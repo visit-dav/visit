@@ -1,0 +1,10 @@
+TODO
+====
+
+ - update vbv_delay calculation to agree with November 1994 
+   (WG11 approved IS draft of ISO/IEC 13818-2).
+
+ - allow intra only encoding of sequences (disable ipflag in
+   putseq.c)
+
+

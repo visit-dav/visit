@@ -1,0 +1,65 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta http-equiv="Content-Language" content="en-us">
+   <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+   <meta name="ProgId" content="FrontPage.Editor.Document">
+   <title>VisIt 2.6.3 Release Notes</title>
+</head>
+<body>
+
+<center><b><font size="6">VisIt 2.6.3 Release Notes</font></b></center>
+
+<p>Welcome to VisIt's release notes page. Release 2.6.3 is primarily a
+bug fix release to release 2.6. It fixes additional bugs in release
+2.6.  Look <a href="relnotes2.6.0.html">here</a> to see a complete
+list of changes in release 2.6.</p>
+
+<p><b><font size="4">Configuration changes in version 2.6.3</font></b></p>
+<ul>
+<li>Serial and parallel host profiles were added for LLNL's <i>rzcereal</i> system.</li>
+<li>The gateway host was changed to rfta15.lanl.gov in the host profile for LANL's cielo system since the old gateway cluster was retired.</li>
+</ul>
+
+<p><b><font size="4">Bugs fixed in version 2.6.3</font></b></p>
+<ul>
+<li>The algorithm for generating tubes (i.e., Tube operator) has been significantly improved, removing artifacts seen in previous versions.</li>
+<li>A crash was fixed with transitioning between the SLIVR and raycasting volume renderers.</li>
+<li>VisIt's frontendlauncher script now sets LD_LIBRARY_PATH so VisIt's internal Python interpreter can properly locate Python shared libraries within the VisIt installation.</li>
+<li>VisIt once again honors any plugin directories specified by the <i>VISITPLUGINDIR</i> environment variable. Some sites use the environment variable to point multiple users to a custom plugin directory.</li>
+<li>VisIt now always passes "-l username" to ssh when making remote connections when running on Windows since qtssh, the ssh utility VisIt uses on Windows, requires it.</li>
+<li>The Windows installer now only installs VisIt's parallel components when the user requests it.</li>
+<li>The <i>Stop</i> button in VisIt's animation controls now stops animations when used in PySide applications.</li>
+<li>VisIt now properly reads pvti files. The previous version was incorrectly looking for a PImage element instead of a PImageData element.</li>
+<li>The host profiles that are used to access the machines in the LLNL RZ through the RZ gateway were modified to remove the "llnl.gov" from the hostname since this was causing login failures for some users.</li>
+<li>Ray-traced volume plots now correctly handle non-floating point scalars.</li>
+<li>Material interface reconstruction now correctly handles polygons of arbitrary size.</li>
+<li>The encoding of mpeg movies was updated to work with the newer version of ffmpeg.</li>
+<li>Pressing the middle mouse button and moving the mouse up and down once again zooms and de-zooms the image while in 2d zoom mode.</li>
+<li>The 2d and 3d zoom interactors once again constrain the zoom rectangle to a 1:1 ratio when zooming with the shift key and left mouse button pressed. Pressing the ctrl key and the left mouse button still pans the image.</li>
+<li>Releasing the shift key before the left mouse button no longer results in the window being stuck in pan mode when panning with the shift key and left mouse button pressed while in 2d or 3d zoom mode.</li>
+<li>The 2d and 3d interactors now ignore mouse wheel movements when any mouse keys are pressed to avoid strange behaviors in some situations.</li>
+<li>The MFiX reader now supports files from MFiX version 1.8.</li>
+<li>The VisIt launch script was modified to correct a bug that incorrectly identified the machine architecture on some Mac systems.</li>
+</ul>
+
+<p><b><font size="4">Enhancements in version 2.6.3</font></b></p>
+<ul>
+<li>The qtssh utility that is used to make remote connections when running VisIt in a client/server mode from a windows desktop has been enhanced to enable logging to facilitate troubleshooting connection problems. Qtssh is now also available on Mac and Linux systems so it can be used instead of the system installed ssh to troubleshoot connection problems on those systems as well.<p>To enable logging add "-log 'logfilename'" to the ssh arguments. It will then create a log with the specified name in your VisIt directory (My Documents/VisIt on Windows and $HOME/.visit on Mac and Linux systems.)</p></li>
+</ul>
+
+<a name="Dev_changes"></a>
+<p><b><font size="4">Changes for VisIt developers in version 2.6.3</font></b></p>
+<ul>
+<li>The Python bindings for libsim no longer reference an additional libsimV2dyn shared library. This makes using the Python bindings easier so they work as intended.</li>
+<li>The build_visit script now correctly turns off VisIt's VISIT_SLIVR flag if <i>--slivr</i> is not used.</li>
+<li>The build_visit script now builds the NetCDF libraries before the ITAPS libraries.</li>
+</ul>
+
+
+<p>Click the following link to view the release notes for the previous
+version of VisIt: <a href="relnotes2.6.2.html">VisIt 2.6.2 Release Notes</a>.</p>
+
+</body>
+</html>

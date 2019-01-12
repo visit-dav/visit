@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+  <Plugin name="ToroidalPoloidalProjection" type="operator" label="ToroidalPoloidalProjection" version="1.0" enabled="false" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" category="Transforms">
+    <Attribute name="ToroidalPoloidalProjection" purpose="Projects Exterior of Torus from 3D to ToroidalPoloidal mapping in 2D" persistent="true" keyframe="true" exportAPI="" exportInclude="">
+      <Enum name="CentroidSource">
+        Manual
+        Auto
+       </Enum>
+      <Field name="R0" label="R0: toroidal radius" type="double">
+        1.500000
+      </Field>
+      <Field name="r" label="r: poloidal radius" type="double">
+        0.200000
+      </Field>
+      <Field name="centroidSource" label="Centroid Source" type="enum" subtype="CentroidSource">
+        Manual
+      </Field>
+      <Field name="centroid" label="Centroid (R,phi,Z)" type="doubleArray" length="3" enabler="centroidSource:Manual">
+        0.000000
+        0.000000
+        0.000000
+      </Field>
+      <Field name="project2D" label="Project to XY plane" type="bool">
+        true
+      </Field>
+    </Attribute>
+  </Plugin>

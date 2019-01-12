@@ -1,0 +1,5 @@
+Grid 0: type=AVT_RECTILINEAR_MESH, dims={50,50,50}
+=================================================
+Grid 0: type=AVT_RECTILINEAR_MESH, dims={50,50,50}, extents={-10,10,-10,10,-10,10}
+=================================================
+Grid 0: type=AVT_RECTILINEAR_MESH, dims={50,50,50}, extents={-10,10,-10,10,-10,10}, ghosttypes=0={}

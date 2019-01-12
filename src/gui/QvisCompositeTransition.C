@@ -1,0 +1,146 @@
+/*****************************************************************************
+*
+* Copyright (c) 2000 - 2018, Lawrence Livermore National Security, LLC
+* Produced at the Lawrence Livermore National Laboratory
+* LLNL-CODE-442911
+* All rights reserved.
+*
+* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
+* full copyright notice is contained in the file COPYRIGHT located at the root
+* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
+*
+* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
+* modification, are permitted provided that the following conditions are met:
+*
+*  - Redistributions of  source code must  retain the above  copyright notice,
+*    this list of conditions and the disclaimer below.
+*  - Redistributions in binary form must reproduce the above copyright notice,
+*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
+*    documentation and/or other materials provided with the distribution.
+*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
+*    be used to endorse or promote products derived from this software without
+*    specific prior written permission.
+*
+* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
+* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
+* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
+* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
+* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
+* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
+* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
+* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
+* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
+* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
+* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
+* DAMAGE.
+*
+*****************************************************************************/
+#include <QvisCompositeTransition.h>
+#include <QvisColorButton.h>
+#include <QCheckBox>
+#include <QFrame>
+#include <QLabel>
+#include <QLayout>
+#include <QSpinBox>
+
+// ****************************************************************************
+// Method: QvisCompositeTransition::QvisCompositeTransition
+//
+// Purpose: 
+//   Constructor.
+//
+// Arguments:
+//   pix    : The widget's pixmap.
+//   parent : The widget's parent.
+//   name   : The widget's name.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Nov 14 13:21:32 PST 2006
+//
+// Modifications:
+//   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
+//   Support for internationalization.
+//
+//   Brad Whitlock, Tue Oct  7 09:24:21 PDT 2008
+//   Qt 4.
+//
+// ****************************************************************************
+
+QvisCompositeTransition::QvisCompositeTransition(const QPixmap &pix,
+    QWidget *parent) : QGroupBox(parent)
+{
+    QVBoxLayout *innerLayout = new QVBoxLayout(this);
+    innerLayout->setMargin(10);
+    innerLayout->addSpacing(15);
+
+    // Add the pixmap here.
+    QLabel *pixLabel = new QLabel(this);
+    pixLabel->setPixmap(pix);
+    innerLayout->addWidget(pixLabel);
+    innerLayout->addSpacing(15);
+
+    QHBoxLayout *hLayout = new QHBoxLayout(0);
+    innerLayout->addLayout(hLayout);
+    QGridLayout *gLayout = new QGridLayout(0);
+    hLayout->addLayout(gLayout);
+    gLayout->setSpacing(15);
+    hLayout->addStretch(10);
+    innerLayout->addStretch(10);
+
+    // Number of frames controls.
+    nFrames = new QSpinBox(this);
+    nFrames->setMinimum(1);
+    nFrames->setValue(10);
+    gLayout->addWidget(
+        new QLabel(tr("Number of transition frames"), this), 0, 0);
+    gLayout->addWidget(nFrames, 0, 1);
+
+    // Reverse
+    reverseCheckbox = new QCheckBox(tr("Reverse"), this);
+    gLayout->addWidget(reverseCheckbox, 1, 0);
+}
+
+// ****************************************************************************
+// Method: QvisCompositeTransition::~QvisCompositeTransition
+//
+// Purpose: 
+//   Destructor
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Nov 14 13:22:16 PST 2006
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+QvisCompositeTransition::~QvisCompositeTransition()
+{
+}
+
+//
+// Set/Get methods.
+//
+
+void
+QvisCompositeTransition::setNFrames(int val)
+{
+    nFrames->setValue(val);
+}
+
+int
+QvisCompositeTransition::getNFrames() const
+{
+    return nFrames->value();
+}
+
+void
+QvisCompositeTransition::setReverse(bool val)
+{
+    reverseCheckbox->setChecked(val);
+}
+
+bool
+QvisCompositeTransition::getReverse() const
+{
+    return reverseCheckbox->isChecked();
+}

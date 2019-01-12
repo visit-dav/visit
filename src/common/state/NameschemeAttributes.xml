@@ -1,0 +1,45 @@
+<?xml version="1.0"?>
+  <Attribute name="NameschemeAttributes" purpose="Information and methods to manage nameschemes" persistent="true" keyframe="true" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="NameschemeAttributes.code">
+    <Field name="namescheme" label="Silo-style namescheme format string" type="string">
+    </Field>
+    <Field name="externalArrayNames" label="Names of external indexing arrays" type="stringVector">
+    </Field>
+    <Field name="externalArrayOffsets" label="Offsets into external indexing array data for each array" type="intVector">
+    </Field>
+    <Field name="externalArrayData" label="Data for external indexing arrays (flattened from all arrays into one vector)" type="intVector">
+    </Field>
+    <Field name="allExplicitNames" label="List of ALL explicit names for the case where the namescheme is just an explicit list of names" type="stringVector">
+    </Field>
+    <Field name="explicitIds" label="Ids of those entries with explicit names" type="intVector">
+    </Field>
+    <Field name="explicitNames" label="Names of those entries with explicit names" type="stringVector">
+    </Field>
+    <Function name="AddExternalArray" user="true" member="true">
+    </Function>
+    <Function name="AddExternalArray2" user="true" member="true">
+    </Function>
+    <Function name="SetAllNames" user="true" member="true">
+    </Function>
+    <Function name="SetName" user="true" member="true">
+    </Function>
+    <Function name="SetName2" user="true" member="true">
+    </Function>
+    <Function name="GetName" user="true" member="true">
+    </Function>
+    <Function name="SetAllNames2" user="true" member="true">
+    </Function>
+    <Function name="CheckIfGetNameCalled" user="true" member="true">
+    </Function>
+    <Include file="header" quoted="false">
+      map
+    </Include>
+    <Include file="header" quoted="false">
+      Namescheme.h
+    </Include>
+    <Include file="header" quoted="false">
+      vector
+    </Include>
+    <Include file="header" quoted="false">
+      snprintf.h
+    </Include>
+  </Attribute>

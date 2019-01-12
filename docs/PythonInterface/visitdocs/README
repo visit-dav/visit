@@ -1,0 +1,29 @@
+To run this program, you will need to have "visit" in your path. You may also
+need to add VisIt's lib directory to the Python path. One way to do that is to
+add a line to the script where you add a line like this:
+
+sys.path.append("/usr/gapps/visit/2.2.2/linux-x86_64/lib")
+
+This change is geared towards making sure that you can import the visit module
+into your Python interpreter.
+
+Running the script:
+
+    python visitdocs.py > cli.tex
+
+Generating a PDF from the Latex file:
+
+    pdf2latex cli.tex
+
+
+Once you've done these steps, you can open cli.pdf and see the functions
+described by the VisIt module.
+
+Note that the visitdocs.py script imports the VisIt module and extracts its
+doc strings for each function in the visit module. This means that undocumented
+functions in the VisIt module will not have documentation. We'll need to 
+update the visit module. This isn't 100% optimal either because the Python 
+Interface Manual provides some extra material that this program does not
+generate. Perhaps the right solution is to latex-ize the extra chapters for
+that manual and generate the reference portion from the visit module, with
+the real reference materials being in the visit module doc strings.

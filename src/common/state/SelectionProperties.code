@@ -1,0 +1,28 @@
+Constant: MIN
+Declaration: static const double MIN;
+Definition: const double SelectionProperties::MIN = -FLT_MAX;
+
+Constant: MAX
+Declaration: static const double MAX;
+Definition: const double SelectionProperties::MAX = FLT_MAX;
+
+Function: GetOriginatingPlot
+Declaration: const std::string &GetOriginatingPlot() const;
+Definition:
+// Synonym for GetSource but makes more sense when a plotName is expected.
+const std::string &
+SelectionProperties::GetOriginatingPlot() const
+{
+    return GetSource();
+}
+
+Function: SetOriginatingPlot
+Declaration: void SetOriginatingPlot(const std::string &);
+Definition:
+// Synonym for SetSource but makes more sense when a plotName is expected.
+void
+SelectionProperties::SetOriginatingPlot(const std::string &p)
+{
+    SetSource(p);
+}
+

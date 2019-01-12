@@ -1,0 +1,33 @@
+# ----------------------------------------------------------------------------
+#
+# Dummy python filter query script that tests:
+#   Requests of additonal vars.
+#   Passing of arbitary python args.
+#
+#  Modifications:
+#   Only use var check results on first proc (b/c we are running this on a
+#   single domain dataset.)
+#
+# ----------------------------------------------------------------------------
+
+class TestQuery(SimplePythonQuery):
+    def __init__(self):
+        SimplePythonQuery.__init__(self)
+    def pre_execute(self):
+        self.input_vars_ok = []
+    def execute_chunk(self,ds_in,domain_id):
+        # try to get all vars:
+        arrs = [ds_in.GetCellData().GetArray(name) for name in self.input_var_names]
+        self.input_vars_ok = [arr is not None for arr in arrs]
+    def post_execute(self):
+        if mpicom.rank() == 0:
+            res = "Input Vars:\n"
+            for i in xrange(len(self.input_var_names)):
+                res+= " %s(found=%s)\n" % (self.input_var_names[i],self.input_vars_ok[i])
+            res += "Input Arguments:\n"
+            for r in self.arguments:
+                res+= " %s\n" % str(r)
+            self.set_result_text(res)
+            self.set_result_value(0.0)
+
+py_filter = TestQuery

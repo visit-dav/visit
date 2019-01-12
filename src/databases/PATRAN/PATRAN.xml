@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+  <Plugin name="PATRAN" type="database" label="PATRAN Neutral" version="1.0" enabled="true" mdspecificcode="true" onlyengine="false" noengine="false" dbtype="STSD" haswriter="false" hasoptions="false">
+    <FilePatterns>
+      *.neu
+    </FilePatterns>
+  </Plugin>

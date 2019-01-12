@@ -1,0 +1,2 @@
+force SR mode 0
+window 1:SR is ON

@@ -1,0 +1,167 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta http-equiv="Content-Language" content="en-us">
+  <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+  <meta name="ProgId" content="FrontPage.Editor.Document">
+  <title>VisIt 2.5 Release Notes</title>
+</head>
+<body>
+
+<center><b><font size="6">VisIt 2.5 Release Notes</font></b></center>
+
+<p>Welcome to VisIt's release notes page. This page describes the important
+enhancements and bug-fixes that were added to this release.</p>
+
+
+<p><b>Sections</b></p>
+<ul>
+  <li><a href="#General_Features">Features for all users</a></li>
+  <li><a href="#Advanced_Features">Features for advanced users</a></li>
+  <li><a href="#GUI_Changes">Changes in GUI behavior</a></li>
+  <li><a href="#File_format">Changes to file format readers</a></li>
+  <li><a href="#Plot_changes">Changes to plots</a></li>
+  <li><a href="#Expression_changes">Changes to expressions</a></li>
+  <li><a href="#Query_changes">Changes to picks and queries</a></li>
+  <li><a href="#Bugs_fixed">Other bug fixes</a></li>
+  <li><a href="#Config_changes">Changes to machine configuration files</a></li>
+  <li><a href="#Dev_changes">Changes for VisIt developers</a></li>
+</ul>
+
+<a name="General_Features"></a>
+<p><b><font size="4">General features added in version 2.5</font></b></p>
+<ul>
+  <li>VisIt has been enhanced to better support double precision values, with many plots and operators capable of processing data in double precision from the time the data is read to the time it is displayed.</li>
+  <li>The Windows version of VisIt has been enhanced so it can launch parallel compute engines on Windows HPC clusters. In order to launch VisIt's compute engine on a Windows HPC cluster, you must have Microsoft's HPC Client Utilities. You will also need to create a host profile for your cluster. The new host profile must contain the following:
+    <p><ul>
+      <li>The name of the cluster's head node.</li>
+      <li>The <i>Installation directory</i> where VisIt is located on the remote cluster.</li>
+      <li>The <i>Share batch job with Metadata Server</i> option must be enabled.</li>
+      <li>The <i>Parallel launch method</i> set to <i>WindowsHPC</i>.</li>
+      <li>The default number of processors.</li>
+    </ul></p>
+    When you submit a job to the Windows HPC scheduler, VisIt will interact with the scheduler directly so there is no need to run ssh to get to the remote computer. The cluster's compute nodes must be able to connect back to your client computer over the network.
+  </li>
+  <li>VisIt has been enhanced so the metadata server and compute engine can once again share a single batch job. This option is available in the <i>Host Profiles</i> window.</li>
+  <li>The Windows version of VisIt no longer opens console windows.</li>
+  <li>VisIt has been enhanced so each variable on a mesh can have an associated <i>"missing data"</i> value. Missing data are used to exclude cells or nodes with the missing data values from the visualization. Expressions that combine variables with missing data restrict their outputs to only the cells or nodes that are valid for all of the expression's input variables.<p>Missing data are specified in the scalar metadata by a database reader plugin and can be described using 4 rules:
+  <center><table border="1" cellpadding="10">
+  <tr>
+    <td><b>Missing data rule</b></td>
+    <td><b>Description</b></td>
+  </tr>
+  <tr>
+    <td>Missing value</td>
+    <td>All values matching the provided missing value are excluded.</td>
+  </tr>
+  <tr>
+    <td>Valid min</td>
+    <td>All values below the provided valid minimum value are excluded.</td>
+  </tr>
+  <tr>
+    <td>Valid max</td>
+    <td>All values above the provided valid maximum value are excluded.</td>
+  </tr>
+  <tr>
+    <td>Valid range</td>
+    <td>All values outside of the provided valid range are excluded.</td>
+  </tr>
+  </table></center>
+  </p>
+  </li>
+  <li>Allen Harvey extended the Volume plot's splatting renderer so that it may directly render clouds of points without first resampling them to a regular grid. This change preserves details in point clouds without having to use a large number of sample points. Thanks Allen!</li>
+  <li>The Volume plot's splatting renderer can now render single-block rectilinear datasets without first sampling to another grid size.</li>
+  <li>Zooming using the mouse wheel now causes the view to be sent to the GUI.</li>
+  <li>Zooming using the mouse wheel is now implemented for windows that display Curve plots.</li>
+  <li>If you have loaded or saved a session file then the name of the session file will be displayed in the Main window's title.</li>
+  <li>Support was added for launching engines using the combination of <i>sbatch/aprun</i>.</li>
+  <li>VisIt is now installed with additional color tables derived from the set of <i>Brewer</i> color tables <i>(See the Copyright in the help for more information)</i>. This provides many more color tables from which to choose.</li>
+    <li>VisIt's python module was modified to include packing of python scripts and resolve import namespace issues with the compiled module.
+   This change requires new paths when using the module from your own python interperter. For more details see: <a href="http://visitusers.org/index.php?title=Python_Module_Support">Python Module Support</a></li>
+   <li> A new set of python  utilities <b>visit_utils</b> is included with VisIt.
+</ul>
+
+<a name="Advanced_Features"></a>
+<p><b><font size="4">Advanced features added in version 2.5</font></b></p>
+<ul>
+  <li>Selections have been enhanced so they offer multiple ways to index cells in a mesh. For example, it is now possible to identify cells using their domain and local cell number, global cell number, or by a user-specified variable such as a particle ID. The domain and local cell number and global cell number indexing schemes are useful for domain-decomposed data whose mesh connectivity does not change. The variable indexing scheme is good for domain-decomposed data and situations where mesh connectivity changes across domains and time. You can specify the type of indexing to use when you create a new selection and you can alter the selection's properties in the Selections window.</li>
+  <li>William T. Jones extended libsim so it supports ghost nodes. Thanks William!</li>
+  <li>Libsim was enhanced to provide a function that lets you set the MPI communicator that VisIt should use. Pass an address to the communicator to <i>VisItSetMPICommunicator(void*)</i> if you want to make VisIt use a user-defined communicator. Passing NULL will make VisIt use its copy of the world communicator.</li>
+  <li>The VisIt Python Interface now provides a function called <i>WriteScript</i> that tries to write the current state of VisIt as a Python program that can be executed later.</li>
+</ul>
+
+<a name="GUI_Changes"></a>
+<p><b><font size="4">Changes in GUI behavior for version 2.5</font></b></p>
+<ul>
+  <li>Color table buttons in the gui now show an icon depicting the colors in the color table.</li>
+  <li>Color tables can now use cubic spline interpolation between colors to make smoother transitions than the default linear scheme. The default color tables remain linear but you can change the interpolation yourself.</li>
+  <li>Added a Controls menu option to directly launch VisIt's command line interface (CLI), if an instance of the CLI is not already active.</li>
+</ul>
+
+<a name="File_format"></a>
+<p><b><font size="4">File format reader changes in version 2.5</font></b></p>
+<ul>
+  <li>Joel Welling contributed an MFIXCDF reader.</li>
+  <li>Joel Welling contributed changes to the MFIX reader that change how it performs domain decomposition.</li>
+  <li>The EnSight file format reader now supports materials.</li>
+  <li>VisIt's NETCDF reader now supports conventions for missing data. The <i>missing_value, _FillValue, valid_min, valid_max, valid_range</i> attributes are supported.</li>
+  <li>VisIt's NETCDF reader now supports the <i>scale_factor</i> and <i>add_offset</i> attributes, using them to transform packed char and short data into double-precision.</li>
+  <li>The BOW reader was obsolete so it was removed.</li>
+  <li>VisIt's Dyna3D reader can now read material models 10 and 15.</li>
+  <li>Bob Corey updated the Mili reader.</li>
+  <li>Bob Corey corrected a bug in makemili, where not all the variables present in the Mili file were made available for plotting.</li>
+  <li>The paraDIS reader was fixed so it will read the entire dataset on Windows.</li>
+  <li>The CGNS reader was fixed so that VisIt won't crash when reading a large number of grouped files.</li>
+  <li>The Silo reader was enhanced to read gmap extensions which identify periodic boundary conditions and avoid ghosting of these boundaries.</li>
+</ul>
+
+<a name="Plot_changes"></a>
+<p><b><font size="4">Changes to VisIt's plots in version 2.5</font></b></p>
+<ul>
+  <li>VisIt's Spreadsheet plot now supports missing data, marking them in the spreadsheet with a reddish gray background color.</li>
+</ul>
+
+<a name="Expression_changes"></a>
+<p><b><font size="4">Changes to VisIt's expression language in version 2.5</font></b></p>
+<ul>
+  <li>The <b>cross</b> expression, which performs a cross product, now produces a scalar when crossing two dimensional vectors, as the magnitude of the direction out of the plane.</li>
+  <li>The <b>value_for_materiral</b>, and <b>matvf</b> expressions now work properly with AMR datasets.</li>
+</ul>
+
+<a name="Query_changes"></a>
+<p><b><font size="4">Changes to VisIt's picks and queries in version 2.5</font></b></p>
+<ul>
+  <li>Scatter Plots can now be picked.</li>
+</ul>
+
+<a name="Bugs_fixed"></a>
+<p><b><font size="4">Other bugs fixed in version 2.5</font></b></p>
+<ul>
+  <li>Named selections now correctly select the right cells when FastBit indexing is used.</li>
+  <li>Libsim's routines for setting rectlinear and AMR domain boundary indices are now properly getting called in the simulation runtime library.</li>
+  <li>The PersistentParticles operator no longer causes the compute engine to exit when it is applied to a Mesh plot.</li>
+  <li>Stereo rendering now works properly. It was broken in versions of VisIt after the VTK upgrade in VisIt 2.4.0.</li>
+  <li>Slicing and Contouring of data on unstructured meshes containing polyhedral cells no longer causes VisIt's compute engine to eventually crash.</li>
+  <li>Enabling keyframing no longer crashes the viewer.</li>
+</ul>
+  
+<a name="Config_changes"></a>
+<p><b><font size="4">Changes to configuration files in version 2.5</font></b></p>
+<ul>
+  <li>Host profiles for LLNL's CZ clusters have been changed to use <i>SSH tunneling</i> so Windows users should be able to run client/server without having to modify host profiles.</li>
+  <li>Host profiles were added for LLNL's rzmerl cluster.</li>
+  <li>Host profiles were added for LLNL's oslic cluster.</li>
+  <li>Host profiles were added for LLNL's zin cluster.</li>
+</ul>
+  
+<a name="Dev_changes"></a>
+<p><b><font size="4">Changes for VisIt developers in version 2.5</font></b></p>
+<ul>
+  <li>Visual Studio 2010 support was added.</li>
+</ul>
+
+<p>Click the following link to view the release notes for the previous version
+of VisIt: <a href="relnotes2.4.2.html">VisIt 2.4.2 Release Notes</a>.</p>
+</body>
+</html>

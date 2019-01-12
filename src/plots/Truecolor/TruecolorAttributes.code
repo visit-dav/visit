@@ -1,0 +1,9 @@
+Function: ChangesRequireRecalculation
+Declaration: bool ChangesRequireRecalculation(const TruecolorAttributes &obj);
+Definition:
+bool
+TruecolorAttributes::ChangesRequireRecalculation(const TruecolorAttributes &obj)
+{
+    return false;
+}
+

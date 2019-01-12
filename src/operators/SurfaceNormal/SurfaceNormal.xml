@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+  <Plugin name="SurfaceNormal" type="operator" label="SurfaceNormal" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" iconFile="SurfaceNormal.xpm" category="Geometry" createExpression="true" exprInType="mesh" exprOutType="vector">
+    <Attribute name="SurfaceNormalAttributes" purpose="Attributes for SurfaceNormal operator" persistent="false" keyframe="true" exportAPI="" exportInclude="">
+      <Enum name="Centering">
+        Point
+        Cell
+      </Enum>
+      <Field name="centering" label="Centering" type="enum" subtype="Centering">
+        Point
+      </Field>
+    </Attribute>
+  </Plugin>

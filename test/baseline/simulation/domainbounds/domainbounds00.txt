@@ -1,0 +1,3 @@
+Simulation executable "domainbounds" exists.
+Simulation "domainbounds" started.
+VisIt connected to simulation "domainbounds".

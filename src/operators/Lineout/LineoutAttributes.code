@@ -1,0 +1,310 @@
+Function: CopyAttributes
+Declaration: virtual bool CopyAttributes(const AttributeGroup *);
+Definition:
+// ****************************************************************************
+//
+// Modifications:
+//   Kathleen Bonnell, Thu Nov 18 17:46:02 PST 2004
+//   Copy ReflineLabels.
+//
+//   Kathleen Bonnell, Tue Nov 23 09:19:32 PST 2004
+//   Added ability to copy GlobalLineoutAttributes, as long as we aren't
+//   ignoring them. 
+//
+//   Kathleen Bonnell, Tue May 15 14:22:23 PDT 2007 
+//   Allow Line to copy SamplingOn. 
+//
+// ****************************************************************************
+bool
+LineoutAttributes::CopyAttributes(const AttributeGroup *atts)
+{
+    bool retval = false;
+
+    if(TypeName() == atts->TypeName())
+    {
+        // Call assignment operator.
+        const LineoutAttributes *tmp = (const LineoutAttributes *)atts;
+        *this = *tmp;
+        retval = true;
+    }
+    else if(atts->TypeName() == "Line")
+    {
+        const Line *tmp = (const Line*)atts;
+        SetPoint1(tmp->GetPoint1());
+        SetPoint2(tmp->GetPoint2());
+        SetDesignator(tmp->GetDesignator());
+        SetNumberOfSamplePoints(tmp->GetNumSamples());
+        SetSamplingOn(GetSamplingOn() || tmp->GetSamplingOn());
+        retval = true;
+    }
+    else if(atts->TypeName() == "GlobalLineoutAttributes")
+    {
+        if (!ignoreGlobal)
+        {
+            const GlobalLineoutAttributes *tmp = 
+                   (const GlobalLineoutAttributes*)atts;
+            SetReflineLabels(tmp->GetCreateReflineLabels());
+            SetSamplingOn(tmp->GetSamplingOn());
+            SetNumberOfSamplePoints(tmp->GetNumSamples());
+            retval = true;
+        }
+    }
+
+    return retval;
+}
+
+Function: CreateCompatible
+Declaration: virtual AttributeSubject *CreateCompatible(const std::string &) const;
+Definition:
+AttributeSubject *
+LineoutAttributes::CreateCompatible(const std::string &tname) const
+{
+    AttributeSubject *retval = 0;
+
+    if(TypeName() == tname)
+    {
+        retval = new LineoutAttributes(*this);
+    }
+    else if(tname == "Line")
+    {
+        Line *line = new Line;
+
+        line->SetPoint1(GetPoint1());
+        line->SetPoint2(GetPoint2());
+        line->SetInteractive(GetInteractive());
+        line->SetReflineLabels(GetReflineLabels());
+        line->SetDesignator(GetDesignator());
+        line->SetSamplingOn(GetSamplingOn());
+        line->SetNumSamples(GetNumberOfSamplePoints());
+        retval = line;
+    }
+
+    return retval;
+}
+
+Function: Print
+Declaration: void Print(ostream &, bool) const;
+Definition:
+void
+LineoutAttributes::Print(ostream &out, bool selected_only) const
+{
+    out << "LineoutAttributes" << "\n";
+    out << "{";
+    const double *pt;
+    int i;
+    for(i = 0; i < NumAttributes(); ++i)
+    {
+        if(selected_only && !IsSelected(i))
+            continue;
+
+        switch(i)
+        {
+          case  0: pt = GetPoint1();
+                   out << "point1=" << pt[0] << " " 
+                                    << pt[1] << " "
+                                    << pt[2] << endl;          break;
+          case  1: pt = GetPoint2();
+                   out << "point2=" << pt[0] << " " 
+                                    << pt[1] << " "
+                                    << pt[2] << endl;          break;
+          case  2: out << "sampling on? " << GetSamplingOn();  break;
+          case  3: out << "numberOfSamplePoints=" 
+                       << GetNumberOfSamplePoints();    break;
+        }
+        out << ",";
+    }
+
+    out << "}";
+
+}
+
+Target: xml2info
+Function: LineoutCommonPluginInfo::GetVariableTypes
+Declaration: virtual int GetVariableTypes() const;
+Definition:
+// ****************************************************************************
+// Method: LineoutCommonPluginInfo::GetVariableTypes
+//
+// Purpose: 
+//   Indicates that if the Lineout operator is present in the selected plot
+//   then the GUI's variable menu should include scalars.
+//
+// Returns:    The allowable variable types for the Lineout operator.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Apr 25 16:51:05 PST 2006
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+int
+LineoutCommonPluginInfo::GetVariableTypes() const
+{
+    return VAR_CATEGORY_SCALAR;
+}
+
+Function: LineoutCommonPluginInfo::GetVariableMask
+Declaration: virtual int GetVariableMask() const;
+Definition:
+// ****************************************************************************
+// Method: LineoutCommonPluginInfo::GetVariableMask
+//
+// Purpose: 
+//   Returns a mask that lets the Lineout operator eliminate certain variable
+//   types from the variable menu.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Apr 25 16:52:08 PST 2006
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+int
+LineoutCommonPluginInfo::GetVariableMask() const
+{
+    return VAR_CATEGORY_SCALAR;
+}
+
+Function: LineoutCommonPluginInfo::GetUserSelectable
+Declaration: virtual bool GetUserSelectable() const;
+Definition:
+// ****************************************************************************
+// Method: LineoutCommonPluginInfo::GetUserSelectable
+//
+// Purpose: 
+//   Indicates that the Lineout operator cannot be selected in the GUI.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Apr 25 17:04:25 PST 2006
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+LineoutCommonPluginInfo::GetUserSelectable() const
+{
+    return false;
+}
+
+Function: LineoutViewerEnginePluginInfo::Removeable
+Declaration: virtual bool Removeable() const;
+Definition:
+bool
+LineoutViewerEnginePluginInfo::Removeable() const
+{
+    return false;
+}
+
+Function: LineoutViewerEnginePluginInfo::Moveable
+Declaration: virtual bool Moveable() const;
+Definition:
+bool
+LineoutViewerEnginePluginInfo::Moveable() const
+{
+    return false;
+}
+
+Function: LineoutViewerEnginePluginInfo::AllowsSubsequentOperators
+Declaration: virtual bool AllowsSubsequentOperators() const;
+Definition:
+bool
+LineoutViewerEnginePluginInfo::AllowsSubsequentOperators() const
+{
+    return false;
+}
+
+Function: LineoutEnginePluginInfo::AllocAvtPluginFilter
+Declaration: virtual avtPluginFilter *AllocAvtPluginFilter();
+Definition:
+// ****************************************************************************
+//  Method: LineoutEnginePluginInfo::AllocAvtPluginFilter
+//
+//  Purpose:
+//    Return a pointer to a newly allocated avtPluginFilter.
+//
+//  Returns:    A pointer to the newly allocated avtPluginFilter.
+//
+//  Programmer: kbonnell -- generated by xml2info
+//  Creation:   Tue May 7 13:13:46 PST 2002
+//
+//  Modifications:
+//
+//    Hank Childs, Thu Jan 24 09:26:14 PST 2008
+//    Forced to hand-edit return of avtLineoutPluginFilter ... not
+//    avtLineoutFilter.
+//
+// ****************************************************************************
+#include <avtLineoutPluginFilter.h>
+avtPluginFilter *
+LineoutEnginePluginInfo::AllocAvtPluginFilter()
+{
+    return new avtLineoutPluginFilter;
+}
+
+Function: LineoutCommonPluginInfo::GetCreatedExpressions
+Declaration: virtual ExpressionList *GetCreatedExpressions(const avtDatabaseMetaData *);
+Definition:
+// ****************************************************************************
+//  Method: LineoutCommonPluginInfo::GetCreatedExpressions
+//
+//  Purpose:
+//      Gets the expressions created by this operator.
+//
+//  Programmer: generated by xml2info
+//  Creation:   omitted
+//
+//  Modifications:
+//    Brad Whitlock, Wed Jul 27 11:31:54 PDT 2011
+//    Use std::string instead of sprintf and insert <> in case the variable
+//    name has some punctuation.
+//
+// ****************************************************************************
+
+ExpressionList * 
+LineoutCommonPluginInfo::GetCreatedExpressions(const avtDatabaseMetaData *md) const
+{
+    std::string opLineout("operators/Lineout/"),
+                exPrefix("cell_constant("), exSuffix(", 0.)"),
+                lAngleBracket("<"), rAngleBracket(">");
+    ExpressionList *el = new ExpressionList;
+    int numScalars = md->GetNumScalars();
+    for (int i = 0 ; i < numScalars ; i++)
+    {
+        const avtScalarMetaData *mmd = md->GetScalar(i);
+        if (mmd->hideFromGUI || !mmd->validVariable)
+            continue;
+        {
+            Expression e2;
+            e2.SetName(opLineout + mmd->name);
+            e2.SetType(Expression::CurveMeshVar);
+            e2.SetFromOperator(true);
+            e2.SetOperatorName("Lineout");
+            e2.SetDefinition(exPrefix + lAngleBracket + mmd->name + rAngleBracket + exSuffix);
+            el->AddExpressions(e2);
+        }
+    }
+    const ExpressionList &oldEL = md->GetExprList();
+    for (int i = 0 ; i < oldEL.GetNumExpressions() ; i++)
+    {
+        const Expression &e = oldEL.GetExpressions(i);
+        if (e.GetFromOperator() || e.GetAutoExpression())
+            continue;
+        if (e.GetType() == Expression::ScalarMeshVar)
+        {
+            {
+                Expression e2;
+                e2.SetName(opLineout + e.GetName());
+                e2.SetType(Expression::CurveMeshVar);
+                e2.SetFromOperator(true);
+                e2.SetOperatorName("Lineout");
+                e2.SetDefinition(exPrefix + e.GetName() + exSuffix);
+                el->AddExpressions(e2);
+            }
+        }
+    }
+    return el;
+}
+

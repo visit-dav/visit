@@ -1,0 +1,94 @@
+<?xml version="1.0"?>
+  <Attribute name="AnnotationAttributes" purpose="This class contains the attributes controlling annotations." persistent="true" keyframe="true" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="AnnotationAttributes.code">
+    <Enum name="GradientStyle">
+      TopToBottom
+      BottomToTop
+      LeftToRight
+      RightToLeft
+      Radial
+    </Enum>
+    <Enum name="BackgroundMode">
+      Solid
+      Gradient
+      Image
+      ImageSphere
+    </Enum>
+    <Enum name="PathExpansionMode">
+      File
+      Directory
+      Full
+      Smart
+      SmartDirectory
+    </Enum>
+    <Field name="axes2D" label="2D Axes" type="att" subtype="Axes2D">
+    </Field>
+    <Field name="axes3D" label="3D Axes" type="att" subtype="Axes3D">
+    </Field>
+    <Field name="userInfoFlag" label="userInfoFlag" type="bool">
+      true
+    </Field>
+    <Field name="userInfoFont" label="User font" type="att" subtype="FontAttributes">
+    </Field>
+    <Field name="databaseInfoFlag" label="databaseInfoFlag" type="bool">
+      true
+    </Field>
+    <Field name="timeInfoFlag" label="timeInfoFlag" type="bool">
+      true
+    </Field>
+    <Field name="databaseInfoFont" label="Database info font" type="att" subtype="FontAttributes">
+    </Field>
+    <Field name="databaseInfoExpansionMode" label="Path Expansion:" type="enum" subtype="PathExpansionMode" enabler="databaseInfoFlag:true">
+      File
+    </Field>
+    <Field name="databaseInfoTimeScale" label="Time scale" type="double">
+      1.
+    </Field>
+    <Field name="databaseInfoTimeOffset" label="Time offset" type="double">
+      0.
+    </Field>
+    <Field name="legendInfoFlag" label="legendInfoFlag" type="bool">
+      true
+    </Field>
+    <Field name="backgroundColor" label="backgroundColor" type="color" length="4">
+      255
+      255
+      255
+      255
+    </Field>
+    <Field name="foregroundColor" label="foregroundColor" type="color" length="4">
+      0
+      0
+      0
+      255
+    </Field>
+    <Field name="gradientBackgroundStyle" label="gradientBackgroundStyle" type="enum" subtype="GradientStyle">
+      Radial
+    </Field>
+    <Field name="gradientColor1" label="gradientColor1" type="color" length="4">
+      0
+      0
+      255
+      255
+    </Field>
+    <Field name="gradientColor2" label="gradientColor2" type="color" length="4">
+      0
+      0
+      0
+      255
+    </Field>
+    <Field name="backgroundMode" label="backgroundMode" type="enum" subtype="BackgroundMode">
+      Solid
+    </Field>
+    <Field name="backgroundImage" label="Background image" type="string">
+    </Field>
+    <Field name="imageRepeatX" label="Image repeat X" type="int">
+      1
+    </Field>
+    <Field name="imageRepeatY" label="Image repeat Y" type="int">
+      1
+    </Field>
+    <Field name="axesArray" label="Array Axes" type="att" subtype="AxesArray">
+    </Field>
+    <Function name="GetDiscernibleBackgroundColor" user="true" member="true">
+    </Function>
+  </Attribute>

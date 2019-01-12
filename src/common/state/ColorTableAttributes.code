@@ -1,0 +1,630 @@
+Function:  GetColorTableIndex
+Declaration: int GetColorTableIndex(const std::string &name) const;
+Definition:
+// ****************************************************************************
+// Method: ColorTableAttributes::GetColorTableIndex
+//
+// Purpose: 
+//   Returns the index of the specified color table.
+//
+// Arguments:
+//   name : The name of the color table that we want.
+//
+// Returns:    The index or -1 if the color table is not in the list.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Sat Jun 16 20:32:23 PST 2001
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+int
+ColorTableAttributes::GetColorTableIndex(const std::string &name) const
+{
+    int retval = -1;
+    for(size_t i = 0; i < names.size(); ++i)
+    {
+        if(names[i] == name)
+        {
+            retval = i;
+            break;
+        }
+    }
+
+    return retval;
+}
+
+
+
+Function:  GetColorControlPoints1
+Declaration: const ColorControlPointList *GetColorControlPoints(int index) const;
+Definition:
+// ****************************************************************************
+// Method: ColorTableAttributes::GetColorControlPoints
+//
+// Purpose: 
+//   Returns a pointer to the color control points for the specified color
+//   table index.
+//
+// Arguments:
+//   index : The index for which we want the color control points.
+//
+// Returns:    The color control points or NULL.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Sat Jun 16 20:33:22 PST 2001
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+const ColorControlPointList *
+ColorTableAttributes::GetColorControlPoints(int index) const
+{
+    if(index >= 0 && (size_t)index < colorTables.size())
+        return ((ColorControlPointList *)colorTables[index]);
+    else
+        return 0;
+}
+
+
+
+Function:  GetColorControlPoints2
+Declaration: const ColorControlPointList *GetColorControlPoints(const std::string &name) const;
+Definition:
+// ****************************************************************************
+// Method: ColorTableAttributes::GetColorControlPoints
+//
+// Purpose: 
+//   Returns a pointer to the color control points for the specified color
+//   table index.
+//
+// Arguments:
+//   name : The name of the color table for which we want the color control
+//          points.
+//
+// Returns:    The color control points or NULL.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Sat Jun 16 20:33:22 PST 2001
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+const ColorControlPointList *
+ColorTableAttributes::GetColorControlPoints(const std::string &name) const
+{
+    int index = GetColorTableIndex(name);
+
+    if(index >= 0 && (size_t)index < colorTables.size())
+        return ((ColorControlPointList *)colorTables[index]);
+    else
+        return 0;
+}
+
+
+
+Function:  AddColorTable
+Declaration: void AddColorTable(const std::string &name, const ColorControlPointList &cpts);
+Definition:
+// ****************************************************************************
+// Method: ColorTableAttributes::AddColorTable
+//
+// Purpose: 
+//   Adds a new color table to the list.
+//
+// Arguments:
+//   name : The name of the new color table.
+//   cpts : The color control points for the new color table.
+//
+// Programmer: Brad Whitlock
+// Creation:   Sat Jun 16 20:35:43 PST 2001
+//
+// Modifications:
+//   Brad Whitlock, Mon Nov 25 12:00:52 PDT 2002
+//   I added code to sort the color table using a map.
+//
+//   Brad Whitlock, Mon Mar 13 17:14:55 PST 2006
+//   Make sure that a pre-existing color table with the same name is removed
+//   before adding the new color table.
+//
+//   Hank Childs, Thu Jan 17 16:41:34 PST 2008
+//   Preserve the active continuous/discrete status if a color table is
+//   being replaced.
+//
+// ****************************************************************************
+
+void
+ColorTableAttributes::AddColorTable(const std::string &name,
+    const ColorControlPointList &cpts)
+{
+    bool activeContinuous = false;
+    if (GetActiveContinuous() == name)
+        activeContinuous = true;
+    bool activeDiscrete = false;
+    if (GetActiveDiscrete() == name)
+        activeDiscrete = true;
+
+    // Remove the color table if it already exists in the list.
+    int index = GetColorTableIndex(name);
+    if(index != -1)
+        RemoveColorTable(index);
+
+    // Append the color table to the list.
+    names.push_back(name);
+    AddColorTables(cpts);
+
+    // Store the name, colortable pairs into a map.
+    std::map<std::string, AttributeGroup *> sortMap;
+    size_t i;
+    for(i = 0; i < names.size(); ++i)
+        sortMap[names[i]] = colorTables[i];
+
+    // Traverse the map, it will be sorted. Store the names and color table
+    // pointer back into the old vectors.
+    std::map<std::string, AttributeGroup *>::iterator pos;
+    for(i = 0, pos = sortMap.begin(); pos != sortMap.end(); ++pos, ++i)
+    {
+        names[i] = pos->first;
+        colorTables[i] = pos->second;
+    }
+
+    if (activeContinuous)
+        SetActiveContinuous(name);
+    if (activeDiscrete)
+        SetActiveDiscrete(name);
+
+    Select(0, (void *)&names);
+}
+
+
+Function:  RemoveColorTable1
+Declaration: void RemoveColorTable(const std::string &name);
+Definition:
+// ****************************************************************************
+// Method: ColorTableAttributes::RemoveColorTable
+//
+// Purpose: 
+//   Removes the named color table from the list.
+//
+// Arguments:
+//   name : The name of the color table to remove.
+//
+// Programmer: Brad Whitlock
+// Creation:   Sat Jun 16 20:36:30 PST 2001
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ColorTableAttributes::RemoveColorTable(const std::string &name)
+{
+    int index = GetColorTableIndex(name);
+    RemoveColorTable(index);
+}
+
+
+
+Function:  RemoveColorTable2
+Declaration: void RemoveColorTable(int index);
+Definition:
+// ****************************************************************************
+// Method: ColorTableAttributes::RemoveColorTable
+//
+// Purpose: 
+//   Removes the color table at the specified list index.
+//
+// Arguments:
+//   index : The index of the color table we want to remove.
+//
+// Programmer: Brad Whitlock
+// Creation:   Sat Jun 16 20:37:03 PST 2001
+//
+// Modifications:
+//   Brad Whitlock, Wed Nov 20 12:08:18 PDT 2002
+//   Made it work with the new discrete color tables.
+//
+// ****************************************************************************
+
+void
+ColorTableAttributes::RemoveColorTable(int index)
+{
+    if(index >= 0 && (size_t)index < names.size())
+    {
+        // Determine if the color table is active.
+        bool isActiveContinuous, isActiveDiscrete;
+        isActiveContinuous = (names[index] == activeContinuous);
+        isActiveDiscrete = (names[index] == activeDiscrete);
+
+        // Iterate through the vector "index" times. 
+        stringVector::iterator pos = names.begin();
+        for(int i = 0; i < index; ++i)
+            ++pos;
+
+        // If pos is still a valid iterator, remove that element.
+        if(pos != names.end())
+        {
+            names.erase(pos);
+        }
+
+        // Indicate that things have changed by selecting the list.
+        Select(0, (void *)&names);
+
+        // erase the color table from the vector.
+        RemoveColorTables(index);
+
+        // If it is the active color table that was removed, reset the
+        // active color table to the first element.
+        if(isActiveContinuous)
+        {
+            if(names.size() > 0)
+                SetActiveContinuous(names[0]);
+            else
+                SetActiveContinuous(std::string(""));
+        }
+        if(isActiveDiscrete)
+        {
+            if(names.size() > 0)
+                SetActiveDiscrete(names[0]);
+            else
+                SetActiveDiscrete(std::string(""));
+        }
+    }
+}
+
+
+Function:  CreateNode
+Declaration: virtual bool CreateNode(DataNode *node, bool, bool);
+Definition:
+// ****************************************************************************
+// Method: ColorTableAttributes::CreateNode
+//
+// Purpose: 
+//   This method creates a DataNode representation of the object so it can be saved to a config file.
+//
+// Note:       Autogenerated by classwriter.
+//
+// Programmer: classwriter
+// Creation:   Mon Jun 11 10:41:36 PDT 2001
+//
+// Modifications:
+//   Brad Whitlock, Mon Jun 18 22:03:23 PST 2001
+//   Custom coded this method since classwriter's resulting output format
+//   was ridiculous.
+//
+//   Brad Whitlock, Wed Nov 20 12:24:43 PDT 2002
+//   I made it work with discrete colortables.
+//
+//   Brad Whitlock, Tue May 20 10:21:14 PDT 2003
+//   I made it saved out only what needs to be saved out.
+//
+//   Brad Whitlock, Mon Jul 7 16:51:05 PST 2003
+//   I prevented it from saving out colortables that are external.
+//
+//   Brad Whitlock, Wed Dec 17 12:21:24 PDT 2003
+//   I added another bool argument.
+//
+//   Brad Whitlock, Tue Mar 13 10:40:04 PDT 2007
+//   Updated due to code generator changes.
+//
+//   Brad Whitlock, Fri Dec 14 16:07:50 PST 2007
+//   Made it use ids.
+//
+//   Hank Childs, Thu Jul  1 14:20:26 PDT 2010
+//   Write out opacities.
+//
+//   Brad Whitlock, Fri Apr 27 14:16:01 PDT 2012
+//   Change smoothing.
+//
+// ****************************************************************************
+
+bool
+ColorTableAttributes::CreateNode(DataNode *parentNode, bool, bool)
+{
+    if(parentNode == 0)
+        return true;
+
+    // Create a node for ColorTableAttributes.
+    DataNode *node = new DataNode("ColorTableAttributes");
+    node->AddNode(new DataNode("activeContinuous", activeContinuous));
+    node->AddNode(new DataNode("activeDiscrete", activeDiscrete));
+    node->AddNode(new DataNode("groupingFlag", groupingFlag));
+
+    // Add each color table specially.
+    char tmp[100];
+    ColorControlPointList defaultObject;
+    int index = 0;
+    for(size_t i = 0; i < colorTables.size(); ++i)    
+    {
+        const ColorControlPointList &ccpl = GetColorTables(i);
+        if(!ccpl.GetExternalFlag())
+        {
+            SNPRINTF(tmp, 100, "table%02d", index++);
+            DataNode *ctNode = new DataNode(tmp);
+            // Add the color table attributes to the ctNode.
+            ctNode->AddNode(new DataNode("ctName", names[i]));
+            if(!ccpl.FieldsEqual(ColorControlPointList::ID_equalSpacingFlag, &defaultObject))
+                ctNode->AddNode(new DataNode("equal", ccpl.GetEqualSpacingFlag()));
+            if(!ccpl.FieldsEqual(ColorControlPointList::ID_smoothing, &defaultObject))
+                ctNode->AddNode(new DataNode("smoothing", ccpl.GetSmoothing()));
+            if(!ccpl.FieldsEqual(ColorControlPointList::ID_discreteFlag, &defaultObject))
+                ctNode->AddNode(new DataNode("discrete", ccpl.GetDiscreteFlag()));
+            if(!ccpl.FieldsEqual(ColorControlPointList::ID_categoryName, &defaultObject))
+                ctNode->AddNode(new DataNode("category", ccpl.GetCategoryName()));
+
+            // Add the control points to the vector that we'll save out.
+            floatVector fvec;
+            ctNode->AddNode(new DataNode("colorsHaveOpacity", true));
+            for(int j = 0; j < ccpl.GetNumControlPoints(); ++j)
+            {
+                const ColorControlPoint &cp = ccpl.operator[](j);
+                fvec.push_back(cp.GetPosition());
+                fvec.push_back(float(cp.GetColors()[0]));
+                fvec.push_back(float(cp.GetColors()[1]));
+                fvec.push_back(float(cp.GetColors()[2]));
+                fvec.push_back(float(cp.GetColors()[3]));
+            }
+            ctNode->AddNode(new DataNode("controlPts", fvec));
+            node->AddNode(ctNode);
+        }
+    }
+
+    node->AddNode(new DataNode("Ntables", index));
+
+    // Add the node to the parent node.
+    parentNode->AddNode(node);
+
+    return true;
+}
+
+
+
+Function:  SetFromNode
+Declaration: virtual void SetFromNode(DataNode *node);
+Definition:
+// ****************************************************************************
+// Method: ColorTableAttributes::SetFromNode
+//
+// Purpose: 
+//   This method sets attributes in this object from values in a DataNode representation of the object.
+//
+// Note:       Autogenerated by classwriter.
+//
+// Programmer: classwriter
+// Creation:   Mon Jun 11 10:41:36 PDT 2001
+//
+// Modifications:
+//   Brad Whitlock, Mon Jun 18 23:43:59 PST 2001
+//   I rewrote it so it matches the format that is written in CreateNode.
+//
+//   Brad Whitlock, Wed Nov 20 12:26:24 PDT 2002
+//   I made it work with discrete color tables.
+//
+//   Hank Childs, Thu Jul  1 14:20:26 PDT 2010
+//   Add support for opacities.
+//
+// ****************************************************************************
+
+void
+ColorTableAttributes::SetFromNode(DataNode *parentNode)
+{
+    if(parentNode == 0)
+        return;
+
+    DataNode *searchNode = parentNode->GetNode("ColorTableAttributes");
+    if(searchNode == 0)
+        return;
+
+    // Look for the number of color tables.
+    DataNode *node = 0;
+    if((node = searchNode->GetNode("Ntables")) != 0)
+    {
+        char tmp[100];
+        int  ntables = node->AsInt();
+
+        // Look for ntables color table nodes.
+        for(int i = 0; i < ntables; ++i)
+        {
+            SNPRINTF(tmp, 100, "table%02d", i);
+            if((node = searchNode->GetNode(tmp)) != 0)
+            {
+                DataNode *nameNode = node->GetNode("ctName");
+                DataNode *pointNode = node->GetNode("controlPts");
+                DataNode *colorsHaveOpacity = node->GetNode("colorsHaveOpacity");
+                bool readAlpha = false;
+                if (colorsHaveOpacity != NULL)
+                    readAlpha = true;
+
+                // If we have the name node and the pointNode, we can add a
+                // color table.
+                if(nameNode && pointNode)
+                {
+                    ColorControlPointList ccpl;
+
+                    // Try and set the equal flag.
+                    DataNode *tmpNode;
+                    if((tmpNode = node->GetNode("equal")) != 0)
+                        ccpl.SetEqualSpacingFlag(tmpNode->AsBool());
+                    // Try and set the smooth flag. (old way)
+                    if((tmpNode = node->GetNode("smooth")) != 0)
+                        ccpl.SetSmoothing(tmpNode->AsBool()?ColorControlPointList::Linear:ColorControlPointList::None);
+                    // (new way)
+                    if((tmpNode = node->GetNode("smoothing")) != 0)
+                        ccpl.SetSmoothing(static_cast<ColorControlPointList::SmoothingMethod>(tmpNode->AsInt()));
+
+                    if((tmpNode = node->GetNode("discrete")) != 0)
+                        ccpl.SetDiscreteFlag(tmpNode->AsBool());
+
+                    if((tmpNode = node->GetNode("category")) != 0)
+                        ccpl.SetCategoryName(tmpNode->AsString());
+                    else
+                        ccpl.SetCategoryName("Standard");
+
+                    // Set the color control points.
+                    floatVector fvec = pointNode->AsFloatVector();
+                    int nvalsPerColor = 4;
+                    if (readAlpha)
+                        nvalsPerColor = 5;
+                    for(size_t j = 0; j < fvec.size() / nvalsPerColor; ++j)
+                    {
+                        // Create a control point based on the values
+                        // in the float vector.
+                        int index = j * nvalsPerColor;
+                        ColorControlPoint cpt(fvec[index],
+                                              (unsigned char)(fvec[index+1]),
+                                              (unsigned char)(fvec[index+2]),
+                                              (unsigned char)(fvec[index+3]),
+                                              (readAlpha
+                                                  ? (unsigned char)(fvec[index+4])
+                                                  : 255));
+                        ccpl.AddControlPoints(cpt);
+                    }
+
+                    // If the color table is already in the list, remove it.
+                    // Then add the new color table to the list.
+                    RemoveColorTable(nameNode->AsString());
+                    AddColorTable(nameNode->AsString(), ccpl);
+                }
+            }
+        } // end for i
+    }
+
+    if((node = searchNode->GetNode("activeContinuous")) != 0)
+        SetActiveContinuous(node->AsString());
+
+    if((node = searchNode->GetNode("activeDiscrete")) != 0)
+        SetActiveDiscrete(node->AsString());
+
+    if((node = searchNode->GetNode("groupingFlag")) != 0)
+        SetGroupingFlag(node->AsBool());
+
+    // For older version compatibility...
+    if((node = searchNode->GetNode("activeColorTable")) != 0)
+        SetActiveContinuous(node->AsString());
+}
+
+Target: xml2java
+Function: GetColorTableIndex
+Declaration: GetColorTableIndex
+Definition:
+    public int GetColorTableIndex(String name)
+    {
+        int retval = -1;
+        for(int i = 0; i < names.size(); ++i)
+        {
+            String n = (String)names.elementAt(i);
+            if(n.equals(name))
+            {
+                retval = i;
+                break;
+            }
+        }
+
+        return retval;
+    }
+
+Function: GetColorControlPoints1
+Declaration: GetColorControlPoints1
+Definition:
+    public ColorControlPointList GetColorControlPoints(int index)
+    {
+        if(index >= 0 && index < colorTables.size())
+            return (ColorControlPointList)colorTables.elementAt(index);
+        else
+            return null;
+    }
+
+Function: GetColorControlPoints2
+Declaration: GetColorControlPoints2
+Definition:
+    public ColorControlPointList GetColorControlPoints(String name)
+    {
+        int index = GetColorTableIndex(name);
+        if(index >= 0 && index < colorTables.size())
+            return (ColorControlPointList)colorTables.elementAt(index);
+        else
+            return null;
+    }
+
+Function: GetActiveColorControlPoints
+Declaration: GetActiveColorControlPoints
+Definition:
+    public ColorControlPointList GetActiveColorControlPoints()
+    {
+        int index = GetColorTableIndex(activeContinuous);
+        if(index >= 0 && index < colorTables.size())
+            return (ColorControlPointList)colorTables.elementAt(index);
+        else
+            return null;
+    }
+
+Function: AddColorTable
+Declaration: AddColorTable
+Definition:
+    public void AddColorTable(String name, ColorControlPointList cpts)
+    {
+        names.addElement(new String(name));
+        Select(0);
+        AddColorTables(cpts);
+    }
+
+Function: RemoveColorTable1
+Declaration: RemoveColorTable1
+Definition:
+    public void RemoveColorTable(String name)
+    {
+        int index = GetColorTableIndex(name);
+        RemoveColorTable(index);
+    }
+
+Function: RemoveColorTable2
+Declaration: RemoveColorTable2
+Definition:
+    public void RemoveColorTable(int index)
+    {
+        if(index >= 0 && index < names.size())
+        {
+            String nameAt = (String)names.elementAt(index);
+            boolean isActiveContinuous = nameAt.equals(activeContinuous);
+            boolean isActiveDiscrete = nameAt.equals(activeDiscrete);
+
+            // Remove the name from the vector.
+            names.remove(index);
+            Select(0);
+
+            // Remove the color table from the vector.
+            RemoveColorTables(index);
+
+            // If it is the active color table that was removed, reset the
+            // active color table to the first element.
+            if(isActiveContinuous)
+            {
+                if(names.size() > 0)
+                {
+                    nameAt = (String)names.elementAt(0);
+                    SetActiveContinuous(nameAt);
+                }
+                else
+                    SetActiveContinuous("");
+            }
+            if(isActiveDiscrete)
+            {
+                if(names.size() > 0)
+                {
+                    nameAt = (String)names.elementAt(0);
+                    SetActiveDiscrete(nameAt);
+                }
+                else
+                    SetActiveDiscrete("");
+            }
+        }
+    }

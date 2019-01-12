@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+  <Attribute name="avtVectorMetaData" purpose="Contains vector metadata attributes" persistent="false" keyframe="true" exportAPI="DBATTS_API" exportInclude="dbatts_exports.h" codefile="avtVectorMetaData.code" baseClass="avtVarMetaData">
+    <Field name="varDim" label="Variable dimension" type="int" access="public">
+      0
+    </Field>
+    <Function name="avtVectorMetaData2" user="true" member="true">
+    </Function>
+    <Function name="avtVectorMetaData3" user="true" member="true">
+    </Function>
+    <Function name="SetExtents" user="true" member="true">
+    </Function>
+    <Function name="UnsetExtents" user="true" member="true">
+    </Function>
+    <Function name="Print" user="true" member="true">
+    </Function>
+  </Attribute>

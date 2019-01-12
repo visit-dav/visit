@@ -1,0 +1,43 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta http-equiv="Content-Language" content="en-us">
+   <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+   <meta name="ProgId" content="FrontPage.Editor.Document">
+   <title>VisIt 1.8.1 Release Notes</title>
+</head>
+<body>
+
+<center><b><font size="6">VisIt 1.8.1 Release Notes</font></b></center>
+
+<p>Welcome to VisIt's release notes page. Release 1.8.1 is primarily a bug fix release to release 1.8.  Look <a href="relnotes1.8.html">here</a> to see a complete list of bugs fixed in release 1.8.</p>
+<p><b><font size="4">Bugs fixed in version 1.8.1</font></b></p>
+<ul>
+<li>Fixed 'Change username' option in VisIt's password window to work on Windows.
+</li>
+<li>Fixed viewer crash on Windows when accessing data remotely, and plotting from two different databases in the same window.
+</li>
+<li>Fixed qtssh argument parsing problem encountered when MDServer shares batch job with engine.
+</li>
+<li>Fixed a problem with the creation of automatic vector magnitude expressions for databases with complex variable names.
+</li>
+<li>Fixed an issue with Silo Multi Mesh Adjacency object support when the Treat All DBs as Time Varying preference is enabled. 
+</li>
+<li>Fixed a crash on x86_64 machines when using the Python function SILRestriction().SetsInCategory().
+</li>
+<li>Modified the parallel pbatch host profile for rhea to use Moab instead of LCRM.
+</li>
+<li>Fixed crash for Ale3D files that have no ghost information and mixed variables in only some domains.
+</li>
+<li>Fixed the version of VisIt built for the alc and pengra machines so that it can read HDF5 based Silo files.
+</li>
+<li>Fixed the KullLite reader to correctly create Pyramid zones.
+</li>
+</ul>
+<p>Click the following link to view the release notes for the previous version
+of VisIt: <a href="relnotes1.8.0.html">VisIt 1.8.0 Release Notes</a>.</p>
+<p>Click the following link to view the release notes for the next version
+of VisIt: <a href="relnotes1.9.0.html">VisIt 1.9.0 Release Notes</a>.</p>
+</body>
+</html>

@@ -1,0 +1,6 @@
+Number of states: 5
+Cycle=0, Time=0
+Cycle=1000, Time=1398.41
+Cycle=2000, Time=2288.05
+Cycle=3000, Time=3037.08
+Cycle=4000, Time=3761.2

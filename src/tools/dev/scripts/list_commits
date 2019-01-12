@@ -1,0 +1,38 @@
+#! /bin/sh
+#
+#  Script:  list_commits
+#
+#  Programmer: Jeremy Meredith
+#  Creation:   November 12, 2009
+#
+#  Usage:
+#     list_commits  [from_rev  [to_rev  [user]]]
+#
+#                 where: from_rev defaults to 1
+#                        to_rev   defaults to HEAD
+#                        user     defaults to SVN_NERSC_NAME
+#
+# *****************************************************************************
+
+P=$(which $0)
+P2=${P%/*}
+. ${P2}/visit_svn_helper
+
+FROM="1"
+TO="HEAD"
+USER="${SVN_NERSC_NAME}"
+if test $# -ge 1; then
+  FROM="$1"
+fi
+if test $# -ge 2; then
+  TO="$2"
+fi
+if test $# -ge 3; then
+  USER="$3"
+fi
+if test $# -ge 4; then
+  echo "Too many arguments.  Check usage."
+  exit 1
+fi
+
+svn log -r${FROM}:${TO} -v $VISIT_SVN_REPO | perl  -e "while (<>) {chomp; if (/${USER}/) { print \"\$_\n\"; while (<>) { chomp; print \"\$_\n\"; if (\$_ eq \"------------------------------------------------------------------------\") {last;} } } else {}}"

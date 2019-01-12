@@ -1,0 +1,71 @@
+<?xml version="1.0"?>
+  <Plugin name="Reflect" type="operator" label="Reflect" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" iconFile="Reflect.xpm" category="Transforms">
+    <Files components="G">
+      QvisReflectWidget.C
+    </Files>
+    <Files components="W">
+      QvisReflectWidget.h
+    </Files>
+    <Attribute name="ReflectAttributes" purpose="This class contains attributes for the reflect operator." persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="ReflectAttributes.code">
+      <Enum name="Octant">
+        PXPYPZ
+        NXPYPZ
+        PXNYPZ
+        NXNYPZ
+        PXPYNZ
+        NXPYNZ
+        PXNYNZ
+        NXNYNZ
+      </Enum>
+      <Enum name="ReflectType">
+        Plane
+        Axis
+      </Enum>
+      <Field name="octant" label="octant" type="enum" subtype="Octant">
+        PXPYPZ
+      </Field>
+      <Field name="useXBoundary" label="useXBoundary" type="bool">
+        true
+      </Field>
+      <Field name="specifiedX" label="specifiedX" type="double">
+        0.000000
+      </Field>
+      <Field name="useYBoundary" label="useYBoundary" type="bool">
+        true
+      </Field>
+      <Field name="specifiedY" label="specifiedY" type="double">
+        0.000000
+      </Field>
+      <Field name="useZBoundary" label="useZBoundary" type="bool">
+        true
+      </Field>
+      <Field name="specifiedZ" label="specifiedZ" type="double">
+        0.000000
+      </Field>
+      <Field name="reflections" label="reflections" type="intArray" length="8">
+        1
+        0
+        1
+        0
+        0
+        0
+        0
+        0
+      </Field>
+      <Field name="planePoint" label="planePoint" type="doubleArray" length="3" access="protected">
+        0.000000
+        0.000000
+        0.000000
+      </Field>
+      <Field name="planeNormal" label="planeNormal" type="doubleArray" length="3" access="protected">
+        0.000000
+        0.000000
+        0.000000
+      </Field>
+      <Field name="reflectType" label="reflectType" type="enum" subtype="ReflectType" access="protected">
+        Axis
+      </Field>
+      <Function name="ProcessOldVersions" user="true" member="true">
+      </Function>
+    </Attribute>
+  </Plugin>

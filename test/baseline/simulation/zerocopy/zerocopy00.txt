@@ -1,0 +1,3 @@
+Simulation executable "zerocopy" exists.
+Simulation "zerocopy" started.
+VisIt connected to simulation "zerocopy".

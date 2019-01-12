@@ -1,0 +1,140 @@
+/*=========================================================================
+
+  Program:   Visualization Toolkit
+  Module:    $RCSfile: vtkVectorGlyph.h,v $
+  Language:  C++
+  Date:      $Date: 2001/03/21 14:10:58 $
+  Version:   $Revision: 1.1 $
+  Thanks:    Hank Childs, B Division, Lawrence Livermore Nat'l Laboratory
+
+Copyright (c) 1993-2001 Ken Martin, Will Schroeder, Bill Lorensen
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+ * Redistributions of source code must retain the above copyright notice,
+   this list of conditions and the following disclaimer.
+
+ * Redistributions in binary form must reproduce the above copyright notice,
+   this list of conditions and the following disclaimer in the documentation
+   and/or other materials provided with the distribution.
+
+ * Neither name of Ken Martin, Will Schroeder, or Bill Lorensen nor the names
+   of any contributors may be used to endorse or promote products derived
+   from this software without specific prior written permission.
+
+ * Modified source versions must be plainly marked as such, and must not be
+   misrepresented as being the original software.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS IS''
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ARE DISCLAIMED. IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE FOR
+ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+
+=========================================================================*/
+
+// .NAME vtkVectorGlyph -- Creates the appropriate glyph for a vector.
+//
+// .SECTION Description
+// Creates the poly data to be used by a glyph filter for vector data.  This
+// is a line with a head.  The head is not capped.  The size of the head may
+// be set and the head may be turned off completely.
+//
+
+#ifndef __vtkVectorGlyph_h
+#define __vtkVectorGlyph_h
+#include <visit_vtk_exports.h>
+
+#include <vtkPolyDataAlgorithm.h>
+
+//  Modifications:
+//    Jeremy Meredith, Fri Nov 21 11:25:27 PST 2003
+//    Added offset to allow glyphs to originate/terminate at the point.
+//
+//    Jeremy Meredith, Mon Mar 19 14:33:15 EDT 2007
+//    Added "HighQuality", which ups the number of facets, "LineStem"
+//    which determines if the stem is a line or a cylinder(3d)/rectangle(2d),
+//    "CapEnds" which caps the cone's base (and the cylinder's if
+//    we're in 3D, i.e. if ConeHead is true), and the "StemWidth" which
+//    defines the width of the stem if we're drawing is as a cyl/rect.
+//
+//    Dave Pugmire, Mon Jul 19 09:38:17 EDT 2010
+//    Add ellipsoid glyphing.        
+
+class VISIT_VTK_API vtkVectorGlyph : public vtkPolyDataAlgorithm
+{
+public:
+  vtkTypeMacro(vtkVectorGlyph, vtkPolyDataAlgorithm);
+  void PrintSelf(ostream& os, vtkIndent indent) override;
+
+  // Description:
+  // Instantiate a stride filter that throws away nine of every ten elements.
+  static vtkVectorGlyph *New();
+  vtkSetMacro(HighQuality,bool);
+  vtkGetMacro(HighQuality,bool);
+  vtkBooleanMacro(HighQuality,bool);
+
+  vtkSetMacro(CapEnds,bool);
+  vtkGetMacro(CapEnds,bool);
+  vtkBooleanMacro(CapEnds,bool);
+
+  vtkSetMacro(Arrow,bool);
+  vtkGetMacro(Arrow,bool);
+  vtkBooleanMacro(Arrow,bool);
+
+  vtkSetMacro(LineStem,bool);
+  vtkGetMacro(LineStem,bool);
+  vtkBooleanMacro(LineStem,bool);
+
+  vtkSetClampMacro(StemWidth,float,0.0,0.5);
+  vtkGetMacro(StemWidth,float);
+
+  vtkSetMacro(MakeHead,bool);
+  vtkGetMacro(MakeHead,bool);
+  vtkBooleanMacro(MakeHead,bool);
+
+  vtkSetClampMacro(HeadSize,float,0.0,1.0);
+  vtkGetMacro(HeadSize,float);
+
+  vtkSetClampMacro(OriginOffset,float,-.5,+.5);
+  vtkGetMacro(OriginOffset,float);
+
+  vtkSetMacro(ConeHead,bool);
+  vtkGetMacro(ConeHead,bool);
+  vtkBooleanMacro(ConeHead,bool);
+
+protected:
+  vtkVectorGlyph();
+  ~vtkVectorGlyph() {};
+
+  virtual int RequestData(vtkInformation *,
+                  vtkInformationVector **,
+                  vtkInformationVector *) override;
+  virtual int FillInputPortInformation(int port, vtkInformation *info) override;
+
+  bool HighQuality;
+  bool CapEnds;
+  bool Arrow;
+  bool LineStem;
+  float StemWidth;
+  bool MakeHead;
+  float HeadSize;
+  float OriginOffset;
+  bool ConeHead;
+
+private:
+  vtkVectorGlyph(const vtkVectorGlyph&);
+  void operator=(const vtkVectorGlyph&);
+};
+
+#endif
+
+

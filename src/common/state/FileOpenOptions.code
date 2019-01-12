@@ -1,0 +1,282 @@
+Function: MergeNewFromPluginInfo
+Declaration: void MergeNewFromPluginInfo(const DBPluginInfoAttributes*);
+Definition:
+#include <DebugStream.h> // needed for debug output in this function
+
+// ****************************************************************************
+//  Method: FileOpenOptions::MergeFromPluginInfo
+//
+//  Purpose: Merge options defined from config file with options defined by
+//  plugins. The net effect of calling this function is to change the options
+//  associated with 'this' object.
+//
+//  Programmer: Unknown
+//  Creation:   Unknown
+//
+//  Modifications:
+//    Mark C. Miller, Mon Mar 16 22:55:44 PDT 2009
+//    Re-structured to make it clearer what was getting merged with
+//    what. The options defined by the plugins are coming in via the
+//    dbinfo function argument while the options read from the config file
+//    are basically part of 'this' object. Adjusted logic to deal with
+//    options that have been made obsolete.
+//
+//    Mark C. Miller, Tue May 19 20:53:25 PDT 2009
+//    Terminate for loop searching for matching typeID early.
+// ****************************************************************************
+
+void
+FileOpenOptions::MergeNewFromPluginInfo(const DBPluginInfoAttributes *dbinfo)
+{
+    int n = dbinfo->GetNumDbReadOptions();
+    for (int i=0; i<n; i++)
+    {
+        DBOptionsAttributes plugin_opts = dbinfo->GetDbReadOptions(i);
+        const std::string &id = dbinfo->GetTypesFullNames()[i];
+        const std::string &name = dbinfo->GetTypes()[i];
+        int index = -1;
+        for (size_t j=0; index==-1 && j<typeIDs.size(); j++)
+        {
+            if (typeIDs[j] == id)
+                index = j;
+        }
+        if (index == -1)
+        {
+            typeNames.push_back(name);
+            typeIDs.push_back(id);
+            Enabled.push_back(true);
+            AddOpenOptions(plugin_opts);
+        }
+        else
+        {
+            //
+            // Get the options that are part of this object, make a
+            // copy of them and then over-write 'this' with the options
+            // defined by the plugins.
+            //
+            DBOptionsAttributes &this_opts = GetOpenOptions(index);
+            DBOptionsAttributes config_opts = this_opts; // copy
+            this_opts = plugin_opts; // overwrite 'this'
+
+            //
+            // Ok, now this loop basically iterates over options defined
+            // in the config file, checking them against those defined by
+            // the plugin. When it finds a match, it overwrites it with
+            // whatever value it found in the config file. When it does NOT
+            // find a match, that means that the config file defines an
+            // option that the plugin is no longer coded to know about. This
+            // most likely indicates an obsolete option.
+            //
+            int n_config  = config_opts.GetNumberOfOptions();
+            int n_this = this_opts.GetNumberOfOptions();
+            for (int j=0; j<n_config; j++)
+            {
+                std::string optname = config_opts.GetName(j);
+                int match = -1;
+                for (int k=0; k<n_this; k++)
+                {
+                    if (this_opts.GetName(k) == optname)
+                    {
+                        match = k;
+                        break;
+                    }
+                }
+                if (match < 0 && !this_opts.IsObsolete(optname))
+                {
+                    //
+                    // If we get here, it means the option is defined
+                    // in the config file but is NOT defined by the plugin.
+                    // and probably never has been defined by the plugin at
+                    // any time in the past. 
+                    //
+                    debug1 << "Got unknown option \"" << optname
+                           << "\" from config file for plugin \"" << id
+                           << "\"" << endl;
+                }
+                else
+                {
+                    //
+                    // If we get here, the config file defines a value for an
+                    // option. So, overwrite whatever we have stored in 'this'
+                    // object (which because of the copy, this_opts=plugin_opts,
+                    // above is currently set to whatever the plugin defines as
+                    // the default value) with whatever the config file says.
+                    // If the option was obsolete, the succeeding calls will
+                    // define create it and that is fine because 'this_opts'
+                    // already knows its obsolete and now only needs to obtain
+                    // the value for it from the config file. Otherwise, the
+                    // succeeding calls just overwrite the default value with
+                    // the value from the config file.
+                    //
+                    switch (config_opts.GetType(j))
+                    {
+                      case DBOptionsAttributes::Bool:
+                        this_opts.SetBool(optname, config_opts.GetBool(optname));
+                        break;
+                      case DBOptionsAttributes::Int:
+                        this_opts.SetInt(optname, config_opts.GetInt(optname));
+                        break;
+                      case DBOptionsAttributes::Float:
+                        this_opts.SetFloat(optname, config_opts.GetFloat(optname));
+                        break;
+                      case DBOptionsAttributes::Double:
+                        this_opts.SetDouble(optname, config_opts.GetDouble(optname));
+                        break;
+                      case DBOptionsAttributes::String:
+                        this_opts.SetString(optname, config_opts.GetString(optname));
+                        break;
+                      case DBOptionsAttributes::Enum:
+                        this_opts.SetEnum(optname, config_opts.GetEnum(optname));
+                        this_opts.SetEnumStrings(optname, config_opts.GetEnumStrings(optname));
+                        break;
+                    }
+                }
+            }
+        }
+    }
+}
+
+Function: GetOpenOptionsForID
+Declaration: const DBOptionsAttributes *GetOpenOptionsForID(const std::string&);
+Definition:
+const DBOptionsAttributes*
+FileOpenOptions::GetOpenOptionsForID(const std::string &id)
+{
+    for (size_t i=0; i<typeIDs.size(); i++)
+    {
+        if (typeIDs[i] == id)
+            return (const DBOptionsAttributes*)(openOptions[i]);
+    }
+    return NULL;
+}
+
+Function: IsIDEnabled
+Declaration: bool IsIDEnabled(const std::string&);
+Definition:
+// ****************************************************************************
+// Method:  FileOpenOptions::IsIDEnabled
+//
+// Purpose:
+//   Convenience function to find the Enabled value for the given id.
+//
+// Arguments:
+//   id         the id for which to search
+//
+// Programmer:  Jeremy Meredith
+// Creation:    December 30, 2009
+//
+// ****************************************************************************
+bool
+FileOpenOptions::IsIDEnabled(const std::string &id)
+{
+    for (size_t i=0; i<typeIDs.size(); i++)
+    {
+        if (typeIDs[i] == id)
+            return Enabled[i];
+    }
+    return true; // default is what, true?
+}
+
+Function: AddAssumedFormatsToPreferred
+Declaration: void AddAssumedFormatsToPreferred(const stringVector &formats);
+Definition:
+// ****************************************************************************
+// Method:  FileOpenOptions::AddAssumedFormatsToPreferred
+//
+// Purpose:
+//   Adds any given formats to the *beginning* of the preferred list, moving
+//   their position to the front if they were already in the list.
+//
+// Arguments:
+//   given    the list of formats labeled as "assumed"
+//
+// Programmer:  Jeremy Meredith
+// Creation:    March 26, 2010
+//
+// ****************************************************************************
+void
+FileOpenOptions::AddAssumedFormatsToPreferred(const stringVector &given)
+{
+    // for each format, prepend it; visit them in reverse order
+    // so the first one given winds up first in the new list
+    for (int i=(int)given.size()-1; i>=0; i--)
+    {
+        // get its actual ID
+        std::string id = "";
+        for (size_t j=0; j<typeIDs.size(); j++)
+        {
+            if (given[i] == typeIDs[j] ||
+                given[i] == typeNames[j])
+            {
+                id = typeIDs[j];
+                break;
+            }
+        }
+        // if no id, we don't have that plugin, so skip this one
+        if (id == "")
+            continue;
+
+        // make a new list with this given one at the front
+        stringVector newPreferredIDs;
+        newPreferredIDs.push_back(id);
+        for (size_t j=0; j<preferredIDs.size(); j++)
+        {
+            if (preferredIDs[j] != id)
+                newPreferredIDs.push_back(preferredIDs[j]);
+        }
+        preferredIDs = newPreferredIDs;
+    }
+    SelectPreferredIDs();
+}
+
+
+Function: AddFallbackFormatsToPreferred
+Declaration: void AddFallbackFormatsToPreferred(const stringVector &given);
+Definition:
+// ****************************************************************************
+// Method:  FileOpenOptions::AddFallbackFormatsToPreferred
+//
+// Purpose:
+//   Adds any given formats to the *end* of the preferred list, moving
+//   their position to the back if they were already in the list.
+//
+// Arguments:
+//   given    the list of formats labeled as "fallback"
+//
+// Programmer:  Jeremy Meredith
+// Creation:    March 26, 2010
+//
+// ****************************************************************************
+void
+FileOpenOptions::AddFallbackFormatsToPreferred(const stringVector &given)
+{
+    // for each format, append it
+    for (size_t i=0; i<given.size(); i++)
+    {
+        // get its actual ID
+        std::string id = "";
+        for (size_t j=0; j<typeIDs.size(); j++)
+        {
+            if (given[i] == typeIDs[j] ||
+                given[i] == typeNames[j])
+            {
+                id = typeIDs[j];
+                break;
+            }
+        }
+        // if no id, we don't have that plugin, so skip this one
+        if (id == "")
+            continue;
+
+        // make a new list with this given one at the back
+        stringVector newPreferredIDs;
+        for (size_t j=0; j<preferredIDs.size(); j++)
+        {
+            if (preferredIDs[j] != id)
+                newPreferredIDs.push_back(preferredIDs[j]);
+        }
+        newPreferredIDs.push_back(id);
+        preferredIDs = newPreferredIDs;
+    }
+    SelectPreferredIDs();
+}

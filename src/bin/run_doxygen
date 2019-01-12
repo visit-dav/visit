@@ -1,0 +1,124 @@
+#!/bin/ksh
+#
+# Script : run_doxygen
+#         
+# Purpose: Runs doxygenate on all of the C++ files in the current and 
+#          sub- directories and executes doxygen.
+#
+# Programmer: Hank Childs
+# Creation:   April 13, 2007
+#
+# Modifications:
+#
+#   Hank Childs, June 12, 2000
+#   Removed restriction that script can only be run on
+#   hyper and improved automation.
+#
+#   Hank Childs, June 15, 2000
+#   Ignore symbolic links and specify output directory.
+#   Improve copying over of Doxyfile.
+#
+#   Hank Childs, June 26, 2000
+#   Assume Doxyfile is in the same directory as script.
+# 
+#   Hank Childs, Wed Sep  5 08:57:30 PDT 2007
+#   Reformatted header to make more consistent with the rest of the VisIt 
+#   project.  Improved logic so script can be run from anywhere, meaning that
+#   users don't have to copy it into the current directory to make it work.
+#
+# *****************************************************************************
+
+function doxygenate_everything
+{
+  terms=$(ls *.@(C|c|h|cxx) 2> /dev/null)
+  if [[ $? = 0 ]] ; then
+    for i in $terms ; do
+      if [[ ! -L $i ]] ; then
+        TARGET="${TARGET_DIR}${PWD#$BASE_DIR}/$i"
+        print "Doxygenating $i"
+        doxygenate < $i > $TARGET
+      fi
+    done
+  fi
+  for i in * ; do
+    if [[ -d $i ]] ; then
+       cd $i
+       mkdir ${TARGET_DIR}${PWD#$BASE_DIR}
+       if [[ $PWD != ${TARGET_DIR} ]] ; then
+         doxygenate_everything
+       fi
+       cd ..
+    fi
+  done
+}
+
+function Usage
+{
+  print "Usage: ${0##*/} <output directory>"
+  exit 1
+}
+
+#
+# Figure out where we should put the output
+#
+if [[ $# = 0 ]] ; then
+  Usage
+fi
+typeset -L1 firstchar
+firstchar=$1
+if [[ "$firstchar" = "-" ]] ; then
+  Usage
+fi
+if [[ ! -d $1 ]] ; then
+  mkdir $1
+  if [[ $? != 0 ]] ; then
+    print "Could not make output directory $1"
+    exit 1
+  fi
+fi
+
+BASE_DIR=$PWD
+TARGET_DIR=$1
+
+
+#
+# Check to make sure we will be able to run before we start.
+#
+if [[ "$(whence doxygen)" = "" ]] ; then
+  print "Cannot find doxygen."
+  exit 1
+fi
+if [[ "$(whence doxygenate)" = "" ]] ; then
+  if [[ -f exe/doxygenate ]] ; then
+      export PATH=$PATH:$PWD/exe
+  else
+     print "Cannot find doxygenate."
+     exit 1
+  fi
+fi
+if [[ ! -f ${TARGET_DIR}/Doxyfile ]] ; then
+  print $0
+  script_location=${0%/*}
+  if [[ ! -f $script_location/Doxyfile ]] ; then
+    print "There is no Doxyfile - doxygen cannot run."
+    exit 1
+  else
+    cp $script_location/Doxyfile ${TARGET_DIR}
+  fi
+fi
+   
+
+#
+# Run doxygenate
+#
+doxygenate_everything
+
+# 
+# Run doxygen
+#
+cd ${TARGET_DIR}
+doxygen
+
+exit 0
+
+

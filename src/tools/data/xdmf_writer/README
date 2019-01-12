@@ -1,0 +1,11 @@
+# Here are some instructions on running the examples.
+# On edge:
+#    Generally I start an  mxterm and then run the examples from there.
+
+mxterm 1 12 240 -q pbatch -A bdivp
+
+#    To run the examples do the following.
+
+srun -n 4 xdmf_mpi_example  2  50 50 10    2 2 1
+srun -n 4 xdmf_mpi_example2 2  50 50 10    2 2 1
+srun -n 4 xdmf_mpi_example3 2  50 50 10    2 2 1

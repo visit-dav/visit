@@ -1,0 +1,84 @@
+<?xml version="1.0"?>
+  <Attribute name="QueryList" purpose="List of supported queries" persistent="true" keyframe="true" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="QueryList.code">
+    <Enum name="QueryType">
+      DatabaseQuery
+      PointQuery
+      LineQuery
+    </Enum>
+    <Enum name="WindowType">
+      Basic
+      DomainNode
+      DomainNodeVars
+      DomainZone
+      DomainZoneVars
+      ActualData
+      ActualDataVars
+      LineDistribution
+      HohlraumFlux
+      ConnCompSummary
+      ShapeletsDecomp
+      XRayImage
+      LineSamplerInfo
+      IntegralCurveInfo
+      Pick
+      Lineout
+      Compactness
+      CompactnessVar
+    </Enum>
+    <Enum name="Groups">
+      CurveRelated
+      MeshRelated
+      TimeRelated
+      VariableRelated
+      ShapeRelated
+      ConnectedComponentsRelated
+      Miscellaneous
+      NumGroups
+    </Enum>
+    <Enum name="QueryMode">
+      QueryOnly
+      QueryAndTime
+      TimeOnly
+    </Enum>
+    <Field name="names" label="names" type="stringVector">
+    </Field>
+    <Field name="types" label="types" type="intVector">
+    </Field>
+    <Field name="groups" label="groups" type="intVector">
+    </Field>
+    <Field name="numInputs" label="numInputs" type="intVector">
+    </Field>
+    <Field name="allowedVarTypes" label="allowedVarTypes" type="intVector">
+    </Field>
+    <Field name="winType" label="winType" type="intVector" internal="true">
+    </Field>
+    <Field name="queryMode" label="queryMode" type="intVector">
+    </Field>
+    <Field name="numVars" label="numVars" type="intVector">
+    </Field>
+    <Field name="canBePublic" label="canBePublic" type="intVector">
+    </Field>
+    <Field name="requiresVarSelection" label="requiresVarSelection" type="intVector">
+    </Field>
+    <Function name="AddQuery" user="true" member="true">
+    </Function>
+    <Function name="QueryExists" user="true" member="true">
+    </Function>
+    <Function name="NumberOfInputsForQuery" user="true" member="true">
+    </Function>
+    <Function name="AllowedVarsForQuery" user="true" member="true">
+    </Function>
+    <Function name="TimeQueryAvailable" user="true" member="true">
+    </Function>
+    <Function name="GetWindowType" user="true" member="true">
+    </Function>
+    <Function name="NumberOfVarsForQuery" user="true" member="true">
+    </Function>
+    <Function name="RegularQueryAvailable" user="true" member="true">
+    </Function>
+    <Function name="GetQueryType" user="true" member="true">
+    </Function>
+    <Include file="header" quoted="false">
+      StringHelpers.h
+    </Include>
+  </Attribute>

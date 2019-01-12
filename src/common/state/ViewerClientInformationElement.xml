@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+  <Attribute name="ViewerClientInformationElement" purpose="This class contains the raw element" persistent="true" keyframe="true" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="ViewerClientInformationElement.code">
+    <Field name="data" label="data" type="string">
+    </Field>
+    <Field name="rawData" label="rawData" type="ucharVector">
+    </Field>
+    <Field name="format" label="format" type="int">
+    </Field>
+    <Field name="isRaw" label="isRaw" type="bool">
+      false
+    </Field>
+    <Field name="windowId" label="windowId" type="int">
+      -1
+    </Field>
+  </Attribute>

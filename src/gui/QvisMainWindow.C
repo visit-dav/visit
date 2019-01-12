@@ -1,0 +1,3311 @@
+/*****************************************************************************
+*
+* Copyright (c) 2000 - 2018, Lawrence Livermore National Security, LLC
+* Produced at the Lawrence Livermore National Laboratory
+* LLNL-CODE-442911
+* All rights reserved.
+*
+* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
+* full copyright notice is contained in the file COPYRIGHT located at the root
+* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
+*
+* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
+* modification, are permitted provided that the following conditions are met:
+*
+*  - Redistributions of  source code must  retain the above  copyright notice,
+*    this list of conditions and the disclaimer below.
+*  - Redistributions in binary form must reproduce the above copyright notice,
+*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
+*    documentation and/or other materials provided with the distribution.
+*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
+*    be used to endorse or promote products derived from this software without
+*    specific prior written permission.
+*
+* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
+* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
+* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
+* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
+* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
+* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
+* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
+* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
+* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
+* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
+* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
+* DAMAGE.
+*
+*****************************************************************************/
+
+#include <QApplication>
+#include <QLabel>
+#include <QCheckBox>
+#include <QFrame>
+#include <QLayout>
+#include <QPixmap>
+#include <QMenuBar>
+#include <QMenu>
+//#include <QMenuItem>
+#include <QComboBox>
+#include <QSplitter>
+#include <QStatusBar>
+#include <QPushButton>
+#include <QTimer>
+#include <QToolTip>
+#include <QDesktopWidget>
+#include <QCloseEvent>
+#include <QHideEvent>
+#include <QShowEvent>
+
+#include <QvisMainWindow.h>
+#include <QvisFilePanel.h>
+#include <QvisSourceManagerWidget.h>
+#include <QvisTimeSliderControlWidget.h>
+#include <QvisNotepadArea.h>
+#include <QvisPostableWindow.h>
+#include <QvisPostableMainWindow.h>
+#include <QvisPlotManagerWidget.h>
+
+#include <DataNode.h>
+#include <StatusSubject.h>
+#include <FileServerList.h>
+#include <GlobalAttributes.h>
+#include <MessageAttributes.h>
+#include <NameSimplifier.h>
+#include <PlotList.h>
+#include <SelectionList.h>
+#include <StatusAttributes.h>
+#include <TimeFormat.h>
+#include <UnicodeHelper.h>
+#include <WindowInformation.h>
+#include <ViewerProxy.h>
+#include <DebugStream.h>
+#include <InstallationFunctions.h>
+
+#include <icons/expression.xpm>
+#include <icons/computer.xpm>
+#include <icons/fileopen.xpm>
+#include <icons/filesave.xpm>
+#include <icons/fileprint.xpm>
+#include <icons/animate.xpm>
+#include <icons/annot.xpm>
+#include <icons/command.xpm>
+#include <icons/correlation.xpm>
+#include <icons/globallineout.xpm>
+#include <icons/light.xpm>
+#include <icons/keyframe.xpm>
+#include <icons/matoptions.xpm>
+#include <icons/pick.xpm>
+#include <icons/plugin.xpm>
+#include <icons/rainbow.xpm>
+#include <icons/savemovie.xpm>
+#include <icons/selection.xpm>
+#include <icons/subset.xpm>
+#include <icons/view.xpm>
+#include <icons/output_blue.xpm>
+#include <icons/output_red.xpm>
+
+#include <icons/layout1x1.xpm>
+#include <icons/layout1x2.xpm>
+#include <icons/layout2x2.xpm>
+#include <icons/layout2x3.xpm>
+#include <icons/layout2x4.xpm>
+#include <icons/layout3x3.xpm>
+#include <icons/newwindow.xpm>
+#include <icons/deletewindow.xpm>
+#include <icons/copymenu.xpm>
+#include <icons/lock.xpm>
+
+#define MIN_WINDOW_HEIGHT_BEFORE_POSTING_MAIN 1024
+
+// ****************************************************************************
+// Method: QvisMainWindow::QvisMainWindow
+//
+// Purpose: 
+//    Constructor for the QvisMainWindow class. It creates the widgets
+//    that are part of the main window.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Jul 26 09:43:11 PDT 2000
+//
+// Modifications:
+//    Brad Whitlock, Wed Aug 30 13:56:11 PST 2000
+//    I made it inherit from QvisWindowBase.
+//
+//    Brad Whitlock, Mon Apr 23 09:55:19 PDT 2001
+//    I made it observe the viewer's message and status attributes.
+//
+//    Brad Whitlock, Wed Jun 20 11:09:13 PDT 2001
+//    I added an icon for the color table menu entry and enabled it.
+//
+//    Brad Whitlock, Fri Jun 22 12:46:13 PST 2001
+//    I added an entry for the subset window in the controls menu.
+//
+//    Jeremy Meredith, Fri Jul 20 11:25:56 PDT 2001
+//    Removed the "VisIt is Ready" message.  It should occur later.
+//
+//    Brad Whitlock, Thu Jul 26 15:46:54 PST 2001
+//    Added the view window to the Controls menu.
+//
+//    Brad Whitlock, Thu Aug 30 16:33:30 PST 2001
+//    Added icons for certain menu items.
+//
+//    Jeremy Meredith, Wed Sep  5 14:00:51 PDT 2001
+//    Added plugin manager window.
+//
+//    Jeremy Meredith, Fri Sep 14 13:52:16 PDT 2001
+//    Made it position the main window at 100,100 to prevent some window
+//    managers adjusting its position to keep all decorations onscreen.
+//    We need it in a known position to take some measurements.
+//    The main window is repositioned correctly later.
+//
+//    Brad Whitlock, Wed Oct 17 09:25:00 PDT 2001
+//    Enabled the lighting menu option.
+//
+//    Sean Ahern, Thu Oct 25 11:10:50 PDT 2001
+//    Added the Expression window.
+//
+//    Eric Brugger, Mon Nov 19 15:06:02 PST 2001
+//    Enabled the animation menu option.
+//
+//    Kathleen Bonnell, Wed Dec 12 12:06:20 PST 2001
+//    Added the pick window.
+//
+//    Brad Whitlock, Tue Jan 29 13:38:07 PST 2002
+//    Modified code so it supports multiple main window orientations.
+//
+//    Brad Whitlock, Wed Feb 6 16:52:33 PST 2002
+//    Added icons for a few more menu options.
+//
+//    Brad Whitlock, Tue Feb 19 10:31:45 PDT 2002
+//    Added copyright window.
+//
+//    Brad Whitlock, Wed Feb 20 10:22:52 PDT 2002
+//    Removed the simulation option and enabled print options.
+//
+//    Brad Whitlock, Mon Mar 4 14:19:00 PST 2002
+//    Completed autoupdate support.
+//
+//    Brad Whitlock, Thu Apr 18 13:09:21 PST 2002
+//    Prevented the window from moving on Windows.
+//
+//    Brad Whitlock, Thu May 2 15:18:40 PST 2002
+//    Slightly modified autoupdate support.
+//
+//    Jeremy Meredith, Wed May  8 15:24:21 PDT 2002
+//    Added keyframe window.
+//
+//    Brad Whitlock, Thu May 9 16:51:03 PST 2002
+//    I removed the globalState argument.
+//
+//    Brad Whitlock, Thu Jul 11 16:52:56 PST 2002
+//    I added the help window.
+//
+//    Brad Whitlock, Tue Aug 20 13:43:21 PST 2002
+//    I added the file information window.
+//
+//    Brad Whitlock, Thu Sep 12 17:38:01 PST 2002
+//    I added a bunch of viewer options to the Windows menu. I also added
+//    the menu item for the Rendering preferences window.
+//
+//    Brad Whitlock, Tue Oct 15 16:11:00 PST 2002
+//    I added a window option to clone a window.
+//
+//    Jeremy Meredith, Thu Oct 24 16:03:39 PDT 2002
+//    Added material options window.
+//
+//    Brad Whitlock, Mon Nov 11 12:22:37 PDT 2002
+//    I added locking options to the window menu.
+//
+//    Brad Whitlock, Tue Feb 18 11:13:16 PDT 2003
+//    I fixed a widget parenting bug with some menus that caused
+//    VisIt to crash on exit.
+//
+//    Kathleen Bonnell, Wed Feb 19 13:13:24 PST 2003  
+//    I added activateGlobalLineoutWindow. 
+//
+//    Eric Brugger, Thu Mar 13 12:00:12 PST 2003
+//    I added the preferences window.
+//
+//    Brad Whitlock, Tue May 6 10:49:07 PDT 2003
+//    I moved the host profiles window so it is under options.
+//
+//    Brad Whitlock, Wed May 21 07:43:52 PDT 2003
+//    I added fullFrame mode to the Windows menu.
+//
+//    Brad Whitlock, Fri Jun 20 17:46:13 PST 2003
+//    I made the splashscreen available all the time.
+//
+//    Brad Whitlock, Mon Jun 23 10:09:51 PDT 2003
+//    I added a button to refresh the file list.
+//
+//    Brad Whitlock, Mon Jul 14 11:47:34 PDT 2003
+//    I added menu options for saving and restoring the session.
+//
+//    Brad Whitlock, Wed Jul 30 16:50:12 PST 2003
+//    I made the main window re-emit a signal from the file panel.
+//
+//    Brad Whitlock, Fri Aug 15 15:05:24 PST 2003
+//    I passed a pointer to the menu bar to the plot manager widget.
+//
+//    Kathleen Bonnell, Tue Aug 26 13:47:34 PDT 2003 
+//    Changed 'Material' to 'Material options'.
+//
+//    Brad Whitlock, Sat Jan 24 23:51:40 PST 2004
+//    I added support for next generation file handling, including close
+//    and reopen menus.
+//
+//    Kathleen Bonnell, Wed Mar 31 10:13:43 PST 2004 
+//    I added query over time window.
+//
+//    Brad Whitlock, Mon Apr 5 15:28:04 PST 2004
+//    I added support for putting reopen and close in an "Advanced"
+//    pullright menu.
+//
+//    Kathleen Bonnell, Thu Jun 17 13:50:58 PDT 2004 
+//    Changed QueryOverTime's accelerator key from CTL-T to CTL-SHIFT-Q
+//    so that it would not collide with the ColorTable's accelerator. 
+// 
+//    Kathleen Bonnell, Wed Aug 18 09:44:09 PDT 2004 
+//    Added Interactors window.
+//
+//    Jeremy Meredith, Wed Aug 25 09:52:06 PDT 2004
+//    Connect the viewer proxy's database metadata to the plotmanager.
+//
+//    Brad Whitlock, Wed Feb 9 17:49:22 PST 2005
+//    Added a menu option to update VisIt.
+//
+//    Brad Whitlock, Mon Mar 21 15:17:31 PST 2005
+//    I enabled the save movie option, the command window, and made quitting
+//    emit a quit signal.
+//
+//    Jeremy Meredith, Mon Apr  4 16:35:02 PDT 2005
+//    Added the simulations window to the menu.
+//
+//    Hank Childs, Tue May 24 17:02:15 PDT 2005
+//    Added export database.
+//
+//    Eric Brugger, Thu Jun 30 09:17:12 PDT 2005
+//    Added a 2x3 window layout and removed the 4x4 window layout.
+//
+//    Brad Whitlock, Fri Sep 9 11:50:55 PDT 2005
+//    Added more icons.
+//
+//    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//    Added mesh management attributes window
+//
+//    Brad Whitlock, Mon Mar 13 17:19:28 PST 2006
+//    Changed print option to Ctrl+P.
+//
+//    Brad Whitlock, Mon Jul 24 17:43:18 PST 2006
+//    Added splitters.
+//
+//    Jeremy Meredith, Mon Aug 28 17:28:42 EDT 2006
+//    Added File Open window.
+//
+//    Brad Whitlock, Tue Nov 14 15:35:44 PST 2006
+//    I added restoreSessionWithSources.
+//
+//    Brad Whitlock, Fri Jun 15 09:32:23 PDT 2007
+//    Added Macro window.
+//
+//    Brad Whitlock, Tue Jan 22 16:49:30 PST 2008
+//    Don't even create the notepad on short displays.
+//
+//    Brad Whitlock, Thu Jan 31 10:45:58 PST 2008
+//    Added crash recovery timer.
+//
+//    Sean Ahern, Wed Feb 27 20:32:55 EST 2008
+//    Made the Mac use Command-Q to quit, just like other Mac applications.
+//    I had to move Query and Query-over-time to use 'Y' instead.
+//
+//    Sean Ahern, Wed Dec 31 11:37:18 EST 2008
+//    Moved the Help menu to the end of the menubar, but only for the Mac.
+//    This is to meet Macintosh application guidelines.
+//
+//    Brad Whitlock, Mon Apr  6 15:17:13 PDT 2009
+//    I added 2 missing signal/slot connections.
+//
+//    Brad Whitlock, Thu Jul 23 17:03:45 PDT 2009
+//    I changed the window so when we run on short screens, the notepad
+//    becomes the dominant window control and we post everything else into it.
+//
+//    Jeremy Meredith, Fri Nov  6 11:51:51 EST 2009
+//    File panel selected files starts out hidden, which means starting
+//    out without the Advanced file menu.  Changed default splitter
+//    sizes depending on if file panel starts hidden or not.
+//
+//    Tom Fogal, Sun Jan 24 17:04:34 MST 2010
+//    Patch from Andreas Kloeckner to set the Qt window role.
+//
+//    Jeremy Meredith, Tue Feb  2 17:31:07 EST 2010
+//    Spell out bbox.  I'm not sure most people know what that stands for.
+//    Added "mode" to full frame and spin settings to balance the extra width.
+//
+//    Jeremy Meredith, Fri Feb 19 20:59:34 EST 2010
+//    Big redesign, adding icons and functionality and shuffling arrangement.
+//    Hide the Select File menu item when we're not in selected files mode.
+//
+//    Hank Childs, Sun Mar  7 16:57:18 PST 2010
+//    Put Save Session above Restore Session, so it won't be so close to Exit.
+//
+//    Cyrus Harrison, Fri Mar 12 10:50:26 PST 2010
+//    More shuffling to provide better layouts.
+//
+//    Cyrus Harrison, Tue Mar 16 09:20:05 PDT 2010
+//    Make sure selected files is off by default.
+//
+//    Brad Whitlock, Thu Apr  1 14:58:24 PDT 2010
+//    Shrink the margin a little to free up 10 pixels.
+//
+//    Cyrus Harrison, Thu May  6 16:47:11 PDT 2010
+//    For displays with low vertical resolution: don't use scroll bars when
+//    posting the main window.
+//
+//    Hank Childs, Wed Aug  4 13:27:57 PDT 2010
+//    Add data level comparisons.
+//
+//    Brad Whitlock, Fri Aug  6 16:58:31 PDT 2010
+//    Add Selections window.
+//
+//    Brad Whitlock, Mon Aug 30 11:47:46 PDT 2010
+//    Don't do "Set print options" on Mac.
+//
+//    Brad Whitlock, Wed Sep 22 11:13:04 PDT 2010
+//    Only do printWindow.
+//
+//    Jonathan Byrd (Allinea Software), Sun 18 Dec, 2011
+//    Added the 'connect to DDT' action
+//
+//    Dirk Schubert (Allinea Software), Fri 12 Oct, 2012
+//    Add 'connect to DDT' action optionally (HAVE_DDT)
+//
+// ****************************************************************************
+#include <InstallationFunctions.h>
+QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
+    : QvisWindowBase(captionString)
+{
+    setWindowRole("gui-main");
+
+    setAttribute(Qt::WA_DeleteOnClose,true);
+    QPixmap saveIcon, computerIcon, printIcon, rainbowIcon;
+    QPixmap annotIcon, lightIcon, subsetIcon, selectionIcon, viewIcon;
+    QPixmap exprIcon, animIcon, pluginIcon, pickIcon, copyIcon, lockIcon;
+    QPixmap saveMovieIcon, commandIcon, keyframeIcon, materialIcon;
+    QPixmap globalLineoutIcon, correlationIcon, cinemaIcon;
+
+    // Make the main window observe the global status subject. This is
+    // part of the mechanism that allows other windows to display status
+    // messages in the main window's status bar.
+    statusSubject->Attach(this);
+
+    // Make the main window observe the viewer's message attributes. This is
+    // how messages from the viewer get put into the error window.
+    viewerMessageAtts = GetViewerState()->GetMessageAttributes();
+    viewerMessageAtts->Attach(this);
+
+    // Make the main window observe the file server's message attributes.
+    fileserverMessageAtts = fileServer->GetMessageAttributes();
+    fileserverMessageAtts->Attach(this);
+
+    // Make sure the status attributes are initialized to NULL.
+    statusAtts = NULL;
+    guiMessageAtts = NULL;
+    plotList = NULL;
+    globalAtts = NULL;
+    windowInfo = NULL;
+
+    // Create some pixmaps from the XPM images included at the top of the file.
+    openIcon = new QPixmap(fileopen_xpm);
+    saveIcon = QPixmap(filesave_xpm);
+    printIcon = QPixmap(fileprint_xpm);
+    computerIcon = QPixmap(computer_xpm);
+    rainbowIcon = QPixmap(rainbow_xpm);
+    annotIcon = QPixmap(annot_xpm);
+    lightIcon = QPixmap(light_xpm);
+    subsetIcon = QPixmap(subset_xpm);
+    selectionIcon = QPixmap(selection_xpm);
+    viewIcon = QPixmap(view_xpm);
+    exprIcon = QPixmap(expression_xpm);
+    animIcon = QPixmap(animate_xpm);
+    pluginIcon = QPixmap(plugin_xpm);
+    pickIcon = QPixmap(pick_xpm);
+    copyIcon = QPixmap(copymenu_xpm);
+    lockIcon = QPixmap(lock_xpm);
+    saveMovieIcon = QPixmap(savemovie_xpm);
+    commandIcon = QPixmap(command_xpm);
+    keyframeIcon = QPixmap(keyframe_xpm);
+    materialIcon = QPixmap(matoptions_xpm);
+    globalLineoutIcon = QPixmap(globallineout_xpm);
+    correlationIcon = QPixmap(correlation_xpm);
+
+    std::string cName = GetVisItResourcesFile(VISIT_RESOURCES_IMAGES, "cinema-menu.png");
+    cinemaIcon.load(cName.c_str());
+
+    outputBlue = new QPixmap( output_blue_xpm );
+    outputRed = new QPixmap( output_red_xpm );
+
+    //
+    // Add the File menu.
+    //
+
+    filePopup = menuBar()->addMenu(tr("&File"));
+
+    advancedMenuShowing = false;
+    selFileAct = NULL;
+    if (advancedMenuShowing)
+    {
+        selFileAct = filePopup->addAction(*openIcon, tr("Select &file . . ."), 
+                         this, SIGNAL(activateFileWindow()), 
+                         QKeySequence(Qt::CTRL + Qt::Key_F));
+    }
+    // keep this action so we can add reopen after it in certian cases
+    openFileAct = filePopup->addAction(*openIcon, tr("Open file . . ."), 
+                                       this, SIGNAL(activateFileOpenWindow()),
+                                       QKeySequence(Qt::CTRL + Qt::Key_O));
+
+    // Advanced pull-right menu.
+    if (advancedMenuShowing)
+    {
+        fileAdvancedPopup  = new QMenu(tr("Advanced file options"),filePopup);
+        fileAdvancedPopupAct = filePopup->addMenu(fileAdvancedPopup);
+    }
+
+    // Close pull-right menu
+    closePopup = new QMenu(tr("Close file"),
+                         advancedMenuShowing ? fileAdvancedPopup : filePopup);
+    connect(closePopup, SIGNAL(triggered(QAction*)),
+            this, SLOT(closeFile(QAction*)));
+    if (advancedMenuShowing)
+        closePopupAct = fileAdvancedPopup->addMenu(closePopup);
+    else
+        closePopupAct = filePopup->addMenu(closePopup);
+    closePopupAct->setEnabled(false);
+
+    // ReOpen pull-right menu.    
+    reopenPopup = new QMenu(tr("ReOpen file"), 
+                         advancedMenuShowing ? fileAdvancedPopup : filePopup);
+    connect(reopenPopup, SIGNAL(triggered(QAction*)),
+            this, SLOT(reopenFile(QAction*)));
+    reopenPopupAct = filePopup->addMenu(reopenPopup);
+    reopenPopupAct->setEnabled(false);
+
+    refreshFileListAct = filePopup->addAction(tr("Refresh file list"), 
+                          this, SIGNAL(refreshFileList()), 
+                          QKeySequence(Qt::CTRL + Qt::Key_R));
+    filePopup->addAction(tr("File &information . . ."), 
+                         this, SIGNAL(activateFileInformationWindow()),
+                         QKeySequence(Qt::CTRL + Qt::Key_I));
+    filePopup->addAction(tr("SeedMe . . ."),
+                         this, SIGNAL(activateSeedMeWindow()));
+
+    filePopup->addSeparator();
+
+    filePopup->addAction(tr("Save session"),
+                         this, SIGNAL(saveSession()));
+    filePopup->addAction(tr("Save session as . . ."),
+                         this, SIGNAL(saveSessionAs()));
+    filePopup->addAction(tr("Restore session . . ."),
+                         this, SIGNAL(restoreSession()));
+    filePopup->addAction(tr("Restore session with sources . . ."),
+                         this, SIGNAL(restoreSessionWithSources()));
+
+    filePopup->addSeparator();
+
+    filePopup->addAction(tr("Simulations . . ."),
+                         this, SIGNAL(activateSimulationWindow()));
+
+    connectToDDTAct = new QAction(tr("Connect to DDT"),
+                         this);
+    connect(connectToDDTAct, SIGNAL(triggered()),this, SLOT(connectToDDT()));
+
+#ifdef HAVE_DDT
+    filePopup->addAction(connectToDDTAct);
+#endif
+
+    filePopup->addSeparator();
+
+    filePopup->addAction(saveIcon, tr("&Save window"),
+                         this, SIGNAL(saveWindow()),
+                         QKeySequence(Qt::CTRL + Qt::Key_S));
+    filePopup->addAction(tr("Set save &options . . ."),
+                         this, SIGNAL(activateSaveWindow()), 
+                         QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_O));
+    filePopup->addAction(saveMovieIcon, tr("Save movie . . ."),
+                         this, SIGNAL(saveMovie()));
+    filePopup->addAction(cinemaIcon, tr("Save to Cinema . . ."),
+                         this, SIGNAL(saveCinema()));
+    filePopup->addAction(printIcon, tr("Print window"),
+                         this, SIGNAL(printWindow()),
+                         QKeySequence(Qt::CTRL + Qt::Key_P));
+
+    filePopup->addSeparator();
+
+    filePopup->addAction(tr("Export database . . ."),
+                         this, SIGNAL(activateExportDBWindow()));
+
+    filePopup->addSeparator();
+
+    filePopup->addAction(tr("Compute &engines . . ."), 
+                         this, SIGNAL(activateEngineWindow()),
+                         QKeySequence(Qt::CTRL + Qt::Key_E));
+
+    filePopup->addSeparator();
+
+#if defined(Q_OS_MAC)
+    filePopup->addAction(tr("&Quit"),this, SIGNAL(quit()),
+                         QKeySequence(Qt::CTRL + Qt::Key_Q));
+#else
+    filePopup->addAction(tr("E&xit"), this, SIGNAL(quit()),
+                         QKeySequence(Qt::CTRL + Qt::Key_X));
+#endif
+
+    //
+    // Add the Controls menu.
+    //
+
+    QMenu *ctrls  = menuBar()->addMenu(tr("&Controls"));
+    ctrls->addAction(animIcon, tr("&Animation . . ."),
+                     this, SIGNAL(activateAnimationWindow()),
+                     QKeySequence(Qt::CTRL + Qt::Key_A));
+    ctrls->addAction(annotIcon, tr("A&nnotation . . ."),
+                     this, SIGNAL(activateAnnotationWindow()), 
+                     QKeySequence(Qt::CTRL + Qt::Key_N));
+    ctrls->addAction(rainbowIcon, tr("Color &table . . ."),
+                     this, SIGNAL(activateColorTableWindow()),
+                     QKeySequence(Qt::CTRL + Qt::Key_T));
+    ctrls->addAction(commandIcon, tr("Launch CLI . . ."),
+                     this, SIGNAL(activateCLI()),
+                     QKeySequence(Qt::CTRL + Qt::ALT + Qt::Key_C));
+    ctrls->addAction(commandIcon, tr("Command . . ."),
+                     this, SIGNAL(activateCommandWindow()), 
+                     QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_C));
+    ctrls->addAction(tr("&Data level comparisons . . ."),
+                     this, SIGNAL(setupCMFE()), 
+                     QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_D));
+    ctrls->addAction(correlationIcon, tr("&Database correlations . . ."),
+                      this, SIGNAL(activateCorrelationListWindow()), 
+                      QKeySequence(Qt::CTRL + Qt::Key_D));
+    ctrls->addAction(exprIcon, tr("&Expressions . . ."),
+                     this, SIGNAL(activateExpressionsWindow()),
+                     QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_E));
+    ctrls->addAction(keyframeIcon, tr("&Keyframing . . ."),
+                     this, SIGNAL(activateKeyframeWindow()), 
+                     QKeySequence(Qt::CTRL + Qt::Key_K));
+    ctrls->addAction(lightIcon, tr("&Lighting . . ."), 
+                     this, SIGNAL(activateLightingWindow()),
+                     QKeySequence(Qt::CTRL + Qt::Key_L));
+    ctrls->addAction(globalLineoutIcon, tr("&Lineout . . ."),
+                     this, SIGNAL(activateGlobalLineoutWindow()),
+                     QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_L));
+    ctrls->addAction(tr("Macros . . ."), 
+                     this, SIGNAL(activateMacroWindow()));
+    ctrls->addAction(materialIcon, tr("&Material options . . ."),
+                     this, SIGNAL(activateMaterialWindow()),
+                     QKeySequence(Qt::CTRL + Qt::Key_M));
+    ctrls->addAction(tr("&Mesh management . . ."),
+                     this, SIGNAL(activateMeshManagementWindow()),
+                     QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_M));
+    ctrls->addAction(pickIcon, tr("&Pick . . ."),
+                     this, SIGNAL(activatePickWindow()),
+                     QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_P));
+
+#if defined(Q_OS_MAC)
+    ctrls->addAction(tr("Quer&y . . ."), 
+                     this, SIGNAL(activateQueryWindow()),
+                     QKeySequence(Qt::CTRL + Qt::Key_Y));
+    ctrls->addAction(tr("Quer&y over time options . . ."),
+                     this, SIGNAL(activateQueryOverTimeWindow()), 
+                     QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_Y));
+#else
+    ctrls->addAction(tr("&Query over time options . . ."),
+                     this, SIGNAL(activateQueryOverTimeWindow()), 
+                     QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_Q));
+    ctrls->addAction(tr("&Query . . ."),
+                     this, SIGNAL(activateQueryWindow()), 
+                     QKeySequence(Qt::CTRL + Qt::Key_Q));
+#endif
+    ctrls->addAction(selectionIcon, tr("Selections . . ."),
+                     this, SIGNAL(activateSelectionsWindow()),
+                     QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_S));
+    ctrls->addAction(subsetIcon, tr("S&ubset . . ."),
+                     this, SIGNAL(activateSubsetWindow()), 
+                     QKeySequence(Qt::CTRL + Qt::Key_U));
+    ctrls->addAction(viewIcon, tr("&View . . ."),
+                     this, SIGNAL(activateViewWindow()), 
+                     QKeySequence(Qt::CTRL + Qt::Key_V));
+
+    //
+    // Add the Prefs menu.
+    //
+    QMenu *pref = menuBar()->addMenu(tr("&Options"));
+    pref->addAction(tr("&Appearance . . ."), 
+                    this, SIGNAL(activateAppearanceWindow()), 
+                    QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_A));
+    pref->addSeparator();
+    pref->addAction(computerIcon, tr("&Host profiles . . ."),
+                    this, SIGNAL(activateHostWindow()), 
+                    QKeySequence(Qt::CTRL + Qt::Key_H));
+    pref->addAction(tr("Host profiles and configuration setup . . ."),
+                    this, SIGNAL(activateSetupHostProfilesAndConfig()));
+    pref->addSeparator();
+    pref->addAction(tr("&Interactors . . ."),
+                    this, SIGNAL(activateInteractorWindow()),
+                    QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_I));
+    pref->addAction(pluginIcon, tr("&Plugin manager . . ."),
+                    this, SIGNAL(activatePluginWindow()));
+    pref->addAction(tr("Preferences . . ."),
+                    this, SIGNAL(activatePreferencesWindow()));
+    pref->addAction(tr("Rendering . . ."),
+                    this, SIGNAL(activateRenderingWindow()));
+
+    pref->addSeparator();
+
+    pref->addAction(tr("Save settings"),
+                    this, SIGNAL(saveSettings()));
+
+    //
+    // Add the Windows menu.
+    //
+
+    winPopup = menuBar()->addMenu(tr("&Windows"));
+
+    winPopup->addAction(QPixmap(newwindow_xpm), tr("New"),
+                        this, SLOT(windowAdd())
+#if !(defined(Q_OS_MAC))
+                         , QKeySequence(Qt::CTRL + Qt::Key_Insert)
+#endif
+                        );
+
+    winPopup->addAction(copyIcon, tr("Clone"),this, SLOT(windowClone()));
+
+    winPopup->addAction(QPixmap(deletewindow_xpm), tr("Delete"),
+                         this, SLOT(windowDelete()), 
+                         QKeySequence(Qt::CTRL + Qt::Key_Delete));
+
+    winPopup->addAction(tr("Clear all"), this, SLOT(windowClearAll()));
+
+    // Layout sub menu
+    layoutPopup = winPopup->addMenu(QPixmap(layout2x2_xpm),tr("Layouts"));
+
+    layoutActions[0] = layoutPopup->addAction(QPixmap(layout1x1_xpm), tr("1x1"),
+                                              this, SLOT(windowLayout1x1()));
+    layoutActions[1] = layoutPopup->addAction(QPixmap(layout1x2_xpm), tr("1x2"),
+                                              this, SLOT(windowLayout1x2()));
+    layoutActions[2] = layoutPopup->addAction(QPixmap(layout2x2_xpm), tr("2x2"),
+                                              this, SLOT(windowLayout2x2()));
+    layoutActions[3] = layoutPopup->addAction(QPixmap(layout2x3_xpm), tr("2x3"),
+                                              this, SLOT(windowLayout2x3()));
+    layoutActions[4] = layoutPopup->addAction(QPixmap(layout2x4_xpm), tr("2x4"),
+                                              this, SLOT(windowLayout2x4()));
+    layoutActions[5] = layoutPopup->addAction(QPixmap(layout3x3_xpm), tr("3x3"),
+                                              this, SLOT(windowLayout3x3()));
+
+
+
+    // Active window sub menu
+    activeWindowPopup = new QMenu(tr("Active window"));
+    activeWindowPopupAct =  winPopup->addMenu(activeWindowPopup);
+    activeWindowPopupAct->setEnabled(false);
+    winPopup->addSeparator();
+
+    connect(activeWindowPopup, SIGNAL(triggered(QAction *)),
+            this, SLOT(winset2(QAction *)));
+
+    // Copy sub menu.
+
+    topCopyPopup = new QMenu(tr("Copy"),winPopup);
+    topCopyPopup->setIcon(copyIcon);
+
+    copyPopup[0] = new QMenu(tr("View from"),topCopyPopup);
+    connect(copyPopup[0], SIGNAL(triggered(QAction*)),
+            this, SLOT(copyView(QAction*)));
+    copyPopupAct[0] = topCopyPopup->addMenu(copyPopup[0]);
+    copyPopupAct[0]->setEnabled(false);
+
+
+    copyPopup[1] = new QMenu(tr("Lighting from"),topCopyPopup);
+    connect(copyPopup[1], SIGNAL(triggered(QAction*)),
+            this, SLOT(copyLighting(QAction*)));
+    copyPopupAct[1] = topCopyPopup->addMenu(copyPopup[1]);
+    copyPopupAct[1]->setEnabled(false);
+
+    copyPopup[2] = new QMenu(tr("Annotations from"), topCopyPopup);
+    connect(copyPopup[2], SIGNAL(triggered(QAction*)),
+            this, SLOT(copyAnnotations(QAction*)));
+    copyPopupAct[2] = topCopyPopup->addMenu(copyPopup[2]);
+    copyPopupAct[2]->setEnabled(false);
+
+    copyPopup[3] = new QMenu(tr("Plots from"), topCopyPopup);
+    connect(copyPopup[3], SIGNAL(triggered(QAction*)),
+            this, SLOT(copyPlots(QAction*)));
+    copyPopupAct[3] = topCopyPopup->addMenu(copyPopup[3]);
+    copyPopupAct[3]->setEnabled(false);
+
+
+    copyPopup[4] = new QMenu(tr("Everything from"),topCopyPopup);
+    connect(copyPopup[4], SIGNAL(triggered(QAction*)),
+            this, SLOT(copyAll(QAction*)));
+    copyPopupAct[4] = topCopyPopup->addMenu(copyPopup[4]);
+    copyPopupAct[4]->setEnabled(false);
+
+
+    topCopyPopupAct = winPopup->addMenu(topCopyPopup);
+    topCopyPopupAct->setEnabled(false);    
+
+    // Clear sub menu
+    clearPopup = new QMenu(tr("Clear"));
+    clearPopup->addAction( tr("Pick points"), this, SLOT(clearPickPoints()));
+    clearPopup->addAction( tr("Plots"), this, SLOT(clearPlots()));
+    clearPopup->addAction( tr("Reference lines"), this, SLOT(clearReferenceLines()));
+    clearPopupAct = winPopup->addMenu(clearPopup);
+
+    // Lock sub menu
+    lockPopup = new QMenu(tr("Lock"),winPopup );
+    lockPopup->setIcon(lockIcon);
+    lockTimeAct  = lockPopup->addAction( tr("Time"), this, SLOT(lockTime()));
+    lockToolsAct = lockPopup->addAction( tr("Tools"), this, SLOT(lockTools()));
+    lockViewAct  = lockPopup->addAction( tr("View"), this, SLOT(lockView()));
+    lockPopup->addSeparator();
+    lockPopup->addAction(tr("Unlock everything"), this, SLOT(unlockEverything()));
+    lockPopupAct = winPopup->addMenu(lockPopup);
+
+
+    // Other options.
+    fullFrameModeAct = winPopup->addAction(tr("Full frame mode"),
+                                          this, SLOT(toggleFullFrameMode()));
+    spinModeAct = winPopup->addAction(tr("Spin mode"),
+                                     this, SLOT(toggleSpinMode()));
+
+    if(qApp->desktop()->height() < MIN_WINDOW_HEIGHT_BEFORE_POSTING_MAIN)
+    {
+        splitter = 0;
+
+        // Make the notepad be the main area.
+        notepad = new QvisNotepadArea(this);
+        setCentralWidget(notepad);
+
+        // Create a postable window to house the main window's stuff.
+        QvisPostableMainWindow *pmw = new QvisPostableMainWindow(
+            tr("Main Controls"), tr("Main"), notepad);
+
+        // Create the main window's widgets into the postable window
+        pmw->ContentsWidget()->setMinimumHeight(400);
+        CreateMainContents(pmw);
+
+        SetDefaultSplitterSizes(qApp->desktop()->height());
+
+        // Post the window
+        pmw->post(true);
+    }
+    else
+    {
+        // Make a central widget to contain the other widgets
+
+        QWidget *central = new QWidget(this);
+        QVBoxLayout *layout = new QVBoxLayout(central);
+        layout->setMargin(5);
+        setCentralWidget(central);
+
+        layout->addWidget(CreateGlobalArea(central));
+
+        splitter = new QSplitter(central);
+        splitter->setOrientation(Qt::Vertical);
+        layout->addWidget(splitter);
+
+        CreateMainContents(splitter);
+
+        // Create the notepad widget.
+        notepad = new QvisNotepadArea(splitter);
+
+        // May want to read these from the config file but here are the defaults.
+        SetDefaultSplitterSizes(qApp->desktop()->height());
+    }
+
+    // Add the Help menu
+    AddHelpMenu();
+
+    // Create the output button and put it in the status bar as a
+    // permanent widget.
+    // need to add a label to the status bar so the output button 
+    // ends up on the right side
+    statusBar()->addWidget(new QLabel("",this),10);
+    outputButton = new QPushButton(statusBar());
+    connect(outputButton, SIGNAL(clicked()),
+            this, SLOT(emitActivateOutputWindow()));
+
+    outputButton->setIcon(*outputBlue);
+    outputButton->setFixedSize(32 , 32);
+    outputButton->setToolTip(tr("Output window"));
+
+    statusBar()->addWidget(outputButton, 0);
+    statusBar()->setSizeGripEnabled(false);
+    unreadOutputFlag = false;
+
+    // Create a timer.
+    okayToSaveRecoveryFile = false;
+    recoveryFileTimer = new QTimer(this);
+    connect(recoveryFileTimer, SIGNAL(timeout()),
+            this, SIGNAL(saveCrashRecoveryFile()));
+
+
+    SetShowSelectedFiles(false);
+#if defined(Q_OS_LINUX)
+    // Move the window to a known position on the screen
+    // so we can take some measurements later
+    move(QPoint(100,100));
+#endif
+}
+
+// ****************************************************************************
+// Method: QvisMainWindow::~QvisMainWindow
+//
+// Purpose: 
+//   Destructor for the QvisMainWindow class.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Jul 26 09:43:52 PDT 2000
+//
+// Modifications:
+//   Brad Whitlock, Mon Apr 23 11:23:06 PDT 2001
+//   Detached from the viewer's message and status atts.
+//
+//   Brad Whitlock, Thu Oct 25 18:32:09 PST 2001
+//   Added a new subject.
+//
+//   Brad Whitlock, Fri Feb 1 14:25:56 PST 2002
+//   Added code to delete the window's pixmaps.
+//
+//   Brad Whitlock, Mon Sep 16 15:57:29 PST 2002
+//   Added a couple new subjects.
+//
+//   Jeremy Meredith, Fri Feb 19 20:36:19 EST 2010
+//   Big redesign, adding icons and functionality and shuffling arrangement.
+//   Hide the Select File menu item when we're not in selected files mode.
+//
+// ****************************************************************************
+
+QvisMainWindow::~QvisMainWindow()
+{
+    if(statusSubject)
+       statusSubject->Detach(this);
+
+    if(statusAtts)
+       statusAtts->Detach(this);
+
+    if(globalAtts)
+       globalAtts->Detach(this);
+
+    if(viewerMessageAtts)
+       viewerMessageAtts->Detach(this);
+
+    if(fileserverMessageAtts)
+       fileserverMessageAtts->Detach(this);
+
+    if(plotList)
+       plotList->Detach(this);
+
+    if(windowInfo)
+       windowInfo->Detach(this);
+
+    // Inherited from GUIBase.
+    if(msgAttr)
+       msgAttr->Detach(this);
+
+    // Delete the pixmaps.
+    delete outputButton;
+    delete outputRed;
+    delete outputBlue;
+    delete openIcon;
+}
+
+// ****************************************************************************
+// Method: QvisMainWindow::SetDefaultSplitterSizes
+//
+// Purpose: 
+//   Set the default splitter sizes for the window configuration.
+//
+// Arguments:
+//   h : The window height that we're splitting up.
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri May  7 15:30:15 PDT 2010
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisMainWindow::SetDefaultSplitterSizes(int h)
+{
+    QList<int> splitterSizes;
+    if(h < MIN_WINDOW_HEIGHT_BEFORE_POSTING_MAIN)
+    {
+        if (advancedMenuShowing)
+        {
+            // File panel showing.
+            splitterSizes.append(int(h * 0.32));
+            splitterSizes.append(int(h * 0.68));
+
+            splitter->setStretchFactor(1, 5);
+            splitter->setStretchFactor(2, 10);
+            splitter->setSizes(splitterSizes);
+        }
+    }
+    else
+    {
+        if (advancedMenuShowing)
+        {
+            // File panel showing.
+            splitterSizes.append(int(h * 0.23));
+            splitterSizes.append(int(h * 0.39));
+            splitterSizes.append(int(h * 0.38));
+
+            splitter->setStretchFactor(0, 4);
+            splitter->setStretchFactor(2, 10);
+            splitter->setStretchFactor(3, 8);
+        }
+        else
+        {
+            splitterSizes.append(int(h * 0.));
+            splitterSizes.append(int(h * 0.545));
+            splitterSizes.append(int(h * 0.455));
+
+            splitter->setStretchFactor(0, 0);
+            splitter->setStretchFactor(1, 15);
+            splitter->setStretchFactor(2, 10);
+        }
+        splitter->setSizes(splitterSizes);
+    }
+}
+
+// ****************************************************************************
+// Method: QvisMainWindow::AddHelpMenu
+//
+// Purpose: 
+//   Creates the Help menu on the menubar.
+//
+// Programmer: Sean Ahern
+// Creation:   Wed Dec 31 11:28:51 EST 2008
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisMainWindow::AddHelpMenu(void)
+{
+    menuBar()->addSeparator();
+    helpPopup = menuBar()->addMenu(tr("&Help"));
+
+    helpPopup->addAction(tr("About . . ."),
+                         this, SIGNAL(activateAboutWindow()));
+
+    helpPopup->addAction(tr("Copyright . . ."),
+                         this, SIGNAL(activateCopyrightWindow()));
+
+    helpPopup->addAction(tr("Help . . ."),
+                         this, SIGNAL(activateHelpWindow()),
+                         QKeySequence(Qt::Key_F1));
+
+    helpPopup->addAction(tr("Release notes . . ."),
+                         this, SIGNAL(activateReleaseNotesWindow()));
+
+    helpPopup->addSeparator();
+
+    updateVisItAct = helpPopup->addAction(tr("Check for new version . . ."),
+                                          this, SIGNAL(updateVisIt()));
+}
+
+// ****************************************************************************
+// Method: QvisMainWindow::CreateMainContents
+//
+// Purpose:
+//   This method creates most of the interesting window controls.
+//
+// Arguments:
+//   s      : The splitter to use.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jul 23 16:26:55 PDT 2009
+//
+// Modifications:
+//   Jeremy Meredith, Fri Feb 19 20:36:19 EST 2010
+//   Big redesign, adding icons and functionality and shuffling arrangement.
+//   The plot manager can now trigger a file->open action.
+//
+//   Cyrus Harrison, Fri Mar 12 10:47:47 PST 2010
+//   More refactoring.
+//
+//   Brad Whitlock, Fri May  7 12:06:14 PDT 2010
+//   I removed the global area so I could create it elsewhere.
+//
+//   Brad Whitlock, Fri Jul 23 15:40:19 PDT 2010
+//   I added code to connect the selection list.
+//
+// ****************************************************************************
+
+void
+QvisMainWindow::CreateMainContents(QSplitter *parent)
+{
+    filePanel = new QvisFilePanel(parent);
+    filePanel->ConnectFileServer(fileServer);
+    filePanel->ConnectWindowInformation(GetViewerState()->GetWindowInformation());
+    parent->addWidget(filePanel);
+
+    QWidget *mainControls = new QWidget(parent);
+    QVBoxLayout *layout = new QVBoxLayout(mainControls);
+    layout->setMargin(0);
+
+    sourceManager = new QvisSourceManagerWidget(mainControls);
+    sourceManager->ConnectPlotList(GetViewerState()->GetPlotList());
+    sourceManager->ConnectFileServer(fileServer);
+    sourceManager->ConnectGlobalAttributes(GetViewerState()->GetGlobalAttributes());
+    sourceManager->ConnectWindowInformation(GetViewerState()->GetWindowInformation());
+    connect(sourceManager,SIGNAL(activateFileOpenWindow()),
+            this,SIGNAL(activateFileOpenWindow()));
+    layout->addWidget(sourceManager, 0);
+
+    tsControl = new QvisTimeSliderControlWidget(mainControls);
+    tsControl->ConnectFileServer(fileServer);
+    tsControl->ConnectWindowInformation(GetViewerState()->GetWindowInformation());
+    connect(tsControl, SIGNAL(reopenOnNextFrame()),
+            this, SIGNAL(reopenOnNextFrame()));
+    layout->addWidget(tsControl, 0);
+
+    plotManager = new QvisPlotManagerWidget(menuBar(), mainControls);
+    plotManager->ConnectPlotList(GetViewerState()->GetPlotList());
+    plotManager->ConnectFileServer(fileServer);
+    plotManager->ConnectGlobalAttributes(GetViewerState()->GetGlobalAttributes());
+    plotManager->ConnectExpressionList(GetViewerState()->GetExpressionList());
+    plotManager->ConnectWindowInformation(GetViewerState()->GetWindowInformation());
+    plotManager->ConnectSelectionList(GetViewerState()->GetSelectionList());
+    layout->addWidget(plotManager, 10);
+
+    parent->addWidget(mainControls);
+}
+
+// ****************************************************************************
+// Method: QvisMainWindow::CreateMainContents
+//
+// Purpose:
+//   This method creates most of the interesting window controls.
+//   Overloaded to handle different parent in low res display case.
+//
+// Arguments:
+//   win     : Parent Window.
+//
+// Programmer: Cyrus Harrison
+// Creation:   Fri Mar 12 10:48:31 PST 2010
+//
+// Modifications:
+//    Brad Whitlock, Fri May  7 12:09:35 PDT 2010
+//    Add global area before the splitter.
+//
+// ****************************************************************************
+
+void
+QvisMainWindow::CreateMainContents(QvisPostableMainWindow *win)
+{
+    win->ContentsLayout()->addWidget(CreateGlobalArea(win->ContentsWidget()));
+
+    splitter = new QSplitter(win->ContentsWidget());
+    splitter->setOrientation(Qt::Vertical);
+    win->ContentsLayout()->setMargin(3);
+    win->ContentsLayout()->addWidget(splitter);
+    CreateMainContents(splitter);
+}
+
+// ****************************************************************************
+// Method: QvisMainWindow::CreateGlobalArea
+//
+// Purpose: 
+//   This method creates the "global area" which is a bunch of widgets
+//   that show stuff like autoupdate and the active window list.
+//
+// Arguments:
+//   tl : The layout under which we're going to add the global area.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Sep 18 13:03:40 PST 2000
+//
+// Modifications:
+//   Brad Whitlock, Mon Mar 4 11:43:20 PDT 2002
+//   Enabled autoupdate since it is going to be a GUI concept now.
+//
+//   Brad Whitlock, Thu Mar 7 14:46:41 PST 2002
+//   Enabled replacePlots since it is implemented in the viewer.
+//
+//   Brad Whitlock, Tue Sep 17 15:43:22 PST 2002
+//   I removed maintain view/data.
+//
+//   Eric Brugger, Fri Apr 18 09:10:03 PDT 2003 
+//   I added maintain view limits.
+//
+//   Eric Brugger, Mon Mar 29 13:07:58 PST 2004
+//   I added maintain data limits.
+//
+//   Cyrus Harrison, Mon Jun 30 14:14:59 PDT 2008
+//   Initial Qt4 Port.
+//
+//   Jeremy Meredith, Wed Feb  3 15:35:08 EST 2010
+//   Removed maintain data; moved maintain view from Global settings
+//   (Main window) to per-window Window Information (View window).
+//
+//   Jeremy Meredith, Fri Feb 19 20:36:19 EST 2010
+//   Big redesign, adding icons and functionality and shuffling arrangement.
+//
+//   Brad Whitlock, Mon May 10 11:54:11 PDT 2010
+//   I moved some stuff out of this area to other widgets and windows.
+//
+//   Eric Brugger, Wed Mar  7 11:21:08 PST 2018
+//   I set the SizeAdjustPolicy for the activeWindowComboBox so that it would
+//   resize to accomadate 2 digits if necessary.
+//
+// ****************************************************************************
+
+QWidget *
+QvisMainWindow::CreateGlobalArea(QWidget *par)
+{
+    QGroupBox *globalArea = new QGroupBox(tr("Global"), par);
+    QHBoxLayout *globalLayout = new QHBoxLayout(globalArea);
+    globalLayout->setMargin(5);
+
+    activeWindowComboBox = new QComboBox(globalArea);
+    connect(activeWindowComboBox, SIGNAL(activated(int)),
+            this, SLOT(winset(int)));
+    activeWindowComboBox->setSizeAdjustPolicy(QComboBox::AdjustToContents);
+    activeWindowComboBox->addItem("1");
+
+    QLabel *activeWindowLabel = new QLabel(tr("Active window"), globalArea);
+    activeWindowLabel->setAlignment(Qt::AlignHCenter|Qt::AlignBottom);
+    globalLayout->addWidget(activeWindowLabel);
+    globalLayout->addWidget(activeWindowComboBox);
+
+    QFrame *sep2 = new QFrame(globalArea);
+    sep2->setFrameShape(QFrame::VLine);
+    sep2->setFrameShadow(QFrame::Sunken);
+    globalLayout->addWidget(sep2);
+    globalLayout->addStretch();
+
+    autoUpdateCheckBox = new QCheckBox(tr("Auto apply"), globalArea);
+    connect(autoUpdateCheckBox, SIGNAL(toggled(bool)),
+            this, SLOT(autoUpdateToggled(bool)));
+    globalLayout->addWidget(autoUpdateCheckBox);
+
+    return globalArea;
+}
+
+// ****************************************************************************
+// Method: QvisMainWindow::Update
+//
+// Purpose: 
+//   Updates the window when one of the subjects that it observes
+//   is changed.
+//
+// Arguments:
+//   TheChangedSubject : This is a pointer to the subject that changed.
+//
+// Notes:
+//   This method contains calls that process events for the Qt
+//   application object (qApp). This is to ensure that the statusbar
+//   messages are displayed before doing an expensive operation. Anyway,
+//   this is potentially hazardous.
+//
+// Programmer: Brad Whitlock
+// Creation:   Sat Sep 16 13:10:21 PST 2000
+//
+// Modifications:
+//   Brad Whitlock, Mon Apr 23 11:23:27 PDT 2001
+//   Added code to re-send messages that come from the viewer.
+//
+//   Brad Whitlock, Mon Apr 30 15:08:11 PST 2001
+//   Added code to put status messages from the viewer into the status bar.
+//
+//   Jeremy Meredith, Fri Jun 29 15:18:06 PDT 2001
+//   Changed status reporting a little.  Also, key off of MessageType instead.
+//
+//   Jeremy Meredith, Thu Jul  5 12:40:54 PDT 2001
+//   Changed the status message to prefix a total percent.
+//
+//   Brad Whitlock, Fri Sep 21 13:35:19 PST 2001
+//   Made the status messages from the viewer last as long as the sender
+//   wanted them to.
+//
+//   Brad Whitlock, Fri Oct 26 09:39:15 PDT 2001
+//   Modified messaging a little bit.
+//
+//   Brad Whitlock, Fri Aug 23 16:26:47 PST 2002
+//   I replaced the event processing loops with code to force the status
+//   bar to redraw. This prevents bad re-entrant things from happening.
+//
+//   Brad Whitlock, Mon Sep 16 15:50:31 PST 2002
+//   I added code to update the window when some new subjects are updated.
+//
+//   Brad Whitlock, Wed Sep 25 11:43:22 PDT 2002
+//   I fixed a memory leak.
+//
+//   Brad Whitlock, Tue May 20 15:05:18 PST 2003
+//   Made it work with the regenerated MessageAttributes.
+//
+//   Brad Whitlock, Fri Jan 23 17:29:21 PST 2004
+//   Made it work with the regenerated GlobalAttributes.
+//
+//   Brad Whitlock, Thu Jan 31 13:06:19 PST 2008
+//   Added code to handle the crash recovery timer.
+//
+//   Brad Whitlock, Tue Apr 29 10:23:52 PDT 2008
+//   Access the message text via MessageAttributes_GetText to try and 
+//   preserve unicode from the viewer, if possible.
+//
+//   Cyrus Harrison, Mon Jun 30 14:14:59 PDT 2008
+//   Initial Qt4 Port.
+//
+// ****************************************************************************
+
+void
+QvisMainWindow::Update(Subject *TheChangedSubject)
+{
+    // If any of the objects that the main window observes is
+    // not set, get out.
+    if(statusSubject == 0 || globalAtts == 0 ||
+       statusAtts == 0 || viewerMessageAtts == 0)
+        return;
+
+    if(TheChangedSubject == statusSubject)
+    {
+        // Update the status bar.
+        if(statusSubject->clearing)
+            statusBar()->clearMessage();
+        else
+            statusBar()->showMessage(statusSubject->text, statusSubject->milliseconds);
+    }
+    else if(TheChangedSubject == statusAtts)
+    {
+        // Update the status bar.
+        if(statusAtts->GetClearStatus())
+        {
+            statusBar()->clearMessage();
+        }
+        else
+        {
+            QString statusMsg;
+
+            // If the message field is selected, use it. Otherwise, make up
+            // a message based on the other fields.
+            if(statusAtts->GetMessageType() == 1)
+                statusMsg = StatusAttributes_GetStatusMessage(*statusAtts);
+            else if (statusAtts->GetMessageType() == 2)
+            {
+                int total;
+                if (statusAtts->GetMaxStage() > 0)
+                {
+                    float pct0  = float(statusAtts->GetPercent()) / 100.;
+                    float pct1  = float(statusAtts->GetCurrentStage()-1) / float(statusAtts->GetMaxStage());
+                    float pct2  = float(statusAtts->GetCurrentStage())   / float(statusAtts->GetMaxStage());
+                    total = int(100. * ((pct0 * pct2) + ((1.-pct0) * pct1)));
+                }
+                else
+                    total = 0;
+
+                QString done(tr("done"));
+                QString ofStage(tr("of stage"));
+                QString totalPct; totalPct.sprintf("%d%% ", total);
+                QString progress; progress.sprintf(" (%d%% ", statusAtts->GetPercent());
+                QString progress2; progress2.sprintf(" %d/%d)", statusAtts->GetCurrentStage(),
+                    statusAtts->GetMaxStage());
+                statusMsg = totalPct + done + ": " +
+                            StatusAttributes_GetStatusMessage(*statusAtts) +
+                            progress + ofStage + progress2;
+            }
+
+            statusBar()->showMessage(statusMsg, statusAtts->GetDuration());
+        }
+    }
+    else if(TheChangedSubject == viewerMessageAtts)
+    {
+        SetUpdate(false);
+        unreadOutput(true);
+
+        // Get the message from the viewer's message attributes and send it
+        // through the GUI's error message methods.
+        if(viewerMessageAtts->GetSeverity() == MessageAttributes::Error)
+            Error(MessageAttributes_GetText(*viewerMessageAtts));
+        else if(viewerMessageAtts->GetSeverity() == MessageAttributes::Warning)
+            Warning(MessageAttributes_GetText(*viewerMessageAtts));
+        else if(viewerMessageAtts->GetSeverity() == MessageAttributes::Message)
+            Message(MessageAttributes_GetText(*viewerMessageAtts));
+    }
+    else if(TheChangedSubject == fileserverMessageAtts)
+    {
+        SetUpdate(false);
+        unreadOutput(true);
+
+        // Get the message from the fileserver's message attributes and send
+        // it through the GUI's error message methods.
+        if(fileserverMessageAtts->GetSeverity() == MessageAttributes::Error)
+            Error(QString(fileserverMessageAtts->GetText().c_str()));
+        else if(fileserverMessageAtts->GetSeverity() == MessageAttributes::Warning)
+            Warning(QString(fileserverMessageAtts->GetText().c_str()));
+        else if(fileserverMessageAtts->GetSeverity() == MessageAttributes::Message)
+            Message(QString(fileserverMessageAtts->GetText().c_str()));
+    }
+    else if(TheChangedSubject == msgAttr)
+    {
+        // Indicate that there is unread output.
+        unreadOutput(true);
+    }
+    else if(TheChangedSubject == globalAtts)
+    {
+        // Update the things in the main window that need the
+        // viewer proxy's global attributes.
+        UpdateGlobalArea(false);
+        UpdateWindowMenu(globalAtts->IsSelected(GlobalAttributes::ID_windows) ||
+                         globalAtts->IsSelected(GlobalAttributes::ID_activeWindow));
+
+        // Set the crash recovery timer.
+        if(okayToSaveRecoveryFile && globalAtts->IsSelected(GlobalAttributes::ID_saveCrashRecoveryFile))
+            UpdateCrashRecoveryTimer();
+    }
+    else if(TheChangedSubject == plotList)
+    {
+        UpdateWindowMenu(false);
+    }
+    else if(TheChangedSubject == windowInfo)
+    {
+        UpdateWindowMenu(false);
+    }
+}
+
+// ****************************************************************************
+// Method: QvisMainWindow::UpdateGlobalArea
+//
+// Purpose: 
+//   This method updates the parts of the main window that depend on
+//   the GlobalAttributes state object.
+//
+// Note:       
+//   Note that the main window does not care about all of the attributes
+//   in the GlobalAttributes state object.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Sep 18 11:43:20 PDT 2000
+//
+// Modifications:
+//   Brad Whitlock, Mon Mar 4 11:44:27 PDT 2002
+//   Enabled auto update.
+//
+//   Brad Whitlock, Thu Mar 7 14:47:20 PST 2002
+//   Enabled replacePlots.
+//
+//   Brad Whitlock, Thu May 2 15:19:53 PST 2002
+//   Removed code to set a flag in the plot manager widget.
+//
+//   Brad Whitlock, Mon Sep 16 15:40:04 PST 2002
+//   I added code to check the window layout.
+//
+//   Brad Whitlock, Mon Nov 4 13:57:33 PST 2002
+//   I added code to set the makeDefaultConfirm flag.
+//
+//   Brad Whitlock, Fri Nov 15 11:43:01 PDT 2002
+//   I fixed a bug on Windows.
+//
+//   Brad Whitlock, Thu Mar 20 11:05:52 PDT 2003
+//   I updated the numbering in the switch statement because I removed
+//   some fields from the middle of GlobalAttributes.
+//   
+//   Eric Brugger, Fri Apr 18 09:10:03 PDT 2003 
+//   I added maintain view limits.
+//
+//   Brad Whitlock, Fri Jan 23 17:32:11 PST 2004
+//   I updated the code due to changes in GlobalAttributes. I also added code
+//   to set the contents of the source list.
+//
+//   Eric Brugger, Mon Mar 29 13:07:58 PST 2004
+//   I added maintain data limits.
+//
+//   Brad Whitlock, Mon Apr 5 16:19:18 PST 2004
+//   Renamed a method.
+//
+//   Eric Brugger, Thu Jun 30 09:17:12 PDT 2005
+//   Added a 2x3 window layout and removed the 4x4 window layout.
+//
+//   Brad Whitlock, Fri Dec 14 17:34:28 PST 2007
+//   Made it use ids.
+//
+//   Cyrus Harrison, Mon Jun 30 14:14:59 PDT 2008
+//   Initial Qt4 Port.
+//
+//   Jeremy Meredith, Wed Feb  3 15:35:08 EST 2010
+//   Removed maintain data; moved maintain view from Global settings
+//   (Main window) to per-window Window Information (View window).
+//
+//   Jeremy Meredith, Fri Feb 19 20:36:19 EST 2010
+//   Big redesign, adding icons and functionality and shuffling arrangement.
+//
+//   Brad Whitlock, Fri May  7 14:14:22 PDT 2010
+//   I removed some code for updating check boxes that I moved to another window.
+//
+// ****************************************************************************
+
+void
+QvisMainWindow::UpdateGlobalArea(bool doAll)
+{
+    // Loop through all the attributes and do something for
+    // each of them that changed. This function is only responsible
+    // for displaying the state values and setting widget sensitivity.
+    for(int i = 0; i < globalAtts->NumAttributes(); ++i)
+    {
+        if(!doAll)
+        {
+            if(!globalAtts->IsSelected(i))
+            continue;
+        }
+
+        switch(i)
+        {
+        case GlobalAttributes::ID_sources:
+            UpdateFileMenuPopup(reopenPopup, reopenPopupAct);
+            UpdateFileMenuPopup(closePopup, closePopupAct);
+            break;
+        case GlobalAttributes::ID_windows:
+            UpdateWindowList(true);
+            break;
+        case GlobalAttributes::ID_activeWindow:
+            UpdateWindowList(false);
+            break;
+        case GlobalAttributes::ID_iconifiedFlag:
+            break;
+        case GlobalAttributes::ID_autoUpdateFlag:
+            autoUpdateCheckBox->blockSignals(true);
+            autoUpdateCheckBox->setChecked(globalAtts->GetAutoUpdateFlag());
+            autoUpdateCheckBox->blockSignals(false);
+
+            // Set GUIBase's autoupdate flag.
+            autoUpdate = globalAtts->GetAutoUpdateFlag();
+            break;
+        case GlobalAttributes::ID_replacePlots:
+            break;
+        case GlobalAttributes::ID_applyOperator:
+            break;
+        case GlobalAttributes::ID_applySelection:
+            break;
+        case GlobalAttributes::ID_executing:
+            break;
+        case GlobalAttributes::ID_windowLayout:
+        { // new scope
+            
+            layoutActions[0]->setChecked(globalAtts->GetWindowLayout() == 1);
+            layoutActions[1]->setChecked(globalAtts->GetWindowLayout() == 2);
+            layoutActions[2]->setChecked(globalAtts->GetWindowLayout() == 4);
+            layoutActions[3]->setChecked(globalAtts->GetWindowLayout() == 6);
+            layoutActions[4]->setChecked(globalAtts->GetWindowLayout() == 8);
+            layoutActions[5]->setChecked(globalAtts->GetWindowLayout() == 9);
+            for(int j = 0; j < 6; ++j)
+                layoutActions[j]->setEnabled(true);
+        }
+            break;
+        case GlobalAttributes::ID_makeDefaultConfirm:
+            // Set GUIBase's makeDefaultConfirm flag.
+            makeDefaultConfirm = globalAtts->GetMakeDefaultConfirm();
+            break;
+        case GlobalAttributes::ID_cloneWindowOnFirstRef:
+            break;
+        case GlobalAttributes::ID_automaticallyAddOperator:
+            break;
+        }
+    } // end for
+}
+
+// ****************************************************************************
+// Method: QvisMainWindow::UpdateFileMenuPopup
+//
+// Purpose: 
+//   Updates the contents of the specified file menu.
+//
+// Arguments:
+//   menu   : The menu to update.
+//   menuId : The menu's id in the file menu.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Feb 27 10:49:30 PDT 2004
+//
+// Modifications:
+//   Brad Whitlock, Mon Apr 5 15:33:39 PST 2004
+//   I renamed the method.
+//
+//   Cyrus Harrison, Mon Jun 30 14:14:59 PDT 2008
+//   Initial Qt4 Port.
+//
+//   Brad Whitlock, Mon Apr  6 15:46:18 PDT 2009
+//   I fixed a bug with the Qt4 port.
+//
+// ****************************************************************************
+
+void
+QvisMainWindow::UpdateFileMenuPopup(QMenu *m, QAction *action)
+{
+    stringVector simpleNames;
+    const stringVector &sources = globalAtts->GetSources();
+
+    // Simplify the names in the list.
+    NameSimplifier simple;
+
+    for(size_t i = 0; i < sources.size(); ++i)
+        simple.AddName(sources[i]);
+    simple.GetSimplifiedNames(simpleNames);
+
+    // Clear out the old list and add the new list.
+    m->clear();
+    
+    for(size_t i = 0; i < simpleNames.size(); ++i)
+        m->addAction(simpleNames[i].c_str());
+
+    //
+    // Set the menu's enabled state.
+    //
+    bool menuEnabled = (m->actions().count() > 0);
+    action->setEnabled(menuEnabled);
+}
+
+// ****************************************************************************
+// Method: QvisMainWindow::UpdateWindowList
+//
+// Purpose: 
+//   Updates the active window list.
+//
+// Arguments:
+//   doList : If this is true then the list is populated. Otherwise,
+//            this routine only sets the active window.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Sep 18 11:54:33 PDT 2000
+//
+// Modifications:
+//   Eric Brugger, Fri Sep 22 10:05:24 PDT 2000
+//   I modified the setting of the active window to work properly.
+//   
+//   Brad Whitlock, Fri Sep 13 15:48:27 PST 2002
+//   I changed it so it also updates the new Active window menu.
+//
+//   Brad Whitlock, Fri Apr 15 09:42:58 PDT 2005
+//   I added some code that prevents an update unless it is really needed.
+//
+//   Cyrus Harrison, Mon Jun 30 14:14:59 PDT 2008
+//   Initial Qt4 Port.
+//
+// ****************************************************************************
+
+void
+QvisMainWindow::UpdateWindowList(bool doList)
+{
+    int index = globalAtts->GetActiveWindow();
+    const intVector &indices = globalAtts->GetWindows();
+
+    if(doList)
+    {
+        intVector oldIndices;
+        for(size_t i = 0; i < (size_t)activeWindowComboBox->count(); ++i)
+            oldIndices.push_back(activeWindowComboBox->itemText(i).toInt());
+
+        // Update the Active window combo box.
+        if(oldIndices != indices)
+        {
+            activeWindowComboBox->clear();
+            for(size_t i = 0; i < indices.size(); ++i)
+            {
+                QString temp; temp.sprintf("%d", indices[i]);
+                activeWindowComboBox->addItem(temp);
+            }
+
+            // Update the Active window menu
+            activeWindowPopup->clear();
+            for(size_t i = 0; i < indices.size(); ++i)
+            {
+                QString str; str.sprintf("%d", indices[i]);
+                QAction *act = activeWindowPopup->addAction(tr("Window ") + str);
+                act->setChecked(indices[i] == index);
+            }
+        }
+    }
+    else
+    {
+        // Set the active item in the Active window combobox.
+        if(index >= 0 && index < activeWindowComboBox->count())
+            activeWindowComboBox->setCurrentIndex(index);
+
+        QListIterator<QAction*> itr(actions());
+        size_t i =0;
+        while(itr.hasNext())
+        {
+            itr.next()->setChecked((size_t)index == i);
+            i++;
+        }
+    }
+
+    // Only enable the active window menu when there is more than one
+    // vis window.
+    activeWindowPopupAct->setEnabled(indices.size() > 1);
+}
+
+// ****************************************************************************
+// Method: QvisMainWindow::UpdateWindowMenu
+//
+// Purpose: 
+//   Updates the items in the window's sub-menus.
+//
+// Arguments:
+//   updateNumbers : Tells the method to update the numbers in the copy menu.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Sep 13 10:19:30 PDT 2002
+//
+// Modifications:
+//   Brad Whitlock, Tue Oct 15 16:17:57 PST 2002
+//   I added another copy menu.
+//
+//   Brad Whitlock, Mon Nov 11 13:04:38 PST 2002
+//   I added a lock menu.
+//
+//   Brad Whitlock, Wed May 21 07:46:24 PDT 2003
+//   I added fullframe mode.
+//
+//   Cyrus Harrison, Mon Jun 30 14:14:59 PDT 2008
+//   Initial Qt4 Port.
+//
+//   Hank Childs, Mon Dec 22 10:00:34 PST 2008
+//   Increment a counter so the menus get enabled.
+//
+//   Brad Whitlock, Mon Sep 20 16:38:00 PDT 2010
+//   I removed the navigate mode action.
+//
+//   Jonathan Byrd (Allinea Software), Sun 18 Dec, 2011
+//   Sets the text of the 'connect to DDT' action depending on if
+//   the viewer will connect or disconnect to/from DDT.
+//
+// ****************************************************************************
+
+void
+QvisMainWindow::UpdateWindowMenu(bool updateNumbers)
+{
+    const intVector &indices = globalAtts->GetWindows();
+
+    //
+    // Fill in the copy sub menus.
+    //
+    if(updateNumbers)
+    {
+        size_t i, j, windowIndex = globalAtts->GetActiveWindow();
+
+        // Update the copy menus
+        for(i = 0; i < 5; ++i)
+        {
+            int n = 0;
+            copyPopup[i]->clear();
+            for(j = 0; j < indices.size(); ++j)
+            {
+                if(j == windowIndex)
+                    continue;
+
+                QString str;
+                str.sprintf("%d", indices[j]);
+                copyPopup[i]->addAction(tr("Window ") + str);
+                n++;
+            }
+            copyPopup[i]->setEnabled(n > 0);
+            //topCopyPopup->setItemEnabled(i, n > 0);
+        }
+    }
+
+    // Set the enabled state of the copy and clear menus.
+    bool enoughPlots = (plotList->GetNumPlots() > 0);
+    bool enoughWindows = (indices.size() > 1);
+    
+    topCopyPopupAct->setEnabled(enoughWindows);
+    copyPopupAct[0]->setEnabled(enoughPlots && enoughWindows);
+    copyPopupAct[1]->setEnabled(enoughWindows);
+    copyPopupAct[2]->setEnabled(enoughWindows);
+    copyPopupAct[3]->setEnabled(enoughWindows);
+    copyPopupAct[4]->setEnabled(enoughWindows);
+    
+    copyPopupAct[0]->setEnabled(enoughPlots && enoughWindows);
+    copyPopupAct[1]->setEnabled(enoughWindows);
+    copyPopupAct[2]->setEnabled(enoughWindows);
+    copyPopupAct[3]->setEnabled(enoughWindows);
+    copyPopupAct[4]->setEnabled(enoughWindows);
+
+    clearPopupAct->setEnabled(enoughPlots);
+    lockPopupAct->setEnabled(enoughPlots);
+    lockTimeAct->setChecked(windowInfo->GetLockTime());
+    lockToolsAct->setChecked(windowInfo->GetLockTools());
+    lockViewAct->setChecked(windowInfo->GetLockView());
+    
+    fullFrameModeAct->setEnabled(enoughPlots);
+    fullFrameModeAct->setChecked(windowInfo->GetFullFrame());
+    
+    spinModeAct->setEnabled(enoughPlots);
+    spinModeAct->setChecked(windowInfo->GetSpin());
+
+    if (windowInfo->GetDDTConnected())
+        connectToDDTAct->setText(tr("Disconnect from DDT"));
+    else
+        connectToDDTAct->setText(tr("Connect to DDT"));
+}
+
+// ****************************************************************************
+// Method: QvisMainWindow::ConnectGlobalAttributes
+//
+// Purpose: 
+//   Registers the main window as an observer of the viewer proxy's
+//   GlobalAttributes object.
+//
+// Arguments:
+//   globalAtts_ : A pointer to the viewer proxy's GlobalAttributes
+//                 object.
+//
+// Programmer: Brad Whitlock
+// Creation:   Sat Sep 16 13:23:20 PST 2000
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisMainWindow::ConnectGlobalAttributes(GlobalAttributes *globalAtts_)
+{
+    globalAtts = globalAtts_;
+    globalAtts->Attach(this);
+
+    // Update the global area.
+    UpdateGlobalArea(true);
+}
+
+// ****************************************************************************
+// Method: QvisMainWindow::ConnectViewerStatusAttributes
+//
+// Purpose: 
+//   Connects the viewer's status attributes so the main window observes them.
+//
+// Arguments:
+//   s : A pointer to the viewer's status attributes.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed May 2 15:24:36 PST 2001
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisMainWindow::ConnectViewerStatusAttributes(StatusAttributes *s)
+{
+    statusAtts = s;
+    statusAtts->Attach(this);
+}
+
+// ****************************************************************************
+// Method: QvisMainWindow::ConnectGUIMessageAttributes
+//
+// Purpose: 
+//   Makes the window observe GUIBase's message attributes.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Oct 25 18:30:44 PST 2001
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisMainWindow::ConnectGUIMessageAttributes()
+{
+    msgAttr->Attach(this);
+}
+
+// ****************************************************************************
+// Method: QvisMainWindow::ConnectPlotList
+//
+// Purpose: 
+//   Makes the window observe the viewer's plot list.
+//
+// Arguments:
+//   pl : A pointer to the plot list.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Sep 12 18:04:23 PST 2002
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisMainWindow::ConnectPlotList(PlotList *pl)
+{
+    plotList = pl;
+    plotList->Attach(this);
+}
+
+// ****************************************************************************
+// Method: QvisMainWindow::ConnectWindowInformation
+//
+// Purpose: 
+//   Makes the window observe the viewer's window information.
+//
+// Arguments:
+//   w : A pointer to the window information.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Sep 16 15:55:45 PST 2002
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisMainWindow::ConnectWindowInformation(WindowInformation *w)
+{
+    windowInfo = w;
+    windowInfo->Attach(this);
+}
+
+// ****************************************************************************
+// Method: QvisMainWindow::SubjectRemoved
+//
+// Purpose: 
+//   Unregisters the main window as an observer of TheRemovedSubject.
+//
+// Arguments:
+//   TheRemovedSubject : The subject that we're no longer observing.
+//
+// Programmer: Brad Whitlock
+// Creation:   Sat Sep 16 13:24:39 PST 2000
+//
+// Modifications:
+//   Brad Whitlock, Mon Apr 30 15:18:36 PST 2001
+//   Added code to remove subjects that were missing.
+//
+//   Brad Whitlock, Wed Sep 19 15:45:08 PST 2001
+//   I changed a misplaced assignment into a comparison.
+//
+//   Brad Whitlock, Thu Oct 25 18:31:44 PST 2001
+//   Added a new subject.
+//
+//   Brad Whitlock, Thu Sep 12 18:05:05 PST 2002
+//   Added the plot list and the window info.
+//
+// ****************************************************************************
+
+void
+QvisMainWindow::SubjectRemoved(Subject *TheRemovedSubject)
+{
+    if(TheRemovedSubject == globalAtts)
+        globalAtts = 0;
+    else if(TheRemovedSubject == viewerMessageAtts)
+        viewerMessageAtts = 0;
+    else if(TheRemovedSubject == fileserverMessageAtts)
+        fileserverMessageAtts = 0;
+    else if(TheRemovedSubject == msgAttr)
+        msgAttr = 0;
+    else if(TheRemovedSubject == statusAtts)
+        statusAtts = 0;
+    else if(TheRemovedSubject == plotList)
+        plotList = 0;
+    else if(TheRemovedSubject == windowInfo)
+        windowInfo = 0;
+}
+
+// ****************************************************************************
+// Method: QvisMainWindow::GetNotepad
+//
+// Purpose: 
+//   Returns a pointer to the notepad area so postable windows can
+//   know the widget that they post to.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Jul 26 09:44:24 PDT 2000
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+QvisNotepadArea *
+QvisMainWindow::GetNotepad()
+{
+    return notepad;
+}
+
+// ****************************************************************************
+// Method: QvisMainWindow::GetPlotManager
+//
+// Purpose: 
+//   Returns a pointer to the main window's plot manager widget.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Sep 7 12:48:07 PDT 2000
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+QvisPlotManagerWidget *
+QvisMainWindow::GetPlotManager()
+{
+    return plotManager;
+}
+
+// ****************************************************************************
+// Method: QvisMainWindow::SetOrientation
+//
+// Purpose: 
+//   Set the orientation to vertical or horizontal.
+//
+// Arguments:
+//   vertical : Whether or not to set the window to a vertical layout.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Jan 29 12:50:49 PDT 2002
+//
+// Modifications:
+//   Brad Whitlock, Mon Jul 24 17:43:44 PST 2006
+//   I made it use a splitter.
+//
+//   Brad Whitlock, Thu Jul 23 15:27:08 PDT 2009
+//   Guard against NULL splitter.
+//
+// ****************************************************************************
+
+void
+QvisMainWindow::SetOrientation(int orientation)
+{
+    if(splitter != 0)
+    {
+        splitter->setOrientation((orientation < 2) ? 
+                                  Qt::Vertical : Qt::Horizontal);
+    }
+}
+
+// ****************************************************************************
+// Method: QvisMainWindow::CreateNode
+//
+// Purpose: 
+//   Saves the main window's attributes to the config file.
+//
+// Arguments:
+//   parentNode : The node in which to save the attributes.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Jul 25 10:14:53 PDT 2006
+//
+// Modifications:
+//   Brad Whitlock, Tue Sep 19 12:06:45 PDT 2006
+//   Compensate for window decorations on the Mac.
+//
+//   Brad Whitlock, Thu Jul 23 15:27:08 PDT 2009
+//   Guard against NULL splitter.
+//
+// ****************************************************************************
+
+void
+QvisMainWindow::CreateNode(DataNode *parentNode)
+{
+    DataNode *node = new DataNode("MainWin");
+    parentNode->AddNode(node);
+
+    // Add generic window attributes
+#if defined(Q_OS_MAC)
+    int yval = y() > 0 ? 20 : 0;
+    node->AddNode(new DataNode("x", x()));
+    node->AddNode(new DataNode("y", y() - yval));
+    node->AddNode(new DataNode("width", width()));
+    node->AddNode(new DataNode("height", height() + yval));
+#else
+    node->AddNode(new DataNode("x", x()));
+    node->AddNode(new DataNode("y", y()));
+    node->AddNode(new DataNode("width", width()));
+    node->AddNode(new DataNode("height", height()));
+#endif
+
+    // Add splitter values as a proportion of the window height.
+    if(splitter != 0)
+    {
+        QList<int> splitterSizes(splitter->sizes());
+        floatVector ss;
+        for(int i = 0; i < splitterSizes.size(); ++i)
+            ss.push_back(float(splitterSizes[i]) / 
+                         float(splitter->height()));
+        if(ss.size() >= 2)
+            node->AddNode(new DataNode("SPLITTER_VALUES_V2", ss));
+    }
+}
+
+// ****************************************************************************
+// Method: QvisMainWindow::SetFromNode
+//
+// Purpose: 
+//   Sets the size, position, and splitter values for the main window.
+//
+// Arguments:
+//   parentNode : The node containing the MainWin node.
+//   borders    : Window borders.
+//
+// Notes:      This method only reads the height component of the window if
+//             it is available because it uses the height for determining
+//             how the splitter should be placed. If the overrideGeometry
+//             flag is passed in then it means that the geometry was already
+//             passed on the command line or was already read from the
+//             config file.
+// 
+// Programmer: Brad Whitlock
+// Creation:   Tue Jul 25 10:13:38 PDT 2006
+//
+// Modifications:
+//   Brad Whitlock, Tue Jan 22 16:03:57 PST 2008
+//   Check for NULL notepad.
+//
+//   Cyrus Harrison, Mon Jun 30 14:14:59 PDT 2008
+//   Initial Qt4 Port.
+//
+//   Brad Whitlock, Thu Jul 23 15:27:08 PDT 2009
+//   Guard against NULL splitter.
+//
+//   Brad Whitlock, Fri May  7 15:32:08 PDT 2010
+//   I changed how the splitters are sized.
+//
+// ****************************************************************************
+
+void
+QvisMainWindow::SetFromNode(DataNode *parentNode, bool overrideGeometry,
+    const int *overrideGUISize, const int *overrideGUILocation,
+    const int *borders)
+{
+    const char *mName = "QvisMainWindow::SetFromNode: ";
+
+    DataNode *winNode = 0;
+    int w = width();
+    int h = height();
+    QList<int> splitterSizes;
+
+    if((winNode = parentNode->GetNode("MainWin")) != 0)
+    {
+        DataNode *node = 0;
+
+        int x = 0, y = 0;
+
+        debug1 << mName << "Initializing the main window because it was "
+                  "in the config file." << endl;
+
+        // See if any attributes are set.
+        if((node = winNode->GetNode("height")) != 0)
+        {
+            h = node->AsInt();
+        }
+
+        // Override the settings in the file.
+        if(overrideGeometry)
+        {
+            debug1 << mName << "Overriding geometry from config file." << endl;
+            w = overrideGUISize[0];
+            h = overrideGUISize[1];
+            x = overrideGUILocation[0];
+            y = overrideGUILocation[1];
+        }
+
+        // Make sure that the window will fit on the screen.
+        FitToScreen(x, y, w, h);
+
+        // Look for the splitter values for this screen size.
+        if((node = winNode->GetNode("SPLITTER_VALUES_V2")) != 0)
+        {
+            const floatVector &ss = node->AsFloatVector();
+    
+            if(ss.size() >= 2)
+            {
+                float sum = 0.;
+
+                for(size_t i = 0; i < ss.size(); ++i)
+                    sum += ss[i];
+
+                if(sum >= 0.9 && sum <= 1.)
+                {
+                    debug1 << mName << "Using saved splitter values {";
+                    for(size_t i = 0; i < ss.size(); ++i)
+                    {
+                        splitterSizes.push_back(int(ss[i] * h));
+                        debug1 << ", " << ss[i];
+                    }
+                    debug1 << "}" << endl;
+                }
+                else
+                {
+                    debug1 << mName << "Ignoring splitter values because "
+                        "their sum is not close enough to 1." << endl;
+                }
+            }
+            else
+            {
+                debug1 << mName << "Ignoring splitter values because there "
+                    "are not enough of them." << endl;
+            }
+        }
+        else
+        {
+            debug1 << mName << "Could not locate key SPLITTER_VALUES"  
+                   " so the default splitter values will be used."
+                   << endl;
+        }
+    }
+
+    // Default splitter values.
+    if(splitter != 0)
+    {
+        if(splitterSizes.size() == 0)
+        {
+            debug1 << mName << "Using default splitter values." << endl;
+            SetDefaultSplitterSizes(h);
+        }
+        else
+            splitter->setSizes(splitterSizes);
+    }
+}
+
+//
+// Event handlers
+//
+
+// ****************************************************************************
+// Method: QvisMainWindow::closeEvent
+//
+// Purpose: 
+//   This is a Qt slot function that tells the application that it
+//   is okay to quit when a close event is received.
+//
+// Arguments:
+//   ce : The close event.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Jul 26 09:45:08 PDT 2000
+//
+// Modifications:
+//   Brad Whitlock, Thu Mar 29 13:54:35 PST 2001
+//   Added code to tell the application to quit.
+//
+// ****************************************************************************
+
+void
+QvisMainWindow::closeEvent( QCloseEvent* ce )
+{
+    // Accept the close event and exit the program.
+    ce->accept();
+
+    // Tell the application to quit.
+    qApp->quit();
+}
+
+// ****************************************************************************
+// Method: QvisMainWindow::hideEvent
+//
+// Purpose: 
+//   This is an event handler that emits an iconifyWindows signal if the
+//   hide event was initiated by the window manager.
+//
+// Arguments:
+//   e : The hide event.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Apr 19 10:40:34 PDT 2001
+//
+// Modifications:
+//   
+//   Hank Childs, Thu Jan 13 13:19:31 PST 2005
+//   Add argument to iconify windows that indicates if the request is
+//   spontaneous.
+//
+// ****************************************************************************
+
+void
+QvisMainWindow::hideEvent(QHideEvent *e)
+{
+    // Hide the window
+    QMainWindow::hideEvent(e);
+
+    // If the event was caused by the window manager, emit a signal.
+    if(e->spontaneous())
+    {
+        emit iconifyWindows(e->spontaneous());
+    }
+}
+
+// ****************************************************************************
+// Method: QvisMainWindow::showEvent
+//
+// Purpose: 
+//   This is an event handler that emits a deIconifyWindows signal if the
+//   show event was initiated by the window manager.
+//
+// Arguments:
+//   e : The show event.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Apr 19 10:40:34 PDT 2001
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisMainWindow::showEvent(QShowEvent *e)
+{
+    // Show the window.
+    QMainWindow::showEvent(e);
+
+    // If the event was caused by the window manager, emit a signal.
+    if(e->spontaneous())
+        emit deIconifyWindows();
+}
+
+//
+// Qt slot functions
+//
+
+// ****************************************************************************
+// Method: QvisMainWindow::show
+//
+// Purpose: 
+//   Shows the window and raises it.
+//
+// Note:       We override this method from QvisWindowBase because we don't
+//             want the main window to obey the new window anchor stuff.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Nov 22 10:54:52 PDT 2006
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisMainWindow::show()
+{
+    // Indicate that the window should be saved.
+    saveWindowDefaults = true;
+
+    QMainWindow::show();
+    QMainWindow::raise();
+}
+
+// ****************************************************************************
+// Method: QvisMainWindow::reopenFile
+//
+// Purpose: 
+//   Tells the viewer to reopen the specified file. This makes the reopened
+//   file be the new active source.
+//
+// Arguments:
+//   fileIndex : The index of the source that we're reopening in the source list.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Feb 27 11:42:41 PDT 2004
+//
+// Modifications:
+//   Cyrus Harrison, Mon Jun 30 14:14:59 PDT 2008
+//   Initial Qt4 Port.
+//
+//   Brad Whitlock, Mon Apr  6 15:18:46 PDT 2009
+//   I added code to translate the action id to a file index.
+//
+// ****************************************************************************
+
+void
+QvisMainWindow::reopenFile(QAction *action)
+{
+    int fileIndex = reopenPopup->actions().indexOf(action);
+    const stringVector &sources = globalAtts->GetSources();
+
+    if(fileIndex >= 0 && (size_t)fileIndex < sources.size())
+    {
+        //
+        // Make the file that we reopened be the new open file. Since we're
+        // reopening, this will take care of freeing the old metadata and SIL.
+        //
+        QualifiedFilename fileName(sources[fileIndex]);
+        int timeState = GetStateForSource(fileName);
+        SetOpenDataFile(fileName, timeState, 0, true);
+
+        // Tell the viewer to replace all of the plots having
+        // databases that match the file we're re-opening.
+        GetViewerMethods()->ReOpenDatabase(sources[fileIndex], false);
+    }
+}
+
+// ****************************************************************************
+// Method: QvisMainWindow::closeFile
+//
+// Purpose: 
+//   Tells the viewer to close the specified file.
+//
+// Arguments:
+//   fileIndex : The index of the file that we want to close.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Feb 27 11:51:59 PDT 2004
+//
+// Modifications:
+//   Brad Whitlock, Mon Jun 27 14:53:14 PST 2005
+//   Added a little code to update the file panel.
+//
+//   Cyrus Harrison, Mon Jun 30 14:14:59 PDT 2008
+//   Initial Qt4 Port.
+//
+//   Brad Whitlock, Mon Apr  6 15:18:46 PDT 2009
+//   I added code to translate the action id to a file index.
+//
+//   Jeremy Meredith, Fri Mar 19 13:22:13 EDT 2010
+//   Added extra parameter telling ClearFile whether or not we want it
+//   to forget about which plugin opened a file.  Here, we do.
+//
+// ****************************************************************************
+
+void
+QvisMainWindow::closeFile(QAction *action)
+{
+    int fileIndex = closePopup->actions().indexOf(action);
+    const stringVector &sources = globalAtts->GetSources();
+
+    if(fileIndex >= 0 && (size_t)fileIndex < sources.size())
+    {
+        //
+        // Clear out the metadata and SIL for the file.
+        //
+        fileServer->ClearFile(sources[fileIndex], true);
+
+        //
+        // Tell the viewer to replace close the specified database. If the
+        // file is not being used then the viewer will allow it. Otherwise
+        // the viewer will issue a warning message.
+        //
+        GetViewerMethods()->CloseDatabase(sources[fileIndex]);
+
+        // Update the file panel based on what's selected.
+        //filePanel->UpdateOpenButtonState();
+    }
+}
+
+void
+QvisMainWindow::windowAdd()
+{
+    // Tell the viewer to add a window
+    GetViewerMethods()->AddWindow();
+}
+
+void
+QvisMainWindow::windowClone()
+{
+    // Tell the viewer to clone a window
+    GetViewerMethods()->CloneWindow();
+}
+
+void
+QvisMainWindow::windowDelete()
+{
+    // Tell the viewer to delete a window
+    GetViewerMethods()->DeleteWindow();
+}
+
+void
+QvisMainWindow::windowClearAll()
+{
+    // Tell the viewer to clear all windows.
+    GetViewerMethods()->ClearAllWindows();    
+}
+
+void
+QvisMainWindow::windowLayout1x1()
+{
+    // Tell the viewer to change the layout.
+    GetViewerMethods()->SetWindowLayout(1);
+}
+
+void
+QvisMainWindow::windowLayout1x2()
+{
+    // Tell the viewer to change the layout.
+    GetViewerMethods()->SetWindowLayout(2);
+}
+
+void
+QvisMainWindow::windowLayout2x2()
+{
+    // Tell the viewer to change the layout.
+    GetViewerMethods()->SetWindowLayout(4);
+}
+
+void
+QvisMainWindow::windowLayout2x3()
+{
+    // Tell the viewer to change the layout.
+    GetViewerMethods()->SetWindowLayout(6);
+}
+
+void
+QvisMainWindow::windowLayout2x4()
+{
+    // Tell the viewer to change the layout.
+    GetViewerMethods()->SetWindowLayout(8);
+}
+
+void
+QvisMainWindow::windowLayout3x3()
+{
+    // Tell the viewer to change the layout.
+    GetViewerMethods()->SetWindowLayout(9);
+}
+
+// ****************************************************************************
+// Method: QvisMainWindow::emitActivateOutputWindow
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the window's
+//   output button is clicked. It sets the outputButton's pixmap to
+//   the blue icon and emits a signal to activate the output window.
+//
+// Programmer: Brad Whitlock
+// Creation:   Sat Sep 16 12:16:03 PDT 2000
+//
+// Modifications:
+//    Cyrus Harrison, Mon Jun 30 14:14:59 PDT 2008
+//    Initial Qt4 Port.
+//
+// ****************************************************************************
+
+void
+QvisMainWindow::emitActivateOutputWindow()
+{
+    // Indicate that the output was read.
+    if(unreadOutputFlag)
+    {
+        unreadOutputFlag = false;
+        outputButton->setIcon(*outputBlue);
+    }
+
+    // Activate the output window.
+    emit activateOutputWindow();
+}
+
+// ****************************************************************************
+// Method: QvisMainWindow::IndicateUnreadOutput
+//
+// Purpose: 
+//   This is a Qt slot function that tells the main window to set the output
+//   button's icon.
+//
+// Programmer: Brad Whitlock
+// Creation:   Sat Sep 16 11:50:35 PDT 2000
+//
+// Modifications:
+//    Cyrus Harrison, Mon Jun 30 14:14:59 PDT 2008
+//    Initial Qt4 Port.
+//
+// ****************************************************************************
+
+void
+QvisMainWindow::unreadOutput(bool val)
+{
+    // Change to the read icon.
+    unreadOutputFlag = val;
+    if(val)
+        outputButton->setIcon(*outputRed);
+    else
+        outputButton->setIcon(*outputBlue);
+}
+
+// ****************************************************************************
+// Method: QvisMainWindow::updateNotAllowed
+//
+// Purpose: 
+//   This is a Qt slot function that disables the "update visit" help option.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Feb 15 14:16:28 PST 2005
+//
+// Modifications:
+//    Cyrus Harrison, Mon Jun 30 14:14:59 PDT 2008
+//    Initial Qt4 Port.
+//
+// ****************************************************************************
+
+void
+QvisMainWindow::updateNotAllowed()
+{
+    updateVisItAct->setEnabled(false);
+}
+
+// ****************************************************************************
+// Method: QvisMainWindow::SetTimeStateFormat
+//
+// Purpose: 
+//   This a Qt slot function that sets the file panel's timestate format.
+//
+// Arguments:
+//   fmt : The new timestate format.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Oct 13 17:15:52 PST 2003
+//
+// Modifications:
+//  Cyrus Harrison, Mon Mar 15 12:02:26 PDT 2010
+//  Update due to widget refactor.
+//
+// ****************************************************************************
+
+void
+QvisMainWindow::SetTimeStateFormat(const TimeFormat &fmt)
+{
+    filePanel->SetTimeStateFormat(fmt);
+    tsControl->SetTimeStateFormat(fmt);
+}
+
+// ****************************************************************************
+// Method: QvisMainWindow::GetTimeStateFormat
+//
+// Purpose: 
+//   Returns the file panel's timestate format
+//
+// Returns:    The file panel's timestate format.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Oct 13 17:20:14 PST 2003
+//
+// Modifications:
+//    Cyrus Harrison, Mon Jun 30 14:14:59 PDT 2008
+//    Initial Qt4 Port.
+//
+// ****************************************************************************
+
+const TimeFormat &
+QvisMainWindow::GetTimeStateFormat() const
+{
+    return filePanel->GetTimeStateFormat();
+}
+
+// ****************************************************************************
+// Method: QvisMainWindow::SetShowSelectedFiles
+//
+// Purpose: 
+//   This is a Qt slot function that sets whether or not the selected files
+//   should be showing.
+//
+// Arguments:
+//   val : If true, show the selected files. If false, don't show them.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Jan 30 14:36:47 PST 2004
+//
+// Modifications:
+//   Brad Whitlock, Mon Apr 5 15:50:24 PST 2004
+//   Added support for menus that hide depending on if the selected files
+//   are showing.
+//
+//   Jeremy Meredith, Mon Aug 28 17:30:47 EDT 2006
+//   Changed positions of some menu entries to account for the new File
+//   Open entry.
+//
+//   Cyrus Harrison, Mon Jun 30 14:14:59 PDT 2008
+//   Initial Qt4 Port.
+//
+//   Brad Whitlock, Mon Apr  6 15:41:07 PDT 2009
+//   I fixed bugs with the Qt4 port.
+//
+//   Jeremy Meredith, Thu Feb  4 17:08:03 EST 2010
+//   Redraw the plot list when this changes.
+//
+//   Jeremy Meredith, Fri Feb 19 20:59:34 EST 2010
+//   Hide the Select File menu item when we're not in selected files mode.
+//
+//   Cyrus Harrison, Fri Mar 12 10:50:26 PST 2010
+//   More shuffling to provide better layouts.
+//
+//   Brad Whitlock, Fri May  7 15:14:17 PDT 2010
+//   I added some code to make some room for the file panel.
+//
+//   Jeremy Meredith, Tue Feb  5 16:02:54 EST 2013
+//   Force the file panel to update itself when we show it again. We disabled
+//   the most common update (updating the selection) in the file panel while
+//   it is hidden, as it was a performance problem with many time steps, so we
+//   need to force it to update as it gets shown to make sure it's up to date.
+//
+// ****************************************************************************
+
+void
+QvisMainWindow::SetShowSelectedFiles(bool val)
+{
+    plotManager->SetSourceVisible(!val);
+    if(val)
+    {
+        filePanel->show();
+        sourceManager->hide();
+        if(!advancedMenuShowing)
+        {
+            selFileAct = filePopup->addAction(*openIcon, tr("Select &file . . ."),
+                         this, SIGNAL(activateFileWindow()), 
+                         QKeySequence(Qt::CTRL + Qt::Key_F));
+            filePopup->insertAction(openFileAct, selFileAct);
+
+            // Show selected files. Put reopen, close in an advanced menu.
+            filePopup->removeAction(reopenPopupAct);
+            filePopup->removeAction(closePopupAct);
+
+            delete reopenPopupAct;
+            delete closePopupAct;
+
+            fileAdvancedPopup = new QMenu(tr("Advanced file options"));
+            fileAdvancedPopupAct = filePopup->insertMenu(refreshFileListAct,fileAdvancedPopup);
+
+            // ReOpen pull-right menu.
+            reopenPopup = new QMenu(tr("ReOpen file"));
+            connect(reopenPopup, SIGNAL(triggered(QAction*)),
+                    this, SLOT(reopenFile(QAction*)));
+            reopenPopupAct = fileAdvancedPopup->addMenu(reopenPopup);
+            reopenPopupAct->setEnabled(false);
+
+            // Close pull-right menu
+            closePopup = new QMenu(tr("Close file"), fileAdvancedPopup);
+            connect(closePopup, SIGNAL(triggered(QAction*)),
+                    this, SLOT(closeFile(QAction*)));
+            closePopupAct = fileAdvancedPopup->addMenu(closePopup);
+            closePopupAct->setEnabled(true);
+
+            advancedMenuShowing = true;
+
+            //
+            // Update the new visible menus with the active sources.
+            //
+            UpdateFileMenuPopup(reopenPopup, reopenPopupAct);
+            UpdateFileMenuPopup(closePopup, closePopupAct);
+
+            // Show the selected file index if possible
+            plotManager->UpdatePlotList();
+
+            // If there is no space for the file panel in the splitter,
+            // make some.
+            QList<int> sizes = splitter->sizes();
+            if(sizes[0] == 0)
+            {
+                while(sizes[0] < 100)
+                {
+                    bool moved = false;
+                    for(int i = 1; i < sizes.size(); ++i)
+                    {
+                        if(sizes[i] > 50)
+                        {
+                            moved = true;
+                            sizes[i]--;
+                            sizes[0]++;
+                        }
+                    }
+                    if(!moved)
+                        break;
+                }
+                splitter->setSizes(sizes);
+            }
+        }
+        filePanel->UpdateFileList(true);
+    }
+    else
+    {
+        filePanel->hide();
+        sourceManager->show();
+        if(advancedMenuShowing)
+        {
+            // No selected files. Put reopen and close in the file menu.
+            delete selFileAct;
+            selFileAct = 0;
+
+            delete fileAdvancedPopupAct;
+            fileAdvancedPopupAct = 0;
+
+            // Close pull-right menu
+            closePopup = new QMenu(tr("Close file"), filePopup);
+            connect(closePopup, SIGNAL(triggered(QAction*)),
+                    this, SLOT(closeFile(QAction*)));
+            closePopupAct = filePopup->insertMenu(refreshFileListAct,closePopup);
+            closePopupAct->setEnabled(false);
+
+            // ReOpen pull-right menu.
+            reopenPopup = new QMenu(tr("ReOpen file"), filePopup);
+            connect(reopenPopup, SIGNAL(triggered(QAction*)),
+                    this, SLOT(reopenFile(QAction*)));
+            reopenPopupAct = filePopup->insertMenu(closePopupAct,reopenPopup);
+            reopenPopupAct->setEnabled(true);
+
+            advancedMenuShowing = false;
+
+            //
+            // Update the new visible menus with the active sources.
+            //
+            UpdateFileMenuPopup(reopenPopup, reopenPopupAct);
+            UpdateFileMenuPopup(closePopup, closePopupAct);
+
+            // Use the file name instead of the selected file index
+            plotManager->UpdatePlotList();
+        }
+    }
+}
+
+// ****************************************************************************
+// Method: QvisMainWindow::GetShowSelectedFiles
+//
+// Purpose: 
+//   Returns whether the selected files should be showing.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Jan 30 14:36:24 PST 2004
+//
+// Modifications:
+//    Cyrus Harrison, Fri Mar 12 10:50:26 PST 2010
+//    More shuffling to provide better layouts.
+//
+// ****************************************************************************
+
+bool
+QvisMainWindow::GetShowSelectedFiles() const
+{
+    return filePanel->isVisible();
+}
+
+// ****************************************************************************
+// Method: QvisMainWindow::GetAllowFileSelectionChange
+//
+// Purpose: 
+//   Returns whether the selected files' selection should be changed when
+//   the source changes.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Apr 9 14:37:38 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+QvisMainWindow::GetAllowFileSelectionChange() const
+{
+    return filePanel->GetAllowFileSelectionChange();
+}
+
+// ****************************************************************************
+// Method: QvisMainWindow::SetAllowFileSelectionChange
+//
+// Purpose: 
+//   Sets whether the file panel is allowed to change the file selection.
+//
+// Arguments:
+//   val : True if it the file panel should be allowed to change the file
+//         selection; false otherwise.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Apr 6 14:36:53 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisMainWindow::SetAllowFileSelectionChange(bool val)
+{
+    filePanel->SetAllowFileSelectionChange(val);
+}
+
+// ****************************************************************************
+// Method: QvisMainWindow::OkayToSaveRecoveryFile
+//
+// Purpose: 
+//   Sets whether VisIt is launched enough to consider saving the recovery file.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jan 31 10:48:01 PST 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisMainWindow::OkayToSaveRecoveryFile()
+{
+    okayToSaveRecoveryFile = true;
+    UpdateCrashRecoveryTimer();
+}
+
+// ****************************************************************************
+// Method: QvisMainWindow::UpdateCrashRecoveryTimer
+//
+// Purpose: 
+//   Updates the crash recovery timer based on the preference in globalAtts.
+//
+// Arguments:
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jan 31 12:28:33 PST 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisMainWindow::UpdateCrashRecoveryTimer()
+{
+    if(globalAtts->GetSaveCrashRecoveryFile())
+    {
+        // Start the timer to save the recovery file every 5 minutes
+        if(!recoveryFileTimer->isActive())
+        {
+            debug1 << "Starting crash recovery file timer." << endl;
+            recoveryFileTimer->start(5 * 60 * 1000);
+        }
+    }
+    else
+    {
+        debug1 << "Stopping crash recovery file timer." << endl;
+        recoveryFileTimer->stop();
+    }
+}
+
+// ****************************************************************************
+// Method: QvisMainWindow::autoUpdateToggled
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the auto update check box
+//   is toggled.
+//
+// Arguments:
+//   val : The new toggle value.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Mar 4 11:45:12 PDT 2002
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisMainWindow::autoUpdateToggled(bool val)
+{
+    globalAtts->SetAutoUpdateFlag(val);
+    // Set GUIBase's autoupdate flag.
+    autoUpdate = val;
+
+    SetUpdate(false);
+    globalAtts->Notify();
+}
+
+// ****************************************************************************
+// Method: QvisMainWindow::winset
+//
+// Programmer: Brad Whitlock
+//
+// Modifications:
+//   Eric Brugger, Fri Sep 22 10:05:24 PDT 2000
+//   I modified the routine to work properly.
+//
+//   Brad Whitlock, Mon Mar 4 11:46:27 PDT 2002
+//   Added code to prevent updates to this window.
+//
+// ****************************************************************************
+
+void
+QvisMainWindow::winset(int index)
+{
+    if(globalAtts->GetActiveWindow() != index)
+    {
+        globalAtts->SetActiveWindow(index);
+        SetUpdate(false);
+        globalAtts->Notify();
+
+        // Tell the viewer...
+        GetViewerMethods()->SetActiveWindow(globalAtts->GetWindows()[index]);
+    }
+}
+
+// ****************************************************************************
+// Method: QvisMainWindow::winset2
+//
+// Purpose: 
+//   This is a Qt slot function that is called when an item in the Window
+//   menu's "Active window" menu is clicked.
+//
+// Arguments:
+//   id : The id of the button that was clicked.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Sep 16 17:22:55 PST 2002
+//
+// Modifications:
+//    Cyrus Harrison, Mon Jun 30 14:14:59 PDT 2008
+//    Initial Qt4 Port.
+//
+// ****************************************************************************
+
+void
+QvisMainWindow::winset2(QAction *action)
+{
+    QString name = action->text();
+    name = name.right(name.length() - 7);
+    int index = name.toInt() - 1;
+    winset(index);
+}
+
+// ****************************************************************************
+// Method: QvisMainWindow::copyView
+//
+// Purpose: 
+//   This is a Qt slot function that causes the view from another window to
+//   be copied to the active window.
+//
+// Arguments:
+//   id : The id of the button that was clicked.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Sep 16 17:23:59 PST 2002
+//
+// Modifications:
+//    Cyrus Harrison, Mon Jun 30 14:14:59 PDT 2008
+//    Initial Qt4 Port.
+//
+// ****************************************************************************
+
+void
+QvisMainWindow::copyView(QAction *action)
+{
+    QString name = action->text();
+    name = name.right(name.length() - 7);
+    int from = name.toInt();
+    int to = globalAtts->GetActiveWindow() + 1;
+    GetViewerMethods()->CopyViewToWindow(from, to);
+}
+
+// ****************************************************************************
+// Method: QvisMainWindow::copyLighting
+//
+// Purpose: 
+//   This is a Qt slot function that causes the lighting from another window
+//   to be copied to the active window.
+//
+// Arguments:
+//   id : The id of the button that was clicked.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Sep 16 17:23:59 PST 2002
+//
+// Modifications:
+//    Cyrus Harrison, Mon Jun 30 14:14:59 PDT 2008
+//    Initial Qt4 Port.
+//
+// ****************************************************************************
+
+void
+QvisMainWindow::copyLighting(QAction *action)
+{
+    QString name = action->text();
+    name = name.right(name.length() - 7);
+    int from = name.toInt();
+    int to = globalAtts->GetActiveWindow() + 1;
+    GetViewerMethods()->CopyLightingToWindow(from, to);
+}
+
+// ****************************************************************************
+// Method: QvisMainWindow::copyAnnotations
+//
+// Purpose: 
+//   This is a Qt slot function that causes the annotations from another
+//   window to be copied to the active window.
+//
+// Arguments:
+//   id : The id of the button that was clicked.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Sep 16 17:23:59 PST 2002
+//
+// Modifications:
+//    Cyrus Harrison, Mon Jun 30 14:14:59 PDT 2008
+//    Initial Qt4 Port.
+//
+// ****************************************************************************
+
+void
+QvisMainWindow::copyAnnotations(QAction *action)
+{
+    QString name = action->text();
+    name = name.right(name.length() - 7);
+    int from = name.toInt();
+    int to = globalAtts->GetActiveWindow() + 1;
+    GetViewerMethods()->CopyAnnotationsToWindow(from, to);
+}
+
+// ****************************************************************************
+// Method: QvisMainWindow::copyAnnotations
+//
+// Purpose: 
+//   This is a Qt slot function that causes the plots from another
+//   window to be copied to the active window.
+//
+// Arguments:
+//   id : The id of the button that was clicked.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Oct 15 16:15:46 PST 2002
+//
+// Modifications:
+//    Cyrus Harrison, Mon Jun 30 14:14:59 PDT 2008
+//    Initial Qt4 Port.
+//
+// ****************************************************************************
+
+void
+QvisMainWindow::copyPlots(QAction *action)
+{
+    QString name = action->text();
+    name = name.right(name.length() - 7);
+    int from = name.toInt();
+    int to = globalAtts->GetActiveWindow() + 1;
+    GetViewerMethods()->CopyPlotsToWindow(from, to);
+}
+
+// ****************************************************************************
+// Method: QvisMainWindow::copyAll
+//
+// Purpose: 
+//   This is a Qt slot function that causes the view, annotations, lighting
+//   from another window to be copied to the active window.
+//
+// Arguments:
+//   id : The id of the button that was clicked.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Sep 16 17:23:59 PST 2002
+//
+// Modifications:
+//   Brad Whitlock, Tue Oct 15 16:15:18 PST 2002
+//   Added plot copying.
+//
+//    Cyrus Harrison, Mon Jun 30 14:14:59 PDT 2008
+//    Initial Qt4 Port.
+//
+// ****************************************************************************
+
+void
+QvisMainWindow::copyAll(QAction *action)
+{
+    QString name = action->text();
+    name = name.right(name.length() - 7);
+    int from = name.toInt();
+    int to = globalAtts->GetActiveWindow() + 1;
+    GetViewerMethods()->DisableRedraw();
+    GetViewerMethods()->CopyViewToWindow(from, to);
+    GetViewerMethods()->CopyLightingToWindow(from, to);
+    GetViewerMethods()->CopyAnnotationsToWindow(from, to);
+    GetViewerMethods()->CopyPlotsToWindow(from, to);
+    GetViewerMethods()->RedrawWindow();
+}
+
+// ****************************************************************************
+// Method: QvisMainWindow::clearPlots
+//
+// Purpose: 
+//   This is a Qt slot function that clears the plots from the active window.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Sep 16 17:25:51 PST 2002
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisMainWindow::clearPlots()
+{
+    GetViewerMethods()->ClearWindow();
+}
+
+// ****************************************************************************
+// Method: QvisMainWindow::clearReferenceLines
+//
+// Purpose: 
+//   This is a Qt slot function that clears the reflines from the active window.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Sep 16 17:25:51 PST 2002
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisMainWindow::clearReferenceLines()
+{
+    GetViewerMethods()->ClearReferenceLines();
+}
+
+// ****************************************************************************
+// Method: QvisMainWindow::clearPickPoints
+//
+// Purpose: 
+//   This is a Qt slot function that clears the picks from the active window.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Sep 16 17:25:51 PST 2002
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisMainWindow::clearPickPoints()
+{
+    GetViewerMethods()->ClearPickPoints();
+}
+
+// ****************************************************************************
+// Method: QvisMainWindow::toggleSpinMode
+//
+// Purpose: 
+//   This is a Qt slot function that causes the active window to toggle its
+//   spin mode.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Sep 16 17:25:51 PST 2002
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+
+void
+QvisMainWindow::toggleSpinMode()
+{
+    GetViewerMethods()->ToggleSpinMode();
+}
+
+// ****************************************************************************
+// Method: QvisMainWindow::toggleFullFrameMode
+//
+// Purpose: 
+//   This is a Qt slot function that causes the active window to toggle its
+//   fullframe mode.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed May 21 07:44:49 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisMainWindow::toggleFullFrameMode()
+{
+    GetViewerMethods()->ToggleFullFrameMode();
+}
+
+// ****************************************************************************
+// Method: QvisMainWindow::lockTime
+//
+// Purpose: 
+//   This is a Qt slot function that causes the active window to toggle its
+//   lockTime mode.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Nov 11 13:02:58 PST 2002
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisMainWindow::lockTime()
+{
+    GetViewerMethods()->ToggleLockTime();
+}
+
+// ****************************************************************************
+// Method: QvisMainWindow::lockTools
+//
+// Purpose: 
+//   This is a Qt slot function that causes the active window to toggle its
+//   lockTools mode.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Nov 11 13:02:58 PST 2002
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisMainWindow::lockTools()
+{
+    GetViewerMethods()->ToggleLockTools();
+}
+
+// ****************************************************************************
+// Method: QvisMainWindow::lockView
+//
+// Purpose: 
+//   This is a Qt slot function that causes the active window to toggle its
+//   lockView mode.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Nov 11 13:02:58 PST 2002
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisMainWindow::lockView()
+{
+    GetViewerMethods()->ToggleLockViewMode();
+}
+
+// ****************************************************************************
+// Method: QvisMainWindow::unlockEverything
+//
+// Purpose: 
+//   This is a Qt slot function that turns off all of the locks.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Jan 23 10:48:12 PST 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisMainWindow::unlockEverything()
+{
+    GetViewerMethods()->TurnOffAllLocks();
+}
+
+// ****************************************************************************
+// Method: QvisMainWindow::connectToDDT
+//
+// Purpose:
+//   This is a Qt slot function that attempts to connect (or disconnect)
+//   the viewer to/from DDT
+//
+// Programmer: Jonathan Byrd
+// Creation:   Sun 18 Dec, 2011
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisMainWindow::connectToDDT()
+{
+    GetViewerMethods()->DDTConnect(!windowInfo->GetDDTConnected());
+}

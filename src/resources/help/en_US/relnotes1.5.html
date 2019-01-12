@@ -1,0 +1,116 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta http-equiv="Content-Language" content="en-us">
+   <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+   <meta name="ProgId" content="FrontPage.Editor.Document">
+   <title>VisIt 1.5 Release Notes</title>
+</head>
+<body>
+
+<center><b><font size="6">VisIt 1.5 Release Notes</font></b></center>
+
+<p>Welcome to VisIt's release notes page. This page describes the important
+enhancements and bug-fixes that were added to this release.</p>
+<p><b><font size="4">Features added in version 1.5</font></b></p>
+<ul>
+<li>VisIt has a new expression called <i>conn_cmfe</i> that allows you to perform connectivity-based common mesh field evaluation (CMFE). CMFE is the process of mapping one mesh's variables onto another mesh using a mapping function. VisIt's new conn_cmfe expression allows you to map 1 mesh's variable onto another mesh 
+using the mesh's connectivity as a guide. This allows for a whole variety of operations hitherto impossible in VisIt. For example, you can use
+<i>conn_cmfe</i> to map simulation 1's data onto simulation 2's mesh, allowing you to create further expressions to do database differencing. Furthermore, you can create expressions using 
+<i>conn_cmfe</i> that allow you to calculate time derivatives for a variable. For more information on using the <i>conn_cmfe</i> expression, look up <i>Database 
+comparison</i> in <b>Index</b> tab of VisIt's <b>Help window</b>.</li>
+<li>VisIt now supports constructive solid geometry (CSG) meshes read in from the Silo file format. CSG is a 
+modeling method whereby primitive shapes (spheres, cones, boxes, planes, etc.) are used to assemble more complex models via union and intersection operations. VisIt can now plot CSG meshes using the Mesh plot. CSG meshes are adaptively subdivided into cells that VisIt can process as an unstructured grid. The new <b>
+Mesh management window</b> in the <b>Main</b> <b>window's</b> <b>Controls</b> menu provides options that allow you to control how CSG mesh subdivision is performed. For example, the window allows you to set tolerances that influence how much subdivision occurs.</li>
+<li>VisIt can now create point-based sphere glyphs for its FilledBoundary, Mesh, Pseudocolor, and Scatter plots. The sphere glyphs allow point meshes to be drawn such that each point resembles a small sphere. The approach is based on multitexturing so you must have at least OpenGL 1.3 on your system in order for sphere glyphs to be supported. Since the sphere glyphs texture regular OpenGL points, drawing them is often much faster than using geometric glyphs. 
+The maximum size for sphere glyphs depends on your video card but many nVIDIA 
+cards support points drawn with up to 64x64 pixels.</li>
+<li>VisIt now supports an isovolume-based material interface reconstruction algorithm in the 
+<b>Material options</b> <b>window</b>. While the isovolume-based MIR may produce gaps in reconstructed material interfaces, it can find materials that have very low volume fractions. VisIt's other MIR algorithms tend to eliminate materials that have very low volume fractions.</li>
+<li>VisIt has new <i>TrajectoryByZone</i> and <i>TrajectoryByNode</i> queries that allow you to plot variable1 vs. variable2 over time for one cell or node, producing a Curve plot of the cell or node's behavior over time.</li>
+<li>VisIt has a new <i>Best Fit Line</i> query that allows you to figure out the line that best fits sets of 2D points, including 2D meshes and 2D point meshes. The new query computes a line slope, y-intercept, and correlation coefficient that can be used to determine how well the line matches the set of points.</li>
+<li>VisIt has new <i>distance_to_best_fit_line</i> and <i>distance_to_best_fit_line2</i> expressions that take 2 scalar variables, use their values to create x,y points, and then compute the best fit line for the set of points. Once the best fit line has been calculated, the expressions compute the difference between the x,y points and the best fit line, allowing you to spot irregularities for variables that have a linear relationship. <i>Example: BF = distance_to_best_fit_line(pressure, density)</i></li>
+<li>Several VisIt database reader plugins are now available on the Windows platform, including: Boxlib, Exodus, NetCDF, GDAL, and Enzo.</li>
+<li>VisIt now supports VTK's XML-style input files.</li>
+<li>It is now possible to specify a user-settable number of pick tabs in the <b>Pick window</b> instead of only having eight tabs. This allows you to set more pick tabs, making old picks more easily accessible.</li>
+<li>VisIt has a new database reader plug-in that can read CGNS files, which are 
+popular for CFD calculations. For more information on CGNS, visit www.cgns.org.</li>
+<li>VisIt has a new database reader plug-in that can read NetCDF files, including specially formatted visualization files from NARAC codes: ADAPT and Lodi.</li>
+<li>VisIt has a new database reader plug-in that can read files generated by the FLASH code, which is developed by the FLASH center at the University of Chicago.</li>
+<li>VisIt can now read a variety of raster Geographic Information System (GIS) files using a new database reader 
+plug-in that leverages the GDAL library. The new database reader plug-in provides multiple resolutions of the input GIS data and can also provide versions of it that have been elevated into 3D, making it easy to visualize terrain. The GDAL library can read many GIS file formats including: DEM and ArcGrid.</li>
+<li>VisIt's Silo database reader plug-in has been improved so that the table of contents from files containing many history variables is read orders of magnitude faster than before.</li>
+<li>VisIt's Curve plot now has a legend which makes it easier to determine which variable is plotted by a Curve plot when there are multiple Curve plots in a visualization window.</li>
+<li>VisIt's <b>Host profiles</b> window now allows you to specify a machine file, which is needed by some MPI implementations in order to determine the list of hosts on which parallel jobs can be launched.</li>
+<li>VisIt has a new <i>Watertight</i> query that inspects mesh connectivity for tears.</li>
+<li>VisIt's Resample operator is now installed by default and it can also now perform its resampling in parallel using multiple processors.</li>
+<li>VisIt's Xmdv database reader/writer plug-in can now write vector variables when you export a database to Xmdv format.</li>
+<li>VisIt's Threshold operator can now optionally produce a point mesh from the thresholded cells.</li>
+<li>VisIt has new expressions that can calculate the minimum and maximum edge lengths for a cell.</li>
+<li>VisIt has five new built-in color tables, which have proven popular among users.</li>
+<li>VisIt's ExternalSurface operator can now remove ghost cells.</li>
+<li>The Curve file format has been extended so it can include time information, making it available to plot legends and queries over time.</li>
+<li>VisIt's CLI and Java client now have methods to allow you to 
+programmatically move and resize visualization windows.</li>
+<li>VisIt now provides a <i>DeferExpression</i> operator that allows you to force an expression to be calculated using plot geometry rather than having the expression execute where it normally would in the visualization pipeline (after reading from the database). This new operator allows you to calculate quantities such as mesh surface normals.</li>
+<li>VisIt now cycles Curve plot colors by default instead of always coloring them black. This makes it easier to distinguish between Curve plots without intervening to change their colors using the Curve plot attributes window.</li>
+<li>VisIt's set of host profiles has been updated to more accurately reflect the current machine deployment at LLNL.</li>
+<li>VisIt has a new expression that can mark cells as being external to the dataset, making it a useful tool to debug certain visualization algorithms.</li>
+<li>VisIt's Exodus database reader plug-in now recognizes files ending in <i>.exoII</i> as Exodus files.</li>
+<li>VisIt's PDB reader now supports making region specific transformations when revolving a mesh into 3D.</li>
+<li>VisIt's PDB reader now appropriately labels the Z- and R- axes for the regular mesh and the K- and L- axes for the logical mesh.</li>
+<li>VisIt's PDB reader now correctly respects the Z-Axis when creating a revolved mesh.</li>
+<li>VisIt's Exodus II database reader plugin is now available on the MacOS X platform.</li>
+<li>VisIt's PF3D database reader plugin is now much more tolerant of changes to the structure of PF3D master files.</li>
+<li>VisIt's BUILD_NOTES have been improved.</li>
+<li>VisIt's User manual has been updated.</li>
+<li>VisIt's Web site has been updated. The updated Web site includes a gallery of images and updated information on what is new with VisIt and an updated FAQ page.</li>
+</ul>
+<p><b><font size="4">Bugs fixed in version 1.5</font></b></p>
+<ul>
+<li>The <i>Apply operators and selections to all plots</i> button is sometimes missing when VisIt is run on computers that have a small display resolution. To combat this problem, the 
+<b>Notepad</b> area is no longer available if the vertical display resolution is less than 1024 pixels.</li>
+<li>The Pseudocolor plot results in a completely white plot when you try to color it using a vector expression. This situation is no longer possible due to enhanced error checking in VisIt's expression evaluation code.</li>
+<li>Slicing a vector plot crashes VisIt's compute engine.</li>
+<li>VisIt's material interface reconstruction algorithm sometimes omits cells that are marked as mixed but have only one material with non-zero volume fractions.</li>
+<li>VisIt hangs when performing a non-screen capture image save when the code was built with the xlC compiler.</li>
+<li>The View window's "wp" command was not performing adequate checks on its arguments, leading VisIt to set up an invalid view.</li>
+<li>VisIt's <i>Centroid</i> query returns invalid results for surfaces.</li>
+<li>VisIt's viewer can crash when you interactively rotate a plot while an animation is playing.</li>
+<li>VisIt's <i>recenter</i> expression does not work with vectors.</li>
+<li>The default variable for the Displace operator is "DISPL", which is not a valid variable name for most databases so the name has been changed to "Default", indicating that the plotted variable's name should be used instead.</li>
+<li>The <i>polar</i> expression always returns 3D results - even on a 2D mesh.</li>
+<li>Restoring a session file causes the <b>Password window</b> to come up repeatedly when you click the <i>Cancel</i> button in the 
+<b>Connection progress window</b>.</li>
+<li>The Transform operator does not transform coordinate systems properly when the input mesh is 2D.</li>
+<li>The Boxlib database reader plug-in automatically creates vector expressions for input scalars ending in: x,y,z. When the input variables are actually called: x,y,z, a vector name of zero length is created, causing a crash if you try to plot it.</li>
+<li>Using interactive tools while a plot is animating can cause a crash.</li>
+<li>VisIt's Enzo database reader plug-in is unable to open certain kinds of Enzo files.</li>
+<li>The version argument is not getting passed to the movie-making script, preventing movie-making from working with beta versions of VisIt.</li>
+<li>VisIt's Label plot does not show labels for 2D plots when VisIt is built using the xlC compiler.</li>
+<li>VisIt's pick capability can become confused when you pick on plots in a window other than the active window.</li>
+<li>VisIt's viewer can crash when visualizing Subset plots of Boxlib data to which the Isovolume operator has been applied.</li>
+<li>VisIt's Label plot can sometimes get confused and not plot vector variables that result from expressions.</li>
+<li>The SetFreeformOpacity method for the VolumeAttributes object in VisIt's CLI no longer exists.</li>
+<li>VisIt's Volume plot can sometimes accidentally produce invalid pictures with its hardware accelerated rendering modes.</li>
+<li>VisIt's movie-making script does not honor compute engine information saved in a session file.</li>
+<li>VisIt's compute engine sometimes crashes when the Elevate operator uses and expression variable to perform the surface elevation.</li>
+<li>The <b>Elevate operator attributes window </b>should gray out the <b>min/max
+</b>text fields in certain situations.</li>
+<li>GUI windows sometimes come up off the screen or partially off the screen on the Windows platform if you have changed screen resolutions.</li>
+<li>VisIt's Exodus database reader plug-in does not support SHELL4 elements.</li>
+<li>VisIt's GUI can crash when you delete an expression that has an empty name.</li>
+<li>The IndexSelect operator can cause plots to be missing pieces if used with the FilledBoundary plot.</li>
+<li>Some Linux clusters use an mpirun parallel launcher program that does not pass along VisIt's environment variables, preventing the compute engine from working.</li>
+<li>Sometimes expressions cannot be deleted from the<b> Expressions window</b>.</li>
+<li>VisIt's expression parser does not accept commas in variable names.</li>
+<li>The Boundary plot does not work when an OnionPeel operator has been applied.</li>
+<li>Picking on a mesh plot and adding a tensor variable to the list of additional pick variables does not produce pick information containing the tensor variable.</li>
+</ul>
+<p>Click the following link to view the release notes for the previous version
+of VisIt: <a href="relnotes1.4.5.html">VisIt 1.4.5 Release Notes</a>.</p>
+<p>Click the following link to view the release notes for the next version
+of VisIt: <a href="relnotes1.5.1.html">VisIt 1.5.1 Release Notes</a>.</p>
+</body>
+</html>

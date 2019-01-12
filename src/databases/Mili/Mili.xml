@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+  <Plugin name="Mili" type="database" label="Mili" version="1.0" dbtype="MTMD">
+    <CXXFLAGS>
+      ${MILI_INCLUDE_DIR}
+    </CXXFLAGS>
+    <LDFLAGS>
+      ${MILI_LIBRARY_DIR}
+    </LDFLAGS>
+    <LIBS>
+      ${MILI_LIB}
+    </LIBS>
+    <FilePatterns>
+      *.mili
+      *.m
+    </FilePatterns>
+    <Attribute name="" purpose="" persistent="false" exportAPI="" exportInclude="">
+    </Attribute>
+  </Plugin>

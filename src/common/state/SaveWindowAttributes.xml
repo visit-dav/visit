@@ -1,0 +1,103 @@
+<?xml version="1.0"?>
+  <Attribute name="SaveWindowAttributes" purpose="This class contains the attributes used for saving windows." persistent="true" keyframe="true" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="SaveWindowAttributes.code">
+    <Enum name="FileFormat">
+      BMP
+      CURVE
+      JPEG
+      OBJ
+      PNG
+      POSTSCRIPT
+      POVRAY
+      PPM
+      RGB
+      STL
+      TIFF
+      ULTRA
+      VTK
+      PLY
+      EXR
+    </Enum>
+    <Enum name="CompressionType">
+      None
+      PackBits
+      Jpeg
+      Deflate
+      LZW
+    </Enum>
+    <Enum name="ResConstraint">
+      NoConstraint
+      EqualWidthHeight
+      ScreenProportions
+    </Enum>
+    <Enum name="PixelData">
+      ColorRGB=1
+      ColorRGBA=2
+      Luminance=4
+      Value=8
+      Depth=16
+    </Enum>
+    <Field name="outputToCurrentDirectory" label="Output to current directory" type="bool" init="true">
+      true
+    </Field>
+    <Field name="outputDirectory" label="outputDirectory" type="string" init="true">
+      .
+    </Field>
+    <Field name="fileName" label="fileName" type="string">
+      visit
+    </Field>
+    <Field name="family" label="family" type="bool">
+      true
+    </Field>
+    <Field name="format" label="format" type="enum" subtype="FileFormat">
+      PNG
+    </Field>
+    <Field name="width" label="width" type="int">
+      1024
+    </Field>
+    <Field name="height" label="height" type="int">
+      1024
+    </Field>
+    <Field name="screenCapture" label="screenCapture" type="bool">
+      false
+    </Field>
+    <Field name="saveTiled" label="saveTiled" type="bool">
+      false
+    </Field>
+    <Field name="quality" label="quality" type="int">
+      80
+    </Field>
+    <Field name="progressive" label="progressive" type="bool">
+      false
+    </Field>
+    <Field name="binary" label="binary" type="bool">
+      false
+    </Field>
+    <Field name="lastRealFilename" label="lastRealFilename" type="string" internal="true">
+    </Field>
+    <Field name="stereo" label="stereo" type="bool">
+      false
+    </Field>
+    <Field name="compression" label="compression" type="enum" subtype="CompressionType">
+      None
+    </Field>
+    <Field name="forceMerge" label="forceMerge" type="bool">
+      false
+    </Field>
+    <Field name="resConstraint" label="resConstraint" type="enum" subtype="ResConstraint">
+      ScreenProportions
+    </Field>
+    <Field name="pixelData" label="Pixel data" type="int">
+      1
+    </Field>
+    <Field name="advancedMultiWindowSave" label="Do Advanced Multi-Window Save?" type="bool">
+      false
+    </Field>
+    <Field name="subWindowAtts" label="Attributes for sub-windows" type="att" subtype="SaveSubWindowsAttributes" enabler="advancedMultiWindowSave:true">
+    </Field>
+    <Field name="opts" label="opts" type="att" subtype="DBOptionsAttributes">
+    </Field>
+    <Function name="CurrentFormatIsImageFormat" user="true" member="true">
+    </Function>
+    <Function name="CurrentFormatSupportsAlpha" user="true" member="true">
+    </Function>
+  </Attribute>

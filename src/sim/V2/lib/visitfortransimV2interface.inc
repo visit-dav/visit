@@ -1,0 +1,2135 @@
+!cccccccccccccccccccccccccccccccccccccccccccccccccccccccc -*- fortran -*-
+!
+! VisIt Fortran Simulation Interface V2 include file
+!
+! Programmer: Brad Whitlock
+! Date: Fri Feb 19 15:44:42 PST 2010
+!
+! Notes:
+!  1. All functions, unless noted, return either VISIT_OKAY or 
+!     VISIT_ERROR.
+!  2. Data functions take "visit_handle" as an argument, which is an
+!     integer created by calling an alloc function.
+!  3. Any place where "string" is mentioned as a function argument, it
+!     means array of character. All string arguments are followed by a
+!     length argument that specifies the length of the character array.
+!  4. If you alloc an object and put it into another object, the 
+!     container object will own the alloc'd object and you won't have
+!     to free it. If you don't put the object into another object then
+!     you will need to free it unless you are returning the object to
+!     VisIt's data callback functions.
+!
+! Modifications:
+!   Brad Whitlock, Fri Jul 22 09:47:01 PDT 2011
+!   Expose visitdetectinputwithtimeout
+!
+!   Brad Whitlock, Wed Jul 27 10:46:13 PDT 2011
+!   Add visitgetsockets.
+!
+!   Brad Whitlock, Thu Aug 11 12:03:43 PDT 2011
+!   Added functions to set/get ghost zones on meshes.
+!
+!   Brad Whitlock, Thu Dec 15 15:09:25 PST 2011
+!   I added hidefromgui and numcomponents attributes for variable 
+!   metadata.
+!
+!   William T. Jones, Fri Jan 20 17:28:03 EST 2012
+!   Added functions to set/get ghost nodes on meshes.
+!
+!   Brad Whitlock, Mon Apr 16 16:18:08 PDT 2012
+!   Added visitsetmpicommunicator.
+!
+!   Brad Whitlock, Wed Jul 18 13:47:45 PDT 2012
+!   Add regionIds functions for variable metadata.
+!
+!   Brad Whitlock, Tue Jun  4 09:28:59 PDT 2013
+!   Add newer environment functions (visitgetenv, visitsetupenv2).
+!
+!   Brad Whitlock, Fri Jun 13 09:38:34 PDT 2014
+!   Functions for getting/setting global node/cell ids.
+!
+!   Brad Whitlock, Fri Sep 19 14:05:50 PDT 2014
+!   Added visitexportdatabase, visitrestoresession.
+!
+!   Brad Whitlock
+!   Tue Jun  6 17:02:11 PDT 2017
+!   Added visitsetview3d, visitgetview3d, visitsavecinema.
+!
+!cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
+!... Commonly useful declarations
+      external visitstrcmp
+      integer  visitstrcmp
+
+!... Null string values
+      character*12 VISIT_F77NULLSTRING
+      parameter   (VISIT_F77NULLSTRING         = "NULLSTRING")
+      integer      VISIT_F77NULLSTRINGLEN
+      parameter   (VISIT_F77NULLSTRINGLEN      = 10)
+
+!... Function return values
+      integer      VISIT_ERROR
+      parameter   (VISIT_ERROR                 = 0)
+      integer      VISIT_OKAY
+      parameter   (VISIT_OKAY                  = 1)
+
+!... Handle values
+      integer      VISIT_INVALID_HANDLE
+      parameter   (VISIT_INVALID_HANDLE        = -1)
+
+!... Mesh types
+      integer      VISIT_MESHTYPE_UNKNOWN
+      parameter   (VISIT_MESHTYPE_UNKNOWN      = 0)
+      integer      VISIT_MESHTYPE_RECTILINEAR
+      parameter   (VISIT_MESHTYPE_RECTILINEAR  = 1)
+      integer      VISIT_MESHTYPE_CURVILINEAR
+      parameter   (VISIT_MESHTYPE_CURVILINEAR  = 2)
+      integer      VISIT_MESHTYPE_UNSTRUCTURED
+      parameter   (VISIT_MESHTYPE_UNSTRUCTURED = 3)
+      integer      VISIT_MESHTYPE_POINT
+      parameter   (VISIT_MESHTYPE_POINT        = 4)
+      integer      VISIT_MESHTYPE_CSG
+      parameter   (VISIT_MESHTYPE_CSG          = 5)
+      integer      VISIT_MESHTYPE_AMR
+      parameter   (VISIT_MESHTYPE_AMR          = 6)
+
+!... Centering
+      integer      VISIT_VARCENTERING_NODE
+      parameter   (VISIT_VARCENTERING_NODE     = 0)
+      integer      VISIT_VARCENTERING_ZONE
+      parameter   (VISIT_VARCENTERING_ZONE     = 1)
+
+!... Variable Type
+      integer      VISIT_VARTYPE_UNKNOWN             
+      parameter   (VISIT_VARTYPE_UNKNOWN             = 0)
+      integer      VISIT_VARTYPE_SCALAR              
+      parameter   (VISIT_VARTYPE_SCALAR              = 1)
+      integer      VISIT_VARTYPE_VECTOR              
+      parameter   (VISIT_VARTYPE_VECTOR              = 2)
+      integer      VISIT_VARTYPE_TENSOR              
+      parameter   (VISIT_VARTYPE_TENSOR              = 3)
+      integer      VISIT_VARTYPE_SYMMETRIC_TENSOR    
+      parameter   (VISIT_VARTYPE_SYMMETRIC_TENSOR    = 4)
+      integer      VISIT_VARTYPE_MATERIAL            
+      parameter   (VISIT_VARTYPE_MATERIAL            = 5)
+      integer      VISIT_VARTYPE_MATSPECIES          
+      parameter   (VISIT_VARTYPE_MATSPECIES          = 6)
+      integer      VISIT_VARTYPE_LABEL          
+      parameter   (VISIT_VARTYPE_LABEL               = 7)
+      integer      VISIT_VARTYPE_ARRAY          
+      parameter   (VISIT_VARTYPE_ARRAY               = 8)
+      integer      VISIT_VARTYPE_MESH          
+      parameter   (VISIT_VARTYPE_MESH                = 100)
+      integer      VISIT_VARTYPE_CURVE          
+      parameter   (VISIT_VARTYPE_CURVE               = 101)
+
+!... Enumerated Type
+      integer      VISIT_ENUMTYPE_NONE             
+      parameter   (VISIT_ENUMTYPE_NONE               = 0)
+      integer      VISIT_ENUMTYPE_BY_VALUE              
+      parameter   (VISIT_ENUMTYPE_BY_VALUE           = 1)
+      integer      VISIT_ENUMTYPE_BY_RANGE      
+      parameter   (VISIT_ENUMTYPE_BY_RANGE           = 2)
+      integer      VISIT_ENUMTYPE_BY_BITMASK      
+      parameter   (VISIT_ENUMTYPE_BY_BITMASK         = 3)
+      integer      VISIT_ENUMTYPE_BY_NCHOOSER    
+      parameter   (VISIT_ENUMTYPE_BY_NCHOOSER        = 4)
+
+!... Command Argument Type
+      integer      VISIT_CMDARG_NONE                 
+      parameter   (VISIT_CMDARG_NONE                 = 0)
+      integer      VISIT_CMDARG_INT                  
+      parameter   (VISIT_CMDARG_INT                  = 1)
+      integer      VISIT_CMDARG_FLOAT                
+      parameter   (VISIT_CMDARG_FLOAT                = 2)
+      integer      VISIT_CMDARG_STRING               
+      parameter   (VISIT_CMDARG_STRING               = 3)
+
+!... Simulation Mode
+      integer      VISIT_SIMMODE_UNKNOWN             
+      parameter   (VISIT_SIMMODE_UNKNOWN             = 0)
+      integer      VISIT_SIMMODE_RUNNING             
+      parameter   (VISIT_SIMMODE_RUNNING             = 1)
+      integer      VISIT_SIMMODE_STOPPED             
+      parameter   (VISIT_SIMMODE_STOPPED             = 2)
+
+!... Data Type
+      integer      VISIT_DATATYPE_CHAR               
+      parameter   (VISIT_DATATYPE_CHAR               = 0)
+      integer      VISIT_DATATYPE_INT                
+      parameter   (VISIT_DATATYPE_INT                = 1)
+      integer      VISIT_DATATYPE_FLOAT              
+      parameter   (VISIT_DATATYPE_FLOAT              = 2)
+      integer      VISIT_DATATYPE_DOUBLE             
+      parameter   (VISIT_DATATYPE_DOUBLE             = 4)
+      integer      VISIT_DATATYPE_LONG             
+      parameter   (VISIT_DATATYPE_LONG               = 4)
+
+!... Array Owner
+      integer      VISIT_OWNER_SIM                   
+      parameter   (VISIT_OWNER_SIM                   = 0)
+      integer      VISIT_OWNER_VISIT                 
+      parameter   (VISIT_OWNER_VISIT                 = 1)
+      integer      VISIT_OWNER_COPY                 
+      parameter   (VISIT_OWNER_COPY                  = 2)
+
+!... Cell Types
+      integer      VISIT_CELL_BEAM
+      parameter   (VISIT_CELL_BEAM                   = 0)
+      integer      VISIT_CELL_TRI
+      parameter   (VISIT_CELL_TRI                    = 1)
+      integer      VISIT_CELL_QUAD
+      parameter   (VISIT_CELL_QUAD                   = 2)
+      integer      VISIT_CELL_TET
+      parameter   (VISIT_CELL_TET                    = 3)
+      integer      VISIT_CELL_PYR
+      parameter   (VISIT_CELL_PYR                    = 4)
+      integer      VISIT_CELL_WEDGE
+      parameter   (VISIT_CELL_WEDGE                  = 5)
+      integer      VISIT_CELL_HEX
+      parameter   (VISIT_CELL_HEX                    = 6)
+      integer      VISIT_CELL_POINT
+      parameter   (VISIT_CELL_POINT                  = 7)
+      integer      VISIT_CELL_POLYHEDRON
+      parameter   (VISIT_CELL_POLYHEDRON             = 8)
+      integer      VISIT_CELL_QUADRATIC_EDGE
+      parameter   (VISIT_CELL_QUADRATIC_EDGE         = 20)
+      integer      VISIT_CELL_QUADRATIC_TRI
+      parameter   (VISIT_CELL_QUADRATIC_TRI          = 21)
+      integer      VISIT_CELL_QUADRATIC_QUAD
+      parameter   (VISIT_CELL_QUADRATIC_QUAD         = 22)
+      integer      VISIT_CELL_QUADRATIC_TET
+      parameter   (VISIT_CELL_QUADRATIC_TET          = 23)
+      integer      VISIT_CELL_QUADRATIC_PYRAMID
+      parameter   (VISIT_CELL_QUADRATIC_PYRAMID      = 24)
+      integer      VISIT_CELL_QUADRATIC_WEDGE
+      parameter   (VISIT_CELL_QUADRATIC_WEDGE        = 25)
+      integer      VISIT_CELL_QUADRATIC_HEX
+      parameter   (VISIT_CELL_QUADRATIC_HEX          = 26)
+      integer      VISIT_CELL_BIQUAD_TRI
+      parameter   (VISIT_CELL_BIQUAD_TRI             = 27)
+      integer      VISIT_CELL_BIQUAD_QUAD
+      parameter   (VISIT_CELL_BIQUAD_QUAD            = 28)
+      integer      VISIT_CELL_TRIQUAD_HEX
+      parameter   (VISIT_CELL_TRIQUAD_HEX            = 29)
+      integer      VISIT_CELL_QUAD_LIN_QUAD
+      parameter   (VISIT_CELL_QUAD_LIN_QUAD          = 30)
+      integer      VISIT_CELL_QUAD_LIN_WEDGE
+      parameter   (VISIT_CELL_QUAD_LIN_WEDGE         = 31)
+      integer      VISIT_CELL_BIQUAD_QUAD_WEDGE
+      parameter   (VISIT_CELL_BIQUAD_QUAD_WEDGE      = 32)
+      integer      VISIT_CELL_BIQUAD_QUAD_HEX
+      parameter   (VISIT_CELL_BIQUAD_QUAD_HEX        = 33)
+
+
+!... Coordinate modes 
+      integer      VISIT_COORD_MODE_SEPARATE
+      parameter   (VISIT_COORD_MODE_SEPARATE         = 0)
+      integer      VISIT_COORD_MODE_INTERLEAVED
+      parameter   (VISIT_COORD_MODE_INTERLEAVED      = 1)
+
+!... Ghost cell types
+      integer       VISIT_GHOSTCELL_REAL                
+      parameter    (VISIT_GHOSTCELL_REAL              = 0)
+      integer       VISIT_GHOSTCELL_INTERIOR_BOUNDARY     
+      parameter    (VISIT_GHOSTCELL_INTERIOR_BOUNDARY = 1)
+      integer       VISIT_GHOSTCELL_EXTERIOR_BOUNDARY     
+      parameter    (VISIT_GHOSTCELL_EXTERIOR_BOUNDARY = 2)
+      integer       VISIT_GHOSTCELL_ENHANCED_CONNECTIVITY 
+      parameter    (VISIT_GHOSTCELL_ENHANCED_CONNECTIVITY = 3)
+      integer       VISIT_GHOSTCELL_REDUCED_CONNECTIVITY  
+      parameter    (VISIT_GHOSTCELL_REDUCED_CONNECTIVITY = 4)
+      integer       VISIT_GHOSTCELL_BLANK                 
+      parameter    (VISIT_GHOSTCELL_BLANK             = 5)
+
+!... Ghost node types
+      integer       VISIT_GHOSTNODE_REAL                
+      parameter    (VISIT_GHOSTNODE_REAL              = 0)
+      integer       VISIT_GHOSTNODE_INTERIOR_BOUNDARY     
+      parameter    (VISIT_GHOSTNODE_INTERIOR_BOUNDARY = 1)
+      integer       VISIT_GHOSTNODE_BLANK                 
+      parameter    (VISIT_GHOSTNODE_BLANK             = 2)
+      integer       VISIT_GHOSTNODE_COARSE_SIDE           
+      parameter    (VISIT_GHOSTNODE_COARSE_SIDE       = 3)
+      integer       VISIT_GHOSTNODE_FINE_SIDE             
+      parameter    (VISIT_GHOSTNODE_FINE_SIDE         = 4)
+
+!... Image formats 
+      integer      VISIT_IMAGEFORMAT_BMP
+      parameter   (VISIT_IMAGEFORMAT_BMP             = 0)
+      integer      VISIT_IMAGEFORMAT_JPEG
+      parameter   (VISIT_IMAGEFORMAT_JPEG            = 1)
+      integer      VISIT_IMAGEFORMAT_PNG
+      parameter   (VISIT_IMAGEFORMAT_PNG             = 2)
+      integer      VISIT_IMAGEFORMAT_POVRAY 
+      parameter   (VISIT_IMAGEFORMAT_POVRAY          = 3)
+      integer      VISIT_IMAGEFORMAT_PPM
+      parameter   (VISIT_IMAGEFORMAT_PPM             = 4)
+      integer      VISIT_IMAGEFORMAT_RGB
+      parameter   (VISIT_IMAGEFORMAT_RGB             = 5)
+      integer      VISIT_IMAGEFORMAT_TIFF
+      parameter   (VISIT_IMAGEFORMAT_TIFF            = 6)
+      integer      VISIT_IMAGEFORMAT_EXR
+      parameter   (VISIT_IMAGEFORMAT_EXR             = 7)
+
+!... Cinema spec types 
+      integer      VISIT_CINEMA_SPEC_A
+      parameter   (VISIT_CINEMA_SPEC_A = 0)
+      integer      VISIT_CINEMA_SPEC_C
+      parameter   (VISIT_CINEMA_SPEC_C = 2)
+      integer      VISIT_CINEMA_SPEC_D
+      parameter   (VISIT_CINEMA_SPEC_D = 3)
+
+!... Cinema camera types 
+      integer      VISIT_CINEMA_CAMERA_STATIC
+      parameter   (VISIT_CINEMA_CAMERA_STATIC = 0)
+      integer      VISIT_CINEMA_CAMERA_PHI_THETA
+      parameter   (VISIT_CINEMA_CAMERA_PHI_THETA = 1)
+
+! Definitions for CSG boundary types 
+!   Designed so low-order 16 bits are unused
+!
+!   The last few characters of the symbol are intended
+!   to indicate the representational form of the surface type
+!
+!   G = generalized form  (n values, depends on surface type)
+!   P = point (3 values, x,y,z in 3D, 2 values in 2D x,y)
+!   N = normal (3 values, Nx,Ny,Nz in 3D, 2 values in 2D Nx,Ny)
+!   R = radius (1 value)
+!   A = angle (1 value in degrees)
+!   L = length (1 value)
+!   X = x-intercept (1 value)
+!   Y = y-intercept (1 value)
+!   Z = z-intercept (1 value)
+!   K = arbitrary integer
+!   F = planar face defined by point-normal pair (6 values)
+      integer    VISIT_CSG_QUADRIC_G     
+      parameter (VISIT_CSG_QUADRIC_G           = 16777216       )
+      integer    VISIT_CSG_SPHERE_PR     
+      parameter (VISIT_CSG_SPHERE_PR           = 33619968       )
+      integer    VISIT_CSG_ELLIPSOID_PRRR
+      parameter (VISIT_CSG_ELLIPSOID_PRRR      = 33685504       )
+      integer    VISIT_CSG_PLANE_G       
+      parameter (VISIT_CSG_PLANE_G             = 50331648       )
+      integer    VISIT_CSG_PLANE_X       
+      parameter (VISIT_CSG_PLANE_X             = 50397184       )
+      integer    VISIT_CSG_PLANE_Y       
+      parameter (VISIT_CSG_PLANE_Y             = 50462720       )
+      integer    VISIT_CSG_PLANE_Z       
+      parameter (VISIT_CSG_PLANE_Z             = 50528256       )
+      integer    VISIT_CSG_PLANE_PN      
+      parameter (VISIT_CSG_PLANE_PN            = 50593792       )
+      integer    VISIT_CSG_PLANE_PPP     
+      parameter (VISIT_CSG_PLANE_PPP           = 50659328       )
+      integer    VISIT_CSG_CYLINDER_PNLR 
+      parameter (VISIT_CSG_CYLINDER_PNLR       = 67108864       )
+      integer    VISIT_CSG_CYLINDER_PPR  
+      parameter (VISIT_CSG_CYLINDER_PPR        = 67174400       )
+      integer    VISIT_CSG_BOX_XYZXYZ    
+      parameter (VISIT_CSG_BOX_XYZXYZ          = 83886080       )
+      integer    VISIT_CSG_CONE_PNLA     
+      parameter (VISIT_CSG_CONE_PNLA           = 100663296      )
+      integer    VISIT_CSG_CONE_PPA      
+      parameter (VISIT_CSG_CONE_PPA            = 100728832      )
+      integer    VISIT_CSG_POLYHEDRON_KF 
+      parameter (VISIT_CSG_POLYHEDRON_KF       = 117440512      )
+      integer    VISIT_CSG_HEX_6F        
+      parameter (VISIT_CSG_HEX_6F              = 117506048      )
+      integer    VISIT_CSG_TET_4F        
+      parameter (VISIT_CSG_TET_4F              = 117571584      )
+      integer    VISIT_CSG_PYRAMID_5F    
+      parameter (VISIT_CSG_PYRAMID_5F          = 117637120      )
+      integer    VISIT_CSG_PRISM_5F      
+      parameter (VISIT_CSG_PRISM_5F            = 117702656      )
+
+!... Definitions for 2D CSG boundary types
+      integer    VISIT_CSG_QUADRATIC_G   
+      parameter (VISIT_CSG_QUADRATIC_G         = 134217728      )
+      integer    VISIT_CSG_CIRCLE_PR     
+      parameter (VISIT_CSG_CIRCLE_PR           = 150994944      )
+      integer    VISIT_CSG_ELLIPSE_PRR   
+      parameter (VISIT_CSG_ELLIPSE_PRR         = 151060480      )
+      integer    VISIT_CSG_LINE_G        
+      parameter (VISIT_CSG_LINE_G              = 167772160      )
+      integer    VISIT_CSG_LINE_X        
+      parameter (VISIT_CSG_LINE_X              = 167837696      )
+      integer    VISIT_CSG_LINE_Y        
+      parameter (VISIT_CSG_LINE_Y              = 167903232      )
+      integer    VISIT_CSG_LINE_PN       
+      parameter (VISIT_CSG_LINE_PN             = 167968768      )
+      integer    VISIT_CSG_LINE_PP       
+      parameter (VISIT_CSG_LINE_PP             = 168034304      )
+      integer    VISIT_CSG_BOX_XYXY      
+      parameter (VISIT_CSG_BOX_XYXY            = 184549376      )
+      integer    VISIT_CSG_ANGLE_PNLA    
+      parameter (VISIT_CSG_ANGLE_PNLA          = 201326592      )
+      integer    VISIT_CSG_ANGLE_PPA     
+      parameter (VISIT_CSG_ANGLE_PPA           = 201392128      )
+      integer    VISIT_CSG_POLYGON_KP    
+      parameter (VISIT_CSG_POLYGON_KP          = 218103808      )
+      integer    VISIT_CSG_TRI_3P        
+      parameter (VISIT_CSG_TRI_3P              = 218169344      )
+      integer    VISIT_CSG_QUAD_4P       
+      parameter (VISIT_CSG_QUAD_4P             = 218234880      )
+
+!... Definitions for CSG Region operators
+      integer    VISIT_CSG_INNER         
+      parameter (VISIT_CSG_INNER               = 2130706432     )
+      integer    VISIT_CSG_OUTER         
+      parameter (VISIT_CSG_OUTER               = 2130771968     )
+      integer    VISIT_CSG_ON            
+      parameter (VISIT_CSG_ON                  = 2130837504     )
+      integer    VISIT_CSG_UNION         
+      parameter (VISIT_CSG_UNION               = 2130903040     )
+      integer    VISIT_CSG_INTERSECT     
+      parameter (VISIT_CSG_INTERSECT           = 2130968576     )
+      integer    VISIT_CSG_DIFF          
+      parameter (VISIT_CSG_DIFF                = 2131034112     )
+      integer    VISIT_CSG_COMPLIMENT    
+      parameter (VISIT_CSG_COMPLIMENT          = 2131099648     )
+!... VISIT_CSG_XFORM and VISIT_CSG_SWEEP are not yet implemented
+      integer    VISIT_CSG_XFORM         
+      parameter (VISIT_CSG_XFORM               = 2131165184     )
+      integer    VISIT_CSG_SWEEP         
+      parameter (VISIT_CSG_SWEEP               = 2131230720     )
+
+!cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+! Control interface functions
+!cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
+! visitattemptconnection()
+      external visitattemptconnection
+      integer  visitattemptconnection
+
+! visitclosetracefile()
+      external visitclosetracefile
+      integer  visitclosetracefile
+
+! visitdebug1(string str, int lstr)
+      external visitdebug1
+      integer  visitdebug1
+
+! visitdebug2(string str, int lstr)
+      external visitdebug2
+      integer  visitdebug2
+
+! visitdebug3(string str, int lstr)
+      external visitdebug3
+      integer  visitdebug3
+
+! visitdebug4(string str, int lstr)
+      external visitdebug4
+      integer  visitdebug4
+
+! visitdebug5(string str, int lstr)
+      external visitdebug5
+      integer  visitdebug5
+
+! visitdetectinput(int blocking, int consoledesc)
+!     returns int codes -5 through 3
+      external visitdetectinput
+      integer  visitdetectinput
+
+! visitdetectinputwithtimeout(int blocking, int micsec, int consoledesc)
+!     returns int codes -5 through 3
+      external visitdetectinputwithtimeout
+      integer  visitdetectinputwithtimeout
+
+! visitdisconnect()
+      external visitdisconnect
+      integer  visitdisconnect
+
+! visitenablesynchronize(int val)
+      external visitenablesynchronize
+      integer  visitenablesynchronize
+
+! visitexecutecommand(string command, int lcommand)
+      external visitexecutecommand
+      integer  visitexecutecommand
+
+! visitgetenv(string env, int lenv)
+      external visitgetenv
+      integer  visitgetenv
+
+! visitgetlasterror(string dest, int ldest)
+      external visitgetlasterror
+      integer  visitgetlasterror
+
+! visitgetsockets(int lsocket, int csocket)
+      external visitgetsockets
+      integer  visitgetsockets
+
+! visitinitializesim(
+!    string name, int lname,
+!    string comment, int lcomment,
+!    string path, int lpath,
+!    string inputfile, int linputfile,
+!    string uifile, int luifile,
+!    string absoluteFilename, int labsoluteFilename)
+      external visitinitializesim
+      integer  visitinitializesim
+
+! visitisconnected()
+      external visitisconnected
+      integer  visitisconnected
+
+! visitopentracefile(string name, int lname)
+      external visitopentracefile
+      integer  visitopentracefile
+
+! visitprocessenginecommand()
+      external visitprocessenginecommand
+      integer  visitprocessenginecommand
+
+! visitsavewindow(string filename, int lfilename, int width, int height, int format)
+      external visitsavewindow
+      integer  visitsavewindow
+
+! visitsetdirectory(string dir, int ldir)
+      external visitsetdirectory
+      integer  visitsetdirectory
+
+! visitsetmpicommunicator(int comm)
+      external visitsetmpicommunicator
+      integer  visitsetmpicommunicator
+
+! visitsetoptions(string opt, int lopt)
+      external visitsetoptions
+      integer  visitsetoptions
+
+! visitsetparallel(int val)
+      external visitsetparallel
+      integer  visitsetparallel
+
+! visitsetparallelrank(int rank)
+      external visitsetparallelrank
+      integer  visitsetparallelrank
+
+! visitsetupenv()
+      external visitsetupenv
+      integer  visitsetupenv
+
+! visitsetupenv2(string env, int lenv)
+      external visitsetupenv2
+      integer  visitsetupenv2
+
+! visitsynchronize()
+      external visitsynchronize
+      integer  visitsynchronize
+
+! visittimestepchanged()
+      external visittimestepchanged
+      integer  visittimestepchanged
+
+! visitupdateplots()
+      external visitupdateplots
+      integer  visitupdateplots
+
+!cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+! Prototype batch mode functions
+!cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
+! visitinitializeruntime()
+      external visitinitializeruntime
+      integer  visitinitializeruntime
+
+! visitaddplot(string plotType, int lplotType, string var, 
+!              int lvar)
+      external visitaddplot
+      integer  visitaddplot
+
+! visitaddoperator(string operatorType, int loperatorType,
+!                  int applyToAll) 
+      external visitaddoperator
+      integer  visitaddoperator
+
+! visitdrawplots()
+      external visitdrawplots
+      integer  visitdrawplots
+
+! visitdeleteactiveplots()
+      external visitdeleteactiveplots
+      integer  visitdeleteactiveplots
+
+! visitsetactiveplots(int ids, int nids)
+      external visitsetactiveplots
+      integer  visitsetactiveplots
+
+! visitchangeplotvar(string var, int lvar, int all)
+      external visitchangeplotvar
+      integer  visitchangeplotvar
+
+! visitexportdatabase(string filename, int lfilename,
+!                     string format, int lformat,
+!                     visit_handle vars)
+      external visitexportdatabase
+      integer  visitexportdatabase
+
+! visitexportdatabasewithoptions(string filename, int lfilename,
+!                     string format, int lformat,
+!                     visit_handle vars, visit_handle options)
+      external visitexportdatabasewithoptions
+      integer  visitexportdatabasewithoptions
+
+! visitrestoresession(string filename, int lfilename)
+      external visitrestoresession
+      integer  visitrestoresession
+
+! visitsetview2d(visit_handle view)
+      external visitsetview2d
+      integer  visitsetview2d
+
+! visitgetview2d(visit_handle view)
+      external visitgetview2d
+      integer  visitgetview2d
+
+! visitsetview3d(visit_handle view)
+      external visitsetview3d
+      integer  visitsetview3d
+
+! visitgetview3d(visit_handle view)
+      external visitgetview3d
+      integer  visitgetview3d
+
+! visitbegincinema(visit_handle h, string file_cdb, int lfile_cdb,
+!                  int spec, int composite,
+!                  int format, int width, int height, 
+!                  int cameratype, int ntheta, int nphi,
+!                  visit_handle hvar)
+      external visitbegincinema
+      integer  visitbegincinema
+
+! visitsavecinema(string file_cdb, int lfile_cdb, double time)
+      external visitsavecinema
+      integer  visitsavecinema
+
+! visitendcinema(string file_cdb, int lfile_cdb)
+      external visitendcinema
+      integer  visitendcinema
+
+!cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+! Prototype plot attribute setting functions
+!cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+! visitsetplotoptionsc(string name, int lname, char val)
+      external visitsetplotoptionsc
+      integer  visitsetplotoptionsc
+
+! visitsetplotoptionsuc(string name, int lname, uchar val)
+      external visitsetplotoptionsuc
+      integer  visitsetplotoptionsuc
+
+! visitsetplotoptionsi(string name, int lname, int val)
+      external visitsetplotoptionsi
+      integer  visitsetplotoptionsi
+
+! visitsetplotoptionsb(string name, int lname, int val)
+      external visitsetplotoptionsb
+      integer  visitsetplotoptionsb
+
+! visitsetplotoptionsl(string name, int lname, long val)
+      external visitsetplotoptionsl
+      integer  visitsetplotoptionsl
+
+! visitsetplotoptionsf(string name, int lname, float val)
+      external visitsetplotoptionsf
+      integer  visitsetplotoptionsf
+
+! visitsetplotoptionsd(string name, int lname, double val)
+      external visitsetplotoptionsd
+      integer  visitsetplotoptionsd
+
+! visitsetplotoptionss(string name, int lname, string val, int lval)
+      external visitsetplotoptionss
+      integer  visitsetplotoptionss
+
+! visitsetplotoptionscv(string name, int lname, char val, int nval)
+      external visitsetplotoptionscv
+      integer  visitsetplotoptionscv
+
+! visitsetplotoptionsucv(string name, int lname, uchar val, int nval)
+      external visitsetplotoptionsucv
+      integer  visitsetplotoptionsucv
+
+! visitsetplotoptionsiv(string name, int lname, int val, int nval)
+      external visitsetplotoptionsiv
+      integer  visitsetplotoptionsiv
+
+! visitsetplotoptionslv(string name, int lname, long val, int nval)
+      external visitsetplotoptionslv
+      integer  visitsetplotoptionslv
+
+! visitsetplotoptionsfv(string name, int lname, float val, int nval)
+      external visitsetplotoptionsfv
+      integer  visitsetplotoptionsfv
+
+! visitsetplotoptionsdv(string name, int lname, double val, int nval)
+      external visitsetplotoptionsdv
+      integer  visitsetplotoptionsdv
+
+! visitsetplotoptionssv(string name, int lname, string val, int nval,
+!                       int stringWidth)
+      external visitsetplotoptionssv
+      integer  visitsetplotoptionssv
+
+!cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+! Prototype operator attribute setting functions
+!cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+! visitsetoperatoroptionsc(string name, int lname, char val)
+      external visitsetoperatoroptionsc
+      integer  visitsetoperatoroptionsc
+
+! visitsetoperatoroptionsuc(string name, int lname, uchar val)
+      external visitsetoperatoroptionsuc
+      integer  visitsetoperatoroptionsuc
+
+! visitsetoperatoroptionsi(string name, int lname, int val)
+      external visitsetoperatoroptionsi
+      integer  visitsetoperatoroptionsi
+
+! visitsetoperatoroptionsb(string name, int lname, int val)
+      external visitsetoperatoroptionsb
+      integer  visitsetoperatoroptionsb
+
+! visitsetoperatoroptionsl(string name, int lname, long val)
+      external visitsetoperatoroptionsl
+      integer  visitsetoperatoroptionsl
+
+! visitsetoperatoroptionsf(string name, int lname, float val)
+      external visitsetoperatoroptionsf
+      integer  visitsetoperatoroptionsf
+
+! visitsetoperatoroptionsd(string name, int lname, double val)
+      external visitsetoperatoroptionsd
+      integer  visitsetoperatoroptionsd
+
+! visitsetoperatoroptionss(string name, int lname, string val, int lval)
+      external visitsetoperatoroptionss
+      integer  visitsetoperatoroptionss
+
+! visitsetoperatoroptionscv(string name, int lname, char val, int nval)
+      external visitsetoperatoroptionscv
+      integer  visitsetoperatoroptionscv
+
+! visitsetoperatoroptionsucv(string name, int lname, uchar val, int nval)
+      external visitsetoperatoroptionsucv
+      integer  visitsetoperatoroptionsucv
+
+! visitsetoperatoroptionsiv(string name, int lname, int val, int nval)
+      external visitsetoperatoroptionsiv
+      integer  visitsetoperatoroptionsiv
+
+! visitsetoperatoroptionslv(string name, int lname, long val, int nval)
+      external visitsetoperatoroptionslv
+      integer  visitsetoperatoroptionslv
+
+! visitsetoperatoroptionsfv(string name, int lname, float val, int nval)
+      external visitsetoperatoroptionsfv
+      integer  visitsetoperatoroptionsfv
+
+! visitsetoperatoroptionsdv(string name, int lname, double val, int nval)
+      external visitsetoperatoroptionsdv
+      integer  visitsetoperatoroptionsdv
+
+! visitsetoperatoroptionssv(string name, int lname, string val, 
+!                           int nval, int stringWidth)
+      external visitsetoperatoroptionssv
+      integer  visitsetoperatoroptionssv
+
+!cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+! Metric functions 
+!cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+! visitgetmemory(unsigned long m_size, unsigned long m_rss)
+      external visitgetmemory
+      integer  visitgetmemory
+
+!cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+! Metadata functions
+!cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
+! VisIt_CommandMetaData functions
+!cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
+! visitmdcmdalloc(visit_handle h)
+      external visitmdcmdalloc
+      integer  visitmdcmdalloc
+
+! visitmdcmdfree(visit_handle h)
+      external visitmdcmdfree
+      integer  visitmdcmdfree
+
+! visitmdcmdsetname(visit_handle h, string val, int lval)
+      external visitmdcmdsetname
+      integer  visitmdcmdsetname
+
+! visitmdcmdgetname(visit_handle h, string val, int lval)
+      external visitmdcmdgetname
+      integer  visitmdcmdgetname
+
+! VisIt_CurveMetaData functions
+!cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
+! visitmdcurvealloc(visit_handle h)
+      external visitmdcurvealloc
+      integer  visitmdcurvealloc
+
+! visitmdcurvefree(visit_handle h)
+      external visitmdcurvefree
+      integer  visitmdcurvefree
+
+! visitmdcurvesetname(visit_handle h, string val, int lval)
+      external visitmdcurvesetname
+      integer  visitmdcurvesetname
+
+! visitmdcurvegetname(visit_handle h, string val, int lval)
+      external visitmdcurvegetname
+      integer  visitmdcurvegetname
+
+! visitmdcurvesetxunits(visit_handle h, string val, int lval)
+      external visitmdcurvesetxunits
+      integer  visitmdcurvesetxunits
+
+! visitmdcurvegetxunits(visit_handle h, string val, int lval)
+      external visitmdcurvegetxunits
+      integer  visitmdcurvegetxunits
+
+! visitmdcurvesetyunits(visit_handle h, string val, int lval)
+      external visitmdcurvesetyunits
+      integer  visitmdcurvesetyunits
+
+! visitmdcurvegetyunits(visit_handle h, string val, int lval)
+      external visitmdcurvegetyunits
+      integer  visitmdcurvegetyunits
+
+! visitmdcurvesetxlabel(visit_handle h, string val, int lval)
+      external visitmdcurvesetxlabel
+      integer  visitmdcurvesetxlabel
+
+! visitmdcurvegetxlabel(visit_handle h, string val, int lval)
+      external visitmdcurvegetxlabel
+      integer  visitmdcurvegetxlabel
+
+! visitmdcurvesetylabel(visit_handle h, string val, int lval)
+      external visitmdcurvesetylabel
+      integer  visitmdcurvesetylabel
+
+! visitmdcurvegetylabel(visit_handle h, string val, int lval)
+      external visitmdcurvegetylabel
+      integer  visitmdcurvegetylabel
+
+! VisIt_ExpressionMetaData functions
+!cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
+! visitmdexpralloc(visit_handle h)
+      external visitmdexpralloc
+      integer  visitmdexpralloc
+
+! visitmdexprfree(visit_handle h)
+      external visitmdexprfree
+      integer  visitmdexprfree
+
+! visitmdexprsetname(visit_handle h, string val, int lval)
+      external visitmdexprsetname
+      integer  visitmdexprsetname
+
+! visitmdexprgetname(visit_handle h, string val, int lval)
+      external visitmdexprgetname
+      integer  visitmdexprgetname
+
+! visitmdexprsetdefinition(visit_handle h, string val, int lval)
+      external visitmdexprsetdefinition
+      integer  visitmdexprsetdefinition
+
+! visitmdexprgetdefinition(visit_handle h, string val, int lval)
+      external visitmdexprgetdefinition
+      integer  visitmdexprgetdefinition
+
+! visitmdexprsettype(visit_handle h, int val)
+      external visitmdexprsettype
+      integer  visitmdexprsettype
+
+! visitmdexprgettype(visit_handle h, int val)
+      external visitmdexprgettype
+      integer  visitmdexprgettype
+
+
+! VisIt_MaterialMetaData functions
+!cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
+! visitmdmatalloc(visit_handle h)
+      external visitmdmatalloc
+      integer  visitmdmatalloc
+
+! visitmdmatfree(visit_handle h)
+      external visitmdmatfree
+      integer  visitmdmatfree
+
+! visitmdmatsetname(visit_handle h, string val, int lval)
+      external visitmdmatsetname
+      integer  visitmdmatsetname
+
+! visitmdmatgetname(visit_handle h, string val, int lval)
+      external visitmdmatgetname
+      integer  visitmdmatgetname
+
+! visitmdmatsetmeshname(visit_handle h, string val, int lval)
+      external visitmdmatsetmeshname
+      integer  visitmdmatsetmeshname
+
+! visitmdmatgetmeshname(visit_handle h, string val, int lval)
+      external visitmdmatgetmeshname
+      integer  visitmdmatgetmeshname
+
+! visitmdmataddmaterialname(visit_handle h, string val, int lval)
+      external visitmdmataddmaterialname
+      integer  visitmdmataddmaterialname
+
+! visitmdmatgetnummaterialnames(visit_handle h, int val)
+      external visitmdmatgetnummaterialnames
+      integer  visitmdmatgetnummaterialnames
+
+! visitmdmatgetmaterialname(visit_handle h, int i, string val, int lval)
+      external visitmdmatgetmaterialname
+      integer  visitmdmatgetmaterialname
+
+
+! VisIt_MeshMetaData functions
+!cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
+! visitmdmeshalloc(visit_handle h)
+      external visitmdmeshalloc
+      integer  visitmdmeshalloc
+
+! visitmdmeshfree(visit_handle h)
+      external visitmdmeshfree
+      integer  visitmdmeshfree
+
+! visitmdmeshsetname(visit_handle h, string val, int lval)
+      external visitmdmeshsetname
+      integer  visitmdmeshsetname
+
+! visitmdmeshgetname(visit_handle h, string val, int lval)
+      external visitmdmeshgetname
+      integer  visitmdmeshgetname
+
+! visitmdmeshsetmeshtype(visit_handle h, int val)
+      external visitmdmeshsetmeshtype
+      integer  visitmdmeshsetmeshtype
+
+! visitmdmeshgetmeshtype(visit_handle h, int val)
+      external visitmdmeshgetmeshtype
+      integer  visitmdmeshgetmeshtype
+
+! visitmdmeshsettopologicaldim(visit_handle h, int val)
+      external visitmdmeshsettopologicaldim
+      integer  visitmdmeshsettopologicaldim
+
+! visitmdmeshgettopologicaldim(visit_handle h, int val)
+      external visitmdmeshgettopologicaldim
+      integer  visitmdmeshgettopologicaldim
+
+! visitmdmeshsetspatialdim(visit_handle h, int val)
+      external visitmdmeshsetspatialdim
+      integer  visitmdmeshsetspatialdim
+
+! visitmdmeshgetspatialdim(visit_handle h, int val)
+      external visitmdmeshgetspatialdim
+      integer  visitmdmeshgetspatialdim
+
+! visitmdmeshsetnumdomains(visit_handle h, int val)
+      external visitmdmeshsetnumdomains
+      integer  visitmdmeshsetnumdomains
+
+! visitmdmeshgetnumdomains(visit_handle h, int val)
+      external visitmdmeshgetnumdomains
+      integer  visitmdmeshgetnumdomains
+
+! visitmdmeshsetdomaintitle(visit_handle h, string val, int lval)
+      external visitmdmeshsetdomaintitle
+      integer  visitmdmeshsetdomaintitle
+
+! visitmdmeshgetdomaintitle(visit_handle h, string val, int lval)
+      external visitmdmeshgetdomaintitle
+      integer  visitmdmeshgetdomaintitle
+
+! visitmdmeshsetdomainpiecename(visit_handle h, string val, int lval)
+      external visitmdmeshsetdomainpiecename
+      integer  visitmdmeshsetdomainpiecename
+
+! visitmdmeshgetdomainpiecename(visit_handle h, string val, int lval)
+      external visitmdmeshgetdomainpiecename
+      integer  visitmdmeshgetdomainpiecename
+
+! visitmdmeshadddomainname(visit_handle h, string val, int lval)
+      external visitmdmeshadddomainname
+      integer  visitmdmeshadddomainname
+
+! visitmdmeshgetnumdomainname(visit_handle h, int val)
+      external visitmdmeshgetnumdomainname
+      integer  visitmdmeshgetnumdomainname
+
+! visitmdmeshgetdomainname(visit_handle h, int i, string val, int lval)
+      external visitmdmeshgetdomainname
+      integer  visitmdmeshgetdomainname
+
+! visitmdmeshsetnumgroups(visit_handle h, int val)
+      external visitmdmeshsetnumgroups
+      integer  visitmdmeshsetnumgroups
+
+! visitmdmeshgetnumgroups(visit_handle h, int val)
+      external visitmdmeshgetnumgroups
+      integer  visitmdmeshgetnumgroups
+
+! visitmdmeshsetgrouptitle(visit_handle h, string val, int lval)
+      external visitmdmeshsetgrouptitle
+      integer  visitmdmeshsetgrouptitle
+
+! visitmdmeshgetgrouptitle(visit_handle h, string val, int lval)
+      external visitmdmeshgetgrouptitle
+      integer  visitmdmeshgetgrouptitle
+
+! visitmdmeshsetgrouppiecename(visit_handle h, string val, int lval)
+      external visitmdmeshsetgrouppiecename
+      integer  visitmdmeshsetgrouppiecename
+
+! visitmdmeshgetgrouppiecename(visit_handle h, string val, int lval)
+      external visitmdmeshgetgrouppiecename
+      integer  visitmdmeshgetgrouppiecename
+
+! visitmdmeshsetgroupids(visit_handle h, int val)
+      external visitmdmeshsetgroupids
+      integer  visitmdmeshsetgroupids
+
+! visitmdmeshgetnumgroupids(visit_handle h, int n)
+      external visitmdmeshgetnumgroupids
+      integer  visitmdmeshgetnumgroupids
+
+! visitmdmeshgetgroupids(visit_handle h, int i, int val)
+      external visitmdmeshgetgroupids
+      integer  visitmdmeshgetgroupids
+
+! visitmdmeshsetxunits(visit_handle h, string val, int lval)
+      external visitmdmeshsetxunits
+      integer  visitmdmeshsetxunits
+
+! visitmdmeshgetxunits(visit_handle h, string val, int lval)
+      external visitmdmeshgetxunits
+      integer  visitmdmeshgetxunits
+
+! visitmdmeshsetyunits(visit_handle h, string val, int lval)
+      external visitmdmeshsetyunits
+      integer  visitmdmeshsetyunits
+
+! visitmdmeshgetyunits(visit_handle h, string val, int lval)
+      external visitmdmeshgetyunits
+      integer  visitmdmeshgetyunits
+
+! visitmdmeshsetzunits(visit_handle h, string val, int lval)
+      external visitmdmeshsetzunits
+      integer  visitmdmeshsetzunits
+
+! visitmdmeshgetzunits(visit_handle h, string val, int lval)
+      external visitmdmeshgetzunits
+      integer  visitmdmeshgetzunits
+
+! visitmdmeshsetxlabel(visit_handle h, string val, int lval)
+      external visitmdmeshsetxlabel
+      integer  visitmdmeshsetxlabel
+
+! visitmdmeshgetxlabel(visit_handle h, string val, int lval)
+      external visitmdmeshgetxlabel
+      integer  visitmdmeshgetxlabel
+
+! visitmdmeshsetylabel(visit_handle h, string val, int lval)
+      external visitmdmeshsetylabel
+      integer  visitmdmeshsetylabel
+
+! visitmdmeshgetylabel(visit_handle h, string val, int lval)
+      external visitmdmeshgetylabel
+      integer  visitmdmeshgetylabel
+
+! visitmdmeshsetzlabel(visit_handle h, string val, int lval)
+      external visitmdmeshsetzlabel
+      integer  visitmdmeshsetzlabel
+
+! visitmdmeshgetzlabel(visit_handle h, string val, int lval)
+      external visitmdmeshgetzlabel
+      integer  visitmdmeshgetzlabel
+
+! visitmdmeshsetcellorigin(visit_handle h, int origin)
+      external visitmdmeshsetcellorigin
+      integer visitmdmeshsetcellorigin
+
+! visitmdmeshgetcellorigin(visit_handle h, int origin)
+      external visitmdmeshgetcellorigin
+      integer visitmdmeshgetcellorigin
+
+! visitmdmeshsetnodeorigin(visit_handle h, int origin)
+      external visitmdmeshsetnodeorigin
+      integer visitmdmeshsetnodeorigin
+
+! visitmdmeshgetnodeorigin(visit_handle h, int origin)
+      external visitmdmeshgetnodeorigin
+      integer visitmdmeshgetnodeorigin
+
+! visitmdmeshsethasspatialextents(visit_handle h, int hasSE)
+      external visitmdmeshsethasspatialextents
+      integer visitmdmeshsethasspatialextents
+
+! visitmdmeshgethasspatialextents(visit_handle h, int hasSE)
+      external visitmdmeshgethasspatialextents
+      integer visitmdmeshgethasspatialextents
+
+! visitmdmeshsetspatialextents(visit_handle h, double extents[6])
+      external visitmdmeshsetspatialextents
+      integer visitmdmeshsetspatialextents
+
+! visitmdmeshgetspatialextents(visit_handle h, double extents[6])
+      external visitmdmeshgetspatialextents
+      integer visitmdmeshgetspatialextents
+
+! visitmdmeshsethaslogicalbounds(visit_handle h, int hasB)
+      external visitmdmeshsethaslogicalbounds
+      integer visitmdmeshsethaslogicalbounds
+
+! visitmdmeshgethaslogicalbounds(visit_handle h, int hasB)
+      external visitmdmeshgethaslogicalbounds
+      integer visitmdmeshgethaslogicalbounds
+
+! visitmdmeshsetlogicalbounds(visit_handle h, int bounds[3])
+      external visitmdmeshsetlogicalbounds
+      integer visitmdmeshsetlogicalbounds
+
+! visitmdmeshgetlogicalbounds(visit_handle h, int bounds[3])
+      external visitmdmeshgetlogicalbounds
+      integer visitmdmeshgetlogicalbounds
+
+! VisIt_NameList functions
+!cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
+! visitnamelistalloc(visit_handle h)
+      external visitnamelistalloc
+      integer  visitnamelistalloc
+
+! visitnamelistfree(visit_handle h)
+      external visitnamelistfree
+      integer  visitnamelistfree
+
+! visitnamelistaddname(visit_handle h, string val, int lval)
+      external visitnamelistaddname
+      integer  visitnamelistaddname
+
+! visitnamelistgetnumname(visit_handle h, int val)
+      external visitnamelistgetnumname
+      integer  visitnamelistgetnumname
+
+! visitnamelistgetname(visit_handle h, int i, string val, int lval)
+      external visitnamelistgetname
+      integer  visitnamelistgetname
+
+! VisIt_OptionList functions
+!cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
+! visitoptionlistalloc(visit_handle obj)
+      external visitoptionlistalloc
+      integer  visitoptionlistalloc
+
+! visitoptionlistfree(visit_handle obj)
+      external visitoptionlistfree
+      integer  visitoptionlistfree
+
+! visitoptionlistsetvalueb(visit_handle obj, string name, int lname, int value)
+      external visitoptionlistsetvalueb
+      integer  visitoptionlistsetvalueb
+
+! visitoptionlistsetvaluei(visit_handle obj, string name, int lname, int value)
+      external visitoptionlistsetvaluei
+      integer  visitoptionlistsetvaluei
+
+! visitoptionlistsetvaluef(visit_handle obj, string name, int lname, float value)
+      external visitoptionlistsetvaluef
+      integer  visitoptionlistsetvaluef
+
+! visitoptionlistsetvalued(visit_handle obj, string name, int lname, double value)
+      external visitoptionlistsetvalued
+      integer  visitoptionlistsetvalued
+
+! visitoptionlistsetvalues(visit_handle obj, string name, int lname, string value, int lvalue)
+      external visitoptionlistsetvalues
+      integer  visitoptionlistsetvalues
+
+! visitoptionlistgetnumvalues(visit_handle obj, int nv)
+      external visitoptionlistgetnumvalues
+      integer  visitoptionlistgetnumvalues
+
+! visitoptionlistgettype(visit_handle obj, int index, int type)
+      external visitoptionlistgettype
+      integer  visitoptionlistgettype
+
+! visitoptionlistgetname(visit_handle obj, int index, string name, int lname)
+      external visitoptionlistgetname
+      integer  visitoptionlistgetname
+
+! visitoptionlistgetvaluei(visit_handle obj, string name, int lname, int value)
+      external visitoptionlistgetvaluei
+      integer  visitoptionlistgetvaluei
+
+! visitoptionlistgetvaluef(visit_handle obj, string name, int lname, float value)
+      external visitoptionlistgetvaluef
+      integer  visitoptionlistgetvaluef
+
+! visitoptionlistgetvalued(visit_handle obj, string name, int lname, double value)
+      external visitoptionlistgetvalued
+      integer  visitoptionlistgetvalued
+
+! visitoptionlistgetvalues(visit_handle obj, string name, int lname, string value, int lvalue)
+      external visitoptionlistgetvalues
+      integer  visitoptionlistgetvalues
+
+! VisIt_SimulationMetaData functions
+!cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
+! visitmdsimalloc(visit_handle h)
+      external visitmdsimalloc
+      integer  visitmdsimalloc
+
+! visitmdsimfree(visit_handle h)
+      external visitmdsimfree
+      integer  visitmdsimfree
+
+! visitmdsimsetmode(visit_handle h, int mode)
+      external visitmdsimsetmode
+      integer  visitmdsimsetmode
+
+! visitmdsimsetcycletime(visit_handle h, int cycle, double time)
+      external visitmdsimsetcycletime
+      integer  visitmdsimsetcycletime
+
+! visitmdsimaddmesh(visit_handle h, visit_handle md)
+      external visitmdsimaddmesh
+      integer  visitmdsimaddmesh
+
+! visitmdsimaddvariable(visit_handle h, visit_handle md)
+      external visitmdsimaddvariable
+      integer  visitmdsimaddvariable
+
+! visitmdsimaddmaterial(visit_handle h, visit_handle md)
+      external visitmdsimaddmaterial
+      integer  visitmdsimaddmaterial
+
+! visitmdsimaddcurve(visit_handle h, visit_handle md)
+      external visitmdsimaddcurve
+      integer  visitmdsimaddcurve
+
+! visitmdsimaddexpression(visit_handle h, visit_handle md)
+      external visitmdsimaddexpression
+      integer  visitmdsimaddexpression
+
+! visitmdsimaddspecies(visit_handle h, visit_handle md)
+      external visitmdsimaddspecies
+      integer  visitmdsimaddspecies
+
+! visitmdsimaddgenericcommand(visit_handle h, visit_handle md)
+      external visitmdsimaddgenericcommand
+      integer  visitmdsimaddgenericcommand
+
+! visitmdsimaddcustomcommand(visit_handle h, visit_handle md)
+      external visitmdsimaddcustomcommand
+      integer  visitmdsimaddcustomcommand
+
+! visitmdsimaddmessage(visit_handle h, visit_handle md)
+      external visitmdsimaddmessage
+      integer  visitmdsimaddmessage
+
+
+! VisIt_SpeciesMetaData functions
+!cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
+! visitmdspeciesalloc(visit_handle h)
+      external visitmdspeciesalloc
+      integer  visitmdspeciesalloc
+
+! visitmdspeciesfree(visit_handle h)
+      external visitmdspeciesfree
+      integer  visitmdspeciesfree
+
+! visitmdspeciessetname(visit_handle h, string val, int lval)
+      external visitmdspeciessetname
+      integer  visitmdspeciessetname
+
+! visitmdspeciesgetname(visit_handle h, string val, int lval)
+      external visitmdspeciesgetname
+      integer  visitmdspeciesgetname
+
+! visitmdspeciessetmeshname(visit_handle h, string val, int lval)
+      external visitmdspeciessetmeshname
+      integer  visitmdspeciessetmeshname
+
+! visitmdspeciesgetmeshname(visit_handle h, string val, int lval)
+      external visitmdspeciesgetmeshname
+      integer  visitmdspeciesgetmeshname
+
+! visitmdspeciessetmaterialname(visit_handle h, string val, int lval)
+      external visitmdspeciessetmaterialname
+      integer  visitmdspeciessetmaterialname
+
+! visitmdspeciesgetmaterialname(visit_handle h, string val, int lval)
+      external visitmdspeciesgetmaterialname
+      integer  visitmdspeciesgetmaterialname
+
+! visitmdspeciesaddspeciesname(visit_handle h, visit_handle val)
+      external visitmdspeciesaddspeciesname
+      integer  visitmdspeciesaddspeciesname
+
+! visitmdspeciesgetnumspeciesname(visit_handle h, int val)
+      external visitmdspeciesgetnumspeciesname
+      integer  visitmdspeciesgetnumspeciesname
+
+! visitmdspeciesgetspeciesname(visit_handle h, int i, visit_handle val)
+      external visitmdspeciesgetspeciesname
+      integer  visitmdspeciesgetspeciesname
+
+
+! VisIt_VariableMetaData functions
+!cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
+! visitmdvaralloc(visit_handle h)
+      external visitmdvaralloc
+      integer  visitmdvaralloc
+
+! visitmdvarfree(visit_handle h)
+      external visitmdvarfree
+      integer  visitmdvarfree
+
+! visitmdvarsetname(visit_handle h, string val, int lval)
+      external visitmdvarsetname
+      integer  visitmdvarsetname
+
+! visitmdvargetname(visit_handle h, string val, int lval)
+      external visitmdvargetname
+      integer  visitmdvargetname
+
+! visitmdvarsetmeshname(visit_handle h, string val, int lval)
+      external visitmdvarsetmeshname
+      integer  visitmdvarsetmeshname
+
+! visitmdvargetmeshname(visit_handle h, string val, int lval)
+      external visitmdvargetmeshname
+      integer  visitmdvargetmeshname
+
+! visitmdvarsetunits(visit_handle h, string val, int lval)
+      external visitmdvarsetunits
+      integer  visitmdvarsetunits
+
+! visitmdvargetunits(visit_handle h, string val, int lval)
+      external visitmdvargetunits
+      integer  visitmdvargetunits
+
+! visitmdvarsetcentering(visit_handle h, int val)
+      external visitmdvarsetcentering
+      integer  visitmdvarsetcentering
+
+! visitmdvargetcentering(visit_handle h, int val)
+      external visitmdvargetcentering
+      integer  visitmdvargetcentering
+
+! visitmdvarsettype(visit_handle h, int val)
+      external visitmdvarsettype
+      integer  visitmdvarsettype
+
+! visitmdvargettype(visit_handle h, int val)
+      external visitmdvargettype
+      integer  visitmdvargettype
+
+! visitmdvarsettreatasascii(visit_handle h, int val)
+      external visitmdvarsettreatasascii
+      integer  visitmdvarsettreatasascii
+
+! visitmdvargettreatasascii(visit_handle h, int val)
+      external visitmdvargettreatasascii
+      integer  visitmdvargettreatasascii
+
+! visitmdvarsethidefromgui(visit_handle h, int val)
+      external visitmdvarsethidefromgui
+      integer  visitmdvarsethidefromgui
+
+! visitmdvargethidefromgui(visit_handle h, int val)
+      external visitmdvargethidefromgui
+      integer  visitmdvargethidefromgui
+
+! visitmdvarsetnumcomponents(visit_handle h, int val)
+      external visitmdvarsetnumcomponents
+      integer  visitmdvarsetnumcomponents
+
+! visitmdvargetnumcomponents(visit_handle h, int val)
+      external visitmdvargetnumcomponents
+      integer  visitmdvargetnumcomponents
+
+! visitmdvaraddmaterialname(visit_handle h, string val, int lval)
+      external visitmdvaraddmaterialname
+      integer  visitmdvaraddmaterialname
+
+! visitmdvargetnummaterialnames(visit_handle h, int val)
+      external visitmdvargetnummaterialnames
+      integer  visitmdvargetnummaterialnames
+
+! visitmdvargetmaterialname(visit_handle h, int i, string val, int lval)
+      external visitmdvargetmaterialname
+      integer  visitmdvargetmaterialname
+
+!cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+! Data functions
+!cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
+! VisIt_CSGMesh functions
+!cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+! visitcsgmeshalloc(visit_handle obj)
+      external visitcsgmeshalloc
+      integer  visitcsgmeshalloc
+
+! visitcsgmeshfree(visit_handle obj)
+      external visitcsgmeshfree
+      integer  visitcsgmeshfree
+
+! visitcsgmeshsetregions(visit_handle obj, visit_handle boolops, visit_handle leftids, visit_handle rightids)
+      external visitcsgmeshsetregions
+      integer  visitcsgmeshsetregions
+
+! visitcsgmeshsetzonelist(visit_handle obj, visit_handle zl)
+      external visitcsgmeshsetzonelist
+      integer  visitcsgmeshsetzonelist
+
+! visitcsgmeshsetboundarytypes(visit_handle obj, visit_handle boundarytypes)
+      external visitcsgmeshsetboundarytypes
+      integer  visitcsgmeshsetboundarytypes
+
+! visitcsgmeshsetboundarycoeffs(visit_handle obj, visit_handle boundarycoeffs)
+      external visitcsgmeshsetboundarycoeffs
+      integer  visitcsgmeshsetboundarycoeffs
+
+! visitcsgmeshsetextents(visit_handle obj, double mins, double maxs)
+      external visitcsgmeshsetextents
+      integer  visitcsgmeshsetextents
+
+! visitcsgmeshgetregions(visit_handle obj, visit_handle boolops, 
+!                        visit_handle leftids, visit_handle rightids)
+      external visitcsgmeshgetregions
+      integer  visitcsgmeshgetregions
+
+! visitcsgmeshgetzonelist(visit_handle obj, visit_handle zl)
+      external visitcsgmeshgetzonelist
+      integer  visitcsgmeshgetzonelist
+
+! visitcsgmeshgetboundarytypes(visit_handle obj, visit_handle boundarytypes)
+      external visitcsgmeshgetboundarytypes
+      integer  visitcsgmeshgetboundarytypes
+
+! visitcsgmeshgetboundarycoeffs(visit_handle obj, visit_handle boundarycoeffs)
+      external visitcsgmeshgetboundarycoeffs
+      integer  visitcsgmeshgetboundarycoeffs
+
+! visitcsgmeshgetextents(visit_handle obj, double mins, double maxs)
+      external visitcsgmeshgetextents
+      integer  visitcsgmeshgetextents
+
+
+! VisIt_CurveData functions
+!cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
+! visitcurvedataalloc(visit_handle obj)
+      external visitcurvedataalloc
+      integer  visitcurvedataalloc
+
+! visitcurvedatafree(visit_handle obj)
+      external visitcurvedatafree
+      integer  visitcurvedatafree
+
+! visitcurvedatasetcoordsxy(visit_handle obj, visit_handle x, visit_handle y)
+      external visitcurvedatasetcoordsxy
+      integer  visitcurvedatasetcoordsxy
+
+
+! VisIt_CurvilinearMesh functions
+!cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
+! visitcurvmeshalloc(visit_handle obj)
+      external visitcurvmeshalloc
+      integer  visitcurvmeshalloc
+
+! visitcurvmeshfree(visit_handle obj)
+      external visitcurvmeshfree
+      integer  visitcurvmeshfree
+
+! visitcurvmeshsetcoordsxy(visit_handle obj, int dims, visit_handle x, visit_handle y)
+      external visitcurvmeshsetcoordsxy
+      integer  visitcurvmeshsetcoordsxy
+
+! visitcurvmeshsetcoordsxyz(visit_handle obj, int dims, visit_handle x, visit_handle y, visit_handle z)
+      external visitcurvmeshsetcoordsxyz
+      integer  visitcurvmeshsetcoordsxyz
+
+! visitcurvmeshsetcoords2(visit_handle obj, int dims, visit_handle c)
+      external visitcurvmeshsetcoords2
+      integer  visitcurvmeshsetcoords2
+
+! visitcurvmeshsetcoords3(visit_handle obj, int dims, visit_handle c)
+      external visitcurvmeshsetcoords3
+      integer  visitcurvmeshsetcoords3
+
+! visitcurvmeshsetbaseindex(visit_handle obj, int base_index)
+      external visitcurvmeshsetbaseindex
+      integer  visitcurvmeshsetbaseindex
+
+! visitcurvmeshsetrealindices(visit_handle obj, int mins, int maxs)
+      external visitcurvmeshsetrealindices
+      integer  visitcurvmeshsetrealindices
+
+! visitcurvmeshsetghostcells(visit_handle obj, visit_handle gz)
+      external visitcurvmeshsetghostcells
+      integer  visitcurvmeshsetghostcells
+
+! visitcurvmeshsetghostnodes(visit_handle obj, visit_handle gn)
+      external visitcurvmeshsetghostnodes
+      integer  visitcurvmeshsetghostnodes
+
+! visitcurvmeshgetcoords(visit_handle obj, int ndims, int dims, int coordMode,
+!                        visit_handle x, visit_handle y, visit_handle z, 
+!                        visit_handle c)
+      external visitcurvmeshgetcoords
+      integer  visitcurvmeshgetcoords
+
+! visitcurvmeshgetbaseindex(visit_handle obj, int base_index)
+      external visitcurvmeshgetbaseindex
+      integer  visitcurvmeshgetbaseindex
+
+! visitcurvmeshgetrealindices(visit_handle obj, int mins, int maxs)
+      external visitcurvmeshgetrealindices
+      integer  visitcurvmeshgetrealindices
+
+! visitcurvmeshgetghostcells(visit_handle obj, visit_handle gz)
+      external visitcurvmeshgetghostcells
+      integer  visitcurvmeshgetghostcells
+
+! visitcurvmeshgetghostnodes(visit_handle obj, visit_handle gn)
+      external visitcurvmeshgetghostnodes
+      integer  visitcurvmeshgetghostnodes
+
+
+! VisIt_DomainBoundaries functions
+!cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
+! visitdboundsalloc(visit_handle obj)
+      external visitdboundsalloc
+      integer  visitdboundsalloc
+
+! visitdboundsfree(visit_handle obj)
+      external visitdboundsfree
+      integer  visitdboundsfree
+
+! visitdboundssettype(visit_handle obj, int type)
+      external visitdboundssettype
+      integer  visitdboundssettype
+
+! visitdboundssetnumdomains(visit_handle obj, int numdomains)
+      external visitdboundssetnumdomains
+      integer  visitdboundssetnumdomains
+
+! visitdboundssetamrindices(visit_handle obj, int patch, int level, const int extents)
+      external visitdboundssetamrindices
+      integer  visitdboundssetamrindices
+
+! visitdboundssetrectindices(visit_handle obj, int domain, const int extents)
+      external visitdboundssetrectindices
+      integer  visitdboundssetrectindices
+
+! visitdboundssetextents(visit_handle obj, int domain, const int extents);
+      external visitdboundssetextents
+      integer  visitdboundssetextents
+
+! visitdboundsaddneighbor(visit_handle obj, int domain, int mi, 
+!                         const int orientation, const int extents)
+      external visitdboundsaddneighbor
+      integer  visitdboundsaddneighbor
+
+! visitdboundsfinish(visit_handle obj, int domain)
+      external visitdboundsfinish
+      integer  visitdboundsfinish
+
+
+! VisIt_DomainList functions
+!cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
+! visitdomainlistalloc(visit_handle obj)
+      external visitdomainlistalloc
+      integer  visitdomainlistalloc
+
+! visitdomainlistfree(visit_handle obj)
+      external visitdomainlistfree
+      integer  visitdomainlistfree
+
+! visitdomainlistsetdomains(visit_handle obj, int alldoms, visit_handle mydoms)
+      external visitdomainlistsetdomains
+      integer  visitdomainlistsetdomains
+
+
+! VisIt_DomainNesting functions
+!cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
+! visitdnestingalloc(visit_handle obj)
+      external visitdnestingalloc
+      integer  visitdnestingalloc
+
+! visitdnestingfree(visit_handle obj)
+      external visitdnestingfree
+      integer  visitdnestingfree
+
+! visitdnestingsetdimensions(visit_handle obj, int npatches, int nlevels, int ndimensions)
+      external visitdnestingsetdimensions
+      integer  visitdnestingsetdimensions
+
+! visitdnestingsetlevelrefinement(visit_handle obj, int level, const int ratios)
+      external visitdnestingsetlevelrefinement
+      integer  visitdnestingsetlevelrefinement
+
+! visitdnestingsetnestingforpatch(visit_handle obj, int patch, int level, 
+      external visitdnestingsetnestingforpatch
+      integer  visitdnestingsetnestingforpatch
+
+
+! VisIt_MaterialData functions
+!cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
+! visitmatdataalloc(visit_handle h)
+      external visitmatdataalloc
+      integer  visitmatdataalloc
+
+! visitmatdatafree(visit_handle h)
+      external visitmatdatafree
+      integer  visitmatdatafree
+
+! visitmatdataappendcells(visit_handle h, int ncells)
+      external visitmatdataappendcells
+      integer  visitmatdataappendcells
+
+! visitmatdataaddmat(visit_handle obj, visit_f77string matname, int lmatname, int matno)
+      external visitmatdataaddmat
+      integer  visitmatdataaddmat
+
+! visitmatdataaddcleancell(visit_handle h, int cell, int matno)
+      external visitmatdataaddcleancell
+      integer  visitmatdataaddcleancell
+
+! visitmatdataaddmixedcell(visit_handle h, int cell, int matnos, float matvf, int nmats)
+      external visitmatdataaddmixedcell
+      integer  visitmatdataaddmixedcell
+
+! visitmatdatasetmats(visit_handle obj, visit_handle matlist)
+      external visitmatdatasetmats
+      integer  visitmatdatasetmats
+
+! visitmatdatasetmixedmats(visit_handle obj, visit_handle mix_mat, 
+      external visitmatdatasetmixedmats
+      integer  visitmatdatasetmixedmats
+
+
+! VisIt_PointMesh functions
+!cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
+! visitpointmeshalloc(visit_handle obj)
+      external visitpointmeshalloc
+      integer  visitpointmeshalloc
+
+! visitpointmeshfree(visit_handle obj)
+      external visitpointmeshfree
+      integer  visitpointmeshfree
+
+! visitpointmeshsetcoordsxy(visit_handle obj, visit_handle x, visit_handle y)
+      external visitpointmeshsetcoordsxy
+      integer  visitpointmeshsetcoordsxy
+
+! visitpointmeshsetcoordsxyz(visit_handle obj, visit_handle x, visit_handle y, visit_handle z)
+      external visitpointmeshsetcoordsxyz
+      integer  visitpointmeshsetcoordsxyz
+
+! visitpointmeshsetcoords(visit_handle obj, visit_handle c)
+      external visitpointmeshsetcoords
+      integer  visitpointmeshsetcoords
+
+! visitpointmeshgetcoords(visit_handle obj, int ndims, int coordmode,
+!    visit_handle x, visit_handle y, visit_handle z, visit_handle c)
+      external visitpointmeshgetcoords
+      integer  visitpointmeshgetcoords
+
+
+! VisIt_RectilinearMesh functions
+!cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
+! visitrectmeshalloc(visit_handle obj)
+      external visitrectmeshalloc
+      integer  visitrectmeshalloc
+
+! visitrectmeshfree(visit_handle obj)
+      external visitrectmeshfree
+      integer  visitrectmeshfree
+
+! visitrectmeshsetcoordsxy(visit_handle obj, visit_handle x, visit_handle y)
+      external visitrectmeshsetcoordsxy
+      integer  visitrectmeshsetcoordsxy
+
+! visitrectmeshsetcoordsxyz(visit_handle obj, visit_handle x, visit_handle y, visit_handle z)
+      external visitrectmeshsetcoordsxyz
+      integer  visitrectmeshsetcoordsxyz
+
+! visitrectmeshsetbaseindex(visit_handle obj, int base_index)
+      external visitrectmeshsetbaseindex
+      integer  visitrectmeshsetbaseindex
+
+! visitrectmeshsetrealindices(visit_handle obj, int mins, int maxs)
+      external visitrectmeshsetrealindices
+      integer  visitrectmeshsetrealindices
+
+! visitrectmeshsetghostcells(visit_handle obj, visit_handle gz)
+      external visitrectmeshsetghostcells
+      integer  visitrectmeshsetghostcells
+
+! visitrectmeshsetghostnodes(visit_handle obj, visit_handle gn)
+      external visitrectmeshsetghostnodes
+      integer  visitrectmeshsetghostnodes
+
+! visitrectmeshgetcoords(visit_handle obj, int ndims, visit_handle x, 
+!                        visit_handle y, visit_handle z)
+      external visitrectmeshgetcoords
+      integer  visitrectmeshgetcoords
+
+! visitrectmeshgetbaseindex(visit_handle obj, int base_index)
+      external visitrectmeshgetbaseindex
+      integer  visitrectmeshgetbaseindex
+
+! visitrectmeshgetrealindices(visit_handle obj, int mins, int maxs)
+      external visitrectmeshgetrealindices
+      integer  visitrectmeshgetrealindices
+
+! visitrectmeshgetghostcells(visit_handle obj, visit_handle gz)
+      external visitrectmeshgetghostcells
+      integer  visitrectmeshgetghostcells
+
+! visitrectmeshgetghostnodes(visit_handle obj, visit_handle gn)
+      external visitrectmeshgetghostnodes
+      integer  visitrectmeshgetghostnodes
+
+! VisIt_SpeciesData functions
+!cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
+! visitspecdataalloc(visit_handle h)
+      external visitspecdataalloc
+      integer  visitspecdataalloc
+
+! visitspecdatafree(visit_handle h)
+      external visitspecdatafree
+      integer  visitspecdatafree
+
+! visitspecdataaddspeciesname(visit_handle h, visit_handle val)
+      external visitspecdataaddspeciesname
+      integer  visitspecdataaddspeciesname
+
+! visitspecdatasetspecies(visit_handle h, visit_handle val)
+      external visitspecdatasetspecies
+      integer  visitspecdatasetspecies
+
+! visitspecdatasetspeciesmf(visit_handle h, visit_handle val)
+      external visitspecdatasetspeciesmf
+      integer  visitspecdatasetspeciesmf
+
+! visitspecdatasetmixedspecies(visit_handle h, visit_handle val)
+      external visitspecdatasetmixedspecies
+      integer  visitspecdatasetmixedspecies
+
+
+! VisIt_UnstructuredMesh functions
+!cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
+! visitucdmeshalloc(visit_handle obj)
+      external visitucdmeshalloc
+      integer  visitucdmeshalloc
+
+! visitucdmeshfree(visit_handle obj)
+      external visitucdmeshfree
+      integer  visitucdmeshfree
+
+! visitucdmeshsetcoordsxy(visit_handle obj, visit_handle x, visit_handle y)
+      external visitucdmeshsetcoordsxy
+      integer  visitucdmeshsetcoordsxy
+
+! visitucdmeshsetcoordsxyz(visit_handle obj, visit_handle x, visit_handle y, visit_handle z)
+      external visitucdmeshsetcoordsxyz
+      integer  visitucdmeshsetcoordsxyz
+
+! visitucdmeshsetcoords(visit_handle obj, visit_handle c)
+      external visitucdmeshsetcoords
+      integer  visitucdmeshsetcoords
+
+! visitucdmeshsetconnectivity(visit_handle obj, int nzones, visit_handle c)
+      external visitucdmeshsetconnectivity
+      integer  visitucdmeshsetconnectivity
+
+! visitucdmeshsetrealindices(visit_handle obj, int min, int max)
+      external visitucdmeshsetrealindices
+      integer  visitucdmeshsetrealindices
+
+! visitucdmeshsetghostcells(visit_handle obj, visit_handle gz)
+      external visitucdmeshsetghostcells
+      integer  visitucdmeshsetghostcells
+
+! visitucdmeshsetghostnodes(visit_handle obj, visit_handle gn)
+      external visitucdmeshsetghostnodes
+      integer  visitucdmeshsetghostnodes
+
+! visitucdmeshsetglobalcellids(visit_handle obj, visit_handle gz)
+      external visitucdmeshsetglobalcellids
+      integer  visitucdmeshsetglobalcellids
+
+! visitucdmeshsetglobalnodeids(visit_handle obj, visit_handle gn)
+      external visitucdmeshsetglobalnodeids
+      integer  visitucdmeshsetglobalnodeids
+
+! visitucdmeshgetcoords(visit_handle obj, int ndims, int coordmode,  
+!     visit_handle x, visit_handle y, visit_handle z, visit_handle c)
+      external visitucdmeshgetcoords
+      integer  visitucdmeshgetcoords
+
+! visitucdmeshgetconnectivity(visit_handle obj, int nzones, visit_handle c)
+      external visitucdmeshgetconnectivity
+      integer  visitucdmeshgetconnectivity
+
+! visitucdmeshgetrealindices(visit_handle obj, int min, int max)
+      external visitucdmeshgetrealindices
+      integer  visitucdmeshgetrealindices
+
+! visitucdmeshgetghostcells(visit_handle obj, visit_handle gz)
+      external visitucdmeshgetghostcells
+      integer  visitucdmeshgetghostcells
+
+! visitucdmeshgetghostnodes(visit_handle obj, visit_handle gn)
+      external visitucdmeshgetghostnodes
+      integer  visitucdmeshgetghostnodes
+
+! visitucdmeshgetglobalcellids(visit_handle obj, visit_handle gz)
+      external visitucdmeshgetglobalcellids
+      integer  visitucdmeshgetglobalcellids
+
+! visitucdmeshgetglobalnodeids(visit_handle obj, visit_handle gn)
+      external visitucdmeshgetglobalnodeids
+      integer  visitucdmeshgetglobalnodeids
+
+! VisIt_VariableData functions
+!cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
+! visitvardataalloc(visit_handle obj)
+      external visitvardataalloc
+      integer  visitvardataalloc
+
+! visitvardatafree(visit_handle obj)
+      external visitvardatafree
+      integer  visitvardatafree
+
+!! Contiguous array storage
+
+! visitvardatasetc(visit_handle obj, int owner, int ncomps, int ntuples, char ptr)
+      external visitvardatasetc
+      integer  visitvardatasetc
+
+! visitvardataseti(visit_handle obj, int owner, int ncomps, int ntuples, int ptr)
+      external visitvardataseti
+      integer  visitvardataseti
+
+! visitvardatasetl(visit_handle obj, int owner, int ncomps, int ntuples, long ptr)
+      external visitvardatasetl
+      integer  visitvardatasetl
+
+! visitvardatasetf(visit_handle obj, int owner, int ncomps, int ntuples, float ptr)
+      external visitvardatasetf
+      integer  visitvardatasetf
+
+! visitvardatasetd(visit_handle obj, int owner, int ncomps, int ntuples, double ptr)
+      external visitvardatasetd
+      integer  visitvardatasetd
+
+!! Non-contiguous / multi-component array storage
+
+! visitvardatasetarrc(visit_handle obj, int idx, int owner, int ntuples,
+!                     int offset, int stride, char ptr)
+      external visitvardatasetarrc
+      integer  visitvardatasetarrc
+
+! visitvardatasetarri(visit_handle obj, int idx, int owner, int ntuples,
+!                     int offset, int stride, int ptr)
+      external visitvardatasetarri
+      integer  visitvardatasetarri
+
+! visitvardatasetarrl(visit_handle obj, int idx, int owner, int ntuples,
+!                     int offset, int stride, long ptr)
+      external visitvardatasetarrl
+      integer  visitvardatasetarrl
+
+! visitvardatasetarrf(visit_handle obj, int idx, int owner, int ntuples,
+!                     int offset, int stride, float ptr)
+      external visitvardatasetarrf
+      integer  visitvardatasetarrf
+
+! visitvardatasetarrd(visit_handle obj, int idx, int owner, int ntuples,
+!                     int offset, int stride, double ptr)
+      external visitvardatasetarrd
+      integer  visitvardatasetarrd
+
+!! Get functions
+
+! visitvardatagettype(visit_handle obj, int datatype)
+      external visitvardatagettype
+      integer  visitvardatagettype
+
+! visitvardatagetc(visit_handle obj, int owner, int ncomps, int ntuples,
+!                  char dest, int ldest)
+      external visitvardatagetc
+      integer  visitvardatagetc
+
+! visitvardatageti(visit_handle obj, int owner, int ncomps, int ntuples,
+!                  int dest, int ldest)
+      external visitvardatageti
+      integer  visitvardatageti
+
+! visitvardatagetf(visit_handle obj, int owner, int ncomps, int ntuples,
+!                  float dest, int ldest)
+      external visitvardatagetf
+      integer  visitvardatagetf
+
+! visitvardatagetd(visit_handle obj, int owner, int ncomps, int ntuples,
+!                  double dest, int ldest)
+      external visitvardatagetd
+      integer  visitvardatagetd
+
+! visitvardatagetl(visit_handle obj, int owner, int ncomps, int ntuples,
+!                  long dest, int ldest)
+      external visitvardatagetl
+      integer  visitvardatagetl
+
+! VisIt_View2D functions
+!cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
+! visitview2dalloc(visit_handle obj)
+      external 
+      integer
+
+! visitview2dfree(visit_handle obj)
+      external visitview2dfree
+      integer  visitview2dfree
+
+! visitview2dsetwindowcoords(visit_handle h, double val[4])
+      external visitview2dsetwindowcoords
+      integer  visitview2dsetwindowcoords
+
+! visitview2dgetwindowcoords(visit_handle h, double val[4])
+      external visitview2dgetwindowcoords
+      integer  visitview2dgetwindowcoords
+
+! visitview2dsetviewportcoords(visit_handle h, double val[4])
+      external visitview2dsetviewportcoords
+      integer  visitview2dsetviewportcoords
+
+! visitview2dgetviewportcoords(visit_handle h, double val[4])
+      external visitview2dgetviewportcoords
+      integer  visitview2dgetviewportcoords
+
+! visitview2dsetffmode(visit_handle h, int val)
+      external visitview2dsetffmode
+      integer  visitview2dsetffmode
+
+! visitview2dgetffmode(visit_handle h, int val )
+      external visitview2dgetffmode
+      integer  visitview2dgetffmode
+
+! visitview2dsetffautothreshold(visit_handle h, double val)
+      external visitview2dsetffautothreshold
+      integer  visitview2dsetffautothreshold
+
+! visitview2dgetffautothreshold(visit_handle h, double val)
+      external visitview2dgetffautothreshold
+      integer  visitview2dgetffautothreshold
+
+! visitview2dsetxscale(visit_handle h, int val)
+      external visitview2dsetxscale
+      integer  visitview2dsetxscale
+
+! visitview2dgetxscale(visit_handle h, int val)
+      external visitview2dgetxscale
+      integer  visitview2dgetxscale
+
+! visitview2dsetyscale(visit_handle h, int val)
+      external visitview2dsetyscale
+      integer  visitview2dsetyscale
+
+! visitview2dgetyscale(visit_handle h, int val)
+      external visitview2dgetyscale
+      integer  visitview2dgetyscale
+
+! visitview2dsetwindowvalid(visit_handle h, int val)
+      external visitview2dsetwindowvalid
+      integer  visitview2dsetwindowvalid
+
+! visitview2dgetwindowvalid(visit_handle h, int val)
+      external visitview2dgetwindowvalid
+      integer  visitview2dgetwindowvalid
+
+! visitview2dcopy(visit_handle dest, visit_handle src)
+      external visitview2dcopy
+      integer  visitview2dcopy
+
+
+! VisIt_View3D functions
+!cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
+! visitview3dalloc(visit_handle h)
+      external visitview3dalloc
+      integer  visitview3dalloc
+
+! visitview3dfree(visit_handle h)
+      external visitview3dfree
+      integer  visitview3dfree
+
+! visitview3dsetviewnormal(visit_handle h, double val[3])
+      external visitview3dsetviewnormal
+      integer  visitview3dsetviewnormal
+
+! visitview3dgetviewnormal(visit_handle h, double val[3])
+      external visitview3dgetviewnormal
+      integer  visitview3dgetviewnormal
+
+! visitview3dsetfocus(visit_handle h, double val[3])
+      external visitview3dsetfocus
+      integer  visitview3dsetfocus
+
+! visitview3dgetfocus(visit_handle h, double val[3])
+      external visitview3dgetfocus
+      integer  visitview3dgetfocus
+
+! visitview3dsetviewup(visit_handle h, double val[3])
+      external visitview3dsetviewup
+      integer  visitview3dsetviewup
+
+! visitview3dgetviewup(visit_handle h, double val[3])
+      external visitview3dgetviewup
+      integer  visitview3dgetviewup
+
+! visitview3dsetviewangle(visit_handle h, double val)
+      external visitview3dsetviewangle
+      integer  visitview3dsetviewangle
+
+! visitview3dgetviewangle(visit_handle h, double val)
+      external visitview3dgetviewangle
+      integer  visitview3dgetviewangle
+
+! visitview3dsetparallelscale(visit_handle h, double val)
+      external visitview3dsetparallelscale
+      integer  visitview3dsetparallelscale
+
+! visitview3dgetparallelscale(visit_handle h, double val)
+      external visitview3dgetparallelscale
+      integer  visitview3dgetparallelscale
+
+! visitview3dsetnearplane(visit_handle h, double val)
+      external visitview3dsetnearplane
+      integer  visitview3dsetnearplane
+
+! visitview3dgetnearplane(visit_handle h, double val)
+      external visitview3dgetnearplane
+      integer  visitview3dgetnearplane
+
+! visitview3dsetfarplane(visit_handle h, double val)
+      external visitview3dsetfarplane
+      integer  visitview3dsetfarplane
+
+! visitview3dgetfarplane(visit_handle h, double val)
+      external visitview3dgetfarplane
+      integer  visitview3dgetfarplane
+
+! visitview3dsetimagepan(visit_handle h, double val[2])
+      external visitview3dsetimagepan
+      integer  visitview3dsetimagepan
+
+! visitview3dgetimagepan(visit_handle h, double val[2])
+      external visitview3dgetimagepan
+      integer  visitview3dgetimagepan
+
+! visitview3dsetimagezoom(visit_handle h, double val)
+      external visitview3dsetimagezoom
+      integer  visitview3dsetimagezoom
+
+! visitview3dgetimagezoom(visit_handle h, double val)
+      external visitview3dgetimagezoom
+      integer  visitview3dgetimagezoom
+
+! visitview3dsetperspective(visit_handle h, int val)
+      external visitview3dsetperspective
+      integer  visitview3dsetperspective
+
+! visitview3dgetperspective(visit_handle h, int val)
+      external visitview3dgetperspective
+      integer  visitview3dgetperspective
+
+! visitview3dseteyeangle(visit_handle h, double val)
+      external visitview3dseteyeangle
+      integer  visitview3dseteyeangle
+
+! visitview3dgeteyeangle(visit_handle h, double val)
+      external visitview3dgeteyeangle
+      integer  visitview3dgeteyeangle
+
+! visitview3dsetcenterofrotationset(visit_handle h, int val)
+      external visitview3dsetcenterofrotationset
+      integer  visitview3dsetcenterofrotationset
+
+! visitview3dgetcenterofrotationset(visit_handle h, int val)
+      external visitview3dgetcenterofrotationset
+      integer  visitview3dgetcenterofrotationset
+
+! visitview3dsetcenterofrotation(visit_handle h, double val[3])
+      external visitview3dsetcenterofrotation
+      integer  visitview3dsetcenterofrotation
+
+! visitview3dgetcenterofrotation(visit_handle h, double val[3])
+      external visitview3dgetcenterofrotation
+      integer  visitview3dgetcenterofrotation
+
+! visitview3dsetaxis3dscaleflag(visit_handle h, int val)
+      external visitview3dsetaxis3dscaleflag
+      integer  visitview3dsetaxis3dscaleflag
+
+! visitview3dgetaxis3dscaleflag(visit_handle h, int val)
+      external visitview3dgetaxis3dscaleflag
+      integer  visitview3dgetaxis3dscaleflag
+
+! visitview3dsetaxis3dscales(visit_handle h, double val[3])
+      external visitview3dsetaxis3dscales
+      integer  visitview3dsetaxis3dscales
+
+! visitview3dgetaxis3dscales(visit_handle h, double val[3])
+      external visitview3dgetaxis3dscales
+      integer  visitview3dgetaxis3dscales
+
+! visitview3dsetshear(visit_handle h, double val[3])
+      external visitview3dsetshear
+      integer  visitview3dsetshear
+
+! visitview3dgetshear(visit_handle h, double val[3])
+      external visitview3dgetshear
+      integer  visitview3dgetshear
+
+! visitview3dsetwindowvalid(visit_handle h, int val)
+      external visitview3dsetwindowvalid
+      integer  visitview3dsetwindowvalid
+
+! visitview3dgetwindowvalid(visit_handle h, int val)
+      external visitview3dgetwindowvalid
+      integer  visitview3dgetwindowvalid
+
+! visitview3dcopy(visit_handle dest, visit_handle src)
+      external visitview3dcopy
+      integer  visitview3dcopy

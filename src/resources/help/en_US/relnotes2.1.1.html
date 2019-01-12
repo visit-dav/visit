@@ -1,0 +1,89 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta http-equiv="Content-Language" content="en-us">
+   <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+   <meta name="ProgId" content="FrontPage.Editor.Document">
+   <title>VisIt 2.1.1 Release Notes</title>
+</head>
+<body>
+
+<center><b><font size="6">VisIt 2.1.1 Release Notes</font></b></center>
+
+<p>Welcome to VisIt's release notes page. Release 2.1.1 is primarily a bug fix release to release 2.1. It fixes additional bugs in release 2.1. Look <a href="relnotes2.1.0.html">here</a> to see a complete list of changes in release 2.1.</p>
+<p><b><font size="4">Bugs fixed in version 2.1.1</font></b></p>
+<ul>
+<li>When you save a window using the <b>Screen ratio</b> option, the image should match what you see on the screen much better.</li>
+<li>Saving movies using "movie templates" is now fixed.</li>
+<li>Clicking <b>Print</b> in the Print dialog now prints on all platforms.</li>
+<li>The molecule plot now correctly uses 'sphere imposters' in scalable
+rendering mode.</li>
+<li>The FVCOM reader can group files again.</li>
+<li>The Tecplot reader understands additions to the Tecplot ASCII format, such as comments, NODES/ELEMENTS as aliases for N/E, and complex VARLOCATION specifications.</li>
+<li>The Tecplot writer adds extra spaces between elements to avoid cases where field widths were not sufficient to prevent overlap.</li>
+<li>The ThreeSlice operator now correctly handles data with mixed mesh types, such as unstructured and structured in different domains.</li>
+<li>The H5Part reader no erroneously longer assumes a timestep of 0 for some operations.</li>
+<li>The 3D view axis scaling behavior has received some usability improvements.</li>
+<li>The POV-Ray exporter now avoids POV-Ray errors on degenerate geometry.</li>
+<li>The <tt>-viewer_geometry</tt> argument works again, letting you tell VisIt where to place the viewer windows.</li>
+<LI>Position independent code is forced when building Mesa, as a workaround for build that appeared on 32bit
+SELinux-enabled systems.</LI>
+<li>The streamline plot:</li>
+<ul>
+   <li>now works properly on 2D curvilinear meshes.</li>
+   <li>now updates its legend properly when you change color tables.</li>
+   <li>no longer suffers from memory corruption issues like those described in
+    <A HREF="http://visitbugs.ornl.gov/issues/368">issue 368</A>.</li>
+   <li>no longer crashes when applied to an empty data set.</li>
+   <li>handles sample densities more robustly when going from the CLI to the gui.</li>
+   <li>now is more robust when cropping away portions of a streamline for animations.  4 defects were resolved and the user interface was improved.</li>
+</ul>
+<li>The resample operator now correctly preserves vector data for all mesh types.  (Previously only rectilinear and AMR worked correctly.)</li>
+<li>The uniform placement option for the vector plot now:</li>
+<ul>
+  <li>works with the save window feature and in scalable rendering mode.</li>
+  <li>warns you when you have tried a configuration it can't succeed with (e.g. uniform placement over a surface in 3D).</li>
+  <li>does not produce gigantic vectors in regions where there is no data.</li>
+  <li>no longer scales your data when you look at non-rectilinear data.</li>
+</ul>
+<li>The <i>Reverse, Turn all on, Turn all off</i> buttons in the Subset window now take effect immediately when the <i>Auto apply</i> setting is enabled.</li>
+<li>The volume plot was incorrectly restricting the maximum number of samples per ray when ray casting.  This restriction has been lifted.</li>
+<li>The DataBinning operator now can be used in conjunction with the Contour plot and the Volume plot.</li>
+<li><i>Save Session</i> and <i>Save Settings</i> will now work correctly for the DataBinning, AMRStitchCell,
+    DeformSphereGlyph, Delaunay, and Edge operators.</li>
+<li>The PersistentParticles operator now works in conjunction with <i>Selections</i> for all data.  (It previously
+    only worked with FastBit data.)</li>
+<li>Banks can now be correctly specified on Argonne's Eureka machine.</li>
+<li>An indexing problem for the SetWindowMode in the Python interface was corrected.</li>
+<li>The Label plot can now set text heights that are fractional percents.  Meaning 1.5% is now possible, where only 1% and 2% were possible through the GUI previously.</li>
+<li>A bug was fixed that prevented saving movies with old session files.</li>
+<li>Expressions that extract vectors from tensor data now work correctly for 2D data.</li>
+<li>Making movies once again can obtain the engine launch parameters from a session file. This fixes the movie-making case where you want to use a new instance of VisIt or if you want VisIt to tell you the command to run.</li>
+<li>Quoting for string data in saved settings has been eliminated except for strings that contain spaces. This more closely matches VisIt's old behavior, improving compatibility with older versions of VisIt.</li>
+<li>Cracks Clipper operator works again.</li>
+<li>The embedded viewer example program now works on Windows.</li>
+<li>The Windows installer now checks for previous versions of VisIt in the PATH environment variable, and removes them if user so chooses.</li>
+<li>SimV2 can better deal with 2-element arrays when setting real indices and base indices for rectilinear meshes.</li>
+<li>The default number of cores per node to use was changed from 8 to 16 for the parallel interactive pdebug profile on hera.</li>
+<li>The new <i>RenamePickLabel</i> function has been changed so it can repeatedly use the pick letter as the old pick text.</li>
+<li>A Mac-specific bug was fixed where the Threshold operator was not correctly inputting ranges from the window in all occasions.</li>
+<li>A Mac-specific bug was fixed where legend annotation attributes were not correctly inputting labels in all occasions.</li>
+<li>A bug with passing arbitrary arguments to Python Queries was fixed.</li>
+<li>Versioned releases of build_visit are now tied to the proper release tag in svn mode.</li>
+<li>A parallel engine bug with patch selection for Silo AMR data sets was resolved.
+<li>Windows version can save mpeg encoded movies again.</li>
+<li>A Windows-specific bug with Restore Session was fixed.</li>
+<li>The DDCDM reader works properly again in parallel.</li>
+</ul>
+<p><b><font size="4">Enhancements in version 2.1.1</font></b></p>
+<ul>
+<li>The -o command line option, and OpenDatabase Python command, to open files with a specific database reader plugin no longer requires a plugin version.  For example, <tt>visit -o myvtkfile,VTK</tt> now works as expected.</li>
+<li>Host profiles were added for the new LLNL machines aztec, edge and inca.</li>
+<li>Host profiles were added for Argonne's MCS machines.</li>
+<li>Performance of vector plots with lots of zero-magnitude data has been improved.</li>
+<li>VisIt's behavior for prompting about whether you want to exit all of VisIt or just the graphical interface has been improved.</li>
+</ul>
+<p>Click the following link to view the release notes for the previous version of VisIt: <a href="relnotes2.1.0.html">VisIt 2.1 Release Notes</a>.</p>
+</body>
+</html>

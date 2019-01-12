@@ -1,0 +1,2108 @@
+/*****************************************************************************
+*
+* Copyright (c) 2000 - 2018, Lawrence Livermore National Security, LLC
+* Produced at the Lawrence Livermore National Laboratory
+* LLNL-CODE-442911
+* All rights reserved.
+*
+* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
+* full copyright notice is contained in the file COPYRIGHT located at the root
+* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
+*
+* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
+* modification, are permitted provided that the following conditions are met:
+*
+*  - Redistributions of  source code must  retain the above  copyright notice,
+*    this list of conditions and the disclaimer below.
+*  - Redistributions in binary form must reproduce the above copyright notice,
+*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
+*    documentation and/or other materials provided with the distribution.
+*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
+*    be used to endorse or promote products derived from this software without
+*    specific prior written permission.
+*
+* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
+* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
+* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
+* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
+* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
+* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
+* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
+* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
+* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
+* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
+* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
+* DAMAGE.
+*
+*****************************************************************************/
+
+// ************************************************************************* //
+//                             avtDataRequest.C                              //
+// ************************************************************************* //
+
+#include <avtDataRequest.h>
+
+#include <avtSILRestrictionTraverser.h>
+#include <avtWebpage.h>
+
+#include <DebugStream.h>
+#include <ImproperUseException.h>
+
+#include <vtkSetGet.h>
+#include <vtkSystemIncludes.h>
+
+#include <vector>
+#include <map>
+
+#include <snprintf.h>
+#include <visit-config.h>
+
+using     std::vector;
+using     std::map;
+
+
+// ****************************************************************************
+//  Method: avtDataRequest constructor
+//
+//  Arguments:
+//      var          The variable for this dataset.
+//      ts           The timestep for this dataset.
+//      s            The SIL restriction.
+//
+//  Programmer:  Hank Childs
+//  Creation:    May 19, 2001
+//
+//  Modifications:
+//
+//    Kathleen Bonnell, Fri Oct 19 15:33:35 PDT 2001
+//    Initialize needDomainLabels.
+//
+//    Hank Childs, Wed Nov 28 13:23:17 PST 2001
+//    Initialize useGhostZones.
+//
+//    Jeremy Meredith, Thu Mar 14 17:30:11 PST 2002
+//    Initialize needInternalSurfaces.
+//
+//    Hank Childs, Tue Jun 18 16:49:01 PDT 2002
+//    Initialize mayRequireZones.
+//
+//    Jeremy Meredith, Tue Aug 13 12:48:12 PDT 2002
+//    Initialize needValidFaceConnectivity.
+//
+//    Kathleen Bonnell, Wed Sep  4 14:43:43 PDT 2002  
+//    Removed needDomainLabels. 
+//
+//    Hank Childs, Mon Sep 30 17:31:59 PDT 2002
+//    Initialize needStructuredIndices.
+//
+//    Hank Childs, Wed Oct  9 10:08:04 PDT 2002
+//    Initialize usesAllDomains.
+//
+//    Jeremy Meredith, Thu Oct 24 16:15:11 PDT 2002
+//    Added material options.
+//
+//    Jeremy Meredith, Tue Jun 10 13:21:15 PDT 2003
+//    Added needBoundarySurfaces.
+//
+//    Hank Childs, Wed Jun 18 09:20:16 PDT 2003
+//    Added needNodes.
+//
+//    Hank Childs, Tue Aug 12 17:27:32 PDT 2003
+//    Added mustDoMIR.
+//
+//    Jeremy Meredith, Mon Sep 15 17:12:16 PDT 2003
+//    Added a flag for the material interface algorithm to use.
+//
+//    Hank Childs, Thu Sep 25 08:28:28 PDT 2003
+//    Set the db variable.
+//
+//    Kathleen Bonnell, Tue Jun  1 15:08:30 PDT 2004 
+//    Initialize mayRequireNodes. 
+//
+//    Hank Childs, Tue Aug 10 14:51:34 PDT 2004
+//    Remove useGhostZones, add maintainOriginalConnectivity and
+//    desiredGhostDataType.
+//
+//    Hank Childs, Thu Sep 23 09:23:01 PDT 2004
+//    Added needGlobalZones and needGlobalNodes.
+//
+//    Mark C. Miller, Tue Apr  5 10:30:16 PDT 2005
+//    Added admissibleDataTypes and needNativePrecision
+//
+//    Hank Childs, Tue Aug 16 16:17:03 PDT 2005
+//    Add support for simplifying heavily mixed zones.
+//
+//    Jeremy Meredith, Thu Aug 18 17:54:51 PDT 2005
+//    Added a new isovolume algorithm, with adjustable VF cutoff.
+//
+//    Jeremy Meredith, Fri Aug 19 17:20:41 PDT 2005
+//    Set the default back to Tet temporarily.  This is only to make sure
+//    the test suite still passes.
+//
+//    Hank Childs, Fri Sep 23 10:10:12 PDT 2005
+//    Change db_variable to orig_variable.
+//
+//    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//    Added members for mesh discretization 
+//
+//    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
+//    Added initialization of flatness tolerance.
+//
+//    Mark C. Miller, Tue Dec  5 18:14:58 PST 2006
+//    Set discMode based on existence of FI library
+//
+//    Cyrus Harrison, Fri Mar 23 07:48:16 PDT 2007
+//    Set default MIR algorithm to Zoo
+//
+//    Kathleen Bonnell, Thu Jun 21 16:31:59 PDT 2007 
+//    Added member needAMRIndices.
+//
+//    Hank Childs, Wed Jul 25 14:11:26 PDT 2007
+//    Added support for getSimplifiedNestingRep.  Renamed needBoundarySurfaces
+//    to getBoundarySurfaceRep for consistency.
+//
+//    Brad Whitlock, Wed Jan 23 15:43:52 PST 2008
+//    Added transformVectorsDuringProject.
+//
+//    Cyrus Harrison, Tue Feb 12 13:35:19 PST 2008
+//    Added needPostGhostMaterialInfo.
+//
+//    John C. Anderson, Thu Jan 15 10:20:20 2009
+//    Added annealing time for Discrete MIR.
+//
+//    Jeremy Meredith, Fri Feb 13 11:22:39 EST 2009
+//    Added MIR iteration capability.
+//
+//    Jeremy Meredith, Tue Aug  4 10:48:26 EDT 2009
+//    Added comment for Youngs algorithm.
+//
+//    Mark C. Miller, Wed Mar  3 07:59:15 PST 2010
+//    Changed form of conditional compilation check for HAVE_BILIB from
+//    numeric test to existence test.
+//
+//    Hank Childs, Fri Sep  3 12:10:47 PDT 2010
+//    Added support for "velocityMustBeContinuous".
+//
+//    Brad Whitlock, Thu Sep  1 10:56:43 PDT 2011
+//    Added selectionName.
+//
+//    Brad Whitlock, Wed Jan  4 16:52:54 PST 2012
+//    Add missingDataBehavior.
+//
+//    Cyrus Harrison, Mon Jan 26 21:26:34 PST 2015
+//    Changed check from boost interval template lib to boost proper.
+//
+//    Alister Maguire, Mon Nov 27 14:16:21 PST 2017
+//    Added forceConstructMaterialLabels. 
+//
+// ****************************************************************************
+
+avtDataRequest::avtDataRequest(const char *var, int ts,
+                                           avtSILRestriction_p s)
+{
+    mayRequireZones = false;
+    mayRequireNodes = false;
+    needZones = false;
+    needNodes = false;
+    needGlobalZones = false;
+    needGlobalNodes = false;
+    needInternalSurfaces = false;
+    velocityMustBeContinuous = false;
+    mustDoMIR = false;
+    forceConstructMaterialLabels = false;
+    getBoundarySurfaceRep = false;
+    getSimplifiedNestingRep = false;
+    needValidFaceConnectivity = false;
+    needStructuredIndices = false;
+    needAMRIndices = -1;
+    usesAllDomains = true;
+    needMixedVariableReconstruction = false;
+    needSmoothMaterialInterfaces = false;
+    needCleanZonesOnly = false;
+    mirAlgorithm = 1; // 0=Tet 1=Zoo 2=Isovolume 3=Youngs
+    mirNumIterations = 0; // 0 = no iteration
+    mirIterationDamping = .2; // the multiplier of the vf diff when iterating
+    isovolumeMIRVF = 0.5;
+    annealingTime = 10;
+    simplifyHeavilyMixedZones = false;
+    maxMatsPerZone = 3;
+    desiredGhostDataType = NO_GHOST_DATA;
+    maintainOriginalConnectivity = false;
+    needNativePrecision = false;
+    discTol = 0.01;
+    flatTol = 0.05;
+#ifdef HAVE_BOOST
+    discMode = 1; // adaptive
+#else
+    discMode = 0; // uniform 
+#endif
+    discBoundaryOnly = false;
+    passNativeCSG = false;
+    transformVectorsDuringProject = true;
+    needPostGhostMaterialInfo = false;
+
+    InitAdmissibleDataTypes();
+
+    timestep  = ts;
+
+    sil.useRestriction = true;
+    sil.silr = s;
+
+    variable  = new char[strlen(var)+1];
+    strcpy(variable, var);
+
+    selectionName = std::string();
+    missingDataBehavior = MISSING_DATA_REMOVE;
+
+    //
+    // Assume the 'orig' variable is the input variable.  If this is not true,
+    // it will be corrected later.
+    //
+    orig_variable = new char[strlen(var)+1];
+    strcpy(orig_variable, var);
+}
+
+
+// ****************************************************************************
+//  Method: avtDataRequest constructor
+//
+//  Arguments:
+//      var          The variable for this dataset.
+//      ts           The timestep for this dataset.
+//      ch           The index of the data chunk.
+//
+//  Programmer:  Hank Childs
+//  Creation:    June 5, 2001
+//
+//  Modifications:
+//    Kathleen Bonnell, Fri Oct 19 15:33:35 PDT 2001
+//    Initialize needDomainLabels.
+//
+//    Jeremy Meredith, Thu Mar 14 17:30:11 PST 2002
+//    Initialize needInternalSurfaces.
+//
+//    Hank Childs, Tue Jun 18 16:49:01 PDT 2002
+//    Initialize mayRequireZones.
+//
+//    Jeremy Meredith, Tue Aug 13 12:48:42 PDT 2002
+//    Initialize needValidFaceConnectivity.
+//
+//    Kathleen Bonnell, Wed Sep  4 14:43:43 PDT 2002  
+//    Removed needDomainLabels. 
+//
+//    Hank Childs, Mon Sep 30 17:31:59 PDT 2002
+//    Initialize needStructuredIndices.
+//
+//    Hank Childs, Wed Oct  9 10:08:04 PDT 2002
+//    Initialize usesAllDomains.
+//
+//    Jeremy Meredith, Thu Oct 24 16:15:11 PDT 2002
+//    Added material options.
+//
+//    Jeremy Meredith, Tue Jun 10 13:21:24 PDT 2003
+//    Added needBoundarySurfaces.
+//
+//    Hank Childs, Wed Jun 18 09:20:16 PDT 2003
+//    Added needNodes.
+//
+//    Hank Childs, Tue Aug 12 17:27:32 PDT 2003
+//    Added mustDoMIR.
+//
+//    Jeremy Meredith, Mon Sep 15 17:12:16 PDT 2003
+//    Added a flag for the material interface algorithm to use.
+//
+//    Hank Childs, Thu Sep 25 08:28:28 PDT 2003
+//    Set the db variable.
+//
+//    Kathleen Bonnell, Tue Jun  1 15:08:30 PDT 2004 
+//    Initialize mayRequireNodes. 
+//
+//    Hank Childs, Tue Aug 10 14:51:34 PDT 2004
+//    Remove useGhostZones, add maintainOriginalConnectivity and
+//    desiredGhostDataType.
+//
+//    Hank Childs, Thu Sep 23 09:23:01 PDT 2004
+//    Added needGlobalZones and needGlobalNodes.
+//
+//    Mark C. Miller, Tue Apr  5 10:30:16 PDT 2005
+//    Added admissibleDataTypes and needNativePrecision
+//
+//    Hank Childs, Tue Aug 16 16:17:03 PDT 2005
+//    Add support for simplifying heavily mixed zones.
+//
+//    Jeremy Meredith, Thu Aug 18 17:54:51 PDT 2005
+//    Added a new isovolume algorithm, with adjustable VF cutoff.
+//
+//    Hank Childs, Fri Sep 23 10:10:12 PDT 2005
+//    Change db_variable to orig_variable.
+//
+//    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//    Added members for mesh discretization 
+//
+//    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
+//    Added initialization of flatness tolerance.
+//
+//    Kathleen Bonnell, Thu Jun 21 16:31:59 PDT 2007 
+//    Added member needAMRIndices.
+//
+//    Hank Childs, Wed Jul 25 14:11:26 PDT 2007
+//    Added support for getSimplifiedNestingRep.  Renamed needBoundarySurfaces
+//    to getBoundarySurfaceRep for consistency.
+//
+//    Brad Whitlock, Wed Jan 23 15:44:19 PST 2008
+//    Added transformVectorsDuringProject.
+//
+//    Cyrus Harrison, Tue Feb 12 13:35:19 PST 2008
+//    Added needPostGhostMaterialInfo.
+//
+//    John C. Anderson, Thu Jan 15 10:20:20 2009
+//    Added annealing time for Discrete MIR.
+//
+//    Jeremy Meredith, Fri Feb 13 11:22:39 EST 2009
+//    Added MIR iteration capability.
+//
+//    Jeremy Meredith, Tue Aug  4 10:48:26 EDT 2009
+//    Added comment for Youngs algorithm.
+//
+//    Hank Childs, Fri Sep  3 12:10:47 PDT 2010
+//    Added support for "velocityMustBeContinuous".
+//
+//    Brad Whitlock, Wed Jan  4 16:52:54 PST 2012
+//    Add missingDataBehavior.
+//
+//    Alister Maguire, Mon Nov 27 14:16:21 PST 2017
+//    Added forceConstructMaterialLabels.
+//
+// ****************************************************************************
+
+avtDataRequest::avtDataRequest(const char *var, int ts, int ch)
+{
+    mayRequireZones = false;
+    mayRequireNodes = false;
+    needZones = false;
+    needNodes = false;
+    needGlobalZones = false;
+    needGlobalNodes = false;
+    mustDoMIR = false;
+    forceConstructMaterialLabels = false;
+    velocityMustBeContinuous = false;
+    needInternalSurfaces = false;
+    getBoundarySurfaceRep = false;
+    getSimplifiedNestingRep = false;
+    needValidFaceConnectivity = false;
+    needStructuredIndices = false;
+    needAMRIndices = -1;
+    usesAllDomains = true;
+    needMixedVariableReconstruction = false;
+    needSmoothMaterialInterfaces = false;
+    needCleanZonesOnly = false;
+    mirAlgorithm = 1; // 0=Tet 1=Zoo 2=Isovolume 3=Youngs
+    mirNumIterations = 0; // 0 = no iteration
+    mirIterationDamping = .2; // the multiplier of the vf diff when iterating
+    isovolumeMIRVF = 0.5;
+    annealingTime = 10;
+    simplifyHeavilyMixedZones = false;
+    maxMatsPerZone = 3;
+    desiredGhostDataType = NO_GHOST_DATA;
+    maintainOriginalConnectivity = false;
+    needNativePrecision = false;
+    discTol = 0.01;
+    flatTol = 0.05;
+    discMode = 1; // adaptive
+    discBoundaryOnly = false;
+    passNativeCSG = false;
+    transformVectorsDuringProject = true;
+    needPostGhostMaterialInfo = false;
+    
+    InitAdmissibleDataTypes();
+
+    timestep  = ts;
+
+    sil.useRestriction = false;
+    sil.dataChunk = ch;
+
+    variable  = new char[strlen(var)+1];
+    strcpy(variable, var);
+
+    selectionName = std::string();
+    missingDataBehavior = MISSING_DATA_REMOVE;
+
+    //
+    // Assume the 'db' variable is the input variable.  If this is not true,
+    // it will be corrected later.
+    //
+    orig_variable = new char[strlen(var)+1];
+    strcpy(orig_variable, var);
+}
+
+
+// ****************************************************************************
+//  Method: avtDataRequest constructor
+//
+//  Arguments:
+//      spec     An old specification that should be copied.
+//      silr     The new SIL restriction that should be used in its place.
+//
+//  Programmer:  Hank Childs
+//  Creation:    June 5, 2001
+//
+//  Modifications:
+//
+//    Hank Childs, Thu Sep  6 15:39:36 PDT 2001
+//    Initialized variable to NULL.
+//
+//    Hank Childs, Thu Sep 25 08:28:28 PDT 2003
+//    Initialized db_variable to NULL.
+//
+//    Hank Childs, Fri Sep 23 10:10:12 PDT 2005
+//    Change db_variable to orig_variable.
+//
+// ****************************************************************************
+
+avtDataRequest::avtDataRequest(avtDataRequest_p spec,
+                                           avtSILRestriction_p silr)
+{
+    variable = NULL;
+    orig_variable = NULL;
+    (*this) = **spec;
+    sil.useRestriction = true;
+    sil.silr = silr;
+}
+
+
+// ****************************************************************************
+//  Method: avtDataRequest constructor
+//
+//  Arguments:
+//      spec     An old specification that should be copied.
+//      cdi      The index of the chunk of data.
+//
+//  Programmer:  Hank Childs
+//  Creation:    June 5, 2001
+//
+//  Modifications:
+//
+//    Hank Childs, Thu Sep 25 08:28:28 PDT 2003
+//    Initialized db_variable to NULL.
+//
+//    Hank Childs, Fri Sep 23 10:10:12 PDT 2005
+//    Change db_variable to orig_variable.
+//
+// ****************************************************************************
+
+avtDataRequest::avtDataRequest(avtDataRequest_p spec,
+                                           int cdi)
+{
+    variable = NULL;
+    orig_variable = NULL;
+    (*this) = **spec;
+    sil.useRestriction = false;
+    sil.dataChunk = cdi;
+}
+
+
+// ****************************************************************************
+//  Method: avtDataRequest constructor
+//
+//  Arguments:
+//      spec     An old specification that should be copied.
+//      name     The name of the new variable.
+//
+//  Programmer:  Hank Childs
+//  Creation:    June 6, 2001
+//
+//  Modifications:
+//
+//    Hank Childs, Mon Jan 14 14:23:22 PST 2002
+//    Fix memory leak.
+//
+//    Hank Childs, Thu Sep 25 08:28:28 PDT 2003
+//    Handle the db_variable as well.
+//
+//    Hank Childs, Fri Sep 23 10:10:12 PDT 2005
+//    Change db_variable to orig_variable.
+//
+// ****************************************************************************
+
+avtDataRequest::avtDataRequest(avtDataRequest_p spec,
+                                           const char *name)
+{
+    variable = NULL;
+    orig_variable = NULL;
+
+    (*this) = **spec;
+
+    if (variable != NULL)
+    {
+        delete [] variable;
+    }
+    if (orig_variable != NULL)
+    {
+        delete [] orig_variable;
+    }
+
+    variable = new char[strlen(name)+1];
+    strcpy(variable, name);
+    orig_variable = new char[strlen(name)+1];
+    strcpy(orig_variable, name);
+}
+
+
+// ****************************************************************************
+//  Method: avtDataRequest constructor
+//
+//  Arguments:
+//      spec     An old specification that should be copied.
+//
+//  Programmer:  Hank Childs
+//  Creation:    June 7, 2002
+//
+//  Modifications:
+//
+//    Hank Childs, Thu Sep 25 08:28:28 PDT 2003
+//    Initialized db_variable to NULL.
+//
+//    Hank Childs, Fri Sep 23 10:10:12 PDT 2005
+//    Change db_variable to orig_variable.
+//
+// ****************************************************************************
+
+avtDataRequest::avtDataRequest(avtDataRequest_p spec)
+{
+    variable = NULL;
+    orig_variable = NULL;
+    (*this) = **spec;
+}
+
+
+// ****************************************************************************
+//  Method: avtDataRequest assignment operator
+//
+//  Arguments:
+//      spec    The specification to copy.
+//
+//  Programmer: Hank Childs
+//  Creation:   June 5, 2001
+//
+//  Modifications:
+//
+//    Kathleen Bonnell, Fri Oct 19 16:21:42 PDT 2001
+//    Copy over needDomainLabels.
+//
+//    Hank Childs, Tue Oct 23 08:58:30 PDT 2001
+//    Copy over secondary variables as well.
+//
+//    Hank Childs, Tue Dec 18 15:29:49 PST 2001
+//    Copy over need zones.
+//
+//    Jeremy Meredith, Thu Mar 14 18:01:52 PST 2002
+//    Copy needInternalSurfaces.
+//
+//    Hank Childs, Tue Jun 18 16:49:01 PDT 2002
+//    Copy over mayRequireZones.
+//
+//    Jeremy Meredith, Tue Aug 13 12:48:57 PDT 2002
+//    Copy needValidFaceConnectivity.
+//
+//    Kathleen Bonnell, Wed Sep  4 14:43:43 PDT 2002  
+//    Removed needDomainLabels.
+//
+//    Hank Childs, Mon Sep 30 17:31:59 PDT 2002
+//    Copy needStructuredIndices.
+//
+//    Hank Childs, Wed Oct  9 10:08:04 PDT 2002
+//    Copy usesAllDomains.
+//
+//    Jeremy Meredith, Thu Oct 24 16:15:11 PDT 2002
+//    Added material options.
+//
+//    Jeremy Meredith, Tue Jun 10 13:21:32 PDT 2003
+//    Added needBoundarySurfaces.
+//
+//    Hank Childs, Tue Aug 12 17:27:32 PDT 2003
+//    Added mustDoMIR.
+//
+//    Jeremy Meredith, Mon Sep 15 17:12:16 PDT 2003
+//    Added a flag for the material interface algorithm to use.
+//
+//    Hank Childs, Thu Sep 25 08:28:28 PDT 2003
+//    Handle db_variable.
+//
+//    Kathleen Bonnell, Tue Jun  1 15:08:30 PDT 2004 
+//    Added mayRequireNodes. 
+//
+//    Hank Childs, Tue Aug 10 14:51:34 PDT 2004
+//    Remove useGhostZones, add maintainOriginalConnectivity and
+//    desiredGhostDataType.
+//
+//    Hank Childs, Thu Sep 23 09:23:01 PDT 2004
+//    Added needGlobalZones and needGlobalNodes.
+//
+//    Mark C. Miller, Tue Sep 28 19:57:42 PDT 2004
+//    Added data selection list
+//
+//    Mark C. Miller, Tue Apr  5 10:30:16 PDT 2005
+//    Added admissibleDataTypes and needNativePrecision
+//
+//    Hank Childs, Tue Aug 16 16:17:03 PDT 2005
+//    Add support for simplifying heavily mixed zones.
+//
+//    Jeremy Meredith, Thu Aug 18 17:54:51 PDT 2005
+//    Added a new isovolume algorithm, with adjustable VF cutoff.
+//
+//    Hank Childs, Fri Sep 23 10:10:12 PDT 2005
+//    Change db_variable to orig_variable.
+//
+//    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//    Added members for mesh discretization 
+//
+//    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
+//    Added flatness tolerance.
+//
+//    Kathleen Bonnell, Thu Jun 21 16:31:59 PDT 2007 
+//    Added member needAMRIndices.
+//
+//    Hank Childs, Wed Jul 25 14:11:26 PDT 2007
+//    Added support for getSimplifiedNestingRep.  Renamed needBoundarySurfaces
+//    to getBoundarySurfaceRep for consistency.
+//
+//    Brad Whitlock, Wed Jan 23 15:44:43 PST 2008
+//    Added transformVectorsDuringProject.
+//
+//    Cyrus Harrison, Tue Feb 12 13:35:19 PST 2008
+//    Added needPostGhostMaterialInfo.
+//
+//    John C. Anderson, Thu Jan 15 10:20:20 2009
+//    Added annealing time for Discrete MIR.
+//
+//    Jeremy Meredith, Fri Feb 13 11:22:39 EST 2009
+//    Added MIR iteration capability.
+//
+//    Hank Childs, Fri Sep  3 12:10:47 PDT 2010
+//    Added support for "velocityMustBeContinuous".
+//
+//    Brad Whitlock, Thu Sep  1 10:58:43 PDT 2011
+//    Added selectionName.
+//
+//    Brad Whitlock, Wed Jan  4 16:52:54 PST 2012
+//    Add missingDataBehavior.
+//
+//    Alister Maguire, Mon Nov 27 14:16:21 PST 2017
+//    added forceConstructMaterialLabels.
+//
+// ****************************************************************************
+
+avtDataRequest &
+avtDataRequest::operator=(const avtDataRequest &spec)
+{
+    if (variable != NULL)
+    {
+        delete [] variable;
+    }
+    if (orig_variable != NULL)
+    {
+        delete [] orig_variable;
+    }
+
+    timestep = spec.timestep;
+
+    variable = new char[strlen(spec.variable)+1];
+    strcpy(variable, spec.variable);
+
+    orig_variable = new char[strlen(spec.orig_variable)+1];
+    strcpy(orig_variable, spec.orig_variable);
+
+    sil.useRestriction = spec.sil.useRestriction;
+    if (sil.useRestriction)
+    {
+        sil.silr = spec.sil.silr;
+    }
+    else
+    {
+        sil.dataChunk = spec.sil.dataChunk;
+    }
+
+    mayRequireZones                 = spec.mayRequireZones;
+    mayRequireNodes                 = spec.mayRequireNodes;
+    mustDoMIR                       = spec.mustDoMIR;
+    forceConstructMaterialLabels    = spec.forceConstructMaterialLabels;
+    needZones                       = spec.needZones;
+    needNodes                       = spec.needNodes;
+    needGlobalZones                 = spec.needGlobalZones;
+    needGlobalNodes                 = spec.needGlobalNodes;
+    needInternalSurfaces            = spec.needInternalSurfaces;
+    velocityMustBeContinuous        = spec.velocityMustBeContinuous;
+    getBoundarySurfaceRep           = spec.getBoundarySurfaceRep;
+    getSimplifiedNestingRep         = spec.getSimplifiedNestingRep;
+    needValidFaceConnectivity       = spec.needValidFaceConnectivity;
+    needStructuredIndices           = spec.needStructuredIndices;
+    needAMRIndices                  = spec.needAMRIndices;
+    usesAllDomains                  = spec.usesAllDomains;
+    needMixedVariableReconstruction = spec.needMixedVariableReconstruction;
+    needSmoothMaterialInterfaces    = spec.needSmoothMaterialInterfaces;
+    needCleanZonesOnly              = spec.needCleanZonesOnly;
+    simplifyHeavilyMixedZones       = spec.simplifyHeavilyMixedZones;
+    maxMatsPerZone                  = spec.maxMatsPerZone;
+    mirAlgorithm                    = spec.mirAlgorithm;
+    mirNumIterations                = spec.mirNumIterations;
+    mirIterationDamping             = spec.mirIterationDamping;
+    isovolumeMIRVF                  = spec.isovolumeMIRVF;
+    annealingTime                   = spec.annealingTime;
+    desiredGhostDataType            = spec.desiredGhostDataType;
+    maintainOriginalConnectivity    = spec.maintainOriginalConnectivity;
+    needNativePrecision             = spec.needNativePrecision;
+    admissibleDataTypes             = spec.admissibleDataTypes;
+    discTol                         = spec.discTol;
+    flatTol                         = spec.flatTol;
+    discMode                        = spec.discMode;
+    discBoundaryOnly                = spec.discBoundaryOnly;
+    passNativeCSG                   = spec.passNativeCSG;
+    transformVectorsDuringProject   = spec.transformVectorsDuringProject;
+    needPostGhostMaterialInfo       = spec.needPostGhostMaterialInfo;
+    secondaryVariables              = spec.secondaryVariables;
+    selectionName                   = spec.selectionName;
+    missingDataBehavior             = spec.missingDataBehavior;
+
+    selList = spec.selList;
+
+    return *this;
+}
+
+
+// ****************************************************************************
+//  Method: avtDataRequest comparison operator
+//
+//  Arguments:
+//      ds      The data specification to compare against.
+//
+//  Returns:    true if this data specification equals the argument, false
+//              otherwise.
+//
+//  Programmer: Hank Childs
+//  Creation:   July 26, 2001
+//
+//  Modifications:
+//
+//    Kathleen Bonnell, Fri Oct 19 15:33:35 PDT 2001
+//    Compare needDomainLabels.
+//
+//    Hank Childs, Tue Oct 23 08:58:30 PDT 2001
+//    Check to make sure the secondary variables are equal as well.
+//
+//    Hank Childs, Wed Nov 28 13:23:17 PST 2001
+//    Check against useGhostZones.
+//
+//    Jeremy Meredith, Thu Mar 14 18:02:00 PST 2002
+//    Check against needInternalSurfaces.
+//
+//    Hank Childs, Tue Jun 18 16:49:01 PDT 2002
+//    Check against mayRequireZones.
+//
+//    Jeremy Meredith, Tue Aug 13 12:49:38 PDT 2002
+//    Check needValidFaceConnectivity.
+//
+//    Kathleen Bonnell, Wed Sep  4 14:43:43 PDT 2002  
+//    Removed needDomainLabels. 
+//
+//    Hank Childs, Mon Sep 30 17:31:59 PDT 2002
+//    Compare needStructuredIndices.
+//
+//    Hank Childs, Wed Oct  9 10:08:04 PDT 2002
+//    Compare usesAllDomains.
+//
+//    Jeremy Meredith, Thu Oct 24 16:15:11 PDT 2002
+//    Compare material options.
+//
+//    Jeremy Meredith, Tue Jun 10 13:21:40 PDT 2003
+//    Compare needBoundarySurfaces.
+//
+//    Hank Childs, Wed Jun 18 09:20:16 PDT 2003
+//    Compare needNodes.
+//
+//    Hank Childs, Tue Aug 12 17:27:32 PDT 2003
+//    Added mustDoMIR.
+//
+//    Jeremy Meredith, Mon Sep 15 17:12:16 PDT 2003
+//    Added a flag for the material interface algorithm to use.
+//
+//    Hank Childs, Thu Sep 25 08:28:28 PDT 2003
+//    Compare db_variable.
+//
+//    Kathleen Bonnell, Tue Jun  1 15:08:30 PDT 2004 
+//    Added mayRequireNodes. 
+//
+//    Hank Childs, Tue Aug 10 14:51:34 PDT 2004
+//    Remove useGhostZones, add maintainOriginalConnectivity and
+//    desiredGhostDataType.
+//
+//    Hank Childs, Thu Sep 23 09:23:01 PDT 2004
+//    Added needGlobalZones and needGlobalNodes.
+//
+//    Mark C. Miller, Tue Sep 28 19:57:42 PDT 2004
+//    Added data selection list
+//
+//    Mark C. Miller, Tue Apr  5 10:30:16 PDT 2005
+//    Added admissibleDataTypes and needNativePrecision
+//
+//    Hank Childs, Tue Aug 16 16:17:03 PDT 2005
+//    Add support for simplifying heavily mixed zones.
+//
+//    Jeremy Meredith, Thu Aug 18 17:54:51 PDT 2005
+//    Added a new isovolume algorithm, with adjustable VF cutoff.
+//
+//    Hank Childs, Fri Sep 23 10:10:12 PDT 2005
+//    Change db_variable to orig_variable.
+//
+//    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//    Added members for mesh discretization 
+//
+//    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
+//    Added flatness tolerance.
+//
+//    Kathleen Bonnell, Thu Jun 21 16:31:59 PDT 2007 
+//    Added member needAMRIndices.
+//
+//    Hank Childs, Wed Jul 25 14:11:26 PDT 2007
+//    Added support for getSimplifiedNestingRep.  Renamed needBoundarySurfaces
+//    to getBoundarySurfaceRep for consistency.
+//
+//    Brad Whitlock, Wed Jan 23 15:45:02 PST 2008
+//    Added transformVectorsDuringProject.
+//
+//    Cyrus Harrison, Tue Feb 12 13:35:19 PST 2008
+//    Added needPostGhostMaterialInfo.
+//
+//    John C. Anderson, Thu Jan 15 10:20:20 2009
+//    Added annealing time for Discrete MIR.
+//
+//    Jeremy Meredith, Fri Feb 13 11:22:39 EST 2009
+//    Added MIR iteration capability.
+//
+//    Hank Childs, Fri Sep  3 12:10:47 PDT 2010
+//    Added support for "velocityMustBeContinuous".
+//
+//    Brad Whitlock, Wed Jan  4 16:52:54 PST 2012
+//    Add missingDataBehavior.
+//
+//    Alister Maguire, Mon Nov 27 14:16:21 PST 2017
+//    Added forceConstructMaterialLabels.
+//
+// ****************************************************************************
+
+bool
+avtDataRequest::operator==(const avtDataRequest &ds)
+{
+    if (timestep != ds.timestep)
+    {
+        return false;
+    }
+
+    //
+    // Assumption here that we don't have NULL pointers.
+    //
+    if (strcmp(variable, ds.variable) != 0)
+    {
+        return false;
+    }
+    if (strcmp(orig_variable, ds.orig_variable) != 0)
+    {
+        return false;
+    }
+
+    if (!(sil == ds.sil))
+    {
+        return false;
+    }
+
+    if (needZones != ds.needZones)
+    {
+        return false;
+    }
+
+    if (needNodes != ds.needNodes)
+    {
+        return false;
+    }
+
+    if (needGlobalZones != ds.needGlobalZones)
+    {
+        return false;
+    }
+
+    if (needGlobalNodes != ds.needGlobalNodes)
+    {
+        return false;
+    }
+
+    if (mustDoMIR != ds.mustDoMIR)
+    {
+        return false;
+    }
+
+    if (forceConstructMaterialLabels != ds.forceConstructMaterialLabels)
+    {
+        return false;
+    }
+
+    if (mayRequireZones != ds.mayRequireZones)
+    {
+        return false;
+    }
+
+    if (mayRequireNodes != ds.mayRequireNodes)
+    {
+        return false;
+    }
+
+    if (needInternalSurfaces != ds.needInternalSurfaces)
+    {
+        return false;
+    }
+
+    if (velocityMustBeContinuous != ds.velocityMustBeContinuous)
+    {
+        return false;
+    }
+
+    if (getBoundarySurfaceRep != ds.getBoundarySurfaceRep)
+    {
+        return false;
+    }
+
+    if (getSimplifiedNestingRep != ds.getSimplifiedNestingRep)
+    {
+        return false;
+    }
+
+    if (desiredGhostDataType != ds.desiredGhostDataType)
+    {
+        return false;
+    }
+
+    if (maintainOriginalConnectivity != ds.maintainOriginalConnectivity)
+    {
+        return false;
+    }
+
+    if (needValidFaceConnectivity != ds.needValidFaceConnectivity)
+    {
+        return false;
+    }
+
+    if (needStructuredIndices != ds.needStructuredIndices)
+    {
+        return false;
+    }
+
+    if (needAMRIndices != ds.needAMRIndices)
+    {
+        return false;
+    }
+
+    if (usesAllDomains != ds.usesAllDomains)
+    {
+        return false;
+    }
+
+    if (needMixedVariableReconstruction != ds.needMixedVariableReconstruction)
+    {
+        return false;
+    }
+
+    if (needSmoothMaterialInterfaces != ds.needSmoothMaterialInterfaces)
+    {
+        return false;
+    }
+
+    if (needCleanZonesOnly != ds.needCleanZonesOnly)
+    {
+        return false;
+    }
+
+    if (mirAlgorithm != ds.mirAlgorithm)
+    {
+        return false;
+    }
+
+    if (mirNumIterations != ds.mirNumIterations)
+    {
+        return false;
+    }
+
+    if (mirIterationDamping != ds.mirIterationDamping)
+    {
+        return false;
+    }
+
+    if (isovolumeMIRVF != ds.isovolumeMIRVF)
+    {
+        return false;
+    }
+
+    if (annealingTime != ds.annealingTime)
+    {
+        return false;
+    }
+
+    if (simplifyHeavilyMixedZones != ds.simplifyHeavilyMixedZones)
+    {
+        return false;
+    }
+
+    if (maxMatsPerZone != ds.maxMatsPerZone)
+    {
+        return false;
+    }
+
+    if (needNativePrecision != ds.needNativePrecision)
+    {
+        return false;
+    }
+
+    if (secondaryVariables.size() != ds.secondaryVariables.size())
+    {
+        return false;
+    }
+
+    for (size_t i = 0 ; i < secondaryVariables.size() ; i++)
+    {
+        const char *my_str  = *(secondaryVariables[i]);
+        const char *his_str = *(ds.secondaryVariables[i]);
+        if (strcmp(my_str, his_str) != 0)
+        {
+            return false;
+        }
+    }
+
+    if (selList.size() != ds.selList.size())
+    {
+        return false;
+    }
+    for (size_t i = 0; i < selList.size(); i++)
+    {
+        if (*selList[i] != *(ds.selList[i]))
+            return false;
+    }
+
+    if (admissibleDataTypes != ds.admissibleDataTypes)
+        return false;
+
+    if (discTol != ds.discTol)
+        return false;
+
+    if (flatTol != ds.flatTol)
+        return false;
+   
+    if (discMode != ds.discMode)
+        return false;
+
+    if (discBoundaryOnly != ds.discBoundaryOnly)
+        return false;
+
+    if (passNativeCSG != ds.passNativeCSG)
+        return false;
+
+    if (transformVectorsDuringProject != ds.transformVectorsDuringProject)
+        return false;
+
+    if (needPostGhostMaterialInfo != ds.needPostGhostMaterialInfo)
+        return false;
+ 
+    //if (selectionName != ds.selectionName)
+    //    return false;
+
+    if (missingDataBehavior != ds.missingDataBehavior)
+        return false;
+
+    return true;
+}
+
+
+// ****************************************************************************
+//  Method: avtDataRequest destructor
+//
+//  Programmer: Hank Childs
+//  Creation:   May 19, 2001
+//
+//  Modifications:
+//
+//    Hank Childs, Thu Sep 25 08:28:28 PDT 2003
+//    Destruct db_variable.
+//
+//    Hank Childs, Fri Sep 23 10:10:12 PDT 2005
+//    Change db_variable to orig_variable.
+//
+// ****************************************************************************
+
+avtDataRequest::~avtDataRequest()
+{
+    if (variable != NULL)
+    {
+        delete [] variable;
+        variable = NULL;
+    }
+    if (orig_variable != NULL)
+    {
+        delete [] orig_variable;
+        orig_variable = NULL;
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtDataRequest::SetOriginalVariable
+//
+//  Purpose:
+//      Sets the variable that is known to be good on the database.
+//
+//  Programmer: Hank Childs
+//  Creation:   September 25, 2003
+//
+//  Modifications:
+//
+//    Hank Childs, Fri Sep 23 10:10:12 PDT 2005
+//    Change db_variable to orig_variable.
+//
+// ****************************************************************************
+
+void
+avtDataRequest::SetOriginalVariable(const char *v)
+{
+    if (orig_variable != NULL)
+    {
+        delete [] orig_variable;
+        orig_variable = NULL;
+    }
+    if (v != NULL)
+    {
+        orig_variable = new char[strlen(v)+1];
+        strcpy(orig_variable, v);
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtDataRequest::SetVariable
+//
+//  Purpose:
+//      Sets the variable
+//
+//  Programmer: Burlen Loring
+//  Creation:   Wed Aug  5 12:05:27 PDT 2015
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtDataRequest::SetVariable(const char *v)
+{
+    if (variable != NULL)
+    {
+        delete [] variable;
+        variable = NULL;
+    }
+    if (v != NULL)
+    {
+        variable = new char[strlen(v)+1];
+        strcpy(variable, v);
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtDataRequest::GetRestriction
+//
+//  Purpose:
+//      Gets the restriction for a SIL.  Performs some error checking to make
+//      sure the SIL is valid.
+//
+//  Returns:    The SIL restriction.
+//
+//  Programmer: Hank Childs
+//  Creation:   June 5, 2001
+//
+// ****************************************************************************
+
+avtSILRestriction_p
+avtDataRequest::GetRestriction(void)
+{
+    if (!sil.useRestriction)
+    {
+        EXCEPTION0(ImproperUseException);
+    }
+
+    return sil.silr;
+}
+
+
+// ****************************************************************************
+//  Method: avtDataRequest::AddSecondaryVariable
+//
+//  Purpose:
+//      Adds a secondary variable to an array.
+//
+//  Arguments:
+//      var     The name of the variable that should be read in.
+//
+//  Programmer: Hank Childs
+//  Creation:   October 23, 2001
+//
+// ****************************************************************************
+
+void
+avtDataRequest::AddSecondaryVariable(const char *var)
+{
+    char *v2 = new char[strlen(var)+1];
+    strcpy(v2, var);
+    CharStrRef ref = v2;
+    secondaryVariables.push_back(ref);
+
+    //
+    // We don't need to free v2 since it is now in the world of reference
+    // pointers.
+    //
+}
+
+
+// ****************************************************************************
+//  Method: avtDataRequest::HasSecondaryVariable
+//
+//  Purpose:
+//      Determines if we have a secondary variable.
+//
+//  Arguments:
+//      var     The name of the variable to compare.
+//
+//  Returns:    true if we have the variable, false otherwise.
+//
+//  Programmer: Hank Childs
+//  Creation:   June 7, 2002
+//
+// ****************************************************************************
+
+bool
+avtDataRequest::HasSecondaryVariable(const char *var)
+{
+    for (size_t i = 0 ; i < secondaryVariables.size() ; i++)
+    {
+        if (strcmp(var, *(secondaryVariables[i])) == 0)
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+
+// ****************************************************************************
+//  Method: avtDataRequest::RemoveSecondaryVariable
+//
+//  Purpose:
+//      Removes a secondary variable from our list.
+//
+//  Arguments:
+//      var     The name of the variable to remove.
+//
+//  Programmer: Hank Childs
+//  Creation:   June 7, 2002
+//
+// ****************************************************************************
+
+void
+avtDataRequest::RemoveSecondaryVariable(const char *var)
+{
+    vector<CharStrRef> newList;
+    for (size_t i = 0 ; i < secondaryVariables.size() ; i++)
+    {
+        if (strcmp(var, *(secondaryVariables[i])) != 0)
+        {
+            newList.push_back(secondaryVariables[i]);
+        }
+    }
+
+    secondaryVariables = newList;
+}
+
+
+// ****************************************************************************
+//  Method: avtDataRequest::VariablesAreTheSame
+//
+//  Purpose:
+//      This compares variables with the passed object. 
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   April 22, 2004
+//
+//  Modifications:
+//
+//    Hank Childs, Fri Sep 23 10:10:12 PDT 2005
+//    Change db_variable to orig_variable.
+//
+// ****************************************************************************
+
+bool
+avtDataRequest::VariablesAreTheSame(const avtDataRequest &ds)
+{
+    //
+    // Assumption here that we don't have NULL pointers.
+    //
+    if (strcmp(variable, ds.variable) != 0)
+    {
+        return false;
+    }
+    if (strcmp(orig_variable, ds.orig_variable) != 0)
+    {
+        return false;
+    }
+    if (secondaryVariables.size() != ds.secondaryVariables.size())
+    {
+        return false;
+    }
+    for (size_t i = 0 ; i < secondaryVariables.size() ; i++)
+    {
+        const char *my_str  = *(secondaryVariables[i]);
+        const char *his_str = *(ds.secondaryVariables[i]);
+        if (strcmp(my_str, his_str) != 0)
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
+
+// ****************************************************************************
+//  Method:  avtDataRequest::GetSecondaryVariablesWithoutDuplicates
+//
+//  Purpose:
+//    Return the list of secondary variables, removing duplicates of the
+//    primary variable and not allowing duplicates within the secondary
+//    variables.
+//
+//  Arguments:
+//    none.
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    July  9, 2004
+//
+//  Modifications:
+//
+//    Hank Childs, Fri Sep 23 10:10:12 PDT 2005
+//    Fix typo in test.
+//
+// ****************************************************************************
+
+vector<CharStrRef>
+avtDataRequest::GetSecondaryVariablesWithoutDuplicates(void)
+{
+    vector<CharStrRef> newList;
+    for (size_t i = 0 ; i < secondaryVariables.size() ; i++)
+    {
+        bool duplicate = false;
+
+        // don't allow duplicates of the primary variable
+        if (variable && strcmp(variable, *(secondaryVariables[i])) == 0)
+        {
+            duplicate = true;
+        }
+
+        // don't allow duplicates of other secondary variables; just take
+        // the first instance of it
+        for (size_t j = 0 ; j < i && !duplicate; j++)
+        {
+            if (strcmp(*(secondaryVariables[i]),*(secondaryVariables[j])) == 0)
+            {
+                duplicate = true;
+            }
+        }
+
+        // add it to the list if it wasn't a duplicate
+        if (!duplicate)
+        {
+            newList.push_back(secondaryVariables[i]);
+        }
+    }
+
+    return newList;
+}
+
+
+// ****************************************************************************
+//  Method: avtDataRequest::AddDataSelectionRefPtr
+//
+//  Purpose: Adds a data selection to the specification
+//
+//  Notes:
+//     This method is highly related to the one that does not take a ref_ptr.
+//     I gave it its own name because I didn't want there to be namespace
+//     conflict.  I should probably unify the two methods (by deprecating the
+//     non-refptr method), but I'm chasing a publication and don't have time
+//     to pursue.  (Also, bad code got checked into the repo and this checkin
+//     will correct it.)
+//
+//  Programmer: Hank Childs
+//  Creation:   March 31, 2009
+//
+// ****************************************************************************
+
+int
+avtDataRequest::AddDataSelectionRefPtr(avtDataSelection_p sel)
+{
+    selList.push_back(sel);
+    return selList.size()-1;
+}
+
+
+// ****************************************************************************
+//  Method: avtDataRequest::AddDataSelection
+//
+//  Purpose: Adds a data selection to the specification
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   September 28, 2004 
+//
+//  Modifications:
+//    Brad Whitlock, Mon Nov 1 16:07:37 PST 2004
+//    I added a return statement since the return type is int.
+//
+//    Hank Childs, Fri Mar 11 10:54:13 PST 2005
+//    Return the index of the selection, since that is what most callers count
+//    on.
+//
+// ****************************************************************************
+
+int
+avtDataRequest::AddDataSelection(avtDataSelection *sel)
+{
+    selList.push_back(sel);
+    return selList.size()-1;
+}
+
+// ****************************************************************************
+//  Method: avtDataRequest::RemoveAllDataSelections
+//
+//  Purpose: Removes all data selections from the specification 
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   September 28, 2004 
+//
+// ****************************************************************************
+
+void
+avtDataRequest::RemoveAllDataSelections()
+{
+    selList.clear();
+}
+
+// ****************************************************************************
+//  Method: avtDataRequest::GetDataSelection
+//
+//  Purpose: Gets data selection at the specified index 
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   September 28, 2004 
+//
+// ****************************************************************************
+
+const avtDataSelection_p
+avtDataRequest::GetDataSelection(int id) const
+{
+    if (id < 0 || (size_t)id >= selList.size())
+        return 0;
+    return selList[id];
+}
+
+// ****************************************************************************
+//  Method: avtDataRequest::GetAllDataSelections
+//
+//  Purpose: Gets all data selections in the specification 
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   September 28, 2004 
+//
+// ****************************************************************************
+
+const std::vector<avtDataSelection_p>
+avtDataRequest::GetAllDataSelections() const
+{
+    return selList;
+}
+
+
+// ****************************************************************************
+//  Method: avtDataRequest::GetAllDataSelections
+//
+//  Purpose: Gets all data selections in the specification 
+//
+//  Programmer: Hank Childs
+//  Creation:   December 11, 2012
+//
+// ****************************************************************************
+
+std::vector<avtDataSelection_p>
+avtDataRequest::GetAllDataSelections()
+{
+    return selList;
+}
+
+
+// ****************************************************************************
+//  Method: avtDataRequest::InitAdmissibleDataTypes
+//
+//  Purpose: Initialize admissible data types to all true
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   March 23, 2005 
+//
+//  Modifications:
+//    Brad Whitlock, Thu Apr 12 15:18:01 PDT 2012
+//    Use AllAdmissibleDataTypes().
+//
+// ****************************************************************************
+
+void
+avtDataRequest::InitAdmissibleDataTypes()
+{
+    admissibleDataTypes.clear();
+    std::vector<int> alltypes(AllAdmissibleDataTypes());
+    for(size_t i = 0; i < alltypes.size(); ++i)
+        admissibleDataTypes[alltypes[i]] = true;
+}
+
+// ****************************************************************************
+//  Method: avtDataRequest::UpdateAdmissibleDataTypes
+//
+//  Purpose: Merges a set of admissible types into the current list of
+//  admissible types
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   March 23, 2005 
+//
+//  Modifications:
+//    Brad Whitlock, Tue May 10 15:03:30 PST 2005
+//    Fixed for win32.
+//
+// ****************************************************************************
+
+void
+avtDataRequest::UpdateAdmissibleDataTypes(const vector<int> &admissibleTypes)
+{
+    std::map<int,bool>::iterator it;
+    for (it = admissibleDataTypes.begin();
+         it != admissibleDataTypes.end(); it++)
+    {
+        bool isAnAdmissibleType = false;
+        for (size_t i = 0; i < admissibleTypes.size(); i++)
+        {
+            if (admissibleTypes[i] == it->first)
+            {
+                isAnAdmissibleType = true;
+                break;
+            }
+        }
+        if (isAnAdmissibleType == false)
+            it->second = false;
+    }
+}
+
+void
+avtDataRequest::UpdateAdmissibleDataTypes(int dt1)
+{
+    std::vector<int> vec;
+    vec.push_back(dt1);
+    UpdateAdmissibleDataTypes(vec);
+}
+
+void
+avtDataRequest::UpdateAdmissibleDataTypes(int dt1, int dt2)
+{
+    std::vector<int> vec;
+    vec.push_back(dt1);
+    vec.push_back(dt2);
+    UpdateAdmissibleDataTypes(vec);
+}
+
+void
+avtDataRequest::UpdateAdmissibleDataTypes(int dt1, int dt2, int dt3)
+{
+    std::vector<int> vec;
+    vec.push_back(dt1);
+    vec.push_back(dt2);
+    vec.push_back(dt3);
+    UpdateAdmissibleDataTypes(vec);
+}
+
+// ****************************************************************************
+// Method: avtDataRequest::AllAdmissibleDataTypes
+//
+// Purpose: 
+//   Return a vector containing all possible admissible types.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Apr 12 15:18:17 PDT 2012
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+std::vector<int>
+avtDataRequest::AllAdmissibleDataTypes()
+{
+    std::vector<int> types;
+    types.push_back(VTK_BIT);
+    types.push_back(VTK_CHAR);
+    types.push_back(VTK_SIGNED_CHAR);
+    types.push_back(VTK_UNSIGNED_CHAR);
+    types.push_back(VTK_SHORT);
+    types.push_back(VTK_UNSIGNED_SHORT);
+    types.push_back(VTK_INT);
+    types.push_back(VTK_UNSIGNED_INT);
+    types.push_back(VTK_LONG);
+    types.push_back(VTK_UNSIGNED_LONG);
+    types.push_back(VTK_FLOAT);
+    types.push_back(VTK_DOUBLE);
+    types.push_back(VTK_ID_TYPE);
+    return types;
+}
+
+// ****************************************************************************
+//  Method: avtDataRequest::IsAdmissibleDataType
+//
+//  Purpose: Return bool indicating if the given type is admissible 
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   March 23, 2005 
+//
+//  Modifications:
+//    Brad Whitlock, Tue May 10 15:03:30 PST 2005
+//    Fixed for win32.
+//
+// ****************************************************************************
+
+bool
+avtDataRequest::IsAdmissibleDataType(int theType) const
+{
+    std::map<int,bool>::const_iterator fit =
+        admissibleDataTypes.find(theType);
+    if (fit != admissibleDataTypes.end())
+        return fit->second;
+    return false;
+}
+
+// ****************************************************************************
+//  Method: avtDataRequest::GetAdmissibleDataTypes
+//
+//  Purpose: Return vector of admissible data types 
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   March 23, 2005 
+//
+//  Modifications:
+//    Brad Whitlock, Tue May 10 15:03:30 PST 2005
+//    Fixed for win32.
+//
+// ****************************************************************************
+
+vector<int>
+avtDataRequest::GetAdmissibleDataTypes() const
+{
+    vector<int> admissibleTypes;
+    std::map<int,bool>::const_iterator it;
+    for (it = admissibleDataTypes.begin();
+         it != admissibleDataTypes.end(); it++)
+    {
+        if (it->second)
+            admissibleTypes.push_back(it->first);
+    }
+    return admissibleTypes;
+}
+
+// ****************************************************************************
+//  Method: avtDataRequest::SetDiscMode
+//
+//  Purpose: Set discretization mode (for CSG). Handle logic for missing libs 
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   December 4, 2006 
+//
+//  Modifications:
+//
+//    Mark C. Miller, Tue Dec  5 18:14:58 PST 2006
+//    Made it more robust if FI library not available. 
+//
+//    Mark C. Miller, Wed Mar  3 07:59:15 PST 2010
+//    Changed form of conditional compilation check for HAVE_BILIB from
+//    numeric test to existence test.
+//
+//    Cyrus Harrison, Mon Jan 26 21:26:34 PST 2015
+//    Changed check from boost interval template lib to boost proper.
+//
+// ****************************************************************************
+
+void
+avtDataRequest::SetDiscMode(int mode)
+{
+    discMode = mode;
+#ifndef HAVE_BOOST
+    if (discMode == 1) // Adaptive
+    {
+        debug1 << "Adaptive not available. "
+                  "Missing boost interval template library. "
+                  "Overriding to Uniform." << endl;
+        discMode = 0;
+    }
+#endif
+};
+
+// ****************************************************************************
+//  Method: avtSILSpecification::GetDomainList
+//
+//  Purpose:
+//      Gets a domain list regardless of whether a SIL was specified, or if
+//      a data chunk was specified.
+//
+//  Arguments:
+//      list    A place to put the list of domains.
+//
+//  Programmer: Hank Childs
+//  Creation:   June 5, 2001
+//
+//  Modifications:
+//
+//    Hank Childs, Fri Nov 22 15:58:40 PST 2002
+//    Use SIL restriction traverser.
+//
+// ****************************************************************************
+
+void
+avtSILSpecification::GetDomainList(vector<int> &list)
+{
+    list.clear();
+    if (useRestriction)
+    {
+        avtSILRestrictionTraverser trav(silr);
+        trav.GetDomainList(list);
+    }
+    else
+    {
+        list.push_back(dataChunk);
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtSILSpecification::UsesAllData
+//
+//  Purpose:
+//      Determines if this SIL specification uses all of the data.
+//
+//  Programmer: Hank Childs
+//  Creation:   June 17, 2001
+//
+//  Modifications:
+//
+//    Hank Childs, Fri Nov 22 15:58:40 PST 2002
+//    Use SIL restriction traverser.
+//
+// ****************************************************************************
+
+bool
+avtSILSpecification::UsesAllData(void)
+{
+    bool rv = false;
+    if (useRestriction)
+    {
+        avtSILRestrictionTraverser trav(silr);
+        rv = trav.UsesAllData();
+    }
+    else
+    {
+        rv = (dataChunk < 0 ? true : false);
+    }
+
+    return rv;
+}
+
+
+// ****************************************************************************
+//  Method: avtSILSpecification::UsesAllDomains
+//
+//  Purpose:
+//      Determines if this SIL specification uses all of the domains.
+//
+//  Programmer: Hank Childs
+//  Creation:   September 14, 2001
+//
+//  Modifications:
+//
+//    Hank Childs, Fri Nov 22 15:58:40 PST 2002
+//    Use SIL restriction traverser.
+//
+// ****************************************************************************
+
+bool
+avtSILSpecification::UsesAllDomains(void)
+{
+    bool rv = false;
+    if (useRestriction)
+    {
+        avtSILRestrictionTraverser trav(silr);
+        rv = trav.UsesAllDomains();
+    }
+    else
+    {
+        rv = (dataChunk < 0 ? true : false);
+    }
+
+    return rv;
+}
+
+
+// ****************************************************************************
+//  Method: avtSILSpecification::EmptySpecification
+//
+//  Purpose:
+//      Determines if this SIL specification is empty.
+//
+//  Programmer: Hank Childs
+//  Creation:   July 17, 2001
+//
+//  Modifications:
+//
+//    Hank Childs, Fri Nov 22 15:58:40 PST 2002
+//    Use SIL restriction traverser.
+//
+// ****************************************************************************
+
+bool
+avtSILSpecification::EmptySpecification(void)
+{
+    bool rv = false;
+    if (useRestriction)
+    {
+        avtSILRestrictionTraverser trav(silr);
+        if (trav.UsesSetData(silr->GetTopSet()) == NoneUsed)
+        {
+            rv = true;
+        }
+    }
+
+    return rv;
+}
+
+
+// ****************************************************************************
+//  Method: avtSILSpecification::operator==
+//
+//  Purpose:
+//      Determines if two SIL specifications are equal.
+//
+//  Arguments:
+//      s       A SIL specification.
+//
+//  Returns:    true if the two specification are equal, false otherwise.
+//
+//  Programmer: Hank Childs
+//  Creation:   July 26, 2001
+//
+//  Modifications:
+//
+//    Hank Childs, Fri Nov 22 15:58:40 PST 2002
+//    Use SIL restriction traverser.
+//
+// ****************************************************************************
+
+bool
+avtSILSpecification::operator==(const avtSILSpecification &s)
+{
+    if (useRestriction != s.useRestriction)
+    {
+        return false;
+    }
+
+    if (useRestriction)
+    {
+        avtSILRestrictionTraverser trav(silr);
+        if (!(trav.Equal(s.silr)))
+        {
+            return false;
+        }
+    }
+    else
+    {
+        if (dataChunk != s.dataChunk)
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+
+// ****************************************************************************
+//  Method: avtDataRequest::DebugDump
+//
+//  Purpose:
+//      Outputs data attributes into a webpage.
+//
+//  Programmer: Hank Childs
+//  Creation:   June 15, 2007
+//
+//  Modifications:
+//    Kathleen Bonnell, Thu Jun 21 16:31:59 PDT 2007 
+//    Added member needAMRIndices.
+//
+//    Hank Childs, Wed Jul 25 14:11:26 PDT 2007
+//    Added support for getSimplifiedNestingRep.  Renamed needBoundarySurfaces
+//    to getBoundarySurfaceRep for consistency.
+//
+//    Hank Childs, Tue Jul 31 09:21:25 PDT 2007
+//    Add missing entry: mayRequireZones.
+//
+//    Brad Whitlock, Wed Jan 23 15:46:10 PST 2008
+//    Added transformVectorsDuringProject.
+//
+//    Hank Childs, Fri Feb  1 12:51:44 PST 2008
+//    Add dumping of admissibleDataTypes.
+//
+//    Cyrus Harrison, Tue Feb 12 13:35:19 PST 2008
+//    Added needPostGhostMaterialInfo.
+//
+//    Jeremy Meredith, Thu Aug  7 14:44:02 EDT 2008
+//    Removed unused var.
+//
+//    Jeremy Meredith, Fri Feb 13 11:22:39 EST 2009
+//    Added MIR iteration capability.
+//
+//    Jeremy Meredith, Tue Aug  4 10:49:32 EDT 2009
+//    Added MIR algorithm enumeration values to page.
+//
+//    Hank Childs, Fri Sep  3 12:10:47 PDT 2010
+//    Added support for "velocityMustBeContinuous".
+//
+//    Brad Whitlock, Thu Sep  1 11:01:51 PDT 2011
+//    Added selectionName.
+//
+//    Brad Whitlock, Wed Jan  4 16:55:23 PST 2012
+//    Added missing data behavior.
+//
+//    Alister Maguire, Mon Nov 27 14:16:21 PST 2017
+//    Added forceConstructMaterialLabels.
+//
+// ****************************************************************************
+
+static const char *
+YesOrNo(bool b)
+{
+    static const char *yes_str = "yes";
+    static const char *no_str  = "no";
+    if (b)
+        return yes_str;
+
+    return no_str;
+}
+
+
+void
+avtDataRequest::DebugDump(avtWebpage *webpage)
+{
+    char str[1024];
+
+    webpage->AddSubheading("Data specification attributes");
+    webpage->StartTable();
+    webpage->AddTableHeader2("Field", "Value");
+
+    sprintf(str, "%d", timestep);
+    webpage->AddTableEntry2("Timestep", str);
+    webpage->AddTableEntry2("Variable", variable);
+    if (secondaryVariables.size() > 0)
+    {
+        webpage->AddTableEntry2("Secondary variables", "");
+        for (size_t i = 0 ; i < secondaryVariables.size() ; i++)
+            webpage->AddTableEntry2("", *(secondaryVariables[i]));
+    }
+    else
+        webpage->AddTableEntry2("Secondary variables", "NONE");
+    webpage->AddTableEntry2("Original variable", orig_variable);
+    webpage->AddTableEntry2("needZones", YesOrNo(needZones));
+    webpage->AddTableEntry2("needNodes", YesOrNo(needNodes));
+    webpage->AddTableEntry2("needGlobalZones", YesOrNo(needGlobalZones));
+    webpage->AddTableEntry2("needGlobalNodes", YesOrNo(needGlobalNodes));
+    webpage->AddTableEntry2("mayRequireNodes", YesOrNo(mayRequireNodes));
+    webpage->AddTableEntry2("mayRequireZones", YesOrNo(mayRequireZones));
+    webpage->AddTableEntry2("mustDoMIR", YesOrNo(mustDoMIR));
+    webpage->AddTableEntry2("forceConstructMaterialLabels", YesOrNo(forceConstructMaterialLabels));
+    webpage->AddTableEntry2("needInternalSurfaces", YesOrNo(needInternalSurfaces));
+    webpage->AddTableEntry2("velocityMustBeContinuous", YesOrNo(velocityMustBeContinuous));
+    webpage->AddTableEntry2("Get data set as only material boundaries", YesOrNo(getBoundarySurfaceRep));
+    webpage->AddTableEntry2("Get data set in a simplified form for showing domain nesting", 
+                                    YesOrNo(getSimplifiedNestingRep));
+    webpage->AddTableEntry2("needValidFaceConnectivity", YesOrNo(needValidFaceConnectivity));
+    webpage->AddTableEntry2("needStructuredIndices", YesOrNo(needStructuredIndices));
+    sprintf(str, "%d", needAMRIndices);
+    webpage->AddTableEntry2("needAMRIndices", str);
+    webpage->AddTableEntry2("needMixedVariableReconstruction", YesOrNo(needMixedVariableReconstruction));
+    webpage->AddTableEntry2("needSmoothMaterialInterfaces", YesOrNo(needSmoothMaterialInterfaces));
+    webpage->AddTableEntry2("needCleanZonesOnly", YesOrNo(needCleanZonesOnly));
+    sprintf(str, "%d (0=Tet 1=Zoo 2=Isovolume 3=Youngs)", mirAlgorithm);
+    webpage->AddTableEntry2("mirAlgorithm", str);
+    sprintf(str, "%d", mirNumIterations);
+    webpage->AddTableEntry2("mirNumIterations", str);
+    sprintf(str, "%f", mirIterationDamping);
+    webpage->AddTableEntry2("mirIterationDamping", str);
+    sprintf(str, "%f", isovolumeMIRVF);
+    webpage->AddTableEntry2("isovolumeMIRVF", str);
+    sprintf(str, "%d", annealingTime);
+    webpage->AddTableEntry2("annealingTime", str);
+    webpage->AddTableEntry2("simplifyHeavilyMixedZones", YesOrNo(simplifyHeavilyMixedZones));
+    sprintf(str, "%d", maxMatsPerZone);
+    webpage->AddTableEntry2("maxMatsPerZone", str);
+    webpage->AddTableEntry2("maintainOriginalConnectivity", YesOrNo(maintainOriginalConnectivity));
+    webpage->AddTableEntry2("needNativePrecision", YesOrNo(needNativePrecision));
+    webpage->AddTableEntry2("admissibleDataTypes", "");
+    std::map<int,bool>::iterator it;
+    for (it = admissibleDataTypes.begin();
+         it != admissibleDataTypes.end(); it++)
+    {
+        const char *type = vtkImageScalarTypeNameMacro(it->first);
+        bool val = it->second;
+        char entry[1024];
+        SNPRINTF(entry, 1024, "%s = %s", type, (val ? "true" : "false"));
+        webpage->AddTableEntry2("", entry);
+    }
+
+    switch (desiredGhostDataType)
+    {
+      case NO_GHOST_DATA:
+        strcpy(str, "No ghost data needed");
+        break;
+      case GHOST_NODE_DATA:
+        strcpy(str, "Need ghost node data");
+        break;
+      case GHOST_ZONE_DATA:
+        strcpy(str, "Need ghost zone data");
+        break;
+    }
+    webpage->AddTableEntry2("Ghost Data", str);
+    sprintf(str, "%f", discTol);
+    webpage->AddTableEntry2("discTol", str);
+    sprintf(str, "%f", flatTol);
+    webpage->AddTableEntry2("flatTol", str);
+    webpage->AddTableEntry2("discBoundaryOnly", YesOrNo(discBoundaryOnly));
+    webpage->AddTableEntry2("passNativeCSG", YesOrNo(passNativeCSG));
+    webpage->AddTableEntry2("usesAllDomains", YesOrNo(usesAllDomains));
+    webpage->AddTableEntry2("transformVectorsDuringProject", YesOrNo(transformVectorsDuringProject));
+    webpage->AddTableEntry2("needPostGhostMaterialInfo", YesOrNo(needPostGhostMaterialInfo));
+    webpage->AddTableEntry2("selectionName", selectionName.c_str());
+    if(missingDataBehavior == MISSING_DATA_IGNORE)
+        webpage->AddTableEntry2("missingDataBehavior", "MISSING_DATA_IGNORE");
+    else if(missingDataBehavior == MISSING_DATA_REMOVE)
+        webpage->AddTableEntry2("missingDataBehavior", "MISSING_DATA_REMOVE");
+    else
+        webpage->AddTableEntry2("missingDataBehavior", "MISSING_DATA_IDENTIFY");
+
+    webpage->EndTable();
+}

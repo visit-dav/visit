@@ -1,0 +1,99 @@
+Target: xml2info
+Function: ExodusCommonPluginInfo::SetupDatabase
+Declaration: virtual avtDatabase * ExodusCommonPluginInfo::SetupDatabase(const char *const *list, int nList, int nBlock);
+Definition:
+// ****************************************************************************
+//  Method: ExodusCommonPluginInfo::SetupDatabase
+//
+//  Purpose:
+//      Sets up a Exodus database.
+//
+//  Arguments:
+//      list    A list of file names.
+//      nList   The number of timesteps in list.
+//      nBlocks The number of blocks in the list.
+//
+//  Returns:    A Exodus database from list.
+//
+//  Programmer: Jeremy Meredith
+//  Creation:   August 27, 2002
+//
+//  Modifications:
+//
+//    Hank Childs, Tue Feb 25 13:56:42 PST 2003
+//    Account for .EXODUS, .nemesis, and .NEMESIS.
+//
+//    Hank Childs, Thu Jul 22 11:29:31 PDT 2004
+//    Register the file list 
+//
+//    Jeremy Meredith, Thu Jan 28 12:28:07 EST 2010
+//    MTSD now accepts grouping multiple files into longer sequences, so
+//    its interface has changed to accept both a number of timestep groups
+//    and a number of blocks.
+//
+//    Brad Whitlock, Tue Feb 2 10:06:34 PDT 2010
+//    I changed the code so when nBlocks==-1 it will treat the list of files
+//    as domains so multiblock files work again.
+//
+//    Mark C. Miller, Wed Jan  8 18:07:37 PST 2014
+//    I enabled this to work for cases in which we have timestep groups *and*
+//    many files as well as the most common case where nBlocks is number of
+//    files in the list.
+// ****************************************************************************
+#include <string>
+
+avtDatabase *
+ExodusCommonPluginInfo::SetupDatabase(const char *const *list, int nList, int nBlock)
+{
+    char  **reallist  = NULL;
+    bool    read_list_from_text_file = false;
+    int     listcount = 0;
+    int     bang_nBlocks = -1;
+    int     fileListId = -1;
+    int     nTimestepGroups = 1;
+
+    if (nList == 1)
+        read_list_from_text_file = avtDatabase::GetFileListFromTextFile(list[0],
+            reallist, listcount, &bang_nBlocks);
+
+    if (read_list_from_text_file)
+    {
+        if (bang_nBlocks > 0)
+            nBlock = bang_nBlocks;
+        else
+            nBlock = listcount;
+        list = reallist;
+        nList = listcount;
+    }
+    else
+    {
+        nBlock = nList;
+    }
+
+    fileListId = avtExodusFileFormat::RegisterFileList(list, nList);
+    nTimestepGroups = nList / nBlock;
+
+    avtMTSDFileFormat ***ffl = new avtMTSDFileFormat**[nTimestepGroups];
+    for (int i = 0 ; i < nTimestepGroups ; i++)
+    {
+        ffl[i] = new avtMTSDFileFormat*[nBlock];
+        for (int j = 0 ; j < nBlock ; j++)
+        {
+            avtExodusFileFormat *exo = new avtExodusFileFormat(list[i*nBlock+j]);
+            exo->SetFileList(fileListId);
+            ffl[i][j] = exo; 
+        }
+    }
+
+    avtMTSDFileFormatInterface *inter 
+        = new avtMTSDFileFormatInterface(ffl, nTimestepGroups, nBlock);
+
+    if (reallist)
+    {
+        for (int i = 0 ; i < listcount ; i++)
+            delete [] reallist[i];
+        delete [] reallist;
+    }
+
+    return new avtGenericDatabase(inter);
+}

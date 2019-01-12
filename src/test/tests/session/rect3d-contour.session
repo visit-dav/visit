@@ -1,0 +1,88 @@
+<?xml version="1.0"?>
+<Object name="VisIt">
+    <Field name="Version" type="string">2.8.0b</Field>
+    <Object name="VIEWER">
+        <Object name="ViewerSubject">
+            <Object name="SourceMap">
+                <Field name="SOURCE00" type="string">rect3d.silo</Field>
+            </Object>
+            <Object name="SourcePlugins">
+                <Field name="rect3d.silo" type="string">Silo_1.0</Field>
+            </Object>
+            <Object name="ViewerWindowManager">
+                <Object name="Windows">
+                    <Object name="ViewerWindow">
+                        <Object name="AnnotationAttributes">
+                            <Object name="axes3D">
+                                <Object name="Axes3D">
+                                    <Field name="visible" type="bool">false</Field>
+                                    <Field name="triadFlag" type="bool">false</Field>
+                                    <Field name="bboxFlag" type="bool">false</Field>
+                                </Object>
+                            </Object>
+                            <Field name="userInfoFlag" type="bool">false</Field>
+                            <Field name="databaseInfoFlag" type="bool">false</Field>
+                            <Field name="legendInfoFlag" type="bool">false</Field>
+                        </Object>
+                        <Object name="ViewerPlotList">
+                            <Object name="plot00">
+                                <Field name="plotName" type="string">Plot0000</Field>
+                                <Field name="pluginID" type="string">Contour_1.0</Field>
+                                <Field name="sourceID" type="string">SOURCE00</Field>
+                                <Field name="variableName" type="string">d</Field>
+                                <Field name="active" type="bool">true</Field>
+                                <Field name="hidden" type="bool">false</Field>
+                                <Field name="realized" type="bool">true</Field>
+                                <Object name="ViewerPlot">
+                                    <Field name="plotDescription" type="string"></Field>
+                                    <Field name="cacheIndex" type="int">0</Field>
+                                    <Field name="spatialExtentsType" type="string">AVT_ORIGINAL_EXTENTS</Field>
+                                    <Field name="bgColor" type="doubleArray" length="3">1 1 1 </Field>
+                                    <Field name="fgColor" type="doubleArray" length="3">0 0 0 </Field>
+                                    <Field name="expandedFlag" type="bool">false</Field>
+                                    <Field name="followsTime" type="bool">true</Field>
+                                    <Object name="ContourAttributes">
+                                        <Object name="defaultPalette">
+                                            <Object name="ColorControlPointList">
+                                                <Field name="compactColors" type="unsignedCharVector">255 0 0 255 0 255 0 255 0 0 255 135 0 255 255 255 255 0 255 255 255 255 0 255 255 135 0 255 255 0 135 255 168 168 168 255 255 68 68 255 99 255 99 0 99 99 255 0 40 165 165 0 255 99 255 0 255 255 99 0 255 170 99 0 170 79 255 0 150 0 0 0 0 150 0 0 0 0 150 0 0 109 109 0 150 0 150 0 150 150 0 0 150 84 0 0 160 0 79 0 255 104 28 0 0 170 81 0 68 255 124 0 0 130 255 0 130 0 255 0 </Field>
+                                                <Field name="compactPositions" type="floatVector">0 0.03 0.07 0.1 0.14 0.17 0.21 0.24 0.28 0.31 0.34 0.38 0.41 0.45 0.48 0.52 0.55 0.59 0.62 0.66 0.69 0.72 0.76 0.79 0.83 0.86 0.9 0.93 0.97 1 </Field>
+                                                <Field name="smoothing" type="string">None</Field>
+                                                <Field name="equalSpacingFlag" type="bool">true</Field>
+                                                <Field name="discreteFlag" type="bool">true</Field>
+                                                <Field name="externalFlag" type="bool">false</Field>
+                                            </Object>
+                                        </Object>
+                                        <Field name="colorType" type="string">ColorByMultipleColors</Field>
+                                        <Field name="colorTableName" type="string">Default</Field>
+                                        <Field name="legendFlag" type="bool">true</Field>
+                                        <Field name="lineStyle" type="int">0</Field>
+                                        <Field name="lineWidth" type="int">0</Field>
+                                        <Object name="singleColor">
+                                            <Object name="ColorAttribute">
+                                                <Field name="color" type="unsignedCharArray" length="4">255 0 0 255 </Field>
+                                            </Object>
+                                        </Object>
+                                        <Field name="contourNLevels" type="int">10</Field>
+                                        <Field name="contourValue" type="doubleVector">0.2 0.4 0.6 </Field>
+                                        <Field name="contourPercent" type="doubleVector"></Field>
+                                        <Field name="contourMethod" type="string">Value</Field>
+                                        <Field name="minFlag" type="bool">false</Field>
+                                        <Field name="maxFlag" type="bool">false</Field>
+                                        <Field name="min" type="double">0</Field>
+                                        <Field name="max" type="double">1</Field>
+                                        <Field name="scaling" type="string">Linear</Field>
+                                        <Field name="wireframe" type="bool">false</Field>
+                                    </Object>
+                                </Object>
+                            </Object>
+                            <Field name="activeSource" type="string">SOURCE00</Field>
+                            <Field name="nPlots" type="int">1</Field>
+                            <Field name="keyframeMode" type="bool">false</Field>
+                            <Field name="nKeyframes" type="int">1</Field>
+                        </Object>
+                    </Object>
+                </Object>
+            </Object>
+        </Object>
+    </Object>
+</Object>

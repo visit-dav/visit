@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+  <Attribute name="avtCurveMetaData" purpose="Contains curve metadata attributes" persistent="false" keyframe="true" exportAPI="DBATTS_API" exportInclude="dbatts_exports.h" codefile="avtCurveMetaData.code" baseClass="avtVarMetaData">
+    <Field name="xUnits" label="X units" type="string" access="public">
+    </Field>
+    <Field name="xLabel" label="X label" type="string" access="public">
+      X-Axis
+    </Field>
+    <Field name="yUnits" label="Y units" type="string" access="public">
+    </Field>
+    <Field name="yLabel" label="Y label" type="string" access="public">
+      Y-Axis
+    </Field>
+    <Field name="hasSpatialExtents" label="Has spatial extents" type="bool" access="public">
+      false
+    </Field>
+    <Field name="minSpatialExtents" label="Minimum spatial extents" type="double" access="public">
+      0.000000
+    </Field>
+    <Field name="maxSpatialExtents" label="Maximum spatial extents" type="double" access="public">
+      0.000000
+    </Field>
+    <Field name="from1DScalarName" label="Name  of 1D scalar this curve object was interpreted from" type="string" access="public">
+    </Field>
+    <Function name="avtCurveMetaData2" user="true" member="true">
+    </Function>
+    <Function name="avtCurveMetaData3" user="true" member="true">
+    </Function>
+    <Function name="SetSpatialExtents" user="true" member="true">
+    </Function>
+    <Function name="UnsetSpatialExtents" user="true" member="true">
+    </Function>
+    <Function name="SetDataExtents" user="true" member="true">
+    </Function>
+    <Function name="UnsetDataExtents" user="true" member="true">
+    </Function>
+    <Function name="Print" user="true" member="true">
+    </Function>
+  </Attribute>

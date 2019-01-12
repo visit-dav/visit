@@ -1,0 +1,3125 @@
+/*****************************************************************************
+*
+* Copyright (c) 2000 - 2018, Lawrence Livermore National Security, LLC
+* Produced at the Lawrence Livermore National Laboratory
+* LLNL-CODE-442911
+* All rights reserved.
+*
+* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
+* full copyright notice is contained in the file COPYRIGHT located at the root
+* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
+*
+* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
+* modification, are permitted provided that the following conditions are met:
+*
+*  - Redistributions of  source code must  retain the above  copyright notice,
+*    this list of conditions and the disclaimer below.
+*  - Redistributions in binary form must reproduce the above copyright notice,
+*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
+*    documentation and/or other materials provided with the distribution.
+*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
+*    be used to endorse or promote products derived from this software without
+*    specific prior written permission.
+*
+* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
+* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
+* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
+* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
+* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
+* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
+* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
+* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
+* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
+* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
+* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
+* DAMAGE.
+*
+*****************************************************************************/
+
+// ************************************************************************* //
+//                            avtSimV2FileFormat.C                           //
+// ************************************************************************* //
+
+#include <avtSimV2FileFormat.h>
+
+#include <map>
+#include <string>
+#include <sstream>
+#include <vector>
+#include <snprintf.h>
+
+#include <avtDatabaseMetaData.h>
+#include <avtGhostData.h>
+#include <avtIOInformation.h>
+#include <avtMixedVariable.h>
+#include <avtSimulationInformation.h>
+#include <avtSimulationCommandSpecification.h>
+#include <avtStructuredDomainBoundaries.h>
+#include <avtStructuredDomainNesting.h>
+#include <avtSpecies.h>
+#include <avtVariableCache.h>
+#include <avtPolyhedralSplit.h>
+
+#include <Expression.h>
+#include <DebugStream.h>
+#include <InvalidFilesException.h>
+#include <InvalidVariableException.h>
+
+#include <visitstream.h>
+
+#include "vtkComponentDataArray.h"
+
+#include <vtkCellArray.h>
+#include <vtkCellData.h>
+#include <vtkFieldData.h>
+#include <vtkFloatArray.h>
+#include <vtkDoubleArray.h>
+#include <vtkIdTypeArray.h>
+#include <vtkIntArray.h>
+#include <vtkLongArray.h>
+#include <vtkPointData.h>
+#include <vtkPolyData.h>
+#include <vtkRectilinearGrid.h>
+#include <vtkStructuredGrid.h>
+#include <vtkUnstructuredGrid.h>
+#include <vtkVisItUtility.h>
+
+using std::string;
+using std::vector;
+using std::ostringstream;
+
+#ifdef PARALLEL
+#include <mpi.h>
+#include <avtParallel.h>
+#endif
+
+#ifndef MDSERVER
+#include <VisItControlInterfaceRuntime.h>
+#include <VisItDataInterfaceRuntime.h>
+
+// MetaData
+#include <simv2_CommandMetaData.h>
+#include <simv2_CurveMetaData.h>
+#include <simv2_ExpressionMetaData.h>
+#include <simv2_MaterialMetaData.h>
+#include <simv2_MeshMetaData.h>
+#include <simv2_MessageMetaData.h>
+#include <simv2_NameList.h>
+#include <simv2_SimulationMetaData.h>
+#include <simv2_SpeciesMetaData.h>
+#include <simv2_VariableMetaData.h>
+
+// Data
+#include <simv2_CurveData.h>
+#include <simv2_DomainBoundaries.h>
+#include <simv2_DomainList.h>
+#include <simv2_DomainNesting.h>
+#include <simv2_MaterialData.h>
+#include <simv2_SpeciesData.h>
+#include <simv2_VariableData.h>
+#include <simv2_TypeTraits.hxx>
+#include <simv2_DeleteEventObserver.h>
+#include <simv2_UnstructuredMesh.h>
+
+#include "SimV2GetMesh.h"
+
+const char *AUXILIARY_DATA_POLYHEDRAL_SPLIT = "POLYHEDRAL_SPLIT";
+
+extern vtkDataArray *SimV2_MultiArray_To_VTK_SOA(int ndims, visit_handle c);
+#endif
+
+
+int zc_getvoidpointer()
+{
+    return 0;
+}
+
+// ****************************************************************************
+//  Method: avtSimV2 constructor
+//
+//  Programmer: Brad Whitlock
+//  Creation:   March 17, 2005
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+avtSimV2FileFormat::avtSimV2FileFormat(const char *filename)
+    : avtSTMDFileFormat(&filename, 1)
+{
+#ifdef MDSERVER
+    ifstream in(filename);
+
+    simInfo.SetHost("");
+    simInfo.SetPort(-1);
+    simInfo.SetSecurityKey("");
+
+    char buff[256];
+    while (in >> buff)
+    {
+        if (strcmp(buff, "host")==0)
+        {
+            in >> buff;
+            simInfo.SetHost(buff);
+        }
+        else if (strcmp(buff, "port")==0)
+        {
+            int port;
+            in >> port;
+            simInfo.SetPort(port);
+        }
+        else if (strcmp(buff, "key")==0)
+        {
+            in >> buff;
+            simInfo.SetSecurityKey(buff);
+        }
+        else
+        {
+            in.get(); // assume one delimiter character
+
+            char val[2048];
+            in.getline(val, 2048);
+            simInfo.GetOtherNames().push_back(buff);
+            simInfo.GetOtherValues().push_back(val);
+        }
+    }
+
+    in.close();
+
+    if (simInfo.GetHost()=="")
+    {
+        EXCEPTION2(InvalidFilesException,filename,
+                   "Did not find 'host' in the file.");
+    }
+    if (simInfo.GetSecurityKey()=="")
+    {
+        EXCEPTION2(InvalidFilesException,filename,
+                   "Did not find 'key' in the file.");
+    }
+    if (simInfo.GetPort()==-1)
+    {
+        EXCEPTION2(InvalidFilesException,filename,
+                   "Did not find 'port' in the file.");
+    }
+#else
+    (void)filename;
+#endif
+}
+
+// ****************************************************************************
+//  Method: avtSimV2FileFormat::FreeUpResources
+//
+//  Purpose:
+//      When VisIt is done focusing on a particular timestep, it asks that
+//      timestep to free up any resources (memory, file descriptors) that
+//      it has associated with it.  This method is the mechanism for doing
+//      that.
+//
+//  Programmer: Brad Whitlock
+//  Creation:   August 11, 2004
+//
+// ****************************************************************************
+
+void
+avtSimV2FileFormat::FreeUpResources(void)
+{
+}
+
+// ****************************************************************************
+// Method: avtSimV2FileFormat::ActivateTimestep
+//
+// Purpose:
+//   Calls ActivateTimestep on all of the simulation processors.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Mar 16 16:51:20 PDT 2009
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+avtSimV2FileFormat::ActivateTimestep()
+{
+#ifndef MDSERVER
+    simv2_invoke_ActivateTimestep();
+#endif
+}
+
+#ifndef MDSERVER
+// ****************************************************************************
+// Method: AddMeshMetaData
+//
+// Purpose:
+//   Populates avtMeshMetaData using a handle to SimV2's MeshMetaData
+//
+// Arguments:
+//   mHandle : A handle to a MeshMetaData object.
+//
+// Returns:    An initialized avtMeshMetaData object.
+//
+// Note:
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Mar  9 11:11:27 PST 2010
+//
+// Modifications:
+//   Brad Whitlock, Tue Jun  8 11:51:09 PDT 2010
+//   I fixed an error where the wrong mesh metadata was used for domain
+//   piece name.
+//
+//   Brad Whitlock, Thu Dec  2 14:41:13 PST 2010
+//   I fixed a problem where a freed units string was being referenced.
+//
+//   Brad Whitlock, Wed Aug 17 12:20:43 PDT 2011
+//   I added support for node/cell origin and spatial extents.
+//
+//   Brad Whitlock, Wed Aug  8 14:19:31 PDT 2012
+//   Always assume that the number of groupIds is equal to the number of domains.
+//
+//   Kathleen Biagas, Wed Jul  2 15:20:32 MST 2014
+//   Don't add group info unless there is at least 1 group.
+//
+// ****************************************************************************
+
+void
+AddMeshMetaData(avtDatabaseMetaData *md, visit_handle h)
+{
+    avtMeshMetaData *mesh = 0;
+
+    // Get the mesh type
+    int meshType = VISIT_MESHTYPE_UNKNOWN;
+    if(simv2_MeshMetaData_getMeshType(h, &meshType) == VISIT_OKAY)
+    {
+        // Get the mesh name
+        char *meshName = NULL;
+        if(simv2_MeshMetaData_getName(h, &meshName) == VISIT_OKAY)
+        {
+            int tdim = 0, sdim = 0;
+            if(simv2_MeshMetaData_getTopologicalDimension(h, &tdim)
+               == VISIT_OKAY &&
+               simv2_MeshMetaData_getSpatialDimension(h, &sdim)
+               == VISIT_OKAY)
+            {
+                mesh = new avtMeshMetaData;
+                mesh->name = meshName;
+                mesh->topologicalDimension = tdim;
+                mesh->spatialDimension = sdim;
+                mesh->hasSpatialExtents = false;
+                mesh->hasLogicalBounds = false;
+
+                switch (meshType)
+                {
+                case VISIT_MESHTYPE_RECTILINEAR:
+                    mesh->meshType = AVT_RECTILINEAR_MESH;
+                    break;
+                case VISIT_MESHTYPE_CURVILINEAR:
+                    mesh->meshType = AVT_CURVILINEAR_MESH;
+                    break;
+                case VISIT_MESHTYPE_UNSTRUCTURED:
+                    mesh->meshType = AVT_UNSTRUCTURED_MESH;
+                    break;
+                case VISIT_MESHTYPE_POINT:
+                    mesh->meshType = AVT_POINT_MESH;
+                    break;
+                case VISIT_MESHTYPE_CSG:
+                    mesh->meshType = AVT_CSG_MESH;
+                    break;
+                case VISIT_MESHTYPE_AMR:
+                    mesh->meshType = AVT_AMR_MESH;
+                    break;
+                default:
+                    delete mesh;
+                    simv2_FreeObject(h);
+                    EXCEPTION1(ImproperUseException,
+                               "Invalid mesh type in MeshMetaData.");
+                    break;
+                }
+            }
+
+            free(meshName);
+        }
+    }
+
+    if(mesh == 0)
+        return;
+
+    int nDomains = 1;
+    if(simv2_MeshMetaData_getNumDomains(h, &nDomains) == VISIT_OKAY)
+        mesh->numBlocks = nDomains;
+
+    char *domainTitle = NULL;
+    if(simv2_MeshMetaData_getDomainTitle(h, &domainTitle) == VISIT_OKAY)
+    {
+        mesh->blockTitle = std::string(domainTitle);
+        free(domainTitle);
+    }
+
+    char *domainPieceName = NULL;
+    if(simv2_MeshMetaData_getDomainPieceName(h, &domainPieceName) == VISIT_OKAY)
+    {
+        mesh->blockPieceName = std::string(domainPieceName);
+        free(domainPieceName);
+    }
+
+    int nDomainNames = 0;
+    if(simv2_MeshMetaData_getNumDomainName(h, &nDomainNames) == VISIT_OKAY)
+    {
+      if( nDomainNames && nDomainNames != nDomains )
+        EXCEPTION1(ImproperUseException,
+                   "Invalid mesh number of domains and names does not match in MeshMetaData.");
+          
+        for(int i = 0; i < nDomainNames; ++i)
+        {
+            char *name = NULL;
+            if(simv2_MeshMetaData_getDomainName(h, i, &name) == VISIT_OKAY)
+            {
+                mesh->blockNames.push_back(name);
+                free(name);
+            }
+            else
+                mesh->blockNames.push_back("");
+        }
+    }
+
+    int nGroups = 0;
+    if(simv2_MeshMetaData_getNumGroups(h, &nGroups) == VISIT_OKAY)
+        mesh->numGroups = nGroups;
+
+    if (nGroups > 0)
+    {
+        char *groupTitle = NULL;
+        if(simv2_MeshMetaData_getGroupTitle(h, &groupTitle) == VISIT_OKAY)
+        {
+            mesh->groupTitle = std::string(groupTitle);
+            free(groupTitle);
+        }
+
+        int nGroupNames = 0;
+        if(simv2_MeshMetaData_getNumGroupName(h, &nGroupNames) == VISIT_OKAY)
+        {
+          if( nGroupNames && nGroupNames != nGroups )
+            EXCEPTION1(ImproperUseException,
+                       "Invalid mesh number of groups and names does not match in MeshMetaData.");
+          
+            for(int i = 0; i < nGroupNames; ++i)
+            {
+                char *name = NULL;
+                if(simv2_MeshMetaData_getGroupName(h, i, &name) == VISIT_OKAY)
+                {
+                    mesh->groupNames.push_back(name);
+                    free(name);
+                }
+                else
+                  mesh->groupNames.push_back("");
+            }
+        }
+
+        char *groupPieceName = NULL;
+        if(simv2_MeshMetaData_getGroupPieceName(h, &groupPieceName) == VISIT_OKAY)
+        {
+            mesh->groupPieceName = std::string(groupPieceName);
+            free(groupPieceName);
+        }
+
+        int groupLen = mesh->numBlocks;
+        mesh->groupIds.resize(groupLen);
+        for (int g = 0; g<groupLen; g++)
+        {
+            int id = 0;
+            simv2_MeshMetaData_getGroupId(h, g, &id);
+            mesh->groupIds[g] = id;
+        }
+    }
+
+    // Get axis labels
+    char *xLabel = NULL, *yLabel = NULL, *zLabel = NULL;
+    if(simv2_MeshMetaData_getXLabel(h, &xLabel) == VISIT_OKAY)
+    {
+        mesh->xLabel = std::string(xLabel);
+        free(xLabel);
+    }
+    if(simv2_MeshMetaData_getYLabel(h, &yLabel) == VISIT_OKAY)
+    {
+        mesh->yLabel = std::string(yLabel);
+        free(yLabel);
+    }
+    if(simv2_MeshMetaData_getZLabel(h, &zLabel) == VISIT_OKAY)
+    {
+        mesh->zLabel = std::string(zLabel);
+        free(zLabel);
+    }
+
+    // Get axis units
+    char *xUnits = NULL, *yUnits = NULL, *zUnits = NULL;
+    if(simv2_MeshMetaData_getXUnits(h, &xUnits) == VISIT_OKAY)
+    {
+        mesh->xUnits = std::string(xUnits);
+        free(xUnits);
+    }
+    if(simv2_MeshMetaData_getYUnits(h, &yUnits) == VISIT_OKAY)
+    {
+        mesh->yUnits = std::string(yUnits);
+        free(yUnits);
+    }
+    if(simv2_MeshMetaData_getZUnits(h, &zUnits) == VISIT_OKAY)
+    {
+        mesh->zUnits = std::string(zUnits);
+        free(zUnits);
+    }
+
+    // Get cell origin.
+    int origin = 0;
+    if(simv2_MeshMetaData_getCellOrigin(h, &origin) == VISIT_OKAY)
+        mesh->cellOrigin = origin;
+
+    // Get node origin.
+    if(simv2_MeshMetaData_getNodeOrigin(h, &origin) == VISIT_OKAY)
+        mesh->nodeOrigin = origin;
+
+    // Get the spatial extents.
+    int hasSE = 0;
+    if(simv2_MeshMetaData_getHasSpatialExtents(h, &hasSE) == VISIT_OKAY)
+    {
+        double extents[6] = {0.,0.,0.,0.,0.,0.};
+        if(hasSE > 0 &&
+           simv2_MeshMetaData_getSpatialExtents(h, extents) == VISIT_OKAY)
+        {
+            mesh->hasSpatialExtents = true;
+            mesh->minSpatialExtents[0] = extents[0];
+            mesh->minSpatialExtents[1] = extents[2];
+            mesh->minSpatialExtents[2] = extents[4];
+            mesh->maxSpatialExtents[0] = extents[1];
+            mesh->maxSpatialExtents[1] = extents[3];
+            mesh->maxSpatialExtents[2] = extents[5];
+        }
+    }
+
+    // Get the logical bounds.
+    int hasB = 0;
+    if(simv2_MeshMetaData_getHasLogicalBounds(h, &hasB) == VISIT_OKAY)
+    {
+        int bounds[3] = {0,0,0};
+        if(hasB > 0 &&
+           simv2_MeshMetaData_getLogicalBounds(h, bounds) == VISIT_OKAY)
+        {
+            mesh->hasLogicalBounds = true;
+            mesh->logicalBounds[0] = bounds[0];
+            mesh->logicalBounds[1] = bounds[1];
+            mesh->logicalBounds[2] = bounds[2];
+        }
+    }
+
+    md->Add(mesh);
+}
+
+// ****************************************************************************
+// Method: RestrictMaterialIndices
+//
+// Purpose:
+//   Check the input variable metadata for its materialName to see if any of
+//   the material names are present in the material for the variable's mesh.
+//   If so, return a vector of the indices of the material names.
+//
+// Arguments:
+//   h : the metadata handle.
+//   mmd : The material metadata.
+//
+// Returns:    A vector of indices.
+//
+// Note:
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Jul 18 14:55:04 PDT 2012
+//
+// Modifications:
+//
+// ****************************************************************************
+
+intVector
+RestrictMaterialIndices(visit_handle h, const avtMaterialMetaData *mmd)
+{
+    intVector restrictedMats;
+
+    if(mmd != NULL)
+    {
+        int nmat = 0;
+        if(simv2_VariableMetaData_getNumMaterialNames(h, &nmat) == VISIT_OKAY)
+        {
+            for(int m = 0; m < nmat; ++m)
+            {
+                char *matname = NULL;
+                if(simv2_VariableMetaData_getMaterialName(h, m, &matname) == VISIT_OKAY)
+                {
+                    // Find index of matname in mmd's material names.
+                    for(size_t idx = 0; idx < mmd->materialNames.size(); ++idx)
+                    {
+                        if(mmd->materialNames[idx] == std::string(matname))
+                        {
+                            restrictedMats.push_back((int)idx);
+                            break;
+                        }
+                    }
+                    free(matname);
+                }
+            }
+        }
+    }
+
+    return restrictedMats;
+}
+
+// ****************************************************************************
+// Method: AddVariableMetaData
+//
+// Purpose:
+//   Adds a variable metadata to the database metadata.
+//
+// Arguments:
+//
+// Returns:
+//
+// Note:
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Mar  9 11:34:15 PST 2010
+//
+// Modifications:
+//   Brad Whitlock, Thu Dec 15 14:51:15 PST 2011
+//   Reenable array variables. Also add support for hideFromGUI attribute.
+//
+//   Brad Whitlock, Wed Jul 18 14:58:01 PDT 2012
+//   Enable variables to be restricted to material subsets of the mesh.
+//
+// ****************************************************************************
+
+void
+AddVariableMetaData(avtDatabaseMetaData *md, visit_handle h)
+{
+    char *varName = NULL, *meshName = NULL;
+    if(simv2_VariableMetaData_getName(h, &varName) == VISIT_OKAY)
+    {
+        if(simv2_VariableMetaData_getMeshName(h, &meshName) == VISIT_OKAY)
+        {
+            int type, cntr;
+            if(simv2_VariableMetaData_getType(h, &type) == VISIT_OKAY &&
+               simv2_VariableMetaData_getCentering(h, &cntr) == VISIT_OKAY)
+            {
+                char *u = NULL;
+                bool hasUnits = false;
+                std::string units;
+                if(simv2_VariableMetaData_getUnits(h, &u) == VISIT_OKAY)
+                {
+                    units = u;
+                    hasUnits = !units.empty();
+                    free(u);
+                }
+
+                avtCentering centering;
+                if(cntr == VISIT_VARCENTERING_NODE)
+                    centering = AVT_NODECENT;
+                else
+                    centering = AVT_ZONECENT;
+
+                int iHideFromGUI = 0;
+                bool hideFromGUI = false;
+                if(simv2_VariableMetaData_getHideFromGUI(h, &iHideFromGUI) ==  VISIT_OKAY)
+                    hideFromGUI = iHideFromGUI > 0;
+
+                // See if the mesh for this variable has a material so we can
+                // potentially restrict this variable to certain material regions.
+                const avtMaterialMetaData *mmd = md->GetMaterialOnMesh(meshName);
+
+                // Create the appropriate metadata based on the variable type.
+                if(type == VISIT_VARTYPE_SCALAR)
+                {
+                    int treatAsASCII = 0;
+                    simv2_VariableMetaData_getTreatAsASCII(h, &treatAsASCII);
+
+                    avtScalarMetaData *scalar = new avtScalarMetaData;
+                    scalar->name = varName;
+                    scalar->originalName = varName;
+                    scalar->meshName = meshName;
+                    scalar->centering = centering;
+                    scalar->treatAsASCII = treatAsASCII != 0;
+                    scalar->hasDataExtents = false;
+                    scalar->units = units;
+                    scalar->hasUnits = hasUnits;
+                    scalar->hideFromGUI = hideFromGUI;
+                    scalar->matRestricted = RestrictMaterialIndices(h, mmd);
+
+                    int enumType;
+                    if(simv2_VariableMetaData_getEnumerationType(h, &enumType) == VISIT_OKAY) {
+                      switch( enumType ) {
+                      case VISIT_ENUMTYPE_NONE:
+                        scalar->SetEnumerationType(avtScalarMetaData::None);
+                        break;
+                      case VISIT_ENUMTYPE_BY_VALUE:
+                        scalar->SetEnumerationType(avtScalarMetaData::ByValue);
+                        break;
+                      case VISIT_ENUMTYPE_BY_RANGE:
+                        scalar->SetEnumerationType(avtScalarMetaData::ByRange);
+                        break;
+                      case VISIT_ENUMTYPE_BY_BITMASK:
+                        scalar->SetEnumerationType(avtScalarMetaData::ByBitMask);
+                        break;
+                      case VISIT_ENUMTYPE_BY_NCHOOSER:
+                        scalar->SetEnumerationType(avtScalarMetaData::ByNChooseR);
+                        break;
+                      default:
+                        scalar->SetEnumerationType(avtScalarMetaData::None);
+                      }
+                    }
+
+                    int nNames;
+                    if(simv2_VariableMetaData_getNumEnumNames(h, &nNames) == VISIT_OKAY && nNames > 0)
+                    {
+                      for( int i=0; i<nNames; ++i )
+                      {
+                        char *eName = NULL;
+                        double minVal, maxVal;
+                        
+                        if(simv2_VariableMetaData_getEnumName(h, i, &eName) == VISIT_OKAY &&
+                           simv2_VariableMetaData_getEnumNameRange(h, i, &minVal, &maxVal) == VISIT_OKAY)
+                        {
+                          scalar->AddEnumNameRange(eName, minVal, maxVal);
+                          free(eName);
+                        }
+                      }
+                    }
+
+                    int nGraphEdges;
+                    if(simv2_VariableMetaData_getNumEnumGraphEdges(h, &nGraphEdges) == VISIT_OKAY && nGraphEdges > 0)
+                    {
+                      for( int i=0; i<nGraphEdges; ++i )
+                      {
+                        int head, tail;
+                        char *edgeName = NULL;
+                        
+                        if(simv2_VariableMetaData_getEnumGraphEdge(h, i, &head, &tail, &edgeName) == VISIT_OKAY)
+                        {
+                          scalar->AddEnumGraphEdge( head, tail, edgeName );
+                          free(edgeName);
+                        }                       
+                      }
+                    }
+
+                    double minVal, maxVal;
+
+                    if(simv2_VariableMetaData_getEnumAlwaysIncludeRange(h, &minVal, &maxVal) == VISIT_OKAY)
+                    {
+                        // The defaults are +DBL_MAX and -DBL_MAX which will fail this conditional
+                        if( minVal <= maxVal )
+                        {
+                            scalar->SetEnumAlwaysIncludeRange( minVal, maxVal );
+                        }
+                    }
+                    
+                    if(simv2_VariableMetaData_getEnumAlwaysExcludeRange(h, &minVal, &maxVal) == VISIT_OKAY)
+                    {
+                        // The defaults are +DBL_MAX and -DBL_MAX which will fail this conditional
+                        if( minVal <= maxVal )
+                        {
+                            scalar->SetEnumAlwaysExcludeRange( minVal, maxVal );
+                        }
+                    }
+                    
+                    md->Add(scalar);                
+                }
+                else if(type == VISIT_VARTYPE_VECTOR)
+                {
+                    int nComponents = 1;
+                    simv2_VariableMetaData_getNumComponents(h, &nComponents);
+
+                    avtVectorMetaData *vector = new avtVectorMetaData;
+                    vector->name = varName;
+                    vector->originalName = varName;
+                    vector->meshName = meshName;
+                    vector->centering = centering;
+                    vector->varDim = nComponents;
+                    vector->units = units;
+                    vector->hasUnits = hasUnits;
+                    vector->hideFromGUI = hideFromGUI;
+                    vector->matRestricted = RestrictMaterialIndices(h, mmd);
+
+                    md->Add(vector);
+                }
+                else if(type == VISIT_VARTYPE_TENSOR)
+                {
+                    int nComponents = 1;
+                    simv2_VariableMetaData_getNumComponents(h, &nComponents);
+
+                    avtTensorMetaData *tensor = new avtTensorMetaData;
+                    tensor->name = varName;
+                    tensor->originalName = varName;
+                    tensor->meshName = meshName;
+                    tensor->centering = centering;
+                    tensor->dim = nComponents;
+                    tensor->units = units;
+                    tensor->hasUnits = hasUnits;
+                    tensor->hideFromGUI = hideFromGUI;
+                    tensor->matRestricted = RestrictMaterialIndices(h, mmd);
+
+                    md->Add(tensor);
+                }
+                else if(type == VISIT_VARTYPE_SYMMETRIC_TENSOR)
+                {
+                    int nComponents = 1;
+                    simv2_VariableMetaData_getNumComponents(h, &nComponents);
+
+                    avtSymmetricTensorMetaData *tensor = new avtSymmetricTensorMetaData;
+                    tensor->name = varName;
+                    tensor->originalName = varName;
+                    tensor->meshName = meshName;
+                    tensor->centering = centering;
+                    tensor->dim = nComponents;
+                    tensor->units = units;
+                    tensor->hasUnits = hasUnits;
+                    tensor->hideFromGUI = hideFromGUI;
+                    tensor->matRestricted = RestrictMaterialIndices(h, mmd);
+
+                    md->Add(tensor);
+                }
+                else if(type == VISIT_VARTYPE_LABEL)
+                {
+                    avtLabelMetaData *label = new avtLabelMetaData;
+                    label->name = varName;
+                    label->originalName = varName;
+                    label->meshName = meshName;
+                    label->centering = centering;
+                    label->hideFromGUI = hideFromGUI;
+                    label->matRestricted = RestrictMaterialIndices(h, mmd);
+
+                    md->Add(label);
+                }
+                else if(type == VISIT_VARTYPE_ARRAY)
+                {
+                    int nComponents = 1;
+                    simv2_VariableMetaData_getNumComponents(h, &nComponents);
+
+                    avtArrayMetaData *arr = new avtArrayMetaData;
+                    arr->name = varName;
+                    arr->originalName = varName;
+                    arr->meshName = meshName;
+                    arr->centering = centering;
+                    arr->nVars = nComponents;
+                    for(int c = 0; c < nComponents; ++c)
+                    {
+                        char compname[100];
+                        sprintf(compname, "%d", c);
+                        arr->compNames.push_back(compname);
+                    }
+                    arr->units = units;
+                    arr->hasUnits = hasUnits;
+                    arr->hideFromGUI = hideFromGUI;
+                    arr->matRestricted = RestrictMaterialIndices(h, mmd);
+
+                    md->Add(arr);
+                }
+            }       
+            free(meshName);
+        }
+        free(varName);
+    }
+}
+
+// ****************************************************************************
+// Method: AddMaterialMetaData
+//
+// Purpose:
+//   Add metadata for a material
+//
+// Arguments:
+//
+// Returns:
+//
+// Note:
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Mar  9 12:13:56 PST 2010
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+AddMaterialMetaData(avtDatabaseMetaData *md, visit_handle h)
+{
+    char *name = NULL, *meshName = NULL;
+    if(simv2_MaterialMetaData_getName(h, &name) == VISIT_OKAY)
+    {
+        if(simv2_MaterialMetaData_getMeshName(h, &meshName) == VISIT_OKAY)
+        {
+            int nMat = 0;
+            if(simv2_MaterialMetaData_getNumMaterialNames(h, &nMat) == VISIT_OKAY)
+            {
+                avtMaterialMetaData *material = new avtMaterialMetaData;
+                material->name = name;
+                material->originalName = name;
+                material->meshName = meshName;
+                material->numMaterials = nMat;
+                material->materialNames.clear();
+
+                for (int m = 0; m < nMat; m++)
+                {
+                    char *matname = NULL;
+                    if(simv2_MaterialMetaData_getMaterialName(h, m, &matname) == VISIT_OKAY)
+                    {
+                        material->materialNames.push_back(matname);
+                        free(matname);
+                    }
+                    else
+                        material->materialNames.push_back("");
+                }
+
+                md->Add(material);
+            }
+            free(meshName);
+        }
+        free(name);
+    }
+}
+
+// ****************************************************************************
+// Method: NameListToStringVector
+//
+// Purpose:
+//   Converts a name list to a string vector.
+//
+// Arguments:
+//
+// Returns:
+//
+// Note:
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Mar  9 13:06:44 PST 2010
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+NameListToStringVector(visit_handle h, stringVector &vec)
+{
+    int n;
+    if(simv2_NameList_getNumName(h, &n) == VISIT_OKAY)
+    {
+        for(int i = 0; i < n; ++i)
+        {
+            char *name = NULL;
+            if(simv2_NameList_getName(h, i, &name) == VISIT_OKAY)
+            {
+                vec.push_back(name);
+                free(name);
+            }
+        }
+    }
+}
+
+// ****************************************************************************
+// Method: AddSpeciesMetaData
+//
+// Purpose:
+//   Adds species metadata.
+//
+// Arguments:
+//
+// Returns:
+//
+// Note:
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Mar  9 13:07:12 PST 2010
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+AddSpeciesMetaData(avtDatabaseMetaData *md, visit_handle h)
+{
+    char *name = NULL, *meshName = NULL, *matName = NULL;
+    if(simv2_SpeciesMetaData_getName(h, &name) == VISIT_OKAY)
+    {
+        if(simv2_SpeciesMetaData_getMeshName(h, &meshName) == VISIT_OKAY)
+        {
+            if(simv2_SpeciesMetaData_getMaterialName(h, &matName) == VISIT_OKAY)
+            {
+                int nSpecies = 0;
+                if(simv2_SpeciesMetaData_getNumSpeciesName(h, &nSpecies) == VISIT_OKAY)
+                {
+                    vector<int>   numSpecies;
+                    vector<vector<string> > speciesNames;
+                    for(int i = 0; i < nSpecies; ++i)
+                    {
+                        visit_handle s;
+                        if(simv2_SpeciesMetaData_getSpeciesName(h, i, &s) == VISIT_OKAY)
+                        {
+                            stringVector onelist;
+                            NameListToStringVector(s, onelist);
+
+                            numSpecies.push_back(static_cast<int>(onelist.size()));
+                            speciesNames.push_back(onelist);
+                        }
+                    }
+
+                    avtSpeciesMetaData *species = new avtSpeciesMetaData(name,
+                        meshName, matName, static_cast<int>(numSpecies.size()), numSpecies,
+                        speciesNames);
+
+                    md->Add(species);
+                }
+                free(matName);
+            }
+            free(meshName);
+        }
+        free(name);
+    }
+}
+
+// ****************************************************************************
+// Method: AddCurveMetaData
+//
+// Purpose:
+//   Adds curve metadata.
+//
+// Arguments:
+//
+// Returns:
+//
+// Note:
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Mar  9 13:22:56 PST 2010
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+AddCurveMetaData(avtDatabaseMetaData *md, visit_handle h)
+{
+    char *name = NULL;
+    if(simv2_CurveMetaData_getName(h, &name) == VISIT_OKAY)
+    {
+        avtCurveMetaData *curve = new avtCurveMetaData;
+        curve->name = name;
+        curve->originalName = name;
+        free(name);
+
+        // Get axis labels
+        char *xLabel = NULL, *yLabel = NULL;
+        if(simv2_CurveMetaData_getXLabel(h, &xLabel) == VISIT_OKAY)
+        {
+            curve->xLabel = xLabel;
+            free(xLabel);
+        }
+        if(simv2_CurveMetaData_getYLabel(h, &yLabel) == VISIT_OKAY)
+        {
+            curve->yLabel = yLabel;
+            free(yLabel);
+        }
+
+        // Get axis units
+        char *xUnits = NULL, *yUnits = NULL;
+        if(simv2_CurveMetaData_getXUnits(h, &xUnits) == VISIT_OKAY)
+        {
+            curve->xUnits = xUnits;
+            free(xUnits);
+        }
+        if(simv2_CurveMetaData_getYUnits(h, &yUnits) == VISIT_OKAY)
+        {
+            curve->yUnits = yUnits;
+            free(yUnits);
+        }
+
+        md->Add(curve);
+    }
+}
+
+// ****************************************************************************
+// Method: AddExpressionMetaData
+//
+// Purpose:
+//
+//
+// Arguments:
+//
+// Returns:
+//
+// Note:
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Mar  9 13:28:23 PST 2010
+//
+// Modifications:
+//
+//   Burlen Loring, Mon Apr 28 14:54:13 PDT 2014
+//   fixed leak, delete the expression after adding it.
+//
+// ****************************************************************************
+
+void
+AddExpressionMetaData(avtDatabaseMetaData *md, visit_handle h)
+{
+    char *name = NULL, *definition = NULL;
+    if(simv2_ExpressionMetaData_getName(h, &name) == VISIT_OKAY)
+    {
+        if(simv2_ExpressionMetaData_getDefinition(h, &definition) == VISIT_OKAY)
+        {
+            int vartype;
+            if(simv2_ExpressionMetaData_getType(h, &vartype) == VISIT_OKAY)
+            {
+                Expression *newexp = new Expression;
+                newexp->SetName(name);
+                newexp->SetDefinition(definition);
+                if(vartype == VISIT_VARTYPE_MESH)
+                    newexp->SetType(Expression::Mesh);
+                else if(vartype == VISIT_VARTYPE_SCALAR)
+                    newexp->SetType(Expression::ScalarMeshVar);
+                else if(vartype == VISIT_VARTYPE_VECTOR)
+                    newexp->SetType(Expression::VectorMeshVar);
+                else if(vartype == VISIT_VARTYPE_TENSOR)
+                    newexp->SetType(Expression::TensorMeshVar);
+                else if(vartype == VISIT_VARTYPE_SYMMETRIC_TENSOR)
+                    newexp->SetType(Expression::SymmetricTensorMeshVar);
+                else if(vartype == VISIT_VARTYPE_MATERIAL)
+                    newexp->SetType(Expression::Material);
+                else if(vartype == VISIT_VARTYPE_MATSPECIES)
+                    newexp->SetType(Expression::Species);
+                else if(vartype == VISIT_VARTYPE_CURVE)
+                    newexp->SetType(Expression::CurveMeshVar);
+                else
+                    newexp->SetType(Expression::Unknown);
+
+                md->AddExpression(newexp);
+                delete newexp;
+            }
+            free(definition);
+        }
+        free(name);
+    }
+}
+
+// ****************************************************************************
+// Method: CommandMetaDataToCommandSpec
+//
+// Purpose:
+//   Populates avtSimulationCommandSpecification from CommandMetaData.
+//
+// Arguments:
+//
+// Returns:
+//
+// Note:
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Mar  9 13:46:29 PST 2010
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+CommandMetaDataToCommandSpec(visit_handle h, avtSimulationCommandSpecification &scs)
+{
+    char *name = NULL;
+    if(simv2_CommandMetaData_getName(h, &name) == VISIT_OKAY)
+    {
+        scs.SetName(name);
+        scs.SetArgumentType(avtSimulationCommandSpecification::CmdArgNone);
+        free(name);
+    }
+
+    int enabled = 1;
+
+    if(simv2_CommandMetaData_getEnabled(h, &enabled) == VISIT_OKAY)
+    {
+        scs.SetEnabled(enabled);
+    }
+}
+
+
+// ****************************************************************************
+// Method: MessageMetaDataToString
+//
+// Purpose:
+//   Populates string from MessageMetaData.
+//
+// Arguments:
+//
+// Returns:
+//
+// Note:
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Mar  9 13:46:29 PST 2010
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+MessageMetaDataToString(visit_handle h, std::string &str)
+{
+    char *name = NULL;
+    if(simv2_MessageMetaData_getName(h, &name) == VISIT_OKAY)
+    {
+        str = std::string(name);
+        free(name);
+    }
+}
+#endif
+
+// ****************************************************************************
+//  Method: avtSimV2FileFormat::PopulateDatabaseMetaData
+//
+//  Purpose:
+//      Fill the simulation metadata with the parameters from the file for
+//      the mdserver.  Get the info from the simulation for the engine.
+//
+//  Programmer: Brad Whitlock
+//  Creation:   Tue Mar  9 10:31:56 PST 2010
+//
+//  Modifications:
+//    Mark C. Miller, Tue Oct 19 20:23:57 PDT 2010
+//    Added test of debug level before calling MD's Print() method.
+//
+//    Brad Whitlock, Fri Aug 10 10:38:20 PDT 2012
+//    I moved CalculateBoundaries into the simv2 runtime.
+//
+// ****************************************************************************
+
+void
+avtSimV2FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
+{
+    md->SetIsSimulation(true);
+#ifdef MDSERVER
+    md->SetSimInfo(simInfo);
+#else
+    const char *mName = "avtSimV2FileFormat::PopulateDatabaseMetaData: ";
+
+    visit_handle h = simv2_invoke_GetMetaData();
+    if(h == VISIT_INVALID_HANDLE)
+        return;
+
+    int simMode, currentCycle;
+    double currentTime;
+    if(simv2_SimulationMetaData_getData(h, simMode, currentCycle,
+        currentTime) == VISIT_ERROR)
+    {
+        debug4 << mName << "Can't get data from simulation metadata" << endl;
+        simv2_FreeObject(h);
+        return;
+    }
+
+    md->SetCycle(timestep, currentCycle);
+    md->SetTime(timestep, currentTime);
+
+    switch(simMode)
+    {
+    case VISIT_SIMMODE_UNKNOWN:
+        md->GetSimInfo().SetMode(avtSimulationInformation::Unknown);
+        break;
+    case VISIT_SIMMODE_RUNNING:
+        md->GetSimInfo().SetMode(avtSimulationInformation::Running);
+        break;
+    case VISIT_SIMMODE_STOPPED:
+        md->GetSimInfo().SetMode(avtSimulationInformation::Stopped);
+        break;
+    }
+
+    //
+    // Add the meshes.
+    //
+    int numMeshes = 0;
+    simv2_SimulationMetaData_getNumMeshes(h, numMeshes);
+    for(int m = 0; m < numMeshes; m++)
+    {
+        visit_handle mHandle = VISIT_INVALID_HANDLE;
+        if(simv2_SimulationMetaData_getMesh(h, m, mHandle) == VISIT_OKAY)
+            AddMeshMetaData(md, mHandle);
+    }
+
+    //
+    // Add the Curves
+    //
+    int numCurves = 0;
+    simv2_SimulationMetaData_getNumCurves(h, numCurves);
+    for (int i=0; i < numCurves; i++)
+    {
+        visit_handle iHandle = VISIT_INVALID_HANDLE;
+        if(simv2_SimulationMetaData_getCurve(h, i, iHandle) == VISIT_OKAY)
+            AddCurveMetaData(md, iHandle);
+    }
+    for(int i = 0; i < md->GetNumCurves(); ++i)
+        curveMeshes.insert(md->GetCurve(i)->name);
+
+    //
+    // Add the materials
+    //
+    int numMaterials = 0;
+    simv2_SimulationMetaData_getNumMaterials(h, numMaterials);
+    for (int i=0; i < numMaterials; i++)
+    {
+        visit_handle iHandle = VISIT_INVALID_HANDLE;
+        if(simv2_SimulationMetaData_getMaterial(h, i, iHandle) == VISIT_OKAY)
+            AddMaterialMetaData(md, iHandle);
+    }
+
+    //
+    // Add the Species
+    //
+    int numSpecies = 0;
+    simv2_SimulationMetaData_getNumSpecies(h, numSpecies);
+    for (int i=0; i < numSpecies; i++)
+    {
+        visit_handle iHandle = VISIT_INVALID_HANDLE;
+        if(simv2_SimulationMetaData_getSpecies(h, i, iHandle) == VISIT_OKAY)
+            AddSpeciesMetaData(md, iHandle);
+    }
+
+    //
+    // Add the variables
+    //
+    int numVariables = 0;
+    simv2_SimulationMetaData_getNumVariables(h, numVariables);
+    for (int s=0; s < numVariables; s++)
+    {
+        visit_handle vHandle = VISIT_INVALID_HANDLE;
+        if(simv2_SimulationMetaData_getVariable(h, s, vHandle) == VISIT_OKAY)
+            AddVariableMetaData(md, vHandle);
+    }
+
+    //
+    // Add the Expressions
+    //
+    int numExpressions = 0;
+    simv2_SimulationMetaData_getNumExpressions(h, numExpressions);
+    for (int i=0; i < numExpressions; i++)
+    {
+        visit_handle iHandle = VISIT_INVALID_HANDLE;
+        if(simv2_SimulationMetaData_getExpression(h, i, iHandle) == VISIT_OKAY)
+            AddExpressionMetaData(md, iHandle);
+    }
+
+    //
+    // Add simulation commands.
+    //
+    int numCommands = 0;
+    simv2_SimulationMetaData_getNumGenericCommands(h, numCommands);
+    for (int i=0; i < numCommands; i++)
+    {
+        visit_handle cHandle = VISIT_INVALID_HANDLE;
+        if(simv2_SimulationMetaData_getGenericCommand(h, i, cHandle) == VISIT_OKAY)
+        {
+            avtSimulationCommandSpecification spec;
+            CommandMetaDataToCommandSpec(cHandle, spec);
+            md->GetSimInfo().AddGenericCommands(spec);
+        }
+    }
+
+    simv2_SimulationMetaData_getNumCustomCommands(h, numCommands);
+    for (int i=0; i < numCommands; i++)
+    {
+        visit_handle cHandle = VISIT_INVALID_HANDLE;
+        if(simv2_SimulationMetaData_getCustomCommand(h, i, cHandle) == VISIT_OKAY)
+        {
+            avtSimulationCommandSpecification spec;
+            CommandMetaDataToCommandSpec(cHandle, spec);
+            md->GetSimInfo().AddCustomCommands(spec);
+        }
+    }
+
+    // Get domain boundary information
+    int numMultiblock = 0;
+    for (int m=0; m < md->GetNumMeshes(); m++)
+    {
+        if(md->GetMesh(m)->numBlocks > 1)
+            numMultiblock++;
+    }
+    if(numMultiblock > 0)
+    {
+        for (int i=0; i < md->GetNumMeshes(); i++)
+        {
+            if(md->GetMesh(i)->numBlocks > 1)
+            {
+                debug4 << mName << "Getting domain boundaries for mesh: " << md->GetMesh(i)->name << endl;
+                visit_handle boundaries = simv2_invoke_GetDomainBoundaries(md->GetMesh(i)->name.c_str());
+                if(boundaries != VISIT_INVALID_HANDLE)
+                {
+                    // Cache the domain boundary information
+                    avtStructuredDomainBoundaries *sdb = (avtStructuredDomainBoundaries *)
+                        simv2_DomainBoundaries_avt(boundaries);
+                    if(sdb != NULL)
+                    {
+                        void_ref_ptr vr = void_ref_ptr(sdb,avtStructuredDomainBoundaries::Destruct);
+                        const char *cache_meshname = (numMultiblock > 1) ? md->GetMesh(i)->name.c_str() : "any_mesh";
+                        debug4 << mName << "Caching domain boundaries for mesh:" << cache_meshname << endl;
+                        cache->CacheVoidRef(cache_meshname,
+                                AUXILIARY_DATA_DOMAIN_BOUNDARY_INFORMATION,
+                                timestep, -1, vr);
+                    }
+                    else
+                    {
+                        debug4 << mName << "Could not obtain domain boundaries from returned "
+                                           "simulation object."
+                               << endl;
+                    }
+                    simv2_DomainBoundaries_free(boundaries);
+                }
+                else
+                {
+                    debug4 << mName << "The simulation did not return a valid "
+                                       "domain boundaries object for mesh "
+                           << md->GetMesh(i)->name << endl;
+                }
+            }
+        }
+    }
+
+    // Get domain nesting information
+    int numAMR = 0;
+    for (int m=0; m < md->GetNumMeshes(); m++)
+    {
+        if(md->GetMesh(m)->meshType == AVT_AMR_MESH)
+            numAMR++;
+    }
+    if(numAMR > 0)
+    {
+        for (int i=0; i < md->GetNumMeshes(); i++)
+        {
+            if(md->GetMesh(i)->meshType == AVT_AMR_MESH)
+            {
+                debug4 << mName << "Getting domain nesting for mesh: " << md->GetMesh(i)->name << endl;
+                visit_handle nesting = simv2_invoke_GetDomainNesting(md->GetMesh(i)->name.c_str());
+                if(nesting != VISIT_INVALID_HANDLE)
+                {
+                    avtStructuredDomainNesting *sdn = (avtStructuredDomainNesting *)
+                        simv2_DomainNesting_avt(nesting);
+                    if(sdn != NULL)
+                    {
+                        void_ref_ptr vr = void_ref_ptr(sdn, avtStructuredDomainNesting::Destruct);
+                        const char *cache_meshname = (numAMR > 1) ? md->GetMesh(i)->name.c_str() : "any_mesh";
+                        debug4 << mName << "Caching domain nesting for mesh:" << cache_meshname << endl;
+                        cache->CacheVoidRef(cache_meshname,
+                                            AUXILIARY_DATA_DOMAIN_NESTING_INFORMATION,
+                                            timestep, -1, vr);
+                    }
+                    else
+                    {
+                        debug4 << mName << "Could not obtain domain nesting from returned "
+                                           "simulation object."
+                               << endl;
+                    }
+                    simv2_DomainNesting_free(nesting);
+                }
+                else
+                {
+                    debug4 << mName << "The simulation did not return a valid "
+                                       "domain nesting object for mesh "
+                           << md->GetMesh(i)->name << endl;
+                }
+            }
+        }
+    }
+
+
+    //
+    // Add simulation messages.
+    //
+    int numMessages = 0;
+    simv2_SimulationMetaData_getNumMessages(h, numMessages);
+
+    for (int i=0; i < numMessages; i++)
+    {
+        visit_handle cHandle = VISIT_INVALID_HANDLE;
+        if(simv2_SimulationMetaData_getMessage(h, i, cHandle) == VISIT_OKAY)
+        {
+            std::string message;
+            MessageMetaDataToString(cHandle, message);
+            md->GetSimInfo().SetMessage(message);
+        }
+    }
+
+
+    if (DebugStream::Level4())
+    {
+        debug4 << mName << "Returning meta data:" << endl;
+        md->Print(DebugStream::Stream4());
+    }
+    simv2_SimulationMetaData_free(h);
+#endif
+}
+
+#ifndef MDSERVER
+// ****************************************************************************
+// Method: PackageGlobalIdArray
+//
+// Purpose:
+//   Package the global cells/nodes as a VTK int array.
+//
+// Arguments:
+//   global : The data array.
+//   name   : Then name of the data array we're making.
+//
+// Returns:    A VTK int array with the global cell/node ids.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Jun 13 10:53:32 PDT 2014
+//
+// Modifications:
+//
+// ****************************************************************************
+
+static vtkDataArray *
+PackageGlobalIdArray(visit_handle global, const char *name)
+{
+    vtkDataArray *arr = NULL;
+    // Get the global cell id information
+    int memory, owner, dataType, nComponents = 0, nTuples = 0, offset = 0, stride = 0;
+    void *data = 0;
+    if(simv2_VariableData_getArrayData(global, 0, memory, owner, dataType, nComponents, nTuples, offset, stride, data))
+    {
+        vtkIntArray *a = vtkIntArray::New();
+        a->SetName(name);
+        if(memory == VISIT_MEMORY_CONTIGUOUS && dataType == VISIT_DATATYPE_INT)
+        {
+            // Zero copy.
+            int saveArray = ((owner == VISIT_OWNER_SIM) ? 1 : 0);
+            a->SetArray(static_cast<int *>(data), nComponents*nTuples, saveArray);
+        }
+        else
+        {
+            debug5 << "Requesting " << name << " from simulation and converting "
+                      "to int due to assumptions in AVT." << endl;
+
+            // Copy to int. We have to copy to int because AVT has some assumptions
+            // that the global ids will be a vtkIntArray.
+            a->SetName(name);
+            a->SetNumberOfTuples(nTuples);
+            int *iptr = (int *)a->GetVoidPointer(0);
+            switch(dataType)
+            {
+            simV2TemplateMacro(
+                const simV2_TT::cppType *src = reinterpret_cast<const simV2_TT::cppType *>(data);
+                for(int i = 0; i < nTuples; ++i)
+                    iptr[i] = static_cast<int>(src[i]);
+            );
+            }
+        }
+        arr = a;
+    }
+
+    return arr;
+}
+
+// ****************************************************************************
+// Method: CreateUnstructuredMeshGlobalCellIds
+//
+// Purpose:
+//   Creates global cell ids for unstructured mesh.
+//
+// Arguments:
+//   h : The handle to the unstructured mesh.
+//
+// Returns:    A pointer to the VTK data array containing the ids.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Jun 13 10:47:37 PDT 2014
+//
+// Modifications:
+//    Kathleen Biagas, Tue Jun 24 10:25:03 MST 2014
+//    Check for valid handle before packaging.
+//
+// ****************************************************************************
+
+static vtkDataArray *
+CreateUnstructuredMeshGlobalCellIds(visit_handle h)
+{
+    vtkDataArray *retval = NULL;
+    visit_handle globalCells = VISIT_INVALID_HANDLE;
+    if(simv2_UnstructuredMesh_getGlobalCellIds(h, &globalCells) == VISIT_OKAY)
+    {
+        if (globalCells != VISIT_INVALID_HANDLE)
+            retval = PackageGlobalIdArray(globalCells, "avtGlobalZoneIds");
+    }
+    return retval;
+}
+
+// ****************************************************************************
+// Method: CreateUnstructuredMeshGlobalNodeIds
+//
+// Purpose:
+//   Creates global node ids for unstructured mesh.
+//
+// Arguments:
+//   h : The handle to the unstructured mesh.
+//
+// Returns:    A pointer to the VTK data array containing the ids.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Jun 13 10:47:37 PDT 2014
+//
+// Modifications:
+//    Kathleen Biagas, Tue Jun 24 10:25:03 MST 2014
+//    Check for valid handle before packaging.
+//
+// ****************************************************************************
+
+static vtkDataArray *
+CreateUnstructuredMeshGlobalNodeIds(visit_handle h)
+{
+    vtkDataArray *retval = NULL;
+    visit_handle globalNodes = VISIT_INVALID_HANDLE;
+    if(simv2_UnstructuredMesh_getGlobalNodeIds(h, &globalNodes) == VISIT_OKAY)
+    {
+        if (globalNodes != VISIT_INVALID_HANDLE)
+            retval = PackageGlobalIdArray(globalNodes, "avtGlobalNodeIds");
+    }
+    return retval;
+}
+#endif
+
+// ****************************************************************************
+//  Method: avtSimV2FileFormat::GetMesh
+//
+//  Purpose:
+//      For the mdserver, do nothing.
+//      For the engine, return a C-api mesh converted to a vtkDataSet.
+//
+//  Arguments:
+//      domain      The index of the domain.  If there are NDomains, this
+//                  value is guaranteed to be between 0 and NDomains-1,
+//                  regardless of block origin.
+//      meshname    The name of the mesh of interest.  This can be ignored if
+//                  there is only one mesh.
+//
+//  Programmer: Brad Whitlock
+//  Creation:   Thu Feb  5 11:50:58 PST 2009
+//
+//  Modifications:
+//    Brad Whitlock, Fri Jun 13 10:56:13 PDT 2014
+//    I added global nodes/cell support.
+//
+//    Kathleen Biagas, Fri Jul 25 09:13:45 MST 2014
+//    Set a new mesh meta data flag when polyhdral zones are split.
+//
+// ****************************************************************************
+
+vtkDataSet *
+avtSimV2FileFormat::GetMesh(int domain, const char *meshname)
+{
+#ifdef MDSERVER
+    (void)domain;
+    (void)meshname;
+    return NULL;
+#else
+    if (curveMeshes.count(meshname))
+    {
+        return GetCurve(meshname);
+    }
+
+    visit_handle h = simv2_invoke_GetMesh(domain, meshname);
+
+    // If the mesh could not be created then return.
+    if(h == VISIT_INVALID_HANDLE)
+        return NULL;
+
+    vtkDataSet *ds = 0;
+    avtPolyhedralSplit *phSplit = 0;
+    TRY
+    {
+        int objType = simv2_ObjectType(h);
+        switch (objType)
+        {
+        case VISIT_CURVILINEAR_MESH:
+            ds = SimV2_GetMesh_Curvilinear(h);
+            break;
+        case VISIT_RECTILINEAR_MESH:
+            ds = SimV2_GetMesh_Rectilinear(h);
+            break;
+        case VISIT_UNSTRUCTURED_MESH:
+        {
+            ds = SimV2_GetMesh_Unstructured(domain, h, &phSplit);
+
+            // Cache the polyhedral split object in case we need it for
+            // variables later.
+            if(phSplit != 0)
+            {
+                void_ref_ptr vr = void_ref_ptr(phSplit, avtPolyhedralSplit::Destruct);
+                debug4 << "Caching polyhedral split for mesh:" << meshname << endl;
+                cache->CacheVoidRef(meshname,
+                                    AUXILIARY_DATA_POLYHEDRAL_SPLIT,
+                                    timestep, domain, vr);
+                metadata->SetZonesWereSplit(meshname, true);
+            }
+            else
+            {
+                // Try and add the global ids if we have not split the mesh.
+
+                vtkDataArray *globalCellIds = CreateUnstructuredMeshGlobalCellIds(h);
+                if(globalCellIds != NULL)
+                {
+                    void_ref_ptr vr = void_ref_ptr(globalCellIds, avtVariableCache::DestructVTKObject);
+                    cache->CacheVoidRef(meshname, AUXILIARY_DATA_GLOBAL_ZONE_IDS, timestep,
+                                        domain, vr);
+                }
+
+                vtkDataArray *globalNodeIds = CreateUnstructuredMeshGlobalNodeIds(h);
+                if(globalNodeIds != NULL)
+                {
+                    void_ref_ptr vr = void_ref_ptr(globalNodeIds, avtVariableCache::DestructVTKObject);
+                    cache->CacheVoidRef(meshname, AUXILIARY_DATA_GLOBAL_NODE_IDS, timestep,
+                                        domain, vr);
+                }
+            }
+        }
+            break;
+        case VISIT_POINT_MESH:
+            ds = SimV2_GetMesh_Point(h);
+            break;
+        case VISIT_CSG_MESH:
+            ds = SimV2_GetMesh_CSG(h);
+            break;
+        default:
+            EXCEPTION1(ImproperUseException,
+                "The simulation returned a handle that does not correspond "
+                "to a mesh.\n");
+            break;
+        }
+    }
+    CATCH(VisItException)
+    {
+        delete phSplit;
+        simv2_FreeObject(h);
+        RETHROW;
+    }
+    ENDTRY
+
+    simv2_FreeObject(h);
+
+    return ds;
+#endif
+}
+
+#ifndef MDSERVER
+// ****************************************************************************
+// Method: StoreVariableData
+//
+// Purpose:
+//   Store memory into the new vtkDataArray, taking 2-tuple to 3-tuple conversion
+//   into account.
+//
+// Arguments:
+//   array       : The destination vtkDataArray.
+//   src         : The source data array.
+//   nComponents : The number of components in the data.
+//   nTuples     : The numebr of tuples in the data.
+//   owner       : The owner of the array.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Feb 27 11:12:21 PST 2009
+//
+// Modifications:
+//   Brad Whitlock, Tue Jan 18 00:14:15 PST 2011
+//   I added code to use the array from the simulation directly.
+//
+//   Brad Whitlock, Mon Jul 20 16:58:17 PDT 2015
+//   I removed the copy case since that's handled differently now.
+//
+//   Burlen Loring, Sat Sep 12 15:32:21 PDT 2015
+//   I added an error report if VISIT_OWNER_EX is used without a
+//   callback
+//
+// ****************************************************************************
+
+template <class ARR, class T>
+void
+StoreVariableData(ARR *array, T *src, int nComponents, int nTuples,
+    const char *varname, int owner, void(*callback)(void*), void *callbackData)
+{
+    if (nComponents == 2)
+    {
+        debug5 << "StoreVariableData: copy 2D vector to 3D vector." << endl;
+
+        // make 3d vectors as VTK requires
+        array->SetNumberOfComponents(3);
+        array->SetNumberOfTuples(nTuples);
+        T *dest = array->GetPointer(0);
+        const T *s = src;
+        const T *end = src + (nTuples * 2);
+        while(s < end)
+        {
+            *dest++ = *s++;
+            *dest++ = *s++;
+            *dest++ = T();
+        }
+    }
+    else
+    {
+        array->SetNumberOfComponents(nComponents);
+        if (owner == VISIT_OWNER_VISIT_EX)
+        {
+            debug5 << "StoreVariableData: zero copy with supplied deletion callback." << endl;
+
+            if (!callback)
+            {
+                ostringstream oss;
+                oss << "Attempt to use VISIT_OWNER_VISIT_EX without a callback"
+                    << " for variable " << (varname ? varname : "unnamed");
+                EXCEPTION1(ImproperUseException, oss.str().c_str());
+             }
+
+            // zero-copy
+            // we observe VTK data array's DeleteEvent and invoke the user
+            // provided callback in repsonse. it's the callbacks duty to free
+            // the memory.
+            array->SetArray(src, nComponents*nTuples, 1);
+
+            simV2_DeleteEventObserver *observer = simV2_DeleteEventObserver::New();
+            observer->Observe(array, callback, callbackData);
+            // this is not a leak, the observer is Delete'd after it's invoked.
+        }
+        else
+        if ((owner == VISIT_OWNER_VISIT) || (owner == VISIT_OWNER_SIM))
+        {
+            debug5 << "StoreVariableData: zero copy." << endl;
+
+            // zero-copy
+            // VTK assumes ownership for VISIT_OWNER_VISIT. for VISIT_OWNER_SIM
+            // the sim must ensure that data persists while VTK is using it, 
+            int saveArray = ((owner == VISIT_OWNER_SIM) ? 1 : 0);
+            array->SetArray(src, nComponents*nTuples, saveArray);
+        }
+    }
+}
+#endif
+
+// ****************************************************************************
+// Method: avtSimV2FileFormat::GetRestrictedMaterialIndices
+//
+// Purpose:
+//   Get the material indices for a variable.
+//
+// Arguments:
+//   varname : The name of the variable for which we want material indices.
+//
+// Returns:    An intVector of the material indices.
+//
+// Note:
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Jul 18 11:55:38 PDT 2012
+//
+// Modifications:
+//
+// ****************************************************************************
+
+intVector
+avtSimV2FileFormat::GetRestrictedMaterialIndices(const std::string &varname) const
+{
+    avtVarType varType = metadata->DetermineVarType(varname, false);
+    if(varType == AVT_SCALAR_VAR)
+        return metadata->GetScalar(varname)->matRestricted;
+    else if(varType == AVT_VECTOR_VAR)
+        return metadata->GetVector(varname)->matRestricted;
+    else if(varType == AVT_TENSOR_VAR)
+        return metadata->GetTensor(varname)->matRestricted;
+    else if(varType == AVT_SYMMETRIC_TENSOR_VAR)
+        return metadata->GetSymmTensor(varname)->matRestricted;
+    else if(varType == AVT_ARRAY_VAR)
+        return metadata->GetArray(varname)->matRestricted;
+    else if(varType == AVT_LABEL_VAR)
+        return metadata->GetLabel(varname)->matRestricted;
+    return intVector();
+}
+
+// ****************************************************************************
+// Method: avtSimV2FileFormat::GetCentering
+//
+// Purpose:
+//   Get the centering of the specified variable.
+//
+// Arguments:
+//   varname : The name of the variable for which we want the centering.
+//
+// Returns:    The variable centering.
+//
+// Note:
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Jul 18 11:56:34 PDT 2012
+//
+// Modifications:
+//
+// ****************************************************************************
+
+avtCentering
+avtSimV2FileFormat::GetCentering(const std::string &varname) const
+{
+    // Get the variable centering
+    avtVarType varType = metadata->DetermineVarType(varname, false);
+    avtCentering centering = AVT_ZONECENT;
+    if(varType == AVT_SCALAR_VAR)
+        centering = metadata->GetScalar(varname)->centering;
+    else if(varType == AVT_VECTOR_VAR)
+        centering = metadata->GetVector(varname)->centering;
+    else if(varType == AVT_TENSOR_VAR)
+        centering = metadata->GetTensor(varname)->centering;
+    else if(varType == AVT_SYMMETRIC_TENSOR_VAR)
+        centering = metadata->GetSymmTensor(varname)->centering;
+    else if(varType == AVT_ARRAY_VAR)
+        centering = metadata->GetArray(varname)->centering;
+    else if(varType == AVT_LABEL_VAR)
+        centering = metadata->GetLabel(varname)->centering;
+
+    return centering;
+}
+
+// ****************************************************************************
+// Method: avtSimV2FileFormat::ExpandVariable
+//
+// Purpose:
+//   Expand a material-restricted variable up to the whole mesh size.
+//
+// Arguments:
+//   array          : The input variable.
+//   mv             : The input mixed variable.
+//   domain         : The domain.
+//   varname        : The name of the variable.
+//   restrictToMats : The vector of material indices.
+//
+// Returns:
+//
+// Note:       This code is inspired by TraverseMaterialForSubsettedUcdvar in
+//             avtSiloFileFormat.C
+//
+//             If we can't get the material or mesh we just return the input
+//             array with an increased refcount.
+//
+//             Ideally, this kind of operation would be up in the database.
+//
+//             The reason that the restrictToMats values work with the matnos
+//             in the avtMaterial is that the avtMaterial renumbers all materials
+//             to start with 0.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Jul 18 11:29:46 PDT 2012
+//
+// Modifications:
+//
+// ****************************************************************************
+
+vtkDataArray *
+avtSimV2FileFormat::ExpandVariable(vtkDataArray *array, avtMixedVariable **mv,
+    int nMixVarComponents, int domain, const std::string &varname,
+    const intVector &restrictToMats)
+{
+#ifdef MDSERVER
+    (void)array;
+    (void)mv;
+    (void)nMixVarComponents;
+    (void)domain;
+    (void)varname;
+    (void)restrictToMats;
+    return NULL;
+#else
+    const char *mName = "avtSimV2FileFormat::ExpandVariable: ";
+
+    // Obtain the avtMaterial object associated with the mesh this
+    // variable is defined on.
+    string meshName = metadata->MeshForVar(varname);
+    string matObjectName = metadata->MaterialOnMesh(meshName);
+    avtMaterial *mat = NULL;
+
+    // First, see if material object is already cached
+    void_ref_ptr vr = cache->GetVoidRef(matObjectName.c_str(),
+        AUXILIARY_DATA_MATERIAL, timestep, domain);
+    mat = (avtMaterial*) *vr;
+
+    // If we don't have the material, read it and cache it
+    if (mat == NULL)
+    {
+        DestructorFunction df;
+        void *p = GetAuxiliaryData(matObjectName.c_str(), domain,
+            AUXILIARY_DATA_MATERIAL, (void*)0, df);
+        mat = (avtMaterial*) p;
+        void_ref_ptr vr = void_ref_ptr(p, df);
+        cache->CacheVoidRef(matObjectName.c_str(), AUXILIARY_DATA_MATERIAL,
+            this->timestep, domain, vr);
+    }
+
+    if(mat == NULL)
+    {
+        debug1 << mName << "Unable to obtain material object \"" << matObjectName
+               << "\" required to compute subsets upon which the variable \""
+               << varname << "\" is defined." << endl;
+        array->Register(NULL);
+        return array;
+    }
+
+    // If we have a node-centered variable then we need the dataset.
+    avtCentering centering = GetCentering(varname);
+    vtkDataSet *mesh = NULL;
+    if(centering == AVT_NODECENT)
+    {
+        mesh = (vtkDataSet *) cache->GetVTKObject(meshName.c_str(),
+                                                  avtVariableCache::DATASET_NAME,
+                                                  this->timestep, domain, "_all");
+        if (mesh == NULL)
+        {
+            debug1 << mName << "Cannot find cached mesh \"" << meshName
+                   << "\" for domain %d to traverse subsetted node-centered variable, \""
+                   << varname << "\"" << endl;
+            array->Register(NULL);
+            return array;
+        }
+    }
+
+    // Create a new mesh-sized data array filled in with values from the
+    // first tuple. We initialize it thus because the code to copy the data over
+    // from the array that we're expanding pokes values back into this array.
+    // This initialization ensures that all values are initialized.
+    int i, nZones = mat->GetNZones();
+    vtkIdType nTuples = (centering == AVT_NODECENT) ? mesh->GetNumberOfPoints() : nZones;
+    vtkDataArray *newvals = array->NewInstance();
+    newvals->SetNumberOfComponents(array->GetNumberOfComponents());
+    newvals->SetNumberOfTuples(nTuples);
+    for(vtkIdType id = 0; id < nTuples; ++id)
+        newvals->SetTuple(id, array->GetTuple(0));
+    debug1 << mName << "New array has " << nTuples << " tuples and we've initialized them all to: "
+           << array->GetTuple1(0) << endl;
+
+    // Create new mixvals array if we have zonal data and a mixed variable.
+    const float *mixvals = NULL;
+    int newmixlen = 0;
+    float *newmixvals = NULL;
+    if(*mv != NULL && centering == AVT_ZONECENT)
+        mixvals = (*mv)->GetBuffer();
+    if(mixvals != NULL)
+    {
+        newmixlen = array->GetNumberOfComponents() * mat->GetMixlen();
+        newmixvals = new float[newmixlen];
+        for(i = 0; i < newmixlen; ++i)
+            newmixvals[i] = mixvals[0];
+    }
+
+    //
+    // Map values back into the mesh sized data array. Copy over mixvals too.
+    //
+    debug1 << mName << "Iterating over " << nZones << " zones" << endl;
+    std::map<vtkIdType,bool> haveVisitedPoint;
+    int nvals = 0;
+    int nmixvals = 0;
+    for(i = 0; i < nZones; ++i)
+    {
+        int matno = mat->GetMatlist()[i];
+
+        // Is this zone selected by restrictToMats?
+        bool selected = false;
+        if(matno >= 0) // clean case
+        {
+            // Is matno in our restrictToMats?
+            for (size_t j = 0; j < restrictToMats.size() && !selected; j++)
+                selected |= (matno == restrictToMats[j]);
+        }
+        else // mixed cell
+        {
+            // Are any matnos in our restrictToMats?
+            int mix_idx = -(matno) - 1;
+            while(mix_idx >= 0 && !selected)
+            {
+                for(size_t j = 0; j < restrictToMats.size() && !selected; j++)
+                    selected |= (mat->GetMixMat()[mix_idx] == restrictToMats[j]);
+                mix_idx = mat->GetMixNext()[mix_idx]-1;
+            }
+        }
+
+        if(selected)
+        {
+            if(centering == AVT_NODECENT)
+            {
+                vtkCell *cell = mesh->GetCell(i);
+                for (vtkIdType j = 0; j < cell->GetNumberOfPoints(); j++)
+                {
+                    vtkIdType ptId = cell->GetPointId(j);
+                    if (haveVisitedPoint.find(ptId) == haveVisitedPoint.end())
+                    {
+                        haveVisitedPoint[ptId] = true;
+                        // Copy current source value into the value for this node.
+                        newvals->SetTuple(ptId, array->GetTuple(nvals));
+                        nvals++;
+                    }
+                }
+            }
+            else
+            {
+                // Copy current source value into the value for this zone.
+                newvals->SetTuple(i, array->GetTuple(nvals));
+                nvals++;
+
+                // If the cell is mixed then copy the current mixvar value
+                // into the mixvar for this zone.
+                if(matno < 0 && mixvals != NULL)
+                {
+                    int mix_idx = -(matno) - 1;
+                    while(mix_idx >= 0)
+                    {
+                        int src = nMixVarComponents * nmixvals;
+                        int dest = array->GetNumberOfComponents() * mix_idx;
+                        for (int j = 0; j < array->GetNumberOfComponents(); j++)
+                        {
+                            if(j < nMixVarComponents)
+                                newmixvals[dest + j] = mixvals[src + j];
+                            else
+                                newmixvals[dest + j] = 0.f;
+                        }
+                        nmixvals++;
+                        mix_idx = mat->GetMixNext()[mix_idx]-1;
+                    }
+                }
+            }
+        }
+    }
+
+    // Package up a new mixed variable and pass it back. Note that we delete the old one.
+    if(mixvals != NULL)
+    {
+        avtMixedVariable *newmv = new avtMixedVariable(newmixvals, newmixlen, (*mv)->GetVarname());
+        delete *mv;
+        delete [] newmixvals;
+        *mv = newmv;
+    }
+
+    return newvals;
+#endif
+}
+
+#ifndef MDSERVER
+// ****************************************************************************
+// Method: SimV2_GetVar_Single
+//
+// Purpose:
+//   Get a vtkDataArray that wraps data from a VisIt_VariableData object that
+//   has a single underlying array.
+//
+// Arguments:
+//   hvar : A handle to a VisIt_VariableData object.
+//
+// Returns:    A vtkDataArray that wraps the VisIt_VariableData's data.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Jul 20 16:35:54 PDT 2015
+//
+// Modifications:
+//
+// ****************************************************************************
+
+vtkDataArray *
+SimV2_GetVar_Single(visit_handle hvar, const char *varname)
+{
+    vtkDataArray *array = NULL;
+    int owner, dataType, nComponents, memory, offset, stride;
+    void *data = NULL;
+
+    // Get the data from the opaque object.
+    int nTuples;
+    int err = simv2_VariableData_getArrayData(hvar, 0, memory,
+                                              owner, dataType,
+                                              nComponents, nTuples,
+                                              offset, stride,
+                                              data);
+    if (err == VISIT_ERROR)
+    {
+        ostringstream oss;
+        oss << "Failed to get data for " << varname;
+        EXCEPTION1(InvalidVariableException, oss.str().c_str());
+    }
+
+    // This is okay. A domain can return NULL for no-data.
+    if (nTuples < 1)
+        return NULL;
+
+    if (!simV2_ValidDataType(dataType))
+    {
+        ostringstream oss;
+        oss << "Unsupported data type for " << varname;
+        EXCEPTION1(InvalidVariableException, oss.str().c_str());
+    }
+
+    if(memory == VISIT_MEMORY_CONTIGUOUS)
+    {
+        debug5 << "SimV2_GetVar_Single: contiguous data" << endl;
+
+        // Get the callback.
+        void (*callback)(void*) = NULL;
+        void *callbackData = NULL;
+        simv2_VariableData_getDeletionCallback(hvar, callback, callbackData);
+
+        // Zero-copy, single component, use VTK data array types.
+        switch (dataType)
+        {
+        simV2TemplateMacro(
+            simV2_TT::vtkType *da = simV2_TT::vtkType::New();
+            StoreVariableData(da, static_cast<simV2_TT::cppType*>(data),
+                nComponents, nTuples, varname, owner, callback, callbackData);
+            array = da;
+        );
+        }
+    }
+    else if(memory == VISIT_MEMORY_STRIDED)
+    {
+        debug5 << "SimV2_GetVar_Single: zero copy of strided data" << endl;
+
+        // Zero-copy, single component, use component data array type.
+        bool owns = (owner == VISIT_OWNER_VISIT);
+        switch (dataType)
+        {
+        simV2TemplateMacro(
+            vtkComponentDataArray<simV2_TT::cppType> *da = vtkComponentDataArray<simV2_TT::cppType>::New();
+            da->SetNumberOfTuples(nTuples);
+            da->SetComponentData(0, vtkArrayComponentStride(data, offset, stride, simV2_TT::vtkEnum, owns));
+            array = da;
+        );
+        }
+    }
+    else
+    {
+        ostringstream oss;
+        oss << "Unsupported memory layout for " << varname;
+        EXCEPTION1(InvalidVariableException, oss.str().c_str());
+    }
+
+    return array;
+}
+
+// ****************************************************************************
+// Method: SimV2_GetVar_Multiple
+//
+// Purpose:
+//   Assemble a vtkDataArray out of a VariableData object that consists of 
+//   multiple arrays.
+//
+// Arguments:
+//   hvar : A handle to the VisIt_VariableData object.
+//
+// Returns:    A vtkDataArray object that wraps the data.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Jul 20 16:58:44 PDT 2015
+//
+// Modifications:
+//
+// ****************************************************************************
+
+vtkDataArray *
+SimV2_GetVar_Multiple(visit_handle hvar, const char *varname, int nArrs)
+{
+    vtkDataArray *array = NULL;
+
+    debug5 << "SimV2_GetVar_Multiple" << endl;
+
+    // Try and make a VTK SOA data array from the multi array.
+    array = SimV2_MultiArray_To_VTK_SOA(nArrs, hvar);
+
+    if(array == NULL)
+    {
+        int owner, dataType, nComponents, memory, offset, stride;
+        void *data = NULL;
+
+        // Zero-copy, multiple component
+        int *nTuples = new int[nArrs];
+        vtkComponentDataArray<float> *da = vtkComponentDataArray<float>::New();
+        da->SetNumberOfComponents(nArrs);
+        for(int i = 0; i < nArrs; ++i)
+        {
+            // Get the data from the opaque object.
+            int err = simv2_VariableData_getArrayData(hvar, i, memory,
+                                                      owner, dataType,
+                                                      nComponents, nTuples[i],
+                                                      offset, stride,
+                                                      data);
+            if (err == VISIT_ERROR)
+            {
+                delete [] nTuples;
+                da->Delete();
+                ostringstream oss;
+                oss << "Failed to get component " << i << " data for " << varname;
+                EXCEPTION1(InvalidVariableException, oss.str().c_str());
+            }
+
+            if(i == 0)
+                da->SetNumberOfTuples(nTuples[i]);
+
+            bool owns = (owner == VISIT_OWNER_VISIT);
+            int vtktype = SimV2_GetVTKType(dataType);
+            da->SetComponentData(i, vtkArrayComponentStride(data, offset, stride, vtktype, owns));
+        }
+
+        for(int i = 1; i < nArrs; ++i)
+        {
+            if(nTuples[0] != nTuples[i])
+            {
+                da->Delete();
+                ostringstream oss;
+                oss << "The number of tuples is not the same for the tuples of " << varname;
+                EXCEPTION1(InvalidVariableException, oss.str().c_str());
+            }
+        }
+        delete [] nTuples;
+
+        array = da;
+    }
+
+    return array;
+}
+
+// ****************************************************************************
+// Method: SimV2_GetVar
+//
+// Purpose:
+//   Returns a vtkDataArray representation of the VisIt_VariableData object.
+//
+// Arguments:
+//   hvar : A handle to a VisIt_VariableData object.
+//
+// Returns:    A vtkDataArray that wraps the variable data's data.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Jul 20 16:31:26 PDT 2015
+//
+// Modifications:
+//
+// ****************************************************************************
+
+static vtkDataArray *
+SimV2_GetVar(visit_handle hvar, const char *varname)
+{
+    vtkDataArray *array = NULL;
+    debug5 << "SimV2_GetVar" << endl;
+
+    // Get the number of arrays.
+    int nArrs = 1;
+    if (simv2_VariableData_getNumArrays(hvar, &nArrs) == VISIT_ERROR)
+    {
+        ostringstream oss;
+        oss << "Failed to get number of arrays for " << varname;
+        EXCEPTION1(InvalidVariableException, oss.str().c_str());
+    }
+
+    if(nArrs > 1)
+        array = SimV2_GetVar_Multiple(hvar, varname, nArrs);
+    else
+        array = SimV2_GetVar_Single(hvar, varname);
+
+    return array;
+}
+#endif
+
+// ****************************************************************************
+//  Method: avtSimV2FileFormat::GetVar
+//
+//  Purpose:
+//      For the mdserver, do nothing.
+//      For the engine, return a scalar converted to a VTK array.
+//
+//  Arguments:
+//      domain     The index of the domain.  If there are NDomains, this
+//                 value is guaranteed to be between 0 and NDomains-1,
+//                 regardless of block origin.
+//      varname    The name of the variable requested.
+//
+//  Programmer: Brad Whitlock
+//  Creation:   Fri Feb 19 15:09:06 PST 2010
+//
+//  Modifications:
+//    Brad Whitlock, Tue Jan 18 00:16:58 PST 2011
+//    I added support for sharing the simulation array directly.
+//
+//    Brad Whitlock, Thu Jul 19 12:19:54 PDT 2012
+//    I added support for long. I also added support for various types of
+//    mixed variables beyond float/double. I also added support for expanding
+//    material restricted variables back up to the whole mesh.
+//
+//    Burlen Loring
+//    * template refactor
+//    * zero-copy support
+//    * bug/leak fix, only malloc mixvar once
+//
+//    Brad Whitlock, Mon Jun 29 11:15:57 PDT 2015
+//    Added per-component strided memory access.
+//    
+// ****************************************************************************
+
+vtkDataArray *
+avtSimV2FileFormat::GetVar(int domain, const char *varname)
+{
+#ifdef MDSERVER
+    (void)domain;
+    (void)varname;
+    return NULL;
+#else
+
+    visit_handle hvar = simv2_invoke_GetVariable(domain, varname);
+    if (hvar == VISIT_INVALID_HANDLE)
+    {
+        ostringstream oss;
+        oss << "Failed to get an opaque object for " << varname;
+        EXCEPTION1(InvalidVariableException, oss.str().c_str());
+        return NULL;
+    }
+
+    // Get the variable.
+    vtkDataArray *array = SimV2_GetVar(hvar, varname);
+
+    // We've wrapped the data from the sim at this point. Clear out the VariableData object.
+    simv2_VariableData_nullData(hvar);
+    simv2_VariableData_free(hvar);
+
+    int owner, dataType, nComponents;
+    void *data = NULL;
+    // Get the mixed variable.
+    avtMixedVariable *mv = NULL;
+    hvar = simv2_invoke_GetMixedVariable(domain, varname);
+    int nMixVarComponents = 1;
+    if (hvar != VISIT_INVALID_HANDLE)
+    {
+// TODO: Use SimV2_GetVar (would handle strided data) and convert to avtMixedVariable.
+        int nTuples = 1;
+        int err = simv2_VariableData_getData(hvar, owner, dataType, nComponents,
+                                             nTuples, data);
+
+        if ( (err != VISIT_ERROR) && (nTuples > 0) 
+          && simV2_ValidDataType(dataType) )
+        {
+            nMixVarComponents = nComponents;
+            int mixlen = nTuples * nComponents;
+            float *mixvar = new float[mixlen];
+
+            // copy mixvar
+            switch (dataType)
+            {
+            simV2TemplateMacro(
+                simV2_TT::cppType *src = static_cast<simV2_TT::cppType*>(data);
+                for(int i = 0; i < mixlen; ++i)
+                    { mixvar[i] = static_cast<float>(src[i]); }
+                );
+            }
+
+            // Cache the mixed data.
+            mv = new avtMixedVariable(mixvar, mixlen, varname);
+            delete [] mixvar;
+        }
+
+        simv2_VariableData_free(hvar);
+    }
+
+    // See if the variable is restricted to certain materials. If so, we need to
+    // inflate it back up to the whole mesh size.
+    intVector matRestricted(GetRestrictedMaterialIndices(varname));
+    if(!matRestricted.empty())
+    {
+        vtkDataArray *newarr = ExpandVariable(array, &mv, nMixVarComponents,
+            domain, varname, matRestricted);
+        array->Delete();
+        array = newarr;
+    }
+
+    // See if there is a polyhedral split for this variable's mesh.
+    avtPolyhedralSplit *phSplit = 0;
+    TRY
+    {
+        std::string meshName = metadata->MeshForVar(varname);
+        void_ref_ptr vr = cache->GetVoidRef(meshName.c_str(),
+            AUXILIARY_DATA_POLYHEDRAL_SPLIT, this->timestep, domain);
+        if(*vr != 0)
+        {
+            debug4 << "Found a cached polyhedral split for "
+                   << meshName << " at: " << (*vr) << endl;
+            phSplit = (avtPolyhedralSplit *)(*vr);
+
+            // Get the variable centering
+            avtCentering centering = GetCentering(varname);
+            vtkDataArray *splitArray = phSplit->ExpandDataArray(array,
+                centering == AVT_ZONECENT);
+            array->Delete();
+            array = splitArray;
+        }
+    }
+    CATCH(VisItException)
+    {
+        // ignore the exception
+    }
+    ENDTRY
+
+    // Cache the mixed variable. Note that we only do it if we haven't further split
+    // the mesh to handle polyhedra since the polyhedral splitting does not currently
+    // take into account per-material values.
+    if(mv != NULL)
+    {
+        if(phSplit == 0)
+        {
+            void_ref_ptr vr = void_ref_ptr(mv, avtMixedVariable::Destruct);
+            cache->CacheVoidRef(varname, AUXILIARY_DATA_MIXED_VARIABLE,
+                                this->timestep, domain, vr);
+            debug1 << "SimV2 cached mixvar data for " << varname
+                   << " domain " << domain << endl;
+        }
+        else
+        {
+            debug1 << "SimV2 did not cache mixvar for " << varname
+                   << " due to polyhedral splitting." << endl;
+            delete mv;
+        }
+    }
+
+    return array;
+#endif
+}
+
+
+// ****************************************************************************
+//  Method: avtSimV2FileFormat::GetVectorVar
+//
+//  Purpose:
+//      For the mdserver, do nothing.
+//      For the engine, also do nothing right now.
+//
+//  Arguments:
+//      domain     The index of the domain.  If there are NDomains, this
+//                 value is guaranteed to be between 0 and NDomains-1,
+//                 regardless of block origin.
+//      varname    The name of the variable requested.
+//
+//  Programmer: Brad Whitlock
+//  Creation:   March 17, 2005
+//
+//  Modifications:
+//    Brad Whitlock, Sat Feb 14 15:49:02 PST 2009
+//    I made it call GetVar.
+//
+// ****************************************************************************
+
+vtkDataArray *
+avtSimV2FileFormat::GetVectorVar(int domain, const char *varname)
+{
+    return GetVar(domain, varname);
+}
+
+// ****************************************************************************
+//  Method:  avtSimV2FileFormat::GetAuxiliaryData
+//
+//  Purpose:
+//    Get auxiliary data.  E.g. material, species.
+//
+//  Arguments:
+//    var        variable name
+//    domain     the domain
+//    type       the type of auxiliary data
+//    df         (out) the destructor
+//
+//  Programmer:  Brad Whitlock
+//  Creation:    April 11, 2005
+//
+//  Modifications:
+//    Brad Whitlock, Mon Feb  9 13:44:38 PST 2009
+//    I added species.
+//
+// ****************************************************************************
+void *
+avtSimV2FileFormat::GetAuxiliaryData(const char *var, int domain,
+                              const char *type, void *, DestructorFunction &df)
+{
+    void *rv = NULL;
+#ifndef MDSERVER
+    if (strcmp(type, AUXILIARY_DATA_MATERIAL) == 0)
+    {
+        rv = (void *) GetMaterial(domain, var);
+        df = avtMaterial::Destruct;
+    }
+    else if (strcmp(type, AUXILIARY_DATA_SPECIES) == 0)
+    {
+        rv = (void *) GetSpecies(domain, var);
+        df = avtSpecies::Destruct;
+    }
+#else
+    (void)var;
+    (void)domain;
+    (void)type;
+    (void)df;
+#endif
+    
+    return rv;
+}
+
+// ****************************************************************************
+//  Method:  avtSimV2FileFormat::GetMaterial
+//
+//  Purpose:
+//    Return a material for a domain.
+//
+//  Arguments:
+//      domain     The index of the domain.  If there are NDomains, this
+//                 value is guaranteed to be between 0 and NDomains-1,
+//                 regardless of block origin.
+//      varname    The name of the material variable requested.
+//
+//  Programmer:  Brad Whitlock
+//  Creation:    Tue Mar  2 11:49:42 PST 2010
+//
+//  Modifications:
+//    Brad Whitlock, Mon Jul 23 16:14:52 PDT 2012
+//    Convert mix_vf to float if it was double.
+//
+// ****************************************************************************
+
+avtMaterial *
+avtSimV2FileFormat::GetMaterial(int domain, const char *varname)
+{
+#ifdef MDSERVER
+    (void)domain;
+    (void)varname;
+    return NULL;
+#else
+    const char *mName = "avtSimV2FileFormat::GetMaterial: ";
+
+    visit_handle h = simv2_invoke_GetMaterial(domain,varname);
+    if (h == VISIT_INVALID_HANDLE)
+    {
+        debug1 << mName << "An invalid handle was given for the material" << endl;
+        return NULL;
+    }
+
+    int nMaterials = 0;
+    if(simv2_MaterialData_getNumMaterials(h, nMaterials) == VISIT_ERROR)
+    {
+        debug1 << mName << "Could not query number of materials" << endl;
+        simv2_FreeObject(h);
+        return NULL;
+    }
+
+    // Get the material names
+    vector<string> matNames(nMaterials);
+    int *materialNumbers = new int[nMaterials];
+    char matName[100];
+    for (int m=0; m < nMaterials; m++)
+    {
+        if(simv2_MaterialData_getMaterial(h, m, materialNumbers[m], matName,
+            100) == VISIT_ERROR)
+        {
+            debug1 << mName << "Could not get material " << m << endl;
+            simv2_FreeObject(h);
+            return NULL;
+        }
+        matNames[m] = string(matName);
+    }
+
+    // Get the materials
+    visit_handle mHandles[5];
+    if(simv2_MaterialData_getMaterials(h, mHandles[0]) == VISIT_ERROR)
+    {
+        debug1 << mName << "could not get material from MaterialData" << endl;
+        simv2_FreeObject(h);
+        return NULL;
+    }
+
+    // Get the mixed materials
+    if(simv2_MaterialData_getMixedMaterials(h, mHandles[1], mHandles[2],
+        mHandles[3], mHandles[4]) == VISIT_ERROR)
+    {
+        debug1 << "Could not get mixed materials from MaterialData" << endl;
+        simv2_FreeObject(h);
+        return NULL;
+    }
+
+    // Get the actual data from the materials
+    int owner, dataType[5]={0,0,0,0,0}, nComps[5]={0,0,0,0,0};
+    int nTuples[5]={0,0,0,0,0};
+    void *data[5] = {NULL,NULL,NULL,NULL,NULL};
+    if(simv2_VariableData_getData(mHandles[0], owner, dataType[0], nComps[0],
+        nTuples[0], data[0]) == VISIT_ERROR)
+    {
+        debug1 << mName << "Could not access variable data for matlist" << endl;
+        simv2_FreeObject(h);
+        return NULL;
+    }
+    bool haveMixedMaterials = mHandles[1] != VISIT_INVALID_HANDLE;
+    if(haveMixedMaterials)
+    {
+        for(int i = 1; i < 5; ++i)
+        {
+           if(simv2_VariableData_getData(mHandles[i], owner, dataType[i],
+               nComps[i], nTuples[i], data[i]) == VISIT_ERROR)
+           {
+               debug1 << mName << "Could not access mixed material data" << endl;
+               simv2_FreeObject(h);
+               return NULL;
+           }
+        }
+    }
+    const int *matlist = (const int *)data[0];
+    const int *mix_mat = (const int *)data[1];
+    const int *mix_zone = (const int *)data[2];
+    const int *mix_next = (const int *)data[3];
+    const float *mix_vf = (const float *)data[4];
+
+    // Convert mix_vf input to float if it was double.
+    float *mix_vf_alloc = NULL;
+    if(dataType[4] == VISIT_DATATYPE_DOUBLE)
+    {
+        debug4 << mName << "Converting double mixVF to float." << endl;
+        int nElem = nComps[4] * nTuples[4];
+        mix_vf_alloc = new float[nElem];
+        const double *mix_vf_in = (const double *)data[4];
+        for(int i = 0; i < nElem; ++i)
+            mix_vf_alloc[i] = (float)mix_vf_in[i];
+        mix_vf = mix_vf_alloc;
+    }
+
+    // Scan the material numbers to see if they are 0..N-1. If not then use
+    // the contructor that will perform re-ordering.
+    bool *matUsed = new bool[nMaterials];
+    for(int i = 0; i < nMaterials; ++i)
+        matUsed[i] = false;
+
+    bool reorderRequired = false;
+    for(int i = 0; i < nTuples[0]; ++i)
+    {
+        if(matlist[i] < 0)
+            continue;
+        else if(matlist[i] >= 0 && matlist[i] < nMaterials)
+            matUsed[matlist[i]] = true;
+        else
+        {
+            reorderRequired = true;
+            break;
+        }
+    }
+    if(haveMixedMaterials && !reorderRequired)
+    {
+        for(int i = 0; i < nTuples[1]; ++i)
+        {
+            if(mix_mat[i] >= 0 && mix_mat[i] < nMaterials)
+                matUsed[mix_mat[i]] = true;
+            else
+            {
+                reorderRequired = true;
+                break;
+            }
+        }
+    }
+    if(!reorderRequired)
+    {
+        bool allUsed = true;
+        for(int i = 0; i < nMaterials; ++i)
+            allUsed &= matUsed[i];
+        reorderRequired = !allUsed;
+    }
+    delete [] matUsed;
+
+    avtMaterial *mat = 0;
+    if(reorderRequired)
+    {
+        debug5 << mName << "Reordering of material numbers is needed." << endl;
+        char **matnames = new char *[nMaterials];
+        for(int i = 0; i < nMaterials; ++i)
+            matnames[i] = (char *)matNames[i].c_str(); // for sake of avtMaterial
+        mat = new avtMaterial(nMaterials,
+                              materialNumbers,
+                              matnames,
+                              1,
+                              &nTuples[0], // #zones
+                              0,
+                              matlist,
+                              nTuples[1], // mixlen
+                              mix_mat,
+                              mix_next,
+                              mix_zone,
+                              mix_vf,
+                              "domain", 1);
+        delete [] matnames;
+    }
+    else
+    {
+        debug5 << mName << "No reordering of material numbers is needed." << endl;
+        mat = new avtMaterial(nMaterials,
+                              matNames,
+                              nTuples[0], // #zones
+                              matlist,
+                              nTuples[1], // mixlen
+                              mix_mat,
+                              mix_next,
+                              mix_zone,
+                              mix_vf);
+    }
+
+    delete [] materialNumbers;
+    simv2_FreeObject(h);
+    if(mix_vf_alloc != NULL)
+        delete [] mix_vf_alloc;
+
+    return mat;
+#endif
+}
+
+// ****************************************************************************
+//  Method:  avtSimV2FileFormat::GetCurve
+//
+//  Purpose:
+//    Return a curve by name.
+//
+//  Arguments:
+//      varname    The name of the curve requested.
+//
+//  Programmer:  Brad Whitlock
+//  Creation:    Mon Mar  1 15:03:37 PST 2010
+//
+//  Modifications:
+//  Burlen Loring, Jan 2014
+//  * template refactor
+//  * uniform error handling
+//
+//    Kathleen Biagas, Tue Jun 17 08:00:12 MST 2014
+//    Fix loop indexing when copying the data.
+//
+// ****************************************************************************
+
+vtkDataSet *
+avtSimV2FileFormat::GetCurve(const char *name)
+{
+#ifdef MDSERVER
+    (void)name;
+    return NULL;
+#else
+    visit_handle h = simv2_invoke_GetCurve(name);
+    if (h == VISIT_INVALID_HANDLE)
+    {
+        ostringstream oss;
+        oss << "Failed to get a handle for curve " << (name?name:"NULL");
+        EXCEPTION1(ImproperUseException, oss.str().c_str());
+        return NULL;
+    }
+
+    visit_handle cHandles[2];
+    if(simv2_CurveData_getData(h, cHandles[0], cHandles[1]) == VISIT_ERROR)
+    {
+        simv2_FreeObject(h);
+        EXCEPTION1(ImproperUseException,
+            "Could not obtain curve data using the provided handle.\n");
+        return NULL;
+    }
+
+    vtkRectilinearGrid *rg = 0;
+
+    int memory[2], owner[2], dataType[2], nComps[2], nTuples[2], offset[2], stride[2];
+    void *data[2] = {0, 0};
+    for(int i = 0; i < 2; ++i)
+    {
+        if(simv2_VariableData_getArrayData(cHandles[i], 0, memory[i], owner[i], dataType[i],
+            nComps[i], nTuples[i], offset[i], stride[i], data[i]) == VISIT_ERROR)
+        {
+            simv2_FreeObject(h);
+            EXCEPTION1(ImproperUseException,
+                "Could not obtain curve coordinate data using the provided handle.\n");
+            return NULL;
+        }
+
+        if (!simV2_ValidDataType(dataType[i]))
+        {
+            simv2_FreeObject(h);
+            ostringstream oss;
+            oss << "Unsupported datatype in curve " << ((i==0)?"x":"y");
+            EXCEPTION1(ImproperUseException, oss.str().c_str());
+            return NULL;
+        }
+
+        vtkFloatArray *arr = 0;
+        if(i == 0)
+        {
+            rg = vtkVisItUtility::Create1DRGrid(nTuples[i], VTK_FLOAT);
+            arr = vtkFloatArray::SafeDownCast(rg->GetXCoordinates());
+        }
+        else
+        {
+            arr = vtkFloatArray::New();
+            arr->SetNumberOfTuples(nTuples[i]);
+            arr->SetName(name);
+            rg->GetPointData()->SetScalars(arr); // FIXME : pre-VTK 6.0 API.
+            arr->Delete();
+        }
+        float *pArr = arr->GetPointer(0);
+#define COPYTOPARR(INDEX, SRCVAL) pArr[INDEX] = static_cast<float>(SRCVAL)
+        bool err = true;
+        switch (dataType[i])
+        {
+        // copy the data into float array
+        simV2TemplateMacro(
+            simV2MemoryCopyMacro(COPYTOPARR, memory[i], nTuples[i], offset[i], stride[i], simV2_TT::cppType, data[i], err)
+            );
+        }
+        if(err)
+        {
+            debug5 << "Error with curve coordinates." << endl;
+        }
+#undef COPYTOPARR
+    }
+
+    simv2_FreeObject(h);
+
+    return rg;
+#endif
+}
+
+// ****************************************************************************
+// Method: avtSimV2FileFormat::GetSpecies
+//
+// Purpose:
+//   Gets the species for the dataset.
+//
+// Arguments:
+//   domain  : The domain for which we're returning species
+//   varname : The name of the species variable.
+//
+// Returns:
+//
+// Note:
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Feb  6 16:47:44 PST 2009
+//
+// Modifications:
+//   Brad Whitlock, Mon Jul 23 16:19:35 PDT 2012
+//   Support double speciesMF.
+//
+// ****************************************************************************
+
+avtSpecies *
+avtSimV2FileFormat::GetSpecies(int domain, const char *varname)
+{
+#ifdef MDSERVER
+    (void)domain;
+    (void)varname;
+    return NULL;
+#else
+    const char *mName = "avtSimV2FileFormat::GetSpecies: ";
+    visit_handle h = simv2_invoke_GetSpecies(domain, varname);
+    if (h == VISIT_INVALID_HANDLE)
+        return NULL;
+
+    // Get data out of the species object.
+    std::vector<visit_handle> namelist;
+    visit_handle species, speciesMF, mixedSpecies;
+    if(simv2_SpeciesData_getData(h, namelist, species, speciesMF,
+        mixedSpecies) == VISIT_ERROR)
+    {
+        debug4 << mName << "Can't get data out of SpeciesData object" << endl;
+        simv2_FreeObject(h);
+        return NULL;
+    }
+
+    bool err = false;
+    vector<int>             numSpecies;
+    vector<vector<string> > speciesNames;
+    for(size_t i = 0; i < namelist.size() && !err; ++i)
+    {
+        int nNames = 0;
+        if(simv2_NameList_getNumName(namelist[i], &nNames) == VISIT_OKAY)
+        {
+            numSpecies.push_back(nNames);
+
+            vector<string> onelist;
+            for(int n = 0; n < nNames && !err; ++n)
+            {
+                char *specName = NULL;
+                if(simv2_NameList_getName(namelist[i], n, &specName) == VISIT_OKAY)
+                {
+                    onelist.push_back(specName);
+                    free(specName);
+                }
+                else
+                    err = true;
+            }
+            speciesNames.push_back(onelist);
+        }
+        else
+            err = true;
+    }
+    if(err)
+    {
+        debug4 << mName << "Can't get name list" << endl;
+        simv2_FreeObject(h);
+        return NULL;
+    }
+
+    int species_owner, species_dataType, species_nComps, species_nTuples;
+    void *species_data = NULL;
+    if(simv2_VariableData_getData(species, species_owner, species_dataType,
+        species_nComps, species_nTuples, species_data) == VISIT_ERROR)
+    {
+        debug4 << mName << "Can't get species" << endl;
+        simv2_FreeObject(h);
+        return NULL;
+    }
+
+    int speciesMF_owner, speciesMF_dataType, speciesMF_nComps, speciesMF_nTuples;
+    void *speciesMF_data = NULL;
+    if(simv2_VariableData_getData(speciesMF, speciesMF_owner, speciesMF_dataType,
+        speciesMF_nComps, speciesMF_nTuples, speciesMF_data) == VISIT_ERROR)
+    {
+        debug4 << mName << "Can't get speciesMF" << endl;
+        simv2_FreeObject(h);
+        return NULL;
+    }
+    // Convert the speciesMF to float if needed.
+    float *speciesMF_alloc = NULL;
+    if(speciesMF_dataType == VISIT_DATATYPE_DOUBLE)
+    {
+        debug4 << mName << "Converting double speciesMF to float." << endl;
+        int nElem = speciesMF_nComps * speciesMF_nTuples;
+        speciesMF_alloc = new float[nElem];
+        const double *input = (const double *)speciesMF_data;
+        for(int i = 0; i < nElem; ++i)
+            speciesMF_alloc[i] = (float)input[i];
+        speciesMF_data = (void *)speciesMF_alloc;
+    }
+
+    int mixedSpecies_owner, mixedSpecies_dataType, mixedSpecies_nComps,
+        mixedSpecies_nTuples;
+    void *mixedSpecies_data = NULL;
+    if(simv2_VariableData_getData(mixedSpecies, mixedSpecies_owner,
+        mixedSpecies_dataType, mixedSpecies_nComps, mixedSpecies_nTuples,
+        mixedSpecies_data) == VISIT_ERROR)
+    {
+        debug4 << mName << "Can't get mixedSpecies" << endl;
+        simv2_FreeObject(h);
+        return NULL;
+    }
+
+    avtSpecies *spec = new avtSpecies(numSpecies,
+        speciesNames,
+        species_nTuples, (int *)species_data,
+        mixedSpecies_nTuples, (int *)mixedSpecies_data,
+        speciesMF_nTuples, (float *)speciesMF_data);
+
+    simv2_FreeObject(h);
+    if(speciesMF_alloc != NULL)
+        delete [] speciesMF_alloc;
+
+    return spec;
+#endif
+}
+
+// ****************************************************************************
+//  Method:  avtSimV2FileFormat::PopulateIOInformation
+//
+//  Purpose:
+//    Populate the list of acceptable domains for this processor.
+//
+//  Arguments:
+//    ioinfo     the avtIOInformation containing the output domain list
+//
+//  Programmer:  Brad Whitlock
+//  Creation:    Mon Mar  1 16:50:18 PST 2010
+//
+//  Modifications:
+//    Brad Whitlock, Mon Aug  6 15:21:01 PDT 2012
+//    Allow for empty domain lists.
+//
+//    Brad Whitlock, Thu Jun 19 11:20:12 PDT 2014
+//    Pass the mesh name.
+//
+//    Brad Whitlock, Mon Aug 11 14:46:49 PDT 2014
+//    Allow unset IO hints in the domain list.
+//
+// ****************************************************************************
+
+bool
+avtSimV2FileFormat::PopulateIOInformation(const std::string &meshname,
+    avtIOInformation &ioInfo)
+{
+#ifndef MDSERVER
+    const char *mName = "avtSimV2FileFormat::PopulateIOInformation: ";
+
+    visit_handle h = simv2_invoke_GetDomainList(meshname.c_str());
+    if (h == VISIT_INVALID_HANDLE)
+    {
+        debug1 << mName << "An invalid domain list was returned." << endl;
+        return false;
+    }
+
+    int rank = 0;
+    int size = 1;
+#ifdef PARALLEL
+    rank = PAR_Rank();
+    size = PAR_Size();
+#endif
+
+    int alldoms = 0;
+    visit_handle mydoms = VISIT_INVALID_HANDLE;
+    if(simv2_DomainList_getData(h, alldoms, mydoms) == VISIT_ERROR)
+    {
+        debug1 << mName << "Could not get domain list data" << endl;
+        simv2_FreeObject(h);
+        return false;
+    }
+
+    // Set the number of domains.
+    ioInfo.SetNDomains(alldoms);
+
+    // Set the IO hints if they are present.
+    vector< vector<int> > hints;
+    hints.resize(size);
+    if(mydoms != VISIT_INVALID_HANDLE)
+    {
+        int owner, dataType, nComps, nTuples = 0;
+        void *data = 0;
+        if(simv2_VariableData_getData(mydoms, 
+            owner, dataType, nComps, nTuples, data) == VISIT_OKAY)
+        {
+            hints[rank].resize(nTuples);
+            for (int i=0; i<nTuples; i++)
+            {
+                int dom = ((int *)data)[i];
+                if(dom >= 0 && dom < alldoms)
+                    hints[rank][i] = dom;
+                else
+                {
+                    debug1 << mName << "An out of range domain number " << dom
+                           << " was given in the domain list. Valid numbers are in [0,"
+                           << alldoms << "]" << endl;
+                    simv2_FreeObject(h);
+                    return false;
+                }
+            }
+        }
+        else
+        {
+            debug1 << mName << "Could not get domain list data" << endl;
+            simv2_FreeObject(h);
+            return false;
+        }
+    }
+    ioInfo.AddHints(hints);
+
+    simv2_FreeObject(h);
+    return true;
+#else
+    (void)meshname;
+    (void)ioInfo;
+    return false;
+#endif
+}

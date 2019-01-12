@@ -1,0 +1,1703 @@
+/*****************************************************************************
+*
+* Copyright (c) 2000 - 2018, Lawrence Livermore National Security, LLC
+* Produced at the Lawrence Livermore National Laboratory
+* LLNL-CODE-442911
+* All rights reserved.
+*
+* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
+* full copyright notice is contained in the file COPYRIGHT located at the root
+* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
+*
+* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
+* modification, are permitted provided that the following conditions are met:
+*
+*  - Redistributions of  source code must  retain the above  copyright notice,
+*    this list of conditions and the disclaimer below.
+*  - Redistributions in binary form must reproduce the above copyright notice,
+*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
+*    documentation and/or other materials provided with the distribution.
+*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
+*    be used to endorse or promote products derived from this software without
+*    specific prior written permission.
+*
+* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
+* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
+* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
+* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
+* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
+* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
+* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
+* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
+* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
+* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
+* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
+* DAMAGE.
+*
+*****************************************************************************/
+
+#include <QvisVectorPlotWindow.h>
+#include <QLayout> 
+#include <QButtonGroup>
+#include <QCheckBox>
+#include <QComboBox>
+#include <QGroupBox>
+#include <QWidget>
+#include <QLabel>
+#include <QLineEdit>
+#include <QRadioButton>
+#include <QTabWidget>
+
+#include <VectorAttributes.h>
+#include <ViewerProxy.h>
+#include <QvisLineWidthWidget.h>
+#include <QvisColorButton.h>
+#include <QvisColorTableWidget.h>
+
+// ****************************************************************************
+// Method: QvisVectorPlotWindow::QvisVectorPlotWindow
+//
+// Purpose: 
+//   Constructor for the QvisVectorPlotWindow class.
+//
+// Arguments:
+//   type      : An identifier used to identify the plot type in the viewer.
+//   _vecAtts  : The vector attributes that the window observes.
+//   caption   : The caption displayed in the window decorations.
+//   shortName : The name used in the notepad.
+//   notepad   : The notepad area where the window posts itself.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Mar 22 23:45:22 PST 2001
+//
+// Modifications:
+//   Brad Whitlock, Fri Feb 15 15:04:45 PST 2002
+//   Initialized widgets with no parents.
+//
+// ****************************************************************************
+
+QvisVectorPlotWindow::QvisVectorPlotWindow(const int type,
+    VectorAttributes *_vecAtts, const QString &caption, const QString &shortName,
+    QvisNotepadArea *notepad) :
+    QvisPostableWindowObserver(_vecAtts, caption, shortName, notepad)
+{
+    plotType = type;
+    vectorAtts = _vecAtts;
+
+    // Initialize parentless widgets.
+    reduceButtonGroup = 0;
+    colorButtonGroup = 0;
+}
+
+// ****************************************************************************
+// Method: QvisVectorPlotWindow::~QvisVectorPlotWindow
+//
+// Purpose: 
+//   Destructor for the QvisVectorPlotWindow class.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Mar 22 23:50:47 PST 2001
+//
+// Modifications:
+//   Brad Whitlock, Fri Feb 15 15:04:58 PST 2002
+//   Deleted widgets with no parents.
+//
+//   Cyrus Harrison, Wed Aug 27 08:54:49 PDT 2008
+//   Made sure a button groups have parents, so we don't need to explicitly
+//   delete.
+//
+// ****************************************************************************
+
+QvisVectorPlotWindow::~QvisVectorPlotWindow()
+{
+    vectorAtts = 0;
+}
+
+// ****************************************************************************
+// Method: QvisVectorPlotWindow::CreateWindowContents
+//
+// Purpose: 
+//   This method creates the widgets that are in the window and sets
+//   up their signals/slots.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Mar 22 23:50:55 PST 2001
+//
+// Modifications:
+//   Disabled the lineStyleLabel so that users will know that lineStyle
+//   is disabled, until such a time as we get the vtk version that has
+//   line stippling available.
+//
+//   Brad Whitlock, Sat Jun 16 19:08:44 PST 2001
+//   Added color table controls.
+//
+//   Kathleen Bonnell, Thu Jun 21 16:33:54 PDT 2001
+//   Enabled lineStyleLabel, lineStyle.
+//
+//   Brad Whitlock, Fri Aug 29 11:37:35 PDT 2003
+//   Grouped like items into group boxes.
+//
+//   Jeremy Meredith, Fri Nov 21 12:29:29 PST 2003
+//   Added vector origin type radio buttons.
+//
+//   Eric Brugger, Tue Nov 23 10:18:29 PST 2004
+//   Added scaleByMagnitude and autoScale.
+//
+//   Kathleen Bonnell, Wed Dec 22 16:42:35 PST 2004
+//   Added widgets for min/max and limits selection. 
+//
+//   Jeremy Meredith, Mon Mar 19 16:24:08 EDT 2007
+//   Added controls for lineStem, stemWidth, and geometryquality.
+//   Reorganized the window a bit.  Allowed disabling use of tabs
+//   by simply removing the TABS #define below -- this puts it back
+//   to the tall version of the window with groupboxes for sections.
+//
+//   Brad Whitlock, Wed Apr 23 12:09:56 PDT 2008
+//   Added tr()'s
+//
+//   Jeremy Meredith, Tue Jul  8 15:15:18 EDT 2008
+//   Added ability to limit vectors to come from original cell only
+//   (useful for material-selected vector plots).
+//
+//   Jeremy Meredith, Tue Jul  8 16:56:25 EDT 2008
+//   Changed the phrasing for the "limit to original" toggle.
+//
+//   Brad Whitlock, Tue Jul 29 10:38:34 PDT 2008
+//   Qt 4.
+//
+//   Dave Pugmire, Thu Oct 30 08:40:26 EDT 2008
+//   Switch the order of the min/max.
+//
+//   Allen Sanderson, Sun Mar  7 12:49:56 PST 2010
+//   Change layout of window for 2.0 interface changes.
+//
+//   Dave Pugmire, Mon Jul 19 09:38:17 EDT 2010
+//   Add ellipsoid glyphing.
+//
+//   Hank Childs, Tue Aug 24 07:42:05 PDT 2010
+//   Add location widgets.  Also reorgnized into three tabs.
+//    
+//   Kathleen Bonnell, Mon Jan 17 18:07:08 MST 2011
+//   Change colorTableButton to colorTableWidget to gain invert toggle.
+//
+// ****************************************************************************
+
+void
+QvisVectorPlotWindow::CreateWindowContents()
+{
+    QTabWidget *propertyTabs = new QTabWidget(central);
+    topLayout->addWidget(propertyTabs);
+
+    // ----------------------------------------------------------------------
+    // Vectors tab
+    // ----------------------------------------------------------------------
+    QWidget *vectorTab = new QWidget(central);
+    propertyTabs->addTab(vectorTab, tr("Vectors"));
+    CreateVectorTab(vectorTab);
+
+    // ----------------------------------------------------------------------
+    // Data tab
+    // ----------------------------------------------------------------------
+    QWidget *dataTab = new QWidget(central);
+    propertyTabs->addTab(dataTab, tr("Data"));
+    CreateDataTab(dataTab);
+
+    // ----------------------------------------------------------------------
+    // Glyph tab
+    // ----------------------------------------------------------------------
+    QWidget *glyphTab = new QWidget(central);
+    propertyTabs->addTab(glyphTab, tr("Glyphs"));
+    CreateGlyphTab(glyphTab);
+
+
+    // ----------------------------------------------------------------------
+    // Extras tab
+    // ----------------------------------------------------------------------
+    // QWidget *extrasTab = new QWidget(central);
+    // propertyTabs->addTab(extrasTab, tr("Extras"));
+    // CreateExtrasTab(extrasTab);
+}
+
+
+// ****************************************************************************
+// Method: QvisVectorPlotWindow::CreateExtrasTab
+//
+// Purpose: 
+//   Populates the vector tab.
+//
+// Programmer: Allen Sanderson
+// Creation:   September 20 2013
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisVectorPlotWindow::CreateVectorTab(QWidget *pageVector)
+{
+    QGridLayout *topLayout = new QGridLayout(pageVector);
+    topLayout->setMargin(5);
+    topLayout->setSpacing(10);
+
+    //
+    // Create the reduce-related widgets.
+    //
+    QGroupBox * reduceGroupBox = new QGroupBox(central);
+    reduceGroupBox->setTitle(tr("Where to place the vectors and how many of them"));
+    topLayout->addWidget(reduceGroupBox);
+    QGridLayout *rgLayout = new QGridLayout(reduceGroupBox);
+    rgLayout->setSpacing(10);
+//    rgLayout->setColumnStretch(1, 10);
+
+    // Create the data location button group.
+    QLabel *locationLabel = new QLabel(tr("Vector placement"), reduceGroupBox);
+    rgLayout->addWidget(locationLabel, 0, 0);
+    locationButtonGroup = new QButtonGroup(reduceGroupBox);
+    connect(locationButtonGroup, SIGNAL(buttonClicked(int)),
+            this, SLOT(locationMethodChanged(int)));
+    QRadioButton *rb = new QRadioButton(tr("Adapted to resolution of mesh"), reduceGroupBox);
+    rb->setChecked(true);
+    locationButtonGroup->addButton(rb, 0);
+    rgLayout->addWidget(rb, 0, 1, 1, 3);
+    rb = new QRadioButton(tr("Uniformly located throughout mesh"), reduceGroupBox);
+    locationButtonGroup->addButton(rb, 1);
+    rgLayout->addWidget(rb, 2, 1, 1, 3);
+
+    QFrame *hline1 = new QFrame(reduceGroupBox);
+    hline1->setFrameStyle(QFrame::HLine | QFrame::Sunken);
+    rgLayout->addWidget(hline1, 3, 0, 1, 4);
+
+    // Create the reduce button group.
+    QLabel *reduceLabel = new QLabel(tr("Vector amount"), reduceGroupBox);
+    rgLayout->addWidget(reduceLabel, 4, 0);
+    reduceButtonGroup = new QButtonGroup(reduceGroupBox);
+    connect(reduceButtonGroup, SIGNAL(buttonClicked(int)),
+            this, SLOT(reduceMethodChanged(int)));
+    rb = new QRadioButton(tr("Fixed number"), reduceGroupBox);
+    rb->setChecked(true);
+    reduceButtonGroup->addButton(rb, 0);
+    rgLayout->addWidget(rb, 4, 1);
+    strideRB = new QRadioButton(tr("Stride"), reduceGroupBox);
+    reduceButtonGroup->addButton(strideRB, 1);
+    rgLayout->addWidget(strideRB, 5, 1);
+
+    // Add the N vectors line edit.
+    nVectorsLineEdit = new QLineEdit(reduceGroupBox);
+    connect(nVectorsLineEdit, SIGNAL(returnPressed()),
+            this, SLOT(processNVectorsText()));
+    rgLayout->addWidget(nVectorsLineEdit, 4, 2);
+
+    // Add the stride line edit.
+    strideLineEdit = new QLineEdit(reduceGroupBox);
+    connect(strideLineEdit, SIGNAL(returnPressed()),
+            this, SLOT(processStrideText()));
+    rgLayout->addWidget(strideLineEdit, 5, 2);
+
+    QFrame *hline2 = new QFrame(reduceGroupBox);
+    hline2->setFrameStyle(QFrame::HLine | QFrame::Sunken);
+    rgLayout->addWidget(hline2, 6, 0, 1, 4);
+
+    // Add the toggle to limit to one vector per original cell/node
+    limitToOrigToggle =
+      new QCheckBox(tr("Only show vectors on original nodes/cells"),
+                    reduceGroupBox);
+    connect(limitToOrigToggle, SIGNAL(toggled(bool)),
+            this, SLOT(limitToOrigToggled(bool)));
+    rgLayout->addWidget(limitToOrigToggle, 7, 0, 1, 4);
+}
+
+
+// ****************************************************************************
+// Method: QvisVectorPlotWindow::CreateDataTab
+//
+// Purpose: 
+//   Populates the data tab.
+//
+// Programmer: Allen Sanderson
+// Creation:   September 20 2013
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisVectorPlotWindow::CreateDataTab(QWidget *pageVector)
+{
+    QGridLayout *topLayout = new QGridLayout(pageVector);
+    topLayout->setMargin(5);
+    topLayout->setSpacing(10);
+
+    //
+    // Create the Limits stuff
+    //
+    limitsGroup = new QGroupBox(central);
+    limitsGroup->setTitle(tr("Limits"));
+    topLayout->addWidget(limitsGroup);
+
+    QGridLayout *limitsLayout = new QGridLayout(limitsGroup);
+    limitsLayout->setMargin(5);
+    limitsLayout->setSpacing(10);
+
+    limitsLayout->addWidget( new QLabel(tr("Limits"), central), 0, 0);
+
+    limitsSelect = new QComboBox(central);
+    limitsSelect->addItem(tr("Use Original Data"));
+    limitsSelect->addItem(tr("Use Current Plot"));
+    connect(limitsSelect, SIGNAL(activated(int)),
+            this, SLOT(limitsSelectChanged(int))); 
+    limitsLayout->addWidget(limitsSelect, 0, 1, 1, 2, Qt::AlignLeft);
+
+    // Create the min toggle and line edit
+    minToggle = new QCheckBox(tr("Minimum"), central);
+    limitsLayout->addWidget(minToggle, 1, 0);
+    connect(minToggle, SIGNAL(toggled(bool)),
+            this, SLOT(minToggled(bool)));
+    minLineEdit = new QLineEdit(central);
+    connect(minLineEdit, SIGNAL(returnPressed()),
+            this, SLOT(processMinLimitText())); 
+    limitsLayout->addWidget(minLineEdit, 1, 1);
+
+    // Create the max toggle and line edit
+    maxToggle = new QCheckBox(tr("Maximum"), central);
+    limitsLayout->addWidget(maxToggle, 1, 2);
+    connect(maxToggle, SIGNAL(toggled(bool)),
+            this, SLOT(maxToggled(bool)));
+    maxLineEdit = new QLineEdit(central);
+    connect(maxLineEdit, SIGNAL(returnPressed()),
+            this, SLOT(processMaxLimitText())); 
+    limitsLayout->addWidget(maxLineEdit, 1, 3);
+
+    //
+    // Create the color-related widgets.
+    //
+    QGroupBox * colorGroupBox = new QGroupBox(central);
+    colorGroupBox->setTitle(tr("Color"));
+    topLayout->addWidget(colorGroupBox);
+
+    QGridLayout *cgLayout = new QGridLayout(colorGroupBox);
+    cgLayout->setMargin(5);
+    cgLayout->setSpacing(10);
+    cgLayout->setColumnStretch(1, 10);
+
+    // Add the vector color label.
+    colorButtonGroup = new QButtonGroup(colorGroupBox);
+    connect(colorButtonGroup, SIGNAL(buttonClicked(int)),
+            this, SLOT(colorModeChanged(int)));
+    QRadioButton* rb = new QRadioButton(tr("Magnitude"), colorGroupBox);
+    colorButtonGroup->addButton(rb, 0);
+    cgLayout->addWidget(rb, 0, 0);
+    rb = new QRadioButton(tr("Constant"), colorGroupBox);
+    rb->setChecked(true);
+    colorButtonGroup->addButton(rb, 1);
+    cgLayout->addWidget(rb, 1, 0);
+
+    // Create the color-by-eigenvalues button.
+    colorTableWidget = new QvisColorTableWidget(colorGroupBox, true);
+    connect(colorTableWidget, SIGNAL(selectedColorTable(bool, const QString &)),
+            this, SLOT(colorTableClicked(bool, const QString &)));
+    connect(colorTableWidget,
+            SIGNAL(invertColorTableToggled(bool)),
+            this,
+            SLOT(invertColorTableToggled(bool)));
+    cgLayout->addWidget(colorTableWidget, 0, 1, Qt::AlignLeft | Qt::AlignVCenter);
+
+    // Create the vector color button.
+    vectorColor = new QvisColorButton(colorGroupBox);
+    vectorColor->setButtonColor(QColor(255, 0, 0));
+    connect(vectorColor, SIGNAL(selectedColor(const QColor &)),
+            this, SLOT(vectorColorChanged(const QColor &)));
+    cgLayout->addWidget(vectorColor, 1, 1, Qt::AlignLeft | Qt::AlignVCenter);
+
+    //
+    // Create the misc stuff
+    //
+    QGroupBox * miscGroup = new QGroupBox(central);
+    miscGroup->setTitle(tr("Misc"));
+    topLayout->addWidget(miscGroup);
+
+    QGridLayout *miscLayout = new QGridLayout(miscGroup);
+    miscLayout->setMargin(5);
+    miscLayout->setSpacing(10);
+ 
+    // Create the legend toggle
+    legendToggle = new QCheckBox(tr("Legend"), central);
+    connect(legendToggle, SIGNAL(toggled(bool)),
+            this, SLOT(legendToggled(bool)));
+    miscLayout->addWidget(legendToggle, 0, 0);
+}
+
+
+// ****************************************************************************
+// Method: QvisVectorPlotWindow::CreateGlyphTab
+//
+// Purpose: 
+//   Populates the glyph tab.
+//
+// Programmer: Allen Sanderson
+// Creation:   September 20 2013
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisVectorPlotWindow::CreateGlyphTab(QWidget *pageGlyphs)
+{
+    QGridLayout *topLayout = new QGridLayout(pageGlyphs);
+    topLayout->setMargin(5);
+    topLayout->setSpacing(10);
+
+    //
+    // Create the scale-related widgets.
+    //
+    QGroupBox * scaleGroupBox = new QGroupBox(central);
+    scaleGroupBox->setTitle(tr("Scale"));
+    topLayout->addWidget(scaleGroupBox);
+
+    QGridLayout *sgLayout = new QGridLayout(scaleGroupBox);
+    sgLayout->setMargin(5);
+    sgLayout->setSpacing(10);
+    sgLayout->setColumnStretch(1, 10);
+
+    // Add the scale line edit.
+    scaleLineEdit = new QLineEdit(scaleGroupBox);
+    connect(scaleLineEdit, SIGNAL(returnPressed()),
+            this, SLOT(processScaleText()));
+    sgLayout->addWidget(scaleLineEdit, 0, 1);
+    QLabel *scaleLabel = new QLabel(tr("Scale"), scaleGroupBox);
+    scaleLabel->setBuddy(scaleLineEdit);
+    sgLayout->addWidget(scaleLabel, 0, 0, Qt::AlignRight | Qt::AlignVCenter);
+
+    // Add the scale by magnitude toggle button.
+    scaleByMagnitudeToggle = new QCheckBox(tr("Scale by magnitude"), scaleGroupBox);
+    connect(scaleByMagnitudeToggle, SIGNAL(clicked(bool)), 
+            this, SLOT(scaleByMagnitudeToggled(bool)));
+    sgLayout->addWidget(scaleByMagnitudeToggle, 0, 2);
+
+    // Add the auto scale toggle button.
+    autoScaleToggle = new QCheckBox(tr("Auto scale"), scaleGroupBox);
+    connect(autoScaleToggle, SIGNAL(clicked(bool)),
+            this, SLOT(autoScaleToggled(bool)));
+    sgLayout->addWidget(autoScaleToggle, 0, 3);
+
+    //
+    // Create the style-related widgets
+    //
+    QGroupBox * styleGroupBox = new QGroupBox(central);
+    styleGroupBox->setTitle(tr("Style"));
+    topLayout->addWidget(styleGroupBox);
+
+    QGridLayout *styleLayout = new QGridLayout(styleGroupBox);
+    styleLayout->setMargin(5);
+    styleLayout->setSpacing(10);
+    styleLayout->setColumnStretch(1, 10);
+    
+    int row = 0;
+    glyphTypeLabel = new QLabel(tr("Glyph type"), styleGroupBox);
+    styleLayout->addWidget(glyphTypeLabel, row, 0);
+    glyphType = new QComboBox(styleGroupBox);
+    glyphType->addItem(tr("Arrow"));
+    glyphType->addItem(tr("Ellipsoid"));
+    connect(glyphType, SIGNAL(activated(int)), this, SLOT(glyphTypeChanged(int)));
+    styleLayout->addWidget(glyphType, row, 1);
+
+
+    // Add the "draw head" toggle button.
+    drawHeadToggle = new QCheckBox(tr("Draw head"), styleGroupBox);
+    connect(drawHeadToggle, SIGNAL(clicked(bool)),
+            this, SLOT(drawHeadToggled(bool)));
+    styleLayout->addWidget(drawHeadToggle, row, 3);
+
+    // Add the head size edit.
+    headSizeLineEdit = new QLineEdit(styleGroupBox);
+    connect(headSizeLineEdit, SIGNAL(returnPressed()),
+            this, SLOT(processHeadSizeText()));
+    styleLayout->addWidget(headSizeLineEdit, row, 5);
+    headSizeLabel = new QLabel(tr("Size"), styleGroupBox);
+    headSizeLabel->setBuddy(headSizeLineEdit);
+    styleLayout->addWidget(headSizeLabel, row, 4, Qt::AlignRight);
+
+    row++;
+
+    lineStemLabel = new QLabel(tr("Arrow body"), styleGroupBox);
+    styleLayout->addWidget(lineStemLabel, row, 0, Qt::AlignRight);
+    lineStem = new QComboBox(styleGroupBox);
+    lineStem->addItem(tr("Cylinder"));
+    lineStem->addItem(tr("Line"));
+    connect(lineStem, SIGNAL(activated(int)), this, SLOT(lineStemChanged(int)));
+    styleLayout->addWidget(lineStem, row, 1);
+
+    // Create the line width widget.
+    lineWidthLabel = new QLabel(tr("Width"), styleGroupBox);
+    styleLayout->addWidget(lineWidthLabel, row, 4, Qt::AlignRight);
+    lineWidth = new QvisLineWidthWidget(0, styleGroupBox);
+    styleLayout->addWidget(lineWidth, row, 5);
+    connect(lineWidth, SIGNAL(lineWidthChanged(int)),
+            this, SLOT(lineWidthChanged(int)));
+    lineWidthLabel->setBuddy(lineWidth);
+
+    
+    // Add the cylinder width edit.
+    stemWidthEdit = new QLineEdit(styleGroupBox);
+    connect(stemWidthEdit, SIGNAL(returnPressed()),
+            this, SLOT(processStemWidthText()));
+    styleLayout->addWidget(stemWidthEdit, row, 5);
+    stemWidthLabel = new QLabel(tr("Width"), styleGroupBox);
+    stemWidthLabel->setBuddy(stemWidthEdit);
+    styleLayout->addWidget(stemWidthLabel, row, 4, Qt::AlignRight);
+
+    row++;
+
+    //
+    // Create the radio buttons to choose the glyph origin
+    //
+    
+    QWidget *originBox = new QWidget(styleGroupBox);
+    originButtonGroup = new QButtonGroup(originBox);
+    QHBoxLayout *originLayout = new QHBoxLayout(originBox);
+    originLayout->setMargin(0);
+    originLayout->setSpacing(10);
+    QLabel *vectorOriginLabel = new QLabel(tr("Vector origin"), originBox);
+    connect(originButtonGroup, SIGNAL(buttonClicked(int)),
+            this, SLOT(originTypeChanged(int)));
+    originLayout->addWidget(vectorOriginLabel);
+    QRadioButton* rb = new QRadioButton(tr("Head"), originBox);
+    originButtonGroup->addButton(rb,0);
+    originLayout->addWidget(rb);
+    rb = new QRadioButton(tr("Middle"), originBox);
+    originButtonGroup->addButton(rb,1);
+    originLayout->addWidget(rb);
+    rb = new QRadioButton(tr("Tail"), originBox);
+    originButtonGroup->addButton(rb,2);
+    originLayout->addWidget(rb);
+    styleLayout->addWidget(originBox, row, 0, 1, 3);
+    row++;
+
+    //
+    // Create the rendering group
+    //
+    QGroupBox * renderingGroup = new QGroupBox(central);
+    renderingGroup->setTitle(tr("Rendering"));
+    topLayout->addWidget(renderingGroup);
+
+    QGridLayout *renderingLayout = new QGridLayout(renderingGroup);
+    renderingLayout->setMargin(5);
+    renderingLayout->setSpacing(10);
+
+    // Create the smoothing options
+    renderingLayout->addWidget(new QLabel(tr("Geometry Quality"), central), 0,0,1,2);
+
+    // Create the smoothing level buttons
+    geometryQualityButtons = new QButtonGroup(central);
+    connect(geometryQualityButtons, SIGNAL(buttonClicked(int)),
+            this, SLOT(geometryQualityChanged(int)));
+
+    rb = new QRadioButton(tr("Fast"), central);
+    geometryQualityButtons->addButton(rb, 0);
+    renderingLayout->addWidget(rb, 0, 1);
+    rb = new QRadioButton(tr("High"), central);
+    geometryQualityButtons->addButton(rb, 1);
+    renderingLayout->addWidget(rb, 0, 2);
+}
+
+
+// ****************************************************************************
+// Method: QvisVectorPlotWindow::CreateExtrasTab
+//
+// Purpose: 
+//   Populates the extras tab.
+//
+// Programmer: Allen Sanderson
+// Creation:   September 20 2013
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisVectorPlotWindow::CreateExtrasTab(QWidget *pageExtras)
+{
+    QGridLayout *topLayout = new QGridLayout(pageExtras);
+    topLayout->setMargin(5);
+    topLayout->setSpacing(10);
+
+    // Create the blank stuff to fill in gaps.
+    
+    QGroupBox * blankGroup = new QGroupBox(central);
+//    blankGroup->setTitle(tr("Blank"));
+    topLayout->addWidget(blankGroup);
+
+    QGridLayout *blankLayout = new QGridLayout(blankGroup);
+    blankLayout->setMargin(5);
+    blankLayout->setSpacing(10);
+ 
+    blankLayout->addWidget(new QLabel(tr(""), central), 0,0);
+    blankLayout->addWidget(new QLabel(tr(""), central), 1,0);
+    blankLayout->addWidget(new QLabel(tr(""), central), 2,0);
+    blankLayout->addWidget(new QLabel(tr(""), central), 3,0);
+}
+
+// ****************************************************************************
+// Method: QvisVectorPlotWindow::UpdateWindow
+//
+// Purpose: 
+//   This method is called when the window's subject is changed. The
+//   subject tells this window what attributes changed and we put the
+//   new values into those widgets.
+//
+// Arguments:
+//   doAll : If this flag is true, update all the widgets regardless
+//           of whether or not they are selected.
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Mar 22 23:51:26 PST 2001
+//
+// Modifications:
+//   Kathleen Bonnell, Mon Mar 26 18:17:53 PST 2001
+//   Disabled lineStyle until we have vtk version
+//   in which line stippling is available.
+//
+//   Brad Whitlock, Sat Jun 16 19:21:03 PST 2001
+//   I added code to handle color table widgets.
+//
+//   Kathleen Bonnell, Thu Jun 21 16:33:54 PDT 2001
+//   Enabled lineStyle.
+//
+//   Brad Whitlock, Fri Feb 15 11:49:23 PDT 2002
+//   Fixed format strings.
+//
+//   Jeremy Meredith, Fri Nov 21 12:29:16 PST 2003
+//   Added vector origin type radio buttons.
+//
+//   Jeremy Meredith, Tue Nov 16 11:39:53 PST 2004
+//   Replaced simple QString::sprintf's with a setNum because there seems
+//   to be a bug causing numbers to be incremented by .00001.  See '5263.
+//
+//   Eric Brugger, Tue Nov 23 10:18:29 PST 2004
+//   Added scaleByMagnitude and autoScale.
+//
+//   Kathleen Bonnell, Wed Dec 22 16:42:35 PST 2004
+//   Update widgets for min/max and limits selection. 
+//
+//   Jeremy Meredith, Mon Mar 19 16:24:08 EDT 2007
+//   Added controls for lineStem, stemWidth, and geometryquality.
+//
+//   Jeremy Meredith, Tue Jul  8 15:15:18 EDT 2008
+//   Added ability to limit vectors to come from original cell only
+//   (useful for material-selected vector plots).
+//
+//   Brad Whitlock, Tue Jul 29 11:07:34 PDT 2008
+//   Qt 4.
+//
+//   Dave Pugmire, Mon Jul 19 09:38:17 EDT 2010
+//   Add ellipsoid glyphing.   
+//
+//   Hank Childs, Tue Aug 24 17:35:39 PDT 2010
+//   Add support for advanced vector placements.
+//
+//   Kathleen Bonnell, Mon Jan 17 18:07:08 MST 2011
+//   Change colorTableButton to colorTableWidget to gain invert toggle.
+//
+//   Kathleen Biagas, Thu Apr 9 07:19:54 MST 2015
+//   Use helper function DoubleToQString for consistency in formatting across
+//   all windows.
+//
+// ****************************************************************************
+
+void
+QvisVectorPlotWindow::UpdateWindow(bool doAll)
+{
+    // Loop through all the attributes and do something for
+    // each of them that changed. This function is only responsible
+    // for displaying the state values and setting widget sensitivity.
+    for(int i = 0; i < vectorAtts->NumAttributes(); ++i)
+    {
+        if(!doAll)
+        {
+            if(!vectorAtts->IsSelected(i))
+                continue;
+        }
+        
+        switch(i)
+        {
+          case VectorAttributes::ID_glyphLocation:
+            locationButtonGroup->blockSignals(true);
+            locationButtonGroup->button(vectorAtts->GetGlyphLocation() == VectorAttributes::AdaptsToMeshResolution ? 0 : 1);
+            strideRB->setEnabled(vectorAtts->GetGlyphLocation() == VectorAttributes::AdaptsToMeshResolution);
+            limitToOrigToggle->setEnabled(vectorAtts->GetGlyphLocation() == VectorAttributes::AdaptsToMeshResolution);
+            locationButtonGroup->blockSignals(false);
+          case VectorAttributes::ID_useStride:
+            reduceButtonGroup->blockSignals(true);
+            reduceButtonGroup->button(vectorAtts->GetUseStride()?1:0)->setChecked(true);
+            reduceButtonGroup->blockSignals(false);
+
+            nVectorsLineEdit->setEnabled(!vectorAtts->GetUseStride());
+            strideLineEdit->setEnabled(vectorAtts->GetUseStride());
+            break;
+          case VectorAttributes::ID_stride:
+            strideLineEdit->setText(IntToQString(vectorAtts->GetStride()));
+            break;
+          case VectorAttributes::ID_nVectors:
+            nVectorsLineEdit->setText(IntToQString(vectorAtts->GetNVectors()));
+            break;
+          case VectorAttributes::ID_lineWidth:
+            lineWidth->blockSignals(true);
+            lineWidth->SetLineWidth(vectorAtts->GetLineWidth());
+            lineWidth->blockSignals(false);
+            break;
+          case VectorAttributes::ID_scale:
+            scaleLineEdit->setText(DoubleToQString(vectorAtts->GetScale()));
+            break;
+          case VectorAttributes::ID_scaleByMagnitude:
+            scaleByMagnitudeToggle->blockSignals(true);
+            scaleByMagnitudeToggle->setChecked(vectorAtts->GetScaleByMagnitude());
+            scaleByMagnitudeToggle->blockSignals(false);
+            break;
+          case VectorAttributes::ID_autoScale:
+            autoScaleToggle->blockSignals(true);
+            autoScaleToggle->setChecked(vectorAtts->GetAutoScale());
+            autoScaleToggle->blockSignals(false);
+            break;
+          case VectorAttributes::ID_headSize:
+            headSizeLineEdit->setText(DoubleToQString(vectorAtts->GetHeadSize()));
+            break;
+          case VectorAttributes::ID_headOn:
+            drawHeadToggle->blockSignals(true);
+            drawHeadToggle->setChecked(vectorAtts->GetHeadOn());
+            drawHeadToggle->blockSignals(false);
+            break;
+          case VectorAttributes::ID_colorByMag:
+            colorButtonGroup->blockSignals(true);
+            colorButtonGroup->button(vectorAtts->GetColorByMag() ? 0 : 1)->setChecked(true);
+            colorButtonGroup->blockSignals(false);
+//            limitsGroup->setEnabled(vectorAtts->GetColorByMag());
+            break;
+          case VectorAttributes::ID_useLegend:
+            legendToggle->blockSignals(true);
+            legendToggle->setChecked(vectorAtts->GetUseLegend());
+            legendToggle->blockSignals(false);
+            break;
+          case VectorAttributes::ID_vectorColor:
+            { // new scope
+            QColor temp(vectorAtts->GetVectorColor().Red(),
+                        vectorAtts->GetVectorColor().Green(),
+                        vectorAtts->GetVectorColor().Blue());
+            vectorColor->blockSignals(true);
+            vectorColor->setButtonColor(temp);
+            vectorColor->blockSignals(false);
+            }
+          case VectorAttributes::ID_colorTableName:
+            colorTableWidget->setColorTable(vectorAtts->GetColorTableName().c_str());
+            break;
+          case VectorAttributes::ID_invertColorTable:
+            colorTableWidget->setInvertColorTable(vectorAtts->GetInvertColorTable());
+            break;
+          case VectorAttributes::ID_vectorOrigin:
+            originButtonGroup->blockSignals(true);
+            switch (vectorAtts->GetVectorOrigin())
+            {
+              case VectorAttributes::Head:
+                originButtonGroup->button(0)->setChecked(true);
+                break;
+              case VectorAttributes::Middle:
+                originButtonGroup->button(1)->setChecked(true);
+                break;
+              case VectorAttributes::Tail:
+                originButtonGroup->button(2)->setChecked(true);
+                break;
+            }
+            originButtonGroup->blockSignals(false);
+          break;
+          case VectorAttributes::ID_minFlag:
+            // Disconnect the slot before setting the toggle and
+            // reconnect it after. This prevents multiple updates.
+            disconnect(minToggle, SIGNAL(toggled(bool)),
+                       this, SLOT(minToggled(bool)));
+            minToggle->setChecked(vectorAtts->GetMinFlag());
+            minLineEdit->setEnabled(vectorAtts->GetMinFlag());
+            connect(minToggle, SIGNAL(toggled(bool)),
+                    this, SLOT(minToggled(bool)));
+            break;
+          case VectorAttributes::ID_maxFlag:
+            // Disconnect the slot before setting the toggle and
+            // reconnect it after. This prevents multiple updates.
+            disconnect(maxToggle, SIGNAL(toggled(bool)),
+                       this, SLOT(maxToggled(bool)));
+            maxToggle->setChecked(vectorAtts->GetMaxFlag());
+            maxLineEdit->setEnabled(vectorAtts->GetMaxFlag());
+            connect(maxToggle, SIGNAL(toggled(bool)),
+                    this, SLOT(maxToggled(bool)));
+           break;
+          case VectorAttributes::ID_limitsMode:
+            limitsSelect->blockSignals(true);
+            limitsSelect->setCurrentIndex(vectorAtts->GetLimitsMode());
+            limitsSelect->blockSignals(false);
+            break;
+          case VectorAttributes::ID_min:
+            minLineEdit->setText(DoubleToQString(vectorAtts->GetMin()));
+            break;
+          case VectorAttributes::ID_max:
+            maxLineEdit->setText(DoubleToQString(vectorAtts->GetMax()));
+            break;
+          case VectorAttributes::ID_lineStem:
+            lineStem->blockSignals(true);
+            lineStem->setCurrentIndex(int(vectorAtts->GetLineStem()));
+            lineStem->blockSignals(false);
+
+            UpdateLineStem();
+
+            break;
+          case VectorAttributes::ID_geometryQuality:
+            geometryQualityButtons->blockSignals(true);
+            geometryQualityButtons->button(vectorAtts->GetGeometryQuality())->setChecked(true);
+            geometryQualityButtons->blockSignals(false);
+            break;
+          case VectorAttributes::ID_stemWidth:
+            stemWidthEdit->setText(DoubleToQString(vectorAtts->GetStemWidth()));
+            break;
+          case VectorAttributes::ID_origOnly:
+            limitToOrigToggle->blockSignals(true);
+            limitToOrigToggle->setChecked(vectorAtts->GetOrigOnly());
+            limitToOrigToggle->blockSignals(false);
+            break;
+
+          case VectorAttributes::ID_glyphType:
+            glyphType->blockSignals(true);
+            glyphType->setCurrentIndex(int(vectorAtts->GetGlyphType()));
+            glyphType->blockSignals(false);
+            
+            UpdateLineStem();
+            break;
+        }
+    } // end for
+}
+
+
+// ****************************************************************************
+// Method: QvisVectorPlotWindow::UpdateLineStem
+//
+// Purpose: 
+//   Updates the line stem attributes
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Mar 22 23:51:58 PST 2001
+//
+// Modifications:
+//
+// ****************************************************************************
+void
+QvisVectorPlotWindow::UpdateLineStem()
+{
+
+  if (vectorAtts->GetGlyphType() == VectorAttributes::Arrow)
+  {
+    lineStem->show();
+    lineStemLabel->show();
+    drawHeadToggle->show();
+    headSizeLabel->show();
+    headSizeLineEdit->show();
+
+    if( vectorAtts->GetLineStem() == VectorAttributes::Line )
+    {
+      lineWidth->show();
+      lineWidthLabel->show();
+      
+      stemWidthEdit->hide();
+      stemWidthLabel->hide();
+    }
+    else //if (vectorAtts->GetLineStem() == VectorAttributes::Cylinder)
+    {
+      lineWidth->hide();
+      lineWidthLabel->hide();
+      
+      stemWidthEdit->show();
+      stemWidthLabel->show();
+    }
+  }
+
+  else //if (vectorAtts->GetGlyphType() == VectorAttributes::Ellipsoid)
+  {
+    lineStem->hide();
+    lineStemLabel->hide();
+    drawHeadToggle->hide();
+    headSizeLabel->hide();
+    headSizeLineEdit->hide();
+
+    lineWidth->hide();
+    lineWidthLabel->hide();
+    
+    stemWidthEdit->hide();
+    stemWidthLabel->hide();
+  }
+}
+
+
+// ****************************************************************************
+// Method: QvisVectorPlotWindow::GetCurrentValues
+//
+// Purpose: 
+//   Gets the current values for one or all of the lineEdit widgets.
+//
+// Arguments:
+//   which_widget : The number of the widget to update. If -1 is passed,
+//                  the routine gets the current values for all widgets.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Mar 22 23:51:58 PST 2001
+//
+// Modifications:
+//   Brad Whitlock, Fri Feb 15 11:49:34 PDT 2002
+//   Fixed format strings.
+//
+//   Kathleen Bonnell, Wed Dec 22 16:42:35 PST 2004
+//   Get values for min and max.
+//
+//   Jeremy Meredith, Mon Mar 19 16:24:08 EDT 2007
+//   Added stemWidth.
+//
+//   Brad Whitlock, Wed Apr 23 12:11:47 PDT 2008
+//   Support for internationalization.
+//
+// ****************************************************************************
+
+void
+QvisVectorPlotWindow::GetCurrentValues(int which_widget)
+{
+    bool okay, doAll = (which_widget == -1);
+    QString msg, temp;
+
+    // Do the scale value.
+    if(which_widget == 0 || doAll)
+    {
+        double val;
+        if(LineEditGetDouble(scaleLineEdit, val))
+            vectorAtts->SetScale(val);
+        else
+        {
+            ResettingError(tr("scale value"),
+                DoubleToQString(vectorAtts->GetScale()));
+            vectorAtts->SetScale(vectorAtts->GetScale());
+        }
+    }
+
+    // Do the head size value.
+    if(which_widget == 1 || doAll)
+    {
+        double val;
+        if(LineEditGetDouble(headSizeLineEdit, val))
+            vectorAtts->SetHeadSize(val);
+        else
+        {
+            ResettingError(tr("head size"),
+                DoubleToQString(vectorAtts->GetHeadSize()));
+            vectorAtts->SetHeadSize(vectorAtts->GetHeadSize());
+        }
+    }
+
+    // Do the N vectors value.
+    if(which_widget == 2 || doAll)
+    {
+        int val;
+        if(LineEditGetInt(nVectorsLineEdit, val))
+            vectorAtts->SetNVectors(val);
+        else
+        {
+            ResettingError(tr("number of vectors"),
+                IntToQString(vectorAtts->GetNVectors()));
+            vectorAtts->SetNVectors(vectorAtts->GetNVectors());
+        }
+    }
+
+    // Do the stride value.
+    if(which_widget == 3 || doAll)
+    {
+        int val;
+        if(LineEditGetInt(strideLineEdit, val))
+            vectorAtts->SetStride(val);
+        else
+        {
+            ResettingError(tr("stride"), 
+                IntToQString(vectorAtts->GetStride()));
+            vectorAtts->SetStride(vectorAtts->GetStride());
+        }
+    }
+        // Do the minimum value.
+    if(which_widget == 4 || doAll)
+    {
+        double val;
+        if(LineEditGetDouble(minLineEdit, val))
+            vectorAtts->SetMin(val);
+        else
+        {
+            ResettingError(tr("minimum value"),
+                DoubleToQString(vectorAtts->GetMin()));
+            vectorAtts->SetMin(vectorAtts->GetMin());
+        }
+    }
+
+    // Do the maximum value
+    if(which_widget == 5 || doAll)
+    {
+        double val;
+        if(LineEditGetDouble(maxLineEdit, val))
+            vectorAtts->SetMax(val);
+        else
+        {
+            ResettingError(tr("maximum value"),
+                DoubleToQString(vectorAtts->GetMax()));
+            vectorAtts->SetMax(vectorAtts->GetMax());
+        }
+    }
+
+    // Do the stem width value.
+    if(which_widget == 22 || doAll)
+    {
+        double val;
+        if((okay = LineEditGetDouble(stemWidthEdit, val)) == true)
+        {
+            if (val >=0 && val <= 0.5)
+                vectorAtts->SetStemWidth(val);
+            else
+                okay = false;
+        }
+
+        if(!okay)
+        {
+            ResettingError(tr("stem width"),
+                DoubleToQString(vectorAtts->GetStemWidth()));
+            vectorAtts->SetStemWidth(vectorAtts->GetStemWidth());
+        }
+    }
+}
+
+// ****************************************************************************
+// Method: QvisVectorPlotWindow::Apply
+//
+// Purpose: 
+//   This method applies the vector attributes and optionally tells the viewer
+//   to apply them to the plot.
+//
+// Arguments:
+//   ignore : This flag, when true, tells the code to ignore the
+//            AutoUpdate function and tell the viewer to apply the
+//            vector attributes.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Mar 22 23:52:51 PST 2001
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisVectorPlotWindow::Apply(bool ignore)
+{
+    if(AutoUpdate() || ignore)
+    {
+        // Get the current aslice attributes and tell the other
+        // observers about them.
+        GetCurrentValues(-1);
+        vectorAtts->Notify();
+
+        // Tell the viewer to set the vector attributes.
+        GetViewerMethods()->SetPlotOptions(plotType);
+    }
+    else
+        vectorAtts->Notify();
+}
+
+//
+// Qt Slot functions...
+//
+
+void
+QvisVectorPlotWindow::apply()
+{
+    Apply(true);
+}
+
+void
+QvisVectorPlotWindow::makeDefault()
+{
+    // Tell the viewer to set the default vector attributes.
+    GetCurrentValues(-1);
+    vectorAtts->Notify();
+    GetViewerMethods()->SetDefaultPlotOptions(plotType);
+}
+
+void
+QvisVectorPlotWindow::reset()
+{
+    // Tell the viewer to reset the aslice attributes to the last
+    // applied values.
+    GetViewerMethods()->ResetPlotOptions(plotType);
+}
+
+
+// ****************************************************************************
+// Method: QvisVectorPlotWindow::lineWidthChanged
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the user changes the
+//   lineWidth widget.
+//
+// Arguments:
+//   newWidth : The new line width.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Mar 23 12:20:44 PDT 2001
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisVectorPlotWindow::lineWidthChanged(int newWidth)
+{
+    vectorAtts->SetLineWidth(newWidth);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisVectorPlotWindow::vectorColorChanged
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the user changes the
+//   vector color.
+//
+// Arguments:
+//   color : The new vector color.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Mar 23 12:21:58 PDT 2001
+//
+// Modifications:
+//   Brad Whitlock, Sat Jun 16 19:19:30 PST 2001
+//   Added code to disable coloration by vector magnitude.
+//
+// ****************************************************************************
+
+void
+QvisVectorPlotWindow::vectorColorChanged(const QColor &color)
+{
+    ColorAttribute temp(color.red(), color.green(), color.blue());
+    vectorAtts->SetVectorColor(temp);
+    vectorAtts->SetColorByMag(false);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisVectorPlotWindow::processScaleText
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the user changes the
+//   scale line edit.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Mar 23 12:22:33 PDT 2001
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisVectorPlotWindow::processScaleText()
+{
+    GetCurrentValues(0);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisVectorPlotWindow::scaleByMagnitudeToggled
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the user toggles the
+//   window's scale by magnitude toggle button.
+//
+// Programmer: Eric Brugger
+// Creation:   Tue Nov 23 10:18:29 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisVectorPlotWindow::scaleByMagnitudeToggled(bool)
+{
+    vectorAtts->SetScaleByMagnitude(!vectorAtts->GetScaleByMagnitude());
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisVectorPlotWindow::autoScaleToggled
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the user toggles the
+//   window's auto scale toggle button.
+//
+// Programmer: Eric Brugger
+// Creation:   Tue Nov 23 10:18:29 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisVectorPlotWindow::autoScaleToggled(bool)
+{
+    vectorAtts->SetAutoScale(!vectorAtts->GetAutoScale());
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisVectorPlotWindow::processHeadSizeText
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the user changes the
+//   head size line edit.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Mar 23 12:22:33 PDT 2001
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisVectorPlotWindow::processHeadSizeText()
+{
+    GetCurrentValues(1);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisVectorPlotWindow::reduceMethodChanged
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the user changes the
+//   method used to reduce the number of vectors.
+//
+// Arguments:
+//   index : The reduction method.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Mar 23 12:24:08 PDT 2001
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisVectorPlotWindow::reduceMethodChanged(int index)
+{
+    vectorAtts->SetUseStride(index != 0);
+    Apply();   
+}
+
+// ****************************************************************************
+// Method: QvisVectorPlotWindow::locationMethodChanged
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the user changes the
+//   method used to place the vectors.
+//
+// Arguments:
+//   index : The location method.
+//
+// Programmer: Hank Childs
+// Creation:   August 24, 2010
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisVectorPlotWindow::locationMethodChanged(int index)
+{
+    vectorAtts->SetGlyphLocation(index == 0 
+                                   ? VectorAttributes::AdaptsToMeshResolution
+                                   : VectorAttributes::UniformInSpace);
+    if (vectorAtts->GetGlyphLocation() == VectorAttributes::UniformInSpace)
+        vectorAtts->SetUseStride(false);
+    Apply();   
+}
+
+// ****************************************************************************
+// Method: QvisVectorPlotWindow::processNVectorsText
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the user changes the
+//   N vectors line edit.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Mar 23 12:22:33 PDT 2001
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisVectorPlotWindow::processNVectorsText()
+{
+    GetCurrentValues(2);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisVectorPlotWindow::processStrideText
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the user changes the
+//   stride line edit.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Mar 23 12:22:33 PDT 2001
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisVectorPlotWindow::processStrideText()
+{
+    GetCurrentValues(3);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisVectorPlotWindow::legendToggled
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the user toggles the
+//   window's legend toggle button.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Mar 23 12:24:55 PDT 2001
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisVectorPlotWindow::legendToggled(bool)
+{
+    vectorAtts->SetUseLegend(!vectorAtts->GetUseLegend());
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisVectorPlotWindow::drawHeadToggled
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the user toggles the
+//   window's "drawhead" toggle button.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Mar 23 12:25:29 PDT 2001
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisVectorPlotWindow::drawHeadToggled(bool val)
+{
+    vectorAtts->SetHeadOn(!vectorAtts->GetHeadOn());
+
+    headSizeLineEdit->setEnabled(val);
+
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisVectorPlotWindow::colorByMagnitudeToggled
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the user toggles the
+//   window's "color by magnitude" toggle button.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Mar 23 12:26:11 PDT 2001
+//
+// Modifications:
+//   Kathleen Bonnell, Wed Dec 22 16:42:35 PST 2004
+//   Set the enabled state for the limitsGroup based on ColorByMag.
+//   
+// ****************************************************************************
+
+void
+QvisVectorPlotWindow::colorModeChanged(int index)
+{
+    vectorAtts->SetColorByMag(index == 0);
+//    limitsGroup->setEnabled(vectorAtts->GetColorByMag());
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisVectorPlotWindow::colorTableClicked
+//
+// Purpose: 
+//   This is a Qt slot function that sets the desired color table name into
+//   the vector plot attributes.
+//
+// Arguments:
+//   useDefault : If this is true, we want to use the default color table.
+//   ctName     : The name of the color table to use if we're not going to
+//                use the default.
+//
+// Programmer: Brad Whitlock
+// Creation:   Sat Jun 16 18:30:51 PST 2001
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisVectorPlotWindow::colorTableClicked(bool useDefault,
+    const QString &ctName)
+{
+    vectorAtts->SetColorByMag(true);
+    vectorAtts->SetColorTableName(ctName.toStdString());
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisVectorPlotWindow::invertColorTableToggled
+//
+// Purpose: 
+//   This is a Qt slot function that sets the invert color table flag into the
+//   vector plot attributes.
+//
+// Arguments:
+//   val    :  Whether or not to invert the color table.
+//
+// Programmer: Kathleen Bonnell
+// Creation:   January  17, 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisVectorPlotWindow::invertColorTableToggled(bool val)
+{
+    vectorAtts->SetInvertColorTable(val);
+    Apply();
+}
+
+// ****************************************************************************
+//  Method:  
+//
+//  Purpose:
+//    Qt slot function to change the state of the vector origin type on
+//    response to a radio button click.
+//
+//  Arguments:
+//    index      the index of the radio button
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    November 21, 2003
+//
+// ****************************************************************************
+void
+QvisVectorPlotWindow::originTypeChanged(int index)
+{
+    vectorAtts->SetVectorOrigin((VectorAttributes::OriginType) index);
+    Apply();
+}
+
+void
+QvisVectorPlotWindow::glyphTypeChanged(int newType)
+{
+    vectorAtts->SetGlyphType((VectorAttributes::GlyphType) newType);
+    Apply();    
+}
+
+// ****************************************************************************
+// Method: QvisVectorPlotWindow::limitsSelectChanged
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the user changes the
+//   window's limits selection combo box. 
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   December 22, 2004 
+//
+// Modifications:
+//   
+// ****************************************************************************
+void
+QvisVectorPlotWindow::limitsSelectChanged(int mode)
+{
+    // Only do it if it changed.
+    if(mode != vectorAtts->GetLimitsMode())
+    {
+        vectorAtts->SetLimitsMode(VectorAttributes::LimitsMode(mode));
+        Apply();
+    }
+}
+
+// ****************************************************************************
+// Method: QvisVectorPlotWindow::processMinLimitText
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the user changes the
+//   window's min line edit text. 
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   December 22, 2004 
+//
+// Modifications:
+//   
+// ****************************************************************************
+void
+QvisVectorPlotWindow::processMinLimitText()
+{
+    GetCurrentValues(4);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisVectorPlotWindow::processMaxLimitText
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the user changes the
+//   window's max line edit text. 
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   December 22, 2004 
+//
+// Modifications:
+//   
+// ****************************************************************************
+void
+QvisVectorPlotWindow::processMaxLimitText()
+{
+    GetCurrentValues(5);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisVectorPlotWindow::minToggled
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the user toggles the
+//   window's min toggle button.
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   December 22, 2004 
+//
+// Modifications:
+//   
+// ****************************************************************************
+void
+QvisVectorPlotWindow::minToggled(bool val)
+{
+    vectorAtts->SetMinFlag(val);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisVectorPlotWindow::maxToggled
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the user toggles the
+//   window's max toggle button.
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   December 22, 2004 
+//
+// Modifications:
+//   
+// ****************************************************************************
+void
+QvisVectorPlotWindow::maxToggled(bool val)
+{
+    vectorAtts->SetMaxFlag(val);
+    Apply();
+}
+
+
+// ****************************************************************************
+// Method: QvisVectorPlotWindow::lineStemMethodChanged
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the user changes the
+//   window's line stem method.
+//
+// Programmer: Jeremy Meredith
+// Creation:   March 19, 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+void
+QvisVectorPlotWindow::lineStemChanged(int val)
+{
+    vectorAtts->SetLineStem((VectorAttributes::LineStem) val);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisVectorPlotWindow::geometryQualityChanged
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the user toggles the
+//   window's high quality button.
+//
+// Programmer: Jeremy Meredith
+// Creation:   March 19, 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+void
+QvisVectorPlotWindow::geometryQualityChanged(int val)
+{
+    vectorAtts->SetGeometryQuality( (VectorAttributes::Quality)val);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisVectorPlotWindow::processStemWidthText
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the user changes the
+//   window's stem width edit text. 
+//
+// Programmer: Jeremy Meredith
+// Creation:   March 19, 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+void
+QvisVectorPlotWindow::processStemWidthText()
+{
+    GetCurrentValues(22);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisVectorPlotWindow::limitToOrigToggled
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the user toggles the
+//   window's limit to original node/cell toggle button.
+//
+// Programmer: Jeremy Meredith
+// Creation:   July  8, 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+void
+QvisVectorPlotWindow::limitToOrigToggled(bool val)
+{
+    vectorAtts->SetOrigOnly(val);
+    Apply();
+}

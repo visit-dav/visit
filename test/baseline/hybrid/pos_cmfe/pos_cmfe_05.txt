@@ -1,0 +1,4 @@
+
+cmfe -- Min = -1 (node 46 at coord <5.55994e-08, 2.075>)
+cmfe -- Max = 1.97445 (node 94 at coord <2.21281, 0.232576>)
+

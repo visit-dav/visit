@@ -1,0 +1,93 @@
+# FMMs in Boxlib (VisIt 00006156)
+suppress FMM free;operator >>(istream&,RealDescriptor&);FABio::read_header(istream&,FArrayBox&,int,int&);FArrayBox::readFrom(istream&,int);VisMF::readFAB(int,const basic_string<char, string_char_traits<char>, __default_alloc_template<true, 0>>&,const VisMF::Header&,int);VisMF::GetFab(int,int)const;avtBoxlib2DFileFormat::GetVar(int,const char*)
+suppress FMM free;RealDescriptor::~RealDescriptor(void);CpPtr<RealDescriptor>::~CpPtr(void);FABio_binary::~FABio_binary(void);FArrayBox::readFrom(istream&,int);VisMF::readFAB(int,const basic_string<char, string_char_traits<char>, __default_alloc_template<true, 0>>&,const VisMF::Header&,int);VisMF::GetFab(int,int)const;avtBoxlib2DFileFormat::GetVar(int,const char*)
+
+# UMRs from exodos.py test (VisIt00006158)
+suppress UMR avtUnstructuredPointBoundaries::Generate(vector<int, allocator<int>>,vector<vtkDataSet*, allocator<vtkDataSet*>>);avtUnstructuredPointBoundaries::ExchangeMesh(vector<int, allocator<int>>,vector<vtkDataSet*, allocator<vtkDataSet*>>);avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(avtDomainBoundaries*,avtDatasetCollection&,vector<int, allocator<int>>&,ref_ptr<avtDataSpecification>&,avtSourceFromDatabase*);avtGenericDatabase::CommunicateGhostZonesFromGlobalNodeIds(avtDatasetCollection&,vector<int, allocator<int>>&,ref_ptr<avtDataSpecification>&,avtSourceFromDatabase*);avtGenericDatabase::CommunicateGhosts(avtGhostDataType,avtDatasetCollection&,vector<int, allocator<int>>&,ref_ptr<avtDataSpecification>&,avtSourceFromDatabase*,vector<int, allocator<int>>&,bool);avtGenericDatabase::GetOutput(ref_ptr<avtDataSpecification>,avtSourceFromDatabase*)
+suppress UMR avtGhostData::AddGhostZoneType(unsigned char&,avtGhostZoneTypes);avtUnstructuredDomainBoundaries::ExchangeMesh(vector<int, allocator<int>>,vector<vtkDataSet*, allocator<vtkDataSet*>>);avtUnstructuredPointBoundaries::ExchangeMesh(vector<int, allocator<int>>,vector<vtkDataSet*, allocator<vtkDataSet*>>);avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(avtDomainBoundaries*,avtDatasetCollection&,vector<int, allocator<int>>&,ref_ptr<avtDataSpecification>&,avtSourceFromDatabase*);avtGenericDatabase::CommunicateGhostZonesFromGlobalNodeIds(avtDatasetCollection&,vector<int, allocator<int>>&,ref_ptr<avtDataSpecification>&,avtSourceFromDatabase*);avtGenericDatabase::CommunicateGhosts(avtGhostDataType,avtDatasetCollection&,vector<int, allocator<int>>&,ref_ptr<avtDataSpecification>&,avtSourceFromDatabase*,vector<int, allocator<int>>&,bool)
+suppress UMR vtkDataSetRemoveGhostCells::PolyDataExecute(void);vtkDataSetRemoveGhostCells::Execute(void);vtkSource::ExecuteData(vtkDataObject*);vtkSource::UpdateData(vtkDataObject*);vtkDataObject::UpdateData(void);vtkDataObject::Update(void);avtGhostZoneFilter::ExecuteData(vtkDataSet*,int,basic_string<char string_char_traits<char>, __default_alloc_template<true, 0>>)
+
+# UMRs from mili.py (VisIt00006159)
+suppress UMR InvalidVariableException::InvalidVariableException(basic_string<char, string_char_traits<char>, __default_alloc_template<true, 0>>);avtMiliFileFormat::GetVariableIndex(const char*)
+
+# UMR from expressions.py (VisIt00006161)
+suppress UMR varres(float*,float*,int,int,int,float,float,float);avtResradFilter::DoOperation(vtkDataArray*,vtkDataArray*,vtkDataArray*,int,int)
+
+# problem sized leak in exodos.py test (VisIt00006166)
+suppress MLK malloc;__bUiLtIn_nEw;__bUiLtIn_vEc_nEw;vtkCellLinks::Allocate(int,int);vtkCellLinks::DeepCopy(vtkCellLinks*);vtkUnstructuredGrid::DeepCopy(vtkDataObject*);avtUnstructuredDomainBoundaries::ExchangeMesh(vector<int, allocator<int>>,vector<vtkDataSet*, allocator<vtkDataSet*>>)
+
+# leaks in avtDataAttributes::SetVariableDimension and avtExtents == operator
+suppress MLK ...;avtDataAttributes::SetVariableDimension( int, char const *)
+suppress MLK ...;avtExtents::operator=(avtExtents const &)
+
+# Uninvestigated UMRs (VisIt00006157)
+suppress UMR "stl_bvector.h"
+suppress UMR ...;"PluginManager.C"
+suppress UMR AttributeGroup::WriteType(Connection&,AttributeGroup::typeInfo&)
+suppress UMR BHashEntry::ActuallyAddQuad(BQuad*)
+suppress UMR BHashEntry::ActuallyAddTri(BTri*)
+suppress UMR BinaryExpr::GetVarLeaves(void)
+suppress UMR CellMatInfo::CellMatInfo(basic_string<char, string_char_traits<char>, __default_alloc_template<true, 0>>,int,float,int)
+suppress UMR CellSpecInfo::CellSpecInfo(basic_string<char, string_char_traits<char>, __default_alloc_template<true, 0>>,float)
+suppress UMR FTC_CMapCache_Lookup
+suppress UMR FunctionExpr::GetVarLeaves(void)
+suppress UMR GetRealVariableHelper* "ParsingExprList.C"
+suppress UMR GetUniqueLabels__11avtDataTree*
+suppress UMR HashEntry::ActuallyAddQuad(Quad*)
+suppress UMR HashEntry::ActuallyAddTri(Tri*)
+suppress UMR ImproperUseException::ImproperUseException(basic_string<char, string_char_traits<char>, __default_alloc_template<true, 0>>)
+suppress UMR VarExpr::GetVarLeaves(void)
+suppress UMR VectorExpr::GetVarLeaves(void)
+suppress UMR _Bit_reference::operator=(bool)
+suppress UMR __dcigettext
+suppress UMR _mesa_DrawPixels
+suppress UMR _swrast_copy_texsubimage3d
+suppress UMR _tnl_install_pipeline
+suppress UMR avtCachedVoidRef::avtCachedVoidRef(void_ref_ptr)
+suppress UMR avtCurveComparisonQuery::PutOnSameXIntervals(int,const float*,const float*,int,const float*,const float*,vector<float, allocator<float>>&,vector<float, allocator<float>>&,vector<float, allocator<float>>&)
+suppress UMR avtDataRepresentation::avtDataRepresentation(vtkDataSet*,int,basic_string<char, string_char_traits<char>, __default_alloc_template<true, 0>>,bool)
+suppress UMR avtDataSpecification::avtDataSpecification(const char*,int,ref_ptr<avtSILRestriction>)
+suppress UMR avtDataSpecification::avtDataSpecification(ref_ptr<avtDataSpecification>)
+suppress UMR avtDataSpecification::avtDataSpecification(ref_ptr<avtDataSpecification>,const char*)
+suppress UMR avtDataSpecification::avtDataSpecification(ref_ptr<avtDataSpecification>,int)
+suppress UMR avtDataSpecification::avtDataSpecification(ref_ptr<avtDataSpecification>,ref_ptr<avtSILRestriction>)
+suppress UMR avtDataTree::avtDataTree(ref_ptr<avtDataTree>,bool)
+suppress UMR avtDataTree::avtDataTree(vtkDataSet*,int,basic_string<char, string_char_traits<char>, __default_alloc_template<true, 0>>)
+suppress UMR avtDatabase::GetExtentsFromAuxiliaryData(ref_ptr<avtDataSpecification>,const char*,const char*,double*)
+suppress UMR avtDataset::avtDataset(ref_ptr<avtDataset>,bool)
+suppress UMR avtDefaultPlotMetaData::avtDefaultPlotMetaData(basic_string<char, string_char_traits<char>, __default_alloc_template<true, 0>>,basic_string<char, string_char_traits<char>, __default_alloc_template<true, 0>>)
+suppress UMR avtEulerianQuery::Execute(vtkDataSet*,int)
+suppress UMR avtExpressionEvaluatorFilter::PerformRestriction(ref_ptr<avtPipelineSpecification>)
+suppress UMR avtExtents::Merge(const double*)
+suppress UMR avtInlinePipelineSource::avtInlinePipelineSource(int,ref_ptr<avtDataObject>)
+suppress UMR avtLocateQuery::LocatorFindCell(vtkDataSet*,float&,float*)
+suppress UMR avtMatSpeciesMetaData::avtMatSpeciesMetaData(int,vector<basic_string<char, string_char_traits<char>, __default_alloc_template<true, 0>>, allocator<basic_string<char, string_char_traits<char>, __default_alloc_template<true, 0>>>>)
+suppress UMR avtMaterial::avtMaterial(const avtMaterial*,int,vector<int, allocator<int>>,vector<int, allocator<int>>)
+suppress UMR avtMaterialMetaData::avtMaterialMetaData*
+suppress UMR avtMeshMetaData::avtMeshMetaData(basic_string<char, string_char_traits<char>, __default_alloc_template<true, 0>>,int,int,int,int,int,avtMeshType)
+suppress UMR avtMeshMetaData::avtMeshMetaData(const float*,basic_string<char, string_char_traits<char>, __default_alloc_template<true, 0>>,int,int,int,int,int,avtMeshType)
+suppress UMR avtMixedVariable::avtMixedVariable(const float*,int,basic_string<char, string_char_traits<char>, __default_alloc_template<true, 0>>)
+suppress UMR avtPickQuery::RetrieveVarInfo(vtkDataSet*,int,const vector<int, allocator<int>>&)
+suppress UMR avtPipelineSpecification::avtPipelineSpecification(ref_ptr<avtDataSpecification>,int)
+suppress UMR avtPipelineSpecification::avtPipelineSpecification(ref_ptr<avtPipelineSpecification>)
+suppress UMR avtPipelineSpecification::avtPipelineSpecification(ref_ptr<avtPipelineSpecification>,ref_ptr<avtDataSpecification>)
+suppress UMR avtSILCollection::avtSILCollection(basic_string<char, string_char_traits<char>, __default_alloc_template<true, 0>>,SILCategoryRole,int,avtSILNamespace*)
+suppress UMR avtSILRestrictionTraverser::avtSILRestrictionTraverser(ref_ptr<avtSILRestriction>)
+suppress UMR avtSILSet::avtSILSet(basic_string<char, string_char_traits<char>, __default_alloc_template<true, 0>>,int)
+suppress UMR avtSamplePointArbitrator::ShouldOverwrite(float,float)
+suppress UMR avtScalarMetaData::avtScalarMetaData(basic_string<char, string_char_traits<char>, __default_alloc_template<true, 0>>,basic_string<char, string_char_traits<char>, __default_alloc_template<true, 0>>,avtCentering)
+suppress UMR avtScatterFilter::PointMeshFromVariables(avtScatterFilter::DataInput*,avtScatterFilter::DataInput*,avtScatterFilter::DataInput*)
+suppress UMR avtSourceFromAVTDataset::avtSourceFromAVTDataset(int,ref_ptr<avtDataset>)
+suppress UMR avtSpeciesMetaData::avtSpeciesMetaData*
+suppress UMR avtUserDefinedMapper::avtUserDefinedMapper(int,ref_ptr<avtCustomRenderer>)
+suppress UMR avtVectorMetaData::avtVectorMetaData(basic_string<char, string_char_traits<char>, __default_alloc_template<true, 0>>,basic_string<char, string_char_traits<char>, __default_alloc_template<true, 0>>,avtCentering,int)
+suppress UMR ffix(double) "vtkVisItAxisActor2D.C"
+suppress UMR jpeg_CreateDecompress
+suppress UMR sysctl
+suppress UMR vtkByteSwap::SwapWrite4BERange(char*,int,ostream*)
+suppress UMR vtkCoordinate::GetComputedViewportValue(vtkViewport*)
+suppress UMR vtkMesaCamera::Render(vtkRenderer*)
+suppress UMR vtkVisItCellDataToPointData::Execute(void)
+suppress UMR vtkVisItScalarTree::BuildTree(void)
+suppress UMR vtkVisItScalarTree::GetCellList(float,vector<int, allocator<int>>&)
+suppress UMR vtkVisItScalarTree::RecursiveSearch(vector<int, allocator<int>>&,int,int)

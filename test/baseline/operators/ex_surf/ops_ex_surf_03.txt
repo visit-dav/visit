@@ -1,0 +1,1 @@
+The actual number of zones is 6600.

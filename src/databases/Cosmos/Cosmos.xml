@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+  <Plugin name="Cosmos" label="Cosmos" type="database" dbtype="MTMD" version="1.0">
+    <FilePatterns> 
+      *.cosmos 
+    </FilePatterns>
+    <CXXFLAGS> 
+      ${HDF4_INCLUDE_DIR} 
+    </CXXFLAGS>
+    <LDFLAGS>  
+      ${HDF4_LIBRARY_DIR} 
+    </LDFLAGS>
+    <LIBS>     
+      ${HDF4_LIB}     
+    </LIBS>
+  </Plugin>

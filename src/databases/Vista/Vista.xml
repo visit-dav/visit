@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+  <Plugin name="Vista" type="database" label="Vista" version="1.0" dbtype="STMD">
+    <FilePatterns>
+        *.vista
+    </FilePatterns>
+    <Files components="E,M">
+        avtVistaFileFormat.C 
+        avtVistaAle3dFileFormat.C 
+        avtVistaDiabloFileFormat.C
+    </Files>
+    <CXXFLAGS> 
+        ${SILO_INCLUDE_DIR} 
+        ${HDF5_INCLUDE_DIR} 
+    </CXXFLAGS>
+    <LDFLAGS> 
+        ${SILO_LIBRARY_DIR} 
+        ${HDF5_LIBRARY_DIR} 
+    </LDFLAGS>
+    <LIBS>     
+        ${SILO_LIB}     
+        ${HDF5_LIB}     
+    </LIBS>
+    <Attribute name="" purpose="" persistent="true" exportAPI="" exportInclude="" codefile="Vista.code">
+      <Function name="VistaCommonPluginInfo::SetupDatabase" user="false" member="true">
+      </Function>
+    </Attribute>
+  </Plugin>

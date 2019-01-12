@@ -1,0 +1,55 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta http-equiv="Content-Language" content="en-us">
+   <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+   <meta name="ProgId" content="FrontPage.Editor.Document">
+   <title>VisIt 2.4.1 Release Notes</title>
+</head>
+<body>
+
+<center><b><font size="6">VisIt 2.4.1 Release Notes</font></b></center>
+
+<p>Welcome to VisIt's release notes page. Release 2.4.1 is primarily a
+bug fix release to release 2.4. It fixes additional bugs in release
+2.4.  Look <a href="relnotes2.4.0.html">here</a> to see a complete
+list of changes in release 2.4.</p>
+
+<p><b><font size="4">Bugs fixed in version 2.4.1</font></b></p>
+<ul>
+<li>Ray-casted volume rendering on rectilinear meshes now correctly works with panning.</li>
+<li>VisIt now correctly passes along the -display flag when using hardware acceleration on its parallel server.</li>
+<li>Launching servers using sbatch now correctly passes along additional launch arguments set up in the host profile.</li>
+<li>Simulations that use an absolute path to their .sim2 file now show the current time in the Simulations window.</li>
+<li>The database annotation in the legend was made a little smaller and it now responds to font scaling that can be set in the Annotations window.</li>
+<li>The Xdmf reader was fixed so it can read larger grids.</li>
+<li>A bug was fixed with caching the reads of image files when using IndexSelect.</li>
+<li>A bug was fixed with the Streamline plot being used with the Reflect operator.</li>
+<li>Changing the point type with the Psueodcolor plot to Point/Sphere now takes effect immediately.</li>
+<li>Support for transparency has been fixed. VisIt now explicitly requests an alpha-channel for its on-screen OpenGL rendering context.</li>
+<li>The Pick Window's time controls were fixed so that stride and start/end settings are actually used, and that the default start/end times would match the number of times states in active plot.</li>
+<li>When connecting through a gateway computer, the password window now shows the hostname for the gateway computer instead of showing the hostname for the computer beyond the gateway.</li>
+<li>The Psuedocolor plot now correctly colors zone centered data defined on unstructured grids that contain cells with a mixture of topological dimensions (e.g. points, lines, polygons and volume cell types).</li>
+<li>Build_visit no longer echos the results of the "which" command when it is used to determine the location of the fortran compiler. This was confusing since it did this even when the user was not asking for fortran support to be compiled into the third party libraries.</li>
+<li>Build_visit now correctly downloads the tar file containing the VisIt source code when running build_visit from the main development trunk and not specifying --svn.</li>
+<li>Build_visit now runs on machines with older versions of bash that do not support dashes in function names.</li>
+</ul>
+
+<p><b><font size="4">Enhancements in version 2.4.1</font></b></p>
+<ul>
+<li>VisIt can now tunnel data connections through ssh when a gateway machine is used to connect to a remote computer. For example, Windows computers can use this feature to connect to remote computers through a gateway even if the Windows firewall does not permit exceptions for VisIt's ports <i>(5600-5610)</i>.</li>
+<li>Libsim was enhanced so variable metadata objects can be hidden from the gui so variables cannot be plotted directly.</li>
+<li>VisIt and Libsim were enhanced to support array variables.</li>
+<li>The Dyna3D reader was enhanced so it can read a new style of control information.</li>
+<li>The caching behavior was improved for the class of file format readers which incorporate optimizations, such as reading only a portion of the data, directly into the read process.</li>
+<li>the STL database plugin was changed so it uses VTK's vtkSTLReader class to read data instead of relying on an older, modified STL reader implementation.</li>
+<li>The STL database plugin was enhanced so it can export geometry as triangles to STL format.</li>
+<li>The Silo plugin was enhanced to provide limited support for multiblock object definitions using Silo nameschemes.</li>
+</ul>
+
+<p>Click the following link to view the release notes for the previous
+version of VisIt: <a href="relnotes2.4.0.html">VisIt 2.4 Release Notes</a>.</p>
+
+</body>
+</html>

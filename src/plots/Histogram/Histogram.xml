@@ -1,0 +1,122 @@
+<?xml version="1.0"?>
+  <Plugin name="Histogram" type="plot" label="Histogram" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="true" onlyengine="false" noengine="false" vartype="scalar,array" iconFile="Histogram.xpm">
+    <CXXFLAGS>
+      ${VISIT_INCLUDE_DIR}/avt/Expressions/MeshQuality
+      ${VISIT_INCLUDE_DIR}/avt/Expressions/Abstract
+    </CXXFLAGS>
+    <LIBS components="ESer">
+      avtexpressions_ser
+    </LIBS>
+    <LIBS components="EPar">
+      avtexpressions_par
+    </LIBS>
+    <Files components="V">
+      avtHistogramFilter.C
+      avtHistogramMapper.C
+    </Files>
+    <Files components="E">
+      avtHistogramFilter.C
+      avtHistogramMapper.C
+    </Files>
+    <Attribute name="HistogramAttributes" purpose="Attributes for Histogram Plot" persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="HistogramAttributes.code">
+      <Enum name="OutputType">
+        Curve
+        Block
+      </Enum>
+      <Enum name="BasedOn">
+        ManyVarsForSingleZone
+        ManyZonesForSingleVar
+      </Enum>
+      <Enum name="BinContribution">
+        Frequency
+        Weighted
+        Variable
+      </Enum>
+      <Enum name="LimitsMode">
+        OriginalData
+        CurrentPlot
+      </Enum>
+      <Enum name="DataScale">
+        Linear
+        Log
+        SquareRoot
+      </Enum>
+      <Field name="basedOn" label="Histogram based on" type="enum" subtype="BasedOn">
+        ManyZonesForSingleVar
+      </Field>
+      <Field name="histogramType" label="Histogram Method" type="enum" subtype="BinContribution" enabler="basedOn:ManyZonesForSingleVar">
+        Frequency
+      </Field>
+      <Field name="weightVariable" label="Variable to Weight By" type="variablename" enabler="histogramType:Variable" vartypes="01000000000">
+        default
+      </Field>
+      <Field name="limitsMode" label="Limits Mode" type="enum" subtype="LimitsMode">
+        OriginalData
+      </Field>
+      <Field name="minFlag" label="Use min" type="bool">
+        false
+      </Field>
+      <Field name="maxFlag" label="Use max" type="bool">
+        false
+      </Field>
+      <Field name="min" label="Minimum" type="double" enabler="minFlag:true">
+        0.000000
+      </Field>
+      <Field name="max" label="Maximum" type="double" enabler="maxFlag:true">
+        1.000000
+      </Field>
+      <Field name="numBins" label="Number of Bins" type="int" enabler="basedOn:ManyZonesForSingleVar">
+        32
+      </Field>
+      <Field name="domain" label="domain" type="int" enabler="basedOn:ManyVarsForSingleZone">
+        0
+      </Field>
+      <Field name="zone" label="zone" type="int" enabler="basedOn:ManyVarsForSingleZone">
+        0
+      </Field>
+      <Field name="useBinWidths" label="Use bin widths?" type="bool" enabler="basedOn:ManyVarsForSingleZone">
+        true
+      </Field>
+      <Field name="outputType" label="Type of Output" type="enum" subtype="OutputType">
+        Block
+      </Field>
+      <Field name="lineWidth" label="Line Width" type="linewidth">
+        0
+      </Field>
+      <Field name="color" label="Color" type="color" length="4">
+        200
+        80
+        40
+        255
+      </Field>
+      <Field name="dataScale" label="Data Scale" type="enum" subtype="DataScale">
+        Linear
+      </Field>
+      <Field name="binScale" label="Bin Scale" type="enum" subtype="DataScale">
+        Linear
+      </Field>
+      <Field name="normalizeHistogram" label="Normalize the Histogram" type="bool">
+        false
+      </Field>
+      <Field name="computeAsCDF" label="Compute CDF" type="bool">
+        false
+      </Field>
+      <Function name="ChangesRequireRecalculation" user="true" member="true">
+      </Function>
+      <Function name="VarChangeRequiresReset" user="true" member="true">
+      </Function>
+      <Function name="CopyAttributes" user="false" member="true">
+      </Function>
+      <Function name="HistogramViewerEnginePluginInfo::InitializePlotAtts" user="false" member="true">
+      </Function>
+      <Function name="HistogramViewerEnginePluginInfo::ReInitializePlotAtts" user="false" member="true">
+      </Function>
+      <Function name="HistogramViewerEnginePluginInfo::ResetPlotAtts" user="false" member="true">
+      </Function>
+      <Function name="HistogramViewerEnginePluginInfo::ProvidesLegend" user="false" member="true">
+      </Function>
+      <Include file="header" quoted="false">
+        PickAttributes.h
+      </Include>
+    </Attribute>
+  </Plugin>

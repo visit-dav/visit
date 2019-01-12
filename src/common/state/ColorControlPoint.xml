@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+  <Attribute name="ColorControlPoint" codefile="ColorControlPoint.code" purpose="This class contains an RGBA color with a position value." exportAPI="STATE_API" exportInclude="state_exports.h">
+    <Field name="colors" type="ucharArray" length="4">0 0 0 255</Field>
+    <Field name="position" type="float">0.0</Field>
+    <Function name="ColorControlPoint" user="true"></Function>
+  </Attribute>

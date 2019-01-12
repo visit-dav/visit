@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+  <Attribute name="ExpressionList" purpose="This class contains a list of expressions and some functions to manipulate them." persistent="true" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="ExpressionList.code">
+    <Field name="expressions" label="expressions" type="attVector" subtype="Expression">
+    </Field>
+    <Function name="operator[]" user="true" member="true">
+    </Function>
+    <Function name="CreateNode" user="false" member="true">
+    </Function>
+    <Function name="GetAllVarNames" user="true" member="true">
+    </Function>
+  </Attribute>

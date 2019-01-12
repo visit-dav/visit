@@ -1,0 +1,141 @@
+#!/bin/sh
+
+testEmail=""
+
+#
+# list of users who want email every night with the log file
+#
+logRecipients="miller86@llnl.gov hank@uoregon.edu"
+logRecipients="${logRecipients} brugger1@llnl.gov harrison37@llnl.gov"
+
+#
+# Parse the command line to determine the host to run on.
+#
+host="surface"
+status="fail"
+
+for abc
+do
+   case $1 in
+      -fail)
+         status="fail"
+         shift
+         ;;
+      -host)
+         host=$2
+         shift 2
+         ;;
+      -pass)
+         status="pass"
+         shift
+         ;;
+   esac
+done
+
+#
+# If we have a pass, send out the pass e-mail and exit.
+#
+if test "$status" = "pass" ; then
+   #
+   # Create the list to send the e-mail to.
+   #
+   emailList=`echo $logRecipients | tr ' ' '\n' | sort | uniq`
+
+   #
+   # Create the email.
+   #
+   rm -rf mailmsg
+   cat > mailmsg << EOF
+From: visit-developers@ornl.gov
+Subject: The test suite run on $host passed
+The test suite run on $host passed.
+EOF
+
+   #
+   # Send the email.
+   #
+   if test -n "$testEmail"; then
+      cat mailmsg | /usr/sbin/sendmail $testEmail
+   else
+      cat mailmsg | /usr/sbin/sendmail $emailList
+   fi
+   rm -f mailmsg
+
+   exit 0
+fi
+
+#
+# Check that we have a checkout of src data and test sitting in our directory.
+#
+if test ! -e src ; then
+   echo "The src directory does not exist."
+   exit 1
+fi
+if test ! -e data ; then
+   echo "The data directory does not exist."
+   exit 1
+fi
+if test ! -e test ; then
+   echo "The test directory does not exist."
+   exit 1
+fi
+
+#
+# Determine the revision number of the last pass.
+#
+lastpass=0
+if test -e src/tools/dev/scripts/lastpass_$host ; then
+   lastpass=`cat src/tools/dev/scripts/lastpass_$host`
+fi
+
+#
+# Determine the list of users who modified the source since the last pass.
+#
+rm -f modifiers
+touch modifiers
+if test "$lastpass" != "0" ; then
+   git log $lastpass..HEAD | grep '^Author: ' | sed 's/>//' | cut -d'<' -f2 | sort | uniq >> modifiers
+fi
+
+#
+# Build the email list of modifiers.
+#
+modifiersEmails=
+for user in `cat modifiers` ; do
+    useremail=`./src/tools/dev/scripts/nersc_username_to_email $user`
+    modifiersEmails="$modifiersEmails $useremail"
+done
+rm -f modifiers
+
+#
+# Build the complete email list, making sure we don't wind up including a
+# user from logrecipients and modifiers twice.
+#
+emailList="`echo $logRecipients` `echo $modifiersEmails`"
+emailList=`echo $emailList | tr ' ' '\n' | sort | uniq`
+
+#
+# Create the email and send it.
+#
+rm -rf mailmsg
+cat > mailmsg << EOF
+From: visit-developers@ornl.gov
+Subject: The test suite run on $host failed
+The test suite run on $host failed.
+
+The list of users who have modified VisIt since the
+test suite last succesfully PASSED or PASSED w/SKIPS
+is...
+
+EOF
+echo $modifiersEmails | tr ' ' '\n' | sort >> mailmsg
+echo "" >> mailmsg
+echo "The test suite results are at http://portal.nersc.gov/project/visit/" >> mailmsg
+echo "" >> mailmsg
+
+if test -n "$testEmail"; then
+   cat mailmsg | /usr/sbin/sendmail $testEmail
+else
+   cat mailmsg | /usr/sbin/sendmail $emailList
+fi
+rm -f mailmsg

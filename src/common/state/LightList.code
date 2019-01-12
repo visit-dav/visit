@@ -1,0 +1,162 @@
+Initialization: light7
+    SetDefaultEnabledStates();
+
+Target: xml2java
+Initialization: light7
+    light7 = new LightAttributes();
+        SetDefaultEnabledStates();
+
+Target: xml2atts
+Function: GetLight
+Declaration: const LightAttributes &GetLight(int i) const;
+Definition:
+const LightAttributes &
+LightList::GetLight(int i) const
+{
+    if(i == 0)
+        return light0;
+    else if(i == 1)
+        return light1;
+    else if(i == 2)
+        return light2;
+    else if(i == 3)
+        return light3;
+    else if(i == 4)
+        return light4;
+    else if(i == 5)
+        return light5;
+    else if(i == 6)
+        return light6;
+    else
+        return light7;
+}
+
+Function: GetLight2
+Declaration: LightAttributes &GetLight(int i);
+Definition:
+LightAttributes &
+LightList::GetLight(int i)
+{
+    if(i == 0)
+        return light0;
+    else if(i == 1)
+        return light1;
+    else if(i == 2)
+        return light2;
+    else if(i == 3)
+        return light3;
+    else if(i == 4)
+        return light4;
+    else if(i == 5)
+        return light5;
+    else if(i == 6)
+        return light6;
+    else
+        return light7;
+}
+
+Function: NumLights
+Declaration: int NumLights() const;
+Definition:
+int
+LightList::NumLights() const
+{
+    return 8;
+}
+
+Function: SelectLight
+Declaration: void SelectLight(int i);
+Definition:
+void
+LightList::SelectLight(int i)
+{
+    if(i == 0)
+        SelectLight0();
+    else if(i == 1)
+        SelectLight1();
+    else if(i == 2)
+        SelectLight2();
+    else if(i == 3)
+        SelectLight3();
+    else if(i == 4)
+        SelectLight4();
+    else if(i == 5)
+        SelectLight5();
+    else if(i == 6)
+        SelectLight6();
+    else
+        SelectLight7();
+}
+
+Function: SetLight
+Declaration: void SetLight(int i, const LightAttributes &l);
+Definition:
+void
+LightList::SetLight(int i, const LightAttributes &l)
+{
+    if(i == 0)
+        SetLight0(l);
+    else if(i == 1)
+        SetLight1(l);
+    else if(i == 2)
+        SetLight2(l);
+    else if(i == 3)
+        SetLight3(l);
+    else if(i == 4)
+        SetLight4(l);
+    else if(i == 5)
+        SetLight5(l);
+    else if(i == 6)
+        SetLight6(l);
+    else
+        SetLight7(l);
+}
+
+Function: SetDefaultEnabledStates
+Declaration: void SetDefaultEnabledStates();
+Definition:
+void
+LightList::SetDefaultEnabledStates()
+{
+    light0.SetEnabledFlag(true);
+    light0.SetEnabledFlagCanBeToggled(false);
+    light1.SetEnabledFlag(false);
+    light2.SetEnabledFlag(false);
+    light3.SetEnabledFlag(false);
+    light4.SetEnabledFlag(false);
+    light5.SetEnabledFlag(false);
+    light6.SetEnabledFlag(false);
+    light7.SetEnabledFlag(false);
+}
+
+Target: xml2java
+Function: SetAllEnabled
+Declaration: SetAllEnabled
+Definition:
+    public void SetAllEnabled(boolean val)
+    {
+        light0.SetEnabledFlag(val);
+        light1.SetEnabledFlag(val);
+        light2.SetEnabledFlag(val);
+        light3.SetEnabledFlag(val);
+        light4.SetEnabledFlag(val);
+        light5.SetEnabledFlag(val);
+        light6.SetEnabledFlag(val);
+        light7.SetEnabledFlag(val);
+        SelectAll();
+    }
+
+Function: SetDefaultEnabledStates
+Declaration: SetDefaultEnabledStates
+Definition:
+    public void SetDefaultEnabledStates()
+    {
+        light0.SetEnabledFlag(true);
+        light1.SetEnabledFlag(false);
+        light2.SetEnabledFlag(false);
+        light3.SetEnabledFlag(false);
+        light4.SetEnabledFlag(false);
+        light5.SetEnabledFlag(false);
+        light6.SetEnabledFlag(false);
+        light7.SetEnabledFlag(false);
+    }

@@ -1,0 +1,16 @@
+# Doxyfile 1.7.4
+
+#---------------------------------------------------------------------------
+# Project related configuration options
+#---------------------------------------------------------------------------
+DOXYFILE_ENCODING      = UTF-8
+PROJECT_NAME           = VisItPythonDocs
+JAVADOC_AUTOBRIEF      = YES
+TAB_SIZE               = 2
+OPTIMIZE_OUTPUT_JAVA   = YES
+FILE_PATTERNS          = *.py
+GENERATE_HTML          = NO
+GENERATE_LATEX         = YES
+COMPACT_LATEX          = YES
+
+

@@ -1,0 +1,536 @@
+Function: ChangesRequireRecalculation
+Declaration: bool ChangesRequireRecalculation(const FilledBoundaryAttributes &obj);
+Definition:
+// ****************************************************************************
+// Modifications:
+//    Jeremy Meredith, Mon Dec  9 16:30:54 PST 2002
+//    Added smoothing level.
+//
+//    Jeremy Meredith, Fri Jun 13 16:58:16 PDT 2003
+//    Added cleanZonesOnly.
+//
+//    Kathleen Bonnell, Wed Nov 10 09:22:35 PST 2004 
+//    Added needSecondaryVar.
+//
+//    Kathleen Biagas, Thu Dec 15 16:24:11 PST 2016
+//    Removed boundaryType, filledFlag.
+//
+// ****************************************************************************
+bool
+FilledBoundaryAttributes::ChangesRequireRecalculation(const FilledBoundaryAttributes &obj)
+{
+    bool needSecondaryVar = obj.pointSizeVarEnabled &&
+                            pointSizeVar != obj.pointSizeVar &&
+                            obj.pointSizeVar != "default" && 
+                            obj.pointSizeVar != "" &&
+                            obj.pointSizeVar != "\0"; 
+
+    return ((boundaryNames != obj.boundaryNames) ||
+            (wireframe != obj.wireframe) ||
+            (drawInternal != obj.drawInternal) ||
+            (smoothingLevel != obj.smoothingLevel) ||
+            (cleanZonesOnly != obj.cleanZonesOnly) ||
+            needSecondaryVar);
+}
+
+Function: VarChangeRequiresReset
+Declaration: virtual bool VarChangeRequiresReset(void);
+Definition:
+bool
+FilledBoundaryAttributes::VarChangeRequiresReset()
+{ 
+    return true;
+}
+
+Function: ProcessOldVersions
+Declaration: virtual void ProcessOldVersions(DataNode *parentNode, const char *configVersion);
+Definition:
+// ****************************************************************************
+// Method: FilledBoundaryAttributes::ProcessOldVersions
+//
+// Purpose: 
+//   This method allows handling of older config/session files that may
+//   contain fields that are no longer present or have been modified/renamed.
+//
+// Programmer: Kathleen Biagas
+// Creation:   December 19, 2016
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+FilledBoundaryAttributes::ProcessOldVersions(DataNode *parentNode,
+                                       const char *configVersion)
+{
+    if(parentNode == 0)
+        return;
+
+    DataNode *searchNode = parentNode->GetNode("BoundaryAttributes");
+    if(searchNode == 0)
+        return;
+
+    if (VersionLessThan(configVersion, "2.13.0"))
+    {
+        if (searchNode->GetNode("boundaryType") != 0)
+            searchNode->RemoveNode("boundaryType");
+        if (searchNode->GetNode("filledFlag") != 0)
+            searchNode->RemoveNode("filledFlag");
+    }
+    if (VersionLessThan(configVersion, "3.0.0"))
+    {
+        if (searchNode->GetNode("lineStyle") != 0)
+            searchNode->RemoveNode("lineStyle");
+    }
+}
+
+Target: xml2python
+Code: PyFilledBoundaryAttributes_getattr
+Prefix:
+Postfix:
+    // Try and handle legacy fields
+
+    bool boundaryTypeFound = false;
+    bool lineStyleFound = false;
+    // boundaryType and it's possible enumerations
+    if (strcmp(name, "boundaryType") == 0)
+    {
+        boundaryTypeFound = true;
+    }
+    else if (strcmp(name, "Domain") == 0)
+    {
+        boundaryTypeFound = true;
+    }
+    else if (strcmp(name, "Group") == 0)
+    {
+        boundaryTypeFound = true;
+    }
+    else if (strcmp(name, "Material") == 0)
+    {
+        boundaryTypeFound = true;
+    }
+    else if (strcmp(name, "Unknown") == 0)
+    {
+        boundaryTypeFound = true;
+    }
+    if (strcmp(name, "filledFlag") == 0)
+    {
+        fprintf(stdout, "filledFlag is no longer a valid FilledBoundary "
+                       "attribute.\nIt's value is being ignored, please remove "
+                       "it from your script.\n");
+        return PyInt_FromLong(0L);
+    }
+    // lineStyle and it's possible enumerations
+    else if (strcmp(name, "lineStyle") == 0)
+    {
+        lineStyleFound = true;
+    }
+    else if (strcmp(name, "SOLID") == 0)
+    {
+        lineStyleFound = true;
+    }
+    else if (strcmp(name, "DASH") == 0)
+    {
+        lineStyleFound = true;
+    }
+    else if (strcmp(name, "DOT") == 0)
+    {
+        lineStyleFound = true;
+    }
+    else if (strcmp(name, "DOTDASH") == 0)
+    {
+        lineStyleFound = true;
+    }
+    if (boundaryTypeFound)
+    {
+        fprintf(stdout, "boundaryType is no longer a valid FilledBoundary "
+                       "attribute.\nIt's value is being ignored, please remove "
+                       "it from your script.\n");
+        return PyInt_FromLong(0L);
+    }
+    if (lineStyleFound)
+    {
+        fprintf(stdout, "lineStyle is no longer a valid FilledBoundary "
+                       "attribute.\nIt's value is being ignored, please remove "
+                       "it from your script.\n");
+        return PyInt_FromLong(0L);
+    }
+
+
+Code: PyFilledBoundaryAttributes_setattr
+Prefix:
+Postfix:
+    // Try and handle legacy fields
+    if(obj == NULL)
+    {
+        if(strcmp(name, "filledFlag") == 0)
+        {
+            Py_INCREF(Py_None);
+            obj = Py_None;
+        }
+        else if(strcmp(name, "boundaryType") == 0)
+        {
+            Py_INCREF(Py_None);
+            obj = Py_None;
+        }
+        else if(strcmp(name, "lineStyle") == 0)
+        {
+            Py_INCREF(Py_None);
+            obj = Py_None;
+        }
+    }
+
+
+Function: PyFilledBoundaryAttributes_SetDefaults
+Declaration: PyFilledBoundaryAttributes_SetDefaults
+Definition: 
+// ****************************************************************************
+//  Modifications:
+//    Kathleen Bonnell, Fri Jul 18 13:49:42 PDT 2003
+//    Make defaultAtts point to the passed atts directly.
+//
+// ****************************************************************************
+
+void
+PyFilledBoundaryAttributes_SetDefaults(const FilledBoundaryAttributes *atts)
+{
+    defaultAtts = const_cast<FilledBoundaryAttributes*>(atts);
+}
+
+Target: xml2info
+Function: FilledBoundaryViewerEnginePluginInfo::InitializePlotAtts
+Declaration: virtual void InitializePlotAtts(AttributeSubject *atts, const avtPlotMetaData &);
+Definition: 
+// ****************************************************************************
+//  Method: FilledBoundaryViewerEnginePluginInfo::InitializePlotAtts
+//
+//  Purpose:
+//    Initialize the plot attributes to the default attributes.
+//
+//  Arguments:
+//    atts      The attribute subject to initialize.
+//
+//  Programmer: whitlocb -- generated by xml2info
+//  Creation:   Tue Mar 18 09:01:21 PDT 2003
+//
+//  Modifications:
+//    Kathleen Bonnell, Tue Nov  6 08:19:45 PST 2001
+//    Create labels only from mesh related to varName, not from all
+//    meshes.
+//
+//    Hank Childs, Wed Aug 14 11:30:18 PDT 2002
+//    Only use the labels from the material we actually have.
+//
+//    Kathleen Bonnell, Thu Sep  5 10:55:47 PDT 2002  
+//    Moved bulk of code to PrivateSetPlotAtts to aid in maintenance, as it is
+//    shared with ResetPlotAtts. 
+//
+//    Brad Whitlock, Fri Mar 26 15:19:50 PST 2004
+//    I made it use passed in metadata.
+//
+//    Brad Whitlock, Wed Feb 21 14:31:20 PST 2007
+//    Changed API.
+//
+// ****************************************************************************
+
+void
+FilledBoundaryViewerEnginePluginInfo::InitializePlotAtts(AttributeSubject *atts,
+    const avtPlotMetaData &plot)
+{
+    *(FilledBoundaryAttributes*)atts = *defaultAtts;
+
+    PrivateSetPlotAtts(atts, plot);
+}
+
+Function: FilledBoundaryViewerEnginePluginInfo::ReInitializePlotAtts
+Declaration: virtual void ReInitializePlotAtts(AttributeSubject *atts, const avtPlotMetaData &);
+Definition: 
+// ****************************************************************************
+//  Method: FilledBoundaryViewerEnginePluginInfo::ReInitializePlotAtts
+//
+//  Purpose:
+//    ReInitialize the plot attributes.
+//
+//  Arguments:
+//    atts      The attribute subject to initialize.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   December 5, 2002 
+//
+//  Modifications:
+//   Brad Whitlock, Fri Mar 26 15:19:50 PST 2004
+//   I made it use passed in metadata.
+//
+// ****************************************************************************
+
+void
+FilledBoundaryViewerEnginePluginInfo::ReInitializePlotAtts(AttributeSubject *atts,
+    const avtPlotMetaData &plot)
+{
+    PrivateSetPlotAtts(atts, plot);
+}
+
+Function: FilledBoundaryViewerEnginePluginInfo::ResetPlotAtts
+Declaration: virtual void ResetPlotAtts(AttributeSubject *atts, const avtPlotMetaData &);
+Definition: 
+// ****************************************************************************
+//  Method: FilledBoundaryViewerEnginePluginInfo::ResetPlotAtts
+//
+//  Purpose:
+//    Initialize the plot attributes to the default attributes.
+//
+//  Arguments:
+//    atts      The attribute subject to initialize.
+//
+//  Programmer: meredith -- generated by xml2info
+//  Creation:   Fri Sep 7 10:53:06 PDT 2001
+//
+//  Modifications:
+//    Kathleen Bonnell, Mon Apr 29 13:37:14 PDT 2002  
+//    Create labels only from mesh related to varName, not from all
+//    meshes.
+//
+//    Hank Childs, Wed Aug 14 11:30:18 PDT 2002
+//    Only use the labels from the material we actually have.
+//
+//    Kathleen Bonnell, Thu Sep  5 10:55:47 PDT 2002  
+//    Moved code to PrivateSetPlotAtts to aid in maintenance, as the code is
+//    shared with InitializePlotAtts. 
+//
+//    Brad Whitlock, Fri Mar 26 15:19:50 PST 2004
+//    I made it use passed in metadata.
+//
+//    Brad Whitlock, Wed Feb 21 14:31:20 PST 2007
+//    Changed API.
+//
+// ****************************************************************************
+
+void
+FilledBoundaryViewerEnginePluginInfo::ResetPlotAtts(AttributeSubject *atts,
+    const avtPlotMetaData &plot)
+
+{
+    PrivateSetPlotAtts(atts, plot);
+}
+
+Function: FilledBoundaryViewerEnginePluginInfo::PrivateSetPlotAtts
+Declaration: void   PrivateSetPlotAtts(AttributeSubject *atts, const avtPlotMetaData &);
+Definition: 
+// ****************************************************************************
+//  Method: FilledBoundaryViewerEnginePluginInfo::PrivateSetPlotAtts
+//
+//  Purpose:
+//    Initialize the plot attributes. 
+//
+//  Arguments:
+//    atts          The attribute subject to initialize.
+//    hostName      The host name of the plot. 
+//    databaseName  The database name of the plot.
+//    varName       The variable name of the plot.
+//
+//  Notes:  
+//    This code was pulled from ResetPlotAtts and InitializePlotAtts to
+//    aid in maintenance, and reworkd to support groups.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   September 5, 2002 
+//
+//  Modifications:
+//    Kathleen Bonnell, Thu Dec  5 16:53:22 PST 2002 
+//    Changed exception from ImproperUse to InvalidVariable.
+//
+//    Brad Whitlock, Wed Nov 20 14:12:03 PST 2002
+//    I added support for discrete color tables.
+//
+//    Kathleen Bonnell, Thu Sep  4 16:08:46 PDT 2003 
+//    Set colors, subsetNames for defaultAtts so that "Reset" won't zero
+//    out the colors in the gui.
+//
+//    Jeremy Meredith, Wed Oct 15 16:46:12 PDT 2003
+//    Modified it to add an extra slot for a "mixed material zone" color.
+//    This value is only used when the "Clean zones only" option is checked.
+//
+//    Jeremy Meredith, Wed Oct 22 13:00:10 PDT 2003
+//    Made the support for the extra color a little more robust.  It now
+//    is treated more like a special color; it only gets added if we are
+//    doing a material plot, and doing another plot later with more materials
+//    will overwrite it with the default color.
+//
+//    Brad Whitlock, Fri Mar 26 15:19:50 PST 2004
+//    I made it use passed in metadata.
+//
+//    Jeremy Meredith, Wed Apr 14 16:30:09 PDT 2004
+//    Removed all the extra coding for clean zones only.  It no longer goes
+//    in the MultiColor list -- it is its own field in the attributes, and
+//    it gets added to the plot/legend color mapping separately.
+//
+//    Mark C. Miller, Thu Jul 13 22:41:56 PDT 2006
+//    Added use of colorNames from avtMaterialMetaData, if specified 
+//
+//    Brad Whitlock, Wed Feb 21 14:31:20 PST 2007
+//    Changed API.
+//
+//    Kathleen Biagas, Thu Dec 15 16:24:11 PST 2016
+//    Removed Subset type logic as Material is the only subset this plot
+//    supports.
+//
+// ****************************************************************************
+
+#include <stdio.h>
+
+#include <avtColorTables.h>
+#include <avtDatabaseMetaData.h>
+#include <avtTypes.h>
+#include <set>
+
+#include <avtPlotMetaData.h>
+
+#include <DebugStream.h>
+#include <InvalidVariableException.h>
+
+void
+FilledBoundaryViewerEnginePluginInfo::PrivateSetPlotAtts(AttributeSubject *atts, 
+    const avtPlotMetaData &plot)
+{
+    FilledBoundaryAttributes *boundaryAtts = (FilledBoundaryAttributes *)atts;
+
+    //
+    // Get the meta-data and initialize the boundary names and colors in the
+    // new FilledBoundaryAttributes object.
+    //
+    const avtDatabaseMetaData *md = plot.GetMetaData();
+    if (md == NULL)
+    {
+        return;
+    }
+
+    avtDatabaseMetaData *nonConstmd = const_cast <avtDatabaseMetaData *>(md);
+
+    std::string vn(plot.GetVariableName());
+
+    const avtMaterialMetaData *mat = NULL;
+
+    std::string meshName = nonConstmd->MeshForVar(vn);
+    avtMeshMetaData *mesh = 
+        const_cast <avtMeshMetaData *> (md->GetMesh(meshName));
+
+
+    stringVector       sv;
+    stringVector       matColors;
+    stringVector::const_iterator pos;
+    std::set<int> groupSet;
+    std::vector<int> gIDS;
+    char temp[512];
+
+    // 
+    // Ensure only Materials
+    // 
+    if (nonConstmd->DetermineSubsetType(vn) != AVT_MATERIAL_SUBSET)
+    {
+        EXCEPTION1(InvalidVariableException, vn);
+    }
+
+    // 
+    // Create boundary names
+    // 
+    mat = md->GetMaterial(vn);
+    if (mat != NULL)
+    {
+        for(pos = mat->materialNames.begin();
+            pos != mat->materialNames.end(); ++pos)
+        {
+            sv.push_back(*pos);
+        }
+        matColors = mat->colorNames;
+    }
+    
+    // 
+    // Add a color for each boundary name.
+    //
+    ColorAttribute *ca = new ColorAttribute[sv.size() + 1];
+    avtColorTables *ct = avtColorTables::Instance();
+    if(ct->IsDiscrete(ct->GetDefaultDiscreteColorTable()))
+    {
+        // The CT is discrete, get its color color control points.
+        for(size_t i = 0; i < sv.size(); ++i)
+        {
+            if (matColors.size() && matColors[i] != "")
+                ca[i].SetByName(matColors[i].c_str());
+            else
+            {
+                unsigned char rgb[3] = {0,0,0};
+                ct->GetControlPointColor(ct->GetDefaultDiscreteColorTable(), (int)i, rgb);
+                ca[i].SetRed(int(rgb[0]));
+                ca[i].SetGreen(int(rgb[1]));
+                ca[i].SetBlue(int(rgb[2]));
+            }
+        }
+    }
+    else
+    {
+        // The CT is continuous, sample the CT so we have a unique color
+        // for each element in sv.
+        unsigned char *rgb = ct->GetSampledColors(
+            ct->GetDefaultDiscreteColorTable(), (int)sv.size());
+        if(rgb)
+        {
+            for(size_t i = 0; i < sv.size(); ++i)
+            {
+                if (matColors.size() && matColors[i] != "")
+                    ca[i].SetByName(matColors[i].c_str());
+                else
+                {
+                    ca[i].SetRed(int(rgb[i*3]));
+                    ca[i].SetGreen(int(rgb[i*3+1]));
+                    ca[i].SetBlue(int(rgb[i*3+2]));
+                }
+            }
+            delete [] rgb;
+        }
+    }
+
+    ColorAttributeList cal;
+    int idx = 0;
+    for(pos = sv.begin(); pos != sv.end(); ++pos, ++idx)
+    {
+        if (idx < boundaryAtts->GetMultiColor().GetNumColors())
+        {
+            if (matColors.size() && matColors[idx] != "")
+            {
+                ColorAttribute tmpca;
+                tmpca.SetByName(matColors[idx].c_str());
+                cal.AddColors(tmpca);
+            }
+            else
+            {
+                // The meshIndex is within the defaultAtts' color
+                // vector size.
+                cal.AddColors(boundaryAtts->GetMultiColor()[idx]);
+            }
+        }
+        else
+        {
+            // The meshIndex is greater than the size of the
+            // defaultAtts' color vector. Use colors from the
+            // default discrete color table.
+            if (matColors.size() && matColors[idx] != "")
+            {
+                ColorAttribute tmpca;
+                tmpca.SetByName(matColors[idx].c_str());
+                cal.AddColors(tmpca);
+            }
+            else
+            {
+                cal.AddColors(ca[idx]);
+            }
+        }
+    }
+
+    delete [] ca;
+
+    // Set the boundary names and colors in the boundaryAtts.
+    boundaryAtts->SetBoundaryNames(sv);
+    boundaryAtts->SetMultiColor(cal);
+    defaultAtts->SetBoundaryNames(sv);
+    defaultAtts->SetMultiColor(cal);
+}

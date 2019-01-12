@@ -1,0 +1,61 @@
+#!/bin/sh
+
+#
+# ----------------------------------------------------------------------------
+#  Script to monitor a test and kill it after a certain elpased time
+#
+#  Arguments: pass 0's where appropriate for default values
+#     $1    elapsed time limit in seconds [600]
+#     $2    interval, in seconds, between process status checks [30 seconds]
+#     $3    pid of process to monitor
+#
+#  Returns: returns 118 if the process exceeded the time limit, 0 otherwise
+#
+#  Programmer: Mark C. Miller 
+#  Date:       January 15, 2004 
+#
+#  Modifications:
+#    Re-write if conditionals in style of 'if test...'
+#    Made timeLimit be specified in seconds
+#
+# ----------------------------------------------------------------------------
+#
+
+# the total time limit of the test in seconds
+timeLimit=$1
+if test $timeLimit -eq 0 || test -z "$timeLimit"; then
+   timeLimit=600
+fi
+
+# we inspect ps every $2 seconds
+waitInterval=$2
+if test $waitInterval -eq 0 || test -z "$waitInterval"; then
+   waitInterval=30
+fi
+
+# pid of test to monitor
+testPid=$3
+
+# maximum # of iterations to check process 
+maxIters=`expr $timeLimit / $waitInterval`
+
+# loop and check status of our running test
+numIters=0
+processCompleted=0
+while test $numIters -lt $maxIters; do
+   processStatus=`ps -p $testPid | grep $testPid`
+   if test -z "$processStatus"; then
+      processCompleted=1
+      break;
+   fi
+   numIters=`expr $numIters + 1`
+   sleep $waitInterval
+done
+  
+# kill the process if it didn't complete
+if test $processCompleted -eq 0; then
+   kill -9 $testPid 1>/dev/null 2>&1 
+   exit 118 
+fi
+
+exit 0

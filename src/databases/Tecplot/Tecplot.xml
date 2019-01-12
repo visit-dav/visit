@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+  <Plugin name="Tecplot" type="database" label="Tecplot" version="1.0" enabled="true" mdspecificcode="true" engspecificcode="false" onlyengine="false" noengine="false" dbtype="STMD" haswriter="true" hasoptions="true" filePatternsStrict="false">
+    <FilePatterns>
+      *.tp
+      *.plt
+      *.tec
+    </FilePatterns>
+    <Files components="M">
+      avtTecplotOptions.C
+      avtTecplotFileFormat.C
+      avtTecplotBinaryFileFormat.C
+      TecplotFile.C
+    </Files>
+    <Files components="E">
+      avtTecplotOptions.C
+      avtTecplotFileFormat.C
+      avtTecplotBinaryFileFormat.C
+      avtTecplotWriter.C
+      TecplotFile.C
+    </Files>
+    <Attribute name="" purpose="" persistent="false" keyframe="true" exportAPI="" exportInclude="" codefile="Tecplot.code">
+      <Function name="TecplotCommonPluginInfo::SetupDatabase" user="false" member="true">
+      </Function>
+    </Attribute>
+  </Plugin>

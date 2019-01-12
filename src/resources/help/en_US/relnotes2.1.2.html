@@ -1,0 +1,54 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta http-equiv="Content-Language" content="en-us">
+   <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+   <meta name="ProgId" content="FrontPage.Editor.Document">
+   <title>VisIt 2.1.2 Release Notes</title>
+</head>
+<body>
+
+<center><b><font size="6">VisIt 2.1.2 Release Notes</font></b></center>
+
+<p>Welcome to VisIt's release notes page. Release 2.1.2 is primarily a
+bug fix release to release 2.1.1. It fixes additional bugs in release
+2.1.1.  Look <a href="relnotes2.1.1.html">here</a> to see a complete
+list of changes in release 2.1.1.</p>
+
+<p><b><font size="4">Bugs fixed in version 2.1.2</font></b></p>
+<ul>
+<li>A bug that caused VisIt to crash if the <tt>GetTimeSliderNStates</tt> python function was called when there was no active time slider was fixed.</li>
+<li>A bug that caused a parallel compute engine started with msub or qsub to silently fail when the user started VisIt in a directory that they didn't have write permission in was corrected.</li>
+<li>A bug in the Point3D database reader that caused the last point to be ignored was corrected.</li>
+<li>The Simulation window has been fixed so it no longer loses its command buttons.</li>
+<li>A bug in the Windows version of VisIt that prevented VisIt from connecting to remote machines was fixed.</li>
+<li>A memory leak in the viewer caused by repeated menu creation has been fixed.</li>
+<li>A bug was fixed where plot variable menus were being created far too often due to some changes that broke variable list caching.</li>
+<li>A bug was fixed where VisIt was interpreting all double-precision Z-coordinates from simulations as zero, causing "flat plots".</li>
+<li>build_visit was patched to work with old versions of gcc when building Mesa.</li>
+<li>build_visit now correctly builds optimized libraries and executables with 64 bit Linux machines.</li>
+<li>build_visit was modified to disable PostgreSQL and curl support in the GDAL library since it was causing linking errors at runtime on older Linux systems.</li>
+<li>A bug that caused VisIt's save movie routines to save out files with names that contained only the file extension was corrected.</li>
+<li>A bug was corrected with the Exodus reader for setting up element blocks with non-consecutive numbers.</li>
+<li>A bug was corrected where data-level comparisons on vector data would return the value of the first vector component for all three components, when using the "pos_cmfe" option, running in parallel, and working on rectilinear grids.</li>
+<li>Plugin development tools now work against an installed verison of VisIt on Windows.</li>
+<li>The error message shown when bad parameters are passed to EvalCubicSpline was improved.</li>
+<li>A bug causing the mdserver to crash on some ddcMD databases was resolved.</li>
+<li>A bug in the Subset window preventing "Turn On All" from working was resolved.</li>
+<li>A bug with page progression in the Save Movie Wizard was resolved.</li>
+<li>The exception handling in VisIt's gui was improved so VisIt no longer locks up when files are missing.</li>
+</ul>
+
+<p><b><font size="4">Enhancements in version 2.1.2</font></b></p>
+<ul>
+<li>The Python interface now provides a <i>SetPlotFollowsTime</i> function that sets whether a plot follows its time slider.</li>
+<li>Host profiles were added for the new LLNL machine muir.</li>
+</ul>
+
+<p>Click the following link to view the release notes for the previous
+version of VisIt: <a href="relnotes2.1.1.html">VisIt 2.1.1 Release
+Notes</a>.</p>
+
+</body>
+</html>

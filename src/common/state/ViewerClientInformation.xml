@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+  <Attribute name="ViewerClientInformation" purpose="This class contains information generated for each client" persistent="true" keyframe="true" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="ViewerClientInformation.code">
+    <Enum name="OutputFormat">
+      None
+      Image
+      BMP
+      PNG
+      JPEG
+      Data
+      VTK
+      X3D
+      UserData
+      JSON
+      Message
+    </Enum>
+    <Field name="vars" label="vars" type="attVector" subtype="ViewerClientInformationElement">
+    </Field>
+    <Field name="supportedFormats" label="supportedFormats" type="stringVector">
+      None
+      Image
+      BMP
+      PNG
+      JPEG
+      Data
+      VTK
+      X3D
+      UserData
+      JSON
+      Message
+    </Field>
+  </Attribute>

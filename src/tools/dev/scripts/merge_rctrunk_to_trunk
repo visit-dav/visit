@@ -1,0 +1,217 @@
+#!/bin/bash
+#
+#  Script: merge_rctrunk_to_trunk
+# 
+#  Purpose: 
+#      Merges the RC trunk into the trunk
+#
+#  Programmer: Hank Childs
+#  Creation:   June 23, 2007
+#
+#  Modifications:
+#
+#    Hank Childs, Thu Jul  5 16:13:57 PDT 2007
+#    Suppress some SVN noise.
+#
+#    Hank Childs, Wed Oct 10 09:45:14 PDT 2007
+#    If the user is not in the trunk, then exit immediately.
+#
+#    Hank Childs, Mon Dec 17 14:25:38 PST 2007
+#    See if there are checkouts before merging, force an SVN update before 
+#    merging, and disallow changes to VERSION.
+#
+#    Hank Childs, Thu Dec 20 09:21:03 PST 2007
+#    Renamed -allow_checkouts to -allow_local_mods
+#
+#    Tom Fogal, Tue Mar 17 21:55:56 MST 2009
+#    Updated whence to which, to allow use on systems w/o ksh.
+#    Got rid of a 'return 0', which broke on bash.
+#
+# *****************************************************************************
+
+issueHelp="no"
+allowLocalMods="no"
+
+P=$(which $0)
+P2=${P%/*}
+. ${P2}/visit_svn_helper
+
+# Prevent print statements when changing directories
+CDPATH=""
+
+if [[ $# == 2 ]] ; then
+   if [[ "$2" != "-allow_local_mods" ]] ; then
+       issueHelp="yes"
+   else
+       allowLocalMods="yes"
+   fi
+elif [[ $# != 1 ]] ; then
+   issueHelp="yes"
+fi
+if [[ "$1" == "-help" || "$1" == "-h" || "$1" == "-?" ]] ; then
+   issueHelp="yes"
+fi
+
+if [[ "$issueHelp" != "yes" ]] ; then
+   if [[ ! -f .branchname ]] ; then
+      echo ""
+      echo "ERROR: You must run this script at the root of the trunk directory"
+      echo ""
+      issueHelp="yes"
+   elif [[ ! -f .rootpath ]] ; then
+      echo ""
+      echo "ERROR: You must run this script at the root of the trunk directory"
+      echo ""
+      issueHelp="yes"
+   fi
+fi
+
+BRANCH=""
+RCTRUNKNAME=""
+
+if [[ "$issueHelp" != "yes" ]] ; then
+   TRUNKNAME=$(cat .branchname)
+   if [[ "$TRUNKNAME" != "trunk" ]] ; then
+      echo ""
+      echo "You must be in the trunk when you run this script"
+      echo "(Not the RC trunk.)"
+      echo "This is so SVN has a place to put the modified files from the "
+      echo "merge."
+      echo ""
+      issueHelp="yes"
+   fi
+fi
+
+if [[ "$issueHelp" != "yes" ]] ; then
+    WHOLE_TRUNK="yes"
+    ROOTPATH=$(cat .rootpath)
+    if [[ "$ROOTPATH" != "/" ]] ; then
+       WHOLE_TRUNK="no"
+    else
+       if [[ ! -d src || ! -d data || ! -d docs || ! -d test || ! -d third_party || ! -d windowsbuild ]] ; then
+       WHOLE_TRUNK="no"
+       fi
+    fi
+    if [[ "$WHOLE_TRUNK" == "no" ]]; then
+       echo "Your checkout is not of the entire trunk.  The merge will only "
+       echo "take place over your checkout.  If you continue, any changes that "
+       echo "are on directories not in your current checkout of the trunk will be lost!"
+       stop="no"
+       while [[ "$stop" == "no" ]] ; do
+            echo "Do you want to continue? [yes/no]"
+            read answer
+            if [[ "$answer" == "yes" ]] ; then
+               stop="yes"
+            fi
+            if [[ "$answer" == "no" ]] ; then
+               stop="yes"
+            fi
+        done
+        if [[ "$answer" == "no" ]] ; then
+            exit 1
+        fi
+    fi
+
+    RCTRUNKNAME=$1
+    BRANCH=${VISIT_SVN_BRANCHES}/${RCTRUNKNAME}${ROOTPATH}
+    svn ls $BRANCH 2>/dev/null > /dev/null
+    if [[ $? != 0 ]] ; then
+       echo "The RC TRUNK $1 does not appear to exist."
+       echo "(Looking for it at $BRANCH)"
+       echo "Try using the script ls_branches to locate the RC trunk."
+       issueHelp="yes"
+    fi
+fi
+
+if [[ "$issueHelp" == "yes" ]] ; then
+   echo ""
+   echo "Usage:   ${0##*/} <RC trunk> [-allow_local_mods]"
+   echo ""
+   echo "Args:"
+   echo "\t-allow_local_mods\tForce merge, despite modifications in the working copy of the trunk."
+   echo ""
+   echo "Example: ${0##*/} 1.7RC"
+   echo ""
+   echo "\tThis command should be run at the top level of your checked out "
+   echo "\ttrunk.  It will merge the work from the RC trunk into the trunk."
+   echo ""
+   
+   exit 1
+fi
+
+for i in src data docs test third_party windowsbuild ; do
+  if [[ -d $i ]] ; then
+      cd $i
+      if [[ "$allowLocalMods" == "no" ]] ; then
+        echo "Checking for pre-existing modifications on ${i}..."
+        files=$(svn status -q)
+        if [[ "$files" != "" ]] ; then
+            echo "I believe you have the following files modified out on ${i}:"
+            echo "$files"
+            echo "Aborting!"
+            echo "(You can force this merge by reinvoking with -allow_local_mods)"
+            exit 1
+        fi
+      fi
+      echo "Making sure your working copy of the trunk/$i is up to date"
+      svn update 
+      cd ..
+  fi
+done
+
+echo ""
+echo "Merging $BRANCH into the trunk"
+echo ""
+
+echo ""
+echo "Getting record of last merge from this branch into the trunk..."
+mkdir tmp_forRev$$
+cd tmp_forRev$$
+svn co --quiet ${VISIT_SVN_BRANCHES}/${RCTRUNKNAME}/svninfo
+cd svninfo
+REV=$(cat Rev_toTrunk)
+cd ../..
+echo ""
+echo "The revision of the last merge was $REV"
+echo ""
+
+for i in src data docs test third_party windowsbuild ; do
+  if [[ -d $i ]] ; then
+      cd $i
+      echo ""
+      echo "Merging directory \"$i\""
+      echo ""
+      svn merge -r ${REV}:HEAD ${VISIT_SVN_BRANCHES}/${RCTRUNKNAME}/${ROOTPATH}/$i
+      cd ..
+  fi
+done
+NEW_REV=$(get_latest_rev)
+
+if [[ -f src/VERSION ]] ; then
+   status=$(svn status src/VERSION)
+   if [[ "$status" != "" ]] ; then
+      echo "Reverting change of file src/VERSION"
+      svn revert src/VERSION
+   fi
+fi
+
+cd tmp_forRev$$/svninfo
+echo "$NEW_REV" > Rev_toTrunk
+echo ""
+echo "Updating branch $RCTRUNKNAME to contain a record of this merge"
+echo ""
+svn commit --quiet -m "Update for revision sent to trunk from RC trunk $RCTRUNKNAME, $REV to $NEW_REV"
+cd ../..
+rm -Rf tmp_forRev$$
+
+echo ""
+echo "The changes from the RC trunk ($RCTRUNKNAME) have been put on your working copy."
+echo "You need to review the changes and do an \"svn commit\" for these changes "
+echo "to be saved.  Note that the branch has been updated with the info that this "
+echo "merge took place and future merges into the trunk will not attempt to merge "
+echo "these revisions again.  If you want to back out this merge, you will need "
+echo "invoke the following command to update our bookkeeping: "
+echo ""
+echo "  set_branch_to_trunk_revision $RCTRUNKNAME $REV"
+echo "  (The RC Trunk is technically a branch, so this is the right script)"
+echo ""

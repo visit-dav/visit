@@ -1,0 +1,63 @@
+<?xml version="1.0"?>
+  <Attribute name="PickVarInfo" purpose="This class contains PickVarInfo." persistent="false" keyframe="true" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="PickVarInfo.code">
+    <Enum name="Centering">
+      Nodal
+      Zonal
+      None
+    </Enum>
+    <Field name="variableName" label="variableName" type="string">
+    </Field>
+    <Field name="variableType" label="variableType" type="string">
+    </Field>
+    <Field name="names" label="names" type="stringVector">
+    </Field>
+    <Field name="values" label="values" type="doubleVector">
+    </Field>
+    <Field name="mixNames" label="mixNames" type="stringVector">
+    </Field>
+    <Field name="mixValues" label="mixValues" type="doubleVector">
+    </Field>
+    <Field name="mixVar" label="mixVar" type="bool">
+      false
+    </Field>
+    <Field name="centering" label="centering" type="enum" subtype="Centering">
+      None
+    </Field>
+    <Field name="miscMessage" label="miscMessage" type="string">
+    </Field>
+    <Field name="numMatsPerZone" label="numMatsPerZone" type="intVector">
+    </Field>
+    <Field name="matNames" label="matNames" type="stringVector">
+    </Field>
+    <Field name="numSpecsPerMat" label="numSpecsPerMat" type="intVector">
+    </Field>
+    <Field name="treatAsASCII" label="treatAsASCII" type="bool" internal="true">
+      false
+    </Field>
+    <Field name="floatFormat" label="floatFormat" type="string">
+      %g
+    </Field>
+    <Function name="PrintSelf" user="true" member="true">
+    </Function>
+    <Function name="CreateOutputString" user="true" member="true">
+    </Function>
+    <Function name="PrintTensor" user="true" member="true">
+    </Function>
+    <Function name="PrintSymmetricTensor" user="true" member="true">
+    </Function>
+    <Function name="HasInfo" user="true" member="true">
+    </Function>
+    <Function name="PrintArray" user="true" member="true">
+    </Function>
+    <Function name="CreateOutputMapNode" user="true" member="true">
+    </Function>
+    <Include file="source" quoted="false">
+      stdio.h
+    </Include>
+    <Include file="source" quoted="false">
+      cstring 
+    </Include>
+    <Include file="header" quoted="true">
+      snprintf.h
+    </Include>
+  </Attribute>

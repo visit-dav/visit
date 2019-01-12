@@ -1,0 +1,69 @@
+Function: AddOperator
+Declaration: void AddOperator(int op, const char *name);
+Definition:
+void
+Plot::AddOperator(int op, const char *name)
+{
+    operators.push_back(op);
+    operatorNames.push_back(name);
+    Select(ID_operators, (void *)&operators);
+    Select(ID_operatorNames, (void *)&operatorNames);
+}
+
+Function: ClearAllOperators
+Declaration: void ClearAllOperators();
+Definition:
+void
+Plot::ClearAllOperators()
+{
+    if(operators.size() > 0)
+    {
+        operators.clear();
+        operatorNames.clear();
+        Select(ID_operators, (void *)&operators);
+        Select(ID_operatorNames, (void *)&operatorNames);
+    }
+}
+
+Function: GetNumOperators
+Declaration: int  GetNumOperators() const;
+Definition:
+int
+Plot::GetNumOperators() const
+{
+    return operators.size();
+}
+
+Function: GetOperator
+Declaration: int  GetOperator(int i) const;
+Definition:
+int
+Plot::GetOperator(int i) const
+{
+    return operators[i];
+}
+
+Function: GetOperatorName
+Declaration: const std::string  &GetOperatorName(int i) const;
+Definition:
+const std::string &
+Plot::GetOperatorName(int i) const
+{
+    return operatorNames[i];
+}
+
+Function: RemoveLastOperator
+Declaration: void RemoveLastOperator();
+Definition:
+void
+Plot::RemoveLastOperator()
+{
+    if(operators.size() > 0)
+    {
+        operators.pop_back();
+        operatorNames.pop_back();
+        Select(ID_operators, (void *)&operators);
+        Select(ID_operatorNames, (void *)&operatorNames);
+    }
+}
+

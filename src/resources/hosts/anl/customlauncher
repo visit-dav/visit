@@ -1,0 +1,87 @@
+###############################################################################
+# Class: JobSubmitter_qsub_ANL
+#
+# Purpose:    Custom "qsub" job submitter for ANL.
+#
+# Programmer: Brad Whitlock
+# Date:       Thu May 17 14:22:04 PDT 2012
+#
+# Modifications:
+#   Cyrus Harrison, Tue Aug  1 15:31:48 PDT 2017
+#   Update for Cooley.
+#
+###############################################################################
+
+class JobSubmitter_qsub_ANL(JobSubmitter_qsub):
+    def __init__(self, launcher):
+        super(JobSubmitter_qsub_ANL, self).__init__(launcher)
+
+    def CreateFilename(self, root):
+        tdate = time.asctime()[11:19]
+        tuser = self.launcher.username()
+        return os.path.join("/home", tuser, "%s.%s.%s" % (root, tuser, tdate))
+
+    def AddEnvironment(self):
+        env = ""
+        env = env + "HOME=" + GETENV("HOME")
+        env = env + ":LIBPATH=" + GETENV("LIBPATH")
+        env = env + ":LD_LIBRARY_PATH=" + GETENV("LD_LIBRARY_PATH")
+        env = env + ":VISITHOME=" + GETENV("VISITHOME")
+        env = env + ":VISITARCHHOME=" + GETENV("VISITARCHHOME")
+        env = env + ":VISITPLUGINDIR=" + GETENV("VISITPLUGINDIR")
+        return ["--env", env]
+
+    def SetupPPN(self, nodes, procs, ppn, use_vis):
+        args = ["-n", nodes]
+        return args
+
+    def SetupTime(self):
+        args = []
+        if self.parallel.time != None:
+            args = ["-t", "%s" % self.parallel.time]
+        return args
+
+    def TFileSetup(self, tfile):
+        tfile.write("cd %s\n" % os.path.abspath(os.curdir))
+        tfile.write("ulimit -c 0\n")
+        env = self.AddEnvironment()[1]
+        tfile.write("export %s\n" % env)
+
+
+###############################################################################
+# Class: ANLLauncher
+#
+# Purpose:    Custom launcher for ANL
+#
+# Programmer: Brad Whitlock
+# Date:       Thu May 17 14:22:04 PDT 2012
+#
+# Modifications:
+#   Cyrus Harrison, Tue Aug  1 15:31:48 PDT 2017
+#   Update for Cooley.
+#
+###############################################################################
+
+class ANLLauncher(MainLauncher):
+    def __init__(self):
+        super(ANLLauncher, self).__init__()
+
+    #
+    #  Avoid python home before job is submitted
+    #  
+    def SetupEnvironment(self):
+        super(ANLLauncher, self).SetupEnvironment()
+        UNSETENV("PYTHONHOME")
+    #
+    # Override the JobSubmitterFactory method so the custom job submitter can
+    # be returned.
+    #
+    def JobSubmitterFactory(self, launch):
+        if launch[:4] == "qsub":
+            return JobSubmitter_qsub_ANL(self)
+        return super(ANLLauncher, self).JobSubmitterFactory(launch)
+
+# Launcher creation function
+def createlauncher():
+    return ANLLauncher()
+

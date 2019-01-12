@@ -1,0 +1,224 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>[log viewer]</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="css/bootstrap.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link href="css/grid.css" rel="stylesheet">
+
+
+    <!-- Just for debugging purposes. Don't actually copy this line! -->
+    <!--[if lt IE 9]><script src="../../docs-assets/js/ie8-responsive-file-warning.js"></script><![endif]-->
+
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+      <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="container" id="main">
+
+      <div class="page-header" id="hdr">
+      </div>
+    </div> <!-- /container -->
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="js/jquery-1.10.2.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script type="text/javascript">
+    
+        function getURLParameter(name) 
+        {
+            return decodeURI(
+                (RegExp(name + '=' + '(.+?)(&|$)').exec(location.search)||[,null])[1]
+                );
+        }
+        
+        function action_result(action)
+        {
+            if(action.return_code == 0)
+                return "success";
+            else
+                return "danger";
+        }
+        
+        function tstring(timedelta)
+        {
+            var res = "";
+            if(timedelta.hours > 0)
+                res += timedelta.hours + " hours ";
+            if(timedelta.minutes > 0)
+                res += timedelta.minutes + " minutes ";
+            if(timedelta.seconds > 0)
+                res += timedelta.seconds + " seconds";
+            return res;
+        }
+        
+        $('div.accordion-body').on('shown', function () 
+        {
+            $(this).parent("div").find(".icon-chevron-down").removeClass("icon-chevron-down").addClass("icon-chevron-up");
+        });
+
+        $('div.accordion-body').on('hidden', function () 
+        {
+            $(this).parent("div").find(".icon-chevron-up").removeClass("icon-chevron-up").addClass("icon-chevron-down");
+        });
+        
+        obj = null;
+        last = null;
+        $(document).ready(function()
+        {
+            fname = getURLParameter("log");
+            $(document).attr('title', '[log: ' + fname+ ']');
+            $("#hdr").append('<h2>[log: ' + fname+ ']</h2>');
+            $.getJSON(fname, function(json)
+            {
+                console.log(json); // this will show the info it in firebug console
+                obj = json;
+                console.log(obj.trigger.name);
+                console.log(obj.trigger.key);
+
+                var hdr = '<div class="well">'
+                hdr += '<h3>[trigger: ' + obj.trigger.name + ' (' + obj.trigger.type + ')]</h3>';
+                hdr += '<div class="progress">'
+                var n_actions = obj.trigger.actions.length
+                var act_perc = 100.0 / n_actions;
+                
+                $.each(obj.trigger.results, function()
+                {
+                    hdr += '<a href="#well_' +  this.action.name  + ' ">'
+                    hdr += '<div class="progress-bar progress-bar-' + action_result(this.action) + '" style="width: ' + act_perc +  '%">'
+                    hdr += '<span class="sr-only">'+ act_perc + '% Complete ('+ action_result(this.action) + ')</span></div>'
+                    hdr += '</a>'
+                });
+                
+                $.each(obj.trigger.active_actions, function()
+                {
+                    hdr += '<a href="#well_bv_' +  this.action.name  + ' ">'
+                    hdr += '<div class="progress-bar progress-bar-info" style="width: 10%">'
+                    hdr += '<span class="sr-only">10% Complete (info)</span></div>'
+                    hdr += '</a>'
+                });
+                
+                hdr += '</div>'
+                hdr += '<h4>[actions]</h4>';                 
+                hdr += '<ul>'  
+                $.each(obj.trigger.results, function()
+                {
+
+                    hdr += '<li><p><a href="#well_' + this.action.name + '">';
+                    hdr += '<button type="button" class="btn btn-xs btn-' + action_result(this.action) + '">'                   
+                    hdr += this.action.name + '</button></a></p></li>';
+                });
+                
+                $.each(obj.trigger.active_actions, function()
+                {
+                    hdr += '<li><p><a href="#well_' + this.action.name + '">';
+                    hdr += '<button type="button" class="btn btn-xs btn-info">';
+                    hdr += this.action.name + '</button></a></p></li>';
+                });
+                
+                hdr += "</div>"
+                $("#main").append(hdr);
+                
+                $.each(obj.trigger.results, function()
+                {
+                    var nrow = '<div class="well" id="well_' + this.action.name + '">'
+                    nrow += '<button type="button" class="btn btn-sm btn-' + action_result(this.action) + '">'
+
+                    nrow += this.action.name + '</button><hr>';
+                    nrow += '<div class="panel panel-info" ';
+                    nrow += 'id="cmd_' + this.action.name + '" >';
+                    nrow += '<div class="panel-heading">';
+                    nrow += '<a data-toggle="collapse" href="#panel-cmd-' + this.action.name +  '">'
+                    nrow += '<h3 class="panel-title">Command</h3>';
+                    nrow += '</a>';
+                    nrow += '</div>';
+                    nrow += '<div class="panel-body" id="panel-cmd-' + this.action.name  +  '" >';
+                    nrow +=  this.action.cmd;
+                    nrow += '</div>';
+                    nrow += '</div>';
+                    
+                    nrow += '<div class="panel panel-' + action_result(this.action) + '" ';
+                    nrow += 'id="out_' + this.action.name + '" >';
+                    
+                    nrow += '<div class="panel-heading">';
+                    nrow += '<a data-toggle="collapse" href="#panel-out-' + this.action.name +  '">'
+                    if(this.action.return_code == 0)
+                    {                   
+                        nrow += '<h3 class="panel-title">Output</h3>';
+                    }
+                    else
+                    {
+                        nrow += '<h3 class="panel-title">Error</h3>';
+                    }
+                    
+                    nrow += '</a>';
+                    nrow += '</div>';
+                    nrow += '<div class="panel-body" id="panel-out-' + this.action.name  +  '" >';
+                    nrow += '<b>return_code</b>: '   + this.action.return_code
+                    nrow += '<br><b>elapsed_time</b>: ' + tstring(this.action.elapsed_time)
+                    if(this.action.output != null)
+                    {
+                        nrow += '<br><br>' + this.action.output;
+                    }
+                    if('error' in this.action)
+                    {
+                        nrow += '<br><br>' + this.action.error;
+                    }
+                    nrow += '</div>';
+                    nrow += '</div>'   ;
+                    // close col
+                    nrow += '</div>';                    
+                    
+                    nrow += '</div>';
+                    nrow = nrow.replace(/\n/g, '<br />');
+                    $("#main").append(nrow);
+                    last = this;
+                });
+
+                $.each(obj.trigger.active_actions, function()
+                {
+                    var nrow = '<div class="well" id="well_' + this.action.name + '">'
+                    nrow += '<button type="button" class="btn btn-sm btn-info">'
+                    nrow += this.action.name + '</button><hr>';
+                    nrow += '<div class="panel panel-info" ';
+                    nrow += 'id="cmd_' + this.action.name + '" >';
+                    nrow += '<div class="panel-heading">';
+                    nrow += '<a data-toggle="collapse" href="#panel-cmd-' + this.action.name +  '">'
+                    nrow += '<h3 class="panel-title">Command</h3>';
+                    nrow += '</a>';
+                    nrow += '</div>';
+                    nrow += '<div class="panel-body">';
+                    nrow += '<b>start_time</b>: ' + this.action.start_time.key
+                    nrow +=  "<br><br>" + this.action.cmd;
+                    nrow += '</div>';
+                    nrow += '</div>';
+                    nrow += '</div>';
+                    nrow = nrow.replace(/\n/g, '<br />');
+                    $("#main").append(nrow);
+                    last = this;
+                });
+                
+                
+                
+            });
+        });
+</script>
+ 
+
+  </body>
+</html>

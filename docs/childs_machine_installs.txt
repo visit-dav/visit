@@ -1,0 +1,110 @@
+
+November 11, 2004
+
+Here's what I (Hank Childs) do for the install process in addition to
+what Eric does:
+
+1) Install on janus and pomona.  My password is the same as my B-Division 
+account.
+Installed under /usr/local/apps/visit.  Irix6 only.
+This install is for Jack Reaugh and Mike Howard.  It was requested by Jack in
+ late September, 2004 and Mike in April.
+
+The install line is:
+visit-install -c open -l 1.4.4 irix6 /usr/local/apps/visit
+
+Up until version 1.4.4, we were able to use the Riptide binary on Janus.
+When riptide went away, we had to start using the hyper binary.  Hyper is
+CC V7.4, Janus is V7.3.1.3m. Pomona is V7.2.1, but that works just fine.
+
+So the hyper versions do not run on janus by default.
+To make them work, you can copy over the following libraries
+(paths given for location on hyper):
+
+/usr/lib64/libCsup.so
+/usr/lib64/libC.so.2
+/usr/lib64/libc.so.1
+
+
+
+2) Install on CASC cluster.
+
+There are two partitions that you have to install on, tux01 and tux99.
+Some machines mount the filesystem from tux01 (the redhat 7's I think), and some
+from tux99.  Do not install both at the same time, because the home directories
+are shared and the gunzip's, etc can interfere with each other.
+The password is the same as LC machines.
+
+The directory to install in is /usr/apps/visit.
+The install line is:
+visit-install -c open -g visit -gw 1.4 linux /usr/apps/visit
+
+Note: tux01 cannot take linux_rhel3, because the compiler is too old.  tux99
+can take linux_rhel3.
+
+Note: logging is not useful on the CASC cluster, since the /usr/local/apps/visit
+is a read only file system for all but tux01 and tux99 (so they can't update
+the 'usagelog' file).
+
+It is not entirely clear how heavy the usage is on these machines.  I believe
+Bob Anderson and Andy Wissink make enough use to justify the install, but I 
+do not know for sure.  Others, such as Gary Kerbel and Mike Owen, also use
+the code there, but their usage is somewhat transitory (Mike because he
+no longer has an account on those machines).
+
+
+
+3) Install on A-Division machines.
+
+On the open side, we install both Linux and Darwin.  We cannot test the Darwin
+install.  The install is done from my open-side Linux box, wizard.
+The group to use is "vis_dev", which is myself, Dan Laney, and Steve Langer.
+Steve did an install once that was not group-writable, so there are frequently
+errors when installing the data files -- this does not interfere with the
+rest of the process.
+
+On the closed side, we install Linux from my machine, saruman.  We do not
+install Darwin yet, but it is anticipated that we will at some point
+in the future.
+
+On open:
+
+visit-install -c open -g vis_dev -gw -l 1.4 linux /usr/gapps/visit
+visit-install -c open -g vis_dev -gw -l 1.4 darwin /usr/gapps/visit
+
+On closed:
+
+visit-install -c closed -g vis_dev -gw -l 1.4 linux /usr/gapps/visit
+visit-install -c closed -g vis_dev -gw -l 1.4 darwin /usr/gapps/visit
+
+
+Note: Jay Salmonson's machine, panhead, is still at redhat9 and it is
+not compatible with the rhel3 version.  I was able to make it work by
+copying over libXrandr.so.2, libXcursor.so.1, and libstdc++.so.5.
+I have an account on panhead.
+
+
+4) Install for Brits.
+
+The installs for the Brits is done through /usr/icf/jeshare/visit.
+We install Tru64, Linux, and AIX.
+
+This was requested by Steve Langer over a year ago, but I do not believe
+that anyone is using this, even though we make regular installs.
+Candidates to use it are John Edwards and Des Pilkington.
+
+/usr/icf/jeshare/visit is accessible on most LC closed machines.  I do my
+installs on white.
+
+visit-install -c closed -l 1.4 linux /usr/icf/jeshare/visit
+visit-install -c closed -l 1.4 aix /usr/icf/jeshare/visit
+visit-install -c closed -l 1.4 osf1 /usr/icf/jeshare/visit
+
+
+
+5) Notify Neil Hodge
+
+Neil does the installs for the Engineering network, open and closed.
+He accesses the binaries under the /usr/gapps/visit/1.4/visit-dist directory
+on the LC machines.
+

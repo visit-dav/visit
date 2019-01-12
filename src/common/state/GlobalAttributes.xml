@@ -1,0 +1,99 @@
+<?xml version="1.0"?>
+  <Attribute name="GlobalAttributes" purpose="This class contains attributes associated with the main window." persistent="true" keyframe="true" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="GlobalAttributes.code">
+    <Enum name="PrecisionType">
+      Float
+      Native
+      Double
+    </Enum>
+    <Enum name="BackendType">
+      VTK
+      EAVL
+      VTKM
+    </Enum>
+    <Field name="sources" label="Sources" type="stringVector">
+    </Field>
+    <Field name="windows" label="windows" type="intVector">
+    </Field>
+    <Field name="activeWindow" label="activeWindow" type="int">
+      1
+    </Field>
+    <Field name="iconifiedFlag" label="iconifiedFlag" type="bool">
+      false
+    </Field>
+    <Field name="autoUpdateFlag" label="autoUpdateFlag" type="bool">
+      false
+    </Field>
+    <Field name="replacePlots" label="replacePlots" type="bool">
+      false
+    </Field>
+    <Field name="applyOperator" label="applyOperator" type="bool">
+      true
+    </Field>
+    <Field name="applySelection" label="applySelection" type="bool">
+      true
+    </Field>
+    <Field name="applyWindow" label="applyWindow" type="bool">
+      false
+    </Field>
+    <Field name="executing" label="executing" type="bool">
+      false
+    </Field>
+    <Field name="windowLayout" label="windowLayout" type="int">
+      1
+    </Field>
+    <Field name="makeDefaultConfirm" label="makeDefaultConfirm" type="bool">
+      true
+    </Field>
+    <Field name="cloneWindowOnFirstRef" label="cloneWindowOnFirstRef" type="bool">
+      false
+    </Field>
+    <Field name="automaticallyAddOperator" label="automaticallyAddOperator" type="bool">
+      false
+    </Field>
+    <Field name="tryHarderCyclesTimes" label="tryHarderCyclesTimes" type="bool">
+      false
+    </Field>
+    <Field name="treatAllDBsAsTimeVarying" label="treatAllDBsAsTimeVarying" type="bool">
+      false
+    </Field>
+    <Field name="createMeshQualityExpressions" label="createMeshQualityExpressions" type="bool">
+      true
+    </Field>
+    <Field name="createTimeDerivativeExpressions" label="createTimeDerivativeExpressions" type="bool">
+      true
+    </Field>
+    <Field name="createVectorMagnitudeExpressions" label="createVectorMagnitudeExpressions" type="bool">
+      true
+    </Field>
+    <Field name="newPlotsInheritSILRestriction" label="New plots inherit SIL restriction" type="bool">
+      true
+    </Field>
+    <Field name="userDirForSessionFiles" label="Use the user directory for session files" type="bool" init="true">
+      false
+    </Field>
+    <Field name="saveCrashRecoveryFile" label="Save a crash recovert file" type="bool">
+      true
+    </Field>
+    <Field name="ignoreExtentsFromDbs" label="ignoreExtentsFromDbs" type="bool">
+      false
+    </Field>
+    <Field name="expandNewPlots" label="Expand New Plots" type="bool">
+      false
+    </Field>
+    <Field name="userRestoreSessionFile" label="Restore Last Session" type="bool">
+      false
+    </Field>
+    <Field name="precisionType" label="precision" type="enum" subtype="PrecisionType">
+      Native
+    </Field>
+    <Field name="backendType" label="backend" type="enum" subtype="BackendType">
+      VTK
+    </Field>
+    <Field name="removeDuplicateNodes" label="Remove Duplicate Nodes" type="bool">
+      false
+    </Field>
+    <Function name="CreateNode" user="false" member="true">
+    </Function>
+    <Function name="SetFromNode" user="false" member="true">
+    </Function>
+  </Attribute>

@@ -1,0 +1,1328 @@
+/*****************************************************************************
+*
+* Copyright (c) 2000 - 2018, Lawrence Livermore National Security, LLC
+* Produced at the Lawrence Livermore National Laboratory
+* LLNL-CODE-442911
+* All rights reserved.
+*
+* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
+* full copyright notice is contained in the file COPYRIGHT located at the root
+* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
+*
+* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
+* modification, are permitted provided that the following conditions are met:
+*
+*  - Redistributions of  source code must  retain the above  copyright notice,
+*    this list of conditions and the disclaimer below.
+*  - Redistributions in binary form must reproduce the above copyright notice,
+*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
+*    documentation and/or other materials provided with the distribution.
+*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
+*    be used to endorse or promote products derived from this software without
+*    specific prior written permission.
+*
+* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
+* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
+* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
+* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
+* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
+* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
+* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
+* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
+* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
+* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
+* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
+* DAMAGE.
+*
+*****************************************************************************/
+
+#include <SurfaceAttributes.h>
+#include <DataNode.h>
+
+//
+// Enum conversion methods for SurfaceAttributes::ColorByType
+//
+
+static const char *ColorByType_strings[] = {
+"Constant", "ZValue"};
+
+std::string
+SurfaceAttributes::ColorByType_ToString(SurfaceAttributes::ColorByType t)
+{
+    int index = int(t);
+    if(index < 0 || index >= 2) index = 0;
+    return ColorByType_strings[index];
+}
+
+std::string
+SurfaceAttributes::ColorByType_ToString(int t)
+{
+    int index = (t < 0 || t >= 2) ? 0 : t;
+    return ColorByType_strings[index];
+}
+
+bool
+SurfaceAttributes::ColorByType_FromString(const std::string &s, SurfaceAttributes::ColorByType &val)
+{
+    val = SurfaceAttributes::Constant;
+    for(int i = 0; i < 2; ++i)
+    {
+        if(s == ColorByType_strings[i])
+        {
+            val = (ColorByType)i;
+            return true;
+        }
+    }
+    return false;
+}
+
+//
+// Enum conversion methods for SurfaceAttributes::Scaling
+//
+
+static const char *Scaling_strings[] = {
+"Linear", "Log", "Skew"
+};
+
+std::string
+SurfaceAttributes::Scaling_ToString(SurfaceAttributes::Scaling t)
+{
+    int index = int(t);
+    if(index < 0 || index >= 3) index = 0;
+    return Scaling_strings[index];
+}
+
+std::string
+SurfaceAttributes::Scaling_ToString(int t)
+{
+    int index = (t < 0 || t >= 3) ? 0 : t;
+    return Scaling_strings[index];
+}
+
+bool
+SurfaceAttributes::Scaling_FromString(const std::string &s, SurfaceAttributes::Scaling &val)
+{
+    val = SurfaceAttributes::Linear;
+    for(int i = 0; i < 3; ++i)
+    {
+        if(s == Scaling_strings[i])
+        {
+            val = (Scaling)i;
+            return true;
+        }
+    }
+    return false;
+}
+
+//
+// Enum conversion methods for SurfaceAttributes::LimitsMode
+//
+
+static const char *LimitsMode_strings[] = {
+"OriginalData", "CurrentPlot"};
+
+std::string
+SurfaceAttributes::LimitsMode_ToString(SurfaceAttributes::LimitsMode t)
+{
+    int index = int(t);
+    if(index < 0 || index >= 2) index = 0;
+    return LimitsMode_strings[index];
+}
+
+std::string
+SurfaceAttributes::LimitsMode_ToString(int t)
+{
+    int index = (t < 0 || t >= 2) ? 0 : t;
+    return LimitsMode_strings[index];
+}
+
+bool
+SurfaceAttributes::LimitsMode_FromString(const std::string &s, SurfaceAttributes::LimitsMode &val)
+{
+    val = SurfaceAttributes::OriginalData;
+    for(int i = 0; i < 2; ++i)
+    {
+        if(s == LimitsMode_strings[i])
+        {
+            val = (LimitsMode)i;
+            return true;
+        }
+    }
+    return false;
+}
+
+// ****************************************************************************
+// Method: SurfaceAttributes::SurfaceAttributes
+//
+// Purpose: 
+//   Init utility for the SurfaceAttributes class.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void SurfaceAttributes::Init()
+{
+    legendFlag = true;
+    lightingFlag = true;
+    surfaceFlag = true;
+    wireframeFlag = false;
+    limitsMode = OriginalData;
+    minFlag = false;
+    maxFlag = false;
+    colorByZFlag = true;
+    scaling = Linear;
+    lineWidth = 0;
+    skewFactor = 1;
+    min = 0;
+    max = 1;
+    invertColorTable = false;
+
+    SurfaceAttributes::SelectAll();
+}
+
+// ****************************************************************************
+// Method: SurfaceAttributes::SurfaceAttributes
+//
+// Purpose: 
+//   Copy utility for the SurfaceAttributes class.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void SurfaceAttributes::Copy(const SurfaceAttributes &obj)
+{
+    legendFlag = obj.legendFlag;
+    lightingFlag = obj.lightingFlag;
+    surfaceFlag = obj.surfaceFlag;
+    wireframeFlag = obj.wireframeFlag;
+    limitsMode = obj.limitsMode;
+    minFlag = obj.minFlag;
+    maxFlag = obj.maxFlag;
+    colorByZFlag = obj.colorByZFlag;
+    scaling = obj.scaling;
+    lineWidth = obj.lineWidth;
+    surfaceColor = obj.surfaceColor;
+    wireframeColor = obj.wireframeColor;
+    skewFactor = obj.skewFactor;
+    min = obj.min;
+    max = obj.max;
+    colorTableName = obj.colorTableName;
+    invertColorTable = obj.invertColorTable;
+
+    SurfaceAttributes::SelectAll();
+}
+
+// Type map format string
+const char *SurfaceAttributes::TypeMapFormatString = SURFACEATTRIBUTES_TMFS;
+const AttributeGroup::private_tmfs_t SurfaceAttributes::TmfsStruct = {SURFACEATTRIBUTES_TMFS};
+
+
+// ****************************************************************************
+// Method: SurfaceAttributes::SurfaceAttributes
+//
+// Purpose: 
+//   Default constructor for the SurfaceAttributes class.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+SurfaceAttributes::SurfaceAttributes() : 
+    AttributeSubject(SurfaceAttributes::TypeMapFormatString),
+    surfaceColor(0, 0, 0), wireframeColor(0, 0, 0), 
+    colorTableName("hot")
+{
+    SurfaceAttributes::Init();
+}
+
+// ****************************************************************************
+// Method: SurfaceAttributes::SurfaceAttributes
+//
+// Purpose: 
+//   Constructor for the derived classes of SurfaceAttributes class.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+SurfaceAttributes::SurfaceAttributes(private_tmfs_t tmfs) : 
+    AttributeSubject(tmfs.tmfs),
+    surfaceColor(0, 0, 0), wireframeColor(0, 0, 0), 
+    colorTableName("hot")
+{
+    SurfaceAttributes::Init();
+}
+
+// ****************************************************************************
+// Method: SurfaceAttributes::SurfaceAttributes
+//
+// Purpose: 
+//   Copy constructor for the SurfaceAttributes class.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+SurfaceAttributes::SurfaceAttributes(const SurfaceAttributes &obj) : 
+    AttributeSubject(SurfaceAttributes::TypeMapFormatString)
+{
+    SurfaceAttributes::Copy(obj);
+}
+
+// ****************************************************************************
+// Method: SurfaceAttributes::SurfaceAttributes
+//
+// Purpose: 
+//   Copy constructor for derived classes of the SurfaceAttributes class.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+SurfaceAttributes::SurfaceAttributes(const SurfaceAttributes &obj, private_tmfs_t tmfs) : 
+    AttributeSubject(tmfs.tmfs)
+{
+    SurfaceAttributes::Copy(obj);
+}
+
+// ****************************************************************************
+// Method: SurfaceAttributes::~SurfaceAttributes
+//
+// Purpose: 
+//   Destructor for the SurfaceAttributes class.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+SurfaceAttributes::~SurfaceAttributes()
+{
+    // nothing here
+}
+
+// ****************************************************************************
+// Method: SurfaceAttributes::operator = 
+//
+// Purpose: 
+//   Assignment operator for the SurfaceAttributes class.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+SurfaceAttributes& 
+SurfaceAttributes::operator = (const SurfaceAttributes &obj)
+{
+    if (this == &obj) return *this;
+
+    SurfaceAttributes::Copy(obj);
+
+    return *this;
+}
+
+// ****************************************************************************
+// Method: SurfaceAttributes::operator == 
+//
+// Purpose: 
+//   Comparison operator == for the SurfaceAttributes class.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+SurfaceAttributes::operator == (const SurfaceAttributes &obj) const
+{
+    // Create the return value
+    return ((legendFlag == obj.legendFlag) &&
+            (lightingFlag == obj.lightingFlag) &&
+            (surfaceFlag == obj.surfaceFlag) &&
+            (wireframeFlag == obj.wireframeFlag) &&
+            (limitsMode == obj.limitsMode) &&
+            (minFlag == obj.minFlag) &&
+            (maxFlag == obj.maxFlag) &&
+            (colorByZFlag == obj.colorByZFlag) &&
+            (scaling == obj.scaling) &&
+            (lineWidth == obj.lineWidth) &&
+            (surfaceColor == obj.surfaceColor) &&
+            (wireframeColor == obj.wireframeColor) &&
+            (skewFactor == obj.skewFactor) &&
+            (min == obj.min) &&
+            (max == obj.max) &&
+            (colorTableName == obj.colorTableName) &&
+            (invertColorTable == obj.invertColorTable));
+}
+
+// ****************************************************************************
+// Method: SurfaceAttributes::operator != 
+//
+// Purpose: 
+//   Comparison operator != for the SurfaceAttributes class.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+SurfaceAttributes::operator != (const SurfaceAttributes &obj) const
+{
+    return !(this->operator == (obj));
+}
+
+// ****************************************************************************
+// Method: SurfaceAttributes::TypeName
+//
+// Purpose: 
+//   Type name method for the SurfaceAttributes class.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+const std::string
+SurfaceAttributes::TypeName() const
+{
+    return "SurfaceAttributes";
+}
+
+// ****************************************************************************
+// Method: SurfaceAttributes::CopyAttributes
+//
+// Purpose: 
+//   CopyAttributes method for the SurfaceAttributes class.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+SurfaceAttributes::CopyAttributes(const AttributeGroup *atts)
+{
+    if(TypeName() != atts->TypeName())
+        return false;
+
+    // Call assignment operator.
+    const SurfaceAttributes *tmp = (const SurfaceAttributes *)atts;
+    *this = *tmp;
+
+    return true;
+}
+
+// ****************************************************************************
+// Method: SurfaceAttributes::CreateCompatible
+//
+// Purpose: 
+//   CreateCompatible method for the SurfaceAttributes class.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+AttributeSubject *
+SurfaceAttributes::CreateCompatible(const std::string &tname) const
+{
+    AttributeSubject *retval = 0;
+    if(TypeName() == tname)
+        retval = new SurfaceAttributes(*this);
+    // Other cases could go here too. 
+
+    return retval;
+}
+
+// ****************************************************************************
+// Method: SurfaceAttributes::NewInstance
+//
+// Purpose: 
+//   NewInstance method for the SurfaceAttributes class.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+AttributeSubject *
+SurfaceAttributes::NewInstance(bool copy) const
+{
+    AttributeSubject *retval = 0;
+    if(copy)
+        retval = new SurfaceAttributes(*this);
+    else
+        retval = new SurfaceAttributes;
+
+    return retval;
+}
+
+// ****************************************************************************
+// Method: SurfaceAttributes::SelectAll
+//
+// Purpose: 
+//   Selects all attributes.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+SurfaceAttributes::SelectAll()
+{
+    Select(ID_legendFlag,       (void *)&legendFlag);
+    Select(ID_lightingFlag,     (void *)&lightingFlag);
+    Select(ID_surfaceFlag,      (void *)&surfaceFlag);
+    Select(ID_wireframeFlag,    (void *)&wireframeFlag);
+    Select(ID_limitsMode,       (void *)&limitsMode);
+    Select(ID_minFlag,          (void *)&minFlag);
+    Select(ID_maxFlag,          (void *)&maxFlag);
+    Select(ID_colorByZFlag,     (void *)&colorByZFlag);
+    Select(ID_scaling,          (void *)&scaling);
+    Select(ID_lineWidth,        (void *)&lineWidth);
+    Select(ID_surfaceColor,     (void *)&surfaceColor);
+    Select(ID_wireframeColor,   (void *)&wireframeColor);
+    Select(ID_skewFactor,       (void *)&skewFactor);
+    Select(ID_min,              (void *)&min);
+    Select(ID_max,              (void *)&max);
+    Select(ID_colorTableName,   (void *)&colorTableName);
+    Select(ID_invertColorTable, (void *)&invertColorTable);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Persistence methods
+///////////////////////////////////////////////////////////////////////////////
+
+// ****************************************************************************
+// Method: SurfaceAttributes::CreateNode
+//
+// Purpose: 
+//   This method creates a DataNode representation of the object so it can be saved to a config file.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+SurfaceAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool forceAdd)
+{
+    if(parentNode == 0)
+        return false;
+
+    SurfaceAttributes defaultObject;
+    bool addToParent = false;
+    // Create a node for SurfaceAttributes.
+    DataNode *node = new DataNode("SurfaceAttributes");
+
+    if(completeSave || !FieldsEqual(ID_legendFlag, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("legendFlag", legendFlag));
+    }
+
+    if(completeSave || !FieldsEqual(ID_lightingFlag, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("lightingFlag", lightingFlag));
+    }
+
+    if(completeSave || !FieldsEqual(ID_surfaceFlag, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("surfaceFlag", surfaceFlag));
+    }
+
+    if(completeSave || !FieldsEqual(ID_wireframeFlag, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("wireframeFlag", wireframeFlag));
+    }
+
+    if(completeSave || !FieldsEqual(ID_limitsMode, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("limitsMode", LimitsMode_ToString(limitsMode)));
+    }
+
+    if(completeSave || !FieldsEqual(ID_minFlag, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("minFlag", minFlag));
+    }
+
+    if(completeSave || !FieldsEqual(ID_maxFlag, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("maxFlag", maxFlag));
+    }
+
+    if(completeSave || !FieldsEqual(ID_colorByZFlag, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("colorByZFlag", colorByZFlag));
+    }
+
+    if(completeSave || !FieldsEqual(ID_scaling, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("scaling", Scaling_ToString(scaling)));
+    }
+
+    if(completeSave || !FieldsEqual(ID_lineWidth, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("lineWidth", lineWidth));
+    }
+
+        DataNode *surfaceColorNode = new DataNode("surfaceColor");
+        if(surfaceColor.CreateNode(surfaceColorNode, completeSave, true))
+        {
+            addToParent = true;
+            node->AddNode(surfaceColorNode);
+        }
+        else
+            delete surfaceColorNode;
+        DataNode *wireframeColorNode = new DataNode("wireframeColor");
+        if(wireframeColor.CreateNode(wireframeColorNode, completeSave, true))
+        {
+            addToParent = true;
+            node->AddNode(wireframeColorNode);
+        }
+        else
+            delete wireframeColorNode;
+    if(completeSave || !FieldsEqual(ID_skewFactor, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("skewFactor", skewFactor));
+    }
+
+    if(completeSave || !FieldsEqual(ID_min, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("min", min));
+    }
+
+    if(completeSave || !FieldsEqual(ID_max, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("max", max));
+    }
+
+    if(completeSave || !FieldsEqual(ID_colorTableName, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("colorTableName", colorTableName));
+    }
+
+    if(completeSave || !FieldsEqual(ID_invertColorTable, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("invertColorTable", invertColorTable));
+    }
+
+
+    // Add the node to the parent node.
+    if(addToParent || forceAdd)
+        parentNode->AddNode(node);
+    else
+        delete node;
+
+    return (addToParent || forceAdd);
+}
+
+// ****************************************************************************
+// Method: SurfaceAttributes::SetFromNode
+//
+// Purpose: 
+//   This method sets attributes in this object from values in a DataNode representation of the object.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+SurfaceAttributes::SetFromNode(DataNode *parentNode)
+{
+    if(parentNode == 0)
+        return;
+
+    DataNode *searchNode = parentNode->GetNode("SurfaceAttributes");
+    if(searchNode == 0)
+        return;
+
+    DataNode *node;
+    if((node = searchNode->GetNode("legendFlag")) != 0)
+        SetLegendFlag(node->AsBool());
+    if((node = searchNode->GetNode("lightingFlag")) != 0)
+        SetLightingFlag(node->AsBool());
+    if((node = searchNode->GetNode("surfaceFlag")) != 0)
+        SetSurfaceFlag(node->AsBool());
+    if((node = searchNode->GetNode("wireframeFlag")) != 0)
+        SetWireframeFlag(node->AsBool());
+    if((node = searchNode->GetNode("limitsMode")) != 0)
+    {
+        // Allow enums to be int or string in the config file
+        if(node->GetNodeType() == INT_NODE)
+        {
+            int ival = node->AsInt();
+            if(ival >= 0 && ival < 2)
+                SetLimitsMode(LimitsMode(ival));
+        }
+        else if(node->GetNodeType() == STRING_NODE)
+        {
+            LimitsMode value;
+            if(LimitsMode_FromString(node->AsString(), value))
+                SetLimitsMode(value);
+        }
+    }
+    if((node = searchNode->GetNode("minFlag")) != 0)
+        SetMinFlag(node->AsBool());
+    if((node = searchNode->GetNode("maxFlag")) != 0)
+        SetMaxFlag(node->AsBool());
+    if((node = searchNode->GetNode("colorByZFlag")) != 0)
+        SetColorByZFlag(node->AsBool());
+    if((node = searchNode->GetNode("scaling")) != 0)
+    {
+        // Allow enums to be int or string in the config file
+        if(node->GetNodeType() == INT_NODE)
+        {
+            int ival = node->AsInt();
+            if(ival >= 0 && ival < 3)
+                SetScaling(Scaling(ival));
+        }
+        else if(node->GetNodeType() == STRING_NODE)
+        {
+            Scaling value;
+            if(Scaling_FromString(node->AsString(), value))
+                SetScaling(value);
+        }
+    }
+    if((node = searchNode->GetNode("lineWidth")) != 0)
+        SetLineWidth(node->AsInt());
+    if((node = searchNode->GetNode("surfaceColor")) != 0)
+        surfaceColor.SetFromNode(node);
+    if((node = searchNode->GetNode("wireframeColor")) != 0)
+        wireframeColor.SetFromNode(node);
+    if((node = searchNode->GetNode("skewFactor")) != 0)
+        SetSkewFactor(node->AsDouble());
+    if((node = searchNode->GetNode("min")) != 0)
+        SetMin(node->AsDouble());
+    if((node = searchNode->GetNode("max")) != 0)
+        SetMax(node->AsDouble());
+    if((node = searchNode->GetNode("colorTableName")) != 0)
+        SetColorTableName(node->AsString());
+    if((node = searchNode->GetNode("invertColorTable")) != 0)
+        SetInvertColorTable(node->AsBool());
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Set property methods
+///////////////////////////////////////////////////////////////////////////////
+
+void
+SurfaceAttributes::SetLegendFlag(bool legendFlag_)
+{
+    legendFlag = legendFlag_;
+    Select(ID_legendFlag, (void *)&legendFlag);
+}
+
+void
+SurfaceAttributes::SetLightingFlag(bool lightingFlag_)
+{
+    lightingFlag = lightingFlag_;
+    Select(ID_lightingFlag, (void *)&lightingFlag);
+}
+
+void
+SurfaceAttributes::SetSurfaceFlag(bool surfaceFlag_)
+{
+    surfaceFlag = surfaceFlag_;
+    Select(ID_surfaceFlag, (void *)&surfaceFlag);
+}
+
+void
+SurfaceAttributes::SetWireframeFlag(bool wireframeFlag_)
+{
+    wireframeFlag = wireframeFlag_;
+    Select(ID_wireframeFlag, (void *)&wireframeFlag);
+}
+
+void
+SurfaceAttributes::SetLimitsMode(SurfaceAttributes::LimitsMode limitsMode_)
+{
+    limitsMode = limitsMode_;
+    Select(ID_limitsMode, (void *)&limitsMode);
+}
+
+void
+SurfaceAttributes::SetMinFlag(bool minFlag_)
+{
+    minFlag = minFlag_;
+    Select(ID_minFlag, (void *)&minFlag);
+}
+
+void
+SurfaceAttributes::SetMaxFlag(bool maxFlag_)
+{
+    maxFlag = maxFlag_;
+    Select(ID_maxFlag, (void *)&maxFlag);
+}
+
+void
+SurfaceAttributes::SetColorByZFlag(bool colorByZFlag_)
+{
+    colorByZFlag = colorByZFlag_;
+    Select(ID_colorByZFlag, (void *)&colorByZFlag);
+}
+
+void
+SurfaceAttributes::SetScaling(SurfaceAttributes::Scaling scaling_)
+{
+    scaling = scaling_;
+    Select(ID_scaling, (void *)&scaling);
+}
+
+void
+SurfaceAttributes::SetLineWidth(int lineWidth_)
+{
+    lineWidth = lineWidth_;
+    Select(ID_lineWidth, (void *)&lineWidth);
+}
+
+void
+SurfaceAttributes::SetSurfaceColor(const ColorAttribute &surfaceColor_)
+{
+    surfaceColor = surfaceColor_;
+    Select(ID_surfaceColor, (void *)&surfaceColor);
+}
+
+void
+SurfaceAttributes::SetWireframeColor(const ColorAttribute &wireframeColor_)
+{
+    wireframeColor = wireframeColor_;
+    Select(ID_wireframeColor, (void *)&wireframeColor);
+}
+
+void
+SurfaceAttributes::SetSkewFactor(double skewFactor_)
+{
+    skewFactor = skewFactor_;
+    Select(ID_skewFactor, (void *)&skewFactor);
+}
+
+void
+SurfaceAttributes::SetMin(double min_)
+{
+    min = min_;
+    Select(ID_min, (void *)&min);
+}
+
+void
+SurfaceAttributes::SetMax(double max_)
+{
+    max = max_;
+    Select(ID_max, (void *)&max);
+}
+
+void
+SurfaceAttributes::SetColorTableName(const std::string &colorTableName_)
+{
+    colorTableName = colorTableName_;
+    Select(ID_colorTableName, (void *)&colorTableName);
+}
+
+void
+SurfaceAttributes::SetInvertColorTable(bool invertColorTable_)
+{
+    invertColorTable = invertColorTable_;
+    Select(ID_invertColorTable, (void *)&invertColorTable);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Get property methods
+///////////////////////////////////////////////////////////////////////////////
+
+bool
+SurfaceAttributes::GetLegendFlag() const
+{
+    return legendFlag;
+}
+
+bool
+SurfaceAttributes::GetLightingFlag() const
+{
+    return lightingFlag;
+}
+
+bool
+SurfaceAttributes::GetSurfaceFlag() const
+{
+    return surfaceFlag;
+}
+
+bool
+SurfaceAttributes::GetWireframeFlag() const
+{
+    return wireframeFlag;
+}
+
+SurfaceAttributes::LimitsMode
+SurfaceAttributes::GetLimitsMode() const
+{
+    return LimitsMode(limitsMode);
+}
+
+bool
+SurfaceAttributes::GetMinFlag() const
+{
+    return minFlag;
+}
+
+bool
+SurfaceAttributes::GetMaxFlag() const
+{
+    return maxFlag;
+}
+
+bool
+SurfaceAttributes::GetColorByZFlag() const
+{
+    return colorByZFlag;
+}
+
+SurfaceAttributes::Scaling
+SurfaceAttributes::GetScaling() const
+{
+    return Scaling(scaling);
+}
+
+int
+SurfaceAttributes::GetLineWidth() const
+{
+    return lineWidth;
+}
+
+const ColorAttribute &
+SurfaceAttributes::GetSurfaceColor() const
+{
+    return surfaceColor;
+}
+
+ColorAttribute &
+SurfaceAttributes::GetSurfaceColor()
+{
+    return surfaceColor;
+}
+
+const ColorAttribute &
+SurfaceAttributes::GetWireframeColor() const
+{
+    return wireframeColor;
+}
+
+ColorAttribute &
+SurfaceAttributes::GetWireframeColor()
+{
+    return wireframeColor;
+}
+
+double
+SurfaceAttributes::GetSkewFactor() const
+{
+    return skewFactor;
+}
+
+double
+SurfaceAttributes::GetMin() const
+{
+    return min;
+}
+
+double
+SurfaceAttributes::GetMax() const
+{
+    return max;
+}
+
+const std::string &
+SurfaceAttributes::GetColorTableName() const
+{
+    return colorTableName;
+}
+
+std::string &
+SurfaceAttributes::GetColorTableName()
+{
+    return colorTableName;
+}
+
+bool
+SurfaceAttributes::GetInvertColorTable() const
+{
+    return invertColorTable;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Select property methods
+///////////////////////////////////////////////////////////////////////////////
+
+void
+SurfaceAttributes::SelectSurfaceColor()
+{
+    Select(ID_surfaceColor, (void *)&surfaceColor);
+}
+
+void
+SurfaceAttributes::SelectWireframeColor()
+{
+    Select(ID_wireframeColor, (void *)&wireframeColor);
+}
+
+void
+SurfaceAttributes::SelectColorTableName()
+{
+    Select(ID_colorTableName, (void *)&colorTableName);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Keyframing methods
+///////////////////////////////////////////////////////////////////////////////
+
+// ****************************************************************************
+// Method: SurfaceAttributes::GetFieldName
+//
+// Purpose: 
+//   This method returns the name of a field given its index.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+std::string
+SurfaceAttributes::GetFieldName(int index) const
+{
+    switch (index)
+    {
+    case ID_legendFlag:       return "legendFlag";
+    case ID_lightingFlag:     return "lightingFlag";
+    case ID_surfaceFlag:      return "surfaceFlag";
+    case ID_wireframeFlag:    return "wireframeFlag";
+    case ID_limitsMode:       return "limitsMode";
+    case ID_minFlag:          return "minFlag";
+    case ID_maxFlag:          return "maxFlag";
+    case ID_colorByZFlag:     return "colorByZFlag";
+    case ID_scaling:          return "scaling";
+    case ID_lineWidth:        return "lineWidth";
+    case ID_surfaceColor:     return "surfaceColor";
+    case ID_wireframeColor:   return "wireframeColor";
+    case ID_skewFactor:       return "skewFactor";
+    case ID_min:              return "min";
+    case ID_max:              return "max";
+    case ID_colorTableName:   return "colorTableName";
+    case ID_invertColorTable: return "invertColorTable";
+    default:  return "invalid index";
+    }
+}
+
+// ****************************************************************************
+// Method: SurfaceAttributes::GetFieldType
+//
+// Purpose: 
+//   This method returns the type of a field given its index.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+AttributeGroup::FieldType
+SurfaceAttributes::GetFieldType(int index) const
+{
+    switch (index)
+    {
+    case ID_legendFlag:       return FieldType_bool;
+    case ID_lightingFlag:     return FieldType_bool;
+    case ID_surfaceFlag:      return FieldType_bool;
+    case ID_wireframeFlag:    return FieldType_bool;
+    case ID_limitsMode:       return FieldType_enum;
+    case ID_minFlag:          return FieldType_bool;
+    case ID_maxFlag:          return FieldType_bool;
+    case ID_colorByZFlag:     return FieldType_bool;
+    case ID_scaling:          return FieldType_enum;
+    case ID_lineWidth:        return FieldType_linewidth;
+    case ID_surfaceColor:     return FieldType_color;
+    case ID_wireframeColor:   return FieldType_color;
+    case ID_skewFactor:       return FieldType_double;
+    case ID_min:              return FieldType_double;
+    case ID_max:              return FieldType_double;
+    case ID_colorTableName:   return FieldType_colortable;
+    case ID_invertColorTable: return FieldType_bool;
+    default:  return FieldType_unknown;
+    }
+}
+
+// ****************************************************************************
+// Method: SurfaceAttributes::GetFieldTypeName
+//
+// Purpose: 
+//   This method returns the name of a field type given its index.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+std::string
+SurfaceAttributes::GetFieldTypeName(int index) const
+{
+    switch (index)
+    {
+    case ID_legendFlag:       return "bool";
+    case ID_lightingFlag:     return "bool";
+    case ID_surfaceFlag:      return "bool";
+    case ID_wireframeFlag:    return "bool";
+    case ID_limitsMode:       return "enum";
+    case ID_minFlag:          return "bool";
+    case ID_maxFlag:          return "bool";
+    case ID_colorByZFlag:     return "bool";
+    case ID_scaling:          return "enum";
+    case ID_lineWidth:        return "linewidth";
+    case ID_surfaceColor:     return "color";
+    case ID_wireframeColor:   return "color";
+    case ID_skewFactor:       return "double";
+    case ID_min:              return "double";
+    case ID_max:              return "double";
+    case ID_colorTableName:   return "colortable";
+    case ID_invertColorTable: return "bool";
+    default:  return "invalid index";
+    }
+}
+
+// ****************************************************************************
+// Method: SurfaceAttributes::FieldsEqual
+//
+// Purpose: 
+//   This method compares two fields and return true if they are equal.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+SurfaceAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
+{
+    const SurfaceAttributes &obj = *((const SurfaceAttributes*)rhs);
+    bool retval = false;
+    switch (index_)
+    {
+    case ID_legendFlag:
+        {  // new scope
+        retval = (legendFlag == obj.legendFlag);
+        }
+        break;
+    case ID_lightingFlag:
+        {  // new scope
+        retval = (lightingFlag == obj.lightingFlag);
+        }
+        break;
+    case ID_surfaceFlag:
+        {  // new scope
+        retval = (surfaceFlag == obj.surfaceFlag);
+        }
+        break;
+    case ID_wireframeFlag:
+        {  // new scope
+        retval = (wireframeFlag == obj.wireframeFlag);
+        }
+        break;
+    case ID_limitsMode:
+        {  // new scope
+        retval = (limitsMode == obj.limitsMode);
+        }
+        break;
+    case ID_minFlag:
+        {  // new scope
+        retval = (minFlag == obj.minFlag);
+        }
+        break;
+    case ID_maxFlag:
+        {  // new scope
+        retval = (maxFlag == obj.maxFlag);
+        }
+        break;
+    case ID_colorByZFlag:
+        {  // new scope
+        retval = (colorByZFlag == obj.colorByZFlag);
+        }
+        break;
+    case ID_scaling:
+        {  // new scope
+        retval = (scaling == obj.scaling);
+        }
+        break;
+    case ID_lineWidth:
+        {  // new scope
+        retval = (lineWidth == obj.lineWidth);
+        }
+        break;
+    case ID_surfaceColor:
+        {  // new scope
+        retval = (surfaceColor == obj.surfaceColor);
+        }
+        break;
+    case ID_wireframeColor:
+        {  // new scope
+        retval = (wireframeColor == obj.wireframeColor);
+        }
+        break;
+    case ID_skewFactor:
+        {  // new scope
+        retval = (skewFactor == obj.skewFactor);
+        }
+        break;
+    case ID_min:
+        {  // new scope
+        retval = (min == obj.min);
+        }
+        break;
+    case ID_max:
+        {  // new scope
+        retval = (max == obj.max);
+        }
+        break;
+    case ID_colorTableName:
+        {  // new scope
+        retval = (colorTableName == obj.colorTableName);
+        }
+        break;
+    case ID_invertColorTable:
+        {  // new scope
+        retval = (invertColorTable == obj.invertColorTable);
+        }
+        break;
+    default: retval = false;
+    }
+
+    return retval;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// User-defined methods.
+///////////////////////////////////////////////////////////////////////////////
+
+// ****************************************************************************
+// Modifications:
+//   Kathleen Bonnell, Thu Mar 28 14:03:19 PST 2002
+//   Removed 'scaling' modifier from min/max and min/maxFlag.
+//
+// ****************************************************************************
+bool
+SurfaceAttributes::ChangesRequireRecalculation(const SurfaceAttributes &obj) const
+{
+    return ((minFlag != obj.minFlag) ||
+            (maxFlag != obj.maxFlag) ||
+            (scaling != obj.scaling) ||
+            (skewFactor != obj.skewFactor) ||
+            (min != obj.min) ||
+            (max != obj.max) );
+}
+

@@ -1,0 +1,11852 @@
+/*****************************************************************************
+*
+* Copyright (c) 2000 - 2018, Lawrence Livermore National Security, LLC
+* Produced at the Lawrence Livermore National Laboratory
+* LLNL-CODE-442911
+* All rights reserved.
+*
+* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
+* full copyright notice is contained in the file COPYRIGHT located at the root
+* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
+*
+* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
+* modification, are permitted provided that the following conditions are met:
+*
+*  - Redistributions of  source code must  retain the above  copyright notice,
+*    this list of conditions and the disclaimer below.
+*  - Redistributions in binary form must reproduce the above copyright notice,
+*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
+*    documentation and/or other materials provided with the distribution.
+*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
+*    be used to endorse or promote products derived from this software without
+*    specific prior written permission.
+*
+* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
+* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
+* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
+* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
+* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
+* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
+* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
+* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
+* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
+* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
+* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
+* DAMAGE.
+*
+*****************************************************************************/
+
+// ************************************************************************* //
+//                            avtGenericDatabase.C                           //
+// ************************************************************************* //
+
+#include <avtGenericDatabase.h>
+#include <algorithm>
+#include <float.h>
+
+#ifdef PARALLEL
+#include <mpi.h>
+#endif
+
+#include <vtkCell.h>
+#include <vtkCellData.h>
+#include <vtkCSGGrid.h>
+#include <vtkDataSet.h>
+#include <vtkDataSetWriter.h>
+#include <vtkDoubleArray.h>
+#include <vtkEnumThreshold.h>
+#include <vtkFloatArray.h>
+#include <vtkIdList.h>
+#include <vtkInformation.h>
+#include <vtkIntArray.h>
+#include <vtkMath.h>
+#include <vtkPointData.h>
+#include <vtkPointSet.h>
+#include <vtkPoints.h>
+#include <vtkPolyData.h>
+#include <vtkPolyDataRelevantPointsFilter.h>
+#include <vtkRectilinearGrid.h>
+#include <vtkStructuredGrid.h>
+#include <vtkTrivialProducer.h>
+#include <vtkUnsignedCharArray.h>
+#include <vtkUnsignedIntArray.h>
+#include <vtkUnstructuredGrid.h>
+#include <vtkUnstructuredGridBoundaryFilter.h>
+#include <vtkUnstructuredGridFacelistFilter.h>
+#include <vtkVisItUtility.h>
+
+#include <snprintf.h>
+#include <visitstream.h>
+
+#include <avtCallback.h>
+#include <avtCommonDataFunctions.h>
+#include <avtDatabaseMetaData.h>
+#include <avtDatasetCollection.h>
+#include <avtDatasetVerifier.h>
+#include <avtDebugDumpOptions.h>
+#include <avtDomainBoundaries.h>
+#include <avtDomainNesting.h>
+#include <avtFileFormatInterface.h>
+#include <avtMemory.h>
+#include <avtMixedVariable.h>
+#include <avtParallel.h>
+#include <avtSILGenerator.h>
+#include <avtSILRestrictionTraverser.h>
+#include <avtSourceFromDatabase.h>
+#include <avtStreamingGhostGenerator.h>
+#include <avtStructuredDomainBoundaries.h>
+#include <avtLocalStructuredDomainBoundaries.h>
+#include <avtStructuredDomainNesting.h>
+#include <avtTransformManager.h>
+#include <avtTypes.h>
+#include <avtUnstructuredPointBoundaries.h>
+#include <PickAttributes.h>
+#include <PickVarInfo.h>
+#ifndef DBIO_ONLY
+#include <DiscreteMIR.h>
+#include <TetMIR.h>
+#include <ZooMIR.h>
+#include <YoungsMIR.h>
+#endif
+
+#include <DebugStream.h>
+#include <BadDomainException.h>
+#include <ImproperUseException.h>
+#include <InvalidDBTypeException.h>
+#include <InvalidVariableException.h>
+#include <NoInputException.h>
+#include <TimingsManager.h>
+
+using     std::string;
+using     std::vector;
+
+
+// Function prototypes for static functions.
+static const char   *GetOriginalVariableName(const avtDatabaseMetaData *,
+                                             const char *);
+void                 AddGhostNodesForSimplifiedNesting(bool *hasNeighbor,
+                       vtkUnstructuredGrid *ugrid, bool addGhostZones,
+                       const int *dims, vtkUnsignedCharArray *ghost_zones);
+
+// static members
+
+// used to track if the matvf/specmv ghost zones warning has been issued.
+bool avtGenericDatabase::issuedOriginalConnectivityWarning = false;
+
+// Percent of memory allowed for the cache.
+const float avtGenericDatabase::maxCachePercent = 0.1f;
+
+// ****************************************************************************
+//  Method: avtGenericDatabase constructor
+//
+//  Arguments:
+//      inter   The interface -- the database will delete this object when it
+//              is done with it.
+//
+//  Programmer: Hank Childs
+//  Creation:   March 1, 2001
+//
+//  Modifications:
+//
+//    Hank Childs, Thu Sep 20 14:19:34 PDT 2001
+//    Give the formats a chance to put stuff in the cache.
+//
+//    Hank Childs, Fri Mar 11 11:24:25 PST 2005
+//    Initialize non-cachable references.
+//
+//    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
+//    Added transform manager
+// ****************************************************************************
+
+avtGenericDatabase::avtGenericDatabase(avtFileFormatInterface *inter)
+{
+    Interface = inter;
+    Interface->SetCache(&cache);
+    xformManager = new avtTransformManager(&cache);
+    lastTimestep = -1;
+    nonCachableVariableReference = NULL;
+    nonCachableMeshReference = NULL;
+}
+
+
+// ****************************************************************************
+//  Method: avtGenericDatabase destructor
+//
+//  Programmer: Hank Childs
+//  Creation:   March 1, 2001
+//
+//  Modifications:
+//
+//    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
+//    Added transform manager
+// ****************************************************************************
+
+avtGenericDatabase::~avtGenericDatabase()
+{
+    if (Interface != NULL)
+    {
+        delete Interface;
+        Interface = NULL;
+    }
+    if (xformManager != NULL)
+    {
+        delete xformManager;
+        xformManager = NULL;
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::GetFilename
+//
+//  Purpose:
+//      Gets the name of the database.
+//
+//  Returns:    The name for the database.
+//
+//  Programmer: Hank Childs
+//  Creation:   March 12, 2002
+//
+// ****************************************************************************
+
+const char *
+avtGenericDatabase::GetFilename(int ts)
+{
+    return Interface->GetFilename(ts);
+}
+
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::SetDatabaseMetaData
+//
+//  Purpose:
+//      Sets the database meta-data using the file format interface.
+//
+//  Arguments:
+//      md        : The meta-data to set.
+//      timeState : The time state that we're interested in.
+//
+//  Programmer: Hank Childs
+//  Creation:   March 2, 2001
+//
+//  Modifications:
+//    Brad Whitlock, Wed May 14 09:15:18 PDT 2003
+//    I added the optional timeState argument.
+//
+//    Hank Childs, Tue Feb 15 07:21:10 PST 2005
+//    Replace forbidden characters of expression language.
+//
+//    Mark C. Miller, Tue May 17 18:48:38 PDT 2005
+//    Added bool arg, forceReadAllCyclesTimes
+//
+//    Jeremy Meredith, Fri Sep  2 15:03:06 PDT 2005
+//    Removed most of the special character replacements, as the expression
+//    language scanner is now accepting most of them inside <>'s.  Replaced
+//    the unacceptable [] <> () with the acceptable {}'s since it seems
+//    more natural than the former _ character used to replace them.
+//
+//    Hank Childs, Sun Mar 16 07:10:49 PDT 2008
+//    Change substitutions for (, }, [, ], <, and > to use an underscore,
+//    instead of { & }, since that was screwing up expressions.
+//
+//    Dave Pugmire, Thu Mar  4 10:27:17 EST 2010
+//    Ensure that naming collisions don't occur. Previously ()[]<> all mapped
+//    to '_'.
+//
+// ****************************************************************************
+
+void
+avtGenericDatabase::SetDatabaseMetaData(avtDatabaseMetaData *md, int timeState,
+    bool forceReadAllCyclesTimes)
+{
+    int t0 = visitTimer->StartTimer();
+    Interface->SetDatabaseMetaData(md, timeState, forceReadAllCyclesTimes);
+    md->ReplaceForbiddenCharacters();
+    visitTimer->StopTimer(t0, "Getting database meta data");
+}
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::SetCycleTimeInDatabaseMetaData
+//
+//  Purpose: Set cycle/time values in metadata for current state
+//
+//  Programmer: Mark C. Miller
+//  Created:    May 31, 3005
+// ****************************************************************************
+
+void
+avtGenericDatabase::SetCycleTimeInDatabaseMetaData(avtDatabaseMetaData *md, int ts)
+{
+    Interface->SetCycleTimeInDatabaseMetaData(md, ts);
+}
+
+// ****************************************************************************
+//  Function: DebugDumpDatasetCollection
+//
+//  Purpose: Utility to include various phases of generic database operations
+//      during a -dump run.
+//
+//  Created: Mark C. Miller, Wed Dec 12 04:58:26 PST 2018
+// ****************************************************************************
+static void
+DebugDumpDatasetCollection(avtDatasetCollection &dsc, int ndoms,
+    string phaseName)
+
+{
+    static int call_count = 0;
+    std::ostringstream oss;
+
+    if (!avtDebugDumpOptions::DumpEnabled())
+        return;
+
+    string dumpDir = avtDebugDumpOptions::GetDumpDirectory();
+    if (dumpDir == "")
+        dumpDir = ".";
+    oss << dumpDir << "/gdb." << std::setfill('0') << std::setw(4) << call_count << "." << phaseName << ".vtk";
+    string dumpFile = oss.str();
+    vtkDataSetWriter *dsw = vtkDataSetWriter::New();
+    dsw->SetFileTypeToASCII();
+    dsw->SetFileName(dumpFile.c_str());
+    for (int i = 0 ; i < ndoms; i++)
+    {
+        vtkDataSet *ds = dsc.GetDataset(i, 0);
+        dsw->SetInputData(i, ds);
+    }
+    dsw->Write();
+    dsw->Delete();
+    call_count++;
+}
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::GetOutput
+//
+//  Purpose:
+//      Takes a database specification and generates the correct dataset
+//      output.
+//
+//  Arguments:
+//      spec    A database specification.
+//      v       An object that represents the validity of the dataset.
+//
+//  Returns:    A domain tree with a dataset for each domain.
+//
+//  Programmer: Hank Childs
+//  Creation:   March 1, 2001
+//
+//  Modifications:
+//
+//    Kathleen Bonnell, Mon Apr  9 14:47:12 PDT 2001
+//    Made this method return avtDataTree_p.
+//
+//    Hank Childs, Tue May 22 10:47:31 PDT 2001
+//    Use a database specification instead of a SIL restriction.
+//
+//    Hank Childs, Tue Jul 24 14:17:14 PDT 2001
+//    Add data validity argument.
+//
+//    Hank Childs, Fri Oct  5 15:30:57 PDT 2001
+//    Account for file formats that do their own material selection.
+//
+//    Kathleen Bonnell, Fri Oct 19 15:33:35 PDT 2001
+//    Create domain labels for output data tree when requested.
+//
+//    Hank Childs, Tue Oct 23 09:18:43 PDT 2001
+//    Add support for reading in multiple variables.
+//
+//    Eric Brugger, Mon Nov  5 13:32:49 PST 2001
+//    Modified to always compile the timing code.
+//
+//    Jeremy Meredith, Wed Nov 21 15:11:45 PST 2001
+//    Disabled ghost zone communication temporarily.
+//
+//    Hank Childs, Wed Nov 28 13:01:00 PST 2001
+//    Do not communicate ghost zones if they are not appropriate.
+//
+//    Kathleen Bonnell,  Fri Nov 30 10:36:41 PST 2001
+//    Create Original Zones array if data spec specifies they are needed.
+//
+//    Jeremy Meredith, Thu Dec 13 11:42:01 PST 2001
+//    Re-enabled ghost zone communication again.
+//
+//    Hank Childs, Wed Dec 19 09:37:04 PST 2001
+//    Added support for species selection.
+//
+//    Kathleen Bonnell, Mon May 20 17:01:31 PDT 2002
+//    Added 'domains' parameter to CreateOriginalZones.
+//
+//    Hank Childs, Mon Sep 30 17:56:43 PDT 2002
+//    Add support for creating structured indices.
+//
+//    Hank Childs, Fri Nov 22 16:39:13 PST 2002
+//    Use the SIL restriction traverser since SIL restriction routines were
+//    antiquated.
+//
+//    Kathleen Bonnell, Fri Dec  6 12:10:04 PST 2002
+//    Add OriginalCellsArray whenever MatSelect will be performed,
+//    to ensure that pick will operate correctly.
+//
+//    Kathleen Bonnell, Wed Mar 26 13:03:54 PST 2003
+//    Tell the MetaData when the originalCells array has been added.
+//
+//    Jeremy Meredith, Thu Jun 12 09:06:49 PDT 2003
+//    Added the data spec to the input of PopulateDataObjectInformation.
+//
+//    Jeremy Meredith, Sat Aug  2 20:40:04 PDT 2003
+//    If any processor decides to do material selection, they all should.
+//    Unified shouldDoMatSelect across all processors.
+//
+//    Hank Childs, Wed Nov 12 10:34:57 PST 2003
+//    Communicate ghost zones after applying AMR nesting.  This is because it
+//    is difficult to do them in the opposite order (nesting must be on orig
+//    indices), but fairly straight-forward to do them in new order.
+//
+//    Hank Childs, Fri Jan  9 13:46:43 PST 2004
+//    Use a dataset verifier before passing data into routines like the MIR.
+//
+//    Kathleen Bonnell, Fri May 28 18:31:15 PDT 2004
+//    Add OriginalNodesArray whenever MatSelect will be performed,
+//    to ensure that pick will operate correctly.
+//
+//    Kathleen Bonnell, Wed Jun 23 17:04:23 PDT 2004
+//    Add TRY-CATCH, so that no process skips the parallel communication.
+//
+//    Hank Childs, Wed Aug 11 08:14:16 PDT 2004
+//    Only create ghost data if it is requested.
+//
+//    Mark C. Miller, Thu Aug 12 12:10:37 PDT 2004
+//    I changed behavior when processors have errors during the read phase.
+//    Previously, only the err'ing processor knew about and would return
+//    early. Since we are doing an MPI_Allreduce for the mat select mode,
+//    I simple tacked on a second int indicating if anyone had errors
+//    and included that in the all reduce as well. Now, if any processor
+//    encounters an error during the read phase, they will are return
+//    together.
+//
+//    Hank Childs, Thu Sep 23 09:28:58 PDT 2004
+//    Add support for getting global ids.
+//
+//    Mark C. Miller, Tue Sep 28 19:57:42 PDT 2004
+//    Added vector of bools for data selections that plugins apply
+//
+//    Kathleen Bonnell, Wed Dec 15 08:41:17 PST 2004
+//    Changed 'vector<int>' to 'intVector' and 'vector<bool>' to 'boolVector'.
+//
+//    Hank Childs, Sun Feb 27 14:47:45 PST 2005
+//    Pass "allDomains" to CommunicateGhosts.
+//
+//    Hank Childs, Sat Mar  5 19:26:05 PST 2005
+//    Do not do collective communication if we are in DLB mode.
+//
+//    Hank Childs, Mon Mar 28 15:14:39 PST 2005
+//    Add some more timing information.
+//
+//    Jeremy Meredith, Mon Aug 28 16:43:10 EDT 2006
+//    Added support for enumerated scalar selections.
+//
+//    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
+//    Moved GetMetaData to top of routine so transform manager would have it
+//    Changed uses of GetMetaData()-> to md->. Added call to TransformDataset
+//
+//    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
+//    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
+//
+//    Hank Childs, Fri Mar  2 13:06:58 PST 2007
+//    Do not check for "MustMaintainOriginalConnectivity()" here.  If we wait
+//    until a lower level, it makes it easier to issue an error message.
+//
+//    Kathleen Bonnell, Thu Jun 21 17:09:42 PDT 2007
+//    CreateAMRIndices when requested.
+//
+//    Hank Childs, Tue Jul 31 08:23:22 PDT 2007
+//    Add support for a simplified representation of nesting information.
+//
+//    Hank Childs, Fri Sep 28 10:36:39 PDT 2007
+//    If we have a subset plot with secondary variables defined on it, we can't
+//    do simplified nesting.
+//
+//    Hank Childs, Mon Sep 15 16:28:51 PST 2008
+//    Manage memory for non-cachable vars.
+//
+//    Hank Childs, Tue Jan 20 16:33:40 CST 2009
+//    Add a stage for "waiting for all processors to finish I/O".
+//
+//    Tom Fogal, Sun May  3 19:50:37 MDT 2009
+//    Don't do any ghost calculations when there are no domains.
+//
+//    Tom Fogal, Mon May  4 17:38:17 MDT 2009
+//    Make sure all processors agree about whether or not they should
+//    synchronize ghost and nesting information.  This replaces the `blind
+//    skip' logic used previously.
+//
+//    Hank Childs, Mon Jul 20 07:37:23 PDT 2009
+//    Only apply the collective test for simplified nesting if that field is
+//    in the contract.  Also, disable the collective test if we are doing
+//    on demand streaming.
+//
+//    Mark C. Miller, Mon Nov  9 09:38:49 PST 2009
+//    Pushed transform manager work down one level from here, where it
+//    operates on a dataset collection (and means for example that all
+//    domains could be read in double precision before any one domain is
+//    converted to float) to inside ReadDataset. Doh! Why didn't I think
+//    of that before.
+//
+//    Hank Childs, Mon Nov 22 10:47:22 PST 2010
+//    Call PopulateDataObjectInfo at the beginning of the method as well ...
+//    this makes sure the variable list is up-to-date when we calculate
+//    extents ... and this extents calculation happens before the PopDBObjInfo
+//    at the end.
+//
+//    Hank Childs, Sun Nov 28 16:51:28 PST 2010
+//    Pass meshname and time step to MergeExtents ... this gives it enough
+//    information to cache.
+//
+//    Hank Childs, Wed Dec 22 15:14:33 PST 2010
+//    Tell the file formats whether or not we are streaming.
+//
+//    Eric Brugger, Wed Jul 25 08:35:11 PDT 2012
+//    I modified the multi-pass discretizion of CSG meshes to only process
+//    a portion of the mesh on each processor instead of the entire mesh.
+//
+//    Mark C. Miller, Wed Dec 12 04:58:53 PST 2018
+//    Add judicious calls to DebugDumpDatasetCollection
+// ****************************************************************************
+
+avtDataTree_p
+avtGenericDatabase::GetOutput(avtDataRequest_p spec,
+                              avtSourceFromDatabase *src)
+{
+    avtDataValidity &validity = src->GetOutput()->GetInfo().GetValidity();
+    bool canDoCollectiveCommunication = !validity.AreWeStreaming();
+    Interface->DoingStreaming(validity.AreWeStreaming());
+
+    int timerHandle = visitTimer->StartTimer();
+    int timeStep = spec->GetTimestep();
+    avtDataObject_p dob = src->GetOutput();
+    avtDatabaseMetaData *md = GetMetaData(timeStep);
+
+    //
+    // We call PopDataObjInfo twice in this method.  This time we do it so
+    // that the variable list can be updated.  We need that so that MergeExtents
+    // will be right.
+    //
+    vector<bool> dummy;
+    PopulateDataObjectInformation(dob, spec->GetVariable(), timeStep,
+                                  dummy, spec);
+
+    UpdateInternalState(timeStep);
+
+    //
+    // Determine which domains the SIL restriction has turned on.
+    //
+    avtSILRestriction_p silr = spec->GetRestriction();
+    avtSILRestrictionTraverser trav(silr);
+    intVector domains, allDomains;
+    std::string meshname = md->MeshForVar(spec->GetVariable());
+    if (md->GetMesh(meshname) != NULL &&
+        md->GetMesh(meshname)->meshType == AVT_CSG_MESH)
+    {
+        trav.GetDomainListAllProcs(domains);
+    }
+    else
+    {
+        trav.GetDomainList(domains);
+    }
+    trav.GetDomainListAllProcs(allDomains);
+
+    //
+    // Set up a data tree for each of the domains.
+    //
+    int                    nDomains = (int)domains.size();
+    avtDatasetCollection   datasetCollection(nDomains);
+
+    bool shouldDoMatSelect = false;
+    bool hadError = false;
+    boolVector selectionsApplied;
+    TRY
+    {
+        int i;
+
+        //
+        // Add secondary variables from enumeration selections
+        //
+        int enumCount = trav.GetEnumerationCount();
+        for (i = 0 ; i < enumCount ; i++)
+        {
+            bool needSelection;
+            vector<bool> selection;
+            string varname;
+            needSelection = trav.GetEnumeration(i, selection, varname);
+            if (needSelection)
+                spec->AddSecondaryVariable(varname.c_str());
+        }
+
+        //
+        // This is the primary routine that reads things in from disk.
+        //
+        ReadDataset(datasetCollection, domains, spec, src, selectionsApplied);
+        DebugDumpDatasetCollection(datasetCollection, nDomains, "output.ReadDataset");
+
+        //
+        // Now that we have read things in from disk, verify that the dataset
+        // is valid, since routines like the MIR downstream will assume they are.
+        //
+        int t1 = visitTimer->StartTimer();
+        avtDatasetVerifier verifier;
+        vtkDataSet **ds_list = new vtkDataSet*[nDomains];
+        for (i = 0 ; i < nDomains ; i++)
+        {
+            ds_list[i] = datasetCollection.GetDataset(i, 0);
+        }
+        verifier.VerifyDatasets(nDomains, ds_list, domains);
+        delete [] ds_list;
+        visitTimer->StopTimer(t1, "Verifying dataset");
+
+        //
+        // Do species selection if appropriate.
+        //
+        boolVector speciesList;
+        if (trav.GetSpecies(speciesList))
+        {
+            int t2 = visitTimer->StartTimer();
+            SpeciesSelect(datasetCollection, domains, speciesList, spec, src);
+            visitTimer->StopTimer(t2, "Species selection");
+        }
+
+        //
+        //  HACK!!! Pick requires original cells array whenever
+        //  MaterialSelection has occurred.  Rather than incur the expense of
+        //  re-execution at StartPick, always send the array when MatSelected,
+        //  until a better solution is derived.
+        //
+        for (i = 0 ; i < datasetCollection.GetNDomains() ; i++)
+        {
+            shouldDoMatSelect = shouldDoMatSelect ||
+                                datasetCollection.needsMatSelect[i];
+        }
+
+        //
+        // Do enumeration selection if appropriate
+        //
+        for (i = 0 ; i < enumCount ; i++)
+        {
+            bool needSelection;
+            vector<bool> selection;
+            string varname;
+            needSelection = trav.GetEnumeration(i, selection, varname);
+            if (needSelection)
+            {
+                int t3 = visitTimer->StartTimer();
+                EnumScalarSelect(datasetCollection, selection, md, varname);
+                visitTimer->StopTimer(t3, "Enumeration selection");
+            }
+        }
+    }
+    CATCH2(VisItException, e)
+    {
+        //
+        //  Only set an error condition, the early exit from this method
+        //  is after the parallel communication.  There may be a better
+        //  way to handle this.
+        //
+        hadError = true;
+        debug1 << "Catching the exception at the generic database level."
+               << endl;
+        avtDataValidity &v = src->GetOutput()->GetInfo().GetValidity();
+        v.ErrorOccurred();
+        string tmp = e.Message(); // Otherwise there is a const problem.
+        v.SetErrorMessage(tmp);
+    }
+    ENDTRY
+
+#ifdef PARALLEL
+    int t1 = visitTimer->StartTimer();
+    if (canDoCollectiveCommunication)
+    {
+        const char *progressStr="Waiting for all processors to finish I/O";
+        src->DatabaseProgress(0, 0, progressStr);
+        //
+        // If any processor decides to do material selection, they all should
+        // If any processor had an error, they all should return
+        //
+        int tmp[2], rtmp[2];
+        tmp[0] = (shouldDoMatSelect ? 1 : 0);
+        tmp[1] = (hadError ? 1 : 0);
+        MPI_Allreduce(tmp, rtmp, 2, MPI_INT, MPI_MAX, VISIT_MPI_COMM);
+        shouldDoMatSelect = bool(rtmp[0]);
+        hadError = bool(rtmp[1]);
+        src->DatabaseProgress(1, 0, progressStr);
+    }
+    visitTimer->StopTimer(t1, "Waiting for all processors to catch up");
+#endif
+
+    if (hadError)
+    {
+        avtDataTree_p rv = new avtDataTree();
+        return rv;
+    }
+
+    if (shouldDoMatSelect)
+    {
+        spec->TurnZoneNumbersOn();
+        spec->TurnNodeNumbersOn();
+    }
+
+    // clear the present ghost zone types state in the db metadata
+    // (this is the current path to get things set in the data atts...)
+    md->ClearGhostTypesPresent(meshname);
+
+    bool alreadyDidNesting    = false;
+    bool alreadyDidGhosts     = false;
+    bool didSimplifiedNesting = false;
+    if (spec->GetSimplifiedNestingRepresentation())
+    {
+        int t0 = visitTimer->StartTimer();
+        if (!shouldDoMatSelect &&
+            !spec->NeedNodeNumbers() &&
+            !spec->NeedZoneNumbers() &&
+            !spec->NeedGlobalNodeNumbers() &&
+            !spec->MayRequireZones() &&
+            !spec->MayRequireNodes() &&
+            !spec->NeedStructuredIndices() &&
+            (spec->GetSecondaryVariables().size() == 0) &&
+            !(spec->NeedAMRIndices() >= 0) &&
+            (spec->GetDesiredGhostDataType() == NO_GHOST_DATA
+             || spec->GetDesiredGhostDataType() == GHOST_NODE_DATA))
+        {
+            if (CreateSimplifiedNestingRepresentation(datasetCollection,
+                                     domains, allDomains, src, spec))
+            {
+                alreadyDidNesting    = true;
+                alreadyDidGhosts     = true;
+                didSimplifiedNesting = true;
+            }
+
+        }
+        visitTimer->StopTimer(t0, "Creating simplified nesting rep.");
+        // Figure out the nesting globally to make sure all processors will
+        // synchronously communicate (or not) later.
+        // Stuff them into ints first.  MPI_MAX isn't defined on MPI_BOOLs.
+        if (canDoCollectiveCommunication)
+        {
+            alreadyDidNesting = static_cast<bool>
+                (UnifyMaximumValue(static_cast<int>(alreadyDidNesting)));
+            alreadyDidGhosts = static_cast<bool>
+                (UnifyMaximumValue(static_cast<int>(alreadyDidGhosts)));
+        }
+    }
+
+    //
+    // Add node numbers if requested.
+    //
+    if (spec->NeedNodeNumbers())
+    {
+        int t0 = visitTimer->StartTimer();
+        CreateOriginalNodes(datasetCollection, domains, src);
+        //
+        // Tell everything downstream that we do have original cells.
+        //
+        string meshname = md->MeshForVar(spec->GetVariable());
+        md->SetContainsOriginalNodes(meshname, true);
+        visitTimer->StopTimer(t0, "Creating original node numbers");
+    }
+
+    //
+    // Add zone numbers if requested.
+    //
+    if (spec->NeedZoneNumbers())
+    {
+        int t0 = visitTimer->StartTimer();
+        CreateOriginalZones(datasetCollection, domains, src);
+        //
+        // Tell everything downstream that we do have original cells.
+        //
+        string meshname = md->MeshForVar(spec->GetVariable());
+        md->SetContainsOriginalCells(meshname, true);
+        visitTimer->StopTimer(t0, "Creating original zone numbers");
+    }
+
+    //
+    // Add global node numbers if requested.
+    //
+    if (spec->NeedGlobalNodeNumbers())
+    {
+        int t0 = visitTimer->StartTimer();
+        CreateGlobalNodes(datasetCollection, domains, src, spec);
+        visitTimer->StopTimer(t0, "Creating global node numbers");
+    }
+
+    //
+    // Add zone numbers if requested.
+    //
+    if (spec->NeedGlobalZoneNumbers())
+    {
+        int t0 = visitTimer->StartTimer();
+        CreateGlobalZones(datasetCollection, domains, src, spec);
+        visitTimer->StopTimer(t0, "Creating global zone numbers");
+    }
+
+    //
+    // Add the indices for a structured mesh if requested.
+    //
+    if (spec->NeedStructuredIndices())
+    {
+        int t0 = visitTimer->StartTimer();
+        CreateStructuredIndices(datasetCollection, src);
+        //
+        // Tell everything downstream that we do have original cells.
+        //
+        string meshname = md->MeshForVar(spec->GetVariable());
+        md->SetContainsOriginalCells(meshname, true);
+        visitTimer->StopTimer(t0, "Creating structured indices");
+    }
+
+    if (spec->NeedAMRIndices() >= 0)
+    {
+        int t0 = visitTimer->StartTimer();
+        CreateAMRIndices(datasetCollection, domains, spec, src,
+                         spec->NeedAMRIndices());
+        //
+        // Tell everything downstream that we do have original cells.
+        //
+        string meshname = md->MeshForVar(spec->GetVariable());
+        md->SetContainsOriginalCells(meshname, true);
+        visitTimer->StopTimer(t0, "Creating AMR indices");
+    }
+
+    //
+    // Apply ghosting when domains nest within other domains (AMR meshes)
+    //
+    if (!alreadyDidNesting)
+    {
+        int t0 = visitTimer->StartTimer();
+        ApplyGhostForDomainNesting(datasetCollection, domains, allDomains, spec,
+                                   canDoCollectiveCommunication);
+        visitTimer->StopTimer(t0, "Doing ghost nesting");
+    }
+
+    //
+    // Communicates ghost zones if they are not present and we have domain
+    // boundary information.
+    //
+    bool didGhosts = false;
+
+    avtGhostDataType ghostType = spec->GetDesiredGhostDataType();
+    if (shouldDoMatSelect)
+        ghostType = GHOST_ZONE_DATA;
+
+    bool ghostDataIsNeeded = false;
+    if (ghostType != NO_GHOST_DATA)
+        ghostDataIsNeeded = true;
+
+    if (ghostDataIsNeeded && !alreadyDidGhosts)
+    {
+        DebugDumpDatasetCollection(datasetCollection, nDomains, "input.CommunicateGhost");
+        didGhosts = CommunicateGhosts(ghostType, datasetCollection, domains,
+                                      spec, src, allDomains,
+                                      canDoCollectiveCommunication);
+    }
+
+    //
+    // Finally, do the material selection.
+    //
+    MaterialSelect(datasetCollection, domains, spec, src, didGhosts);
+
+    //
+    // Now make something that AVT will understand downstream.
+    //
+    avtDataTree_p rv = datasetCollection.AssembleDataTree(domains);
+
+    char str[1024];
+    sprintf(str, "Getting dataset for %s", spec->GetVariable());
+    visitTimer->StopTimer(timerHandle, str);
+    visitTimer->DumpTimings();
+
+    //
+    // As we have actually read the data, our opinion on what the data looked
+    // like may have changed slightly (we may have decided it had ghost zones
+    // for example), so call this again.
+    //
+    if (nDomains == 0)
+        dob->GetInfo().GetValidity().SetHasEverOwnedAnyDomain(false);
+    if (didSimplifiedNesting)
+        dob->GetInfo().GetAttributes().SetOrigElementsRequiredForPick(true);
+    PopulateDataObjectInformation(dob, spec->GetVariable(), timeStep,
+        selectionsApplied, spec);
+
+    ManageMemoryForNonCachableVar(NULL);
+    ManageMemoryForNonCachableMesh(NULL);
+
+    DebugDumpDatasetCollection(datasetCollection, nDomains, "output.GetOutput");
+
+    return rv;
+}
+
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::UpdateInternalState
+//
+//  Purpose:
+//      Do some internal bookkeeping.  This is mostly to handle current
+//      timestep information.
+//
+//  Arguments:
+//      ts      The incoming timestep.
+//
+//  Programmer: Hank Childs
+//  Creation:   October 26, 2001
+//
+//  Modifications:
+//
+//    Hank Childs, Mon Jan  7 17:34:00 PST 2002
+//    Clear out the cache when the timestep changes.
+//
+//    Hank Childs, Mon Aug 25 16:16:01 PDT 2008
+//    When changing time slices, clear out the cache of the transform
+//    manager as well.
+//
+// ****************************************************************************
+
+void
+avtGenericDatabase::UpdateInternalState(int ts)
+{
+    //
+    // We will run out of file descriptors if we are not careful!
+    //
+    if (ts != lastTimestep)
+    {
+        if (lastTimestep != -1)
+        {
+            int allDomains = -1;
+            debug4 << "Generic database freeing up resources "
+                   << " (file descriptors, memory) for timestep "
+                   << lastTimestep << endl;
+            Interface->FreeUpResources(lastTimestep, allDomains);
+            cache.ClearTimestep(lastTimestep);
+            xformManager->ClearTimestep(lastTimestep);
+        }
+    }
+    lastTimestep = ts;
+}
+
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::FreeUpResources
+//
+//  Purpose:
+//      Release any system resources that we're using.
+//
+//  Programmer: Sean Ahern
+//  Creation:   Tue May 21 12:00:49 PDT 2002
+//
+//  Modifications:
+//
+//    Hank Childs, Fri Mar 11 11:24:25 PST 2005
+//    Free up the memory references to non-cachable variables.
+//
+// ****************************************************************************
+
+void
+avtGenericDatabase::FreeUpResources(void)
+{
+    debug4 << "Generic database freeing up resources (file descriptors, "
+           << "memory)" << endl;
+    Interface->FreeUpResources(-1, -1);
+    xformManager->FreeUpResources(lastTimestep);
+    cache.ClearTimestep(lastTimestep);
+    ManageMemoryForNonCachableVar(NULL);
+    ManageMemoryForNonCachableMesh(NULL);
+}
+
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::ManageMemoryForNonCachableVar
+//
+//  Purpose:
+//      Some variables are non-cachable.  But we own their memory and want
+//      to do bookkeeping right away.  This is a spot where you can register
+//      a variable and it will be kept until the method is called again.
+//      It is assumed that by this time the variable has been associated with
+//      a data set that now owns it.
+//
+//  Programmer: Hank Childs
+//  Creation:   March 11, 2005
+//
+// ****************************************************************************
+
+void
+avtGenericDatabase::ManageMemoryForNonCachableVar(vtkDataArray *v)
+{
+    if (nonCachableVariableReference != NULL)
+    {
+        nonCachableVariableReference->Delete();
+        nonCachableVariableReference = NULL;
+    }
+    nonCachableVariableReference = v;
+    if (nonCachableVariableReference != NULL)
+        nonCachableVariableReference->Register(NULL);
+}
+
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::ManageMemoryForNonCachableMesh
+//
+//  Purpose:
+//      Some meshes are non-cachable.  But we own their memory and want
+//      to do bookkeeping right away.  This is a spot where you can register
+//      a mesh and it will be kept until the method is called again.
+//      It is assumed that by this time the variable has been associated with
+//      a data set that now owns it.
+//
+//  Programmer: Hank Childs
+//  Creation:   March 11, 2005
+//
+// ****************************************************************************
+
+void
+avtGenericDatabase::ManageMemoryForNonCachableMesh(vtkDataSet *v)
+{
+    if (nonCachableMeshReference != NULL)
+    {
+        nonCachableMeshReference->Delete();
+        nonCachableMeshReference = NULL;
+    }
+    nonCachableMeshReference = v;
+    if (nonCachableMeshReference != NULL)
+        nonCachableMeshReference->Register(NULL);
+}
+
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::GetDataset
+//
+//  Purpose:
+//      Determines what the dataset type is requested (scalar var, material,
+//      etc.) and calls the appropriate routine.
+//
+//  Arguments:
+//      varname      The variable for that domain.
+//      ts           The timestep of interest.
+//      domain       The domain of the dataset to retrieve.
+//      matname      The material of interest (may be _all).
+//      vars2nd      The list of secondary variables.
+//      src          The source from a database.
+//
+//  Returns:         The dataset for that block.
+//
+//  Programmer:  Hank Childs
+//  Creation:    November 7, 2000
+//
+//  Modifications:
+//
+//    Hank Childs, Thu Mar  1 09:20:52 PST 2001
+//    Moved from avtDatabase to avtGenericDatabase.
+//
+//    Hank Childs, Mon Mar 19 16:35:56 PST 2001
+//    Added logic for vector datasets.
+//
+//    Hank Childs, Tue Mar 27 08:59:23 PST 2001
+//    Added logic for mesh datasets.
+//
+//    Hank Childs, Fri Oct  5 15:52:13 PDT 2001
+//    Added a argument for the database source.  Also an argument for the
+//    material name.
+//
+//    Hank Childs, Tue Oct 23 09:18:43 PDT 2001
+//    Added support for secondary variables.
+//
+//    Hank Childs, Mon Nov  5 16:54:18 PST 2001
+//    Extend support for secondary variables to include vectors.
+//
+//    Hank Childs, Fri Aug  1 21:49:01 PDT 2003
+//    Treat curves like meshes.
+//
+//    Hank Childs, Mon Sep 22 07:48:34 PDT 2003
+//    Added support for tensors.
+//
+//    Brad Whitlock, Sat Apr 2 00:46:37 PDT 2005
+//    Added support for labels.
+//
+//    Mark C. Miller, Tue Apr  5 10:30:16 PDT 2005
+//    Added support for data type conversion
+//
+//    Hank Childs, Mon Jun 27 16:24:23 PDT 2005
+//    Added data specification argument.
+//
+//    Hank Childs, Tue Jul 19 14:54:22 PDT 2005
+//    Add support for arrays.
+//
+//    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//    Passed data spec down Get function call tree
+//
+//    Eric Brugger, Wed Nov 19 08:49:48 PST 2014
+//    I reduced the number of reads of CSG meshes to only once per CSG mesh
+//    instead of once per region in order to reduce the number of times the
+//    same CSG mesh was cached. Typically there is one CSG mesh with many
+//    regions, so this is a significant saving. CSG meshes with thousands
+//    of regions were exhausting memory in the previous scheme.
+//
+// ****************************************************************************
+
+vtkDataSet *
+avtGenericDatabase::GetDataset(const char *varname, int ts, int domain,
+                        const char *matname, const vector<CharStrRef> &vars2nd,
+                        avtDataRequest_p spec,avtSourceFromDatabase *src)
+{
+    avtDatabaseMetaData *md = GetMetaData(ts);
+    md->ConvertCSGDomainToBlockAndRegion(varname, &domain, 0);
+
+    vtkDataSet *rv = NULL;
+    avtVarType type = GetMetaData(ts)->DetermineVarType(varname);
+
+    if (strcmp(matname, "_all") == 0)
+    {
+        Interface->TurnMaterialSelectionOff();
+    }
+    else
+    {
+        Interface->TurnMaterialSelectionOn(matname);
+    }
+
+    switch (type)
+    {
+      case AVT_SCALAR_VAR:
+        rv = GetScalarVarDataset(varname, ts, domain, matname, spec);
+        break;
+
+      case AVT_VECTOR_VAR:
+        rv = GetVectorVarDataset(varname, ts, domain, matname, spec);
+        break;
+
+      case AVT_TENSOR_VAR:
+        rv = GetTensorVarDataset(varname, ts, domain, matname, spec);
+        break;
+
+      case AVT_SYMMETRIC_TENSOR_VAR:
+        rv = GetSymmetricTensorVarDataset(varname, ts, domain, matname, spec);
+        break;
+
+      case AVT_ARRAY_VAR:
+        rv = GetArrayVarDataset(varname, ts, domain, matname, spec);
+        break;
+
+      case AVT_LABEL_VAR:
+        rv = GetLabelVarDataset(varname, ts, domain, matname, spec);
+        break;
+
+      case AVT_MATERIAL:
+        rv = GetMaterialDataset(varname, ts, domain, matname, spec);
+        break;
+
+      case AVT_MESH:
+      case AVT_CURVE:
+        rv = GetMeshDataset(varname, ts, domain, matname, spec);
+        break;
+
+      case AVT_MATSPECIES:
+        rv = GetSpeciesDataset(varname, ts, domain, matname, spec);
+        break;
+
+      default:
+        EXCEPTION1(InvalidVariableException, varname);
+    }
+
+    if (rv != NULL && vars2nd.size() > 0)
+    {
+        AddSecondaryVariables(rv, ts, domain, matname, vars2nd, spec);
+    }
+
+    Interface->TurnMaterialSelectionOff();
+
+    //
+    // Make sure that every domain we read has its extents merged into the
+    // extents for all the dataset.
+    //
+    string meshname  = GetMetaData(ts)->MeshForVar(varname);
+    src->MergeExtents(rv, domain, ts, meshname.c_str());
+
+    return rv;
+}
+
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::GetScalarVarDataset
+//
+//  Purpose:
+//      Constructs a dataset for a scalar variable.
+//
+//  Arguments:
+//      varname      The variable for that domain.
+//      ts           The timestep of interest.
+//      domain       The domain of the dataset to retrieve.
+//      material     The name of the material we are getting.
+//
+//  Returns:         The dataset for that block.
+//
+//  Programmer: Hank Childs
+//  Creation:   November 7, 2000
+//
+//  Modifications:
+//
+//    Hank Childs, Thu Mar  1 09:20:52 PST 2001
+//    Moved from avtDatabase to avtGenericDatabase.
+//
+//    Hank Childs, Mon Oct  8 10:54:30 PDT 2001
+//    Added material argument.
+//
+//    Hank Childs, Thu Oct 11 13:04:25 PDT 2001
+//    Added support for NULL meshes.
+//
+//    Hank Childs, Tue Oct 23 09:18:43 PDT 2001
+//    Added support for secondary variables.
+//
+//    Hank Childs, Thu Oct 25 15:26:08 PDT 2001
+//    Allow for file formats that don't have domains.
+//
+//    Hank Childs, Mon Nov  5 16:55:49 PST 2001
+//    Remove support of secondary variables in this routine in favor of a more
+//    general routine that supports vectors.
+//
+//    Kathleen Bonnell, Fri Feb  8 08:48:06 PST 2002
+//    vtkScalars has been deprecated in VTK 4.0.  Use vtkDataArray instead.
+//
+//    Jeremy Meredith, Wed Mar 19 12:22:20 PST 2003
+//    Allow for a NULL var as well as a NULL mesh.
+//
+//    Mark C. Miller, Mon Jan 10 14:06:06 PST 2005
+//    Changed order of retrieval of mesh and variable to get the mesh
+//    first and then the variable. This is so plugin can handle things
+//    like removal of arb-poly zones correctly.
+//
+//    Mark C. Miller, Tue Apr  5 10:30:16 PDT 2005
+//    Added support for data type conversion
+//
+//    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//    Replaced data type args with data specification
+// ****************************************************************************
+
+vtkDataSet *
+avtGenericDatabase::GetScalarVarDataset(const char *varname, int ts,
+                                        int domain, const char *material,
+                                         const avtDataRequest_p dataRequest)
+{
+    const avtScalarMetaData *smd = GetMetaData(ts)->GetScalar(varname);
+    if (smd == NULL)
+    {
+        EXCEPTION1(InvalidVariableException, varname);
+    }
+
+    string meshname  = GetMetaData(ts)->MeshForVar(varname);
+    vtkDataSet *mesh = GetMesh(meshname.c_str(), ts, domain, material, dataRequest);
+
+    if (mesh == NULL)
+    {
+        //
+        // Some file formats don't have a mesh for every domain (like Exodus
+        // when material selection is applied).  Just propagate the NULL up.
+        //
+        return NULL;
+    }
+
+    vtkDataArray *var  = GetScalarVariable(varname, ts, domain, material, dataRequest);
+
+    if (var == NULL)
+    {
+        //
+        // Some variables don't have a var for every domain, even if the
+        // mesh exists there.  Just propagate the NULL up.
+        //
+        return NULL;
+    }
+
+
+    //
+    // Set up the scalar var's name in case we have more than one.
+    //
+    var->SetName(varname);
+
+    if (smd->centering == AVT_NODECENT)
+    {
+        mesh->GetPointData()->SetScalars(var);
+    }
+    else
+    {
+        mesh->GetCellData()->SetScalars(var);
+    }
+
+    return mesh;
+}
+
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::AddSecondaryVariables
+//
+//  Purpose:
+//      Adds the secondary variables to the dataset.
+//
+//  Arguments:
+//      ds           The vtk dataset to add to.
+//      ts           The timestep of interest.
+//      domain       The domain of the dataset to retrieve.
+//      material     The name of the material we are getting.
+//      vars2nd      A list of secondary variable to add.
+//
+//  Programmer: Hank Childs
+//  Creation:   November 5, 2001
+//
+//  Modifications:
+//
+//    Kathleen Bonnell, Fri Feb  8 08:48:06 PST 2002
+//    vtkScalars has been deprecated in VTK 4.0.  Use vtkDataArray instead.
+//
+//    Hank Childs, Tue Sep 17 09:50:24 PDT 2002
+//    Add support for species variables.
+//
+//    Hank Childs, Fri Jul 25 10:49:56 PDT 2003
+//    Allow for meshes to be specified (then ignored).
+//
+//    Hank Childs, Thu Aug 21 11:01:22 PDT 2003
+//    Allow for materials to be specified (then ignored).
+//
+//    Hank Childs, Sat Oct 18 10:09:40 PDT 2003
+//    Add support for tensors.
+//
+//    Brad Whitlock, Sat Apr 2 00:46:56 PDT 2005
+//    Added support for labels.
+//
+//    Mark C. Miller, Tue Apr  5 10:30:16 PDT 2005
+//    Added support for data type conversion
+//
+//    Kathleen Bonnell, Tue May 17 10:03:38 PDT 2005
+//    Fix memory leak related to species vars.
+//
+//    Hank Childs, Tue Jul 19 14:54:22 PDT 2005
+//    Add support for array variables.
+//
+//    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//    Replaced data type args with data specification
+//
+//    Hank Childs, Sun Feb 19 10:30:11 PST 2006
+//    If something goes wrong during expression calculation, then some of
+//    the assumptions in this routine are wrong.  Fix them so we don't crash.
+//
+//    Kathleen Bonnell, Wed Jun 11 16:59:22 PDT 2008
+//    Add support for AVT_CURVE.
+//
+//    Mark C. Miller, Wed Feb 11 17:10:57 PST 2009
+//    Removed centering from curve meta data
+//
+//    Mark C. Miller, Wed Jul  8 18:29:43 PDT 2015
+//    Added a continue for data==NULL (possible for null returns from plugins)
+// ****************************************************************************
+
+void
+avtGenericDatabase::AddSecondaryVariables(vtkDataSet *ds, int ts, int domain,
+                  const char *material, const vector<CharStrRef> &vars2nd,
+                  const avtDataRequest_p dataRequest)
+{
+    int nzones = ds->GetNumberOfCells();
+
+    //
+    // If we have any secondary arrays, then fetch those as well.
+    //
+    size_t num2ndVars = vars2nd.size();
+    for (size_t i = 0 ; i < num2ndVars ; i++)
+    {
+        const char *varName = *(vars2nd[i]);
+        avtDatabaseMetaData *md = GetMetaData(ts);
+
+        avtVarType vt = md->DetermineVarType(varName, false);
+
+        //
+        // They asked for the mesh as a secondary variable.  Just ignore this
+        // request -- it is likely from the expression code.
+        //
+        if (vt == AVT_MESH || vt == AVT_MATERIAL)
+            continue;
+
+        //
+        // Do some preparation.  Decide the variable type and
+        // if it is node centered or zone centered.
+        //
+        vtkDataSetAttributes *atts = NULL;
+        switch (vt)
+        {
+          case AVT_SCALAR_VAR:
+            {
+                const avtScalarMetaData *smd=GetMetaData(ts)->GetScalar(varName);
+                if (smd->centering == AVT_NODECENT)
+                {
+                    atts = ds->GetPointData();
+                }
+                else
+                {
+                    atts = ds->GetCellData();
+                }
+            }
+            break;
+
+          case AVT_SYMMETRIC_TENSOR_VAR:
+            {
+                const avtSymmetricTensorMetaData *vmd =
+                                       GetMetaData(ts)->GetSymmTensor(varName);
+                if (vmd->centering == AVT_NODECENT)
+                {
+                    atts = ds->GetPointData();
+                }
+                else
+                {
+                    atts = ds->GetCellData();
+                }
+            }
+            break;
+
+          case AVT_TENSOR_VAR:
+            {
+                const avtTensorMetaData *vmd =
+                                           GetMetaData(ts)->GetTensor(varName);
+                if (vmd->centering == AVT_NODECENT)
+                {
+                    atts = ds->GetPointData();
+                }
+                else
+                {
+                    atts = ds->GetCellData();
+                }
+            }
+            break;
+
+          case AVT_VECTOR_VAR:
+            {
+                const avtVectorMetaData *vmd =
+                                           GetMetaData(ts)->GetVector(varName);
+                if (vmd->centering == AVT_NODECENT)
+                {
+                    atts = ds->GetPointData();
+                }
+                else
+                {
+                    atts = ds->GetCellData();
+                }
+            }
+            break;
+
+          case AVT_LABEL_VAR:
+            {
+                const avtLabelMetaData *lmd=GetMetaData(ts)->GetLabel(varName);
+                if (lmd->centering == AVT_NODECENT)
+                {
+                    atts = ds->GetPointData();
+                }
+                else
+                {
+                    atts = ds->GetCellData();
+                }
+            }
+            break;
+
+          case AVT_ARRAY_VAR:
+            {
+                const avtArrayMetaData *lmd=GetMetaData(ts)->GetArray(varName);
+                if (lmd->centering == AVT_NODECENT)
+                {
+                    atts = ds->GetPointData();
+                }
+                else
+                {
+                    atts = ds->GetCellData();
+                }
+            }
+            break;
+
+          case AVT_MATSPECIES:
+            atts = ds->GetCellData();
+            break;
+
+          case AVT_CURVE:
+            atts = ds->GetPointData();
+            break;
+
+          default:
+            EXCEPTION1(InvalidVariableException, varName);
+        }
+
+        //
+        // Okay, now get the variable and add them to the dataset.
+        //
+        vtkDataArray *dat = NULL;
+        vtkDataSet *mesh = NULL;
+        switch (vt)
+        {
+          case AVT_SCALAR_VAR:
+            dat = GetScalarVariable(varName, ts, domain, material, dataRequest);
+            break;
+          case AVT_VECTOR_VAR:
+            dat = GetVectorVariable(varName, ts, domain, material, dataRequest);
+            break;
+          case AVT_TENSOR_VAR:
+            dat = GetTensorVariable(varName, ts, domain, material, dataRequest);
+            break;
+          case AVT_SYMMETRIC_TENSOR_VAR:
+            dat = GetSymmetricTensorVariable(varName, ts, domain, material, dataRequest);
+            break;
+          case AVT_LABEL_VAR:
+            dat = GetLabelVariable(varName, ts, domain, material);
+            break;
+          case AVT_ARRAY_VAR:
+            dat = GetArrayVariable(varName, ts, domain, material, dataRequest);
+            break;
+          case AVT_MATSPECIES:
+            dat = GetSpeciesVariable(varName, ts, domain, material, nzones);
+            break;
+          case AVT_CURVE:
+            mesh = GetMesh(varName, ts, domain, material, dataRequest);
+            dat = mesh->GetPointData()->GetArray(varName);
+            if (dat == NULL)
+                dat = mesh->GetCellData()->GetArray(varName);
+            break;
+          default:
+            EXCEPTION1(InvalidVariableException, varName);
+        }
+
+        // We can arrive here with dat == NULL when a plugin decides to
+        // return null for a variable that is missing on a given domain
+        // (a well-known case is Silo 'EMPTY' blocks)
+        if (!dat) continue;
+
+        dat->SetName(varName);
+        atts->AddArray(dat);
+        if (vt == AVT_MATSPECIES)
+            dat->Delete();
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::GetMeshDataset
+//
+//  Purpose:
+//      Constructs a dataset for a mesh variable.
+//
+//  Arguments:
+//      varname      The variable for that domain.
+//      ts           The timestep of interest.
+//      domain       The domain of the dataset to retrieve.
+//      material     The name of the material we are getting.
+//
+//  Returns:         The dataset for that block.
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   March 22, 2001
+//
+//  Modifications:
+//
+//    Kathleen Bonnell, Fri Jun 15 11:34:26 PDT 2001
+//    Call method AddOriginalCellsArray.
+//
+//    Hank Childs, Mon Oct  8 10:54:30 PDT 2001
+//    Added material argument.
+//
+//    Hank Childs, Thu Oct 11 13:04:25 PDT 2001
+//    Added support for NULL meshes.
+//
+//    Kathleen Bonnell, Mon Mar 25 17:30:07 PST 2002
+//    Removed call to AddOriginalCellsArray.  Instead made the
+//    mesh filter set the necessary flag in the dataspecification,
+//    so the method is only called from one place.
+//
+//    Mark C. Miller, Tue Apr  5 10:30:16 PDT 2005
+//    Added support for data type conversion
+//
+//    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//    Replaced data type args with data specification
+// ****************************************************************************
+
+vtkDataSet *
+avtGenericDatabase::GetMeshDataset(const char *varname, int ts, int domain,
+                                   const char *material,
+                                   const avtDataRequest_p dataRequest)
+{
+    string meshname  = GetMetaData(ts)->MeshForVar(varname);
+    vtkDataSet *mesh = GetMesh(meshname.c_str(), ts, domain, material, dataRequest);
+
+    return mesh;
+}
+
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::GetVectorVarDataset
+//
+//  Purpose:
+//      Constructs a dataset for a vector variable.
+//
+//  Arguments:
+//      varname      The variable for that domain.
+//      ts           The timestep of interest.
+//      domain       The domain of the dataset to retrieve.
+//      material     The name of the material we are getting.
+//
+//  Returns:         The dataset for that block.
+//
+//  Programmer: Hank Childs
+//  Creation:   March 19, 2001
+//
+//  Modifications:
+//
+//    Hank Childs, Mon Oct  8 10:54:30 PDT 2001
+//    Added material argument.
+//
+//    Hank Childs, Thu Oct 11 13:04:25 PDT 2001
+//    Added support for NULL meshes.
+//
+//    Hank Childs, Thu Jan  3 10:29:02 PST 2002
+//    Name the vector so we can reference it later.
+//
+//    Kathleen Bonnell, Fri Feb  8 08:48:06 PST 2002
+//    vtkVectors has been deprecated in VTK 4.0.  Use vtkDataArray instead.
+//
+//    Jeremy Meredith, Wed Mar 19 12:22:20 PST 2003
+//    Allow for a NULL var as well as a NULL mesh.
+//
+//    Jeremy Meredith, Fri Jun 18 14:18:48 PDT 2004
+//    Allow for non-3-component vectors.  This will be used in the short
+//    term for colors, though we should have a better solution when colors
+//    are no longer categorized as vectors.
+//
+//    Mark C. Miller, Mon Jan 10 14:06:06 PST 2005
+//    Changed order of retrieval of mesh and variable to get the mesh
+//    first and then the variable. This is so plugin can handle things
+//    like removal of arb-poly zones correctly.
+//
+//    Mark C. Miller, Tue Apr  5 10:30:16 PDT 2005
+//    Added support for data type conversion
+//
+//    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//    Replaced data type args with data specification
+// ****************************************************************************
+
+vtkDataSet *
+avtGenericDatabase::GetVectorVarDataset(const char *varname, int ts,
+                                        int domain, const char *material,
+                                        const avtDataRequest_p dataRequest)
+{
+    const avtVectorMetaData *vmd = GetMetaData(ts)->GetVector(varname);
+    if (vmd == NULL)
+    {
+        EXCEPTION1(InvalidVariableException, varname);
+    }
+
+    string meshname  = GetMetaData(ts)->MeshForVar(varname);
+    vtkDataSet *mesh = GetMesh(meshname.c_str(), ts, domain, material, dataRequest);
+
+    if (mesh == NULL)
+    {
+        //
+        // Some file formats don't have a mesh for every domain (like Exodus
+        // when material selection is applied).  Just propagate the NULL up.
+        //
+        return NULL;
+    }
+
+    vtkDataArray *var = GetVectorVariable(varname, ts, domain, material, dataRequest);
+
+    if (var == NULL)
+    {
+        //
+        // Some variables don't have a var for every domain, even if the
+        // mesh exists there.  Just propagate the NULL up.
+        //
+        return NULL;
+    }
+
+    //
+    // Set up the vector var's name in case we have more than one.
+    //
+    var->SetName(varname);
+
+    if (vmd->centering == AVT_NODECENT)
+    {
+        if (var->GetNumberOfComponents() == 3)
+        {
+            mesh->GetPointData()->SetVectors(var);
+        }
+        else
+        {
+            mesh->GetPointData()->AddArray(var);
+        }
+    }
+    else
+    {
+        if (var->GetNumberOfComponents() == 3)
+        {
+            mesh->GetCellData()->SetVectors(var);
+        }
+        else
+        {
+            mesh->GetCellData()->AddArray(var);
+        }
+    }
+
+    return mesh;
+}
+
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::GetTensorVarDataset
+//
+//  Purpose:
+//      Constructs a dataset for a tensor variable.
+//
+//  Arguments:
+//      varname      The variable for that domain.
+//      ts           The timestep of interest.
+//      domain       The domain of the dataset to retrieve.
+//      material     The name of the material we are getting.
+//
+//  Returns:         The dataset for that block.
+//
+//  Programmer: Hank Childs
+//  Creation:   September 22, 2003
+//
+//  Modifications:
+//
+//    Mark C. Miller, Mon Jan 10 14:06:06 PST 2005
+//    Changed order of retrieval of mesh and variable to get the mesh
+//    first and then the variable. This is so plugin can handle things
+//    like removal of arb-poly zones correctly.
+//
+//    Mark C. Miller, Tue Apr  5 10:30:16 PDT 2005
+//    Added support for data type conversion
+//
+//    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//    Replaced data type args with data specification
+// ****************************************************************************
+
+vtkDataSet *
+avtGenericDatabase::GetTensorVarDataset(const char *varname, int ts,
+                                        int domain, const char *material,
+                                        const avtDataRequest_p dataRequest)
+{
+    const avtTensorMetaData *tmd = GetMetaData(ts)->GetTensor(varname);
+    if (tmd == NULL)
+    {
+        EXCEPTION1(InvalidVariableException, varname);
+    }
+
+    string meshname  = GetMetaData(ts)->MeshForVar(varname);
+    vtkDataSet *mesh = GetMesh(meshname.c_str(), ts, domain, material, dataRequest);
+
+    if (mesh == NULL)
+    {
+        //
+        // Some file formats don't have a mesh for every domain (like Exodus
+        // when material selection is applied).  Just propagate the NULL up.
+        //
+        return NULL;
+    }
+
+    vtkDataArray *var = GetTensorVariable(varname, ts, domain, material, dataRequest);
+
+    if (var == NULL)
+    {
+        //
+        // Some variables don't have a var for every domain, even if the
+        // mesh exists there.  Just propagate the NULL up.
+        //
+        return NULL;
+    }
+
+    //
+    // Set up the tensor var's name in case we have more than one.
+    //
+    var->SetName(varname);
+
+    if (tmd->centering == AVT_NODECENT)
+    {
+        mesh->GetPointData()->SetTensors(var);
+    }
+    else
+    {
+        mesh->GetCellData()->SetTensors(var);
+    }
+
+    return mesh;
+}
+
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::GetSymmetricTensorVarDataset
+//
+//  Purpose:
+//      Constructs a dataset for a symmetric tensor variable.
+//
+//  Arguments:
+//      varname      The variable for that domain.
+//      ts           The timestep of interest.
+//      domain       The domain of the dataset to retrieve.
+//      material     The name of the material we are getting.
+//
+//  Returns:         The dataset for that block.
+//
+//  Programmer: Hank Childs
+//  Creation:   September 22, 2003
+//
+//  Modifications:
+//
+//    Mark C. Miller, Mon Jan 10 14:06:06 PST 2005
+//    Changed order of retrieval of mesh and variable to get the mesh
+//    first and then the variable. This is so plugin can handle things
+//    like removal of arb-poly zones correctly.
+//
+//    Mark C. Miller, Tue Apr  5 10:30:16 PDT 2005
+//    Added support for data type conversion
+//
+//    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//    Replaced data type args with data specification
+// ****************************************************************************
+
+vtkDataSet *
+avtGenericDatabase::GetSymmetricTensorVarDataset(const char *varname, int ts,
+                                        int domain, const char *material,
+                                        const avtDataRequest_p dataRequest)
+{
+    const avtSymmetricTensorMetaData *tmd =
+                                         GetMetaData(ts)->GetSymmTensor(varname);
+    if (tmd == NULL)
+    {
+        EXCEPTION1(InvalidVariableException, varname);
+    }
+
+    string meshname  = GetMetaData(ts)->MeshForVar(varname);
+    vtkDataSet *mesh = GetMesh(meshname.c_str(), ts, domain, material, dataRequest);
+
+    if (mesh == NULL)
+    {
+        //
+        // Some file formats don't have a mesh for every domain (like Exodus
+        // when material selection is applied).  Just propagate the NULL up.
+        //
+        return NULL;
+    }
+
+    vtkDataArray *var = GetSymmetricTensorVariable(varname, ts, domain,
+                                                   material, dataRequest);
+
+    if (var == NULL)
+    {
+        //
+        // Some variables don't have a var for every domain, even if the
+        // mesh exists there.  Just propagate the NULL up.
+        //
+        return NULL;
+    }
+
+    //
+    // Set up the tensor var's name in case we have more than one.
+    //
+    var->SetName(varname);
+
+    if (tmd->centering == AVT_NODECENT)
+    {
+        mesh->GetPointData()->SetTensors(var);
+    }
+    else
+    {
+        mesh->GetCellData()->SetTensors(var);
+    }
+
+    return mesh;
+}
+
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::GetArrayVarDataset
+//
+//  Purpose:
+//      Constructs a dataset for an array variable.
+//
+//  Arguments:
+//      varname      The variable for that domain.
+//      ts           The timestep of interest.
+//      domain       The domain of the dataset to retrieve.
+//      material     The name of the material we are getting.
+//
+//  Returns:         The dataset for that block.
+//
+//  Programmer: Hank Childs
+//  Creation:   July 19, 2005
+//
+//  Modifications:
+//
+//    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//    Replaced data type args with data specification
+// ****************************************************************************
+
+vtkDataSet *
+avtGenericDatabase::GetArrayVarDataset(const char *varname, int ts,
+                                        int domain, const char *material,
+                                        const avtDataRequest_p dataRequest)
+{
+    const avtArrayMetaData *tmd = GetMetaData(ts)->GetArray(varname);
+    if (tmd == NULL)
+    {
+        EXCEPTION1(InvalidVariableException, varname);
+    }
+
+    string meshname  = GetMetaData(ts)->MeshForVar(varname);
+    vtkDataSet *mesh = GetMesh(meshname.c_str(), ts, domain, material, dataRequest);
+
+    if (mesh == NULL)
+    {
+        //
+        // Some file formats don't have a mesh for every domain (like Exodus
+        // when material selection is applied).  Just propagate the NULL up.
+        //
+        return NULL;
+    }
+
+    vtkDataArray *var = GetArrayVariable(varname, ts, domain, material, dataRequest);
+
+    if (var == NULL)
+    {
+        //
+        // Some variables don't have a var for every domain, even if the
+        // mesh exists there.  Just propagate the NULL up.
+        //
+        return NULL;
+    }
+
+    //
+    // Set up the array var's name in case we have more than one.
+    //
+    var->SetName(varname);
+
+    if (tmd->centering == AVT_NODECENT)
+    {
+        mesh->GetPointData()->AddArray(var);
+    }
+    else
+    {
+        mesh->GetCellData()->AddArray(var);
+    }
+
+    return mesh;
+}
+
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::GetMaterialDataset
+//
+//  Purpose:
+//      Constructs a dataset for a material.  This is only the mesh, as the
+//      material is retrieved through the GetAuxiliaryData mechanism.
+//
+//  Arguments:
+//      matname      The material for that domain (like "mat1").
+//      ts           The timestep of interest.
+//      domain       The domain of the dataset to retrieve.
+//      material     The name of the material we are getting.
+//
+//  Returns:         The dataset for that block.
+//
+//  Programmer: Hank Childs
+//  Creation:   November 7, 2000
+//
+//  Modifications:
+//
+//    Hank Childs, Thu Mar  1 09:20:52 PST 2001
+//    Moved from avtDatabase to avtGenericDatabase.
+//
+//    Eric Brugger, Thu Sep 20 10:12:56 PDT 2001
+//    I modified the routine to return a non material selected mesh, since
+//    that occurs later.
+//
+//    Hank Childs, Mon Oct  8 10:54:30 PDT 2001
+//    Added material argument.
+//
+//    Mark C. Miller, Tue Apr  5 10:30:16 PDT 2005
+//    Added support for data type conversion
+//
+//    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//    Replaced data type args with data specification
+//
+// ****************************************************************************
+
+vtkDataSet *
+avtGenericDatabase::GetMaterialDataset(const char *matname, int ts, int domain,
+                                       const char *material,
+                                       const avtDataRequest_p dataRequest)
+{
+    string meshname  = GetMetaData(ts)->MeshForVar(matname);
+    vtkDataSet *mesh = GetMesh(meshname.c_str(), ts, domain, material, dataRequest);
+
+    return mesh;
+}
+
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::GetSpeciesDataset
+//
+//  Purpose:
+//      Constructs a dataset for a species.  This is only the mesh, as the
+//      species is retrieved through the GetAuxiliaryData mechanism.
+//
+//  Arguments:
+//      specname     The species for that domain (like "spec1").
+//      ts           The timestep of interest.
+//      domain       The domain of the dataset to retrieve.
+//      material     The name of the material we are getting.
+//
+//  Returns:         The dataset for that block.
+//
+//  Programmer: Hank Childs and Jeremy Meredith
+//  Creation:   December 19, 2001
+//
+//  Modifications:
+//
+//    Kathleen Bonnell, Fri Feb  8 08:48:06 PST 2002
+//    vtkScalars has been deprecated in VTK 4.0.  Use vtkDataArray and
+//    vtkFloatArray instead.
+//
+//    Hank Childs, Thu Jul  4 13:07:23 PDT 2002
+//    Add a name to the mixed variable.
+//
+//    Hank Childs, Tue Sep 17 09:50:24 PDT 2002
+//    Create the species variable in its own subroutine.
+//
+//    Mark C. Miller, Tue Apr  5 10:30:16 PDT 2005
+//    Added support for data type conversion
+//
+//    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//    Replaced data type args with data specification
+// ****************************************************************************
+
+vtkDataSet *
+avtGenericDatabase::GetSpeciesDataset(const char *specname, int ts, int domain,
+                                      const char *material,
+                                      const avtDataRequest_p dataRequest)
+{
+    string meshname  = GetMetaData(ts)->MeshForVar(specname);
+    vtkDataSet *mesh = GetMesh(meshname.c_str(), ts, domain, material, dataRequest);
+
+    if (mesh == NULL)
+    {
+        //
+        // Some file formats don't have a mesh for every domain (like Exodus
+        // when material selection is applied).  Just propagate the NULL up.
+        //
+        return NULL;
+    }
+
+    vtkDataArray *spec = GetSpeciesVariable(specname, ts, domain, material,
+                                            mesh->GetNumberOfCells());
+    mesh->GetCellData()->SetScalars(spec);
+    spec->Delete();
+
+    return mesh;
+}
+
+// ****************************************************************************
+// Method: avtGenericDatabase::GetLabelVarDataset
+//
+// Purpose:
+//   Gets a label variable and its mesh.
+//
+// Arguments:
+//      varname      The variable for that domain
+//      ts           The timestep of interest.
+//      domain       The domain of the dataset to retrieve.
+//      material     The name of the material we are getting.
+//
+// Returns:    A vtkDataSet containing the data.
+//
+// Note:
+//
+// Programmer: Brad Whitlock
+// Creation:   Sat Apr 2 00:38:47 PDT 2005
+//
+// Modifications:
+//
+//    Mark C. Miller, Tue Apr  5 10:30:16 PDT 2005
+//    Added support for data type conversion
+//
+//    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//    Replaced data type args with data specification
+//
+//    Mark C. Miller, Thu Aug 10 11:36:57 PDT 2006
+//    Fixed leak of lvs
+//
+//    Cyrus Harrison, Fri Aug 14 11:10:03 PDT 2009
+//    Removed creation of lvs, it is no longer necessary to communicate
+//    that we have a label string.
+//
+// ****************************************************************************
+
+vtkDataSet *
+avtGenericDatabase::GetLabelVarDataset(const char *varname, int ts,
+                                       int domain, const char *material,
+                                       const avtDataRequest_p dataRequest)
+{
+    const avtLabelMetaData *lmd = GetMetaData(ts)->GetLabel(varname);
+    if (lmd == NULL)
+    {
+        EXCEPTION1(InvalidVariableException, varname);
+    }
+
+    string meshname  = GetMetaData(ts)->MeshForVar(varname);
+    vtkDataSet *mesh = GetMesh(meshname.c_str(), ts, domain, material, dataRequest);
+
+    if (mesh == NULL)
+    {
+        //
+        // Some file formats don't have a mesh for every domain (like Exodus
+        // when material selection is applied).  Just propagate the NULL up.
+        //
+        return NULL;
+    }
+
+    vtkDataArray *var = GetLabelVariable(varname, ts, domain, material);
+
+    if (var == NULL)
+    {
+        //
+        // Some variables don't have a var for every domain, even if the
+        // mesh exists there.  Just propagate the NULL up.
+        //
+        return NULL;
+    }
+
+
+    //
+    // Set up the scalar var's name in case we have more than one.
+    //
+    var->SetName(varname);
+
+    if (lmd->centering == AVT_NODECENT)
+    {
+        mesh->GetPointData()->SetScalars(var);
+    }
+    else
+    {
+        mesh->GetCellData()->SetScalars(var);
+    }
+
+    return mesh;
+}
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::GetSpeciesVariable
+//
+//  Purpose:
+//      Creates a zonal variable that serves as the species.  Also sets up
+//      a mixed variable for use with material selection.
+//
+//  Arguments:
+//      specname    The name of the species.
+//      ts          The timestep.
+//      domain      The domain number.
+//      material    The name of the associated material.
+//      nzones      The number of zones in the mesh for this domain.
+//
+//  Returrns:   An array (of all 1.'s) that is the species.
+//
+//  Notes:      The calling routine must de-reference the returned array.
+//
+//  Programmer: Hank Childs
+//  Creation:   September 17, 2002
+//
+//  Modifications:
+//
+//    Burlen Loring, Fri Oct  2 17:02:27 PDT 2015
+//    clean up a warning
+//
+// ****************************************************************************
+
+vtkDataArray *
+avtGenericDatabase::GetSpeciesVariable(const char *specname, int ts,
+                                  int domain, const char *material, int nzones)
+{
+    (void)material;
+    int i;
+
+    vtkFloatArray *allOnes = vtkFloatArray::New();
+    allOnes->SetNumberOfTuples(nzones);
+    float *ptr = allOnes->GetPointer(0);
+    for (i = 0 ; i < nzones ; i++)
+    {
+        *ptr = 1.;
+        ptr++;
+    }
+    allOnes->SetName(specname);
+
+    //
+    // Now create a mixed variable.  We should probably be caching this so we
+    // don't generate every time we ask for this dataset.
+    //
+    avtMaterial *mat = GetMaterial(domain, specname, ts);
+    int mixlen = mat->GetMixlen();
+    float *mixvarbuff = new float[mixlen];
+    for (i = 0 ; i < mixlen ; i++)
+        mixvarbuff[i] = 1.;
+    avtMixedVariable *mixvar = new avtMixedVariable(mixvarbuff, mixlen,
+                                                    specname);
+    delete [] mixvarbuff;
+
+    //
+    // After this routine is called, the main routine will look for mixed
+    // variables in the cache.  So: all we have to do is put this mixed
+    // variable in the cache and we can forget about it.
+    //
+    void_ref_ptr vr = void_ref_ptr(mixvar, avtMixedVariable::Destruct);
+    cache.CacheVoidRef(specname, AUXILIARY_DATA_MIXED_VARIABLE, ts, domain,vr);
+
+    return allOnes;
+}
+
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::GetScalarVariable
+//
+//  Purpose:
+//      Checks to see if a variable is already in cache and fetches it if it
+//      is not.
+//
+//  Arguments:
+//      varname    The name of the variable.
+//      ts         The timestep for the variable.
+//      domain     The domain for the variable.
+//      material   The name of the material we are getting.
+//
+//  Returns:    A vtkScalars for the variable.
+//
+//  Programmer: Hank Childs
+//  Creation:   October 31, 2000
+//
+//  Modifications:
+//
+//    Hank Childs, Thu Mar  1 09:20:52 PST 2001
+//    Moved from avtDatabase to avtGenericDatabase.
+//
+//    Hank Childs, Mon Oct  8 10:54:30 PDT 2001
+//    Added material argument.
+//
+//    Kathleen Bonnell, Fri Feb  8 08:48:06 PST 2002
+//    vtkScalars has been deprecated in VTK 4.0.  Use vtkDataArray instead.
+//
+//    Hank Childs, Fri Mar 14 20:56:40 PST 2003
+//    Turned off caching in some instances.
+//
+//    Hank Childs, Tue Feb 15 07:21:10 PST 2005
+//    Make translations when we have hidden characters.
+//
+//    Hank Childs, Fri Mar 11 11:24:25 PST 2005
+//    Fix memory leak.
+//
+//    Mark C. Miller, Tue Apr  5 10:30:16 PDT 2005
+//    Added support for data type conversion
+//
+//    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//    Replaced data type args with data specification
+//
+//    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
+//    Moved code dealing with precision transformation to transform manager
+//
+//    Hank Childs, Tue Dec 20 11:51:30 PST 2011
+//    Add support for caching with selections.
+//
+//    Burlen Loring, Fri Oct  2 17:02:27 PDT 2015
+//    clean up a warning
+//
+// ****************************************************************************
+
+vtkDataArray *
+avtGenericDatabase::GetScalarVariable(const char *varname, int ts, int domain,
+                                      const char *material,
+                                      const avtDataRequest_p dataRequest)
+{
+    (void)dataRequest;
+
+    //
+    // We have to be leery about doing any caching when the variables are
+    // defined on sub-meshes.  This is because if we add new secondary
+    // variables, some parts of the mesh may drop out, and the size of the
+    // cached objects are now wrong.
+    //
+    vtkDataArray *var = NULL;
+    if (!Interface->HasVarsDefinedOnSubMeshes())
+    {
+        std::string cache_varname =
+               Interface->CreateCacheNameIncludingSelections(varname, ts, domain);
+        var = (vtkDataArray *) cache.GetVTKObject(cache_varname.c_str(),
+                             avtVariableCache::SCALARS_NAME,
+                             ts, domain, material);
+    }
+
+    //
+    // Translate the variable name into something the interface understands.
+    // Note: use the "real_varname" when talking to the Interface, but use
+    // the standard "varname" for caching and all other places.
+    //
+    const avtScalarMetaData *smd = GetMetaData(ts)->GetScalar(varname);
+    if (smd == NULL)
+        EXCEPTION1(InvalidVariableException, varname);
+    const char *real_varname = varname;
+    if (smd->originalName != smd->name && smd->originalName != "")
+    {
+        real_varname = smd->originalName.c_str();
+    }
+
+    if (var == NULL)
+    {
+        //
+        // We haven't read in this domain before, so fetch it from the files.
+        //
+        var = Interface->GetVar(ts, domain, real_varname);
+        if (var != NULL)
+        {
+            //
+            // Cache the variable if we can
+            //
+            if (CachingRecommended(var) && Interface->CanCacheVariable(real_varname))
+            {
+                std::string cache_varname =
+                        Interface->CreateCacheNameIncludingSelections(varname,
+                                                                   ts, domain);
+                cache.CacheVTKObject(cache_varname.c_str(),
+                                     avtVariableCache::SCALARS_NAME,
+                                     ts, domain, material, var);
+            }
+            else
+            {
+                ManageMemoryForNonCachableVar(var);
+            }
+
+            //
+            // We need to decrement the reference count of the variable
+            // returned from FetchVar, but we could not do it previously
+            // because it would knock the count down to 0 and delete it.
+            // Since we have cached it, we can do it now.
+            //
+            var->Delete();
+
+        }
+    }
+
+    return var;
+}
+
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::GetVectorVariable
+//
+//  Purpose:
+//      Checks to see if a variable is already in cache and fetches it if it
+//      is not.
+//
+//  Arguments:
+//      varname    The name of the variable.
+//      ts         The timestep for the variable.
+//      domain     The domain for the variable.
+//      material   The name of the material we are getting.
+//
+//  Returns:    A vtkDataArray for the variable.
+//
+//  Programmer: Hank Childs
+//  Creation:   March 19, 2001
+//
+//  Modifications:
+//
+//    Hank Childs, Mon Oct  8 10:54:30 PDT 2001
+//    Added material argument.
+//
+//    Kathleen Bonnell, Fri Feb  8 08:48:06 PST 2002
+//    vtkVectors has been deprecated in VTK 4.0.  Use vtkDataArray instead.
+//
+//    Hank Childs, Fri Mar 14 20:56:40 PST 2003
+//    Turned off caching in some instances.
+//
+//    Hank Childs, Tue Feb 15 07:21:10 PST 2005
+//    Make translations when we have hidden characters.
+//
+//    Hank Childs, Fri Mar 11 11:24:25 PST 2005
+//    Fix memory leak.
+//
+//    Mark C. Miller, Tue Apr  5 10:30:16 PDT 2005
+//    Added support for data type conversion
+//
+//    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//    Replaced data type args with data specification
+//
+//    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
+//    Moved code dealing with precision transformation to transform manager
+//
+//    Hank Childs, Tue Dec 20 11:51:30 PST 2011
+//    Add support for caching with selections.
+//
+//    Burlen Loring, Fri Oct  2 17:02:27 PDT 2015
+//    clean up a warning
+//
+// ****************************************************************************
+
+vtkDataArray *
+avtGenericDatabase::GetVectorVariable(const char *varname, int ts, int domain,
+                                      const char *material,
+                                      const avtDataRequest_p dataRequest)
+{
+    (void)dataRequest;
+    //
+    // We have to be leery about doing any caching when the variables are
+    // defined on sub-meshes.  This is because if we add new secondary
+    // variables, some parts of the mesh may drop out, and the size of the
+    // cached objects are now wrong.
+    //
+    vtkDataArray *var = NULL;
+    if (!Interface->HasVarsDefinedOnSubMeshes())
+    {
+        std::string cache_varname =
+               Interface->CreateCacheNameIncludingSelections(varname, ts, domain);
+        var = (vtkDataArray *) cache.GetVTKObject(cache_varname.c_str(),
+                                 avtVariableCache::VECTORS_NAME,
+                                 ts, domain, material);
+    }
+
+    //
+    // Translate the variable name into something the interface understands.
+    // Note: use the "real_varname" when talking to the Interface, but use
+    // the standard "varname" for caching and all other places.
+    //
+    const avtVectorMetaData *vmd = GetMetaData(ts)->GetVector(varname);
+    if (vmd == NULL)
+        EXCEPTION1(InvalidVariableException, varname);
+    const char *real_varname = varname;
+    if (vmd->originalName != vmd->name && vmd->originalName != "")
+    {
+        real_varname = vmd->originalName.c_str();
+    }
+
+    if (var == NULL)
+    {
+        //
+        // We haven't read in this domain before, so fetch it from the files.
+        //
+        var = Interface->GetVectorVar(ts, domain, real_varname);
+        if (var != NULL)
+        {
+            if (CachingRecommended(var) && Interface->CanCacheVariable(real_varname))
+            {
+                std::string cache_varname =
+                       Interface->CreateCacheNameIncludingSelections(varname,
+                                                                    ts,domain);
+                cache.CacheVTKObject(cache_varname.c_str(),
+                                     avtVariableCache::VECTORS_NAME,
+                                     ts, domain, material, var);
+            }
+            else
+            {
+                ManageMemoryForNonCachableVar(var);
+            }
+
+            //
+            // We need to decrement the reference count of the variable
+            // returned from FetchVar, but we could not do it previously
+            // because it would knock the count down to 0 and delete it.
+            // Since we have cached it, we can do it now.
+            //
+            var->Delete();
+        }
+    }
+
+    return var;
+}
+
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::GetTensorVariable
+//
+//  Purpose:
+//      Checks to see if a variable is already in cache and fetches it if it
+//      is not.
+//
+//  Arguments:
+//      varname    The name of the variable.
+//      ts         The timestep for the variable.
+//      domain     The domain for the variable.
+//      material   The name of the material we are getting.
+//
+//  Returns:    A vtkDataArray for the variable.
+//
+//  Programmer: Hank Childs
+//  Creation:   September 22, 2003
+//
+//  Modifications:
+//
+//    Hank Childs, Tue Feb 15 07:21:10 PST 2005
+//    Make translations when we have hidden characters.
+//
+//    Hank Childs, Fri Mar 11 11:24:25 PST 2005
+//    Fix memory leak.
+//
+//    Mark C. Miller, Tue Apr  5 10:30:16 PDT 2005
+//    Added support for data type conversion
+//
+//    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//    Replaced data type args with data specification
+//
+//    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
+//    Moved code dealing with precision transformation to transform manager
+//
+//    Hank Childs, Tue Dec 20 11:51:30 PST 2011
+//    Add support for caching with selections.
+//
+//    Burlen Loring, Fri Oct  2 17:02:27 PDT 2015
+//    clean up a warning
+//
+// ****************************************************************************
+
+vtkDataArray *
+avtGenericDatabase::GetTensorVariable(const char *varname, int ts, int domain,
+                                      const char *material,
+                                      const avtDataRequest_p dataRequest)
+{
+    (void)dataRequest;
+    //
+    // We have to be leery about doing any caching when the variables are
+    // defined on sub-meshes.  This is because if we add new secondary
+    // variables, some parts of the mesh may drop out, and the size of the
+    // cached objects are now wrong.
+    //
+    vtkDataArray *var = NULL;
+    if (!Interface->HasVarsDefinedOnSubMeshes())
+    {
+        std::string cache_varname =
+               Interface->CreateCacheNameIncludingSelections(varname, ts, domain);
+        var = (vtkDataArray *) cache.GetVTKObject(cache_varname.c_str(),
+                             avtVariableCache::TENSORS_NAME,
+                             ts, domain, material);
+    }
+
+    //
+    // Translate the variable name into something the interface understands.
+    // Note: use the "real_varname" when talking to the Interface, but use
+    // the standard "varname" for caching and all other places.
+    //
+    const avtTensorMetaData *tmd = GetMetaData(ts)->GetTensor(varname);
+    if (tmd == NULL)
+        EXCEPTION1(InvalidVariableException, varname);
+    const char *real_varname = varname;
+    if (tmd->originalName != tmd->name && tmd->originalName != "")
+    {
+        real_varname = tmd->originalName.c_str();
+    }
+
+    if (var == NULL)
+    {
+        //
+        // We haven't read in this domain before, so fetch it from the files.
+        // Note: we use the vector var interface to get tensors.
+        //
+        var = Interface->GetVectorVar(ts, domain, real_varname);
+        if (var != NULL)
+        {
+            if (CachingRecommended(var) && Interface->CanCacheVariable(real_varname))
+            {
+                std::string cache_varname =
+                       Interface->CreateCacheNameIncludingSelections(varname, ts, domain);
+                cache.CacheVTKObject(cache_varname.c_str(),
+                                     avtVariableCache::TENSORS_NAME,
+                                     ts, domain, material, var);
+            }
+            else
+            {
+                ManageMemoryForNonCachableVar(var);
+            }
+
+            //
+            // We need to decrement the reference count of the variable
+            // returned from FetchVar, but we could not do it previously
+            // because it would knock the count down to 0 and delete it.
+            // Since we have cached it, we can do it now.
+            //
+            var->Delete();
+        }
+    }
+
+    return var;
+}
+
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::GetSymmetricTensorVariable
+//
+//  Purpose:
+//      Checks to see if a variable is already in cache and fetches it if it
+//      is not.
+//
+//  Arguments:
+//      varname    The name of the variable.
+//      ts         The timestep for the variable.
+//      domain     The domain for the variable.
+//      material   The name of the material we are getting.
+//
+//  Returns:    A vtkDataArray for the variable.
+//
+//  Programmer: Hank Childs
+//  Creation:   September 22, 2003
+//
+//  Modifications:
+//
+//    Hank Childs, Tue Feb 15 07:21:10 PST 2005
+//    Make translations when we have hidden characters.
+//
+//    Hank Childs, Fri Mar 11 11:24:25 PST 2005
+//    Fix memory leak.
+//
+//    Mark C. Miller, Tue Apr  5 10:30:16 PDT 2005
+//    Added support for data type conversion
+//
+//    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//    Replaced data type args with data specification
+//
+//    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
+//    Moved code dealing with precision transformation to transform manager
+//
+//    Hank Childs, Tue Dec 20 11:51:30 PST 2011
+//    Add support for caching with selections.
+//
+//    Burlen Loring, Fri Oct  2 17:02:27 PDT 2015
+//    clean up a warning
+//
+// ****************************************************************************
+
+vtkDataArray *
+avtGenericDatabase::GetSymmetricTensorVariable(const char *varname, int ts,
+                                               int domain,const char *material,
+                                           const avtDataRequest_p dataRequest)
+{
+    (void)dataRequest;
+    //
+    // We have to be leery about doing any caching when the variables are
+    // defined on sub-meshes.  This is because if we add new secondary
+    // variables, some parts of the mesh may drop out, and the size of the
+    // cached objects are now wrong.
+    //
+    vtkDataArray *var = NULL;
+    if (!Interface->HasVarsDefinedOnSubMeshes())
+    {
+        std::string cache_varname =
+               Interface->CreateCacheNameIncludingSelections(varname, ts, domain);
+        var = (vtkDataArray *) cache.GetVTKObject(cache_varname.c_str(),
+                             avtVariableCache::SYMMETRIC_TENSORS_NAME,
+                             ts, domain, material);
+    }
+
+    //
+    // Translate the variable name into something the interface understands.
+    // Note: use the "real_varname" when talking to the Interface, but use
+    // the standard "varname" for caching and all other places.
+    //
+    const avtSymmetricTensorMetaData *smd =
+                                       GetMetaData(ts)->GetSymmTensor(varname);
+    if (smd == NULL)
+        EXCEPTION1(InvalidVariableException, varname);
+    const char *real_varname = varname;
+    if (smd->originalName != smd->name && smd->originalName != "")
+    {
+        real_varname = smd->originalName.c_str();
+    }
+
+    if (var == NULL)
+    {
+        //
+        // We haven't read in this domain before, so fetch it from the files.
+        // Note: we use the vector var interface to get tensors.
+        //
+        var = Interface->GetVectorVar(ts, domain, real_varname);
+        if (var != NULL)
+        {
+            //
+            // Cache the variable if we can
+            //
+            if (CachingRecommended(var) && Interface->CanCacheVariable(real_varname))
+            {
+                std::string cache_varname =
+                       Interface->CreateCacheNameIncludingSelections(varname, ts, domain);
+                cache.CacheVTKObject(cache_varname.c_str(),
+                                     avtVariableCache::SYMMETRIC_TENSORS_NAME,
+                                     ts, domain, material, var);
+            }
+            else
+            {
+                ManageMemoryForNonCachableVar(var);
+            }
+
+            //
+            // We need to decrement the reference count of the variable
+            // returned from FetchVar, but we could not do it previously
+            // because it would knock the count down to 0 and delete it.
+            // Since we have cached it, we can do it now.
+            //
+            var->Delete();
+        }
+    }
+
+    return var;
+}
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::GetArrayVariable
+//
+//  Purpose:
+//      Checks to see if a variable is already in cache and fetches it if it
+//      is not.
+//
+//  Arguments:
+//      varname    The name of the variable.
+//      ts         The timestep for the variable.
+//      domain     The domain for the variable.
+//      material   The name of the material we are getting.
+//
+//  Returns:    A vtkDataArray for the variable.
+//
+//  Programmer: Hank Childs
+//  Creation:   July 19, 2005
+//
+//  Modifications:
+//
+//    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//    Replaced data type args with data specification
+//
+//    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
+//    Moved code dealing with precision transformation to transform manager
+//
+//    Hank Childs, Tue Dec 20 11:51:30 PST 2011
+//    Add support for caching with selections.
+//
+//    Burlen Loring, Fri Oct  2 17:02:27 PDT 2015
+//    clean up a warning
+//
+// ****************************************************************************
+
+vtkDataArray *
+avtGenericDatabase::GetArrayVariable(const char *varname, int ts, int domain,
+                                     const char *material,
+                                     const avtDataRequest_p dataRequest)
+{
+    (void)dataRequest;
+    //
+    // We have to be leery about doing any caching when the variables are
+    // defined on sub-meshes.  This is because if we add new secondary
+    // variables, some parts of the mesh may drop out, and the size of the
+    // cached objects are now wrong.
+    //
+    vtkDataArray *var = NULL;
+    if (!Interface->HasVarsDefinedOnSubMeshes())
+    {
+        std::string cache_varname =
+               Interface->CreateCacheNameIncludingSelections(varname, ts, domain);
+        var = (vtkDataArray *) cache.GetVTKObject(cache_varname.c_str(),
+                             avtVariableCache::ARRAYS_NAME,
+                             ts, domain, material);
+    }
+
+    //
+    // Translate the variable name into something the interface understands.
+    // Note: use the "real_varname" when talking to the Interface, but use
+    // the standard "varname" for caching and all other places.
+    //
+    const avtArrayMetaData *tmd = GetMetaData(ts)->GetArray(varname);
+    if (tmd == NULL)
+        EXCEPTION1(InvalidVariableException, varname);
+    const char *real_varname = varname;
+    if (tmd->originalName != tmd->name && tmd->originalName != "")
+    {
+        real_varname = tmd->originalName.c_str();
+    }
+
+    if (var == NULL)
+    {
+        //
+        // We haven't read in this domain before, so fetch it from the files.
+        // Note: we use the vector var interface to get arrays.
+        //
+        var = Interface->GetVectorVar(ts, domain, real_varname);
+        if (var != NULL)
+        {
+            if (CachingRecommended(var) && Interface->CanCacheVariable(real_varname))
+            {
+                std::string cache_varname =
+                       Interface->CreateCacheNameIncludingSelections(varname, ts, domain);
+                cache.CacheVTKObject(cache_varname.c_str(),
+                                     avtVariableCache::ARRAYS_NAME,
+                                     ts, domain, material, var);
+            }
+            else
+            {
+                ManageMemoryForNonCachableVar(var);
+            }
+
+            //
+            // We need to decrement the reference count of the variable
+            // returned from FetchVar, but we could not do it previously
+            // because it would knock the count down to 0 and delete it.
+            // Since we have cached it, we can do it now.
+            //
+            var->Delete();
+        }
+    }
+
+    return var;
+}
+
+
+// ****************************************************************************
+// Method: avtGenericDatabase::GetLabelVariable
+//
+// Purpose:
+//   Gets the specified label data array from the database.
+//
+// Arguments:
+//      varname    The name of the variable.
+//      ts         The timestep for the variable.
+//      domain     The domain for the variable.
+//      material   The name of the material we are getting.
+//
+// Returns:    The data array
+//
+// Note:
+//
+// Programmer: Brad Whitlock
+// Creation:   Sat Apr 2 00:43:11 PDT 2005
+//
+// Modifications:
+//
+//    Hank Childs, Tue Dec 20 11:51:30 PST 2011
+//    Add support for caching with selections.
+//
+// ****************************************************************************
+
+vtkDataArray *
+avtGenericDatabase::GetLabelVariable(const char *varname, int ts, int domain,
+                                     const char *material)
+{
+
+    //
+    // We have to be leery about doing any caching when the variables are
+    // defined on sub-meshes.  This is because if we add new secondary
+    // variables, some parts of the mesh may drop out, and the size of the
+    // cached objects are now wrong.
+    //
+    vtkDataArray *var = NULL;
+    if (!Interface->HasVarsDefinedOnSubMeshes())
+    {
+        std::string cache_varname =
+               Interface->CreateCacheNameIncludingSelections(varname, ts, domain);
+        var = (vtkDataArray *) cache.GetVTKObject(cache_varname.c_str(),
+                         avtVariableCache::LABELS_NAME, ts, domain, material);
+    }
+
+    //
+    // Translate the variable name into something the interface understands.
+    // Note: use the "real_varname" when talking to the Interface, but use
+    // the standard "varname" for caching and all other places.
+    //
+    const avtLabelMetaData *lmd = GetMetaData(ts)->GetLabel(varname);
+    if (lmd == NULL)
+        EXCEPTION1(InvalidVariableException, varname);
+    const char *real_varname = varname;
+    if (lmd->originalName != lmd->name && lmd->originalName != "")
+    {
+        real_varname = lmd->originalName.c_str();
+    }
+
+    if (var == NULL)
+    {
+        //
+        // We haven't read in this domain before, so fetch it from the files.
+        //
+        var = Interface->GetVar(ts, domain, real_varname);
+        if (var != NULL)
+        {
+            if (CachingRecommended(var) && Interface->CanCacheVariable(real_varname))
+            {
+                std::string cache_varname =
+                       Interface->CreateCacheNameIncludingSelections(varname, ts, domain);
+                cache.CacheVTKObject(cache_varname.c_str(),
+                                     avtVariableCache::LABELS_NAME,
+                                     ts, domain, material, var);
+            }
+            else
+                ManageMemoryForNonCachableVar(var);
+
+            //
+            // We need to decrement the reference count of the variable
+            // returned from FetchVar, but we could not do it previously
+            // because it would knock the count down to 0 and delete it.
+            // Since we have cached it, we can do it now.
+            //
+            var->Delete();
+        }
+    }
+
+    return var;
+}
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::GetMesh
+//
+//  Purpose:
+//      Checks to see if a mesh is already in cache and fetches it if it's not.
+//
+//  Arguments:
+//      meshname   The name of the mesh.
+//      ts         The timestep for the mesh.
+//      domain     The domain for the mesh.
+//      material   The name of the material we are getting.
+//
+//  Returns:    A vtkDataSet for the mesh.  The caller of this routine owns
+//              the mesh.
+//
+//  Programmer: Hank Childs
+//  Creation:   October 31, 2000
+//
+//  Modifications:
+//
+//    Hank Childs, Thu Mar  1 09:20:52 PST 2001
+//    Moved from avtDatabase to avtGenericDatabase.
+//
+//    Kathleen Bonnell, Tue Jun 12 14:34:02 PDT 2001
+//    Added Code to pass ghost-level information along if necessary.
+//
+//    Hank Childs, Wed Aug 22 14:45:33 PDT 2001
+//    Added case for poly data meshes.
+//
+//    Hank Childs, Mon Oct  8 10:54:30 PDT 2001
+//    Added material argument.
+//
+//    Hank Childs, Thu Oct 11 13:04:25 PDT 2001
+//    Better support for returning NULL.
+//
+//    Hank Childs, Wed Jan  9 14:05:05 PST 2002
+//    Removed unnecessary code in favor of MakeObject.
+//
+//    Hank Childs, Tue Jun 25 19:44:24 PDT 2002
+//    Copy over the field data.
+//
+//    Hank Childs, Mon Sep 30 09:11:13 PDT 2002
+//    Indicate if we have ghost zones or not.
+//
+//    Kathleen Bonnell, Fri Dec 13 14:07:15 PST 2002
+//    Use NewInstance instead of MakeObject, new vtk api.
+//
+//    Hank Childs, Fri Mar 14 20:56:40 PST 2003
+//    Turned off caching in some instances.
+//
+//    Hank Childs, Tue Jul 29 16:48:28 PDT 2003
+//    Scale mesh when appropriate.  Also cache bounds.
+//
+//    Hank Childs, Sun Jun 27 10:47:38 PDT 2004
+//    Copy over more information about ghosts or global indexing.
+//
+//    Hank Childs, Fri Jul  9 14:24:21 PDT 2004
+//    No longer scale the mesh, since the camera and lighting now both handle
+//    large and small problems better.
+//
+//    Mark C. Miller, Mon Aug  9 19:12:24 PDT 2004
+//    Removed code to pass along 'avtGlobalNodeIds' and 'ElementGlobalIds'
+//    point and cell data arrays. That information is now obtained through
+//    the GetAuxiliaryData interface.
+//
+//    Hank Childs, Fri Aug 27 16:16:52 PDT 2004
+//    Rename ghost data arrays.
+//
+//    Hank Childs, Tue Feb 15 07:21:10 PST 2005
+//    Make translations when we have hidden characters.
+//
+//    Mark C. Miller, Tue Apr  5 10:30:16 PDT 2005
+//    Added support for data type conversion
+//
+//    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//    Replaced data type args with data specification
+//    Added CSG Mesh Discretization
+//
+//    Kathleen Bonnell, Thu Aug  3 08:42:33 PDT 2006
+//    Add PointData Scalars to a curve mesh.
+//
+//    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
+//    Moved code dealing with precision transformation to transform manager.
+//    Moved code to discretize CSG mesh to transform manager.
+//    Added call to register object pointer pair in variable cache due to
+//    fact that generic db returns copy of object in cache
+//
+//    Mark C. Miller, Tue Dec  5 18:14:58 PST 2006
+//    Only add object pointer pair if interface can cache the variable
+//
+//    Kathleen Bonnell, Wed Oct  3 11:28:11 PDT 2007
+//    Keep avtOriginalCellNumbers if present.
+//
+//    Hank Childs, Thu Jun  5 08:20:51 PDT 2008
+//    Disconnect the data set source, so we have less VTK objects lying
+//    around, waiting for garbage collection.
+//
+//    Hank Childs, Mon Dec 15 18:22:54 CST 2008
+//    Add domain information when we cache.
+//
+//    Mark C. Miller, Thu Feb 12 02:21:10 PST 2009
+//    Handle curve objects that are the result of re-interpreting some 1D
+//    scalar variables by requesting them from the plugin as we would any
+//    other scalar variable (e.g. GetScalarVarDataset())
+//
+//    Tom Fogal, Tue Sep 27 14:53:50 MDT 2011
+//    Ensure static VTK memory gets cleaned up.
+//
+//    Hank Childs, Tue Dec 20 11:51:30 PST 2011
+//    Add support for caching with selections.
+//
+//    Kathleen Biagas, Thu Sep 11 09:10:42 PDT 2014
+//    Keep avtOriginalNodeNumbers if present.
+//
+// ****************************************************************************
+
+vtkDataSet *
+avtGenericDatabase::GetMesh(const char *meshname, int ts, int domain,
+                            const char *material,
+                            const avtDataRequest_p dataRequest)
+{
+    //
+    // We have to be leery about doing any caching when the variables are
+    // defined on sub-meshes.  This is because if we add new secondary
+    // variables, some parts of the mesh may drop out, and the size of the
+    // cached objects are now wrong.
+    //
+    vtkDataSet *mesh = NULL;
+    if (!Interface->HasVarsDefinedOnSubMeshes())
+    {
+        std::string cache_meshname =
+               Interface->CreateCacheNameIncludingSelections(meshname, ts, domain);
+        mesh = (vtkDataSet *) cache.GetVTKObject(cache_meshname.c_str(),
+                         avtVariableCache::DATASET_NAME,
+                         ts, domain, material);
+    }
+
+    //
+    // Translate the variable name into something the interface understands.
+    // Note: use the "real_varname" when talking to the Interface, but use
+    // the standard "varname" for caching and all other places.
+    //
+    const avtMeshMetaData *mmd = GetMetaData(ts)->GetMesh(meshname);
+    const avtCurveMetaData *cmd = GetMetaData(ts)->GetCurve(meshname);
+    if (cmd == NULL && mmd == NULL)
+        EXCEPTION1(InvalidVariableException, meshname);
+    const char *real_meshname = meshname;
+    if (mmd != NULL &&
+        mmd->originalName != mmd->name && mmd->originalName != "")
+    {
+        real_meshname = mmd->originalName.c_str();
+    }
+    if (cmd != NULL)
+    {
+        //
+        // If this curve object was re-interpreted from a 1D scalar, get it like we would
+        // a real scalar.
+        //
+        if (cmd->from1DScalarName != "")
+            return GetScalarVarDataset(cmd->from1DScalarName.c_str(),ts,domain,material,dataRequest);
+
+        if (cmd->originalName != cmd->name && cmd->originalName != "")
+        {
+            real_meshname = cmd->originalName.c_str();
+        }
+    }
+
+    if (mesh == NULL)
+    {
+        //
+        // We haven't read in this domain before, so fetch it from the files.
+        //
+        mesh = Interface->GetMesh(ts, domain, real_meshname);
+        if (mesh == NULL)
+        {
+            debug4 << "Mesh returned by file format is NULL for domain "
+                   << domain << ", material = " << material << endl;
+            return NULL;
+        }
+
+        //
+        // VTK creates a trivial producer for each data set.  It later does
+        // garbage collection and that takes a long time if we have a lot
+        // of trivial producers.  Make one trivial producer for all
+        // data sets here.
+        //
+        static vtkTrivialProducer* tp = NULL;
+        if(tp == NULL)
+        {
+            tp = vtkTrivialProducer::New();
+            vtkVisItUtility::RegisterStaticVTKObject(tp);
+        }
+        tp->SetOutput(mesh);
+        tp->SetOutput(NULL);
+
+        AssociateBounds(mesh);
+
+        if (CachingRecommended(mesh) && Interface->CanCacheVariable(real_meshname))
+        {
+            std::string cache_meshname =
+                   Interface->CreateCacheNameIncludingSelections(meshname, ts, domain);
+            cache.CacheVTKObject(cache_meshname.c_str(),
+                                 avtVariableCache::DATASET_NAME, ts,
+                                 domain, material, mesh);
+        }
+        else
+        {
+            ManageMemoryForNonCachableMesh(mesh);
+        }
+
+        //
+        // We need to decrement the reference count of the variable returned
+        // from FetchMesh, but we could not do it previously because it
+        // would knock the count down to 0 and delete it.  Since we have
+        // cached it, we can do it now.
+        //
+        mesh->Delete();
+    }
+
+    //
+    // We cannot return this mesh exactly.  If we do, when we try to plot
+    // another variable, it will use the same mesh and reset the variable,
+    // invalidating the mesh we have in the pipeline.  To get around this, we
+    // can copy the structure of the mesh (which is cheap and done through
+    // reference counting).
+    //
+    vtkDataSet *rv = (vtkDataSet *) mesh->NewInstance();
+    rv->CopyStructure(mesh);
+    if (Interface->CanCacheVariable(real_meshname))
+        cache.AddObjectPointerPair(rv, mesh, domain);
+
+    //
+    // There are some mesh variables that we want to copy over -- namely
+    // those with ghost information or global numbering information.
+    //
+    if (mesh->GetCellData()->GetArray("avtGhostZones"))
+    {
+        rv->GetCellData()->AddArray(
+            mesh->GetCellData()->GetArray("avtGhostZones"));
+        GetMetaData(ts)->SetContainsGhostZones(meshname, AVT_HAS_GHOSTS);
+    }
+    if (mesh->GetPointData()->GetArray("avtGhostNodes"))
+    {
+        rv->GetPointData()->AddArray(
+            mesh->GetPointData()->GetArray("avtGhostNodes"));
+        GetMetaData(ts)->SetContainsGhostZones(meshname, AVT_HAS_GHOSTS);
+    }
+    if (mesh->GetCellData()->GetArray("avtOriginalCellNumbers"))
+    {
+        rv->GetCellData()->AddArray(
+            mesh->GetCellData()->GetArray("avtOriginalCellNumbers"));
+        GetMetaData(ts)->SetContainsOriginalCells(meshname, true);
+    }
+    if (mesh->GetPointData()->GetArray("avtOriginalNodeNumbers"))
+    {
+        rv->GetPointData()->AddArray(
+            mesh->GetPointData()->GetArray("avtOriginalNodeNumbers"));
+        GetMetaData(ts)->SetContainsOriginalNodes(meshname, true);
+    }
+    rv->GetFieldData()->ShallowCopy(mesh->GetFieldData());
+
+    if (GetMetaData(ts)->DetermineVarType(meshname) == AVT_CURVE)
+        rv->GetPointData()->SetScalars(mesh->GetPointData()->GetScalars());
+
+    return rv;
+}
+
+// ****************************************************************************
+// Method: avtGenericDatabase::CachingRecommended
+//
+// Purpose:
+//   Determines whether the array plus the current cache size will still be
+//   under a given threshold, in which case, we allow the array to be cached.
+//
+// Arguments:
+//   arr : The array we're checking to see if it fits.
+//
+// Returns:    True if we can cache and still fit.
+//
+// Note:
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Oct 29 17:54:55 PDT 2014
+//
+// Modifications:
+//
+//    Burlen Loring, Fri Oct  2 17:02:27 PDT 2015
+//    clean up a warning
+//
+// ****************************************************************************
+
+bool
+avtGenericDatabase::CachingRecommended(vtkDataArray *arr) const
+{
+    bool retval = true;
+
+#ifndef VISIT_BLUE_GENE_Q
+    (void)arr;
+#else
+    // We need to be more frugal with what we cache. Let's limit the cache size
+    // to some percentage of the total memory size for this process.
+    unsigned long nBytes = cache.EstimateSize(arr, true);
+    unsigned long cacheSize = cache.EstimateCacheSize();
+    unsigned long mtotal = 0;
+    avtMemory::GetTotalMemorySize(mtotal);
+    if(mtotal > 0)
+    {
+        double newPercent = double(cacheSize + nBytes) / double(mtotal);
+        retval = newPercent < maxCachePercent;
+        if(!retval)
+        {
+            debug1 << "Caching data array not recommended. Cache would "
+                      "increase to " << newPercent << "% of " << mtotal
+                   << " bytes." << endl;
+        }
+    }
+#endif
+
+    return retval;
+}
+
+// ****************************************************************************
+// Method: avtGenericDatabase::CachingRecommended
+//
+// Purpose:
+//   Determines whether the dataset plus the current cache size will still be
+//   under a given threshold, in which case, we allow the dataset to be cached.
+//
+// Arguments:
+//   ds : The dataset we're checking to see if it fits.
+//
+// Returns:    True if we can cache and still fit.
+//
+// Note:
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Oct 29 17:54:55 PDT 2014
+//
+// Modifications:
+//
+//    Burlen Loring, Fri Oct  2 17:02:27 PDT 2015
+//    clean up a warning
+//
+// ****************************************************************************
+
+bool
+avtGenericDatabase::CachingRecommended(vtkDataSet *ds) const
+{
+    bool retval = true;
+
+#ifndef VISIT_BLUE_GENE_Q
+    (void)ds;
+#else
+    // We need to be more frugal with what we cache. Let's limit the cache size
+    // to some percentage of the total memory size for this process.
+    unsigned long nBytes = cache.EstimateSize(ds);
+    unsigned long cacheSize = cache.EstimateCacheSize();
+    unsigned long mtotal = 0;
+    avtMemory::GetTotalMemorySize(mtotal);
+    if(mtotal > 0)
+    {
+        double newPercent = double(cacheSize + nBytes) / double(mtotal);
+        retval = newPercent < maxCachePercent;
+        if(!retval)
+        {
+            debug1 << "Caching dataset not recommended. Cache would "
+                      "increase to " << newPercent << "% of " << mtotal
+                   << " bytes." << endl;
+        }
+    }
+#endif
+
+    return retval;
+}
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::GetAuxiliaryData
+//
+//  Purpose:
+//      Gets the auxiliary data by asking the interface if it has it.  Also
+//      performs caching.
+//
+//  Programmer: Hank Childs
+//  Creation:   March 1, 2001
+//
+//  Modifications:
+//
+//    Hank Childs, Tue May 22 10:47:31 PDT 2001
+//    Use a database specification instead of a SIL restriction.  Also took
+//    care of hacks for caching/memory management.
+//
+//    Hank Childs, Wed Oct 10 15:47:49 PDT 2001
+//    Don't cache back NULL data.
+//
+//    Hank Childs, Mon Aug 23 14:14:23 PDT 2004
+//    Look for auxiliary data where the data is of type that applies to all
+//    timesteps (for example, global node ids where the nodes don't change
+//    over time).
+//
+//    Mark C. Miller, Mon Oct 18 13:02:37 PDT 2004
+//    Added code to set variable name from 'args' for Data/Spatial extents
+//
+//    Mark C. Miller, Wed Oct 20 12:01:10 PDT 2004
+//    Added call to ActivateTimestep to deal with cases in which the *first*
+//    thing we attempt to read from the file is auxiliary data
+//
+//    Kathleen Bonnell, Wed Dec 15 08:41:17 PST 2004
+//    Changed 'vector<int>' to 'intVector'.
+//
+//    Hank Childs, Tue Feb 15 07:21:10 PST 2005
+//    Make translations when we have hidden characters.
+//
+//    Cyrus Harrison, Wed Jan 30 13:26:28 PST 2008
+//    Added support for passing variable name from a mixed variable request.
+//
+//    Cyrus Harrison, Tue Feb 12 14:53:48 PST 2008
+//    Added support for passing variable name to a post ghost mixed variable
+//    request.
+//
+//    Mark C. Miller, Tue Jun 10 22:36:25 PDT 2008
+//    Added support for ignoring bad extents from dbs.
+//
+//    Hank Childs, Tue Jan 27 11:03:49 PST 2009
+//    Don't use cached meta data when it comes to identifiers.
+//
+//    Eduard Deines, Wed Apr 21 2010
+//    Add support for "any_mesh" (Hank Childs).
+//
+//    Eric Brugger, Wed Nov 19 08:49:48 PST 2014
+//    I reduced the number of reads of CSG meshes to only once per CSG mesh
+//    instead of once per region in order to reduce the number of times the
+//    same CSG mesh was cached. Typically there is one CSG mesh with many
+//    regions, so this is a significant saving. CSG meshes with thousands
+//    of regions were exhausting memory in the previous scheme.
+//
+// ****************************************************************************
+
+void
+avtGenericDatabase::GetAuxiliaryData(avtDataRequest_p spec,
+                                     VoidRefList &rv, const char *type,
+                                     void *args)
+{
+    //
+    // Don't do extents queries if we've been told to ignore 'em.
+    //
+    if (ignoreExtents)
+    {
+        if ((strcmp(type, AUXILIARY_DATA_SPATIAL_EXTENTS) == 0) ||
+            (strcmp(type, AUXILIARY_DATA_DATA_EXTENTS) == 0))
+            return;
+    }
+
+    //
+    // Get the fields out of the database specification.  Use the SIL
+    // specification since it captures the concept of a SIL restriction as well
+    // as the concept of an object that spans all domains, like an interval
+    // tree (which it represents as domain -1).
+    //
+    int ts = spec->GetTimestep();
+    avtSILSpecification sil = spec->GetSIL();
+    const char *var = spec->GetVariable();
+    if ((strcmp(type, AUXILIARY_DATA_SPATIAL_EXTENTS) == 0) ||
+        (strcmp(type, AUXILIARY_DATA_DATA_EXTENTS) == 0)    ||
+        (strcmp(type, AUXILIARY_DATA_MIXED_VARIABLE) == 0)  ||
+        (strcmp(type, AUXILIARY_DATA_POST_GHOST_MIXED_VARIABLE) == 0))
+    {
+        if (args != NULL)
+            var = (char *) args;
+    }
+
+    //
+    // It is concievable to arrive here with a file that has not yet
+    // been opened. So, we need to active this timestep which will
+    // be a no-op if the file has been opened and will open the file
+    // if it has not been opened.
+    //
+    ActivateTimestep(ts);
+
+    const char *real_var = GetOriginalVariableName(GetMetaData(ts), var);
+
+    intVector domains;
+    sil.GetDomainList(domains);
+
+    //
+    // Populate the void reference list.
+    //
+    rv.nList = (int)domains.size();
+    rv.list = new void_ref_ptr[rv.nList];
+
+    for (size_t i = 0 ; i < domains.size() ; i++)
+    {
+        int domain = domains[i];
+        avtDatabaseMetaData *md = GetMetaData(ts);
+        md->ConvertCSGDomainToBlockAndRegion(var, &domain, 0);
+
+        //
+        // See if we already have the data lying around for this timestep or
+        // for "all" (= -1) timesteps.  Examples of "all" timesteps entities
+        // are global node ids where the nodes do not change over time.
+        //
+        void_ref_ptr vr;
+        if (strcmp(type, AUXILIARY_DATA_IDENTIFIERS) != 0)
+            vr = cache.GetVoidRef(var, type, ts, domain);
+        if (*vr == NULL)
+        {
+            vr = cache.GetVoidRef(var, type, -1, domain);
+        }
+
+        if (*vr == NULL)
+        {
+            if ((strcmp(type, AUXILIARY_DATA_DOMAIN_NESTING_INFORMATION) == 0) ||
+                (strcmp(type, AUXILIARY_DATA_DOMAIN_BOUNDARY_INFORMATION) == 0))
+                vr = cache.GetVoidRef("any_mesh", type, ts, domain);
+        }
+        if (*vr == NULL)
+        {
+            if ((strcmp(type, AUXILIARY_DATA_DOMAIN_NESTING_INFORMATION) == 0) ||
+                (strcmp(type, AUXILIARY_DATA_DOMAIN_BOUNDARY_INFORMATION) == 0))
+                vr = cache.GetVoidRef("any_mesh", type, -1, domain);
+        }
+
+        if (*vr != NULL)
+        {
+            //
+            // We have it, so share a reference and you're done.
+            //
+            rv.list[i] = vr;
+        }
+        else
+        {
+            //
+            // We did not have it, so calculate it and then store it.
+            //
+            DestructorFunction df;
+            void *d = Interface->GetAuxiliaryData(real_var, ts, domain,
+                                                  type, args, df);
+            if (d != NULL)
+            {
+                //
+                // Putting 'd' into the world of reference pointers saves some
+                // headaches.
+                //
+                void_ref_ptr vr = void_ref_ptr(d, df);
+                cache.CacheVoidRef(var, type, ts, domain, vr);
+                rv.list[i] = vr;
+            }
+        }
+    }
+}
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::PopulateSIL
+//
+//  Purpose:
+//      Populates a SIL from the database meta-data.
+//
+//  Arguments:
+//      sil       : The sil to populate.
+//      timeState : The time state that we're interested in.
+//
+//  Programmer: Hank Childs
+//  Creation:   March 9, 2001
+//
+//  Modifications:
+//    Hank Childs, Fri Sep  6 12:24:55 PDT 2002
+//    Relocated old routine to avtSILGenerator.  Blew away outdated comments.
+//
+//    Brad Whitlock, Wed May 14 09:12:42 PDT 2003
+//    Added optional timeState argument.
+//
+//    Mark C. Miller, Wed Aug 22 20:16:59 PDT 2007
+//    Added treatAllDBsAsTimeVarying
+//
+//    Hank Childs, Mon Oct  8 11:19:58 PDT 2007
+//    Added missing default arguments.  treatAllDBsAsTimeVarying was not
+//    getting put in the correct argument position.
+//
+// ****************************************************************************
+
+void
+avtGenericDatabase::PopulateSIL(avtSIL *sil, int timeState,
+    bool treatAllDBsAsTimeVarying)
+{
+    int timerHandle = visitTimer->StartTimer();
+    bool forceReadAllCyclesTimes = false;
+    bool forceReadThisStateCycleTime = false;
+    avtDatabaseMetaData *md = GetMetaData(timeState,
+                                          forceReadAllCyclesTimes,
+                                          forceReadThisStateCycleTime,
+                                          treatAllDBsAsTimeVarying);
+    avtSILGenerator gen;
+    gen.CreateSIL(md, sil);
+    visitTimer->StopTimer(timerHandle, "Creating a SIL object.");
+    visitTimer->DumpTimings();
+}
+
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::PopulateIOInformation
+//
+//  Purpose:
+//      Populates the I/O Hints for a database, which allows domains that
+//      should be processed on the same processor for I/O performance reasons
+//      to do so.
+//
+//  Programmer: Hank Childs
+//  Creation:   May 11, 2001
+//
+//  Modifications:
+//    Mark C. Miller, Tue Mar 16 14:40:19 PST 2004
+//    Added timestep argument
+//
+//    Brad Whitlock, Thu Jun 19 11:13:21 PDT 2014
+//    Pass meshname.
+//
+// ****************************************************************************
+
+bool
+avtGenericDatabase::PopulateIOInformation(int ts, const std::string &meshname,
+    avtIOInformation &ioInfo)
+{
+    bool retval = Interface->PopulateIOInformation(ts, meshname, ioInfo);
+    if(!retval)
+    {
+        debug5 << Interface->GetType() << ": No I/O info provided for mesh "
+               << meshname << endl;
+    }
+    return retval;
+}
+
+// ****************************************************************************
+//  Function: AddOriginalCellsArray
+//
+//  Purpose:
+//    Creates an array of 'original zone numbers' to attach to the dataset.
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   June 8, 2001
+//
+//  Modifications:
+//    Kathleen Bonnell, Mon Nov 12 09:38:17 PST 2001
+//    Don't re-create array if it is already present.  Made values in
+//    original cell array be global in nature, so multiple-domain datasets
+//    have unique "original zones" across domains.  Turn on flag that
+//    ensures this array will be copied by vtk filters.
+//
+//    Kathleen Bonnell, Tue Mar 26 15:58:05 PST 2002
+//    Added new argument to keep track of starting cell number.
+//
+//    Kathleen Bonnell, Mon May 20 17:01:31 PDT 2002
+//    Changed int parameter to domain number.  Add domain as another
+//    component to the array.
+//
+//    Hank Childs, Sat Sep  7 08:34:08 PDT 2002
+//    Sped up routine and fixed memory leak.
+//
+//    Hank Childs, Mon Sep 30 18:01:26 PDT 2002
+//    Do not force the domain to be encoded.
+//
+//    Hank Childs, Fri Jan 17 08:47:57 PST 2003
+//    Re-ordered the location of the start-timer call to make sure that it
+//    would have a matching stop-timer.
+//
+// ****************************************************************************
+
+void
+avtGenericDatabase::AddOriginalCellsArray(vtkDataSet *ds, const int domain)
+{
+    if (ds == NULL || ds->GetCellData()->GetArray("avtOriginalCellNumbers"))
+    {
+        // Array already created, probably by GetMeshDataset
+        return;
+    }
+    int timerHandle = visitTimer->StartTimer();
+    vtkUnsignedIntArray *origZones = vtkUnsignedIntArray::New();
+    origZones->SetName("avtOriginalCellNumbers");
+    bool encodeDomains = (domain >= 0 ? true : false);
+    int nComps = (encodeDomains ? 2 : 1);
+    origZones->SetNumberOfComponents(nComps);
+    int ncells = ds->GetNumberOfCells();
+    origZones->SetNumberOfTuples(ncells);
+    unsigned int *ptr = origZones->GetPointer(0);
+    for (int i = 0; i < ncells; i++)
+    {
+        if (encodeDomains)
+        {
+            *ptr = domain;
+            ptr++;
+        }
+        *ptr = i;
+        ptr++;
+    }
+    ds->GetCellData()->AddArray(origZones);
+    origZones->Delete();
+    ds->GetCellData()->CopyFieldOn("avtOriginalCellNumbers");
+    visitTimer->StopTimer(timerHandle, "Creating original zones array");
+}
+
+
+// ****************************************************************************
+//  Function: AddOriginalNodesArray
+//
+//  Purpose:
+//    Creates an array of 'original node numbers' to attach to the dataset.
+//
+//  Programmer: Hank Childs
+//  Creation:   June 18, 2003
+//
+//  Kathleen bonnell, Wed Jun 16 13:54:28 PDT 2004
+//  Changed orgiNodes array to vtkIntArray from vtkUnsignedIntArray, to
+//  accommodate -1 (used by MIR when creating nodes).
+//
+// ****************************************************************************
+
+void
+avtGenericDatabase::AddOriginalNodesArray(vtkDataSet *ds, const int domain)
+{
+    if (ds == NULL || ds->GetPointData()->GetArray("avtOriginalNodeNumbers"))
+    {
+        // DataSet is NULL or array is already created -- return.
+        return;
+    }
+
+    int timerHandle = visitTimer->StartTimer();
+    vtkIntArray *origNodes = vtkIntArray::New();
+    origNodes->SetName("avtOriginalNodeNumbers");
+    bool encodeDomains = (domain >= 0 ? true : false);
+    int nComps = (encodeDomains ? 2 : 1);
+    origNodes->SetNumberOfComponents(nComps);
+    int nnodes = ds->GetNumberOfPoints();
+    origNodes->SetNumberOfTuples(nnodes);
+    int *ptr = origNodes->GetPointer(0);
+    for (int i = 0; i < nnodes; i++)
+    {
+        if (encodeDomains)
+        {
+            *ptr = domain;
+            ptr++;
+        }
+        *ptr = i;
+        ptr++;
+    }
+    ds->GetPointData()->AddArray(origNodes);
+    origNodes->Delete();
+    ds->GetPointData()->CopyFieldOn("avtOriginalNodeNumbers");
+    visitTimer->StopTimer(timerHandle, "Creating original nodes array");
+}
+
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::MaterialSelect
+//
+//  Purpose:
+//      Determines if the dataset needs to be material selected and performs
+//      the selection if it does.
+//
+//  Arguments:
+//      ds      The input as a vtk dataset.
+//      mat     The avt material.
+//      mvl     A list of the mixed variables.
+//      dom     The domain number for this dataset.
+//      var     The variable for this dataset (to determine the material).
+//      ts      The timestep of interest.
+//      mnames  The names of the materials we want.
+//      reUseMIR  Whether or not the MIR can be re-used.
+//
+//  Output Arguments:
+//      subdivisionOccurred              true if subdiv occurred in MIR
+//      notAllCellsSubdivided            true if some cells were left whole
+//
+//  Returns:    A data tree representation of the dataset, material selected or
+//              not based on the sil restriction.
+//
+//  Programmer: Hank Childs
+//  Creation:   July 20, 2001
+//
+//  Arguments:
+//
+//    Hank Childs, Tue Jul 24 14:17:14 PDT 2001
+//    Added didIt argument.
+//
+//    Kathleen Bonnell, Wed Sep 19 13:45:33 PDT 2001
+//    Retrieve material names and pass them to the output tree.
+//
+//    Jeremy Meredith, Mon Oct  1 12:09:06 PDT 2001
+//    Pass mixvar info to GetZonalVariable.
+//
+//    Hank Childs, Fri Oct  5 16:27:34 PDT 2001
+//    Added mnames argument and removed arguments didIt and silr.
+//
+//    Kathleen Bonnell, Fri Oct 19 15:33:35 PDT 2001
+//    Added labels argument, to be used when creating the data tree instead
+//    of mnames.
+//
+//    Hank Childs, Mon Nov 26 09:01:36 PST 2001
+//    Added material argument.
+//
+//    Hank Childs, Wed Dec  5 10:57:23 PST 2001
+//    Added mixvar argument.
+//
+//    Eric Brugger, Tue Dec 11 13:02:39 PST 2001
+//    I modified the material selection to create a single dataset with
+//    all the cells instead of a dataset per material.  This causes the
+//    internal material boundaries to be eliminated.
+//
+//    Jeremy Meredith, Wed Dec 19 20:13:05 PST 2001
+//    Added understanding of species as a zonal variable.
+//
+//    Hank Childs, Fri Feb  1 15:20:32 PST 2002
+//    Material select all of the variables.
+//
+//    Hank Childs, Wed Feb  6 11:45:12 PST 2002
+//    Check before overwriting ghost levels array.
+//
+//    Jeremy Meredith, Thu Mar 14 18:02:31 PST 2002
+//    Added a flag to split materials into their own datasets.
+//
+//    Jeremy Meredith, Thu Mar 14 18:03:22 PST 2002
+//    Added a flag for the helper MaterialSelect which says whether or
+//    not the dataspec says we need internal surfaces.
+//
+//    Kathleen Bonnell, Fri Mar 15 10:11:23 PST 2002
+//    Use new VTK methods for changing active scalars in PointData and CellData.
+//
+//    Hank Childs, Thu Jul  4 09:30:05 PDT 2002
+//    Fit MIRs new interface to handle secondary variables without so much
+//    hoopla.  Also add support for an arbitrary number of mixvars.
+//
+//    Jeremy Meredith, Tue Aug 13 14:36:40 PDT 2002
+//    Added the needValidConnectivity flag, as well as the two subdivision
+//    return flags.
+//
+//    Kathleen Bonnell, Thu Aug 15 20:08:34 PDT 2002
+//    Use the blockOrigin when setting a domain label (instead of adding 1
+//    to the domain number).
+//
+//    Hank Childs, Sun Aug 18 22:33:35 PDT 2002
+//    Added argument for whether or not the MIR can be re-used.
+//
+//    Kathleen Bonnell, Thu Sep  5 13:53:15 PDT 2002
+//    Added support for creating group labels.
+//
+//    Hank Childs, Thu Sep 26 08:22:40 PDT 2002
+//    Cleaned up huge memory leak.
+//
+//    Hank Childs, Wed Oct  2 10:09:53 PDT 2002
+//    Go back to using reference pointers because the MIR may not have been
+//    cached.
+//
+//    Jeremy Meredith, Thu Oct 24 15:37:05 PDT 2002
+//    Added smoothing option and clean zones only option.
+//
+//    Jeremy Meredith, Thu Jun 12 09:07:28 PDT 2003
+//    Added needBoundarySurfaces option.
+//
+//    Hank Childs, Tue Jul 22 21:48:09 PDT 2003
+//    Added a flag for whether or not we communicated ghosts.
+//
+//    Hank Childs, Fri Sep 12 16:27:38 PDT 2003
+//    Added a flag for whether or not reconstruction was forced.
+//
+//    Jeremy Meredith, Fri Sep  5 15:31:53 PDT 2003
+//    Added a flag for the MIR algorithm.
+//
+//    Kathleen Bonnell, Thu Sep 18 11:49:16 PDT 2003
+//    Add 'vtkOriginalDimensions' field data to output, if input was
+//    structured (so Pick can return correct zone/node numbers).
+//
+//    Jeremy Meredith, Wed Oct 15 17:25:48 PDT 2003
+//    Added code to correctly handle clean-zones-only MIR.
+//
+//    Hank Childs, Fri Apr  9 09:15:25 PDT 2004
+//    Use the material object to determine the material indices, not meta-data
+//    from timestep 0.
+//
+//    Hank Childs, Wed Jul 28 15:28:23 PDT 2004
+//    Make sure that the material object and the dataset are sized
+//    appropriately before starting to execute.
+//
+//    Kathleen Bonnell, Wed Dec 15 08:41:17 PST 2004
+//    Changed 'vector<int>' to 'intVector', and 'vector<string>' to
+//    'stringVector'.
+//
+//    Hank Childs, Thu Mar 10 16:48:19 PST 2005
+//    Fix memory leak with boundary plots.
+//
+//    Mark C. Miller, Thu Apr 21 09:37:41 PDT 2005
+//    Made error message a little clearer
+//
+//    Jeremy Meredith, Thu Aug 18 17:54:51 PDT 2005
+//    Added a new isovolume algorithm, with adjustable VF cutoff.
+//
+//    Hank Childs, Thu Jan 12 14:49:44 PST 2006
+//    Make warning also include domain number.
+//
+//    Kathleen Bonnell, Tue May 16 09:41:46 PDT 2006
+//    Removed call to SetSource(NULL), with new vtk pipeline, it also removes
+//    necessary information from the dataset.
+//
+//    Mark C. Miller, Sun Dec  3 11:32:07 PST 2006
+//    Fixed possible reference through nil pointer during Exception
+//
+//    Hank Childs, Thu Sep 20 12:58:17 PDT 2007
+//    If the material object has been reordered (due to simplifying heavily
+//    mixed zones), then reorder the mixed variable as well ['8082].
+//
+//    Hank Childs, Thu Feb 21 16:50:18 PST 2008
+//    Fix problem where object could be deleted multiple times.
+//
+//    Jeremy Meredith, Tue Oct 14 16:37:07 EDT 2008
+//    Material selection can now pass through original grids unscathed if
+//    they had only one material.  Added code to account for that in
+//    case of creating boundary surfaces.
+//
+//    John C. Anderson, Thu Jan 15 10:20:20 2009
+//    Added annealing time for Discrete MIR.
+//
+//    Jeremy Meredith, Fri Feb 13 11:22:39 EST 2009
+//    Added MIR iteration capability.
+//
+//    Mark C. Miller, Wed Mar  4 18:00:22 PST 2009
+//    Adjusted for dbio-only build
+//
+//    Mark C. Miller, Sun Aug 29 23:31:55 PDT 2010
+//    Removed extraneous cerr statements left over from debugging.
+//
+//    Eric Brugger, Tue May 17 10:56:46 PDT 2011
+//    I had the routine return NULL if the dataset didn't have any cells.
+//
+//    Hank Childs, Mon Mar 26 11:31:46 PDT 2012
+//    Fix problem with subset plot with a material removed (labels weren't
+//    being passed back correctly).
+//
+//    Alister Maguire, Mon Nov 27 15:31:54 PST 2017
+//    If materialLabelsForced is true, then create material labels. 
+//
+// ****************************************************************************
+
+avtDataTree_p
+avtGenericDatabase::MaterialSelect(vtkDataSet *ds, avtMaterial *mat,
+                        vector<avtMixedVariable *> mvl,int dom,const char *var,
+                        int ts, stringVector &mnames, stringVector &labels,
+                        bool needInternalSurfaces,
+                        bool needBoundarySurfaces,
+                        bool needValidConnectivity,
+                        bool needSmoothMaterialInterfaces,
+                        bool needCleanZonesOnly,
+                        bool reconstructionForced,
+                        bool materialLabelsForced,
+                        bool simplifyHeavilyMixedZones,
+                        int  maxMatsPerZone,
+                        int  mirAlgorithm,
+                        int  mirNumIterations,
+                        float  mirIterationDamping,
+                        float isovolumeMIRVF,
+                        int annealingTime,
+                        bool didGhosts,
+                        bool &subdivisionOccurred,
+                        bool &notAllCellsSubdivided,
+                        bool reUseMIR)
+{
+#ifndef DBIO_ONLY
+    if (ds == NULL)
+    {
+        char msg[128];
+        SNPRINTF(msg, sizeof(msg),
+                "In domain number %d, the dataset object is NULL", dom);
+        EXCEPTION1(InvalidDBTypeException, msg);
+    }
+
+    //
+    // We need to have the material indices as well.
+    //
+    intVector mindex;
+    GetMaterialIndices(mat, mnames, mindex);
+
+    if (mat == NULL)
+    {
+        char msg[128];
+        SNPRINTF(msg,sizeof(msg),
+            "In domain number %d, the material object is NULL", dom);
+        EXCEPTION1(InvalidDBTypeException, msg);
+    }
+
+    if (mat->GetNZones() !=ds->GetNumberOfCells())
+    {
+        char msg[128];
+        SNPRINTF(msg,sizeof(msg),"In domain number %d, the material object "
+              "with nzones=%d and dataset object with ncells=%d do not agree.",
+               dom, mat->GetNZones(), (int) ds->GetNumberOfCells());
+        EXCEPTION1(InvalidDBTypeException, msg);
+    }
+
+    //
+    // If there aren't any cells, then we are finished.
+    //
+    if (ds->GetNumberOfCells() == 0)
+    {
+        return NULL;
+    }
+
+    //
+    // Make room for the "mixed" material (i.e. for clean-zones-only)
+    //
+    mindex.push_back(mat->GetNMaterials());
+
+    //
+    // Determine the topological dimension.
+    //
+    avtDatabaseMetaData *md = GetMetaData(ts);
+    string meshname = md->MeshForVar(var);
+    const avtMeshMetaData *mmd = md->GetMesh(meshname);
+    if (mmd == NULL)
+    {
+        return NULL;
+    }
+    int topoDim = mmd->topologicalDimension;
+
+    avtMaterial *material_used = NULL;
+    void_ref_ptr vr_mir = GetMIR(dom, var, ts, ds, mat, topoDim,
+                                 needValidConnectivity,
+                                 needSmoothMaterialInterfaces,
+                                 needCleanZonesOnly,
+                                 simplifyHeavilyMixedZones,
+                                 maxMatsPerZone,
+                                 mirAlgorithm,
+                                 mirNumIterations,
+                                 mirIterationDamping,
+                                 isovolumeMIRVF,
+                                 annealingTime,
+                                 didGhosts,
+                                 subdivisionOccurred,
+                                 notAllCellsSubdivided,
+                                 reUseMIR,
+                                 material_used);
+    MIR *mir = (MIR *) (*vr_mir);
+
+    int numSelected = (int)mindex.size();
+
+    intVector selMats;
+    int numOutput = (needInternalSurfaces ?  numSelected : 1);
+    vtkDataSet **out_ds = new vtkDataSet *[numOutput];
+
+    avtVarType type = GetMetaData(ts)->DetermineVarType(var);
+    vtkIntArray *origDims = NULL;
+    if (ds->GetDataObjectType() == VTK_STRUCTURED_GRID)
+    {
+        int *dims = ((vtkStructuredGrid*)ds)->GetDimensions();
+        origDims = vtkIntArray::New();
+        origDims->SetName("vtkOriginalDimensions");
+        origDims->SetNumberOfComponents(1);
+        origDims->SetNumberOfTuples(3);
+        origDims->SetValue(0, dims[0]);
+        origDims->SetValue(1, dims[1]);
+        origDims->SetValue(2, dims[2]);
+    }
+    else if (ds->GetDataObjectType() == VTK_RECTILINEAR_GRID)
+    {
+        int *dims = ((vtkRectilinearGrid*)ds)->GetDimensions();
+        origDims = vtkIntArray::New();
+        origDims->SetName("vtkOriginalDimensions");
+        origDims->SetNumberOfComponents(1);
+        origDims->SetNumberOfTuples(3);
+        origDims->SetValue(0, dims[0]);
+        origDims->SetValue(1, dims[1]);
+        origDims->SetValue(2, dims[2]);
+    }
+
+    for (int d=0; d<numOutput; d++)
+    {
+        if (needInternalSurfaces)
+        {
+            selMats.clear();
+            selMats.push_back(mindex[d]);
+        }
+        else
+        {
+            selMats = mindex;
+        }
+
+        bool  setUpMaterialVariable = false;
+        if (type == AVT_MATERIAL || reconstructionForced)
+        {
+            setUpMaterialVariable = true;
+        }
+
+        vector<avtMixedVariable *> mvl2 = mvl;
+        if (material_used->ReorderedMaterials())
+        {
+            for (size_t i = 0 ; i < mvl2.size() ; i++)
+                mvl2[i] = material_used->ReorderMixedVariable(mvl[i]);
+        }
+        out_ds[d] = mir->GetDataset(selMats, ds, mvl2, setUpMaterialVariable,
+                                    mat);
+        if (material_used->ReorderedMaterials())
+        {
+            for (size_t i = 0 ; i < mvl2.size() ; i++)
+                delete mvl2[i];
+        }
+        if (out_ds[d] != NULL && out_ds[d]->GetNumberOfCells() == 0)
+        {
+            out_ds[d]->Delete();
+            out_ds[d] = NULL;
+        }
+
+        if (out_ds[d] != NULL && needBoundarySurfaces)
+        {
+            //
+            // We need to extract the internal boundaries
+            //
+            if (out_ds[d]->GetDataObjectType() != VTK_UNSTRUCTURED_GRID)
+            {
+                debug2 << "Warning: MaterialSelect/needBoundarySurfaces did "
+                       << "not get a VTK_UNSTRUCTURED_GRID.  This can only "
+                       << "currently happen if the material selected grid "
+                       << "was all one material, which means it should have "
+                       << "have no boundaries, so we are returning NULL.  If "
+                       << "the selection algorithm can ever get to this state "
+                       << "*with* boundaries, then this should be fixed.\n";
+                out_ds[d]->Delete();
+                out_ds[d] = NULL;
+            }
+            else
+            {
+                vtkUnstructuredGridBoundaryFilter *bf =
+                    vtkUnstructuredGridBoundaryFilter::New();
+
+                vtkDataSet *in_ds = out_ds[d];
+
+                bf->SetInputData((vtkUnstructuredGrid*)in_ds);
+                in_ds->Delete();
+                out_ds[d] = bf->GetOutput();
+                bf->Update();
+
+                out_ds[d]->Register(NULL);
+                //  Using SetSource(NULL) on vtkDataSets no longer a good idea.
+                //out_ds[d]->SetSource(NULL);
+                bf->Delete();
+
+                if (out_ds != NULL && out_ds[d]->GetNumberOfCells() == 0)
+                {
+                    out_ds[d]->Delete();
+                    out_ds[d] = NULL;
+                }
+            }
+
+        }
+        if (out_ds[d] && origDims)
+        {
+            out_ds[d]->GetFieldData()->AddArray(origDims);
+            out_ds[d]->GetFieldData()->CopyFieldOn("vtkOriginalDimensions");
+        }
+    }
+    if (material_used != mat)
+    {
+        // The GetMIR applied SimplifyHeavilyMixed and gave us this
+        // object to deal with.  Clean it up.
+        delete material_used;
+    }
+    if (origDims)
+        origDims->Delete();
+
+    //
+    // Create new labels.
+    //
+    stringVector labelStrings;
+
+    if (type == AVT_MATERIAL || materialLabelsForced) 
+    {
+        if (needInternalSurfaces)
+        {
+            labelStrings = labels;
+            // add the one for the "mixed material"
+            labelStrings.push_back("mixed");
+        }
+        else
+        {
+            //
+            // Create a new label of the form "%d;%d;%s;...", which consists
+            // of the number of materials, followed by pairs of material
+            // number and material name for each material.  Make sure the last
+            // one is for the "mixed material".
+            //
+            char   buff[32];
+            string label;
+            sprintf(buff, "%d;", numSelected);
+            label += buff;
+            for (int i = 0; i < numSelected; i++)
+            {
+                sprintf(buff, "%d;", mindex[i]);
+                if (i == numSelected-1)
+                    label += string(buff) + "mixed;";
+                else
+                    label += string(buff) + labels[i] + ";";
+            }
+            labelStrings.push_back(label);
+        }
+    }
+    else
+    {
+        char label[40];
+        avtSubsetType sT = GetMetaData(ts)->DetermineSubsetType(var);
+        if (sT == AVT_DOMAIN_SUBSET || sT == AVT_UNKNOWN_SUBSET)
+        {
+            for (int d = 0; d < numOutput; d++)
+            {
+                // If labels were sent in, they are all identical ... use the first one
+                // Otherwise, make one up with our best guess.
+                if (labels.size() > 0)
+                    labelStrings.push_back(labels[0]);
+                else
+                {
+                    //
+                    // Create a new label which is the domain number.
+                    // We are doing a material-selected domain-subset plot,
+                    // or a material-selected non-subset plot.
+                    //
+                    int domOrigin  =  GetMetaData(ts)->GetMesh(meshname)->blockOrigin;
+                    sprintf(label, "%d", dom + domOrigin);
+                    labelStrings.push_back(label);
+                }
+            }
+        }
+        else if (sT == AVT_GROUP_SUBSET)
+        {
+            for (int d = 0; d < numOutput; d++)
+            {
+                // If labels were sent in, they are all identical ... use the first one
+                // Otherwise, make one up with our best guess.
+                if (labels.size() > 0)
+                    labelStrings.push_back(labels[0]);
+                else
+                {
+                    //
+                    // Create a new label which is the group number.
+                    //
+                    int gID  =  GetMetaData(ts)->GetMesh(meshname)->groupIds[dom];
+                    sprintf(label, "%d", gID);
+                    labelStrings.push_back(label);
+                }
+            }
+        }
+    }
+    avtDataTree_p outDT = new avtDataTree(numOutput, out_ds, dom, labelStrings);
+    for (int i = 0 ; i < numOutput ; i++)
+    {
+        if (out_ds[i] != NULL)
+        {
+            out_ds[i]->Delete();
+        }
+    }
+    delete [] out_ds;
+
+    return outDT;
+#else
+    return 0;
+#endif
+}
+
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::GetMaterialIndices
+//
+//  Purpose:
+//      Gets a list of material indices based on a list of material names.
+//
+//  Arguments:
+//      mat     The material we should get the indices from.
+//      mn      The material names.
+//      ml      A place to put the material list.
+//
+//  Programmer: Hank Childs
+//  Creation:   October 5, 2001
+//
+//  Modifications:
+//
+//    Hank Childs, Fri Apr  9 09:02:57 PDT 2004
+//    Use the avtMaterial for the correct timestep to get the indices.
+//
+//    Brad Whitlock, Wed Apr 14 12:14:42 PDT 2004
+//    I fixed it for Windows.
+//
+//    Hank Childs, Wed Jul 28 15:27:45 PDT 2004
+//    Make sure material is valid before moving on.
+//
+//    Kathleen Bonnell, Wed Dec 15 08:41:17 PST 2004
+//    Changed 'vector<int>' to 'intVector', and 'vector<string>' to
+//    'stringVector'.
+//
+//    Mark C. Miller, Tue Feb 24 10:14:20 PST 2009
+//    Added quotes around material name in debug output.
+// ****************************************************************************
+
+void
+avtGenericDatabase::GetMaterialIndices(avtMaterial *mat, stringVector &mn,
+                                       intVector &ml)
+{
+    if (mat == NULL)
+    {
+        debug1 << "ERROR: The file format returned a NULL material object."
+               << endl;
+        EXCEPTION1(InvalidDBTypeException, "\"Unable to sucessfully read "
+                                           "the material information.\"");
+    }
+
+    const stringVector &matlist = mat->GetCompleteMaterialList();
+
+    size_t nstr = mn.size();
+    for (size_t i = 0 ; i < nstr ; i++)
+    {
+        bool foundMatch = false;
+        for (size_t j = 0 ; j < matlist.size() ; j++)
+        {
+            if (mn[i] == matlist[j])
+            {
+                ml.push_back((int)j);
+                foundMatch = true;
+                break;
+            }
+        }
+        if (!foundMatch)
+        {
+            debug1 << "Was unable to match material \"" << mn[i].c_str() << "\" against "
+                   << "any material for this dataset.  It is likely that this "
+                   << "material exists at another timestep, but not at this "
+                   << "one." << endl;
+        }
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::GetMaterial
+//
+//  Purpose:
+//      Gets a material for a specific domain and a variable.  This handles
+//      going through the auxiliary data mechanism and caching issues.
+//
+//  Arguments:
+//      dom     The domain we want the material for.
+//      var     A variable (could be vector, scalar, mesh, or material).
+//      ts      The timestep of interest.
+//
+//  Programmer: Hank Childs
+//  Creation:   July 20, 2001
+//
+//  Modifications:
+//    Brad Whitlock, Thu Apr 4 16:25:10 PST 2002
+//    Changed CopyTo to an inline template function.
+//
+//    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
+//    Added data specification arg as well as transformation of material,
+//    if neededb
+//
+//    Hank Childs, Fri May  9 16:05:46 PDT 2008
+//    Added argument for domainID to TransformMaterialDataset.
+//
+// ****************************************************************************
+
+avtMaterial *
+avtGenericDatabase::GetMaterial(int dom, const char *var, int ts,
+    const avtDataRequest_p dataRequest)
+{
+    avtDatabaseMetaData *md = GetMetaData(ts);
+
+    //
+    // Identify the material we want.
+    //
+    string meshname = md->MeshForVar(var);
+    string matname  = md->MaterialOnMesh(meshname);
+
+    avtDataRequest_p spec = new avtDataRequest(matname.c_str(),
+                                                           ts, dom);
+    VoidRefList mats;
+    GetAuxiliaryData(spec, mats, AUXILIARY_DATA_MATERIAL, NULL);
+    if (mats.nList != 1)
+    {
+        EXCEPTION0(ImproperUseException);
+    }
+
+    avtMaterial *rv = (avtMaterial *) *(mats.list[0]);
+
+    // this is a no-op unless transformation is needed
+    xformManager->TransformMaterialDataset(md, *dataRequest ? dataRequest : spec, &rv, dom);
+
+    return rv;
+}
+
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::GetSpecies
+//
+//  Purpose:
+//      Gets a species for a specific domain and a variable.  This handles
+//      going through the auxiliary data mechanism and caching issues.
+//
+//  Arguments:
+//      dom     The domain we want the species for.
+//      var     A variable (could be vector, scalar, mesh, mat, or species).
+//      ts      The timestep of interest.
+//
+//  Programmer: Jeremy Meredith
+//  Creation:   December 17, 2001
+//
+//  Modifications:
+//    Brad Whitlock, Thu Apr 4 16:25:10 PST 2002
+//    Changed CopyTo to an inline template function.
+//
+// ****************************************************************************
+
+avtSpecies *
+avtGenericDatabase::GetSpecies(int dom, const char *var, int ts)
+{
+    avtDatabaseMetaData *md = GetMetaData(ts);
+
+    //
+    // Identify the species we want.
+    //
+    string meshname = md->MeshForVar(var);
+    string specname = md->SpeciesOnMesh(meshname);
+
+    avtDataRequest_p dataRequest = new avtDataRequest(specname.c_str(),
+                                                            ts, dom);
+    VoidRefList specs;
+    GetAuxiliaryData(dataRequest, specs, AUXILIARY_DATA_SPECIES, NULL);
+    if (specs.nList != 1)
+    {
+        EXCEPTION0(ImproperUseException);
+    }
+
+    avtSpecies *rv = (avtSpecies *) *(specs.list[0]);
+
+    return rv;
+}
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::GetGlobalNodeIds
+//
+//  Purpose:
+//      Gets a global node numbers for a specific domain and a variable.
+//      This handles going through the auxiliary data mechanism and caching
+//      issues.
+//
+//  Arguments:
+//      dom     The domain we want the species for.
+//      var     A variable (could be vector, scalar, mesh, mat, or species).
+//      ts      The timestep of interest.
+//
+//  Programmer: Mark C. Miller
+//  Creation:   August 5, 2004
+//
+//  Modifications:
+//
+//    Hank Childs, Thu Sep 23 09:48:24 PDT 2004
+//    Name the global node ids array.
+//
+//    Kathleen Bonnell, Thu Dec  9 14:11:44 PST 2004
+//    Only set 'ContainsGlobalNodeIds' to true if the returned array
+//    is not null.  Pass meshname instead of var to SetContainsGlobalNodeIds.
+//
+// ****************************************************************************
+
+vtkDataArray *
+avtGenericDatabase::GetGlobalNodeIds(int dom, const char *var, int ts)
+{
+    avtDatabaseMetaData *md = GetMetaData(ts);
+
+    //
+    // Identify the mesh we want global node ids for
+    //
+    string meshname = md->MeshForVar(var);
+
+    avtDataRequest_p dataRequest = new avtDataRequest(meshname.c_str(),
+                                                            ts, dom);
+    VoidRefList gnodeIds;
+    GetAuxiliaryData(dataRequest, gnodeIds, AUXILIARY_DATA_GLOBAL_NODE_IDS, NULL);
+    if (gnodeIds.nList > 1)
+    {
+        EXCEPTION0(ImproperUseException);
+    }
+    else if (gnodeIds.nList == 1)
+    {
+        vtkDataArray *arr = (vtkDataArray *) *(gnodeIds.list[0]);
+        if (arr != NULL)
+        {
+            md->SetContainsGlobalNodeIds(meshname, true);
+            arr->SetName("avtGlobalNodeNumbers");
+        }
+        return arr;
+    }
+    else
+    {
+        return NULL;
+    }
+}
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::GetGlobalZoneIds
+//
+//  Purpose:
+//      Gets a global zone numbers for a specific domain and a variable.
+//      This handles going through the auxiliary data mechanism and caching
+//      issues.
+//
+//  Arguments:
+//      dom     The domain we want the species for.
+//      var     A variable (could be vector, scalar, mesh, mat, or species).
+//      ts      The timestep of interest.
+//
+//  Programmer: Mark C. Miller
+//  Creation:   August 5, 2004
+//
+//  Modifications:
+//
+//    Hank Childs, Thu Sep 23 09:48:24 PDT 2004
+//    Name the global zone ids array.
+//
+//    Kathleen Bonnell, Thu Dec  9 14:11:44 PST 2004
+//    Only set 'ContainsGlobalZoneIds' to true if the returned array
+//    is not null.  Pass meshname instead of var to SetContainsGlobalZoneIds.
+//
+// ****************************************************************************
+
+vtkDataArray *
+avtGenericDatabase::GetGlobalZoneIds(int dom, const char *var, int ts)
+{
+    avtDatabaseMetaData *md = GetMetaData(ts);
+
+    //
+    // Identify the mesh we want global node ids for
+    //
+    string meshname = md->MeshForVar(var);
+
+    avtDataRequest_p dataRequest = new avtDataRequest(meshname.c_str(),
+                                                            ts, dom);
+    VoidRefList gzoneIds;
+    GetAuxiliaryData(dataRequest, gzoneIds, AUXILIARY_DATA_GLOBAL_ZONE_IDS, NULL);
+    if (gzoneIds.nList > 1)
+    {
+        EXCEPTION0(ImproperUseException);
+    }
+    else if (gzoneIds.nList == 1)
+    {
+        vtkDataArray *arr = (vtkDataArray *) *(gzoneIds.list[0]);
+        if (arr != NULL)
+        {
+            arr->SetName("avtGlobalZoneNumbers");
+            md->SetContainsGlobalZoneIds(meshname, true);
+        }
+        return arr;
+    }
+    else
+    {
+        return NULL;
+    }
+}
+
+
+// ****************************************************************************
+//  Method:  avtGenericDatabase::EnumScalarSelect
+//
+//  Purpose:
+//    Remove parts of the datasets based on their values in an
+//    enumerated scalar.
+//
+//  Arguments:
+//      dsc         The dataset collection.  This will be modified.
+//      selection   The
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    August 28, 2006
+//
+//  Modifications:
+//    Mark C. Miller, Mon Apr 14 15:28:11 PDT 2008
+//    Added support for enhanced enumerated scalar functionality
+//
+// ****************************************************************************
+void
+avtGenericDatabase::EnumScalarSelect(avtDatasetCollection &dsc,
+                                     const boolVector &selection,
+                                     const avtDatabaseMetaData *md,
+                                     const string &varname)
+{
+    const avtScalarMetaData *smd = md->GetScalar(varname);
+    int nDomains = dsc.GetNDomains();
+    for (int i = 0 ; i < nDomains ; i++)
+    {
+        int m = 0; // Using 0 assumes that the file format does not do matsel.
+        vtkDataSet *ds = dsc.GetDataset(i, m);
+        if (!ds)
+            continue;
+
+        vtkEnumThreshold *enumThreshold = vtkEnumThreshold::New();
+
+        if (ds->GetPointData()->GetArray(varname.c_str()) != NULL)
+        {
+            enumThreshold->SetInputArrayToProcess(0, 0, 0,
+                     vtkDataObject::FIELD_ASSOCIATION_POINTS, varname.c_str());
+        }
+        else if (ds->GetCellData()->GetArray(varname.c_str()) != NULL)
+        {
+            enumThreshold->SetInputArrayToProcess(0, 0, 0,
+                     vtkDataObject::FIELD_ASSOCIATION_CELLS, varname.c_str());
+        }
+        else
+        {
+            ds->Register(NULL);
+            enumThreshold->Delete();
+            char errMsg[1024];
+            sprintf(errMsg, "Data for variable \"%s\" is not available.",
+                    varname.c_str());
+            EXCEPTION1(VisItException, errMsg);
+        }
+
+        // setup operator behavior
+        enumThreshold->SetReturnEmptyIfAllCellsKept(true);
+        enumThreshold->SetEnumerationMode((vtkEnumThreshold::EnumerationMode)
+            smd->GetEnumerationType());
+        enumThreshold->SetEnumerationRanges(smd->enumRanges);
+        enumThreshold->SetAlwaysExcludeRange(smd->enumAlwaysExclude[0],
+            smd->enumAlwaysExclude[1]);
+        enumThreshold->SetAlwaysIncludeRange(smd->enumAlwaysInclude[0],
+            smd->enumAlwaysInclude[1]);
+        enumThreshold->SetPartialCellMode((vtkEnumThreshold::PartialCellMode)
+            smd->GetEnumPartialCellMode());
+        if (smd->GetEnumerationType() == avtScalarMetaData::ByNChooseR)
+        {
+            enumThreshold->SetNAndMaxRForNChooseRMode(
+                smd->GetEnumNChooseRN(),smd->GetEnumNChooseRMaxR());
+        }
+        enumThreshold->SetEnumerationSelection(selection);
+
+        // do the operation
+        enumThreshold->SetInputData(ds);
+        vtkDataSet *outds = enumThreshold->GetOutput();
+        enumThreshold->Update();
+
+        // Only change the dataset if the enum filter actually removed something
+        if (!(enumThreshold->GetReturnEmptyIfAllCellsKept() &&
+              enumThreshold->GetAllCellsKeptInLastRequestData()))
+        {
+            dsc.SetDataset(i, m, outds);
+            outds->Register(NULL);
+        }
+
+        enumThreshold->Delete();
+    }
+}
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::SpeciesSelect
+//
+//  Purpose:
+//      Performs species selection.
+//
+//  Arguments:
+//      dsc       The dataset collection.  This will be modified.
+//      domains   The domain list.
+//      specList  A list of species that are on and off.
+//      spec      The data specification.
+//      src       The source from a database.  Used for progress.
+//
+//  Programmer:   Hank Childs
+//  Creation:     December 19, 2001
+//
+//  Modifications:
+//
+//    Kathleen Bonnell, Fri Feb  8 08:48:06 PST 2002
+//    vtkScalars has been deprecated in VTK 4.0, use vtkDataArray instead.
+//
+//    Hank Childs, Thu Jul  4 14:53:05 PDT 2002
+//    Reflect interface change that supports multiple mixed variables.
+//
+//    Hank Childs, Tue Sep 17 10:19:15 PDT 2002
+//    Add support for all secondary variables.  Also fix memory leak.
+//
+//    Hank Childs, Tue Sep 24 08:25:28 PDT 2002
+//    I screwed up the progress bar for species selection on my last checkin.
+//
+//    Kathleen Bonnell, Wed Dec 15 08:41:17 PST 2004
+//    Changed 'vector<int>' to 'intVector', and 'vector<bool>' to 'boolVector'.
+//
+//    Jeremy Meredith, Tue Jun  7 10:55:18 PDT 2005
+//    Allowed empty domains.
+//
+//    Jeremy Meredith, Wed Aug  6 18:08:33 EDT 2008
+//    Changed char* to const char* to fix warning.
+//
+//    Mark C. Miller, Wed Mar  4 18:00:38 PST 2009
+//    Adjusted for dbio-only build
+// ****************************************************************************
+
+void
+avtGenericDatabase::SpeciesSelect(avtDatasetCollection &dsc,
+                      intVector &domains, boolVector &specList,
+                      avtDataRequest_p &spec, avtSourceFromDatabase *src)
+{
+    const char *progressString = "Doing species selection";
+    src->DatabaseProgress(0, 0, progressString);
+
+    int timestep = spec->GetTimestep();
+
+    int nDomains = dsc.GetNDomains();
+    for (int i = 0 ; i < nDomains ; i++)
+    {
+        int m = 0; // Using 0 assumes that the file format does not do matsel.
+        vtkDataSet *ds = dsc.GetDataset(i, m);
+
+        // Allow for empty domains
+        if (!ds)
+            continue;
+
+        int n_cell_vars = ds->GetCellData()->GetNumberOfArrays();
+        // We make a copy of the cell data so that we can manipulate
+        // the order of the arrays without processing some twice
+        vtkCellData *inCD = vtkCellData::New();
+        inCD->ShallowCopy(ds->GetCellData());
+        for (int j = 0 ; j < n_cell_vars ; j++)
+        {
+            vtkDataArray *arr = inCD->GetArray(j);
+            if (arr->GetDataType() != VTK_FLOAT ||
+                arr->GetNumberOfComponents() != 1)
+            {
+                continue;
+            }
+
+            string var = arr->GetName();
+            bool activeVar = false;
+            if (ds->GetCellData()->GetScalars() == arr)
+            {
+                activeVar = true;
+            }
+            avtMaterial *mat = GetMaterial(domains[i], var.c_str(), timestep);
+            avtSpecies *species = GetSpecies(domains[i],var.c_str(),timestep);
+
+            avtMixedVariable *mixvar = (avtMixedVariable *)
+                                                       *(dsc.GetMixVar(i,var));
+
+            avtMixedVariable *mixVarOut = NULL;
+            vtkDataArray     *scalarOut = NULL;
+#ifndef DBIO_ONLY
+            MIR::SpeciesSelect(specList, mat, species, arr, mixvar,
+                               scalarOut, mixVarOut);
+#endif
+            ds->GetCellData()->RemoveArray(var.c_str());
+            ds->GetCellData()->AddArray(scalarOut);
+            if (activeVar)
+            {
+                ds->GetCellData()->SetActiveScalars(var.c_str());
+            }
+            scalarOut->Delete();
+            if (mixVarOut != NULL)
+            {
+                void_ref_ptr vr = void_ref_ptr(mixVarOut,
+                                               avtMixedVariable::Destruct);
+                dsc.AddMixVar(i, vr);
+            }
+            src->DatabaseProgress(i*n_cell_vars+j, nDomains*n_cell_vars,
+                                  progressString);
+        }
+        inCD->Delete();
+    }
+
+    src->DatabaseProgress(1, 0, progressString);
+}
+
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::GetMIR
+//
+//  Purpose:
+//      Gets the Material Interface Reconstruction (MIR), by first checking
+//      to see if it was cached and returning the cached object if it was.
+//      It then goes ahead and retrieves the material and reconstructs the
+//      mesh if necessary.
+//
+//  Arguments:
+//      domain    The domain of interest.
+//      varname   The name of the variable (not necessarily the material name).
+//      timestep  The timestep of interest.
+//      ds        The dataset to reconstruct.
+//      mat       The material.
+//      topoDim   Whether this is a 3D mesh or 2D mesh.
+//      needValidConnectivity
+//                True if any subdivision must imply complete subdivision
+//      reUseMIR  True if we can use this MIR on subsequent runs.
+//
+//  Output Arguments:
+//      subdivisionOccurred              true if subdiv occurred in MIR
+//      notAllCellsSubdivided            true if some cells were left whole
+//
+//  Returns:      The MIR object.
+//
+//  Programmer:   Hank Childs
+//  Creation:     July 23, 2001
+//
+//  Modifications:
+//
+//    Hank Childs, Mon Nov 26 09:06:07 PST 2001
+//    Added material argument.  This allowed for the material to be read in
+//    at the same time as the mesh, which allowed for ghost zone information
+//    to be communicated.
+//
+//    Brad Whitlock, Thu Apr 4 16:25:10 PST 2002
+//    Changed CopyTo to an inline template function.
+//
+//    Jeremy Meredith, Tue Aug 13 14:34:20 PDT 2002
+//    Allowed leaving clean zones whole when possible.  This means
+//    two *different* MIRs need to be in the cache.
+//
+//    Hank Childs, Sun Aug 18 22:33:35 PDT 2002
+//    Add a boolean argument about whether we can re-use the MIR.
+//
+//    Hank Childs, Tue Sep 24 15:24:56 PDT 2002
+//    Remove unneeded reference counting.
+//
+//    Hank Childs, Wed Oct  2 08:15:53 PDT 2002
+//    Make the return type be a void_ref_ptr.
+//
+//    Jeremy Meredith, Thu Oct 24 15:36:34 PDT 2002
+//    Added smoothing option and clean zones only option.
+//
+//    Hank Childs, Tue Jul 22 21:48:09 PDT 2003
+//    Added a flag for whether or not we communicated ghosts.
+//
+//    Jeremy Meredith, Fri Sep  5 15:31:33 PDT 2003
+//    Added the new MIR algorithm.
+//
+//    Jeremy Meredith, Thu Sep 18 11:31:23 PDT 2003
+//    Made the new MIR algorithm work in 2D as well.
+//
+//    Hank Childs, Wed Aug 17 09:10:35 PDT 2005
+//    Add support for simplifying heavily mixed zones.
+//
+//    Jeremy Meredith, Thu Aug 18 17:54:51 PDT 2005
+//    Added a new isovolume algorithm, with adjustable VF cutoff.
+//
+//    Hank Childs, Thu Sep 20 17:19:20 PDT 2007
+//    Do not delete the new material if we do "simplify heavily mixed",
+//    since it might be used later.
+//
+//    John C. Anderson, Fri Oct 17 17:37:16 2008
+//    Added Discrete MIR option.
+//
+//    John C. Anderson, Thu Jan 15 10:20:20 2009
+//    Added annealing time for Discrete MIR.
+//
+//    Hank Childs, Thu Feb 21 16:41:25 PST 2008
+//    Throw an exception if we get a bad MIR type value.
+//
+//    Jeremy Meredith, Fri Feb 13 11:22:39 EST 2009
+//    Added MIR iteration capability.
+//
+//    Mark C. Miller, Wed Mar  4 18:00:58 PST 2009
+//    Adjusted for dbio-only build
+//
+//    Jeremy Meredith, Tue Aug  4 10:50:03 EDT 2009
+//    Added Youngs algorihtm.
+//
+//    Jeremy Meredith, Wed Aug  5 13:59:58 EDT 2009
+//    Force algorithm to Zoo if we're asked for clean zones only.  Only ZooMIR
+//    supports this option.  Really, this a higher level choice than which
+//    algorithm to use, so it doesn't matter that we're calling Zoo code;
+//    it's not really doing interface reconstruction at all.
+//
+// ****************************************************************************
+
+void_ref_ptr
+avtGenericDatabase::GetMIR(int domain, const char *varname, int timestep,
+                           vtkDataSet *ds, avtMaterial *mat, int topoDim,
+                           bool needValidConnectivity,
+                           bool needSmoothMaterialInterfaces,
+                           bool needCleanZonesOnly,
+                           bool simplifyHeavilyMixedZones, int maxMatsPerZone,
+                           int  mirAlgorithm,
+                           int  mirNumIterations,
+                           float mirIterationDamping,
+                           float isovolumeMIRVF,
+                           int annealingTime,
+                           bool didGhosts,
+                           bool &subdivisionOccurred,
+                           bool &notAllCellsSubdivided, bool reUseMIR,
+                           avtMaterial *&mat_to_use)
+{
+    void_ref_ptr vr = void_ref_ptr();
+#ifndef DBIO_ONLY
+    mat_to_use = mat;
+
+    //
+    // The Youngs and Tetrahedral MIR algorithms do not support
+    // clean zones only.  Force it to use the Zoo MIR algorithm.
+    // (This hardly counts as interface reconstruction, so algorithm
+    // is meaningless.)
+    //
+    if (needCleanZonesOnly)
+    {
+        debug1 << "Note: asked for MIR requiring clean zones. "
+               << "Forcing algorithm to ZooMIR.\n";
+        mirAlgorithm = 1;
+    }
+
+    char cacheLbl[1000];
+    sprintf(cacheLbl, "MIR_%s_%s_%s_%s_%s_%d_%f_%s_%d_%d_%f",
+            needValidConnectivity        ? "FullSubdiv" : "MinimalSubdiv",
+            needSmoothMaterialInterfaces ? "Smooth"     : "NotSmooth",
+            needCleanZonesOnly           ? "CleanOnly"  : "SplitMixed",
+            didGhosts                    ? "DidGhosts"  : "NoDidGhosts",
+            simplifyHeavilyMixedZones    ? "Simplify"   : "NoSimplify",
+            maxMatsPerZone,
+            isovolumeMIRVF,
+            mirAlgorithm==0 ? "TetMIR" :
+            (mirAlgorithm==1 ? "ZooMIR" :
+             (mirAlgorithm==2 ? "IsovolumeMIR" :
+              (mirAlgorithm==3 ? "YoungsMIR" :
+                  "DiscreteMIR"))),
+            annealingTime,
+            mirNumIterations,
+            mirIterationDamping);
+
+    //
+    // See if we already have the data lying around.
+    //
+    avtDatabaseMetaData *md = GetMetaData(timestep);
+    string meshname = md->MeshForVar(varname);
+    string matname  = md->MaterialOnMesh(meshname);
+    if (reUseMIR)
+    {
+        vr = cache.GetVoidRef(matname.c_str(), cacheLbl, timestep, domain);
+    }
+
+    if (*vr == NULL)
+    {
+        //
+        // We will need the material to calculate the reconstruction.
+        //
+        if (mat == NULL)
+        {
+            EXCEPTION0(NoInputException);
+        }
+
+        if (simplifyHeavilyMixedZones)
+            mat_to_use = mat->SimplifyHeavilyMixedZones(maxMatsPerZone);
+
+        MIR *mir = NULL;
+
+        switch (mirAlgorithm)
+        {
+          case 0:
+            mir = new TetMIR;
+            break;
+
+          case 1:
+          case 2:
+            // Both the recursive clipping and isovolume clipping
+            // use the Zoo clipping MIR
+            mir = new ZooMIR;
+            break;
+
+          case 3:
+            mir = new YoungsMIR;
+            break;
+
+          case 4:
+            mir = new DiscreteMIR;
+            break;
+
+          default:
+            EXCEPTION0(ImproperUseException);
+        }
+
+        mir->SetAlgorithm(mirAlgorithm);
+        mir->SetNumIterations(mirNumIterations);
+        mir->SetIterationDamping(mirIterationDamping);
+        mir->SetLeaveCleanZonesWhole(!needValidConnectivity);
+        mir->SetSmoothing(needSmoothMaterialInterfaces);
+        mir->SetCleanZonesOnly(needCleanZonesOnly);
+        mir->SetIsovolumeVF(isovolumeMIRVF);
+        mir->SetAnnealingTime(annealingTime);
+        if (topoDim == 3)
+        {
+            mir->Reconstruct3DMesh(ds, mat_to_use);
+        }
+        else
+        {
+            mir->Reconstruct2DMesh(ds, mat_to_use);
+        }
+
+        //
+        // Putting the MIR into the world of reference pointers saves some
+        // headaches.
+        //
+        vr = void_ref_ptr(mir, MIR::Destruct);
+
+        if (reUseMIR)
+        {
+            cache.CacheVoidRef(matname.c_str(), cacheLbl, timestep, domain,vr);
+        }
+
+        // We are not deleting mat_to_use.  The calling function must do this.
+    }
+
+    MIR *rv = (MIR *) *vr;
+    subdivisionOccurred   = rv->SubdivisionOccurred();
+    notAllCellsSubdivided = rv->NotAllCellsSubdivided();
+#endif
+    return vr;
+}
+
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::PrepareMaterialSelect
+//
+//  Purpose:
+//      Determines if we need to do a material selection.  Notifies the file
+//      format interface of the materials if we should do a material selection,
+//      so that it can do the material selection as we read.
+//
+//  Arguments:
+//      dom          The domain.
+//      forceMIROn   A boolean saying whether we should force MIR on.
+//      silr         The SIL restriction.
+//      mnames       A place to put the list of material names.
+//
+//  Returns:    true if we need to perform material selection, false otherwise.
+//
+//  Programmer: Hank Childs
+//  Creation:   October 5, 2001
+//
+//  Modifications:
+//
+//    Hank Childs, Fri Nov 22 16:39:13 PST 2002
+//    Use the SIL restriction traverser since SIL restriction routines were
+//    antiquated.
+//
+//    Hank Childs, Wed Aug 13 08:09:20 PDT 2003
+//    Do not longer key off type, instead use a flag that has been explicitly
+//    set.
+//
+//    Kathleen Bonnell, Wed Dec 15 08:41:17 PST 2004
+//    Changed 'vector<string>' to 'stringVector'.
+//
+// ****************************************************************************
+
+bool
+avtGenericDatabase::PrepareMaterialSelect(int dom, bool forceMIROn,
+                      avtSILRestrictionTraverser &trav, stringVector &mnames)
+{
+    //
+    // Have the SIL restriction determine if material selection is necessary
+    // for this domain.
+    //
+    bool needMatSel;
+    mnames = trav.GetMaterials(dom, needMatSel);
+
+    //
+    // If we were told to do material interface reconstruction, we should do
+    // it, regardless of SIL.
+    //
+    needMatSel |= forceMIROn;
+
+    return needMatSel;
+}
+
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::CanDoStreaming
+//
+//  Purpose:
+//      Determines whether or not we can do streaming.
+//
+//  Programmer: Hank Childs
+//  Creation:   October 25, 2001
+//
+//  Modifications:
+//
+//    Hank Childs, Sun Feb 27 11:20:39 PST 2005
+//    Added argument and significantly beefed up logic.
+//
+//    Hank Childs, Tue Feb 19 19:45:43 PST 2008
+//    Rename "dynamic" to "streaming", since we really care about whether we
+//    are streaming, not about whether we are doing dynamic load balancing.
+//    And the two are no longer synonymous.
+//
+// ****************************************************************************
+
+bool
+avtGenericDatabase::CanDoStreaming(avtDataRequest_p dataspec)
+{
+    //
+    // Make sure the plugin has registered any domain boundary information
+    // we need.
+    //
+    ActivateTimestep(dataspec->GetTimestep());
+
+    //
+    // If the plugin is doing domain decomposition, then we can't do
+    // streaming.
+    //
+    avtDatabaseMetaData *md = GetMetaData(dataspec->GetTimestep());
+    if (md->GetFormatCanDoDomainDecomposition())
+        return false;
+
+    //
+    // If the plugin is doing collective communication, then we can't do
+    // streaming.
+    //
+    if (!Interface->CanDoStreaming())
+        return false;
+
+    //
+    // It's possible that we can't create ghost zones, even if asked.  If
+    // this is the case, then there is no point in going further.
+    //
+    avtDatasetCollection emptyCollection(0);
+    intVector emptyDomainList;
+    avtDomainBoundaries *dbi = GetDomainBoundaryInformation(emptyCollection,
+                                                    emptyDomainList, dataspec);
+    if (dbi == NULL)
+        return true;
+
+    //
+    // Check to see if we need to create ghost data.  If so, then we may need
+    // to do cross-block communication, which will mean we can't do DLB.
+    //
+    avtSILRestrictionTraverser trav(dataspec->GetRestriction());
+    avtGhostDataType gtype = dataspec->GetDesiredGhostDataType();
+    if (gtype != GHOST_ZONE_DATA)
+    {
+        if (dataspec->MustDoMaterialInterfaceReconstruction())
+            gtype = GHOST_ZONE_DATA;
+        else
+        {
+            bool doMatSel = !trav.UsesAllMaterials();
+            if (doMatSel)
+                gtype = GHOST_ZONE_DATA;
+        }
+    }
+
+    bool reqParCom = dbi->RequiresCommunication(gtype);
+    bool canDoDLB = !reqParCom;
+    return canDoDLB;
+}
+
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::HasInvariantMetaData
+//
+//  Purpose:
+//      Indicates whether or not metadata can vary with time
+//
+//  Programmer: Mark C. Miller
+//  Creation:   September 30, 2003
+//
+// ****************************************************************************
+
+bool
+avtGenericDatabase::HasInvariantMetaData(void) const
+{
+    return Interface->HasInvariantMetaData();
+}
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::HasInvariantSIL
+//
+//  Purpose:
+//      Indicates whether or not the SIL can vary with time
+//
+//  Programmer: Mark C. Miller
+//  Creation:   September 30, 2003
+//
+// ****************************************************************************
+
+bool
+avtGenericDatabase::HasInvariantSIL(void) const
+{
+    return Interface->HasInvariantSIL();
+}
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::ActivateTimestep
+//
+//  Purpose: Provide collective entry-point into database for preparing to
+//  read a possibly new timestep
+//
+//  Programmer: Mark C. Miller
+//  Creation:   March 16, 2004
+//
+// ****************************************************************************
+
+void
+avtGenericDatabase::ActivateTimestep(int stateIndex)
+{
+    Interface->ActivateTimestep(stateIndex);
+}
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::ReadDataset
+//
+//  Purpose:
+//      Reads in a dataset through the file format interface.
+//
+//  Arguments:
+//      ds        The dataset collection.
+//      domains   A list of domains to be read.
+//      spec      A data specification.
+//      src       The source object.
+//
+//  Programmer:   Hank Childs
+//  Creation:     October 26, 2001
+//
+//  Modifications:
+//
+//    Hank Childs, Wed Nov 28 13:01:00 PST 2001
+//    Remove ghost zone arrays for filters where ghost zones are not
+//    appropriate.
+//
+//    Hank Childs, Wed Dec  5 10:33:52 PST 2001
+//    Read in mixed variables so that they can be communicated in the ghost
+//    zone communication phase (if appropriate).
+//
+//    Hank Childs, Thu Jul  4 14:53:05 PDT 2002
+//    Reflect interface change that supports multiple mixed variables.
+//
+//    Kathleen Bonnell, Wed Sep  4 14:57:31 PDT 2002
+//    Replace NeedDomainLabels with a check of subset type to determine
+//    what kind of labels get created, if any.
+//
+//    Jeremy Meredith, Thu Oct 24 16:04:22 PDT 2002
+//    Reordered a big chunk of code to allow users to force material
+//    interface reconstruction if they have mixed variables.
+//
+//    Hank Childs, Tue Oct 29 07:05:36 PST 2002
+//    Changed the location of the declaration of the 'labels' string to inside
+//    a for loop, ensuring that it will be properly cleaned out over each
+//    iteration of the loop.
+//
+//    Hank Childs, Fri Nov 22 16:39:13 PST 2002
+//    Use the SIL restriction traverser since SIL restriction routines were
+//    antiquated.
+//
+//    Kathleen Bonnell, Wed Mar 26 13:03:54 PST 2003
+//    Initialize ContainsOriginalCells in the MetaData.
+//
+//    Mark C. Miller, Mon Feb  9 15:41:57 PST 2004
+//    Added call to new interface method, ActivateTimestep
+//
+//    Mark C. Miller, Mon Feb 23 20:38:47 PST 2004
+//    Made call to ActivateTimestep accept the timestep as an argument
+//
+//    Mark C. Miller, Tue Mar 16 10:10:02 PST 2004
+//    Made call to ActivateTimestep call this class' implementation instead
+//    of referring to it through 'Interface->' explicitly
+//
+//    Kathleen Bonnell, Fri May 28 18:31:15 PDT 2004
+//    Initialize ContainsOriginalNodes in the MetaData.
+//
+//    Jeremy Meredith, Fri Jul  9 17:32:38 PDT 2004
+//    It is possible to get multiple secondary variables in the data
+//    specification and cause all sorts of problems (see '4798). I added a
+//    method to get the secondary variable list without duplicating either the
+//    primary variable or other secondary variables, and made use of it here.
+//
+//    Hank Childs, Wed Aug 11 08:14:16 PDT 2004
+//    Do not simply remove the vtkGhostLevels array so we can pretend we don't
+//    have ghost zones.
+//
+//    Mark C. Miller, Tue Sep 28 19:57:42 PDT 2004
+//    Added call to RegisterDataSelections with the plugins
+//
+//    Kathleen Bonnell, Thu Dec  9 14:11:44 PST 2004
+//    Initialize ContainsGlobalNode/ZoneIds in the MetaData.
+//
+//    Kathleen Bonnell, Wed Dec 15 08:41:17 PST 2004
+//    Changed 'vector<int>' to 'intVector', 'vector<bool>' to 'boolVector',
+//    and 'vector<string>' to 'stringVector'.
+//
+//    Hank Childs, Tue Feb 15 07:21:10 PST 2005
+//    Make translations when we have hidden characters.
+//
+//    Hank Childs, Mon Jun 27 16:24:23 PDT 2005
+//    Add argument to GetDataset.
+//
+//    Hank Childs, Thu Feb  9 16:24:32 PST 2006
+//    If we have domain boundary information and we are doing reconstruction
+//    for mixed material zones, then we need to read in the materials for
+//    every domain, so the ghost zone communication routines can work
+//    correctly.
+//
+//    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
+//    Added calls to set Vars and Vars2nd members of dataset collection.
+//    Added data specification to call to get material.
+//
+//    Cyrus Harrison, Tue Feb 12 14:54:34 PST 2008
+//    Added support for caching post ghost material & mixed var objects.
+//
+//    Hank Childs, Tue Jan 20 13:01:52 CST 2009
+//    If we are doing dynamic domain decomposition, then give each processor's
+//    domain a domain ID that matches the processor's rank.  The integral curve
+//    algorithm (for example) assumes that all of the domains have different
+//    IDs.
+//
+//    Hank Childs, Fri Apr  3 23:51:06 CDT 2009
+//    Add support for file formats that do their own domain decomposition
+//    in a parallel setting when using data selections.
+//
+//    Mark C. Miller, Mon Nov  9 09:40:52 PST 2009
+//    Moved transform manager work here from ::GetOutput, so transforms can
+//    be applied as each domain is read rather than after all domains are
+//    read. This is important for transformations such us changes from
+//    double to single precision that reduce the memory footprint of a
+//    dataset.
+//
+//    Hank Childs, Tue Dec 15 14:55:50 PST 2009
+//    Add support for group IDs based on ranges.
+//
+//    Kathleen Biagas, Tue Aug 27 16:58:30 PDT 2013
+//    Add support for groupNames.
+//
+//    Kathleen Biagas, Wed Aug 28 08:51:16 PDT 2013
+//    Fixed error where domains[i] wasn't being used to get the correct
+//    groupName, resulting in incorrect labels for the SIL selection.
+//
+//    Mark C. Miller, Tue Feb 11 19:35:08 PST 2014
+//    Fix size_t/int type mixing in loop completion expression causing loop
+//    body to be executed for empty vectors.
+//
+//    Mark C. Miller, Thu Dec 18 12:55:50 PST 2014
+//    Incorporated changes from Jeremy to properly pass along labels for
+//    enum scalars. Thanks Jeremy!
+//
+//    Alister Maguire, Mon Nov 27 15:31:54 PST 2017
+//    When preparing labels, check to see if we're forcing material 
+//    labels to be created. Also, if the dataset doesn't contain 
+//    any materials, don't try and look for them.  
+//
+// ****************************************************************************
+
+void
+avtGenericDatabase::ReadDataset(avtDatasetCollection &ds, intVector &domains,
+                      avtDataRequest_p &spec, avtSourceFromDatabase *src,
+                      boolVector &selectionsApplied)
+{
+    int timerHandle = visitTimer->StartTimer();
+    int ts = spec->GetTimestep();
+
+    //
+    // This will get unset later if we determine that we actually do have
+    // ghosts.
+    //
+    avtDatabaseMetaData *md = GetMetaData(ts);
+    string meshname = md->MeshForVar(spec->GetVariable());
+    md->SetContainsGhostZones(meshname, AVT_NO_GHOSTS);
+    md->SetContainsOriginalCells(meshname, false);
+    md->SetContainsOriginalNodes(meshname, false);
+    md->SetContainsGlobalZoneIds(meshname, false);
+    md->SetContainsGlobalNodeIds(meshname, false);
+
+
+    bool post_ghost = spec->NeedPostGhostMaterialInfo();
+    //
+    // Set up some things we will want for later.
+    //
+    const char *var = spec->GetVariable();
+    const vector<CharStrRef> &vars2nd =
+                               spec->GetSecondaryVariablesWithoutDuplicates();
+    avtSILRestriction_p silr = spec->GetRestriction();
+
+    char  progressString[1024];
+    sprintf(progressString, "Reading from %s", Interface->GetType());
+
+    stringVector blockNames;
+    stringVector groupNames;
+    intVector gIds;
+    intVector groupIdsBasedOnRange;
+    int domOrigin = 0;
+    int grpOrigin = 0;
+    string enumScalarLabel;
+
+    avtSubsetType subT = GetMetaData(ts)->DetermineSubsetType(var);
+    if (subT == AVT_DOMAIN_SUBSET || subT == AVT_GROUP_SUBSET)
+    {
+        string meshName = GetMetaData(ts)->MeshForVar(var);
+        blockNames =  GetMetaData(ts)->GetMesh(meshName)->blockNames;
+        domOrigin  =  GetMetaData(ts)->GetMesh(meshName)->blockOrigin;
+        grpOrigin  =  GetMetaData(ts)->GetMesh(meshName)->groupOrigin;
+        groupNames =  GetMetaData(ts)->GetMesh(meshName)->groupNames;
+        gIds       =  GetMetaData(ts)->GetMesh(meshName)->groupIds;
+        groupIdsBasedOnRange =  GetMetaData(ts)->GetMesh(meshName)->groupIdsBasedOnRange;
+    }
+    else if (subT == AVT_ENUMSCALAR_SUBSET)
+    {
+        const avtScalarMetaData *smd = GetMetaData(ts)->GetScalar(var);
+        int n = (int)smd->enumNames.size();
+        char tmp[100];
+        sprintf(tmp,"%d",n);
+        enumScalarLabel += tmp;
+        enumScalarLabel += ";";
+        for (int i=0; i<n; ++i)
+        {
+            string name = smd->enumNames[i];
+            int value = smd->enumRanges[2*i];
+            sprintf(tmp, "%d", value);
+            enumScalarLabel += tmp;
+            enumScalarLabel += ";";
+            enumScalarLabel += name;
+            enumScalarLabel += ";";
+        }
+        enumScalarLabel += "mixed";
+    }
+
+
+    //
+    // Some file formats have variables that are defined for only some of
+    // the materials.  In that case, we have to tell the file format interface
+    // of all of the variables we will be interested in.
+    //
+    const char *real_var = GetOriginalVariableName(md, var);
+    vector<CharStrRef> real_vars2nd;
+    for (size_t i = 0 ; i < vars2nd.size() ; i++)
+    {
+        const char *str = GetOriginalVariableName(md, *(vars2nd[i]));
+        char *v2 = new char[strlen(str)+1];
+        strcpy(v2, str);
+        CharStrRef ref = v2;
+        real_vars2nd.push_back(ref);
+    }
+    Interface->RegisterVariableList(real_var, vars2nd);
+
+    //
+    // File formats that do their own domain decomposition divide the problem
+    // among their processors.  If we are streaming, then we don't want to
+    // do this.  We'll have to count on the data selections in this case.
+    // Communicate this to the file formats here.
+    //
+    avtDataValidity &validity = src->GetOutput()->GetInfo().GetValidity();
+    Interface->SetResultMustBeProducedOnlyOnThisProcessor(
+                                                   validity.AreWeStreaming());
+
+    //
+    // Some file formats are interested in knowing about data selections
+    //
+    vector<avtDataSelection_p> selList = spec->GetAllDataSelections();
+    for (size_t i = 0; i < selList.size(); i++)
+        selectionsApplied.push_back(false);
+    Interface->RegisterDataSelections(selList, &selectionsApplied);
+
+    //
+    // Some file formats may need to engage in global communication when
+    // changing time-steps. Provide that opportunity here
+    //
+    ActivateTimestep(ts);
+
+    //
+    // Iterate through each of the domains and do material selection as we go.
+    //
+    src->DatabaseProgress(0, 0, progressString);
+    int nDomains = (int)domains.size();
+    avtSILRestrictionTraverser trav(silr);
+    bool forceMIR = spec->MustDoMaterialInterfaceReconstruction();
+    if (spec->NeedMixedVariableReconstruction())
+    {
+        avtDatasetCollection emptyCollection(0);
+        intVector emptyDomainList;
+        avtDomainBoundaries *dbi = GetDomainBoundaryInformation(emptyCollection,
+                                                    emptyDomainList, spec);
+        if (dbi != NULL)
+            forceMIR = true;
+    }
+
+    ds.SetVar(var);
+    ds.SetVars2nd(vars2nd);
+    for (int i = 0 ; i < nDomains ; i++)
+    {
+        stringVector labels;
+        stringVector matnames;
+        bool doSelect = PrepareMaterialSelect(domains[i], forceMIR, trav,
+                                              matnames);
+        int nmats = (int)matnames.size();
+        vtkDataSet *single_ds = NULL;
+
+        if (nmats <= 0)
+        {
+            doSelect = false;
+        }
+
+        if (!doSelect || !Interface->PerformsMaterialSelection()) 
+        {
+            // We know we want the dataset as a whole
+            if (md->GetFormatCanDoDomainDecomposition())
+                domains[i] = PAR_Rank();
+            debug4 << "Generic database instructing get for var = "
+                   << var << ", timestep = " << ts << " domain = "
+                   << domains[i] << endl;
+            single_ds = GetDataset(var, ts, domains[i], "_all", vars2nd,
+                                   spec, src);
+
+            // Determine if there are mixed vars.  If so, force
+            // material selection if it was requested for mixed vars
+            if (spec->NeedMixedVariableReconstruction())
+            {
+                bool hasmixvar = cache.HasVoidRef(var,
+                                                  AUXILIARY_DATA_MIXED_VARIABLE,
+                                                  ts, domains[i]);
+                for (size_t kk = 0 ; kk < vars2nd.size() && !hasmixvar ; kk++)
+                {
+                    hasmixvar |= cache.HasVoidRef(*(vars2nd[kk]),
+                                                  AUXILIARY_DATA_MIXED_VARIABLE,
+                                                  ts, domains[i]);
+                }
+
+                if (hasmixvar)
+                    doSelect = true;
+            }
+
+            // if we're not doing material selection and we dont need post
+            // ghost material info set nmats to 1
+            if (!doSelect && !post_ghost)
+                nmats = 1;
+        }
+
+        //
+        //  Allocate space for our dataset
+        //
+        ds.SetNumMaterials(i, nmats);
+
+        //
+        //  Prepare labels; we need nmats labels.
+        //
+        if (spec->ForceConstructMaterialLabels() && nmats > 0) 
+        {
+            labels = matnames;
+        }
+        else if (subT == AVT_DOMAIN_SUBSET)
+        {
+            if (blockNames.empty())
+            {
+                char temp[512];
+                sprintf(temp, "%d", domains[i] + domOrigin);
+                for (int l = 0; l < nmats; l++)
+                {
+                    labels.push_back(temp);
+                }
+            }
+            else
+            {
+                for (int l = 0; l < nmats; l++)
+                    labels.push_back(blockNames[domains[i]]);
+            }
+        }
+        else if (subT == AVT_GROUP_SUBSET)
+        {
+            char temp[512];
+            if (!groupNames.empty() && !gIds.empty())
+                sprintf(temp, "%s", groupNames[gIds[domains[i]]].c_str());
+            else if (gIds.size() != 0)
+                sprintf(temp, "%d", gIds[domains[i]]);
+            else
+            {
+                int pos = grpOrigin;
+                for (int j = 0 ; j < (int) groupIdsBasedOnRange.size()-1 ; j++)
+                {
+                    if (groupIdsBasedOnRange[j] <= domains[i] && domains[i] < groupIdsBasedOnRange[j+1])
+                        break;
+                    pos++;
+                }
+                sprintf(temp, "%d", pos);
+            }
+            for (int l = 0; l < nmats; l++)
+                labels.push_back(temp);
+        }
+        else if (subT == AVT_MATERIAL_SUBSET)
+        {
+            labels = matnames;
+        }
+        else if (subT == AVT_ENUMSCALAR_SUBSET)
+        {
+            labels.push_back(enumScalarLabel);
+        }
+
+        ds.labels[i] = labels;
+
+        //
+        //  Finish setting up the dataset
+        //
+        if (doSelect)
+        {
+            if (Interface->PerformsMaterialSelection())
+            {
+                ds.needsMatSelect[i] = false;
+
+                //
+                // This file format does its own material selection, so get the
+                // dataset one material at a time.
+                //
+                for (int j = 0 ; j < nmats ; j++)
+                {
+                    debug4 << "Generic database instructing get for var = "
+                           << var << ", timestep = " << ts << " domain = "
+                           << domains[i] << ", material = "
+                           << matnames[j].c_str() << endl;
+                    vtkDataSet *ds1 = GetDataset(var, ts, domains[i],
+                                      matnames[j].c_str(), vars2nd, spec, src);
+                    ds.SetDataset(i, j, ds1);
+                    if (ds1 != NULL)
+                    {
+                        ds1->Delete();
+                    }
+                }
+            }
+            else
+            {
+                ds.needsMatSelect[i] = true;
+
+                ds.SetDataset(i, 0, single_ds);
+                if (single_ds != NULL)
+                {
+                    single_ds->Delete();
+                }
+
+                // Get the material
+                ds.matnames[i] = matnames;
+                avtMaterial *mat = GetMaterial(domains[i], var, ts, spec);
+                ds.SetMaterial(i, mat);
+
+                // Get the mixed variables
+                void_ref_ptr vr=cache.GetVoidRef(var,
+                                                 AUXILIARY_DATA_MIXED_VARIABLE,
+                                                 ts, domains[i]);
+                if (*vr != NULL)
+                {
+                    ds.AddMixVar(i, vr);
+                }
+                for (size_t kk = 0 ; kk < vars2nd.size() ; kk++)
+                {
+                    vr = cache.GetVoidRef(*(vars2nd[kk]),
+                                          AUXILIARY_DATA_MIXED_VARIABLE, ts,
+                                          domains[i]);
+                    if (*vr != NULL)
+                    {
+                         ds.AddMixVar(i, vr);
+                    }
+                }
+            }
+
+            src->InvalidateZones();
+        }
+        else
+        {
+            ds.needsMatSelect[i] = false;
+
+            ds.SetDataset(i, 0, single_ds);
+            if (single_ds != NULL)
+            {
+                single_ds->Delete();
+            }
+
+            // we still may need to cache material & mixed var info
+            //
+            if(post_ghost)
+            {
+                // Get the material
+                ds.matnames[i] = matnames;
+                avtMaterial *mat = GetMaterial(domains[i], var, ts, spec);
+                ds.SetMaterial(i, mat);
+
+                // Get the mixed variables
+                void_ref_ptr vr=cache.GetVoidRef(var,
+                                                 AUXILIARY_DATA_MIXED_VARIABLE,
+                                                 ts, domains[i]);
+                if (*vr != NULL)
+                {
+                    ds.AddMixVar(i, vr);
+                }
+
+                for (size_t kk = 0 ; kk < vars2nd.size() ; kk++)
+                {
+                    vr = cache.GetVoidRef(*(vars2nd[kk]),
+                                            AUXILIARY_DATA_MIXED_VARIABLE, ts,
+                                            domains[i]);
+                    if (*vr != NULL)
+                    {
+                        ds.AddMixVar(i, vr);
+                    }
+                }
+            }
+        }
+
+        //
+        // Do any transformations necessary to convert data
+        // from a form VisIt cannot, in general, handle to a
+        // form that it can. Typically, this is a no-op. The
+        // kind of transformations here include such things
+        // as precision conversion, making the mesh a "conforming"
+        // mesh (e.g. removing hanging nodes), converting arbitrary
+        // polyhdra to zoo-type, discretizing a csg mesh, etc.
+        //
+        for (int j = 0 ; j < (ds.needsMatSelect[i]?nmats:1); j++)
+        {
+            vtkDataSet *dsOrig, *dstmp;
+            dsOrig = dstmp = ds.GetDataset(i, j);
+            dstmp = xformManager->TransformSingleDataset(dstmp,
+                domains[i], spec, src, selectionsApplied, md);
+            if (dstmp != dsOrig)
+            {
+                ds.SetDataset(i, j, dstmp);
+                dstmp->Delete();
+            }
+        }
+
+        src->DatabaseProgress(i, nDomains, progressString);
+    }
+
+    src->DatabaseProgress(1, 0, progressString);
+
+    visitTimer->StopTimer(timerHandle, "Reading dataset");
+    visitTimer->DumpTimings();
+}
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::CommunicateGhosts
+//
+//  Purpose:
+//      Uses a domain boundary information object to communicate the ghost
+//      zones.
+//
+//  Arguments:
+//      ghostType The type of ghost data to create.
+//      ds        The dataset collection.
+//      doms      A list of domains.
+//      spec      A data specification.
+//      src       The source object.
+//
+//  Returns:      True if ghost zones were communicated.  False otherwise.
+//
+//  Programmer:   Hank Childs
+//  Creation:     October 26, 2001
+//
+//  Modifications:
+//
+//    Jeremy Meredith, Tue Dec  4 13:52:39 PST 2001
+//    Added material and mixvar support.  Added parallel and progress support.
+//
+//    Jeremy Meredith, Fri Dec 21 12:25:29 PST 2001
+//    Added species-scalar support.
+//
+//    Hank Childs, Wed Jan  2 08:35:34 PST 2002
+//    Communicate secondary variables.
+//
+//    Hank Childs, Sun Jan 13 14:04:32 PST 2002
+//    Clean up hack that resulted from poorly understood circumstances.
+//
+//    Hank Childs, Wed Mar 27 08:38:02 PST 2002
+//    Make sure that the mesh we want to exchange ghost zones for is the mesh
+//    that we have boundary information for.
+//
+//    Kathleen Bonnell, Wed Mar 27 15:47:14 PST 2002
+//    vtkScalars and vtkVectors have been deprecated in VTK 4.0,
+//    use vtkDataArray instead.
+//
+//    Kathleen Bonnell, Fri May 17 12:52:08 PDT 2002
+//    Make sure avtOriginalCellNumbers is exhanged if needed.
+//
+//    Hank Childs, Tue Jun 25 20:34:15 PDT 2002
+//    Copy over the field data.
+//
+//    Hank Childs, Thu Jul  4 14:53:05 PDT 2002
+//    Reflect interface change that supports multiple mixed variables.
+//
+//    Hank Childs, Wed Jul 10 11:33:20 PDT 2002
+//    A reference was being removed from a scalar variable that should not
+//    have been.
+//
+//    Kathleen Bonnell, Wed Jul 10 16:02:56 PDT 2002
+//    Copy FieldData arrays individually, as ExchangeMesh may set
+//    an array in the NewList, and ShallowCopy will overwrite that.
+//
+//    Hank Childs, Sun Aug 18 22:33:35 PDT 2002
+//    Added return value.
+//
+//    Hank Childs, Mon Sep 30 09:29:36 PDT 2002
+//    Tell output that we have ghost zones.
+//
+//    Hank Childs, Wed Oct  2 10:09:53 PDT 2002
+//    Also communicate the original zone numbers if we are creating structured
+//    indices.
+//
+//    Hank Childs, Wed Jun 18 09:34:38 PDT 2003
+//    Communicate node numbers.
+//
+//    Kathleen Bonnell, Wed Jun 18 17:47:10 PDT 2003
+//    When telling downstream items that ghost zones are present, use
+//    AVT_CREATED_GHOSTS to distinguish between those designated by the file
+//    format (AVT_HAS_GHOSTS) and those created here. (Needed currently so
+//    that Pick can return the correct cell id and/or coords).
+//
+//    Hank Childs, Mon Oct 20 16:45:11 PDT 2003
+//    Allow for materials and meshes to be specified (and then ignored).
+//    They are typically specified as a by-product of expressions.
+//
+//    Hank Childs, Wed Nov 12 10:37:22 PST 2003
+//    Also check to see if there is per-timestep domain boundary information,
+//    since this can change from timestep-to-timestep for AMR meshes.
+//
+//    Hank Childs, Sun Jun 27 11:02:42 PDT 2004
+//    Add support for identifying ghost nodes using global indexing.
+//
+//    Jeremy Meredith, Fri Jul  9 17:32:38 PDT 2004
+//    It is possible to get multiple secondary variables in the data
+//    specification and cause all sorts of problems (see '4798). I added a
+//    method to get the secondary variable list without duplicating either the
+//    primary variable or other secondary variables, and made use of it here.
+//
+//    Mark C. Miller, Mon Aug  9 19:12:24 PDT 2004
+//    Removed avtMeshMetadata local variable.
+//    Changed logic for testing existence of global node ids to attempt to
+//    Get global node ids and if they exist, use them.
+//
+//    Mark C. Miller, Tue Aug 10 14:16:36 PDT 2004
+//    Added check for if ghosts had been read from file and return immediately
+//
+//    Mark C. Miller, Wed Aug 11 14:41:06 PDT 2004
+//    Moved check for if ghost had been read from file to just before ghost
+//    node stuff. Made it contribute to results for shouldStop
+//
+//    Mark C. Miller, Mon Aug 16 15:01:27 PDT 2004
+//    Fixed missing initialization of boolean haveGlobalNodeIds
+//    Removed extraneous debug statements
+//
+//    Hank Childs, Sat Aug 14 06:41:00 PDT 2004
+//    Allow for ghost nodes to be created.  Put real work in subroutines.
+//
+//    Brad Whitlock, Thu Sep 16 11:04:57 PDT 2004
+//    Removed a stray semicolon.
+//
+//    Kathleen Bonnell, Wed Dec 15 08:41:17 PST 2004
+//    Changed 'vector<int>' to 'intVector'.
+//
+//    Hank Childs, Sun Feb 27 14:47:45 PST 2005
+//    Added "allDomains" argument.
+//
+//    Hank Childs, Sun Mar  6 09:14:52 PST 2005
+//    Only do collective communication if we are not in DLB mode.
+//
+//    Hank Childs, Thu Jan 26 10:07:14 PST 2006
+//    Do not use non-robust ghost nodes. ['6900]
+//
+//    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
+//    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
+//
+//    Hank Childs, Sat Mar  3 08:34:29 PST 2007
+//    Issue a warning if we must "MaintainOriginalConnectivity".
+//
+//    Hank Childs, Sat Mar 17 17:01:51 PDT 2007
+//    Change warning to also include specmf.
+//
+//    Cyrus Harrison, Tue Jun 19 11:10:40 PDT 2007
+//    Made sure the warning is actually issued "only once per session"
+//
+//    Hank Childs, Sun Feb 10 19:43:59 MST 2008
+//    Add support for streaming ghost generation.
+//
+//    Hank Childs, Thu Feb 14 17:08:39 PST 2008
+//    Add support for modules that only create ghost nodes.
+//
+//    Cyrus Harrison, Fri Feb 15 09:35:20 PST 2008
+//    Changed MustMaintainOriginalConnectivity warning to only mention
+//    specmf, since the matvf + ghost zones restriction was resolved.
+//
+//    Cyrus Harrison,Thu Feb  9 10:26:48 PST 2012
+//    Added logic to support presentGhostZoneTypes, which allows us to
+//    differentiate between ghost zones for boundaries & nesting.
+//
+//    Kevin Griffin, Tue Apr 21 17:41:51 PDT 2015
+//    Changed all calls from Exchange*Vector (* = Float, Double, etc) to
+//    ExchangeVector.
+//
+//    Burlen Loring, Fri Oct  2 17:02:27 PDT 2015
+//    clean up a warning
+//
+// ****************************************************************************
+
+bool
+avtGenericDatabase::CommunicateGhosts(avtGhostDataType ghostType,
+                      avtDatasetCollection &ds, intVector &doms,
+                      avtDataRequest_p &spec, avtSourceFromDatabase *src,
+                      intVector &allDomains, bool canDoCollectiveCommunication)
+{
+#ifndef PARALLEL
+    (void)canDoCollectiveCommunication;
+#endif
+    int portion1 = visitTimer->StartTimer();
+
+    size_t  i;
+
+    int ts = spec->GetTimestep();
+    avtDatabaseMetaData *md = GetMetaData(ts);
+    const char *varname = spec->GetVariable();
+    string meshname = md->MeshForVar(varname);
+
+    //
+    // We may already have ghost data from reading it out of the file.  If this
+    // is the case, just return now.
+    //
+    int shouldStop = 0;
+    if (md->GetContainsGhostZones(meshname) == AVT_HAS_GHOSTS)
+        shouldStop = 1;
+#ifdef PARALLEL
+    if (canDoCollectiveCommunication)
+    {
+        int  parallelShouldStop;
+        MPI_Allreduce(&shouldStop, &parallelShouldStop, 1, MPI_INT, MPI_MAX,
+                      VISIT_MPI_COMM);
+        shouldStop = parallelShouldStop;
+    }
+#endif
+    if (shouldStop != 0)
+        return false;
+
+    avtDomainBoundaries *dbi = GetDomainBoundaryInformation(ds, doms, spec);
+    bool hasDomainBoundaryInfo = (dbi != NULL);
+#ifdef PARALLEL
+    if (canDoCollectiveCommunication)
+    {
+        int hdbi = (hasDomainBoundaryInfo ? 1 : 0);
+        int phdbi;
+        MPI_Allreduce(&hdbi, &phdbi, 1, MPI_INT, MPI_MIN, VISIT_MPI_COMM);
+        if (phdbi < 1)
+            hasDomainBoundaryInfo = false;
+    }
+#endif
+
+    //
+    // Determine if we have global node ids.
+    //
+    bool haveDomainWithoutGlobalNodeIds = false;
+    bool haveGlobalNodeIdsForAtLeastOneDom = false;
+    for (i = 0 ; i < doms.size() ; i++)
+    {
+        if (GetGlobalNodeIds(doms[i], meshname.c_str(), ts) == NULL)
+            haveDomainWithoutGlobalNodeIds = true;
+        else
+            haveGlobalNodeIdsForAtLeastOneDom = true;
+    }
+#ifdef PARALLEL
+    if (canDoCollectiveCommunication)
+    {
+        int tmp1[2], tmp2[2];
+        tmp1[0] = (haveDomainWithoutGlobalNodeIds ? 1 : 0);
+        tmp1[1] = (haveGlobalNodeIdsForAtLeastOneDom ? 1 : 0);
+        MPI_Allreduce(tmp1, tmp2, 2, MPI_INT, MPI_MAX, VISIT_MPI_COMM);
+        haveDomainWithoutGlobalNodeIds = (tmp2[0] == 1 ? true : false);
+        haveGlobalNodeIdsForAtLeastOneDom = (tmp2[1] == 1 ? true : false);
+    }
+#endif
+    bool canUseGlobalNodeIds = !haveDomainWithoutGlobalNodeIds &&
+                               haveGlobalNodeIdsForAtLeastOneDom;
+
+    avtStreamingGhostGenerator *sgg = GetStreamingGhostGenerator();
+    bool canDoStreamingGhosts = (sgg != NULL);
+
+    visitTimer->StopTimer(portion1, "Prepatory time for ghost zone creation."
+                                    "  This also counts synchronization.");
+
+    //
+    // The unstructured mesh domain boundaries code can create situations
+    // where ghost nodes identify faces as ghost that are actually real.
+    // Create ghost zones in this case.
+    //
+    if (ghostType == GHOST_NODE_DATA)
+    {
+        if (hasDomainBoundaryInfo)
+            if (!dbi->CreatesRobustGhostNodes())
+                ghostType = GHOST_ZONE_DATA;
+        if (md->GetMesh(meshname)->meshType == AVT_UNSTRUCTURED_MESH)
+            ghostType = GHOST_ZONE_DATA;
+    }
+    if (ghostType == GHOST_ZONE_DATA)
+    {
+        if (hasDomainBoundaryInfo)
+            if (dbi->CanOnlyCreateGhostNodes())
+                ghostType = GHOST_NODE_DATA;
+    }
+
+    //
+    // Some filters (namely MatVF) access data from the database (namely
+    // avtMaterials) where the creation of ghost zones will screw up
+    // their indexing of the data.  In this case, they set
+    // "MaintainOriginalConnectivity" flag in the contract.  If that is the
+    // case, we should *not* create ghost zones.  Also, this logic should
+    // not be moved to earlier in the pipeline.  If it was earlier, we
+    // wouldn't know if we could really create ghost zones, so we wouldn't
+    // know whether or not to issue a warning.
+    //
+    if (spec->MustMaintainOriginalConnectivity() &&
+        ghostType == GHOST_ZONE_DATA)
+    {
+        const char *warning = "Because of the way VisIt organizes data, "
+              "it is not possible to create ghost zones for this plot.  "
+              "This problem is likely coming about because you are "
+              "using the specmf expression.  Contact a VisIt "
+              "developer for more information.  This message will only "
+              "be issued once per session.";
+        // We only need to issue the warning if we actually would have done
+        // something.
+        if ((hasDomainBoundaryInfo || canUseGlobalNodeIds) &&
+            allDomains.size() > 1 && !issuedOriginalConnectivityWarning)
+        {
+            avtCallback::IssueWarning(warning);
+            issuedOriginalConnectivityWarning = true;
+        }
+        return false;
+    }
+
+    //
+    // Now its decision time.  We know what tools we can use -- whether or not
+    // we have domain boundary information and whether or not we can use global
+    // node ids.  We also know what kind of ghost data we need.  So call the
+    // proper subroutine to do it.
+    //
+    int portion2 = visitTimer->StartTimer();
+    bool s = false;
+    if (ghostType == GHOST_NODE_DATA)
+    {
+        if (hasDomainBoundaryInfo)
+            s = CommunicateGhostNodesFromDomainBoundariesFromFile(ds, doms,
+                                                       spec, src, allDomains);
+        else if (canUseGlobalNodeIds)
+            s = CommunicateGhostNodesFromGlobalNodeIds(ds, doms, spec, src);
+        else if (canDoStreamingGhosts)  // Zones not Nodes
+            s = CommunicateGhostZonesWhileStreaming(ds, doms, spec, src);
+    }
+    else if (ghostType == GHOST_ZONE_DATA)
+    {
+        if (hasDomainBoundaryInfo)
+            s = CommunicateGhostZonesFromDomainBoundariesFromFile(ds, doms,
+                                                                  spec, src);
+        else if (canUseGlobalNodeIds)
+            s = CommunicateGhostZonesFromGlobalNodeIds(ds, doms, spec, src);
+        else if (canDoStreamingGhosts)
+            s = CommunicateGhostZonesWhileStreaming(ds, doms, spec, src);
+    }
+    else
+    {
+        debug1 << "Internal error: asked to communicate ghost data, but ghost "
+               << "type is neither ghost zones or ghost nodes." << endl;
+    }
+    visitTimer->StopTimer(portion2, "Time to actually communicate ghost data");
+
+    bool madeGhosts = s;
+    if (madeGhosts)
+    {
+        //
+        // This will tell everything downstream that we have created ghost
+        // zones.
+        //
+        md->SetContainsGhostZones(meshname, AVT_CREATED_GHOSTS);
+    }
+
+    bool madeNewZones = madeGhosts && (ghostType == GHOST_ZONE_DATA);
+    // if we have created ghost zones, add to present ghost types
+    if(madeNewZones)
+        md->AddGhostZoneTypePresent(meshname, AVT_BOUNDARY_GHOST_ZONES);
+    return madeNewZones;
+}
+
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::GetDomainBoundaryInformation
+//
+//  Purpose:
+//      Gets the domain boundary information and confirms that the DBI actually
+//      applies to the mesh we have.
+//
+//  Programmer: Hank Childs
+//  Creation:   August 14, 2004
+//
+//  Modifications:
+//
+//    Kathleen Bonnell, Wed Dec 15 08:41:17 PST 2004
+//    Changed 'vector<int>' to 'intVector'.
+//
+//    Hank Childs, Sun Oct 28 21:09:44 PST 2007
+//    Add an argument for whether or not we need to confirm that the input
+//    mesh has a size consistent with what the domain boundary information
+//    expects.  If we already have ghost zones, we might want the domain
+//    boundary information just to understand how the domains abut.
+//
+//    Cyrus Harrison, Mon Apr 20 14:47:50 PDT 2009
+//    I used Eric's workaround from CommunicateGhostZonesFromDomainBoundaries
+//    to make sure we check the conformity of the proper domain. When a file
+//    reader does its own on the fly decomposition, the domain get labeled
+//    0 on every processor - the appropriate domain id is this processor's
+//    MPI rank.
+//
+//    Cyrus Harrison, Tue Dec 22 15:29:39 PST 2015
+//    Added support for local (per-domain) domain boundary descriptions.
+//
+// ****************************************************************************
+
+avtDomainBoundaries *
+avtGenericDatabase::GetDomainBoundaryInformation(avtDatasetCollection &ds,
+                                intVector &doms, avtDataRequest_p spec,
+                                bool confirmInputMeshHasRightSize)
+{
+
+    //
+    // Try getting the domain boundary information.  If we don't have it for
+    // *any* timestep, try getting it for *this* timestep (it can change with
+    // AMR datasets).
+    //
+    void_ref_ptr vr = cache.GetVoidRef("any_mesh",
+                                   AUXILIARY_DATA_DOMAIN_BOUNDARY_INFORMATION,
+                                  -1, -1);
+    if (*vr == NULL)
+        vr = cache.GetVoidRef("any_mesh",
+                              AUXILIARY_DATA_DOMAIN_BOUNDARY_INFORMATION,
+                              spec->GetTimestep(), -1);
+
+
+    avtDomainBoundaries *dbi = (avtDomainBoundaries*)*vr;
+
+    int need_db = (int) (dbi == NULL);
+
+    // Only get the domain information if there is no domain
+    // information on all processors. This prevents problems when
+    // there are more processes than domains.
+#ifdef PARALLEL
+    int need_db_global;
+    MPI_Allreduce(&need_db, &need_db_global, 1,
+                  MPI_INT, MPI_MIN, VISIT_MPI_COMM);
+
+    need_db = need_db_global;
+#endif
+    
+    if (need_db)
+    {
+        debug1  << "avtGenericDatabase::GetDomainBoundaryInformation Cached "
+                << "global domain boundary info not found, checking for local info."
+                << endl;
+        // If we didn't find a DBI in the cache, try to generate a global
+        // dbi object from local info
+        dbi = GetLocalDomainBoundaryInformation(ds,
+                                                doms,
+                                                spec,
+                                                confirmInputMeshHasRightSize);
+
+        if(dbi)
+        {
+            debug1 << "avtGenericDatabase::GetDomainBoundaryInformation: Global for local success" <<endl;
+            // do not cache b/c we don't have a good way of invalidating
+            // the dbis if the set of domains involved changes. 
+        }else
+        {
+            debug1 << "avtGenericDatabase::GetDomainBoundaryInformation: No local info." <<endl;
+        }
+    }
+
+    //
+    // If we couldn't find DBI, then we are done, so return.
+    //
+    if(dbi == NULL)
+        return NULL;
+
+    int ts = spec->GetTimestep();
+    avtDatabaseMetaData *md = GetMetaData(ts);
+
+    //
+    // If the file format reader can do its own domain decomposition
+    // and there is one domain then change it to the rank so that
+    // things work properly.  The convention is that when the reader
+    // is doing its own decomposition, all the processors have domain
+    // zero.  The value gets reset at the end of this method.
+    //
+    if (md->GetFormatCanDoDomainDecomposition() && doms.size() == 1)
+    {
+        doms[0] = PAR_Rank();
+    }
+
+    //
+    // Make sure that this mesh is the mesh we have boundary information
+    // for.
+    //
+    if (confirmInputMeshHasRightSize)
+    {
+        vector<vtkDataSet *> confirmlist;
+        for (int i = 0 ; i < (int)doms.size() ; i++)
+        {
+            confirmlist.push_back(ds.GetDataset(i, 0));
+        }
+        bool haveRightMesh = dbi->ConfirmMesh(doms, confirmlist);
+        if (!haveRightMesh)
+        {
+            debug1 << "Ignoring domain boundary information, because the mesh "
+                   << "we read has the wrong size." << endl;
+            debug1 << "It could have the wrong size because of:" << endl;
+            debug1 << "\tAn internal error." << endl;
+            debug1 << "\tThere are multiple meshes in the file." << endl;
+            debug1 << "\tThe file already has ghost data." << endl;
+            dbi = NULL;
+        }
+    }
+
+    //
+    // Restore the doms array.
+    //
+    if (md->GetFormatCanDoDomainDecomposition() && doms.size() == 1)
+    {
+        doms[0] = 0;
+    }
+
+
+    return dbi;
+}
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::GetLocalDomainBoundaryInformation
+//
+//  Purpose:
+//    Tries to fetch local dbi info, and combine it to create a global picture
+//    for ghost zone comm.
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   Thu Apr 19 16:11:12 PDT 2012
+//
+//  Modifications:
+//
+//
+// ****************************************************************************
+
+avtDomainBoundaries *
+avtGenericDatabase::GetLocalDomainBoundaryInformation(avtDatasetCollection &ds,
+                                                      intVector &doms,
+                                                      avtDataRequest_p spec,
+                                                      bool confirmInputMeshHasRightSize)
+{
+    
+    
+    int t_fetch_loc_dbi = visitTimer->StartTimer();
+    
+    VoidRefList local_dbis;
+    GetAuxiliaryData(spec,
+                     local_dbis,
+                     AUXILIARY_DATA_DOMAIN_BOUNDARY_INFORMATION,
+                     NULL);
+
+    int nlocal = local_dbis.nList;
+    vector<avtLocalStructuredDomainBoundaryList*> local_lsts;
+    avtLocalStructuredDomainBoundaryList *lst = NULL;
+
+    for(int i = 0; i < nlocal; i++)
+    {
+        lst = (avtLocalStructuredDomainBoundaryList*)*(local_dbis.list[i]);
+        // guard against NULL
+        if(lst != NULL)
+        {
+            local_lsts.push_back(lst);
+        }
+    }
+    
+    visitTimer->StopTimer(t_fetch_loc_dbi,
+                          "avtGenericDatabase: Fetch local domain boundary info");
+    
+    int t_gen_global = visitTimer->StartTimer();
+    // this will return null if there are no local lists.
+    avtDomainBoundaries *res  = avtLocalStructuredDomainBoundaryList::GlobalGenerate(local_lsts);
+    visitTimer->StopTimer(t_gen_global,
+                         "avtGenericDatabase: Generate global domain boundaries from local info");
+    
+    return res;
+}
+
+
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::GetStreamingGhostGenerator
+//
+//  Purpose:
+//      Gets a streaming ghost generator module if one exists.
+//
+//  Programmer: Hank Childs
+//  Creation:   February 10, 2008
+//
+// ****************************************************************************
+
+avtStreamingGhostGenerator *
+avtGenericDatabase::GetStreamingGhostGenerator(void)
+{
+    void_ref_ptr vr = cache.GetVoidRef("any_mesh",
+                                   AUXILIARY_DATA_STREAMING_GHOST_GENERATION,
+                                  -1, -1);
+    if (*vr == NULL)
+        return NULL;
+
+    return (avtStreamingGhostGenerator *) (*vr);
+}
+
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::
+//                            CommunicateGhostZonesFromDomainBoundariesFromFile
+//
+//  Purpose:
+//      Creates ghost zones using domain boundary information that comes from
+//      a file.
+//
+//  Arguments:
+//      ds        The dataset collection.
+//      doms      A list of domains.
+//      spec      A data specification.
+//      src       The source object.
+//
+//  Notes:      This routine used to be wholely contained by CommunicateGhosts.
+//
+//  Programmer: Hank Childs
+//  Creation:   August 13, 2004
+//
+//  Modifications:
+//    Kathleen Bonnell, Wed Dec 15 08:41:17 PST 2004
+//    Changed 'vector<int>' to 'intVector'.
+//
+//    Hank Childs, Sun Mar  6 09:14:52 PST 2005
+//    Removed parallel error checking, since all of that error checking is
+//    already performed by the calling function.
+//
+// ****************************************************************************
+
+bool
+avtGenericDatabase::CommunicateGhostZonesFromDomainBoundariesFromFile(
+                      avtDatasetCollection &ds, intVector &doms,
+                      avtDataRequest_p &spec, avtSourceFromDatabase *src)
+{
+    //
+    //  Setup
+    //
+    char  progressString[1024] = "Calculating ghost zones";
+    src->DatabaseProgress(0, 0, progressString);
+    src->DatabaseProgress(0, 100,
+                     "Calculating ghost zones: waiting for all MPI tasks");
+
+    //
+    // Obtain some info about what we are operating on.
+    //
+    int ts = spec->GetTimestep();
+    avtDatabaseMetaData *md = GetMetaData(ts);
+    const char *varname = spec->GetVariable();
+    string meshname = md->MeshForVar(varname);
+
+    avtDomainBoundaries *dbi = GetDomainBoundaryInformation(ds, doms, spec);
+
+    //
+    // This method should never be called if the domain boundary information
+    // doesn't exist, but make sure just in case.  If this does happen, we
+    // could get parallel deadlock.
+    //
+    if (dbi == NULL)
+    {
+        debug1 << "Not applying ghost zones because the boundary "
+               << "information does not apply to this mesh." << endl;
+        return false;
+    }
+
+    return CommunicateGhostZonesFromDomainBoundaries(dbi, ds, doms, spec, src);
+}
+
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries
+//
+//  Purpose:
+//      Creates ghost zones using domain boundary information.
+//
+//  Arguments:
+//      ds        The dataset collection.
+//      doms      A list of domains.
+//      spec      A data specification.
+//      src       The source object.
+//
+//  Notes:      This routine used to be wholely contained by CommunicateGhosts.
+//
+//  Programmer: Hank Childs
+//  Creation:   August 17, 2004
+//
+//  Modifications:
+//    Kathleen Bonnell, Wed Dec 15 08:41:17 PST 2004
+//    Changed 'vector<int>' to 'intVector'.
+//
+//    Hank Childs, Sun Mar 13 10:47:59 PST 2005
+//    Fix memory leak.
+//
+//    Hank Childs, Wed Jun 29 15:24:35 PDT 2005
+//    Call ResetCachedMembers.
+//
+//    Hank Childs, Fri Jan 27 08:57:17 PST 2006
+//    Add support for exchanging global node and zone numbers.
+//
+//    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
+//    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
+//
+//    Cyrus Harrison, Tue Feb 19 13:11:03 PST 2008
+//    Added support for post ghost material and mixed var objects.
+//
+//    Cyrus Harrison, Fri Feb 22 09:17:34 PST 2008
+//    Fixed a problem where a material name could be requested on mesh
+//    with no materials - resulting in an error.
+//
+//    Eric Brugger, Fri Mar 13 16:57:08 PDT 2009
+//    I corrected a problem where this routine didn't handle the case
+//    where the file reader did its own on the fly decomposition.  In this
+//    case all the processors would have domain 0, which caused problems.
+//    Now it temporarily sets the domain number to the processor rank.
+//
+//    Kathleen Biagas, Wed Apr  1 16:33:37 PDT 2015
+//    Obtain FieldData arrays as AbstractArray.
+//
+// ****************************************************************************
+
+bool
+avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
+                      avtDomainBoundaries *dbi,
+                      avtDatasetCollection &ds, intVector &doms,
+                      avtDataRequest_p &spec, avtSourceFromDatabase *src)
+{
+    int t1 = visitTimer->StartTimer();
+
+    int   localstage;
+    int   nlocalstage;
+    char  progressString[1024] = "Calculating ghost zones";
+
+    //
+    // Obtain some info about what we are operating on.
+    //
+    int ts = spec->GetTimestep();
+    avtDatabaseMetaData *md = GetMetaData(ts);
+    const char *varname = spec->GetVariable();
+    avtVarType type  = md->DetermineVarType(varname);
+    string meshname  = md->MeshForVar(varname);
+
+    bool post_ghost = spec->NeedPostGhostMaterialInfo();
+
+    //
+    // If the file format reader can do its own domain decomposition
+    // and there is one domain then change it to the rank so that
+    // things work properly.  The convention is that when the reader
+    // is doing its own decomposition, all the processors have domain
+    // zero.  The value gets reset at the end of this method.
+    //
+    if (md->GetFormatCanDoDomainDecomposition() && doms.size() == 1)
+    {
+        doms[0] = PAR_Rank();
+    }
+
+    // Setup materials
+    int anymats    = false;
+    int allmats    = true;
+    int most_mixvars = 0;
+    const int didnt_get_any = 100;
+    int least_mixvars = didnt_get_any;
+    for (int i = 0 ; i < (int)doms.size() ; i++)
+    {
+        avtMaterial *mat = ds.GetMaterial(i);
+        if (mat)
+            anymats = true;
+        else
+            allmats = false;
+
+        if (mat != NULL && mat->GetMixlen() > 0)
+        {
+            int num = (int)ds.GetAllMixVars(i).size();
+            most_mixvars = (most_mixvars > num ? most_mixvars : num);
+            least_mixvars = (least_mixvars < num ? least_mixvars : num);
+        }
+    }
+
+#ifdef PARALLEL
+    int anymats_tmp    = anymats;
+    int allmats_tmp    = allmats;
+    int least_mix_tmp  = least_mixvars;
+    int most_mix_tmp   = most_mixvars;
+    MPI_Allreduce(&anymats_tmp, &anymats,1,MPI_INT,MPI_MAX,VISIT_MPI_COMM);
+    MPI_Allreduce(&allmats_tmp, &allmats,1,MPI_INT,MPI_MIN,VISIT_MPI_COMM);
+    MPI_Allreduce(&most_mix_tmp, &most_mixvars, 1, MPI_INT, MPI_MAX,
+                  VISIT_MPI_COMM);
+    MPI_Allreduce(&least_mix_tmp, &least_mixvars, 1, MPI_INT, MPI_MIN,
+                  VISIT_MPI_COMM);
+#endif
+
+    if (anymats && !allmats)
+        EXCEPTION1(VisItException, "Material selection must be performed "
+                   "on all domains.  Please see a VisIt developer.");
+    if (least_mixvars != didnt_get_any)
+    {
+        if (most_mixvars != least_mixvars)
+        {
+            debug1 << "Not all of the domains have the same number of "
+                   << "mixvars." << endl;
+            debug1 << "Most_mixvars = " << most_mixvars << endl;
+            debug1 << "Least_mixvars = " << least_mixvars << endl;
+            EXCEPTION1(VisItException, "Mixed variables must be defined "
+                       "on all domains that have mixed materials. "
+                       " Please see a VisIt developer.");
+        }
+    }
+    int nummixvars = most_mixvars;
+
+    localstage  = 1;
+    nlocalstage = (1 +
+                   ((type==AVT_SCALAR_VAR || type==AVT_VECTOR_VAR) ? 1:0) +
+                   (anymats ? 1:0) +
+                   (nummixvars > 0 ? 1:0) +
+                   (spec->NeedZoneNumbers()||spec->NeedStructuredIndices()
+                            ? 1: 0));
+
+    //
+    // Don't let cache data members from the last execution affect this one.
+    //
+    dbi->ResetCachedMembers();
+
+    //
+    //  Exchange Meshes
+    //
+    src->DatabaseProgress(localstage++, nlocalstage,
+                          "Creating ghost zones for meshes");
+
+    vector<vtkDataSet *> list;
+    for (int i = 0 ; i < (int)doms.size() ; i++)
+    {
+        list.push_back(ds.GetDataset(i, 0));
+        list[i]->Register(NULL);
+    }
+    vector<vtkDataSet *> newList = dbi->ExchangeMesh(doms, list);
+
+    //
+    //  Copy FieldData arrays indivdually, as there may be
+    //  some already in existence in newList.
+    //
+    for (int i = 0 ; i < (int)doms.size() ; i++)
+    {
+        vtkFieldData *fd = list[i]->GetFieldData();
+        for (int k = 0; k < fd->GetNumberOfArrays(); k++)
+        {
+            newList[i]->GetFieldData()->AddArray(fd->GetAbstractArray(k));
+        }
+        ds.SetDataset(i, 0, newList[i]);
+        newList[i]->Delete();
+    }
+
+    //
+    //  Exchange Variables
+    //
+    if (type == AVT_SCALAR_VAR || type == AVT_MATSPECIES)
+    {
+        src->DatabaseProgress(localstage++, nlocalstage,
+                              "Creating ghost zones for scalars");
+
+        avtCentering centering;
+        if (type == AVT_MATSPECIES)
+            centering = AVT_ZONECENT;
+        else
+            centering = GetMetaData(ts)->GetScalar(varname)->centering;
+
+        bool isPointData = (centering == AVT_NODECENT ? true : false);
+        vector<vtkDataArray *> scalars;
+        for (size_t i = 0 ; i < doms.size() ; i++)
+        {
+            vtkDataSet *ds1 = list[i];
+            vtkDataArray *s   = NULL;
+            if (centering == AVT_NODECENT)
+            {
+                s = ds1->GetPointData()->GetScalars();
+            }
+            else
+            {
+                s = ds1->GetCellData()->GetScalars();
+            }
+            scalars.push_back(s);
+        }
+        vector<vtkDataArray *> scalarsOut;
+        scalarsOut = dbi->ExchangeScalar(doms, isPointData, scalars);
+        for (int i = 0 ; i < (int)doms.size() ; i++)
+        {
+            vtkDataSet *ds1 = ds.GetDataset(i, 0);
+            vtkDataArray *s   = scalarsOut[i];
+            if (centering == AVT_NODECENT)
+            {
+                ds1->GetPointData()->SetScalars(s);
+            }
+            else
+            {
+                ds1->GetCellData()->SetScalars(s);
+            }
+            s->Delete();
+        }
+    }
+
+    if (type == AVT_VECTOR_VAR)
+    {
+        src->DatabaseProgress(localstage++, nlocalstage,
+                              "Creating ghost zones for vectors");
+
+        const avtVectorMetaData *vmd = GetMetaData(ts)->GetVector(varname);
+        bool isPointData = (vmd->centering == AVT_NODECENT ? true : false);
+        vector<vtkDataArray *> vectors;
+        for (size_t i = 0 ; i < doms.size() ; i++)
+        {
+            vtkDataSet *ds1 = list[i];
+            vtkDataArray *s   = NULL;
+            if (vmd->centering == AVT_NODECENT)
+            {
+                s = ds1->GetPointData()->GetVectors();
+            }
+            else
+            {
+                s = ds1->GetCellData()->GetVectors();
+            }
+            vectors.push_back(s);
+        }
+        vector<vtkDataArray *> vectorsOut;
+        vectorsOut = dbi->ExchangeVector(doms, isPointData, vectors);
+        for (int i = 0 ; i < (int)doms.size() ; i++)
+        {
+            vtkDataSet *ds1 = ds.GetDataset(i, 0);
+            vtkDataArray *s   = vectorsOut[i];
+            if (vmd->centering == AVT_NODECENT)
+            {
+                ds1->GetPointData()->SetVectors(s);
+            }
+            else
+            {
+                ds1->GetCellData()->SetVectors(s);
+            }
+            s->Delete();
+        }
+    }
+
+    //
+    // Exchange secondary variables.
+    //
+    const vector<CharStrRef> &var2nd =
+                           spec->GetSecondaryVariablesWithoutDuplicates();
+    avtDatabaseMetaData *metadata = GetMetaData(ts);
+    for (size_t i = 0 ; i < var2nd.size() ; i++)
+    {
+        CharStrRef curVar  = var2nd[i];
+        avtVarType varType = metadata->DetermineVarType(*curVar);
+        switch (varType)
+        {
+          case AVT_SCALAR_VAR:
+            {
+                avtCentering centering = metadata->GetScalar(*curVar)
+                                                               ->centering;
+                bool isPointData = (centering == AVT_NODECENT ? true : false);
+                vector<vtkDataArray *> scalars;
+                for (size_t j = 0 ; j < doms.size() ; j++)
+                {
+                    vtkDataSet *ds1 = list[j];
+                    vtkDataSetAttributes *atts = NULL;
+                    if (isPointData)
+                    {
+                        atts = ds1->GetPointData();
+                    }
+                    else
+                    {
+                        atts = ds1->GetCellData();
+                    }
+                    scalars.push_back(atts->GetArray(*curVar));
+                }
+                vector<vtkDataArray *> scalarsOut;
+                scalarsOut = dbi->ExchangeScalar(doms,isPointData,scalars);
+                for (int j = 0 ; j < (int)doms.size() ; j++)
+                {
+                    vtkDataSet *ds1 = ds.GetDataset(j, 0);
+                    vtkDataSetAttributes *atts = NULL;
+                    if (isPointData)
+                    {
+                        atts = ds1->GetPointData();
+                    }
+                    else
+                    {
+                        atts = ds1->GetCellData();
+                    }
+                    atts->AddArray(scalarsOut[j]);
+                    scalarsOut[j]->Delete();
+                }
+            }
+            break;
+          case AVT_MATSPECIES:
+            {
+                vector<vtkDataArray *> scalars;
+                for (size_t j = 0 ; j < doms.size() ; j++)
+                {
+                    scalars.push_back(list[j]->GetCellData()->GetArray(
+                                                                 *curVar));
+                }
+                vector<vtkDataArray *> scalarsOut;
+                scalarsOut = dbi->ExchangeScalar(doms, false, scalars);
+                for (int j = 0 ; j < (int)doms.size() ; j++)
+                {
+                    vtkDataSet *ds1 = ds.GetDataset(j, 0);
+                    ds1->GetCellData()->AddArray(scalarsOut[j]);
+                    scalarsOut[j]->Delete();
+                }
+            }
+            break;
+          case AVT_VECTOR_VAR:
+            {
+                avtCentering centering = metadata->GetVector(*curVar)
+                                                               ->centering;
+                bool isPointData = (centering == AVT_NODECENT ? true : false);
+                vector<vtkDataArray *> vectors;
+                for (size_t j = 0 ; j < doms.size() ; j++)
+                {
+                    vtkDataSet *ds1 = list[j];
+                    vtkDataSetAttributes *atts = NULL;
+                    if (isPointData)
+                    {
+                        atts = ds1->GetPointData();
+                    }
+                    else
+                    {
+                        atts = ds1->GetCellData();
+                    }
+                    vectors.push_back(atts->GetArray(*curVar));
+                }
+                vector<vtkDataArray *> vectorsOut;
+                vectorsOut = dbi->ExchangeVector(doms,isPointData,vectors);
+                for (int j = 0 ; j < (int) doms.size() ; j++)
+                {
+                    vtkDataSet *ds1 = ds.GetDataset(j, 0);
+                    vtkDataSetAttributes *atts = NULL;
+                    if (isPointData)
+                    {
+                        atts = ds1->GetPointData();
+                    }
+                    else
+                    {
+                        atts = ds1->GetCellData();
+                    }
+                    atts->AddArray(vectorsOut[j]);
+                    vectorsOut[j]->Delete();
+                }
+            }
+            break;
+
+          case AVT_MATERIAL:
+          case AVT_MESH:
+            // These typically come about because of expressions.
+            // Just ignore -- it will be handled elsewhere.
+            continue;
+
+          default:
+            EXCEPTION1(VisItException, "Cannot exchange secondary "
+                     "variables that aren't scalars, vectors, or species");
+        }
+    }
+
+    //
+    //  Exchange Materials and Mixed Variables
+    //
+    if (anymats)
+    {
+        src->DatabaseProgress(localstage++, nlocalstage,
+                              "Creating ghost zones for materials");
+
+        // get the proper mesh name
+        string matonmesh = md->MaterialOnMesh(meshname);
+        // materials
+        vector<avtMaterial*> matList;
+        for (int i = 0 ; i < (int) doms.size() ; i++)
+            matList.push_back(ds.GetMaterial(i));
+
+        vector<avtMaterial*> newMatList = dbi->ExchangeMaterial(doms, matList);
+
+        for (int i = 0 ; i < (int)doms.size() ; i++)
+        {
+            ds.SetMaterial(i, newMatList[i]);
+            // cache post ghost material object if requested
+            if(post_ghost)
+            {
+                void_ref_ptr vr = void_ref_ptr(newMatList[i],
+                                               avtMaterial::Destruct);
+                debug4 << "avtGenericDatabase - Caching:"
+                       << matonmesh  << " ("
+                       << AUXILIARY_DATA_POST_GHOST_MATERIAL
+                       << ") for timestep, domain =  "
+                       << ts << "," << doms[i] << endl;
+
+                cache.CacheVoidRef(matonmesh.c_str(),
+                                   AUXILIARY_DATA_POST_GHOST_MATERIAL,
+                                   ts,
+                                   doms[i], vr);
+            }
+        }
+
+        if(!post_ghost)
+            ds.MaterialsShouldBeFreed();
+
+        // mixvars
+        if (nummixvars > 0)
+        {
+            src->DatabaseProgress(localstage++, nlocalstage,
+                                  "Creating ghost zones for mixed vars");
+            for (int i = 0 ; i < nummixvars ; i++)
+            {
+                vector<avtMixedVariable*> mixvarList;
+                int  numDomains = (int)doms.size();
+                for (int j = 0 ; j < numDomains ; j++)
+                {
+                    avtMaterial *mat = matList[j];
+                    if (mat != NULL && mat->GetMixlen() > 0)
+                    {
+                        avtMixedVariable *mv = (avtMixedVariable *)
+                                                 *(ds.GetAllMixVars(j)[i]);
+                        mixvarList.push_back(mv);
+                    }
+                    else
+                    {
+                        mixvarList.push_back(NULL);
+                    }
+                }
+
+                vector<avtMixedVariable*> newMixvarList =
+                                dbi->ExchangeMixVar(doms, matList, mixvarList);
+
+                for (int j = 0 ; j < (int)doms.size() ; j++)
+                    if (newMixvarList[j] != NULL)
+                    {
+                        string mixv_name = newMixvarList[j]->GetVarname();
+                        void_ref_ptr vr = void_ref_ptr(newMixvarList[j],
+                                                   avtMixedVariable::Destruct);
+                        ds.ReplaceMixVar(j, vr);
+
+                        // cache post ghost mixed var object if requested
+                        if(post_ghost)
+                        {
+                            debug4 << "avtGenericDatabase - Caching:"
+                                   << mixv_name  << " ("
+                                   << AUXILIARY_DATA_POST_GHOST_MIXED_VARIABLE
+                                   << ") for timestep, domain = "
+                                   << ts  << "," << doms[j] << endl;
+                            cache.CacheVoidRef(mixv_name.c_str(),
+                                     AUXILIARY_DATA_POST_GHOST_MIXED_VARIABLE,
+                                               ts,
+                                               doms[j],
+                                               vr);
+                        }
+                    }
+            }
+        }
+    }
+
+    //
+    // Exchange OriginalNodes Arrays.
+    //
+    if (spec->NeedNodeNumbers())
+    {
+        vector<vtkDataArray *> nodeNums;
+        for (size_t j = 0 ; j < doms.size() ; j++)
+        {
+            vtkDataSet *ds1 = list[j];
+            nodeNums.push_back(ds1->GetPointData()->GetArray(
+                                                "avtOriginalNodeNumbers"));
+        }
+        vector<vtkDataArray *> nodeNumsOut;
+        nodeNumsOut = dbi->ExchangeVector(doms,true,nodeNums);
+        for (int j = 0 ; j < (int)doms.size() ; j++)
+        {
+            vtkDataSet *ds1 = ds.GetDataset(j, 0);
+            ds1->GetPointData()->AddArray(nodeNumsOut[j]);
+            nodeNumsOut[j]->Delete();
+        }
+    }
+
+    //
+    // Exchange OriginalCells Arrays.
+    //
+    if (spec->NeedZoneNumbers() || spec->NeedStructuredIndices())
+    {
+        vector<vtkDataArray *> cellNums;
+        for (size_t j = 0 ; j < doms.size() ; j++)
+        {
+            vtkDataSet *ds1 = list[j];
+            cellNums.push_back(ds1->GetCellData()->GetArray(
+                                                "avtOriginalCellNumbers"));
+        }
+        vector<vtkDataArray *> cellNumsOut;
+        cellNumsOut = dbi->ExchangeVector(doms,false,cellNums);
+        for (int j = 0 ; j < (int)doms.size() ; j++)
+        {
+            vtkDataSet *ds1 = ds.GetDataset(j, 0);
+            ds1->GetCellData()->AddArray(cellNumsOut[j]);
+            cellNumsOut[j]->Delete();
+        }
+    }
+
+    //
+    // Exchange GlobalNodeIds.
+    //
+    if (spec->NeedGlobalNodeNumbers())
+    {
+        vector<vtkDataArray *> nodeNums;
+        for (size_t j = 0 ; j < doms.size() ; j++)
+        {
+            vtkDataSet *ds1 = list[j];
+            nodeNums.push_back(ds1->GetPointData()->GetArray(
+                                                "avtGlobalNodeNumbers"));
+        }
+        vector<vtkDataArray *> nodeNumsOut;
+        nodeNumsOut = dbi->ExchangeVector(doms,true,nodeNums);
+        for (int j = 0 ; j < (int)doms.size() ; j++)
+        {
+            vtkDataSet *ds1 = ds.GetDataset(j, 0);
+            ds1->GetPointData()->AddArray(nodeNumsOut[j]);
+            nodeNumsOut[j]->Delete();
+        }
+    }
+
+    //
+    // Exchange GlobalZoneNumbers Arrays.
+    //
+    if (spec->NeedGlobalZoneNumbers())
+    {
+        vector<vtkDataArray *> cellNums;
+        for (size_t j = 0 ; j < doms.size() ; j++)
+        {
+            vtkDataSet *ds1 = list[j];
+            cellNums.push_back(ds1->GetCellData()->GetArray(
+                                                "avtGlobalZoneNumbers"));
+        }
+        vector<vtkDataArray *> cellNumsOut;
+        cellNumsOut = dbi->ExchangeVector(doms,false,cellNums);
+        for (int j = 0 ; j < (int)doms.size() ; j++)
+        {
+            vtkDataSet *ds1 = ds.GetDataset(j, 0);
+            ds1->GetCellData()->AddArray(cellNumsOut[j]);
+            cellNumsOut[j]->Delete();
+        }
+    }
+
+    //
+    // We added references to the mesh with no ghost zones so that we could
+    // reference it through the communication.  Now that we are done,
+    // remove those references.
+    //
+    for (size_t i = 0 ; i < doms.size() ; i++)
+    {
+        list[i]->Delete();
+    }
+
+    src->DatabaseProgress(1, 0, progressString);
+
+    //
+    // Restore the doms array.
+    //
+    if (md->GetFormatCanDoDomainDecomposition() && doms.size() == 1)
+    {
+        doms[0] = 0;
+    }
+
+    visitTimer->StopTimer(t1, "Actual communication of ghost zones");
+    return true;
+}
+
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::
+//                            CommunicateGhostNodesFromDomainBoundariesFromFile
+//
+//  Purpose:
+//      Creates ghost nodes using domain boundary information.
+//
+//  Arguments:
+//      ds           The dataset collection.
+//      doms         A list of domains.
+//      spec         A data specification.
+//      src          The source object.
+//      allDomains   A list of all domains being used.  Important for DLB.
+//
+//  Programmer: Hank Childs
+//  Creation:   August 14, 2004
+//
+//  Modifications:
+//    Kathleen Bonnell, Wed Dec 15 08:41:17 PST 2004
+//    Changed 'vector<int>' to 'intVector'.
+//
+//    Hank Childs, Sun Feb 27 14:47:45 PST 2005
+//    Added allDomains argument.
+//
+//    Hank Childs, Sun Mar  6 09:14:52 PST 2005
+//    Removed parallel error checking, since all of that error checking is
+//    already performed by the calling function.
+//
+// ****************************************************************************
+
+bool
+avtGenericDatabase::CommunicateGhostNodesFromDomainBoundariesFromFile(
+                      avtDatasetCollection &ds, intVector &doms,
+                      avtDataRequest_p &spec, avtSourceFromDatabase *src,
+                      intVector &allDomains)
+{
+    //
+    //  Setup
+    //
+    char  progressString[1024] = "Calculating ghost nodes";
+    src->DatabaseProgress(0, 0, progressString);
+    src->DatabaseProgress(0, 100,
+                     "Calculating ghost nodes: waiting for all MPI tasks");
+
+    //
+    // Obtain some info about what we are operating on.
+    //
+    int ts = spec->GetTimestep();
+    avtDatabaseMetaData *md = GetMetaData(ts);
+    const char *varname = spec->GetVariable();
+    string meshname = md->MeshForVar(varname);
+
+    avtDomainBoundaries *dbi = GetDomainBoundaryInformation(ds, doms, spec);
+
+    //
+    // This method should never be called if the domain boundary information
+    // doesn't exist, but make sure just in case.  If this does happen, we
+    // could get parallel deadlock.
+    //
+    if (dbi == NULL)
+    {
+        debug1 << "Not applying ghost nodes because the boundary "
+               << "information does not apply to this mesh." << endl;
+        return false;
+    }
+
+    vector<vtkDataSet *> list;
+    for (int i = 0 ; i < (int)doms.size() ; i++)
+        list.push_back(ds.GetDataset(i, 0));
+    dbi->CreateGhostNodes(doms, list, allDomains);
+
+    src->DatabaseProgress(1, 0, progressString);
+
+    return true;
+}
+
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::CommunicateGhostZonesFromGlobalNodeIds
+//
+//  Purpose:
+//      Creates ghost zones using global node ids.
+//
+//  Arguments:
+//      ds        The dataset collection.
+//      doms      A list of domains.
+//      spec      A data specification.
+//      src       The source object.
+//
+//  Programmer: Hank Childs
+//  Creation:   August 14, 2004
+//
+//  Modifications:
+//
+//    Hank Childs, Wed Sep 29 16:55:26 PDT 2004
+//    Update name of global node numbers, since name was recently changed
+//    out from underneath us.
+//
+//    Kathleen Bonnell, Wed Dec 15 08:41:17 PST 2004
+//    Changed 'vector<int>' to 'intVector'.
+//
+//    Hank Childs, Mon Apr  4 13:21:09 PDT 2005
+//    Fix problem where curDisp was being deleted twice in parallel.
+//
+//    Mark C. Miller, Thu Apr 21 09:37:41 PDT 2005
+//    Fixed leak for 'ln' object
+//
+//    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
+//    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
+//
+//    Mark C. Miller, Wed Aug 22 08:43:26 PDT 2012
+//    Added logic to cleanup VTK objects before EXCEPTION
+// ****************************************************************************
+
+bool
+avtGenericDatabase::CommunicateGhostZonesFromGlobalNodeIds(
+                      avtDatasetCollection &ds, intVector &doms,
+                      avtDataRequest_p &spec, avtSourceFromDatabase *src)
+{
+    //
+    // The game plan here is to create a domain boundaries object using the
+    // global node ids.
+    //
+    int ts = spec->GetTimestep();
+    avtDatabaseMetaData *md = GetMetaData(ts);
+    const char *varname = spec->GetVariable();
+    string meshname = md->MeshForVar(varname);
+    int numDomains = md->GetMesh(meshname)->numBlocks;
+
+    //
+    // Make sure we are dealing with unstructured grids.
+    //
+    for (int i = 0 ; i < (int)doms.size() ; i++)
+    {
+        vtkDataSet *d = ds.GetDataset(i, 0);
+        if (d == NULL)
+            continue;
+        if (d->GetDataObjectType() != VTK_UNSTRUCTURED_GRID)
+        {
+            debug1 << "Not able to create ghost zones for anything but "
+                   << "unstructured grids." << endl;
+            return false;
+        }
+    }
+
+    //
+    // Most of the nodes in a dataset are internal.  It is possible to run
+    // this algorithm using all of those nodes, but it will make the number
+    // of nodes considered *huge*.  So let's figure out which nodes are
+    // internal and exteral.
+    //
+    int t1 = visitTimer->StartTimer();
+    vector<vtkIntArray *> gni;
+    vector<vtkIntArray *> lni;
+    for (int i = 0 ; i < (int)doms.size() ; i++)
+    {
+        vtkUnstructuredGrid *d = (vtkUnstructuredGrid *) ds.GetDataset(i, 0);
+        vtkUnstructuredGrid *copy = vtkUnstructuredGrid::New();
+        copy->CopyStructure(d);
+        vtkDataArray *gn = GetGlobalNodeIds(doms[i], meshname.c_str(), ts);
+        copy->GetPointData()->AddArray(gn);
+        vtkIntArray *ln = vtkIntArray::New();
+        int npts = gn->GetNumberOfTuples();
+        ln->SetNumberOfTuples(npts);
+        int *ptr = ln->GetPointer(0);
+        for (int j = 0 ; j < npts ; j++)
+            ptr[j] = j;
+        ln->SetName("avtOriginalNodeId");
+        copy->GetPointData()->AddArray(ln);
+        ln->Delete();
+        vtkUnstructuredGridFacelistFilter *ff =
+                                      vtkUnstructuredGridFacelistFilter::New();
+        ff->SetInputData(copy);
+        vtkPolyDataRelevantPointsFilter *rpf =
+                                        vtkPolyDataRelevantPointsFilter::New();
+        rpf->SetInputConnection(ff->GetOutputPort());
+        rpf->Update();
+        vtkIntArray *g = (vtkIntArray *)
+            rpf->GetOutput()->GetPointData()->GetArray("avtGlobalNodeNumbers");
+        if (g == NULL)  // Name of array changed out from underneath us?
+        {
+            copy->Delete();
+            rpf->Delete();
+            ff->Delete();
+            EXCEPTION0(ImproperUseException);
+        }
+        vtkIntArray *l = (vtkIntArray *)
+               rpf->GetOutput()->GetPointData()->GetArray("avtOriginalNodeId");
+
+        g->Register(NULL);
+        l->Register(NULL);
+        copy->Delete();
+        rpf->Delete();
+        ff->Delete();
+
+        gni.push_back(g);
+        lni.push_back(l);
+    }
+    visitTimer->StopTimer(t1, "Finding nodes external to domain.");
+
+    //
+    // Identify what the biggest id is.
+    //
+    int maxId = -1;
+    for (size_t i = 0 ; i < doms.size() ; i++)
+    {
+        vtkIntArray *int_gni = gni[i];
+        int *ptr = int_gni->GetPointer(0);
+        vtkIdType nvals = int_gni->GetNumberOfTuples();
+        for (vtkIdType j = 0 ; j < nvals ; j++)
+            maxId = (maxId < ptr[j] ? ptr[j] : maxId);
+    }
+
+    maxId += 1;  // Its easier to work with ranges if maxId is one bigger
+                 // than the actual biggest id.
+
+    //
+    // Identify what the maximum id is across all processors.
+    //
+    maxId = UnifyMaximumValue(maxId);
+    int num_procs = PAR_Size();
+    int rank = PAR_Rank();
+
+    //
+    // Break the range up among all processors.
+    //
+    int t2 = visitTimer->StartTimer();
+    int numIdsPerProc = maxId / num_procs + 1;
+    int myMin = numIdsPerProc * rank;
+    int myMax = numIdsPerProc * (rank+1);
+    if (myMax > maxId)
+        myMax = maxId;
+
+    //
+    // We will do the bookkeeping for this processor's range.  Set up
+    // the variables for that now.
+    //
+    int mySize = myMax-myMin;
+    intVector index_for_node(mySize, -1);
+
+    int curIndex = 0;
+    int curSize = 4096;
+    vector< intVector > doms_for_id(curSize);
+    vector< intVector > local_ids_for_id(curSize);
+
+    //
+    // Go through all of the ids for this processor and either update
+    // our arrays or determine which processor they should go to.
+    //
+    vector< intVector > global_ids_for_proc(num_procs);
+    vector< intVector > doms_for_proc(num_procs);
+    vector< intVector > local_ids_for_proc(num_procs);
+    for (size_t i = 0 ; i < doms.size() ; i++)
+    {
+        vtkIntArray *int_gni = gni[i];
+        vtkIntArray *int_lni = lni[i];
+        int *ptr  = int_gni->GetPointer(0);
+        int *ptr2 = int_lni->GetPointer(0);
+        vtkIdType nvals = int_gni->GetNumberOfTuples();
+        for (vtkIdType j = 0 ; j < nvals ; j++)
+        {
+            if (ptr[j] < myMin || ptr[j] >= myMax)
+            {
+                int otherProc = ptr[j] / numIdsPerProc;
+                global_ids_for_proc[otherProc].push_back(ptr[j]);
+                doms_for_proc[otherProc].push_back(doms[i]);
+                local_ids_for_proc[otherProc].push_back(ptr2[j]);
+            }
+            else
+            {
+                int idx = ptr[j]-myMin;
+                int ifn = index_for_node[idx];
+                if (ifn == -1)
+                {
+                    if ((curIndex + 1) >= curSize)
+                    {
+                        curSize *= 2;
+                        doms_for_id.resize(curSize);
+                        local_ids_for_id.resize(curSize);
+                    }
+                    index_for_node[idx] = curIndex;
+                    curIndex++;
+                    ifn = index_for_node[idx];
+                }
+                doms_for_id[ifn].push_back(doms[i]);
+                local_ids_for_id[ifn].push_back(ptr2[j]);
+            }
+        }
+    }
+
+    //
+    // We are now done with the arrays of global node ids that are on the
+    // exterior of the dataset, so let's clean that up now.
+    //
+    for (size_t i = 0 ; i < doms.size() ; i++)
+    {
+        gni[i]->Delete();
+        lni[i]->Delete();
+    }
+    gni.clear();
+    lni.clear();
+
+#ifdef PARALLEL
+    //
+    // Now take all the nodes that fell into other processors' ranges and
+    // send them there using all-to-all communication.
+    //
+    int *sendcount = new int[num_procs];
+    int *recvcount = new int[num_procs];
+    int totalSend = 0;
+    for (int i = 0 ; i < num_procs ; i++)
+    {
+        sendcount[i] = 3*(int)global_ids_for_proc[i].size();
+        totalSend += sendcount[i];
+    }
+
+    MPI_Alltoall(sendcount, 1, MPI_INT, recvcount, 1, MPI_INT, VISIT_MPI_COMM);
+
+    int totalRecv = 0;
+    for (int i = 0 ; i < num_procs ; i++)
+    {
+        totalRecv += recvcount[i];
+    }
+
+    int *senddisp = new int[num_procs];
+    int *recvdisp = new int[num_procs];
+    senddisp[0] = 0;
+    recvdisp[0] = 0;
+    for (int i = 1 ; i < num_procs ; i++)
+    {
+        senddisp[i] = senddisp[i-1] + sendcount[i-1];
+        recvdisp[i] = recvdisp[i-1] + recvcount[i-1];
+    }
+
+    int *big_send_buffer = new int[totalSend];
+    int idx = 0;
+    for (int i = 0 ; i < num_procs ; i++)
+    {
+        for (size_t j = 0 ; j < global_ids_for_proc[i].size() ; j++)
+        {
+            big_send_buffer[idx++] = global_ids_for_proc[i][j];
+            big_send_buffer[idx++] = doms_for_proc[i][j];
+            big_send_buffer[idx++] = local_ids_for_proc[i][j];
+        }
+    }
+
+    int *big_recv_buffer = new int[totalRecv];
+
+    //
+    // We are now ready to transfer the actual node ids.
+    //
+    MPI_Alltoallv(big_send_buffer, sendcount, senddisp, MPI_INT,
+                  big_recv_buffer, recvcount, recvdisp, MPI_INT,
+                  VISIT_MPI_COMM);
+
+    //
+    // Now take everything in the receive buffer and add update our
+    // node list counters with it.
+    //
+    if ((totalRecv % 3) != 0)
+    {
+        EXCEPTION0(ImproperUseException);
+    }
+    intVector Domain2Proc(numDomains, -1);
+    int index = 0;
+    for (int i = 0 ; i < num_procs ; i++)
+    {
+        for (int j = 0 ; j < recvcount[i] ; j += 3)
+        {
+            int glob_id = big_recv_buffer[index];
+            int dom_id = big_recv_buffer[index+1];
+            int local_id = big_recv_buffer[index+2];
+            if (glob_id < myMin || glob_id >= myMax)
+            {
+                EXCEPTION0(ImproperUseException);
+            }
+
+            int idx = glob_id-myMin;
+            int ifn = index_for_node[idx];
+            if (ifn == -1)
+            {
+                if ((curIndex + 1) >= curSize)
+                {
+                    curSize *= 2;
+                    doms_for_id.resize(curSize);
+                    local_ids_for_id.resize(curSize);
+                }
+                index_for_node[idx] = curIndex;
+                curIndex++;
+                ifn = index_for_node[idx];
+            }
+            doms_for_id[ifn].push_back(dom_id);
+            local_ids_for_id[ifn].push_back(local_id);
+            Domain2Proc[dom_id] = i;
+
+            index += 3;
+        }
+    }
+#endif
+    visitTimer->StopTimer(t2, "Creating table of shared nodes.");
+
+    //
+    // We now have all the info we need to identify which nodes are shared
+    // between which domains (for our portion of the global indexing space,
+    // at least).
+    //
+    int t4 = visitTimer->StartTimer();
+    vector< intVector > pairs(numDomains);
+    vector< vector< intVector > > first_val(numDomains);
+    vector< vector< intVector > > second_val(numDomains);
+    for (int i = myMin; i < myMax; i++)
+    {
+        int idx = i-myMin;
+        int indirection_index = index_for_node[idx];
+        if (indirection_index < 0)
+            continue;
+        if (doms_for_id[indirection_index].size() <= 1)
+            continue;
+
+        for (size_t j = 0 ; j < doms_for_id[indirection_index].size() ; j++)
+        {
+            int primary_dom = doms_for_id[indirection_index][j];
+            int primary_local_node = local_ids_for_id[indirection_index][j];
+            for (size_t k = 0 ; k < doms_for_id[indirection_index].size() ; k++)
+            {
+                int secondary_dom = doms_for_id[indirection_index][k];
+                int secondary_local_node =
+                                        local_ids_for_id[indirection_index][k];
+                // 'if' test should be true only when j == k.
+                if (primary_dom == secondary_dom)
+                    continue;
+                int match = -1;
+                for (int l = 0 ; l < (int)pairs[primary_dom].size() ; l++)
+                    if (pairs[primary_dom][l] == secondary_dom)
+                    {
+                        match = l;
+                        break;
+                    }
+                if (match == -1)
+                {
+                    pairs[primary_dom].push_back(secondary_dom);
+                    size_t newSize = first_val[primary_dom].size()+1;
+                    first_val[primary_dom].resize(newSize);
+                    second_val[primary_dom].resize(newSize);
+                    match = (int)pairs[primary_dom].size()-1;
+                }
+                first_val[primary_dom][match].push_back(primary_local_node);
+                second_val[primary_dom][match].push_back(secondary_local_node);
+            }
+        }
+    }
+
+#ifdef PARALLEL
+    //
+    // We now have a list of all shared points for our portion of the global
+    // indexing space.  But the matches we are interested in have to go to
+    // other processors.  So do more all-to-all communication.
+    //
+
+    //
+    // First, decide the size of what we are going to send to each processor.
+    //
+    for (int i = 0 ; i < num_procs ; i++)
+        sendcount[i] = 0;
+    for (int i = 0 ; i < numDomains ; i++)
+    {
+        int proc = Domain2Proc[i];
+        int numPairs = (int)pairs[i].size();
+        for (int j = 0 ; j < numPairs ; j++)
+        {
+            int domain2 = pairs[i][j];
+            int proc2 = Domain2Proc[domain2];
+            int numShared = (int)first_val[i][j].size();
+            if (proc >= 0)
+                sendcount[proc] += 2+1+numShared*2;
+            if (proc2 >= 0 && proc2 != proc)
+                sendcount[proc2] += 2+1+numShared*2;
+        }
+    }
+
+    totalSend = 0;
+    for (int i = 0 ; i < num_procs ; i++)
+    {
+        totalSend += sendcount[i];
+    }
+
+    MPI_Alltoall(sendcount, 1, MPI_INT, recvcount, 1, MPI_INT, VISIT_MPI_COMM);
+
+    totalRecv = 0;
+    for (int i = 0 ; i < num_procs ; i++)
+    {
+        totalRecv += recvcount[i];
+    }
+
+    senddisp[0] = 0;
+    recvdisp[0] = 0;
+    for (int i = 1 ; i < num_procs ; i++)
+    {
+        senddisp[i] = senddisp[i-1] + sendcount[i-1];
+        recvdisp[i] = recvdisp[i-1] + recvcount[i-1];
+    }
+
+    delete [] big_send_buffer;
+    big_send_buffer = new int[totalSend];
+    idx = 0;
+    int *curDisp = new int[num_procs];
+    for (int i = 0 ; i < num_procs ; i++)
+        curDisp[i] = senddisp[i];
+
+    for (int i = 0 ; i < numDomains ; i++)
+    {
+        int proc = Domain2Proc[i];
+        int numPairs = (int)pairs[i].size();
+        for (int j = 0 ; j < numPairs ; j++)
+        {
+            int domain2 = pairs[i][j];
+            int proc2 = Domain2Proc[domain2];
+            int numShared = (int)first_val[i][j].size();
+            if (proc >= 0)
+            {
+                int *buffer = big_send_buffer + curDisp[proc];
+                curDisp[proc] += 2+1+numShared*2;
+                buffer[0] = i;
+                buffer[1] = domain2;
+                buffer[2] = numShared;
+                for (int k = 0 ; k < numShared ; k++)
+                    buffer[k+3] = first_val[i][j][k];
+                for (int k = 0 ; k < numShared ; k++)
+                    buffer[k+3+numShared] = second_val[i][j][k];
+            }
+            if (proc2 >= 0 && proc2 != proc)
+            {
+                int *buffer = big_send_buffer + curDisp[proc2];
+                curDisp[proc2] += 2+1+numShared*2;
+                buffer[0] = i;
+                buffer[1] = domain2;
+                buffer[2] = numShared;
+                for (int k = 0 ; k < numShared ; k++)
+                    buffer[k+3] = first_val[i][j][k];
+                for (int k = 0 ; k < numShared ; k++)
+                    buffer[k+3+numShared] = second_val[i][j][k];
+            }
+        }
+    }
+    delete [] curDisp;
+    delete [] big_recv_buffer;
+    big_recv_buffer = new int[totalRecv];
+
+    //
+    // We are now ready to transfer the actual sets of shared points.
+    //
+    MPI_Alltoallv(big_send_buffer, sendcount, senddisp, MPI_INT,
+                  big_recv_buffer, recvcount, recvdisp, MPI_INT,
+                  VISIT_MPI_COMM);
+
+    //
+    // Now add the shared points to the domain boundary information that comes
+    // from other processors.
+    //
+    for (int i = 0 ; i < num_procs ; i++)
+    {
+        int ap = 0; // ap => amountProcessed
+        int amountToProcess = recvcount[i];
+        int *buffer = big_recv_buffer + recvdisp[i];
+        while (ap < amountToProcess)
+        {
+            int domain1 = buffer[ap++];
+            int domain2 = buffer[ap++];
+            int numShared = buffer[ap++];
+
+            if (domain1 == domain2)
+            {
+                // Should not happen...
+                buffer += 2*numShared;
+                continue;
+            }
+
+            int match = -1;
+            for (int l = 0 ; l < (int)pairs[domain1].size() ; l++)
+                if (pairs[domain1][l] == domain2)
+                {
+                    match = l;
+                    break;
+                }
+            if (match == -1)
+            {
+                pairs[domain1].push_back(domain2);
+                size_t newSize = first_val[domain1].size()+1;
+                first_val[domain1].resize(newSize);
+                second_val[domain1].resize(newSize);
+                match = (int)pairs[domain1].size()-1;
+            }
+
+            int numCurVals =(int) first_val[domain1][match].size();
+            int newNumVals = numCurVals + numShared;
+
+            first_val[domain1][match].resize(newNumVals);
+            second_val[domain1][match].resize(newNumVals);
+
+            for (int j = 0 ; j < numShared ; j++)
+                first_val[domain1][match][numCurVals+j] = buffer[ap++];
+            for (int j = 0 ; j < numShared ; j++)
+                second_val[domain1][match][numCurVals+j] = buffer[ap++];
+        }
+    }
+
+    delete [] sendcount;
+    delete [] recvcount;
+    delete [] senddisp;
+    delete [] recvdisp;
+    delete [] big_send_buffer;
+    delete [] big_recv_buffer;
+#endif
+    visitTimer->StopTimer(t4, "Setting up shared nodes list.");
+
+    //
+    // Create domain boundary information object by registering the shared
+    // points.
+    //
+    avtUnstructuredPointBoundaries upb;
+    upb.SetTotalNumberOfDomains(numDomains);
+    for (int i = 0 ; i < numDomains ; i++)
+    {
+        for (int j = 0 ; j < (int)pairs[i].size() ; j++)
+        {
+            upb.SetSharedPoints(i, pairs[i][j], first_val[i][j],
+                                                 second_val[i][j]);
+        }
+    }
+
+    return CommunicateGhostZonesFromDomainBoundaries(&upb, ds, doms, spec,src);
+}
+
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::CommunicateGhostZonesWhileStreaming
+//
+//  Purpose:
+//      Creates ghost zones while in a streaming mode.
+//
+//  Arguments:
+//      ds        The dataset collection.
+//      doms      A list of domains.
+//      spec      A data specification.
+//      src       The source object.
+//
+//  Programmer: Hank Childs
+//  Creation:   February 10, 2008
+//
+//  Modifications:
+//
+//    Burlen Loring, Fri Oct  2 17:02:27 PDT 2015
+//    clean up a couple of warnings
+//
+// ****************************************************************************
+
+bool
+avtGenericDatabase::CommunicateGhostZonesWhileStreaming(
+                      avtDatasetCollection &ds, intVector &doms,
+                      avtDataRequest_p &spec, avtSourceFromDatabase *src)
+{
+    (void)doms;
+    (void)spec;
+    (void)src;
+    avtStreamingGhostGenerator *sgg = GetStreamingGhostGenerator();
+    vtkDataSet *input  = ds.GetDataset(0, 0);
+    vtkDataSet *output = sgg->StreamDataset(input);
+    ds.SetDataset(0,0,output);
+    output->Delete();
+    return true;
+}
+
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::CommunicateGhostNodesFromGlobalNodeIds
+//
+//  Purpose:
+//      Creates ghost nodes using global node ids.
+//
+//  Arguments:
+//      ds        The dataset collection.
+//      doms      A list of domains.
+//      spec      A data specification.
+//      src       The source object.
+//
+//  Notes:      This routine used to be wholely contained by CommunicateGhosts.
+//
+//  Programmer: Hank Childs
+//  Creation:   August 13, 2004
+//
+//  Modifications:
+//
+//    Hank Childs, Fri Aug 27 16:16:52 PDT 2004
+//    Rename ghost data arrays.
+//
+//    Kathleen Bonnell, Wed Dec 15 08:41:17 PST 2004
+//    Changed 'vector<int>' to 'intVector'.
+//
+//    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
+//    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
+//
+//    Burlen Loring, Fri Oct  2 17:02:27 PDT 2015
+//    clean up a warning
+//
+// ****************************************************************************
+
+bool
+avtGenericDatabase::CommunicateGhostNodesFromGlobalNodeIds(
+                      avtDatasetCollection &ds, intVector &doms,
+                      avtDataRequest_p &spec, avtSourceFromDatabase *src)
+{
+    (void)src;
+    int ts = spec->GetTimestep();
+    avtDatabaseMetaData *md = GetMetaData(ts);
+    const char *varname = spec->GetVariable();
+    string meshname = md->MeshForVar(varname);
+
+    //
+    // Identify what the biggest id is.
+    //
+    int maxId = -1;
+    for (size_t i = 0 ; i < doms.size() ; i++)
+    {
+        vtkDataArray *gni = GetGlobalNodeIds(doms[i], meshname.c_str(), ts);
+        vtkIntArray *int_gni = (vtkIntArray *) gni;
+        int *ptr = int_gni->GetPointer(0);
+        vtkIdType nvals = int_gni->GetNumberOfTuples();
+        for (vtkIdType j = 0 ; j < nvals ; j++)
+            maxId = (maxId < ptr[j] ? ptr[j] : maxId);
+    }
+
+    maxId += 1;  // Its easier to work with ranges if maxId is one bigger
+                 // than the actual biggest id.
+
+    //
+    // Identify what the maximum id is across all processors.
+    //
+    maxId = UnifyMaximumValue(maxId);
+    int num_procs = PAR_Size();
+    int rank = PAR_Rank();
+
+    //
+    // Break the range up among all processors.
+    //
+    int numIdsPerProc = (maxId / num_procs) + 1;
+    int myMin = numIdsPerProc * rank;
+    int myMax = numIdsPerProc * (rank+1);
+    if (myMax > maxId)
+        myMax = maxId;
+
+    //
+    // We will do the bookkeeping for this processor's range.  Set up
+    // the variables for that now.
+    //
+    int mySize = myMax-myMin;
+    int *allIds = new int[mySize];
+    for (int i = 0 ; i < mySize ; i++)
+        allIds[i] = 0;
+
+    //
+    // Go through all of the ids for this processor and either update
+    // our arrays or determine which processor they should go to.
+    //
+    vector< intVector > ids_for_proc(num_procs);
+    for (size_t i = 0 ; i < doms.size() ; i++)
+    {
+        vtkDataArray *gni = GetGlobalNodeIds(doms[i], meshname.c_str(), ts);
+        vtkIntArray *int_gni = (vtkIntArray *) gni;
+        int *ptr = int_gni->GetPointer(0);
+        vtkIdType nvals = int_gni->GetNumberOfTuples();
+        for (vtkIdType j = 0 ; j < nvals ; j++)
+        {
+            if (ptr[j] < myMin || ptr[j] >= myMax)
+            {
+                int otherProc = ptr[j] / numIdsPerProc;
+                ids_for_proc[otherProc].push_back(ptr[j]);
+            }
+            else
+                allIds[ptr[j]-myMin]++;
+        }
+    }
+
+#ifdef PARALLEL
+    //
+    // Now take all the nodes that fell into other processors' ranges and
+    // send them there using all-to-all communication.
+    //
+    int *sendcount = new int[num_procs];
+    int *recvcount = new int[num_procs];
+    int totalSend = 0;
+    for (int i = 0 ; i < num_procs ; i++)
+    {
+        sendcount[i] = (int)ids_for_proc[i].size();
+        totalSend += sendcount[i];
+    }
+
+    MPI_Alltoall(sendcount, 1, MPI_INT, recvcount, 1, MPI_INT, VISIT_MPI_COMM);
+
+    int totalRecv = 0;
+    for (int i = 0 ; i < num_procs ; i++)
+    {
+        totalRecv += recvcount[i];
+    }
+
+    int *senddisp = new int[num_procs];
+    int *recvdisp = new int[num_procs];
+    senddisp[0] = 0;
+    recvdisp[0] = 0;
+    for (int i = 1 ; i < num_procs ; i++)
+    {
+        senddisp[i] = senddisp[i-1] + sendcount[i-1];
+        recvdisp[i] = recvdisp[i-1] + recvcount[i-1];
+    }
+
+    int *big_send_buffer = new int[totalSend];
+    int idx = 0;
+    for (int i = 0 ; i < num_procs ; i++)
+        for (size_t j = 0 ; j < ids_for_proc[i].size() ; j++)
+            big_send_buffer[idx++] = ids_for_proc[i][j];
+
+    int *big_recv_buffer = new int[totalRecv];
+
+    //
+    // We are now ready to transfer the actual node ids.
+    //
+    MPI_Alltoallv(big_send_buffer, sendcount, senddisp, MPI_INT,
+                  big_recv_buffer, recvcount, recvdisp, MPI_INT,
+                  VISIT_MPI_COMM);
+
+    //
+    // Now take everything in the receive buffer and add update our
+    // node list counters with it.
+    //
+    for (int i = 0 ; i < totalRecv ; i++)
+    {
+        if (big_recv_buffer[i] < myMin || big_recv_buffer[i] >= myMax)
+        {
+            EXCEPTION0(ImproperUseException);
+        }
+        allIds[big_recv_buffer[i]-myMin]++;
+    }
+
+    //
+    // We now know definitively whether each node is a ghost or not ghost.
+    //  Now get that information back to the processors
+    // that requested it.  Because we know what order things were sent in,
+    // it is sufficient to simply send back a yes/no answer with no
+    // further information.
+    //
+    // Note: since we are now sending back information about what we
+    // received, all the "send" sizes become "receive" sizes and
+    // vice-versa.
+    //
+    int new_totalSend = totalRecv;
+    int new_totalRecv = totalSend;
+    int *new_senddisp = recvdisp;
+    int *new_recvdisp = senddisp;
+    int *new_sendcount = recvcount;
+    int *new_recvcount = sendcount;
+    char *new_big_send_buffer = new char[new_totalSend];
+    char *new_big_recv_buffer = new char[new_totalRecv];
+
+    for (int i = 0 ; i < new_totalSend ; i++)
+        new_big_send_buffer[i] =
+                            (allIds[big_recv_buffer[i]-myMin] > 1 ? 1 : 0);
+
+    MPI_Alltoallv(new_big_send_buffer, new_sendcount, new_senddisp,MPI_CHAR,
+                  new_big_recv_buffer, new_recvcount, new_recvdisp,MPI_CHAR,
+                  VISIT_MPI_COMM);
+
+    //
+    // We are almost there!  Each processor has now sent us whether or not
+    // the nodes we requested are ghost nodes are not.  Note: the info
+    // is coming back to us in *exactly* the order requested, so we can
+    // take the values and start blindly assigning them.  There is some
+    // subtlety to the indexing here.
+    //
+    intVector num_used_from_proc(num_procs, 0);
+#endif
+
+    for (int i = 0 ; i < (int)doms.size() ; i++)
+    {
+        vtkDataSet *d = ds.GetDataset(i, 0);
+        vtkDataArray *gni = GetGlobalNodeIds(doms[i], meshname.c_str(), ts);
+        vtkIntArray *int_gni = (vtkIntArray *) gni;
+        int *ptr = int_gni->GetPointer(0);
+        int nvals = int_gni->GetNumberOfTuples();
+        vtkUnsignedCharArray *ghost_nodes = vtkUnsignedCharArray::New();
+        ghost_nodes->SetName("avtGhostNodes");
+        ghost_nodes->SetNumberOfTuples(nvals);
+        for (int j = 0 ; j < nvals ; j++)
+        {
+            if (ptr[j] >= myMin && ptr[j] < myMax)
+            {
+                if (allIds[ptr[j]-myMin] > 1)
+                    ghost_nodes->SetValue(j, 1);
+                else
+                    ghost_nodes->SetValue(j, 0);
+            }
+            else
+            {
+#ifdef PARALLEL
+                int otherProc = ptr[j] / numIdsPerProc;
+                int idx = new_recvdisp[otherProc] +
+                          num_used_from_proc[otherProc];
+                char val = new_big_recv_buffer[idx];
+                num_used_from_proc[otherProc]++;
+                ghost_nodes->SetValue(j, val);
+#else
+                EXCEPTION0(ImproperUseException);
+#endif
+            }
+        }
+        vtkDataSet *d2 = d->NewInstance();
+        d2->ShallowCopy(d);
+        d2->GetPointData()->AddArray(ghost_nodes);
+        ds.SetDataset(i, 0, d2);
+        d2->Delete();
+        ghost_nodes->Delete();
+    }
+
+    delete [] allIds;
+#ifdef PARALLEL
+    delete [] new_big_send_buffer;
+    delete [] new_big_recv_buffer;
+    delete [] big_recv_buffer;
+    delete [] big_send_buffer;
+    delete [] senddisp;
+    delete [] recvdisp;
+    delete [] sendcount;
+    delete [] recvcount;
+#endif
+
+    return true;
+}
+
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::ApplyGhostForDomainNesting
+//
+//  Purpose:
+//      When domains nest within each other (as for an AMR mesh), this method
+//      will apply the "vtkGhostLevels" label to any zones in coarser domains
+//      that have finer domains in the current selection.
+//
+//      Note: In addition to knowing the list of domains being processed on
+//      this processor, we also need to know the list of domains being
+//      processed on all processors. The fact is, this processor may contain
+//      a coarse domain that should have zones ghosted out due to a finer
+//      patch in the current selection but living on another processor
+//
+//  Arguments:
+//      ds        The dataset collection.
+//      doms      A list of domains.
+//      spec      A data specification.
+//
+//  Returns:      True if any zones where ghosted.  False otherwise.
+//
+//  Programmer:   Mark C. Miller
+//  Creation:     October 13, 2003
+//
+//  Modifications:
+//
+//    Hank Childs, Mon Nov 17 17:45:39 PST 2003
+//    Clean up memory leak.
+//
+//    Kathleen Bonnell, Wed Dec 15 08:41:17 PST 2004
+//    Changed 'vector<int>' to 'intVector'.
+//
+//    Hank Childs, Thu Jan  6 16:47:50 PST 2005
+//    Added calls to confirm mesh.
+//
+//    Hank Childs, Sat Mar  5 19:26:05 PST 2005
+//    Added argument canDoCollectiveCommunication.
+//
+//    Hank Childs, Fri Jan 20 17:11:59 PST 2006
+//    Added error message.
+//
+//    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
+//    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
+//
+//    Cyrus Harrison,
+//    Fixed bug preventing domain nesting from being applied if we have
+//    more MPI tasks than domains.
+//
+//    Cyrus Harrison,Thu Feb  9 10:26:48 PST 2012
+//    Added logic to support presentGhostZoneTypes, which allows us to
+//    differentiate between ghost zones for boundaries & nesting.
+//
+//    Burlen Loring, Fri Oct  2 17:02:27 PDT 2015
+//    clean up a warning
+//
+// ****************************************************************************
+
+bool
+avtGenericDatabase::ApplyGhostForDomainNesting(avtDatasetCollection &ds,
+   intVector &doms, intVector &allDoms, avtDataRequest_p &spec,
+   bool canDoCollectiveCommunication)
+{
+#ifndef PARALLEL
+    (void)canDoCollectiveCommunication;
+#endif
+    bool rv = false;
+
+    int ts = spec->GetTimestep();
+    avtDatabaseMetaData *md = GetMetaData(ts);
+    string meshname = md->MeshForVar(spec->GetVariable());
+
+    void_ref_ptr vr = cache.GetVoidRef(meshname.c_str(),
+                                   AUXILIARY_DATA_DOMAIN_NESTING_INFORMATION,
+                                   ts, -1);
+    if (*vr == NULL)
+        vr = cache.GetVoidRef("any_mesh",
+                              AUXILIARY_DATA_DOMAIN_NESTING_INFORMATION,
+                              spec->GetTimestep(), -1);
+
+    avtDomainNesting *dn = (avtDomainNesting*)*vr;
+    vector<vtkDataSet *> list;
+
+    int shouldStop = 0;
+    if (*vr != NULL)
+    {
+        for (int i = 0 ; i < (int) doms.size() ; i++)
+        {
+            list.push_back(ds.GetDataset(i, 0));
+        }
+
+        bool rightMesh = dn->ConfirmMesh(doms, list);
+        if (!rightMesh)
+        {
+            debug1 << "UNUSUAL: the domain nesting object could not be used."
+                   << "  This is expected behavior if there are multiple "
+                   << "meshes, but is indicative of an error if there is only"
+                   << " one mesh." << endl;
+            shouldStop = 1;
+        }
+    }
+    else if(doms.size() != 0)
+    {
+        // we only want to signal 'shouldStop' if the current processor
+        // actually has datasets, but no avtDomainNesting object.
+        shouldStop = 1;
+    }
+
+#ifdef PARALLEL
+    if (canDoCollectiveCommunication)
+    {
+        int  parallelShouldStop;
+        MPI_Allreduce(&shouldStop, &parallelShouldStop, 1, MPI_INT, MPI_MAX,
+                      VISIT_MPI_COMM);
+        shouldStop = parallelShouldStop;
+    }
+#endif
+
+    // if dn is null (case were we have no datasets on this proc)
+    // make sure to skip 'dn->ApplyGhost'.
+    if (!shouldStop && dn != NULL)
+    {
+        int t0 = visitTimer->StartTimer();
+        rv = dn->ApplyGhost(doms, allDoms, list);
+        visitTimer->StopTimer(t0, "DomainNesting::ApplyGhost");
+
+        //
+        // Tell everything downstream that we do have ghost zones.
+        //
+        if (rv)
+        {
+            GetMetaData(ts)->SetContainsGhostZones(meshname,
+                                                   AVT_CREATED_GHOSTS);
+            GetMetaData(ts)->AddGhostZoneTypePresent(meshname, AVT_NESTING_GHOST_ZONES);
+        }
+    }
+
+    return rv;
+}
+
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::MaterialSelect
+//
+//  Purpose:
+//      Perform a material selection.
+//
+//  Arguments:
+//      ds        The dataset collection.
+//      domains   A list of domains to be read.
+//      spec      A data specification.
+//      src       The source object.
+//      didGhost  Indicates whether we created ghosts.
+//
+//  Programmer:   Hank Childs
+//  Creation:     October 26, 2001
+//
+//  Modifications:
+//
+//    Hank Childs, Mon Nov 26 09:01:36 PST 2001
+//    Account for materials being read in while the mesh is being read in.
+//
+//    Hank Childs, Thu Jul  4 16:34:33 PDT 2002
+//    Account for cases where there are multiple mixed variables.
+//
+//    Jeremy Meredith, Tue Aug 13 14:39:30 PDT 2002
+//    Added the two subdivision flags and set their counterparts
+//    in the output avtDataValidity structure.
+//
+//    Hank Childs, Wed Oct  9 10:16:15 PDT 2002
+//    Change test for if we are using all the domains, since it did not work
+//    in parallel.
+//
+//    Jeremy Meredith, Thu Oct 24 15:37:24 PDT 2002
+//    Added smoothing option and clean zones only option.
+//
+//    Hank Childs, Fri Jan 17 09:43:03 PST 2003
+//    Make sure to stop the timer if we return early.
+//
+//    Jeremy Meredith, Wed Mar 19 16:50:58 PST 2003
+//    Added support for variables defined on only a subset of the domains.
+//
+//    Jeremy Meredith, Thu Jun 12 09:09:30 PDT 2003
+//    Added a flag for internal boundary surfaces.
+//
+//    Hank Childs, Tue Jul 22 21:48:09 PDT 2003
+//    Send down information about whether or not we communicated ghost zones.
+//
+//    Hank Childs, Fri Sep 12 16:27:38 PDT 2003
+//    Send down info about whether the MIR was forced.
+//
+//    Jeremy Meredith, Fri Sep  5 15:32:30 PDT 2003
+//    Added a flag for the MIR algorithm.
+//
+//    Kathleen Bonnell, Wed Dec 15 08:41:17 PST 2004
+//    Changed 'vector<int>' to 'intVector'.
+//
+//    Kathleen Bonnell, Thu Feb  3 09:27:22 PST 2005
+//    Set MIROccurred flag in avtDataAttributes.
+//
+//    Hank Childs, Wed Aug 17 09:23:38 PDT 2005
+//    Use new material options for simplifying heavily mixed zones.
+//
+//    Jeremy Meredith, Thu Aug 18 17:54:51 PDT 2005
+//    Added a new isovolume algorithm, with adjustable VF cutoff.
+//
+//    Hank Childs, Wed Jul 25 14:16:36 PDT 2007
+//    Renamed method: NeedBoundarySurfaces -> GetBoundarySurfaceRepresentation.
+//
+//    John C. Anderson, Thu Jan 15 10:20:20 2009
+//    Added annealing time for Discrete MIR.
+//
+//    Jeremy Meredith, Fri Feb 13 11:22:39 EST 2009
+//    Added MIR iteration capability.
+//
+//    Alister Maguire, Mon Nov 27 15:31:54 PST 2017
+//    Added ForceConstructMaterialLabels argument to 
+//    MaterialSelect. 
+//
+//    Mark C. Miller, Wed Dec 12 04:59:12 PST 2018
+//    Add a call to DebugDumpDatasetCollection
+// ****************************************************************************
+
+void
+avtGenericDatabase::MaterialSelect(avtDatasetCollection &ds,
+                            intVector &domains, avtDataRequest_p &spec,
+                            avtSourceFromDatabase *src, bool didGhosts)
+{
+    int i, timerHandle = visitTimer->StartTimer();
+
+    const char *var = spec->GetVariable();
+    int         ts  = spec->GetTimestep();
+
+    char  progressString[1024] = "Performing material selection";
+
+    bool shouldDoMatSelect = false;
+    for (i = 0 ; i < ds.GetNDomains() ; i++)
+    {
+        shouldDoMatSelect = shouldDoMatSelect || ds.needsMatSelect[i];
+    }
+    if (! shouldDoMatSelect)
+    {
+        visitTimer->StopTimer(timerHandle, "Deciding not to material "
+                                           "select data");
+        return;
+    }
+    DebugDumpDatasetCollection(ds, ds.GetNDomains(), "input.MaterialSelect");
+
+    bool subdivisionOccurred   = false;
+    bool notAllCellsSubdivided = false;
+
+    src->DatabaseProgress(0, 0, progressString);
+
+    //
+    // If we are communicating ghost zones ourselves, the MIR objects we
+    // create could be invalid if we are using a different set of domains.  To
+    // be on the safe side, only re-use MIRs if we are re-using all of the
+    // data.  We could cache all of the MIRs and re-use which ever ones make
+    // sense based on which domains are being used, but that could blow the
+    // cache pretty quickly.
+    //
+    bool reUseMIR = true;
+    if (didGhosts)
+    {
+        if (!spec->UsesAllDomains())
+        {
+            reUseMIR = false;
+        }
+    }
+
+    for (i = 0 ; i < ds.GetNDomains() ; i++)
+    {
+        if (ds.GetDataset(i,0)!=NULL  &&  ds.needsMatSelect[i])
+        {
+            vector<avtMixedVariable *> mvl;
+            vector<void_ref_ptr> &vrl = ds.GetAllMixVars(i);
+            for (size_t j = 0 ; j < vrl.size() ; j++)
+            {
+                avtMixedVariable *mv = (avtMixedVariable *) *vrl[j];
+                mvl.push_back(mv);
+            }
+
+            bool so;
+            bool nacs;
+            ds.avtds[i] = MaterialSelect(ds.GetDataset(i,0), ds.GetMaterial(i),
+                                mvl, domains[i], var, ts,
+                                ds.matnames[i], ds.labels[i],
+                                spec->NeedInternalSurfaces(),
+                                spec->GetBoundarySurfaceRepresentation(),
+                                spec->NeedValidFaceConnectivity(),
+                                spec->NeedSmoothMaterialInterfaces(),
+                                spec->NeedCleanZonesOnly(),
+                                spec->MustDoMaterialInterfaceReconstruction(),
+                                spec->ForceConstructMaterialLabels(),
+                                spec->SimplifyHeavilyMixedZones(),
+                                spec->MaxMaterialsPerZone(),
+                                spec->MIRAlgorithm(),
+                                spec->MIRNumIterations(),
+                                spec->MIRIterationDamping(),
+                                spec->IsovolumeMIRVF(),
+                                spec->AnnealingTime(),
+                                didGhosts, so, nacs, reUseMIR);
+
+            notAllCellsSubdivided = notAllCellsSubdivided || nacs ||
+                (subdivisionOccurred && !so) || (!subdivisionOccurred && so);
+            subdivisionOccurred = subdivisionOccurred || so;
+        }
+
+        src->DatabaseProgress(i, ds.GetNDomains(), progressString);
+    }
+    src->DatabaseProgress(1, 0, progressString);
+    src->GetOutput()->GetInfo().GetAttributes().SetMIROccurred(true);
+    src->GetOutput()->GetInfo().GetValidity().SetSubdivisionOccurred(
+                                                        subdivisionOccurred);
+    src->GetOutput()->GetInfo().GetValidity().SetNotAllCellsSubdivided(
+                                                        notAllCellsSubdivided);
+
+    visitTimer->StopTimer(timerHandle, "Material selecting dataset");
+    visitTimer->DumpTimings();
+}
+
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::CreateGlobalZones
+//
+//  Purpose:
+//    Create global zones array.
+//
+//  Programmer:   Hank Childs
+//  Creation:     September 23, 2004
+//
+//  Modifications:
+//    Kathleen Bonnell, Wed Dec 15 08:41:17 PST 2004
+//    Changed 'vector<int>' to 'intVector'.
+//
+//    Kathleen Biagas, Wed Mar 23 18:06:29 PDT 2016
+//    Account for some domains being empty (NULL vtkDataSet).
+//
+// ****************************************************************************
+
+void
+avtGenericDatabase::CreateGlobalZones(avtDatasetCollection &ds,
+                              intVector &domains, avtSourceFromDatabase *src,
+                              avtDataRequest_p &spec)
+{
+    char  progressString[1024] = "Creating Global Zones Array";
+    src->DatabaseProgress(0, 0, progressString);
+    for (int i = 0 ; i < ds.GetNDomains() ; i++)
+    {
+        if (ds.GetDataset(i,0) != NULL)
+        {
+            vtkDataArray *arr = GetGlobalZoneIds(domains[i],
+                                                 spec->GetVariable(),
+                                                 spec->GetTimestep());
+            ds.GetDataset(i, 0)->GetCellData()->AddArray(arr);
+        }
+        src->DatabaseProgress(i, ds.GetNDomains(), progressString);
+    }
+    src->DatabaseProgress(1, 0, progressString);
+}
+
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::CreateGlobalNodes
+//
+//  Purpose:
+//    Create global nodes array.
+//
+//  Programmer:   Hank Childs
+//  Creation:     September 23, 2004
+//
+//  Modifications:
+//    Kathleen Bonnell, Wed Dec 15 08:41:17 PST 2004
+//    Changed 'vector<int>' to 'intVector'.
+//
+//    Kathleen Biagas, Wed Mar 23 18:06:29 PDT 2016
+//    Account for some domains being empty (NULL vtkDataSet).
+//
+// ****************************************************************************
+
+void
+avtGenericDatabase::CreateGlobalNodes(avtDatasetCollection &ds,
+                              intVector &domains, avtSourceFromDatabase *src,
+                              avtDataRequest_p &spec)
+{
+    char  progressString[1024] = "Creating Global Nodes Array";
+    src->DatabaseProgress(0, 0, progressString);
+    for (int i = 0 ; i < ds.GetNDomains() ; i++)
+    {
+        if (ds.GetDataset(i,0) != NULL)
+        {
+            vtkDataArray *arr = GetGlobalNodeIds(domains[i],
+                                                 spec->GetVariable(),
+                                                 spec->GetTimestep());
+            ds.GetDataset(i, 0)->GetPointData()->AddArray(arr);
+        }
+        src->DatabaseProgress(i, ds.GetNDomains(), progressString);
+    }
+    src->DatabaseProgress(1, 0, progressString);
+}
+
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::CreateSimplifiedNestingRepresentation
+//
+//  Purpose:
+//    Changes the data set to be a simplified version that represents the
+//    nesting relationship of the domain and domains inside it.
+//
+//  Arguments:
+//      ds          The dataset collection.
+//      domains     The domains being used.
+//      allDomains  All domains being used for this plot (on all processors).
+//      src         The source object.
+//      spec        The data specification.
+//
+//  Programmer:   Hank Childs
+//  Creation:     July 26, 2007
+//
+//  Modifications:
+//    Cyrus Harrison,Thu Feb  9 10:26:48 PST 2012
+//    Added logic to support presentGhostZoneTypes, which allows us to
+//    differentiate between ghost zones for boundaries & nesting.
+//
+// ****************************************************************************
+
+bool
+avtGenericDatabase::CreateSimplifiedNestingRepresentation(
+                              avtDatasetCollection &ds,
+                              intVector &domains, intVector &allDomains,
+                              avtSourceFromDatabase *src,
+                              avtDataRequest_p &spec)
+{
+    int ts = spec->GetTimestep();
+    avtDatabaseMetaData *md = GetMetaData(ts);
+    string meshname = md->MeshForVar(spec->GetVariable());
+
+    void_ref_ptr vr = cache.GetVoidRef(meshname.c_str(),
+                                   AUXILIARY_DATA_DOMAIN_NESTING_INFORMATION,
+                                   ts, -1);
+    if (*vr == NULL)
+        vr = cache.GetVoidRef("any_mesh",
+                              AUXILIARY_DATA_DOMAIN_NESTING_INFORMATION,
+                              ts, -1);
+
+    if (*vr == NULL)
+    {
+        return false;
+    }
+
+    for (int i = 0 ; i < ds.GetNDomains() ; i++)
+    {
+        if (ds.GetDataset(i, 0)->GetDataObjectType() != VTK_RECTILINEAR_GRID)
+            return false;
+    }
+
+    avtStructuredDomainNesting *dn = (avtStructuredDomainNesting*)*vr;
+
+    // Don't confirm the mesh sizes with the DBI.  We aren't actually going
+    // to apply the DBI ... we just want to get information from it.
+    bool confirmMeshSizes = false;
+    avtDomainBoundaries *dbi = GetDomainBoundaryInformation(ds, domains, spec,
+                                                            confirmMeshSizes);
+    avtStructuredDomainBoundaries *sdbi = (avtStructuredDomainBoundaries*)dbi;
+
+    char  progressString[1024] = "Simplifying nesting relationships";
+    src->DatabaseProgress(0, 0, progressString);
+    for (int i = 0 ; i < ds.GetNDomains() ; i++)
+    {
+        vtkUnstructuredGrid *ugrid = NULL;
+        if (spec->UsesAllDomains())
+        {
+            vector<int> emptyList;
+            ugrid = CreateSimplifiedNestingRepresentation(
+                   (vtkRectilinearGrid *) ds.GetDataset(i, 0), domains[i],
+                   emptyList, dn, sdbi, spec->GetDesiredGhostDataType());
+        }
+        else
+        {
+            ugrid = CreateSimplifiedNestingRepresentation(
+                   (vtkRectilinearGrid *) ds.GetDataset(i, 0), domains[i],
+                   allDomains, dn, sdbi, spec->GetDesiredGhostDataType());
+        }
+        ds.SetDataset(i, 0, ugrid);
+        ugrid->Delete();
+        src->DatabaseProgress(i, ds.GetNDomains(), progressString);
+    }
+
+    if (spec->GetDesiredGhostDataType() != NO_GHOST_DATA)
+    {
+        md->SetContainsGhostZones(meshname, AVT_CREATED_GHOSTS);
+        md->AddGhostZoneTypePresent(meshname, AVT_NESTING_GHOST_ZONES);
+    }
+
+    src->DatabaseProgress(1, 0, progressString);
+
+    return true;
+}
+
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::CreateSimplifiedNestingRepresentation
+//
+//  Purpose:
+//      Takes a single rectilinear grid and turns it into an unstructured
+//      grid whose voxels demarcate the boundaries between the nested
+//      regions of the exterior of the grid.
+//
+//  Arguments:
+//      rgrid     A rectilinear grid that should be simplified.
+//      domain    The domain ID of rgrid.
+//      dl        The list of domains that are actually being used for
+//                this plot.  (If some domains are not being used, then
+//                we should not nest out the parts they affect.)
+//      dn        The structured domain nesting information.
+//      dn        The structured domain boundary information.
+//      gt        The desired ghost type.
+//
+//  Returns:    An unstructured grid.  The caller owns the memory associated
+//              with this object after calling.
+//
+//  Programmer: Hank Childs
+//  Creation:   July 27, 2007
+//
+//  Modifications:
+//
+//    Hank Childs, Wed Oct 17 15:52:59 PDT 2007
+//    This routine causes the IRIX compiler to assert with an internal error.
+//    So I tweaked the code a little to get it through.
+//
+//    Hank Childs, Mon Oct 22 17:09:58 PDT 2007
+//    Previous attempt had incorrect code.  Try again, by separating out
+//    the problem code into its own function.
+//
+//    Hank Childs, Sun Oct 28 15:02:31 PST 2007
+//    If there is ghost data in the input, then ignore that ghost data.
+//
+//    Kathleen Biagas, Tue Aug 21 14:18:32 MST 2012
+//    Preserve coordinate type.
+//
+// ****************************************************************************
+
+vtkUnstructuredGrid *
+avtGenericDatabase::CreateSimplifiedNestingRepresentation(
+                        vtkRectilinearGrid *rgrid, int domain,
+                        intVector &allDomains,
+                        avtStructuredDomainNesting *dn,
+                        avtStructuredDomainBoundaries *dbi,
+                        avtGhostDataType gt)
+{
+    //
+    // This will retrieve:
+    //    my_exts: The extents of this patch with respect to the current
+    //             refinement level.  So my_exts[3]-my_exts[0] == dims[0]
+    //             but my_exts[0] will be the start of the patch in I
+    //             for this patch's refinement level.
+    //    child_domains: the patches nested inside this patch.
+    //    childExts: the extents of each child in the same indexing
+    //             system as my_exts.
+    //
+    // Example: my_exts = [10,      5,    0,   20,   15,    0]
+    //                =   [minI, minJ, minK, maxI, maxJ, maxK]
+    //  child_domains = [5, 6] (the child patches are #'s 5 and 6)
+    //  childExts = [12, 5, 0, 14, 8, 0, 15, 5, 0, 17, 8, 0]
+    //  meaning patch 5 blocks out I=12-14, J=5-8 & patch 6 blocks out
+    //                I=15-17, J=5-8
+    //
+    vector<int> my_exts;
+    vector<int> childDomains;
+    vector<int> childExts;
+    dn->GetNestingForDomain(domain, my_exts, childDomains, childExts);
+
+    //
+    // If the user has turned off some patches, then we shouldn't nest
+    // those areas out.  Below we calculate which patches are on and
+    // which are off.
+    //
+    vector<bool> usesDomain(childDomains.size());
+    for (size_t i = 0 ; i < childDomains.size() ; i++)
+        usesDomain[i] = true;
+
+    if (allDomains.size() > 0) // if it is 0, then all domains are on
+    {
+        std::set<int> myAllDomains;
+        for (size_t i = 0 ; i < allDomains.size() ; i++)
+            myAllDomains.insert(allDomains[i]);
+        for (size_t i = 0 ; i < childDomains.size() ; i++)
+        {
+            if (myAllDomains.find(childDomains[i]) == myAllDomains.end())
+                usesDomain[i] = false;
+        }
+    }
+
+    //
+    // This will get the dimensions for the grid.  This should be the same
+    // as (my_exts[3]-my_exts[0], my_exts[4]-my_exts[1],
+    // my_exts[5]-my_exts[2]), but it seems extra safe to use what is
+    // actually on the mesh.
+    //
+    int dims[3];
+    rgrid->GetDimensions(dims);
+    if (rgrid->GetFieldData()->GetArray("avtRealDims") != NULL)
+    {
+        vtkIntArray *rd = (vtkIntArray *)
+                                 rgrid->GetFieldData()->GetArray("avtRealDims");
+        dims[0] = rd->GetValue(1) - rd->GetValue(0) + 1;
+        dims[1] = rd->GetValue(3) - rd->GetValue(2) + 1;
+        dims[2] = rd->GetValue(5) - rd->GetValue(4) + 1;
+    }
+
+    int minIGlob = my_exts[0];
+    int maxIGlob = my_exts[0] + dims[0]-1; // -1 to have inclusive range.
+    int minJGlob = my_exts[1];
+    int maxJGlob = my_exts[1] + dims[1]-1;
+    int minKGlob = my_exts[2];
+    int maxKGlob = my_exts[2] + dims[2]-1;
+    maxKGlob = (maxKGlob < 0 ? 0 : maxKGlob); // Just in case for 2D
+
+    //
+    // This array will keep track of all indices for the patch we are operating
+    // on and its children.  All entries in this array will be using
+    // "local indices".
+    std::vector<int> Ilist;
+    std::vector<int> Jlist;
+    std::vector<int> Klist;
+
+    int minILocal = 0;
+    int maxILocal = dims[0]-1;
+    int minJLocal = 0;
+    int maxJLocal = dims[1]-1;
+    int minKLocal = 0;
+    int maxKLocal = dims[2]-1;
+    maxKLocal = (maxKLocal < 0 ? 0 : maxKLocal); // Just in case for 2D
+    Ilist.push_back(minILocal);
+    Ilist.push_back(maxILocal);
+    Jlist.push_back(minJLocal);
+    Jlist.push_back(maxJLocal);
+    Klist.push_back(minKLocal);
+    Klist.push_back(maxKLocal);
+
+    for (size_t d = 0 ; d < childDomains.size() ; d++)
+    {
+        if (!usesDomain[d])
+            continue;
+
+        // A few confusing things here:
+        // 1) The childExts are in "global indices" are we are converting them
+        //    to "local indices" (by subtracting min[IJK]Glob).
+        // 2) The children might span outside the current patch.  If so, we
+        //    are truncating them to the current patch (with the ( C ? T : E ) ).
+        // 3) The childExts are [minI, minJ, minK, maxI, maxJ, maxK].
+        // 4) The extents are in cells that overlap.  But we want to focus on
+        //    nodes.  So we add one to the maximums, which effectively makes
+        //    them node IDs.
+
+        int boundExts[6];
+        boundExts[0] = (childExts[6*d+0]<minIGlob ? minIGlob
+                                              : childExts[6*d+0])-minIGlob;
+        boundExts[1] = (childExts[6*d+1]<minJGlob ? minJGlob
+                                              : childExts[6*d+1])-minJGlob;
+        boundExts[2] = (childExts[6*d+2]<minKGlob ? minKGlob
+                                              : childExts[6*d+2])-minKGlob;
+        boundExts[3] = (childExts[6*d+3]+1>maxIGlob ? maxIGlob
+                                              : childExts[6*d+3]+1)-minIGlob;
+        boundExts[4] = (childExts[6*d+4]+1>maxJGlob ? maxJGlob
+                                              : childExts[6*d+4]+1)-minJGlob;
+        boundExts[5] = (childExts[6*d+5]+1>maxKGlob ? maxKGlob
+                                              : childExts[6*d+5]+1)-minKGlob;
+
+        // Now add the indices to [IJK]list.
+        // 1) We have local indices (from above), so we can add them directly.
+        // 2) The childExts are [minI, minJ, minK, maxI, maxJ, maxK], so the
+        //    indices [0&3, 1&4, 2&5] are a little funny.
+        Ilist.push_back(boundExts[0]);
+        Ilist.push_back(boundExts[3]);
+        Jlist.push_back(boundExts[1]);
+        Jlist.push_back(boundExts[4]);
+        Klist.push_back(boundExts[2]);
+        Klist.push_back(boundExts[5]);
+    }
+
+    //
+    // Ghost nodes break down if you have a single cell. (If you have a cell that
+    // has a neighbor on the left and on the right, it will have all 8 nodes as
+    // ghost, so you don't see any of the faces.)  In this case, you really
+    // want to have a 2x2x2 grid at least.  So insert an extra point in the middle.
+    //
+    if (Ilist.size() == 2)
+        if (maxILocal >= 2)
+            Ilist.push_back(maxILocal / 2);
+    if (Jlist.size() == 2)
+        if (maxJLocal >= 2)
+            Jlist.push_back(maxJLocal / 2);
+    if (Klist.size() == 2)
+        if (maxKLocal >= 2)
+            Klist.push_back(maxKLocal / 2);
+
+    //
+    // We want each of [IJK]list to have unique and sorted elements.
+    // Do that now.
+    //
+    vector<int>::iterator new_end;
+
+    std::sort(Ilist.begin(), Ilist.end());
+    new_end = std::unique(Ilist.begin(), Ilist.end());
+    Ilist.erase(new_end, Ilist.end());
+
+    std::sort(Jlist.begin(), Jlist.end());
+    new_end = std::unique(Jlist.begin(), Jlist.end());
+    Jlist.erase(new_end, Jlist.end());
+
+    std::sort(Klist.begin(), Klist.end());
+    new_end = std::unique(Klist.begin(), Klist.end());
+    Klist.erase(new_end, Klist.end());
+
+    //
+    // We will now divide the mesh into cells, with cell boundaries
+    // being at the elements of [IJK]list.  We choose these boundaries
+    // because we need to create a mesh with proper face/edge (3D/2D)
+    // connectivity for the wireframe subset option to work.
+    //
+    int numIlist = (int)Ilist.size();
+    int numJlist = (int)Jlist.size();
+    int numKlist = (int)Klist.size(); // Will be "1" in 2D.
+    int numCells;
+    if (dims[2] == 1)
+        numCells = (numIlist-1)*(numJlist-1);
+    else
+        numCells = (numIlist-1)*(numJlist-1)*(numKlist-1);
+
+    //
+    // We need to keep track of which cells are used and which are
+    // not.  We will start by declaring all cells as used, and then
+    // remove them as we find that they are nested out by children.
+    //
+    bool *useCell = new bool[numCells];
+    for (int i = 0 ; i < numCells ; i++)
+        useCell[i] = true;
+
+    for (size_t d = 0 ; d < childDomains.size() ; d++)
+    {
+        if (!usesDomain[d])
+            continue;
+
+        // Get the indices that bound the child patch.
+        // Again, a few confusing things here:
+        // 1) The childExts are in "global indices" are we are converting them
+        //    to "local indices" (by subtracting min[IJK]Glob).
+        // 2) The children might span outside the current patch.  If so, we
+        //    are truncating them to the current patch (with the ( C ? T : E ) ).
+        // 3) The childExts are [minI, minJ, minK, maxI, maxJ, maxK].
+        // 4) The extents are in cells that overlap.  But we want to focus on
+        //    nodes.  So we add one to the maximums, which effectively makes
+        //    them node IDs.
+        int boundExts[6];
+        boundExts[0] = (childExts[6*d+0]<minIGlob ? minIGlob
+                                              : childExts[6*d+0]) - minIGlob;
+        boundExts[1] = (childExts[6*d+1]<minJGlob ? minJGlob
+                                              : childExts[6*d+1]) - minJGlob;
+        boundExts[2] = (childExts[6*d+2]<minKGlob ? minKGlob
+                                              : childExts[6*d+2]) - minKGlob;
+        boundExts[3] = (childExts[6*d+3]+1>maxIGlob ? maxIGlob
+                                              : childExts[6*d+3]+1) - minIGlob;
+        boundExts[4] = (childExts[6*d+4]+1>maxJGlob ? maxJGlob
+                                              : childExts[6*d+4]+1) - minJGlob;
+        boundExts[5] = (childExts[6*d+5]+1>maxKGlob ? maxKGlob
+                                              : childExts[6*d+5]+1) - minKGlob;
+
+        //
+        // We have the bounds with respect to the "local index" space.  But
+        // we will not be using most of the "local index" space.  Instead,
+        // the mesh we are setting up is based on [IJK]list.  We will now
+        // convert our "local indices" to "list" indices.  I named them
+        // "list" indices because they are relative to [IJK]list.
+        //
+        int listIlo = -1;
+        for (int l = 0 ; l < (int)Ilist.size() ; l++)
+             if (boundExts[0] == Ilist[l])
+             {
+                 listIlo = l;
+                 break;
+             }
+        int listIhi = -1;
+        for (int l = 0 ; l < (int)Ilist.size() ; l++)
+             if (boundExts[3] == Ilist[l])
+             {
+                 listIhi = l;
+                 break;
+             }
+        int listJlo = -1;
+        for (int l = 0 ; l < (int)Jlist.size() ; l++)
+             if (boundExts[1] == Jlist[l])
+             {
+                 listJlo = l;
+                 break;
+             }
+        int listJhi = -1;
+        for (int l = 0 ; l < (int)Jlist.size() ; l++)
+             if (boundExts[4] == Jlist[l])
+             {
+                 listJhi = l;
+                 break;
+             }
+        int listKlo = -1;
+        for (int l = 0 ; l < (int)Klist.size() ; l++)
+             if (boundExts[2] == Klist[l])
+             {
+                 listKlo = l;
+                 break;
+             }
+        int listKhi = -1;
+        for (int l = 0 ; l < (int)Klist.size() ; l++)
+             if (boundExts[5] == Klist[l])
+             {
+                 listKhi = l;
+                 break;
+             }
+
+        //
+        // Now take out all cells (from our mesh that is made up of elements
+        // from [IJK]list).
+        //
+        for (int i = listIlo ; i < listIhi ; i++)
+        {
+            for (int j = listJlo ; j < listJhi ; j++)
+            {
+                if (dims[2] == 1)
+                {
+                    int idx = j*(numIlist-1) + i;
+                    useCell[idx] = false;
+                }
+                else
+                {
+                    for (int k = listKlo ; k < listKhi ; k++)
+                    {
+                        size_t idx = k*(numJlist-1)*(numIlist-1)
+                                + j*(numIlist-1) + i;
+                        useCell[idx] = false;
+                    }
+                }
+            }
+        }
+    }
+
+    bool addGhostZones = (gt != NO_GHOST_DATA);
+
+    // Now we have the voxels/quads, let's build the unstructured mesh.
+    vtkUnstructuredGrid *ugrid = vtkUnstructuredGrid::New();
+    int nRealCells = 0;
+    for (int i = 0 ; i < numCells ; i++)
+        if (useCell[i])
+            nRealCells++;
+    int cellSize = (dims[2] == 1 ? 5 : 9);
+    int ncellsToAllocate = (addGhostZones ? numCells : nRealCells);
+    ugrid->Allocate(cellSize*ncellsToAllocate);
+
+    //
+    // We previously broke up the old mesh into cells based on the
+    // elements of [IJK]list.  We will only keep some of these cells
+    // (the ones with useCell set to true).  So iterate all of
+    // the cells and add the keepers to the unstructured mesh.
+    //
+    vtkUnsignedCharArray *ghost_zones = NULL;
+    if (addGhostZones)
+    {
+        ghost_zones = vtkUnsignedCharArray::New();
+        ghost_zones->SetNumberOfTuples(numCells);
+        ghost_zones->SetName("avtGhostZones");
+    }
+
+    for (int c = 0 ; c < numCells ; c++)
+    {
+        if (useCell[c] || addGhostZones)
+        {
+            if (dims[2] == 1)
+            {
+                int I = c%(numIlist-1);
+                int J = c/(numIlist-1);
+                int map_to_quad[4] = { 0, 1, 3, 2 };
+                vtkIdType quad_pts[4];
+                for (int p = 0 ; p < 4 ; p++)
+                {
+                    int Ipt = (p&1 ? I+1 : I);
+                    int Jpt = (p&2 ? J+1 : J);
+                    int pt = Jpt*numIlist + Ipt;
+                    quad_pts[map_to_quad[p]] = pt;
+                }
+                ugrid->InsertNextCell(VTK_QUAD, 4, quad_pts);
+            }
+            else
+            {
+                int I = c%(numIlist-1);
+                int J = (c/(numIlist-1)) % (numJlist-1);
+                int K = c / ((numIlist-1)*(numJlist-1));
+                int map_to_hex[8] = { 0, 1, 3, 2, 4, 5, 7, 6 };
+                vtkIdType hex_pts[8];
+                for (int p = 0 ; p < 8 ; p++)
+                {
+                    int Ipt = (p&1 ? I+1 : I);
+                    int Jpt = (p&2 ? J+1 : J);
+                    int Kpt = (p&4 ? K+1 : K);
+                    int pt = Kpt*numJlist*numIlist + Jpt*numIlist + Ipt;
+                    hex_pts[map_to_hex[p]] = pt;
+                }
+                ugrid->InsertNextCell(VTK_HEXAHEDRON, 8, hex_pts);
+           }
+        }
+        if (addGhostZones)
+        {
+            unsigned char v = '\0';
+            if (!useCell[c])
+                avtGhostData::AddGhostZoneType(v, REFINED_ZONE_IN_AMR_GRID);
+            ghost_zones->SetValue(c, v);
+        }
+    }
+    if (addGhostZones)
+    {
+        ugrid->GetCellData()->AddArray(ghost_zones);
+        ghost_zones->Delete();
+    }
+
+    //
+    // We previously broke up the old mesh into cells based on the
+    // elements of [IJK]list.  We will now create a point list using
+    // all of these points.  Some of the points may not be incident
+    // to any ``keeper" cells.  Add those points anyway, since there
+    // won't be very many (so memory cost won't be high) and it makes
+    // our indexing so easy this way.
+    //
+    vtkPoints *pts = vtkVisItUtility::NewPoints(rgrid);
+    int nPts = numIlist*numJlist*numKlist;
+    pts->SetNumberOfPoints(nPts);
+    int iOff = 0;
+    int jOff = 0;
+    int kOff = 0;
+    if (rgrid->GetFieldData()->GetArray("avtRealDims") != NULL)
+    {
+        vtkIntArray *rd = (vtkIntArray *)
+                                rgrid->GetFieldData()->GetArray("avtRealDims");
+        iOff = rd->GetValue(0);
+        jOff = rd->GetValue(2);
+        kOff = rd->GetValue(4);
+    }
+    int realdims[3];
+    rgrid->GetDimensions(realdims);  // this should be the same as dims,
+                                     // unless we have ghost data...
+    for (int k = 0 ; k < numKlist ; k++)
+    {
+        for (int j = 0 ; j < numJlist ; j++)
+        {
+            for (int i = 0 ; i < numIlist ; i++)
+            {
+                //
+                // Get the point in the indexing scheme
+                // of the original rectilinear mesh.
+                //
+                int ptId = (Klist[k]+kOff)*realdims[1]*realdims[0]
+                         + (Jlist[j]+jOff)*realdims[0]
+                         + (Ilist[i]+iOff);
+                double pt[3];
+                rgrid->GetPoint(ptId, pt);
+
+                //
+                // Now get the index for the point for
+                // our new unstructured mesh.
+                //
+                int idx = k*numJlist*numIlist + j*numIlist + i;
+                pts->SetPoint(idx, pt);
+            }
+        }
+    }
+
+    //
+    // Set up ghost node information.
+    //
+    if (dbi != NULL && gt != NO_GHOST_DATA)
+    {
+        bool hasNeighbor[6];
+        dbi->GetNeighborPresence(domain, hasNeighbor, allDomains);
+        const int new_dims[3] = { numIlist, numJlist, numKlist };
+        AddGhostNodesForSimplifiedNesting(hasNeighbor, ugrid, addGhostZones,
+                                          new_dims, ghost_zones);
+    }
+
+
+    //
+    // Clean up memory.  It is assumed that the calling function will
+    // delete "ugrid".
+    //
+    ugrid->SetPoints(pts);
+    pts->Delete();
+    delete [] useCell;
+
+    return ugrid;
+}
+
+
+// ****************************************************************************
+//  Function: AddGhostNodesForSimplifiedNesting
+//
+//  Purpose:
+//      A helper function for CreateSimplifiedNestingRepresentation.  It
+//      creates the ghost nodes.
+//
+//  Notes:      This functionality used to be directly in
+//              CreateSimplifiedNestingRepresentation.  But that was causing
+//              an internal error with the SGI compiler, so I pulled it out.
+//              The function was too long anyway.
+//
+//  Programmer: Hank Childs
+//  Creation:   October 22, 2007
+//
+// ****************************************************************************
+
+void
+AddGhostNodesForSimplifiedNesting(bool *hasNeighbor, vtkUnstructuredGrid *ugrid,
+                                  bool addGhostZones, const int *dims,
+                                  vtkUnsignedCharArray *ghost_zones)
+{
+    int  i, j, k, l;
+
+    int numCells;
+    if (dims[2] == 1)
+        numCells = (dims[0]-1)*(dims[1]-1);
+    else
+        numCells = (dims[0]-1)*(dims[1]-1)*(dims[2]-1);
+    int nPts = dims[0]*dims[1]*dims[2];
+
+    vtkUnsignedCharArray *ghost_nodes = vtkUnsignedCharArray::New();
+    ghost_nodes->SetName("avtGhostNodes");
+    ghost_nodes->SetNumberOfTuples(nPts);
+    unsigned char *gnp = ghost_nodes->GetPointer(0);
+    for (i = 0 ; i < nPts ; i++)
+        gnp[i] = 0;
+
+
+    //
+    // Start by setting up all ghost nodes from abutting
+    // neighboring patches.
+    //
+    if (hasNeighbor[0])
+        for (j = 0 ; j < dims[1] ; j++)
+            for (k = 0 ; k < dims[2] ; k++)
+                avtGhostData::AddGhostNodeType(gnp[k*dims[0]*dims[1]+j*dims[0]],
+                                               DUPLICATED_NODE);
+    if (hasNeighbor[1])
+        for (j = 0 ; j < dims[1] ; j++)
+            for (k = 0 ; k < dims[2] ; k++)
+                avtGhostData::AddGhostNodeType(gnp[k*dims[0]*dims[1]+j*dims[0]+dims[0]-1],
+                                               DUPLICATED_NODE);
+    if (hasNeighbor[2])
+        for (i = 0 ; i < dims[0] ; i++)
+            for (k = 0 ; k < dims[2] ; k++)
+                avtGhostData::AddGhostNodeType(gnp[k*dims[0]*dims[1]+i],
+                                               DUPLICATED_NODE);
+    if (hasNeighbor[3])
+        for (i = 0 ; i < dims[0] ; i++)
+            for (k = 0 ; k < dims[2] ; k++)
+                avtGhostData::AddGhostNodeType(gnp[k*dims[0]*dims[1]+(dims[1]-1)*dims[0]+i],
+                                               DUPLICATED_NODE);
+    if (hasNeighbor[4])
+        for (i = 0 ; i < dims[0] ; i++)
+            for (j = 0 ; j < dims[1] ; j++)
+                avtGhostData::AddGhostNodeType(gnp[j*dims[0]+i],
+                                               DUPLICATED_NODE);
+    if (hasNeighbor[5])
+        for (i = 0 ; i < dims[0] ; i++)
+            for (j = 0 ; j < dims[1] ; j++)
+                avtGhostData::AddGhostNodeType(gnp[(dims[2]-1)*dims[0]*dims[1]+j*dims[0]+i],
+                                               DUPLICATED_NODE);
+
+    //
+    // If we have ghost zones, then every face that abutted a ghost
+    // zone should be treated as a ghost face.  This is important for
+    // wireframe subset plots.
+    //
+    if (addGhostZones)
+    {
+        for (int c = 0 ; c < numCells ; c++)
+        {
+            unsigned char c2 = ghost_zones->GetValue(c);
+            if (avtGhostData::IsGhostZoneType(c2,REFINED_ZONE_IN_AMR_GRID))
+            {
+                if (dims[2] == 1)
+                {
+                    int I = c % (dims[0]-1);
+                    int J = c / (dims[0]-1);
+                    for (l = 0 ; l < 4 ; l++)
+                    {
+                        int I2 = (l & 1 ? I+1 : I);
+                        int J2 = (l & 2 ? J+1 : J);
+                        int pt = J2*dims[0]+I2;
+                        avtGhostData::AddGhostNodeType(gnp[pt],
+                           NODE_IS_ON_COARSE_SIDE_OF_COARSE_FINE_BOUNDARY);
+                    }
+                }
+                else
+                {
+                    int I = c % (dims[0]-1);
+                    int J = (c / (dims[0]-1)) % (dims[1]-1);
+                    int K = c / ((dims[0]-1)*(dims[1]-1));
+                    for (l = 0 ; l < 8 ; l++)
+                    {
+                        int I2 = (l & 1 ? I+1 : I);
+                        int J2 = (l & 2 ? J+1 : J);
+                        int K2 = (l & 4 ? K+1 : K);
+                        int pt = K2*dims[1]*dims[0] + J2*dims[0] + I2;
+                        avtGhostData::AddGhostNodeType(gnp[pt],
+                           NODE_IS_ON_COARSE_SIDE_OF_COARSE_FINE_BOUNDARY);
+                    }
+                }
+            }
+        }
+    }
+    ugrid->GetPointData()->AddArray(ghost_nodes);
+    ghost_nodes->Delete();
+}
+
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::CreateOriginalZones
+//
+//  Purpose:
+//    Create original zones array.
+//
+//  Arguments:
+//      ds        The dataset collection.
+//      src       The source object.
+//
+//  Programmer:   Kathleen Bonnell
+//  Creation:     November 12, 2001
+//
+//  Modifications:
+//    Kathleen Bonnell, Tue Mar 26 15:58:05 PST 2002
+//    Make this method keep track of a starting cell number for each data set.
+//
+//    Kathleen Bonnell, Mon May 20 17:01:31 PDT 2002
+//    Removed starting cell number.  Pass domain number to
+//    AddOriginalCellsArray.
+//
+//    Kathleen Bonnell, Wed Dec 15 08:41:17 PST 2004
+//    Changed 'vector<int>' to 'intVector'.
+//
+// ****************************************************************************
+
+void
+avtGenericDatabase::CreateOriginalZones(avtDatasetCollection &ds,
+                              intVector &domains, avtSourceFromDatabase *src)
+{
+    char  progressString[1024] = "Creating Original Zones Array";
+    src->DatabaseProgress(0, 0, progressString);
+    for (int i = 0 ; i < ds.GetNDomains() ; i++)
+    {
+        AddOriginalCellsArray(ds.GetDataset(i, 0), domains[i]);
+        src->DatabaseProgress(i, ds.GetNDomains(), progressString);
+    }
+    src->DatabaseProgress(1, 0, progressString);
+}
+
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::CreateOriginalNodes
+//
+//  Purpose:
+//    Create original nodes array.
+//
+//  Arguments:
+//      ds        The dataset collection.
+//      src       The source object.
+//
+//  Programmer:   Hank Childs
+//  Creation:     June 18, 2003
+//
+//  Modifications:
+//    Kathleen Bonnell, Wed Dec 15 08:41:17 PST 2004
+//    Changed 'vector<int>' to 'intVector'.
+//
+// ****************************************************************************
+
+void
+avtGenericDatabase::CreateOriginalNodes(avtDatasetCollection &ds,
+                              intVector &domains, avtSourceFromDatabase *src)
+{
+    char  progressString[1024] = "Creating Original Nodes Array";
+    src->DatabaseProgress(0, 0, progressString);
+    for (int i = 0 ; i < ds.GetNDomains() ; i++)
+    {
+        AddOriginalNodesArray(ds.GetDataset(i, 0), domains[i]);
+        src->DatabaseProgress(i, ds.GetNDomains(), progressString);
+    }
+    src->DatabaseProgress(1, 0, progressString);
+}
+
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::CreateStructuredIndices
+//
+//  Purpose:
+//      Create an array that contains the index number of each cell.
+//
+//  Arguments:
+//      ds        The dataset collection.
+//      src       The source object.
+//
+//  Programmer:   Hank Childs
+//  Creation:     September 30, 2002
+//
+//  Modifications:
+//    Brad Whitlock, Thu Feb 3 11:46:47 PDT 2005
+//    Added a check for NULL meshes since a case popped up where some of the
+//    return meshes were NULL.
+//
+// ****************************************************************************
+
+void
+avtGenericDatabase::CreateStructuredIndices(avtDatasetCollection &dsc,
+                                            avtSourceFromDatabase *src)
+{
+    char  progressString[1024] = "Creating Structured Indices";
+    src->DatabaseProgress(0, 0, progressString);
+    for (int i = 0 ; i < dsc.GetNDomains() ; i++)
+    {
+        vtkDataSet *ds = dsc.GetDataset(i, 0);
+        if(ds == NULL)
+        {
+            debug1 << "Requested structured indices for NULL mesh." << endl;
+            continue;
+        }
+        int dstype = ds->GetDataObjectType();
+        int dims[3];
+        if (dstype == VTK_RECTILINEAR_GRID)
+        {
+            vtkRectilinearGrid *rgrid = (vtkRectilinearGrid *) ds;
+            rgrid->GetDimensions(dims);
+        }
+        else if (dstype == VTK_STRUCTURED_GRID)
+        {
+            vtkStructuredGrid *sgrid = (vtkStructuredGrid *) ds;
+            sgrid->GetDimensions(dims);
+        }
+        else
+        {
+            debug1 << "Requested structured indices for non-structured grid."
+                   << endl;
+            continue;
+        }
+        vtkUnsignedIntArray *orig_dims = vtkUnsignedIntArray::New();
+        orig_dims->SetNumberOfTuples(3);
+        orig_dims->SetValue(0, dims[0]);
+        orig_dims->SetValue(1, dims[1]);
+        orig_dims->SetValue(2, dims[2]);
+        orig_dims->SetName("avtOriginalStructuredDimensions");
+        ds->GetFieldData()->AddArray(orig_dims);
+        orig_dims->Delete();
+        AddOriginalCellsArray(ds, -1);
+        src->DatabaseProgress(i, dsc.GetNDomains(), progressString);
+    }
+    src->DatabaseProgress(1, 0, progressString);
+}
+
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::NumStagesForFetch
+//
+//  Purpose:
+//      This returns how many stages there are for the fetch.  Some databases
+//      have more than one stage (read from file format, perform material
+//      selection, etc).
+//
+//  Arguments:
+//      spec    The data specification that will be sent in.
+//
+//  Returns:    A good default number of stages (1).
+//
+//  Programmer: Hank Childs
+//  Creation:   October 26, 2001
+//
+//  Modifications:
+//
+//    Hank Childs, Wed Dec 19 20:14:30 PST 2001
+//    Added a stage for species selection.
+//
+//    Hank Childs, Mon Sep 30 18:01:26 PDT 2002
+//    Added stages for creating the original zones and structured indices
+//    arrays.
+//
+//    Hank Childs, Fri Nov 22 16:39:13 PST 2002
+//    Use the SIL restriction traverser since SIL restriction routines were
+//    antiquated.
+//
+//    Hank Childs, Wed Jun 18 09:34:38 PDT 2003
+//    Added a stage for needing node numbers.
+//
+//    Hank Childs, Wed Aug 13 08:09:20 PDT 2003
+//    We should do MIR if we are told to by the data spec, not if the type of
+//    variable is material.
+//
+//    Jeremy Meredith, Wed Aug 20 09:56:19 PDT 2003
+//    Refactored MIR into a base and subclass.  This will allow us to swap
+//    in other MIR algorithms more easily.
+//
+//    Kathleen Bonnell, Wed Dec 15 08:41:17 PST 2004
+//    Changed 'vector<int>' to 'intVector', and 'vector<bool>' to 'boolVector'.
+//
+//    Hank Childs, Thu Feb  8 09:26:19 PST 2007
+//    Add a stage for the transform manager ... it is always called.
+//
+//    Hank Childs, Mon Dec  1 15:39:54 PST 2008
+//    No longer add a stage for material select.  For big SILs, getting this
+//    information just takes too long.
+//
+//    Hank Childs, Tue Jan 20 16:25:23 CST 2009
+//    Add a stage for parallel I/O.
+//
+// ****************************************************************************
+
+int
+avtGenericDatabase::NumStagesForFetch(avtDataRequest_p spec)
+{
+    int numStages = 1;   // Always one for I/O.
+
+    bool  alwaysCallTransformManager = true;
+    if (alwaysCallTransformManager)
+        numStages++;
+
+    avtSILRestriction_p silr = spec->GetRestriction();
+    avtSILRestrictionTraverser trav(silr);
+
+    //
+    // Determine if there will be a material selection phase.
+    //
+    bool needMatSel = false;
+
+    needMatSel |= spec->MustDoMaterialInterfaceReconstruction();
+    // Note from HRC: it is just not worth it to get this right.  The
+    // traversal takes time and that time only is going to make our stage
+    // numbering more accurate.
+    //if (!needMatSel)
+    if (0)
+    {
+        intVector domains;
+        trav.GetDomainList(domains);
+
+        for (size_t i = 0 ; i < domains.size() ; i++)
+        {
+            bool needMatSelForThisDom;
+            trav.GetMaterials(domains[i], needMatSelForThisDom);
+            if (needMatSelForThisDom)
+            {
+                needMatSel = true;
+                break;
+            }
+        }
+    }
+
+    //
+    // Barrier for parallel I/O to catch up.
+    //
+    if (PAR_Size() > 1)
+        numStages += 1;
+
+    //
+    // Some file formats do their own selection.  They have a combined stage,
+    // so do not add one in that case.
+    //
+    if (needMatSel && !Interface->PerformsMaterialSelection())
+    {
+        numStages += 1;
+    }
+
+    //
+    // Now determine if there will be a phase to communicate ghost zones.
+    //
+    void_ref_ptr vr = cache.GetVoidRef("any_mesh",
+                                  AUXILIARY_DATA_DOMAIN_BOUNDARY_INFORMATION,
+                                  -1, -1);
+    if (*vr != NULL && trav.UsesAllData())
+    {
+        numStages += 1;
+    }
+
+    boolVector list;
+    if (trav.GetSpecies(list))
+    {
+        numStages += 1;
+    }
+
+    if (spec->NeedNodeNumbers())
+    {
+        numStages += 1;
+    }
+
+    if (spec->NeedZoneNumbers())
+    {
+        numStages += 1;
+    }
+
+    if (spec->NeedStructuredIndices())
+    {
+        numStages += 1;
+    }
+
+    return numStages;
+}
+
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::QueryScalars
+//
+//  Purpose:
+//    Queries the db regarding scalar var info for a specific cell or nodes.
+//
+//  Arguments:
+//    varName     The variable on which to retrieve data.
+//    dom         The domain to query.
+//    zone        The zone to query.
+//    ts          The timestep to query.
+//    nodes       The nodes to query.
+//    varInfo     A place to store the results.
+//    zonePick    Whether or not the pick was a zone pick.
+//
+//  Returns:
+//    True if data was successfully retrieved, false otherwise.
+//
+//  Programmer:   Kathleen Bonnell
+//  Creation:     June 27, 2002
+//
+//  Modifications:
+//    Kathleen Bonnell, Fri Nov 15 09:07:36 PST 2002
+//    Made filling of values contigent upon it not being filled already.
+//    Don't set variable name, it should be set already.
+//
+//    Kathleen Bonnell, Fri Jun 20 13:57:30 PDT 2003
+//    Add support for node-pick.
+//
+//    Mark C. Miller, 30Sep03 added timestep argument
+//
+//    Kathleen Bonnell, Thu Jul 22 12:10:19 PDT 2004
+//    Set PickVarInfo::treatAsASCII from ScalarMetaData::treatAsASCII.
+//
+//    Hank Childs, Fri Aug 20 14:05:54 PDT 2004
+//    Initialize variable to remove compiler warning.
+//
+//    Kathleen Bonnell, Wed Dec 15 08:41:17 PST 2004
+//    Changed 'std::vector<int>' to 'intVector', 'std::vector<std::string>'
+//    to 'stringVector', and 'std::vector<double>' to 'doubleVector'.
+//
+//    Mark C. Miller, Tue Apr  5 10:30:16 PDT 2005
+//    Added dummy args for data type conversion for calls to get variable
+//
+//    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//    Changed dummy args for type conversion to dummy arg for data spec
+//
+// ****************************************************************************
+
+bool
+avtGenericDatabase::QueryScalars(const string &varName, const int dom,
+                                 const int element, const int ts,
+                                 const intVector &incidentElements,
+                                 PickVarInfo &varInfo, const bool zonePick)
+{
+    bool rv = false;
+    size_t i;
+    if (varInfo.GetValues().empty())
+    {
+        doubleVector vals;
+        stringVector names;
+        const avtScalarMetaData *smd = GetMetaData(ts)->GetScalar(varName);
+        if (!smd)
+        {
+             debug4 << "Querying scalar var, but could not retrieve"
+                    << " meta data!" << endl;
+             return false;
+        }
+        char temp[80];
+
+        //
+        // dataRequest is a place-holder for
+        // information that will eventually be obtained either through
+        // additional args to this method or from PickVarInfo
+        //
+        avtDataRequest_p dataRequest;
+        vtkDataArray *scalars = GetScalarVariable(varName.c_str(), ts, dom,
+                                                  "_all", dataRequest);
+        if (scalars)
+        {
+            varInfo.SetTreatAsASCII(smd->treatAsASCII);
+            bool zoneCent = false, validCentering = true;
+            if (smd->centering == AVT_NODECENT)
+            {
+                varInfo.SetCentering(PickVarInfo::Nodal);
+                zoneCent = false;
+            }
+            else if (smd->centering == AVT_ZONECENT)
+            {
+                varInfo.SetCentering(PickVarInfo::Zonal);
+                zoneCent = true;
+            }
+            else
+            {
+                validCentering = false;
+            }
+
+            if (validCentering)
+            {
+                if (zoneCent != zonePick)
+                {
+                    // the info we're after is associated with incidentElements
+                    for (i = 0; i < incidentElements.size(); i++)
+                    {
+                        sprintf(temp, "(%d)", incidentElements[i]);
+                        names.push_back(temp);
+                        vals.push_back(scalars->GetTuple1(incidentElements[i]));
+                    }
+                }
+                else
+                {
+                    // the info we're after is associated with element
+                    sprintf(temp, "(%d)", element);
+                    names.push_back(temp);
+                    vals.push_back(scalars->GetTuple1(element));
+                }
+            }
+        }
+        if (!vals.empty())
+        {
+            varInfo.SetNames(names);
+            varInfo.SetValues(vals);
+            vals.clear();
+            names.clear();
+            rv = true;
+        }
+    }
+
+
+    //
+    //  If this is a mixed-var, then get the material values.
+    //
+    void_ref_ptr vr = cache.GetVoidRef(varName.c_str(),
+                                AUXILIARY_DATA_MIXED_VARIABLE,
+                                ts, dom);
+
+    if (*vr != NULL)
+    {
+        avtMixedVariable *mv = (avtMixedVariable*)(*vr);
+        avtMaterial *mat = GetMaterial(dom, varName.c_str(), ts);
+        vector<CellMatInfo> matInfo;
+        stringVector mN;
+        doubleVector mV;
+        intVector nMats;
+        bool mixed = false;
+
+        if (zonePick)
+        {
+            // check that zones reported by pick are accurate for retrieving
+            // material var info
+            if (element < 0 || element >= mat->GetNZones())
+            {
+                debug4 << "CANNOT QUERY MATFRACS, ZONE IS OUT OF RANGE" << endl;
+                return rv;
+            }
+            matInfo = mat->ExtractCellMatInfo(element);
+            int nMatsPerZone = 0;
+            for (size_t i = 0; i < matInfo.size(); i++)
+            {
+                if (matInfo[i].mix_index != -1)
+                {
+                    mixed = true;
+                    mN.push_back(matInfo[i].name);
+                    mV.push_back(mv->GetBuffer()[matInfo[i].mix_index]);
+                    nMatsPerZone++;
+                }
+            }
+            nMats.push_back(nMatsPerZone);
+        }
+        else
+        {
+            // check that zones reported by pick are accurate for retrieving
+            // material var info
+            bool zonesInRange = true;
+            int nmatzones = mat->GetNZones();
+            for (size_t i = 0; i < incidentElements.size(); i++)
+            {
+                if (incidentElements[i] < 0 || incidentElements[i] >= nmatzones)
+                {
+                    zonesInRange = false;
+                    break;
+                }
+            }
+            if (!zonesInRange)
+            {
+                debug4 << "CANNOT QUERY MATFRACS ZONE IS OUT OF RANGE" << endl;
+                return rv;
+            }
+            for (size_t j = 0; j < incidentElements.size(); j++)
+            {
+                int nMatsPerZone = 0;
+                matInfo = mat->ExtractCellMatInfo(incidentElements[j]);
+                for (size_t i = 0; i < matInfo.size(); i++)
+                {
+                    if (matInfo[i].mix_index != -1)
+                    {
+                        mixed = true;
+                        mN.push_back(matInfo[i].name);
+                        mV.push_back(mv->GetBuffer()[matInfo[i].mix_index]);
+                        nMatsPerZone++;
+                    }
+                }
+                nMats.push_back(nMatsPerZone);
+            }
+        }
+        if (mixed)
+        {
+            varInfo.SetMixVar(true);
+            varInfo.SetMixNames(mN);
+            varInfo.SetMixValues(mV);
+            varInfo.SetNumMatsPerZone(nMats);
+        }
+        rv = true;
+    }
+
+    //
+    // This is where we could allow the interface to add more information.
+    //
+    return rv;
+}
+
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::QueryVectors
+//
+//  Purpose:
+//    Queries the db regarding vector var info for a specific cell or nodes.
+//
+//  Arguments:
+//    varName     The variable on which to retrieve data.
+//    dom         The domain to query.
+//    zone        The zone to query.
+//    ts          The timestep to query.
+//    nodes       The nodes to query.
+//    varInfo     A place to store the results.
+//
+//  Returns:
+//    True if data was successfully retrieved, false otherwise.
+//
+//  Programmer:   Kathleen Bonnell
+//  Creation:     June 27, 2002
+//
+//  Modifications:
+//    Kathleen Bonnell, Fri Nov 15 09:07:36 PST 2002
+//    Made filling of values contigent upon it not being filled already.
+//    Don't set variable name, it should be set already.
+//
+//    Kathleen Bonnell, Fri Jun 20 13:57:30 PDT 2003
+//    Add support for node-pick.
+//
+//    Hank Childs, Fri Aug 20 14:05:54 PDT 2004
+//    Initialize variable to remove compiler warning.
+//
+//    Kathleen Bonnell, Wed Dec 15 08:41:17 PST 2004
+//    Changed 'std::vector<int>' to 'intVector', 'std::vector<std::string>'
+//    to 'stringVector', and 'std::vector<double>' to 'doubleVector'.
+//
+//    Mark C. Miller, Tue Apr  5 10:30:16 PDT 2005
+//    Added dummy args for data type conversion for calls to get variable
+//
+//    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//    Changed dummy args for type conversion to dummy arg for data spec
+// ****************************************************************************
+
+bool
+avtGenericDatabase::QueryVectors(const string &varName, const int dom,
+                                 const int element, const int ts,
+                                 const intVector &incidentElements,
+                                 PickVarInfo &varInfo, const bool zonePick)
+{
+    bool rv = false;
+    if (varInfo.GetValues().empty())
+    {
+        const avtVectorMetaData *vmd = GetMetaData(ts)->GetVector(varName);
+        if (!vmd)
+        {
+            debug4 << "Querying vector var, but could not retrieve"
+                   << " meta data!" << endl;
+            return false;
+        }
+        stringVector names;
+        doubleVector vals;
+        char buff[80];
+
+        //
+        // dataRequest is a place-holder for
+        // information that will eventually be obtained either through
+        // additional args to this method or from PickVarInfo
+        //
+        avtDataRequest_p dataRequest;
+        vtkDataArray *vectors = GetVectorVariable(varName.c_str(), ts, dom,
+                                                  "_all", dataRequest);
+        int nComponents = 0;;
+        double *temp = NULL;
+        double mag = 0.;
+        if (vectors)
+        {
+            bool zoneCent = false, validCentering = true;
+            if (vmd->centering == AVT_NODECENT)
+            {
+                varInfo.SetCentering(PickVarInfo::Nodal);
+                zoneCent = false;
+            }
+            else if (vmd->centering == AVT_ZONECENT)
+            {
+                varInfo.SetCentering(PickVarInfo::Zonal);
+                zoneCent = true;
+            }
+            else
+            {
+                validCentering = false;
+            }
+            if (validCentering)
+            {
+                nComponents = vectors->GetNumberOfComponents();
+                temp = new double[nComponents];
+                if (zonePick != zoneCent)
+                {
+                    // info we're after is associated with incidentElements
+                    for (size_t k = 0; k < incidentElements.size(); k++)
+                    {
+                        sprintf(buff, "(%d)", incidentElements[k]);
+                        names.push_back(buff);
+                        vectors->GetTuple(incidentElements[k], temp);
+                        mag = 0.;
+                        for (int i = 0; i < nComponents; i++)
+                        {
+                            vals.push_back(temp[i]);
+                            mag += (temp[i] * temp[i]);
+                        }
+                        mag = sqrt(mag);
+                        vals.push_back(mag);
+                    }
+                }
+                else
+                {
+                    // info we're after is associated with element
+                    sprintf(buff, "(%d)", element);
+                    names.push_back(buff);
+                    vectors->GetTuple(element, temp);
+                    mag = 0.;
+                    for (int i = 0; i < nComponents; i++)
+                    {
+                        vals.push_back(temp[i]);
+                        mag +=  (temp[i] * temp[i]);
+                    }
+                    mag = sqrt(mag);
+                    vals.push_back(mag);
+                }
+                delete [] temp;
+            }
+        }
+        if (!vals.empty())
+        {
+            varInfo.SetNames(names);
+            varInfo.SetValues(vals);
+            vals.clear();
+            names.clear();
+            rv = true;
+        }
+    }
+    //
+    // This is where we could allow the interface to add more information.
+    //
+    return rv;
+}
+
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::QueryTensors
+//
+//  Purpose:
+//    Queries the db regarding tensor var info for a specific cell or nodes.
+//
+//  Arguments:
+//    varName     The variable on which to retrieve data.
+//    dom         The domain to query.
+//    zone        The zone to query.
+//    ts          The timestep to query.
+//    nodes       The nodes to query.
+//    varInfo     A place to store the results.
+//
+//  Returns:
+//    True if data was successfully retrieved, false otherwise.
+//
+//  Programmer:   Hank Childs
+//  Creation:     September 22, 2003
+//
+//  Modifications:
+//
+//    Hank Childs, Fri Aug 20 14:05:54 PDT 2004
+//    Initialize variable to remove compiler warning.
+//
+//    Kathleen Bonnell, Wed Dec 15 08:41:17 PST 2004
+//    Changed 'std::vector<int>' to 'intVector', 'std::vector<std::string>'
+//    to 'stringVector', and 'std::vector<double>' to 'doubleVector'.
+//
+//    Mark C. Miller, Tue Apr  5 10:30:16 PDT 2005
+//    Added dummy args for data type conversion for calls to get variable
+//
+//    Kathleen Bonnell, Tue Aug 30 09:35:44 PDT 2005
+//    Compute Major Eigenvalue.
+//
+//    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//    Changed dummy args for type conversion to dummy arg for data spec
+// ****************************************************************************
+
+bool
+avtGenericDatabase::QueryTensors(const string &varName, const int dom,
+                                 const int element, const int ts,
+                                 const intVector &incidentElements,
+                                 PickVarInfo &varInfo, const bool zonePick)
+{
+    bool rv = false;
+    if (varInfo.GetValues().empty())
+    {
+        const avtTensorMetaData *tmd = GetMetaData(ts)->GetTensor(varName);
+        if (!tmd)
+        {
+            debug4 << "Querying tensor var, but could not retrieve"
+                   << " meta data!" << endl;
+            return false;
+        }
+
+        stringVector names;
+        doubleVector vals;
+        char buff[80];
+
+        //
+        // dataRequest is a place-holder for
+        // information that will eventually be obtained either through
+        // additional args to this method or from PickVarInfo
+        //
+        avtDataRequest_p dataRequest;
+        vtkDataArray *tensors = GetTensorVariable(varName.c_str(), ts, dom,
+                                                  "_all", dataRequest);
+        int nComponents = 0;;
+        double *temp = NULL;
+        if (tensors)
+        {
+            bool zoneCent = false, validCentering = true;
+            if (tmd->centering == AVT_NODECENT)
+            {
+                varInfo.SetCentering(PickVarInfo::Nodal);
+                zoneCent = false;
+            }
+            else if (tmd->centering == AVT_ZONECENT)
+            {
+                varInfo.SetCentering(PickVarInfo::Zonal);
+                zoneCent = true;
+            }
+            else
+            {
+                validCentering = false;
+            }
+            if (validCentering)
+            {
+                nComponents = tensors->GetNumberOfComponents();
+                temp = new double[nComponents];
+                if (zonePick != zoneCent)
+                {
+                    // info we're after is associated with incidentElements
+                    for (size_t k = 0; k < incidentElements.size(); k++)
+                    {
+                        sprintf(buff, "(%d)", incidentElements[k]);
+                        names.push_back(buff);
+                        tensors->GetTuple(incidentElements[k], temp);
+                        for (int i = 0; i < nComponents; i++)
+                            vals.push_back(temp[i]);
+                        vals.push_back(MajorEigenvalue(temp));
+                    }
+                }
+                else
+                {
+                    // info we're after is associated with element
+                    sprintf(buff, "(%d)", element);
+                    names.push_back(buff);
+                    tensors->GetTuple(element, temp);
+                    for (int i = 0; i < nComponents; i++)
+                        vals.push_back(temp[i]);
+                    vals.push_back(MajorEigenvalue(temp));
+                }
+                delete [] temp;
+            }
+        }
+        if (!vals.empty())
+        {
+            varInfo.SetNames(names);
+            varInfo.SetValues(vals);
+            vals.clear();
+            names.clear();
+            rv = true;
+        }
+    }
+    //
+    // This is where we could allow the interface to add more information.
+    //
+    return rv;
+}
+
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::QueryArrays
+//
+//  Purpose:
+//    Queries the db regarding array var info for a specific cell or nodes.
+//
+//  Arguments:
+//    varName     The variable on which to retrieve data.
+//    dom         The domain to query.
+//    zone        The zone to query.
+//    ts          The timestep to query.
+//    nodes       The nodes to query.
+//    varInfo     A place to store the results.
+//
+//  Returns:
+//    True if data was successfully retrieved, false otherwise.
+//
+//  Programmer:   Hank Childs
+//  Creation:     July 19, 2005
+//
+//  Modifications:
+//
+//    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//    Changed dummy args for type conversion to dummy arg for data spec
+// ****************************************************************************
+
+bool
+avtGenericDatabase::QueryArrays(const string &varName, const int dom,
+                                 const int element, const int ts,
+                                 const intVector &incidentElements,
+                                 PickVarInfo &varInfo, const bool zonePick)
+{
+    bool rv = false;
+    if (varInfo.GetValues().empty())
+    {
+        const avtArrayMetaData *tmd = GetMetaData(ts)->GetArray(varName);
+        if (!tmd)
+        {
+            debug4 << "Querying array var, but could not retrieve"
+                   << " meta data!" << endl;
+            return false;
+        }
+
+        stringVector names;
+        doubleVector vals;
+        char buff[80];
+
+        //
+        // dataRequest is a place-holder for
+        // information that will eventually be obtained either through
+        // additional args to this method or from PickVarInfo
+        //
+        avtDataRequest_p dataRequest;
+        vtkDataArray *array = GetArrayVariable(varName.c_str(), ts, dom,
+                                                  "_all", dataRequest);
+        int nComponents = 0;;
+        double *temp = NULL;
+        if (array)
+        {
+            bool zoneCent = false, validCentering = true;
+            if (tmd->centering == AVT_NODECENT)
+            {
+                varInfo.SetCentering(PickVarInfo::Nodal);
+                zoneCent = false;
+            }
+            else if (tmd->centering == AVT_ZONECENT)
+            {
+                varInfo.SetCentering(PickVarInfo::Zonal);
+                zoneCent = true;
+            }
+            else
+            {
+                validCentering = false;
+            }
+            if (validCentering)
+            {
+                nComponents = array->GetNumberOfComponents();
+                temp = new double[nComponents];
+                if (zonePick != zoneCent)
+                {
+                    // info we're after is associated with incidentElements
+                    for (size_t k = 0; k < incidentElements.size(); k++)
+                    {
+                        sprintf(buff, "(%d)", incidentElements[k]);
+                        names.push_back(buff);
+                        array->GetTuple(incidentElements[k], temp);
+                        for (int i = 0; i < nComponents; i++)
+                            vals.push_back(temp[i]);
+                    }
+                }
+                else
+                {
+                    // info we're after is associated with element
+                    sprintf(buff, "(%d)", element);
+                    names.push_back(buff);
+                    array->GetTuple(element, temp);
+                    for (int i = 0; i < nComponents; i++)
+                        vals.push_back(temp[i]);
+                }
+                delete [] temp;
+            }
+        }
+        if (!vals.empty())
+        {
+            varInfo.SetNames(names);
+            varInfo.SetValues(vals);
+            vals.clear();
+            names.clear();
+            rv = true;
+        }
+    }
+    //
+    // This is where we could allow the interface to add more information.
+    //
+    return rv;
+}
+
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::QuerySymmetricTensors
+//
+//  Purpose:
+//    Queries the db regarding tensor var info for a specific cell or nodes.
+//
+//  Arguments:
+//    varName     The variable on which to retrieve data.
+//    dom         The domain to query.
+//    zone        The zone to query.
+//    ts          The timestep to query.
+//    nodes       The nodes to query.
+//    varInfo     A place to store the results.
+//
+//  Returns:
+//    True if data was successfully retrieved, false otherwise.
+//
+//  Programmer:   Hank Childs
+//  Creation:     September 22, 2003
+//
+//  Modifications:
+//
+//    Hank Childs, Fri Aug 20 14:05:54 PDT 2004
+//    Initialize variable to remove compiler warning.
+//
+//    Kathleen Bonnell, Wed Dec 15 08:41:17 PST 2004
+//    Changed 'std::vector<int>' to 'intVector', 'std::vector<std::string>'
+//    to 'stringVector', and 'std::vector<double>' to 'doubleVector'.
+//
+//    Mark C. Miller, Tue Apr  5 10:30:16 PDT 2005
+//    Added dummy args for data type conversion for calls to get variable
+//
+//    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//    Changed dummy args for type conversion to dummy arg for data spec
+// ****************************************************************************
+
+bool
+avtGenericDatabase::QuerySymmetricTensors(const string &varName,
+                                 const int dom, const int element,const int ts,
+                                 const intVector &incidentElements,
+                                 PickVarInfo &varInfo, const bool zonePick)
+{
+    bool rv = false;
+    if (varInfo.GetValues().empty())
+    {
+        const avtSymmetricTensorMetaData *tmd
+                                     = GetMetaData(ts)->GetSymmTensor(varName);
+        if (!tmd)
+        {
+            debug4 << "Querying tensor var, but could not retrieve"
+                   << " meta data!" << endl;
+            return false;
+        }
+
+        stringVector names;
+        doubleVector vals;
+        char buff[80];
+
+        //
+        // dataRequest is a place-holder for
+        // information that will eventually be obtained either through
+        // additional args to this method or from PickVarInfo
+        //
+        avtDataRequest_p dataRequest;
+        vtkDataArray *tensors = GetSymmetricTensorVariable(varName.c_str(), ts,
+                                                           dom, "_all", dataRequest);
+        int nComponents = 0;;
+        if (tensors)
+        {
+            bool zoneCent = false, validCentering = true;
+            if (tmd->centering == AVT_NODECENT)
+            {
+                varInfo.SetCentering(PickVarInfo::Nodal);
+                zoneCent = false;
+            }
+            else if (tmd->centering == AVT_ZONECENT)
+            {
+                varInfo.SetCentering(PickVarInfo::Zonal);
+                zoneCent = true;
+            }
+            else
+            {
+                validCentering = false;
+            }
+            if (validCentering)
+            {
+                nComponents = tensors->GetNumberOfComponents();
+                double *temp = new double[nComponents];
+                if (zonePick != zoneCent)
+                {
+                    // info we're after is associated with incidentElements
+                    for (size_t k = 0; k < incidentElements.size(); k++)
+                    {
+                        sprintf(buff, "(%d)", incidentElements[k]);
+                        names.push_back(buff);
+                        tensors->GetTuple(incidentElements[k], temp);
+                        for (int i = 0; i < nComponents; i++)
+                            vals.push_back(temp[i]);
+                    }
+                }
+                else
+                {
+                    // info we're after is associated with element
+                    sprintf(buff, "(%d)", element);
+                    names.push_back(buff);
+                    tensors->GetTuple(element, temp);
+                    for (int i = 0; i < nComponents; i++)
+                        vals.push_back(temp[i]);
+                }
+                delete [] temp;
+            }
+        }
+        if (!vals.empty())
+        {
+            varInfo.SetNames(names);
+            varInfo.SetValues(vals);
+            vals.clear();
+            names.clear();
+            rv = true;
+        }
+    }
+    //
+    // This is where we could allow the interface to add more information.
+    //
+    return rv;
+}
+
+// ****************************************************************************
+// Method: avtGenericDatabase::QueryLabels
+//
+// Purpose:
+//   Queries the database for a label dataset.
+//
+// Arguments:
+//    varName     The variable on which to retrieve data.
+//    dom         The domain to query.
+//    zone        The zone to query.
+//    ts          The timestep to query.
+//    nodes       The nodes to query.
+//    varInfo     A place to store the results.
+//
+// Returns:    True if data was retrieved; otherwise false.
+//
+// Note:       Pretty much the same as QueryVectors except that we don't
+//             calculate a magnitude.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Apr 4 11:51:56 PDT 2005
+//
+// Modifications:
+//
+// ****************************************************************************
+
+bool
+avtGenericDatabase::QueryLabels(const string &varName, const int dom,
+                                 const int element, const int ts,
+                                 const intVector &incidentElements,
+                                 PickVarInfo &varInfo, const bool zonePick)
+{
+    bool rv = false;
+    if (varInfo.GetValues().empty())
+    {
+        const avtLabelMetaData *lmd = GetMetaData(ts)->GetLabel(varName);
+        if (!lmd)
+        {
+            debug4 << "Querying label var, but could not retrieve"
+                   << " meta data!" << endl;
+            return false;
+        }
+        stringVector names;
+        doubleVector vals;
+        char buff[80];
+        vtkDataArray *labels = GetLabelVariable(varName.c_str(), ts, dom,
+                                                "_all");
+        int nComponents = 0;
+        double *temp = NULL;
+        if (labels)
+        {
+            bool zoneCent = false, validCentering = true;
+            if (lmd->centering == AVT_NODECENT)
+            {
+                varInfo.SetCentering(PickVarInfo::Nodal);
+                zoneCent = false;
+            }
+            else if (lmd->centering == AVT_ZONECENT)
+            {
+                varInfo.SetCentering(PickVarInfo::Zonal);
+                zoneCent = true;
+            }
+            else
+            {
+                validCentering = false;
+            }
+            if (validCentering)
+            {
+                nComponents = labels->GetNumberOfComponents();
+                temp = new double[nComponents];
+                if (zonePick != zoneCent)
+                {
+                    // info we're after is associated with incidentElements
+                    for (size_t k = 0; k < incidentElements.size(); k++)
+                    {
+                        sprintf(buff, "(%d)", incidentElements[k]);
+                        names.push_back(buff);
+                        labels->GetTuple(incidentElements[k], temp);
+                        for (int i = 0; i < nComponents; i++)
+                            vals.push_back(temp[i]);
+                    }
+                }
+                else
+                {
+                    // info we're after is associated with element
+                    sprintf(buff, "(%d)", element);
+                    names.push_back(buff);
+                    labels->GetTuple(element, temp);
+                    for (int i = 0; i < nComponents; i++)
+                        vals.push_back(temp[i]);
+                }
+                delete [] temp;
+            }
+        }
+        if (!vals.empty())
+        {
+            varInfo.SetNames(names);
+            varInfo.SetValues(vals);
+            vals.clear();
+            names.clear();
+            rv = true;
+        }
+    }
+    //
+    // This is where we could allow the interface to add more information.
+    //
+    return rv;
+}
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::QueryMaterial
+//
+//  Purpose:
+//    Queries the db regarding material var info for a specific cell or nodes.
+//
+//  Arguments:
+//    varName     The variable on which to retrieve data.
+//    dom         The domain to query.
+//    zone        The zone to query.
+//    ts          The timestep to query.
+//    nodes       The nodes to query.
+//    varInfo     A place to store the results.
+//
+//  Returns:
+//    True if data was successfully retrieved, false otherwise.
+//
+//  Programmer:   Kathleen Bonnell
+//  Creation:     June 27, 2002
+//
+//  Modifications:
+//    Kathleen Bonnell, Fri Nov 15 09:07:36 PST 2002
+//    Don't set variable name, it should be set already.
+//
+//    Kathleen Bonnell, Fri Dec  6 12:10:04 PST 2002
+//    Added test for zone out of range in regards to material zones.
+//
+//    Kathleen Bonnell, Fri Jun 20 13:57:30 PDT 2003
+//    Add support for node-pick.
+//
+//    Kathleen Bonnell, Thu Nov 20 15:11:52 PST 2003
+//    Removed call to varInfo.SetVarIsMaterial.
+//
+//    Kathleen Bonnell, Wed Dec 15 08:41:17 PST 2004
+//    Changed 'std::vector<int>' to 'intVector', 'std::vector<std::string>'
+//    to 'stringVector', and 'std::vector<double>' to 'doubleVector'.
+//
+// ****************************************************************************
+
+bool
+avtGenericDatabase::QueryMaterial(const string &varName, const int dom,
+                                  const int element, const int ts,
+                                  const intVector &incidentElements,
+                                  PickVarInfo &varInfo, const bool zonePick)
+{
+    doubleVector volFracs;
+    stringVector matNames;
+    stringVector zoneNames;
+    intVector    nMats;
+    vector<CellMatInfo> matInfo;
+    avtMaterial *mat = GetMaterial(dom, varName.c_str(), ts);
+    size_t i, j;
+    if (mat == NULL)
+    {
+        return false;
+    }
+
+    char buff[80];
+    int numMatsThisZone;
+    if (zonePick) // zone number is stored in element
+    {
+        if (element < 0 || element >= mat->GetNZones())
+        {
+            debug4 << "CANNOT QUERY MATERIALS ZONE IS OUT OF RANGE" << endl;
+            return false;
+        }
+        numMatsThisZone = 0;
+        matInfo = mat->ExtractCellMatInfo(element);
+        for (i = 0; i < matInfo.size(); i++)
+        {
+            if (matInfo[i].vf > 0.)
+            {
+                matNames.push_back(matInfo[i].name);
+                volFracs.push_back(matInfo[i].vf);
+                numMatsThisZone++;
+            }
+        }
+        nMats.push_back(numMatsThisZone);
+    }
+    else // zones are stored in incidentElements.
+    {
+        bool zonesInRange = true;
+        int nmatzones = mat->GetNZones();
+        for (i = 0; i < incidentElements.size(); i++)
+        {
+            if (incidentElements[i] < 0 || incidentElements[i] >= nmatzones)
+            {
+                zonesInRange = false;
+                break;
+            }
+        }
+        if (!zonesInRange)
+        {
+            debug4 << "CANNOT QUERY MATERIALS ZONE IS OUT OF RANGE" << endl;
+            return false;
+        }
+        for (j = 0; j < incidentElements.size(); j++)
+        {
+            numMatsThisZone = 0;
+            sprintf(buff, "(%d)", incidentElements[j]);
+            zoneNames.push_back(buff);
+            matInfo = mat->ExtractCellMatInfo(incidentElements[j]);
+            for (i = 0; i < matInfo.size(); i++)
+            {
+                if (matInfo[i].vf > 0.)
+                {
+                    matNames.push_back(matInfo[i].name);
+                    volFracs.push_back(matInfo[i].vf);
+                    numMatsThisZone++;
+                }
+            }
+            nMats.push_back(numMatsThisZone);
+        }
+    }
+    varInfo.SetCentering(PickVarInfo::None);
+    varInfo.SetNames(zoneNames);
+    varInfo.SetMixNames(matNames);
+    varInfo.SetMixValues(volFracs);
+    varInfo.SetNumMatsPerZone(nMats);
+
+    if (!matNames.empty())
+        matNames.clear();
+    if (!volFracs.empty())
+        volFracs.clear();
+    if (!zoneNames.empty())
+        zoneNames.clear();
+    if (!nMats.empty())
+        nMats.clear();
+
+    //
+    // This is where we could allow the interface to add more information.
+    //
+    return true;
+}
+
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::QueryNodes
+//
+//  Purpose:
+//    Queries the db regarding material var info for a specific cell or nodes.
+//
+//  Arguments:
+//    varName       The variable on which to retrieve data.
+//    dom           The domain to query.
+//    zone          The zone to query.
+//    ts            The timestep to query.
+//    nodes         A place to store the nodes.
+//    ppt           A place to store the 'real' picked point for point meshes.
+//    useNodeCoords Whether or not to fill in the node coordinates.
+//    logicalNodes  Whether or not to use logical indices for the node coordinates.
+//    nCoords       A place to store the node coordinates.
+//    logicalZones  Whether or not to fill in the zone coordinates.
+//    zCoords       A place to store the zone coordinates.
+//
+//  Returns:
+//    True if data was successfully retrieved, false otherwise.
+//
+//  Programmer:   Kathleen Bonnell
+//  Creation:     December 6, 2002
+//
+//  Modifications:
+//    Kathleen Bonnell, Fri Dec 27 14:09:40 PST 2002
+//    Added useNodeCoords && nodeCoords arguments.  Fill in nodeCoords as
+//    needed.
+//
+//    Kathleen Bonnell, Tue Sep 16 13:33:30 PDT 2003
+//    Use "base_index" if available when creating logical coords.
+//
+//    Kathleen Bonnell, Tue Nov 18 14:07:13 PST 2003
+//    Added support for logical zone coords.
+//
+//    Kathleen Bonnell, Wed Nov 26 14:35:29 PST 2003
+//    Set ppt to Cell center if doing PickByZone (ppt[0] == FLT_MAX).
+//
+//    Kathleen Bonnell, Wed Dec 17 15:04:57 PST 2003
+//    Updated args list to include multiple types of Coordinates.
+//
+//    Kathleen Bonnell, Wed Oct 20 17:01:38 PDT 2004
+//    Replaced get-cell-center code with single call to
+//    vtkVisItUtility::GetCellCenter.
+//
+//    Kathleen Bonnell, Wed Dec 15 08:41:17 PST 2004
+//    Changed 'std::vector<int>' to 'intVector', and 'std::vector<std::string>'
+//    to 'stringVector'.
+//
+//    Hank Childs, Sun Mar 13 13:42:04 PST 2005
+//    Fix memory leak.
+//
+//    Mark C. Miller, Tue Apr  5 10:30:16 PDT 2005
+//    Added dummy args for data type conversion for calls to get variable
+//
+//    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//    Changed dummy args for type conversion to dummy arg for data spec
+//
+//    Cyrus Harrison, Fri Sep 14 14:16:38 PDT 2007
+//    Added floating point format argument
+//
+// ****************************************************************************
+
+bool
+avtGenericDatabase::QueryNodes(const string &varName, const int dom,
+                               const string &floatFormat, const int zone,
+                               bool &zoneIsGhost, const int ts,
+                               intVector &nodes, intVector &ghostNodes,
+                               const bool includeGhosts, double ppt[3],
+                               const int dim, const bool physicalNodes,
+                               const bool logicalDNodes, const bool logicalBNodes,
+                               stringVector &pnCoords, stringVector &dnCoords,
+                               stringVector &bnCoords,
+                               const bool logicalDZones, const bool logicalBZones,
+                               stringVector &dzCoords, stringVector &bzCoords)
+{
+    // dataRequest is a placeholder for when this information will come from elsewhere
+    avtDataRequest_p dataRequest;
+    string meshName = GetMetaData(ts)->MeshForVar(varName);
+    vtkDataSet *ds = GetMeshDataset(meshName.c_str(), ts, dom, "_all", dataRequest);
+    bool rv = false;
+    if (ds)
+    {
+        string format="";
+
+        vtkIdList *ptIds = vtkIdList::New();
+        ds->GetCellPoints(zone, ptIds);
+        double coord[3];
+        int ijk[3];
+        char buff[80];
+        int type = ds->GetDataObjectType();
+        unsigned char *gn = NULL;
+        unsigned char *gz = NULL;
+        if (includeGhosts)
+        {
+            vtkUnsignedCharArray *gzone =
+               (vtkUnsignedCharArray*) ds->GetCellData()->GetArray("avtGhostZones");
+            if (gzone)
+            {
+                gz = gzone->GetPointer(0);
+                if (gz[zone])
+                    zoneIsGhost = true;
+            }
+            vtkUnsignedCharArray *gnode =
+               (vtkUnsignedCharArray*) ds->GetPointData()->GetArray("avtGhostNodes");
+            if (gnode)
+                gn = gnode->GetPointer(0);
+        }
+        if (logicalDZones && (type == VTK_RECTILINEAR_GRID ||
+                             type == VTK_STRUCTURED_GRID ))
+        {
+            vtkVisItUtility::GetLogicalIndices(ds, true, zone, ijk, false);
+            if (dim == 2)
+            {
+                sprintf(buff, "<%d, %d>", ijk[0], ijk[1]);
+            }
+            else
+            {
+                sprintf(buff, "<%d, %d, %d>", ijk[0], ijk[1], ijk[2]);
+            }
+            dzCoords.push_back(buff);
+        }
+        if (logicalBZones && (type == VTK_RECTILINEAR_GRID ||
+                             type == VTK_STRUCTURED_GRID ))
+        {
+            vtkVisItUtility::GetLogicalIndices(ds, true, zone, ijk, true);
+            if (dim == 2)
+            {
+                sprintf(buff, "<%d, %d>", ijk[0], ijk[1]);
+            }
+            else
+            {
+                sprintf(buff, "<%d, %d, %d>", ijk[0], ijk[1], ijk[2]);
+            }
+            bzCoords.push_back(buff);
+        }
+        vtkIdList *cells = vtkIdList::New();
+        int nGnodes = 0;
+        for (int i = 0; i < ptIds->GetNumberOfIds(); i++)
+        {
+            vtkIdType id = ptIds->GetId(i);
+            if (includeGhosts)
+            {
+                if (gn && gn[id])
+                {
+                    ghostNodes.push_back(1);
+                    nGnodes++;
+                }
+                else if (gz)
+                {
+                    int nGhosts = 0;
+                    ds->GetPointCells(id, cells);
+                    for (int j = 0; j < cells->GetNumberOfIds(); j++)
+                    {
+                        nGhosts += (int)gz[cells->GetId(j)];
+                    }
+                    if (nGhosts > 0 && nGhosts == cells->GetNumberOfIds())
+                    {
+                        ghostNodes.push_back(1);
+                        nGnodes++;
+                    }
+                    else
+                    {
+                        ghostNodes.push_back(0);
+                    }
+                }
+                else
+                {
+                    ghostNodes.push_back(0);
+                }
+            }
+            nodes.push_back(id);
+            if (logicalDNodes && (type == VTK_RECTILINEAR_GRID ||
+                                 type == VTK_STRUCTURED_GRID ))
+            {
+                vtkVisItUtility::GetLogicalIndices(ds, false,
+                                         ptIds->GetId(i), ijk, false);
+                if (dim == 2)
+                {
+                    sprintf(buff, "<%d, %d>", ijk[0], ijk[1]);
+                }
+                else
+                {
+                    sprintf(buff, "<%d, %d, %d>", ijk[0], ijk[1], ijk[2]);
+                }
+                dnCoords.push_back(buff);
+            }
+            if (logicalBNodes && (type == VTK_RECTILINEAR_GRID ||
+                                 type == VTK_STRUCTURED_GRID ))
+            {
+                vtkVisItUtility::GetLogicalIndices(ds, false,
+                                         ptIds->GetId(i), ijk, true);
+                if (dim == 2)
+                {
+                    sprintf(buff, "<%d, %d>", ijk[0], ijk[1]);
+                }
+                else
+                {
+                    sprintf(buff, "<%d, %d, %d>", ijk[0], ijk[1], ijk[2]);
+                }
+                bnCoords.push_back(buff);
+            }
+            if (physicalNodes)
+            {
+                ds->GetPoint(ptIds->GetId(i), coord);
+                if (dim == 2)
+                {
+                    format = "<" + floatFormat + ", "
+                                 + floatFormat + ">";
+                    sprintf(buff, format.c_str(), coord[0], coord[1]);
+                }
+                else
+                {
+                    format = "<" + floatFormat + ", "
+                                 + floatFormat + ", "
+                                 + floatFormat + ">";
+                    sprintf(buff, format.c_str(), coord[0], coord[1], coord[2]);
+                }
+                pnCoords.push_back(buff);
+            }
+        }
+        cells->Delete();
+        zoneIsGhost |= (nGnodes > 0 && nGnodes == ptIds->GetNumberOfIds());
+        ptIds->Delete();
+        if (nodes.size() == 1) // point mesh
+        {
+            //
+            //  Set pick point to be the same as the cell
+            //  node for point mesh.
+            //
+            ds->GetPoint(nodes[0], ppt);
+        }
+        else if (ppt[0] == FLT_MAX)
+        {
+            vtkVisItUtility::GetCellCenter(ds->GetCell(zone), ppt);
+        }
+        rv = true;
+        ds->Delete();
+    }
+    return rv;
+}
+
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::QueryMesh
+//
+//  Purpose:
+//    Queries the db regarding mesh info for a domain.
+//
+//  Arguments:
+//    varName     The variable on which to retrieve data.
+//    dom         The domain to query.
+//    meshInfo     A place to store the results.
+//
+//  Returns:
+//    True if data was successfully retrieved, false otherwise.
+//
+//  Programmer:   Kathleen Bonnell
+//  Creation:     April 18, 2003
+//
+//  Modifications:
+//    Kathleen Bonnell, Tue Sep  9 16:51:10 PDT 2003
+//    Changed PickVarInfo argument to std::string.
+//
+//    Kathleen Bonnell, Wed Jun  9 17:41:00 PDT 2004
+//    Added showName argument.
+//
+//    Kathleen Bonnell, Wed Dec 15 08:41:17 PST 2004
+//    Removed use of 'std::'.
+//
+//    Jeremy Meredith, Wed Aug 24 12:51:09 PDT 2005
+//    Added group origin.
+//
+//    Dave Bremer, Tue Feb 13 11:40:45 PST 2007
+//    Add support for format strings.
+//
+// ****************************************************************************
+
+bool
+avtGenericDatabase::QueryMesh(const string &varName, const int ts,
+                              const int dom, string &meshInfo,
+                              const bool showName)
+{
+    bool rv = false;
+    string mesh = GetMetaData(ts)->MeshForVar(varName);
+    const avtMeshMetaData *mmd = GetMetaData(ts)->GetMesh(mesh);
+    char temp[256];
+    if (!mmd)
+    {
+         debug4 << "Querying mesh, but could not retrieve"
+                << " meta data!" << endl;
+         return false;
+    }
+    if (showName)
+    {
+        sprintf(temp, "%s ", mesh.c_str());
+        meshInfo += temp;
+    }
+    if (mmd->numGroups > 0 && (size_t)dom < mmd->groupIds.size())
+    {
+        if (strstr(mmd->groupPieceName.c_str(), "%") != NULL)
+        {
+            sprintf(temp, mmd->groupPieceName.c_str(),
+                    mmd->groupIds[dom] + mmd->groupOrigin);
+            strcat(temp, " ");
+        }
+        else
+        {
+            sprintf(temp, "%s %d " , mmd->groupPieceName.c_str(),
+                    mmd->groupIds[dom] + mmd->groupOrigin);
+        }
+        meshInfo += temp;
+        rv = true;
+    }
+    if (mmd->numBlocks > 1)
+    {
+        if ( mmd->blockNames.size() == 0)
+        {
+             if (strstr(mmd->blockPieceName.c_str(), "%") != NULL)
+             {
+                 sprintf(temp, mmd->blockPieceName.c_str(),
+                         dom + mmd->blockOrigin);
+                 strcat(temp, " ");
+             }
+             else
+             {
+                 sprintf(temp, "%s %d " , mmd->blockPieceName.c_str(),
+                         dom + mmd->blockOrigin);
+             }
+             meshInfo += temp;
+        }
+        else
+        {
+             sprintf(temp, "%s %s " , mmd->blockPieceName.c_str(),
+                     mmd->blockNames[dom].c_str());
+             meshInfo += temp;
+        }
+        rv = true;
+    }
+    //
+    // This is where we could allow the interface to add more information.
+    //
+    return rv;
+}
+
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::QueryZones
+//
+//  Purpose:
+//    Queries the db regarding zones incident upon a specific node.
+//
+//  Arguments:
+//    varName       The variable on which to retrieve data.
+//    dom           The domain to query.
+//    foundEl       IN:  zone that contains the picked point.
+//                  OUT: The node closest to the picked point.
+//    ts            The timestep to query.
+//    zones         A place to store the zones.
+//    ppt           IN:  The picked point.
+//                  OUT: The node coordinates.
+//    dimension     The spatial dimension.
+//    useNodeCoords Whether or not to supply coordinates for the node.
+//    logicalNodes  Whether the node coords should be logical.
+//    nodeCoords    A place to store the node coordinates.
+//    logicalZones  Whether or not to supply coordinates for the zone.
+//    zoneCoords    A place to store the zone coordinates.
+//
+//  Returns:
+//    True if data was successfully retrieved, false otherwise.
+//
+//  Programmer:   Kathleen Bonnell
+//  Creation:     June 20, 2003
+//
+//  Modifications:
+//    Kathleen Bonnell, Tue Sep 16 13:33:30 PDT 2003
+//    Use "base_index" if available when creating logical coords.
+//
+//    Kathleen Bonnell, Tue Nov 18 14:07:13 PST 2003
+//    Added support for logical zone coords.
+//
+//    Kathleen Bonnell, Wed Nov 26 14:35:29 PST 2003
+//    Use foundEl as minId if doing PickByNode (ppt[0] == FLT_MAX).
+//
+//    Kathleen Bonnell, Wed Dec 17 15:04:57 PST 2003
+//    Updated args list to include multiple types of Coordinates.
+//
+//    Kathleen Bonnell, Thu Jun 17 12:58:47 PDT 2004
+//    Only search for the node if it hasn't already been discovered,
+//    use the generic ds->GetPoint() method.
+//
+//    Hank Childs, Fri Aug 27 16:16:52 PDT 2004
+//    Rename ghost data arrays.
+//
+//    Kathleen Bonnell, Thu Sep 23 17:48:37 PDT 2004
+//    Added args to support ghost-zone retrieval if requested.
+//
+//    Kathleen Bonnell, Thu Oct 21 18:02:50 PDT 2004
+//    Correctly test whether a zone is ghost or not.
+//
+//    Kathleen Bonnell, Wed Dec 15 08:41:17 PST 2004
+//    Changed 'std::vector<int>' to 'intVector', and
+//    'std::vector<std::string>'.
+//
+//    Hank Childs, Thu Mar 10 10:23:02 PST 2005
+//    Removed memory leak.
+//
+//    Mark C. Miller, Tue Apr  5 10:30:16 PDT 2005
+//    Added dummy args for data type conversion for calls to get variable
+//
+//    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//    Changed dummy args for type conversion to dummy arg for data spec
+//
+//    Cyrus Harrison, Fri Sep 14 14:16:38 PDT 2007
+//    Added floating point format argument
+//
+// ****************************************************************************
+
+bool
+avtGenericDatabase::QueryZones(const string &varName, const int dom,
+                               const string &floatFormat,
+                               int &foundEl, bool &elIsGhost,
+                               const int ts, intVector &zones,
+                               intVector &ghostZ, bool includeGhosts,
+                               double ppt[3], const int dimension,
+                               const bool physicalNodes,
+                               const bool logicalDNodes,
+                               const bool logicalBNodes,
+                               stringVector &pnodeCoords,
+                               stringVector &dnodeCoords,
+                               stringVector &bnodeCoords,
+                               const bool logicalDZones,
+                               const bool logicalBZones,
+                               stringVector &dzoneCoords,
+                               stringVector &bzoneCoords)
+{
+    // dataRequest is a placeholder for when this information will come from elsewhere
+    avtDataRequest_p dataRequest;
+    string meshName = GetMetaData(ts)->MeshForVar(varName);
+    vtkDataSet *ds = GetMeshDataset(meshName.c_str(), ts, dom, "_all", dataRequest);
+    bool rv = false;
+    if (ds)
+    {
+        string format = "";
+
+        vtkIdList *ids = vtkIdList::New();
+        vtkIdType *idptr;
+        vtkIdType minId = foundEl;
+        double coord[3];
+        int ijk[3];
+        char buff[80];
+        int type = ds->GetDataObjectType();
+        if (minId == -1)
+        {
+            minId = ds->FindPoint(ppt);
+        }
+
+        if ( minId != -1)
+        {
+            ds->GetPoint(minId, ppt);
+
+            foundEl = minId;
+
+            if (logicalDNodes  && (type == VTK_STRUCTURED_GRID ||
+                                   type == VTK_RECTILINEAR_GRID))
+            {
+                vtkVisItUtility::GetLogicalIndices(ds, false, minId, ijk, false);
+                if (dimension == 2)
+                {
+                    sprintf(buff, "<%d, %d>", ijk[0], ijk[1]);
+                }
+                else
+                {
+                    sprintf(buff, "<%d, %d, %d>", ijk[0], ijk[1], ijk[2]);
+                }
+                dnodeCoords.push_back(buff);
+            }
+            if (logicalBNodes  && (type == VTK_STRUCTURED_GRID ||
+                                   type == VTK_RECTILINEAR_GRID))
+            {
+                vtkVisItUtility::GetLogicalIndices(ds, false, minId, ijk, true);
+                if (dimension == 2)
+                {
+                    sprintf(buff, "<%d, %d>", ijk[0], ijk[1]);
+                }
+                else
+                {
+                    sprintf(buff, "<%d, %d, %d>", ijk[0], ijk[1], ijk[2]);
+                }
+                bnodeCoords.push_back(buff);
+            }
+            if (physicalNodes)
+            {
+                ds->GetPoint(minId, coord);
+                if (dimension  == 2)
+                {
+                    format  = "<" + floatFormat + ", "
+                                  + floatFormat + ">";
+                    sprintf(buff, format.c_str(), coord[0], coord[1]);
+                }
+                else
+                {
+                    format  = "<" + floatFormat + ", "
+                                  + floatFormat + ", "
+                                  + floatFormat + ">";
+                    sprintf(buff, format.c_str(), coord[0], coord[1], coord[2]);
+                }
+                pnodeCoords.push_back(buff);
+            }
+            ds->GetPointCells(minId, ids);
+            int nCells = ids->GetNumberOfIds();
+            if (nCells > 0)
+            {
+                vtkUnsignedCharArray *ghostArray = (vtkUnsignedCharArray*)
+                    ds->GetCellData()-> GetArray("avtGhostZones");
+                unsigned char *ghosts = NULL;
+                if (ghostArray)
+                    ghosts = ghostArray->GetPointer(0);
+                int nGhosts = 0;
+                idptr = ids->GetPointer(0);
+                for (int i = 0;i < nCells; i++)
+                {
+                    if (ghosts && ghosts[idptr[i]] > 0)
+                    {
+                        if (includeGhosts)
+                        {
+                            ghostZ.push_back(1);
+                            nGhosts++;
+                        }
+                        else
+                            continue;
+                    }
+                    else if (includeGhosts)
+                    {
+                        ghostZ.push_back(0);
+                    }
+                    zones.push_back(idptr[i]);
+
+                    if (logicalDZones && (type == VTK_STRUCTURED_GRID ||
+                                          type == VTK_RECTILINEAR_GRID))
+                    {
+                        vtkVisItUtility::GetLogicalIndices(ds, true, idptr[i],
+                                              ijk, false);
+                        if (dimension == 2)
+                        {
+                            sprintf(buff, "<%d, %d>", ijk[0], ijk[1]);
+                        }
+                        else
+                        {
+                            sprintf(buff, "<%d, %d, %d>", ijk[0], ijk[1], ijk[2]);
+                        }
+                        dzoneCoords.push_back(buff);
+                    }
+                    if (logicalBZones && (type == VTK_STRUCTURED_GRID ||
+                                          type == VTK_RECTILINEAR_GRID))
+                    {
+                        vtkVisItUtility::GetLogicalIndices(ds, true, idptr[i],
+                                              ijk, true);
+                        if (dimension == 2)
+                        {
+                            sprintf(buff, "<%d, %d>", ijk[0], ijk[1]);
+                        }
+                        else
+                        {
+                            sprintf(buff, "<%d, %d, %d>", ijk[0], ijk[1], ijk[2]);
+                        }
+                        bzoneCoords.push_back(buff);
+                    }
+                    elIsGhost |= (nGhosts == nCells);
+                }
+                rv = true;
+            }
+        } // found valid point
+        ids->Delete();
+        ds->Delete();
+    }
+    return rv;
+}
+
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::AssociateBounds
+//
+//  Purpose:
+//      Calls GetBounds on the dataset one time and associates the information
+//      with the dataset.  This avoids having the routine called repeatedly.
+//
+//  Programmer: Hank Childs
+//  Creation:   July 29, 2003
+//
+// ****************************************************************************
+
+void
+avtGenericDatabase::AssociateBounds(vtkDataSet *ds)
+{
+    double bounds[6];
+    ds->GetBounds(bounds);
+    vtkDoubleArray *arr = vtkDoubleArray::New();
+    arr->SetName("avtOriginalBounds");
+    arr->SetNumberOfTuples(6);
+    for (int i = 0 ; i < 6 ; i++)
+        arr->SetTuple1(i, bounds[i]);
+    ds->GetFieldData()->AddArray(arr);
+    arr->Delete();
+}
+
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::ScaleMesh
+//
+//  Purpose:
+//      Scales the mesh in if it is too big.
+//
+//  Programmer: Hank Childs
+//  Creation:   July 29, 2003
+//
+//  Modifications:
+//
+//    Hank Childs, Tue Dec 16 09:49:13 PST 2003
+//    Improve clarity of warning message.
+//
+//    Hank Childs, Sat Mar 27 11:51:10 PST 2004
+//    Do not let scaling go into an infinite loop.
+//
+//    Hank Childs, Thu Apr 22 07:56:13 PDT 2004
+//    Make sure that all of the dimensions are too big or too small, not just
+//    one of them.
+//
+//    Kathleen Biagas, Tue Aug 21 14:17:12 MST 2012
+//    Preserve coordinate type.
+//
+// ****************************************************************************
+
+void
+avtGenericDatabase::ScaleMesh(vtkDataSet *ds)
+{
+    bool needXScaling = false;
+    bool needYScaling = false;
+    bool needZScaling = false;
+    double scaleFactor = 1.;
+
+    double bounds[6];
+    if (ds->GetFieldData()->GetArray("avtOriginalBounds") != NULL)
+    {
+        vtkDataArray *arr = ds->GetFieldData()->GetArray("avtOriginalBounds");
+        for (int i = 0 ; i < 6 ; i++)
+            bounds[i] = arr->GetTuple1(i);
+    }
+    else
+    {
+        ds->GetBounds(bounds);
+    }
+
+    if (bounds[1] - bounds[0] > 1e8)
+    {
+        scaleFactor = 1.;
+        double temp = bounds[1] - bounds[0];
+        int iterations = 0;
+        while (temp > 1e6 && (iterations++ < 100))
+        {
+            temp /= 10.;
+            scaleFactor *= 10.;
+        }
+        needXScaling = true;
+    }
+    if ((bounds[1] > bounds[0]) && (bounds[1] - bounds[0] < 1e-6))
+    {
+        scaleFactor = 1.;
+        double temp = bounds[1] - bounds[0];
+        int iterations = 0;
+        while (temp < 1e-3 && (iterations++ < 100))
+        {
+            temp *= 10.;
+            scaleFactor /= 10.;
+        }
+        needXScaling = true;
+    }
+    if (bounds[3] - bounds[2] > 1e8)
+    {
+        scaleFactor = 1.;
+        double temp = bounds[3] - bounds[2];
+        int iterations = 0;
+        while (temp > 1e6 && (iterations++ < 100))
+        {
+            temp /= 10.;
+            scaleFactor *= 10.;
+        }
+        needYScaling = true;
+    }
+    if ((bounds[3] > bounds[2]) && (bounds[3] - bounds[2] < 1e-6))
+    {
+        scaleFactor = 1.;
+        double temp = bounds[3] - bounds[2];
+        int iterations = 0;
+        while (temp < 1e-3 && (iterations++ < 100))
+        {
+            temp *= 10.;
+            scaleFactor /= 10.;
+        }
+        needYScaling = true;
+    }
+    if (bounds[5] - bounds[4] > 1e8)
+    {
+        scaleFactor = 1.;
+        double temp = bounds[5] - bounds[4];
+        int iterations = 0;
+        while (temp > 1e6 && (iterations++ < 100))
+        {
+            temp /= 10.;
+            scaleFactor *= 10.;
+        }
+        needZScaling = true;
+    }
+    if ((bounds[5] > bounds[4]) && (bounds[5] - bounds[4] < 1e-6))
+    {
+        scaleFactor = 1.;
+        double temp = bounds[5] - bounds[4];
+        int iterations = 0;
+        while (temp < 1e-3 && (iterations++ < 100))
+        {
+            temp *= 10.;
+            scaleFactor /= 10.;
+        }
+        needZScaling = true;
+    }
+
+    //
+    // If any of the three dimensions don't need to be scaled, then don't
+    // scale.  However, the Z-test is a little tricky, since we might only
+    // have a 2D dataset.
+    //
+    if (!needXScaling || !needYScaling)
+    {
+        return;
+    }
+    if (!needZScaling && (bounds[4] != bounds[5]))
+    {
+        return;
+    }
+
+    static bool haveIssuedWarning = false;
+    if (!haveIssuedWarning)
+    {
+        char msg[1024] = "The spatial extents of the dataset are too large or "
+                         "too small for VisIt to "
+                  "handle natively.  As a result, the dataset is being scaled."
+                  "  This will affect the labels for axes, as well as "
+                  "coordinate arguments, such as the origin for a slice."
+                  "This message will only be issued one time per session, "
+                  "even if additional datasets are scaled.";
+        avtCallback::IssueWarning(msg);
+        haveIssuedWarning = true;
+    }
+
+    int dstype = ds->GetDataObjectType();
+    switch (dstype)
+    {
+      case VTK_STRUCTURED_GRID:
+      case VTK_UNSTRUCTURED_GRID:
+      case VTK_POLY_DATA:
+        {
+            vtkPointSet *ps = (vtkPointSet *) ds;
+            vtkPoints *pts = ps->GetPoints();
+            vtkPoints *newPts = vtkPoints::New(pts->GetDataType());
+            vtkIdType npts = pts->GetNumberOfPoints();
+            newPts->SetNumberOfPoints(npts);
+            if (pts->GetDataType() == VTK_FLOAT)
+            {
+                float *np = (float *) newPts->GetVoidPointer(0);
+                float *p  = (float *) pts->GetVoidPointer(0);
+                int nvals = 3*npts;
+                for (int i = 0 ; i < nvals ; i++)
+                {
+                    np[i] = p[i] / scaleFactor;
+                }
+                ps->SetPoints(newPts);
+                newPts->Delete();
+            }
+            else if (pts->GetDataType() == VTK_DOUBLE)
+            {
+                double *np = (double *) newPts->GetVoidPointer(0);
+                double *p  = (double *) pts->GetVoidPointer(0);
+                int nvals = 3*npts;
+                for (int i = 0 ; i < nvals ; i++)
+                {
+                    np[i] = p[i] / scaleFactor;
+                }
+                ps->SetPoints(newPts);
+                newPts->Delete();
+            }
+            else
+            {
+                for (int i = 0 ; i < npts ; i++)
+                {
+                    double *np = pts->GetPoint(i);
+                    np[0] = np[0] / scaleFactor;
+                    np[1] = np[1] / scaleFactor;
+                    np[2] = np[2] / scaleFactor;
+                    newPts->SetPoint(i, np);
+                }
+                ps->SetPoints(newPts);
+                newPts->Delete();
+            }
+        }
+        break;
+      case VTK_RECTILINEAR_GRID:
+        {
+            vtkRectilinearGrid *rg = (vtkRectilinearGrid *) ds;
+            vtkDataArray *in[3];
+            in[0] = rg->GetXCoordinates();
+            in[1] = rg->GetYCoordinates();
+            in[2] = rg->GetZCoordinates();
+            vtkDataArray *out[3];
+            for (int i = 0 ; i < 3 ; i++)
+            {
+                out[i] = in[i]->NewInstance();
+                int ntuples = in[i]->GetNumberOfTuples();
+                out[i]->SetNumberOfTuples(ntuples);
+                for (int j = 0 ; j < ntuples ; j++)
+                    out[i]->SetTuple1(j, in[i]->GetTuple1(j) / scaleFactor);
+            }
+            rg->SetXCoordinates(out[0]);
+            rg->SetYCoordinates(out[1]);
+            rg->SetZCoordinates(out[2]);
+            out[0]->Delete();
+            out[1]->Delete();
+            out[2]->Delete();
+        }
+        break;
+
+      default:
+        debug1 << "Warning: a mesh should be scaled, but VisIt could not do "
+               << "it because it was an unknown meshtype." << endl;
+    }
+
+    if (ds->GetFieldData()->GetArray("avtOriginalBounds") != NULL)
+    {
+        vtkDataArray *arr = ds->GetFieldData()->GetArray("avtOriginalBounds");
+        for (int i = 0 ; i < 6 ; i++)
+            arr->SetTuple1(i, arr->GetTuple1(i) / scaleFactor);
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::QuerySpecies
+//
+//  Purpose:
+//    Queries the db regarding species var info for a specific cell/s.
+//
+//  Arguments:
+//    varName           The variable on which to retrieve data.
+//    dom               The domain to query.
+//    element           The element to query.
+//    ts                The timestep to query.
+//    incidentElements  The incident elements to query.
+//    varInfo           A place to store the results.
+//    zonePick          Whether or not the pick was a zone pick.
+//
+//  Returns:
+//    True if data was successfully retrieved, false otherwise.
+//
+//  Programmer:   Kathleen Bonnell
+//  Creation:     November 20, 2003
+//
+//  Modifications:
+//    Kathleen Bonnell, Wed Dec 15 08:41:17 PST 2004
+//    Changed 'std::vector<int>' to 'intVector', 'std::vector<std::string>'
+//    to stringVector, 'std::vector<double>' to 'doubleVector'.  Removed
+//    use of 'std::'.
+//
+//    Mark C. Miller, Mon Jan 10 14:06:06 PST 2005
+//    Changed order of retrieval of mesh and variable to get the mesh
+//    first and then the variable. This is so plugin can handle things
+//    like removal of arb-poly zones correctly.
+//
+//    Hank Childs, Thu Mar 10 17:33:17 PST 2005
+//    Fix memory leak.
+//
+//    Mark C. Miller, Tue Apr  5 10:30:16 PDT 2005
+//    Added dummy args for data type conversion for calls to get variable
+//
+//    Kathleen Bonnell, Fri May 13 16:26:41 PDT 2005
+//    Fix memory leak.
+//
+//    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//    Changed dummy args for type conversion to dummy arg for data spec
+// ****************************************************************************
+
+bool
+avtGenericDatabase::QuerySpecies(const string &varName, const int dom,
+                                 const int element, const int ts,
+                                 const intVector &incidentElements,
+                                 PickVarInfo &varInfo, const bool zonePick)
+{
+    const avtSpeciesMetaData *smd = GetMetaData(ts)->GetSpecies(varName);
+    if (!smd)
+    {
+        debug4 << "Querying species var, but could not retrieve"
+               << " meta data!" << endl;
+        return false;
+    }
+
+    //
+    // Retrieve the species sum for the cell/s, if it has not been
+    // retrieved already.
+    //
+    string matName = smd->materialName;
+    string meshname  = GetMetaData(ts)->MeshForVar(varName);
+    // dataRequest is a placeholder for when this information will come from elsewhere
+    avtDataRequest_p dataRequest;
+    vtkDataSet *mesh = GetMesh(meshname.c_str(), ts, dom, matName.c_str(), dataRequest);
+    vtkDataArray *species = GetSpeciesVariable(varName.c_str(), ts, dom,
+                                matName.c_str(), mesh->GetNumberOfCells());
+    mesh->Delete();
+    avtMaterial *mat = GetMaterial(dom, matName.c_str(), ts);
+    avtSpecies *spec = GetSpecies(dom, varName.c_str(), ts);
+
+    if (species == NULL)
+    {
+        debug4 << "Querying species var, but could not retrieve"
+               << " data array!" << endl;
+        return false;
+    }
+    if (mat == NULL)
+    {
+        debug4 << "Querying species var, but could not retrieve"
+               << " avtMaterial!" << endl;
+        return false;
+    }
+    if (spec == NULL)
+    {
+        debug4 << "Querying species var, but could not retrieve"
+               << " avtSpecies!" << endl;
+        return false;
+    }
+
+    doubleVector vals = varInfo.GetValues();
+    stringVector names;
+    char buff[80];
+    size_t i, j, k;
+    varInfo.SetCentering(PickVarInfo::Zonal);
+    bool getVal = (vals.size() == 0);
+
+    if (!zonePick)
+    {
+        // the info we're after is associated with incidentElements
+        for (i = 0; i < incidentElements.size(); i++)
+        {
+            sprintf(buff, "(%d)", incidentElements[i]);
+            names.push_back(buff);
+            if (getVal)
+                vals.push_back(species->GetTuple1(incidentElements[i]));
+        }
+    }
+    else
+    {
+        // the info we're after is associated with element
+        sprintf(buff, "(%d)", element);
+        names.push_back(buff);
+        if (getVal)
+            vals.push_back(species->GetTuple1(element));
+    }
+    species->Delete();
+
+    //
+    // Retrieve the mass fractions for each species within each material
+    //
+
+    intVector    nMats;
+    stringVector matNames;
+    intVector    nSpecs;
+    stringVector specNames;
+    doubleVector massFracs;
+
+    vector<CellMatInfo> matInfo;
+
+    int numMatsThisZone = 0;
+
+    if (zonePick) // zone number is stored in element
+    {
+        if (element < 0 || element >= mat->GetNZones())
+        {
+            debug4 << "CANNOT QUERY SPECIES ZONE IS OUT OF RANGE" << endl;
+            return false;
+        }
+        matInfo = mat->ExtractCellMatInfo(element);
+        for (i = 0; i < matInfo.size(); i++)
+        {
+            int numSpecsThisMat = 0;
+            vector<CellSpecInfo> specInfo;
+            specInfo = spec->ExtractCellSpecInfo(element,matInfo[i].matno,mat);
+            for (j = 0; j < specInfo.size(); j++)
+            {
+                specNames.push_back(specInfo[j].name);
+                massFracs.push_back(specInfo[j].mf);
+                numSpecsThisMat++;
+            }
+            if (specInfo.size() > 0)
+            {
+                matNames.push_back(matInfo[i].name);
+                numMatsThisZone++;
+                nSpecs.push_back(numSpecsThisMat);
+            }
+        }
+        nMats.push_back(numMatsThisZone);
+    }
+    else
+    {
+        bool zonesInRange = true;
+        int nmatzones = mat->GetNZones();
+        for (i = 0; i < incidentElements.size(); i++)
+        {
+            if (incidentElements[i] < 0 || incidentElements[i] >= nmatzones)
+            {
+                zonesInRange = false;
+                break;
+            }
+        }
+        if (!zonesInRange)
+        {
+            debug4 << "CANNOT QUERY MATERIALS ZONE IS OUT OF RANGE" << endl;
+            return false;
+        }
+        for (j = 0; j < incidentElements.size(); j++)
+        {
+            numMatsThisZone = 0;
+            matInfo = mat->ExtractCellMatInfo(incidentElements[j]);
+            for (i = 0; i < matInfo.size(); i++)
+            {
+                int numSpecsThisMat = 0;
+                vector<CellSpecInfo> specInfo;
+                specInfo = spec->ExtractCellSpecInfo(incidentElements[j],
+                    matInfo[i].matno,mat);
+                for (k = 0; k < specInfo.size(); k++)
+                {
+                    specNames.push_back(specInfo[k].name);
+                    massFracs.push_back(specInfo[k].mf);
+                    numSpecsThisMat++;
+                }
+                if (specInfo.size() > 0)
+                {
+                    matNames.push_back(matInfo[i].name);
+                    numMatsThisZone++;
+                    nSpecs.push_back(numSpecsThisMat);
+                }
+            }
+            nMats.push_back(numMatsThisZone);
+        }
+    }
+
+    varInfo.SetNames(names);
+    varInfo.SetValues(vals);
+    varInfo.SetNumMatsPerZone(nMats);
+    varInfo.SetMatNames(matNames);
+    varInfo.SetNumSpecsPerMat(nSpecs);
+    varInfo.SetMixNames(specNames);
+    varInfo.SetMixValues(massFracs);
+
+    if (!nMats.empty())
+        nMats.clear();
+    if (!matNames.empty())
+        matNames.clear();
+    if (!nSpecs.empty())
+        nSpecs.clear();
+    if (!specNames.empty())
+        specNames.clear();
+    if (!massFracs.empty())
+        massFracs.clear();
+
+    return true;
+}
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::FindElementForPoint
+//
+//  Purpose:
+//     Searches for the node (elementName = 'node') closest to the passed
+//     point or the zone (elementName = 'zone') which contains the point.
+//
+//  Returns:
+//      True for successful search, false otherwise.
+//
+//  Arguments:
+//    var       The variable to use in searching the database.
+//    ts        The timestep to use in searching the database.
+//    dom       The domain to use in searching the database.
+//    elType    Specified which type of element (node, zone) to search for.
+//    pt        The point to use in searching the database.
+//    elNum     A place to store the zone or node number associated with the
+//              point pt.
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   November 13, 2003
+//
+//  Modifications:
+//    Kathleen Bonnell, Mon Apr 19 15:49:05 PDT 2004
+//    Ensure that the timestep being queried is the active one.
+//
+//    Hank Childs, Thu Mar 10 17:33:17 PST 2005
+//    Fix memory leak.
+//
+//    Mark C. Miller, Tue Apr  5 10:30:16 PDT 2005
+//    Added dummy args for data type conversion for calls to get variable
+//
+//    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//    Changed dummy args for type conversion to dummy arg for data spec
+//
+//    Burlen Loring Mon Aug  3 12:10:59 PDT 2015
+//    Check for null dataset.
+//
+// ****************************************************************************
+
+bool
+avtGenericDatabase::FindElementForPoint(const char *var, const int ts,
+                        const int dom, const char *elementName,
+                        double pt[3], int &elNum)
+{
+    ActivateTimestep(ts);
+
+    // dataRequest is a placeholder for when this information will come from elsewhere
+    avtDataRequest_p dataRequest;
+    string mesh = GetMetaData(ts)->MeshForVar(var);
+    vtkDataSet *ds = GetMeshDataset(mesh.c_str(), ts, dom, "_all", dataRequest);
+    if (!ds)
+    {
+       debug1 << "Failed to find " << elementName << " in mesh " << mesh
+            << " for point [" << pt[0] << ", " << pt[1] << ", " << pt[2] << "]"
+            << " in domain " << dom << " at timestep " << ts << endl;
+        return false;
+    }
+
+    if (strcmp(elementName, "node") == 0)
+    {
+        elNum = ds->FindPoint(pt);
+    }
+    else if (strcmp(elementName, "zone") == 0)
+    {
+        elNum = vtkVisItUtility::FindCell(ds, pt);
+    }
+    ds->Delete();
+
+    return  (elNum != -1);
+}
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::GetDomainName
+//
+//  Purpose:
+//    Gets a string representing the passed domain.
+//
+//  Arguments:
+//    var       The variable to use in searching the database.
+//    ts        The timestep to use in searching the database.
+//    dom       The domain to use in searching the database.
+//    domName   A place to store the domain name.
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   December 22, 2003
+//
+//    Kathleen Bonnell, Mon Apr 19 15:49:05 PDT 2004
+//    Ensure that the timestep being queried is the active one.
+//
+//    Dave Bremer, Tue Feb 13 11:40:45 PST 2007
+//    Add support for format strings.
+//
+// ****************************************************************************
+
+void
+avtGenericDatabase::GetDomainName(const string &varName, const int ts,
+                                const int dom, string &domName)
+{
+    ActivateTimestep(ts);
+
+    string mesh = GetMetaData(ts)->MeshForVar(varName.c_str());
+    const avtMeshMetaData *mmd = GetMetaData(ts)->GetMesh(mesh);
+    char temp[256];
+    if (mmd)
+    {
+        if (mmd->numBlocks > 1)
+        {
+            if ( mmd->blockNames.size() == 0)
+            {
+                if (strstr(mmd->blockPieceName.c_str(), "%") != NULL)
+                    sprintf(temp, mmd->blockPieceName.c_str(),
+                            dom + mmd->blockOrigin);
+                else
+                    sprintf(temp, "%s %d" , mmd->blockPieceName.c_str(),
+                            dom + mmd->blockOrigin);
+                domName = temp;
+            }
+            else
+            {
+                 sprintf(temp, "%s %s" , mmd->blockPieceName.c_str(),
+                         mmd->blockNames[dom].c_str());
+                 domName = temp;
+            }
+        }
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::QueryCoords
+//
+//  Purpose:
+//    Gets the geometric center of a zone, or node coords.
+//
+//  Arguments:
+//    var       The variable to use in searching the database.
+//    dom       The domain to use in searching the database.
+//    id        The zone or node number to use in searching the database.
+//    ts        The timestep to use in searching the database.
+//    coord     A place to store the zone center.
+//    forZone   Whether to find coords for a zone or a node.
+//
+//  Returns:    True if query is a success, false otherwise.
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   May 25, 2004
+//
+//  Modifications:
+//    Kathleen Bonnell, Thu May 27 17:46:25 PDT 2004
+//    Take ghost zones into account.
+//
+//    Kathleen Bonnell, Thu Jun 10 18:15:11 PDT 2004
+//    Renamed from QueryZoneCenter to QueryCoords, added bool arg.
+//
+//    Hank Childs, Fri Aug 27 16:16:52 PDT 2004
+//    Rename ghost data arrays.
+//
+//    Kathleen Bonnell, Wed Oct 20 17:01:38 PDT 2004
+//    Replaced get-cell-center code with single call to
+//    vtkVisItUtility::GetCellCenter.
+//
+//    Kathleen Bonnell, Wed Dec 15 08:41:17 PST 2004
+//    Removed 'std::' from 'std::string'.
+//    vtkVisItUtility::GetCellCenter.
+//
+//    Kathleen Bonnell, Thu Dec 16 17:11:19 PST 2004
+//    Added bool arg specifying whether the id is global or not, find
+//    local id if so.
+//
+//    Eric Brugger, Wed Dec 29 15:20:37 PST 2004
+//    I added a call to ActivateTimestep to handle changing time steps.
+//
+//    Kathleen Bonnell, Tue Jan 25 07:59:28 PST 2005
+//    Added const char* arg to QueryCoords for meshName, use the meshname
+//    to determine where the coords should come from.
+//
+//    Hank Childs, Thu Mar 10 10:23:02 PST 2005
+//    Fix memory leak.
+//
+//    Mark C. Miller, Tue Apr  5 10:30:16 PDT 2005
+//    Added dummy args for data type conversion for calls to get variable
+//
+//    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//    Changed dummy args for type conversion to dummy arg for data spec
+//
+//    Kathleen Biagas, Tue Sep  9 13:57:55 PDT 2014
+//    Don't take ghost zones into account if they came from DB.
+//
+// ****************************************************************************
+
+bool
+avtGenericDatabase::QueryCoords(const string &varName, const int dom,
+       const int id, const int ts, double coord[3], const bool forZone,
+       const bool useGlobalId, const char *mN)
+{
+    ActivateTimestep(ts);
+
+    int currentid = id;
+    if (useGlobalId)
+    {
+        currentid = LocalIdForGlobal(dom, varName, ts, forZone, id);
+        if (currentid == -1)
+            return false;
+    }
+    avtDatabaseMetaData *md = GetMetaData(ts);
+    string meshName;
+    if (mN == NULL || strcmp(mN, "default") == 0)
+        meshName = md->MeshForVar(varName);
+    else
+        meshName = mN;
+    int ghostType = md->GetContainsGhostZones(meshName);
+    vtkDataSet *ds =  NULL;
+    TRY
+    {
+        // dataRequest is a placeholder for when this information will come
+        // from elsewhere
+        avtDataRequest_p dataRequest;
+        ds = GetMeshDataset(meshName.c_str(), ts, dom, "_all", dataRequest);
+    }
+    CATCH(BadDomainException)
+    {
+        ; // do nothing, possible if domain is not defined on specified mesh.
+    }
+    ENDTRY
+    bool rv = false;
+    if (ds)
+    {
+        if (forZone)
+        {
+            int zone = currentid;
+            if (ds->GetDataObjectType() == VTK_RECTILINEAR_GRID ||
+                ds->GetDataObjectType() == VTK_STRUCTURED_GRID)
+            {
+                if ((ds->GetCellData()->GetArray("avtGhostZones") != NULL) &&
+                    (ghostType != AVT_HAS_GHOSTS))
+                {
+                    int dims[3], ijk[3] = {0, 0, 0};
+                    vtkVisItUtility::GetDimensions(ds, dims);
+                    vtkVisItUtility::GetLogicalIndices(ds, true, zone, ijk, false, false);
+                    vtkIntArray *realDims =
+                        (vtkIntArray*)ds->GetFieldData()->GetArray("avtRealDims");
+                    if (realDims != NULL)
+                    {
+                        ijk[0] += realDims->GetValue(0);
+                        ijk[1] += realDims->GetValue(2);
+                        ijk[2] += realDims->GetValue(4);
+                    }
+                    zone = ijk[0] +
+                           ijk[1] * (dims[0]-1) +
+                           ijk[2] * (dims[0]-1) * (dims[1]-1);
+                }
+            }
+            vtkVisItUtility::GetCellCenter(ds->GetCell(zone), coord);
+            rv = true;
+        }
+        else
+        {
+            int node = currentid;
+            if (ds->GetDataObjectType() == VTK_RECTILINEAR_GRID ||
+                ds->GetDataObjectType() == VTK_STRUCTURED_GRID)
+            {
+                if ((ds->GetCellData()->GetArray("avtGhostZones") != NULL) &&
+                    (ghostType != AVT_HAS_GHOSTS))
+                {
+                    int dims[3], ijk[3] = {0, 0, 0};
+                    vtkVisItUtility::GetDimensions(ds, dims);
+                    vtkVisItUtility::GetLogicalIndices(ds, false, node, ijk,
+                                                       false, false);
+                    vtkIntArray *realDims =
+                        (vtkIntArray*)ds->GetFieldData()->GetArray("avtRealDims");
+                    if (realDims != NULL)
+                    {
+                        ijk[0] += realDims->GetValue(0);
+                        ijk[1] += realDims->GetValue(2);
+                        ijk[2] += realDims->GetValue(4);
+                    }
+                    node = ijk[0] +
+                           ijk[1] * (dims[0]) +
+                           ijk[2] * (dims[0]) * (dims[1]);
+                }
+            }
+            ds->GetPoint(node, coord);
+            rv = true;
+        }
+        ds->Delete();
+    }
+    return rv;
+}
+
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::QueryGlobalIds
+//
+//  Purpose:
+//    Given an element id, and a list of incident elements, find corresponding
+//    global ids.
+//
+//  Arguments:
+//    dom       The domain to use in searching the database.
+//    var       The variable to use in searching the database.
+//    ts        The timestep to use in searching the database.
+//    zonal     Whether the element is a zonal or nodal id.
+//    element   The zone or node number to use in searching the database.
+//    incEls    A list of nodes/zone incident to element.
+//    globalElement   A place to store the global element.
+//    globalIncEls    A place to store the global incident elements.
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   December 15, 2004
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtGenericDatabase::QueryGlobalIds(const int dom, const string &var, const int ts,
+                                   const bool zonal, const int element,
+                                   const intVector &incEls, int &globalElement,
+                                    intVector &globalIncEls)
+{
+    vtkIntArray *globalZones =
+        (vtkIntArray*)GetGlobalZoneIds(dom, var.c_str(), ts);
+    vtkIntArray *globalNodes =
+        (vtkIntArray*)GetGlobalNodeIds(dom, var.c_str(), ts);
+
+    globalElement = -1;
+    if (!globalIncEls.empty())
+        globalIncEls.clear();
+
+    if (zonal)
+    {
+        if (globalZones)
+            globalElement = globalZones->GetValue(element);
+        if (globalNodes)
+            for (size_t i = 0; i < incEls.size(); i++)
+                globalIncEls.push_back(globalNodes->GetValue(incEls[i]));
+    }
+    else
+    {
+        if (globalNodes)
+            globalElement = globalNodes->GetValue(element);
+        if (globalZones)
+            for (size_t i = 0; i < incEls.size(); i++)
+                globalIncEls.push_back(globalZones->GetValue(incEls[i]));
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::LocalIdForGlobal
+//
+//  Purpose:
+//    Given an element id, and a list of incident elements, find corresponding
+//    global ids.
+//
+//  Returns:    The element whose global counterpart is globalElement.
+//
+//  Arguments:
+//    dom       The domain to use in searching the database.
+//    var       The variable to use in searching the database.
+//    ts        The timestep to use in searching the database.
+//    zonal     Whether the element is a zonal or nodal id.
+//    globalElement   A place to store the global element.
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   December 15, 2004
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+int
+avtGenericDatabase::LocalIdForGlobal(const int dom, const string &var,
+    const int ts, const bool zonal, const int globalElement)
+{
+    int retVal = -1;
+
+    vtkIntArray *globalIds = NULL;
+    if (zonal)
+    {
+        globalIds = (vtkIntArray*)GetGlobalZoneIds(dom, var.c_str(), ts);
+    }
+    else
+    {
+        globalIds = (vtkIntArray*)GetGlobalNodeIds(dom, var.c_str(), ts);
+    }
+
+    if (globalIds)
+    {
+        int n = globalIds->GetNumberOfTuples();
+        int *g = globalIds->GetPointer(0);
+        for (int i = 0; i < n && retVal == -1; i++)
+        {
+            retVal = (g[i] == globalElement ? i : -1);
+        }
+    }
+    return retVal;
+}
+
+
+// ****************************************************************************
+//  Function: GetOriginalVariableName
+//
+//  Purpose:
+//      Gets the original variable name from the variable name being used
+//      outside the database (this translation is necessary for expressions).
+//      It is not known whether this is a scalar, vector, etc.
+//
+//  Programmer: Hank Childs
+//  Creation:   February 15, 2005
+//
+// ****************************************************************************
+
+static const char *
+GetOriginalVariableName(const avtDatabaseMetaData *md, const char *varname)
+{
+    const avtScalarMetaData *smd = md->GetScalar(varname);
+    if (smd != NULL)
+    {
+        if (smd->originalName != smd->name && smd->originalName != "")
+            return smd->originalName.c_str();
+        return varname;
+    }
+
+    const avtVectorMetaData *vmd = md->GetVector(varname);
+    if (vmd != NULL)
+    {
+        if (vmd->originalName != vmd->name && vmd->originalName != "")
+            return vmd->originalName.c_str();
+        return varname;
+    }
+
+    const avtTensorMetaData *tmd = md->GetTensor(varname);
+    if (tmd != NULL)
+    {
+        if (tmd->originalName != tmd->name && tmd->originalName != "")
+            return tmd->originalName.c_str();
+        return varname;
+    }
+
+    const avtSymmetricTensorMetaData *stmd = md->GetSymmTensor(varname);
+    if (stmd != NULL)
+    {
+        if (stmd->originalName != stmd->name && stmd->originalName != "")
+            return stmd->originalName.c_str();
+        return varname;
+    }
+
+    const avtMaterialMetaData *matmd = md->GetMaterial(varname);
+    if (matmd != NULL)
+    {
+        if (matmd->originalName != matmd->name && matmd->originalName != "")
+            return matmd->originalName.c_str();
+        return varname;
+    }
+
+    const avtMeshMetaData *meshmd = md->GetMesh(varname);
+    if (meshmd != NULL)
+    {
+        if (meshmd->originalName != meshmd->name && meshmd->originalName != "")
+            return meshmd->originalName.c_str();
+        return varname;
+    }
+
+    const avtCurveMetaData *cmd = md->GetCurve(varname);
+    if (cmd != NULL)
+    {
+        if (cmd->originalName != cmd->name && cmd->originalName != "")
+            return cmd->originalName.c_str();
+        return varname;
+    }
+
+    return varname;
+}
+
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::CreateAMRIndices
+//
+//  Purpose:
+//    Create an array containing AMR indexing information that allow
+//    translation between the requested level and the level of each dataset.
+//
+//  Arguments:
+//      ds        The dataset collection.
+//      domains   Domain numbers associated with the datasets.
+//      spec      The Data specification.
+//      src       The source object.
+//      level     The requested level.
+//
+//  Programmer:   Kathleen Bonnell
+//  Creation:     June 20, 2007
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtGenericDatabase::CreateAMRIndices(avtDatasetCollection &dsc,
+                                     intVector &domains,
+                                     avtDataRequest_p &spec,
+                                     avtSourceFromDatabase *src, int level)
+{
+    char  progressString[1024] = "Creating AMR Indices";
+    src->DatabaseProgress(0, 0, progressString);
+
+    int ts = spec->GetTimestep();
+    avtDatabaseMetaData *md = GetMetaData(ts);
+    string meshname = md->MeshForVar(spec->GetVariable());
+
+    void_ref_ptr vr = cache.GetVoidRef(meshname.c_str(),
+                                   AUXILIARY_DATA_DOMAIN_NESTING_INFORMATION,
+                                   ts, -1);
+    if (*vr == NULL)
+        vr = cache.GetVoidRef("any_mesh",
+                              AUXILIARY_DATA_DOMAIN_NESTING_INFORMATION,
+                              ts, -1);
+
+    if (*vr == NULL)
+    {
+        debug1 << "avtGenericDatabase could not create AMR Indices as "
+               << "requested because the DomainNesting object could not "
+               << "be retrieved." << endl;
+        return;
+    }
+
+    avtDomainNesting *dn = (avtDomainNesting*)*vr;
+
+    for (int i = 0; i < dsc.GetNDomains(); i++)
+    {
+        intVector rv = dn->GetRatiosForLevel(level, domains[i]);
+        vtkDataSet *ds = dsc.GetDataset(i, 0);
+        if(ds == NULL)
+        {
+            debug1 << "Requested AMR indices for NULL mesh." << endl;
+            continue;
+        }
+        vtkIntArray *amrDims = vtkIntArray::New();
+        amrDims->SetNumberOfTuples(rv.size());
+        for (size_t j = 0; j < rv.size(); j++)
+        {
+            amrDims->SetValue(j, rv[j]);
+        }
+        amrDims->SetName("avtAMRDimensions");
+        ds->GetFieldData()->AddArray(amrDims);
+        amrDims->Delete();
+        AddOriginalCellsArray(ds, -1);
+        src->DatabaseProgress(i, dsc.GetNDomains(), progressString);
+    }
+    src->DatabaseProgress(1, 0, progressString);
+}
+
+
+// ****************************************************************************
+// Method:  avtGenericDatabase::SetStrictMode
+//
+// Purpose:
+//   Enabled strict file reading mode.
+//
+// Arguments:
+//   strictMode   true to enable extra error checking
+//
+// Programmer:  Jeremy Meredith
+// Creation:    January  8, 2010
+//
+// ****************************************************************************
+void
+avtGenericDatabase::SetStrictMode(bool strictMode)
+{
+    if (Interface)
+        Interface->SetStrictMode(strictMode);
+}
+
+//****************************************************************************
+// Method:  avtGenericDatabase::SetIsEnsemble
+//
+// Programmer:  Dave Pugmire
+// Creation:    February 11, 2013
+//
+// Modifications:
+//
+//****************************************************************************
+
+void
+avtGenericDatabase::SetIsEnsemble(bool v)
+{
+    if (Interface)
+        Interface->SetIsEnsemble(v);
+}

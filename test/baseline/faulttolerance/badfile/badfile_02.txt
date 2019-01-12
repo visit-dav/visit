@@ -1,0 +1,12 @@
+VisIt could not read from the file "VISIT_TOP_DIR/test/junk.vtk".
+
+The generated error message was:
+
+There was an error opening VISIT_TOP_DIR/test/junk.vtk. It may be an invalid file.
+VisIt tried using the following file format readers to open the file: VTK, Silo
+
+If you know the specific format reader VisIt should use to
+read this data, you can use Open As... (GUI) or
+'-o <file>,<plugin> (CL arg.) and identify that specific reader
+for VisIt to try. This will possibly give more information on
+the exact error.

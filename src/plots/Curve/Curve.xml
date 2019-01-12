@@ -1,0 +1,174 @@
+<?xml version="1.0"?>
+  <Plugin name="Curve" type="plot" label="Curve" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" vartype="curve" iconFile="Curve.xpm">
+    <CXXFLAGS>
+      ${GLEW_INCLUDE_DIR}
+    </CXXFLAGS>
+    <Files components="V">
+      avtCurveFilter.C
+      avtCurveMapper.C
+      avtPolarToCartesianFilter.C
+      vtkCurveMapper.C
+    </Files>
+    <Files components="E">
+      avtCurveFilter.C
+      avtCurveMapper.C
+      avtPolarToCartesianFilter.C
+      vtkCurveMapper.C
+    </Files>
+    <Attribute name="CurveAttributes" purpose="Attributes for the xy plot" persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="CurveAttributes.code">
+      <Enum name="CurveColor">
+        Cycle
+        Custom
+      </Enum>
+      <Enum name="FillMode">
+        Static
+        Dynamic
+      </Enum>
+      <Enum name="SymbolTypes">
+        Point
+        TriangleUp
+        TriangleDown
+        Square
+        Circle
+        Plus
+        X
+      </Enum>
+      <Enum name="CurveFillMode">
+        NoFill
+        Solid
+        HorizontalGradient
+        VerticalGradient
+      </Enum>
+      <Enum name="PolarCoordinateOrder">
+        R_Theta
+        Theta_R
+      </Enum>
+      <Enum name="AngleUnits">
+        Radians
+        Degrees
+      </Enum>
+      <Field name="showLines" label="showLines" type="bool">
+        true
+      </Field>
+      <Field name="lineWidth" label="Line Width" type="linewidth" enabler="showLines:true">
+        0
+      </Field>
+      <Field name="showPoints" label="showPoints" type="bool">
+        false
+      </Field>
+      <Field name="symbol" label="Symbol" type="enum" subtype="SymbolTypes">
+        Point
+      </Field>
+      <Field name="pointSize" label="pointSize" type="double" enabler="showPoints:true">
+        5.000000
+      </Field>
+      <Field name="pointFillMode" label="pointFillMode" type="enum" subtype="FillMode" enabler="showPoints:true">
+        Static
+      </Field>
+      <Field name="pointStride" label="pointStride" type="int" enabler="pointFillMode:Static">
+        1
+      </Field>
+      <Field name="symbolDensity" label="Symbol density" type="int" enabler="pointFillMode:Dynamic">
+        50
+      </Field>
+      <Field name="curveColorSource" label="Curve color" type="enum" subtype="CurveColor">
+        Cycle
+      </Field>
+      <Field name="curveColor" label="Color" type="color" length="4">
+        0
+        0
+        0
+        255
+      </Field>
+      <Field name="showLegend" label="Legend" type="bool">
+        true
+      </Field>
+      <Field name="showLabels" label="Labels" type="bool">
+        true
+      </Field>
+      <Field name="designator" label="Designator" type="string">
+      </Field>
+      <Field name="doBallTimeCue" label="Do Ball Time Cue" type="bool">
+        false
+      </Field>
+      <Field name="ballTimeCueColor" label="Ball Time Cue Color" type="color" length="4" enabler="doBallTimeCue:true">
+        0
+        0
+        0
+        255
+      </Field>
+      <Field name="timeCueBallSize" label="Time Cue Ball Size" type="double" enabler="doBallTimeCue:true">
+        0.010000
+      </Field>
+      <Field name="doLineTimeCue" label="Do Line Time Curve" type="bool">
+        false
+      </Field>
+      <Field name="lineTimeCueColor" label="Line Time Cue Color" type="color" length="4" enabler="doLineTimeCue:true">
+        0
+        0
+        0
+        255
+      </Field>
+      <Field name="lineTimeCueWidth" label="Line Time Cue Width" type="int" enabler="doLineTimeCue:true">
+        0
+      </Field>
+      <Field name="doCropTimeCue" label="Crop For Time Cue" type="bool">
+        false
+      </Field>
+      <Field name="timeForTimeCue" label="timeForTimeCue" type="double">
+        0.000000
+      </Field>
+      <Field name="fillMode" label="Fill Mode" type="enum" subtype="CurveFillMode">
+        NoFill
+      </Field>
+      <Field name="fillColor1" label="Color" type="color" length="4">
+        255
+        0
+        0
+        255
+      </Field>
+      <Field name="fillColor2" label="Color" type="color" length="4">
+        255
+        100
+        100
+        255
+      </Field>
+      <Field name="polarToCartesian" label="Polar to Cartesian" type="bool">
+        false
+      </Field>
+      <Field name="polarCoordinateOrder" label="Polar Coordinate Order" type="enum" subtype="PolarCoordinateOrder" enabler="polarToCartesian:true">
+        R_Theta
+      </Field>
+      <Field name="angleUnits" label="Angle Units" type="enum" subtype="AngleUnits" enabler="polarToCartesian:true">
+        Radians
+      </Field>
+      <Function name="CopyAttributes" user="false" member="true">
+      </Function>
+      <Function name="CreateCompatible" user="false" member="true">
+      </Function>
+      <Function name="ChangesRequireRecalculation" user="true" member="true">
+      </Function>
+      <Function name="ProcessOldVersions" user="true" member="true" access="private">
+      </Function>
+      <Function name="CurveViewerEnginePluginInfo::InitializeGlobalObjects" user="false" member="true">
+      </Function>
+      <Function name="CurveViewerEnginePluginInfo::InitializePlotAtts" user="false" member="true">
+      </Function>
+      <Function name="CurveViewerEnginePluginInfo::SetColor" user="true" member="true" access="private">
+      </Function>
+      <Function name="CurveViewerEnginePluginInfo::PermitsCurveViewScaling" user="false" member="true">
+      </Function>
+      <Function name="CurveViewerEnginePluginInfo::SupportsAnimation" user="false" member="true">
+      </Function>
+      <Function name="CurveViewerEnginePluginInfo::AnimationReset" user="false" member="true">
+      </Function>
+      <Function name="CurveViewerEnginePluginInfo::AnimationStep" user="false" member="true">
+      </Function>
+      <Include file="source" quoted="false">
+        Line.h
+      </Include>
+      <Include file="header" quoted="false">
+        visitstream.h
+      </Include>
+    </Attribute>
+  </Plugin>

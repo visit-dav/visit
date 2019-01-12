@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+  <Plugin name="IDX" type="database" label="IDX files" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" dbtype="MTMD" haswriter="false" hasoptions="true" filePatternsStrict="true" opensWholeDirectory="false">
+    <CXXFLAGS>
+      ${VISUS_INCLUDE_DIR}
+      ${VISIT_INCLUDE_DIR}/avt/View
+    </CXXFLAGS>
+    <LDFLAGS>
+      ${VISUS_LIBRARY_DIR}
+    </LDFLAGS>
+    <LIBS>
+      avtview
+      ${VISUS_LIBRARIES}
+    </LIBS>
+    <FilePatterns>
+      *.idx *.midx *.gidx
+    </FilePatterns>
+    <Attribute name="" purpose="" persistent="true" keyframe="true" exportAPI="" exportInclude="">
+    </Attribute>
+  </Plugin>

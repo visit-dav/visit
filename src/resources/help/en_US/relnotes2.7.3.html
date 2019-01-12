@@ -1,0 +1,78 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta http-equiv="Content-Language" content="en-us">
+   <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+   <meta name="ProgId" content="FrontPage.Editor.Document">
+   <title>VisIt 2.7.3 Release Notes</title>
+</head>
+<body>
+
+<center><b><font size="6">VisIt 2.7.3 Release Notes</font></b></center>
+
+<p>Welcome to VisIt's release notes page. Release 2.7.3 is primarily a
+bug fix release to release 2.7. It fixes additional bugs in release
+2.7.  Look <a href="relnotes2.7.0.html">here</a> to see a complete
+list of changes in release 2.7.</p>
+
+<p><b><font size="4">Configuration changes in version 2.7.3</font></b></p>
+<ul>
+<li>The partition was changed from "pbatch" to "pgpu" for the "parallel pgpu" launch profile for LLNL's <i>max</i> system.</li>
+<li>The default bank was changed from "bdivp" to "bbronze" for all the hosts in the <i>LLNL closed network</i> configuration.</li>
+<li>The default launch profile was changed to "serial" for LLNL's <i>muir</i> and <i>graph</i> systems.</li>
+<li>The "parallel views" launch profile was replaced with the "parallel interactive pdebug" launch profile for LLNL's <i>muir</i> system.</li>
+<li>The VisIt installations that used the CHAOS operating system at LLNL were modified so that they use an older version of the NVIDIA driver that works properly with the desktop systems at LLNL.</li>
+<li>The gateway host was changed to red-wtrw.lanl.gov in the host profile for LANL's <i>cielo</i> system since the old gateway cluster was retired.</li>
+<li>A host profile was added for LLNL's <i>zindev</i> system.</li>
+<li>Host profiles were added for the Swiss National Supercomputing Center's <i>rosa</i> and <i>daint</i> systems.</li>
+</ul>
+
+<p><b><font size="4">Bugs fixed in version 2.7.3</font></b></p>
+<ul>
+<li>Fixed a bug with ray-casted volume plots where it wouldn't correctly parse a compound variable (eg <i>"earth/water/temperature"</i>) when in log-scale mode (<a href="https://visitbugs.ornl.gov/issues/1778">ticket #1778</a>).</li>
+<li>Fixed a bug with command recording for Time picks that resulted in an empty 'time_options' argument (<a href="https://visitbugs.ornl.gov/issues/1778">ticket #1780</a>).</li>
+<li>Fixed a failure with Pick and Query from the CLI with a single non-default variable specified in 'vars' argument (<a href="https://visitbugs.ornl.gov/issues/1778">ticket #1784</a>).</li>
+<li>Fixed a bug that could crash the engine or deliver bad results when Index Select operator applied to a Contour plot (<a href="https://visitbugs.ornl.gov/issues/1462">ticket #1462</a>).</li>
+<li>Fixed host-profile creation on Windows to include full 'host.domain' as host Alias.</li>
+<li>Fixed a bug in the Chombo reader that prevented the AMRStitchCell operator to work on 2D datasets. Corrected an error message in AMRStitchCell operator.</li>
+<li>Fixed a bug in saving multiple lineout curves.</li>
+<li>The internal launcher was modified so that VisIt would work on systems where the OpenGL libraries were located in the LD_LIBRARY_PATH.</li>
+<li>The VisItSetMPICommunicator() function in libsim was fixed.</li>
+<li>The Datalevel comparison wizard was fixed so that it doesn't create expressions with nested <>.</li>
+<li>Fixed a bug with the Pseudocolor plot not using the correct data extents when Material selection was applied and the data limits were based on the current plot.</li>
+<li>The <i>GetProcessAttributes()</i> function, which returns information about the engine or viewer, was not updating the returned values when called multiple times for the compute engine.</li>
+<li>In build_visit, the CONFIG_SITE env var was cleared to avoid third party lib installs using a lib64 directory style.</li>
+<li>Fixed a problem where SIL selection for 1D, wedge meshes didn't work properly.</li>
+</ul>
+
+<p><b><font size="4">Enhancements in version 2.7.3</font></b></p>
+<ul>
+<li>It is now possible to specify an initial frame value when creating images via the movie wizard or the command line option -movie. This allows starting the series at an initial frame instead of frame 0. This option can be specified in the movie wizard on the "Chose Length" page or with the command line argument "-frame value". </li>
+<li>In zoom mode for 2D and 3D views the shift left mouse will now pan, a simple left mouse will continue to rectangular rubber band zoom and a ctrl left mouse will unzoom.  The shift left mouse pan action matches the Navigate2D/3D mode for panning. Previously in zoom mode the shift left would create a square zoom and was not used heavily.</li>
+<li>Several enhancements were made to the BOUT++ reader. They include:
+  <ul>
+    <li>The absolute value of the variable is displayed when displaying a variable on the diverter.</li>
+    <li>The grid above the upper X point is not displayed in a two X point grid.</li>
+    <li>The entire lower diverter is now displayed. You can use the subset window to eliminate portions of the lower diverter if you want to do so.</li>
+    <li>The upper diverter is now displayed in a two X point grid.</li>
+  </ul>
+</li>
+<li>The multi-pass discretization of CSG meshes was enhanced so that it now supports a maximum of 512 boundaries per region instead of 512 boundaries in the entire mesh.</li>
+<li>The VisIt executables available on the web site for Mac OS X, Redhat Enterprise Linux 6 and Ubuntu 11.04 now contain support for ADIOS.</li>
+<li>Build_visit builds ADIOS on a larger range of platforms.</li>
+<li>An ellipsoid slice operator was added.</li>
+</ul>
+
+<a name="Dev_changes"></a>
+<p><b><font size="4">Changes for VisIt developers in version 2.7.3</font></b></p>
+<ul>
+<li>A compile bug with nek5000 thirdparty jl library support using xlC compiler was fixed.</li>
+</ul>
+
+
+<p>Click the following link to view the release notes for the previous
+version of VisIt: <a href="relnotes2.7.2.html">VisIt 2.7.2 Release Notes</a>.</p>
+
+</body>
+</html>

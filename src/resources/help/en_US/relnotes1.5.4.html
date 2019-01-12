@@ -1,0 +1,133 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta http-equiv="Content-Language" content="en-us">
+   <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+   <meta name="ProgId" content="FrontPage.Editor.Document">
+   <title>VisIt 1.5.4 Release Notes</title>
+</head>
+<body>
+
+<center><b><font size="6">VisIt 1.5.4 Release Notes</font></b></center>
+
+<p>Welcome to VisIt's release notes page. This page describes the important
+enhancements and bug-fixes that were added to this release.</p>
+<p><b><font size="4">Features added in version 1.5.4</font></b></p>
+<ul>
+<li>This version of VisIt provides a new manual called: <u> <i>Getting Data Into VisIt</i></u>. 
+The new manual explains&nbsp; how to get data into VisIt using three main 
+approaches:<ul>
+<li>Writing data to existing file formats that VisIt can read (BOV, Silo, and 
+VTK file formats).</li>
+<li>Writing a new database reader plug-in for your data file format.</li>
+<li>Using VisIt's libsim library to instrument a simulation code so VisIt can 
+directly access data from its memory without the need to write files.</li>
+</ul>
+</li>
+<li>VisIt's scalable rendering mode has been enhanced so that it can support stereo rendering.</li>
+<li>VisIt has been enhanced to support several line scan queries (such as a chord
+length distribution) that allow 
+you to produce characteristic functions describing a data set's shape.</li>
+<li>VisIt now supports <i>enumerated scalars</i>. Enumerated scalars are scalars that contain ranges of values that are mapped to named bins that can be used for subsetting. Molecular datasets employ enumerated scalars to associate atomic number with the set of  element 
+names. Enumerated scalars appear in the <b>Subset window</b> and can be used to 
+implicitly threshold values from a scalar variable using the names of the bins instead of the 
+actual scalar values associated with those bins.</li>
+<li>VisIt's <b>File menu</b> now contains an <b>Open file</b> option that allows 
+you to select and open a file to visualize. In addition, the new <b>Open file</b> 
+option allows you to select which database reader plug-in should be used to open 
+the file, which makes VisIt less dependent on file extensions for selecting an 
+appropriate database reader plug-in. With the addition of the <b>Open file</b> 
+option in the <b>File menu</b>, it is now feasible to hide the <b>File panel</b> 
+all of the time using the <b>Preferences window</b>.</li>
+<li>VisIt now provides a Replicate operator that can be used to replicate datasets along any or all of three direction vectors, making it easy to repeat periodic data such as molecules that make up a crystal. It is possible to specify the direction vectors in a file format's mesh metadata and it is also possible to 
+override those direction vectors in the <b>Replicate Operator attributes window</b>. 
+The window also allows you to control how many copies of the data will be 
+created along each of the three dimension vectors.</li>
+<li>VisIt's <b>Main window</b> has been improved so it contains two splitters that allow you to resize the amount of the 
+<b>Main window</b> that is devoted to the <b>File panel</b>, <b>Plot list</b>, and 
+<b>Notepad</b> <b>area</b>.</li>
+<li>VisIt's <b>Main window </b>can now be resized and positioned interactively and with the 
+<i>-geometry</i> command line flag. VisIt will remember the size and location of the 
+<b>Main window</b> for future VisIt sessions if you save your settings. This feature has been added to make VisIt easier to use on large displays.</li>
+<li>VisIt's expression language has been extended so that it can operate on curve variables.</li>
+<li>It is now possible to access curve data from lineouts from Python using the new 
+<i>GetOutputArray</i> function. Using the <i>GetOutputArray</i> function simplifies Python-based data analysis scripts since it makes curve data available in Python without having to 
+first save the curves in a visualization window and read the resulting curve file.</li>
+<li>VisIt now includes an <i>Expected value</i> query that calculates the integral of x*f(x)dx.</li>
+<li>VisIt's LLNL host profiles now include a batch profile for submitting to the Purple machine's visualization nodes. This enables VisIt to take priority over batch jobs running on the visualization nodes.</li>
+<li>VisIt's Clip operator has been extended so it works on any type of polygonal, line, or point data. This makes it possible to use the Clip operator to remove regions of point meshes, Molecule plots, or surfaces.</li>
+<li>VisIt can now scale glyphs from Vector plots when in <i>Fullframe</i> mode so the vector 
+glyphs have the correct scale relative to the <i>Fullframe</i> mode scaling.</li>
+<li>VisIt now provides a CreateBonds operator that allows you to to connect sets of atoms into  molecular structures. The CreateBonds operator allows you to pick any number of atomic pairs and 
+set the distance tolerances that are used to create bonds between them. The <b>CreateBonds 
+Operator attributes window </b>uses a novel Periodic Chart widget to simplify 
+the process of&nbsp; picking pairs of element types.</li>
+<li>The data model used for VisIt's Molecule plot has been changed so that it is 
+now possible to have data that is centered on the atomic bonds as well as data 
+centered on the atoms.</li>
+<li>VisIt's FVCOM database reader plug-in has been extended to support reading the multi-domain FVCOM file format, making it possible to use VisIt to 
+analyze datasets generated using parallel FVCOM.</li>
+<li>VisIt has  new database reader plug-ins that can read the CTRL and VASP molecular file formats.</li>
+<li>VisIt has a new database reader plug-in that can read 2D and 3D image data from NASA's FITS file format. The FITS file format is used to 
+store data from astronomical observations as well as simulated data.</li>
+<li>VisIt has a new database reader plug-in that can read 3D volumetric data from the Vis5D file format, 
+which is a format popular in the climate modeling community.</li>
+<li>VisIt has a new database reader plug-in that can read GGCM files.</li>
+<li>VisIt has a new database reader plug-in that can read OpenFOAM files.</li>
+<li>VisIt has a new database reader plug-in that can read Fluent files.</li>
+<li>VisIt has a new database reader plug-in that can read MM5 files.</li>
+</ul>
+<p><b><font size="4">Bugs fixed in version 1.5.4</font></b></p>
+<ul>
+<li>Lineout produced bad results due to a faulty VTK module for calculating the intersections of a line 
+with the cells in a plot. The faulty module has been replaced by a faster, better version that produced the correct lineout results.</li>
+<li>Pick sometimes returns the wrong values for array variables.</li>
+<li>VisIt's launcher scripts used to write to the <i>/tmp</i> directory, making it impossible to launch VisIt on diskless MacOS X computers where the <i>/tmp</i> directory 
+is read-only.</li>
+<li>VisIt's launcher scripts use a form of the <i>tail</i> command that prevents them from working on MacOS X systems where <i>tail</i> is a newer version provided by the fink project.</li>
+<li>The Windows version of VisIt hangs at 12% on startup due to some faulty code that treated IP addresses as null-terminated strings.</li>
+<li>The Revolve operator contained a memory overrun that caused VisIt's compute engine to crash on the Windows platform.</li>
+<li>Plotting scalar expressions after applying operators that use non-scalar secondary variables causes a problem in VisIt's visualization pipeline.</li>
+<li>Silex crashes when it is given a command line argument specifying the name 
+of a file that it cannot open.</li>
+<li>Dynamic lineout gets confused when multiple time-varying databases are used because it 
+sometimes uses the wrong time slider.</li>
+<li>Pick fails to find the zone that was picked when the zone is 2D but non-planar.</li>
+<li>VisIt's Clip operator crashes the compute engine when no clip planes are enabled.</li>
+<li>Pick does not work on Contour plots and sometimes pick markers are added in seemingly random locations.</li>
+<li>Query over time cannot finish for long execution times because the compute engine times out due to perceived inactivity.</li>
+<li>VisIt's Resample operator does not check its inputs carefully. When a negative number of samples is used, the operator tries to use that number for the number of samples and the compute engine crashes.</li>
+<li>VisIt does not handle ghost zones for very small Silo datasets that have 2 domains, each with one zone.</li>
+<li>VisIt can no longer open Wavefront OBJ files.</li>
+<li>VisIt's ThreeSlice operator no longer works.</li>
+<li>Red-Blue stereo rendering does not work in parallel in scalable rendering 
+mode.</li>
+<li>VisIt's Silo database reader plug-in does not successfully populate I/O information when the first mesh is a CSG mesh.</li>
+<li>VisIt's expression language parser does not rigorously check the number of expected arguments for expression functions, causing the compute engine to fail when processing a malformed expression definition.</li>
+<li>The host profile for the ICE machine no longer works.</li>
+<li>VisIt's VTK database reader plug-in can not read binary VTK XML files.</li>
+<li>Domain decomposed KullLite files do not expose the <i>"density"</i> variable.</li>
+<li>The variable menu in the <b>Displace Operator attributes window</b> can malfunction if you ever choose a variable that is not the <i>"default"</i> variable.</li>
+<li>VisIt's EnSight database reader plug-in only exposes 1 time state from files that have many time states.</li>
+<li>The DeferExpression operator is not available in the Windows version of VisIt.</li>
+<li>VisIt's plot variable menus are not updated for files that have metadata 
+which varies over time.</li>
+<li>Certain VTK include directories are missing from the binary VisIt distributions. This prevents plug-in development against installed versions of VisIt.</li>
+<li>When using the Python interface to control image and line annotations, the changes made to those objects do not take immediate effect as they should.</li>
+<li>VisIt issues a warning message for invalid material 0.</li>
+<li>The <b>Apply operators and selection to all plots</b> check box can sometimes be covered up by the 
+<b>Notepad area</b> in VisIt's <b>Main window</b>.</li>
+<li>VisIt's <i>2D area</i> query issues a misleading error message when applied to a plot that yielded no geometry.</li>
+<li>The text in the Curve plot's legend was being drawn in white, making it impossible to see against the default white background in the visualization window.</li>
+<li>VisIt's support for arbitrary polyhedra is improved; it is faster for vector plots and does a better job of calculating their external faces.</li>
+<li>The Mili database reader is now built on Thunder.</li>
+<li>The Chombo database reader has been improved.</li>
+<li>The EnSight database reader has been improved to better handle time sequences.</li>
+</ul>
+<p>Click the following link to view the release notes for the previous version
+of VisIt: <a href="relnotes1.5.3.html">VisIt 1.5.3 Release Notes</a>.</p>
+<p>Click the following link to view the release notes for the next version
+of VisIt: <a href="relnotes1.5.5.html">VisIt 1.5.5 Release Notes</a>.</p>
+</body>
+</html>

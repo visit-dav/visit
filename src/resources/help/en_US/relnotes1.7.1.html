@@ -1,0 +1,32 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta http-equiv="Content-Language" content="en-us">
+   <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+   <meta name="ProgId" content="FrontPage.Editor.Document">
+   <title>VisIt 1.7.1 Release Notes</title>
+</head>
+<body>
+
+<center><b><font size="6">VisIt 1.7.1 Release Notes</font></b></center>
+
+<p>Welcome to VisIt's release notes page. Release 1.7.1 is primarily a bug fix release to release 1.7.  Look <a href="relnotes1.7.html">here</a> to see a complete list of bugs fixed in release 1.7.</p>
+<p><b><font size="4">Bugs fixed in version 1.7.1</font></b></p>
+<ul>
+<li>The slice operator's project feature was not correctly projecting the slice to the plane Z=0.  This bug was exhibited only with data sets that had very large spatial extents.</li>
+<li>Apply either the Displace operator or Transform operator followed by the Box operator would sometimes result in missing data.</li>
+<li>The Chombo reader used 32-bit integer arithmetic to calculate start offsets for boxes/patches, which would result in errors when loading large files. Calculations now use 64-bit integer arithmetic.
+<li>The plugin manager was incorrectly loading non-plugin files in some cases.</li>
+<li>The modules for the Java client have been updated to reflect changes made in release 1.7.</li>
+<li>Valid printf-style format strings for Label plot and Queries were incorrectly being deemed invalid on Mac.</li>
+<li>Extents trees were temporarily disabled in Silo plugin to work around issue with Ale3d data files.</li>
+<li>The Nek3D reader was enhanced to handle parallel, ascii, and 2D variants of the format.</li>
+<li>The SAS reader was enhanced to expose variables for assembly type and id.</li>
+<li>A bug manifesting as a C++ runtime error was fixed for the windows version.</li>
+<li>The NZQH gradient was modified to avoid precision errors on AIX.</li>
+</ul>
+<p>Click the following link to view the release notes for the next version
+of VisIt: <a href="relnotes1.8.0.html">VisIt 1.8.0 Release Notes</a>.</p>
+</body>
+</html>

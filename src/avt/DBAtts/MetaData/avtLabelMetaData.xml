@@ -1,0 +1,5 @@
+<?xml version="1.0"?>
+  <Attribute name="avtLabelMetaData" purpose="Contains label metadata attributes" persistent="false" keyframe="true" exportAPI="DBATTS_API" exportInclude="dbatts_exports.h" codefile="avtLabelMetaData.code" baseClass="avtVarMetaData">
+    <Function name="avtLabelMetaData2" user="true" member="true">
+    </Function>
+  </Attribute>

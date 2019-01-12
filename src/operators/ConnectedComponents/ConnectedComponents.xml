@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+  <Plugin name="ConnectedComponents" type="operator" label="ConnectedComponents" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" category="Analysis" createExpression="true" exprInType="mesh" exprOutType="scalar">
+    <Attribute name="ConnectedComponentsAttributes" purpose="Attributes for Connected Components operator" persistent="false" keyframe="true" exportAPI="" exportInclude="">
+      <Field name="EnableGhostNeighborsOptimization" label="Use Ghosts Zone Neighbors for connectivity between Domains" type="bool">
+        true
+      </Field>
+    </Attribute>
+  </Plugin>

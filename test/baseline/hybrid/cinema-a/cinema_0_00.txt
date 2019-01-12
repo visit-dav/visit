@@ -1,0 +1,12 @@
+-specification
+A
+-scriptfile
+test0.py
+-output
+VISIT_TOP_DIR/test/test0.cdb
+-format
+png
+-geometry
+300x300
+-camera
+static

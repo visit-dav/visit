@@ -1,0 +1,2 @@
+The actual number of zones is 6600.
+The number of ghost zones is 1728.

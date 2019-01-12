@@ -1,0 +1,5 @@
+activeSource = "localhost:VISIT_TOP_DIR/data/silo_hdf5_test_data/curv3d.silo"
+activeTimeSlider = -1
+timeSliders = ()
+timeSliderCurrentStates = ()
+animationMode = 2

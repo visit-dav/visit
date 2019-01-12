@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+  <Attribute name="ViewerClientAttributes" purpose="This class contains attributes used for viewer client" persistent="true" keyframe="true" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="ViewerClientAttributes.code">
+    <Enum name="RenderType">
+      None
+      Image
+      Data
+    </Enum>
+    <Field name="renderingType" label="renderingType" type="enum" subtype="RenderType">
+      None
+    </Field>
+    <Field name="id" label="id" type="int">
+      -1
+    </Field>
+    <Field name="title" label="title" type="string">
+      client
+    </Field>
+    <Field name="windowIds" label="windowIds" type="intVector">
+    </Field>
+    <Field name="imageWidth" label="imageWidth" type="int">
+      300
+    </Field>
+    <Field name="imageHeight" label="imageHeight" type="int">
+      300
+    </Field>
+    <Field name="imageResolutionPcnt" label="imageResolutionPcnt" type="double">
+      100.000000
+    </Field>
+    <Field name="externalClient" label="externalClient" type="bool">
+      false
+    </Field>
+    <Field name="renderingTypes" label="renderingTypes" type="intVector">
+    </Field>
+  </Attribute>

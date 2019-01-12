@@ -1,0 +1,105 @@
+#!/bin/bash
+#
+#  Script: mk_branch_from_trunk
+# 
+#  Purpose: 
+#      Copies the trunk into the branches directory to a development branch.
+#
+#  Programmer: Hank Childs
+#  Creation:   May 12, 2007
+#
+#  Modifications:
+#
+#    Hank Childs, Thu Jul  5 16:13:57 PDT 2007
+#    Suppress SVN noise.
+#
+#    Hank Childs, Thu Apr 23 15:32:10 PDT 2009
+#    Port to bash.
+#
+# *****************************************************************************
+
+issueHelp="no"
+CDPATH="" # Prevent unneeded echoing of chdir's.
+
+P=$(which $0)
+P2=${P%/*}
+. ${P2}/visit_svn_helper
+
+if [[ $# != 1 ]] ; then
+   issueHelp="yes"
+fi
+
+if [[ "$issueHelp" == "yes" ]] ; then
+   echo ""
+   echo "Usage:   $0 <branch>"
+   echo ""
+   echo "Example: $0 my_dev_work"
+   echo "\twill create a development branch under REPO/branches/${SVN_NERSC_NAME}/my_dev_work"
+   echo ""
+   exit 1
+fi
+
+SRC=${VISIT_SVN_TRUNK}
+DEST_ROOT=${VISIT_SVN_BRANCHES}/${SVN_NERSC_NAME}
+DEST=${DEST_ROOT}/$1
+
+svn ls $DEST_ROOT 2>/dev/null > /dev/null
+if [[ $? != 0 ]] ; then
+   echo "Detected that the directory ${DEST_ROOT} does not exist."
+   echo "(This should only be the case if this is your first time developing "
+   echo " VisIt in the Subversion repo.)"
+   echo "Creating directory $DEST_ROOT"
+   svn mkdir $DEST_ROOT -m "Creating branch area for user ${SVN_NERSC_NAME}"
+fi
+
+svn ls $DEST 2>/dev/null > /dev/null
+if [[ $? == 0 ]] ; then
+   echo "The destination branch name ($DEST)"
+   echo "already exists.  Please choose a different name"
+   exit 1
+fi
+
+svn_cp_dir $SRC $DEST
+if [[ $? != 0 ]] ; then
+   echo "There was an error with creating the branch"
+   exit 1
+fi
+
+mkdir tmp_forRev$$
+cd tmp_forRev$$
+echo ""
+echo "Logging revision numbers (needed for merging later)..."
+svn co --quiet $DEST/svninfo
+cd svninfo
+REV=$(get_latest_rev)
+if [[ -f Rev_fromTrunk ]] ; then
+   echo $REV > Rev_fromTrunk
+else
+   echo $REV > Rev_fromTrunk
+   svn add Rev_fromTrunk
+fi
+
+if [[ -f Rev_toTrunk ]] ; then
+   echo $REV > Rev_toTrunk
+else
+   echo $REV > Rev_toTrunk
+   svn add Rev_toTrunk
+fi
+
+if [[ -f Rev_initial ]] ; then
+   echo $REV > Rev_initial
+else
+   echo $REV > Rev_initial
+   svn add Rev_initial
+fi
+
+svn commit --quiet -m "Add revision info for branch ${1}, which originated at revision $REV"
+cd ../../
+rm -Rf tmp_forRev$$
+
+echo ""
+echo "Successful!"
+echo ""
+
+exit 0
+

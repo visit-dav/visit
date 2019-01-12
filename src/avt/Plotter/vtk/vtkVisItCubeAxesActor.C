@@ -1,0 +1,2345 @@
+/*=========================================================================
+
+  Program:   Visualization Toolkit
+  Module:    $RCSfile: vtkVisItCubeAxesActor.cxx,v $
+  Language:  C++
+  Date:      $Date: 2001/08/03 21:55:01 $
+  Version:   $Revision: 1.22 $
+  Thanks:    Kathleen Bonnell, B Division, Lawrence Livermore National Lab
+
+Copyright (c) 1993-2001 Ken Martin, Will Schroeder, Bill Lorensen 
+All rights reserved.
+  See Copyright.txt or http://www.kitware.com/Copyright.htm for details.
+
+     This software is distributed WITHOUT ANY WARRANTY; without even 
+     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
+     PURPOSE.  See the above copyright notice for more information.
+=========================================================================*/
+#include "vtkVisItCubeAxesActor.h"
+#include "vtkVisItAxisActor.h"
+#include "vtkMath.h"
+#include "vtkObjectFactory.h"
+#include <vtkProperty.h>
+#include <vtkViewport.h>
+#include <vtkCollection.h>
+#include <DebugStream.h>
+#include <float.h>
+#include <snprintf.h>
+
+#include <vector>
+using std::vector;
+#include <string>
+using std::string;
+
+int LabelExponent(double min, double max);
+int Digits(double min, double max);
+double MaxOf(double, double);
+double MaxOf(double, double, double, double); 
+
+// *************************************************************************
+// Modifications:
+//   Kathleen Bonnell, Wed Mar  6 13:48:48 PST 2002
+//   Replace 'New' method with Macro to match VTK 4.0 API. 
+//
+// *************************************************************************
+
+vtkStandardNewMacro(vtkVisItCubeAxesActor);
+vtkCxxSetObjectMacro(vtkVisItCubeAxesActor, Camera,vtkCamera);
+
+
+// *************************************************************************
+// Instantiate this object.
+//
+// Modifications:
+//   Kathleen Bonnell, Wed Oct 31 07:57:49 PST 2001
+//   Intialize new members lastPow, last*AxisDigits.
+//
+//   Kathleen Bonnell, Wed Nov  7 16:19:16 PST 2001
+//   Intialize new members:  Last*Extent, LastFlyMode, 
+//   renderAxes*, numAxes*.
+//
+//   Hank Childs, Fri Sep 27 17:15:07 PDT 2002
+//   Initialize new members for units.
+//
+//   Kathleen Bonnell, Fri Jul 25 14:37:32 PDT 2003 
+//   Remove 'Input' and 'Prop' members, initialize new members
+//   valueScaleFactor, mustAdjustValue, ForceLabelReset.
+//
+//   Kathleen Bonnell, Wed Aug  6 13:59:15 PDT 2003 
+//   Remove valueScaleFactor, replace mustAdjustValue and ForceLabelReset
+//   with one for each axis type.
+//
+//   Kathleen Bonnell, Tue Dec 16 11:27:30 PST 2003 
+//   Replace Last*Extent with Last*Range.  (* = X, Y, Z)
+//   Add autoLabelScaling, userXPow, userYPow, userZPow.
+//
+//   Brad Whitlock, Fri Jul 23 18:18:41 PST 2004
+//   Added ActualXLabel et al so we can keep title separate from what's
+//   actually displayed so information is not lost.
+//
+//   Brad Whitlock, Wed Mar 26 13:42:08 PDT 2008
+//   Added TitleTextProperty, LabelTextProperty, TitleScale, LabelScale.
+//
+//   Eric Brugger, Tue Oct 21 12:32:51 PDT 2008
+//   Added support for specifying tick mark locations.
+//
+//   Jeremy Meredith, Wed May  5 14:31:37 EDT 2010
+//   Added support for title visibility separate from label visibility.
+//
+//   Jeremy Meredith, Tue May 18 12:49:48 EDT 2010
+//   Renamed some instances of Range to Bounds to reflect their true
+//   usage (since in theory, the range of an axis need not be tied to
+//   its location in physical space).
+//
+//   Jeremy Meredith, Tue May 18 13:14:58 EDT 2010
+//   Removed unused corner offset.
+//
+//   Jeremy Meredith, Tue May 18 13:24:05 EDT 2010
+//   Added Ranges which are independent of Bounds.
+//
+//   Kathleen Bonnell, Wed Feb  9 10:52:42 PST 2011
+//   Change defaults for last*AxisDigits, so that label formats are 
+//   computed on first-build for all axes. (Fixes problem with not showing 
+//   enough precision in some cases).
+//
+// *************************************************************************
+
+vtkVisItCubeAxesActor::vtkVisItCubeAxesActor()
+{
+  this->Bounds[0] = -1.0; this->Bounds[1] = 1.0;
+  this->Bounds[2] = -1.0; this->Bounds[3] = 1.0;
+  this->Bounds[4] = -1.0; this->Bounds[5] = 1.0;
+
+  this->Ranges[0] = -1.0; this->Ranges[1] = 1.0;
+  this->Ranges[2] = -1.0; this->Ranges[3] = 1.0;
+  this->Ranges[4] = -1.0; this->Ranges[5] = 1.0;
+
+  this->TickLocation = VTK_TICKS_INSIDE;
+  this->Camera = NULL;
+  this->FlyMode = VTK_FLY_CLOSEST_TRIAD;
+  int i;
+  for (i = 0; i < 4; i++)
+    {
+    this->XAxes[i] = vtkVisItAxisActor::New();
+    this->XAxes[i]->SetTickVisibility(true);
+    this->XAxes[i]->SetMinorTicksVisible(true);
+    this->XAxes[i]->SetLabelVisibility(true);
+    this->XAxes[i]->SetTitleVisibility(true);
+    this->XAxes[i]->SetAxisTypeToX();
+    this->XAxes[i]->SetAxisPosition(i);
+
+    this->YAxes[i] = vtkVisItAxisActor::New();
+    this->YAxes[i]->SetTickVisibility(true);
+    this->YAxes[i]->SetMinorTicksVisible(true);
+    this->YAxes[i]->SetLabelVisibility(true);
+    this->YAxes[i]->SetTitleVisibility(true);
+    this->YAxes[i]->SetAxisTypeToY();
+    this->YAxes[i]->SetAxisPosition(i);
+
+    this->ZAxes[i] = vtkVisItAxisActor::New();
+    this->ZAxes[i]->SetTickVisibility(true);
+    this->ZAxes[i]->SetMinorTicksVisible(true);
+    this->ZAxes[i]->SetLabelVisibility(true);
+    this->ZAxes[i]->SetTitleVisibility(true);
+    this->ZAxes[i]->SetAxisTypeToZ();
+    this->ZAxes[i]->SetAxisPosition(i);
+    }
+
+  for (i = 0; i < 3; i++)
+    {
+    this->TitleTextProperty[i] = vtkTextProperty::New();
+    this->TitleTextProperty[i]->SetColor(0.,0.,0.);
+    this->TitleTextProperty[i]->SetFontFamilyToArial();
+
+    this->LabelTextProperty[i] = vtkTextProperty::New();
+    this->LabelTextProperty[i]->SetColor(0.,0.,0.);
+    this->LabelTextProperty[i]->SetFontFamilyToArial();
+
+    this->TitleScale[i] = 1.;
+    this->LabelScale[i] = 1.;
+    }
+  this->scalingChanged = false;
+
+  this->XLabelFormat = new char[8]; 
+  SNPRINTF(this->XLabelFormat, 8, "%s","%-#6.3g");
+  this->YLabelFormat = new char[8]; 
+  SNPRINTF(this->YLabelFormat,8, "%s","%-#6.3g");
+  this->ZLabelFormat = new char[8]; 
+  SNPRINTF(this->ZLabelFormat,8, "%s","%-#6.3g");
+  this->Inertia = 1;
+  this->RenderCount = 0;
+
+  this->XAxisVisibility = true;
+  this->YAxisVisibility = true;
+  this->ZAxisVisibility = true;
+
+  this->XAxisTickVisibility = true;
+  this->YAxisTickVisibility = true;
+  this->ZAxisTickVisibility = true;
+
+  this->XAxisMinorTickVisibility = true;
+  this->YAxisMinorTickVisibility = true;
+  this->ZAxisMinorTickVisibility = true;
+
+  this->XAxisLabelVisibility = true;
+  this->YAxisLabelVisibility = true;
+  this->ZAxisLabelVisibility = true;
+
+  this->XAxisTitleVisibility = true;
+  this->YAxisTitleVisibility = true;
+  this->ZAxisTitleVisibility = true;
+
+  this->DrawXGridlines = false;
+  this->DrawYGridlines = false;
+  this->DrawZGridlines = false;
+
+  this->XTitle = new char[7];
+  SNPRINTF(this->XTitle,7, "%s","X-Axis");
+  this->XUnits = NULL;
+  this->YTitle = new char[7];
+  SNPRINTF(this->YTitle,7, "%s","Y-Axis");
+  this->YUnits = NULL;
+  this->ZTitle = new char[7];
+  SNPRINTF(this->ZTitle,7, "%s","Z-Axis");
+  this->ZUnits = NULL;
+
+  this->ActualXLabel = 0;
+  this->ActualYLabel = 0;
+  this->ActualZLabel = 0;
+
+  this->lastXPow = 0;
+  this->lastYPow = 0;
+  this->lastZPow = 0;
+  this->lastXAxisDigits = -1;
+  this->lastYAxisDigits = -1;
+  this->lastZAxisDigits = -1;
+
+  this->LastXBounds[0] = FLT_MAX;
+  this->LastXBounds[1] = FLT_MAX;
+  this->LastYBounds[0] = FLT_MAX;
+  this->LastYBounds[1] = FLT_MAX;
+  this->LastZBounds[0] = FLT_MAX;
+  this->LastZBounds[1] = FLT_MAX;
+
+  this->LastFlyMode = -1;
+  for (i = 0; i < 4; i++)
+  {
+      this->renderAxesX[i] = i;
+      this->renderAxesY[i] = i;
+      this->renderAxesZ[i] = i;
+  }
+  this->numAxesX = this->numAxesY = this->numAxesZ = 1;
+
+  this->mustAdjustXValue = false;
+  this->mustAdjustYValue = false;
+  this->mustAdjustZValue = false;
+
+  this->ForceXLabelReset = false;
+  this->ForceYLabelReset = false;
+  this->ForceZLabelReset = false;
+
+  this->autoLabelScaling = true;
+  this->userXPow = 0;
+  this->userYPow = 0;
+  this->userZPow = 0;
+
+  this->AdjustLabels = true;
+  this->XMajorTickMinimum = 0.0;
+  this->XMajorTickMaximum = 1.0;
+  this->XMajorTickSpacing = 1.0;
+  this->XMinorTickSpacing = 0.1;
+  this->YMajorTickMinimum = 0.0;
+  this->YMajorTickMaximum = 1.0;
+  this->YMajorTickSpacing = 1.0;
+  this->YMinorTickSpacing = 0.1;
+  this->ZMajorTickMinimum = 0.0;
+  this->ZMajorTickMaximum = 1.0;
+  this->ZMajorTickSpacing = 1.0;
+  this->ZMinorTickSpacing = 0.1;
+  this->LastAdjustLabels = false;
+  this->LastXMajorTickMinimum = FLT_MAX;
+  this->LastXMajorTickMaximum = FLT_MAX;
+  this->LastXMajorTickSpacing = FLT_MAX;
+  this->LastXMinorTickSpacing = FLT_MAX;
+  this->LastYMajorTickMinimum = FLT_MAX;
+  this->LastYMajorTickMaximum = FLT_MAX;
+  this->LastYMajorTickSpacing = FLT_MAX;
+  this->LastYMinorTickSpacing = FLT_MAX;
+  this->LastZMajorTickMinimum = FLT_MAX;
+  this->LastZMajorTickMaximum = FLT_MAX;
+  this->LastZMajorTickSpacing = FLT_MAX;
+  this->LastZMinorTickSpacing = FLT_MAX;
+}
+
+// ****************************************************************************
+// Shallow copy of an actor.
+//
+// Modifications:
+//   Kathleen Bonnell, Wed Mar  6 13:48:48 PST 2002
+//   Call superclass method the new VTK 4.0 way.
+//
+//   Kathleen Bonnell, Fri Jul 25 14:37:32 PDT 2003 
+//   Remove 'Input' and 'Prop' members, added new members
+//   valueScaleFactor, mustAdjustValue, ForceLabelReset.
+//
+//   Kathleen Bonnell, Wed Aug  6 13:59:15 PDT 2003 
+//   Remove valueScaleFactor, replace mustAdjustValue and ForceLabelReset
+//   with one for each axis type.
+//
+//   Eric Brugger, Tue Oct 21 12:32:51 PDT 2008
+//   Added support for specifying tick mark locations.
+//
+//   Jeremy Meredith, Tue May 18 13:14:58 EDT 2010
+//   Removed unused corner offset.
+//
+//   Jeremy Meredith, Tue May 18 13:24:05 EDT 2010
+//   Added Ranges which are independent of Bounds.
+//
+// ****************************************************************************
+
+void vtkVisItCubeAxesActor::ShallowCopy(vtkVisItCubeAxesActor *actor)
+{
+  this->Superclass::ShallowCopy(actor);
+  this->SetXLabelFormat(actor->GetXLabelFormat());
+  this->SetYLabelFormat(actor->GetYLabelFormat());
+  this->SetZLabelFormat(actor->GetZLabelFormat());
+  this->SetInertia(actor->GetInertia());
+  this->SetXTitle(actor->GetXTitle());
+  this->SetYTitle(actor->GetYTitle());
+  this->SetZTitle(actor->GetZTitle());
+  this->SetFlyMode(actor->GetFlyMode());
+  this->SetCamera(actor->GetCamera());
+  this->SetBounds(actor->GetBounds());
+  this->SetRanges(actor->GetRanges());
+  this->mustAdjustXValue = actor->mustAdjustXValue;
+  this->mustAdjustYValue = actor->mustAdjustYValue;
+  this->mustAdjustZValue = actor->mustAdjustZValue;
+  this->ForceXLabelReset = actor->ForceXLabelReset;
+  this->ForceYLabelReset = actor->ForceYLabelReset;
+  this->ForceZLabelReset = actor->ForceZLabelReset;
+  this->SetAdjustLabels(actor->GetAdjustLabels());
+  this->SetXMajorTickMinimum(actor->GetXMajorTickMinimum());
+  this->SetXMajorTickMaximum(actor->GetXMajorTickMaximum());
+  this->SetXMajorTickSpacing(actor->GetXMajorTickSpacing());
+  this->SetXMinorTickSpacing(actor->GetXMinorTickSpacing());
+  this->SetYMajorTickMinimum(actor->GetYMajorTickMinimum());
+  this->SetYMajorTickMaximum(actor->GetYMajorTickMaximum());
+  this->SetYMajorTickSpacing(actor->GetYMajorTickSpacing());
+  this->SetYMinorTickSpacing(actor->GetYMinorTickSpacing());
+  this->SetZMajorTickMinimum(actor->GetZMajorTickMinimum());
+  this->SetZMajorTickMaximum(actor->GetZMajorTickMaximum());
+  this->SetZMajorTickSpacing(actor->GetZMajorTickSpacing());
+  this->SetZMinorTickSpacing(actor->GetZMinorTickSpacing());
+}
+
+// ****************************************************************************
+//  Modifications:
+//
+//    Hank Childs, Fri Sep 27 17:15:07 PDT 2002
+//    Destruct new data members for units.
+//
+//    Brad Whitlock, Fri Jul 23 18:21:16 PST 2004
+//    Added more items and fixed a small memory leak.
+//
+// ****************************************************************************
+
+vtkVisItCubeAxesActor::~vtkVisItCubeAxesActor()
+{
+  this->SetCamera(NULL);
+
+  for (int i = 0; i < 4; i++)
+    {
+    if (this->XAxes[i]) 
+      {
+      this->XAxes[i]->Delete();
+      this->XAxes[i] = NULL;
+      }
+    if (this->YAxes[i]) 
+      {
+      this->YAxes[i]->Delete();
+      this->YAxes[i] = NULL;
+      }
+    if (this->ZAxes[i]) 
+      {
+      this->ZAxes[i]->Delete();
+      this->ZAxes[i] = NULL;
+      }
+    }
+
+    for (int i = 0; i < 3; i++)
+    {
+       if(this->TitleTextProperty[i] != NULL)
+           this->TitleTextProperty[i]->Delete();
+       this->TitleTextProperty[i] = NULL;
+
+       if(this->LabelTextProperty[i] != NULL)
+           this->LabelTextProperty[i]->Delete();
+       this->LabelTextProperty[i] = NULL;
+    }
+
+  if (this->XLabelFormat) 
+    {
+    delete [] this->XLabelFormat;
+    this->XLabelFormat = NULL;
+    }
+  
+  if (this->YLabelFormat) 
+    {
+    delete [] this->YLabelFormat;
+    this->YLabelFormat = NULL;
+    }
+  
+  if (this->ZLabelFormat) 
+    {
+    delete [] this->ZLabelFormat;
+    this->ZLabelFormat = NULL;
+    }
+  
+  if (this->XTitle)
+    {
+    delete [] this->XTitle;
+    this->XTitle = NULL;
+    }
+  if (this->YTitle)
+    {
+    delete [] this->YTitle;
+    this->YTitle = NULL;
+    }
+  if (this->ZTitle)
+    {
+    delete [] this->ZTitle;
+    this->ZTitle = NULL;
+    }
+
+  if (this->XUnits)
+    {
+    delete [] this->XUnits;
+    this->XUnits = NULL;
+    }
+  if (this->YUnits)
+    {
+    delete [] this->YUnits;
+    this->YUnits = NULL;
+    }
+  if (this->ZUnits)
+    {
+    delete [] this->ZUnits;
+    this->ZUnits = NULL;
+    }
+
+  if (this->ActualXLabel)
+    {
+    delete [] this->ActualXLabel;
+    this->ActualXLabel = NULL;
+    }
+  if (this->ActualYLabel)
+    {
+    delete [] this->ActualYLabel;
+    this->ActualYLabel = NULL;
+    }
+  if (this->ActualZLabel)
+    {
+    delete [] this->ActualZLabel;
+    this->ActualZLabel = NULL;
+    }
+}
+
+
+// *************************************************************************
+// Project the bounding box and compute edges on the border of the bounding
+// cube. Determine which parts of the edges are visible via intersection 
+// with the boundary of the viewport (minus borders).
+//
+//  Modifications:
+//    Kathleen Bonnell, Wed Oct 31 07:57:49 PST 2001
+//    Added calls to AdjustValues, AdjustRange. 
+//
+//   Kathleen Bonnell, Wed Nov  7 16:19:16 PST 2001
+//   Only render those axes needed for current FlyMode.  
+//   Moved bulk of 'build' code to BuildAxes method, added calls to
+//   BuildAxes and DetermineRenderAxes methods.
+//
+//   Kathleen Bonnell, Fri Jul 25 14:37:32 PDT 2003 
+//   Added initial build of each axis. 
+// *************************************************************************
+
+int vtkVisItCubeAxesActor::RenderOpaqueGeometry(vtkViewport *viewport)
+{
+  int i, renderedSomething=0;
+  static bool initialRender = true; 
+  // Initialization
+  if (!this->Camera)
+    {
+    vtkErrorMacro(<<"No camera!");
+    this->RenderSomething = false;
+    return 0;
+    }
+ 
+  this->BuildAxes(viewport); 
+
+  if (initialRender)
+    {
+     for (i = 0; i < 4; i++)
+       {
+       this->XAxes[i]->BuildAxis(viewport, true);
+       this->YAxes[i]->BuildAxis(viewport, true);
+       this->ZAxes[i]->BuildAxis(viewport, true);
+       }
+    }
+  initialRender = false;
+
+  this->DetermineRenderAxes(viewport); 
+
+  //Render the axes
+  if (this->XAxisVisibility)
+    {
+    for (i = 0; i < this->numAxesX; i++)
+      { 
+      renderedSomething += 
+          this->XAxes[this->renderAxesX[i]]->RenderOpaqueGeometry(viewport);
+      } 
+    }
+
+  if (this->YAxisVisibility)
+    {
+    for (i = 0; i < this->numAxesY; i++)
+      {
+      renderedSomething += 
+          this->YAxes[this->renderAxesY[i]]->RenderOpaqueGeometry(viewport);
+      }
+    }
+
+  if (this->ZAxisVisibility)
+    {
+    for (i = 0; i < this->numAxesZ; i++)
+      {
+      renderedSomething += 
+          this->ZAxes[this->renderAxesZ[i]]->RenderOpaqueGeometry(viewport);
+      }
+    }
+  return renderedSomething;
+}
+
+// *************************************************************************
+// Build the underlying geometry for SceneGraph API
+//
+// *************************************************************************
+
+void vtkVisItCubeAxesActor::BuildGeometry(vtkViewport *viewport, vtkCollection* collection)
+{
+  static bool initialBuild = true; 
+  
+  if (!this->Camera)
+  {
+    vtkErrorMacro(<<"No camera!");
+    this->RenderSomething = false;
+    return;
+  }
+ 
+  this->BuildAxes(viewport); 
+
+  if (initialBuild)
+  {
+    for (int i = 0; i < 4; i++)
+    {
+      this->XAxes[i]->BuildAxis(viewport, true);
+      this->YAxes[i]->BuildAxis(viewport, true);
+      this->ZAxes[i]->BuildAxis(viewport, true);
+    }
+  }
+  
+  this->DetermineRenderAxes(viewport);
+
+  if (this->XAxisVisibility)
+  {
+    for (int i = 0; i < this->numAxesX; i++)
+    { 
+      collection->AddItem(this->XAxes[this->renderAxesX[i]]);
+    } 
+  }
+
+  if (this->YAxisVisibility)
+  {
+    for (int i = 0; i < this->numAxesY; i++)
+    {
+      collection->AddItem(this->YAxes[this->renderAxesY[i]]);
+    }
+  }
+
+  if (this->ZAxisVisibility)
+  {
+    for (int i = 0; i < this->numAxesZ; i++)
+    {
+      collection->AddItem(this->ZAxes[this->renderAxesZ[i]]);
+    }
+  }
+}
+
+// Release any graphics resources that are being consumed by this actor.
+// The parameter window could be used to determine which graphic
+// resources to release.
+void vtkVisItCubeAxesActor::ReleaseGraphicsResources(vtkWindow *win)
+{
+  for (int i = 0; i < 4; i++)
+    {
+    this->XAxes[i]->ReleaseGraphicsResources(win);
+    this->YAxes[i]->ReleaseGraphicsResources(win);
+    this->ZAxes[i]->ReleaseGraphicsResources(win);
+    }
+}
+
+// *************************************************************************
+// Compute the bounds
+// 
+// Modifications:
+//   Kathleen Bonnell, Fri Jul 25 14:37:32 PDT 2003 
+//   Removed support for Prop and Input. 
+// *************************************************************************
+void vtkVisItCubeAxesActor::GetBounds(double bounds[6])
+{
+  for (int i=0; i< 6; i++)
+    {
+    bounds[i] = this->Bounds[i];
+    }
+}
+
+// Compute the bounds
+void vtkVisItCubeAxesActor::GetBounds(double& xmin, double& xmax, 
+                                   double& ymin, double& ymax,
+                                   double& zmin, double& zmax)
+{
+  xmin = this->Bounds[0];
+  xmax = this->Bounds[1];
+  ymin = this->Bounds[2];
+  ymax = this->Bounds[3];
+  zmin = this->Bounds[4];
+  zmax = this->Bounds[5];
+}
+
+// Compute the bounds
+double *vtkVisItCubeAxesActor::GetBounds()
+{
+  return this->Bounds;
+}
+
+// Compute the ranges
+double *vtkVisItCubeAxesActor::GetRanges()
+{
+  return this->Ranges;
+}
+
+// ******************************************************************
+// Modifications:
+//   Kathleen Bonnell, Wed Mar  6 13:48:48 PST 2002
+//   Call superclass method the new VTK 4.0 way.
+//
+//   Kathleen Bonnell, Fri Jul 25 14:37:32 PDT 2003 
+//   Removed Input and Prop.
+//
+//   Jeremy Meredith, Tue May 18 13:15:40 EDT 2010
+//   Removed unused corner offset.
+//
+//   Jeremy Meredith, Tue May 18 13:24:05 EDT 2010
+//   Added Ranges which are independent of Bounds.
+//
+// ******************************************************************
+
+void vtkVisItCubeAxesActor::PrintSelf(ostream& os, vtkIndent indent)
+{
+  this->Superclass::PrintSelf(os,indent);
+
+  os << indent << "Bounds: \n";
+  os << indent << "  Xmin,Xmax: (" << this->Bounds[0] << ", " 
+     << this->Bounds[1] << ")\n";
+  os << indent << "  Ymin,Ymax: (" << this->Bounds[2] << ", " 
+     << this->Bounds[3] << ")\n";
+  os << indent << "  Zmin,Zmax: (" << this->Bounds[4] << ", " 
+     << this->Bounds[5] << ")\n";
+
+  os << indent << "Ranges: \n";
+  os << indent << "  Xmin,Xmax: (" << this->Ranges[0] << ", " 
+     << this->Ranges[1] << ")\n";
+  os << indent << "  Ymin,Ymax: (" << this->Ranges[2] << ", " 
+     << this->Ranges[3] << ")\n";
+  os << indent << "  Zmin,Zmax: (" << this->Ranges[4] << ", " 
+     << this->Ranges[5] << ")\n";
+  
+  if (this->Camera)
+    {
+    os << indent << "Camera:\n";
+    this->Camera->PrintSelf(os,indent.GetNextIndent());
+    }
+  else
+    {
+    os << indent << "Camera: (none)\n";
+    }
+
+  if (this->FlyMode == VTK_FLY_CLOSEST_TRIAD)
+    {
+    os << indent << "Fly Mode: CLOSEST_TRIAD\n";
+    }
+  else if (this->FlyMode == VTK_FLY_FURTHEST_TRIAD)
+    {
+    os << indent << "Fly Mode: FURTHEST_TRIAD\n";
+    }
+  else if (this->FlyMode == VTK_FLY_STATIC_TRIAD)
+    {
+    os << indent << "Fly Mode: STATIC_TRIAD\n";
+    }
+  else if (this->FlyMode == VTK_FLY_STATIC_EDGES)
+    {
+    os << indent << "Fly Mode: STATIC_EDGES\n";
+    }
+  else 
+    {
+    os << indent << "Fly Mode: OUTER_EDGES\n";
+    }
+
+  os << indent << "X Axis Title: " << this->XTitle << "\n";
+  os << indent << "Y Axis Title: " << this->YTitle << "\n";
+  os << indent << "Z Axis Title: " << this->ZTitle << "\n";
+  
+  os << indent << "X Axis Visibility: " 
+     << (this->XAxisVisibility ? "On\n" : "Off\n");
+  os << indent << "Y Axis Visibility: " 
+     << (this->YAxisVisibility ? "On\n" : "Off\n");
+  os << indent << "Z Axis Visibility: " 
+     << (this->ZAxisVisibility ? "On\n" : "Off\n");
+
+  os << indent << "X Axis Label Format: " << this->XLabelFormat << "\n";
+  os << indent << "Y Axis Label Format: " << this->YLabelFormat << "\n";
+  os << indent << "Z Axis Label Format: " << this->ZLabelFormat << "\n";
+  os << indent << "Inertia: " << this->Inertia << "\n";
+}
+
+
+void vtkVisItCubeAxesActor::TransformBounds(vtkViewport *viewport, 
+                                          const double bounds[6], 
+                                          double pts[8][3])
+{
+  int i, j, k, idx;
+  double x[3];
+
+  //loop over verts of bounding box
+  for (k=0; k<2; k++)
+    {
+    x[2] = bounds[4+k];
+    for (j=0; j<2; j++)
+      {
+      x[1] = bounds[2+j];
+      for (i=0; i<2; i++)
+        {
+        idx = i + 2*j + 4*k;
+        x[0] = bounds[i];
+        viewport->SetWorldPoint(x[0],x[1],x[2],1.0);
+        viewport->WorldToDisplay();
+        viewport->GetDisplayPoint(pts[idx]);
+        }
+      }
+    }
+}
+
+// ***********************************************************************
+//
+//  Calculate the size (length) of major and minor ticks,
+//  based on an average of the coordinate direction ranges.
+//  Set the necessary Axes methods with the calculated information.
+//
+//  Returns:  false if tick size not recomputed, true otherwise.
+//
+//  Modifications:
+//    Kathleen Bonnell, Wed Nov  7 16:19:16 PST 2001
+//    Added logic for early-termination.
+//
+//    Kathleen Bonnell, Fri Jul 18 09:09:31 PDT 2003 
+//    Added return value, added calls to AdjustTicksComputeRange and
+//    BuildLabels. 
+//
+//    Kathleen Bonnell, Mon Dec 15 14:59:26 PST 2003 
+//    Use the actual range values instead of range-extents to determine
+//    if tick size needs to be recomputed. 
+//
+//    Jeremy Meredith, Tue May 18 12:49:48 EDT 2010
+//    Renamed some instances of Range to Bounds to reflect their true
+//    usage (since in theory, the range of an axis need not be tied to
+//    its location in physical space).
+//
+// ***********************************************************************
+
+bool
+vtkVisItCubeAxesActor::ComputeTickSize(double bounds[6])
+{
+  bool xPropsChanged = this->LabelTextProperty[0]->GetMTime() > this->BuildTime.GetMTime();
+  bool yPropsChanged = this->LabelTextProperty[1]->GetMTime() > this->BuildTime.GetMTime();
+  bool zPropsChanged = this->LabelTextProperty[2]->GetMTime() > this->BuildTime.GetMTime();
+
+  bool xBoundsChanged = this->LastXBounds[0] != bounds[0] ||
+                        this->LastXBounds[1] != bounds[1];
+
+  bool yBoundsChanged = this->LastYBounds[0] != bounds[2] ||
+                        this->LastYBounds[1] != bounds[3];
+
+  bool zBoundsChanged = this->LastZBounds[0] != bounds[4] ||
+                        this->LastZBounds[1] != bounds[5];
+
+  if (!(xBoundsChanged || yBoundsChanged || zBoundsChanged) &&
+      !(xPropsChanged || yPropsChanged || zPropsChanged))
+    {
+    // no need to re-compute ticksize.
+    return false;
+    }
+
+  int i;
+  double xExt = bounds[1] - bounds[0];
+  double yExt = bounds[3] - bounds[2];
+  double zExt = bounds[5] - bounds[4];
+  if (xBoundsChanged || xPropsChanged)
+    {
+    AdjustTicksComputeRange(this->XAxes);
+    BuildLabels(this->XAxes);
+    }
+  if (yBoundsChanged || yPropsChanged)
+    {
+    AdjustTicksComputeRange(this->YAxes);
+    BuildLabels(this->YAxes);
+    }
+  if (zBoundsChanged || zPropsChanged)
+    {
+    AdjustTicksComputeRange(this->ZAxes);
+    BuildLabels(this->ZAxes);
+    }
+
+  this->LastXBounds[0] = bounds[0];
+  this->LastXBounds[1] = bounds[1];
+  this->LastYBounds[0] = bounds[2];
+  this->LastYBounds[1] = bounds[3];
+  this->LastZBounds[0] = bounds[4];
+  this->LastZBounds[1] = bounds[5];
+
+  double major = 0.02 * (xExt + yExt + zExt) / 3.;
+  double minor = 0.5 * major;
+  for (i = 0; i < 4; i++)
+    {
+    this->XAxes[i]->SetMajorTickSize(major);
+    this->XAxes[i]->SetMinorTickSize(minor);
+
+    this->YAxes[i]->SetMajorTickSize(major);
+    this->YAxes[i]->SetMinorTickSize(minor);
+
+    this->ZAxes[i]->SetMajorTickSize(major);
+    this->ZAxes[i]->SetMinorTickSize(minor);
+
+    this->XAxes[i]->SetGridlineXLength(xExt);
+    this->XAxes[i]->SetGridlineYLength(yExt);
+    this->XAxes[i]->SetGridlineZLength(zExt);
+
+    this->YAxes[i]->SetGridlineXLength(xExt);
+    this->YAxes[i]->SetGridlineYLength(yExt);
+    this->YAxes[i]->SetGridlineZLength(zExt);
+
+    this->ZAxes[i]->SetGridlineXLength(xExt);
+    this->ZAxes[i]->SetGridlineYLength(yExt);
+    this->ZAxes[i]->SetGridlineZLength(zExt);
+    }
+  return true;
+}
+
+// ****************************************************************************
+//  Method: vtkVisItCubeAxesActor::ComputeLabelExponent
+//
+//  Purpose:
+//      If the range of values is too big or too small, put them in scientific
+//      notation and changes the labels.
+//
+//  Arguments:
+//      bnds     The min/max values in each coordinate direction:
+//                 (min_x, max_x, min_y, max_y, min_z, max_x).
+//
+//  Note:       This code is partially stolen from old MeshTV code,
+//              /meshtvx/toolkit/plotgrid.c, axlab[x|y].
+//
+//  Programmer: Hank Childs
+//  Creation:   July 11, 2000
+//
+//  Modifications:
+//    Kathleen Bonnell, Wed Oct 31 07:57:49 PST 2001 
+//    Regardless of individual ranges, if any coord direction has too 
+//    small/large a range, all will have a scale factor set for scaling their 
+//    label values, and their titles adjusted accordingly. 
+//
+//    Kathleen Bonnell, Thu Sep  5 17:32:16 PDT 2002 
+//    Only use dimensions with range > 0 for determining scale factor. 
+//    
+//    Hank Childs, Fri Sep 27 17:15:07 PDT 2002
+//    Account for units.
+//
+//    Kathleen Bonnell, Wed Aug  6 13:59:15 PDT 2003
+//    Each axis type now has its own 'mustAdjustValue' and 'lastPow'.
+//
+//    Kathleen Bonnell, Tue Dec 16 11:23:31 PST 2003 
+//    Allow the LabelExponent to be user-settable (autLabelScaling is off).
+//    For title use '10e' instead of just 'e' to designate that exponent 
+//    has been used.
+//
+//    Kathleen Bonnell, Tue Jul 20 11:41:45 PDT 2004 
+//    For title use 'x10^' instead of '10e' to designate that exponent.
+//
+//    Brad Whitlock, Fri Jul 23 18:27:30 PST 2004
+//    Added support for using user-defined titles for axes.
+//
+//    Jeremy Meredith, Tue May 18 15:05:41 EDT 2010
+//    Renamed to ComputeLabelExponent as a more correct, descriptive name.
+//
+// ****************************************************************************
+
+void
+vtkVisItCubeAxesActor::ComputeLabelExponent(const double bnds[6])
+{
+    char xTitle[64];
+
+    int xPow, yPow, zPow;
+
+    if (autoLabelScaling)
+    {
+        xPow = LabelExponent(bnds[0], bnds[1]);
+        yPow = LabelExponent(bnds[2], bnds[3]);
+        zPow = LabelExponent(bnds[4], bnds[5]);
+    }
+    else 
+    {
+        xPow = userXPow;
+        yPow = userYPow;
+        zPow = userZPow;
+    }
+
+    if (xPow != 0)
+      { 
+      if (!this->mustAdjustXValue || this->lastXPow != xPow)
+        {
+        this->ForceXLabelReset = true;
+        }
+        else
+        {
+        this->ForceXLabelReset = false;
+        }
+      this->mustAdjustXValue = true;
+
+      if (XUnits == NULL || XUnits[0] == '\0')
+        SNPRINTF(xTitle,64, "%s (x10^%d)", this->XTitle, xPow);
+      else
+        SNPRINTF(xTitle,64, "%s (x10^%d %s)", this->XTitle, xPow, XUnits);
+      }
+    else 
+      { 
+      if (this->mustAdjustXValue)
+        {
+        this->Modified();
+        this->ForceXLabelReset = true;
+        }
+      else
+        {
+        this->ForceXLabelReset = false;
+        }
+      this->mustAdjustXValue = false;
+
+      if (XUnits == NULL || XUnits[0] == '\0')
+        SNPRINTF(xTitle,64, "%s", this->XTitle);
+      else
+        SNPRINTF(xTitle,64, "%s (%s)", this->XTitle, XUnits);
+      }
+
+
+    char yTitle[64];
+    if (yPow != 0)
+      { 
+
+      if (!this->mustAdjustYValue || this->lastYPow != yPow)
+        {
+        this->ForceYLabelReset = true;
+        }
+        else
+        {
+        this->ForceYLabelReset = false;
+        }
+      this->mustAdjustYValue = true;
+      if (YUnits == NULL || YUnits[0] == '\0')
+        SNPRINTF(yTitle,64, "%s (x10^%d)", this->YTitle, yPow);
+      else
+        SNPRINTF(yTitle,64, "%s (x10^%d %s)", this->YTitle, yPow, YUnits);
+      }
+    else 
+      { 
+      if (this->mustAdjustYValue)
+        {
+        this->Modified();
+        this->ForceYLabelReset = true;
+        }
+      else
+        {
+        this->ForceYLabelReset = false;
+        }
+      this->mustAdjustYValue = false;
+      if (YUnits == NULL || YUnits[0] == '\0')
+        SNPRINTF(yTitle,64, "%s", this->YTitle);
+      else
+        SNPRINTF(yTitle,64, "%s (%s)", this->YTitle, YUnits);
+      }
+
+
+    char zTitle[64];
+    if (zPow != 0)
+      { 
+      if (!this->mustAdjustZValue || this->lastZPow != zPow)
+        {
+        this->ForceZLabelReset = true;
+        }
+        else
+        {
+        this->ForceZLabelReset = false;
+        }
+      this->mustAdjustZValue = true;
+
+      if (ZUnits == NULL || ZUnits[0] == '\0')
+        SNPRINTF(zTitle,64, "%s (x10^%d)", this->ZTitle, zPow);
+      else
+        SNPRINTF(zTitle,64, "%s (x10^%d %s)", this->ZTitle, zPow, ZUnits);
+      }
+    else 
+      { 
+      if (this->mustAdjustZValue)
+        {
+        this->Modified();
+        this->ForceZLabelReset = true;
+        }
+      else
+        {
+        this->ForceZLabelReset = false;
+        }
+      this->mustAdjustZValue = false;
+
+      if (ZUnits == NULL || ZUnits[0] == '\0')
+        SNPRINTF(zTitle,64, "%s", this->ZTitle);
+      else
+        SNPRINTF(zTitle,64, "%s (%s)", this->ZTitle, ZUnits);
+      }
+  
+    this->lastXPow = xPow;
+    this->lastYPow = yPow;
+    this->lastZPow = zPow;
+
+    SetActualXLabel(xTitle);
+    SetActualYLabel(yTitle);
+    SetActualZLabel(zTitle);
+}
+
+
+// ****************************************************************************
+//  Method: vtkVisItCubeAxesActor::ComputeLabelFormat
+//
+//  Purpose:
+//    If the range is small, adjust the precision of the values displayed.
+//
+//  Arguments:
+//    bnds    The minimum and maximum values in each coordinate direction
+//            (min_x, max_x, min_y, max_y, min_z, max_z).
+//
+//  Programmer: Hank Childs
+//  Creation:   July 11, 2000
+//
+//  Modifications:
+//    Kathleen Bonnell, Wed Oct 31 07:57:49 PST 2001 
+//    Moved from VisWinAxes3D.
+//
+//    Kathleen Bonnell, Thu Aug  1 14:05:05 PDT 2002 
+//    Send lastPos as argument to Digits. 
+//
+//    Kathleen Bonnell, Wed Aug  6 13:59:15 PDT 2003 
+//    Adjust the range values using lastXPow, lastYPow, lastZPow.
+//
+//    Jeremy Meredith, Tue May 18 12:49:48 EDT 2010
+//    Renamed some instances of Range to Bounds to reflect their true
+//    usage (since in theory, the range of an axis need not be tied to
+//    its location in physical space).
+//
+//    Jeremy Meredith, Tue May 18 15:05:41 EDT 2010
+//    Renamed to ComputeLabelFormat as a more correct, descriptive name.
+//
+// ****************************************************************************
+
+void
+vtkVisItCubeAxesActor::ComputeLabelFormat(const double bnds[6])
+{
+    double xbounds[2], ybounds[2], zbounds[2];
+    xbounds[0] = bnds[0];
+    xbounds[1] = bnds[1];
+    ybounds[0] = bnds[2];
+    ybounds[1] = bnds[3];
+    zbounds[0] = bnds[4];
+    zbounds[1] = bnds[5];
+
+    if (this->lastXPow != 0)
+    {
+        xbounds[0] /= pow(10., this->lastXPow);
+        xbounds[1] /= pow(10., this->lastXPow);
+    }
+    if (this->lastYPow != 0)
+    {
+        ybounds[0] /= pow(10., this->lastYPow);
+        ybounds[1] /= pow(10., this->lastYPow);
+    }
+    if (this->lastZPow != 0)
+    {
+        zbounds[0] /= pow(10., this->lastZPow);
+        zbounds[1] /= pow(10., this->lastZPow);
+    }
+
+    int xAxisDigits = Digits(xbounds[0], xbounds[1]);
+    if (xAxisDigits != this->lastXAxisDigits)
+    {
+        char  format[16];
+        SNPRINTF(format,16, "%%.%df", xAxisDigits);
+        this->SetXLabelFormat(format);
+        this->lastXAxisDigits = xAxisDigits;
+    }
+
+    int yAxisDigits = Digits(ybounds[0], ybounds[1]);
+    if (yAxisDigits != this->lastYAxisDigits)
+    {
+        char  format[16];
+        SNPRINTF(format,16, "%%.%df", yAxisDigits);
+        this->SetYLabelFormat(format);
+        this->lastYAxisDigits = yAxisDigits;
+    }
+
+    int zAxisDigits = Digits(zbounds[0], zbounds[1]);
+    if (zAxisDigits != this->lastZAxisDigits)
+    {
+        char  format[16];
+        SNPRINTF(format,16, "%%.%df", zAxisDigits);
+        this->SetZLabelFormat(format);
+        this->lastZAxisDigits = zAxisDigits;
+    }
+}
+
+
+// ****************************************************************************
+//  Function: Digits
+//
+//  Purpose:
+//      Determines the appropriate number of digits for a given range.
+//
+//  Arguments:
+//      min    The minimum value in the range.
+//      max    The maximum value in the range.
+//
+//  Returns:   The appropriate number of digits.
+//
+//  Programmer: Hank Childs
+//  Creation:   July 11, 2000
+//
+//  Modifications:
+//
+//    Hank Childs, Tue Sep 18 11:58:33 PDT 2001
+//    Cast ipow10 to get rid of compiler warning.
+//
+//    Kathleen Bonnell, Wed Oct 31 07:57:49 PST 2001 
+//    Moved from VisWinAxes3D.
+//
+//    Kathleen Bonnell, Thu Aug  1 13:44:02 PDT 2002 
+//    Added lastPow argument, it specifies whether or not scientific notation
+//    is being used on the labels.
+//
+//    Kathleen Bonnell, Wed Aug  6 13:59:15 PDT 2003
+//    Removed lastPow argment, as the adjustment necessary is now taking
+//    place in AdjustRange. 
+//    
+// ****************************************************************************
+
+int
+Digits(double min, double max )
+{
+    double  range = max - min;
+    double  pow10   = log10(range);
+    int    ipow10  = (int)floor(pow10);
+    int    digitsPastDecimal = -ipow10;
+
+    if (!std::isfinite(pow10) || digitsPastDecimal < 0) 
+    {
+        //
+        // The range is more than 10, but not so big we need scientific
+        // notation, we don't need to worry about decimals.
+        //
+        digitsPastDecimal = 0;
+    }
+    else
+    {
+        //
+        // We want one more than the range since there is more than one
+        // tick per decade.  
+        //
+        digitsPastDecimal++;
+
+        //
+        // Anything more than 5 is just noise.  (and probably 5 is noise with
+        // doubleing point if the part before the decimal is big).
+        //
+        if (digitsPastDecimal > 5)
+        {
+            digitsPastDecimal = 5;
+        }
+    }
+
+    return digitsPastDecimal;
+}
+
+
+// ****************************************************************************
+//  Function: LabelExponent
+//
+//  Purpose:
+//      Determines the proper exponent for the min and max values.
+//
+//  Arguments:
+//      min     The minimum value along a certain axis.
+//      max     The maximum value along a certain axis.
+//
+//  Note:       This code is mostly stolen from old MeshTV code,
+//              /meshtvx/toolkit/plotgrid.c, axlab_format.
+//
+//  Programmer: Hank Childs
+//  Creation:   July 11, 2000
+//
+//  Modifications:
+//    Eric Brugger, Tue Sep 18 09:18:17 PDT 2001
+//    Change a few static local variables to be non-static to get around a
+//    compiler bug with the MIPSpro 7.2.1.3 compiler.
+//
+//    Hank Childs, Tue Sep 18 11:58:33 PDT 2001
+//    Cast return value to get rid of compiler warning.
+//
+//    Kathleen Bonnell, Wed Oct 31 07:57:49 PST 2001 
+//    Moved from VisWinAxes3D.
+//
+//    Kathleen Bonnell, Wed Aug  6 13:59:15 PDT 2003 
+//    Added test for min==max.
+//
+// ****************************************************************************
+
+int
+LabelExponent(double min, double max)
+{
+    if (min == max)
+        return 0;
+
+    //
+    // Determine power of 10 to scale axis labels to.
+    //
+    double range = (fabs(min) > fabs(max) ? fabs(min) : fabs(max));
+    double pow10 = log10(range);
+
+    //
+    // Cutoffs for using scientific notation.  The following 4 variables
+    // should all be static for maximum performance but were made non-static
+    // to get around a compiler bug with the MIPSpro 7.2.1.3 compiler.
+    //
+    double eformat_cut_min = -1.5;
+    double eformat_cut_max =  3.0;
+    double cut_min = pow(10., eformat_cut_min);
+    double cut_max = pow(10., eformat_cut_max);
+    double ipow10;
+    if (range < cut_min || range > cut_max)
+    {
+        //
+        // We are going to use scientific notation and round the exponents to
+        // the nearest multiple of three.
+        //
+        ipow10 = (floor(floor(pow10)/3.))*3;
+    }
+    else
+    {
+        ipow10 = 0;
+    }
+
+    return (int)ipow10;
+}    
+
+
+
+// *************************************************************************
+//  Build the axes. Determine coordinates, position, etc. 
+//
+//  Note:  Bulk of code moved here from RenderOpaqueGeomtry.  
+//         Early-termination test added.
+//
+//  Programmer:  Kathleen Bonnell
+//  Creation:    November 7, 2001
+//
+//  Modifications:
+//    Kathleen Bonnell, Mon Dec  3 16:49:01 PST 2001
+//    Compare vtkTimeStamps correctly.
+//
+//    Kathleen Bonnell, Fri Jul 25 14:37:32 PDT 2003
+//    Added logic to compute and set for each axis the labels and title 
+//    scale size. 
+//
+//    Kathleen Bonnell, Wed Aug  6 13:59:15 PDT 2003 
+//    Indivdual axes now have their own ForceLabelReset.
+//
+//    Brad Whitlock, Wed Mar 26 14:00:56 PDT 2008
+//    Multiply the calculated label scales by a scale factor that the user
+//    provided.
+//
+//    Eric Brugger, Tue Oct 21 12:32:51 PDT 2008
+//    Added support for specifying tick mark locations.
+//
+//    Jeremy Meredith, Tue May 18 12:49:48 EDT 2010
+//    Renamed some instances of Range to Bounds to reflect their true
+//    usage (since in theory, the range of an axis need not be tied to
+//    its location in physical space).
+//
+//    Jeremy Meredith, Tue May 18 15:25:35 EDT 2010
+//    Removed call to AdjustAxes, as it now does nothing.
+//    Renamed a couple routines to be more descriptive.
+//    Added Ranges which are independent of Bounds.
+//
+// *************************************************************************
+
+void vtkVisItCubeAxesActor::BuildAxes(vtkViewport *viewport)
+{
+  double bounds[6]; 
+  double pts[8][3];
+  int i; 
+
+  bool labelPropsChanged = 
+      this->LabelTextProperty[0]->GetMTime() > this->BuildTime.GetMTime() ||
+      this->LabelTextProperty[1]->GetMTime() > this->BuildTime.GetMTime() ||
+      this->LabelTextProperty[2]->GetMTime() > this->BuildTime.GetMTime();
+  bool axesTicksChanged =
+      this->AdjustLabels != this->LastAdjustLabels ||
+      this->XMajorTickMinimum != this->LastXMajorTickMinimum ||
+      this->XMajorTickMaximum != this->LastXMajorTickMaximum ||
+      this->XMajorTickSpacing != this->LastXMajorTickSpacing ||
+      this->XMinorTickSpacing != this->LastXMinorTickSpacing ||
+      this->YMajorTickMinimum != this->LastYMajorTickMinimum ||
+      this->YMajorTickMaximum != this->LastYMajorTickMaximum ||
+      this->YMajorTickSpacing != this->LastYMajorTickSpacing ||
+      this->YMinorTickSpacing != this->LastYMinorTickSpacing ||
+      this->ZMajorTickMinimum != this->LastZMajorTickMinimum ||
+      this->ZMajorTickMaximum != this->LastZMajorTickMaximum ||
+      this->ZMajorTickSpacing != this->LastZMajorTickSpacing ||
+      this->ZMinorTickSpacing != this->LastZMinorTickSpacing;
+
+  if ((this->GetMTime() < this->BuildTime.GetMTime()) &&
+      !labelPropsChanged && !axesTicksChanged
+     ) 
+    {
+    return;
+    }
+  this->SetNonDependentAttributes();
+  // determine the bounds to use (input, prop, or user-defined)
+  this->GetBounds(bounds);
+
+
+  // Build the axes (almost always needed so we don't check mtime)
+  // Transform all points into display coordinates (to determine which closest
+  // to camera).
+
+  this->TransformBounds(viewport, bounds, pts);
+
+  // Setup the axes for plotting
+  double xCoords[4][6], yCoords[4][6], zCoords[4][6];
+
+  // these arrays are accessed by 'location':  mm, mX, XX, or Xm.
+  int mm1[4] = { 0, 0, 1, 1 };
+  int mm2[4] = { 0, 1, 1, 0 };
+
+  for (i = 0; i < 4; i++)
+    {
+    this->XAxes[i]->SetAxisPosition(i);
+    xCoords[i][0] = bounds[0];
+    xCoords[i][3] = bounds[1];
+    xCoords[i][1] = xCoords[i][4] = bounds[2+mm1[i]];
+    xCoords[i][2] = xCoords[i][5] = bounds[4+mm2[i]];
+
+    this->YAxes[i]->SetAxisPosition(i);
+    yCoords[i][0] = yCoords[i][3] = bounds[0+mm1[i]];
+    yCoords[i][1] = bounds[2];
+    yCoords[i][4] = bounds[3];
+    yCoords[i][2] = yCoords[i][5] = bounds[4+mm2[i]];
+
+    this->ZAxes[i]->SetAxisPosition(i);
+    zCoords[i][0] = zCoords[i][3] = bounds[0+mm1[i]];
+    zCoords[i][1] = zCoords[i][4] = bounds[2+mm2[i]];
+    zCoords[i][2] = bounds[4];
+    zCoords[i][5] = bounds[5];
+    }
+
+  // adjust for sci. notation if necessary 
+  // May set a flag for each axis specifying that label values should
+  // be scaled, may change title of each axis, may change label format.
+  this->ComputeLabelExponent(this->Ranges);
+  this->ComputeLabelFormat(this->Ranges);
+
+  // Prepare axes for rendering with user-definable options 
+  for (i = 0; i < 4; i++)
+    {
+    this->XAxes[i]->GetPoint1Coordinate()->SetValue(xCoords[i][0], 
+                                                    xCoords[i][1],
+                                                    xCoords[i][2]);
+    this->XAxes[i]->GetPoint2Coordinate()->SetValue(xCoords[i][3], 
+                                                    xCoords[i][4],
+                                                    xCoords[i][5]);
+    this->YAxes[i]->GetPoint1Coordinate()->SetValue(yCoords[i][0], 
+                                                    yCoords[i][1],
+                                                    yCoords[i][2]);
+    this->YAxes[i]->GetPoint2Coordinate()->SetValue(yCoords[i][3], 
+                                                    yCoords[i][4],
+                                                    yCoords[i][5]);
+    this->ZAxes[i]->GetPoint1Coordinate()->SetValue(zCoords[i][0], 
+                                                    zCoords[i][1],
+                                                    zCoords[i][2]);
+    this->ZAxes[i]->GetPoint2Coordinate()->SetValue(zCoords[i][3], 
+                                                    zCoords[i][4],
+                                                    zCoords[i][5]);
+
+
+    this->XAxes[i]->SetRange(this->Ranges[0], this->Ranges[1]);
+    this->YAxes[i]->SetRange(this->Ranges[2], this->Ranges[3]);
+    this->ZAxes[i]->SetRange(this->Ranges[4], this->Ranges[5]);
+
+
+    this->XAxes[i]->SetTitle(this->ActualXLabel);
+    this->YAxes[i]->SetTitle(this->ActualYLabel);
+    this->ZAxes[i]->SetTitle(this->ActualZLabel);
+    }
+
+
+  bool ticksRecomputed = this->ComputeTickSize(bounds);
+
+  //
+  // Labels are built during ComputeTickSize. if
+  // ticks were not recomputed, but we need a label
+  // reset, then build the labels here. 
+  //
+  if (!ticksRecomputed)
+    {
+    if (this->ForceXLabelReset || axesTicksChanged)
+      BuildLabels(this->XAxes);
+    if (this->ForceYLabelReset || axesTicksChanged)
+      BuildLabels(this->YAxes);
+    if (this->ForceZLabelReset || axesTicksChanged)
+      BuildLabels(this->ZAxes);
+    }
+
+  if (ticksRecomputed || axesTicksChanged || this->ForceXLabelReset ||
+      this->ForceYLabelReset || this->ForceZLabelReset ||
+      this->scalingChanged)
+    {
+    // labels were re-built, need to recompute the scale. 
+    double center[3]; 
+
+    center[0] = (this->Bounds[1] - this->Bounds[0]) * 0.5;
+    center[1] = (this->Bounds[3] - this->Bounds[2]) * 0.5;
+    center[2] = (this->Bounds[5] - this->Bounds[4]) * 0.5;
+
+
+    double lenX = this->XAxes[0]->ComputeMaxLabelLength(center);
+    double lenY = this->YAxes[0]->ComputeMaxLabelLength(center);
+    double lenZ = this->ZAxes[0]->ComputeMaxLabelLength(center);
+    double lenTitleX = this->XAxes[0]->ComputeTitleLength(center);
+    double lenTitleY = this->YAxes[0]->ComputeTitleLength(center);
+    double lenTitleZ = this->ZAxes[0]->ComputeTitleLength(center);
+    double maxLabelLength = MaxOf(lenX, lenY, lenZ, 0.);
+    double maxTitleLength = MaxOf(lenTitleX, lenTitleY, lenTitleZ, 0.);
+    double bWidth  = this->Bounds[1] - this->Bounds[0];
+    double bHeight = this->Bounds[3] - this->Bounds[2];
+
+    double bLength = sqrt(bWidth*bWidth + bHeight*bHeight);
+
+    double target = bLength *0.04;
+    double labelscale = 1.;
+    if (maxLabelLength != 0.)
+      {
+      labelscale = target / maxLabelLength;
+      }
+    target = bLength *0.10;
+    double titlescale = 1.;
+    if (maxTitleLength != 0.)
+      {
+      titlescale = target / maxTitleLength;
+      }
+ 
+    //
+    // Allow a bit bigger title if we have units, otherwise
+    // the title may be too small to read.
+    //
+    if (XUnits != NULL && XUnits[0] != '\0')
+        titlescale *= 2;
+
+    for (i = 0; i < 4; i++)
+      {
+      this->XAxes[i]->SetLabelScale(labelscale * this->LabelScale[0]);
+      this->YAxes[i]->SetLabelScale(labelscale * this->LabelScale[1]);
+      this->ZAxes[i]->SetLabelScale(labelscale * this->LabelScale[2]);
+      this->XAxes[i]->SetTitleScale(titlescale * this->TitleScale[0]);
+      this->YAxes[i]->SetTitleScale(titlescale * this->TitleScale[1]);
+      this->ZAxes[i]->SetTitleScale(titlescale * this->TitleScale[2]);
+      }
+    this->scalingChanged = false;
+    }
+  this->RenderSomething = true;
+  this->BuildTime.Modified();
+  this->LastFlyMode = this->FlyMode;
+
+  this->LastAdjustLabels = this->AdjustLabels;
+  this->LastXMajorTickMinimum = this->XMajorTickMinimum;
+  this->LastXMajorTickMaximum = this->XMajorTickMaximum;
+  this->LastXMajorTickSpacing = this->XMajorTickSpacing;
+  this->LastXMinorTickSpacing = this->XMinorTickSpacing;
+  this->LastYMajorTickMinimum = this->YMajorTickMinimum;
+  this->LastYMajorTickMaximum = this->YMajorTickMaximum;
+  this->LastYMajorTickSpacing = this->YMajorTickSpacing;
+  this->LastYMinorTickSpacing = this->YMinorTickSpacing;
+  this->LastZMajorTickMinimum = this->ZMajorTickMinimum;
+  this->LastZMajorTickMaximum = this->ZMajorTickMaximum;
+  this->LastZMajorTickSpacing = this->ZMajorTickSpacing;
+  this->LastZMinorTickSpacing = this->ZMinorTickSpacing;
+}
+
+
+// *************************************************************************
+//  Sends attributes to each vtkVisItAxisActor.  Only sets those that are 
+//  not dependent upon viewport changes, and thus do not need to be set 
+//  very often.
+//
+//  Programmer:  Kathleen Bonnell
+//  Creation:    November 7, 2001
+//
+//  Modifications:
+//    Kathleen Bonnell, Thu Oct  3 14:33:15 PDT 2002
+//    Disable lighting for the axes by setting the ambient coefficient to 1
+//    and the diffuse coeeficient to 0.
+//
+//    Brad Whitlock, Wed Mar 26 13:49:16 PDT 2008
+//    Set the title and label properties for each axis actor.
+//
+//    Eric Brugger, Tue Oct 21 12:32:51 PDT 2008
+//    Added support for specifying tick mark locations.
+//
+//    Jeremy Meredith, Wed May  5 14:31:37 EDT 2010
+//    Added support for title visibility separate from label visibility.
+//
+// *************************************************************************
+
+void vtkVisItCubeAxesActor::SetNonDependentAttributes()
+{
+  vtkProperty *prop = this->GetProperty();
+  prop->SetAmbient(1.0);
+  prop->SetDiffuse(0.0);
+  for (int i = 0; i < 4; i++)
+    {
+    this->XAxes[i]->SetCamera(this->Camera);
+    this->XAxes[i]->SetProperty(prop);
+    this->XAxes[i]->SetTitleTextProperty(this->TitleTextProperty[0]);
+    this->XAxes[i]->SetLabelTextProperty(this->LabelTextProperty[0]);
+    this->XAxes[i]->SetTickLocation(this->TickLocation);
+    this->XAxes[i]->SetDrawGridlines(this->DrawXGridlines);
+    this->XAxes[i]->SetBounds(this->Bounds);
+    this->XAxes[i]->AxisVisibilityOn();
+    this->XAxes[i]->SetLabelVisibility(this->XAxisLabelVisibility);
+    this->XAxes[i]->SetTitleVisibility(this->XAxisTitleVisibility);
+    this->XAxes[i]->SetTickVisibility(this->XAxisTickVisibility);
+    this->XAxes[i]->SetMinorTicksVisible(this->XAxisMinorTickVisibility);
+    this->XAxes[i]->SetAdjustLabels(this->AdjustLabels);
+    this->XAxes[i]->SetMajorTickMinimum(this->XMajorTickMinimum);
+    this->XAxes[i]->SetMajorTickMaximum(this->XMajorTickMaximum);
+    this->XAxes[i]->SetMajorTickSpacing(this->XMajorTickSpacing);
+    this->XAxes[i]->SetMinorTickSpacing(this->XMinorTickSpacing);
+
+    this->YAxes[i]->SetCamera(this->Camera);
+    this->YAxes[i]->SetProperty(prop);
+    this->YAxes[i]->SetTitleTextProperty(this->TitleTextProperty[1]);
+    this->YAxes[i]->SetLabelTextProperty(this->LabelTextProperty[1]);
+    this->YAxes[i]->SetTickLocation(this->TickLocation);
+    this->YAxes[i]->SetDrawGridlines(this->DrawYGridlines);
+    this->YAxes[i]->SetBounds(this->Bounds);
+    this->YAxes[i]->AxisVisibilityOn();
+    this->YAxes[i]->SetLabelVisibility(this->YAxisLabelVisibility);
+    this->YAxes[i]->SetTitleVisibility(this->YAxisTitleVisibility);
+    this->YAxes[i]->SetTickVisibility(this->YAxisTickVisibility);
+    this->YAxes[i]->SetMinorTicksVisible(this->YAxisMinorTickVisibility);
+    this->YAxes[i]->SetAdjustLabels(this->AdjustLabels);
+    this->YAxes[i]->SetMajorTickMinimum(this->YMajorTickMinimum);
+    this->YAxes[i]->SetMajorTickMaximum(this->YMajorTickMaximum);
+    this->YAxes[i]->SetMajorTickSpacing(this->YMajorTickSpacing);
+    this->YAxes[i]->SetMinorTickSpacing(this->YMinorTickSpacing);
+
+    this->ZAxes[i]->SetCamera(this->Camera);
+    this->ZAxes[i]->SetProperty(prop);
+    this->ZAxes[i]->SetTitleTextProperty(this->TitleTextProperty[2]);
+    this->ZAxes[i]->SetLabelTextProperty(this->LabelTextProperty[2]);
+    this->ZAxes[i]->SetTickLocation(this->TickLocation);
+    this->ZAxes[i]->SetDrawGridlines(this->DrawZGridlines);
+    this->ZAxes[i]->SetBounds(this->Bounds);
+    this->ZAxes[i]->AxisVisibilityOn();
+    this->ZAxes[i]->SetLabelVisibility(this->ZAxisLabelVisibility);
+    this->ZAxes[i]->SetTitleVisibility(this->ZAxisTitleVisibility);
+    this->ZAxes[i]->SetTickVisibility(this->ZAxisTickVisibility);
+    this->ZAxes[i]->SetMinorTicksVisible(this->ZAxisMinorTickVisibility);
+    this->ZAxes[i]->SetAdjustLabels(this->AdjustLabels);
+    this->ZAxes[i]->SetMajorTickMinimum(this->ZMajorTickMinimum);
+    this->ZAxes[i]->SetMajorTickMaximum(this->ZMajorTickMaximum);
+    this->ZAxes[i]->SetMajorTickSpacing(this->ZMajorTickSpacing);
+    this->ZAxes[i]->SetMinorTickSpacing(this->ZMinorTickSpacing);
+    }
+}
+
+// Static variable describes locations in cube, relative to the type
+// of axis:  mm for an X-axis means the x-edge at min-y and min-z.
+// mX for a Y-axis means the y-edge at min-x and max-z, and so on.
+
+enum {mm = 0, mX, XX, Xm };
+//
+// For CLOSEST_TRIAD, and FURTHEST_TRIAD, this variable determines 
+// which locations in the cube each 'Major' axis should take.
+//
+static int Triads[8][3] = {{mm,mm,mm}, {mm,Xm,Xm}, {Xm,mm,mX}, {Xm,Xm,XX},
+                           {mX,mX,mm}, {mX,XX,Xm}, {XX,mX,mX}, {XX,XX,XX}};
+static int Conn[8][3] = {{1,2,4}, {0,3,5}, {3,0,6}, {2,1,7},
+                         {5,6,0}, {4,7,1}, {7,4,2}, {6,5,3}};
+
+// *************************************************************************
+// Determine which of the axes in each coordinate direction actually should
+// be rendered.  For STATIC FlyMode, all axes are rendered.  For other
+// FlyModes, either 1 or 2 per coordinate direction are rendered.
+//
+// Programmer:  Kathleen Bonnell
+// Creation:    November 7, 2001
+// 
+// Modifications:
+//   Kathleen Bonnell, Thu Jul 18 10:33:07 PDT 2002  
+//   Ensure that primary axes visibility flags are set properly, and
+//   that secondary axes visibility flags are turned off.
+//
+//   Jeremy Meredith, Wed May  5 14:31:37 EDT 2010
+//   Added support for title visibility separate from label visibility.
+// *************************************************************************
+void vtkVisItCubeAxesActor::DetermineRenderAxes(vtkViewport *viewport)
+{
+  double bounds[6];
+  double slope = 0.0;
+  double minSlope;
+  double num;
+  double den;
+  double pts[8][3];
+  double d2;
+  double d2Min;
+  double min;
+  double max;
+  int i, idx = 0;
+  int xIdx; 
+  int yIdx = 0;
+  int zIdx = 0;
+  int zIdx2;
+  int xAxes = 0; 
+  int yAxes; 
+  int zAxes;
+  int xloc = 0; 
+  int yloc = 0; 
+  int zloc = 0;
+ 
+  if (this->FlyMode == VTK_FLY_STATIC_EDGES) 
+    {
+    for (i = 0; i < 4; i++)
+      {
+      this->renderAxesX[i] = i; 
+      this->renderAxesY[i] = i; 
+      this->renderAxesZ[i] = i; 
+      }
+    this->numAxesX = this->numAxesY = this->numAxesZ = 4;
+    return;
+    }
+  if (this->FlyMode == VTK_FLY_STATIC_TRIAD) 
+    {
+    this->renderAxesX[0] = 0; 
+    this->renderAxesY[0] = 0; 
+    this->renderAxesZ[0] = 0; 
+    if (this->DrawXGridlines)
+      {
+      this->renderAxesX[1] = 2; 
+      this->numAxesX = 2; 
+      this->XAxes[renderAxesX[1]]->SetTickVisibility(false);
+      this->XAxes[renderAxesX[1]]->SetLabelVisibility(false);
+      this->XAxes[renderAxesX[1]]->SetTitleVisibility(false);
+      this->XAxes[renderAxesX[1]]->SetMinorTicksVisible(false);
+      }
+    else 
+      {
+      this->numAxesX = 1; 
+      }
+    if (this->DrawYGridlines)
+      {
+      this->renderAxesY[1] = 2; 
+      this->numAxesY = 2; 
+      this->YAxes[renderAxesY[1]]->SetTickVisibility(false);
+      this->YAxes[renderAxesY[1]]->SetLabelVisibility(false);
+      this->YAxes[renderAxesY[1]]->SetTitleVisibility(false);
+      this->YAxes[renderAxesY[1]]->SetMinorTicksVisible(false);
+      }
+    else 
+      {
+      this->numAxesY = 1; 
+      }
+    if (this->DrawZGridlines)
+      {
+      this->renderAxesZ[1] = 2; 
+      this->numAxesZ = 2; 
+      this->ZAxes[renderAxesZ[1]]->SetTickVisibility(false);
+      this->ZAxes[renderAxesZ[1]]->SetLabelVisibility(false);
+      this->ZAxes[renderAxesZ[1]]->SetTitleVisibility(false);
+      this->ZAxes[renderAxesZ[1]]->SetMinorTicksVisible(false);
+      }
+    else 
+      {
+      this->numAxesZ = 1; 
+      }
+    return;
+    }
+
+  // determine the bounds to use (input, prop, or user-defined)
+  this->GetBounds(bounds);
+  this->TransformBounds(viewport, bounds, pts);
+
+  // Take into account the inertia. Process only so often.
+  if (this->RenderCount++ == 0 || !(this->RenderCount % this->Inertia))
+    {
+    if (this->FlyMode == VTK_FLY_CLOSEST_TRIAD)
+      {
+      // Loop over points and find the closest point to the camera
+      min = VTK_FLOAT_MAX;
+      for (i=0; i < 8; i++)
+        {
+        if (pts[i][2] < min)
+          {
+          idx = i;
+          min = pts[i][2];
+          }
+        }
+      xloc = Triads[idx][0];
+      yloc = Triads[idx][1];
+      zloc = Triads[idx][2];
+
+      } // closest-triad
+    else if (this->FlyMode == VTK_FLY_FURTHEST_TRIAD)
+      {
+      // Loop over points and find the furthest point from the camera
+      max = VTK_FLOAT_MIN;
+      for (i=0; i < 8; i++)
+        {
+        if (pts[i][2] > max)
+          {
+          idx = i;
+          max = pts[i][2];
+          }
+        }
+      xloc = Triads[idx][0];
+      yloc = Triads[idx][1];
+      zloc = Triads[idx][2];
+
+      } // furthest-triad
+    else
+      {
+      double e1[3], e2[3], e3[3];
+
+      // Find distance to origin
+      d2Min = VTK_FLOAT_MAX;
+      for (i=0; i < 8; i++)
+        {
+        d2 = pts[i][0]*pts[i][0] + pts[i][1]*pts[i][1];
+        if (d2 < d2Min)
+          {
+          d2Min = d2;
+          idx = i;
+          }
+        }
+
+      // find minimum slope point connected to closest point and on 
+      // right side (in projected coordinates). This is the first edge.
+      minSlope = VTK_FLOAT_MAX;
+      for (xIdx=0, i=0; i<3; i++)
+        {
+        num = (pts[Conn[idx][i]][1] - pts[idx][1]);
+        den = (pts[Conn[idx][i]][0] - pts[idx][0]);
+        if (den != 0.0)
+          {
+          slope = num / den;
+          }
+        if (slope < minSlope && den > 0)
+          {
+          xIdx = Conn[idx][i];
+          yIdx = Conn[idx][(i+1)%3];
+          zIdx = Conn[idx][(i+2)%3];
+          xAxes = i;
+          minSlope = slope;
+          }
+        }
+
+      // find edge (connected to closest point) on opposite side
+      for ( i=0; i<3; i++)
+        {
+        e1[i] = (pts[xIdx][i] - pts[idx][i]);
+        e2[i] = (pts[yIdx][i] - pts[idx][i]);
+        e3[i] = (pts[zIdx][i] - pts[idx][i]);
+        }
+      vtkMath::Normalize(e1);
+      vtkMath::Normalize(e2);
+      vtkMath::Normalize(e3);
+
+      if (vtkMath::Dot(e1,e2) < vtkMath::Dot(e1,e3))
+        {
+        yAxes = (xAxes + 1) % 3;
+        }
+      else
+        {
+        yIdx = zIdx;
+        yAxes = (xAxes + 2) % 3;
+        }
+
+      // Find the final point by determining which global x-y-z axes have not 
+      // been represented, and then determine the point closest to the viewer.
+      zAxes = (xAxes != 0 && yAxes != 0 ? 0 :
+              (xAxes != 1 && yAxes != 1 ? 1 : 2));
+      if (pts[Conn[xIdx][zAxes]][2] < pts[Conn[yIdx][zAxes]][2])
+        {
+        zIdx = xIdx;
+        zIdx2 = Conn[xIdx][zAxes];
+        }
+      else
+        {
+        zIdx = yIdx;
+        zIdx2 = Conn[yIdx][zAxes];
+        }
+
+      int mini = (idx < xIdx ? idx : xIdx);
+      switch (xAxes)
+        {
+        case 0 : xloc = Triads[mini][0]; break;
+        case 1 : yloc = Triads[mini][1]; break;
+        case 2 : zloc = Triads[mini][2]; break;
+        }
+      mini = (idx < yIdx ? idx : yIdx);
+      switch (yAxes)
+        {
+        case 0 : xloc = Triads[mini][0]; break;
+        case 1 : yloc = Triads[mini][1]; break;
+        case 2 : zloc = Triads[mini][2]; break;
+        }
+      mini = (zIdx < zIdx2 ? zIdx : zIdx2);
+      switch (zAxes)
+        {
+        case 0 : xloc = Triads[mini][0]; break;
+        case 1 : yloc = Triads[mini][1]; break;
+        case 2 : zloc = Triads[mini][2]; break;
+        }
+
+      }//else boundary edges fly mode
+
+    this->InertiaLocs[0] = xloc;
+    this->InertiaLocs[1] = yloc;
+    this->InertiaLocs[2] = zloc;
+    } //inertia
+  else
+    {
+    // don't change anything, use locations from last render
+    xloc = this->InertiaLocs[0];
+    yloc = this->InertiaLocs[1];
+    zloc = this->InertiaLocs[2];
+    }
+  
+ 
+  this->renderAxesX[0] = xloc % 4;
+  if (this->DrawXGridlines)
+    { 
+    this->renderAxesX[1] = (xloc + 2) % 4;
+    this->numAxesX = 2;
+    this->XAxes[renderAxesX[1]]->SetTickVisibility(false);
+    this->XAxes[renderAxesX[1]]->SetLabelVisibility(false);
+    this->XAxes[renderAxesX[1]]->SetTitleVisibility(false);
+    this->XAxes[renderAxesX[1]]->SetMinorTicksVisible(false);
+    } 
+  else
+    { 
+    this->numAxesX = 1;
+    } 
+
+  this->renderAxesY[0] = yloc % 4;
+  if (this->DrawYGridlines)
+    { 
+    this->renderAxesY[1] = (yloc + 2) % 4;
+    this->numAxesY = 2;
+    this->YAxes[renderAxesY[1]]->SetTickVisibility(false);
+    this->YAxes[renderAxesY[1]]->SetLabelVisibility(false);
+    this->YAxes[renderAxesY[1]]->SetTitleVisibility(false);
+    this->YAxes[renderAxesY[1]]->SetMinorTicksVisible(false);
+    } 
+  else
+    { 
+    this->numAxesY = 1;
+    } 
+
+  this->renderAxesZ[0] = zloc % 4;
+  if (this->DrawZGridlines)
+    { 
+    this->renderAxesZ[1] = (zloc + 2) % 4;
+    this->numAxesZ = 2;
+    this->ZAxes[renderAxesZ[1]]->SetTickVisibility(false);
+    this->ZAxes[renderAxesZ[1]]->SetLabelVisibility(false);
+    this->ZAxes[renderAxesZ[1]]->SetTitleVisibility(false);
+    this->ZAxes[renderAxesZ[1]]->SetMinorTicksVisible(false);
+    } 
+  else
+    { 
+    this->numAxesZ = 1;
+    } 
+  //
+  //  Make sure that the primary axis visibility flags are set correctly.
+  //
+  this->XAxes[renderAxesX[0]]->SetLabelVisibility(this->XAxisLabelVisibility);
+  this->XAxes[renderAxesX[0]]->SetTitleVisibility(this->XAxisTitleVisibility);
+  this->XAxes[renderAxesX[0]]->SetTickVisibility(this->XAxisTickVisibility);
+  this->XAxes[renderAxesX[0]]->SetMinorTicksVisible(this->XAxisMinorTickVisibility);
+
+  this->YAxes[renderAxesY[0]]->SetLabelVisibility(this->YAxisLabelVisibility);
+  this->YAxes[renderAxesY[0]]->SetTitleVisibility(this->YAxisTitleVisibility);
+  this->YAxes[renderAxesY[0]]->SetTickVisibility(this->YAxisTickVisibility);
+  this->YAxes[renderAxesY[0]]->SetMinorTicksVisible(this->YAxisMinorTickVisibility);
+
+  this->ZAxes[renderAxesZ[0]]->SetLabelVisibility(this->ZAxisLabelVisibility);
+  this->ZAxes[renderAxesZ[0]]->SetTitleVisibility(this->ZAxisTitleVisibility);
+  this->ZAxes[renderAxesZ[0]]->SetTickVisibility(this->ZAxisTickVisibility);
+  this->ZAxes[renderAxesZ[0]]->SetMinorTicksVisible(this->ZAxisMinorTickVisibility);
+}
+
+double
+MaxOf(double a, double b)
+{
+    return (a > b ? a : b); 
+}
+
+double
+MaxOf(double a, double b, double c, double d)
+{
+    return MaxOf(MaxOf(a, b), MaxOf(c, d));
+}
+
+
+
+inline double ffix(double value)
+{
+  int ivalue = (int)value;
+  return (double) ivalue;
+}
+
+inline double fsign(double value, double sign)
+{
+  value = fabs(value);
+  if (sign < 0.)
+    {
+    value *= -1.;
+    }
+  return value;
+}
+
+// *******************************************************************
+// Method: vtkVisItCubeAxesActor::AdjustTicksComputeRange
+//
+// Purpose: Sets private members controlling the number and position
+//          of ticks.
+//   
+// Arguments:
+//   inRange   The range for this axis.
+//
+// Note:    The bulk of this method was taken from vtkHankAxisActor.C
+//          The original method was reduced to serve the purposes
+//          of this class.   
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   29 August, 2001 
+//
+// Modifications:
+//   Kathleen Bonnell, Fri Jul 25 14:37:32 PDT 2003
+//   Moved from vtkVisItAxisActor. Added calls to set inividual axis'
+//   MajorStart, MinorStart, deltaMajor, deltaMinor. 
+//
+//   Jeremy Meredith, Tue May 18 15:27:11 EDT 2010
+//   Fixed the calculation for major/minor start when the range start
+//   is positive -- in the old way, you would miss the first label/
+//   tick if it fell exactly at the beginning of the drawn range.
+//
+// *******************************************************************
+
+void 
+vtkVisItCubeAxesActor::AdjustTicksComputeRange(vtkVisItAxisActor *axes[4]) 
+{
+  double sortedRange[2], range;
+  double fxt, fnt, frac;
+  double div, major, minor;
+  double majorStart, minorStart; 
+  int numTicks;
+  double *inRange = axes[0]->GetRange();
+
+  sortedRange[0] = (double)(inRange[0] < inRange[1] ? inRange[0] : inRange[1]);
+  sortedRange[1] = (double)(inRange[0] > inRange[1] ? inRange[0] : inRange[1]);
+
+  range = sortedRange[1] - sortedRange[0];
+
+  // Find the integral points.
+  double pow10 = log10(range);
+
+
+  // Build in numerical tolerance
+  if (pow10 != 0.)
+    {
+    double eps = 10.0e-10;
+    pow10 = fsign((fabs(pow10) + eps), pow10);
+    }
+
+  // ffix move you in the wrong direction if pow10 is negative.
+  if (pow10 < 0.)
+    {
+    pow10 = pow10 - 1.;
+    }
+
+  fxt = pow(10., ffix(pow10));
+    
+  // Find the number of integral points in the interval.
+  fnt  = range/fxt;
+  fnt  = ffix(fnt);
+  frac = fnt;
+  numTicks = (frac <= 0.5 ? (int)ffix(fnt) : ((int)ffix(fnt) + 1));
+
+  div = 1.;
+  if (numTicks < 5)
+    {
+    div = 2.;
+    }
+  if (numTicks <= 2)
+    {
+    div = 5.;
+    }
+
+  // If there aren't enough major tick points in this decade, use the next
+  // decade.
+  major = fxt;
+  if (div != 1.)
+    {
+    major /= div;
+    }
+  minor = (fxt/div) / 10.;
+
+  // Figure out the first major and minor tick locations, relative to the
+  // start of the axis.
+  if (sortedRange[0] <= 0.)
+    {
+    majorStart = major*(ffix(sortedRange[0]*(1./major)));
+    minorStart = minor*(ffix(sortedRange[0]*(1./minor)));
+    }
+  else
+    {
+    majorStart = major*(ffix(sortedRange[0]*(1./major) + .999));
+    minorStart = minor*(ffix(sortedRange[0]*(1./minor) + .999));
+    }
+
+  for (int i = 0; i < 4; i++)
+    {
+    axes[i]->SetMinorStart(minorStart); 
+    axes[i]->SetMajorStart(majorStart); 
+
+    axes[i]->SetDeltaMinor(minor); 
+    axes[i]->SetDeltaMajor(major); 
+    }
+}
+
+
+// ****************************************************************
+//  Determine what the labels should be and set them in each axis.
+//
+//  Modification:
+//    Kathleen Bonnell, Wed Aug  6 13:59:15 PDT 2003
+//    Each axis type now has it's own 'mustAdjustValue' and 'pow'.
+//
+//    Kathleen Bonnell, Tue Jul 20 14:29:10 PDT 2004 
+//    Ensure that '-0.0' is never used as a label. 
+//
+//    Eric Brugger, Mon Jul 26 16:09:26 PDT 2004
+//    Correct a bug with a misplaced closing parenthesis.
+//
+//    Eric Brugger, Tue Oct 21 12:32:51 PDT 2008
+//    Added support for specifying tick mark locations.
+//
+//    Jeremy Meredith, Tue May 18 15:28:38 EDT 2010
+//    We now use the Range of axis as the, well, Range of the axis.
+//    (Previously we ignored the Axis set for the Range, and
+//    used the physical extents of the problem as the Range.)
+//
+// ****************************************************************
+
+void
+vtkVisItCubeAxesActor::BuildLabels(vtkVisItAxisActor *axes[4])
+{
+  char label[64];
+  int i, labelCount = 0;
+  double majorStart = axes[0]->GetMajorStart();
+  const double deltaMajor = axes[0]->GetDeltaMajor();
+  const double *range     = axes[0]->GetRange();
+  const double majorTickMinimum = axes[0]->GetMajorTickMinimum();
+  const double majorTickMaximum = axes[0]->GetMajorTickMaximum();
+  const double majorTickSpacing = axes[0]->GetMajorTickSpacing();
+  double firstVal, deltaVal, lastVal = 0, val;
+  double extents = range[1] - range[0];
+  bool mustAdjustValue = true;
+  int lastPow = 0;
+  
+  vector<string> labels; 
+  const char *format = NULL;
+  switch (axes[0]->GetAxisType())
+    {
+    case VTK_AXIS_TYPE_X : 
+        lastVal = this->Ranges[1]; 
+        format = this->XLabelFormat;
+        mustAdjustValue = this->mustAdjustXValue;
+        lastPow = this->lastXPow;
+        break; 
+    case VTK_AXIS_TYPE_Y : 
+        lastVal = this->Ranges[3]; 
+        format = this->YLabelFormat;
+        mustAdjustValue = this->mustAdjustYValue;
+        lastPow = this->lastYPow;
+        break; 
+    case VTK_AXIS_TYPE_Z : 
+        lastVal = this->Ranges[5]; 
+        format = this->ZLabelFormat;
+        mustAdjustValue = this->mustAdjustZValue;
+        lastPow = this->lastZPow;
+        break; 
+    }
+
+  if (this->AdjustLabels)
+    {
+    firstVal = majorStart;
+    deltaVal = deltaMajor;
+    }
+  else
+    {
+    firstVal = majorTickMinimum +
+        ceil((majorStart - majorTickMinimum) / majorTickSpacing) *
+        majorTickSpacing;
+    firstVal = firstVal > majorTickMinimum ? firstVal : majorTickMinimum;
+    lastVal = majorTickMaximum < lastVal ? majorTickMaximum : lastVal;
+    lastVal = lastVal + majorTickSpacing / 1e6;
+    deltaVal = majorTickSpacing;
+    }
+
+  // figure out how many labels we need:
+  val = firstVal;
+  while (val <= lastVal && labelCount < VTK_MAX_LABELS)
+    {
+    labelCount++;
+    val += deltaVal;
+    }
+
+  val = firstVal;
+
+  double scaleFactor = 1.;
+  if (lastPow != 0)
+     scaleFactor = 1.0/pow(10., lastPow);
+
+  for (i = 0; i < labelCount; i++)
+    {
+    if (fabs(val) < 0.01 && extents > 1)
+      {
+      // We just happened to fall at something near zero and the range is
+      // large, so set it to zero to avoid ugliness.
+      val = 0.;  
+      }
+    if (mustAdjustValue) 
+      {
+      SNPRINTF(label,64, format, val*scaleFactor);
+      }
+    else
+      {
+      SNPRINTF(label,64, format, val);
+      }
+    if (fabs(val) < 0.01)
+      {
+      // 
+      // Ensure that -0.0 is never a label
+      // The maximum number of digits that we allow past the decimal is 5.
+      // 
+      if (strcmp(label, "-0") == 0) 
+        SNPRINTF(label, 64, "0");
+      else if (strcmp(label, "-0.0") == 0) 
+        SNPRINTF(label, 64, "0.0");
+      else if (strcmp(label, "-0.00") == 0) 
+        SNPRINTF(label, 64, "0.00");
+      else if (strcmp(label, "-0.000") == 0) 
+        SNPRINTF(label, 64, "0.000");
+      else if (strcmp(label, "-0.0000") == 0)
+        SNPRINTF(label, 64, "0.0000");
+      else if (strcmp(label, "-0.00000") == 0)
+        SNPRINTF(label, 64, "0.00000");
+      }
+    labels.push_back(label);
+    val += deltaVal;
+    }
+  for (i = 0; i < 4; i++)
+    {
+        axes[i]->SetLabels(labels);
+    }
+}
+
+// ****************************************************************************
+//  Set automatic label scaling mode, set exponents for each axis type. 
+//
+// ****************************************************************************
+void
+vtkVisItCubeAxesActor::SetLabelScaling(bool autoscale, int upowX, int upowY, 
+                                     int upowZ)
+{
+
+  if (autoscale != autoLabelScaling || upowX != userXPow ||
+      upowY != userYPow || upowZ != userZPow)
+    {
+    autoLabelScaling = autoscale;
+    userXPow = upowX;
+    userYPow = upowY;
+    userZPow = upowZ;
+    this->Modified();
+    } 
+}
+
+// ****************************************************************************
+// Method: vtkVisItCubeAxesActor::GetTitleTextProperty
+//
+// Purpose: 
+//   Gets the i'th title text property.
+//
+// Arguments:
+//   axis : The axis 0,1,2.
+//
+// Returns:    A text property or NULL.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Mar 26 16:21:54 PDT 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+vtkTextProperty *
+vtkVisItCubeAxesActor::GetTitleTextProperty(int axis)
+{
+    return (axis >= 0 && axis < 3) ? this->TitleTextProperty[axis] : NULL;
+}
+
+// ****************************************************************************
+// Method: vtkVisItCubeAxesActor::GetLabelTextProperty
+//
+// Purpose: 
+//   Gets the i'th label text property.
+//
+// Arguments:
+//   axis : The axis 0,1,2.
+//
+// Returns:    A text property or NULL.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Mar 26 16:21:54 PDT 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+vtkTextProperty *
+vtkVisItCubeAxesActor::GetLabelTextProperty(int axis)
+{
+    return (axis >= 0 && axis < 3) ? this->LabelTextProperty[axis] : NULL;
+}
+
+// ****************************************************************************
+// Method: vtkVisItCubeAxesActor::SetTitleScale
+//
+// Purpose: 
+//   Sets the scale used for the titles on the different axes.
+//
+// Arguments:
+//   s0 : Scale for the X axis.
+//   s1 : Scale for the Y axis.
+//   s2 : Scale for the Z axis.
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Mar 26 16:20:49 PDT 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+vtkVisItCubeAxesActor::SetTitleScale(double s0, double s1, double s2)
+{
+    if(this->TitleScale[0] != s0 ||
+       this->TitleScale[1] != s1 ||
+       this->TitleScale[2] != s2)
+    {
+        this->TitleScale[0] = s0;
+        this->TitleScale[1] = s1;
+        this->TitleScale[2] = s2;
+        this->scalingChanged = true;
+        this->Modified();
+    }
+}
+
+// ****************************************************************************
+// Method: vtkVisItCubeAxesActor::SetLabelScale
+//
+// Purpose: 
+//   Sets the scale used for the labels on the different axes.
+//
+// Arguments:
+//   s0 : Scale for the X axis.
+//   s1 : Scale for the Y axis.
+//   s2 : Scale for the Z axis.
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Mar 26 16:20:49 PDT 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+vtkVisItCubeAxesActor::SetLabelScale(double s0, double s1, double s2)
+{
+    if(this->LabelScale[0] != s0 ||
+       this->LabelScale[1] != s1 ||
+       this->LabelScale[2] != s2)
+    {
+        this->LabelScale[0] = s0;
+        this->LabelScale[1] = s1;
+        this->LabelScale[2] = s2;
+        this->scalingChanged = true;
+        this->Modified();
+    }
+}

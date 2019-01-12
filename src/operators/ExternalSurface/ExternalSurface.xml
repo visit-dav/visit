@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+  <Plugin name="ExternalSurface" type="operator" label="External Surface" version="1.0" enabled="true" mdspecificcode="false" onlyengine="false" noengine="false" category="Geometry">
+    <Attribute name="ExternalSurfaceAttributes" purpose="This class contains attributes for the external surface operator." persistent="true">
+      <Field name="removeGhosts" label="Remove ghost faces?" type="bool">
+        false
+      </Field>
+      <Field name="edgesIn2D" label="Find external edges for 2D datasets" type="bool">
+        true
+      </Field>
+    </Attribute>
+  </Plugin>

@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+  <Plugin name="CGNS" type="database" label="CGNS" version="1.0" enabled="true" mdspecificcode="false" onlyengine="false" noengine="false" dbtype="MTMD" haswriter="false" hasoptions="false">
+    <CXXFLAGS>
+      ${CGNS_INCLUDE_DIR}
+    </CXXFLAGS>
+    <LIBS>
+      ${CGNS_LIB}
+    </LIBS>
+    <LDFLAGS>
+      ${CGNS_LIBRARY_DIR}
+    </LDFLAGS>
+    <FilePatterns>
+      *.cgns
+    </FilePatterns>
+    <Attribute name="" purpose="" persistent="true">
+    </Attribute>
+  </Plugin>

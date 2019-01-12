@@ -1,0 +1,5 @@
+activeSource = "localhost:VISIT_TOP_DIR/data/silo_hdf5_test_data/wave*.silo database"
+activeTimeSlider = 0
+timeSliders = ("localhost:VISIT_TOP_DIR/data/silo_hdf5_test_data/wave*.silo database")
+timeSliderCurrentStates = (30)
+animationMode = 2

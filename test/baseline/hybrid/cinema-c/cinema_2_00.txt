@@ -1,0 +1,17 @@
+-specification
+C
+-docomposite
+-scriptfile
+test2.py
+-output
+test2.cdb
+-format
+png
+-geometry
+300x300
+-camera
+static
+-var
+pressure
+-var
+v

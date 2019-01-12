@@ -1,0 +1,498 @@
+#!/bin/sh
+#-----------------------------------------------------------------------
+#
+# Get the visit usage statistics
+#
+#-----------------------------------------------------------------------
+
+year=none
+month=none
+open=true
+code=VisIt
+date=`date +%y%m%d`
+
+#
+# Parse the execute line.
+#
+for abc
+do
+   case $1 in
+      -open)
+         open=true
+         shift
+         ;;
+      -closed)
+         open=false
+         shift
+         ;;
+      -visit)
+         code=VisIt
+         shift
+         ;;
+      -meshtv)
+         code=MeshTV
+         shift
+         ;;
+      -year)
+         year=$2
+         shift
+         shift
+         ;;
+      -month)
+         month=$2
+         shift
+         shift
+         ;;
+   esac
+done
+
+#
+# On the closed network, a sleep of 1 second must be inserted between
+# ph commands, or else ph hangs.
+#
+if [ $open = true ]
+then
+   sleep=
+else
+   sleep="sleep 1"
+fi
+
+#
+# Set code specific variables.
+#
+if [ $code = VisIt ]
+then
+   log_name=/usr/gapps/visit/1.\*/usagelog
+   user_position=1
+else
+   log_name=/usr/gapps/meshtv/usagelog
+   user_position=2
+fi
+
+#
+# Create the awk script to parse the usage log.
+#
+rm -f parse_usagelog
+cat <<EOF > parse_usagelog
+BEGIN { FS = " " }
+      { print \$$user_position | "sort | uniq -c" }
+EOF
+
+#
+# Create the awk script to fix the usage log output.
+#
+rm -f fix_usagelog
+cat <<EOF > fix_usagelog
+BEGIN { FS = " " }
+      { print \$1 " " \$2 }
+EOF
+
+#
+# Create an awk script to format the output.
+#
+cat <<EOF > format_output
+BEGIN { FS = ";" }
+      { printf "%-23s %4d %-32s %-10s %7s %s\n", \$1, \$5, \$2, \$6, \$3, \$4}
+EOF
+
+cat <<EOF > format_output2 
+BEGIN { FS = ";" }
+      { printf "%s;%s\n", \$1, \$6}
+EOF
+
+#
+# Create a sed script to correct the finger user names.
+#
+cat <<EOF > name_fixes
+s/Dave Stevens/David Stevens/
+s/Andy Anderson/Andrew T. Anderson/
+s/Mark Miller/Mark C. Miller/
+s/Jennifer Daclesmariani/Jennifer Samson Dacles-mariani/
+s/Matthew R. Terry/Mattew Terry/
+s/Christoph P Hendrickson/Christopher P. Hendrickson/
+s/A. Ellen. Tarwater/Ellen Tarwater/
+s/Chad L Goerzen/Chad L. Goerzen/
+s/Patrick C. Fragile/Patrick Christopher Fragile/
+s/Boyce E. Griffith/Boyce Eugene Griffith/
+s/Dean Malmgren/Robert D. Malmgren/
+s/Brian T.N. Gunney/Brian T. Gunney/
+s/C. A. Hier-Majumder/Cathy Hier Majumder/
+s/William T. Piggott/W. Thomas Piggott III/
+s/Sanford R. Goldman/Sanford Robert Goldman/
+s/J Michael Owen/John M. Owen/
+s/Byung Jun/Byung-Il Jun/
+s/Aaron J Golumbfskie/Aaron J. Golumbfskie/
+s/David S Miller/David S. Miller/
+s/Maurice B. Aufderheide III/Maurice B. Aufderheide/
+s/Chris Clouse/Christopher J. Clouse/
+s/Eric S. Brugger/Eric Brugger/
+s/Kwok-Tsan Cheng/Kwok-Tsang Cheng/
+s/Don J. Fujino/Don H. Fujino/
+s/Danny R. Tolar jr/Danny R. Tolar Jr./
+s/A. Schach Von Wittenau/Alexis E. Schach Von Wittenau/
+s/Al M. Frank/Alan M. Frank/
+s/J. Michael Owen/John M. Owen/
+s/Jeff Grandy/Jeffrey M. Grandy/
+s/Henry D Shay/Henry D. Shay/
+s/Andrew M. Wissink/Andrew Mahlon Wissink/
+s/Bruce N. Hanes/Bruce Hanes Jr./
+s/William C.Tapley/Bill Tapley/
+s/Kurt Raymond Glaesemann/Kurt Glaesemann/
+s/Stefan J. Kollet/Stefan Kollet/
+s/Phaedon S. Koutsourelakis/Phaedon-stelios Koutsourelakis/
+s/Patrick Christopher Fragile/Patrick Chris Fragile/
+s/Brian Miller/Brian J. Miller/
+s/Bruce N. Hanes/Bruce Hanes Jr./
+s/Christopher T. Werner/Christopher J. Werner/
+s/Timothy Pierce/Tim G. Pierce/
+s/B.I.Jun/B.I. Jun/
+s/gromit/Liam Krauss/
+s/rnewton/Ramon Newton/
+s/tabrunn/Thomas A. Brunner/
+s/rjfrank/Frank R. Graziani/
+s/srg/Sanford Robert Goldman/
+s/gotodm/Dana M. Goto/
+s/decker/Christopher D. Decker/
+s/brecht/Stephen Harold Brecht/
+s/rountree/Olie Rountree/
+s/tapley1/Bill Tapley/
+s/vignes2/Ryan M. Vignes/
+s/cotrell2/David L. Cotrell/
+s/deiter/Ralf Deiterding/
+s/julianc/Julian Cummings/
+s/cottomt/Teresa L. Cottom/
+s/arrighi/Bill Arrighi/
+s/Sean D. Ahern/ahern/
+s/Jeffrey E. McAninch/mcaninch/
+s/Lynn M. Groves/lgroves/
+s/root on sunspot/root/
+s/VisIt VOB account/visit/
+s/Matt Busche/busche/
+s/Ned Bass - DISABLED/bass6/
+s/Matthew Aaron Dawson/dawson20/
+s/Dale Slone - DISABLED 01\/27\/06 AEB/dslone/
+s/Jeremy Meredith - DISABLED 12\/12\/05 left lab/meredith/
+s/Robert T. Fisher/rfisher/
+s/system PRIVILEGED account/root/
+s/Hollis E . Dalhed/dalhed/
+s/Arden A. Anderson/arden/
+s/Boyce Eugene Griffith/boyce/
+s/Anne J. Sunwoo/sunwoo1/
+s/Kyle J. Peterson/kpeterss/
+s/Sanford Robert Goldman/srg/
+s/Donald E. Eliason/eliason/
+s/Mark C. Herrmann/mch/
+EOF
+
+#
+# Create a sed script to correct the affiliation information.
+#
+cat <<EOF > org_fixes
+s/AX DIVISION/AXDIV/
+s/CAR-CADSE/CADSE/
+s/CAR-CENTER FOR APPLIED SCIENTIFIC COMPUTING/CASC/
+s/CAR-DNT COMPUTING APPLICATIONS DIVISION/DCOM/
+s/CAR-E+E BBRP-INSTITUTIONAL COMP APPLICATIONS/EEBI/
+s/CAR-INSTITUTE SCIENTIFIC COMPUTING RESEARCH/ISCR/
+s/CAR - NAI COMPUTING APPLICATIONS DIVISION/NAIC/
+s/CCHED-CHEMISTRY + CHEMICAL ENGINEERING DIVISION/CHEM/
+s/CHEMICAL BIOLOGY & NUCLEAR SCIENCE DIVISION/CHEM-BIO/
+s/DEFENSE TECHNOLOGIES ENGINEERING DIVISION/DTED/
+s/DEFENSE + NUCLEAR TECHNOLOGY/DNT/
+s/EE-DSED/EE-DSED/
+s/EE-EETD 9782/EE-EETD/
+s/ENERGY + ENVIRONMENT ATMOSPHERIC SCIENCE DIV/EE-ATMOS/
+s/ENERGY + ENVIRONMENT EARTH SCIENCE DIVISION/EE-ESD/
+s/ENERGY + ENVIRONMENT ENV SCI DIV/EE-ENV/
+s/GEORGIA TECH/GEORGIA TE/
+s/ICC-SERVICES & DEVELOPMENT DIVISION/ICCD/
+s/ICCD-COMPUTER SYSTEMS SUPPORT/ICCD/
+s/ICCD-HIGH PERFORMANCE SYSTEMS DIVISION/ICCD/
+s/INERTIAL CONFINEMENT FUSION PROGRAM/ICF/
+s/LAWRENCE BERKELEY NATIONAL LABORATORY/LBNL/
+s/LAWRENCE BERKELEY NATIONAL LAB/LBNL/
+s/LOS ALAMOS NATIONAL LABORATORY/LANL/
+s/MANUFACTURING + MATERIALS ENGINEERING DIVISION/MANUF/
+s/MATERIALS SCIENCE + TECHNOLOGY DIV./MATSCI/
+s/NATIONAL IGNITION FACILITY PROJECT/NIF/
+s/NEW TECHNOLOGIES ENGINEERING DIVISION/NTED/
+s/PAT DIRECTORATE-FE/PAT/
+s/PAT DIRECTORATE-H DIVISION/PAT/
+s/PAT DIRECTORATE-M DIVISION/PAT/
+s/PAT DIRECTORATE-N DIVISION/PAT/
+s/PAT DIRECTORATE-V DIVISION/PAT/
+s/PRINCETON PLASMA PHYSICS LABORATORY/PRINCETON/
+s/Q DIVISION-Q DIVISION/QDIV/
+s/RETIRED (LLNL)/RETIRED/
+s/SANDIA NATIONAL LABORATORY/SANDIA/
+s/SANDIA NATIONAL LABORATORIES/SANDIA/
+s/SCIENTIFIC B DIV/BDIV/
+s/TEXAS AM UNIVERSITY/TEXAS AM/
+s/UNIVERSITY OF ROCHESTER/ROCHESTER/
+s/Z DIVISION/ZDIV/
+s/UNIVERSITY OF CALIFORNIA SAN DIEGO NTED/NTED/
+s/NTED UNIVERSITY OF CALIFORNIA SAN DIEGO/NTED/
+s/UCDAVIS UNIVERSITY RELATIONS PROGRAM TEMP EMPLOYEES/UCDAVIS/
+s/UNIVERSITY RELATIONS PROGRAM TEMP EMPLOYEES UCDAVIS/UCDAVIS/
+s/AXDIV JCWS/AXDIV/
+s/JCWS AXDIV/AXDIV/
+s/WASHINGTON UNIVERSITY EE-DSED/EE-DSED/
+s/EE-DSED WASHINGTON UNIVERSITY/EE-DSED/
+s/LBNL LBNL/LBNL/
+s/AEES DEPARTMENT - ENERGY & ENVIRONMENT/EE-AEES/
+s/LASER SCIENCE + TECHNOLOGY/LST/
+s/UNIVERSITY RELATIONS PROGRAM TEMP EMPLOYEES/TEMP/
+s/COLLEGE OF CHARLESTON, DEPT. OF PHYSICS/CHARLESTON/
+s/PHOTON SCIENCE & APPLICATIONS/PSA/
+s/RETIRED PAT/PAT/
+s/UNIVERSITY OF WISCONSIN/WISCONSIN/
+s/HEA\/CAMS-CENTER FOR ACCELERATOR MASS SPEC/HEA/
+s/BAY AREA RESEARCH CORPORATION/BARC/
+s/APPLIED RESEARCH ASSOC. INC./ARAI/
+s/CALIFORNIA INSTITUTE OF TECHNOLOGY/CALTECH/
+s/MONASH UNIVERSITY/MONASH/
+s/PAT DIRECTORATE-I DIVISION/PAT/
+s/VASSAR COLLEGE PAT/PAT/
+s/2-9426 2-9426/2-9426/
+s/3-1971//
+s/barton22@llnl.gov barton19@llnl.gov/barton22@llnl.gov/
+s/barton19@llnl.gov barton22@llnl.gov/barton22@llnl.gov/
+s/herrnstein2@llnl.gov herrnstein1@llnl.gov/herrnstein2@llnl.gov/
+s/herrnstein1@llnl.gov herrnstein2@llnl.gov/herrnstein2@llnl.gov/
+s/miller18@llnl.gov miller116@llnl.gov/miller18@llnl.gov/
+s/miller116@llnl.gov miller18@llnl.gov/miller18@llnl.gov/
+s/pingenot1@llnl.gov pingenot2@llnl.gov/pingenot2@llnl.gov/
+s/pingenot2@llnl.gov pingenot1@llnl.gov/pingenot2@llnl.gov/
+s/\[none\] santhanam1@llnl.gov/santhanam1@llnl.gov/
+s/santhanam1@llnl.gov \[none\]/santhanam1@llnl.gov/
+s/kaiser10@llnl.gov kaiser4@llnl.gov/kaiser4@llnl.gov/
+s/robinson86@llnl.gov robinson84@llnl.gov/robinson84@llnl.gov/
+EOF
+
+#
+# Create the script to get the information.
+#
+rm -f get_usagelog
+cat <<EOF > get_usagelog
+#!/bin/csh
+set month = none
+set year = none
+set option_found = true
+while (\$option_found == true)
+   switch (\$1)
+      case -year:
+         set year = \$2
+         shift
+         shift
+         breaksw
+      case -month:
+         set month = \$2
+         shift
+         shift
+         breaksw
+      default:
+         set option_found = false
+         breaksw
+   endsw
+end
+rm -f usage usage2
+if ("\$year" == "none") then
+   if ("\$month" == "none") then
+      gawk -f parse_usagelog $log_name > usage
+   else
+      cat $log_name | grep \$month | gawk -f parse_usagelog > usage
+   endif
+else
+   if ("\$month" == "none") then
+      cat $log_name | grep \$year | gawk -f parse_usagelog > usage
+   else
+      cat $log_name | grep \$year | grep \$month | gawk -f parse_usagelog > usage
+   endif
+endif
+gawk -f fix_usagelog usage > usage2
+set counts = \`cut -d " " -f 1 usage2\`
+set users = \`cut -d " " -f 2 usage2\`
+rm -f usage usage2 total_usage
+touch total_usage
+foreach user (\$users)
+   echo \$user
+   if ("\`egrep ^\$user\\: /etc/passwd\`" == "") then
+      set fullname = \`echo \$user | sed -f name_fixes\`
+      if ("\$fullname" == "\$user") then
+         set ext = 4-9999
+         set email = aa-\$user@llnl.gov
+         set affiliation = UNKNOWN
+      else
+         set ext = \`ph \$fullname | grep "ext:" | cut -d ":" -f 2\`
+         $sleep
+         set email = \`ph \$fullname | grep "email:" | cut -d ":" -f 2 | sed "s/\\[none\\]/aa-\$user@llnl.gov/"\`
+         $sleep
+         set affiliation = \`ph \$fullname | grep "affiliation:" | cut -d ":" -f 2\`
+         $sleep
+      endif
+   else
+      set fullname = \`egrep ^\$user\\: /etc/passwd | cut -d: -f 5 | cut -d, -f 1 | sed -f name_fixes\`
+      if ("\$fullname" == "\$user") then
+         set ext = 4-9999
+         set email = aa-\$user@llnl.gov
+         set affiliation = UNKNOWN
+      else
+         set ext = \`ph \$fullname | grep "ext:" | cut -d ":" -f 2\`
+         $sleep
+         set email = \`ph \$fullname | grep "email:" | cut -d ":" -f 2 | sed "s/\\[none\\]/aa-\$user@llnl.gov/"\`
+         $sleep
+         set affiliation = \`ph \$fullname | grep "affiliation:" | cut -d ":" -f 2\`
+         $sleep
+      endif
+   endif
+   set count = \$counts[1]
+   shift counts
+   echo "\$email;\$fullname;\$ext;\$user;\$count;\$affiliation;" >> total_usage
+end
+rm -f parse_usagelog fix_usagelog name_fixes
+EOF
+
+#
+# Create the script to get the information.
+#
+rm -f get_monthly_startups
+cat <<EOF > get_monthly_startups
+#!/bin/csh
+rm -f monthly_startups
+touch monthly_startups
+set years = "2004 2005 2006"
+foreach year (\$years)
+   set months = "Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec"
+   foreach month (\$months)
+      set startups = \`cat $log_name | grep \$year | grep \$month | wc -l\`
+      echo "\$year \$month \$startups" >> monthly_startups
+   end
+end
+EOF
+
+#
+# Create the script to create the e-mail list.
+#
+rm -f create_email_list
+cat <<EOF > create_email_list
+#!/bin/csh
+set counts = \`sed -f org_fixes bdiv_usage lc_usage | cut -d ";" -f 5\`
+set users = \`sed -f org_fixes bdiv_usage lc_usage | cut -d ";" -f 1\`
+foreach user (\$users)
+   set count = \$counts[1]
+   if ("\$count" > 1) then
+      echo "\$user"
+   endif
+   shift counts
+end
+EOF
+
+#
+# Create the script to combine the monthly startup results
+#
+rm -f combine_monthly_startups
+cat <<EOF > combine_monthly_startups
+#!/bin/csh
+set years = \`cat bdiv_startups | cut -d " " -f 1\`
+set months = \`cat bdiv_startups | cut -d " " -f 2\`
+set counts1 = \`cat bdiv_startups | cut -d " " -f 3\`
+set counts2 = \`cat lc_startups | cut -d " " -f 3\`
+foreach month (\$months)
+   set year = \$years[1]
+   set count1 = \$counts1[1]
+   set count2 = \$counts2[1]
+   set count = \`expr \$count1 + \$count2\`
+   echo \$year \$month \$count
+   shift years
+   shift counts1
+   shift counts2
+end
+EOF
+
+#
+# Set several variables depending on if we are on the open or closed netweork.
+#
+if [ $open = true ]
+then
+   output=${code}_open_usage_${date}
+   output2=${code}_open_usage_byorg_${date}
+   output3=${code}_open_users_${date}
+   output4=${code}_open_startups_${date}
+   bdivmach=sunspot
+   lcmach=gps15
+else
+   output=${code}_closed_usage_${date}
+   output2=${code}_closed_usage_byorg_${date}
+   output3=${code}_closed_users_${date}
+   output4=${code}_closed_startups_${date}
+   bdivmach=sunset
+   lcmach=sc1
+fi
+
+#
+# Get the raw B division usage information.
+#
+scp parse_usagelog $bdivmach:
+scp fix_usagelog $bdivmach:
+scp get_usagelog $bdivmach:
+scp get_monthly_startups $bdivmach:
+scp name_fixes $bdivmach:
+ssh $bdivmach "chmod 750 get_usagelog;./get_usagelog -year $year -month $month"
+scp $bdivmach:total_usage bdiv_usage
+ssh $bdivmach "chmod 750 get_monthly_startups;./get_monthly_startups"
+scp $bdivmach:monthly_startups bdiv_startups
+
+#
+# Get the raw LC usage information.
+#
+scp parse_usagelog $lcmach:
+scp fix_usagelog $lcmach:
+scp get_usagelog $lcmach:
+scp get_monthly_startups $lcmach:
+scp name_fixes $lcmach:
+ssh $lcmach "chmod 750 get_usagelog;./get_usagelog -year $year -month $month"
+scp $lcmach:total_usage lc_usage
+ssh $lcmach "chmod 750 get_monthly_startups;./get_monthly_startups"
+scp $lcmach:monthly_startups lc_startups
+
+#
+# Create the reports
+#
+rm -f $output
+echo ""                                                        >  $output
+echo "                    $code usage on B Division network"   >> $output
+echo "                   -----------------------------------"  >> $output
+echo ""                                                        >> $output
+sed -f org_fixes bdiv_usage | gawk -f format_output | sort     >> $output
+echo ""                                                        >> $output
+echo "                        $code usage on LC network"       >> $output
+echo "                   -----------------------------------"  >> $output
+echo ""                                                        >> $output
+sed -f org_fixes lc_usage | gawk -f format_output | sort       >> $output
+
+rm -f $output2
+echo ""                                                        >  $output2
+echo "                    $code usage by organization"         >> $output2
+echo "                   -----------------------------"        >> $output2
+echo ""                                                        >> $output2
+cat bdiv_usage lc_usage | sed -f org_fixes | gawk -f format_output2 | sort | uniq | cut -d ";" -f 2 | sort | uniq -c >> $output2
+
+rm -f $output3
+echo ""                                                        >  $output3
+echo "                    $code e-mail list"                   >> $output3
+echo "                   -------------------"                  >> $output3
+echo ""                                                        >> $output3
+chmod 750 create_email_list
+./create_email_list | sort | uniq                              >> $output3
+   
+rm -f $output4
+echo ""                                                        >  $output4
+echo "                 $code monthly startups"                 >> $output4
+echo "                ------------------------"                >> $output4
+echo ""                                                        >> $output4
+chmod 750 combine_monthly_startups
+./combine_monthly_startups                                     >> $output4
+
+rm -f parse_usagelog fix_usagelog get_usagelog get_monthly_startups
+rm -f name_fixes org_fixes format_output format_output2
+rm -f create_email_list combine_monthly_startups

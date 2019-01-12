@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+  <Plugin name="StreamGhostTest" type="database" label="StreamGhostTest" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" dbtype="STMD" haswriter="false" hasoptions="false" filePatternsStrict="false">
+    <FilePatterns>
+      *.sgt
+    </FilePatterns>
+    <Attribute name="" purpose="" persistent="true" keyframe="true" exportAPI="" exportInclude="">
+    </Attribute>
+  </Plugin>

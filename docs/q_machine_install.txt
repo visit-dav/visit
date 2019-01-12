@@ -1,0 +1,80 @@
+Installation for the Q machine:
+
+1) Copy the source distribution to Q.
+
+Note -- there are two partitions to Q.  Right now we need to use
+the first one (qfe1) because LLNL batch partitions are there.
+
+sc1:>> cd ~brugger/visit1.4.1
+sc1:>> scp visit050110.tar.gz meredith@qfe1.lanl.gov:
+
+2) Go to Q.
+
+Note -- despite the fact that my user id is the same as on the LC
+machines, I still need to specify my id on the ssh line.  They
+know about the problem but can't give me a reason, so just an FYI.
+
+sunrise:>> ssh meredith@qfe1.lanl.gov:
+
+3) "llogin" to get to the compute nodes
+
+Note -- you can't do anyting on the "front end" nodes.  You have
+to actually go to a compute node, and "llogin" the way to do it.
+If the default queue is full, you need to specify a different
+queue; list the queues with bqueue and choose one like lvizq or
+lsmallq, and specify it with a "-q lvizq" option to llogin.
+
+qfe1:>> llogin
+Job <121214> submitted to default queue <ldevq>
+<<Waiting for dispatch ....>>
+<<Starting on q21>>
+... snip snip ...
+
+q21:~ [1] >
+
+4) Unpack the distribution
+
+Note -- don't try to build in scratch space.  It doesn't work
+because of filesystem issues.  Just do it in your home directory.
+
+q21:~ [1] > gunzip visit050110.tar.gz
+q21:~ [2] > tar xvf visit050110.tar
+q21:~ [3] > cd visit050110
+
+5) Look at the config-site for Q to see the module commands.
+
+Note -- to pick up even basic things like g++ and MPI you need
+to use modules.  Execute these commands as listed at the top
+of config-site/q.conf.  Also, if these need to change because
+MPI or gcc was updated, there are more instructions in that
+config-site file for how to update it, because things like
+the LDFLAGS also will need to change.
+
+q21:~/visit050110 [4] > cat config-site/q.conf
+q21:~/visit050110 [5] > module add gcc_3.0.4
+q21:~/visit050110 [6] > module add MPI_64bit_R5
+
+6) Look at the config-site for Q to see the configure command.
+
+Note -- since you can be on any compute node of Q, you must
+specify the config-site file to use.  Again, this command
+is specified in the q.conf file.
+
+q21:~/visit050110 [7] > env CXXFLAGS="-O2" ./configure --with-config=config-site/q.conf --enable-parallel
+
+7) Build it.
+
+q21:~/visit050110 [8] > make
+
+8) Make the binary distribution; skip the data.
+
+q21:~/visit050110 [8] > ./clearcase_bin/visit-bin-dist -nd
+
+9) Install it!
+
+q21:~/visit050110 [8] > ./clearcase_bin/visit-install -g llnl 1.4.1 osf1 /usr/projects/llnl_b/visit
+
+...and choose "No system configuration".  This is because no one
+actually runs the VisIt GUI on Q; they only run an engine or
+mdserver on Q, and our host profiles have not been tested for this
+purpose (going from LANL to LLNL).

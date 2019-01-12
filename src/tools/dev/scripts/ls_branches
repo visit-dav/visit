@@ -1,0 +1,51 @@
+#!/bin/sh
+#
+#  Script: ls_branches
+# 
+#  Purpose: 
+#     Lists the branches for a given developer or a given directory.
+#
+#  Programmer: Hank Childs
+#  Creation:   May 7, 2007
+#
+#  Modifications:
+#
+#    Hank Childs, Fri Feb 22 10:57:49 PST 2008
+#    Port from ksh to sh.
+#
+#    Hank Childs, Thu Nov 12 11:37:39 PST 2009
+#    Switch to more standard usage of sh.
+#
+# *****************************************************************************
+
+if [ "$#" != "0" ] ; then
+   if [ "$1" = "-help" -o "$1" = "-h" -o "$1" = "-?" ] ; then
+       echo ""
+       echo "Usage: $0\t\t<prints branches with your username>"
+       echo "Usage: $0 <dir>\t<prints branches under REPO/branches/<dir>>"
+       echo ""
+       exit 1
+   fi
+fi
+
+P=$(which $0)
+P2=${P%/*}
+. ${P2}/visit_svn_helper
+
+if [ "$#" != "0" ] ; then
+   echo ""
+   svn ls ${VISIT_SVN_BRANCHES}/$1
+   echo ""
+else
+   echo ""
+   echo "Top level branches:"
+   echo ""
+   svn ls ${VISIT_SVN_BRANCHES}
+   echo ""
+   echo ""
+   echo "Your branches:"
+   echo ""
+   svn ls ${VISIT_SVN_BRANCHES}/$SVN_NERSC_NAME
+   echo ""
+fi
+

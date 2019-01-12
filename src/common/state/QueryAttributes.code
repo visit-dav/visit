@@ -1,0 +1,117 @@
+Initialization: defaultVars
+    defaultVars.push_back("default");
+
+Function: SetVariables
+Declaration: void SetVariables(const stringVector &variables_);
+Definition:
+void
+QueryAttributes::SetVariables(const stringVector &variables_)
+{
+   queryInputParams["vars"] = variables_;
+}
+
+Function: GetName
+Declaration: const std::string &GetName() const;
+Definition:
+const std::string &
+QueryAttributes::GetName() const
+{
+    if (queryInputParams.HasEntry("query_name"))
+        return queryInputParams.GetEntry("query_name")->AsString();
+    return defaultName;
+}
+
+Function: GetName2
+Declaration: std::string &GetName();
+Definition:
+std::string &
+QueryAttributes::GetName() 
+{
+    if (queryInputParams.HasEntry("query_name"))
+        return queryInputParams.GetEntry("query_name")->AsString();
+    return defaultName;
+}
+
+Function: GetVariables
+Declaration: const stringVector &GetVariables() const;
+Definition:
+const stringVector &
+QueryAttributes::GetVariables() const
+{
+    if (queryInputParams.HasEntry("vars"))
+        return queryInputParams.GetEntry("vars")->AsStringVector();
+    return defaultVars;
+}
+
+Function: GetVariables2
+Declaration: stringVector &GetVariables();
+Definition:
+stringVector &
+QueryAttributes::GetVariables() 
+{
+    if (queryInputParams.HasEntry("vars"))
+        return queryInputParams.GetEntry("vars")->AsStringVector();
+    return defaultVars;
+}
+
+Function: Reset
+Declaration: void Reset();
+Definition:
+void
+QueryAttributes::Reset()
+{
+    resultsMessage  = " ";
+    xUnits = "";
+    yUnits = "";
+    if (!varTypes.empty())
+    {
+         varTypes.clear();
+    }
+    if (!resultsValue.empty())
+    {
+        resultsValue.clear();
+        resultsValue.push_back(0.);
+    }
+    pipeIndex = -1;
+
+    queryInputParams.Reset();
+ 
+    SelectAll();
+}
+
+Function: PrintSelf
+Declaration: void PrintSelf(ostream &os);
+Definition:
+void
+QueryAttributes::PrintSelf(ostream &os)
+{
+    os << "\n" << GetName().c_str() << ":  ";
+    os << "selected variables: ";
+    stringVector &v = GetVariables();
+    for (size_t i = 0; i < v.size(); i++)
+        os << v[i].c_str() << "  ";
+    os << "\n";
+    os << "Results: <" << resultsMessage.c_str() << ">\n";
+}
+
+Function: SetResultsValue
+Declaration: void SetResultsValue(const double);
+Definition:
+void
+QueryAttributes::SetResultsValue(const double val)
+{
+    resultsValue[0] = val;    
+}
+
+Function: SetResultsValues
+Declaration: void SetResultsValues(const double*, const int);
+Definition:
+void
+QueryAttributes::SetResultsValues(const double *vals, const int numVals)
+{
+    int i;
+    resultsValue.clear();
+    for (i = 0; i < numVals; ++i)
+        resultsValue.push_back(vals[i]);
+}
+

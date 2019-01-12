@@ -1,0 +1,52 @@
+Function: SetPoint1
+Declaration: void SetPoint1(double,double,double);
+Definition:
+// ****************************************************************************
+//  Method:  Line::SetPoint1
+//
+//  Purpose:
+//    A method to set the xyz values of point1. 
+//
+//  Arguments:
+//    x,y,z   the coordinate
+//
+//  Programmer:  Kathleen Bonnell 
+//  Creation:    February 28, 2003 
+//
+// ****************************************************************************
+
+void
+Line::SetPoint1(double x, double y, double z) 
+{
+    point1[0] = x;
+    point1[1] = y;
+    point1[2] = z;
+    Select(0, (void*)point1, 3);
+}
+
+Function: SetPoint2
+Declaration: void SetPoint2(double,double,double);
+Definition:
+// ****************************************************************************
+//  Method:  Line::SetPoint2
+//
+//  Purpose:
+//    A method to set the xyz values of point2. 
+//
+//  Arguments:
+//    x,y,z   the coordinate
+//
+//  Programmer:  Kathleen Bonnell 
+//  Creation:    February 28, 2003 
+//
+// ****************************************************************************
+
+void
+Line::SetPoint2(double x, double y, double z) 
+{
+    point2[0] = x;
+    point2[1] = y;
+    point2[2] = z;
+    Select(1, (void*)point2, 3);
+}
+

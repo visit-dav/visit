@@ -1,0 +1,108 @@
+RZ UGRID:
+    The total u is 639.14
+    The total RevolvedVolume is 62.8319
+    The total RevolvedSurfaceArea is 87.9646
+This query was calculated by finding the external line segments of the data set and then calculating the surface area of these line segments when revolved into 3D.
+
+ZR UGRID:
+    The total u is 1464.68
+    The total RevolvedVolume is 157.08
+    The total RevolvedSurfaceArea is 219.911
+This query was calculated by finding the external line segments of the data set and then calculating the surface area of these line segments when revolved into 3D.
+
+XY UGRID:
+    The total u is 85
+    The total RevolvedVolume is 62.8319
+    The total RevolvedSurfaceArea is 87.9646
+This query was calculated by finding the external line segments of the data set and then calculating the surface area of these line segments when revolved into 3D.
+
+XY UGRID TRANSLATED:
+    The total u is 85
+    The total RevolvedVolume is 1130.97
+    The total RevolvedSurfaceArea is 1583.36
+This query was calculated by finding the external line segments of the data set and then calculating the surface area of these line segments when revolved into 3D.
+
+ZR UGRID TRANSLATED:
+    The total u is 4135.03
+    The total RevolvedVolume is 471.239
+    The total RevolvedSurfaceArea is 659.734
+This query was calculated by finding the external line segments of the data set and then calculating the surface area of these line segments when revolved into 3D.
+
+RZ UGRID TRANSLATED:
+    The total u is 9718.34
+    The total RevolvedVolume is 1130.97
+    The total RevolvedSurfaceArea is 1583.36
+This query was calculated by finding the external line segments of the data set and then calculating the surface area of these line segments when revolved into 3D.
+
+RZ RGRID:
+    The total u is 628.319
+    The total RevolvedVolume is 62.8319
+    The total RevolvedSurfaceArea is 87.9646
+This query was calculated by finding the external line segments of the data set and then calculating the surface area of these line segments when revolved into 3D.
+
+ZR RGRID:
+    The total u is 1460.84
+    The total RevolvedVolume is 157.08
+    The total RevolvedSurfaceArea is 219.911
+This query was calculated by finding the external line segments of the data set and then calculating the surface area of these line segments when revolved into 3D.
+
+XY RGRID:
+    The total u is 85
+    The total RevolvedVolume is 62.8319
+    The total RevolvedSurfaceArea is 87.9646
+This query was calculated by finding the external line segments of the data set and then calculating the surface area of these line segments when revolved into 3D.
+
+XY RGRID TRANSLATED:
+    The total u is 85
+    The total RevolvedVolume is 1130.97
+    The total RevolvedSurfaceArea is 1583.36
+This query was calculated by finding the external line segments of the data set and then calculating the surface area of these line segments when revolved into 3D.
+
+ZR RGRID TRANSLATED:
+    The total u is 4131.19
+    The total RevolvedVolume is 471.239
+    The total RevolvedSurfaceArea is 659.734
+This query was calculated by finding the external line segments of the data set and then calculating the surface area of these line segments when revolved into 3D.
+
+RZ RGRID TRANSLATED:
+    The total u is 9707.52
+    The total RevolvedVolume is 1130.97
+    The total RevolvedSurfaceArea is 1583.36
+This query was calculated by finding the external line segments of the data set and then calculating the surface area of these line segments when revolved into 3D.
+
+RZ POLY:
+    The total u is 594.11
+    The total RevolvedVolume is 62.8319
+    The total RevolvedSurfaceArea is 87.9646
+This query was calculated by finding the external line segments of the data set and then calculating the surface area of these line segments when revolved into 3D.
+
+ZR POLY:
+    The total u is 1470.27
+    The total RevolvedVolume is 157.08
+    The total RevolvedSurfaceArea is 219.911
+This query was calculated by finding the external line segments of the data set and then calculating the surface area of these line segments when revolved into 3D.
+
+XY POLY:
+    The total u is 85
+    The total RevolvedVolume is 62.8319
+    The total RevolvedSurfaceArea is 87.9646
+This query was calculated by finding the external line segments of the data set and then calculating the surface area of these line segments when revolved into 3D.
+
+XY POLY TRANSLATED:
+    The total u is 85
+    The total RevolvedVolume is 1130.97
+    The total RevolvedSurfaceArea is 1583.36
+This query was calculated by finding the external line segments of the data set and then calculating the surface area of these line segments when revolved into 3D.
+
+ZR POLY TRANSLATED:
+    The total u is 4140.62
+    The total RevolvedVolume is 471.239
+    The total RevolvedSurfaceArea is 659.734
+This query was calculated by finding the external line segments of the data set and then calculating the surface area of these line segments when revolved into 3D.
+
+RZ POLY TRANSLATED:
+    The total u is 9673.31
+    The total RevolvedVolume is 1130.97
+    The total RevolvedSurfaceArea is 1583.36
+This query was calculated by finding the external line segments of the data set and then calculating the surface area of these line segments when revolved into 3D.
+

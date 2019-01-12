@@ -1,0 +1,877 @@
+Function: avtMeshMetaData2
+Declaration: avtMeshMetaData(const int *, const double *, std::string, int, int, int, int, int, int, avtMeshType);
+Definition:
+// ****************************************************************************
+//  Method: avtMeshMetaData constructor
+//
+//  Arguments:
+//      bounds      Strunctured mesh bounds as < max_i, max_j, max_k>.
+//      extents     Mesh extents as <min_x, max_x, min_y, max_y, min_z, max_z>.
+//      s           The name of the mesh.
+//      nb          The number of blocks.
+//      bo          The block origin.
+//      sd          The spacial dimensionality.
+//      td          The topological dimensionality.
+//      mt          The type of mesh.
+//
+//  Programmer: Hank Childs
+//  Creation:   August 25, 2000
+//
+//  Modifications:
+//
+//    Hank Childs, Tue May 28 13:57:49 PDT 2002
+//    Initialized blockPieceName and blockTitle.
+//
+//    Hank Childs, Sun Jun 16 19:31:03 PDT 2002 
+//    Added argument for cell origin.
+//
+//    Hank Childs, Mon Jun 24 12:21:15 PDT 2002
+//    Initialize numGroups.
+//
+//    Hank Childs, Sun Aug 18 10:54:26 PDT 2002
+//    Initialized disjointElements.
+//
+//    Hank Childs, Mon Sep 30 08:57:30 PDT 2002 
+//    Initialized containsGhostZones.
+//
+//    Hank Childs, Mon Dec  9 17:04:39 PST 2002
+//    Initialized validVariable.
+//
+//    Kathleen Bonnell, Wed Mar 26 13:03:54 PST 2003 
+//    Initialized containsOriginalCells. 
+//
+//    Kathleen Bonnell, Fri May 28 18:16:48 PDT 2004 
+//    Initialized containsOriginalNodes. 
+//
+//    Hank Childs, Sun Jun 27 11:50:34 PDT 2004
+//    Initialized containsGlobalNodeIds.
+//
+//    Brad Whitlock, Fri Jul 23 12:25:03 PDT 2004
+//    Added xLabel, yLabel, zLabel.
+//
+//    Mark C. Miller, August 9, 2004
+//    Added containsGlobalZoneIds data member
+//
+//    Hank Childs, Mon Feb 14 14:16:49 PST 2005
+//    Added original name.
+//
+//    Jeremy Meredith, Thu Aug 25 09:42:33 PDT 2005
+//    Added group origin.
+//
+//    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//    Added loadBalanceScheme
+//
+//    Kathleen Bonnell, Fri Feb  3 10:23:36 PST 2006 
+//    Added meshCoordType.
+//
+//    Jeremy Meredith, Fri Aug 25 17:14:58 EDT 2006
+//    Added nodesAreCritical and unitCellVectors.
+//
+//    Jeremy Meredith, Thu Feb 15 11:42:44 EST 2007
+//    Added support for rectilinear grids with an inherent transform.
+//
+//    Brad Whitlock, Thu Mar 1 16:36:37 PST 2007
+//    Rewrote.
+//
+//    Hank Childs, Sun Oct 28 09:17:48 PST 2007
+//    Added containsExteriorBoundaryGhosts
+//
+// ****************************************************************************
+
+avtMeshMetaData::avtMeshMetaData(const int *bounds, const double *extents,
+                                 std::string s, int nb,
+                                 int bo, int co, int go, int sd, int td,
+                                 avtMeshType mt)
+    : AttributeSubject(avtMeshMetaData::TypeMapFormatString)
+{
+    // Initialize all values.
+    *this = avtMeshMetaData();
+
+    // Override some initialization with the passed arguments.
+    name                 = s;
+    originalName         = name;
+    numBlocks            = nb;
+    blockOrigin          = bo;
+    cellOrigin           = co;
+    groupOrigin          = go;
+    topologicalDimension = td;
+    spatialDimension     = sd;
+    meshType             = mt;
+    numGroups            = 0;
+    containsExteriorBoundaryGhosts = false;
+    SetExtents(extents);
+    SetBounds(bounds);
+}
+
+Function: avtMeshMetaData3
+Declaration: avtMeshMetaData(std::string, int, int, int, int, int, int, avtMeshType);
+Definition:
+// ****************************************************************************
+//  Method: avtMeshMetaData constructor
+//
+//  Arguments:
+//      s           The name of the mesh.
+//      nb          The number of blocks.
+//      bo          The block origin.
+//      sd          The spacial dimensionality.
+//      td          The topological dimensionality.
+//      mt          The type of mesh.
+//
+//  Programmer: Hank Childs
+//  Creation:   August 25, 2000
+//
+//  Modifications:
+//
+//    Hank Childs, Tue May 28 13:57:49 PDT 2002
+//    Initialized blockPieceName and blockTitle.
+//
+//    Hank Childs, Sun Jun 16 19:31:03 PDT 2002 
+//    Added argument for cell origin.
+//
+//    Hank Childs, Mon Jun 24 12:21:15 PDT 2002
+//    Initialize numGroups.
+//
+//    Hank Childs, Sun Aug 18 10:54:26 PDT 2002
+//    Initialized disjointElements.
+//
+//    Hank Childs, Mon Sep 30 08:57:30 PDT 2002 
+//    Initialized containsGhostZones.
+//
+//    Hank Childs, Mon Dec  9 17:04:39 PST 2002
+//    Initialized validVariable.
+//
+//    Kathleen Bonnell, Wed Mar 26 13:03:54 PST 2003 
+//    Initialized containsOriginalCells. 
+//
+//    Kathleen Bonnell, Fri May 28 18:16:48 PDT 2004 
+//    Initialized containsOriginalNodes. 
+//
+//    Hank Childs, Sun Jun 27 11:50:34 PDT 2004
+//    Initialized containsGlobalNodeIds.
+//
+//    Brad Whitlock, Fri Jul 23 12:25:22 PDT 2004
+//    Added xLabel, yLabel, zLabel.
+//
+//    Mark C. Miller, August 9, 2004
+//    Added containsGlobalZoneIds data member
+//
+//    Hank Childs, Mon Feb 14 14:16:49 PST 2005
+//    Added original name.
+//
+//    Jeremy Meredith, Thu Aug 25 09:42:37 PDT 2005
+//    Added group origin.
+//
+//    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//    Added loadBalanceScheme
+//
+//    Kathleen Bonnell, Fri Feb  3 10:23:36 PST 2006 
+//    Added meshCoordType.
+//
+//    Mark C. Miller, Tue Aug 15 21:48:46 PDT 2006
+//    Called SetExtents to initialize extents. Keeps purify happy.
+//
+//    Jeremy Meredith, Fri Aug 25 17:14:58 EDT 2006
+//    Added nodesAreCritical and unitCellVectors.
+//
+//    Jeremy Meredith, Thu Feb 15 11:42:44 EST 2007
+//    Added support for rectilinear grids with an inherent transform.
+//
+//    Brad Whitlock, Thu Mar 1 16:37:16 PST 2007
+//    Rewrote.
+//
+//    Hank Childs, Sun Oct 28 09:17:48 PST 2007
+//    Added containsExteriorBoundaryGhosts
+//
+// ****************************************************************************
+
+avtMeshMetaData::avtMeshMetaData(std::string s, int nb, int bo, int co, int go,
+                                 int sd, int td, avtMeshType mt)
+    : AttributeSubject(avtMeshMetaData::TypeMapFormatString)
+{
+    // Initialize all values.
+    *this = avtMeshMetaData();
+
+    // Override some initialization with the passed arguments.
+    name                 = s;
+    originalName         = name;
+    numBlocks            = nb;
+    blockOrigin          = bo;
+    cellOrigin           = co;
+    groupOrigin          = go;
+    topologicalDimension = td;
+    spatialDimension     = sd;
+    meshType             = mt;
+    containsExteriorBoundaryGhosts = false;
+    SetExtents(0);
+    SetBounds(0);
+}
+
+Function: SetExtents
+Declaration: void SetExtents(const double *);
+Definition:
+// ****************************************************************************
+//  Method: avtMeshMetaData::SetExtents
+//
+//  Purpose:
+//      Sets the extents of the mesh.
+//
+//  Arguments:
+//      extents     Mesh extents as <min_x, max_x, min_y, max_y, min_z, max_z>.
+//
+//  Programmer: Hank Childs
+//  Creation:   August 30, 2000
+//
+//  Modifications:
+//
+//    Hank Childs, Tue May  1 12:53:10 PDT 2001
+//    Check for NULL extents.
+//
+//    Mark C. Miller, Tue Aug 15 21:45:50 PDT 2006
+//    Added code to initialize extents to [0,1] if null was passed in. Keeps
+//    purify happy.
+//
+//    Dave Pugmire, Tue Jan 11 16:26:35 EST 2011
+//    Protect against spatialDims > 3.
+// ****************************************************************************
+
+void
+avtMeshMetaData::SetExtents(const double *extents)
+{
+    if (extents == NULL)
+    {
+        hasSpatialExtents = false;
+        for (int i = 0 ; i < std::min(spatialDimension, 3) ; i++)
+        {
+            minSpatialExtents[i] = 0.0;  
+            maxSpatialExtents[i] = 1.0; 
+        }
+    }
+    else
+    {
+        hasSpatialExtents = true;
+        for (int i = 0 ; i < std::min(spatialDimension, 3) ; i++)
+        {
+            minSpatialExtents[i] = extents[2*i];
+            maxSpatialExtents[i] = extents[2*i + 1];
+        }
+    }
+}
+
+Function: UnsetExtents
+Declaration: void UnsetExtents();
+Definition:
+void
+avtMeshMetaData::UnsetExtents()
+{
+    hasSpatialExtents = false;
+}
+
+Function: SetBounds
+Declaration: void SetBounds(const int *);
+Definition:
+// ****************************************************************************
+//  Method: avtMeshMetaData::SetBounds
+//
+//  Purpose:
+//      Sets the logical bounds of a structured mesh.
+//
+//  Arguments:
+//      bounds     Mesh bounds as < i_max, j_max, k_max>.
+//
+//  Creationist: Allen Sanderson
+//  Creation:    March 3, 2011
+//
+//  Modifications:
+//    Mark C. Miller, Tue Apr 19 14:46:23 PDT 2011
+//    Set logical bounds to integer value '0' and not '0.0'.
+// ****************************************************************************
+
+void
+avtMeshMetaData::SetBounds(const int *bounds)
+{
+    if (bounds == NULL)
+    {
+        hasLogicalBounds = false;
+        for (int i = 0 ; i < std::min(topologicalDimension, 3) ; i++)
+        {
+            logicalBounds[i] = 0;  
+        }
+    }
+    else
+    {
+        hasLogicalBounds = true;
+        for (int i = 0 ; i < std::min(topologicalDimension, 3) ; i++)
+        {
+            logicalBounds[i] = bounds[i];
+        }
+    }
+}
+
+Function: UnsetBounds
+Declaration: void UnsetBounds();
+Definition:
+void
+avtMeshMetaData::UnsetBounds()
+{
+    hasLogicalBounds = false;
+}
+
+Function: SetNumberCells
+Declaration: void SetNumberCells(const int);
+Definition:
+// ****************************************************************************
+//  Method: avtMeshMetaData::SetNumberCells
+//
+//  Purpose:
+//      Sets the number of cells for a mesh.
+//
+//  Arguments:
+//      numberCells     Number if mesh cells as < nCells >.
+//
+//  Creationist: Allen Sanderson
+//  Creation:    July 27, 2011
+//
+// ****************************************************************************
+
+void
+avtMeshMetaData::SetNumberCells(const int nCells)
+{
+    hasNumberCells = (nCells > 0);
+
+    numberCells = (nCells > 0 ? nCells : 0 );
+}
+
+Function: UnsetNumberCells
+Declaration: void UnsetNumberCells();
+Definition:
+void
+avtMeshMetaData::UnsetNumberCells()
+{
+    hasNumberCells = false;
+}
+
+Function: Print
+Declaration: void Print(ostream &, int = 0) const;
+Definition:
+// ****************************************************************************
+//  Method: avtMeshMetaData::Print
+//
+//  Purpose:
+//      Print statement for debugging.
+//
+//  Arguments:
+//      out      The stream to output to.
+//      indent   The number of tabs to indent each line with.
+//
+//  Programmer:  Hank Childs
+//  Creation:    August 28, 2000
+//
+//  Modifications:
+//
+//    Hank Childs, Tue Aug 28 10:16:24 PDT 2001
+//    Added block names.
+//
+//    Hank Childs, Tue May 28 13:57:49 PDT 2002
+//    Added blockPieceName and blockTitle.
+//
+//    Hank Childs, Sun Jun 16 19:31:03 PDT 2002 
+//    Added cell origin.
+//
+//    Hank Childs, Mon Jun 24 12:21:15 PDT 2002
+//    Added numGroups.
+//
+//    Hank Childs, Sun Aug 18 10:54:26 PDT 2002
+//    Added disjointElements.
+//
+//    Brad Whitlock, Tue Aug 20 15:11:14 PST 2002
+//    Changed printing a little.
+//
+//    Hank Childs, Thu Sep 26 22:01:55 PDT 2002
+//    Added units.
+//
+//    Hank Childs, Mon Sep 30 08:57:30 PDT 2002 
+//    Added containsGhostZones.
+//
+//    Hank Childs, Mon Dec  9 17:04:39 PST 2002
+//    Added validVariable.
+//
+//    Kathleen Bonnell, Wed Mar 26 13:03:54 PST 2003 
+//    Added containsOriginalCells. 
+//
+//    Kathleen Bonnell, Fri May 28 18:16:48 PDT 2004 
+//    Added containsOriginalNodes. 
+//
+//    Brad Whitlock, Fri Jul 23 12:28:21 PDT 2004
+//    Added xLabel, yLabel, and zLabel.
+//
+//    Hank Childs, Mon Feb 14 14:16:49 PST 2005
+//    Added original name.
+//
+//    Jeremy Meredith, Thu Aug 25 09:42:47 PDT 2005
+//    Added group origin.
+//
+//    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//    Added loadBalanceScheme
+// 
+//    Hank Childs, Wed Jan 11 09:36:13 PST 2006
+//    Added new mesh types.
+//
+//    Kathleen Bonnell, Fri Feb  3 10:23:36 PST 2006 
+//    Added meshCoordType.
+//
+//    Jeremy Meredith, Fri Aug 25 17:14:58 EDT 2006
+//    Added nodesAreCritical and unitCellVectors.
+//
+//    Jeremy Meredith, Thu Feb 15 11:42:44 EST 2007
+//    Added support for rectilinear grids with an inherent transform.
+//
+//    Mark C. Miller, Tue Mar 27 08:39:55 PDT 2007
+//    Added support for node origin
+//
+//    Hank Childs, Sun Oct 28 09:17:48 PST 2007
+//    Added containsExteriorBoundaryGhosts
+//
+//    Hank Childs, Fri Dec 11 14:17:12 PST 2009
+//    Add support for new SIL-efficiency data members.
+//
+// ****************************************************************************
+inline void
+Indent(ostream &out, int indent)
+{
+    for (int i = 0 ; i < indent ; i++)
+    {
+        out << "\t";
+    }
+}
+
+void
+avtMeshMetaData::Print(ostream &out, int indent) const
+{
+    Indent(out, indent);
+    out << "Name = " << name.c_str() << std::endl;
+    if (name != originalName)
+    {
+        Indent(out, indent);
+        out << "Original Name = " << originalName.c_str() << std::endl;
+    }
+    Indent(out, indent);
+    out << "Number of blocks = " << numBlocks << std::endl;
+    Indent(out, indent);
+    out << "Block origin = " << blockOrigin << std::endl;
+    Indent(out, indent);
+    out << "Cell origin = " << cellOrigin 
+        << " (origin within one block of the cells)." << std::endl;
+    Indent(out, indent);
+    out << "Node origin = " << nodeOrigin 
+        << " (origin within one block of the nodes)." << std::endl;
+    Indent(out, indent);
+    out << "Group origin = " << groupOrigin << std::endl;
+    Indent(out, indent);
+    out << "Title for domain hierarchy is " << blockTitle.c_str() << std::endl;
+    Indent(out, indent);
+    out << "Title for individual piece in domain hierarchy is "
+        << blockPieceName.c_str() << std::endl;
+    if (blockNameScheme.GetNamescheme() != "")
+    {
+        Indent(out, indent);
+        out << "The name scheme is: " << blockNameScheme.GetNamescheme() << std::endl;
+    }
+
+    Indent(out, indent);
+    out << "Number of groups = " << numGroups << std::endl;
+    if(numGroups > 0)
+    {
+        Indent(out, indent);
+        out << "Group ids are: ";
+        if (groupIdsBasedOnRange.size() > 0)
+        {
+            for (size_t i = 0 ; i < groupIdsBasedOnRange.size()-1 ; i++)
+            {
+                out << i << ": " << groupIdsBasedOnRange[i] << "-" 
+                    << groupIdsBasedOnRange[i+1]-1;
+                if (i < groupIdsBasedOnRange.size()-1)
+                    out << ", ";
+            }
+        }
+        else
+        {
+            for (size_t i = 0 ; i < groupIds.size() ; i++)
+            {
+                out << groupIds[i];
+                if(i < groupIds.size() - 1)
+                    out << ", ";
+            }
+        }
+        out << std::endl;
+    }
+    Indent(out, indent);
+    out << "Title for group hierarchy is " << groupTitle.c_str() << std::endl;
+    Indent(out, indent);
+    out << "Title for individual piece in group hierarchy is "
+        << groupPieceName.c_str() << std::endl;
+
+    Indent(out, indent);
+    out << "Mesh type is ";
+    switch (meshType)
+    {
+      case AVT_RECTILINEAR_MESH:
+        out << "Rectilinear Mesh";
+        break;
+
+      case AVT_CURVILINEAR_MESH:
+        out << "Curvilinear Mesh";
+        break;
+
+      case AVT_UNSTRUCTURED_MESH:
+        out << "Unstructured Mesh";
+        break;
+
+      case AVT_POINT_MESH:
+        out << "Point Mesh";
+        break;
+
+      case AVT_SURFACE_MESH:
+        out << "Surface Mesh";
+        break;
+
+      case AVT_CSG_MESH:
+        out << "CSG Mesh";
+        break;
+
+      case AVT_AMR_MESH:
+        out << "AMR Mesh";
+        break;
+
+      case AVT_UNKNOWN_MESH:
+      default:
+        out << "Unknown";
+        break;
+    }
+    out << "." << std::endl;
+
+    Indent(out, indent);
+    out << "Spatial Dimension = " << spatialDimension << std::endl;
+
+    if (hasSpatialExtents)
+    {
+        Indent(out, indent);
+        out << "Spatial extents are: (";
+        for (int j = 0 ; j < std::min(spatialDimension, 3) ; j++)
+        {
+            out << "(" << minSpatialExtents[j] << ", " << maxSpatialExtents[j]
+                << ")";
+            if(j < spatialDimension-1)
+                out << ", ";
+        }
+        out << ")" << std::endl;
+    }
+    else
+    {
+        Indent(out, indent);
+        out << "The spatial extents are not set." << std::endl;
+    }
+
+    Indent(out, indent);
+    out << "Topological Dimension = " << topologicalDimension << std::endl;
+
+    if (hasLogicalBounds || hasNumberCells )
+    {
+        switch (meshType)
+        {
+          case AVT_RECTILINEAR_MESH:
+          case AVT_CURVILINEAR_MESH:
+            Indent(out, indent);
+            out << "Logical nodal bounds are (";
+            for (int j = 0 ; j < std::min(topologicalDimension, 3) ; j++)
+            {
+              out << logicalBounds[j];
+              if(j < topologicalDimension-1)
+                  out << ", ";
+            }
+            out << ")" << std::endl;
+            break;
+          case AVT_POINT_MESH:
+          case AVT_UNSTRUCTURED_MESH:
+            Indent(out, indent);
+            out << "Logical cell bound is (" << numberCells << ")"
+                << std::endl;
+            break;
+
+//        Report nothing as the logical bounds are not applicable
+          default:
+            out << "The logical nodal bounds or number of cells are set but not applicable."
+                << std::endl;
+            break;
+        }
+    }
+    else
+    {
+        switch (meshType)
+        {
+          case AVT_RECTILINEAR_MESH:
+          case AVT_CURVILINEAR_MESH:
+            Indent(out, indent);
+            out << "The logical nodal bounds are not set." << std::endl;
+            break;
+          case AVT_POINT_MESH:
+          case AVT_UNSTRUCTURED_MESH:
+            Indent(out, indent);
+            out << "The logical cell bound are not set." << std::endl;
+            break;
+
+          // Report nothing as the logical bounds are not applicable
+          default:
+            // out << "The logical bounds are not applicable." << std::endl;
+            break;
+        }
+    }
+
+    if (hasNumberCells)
+    {
+        Indent(out, indent);
+        out << "Number of cells is " << numberCells << std::endl;
+    }
+    else
+    {
+        switch (meshType)
+        {
+          case AVT_UNSTRUCTURED_MESH:
+          case AVT_RECTILINEAR_MESH:
+          case AVT_CURVILINEAR_MESH:
+          case AVT_POINT_MESH:
+            Indent(out, indent);
+            out << "The number of cells is not set." << std::endl;
+            break;
+
+          // Report nothing as the number of cells is not applicable
+          default:
+            // out << "The number of cells is not applicable." << std::endl;
+            break;
+        }
+    }
+
+
+    if (blockNames.size() == (size_t)numBlocks)
+    {
+        Indent(out, indent);
+        out << "Block names: " << std::endl;
+        for (int i = 0 ; i < numBlocks ; i++)
+        {
+            Indent(out, indent);
+            out << "\t" << blockNames[i].c_str() << std::endl;
+        }
+    }
+    else
+    {
+        Indent(out, indent);
+        out << "There are no names set with the blocks." << std::endl;
+    }
+
+    Indent(out, indent);
+    out << "Disjoint elements " << (disjointElements ? "Yes" : "No") 
+        << std::endl;
+
+    if( containsGhostZones )
+    {
+      Indent(out, indent);
+      if( containsGhostZones == AVT_HAS_GHOSTS )
+        out << "Contains ghost zones " << "Yes" << std::endl;
+
+      else if( containsGhostZones == AVT_CREATED_GHOSTS )
+        out << "Contains ghost zones " << "Created" << std::endl;
+      
+      else if( containsGhostZones == AVT_MAYBE_GHOSTS )
+        out << "Contains ghost zones " << "Maybe" << std::endl;
+
+      if (containsExteriorBoundaryGhosts)
+      {
+        Indent(out, indent);
+        out << "Contains ghost zones on the exterior boundary" << std::endl;
+      }
+    }
+
+    Indent(out, indent);
+    out << "Contains original cells " << (containsOriginalCells ? "Yes" : "No")
+        << std::endl;
+
+    Indent(out, indent);
+    out << "Contains original nodes " << (containsOriginalNodes ? "Yes" : "No")
+        << std::endl;
+
+    Indent(out, indent);
+    out << "Units =  x: \"" << xUnits.c_str()
+        << "\", y: \"" << yUnits.c_str()
+        << "\", z: \"" << zUnits.c_str() << "\"." << std::endl;
+
+    Indent(out, indent);
+    out << "Labels =  x: \"" << xLabel.c_str()
+        << "\", y: \"" << yLabel.c_str()
+        << "\", z: \"" << zLabel.c_str() << "\"." << std::endl;
+
+    if (!validVariable)
+    {
+        Indent(out, indent);
+        out << "THIS IS NOT A VALID VARIABLE." << std::endl;
+    }
+
+    if (loadBalanceScheme != LOAD_BALANCE_UNKNOWN)
+    {
+        Indent(out, indent);
+        out << "HAS A SPECIFIC LOAD BALANCE SCHEME = "
+            << loadBalanceScheme << std::endl;
+    }
+    if (meshCoordType == AVT_XY)
+    {
+        Indent(out, indent);
+        out << "Mesh coord type is XY" << std::endl;
+    }
+    else if (meshCoordType == AVT_RZ)
+    {
+        Indent(out, indent);
+        out << "Mesh coord type is RZ" << std::endl;
+    }
+    else if (meshCoordType == AVT_ZR)
+    {
+        Indent(out, indent);
+        out << "Mesh coord type is ZR" << std::endl;
+    }
+
+    Indent(out, indent);
+    out << "Mesh is primarily "
+        << (nodesAreCritical ? "point" : "cell") << "-based" << std::endl;
+
+    for (int i=0; i<3; i++)
+    {
+        Indent(out, indent);
+        out << "Unit cell vector #"<<i<<" is "
+            << unitCellVectors[i*3+0] << " "
+            << unitCellVectors[i*3+1] << " "
+            << unitCellVectors[i*3+2] << std::endl;
+    }
+
+    Indent(out, indent);
+    out << "Rectilinear grids "
+        << (rectilinearGridHasTransform ? "do " : "do not ")
+        << "have an implicit transform." << std::endl;
+    if (rectilinearGridHasTransform)
+    {
+        for (int i=0; i<4; i++)
+        {
+            Indent(out, indent);
+            out << "   [ "
+                << rectilinearGridTransform[i*4+0] << " "
+                << rectilinearGridTransform[i*4+1] << " "
+                << rectilinearGridTransform[i*4+2] << " "
+                << rectilinearGridTransform[i*4+3] << " "
+                << "]" << std::endl;
+        }
+    }
+}
+
+Function: SetAMRInfo
+Declaration: void SetAMRInfo(const std::string &levelName, const std::string &patchName, int origin,const std::vector<int> &patchesPerLevel);
+Definition:
+// ****************************************************************************
+//  Method: avtMeshMetaData::SetAMRInfo
+//
+//  Purpose:
+//      Sets meta data for AMR meshes.  Specifically, it sets up the names
+//      for the levels/patches and the information between the levels and
+//      the patches.
+//
+//  Programmer: Hank Childs
+//  Creation:   December 11, 2009
+//
+//  Modifications:
+//
+//    Hank Childs, Mon Jun 14 14:27:16 PDT 2010
+//    Fix crash for nlevels == 1 && patchs -> patches.
+//
+// ****************************************************************************
+
+void
+avtMeshMetaData::SetAMRInfo(const std::string &levelName,
+                            const std::string &patchName, int origin,
+                            const std::vector<int> &patchesPerLevel)
+{
+    int  i;
+    int  nlevels = (int)patchesPerLevel.size();
+
+    // Basic setup stuff
+    int  numBlocks = 0;
+    for (i = 0 ; i < nlevels ; i++)
+        numBlocks += patchesPerLevel[i];
+    this->numBlocks = numBlocks;
+    this->blockTitle = patchName + "s";
+    if (patchName == "patch" || patchName == "Patch")
+        this->blockTitle = patchName + "es";
+    this->blockPieceName = patchName;
+    this->numGroups = nlevels;
+    this->groupTitle = levelName + "s";
+    this->groupPieceName = levelName;
+    this->blockOrigin = origin;
+    this->groupOrigin = origin;
+
+    std::vector<int> groupIds(nlevels+1);
+    groupIds[0] = 0;
+    for (i = 1 ; i < nlevels+1 ; i++)
+    {
+        groupIds[i] = groupIds[i-1] + patchesPerLevel[i-1];
+    }
+    this->groupIdsBasedOnRange = groupIds;
+    std::vector<int> numbelow(nlevels);
+    numbelow[0] = 0;
+    for (i = 1 ; i < nlevels ; i++)
+        numbelow[i] = numbelow[i-1]+patchesPerLevel[i-1];
+    char str[128];
+    sprintf(str, "@%s%%d,%s%%d@", levelName.c_str(), patchName.c_str());
+    std::string base_string = str;
+    for (i = 1 ; i < nlevels ; i++)
+    {
+        sprintf(str, "(n/%d)", numbelow[i]);
+        base_string += str;
+        if (i != (nlevels-1))
+            base_string += "?(";
+    }
+    for (i = nlevels-1 ; i >= 0 ; i--)
+    {
+        if (i == (nlevels-1))
+            sprintf(str, "?%d", i+origin);
+        else if (i > 0)
+            sprintf(str, ":%d:)", i+origin);
+        else
+            sprintf(str, ":%d:@", i+origin);
+        base_string += str;
+    }
+    for (i = 1 ; i < nlevels ; i++)
+    {
+        sprintf(str, "(n/%d)", numbelow[i]);
+        base_string += str;
+        if (i != (nlevels-1))
+            base_string += "?(";
+        else
+            base_string += "?";
+    }
+    for (i = nlevels-1 ; i >= 0 ; i--)
+    {
+        if (i == (nlevels-1))
+            sprintf(str, "n+%d-%d", origin, numbelow[i]);
+        else if (i > 0)
+            sprintf(str, ":n+%d-%d:)", origin, numbelow[i]);
+        else
+            sprintf(str, ":n+%d:", origin);
+        base_string += str;
+    }
+    if (nlevels <= 1)
+    {
+        // logic above doesn't work for nlevels == 1, just override
+        sprintf(str, "@%s%d,%s%%d@n+%d:", levelName.c_str(), origin,
+                                          patchName.c_str(), origin);
+        base_string = str;
+    }
+
+    NameschemeAttributes atts;
+    atts.SetNamescheme(base_string);
+    this->blockNameScheme = atts;
+}
+

@@ -1,0 +1,75 @@
+<?xml version="1.0"?>
+  <Plugin name="SurfCompPrep" type="operator" label="SurfCompPrep" version="1.0" category="Analysis">
+    <Attribute name="SurfCompPrepAttributes" purpose="Attributes for the SurfCompPrep operator." persistent="true" exportAPI="" exportInclude="">
+      <Enum name="CoordinateSystem">
+        Cartesian
+        Cylindrical
+        Spherical
+      </Enum>
+      <Enum name="SurfaceType">
+        Closest
+        Farthest
+        Average
+      </Enum>
+      <Field name="surfaceType" label="Method for inferring surface" type="enum" subtype="SurfaceType">
+        Average
+      </Field>
+      <Field name="coordSystem" label="Coordinate System" type="enum" subtype="CoordinateSystem">
+        Cartesian
+      </Field>
+      <Field name="thetaStart" label="Start for Theta (degrees)" type="double" enabler="coordSystem:Spherical,Cylindrical">
+        0.000000
+      </Field>
+      <Field name="thetaStop" label="Stop for Theta (degrees)" type="double" enabler="coordSystem:Spherical,Cylindrical">
+        360.000000
+      </Field>
+      <Field name="thetaSteps" label="Number of samples in Theta" type="int" enabler="coordSystem:Spherical,Cylindrical">
+        90
+      </Field>
+      <Field name="phiStart" label="Start for Phi (degrees)" type="double" enabler="coordSystem:Spherical">
+        0.000000
+      </Field>
+      <Field name="phiStop" label="Stop for Phi (degrees)" type="double" enabler="coordSystem:Spherical">
+        180.000000
+      </Field>
+      <Field name="phiSteps" label="Number of samples in Phi" type="int" enabler="coordSystem:Spherical">
+        45
+      </Field>
+      <Field name="startRadius" label="First radius to sample" type="double" enabler="coordSystem:Cylindrical,Spherical">
+        0.000000
+      </Field>
+      <Field name="endRadius" label="Last radius to sample" type="double" enabler="coordSystem:Cylindrical,Spherical">
+        1.000000
+      </Field>
+      <Field name="radiusSteps" label="Number of samples in radius" type="int" enabler="coordSystem:Cylindrical,Spherical">
+        100
+      </Field>
+      <Field name="xStart" label="Starting point for X" type="double" enabler="coordSystem:Cartesian">
+        0.000000
+      </Field>
+      <Field name="xStop" label="Ending point for X" type="double" enabler="coordSystem:Cartesian">
+        1.000000
+      </Field>
+      <Field name="xSteps" label="Number of steps in X" type="int" enabler="coordSystem:Cartesian">
+        100
+      </Field>
+      <Field name="yStart" label="Starting point for Y" type="double" enabler="coordSystem:Cartesian">
+        0.000000
+      </Field>
+      <Field name="yStop" label="Ending point for Y" type="double" enabler="coordSystem:Cartesian">
+        1.000000
+      </Field>
+      <Field name="ySteps" label="Number of steps in Y" type="int" enabler="coordSystem:Cartesian">
+        100
+      </Field>
+      <Field name="zStart" label="Starting point for Z" type="double" enabler="coordSystem:Cartesian,Cylindrical">
+        0.000000
+      </Field>
+      <Field name="zStop" label="Ending point for Z" type="double" enabler="coordSystem:Cartesian,Cylindrical">
+        1.000000
+      </Field>
+      <Field name="zSteps" label="Number of steps in Z" type="int" enabler="coordSystem:Cartesian,Cylindrical">
+        100
+      </Field>
+    </Attribute>
+  </Plugin>

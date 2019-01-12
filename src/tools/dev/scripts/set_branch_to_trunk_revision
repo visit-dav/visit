@@ -1,0 +1,91 @@
+#!/bin/bash
+#
+#  Script: set_branch_to_trunk_revision
+# 
+#  Purpose: 
+#      "Undoes" a merge, meaning that subsequent merges from a branch to the
+#      trunk will start at this revision.
+#
+#  Programmer: Hank Childs
+#  Creation:   May 16, 2007
+#
+#  Modifications:
+#
+#    Hank Childs, Sat Jun 23 16:38:02 PDT 2007
+#    Add support for release candidates.
+#
+#    Hank Childs, Mon Dec 17 15:22:36 PST 2007
+#    Fix bug with release candidates.
+#
+#    Tom Fogal, Tue Mar 17 22:01:44 MST 2009
+#    Changed kshisms to bashisms.
+#
+# *****************************************************************************
+
+issueHelp="no"
+
+# Make sure we don't get superfluous print statements when changing dirs
+CDPATH=""
+
+P=$(which $0)
+P2=${P%/*}
+. ${P2}/visit_svn_helper
+
+doRC="no"
+if [[ $# == 3 ]] ; then
+   if [[ "$3" == "RC" ]] ; then
+       doRC="yes"
+       shift
+   fi
+fi
+
+if [[ $# != 2 ]] ; then
+   issueHelp="yes"
+fi
+
+if [[ "$issueHelp" == "yes" ]] ; then
+   echo ""
+   echo "Usage:   $0 <branch> REV"
+   echo ""
+   echo "Example: $0 my_dev_work 1027"
+   echo "\twill modify the bookkeeping of the last revision merged from the "
+   echo "\tbranch my_dev_work to the trunk as 1027."
+   echo ""
+   echo "This script is dangerous and you should really only run it if you "
+   echo "are following the instructions from the merge_branch_to_trunk "
+   echo "script."
+   echo ""
+   exit 1
+fi
+
+DEST=${VISIT_SVN_BRANCHES}/${SVN_NERSC_NAME}/$1
+
+svn ls $DEST 2>/dev/null > /dev/null
+if [[ $? != 0 ]] ; then
+   DEST=${VISIT_SVN_BRANCHES}/$1
+   svn ls $DEST 2>/dev/null > /dev/null
+   if [[ $? != 0 ]] ; then
+      echo "$DEST does not appear to be a valid branch."
+      exit 1
+   fi
+fi
+
+mkdir tmp_forRev$$
+cd tmp_forRev$$
+echo ""
+echo "Getting appropriate files..."
+svn co --quiet $DEST/svninfo
+cd svninfo
+if [[ "$doRC" == "yes" ]] ; then
+   echo $2 > Rev_toRCTrunk
+else
+   echo $2 > Rev_toTrunk
+fi
+echo ""
+echo "Updating with new revision info..."
+svn commit --quiet -m "Reset revision from branch $1 to trunk as $2"
+cd ../../
+rm -Rf tmp_forRev$$
+
+echo ""
+echo "Completed!"

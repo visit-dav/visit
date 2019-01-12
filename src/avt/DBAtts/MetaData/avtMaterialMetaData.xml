@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+  <Attribute name="avtMaterialMetaData" purpose="Contains material metadata attributes" persistent="false" keyframe="true" exportAPI="DBATTS_API" exportInclude="dbatts_exports.h" codefile="avtMaterialMetaData.code" baseClass="avtBaseVarMetaData">
+    <Field name="numMaterials" label="Number of materials" type="int" access="public">
+      0
+    </Field>
+    <Field name="materialNames" label="Material names" type="stringVector" access="public">
+    </Field>
+    <Field name="colorNames" label="Material color names" type="stringVector" access="public">
+    </Field>
+    <Function name="avtMaterialMetaData2" user="true" member="true">
+    </Function>
+    <Function name="avtMaterialMetaData3" user="true" member="true">
+    </Function>
+    <Function name="avtMaterialMetaData4" user="true" member="true">
+    </Function>
+    <Function name="Print" user="true" member="true">
+    </Function>
+  </Attribute>

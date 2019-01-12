@@ -1,0 +1,62 @@
+Function: ChangesRequireRecalculation
+Declaration: bool ChangesRequireRecalculation(const CracksClipperAttributes &) const;
+Definition:
+// ****************************************************************************
+// Modifications:
+//
+// ****************************************************************************
+bool
+CracksClipperAttributes::ChangesRequireRecalculation(const CracksClipperAttributes &obj) const
+{
+    return true;
+}
+
+Target: xml2info
+Function: CracksClipperCommonPluginInfo::GetCreatedExpressions
+Declaration: virtual ExpressionList *GetCreatedExpressions(const avtDatabaseMetaData *);
+Definition:
+
+// ***************************************************************************
+//  Method: CracksClipperCommonPluginInfo::GetCreatedExpressions
+//
+//  Purpose: Adds expressions to the pipeline that will be evaluated after
+//           this operator is executed.
+//
+//  Programmer:  Kathleen Bonnell
+//  Creation:    September 27, 2010
+//
+//  Modifications:
+//    Kathleen Biagas, Thu Aug  9 16:16:59 PDT 2012
+//    Match new API for this method.
+//
+//    Kathleen Biagas, Wed Nov 20 12:57:06 PST 2013
+//    Removed code that did nothing.
+//
+// ***************************************************************************
+
+ExpressionList *
+CracksClipperCommonPluginInfo::GetCreatedExpressions(const avtDatabaseMetaData *md) const
+{
+    int i;
+    char name[1024], defn[1024];
+    ExpressionList *el = new ExpressionList;
+    int numMeshes = md->GetNumMeshes();
+    for (i = 0 ; i < numMeshes ; i++)
+    {
+        const avtMeshMetaData *mmd = md->GetMesh(i);
+        if (mmd->hideFromGUI || !mmd->validVariable)
+            continue;
+        {
+            Expression e2;
+            sprintf(name, "operators/CracksClipper/%s/den", mmd->name.c_str());
+            e2.SetName(name);
+            e2.SetType(Expression::ScalarMeshVar);
+            e2.SetFromOperator(true);
+            e2.SetOperatorName("CracksClipper");
+            sprintf(defn, "cell_constant(<%s>, 0.)", mmd->name.c_str());
+            e2.SetDefinition(defn);
+            el->AddExpressions(e2);
+        }
+    }
+    return el;
+}

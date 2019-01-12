@@ -1,0 +1,3608 @@
+import os
+import math
+import socket
+import stat
+import time
+
+###############################################################################
+# Class: JobSubmitter
+#
+# Purpose:    Base class for job submitter classes, which construct various
+#             command lines to submit parallel VisIt jobs.
+#
+# Programmer: Brad Whitlock
+# Date:       Thu May 17 14:22:04 PDT 2012
+#
+# Modifications:
+#   Eric Brugger, Mon Dec  3 13:25:32 PST 2012
+#   I modified the script so that all the arguments are passed to subsequent
+#   components before the "-s script_file" argument.
+#
+#   David Camp, Mon Oct 26 10:13:49 PDT 2015
+#   I added a function to return the correct argument for the process per node
+#   flag for Open MPI and MPICH.
+#
+###############################################################################
+
+class JobSubmitter(object):
+    def __init__(self, launcher):
+        super(JobSubmitter,self).__init__()
+        self.launcher = launcher
+        self.parallel = launcher.parallelArgs
+
+    def hostname(self):
+        return self.launcher.hostname()
+
+    def nodename(self):
+        return self.launcher.nodename()
+
+    def sectorname(self):
+        return self.launcher.sectorname()
+
+    def domainname(self):
+        return self.launcher.domainname()
+
+    def Executable(self):
+        return []
+
+    def VisItExecutable(self):
+        return [os.path.join(self.launcher.visitbindir, self.launcher.generalArgs.exe_name)]
+
+    def HandledHardwareArguments(self):
+        return 0
+
+    def LauncherAndSubLauncher(self):
+        sep = ""
+        if string.find(self.parallel.launch, ",") != -1:
+            sep = ","
+        if sep == "" and string.find(self.parallel.launch, "/") != -1:
+            sep = "/"
+        if sep != "":
+            s = string.split(self.parallel.launch, sep)
+            lname = s[0]
+            slname = s[1] 
+        else:
+            lname = self.parallel.launch
+            slname = ""
+        return (lname, slname)
+
+    def PPN(self):
+        return str(int(math.ceil(float(self.parallel.np) / float(self.parallel.nn))))
+
+    # Open MPI and MPICH have different arguments for the process per node flag.
+    # This function trys to decide with flag to use. It defaults to MPICH.
+    def PPNArgument(self):
+        p = subprocess.Popen(["mpirun", "--version"], stderr=subprocess.PIPE, stdout=subprocess.PIPE)
+        output = p.communicate()
+        new = ' '.join(output)
+        if new.find("Open MPI") == -1:
+            # MPICH
+            return "-ppn"
+        else:
+            # Open MPI
+            return "-npernode"
+
+    def CreateCommand(self, args, debugger):
+        parcmd = self.Executable()
+        parcmd = debugger.CreateCommand(parcmd + self.VisItExecutable() + args)
+        return parcmd
+
+###############################################################################
+# Class: JobSubmitter_mpirun
+#
+# Purpose:    Launch an MPI job with mpirun.
+#
+# Programmer: Brad Whitlock
+# Date:       Thu May 17 14:22:04 PDT 2012
+#
+# Modifications:
+#   Eric Brugger, Wed Oct 22 16:11:57 PDT 2014
+#   Make adding of -ppn to mpirun dependent on useppnmpirun being set to 1.
+#   By default it is set to 0, so it would need to be overridden in a custom
+#   launcher to be added.
+#
+#   David Camp, Mon Jul 27 13:10:15 PDT 2015
+#   Make adding of -ppn to mpirun dependent on "self.parallel.nn".
+#   Removed useppnmpirun.
+#
+#   David Camp, Mon Oct 26 10:13:49 PDT 2015
+#   Call the new PPNArgument function to get the correct MPI argument for 
+#   the "process per node" flag.
+#
+###############################################################################
+
+class JobSubmitter_mpirun(JobSubmitter):
+    def __init__(self, launcher):
+        super(JobSubmitter_mpirun,self).__init__(launcher)
+
+    def Executable(self):
+        return ["mpirun"]
+
+    def CreateCommand(self, args, debugger):
+        parcmd = self.Executable()
+        if self.parallel.launchargs != None:
+            parcmd = parcmd + self.parallel.launchargs
+        if self.parallel.np != None:
+            parcmd = parcmd + ["-np", self.parallel.np]
+        if self.parallel.nn != None:
+            parcmd = parcmd + [self.PPNArgument(), self.PPN()]
+        if self.parallel.partition != None:
+            parcmd = parcmd + ["-p", self.parallel.partition]
+        if self.parallel.machinefile != None:
+            parcmd = parcmd + ["-machinefile", self.parallel.machinefile]
+        parcmd = parcmd + self.VisItExecutable()
+        parcmd = parcmd + ["-plugindir", GETENV("VISITPLUGINDIR")]
+        parcmd = parcmd + ["-visithome", GETENV("VISITHOME")]
+        parcmd = parcmd + ["-visitarchhome", GETENV("VISITARCHHOME")]
+        parcmd = debugger.CreateCommand(parcmd + args)
+        return parcmd
+
+###############################################################################
+# Class: JobSubmitter_mpiexec
+#
+# Purpose:    Launch an MPI job with mpiexec.
+#
+# Programmer: Gunther H. Weber
+# Date:       Wed Dec  5 18:39:03 PST 2012
+#
+# Modifications:
+#   Brad Whitlock, Tue Jan 29 12:22:39 PST 2013
+#   If we're on a newer Mac and we're not running a dev version then get 
+#   mpiexec from the VisIt architecture/bin directory, if it exists.
+#
+#   Cyrus Harrison, Fri Feb  1 17:02:02 PST 2013
+#   Use mpiexe on OSX 10.6 and beyond.
+#
+#   David Camp, Tue Mar 11 10:17:48 PDT 2014
+#   Added the -ppn (process per node) option to the mpiexec.
+#
+#   Eric Brugger, Wed Oct 22 16:11:57 PDT 2014
+#   Make adding of -ppn to mpiexec dependent on useppnmpiexec being set to 1.
+#   By default it is set to 0, so it would need to be overridden in a custom
+#   launcher to be added.
+#
+#   David Camp, Mon Jul 27 13:10:15 PDT 2015
+#   Make adding of -ppn to mpiexec dependent on "self.parallel.nn".
+#   Removed useppnmpiexec.
+#
+#   David Camp, Mon Oct 26 10:13:49 PDT 2015
+#   Call the new PPNArgument function to get the correct MPI argument for 
+#   the "process per node" flag.
+#
+################################################################################
+
+class JobSubmitter_mpiexec(JobSubmitter):
+    def __init__(self, launcher):
+        super(JobSubmitter_mpiexec,self).__init__(launcher)
+
+    def Executable(self):
+        # If we're running on MacOS X 10.7 or later, use our own mpich
+        # that we bundle with VisIt when we're running an installed version
+        # of the code.
+        if self.launcher.os == "darwin" and self.launcher.osver >= 10 and \
+           self.launcher.generalArgs.dv == 0:
+            mpiexec = os.path.join(GETENV("VISITARCHHOME"),"bin","mpiexec")
+            if os.path.exists(mpiexec):
+                return [mpiexec]
+        return ["mpiexec"]
+
+    def CreateCommand(self, args, debugger):
+        parcmd = self.Executable()
+        if self.parallel.launchargs != None:
+            parcmd = parcmd + self.parallel.launchargs
+        if self.parallel.np != None:
+            parcmd = parcmd + ["-n", self.parallel.np]
+        if self.parallel.nn != None:
+            parcmd = parcmd + [self.PPNArgument(), self.PPN()]
+        if self.parallel.partition != None:
+            parcmd = parcmd + ["-p", self.parallel.partition]
+        if self.parallel.machinefile != None:
+            parcmd = parcmd + ["-machinefile", self.parallel.machinefile]
+        parcmd = parcmd + self.VisItExecutable()
+        parcmd = parcmd + ["-plugindir", GETENV("VISITPLUGINDIR")]
+        parcmd = parcmd + ["-visithome", GETENV("VISITHOME")]
+        parcmd = parcmd + ["-visitarchhome", GETENV("VISITARCHHOME")]
+        parcmd = debugger.CreateCommand(parcmd + args)
+        return parcmd
+
+###############################################################################
+# Class: JobSubmitter_lrun
+#
+# Purpose:    Launch an MPI job with lrun (LLNL's jsrun wrapper)
+#
+# Programmer: Cyrus Harrison
+# Date:       Wed Nov  7 10:47:30 PST 2018
+#
+# Modifications:
+#
+###############################################################################
+class JobSubmitter_lrun(JobSubmitter):
+    def __init__(self, launcher):
+        super(JobSubmitter_lrun,self).__init__(launcher)
+
+    def Executable(self):
+        return ["lrun"]
+
+    def CreateCommand(self, args, debugger):
+        parcmd = self.Executable()
+        if self.parallel.nn != None:
+            parcmd = parcmd + ["-N" +str(self.parallel.nn)] 
+        if self.parallel.np != None:
+            parcmd = parcmd + ["-p" + str(self.parallel.np)]
+        parcmd = parcmd + self.VisItExecutable()
+        parcmd = parcmd + ["-plugindir", GETENV("VISITPLUGINDIR")]
+        parcmd = parcmd + ["-visithome", GETENV("VISITHOME")]
+        parcmd = parcmd + ["-visitarchhome", GETENV("VISITARCHHOME")]
+        parcmd = debugger.CreateCommand(parcmd + args)
+        return parcmd
+
+###############################################################################
+# Class: JobSubmitter_aprun
+#
+# Purpose:    Launch an MPI job with aprun.
+#
+# Programmer: Brad Whitlock
+# Date:       Thu May 17 14:22:04 PDT 2012
+#
+# Modifications:
+#   Eric Brugger, Fri Feb 28 10:19:02 PST 2014
+#   I added a fix from Jean Favre that corrected the setting of the -N option
+#   for aprun.
+#
+#   David Camp, Mon Jul 27 08:31:12 PDT 2015
+#   Make adding of -N to aprun dependent on "self.parallel.nn".
+#
+###############################################################################
+
+class JobSubmitter_aprun(JobSubmitter):
+    def __init__(self, launcher):
+        super(JobSubmitter_aprun,self).__init__(launcher)
+
+    def Executable(self):
+        return ["aprun"]
+
+    def CreateCommand(self, args, debugger):
+        parcmd = self.Executable()
+        if self.parallel.launchargs != None:
+            parcmd = parcmd + self.parallel.launchargs
+        if self.parallel.np != None:
+            parcmd = parcmd + ["-n", self.parallel.np]
+        if self.parallel.nn != None:
+            parcmd = parcmd + ["-N", self.PPN()]
+        parcmd = parcmd + self.VisItExecutable()
+        parcmd = parcmd + ["-plugindir", GETENV("VISITPLUGINDIR")]
+        parcmd = parcmd + ["-visithome", GETENV("VISITHOME")]
+        parcmd = parcmd + ["-visitarchhome", GETENV("VISITARCHHOME")]
+        parcmd = debugger.CreateCommand(parcmd + args)
+        return parcmd
+
+###############################################################################
+# Class: JobSubmitter_dmpirun
+#
+# Purpose:    Launch an MPI job with dmpirun.
+#
+# Programmer: Brad Whitlock
+# Date:       Thu May 17 14:22:04 PDT 2012
+#
+# Modifications:
+#
+###############################################################################
+
+class JobSubmitter_dmpirun(JobSubmitter):
+    def __init__(self, launcher):
+        super(JobSubmitter_dmpirun, self).__init__(launcher)
+
+    def Executable(self):
+        return ["dmpirun"]
+
+    def CreateCommand(self, args, debugger):
+        parcmd = self.Executable()
+        if self.parallel.launchargs != None:
+            parcmd = parcmd + self.parallel.launchargs
+        if self.parallel.np != None:
+            parcmd = parcmd + ["-np", self.parallel.np]
+        if self.parallel.partition != None:
+            parcmd = parcmd + ["-p", self.parallel.partition]
+        parcmd = debugger.CreateCommand(parcmd + self.VisItExecutable() + args)
+        return parcmd
+
+###############################################################################
+# Class: JobSubmitter_poe
+#
+# Purpose:    Launch an MPI job with poe.
+#
+# Programmer: Brad Whitlock
+# Date:       Thu May 17 14:22:04 PDT 2012
+#
+# Modifications:
+#
+###############################################################################
+
+class JobSubmitter_poe(JobSubmitter):
+    def __init__(self, launcher):
+        super(JobSubmitter_poe, self).__init__(launcher)
+
+    def Executable(self):
+        return ["poe"]
+
+    def CreateCommand(self, args, debugger):
+        parcmd = self.Executable() + self.VisItExecutable() + args
+        if self.parallel.launchargs != None:
+            parcmd = parcmd + self.parallel.launchargs
+        if self.parallel.np != None:
+            parcmd = parcmd + ["-procs", self.parallel.np]
+        if self.parallel.nn != None:
+            parcmd = parcmd + ["-nodes", self.parallel.nn]
+        if self.parallel.partition != None:
+            parcmd = parcmd + ["-rmpool", self.parallel.partition]
+        parcmd = debugger.CreateCommand(parcmd)
+        return parcmd
+
+###############################################################################
+# Class: JobSubmitter_ibrun
+#
+# Purpose:    Launch an MPI job with poe.
+#
+# Programmer: Brad Whitlock
+# Date:       Thu May 17 14:22:04 PDT 2012
+#
+# Modifications:
+#
+###############################################################################
+
+class JobSubmitter_ibrun(JobSubmitter):
+    def __init__(self, launcher):
+        super(JobSubmitter_ibrun, self).__init__(launcher)
+
+    def Executable(self):
+        return ["ibrun"]
+
+###############################################################################
+# Class: JobSubmitter_prun
+#
+# Purpose:    Launch an MPI job with prun.
+#
+# Programmer: Brad Whitlock
+# Date:       Thu May 17 14:22:04 PDT 2012
+#
+# Modifications:
+#
+###############################################################################
+
+class JobSubmitter_prun(JobSubmitter):
+    def __init__(self, launcher):
+        super(JobSubmitter_prun, self).__init__(launcher)
+
+    def Executable(self):
+        return ["prun"]
+
+    def CreateCommand(self, args, debugger):
+        parcmd = self.Executable()
+        if self.parallel.launchargs != None:
+            parcmd = parcmd + self.parallel.launchargs
+        if self.parallel.np != None:
+            parcmd = parcmd + ["-n", self.parallel.np]
+        if self.parallel.nn != None:
+            parcmd = parcmd + ["-N", self.parallel.nn]
+        if self.parallel.partition != None:
+            parcmd = parcmd + ["-p", self.parallel.partition]
+        parcmd = debugger.CreateCommand(parcmd + self.VisItExecutable() + args)
+        return parcmd
+
+###############################################################################
+# Class: JobSubmitter_srun
+#
+# Purpose:    Launch an MPI job with srun.
+#
+# Programmer: Brad Whitlock
+# Date:       Thu May 17 14:22:04 PDT 2012
+#
+# Modifications:
+#
+###############################################################################
+
+class JobSubmitter_srun(JobSubmitter):
+    def __init__(self, launcher):
+        super(JobSubmitter_srun, self).__init__(launcher)
+
+    def Executable(self):
+        return ["srun"]
+
+    def CreateCommand(self, args, debugger):
+        parcmd = self.Executable()
+        if self.parallel.launchargs != None:
+            parcmd = parcmd + self.parallel.launchargs
+        if self.parallel.np != None:
+            parcmd = parcmd + ["-n", self.parallel.np]
+        if self.parallel.nn != None:
+            parcmd = parcmd + ["-N", self.parallel.nn]
+        if self.parallel.name != None:
+            parcmd = parcmd + ["-J", self.parallel.name]
+        if self.parallel.partition != None:
+            parcmd = parcmd + ["-p", self.parallel.partition]
+        if self.parallel.time != None:
+            parcmd = parcmd + ["-t", self.parallel.time]
+        parcmd = debugger.CreateCommand(parcmd + self.VisItExecutable() + args)
+        return parcmd
+
+###############################################################################
+# Class: JobSubmitter_psub
+#
+# Purpose:    Launch an MPI job with psub.
+#
+# Programmer: Brad Whitlock
+# Date:       Thu May 17 14:22:04 PDT 2012
+#
+# Modifications:
+#
+###############################################################################
+
+class JobSubmitter_psub(JobSubmitter):
+    def __init__(self, launcher):
+        super(JobSubmitter_psub, self).__init__(launcher)
+
+    def Executable(self):
+        return ["psub"]
+
+    def CreateCommand(self, args, debugger):
+        psub, sublauncher = self.LauncherAndSubLauncher()
+        sublaunchargs = []
+        if self.parallel.sublaunchargs != None: 
+            sublaunchargs = sublaunchargs + self.parallel.sublaunchargs
+        if sublauncher == "srun" and self.parallel.np != None:
+            sublaunchargs = ["srun"] + sublaunchargs + ["-n", self.parallel.np]
+        elif sublauncher == "mpirun" and self.parallel.np != None:
+            sublaunchargs = ["mpirun"] + sublaunchargs + ["-np", self.parallel.np]
+
+        lpvar = (GETENV("LIBPATH"), GETENV("LIBPATH"))
+        if "csh" in GETENV("SHELL"):
+            libpathcmd="setenv LIBPATH %s ; setenv LD_LIBRARY_PATH %s" % lpvar
+            limitcmd="limit coredumpsize 0"
+        else:
+            libpathcmd="LIBPATH=%s ; export LIBPATH ; LD_LIBRARY_PATH=%s ; export LD_LIBRARY_PATH" % lpvar
+            limitcmd="ulimit -c 0"
+
+        parcmd = self.Executable()
+        if self.parallel.launchargs != None:
+            parcmd = parcmd + self.parallel.launchargs
+        parcmd = parcmd + ["-x"]
+        # Use both -g and -np to set procs if we have multiple processors
+        # per node.  On some machines the -np is used and the -g ignored
+        # and on others it is the opposite.
+        # Otherwise, syntax is not accepted, so use -ln.
+        if self.parallel.np != None and self.parallel.nn != None:
+            parcmd = parcmd + ["-g", self.parallel.np, "-np", self.parallel.np, "-ln", self.parallel.nn]
+        elif self.parallel.np != None:
+            parcmd = parcmd + ["-ln", self.parallel.np]
+
+        if self.parallel.name != None:
+            parcmd = parcmd + ["-r", self.parallel.name]
+        if self.parallel.partition != None:
+            parcmd = parcmd + ["-c", self.parallel.partition]
+        if self.parallel.bank != None:
+            parcmd = parcmd + ["-b", self.parallel.bank]
+        if self.parallel.time != None:
+            parcmd = parcmd + ["-tM", self.parallel.time]
+        if self.parallel.expedite:
+            parcmd = parcmd + ["-expedite"]
+
+        setupcmd = "cd %s ; %s ; %s ;" % (os.path.abspath(os.curdir), limitcmd, libpathcmd)
+
+        sublaunchprecmd = ""
+        if self.parallel.sublaunchprecmd != None:
+            sublaunchprecmd = string.join(list(self.parallel.sublaunchprecmd) + [";"], " ")
+        sublaunchpostcmd = ""
+        if self.parallel.sublaunchpostcmd != None:
+            sublaunchpostcmd = string.join(list(self.parallel.sublaunchpostcmd) + [";"], " ")
+
+        launchcmd = sublaunchprecmd
+        allargs = debugger.CreateCommand(sublaunchargs + self.VisItExecutable() + args)
+        launchcmd = launchcmd + string.join(allargs, " ") + " ; "
+        launchcmd = launchcmd + sublaunchpostcmd
+
+        parcmd = parcmd + ["-i", setupcmd + launchcmd]
+        return parcmd
+
+###############################################################################
+# Class: JobSubmitter_salloc
+#
+# Purpose:    Launch an MPI job with salloc.
+#
+# Programmer: Brad Whitlock
+# Date:       Thu May 17 14:22:04 PDT 2012
+#
+# Modifications:
+#
+###############################################################################
+
+class JobSubmitter_salloc(JobSubmitter):
+    def __init__(self, launcher):
+        super(JobSubmitter_salloc, self).__init__(launcher)
+
+    def Executable(self):
+        return ["salloc"]
+
+    def CreateCommand(self, args, debugger):
+        parcmd = self.Executable()
+        if self.parallel.partition != None:
+            parcmd = parcmd + ["-p", self.parallel.partition]
+        if self.parallel.bank != None:
+            parcmd = parcmd + ["-A", self.parallel.bank]
+        if self.parallel.time != None:
+            parcmd = parcmd + ["-t", self.parallel.time]
+        if self.parallel.nn != None:
+            parcmd = parcmd + ["-N", self.parallel.nn]
+        if self.parallel.np != None:
+            parcmd = parcmd + ["-n", self.parallel.np]
+
+        if self.parallel.nn != None:
+            parcmd = parcmd + ["--ntasks-per-node=%s" % self.PPN()]
+
+        if self.parallel.launchargs != None:
+            parcmd = parcmd + self.parallel.launchargs
+
+        parcmd = parcmd + ["srun","-N1","-n1","--preserve-env","--mpi=none", "mpirun"]
+
+        if self.parallel.nn != None:
+            parcmd = parcmd + ["--npernode", self.PPN()]
+
+        parcmd = debugger.CreateCommand(parcmd + self.VisItExecutable() + args)
+
+        return parcmd
+
+###############################################################################
+# Class: JobSubmitter_sbatch
+#
+# Purpose:    Launch an MPI job with sbatch.
+#
+# Programmer: Brad Whitlock
+# Date:       Thu May 17 14:22:04 PDT 2012
+#
+# Modifications:
+#   Satheesh Maheswaran, Tue Jan 15 14:47:54 GMT 2013
+#   I added job name option to Slurm scheduler and mpirun launcher argument support 
+#
+#   Paul Selby, Thu May 16 12:06:30 BST 2013
+#   Use launchargs if supplied
+#
+#   Eric Brugger, Fri Feb 28 10:19:02 PST 2014
+#   I added a fix from Jean Favre that corrected the setting of the -N option
+#   for aprun.
+#
+#   David Camp, Thu Oct  1 11:37:53 PDT 2015
+#   Update sbatch to be more like qsub to support new NERSC system, Cori.
+#   Also added the srun mpi launcher option.
+#
+###############################################################################
+
+class JobSubmitter_sbatch(JobSubmitter):
+    def __init__(self, launcher):
+        super(JobSubmitter_sbatch, self).__init__(launcher)
+
+    def Executable(self):
+        return ["sbatch"]
+
+    def CreateFilename(self):
+        tdate = time.asctime()[11:19]
+        tuser = self.launcher.username()
+        return os.path.join("/tmp", "visit.%s.%s" % (tuser, tdate))
+
+    def HandledHardwareArguments(self):
+        return 1
+
+    def TFileLoadModules(self, tfile):
+        return
+
+    def TFileSetup(self, tfile):
+        tfile.write("cd %s\n" % os.path.abspath(os.curdir))
+        tfile.write("ulimit -c 0\n")
+        #tfile.write("# Submitted on host %s\n" % self.launcher.hostname())
+        #for v in ("LIBPATH", "LD_LIBRARY_PATH", "VISITHOME", "VISITARCHHOME", "VISITPLUGINDIR"):
+        #    tfile.write('echo "%s=$%s"\n' % (v,v))
+
+    def Writable(self, d):
+        return self.launcher.writepermission(d)
+
+    def HandleCWDPermissions(self):
+        args = []
+        if not self.Writable(os.path.abspath(os.curdir)):
+            msg = """
+The directory you started VisIt in does not have write permission.
+Using /dev/null for the batch job standard error and standard
+output streams.
+"""
+            self.launcher.warning(msg)
+            args = args + ["-e", "/dev/null", "-o", "/dev/null"]
+        return args
+
+    def AddEnvironment(self):
+        env = "--export="
+        env = env + "HOME=" + GETENV("HOME")
+        env = env + ",LIBPATH=" + GETENV("LIBPATH")
+        env = env + ",LD_LIBRARY_PATH=" + GETENV("LD_LIBRARY_PATH")
+        env = env + ",VISITHOME=" + GETENV("VISITHOME")
+        env = env + ",VISITARCHHOME=" + GETENV("VISITARCHHOME")
+        env = env + ",VISITPLUGINDIR=" + GETENV("VISITPLUGINDIR")
+        return [env]
+
+    def mpiexec(self):
+        return ["mpiexec"]
+
+    def mpiexec_args(self, args):
+        mpicmd = self.mpiexec()
+        if self.parallel.sublaunchargs != None:
+            mpicmd = mpicmd + self.parallel.sublaunchargs
+        if self.parallel.np != None:
+            mpicmd = mpicmd + ["-n", self.parallel.np]
+        if self.parallel.nn != None:
+            mpicmd = mpicmd + [self.PPNArgument(), self.PPN()]
+        if self.parallel.machinefile != None:
+            mpicmd = mpicmd + ["-machinefile", self.parallel.machinefile]
+        mpicmd = mpicmd + self.VisItExecutable() + args
+        return mpicmd
+
+    def aprun(self):
+        return ["aprun"]
+
+    def aprun_args(self, args):
+        mpicmd = self.aprun()
+        if self.parallel.sublaunchargs != None:
+            mpicmd = mpicmd + self.parallel.sublaunchargs
+        if self.parallel.np != None:
+            mpicmd = mpicmd + ["-n", self.parallel.np]
+        if self.parallel.nn != None:
+            mpicmd = mpicmd + ["-N", self.PPN()]
+        mpicmd = mpicmd + self.VisItExecutable() + args
+        return mpicmd
+
+    def mpirun(self):
+        return ["mpirun"]
+
+    def mpirun_args(self, args):
+        mpicmd = self.mpirun()
+        if self.parallel.sublaunchargs != None:
+            mpicmd = mpicmd + self.parallel.sublaunchargs
+        if self.parallel.np != None:
+            mpicmd = mpicmd + ["-np", self.parallel.np]
+        if self.parallel.nn != None:
+            mpicmd = mpicmd + [self.PPNArgument(), self.PPN()]
+        if self.parallel.machinefile != None:
+            mpicmd = mpicmd + ["-machinefile", self.parallel.machinefile]
+        mpicmd = mpicmd + self.VisItExecutable() + args
+        return mpicmd
+
+    def ibrun(self):
+        return ["ibrun"]
+
+    def ibrun_args(self, args):
+        mpicmd = self.ibrun()
+        if self.parallel.sublaunchargs != None:
+            mpicmd = mpicmd + self.parallel.sublaunchargs
+        mpicmd = mpicmd + self.VisItExecutable() + args
+        return mpicmd
+
+    def srun(self):
+        return ["srun"]
+
+    def srun_args(self, args):
+        mpicmd = self.srun()
+        if self.parallel.sublaunchargs != None:
+            mpicmd = mpicmd + self.parallel.sublaunchargs
+        if self.parallel.np != None:
+            mpicmd = mpicmd + ["--ntasks=%s" % self.parallel.np]
+        if self.parallel.nn != None:
+            mpicmd = mpicmd + ["--nodes=%s" % self.parallel.nn]
+            mpicmd = mpicmd + ["--tasks-per-node=%s" % self.PPN()]
+        mpicmd = mpicmd + self.VisItExecutable() + args
+        return mpicmd
+
+    def CreateCommand(self, args, debugger):
+        parcmd = self.Executable()
+        parcmd = parcmd + self.HandleCWDPermissions()
+        parcmd = parcmd + self.AddEnvironment()
+        if self.parallel.launchargs != None:
+            parcmd = parcmd + self.parallel.launchargs
+        if self.parallel.partition != None:
+            parcmd = parcmd + ["--partition=%s" % self.parallel.partition]
+        if self.parallel.bank != None:
+            parcmd = parcmd + ["--account=%s" % self.parallel.bank]
+        if self.parallel.time != None:
+            parcmd = parcmd + ["--time=%s" % self.parallel.time]
+        if self.parallel.np != None:
+            parcmd = parcmd + ["--ntasks=%s" % self.parallel.np]
+        if self.parallel.nn != None:
+            parcmd = parcmd + ["--nodes=%s" % self.parallel.nn]
+            parcmd = parcmd + ["--tasks-per-node=%s" % self.PPN()]
+        if self.parallel.name != None:
+            parcmd = parcmd + ["--job-name=%s" % self.parallel.name]
+
+        sbatch,sublauncher = self.LauncherAndSubLauncher()
+        if sublauncher == "srun":
+            mpicmd = self.srun_args(args)
+        elif sublauncher == "mpiexec":
+            mpicmd = self.mpiexec_args(args)
+        elif sublauncher == "aprun":
+            mpicmd = self.aprun_args(args)
+        elif sublauncher == "mpirun":
+            mpicmd = self.mpirun_args(args)
+        elif sublauncher == "ibrun":
+            mpicmd = self.ibrun_args(args)
+        else:
+            mpicmd = self.VisItExecutable() + args
+
+        mpicmd = debugger.CreateCommand(mpicmd)
+
+        # Create the tfile
+        tfilename = self.CreateFilename()
+        try:
+            tfile = open(tfilename, "wt")
+            tfile.write("#!/bin/sh\n")
+            self.TFileLoadModules(tfile)
+            self.TFileSetup(tfile)
+
+            if self.parallel.hw_precmd != None:
+                tfile.write(self.parallel.hw_precmd + "\n")
+            if self.parallel.sublaunchprecmd != None:
+                tfile.write(string.join(self.parallel.sublaunchprecmd, " ") + "\n")
+            tfile.write(string.join(mpicmd, " ") + "\n")
+            if self.parallel.sublaunchpostcmd != None:
+                tfile.write(string.join(self.parallel.sublaunchpostcmd, " ") + "\n")
+            if self.parallel.hw_postcmd != None:
+                tfile.write(self.parallel.hw_postcmd + "\n")
+
+            tfile.close()
+            os.chmod(tfilename, 0775)
+        except (OSError, IOError):
+            exit("Could not create script file to launch %s job." % self.parallel.launcher, 0)
+
+        # The parallel command is the tfile script we just made.
+        parcmd = parcmd + [tfilename]
+        return parcmd
+
+
+###############################################################################
+# Class: JobSubmitter_bsub
+#
+# Purpose:    Launch an MPI job with bsub.
+#
+# Programmer: Brad Whitlock
+# Date:       Thu May 17 14:22:04 PDT 2012
+#
+# Modifications:
+#   Eric Brugger, Tue Nov 27 11:39:36 PST 2018
+#   I added support for specifying the bank and number of processes per node
+#   to bsub. I also added support to specifying the plugindir, visithome and
+#   visitarchhome.
+#
+###############################################################################
+
+class JobSubmitter_bsub(JobSubmitter):
+    def __init__(self, launcher):
+        super(JobSubmitter_bsub, self).__init__(launcher)
+
+    def Executable(self):
+        return ["bsub"]
+
+    def CreateCommand(self, args, debugger):
+        bsub, sublauncher = self.LauncherAndSubLauncher()
+        parcmd = self.Executable()
+        parcmd = parcmd + ["-I"]
+        if self.parallel.launchargs != None:
+            parcmd = parcmd + self.parallel.launchargs
+        if self.parallel.np != None:
+            parcmd = parcmd + ["-n", self.parallel.np]
+        if self.parallel.partition != None:
+            parcmd = parcmd + ["-q", self.parallel.partition]
+        if self.parallel.time != None:
+            parcmd = parcmd + ["-W", self.parallel.time]
+        if self.parallel.bank != None:
+            parcmd = parcmd + ["-G", self.parallel.bank]
+        nodes = self.parallel.nn
+        if nodes == None:
+            nodes = self.parallel.np
+        ppn = str(int(math.ceil(float(self.parallel.np) / float(nodes))))
+        parcmd = parcmd + ["-R", "\"span[ptile=%s]\"" % ppn]
+        parcmd = parcmd + [sublauncher]
+        if self.parallel.sublaunchargs != None:
+            parcmd = parcmd + self.parallel.sublaunchargs
+        parcmd = parcmd + self.VisItExecutable()
+        parcmd = parcmd + ["-plugindir", GETENV("VISITPLUGINDIR")]
+        parcmd = parcmd + ["-visithome", GETENV("VISITHOME")]
+        parcmd = parcmd + ["-visitarchhome", GETENV("VISITARCHHOME")]
+        parcmd = parcmd + args
+        parcmd = debugger.CreateCommand(parcmd)
+        return parcmd
+
+###############################################################################
+# Class: JobSubmitter_yod
+#
+# Purpose:    Launch an MPI job with yod.
+#
+# Programmer: Brad Whitlock
+# Date:       Thu May 17 14:22:04 PDT 2012
+#
+# Modifications:
+#
+###############################################################################
+
+class JobSubmitter_yod(JobSubmitter):
+    def __init__(self, launcher):
+        super(JobSubmitter_yod, self).__init__(launcher)
+
+    def Executable(self):
+        return ["/cougar/bin/yod"]
+
+    def CreateCommand(self, args, debugger):
+        parcmd = self.Executable()
+        if self.parallel.launchargs != None:
+            parcmd = parcmd + self.launchargs
+        if self.parallel.np != None:
+            parcmd = parcmd + ["-sz", self.parallel.np]
+        parcmd = debugger.CreateCommand(parcmd + self.VisItExecutable() + args)
+        return parcmd
+
+###############################################################################
+# Class: JobSubmitter_qsub
+#
+# Purpose:    Launch an MPI job with qsub or msub.
+#
+# Programmer: Brad Whitlock
+# Date:       Thu May 17 14:22:04 PDT 2012
+#
+# Modifications:
+#   David Camp, Tue Mar 11 10:17:48 PDT 2014
+#   Added the -ppn (process per node) option to the mpiexec command.
+#
+#   Eric Brugger, Fri Aug 15 11:06:59 PDT 2014
+#   I modified AddEnvironment to pass the HOST environment variable to the
+#   parallel runtime environment.
+#
+#   Eric Brugger, Wed Oct 22 16:11:57 PDT 2014
+#   Make adding of -ppn to mpiexec and mpirun dependent on useppnmpiexec or
+#   useppnmpirun being set to 1. By default they are set to 0, so they would
+#   need to be overridden in a custom launcher to be added.
+#
+#   David Camp, Mon Jul 27 13:10:15 PDT 2015
+#   Make adding of -ppn to mpirun and mpiexec dependent on "self.parallel.nn".
+#   Removed useppnmpiexec and useppnmpirun.
+#
+#   David Camp, Mon Oct 26 10:13:49 PDT 2015
+#   Call the new PPNArgument function to get the correct MPI argument for 
+#   the "process per node" flag.
+#
+###############################################################################
+
+class JobSubmitter_qsub(JobSubmitter):
+    def __init__(self, launcher):
+        super(JobSubmitter_qsub, self).__init__(launcher)
+        self.tfilename = ""
+        self.useppn = 1
+        self.usettc = 0
+
+    def Executable(self):
+        plauncher,sublauncher = self.LauncherAndSubLauncher()
+        return [plauncher]
+
+    def CreateFilename(self, root):
+        tdate = string.replace(time.asctime(), " ", "-")
+        tuser = self.launcher.username()
+        return os.path.join("/tmp", "%s.%s.%s" % (root, tuser, tdate))
+
+    def HandledHardwareArguments(self):
+        return 1
+
+    def TFileLoadModules(self, tfile):
+        return
+
+    def TFileSetup(self, tfile):
+        tfile.write("cd %s\n" % os.path.abspath(os.curdir))
+        tfile.write("ulimit -c 0\n")
+        #tfile.write("# Submitted on host %s\n" % self.launcher.hostname())
+        #for v in ("LIBPATH", "LD_LIBRARY_PATH", "VISITHOME", "VISITARCHHOME", "VISITPLUGINDIR"):
+        #    tfile.write('echo "%s=$%s"\n' % (v,v))
+
+    def mpiexec(self):
+        return ["mpiexec"]
+
+    def mpiexec_args(self, args):
+        mpicmd = self.mpiexec()
+        if self.parallel.sublaunchargs != None:
+            mpicmd = mpicmd + self.parallel.sublaunchargs
+        if self.parallel.np != None:
+            mpicmd = mpicmd + ["-n", self.parallel.np]
+        if self.parallel.nn != None:
+            mpicmd = mpicmd + [self.PPNArgument(), self.PPN()]
+        if self.parallel.machinefile != None:
+            mpicmd = mpicmd + ["-machinefile", self.parallel.machinefile]
+        mpicmd = mpicmd + self.VisItExecutable() + args
+        return mpicmd
+
+    def mpirun(self):
+        return ["mpirun"]
+
+    def mpirun_args(self, args):
+        mpicmd = self.mpirun()
+        if self.parallel.sublaunchargs != None:
+            mpicmd = mpicmd + self.parallel.sublaunchargs
+        if self.parallel.np != None:
+            mpicmd = mpicmd + ["-np", self.parallel.np]
+        if self.parallel.nn != None:
+            mpicmd = mpicmd + [self.PPNArgument(), self.PPN()]
+        if self.parallel.machinefile != None:
+            mpicmd = mpicmd + ["-machinefile", self.parallel.machinefile]
+        mpicmd = mpicmd + self.VisItExecutable()
+        mpicmd = mpicmd + ["-plugindir", GETENV("VISITPLUGINDIR")]
+        mpicmd = mpicmd + args
+        return mpicmd
+
+    def srun(self):
+        return ["srun"]
+
+    def srun_args(self, args):
+        mpicmd = self.srun()
+        if self.parallel.sublaunchargs != None:
+            mpicmd = mpicmd + self.parallel.sublaunchargs
+        if self.parallel.np != None:
+            mpicmd = mpicmd + ["-n", self.parallel.np]
+        if self.parallel.nn != None:
+            mpicmd = mpicmd + ["--nodes=%s" % self.parallel.nn]
+            mpicmd = mpicmd + ["--tasks-per-node=%s" % self.PPN()]
+        mpicmd = mpicmd + self.VisItExecutable() + args
+        return mpicmd
+
+    def aprun(self):
+        return ["aprun"]
+
+    def aprun_args(self, args):
+        mpicmd = self.aprun()
+        if self.parallel.sublaunchargs != None:
+            mpicmd = mpicmd + self.parallel.sublaunchargs
+        if self.parallel.np != None:
+            mpicmd = mpicmd + ["-n", self.parallel.np]
+        if self.parallel.nn != None:
+            mpicmd = mpicmd + ["-N", self.PPN()]
+        mpicmd = mpicmd + self.VisItExecutable() + args
+        return mpicmd
+
+    def ibrun(self):
+        return ["ibrun"]
+
+    def ibrun_args(self, args):
+        mpicmd = self.ibrun()
+        mpicmd = mpicmd + self.VisItExecutable() + args
+        return mpicmd
+
+    def Writable(self, d):
+        return self.launcher.writepermission(d)
+
+    def HandleCWDPermissions(self):
+        args = []
+        if not self.Writable(os.path.abspath(os.curdir)):
+            msg = """
+The directory you started VisIt in does not have write permission.
+Using /dev/null for the batch job standard error and standard
+output streams.
+"""
+            self.launcher.warning(msg)
+            args = args + ["-e", "/dev/null", "-o", "/dev/null"]
+        return args
+
+    def AddEnvironment(self):
+        env = ""
+        env = env + "HOME=" + GETENV("HOME")
+        env = env + ",LIBPATH=" + GETENV("LIBPATH")
+        env = env + ",LD_LIBRARY_PATH=" + GETENV("LD_LIBRARY_PATH")
+        env = env + ",VISITHOME=" + GETENV("VISITHOME")
+        env = env + ",VISITARCHHOME=" + GETENV("VISITARCHHOME")
+        env = env + ",VISITPLUGINDIR=" + GETENV("VISITPLUGINDIR")
+        return ["-v", env]
+
+    def LauncherArgs(self):
+        args = []
+        use_vis = 0
+        if self.parallel.launchargs != None:
+            i = 0
+            while i < len(self.parallel.launchargs):
+                larg = self.parallel.launchargs[i]
+                if larg == "-l":
+                    nextarg = self.parallel.launchargs[i+1]
+                    if nextarg == "vis":
+                        use_vis = 1
+                    else:
+                        args = args + [larg, nextarg]
+                    i = i + 1
+                else:
+                    args = args + [larg]
+                i = i + 1
+        return args, use_vis
+
+    def SetupPPN(self, nodes, procs, ppn, use_vis):
+        if use_vis:
+            args = ["-l", "nodes=%s:ppn=%s:vis" % (nodes, ppn)]
+        elif self.useppn:
+            args = ["-l", "nodes=%s:ppn=%s" % (nodes, ppn)]
+        else:
+            args = ["-l", "nodes=%s" % nodes]
+        return args
+
+    def SetupTime(self):
+        args = []
+        if self.parallel.time != None:
+            args = ["-l", "walltime=%s" % self.parallel.time]
+        return args
+
+    def AdditionalSetup(self):
+        return []
+
+    # Break up creating the command line into customizable stages.
+    def AssembleCommandLine(self):
+        parcmd = self.Executable()
+        parcmd = parcmd + self.HandleCWDPermissions()
+        parcmd = parcmd + self.AddEnvironment()
+        largs, use_vis = self.LauncherArgs()
+        parcmd = parcmd + largs
+
+        nodes = self.parallel.nn
+        if nodes == None:
+            nodes = self.parallel.np
+        ppn = str(int(math.ceil(float(self.parallel.np) / float(nodes))))
+        parcmd = parcmd + self.SetupPPN(nodes, self.parallel.np, ppn, use_vis)
+
+        parcmd = parcmd + self.SetupTime()
+        parcmd = parcmd + self.AdditionalSetup()
+
+        if self.usettc:
+            parcmd = parcmd + ["-l", "ttc=%s" % self.parallel.np]
+
+        if self.parallel.partition != None:
+            parcmd = parcmd + ["-q", self.parallel.partition]
+
+        if self.parallel.bank != None:
+            parcmd = parcmd + ["-A", self.parallel.bank]
+
+        parcmd = parcmd + [self.tfilename]
+
+        return parcmd
+
+    # Entry point for the job submitter. Create a tfile and a job submission 
+    # command line.
+    def CreateCommand(self, args, debugger):
+        plauncher,sublauncher = self.LauncherAndSubLauncher()
+
+        self.tfilename = self.CreateFilename("visit")
+        try:
+            # Determine the sublauncher command line.
+            if sublauncher == "mpiexec":
+                mpicmd = self.mpiexec_args(args)
+            elif sublauncher == "mpirun":
+                mpicmd = self.mpirun_args(args)
+            elif sublauncher == "srun":
+                mpicmd = self.srun_args(args)
+            elif sublauncher == "ibrun":
+                mpicmd = self.ibrun_args(args)
+            elif sublauncher == "aprun":
+                mpicmd = self.aprun_args(args)
+            else:
+                mpicmd = self.VisItExecutable() + args
+
+            mpicmd = debugger.CreateCommand(mpicmd)
+
+            # Write the tfile.
+            tfile = open(self.tfilename, "wt")
+            tfile.write("#!/bin/sh\n")
+            self.TFileLoadModules(tfile)
+            self.TFileSetup(tfile)
+
+            if self.parallel.hw_precmd != None:
+                tfile.write(self.parallel.hw_precmd + "\n")
+            if self.parallel.sublaunchprecmd != None:
+                tfile.write(string.join(self.parallel.sublaunchprecmd, " ") + "\n")
+            tfile.write(string.join(mpicmd, " ") + "\n")
+            if self.parallel.sublaunchpostcmd != None:
+                tfile.write(string.join(self.parallel.sublaunchpostcmd, " ") + "\n")
+            if self.parallel.hw_postcmd != None:
+                tfile.write(self.parallel.hw_postcmd + "\n")
+
+            tfile.close()
+            os.chmod(self.tfilename, 0775)
+        except (IOError, OSError):
+            exit("Can't create the tfile.", 0)
+
+        parcmd = self.AssembleCommandLine()
+        return parcmd
+
+###############################################################################
+# Class: Debugger
+#
+# Purpose:    Debugger base class.
+#
+# Programmer: Brad Whitlock
+# Date:       Thu May 31 13:07:04 PDT 2012
+#
+# Modifications:
+#
+###############################################################################
+
+class Debugger(object):
+    def __init__(self, launcher):
+        super(Debugger, self).__init__()
+        self.launcher = launcher
+        self.debug = launcher.debugArgs
+
+    def GetSourceDirectories(self):
+        def sourcedirs(root, d):
+            dirnames = []
+            try:
+                thisroot = os.path.join(root, d)
+                files = os.listdir(thisroot)
+                dirnames = [thisroot]
+                for f in files:
+                    if f[0] != "." and f != "CMakeFiles":
+                        thisfile = os.path.join(thisroot, f)
+                        st = os.stat(thisfile)
+                        if st.st_mode & stat.S_IFDIR:
+                            dirnames = dirnames + sourcedirs(thisroot, f)
+            except OSError:
+                # Most likely the directory did not exist.
+                pass
+            return dirnames
+
+        # The directories to search for sources
+        toplevels = ("common", "avt", "databases", "engine", "gui", "launcher", 
+                     "mdserver", "operators", "plots", "viewer", "visitpy", 
+                     "tools/xml", "tools/xmledit", "visit_vtk", "vtkqt", "winutil")
+        dirnames = []
+        for d in toplevels:
+            dirnames = dirnames + sourcedirs(self.launcher.visithome, d)
+        return dirnames
+
+    # This matches the method in JobSubmitter.
+    def VisItExecutable(self):
+        return [os.path.join(self.launcher.visitbindir, self.launcher.generalArgs.exe_name)]
+
+    # Separate a long chain of arguments, potentially containing launcher
+    # commands, etc into launcher arguments and visit arguments. The
+    # launcher arguments will consist of everything up to the visit executable
+    # name. The visit arguments consist of the visit executable and everything
+    # after.
+    def SeparateArguments(self, args):
+        launchargs = []
+        visitargs = []
+        exe = self.VisItExecutable()[0]
+        foundexe = 0
+        for a in args:
+            if a == exe:
+                foundexe = 1
+            if foundexe:
+                visitargs = visitargs + [a]
+            else:
+                launchargs = launchargs + [a]
+        return launchargs, visitargs
+
+    def DebuggerArguments(self):
+        return self.debug.debuggerArgs[:-1]
+
+    def CreateCommand(self, args):
+        return args
+
+###############################################################################
+# Class: GDBDebugger
+#
+# Purpose:    Launch a VisIt component under gdb.
+#
+# Programmer: Brad Whitlock
+# Date:       Thu May 31 13:07:04 PDT 2012
+#
+# Modifications:
+#   Burlen Loring, Thu Jun 25 13:31:56 PDT 2015
+#   Added basic mpi support
+#
+#   Burlen Loring, Thu Oct  8 16:10:51 PDT 2015
+#   remove warning message now that it's been tested for a while
+#
+###############################################################################
+
+class GDBDebugger(Debugger):
+    def __init__(self, launcher):
+        super(GDBDebugger, self).__init__(launcher)
+        self.filename = ""
+
+    def Executable(self):
+        return ["gdb"]
+
+    def CreateCommandFile(self, args):
+        self.filename = "%s%s-gdbcommands" % (self.launcher.generalArgs.exe_name, self.launcher.visitver)
+        self.filename = os.path.abspath(os.path.join(os.curdir, self.filename))
+        try:
+            f = open(self.filename, "wt")
+            # Write the environment to the gdb file.
+            self.launcher.PrintEnvironment(f, "set environment ", "=", 0)
+            f.write("path %s\n" % self.launcher.visitbindir)
+            f.write("file %s\n" % args[0])
+
+            # Write the directories to search for sources
+            dirnames = self.GetSourceDirectories()
+            for d in dirnames:
+                f.write("directory %s\n" % d)
+
+            # Write the command line arguments.
+            f.write("set args %s -dograb\n" % string.join(args[1:], " "))
+
+            # Write breakpoints
+            f.write("set breakpoint pending on\n")
+            for b in self.debug.breakpoints:
+                f.write("break %s\n" % b)
+            f.write("run\n")
+
+            # Our gdb isn't interactive in this case, so default to giving a
+            # backtrace; that's what someone would want in 90% of the cases.
+            # If you really want to control gdb, use -xterm.
+            if not self.launcher.generalArgs.newconsole:
+                f.write("bt full\n")
+
+            f.close()
+        except IOError:
+            return 0
+        return 1
+
+    def CreateCommand(self, args):
+        launcherargs, visitargs = self.SeparateArguments(args)
+
+        if not self.CreateCommandFile(visitargs):
+            self.launcher.error("Could not create GDB command file: %s. Running VisIt normally." % self.filename)
+
+        # parallel launch
+        elif len(launcherargs) > 0:
+            have_xterm = self.launcher.generalArgs.newconsole
+
+            args = launcherargs \
+                + (['xterm', '-geometry', '150x50', '-e'] if have_xterm else []) \
+                + self.Executable() + self.DebuggerArguments() + ["-q", "-x", self.filename]
+
+        # serial launch
+        else:
+            args = self.Executable() + self.DebuggerArguments() + ["-q", "-x", self.filename]
+
+        return args
+
+###############################################################################
+# Class: LLDBDebugger
+#
+# Purpose:    Launch a VisIt component under lldb.
+#
+# Programmer: Cyrus Harrison
+# Date:       Fri Jul 25 15:55:19 PDT 2014
+#
+# Modifications:
+#
+###############################################################################
+
+class LLDBDebugger(Debugger):
+    def __init__(self, launcher):
+        super(LLDBDebugger, self).__init__(launcher)
+
+    def Executable(self):
+        return ["lldb"]
+
+    def CreateCommand(self, args):
+        #lldb_args = ["process","launch","--tty","--"]
+        lldb_args = ["--"]
+        return self.Executable() + lldb_args + [args[0]] + self.DebuggerArguments() + args[1:]
+
+
+###############################################################################
+# Class: TotalviewDebugger
+#
+# Purpose:    Launch a VisIt component under totalview.
+#
+# Programmer: Brad Whitlock
+# Date:       Thu May 31 13:07:04 PDT 2012
+#
+# Modifications:
+#
+###############################################################################
+
+class TotalviewDebugger(Debugger):
+    def __init__(self, launcher):
+        super(TotalviewDebugger, self).__init__(launcher)
+
+    def Executable(self):
+        return ["totalview"]
+
+    def CreateCommand(self, args):
+        return self.Executable() + [args[0], "-a", "-dograb"] + self.DebuggerArguments() + args[1:]
+
+
+###############################################################################
+# Class: DDTDebugger
+#
+# Purpose:    Launch a VisIt component under ddt.
+#
+# Programmer: Cyrus Harrison
+# Date:       Fri May 10 10:05:07 PDT 2013
+#
+# Modifications:
+#
+###############################################################################
+
+class DDTDebugger(Debugger):
+    def __init__(self, launcher):
+        super(DDTDebugger, self).__init__(launcher)
+    def Executable(self):
+        return ["ddt"]
+    def CreateCommand(self, args):
+        ddt_args =self.DebuggerArguments()
+        if "-offline" in ddt_args:
+            # if a specific html log file wasn't passed, provide a sensible name
+            # to capture ddt output
+            ddt_log   = "ddt_%s_log.html" % os.path.split(args[0])[1]
+            off_index = ddt_args.index("-offline")
+            if off_index == len(ddt_args) -1: 
+                #last arg is -offline
+                ddt_args.append(ddt_log)
+            elif not ddt_args[off_index+1].endswith(".html"):
+                # -offline isn't followed by a html file name
+                ddt_args.insert(off_index+1,ddt_log)
+        else:
+            ddt_args.insert(0,"-start")
+        ddt_cmd = self.Executable() + ddt_args + args
+        return ddt_cmd
+
+###############################################################################
+# Class: CudaDebugger
+#
+# Purpose:  Launch a CUDA-enabled VisIt component under the NVIDIA command-line
+#           profiler  
+#
+# Programmer: Kevin Griffin 
+# Date:       Wed May 20 18:33:04 PDT 2015
+#
+# Modifications:
+#
+###############################################################################
+
+class CudaDebugger(Debugger):
+    def __init__(self, launcher):
+        super(CudaDebugger, self).__init__(launcher)
+
+    def Executable(self):
+        return ["nvprof"]
+
+    def CreateCommand(self, args):
+        launcherargs, visitargs = self.SeparateArguments(args)
+        vgargs = self.DebuggerArguments()
+        if len(vgargs) == 0:
+            vgargs = ["--output-profile", "timeline_%h_%p.nvprof"]
+        return launcherargs + self.Executable() + vgargs + visitargs
+
+
+###############################################################################
+# Class: VTuneProfiler
+#
+# Purpose:    Launch a VisIt component under vtune
+#
+# Programmer: Mark C. Miller
+# Date:       Tue May 16 16:30:02 PDT 2017
+#
+###############################################################################
+
+class VTuneProfiler(Debugger):
+    def __init__(self, launcher):
+        super(VTuneProfiler, self).__init__(launcher)
+
+    def Executable(self):
+        return ["amplxe-cl"]
+
+    def CreateCommand(self, args):
+
+        launcherargs, visitargs = self.SeparateArguments(args)
+
+        vtargs = self.DebuggerArguments()
+
+        if len(vtargs) == 0:
+            try:
+                os.mkdir("./vtune_%s"%self.launcher.generalArgs.exe_name)
+            except OSError:
+                pass
+            vtargs = ["-collect", "hotspots", "-quiet", "-user-data-dir",
+                "./vtune_%s"%self.launcher.generalArgs.exe_name]
+            if self.launcher.generalArgs.exe_name == "engine_par":
+                vtargs += ["-trace-mpi", "-r", "%d"%os.getpid()]
+
+        if len(launcherargs) > 0:
+            # parallel launch
+            args = launcherargs + self.Executable() + vtargs + visitargs
+        else:
+            # serial launch
+            args = self.Executable() + vtargs + visitargs
+
+        return args
+
+###############################################################################
+# Class: InstrumentsProfiler
+#
+# Purpose:    Launch a VisIt component under the instruments (osx) profiler
+#
+# Programmer: Mark C. Miller
+# Date:       Tue May 21 16:30:02 PDT 2017
+#
+###############################################################################
+
+class InstrumentsProfiler(Debugger):
+    def __init__(self, launcher):
+        super(InstrumentsProfiler, self).__init__(launcher)
+
+    def Executable(self):
+        return ["instruments"]
+
+    def CreateCommand(self, args):
+        launcherargs, visitargs = self.SeparateArguments(args)
+        instargs = self.DebuggerArguments()
+
+        if len(instargs) == 0:
+
+            instargs = ["-t", "Time Profiler", "-D",
+                "./instruments_%s"%self.launcher.generalArgs.exe_name]
+
+        if len(launcherargs) > 0:
+            # parallel launch
+            args = launcherargs + self.Executable() + instargs + visitargs
+        else:
+            # serial launch
+            args = self.Executable() + instargs + visitargs
+
+        return args
+
+###############################################################################
+# Class: CudaMemcheck
+#
+# Purpose:  Launch a CUDA-enabled VisIt component under NVIDIA's cuda-memcheck
+# 
+# Programmer: Kevin Griffin 
+# Date:       Mon Mar 21 16:34:52 PDT 2016 
+#
+# Modifications:
+#
+###############################################################################
+
+class CudaMemcheck(Debugger):
+    def __init__(self, launcher):
+        super(CudaMemcheck, self).__init__(launcher)
+
+    def Executable(self):
+        return ["cuda-memcheck"]
+
+    def CreateCommand(self, args):
+        launcherargs, visitargs = self.SeparateArguments(args)
+        vgargs = self.DebuggerArguments()
+        return launcherargs + self.Executable() + visitargs
+
+###############################################################################
+# Class: ValgrindDebugger
+#
+# Purpose:    Launch a VisIt component under valgrind.
+#
+# Programmer: Brad Whitlock
+# Date:       Thu May 31 13:07:04 PDT 2012
+#
+# Modifications:
+#
+#   Burlen Loring, Thu Oct  8 14:28:39 PDT 2015
+#   refine valgrind options
+#
+###############################################################################
+
+class ValgrindDebugger(Debugger):
+    def __init__(self, launcher):
+        super(ValgrindDebugger, self).__init__(launcher)
+
+    def Executable(self):
+        return ["valgrind"]
+
+    def CreateCommand(self, args):
+        # setting this environment variable causes libstdc++ routines to free
+        # memory ASAP, instead of leaving it around in pools.  This helps valgrind
+        # properly detect leaks, at a performance cost.
+        if GETENV("GLIBCXX_FORCE_NEW") == "":
+            SETENV("GLIBCXX_FORCE_NEW", "1")
+
+        launcherargs, visitargs = self.SeparateArguments(args)
+
+        have_xterm = self.launcher.generalArgs.newconsole
+        xterm_args = (['xterm', '-geometry', '150x50', '-e'] if have_xterm else [])
+
+        vgargs = self.DebuggerArguments()
+
+        if len(vgargs) == 0:
+            vgargs = ["--tool=memcheck", "--error-limit=no", "--num-callers=50", \
+                    "--leak-check=full", "--track-origins=yes", \
+                    "--show-reachable=yes"] #, "--vgdb=full", "--vgdb-error=0"]
+            if not have_xterm:
+                # if you're not in an xterm then you probably want to send the output
+                # to a file.
+                vgargs.append("--log-file=vg_%s_%%p.log"%(visitargs[0].split('/')[-1]))
+
+        if len(launcherargs) > 0:
+            # parallel launch
+            args = launcherargs + xterm_args \
+                + self.Executable() + vgargs + visitargs
+        else:
+            # serial launch
+            args = xterm_args + self.Executable() + vgargs + visitargs
+
+        return args
+
+###############################################################################
+# Class: CallgrindDebugger
+#
+# Purpose:    Launch a VisIt component under valgrind.
+#
+# Programmer: Burlen Loring
+# Date:       Wed Aug 19 09:34:26 PDT 2015
+#
+# Modifications:
+#
+###############################################################################
+
+class CallgrindDebugger(Debugger):
+    def __init__(self, launcher):
+        super(CallgrindDebugger, self).__init__(launcher)
+
+    def Executable(self):
+        return ["valgrind"]
+
+    def CreateCommand(self, args):
+        launcherargs, visitargs = self.SeparateArguments(args)
+        vgargs = self.DebuggerArguments()
+        if len(vgargs) == 0:
+            # here is an example of how you profile a specific method:
+            # "--collect-atstart=no", "--toggle-collect=NetworkManager::RenderInternal*",
+            vgargs = ["--tool=callgrind"]
+        return launcherargs + self.Executable() + vgargs + visitargs
+
+###############################################################################
+# Class: StraceDebugger
+#
+# Purpose:    Launch a VisIt component under strace.
+#
+# Programmer: Brad Whitlock
+# Date:       Thu May 31 13:07:04 PDT 2012
+#
+# Modifications:
+#
+###############################################################################
+
+class StraceDebugger(Debugger):
+    def __init__(self, launcher):
+        super(StraceDebugger, self).__init__(launcher)
+
+    def Executable(self):
+        return ["strace"]
+
+    def CreateCommand(self, args):
+        strace = self.Executable()
+        if len(self.debug.debuggerArgs) > 1:
+            strace = strace + self.DebuggerArguments()
+        else:
+            strace = strace + ["-ttt", "-T"]
+        launcherargs, visitargs = self.SeparateArguments(args)
+        return launcherargs + strace + visitargs
+
+###############################################################################
+# Class: ApitraceDebugger
+#
+# Purpose:    Launch a VisIt component under apitrace.
+#
+# Programmer: Kathleen Biagas
+# Date:       Mon Apr  8 14:19:36 PDT 2013
+#
+# Modifications:
+#
+###############################################################################
+
+class ApitraceDebugger(Debugger):
+    def __init__(self, launcher):
+        super(ApitraceDebugger, self).__init__(launcher)
+
+    def Executable(self):
+        return ["apitrace"]
+
+    def CreateCommand(self, args):
+        apitrace = self.Executable()
+        if len(self.debug.debuggerArgs) > 1:
+            apitrace = apitrace + self.DebuggerArguments()
+        else:
+            apitrace = apitrace + ["trace", "--api", "gl"]
+        launcherargs, visitargs = self.SeparateArguments(args)
+        return launcherargs + apitrace + visitargs
+
+###############################################################################
+# Class: DebugMallocDebugger
+#
+# Purpose:    Launch a VisIt component with malloc debugging on Mac.
+#
+# Programmer: Brad Whitlock
+# Date:       Fri Jun  1 14:07:22 PDT 2012
+#
+# Modifications:
+#
+###############################################################################
+
+class DebugMallocDebugger(Debugger):
+    def __init__(self, launcher):
+        super(DebugMallocDebugger, self).__init__(launcher)
+
+    def CreateCommand(self, args):
+        dl = self.launcher.splitpaths(GETENV("DYLD_INSERT_LIBRARIES"))
+        libs = self.launcher.quoted(self.launcher.joinpaths(dl + ["/usr/lib/libMallocDebug.A.dylib"]))
+        launcherargs, visitargs = self.SeparateArguments(args)
+        newcmd = ["env", "DYLD_INSERT_LIBRARIES="+libs, "MallocStackLogging=1"]
+        return launcherargs + newcmd + visitargs
+
+###############################################################################
+# Class: GeneralArguments
+#
+# Purpose:    Parse general command line arguments.
+#
+# Programmer: Brad Whitlock
+# Date:       Thu May 17 14:22:04 PDT 2012
+#
+# Modifications:
+#   Brad Whitlock, Thu Dec  6 10:47:27 PST 2012
+#   I fixed the non -noloopback case for launching of parallel engines on
+#   linux clusters.
+#
+#   Cyrus Harrison, Tue Oct 22 11:35:37 PDT 2013
+#   Capture if -hw-accel is passed here so we can use it when we determine
+#   if we should enable mesa for the engine.
+#
+#   Eric Brugger, Wed Aug 26 12:25:27 PDT 2015
+#   I modified ProduceArguments so that unknown arguments get added before
+#   the "-s script_name" argument and not between the script name and the
+#   script arguments.
+#
+#   Brad Whitlock, Tue Sep 12 12:26:50 PDT 2017
+#   Added Cinema.
+#
+###############################################################################
+
+class GeneralArguments(object):
+    def __init__(self, launcher):
+        super(GeneralArguments, self).__init__()
+        self.launcher = launcher
+        if self.launcher.visitprogram != "visit":
+            self.exe_name = self.launcher.visitprogram
+        else:
+            self.exe_name = "gui"
+        self.dv = 0
+        self.add_movie_args = 0
+        self.add_cinema_args = 0
+        self.diffmode = 0        # 0 = none, 1=diff, 2=diffsum
+        self.diffargs = []
+        self.scriptfile = None
+        self.scriptarguments = []
+        self.norun = None
+        self.env = 0
+        self.arch = 0
+        self.host = None
+        self.port = None
+        self.key = None
+        self.publicpluginsonly = 0
+        self.compiler = None
+        self.objectmode = None
+        self.guesshost = 0
+        self.sshtunneling = 0
+        self.noloopback = 0
+        self.viewerdisplay = None
+        self.arguments = []
+        self.newconsole = 0
+        self.clientserver = 0
+        self.quiet = 0
+        self.setupenv = 0
+        self.nowin = 0
+        self.threads = 0
+        self.hw_accel = False
+        self.osmesa   = False
+        self.hosttoip = False
+        self.startdir = None
+
+    def ParseArguments(self, i, args):
+        if i >= len(args):
+            return 0
+        n = 1
+        if args[i] in ("-gui", "-cli", "-vcl", "-viewer", "-mdserver", "-engine"):
+            self.exe_name = args[i][1:]
+        elif args[i] == "-movie":
+            self.exe_name = "cli"
+            self.add_movie_args = 1
+            for j in range(i+1, len(args)):
+                self.scriptarguments = self.scriptarguments + [args[j]]
+            n = len(args) - i
+        elif args[i] == "-cinema":
+            self.exe_name = "cli"
+            self.add_cinema_args = 1
+            for j in range(i+1, len(args)):
+                self.scriptarguments = self.scriptarguments + [args[j]]
+            n = len(args) - i
+        elif args[i] == "-s":
+            self.scriptfile = args[i+1]
+            for j in range(i+2, len(args)):
+                self.scriptarguments = self.scriptarguments + [args[j]]
+            n = len(args) - i
+        elif args[i] == "-diff":
+            self.exe_name = "cli"
+            self.diffmode = 1
+            self.diffargs = [args[i+1], args[i+2]]
+            n = 3
+        elif args[i] == "-diffsum":
+            self.exe_name = "cli"
+            self.diffmode = 2
+            self.diffargs = [args[i+1], args[i+2]]
+            n = 3
+        elif args[i] == "-norun":
+            self.norun = args[i+1]
+            n = 2
+        elif args[i] == "-dv":
+            self.dv = 1
+        elif args[i] == "-nowin":
+            self.nowin = 1
+        elif args[i] == "-arch":
+            self.arch = 1
+        elif args[i] == "-env":
+            self.env = 1
+        elif  args[i] == "-host":
+            self.host = args[i+1]
+            n = 2
+        elif  args[i] == "-port":
+            self.port = args[i+1]
+            n = 2
+        elif  args[i] == "-key":
+            self.key = args[i+1]
+            n = 2
+        elif args[i] == "-publicpluginsonly":
+            self.publicpluginsonly = 1
+        elif args[i] == "-compiler":
+            self.compiler = args[i+1]
+            n = 2
+        elif args[i] == "-objectmode":
+            self.objectmode = args[i+1]
+            n = 2
+        elif args[i] == "-guesshost":
+            self.guesshost = 1
+        elif args[i] == "-sshtunneling":
+            self.sshtunneling = 1
+        elif args[i] == "-noloopback":
+            self.noloopback = 1
+        elif args[i] == "-newconsole":
+            self.newconsole = 1
+        elif args[i] == "-xterm":
+            self.newconsole = 2
+        elif args[i] == "-viewerdisplay":
+            self.viewerdisplay = args[i+1]
+            n = 2
+        elif args[i] == "-clientserver":
+            self.clientserver = 1
+        elif args[i] == "-quiet":
+            self.quiet = 1
+        elif args[i] == "-setupenv":
+            self.setupenv = 1
+        elif args[i] == "-threads":
+            # Number of threads. Some launchers want to know this number, ie depth.
+            self.threads = args[i+1]
+            self.arguments = self.arguments + [args[i]] + [args[i+1]]
+            n = 2
+        elif args[i] == "-startdir":
+            self.startdir = args[i+1]
+            n = 2
+        else:
+            self.arguments = self.arguments + [args[i]]
+        # snoop this without affecting any other parsing
+        if not self.hw_accel and "-hw-accel" in args:
+            self.hw_accel = True
+        # snoop this without affecting any other parsing
+        if "-osmesa" in args:
+            self.osmesa = True
+        return n
+
+    def ProduceArguments(self, parallel):
+        args = []
+        if self.dv:
+            args = args + ["-dv"]
+        if self.publicpluginsonly:
+            args = args + ["-publicpluginsonly"]
+        if self.norun != None and self.norun != self.exe_name:
+            args = args + ["-norun", self.norun]
+        if self.viewerdisplay != None:
+            args = args + ["-viewerdisplay", self.viewerdisplay]
+        if not parallel and self.setupenv:
+            args = args + ["-setupenv"]
+
+        nowin_not_added = 1
+        if self.nowin:
+            args = args + ["-nowin"]
+            nowin_not_added = 0
+
+        args = args + self.arguments
+
+        if self.scriptfile != None:
+            args = args + ["-s", self.scriptfile]
+
+        if self.diffmode > 0:
+            d = ["-s", os.path.join(self.launcher.visitscriptdir, "visitdiff.py"), "-vdiff"]
+            if self.diffmode == 1:
+                args = args + d + self.diffargs
+            else:
+                if nowin_not_added:
+                    args = args + ["-nowin"]
+                args = args + d + self.diffargs + ["-summary_only"]
+
+        if self.add_movie_args:
+            if nowin_not_added:
+                args = args + ["-nowin"]
+            args = args + ["-s", os.path.join(self.launcher.visitscriptdir, "makemoviemain.py")]
+        if self.add_cinema_args:
+            if nowin_not_added:
+                args = args + ["-nowin"]
+            args = args + ["-s", os.path.join(self.launcher.visitscriptdir, "visitcinemamain.py")]
+
+        args = args + self.scriptarguments
+
+        return args
+
+    def GetIPAddress(self, hostname):
+        if not self.hosttoip:
+            return hostname
+        try:
+            IP = socket.gethostbyname(hostname)
+        except socket.gaierror, err:
+            print "cannot resolve hostname: ", hostname, err
+            IP = hostname
+        return IP
+
+    def ConnectionArguments(self, parallel):
+        # Localhost override to loopback.  The default behavior is that we
+        # will always override the given host with the loopback device unless
+        # otherwise specified.  This means that the viewer needs to add the
+        # -noloopback flag when initiating a remote process (e.g. the vcl
+        # with -ssh, or another remote process launched through vcl).  A
+        # parallel engine also needs to add the flag since even "local"
+        # parallel jobs may run on compute nodes.
+        args = []
+        remotehost = ""
+        remotehost_set = 0
+        if self.noloopback:
+            args = args + ["-noloopback"]
+            # If we're running parallel with -noloopback, check to see if the
+            # the -host flag passed the full name for the local host. If so,
+            # then let's use the shorter name for the host name.
+            if parallel and (self.exe_name[:6] == "engine") and \
+               self.host != None and self.launcher.hostname() in self.host:
+                remotehost = self.launcher.hostname()
+                remotehost_set = 1
+        else:
+            remotehost = "127.0.0.1"
+            remotehost_set = 1
+            if parallel and (self.exe_name[:6] == "engine") and \
+                self.launcher.os != "darwin":
+                remotehost = self.launcher.hostname()
+                remotehost_set = 1
+
+        # Determine remotehost based on whether we're guessing the host or
+        # tunneling ssh.
+        if self.sshtunneling:
+            args = args + ["-sshtunneling"]
+            if self.host != None:
+                remotehost = self.host
+            else:
+                # If -sshtunneling was enabled and the host name was not already
+                # set then assume localhost.  This should never happen, but just
+                # in case, this is the safest solution.
+                remotehost = "localhost"
+            remotehost_set = 1
+        elif self.guesshost:
+            remotehost_set = 0
+            for k in ("SSH_CLIENT", "SSH2_CLIENT", "SSH_CONNECTION"):
+                try:
+                    remotehost = string.split(os.environ[k], " ")[0]
+                    remotehost_set = 1
+                    break
+                except KeyError:
+                    pass
+            if remotehost_set == 0:
+                exit("""
+Error: -guesshost was specified but it was unable to parse the 
+SSH_CLIENT/CONNECTION environment variables to get a valid host
+name.""", 1)
+
+        if self.noloopback or self.sshtunneling or self.guesshost or self.host != None:
+            if remotehost_set:
+                args = args + ["-host", self.GetIPAddress(remotehost)]
+            elif self.host != None:
+                args = args + ["-host", self.GetIPAddress(self.host)]
+
+        if self.port != None:
+            args = args + ["-port", self.port]
+        if self.key != None:
+            args = args + ["-key", self.key]
+        return args
+
+###############################################################################
+# Class: ParallelArguments
+#
+# Purpose:    Parse parallel command line arguments.
+#
+# Programmer: Brad Whitlock
+# Date:       Thu May 17 14:22:04 PDT 2012
+#
+# Modifications:
+#
+###############################################################################
+
+class ParallelArguments(object):
+    def __init__(self):
+        super(ParallelArguments, self).__init__()
+        self.parallel = 0
+        self.np = None
+        self.nn = None
+        self.launch = None
+        self.launchargs = None
+        self.parlaunch = None
+        self.sublaunchargs = None
+        self.sublaunchprecmd = None
+        self.sublaunchpostcmd = None
+        self.name = None
+        self.partition = None
+        self.bank = None
+        self.time = None
+        self.workingdir = None
+        self.machinefile = None
+        self.expedite = 0
+        self.launchengine = None
+        self.hw_precmd = None
+        self.hw_postcmd = None
+
+    def ParseArguments(self, i, args):
+        if i >= len(args):
+            return 0
+        n = 2
+        # single arguments
+        if args[i] == "-par":
+            self.parallel = 1
+            n = 1
+        elif args[i] == "-expedite":
+            self.parallel = 1
+            self.expedite = 1
+            n = 1
+        # double arguments
+        elif args[i] == "-np":
+            self.parallel = 1
+            self.np = args[i+1]
+        elif args[i] == "-nn":
+            self.parallel = 1
+            self.nn = args[i+1]
+        elif args[i] == "-l":
+            self.launch = args[i+1]
+        elif args[i] == "-pl":
+            self.parlaunch = args[i+1]
+        elif args[i] == "-la":
+            self.launchargs = string.split(args[i+1], " ")
+        elif args[i] == "-sla":
+            self.sublaunchargs = string.split(args[i+1], " ")
+        elif args[i] == "-slpre":
+            self.sublaunchprecmd = string.split(args[i+1], " ")
+        elif args[i] == "-slpost":
+            self.sublaunchpostcmd = string.split(args[i+1], " ")
+        elif args[i] == "-n":
+            self.name = args[i+1]
+        elif args[i] == "-p":
+            self.partition = args[i+1]
+        elif args[i] == "-b":
+            self.bank = args[i+1]
+        elif args[i] == "-t":
+            self.time = args[i+1]
+        elif args[i] == "-wd":
+            self.workingdir = args[i+1]
+        elif args[i] == "-machinefile":
+            self.machinefile = args[i+1]
+        elif args[i] == "-launchengine":
+            if i+1 < len(args):
+                if args[i+1][0] == '-':
+                    self.launchengine = "localhost"
+                    n = 1
+                else:
+                    self.launchengine = args[i+1]
+            else:
+                self.launchengine = "localhost"
+                n = 1
+        elif args[i] == "-hw-pre":
+            self.hw_precmd = args[i+1]
+        elif args[i] == "-hw-post":
+            self.hw_postcmd = args[i+1]
+        else:
+            # We did not handle the command line argument
+            n = 0
+        return n
+
+    #
+    # Produce arguments for when we're passing the parallel arguments on the 
+    # command line for a serially launched component such as the gui.
+    #
+    def ProduceArguments(self, gather):
+        args = []
+#        if self.parallel and self.np == None:
+#            args = args + ["-par"]
+        if self.launch != None:
+            args = args + ["-l", self.launch]
+        if self.np != None:
+            args = args + ["-np", self.np]
+        if self.nn != None:
+            args = args + ["-nn", self.nn]
+        if self.launchargs != None:
+            args = args + ["-la", string.join(self.launchargs, " ")]
+        if self.name != None:
+            args = args + ["-n", self.name]
+        if self.partition != None:
+            args = args + ["-p", self.partition]
+        if self.bank != None:
+            args = args + ["-b", self.bank]
+        if self.time != None:
+            args = args + ["-t", self.time]
+        if self.machinefile != None:
+            args = args + ["-machinefile", self.machinefile]
+
+        # Gather the arguments destined for the engine into an -engineargs argument.
+        if gather:
+            if len(args) > 0:
+                args = ["-engineargs", string.join(args, ";")]
+            else:
+                args = []
+            if self.launchengine != None:
+                args = args + ["-launchengine", self.launchengine]
+            elif self.parallel:
+                args = args + ["-launchengine", "localhost"]
+
+        return args
+
+###############################################################################
+# Class: DebugArguments
+#
+# Purpose:    Parse debugger-related command line arguments.
+#
+# Programmer: Brad Whitlock
+# Date:       Thu May 17 14:22:04 PDT 2012
+#
+# Modifications:
+#
+###############################################################################
+
+class DebugArguments(object):
+    def __init__(self, launcher):
+        super(DebugArguments, self).__init__()
+        self.launcher = launcher
+        self.debugger = None
+        self.debuggerArgs = []
+        self.breakpoints = []
+
+    def ParseArguments(self, i, args):
+        if i >= len(args):
+            return 0
+
+        n = 0
+
+        # Check to see if we have a debugger. 
+        for d in self.launcher.Debuggers():
+            n = 0
+            flag = "-" + d
+            if args[i] == flag:
+                self.debugger = d
+                n = 1
+                # Read arguments until we hit a VisIt component name.
+                try:
+                    while 1:
+                        nextarg = args[i+n]
+                        n = n + 1
+                        self.debuggerArgs = self.debuggerArgs + [nextarg]
+                        if self.launcher.iscomponent(nextarg):
+                            break
+                except IndexError:
+                    exit("Did not find VisIt component name for %s option." % flag, 1)
+                return n
+
+        if args[i] == "-break":
+            self.breakpoints = self.breakpoints + [args[i+1]]
+            n = 2
+
+        return n
+
+    def ProduceArguments(self):
+        args = []
+        if self.debugger != None:
+            args = ["-" + self.debugger] + self.debuggerArgs
+
+            # Add the breakpoints to the command line.
+            for b in self.breakpoints:
+                args = args + ["-break", b]
+        return args
+
+
+###############################################################################
+# Class: MainLauncher
+#
+# Purpose:    The main launcher class for internallauncher.
+#
+# Programmer: Brad Whitlock
+# Date:       Thu May 17 14:22:04 PDT 2012
+#
+# Modifications:
+#
+###############################################################################
+
+class MainLauncher(object):
+    def __init__(self):
+        super(MainLauncher, self).__init__()
+        self.visitdir = ""
+        self.visithome = ""
+        self.visitprogram = ""
+        self.visitver = ""
+        self.visitpluginver = ""
+        self.generalArgs = None
+        self.parallelArgs = None
+        self.debugArgs = None
+        self.os = ""
+        self.osver = 0
+        self.visitarch = ""
+        self.visitarchdir = ""
+        self.visitbindir = ""
+        self.visitscriptdir = ""
+        self.visitlauncher = ""
+        self.visitlibdir = ""
+        self.visitresourcedir = ""
+        self.visitultradir = ""
+        self.visitplugins = ""
+        self.publicversion = 0
+        self.logging = 0
+        self.loggedComponents = ("mdserver",)
+        self.plugincategories = ("plots", "operators", "databases")
+        self.clientPrograms = ("gui", "cli", "viewer")
+        self.componentNames = ("gui", "cli", "viewer", "mdserver", "vcl", "engine_ser", "engine_par", "xmledit")
+        self.xterm = ["xterm"]
+        self.hosttoip = False
+
+    def username(self):
+        try:
+            return os.getlogin()
+        except OSError:
+            return GETENV("USER")
+
+    def hostname(self):
+        return socket.gethostname()
+
+    def nodename(self):
+        return string.split(self.hostname(), ".")[0]
+
+    def sectorname(self):
+        s = self.nodename()
+        for d in "0123456789":
+            s = string.replace(s, d, "")
+        return s
+
+    def domainname(self):
+        fullhost = socket.gethostbyname_ex(self.hostname())[0]
+        pos = string.find(fullhost, ".")
+        if pos == -1:
+            return fullhost
+        else:
+            return fullhost[pos+1:]
+
+    def uname(self, arg):
+        p = subprocess.Popen(["uname", arg], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+        output = p.communicate()
+        return string.lower(output[0][:-1])
+
+    def joinpaths(self, paths):
+        unique = []
+        for p in paths:
+            if p not in unique and p != "":
+                unique = unique + [p]
+        if len(unique) == 1:
+            ret = unique[0]
+        else:
+            ret = string.join(unique, ":")
+        return ret
+
+    def splitpaths(self, paths):
+        s = string.split(paths, ":")
+        unique = []
+        for p in s:
+            if p not in unique and p != "":
+                unique = unique + [p]
+        return unique
+
+    def quoted(self, s):
+        if string.find(s, " ") != -1:
+            ret = '"' + s + '"'
+        else:
+            ret = s
+        return s
+
+    def writepermission(self, path):
+        st = os.stat(path)
+        return bool(st.st_mode & stat.S_IWUSR)
+
+    def call(self, args, stdinpipe=0, env=None):
+        #print args
+        if env is None:
+            env = os.environ.copy()
+        self.Logging(args)
+        ret = 0
+        try:
+             if stdinpipe:
+                  # Launchers like msub need this in order to work.
+                  p = subprocess.Popen(args, stdin=subprocess.PIPE, env=env)
+             else:
+                  p = subprocess.Popen(args, env=env)
+             p.communicate()
+             ret = p.returncode
+        except KeyboardInterrupt:
+            # Catch so we don't print a Python stack
+            ret = -1
+        return ret
+
+    def message(self, msg, file=sys.stderr):
+        print >> file, msg
+
+    def warning(self, msg):
+        print >> sys.stderr, "WARNING: ", msg
+
+    def error(self, msg):
+        print >> sys.stderr, "ERROR: ", msg
+
+    def iscomponent(self, name):
+        return name in self.componentNames
+    
+    ############################################################################
+    # Method: Initialize
+    #
+    # Purpose: Initialize some important members of the object.
+    #
+    # Arguments:
+    #   visitdir       : The VisIt directory (The directory that contains bin)
+    #   visitprogram   : The name of the VisIt program (visit, xmledit, ...)
+    #   visitver       : The version being run. Can be empty if dev version.
+    #   visitpluginver : The version being run.
+    #
+    # Programmer: Brad Whitlock
+    # Date: Fri May 25 10:48:41 PDT 2012
+    #
+    # Modifications:
+    #
+    ############################################################################
+
+    def Initialize(self, visitdir, visitprogram, visitver, visitpluginver):
+        self.visitdir = visitdir
+        self.visithome = visitdir
+        if self.visithome[-1] == '/':
+            self.visithome = visitdir[:-1]
+        self.visitprogram = visitprogram
+        self.visitver = visitver
+        self.visitpluginver = visitpluginver
+        self.generalArgs = GeneralArguments(self)
+        if self.hosttoip:
+            self.generalArgs.hosttoip = True
+        self.parallelArgs = ParallelArguments()
+        self.debugArgs = DebugArguments(self)
+        self.os = self.uname("-s")
+
+    def SetLogging(self, value):
+        self.logging = value
+
+    ############################################################################
+    # Method: Logging
+    #
+    # Purpose: Log when a VisIt process is launched.
+    #
+    # Notes: This implementation only logs when an mdserver is run.
+    #
+    # Programmer: Brad Whitlock
+    # Date: Fri May 25 10:48:41 PDT 2012
+    #
+    # Modifications:
+    #
+    ############################################################################
+
+    def Logging(self, args):
+        if self.logging and self.generalArgs.exe_name in self.loggedComponents:
+            user_info = self.username()
+            host_info = string.split(self.hostname(), ".")[0]
+            date_info = time.asctime()
+            cs_info = ""
+            if self.generalArgs.clientserver:
+                cs_info = "client/server"
+            info = string.join([user_info, host_info, date_info, cs_info], " ")+"\n"
+
+            # Read in the existing data. (TODO: change to open for append)
+            filename = os.path.join(self.visitdir, "usagelog")
+            lines = []
+            try:
+                lines = open(filename, "rt").readlines() + [info]
+            except (OSError, IOError):
+                lines = [info]
+
+            # Write out the new data.
+            try:
+                f = open(filename, "wt")
+                for line in lines:
+                    f.write(line)
+                f.close()
+            except (OSError, IOError):
+                self.error("Could not write usagelog.")
+
+    ############################################################################
+    # Method: PrintUsage
+    #
+    # Purpose: Print the usage.
+    #
+    # Programmer: Brad Whitlock
+    # Date: Fri May 25 10:48:41 PDT 2012
+    #
+    # Modifications:
+    #
+    ############################################################################
+
+    def PrintUsage(self, fullhelp):
+        def filecontents(filename):
+            f = open(filename, "rt")
+            lines = f.readlines()
+            return string.join(lines, "")
+
+        # setup the usage note about full help
+        helpnote = "NOTE: For a more complete list of options, use '-fullhelp'.\n"
+
+        usagefile = os.path.join(self.visitresourcedir, "usage", "visitusage.txt")
+        usageplusfile = os.path.join(self.visitresourcedir, "usage", "visitusageplus.txt")
+
+        if fullhelp:
+            print "\nUSAGE: visit [options]\n"
+            print filecontents(usagefile)
+            print filecontents(usageplusfile)
+        else:
+            print "\nUSAGE: visit [options]\n"
+            print helpnote
+            print filecontents(usagefile)
+            print helpnote
+
+    ############################################################################
+    # Method: ParseArguments
+    #
+    # Purpose: Read the command line arguments into different objects.
+    #
+    # Programmer: Brad Whitlock
+    # Date: Fri May 25 10:48:41 PDT 2012
+    #
+    # Modifications:
+    #
+    ############################################################################
+
+    def ParseArguments(self, args):
+        # Parse command line arguments.
+        i = 0
+        try:
+            while i < len(args):
+                n = self.parallelArgs.ParseArguments(i, args)
+                if n > 0:
+                    i = i + n
+                    continue
+                n = self.debugArgs.ParseArguments(i, args)
+                if n > 0:
+                    i = i + n
+                    continue
+                n = self.generalArgs.ParseArguments(i, args)
+                if n > 0:
+                    i = i + n
+        except IndexError:
+            exit("The %s argument requires additional arguments." % args[i], -1)
+            
+
+    ############################################################################
+    # Method: DetermineArchitecture
+    #
+    # Purpose: Determine a list of supported VisIt architecture strings.
+    #
+    # Programmer: Brad Whitlock
+    # Date: Fri May 25 10:48:41 PDT 2012
+    #
+    # Modifications:
+    #   Eric Brugger, Wed Jun 26 14:49:49 PDT 2013
+    #   I corrected a bug that incorrectly identified the machine architecture
+    #   on some Mac systems.
+    #
+    ############################################################################
+
+    def DetermineArchitecture(self):
+        """
+        Determine names of VisIt architecture strings that are compatible with this platform.
+        """
+        exe_name = self.generalArgs.exe_name
+        compiler = self.generalArgs.compiler
+        objectmode = self.generalArgs.objectmode
+
+        supportedarches = []
+        if self.os == "linux":
+            mach = self.uname("-m")
+            if mach == "x86_64": 
+                arch = "linux-x86_64"
+            elif mach == "ia64": 
+                arch = "linux-ia64"
+            elif mach == "ppc64": 
+                arch = "linux-ppc64"
+                # Tack on the BlueGene compiler for the engine.
+                if exe_name[:6] == "engine" and compiler != None:
+                    arch = arch + "-" + compiler
+            elif mach == "alpha": 
+                arch = "linux-alpha"
+            else:
+                arch = "linux-intel"
+                if compiler != None:
+                    arch = arch + "-" + compiler
+            supportedarches.append(arch)
+        elif self.os == "darwin":
+            mach = self.uname("-m")
+            release = self.uname("-r")
+            version = [int(x) for x in string.split(release, ".")]
+            self.osver = version[0]
+            if version[0] >= 11:
+                if mach == "x86_64":
+                    supportedarches.append("darwin-x86_64")
+                    supportedarches.append("darwin-i386")
+                else:
+                    supportedarches.append("darwin-i386")
+            else:
+                #
+                # Sometimes uname returns i386 even when it is a 64 bit
+                # processor, so we use system_profiler to get the real
+                # answer. From http://support.apple.com/kb/ht3696 a
+                # Processor Name of "Intel Core Solo" or "Intel Core Duo"
+                # is 32 bits and a Processor Name of "Intel Core 2 Duo" or
+                # "Intel Quad-Core Xeon" or "Dual-Core Intel Xeon" or
+                # "Quad-Core Intel Xeon" is 64 bits.
+                #
+                # Since we only support the 64 bit version with Mac OS X
+                # 10.6 or above, we always choose the 32 bit version prior
+                # to 10.6 and in the case of 10.6 or newer, distinguish
+                # between 32 and 64 bits using system_profiler.
+                #
+                pargs = ["/usr/sbin/system_profiler", "-detailLevel", "-2"]
+                p = subprocess.Popen(pargs, stdout=subprocess.PIPE)
+                output = p.communicate()[0]
+                lines = string.split(output, "\n")
+                for line in lines:
+                    procname = string.find(line, "Processor Name")
+                    if procname != -1:
+                        if "Intel Core Solo" in line or "Intel Core Duo" in line:
+                            supportedarches.append("darwin-i386")
+                        else:
+                            supportedarches.append("darwin-x86_64")
+                            supportedarches.append("darwin-i386")
+                        break
+        elif self.os == "aix":
+            arch = "ibm-aix-pwr"
+            arch = arch + objectmode
+            if compiler != None:
+                arch = arch + "-" + compiler
+            supportedarches.append(arch)
+        elif self.os == "freebsd":
+            mach = uname("-m")
+            version = uname("-r")
+            supportedarches.append("freebsd-%s-%s" % (version, mach))
+        # else
+        #    Support for other platforms was removed.
+        return supportedarches
+
+    ############################################################################
+    # Method: SetupDirectoryNames
+    #
+    # Purpose: Set up various directory names that can be used to reference
+    #          different parts of the VisIt installation.
+    #
+    # Programmer: Brad Whitlock
+    # Date: Fri May 25 10:48:41 PDT 2012
+    #
+    # Modifications:
+    #   Eric Brugger, Mon Mar 19 12:48:20 PDT 2018
+    #   I modified the method to leave the visitarch field unchanged if it is
+    #   already set, which could happen in a custom launcher.
+    #
+    ############################################################################
+
+    def SetupDirectoryNames(self, supportedarches):
+        if self.visitver == "":
+            # If there is no version, then this is a development executable.
+            archdir = supportedarches[0]
+            self.visitarch = archdir
+            self.visitarchdir   = self.visitdir
+            self.visitbindir    = self.visitdir + "exe"
+            self.visitscriptdir = self.visitdir + "bin"
+            self.visitlauncher  = self.visitdir + "bin/visit"
+            if self.os == "darwin" and self.generalArgs.exe_name in ("gui", "viewer", "xmledit", "silex"):
+                self.visitbindir = os.path.join(self.visitbindir, self.generalArgs.exe_name + ".app/Contents/MacOS")
+            self.visitlibdir = self.visitdir + "lib"
+            self.visitresourcedir = self.visitdir + "resources"
+            self.visitultradir = self.visitdir + "ultrawrapper"
+            self.visitplugins = self.visitdir + "plugins"
+            self.publicversion = 0
+            if not os.path.exists(os.path.join(self.visitbindir, self.generalArgs.exe_name)):
+                 msg = "Development version of %s does not exist." % self.generalArgs.exe_name
+                 if self.generalArgs.exe_name == "engine_par":
+                     msg = msg + "\nNote that a serial engine may still work."
+                 exit(msg, 1)
+        else:
+            # We're running a public version
+            archdir = ""
+            if (self.visitarch == ""):
+                for arch in supportedarches:
+                    app = self.visitdir + arch + "/bin/" + self.generalArgs.exe_name
+                    if os.path.exists(app) or os.path.exists("%s.app" % app):
+                        archdir = arch
+                        break
+            else:
+                app = self.visitdir + self.visitarch + "/bin/" + self.generalArgs.exe_name
+                if os.path.exists(app) or os.path.exists("%s.app" % app):
+                    archdir = self.visitarch
+            if archdir == "":
+                msg = "Version %s of %s does not exist for " % (self.visitver, self.generalArgs.exe_name)
+                if len(supportedarches) > 1:
+                    msg = msg + "any of the valid architectures (%s).\n" % string.join(supportedarches, " ")
+                else:
+                    msg = msg + "the architecture %s.\n" % supportedarches[0]
+                if self.generalArgs.exe_name == "engine_par":
+                    msg = msg + "Note that a serial engine may still work.\n"
+                exit(msg, 1)
+
+            self.visitarch      = archdir
+            self.visitarchdir   = self.visitdir + archdir
+            self.visitbindir    = self.visitdir + archdir + "/bin"
+            self.visitscriptdir = self.visitdir + archdir + "/bin"
+            self.visitlauncher  = self.visitdir + "../bin/visit"
+            if self.os == "darwin" and self.generalArgs.exe_name in ("gui", "viewer", "xmledit", "silex"):
+                self.visitbindir = os.path.join(self.visitbindir, self.generalArgs.exe_name + ".app/Contents/MacOS")
+            self.visitlibdir = self.visitdir + archdir + "/lib"
+            self.visitresourcedir = self.visitdir + archdir + "/resources"
+            self.visitultradir = self.visitdir + archdir + "/ultrawrapper"
+            self.visitplugins = self.visitdir + archdir + "/plugins"
+            self.publicversion = 1
+
+            #print "visitarchdir  =", self.visitarchdir
+            #print "visitbindir   =", self.visitbindir
+            #print "visitscriptdir=", self.visitscriptdir
+            #print "visitlauncher =", self.visitlauncher
+            #print "visitlibdir   =", self.visitlibdir
+            #print "visitultradir =", self.visitultradir
+            #print "visitplugins  =", self.visitplugins
+            #print "publicversion =", self.publicversion
+
+    ############################################################################
+    # Method: ConsistencyCheck
+    #
+    # Purpose: Check the different command line arguments for consistency and
+    #          alter their values if needed.
+    #
+    # Programmer: Brad Whitlock
+    # Date: Fri May 25 10:48:41 PDT 2012
+    #
+    # Modifications:
+    #   Brad Whitlock, Tue Jan 29 12:18:57 PST 2013
+    #   Change default launcher to mpiexec on Mac 10.7 and later.
+    #
+    #   Cyrus Harrison, Fri Feb  1 17:02:02 PST 2013
+    #   Use mpiexe on OSX 10.6 and beyond.
+    #
+    ############################################################################
+
+    def ConsistencyCheck(self):
+        # If no partition has been specified then fill one in if we're using
+        # psub as the parallel launcher.
+        if self.parallelArgs.partition == None and self.parallelArgs.launch != None:
+            if self.parallelArgs.launch[:4] == "psub":
+                self.parallelArgs.partition = "pbatch,%s" % self.sectorname()
+
+        # If no launcher was specified then give a default.
+        if self.parallelArgs.parallel and self.parallelArgs.launch == None:
+            if self.os == "darwin" and self.osver >= 10:
+                self.parallelArgs.launch = "mpiexec"
+            else:
+                self.parallelArgs.launch = "mpirun"
+
+    ############################################################################
+    # Method: SourceEnvScript
+    #
+    # Purpose: Capture environment changes from a shell script.
+    #
+    # Arguments:
+    #   shell_script_file     : The script to execute.
+    #
+    # Programmer: Cyrus Harrison
+    # Date: Tue Apr 29 13:14:51 PDT 2014
+    #
+    # Modifications:
+    #
+    ############################################################################
+    def SourceEnvScript(self,shell_script_file,all_pairs=False):
+        shell_script_file = os.path.abspath(shell_script_file)
+        p = subprocess.Popen(["-c", "source %s && env " % shell_script_file ],
+                             stdin=subprocess.PIPE,
+                             stdout=subprocess.PIPE,
+                             shell=True )
+        env_lines = p.communicate()[0].split("\n")
+        # remove empty pairs
+        env_lines = [ e.strip() for e in env_lines if e.count("=") > 0]
+        # parse pairs
+        env_pairs = [ (e[:e.find("=")],e[e.find("=")+1:]) for e in env_lines]
+        for k,v in env_pairs:
+            # always set if all pairs is True, otherwise only
+            # set the pairs that were created as a result of the script.
+            if all_pairs or not k in os.environ.keys():
+                # add new env pair to os.environ
+                print k,v
+                SETENV(k,v)
+
+
+    ############################################################################
+    # Method: LoadEnvModule
+    #
+    # Purpose: Capture environment changes from an env module load.
+    #
+    # Arguments:
+    #   module_name     : The module to load.
+    #
+    # Programmer: Cyrus Harrison
+    # Date: Tue Apr 29 13:14:51 PDT 2014
+    #
+    # Modifications:
+    #
+    ############################################################################
+    def LoadEnvModule(self,module_name,all_pairs=False):
+        self.LoadEnvModules([module_name],all_pairs)
+    
+    ############################################################################
+    # Method: LoadEnvModules
+    #
+    # Purpose: Capture environment changes from an env module load(s).
+    #
+    # Arguments:
+    #   module_names     : List of module to load.
+    #
+    # Programmer: Cyrus Harrison
+    # Date: Tue Apr 29 13:14:51 PDT 2014
+    #
+    # Modifications:
+    #
+    ############################################################################
+    def LoadEnvModules(self,module_names,all_pairs=False):
+        script_src = "source /etc/profile.d/modules.sh "       
+        for mod_name in module_names:
+            script_src += " && module load " + mod_name
+        script_src += " && env "
+        p = subprocess.Popen(["-c", script_src],
+                             stdin=subprocess.PIPE,
+                             stdout=subprocess.PIPE,
+                             shell=True )
+        env_lines = p.communicate()[0].split("\n")
+        # remove empty pairs
+        env_lines = [ e.strip() for e in env_lines if e.count("=") > 0]
+        # parse pairs
+        env_pairs = [ (e[:e.find("=")],e[e.find("=")+1:]) for e in env_lines]
+        for k,v in env_pairs:
+            # always set if all pairs is True, otherwise only
+            # set the pairs that were created as a result of the script.
+            if all_pairs or not k in os.environ.keys():
+                # add new env pair to os.environ
+                SETENV(k,v)
+
+    ############################################################################
+    # Method: Customize
+    #
+    # Purpose: Method that lets derived classes do top-level custom initialization.
+    #
+    # Programmer: Brad Whitlock
+    # Date: Fri May 25 10:48:41 PDT 2012
+    #
+    # Modifications:
+    #
+    ############################################################################
+
+    def Customize(self):
+        return
+
+    ############################################################################
+    # Method: UpdateExecutableNames
+    #
+    # Purpose: Update the name for the executable that we'll run.
+    #
+    # Programmer: Brad Whitlock
+    # Date: Fri May 25 10:48:41 PDT 2012
+    #
+    # Modifications:
+    #   Eric Brugger, Mon Nov 19 13:24:37 PST 2012
+    #   Correct a bug with running makemili and visitconvert in serial.
+    #
+    ############################################################################
+
+    def UpdateExecutableNames(self):
+        if self.generalArgs.exe_name == "engine":
+            np = 1
+            if self.parallelArgs.parallel:
+                if self.parallelArgs.np != None:
+                    try:
+                        np = int(self.parallelArgs.np)
+                    except ValueError:
+                        np = 1
+            if np > 1:
+                self.generalArgs.exe_name = "engine_par"
+            else:
+                self.generalArgs.exe_name = "engine_ser"
+        elif self.generalArgs.exe_name in ("makemili", "visitconvert"):
+            if self.parallelArgs.parallel:
+                par_lite = os.path.join(self.visitdir, "exe", self.generalArgs.exe_name + "_par_lite")
+                if os.path.exists(par_lite):
+                    self.generalArgs.exe_name = self.generalArgs.exe_name + "_par_lite"
+                else:
+                    self.generalArgs.exe_name = self.generalArgs.exe_name + "_par"
+            else:
+                ser_lite = os.path.join(self.visitdir, "exe", self.generalArgs.exe_name + "_ser_lite")
+                if os.path.exists(ser_lite):
+                    self.generalArgs.exe_name = self.generalArgs.exe_name + "_ser_lite"
+                else:
+                    self.generalArgs.exe_name = self.generalArgs.exe_name + "_ser"
+
+    ############################################################################
+    # Method: PrivatePlugins
+    #
+    # Purpose: Return the path to the user's private plugins.
+    #
+    # Programmer: Brad Whitlock
+    # Date: Fri Jun  1 09:53:57 PDT 2012
+    #
+    # Modifications:
+    #
+    ############################################################################
+
+    def PrivatePlugins(self):
+        return os.path.join(GETENV("HOME"), ".visit", self.visitpluginver, self.visitarch, "plugins")
+
+    ############################################################################
+    # Method: SetupEnvironment
+    #
+    # Purpose: Set up the environment variables that we need to run VisIt.
+    #
+    # Programmer: Brad Whitlock
+    # Date: Fri May 25 10:48:41 PDT 2012
+    #
+    # Modifications:
+    #   Brad Whitlock, Tue Nov 27 10:13:42 PST 2012
+    #   Set PYTHONHOME if we're running the cli.
+    #
+    #   Brad Whitlock, Wed Apr  3 10:15:00 PDT 2013
+    #   Removed /usr/local/lib from the LD_LIBRARY_PATH since it was an old fix
+    #   for Suns that caused problems on Linux.
+    #
+    #   Kathleen Biagas, Mon Jul 15 11:31:27 PDT 2013
+    #   Unset QT_PLUGIN_PATH.
+    #
+    #   Cyrus Harrison, Tue Oct 22 11:35:37 PDT 2013
+    #   Don't use mesa if  hw-accel is requested for the engine.
+    #
+    #   David Camp, Tue Mar 11 10:17:48 PDT 2014
+    #   The osmesa option would fail to work because the osmesa path was at the 
+    #   end of the LD_LIBRARY_PATH and the code would load the system version. 
+    #   So I moved the osmesa path to the first path and everything works.
+    #
+    #   Cyrus Harrison, Thu Nov 10 22:38:22 PST 2016
+    #   Make sure to set PYTHONHOME for engine_ser and engine_par if we
+    #   are using VisIt's python. It's needed to properly init the
+    #   python filter env.
+    #
+    #   Kathleen Biagas, Wed Jan 31 15:12:42 PST 2018
+    #   If lib/mesgl/libGL.so exists, then add lib/mesgl to LD_LIBRARY_PATH
+    #   for gui and viewer running with a window.
+    #
+    #   Eric Brugger, Tue Dec 11 11:52:39 PST 2018
+    #   I modified Kathleen's last change so that the logic is now if
+    #   lib/mesgl/libGL.so exists, then add lib/mesgl to LD_LIBRARY_PATH
+    #   for the engine and the viewer running with a window. The gui doesn't
+    #   use GL and saving images without screen capture now works.
+    #
+    ############################################################################
+
+    def SetupEnvironment(self):
+        # Get some environment variables and store their original values.
+        keys = ("LD_LIBRARY_PATH", "LD_LIBRARY32_PATH", "LD_LIBRARYN32_PATH", 
+                "LD_LIBRARY64_PATH", "LIBPATH")
+        for k in keys:
+            if GETENV("%s_VISITORIG" % k) == "":
+                SETENV("%s_VISITORIG" % k, GETENV(k))
+
+        for k in keys:
+            if GETENV("%s_VISITORIG" % k) == "":
+                SETENV(k, self.visitlibdir)
+            else:
+                SETENV(k, self.joinpaths([self.visitlibdir, GETENV("%s_VISITORIG" % k)]))
+
+        # Set R_HOME in case R has been installed it will be in this location..
+        visitrdir = os.path.join(self.visitlibdir, "r_support", "R")
+        if os.path.exists(visitrdir):
+            SETENV("R_HOME", visitrdir)
+
+        # Get the private plugin directory.
+        visitprivateplugins = self.PrivatePlugins()
+
+        if self.os == "darwin":
+            fallback = [self.visitlibdir]
+            for p in self.plugincategories:
+                fallback = fallback + [os.path.join(visitprivateplugins, p)]
+            fallback = fallback + ["/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries"]
+            e = GETENV("DYLD_FALLBACK_LIBRARY_PATH")
+            if e == "":
+                SETENV("DYLD_FALLBACK_LIBRARY_PATH", self.joinpaths(fallback))
+            else:
+                SETENV("DYLD_FALLBACK_LIBRARY_PATH", self.joinpaths(fallback + [e]))
+
+        if self.generalArgs.publicpluginsonly:
+            SETENV("VISITPLUGINDIR", self.visitplugins)
+        else:
+            if GETENV("VISITPLUGINDIRORIG") == "":
+                SETENV("VISITPLUGINDIRORIG", GETENV("VISITPLUGINDIR"))
+            vpdo = self.splitpaths(GETENV("VISITPLUGINDIRORIG"))
+            vpd = self.joinpaths(vpdo + [visitprivateplugins, self.visitplugins])
+            SETENV("VISITPLUGINDIR", vpd)
+
+        # If we are using a public version, or if any main plugin directory is
+        # not writeable, then we should default to a private plugin installation.
+        SETENV("VISITPLUGININSTPUB", self.visitplugins)
+        SETENV("VISITPLUGININSTPRI", visitprivateplugins)
+
+        # Only set up the default installation path if needed
+        if GETENV("VISITPLUGININST") == "":
+            shouldinstallprivate = self.publicversion
+            for p in self.plugincategories:
+                if os.path.exists(os.path.join(self.visitplugins, p)):
+                    shouldinstallprivate = 1
+
+            if shouldinstallprivate:
+                SETENV("VISITPLUGININST", visitprivateplugins)
+            else:
+                SETENV("VISITPLUGININST", self.visitplugins)
+
+        # Set required environment variables
+        SETENV("VISITHOME",     self.visithome)
+        SETENV("VISITARCHHOME", self.visitarchdir)
+        SETENV("VISITULTRAHOME", self.visitultradir)
+
+        # If we're using VisIt's Python, set PYTHONHOME
+        visitlibdir_python = os.path.join(self.visitlibdir, "python")
+        if os.path.isdir(visitlibdir_python) and  \
+           (self.generalArgs.exe_name == "cli" or \
+            self.generalArgs.exe_name == "engine_ser" or \
+            self.generalArgs.exe_name == "engine_par" ):
+            SETENV("PYTHONHOME", visitlibdir_python)
+
+        # Unset QT_PLUGIN_PATH
+        UNSETENV("QT_PLUGIN_PATH")
+
+        # Turn off trapping of floating point exceptions.
+        SETENV("TRAP_FPE", "")
+
+        # Turn off a warning message when running on Linux systems displaying
+        # to a remote display.  The message messes up the communication between
+        # the GUI and Viewer.
+        SETENV("MESA_GLX_FX", "disable")
+
+        # The -viewerdisplay argument allows the user to specify an argument
+        # that the viewer should use, no matter what the GUI was using.  This
+        # can be useful for wall-type displays with a separate console, e.g.
+        # the console on :0 and the DMX server on :2, you could run
+        # env DISPLAY=:0 visit -viewerdisplay :2
+        #
+        #
+        if self.generalArgs.exe_name == "viewer" and self.generalArgs.viewerdisplay != None:
+            SETENV("DISPLAY", self.generalArgs.viewerdisplay)
+
+        #
+        # Use mesagl for opengl with the engine and with the viewer running
+        # with a window.
+        #
+        mesa_gl_dir = os.path.join(self.visitlibdir,"mesagl")
+        mesa_gl_lib = os.path.join(mesa_gl_dir,"libGL.so.1")
+        need_osmesa = 0
+        if ( os.path.isfile(mesa_gl_lib) and
+            ( self.generalArgs.exe_name.startswith("engine") or
+              (self.generalArgs.exe_name == "viewer" and
+               self.generalArgs.nowin == 0))):
+            SETENV("LD_LIBRARY_PATH", self.joinpaths([mesa_gl_dir, GETENV("LD_LIBRARY_PATH")]))
+            need_osmesa = 1
+
+        #
+        # OSMesa GL Settings
+        #
+        osmesa_gl_dir = os.path.join(self.visitlibdir,"osmesa")
+        osmesa_gl_lib = os.path.join(osmesa_gl_dir,"libOSMesa.so.8")
+        #
+        # if we have osmesa, use it for the engine & viewer -nowin
+        #
+        if os.path.isfile(osmesa_gl_lib):
+            #
+            # if we get an explicit osmesa flag, make sure to use mesa
+            #
+            # if we are using OSMesa in the viewer or engine we need to set VISIT_MESA_LIB
+            # and adjust the LD_LIBRARY_PATH so VTK can pick up OSMesa instead of standard GL
+            #
+            if ( (need_osmesa) or (self.generalArgs.osmesa) or
+                 (self.generalArgs.exe_name == "viewer" and self.generalArgs.nowin == 1) or
+                 (self.generalArgs.exe_name.startswith("engine") and not self.generalArgs.hw_accel)):
+                SETENV("LD_LIBRARY_PATH", self.joinpaths([osmesa_gl_dir, GETENV("LD_LIBRARY_PATH")]))
+                SETENV("VISIT_MESA_LIB",osmesa_gl_lib)
+        elif self.generalArgs.osmesa:
+            self.error("Can't launch using osmesa. '-osmesa' specified, but the osmesa library is not available.")
+
+    ############################################################################
+    # Method: PrintEnvironment
+    #
+    # Purpose: Helper to replicate the environment that VisIt has set up.
+    #
+    # Arguments:
+    #   file       : The file to which we're printing the environment.
+    #   set        : The string to use to "setenv" the variable.
+    #   eq         : The equal string to use: ' ' or '='
+    #   allowempty : Whether to still print the value for the variable if it
+    #                is empty.
+    #
+    # Programmer: Brad Whitlock
+    # Date: Fri May 25 10:48:41 PDT 2012
+    #
+    # Modifications:
+    #
+    ############################################################################
+
+    def PrintEnvironment(self, file, set, eq, allowempty):
+        soext = "so"
+        if self.os == "darwin":
+            soext = "dylib"
+
+        # The environment variables whose values we're printing.
+        vars = ["LIBPATH", "VISITHOME", "VISITARCHHOME", 
+                "VISITULTRAHOME", "VISITPLUGINDIR","TRAP_FPE",
+                "MESA_GLX_FX","VISIT_MESA_LIB"]
+        # vars = vars + ["PYTHONHOME"] # don't set PYTHONHOME
+        # A dictionary of extra vars whose source is different 
+        diffvars = {}
+        # Add a few more variables, depending on platform.
+        if self.os == "darwin":
+            diffvars = {"DYLD_LIBRARY_PATH" : "DYLD_FALLBACK_LIBRARY_PATH"}
+        else:
+            ld = ["LD_LIBRARY_PATH", "LD_LIBRARY32_PATH", "LD_LIBRARYN32_PATH", "LD_LIBRARY64_PATH"]
+            vars = ld + vars
+        # Make one dictionary of the variables to check.
+        varnames = {}
+        for v in vars:
+            varnames[v] = v
+        for v in diffvars.keys():
+            varnames[v] = diffvars[v]
+
+        # Check each variable.
+        sorted_keys = sorted(varnames.keys())
+        for var in sorted_keys:
+            value = GETENV(varnames[var])
+            if value != "" or allowempty:
+                file.write(set + var + eq + self.quoted(value) + "\n")
+
+    ############################################################################
+    # Method: PrintEnvironmentShell
+    #
+    # Purpose: Print shell commands to replicate the environment that VisIt 
+    #          has set up.
+    #
+    # Programmer: Brad Whitlock
+    # Date: Fri Jun  1 10:15:30 PDT 2012
+    #
+    # Modifications:
+    #
+    ############################################################################
+
+    def PrintEnvironmentShell(self, csh_style):
+        if csh_style:
+            self.PrintEnvironment(sys.stdout, "setenv ", " ", 1)
+        else:
+            self.PrintEnvironment(sys.stdout, "", "=", 1)
+
+    ############################################################################
+    # Method: MakeUserDirectories
+    #
+    # Purpose: Make the user's ~/.visit plugin subdirectories.
+    #
+    # Arguments:
+    #   pluginver       : The plugin version
+    #   supportedarches : The supported architectures.
+    #
+    # Programmer: Brad Whitlock
+    # Date: Fri May 25 10:48:41 PDT 2012
+    #
+    # Modifications:
+    #
+    ############################################################################
+
+    def MakeUserDirectories(self, pluginver, supportedarches):
+        home = GETENV("HOME")
+        if home != "":
+            for archdir in supportedarches:
+                root = home
+                for subdir in (".visit", pluginver, archdir, "plugins"):
+                    path = os.path.join(root, subdir)
+                    if not os.path.exists(path):
+                        os.mkdir(path)
+                    root = path
+                for p in self.plugincategories:
+                    path = os.path.join(root, p)
+                    if not os.path.exists(path):
+                        os.mkdir(path)
+
+    ############################################################################
+    # Method: SetStartDir
+    #
+    # Purpose: Change the current directory so a component will be started in
+    #          the new directory (so its logs, timings, etc will be there).
+    #
+    # Arguments:
+    #
+    # Programmer: Brad Whitlock
+    # Date: Fri Jul 28 13:05:07 PDT 2017
+    #
+    # Modifications:
+    #
+    ############################################################################
+
+    def SetStartDir(self):
+       if self.generalArgs.startdir != None:
+           try:
+               os.chdir(self.generalArgs.startdir)
+           except:
+               self.warning("Could not change directory to " + self.generalArgs.startdir)
+
+    ############################################################################
+    # Method: NewConsole
+    #
+    # Purpose: Launch VisIt in a new console window.
+    #
+    # Arguments:
+    #   args          : The command line arguments for the program we're running.
+    #   allowLauncher : If we're running a VisIt command, sometimes we must
+    #                   run it through the "visit" script again to make sure that
+    #                   the new console's environment gets set up properly. If
+    #                   this flag is true then running through the "visit" 
+    #                   command is allowed. If not, we're probably running a 
+    #                   non-visit command that we can't mess up.
+    #
+    # Programmer: Brad Whitlock
+    # Date: Thu May 31 10:19:44 PDT 2012
+    #
+    # Modifications:
+    #
+    ############################################################################
+
+    def NewConsole(self, args, allowLauncher):
+        if self.generalArgs.newconsole:
+            title = "VisIt " + self.generalArgs.exe_name + self.visitver
+
+            if allowLauncher:
+                visitexe = os.path.join(self.visitbindir, self.generalArgs.exe_name)
+
+                exeflag = "-" + self.generalArgs.exe_name
+                if exeflag[-4:] == "_ser" or exeflag[-4:] == "_par":
+                    exeflag = exeflag[:-4]
+
+                newcmd = [self.visitlauncher, exeflag]
+                if self.visitver != "":
+                    newcmd = newcmd + ["-v", self.visitver]
+                if args[0] == visitexe:
+                    newcmd = newcmd + args[1:]
+                else:
+                    newcmd = args
+            else:
+                newcmd = args
+
+            if self.os == "darwin":
+                if self.generalArgs.newconsole == 1 and \
+                   GETENV("TERM_PROGRAM") == "Apple_Terminal":
+                    cdcmd = "cd %s" % os.path.abspath(os.curdir)
+                    visitcmd = string.join(newcmd, " ")
+
+                    osascript = subprocess.Popen(["osascript"], stdin=subprocess.PIPE)
+                    osascript.stdin.write('tell application "Terminal"\n')
+                    osascript.stdin.write('activate\n')
+                    osascript.stdin.write('do script with command "%s; %s ; exit"\n' % (cdcmd, visitcmd))
+                    osascript.stdin.write('end tell\n')
+                    osascript.communicate()
+
+                    # The Apple terminal is launching our command.
+                    args = []
+                elif "xterm" in GETENV("TERM") and GETENV("DISPLAY") != "":
+                    args = self.xterm + ["-title", title, "-e"] + args
+                else:
+                    self.warning("""
+VisIt does not recognize your terminal application so it will ignore the -newconsole argument.""")
+            else:
+                args = self.xterm + ["-geometry", "120x40", "-title", title, "-e"] + [string.join(newcmd, " ")]
+        return args
+
+    ############################################################################
+    # Method: Debuggers
+    #
+    # Purpose: Return a list of debugger names.
+    #
+    # Programmer: Brad Whitlock
+    # Date: Thu May 31 10:19:44 PDT 2012
+    #
+    # Modifications:
+    #   Kathleen Biagas, Mon Apr  8 14:19:36 PDT 2013
+    #   Added apitrace.
+    #
+    #   Cyrus Harrison, Fri May 10 15:55:49 PDT 2013
+    #   Added ddt.
+    #
+    #   Cyrus Harrison, Fri Jul 25 15:59:02 PDT 2014
+    #   Added lldb.
+    #
+    #   Kevin Griffin, Wed May 20 18:33:04 PDT 2015
+    #   Added nvprof.
+    #
+    #   Burlen Loring, Wed Aug 19 09:48:07 PDT 2015
+    #   Added callgrind
+    #
+    #   Kevin Griffin, Mon Mar 21 16:34:52 PDT 2016 
+    #   Added cuda-memcheck.
+    #
+    ############################################################################
+    def Debuggers(self):
+        return ["gdb",
+                "totalview",
+                "valgrind",
+                "callgrind",
+                "strace",
+                "apitrace",
+                "debug-malloc",
+                "ddt",
+                "lldb",
+                "nvprof",
+                "cuda-memcheck",
+                "vtune",
+                "instruments"]
+
+    ############################################################################
+    # Method: DebuggerFactory
+    #
+    # Purpose: Return a debugger object for the specified name.
+    #
+    # Arguments:
+    #   debugger : The name of the debugger that we want to instantiate.
+    #
+    # Programmer: Brad Whitlock
+    # Date: Thu May 31 10:19:44 PDT 2012
+    #
+    # Modifications:
+    #   Kathleen Biagas, Mon Apr  8 14:19:36 PDT 2013
+    #   Added apitrace.
+    #
+    #   Cyrus Harrison, Fri Jul 25 15:59:02 PDT 2014
+    #   Added lldb.
+    #
+    #   Kevin Griffin,
+    #   Added nvprof.
+    #
+    #   Kevin Griffin Mon Mar 21 16:34:52 PDT 2016
+    #   Added cuda-memcheck.
+    #
+    ############################################################################
+
+    def DebuggerFactory(self, debugger):
+        if debugger == "gdb":
+            return GDBDebugger(self)
+        elif debugger == "totalview":
+            return TotalviewDebugger(self)
+        elif debugger == "valgrind":
+            return ValgrindDebugger(self)
+        elif debugger == "callgrind":
+            return CallgrindDebugger(self)
+        elif debugger == "strace":
+            return StraceDebugger(self)
+        elif debugger == "apitrace":
+            return ApitraceDebugger(self)
+        elif debugger == "debug-malloc":
+            return DebugMallocDebugger(self)
+        elif debugger == "ddt":
+            return DDTDebugger(self)
+        elif debugger == "lldb":
+            return LLDBDebugger(self)
+        elif debugger == "nvprof":
+            return CudaDebugger(self)
+        elif debugger == "cuda-memcheck":
+            return CudaMemcheck(self)
+        elif debugger == "vtune":
+            return VTuneProfiler(self)
+        elif debugger == "instruments":
+            return InstrumentsProfiler(self)
+        # Return a debugger that does not do anything.
+        return Debugger(self)
+
+    ############################################################################
+    # Method: Debug
+    #
+    # Purpose: Launch VisIt in a debugger.
+    #
+    # Arguments:
+    #   args : The visit command line before we decorate it for a debugger.
+    #
+    # Programmer: Brad Whitlock
+    # Date: Thu May 31 10:19:44 PDT 2012
+    #
+    # Modifications:
+    #
+    ############################################################################
+
+    def Debug(self, args):
+        if self.debugArgs.debugger != None:
+            if self.debugArgs.debuggerArgs[-1] == self.generalArgs.exe_name:
+                # We're debugging this program, try to add debug arguments 
+                # to the command line.
+                debugger = self.DebuggerFactory(self.debugArgs.debugger)
+                if debugger != None:
+                    args = debugger.CreateCommand(args)
+
+                # If we're running with a new console then add the command here
+                # since we want the debugger to run in a new console.
+                args = self.NewConsole(args, 0)
+            else:
+                # We're not debugging this program so add the arguments back onto
+                # the command line.
+                args = args + self.debugArgs.ProduceArguments()
+
+                # If we wanted a new console then add it to the command line since
+                # we're making it tied to the debugger.
+                if self.generalArgs.newconsole == 1:
+                    args = args + ["-newconsole"]
+                elif self.generalArgs.newconsole == 2:
+                    args = args + ["-xterm"]
+
+            # We have a debugger so indicate that the newconsole has been handled.
+            self.generalArgs.newconsole = 0
+
+        return args
+
+    ############################################################################
+    # Method: Banner
+    #
+    # Purpose: Produce a banner to print when we run the executable. This method
+    #          filters out some arguments from the printed command line.
+    #
+    # Arguments:
+    #   arg0 : The program executable
+    #   args : The program arguments
+    #
+    # Programmer: Brad Whitlock
+    # Date: Fri May 25 10:48:41 PDT 2012
+    #
+    # Modifications:
+    #
+    ############################################################################
+
+    def Banner(self, arg0, args):
+        a2 = ["Running: " + arg0]
+        i = 1
+        while i < len(args):
+            if args[i] == "-key":
+                i = i + 2
+            else:
+               if " " in args[i]:
+                   a2 = a2 + ['"' + args[i] + '"']
+               else:
+                   a2 = a2 + [args[i]]
+               i = i + 1
+        return string.join(a2, " ")
+
+    ############################################################################
+    # Method: NoRun
+    #
+    # Purpose: Determine whether we requested -norun for the current launch.
+    #
+    # Programmer: Brad Whitlock
+    # Date: Fri May 25 10:48:41 PDT 2012
+    #
+    # Modifications:
+    #
+    ############################################################################
+
+    def NoRun(self):
+        if self.generalArgs.norun == None:
+            return 0
+        if self.generalArgs.norun == self.generalArgs.exe_name:
+            return 1
+        if self.parallelArgs.parallel:
+            if self.generalArgs.norun in ("engine", "engine_par"):
+                return 1
+        else:
+            exe = self.generalArgs.exe_name
+            exe_ser = self.generalArgs.norun + "_ser"
+            print self.generalArgs.norun, exe, exe_ser
+            if self.generalArgs.norun in (exe, exe_ser):
+                return 1
+        return 0
+
+    ############################################################################
+    # Method: QuoteArguments
+    #
+    # Purpose: Return args as a single string. Args with spaces are quoted.
+    #
+    # Programmer: Brad Whitlock
+    # Date: Fri May 25 10:48:41 PDT 2012
+    #
+    # Modifications:
+    #
+    ############################################################################
+    def QuoteArguments(self, args):
+        a2 = []
+        for a in args:
+            if ' ' in a:
+                a2 = a2 + ['"' + a + '"']
+            else:
+                a2 = a2 + [a]
+        return string.join(a2, " ")
+
+    ############################################################################
+    # Method: Launch
+    #
+    # Purpose: Launch the specified executable.
+    #
+    # Programmer: Brad Whitlock
+    # Date: Fri May 25 10:48:41 PDT 2012
+    #
+    # Modifications:
+    #   Satheesh Maheswaran, Tue Jan 15 14:47:54 GMT 2013
+    #   Permit serial engines to use job submitter.
+    #
+    ############################################################################
+
+    def Launch(self):
+        ret = 0
+        if self.parallelArgs.parallel and \
+           (string.find(self.generalArgs.exe_name, "_par") != -1 or \
+            string.find(self.generalArgs.exe_name, "_ser") != -1):
+            # Create the appropriate job submitter.
+            submitter = self.JobSubmitterFactory(self.parallelArgs.launch)
+            if submitter == None:
+                exit("No job launcher was specified.", 0)
+
+            # Create the command line arguments
+            args = []
+            args = args + self.generalArgs.ProduceArguments(1)
+            args = args + self.generalArgs.ConnectionArguments(1)
+            if self.generalArgs.setupenv:
+                # if we're using -setupenv then we need to run through the launcher
+                # program once more.
+                newargs = [self.visitlauncher, "-engine", "-par", "-quiet"]
+                if self.visitver != "":
+                    newargs = newargs + ["-v", self.visitver]
+                args = newargs + args[1:] + self.parallelArgs.ProduceArguments(0)
+            else:
+                # Create a debugger object.
+                debugger = self.DebuggerFactory(self.debugArgs.debugger)
+                # Let the job submitter change the command line arguments.
+                args = submitter.CreateCommand(args, debugger)
+
+            if self.NoRun():
+                self.message("# SET ENVIRONMENT VARIABLES:", file=sys.stdout)
+                self.PrintEnvironmentShell("csh" in GETENV("SHELL"))
+                cmd = ""
+                if not submitter.HandledHardwareArguments():
+                    if self.parallelArgs.hw_precmd != None:
+                        cmd = cmd + self.parallelArgs.hw_precmd + "\n"
+                cmd = cmd + self.QuoteArguments(args) + "\n"
+                if not submitter.HandledHardwareArguments():
+                    if self.parallelArgs.hw_postcmd != None:
+                        cmd = cmd + self.parallelArgs.hw_postcmd + "\n"
+                self.message("\n# RUN USING:\n" + cmd, file=sys.stdout)
+            else:
+                if not self.generalArgs.quiet:
+                    self.message(self.Banner(args[0], args))
+                try:
+                    # If the job submitter did not handle a hardware-related 
+                    # pre-command then execute it now.
+                    if not submitter.HandledHardwareArguments():
+                        if self.parallelArgs.hw_precmd != None:
+                            r = self.call([self.parallelArgs.hw_precmd])
+
+                    # Execute the command created by the job submitter.
+                    # Note that we pass 1 for stdinpipe so the process we
+                    # make will get a new pipe. This makes msub work, for
+                    # example. We also remove python path information in
+                    # the case of qsub or msub so that we don't get the
+                    # system python and our python intermingled in case
+                    # the job submitter is written in python (e.g. msub on
+                    # Trinity).
+                    #
+                    env = os.environ.copy()
+                    if self.parallelArgs.launch[:4] == "msub":
+                        if "PYTHONHOME" in os.environ.keys():
+                            del env["PYTHONHOME"]
+                        if "PYTHONPATH" in os.environ.keys():
+                            del env["PYTHONPATH"]
+                        if "LD_LIBRARY_PATH" in os.environ.keys():
+                            del env["LD_LIBRARY_PATH"]
+                    ret = self.call(args, stdinpipe=1, env=env)
+
+                    # If the job submitter did not handle a hardware-related 
+                    # post-command then execute it now.
+                    if not submitter.HandledHardwareArguments():
+                        if self.parallelArgs.hw_postcmd != None:
+                            r = self.call([self.parallelArgs.hw_postcmd])
+                except OSError, e:
+                    self.error("Can't launch using %s. %s" % (self.parallelArgs.launch, e.strerror))
+        else:
+            args = [os.path.join(self.visitbindir, self.generalArgs.exe_name)]
+            args = args + self.generalArgs.ProduceArguments(0)
+            args = args + self.generalArgs.ConnectionArguments(0)
+            if self.generalArgs.exe_name in self.clientPrograms:
+                args = args + self.parallelArgs.ProduceArguments(1)
+
+            # Save the first argument.
+            arg0 = args[0]
+
+            # Run the command line through some filters that prepend new commands.
+            args = self.Debug(args)
+            args = self.NewConsole(args, 1)
+
+            if self.generalArgs.newconsole and args == []:
+                # Running with a new console on Mac can cause this case since 
+                # we rely on OSAScript to run a new console.
+                ret = 0
+            elif self.NoRun():
+                args = args + ["-dir", self.visithome]
+                self.message("# SET ENVIRONMENT VARIABLES:", file=sys.stdout)
+                self.PrintEnvironmentShell("csh" in GETENV("SHELL"))
+                self.message("\n# RUN USING:\n" + self.QuoteArguments(args) + "\n", file=sys.stdout)
+            else:
+                # Determine the new banner.
+                if args[0] != arg0:
+                    arg0 = args[0]
+                else:
+                    d,p = os.path.split(arg0)
+                    arg0 = p + self.visitver
+
+                # Run the program
+                if len(args) > 0:
+                    if not self.generalArgs.quiet:
+                        banner = self.Banner(arg0, args)
+                        self.message(banner)
+                    try:
+                        ret = self.call(args)
+                    except OSError, e:
+                        self.error("Can't run %s. %s" % (args[0], e.strerror))
+        return ret
+
+    ############################################################################
+    # Method: JobSubmitterFactory
+    #
+    # Purpose: Return a job submitter object for the indicated launch type.
+    #
+    # Arguments:
+    #   launch : The name of the launcher to create.
+    #
+    # Programmer: Brad Whitlock
+    # Date: Fri May 25 10:48:41 PDT 2012
+    #
+    # Modifications:
+    #    Gunther H. Weber, Wed Dec  5 18:39:31 PST 2012
+    #    Added mpiexec as new job submitter
+    #
+    #    Cyrus Harrison, Wed Nov  7 10:50:15 PST 2018
+    #    Added lrun as new job submitter
+    #
+    ############################################################################
+
+    def JobSubmitterFactory(self, launch):
+        # If launch has not been set then pick a platform-specific default launcher.
+        if launch == None:
+            if self.os == "aix":
+                launch = "poe"
+
+        # Instantiate a job submitter
+        if launch == "mpirun":
+            return JobSubmitter_mpirun(self)
+        elif launch == "mpiexec":
+            return JobSubmitter_mpiexec(self)
+        elif launch == "aprun":
+            return JobSubmitter_aprun(self)
+        elif launch == "dmpirun":
+            return JobSubmitter_dmpirun(self)
+        elif launch == "poe":
+            return JobSubmitter_poe(self)
+        elif launch == "ibrun":
+            return JobSubmitter_ibrun(self)
+        elif launch == "lrun":
+            return JobSubmitter_lrun(self)
+        elif launch == "prun":
+            return JobSubmitter_prun(self)
+        elif launch[:4] == "srun":
+            return JobSubmitter_srun(self)
+        elif launch[:4] == "psub":
+            return JobSubmitter_psub(self)
+        elif launch[:6] == "salloc":
+            return JobSubmitter_salloc(self)
+        elif launch[:6] == "sbatch":
+            return JobSubmitter_sbatch(self)
+        elif launch[:4] == "bsub":
+            return JobSubmitter_bsub(self)
+        elif launch[:4] == "qsub" or launch[:4] == "msub":
+            return JobSubmitter_qsub(self)
+        elif launch == "yod":
+            return JobSubmitter_yod(self)
+        return None
+
+###############################################################################
+# Function: internallauncher
+#
+# Purpose:    The main entry point.
+#
+# Programmer: Brad Whitlock
+# Date:       Thu May 17 14:22:04 PDT 2012
+#
+# Modifications:
+#   Eric Brugger, Mon Mar 19 12:48:20 PDT 2018
+#   I moved the call to Customize before the call to SetupDirectoryNames so
+#   that Customize could override visitarch.
+#
+###############################################################################
+
+def internallauncher(launcher, visitdir, visitprogram, visitver, visitpluginver, visitargs):
+    #print "running internallauncher "
+    #print "visitdir=",visitdir
+    #print "visitprogram=",visitprogram
+    #print "visitver=",visitver
+    #print "visitpluginver=",visitpluginver
+    #print "visitargs=", visitargs
+
+    launcher.Initialize(visitdir, visitprogram, visitver, visitpluginver)
+
+    # Note: visit-install will replace the value of logging if we want to 
+    # enable logging.
+    logging_enabled=0
+    launcher.SetLogging(logging_enabled)
+
+    launcher.ParseArguments(visitargs)
+
+    # Determine the supported architectures
+    supportedarches = launcher.DetermineArchitecture()
+    # If there were no supported architectures, fail.
+    if len(supportedarches) < 1:
+        exit("This hardware platform is not supported by VisIt.", 1)
+    # Print the architectures and exit.
+    if launcher.generalArgs.arch:
+        print string.join(supportedarches, " ")
+        return 0
+
+    launcher.ConsistencyCheck()
+    launcher.UpdateExecutableNames()
+    launcher.Customize()
+    launcher.SetupDirectoryNames(supportedarches)
+    launcher.SetupEnvironment()
+    launcher.MakeUserDirectories(visitpluginver, supportedarches)
+    launcher.SetStartDir()
+
+    if "-help" in visitargs or "--help" in visitargs:
+        launcher.PrintUsage(0)
+        return 0
+    elif "-fullhelp" in visitargs or "--fullhelp" in visitargs:
+        launcher.PrintUsage(1)
+        return 0
+
+    if launcher.generalArgs.env:
+        launcher.PrintEnvironmentShell(0)
+        return 0
+
+    return launcher.Launch()

@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+  <Plugin name="SimV2" type="database" label="SimulationV2" version="1.0" enabled="true" mdspecificcode="true" engspecificcode="false" onlyengine="false" noengine="false" dbtype="STMD" haswriter="true" hasoptions="false" filePatternsStrict="false" opensWholeDirectory="false">
+    <CXXFLAGS>
+      ${VISIT_INCLUDE_DIR}/sim/V2/lib
+      ${VISIT_INCLUDE_DIR}/sim/V2/runtime
+    </CXXFLAGS>
+    <LDFLAGS>
+      ${ICET_LIBRARY_DIR}
+    </LDFLAGS>
+    <FilePatterns>
+      *.sim2
+    </FilePatterns>
+    <Files components="E">
+      avtSimV2FileFormat.C
+      avtSimV2Writer.C
+      SimV2GetMesh.C
+    </Files>
+    <LIBS components="ESer">
+      simV2runtime_ser
+    </LIBS>
+    <LIBS components="EPar">
+      simV2runtime_par
+    </LIBS>
+    <Attribute name="" purpose="" persistent="false" keyframe="true" exportAPI="" exportInclude="">
+    </Attribute>
+  </Plugin>

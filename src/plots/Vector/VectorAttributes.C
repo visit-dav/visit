@@ -1,0 +1,1812 @@
+/*****************************************************************************
+*
+* Copyright (c) 2000 - 2018, Lawrence Livermore National Security, LLC
+* Produced at the Lawrence Livermore National Laboratory
+* LLNL-CODE-442911
+* All rights reserved.
+*
+* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
+* full copyright notice is contained in the file COPYRIGHT located at the root
+* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
+*
+* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
+* modification, are permitted provided that the following conditions are met:
+*
+*  - Redistributions of  source code must  retain the above  copyright notice,
+*    this list of conditions and the disclaimer below.
+*  - Redistributions in binary form must reproduce the above copyright notice,
+*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
+*    documentation and/or other materials provided with the distribution.
+*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
+*    be used to endorse or promote products derived from this software without
+*    specific prior written permission.
+*
+* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
+* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
+* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
+* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
+* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
+* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
+* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
+* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
+* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
+* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
+* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
+* DAMAGE.
+*
+*****************************************************************************/
+
+#include <VectorAttributes.h>
+#include <DataNode.h>
+
+//
+// Enum conversion methods for VectorAttributes::Quality
+//
+
+static const char *Quality_strings[] = {
+"Fast", "High"};
+
+std::string
+VectorAttributes::Quality_ToString(VectorAttributes::Quality t)
+{
+    int index = int(t);
+    if(index < 0 || index >= 2) index = 0;
+    return Quality_strings[index];
+}
+
+std::string
+VectorAttributes::Quality_ToString(int t)
+{
+    int index = (t < 0 || t >= 2) ? 0 : t;
+    return Quality_strings[index];
+}
+
+bool
+VectorAttributes::Quality_FromString(const std::string &s, VectorAttributes::Quality &val)
+{
+    val = VectorAttributes::Fast;
+    for(int i = 0; i < 2; ++i)
+    {
+        if(s == Quality_strings[i])
+        {
+            val = (Quality)i;
+            return true;
+        }
+    }
+    return false;
+}
+
+//
+// Enum conversion methods for VectorAttributes::OriginType
+//
+
+static const char *OriginType_strings[] = {
+"Head", "Middle", "Tail"
+};
+
+std::string
+VectorAttributes::OriginType_ToString(VectorAttributes::OriginType t)
+{
+    int index = int(t);
+    if(index < 0 || index >= 3) index = 0;
+    return OriginType_strings[index];
+}
+
+std::string
+VectorAttributes::OriginType_ToString(int t)
+{
+    int index = (t < 0 || t >= 3) ? 0 : t;
+    return OriginType_strings[index];
+}
+
+bool
+VectorAttributes::OriginType_FromString(const std::string &s, VectorAttributes::OriginType &val)
+{
+    val = VectorAttributes::Head;
+    for(int i = 0; i < 3; ++i)
+    {
+        if(s == OriginType_strings[i])
+        {
+            val = (OriginType)i;
+            return true;
+        }
+    }
+    return false;
+}
+
+//
+// Enum conversion methods for VectorAttributes::LimitsMode
+//
+
+static const char *LimitsMode_strings[] = {
+"OriginalData", "CurrentPlot"};
+
+std::string
+VectorAttributes::LimitsMode_ToString(VectorAttributes::LimitsMode t)
+{
+    int index = int(t);
+    if(index < 0 || index >= 2) index = 0;
+    return LimitsMode_strings[index];
+}
+
+std::string
+VectorAttributes::LimitsMode_ToString(int t)
+{
+    int index = (t < 0 || t >= 2) ? 0 : t;
+    return LimitsMode_strings[index];
+}
+
+bool
+VectorAttributes::LimitsMode_FromString(const std::string &s, VectorAttributes::LimitsMode &val)
+{
+    val = VectorAttributes::OriginalData;
+    for(int i = 0; i < 2; ++i)
+    {
+        if(s == LimitsMode_strings[i])
+        {
+            val = (LimitsMode)i;
+            return true;
+        }
+    }
+    return false;
+}
+
+//
+// Enum conversion methods for VectorAttributes::GlyphType
+//
+
+static const char *GlyphType_strings[] = {
+"Arrow", "Ellipsoid"};
+
+std::string
+VectorAttributes::GlyphType_ToString(VectorAttributes::GlyphType t)
+{
+    int index = int(t);
+    if(index < 0 || index >= 2) index = 0;
+    return GlyphType_strings[index];
+}
+
+std::string
+VectorAttributes::GlyphType_ToString(int t)
+{
+    int index = (t < 0 || t >= 2) ? 0 : t;
+    return GlyphType_strings[index];
+}
+
+bool
+VectorAttributes::GlyphType_FromString(const std::string &s, VectorAttributes::GlyphType &val)
+{
+    val = VectorAttributes::Arrow;
+    for(int i = 0; i < 2; ++i)
+    {
+        if(s == GlyphType_strings[i])
+        {
+            val = (GlyphType)i;
+            return true;
+        }
+    }
+    return false;
+}
+
+//
+// Enum conversion methods for VectorAttributes::LineStem
+//
+
+static const char *LineStem_strings[] = {
+"Cylinder", "Line"};
+
+std::string
+VectorAttributes::LineStem_ToString(VectorAttributes::LineStem t)
+{
+    int index = int(t);
+    if(index < 0 || index >= 2) index = 0;
+    return LineStem_strings[index];
+}
+
+std::string
+VectorAttributes::LineStem_ToString(int t)
+{
+    int index = (t < 0 || t >= 2) ? 0 : t;
+    return LineStem_strings[index];
+}
+
+bool
+VectorAttributes::LineStem_FromString(const std::string &s, VectorAttributes::LineStem &val)
+{
+    val = VectorAttributes::Cylinder;
+    for(int i = 0; i < 2; ++i)
+    {
+        if(s == LineStem_strings[i])
+        {
+            val = (LineStem)i;
+            return true;
+        }
+    }
+    return false;
+}
+
+//
+// Enum conversion methods for VectorAttributes::GlyphLocation
+//
+
+static const char *GlyphLocation_strings[] = {
+"AdaptsToMeshResolution", "UniformInSpace"};
+
+std::string
+VectorAttributes::GlyphLocation_ToString(VectorAttributes::GlyphLocation t)
+{
+    int index = int(t);
+    if(index < 0 || index >= 2) index = 0;
+    return GlyphLocation_strings[index];
+}
+
+std::string
+VectorAttributes::GlyphLocation_ToString(int t)
+{
+    int index = (t < 0 || t >= 2) ? 0 : t;
+    return GlyphLocation_strings[index];
+}
+
+bool
+VectorAttributes::GlyphLocation_FromString(const std::string &s, VectorAttributes::GlyphLocation &val)
+{
+    val = VectorAttributes::AdaptsToMeshResolution;
+    for(int i = 0; i < 2; ++i)
+    {
+        if(s == GlyphLocation_strings[i])
+        {
+            val = (GlyphLocation)i;
+            return true;
+        }
+    }
+    return false;
+}
+
+// ****************************************************************************
+// Method: VectorAttributes::VectorAttributes
+//
+// Purpose: 
+//   Init utility for the VectorAttributes class.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void VectorAttributes::Init()
+{
+    glyphLocation = AdaptsToMeshResolution;
+    useStride = false;
+    stride = 1;
+    nVectors = 400;
+    lineWidth = 0;
+    scale = 0.25;
+    scaleByMagnitude = true;
+    autoScale = true;
+    headSize = 0.25;
+    headOn = true;
+    colorByMag = true;
+    useLegend = true;
+    invertColorTable = false;
+    vectorOrigin = Tail;
+    minFlag = false;
+    maxFlag = false;
+    limitsMode = OriginalData;
+    min = 0;
+    max = 1;
+    lineStem = Line;
+    geometryQuality = Fast;
+    stemWidth = 0.08;
+    origOnly = true;
+    glyphType = Arrow;
+    animationStep = 0;
+
+    VectorAttributes::SelectAll();
+}
+
+// ****************************************************************************
+// Method: VectorAttributes::VectorAttributes
+//
+// Purpose: 
+//   Copy utility for the VectorAttributes class.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void VectorAttributes::Copy(const VectorAttributes &obj)
+{
+    glyphLocation = obj.glyphLocation;
+    useStride = obj.useStride;
+    stride = obj.stride;
+    nVectors = obj.nVectors;
+    lineWidth = obj.lineWidth;
+    scale = obj.scale;
+    scaleByMagnitude = obj.scaleByMagnitude;
+    autoScale = obj.autoScale;
+    headSize = obj.headSize;
+    headOn = obj.headOn;
+    colorByMag = obj.colorByMag;
+    useLegend = obj.useLegend;
+    vectorColor = obj.vectorColor;
+    colorTableName = obj.colorTableName;
+    invertColorTable = obj.invertColorTable;
+    vectorOrigin = obj.vectorOrigin;
+    minFlag = obj.minFlag;
+    maxFlag = obj.maxFlag;
+    limitsMode = obj.limitsMode;
+    min = obj.min;
+    max = obj.max;
+    lineStem = obj.lineStem;
+    geometryQuality = obj.geometryQuality;
+    stemWidth = obj.stemWidth;
+    origOnly = obj.origOnly;
+    glyphType = obj.glyphType;
+    animationStep = obj.animationStep;
+
+    VectorAttributes::SelectAll();
+}
+
+// Type map format string
+const char *VectorAttributes::TypeMapFormatString = VECTORATTRIBUTES_TMFS;
+const AttributeGroup::private_tmfs_t VectorAttributes::TmfsStruct = {VECTORATTRIBUTES_TMFS};
+
+
+// ****************************************************************************
+// Method: VectorAttributes::VectorAttributes
+//
+// Purpose: 
+//   Default constructor for the VectorAttributes class.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+VectorAttributes::VectorAttributes() : 
+    AttributeSubject(VectorAttributes::TypeMapFormatString),
+    vectorColor(0, 0, 0), colorTableName("Default")
+{
+    VectorAttributes::Init();
+}
+
+// ****************************************************************************
+// Method: VectorAttributes::VectorAttributes
+//
+// Purpose: 
+//   Constructor for the derived classes of VectorAttributes class.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+VectorAttributes::VectorAttributes(private_tmfs_t tmfs) : 
+    AttributeSubject(tmfs.tmfs),
+    vectorColor(0, 0, 0), colorTableName("Default")
+{
+    VectorAttributes::Init();
+}
+
+// ****************************************************************************
+// Method: VectorAttributes::VectorAttributes
+//
+// Purpose: 
+//   Copy constructor for the VectorAttributes class.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+VectorAttributes::VectorAttributes(const VectorAttributes &obj) : 
+    AttributeSubject(VectorAttributes::TypeMapFormatString)
+{
+    VectorAttributes::Copy(obj);
+}
+
+// ****************************************************************************
+// Method: VectorAttributes::VectorAttributes
+//
+// Purpose: 
+//   Copy constructor for derived classes of the VectorAttributes class.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+VectorAttributes::VectorAttributes(const VectorAttributes &obj, private_tmfs_t tmfs) : 
+    AttributeSubject(tmfs.tmfs)
+{
+    VectorAttributes::Copy(obj);
+}
+
+// ****************************************************************************
+// Method: VectorAttributes::~VectorAttributes
+//
+// Purpose: 
+//   Destructor for the VectorAttributes class.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+VectorAttributes::~VectorAttributes()
+{
+    // nothing here
+}
+
+// ****************************************************************************
+// Method: VectorAttributes::operator = 
+//
+// Purpose: 
+//   Assignment operator for the VectorAttributes class.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+VectorAttributes& 
+VectorAttributes::operator = (const VectorAttributes &obj)
+{
+    if (this == &obj) return *this;
+
+    VectorAttributes::Copy(obj);
+
+    return *this;
+}
+
+// ****************************************************************************
+// Method: VectorAttributes::operator == 
+//
+// Purpose: 
+//   Comparison operator == for the VectorAttributes class.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+VectorAttributes::operator == (const VectorAttributes &obj) const
+{
+    // Create the return value
+    return ((glyphLocation == obj.glyphLocation) &&
+            (useStride == obj.useStride) &&
+            (stride == obj.stride) &&
+            (nVectors == obj.nVectors) &&
+            (lineWidth == obj.lineWidth) &&
+            (scale == obj.scale) &&
+            (scaleByMagnitude == obj.scaleByMagnitude) &&
+            (autoScale == obj.autoScale) &&
+            (headSize == obj.headSize) &&
+            (headOn == obj.headOn) &&
+            (colorByMag == obj.colorByMag) &&
+            (useLegend == obj.useLegend) &&
+            (vectorColor == obj.vectorColor) &&
+            (colorTableName == obj.colorTableName) &&
+            (invertColorTable == obj.invertColorTable) &&
+            (vectorOrigin == obj.vectorOrigin) &&
+            (minFlag == obj.minFlag) &&
+            (maxFlag == obj.maxFlag) &&
+            (limitsMode == obj.limitsMode) &&
+            (min == obj.min) &&
+            (max == obj.max) &&
+            (lineStem == obj.lineStem) &&
+            (geometryQuality == obj.geometryQuality) &&
+            (stemWidth == obj.stemWidth) &&
+            (origOnly == obj.origOnly) &&
+            (glyphType == obj.glyphType) &&
+            (animationStep == obj.animationStep));
+}
+
+// ****************************************************************************
+// Method: VectorAttributes::operator != 
+//
+// Purpose: 
+//   Comparison operator != for the VectorAttributes class.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+VectorAttributes::operator != (const VectorAttributes &obj) const
+{
+    return !(this->operator == (obj));
+}
+
+// ****************************************************************************
+// Method: VectorAttributes::TypeName
+//
+// Purpose: 
+//   Type name method for the VectorAttributes class.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+const std::string
+VectorAttributes::TypeName() const
+{
+    return "VectorAttributes";
+}
+
+// ****************************************************************************
+// Method: VectorAttributes::CopyAttributes
+//
+// Purpose: 
+//   CopyAttributes method for the VectorAttributes class.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+VectorAttributes::CopyAttributes(const AttributeGroup *atts)
+{
+    if(TypeName() != atts->TypeName())
+        return false;
+
+    // Call assignment operator.
+    const VectorAttributes *tmp = (const VectorAttributes *)atts;
+    *this = *tmp;
+
+    return true;
+}
+
+// ****************************************************************************
+// Method: VectorAttributes::CreateCompatible
+//
+// Purpose: 
+//   CreateCompatible method for the VectorAttributes class.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+AttributeSubject *
+VectorAttributes::CreateCompatible(const std::string &tname) const
+{
+    AttributeSubject *retval = 0;
+    if(TypeName() == tname)
+        retval = new VectorAttributes(*this);
+    // Other cases could go here too. 
+
+    return retval;
+}
+
+// ****************************************************************************
+// Method: VectorAttributes::NewInstance
+//
+// Purpose: 
+//   NewInstance method for the VectorAttributes class.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+AttributeSubject *
+VectorAttributes::NewInstance(bool copy) const
+{
+    AttributeSubject *retval = 0;
+    if(copy)
+        retval = new VectorAttributes(*this);
+    else
+        retval = new VectorAttributes;
+
+    return retval;
+}
+
+// ****************************************************************************
+// Method: VectorAttributes::SelectAll
+//
+// Purpose: 
+//   Selects all attributes.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+VectorAttributes::SelectAll()
+{
+    Select(ID_glyphLocation,    (void *)&glyphLocation);
+    Select(ID_useStride,        (void *)&useStride);
+    Select(ID_stride,           (void *)&stride);
+    Select(ID_nVectors,         (void *)&nVectors);
+    Select(ID_lineWidth,        (void *)&lineWidth);
+    Select(ID_scale,            (void *)&scale);
+    Select(ID_scaleByMagnitude, (void *)&scaleByMagnitude);
+    Select(ID_autoScale,        (void *)&autoScale);
+    Select(ID_headSize,         (void *)&headSize);
+    Select(ID_headOn,           (void *)&headOn);
+    Select(ID_colorByMag,       (void *)&colorByMag);
+    Select(ID_useLegend,        (void *)&useLegend);
+    Select(ID_vectorColor,      (void *)&vectorColor);
+    Select(ID_colorTableName,   (void *)&colorTableName);
+    Select(ID_invertColorTable, (void *)&invertColorTable);
+    Select(ID_vectorOrigin,     (void *)&vectorOrigin);
+    Select(ID_minFlag,          (void *)&minFlag);
+    Select(ID_maxFlag,          (void *)&maxFlag);
+    Select(ID_limitsMode,       (void *)&limitsMode);
+    Select(ID_min,              (void *)&min);
+    Select(ID_max,              (void *)&max);
+    Select(ID_lineStem,         (void *)&lineStem);
+    Select(ID_geometryQuality,  (void *)&geometryQuality);
+    Select(ID_stemWidth,        (void *)&stemWidth);
+    Select(ID_origOnly,         (void *)&origOnly);
+    Select(ID_glyphType,        (void *)&glyphType);
+    Select(ID_animationStep,    (void *)&animationStep);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Persistence methods
+///////////////////////////////////////////////////////////////////////////////
+
+// ****************************************************************************
+// Method: VectorAttributes::CreateNode
+//
+// Purpose: 
+//   This method creates a DataNode representation of the object so it can be saved to a config file.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+VectorAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool forceAdd)
+{
+    if(parentNode == 0)
+        return false;
+
+    VectorAttributes defaultObject;
+    bool addToParent = false;
+    // Create a node for VectorAttributes.
+    DataNode *node = new DataNode("VectorAttributes");
+
+    if(completeSave || !FieldsEqual(ID_glyphLocation, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("glyphLocation", GlyphLocation_ToString(glyphLocation)));
+    }
+
+    if(completeSave || !FieldsEqual(ID_useStride, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("useStride", useStride));
+    }
+
+    if(completeSave || !FieldsEqual(ID_stride, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("stride", stride));
+    }
+
+    if(completeSave || !FieldsEqual(ID_nVectors, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("nVectors", nVectors));
+    }
+
+    if(completeSave || !FieldsEqual(ID_lineWidth, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("lineWidth", lineWidth));
+    }
+
+    if(completeSave || !FieldsEqual(ID_scale, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("scale", scale));
+    }
+
+    if(completeSave || !FieldsEqual(ID_scaleByMagnitude, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("scaleByMagnitude", scaleByMagnitude));
+    }
+
+    if(completeSave || !FieldsEqual(ID_autoScale, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("autoScale", autoScale));
+    }
+
+    if(completeSave || !FieldsEqual(ID_headSize, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("headSize", headSize));
+    }
+
+    if(completeSave || !FieldsEqual(ID_headOn, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("headOn", headOn));
+    }
+
+    if(completeSave || !FieldsEqual(ID_colorByMag, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("colorByMag", colorByMag));
+    }
+
+    if(completeSave || !FieldsEqual(ID_useLegend, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("useLegend", useLegend));
+    }
+
+        DataNode *vectorColorNode = new DataNode("vectorColor");
+        if(vectorColor.CreateNode(vectorColorNode, completeSave, true))
+        {
+            addToParent = true;
+            node->AddNode(vectorColorNode);
+        }
+        else
+            delete vectorColorNode;
+    if(completeSave || !FieldsEqual(ID_colorTableName, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("colorTableName", colorTableName));
+    }
+
+    if(completeSave || !FieldsEqual(ID_invertColorTable, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("invertColorTable", invertColorTable));
+    }
+
+    if(completeSave || !FieldsEqual(ID_vectorOrigin, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("vectorOrigin", OriginType_ToString(vectorOrigin)));
+    }
+
+    if(completeSave || !FieldsEqual(ID_minFlag, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("minFlag", minFlag));
+    }
+
+    if(completeSave || !FieldsEqual(ID_maxFlag, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("maxFlag", maxFlag));
+    }
+
+    if(completeSave || !FieldsEqual(ID_limitsMode, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("limitsMode", LimitsMode_ToString(limitsMode)));
+    }
+
+    if(completeSave || !FieldsEqual(ID_min, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("min", min));
+    }
+
+    if(completeSave || !FieldsEqual(ID_max, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("max", max));
+    }
+
+    if(completeSave || !FieldsEqual(ID_lineStem, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("lineStem", LineStem_ToString(lineStem)));
+    }
+
+    if(completeSave || !FieldsEqual(ID_geometryQuality, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("geometryQuality", Quality_ToString(geometryQuality)));
+    }
+
+    if(completeSave || !FieldsEqual(ID_stemWidth, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("stemWidth", stemWidth));
+    }
+
+    if(completeSave || !FieldsEqual(ID_origOnly, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("origOnly", origOnly));
+    }
+
+    if(completeSave || !FieldsEqual(ID_glyphType, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("glyphType", GlyphType_ToString(glyphType)));
+    }
+
+    if(completeSave || !FieldsEqual(ID_animationStep, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("animationStep", animationStep));
+    }
+
+
+    // Add the node to the parent node.
+    if(addToParent || forceAdd)
+        parentNode->AddNode(node);
+    else
+        delete node;
+
+    return (addToParent || forceAdd);
+}
+
+// ****************************************************************************
+// Method: VectorAttributes::SetFromNode
+//
+// Purpose: 
+//   This method sets attributes in this object from values in a DataNode representation of the object.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+VectorAttributes::SetFromNode(DataNode *parentNode)
+{
+    if(parentNode == 0)
+        return;
+
+    DataNode *searchNode = parentNode->GetNode("VectorAttributes");
+    if(searchNode == 0)
+        return;
+
+    DataNode *node;
+    if((node = searchNode->GetNode("glyphLocation")) != 0)
+    {
+        // Allow enums to be int or string in the config file
+        if(node->GetNodeType() == INT_NODE)
+        {
+            int ival = node->AsInt();
+            if(ival >= 0 && ival < 2)
+                SetGlyphLocation(GlyphLocation(ival));
+        }
+        else if(node->GetNodeType() == STRING_NODE)
+        {
+            GlyphLocation value;
+            if(GlyphLocation_FromString(node->AsString(), value))
+                SetGlyphLocation(value);
+        }
+    }
+    if((node = searchNode->GetNode("useStride")) != 0)
+        SetUseStride(node->AsBool());
+    if((node = searchNode->GetNode("stride")) != 0)
+        SetStride(node->AsInt());
+    if((node = searchNode->GetNode("nVectors")) != 0)
+        SetNVectors(node->AsInt());
+    if((node = searchNode->GetNode("lineWidth")) != 0)
+        SetLineWidth(node->AsInt());
+    if((node = searchNode->GetNode("scale")) != 0)
+        SetScale(node->AsDouble());
+    if((node = searchNode->GetNode("scaleByMagnitude")) != 0)
+        SetScaleByMagnitude(node->AsBool());
+    if((node = searchNode->GetNode("autoScale")) != 0)
+        SetAutoScale(node->AsBool());
+    if((node = searchNode->GetNode("headSize")) != 0)
+        SetHeadSize(node->AsDouble());
+    if((node = searchNode->GetNode("headOn")) != 0)
+        SetHeadOn(node->AsBool());
+    if((node = searchNode->GetNode("colorByMag")) != 0)
+        SetColorByMag(node->AsBool());
+    if((node = searchNode->GetNode("useLegend")) != 0)
+        SetUseLegend(node->AsBool());
+    if((node = searchNode->GetNode("vectorColor")) != 0)
+        vectorColor.SetFromNode(node);
+    if((node = searchNode->GetNode("colorTableName")) != 0)
+        SetColorTableName(node->AsString());
+    if((node = searchNode->GetNode("invertColorTable")) != 0)
+        SetInvertColorTable(node->AsBool());
+    if((node = searchNode->GetNode("vectorOrigin")) != 0)
+    {
+        // Allow enums to be int or string in the config file
+        if(node->GetNodeType() == INT_NODE)
+        {
+            int ival = node->AsInt();
+            if(ival >= 0 && ival < 3)
+                SetVectorOrigin(OriginType(ival));
+        }
+        else if(node->GetNodeType() == STRING_NODE)
+        {
+            OriginType value;
+            if(OriginType_FromString(node->AsString(), value))
+                SetVectorOrigin(value);
+        }
+    }
+    if((node = searchNode->GetNode("minFlag")) != 0)
+        SetMinFlag(node->AsBool());
+    if((node = searchNode->GetNode("maxFlag")) != 0)
+        SetMaxFlag(node->AsBool());
+    if((node = searchNode->GetNode("limitsMode")) != 0)
+    {
+        // Allow enums to be int or string in the config file
+        if(node->GetNodeType() == INT_NODE)
+        {
+            int ival = node->AsInt();
+            if(ival >= 0 && ival < 2)
+                SetLimitsMode(LimitsMode(ival));
+        }
+        else if(node->GetNodeType() == STRING_NODE)
+        {
+            LimitsMode value;
+            if(LimitsMode_FromString(node->AsString(), value))
+                SetLimitsMode(value);
+        }
+    }
+    if((node = searchNode->GetNode("min")) != 0)
+        SetMin(node->AsDouble());
+    if((node = searchNode->GetNode("max")) != 0)
+        SetMax(node->AsDouble());
+    if((node = searchNode->GetNode("lineStem")) != 0)
+    {
+        // Allow enums to be int or string in the config file
+        if(node->GetNodeType() == INT_NODE)
+        {
+            int ival = node->AsInt();
+            if(ival >= 0 && ival < 2)
+                SetLineStem(LineStem(ival));
+        }
+        else if(node->GetNodeType() == STRING_NODE)
+        {
+            LineStem value;
+            if(LineStem_FromString(node->AsString(), value))
+                SetLineStem(value);
+        }
+    }
+    if((node = searchNode->GetNode("geometryQuality")) != 0)
+    {
+        // Allow enums to be int or string in the config file
+        if(node->GetNodeType() == INT_NODE)
+        {
+            int ival = node->AsInt();
+            if(ival >= 0 && ival < 2)
+                SetGeometryQuality(Quality(ival));
+        }
+        else if(node->GetNodeType() == STRING_NODE)
+        {
+            Quality value;
+            if(Quality_FromString(node->AsString(), value))
+                SetGeometryQuality(value);
+        }
+    }
+    if((node = searchNode->GetNode("stemWidth")) != 0)
+        SetStemWidth(node->AsDouble());
+    if((node = searchNode->GetNode("origOnly")) != 0)
+        SetOrigOnly(node->AsBool());
+    if((node = searchNode->GetNode("glyphType")) != 0)
+    {
+        // Allow enums to be int or string in the config file
+        if(node->GetNodeType() == INT_NODE)
+        {
+            int ival = node->AsInt();
+            if(ival >= 0 && ival < 2)
+                SetGlyphType(GlyphType(ival));
+        }
+        else if(node->GetNodeType() == STRING_NODE)
+        {
+            GlyphType value;
+            if(GlyphType_FromString(node->AsString(), value))
+                SetGlyphType(value);
+        }
+    }
+    if((node = searchNode->GetNode("animationStep")) != 0)
+        SetAnimationStep(node->AsInt());
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Set property methods
+///////////////////////////////////////////////////////////////////////////////
+
+void
+VectorAttributes::SetGlyphLocation(VectorAttributes::GlyphLocation glyphLocation_)
+{
+    glyphLocation = glyphLocation_;
+    Select(ID_glyphLocation, (void *)&glyphLocation);
+}
+
+void
+VectorAttributes::SetUseStride(bool useStride_)
+{
+    useStride = useStride_;
+    Select(ID_useStride, (void *)&useStride);
+}
+
+void
+VectorAttributes::SetStride(int stride_)
+{
+    stride = stride_;
+    Select(ID_stride, (void *)&stride);
+}
+
+void
+VectorAttributes::SetNVectors(int nVectors_)
+{
+    nVectors = nVectors_;
+    Select(ID_nVectors, (void *)&nVectors);
+}
+
+void
+VectorAttributes::SetLineWidth(int lineWidth_)
+{
+    lineWidth = lineWidth_;
+    Select(ID_lineWidth, (void *)&lineWidth);
+}
+
+void
+VectorAttributes::SetScale(double scale_)
+{
+    scale = scale_;
+    Select(ID_scale, (void *)&scale);
+}
+
+void
+VectorAttributes::SetScaleByMagnitude(bool scaleByMagnitude_)
+{
+    scaleByMagnitude = scaleByMagnitude_;
+    Select(ID_scaleByMagnitude, (void *)&scaleByMagnitude);
+}
+
+void
+VectorAttributes::SetAutoScale(bool autoScale_)
+{
+    autoScale = autoScale_;
+    Select(ID_autoScale, (void *)&autoScale);
+}
+
+void
+VectorAttributes::SetHeadSize(double headSize_)
+{
+    headSize = headSize_;
+    Select(ID_headSize, (void *)&headSize);
+}
+
+void
+VectorAttributes::SetHeadOn(bool headOn_)
+{
+    headOn = headOn_;
+    Select(ID_headOn, (void *)&headOn);
+}
+
+void
+VectorAttributes::SetColorByMag(bool colorByMag_)
+{
+    colorByMag = colorByMag_;
+    Select(ID_colorByMag, (void *)&colorByMag);
+}
+
+void
+VectorAttributes::SetUseLegend(bool useLegend_)
+{
+    useLegend = useLegend_;
+    Select(ID_useLegend, (void *)&useLegend);
+}
+
+void
+VectorAttributes::SetVectorColor(const ColorAttribute &vectorColor_)
+{
+    vectorColor = vectorColor_;
+    Select(ID_vectorColor, (void *)&vectorColor);
+}
+
+void
+VectorAttributes::SetColorTableName(const std::string &colorTableName_)
+{
+    colorTableName = colorTableName_;
+    Select(ID_colorTableName, (void *)&colorTableName);
+}
+
+void
+VectorAttributes::SetInvertColorTable(bool invertColorTable_)
+{
+    invertColorTable = invertColorTable_;
+    Select(ID_invertColorTable, (void *)&invertColorTable);
+}
+
+void
+VectorAttributes::SetVectorOrigin(VectorAttributes::OriginType vectorOrigin_)
+{
+    vectorOrigin = vectorOrigin_;
+    Select(ID_vectorOrigin, (void *)&vectorOrigin);
+}
+
+void
+VectorAttributes::SetMinFlag(bool minFlag_)
+{
+    minFlag = minFlag_;
+    Select(ID_minFlag, (void *)&minFlag);
+}
+
+void
+VectorAttributes::SetMaxFlag(bool maxFlag_)
+{
+    maxFlag = maxFlag_;
+    Select(ID_maxFlag, (void *)&maxFlag);
+}
+
+void
+VectorAttributes::SetLimitsMode(VectorAttributes::LimitsMode limitsMode_)
+{
+    limitsMode = limitsMode_;
+    Select(ID_limitsMode, (void *)&limitsMode);
+}
+
+void
+VectorAttributes::SetMin(double min_)
+{
+    min = min_;
+    Select(ID_min, (void *)&min);
+}
+
+void
+VectorAttributes::SetMax(double max_)
+{
+    max = max_;
+    Select(ID_max, (void *)&max);
+}
+
+void
+VectorAttributes::SetLineStem(VectorAttributes::LineStem lineStem_)
+{
+    lineStem = lineStem_;
+    Select(ID_lineStem, (void *)&lineStem);
+}
+
+void
+VectorAttributes::SetGeometryQuality(VectorAttributes::Quality geometryQuality_)
+{
+    geometryQuality = geometryQuality_;
+    Select(ID_geometryQuality, (void *)&geometryQuality);
+}
+
+void
+VectorAttributes::SetStemWidth(double stemWidth_)
+{
+    stemWidth = stemWidth_;
+    Select(ID_stemWidth, (void *)&stemWidth);
+}
+
+void
+VectorAttributes::SetOrigOnly(bool origOnly_)
+{
+    origOnly = origOnly_;
+    Select(ID_origOnly, (void *)&origOnly);
+}
+
+void
+VectorAttributes::SetGlyphType(VectorAttributes::GlyphType glyphType_)
+{
+    glyphType = glyphType_;
+    Select(ID_glyphType, (void *)&glyphType);
+}
+
+void
+VectorAttributes::SetAnimationStep(int animationStep_)
+{
+    animationStep = animationStep_;
+    Select(ID_animationStep, (void *)&animationStep);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Get property methods
+///////////////////////////////////////////////////////////////////////////////
+
+VectorAttributes::GlyphLocation
+VectorAttributes::GetGlyphLocation() const
+{
+    return GlyphLocation(glyphLocation);
+}
+
+bool
+VectorAttributes::GetUseStride() const
+{
+    return useStride;
+}
+
+int
+VectorAttributes::GetStride() const
+{
+    return stride;
+}
+
+int
+VectorAttributes::GetNVectors() const
+{
+    return nVectors;
+}
+
+int
+VectorAttributes::GetLineWidth() const
+{
+    return lineWidth;
+}
+
+double
+VectorAttributes::GetScale() const
+{
+    return scale;
+}
+
+bool
+VectorAttributes::GetScaleByMagnitude() const
+{
+    return scaleByMagnitude;
+}
+
+bool
+VectorAttributes::GetAutoScale() const
+{
+    return autoScale;
+}
+
+double
+VectorAttributes::GetHeadSize() const
+{
+    return headSize;
+}
+
+bool
+VectorAttributes::GetHeadOn() const
+{
+    return headOn;
+}
+
+bool
+VectorAttributes::GetColorByMag() const
+{
+    return colorByMag;
+}
+
+bool
+VectorAttributes::GetUseLegend() const
+{
+    return useLegend;
+}
+
+const ColorAttribute &
+VectorAttributes::GetVectorColor() const
+{
+    return vectorColor;
+}
+
+ColorAttribute &
+VectorAttributes::GetVectorColor()
+{
+    return vectorColor;
+}
+
+const std::string &
+VectorAttributes::GetColorTableName() const
+{
+    return colorTableName;
+}
+
+std::string &
+VectorAttributes::GetColorTableName()
+{
+    return colorTableName;
+}
+
+bool
+VectorAttributes::GetInvertColorTable() const
+{
+    return invertColorTable;
+}
+
+VectorAttributes::OriginType
+VectorAttributes::GetVectorOrigin() const
+{
+    return OriginType(vectorOrigin);
+}
+
+bool
+VectorAttributes::GetMinFlag() const
+{
+    return minFlag;
+}
+
+bool
+VectorAttributes::GetMaxFlag() const
+{
+    return maxFlag;
+}
+
+VectorAttributes::LimitsMode
+VectorAttributes::GetLimitsMode() const
+{
+    return LimitsMode(limitsMode);
+}
+
+double
+VectorAttributes::GetMin() const
+{
+    return min;
+}
+
+double
+VectorAttributes::GetMax() const
+{
+    return max;
+}
+
+VectorAttributes::LineStem
+VectorAttributes::GetLineStem() const
+{
+    return LineStem(lineStem);
+}
+
+VectorAttributes::Quality
+VectorAttributes::GetGeometryQuality() const
+{
+    return Quality(geometryQuality);
+}
+
+double
+VectorAttributes::GetStemWidth() const
+{
+    return stemWidth;
+}
+
+bool
+VectorAttributes::GetOrigOnly() const
+{
+    return origOnly;
+}
+
+VectorAttributes::GlyphType
+VectorAttributes::GetGlyphType() const
+{
+    return GlyphType(glyphType);
+}
+
+int
+VectorAttributes::GetAnimationStep() const
+{
+    return animationStep;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Select property methods
+///////////////////////////////////////////////////////////////////////////////
+
+void
+VectorAttributes::SelectVectorColor()
+{
+    Select(ID_vectorColor, (void *)&vectorColor);
+}
+
+void
+VectorAttributes::SelectColorTableName()
+{
+    Select(ID_colorTableName, (void *)&colorTableName);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Keyframing methods
+///////////////////////////////////////////////////////////////////////////////
+
+// ****************************************************************************
+// Method: VectorAttributes::GetFieldName
+//
+// Purpose: 
+//   This method returns the name of a field given its index.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+std::string
+VectorAttributes::GetFieldName(int index) const
+{
+    switch (index)
+    {
+    case ID_glyphLocation:    return "glyphLocation";
+    case ID_useStride:        return "useStride";
+    case ID_stride:           return "stride";
+    case ID_nVectors:         return "nVectors";
+    case ID_lineWidth:        return "lineWidth";
+    case ID_scale:            return "scale";
+    case ID_scaleByMagnitude: return "scaleByMagnitude";
+    case ID_autoScale:        return "autoScale";
+    case ID_headSize:         return "headSize";
+    case ID_headOn:           return "headOn";
+    case ID_colorByMag:       return "colorByMag";
+    case ID_useLegend:        return "useLegend";
+    case ID_vectorColor:      return "vectorColor";
+    case ID_colorTableName:   return "colorTableName";
+    case ID_invertColorTable: return "invertColorTable";
+    case ID_vectorOrigin:     return "vectorOrigin";
+    case ID_minFlag:          return "minFlag";
+    case ID_maxFlag:          return "maxFlag";
+    case ID_limitsMode:       return "limitsMode";
+    case ID_min:              return "min";
+    case ID_max:              return "max";
+    case ID_lineStem:         return "lineStem";
+    case ID_geometryQuality:  return "geometryQuality";
+    case ID_stemWidth:        return "stemWidth";
+    case ID_origOnly:         return "origOnly";
+    case ID_glyphType:        return "glyphType";
+    case ID_animationStep:    return "animationStep";
+    default:  return "invalid index";
+    }
+}
+
+// ****************************************************************************
+// Method: VectorAttributes::GetFieldType
+//
+// Purpose: 
+//   This method returns the type of a field given its index.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+AttributeGroup::FieldType
+VectorAttributes::GetFieldType(int index) const
+{
+    switch (index)
+    {
+    case ID_glyphLocation:    return FieldType_enum;
+    case ID_useStride:        return FieldType_bool;
+    case ID_stride:           return FieldType_int;
+    case ID_nVectors:         return FieldType_int;
+    case ID_lineWidth:        return FieldType_linewidth;
+    case ID_scale:            return FieldType_double;
+    case ID_scaleByMagnitude: return FieldType_bool;
+    case ID_autoScale:        return FieldType_bool;
+    case ID_headSize:         return FieldType_double;
+    case ID_headOn:           return FieldType_bool;
+    case ID_colorByMag:       return FieldType_bool;
+    case ID_useLegend:        return FieldType_bool;
+    case ID_vectorColor:      return FieldType_color;
+    case ID_colorTableName:   return FieldType_colortable;
+    case ID_invertColorTable: return FieldType_bool;
+    case ID_vectorOrigin:     return FieldType_enum;
+    case ID_minFlag:          return FieldType_bool;
+    case ID_maxFlag:          return FieldType_bool;
+    case ID_limitsMode:       return FieldType_enum;
+    case ID_min:              return FieldType_double;
+    case ID_max:              return FieldType_double;
+    case ID_lineStem:         return FieldType_enum;
+    case ID_geometryQuality:  return FieldType_enum;
+    case ID_stemWidth:        return FieldType_double;
+    case ID_origOnly:         return FieldType_bool;
+    case ID_glyphType:        return FieldType_enum;
+    case ID_animationStep:    return FieldType_int;
+    default:  return FieldType_unknown;
+    }
+}
+
+// ****************************************************************************
+// Method: VectorAttributes::GetFieldTypeName
+//
+// Purpose: 
+//   This method returns the name of a field type given its index.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+std::string
+VectorAttributes::GetFieldTypeName(int index) const
+{
+    switch (index)
+    {
+    case ID_glyphLocation:    return "enum";
+    case ID_useStride:        return "bool";
+    case ID_stride:           return "int";
+    case ID_nVectors:         return "int";
+    case ID_lineWidth:        return "linewidth";
+    case ID_scale:            return "double";
+    case ID_scaleByMagnitude: return "bool";
+    case ID_autoScale:        return "bool";
+    case ID_headSize:         return "double";
+    case ID_headOn:           return "bool";
+    case ID_colorByMag:       return "bool";
+    case ID_useLegend:        return "bool";
+    case ID_vectorColor:      return "color";
+    case ID_colorTableName:   return "colortable";
+    case ID_invertColorTable: return "bool";
+    case ID_vectorOrigin:     return "enum";
+    case ID_minFlag:          return "bool";
+    case ID_maxFlag:          return "bool";
+    case ID_limitsMode:       return "enum";
+    case ID_min:              return "double";
+    case ID_max:              return "double";
+    case ID_lineStem:         return "enum";
+    case ID_geometryQuality:  return "enum";
+    case ID_stemWidth:        return "double";
+    case ID_origOnly:         return "bool";
+    case ID_glyphType:        return "enum";
+    case ID_animationStep:    return "int";
+    default:  return "invalid index";
+    }
+}
+
+// ****************************************************************************
+// Method: VectorAttributes::FieldsEqual
+//
+// Purpose: 
+//   This method compares two fields and return true if they are equal.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+VectorAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
+{
+    const VectorAttributes &obj = *((const VectorAttributes*)rhs);
+    bool retval = false;
+    switch (index_)
+    {
+    case ID_glyphLocation:
+        {  // new scope
+        retval = (glyphLocation == obj.glyphLocation);
+        }
+        break;
+    case ID_useStride:
+        {  // new scope
+        retval = (useStride == obj.useStride);
+        }
+        break;
+    case ID_stride:
+        {  // new scope
+        retval = (stride == obj.stride);
+        }
+        break;
+    case ID_nVectors:
+        {  // new scope
+        retval = (nVectors == obj.nVectors);
+        }
+        break;
+    case ID_lineWidth:
+        {  // new scope
+        retval = (lineWidth == obj.lineWidth);
+        }
+        break;
+    case ID_scale:
+        {  // new scope
+        retval = (scale == obj.scale);
+        }
+        break;
+    case ID_scaleByMagnitude:
+        {  // new scope
+        retval = (scaleByMagnitude == obj.scaleByMagnitude);
+        }
+        break;
+    case ID_autoScale:
+        {  // new scope
+        retval = (autoScale == obj.autoScale);
+        }
+        break;
+    case ID_headSize:
+        {  // new scope
+        retval = (headSize == obj.headSize);
+        }
+        break;
+    case ID_headOn:
+        {  // new scope
+        retval = (headOn == obj.headOn);
+        }
+        break;
+    case ID_colorByMag:
+        {  // new scope
+        retval = (colorByMag == obj.colorByMag);
+        }
+        break;
+    case ID_useLegend:
+        {  // new scope
+        retval = (useLegend == obj.useLegend);
+        }
+        break;
+    case ID_vectorColor:
+        {  // new scope
+        retval = (vectorColor == obj.vectorColor);
+        }
+        break;
+    case ID_colorTableName:
+        {  // new scope
+        retval = (colorTableName == obj.colorTableName);
+        }
+        break;
+    case ID_invertColorTable:
+        {  // new scope
+        retval = (invertColorTable == obj.invertColorTable);
+        }
+        break;
+    case ID_vectorOrigin:
+        {  // new scope
+        retval = (vectorOrigin == obj.vectorOrigin);
+        }
+        break;
+    case ID_minFlag:
+        {  // new scope
+        retval = (minFlag == obj.minFlag);
+        }
+        break;
+    case ID_maxFlag:
+        {  // new scope
+        retval = (maxFlag == obj.maxFlag);
+        }
+        break;
+    case ID_limitsMode:
+        {  // new scope
+        retval = (limitsMode == obj.limitsMode);
+        }
+        break;
+    case ID_min:
+        {  // new scope
+        retval = (min == obj.min);
+        }
+        break;
+    case ID_max:
+        {  // new scope
+        retval = (max == obj.max);
+        }
+        break;
+    case ID_lineStem:
+        {  // new scope
+        retval = (lineStem == obj.lineStem);
+        }
+        break;
+    case ID_geometryQuality:
+        {  // new scope
+        retval = (geometryQuality == obj.geometryQuality);
+        }
+        break;
+    case ID_stemWidth:
+        {  // new scope
+        retval = (stemWidth == obj.stemWidth);
+        }
+        break;
+    case ID_origOnly:
+        {  // new scope
+        retval = (origOnly == obj.origOnly);
+        }
+        break;
+    case ID_glyphType:
+        {  // new scope
+        retval = (glyphType == obj.glyphType);
+        }
+        break;
+    case ID_animationStep:
+        {  // new scope
+        retval = (animationStep == obj.animationStep);
+        }
+        break;
+    default: retval = false;
+    }
+
+    return retval;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// User-defined methods.
+///////////////////////////////////////////////////////////////////////////////
+
+bool
+VectorAttributes::ChangesRequireRecalculation(const VectorAttributes &obj)
+{
+    return ((useStride != obj.useStride) ||
+            (stride != obj.stride) ||
+            (glyphLocation != obj.glyphLocation) ||
+            (nVectors != obj.nVectors) ||
+            (origOnly != obj.origOnly));
+}
+
+#include <math.h>
+double
+VectorAttributes::GetAnimationScale() const
+{
+    const int nsteps = 100;
+    double angle = 2.* M_PI * (double(animationStep % nsteps) / double(nsteps-1));
+    return 0.75 + 0.25 * cos(angle);
+}
+

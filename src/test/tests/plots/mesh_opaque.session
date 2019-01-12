@@ -1,0 +1,176 @@
+<?xml version="1.0"?>
+<Object name="VisIt">
+    <Field name="Version" type="string">2.8.0b</Field>
+    <Object name="VIEWER">
+        <Object name="ViewerSubject">
+            <Object name="SourceMap">
+                <Field name="SOURCE00" type="string">"wave*.silo database"</Field>
+            </Object>
+            <Object name="SourcePlugins">
+                <Field name="wave*.silo database" type="string">Silo_1.0</Field>
+            </Object>
+            <Object name="DatabaseCorrelationList">
+                <Field name="needPermission" type="bool">true</Field>
+                <Field name="defaultCorrelationMethod" type="int">0</Field>
+                <Field name="whenToCorrelate" type="string">CorrelateOnlyIfSameLength</Field>
+            </Object>
+            <Object name="ViewerWindowManager">
+                <Object name="Windows">
+                    <Object name="ViewerWindow">
+                        <Object name="AnnotationAttributes">
+                            <Object name="backgroundColor">
+                                <Object name="ColorAttribute">
+                                    <Field name="color" type="unsignedCharArray" length="4">0 0 0 255 </Field>
+                                </Object>
+                            </Object>
+                            <Object name="foregroundColor">
+                                <Object name="ColorAttribute">
+                                    <Field name="color" type="unsignedCharArray" length="4">255 255 255 255 </Field>
+                                </Object>
+                            </Object>
+                            <Field name="gradientBackgroundStyle" type="string">TopToBottom</Field>
+                            <Object name="gradientColor1">
+                                <Object name="ColorAttribute">
+                                    <Field name="color" type="unsignedCharArray" length="4">204 153 255 255 </Field>
+                                </Object>
+                            </Object>
+                            <Object name="gradientColor2">
+                                <Object name="ColorAttribute">
+                                    <Field name="color" type="unsignedCharArray" length="4">0 0 0 255 </Field>
+                                </Object>
+                            </Object>
+                            <Field name="backgroundMode" type="string">Gradient</Field>
+                            <Field name="backgroundImage" type="string"></Field>
+                            <Field name="imageRepeatX" type="int">1</Field>
+                            <Field name="imageRepeatY" type="int">1</Field>
+                        </Object>
+                        <Object name="View3DAttributes">
+                            <Field name="viewNormal" type="doubleArray" length="3">-0.680757 0.556978 0.475757 </Field>
+                            <Field name="focus" type="doubleArray" length="3">5 0.753448 2.5 </Field>
+                            <Field name="viewUp" type="doubleArray" length="3">0.379241 0.823658 -0.42162 </Field>
+                            <Field name="viewAngle" type="double">30</Field>
+                            <Field name="parallelScale" type="double">5.6398</Field>
+                            <Field name="nearPlane" type="double">-11.2796</Field>
+                            <Field name="farPlane" type="double">11.2796</Field>
+                            <Field name="imagePan" type="doubleArray" length="2">0.0397861 0.117376 </Field>
+                            <Field name="imageZoom" type="double">1.22799</Field>
+                            <Field name="perspective" type="bool">true</Field>
+                            <Field name="eyeAngle" type="double">2</Field>
+                            <Field name="centerOfRotationSet" type="bool">false</Field>
+                            <Field name="centerOfRotation" type="doubleArray" length="3">0 0 0 </Field>
+                            <Field name="axis3DScaleFlag" type="bool">false</Field>
+                            <Field name="axis3DScales" type="doubleArray" length="3">1 1 1 </Field>
+                            <Field name="shear" type="doubleArray" length="3">0 0 1 </Field>
+                            <Field name="windowValid" type="bool">false</Field>
+                        </Object>
+                        <Object name="ViewerPlotList">
+                            <Object name="timeSliders">
+                                <Field name="Keyframe animation" type="int">0</Field>
+                                <Field name="SOURCE00" type="int">34</Field>
+                            </Object>
+                            <Field name="activeTimeSlider" type="string">"Keyframe animation"</Field>
+                            <Object name="plot00">
+                                <Field name="plotName" type="string">Plot0000</Field>
+                                <Field name="pluginID" type="string">Pseudocolor_1.0</Field>
+                                <Field name="sourceID" type="string">SOURCE00</Field>
+                                <Field name="variableName" type="string">pressure</Field>
+                                <Field name="active" type="bool">false</Field>
+                                <Field name="hidden" type="bool">false</Field>
+                                <Field name="realized" type="bool">true</Field>
+                                <Object name="ViewerPlot">
+                                    <Field name="plotDescription" type="string"></Field>
+                                    <Field name="cacheIndex" type="int">0</Field>
+                                    <Field name="beginCacheIndex" type="int">2</Field>
+                                    <Field name="endCacheIndex" type="int">7</Field>
+                                    <Field name="spatialExtentsType" type="string">AVT_ORIGINAL_EXTENTS</Field>
+                                    <Field name="bgColor" type="doubleArray" length="3">0.4 0.298039 0.498039 </Field>
+                                    <Field name="fgColor" type="doubleArray" length="3">1 1 1 </Field>
+                                    <Field name="expandedFlag" type="bool">false</Field>
+                                    <Field name="followsTime" type="bool">true</Field>
+                                    <Object name="PseudocolorAttributes">
+                                        <Field name="pointType" type="string">Box</Field>
+                                    </Object>
+                                    <Object name="plotKeyframes">
+                                        <Object name="AttributeSubjectMap">
+                                            <Field name="indices" type="intVector">0 </Field>
+                                            <Object name="attributes">
+                                                <Object name="PseudocolorAttributes">
+                                                    <Field name="pointType" type="string">Box</Field>
+                                                </Object>
+                                            </Object>
+                                        </Object>
+                                    </Object>
+                                    <Object name="databaseKeyframes">
+                                        <Object name="AttributeSubjectMap">
+                                            <Field name="indices" type="intVector">0 9 </Field>
+                                            <Object name="attributes">
+                                                <Object name="DatabaseAttributes">
+                                                    <Field name="state" type="int">0</Field>
+                                                </Object>
+                                                <Object name="DatabaseAttributes">
+                                                    <Field name="state" type="int">70</Field>
+                                                </Object>
+                                            </Object>
+                                        </Object>
+                                    </Object>
+                                </Object>
+                            </Object>
+                            <Object name="plot01">
+                                <Field name="plotName" type="string">Plot0001</Field>
+                                <Field name="pluginID" type="string">Mesh_1.0</Field>
+                                <Field name="sourceID" type="string">SOURCE00</Field>
+                                <Field name="variableName" type="string">quadmesh</Field>
+                                <Field name="active" type="bool">true</Field>
+                                <Field name="hidden" type="bool">false</Field>
+                                <Field name="realized" type="bool">true</Field>
+                                <Object name="ViewerPlot">
+                                    <Field name="plotDescription" type="string"></Field>
+                                    <Field name="cacheIndex" type="int">0</Field>
+                                    <Field name="beginCacheIndex" type="int">0</Field>
+                                    <Field name="endCacheIndex" type="int">9</Field>
+                                    <Field name="spatialExtentsType" type="string">AVT_ORIGINAL_EXTENTS</Field>
+                                    <Field name="bgColor" type="doubleArray" length="3">0.4 0.298039 0.498039 </Field>
+                                    <Field name="fgColor" type="doubleArray" length="3">1 1 1 </Field>
+                                    <Field name="expandedFlag" type="bool">false</Field>
+                                    <Field name="followsTime" type="bool">true</Field>
+                                    <Object name="MeshAttributes">
+                                        <Field name="pointType" type="string">Box</Field>
+                                        <Field name="opaqueMeshIsAppropriate" type="bool">true</Field>
+                                    </Object>
+                                    <Object name="plotKeyframes">
+                                        <Object name="AttributeSubjectMap">
+                                            <Field name="indices" type="intVector">0 </Field>
+                                            <Object name="attributes">
+                                                <Object name="MeshAttributes">
+                                                    <Field name="pointType" type="string">Box</Field>
+                                                    <Field name="opaqueMeshIsAppropriate" type="bool">true</Field>
+                                                </Object>
+                                            </Object>
+                                        </Object>
+                                    </Object>
+                                    <Object name="databaseKeyframes">
+                                        <Object name="AttributeSubjectMap">
+                                            <Field name="indices" type="intVector">0 9 </Field>
+                                            <Object name="attributes">
+                                                <Object name="DatabaseAttributes">
+                                                    <Field name="state" type="int">0</Field>
+                                                </Object>
+                                                <Object name="DatabaseAttributes">
+                                                    <Field name="state" type="int">70</Field>
+                                                </Object>
+                                            </Object>
+                                        </Object>
+                                    </Object>
+                                </Object>
+                            </Object>
+                            <Field name="activeSource" type="string">SOURCE00</Field>
+                            <Field name="nPlots" type="int">2</Field>
+                            <Field name="keyframeMode" type="bool">true</Field>
+                            <Field name="nKeyframes" type="int">10</Field>
+                        </Object>
+                    </Object>
+                </Object>
+            </Object>
+        </Object>
+    </Object>
+</Object>

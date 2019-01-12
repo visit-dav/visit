@@ -1,0 +1,6 @@
+window 1:SR is off
+window 2:SR is off
+window 1:SR is ON
+window 2:SR is off
+window 1:SR is off
+window 2:SR is off

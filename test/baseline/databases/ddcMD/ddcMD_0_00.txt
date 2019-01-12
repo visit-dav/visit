@@ -1,0 +1,34 @@
+Scalar Names:
+Kx_Al
+Kx_Cu
+Ky_Al
+Ky_Cu
+Kz_Al
+Kz_Cu
+U_Al
+U_Cu
+mass_Al
+mass_Cu
+number_particles_Al
+number_particles_Cu
+px_Al
+px_Cu
+py_Al
+py_Cu
+pz_Al
+pz_Cu
+virial_Al
+virial_Cu
+
+
+Expressions:
+Kx = Kx_Al + Kx_Cu
+Ky = Ky_Al + Ky_Cu
+Kz = Kz_Al + Kz_Cu
+U = U_Al + U_Cu
+mass = mass_Al + mass_Cu
+number_particles = number_particles_Al + number_particles_Cu
+px = px_Al + px_Cu
+py = py_Al + py_Cu
+pz = pz_Al + pz_Cu
+virial = virial_Al + virial_Cu

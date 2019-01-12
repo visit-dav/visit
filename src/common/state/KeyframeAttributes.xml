@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+  <Attribute name="KeyframeAttributes" purpose="This class contains the attributes used for keyframing." persistent="true" exportAPI="STATE_API" exportInclude="state_exports.h">
+    <Field name="enabled" label="Enabled" type="bool">
+      false
+    </Field>
+    <Field name="nFrames" label="Number of animation frames" type="int">
+      20
+    </Field>
+    <Field name="nFramesWasUserSet" label="Number frames was set by the user" type="bool">
+      false
+    </Field>
+  </Attribute>

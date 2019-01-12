@@ -1,0 +1,93 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta http-equiv="Content-Language" content="en-us">
+   <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+   <meta name="ProgId" content="FrontPage.Editor.Document">
+   <title>VisIt 1.3.5 Release Notes</title>
+</head>
+<body>
+
+<center><b><font size="6">VisIt 1.3.5 Release Notes</font></b></center>
+
+<p>Welcome to VisIt's release notes page. This page describes the important
+enhancements and bug-fixes that were added to this release.</p>
+<p><b><font size="4">Features added in version 1.3.5</font></b></p>
+<ul>
+<li>VisIt now supports for connecting to running simulations that have been instrumented with the new VisIt/Simulation library. When VisIt connects to a running simulation, the simulation in essence becomes a VisIt compute engine and serves data from the simulation back to VisIt where it can be plotted.</li>
+<li>VisIt has a new window called <i>Interactors</i> that lets you set the options for VisIt's zoom interactor. You can open the Interactors window by clicking on the Interactors... option in the Options menu in VisIt's Main window. Zoom mode has been altered so it shows guidelines by default. If you prefer the previous behavior, set the options for zoom mode in the Interactors window.</li>
+<li>VisIt can now pick on all variables at once if you put <i>all</i> in the <i>secondary variables</i> in the Pick window</li>
+<li>The error messages that VisIt issues when it cannot open a file have been improved so it is more apparent what is happening.</li>
+<li>The Z-Axis of the Surface plot now uses the plotted variable's name.</li>
+<li>VisIt's rubber band zoom mode has been changed so holding down the <i>Control</i> key while drawing the zoom rectangle causes VisIt to zoom out.</li>
+<li>VisIt now displays ijk coordinates in terms of AMR-level for SAMRAI databases.</li>
+<li>VisIt now uses ghost nodes, when appropriate, to speed up operations at domain boundaries.</li>
+<li>VisIt's Query list is now sorted when it appears in the Query window.</li>
+<li>More of VisIt's wide variety of database reader plugins are available on all platforms.</li>
+<li>Changing the size of a point mesh no longer causes the plot of the point mesh to be recalculated on the compute engine.</li>
+<li>Queries can now be run on the Histogram plot so you can, for example, query the area under the Histogram plot's curve.</li>
+<li>Mesh plots are no longer automatically drawn in opaque mode if a point mesh is also plotted in the vis window.</li>
+<li>The IndexSelect operator attributes window has been changed to make it easier to increment or decrement the min/max ranges.</li>
+<li>The <i>Num Zones</i> query has been changed so it reports information for the original data rather than reporting data for only data visible in the vis window.</li>
+<li>VisIt now has preliminary support for global zone/node numbers for databases with multiple domains.</li>
+<li>VisIt's Contour plot now reports progress as it is being generated on the compute engine.</li>
+<li>The OnionPeel window's Category and Set selection controls are now disabled when there is onlt 1 choice.</li><li>&nbsp;</li>
+<li>Queries now work on point meshes.</li>
+<li>The Reflect operator now creates ghost nodes to get rid of internal geometry.</li>
+<li>VisIt has a new database reader plugin that can read data from Pixie3D files.</li>
+</ul>
+<p><b><font size="4">Bugs fixed in version 1.3.5</font></b></p>
+<ul>
+<li>VisIt's Python interface crashes immediately on sc.</li>
+<li>VisIt's compute engine sometimes crashes after reopening a file when scalable rendering is in Auto mode.</li>
+<li>The compute engine crashes after doing a lineout.</li>
+<li>Faces are drawn inside-out for some databases.</li>
+<li>VisIt's compute engine crashes when processing a Contour plot of 2D data in 3D space.</li>
+<li>VisIt does not correctly copy cell-centered data for 2D data in 3D space.</li>
+<li>VisIt's Flash and Z database reader plugin never freed certain data arrays, causing the compute engine to bloat and eventually crash while generating frames for a movie.</li>
+<li>VisIt's compute engine crashes when processing a Subset plot for a KullLite database.</li>
+<li>Transparent geometry is not cleared out of the vis window when switching from 3D transparent contours to a 2D contour variable.</li>
+<li>Picking on VisIt's Boundary plot does not output the same results as MeshTV.</li>
+<li>The Histogram plot takes materials even though that functionality is not yet implemented. The plot has been altered so it only takes scalar variables as input.</li>
+<li>Automatic file grouping does not work properly with multiple databases that have similar base names.</li>
+<li>Some of VisIt's parallel libraries have duplicate symbols.</li>
+<li>The Mesh line offset is not large enough when rendering images offscreen.</li>
+<li>VisIt's camera source code is out of date with VTK.</li>
+<li>VisIt's structured domain nesting code, used with AMR databases, only checks immediate children in the AMR hierarchy.</li>
+<li>VisIt's SAMRAI database reader plugin does not advertise cycles and times as being accurate.</li>
+<li>The IndexSelect operator does not handle module problems.</li>
+<li>VisIt's SAMRAI database reader does not populate certain I/O information, which helps VisIt assign domains to processors in parallel.</li>
+<li>VisIt needs to better handle ghost zones in the database and visualization pipeline.</li>
+<li>Vector and Tensor plots do not correctly report triangle counts to change when VisIt switches into scalable rendering mode, which caused the X-server to crash due to too much geometry being sent to the viewer.</li>
+<li>The magnitudes of vectors plotted by the Vector plot are not correct after slicing.</li>
+<li>Reset view only works when there are plots in the vis window.</li>
+<li>VisIt's legend turned on unexpectedly.</li>
+<li>The available color tables did not appear in the Pseudocolor plot attributes window.</li>
+<li>Node pick of a sliced FilledBoundary plot appears to return points that are not real nodes in the problem.</li>
+<li>VisIt's Choose center function does not use all plots.</li>
+<li>The Mesh plot's test for automatically determining opaqueness does not take into account whether other plots in the plot list have been drawn.</li>
+<li>Keyframing is not playing well with the time slider selector.</li>
+<li>VisIt issues a warning message about the -o option even though it was not given.</li>
+<li>VisIt issues a warning message about session files that was unclear to some users.</li>
+<li>The 3D axis labels for the Surface plot do not change when the plotted variable is changed.</li>
+<li>The Surface plot does not obey the global rendering settings such as wire-frame and point rendering modes.</li>
+<li>Mesh opaqueness logic incorrectly applies to point meshes.</li>
+<li>Pick points are not cleared when the vis window switches from 2D to 3D and vice-versa.</li>
+<li>The Subset window's default size and shape is too small.</li>
+<li>The visibility of annotation objects is not preserved when restoring session files that had annotation objects.</li>
+<li>Setting Lineout operator attributes with the Line tool causes the plot list to briefly show the plot list for the wrong vis window.</li>
+<li>Single color vector is not reflected in the legend.</li>
+<li>The Time slider annotation object shrinks by saving and restoring session files.</li>
+<li>The visit script should understand -h and --help options and print out available command line options appropriately.</li>
+<li>VisIt needs better designations for ghost zones to allow more kinds of ghost zones.</li>
+<li>Some operators should not be applied twice.</li>
+<li>Screen coordinates have been removed as an option from the Query window.</li>
+</ul>
+<p>Click the following link to view the release notes for the previous version
+of VisIt: <a href="relnotes1.3.4.html">VisIt 1.3.4 Release Notes</a>.</p>
+<p>Click the following link to view the release notes for the next version
+of VisIt: <a href="relnotes1.4.html">VisIt 1.4 Release Notes</a>.</p>
+
+</body>
+</html>

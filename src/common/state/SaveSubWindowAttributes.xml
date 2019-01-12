@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+  <Attribute name="SaveSubWindowAttributes" purpose="The attributes for saving a sub window" persistent="true" keyframe="true" exportAPI="STATE_API" exportInclude="state_exports.h">
+    <Field name="position" label="position" type="intArray" length="2">
+      0
+      0
+    </Field>
+    <Field name="size" label="Size" type="intArray" length="2">
+      128
+      128
+    </Field>
+    <Field name="layer" label="unnamed1" type="int">
+      0
+    </Field>
+    <Field name="transparency" label="Transparency" type="double">
+      0.000000
+    </Field>
+    <Field name="omitWindow" label="Omit Window" type="bool">
+      false
+    </Field>
+  </Attribute>

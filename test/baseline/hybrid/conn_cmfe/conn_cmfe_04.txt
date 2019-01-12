@@ -1,0 +1,4 @@
+
+cmfe -- Min = 0.00737681 (node 100 at coord <10, 0.0153846, 0>)
+cmfe -- Max = 0.280899 (node 0 at coord <0, 0.2, 0>)
+

@@ -1,0 +1,47 @@
+###############################################################################
+# Class: JobSubmitter_qsub_ASU
+#
+# Purpose:    Custom "qsub" job submitter for ASU.
+#
+# Programmer: Brad Whitlock
+# Date:       Thu May 17 14:22:04 PDT 2012
+#
+# Modifications:
+#
+###############################################################################
+
+class JobSubmitter_qsub_ASU(JobSubmitter_qsub):
+    def __init__(self, launcher):
+        super(JobSubmitter_qsub_ASU, self).__init__(launcher)
+
+    def mpiexec(self):
+        return ["/packages/gcc-openmpi-1.2.7/bin/mpiexec"]
+
+###############################################################################
+# Class: ASULauncher
+#
+# Purpose:    Custom launcher for ASU
+#
+# Programmer: Brad Whitlock
+# Date:       Thu May 17 14:22:04 PDT 2012
+#
+# Modifications:
+#
+###############################################################################
+
+class ASULauncher(MainLauncher):
+    def __init__(self):
+        super(ASULauncher, self).__init__()
+
+    #
+    # Override the JobSubmitterFactory method so the custom job submitter can
+    # be returned.
+    #
+    def JobSubmitterFactory(self, launch):
+        if launch[:4] == "qsub" or launch[:4] == "msub":
+            return JobSubmitter_qsub_ASU(self)
+        return super(ASULauncher, self).JobSubmitterFactory(launch)
+
+# Launcher creation function
+def createlauncher():
+    return ASULauncher()

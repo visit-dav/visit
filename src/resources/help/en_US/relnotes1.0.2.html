@@ -1,0 +1,70 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>VisIt 1.0.1 Release Notes</title>
+</head>
+
+<body>
+
+<p align="center"><b><font size="6">VisIt</font><font size="6"> 1.0.2 Release 
+Notes</font></b></p>
+<p>Welcome to VisIt's release notes page. This page describes the important 
+enhancements and bug-fixes that were added to this release.</p>
+<p><b><font size="4">Features added in version 1.0.2</font></b></p>
+<ul>
+  <li>A Java library interface to VisIt has been added. The library allows VisIt 
+  to be launched and controlled from Java programs.</li>
+  <li>Material interface reconstruction is faster.</li>
+  <li>Material interface reconstruction now skips over materials that are not 
+  used within a domain.</li>
+  <li>A new window has been added to prompt for the number of processors when 
+  launching VisIt's compute engine.</li>
+  <li>The Erase operator is much faster.</li>
+  <li>Slicing rectilinear meshes is much faster.</li>
+  <li>The CLI has new methods for setting viewer caching and animation 
+  properties.</li>
+  <li>The Onion peel operator supports logical indices.</li>
+  <li>The Lighting window now indicates which lights are active with icons.</li>
+</ul>
+<p><b><font size="4">Bugs fixed in version 1.0.2</font></b></p>
+<ul>
+  <li>Running visit -debug 6 crashes.</li>
+  <li>Pick does not correctly report the picked zone number.</li>
+  <li>Subset plots of domains with material selection applied are sometimes 
+  broken.</li>
+  <li>Opening a new files causes plots to be recalculated when pipeline caching 
+  is turned off.</li>
+  <li>The number of subsets in the Subset plot window gets multiplied sometimes.</li>
+  <li>Material interface reconstruction gets confused when ghost zones are 
+  repeatedly communicated.</li>
+  <li>Splashscreen processes do not exit when VisIt crashes.</li>
+  <li>Sometimes the GUI crashes on exit.</li>
+  <li>The camera light comes on when it is not wanted.</li>
+  <li>Material selection is applied when it is not wanted.</li>
+  <li>SIL restrictions are sometimes applied to plots with an incompatible SIL.</li>
+  <li>Expressions do not work in the CLI.</li>
+  <li>Subset plots of species have been removed.</li>
+  <li>&quot;Selected files&quot; are always the ones in the current directory.</li>
+  <li>The Lighting window's controls have no effect.</li>
+  <li>The Subset plot's legend can get corrupted.</li>
+  <li>Pick should report domain number when the database has multiple domains.</li>
+  <li>Material interface reconstruction always tetrahedralizes clean cells.</li>
+  <li>The Lighting window's direction text field should be enabled for Camera 
+  lights.</li>
+  <li>Disable setting the direction for Ambient lights.</li>
+  <li>Rename Direction and Eye lights to something better.</li>
+  <li>The Lighting window does not accept new directions when &quot;Auto update&quot; mode 
+  is on.</li>
+</ul>
+<p>Click the following link to view the release notes for the previous version 
+of VisIt: <a href="relnotes1.0.1.html">VisIt 1.0.1 Release Notes</a>.</p>
+<p>Click the following link to view the release notes for the next version 
+of VisIt: <a href="relnotes1.0.3.html">VisIt 1.0.3 Release Notes</a>.</p>
+
+</body>
+
+</html>

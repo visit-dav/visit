@@ -1,0 +1,765 @@
+Initialization: userName
+    userName = defaultUserName;
+
+Function: defaultUserName
+Declaration: static std::string defaultUserName;
+Definition:
+std::string MachineProfile::defaultUserName("notset");
+
+Function: UserName
+Declaration: const std::string &UserName() const;
+Definition:
+// ****************************************************************************
+// Method: MachineProfile::UserName
+//
+// Purpose: 
+//   Return the userName. We have to use this instead of GetUserName since that
+//   is a macro definition on Windows that changes the name to GetUserNameA.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jun 14 15:56:10 PDT 2012
+//
+// Modifications:
+//   
+// ****************************************************************************
+const std::string &
+MachineProfile::UserName() const
+{
+    return userName;
+}
+
+Function: Default
+Declaration: static MachineProfile Default(const std::string &host=std::string(), const std::string &user=std::string());
+Definition:
+// ****************************************************************************
+// Method: MachineProfile::Default
+//
+// Purpose: 
+//   Return a basic MachineProfile for the specified host.
+//
+// Arguments:
+//   host : The host where we want to launch.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Jun  5 15:00:37 PDT 2012
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+MachineProfile
+MachineProfile::Default(const std::string &host, const std::string &user)
+{
+    MachineProfile profile;
+    std::string h("localhost");
+    if(!host.empty())
+        h = host;
+    profile.SetHost(h);
+    if(user.empty())
+        profile.SetUserName(defaultUserName);
+    else
+        profile.SetUserName(user);
+    profile.SetHostAliases(h);
+    profile.SetHostNickname(h);
+    profile.SetClientHostDetermination(MachineProfile::MachineName);
+    return profile;
+}
+
+Function: SplitHostPattern
+Declaration: static std::vector<std::string> SplitHostPattern(const std::string &host);
+Definition:
+// ****************************************************************************
+//  Method:  SplitHostPattern
+//
+//  Purpose:
+//    Returns the host name pattern split into strings by whitespace or commas.
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    February 13, 2002
+//
+// ****************************************************************************
+std::vector<std::string>
+MachineProfile::SplitHostPattern(const std::string &host)
+{
+    std::vector<std::string> vec;
+    std::string              name = "";
+
+    for (size_t i=0; i<host.length(); i++)
+    {
+        if (host[i] == ' '  || host[i] == '\t' || host[i] == ',')
+        {
+            if (!name.empty())
+            {
+                vec.push_back(name);
+                name = "";
+            }
+            continue;
+        }
+        else
+        {
+            name += host[i];
+        }
+    }
+    if (!name.empty())
+    {
+        vec.push_back(name);
+        name = "";
+    }
+
+    return vec;
+}
+
+Function: ProfileMatchesHost
+Declaration: bool ProfileMatchesHost(const std::string&) const;
+Definition:
+// ****************************************************************************
+//  Method:  ProfileMatchesHost
+//
+//  Purpose:
+//    True if a hostname matches the host name pattern in the profile.
+//
+//  Arguments:
+//    h          the hostname to compare with this profile
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    February 13, 2002
+//
+//  Modifications:
+//    Jeremy Meredith, Mon Apr 14 10:06:34 PDT 2003
+//    Added matching of host aliases.
+//
+// ****************************************************************************
+bool
+MachineProfile::ProfileMatchesHost(const std::string &h) const
+{
+    std::vector<std::string> patterns = SplitHostPattern(host);
+    bool match = false;
+    size_t i;
+
+    // Try to match the actual host name
+    for (i = 0; i < patterns.size() && !match; i++)
+    {
+         match = WildcardStringMatch(patterns[i], h);
+    }
+
+    // Now match any aliases
+    std::vector<std::string> aliases = SplitHostPattern(hostAliases);
+    for (i = 0; i < aliases.size() && !match; i++)
+    {
+         match = WildcardStringMatch(aliases[i], h);
+    }
+
+    return match;
+}
+
+Function: GetShortHostname
+Declaration: std::string GetShortHostname() const;
+Definition:
+// ****************************************************************************
+//  Method:  GetShortHostname
+//
+//  Purpose:
+//    Returns a shortened version of the hostname.
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    February 13, 2002
+//
+// ****************************************************************************
+std::string
+MachineProfile::GetShortHostname() const
+{
+    return GetShortHostname(host);
+}
+
+Function: GetShortHostname_static
+Declaration: static std::string GetShortHostname(const std::string &host);
+Definition:
+// ****************************************************************************
+//  Method:  GetShortHostname
+//
+//  Purpose:
+//    Returns a shortened version of the hostname.
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    February 13, 2002
+//
+//  Modifications:
+//    Jeremy Meredith, Mon Apr 14 14:35:07 PDT 2003
+//    Added ability to append a common suffix from patterns.
+//
+//    Jeremy Meredith, Fri Nov 14 10:37:59 PST 2003
+//    Removed the suffix for now, and stop at the first dot.
+//
+// ****************************************************************************
+std::string
+MachineProfile::GetShortHostname(const std::string &host)
+{
+    std::vector<std::string> patterns = SplitHostPattern(host);
+    std::string              prefix = "";
+    std::string              suffix = "";
+    std::string              shortname;
+
+    if (patterns.empty())
+        return "";
+
+    // find the minimum length of any string
+    size_t l = patterns[0].length();
+    for (size_t i = 1; i < patterns.size(); i++)
+    {
+        if (patterns[i].length() < l)
+            l = patterns[i].length();
+    }
+
+    // find a common prefix
+    for (size_t p = 0; p < l; p++)
+    {
+        char c = patterns[0][p];
+        for (size_t i = 1; i < patterns.size() && c != '\0'; i++)
+        {
+            if (patterns[i][p] != c)
+                c = '\0';
+        }
+        if (c=='\0' || c=='.')
+            break;
+        if (c != '*' && c != '?')
+            prefix += c;
+    }
+
+    // find a common suffix, too
+    for (size_t s = 0; s < l - prefix.length() - 1 && patterns.size() > 1; s++)
+    {
+        char c = patterns[0][l-1-s];
+        for (size_t i = 1; i < patterns.size() && c != '\0'; i++)
+        {
+            if (patterns[i][l-1-s] != c)
+                c = '\0';
+        }
+        if (!c)
+            break;
+        if (c != '*' && c != '?')
+            suffix = c + suffix;
+    }
+
+    // combine the short name
+    //shortname = prefix + suffix;
+    shortname = prefix;
+    if (prefix.empty())
+        return patterns[0];
+    else
+        return shortname;
+}
+
+Function: GetDefaultUserName_static
+Declaration: static const std::string &GetDefaultUserName();
+Definition:
+// ****************************************************************************
+//  Method:  GetDefaultUserName
+//
+//  Purpose:
+//    Returns the default user name.
+//
+//  Programmer:  Brad Whitlock
+//  Creation:    Thu Apr 11 15:13:46 PST 2002
+//
+// ****************************************************************************
+
+const std::string &
+MachineProfile::GetDefaultUserName()
+{
+    return defaultUserName;
+}
+
+Function: SetDefaultUserName_static
+Declaration: static void SetDefaultUserName(const std::string &n);
+Definition:
+// ****************************************************************************
+//  Method:  SetDefaultUserName
+//
+//  Purpose:
+//    Returns the default user name.
+//
+//  Programmer:  Brad Whitlock
+//  Creation:    Thu Apr 11 15:13:46 PST 2002
+//
+// ****************************************************************************
+
+void
+MachineProfile::SetDefaultUserName(const std::string &n)
+{
+    defaultUserName = n;
+}
+
+Function: GetActiveLaunchProfile
+Declaration: LaunchProfile *GetActiveLaunchProfile() const;
+Definition:
+LaunchProfile *
+MachineProfile::GetActiveLaunchProfile() const
+{
+    if (activeProfile<0 || (size_t)activeProfile>=launchProfiles.size())
+        return NULL;
+
+    return (LaunchProfile*)launchProfiles[activeProfile];
+}
+
+Function: SetFromNode
+Declaration: bool SetFromNode(DataNode *parentNode);
+Definition:
+// ****************************************************************************
+// Method: MachineProfile::SetFromNode
+//
+// Purpose: 
+//   This method sets attributes in this object from values in a DataNode representation of the object.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   Jeremy Meredith, Wed Apr 28 17:26:30 EDT 2010
+//   For the launch profiles, override old values instead of clearing them.
+//   
+//   Eric Brugger, Tue Apr 19 14:45:18 PDT 2011
+//   Added useGateway and gatewayHost.
+//
+//   Brad Whitlock, Thu Oct  6 11:20:21 PDT 2011
+//   Added maximumNodesValid, maximumNodes, maximumProcessorsValid, maximumProcessors
+//
+//   Brad Whitlock, Tue Jun  5 12:04:03 PDT 2012
+//   Added sshCommand, sshCommandSpecified.
+//
+// ****************************************************************************
+
+void
+MachineProfile::SetFromNode(DataNode *parentNode)
+{
+    if(parentNode == 0)
+        return;
+
+    DataNode *searchNode = parentNode->GetNode("MachineProfile");
+    if(searchNode == 0)
+        return;
+
+    DataNode *node;
+    DataNode **children;
+    if((node = searchNode->GetNode("host")) != 0)
+        SetHost(node->AsString());
+    if((node = searchNode->GetNode("userName")) != 0)
+        SetUserName(node->AsString());
+    if((node = searchNode->GetNode("hostAliases")) != 0)
+        SetHostAliases(node->AsString());
+    if((node = searchNode->GetNode("hostNickname")) != 0)
+        SetHostNickname(node->AsString());
+    if((node = searchNode->GetNode("directory")) != 0)
+        SetDirectory(node->AsString());
+    if((node = searchNode->GetNode("shareOneBatchJob")) != 0)
+        SetShareOneBatchJob(node->AsBool());
+    if((node = searchNode->GetNode("sshPortSpecified")) != 0)
+        SetSshPortSpecified(node->AsBool());
+    if((node = searchNode->GetNode("sshPort")) != 0)
+        SetSshPort(node->AsInt());
+    if((node = searchNode->GetNode("sshCommandSpecified")) != 0)
+        SetSshCommandSpecified(node->AsBool());
+    if((node = searchNode->GetNode("sshCommand")) != 0)
+        SetSshCommand(node->AsStringVector());
+    if((node = searchNode->GetNode("useGateway")) != 0)
+        SetUseGateway(node->AsBool());
+    if((node = searchNode->GetNode("gatewayHost")) != 0)
+        SetGatewayHost(node->AsString());
+    if((node = searchNode->GetNode("activeProfile")) != 0)
+        SetActiveProfile(node->AsInt());
+    if((node = searchNode->GetNode("clientHostDetermination")) != 0)
+    {
+        // Allow enums to be int or string in the config file
+        if(node->GetNodeType() == INT_NODE)
+        {
+            int ival = node->AsInt();
+            if(ival >= 0 && ival < 3)
+                SetClientHostDetermination(ClientHostDetermination(ival));
+        }
+        else if(node->GetNodeType() == STRING_NODE)
+        {
+            ClientHostDetermination value;
+            if(ClientHostDetermination_FromString(node->AsString(), value))
+                SetClientHostDetermination(value);
+        }
+    }
+    if((node = searchNode->GetNode("manualClientHostName")) != 0)
+        SetManualClientHostName(node->AsString());
+    if((node = searchNode->GetNode("tunnelSSH")) != 0)
+        SetTunnelSSH(node->AsBool());
+    if((node = searchNode->GetNode("maximumNodesValid")) != 0)
+        SetMaximumNodesValid(node->AsBool());
+    if((node = searchNode->GetNode("maximumNodes")) != 0)
+    {
+        int ival = node->AsInt();
+        if(ival > 0)
+            SetMaximumNodes(ival);
+    }
+    if((node = searchNode->GetNode("maximumProcessorsValid")) != 0)
+        SetMaximumProcessorsValid(node->AsBool());
+    if((node = searchNode->GetNode("maximumProcessors")) != 0)
+    {
+        int ival = node->AsInt();
+        if(ival > 0)
+            SetMaximumProcessors(ival);
+    }
+
+    // Go through all of the children 
+    children = searchNode->GetChildren();
+    if(children != 0)
+    {
+        for(int i = 0; i < searchNode->GetNumChildren(); ++i)
+        {
+            if(children[i]->GetKey() == std::string("LaunchProfile"))
+            {
+                DataNode *nameNode = children[i]->GetNode("profileName");
+                if (!nameNode)
+                {
+                    // we don't have a name for this launch profile, so we
+                    // don't know what to do with it; skip it
+                    continue;
+                }
+                std::string name = nameNode->AsString();
+                bool found = false;
+                for (int j=0; j<GetNumLaunchProfiles(); j++)
+                {
+                    LaunchProfile &lp = GetLaunchProfiles(j);
+                    if (lp.GetProfileName() == name)
+                    {
+                        // it matches one already existing...
+                        // override any old values with the new ones
+                        lp.SetFromNode(children[i]);
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found)
+                {
+                    // didn't find a pre-existing launch profile with 
+                    // the same name, so just add it to the list.
+                    LaunchProfile temp;
+                    temp.SetFromNode(children[i]);
+                    AddLaunchProfiles(temp);
+                }
+            }
+        }
+    }
+
+    // Make sure we didn't get a bad profile index
+    if (GetActiveProfile() >= GetNumLaunchProfiles())
+        SetActiveProfile(GetNumLaunchProfiles() > 0 ? 0 : -1); 
+}
+
+Function: CreateNode
+Declaration: bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
+Definition:
+// ****************************************************************************
+// Method: MachineProfile::CreateNode
+//
+// Purpose: 
+//   This method creates a DataNode representation of the object so it can
+//   be saved to a config file.
+//
+//   This differs from the auto-generated one in the following ways:
+//    - it checks to see if something is selected when saving instead
+//      of checking to see if it differs from the default-constructor version,
+//      which lets us select user-set values which differ from system-global
+//      ones and save only those fields
+//    - it always adds hostNickname, as that's how we identify which
+//      host profile is which
+//    - we use "completeSave" as the cue as to whether our sub-attribute
+//      groups add themselves, overriding forceAdd when descending to them
+//    - since host nickname is always saved, we always add to the parent node
+//
+// Programmer: Jeremy Meredith
+// Creation:   April 29, 2010
+//
+// Modifications:
+//   Eric Brugger, Tue Apr 19 14:45:18 PDT 2011
+//   Added useGateway and gatewayHost.
+//   
+//   Brad Whitlock, Thu Oct  6 11:20:21 PDT 2011
+//   Added maximumNodesValid, maximumNodes, maximumProcessorsValid, maximumProcessors
+//
+//   Brad Whitlock, Tue Jun  5 12:04:03 PDT 2012
+//   Added sshCommand, sshCommandSpecified.
+//
+//   Brad Whitlock, Mon Aug 20 13:50:28 PDT 2012
+//   Always save the host and hostAliases because without them those fields can
+//   end up being populated by the local machine name. That can cause an
+//   unintended host profile match where the mdserver will fail to launch.
+//
+// ****************************************************************************
+
+bool
+MachineProfile::CreateNode(DataNode *parentNode,
+                           bool completeSave, bool forceAdd)
+{
+    if(parentNode == 0)
+        return false;
+
+    // Create a node for MachineProfile.
+    DataNode *node = new DataNode("MachineProfile");
+
+    node->AddNode(new DataNode("hostNickname", hostNickname));
+    node->AddNode(new DataNode("host", host));
+
+    if(completeSave || IsSelected(ID_userName))
+        node->AddNode(new DataNode("userName", userName));
+
+    node->AddNode(new DataNode("hostAliases", hostAliases));
+
+    if(completeSave || IsSelected(ID_directory))
+        node->AddNode(new DataNode("directory", directory));
+
+    if(completeSave || IsSelected(ID_shareOneBatchJob))
+        node->AddNode(new DataNode("shareOneBatchJob", shareOneBatchJob));
+
+    if(completeSave || IsSelected(ID_sshPortSpecified))
+        node->AddNode(new DataNode("sshPortSpecified", sshPortSpecified));
+
+    if(completeSave || IsSelected(ID_sshPort))
+        node->AddNode(new DataNode("sshPort", sshPort));
+
+    if(completeSave || IsSelected(ID_sshCommandSpecified))
+        node->AddNode(new DataNode("sshCommandSpecified", sshCommandSpecified));
+
+    if(completeSave || IsSelected(ID_sshCommand))
+        node->AddNode(new DataNode("sshCommand", sshCommand));
+
+    if(completeSave || IsSelected(ID_useGateway))
+        node->AddNode(new DataNode("useGateway", useGateway));
+
+    if(completeSave || IsSelected(ID_gatewayHost))
+        node->AddNode(new DataNode("gatewayHost", gatewayHost));
+
+    if(completeSave || IsSelected(ID_clientHostDetermination))
+        node->AddNode(new DataNode("clientHostDetermination", ClientHostDetermination_ToString(clientHostDetermination)));
+
+    if(completeSave || IsSelected(ID_manualClientHostName))
+        node->AddNode(new DataNode("manualClientHostName", manualClientHostName));
+
+    if(completeSave || IsSelected(ID_tunnelSSH))
+        node->AddNode(new DataNode("tunnelSSH", tunnelSSH));
+
+    if(completeSave || IsSelected(ID_maximumNodesValid))
+        node->AddNode(new DataNode("maximumNodesValid", maximumNodesValid));
+
+    if(completeSave || IsSelected(ID_maximumNodes))
+        node->AddNode(new DataNode("maximumNodes", maximumNodes));
+
+    if(completeSave || IsSelected(ID_maximumProcessorsValid))
+        node->AddNode(new DataNode("maximumProcessorsValid", maximumProcessorsValid));
+
+    if(completeSave || IsSelected(ID_maximumProcessors))
+        node->AddNode(new DataNode("maximumProcessors", maximumProcessors));
+
+    for(size_t i = 0; i < launchProfiles.size(); ++i)
+        launchProfiles[i]->CreateNode(node, completeSave,
+                     completeSave); // (only force an add for a complete save)
+
+    if(completeSave || IsSelected(ID_activeProfile))
+        node->AddNode(new DataNode("activeProfile", activeProfile));
+
+    // Add the node to the parent node.
+    parentNode->AddNode(node);
+    return true;
+}
+
+Function: SelectOnlyDifferingFields
+Declaration: void SelectOnlyDifferingFields(MachineProfile &other);
+Definition:
+// ****************************************************************************
+// Method:  MachineProfile::SelectOnlyDifferingFields
+//
+// Purpose:
+//   Select only fields which differ from a compared attribute.
+//
+// Arguments:
+//   other      the profile to compare against
+//
+// Programmer:  Jeremy Meredith
+// Creation:    April 29, 2010
+//
+// Modifications:
+//   Eric Brugger, Tue Apr 19 14:45:18 PDT 2011
+//   Added useGateway and gatewayHost.
+//
+//   Brad Whitlock, Thu Oct  6 11:20:21 PDT 2011
+//   Added maximumNodesValid, maximumNodes, maximumProcessorsValid, maximumProcessors
+//
+//   Brad Whitlock, Tue Jun  5 12:04:56 PDT 2012
+//   I added sshCommand, sshCommandSpecified.
+//
+// ****************************************************************************
+
+void
+MachineProfile::SelectOnlyDifferingFields(MachineProfile &other)
+{
+    UnSelectAll();
+
+    if (host != other.host)
+        Select(ID_host,                    (void *)&host);
+    if (userName != other.userName)
+        Select(ID_userName,                (void *)&userName);
+    if (hostAliases != other.hostAliases)
+        Select(ID_hostAliases,             (void *)&hostAliases);
+    if (hostNickname != other.hostNickname)
+        Select(ID_hostNickname,            (void *)&hostNickname);
+    if (directory != other.directory)
+        Select(ID_directory,               (void *)&directory);
+    if (shareOneBatchJob != other.shareOneBatchJob)
+        Select(ID_shareOneBatchJob,        (void *)&shareOneBatchJob);
+    if (sshPortSpecified != other.sshPortSpecified)
+        Select(ID_sshPortSpecified,        (void *)&sshPortSpecified);
+    if (sshPort != other.sshPort)
+        Select(ID_sshPort,                 (void *)&sshPort);
+    if (sshCommandSpecified != other.sshCommandSpecified)
+        Select(ID_sshCommandSpecified,        (void *)&sshCommandSpecified);
+    if (sshCommand != other.sshCommand)
+        Select(ID_sshCommand,                 (void *)&sshCommand);
+    if (useGateway != other.useGateway)
+        Select(ID_useGateway,              (void *)&useGateway);
+    if (gatewayHost != other.gatewayHost)
+        Select(ID_gatewayHost,             (void *)&gatewayHost);
+    if (clientHostDetermination != other.clientHostDetermination)
+        Select(ID_clientHostDetermination, (void *)&clientHostDetermination);
+    if (manualClientHostName != other.manualClientHostName)
+        Select(ID_manualClientHostName,    (void *)&manualClientHostName);
+    if (tunnelSSH != other.tunnelSSH)
+        Select(ID_tunnelSSH,               (void *)&tunnelSSH);
+    if (activeProfile != other.activeProfile)
+        Select(ID_activeProfile,           (void *)&activeProfile);
+    if(maximumNodesValid != other.maximumNodesValid)
+        Select(ID_maximumNodesValid,       (void *)&maximumNodesValid);
+    if(maximumNodes != other.maximumNodes)
+        Select(ID_maximumNodes,            (void *)&maximumNodes);
+    if(maximumProcessorsValid != other.maximumProcessorsValid)
+        Select(ID_maximumProcessorsValid,  (void *)&maximumProcessorsValid);
+    if(maximumProcessors != other.maximumProcessors)
+        Select(ID_maximumProcessors,       (void *)&maximumProcessors);
+
+    for (int i=0; i<GetNumLaunchProfiles(); i++)
+    {
+        LaunchProfile &lp = GetLaunchProfiles(i);
+        lp.SelectAll();
+        for (int j=0; j<other.GetNumLaunchProfiles(); j++)
+        {
+            LaunchProfile &otherlp = other.GetLaunchProfiles(j);
+            if (lp.GetProfileName() == otherlp.GetProfileName())
+            {
+                lp.SelectOnlyDifferingFields(otherlp);
+                break;
+            }
+        }
+    }
+}
+
+Function: SetMaximumNodes
+Declaration: void SetMaximumNodes(int);
+Definition:
+void
+MachineProfile::SetMaximumNodes(int nnodes)
+{
+    maximumNodes = nnodes;
+    Select(ID_maximumNodes, (void *)&maximumNodes);
+    if(maximumNodesValid)
+    {
+        // Make sure that no profiles have larger #nodes.
+        bool changed = false;
+        for (int i=0; i<GetNumLaunchProfiles(); i++)
+        {
+            LaunchProfile &lp = GetLaunchProfiles(i);
+            lp.SelectAll();
+            if (lp.GetNumNodesSet() && lp.GetNumNodes() > nnodes)
+            {
+                lp.SetNumNodes(nnodes);
+                changed = true;
+            }
+        }
+        if(changed)
+            SelectLaunchProfiles();
+    }
+}
+
+Function: SetMaximumProcessors
+Declaration: void SetMaximumProcessors(int);
+Definition:
+void
+MachineProfile::SetMaximumProcessors(int nprocs)
+{
+    maximumProcessors = nprocs;
+    Select(ID_maximumProcessors, (void *)&maximumProcessors);
+    if(maximumProcessorsValid)
+    {
+        // Make sure that no profiles have larger #processors.
+        bool changed = false;
+        for (int i=0; i<GetNumLaunchProfiles(); i++)
+        {
+            LaunchProfile &lp = GetLaunchProfiles(i);
+            lp.SelectAll();
+            if (lp.GetNumProcessors() > nprocs)
+            {
+                lp.SetNumProcessors(nprocs);
+                changed = true;
+            }
+        }
+        if(changed)
+            SelectLaunchProfiles();
+    }
+}
+
+Function: Print
+Declaration: void Print(ostream &) const;
+Definition:
+// ****************************************************************************
+// Method: MachineProfile::Print
+//
+// Purpose: 
+//   Print the MachineProfile to a stream.
+//
+// Arguments:
+//   out : The output stream.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Jun  5 15:00:37 PDT 2012
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+MachineProfile::Print(ostream &out) const
+{
+    out << "hostNickName=" << GetHostNickname() << endl;
+    out << "host=" << GetHost() << endl;
+    out << "username=" << GetUserName() << endl;
+    out << "hostAliases=" << GetHostAliases() << endl;
+    out << "directory=" << GetDirectory() << endl;
+    out << "shareOneBatchJob=" << (GetShareOneBatchJob()?"true":"false") << endl;
+    out << "tunnelSSH=" << (GetTunnelSSH()?"true":"false") << endl;
+    out << "sshPortSpecified=" << (GetSshPortSpecified()?"true":"false") << endl;
+    out << "sshPort=" << GetSshPort() << endl;
+    out << "sshCommandSpecified=" << (GetSshCommandSpecified()?"true":"false") << endl;
+    out << "sshCommand={";
+    size_t len = GetSshCommand().size();
+    for(size_t i = 0; i < len; ++i)
+    {
+        out << GetSshCommand()[i];
+        if(i < len-1)
+            out << ", ";
+    }
+    out << "}" << endl;
+    out << "useGateway=" << (GetUseGateway()?"true":"false") << endl;
+    out << "gatewayHost=" << GetGatewayHost() << endl;
+    out << "clientHostDetermination=" << ClientHostDetermination_ToString(GetClientHostDetermination()) << endl;
+    out << "manualClientHostName=" << GetManualClientHostName() << endl;
+    out << "maximumNodesValid=" << (GetMaximumNodesValid()?"true":"false") << endl;
+    out << "maximumNodes=" << GetMaximumNodes() << endl;
+    out << "maximumProcessorsValid=" << (GetMaximumProcessorsValid()?"true":"false") << endl;
+    out << "maximumProcessors=" << GetMaximumProcessors() << endl;
+
+    // Don't print launch profiles...
+}
+

@@ -1,0 +1,165 @@
+from hdfs_export_utils import *
+import os
+
+class CellExportQuery(SimplePythonQuery):
+    def __init__(self):
+        SimplePythonQuery.__init__(self)
+        self.name = "HDFSExportQuery"
+        self.description = "HDFS Export Query"
+    def pre_execute(self):
+        self.active_domains = []
+    def execute_chunk(self,ds_in,domain_id):
+        npoints = ds_in.GetNumberOfPoints()
+        ncells = ds_in.GetNumberOfCells()
+        if npoints <= 0:
+            return
+
+        keyBase = self.arguments[0]['keybase']
+        outDir = self.arguments[0]['outdir']
+        zCmd = self.arguments[0]['compressCmd']
+        zExt = 'gz'
+        if 'bzip' in zCmd:
+            zExt = 'bz2'
+        descendOutDir(outDir,keyBase,"%06d"%domain_id)
+        outpath = '/'.join(outDir)
+        keybase = ''.join(keyBase)
+
+        nvars = len(self.input_var_names)
+        self.active_domains.append(domain_id)
+        var_arrays = []
+        for vname in self.input_var_names:
+            try:
+                arr = ds_in.GetCellData().GetArray(vname)
+                if not arr:
+                    continue
+                var_arrays += [(vname, "zonal", arr)]
+            except:
+                continue
+        for vname in self.input_var_names:
+            try:
+                arr = ds_in.GetPointData().GetArray(vname)
+                if not arr:
+                    continue
+                var_arrays += [(vname, "nodal", arr)]
+            except:
+                continue
+#        var_arrays = [ (vname,"zonal",ds_in.GetCellData().GetArray(vname)) for vname in self.input_var_names]
+#        var_arrays.extend([ (vname,"nodal",ds_in.GetPointData().GetArray(vname)) for vname in self.input_var_names])
+        var_arrays = [ v for v in var_arrays if not v[2] is None ]
+        nodals = [ v for v in var_arrays if v[1] == "nodal"]
+        zonals = [ v for v in var_arrays if v[1] == "zonal"]
+
+        # varname, centering (0...3), data type, # comps
+        vfname = "%s/variables.txt.%s"%(outpath,zExt)
+        vf = os.popen("%s > %s"%(zCmd,vfname),"w")
+
+        #
+        # Handle ghost information
+        #
+        ghostNodes = ds_in.GetPointData().GetArray("avtGhostNodes")
+        ghostZones =  ds_in.GetCellData().GetArray("avtGhostZones")
+        if ghostZones and not ghostNodes:
+            ghostNodes = vtk.vtkUnsignedCharArray()
+            ghostNodes.SetNumberOfTuples(npoints)
+            # First, assume everything is ghost
+            for i in xrange(npoints):
+                ghostNodes.SetTuple1(i,1)
+            # For each non-ghost zone, make its nodes non-ghost too
+            for i in xrange(ncells):
+                if ghostZones.GetTuple1(i):
+                    continue
+                cell = ds_in.GetCell(i)
+                npts = cell.GetNumberOfPoints()
+                for j in xrange(npts):
+                    ghostNodes.SetTuple1(cell.GetPointId(j),0)
+
+        # do nodal coordinate data
+        vf.write("coords,0,11,3\n")
+        fname = "%s/coords.txt.%s"%(outpath,zExt)
+        f = os.popen("%s > %s"%(zCmd,fname),"w")
+        for i in xrange(npoints):
+            pt = ds_in.GetPoint(i)
+            ghost = False
+            if ghostNodes:
+                ghost = ghostNodes.GetTuple1(i) != 0
+            f.write("%s,%d,%g,%g,%g\n"%(NodeIDKey(keybase,i,ghost), ghost, pt[0], pt[1], pt[2]))
+        f.close()
+
+        # should do nodal global node ids too
+
+        # do other nodal variables
+        for narr in nodals:
+            nv_name = narr[0].replace("Scalar_Curves/","").replace('/','~')
+            ncomps = narr[2].GetNumberOfComponents()
+            dtyp = narr[2].GetDataType()
+            vf.write("%s,0,%d,%d\n"%(nv_name,dtyp,ncomps))
+            fname = "%s/%s.txt.%s"%(outpath,nv_name,zExt)
+            f = os.popen("%s > %s"%(zCmd,fname),"w")
+            for i in xrange(npoints):
+                ghost = False
+                if ghostNodes:
+                    ghost = ghostNodes.GetTuple1(i) != 0
+                linebuf = "%s"%NodeIDKey(keybase,i,ghost)
+                for j in xrange(ncomps):
+                    linebuf += ",%g"%narr[2].GetComponent(i,j)
+                f.write("%s\n"%linebuf)
+            f.close()
+
+        if ncells <= 0:
+            ascendOutDir(outDir,keyBase)
+            return
+
+        # do zonal connectivity data
+        vf.write("topology,3,11,0\n")
+        fname = "%s/topology.txt.%s"%(outpath,zExt)
+        f = os.popen("%s > %s"%(zCmd,fname),"w")
+        for i in xrange(ncells):
+            cell = ds_in.GetCell(i)
+            npts = cell.GetNumberOfPoints()
+            type = cell.GetCellType()
+            ghost = False
+            if ghostZones:
+                ghost = ghostZones.GetTuple1(i) != 0
+            linebuf = "%s,%d,%d,%d"%(EntityTypeIDKey(type,keybase,i,ghost), ghost, type, npts)
+            for j in xrange(npts):
+                ghost = False
+                if ghostNodes:
+                    ghost = ghostNodes.GetTuple1(cell.GetPointId(j)) != 0
+                linebuf += ",%s"%NodeIDKey(keybase,cell.GetPointId(j),ghost)
+            f.write("%s\n"%linebuf)
+        f.close()
+
+        # do other zonal variables
+        for zarr in zonals:
+            zv_name = zarr[0].replace("Scalar_Curves/","").replace('/','~')
+            ncomps = zarr[2].GetNumberOfComponents()
+            dtyp = zarr[2].GetDataType()
+            vf.write("%s,3,%d,%d\n"%(zv_name,dtyp,ncomps))
+            fname = "%s/%s.txt.%s"%(outpath,zv_name,zExt)
+            f = os.popen("%s > %s"%(zCmd,fname),"w")
+            for i in xrange(ncells):
+                type = ds_in.GetCell(i).GetCellType()
+                ghost = False
+                if ghostZones:
+                    ghost = ghostZones.GetTuple1(i) != 0
+                linebuf = "%s"%EntityTypeIDKey(type,keybase,i,ghost)
+                for j in xrange(ncomps):
+                    linebuf += ",%g"%zarr[2].GetComponent(i,j)
+                f.write("%s\n"%linebuf)
+            f.close()
+
+        vf.close()
+        ascendOutDir(outDir,keyBase)
+
+    def post_execute(self):
+        # create .visit file to group domains
+        if mpicom.parallel:
+            # collective on domains list
+            res = mpicom.gather(self.active_domains)
+            self.active_domains = []
+            for r in res:
+                self.active_domains.extend(r)
+        if mpicom.rank() == 0:
+            self.set_result_text("[SciDB Export Complete]")
+ 
+py_filter = CellExportQuery

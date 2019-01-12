@@ -1,0 +1,199 @@
+Function: CreateConstructionAtts
+Declaration: ConstructDataBinningAttributes CreateConstructionAtts(void);
+Definition:
+// **************************************************************
+//  Method: DataBinningAttributes::CreateConstructionAtts
+//
+//  Purpose:
+//      Creates attributes of type ConstructDataBinningAtts.
+//
+//  Programmer: Hank Childs
+//  Creation:   August 19, 2010
+//
+// **************************************************************
+
+ConstructDataBinningAttributes
+DataBinningAttributes::CreateConstructionAtts(void)
+{
+    ConstructDataBinningAttributes dba;
+    static int times = 0;
+    char name[1024];
+    sprintf(name, "_db_op_%d", times++);
+    dba.SetName(name);
+    stringVector varnames;
+    doubleVector range;
+    intVector    numBins;
+    std::vector<unsigned char> binType;
+    varnames.push_back(dim1Var);
+    range.push_back(dim1MinRange);
+    range.push_back(dim1MaxRange);
+    numBins.push_back(dim1NumBins);
+    switch (dim1BinBasedOn)
+    {
+      case X:
+        binType.push_back(ConstructDataBinningAttributes::X);
+        break;
+      case Y:
+        binType.push_back(ConstructDataBinningAttributes::Y);
+        break;
+      case Z:
+        binType.push_back(ConstructDataBinningAttributes::Z);
+        break;
+      case Variable:
+        binType.push_back(ConstructDataBinningAttributes::Variable);
+        break;
+    }
+    if (numDimensions == Two || numDimensions == Three)
+    {
+        varnames.push_back(dim2Var);
+        range.push_back(dim2MinRange);
+        range.push_back(dim2MaxRange);
+        numBins.push_back(dim2NumBins);
+        switch (dim2BinBasedOn)
+        {
+          case X:
+            binType.push_back(ConstructDataBinningAttributes::X);
+            break;
+          case Y:
+            binType.push_back(ConstructDataBinningAttributes::Y);
+            break;
+          case Z:
+            binType.push_back(ConstructDataBinningAttributes::Z);
+            break;
+          case Variable:
+            binType.push_back(ConstructDataBinningAttributes::Variable);
+            break;
+        }
+    }
+    if (numDimensions == Three)
+    {
+        varnames.push_back(dim3Var);
+        range.push_back(dim3MinRange);
+        range.push_back(dim3MaxRange);
+        numBins.push_back(dim3NumBins);
+        switch (dim3BinBasedOn)
+        {
+          case X:
+            binType.push_back(ConstructDataBinningAttributes::X);
+            break;
+          case Y:
+            binType.push_back(ConstructDataBinningAttributes::Y);
+            break;
+          case Z:
+            binType.push_back(ConstructDataBinningAttributes::Z);
+            break;
+          case Variable:
+            binType.push_back(ConstructDataBinningAttributes::Variable);
+            break;
+        }
+    }
+    dba.SetVarnames(varnames);
+    dba.SetBinBoundaries(range);
+    dba.SetNumBins(numBins);
+    dba.SetReductionOperator((ConstructDataBinningAttributes::ReductionOperator) reductionOperator);
+    dba.SetVarForReductionOperator(varForReduction);
+    dba.SetUndefinedValue(emptyVal);
+    dba.SetOverTime(false);
+    dba.SetOutOfBoundsBehavior((ConstructDataBinningAttributes::OutOfBoundsBehavior) outOfBoundsBehavior);
+    dba.SetBinType(binType);
+    
+    return dba;
+}
+
+Target: xml2info
+Function: DataBinningCommonPluginInfo::GetCreatedExpressions
+Declaration: virtual ExpressionList *GetCreatedExpressions(const avtDatabaseMetaData *);
+Definition:
+
+ExpressionList *
+DataBinningCommonPluginInfo::GetCreatedExpressions(const avtDatabaseMetaData *md) const
+{
+    char name[1024];
+    char defn[1024];
+    ExpressionList *el = new ExpressionList;
+
+    for (int i = 0 ; i < md->GetNumMeshes() ; i++)
+    {
+        const char *mesh = md->GetMeshes(i).name.c_str();
+
+        if (md->GetMeshes(i).hideFromGUI || !md->GetMeshes(i).validVariable)
+            continue;
+
+        Expression e2; 
+        sprintf(name, "operators/DataBinning/1D/%s", mesh);
+        e2.SetName(name);
+        e2.SetType(Expression::CurveMeshVar);
+        e2.SetFromOperator(true);
+        e2.SetOperatorName("DataBinning");
+        sprintf(defn, "cell_constant(<%s>, 0)", mesh);
+        e2.SetDefinition(defn);
+        el->AddExpressions(e2);
+    
+        Expression e; 
+        sprintf(name, "operators/DataBinning/2D/%s", mesh);
+        e.SetName(name);
+        e.SetType(Expression::ScalarMeshVar);
+        e.SetFromOperator(true);
+        e.SetOperatorName("DataBinning");
+        sprintf(defn, "cell_constant(<%s>, 0)", mesh);
+        e.SetDefinition(defn);
+        el->AddExpressions(e);
+    
+        Expression e3; 
+        sprintf(name, "operators/DataBinning/3D/%s", mesh);
+        e3.SetName(name);
+        e3.SetType(Expression::ScalarMeshVar);
+        e3.SetFromOperator(true);
+        e3.SetOperatorName("DataBinning");
+        sprintf(defn, "cell_constant(<%s>, 0)", mesh);
+        e3.SetDefinition(defn);
+        el->AddExpressions(e3);
+    }
+   
+    return el;
+}
+
+Function: DataBinningViewerEnginePluginInfo::UpdateOperatorAtts
+Declaration: virtual void DataBinningViewerEnginePluginInfo::UpdateOperatorAtts(AttributeSubject *atts, const avtPlotMetaData &plot, const bool fromDefault);
+Definition:
+// ****************************************************************************
+//  Method: DataBinningViewerEnginePluginInfo::UpdateOperatorAtts
+//
+//  Purpose:
+//    Update the operator attributes to the default attributes.
+//
+//  Arguments:
+//    atts        The attribute subject to update.
+//    plot        The viewer plot that owns the operator.
+//    fromDefault True to update the attributes from the defaults. False
+//                to update from the current attributes.
+//
+//  Programmer: Brad Whitlock
+//  Creation:   Wed Jun 27 10:10:44 PDT 2012
+//
+//  Modifications:
+//    Brad Whitlock, Wed Jun 27 10:13:24 PDT 2012
+//    I transplanted this code from the old version of 
+//    DataBinningAttributes::CopyAttributes since we should just set the 
+//    operator dimensions when we create the operator attributes.
+//
+// ****************************************************************************
+
+#include <avtPlotMetaData.h>
+
+void
+DataBinningViewerEnginePluginInfo::UpdateOperatorAtts(AttributeSubject *atts,
+    const avtPlotMetaData &plot)
+{
+    DataBinningAttributes *binning = (DataBinningAttributes *)atts;
+
+    // Set the number of dimensions based on the variable name.
+    const char *varname = plot.GetVariableName().c_str();
+    if (strstr(varname, "operators/DataBinning/1D") != NULL)
+        binning->SetNumDimensions(DataBinningAttributes::One);
+    else if (strstr(varname, "operators/DataBinning/2D") != NULL)
+        binning->SetNumDimensions(DataBinningAttributes::Two);
+    else if (strstr(varname, "operators/DataBinning/3D") != NULL)
+        binning->SetNumDimensions(DataBinningAttributes::Three);
+}
+

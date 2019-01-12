@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+  <Plugin name="KullLite" label="KullLite" type="database" dbtype="STMD" version="1.0">
+    <FilePatterns>
+       *.pdb
+       *.mkf
+    </FilePatterns>
+    <CXXFLAGS>
+       ${PDB_INCLUDE_DIR}
+    </CXXFLAGS>
+    <LDFLAGS> 
+       ${PDB_LIBRARY_DIR}
+    </LDFLAGS>
+    <LIBS>
+       ${PDB_LIB}
+    </LIBS>
+    <Attribute name="" purpose="" persistent="true" exportAPI="" exportInclude="" codefile="KullLite.code">
+      <Function name="KullLiteCommonPluginInfo::SetupDatabase" user="false" member="true">
+      </Function>
+    </Attribute>
+  </Plugin>

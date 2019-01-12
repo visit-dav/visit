@@ -1,0 +1,5294 @@
+/*****************************************************************************
+*
+* Copyright (c) 2000 - 2018, Lawrence Livermore National Security, LLC
+* Produced at the Lawrence Livermore National Laboratory
+* LLNL-CODE-442911
+* All rights reserved.
+*
+* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
+* full copyright notice is contained in the file COPYRIGHT located at the root
+* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
+*
+* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
+* modification, are permitted provided that the following conditions are met:
+*
+*  - Redistributions of  source code must  retain the above  copyright notice,
+*    this list of conditions and the disclaimer below.
+*  - Redistributions in binary form must reproduce the above copyright notice,
+*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
+*    documentation and/or other materials provided with the distribution.
+*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
+*    be used to endorse or promote products derived from this software without
+*    specific prior written permission.
+*
+* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
+* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
+* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
+* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
+* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
+* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
+* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
+* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
+* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
+* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
+* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
+* DAMAGE.
+*
+*****************************************************************************/
+
+#include <PickAttributes.h>
+#include <DataNode.h>
+#include <stdio.h>
+#include <float.h>
+#include <cstring>
+#include <PickVarInfo.h>
+
+//
+// Enum conversion methods for PickAttributes::PickType
+//
+
+static const char *PickType_strings[] = {
+"Zone", "Node", "CurveZone", 
+"CurveNode", "DomainZone", "DomainNode", 
+"ZoneLabel", "NodeLabel"};
+
+std::string
+PickAttributes::PickType_ToString(PickAttributes::PickType t)
+{
+    int index = int(t);
+    if(index < 0 || index >= 8) index = 0;
+    return PickType_strings[index];
+}
+
+std::string
+PickAttributes::PickType_ToString(int t)
+{
+    int index = (t < 0 || t >= 8) ? 0 : t;
+    return PickType_strings[index];
+}
+
+bool
+PickAttributes::PickType_FromString(const std::string &s, PickAttributes::PickType &val)
+{
+    val = PickAttributes::Zone;
+    for(int i = 0; i < 8; ++i)
+    {
+        if(s == PickType_strings[i])
+        {
+            val = (PickType)i;
+            return true;
+        }
+    }
+    return false;
+}
+
+//
+// Enum conversion methods for PickAttributes::CoordinateType
+//
+
+static const char *CoordinateType_strings[] = {
+"XY", "RZ", "ZR"
+};
+
+std::string
+PickAttributes::CoordinateType_ToString(PickAttributes::CoordinateType t)
+{
+    int index = int(t);
+    if(index < 0 || index >= 3) index = 0;
+    return CoordinateType_strings[index];
+}
+
+std::string
+PickAttributes::CoordinateType_ToString(int t)
+{
+    int index = (t < 0 || t >= 3) ? 0 : t;
+    return CoordinateType_strings[index];
+}
+
+bool
+PickAttributes::CoordinateType_FromString(const std::string &s, PickAttributes::CoordinateType &val)
+{
+    val = PickAttributes::XY;
+    for(int i = 0; i < 3; ++i)
+    {
+        if(s == CoordinateType_strings[i])
+        {
+            val = (CoordinateType)i;
+            return true;
+        }
+    }
+    return false;
+}
+
+//
+// Enum conversion methods for PickAttributes::TimeCurveType
+//
+
+static const char *TimeCurveType_strings[] = {
+"Single_Y_Axis", "Multiple_Y_Axes"};
+
+std::string
+PickAttributes::TimeCurveType_ToString(PickAttributes::TimeCurveType t)
+{
+    int index = int(t);
+    if(index < 0 || index >= 2) index = 0;
+    return TimeCurveType_strings[index];
+}
+
+std::string
+PickAttributes::TimeCurveType_ToString(int t)
+{
+    int index = (t < 0 || t >= 2) ? 0 : t;
+    return TimeCurveType_strings[index];
+}
+
+bool
+PickAttributes::TimeCurveType_FromString(const std::string &s, PickAttributes::TimeCurveType &val)
+{
+    val = PickAttributes::Single_Y_Axis;
+    for(int i = 0; i < 2; ++i)
+    {
+        if(s == TimeCurveType_strings[i])
+        {
+            val = (TimeCurveType)i;
+            return true;
+        }
+    }
+    return false;
+}
+
+// ****************************************************************************
+// Method: PickAttributes::PickAttributes
+//
+// Purpose: 
+//   Init utility for the PickAttributes class.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void PickAttributes::Init()
+{
+    variables.push_back("default");
+    showIncidentElements = true;
+    showNodeId = true;
+    showNodeDomainLogicalCoords = false;
+    showNodeBlockLogicalCoords = false;
+    showNodePhysicalCoords = false;
+    showZoneId = true;
+    showZoneDomainLogicalCoords = false;
+    showZoneBlockLogicalCoords = false;
+    clearWindow = false;
+    fulfilled = false;
+    pickType = Zone;
+    domain = -1;
+    elementNumber = -1;
+    timeStep = -1;
+    dimension = -1;
+    pickPoint[0] = 0;
+    pickPoint[1] = 0;
+    pickPoint[2] = 0;
+    cellPoint[0] = 0;
+    cellPoint[1] = 0;
+    cellPoint[2] = 0;
+    nodePoint[0] = 0;
+    nodePoint[1] = 0;
+    nodePoint[2] = 0;
+    rayPoint1[0] = 0;
+    rayPoint1[1] = 0;
+    rayPoint1[2] = 0;
+    rayPoint2[0] = 0;
+    rayPoint2[1] = 0;
+    rayPoint2[2] = 0;
+    realElementNumber = -1;
+    needTransformMessage = false;
+    doTimeCurve = false;
+    error = false;
+    matSelected = false;
+    needActualCoords = false;
+    conciseOutput = false;
+    showTimeStep = true;
+    showMeshName = true;
+    includeGhosts = false;
+    elementIsGhost = false;
+    requiresGlyphPick = false;
+    locationSuccessful = false;
+    useLabelAsPickLetter = false;
+    showGlobalIds = false;
+    globalElement = -1;
+    elementIsGlobal = false;
+    showPickLetter = true;
+    hasRangeOutput = false;
+    reusePickLetter = false;
+    ghostType = 0;
+    hasMixedGhostTypes = -1;
+    linesData = false;
+    showPickHighlight = false;
+    notifyEnabled = true;
+    inputTopoDim = -1;
+    meshCoordType = XY;
+    createSpreadsheet = false;
+    floatFormat = "%g";
+    timePreserveCoord = true;
+    timeCurveType = Single_Y_Axis;
+    pickHighlightColor[0] = 255;
+    pickHighlightColor[1] = 0;
+    pickHighlightColor[2] = 0;
+    swivelFocusToPick = false;
+    overridePickLabel = false;
+    removeLabelTwins = false;
+
+    PickAttributes::SelectAll();
+}
+
+// ****************************************************************************
+// Method: PickAttributes::PickAttributes
+//
+// Purpose: 
+//   Copy utility for the PickAttributes class.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void PickAttributes::Copy(const PickAttributes &obj)
+{
+    AttributeGroupVector::const_iterator pos;
+
+    variables = obj.variables;
+    showIncidentElements = obj.showIncidentElements;
+    showNodeId = obj.showNodeId;
+    showNodeDomainLogicalCoords = obj.showNodeDomainLogicalCoords;
+    showNodeBlockLogicalCoords = obj.showNodeBlockLogicalCoords;
+    showNodePhysicalCoords = obj.showNodePhysicalCoords;
+    showZoneId = obj.showZoneId;
+    showZoneDomainLogicalCoords = obj.showZoneDomainLogicalCoords;
+    showZoneBlockLogicalCoords = obj.showZoneBlockLogicalCoords;
+    clearWindow = obj.clearWindow;
+    pickLetter = obj.pickLetter;
+    fulfilled = obj.fulfilled;
+    pickType = obj.pickType;
+    domain = obj.domain;
+    elementNumber = obj.elementNumber;
+    incidentElements = obj.incidentElements;
+    cellCoordinates = obj.cellCoordinates;
+    timeStep = obj.timeStep;
+    dimension = obj.dimension;
+    databaseName = obj.databaseName;
+    activeVariable = obj.activeVariable;
+    pickPoint[0] = obj.pickPoint[0];
+    pickPoint[1] = obj.pickPoint[1];
+    pickPoint[2] = obj.pickPoint[2];
+
+    cellPoint[0] = obj.cellPoint[0];
+    cellPoint[1] = obj.cellPoint[1];
+    cellPoint[2] = obj.cellPoint[2];
+
+    nodePoint[0] = obj.nodePoint[0];
+    nodePoint[1] = obj.nodePoint[1];
+    nodePoint[2] = obj.nodePoint[2];
+
+    plotBounds = obj.plotBounds;
+    rayPoint1[0] = obj.rayPoint1[0];
+    rayPoint1[1] = obj.rayPoint1[1];
+    rayPoint1[2] = obj.rayPoint1[2];
+
+    rayPoint2[0] = obj.rayPoint2[0];
+    rayPoint2[1] = obj.rayPoint2[1];
+    rayPoint2[2] = obj.rayPoint2[2];
+
+    meshInfo = obj.meshInfo;
+    realElementNumber = obj.realElementNumber;
+    realIncidentElements = obj.realIncidentElements;
+    pnodeCoords = obj.pnodeCoords;
+    dnodeCoords = obj.dnodeCoords;
+    bnodeCoords = obj.bnodeCoords;
+    dzoneCoords = obj.dzoneCoords;
+    bzoneCoords = obj.bzoneCoords;
+    needTransformMessage = obj.needTransformMessage;
+    // *** Copy the varInfo field ***
+    // Delete the AttributeGroup objects and clear the vector.
+    for(pos = varInfo.begin(); pos != varInfo.end(); ++pos)
+        delete *pos;
+    varInfo.clear();
+    if(obj.varInfo.size() > 0)
+        varInfo.reserve(obj.varInfo.size());
+    // Duplicate the varInfo from obj.
+    for(pos = obj.varInfo.begin(); pos != obj.varInfo.end(); ++pos)
+    {
+        PickVarInfo *oldPickVarInfo = (PickVarInfo *)(*pos);
+        PickVarInfo *newPickVarInfo = new PickVarInfo(*oldPickVarInfo);
+        varInfo.push_back(newPickVarInfo);
+    }
+
+    invalidVars = obj.invalidVars;
+    doTimeCurve = obj.doTimeCurve;
+    errorMessage = obj.errorMessage;
+    error = obj.error;
+    matSelected = obj.matSelected;
+    needActualCoords = obj.needActualCoords;
+    conciseOutput = obj.conciseOutput;
+    showTimeStep = obj.showTimeStep;
+    showMeshName = obj.showMeshName;
+    blockPieceName = obj.blockPieceName;
+    groupPieceName = obj.groupPieceName;
+    ghosts = obj.ghosts;
+    includeGhosts = obj.includeGhosts;
+    elementIsGhost = obj.elementIsGhost;
+    requiresGlyphPick = obj.requiresGlyphPick;
+    locationSuccessful = obj.locationSuccessful;
+    useLabelAsPickLetter = obj.useLabelAsPickLetter;
+    showGlobalIds = obj.showGlobalIds;
+    globalElement = obj.globalElement;
+    globalIncidentElements = obj.globalIncidentElements;
+    elementIsGlobal = obj.elementIsGlobal;
+    showPickLetter = obj.showPickLetter;
+    hasRangeOutput = obj.hasRangeOutput;
+    rangeOutput = obj.rangeOutput;
+    elementLabel = obj.elementLabel;
+    reusePickLetter = obj.reusePickLetter;
+    ghostType = obj.ghostType;
+    hasMixedGhostTypes = obj.hasMixedGhostTypes;
+    linesData = obj.linesData;
+    showPickHighlight = obj.showPickHighlight;
+    notifyEnabled = obj.notifyEnabled;
+    inputTopoDim = obj.inputTopoDim;
+    meshCoordType = obj.meshCoordType;
+    createSpreadsheet = obj.createSpreadsheet;
+    subsetName = obj.subsetName;
+    floatFormat = obj.floatFormat;
+    timePreserveCoord = obj.timePreserveCoord;
+    timeCurveType = obj.timeCurveType;
+    timeOptions = obj.timeOptions;
+    plotRequested = obj.plotRequested;
+    pickHighlightColor[0] = obj.pickHighlightColor[0];
+    pickHighlightColor[1] = obj.pickHighlightColor[1];
+    pickHighlightColor[2] = obj.pickHighlightColor[2];
+
+    removedPicks = obj.removedPicks;
+    swivelFocusToPick = obj.swivelFocusToPick;
+    overridePickLabel = obj.overridePickLabel;
+    forcedPickLabel = obj.forcedPickLabel;
+    removeLabelTwins = obj.removeLabelTwins;
+
+    PickAttributes::SelectAll();
+}
+
+// Type map format string
+const char *PickAttributes::TypeMapFormatString = PICKATTRIBUTES_TMFS;
+const AttributeGroup::private_tmfs_t PickAttributes::TmfsStruct = {PICKATTRIBUTES_TMFS};
+
+
+// ****************************************************************************
+// Method: PickAttributes::PickAttributes
+//
+// Purpose: 
+//   Default constructor for the PickAttributes class.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+PickAttributes::PickAttributes() : 
+    AttributeSubject(PickAttributes::TypeMapFormatString)
+{
+    PickAttributes::Init();
+}
+
+// ****************************************************************************
+// Method: PickAttributes::PickAttributes
+//
+// Purpose: 
+//   Constructor for the derived classes of PickAttributes class.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+PickAttributes::PickAttributes(private_tmfs_t tmfs) : 
+    AttributeSubject(tmfs.tmfs)
+{
+    PickAttributes::Init();
+}
+
+// ****************************************************************************
+// Method: PickAttributes::PickAttributes
+//
+// Purpose: 
+//   Copy constructor for the PickAttributes class.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+PickAttributes::PickAttributes(const PickAttributes &obj) : 
+    AttributeSubject(PickAttributes::TypeMapFormatString)
+{
+    PickAttributes::Copy(obj);
+}
+
+// ****************************************************************************
+// Method: PickAttributes::PickAttributes
+//
+// Purpose: 
+//   Copy constructor for derived classes of the PickAttributes class.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+PickAttributes::PickAttributes(const PickAttributes &obj, private_tmfs_t tmfs) : 
+    AttributeSubject(tmfs.tmfs)
+{
+    PickAttributes::Copy(obj);
+}
+
+// ****************************************************************************
+// Method: PickAttributes::~PickAttributes
+//
+// Purpose: 
+//   Destructor for the PickAttributes class.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+PickAttributes::~PickAttributes()
+{
+    AttributeGroupVector::iterator pos;
+
+    // Destroy the varInfo field.
+    for(pos = varInfo.begin(); pos != varInfo.end(); ++pos)
+        delete *pos;
+}
+
+// ****************************************************************************
+// Method: PickAttributes::operator = 
+//
+// Purpose: 
+//   Assignment operator for the PickAttributes class.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+PickAttributes& 
+PickAttributes::operator = (const PickAttributes &obj)
+{
+    if (this == &obj) return *this;
+
+    PickAttributes::Copy(obj);
+
+    return *this;
+}
+
+// ****************************************************************************
+// Method: PickAttributes::operator == 
+//
+// Purpose: 
+//   Comparison operator == for the PickAttributes class.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+PickAttributes::operator == (const PickAttributes &obj) const
+{
+    // Compare the pickPoint arrays.
+    bool pickPoint_equal = true;
+    for(int i = 0; i < 3 && pickPoint_equal; ++i)
+        pickPoint_equal = (pickPoint[i] == obj.pickPoint[i]);
+
+    // Compare the cellPoint arrays.
+    bool cellPoint_equal = true;
+    for(int i = 0; i < 3 && cellPoint_equal; ++i)
+        cellPoint_equal = (cellPoint[i] == obj.cellPoint[i]);
+
+    // Compare the nodePoint arrays.
+    bool nodePoint_equal = true;
+    for(int i = 0; i < 3 && nodePoint_equal; ++i)
+        nodePoint_equal = (nodePoint[i] == obj.nodePoint[i]);
+
+    // Compare the rayPoint1 arrays.
+    bool rayPoint1_equal = true;
+    for(int i = 0; i < 3 && rayPoint1_equal; ++i)
+        rayPoint1_equal = (rayPoint1[i] == obj.rayPoint1[i]);
+
+    // Compare the rayPoint2 arrays.
+    bool rayPoint2_equal = true;
+    for(int i = 0; i < 3 && rayPoint2_equal; ++i)
+        rayPoint2_equal = (rayPoint2[i] == obj.rayPoint2[i]);
+
+    bool varInfo_equal = (obj.varInfo.size() == varInfo.size());
+    for(size_t i = 0; (i < varInfo.size()) && varInfo_equal; ++i)
+    {
+        // Make references to PickVarInfo from AttributeGroup *.
+        const PickVarInfo &varInfo1 = *((const PickVarInfo *)(varInfo[i]));
+        const PickVarInfo &varInfo2 = *((const PickVarInfo *)(obj.varInfo[i]));
+        varInfo_equal = (varInfo1 == varInfo2);
+    }
+
+    // Compare the pickHighlightColor arrays.
+    bool pickHighlightColor_equal = true;
+    for(int i = 0; i < 3 && pickHighlightColor_equal; ++i)
+        pickHighlightColor_equal = (pickHighlightColor[i] == obj.pickHighlightColor[i]);
+
+    // Create the return value
+    return ((variables == obj.variables) &&
+            (showIncidentElements == obj.showIncidentElements) &&
+            (showNodeId == obj.showNodeId) &&
+            (showNodeDomainLogicalCoords == obj.showNodeDomainLogicalCoords) &&
+            (showNodeBlockLogicalCoords == obj.showNodeBlockLogicalCoords) &&
+            (showNodePhysicalCoords == obj.showNodePhysicalCoords) &&
+            (showZoneId == obj.showZoneId) &&
+            (showZoneDomainLogicalCoords == obj.showZoneDomainLogicalCoords) &&
+            (showZoneBlockLogicalCoords == obj.showZoneBlockLogicalCoords) &&
+            (clearWindow == obj.clearWindow) &&
+            (pickLetter == obj.pickLetter) &&
+            (fulfilled == obj.fulfilled) &&
+            (pickType == obj.pickType) &&
+            (domain == obj.domain) &&
+            (elementNumber == obj.elementNumber) &&
+            (incidentElements == obj.incidentElements) &&
+            (cellCoordinates == obj.cellCoordinates) &&
+            (timeStep == obj.timeStep) &&
+            (dimension == obj.dimension) &&
+            (databaseName == obj.databaseName) &&
+            (activeVariable == obj.activeVariable) &&
+            pickPoint_equal &&
+            cellPoint_equal &&
+            nodePoint_equal &&
+            (plotBounds == obj.plotBounds) &&
+            rayPoint1_equal &&
+            rayPoint2_equal &&
+            (meshInfo == obj.meshInfo) &&
+            (realElementNumber == obj.realElementNumber) &&
+            (realIncidentElements == obj.realIncidentElements) &&
+            (pnodeCoords == obj.pnodeCoords) &&
+            (dnodeCoords == obj.dnodeCoords) &&
+            (bnodeCoords == obj.bnodeCoords) &&
+            (dzoneCoords == obj.dzoneCoords) &&
+            (bzoneCoords == obj.bzoneCoords) &&
+            (needTransformMessage == obj.needTransformMessage) &&
+            varInfo_equal &&
+            (invalidVars == obj.invalidVars) &&
+            (doTimeCurve == obj.doTimeCurve) &&
+            (errorMessage == obj.errorMessage) &&
+            (error == obj.error) &&
+            (matSelected == obj.matSelected) &&
+            (needActualCoords == obj.needActualCoords) &&
+            (conciseOutput == obj.conciseOutput) &&
+            (showTimeStep == obj.showTimeStep) &&
+            (showMeshName == obj.showMeshName) &&
+            (blockPieceName == obj.blockPieceName) &&
+            (groupPieceName == obj.groupPieceName) &&
+            (ghosts == obj.ghosts) &&
+            (includeGhosts == obj.includeGhosts) &&
+            (elementIsGhost == obj.elementIsGhost) &&
+            (requiresGlyphPick == obj.requiresGlyphPick) &&
+            (locationSuccessful == obj.locationSuccessful) &&
+            (useLabelAsPickLetter == obj.useLabelAsPickLetter) &&
+            (showGlobalIds == obj.showGlobalIds) &&
+            (globalElement == obj.globalElement) &&
+            (globalIncidentElements == obj.globalIncidentElements) &&
+            (elementIsGlobal == obj.elementIsGlobal) &&
+            (showPickLetter == obj.showPickLetter) &&
+            (hasRangeOutput == obj.hasRangeOutput) &&
+            (rangeOutput == obj.rangeOutput) &&
+            (elementLabel == obj.elementLabel) &&
+            (reusePickLetter == obj.reusePickLetter) &&
+            (ghostType == obj.ghostType) &&
+            (hasMixedGhostTypes == obj.hasMixedGhostTypes) &&
+            (linesData == obj.linesData) &&
+            (showPickHighlight == obj.showPickHighlight) &&
+            (notifyEnabled == obj.notifyEnabled) &&
+            (inputTopoDim == obj.inputTopoDim) &&
+            (meshCoordType == obj.meshCoordType) &&
+            (createSpreadsheet == obj.createSpreadsheet) &&
+            (subsetName == obj.subsetName) &&
+            (floatFormat == obj.floatFormat) &&
+            (timePreserveCoord == obj.timePreserveCoord) &&
+            (timeCurveType == obj.timeCurveType) &&
+            (timeOptions == obj.timeOptions) &&
+            (plotRequested == obj.plotRequested) &&
+            pickHighlightColor_equal &&
+            (removedPicks == obj.removedPicks) &&
+            (swivelFocusToPick == obj.swivelFocusToPick) &&
+            (overridePickLabel == obj.overridePickLabel) &&
+            (forcedPickLabel == obj.forcedPickLabel) &&
+            (removeLabelTwins == obj.removeLabelTwins));
+}
+
+// ****************************************************************************
+// Method: PickAttributes::operator != 
+//
+// Purpose: 
+//   Comparison operator != for the PickAttributes class.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+PickAttributes::operator != (const PickAttributes &obj) const
+{
+    return !(this->operator == (obj));
+}
+
+// ****************************************************************************
+// Method: PickAttributes::TypeName
+//
+// Purpose: 
+//   Type name method for the PickAttributes class.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+const std::string
+PickAttributes::TypeName() const
+{
+    return "PickAttributes";
+}
+
+// ****************************************************************************
+// Method: PickAttributes::CopyAttributes
+//
+// Purpose: 
+//   CopyAttributes method for the PickAttributes class.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+PickAttributes::CopyAttributes(const AttributeGroup *atts)
+{
+    if(TypeName() != atts->TypeName())
+        return false;
+
+    // Call assignment operator.
+    const PickAttributes *tmp = (const PickAttributes *)atts;
+    *this = *tmp;
+
+    return true;
+}
+
+// ****************************************************************************
+// Method: PickAttributes::CreateCompatible
+//
+// Purpose: 
+//   CreateCompatible method for the PickAttributes class.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+AttributeSubject *
+PickAttributes::CreateCompatible(const std::string &tname) const
+{
+    AttributeSubject *retval = 0;
+    if(TypeName() == tname)
+        retval = new PickAttributes(*this);
+    // Other cases could go here too. 
+
+    return retval;
+}
+
+// ****************************************************************************
+// Method: PickAttributes::NewInstance
+//
+// Purpose: 
+//   NewInstance method for the PickAttributes class.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+AttributeSubject *
+PickAttributes::NewInstance(bool copy) const
+{
+    AttributeSubject *retval = 0;
+    if(copy)
+        retval = new PickAttributes(*this);
+    else
+        retval = new PickAttributes;
+
+    return retval;
+}
+
+// ****************************************************************************
+// Method: PickAttributes::SelectAll
+//
+// Purpose: 
+//   Selects all attributes.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+PickAttributes::SelectAll()
+{
+    Select(ID_variables,                   (void *)&variables);
+    Select(ID_showIncidentElements,        (void *)&showIncidentElements);
+    Select(ID_showNodeId,                  (void *)&showNodeId);
+    Select(ID_showNodeDomainLogicalCoords, (void *)&showNodeDomainLogicalCoords);
+    Select(ID_showNodeBlockLogicalCoords,  (void *)&showNodeBlockLogicalCoords);
+    Select(ID_showNodePhysicalCoords,      (void *)&showNodePhysicalCoords);
+    Select(ID_showZoneId,                  (void *)&showZoneId);
+    Select(ID_showZoneDomainLogicalCoords, (void *)&showZoneDomainLogicalCoords);
+    Select(ID_showZoneBlockLogicalCoords,  (void *)&showZoneBlockLogicalCoords);
+    Select(ID_clearWindow,                 (void *)&clearWindow);
+    Select(ID_pickLetter,                  (void *)&pickLetter);
+    Select(ID_fulfilled,                   (void *)&fulfilled);
+    Select(ID_pickType,                    (void *)&pickType);
+    Select(ID_domain,                      (void *)&domain);
+    Select(ID_elementNumber,               (void *)&elementNumber);
+    Select(ID_incidentElements,            (void *)&incidentElements);
+    Select(ID_cellCoordinates,             (void *)&cellCoordinates);
+    Select(ID_timeStep,                    (void *)&timeStep);
+    Select(ID_dimension,                   (void *)&dimension);
+    Select(ID_databaseName,                (void *)&databaseName);
+    Select(ID_activeVariable,              (void *)&activeVariable);
+    Select(ID_pickPoint,                   (void *)pickPoint, 3);
+    Select(ID_cellPoint,                   (void *)cellPoint, 3);
+    Select(ID_nodePoint,                   (void *)nodePoint, 3);
+    Select(ID_plotBounds,                  (void *)&plotBounds);
+    Select(ID_rayPoint1,                   (void *)rayPoint1, 3);
+    Select(ID_rayPoint2,                   (void *)rayPoint2, 3);
+    Select(ID_meshInfo,                    (void *)&meshInfo);
+    Select(ID_realElementNumber,           (void *)&realElementNumber);
+    Select(ID_realIncidentElements,        (void *)&realIncidentElements);
+    Select(ID_pnodeCoords,                 (void *)&pnodeCoords);
+    Select(ID_dnodeCoords,                 (void *)&dnodeCoords);
+    Select(ID_bnodeCoords,                 (void *)&bnodeCoords);
+    Select(ID_dzoneCoords,                 (void *)&dzoneCoords);
+    Select(ID_bzoneCoords,                 (void *)&bzoneCoords);
+    Select(ID_needTransformMessage,        (void *)&needTransformMessage);
+    Select(ID_varInfo,                     (void *)&varInfo);
+    Select(ID_invalidVars,                 (void *)&invalidVars);
+    Select(ID_doTimeCurve,                 (void *)&doTimeCurve);
+    Select(ID_errorMessage,                (void *)&errorMessage);
+    Select(ID_error,                       (void *)&error);
+    Select(ID_matSelected,                 (void *)&matSelected);
+    Select(ID_needActualCoords,            (void *)&needActualCoords);
+    Select(ID_conciseOutput,               (void *)&conciseOutput);
+    Select(ID_showTimeStep,                (void *)&showTimeStep);
+    Select(ID_showMeshName,                (void *)&showMeshName);
+    Select(ID_blockPieceName,              (void *)&blockPieceName);
+    Select(ID_groupPieceName,              (void *)&groupPieceName);
+    Select(ID_ghosts,                      (void *)&ghosts);
+    Select(ID_includeGhosts,               (void *)&includeGhosts);
+    Select(ID_elementIsGhost,              (void *)&elementIsGhost);
+    Select(ID_requiresGlyphPick,           (void *)&requiresGlyphPick);
+    Select(ID_locationSuccessful,          (void *)&locationSuccessful);
+    Select(ID_useLabelAsPickLetter,        (void *)&useLabelAsPickLetter);
+    Select(ID_showGlobalIds,               (void *)&showGlobalIds);
+    Select(ID_globalElement,               (void *)&globalElement);
+    Select(ID_globalIncidentElements,      (void *)&globalIncidentElements);
+    Select(ID_elementIsGlobal,             (void *)&elementIsGlobal);
+    Select(ID_showPickLetter,              (void *)&showPickLetter);
+    Select(ID_hasRangeOutput,              (void *)&hasRangeOutput);
+    Select(ID_rangeOutput,                 (void *)&rangeOutput);
+    Select(ID_elementLabel,                (void *)&elementLabel);
+    Select(ID_reusePickLetter,             (void *)&reusePickLetter);
+    Select(ID_ghostType,                   (void *)&ghostType);
+    Select(ID_hasMixedGhostTypes,          (void *)&hasMixedGhostTypes);
+    Select(ID_linesData,                   (void *)&linesData);
+    Select(ID_showPickHighlight,           (void *)&showPickHighlight);
+    Select(ID_notifyEnabled,               (void *)&notifyEnabled);
+    Select(ID_inputTopoDim,                (void *)&inputTopoDim);
+    Select(ID_meshCoordType,               (void *)&meshCoordType);
+    Select(ID_createSpreadsheet,           (void *)&createSpreadsheet);
+    Select(ID_subsetName,                  (void *)&subsetName);
+    Select(ID_floatFormat,                 (void *)&floatFormat);
+    Select(ID_timePreserveCoord,           (void *)&timePreserveCoord);
+    Select(ID_timeCurveType,               (void *)&timeCurveType);
+    Select(ID_timeOptions,                 (void *)&timeOptions);
+    Select(ID_plotRequested,               (void *)&plotRequested);
+    Select(ID_pickHighlightColor,          (void *)pickHighlightColor, 3);
+    Select(ID_removedPicks,                (void *)&removedPicks);
+    Select(ID_swivelFocusToPick,           (void *)&swivelFocusToPick);
+    Select(ID_overridePickLabel,           (void *)&overridePickLabel);
+    Select(ID_forcedPickLabel,             (void *)&forcedPickLabel);
+    Select(ID_removeLabelTwins,            (void *)&removeLabelTwins);
+}
+
+// ****************************************************************************
+// Method: PickAttributes::CreateSubAttributeGroup
+//
+// Purpose: 
+//   This class contains attributes used for pick.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+AttributeGroup *
+PickAttributes::CreateSubAttributeGroup(int)
+{
+    return new PickVarInfo;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Persistence methods
+///////////////////////////////////////////////////////////////////////////////
+
+// ****************************************************************************
+// Method: PickAttributes::CreateNode
+//
+// Purpose: 
+//   This method creates a DataNode representation of the object so it can be saved to a config file.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+PickAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool forceAdd)
+{
+    if(parentNode == 0)
+        return false;
+
+    PickAttributes defaultObject;
+    bool addToParent = false;
+    // Create a node for PickAttributes.
+    DataNode *node = new DataNode("PickAttributes");
+
+    if(completeSave || !FieldsEqual(ID_variables, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("variables", variables));
+    }
+
+    if(completeSave || !FieldsEqual(ID_showIncidentElements, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("showIncidentElements", showIncidentElements));
+    }
+
+    if(completeSave || !FieldsEqual(ID_showNodeId, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("showNodeId", showNodeId));
+    }
+
+    if(completeSave || !FieldsEqual(ID_showNodeDomainLogicalCoords, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("showNodeDomainLogicalCoords", showNodeDomainLogicalCoords));
+    }
+
+    if(completeSave || !FieldsEqual(ID_showNodeBlockLogicalCoords, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("showNodeBlockLogicalCoords", showNodeBlockLogicalCoords));
+    }
+
+    if(completeSave || !FieldsEqual(ID_showNodePhysicalCoords, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("showNodePhysicalCoords", showNodePhysicalCoords));
+    }
+
+    if(completeSave || !FieldsEqual(ID_showZoneId, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("showZoneId", showZoneId));
+    }
+
+    if(completeSave || !FieldsEqual(ID_showZoneDomainLogicalCoords, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("showZoneDomainLogicalCoords", showZoneDomainLogicalCoords));
+    }
+
+    if(completeSave || !FieldsEqual(ID_showZoneBlockLogicalCoords, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("showZoneBlockLogicalCoords", showZoneBlockLogicalCoords));
+    }
+
+    // clearWindow is not persistent and should not be saved.
+    // pickLetter is not persistent and should not be saved.
+    // fulfilled is not persistent and should not be saved.
+    // pickType is not persistent and should not be saved.
+    // domain is not persistent and should not be saved.
+    // elementNumber is not persistent and should not be saved.
+    // incidentElements is not persistent and should not be saved.
+    // cellCoordinates is not persistent and should not be saved.
+    // timeStep is not persistent and should not be saved.
+    // dimension is not persistent and should not be saved.
+    // databaseName is not persistent and should not be saved.
+    // activeVariable is not persistent and should not be saved.
+    // pickPoint is not persistent and should not be saved.
+    // cellPoint is not persistent and should not be saved.
+    // nodePoint is not persistent and should not be saved.
+    // plotBounds is not persistent and should not be saved.
+    // rayPoint1 is not persistent and should not be saved.
+    // rayPoint2 is not persistent and should not be saved.
+    // meshInfo is not persistent and should not be saved.
+    // realElementNumber is not persistent and should not be saved.
+    // realIncidentElements is not persistent and should not be saved.
+    // pnodeCoords is not persistent and should not be saved.
+    // dnodeCoords is not persistent and should not be saved.
+    // bnodeCoords is not persistent and should not be saved.
+    // dzoneCoords is not persistent and should not be saved.
+    // bzoneCoords is not persistent and should not be saved.
+    // needTransformMessage is not persistent and should not be saved.
+    // varInfo is not persistent and should not be saved.
+    // invalidVars is not persistent and should not be saved.
+    if(completeSave || !FieldsEqual(ID_doTimeCurve, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("doTimeCurve", doTimeCurve));
+    }
+
+    // errorMessage is not persistent and should not be saved.
+    // error is not persistent and should not be saved.
+    // matSelected is not persistent and should not be saved.
+    // needActualCoords is not persistent and should not be saved.
+    if(completeSave || !FieldsEqual(ID_conciseOutput, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("conciseOutput", conciseOutput));
+    }
+
+    if(completeSave || !FieldsEqual(ID_showTimeStep, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("showTimeStep", showTimeStep));
+    }
+
+    if(completeSave || !FieldsEqual(ID_showMeshName, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("showMeshName", showMeshName));
+    }
+
+    // blockPieceName is not persistent and should not be saved.
+    // groupPieceName is not persistent and should not be saved.
+    // ghosts is not persistent and should not be saved.
+    // includeGhosts is not persistent and should not be saved.
+    // elementIsGhost is not persistent and should not be saved.
+    // requiresGlyphPick is not persistent and should not be saved.
+    // locationSuccessful is not persistent and should not be saved.
+    if(completeSave || !FieldsEqual(ID_useLabelAsPickLetter, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("useLabelAsPickLetter", useLabelAsPickLetter));
+    }
+
+    if(completeSave || !FieldsEqual(ID_showGlobalIds, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("showGlobalIds", showGlobalIds));
+    }
+
+    // globalElement is not persistent and should not be saved.
+    // globalIncidentElements is not persistent and should not be saved.
+    // elementIsGlobal is not persistent and should not be saved.
+    if(completeSave || !FieldsEqual(ID_showPickLetter, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("showPickLetter", showPickLetter));
+    }
+
+    if(completeSave || !FieldsEqual(ID_hasRangeOutput, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("hasRangeOutput", hasRangeOutput));
+    }
+
+    // rangeOutput is not persistent and should not be saved.
+    if(completeSave || !FieldsEqual(ID_elementLabel, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("elementLabel", elementLabel));
+    }
+
+    // reusePickLetter is not persistent and should not be saved.
+    // ghostType is not persistent and should not be saved.
+    // hasMixedGhostTypes is not persistent and should not be saved.
+    // linesData is not persistent and should not be saved.
+    // showPickHighlight is not persistent and should not be saved.
+    // notifyEnabled is not persistent and should not be saved.
+    // inputTopoDim is not persistent and should not be saved.
+    // meshCoordType is not persistent and should not be saved.
+    if(completeSave || !FieldsEqual(ID_createSpreadsheet, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("createSpreadsheet", createSpreadsheet));
+    }
+
+    // subsetName is not persistent and should not be saved.
+    if(completeSave || !FieldsEqual(ID_floatFormat, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("floatFormat", floatFormat));
+    }
+
+    if(completeSave || !FieldsEqual(ID_timePreserveCoord, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("timePreserveCoord", timePreserveCoord));
+    }
+
+    // timeCurveType is not persistent and should not be saved.
+    // timeOptions is not persistent and should not be saved.
+    // plotRequested is not persistent and should not be saved.
+    // pickHighlightColor is not persistent and should not be saved.
+    if(completeSave || !FieldsEqual(ID_removedPicks, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("removedPicks", removedPicks));
+    }
+
+    if(completeSave || !FieldsEqual(ID_swivelFocusToPick, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("swivelFocusToPick", swivelFocusToPick));
+    }
+
+    if(completeSave || !FieldsEqual(ID_overridePickLabel, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("overridePickLabel", overridePickLabel));
+    }
+
+    if(completeSave || !FieldsEqual(ID_forcedPickLabel, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("forcedPickLabel", forcedPickLabel));
+    }
+
+    if(completeSave || !FieldsEqual(ID_removeLabelTwins, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("removeLabelTwins", removeLabelTwins));
+    }
+
+
+    // Add the node to the parent node.
+    if(addToParent || forceAdd)
+        parentNode->AddNode(node);
+    else
+        delete node;
+
+    return (addToParent || forceAdd);
+}
+
+// ****************************************************************************
+// Method: PickAttributes::SetFromNode
+//
+// Purpose: 
+//   This method sets attributes in this object from values in a DataNode representation of the object.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+PickAttributes::SetFromNode(DataNode *parentNode)
+{
+    if(parentNode == 0)
+        return;
+
+    DataNode *searchNode = parentNode->GetNode("PickAttributes");
+    if(searchNode == 0)
+        return;
+
+    DataNode *node;
+    if((node = searchNode->GetNode("variables")) != 0)
+        SetVariables(node->AsStringVector());
+    if((node = searchNode->GetNode("showIncidentElements")) != 0)
+        SetShowIncidentElements(node->AsBool());
+    if((node = searchNode->GetNode("showNodeId")) != 0)
+        SetShowNodeId(node->AsBool());
+    if((node = searchNode->GetNode("showNodeDomainLogicalCoords")) != 0)
+        SetShowNodeDomainLogicalCoords(node->AsBool());
+    if((node = searchNode->GetNode("showNodeBlockLogicalCoords")) != 0)
+        SetShowNodeBlockLogicalCoords(node->AsBool());
+    if((node = searchNode->GetNode("showNodePhysicalCoords")) != 0)
+        SetShowNodePhysicalCoords(node->AsBool());
+    if((node = searchNode->GetNode("showZoneId")) != 0)
+        SetShowZoneId(node->AsBool());
+    if((node = searchNode->GetNode("showZoneDomainLogicalCoords")) != 0)
+        SetShowZoneDomainLogicalCoords(node->AsBool());
+    if((node = searchNode->GetNode("showZoneBlockLogicalCoords")) != 0)
+        SetShowZoneBlockLogicalCoords(node->AsBool());
+    // clearWindow is not persistent and was not saved.
+    // pickLetter is not persistent and was not saved.
+    // fulfilled is not persistent and was not saved.
+    // pickType is not persistent and was not saved.
+    // domain is not persistent and was not saved.
+    // elementNumber is not persistent and was not saved.
+    // incidentElements is not persistent and was not saved.
+    // cellCoordinates is not persistent and was not saved.
+    // timeStep is not persistent and was not saved.
+    // dimension is not persistent and was not saved.
+    // databaseName is not persistent and was not saved.
+    // activeVariable is not persistent and was not saved.
+    // pickPoint is not persistent and was not saved.
+    // cellPoint is not persistent and was not saved.
+    // nodePoint is not persistent and was not saved.
+    // plotBounds is not persistent and was not saved.
+    // rayPoint1 is not persistent and was not saved.
+    // rayPoint2 is not persistent and was not saved.
+    // meshInfo is not persistent and was not saved.
+    // realElementNumber is not persistent and was not saved.
+    // realIncidentElements is not persistent and was not saved.
+    // pnodeCoords is not persistent and was not saved.
+    // dnodeCoords is not persistent and was not saved.
+    // bnodeCoords is not persistent and was not saved.
+    // dzoneCoords is not persistent and was not saved.
+    // bzoneCoords is not persistent and was not saved.
+    // needTransformMessage is not persistent and was not saved.
+    // varInfo is not persistent and was not saved.
+    // invalidVars is not persistent and was not saved.
+    if((node = searchNode->GetNode("doTimeCurve")) != 0)
+        SetDoTimeCurve(node->AsBool());
+    // errorMessage is not persistent and was not saved.
+    // error is not persistent and was not saved.
+    // matSelected is not persistent and was not saved.
+    // needActualCoords is not persistent and was not saved.
+    if((node = searchNode->GetNode("conciseOutput")) != 0)
+        SetConciseOutput(node->AsBool());
+    if((node = searchNode->GetNode("showTimeStep")) != 0)
+        SetShowTimeStep(node->AsBool());
+    if((node = searchNode->GetNode("showMeshName")) != 0)
+        SetShowMeshName(node->AsBool());
+    // blockPieceName is not persistent and was not saved.
+    // groupPieceName is not persistent and was not saved.
+    // ghosts is not persistent and was not saved.
+    // includeGhosts is not persistent and was not saved.
+    // elementIsGhost is not persistent and was not saved.
+    // requiresGlyphPick is not persistent and was not saved.
+    // locationSuccessful is not persistent and was not saved.
+    if((node = searchNode->GetNode("useLabelAsPickLetter")) != 0)
+        SetUseLabelAsPickLetter(node->AsBool());
+    if((node = searchNode->GetNode("showGlobalIds")) != 0)
+        SetShowGlobalIds(node->AsBool());
+    // globalElement is not persistent and was not saved.
+    // globalIncidentElements is not persistent and was not saved.
+    // elementIsGlobal is not persistent and was not saved.
+    if((node = searchNode->GetNode("showPickLetter")) != 0)
+        SetShowPickLetter(node->AsBool());
+    if((node = searchNode->GetNode("hasRangeOutput")) != 0)
+        SetHasRangeOutput(node->AsBool());
+    // rangeOutput is not persistent and was not saved.
+    if((node = searchNode->GetNode("elementLabel")) != 0)
+        SetElementLabel(node->AsString());
+    // reusePickLetter is not persistent and was not saved.
+    // ghostType is not persistent and was not saved.
+    // hasMixedGhostTypes is not persistent and was not saved.
+    // linesData is not persistent and was not saved.
+    // showPickHighlight is not persistent and was not saved.
+    // notifyEnabled is not persistent and was not saved.
+    // inputTopoDim is not persistent and was not saved.
+    // meshCoordType is not persistent and was not saved.
+    if((node = searchNode->GetNode("createSpreadsheet")) != 0)
+        SetCreateSpreadsheet(node->AsBool());
+    // subsetName is not persistent and was not saved.
+    if((node = searchNode->GetNode("floatFormat")) != 0)
+        SetFloatFormat(node->AsString());
+    if((node = searchNode->GetNode("timePreserveCoord")) != 0)
+        SetTimePreserveCoord(node->AsBool());
+    // timeCurveType is not persistent and was not saved.
+    // timeOptions is not persistent and was not saved.
+    // plotRequested is not persistent and was not saved.
+    // pickHighlightColor is not persistent and was not saved.
+    if((node = searchNode->GetNode("removedPicks")) != 0)
+        SetRemovedPicks(node->AsString());
+    if((node = searchNode->GetNode("swivelFocusToPick")) != 0)
+        SetSwivelFocusToPick(node->AsBool());
+    if((node = searchNode->GetNode("overridePickLabel")) != 0)
+        SetOverridePickLabel(node->AsBool());
+    if((node = searchNode->GetNode("forcedPickLabel")) != 0)
+        SetForcedPickLabel(node->AsString());
+    if((node = searchNode->GetNode("removeLabelTwins")) != 0)
+        SetRemoveLabelTwins(node->AsBool());
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Set property methods
+///////////////////////////////////////////////////////////////////////////////
+
+void
+PickAttributes::SetVariables(const stringVector &variables_)
+{
+    variables = variables_;
+    Select(ID_variables, (void *)&variables);
+}
+
+void
+PickAttributes::SetShowIncidentElements(bool showIncidentElements_)
+{
+    showIncidentElements = showIncidentElements_;
+    Select(ID_showIncidentElements, (void *)&showIncidentElements);
+}
+
+void
+PickAttributes::SetShowNodeId(bool showNodeId_)
+{
+    showNodeId = showNodeId_;
+    Select(ID_showNodeId, (void *)&showNodeId);
+}
+
+void
+PickAttributes::SetShowNodeDomainLogicalCoords(bool showNodeDomainLogicalCoords_)
+{
+    showNodeDomainLogicalCoords = showNodeDomainLogicalCoords_;
+    Select(ID_showNodeDomainLogicalCoords, (void *)&showNodeDomainLogicalCoords);
+}
+
+void
+PickAttributes::SetShowNodeBlockLogicalCoords(bool showNodeBlockLogicalCoords_)
+{
+    showNodeBlockLogicalCoords = showNodeBlockLogicalCoords_;
+    Select(ID_showNodeBlockLogicalCoords, (void *)&showNodeBlockLogicalCoords);
+}
+
+void
+PickAttributes::SetShowNodePhysicalCoords(bool showNodePhysicalCoords_)
+{
+    showNodePhysicalCoords = showNodePhysicalCoords_;
+    Select(ID_showNodePhysicalCoords, (void *)&showNodePhysicalCoords);
+}
+
+void
+PickAttributes::SetShowZoneId(bool showZoneId_)
+{
+    showZoneId = showZoneId_;
+    Select(ID_showZoneId, (void *)&showZoneId);
+}
+
+void
+PickAttributes::SetShowZoneDomainLogicalCoords(bool showZoneDomainLogicalCoords_)
+{
+    showZoneDomainLogicalCoords = showZoneDomainLogicalCoords_;
+    Select(ID_showZoneDomainLogicalCoords, (void *)&showZoneDomainLogicalCoords);
+}
+
+void
+PickAttributes::SetShowZoneBlockLogicalCoords(bool showZoneBlockLogicalCoords_)
+{
+    showZoneBlockLogicalCoords = showZoneBlockLogicalCoords_;
+    Select(ID_showZoneBlockLogicalCoords, (void *)&showZoneBlockLogicalCoords);
+}
+
+void
+PickAttributes::SetClearWindow(bool clearWindow_)
+{
+    clearWindow = clearWindow_;
+    Select(ID_clearWindow, (void *)&clearWindow);
+}
+
+void
+PickAttributes::SetPickLetter(const std::string &pickLetter_)
+{
+    pickLetter = pickLetter_;
+    Select(ID_pickLetter, (void *)&pickLetter);
+}
+
+void
+PickAttributes::SetFulfilled(bool fulfilled_)
+{
+    fulfilled = fulfilled_;
+    Select(ID_fulfilled, (void *)&fulfilled);
+}
+
+void
+PickAttributes::SetPickType(PickAttributes::PickType pickType_)
+{
+    pickType = pickType_;
+    Select(ID_pickType, (void *)&pickType);
+}
+
+void
+PickAttributes::SetDomain(int domain_)
+{
+    domain = domain_;
+    Select(ID_domain, (void *)&domain);
+}
+
+void
+PickAttributes::SetElementNumber(int elementNumber_)
+{
+    elementNumber = elementNumber_;
+    Select(ID_elementNumber, (void *)&elementNumber);
+}
+
+void
+PickAttributes::SetIncidentElements(const intVector &incidentElements_)
+{
+    incidentElements = incidentElements_;
+    Select(ID_incidentElements, (void *)&incidentElements);
+}
+
+void
+PickAttributes::SetCellCoordinates(const doubleVector &cellCoordinates_)
+{
+    cellCoordinates = cellCoordinates_;
+    Select(ID_cellCoordinates, (void *)&cellCoordinates);
+}
+
+void
+PickAttributes::SetTimeStep(int timeStep_)
+{
+    timeStep = timeStep_;
+    Select(ID_timeStep, (void *)&timeStep);
+}
+
+void
+PickAttributes::SetDimension(int dimension_)
+{
+    dimension = dimension_;
+    Select(ID_dimension, (void *)&dimension);
+}
+
+void
+PickAttributes::SetDatabaseName(const std::string &databaseName_)
+{
+    databaseName = databaseName_;
+    Select(ID_databaseName, (void *)&databaseName);
+}
+
+void
+PickAttributes::SetActiveVariable(const std::string &activeVariable_)
+{
+    activeVariable = activeVariable_;
+    Select(ID_activeVariable, (void *)&activeVariable);
+}
+
+void
+PickAttributes::SetPickPoint(const double *pickPoint_)
+{
+    pickPoint[0] = pickPoint_[0];
+    pickPoint[1] = pickPoint_[1];
+    pickPoint[2] = pickPoint_[2];
+    Select(ID_pickPoint, (void *)pickPoint, 3);
+}
+
+void
+PickAttributes::SetCellPoint(const double *cellPoint_)
+{
+    cellPoint[0] = cellPoint_[0];
+    cellPoint[1] = cellPoint_[1];
+    cellPoint[2] = cellPoint_[2];
+    Select(ID_cellPoint, (void *)cellPoint, 3);
+}
+
+void
+PickAttributes::SetNodePoint(const double *nodePoint_)
+{
+    nodePoint[0] = nodePoint_[0];
+    nodePoint[1] = nodePoint_[1];
+    nodePoint[2] = nodePoint_[2];
+    Select(ID_nodePoint, (void *)nodePoint, 3);
+}
+
+void
+PickAttributes::SetPlotBounds(const doubleVector &plotBounds_)
+{
+    plotBounds = plotBounds_;
+    Select(ID_plotBounds, (void *)&plotBounds);
+}
+
+void
+PickAttributes::SetRayPoint1(const double *rayPoint1_)
+{
+    rayPoint1[0] = rayPoint1_[0];
+    rayPoint1[1] = rayPoint1_[1];
+    rayPoint1[2] = rayPoint1_[2];
+    Select(ID_rayPoint1, (void *)rayPoint1, 3);
+}
+
+void
+PickAttributes::SetRayPoint2(const double *rayPoint2_)
+{
+    rayPoint2[0] = rayPoint2_[0];
+    rayPoint2[1] = rayPoint2_[1];
+    rayPoint2[2] = rayPoint2_[2];
+    Select(ID_rayPoint2, (void *)rayPoint2, 3);
+}
+
+void
+PickAttributes::SetMeshInfo(const std::string &meshInfo_)
+{
+    meshInfo = meshInfo_;
+    Select(ID_meshInfo, (void *)&meshInfo);
+}
+
+void
+PickAttributes::SetRealElementNumber(int realElementNumber_)
+{
+    realElementNumber = realElementNumber_;
+    Select(ID_realElementNumber, (void *)&realElementNumber);
+}
+
+void
+PickAttributes::SetRealIncidentElements(const intVector &realIncidentElements_)
+{
+    realIncidentElements = realIncidentElements_;
+    Select(ID_realIncidentElements, (void *)&realIncidentElements);
+}
+
+void
+PickAttributes::SetPnodeCoords(const stringVector &pnodeCoords_)
+{
+    pnodeCoords = pnodeCoords_;
+    Select(ID_pnodeCoords, (void *)&pnodeCoords);
+}
+
+void
+PickAttributes::SetDnodeCoords(const stringVector &dnodeCoords_)
+{
+    dnodeCoords = dnodeCoords_;
+    Select(ID_dnodeCoords, (void *)&dnodeCoords);
+}
+
+void
+PickAttributes::SetBnodeCoords(const stringVector &bnodeCoords_)
+{
+    bnodeCoords = bnodeCoords_;
+    Select(ID_bnodeCoords, (void *)&bnodeCoords);
+}
+
+void
+PickAttributes::SetDzoneCoords(const stringVector &dzoneCoords_)
+{
+    dzoneCoords = dzoneCoords_;
+    Select(ID_dzoneCoords, (void *)&dzoneCoords);
+}
+
+void
+PickAttributes::SetBzoneCoords(const stringVector &bzoneCoords_)
+{
+    bzoneCoords = bzoneCoords_;
+    Select(ID_bzoneCoords, (void *)&bzoneCoords);
+}
+
+void
+PickAttributes::SetNeedTransformMessage(bool needTransformMessage_)
+{
+    needTransformMessage = needTransformMessage_;
+    Select(ID_needTransformMessage, (void *)&needTransformMessage);
+}
+
+void
+PickAttributes::SetInvalidVars(const stringVector &invalidVars_)
+{
+    invalidVars = invalidVars_;
+    Select(ID_invalidVars, (void *)&invalidVars);
+}
+
+void
+PickAttributes::SetDoTimeCurve(bool doTimeCurve_)
+{
+    doTimeCurve = doTimeCurve_;
+    Select(ID_doTimeCurve, (void *)&doTimeCurve);
+}
+
+void
+PickAttributes::SetErrorMessage(const std::string &errorMessage_)
+{
+    errorMessage = errorMessage_;
+    Select(ID_errorMessage, (void *)&errorMessage);
+}
+
+void
+PickAttributes::SetError(bool error_)
+{
+    error = error_;
+    Select(ID_error, (void *)&error);
+}
+
+void
+PickAttributes::SetMatSelected(bool matSelected_)
+{
+    matSelected = matSelected_;
+    Select(ID_matSelected, (void *)&matSelected);
+}
+
+void
+PickAttributes::SetNeedActualCoords(bool needActualCoords_)
+{
+    needActualCoords = needActualCoords_;
+    Select(ID_needActualCoords, (void *)&needActualCoords);
+}
+
+void
+PickAttributes::SetConciseOutput(bool conciseOutput_)
+{
+    conciseOutput = conciseOutput_;
+    Select(ID_conciseOutput, (void *)&conciseOutput);
+}
+
+void
+PickAttributes::SetShowTimeStep(bool showTimeStep_)
+{
+    showTimeStep = showTimeStep_;
+    Select(ID_showTimeStep, (void *)&showTimeStep);
+}
+
+void
+PickAttributes::SetShowMeshName(bool showMeshName_)
+{
+    showMeshName = showMeshName_;
+    Select(ID_showMeshName, (void *)&showMeshName);
+}
+
+void
+PickAttributes::SetBlockPieceName(const std::string &blockPieceName_)
+{
+    blockPieceName = blockPieceName_;
+    Select(ID_blockPieceName, (void *)&blockPieceName);
+}
+
+void
+PickAttributes::SetGroupPieceName(const std::string &groupPieceName_)
+{
+    groupPieceName = groupPieceName_;
+    Select(ID_groupPieceName, (void *)&groupPieceName);
+}
+
+void
+PickAttributes::SetGhosts(const intVector &ghosts_)
+{
+    ghosts = ghosts_;
+    Select(ID_ghosts, (void *)&ghosts);
+}
+
+void
+PickAttributes::SetIncludeGhosts(bool includeGhosts_)
+{
+    includeGhosts = includeGhosts_;
+    Select(ID_includeGhosts, (void *)&includeGhosts);
+}
+
+void
+PickAttributes::SetElementIsGhost(bool elementIsGhost_)
+{
+    elementIsGhost = elementIsGhost_;
+    Select(ID_elementIsGhost, (void *)&elementIsGhost);
+}
+
+void
+PickAttributes::SetRequiresGlyphPick(bool requiresGlyphPick_)
+{
+    requiresGlyphPick = requiresGlyphPick_;
+    Select(ID_requiresGlyphPick, (void *)&requiresGlyphPick);
+}
+
+void
+PickAttributes::SetLocationSuccessful(bool locationSuccessful_)
+{
+    locationSuccessful = locationSuccessful_;
+    Select(ID_locationSuccessful, (void *)&locationSuccessful);
+}
+
+void
+PickAttributes::SetUseLabelAsPickLetter(bool useLabelAsPickLetter_)
+{
+    useLabelAsPickLetter = useLabelAsPickLetter_;
+    Select(ID_useLabelAsPickLetter, (void *)&useLabelAsPickLetter);
+}
+
+void
+PickAttributes::SetShowGlobalIds(bool showGlobalIds_)
+{
+    showGlobalIds = showGlobalIds_;
+    Select(ID_showGlobalIds, (void *)&showGlobalIds);
+}
+
+void
+PickAttributes::SetGlobalElement(int globalElement_)
+{
+    globalElement = globalElement_;
+    Select(ID_globalElement, (void *)&globalElement);
+}
+
+void
+PickAttributes::SetGlobalIncidentElements(const intVector &globalIncidentElements_)
+{
+    globalIncidentElements = globalIncidentElements_;
+    Select(ID_globalIncidentElements, (void *)&globalIncidentElements);
+}
+
+void
+PickAttributes::SetElementIsGlobal(bool elementIsGlobal_)
+{
+    elementIsGlobal = elementIsGlobal_;
+    Select(ID_elementIsGlobal, (void *)&elementIsGlobal);
+}
+
+void
+PickAttributes::SetShowPickLetter(bool showPickLetter_)
+{
+    showPickLetter = showPickLetter_;
+    Select(ID_showPickLetter, (void *)&showPickLetter);
+}
+
+void
+PickAttributes::SetHasRangeOutput(bool hasRangeOutput_)
+{
+    hasRangeOutput = hasRangeOutput_;
+    Select(ID_hasRangeOutput, (void *)&hasRangeOutput);
+}
+
+void
+PickAttributes::SetRangeOutput(const MapNode &rangeOutput_)
+{
+    rangeOutput = rangeOutput_;
+    Select(ID_rangeOutput, (void *)&rangeOutput);
+}
+
+void
+PickAttributes::SetElementLabel(const std::string &elementLabel_)
+{
+    elementLabel = elementLabel_;
+    Select(ID_elementLabel, (void *)&elementLabel);
+}
+
+void
+PickAttributes::SetReusePickLetter(bool reusePickLetter_)
+{
+    reusePickLetter = reusePickLetter_;
+    Select(ID_reusePickLetter, (void *)&reusePickLetter);
+}
+
+void
+PickAttributes::SetGhostType(int ghostType_)
+{
+    ghostType = ghostType_;
+    Select(ID_ghostType, (void *)&ghostType);
+}
+
+void
+PickAttributes::SetHasMixedGhostTypes(int hasMixedGhostTypes_)
+{
+    hasMixedGhostTypes = hasMixedGhostTypes_;
+    Select(ID_hasMixedGhostTypes, (void *)&hasMixedGhostTypes);
+}
+
+void
+PickAttributes::SetLinesData(bool linesData_)
+{
+    linesData = linesData_;
+    Select(ID_linesData, (void *)&linesData);
+}
+
+void
+PickAttributes::SetShowPickHighlight(bool showPickHighlight_)
+{
+    showPickHighlight = showPickHighlight_;
+    Select(ID_showPickHighlight, (void *)&showPickHighlight);
+}
+
+void
+PickAttributes::SetNotifyEnabled(bool notifyEnabled_)
+{
+    notifyEnabled = notifyEnabled_;
+    Select(ID_notifyEnabled, (void *)&notifyEnabled);
+}
+
+void
+PickAttributes::SetInputTopoDim(int inputTopoDim_)
+{
+    inputTopoDim = inputTopoDim_;
+    Select(ID_inputTopoDim, (void *)&inputTopoDim);
+}
+
+void
+PickAttributes::SetMeshCoordType(PickAttributes::CoordinateType meshCoordType_)
+{
+    meshCoordType = meshCoordType_;
+    Select(ID_meshCoordType, (void *)&meshCoordType);
+}
+
+void
+PickAttributes::SetCreateSpreadsheet(bool createSpreadsheet_)
+{
+    createSpreadsheet = createSpreadsheet_;
+    Select(ID_createSpreadsheet, (void *)&createSpreadsheet);
+}
+
+void
+PickAttributes::SetSubsetName(const std::string &subsetName_)
+{
+    subsetName = subsetName_;
+    Select(ID_subsetName, (void *)&subsetName);
+}
+
+void
+PickAttributes::SetFloatFormat(const std::string &floatFormat_)
+{
+    floatFormat = floatFormat_;
+    Select(ID_floatFormat, (void *)&floatFormat);
+}
+
+void
+PickAttributes::SetTimePreserveCoord(bool timePreserveCoord_)
+{
+    timePreserveCoord = timePreserveCoord_;
+    Select(ID_timePreserveCoord, (void *)&timePreserveCoord);
+}
+
+void
+PickAttributes::SetTimeCurveType(PickAttributes::TimeCurveType timeCurveType_)
+{
+    timeCurveType = timeCurveType_;
+    Select(ID_timeCurveType, (void *)&timeCurveType);
+}
+
+void
+PickAttributes::SetTimeOptions(const MapNode &timeOptions_)
+{
+    timeOptions = timeOptions_;
+    Select(ID_timeOptions, (void *)&timeOptions);
+}
+
+void
+PickAttributes::SetPlotRequested(const MapNode &plotRequested_)
+{
+    plotRequested = plotRequested_;
+    Select(ID_plotRequested, (void *)&plotRequested);
+}
+
+void
+PickAttributes::SetPickHighlightColor(const int *pickHighlightColor_)
+{
+    pickHighlightColor[0] = pickHighlightColor_[0];
+    pickHighlightColor[1] = pickHighlightColor_[1];
+    pickHighlightColor[2] = pickHighlightColor_[2];
+    Select(ID_pickHighlightColor, (void *)pickHighlightColor, 3);
+}
+
+void
+PickAttributes::SetRemovedPicks(const std::string &removedPicks_)
+{
+    removedPicks = removedPicks_;
+    Select(ID_removedPicks, (void *)&removedPicks);
+}
+
+void
+PickAttributes::SetSwivelFocusToPick(bool swivelFocusToPick_)
+{
+    swivelFocusToPick = swivelFocusToPick_;
+    Select(ID_swivelFocusToPick, (void *)&swivelFocusToPick);
+}
+
+void
+PickAttributes::SetOverridePickLabel(bool overridePickLabel_)
+{
+    overridePickLabel = overridePickLabel_;
+    Select(ID_overridePickLabel, (void *)&overridePickLabel);
+}
+
+void
+PickAttributes::SetForcedPickLabel(const std::string &forcedPickLabel_)
+{
+    forcedPickLabel = forcedPickLabel_;
+    Select(ID_forcedPickLabel, (void *)&forcedPickLabel);
+}
+
+void
+PickAttributes::SetRemoveLabelTwins(bool removeLabelTwins_)
+{
+    removeLabelTwins = removeLabelTwins_;
+    Select(ID_removeLabelTwins, (void *)&removeLabelTwins);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Get property methods
+///////////////////////////////////////////////////////////////////////////////
+
+const stringVector &
+PickAttributes::GetVariables() const
+{
+    return variables;
+}
+
+stringVector &
+PickAttributes::GetVariables()
+{
+    return variables;
+}
+
+bool
+PickAttributes::GetShowIncidentElements() const
+{
+    return showIncidentElements;
+}
+
+bool
+PickAttributes::GetShowNodeId() const
+{
+    return showNodeId;
+}
+
+bool
+PickAttributes::GetShowNodeDomainLogicalCoords() const
+{
+    return showNodeDomainLogicalCoords;
+}
+
+bool
+PickAttributes::GetShowNodeBlockLogicalCoords() const
+{
+    return showNodeBlockLogicalCoords;
+}
+
+bool
+PickAttributes::GetShowNodePhysicalCoords() const
+{
+    return showNodePhysicalCoords;
+}
+
+bool
+PickAttributes::GetShowZoneId() const
+{
+    return showZoneId;
+}
+
+bool
+PickAttributes::GetShowZoneDomainLogicalCoords() const
+{
+    return showZoneDomainLogicalCoords;
+}
+
+bool
+PickAttributes::GetShowZoneBlockLogicalCoords() const
+{
+    return showZoneBlockLogicalCoords;
+}
+
+bool
+PickAttributes::GetClearWindow() const
+{
+    return clearWindow;
+}
+
+const std::string &
+PickAttributes::GetPickLetter() const
+{
+    return pickLetter;
+}
+
+std::string &
+PickAttributes::GetPickLetter()
+{
+    return pickLetter;
+}
+
+bool
+PickAttributes::GetFulfilled() const
+{
+    return fulfilled;
+}
+
+PickAttributes::PickType
+PickAttributes::GetPickType() const
+{
+    return PickType(pickType);
+}
+
+int
+PickAttributes::GetDomain() const
+{
+    return domain;
+}
+
+int
+PickAttributes::GetElementNumber() const
+{
+    return elementNumber;
+}
+
+const intVector &
+PickAttributes::GetIncidentElements() const
+{
+    return incidentElements;
+}
+
+intVector &
+PickAttributes::GetIncidentElements()
+{
+    return incidentElements;
+}
+
+const doubleVector &
+PickAttributes::GetCellCoordinates() const
+{
+    return cellCoordinates;
+}
+
+doubleVector &
+PickAttributes::GetCellCoordinates()
+{
+    return cellCoordinates;
+}
+
+int
+PickAttributes::GetTimeStep() const
+{
+    return timeStep;
+}
+
+int
+PickAttributes::GetDimension() const
+{
+    return dimension;
+}
+
+const std::string &
+PickAttributes::GetDatabaseName() const
+{
+    return databaseName;
+}
+
+std::string &
+PickAttributes::GetDatabaseName()
+{
+    return databaseName;
+}
+
+const std::string &
+PickAttributes::GetActiveVariable() const
+{
+    return activeVariable;
+}
+
+std::string &
+PickAttributes::GetActiveVariable()
+{
+    return activeVariable;
+}
+
+const double *
+PickAttributes::GetPickPoint() const
+{
+    return pickPoint;
+}
+
+double *
+PickAttributes::GetPickPoint()
+{
+    return pickPoint;
+}
+
+const double *
+PickAttributes::GetCellPoint() const
+{
+    return cellPoint;
+}
+
+double *
+PickAttributes::GetCellPoint()
+{
+    return cellPoint;
+}
+
+const double *
+PickAttributes::GetNodePoint() const
+{
+    return nodePoint;
+}
+
+double *
+PickAttributes::GetNodePoint()
+{
+    return nodePoint;
+}
+
+const doubleVector &
+PickAttributes::GetPlotBounds() const
+{
+    return plotBounds;
+}
+
+doubleVector &
+PickAttributes::GetPlotBounds()
+{
+    return plotBounds;
+}
+
+const double *
+PickAttributes::GetRayPoint1() const
+{
+    return rayPoint1;
+}
+
+double *
+PickAttributes::GetRayPoint1()
+{
+    return rayPoint1;
+}
+
+const double *
+PickAttributes::GetRayPoint2() const
+{
+    return rayPoint2;
+}
+
+double *
+PickAttributes::GetRayPoint2()
+{
+    return rayPoint2;
+}
+
+const std::string &
+PickAttributes::GetMeshInfo() const
+{
+    return meshInfo;
+}
+
+std::string &
+PickAttributes::GetMeshInfo()
+{
+    return meshInfo;
+}
+
+int
+PickAttributes::GetRealElementNumber() const
+{
+    return realElementNumber;
+}
+
+const intVector &
+PickAttributes::GetRealIncidentElements() const
+{
+    return realIncidentElements;
+}
+
+intVector &
+PickAttributes::GetRealIncidentElements()
+{
+    return realIncidentElements;
+}
+
+const stringVector &
+PickAttributes::GetPnodeCoords() const
+{
+    return pnodeCoords;
+}
+
+stringVector &
+PickAttributes::GetPnodeCoords()
+{
+    return pnodeCoords;
+}
+
+const stringVector &
+PickAttributes::GetDnodeCoords() const
+{
+    return dnodeCoords;
+}
+
+stringVector &
+PickAttributes::GetDnodeCoords()
+{
+    return dnodeCoords;
+}
+
+const stringVector &
+PickAttributes::GetBnodeCoords() const
+{
+    return bnodeCoords;
+}
+
+stringVector &
+PickAttributes::GetBnodeCoords()
+{
+    return bnodeCoords;
+}
+
+const stringVector &
+PickAttributes::GetDzoneCoords() const
+{
+    return dzoneCoords;
+}
+
+stringVector &
+PickAttributes::GetDzoneCoords()
+{
+    return dzoneCoords;
+}
+
+const stringVector &
+PickAttributes::GetBzoneCoords() const
+{
+    return bzoneCoords;
+}
+
+stringVector &
+PickAttributes::GetBzoneCoords()
+{
+    return bzoneCoords;
+}
+
+bool
+PickAttributes::GetNeedTransformMessage() const
+{
+    return needTransformMessage;
+}
+
+const AttributeGroupVector &
+PickAttributes::GetVarInfo() const
+{
+    return varInfo;
+}
+
+AttributeGroupVector &
+PickAttributes::GetVarInfo()
+{
+    return varInfo;
+}
+
+const stringVector &
+PickAttributes::GetInvalidVars() const
+{
+    return invalidVars;
+}
+
+stringVector &
+PickAttributes::GetInvalidVars()
+{
+    return invalidVars;
+}
+
+bool
+PickAttributes::GetDoTimeCurve() const
+{
+    return doTimeCurve;
+}
+
+const std::string &
+PickAttributes::GetErrorMessage() const
+{
+    return errorMessage;
+}
+
+std::string &
+PickAttributes::GetErrorMessage()
+{
+    return errorMessage;
+}
+
+bool
+PickAttributes::GetError() const
+{
+    return error;
+}
+
+bool
+PickAttributes::GetMatSelected() const
+{
+    return matSelected;
+}
+
+bool
+PickAttributes::GetNeedActualCoords() const
+{
+    return needActualCoords;
+}
+
+bool
+PickAttributes::GetConciseOutput() const
+{
+    return conciseOutput;
+}
+
+bool
+PickAttributes::GetShowTimeStep() const
+{
+    return showTimeStep;
+}
+
+bool
+PickAttributes::GetShowMeshName() const
+{
+    return showMeshName;
+}
+
+const std::string &
+PickAttributes::GetBlockPieceName() const
+{
+    return blockPieceName;
+}
+
+std::string &
+PickAttributes::GetBlockPieceName()
+{
+    return blockPieceName;
+}
+
+const std::string &
+PickAttributes::GetGroupPieceName() const
+{
+    return groupPieceName;
+}
+
+std::string &
+PickAttributes::GetGroupPieceName()
+{
+    return groupPieceName;
+}
+
+const intVector &
+PickAttributes::GetGhosts() const
+{
+    return ghosts;
+}
+
+intVector &
+PickAttributes::GetGhosts()
+{
+    return ghosts;
+}
+
+bool
+PickAttributes::GetIncludeGhosts() const
+{
+    return includeGhosts;
+}
+
+bool
+PickAttributes::GetElementIsGhost() const
+{
+    return elementIsGhost;
+}
+
+bool
+PickAttributes::GetRequiresGlyphPick() const
+{
+    return requiresGlyphPick;
+}
+
+bool
+PickAttributes::GetLocationSuccessful() const
+{
+    return locationSuccessful;
+}
+
+bool
+PickAttributes::GetUseLabelAsPickLetter() const
+{
+    return useLabelAsPickLetter;
+}
+
+bool
+PickAttributes::GetShowGlobalIds() const
+{
+    return showGlobalIds;
+}
+
+int
+PickAttributes::GetGlobalElement() const
+{
+    return globalElement;
+}
+
+const intVector &
+PickAttributes::GetGlobalIncidentElements() const
+{
+    return globalIncidentElements;
+}
+
+intVector &
+PickAttributes::GetGlobalIncidentElements()
+{
+    return globalIncidentElements;
+}
+
+bool
+PickAttributes::GetElementIsGlobal() const
+{
+    return elementIsGlobal;
+}
+
+bool
+PickAttributes::GetShowPickLetter() const
+{
+    return showPickLetter;
+}
+
+bool
+PickAttributes::GetHasRangeOutput() const
+{
+    return hasRangeOutput;
+}
+
+const MapNode &
+PickAttributes::GetRangeOutput() const
+{
+    return rangeOutput;
+}
+
+MapNode &
+PickAttributes::GetRangeOutput()
+{
+    return rangeOutput;
+}
+
+const std::string &
+PickAttributes::GetElementLabel() const
+{
+    return elementLabel;
+}
+
+std::string &
+PickAttributes::GetElementLabel()
+{
+    return elementLabel;
+}
+
+bool
+PickAttributes::GetReusePickLetter() const
+{
+    return reusePickLetter;
+}
+
+int
+PickAttributes::GetGhostType() const
+{
+    return ghostType;
+}
+
+int
+PickAttributes::GetHasMixedGhostTypes() const
+{
+    return hasMixedGhostTypes;
+}
+
+bool
+PickAttributes::GetLinesData() const
+{
+    return linesData;
+}
+
+bool
+PickAttributes::GetShowPickHighlight() const
+{
+    return showPickHighlight;
+}
+
+bool
+PickAttributes::GetNotifyEnabled() const
+{
+    return notifyEnabled;
+}
+
+int
+PickAttributes::GetInputTopoDim() const
+{
+    return inputTopoDim;
+}
+
+PickAttributes::CoordinateType
+PickAttributes::GetMeshCoordType() const
+{
+    return CoordinateType(meshCoordType);
+}
+
+bool
+PickAttributes::GetCreateSpreadsheet() const
+{
+    return createSpreadsheet;
+}
+
+const std::string &
+PickAttributes::GetSubsetName() const
+{
+    return subsetName;
+}
+
+std::string &
+PickAttributes::GetSubsetName()
+{
+    return subsetName;
+}
+
+const std::string &
+PickAttributes::GetFloatFormat() const
+{
+    return floatFormat;
+}
+
+std::string &
+PickAttributes::GetFloatFormat()
+{
+    return floatFormat;
+}
+
+bool
+PickAttributes::GetTimePreserveCoord() const
+{
+    return timePreserveCoord;
+}
+
+PickAttributes::TimeCurveType
+PickAttributes::GetTimeCurveType() const
+{
+    return TimeCurveType(timeCurveType);
+}
+
+const MapNode &
+PickAttributes::GetTimeOptions() const
+{
+    return timeOptions;
+}
+
+MapNode &
+PickAttributes::GetTimeOptions()
+{
+    return timeOptions;
+}
+
+const MapNode &
+PickAttributes::GetPlotRequested() const
+{
+    return plotRequested;
+}
+
+MapNode &
+PickAttributes::GetPlotRequested()
+{
+    return plotRequested;
+}
+
+const int *
+PickAttributes::GetPickHighlightColor() const
+{
+    return pickHighlightColor;
+}
+
+int *
+PickAttributes::GetPickHighlightColor()
+{
+    return pickHighlightColor;
+}
+
+const std::string &
+PickAttributes::GetRemovedPicks() const
+{
+    return removedPicks;
+}
+
+std::string &
+PickAttributes::GetRemovedPicks()
+{
+    return removedPicks;
+}
+
+bool
+PickAttributes::GetSwivelFocusToPick() const
+{
+    return swivelFocusToPick;
+}
+
+bool
+PickAttributes::GetOverridePickLabel() const
+{
+    return overridePickLabel;
+}
+
+const std::string &
+PickAttributes::GetForcedPickLabel() const
+{
+    return forcedPickLabel;
+}
+
+std::string &
+PickAttributes::GetForcedPickLabel()
+{
+    return forcedPickLabel;
+}
+
+bool
+PickAttributes::GetRemoveLabelTwins() const
+{
+    return removeLabelTwins;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Select property methods
+///////////////////////////////////////////////////////////////////////////////
+
+void
+PickAttributes::SelectVariables()
+{
+    Select(ID_variables, (void *)&variables);
+}
+
+void
+PickAttributes::SelectPickLetter()
+{
+    Select(ID_pickLetter, (void *)&pickLetter);
+}
+
+void
+PickAttributes::SelectIncidentElements()
+{
+    Select(ID_incidentElements, (void *)&incidentElements);
+}
+
+void
+PickAttributes::SelectCellCoordinates()
+{
+    Select(ID_cellCoordinates, (void *)&cellCoordinates);
+}
+
+void
+PickAttributes::SelectDatabaseName()
+{
+    Select(ID_databaseName, (void *)&databaseName);
+}
+
+void
+PickAttributes::SelectActiveVariable()
+{
+    Select(ID_activeVariable, (void *)&activeVariable);
+}
+
+void
+PickAttributes::SelectPickPoint()
+{
+    Select(ID_pickPoint, (void *)pickPoint, 3);
+}
+
+void
+PickAttributes::SelectCellPoint()
+{
+    Select(ID_cellPoint, (void *)cellPoint, 3);
+}
+
+void
+PickAttributes::SelectNodePoint()
+{
+    Select(ID_nodePoint, (void *)nodePoint, 3);
+}
+
+void
+PickAttributes::SelectPlotBounds()
+{
+    Select(ID_plotBounds, (void *)&plotBounds);
+}
+
+void
+PickAttributes::SelectRayPoint1()
+{
+    Select(ID_rayPoint1, (void *)rayPoint1, 3);
+}
+
+void
+PickAttributes::SelectRayPoint2()
+{
+    Select(ID_rayPoint2, (void *)rayPoint2, 3);
+}
+
+void
+PickAttributes::SelectMeshInfo()
+{
+    Select(ID_meshInfo, (void *)&meshInfo);
+}
+
+void
+PickAttributes::SelectRealIncidentElements()
+{
+    Select(ID_realIncidentElements, (void *)&realIncidentElements);
+}
+
+void
+PickAttributes::SelectPnodeCoords()
+{
+    Select(ID_pnodeCoords, (void *)&pnodeCoords);
+}
+
+void
+PickAttributes::SelectDnodeCoords()
+{
+    Select(ID_dnodeCoords, (void *)&dnodeCoords);
+}
+
+void
+PickAttributes::SelectBnodeCoords()
+{
+    Select(ID_bnodeCoords, (void *)&bnodeCoords);
+}
+
+void
+PickAttributes::SelectDzoneCoords()
+{
+    Select(ID_dzoneCoords, (void *)&dzoneCoords);
+}
+
+void
+PickAttributes::SelectBzoneCoords()
+{
+    Select(ID_bzoneCoords, (void *)&bzoneCoords);
+}
+
+void
+PickAttributes::SelectVarInfo()
+{
+    Select(ID_varInfo, (void *)&varInfo);
+}
+
+void
+PickAttributes::SelectInvalidVars()
+{
+    Select(ID_invalidVars, (void *)&invalidVars);
+}
+
+void
+PickAttributes::SelectErrorMessage()
+{
+    Select(ID_errorMessage, (void *)&errorMessage);
+}
+
+void
+PickAttributes::SelectBlockPieceName()
+{
+    Select(ID_blockPieceName, (void *)&blockPieceName);
+}
+
+void
+PickAttributes::SelectGroupPieceName()
+{
+    Select(ID_groupPieceName, (void *)&groupPieceName);
+}
+
+void
+PickAttributes::SelectGhosts()
+{
+    Select(ID_ghosts, (void *)&ghosts);
+}
+
+void
+PickAttributes::SelectGlobalIncidentElements()
+{
+    Select(ID_globalIncidentElements, (void *)&globalIncidentElements);
+}
+
+void
+PickAttributes::SelectRangeOutput()
+{
+    Select(ID_rangeOutput, (void *)&rangeOutput);
+}
+
+void
+PickAttributes::SelectElementLabel()
+{
+    Select(ID_elementLabel, (void *)&elementLabel);
+}
+
+void
+PickAttributes::SelectSubsetName()
+{
+    Select(ID_subsetName, (void *)&subsetName);
+}
+
+void
+PickAttributes::SelectFloatFormat()
+{
+    Select(ID_floatFormat, (void *)&floatFormat);
+}
+
+void
+PickAttributes::SelectTimeOptions()
+{
+    Select(ID_timeOptions, (void *)&timeOptions);
+}
+
+void
+PickAttributes::SelectPlotRequested()
+{
+    Select(ID_plotRequested, (void *)&plotRequested);
+}
+
+void
+PickAttributes::SelectPickHighlightColor()
+{
+    Select(ID_pickHighlightColor, (void *)pickHighlightColor, 3);
+}
+
+void
+PickAttributes::SelectRemovedPicks()
+{
+    Select(ID_removedPicks, (void *)&removedPicks);
+}
+
+void
+PickAttributes::SelectForcedPickLabel()
+{
+    Select(ID_forcedPickLabel, (void *)&forcedPickLabel);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// AttributeGroupVector convenience methods.
+///////////////////////////////////////////////////////////////////////////////
+
+// ****************************************************************************
+// Method: PickAttributes::AddVarInfo
+//
+// Purpose: 
+//   This class contains attributes used for pick.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+PickAttributes::AddVarInfo(const PickVarInfo &obj)
+{
+    PickVarInfo *newPickVarInfo = new PickVarInfo(obj);
+    varInfo.push_back(newPickVarInfo);
+
+    // Indicate that things have changed by selecting it.
+    Select(ID_varInfo, (void *)&varInfo);
+}
+
+// ****************************************************************************
+// Method: PickAttributes::ClearVarInfos
+//
+// Purpose: 
+//   This class contains attributes used for pick.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+PickAttributes::ClearVarInfos()
+{
+    AttributeGroupVector::iterator pos;
+
+    for(pos = varInfo.begin(); pos != varInfo.end(); ++pos)
+        delete *pos;
+    varInfo.clear();
+
+    // Indicate that things have changed by selecting the list.
+    Select(ID_varInfo, (void *)&varInfo);
+}
+
+// ****************************************************************************
+// Method: PickAttributes::RemoveVarInfo
+//
+// Purpose: 
+//   This class contains attributes used for pick.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+PickAttributes::RemoveVarInfo(int index)
+{
+    AttributeGroupVector::iterator pos = varInfo.begin();
+
+    // Iterate through the vector "index" times. 
+    for(int i = 0; i < index; ++i)
+        if(pos != varInfo.end()) ++pos;
+
+    // If pos is still a valid iterator, remove that element.
+    if(pos != varInfo.end())
+    {
+        delete *pos;
+        varInfo.erase(pos);
+    }
+
+    // Indicate that things have changed by selecting the list.
+    Select(ID_varInfo, (void *)&varInfo);
+}
+
+// ****************************************************************************
+// Method: PickAttributes::GetNumVarInfos
+//
+// Purpose: 
+//   This class contains attributes used for pick.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+int
+PickAttributes::GetNumVarInfos() const
+{
+    return (int)varInfo.size();
+}
+
+// ****************************************************************************
+// Method: PickAttributes::GetVarInfo
+//
+// Purpose: 
+//   This class contains attributes used for pick.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+PickVarInfo &
+PickAttributes::GetVarInfo(int i)
+{
+    return *((PickVarInfo *)varInfo[i]);
+}
+
+// ****************************************************************************
+// Method: PickAttributes::GetVarInfo
+//
+// Purpose: 
+//   This class contains attributes used for pick.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+const PickVarInfo &
+PickAttributes::GetVarInfo(int i) const
+{
+    return *((PickVarInfo *)varInfo[i]);
+}
+
+// ****************************************************************************
+// Method: PickAttributes::operator []
+//
+// Purpose: 
+//   This class contains attributes used for pick.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+PickVarInfo &
+PickAttributes::operator [] (int i)
+{
+    return *((PickVarInfo *)varInfo[i]);
+}
+
+// ****************************************************************************
+// Method: PickAttributes::operator []
+//
+// Purpose: 
+//   This class contains attributes used for pick.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+const PickVarInfo &
+PickAttributes::operator [] (int i) const
+{
+    return *((PickVarInfo *)varInfo[i]);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Keyframing methods
+///////////////////////////////////////////////////////////////////////////////
+
+// ****************************************************************************
+// Method: PickAttributes::GetFieldName
+//
+// Purpose: 
+//   This method returns the name of a field given its index.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+std::string
+PickAttributes::GetFieldName(int index) const
+{
+    switch (index)
+    {
+    case ID_variables:                   return "variables";
+    case ID_showIncidentElements:        return "showIncidentElements";
+    case ID_showNodeId:                  return "showNodeId";
+    case ID_showNodeDomainLogicalCoords: return "showNodeDomainLogicalCoords";
+    case ID_showNodeBlockLogicalCoords:  return "showNodeBlockLogicalCoords";
+    case ID_showNodePhysicalCoords:      return "showNodePhysicalCoords";
+    case ID_showZoneId:                  return "showZoneId";
+    case ID_showZoneDomainLogicalCoords: return "showZoneDomainLogicalCoords";
+    case ID_showZoneBlockLogicalCoords:  return "showZoneBlockLogicalCoords";
+    case ID_clearWindow:                 return "clearWindow";
+    case ID_pickLetter:                  return "pickLetter";
+    case ID_fulfilled:                   return "fulfilled";
+    case ID_pickType:                    return "pickType";
+    case ID_domain:                      return "domain";
+    case ID_elementNumber:               return "elementNumber";
+    case ID_incidentElements:            return "incidentElements";
+    case ID_cellCoordinates:             return "cellCoordinates";
+    case ID_timeStep:                    return "timeStep";
+    case ID_dimension:                   return "dimension";
+    case ID_databaseName:                return "databaseName";
+    case ID_activeVariable:              return "activeVariable";
+    case ID_pickPoint:                   return "pickPoint";
+    case ID_cellPoint:                   return "cellPoint";
+    case ID_nodePoint:                   return "nodePoint";
+    case ID_plotBounds:                  return "plotBounds";
+    case ID_rayPoint1:                   return "rayPoint1";
+    case ID_rayPoint2:                   return "rayPoint2";
+    case ID_meshInfo:                    return "meshInfo";
+    case ID_realElementNumber:           return "realElementNumber";
+    case ID_realIncidentElements:        return "realIncidentElements";
+    case ID_pnodeCoords:                 return "pnodeCoords";
+    case ID_dnodeCoords:                 return "dnodeCoords";
+    case ID_bnodeCoords:                 return "bnodeCoords";
+    case ID_dzoneCoords:                 return "dzoneCoords";
+    case ID_bzoneCoords:                 return "bzoneCoords";
+    case ID_needTransformMessage:        return "needTransformMessage";
+    case ID_varInfo:                     return "varInfo";
+    case ID_invalidVars:                 return "invalidVars";
+    case ID_doTimeCurve:                 return "doTimeCurve";
+    case ID_errorMessage:                return "errorMessage";
+    case ID_error:                       return "error";
+    case ID_matSelected:                 return "matSelected";
+    case ID_needActualCoords:            return "needActualCoords";
+    case ID_conciseOutput:               return "conciseOutput";
+    case ID_showTimeStep:                return "showTimeStep";
+    case ID_showMeshName:                return "showMeshName";
+    case ID_blockPieceName:              return "blockPieceName";
+    case ID_groupPieceName:              return "groupPieceName";
+    case ID_ghosts:                      return "ghosts";
+    case ID_includeGhosts:               return "includeGhosts";
+    case ID_elementIsGhost:              return "elementIsGhost";
+    case ID_requiresGlyphPick:           return "requiresGlyphPick";
+    case ID_locationSuccessful:          return "locationSuccessful";
+    case ID_useLabelAsPickLetter:        return "useLabelAsPickLetter";
+    case ID_showGlobalIds:               return "showGlobalIds";
+    case ID_globalElement:               return "globalElement";
+    case ID_globalIncidentElements:      return "globalIncidentElements";
+    case ID_elementIsGlobal:             return "elementIsGlobal";
+    case ID_showPickLetter:              return "showPickLetter";
+    case ID_hasRangeOutput:              return "hasRangeOutput";
+    case ID_rangeOutput:                 return "rangeOutput";
+    case ID_elementLabel:                return "elementLabel";
+    case ID_reusePickLetter:             return "reusePickLetter";
+    case ID_ghostType:                   return "ghostType";
+    case ID_hasMixedGhostTypes:          return "hasMixedGhostTypes";
+    case ID_linesData:                   return "linesData";
+    case ID_showPickHighlight:           return "showPickHighlight";
+    case ID_notifyEnabled:               return "notifyEnabled";
+    case ID_inputTopoDim:                return "inputTopoDim";
+    case ID_meshCoordType:               return "meshCoordType";
+    case ID_createSpreadsheet:           return "createSpreadsheet";
+    case ID_subsetName:                  return "subsetName";
+    case ID_floatFormat:                 return "floatFormat";
+    case ID_timePreserveCoord:           return "timePreserveCoord";
+    case ID_timeCurveType:               return "timeCurveType";
+    case ID_timeOptions:                 return "timeOptions";
+    case ID_plotRequested:               return "plotRequested";
+    case ID_pickHighlightColor:          return "pickHighlightColor";
+    case ID_removedPicks:                return "removedPicks";
+    case ID_swivelFocusToPick:           return "swivelFocusToPick";
+    case ID_overridePickLabel:           return "overridePickLabel";
+    case ID_forcedPickLabel:             return "forcedPickLabel";
+    case ID_removeLabelTwins:            return "removeLabelTwins";
+    default:  return "invalid index";
+    }
+}
+
+// ****************************************************************************
+// Method: PickAttributes::GetFieldType
+//
+// Purpose: 
+//   This method returns the type of a field given its index.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+AttributeGroup::FieldType
+PickAttributes::GetFieldType(int index) const
+{
+    switch (index)
+    {
+    case ID_variables:                   return FieldType_stringVector;
+    case ID_showIncidentElements:        return FieldType_bool;
+    case ID_showNodeId:                  return FieldType_bool;
+    case ID_showNodeDomainLogicalCoords: return FieldType_bool;
+    case ID_showNodeBlockLogicalCoords:  return FieldType_bool;
+    case ID_showNodePhysicalCoords:      return FieldType_bool;
+    case ID_showZoneId:                  return FieldType_bool;
+    case ID_showZoneDomainLogicalCoords: return FieldType_bool;
+    case ID_showZoneBlockLogicalCoords:  return FieldType_bool;
+    case ID_clearWindow:                 return FieldType_bool;
+    case ID_pickLetter:                  return FieldType_string;
+    case ID_fulfilled:                   return FieldType_bool;
+    case ID_pickType:                    return FieldType_enum;
+    case ID_domain:                      return FieldType_int;
+    case ID_elementNumber:               return FieldType_int;
+    case ID_incidentElements:            return FieldType_intVector;
+    case ID_cellCoordinates:             return FieldType_doubleVector;
+    case ID_timeStep:                    return FieldType_int;
+    case ID_dimension:                   return FieldType_int;
+    case ID_databaseName:                return FieldType_string;
+    case ID_activeVariable:              return FieldType_string;
+    case ID_pickPoint:                   return FieldType_doubleArray;
+    case ID_cellPoint:                   return FieldType_doubleArray;
+    case ID_nodePoint:                   return FieldType_doubleArray;
+    case ID_plotBounds:                  return FieldType_doubleVector;
+    case ID_rayPoint1:                   return FieldType_doubleArray;
+    case ID_rayPoint2:                   return FieldType_doubleArray;
+    case ID_meshInfo:                    return FieldType_string;
+    case ID_realElementNumber:           return FieldType_int;
+    case ID_realIncidentElements:        return FieldType_intVector;
+    case ID_pnodeCoords:                 return FieldType_stringVector;
+    case ID_dnodeCoords:                 return FieldType_stringVector;
+    case ID_bnodeCoords:                 return FieldType_stringVector;
+    case ID_dzoneCoords:                 return FieldType_stringVector;
+    case ID_bzoneCoords:                 return FieldType_stringVector;
+    case ID_needTransformMessage:        return FieldType_bool;
+    case ID_varInfo:                     return FieldType_attVector;
+    case ID_invalidVars:                 return FieldType_stringVector;
+    case ID_doTimeCurve:                 return FieldType_bool;
+    case ID_errorMessage:                return FieldType_string;
+    case ID_error:                       return FieldType_bool;
+    case ID_matSelected:                 return FieldType_bool;
+    case ID_needActualCoords:            return FieldType_bool;
+    case ID_conciseOutput:               return FieldType_bool;
+    case ID_showTimeStep:                return FieldType_bool;
+    case ID_showMeshName:                return FieldType_bool;
+    case ID_blockPieceName:              return FieldType_string;
+    case ID_groupPieceName:              return FieldType_string;
+    case ID_ghosts:                      return FieldType_intVector;
+    case ID_includeGhosts:               return FieldType_bool;
+    case ID_elementIsGhost:              return FieldType_bool;
+    case ID_requiresGlyphPick:           return FieldType_bool;
+    case ID_locationSuccessful:          return FieldType_bool;
+    case ID_useLabelAsPickLetter:        return FieldType_bool;
+    case ID_showGlobalIds:               return FieldType_bool;
+    case ID_globalElement:               return FieldType_int;
+    case ID_globalIncidentElements:      return FieldType_intVector;
+    case ID_elementIsGlobal:             return FieldType_bool;
+    case ID_showPickLetter:              return FieldType_bool;
+    case ID_hasRangeOutput:              return FieldType_bool;
+    case ID_rangeOutput:                 return FieldType_MapNode;
+    case ID_elementLabel:                return FieldType_string;
+    case ID_reusePickLetter:             return FieldType_bool;
+    case ID_ghostType:                   return FieldType_int;
+    case ID_hasMixedGhostTypes:          return FieldType_int;
+    case ID_linesData:                   return FieldType_bool;
+    case ID_showPickHighlight:           return FieldType_bool;
+    case ID_notifyEnabled:               return FieldType_bool;
+    case ID_inputTopoDim:                return FieldType_int;
+    case ID_meshCoordType:               return FieldType_enum;
+    case ID_createSpreadsheet:           return FieldType_bool;
+    case ID_subsetName:                  return FieldType_string;
+    case ID_floatFormat:                 return FieldType_string;
+    case ID_timePreserveCoord:           return FieldType_bool;
+    case ID_timeCurveType:               return FieldType_enum;
+    case ID_timeOptions:                 return FieldType_MapNode;
+    case ID_plotRequested:               return FieldType_MapNode;
+    case ID_pickHighlightColor:          return FieldType_intArray;
+    case ID_removedPicks:                return FieldType_string;
+    case ID_swivelFocusToPick:           return FieldType_bool;
+    case ID_overridePickLabel:           return FieldType_bool;
+    case ID_forcedPickLabel:             return FieldType_string;
+    case ID_removeLabelTwins:            return FieldType_bool;
+    default:  return FieldType_unknown;
+    }
+}
+
+// ****************************************************************************
+// Method: PickAttributes::GetFieldTypeName
+//
+// Purpose: 
+//   This method returns the name of a field type given its index.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+std::string
+PickAttributes::GetFieldTypeName(int index) const
+{
+    switch (index)
+    {
+    case ID_variables:                   return "stringVector";
+    case ID_showIncidentElements:        return "bool";
+    case ID_showNodeId:                  return "bool";
+    case ID_showNodeDomainLogicalCoords: return "bool";
+    case ID_showNodeBlockLogicalCoords:  return "bool";
+    case ID_showNodePhysicalCoords:      return "bool";
+    case ID_showZoneId:                  return "bool";
+    case ID_showZoneDomainLogicalCoords: return "bool";
+    case ID_showZoneBlockLogicalCoords:  return "bool";
+    case ID_clearWindow:                 return "bool";
+    case ID_pickLetter:                  return "string";
+    case ID_fulfilled:                   return "bool";
+    case ID_pickType:                    return "enum";
+    case ID_domain:                      return "int";
+    case ID_elementNumber:               return "int";
+    case ID_incidentElements:            return "intVector";
+    case ID_cellCoordinates:             return "doubleVector";
+    case ID_timeStep:                    return "int";
+    case ID_dimension:                   return "int";
+    case ID_databaseName:                return "string";
+    case ID_activeVariable:              return "string";
+    case ID_pickPoint:                   return "doubleArray";
+    case ID_cellPoint:                   return "doubleArray";
+    case ID_nodePoint:                   return "doubleArray";
+    case ID_plotBounds:                  return "doubleVector";
+    case ID_rayPoint1:                   return "doubleArray";
+    case ID_rayPoint2:                   return "doubleArray";
+    case ID_meshInfo:                    return "string";
+    case ID_realElementNumber:           return "int";
+    case ID_realIncidentElements:        return "intVector";
+    case ID_pnodeCoords:                 return "stringVector";
+    case ID_dnodeCoords:                 return "stringVector";
+    case ID_bnodeCoords:                 return "stringVector";
+    case ID_dzoneCoords:                 return "stringVector";
+    case ID_bzoneCoords:                 return "stringVector";
+    case ID_needTransformMessage:        return "bool";
+    case ID_varInfo:                     return "attVector";
+    case ID_invalidVars:                 return "stringVector";
+    case ID_doTimeCurve:                 return "bool";
+    case ID_errorMessage:                return "string";
+    case ID_error:                       return "bool";
+    case ID_matSelected:                 return "bool";
+    case ID_needActualCoords:            return "bool";
+    case ID_conciseOutput:               return "bool";
+    case ID_showTimeStep:                return "bool";
+    case ID_showMeshName:                return "bool";
+    case ID_blockPieceName:              return "string";
+    case ID_groupPieceName:              return "string";
+    case ID_ghosts:                      return "intVector";
+    case ID_includeGhosts:               return "bool";
+    case ID_elementIsGhost:              return "bool";
+    case ID_requiresGlyphPick:           return "bool";
+    case ID_locationSuccessful:          return "bool";
+    case ID_useLabelAsPickLetter:        return "bool";
+    case ID_showGlobalIds:               return "bool";
+    case ID_globalElement:               return "int";
+    case ID_globalIncidentElements:      return "intVector";
+    case ID_elementIsGlobal:             return "bool";
+    case ID_showPickLetter:              return "bool";
+    case ID_hasRangeOutput:              return "bool";
+    case ID_rangeOutput:                 return "MapNode";
+    case ID_elementLabel:                return "string";
+    case ID_reusePickLetter:             return "bool";
+    case ID_ghostType:                   return "int";
+    case ID_hasMixedGhostTypes:          return "int";
+    case ID_linesData:                   return "bool";
+    case ID_showPickHighlight:           return "bool";
+    case ID_notifyEnabled:               return "bool";
+    case ID_inputTopoDim:                return "int";
+    case ID_meshCoordType:               return "enum";
+    case ID_createSpreadsheet:           return "bool";
+    case ID_subsetName:                  return "string";
+    case ID_floatFormat:                 return "string";
+    case ID_timePreserveCoord:           return "bool";
+    case ID_timeCurveType:               return "enum";
+    case ID_timeOptions:                 return "MapNode";
+    case ID_plotRequested:               return "MapNode";
+    case ID_pickHighlightColor:          return "intArray";
+    case ID_removedPicks:                return "string";
+    case ID_swivelFocusToPick:           return "bool";
+    case ID_overridePickLabel:           return "bool";
+    case ID_forcedPickLabel:             return "string";
+    case ID_removeLabelTwins:            return "bool";
+    default:  return "invalid index";
+    }
+}
+
+// ****************************************************************************
+// Method: PickAttributes::FieldsEqual
+//
+// Purpose: 
+//   This method compares two fields and return true if they are equal.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+PickAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
+{
+    const PickAttributes &obj = *((const PickAttributes*)rhs);
+    bool retval = false;
+    switch (index_)
+    {
+    case ID_variables:
+        {  // new scope
+        retval = (variables == obj.variables);
+        }
+        break;
+    case ID_showIncidentElements:
+        {  // new scope
+        retval = (showIncidentElements == obj.showIncidentElements);
+        }
+        break;
+    case ID_showNodeId:
+        {  // new scope
+        retval = (showNodeId == obj.showNodeId);
+        }
+        break;
+    case ID_showNodeDomainLogicalCoords:
+        {  // new scope
+        retval = (showNodeDomainLogicalCoords == obj.showNodeDomainLogicalCoords);
+        }
+        break;
+    case ID_showNodeBlockLogicalCoords:
+        {  // new scope
+        retval = (showNodeBlockLogicalCoords == obj.showNodeBlockLogicalCoords);
+        }
+        break;
+    case ID_showNodePhysicalCoords:
+        {  // new scope
+        retval = (showNodePhysicalCoords == obj.showNodePhysicalCoords);
+        }
+        break;
+    case ID_showZoneId:
+        {  // new scope
+        retval = (showZoneId == obj.showZoneId);
+        }
+        break;
+    case ID_showZoneDomainLogicalCoords:
+        {  // new scope
+        retval = (showZoneDomainLogicalCoords == obj.showZoneDomainLogicalCoords);
+        }
+        break;
+    case ID_showZoneBlockLogicalCoords:
+        {  // new scope
+        retval = (showZoneBlockLogicalCoords == obj.showZoneBlockLogicalCoords);
+        }
+        break;
+    case ID_clearWindow:
+        {  // new scope
+        retval = (clearWindow == obj.clearWindow);
+        }
+        break;
+    case ID_pickLetter:
+        {  // new scope
+        retval = (pickLetter == obj.pickLetter);
+        }
+        break;
+    case ID_fulfilled:
+        {  // new scope
+        retval = (fulfilled == obj.fulfilled);
+        }
+        break;
+    case ID_pickType:
+        {  // new scope
+        retval = (pickType == obj.pickType);
+        }
+        break;
+    case ID_domain:
+        {  // new scope
+        retval = (domain == obj.domain);
+        }
+        break;
+    case ID_elementNumber:
+        {  // new scope
+        retval = (elementNumber == obj.elementNumber);
+        }
+        break;
+    case ID_incidentElements:
+        {  // new scope
+        retval = (incidentElements == obj.incidentElements);
+        }
+        break;
+    case ID_cellCoordinates:
+        {  // new scope
+        retval = (cellCoordinates == obj.cellCoordinates);
+        }
+        break;
+    case ID_timeStep:
+        {  // new scope
+        retval = (timeStep == obj.timeStep);
+        }
+        break;
+    case ID_dimension:
+        {  // new scope
+        retval = (dimension == obj.dimension);
+        }
+        break;
+    case ID_databaseName:
+        {  // new scope
+        retval = (databaseName == obj.databaseName);
+        }
+        break;
+    case ID_activeVariable:
+        {  // new scope
+        retval = (activeVariable == obj.activeVariable);
+        }
+        break;
+    case ID_pickPoint:
+        {  // new scope
+        // Compare the pickPoint arrays.
+        bool pickPoint_equal = true;
+        for(int i = 0; i < 3 && pickPoint_equal; ++i)
+            pickPoint_equal = (pickPoint[i] == obj.pickPoint[i]);
+
+        retval = pickPoint_equal;
+        }
+        break;
+    case ID_cellPoint:
+        {  // new scope
+        // Compare the cellPoint arrays.
+        bool cellPoint_equal = true;
+        for(int i = 0; i < 3 && cellPoint_equal; ++i)
+            cellPoint_equal = (cellPoint[i] == obj.cellPoint[i]);
+
+        retval = cellPoint_equal;
+        }
+        break;
+    case ID_nodePoint:
+        {  // new scope
+        // Compare the nodePoint arrays.
+        bool nodePoint_equal = true;
+        for(int i = 0; i < 3 && nodePoint_equal; ++i)
+            nodePoint_equal = (nodePoint[i] == obj.nodePoint[i]);
+
+        retval = nodePoint_equal;
+        }
+        break;
+    case ID_plotBounds:
+        {  // new scope
+        retval = (plotBounds == obj.plotBounds);
+        }
+        break;
+    case ID_rayPoint1:
+        {  // new scope
+        // Compare the rayPoint1 arrays.
+        bool rayPoint1_equal = true;
+        for(int i = 0; i < 3 && rayPoint1_equal; ++i)
+            rayPoint1_equal = (rayPoint1[i] == obj.rayPoint1[i]);
+
+        retval = rayPoint1_equal;
+        }
+        break;
+    case ID_rayPoint2:
+        {  // new scope
+        // Compare the rayPoint2 arrays.
+        bool rayPoint2_equal = true;
+        for(int i = 0; i < 3 && rayPoint2_equal; ++i)
+            rayPoint2_equal = (rayPoint2[i] == obj.rayPoint2[i]);
+
+        retval = rayPoint2_equal;
+        }
+        break;
+    case ID_meshInfo:
+        {  // new scope
+        retval = (meshInfo == obj.meshInfo);
+        }
+        break;
+    case ID_realElementNumber:
+        {  // new scope
+        retval = (realElementNumber == obj.realElementNumber);
+        }
+        break;
+    case ID_realIncidentElements:
+        {  // new scope
+        retval = (realIncidentElements == obj.realIncidentElements);
+        }
+        break;
+    case ID_pnodeCoords:
+        {  // new scope
+        retval = (pnodeCoords == obj.pnodeCoords);
+        }
+        break;
+    case ID_dnodeCoords:
+        {  // new scope
+        retval = (dnodeCoords == obj.dnodeCoords);
+        }
+        break;
+    case ID_bnodeCoords:
+        {  // new scope
+        retval = (bnodeCoords == obj.bnodeCoords);
+        }
+        break;
+    case ID_dzoneCoords:
+        {  // new scope
+        retval = (dzoneCoords == obj.dzoneCoords);
+        }
+        break;
+    case ID_bzoneCoords:
+        {  // new scope
+        retval = (bzoneCoords == obj.bzoneCoords);
+        }
+        break;
+    case ID_needTransformMessage:
+        {  // new scope
+        retval = (needTransformMessage == obj.needTransformMessage);
+        }
+        break;
+    case ID_varInfo:
+        {  // new scope
+        bool varInfo_equal = (obj.varInfo.size() == varInfo.size());
+        for(size_t i = 0; (i < varInfo.size()) && varInfo_equal; ++i)
+        {
+            // Make references to PickVarInfo from AttributeGroup *.
+            const PickVarInfo &varInfo1 = *((const PickVarInfo *)(varInfo[i]));
+            const PickVarInfo &varInfo2 = *((const PickVarInfo *)(obj.varInfo[i]));
+            varInfo_equal = (varInfo1 == varInfo2);
+        }
+
+        retval = varInfo_equal;
+        }
+        break;
+    case ID_invalidVars:
+        {  // new scope
+        retval = (invalidVars == obj.invalidVars);
+        }
+        break;
+    case ID_doTimeCurve:
+        {  // new scope
+        retval = (doTimeCurve == obj.doTimeCurve);
+        }
+        break;
+    case ID_errorMessage:
+        {  // new scope
+        retval = (errorMessage == obj.errorMessage);
+        }
+        break;
+    case ID_error:
+        {  // new scope
+        retval = (error == obj.error);
+        }
+        break;
+    case ID_matSelected:
+        {  // new scope
+        retval = (matSelected == obj.matSelected);
+        }
+        break;
+    case ID_needActualCoords:
+        {  // new scope
+        retval = (needActualCoords == obj.needActualCoords);
+        }
+        break;
+    case ID_conciseOutput:
+        {  // new scope
+        retval = (conciseOutput == obj.conciseOutput);
+        }
+        break;
+    case ID_showTimeStep:
+        {  // new scope
+        retval = (showTimeStep == obj.showTimeStep);
+        }
+        break;
+    case ID_showMeshName:
+        {  // new scope
+        retval = (showMeshName == obj.showMeshName);
+        }
+        break;
+    case ID_blockPieceName:
+        {  // new scope
+        retval = (blockPieceName == obj.blockPieceName);
+        }
+        break;
+    case ID_groupPieceName:
+        {  // new scope
+        retval = (groupPieceName == obj.groupPieceName);
+        }
+        break;
+    case ID_ghosts:
+        {  // new scope
+        retval = (ghosts == obj.ghosts);
+        }
+        break;
+    case ID_includeGhosts:
+        {  // new scope
+        retval = (includeGhosts == obj.includeGhosts);
+        }
+        break;
+    case ID_elementIsGhost:
+        {  // new scope
+        retval = (elementIsGhost == obj.elementIsGhost);
+        }
+        break;
+    case ID_requiresGlyphPick:
+        {  // new scope
+        retval = (requiresGlyphPick == obj.requiresGlyphPick);
+        }
+        break;
+    case ID_locationSuccessful:
+        {  // new scope
+        retval = (locationSuccessful == obj.locationSuccessful);
+        }
+        break;
+    case ID_useLabelAsPickLetter:
+        {  // new scope
+        retval = (useLabelAsPickLetter == obj.useLabelAsPickLetter);
+        }
+        break;
+    case ID_showGlobalIds:
+        {  // new scope
+        retval = (showGlobalIds == obj.showGlobalIds);
+        }
+        break;
+    case ID_globalElement:
+        {  // new scope
+        retval = (globalElement == obj.globalElement);
+        }
+        break;
+    case ID_globalIncidentElements:
+        {  // new scope
+        retval = (globalIncidentElements == obj.globalIncidentElements);
+        }
+        break;
+    case ID_elementIsGlobal:
+        {  // new scope
+        retval = (elementIsGlobal == obj.elementIsGlobal);
+        }
+        break;
+    case ID_showPickLetter:
+        {  // new scope
+        retval = (showPickLetter == obj.showPickLetter);
+        }
+        break;
+    case ID_hasRangeOutput:
+        {  // new scope
+        retval = (hasRangeOutput == obj.hasRangeOutput);
+        }
+        break;
+    case ID_rangeOutput:
+        {  // new scope
+        retval = (rangeOutput == obj.rangeOutput);
+        }
+        break;
+    case ID_elementLabel:
+        {  // new scope
+        retval = (elementLabel == obj.elementLabel);
+        }
+        break;
+    case ID_reusePickLetter:
+        {  // new scope
+        retval = (reusePickLetter == obj.reusePickLetter);
+        }
+        break;
+    case ID_ghostType:
+        {  // new scope
+        retval = (ghostType == obj.ghostType);
+        }
+        break;
+    case ID_hasMixedGhostTypes:
+        {  // new scope
+        retval = (hasMixedGhostTypes == obj.hasMixedGhostTypes);
+        }
+        break;
+    case ID_linesData:
+        {  // new scope
+        retval = (linesData == obj.linesData);
+        }
+        break;
+    case ID_showPickHighlight:
+        {  // new scope
+        retval = (showPickHighlight == obj.showPickHighlight);
+        }
+        break;
+    case ID_notifyEnabled:
+        {  // new scope
+        retval = (notifyEnabled == obj.notifyEnabled);
+        }
+        break;
+    case ID_inputTopoDim:
+        {  // new scope
+        retval = (inputTopoDim == obj.inputTopoDim);
+        }
+        break;
+    case ID_meshCoordType:
+        {  // new scope
+        retval = (meshCoordType == obj.meshCoordType);
+        }
+        break;
+    case ID_createSpreadsheet:
+        {  // new scope
+        retval = (createSpreadsheet == obj.createSpreadsheet);
+        }
+        break;
+    case ID_subsetName:
+        {  // new scope
+        retval = (subsetName == obj.subsetName);
+        }
+        break;
+    case ID_floatFormat:
+        {  // new scope
+        retval = (floatFormat == obj.floatFormat);
+        }
+        break;
+    case ID_timePreserveCoord:
+        {  // new scope
+        retval = (timePreserveCoord == obj.timePreserveCoord);
+        }
+        break;
+    case ID_timeCurveType:
+        {  // new scope
+        retval = (timeCurveType == obj.timeCurveType);
+        }
+        break;
+    case ID_timeOptions:
+        {  // new scope
+        retval = (timeOptions == obj.timeOptions);
+        }
+        break;
+    case ID_plotRequested:
+        {  // new scope
+        retval = (plotRequested == obj.plotRequested);
+        }
+        break;
+    case ID_pickHighlightColor:
+        {  // new scope
+        // Compare the pickHighlightColor arrays.
+        bool pickHighlightColor_equal = true;
+        for(int i = 0; i < 3 && pickHighlightColor_equal; ++i)
+            pickHighlightColor_equal = (pickHighlightColor[i] == obj.pickHighlightColor[i]);
+
+        retval = pickHighlightColor_equal;
+        }
+        break;
+    case ID_removedPicks:
+        {  // new scope
+        retval = (removedPicks == obj.removedPicks);
+        }
+        break;
+    case ID_swivelFocusToPick:
+        {  // new scope
+        retval = (swivelFocusToPick == obj.swivelFocusToPick);
+        }
+        break;
+    case ID_overridePickLabel:
+        {  // new scope
+        retval = (overridePickLabel == obj.overridePickLabel);
+        }
+        break;
+    case ID_forcedPickLabel:
+        {  // new scope
+        retval = (forcedPickLabel == obj.forcedPickLabel);
+        }
+        break;
+    case ID_removeLabelTwins:
+        {  // new scope
+        retval = (removeLabelTwins == obj.removeLabelTwins);
+        }
+        break;
+    default: retval = false;
+    }
+
+    return retval;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// User-defined methods.
+///////////////////////////////////////////////////////////////////////////////
+
+// ****************************************************************************
+// Method: PickAttributes::PrintSelf
+//
+// Purpose: 
+//   Prints the contents of this class to the passed stream. 
+//
+// Modifications:
+//   Kathleen Bonnell, Thu Jun 26 09:31:56 PDT 2003
+//   Reflect new member names (zoneNumber is now elementNumber, nodes is
+//   now incidentElements).  Differentiate between zone pick and node pick.
+//   
+//   Kathleen Bonnell, Wed Jul 23 17:28:30 PDT 2003 
+//   Don't print cellPoint if it is invalid (== FLT_MAX). 
+//   
+//   Kathleen Bonnell, Wed Sep 10 08:02:02 PDT 2003 
+//   Added meshInfo. 
+//   
+//   Kathleen Bonnell, Tue Nov 18 10:06:40 PST 2003 
+//   Support logical zone numbers. 
+//   
+//   Kathleen Bonnell, Wed Dec 17 15:19:46 PST 2003 
+//   Support multiple types of coordinates. 
+//   
+//   Kathleen Bonnell, Tue Jun  1 16:44:44 PDT 2004 
+//   Support new pick types 'DomainNode', 'DomainZone'. 
+//   
+//   Kathleen Bonnell, Wed Jun  9 12:24:09 PDT 2004 
+//   Add conciseOutput.
+//
+//   Hank Childs, Thu Jun  8 16:21:44 PDT 2006
+//   Initialize showId to avoid compiler warning.
+//
+//   Kathleen Bonnell, Tue Feb 13 12:41:28 PST 2007 
+//   If meshCoordType not XY, add (Z,R) or (R,Z) to point info.
+//
+//   Hank Childs, Mon Aug 27 13:59:12 PDT 2007
+//   Print out createSpreadsheet.
+//
+//   Hank Childs, Fri Aug 31 15:35:28 PDT 2007
+//   Print out subset name.
+//
+//   Cyrus Harrison, Mon Sep 17 10:41:25 PDT 200
+//   Added support for user settable floating point format string
+//
+//   Kathleen Bonnell, Tue Jun 24 09:04:23 PDT 2008 
+//   Minor format change: ensure newline prints after domain (or lack thereof).
+//   Change 'preserved' to 'preserve'.
+//
+//   Kathleen Biagas, Wed Oct 26 13:31:50 PDT 2011
+//   Only print timeStep information if requested and not -1.
+//
+//   Kathleen Biagas, Tue Jul 22 11:35:33 MST 2014
+//   Account for global ids.
+//
+// ****************************************************************************
+void
+PickAttributes::PrintSelf(ostream &os)
+{
+    size_t i;
+    
+    char buff[512];
+    
+    std::string fileName;
+    std::string format;
+    size_t pos = databaseName.find_last_of('/');
+    if (pos >= databaseName.size())
+        fileName = databaseName;
+    else
+        fileName = databaseName.substr(pos+1) ;
+    if (pickLetter.size() != 0)
+        os << "\n" << pickLetter.c_str() << ":  ";
+    else 
+        os << "\n";
+    os << fileName.c_str() << " ";
+    if (showTimeStep && timeStep != -1)
+        os << "timestep " << timeStep << " ";
+    if (meshInfo.empty())
+    {
+        if (domain != -1)
+            os << "domain " << domain ;
+        os << "\n";
+    }
+    else
+    {
+        os << "\n" << meshInfo.c_str() << "\n";
+    }
+    if (subsetName != "")
+        os << "The subset name is " << subsetName << "\n";
+    os << "active variable:   " << activeVariable.c_str() << "\n";
+    os << "selected variables: ";
+    for (i = 0; i < variables.size(); i++)
+        os << variables[i].c_str() << "  ";
+    os << "\n";
+    if (pickType == CurveNode)
+    {
+        format = "PickedPoint: <" + floatFormat + ", "
+                                  + floatFormat + ", "
+                                  + floatFormat + ">\n";
+        SNPRINTF(buff, 512, format.c_str(),nodePoint[0],
+                                           nodePoint[1],
+                                           nodePoint[2]);
+        os << buff;
+    }
+    else if (pickType == CurveZone)
+    {
+        format = "EndPoint1: <" + floatFormat + ", "
+                                + floatFormat + ", "
+                                + floatFormat + ">\n";
+        SNPRINTF(buff, 512, format.c_str(),nodePoint[0],
+                                           nodePoint[1],
+                                           nodePoint[2]);
+        os << buff;
+        format = "EndPoint2: <" + floatFormat + ", "
+                                + floatFormat + ", "
+                                + floatFormat + ">\n";
+        SNPRINTF(buff, 512, format.c_str(),cellPoint[0],
+                                           cellPoint[1],
+                                           cellPoint[2]);
+        os << buff;    
+    }
+    else if (cellPoint[0] != FLT_MAX)
+    {
+        os << "PickedPoint: ";
+        if (meshCoordType == RZ)
+            os << "(Z,R) ";
+        else if (meshCoordType == ZR)
+            os << "(R,Z) ";
+        if (needTransformMessage)
+        {
+            os << " (in transformed space) " ;
+        }
+        
+        format = "<" + floatFormat + ", "
+                     + floatFormat + ", "
+                     + floatFormat + ">\n";
+        SNPRINTF(buff, 512, format.c_str(),cellPoint[0],
+                                           cellPoint[1],
+                                           cellPoint[2]);
+        os << buff;
+    }
+    if (pickType == Zone || pickType == DomainZone)
+    {
+        os << "Zone " ;
+        if (showZoneId)
+        {
+            if (elementIsGhost)
+                os<< elementNumber << "(ghost) ";
+            else if (elementIsGlobal)
+                os<< elementNumber << "(global) ";
+            else 
+                os<< elementNumber << " ";
+        }
+        if (showZoneDomainLogicalCoords && !dzoneCoords.empty())
+        {
+            os << "d" << dzoneCoords[0].c_str();
+        }
+        if (showZoneBlockLogicalCoords && !bzoneCoords.empty())
+        {
+            os << " b" << bzoneCoords[0].c_str();
+        }
+        os << "\n";
+    }
+    else if (pickType == Node || pickType == DomainNode)
+    {
+        os << "Node ";
+        if (showNodeId)
+        {
+            if (elementIsGhost)
+                os << elementNumber << "(ghost) ";
+            else if (elementIsGlobal)
+                os << elementNumber << "(global) ";
+            else 
+                os << elementNumber << " ";
+        }
+        if (showNodePhysicalCoords && !pnodeCoords.empty())
+        {
+            os << pnodeCoords[0].c_str() ;
+        }
+        if (showNodeDomainLogicalCoords && !dnodeCoords.empty())
+        {
+            os << dnodeCoords[0].c_str() ;
+        }
+        if (showNodeBlockLogicalCoords && !bnodeCoords.empty())
+        {
+            os << bnodeCoords[0].c_str() ;
+        }
+        os << "\n";
+    }
+    if (showIncidentElements)
+    {
+        bool showId = false;
+        if (pickType == Zone || pickType == DomainZone)
+        {
+            os << "Incident Nodes " ; 
+            showId = showNodeId;
+        }
+        else if (pickType == Node || pickType == DomainNode)
+        {
+            os << "Incident Zones " ; 
+            showId = showZoneId;
+        }
+        for (i = 0; i < incidentElements.size(); i++)
+        {
+            if (showId)
+            {
+                if (ghosts.size() > 0 && ghosts[i])
+                    os << incidentElements[i] << "(ghost)  ";
+                else 
+                    os << incidentElements[i] << "  ";
+            }
+            if (pickType == Zone || pickType == DomainZone)
+            {
+                if (showNodePhysicalCoords && !pnodeCoords.empty())
+                    os << " " << pnodeCoords[i].c_str() << "\n";
+                if (showNodeDomainLogicalCoords && !dnodeCoords.empty())
+                    os << " domain " << dnodeCoords[i].c_str() << "\n";
+                if (showNodeBlockLogicalCoords && !bnodeCoords.empty())
+                    os << " block " << bnodeCoords[i].c_str() << "\n";
+            }
+            else if (pickType == Node || pickType == DomainNode)
+            {
+                if (showZoneDomainLogicalCoords && !dzoneCoords.empty())
+                    os << " domain " << dzoneCoords[i].c_str() << "\n";
+                if (showZoneBlockLogicalCoords && !bzoneCoords.empty())
+                    os << " block " << bzoneCoords[i].c_str() << "\n";
+            }
+        }
+        os << "\n";
+    }
+    for (i = 0; i < varInfo.size(); i++)
+        ((PickVarInfo*)varInfo[i])->PrintSelf(os);
+
+    format = "RayPoint 1: <" + floatFormat + ", "
+                             + floatFormat + ", "
+                             + floatFormat + ">\n";
+
+    SNPRINTF(buff, 512, format.c_str(),rayPoint1[0],
+                                       rayPoint1[1],
+                                       rayPoint1[2]);            
+    os << buff;
+    format = "RayPoint 2: <" + floatFormat + ", "
+                             + floatFormat + ", "
+                             + floatFormat + ">\n";
+    SNPRINTF(buff, 512, format.c_str(),rayPoint2[0],
+                                       rayPoint2[1],
+                                       rayPoint2[2]);            
+    os << buff;
+
+    if (doTimeCurve)
+        os << "Set up to create a time-curve.\n";
+
+    if (timePreserveCoord)
+        os << "Set up for time-curve to preserve picked coord.\n";
+
+    if (timeCurveType == PickAttributes::Single_Y_Axis)
+        os << "Set up for time-curve to create a curve plot with single y axis.\n";
+    else 
+        os << "Set up for time-curve to create a curve plot with multiple y axes.\n";
+
+    if (createSpreadsheet)
+        os << "Create a spreadsheet with this pick.\n";
+
+    if (conciseOutput)
+        os << "Set up to create concise Output.\n";
+}
+
+// ****************************************************************************
+// Method: PickAttributes::CreateOutputString
+//
+// Purpose: 
+//   Creates a single output string containing all the information gathered
+//   from a pick. 
+//
+// Modifications:
+//   Kathleen Bonnell, Thu Jun 26 09:31:56 PDT 2003
+//   Reflect new member names (zoneNumber is now elementNumber, nodes is
+//   now incidentElements).  Differentiate between zone pick and node pick.
+//   
+//   Kathleen Bonnell, Wed Jul 23 17:28:30 PDT 2003 
+//   Don't include cellPoint or pickLetter if invalid.
+//   
+//   Kathleen Bonnell, Wed Sep 10 08:02:02 PDT 2003 
+//   Added meshInfo.  So that outputstring can be created with (default)
+//   or without the 'pickletter', added argument withLetter.
+//   
+//   Kathleen Bonnell, Tue Nov 18 10:06:40 PST 2003 
+//   Support logical zone numbers. 
+//   
+//   Kathleen Bonnell, Tue Dec  2 17:33:13 PST 2003 
+//   Minor changes so that picking on Curves does not display unnecessary
+//   information. 
+//   
+//   Kathleen Bonnell, Wed Dec 17 15:19:46 PST 2003 
+//   Support multiple types of coordinates. 
+//   
+//   Kathleen Bonnell, Tue Mar 16 16:02:05 PST 2004 
+//   Create message regarding invalid variables. 
+//   
+//   Kathleen Bonnell, Tue Jun  1 16:44:44 PDT 2004 
+//   Support new pick types 'DomainNode', 'DomainZone'. 
+//   
+//   Kathleen Bonnell, Wed Jun  9 12:24:09 PDT 2004 
+//   Added 'showTimeStep'. 
+//
+//   Mark C. Miller, Tue Aug 24 19:53:18 PDT 2004
+//   Added block/group piece names
+//   
+//   Hank Childs, Thu Jun  8 16:21:44 PDT 2006
+//   Initialize showId to avoid compiler warning.
+//
+//   Kathleen Bonnell, Tue Feb 13 12:41:28 PST 2007 
+//   If meshCoordType not XY, add (Z,R) or (R,Z) to point info.
+//
+//   Dave Bremer, Tue Feb 13 15:56:02 PST 2007
+//   Add support for blockPieceName as a template string, into which
+//   we print the domain.
+//
+//   Cyrus Harrison, Mon Sep 17 10:13:18 PDT 2007
+//   Add support for user settable floating point format string
+//
+//   Kathleen Biagas, Wed Oct 26 13:31:50 PDT 2011
+//   Only print timeStep information if requested and not -1.
+//
+//   Kathleen Biagas, Wed Mar 08 17:12:07 PST 2012
+//   Use plot overrides of showXXX settings if set in plotRequested MapNode.
+//
+// ****************************************************************************
+
+void
+PickAttributes::CreateOutputString(std::string &os, bool withLetter)
+{
+    if (error)
+    {
+        os = errorMessage;
+        return;
+    }
+
+    if (!fulfilled)
+        return;
+
+    if (conciseOutput)
+    {
+        CreateConciseOutputString(os, withLetter); 
+        return;
+    }
+
+    char buff[512];
+   
+    std::string fileName;
+    std::string format;
+    size_t pos = databaseName.find_last_of('/');
+    if (pos >= databaseName.size())
+        fileName = databaseName;
+    else
+        fileName = databaseName.substr(pos+1) ;
+
+    if (withLetter)
+    {
+        if (pickLetter.size() != 0)
+            SNPRINTF(buff, 512, "\n%s:  ", pickLetter.c_str());
+        else 
+            SNPRINTF(buff, 512, "\n");
+        os += buff;
+    }
+    os += fileName;
+    if (timeStep != -1)
+    {
+        bool showTS = showTimeStep;
+        if (plotRequested.HasNumericEntry("showTimeStep"))
+            showTS = plotRequested.GetEntry("showTimeStep")->ToBool();
+      
+        if (showTS)
+        {
+            SNPRINTF(buff, 512, "  timestep %d", timeStep);
+            os += buff;
+        }
+    }
+
+    std::string domStr = (blockPieceName == "" ? "domain" : blockPieceName);
+    std::string grpStr = (groupPieceName == "" ? "group" : groupPieceName);
+
+    if (domain != -1 && strstr(domStr.c_str(), "%") != NULL)
+    {
+        SNPRINTF(buff, 512, domStr.c_str(), domain);
+        domStr = buff;
+    }
+    
+    if (meshInfo.empty())
+    {
+        if (domain != -1)
+        {
+            SNPRINTF(buff, 512, "  %s %d\n", domStr.c_str(), domain);
+            os += buff;
+        }
+        else 
+            os += "\n";
+    }
+    else
+    {
+        bool showMN = showMeshName;
+        if (plotRequested.HasNumericEntry("showMeshName"))
+            showMN = plotRequested.GetEntry("showMeshName")->ToBool();
+
+        if (showMN)
+        {
+            SNPRINTF(buff, 512, "\n%s\n", meshInfo.c_str());
+            os += buff;
+        }
+    }
+
+    std::string point = "Point";
+    if (meshCoordType == RZ)
+        point += " (Z,R)";
+    else if (meshCoordType == ZR)
+        point += " (R,Z)";
+
+    std::string pointString;
+    if (plotRequested.HasEntry("pointString"))
+        pointString = plotRequested.GetEntry("pointString")->AsString();
+
+    if (pointString.empty())
+    {
+        if (pickType == CurveNode)
+        {
+            format = "Point: <" + floatFormat + ", " + floatFormat + ">\n";
+            SNPRINTF(buff, 512, format.c_str(), nodePoint[0], nodePoint[1]);
+            os += buff;
+        }
+        else if (pickType == CurveZone)
+        {
+            format = "Point1: <" + floatFormat + ", " + floatFormat + ">\n"
+                    +"Point2: <" + floatFormat + ", " + floatFormat + ">\n";
+
+            SNPRINTF(buff, 512, format.c_str(),
+                      nodePoint[0], nodePoint[1], cellPoint[0], cellPoint[1]);
+            os += buff;
+        }
+        else if (cellPoint[0] != FLT_MAX)
+        {
+            if (dimension == 2)
+            {
+                if (!needTransformMessage)
+                {
+                    format = "%s: <" + floatFormat + ", " + floatFormat + ">\n";
+                    SNPRINTF(buff, 512, format.c_str(),
+                            point.c_str(), cellPoint[0], cellPoint[1]);
+                }
+                else 
+                {
+                    format = "%s: (in transformed space)\n        <"  
+                                + floatFormat + ", " + floatFormat + ">\n";
+                    SNPRINTF(buff, 512, format.c_str(),
+                            point.c_str(), cellPoint[0], cellPoint[1]);
+                }
+            }
+            else 
+            {
+                if (!needTransformMessage)
+                {
+                    format = "%s: <" + floatFormat + ", " 
+                                     + floatFormat + ", " 
+                                     + floatFormat + ">\n";
+                    SNPRINTF(buff, 512, format.c_str(),
+                            point.c_str(), cellPoint[0], cellPoint[1], cellPoint[2]);
+                }
+                else 
+                {
+                    format = "%s: (in transformed space) \n       <" 
+                                     + floatFormat + ", " 
+                                     + floatFormat + ", " 
+                                     + floatFormat + ">\n";
+                    SNPRINTF(buff, 512, format.c_str(),
+                            point.c_str(), cellPoint[0], cellPoint[1], cellPoint[2]);
+                }
+            }
+            os += buff;
+        }
+    }
+    else
+    {
+        SNPRINTF(buff, 512, "\nPoint: %s\n", pointString.c_str());
+        os += buff;
+    }
+
+    bool showZDLC = showZoneDomainLogicalCoords;
+    if (plotRequested.HasNumericEntry("showZoneDomainLogicalCoords"))
+        showZDLC = plotRequested.GetEntry("showZoneDomainLogicalCoords")->ToBool(); 
+    showZDLC &= !dzoneCoords.empty();
+    bool showZBLC = showZoneBlockLogicalCoords;
+    if (plotRequested.HasNumericEntry("showZoneBlockLogicalCoords"))
+        showZBLC = plotRequested.GetEntry("showZoneBlockLogicalCoords")->ToBool(); 
+    showZBLC &= !bzoneCoords.empty();
+    bool showZoneCoords = (showZDLC || showZBLC);
+
+    bool showNPC = showNodePhysicalCoords;
+    if (plotRequested.HasNumericEntry("showNodePhysicalCoords"))
+        showNPC = plotRequested.GetEntry("showNodePhysicalCoords")->ToBool();
+    showNPC &= !pnodeCoords.empty();
+    bool showNDLC = showNodeDomainLogicalCoords;
+    if (plotRequested.HasNumericEntry("showNodeDomainLogicalCoords"))
+        showNDLC = plotRequested.GetEntry("showNodeDomainLogicalCoords")->ToBool();
+    showNDLC &= !dnodeCoords.empty();
+    bool showNBLC = showNodeBlockLogicalCoords;
+    if (plotRequested.HasNumericEntry("showNodeBlockLogicalCoords"))
+        showNBLC = plotRequested.GetEntry("showNodeBlockLogicalCoords")->ToBool();
+    showNBLC &= !bnodeCoords.empty();
+    bool showNodeCoords = (showNPC  || showNDLC || showNBLC );
+
+    bool showZId = showZoneId;
+    if (plotRequested.HasNumericEntry("showZoneId"))
+        showZId = plotRequested.GetEntry("showZoneId")->ToBool();
+
+    bool showNId = showNodeId;
+    if (plotRequested.HasNumericEntry("showNodeId"))
+        showNId = plotRequested.GetEntry("showNodeId")->ToBool();
+
+    if (pickType == Zone || pickType == DomainZone)
+    {
+        if (showZId || showZoneCoords)
+            os += "Zone:  ";
+        if (showZId)
+        {
+            if (!elementIsGhost)
+            {
+                if (!showGlobalIds || globalElement == -1) 
+                    SNPRINTF(buff, 512, "%d", elementNumber);
+                else 
+                    SNPRINTF(buff, 512, "%d (global)", globalElement);
+            }
+            else 
+                SNPRINTF(buff, 512, "%d(ghost)", elementNumber);
+            os += buff;
+        }
+        if (showZDLC)
+        {
+            SNPRINTF(buff, 512, " %s %s", domStr.c_str(), dzoneCoords[0].c_str());
+            os += buff;
+        }
+        if (showZBLC)
+        {
+            SNPRINTF(buff, 512, " %s %s", grpStr.c_str(), bzoneCoords[0].c_str());
+            os += buff;
+        }
+        if (showZoneId || showZoneCoords)
+            os += "\n";
+    }
+    else if (pickType == Node || pickType == DomainNode)
+    {
+        if (showNId || showNodeCoords)
+            os += "Node:  ";
+        if (showNId)
+        {
+            if (!elementIsGhost)
+            {
+                if (!showGlobalIds || globalElement == -1)
+                    SNPRINTF(buff, 512, "%d", elementNumber);
+                else 
+                    SNPRINTF(buff, 512, "%d (global)", globalElement);
+            }
+            else 
+                SNPRINTF(buff, 512, "%d(ghost)", elementNumber);
+            os += buff;
+        }
+        if (showNPC)
+        {
+            SNPRINTF(buff, 512, " %s", pnodeCoords[0].c_str());
+            os += buff;
+        }
+        if (showNDLC)
+        {
+            SNPRINTF(buff, 512, " %s %s", domStr.c_str(), dnodeCoords[0].c_str());
+            os += buff;
+        }
+        if (showNBLC)
+        {
+            SNPRINTF(buff, 512, " %s %s", grpStr.c_str(), bnodeCoords[0].c_str());
+            os += buff;
+        }
+        if (showNodeId || showNodeCoords)
+            os += "\n";
+    }
+
+    bool showIE = showIncidentElements;
+    if (plotRequested.HasNumericEntry("showIncidentElements"))
+        showIE = plotRequested.GetEntry("showIncidentElements")->ToBool();
+
+    if (showIE)
+    {
+        bool showId = false;
+        bool showGlobal = globalIncidentElements.size() == incidentElements.size();
+        if (pickType == Zone || pickType == DomainZone)
+        {
+            if (!showGlobal)
+                os += "Incident Nodes:  " ; 
+            else 
+                os += "Incident Nodes: (global)  " ; 
+            if (showNodeCoords)
+            {
+                os += "\n    "; 
+            }
+            showId = showNodeId;
+            if (plotRequested.HasNumericEntry("showNodeId"))
+                showId = plotRequested.GetEntry("showNodeId")->ToBool();
+        }
+        else if (pickType == Node || pickType == DomainNode)
+        {
+            if (!showGlobal)
+                os += "Incident Zones:  " ; 
+            else 
+                os += "Incident Zones: (global)  " ; 
+            if (showZoneCoords)
+            {
+                os += "\n    "; 
+            }
+            showId = showZoneId;
+            if (plotRequested.HasNumericEntry("showZoneId"))
+                showId = plotRequested.GetEntry("showZoneId")->ToBool();
+        }
+        for (size_t i = 0; i < incidentElements.size(); i++)
+        {
+            if (showId)
+            {
+                if (ghosts.size() > 0 && ghosts[i])
+                    SNPRINTF(buff, 512, "%d(ghost)  ", incidentElements[i]);
+                else if (showGlobal)
+                    SNPRINTF(buff, 512, "%d  ", globalIncidentElements[i]);
+                else 
+                    SNPRINTF(buff, 512, "%d  ", incidentElements[i]);
+                os += buff; 
+            }
+            if (pickType == Zone || pickType == DomainZone)
+            {
+                if (showNPC)
+                {
+                    SNPRINTF(buff, 512, " %s", pnodeCoords[i].c_str());
+                    os += buff;
+                }
+                if (showNDLC)
+                {
+                    SNPRINTF(buff, 512, " %s %s", domStr.c_str(), dnodeCoords[i].c_str());
+                    os += buff;
+                }
+                if (showNBLC)
+                {
+                    SNPRINTF(buff, 512, " %s %s", grpStr.c_str(), bnodeCoords[i].c_str());
+                    os += buff;
+                }
+                if (showNodeCoords)
+                {
+                    os += "\n    "; 
+                }
+            }
+            else if (pickType == Node || pickType == DomainNode)
+            {
+                if (showZDLC)
+                {
+                    SNPRINTF(buff, 512, " %s %s", domStr.c_str(), dzoneCoords[i].c_str());
+                    os += buff;
+                }
+                if (showZBLC)
+                {
+                    SNPRINTF(buff, 512, " %s %s", grpStr.c_str(), bzoneCoords[i].c_str());
+                    os += buff;
+                }
+                if (showZoneCoords)
+                {
+                    os += "\n    "; 
+                }
+            }
+        }
+        os += "\n";
+    }
+
+    for (size_t i = 0; i < varInfo.size(); i++)
+    {
+        std::string iv;
+        std::string pt = PickType_ToString(pickType);
+        //
+        // VarInfo does not append a newline char, but we need one here
+        //
+        PickVarInfo* info = (PickVarInfo*)varInfo[i];
+        info->SetFloatFormat(floatFormat);
+        info->CreateOutputString(iv, pt);
+        os += iv;
+        os += "\n";
+    }
+    if (invalidVars.size() > 0)
+    {
+        os += "The following variables are invalid, and Pick ignored them:\n";
+        for (size_t i = 0; i < invalidVars.size(); i++)
+        {
+            os += "  " + invalidVars[i];
+        }
+        os += "\n";
+    }
+}
+
+// ****************************************************************************
+// Method: PickAttributes::PrepareForNewPick
+//
+// Purpose: 
+//   Clear certain fields in preparation for new pick.  These are fields that
+//   will get filled in during the pick process.
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   June 26, 2003 
+//
+// Modifications:
+//   Kathleen Bonnell, Wed Sep 10 08:02:02 PDT 2003
+//   Reset meshInfo.
+//   
+//   Kathleen Bonnell, Wed Sep 17 17:09:00 PDT 2003 
+//   Reset realElementNumber, realIncidentElements.
+//   
+//   Kathleen Bonnell, Tue Nov 18 10:06:40 PST 2003 
+//   Reset zoneCoords. 
+//   
+//   Kathleen Bonnell, Wed Dec 17 15:19:46 PST 2003 
+//   Support new types of coordinates. 
+//   
+//   Kathleen Bonnell, Tue Mar 16 16:02:05 PST 2004
+//   Clear invalidVars. 
+//   
+//   Kathleen Bonnell, Tue Jun  1 16:44:44 PDT 2004 
+//   Reset matSelected and needActualCoords. 
+//
+//   Mark C. Miller, Tue Aug 24 19:37:14 PDT 2004
+//   Added code to reset blockPieceName and groupPieceName
+//
+//   Kathleen Bonnell, Thu Oct 21 15:17:05 PDT 2004 
+//   Reset requiresPickGlyph. 
+//
+//   Kathleen Bonnell, Fri Jul  8 14:27:26 PDT 2005 
+//   Reset hasMixedGhostTypes. 
+//
+//   Kathleen Bonnell, Tue Feb 13 12:41:28 PST 2007 
+//   Reset meshCoordType. 
+//
+//   Brad Whitlock, Tue Jan 20 16:42:30 PST 2009
+//   Changed to using local CoordinateType enum.
+//
+//   Kathleen Bonnell, Thu Feb  3 11:20:11 PST 2011
+//   plotBounds changed to a vetor.
+//
+// ****************************************************************************
+
+void
+PickAttributes::PrepareForNewPick()
+{
+    clearWindow  = false;
+    fulfilled    = false;
+    elementNumber   = -1;
+    domain          = -1;
+    dimension       = -1;
+    pickPoint[0] = pickPoint[1] = pickPoint[2] = 0;
+    cellPoint[0] = cellPoint[1] = cellPoint[2] = 0;
+    nodePoint[0] = nodePoint[1] = nodePoint[2] = 0;
+    needTransformMessage = false;
+    ghostType = 0;
+    hasMixedGhostTypes = -1;
+    meshCoordType = XY;
+
+    if (!incidentElements.empty())
+        incidentElements.clear();
+
+    if (!pnodeCoords.empty())
+        pnodeCoords.clear();
+
+    if (!dnodeCoords.empty())
+        dnodeCoords.clear();
+
+    if (!bnodeCoords.empty())
+        bnodeCoords.clear();
+
+    if (!dzoneCoords.empty())
+        dzoneCoords.clear();
+
+    if (!bzoneCoords.empty())
+        bzoneCoords.clear();
+
+    realElementNumber = -1;
+    if (!realIncidentElements.empty())
+        realIncidentElements.clear();
+
+    meshInfo = "";
+    if (!plotBounds.empty())
+        plotBounds.clear();
+    ClearVarInfos();
+
+    if (!invalidVars.empty())
+        invalidVars.clear();
+
+    errorMessage = "";
+    error = false;
+
+    matSelected = false;
+
+    needActualCoords = false;
+
+    blockPieceName = "";
+    groupPieceName = "";
+
+    if (!ghosts.empty())
+        ghosts.clear();
+
+    includeGhosts = false;
+    elementIsGhost = false;
+    requiresGlyphPick = false;
+    locationSuccessful = false;
+
+    globalElement = -1;
+    if (!globalIncidentElements.empty())
+        globalIncidentElements.clear();
+
+    linesData = false;
+    inputTopoDim = -1;
+}
+
+// ****************************************************************************
+// Method: PickAttributes::CreateConciseOutputString
+//
+// Purpose: 
+//   Creates a single output string containing all the information gathered
+//   from a pick, condensed to use as little space as possible. 
+//
+// Programmer:  Kathleen Bonnell
+// Creation:    June 9, 2004
+//
+// Modifications:
+//
+//   Mark C. Miller, Tue Aug 24 19:53:18 PDT 2004
+//   Added block/group piece names
+//   
+//   Hank Childs, Thu Jun  8 16:21:44 PDT 2006
+//   Initialize showId to avoid compiler warning.
+//
+//   Dave Bremer, Tue Feb 13 15:56:02 PST 2007
+//   Add support for blockPieceName as a template string, into which
+//   we print the domain.
+//
+//   Cyrus Harrison, Mon Sep 17 10:41:25 PDT 200
+//   Added support for user settable floating point format string
+//
+//   Kathleen Biagas, Wed Oct 26 13:31:50 PDT 2011
+//   Only print timeStep information if requested and not -1.
+//
+//   Kathleen Biagas, Wed Mar 08 17:12:07 PST 2012
+//   Use plot overrides of showXXX settings if set in plotRequested MapNode.
+//
+// ****************************************************************************
+
+void
+PickAttributes::CreateConciseOutputString(std::string &os, bool withLetter)
+{
+    char buff[512];
+   
+    std::string fileName;
+    std::string format;
+    size_t pos = databaseName.find_last_of('/');
+    if (pos >= databaseName.size())
+        fileName = databaseName;
+    else
+        fileName = databaseName.substr(pos+1) ;
+
+    if (withLetter)
+    {
+        if (pickLetter.size() != 0)
+            SNPRINTF(buff, 512, "\n%s:  ", pickLetter.c_str());
+        else 
+            SNPRINTF(buff, 512, "\n");
+        os += buff;
+    }
+    os += fileName;
+    if (timeStep != -1)
+    {
+        bool showTS = showTimeStep;
+        if (plotRequested.HasNumericEntry("showTimeStep"))
+            showTS = plotRequested.GetEntry("showTimeStep")->ToBool();
+      
+        if (showTS)
+        {
+            SNPRINTF(buff, 512, "  timestep %d", timeStep);
+            os += buff;
+        }
+    }
+
+    std::string domStr = (blockPieceName == "" ? "domain" : blockPieceName);
+
+    if (meshInfo.empty())
+    {
+        if (domain != -1)
+        {
+            if (strstr(domStr.c_str(), "%") != NULL)
+            {
+                buff[0] = ' ';
+                buff[1] = ' ';
+                SNPRINTF(buff+2, 510, domStr.c_str(), domain);
+            }
+            else
+                SNPRINTF(buff, 512, "  %s %d", domStr.c_str(), domain);
+
+            os += buff;
+        }
+    }
+    else
+    {
+        bool showMN = showMeshName;
+        if (plotRequested.HasNumericEntry("showMeshName"))
+            showMN = plotRequested.GetEntry("showMeshName")->ToBool();
+
+        if (showMN)
+        {
+            SNPRINTF(buff, 512, "  %s", meshInfo.c_str());
+            os += buff;
+        }
+    }
+
+    std::string pointString;
+    if (plotRequested.HasEntry("pointString"))
+        pointString = plotRequested.GetEntry("pointString")->AsString();
+
+    if (pointString.empty())
+    {
+        if (pickType == CurveNode)
+        {
+            format = " at <" + floatFormat + ", " + floatFormat +  ">\n";
+            SNPRINTF(buff, 512, format.c_str() , nodePoint[0], nodePoint[1]);
+            os += buff;
+        }
+        else if (pickType == CurveZone)
+        {
+            format = " at <" + floatFormat + ", " + floatFormat +  ">"
+                     +" & <" + floatFormat + ", " + floatFormat +  ">\b";
+            SNPRINTF(buff, 512, format.c_str(), 
+                      nodePoint[0], nodePoint[1], cellPoint[0], cellPoint[1]);
+            os += buff;
+        }
+        else if (cellPoint[0] != FLT_MAX)
+        {
+            if (dimension == 2)
+            {
+                format = " at <" + floatFormat + ", " + floatFormat +  ">\n";
+                SNPRINTF(buff, 512, format.c_str(), cellPoint[0], cellPoint[1]);
+            }
+            else 
+            {
+                format = " at <" + floatFormat + ", " 
+                                 + floatFormat + ", " 
+                                 + floatFormat +  ">\n";
+                SNPRINTF(buff, 512, format.c_str(),
+                            cellPoint[0], cellPoint[1], cellPoint[2]);
+            }
+            os += buff;
+        }
+    }
+    else
+    {
+        SNPRINTF(buff, 512, " at %s\n", pointString.c_str());
+        os += buff;
+    }
+
+
+    bool showZDLC = showZoneDomainLogicalCoords;
+    if (plotRequested.HasNumericEntry("showZoneDomainLogicalCoords"))
+        showZDLC = plotRequested.GetEntry("showZoneDomainLogicalCoords")->ToBool(); 
+    bool showZBLC = showZoneBlockLogicalCoords;
+    if (plotRequested.HasNumericEntry("showZoneBlockLogicalCoords"))
+        showZBLC = plotRequested.GetEntry("showZoneBlockLogicalCoords")->ToBool(); 
+    bool showZoneCoords = (showZDLC && !dzoneCoords.empty())  || 
+                          (showZBLC && !bzoneCoords.empty());
+
+    bool showNPC = showNodePhysicalCoords;
+    if (plotRequested.HasNumericEntry("showNodePhysicalCoords"))
+        showNPC = plotRequested.GetEntry("showNodePhysicalCoords")->ToBool();
+    bool showNDLC = showNodeDomainLogicalCoords;
+    if (plotRequested.HasNumericEntry("showNodeDomainLogicalCoords"))
+        showNDLC = plotRequested.GetEntry("showNodeDomainLogicalCoords")->ToBool();
+    bool showNBLC = showNodeBlockLogicalCoords;
+    if (plotRequested.HasNumericEntry("showNodeBlockLogicalCoords"))
+        showNBLC = plotRequested.GetEntry("showNodeBlockLogicalCoords")->ToBool();
+    bool showNodeCoords = (showNPC  && !pnodeCoords.empty()) || 
+                          (showNDLC && !dnodeCoords.empty()) || 
+                          (showNBLC && !bnodeCoords.empty());
+
+    bool showZId = showZoneId;
+    if (plotRequested.HasNumericEntry("showZoneId"))
+        showZId = plotRequested.GetEntry("showZoneId")->ToBool();
+
+    bool showNId = showNodeId;
+    if (plotRequested.HasNumericEntry("showNodeId"))
+        showNId = plotRequested.GetEntry("showNodeId")->ToBool();
+
+    if (pickType == Zone || pickType == DomainZone)
+    {
+        if (showZId || showZoneCoords)
+            os += "Zone: ";
+        if (showZId)
+        {
+            if (!elementIsGhost)
+            {
+                if (!showGlobalIds || globalElement == -1) 
+                    SNPRINTF(buff, 512, "%d ", elementNumber);
+                else 
+                    SNPRINTF(buff, 512, "%d (global) ", globalElement);
+            }
+            else 
+                SNPRINTF(buff, 512, "%d(ghost) ", elementNumber);
+            os += buff;
+        }
+        if (showZDLC)
+        {
+            SNPRINTF(buff, 512, "%s ", dzoneCoords[0].c_str());
+            os += buff;
+        }
+        if (showZBLC)
+        {
+            SNPRINTF(buff, 512, "%s ", bzoneCoords[0].c_str());
+            os += buff;
+        }
+    }
+    else if (pickType == Node || pickType == DomainNode)
+    {
+        if (showNId || showNodeCoords)
+            os += "Node: ";
+        if (showNId)
+        {
+            if (!elementIsGhost)
+            {
+                if (!showGlobalIds || globalElement == -1)
+                    SNPRINTF(buff, 512, "%d ", elementNumber);
+                else 
+                    SNPRINTF(buff, 512, "%d (global) ", globalElement);
+            }
+            else 
+                SNPRINTF(buff, 512, "%d(ghost) ", elementNumber);
+            os += buff;
+        }
+        if (showNPC)
+        {
+            SNPRINTF(buff, 512, "%s ", pnodeCoords[0].c_str());
+            os += buff;
+        }
+        if (showNDLC)
+        {
+            SNPRINTF(buff, 512, "%s ", dnodeCoords[0].c_str());
+            os += buff;
+        }
+        if (showNBLC)
+        {
+            SNPRINTF(buff, 512, "%s ", bnodeCoords[0].c_str());
+            os += buff;
+        }
+    }
+
+    bool showIE = showIncidentElements;
+    if (plotRequested.HasNumericEntry("showIncidentElements"))
+        showIE = plotRequested.GetEntry("showIncidentElements")->ToBool();
+
+    if (showIE)
+    {
+        bool showId = false;
+        bool showGlobal = globalIncidentElements.size() == incidentElements.size();
+        if (pickType == Zone || pickType == DomainZone)
+        {
+            os += "  Nodes: " ; 
+            showId = showNodeId;
+            if (plotRequested.HasNumericEntry("showNodeId"))
+                showId = plotRequested.GetEntry("showNodeId")->ToBool();
+           
+        }
+        else if (pickType == Node || pickType == DomainNode)
+        {
+            os += "  Zones: " ; 
+            showId = showZoneId;
+            if (plotRequested.HasNumericEntry("showZoneId"))
+                showId = plotRequested.GetEntry("showZoneId")->ToBool();
+        }
+        if (showId && showGlobal)
+            os += " (global) ";
+        for (size_t i = 0; i < incidentElements.size(); i++)
+        {
+            if (showId)
+            {
+                if (ghosts.size() > 0 && ghosts[i])
+                    SNPRINTF(buff, 512, "%d(ghost) ", incidentElements[i]);
+                else if (showGlobal) 
+                    SNPRINTF(buff, 512, "%d ", globalIncidentElements[i]);
+                else 
+                    SNPRINTF(buff, 512, "%d ", incidentElements[i]);
+                os += buff; 
+            }
+            if (pickType == Zone || pickType == DomainZone)
+            {
+                if (showNPC)
+                {
+                    SNPRINTF(buff, 512, "%s ", pnodeCoords[i].c_str());
+                    os += buff;
+                }
+                if (showNDLC)
+                {
+                    SNPRINTF(buff, 512, "%s ", dnodeCoords[i].c_str());
+                    os += buff;
+                }
+                if (showNBLC)
+                {
+                    SNPRINTF(buff, 512, "%s ", bnodeCoords[i].c_str());
+                    os += buff;
+                }
+            }
+            else if (pickType == Node || pickType == DomainNode)
+            {
+                if (showZDLC)
+                {
+                    SNPRINTF(buff, 512, "%s ", dzoneCoords[i].c_str());
+                    os += buff;
+                }
+                if (showZBLC)
+                {
+                    SNPRINTF(buff, 512, "%s ", bzoneCoords[i].c_str());
+                    os += buff;
+                }
+            }
+        }
+        os += "\n";
+    }
+
+    for (size_t i = 0; i < varInfo.size(); i++)
+    {
+        std::string iv;
+        std::string pt = PickType_ToString(pickType);
+        //
+        // VarInfo does not append a newline char, but we need one here
+        //
+        PickVarInfo* info = (PickVarInfo*)varInfo[i];
+        info->SetFloatFormat(floatFormat);
+        info->CreateOutputString(iv, pt);
+        os += iv;
+        os += "\n";
+    }
+    if (invalidVars.size() > 0)
+    {
+        os += "The following variables are invalid, and Pick ignored them:\n";
+        for (size_t i = 0; i < invalidVars.size(); i++)
+        {
+            os += "  " + invalidVars[i];
+        }
+        os += "\n";
+    }
+}
+
+// ****************************************************************************
+// Method: PickAttributes::SetRayPoint1
+//
+// Purpose: 
+//   Sets raypoint1 from a doubleVector arg.
+//
+// Programmer:  Kathleen Bonnell
+// Creation:    November 9, 2007 
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+PickAttributes::SetRayPoint1(const doubleVector & _v)
+{
+    rayPoint1[0] = _v[0];
+    rayPoint1[1] = _v[1];
+    rayPoint1[2] = _v[2];
+}
+
+// ****************************************************************************
+// Method: PickAttributes::SetRayPoint2
+//
+// Purpose: 
+//   Sets raypoint2 from a doubleVector arg.
+//
+// Programmer:  Kathleen Bonnell
+// Creation:    November 9, 2007 
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+PickAttributes::SetRayPoint2(const doubleVector &_v)
+{
+    rayPoint2[0] = _v[0];
+    rayPoint2[1] = _v[1];
+    rayPoint2[2] = _v[2];
+}
+
+// ****************************************************************************
+// Method: PickAttributes::AddLine
+//
+// Purpose: 
+//   Add the a line to the pick. This highlights the cell
+//
+// Programmer:  Matt Larsen
+// Creation:     
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+PickAttributes::AddLine(const double *_c0, const double *_c1, const int &pos)
+{
+    if(!_c0 || !_c1) return; //TODO: is there error checking here?
+    // extend vector of points as necessary
+    while ((int)cellCoordinates.size() < 6*(pos+1))
+        cellCoordinates.push_back(0.0);
+
+    cellCoordinates[pos*6+0] = _c0[0];
+    cellCoordinates[pos*6+1] = _c0[1];
+    cellCoordinates[pos*6+2] = _c0[2];
+    cellCoordinates[pos*6+3] = _c1[0];
+    cellCoordinates[pos*6+4] = _c1[1];
+    cellCoordinates[pos*6+5] = _c1[2];
+
+}
+
+// ****************************************************************************
+// Method: PickAttributes::Notify
+//
+// Purpose: 
+//    Notifies the observers. This is an override of an inherented method that
+//    adds the ability to disable notification. This is desirable when picking 
+//    ranges of elements, possibly 100+, for visual reasons only and not to
+//    encur the overhead of waiting for all the tabs to appear in the GUI.
+//
+// Programmer:  Matt Larsen 
+// Creation:    December 12, 2016
+//
+// Modifications:
+//
+// ****************************************************************************
+//
+
+void
+PickAttributes::Notify()
+{
+    //
+    // Check to see if we want to notify the window
+    //
+
+    if(notifyEnabled)
+    {
+        // Call the base class's Notify method.
+        Subject::Notify();
+
+        // Now that all the Obsevrers have been called, unselect all the
+        // attributes.
+        UnSelectAll();
+    }
+}
+
+// ****************************************************************************
+// Method: PickAttributes::ClearLines
+//
+// Purpose: 
+//   Clear the vector of lines for cell highlights
+//
+// Programmer:  Matt Larsen
+// Creation:     
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+PickAttributes::ClearLines()
+{
+    cellCoordinates.clear();
+}
+
+
+// ****************************************************************************
+// Method: PickAttributes::CreateOutputMapNode
+//
+// Purpose: 
+//   Creates a MapNode containing all the information gathered from a pick. 
+//
+// Programmer:  Kathleen Biagas
+// Creation:    September 22, 2011
+//
+// Modifications:
+//   Kathleen Biagas, Tue Jul 22 11:35:33 MST 2014
+//   Account for showing global ids.
+//
+// ****************************************************************************
+
+void
+PickAttributes::CreateOutputMapNode(MapNode &m, bool withLetter)
+{
+    if (m.GetNumEntries() != 0)
+        m.Reset();
+
+    if (error)
+        return;
+
+    if (!fulfilled)
+        return;
+
+    if ((pickType == Zone || pickType == DomainZone) && showZoneId)
+    {
+        if (globalElement == -1)
+            m["zone_id"] = elementNumber;
+        else 
+            m["zone_id"] = globalElement;
+    }
+    else if ((pickType == Node || pickType == DomainNode) && showNodeId)
+    {
+        if (globalElement == -1)
+            m["node_id"] = elementNumber;
+        else 
+            m["node_id"] = globalElement;
+    }
+
+    doubleVector p;
+    if (pickType == CurveNode)
+    {
+        p.push_back(nodePoint[0]);
+        p.push_back(nodePoint[1]);
+        m["point"] = p;
+    }
+    else if (pickType == CurveZone)
+    {
+        p.push_back(nodePoint[0]);
+        p.push_back(nodePoint[1]);
+        m["point1"] = p;
+        p[0] = cellPoint[0];
+        p[1] = cellPoint[0];
+        m["point2"] = p;
+    }
+    else if (cellPoint[0] != FLT_MAX)
+    {
+        p.push_back(cellPoint[0]);
+        p.push_back(cellPoint[1]);
+        if (dimension == 3)
+        {
+            p.push_back(cellPoint[2]);
+        }
+        //if (!needTransformMessage)
+        {
+            m["point"] = p;
+        }
+#if 0
+        else 
+        {
+            m["transformed_point"] = p;
+        }
+#endif
+    }
+
+    std::string fileName; 
+    size_t pos = databaseName.find_last_of('/');
+    if (pos >= databaseName.size())
+        fileName = databaseName;
+    else
+        fileName = databaseName.substr(pos+1) ;
+
+    m["filename"] = fileName;
+
+    if (withLetter)
+    {
+        m["pick_letter"] = pickLetter;
+    }
+
+    if (domain != -1)
+    {
+        m["domain_id"] = domain;
+    }
+    
+    if (showTimeStep && timeStep != -1)
+    {
+        m["timestep"] = timeStep;
+    }
+
+    if (showIncidentElements)
+    {
+        bool showId = false;
+        bool showGlobal = globalIncidentElements.size() == incidentElements.size();
+        std::string elName;
+        std::string ghostName;
+        if (pickType == Zone || pickType == DomainZone)
+        {
+            elName = "incident_nodes";
+            ghostName = "ghost_incident_nodes";
+            showId = showNodeId;
+        }
+        else if (pickType == Node || pickType == DomainNode)
+        {
+            elName = "incident_zones";
+            ghostName = "ghost_incident_zones";
+            showId = showZoneId;
+        }
+        if (showId)
+        {
+            if (showGlobal)
+                m[elName] = globalIncidentElements;
+            else 
+                m[elName] = incidentElements;
+            intVector els, ghostEls;
+            for (size_t i = 0; i < incidentElements.size(); ++i)
+            {
+                if (ghosts.size() > 0 && ghosts[i])
+                    ghostEls.push_back(incidentElements[i]);
+                else if (showGlobal)
+                    els.push_back(globalIncidentElements[i]);
+                else 
+                    els.push_back(incidentElements[i]);
+            }
+            m[elName] = els;
+            if (!ghostEls.empty())
+                m[ghostName] = ghostEls;
+        }
+    }
+
+    for (size_t i = 0; i < varInfo.size(); ++i)
+    {
+        std::string pt = PickType_ToString(pickType);
+        PickVarInfo* info = (PickVarInfo*)varInfo[i];
+        info->CreateOutputMapNode(pt, m);
+    }
+
+    if (invalidVars.size() > 0)
+    {
+        m["invalidVars"] = invalidVars;
+    }
+}
+
+
+// ****************************************************************************
+// Method: PickAttributes::CreateXMLString
+//
+// Purpose: 
+//   Creates an xml output string containing all the information gathered
+//   from a pick. 
+//
+// Programmer:  Kathleen Biagas
+// Creation:    September 22, 2011
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+PickAttributes::CreateXMLString(std::string &os, bool withLetter)
+{
+    if (!os.empty())
+        os.clear();
+
+    if (error)
+        return;
+
+    if (!fulfilled)
+        return;
+
+    MapNode m;
+
+    CreateOutputMapNode(m, withLetter);
+    if (m.GetNumEntries()  > 0)
+        os = m.ToXML();
+}
+

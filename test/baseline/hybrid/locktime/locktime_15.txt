@@ -1,0 +1,6 @@
+localhost:VISIT_TOP_DIR/data/pdb_test_data/dbB00.pdb has 20 states
+activeSource = "localhost:VISIT_TOP_DIR/data/pdb_test_data/dbB00.pdb"
+activeTimeSlider = 0
+timeSliders = ("localhost:VISIT_TOP_DIR/data/pdb_test_data/dbB00.pdb")
+timeSliderCurrentStates = (15)
+animationMode = 2

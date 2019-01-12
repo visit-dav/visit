@@ -1,0 +1,17 @@
+name = "matvf_selection"
+source = "Plot0003"
+selectionType = BasicSelection  # BasicSelection, CumulativeQuerySelection
+idVariableType = UseZoneIDForID  # UseZoneIDForID, UseGlobalZoneIDForID, UseVariableForID
+idVariable = ""
+variables = ()
+variableMins = ()
+variableMaxs = ()
+minTimeState = 0
+maxTimeState = -1
+timeStateStride = 1
+combineRule = CombineOr  # CombineAnd, CombineOr
+histogramType = HistogramTime  # HistogramTime, HistogramMatches, HistogramID, HistogramVariable
+histogramNumBins = 10
+histogramStartBin = 0
+histogramEndBin = 9
+histogramVariable = ""

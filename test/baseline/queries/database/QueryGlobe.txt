@@ -1,0 +1,40 @@
+Eulerian for domain 0 is 2
+
+
+u -- Min = -10 (node 872 at coord <0, -10, 7.10543e-14>)
+u -- Max = 10 (node 332 at coord <0, 10, 7.10543e-14>)
+
+
+The total Surface Area is 1685.63
+The total Volume is 3997.28
+The original extents are (-10, 10, -10, 10, -10, 10)
+The actual extents are (-10, 10, -10, 10, -10, 10)
+The actual number of nodes is 1093.
+The actual number of zones is 1200.
+
+AFTER CLIPPING:
+The total Surface Area is 952.842
+The total Volume is 2158.32
+The original extents are (-10, 10, -10, 10, -10, 10)
+The actual extents are (-10, 8.33085, -10, 8.33085, -10, 8.36281)
+The original number of nodes is 1093.
+The actual number of nodes is 953.
+The original number of zones is 1200.
+The actual number of zones is 1269.
+
+MinMax Actual:
+vel -- Min = 0 (node 11 at coord <0, 0, 10>)
+vel -- Max = 10 (node 116 at coord <9.51057, 3.09017, 7.10543e-14>)
+
+
+MinMax Original:
+vel -- Min = 0 (node 11 at coord <0, 0, 10>)
+vel -- Max = 10 (node 116 at coord <9.51057, 3.09017, 7.10543e-14>)
+
+MinMAx Actual:
+disp -- Min = 0.0198941 (zone 4 at coord <0.0397882, 0.251212, 1.20923>)
+disp -- Max = 4.36175 (zone 780 at coord <8.72351, 1.38167, 1.41634>)
+
+
+The total t is 3.13554e+06
+The total neg_t is -3.13554e+06

@@ -1,0 +1,46 @@
+
+A:  noise.silo
+Point: <hardyglobal, shepardglobal>
+Node:  114898
+hardyglobal:  <nodal> = 2.4583
+
+shepardglobal:  <nodal> = 3.78342
+
+radial:  <nodal> = 1.87044
+
+
+B:  noise.silo
+Point: <hardyglobal, shepardglobal>
+Node:  17449
+hardyglobal:  <nodal> = 2.46713
+
+shepardglobal:  <nodal> = 3.82431
+
+radial:  <nodal> = 17.5558
+
+Expressions used in Scatter
+
+C:  multi_rect3d.silo
+Point: <xc, yc, zc>
+Node:  149
+xc:  <nodal> = 0.2
+
+yc:  <nodal> = 0.8
+
+zc:  <nodal> = 0.366667
+
+uvw_prod:  <nodal> = 0.136506
+
+Mix up the coordinates
+
+D:  multi_rect3d.silo
+Point: <yc, xc, zc>
+Node:  213
+xc:  <nodal> = 0.8
+
+yc:  <nodal> = 0.2
+
+zc:  <nodal> = 0.366667
+
+uvw_prod:  <nodal> = 0.136506
+

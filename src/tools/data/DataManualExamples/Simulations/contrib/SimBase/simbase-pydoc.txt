@@ -1,0 +1,268 @@
+Help on module simbase:
+
+NAME
+    simbase - Simulation Base Class
+
+FILE
+    /home/m3047/Versioned/visit/simbase.py
+
+DESCRIPTION
+    Handles the basics of setting up a simulation. Actual simulations
+    will want to subclass this with a class which defines actual
+    data and metadata, and also with something that will run 
+    algorithm epochs.
+    
+    Concepts are taken from, and occasionally idioms borrowed from,
+    the updateplots.py sample. Routines are named similarly where
+    that makes sense.
+
+CLASSES
+    __builtin__.object
+        Simulation
+    
+    class Simulation(__builtin__.object)
+     |  Simulation Base Class. Subclass this.
+     |  
+     |  The Initialize and Finalize methods in this class implement
+     |  the paradigm that there is
+     |    * A Primary Method, which is capitalized and belongs to the base class
+     |    * A Secondary Overridable method, which is not capitalized and is
+     |      present for the convenience of subclasses.
+     |  Methods which implement this paradigm accept additional kwargs
+     |  which will be passed to the subclasses' method.
+     |  
+     |  The MainLoop method implements the paradigm that there is the Primary
+     |  Method (MainLoop), and a number of main_ functions which you will 
+     |  probably want to override. In particular:
+     |    * main_doRun: This is where your compute kernel should run an epoch.
+     |    * main_doVisItConnect: This is where you could connect callbacks.
+     |    * main_doConsoleCommand: This is where you can implement console_commands.
+     |  
+     |  HERE'S A SUGGESTION: Use self.context to store your kernel's context. I
+     |  promise never to step on that.
+     |  
+     |  The following reference arrays are defined on self in lieu of using
+     |  the VISIT_ equivalences. They are defined as instance variables to
+     |  get around the fact that we're importing simV2 during __init__.
+     |  
+     |      MESHTYPES:      VISIT_MESHTYPE_***
+     |      VARTYPES:       VISIT_VARTYPE_***
+     |      CENTERINGS:     VISIT_VARCENTERING_***
+     |      COMMANDS:       Function pointers to VisIt_SimulationMetaData_add***Command
+     |      VARDATATYPES:   Function pointers to VisIt_VariableData_setData*
+     |      DATAOWNERS:     VISIT_OWNER_***
+     |  
+     |  Methods defined here:
+     |  
+     |  Finalize(self, **kwargs)
+     |      Most inportant thing that this does is to call VisItCloseTraceFile
+     |      if trace_qualifier is not set to None.
+     |  
+     |  Initialize(self, sim_name, sim_description, **kwargs)
+     |      Call this first.
+     |      
+     |      By default the simulation comes with the following console
+     |      and callback commands:
+     |      
+     |          * quit (console only)
+     |          * halt
+     |          * step
+     |          * run
+     |          
+     |      Keyword arguments are passed to initialize()
+     |  
+     |  MainLoop(self)
+     |      This is the main loop. It does not have a subclass-overridable companion,
+     |      however it has a number of main_ methods which are intended to be overridden.
+     |      
+     |      It runs until self.done is true.
+     |  
+     |  __init__(self, lib_path, visit_base)
+     |      The most important things that this does are to import simV2
+     |      and to save the VisIt base directory.
+     |      
+     |      Parameters:
+     |        lib_path:     Path to simv2.py. It is probably a good idea to set
+     |                      an environment variable VISIT_LIBPATH and pull from
+     |                      that.
+     |        visit_base:   Base path to the VisIt installation. In practice,
+     |                      this is one directory above the bin/ directory that
+     |                      VisIt runs out of. It is probably a good idea to set
+     |                      an environment variable VISIT_HOME and pull from that.
+     |  
+     |  callback_command(self, cmd, visit_args, cbdata)
+     |      Overridable method.
+     |  
+     |  callback_command_(self, cmd, visit_args, cbdata)
+     |      A wrapper around callback_command, making it easier to
+     |      override in a subclass.
+     |      
+     |      This is the method which is actually registered as a
+     |      callback.
+     |  
+     |  callback_curve(self, name, cbdata)
+     |      Overridable method.
+     |  
+     |  callback_curve_(self, name, cbdata)
+     |      A wrapper around callback_curve, making it easier to
+     |      override in a subclass.
+     |      
+     |      This is the method which is actually registered as a
+     |      callback.
+     |  
+     |  callback_mesh(self, domain, name, cbdata)
+     |      Overridable method.
+     |  
+     |  callback_mesh_(self, domain, name, cbdata)
+     |      A wrapper around callback_mesh, making it easier to
+     |      override in a subclass.
+     |      
+     |      This is the method which is actually registered as a
+     |      callback.
+     |  
+     |  callback_metadata(self, cbdata)
+     |      Overridable method. (You don't have to.)
+     |      
+     |      This method will declare your metadata, if you pass it an
+     |      appropriate structure.
+     |  
+     |  callback_metadata_(self, cbdata)
+     |      This is the method which is actually registered as a callback.
+     |  
+     |  callback_modecycletime(self)
+     |      Returns a triple of:
+     |      
+     |      mode:       True if running, false if not. If you just want this to
+     |                  follow self.simMode, return None.
+     |      cycle:      The epoch.
+     |      time:       The "elapsed time"... presumably in seconds, don't really know.
+     |  
+     |  callback_variable(self, domain, name, cbdata)
+     |      Overridable method.
+     |  
+     |  callback_variable_(self, domain, name, cbdata)
+     |      A wrapper around callback_variable, making it easier to
+     |      override in a subclass.
+     |      
+     |      This is the method which is actually registered as a
+     |      callback.
+     |  
+     |  cmd_halt(self, arg, cmd, visit_args, cbdata)
+     |      Sets the runMode to VISIT_SIMMODE_STOPPED
+     |  
+     |  cmd_quit(self, arg, cmd, visit_args, cbdata)
+     |      Sets the done flag which causes the main loop to exit.
+     |  
+     |  cmd_run(self, arg, cmd, visit_args, cbdata)
+     |      Sets the runMode to VISIT_SIMMODE_RUNNING
+     |  
+     |  cmd_step(self, arg, cmd, visit_args, cbdata)
+     |      Runs one epoch.
+     |  
+     |  finalize(self, **kwargs)
+     |      This is the subclass-overridable companion to Finalize.
+     |  
+     |  initialize(self, **kwargs)
+     |      This is the subclass-overridable companion to Initialize().
+     |      The keyword arguments are what were supplied in the call to
+     |      Initialize().
+     |      
+     |      Specific values which you might want to override:
+     |          trace_qualifier:    Used while naming the trace file. Defaults to
+     |                              the process PID. If set to None no trace file
+     |                              is opened.
+     |          sim_path:           It is assumed that the simulation was started
+     |                              from the current working directory, i.e.
+     |                              os.getcwd()
+     |          console:            Define the console commands.
+     |          callbacks:          Define the callbacks and specific values to be
+     |                              exposed. Otherwise you are going to need to
+     |                              override main_doVisItConnect and do a heap o'
+     |                              work.
+     |      
+     |      callbacks in turn has substructures:
+     |          commands:           Defines commands which can be triggered from the
+     |                              VisIt sim control panel.
+     |          metadata:           Defines/names metadata for which callbacks should
+     |                              be made. The following types of metadata are
+     |                              supported: mesh, variable, curve expression.
+     |                              See the source for callback_metadata() method
+     |                              for enumeration of the properties which can be
+     |                              set for specific types of metadata.
+     |  
+     |  main_doConsoleCommand(self, cmd)
+     |      Processes console commands.
+     |      
+     |      Parameters:
+     |          cmd: The command read from the console.
+     |  
+     |  main_doPrompt(self)
+     |      Displays a command prompt on stdout.
+     |  
+     |  main_doRun(self, running)
+     |      Your compute kernel will want to override this, this is where you will
+     |      do work!
+     |      
+     |      Parameters:
+     |          running:    This will be True if VisIt believes the simulation is
+     |                      running.
+     |  
+     |  main_doVisItConnect(self)
+     |      Your compute kernel may want to override this. This is where you will
+     |      connect callbacks. There are helper methods to assist with this. The
+     |      default automagically invokes some default callbacks based on some
+     |      data definitions, and presumably if you're not doing anything too fancy
+     |      the callbacks themselves can be defined with some... errrm... definitions.
+     |  
+     |  main_visitstateError(self, visitstate)
+     |      Called when the main loop visitstate contains an unexpected value.
+     |  
+     |  print_to_console(self, message)
+     |      Prints to the console and reissues the console prompt.
+     |  
+     |  set_runMode(self, running)
+     |      Sets self.runMode to the appropriate VISIT_ constant.
+     |  
+     |  truth_to_0_1(self, truth)
+     |      Returns 1 if truth is true, 0 if false.
+     |  
+     |  visit_curve(self, data_func, data_x, data_y, data_z=None, owner='VISIT')
+     |      Creates a curve.
+     |  
+     |  visit_execute(self, commands, cmd, visit_args, cbdata)
+     |      Executes the commands
+     |  
+     |  visit_point_mesh(self, data_func, data_x, data_y, data_z=None, owner='VISIT')
+     |      Creates a point mesh.
+     |      
+     |      The handling for owner other that VISIT_OWNER_VISIT is complete and
+     |      utterly untested guesswork.
+     |      
+     |      data_func is one of VARDATATYPES. NOTE: In Python, floats are doubles.
+     |  
+     |  visit_rectilinear_mesh(self, data_func, min_real_idx, max_real_idx, data_x, data_y, data_z=None, owner='VISIT')
+     |      Creates a rectilinear mesh.
+     |      
+     |      The handling for owner other that VISIT_OWNER_VISIT is complete and
+     |      utterly untested guesswork.
+     |      
+     |      data_func is one of VARDATATYPES. NOTE: In Python, floats are doubles.
+     |  
+     |  visit_variable(self, data_func, data, owner='VISIT', nComp=1)
+     |      Creates a variable.
+     |      
+     |      nComp determines the "number of components". For a precise definition
+     |      see the documentation. For Floats and Ints this should typically be
+     |      1 (no stride). For character strings (such as labels), this is the
+     |      length of the label; it is required that each string be the same length.
+     |  
+     |  ----------------------------------------------------------------------
+     |  Data descriptors defined here:
+     |  
+     |  __dict__
+     |      dictionary for instance variables (if defined)
+     |  
+     |  __weakref__
+     |      list of weak references to the object (if defined)
+
+

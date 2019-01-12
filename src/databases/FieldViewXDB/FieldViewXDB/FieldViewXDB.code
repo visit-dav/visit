@@ -1,0 +1,20 @@
+Target: xml2info
+Function: FieldViewXDBCommonPluginInfo::GetLicense
+Declaration: virtual std::string FieldViewXDBCommonPluginInfo::GetLicense() const;
+Definition:
+// ****************************************************************************
+//  Method: FieldViewXDBCommonPluginInfo::GetLicense
+//
+//  Purpose: Get the copyright for the library.
+//
+//  Programmer: Brad Whitlock
+//  Creation:   Tue Apr  8 16:07:39 PDT 2014
+//
+// ****************************************************************************
+#include <avtFieldViewXDBWriterInternal.h>
+
+std::string
+FieldViewXDBCommonPluginInfo::GetLicense() const
+{
+    return avtFieldViewXDBWriterInternal::GetCopyright();
+}

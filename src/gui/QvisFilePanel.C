@@ -1,0 +1,3851 @@
+/*****************************************************************************
+*
+* Copyright (c) 2000 - 2018, Lawrence Livermore National Security, LLC
+* Produced at the Lawrence Livermore National Laboratory
+* LLNL-CODE-442911
+* All rights reserved.
+*
+* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
+* full copyright notice is contained in the file COPYRIGHT located at the root
+* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
+*
+* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
+* modification, are permitted provided that the following conditions are met:
+*
+*  - Redistributions of  source code must  retain the above  copyright notice,
+*    this list of conditions and the disclaimer below.
+*  - Redistributions in binary form must reproduce the above copyright notice,
+*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
+*    documentation and/or other materials provided with the distribution.
+*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
+*    be used to endorse or promote products derived from this software without
+*    specific prior written permission.
+*
+* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
+* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
+* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
+* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
+* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
+* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
+* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
+* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
+* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
+* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
+* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
+* DAMAGE.
+*
+*****************************************************************************/
+
+#include <visitstream.h>
+
+#include <QComboBox>
+#include <QDebug>
+#include <QContextMenuEvent>
+#include <QHeaderView>
+#include <QLabel>
+#include <QMenu>
+#include <QTreeWidget>
+#include <QTreeWidgetItem> 
+#include <QLayout>
+#include <QPushButton>
+#include <QLineEdit> 
+#include <QTimer>
+
+#include <QvisFilePanel.h>
+#include <QvisAnimationSlider.h>
+#include <QvisVCRControl.h>
+#include <QvisFilePanelItem.h>
+
+#include <DatabaseCorrelation.h>
+#include <DatabaseCorrelationList.h>
+#include <DebugStream.h>
+#include <FileServerList.h>
+#include <GlobalAttributes.h>
+#include <KeyframeAttributes.h>
+#include <NameSimplifier.h>
+#include <Plot.h>
+#include <PlotList.h>
+#include <WindowInformation.h>
+#include <Utility.h>
+#include <ViewerProxy.h>
+#include <avtDatabaseMetaData.h>
+
+// Include the XPM files used for the icons.
+#include <icons/database.xpm>
+#include <icons/folder.xpm>
+#include <icons/computer.xpm>
+
+// ****************************************************************************
+// Class: FileTree
+//
+// Purpose:
+//   This class is used internally to represent a file tree that can undergo
+//   reduce operations in order to simplify the tree.
+//
+// Notes:      FileTree::FileTreeNode is an internal class that is used to
+//             help represent the file tree's nodes.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Mar 22 16:47:19 PST 2001
+//
+// Modifications:
+//   Brad Whitlock, Mon Aug 26 16:32:05 PST 2002
+//   I changed the code so it can handle different kinds of file separators.
+//
+//   Brad Whitlock, Wed May 14 15:38:40 PST 2003
+//   I added support for virtual databases being expanded by default.
+//
+//   Brad Whitlock, Thu Aug 5 17:36:02 PST 2004
+//   I added methods to look for long node names.
+//
+//   Cyrus Harrison, Tue Jul  1 14:28:23 PDT 2008
+//   Initial Qt4 Port.
+//
+// ****************************************************************************
+
+
+class FileTree
+{
+public:
+    class FileTreeNode
+    {
+    public:
+        static const int ROOT_NODE;
+        static const int PATH_NODE;
+        static const int FILE_NODE;
+        static const int DATABASE_NODE;
+
+        FileTreeNode(int nodeT = FILE_NODE);
+        ~FileTreeNode();
+        FileTreeNode *Add(int nType, const std::string &name,
+                          const QualifiedFilename &fName, char separator);
+        bool Reduce();
+        FileTreeNode *Find(const std::string &path);
+        int Size() const;
+        bool HasChildrenOfType(int type);
+        bool HasNodeNameExceeding(int len) const;
+        void AddElementsToTreeItem(QTreeWidgetItem *item, int &fileIndex,
+                                   bool addRoot,
+                                   const QPixmap &folderPixmap,
+                                   const QPixmap &dbPixmap,
+                                   QvisFilePanel *filePanel);
+
+        void AddElementsToTree(QTreeWidget *tree, int &fileIndex,
+                               const QPixmap &folderPixmap,
+                               const QPixmap &databasePixmap,
+                               QvisFilePanel *filePanel);
+        QString NumberedFilename(int fileIndex) const;
+
+        std::string separator_str()
+        {
+            char str[2] = {separator, '\0'};
+            return std::string(str);
+        }
+
+        void Print(ostream &os, const std::string &indent) const;
+
+        char              separator;
+        int               nodeType;
+        std::string       nodeName;
+        QualifiedFilename fileName;
+        int               numChildren;
+        FileTreeNode      **children;
+    private:
+        void Destroy();
+    };
+
+    FileTree(QvisFilePanel *fp);
+    ~FileTree();
+
+    void Add(const QualifiedFilename &fileName, char separator);
+    void Reduce();
+    int  Size() const;
+    bool TreeContainsDirectories() const;
+    bool HasNodeNameExceeding(int len) const;
+
+    void AddElementsToTreeItem(QTreeWidgetItem *item, int &fileIndex,
+                               const QPixmap &folderPixmap,
+                               const QPixmap &dbPixmap);
+    void AddElementsToTree(QTreeWidget *tree, int &fileIndex,
+                           const QPixmap &folderPixmap,
+                           const QPixmap &databasePixmap);
+
+    friend ostream &operator << (ostream &os, const FileTree &t);
+private:
+    std::string separator_str()
+    {
+        char str[2] = {separator, '\0'};
+        return std::string(str);
+    }
+
+    char           separator;
+    FileTreeNode  *root;
+    QvisFilePanel *filePanel;
+};
+
+const int FileTree::FileTreeNode::ROOT_NODE     = 0;
+const int FileTree::FileTreeNode::PATH_NODE     = 1;
+const int FileTree::FileTreeNode::FILE_NODE     = 2;
+const int FileTree::FileTreeNode::DATABASE_NODE = 3;
+
+///////////////////////////////////////////////////////////////////////////////
+
+// ****************************************************************************
+// Method: QvisFilePanel::QvisFilePanel
+//
+// Purpose: 
+//   Constructor for the QvisFilePanel class.
+//
+// Arguments:
+//   parent     : A pointer to the widget's parent widget.
+//   name       : The widget's name.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Aug 31 10:35:07 PDT 2000
+//
+// Modifications:
+//   Brad Whitlock, Thu Mar 22 11:24:16 PDT 2001
+//   Added code to create the folder pixmap.
+//
+//   Brad Whitlock, Thu Feb 28 14:01:20 PST 2002
+//   Connected slots for collapse and expand.
+//
+//   Jeremy Meredith, Mon Aug 19 16:22:44 PDT 2002
+//   Initialized globalAtts.
+//
+//   Brad Whitlock, Fri May 16 12:28:49 PDT 2003
+//   Initialized displayInfo.
+//
+//   Brad Whitlock, Mon Oct 13 15:24:56 PST 2003
+//   Initialized timeStateFormat.
+//
+//   Brad Whitlock, Tue Dec 30 14:32:32 PST 2003
+//   I made it use QvisAnimationSlider.
+//
+//   Brad Whitlock, Tue Jan 27 18:14:38 PST 2004
+//   I renamed some slots and added the active time slider.
+//
+//   Brad Whitlock, Tue Apr 6 14:07:34 PST 2004
+//   I added allowFileSelectionChange.
+//
+//   Brad Whitlock, Tue Apr 27 12:11:29 PDT 2004
+//   I improved the spacing for newer versions of Qt.
+//
+//   Jeremy Meredith, Wed Oct 13 20:38:30 PDT 2004
+//   Prevent the header of the file list from being clicked.  Leaving it
+//   enabled allows changing of the sort and in some circumstances broke
+//   time sequences.  ('5391)
+//
+//   Brad Whitlock, Fri May 30 14:22:50 PDT 2008
+//   Qt 4.
+//
+//   Cyrus Harrison, Tue Jul  1 14:28:23 PDT 2008
+//   Initial Qt4 Port.
+//
+//    Cyrus Harrison, Tue Apr 14 13:35:54 PDT 2009
+//    Added creation & setup of filePopupMenu.
+//
+//   Jeremy Meredith, Fri Nov  6 11:40:46 EST 2009
+//   File panel selected files list now starts out hidden.
+//
+//   Cyrus Harrison, Mon Mar 15 11:57:22 PDT 2010
+//   Moved timeslider controls into a QvisTimeSliderControlWidget.
+//
+// ****************************************************************************
+
+QvisFilePanel::QvisFilePanel(QWidget *parent) :
+   QGroupBox(tr("Selected Files"),parent), SimpleObserver(), GUIBase(), 
+   displayInfo(),
+   timeStateFormat()
+{
+    allowFileSelectionChange = true;
+
+    // Create the top layout that will contain the widgets.
+    QVBoxLayout *topLayout = new QVBoxLayout(this);
+    topLayout->setSpacing(5);
+    topLayout->setMargin(5);
+
+    fileTree = new QTreeWidget(this);
+    fileTree->header()->hide();
+
+    // Create the selected file list.
+    fileTree->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+    fileTree->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+
+    connect(fileTree, SIGNAL(itemDoubleClicked(QTreeWidgetItem *,int)),
+            this, SLOT(openFileDblClick(QTreeWidgetItem *)));
+    /*
+    connect(fileListView, 
+            SIGNAL(rightButtonClicked(QListViewItem *,const QPoint &,int)),
+            this, 
+            SLOT(showFilePopup(QListViewItem *, const QPoint &, int)));
+    */
+    connect(fileTree, SIGNAL(currentItemChanged(QTreeWidgetItem *,QTreeWidgetItem *)),
+            this, SLOT(highlightFile(QTreeWidgetItem *)));
+    connect(fileTree, SIGNAL(itemExpanded(QTreeWidgetItem *)),
+            this, SLOT(fileExpanded(QTreeWidgetItem *)));
+    connect(fileTree, SIGNAL(itemCollapsed(QTreeWidgetItem *)),
+            this, SLOT(fileCollapsed(QTreeWidgetItem *)));
+
+    topLayout->addWidget(fileTree, 10);
+
+    // Create the file opening buttons.
+    QHBoxLayout *buttonLayout = new QHBoxLayout(0);
+    buttonLayout->setMargin(0);
+    topLayout->addLayout(buttonLayout);
+    topLayout->setStretchFactor(buttonLayout, 10);
+    openButton = new QPushButton(tr("Open"));
+    openButton->setEnabled(false);
+    connect(openButton, SIGNAL(clicked()), this, SLOT(openFile()));
+    buttonLayout->addWidget(openButton);
+
+    replaceButton = new QPushButton(tr("Replace"));
+    replaceButton->setEnabled(false);
+    connect(replaceButton, SIGNAL(clicked()), this, SLOT(replaceFile()));
+    buttonLayout->addWidget(replaceButton);
+
+    overlayButton = new QPushButton(tr("Overlay"));
+    overlayButton->setEnabled(false);
+    connect(overlayButton, SIGNAL(clicked()), this, SLOT(overlayFile()));
+    buttonLayout->addWidget(overlayButton);
+
+    filePopupMenu = new QMenu(this);
+    openAct    = filePopupMenu->addAction(tr("&Open"));
+    replaceAct = filePopupMenu->addAction(tr("&Replace"));
+    replaceSelectedAct = filePopupMenu->addAction(tr("Replace &Selected"));
+    overlayAct = filePopupMenu->addAction(tr("&Overlay"));
+    closeAct   = filePopupMenu->addAction(tr("&Close"));
+
+    // Create the computer pixmap.
+    computerPixmap = new QPixmap(computer_xpm);
+    // Create the database pixmap.
+    databasePixmap = new QPixmap(database_xpm);
+    // Create the folder pixmap and add it to the pixmap cache.
+    folderPixmap = new QPixmap(folder_xpm);
+
+    // Initialize the attached subjects
+    windowInfo = NULL;
+
+}
+
+// ****************************************************************************
+// Method: QvisFilePanel::~QvisFilePanel
+//
+// Purpose: 
+//   Destructor for the QvisFilePanel class.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Aug 31 10:36:46 PDT 2000
+//
+// Modifications:
+//   Brad Whitlock, Fri Feb 1 14:28:06 PST 2002
+//   Added code to delete the widget's pixmaps.
+//
+//   Brad Whitlock, Sun Jan 25 01:10:56 PDT 2004
+//   I made it use windowInfo instead of globalAtts.
+//
+// ****************************************************************************
+
+QvisFilePanel::~QvisFilePanel()
+{
+    if(fileServer)
+        fileServer->Detach(this);
+
+    if(windowInfo)
+        windowInfo->Detach(this);
+
+    // Delete the pixmaps.
+    delete computerPixmap;
+    delete databasePixmap;
+    delete folderPixmap;
+}
+
+// ****************************************************************************
+// Method: QvisFilePanel::SetTimeStateFormat
+//
+// Purpose: 
+//   Sets the display mode for the file panel. We can make it display files
+//   using cycle information or we can make it use time information.
+//
+// Arguments: 
+//   m : The new timestate display mode.
+//
+// Notes:      This method resets the text on the expanded databases, which
+//             are open databases with more than one time state, so that
+//             they show time using the new timestate display mode.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Oct 13 16:15:46 PST 2003
+//
+// Modifications:
+//   Brad Whitlock, Mon Dec 29 10:13:15 PDT 2003
+//   I added code to help determine how labels are displayed if a database is
+//   virtual.
+//
+//   Brad Whitlock, Sun Jan 25 01:28:55 PDT 2004
+//   I added support for multiple time sliders.
+//
+//   Mark C. Miller, Wed Aug  2 19:58:44 PDT 2006
+//   Changed interface to FileServerList::GetMetaData
+//
+//   Mark C. Miller, Fri Aug 10 23:11:55 PDT 2007
+//   Propogated knowledge that item was updated with metadata that was forced
+//   to get accurate cycles/times.
+//
+//   Cyrus Harrison, Tue Jul  1 16:04:25 PDT 2008
+//   Initial Qt4 Port.
+//
+//   Cyrus Harrison, Mon Mar 15 11:57:22 PDT 2010
+//   Updated b/c timeslider controls were removed.
+//
+// ****************************************************************************
+
+void
+QvisFilePanel::SetTimeStateFormat(const TimeFormat &m)
+{
+    if(m != timeStateFormat)
+    {
+        timeStateFormat = m;
+
+        // Count the number of items in the fileListView. I didn't see a way to
+        // count them all without traversing them all.
+        int i = 0;
+        int count = 0;
+
+        // Create an array to store pointers to all of the items. We save the
+        // pointers in an array because later when we expand databases, we
+        // can't traverse using an iterator because as we add items, the
+        // iterator is invalidated.
+        QList<QvisFilePanelItem*> items;
+        QTreeWidgetItemIterator it(fileTree);
+        for ( ; *it; ++it )
+            items.append((QvisFilePanelItem*)*it);
+        count = items.count();
+
+        // If there are no items, return early.
+        if(count < 1)
+            return;
+
+        //
+        // Iterate through the items and expand them if they are databases.
+        //
+        for(i = 0; i < count; ++i)
+        {
+            QvisFilePanelItem *item = items[i];
+            if(item != 0)
+            {
+                if(HaveFileInformation(item->file))
+                {
+                    // See if the file is a database
+                    const avtDatabaseMetaData *md =
+                        fileServer->GetMetaData(item->file,
+                                                GetStateForSource(item->file),
+                                                FileServerList::ANY_STATE,
+                                               !FileServerList::GET_NEW_MD);
+                    if(md != 0 && md->GetNumStates() > 1)
+                    {
+                        int j, maxts = qMin(md->GetNumStates(), item->childCount());
+
+                        QTreeWidgetItemIterator it(item); ++it;
+                        bool useVirtualDBInfo = DisplayVirtualDBInformation(item->file);
+
+                        // Set the label so that it shows the right values.
+                        for(j = 0; j < maxts; ++j, ++it)
+                        {
+                             (*it)->setText(0, CreateItemLabel(md, j,
+                                 useVirtualDBInfo));
+                        }
+
+                        item->timeStateHasBeenForced =
+                            fileServer->GetForceReadAllCyclesTimes();
+                    }
+                }
+            }
+        }
+    }
+}
+
+// ****************************************************************************
+// Method: QvisFilePanel::GetTimeStateFormat
+//
+// Purpose: 
+//   Returns the time state format.
+//
+// Returns:    The time state format.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Oct 13 17:19:20 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+const TimeFormat &
+QvisFilePanel::GetTimeStateFormat() const
+{
+    return timeStateFormat;
+}
+
+// ****************************************************************************
+// Method: QvisFilePanel::Update
+//
+// Purpose: 
+//   This method tells the widget to update itself when the subject
+//   changes.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Aug 31 10:37:19 PDT 2000
+//
+// Modifications:
+//   Brad Whitlock, Sun Jan 25 01:28:23 PDT 2004
+//   I made it use windowInfo instead of globalAtts.
+//
+//   Cyrus Harrison, Mon Mar 15 11:57:22 PDT 2010
+//   Changed UpdateAnimationControls to UpdateWindowInfo.
+//
+// ****************************************************************************
+
+void
+QvisFilePanel::Update(Subject *TheChangedSubject)
+{
+    if(fileServer == 0 || windowInfo == 0)
+        return;
+
+    if(TheChangedSubject == fileServer)
+        UpdateFileList(false);
+    else if(TheChangedSubject == windowInfo)
+        UpdateWindowInfo(false);
+}
+
+// ****************************************************************************
+// Method: QvisFilePanel::UpdateFileList
+//
+// Purpose: 
+//   This method updates the widget to reflect the new state stored
+//   in the FileServerList that this widget is watching.
+//
+// Arguments:
+//   doAll : Whether or not to update everything. If this is false,
+//           then it should pay attention to what attributes actually
+//           changed.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Aug 31 10:38:11 PDT 2000
+//
+// Modifications:
+//   Brad Whitlock, Sun Jan 25 01:29:46 PDT 2004
+//   I moved the guts into RepopulateFileList.
+//
+// ****************************************************************************
+
+void
+QvisFilePanel::UpdateFileList(bool doAll)
+{
+    if(fileServer == 0 || windowInfo == 0)
+        return;
+
+    // If the appliedFileList has changed, update the appliedFile list.
+    if(fileServer->AppliedFileListChanged() || doAll)
+    {
+        RepopulateFileList();
+    }
+    else if(fileServer->FileChanged())
+    {
+        // Expand any databases that we know about. This just means that we add
+        // the extra information that databases have, we don't expand the tree
+        // until we enter UpdateFileSelection.
+        ExpandDatabases();
+
+        // Highlight the selected file.
+        UpdateFileSelection();
+        // Set the enabled state for the animation controls.
+    }
+}
+
+// ****************************************************************************
+// Method: QvisFilePanel::RepopulateFileList
+//
+// Purpose: 
+//   Clears out the selected files and refills the list with the new list
+//   of selected files.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Jan 30 11:54:15 PDT 2004
+//
+// Modifications:
+//   Brad Whitlock, Wed Jul 28 17:22:59 PST 2004
+//   Added code to force file lists that have MT databases always have a root
+//   so they can be collapsed.
+//
+//   Brad Whitlock, Thu Aug 5 17:36:33 PST 2004
+//   I added code to detect when node names are long and set the horizontal
+//   scrollbar mode of the listview appropriately.
+//
+//   Mark C. Miller, Wed Aug  2 19:58:44 PDT 2006
+//   Changed interface to FileServerList::GetMetaData
+//
+//   Cyrus Harrison, Tue Jul  1 14:28:23 PDT 2008
+//   Initial Qt4 Port.
+//
+//   Cyrus Harrison, Thu Dec  4 09:13:50 PST 2008
+//   Removed unnecssary todo comment.
+//
+// ****************************************************************************
+
+void
+QvisFilePanel::RepopulateFileList()
+{
+    const QualifiedFilenameVector &f = fileServer->GetAppliedFileList();
+    // Holds pointers to the list item for each host.
+    std::map<std::string, QTreeWidgetItem *> hostMap;
+
+    // Go through all of the files and build a list of unique hosts.
+    bool hostOtherThanLocalHost = false;
+    bool someFilesHaveMultipleTimeStates = false;
+    QualifiedFilenameVector::const_iterator pos;
+    for(pos = f.begin(); pos != f.end(); ++pos)
+    {
+        // Populate the hostMap variable.
+        if(pos->host.size() > 0)
+        {
+            // Add an entry for the host.
+            hostMap[pos->host] = 0;
+
+            // See if the host is not localhost.
+            if(pos->host != std::string("localhost"))
+                hostOtherThanLocalHost = true;
+        }
+
+        // See if the current file is MT
+        if(!someFilesHaveMultipleTimeStates)
+        {
+            if(pos->IsVirtual())
+            {
+                someFilesHaveMultipleTimeStates = true;
+            }
+            else if(fileServer->HaveOpenedFile(*pos))
+            {
+                const avtDatabaseMetaData *md =
+                    fileServer->GetMetaData(*pos,
+                                    GetStateForSource(*pos),
+                                    FileServerList::ANY_STATE,
+                                   !FileServerList::GET_NEW_MD);
+                if(md != 0 && md->GetNumStates() > 1)
+                    someFilesHaveMultipleTimeStates = true;
+            }
+        }
+    }
+
+    // Clear out the fileListView widget.
+    fileTree->clear();
+
+    QvisFilePanelItem::resetNodeNumber();
+    // Reset the node numbers that will be used to create the nodes.
+    //QvisListViewFileItem::resetNodeNumber();
+
+    // Assume that we want automatic scrollbars instead of always having them.
+    Qt::ScrollBarPolicy hScrollMode = Qt::ScrollBarAsNeeded;
+
+    // If there are multiple hosts or just one and it is not localhost,
+    // add nodes in the file tree for the host. This makes sure that it
+    // is always clear which host a file came from.
+
+    if(hostMap.size() > 1)
+    {
+        std::map<std::string, QTreeWidgetItem *>::iterator hpos;
+
+        // Create the root for the host list.
+        QualifiedFilename rootName("Hosts", "(root)", "(root)");
+        QTreeWidgetItem *root = new QvisFilePanelItem(fileTree,
+                                                      QString(tr("Hosts")),
+                                                      rootName,
+                                                      QvisFilePanelItem::ROOT_NODE);
+
+        // Always expand the root node.
+        AddExpandedFile(rootName);
+
+        // Create all of the host listview items.
+        int fileIndex = 1;
+        for(hpos = hostMap.begin(); hpos != hostMap.end(); ++hpos)
+        {
+            char separator = fileServer->GetSeparator(hpos->first);
+            QualifiedFilename hostOnly(hpos->first, "(host)", "(host)");
+            hostOnly.separator = separator;
+            
+            QTreeWidgetItem *newFile = new QvisFilePanelItem(root, 
+                                                             QString(hpos->first.c_str()),
+                                                             hostOnly,
+                                                             QvisFilePanelItem::HOST_NODE);
+            newFile->setIcon(0,*computerPixmap);
+            // Add the widget to the host map.
+            hpos->second = newFile;
+
+            // Add the files to the file tree and reduce it.
+            FileTree files(this);
+            for(pos = f.begin(); pos != f.end(); ++pos)
+            {
+                if(pos->host == hpos->first)
+                    files.Add(*pos, separator);
+            }
+            files.Reduce();
+
+            // If there are any nodes with long names then we should have
+            // scrollbars in the selected files list.
+            if(files.HasNodeNameExceeding(30))
+                hScrollMode = Qt::ScrollBarAlwaysOn;
+
+            // Add all the elements in the files list to the host list
+            // view item.
+            files.AddElementsToTreeItem(newFile, fileIndex,
+                                        *folderPixmap, *databasePixmap);
+        }
+    }
+    else
+    {
+        // Add the files to the file tree and reduce it.
+        FileTree files(this);
+        for(pos = f.begin(); pos != f.end(); ++pos)
+        {
+            char separator = fileServer->GetSeparator(pos->host);
+            files.Add(*pos, separator);
+        }
+        files.Reduce();
+
+        // debug1 << "File Tree:\n" << files << endl << endl;
+
+        // If there are any nodes with long names then we should have
+        // scrollbars in the selected files list.
+        if(files.HasNodeNameExceeding(30))
+            hScrollMode = Qt::ScrollBarAlwaysOn;
+
+        // If there are top level directories in the file tree, then we
+        // need to create a node for the host.
+        if(files.TreeContainsDirectories() ||
+           hostOtherThanLocalHost ||
+           someFilesHaveMultipleTimeStates)
+        {
+            // Create the root for the host list.
+            QualifiedFilename rootName(f[0].host, "(host)", "(host)");
+            QTreeWidgetItem *root = new QvisFilePanelItem(fileTree, 
+                                                          QString(f[0].host.c_str()),
+                                                          rootName,
+                                                          QvisFilePanelItem::ROOT_NODE);
+            root->setIcon(0, *computerPixmap);
+
+            // Make sure that the host is expanded.
+            AddExpandedFile(rootName);
+
+            int fileIndex = 1;
+            files.AddElementsToTreeItem(root, fileIndex, *folderPixmap,
+                                        *databasePixmap);
+        }
+        else
+        {
+            // Traverse the file tree and make widgets for the items in it.
+            int fileIndex = 1;
+            files.AddElementsToTree(fileTree, fileIndex, *folderPixmap,
+                                     *databasePixmap);
+        }
+    }
+
+    //
+    // Set the list view's scrollbar mode.
+    //
+    bool hScrollModeChanged = (hScrollMode != fileTree->horizontalScrollBarPolicy());
+    if(hScrollModeChanged)
+        fileTree->setHorizontalScrollBarPolicy(hScrollMode);
+
+    // Expand any databases that we know about. This just means that we add
+    // the extra information that databases have, we don't expand the tree
+    // until we enter UpdateFileSelection.
+    ExpandDatabases();
+
+    // Highlight the selected file.
+    UpdateFileSelection();
+}
+
+// ****************************************************************************
+// Method: QvisFilePanel::UpdateWindowInfo
+//
+// Purpose: 
+//   This method is called when the GlobalAttributes subject that this
+//   widget watches is updated.
+//
+// Arguments:
+//   doAll : A flag indicating whether to ignore any partial selection.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Sep 26 16:04:38 PST 2000
+//
+// Modifications:
+//   Brad Whitlock, Tue Aug 21 16:53:13 PST 2001
+//   Moved the cycle/time code into a sub-function.
+//
+//   Eric Brugger, Fri Nov  2 17:07:24 PST 2001
+//   I added code to handle the current file changing.
+//
+//   Eric Brugger, Mon Dec 16 13:05:01 PST 2002
+//   I seperated the concepts of state and frame, since they are no longer
+//   equivalent with keyframe support.
+//
+//   Brad Whitlock, Thu Mar 20 11:11:14 PDT 2003
+//   I changed the ordering of fields in GlobalAttributes.
+//
+//   Brad Whitlock, Thu May 15 13:19:13 PST 2003
+//   I changed the call to FileServer::OpenFile.
+//
+//   Brad Whitlock, Wed Jul 2 15:58:47 PST 2003
+//   I added exception handling code for when the metadata cannot be read.
+//
+//   Brad Whitlock, Tue Sep 9 15:40:40 PST 2003
+//   I made it return early if the slider is down.
+//
+//   Brad Whitlock, Mon Dec 8 15:39:56 PST 2003
+//   I changed the code so the file server's open file is never changed unless
+//   it is changed to the same file that is open. The purpose of that is to
+//   expand databases that we previously displayed as a single file (like
+//   .visit files). This also allows the selected files list to show the active
+//   time state for the database.
+//
+//   Brad Whitlock, Tue Dec 30 14:31:03 PST 2003
+//   I made it use the animation slider instead of sliderDown.
+//
+//   Brad Whitlock, Sat Jan 24 22:53:05 PST 2004
+//   I made it use the new time and file scheme. I also added code to set
+//   the values in the new activeTimeSlider combobox.
+//
+//   Brad Whitlock, Fri Mar 18 13:39:02 PST 2005
+//   I improved how the time slider names are shortened so all of the sources
+//   are taken into account, which can make it easier to distinguish between
+//   time sliders when there are multiple time sliders whose names only
+//   differ by the path to their database.
+//
+//   Brad Whitlock, Mon Dec 17 11:02:28 PST 2007
+//   Made it use ids.
+//
+//   Cyrus Harrison, Fri Mar 12 09:46:31 PST 2010
+//   Renamed from UpdateAnimationControls.
+//
+//   Hank Childs, Mon Nov  1 17:26:38 PDT 2010
+//   Catch an exception.  Will crash the GUI when restoring sessions from
+//   non-existent hosts otherwise.
+//
+// ****************************************************************************
+
+void
+QvisFilePanel::UpdateWindowInfo(bool doAll)
+{
+    if(fileServer == 0 || windowInfo == 0)
+        return;
+
+    TRY
+    {
+        //
+        // Try and find a correlation for the active time slider.
+        //
+
+        // activeSource changed.  Update the file server.
+        if(windowInfo->IsSelected(WindowInformation::ID_activeSource) || doAll)
+        {
+            OpenActiveSourceInFileServer();
+        }
+    
+        //
+        // If the active source, time slider, or time slider states change then
+        // we need to update the file selection. Note - without this code, the
+        // file selection never updates from what the user clicked.
+        //
+        if(windowInfo->IsSelected(WindowInformation::ID_activeSource) ||
+           windowInfo->IsSelected(WindowInformation::ID_activeTimeSlider) ||
+           windowInfo->IsSelected(WindowInformation::ID_timeSliderCurrentStates) ||
+           doAll)
+        {
+            ExpandDatabases();
+            // Highlight the selected file.
+            UpdateFileSelection();
+        }
+    }
+    CATCHALL
+    {
+        debug1 << "Unable to update window info." << endl;
+    }
+    ENDTRY
+}
+
+
+// ****************************************************************************
+// Method: QvisFilePanel::ExpandDatabases
+//
+// Purpose: 
+//   This method traverses the listviewitem tree and looks for the
+//   selected file. When it finds the selected file, it turns it into
+//   a database if the file has more than 1 state.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Sep 26 11:11:04 PDT 2000
+//
+// Modifications:
+//   Brad Whitlock, Thu Oct 19 13:17:31 PST 2000
+//   I removed a NULL pointer reference.
+//
+//   Brad Whitlock, Wed Mar 21 00:54:50 PDT 2001
+//   Changed a call to the QvisListViewFileItem constructor.
+//
+//   Brad Whitlock, Thu Feb 28 13:39:38 PST 2002
+//   Removed unnecessary recursion.
+//
+//   Brad Whitlock, Tue Mar 25 16:03:16 PST 2003
+//   I added code to handle virtual databases.
+//
+//   Brad Whitlock, Wed May 14 16:19:50 PST 2003
+//   I changed how we iterate though the items and I moved most of the
+//   code to a new method.
+//
+//   Brad Whitlock, Wed Sep 17 18:18:50 PST 2003
+//   Fixed a small bug with how the cycles are displayed when we have a
+//   virtual file that does not have all of the cycle numbers.
+//
+//   Mark C. Miller, Wed Aug  2 19:58:44 PDT 2006
+//   Changed interface to FileServerList::GetMetaData
+//
+//   Mark C. Miller, Fri Aug 10 23:11:55 PDT 2007
+//   Checked to see if item has had its time/state forced and if not, but
+//   the file server is currently forcing, set showing correct file info to
+//   false. Also, Propogate knowledge that item was updated with metadata
+//   that was forced to get accurate cycles/times.
+// ****************************************************************************
+
+void
+QvisFilePanel::ExpandDatabases()
+{
+debug5 << "In QvisFilePanel::ExpandDatabases " << endl;
+
+    int i = 0;
+    int count = 0;
+
+    // Create a list to store pointers to all of the items. We save the
+    // pointers in an array because later when we expand databases, we
+    // can't traverse using an iterator because as we add items, the
+    // iterator is invalidated.
+    QList<QvisFilePanelItem*> items;
+    QTreeWidgetItemIterator itr(fileTree);
+    while(*itr) 
+    {
+        items.append((QvisFilePanelItem*)*itr);
+        ++itr;
+    }
+    count = items.count();
+
+    // If there are no items, return early.
+    if(count < 1)
+        return;
+
+    //
+    // Iterate through the items and expand them if they are databases.
+    //
+    int nDBWithDifferentNStates = 0;
+
+    for(i = 0; i < count; ++i)
+    {
+        QvisFilePanelItem *item = items[i];
+
+        if(item != 0)
+        {
+            if(item->childCount() == 0)
+            {
+                if(item->timeState == -1)
+                    ExpandDatabaseItem(item);
+            }
+            else if(HaveFileInformation(item->file))
+            {
+                // See if the file is a database
+                const avtDatabaseMetaData *md =
+                    fileServer->GetMetaData(item->file,
+                                            GetStateForSource(item->file),
+                                            FileServerList::ANY_STATE,
+                                           !FileServerList::GET_NEW_MD);
+                if(md != 0 && md->GetNumStates() > 1)
+                {
+                    if (fileServer->GetForceReadAllCyclesTimes() &&
+                        !item->timeStateHasBeenForced)
+                        SetFileShowsCorrectData(item->file, false);
+
+                    if(md->GetNumStates() != item->childCount())
+                    {
+                        //
+                        // We likely have a virtual database that has multiple time states
+                        // per file. It would be a pain to fix it here so just note that
+                        // it happened and do an update later.
+                        //
+                        ++nDBWithDifferentNStates;
+                        SetFileShowsCorrectData(item->file, false);
+                    }
+                    else if(!FileShowsCorrectData(item->file))
+                    {
+                        bool useVirtualDBInfo = DisplayVirtualDBInformation(item->file);
+                        int j;
+
+                        QTreeWidgetItemIterator it(item); ++it;
+                        for(j = 0; j < item->childCount(); ++j, ++it)
+                        {
+                            // Reset the label so that it shows the right values.
+                            (*it)->setText(0, CreateItemLabel(md, j,useVirtualDBInfo)); 
+                        }
+
+                        // Remember that the item now has the correct information
+                        // displayed through its children.
+                        SetFileShowsCorrectData(item->file, true);
+                        item->timeStateHasBeenForced =
+                            fileServer->GetForceReadAllCyclesTimes();
+                    }
+                }
+            }
+        }
+    }
+
+    //
+    // If we had databases for which we were not showing the correct number of time
+    // states update the file list later from the event loop so we have the
+    // opportunity to correct the problem without having to try and do it in this
+    // method.
+    //
+    if(nDBWithDifferentNStates > 0)
+    {
+        QTimer::singleShot(100, this, SLOT(internalUpdateFileList()));
+    }
+}
+
+// ****************************************************************************
+// Method: QvisFilePanel::ExpandDatabaseItem
+//
+// Purpose:
+//   Expands the item into a database if it is a database.
+//
+// Arguments:
+//   item : The item to be expanded.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu May 15 09:46:37 PDT 2003
+//
+// Modifications:
+//   Brad Whitlock, Wed Sep 17 18:20:07 PST 2003
+//   I corrected an error with how the cycle is displayed for virtual files
+//   that don't know all of the cycles.
+//
+//   Brad Whitlock, Mon Oct 13 15:37:56 PST 2003
+//   Moved code into CreateItemLabel method.
+//
+//   Brad Whitlock, Fri Oct 24 14:12:45 PST 2003
+//   Fixed a bug that caused expanded databases to sometimes get the wrong
+//   database in their child time states.
+//
+//   Brad Whitlock, Mon Dec 29 11:34:42 PDT 2003
+//   I changed the code so we can correctly display virtual databases that
+//   have multiple time states per file.
+//
+//   Brad Whitlock, Tue Apr 6 12:23:11 PDT 2004
+//   I changed the code so it sets the time state for files that we've
+//   never seen before to 0 so it is not the default -1.
+//
+//   Cyrus Harrison, Tue Jul  1 16:04:25 PDT 2008
+//   Initial Qt4 Port.
+// 
+// ****************************************************************************
+
+void
+QvisFilePanel::ExpandDatabaseItem(QvisFilePanelItem *item)
+{
+    //
+    // It could be that this method is being called on the child timestate of 
+    // a previously expanded database. If that is the case, then the parent
+    // will exist and it will have the same filename as the item.
+    //
+    QvisFilePanelItem *parent = (QvisFilePanelItem *)item->parent();
+    if(parent != 0 && parent->file == item->file)
+        return;
+
+    if(fileServer->HaveOpenedFile(item->file))
+    {
+        ExpandDatabaseItemUsingMetaData(item);
+    }
+    else if(item->file.IsVirtual())
+    {
+        ExpandDatabaseItemUsingVirtualDBDefinition(item);
+    }
+}
+
+// ****************************************************************************
+// Method: QvisFilePanel::ExpandDatabaseItemUsingMetaData
+//
+// Purpose: 
+//   Expands a database item as a database, which means that it uses the
+//   number of time states to display the database.
+//
+// Arguments:
+//   item : The item to expand.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Dec 29 12:22:41 PDT 2003
+//
+// Modifications:
+//   Brad Whitlock, Tue Apr 6 12:22:24 PDT 2004
+//   I made it set files with 1 time state to have their time state be 0.
+//
+//   Mark C. Miller, Wed Aug  2 19:58:44 PDT 2006
+//   Changed interface to FileServerList::GetMetaData
+//   Mark C. Miller, Fri Aug 10 23:11:55 PDT 2007
+//
+//   Propogated knowledge that item was updated with metadata that was forced
+//   to get accurate cycles/times.
+//
+//   Cyrus Harrison, Tue Jul  1 16:04:25 PDT 2008
+//   Initial Qt4 Port.
+// 
+// ****************************************************************************
+
+void
+QvisFilePanel::ExpandDatabaseItemUsingMetaData(QvisFilePanelItem *item)
+{
+    // See if the file is a database
+    const avtDatabaseMetaData *md =
+        fileServer->GetMetaData(item->file,
+                                GetStateForSource(item->file),
+                                FileServerList::ANY_STATE,
+                               !FileServerList::GET_NEW_MD);
+    if(md != 0)
+    {
+        if(md->GetNumStates() > 1)
+        {
+            fileTree->blockSignals(true);
+            bool useVirtualDBInfo = DisplayVirtualDBInformation(item->file);
+            for(int i = 0; i < md->GetNumStates(); ++i)
+            {
+                QvisFilePanelItem *fi = new QvisFilePanelItem(
+                                   item, 
+                                   CreateItemLabel(md, i, useVirtualDBInfo),
+                                   item->file, QvisFilePanelItem::FILE_NODE, i);
+                fi->setExpanded(false);
+            }
+            item->timeStateHasBeenForced =
+                fileServer->GetForceReadAllCyclesTimes();
+
+            // Set the database pixmap.
+            item->setIcon(0, *databasePixmap);
+            fileTree->blockSignals(false);
+
+            // Remember that the item now has the correct information
+            // displayed through its children.
+            SetFileShowsCorrectData(item->file, true);
+        }
+#if 0
+        else
+            item->timeState = 0;
+#endif
+    }
+}
+
+// ****************************************************************************
+// Method: QvisFilePanel::ExpandDatabaseItemUsingVirtualDBDefinition
+//
+// Purpose: 
+//   Expands a database item as a virtual database when possible. Otherwise, if
+//   the virtual database has more time states than files, it is displayed
+//   as a database.
+//
+// Arguments:
+//   item : The item that gets expanded.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Dec 29 12:23:37 PDT 2003
+//
+// Modifications:
+//   Cyrus Harrison, Tue Jul  1 16:04:25 PDT 2008
+//   Initial Qt4 Port.
+// 
+// ****************************************************************************
+
+void
+QvisFilePanel::ExpandDatabaseItemUsingVirtualDBDefinition(QvisFilePanelItem *item)
+{
+    if(DisplayVirtualDBInformation(item->file))
+    {
+        fileTree->blockSignals(true);
+
+        // Get the virtual file definition instead of reading the metadata.
+        stringVector files(fileServer->GetVirtualFileDefinition(item->file));
+
+        for(size_t i = 0; i < files.size(); ++i)
+        {
+            QString label(files[i].c_str());
+            QvisFilePanelItem *fi = new QvisFilePanelItem(item, label, item->file,
+                                                  QvisFilePanelItem::FILE_NODE, i);
+            fi->setExpanded(false);
+        }
+
+        // Set the database pixmap.
+        item->setIcon(0, *databasePixmap);
+        fileTree->blockSignals(false);
+
+        // Remember that the item does not have the correct information
+        // displayed through its children since we have not opened it yet.
+        SetFileShowsCorrectData(item->file, false);
+    }
+    else if(item->file.IsVirtual())
+    {
+        // The database is virtual but it must have more time states than
+        // files so we should expand it as a database.
+        ExpandDatabaseItemUsingMetaData(item);
+    }
+}
+
+// ****************************************************************************
+// Method: QvisFilePanel::CreateItemLabel
+//
+// Purpose: 
+//   Creates the label for the item at the requested database timestate.
+//
+// Arguments:
+//   md : The metadata to use when computing the label.
+//   ts : The timestate to use when computing the label.
+//   useVirtualDBInformation : Whether or not to use virtual DB information
+//                             if it is available.
+//
+// Returns:    A string to use in the file panel to help display the file.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Oct 13 15:42:17 PST 2003
+//
+// Modifications:
+//   Brad Whitlock, Mon Dec 29 10:15:24 PDT 2003
+//   I added the useVirtualDBInformation argument so we can force this method
+//   to ignore the fact that a database may be virtual.
+//
+// ****************************************************************************
+
+QString
+QvisFilePanel::CreateItemLabel(const avtDatabaseMetaData *md, int ts,
+    bool useVirtualDBInformation)
+{
+    QString label, space(" ");
+
+    if(timeStateFormat.GetDisplayMode() == TimeFormat::Cycles)
+    {
+        int cycle = ((size_t)ts < md->GetCycles().size()) ? md->GetCycles()[ts] : ts;
+        if(useVirtualDBInformation && md->GetIsVirtualDatabase())
+        {
+            QualifiedFilename name(md->GetTimeStepNames()[ts]);
+            label = QString(name.filename.c_str()) +
+                    space + QString(tr("cycle")) + space + FormattedCycleString(cycle);
+        }
+        else
+            label = QString(tr("cycle")) + space + FormattedCycleString(cycle);
+    }
+    else if(timeStateFormat.GetDisplayMode() == TimeFormat::Times)
+    {
+        double t = ((size_t)ts < md->GetTimes().size()) ? md->GetTimes()[ts] : double(ts);
+        bool   accurate = ((size_t)ts < md->GetTimes().size()) ?
+                          md->IsTimeAccurate(ts) : false;
+        if(useVirtualDBInformation && md->GetIsVirtualDatabase())
+        {
+            QualifiedFilename name(md->GetTimeStepNames()[ts]);
+
+            label = QString(name.filename.c_str()) +
+                    space + QString(tr("time")) + space + FormattedTimeString(t, accurate);
+        }
+        else
+            label = QString(tr("time")) + space + FormattedTimeString(t, accurate);
+    }
+    else if(timeStateFormat.GetDisplayMode() == TimeFormat::CyclesAndTimes)
+    {
+        int    cycle = ((size_t)ts < md->GetCycles().size()) ? md->GetCycles()[ts] : ts;
+        double t = ((size_t)ts < md->GetTimes().size()) ? md->GetTimes()[ts] : double(ts);
+        bool   accurate = ((size_t)ts < md->GetTimes().size()) ?
+                          md->IsTimeAccurate(ts) : false;
+        if(useVirtualDBInformation && md->GetIsVirtualDatabase())
+        {
+            QualifiedFilename name(md->GetTimeStepNames()[ts]);
+
+            label = QString(name.filename.c_str()) +
+                    space + QString(tr("cycle")) + space + FormattedCycleString(cycle) +
+                    space + space + QString(tr("time")) + space + FormattedTimeString(t, accurate);
+        }
+        else
+        {
+            label = QString(tr("cycle")) + space + FormattedCycleString(cycle) +
+                    space + space + QString(tr("time")) + space + FormattedTimeString(t, accurate);
+        }
+    }
+
+    return label;
+}
+
+// ****************************************************************************
+// Method: QvisFilePanel::FormattedCycleString
+//
+// Purpose: 
+//   Returns a formatted cycle string.
+//
+// Arguments:
+//   cycle : The cycle that we want to convert to a string.
+//
+// Returns:    A formatted cycle string.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Oct 14 11:31:42 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+QString
+QvisFilePanel::FormattedCycleString(const int cycle) const
+{
+    QString retval;
+    retval.sprintf("%04d", cycle);
+    return retval;
+}
+
+// ****************************************************************************
+// Method: QvisFilePanel::FormattedTimeString
+//
+// Purpose: 
+//   Returns a formatted time string.
+//
+// Arguments:
+//   t        : The time value to format.
+//   accurate : Whether the time can be believed. If it can't then we return
+//              a question mark string.
+//
+// Returns:    A formatted time string.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Oct 13 16:03:37 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+QString
+QvisFilePanel::FormattedTimeString(const double t, bool accurate) const
+{
+    QString retval("?");
+    if(accurate)
+    {
+        QString formatString;
+        formatString.sprintf("%%.%dg", timeStateFormat.GetPrecision());
+        retval.sprintf(formatString.toStdString().c_str(), t);
+    }
+    return retval;
+}
+
+// ****************************************************************************
+// Method: QvisFilePanel::DisplayVirtualDBInformation
+//
+// Purpose: 
+//   Returns whether or not we should display a virtual database as a
+//   virtual database. Sometimes, virtual databases have more states than
+//   files. In that case, we want to show them as databases instead of
+//   virtual databases.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Dec 29 11:28:59 PDT 2003
+//
+// Modifications:
+//   
+//   Mark C. Miller, Wed Aug  2 19:58:44 PDT 2006
+//   Changed interface to FileServerList::GetMetaData
+// ****************************************************************************
+
+bool
+QvisFilePanel::DisplayVirtualDBInformation(const QualifiedFilename &file) const
+{
+    bool retval = true;
+
+    const avtDatabaseMetaData *md =
+        fileServer->GetMetaData(file, GetStateForSource(file),
+                                FileServerList::ANY_STATE,
+                               !FileServerList::GET_NEW_MD);
+    if(md != 0 && md->GetNumStates() > 1 && md->GetIsVirtualDatabase())
+    {
+        int nts = fileServer->GetVirtualFileDefinitionSize(file);
+        retval = (nts == md->GetNumStates());
+    }
+
+    return retval;
+}
+
+// ****************************************************************************
+// Method: QvisFilePanel::UpdateFileSelection
+//
+// Purpose: 
+//   Highlights the selected file in the file list view.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Sep 13 11:48:35 PDT 2000
+//
+// Modifications:
+//   Brad Whitlock, Tue Mar 20 23:39:14 PST 2001
+//   Changed code so it takes directories into account.
+//
+//   Brad Whitlock, Thu Feb 28 13:34:11 PST 2002
+//   Rewrote it so it handles preservation of tree expansion.
+//
+//   Eric Brugger, Mon Dec 16 13:05:01 PST 2002
+//   I seperated the concepts of state and frame, since they are no longer
+//   equivalent with keyframe support.
+//
+//   Brad Whitlock, Wed Apr 2 10:13:12 PDT 2003
+//   I made it try and use the metadata for the open file instead of the
+//   globalAtts which are not reliable.
+//
+//   Brad Whitlock, Sat Jan 24 21:38:48 PST 2004
+//   I modified it to use the active time slider and database correlation.
+//
+//   Brad Whitlock, Tue Apr 6 14:05:42 PST 2004
+//   I changed it so it returns early if we're not allowing file
+//   selection changes.
+//
+//   Brad Whitlock, Mon Dec 20 16:19:23 PST 2004
+//   Added code to update the state of the Replace button.
+//
+//   Cyrus Harrison, Tue Jul  1 16:04:25 PDT 2008
+//   Initial Qt4 Port.
+// 
+//   Cyrus Harrison, Thu Dec  4 08:09:20 PST 2008
+//   Made sure the current item is visible via scroll to item. 
+// 
+//   Jeremy Meredith, Tue Feb  5 16:00:12 EST 2013
+//   This can take a while if we have lots and lots of time steps.
+//   Don't update the selection if the file panel is not visible.  We
+//   will force it to update when we make the file panel visible
+//   again.  (Following the mantra of minimal change, at the moment,
+//   this is the only action I have added this check to, as it is the
+//   only one causing performance issues, even though one might argue
+//   other methods should have the same bypass check.)
+//
+// ****************************************************************************
+
+void
+QvisFilePanel::UpdateFileSelection()
+{
+    if (!isVisible())
+        return;
+
+    // Set the text for the open file button.
+    if(fileServer->GetOpenFile().Empty())
+        openButton->setText(tr("Open"));
+    else
+    {
+        openButton->setText(tr("ReOpen"));
+        openButton->setEnabled(true);
+    }
+
+    // If the file changed, then we have to update the selected item.
+    blockSignals(true);
+    fileTree->blockSignals(true);
+
+    //
+    // Iterate through all items of the listview and open up the appropriate items
+    // so that expansion is preserved.
+    //
+    QTreeWidgetItemIterator it(fileTree);
+    QvisFilePanelItem *selectedItem = 0;
+
+    //
+    // Try and find a correlation for the active time slider if there is
+    // and active time slider.
+    //
+    QualifiedFilename activeSource(windowInfo->GetActiveSource());
+    DatabaseCorrelation *correlation = 0;
+    int dbStateForActiveSource = -1;
+    // Get the index of the active time slider.
+    int activeTS = windowInfo->GetActiveTimeSlider();
+    if(activeTS >= 0)
+    {
+        // Get the name of the active time slider.
+        const std::string &activeTSName = windowInfo->GetTimeSliders()[activeTS];
+
+        // Get the correlation for the active time slider
+        DatabaseCorrelationList *correlations = GetViewerState()->
+            GetDatabaseCorrelationList();
+        correlation = correlations->FindCorrelation(activeTSName);
+
+        if(correlation)
+        {
+            // Get the state for the active time slider.
+            int activeTSState = windowInfo->GetTimeSliderCurrentStates()[activeTS];
+            dbStateForActiveSource = correlation->GetCorrelatedTimeState(
+                windowInfo->GetActiveSource(), activeTSState);
+        }
+    }
+
+    //
+    // Iterate through the file items and look for the right item to highlight.
+    //
+    for(; *it; ++it)
+    {
+        QvisFilePanelItem *item = (QvisFilePanelItem *) *it;
+
+        // If it is the root of the tree, open it and continue.
+        if(item->nodeType == QvisFilePanelItem::ROOT_NODE)
+        {
+            AddExpandedFile(item->file);
+            item->setExpanded(true);
+            item->setSelected(true);
+            //fileTree->setExpanded(, true);
+            //fileTree->setSelected(item, false);
+            continue;
+        }
+
+        if(item->file == activeSource)
+        {
+            QvisFilePanelItem *parentItem = (QvisFilePanelItem *)item->parent();
+
+            //
+            // If the correlation involves the active source then we
+            // can highlight using the correlation. If the correlation
+            // does not use the active source then dbStateForActiveSource
+            // will be set to -1.
+            //
+            if(dbStateForActiveSource > -1)
+            {
+                // Check if the current item is for the current time state.
+                bool currentTimeState = item->timeState == dbStateForActiveSource;
+                
+                // If we have information for this file and it turns out that
+                // the file is not expanded, then check to see if the item is
+                // the root of the database.
+                if(HaveFileInformation(item->file) && !FileIsExpanded(item->file))
+                {
+                    //
+                    // The time states are not expanded. If the time state 
+                    // that we're looking at is not -1 then it is a time
+                    // step in the database but since the file is not
+                    // expanded, we want to instead highlight the parent.
+                    //
+                    if(item->timeState != -1)
+                    {
+                        item = (QvisFilePanelItem *)item->parent();
+                        parentItem = (QvisFilePanelItem *)parentItem->parent();
+                    }
+                }
+
+                //
+                // If we have no selected item so far and the item's
+                // timestate is the current time state, then we want
+                // to select it.
+                //
+                if(currentTimeState)
+                    selectedItem = item;
+            }
+            else if(selectedItem == 0)
+            {
+                // If this time step / database is selected then select it.
+                selectedItem = item;
+            }
+
+            // Make sure the item is visible.
+            QvisFilePanelItem *p = item;
+            while((p = parentItem) != 0)
+            {
+                QvisFilePanelItem *fi = (QvisFilePanelItem *)p;
+                if(fi->file != item->file)
+                {
+                    AddExpandedFile(fi->file);
+                    fi->setExpanded(true);
+                }
+                parentItem = (QvisFilePanelItem *)parentItem->parent();
+            }
+        }
+        else if(HaveFileInformation(item->file) &&
+                FileIsExpanded(item->file) && item->timeState == -1)
+        {
+            item->setExpanded(true);
+        }
+    }
+
+    // Make sure the selected item is visible if we're allowing selection
+    // change or if the currently highlighted item is invalid.
+    if(selectedItem != 0 && (allowFileSelectionChange ||
+       HighlightedItemIsInvalid()))
+    {
+        selectedItem->setSelected(true);
+        fileTree->setCurrentItem(selectedItem);
+        fileTree->scrollToItem(selectedItem);
+    }
+
+    // Restore signals.
+    fileTree->blockSignals(false);
+    blockSignals(false);
+
+    // Update the state of the Replace button.
+    UpdateReplaceButtonEnabledState();
+}
+
+// ****************************************************************************
+// Method: QvisFilePanel::HighlightedItemIsInvalid
+//
+// Purpose: 
+//   Returns whether the currently highlighted item is an invalid selection.
+//
+// Returns:    True if the highlighted item is not valid; false otherwise.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Apr 13 14:00:08 PST 2004
+//
+// Modifications:
+//   
+//   Mark C. Miller, Wed Aug  2 19:58:44 PDT 2006
+//   Changed interface to FileServerList::GetMetaData
+//
+//   Cyrus Harrison, Tue Jul  1 16:04:25 PDT 2008
+//   Initial Qt4 Port.
+// 
+// ****************************************************************************
+
+bool
+QvisFilePanel::HighlightedItemIsInvalid() const
+{
+    bool currentItemInvalid = false;
+    if(fileTree->currentItem() != 0)
+    {
+        QvisFilePanelItem *ci = (QvisFilePanelItem*) fileTree->currentItem();
+
+        // If the highlighted item is not a file, then it is not valid and
+        // we are allowed to change the highlight.
+        if(ci->isFile())
+        {
+            // If we've opened the file before and it is supposed to be
+            // expanded
+            if(fileServer->HaveOpenedFile(ci->file) &&
+               HaveFileInformation(ci->file) &&
+               FileIsExpanded(ci->file))
+            {
+                const avtDatabaseMetaData *md = fileServer->
+                    GetMetaData(ci->file, GetStateForSource(ci->file),
+                                FileServerList::ANY_STATE,
+                               !FileServerList::GET_NEW_MD);
+                if(md != 0)
+                {
+                    // We've opened the file before. If the highlighted item
+                    // is an MT database and a time state < 0 is highlighted
+                    // then the highlight is wrong. Change it.
+                    currentItemInvalid = (md->GetNumStates() > 1) &&
+                       (ci->timeState < 0);
+                }
+            }
+        }
+        else
+            currentItemInvalid = true;
+    }
+
+    return currentItemInvalid;
+}
+
+// ****************************************************************************
+// Method: QvisFilePanel::UpdateReplaceButtonEnabledState
+//
+// Purpose: 
+//   This method updates the enabled state of the Replace button.
+//
+// Arguments:
+//
+// Returns:    True if the button was enabled; False otherwise.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Dec 20 16:17:55 PST 2004
+//
+// Modifications:
+//   Mark C. Miller, Wed Aug  2 19:58:44 PDT 2006
+//   Changed interface to FileServerList::GetMetaData
+//
+//   Cyrus Harrison, Tue Jul  1 16:04:25 PDT 2008
+//   Initial Qt4 Port.
+// 
+//   Cyrus Harrison, Tue Apr 14 14:24:08 PDT 2009
+//   Refactored to use common CheckIfReplaceIsValid() method.
+//
+// ****************************************************************************
+
+bool
+QvisFilePanel::UpdateReplaceButtonEnabledState()
+{
+    bool enabled = CheckIfReplaceIsValid();
+    replaceButton->setEnabled(enabled);
+    return enabled;
+}
+
+// ****************************************************************************
+// Method: QvisFilePanel::CheckIfReplaceIsValid
+//
+// Purpose: 
+//   This method tells us if replace/replace selected are valid operations.
+// 
+//
+//   Note: Refactored from UpdateReplaceButtonEnabledState(), so the core
+//    logic could be used both in UpdateReplaceButtonEnabledState() and
+//    for the filePopupMenu.
+//
+// Returns:    True if replace is a valid operation given the selected item.
+//
+// Programmer: Cyrus Harrison
+// Creation:   Tue Apr 14 14:23:11 PDT 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+QvisFilePanel::CheckIfReplaceIsValid()
+{
+    bool enabled = false;
+    if(!fileServer->GetOpenFile().Empty())
+    {
+        QTreeWidgetItem *item = fileTree->currentItem();
+        if(item != 0)
+        {
+            QvisFilePanelItem *ci = (QvisFilePanelItem*)item;
+            bool differentFiles = fileServer->GetOpenFile() != ci->file;
+
+            stringVector defs(fileServer->GetVirtualFileDefinition(ci->file));
+            if(defs.size() > 1)
+            {
+                // Only allow the user to replace if they click on one of
+                // the real time states.
+                enabled = ci->timeState >= 0;
+            }
+            else
+            {
+                const avtDatabaseMetaData *md =
+                    fileServer->GetMetaData(ci->file, GetStateForSource(ci->file),
+                                            FileServerList::ANY_STATE,
+                                           !FileServerList::GET_NEW_MD);
+                if(md != 0)
+                {
+                    if(md->GetNumStates() > 1)
+                    {
+                        // Only allow the user to replace if they click on
+                        // one of the real time states.
+                        enabled = ci->timeState >= 0;
+                    }
+                    else
+                        enabled = differentFiles;
+                }
+                else
+                    enabled = differentFiles;
+            }
+
+            if(!enabled)
+            {
+                std::string highlightFile(ci->file.FullName());
+                PlotList *pl = GetViewerState()->GetPlotList();
+                for(int i = 0; i < pl->GetNumPlots(); ++i)
+                {
+                    const Plot &current = pl->operator[](i);
+                    if(highlightFile != current.GetDatabaseName())
+                    {
+                        enabled = true;
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    return enabled;
+}
+
+// ****************************************************************************
+// Method: QvisFilePanel::SubjectRemoved
+//
+// Purpose: 
+//   Removes the windowInfo or fileserver subjects that this widget
+//   observes.
+//
+// Arguments:
+//   TheRemovedSubject : The subject that is being removed.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Sep 26 15:29:39 PST 2000
+//
+// Modifications:
+//   Brad Whitlock, Thu May 9 16:40:58 PST 2002
+//   Removed file server.
+//
+//   Brad Whitlock, Sat Jan 24 23:44:56 PST 2004
+//   I made it observe windowInfo instead of globalAtts.
+//
+// ****************************************************************************
+
+void
+QvisFilePanel::SubjectRemoved(Subject *TheRemovedSubject)
+{
+    if(TheRemovedSubject == windowInfo)
+        windowInfo = 0;
+}
+
+//
+// Methods to attach to the windowInfo and fileserver objects.
+//
+
+void
+QvisFilePanel::ConnectFileServer(FileServerList *fs)
+{
+    fileServer->Attach(this);
+
+    // Update the file list.
+    UpdateFileList(true);
+}
+
+void
+QvisFilePanel::ConnectWindowInformation(WindowInformation *wi)
+{
+    windowInfo = wi;
+    windowInfo->Attach(this);
+
+    // Update the animation area.
+    UpdateWindowInfo(true);
+}
+
+// ****************************************************************************
+// Method: QvisFilePanel::OpenFile
+//
+// Purpose: 
+//   Tells the file server to open the selected file and notify all
+//   observers that the file was opened.
+//
+// Arguments:
+//   filename : The name of the file to open.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Aug 31 11:01:32 PDT 2000
+//
+// Modifications:
+//   Brad Whitlock, Fri May 18 09:57:29 PDT 2001
+//   Added code to handle a meta-data exception.
+//
+//   Brad Whitlock, Mon Oct 22 18:25:42 PST 2001
+//   Changed the exception handling keywords to macros.
+//
+//   Brad Whitlock, Thu Feb 7 11:17:40 PDT 2002
+//   Modified the code so a more descriptive error message is given
+//   in the case of a metadata exception.
+//
+//   Brad Whitlock, Thu May 9 16:33:34 PST 2002
+//   Moved the code to GUIBase::OpenDataFile.
+//
+//   Brad Whitlock, Mon Jul 29 14:35:28 PST 2002
+//   I added code to set the text for the open button.
+//
+//   Brad Whitlock, Fri Feb 28 08:30:24 PDT 2003
+//   I made the reOpen flag be passed in instead of being calculated in here.
+//
+//   Brad Whitlock, Fri Sep 5 16:40:20 PST 2003
+//   I added code that lets the replace button be active if there's more than
+//   one state in the database.
+//
+//   Brad Whitlock, Wed Oct 22 12:18:23 PDT 2003
+//   I added the addDefaultPlots flag to OpenDataFile.
+//
+//   Brad Whitlock, Mon Nov 3 10:42:23 PDT 2003
+//   I renamed OpenDataFile to SetOpenDataFile and I moved the code that
+//   told the viewer to open the data file to here so file replacement would
+//   no longer do more work than is required.
+//
+//   Brad Whitlock, Mon Dec 20 16:20:49 PST 2004
+//   Changed how the Replace button is updated.
+//
+// ****************************************************************************
+
+bool
+QvisFilePanel::OpenFile(const QualifiedFilename &qf, int timeState, bool reOpen)
+{
+    // Try and open the data file.
+    bool retval = SetOpenDataFile(qf, timeState, this, reOpen);
+
+    if(reOpen)
+    {
+        // Tell the viewer to replace all of the plots having
+        // databases that match the file we're re-opening.
+        GetViewerMethods()->ReOpenDatabase(qf.FullName().c_str(), false);
+    }
+    else
+    {
+        // Tell the viewer to open the database.
+        GetViewerMethods()->OpenDatabase(qf.FullName().c_str(), timeState, true);
+    }
+
+    // Update the Replace and Overlay buttons.
+    UpdateReplaceButtonEnabledState();
+    overlayButton->setEnabled(false);
+
+    return retval;
+}
+
+// ****************************************************************************
+// Method: QvisFilePanel::ReplaceFile
+//
+// Purpose: 
+//   Tells the file server to replace the current file with the
+//   selected file and notify all observers that the file changed.
+//
+// Arguments:
+//   filename : The name of the new file.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Aug 31 11:01:32 PDT 2000
+//
+// Modifications:
+//   Brad Whitlock, Wed Mar 6 16:21:17 PST 2002
+//   Implemented it using the new viewer RPC.
+//
+//   Brad Whitlock, Fri Feb 28 08:44:52 PDT 2003
+//   I added a bool to OpenFile.
+//
+//   Brad Whitlock, Thu May 15 12:30:28 PDT 2003
+//   I added time state to OpenFile.
+//
+//   Brad Whitlock, Wed Oct 15 15:26:31 PST 2003
+//   I made it possible to replace a file at a later time state.
+//
+//   Brad Whitlock, Mon Nov 3 10:46:18 PDT 2003
+//   Rewrote so replace does not first tell the viewer to open the database.
+//
+//   Brad Whitlock, Mon Dec 20 16:21:30 PST 2004
+//   Changed how the Replace button's enabled state is set.
+//
+//    Cyrus Harrison, Tue Apr 14 13:35:54 PDT 2009
+//    Added argument to allow replace of only active plots.
+//
+// ****************************************************************************
+
+void
+QvisFilePanel::ReplaceFile(const QualifiedFilename &filename, int timeState,
+                           bool onlyReplaceActive)
+{
+    // Try and set the open the data file.
+    SetOpenDataFile(filename, timeState, this, false);
+
+    // Tell the viewer to replace the database.
+    GetViewerMethods()->ReplaceDatabase(filename.FullName().c_str(),
+                                        timeState,onlyReplaceActive);
+
+    // Update the Replace and Overlay buttons.
+    UpdateReplaceButtonEnabledState();
+    overlayButton->setEnabled(false);
+}
+
+// ****************************************************************************
+// Method: QvisFilePanel::OverlayFile
+//
+// Purpose:
+//   Tells the file server to overlay the current file with the
+//   selected file and notify all observers that the file changed.
+//
+// Arguments:
+//   filename  : The name of the new file.
+//   timeState : The time state at which to overlay.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Aug 31 11:01:32 PDT 2000
+//
+// Modifications:
+//   Brad Whitlock, Wed Mar 6 16:21:17 PST 2002
+//   Implemented it using the new viewer RPC.
+//
+//   Brad Whitlock, Fri Feb 28 08:45:11 PDT 2003
+//   I added a bool to OpenFile.
+//
+//   Brad Whitlock, Thu May 15 12:31:13 PDT 2003
+//   I added time state to OpenFile.
+//
+//   Brad Whitlock, Mon Nov 3 10:50:01 PDT 2003
+//   I rewrote the routine so it no longer ends up telling the viewer to
+//   open the database before overlaying.
+//
+//   Brad Whitlock, Mon Dec 20 16:22:19 PST 2004
+//   Changed how the enabled state for the Replace button is set.
+//
+//   Brad Whitlock, Thu Jul 24 09:17:54 PDT 2008
+//   Made it possible to overlay a file at a given time state.
+//
+// ****************************************************************************
+
+void
+QvisFilePanel::OverlayFile(const QualifiedFilename &filename, int timeState)
+{
+    // Try and set the open the data file.
+    SetOpenDataFile(filename, timeState, this, false);
+
+    // Tell the viewer to replace the database.
+    GetViewerMethods()->OverlayDatabase(filename.FullName().c_str(), timeState);
+
+    // Set the enabled state for the Replace and Overlay buttons.
+    UpdateReplaceButtonEnabledState();
+    overlayButton->setEnabled(false);
+}
+
+// ****************************************************************************
+// Method: QvisFilePanel::AddExpandedFile
+//
+// Purpose:
+//   Adds a file to the expanded file list.
+//
+// Arguments:
+//   filename : The file to add to the list.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Mar 1 13:20:23 PST 2002
+//
+// Modifications:
+//   Brad Whitlock, Fri May 16 12:42:15 PDT 2003
+//   I rewrote it.
+//
+// ****************************************************************************
+
+void
+QvisFilePanel::AddExpandedFile(const QualifiedFilename &filename)
+{
+    SetFileExpanded(filename, true);
+}
+
+// ****************************************************************************
+// Method: QvisFilePanel::RemoveExpandedFile
+//
+// Purpose:
+//   Removes a file from the expanded file list.
+//
+// Arguments:
+//   filename : The name of the file to remove from the list.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Mar 1 13:21:30 PST 2002
+//
+// Modifications:
+//   Brad Whitlock, Fri May 16 12:42:15 PDT 2003
+//   I rewrote it.
+//
+// ****************************************************************************
+
+void
+QvisFilePanel::RemoveExpandedFile(const QualifiedFilename &filename)
+{
+    SetFileExpanded(filename, false);
+}
+
+// ****************************************************************************
+// Method: QvisFilePanel::SetFileExpanded
+//
+// Purpose:
+//   Sets the expanded flag for the specified filename.
+//
+// Arguments:
+//   filename : The file whose expanded flag we want to set.
+//   val      : The expanded value.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri May 16 12:40:29 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisFilePanel::SetFileExpanded(const QualifiedFilename &filename, bool val)
+{
+    displayInfo[filename.FullName()].expanded = val;
+}
+
+// ****************************************************************************
+// Method: QvisFilePanel::HaveFileInformation
+//
+// Purpose: 
+//   Returns whether or not we have file information for a file.
+//
+// Arguments:
+//   filename : The file whose information we want.
+//
+// Returns:    Whether or not we have file information for the specified file.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri May 16 13:11:19 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+QvisFilePanel::HaveFileInformation(const QualifiedFilename &filename) const
+{
+    return displayInfo.find(filename.FullName()) != displayInfo.end();
+}
+
+// ****************************************************************************
+// Method: QvisFilePanel::FileIsExpanded
+//
+// Purpose:
+//   Returns whether or not a file is expanded.
+//
+// Arguments:
+//   filename : The file we're checking.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Mar 1 13:22:04 PST 2002
+//
+// Modifications:
+//   Brad Whitlock, Tue Apr 13 14:07:48 PST 2004
+//   I made the method be const.
+//
+// ****************************************************************************
+
+bool
+QvisFilePanel::FileIsExpanded(const QualifiedFilename &filename) const
+{
+    bool retval = true;
+    FileDisplayInformationMap::const_iterator pos = 
+        displayInfo.find(filename.FullName());
+    if(pos != displayInfo.end())
+        retval = pos->second.expanded;
+    return retval;
+}
+
+// ****************************************************************************
+// Method: QvisFilePanel::FileShowsCorrectData
+//
+// Purpose:
+//   Returns whether or not we're showing the right cycles for the file.
+//
+// Arguments:
+//   filename : The filename that we're checking.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri May 16 12:47:14 PDT 2003
+//
+// Modifications:
+//
+// ****************************************************************************
+
+bool
+QvisFilePanel::FileShowsCorrectData(const QualifiedFilename &filename)
+{
+    return displayInfo[filename.FullName()].correctData;
+}
+
+// ****************************************************************************
+// Method: QvisFilePanel::SetFileShowsCorrectData
+//
+// Purpose: 
+//   Sets the flag that indicates whether or not we're showing the right
+//   cycles for a file.
+//
+// Arguments:
+//   filename : The file whose information we're setting.
+//   val      : The new flag.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri May 16 13:05:20 PST 2003
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisFilePanel::SetFileShowsCorrectData(const QualifiedFilename &filename,
+    bool val)
+{
+    displayInfo[filename.FullName()].correctData = val;
+}
+
+
+// ****************************************************************************
+// Method: QvisFilePanel::contextMenuEvent
+//
+// Purpose: 
+//   Shows file popup menu.
+//
+//
+// Programmer: Cyrus Harrison
+// Creation:   Tue Apr 14 16:27:57 PDT 2009
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisFilePanel::contextMenuEvent(QContextMenuEvent *e)
+{
+    QvisFilePanelItem *file_item=(QvisFilePanelItem*)fileTree->currentItem();
+    if(file_item == NULL || !file_item->isFile())
+        return;    
+
+    // update popup menu with proper commands
+    bool file_opened_before = fileServer->HaveOpenedFile(file_item->file);
+    if(file_opened_before)
+    {
+        if(fileServer->GetOpenFile() != file_item->file)
+            openAct->setText(tr("&Activate"));
+        else
+            openAct->setText(tr("Re&Open"));
+        // enable close menu item
+        closeAct->setEnabled(true);
+    }
+    else
+    {
+        openAct->setText(tr("&Open"));
+        // if the file is not opened, disable the "Close" menu item
+        closeAct->setEnabled(false);
+    }
+
+    bool replace_valid = CheckIfReplaceIsValid();
+    replaceAct->setEnabled(replace_valid);
+    replaceSelectedAct->setEnabled(replace_valid);
+    overlayAct->setEnabled(replace_valid);
+
+    QAction *result = filePopupMenu->exec(e->globalPos());
+    if(result == openAct)
+        openFile();
+    else if(result == replaceAct)
+        replaceFile();
+    else if(result == replaceSelectedAct)
+        replaceSelected();
+    else if(result == overlayAct)
+        overlayFile();
+    else if(result == closeAct)
+        closeFile();
+}
+
+
+// ****************************************************************************
+// Method: QvisFilePanel::SetAllowFileSelectionChange
+//
+// Purpose:
+//   Sets whether setting the file selection is allowed.
+//
+// Arguments:
+//   val : The new value for allowFileSelectionChange.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Apr 6 14:10:10 PST 2004
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisFilePanel::SetAllowFileSelectionChange(bool val)
+{
+    if(allowFileSelectionChange != val)
+    {
+        allowFileSelectionChange = val;
+        if(val)
+            UpdateFileSelection();
+    }
+}
+
+// ****************************************************************************
+// Method: QvisFilePanel::GetAllowFileSelectionChange
+//
+// Purpose:
+//   Returns whether the file panel will update the file selection.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Apr 9 14:57:47 PST 2004
+//
+// Modifications:
+//
+// ****************************************************************************
+
+bool 
+QvisFilePanel::GetAllowFileSelectionChange() const
+{
+    return allowFileSelectionChange;
+}
+
+// ****************************************************************************
+// Method: QvisFilePanel::UpdateOpenButtonState
+//
+// Purpose: 
+//   Updates the text and enabled state of the Open button based on what
+//   file is currently selected in the list view.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Jun 27 14:53:26 PST 2005
+//
+// Modifications:
+//   Cyrus Harrison, Tue Jul  1 16:04:25 PDT 2008
+//   Initial Qt4 Port.
+// 
+// ****************************************************************************
+
+void
+QvisFilePanel::UpdateOpenButtonState()
+{
+    QTreeWidgetItem *item = fileTree->currentItem();
+    if(item != 0)
+    {
+        // Cast to a derived type.
+        QvisFilePanelItem *fileItem = (QvisFilePanelItem*)item;
+        UpdateOpenButtonState(fileItem);
+    }
+}
+
+//
+// Qt slot functions.
+//
+
+
+// ****************************************************************************
+// Method: QvisFilePanel::internalUpdateFileList
+//
+// Purpose: 
+//   Updates the file list.
+//
+// Note:       This method should only be called on a timer because updating
+//             the file list affects a lot of things.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Dec 19 17:02:15 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisFilePanel::internalUpdateFileList()
+{
+    UpdateFileList(true);
+}
+
+
+// ****************************************************************************
+// Method: QvisFilePanel::fileCollapsed
+//
+// Purpose: 
+//   This is a Qt slot function that collapses a file and thus removes it
+//   from the expanded files list.
+//
+// Arguments:
+//   item : The item that is being collapsed.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Mar 1 13:22:59 PST 2002
+//
+// Modifications:
+//   Eric Brugger, Mon Dec 16 13:05:01 PST 2002
+//   I seperated the concepts of state and frame, since they are no longer
+//   equivalent with keyframe support.
+//
+//   Brad Whitlock, Mon Sep 8 14:54:20 PST 2003
+//   Changed the logic for removing files from the list of expanded files.
+//
+//   Cyrus Harrison, Tue Jul  1 16:04:25 PDT 2008
+//   Initial Qt4 Port.
+// 
+// ****************************************************************************
+
+void
+QvisFilePanel::fileCollapsed(QTreeWidgetItem *item)
+{
+    if(item == 0)
+        return;
+
+    // Cast to a derived type.
+    QvisFilePanelItem *fileItem = (QvisFilePanelItem*)item;
+
+    if(!fileItem->isRoot())
+    {
+        // If the file is a database then we want to update the file selection.
+        if(fileItem->isFile())
+        {
+            //
+            // If the item is the root of the current open database then remove
+            // it from the list of expanded files.
+            //
+            if(fileItem->timeState == -1)
+            {
+                // Remove the file from the expanded file list.
+                RemoveExpandedFile(fileItem->file);
+
+                // If we collapsed the open file then update the file selection.
+                if(fileItem->file == fileServer->GetOpenFile())
+                    UpdateFileSelection();
+            }
+        }
+        else
+            RemoveExpandedFile(fileItem->file);
+    }
+}
+
+// ****************************************************************************
+// Method: QvisFilePanel::fileExpanded
+//
+// Purpose: 
+//   This is a Qt slot function that expands a file thus adding it to the
+//   expanded file list.
+//
+// Arguments:
+//   item : The item that is being expanded.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Mar 1 13:24:05 PST 2002
+//
+// Modifications:
+//   Eric Brugger, Mon Dec 16 13:05:01 PST 2002
+//   I seperated the concepts of state and frame, since they are no longer
+//   equivalent with keyframe support.
+//
+//   Brad Whitlock, Tue Jan 27 18:18:59 PST 2004
+//   I made the check for multiple states use the metadata instead of the
+//   globalAtts.
+//
+//   Mark C. Miller, Wed Aug  2 19:58:44 PDT 2006
+//   Changed interface to FileServerList::GetMetaData
+// 
+//   Cyrus Harrison, Tue Jul  1 16:04:25 PDT 2008
+//   Initial Qt4 Port.
+// 
+// ****************************************************************************
+
+void
+QvisFilePanel::fileExpanded(QTreeWidgetItem *item)
+{
+    if(item == 0)
+        return;
+
+    // Cast to a derived type.
+    QvisFilePanelItem *fileItem = (QvisFilePanelItem*)item;
+    AddExpandedFile(fileItem->file);
+
+    // If the file is a database then we want to update the file selection so
+    // the current cycle will be selected.
+    const QualifiedFilename &qf = fileServer->GetOpenFile();
+    if(fileItem->file == qf && fileServer->
+                               GetMetaData(qf, GetStateForSource(qf),
+                                               FileServerList::ANY_STATE,
+                                              !FileServerList::GET_NEW_MD)->
+                                               GetNumStates() > 1)
+    {
+        UpdateFileSelection();
+    }
+}
+
+// ****************************************************************************
+// Method: QvisFilePanel::highlightFile
+//
+// Purpose: 
+//   This is a Qt slot function that sets the enabled flag on the
+//   open, replace, overlay buttons depending on whether or not the
+//   highlighted file is the active file.
+//
+// Arguments:
+//   item : The qualified filename that is hightlighted.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Aug 31 10:56:13 PDT 2000
+//
+// Modifications:
+//   Brad Whitlock, Wed Mar 21 00:40:21 PDT 2001
+//   Changed the coding that determines if it is a file that is being
+//   highlighted. Temporarily disabled the replace and overlay buttons.
+//
+//   Brad Whitlock, Thu Feb 28 12:26:05 PDT 2002
+//   Changed the code so it is okay to highlight an item that is not a file.
+//
+//   Brad Whitlock, Wed Mar 6 16:22:03 PST 2002
+//   Enabled the replace and overlay buttons.
+//
+//   Brad Whitlock, Mon Jul 29 14:33:43 PST 2002
+//   I added the concept of re-opening a file.
+//
+//   Brad Whitlock, Fri Feb 28 08:39:35 PDT 2003
+//   I made it so highlighting a file that's been opened in the past makes
+//   the highlighted file the new open file.
+//
+//   Brad Whitlock, Fri Sep 5 17:10:43 PST 2003
+//   I made it so replace can be used to set the active time state.
+//
+//   Brad Whitlock, Tue Feb 3 18:23:21 PST 2004
+//   I made the open button turn into the activate button if we highlighted
+//   a file that we've opened before that is not the currently open file.
+//
+//   Brad Whitlock, Mon Dec 20 12:13:42 PDT 2004
+//   I moved the code to update the enabled state of the replace button into
+//   its own method.
+//
+//   Brad Whitlock, Mon Jun 27 14:49:43 PST 2005
+//   I moved the code that updates the text and enabled state for the Open
+//   button into its own method.
+//
+//   Cyrus Harrison, Tue Jul  1 16:04:25 PDT 2008
+//   Initial Qt4 Port.
+// 
+// ****************************************************************************
+
+void
+QvisFilePanel::highlightFile(QTreeWidgetItem *item)
+{
+    if(item == 0)
+        return;
+
+    // Cast to a derived type.
+    QvisFilePanelItem *fileItem = (QvisFilePanelItem*)item;
+    UpdateOpenButtonState(fileItem);
+
+    //
+    // If the highlighted file is not the active file, then
+    // enable the open, replace, overlay buttons.
+    //
+    bool enable = UpdateReplaceButtonEnabledState();
+    overlayButton->setEnabled(enable);
+}
+
+// ****************************************************************************
+// Method: QvisFilePanel::UpdateOpenButtonState
+//
+// Purpose: 
+//   Updates the state of the Open button based on what item is highlighted.
+//
+// Arguments:
+//   fileItem : The highlighted item in the list view.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Jun 27 14:57:22 PST 2005
+//
+// Modifications:
+//   Cyrus Harrison, Tue Jul  1 16:04:25 PDT 2008
+//   Initial Qt4 Port.
+// 
+// ****************************************************************************
+
+void
+QvisFilePanel::UpdateOpenButtonState(QvisFilePanelItem *fileItem)
+{
+    // If the filename is not a file. Disable the open files button.
+    if(!fileItem->isFile())
+    {
+        openButton->setEnabled(false);
+        return;
+    }
+
+    // If we've opened the file before, make the open button say "ReOpen".
+    bool fileOpenedBefore = fileServer->HaveOpenedFile(fileItem->file);
+    if(fileOpenedBefore)
+    {
+        if(fileServer->GetOpenFile() != fileItem->file)
+            openButton->setText(tr("Activate"));
+        else
+            openButton->setText(tr("ReOpen"));
+    }
+    else
+        openButton->setText(tr("Open"));
+    openButton->setEnabled(true);
+}
+
+// ****************************************************************************
+// Method: QvisFilePanel::openFile
+//
+// Purpose: 
+//   This is a Qt slot function that opens a file when the Open button
+//   is clicked.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Aug 31 10:58:13 PDT 2000
+//
+// Modifications:
+//   Brad Whitlock, Wed Mar 21 00:39:32 PDT 2001
+//   Added a check to make sure it's a file.
+//
+//   Brad Whitlock, Fri Feb 28 08:29:31 PDT 2003
+//   I passed the reopen flag to the OpenFile method.
+//
+//   Brad Whitlock, Thu May 15 12:44:42 PDT 2003
+//   I added support for opening a file at a later time state.
+//
+//   Brad Whitlock, Tue Jan 27 20:27:02 PST 2004
+//   I changed how we calculate the current time state for a database that
+//   we're reopening so it takes into account the active time slider.
+//
+//   Cyrus Harrison, Tue Jul  1 16:04:25 PDT 2008
+//   Initial Qt4 Port.
+// 
+// ****************************************************************************
+
+void
+QvisFilePanel::openFile()
+{
+    QvisFilePanelItem* fileItem = (QvisFilePanelItem *) fileTree->currentItem();
+
+    if((fileItem != 0) && fileItem->isFile() && (!fileItem->file.Empty()))
+    {
+        // Try and open the file.
+        bool reOpen = (fileItem->file == fileServer->GetOpenFile());
+        int  timeState = 0;
+
+        // We're reopening so we should reopen to the current time state.
+        if(reOpen)
+        {
+            //
+            // Get the current state for the specified database taking into
+            // account the active time slider.
+            //
+            timeState = GetStateForSource(fileItem->file);
+
+            //
+            // If we're reopening and we're trying to use a later time state
+            // then issue an error message because we don't want to let users
+            // change time states with reopen because they'll do it and
+            // complain that VisIt is slow.
+            //
+            if(fileItem->timeState != -1 &&
+               fileItem->timeState != timeState)
+            {
+                UpdateFileSelection();
+                Error(tr("Reopen cannot be used to change the active time state "
+                      "for an animation because reopen discards all cached "
+                      "networks and causes the database to actually be "
+                      "reopened. If you want to change the active time state, "
+                      "use the animation slider or select a new time state "
+                      "and click the Replace button."));
+                return;
+            }
+        }
+        else if(fileItem->timeState != -1)
+        {
+            // We're not reopening, we're opening. The file that we're opening
+            // has a valid timestep so use that so we open the right timestep
+            // to begin with.
+            timeState = fileItem->timeState;
+        }
+
+        OpenFile(fileItem->file, timeState, reOpen);
+    }
+}
+
+// ****************************************************************************
+// Method: QvisFilePanel::openFileDblClick
+//
+// Purpose: 
+//   This is a Qt slot function that opens a file when the filename
+//   is double clicked.
+//
+// Arguments:
+//   item : The file that was double clicked.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Aug 31 10:58:36 PDT 2000
+//
+// Modifications:
+//   Brad Whitlock, Wed Mar 21 00:39:06 PDT 2001
+//   Added a check to make sure it's a file.
+//
+//   Brad Whitlock, Wed Mar 6 15:31:07 PST 2002
+//   Added code to set the animation time step if the item is a database
+//   timestep.
+//
+//   Brad Whitlock, Fri Feb 28 08:32:51 PDT 2003
+//   I made it so double clicking on a filename never causes it to be reopened.
+//
+//   Brad Whitlock, Thu May 15 12:39:09 PDT 2003
+//   I made it so that we can open a file directly at a later time state.
+//
+//   Brad Whitlock, Fri Oct 24 14:33:12 PST 2003
+//   I made it use the new SetTimeSliderState method.
+//
+//   Brad Whitlock, Tue Feb 3 18:47:50 PST 2004
+//   I changed it so it tries to set the time slider to the right state for
+//   the database with the time state that we want to open.
+//
+//   Brad Whitlock, Mon May 3 17:23:46 PST 2004
+//   I added code to make sure that the time slider is related to the
+//   database that we're opening before trying to figure out the time state
+//   of the database.
+//
+//   Cyrus Harrison, Tue Jul  1 16:04:25 PDT 2008
+//   Initial Qt4 Port.
+// 
+// ****************************************************************************
+
+void
+QvisFilePanel::openFileDblClick(QTreeWidgetItem *item)
+{
+    QvisFilePanelItem *fileItem = (QvisFilePanelItem *)item;
+
+    if((fileItem != 0) && fileItem->isFile() && (!fileItem->file.Empty()))
+    {
+        int state = (fileItem->timeState == -1) ? 0 : fileItem->timeState;
+
+        if(fileItem->timeState != -1 &&
+           fileItem->file == fileServer->GetOpenFile())
+        {
+            // It must be a database timestep if the time state is not -1 and
+            // the file item has the same filename as the open file.
+
+            //
+            // If the correlation for the active time slider does not use the
+            // database that we just double-clicked, 
+            //
+            WindowInformation *windowInfo = GetViewerState()->GetWindowInformation();
+            int activeTS = windowInfo->GetActiveTimeSlider();
+            std::string activeTSName, src(fileItem->file.FullName());
+            DatabaseCorrelationList *cL = GetViewerState()->GetDatabaseCorrelationList();
+
+            if(activeTS >= 0)
+            {
+                activeTSName = windowInfo->GetTimeSliders()[activeTS];
+                DatabaseCorrelation *c = cL->FindCorrelation(activeTSName);
+                DatabaseCorrelation *csrc = cL->FindCorrelation(src);
+                if (c != 0 && csrc != 0 && !c->UsesDatabase(src))
+                {
+                    debug1 << "Have to set the time slider before setting the "
+                              "time state because the active time slider does "
+                              "not use the database that we double clicked.\n";
+                    activeTSName = src;
+                    GetViewerMethods()->SetActiveTimeSlider(activeTSName);
+                }
+            }
+
+            //
+            // Get the inverse correlated time state, which is the time state
+            // for the active time slider's correlation where the given
+            // database has the database time state that we want opened.
+            //
+            state = GetTimeSliderStateForDatabaseState(activeTSName, src, state);
+            GetViewerMethods()->SetTimeSliderState(state);
+        }
+        else
+        {
+            AddExpandedFile(fileItem->file);
+
+            // Try and open the file.
+            OpenFile(fileItem->file, state, false);
+        }
+    }
+}
+
+// ****************************************************************************
+// Method: QvisFilePanel::replaceFile
+//
+// Purpose: 
+//   This is a Qt slot function that replaces a file when the Replace
+//   button is clicked.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Aug 31 10:59:50 PDT 2000
+//
+// Modifications:
+//   Brad Whitlock, Wed Mar 21 00:38:22 PDT 2001
+//   Added a check to make sure it's a file.
+//
+//   Brad Whitlock, Fri Sep 5 16:52:28 PST 2003
+//   I let replace change time states so MeshTV users are happy.
+//
+//   Brad Whitlock, Wed Oct 15 16:18:40 PST 2003
+//   I added code to let replace open files at the selected time state instead
+//   of using time state 0.
+//
+//   Brad Whitlock, Fri Oct 24 14:33:40 PST 2003
+//   I made it use the new SetTimeSliderState method.
+//
+//   Brad Whitlock, Mon Nov 3 11:33:05 PDT 2003
+//   I made it always use the ReplaceFile method and I changed the
+//   ReplaceDatabase functionality in the viewer so changes the animation
+//   time state if we're replacing with the same database.
+//
+//   Cyrus Harrison, Tue Jul  1 16:04:25 PDT 2008
+//   Initial Qt4 Port.
+// 
+// ****************************************************************************
+
+void
+QvisFilePanel::replaceFile()
+{
+    QvisFilePanelItem *fileItem = (QvisFilePanelItem *) fileTree->currentItem();
+
+    if((fileItem != 0) && fileItem->isFile() && (!fileItem->file.Empty()))
+    {
+        // Make sure that we use a valid time state. Some file items
+        // have a time state of -1 if they are the parent item of several
+        // time step items.
+        int timeState = (fileItem->timeState < 0) ? 0 : fileItem->timeState;
+
+        // Try and replace the file.
+        ReplaceFile(fileItem->file.FullName(), timeState,false);
+    }
+}
+
+// ****************************************************************************
+// Method: QvisFilePanel::replaceSelected
+//
+// Purpose: 
+//   This is a Qt slot function that replaces active when the Replace
+//   Selected menu option from the file popup menu is clicked.
+//
+// Programmer: Cyrus Harrison
+// Creation:   Tue Apr 14 16:43:13 PDT 2009
+//
+// Modifications:
+// 
+// ****************************************************************************
+
+void
+QvisFilePanel::replaceSelected()
+{
+    QvisFilePanelItem *file_item= (QvisFilePanelItem *)fileTree->currentItem();
+
+    if((file_item != 0) && file_item->isFile() && (!file_item->file.Empty()))
+    {
+        // Make sure that we use a valid time state. Some file items
+        // have a time state of -1 if they are the parent item of several
+        // time step items.
+        int timeState = (file_item->timeState < 0) ? 0 : file_item->timeState;
+
+        // Try and replace the file.
+        ReplaceFile(file_item->file.FullName(), timeState, true);
+    }
+}
+
+
+
+// ****************************************************************************
+// Method: QvisFilePanel::overlayFile
+//
+// Purpose: 
+//   This is a Qt slot function that overlays a file when the Overlay
+//   button is clicked.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Aug 31 11:00:46 PDT 2000
+//
+// Modifications:
+//   Brad Whitlock, Wed Mar 21 00:38:22 PDT 2001
+//   Added a check to make sure it's a file.
+//
+//   Cyrus Harrison, Tue Jul  1 16:04:25 PDT 2008
+//   Initial Qt4 Port.
+// 
+//   Brad Whitlock, Thu Jul 24 09:16:23 PDT 2008
+//   Make it possible to overlay at a particular time step.
+//
+// ****************************************************************************
+
+void
+QvisFilePanel::overlayFile()
+{
+    QvisFilePanelItem *fileItem = (QvisFilePanelItem *) fileTree->currentItem();
+
+    if((fileItem != 0) && fileItem->isFile() && (!fileItem->file.Empty()))
+    {
+        // Make sure that we use a valid time state. Some file items
+        // have a time state of -1 if they are the parent item of several
+        // time step items.
+        int timeState = (fileItem->timeState < 0) ? 0 : fileItem->timeState;
+
+        // Try and open the file.
+        OverlayFile(fileItem->file.FullName(), timeState);
+    }
+}
+
+// ****************************************************************************
+// Method: QvisFilePanel::closeFile
+//
+// Purpose: 
+//   This is a Qt slot function that overlays a file when the Overlay
+//   button is clicked. TODO
+//
+// Programmer: Cyrus Harrison
+// Creation:   Tue Apr 14 16:43:13 PDT 2009
+//
+// Modifications: 
+//
+//   Jeremy Meredith, Fri Mar 19 13:22:13 EDT 2010
+//   Added extra parameter telling ClearFile whether or not we want it
+//   to forget about which plugin opened a file.  Here, we do.
+//
+// ****************************************************************************
+
+void
+QvisFilePanel::closeFile()
+{
+    QvisFilePanelItem *fileItem = (QvisFilePanelItem *) fileTree->currentItem();
+    if((fileItem != 0) && fileItem ->isFile() && (!fileItem->file.Empty()))
+    {
+        fileServer->ClearFile(fileItem->file.FullName(), true);
+        GetViewerMethods()->CloseDatabase(fileItem->file.FullName());
+        UpdateOpenButtonState();
+    }
+}
+
+
+
+///////////////////////////////////////////////////////////////////////////////
+/// INTERNAL CLASS DEFINITIONS
+///////////////////////////////////////////////////////////////////////////////
+
+// ****************************************************************************
+// Method: FileTree::FileTree
+//
+// Purpose: 
+//   Constructor for the FileTree class.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Mar 22 16:49:19 PST 2001
+//
+// Modifications:
+//   Brad Whitlock, Wed May 14 15:29:54 PST 2003
+//   Added a pointer to the parent QvisFilePanel object.
+//
+// ****************************************************************************
+
+FileTree::FileTree(QvisFilePanel *fp)
+{
+    // Keep a pointer to the file panel that created this object so we can
+    // add virtual files to the list of expanded files.
+    filePanel = fp;
+
+    root = new FileTreeNode(FileTreeNode::ROOT_NODE);
+    root->nodeName = std::string("root");
+}
+
+// ****************************************************************************
+// Method: FileTree::~FileTree
+//
+// Purpose: 
+//   Destructor for the FileTree class.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Mar 22 16:49:42 PST 2001
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+FileTree::~FileTree()
+{
+    delete root;
+}
+
+// ****************************************************************************
+// Method: FileTree::Add
+//
+// Purpose: 
+//   Adds the specified file to the file tree. This includes building the path
+//   nodes in the file tree that need to be built.
+//
+// Arguments:
+//   fileName : The filename to add to the file tree.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Mar 22 16:50:02 PST 2001
+//
+// Modifications:
+//   Brad Whitlock, Fri Apr 26 12:01:52 PDT 2002
+//   Ported to windows.
+//
+//   Brad Whitlock, Mon Aug 26 16:27:33 PST 2002
+//   I added code to handle different file separators.
+//
+//   Brad Whitlock, Mon Mar 31 15:10:48 PST 2003
+//   I added code to handle virtual files.
+//
+//   Brad Whitlock, Mon Sep 15 13:50:26 PST 2003
+//   I fixed the method so path nodes have the correct filename instead
+//   of an empty filename. This ensures that they get expanded correctly
+//   later on.
+//
+// ****************************************************************************
+
+void
+FileTree::Add(const QualifiedFilename &fileName, char separator_)
+{
+    static const int SCAN_MODE = 0;
+    static const int PROCESS_MODE = 1;
+
+    int len = fileName.path.length();
+    int index = 1;
+    int mode = SCAN_MODE;
+
+    separator = separator_;
+    std::string directory;
+    std::string keyPath;
+    FileTreeNode *current = root;
+    QualifiedFilename empty;
+
+    // Loop through the directory string either adding directories to the
+    // tree or advancing the current pointer to the final directory.
+    while(index < len)
+    {
+        if(mode == SCAN_MODE)
+        {
+            keyPath += fileName.path[index];
+            if(fileName.path[index] == separator)
+                mode = PROCESS_MODE;
+            else
+            {
+                directory += fileName.path[index];
+                if(index == len - 1)
+                    mode = PROCESS_MODE;
+                else 
+                    ++index;
+            }
+        }
+        else if(mode == PROCESS_MODE)
+        {
+            // Look for the directory in at the current level.
+            FileTreeNode *dir = current->Find(directory);
+
+            if(dir != NULL)
+            {
+                // Advance the current pointer down the directory structure.
+                current = dir;
+            }
+            else
+            {
+                // Add the host and path but not the filename.
+                QualifiedFilename key(fileName); key.path = keyPath; key.filename = "(path)";
+
+                // The path was not found. We need to add it.
+                FileTreeNode *newNode = current->Add(FileTreeNode::PATH_NODE,
+                                                     directory, key,
+                                                     separator);
+
+                // If we were able to add the node, move to it.
+                current = newNode;
+            }
+            ++index;
+            directory="";
+            mode = SCAN_MODE;
+        }
+    }
+
+    // Add the file to the current node.
+    int t = fileName.IsVirtual() ? FileTreeNode::DATABASE_NODE :
+        FileTreeNode::FILE_NODE;
+    current->Add(t, fileName.filename, fileName, separator);
+}
+
+// ****************************************************************************
+// Method: FileTree::Reduce
+//
+// Purpose: 
+//   Simplifies the file tree. This means condensing nodes with only one child
+//   into its parent node.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Mar 22 16:51:04 PST 2001
+//
+// Modifications:
+//   Brad Whitlock, Thu Mar 29 13:01:48 PST 2001
+//   Modified the file reduction rules so they work with a single file.
+//
+//   Brad Whitlock, Fri Apr 27 13:10:27 PST 2001
+//   Fixed a memory problem.
+//
+//   Brad Whitlock, Fri Apr 26 12:03:08 PDT 2002
+//   Ported to windows.
+//
+//   Brad Whitlock, Mon Aug 26 16:47:24 PST 2002
+//   I changed the code so it can use different separators.
+//
+//   Brad Whitlock, Tue Feb 24 15:43:28 PST 2004
+//   I fixed the code so single filenames are again shown without the path.
+//
+// ****************************************************************************
+
+void
+FileTree::Reduce()
+{
+    for(int i = 0; i < root->numChildren;)
+    {
+        bool retval = root->children[i]->Reduce();
+
+        // If no reduction done, move to the next child.
+        if(!retval)
+           ++i;
+    }
+
+    // Try and reduce the root to see if we can get rid of a single top-level
+    // directory. Do not reduce the root if it only has one child in it since
+    // it has to be a file.
+    int rootSize = root->Size();
+    if(rootSize > 2)
+        root->Reduce();
+    else if(rootSize <= 2)
+    {
+        // The root has only one child and it must be a file. Since it has
+        // been reduced, strip the path from it so it will match what happens
+        // when there are multiple top level files.
+        if(root->numChildren > 0)
+        {
+            std::string &s = root->children[0]->nodeName;
+
+            int pos = s.rfind(separator_str()) + 1;
+            s = s.substr(pos, s.length() - pos);
+        }
+    }
+}
+
+// ****************************************************************************
+// Method: FileTree::Size
+//
+// Purpose: 
+//   Returns the number of nodes in the file tree. This includes the root node.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Mar 22 16:51:59 PST 2001
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+int
+FileTree::Size() const
+{
+    return root->Size();
+}
+
+// ****************************************************************************
+// Method: FileTree::TreeContainsDirectories
+//
+// Purpose: 
+//   Searches the file tree to determine if it contains directories.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Mar 22 16:52:22 PST 2001
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+FileTree::TreeContainsDirectories() const
+{
+    bool retval = false;
+
+    for(int i = 0; i < root->numChildren && !retval; ++i)
+    {
+        retval |= root->children[i]->HasChildrenOfType(FileTreeNode::PATH_NODE);
+    }
+
+    return retval;
+}
+
+// ****************************************************************************
+// Method: FileTree::AddElementsToTreeItem
+//
+// Purpose: 
+//   This method adds adds the appropriate list view items for the file tree
+//   to the parent list view item.
+//
+// Arguments:
+//   item           : The list view item that will be the parent of the new nodes.
+//   fileIndex      : The index of the file being added.
+//   folderPixmap   : An icon of a folder.
+//   databasePixmap : An icon of a database.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Mar 22 16:52:52 PST 2001
+//
+// Modifications:
+//   Brad Whitlock, Mon Mar 31 15:12:01 PST 2003
+//   I added databasePixmap.
+//
+//   Brad Whitlock, Wed May 14 15:31:14 PST 2003
+//   I added filePanel.
+//
+//   Cyrus Harrison, Tue Jul  1 16:04:25 PDT 2008
+//   Initial Qt4 Port.
+// 
+// ****************************************************************************
+
+void
+FileTree::AddElementsToTreeItem(QTreeWidgetItem *item, int &fileIndex,
+    const QPixmap &folderPixmap, const QPixmap &databasePixmap)
+{
+    root->AddElementsToTreeItem(item, fileIndex, false, folderPixmap,
+                                databasePixmap, filePanel);
+}
+
+// ****************************************************************************
+// Method: FileTree::AddElementsToTree
+//
+// Purpose: 
+//   This method adds adds the appropriate list view items for the file tree
+//   to the parent list view.
+//
+// Arguments:
+//   item : The list view that will be the parent of the new nodes.
+//   fileIndex : The index of the file being added.
+// 
+// Programmer: Brad Whitlock
+// Creation:   Thu Mar 22 16:52:52 PST 2001
+//
+// Modifications:
+//   Brad Whitlock, Wed May 14 15:31:21 PST 2003
+//   I added filePanel.
+//
+//   Cyrus Harrison, Tue Jul  1 16:04:25 PDT 2008
+//   Initial Qt4 Port.
+// 
+// ****************************************************************************
+
+void
+FileTree::AddElementsToTree(QTreeWidget *tree, int &fileIndex,
+    const QPixmap &folderPixmap, const QPixmap &databasePixmap)
+{
+    root->AddElementsToTree(tree, fileIndex, folderPixmap,
+                            databasePixmap, filePanel);
+}
+
+// ****************************************************************************
+// Method: FileTree::HasNodeNameExceeding
+//
+// Purpose: 
+//   Returns whether the nodes in the tree have a node name that exceeds the
+//   specified length.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Aug 5 17:34:58 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+FileTree::HasNodeNameExceeding(int len) const
+{
+    return (root != 0) ? root->HasNodeNameExceeding(len) : false;
+}
+
+// ****************************************************************************
+// Method: FileTree::operator <<
+//
+// Purpose: 
+//   Prints the FileTree to a stream.
+//
+// Arguments:
+//   os : The stream to which we want to print.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jul 29 10:08:20 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+ostream &
+operator <<(ostream &os, const FileTree &t)
+{
+    t.root->Print(os, "");
+    return os;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+// ****************************************************************************
+// Method: FileTree::FileTreeNode::FileTreeNode
+//
+// Purpose: 
+//   This is the constructor for the FileTree::FileTreeNode class.
+//
+// Arguments:
+//   nodeT : The type of node we're instantiating.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Mar 22 16:55:21 PST 2001
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+FileTree::FileTreeNode::FileTreeNode(int nodeT) : nodeName()
+{
+    nodeType = nodeT;
+    numChildren = 0;
+    children = NULL;
+}
+
+// ****************************************************************************
+// Method: FileTree::FileTreeNode::~FileTreeNode
+//
+// Purpose: 
+//   Destructor for the FileTree::FileTreeNode class.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Mar 22 16:56:05 PST 2001
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+FileTree::FileTreeNode::~FileTreeNode()
+{
+    Destroy();
+}
+
+// ****************************************************************************
+// Method: FileTree::FileTreeNode::Destroy
+//
+// Purpose: 
+//   Recursively (indirect) destroys all child nodes.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Mar 22 16:56:32 PST 2001
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+FileTree::FileTreeNode::Destroy()
+{
+    if(nodeType == ROOT_NODE || nodeType == PATH_NODE)
+    {
+        for(int i = 0; i < numChildren; ++i)
+            delete children[i];
+
+        delete [] children;
+        children = NULL;
+        numChildren = 0;
+    }
+}
+
+// ****************************************************************************
+// Method: FileTree::FileTreeNode::Add
+//
+// Purpose: 
+//   Adds a new node of the specified type to the current node.
+//
+// Arguments:
+//   nType    : The type of the node being added.
+//   name     : The name of the node being added.
+//   fileName : The filename associated with the new node.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Mar 22 16:57:30 PST 2001
+//
+// Modifications:
+//   Brad Whitlock, Mon Aug 26 16:43:46 PST 2002
+//   I added the ability to have different kinds of separators.
+//
+//   Brad Whitlock, Mon Oct 27 13:42:32 PST 2003
+//   I made the new node get inserted into the list using the fileName to
+//   determine where to insert because the fileName is sorted using the
+//   numeric string comparison routine. This fixes cases where files like
+//   foo10z0000.silo would come before foo2z0000.silo.
+//
+//   Brad Whitlock, Thu Jul 29 10:57:59 PDT 2004
+//   I changed the node insertion scheme so the node name is used
+//   (as it must be) with a numeric string comparison so we preserve
+//   compatibility with the file indices in the file server list.
+//
+// ****************************************************************************
+
+FileTree::FileTreeNode *
+FileTree::FileTreeNode::Add(int nType, const std::string &name,
+    const QualifiedFilename &fileName, char separator_)
+{
+    FileTreeNode *retval = NULL;
+    separator = separator_;
+
+    if(nodeType == ROOT_NODE || nodeType == PATH_NODE)
+    {
+        if(numChildren < 1)
+        {
+            // Append it.
+            children = new FileTreeNode*[1];
+            children[0] = new FileTreeNode(nType);
+            children[0]->nodeName = name;
+            children[0]->fileName = fileName;
+            numChildren = 1;
+
+            retval = children[0];
+        }
+        else
+        {
+            // Add it in order.
+            FileTreeNode **newChildren = new FileTreeNode*[numChildren + 1];
+
+            // Create the new item.
+            FileTreeNode *newNode = new FileTreeNode(nType);
+            newNode->nodeName = name;
+            newNode->fileName = fileName;
+            retval = newNode;
+
+            // Copy the child arrays.
+            bool notInserted = true;
+            int index = 0;
+            for(int i = 0; i < numChildren; ++i, ++index)
+            {
+                if(notInserted &&
+                   NumericStringCompare(newNode->nodeName, children[i]->nodeName))
+                {
+                    newChildren[index++] = newNode;
+                    newChildren[index] = children[i];
+                    notInserted = false;
+                }
+                else
+                    newChildren[index] = children[i];
+            }
+            if(notInserted)
+               newChildren[numChildren] = newNode;
+
+            // Increase the number of children by one and delete the old array.
+            ++numChildren;
+            delete [] children;
+            children = newChildren;
+        }
+    }
+
+    return retval;
+}
+
+// ****************************************************************************
+// Method: FileTree::FileTreeNode::Find
+//
+// Purpose: 
+//   Searches for the node with the given path name.
+//
+// Arguments:
+//   path : The name of the node to look for.
+//
+// Returns:    A pointer to the node or NULL if it cannot be found.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Mar 22 16:58:52 PST 2001
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+FileTree::FileTreeNode *
+FileTree::FileTreeNode::Find(const std::string &path)
+{
+    FileTree::FileTreeNode *retval = NULL;
+
+    for(int i = 0; i < numChildren; ++i)
+    {
+        if(children[i]->nodeName == path &&
+           children[i]->nodeType == PATH_NODE)
+        {
+            retval = children[i];
+            break;
+        }
+    }
+
+    return retval;
+}
+
+// ****************************************************************************
+// Method: FileTree::FileTreeNode::Reduce
+//
+// Purpose: 
+//   Simplifies the file tree.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Mar 22 16:59:51 PST 2001
+//
+// Modifications:
+//   Brad Whitlock, Tue Aug 21 14:34:41 PST 2001
+//   Added a new rule to prepend a slash onto reduced nodes that do not
+//   already have a slash as the first character.
+//
+//   Brad Whitlock, Fri Apr 26 12:02:14 PDT 2002
+//   Ported to windows.
+//
+//   Brad Whitlock, Mon Aug 26 16:41:34 PST 2002
+//   I made it support different kinds of separators.
+//
+//   Brad Whitlock, Mon Mar 31 15:13:54 PST 2003
+//   I added support for database nodes.
+//
+// ****************************************************************************
+
+bool
+FileTree::FileTreeNode::Reduce()
+{
+    bool retval = false;
+
+    if(numChildren == 1)
+    {
+        // Suck the child node into the current node.
+        nodeName += separator_str();
+        nodeName += children[0]->nodeName;
+        nodeType = children[0]->nodeType;
+        fileName = children[0]->fileName;
+
+        // If the reduced node does not have a separator as the first
+        // character of its nodeName, add a separator.
+        if((nodeType == FILE_NODE || nodeType == DATABASE_NODE) &&
+           nodeName[0] != separator)
+        {
+            std::string slash(separator_str());
+            slash += nodeName;
+            nodeName = slash;
+        }
+
+        FileTreeNode *oldChild = children[0];
+        delete [] children;
+        children = oldChild->children;
+        numChildren = oldChild->numChildren;
+
+        // Delete the old child.
+        oldChild->children = NULL;
+        oldChild->numChildren = 0;
+        delete oldChild;
+
+        retval = true;
+    }
+    else
+    {
+        for(int i = 0; i < numChildren;)
+        {
+            retval = children[i]->Reduce();
+
+            // If no reduction done, move to the next child.
+            if(!retval)
+               ++i;
+        }
+    }
+
+    return retval;
+}
+
+// ****************************************************************************
+// Method: FileTree::FileTreeNode::Size
+//
+// Purpose: 
+//   Returns the number of children in the node.
+//
+// Returns:    The number of children in the node.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Mar 22 17:00:21 PST 2001
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+int
+FileTree::FileTreeNode::Size() const
+{
+    int retval = 1;
+
+    if(numChildren > 0)
+    {
+        for(int i = 0; i < numChildren; ++i)
+            retval += children[i]->Size();
+    }
+
+    return retval;
+}
+
+// ****************************************************************************
+// Method: FileTree::FileTreeNode::HasChildrenOfType
+//
+// Purpose: 
+//   Recursively determines whether the node has any children of the
+//   specified type.
+//
+// Arguments:
+//   type : The type we're looking for.
+//
+// Returns:    true if the type was found, else returns false.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Mar 22 17:00:48 PST 2001
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+FileTree::FileTreeNode::HasChildrenOfType(int type)
+{
+    bool retval = (nodeType == type);
+
+    if(!retval && numChildren > 0)
+    {
+        // Look through the children and see if any of them have the
+        // specified type.
+        for(int i = 0; i < numChildren && retval; ++i)
+        {
+            retval &= children[i]->HasChildrenOfType(type);
+        }
+    }
+
+    return retval;
+}
+
+// ****************************************************************************
+// Method: FileTree::FileTreeNode::HasNodeNameExceeding
+//
+// Purpose: 
+//   Returns whether any of the nodes in the tree have a node name that is 
+//   longer than the specified length.
+//
+// Arguments:
+//   len : The specified node name length.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Aug 5 17:32:29 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+FileTree::FileTreeNode::HasNodeNameExceeding(int len) const
+{
+    if(nodeName.size() > (size_t)len)
+        return true;
+
+    // Check the children.
+    for(int i = 0; i < numChildren; ++i)
+    {
+        if(children[i]->HasNodeNameExceeding(len))
+            return true;
+    }
+ 
+    return false;
+}
+
+// ****************************************************************************
+// Method: FileTree::FileTreeNode::AddElementsToTreeItem
+//
+// Purpose: 
+//   Creates the widgets used to represent the file tree.
+//
+// Arguments:
+//   item         : The list view item that will act as a parent for the
+//                  new items.
+//   fileIndex    : A variable used to determine the file index to use.
+//   addRoot      : Whether or not to add a root node that contains multiple
+//                  child nodes.
+//   folderPixmap : A reference to the pixmap used for file folders.
+//   databasePixmap : A reference to the pixmap used for databases.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Mar 22 17:02:12 PST 2001
+//
+// Modifications:
+//   Brad Whitlock, Fri Apr 26 12:02:44 PDT 2002
+//   Ported to windows.
+//
+//   Brad Whitlock, Mon Aug 26 16:40:49 PST 2002
+//   I made it support different kinds of file separators.
+//
+//   Brad Whitlock, Mon Mar 31 15:14:29 PST 2003
+//   I added support for virtual files.
+//
+//   Brad Whitlock, Wed May 14 15:31:57 PST 2003
+//   I made virtual files be expanded by default.
+//
+//   Brad Whitlock, Thu Jul 29 10:00:51 PDT 2004
+//   I fixed a bug where if the first file in a directory lacked read access
+//   then the directory would be displayed as having no access.
+//
+//   Cyrus Harrison, Tue Jul  1 16:04:25 PDT 2008
+//   Initial Qt4 Port.
+// 
+// ****************************************************************************
+
+void
+FileTree::FileTreeNode::AddElementsToTreeItem(QTreeWidgetItem *item,
+    int &fileIndex, bool addRoot, const QPixmap &folderPixmap,
+    const QPixmap &databasePixmap, QvisFilePanel *filePanel)
+{
+    QTreeWidgetItem *root = item;
+
+    // Add the current node.
+    if(addRoot)
+    {
+        if(nodeType == FILE_NODE)
+        {
+            // Add a file node.
+            new QvisFilePanelItem(item, NumberedFilename(fileIndex),
+                                  fileName, QvisFilePanelItem::FILE_NODE);
+            ++fileIndex;
+        }
+        else if(nodeType == DATABASE_NODE)
+        {
+            // Add a file node.
+            QvisFilePanelItem *node = new QvisFilePanelItem(item,
+                NumberedFilename(fileIndex), fileName,
+                QvisFilePanelItem::FILE_NODE);
+            node->setIcon(0, databasePixmap);
+            ++fileIndex;
+
+            // If the file is a virtual file, make it be expanded by default.
+            if(fileName.IsVirtual())
+            {
+                if(!filePanel->HaveFileInformation(fileName))
+                    filePanel->AddExpandedFile(fileName);
+            }
+        }
+        else if(nodeType == PATH_NODE)
+        {
+            // Add a directory node.
+            QString temp;
+            if(nodeName == fileName.path && nodeName[0] != separator)
+                temp.sprintf("%c%s", separator, nodeName.c_str());
+            else
+                temp = QString(nodeName.c_str());
+            root = new QvisFilePanelItem(item, temp, fileName,
+                           QvisFilePanelItem::DIRECTORY_NODE);
+            root->setIcon(0, folderPixmap);
+        }
+    }
+
+    // Add any children there might be.
+    if(numChildren > 0)
+    {
+        for(int i = 0; i < numChildren; ++i)
+        {
+            children[i]->AddElementsToTreeItem(root, fileIndex, true,
+                                               folderPixmap, databasePixmap,
+                                               filePanel);
+        }
+    }        
+}
+
+// ****************************************************************************
+// Method: FileTree::FileTreeNode::AddElementsToTree
+//
+// Purpose: 
+//   Creates the widgets used to represent the file tree.
+//
+// Arguments:
+//   listView     : The list view that will act as a parent for the
+//                  new items.
+//   fileIndex    : A variable used to determine the file index to use.
+//   addRoot      : Whether or not to add a root node that contains multiple
+//                  child nodes.
+//   folderPixmap : A reference to the pixmap used for file folders.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Mar 22 17:02:12 PST 2001
+//
+// Modifications:
+//   Brad Whitlock, Mon Mar 31 15:44:18 PST 2003
+//   I added folder and database pixmaps.
+//
+//   Brad Whitlock, Wed May 14 15:35:32 PST 2003
+//   I made virtual files come expanded by default.
+//
+//   Cyrus Harrison, Tue Jul  1 16:04:25 PDT 2008
+//   Initial Qt4 Port.
+// 
+// ****************************************************************************
+
+void
+FileTree::FileTreeNode::AddElementsToTree(QTreeWidget *tree,
+    int &fileIndex, const QPixmap &folderPixmap, const QPixmap &databasePixmap,
+    QvisFilePanel *filePanel)
+{
+    // Add any children there might be.
+    for(int i = 0; i < numChildren; ++i)
+    {
+        if(children[i]->nodeType == PATH_NODE)
+        {
+            QvisFilePanelItem *item = new QvisFilePanelItem(tree,
+                    children[i]->NumberedFilename(fileIndex),
+                    children[i]->fileName,
+                    QvisFilePanelItem::DIRECTORY_NODE);
+            item->setIcon(0, folderPixmap);
+        }
+        else if(children[i]->nodeType == DATABASE_NODE)
+        {
+            QvisFilePanelItem *item = new QvisFilePanelItem(tree,
+                    children[i]->NumberedFilename(fileIndex),
+                    children[i]->fileName,
+                    QvisFilePanelItem::FILE_NODE);
+            item->setIcon(0, databasePixmap);
+
+            // If the file is a virtual file, make it be expanded by default.
+            if(children[i]->fileName.IsVirtual())
+            {
+                if(!filePanel->HaveFileInformation(children[i]->fileName))
+                    filePanel->AddExpandedFile(children[i]->fileName);
+            }
+        }
+        else
+        {
+            new QvisFilePanelItem(tree,
+                    children[i]->NumberedFilename(fileIndex),
+                    children[i]->fileName,
+                    QvisFilePanelItem::FILE_NODE);
+        }
+
+        ++fileIndex;
+    }
+}
+
+// ****************************************************************************
+// Method: FileTree::FileTreeNode::NumberedFilename
+//
+// Purpose: 
+//   Creates a string that contains the file index and the filename.
+//
+// Arguments:
+//   fileIndex : The file index to use in creating the string.
+//
+// Returns:    The new string that contains both the file index and filename.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Mar 22 17:04:48 PST 2001
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+QString
+FileTree::FileTreeNode::NumberedFilename(int fileIndex) const
+{
+    QString label;
+    if(fileIndex < 10)
+        label.sprintf("  %d: %s", fileIndex, nodeName.c_str());
+    else if(fileIndex < 100)
+        label.sprintf(" %d: %s", fileIndex, nodeName.c_str());
+    else
+        label.sprintf("%d: %s", fileIndex, nodeName.c_str());
+
+    return label;
+}
+
+// ****************************************************************************
+// Method: FileTree::FileTreeNode::Print
+//
+// Purpose: 
+//   Prints the node to a stream.
+//
+// Arguments:
+//   os     : The stream to which we want to print.
+//   indent : The string to prepend to all of the output.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jul 29 10:08:58 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+FileTree::FileTreeNode::Print(ostream &os, const std::string &indent) const
+{
+    os << indent.c_str() << "[" << nodeName.c_str() << "] " << fileName.FullName().c_str() << endl;
+
+    // Add any children there might be.
+    if(numChildren > 0)
+    {
+        std::string newIndent(std::string("    ") + indent);
+
+        for(int i = 0; i < numChildren; ++i)
+            children[i]->Print(os, newIndent);
+    }
+}

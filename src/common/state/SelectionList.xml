@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+  <Attribute name="SelectionList" purpose="Contains a list of SelectionProperties objects." persistent="true" keyframe="true" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="SelectionList.code">
+    <Field name="autoApplyUpdates" label="Automatically apply updates" type="bool">
+      false
+    </Field>
+    <Field name="selections" label="Selections" type="attVector" subtype="SelectionProperties">
+    </Field>
+    <Field name="selectionSummary" label="Selection summary" type="attVector" subtype="SelectionSummary">
+    </Field>
+    <Function name="GetSelection" user="true" member="true">
+    </Function>
+    <Function name="GetSelectionSummary" user="true" member="true">
+    </Function>
+    <Function name="SetFromNode" user="false" member="true">
+    </Function>
+    <Function name="CreateNode" user="false" member="true">
+    </Function>
+  </Attribute>

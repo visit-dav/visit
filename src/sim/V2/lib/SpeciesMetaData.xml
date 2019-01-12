@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+  <Attribute name="SpeciesMetaData" purpose="" persistent="false" keyframe="false" exportAPI="" exportInclude="" codefile="SpeciesMetaData.code">
+    <Field name="name" label="name" type="string">
+    </Field>
+    <Field name="meshName" label="Mesh name" type="string">
+    </Field>
+    <Field name="materialName" label="Material name" type="string">
+    </Field>
+    <Field name="speciesNames" label="Species names" type="attVector">
+    </Field>
+    <Function name="simv2_SpeciesMetaData_check" user="true" member="true">
+    </Function>
+  </Attribute>

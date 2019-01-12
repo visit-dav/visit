@@ -1,0 +1,135 @@
+<?xml version="1.0"?>
+  <Plugin name="Spreadsheet" type="plot" label="Spreadsheet" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" vartype="scalar,curve" iconFile="Spreadsheet.xpm">
+    <CXXFLAGS>
+      ${GLEW_INCLUDE_DIR}
+    </CXXFLAGS>
+    <Files components="V">
+      avtSpreadsheetFilter.C
+      avtSpreadsheetRenderer.C
+      avtSpreadsheetRenderer_Viewer.C
+      avtSpreadsheetTraceRenderer.C
+      avtOpenGLSpreadsheetTraceRenderer.C
+      SpreadsheetViewer.C
+      SpreadsheetCurveViewer.C
+      SpreadsheetTable.C
+      SpreadsheetTabWidget.C
+    </Files>
+    <Files components="E">
+      avtSpreadsheetFilter.C
+      avtSpreadsheetRenderer.C
+      avtSpreadsheetRenderer_Engine.C
+      avtSpreadsheetTraceRenderer.C
+      avtOpenGLSpreadsheetTraceRenderer.C
+    </Files>
+    <Files components="VW">
+      SpreadsheetViewer.h
+      SpreadsheetCurveViewer.h
+      SpreadsheetTable.h
+      SpreadsheetTabWidget.h
+    </Files>
+    <Attribute name="SpreadsheetAttributes" purpose="Contains the attributes for the visual spreadsheet." persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="Spreadsheet.code">
+      <Enum name="NormalAxis">
+        X
+        Y
+        Z
+      </Enum>
+      <Field name="subsetName" label="Subset name" type="string">
+        Whole
+      </Field>
+      <Field name="formatString" label="Format string" type="string">
+        %1.6f
+      </Field>
+      <Field name="useColorTable" label="Use color table" type="bool">
+        false
+      </Field>
+      <Field name="colorTableName" label="Color table" type="colortable" enabler="useColorTable:true">
+        Default
+      </Field>
+      <Field name="showTracerPlane" label="Show tracer plane" type="bool">
+        true
+      </Field>
+      <Field name="tracerColor" label="Tracer color" type="color" length="4" enabler="showTracerPlane:true">
+        255
+        0
+        0
+        150
+      </Field>
+      <Field name="normal" label="Normal" type="enum" subtype="NormalAxis">
+        Z
+      </Field>
+      <Field name="sliceIndex" label="Slice index" type="int">
+        0
+      </Field>
+      <Field name="spreadsheetFont" label="Spreadsheet Font" type="string">
+        Courier,12,-1,5,50,0,0,0,0,0
+      </Field>
+      <Field name="showPatchOutline" label="Show patch outline" type="bool">
+        true
+      </Field>
+      <Field name="showCurrentCellOutline" label="Show current cell outline" type="bool">
+        false
+      </Field>
+      <Field name="currentPick" label="Current pick" type="int" internal="true">
+        0
+      </Field>
+      <Field name="currentPickType" label="currentPickType" type="int">
+        0
+      </Field>
+      <Field name="currentPickValid" label="Current pick valid" type="bool" internal="true">
+        false
+      </Field>
+      <Field name="currentPickLetter" label="Current pick letter" type="string">
+      </Field>
+      <Field name="pastPicks" label="Past picks" type="doubleVector" internal="true">
+      </Field>
+      <Field name="pastPickLetters" label="Past pick letters" type="stringVector">
+      </Field>
+      <Function name="ChangesRequireRecalculation" user="true" member="true">
+      </Function>
+      <Function name="CopyAttributes" user="false" member="true">
+      </Function>
+      <Function name="CreateCompatible" user="false" member="true">
+      </Function>
+      <Function name="SetSubsetName" user="false" member="true">
+      </Function>
+      <Function name="CreateNode" user="false" member="true">
+      </Function>
+      <Function name="SpreadsheetViewerEnginePluginInfo::InitializePlotAtts" user="false" member="true">
+      </Function>
+      <Function name="SpreadsheetViewerEnginePluginInfo::ReInitializePlotAtts" user="false" member="true">
+      </Function>
+      <Function name="SpreadsheetViewerEnginePluginInfo::ResetPlotAtts" user="false" member="true">
+      </Function>
+      <Function name="SpreadsheetViewerEnginePluginInfo::ProvidesLegend" user="false" member="true">
+      </Function>
+      <Function name="SpreadsheetViewerPluginInfo::AlternateDisplayCreate" user="false" member="true">
+      </Function>
+      <Function name="SpreadsheetViewerPluginInfo::AlternateDisplayDestroy" user="false" member="true">
+      </Function>
+      <Function name="SpreadsheetViewerPluginInfo::AlternateDisplayClear" user="false" member="true">
+      </Function>
+      <Function name="SpreadsheetViewerPluginInfo::AlternateDisplayHide" user="false" member="true">
+      </Function>
+      <Function name="SpreadsheetViewerPluginInfo::AlternateDisplayShow" user="false" member="true">
+      </Function>
+      <Function name="SpreadsheetViewerPluginInfo::AlternateDisplayIconify" user="false" member="true">
+      </Function>
+      <Function name="SpreadsheetViewerPluginInfo::AlternateDisplayDeIconify" user="false" member="true">
+      </Function>
+      <Function name="SpreadsheetViewerEnginePluginInfo::PrivateSetPlotAtts" user="true" member="true" access="private">
+      </Function>
+      <Function name="SpreadsheetViewerEnginePluginInfo::Permits2DViewScaling" user="false" member="true">
+      </Function>
+      <Function name="ProcessOldVersions" user="true" member="true">
+      </Function>
+      <Include file="header" quoted="false">
+        PlaneAttributes.h
+      </Include>
+      <Include file="header" quoted="false">
+        PickAttributes.h
+      </Include>
+      <Include file="header" quoted="false">
+        math.h
+      </Include>
+    </Attribute>
+  </Plugin>

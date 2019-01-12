@@ -1,0 +1,45 @@
+Target: xml2sim
+Code: simv2_SpeciesMetaData_addSpeciesName
+Prefix:
+    if(simv2_ObjectType(val) != VISIT_NAMELIST)
+    {
+        VisItError("Only NameList objects can be inserted as species names");
+        return VISIT_ERROR;
+    }
+Postfix:
+
+Function: simv2_SpeciesMetaData_check
+Declaration: SIMV2_API int simv2_SpeciesMetaData_check(visit_handle);
+Definition:
+int
+simv2_SpeciesMetaData_check(visit_handle h)
+{
+    VisIt_SpeciesMetaData *obj = GetObject(h, "simv2_SpeciesMetaData_check");
+    int retval = VISIT_ERROR;
+    if(obj != NULL)
+    {
+        if(obj->name == "")
+        {
+            VisItError("SpeciesMetaData needs a name");
+            return VISIT_ERROR;
+        }
+        if(obj->meshName == "")
+        {
+            VisItError("SpeciesMetaData needs a mesh name");
+            return VISIT_ERROR;
+        }
+        if(obj->materialName == "")
+        {
+            VisItError("SpeciesMetaData needs a material name");
+            return VISIT_ERROR;
+        }
+        if(obj->speciesNames.empty())
+        {
+            VisItError("SpeciesMetaData needs species name lists");
+            return VISIT_ERROR;
+        }
+        retval = VISIT_OKAY;
+    }
+    return retval;
+}
+

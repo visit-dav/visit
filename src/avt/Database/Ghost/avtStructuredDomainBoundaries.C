@@ -1,0 +1,4308 @@
+/*****************************************************************************
+*
+* Copyright (c) 2000 - 2018, Lawrence Livermore National Security, LLC
+* Produced at the Lawrence Livermore National Laboratory
+* LLNL-CODE-442911
+* All rights reserved.
+*
+* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
+* full copyright notice is contained in the file COPYRIGHT located at the root
+* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
+*
+* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
+* modification, are permitted provided that the following conditions are met:
+*
+*  - Redistributions of  source code must  retain the above  copyright notice,
+*    this list of conditions and the disclaimer below.
+*  - Redistributions in binary form must reproduce the above copyright notice,
+*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
+*    documentation and/or other materials provided with the distribution.
+*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
+*    be used to endorse or promote products derived from this software without
+*    specific prior written permission.
+*
+* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
+* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
+* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
+* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
+* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
+* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
+* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
+* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
+* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
+* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
+* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
+* DAMAGE.
+*
+*****************************************************************************/
+
+// ************************************************************************* //
+//                       avtStructuredDomainBoundaries.C                     //
+// ************************************************************************* //
+
+#include <avtStructuredDomainBoundaries.h>
+
+#include <algorithm>
+
+#include <vtkCellData.h>
+#include <vtkFloatArray.h>
+#include <vtkDoubleArray.h>
+#include <vtkInformation.h>
+#include <vtkIntArray.h>
+#include <vtkPointData.h>
+#include <vtkRectilinearGrid.h>
+#include <vtkStreamingDemandDrivenPipeline.h>
+#include <vtkStructuredGrid.h>
+#include <vtkUnsignedCharArray.h>
+
+#include <avtGhostData.h>
+#include <avtIntervalTree.h>
+#include <avtMaterial.h>
+#include <avtMixedVariable.h>
+#include <avtParallel.h>
+
+#include <BadIndexException.h>
+#include <DebugStream.h>
+#include <ImproperUseException.h>
+#include <TimingsManager.h>
+#include <VisItException.h>
+
+
+#ifdef PARALLEL
+#include <mpi.h>
+#endif
+
+
+using   std::string;
+using   std::vector;
+using   std::sort;
+
+// ----------------------------------------------------------------------------
+//                            static data members
+// ----------------------------------------------------------------------------
+
+bool avtStructuredDomainBoundaries::createGhostsForTIntersections = true;
+
+// ----------------------------------------------------------------------------
+//                            private helper methods
+// ----------------------------------------------------------------------------
+
+#ifdef PARALLEL
+template <class T> MPI_Datatype GetMPIDataType();
+template <>        MPI_Datatype GetMPIDataType<int>()    { return MPI_INT;  }
+template <>        MPI_Datatype GetMPIDataType<float>()  { return MPI_FLOAT;}
+template <>        MPI_Datatype GetMPIDataType<double>() { return MPI_DOUBLE;}
+template <>        MPI_Datatype GetMPIDataType<unsigned char>()  { return MPI_UNSIGNED_CHAR;}
+#endif
+
+// ****************************************************************************
+//  Method:  avtStructuredDomainBoundaries::CreateDomainToProcessorMap
+//
+//  Purpose:
+//    Create an array of (ndomains) integers with the rank of the processor
+//    (0..nproc-1) which owns each domain, or -1 if no processor owns it.
+//
+//  Arguments:
+//    domainNum    an array of domain numbers owned by the current processor
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    November 20, 2001
+//
+//  Modifications:
+//
+//    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
+//    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
+// ****************************************************************************
+vector<int>
+avtStructuredDomainBoundaries::CreateDomainToProcessorMap(const vector<int> &domainNum)
+{
+    // get the processor rank
+    int rank = 0;
+#ifdef PARALLEL
+    MPI_Comm_rank(VISIT_MPI_COMM, &rank);
+#endif
+
+    // find the number of domains
+    int ntotaldomains = (int)wholeBoundary.size();
+
+    // create the map
+    vector<int> domain2proc(ntotaldomains, -1);
+    for (size_t d=0; d<domainNum.size(); d++)
+        domain2proc[domainNum[d]] = rank;
+#ifdef PARALLEL
+    vector<int> domain2proc_tmp(domain2proc);
+    MPI_Allreduce(&domain2proc_tmp[0], &domain2proc[0], ntotaldomains, MPI_INT,
+                  MPI_MAX, VISIT_MPI_COMM);
+#endif
+
+    return domain2proc;
+}
+
+// ****************************************************************************
+//  Method: avtStructuredDomainBoundaries::CreateCurrentDomainBoundaryInformation
+//
+//  Purpose:
+//    Create the boundaries appropriate for the current domain selection.
+//
+//  Arguments:
+//    domain2proc   the map of domains to processors
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    November 20, 2001
+//
+//  Modifications:
+//
+//    Hank Childs, Mon Jun 27 10:02:55 PDT 2005
+//    Added timing info.
+//
+//    Hank Childs, Wed Jul  6 06:50:55 PDT 2005
+//    Add argument to DeleteNeighbor.
+//
+// ****************************************************************************
+void
+avtStructuredDomainBoundaries::CreateCurrentDomainBoundaryInformation(
+                                                const vector<int> &domain2proc)
+{
+    int t0 = visitTimer->StartTimer();
+    boundary = wholeBoundary;
+    for (size_t i=0; i<wholeBoundary.size(); i++)
+    {
+        Boundary &wbi = wholeBoundary[i];
+        if (domain2proc[i] < 0)
+        {
+            boundary[i].neighbors.clear();
+            boundary[i].domain = -1;
+            continue;
+        }
+
+        for (size_t j=0; j<wbi.neighbors.size(); j++)
+        {
+            if (domain2proc[wbi.neighbors[j].domain] < 0)
+                boundary[i].DeleteNeighbor(wbi.neighbors[j].domain, boundary);
+        }
+    }
+
+    visitTimer->StopTimer(t0, "avtStructuredDomainBoundaries::CurrentDBI");
+}
+
+// ****************************************************************************
+//  Method:  BoundaryHelperFunctions::InitializeBoundaryData
+//
+//  Purpose:
+//    Allocate some temporary storage structure for the boundary data.
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    November 21, 2001
+//
+//  Modifications:
+//    Jeremy Meredith, Thu Dec 13 11:54:58 PST 2001
+//    Templatized this function.
+//
+// ****************************************************************************
+template <class T>
+T***
+BoundaryHelperFunctions<T>::InitializeBoundaryData()
+{
+    T ***data = new T**[sdb->boundary.size()];
+    for (size_t b = 0; b < sdb->boundary.size(); b++)
+    {
+        Boundary *bi = &sdb->boundary[b];
+        data[b] = new T*[bi->neighbors.size()];
+        for (size_t n = 0; n < bi->neighbors.size(); n++)
+            data[b][n] = NULL;
+    }
+    return data;
+}
+
+// ****************************************************************************
+//  Method:  BoundaryHelperFunctions::FillBoundaryData
+//
+//  Purpose:
+//    Fill the temporary boundary data from a single domain, allocating
+//    the actual data storage array.
+//
+//  Arguments:
+//    d1             the domain number
+//    olddata        the mesh-sized array containing the original data
+//    bnddata        the temporary boundary data
+//    isPointData    true if this is node-centered, false if cell-centered
+//    ncomp          1 for scalar data, >1 for vector data
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    November 21, 2001
+//
+//  Modifications:
+//    Jeremy Meredith, Thu Dec 13 11:54:58 PST 2001
+//    Templatized this function.
+//
+//    Hank Childs, Wed Jul  6 06:50:55 PDT 2005
+//    Instead of calculating index into domain's neighbor list in a non-robust
+//    way, use the "match", which is already pre-computed by the client for
+//    this purpose.
+//
+//    Hank Childs, Tue Jan  4 13:35:56 PST 2011
+//    Add support for asymmetric relationships (which occur at coarse/fine
+//    AMR boundaries).
+//
+//    Cyrus Harrison, Tue Dec 22 15:39:48 PST 2015
+//    When match index == -1, find match index instead of using a stored index.
+//
+// ****************************************************************************
+template <class T>
+void
+BoundaryHelperFunctions<T>::FillBoundaryData(int      d1,
+                                                const T *olddata,
+                                                T     ***bnddata,
+                                                bool     isPointData,
+                                                int      ncomp)
+{
+    Boundary *bi = &sdb->boundary[d1];
+    for (size_t n = 0; n < bi->neighbors.size(); n++)
+    {
+        Neighbor *n1 = &bi->neighbors[n];
+        int d2 = n1->domain;
+        if (n1->neighbor_rel == DONOR_NEIGHBOR)
+        {
+            // d2 is a donor to d1.  Don't send it our data.
+            continue;
+        }
+        T *t = NULL;
+        if (isPointData)
+            t = new T[n1->npts * ncomp];
+        else
+            t = new T[n1->ncells * ncomp];
+        bnddata[d1][n] = t;
+
+        int mi = n1->match;
+        // local dbi's case doesn't use an explicit match index
+        if(mi == -1)
+        {
+            // find the match index ourselves
+            mi = FindMatchIndex(d1,d2);
+        }
+
+        Neighbor *n2 = &(sdb->boundary[d2].neighbors[mi]);
+        int *n2extents = (isPointData ? n2->nextents : n2->zextents);
+        int bndindex = 0;
+        for (int k=n2extents[4]; k<=n2extents[5]; k++)
+        {
+            for (int j=n2extents[2]; j<=n2extents[3]; j++)
+            {
+                for (int i=n2extents[0]; i<=n2extents[1]; i++)
+                {
+                    int oldindex;
+                    if (isPointData)
+                        oldindex = bi->TranslatedPointIndex(n2,n1, i,j,k);
+                    else
+                        oldindex = bi->TranslatedCellIndex(n2,n1, i,j,k);
+                    for (int c=0; c<ncomp; c++)
+                    {
+                        bnddata[d1][n][bndindex*ncomp + c] = olddata[oldindex*ncomp + c];
+                    }
+                    bndindex++;
+                }
+            }
+        }
+    }
+}
+
+// ****************************************************************************
+//  Method:  BoundaryHelperFunctions::FillRectilinearBoundaryData
+//
+//  Purpose:
+//    Fill the temporary boundary data from the coordinates of a single
+//    rectilinear domain, as well as allocating the actual data storage array.
+//
+//  Arguments:
+//    d1             the domain number
+//    x              the x-coordinates
+//    y              the y-coordinates
+//    z              the z-coordinates
+//    bnddata        the temporary boundary data
+//
+//  Programmer:  Hank Childs
+//  Creation:    November 10, 2003
+//
+//  Modifications:
+//
+//    Hank Childs, Thu Nov 13 08:56:18 PST 2003
+//    Removed unused variables.
+//
+//    Hank Childs, Wed Jul  6 06:50:55 PDT 2005
+//    Instead of calculating index into domain's neighbor list in a non-robust
+//    way, use the "match", which is already pre-computed by the client for
+//    this purpose.
+//
+//    Cyrus Harrison, Tue Dec 22 15:39:48 PST 2015
+//    When match index == -1, find match index instead of using a stored index.
+//
+// ****************************************************************************
+template <class T>
+void
+BoundaryHelperFunctions<T>::FillRectilinearBoundaryData(int      d1,
+                                                        const T *x,
+                                                        const T *y,
+                                                        const T *z,
+                                                        T     ***bnddata)
+{
+    Boundary *bi = &sdb->boundary[d1];
+    int *oldbiextents = bi->oldnextents;
+    int nIold = oldbiextents[1] - oldbiextents[0] + 1;
+    int nJold = oldbiextents[3] - oldbiextents[2] + 1;
+    int nKold = oldbiextents[5] - oldbiextents[4] + 1;
+    for (int n = 0; n < bi->neighbors.size(); n++)
+    {
+        Neighbor *n1 = &bi->neighbors[n];
+        bnddata[d1][n] = new T[n1->npts*3];
+
+        int d2 = n1->domain;
+
+        int mi = n1->match;
+        // local dbi's case doesn't use an explicit match index
+        if(mi == -1)
+        {
+            // find the match index ourselves
+            mi = FindMatchIndex(d1,d2);
+        }
+
+        // get the other neis list
+        Neighbor *n2 = &(sdb->boundary[d2].neighbors[mi]);
+
+
+        int *n2extents = n2->nextents;
+        int bndindex = 0;
+        for (int k=n2extents[4]; k<=n2extents[5]; k++)
+        {
+            for (int j=n2extents[2]; j<=n2extents[3]; j++)
+            {
+                for (int i=n2extents[0]; i<=n2extents[1]; i++)
+                {
+                    int ptId = bi->TranslatedPointIndex(n2, n1, i, j, k);
+                    int oldI = (ptId % nIold);
+                    int oldJ = ((ptId/nIold) % nJold);
+                    int oldK = ((ptId/(nIold*nJold)) % nKold);
+                    bnddata[d1][n][bndindex*3 + 0] = x[oldI];
+                    bnddata[d1][n][bndindex*3 + 1] = y[oldJ];
+                    bnddata[d1][n][bndindex*3 + 2] = z[oldK];
+                    bndindex++;
+                }
+            }
+        }
+    }
+}
+
+// ****************************************************************************
+//  Method:  BoundaryHelperFunctions::FillMixedBoundaryData
+//
+//  Purpose:
+//    Fill the temporary mixed boundary data from a single domain, allocating
+//    the actual data storage array.
+//
+//  Arguments:
+//    d1             the domain number
+//    oldmat         the old material
+//    olddata        the mesh-sized array containing the original data
+//    bnddata        the temporary boundary data
+//    bndmixmat      the temporary boundary material numbers
+//    bndmixzone     the temporary boundary zone numbers
+//    bndmixnext     the temporary boundary zone next index
+//    bndmixlen      the temporary boundary mixlen
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    November 21, 2001
+//
+//  Note:  bnddata, bndmixmat, and bndmixzone may each be NULL.  
+//         olddata may be NULL as well as long as the mixlen is zero.
+//
+//  Modifications:
+//
+//    Hank Childs, Wed Jul  6 06:50:55 PDT 2005
+//    Instead of calculating index into domain's neighbor list in a non-robust
+//    way, use the "match", which is already pre-computed by the client for
+//    this purpose.
+//
+//    Jeremy Meredith, Thu Aug 14 10:24:12 EDT 2014
+//    Added ability to fill values from the 'mixnext' array for mixed
+//    boundary data.  We can't reliably use any other information (like a
+//    change in zone ID) to determine when a segment of mix data has ended.
+//
+//    Jeremy Meredith, Thu Aug 14 10:26:56 EDT 2014
+//    Skip generating neighbor data for a donor relationship.  It won't
+//    get used anyway.
+//
+// ****************************************************************************
+template <class T>
+void
+BoundaryHelperFunctions<T>::FillMixedBoundaryData(int          d1,
+                                                     avtMaterial *oldmat,
+                                                     const T     *olddata,
+                                                     T         ***bnddata,
+                                                     int       ***bndmixmat,
+                                                     int       ***bndmixzone,
+                                                     int       ***bndmixnext,
+                                                     vector<int> &bndmixlen)
+{
+    Boundary *bi = &sdb->boundary[d1];
+    int k;
+
+    for (size_t n = 0; n < bi->neighbors.size(); n++)
+    {
+        Neighbor *n1 = &bi->neighbors[n];
+        int d2 = n1->domain;
+        if (n1->neighbor_rel == DONOR_NEIGHBOR)
+        {
+            // d2 is a donor to d1.  Don't send it our data.
+            continue;
+        }
+        int mi = n1->match;
+        Neighbor *n2 = &(sdb->boundary[d2].neighbors[mi]);
+        int *n2extents = n2->zextents;
+
+        for (k=n2extents[4]; k<=n2extents[5]; k++)
+        {
+            for (int j=n2extents[2]; j<=n2extents[3]; j++)
+            {
+                for (int i=n2extents[0]; i<=n2extents[1]; i++)
+                {
+                    int oldindex = bi->TranslatedCellIndex(n2,n1, i,j,k);
+                    int oldmatno = oldmat->GetMatlist()[oldindex];
+                    if (oldmatno < 0)
+                    {
+                        int oldmixindex = -oldmatno - 1;
+                        while (oldmixindex >= 0)
+                        {
+                            oldmixindex = oldmat->GetMixNext()[oldmixindex] - 1;
+                            bndmixlen[n]++;
+                        }
+                    }
+                }
+            }
+        }
+
+        if (bnddata)
+            bnddata[d1][n]    = new T[bndmixlen[n]];
+        if (bndmixmat)
+            bndmixmat[d1][n]  = new int[bndmixlen[n]];
+        if (bndmixzone)
+            bndmixzone[d1][n] = new int[bndmixlen[n]];
+        if (bndmixnext)
+            bndmixnext[d1][n] = new int[bndmixlen[n]];
+
+        int bndindex = 0;
+        for (k=n2extents[4]; k<=n2extents[5]; k++)
+        {
+            for (int j=n2extents[2]; j<=n2extents[3]; j++)
+            {
+                for (int i=n2extents[0]; i<=n2extents[1]; i++)
+                {
+                    int oldindex;
+                    oldindex = bi->TranslatedCellIndex(n2,n1, i,j,k);
+                    int oldmatno = oldmat->GetMatlist()[oldindex];
+                    if (oldmatno < 0)
+                    {
+                        int oldmixindex = -oldmatno - 1;
+                        while (oldmixindex >= 0)
+                        {
+                            if (bnddata)
+                                bnddata[d1][n][bndindex]    = olddata[oldmixindex];
+                            if (bndmixmat)
+                                bndmixmat[d1][n][bndindex]  = oldmat->GetMixMat()[oldmixindex];
+                            if (bndmixzone)
+                                bndmixzone[d1][n][bndindex] = oldmat->GetMixZone()[oldmixindex];
+                            if (bndmixnext)
+                                bndmixnext[d1][n][bndindex] = oldmat->GetMixNext()[oldmixindex];
+                            oldmixindex = oldmat->GetMixNext()[oldmixindex] - 1;
+                            bndindex++;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+// ****************************************************************************
+//  Method:  BoundaryHelperFunctions::FindMatchIndex
+//
+//  Purpose:
+//    Finds the match index of the neighbor for a given source domain.
+//
+//
+//  Programmer:  Cyrus Harrison
+//  Creation:    Thu Apr 18 11:02:25 PDT 2013
+//
+//  Modifications:
+//
+// ****************************************************************************
+template <class T>
+int
+BoundaryHelperFunctions<T>::FindMatchIndex(int src_domain,
+                                           int nei_domain)
+{
+
+    int res_match = -1;
+    Neighbor *n = NULL;
+    for(int i=0;n == NULL && i < sdb->boundary[nei_domain].neighbors.size();i++)
+    {
+        Neighbor *n_test = &(sdb->boundary[nei_domain].neighbors[i]);
+        if(n_test->domain == src_domain)
+        {
+            n = n_test;
+            res_match = i;
+        }
+    }
+    if (res_match == -1)
+            EXCEPTION1(VisItException,"Bad Neighbor Index");
+
+    return res_match;
+}
+
+// ****************************************************************************
+//  Method:  BoundaryHelperFunctions::CommunicateBoundaryData
+//
+//  Purpose:
+//    Send data needed by other processors to those processors, and receive
+//    any boundary data we still need.
+//
+//  Arguments:
+//    domain2proc    the map of domains to processors
+//    bnddata        the temporary boundary data
+//    isPointData    true if this is node-centered, false if cell-centered
+//    ncomp          1 for scalar data, >1 for vector data
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    November 21, 2001
+//
+//  Modifications:
+//    Jeremy Meredith, Thu Dec 13 11:54:58 PST 2001
+//    Templatized this function.
+//
+//    Mark C. Miller, Wed Jun  9 21:50:12 PDT 2004
+//    Eliminated use of MPI_ANY_TAG and modified to use GetUniqueMessageTags
+//
+//    Hank Childs, Thu Jun 23 10:27:01 PDT 2005
+//    Re-wrote using all-to-all for efficiency.
+//
+//    Brad Whitlock, Mon Nov 7 09:26:56 PDT 2005
+//    I made it use MPI_Datatype for the return type of GetMPIDataType so
+//    it can build with LAM.
+//
+//    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
+//    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
+//
+//    David Camp, Wed Jul 13 12:53:52 PDT 2011
+//    Fixed a memory leak, not deleting tmp_ptr
+//
+//    Hank Childs, Fri Dec 16 15:10:28 PST 2011
+//    Fix problem with communication across refinement levels.
+//
+//    Jeremy Meredith, Thu Apr 12 18:00:17 EDT 2012
+//    Added timings for each phase of ghost zone communication.
+//
+//    Jeremy Meredith, Wed May  2 17:23:18 EDT 2012
+//    Record total global alltoall communication in num items and num kbytes.
+//
+// ****************************************************************************
+template <class T>
+void
+BoundaryHelperFunctions<T>::CommunicateBoundaryData(const vector<int> &domain2proc,
+                                                       T     ***bnddata,
+                                                       bool     isPointData,
+                                                       int      ncomp)
+{
+    int timer_CommunicateGhost = visitTimer->StartTimer();
+#ifdef PARALLEL
+    MPI_Datatype mpi_datatype = GetMPIDataType<T>();
+
+    int rank;
+    MPI_Comm_rank(VISIT_MPI_COMM, &rank);
+
+    int nprocs;
+    MPI_Comm_size(VISIT_MPI_COMM, &nprocs);
+
+    int *sendcount = new int[nprocs];
+    int *recvcount = new int[nprocs];
+    int i;
+    for (i = 0 ; i < nprocs ; i++)
+    {
+        sendcount[i] = 0;
+        recvcount[i] = 0;
+    }
+
+    for (size_t d1 = 0; d1 < sdb->boundary.size(); d1++)
+    {
+        Boundary *bi = &sdb->boundary[d1];
+
+        // find matching neighbors
+        for (size_t n=0; n<bi->neighbors.size(); n++)
+        {
+            Neighbor *n1 = &bi->neighbors[n];
+            int d2 = n1->domain;
+            if (n1->neighbor_rel == DONOR_NEIGHBOR)
+                continue;
+            int size = ncomp * (isPointData ? n1->npts : n1->ncells);
+
+            if (domain2proc[d1] != domain2proc[d2])
+            {
+                if (domain2proc[d1] == rank)
+                    sendcount[domain2proc[d2]] += size;
+                else if (domain2proc[d2] == rank)
+                    recvcount[domain2proc[d1]] += size;
+            }
+        }
+    }
+
+    int *senddisp = new int[nprocs];
+    int *recvdisp = new int[nprocs];
+    senddisp[0] = recvdisp[0] = 0;
+    for (i = 1 ; i < nprocs ; i++)
+    {
+        senddisp[i] = senddisp[i-1] + sendcount[i-1];
+        recvdisp[i] = recvdisp[i-1] + recvcount[i-1];
+    }
+    int total_send = 0;
+    int total_recv = 0;
+    for (i = 0 ; i < nprocs ; i++)
+    {
+        total_send += sendcount[i];
+        total_recv += recvcount[i];
+    }
+
+    T *sendbuff = new T[total_send];
+    T *recvbuff = new T[total_recv];
+
+    T **tmp_ptr = new T*[nprocs];
+    for (i = 0 ; i < nprocs ; i++)
+        tmp_ptr[i] = sendbuff + senddisp[i];
+    for (size_t d1 = 0; d1 < sdb->boundary.size(); d1++)
+    {
+        Boundary *bi = &sdb->boundary[d1];
+
+        // find matching neighbors
+        for (size_t n=0; n<bi->neighbors.size(); n++)
+        {
+            Neighbor *n1 = &bi->neighbors[n];
+            int d2 = n1->domain;
+            if (n1->neighbor_rel == DONOR_NEIGHBOR)
+                continue;
+            int size = ncomp * (isPointData ? n1->npts : n1->ncells);
+
+            if (domain2proc[d1] != domain2proc[d2])
+                if (domain2proc[d1] == rank)
+                    for (i = 0 ; i < size ; i++)
+                    {
+                        int p2 = domain2proc[d2];
+                        *(tmp_ptr[p2]) = bnddata[d1][n][i];
+                        (tmp_ptr[p2])++;
+                    }
+        }
+    }
+
+    MPI_Alltoallv(sendbuff, sendcount, senddisp, mpi_datatype,
+                  recvbuff, recvcount, recvdisp, mpi_datatype,
+                  VISIT_MPI_COMM);
+
+    for (i = 0 ; i < nprocs ; i++)
+        tmp_ptr[i] = recvbuff + recvdisp[i];
+    for (size_t d1 = 0; d1 < sdb->boundary.size(); d1++)
+    {
+        Boundary *bi = &sdb->boundary[d1];
+
+        // find matching neighbors
+        for (size_t n=0; n<bi->neighbors.size(); n++)
+        {
+            Neighbor *n1 = &bi->neighbors[n];
+            int d2 = n1->domain;
+            if (n1->neighbor_rel == DONOR_NEIGHBOR)
+                continue;
+            int size = ncomp * (isPointData ? n1->npts : n1->ncells);
+
+            if (domain2proc[d1] != domain2proc[d2])
+            {
+                if (domain2proc[d2] == rank)
+                {
+                    bnddata[d1][n] = new T[size];
+                    for (i = 0 ; i < size ; i++)
+                    {
+                        int p2 = domain2proc[d1];
+                        bnddata[d1][n][i] = *(tmp_ptr[p2]);
+                        (tmp_ptr[p2])++;
+                    }
+                }
+            }
+        }
+    }
+    MPI_Barrier(VISIT_MPI_COMM);
+
+    delete [] sendbuff;
+    delete [] recvbuff;
+    delete [] senddisp;
+    delete [] recvdisp;
+    delete [] sendcount;
+    delete [] recvcount;
+    delete [] tmp_ptr;
+
+    // record how many bytes were exchanged globally
+    long global_items_exchanged = total_send;
+    SumLongAcrossAllProcessors(global_items_exchanged);
+    long global_bytes_exchanged = (global_items_exchanged * sizeof(T) + 512) / 1024;
+#else
+    long global_items_exchanged = 0;
+    long global_bytes_exchanged = 0;
+#endif
+    char msg[256];
+    sprintf(msg, "Ghost Zone Generation phase 3: Communicate "
+            "(global %ld items, %ld kB)",
+            global_items_exchanged,
+            global_bytes_exchanged);
+
+    visitTimer->StopTimer(timer_CommunicateGhost, msg);
+}
+
+// ****************************************************************************
+//  Method:  BoundaryHelperFunctions::CommunicateMixedBoundaryData
+//
+//  Purpose:
+//    Communicate the boundary data for mixed cells.
+//
+//  Arguments:
+//    domain2proc    the map of domains to processors
+//    bnddata        the temporary boundary data
+//    bndmixmat      the temporary boundary material numbers
+//    bndmixzone     the temporary boundary zone numbers
+//    bndmixnext     the temporary boundary next index
+//    bndmixlen      the temporary boundary mixlen
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    November 21, 2001
+//
+//  Note:  bndmixdata, bndmixmat, and bndmixzone may each be NULL
+//
+//  Modifications:
+//
+//    Mark C. Miller, Wed Jun  9 21:50:12 PDT 2004
+//    Eliminated use of MPI_ANY_TAG and modified to use GetUniqueMessageTags
+//
+//    Hank Childs, Wed Jul  6 06:50:55 PDT 2005
+//    Instead of calculating index into domain's neighbor list in a non-robust
+//    way, use the "match", which is already pre-computed by the client for
+//    this purpose.
+//
+//    Brad Whitlock, Mon Nov 7 09:26:56 PDT 2005
+//    I made it use MPI_Datatype for the return type of GetMPIDataType so
+//    it can build with LAM.
+//
+//    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
+//    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
+//
+//    Jeremy Meredith, Thu Aug 14 10:24:12 EDT 2014
+//    Added ability to communicate values from the 'mixnext' array for mixed
+//    boundary data.  We can't reliably use any other information (like a
+//    change in zone ID) to determine when a segment of mix data has ended.
+//
+// ****************************************************************************
+template <class T>
+void
+BoundaryHelperFunctions<T>::CommunicateMixedBoundaryData(const vector<int> &domain2proc,
+                                                            T     ***bnddata,
+                                                            int   ***bndmixmat,
+                                                            int   ***bndmixzone,
+                                                            int   ***bndmixnext,
+                                                            vector< vector<int> > &bndmixlen)
+{
+#ifdef PARALLEL
+
+    MPI_Datatype mpi_datatype = GetMPIDataType<T>();
+    MPI_Status stat;
+
+    int rank;
+    MPI_Comm_rank(VISIT_MPI_COMM, &rank);
+
+    int tags[5];
+    GetUniqueMessageTags(tags, 5);
+    int mpiMsgTag        = tags[0];
+    int mpiBndDataTag    = tags[1];
+    int mpiBndMixMatTag  = tags[2];
+    int mpiBndMixZoneTag = tags[3];
+    int mpiBndMixNextTag = tags[4];
+
+    for (size_t d1 = 0; d1 < sdb->boundary.size(); d1++)
+    {
+        Boundary *bi = &sdb->boundary[d1];
+
+        // find matching neighbors
+        for (size_t n=0; n<bi->neighbors.size(); n++)
+        {
+            Neighbor *n1 = &bi->neighbors[n];
+            int d2 = n1->domain;
+
+            if (domain2proc[d1] != domain2proc[d2])
+            {
+                if (domain2proc[d1] == rank)
+                {
+                    MPI_Send(&(bndmixlen[d1][n]), 1, MPI_INT,
+                             domain2proc[d2], mpiMsgTag, VISIT_MPI_COMM);
+                }
+                else if (domain2proc[d2] == rank)
+                {
+                    MPI_Recv(&(bndmixlen[d1][n]), 1, MPI_INT,
+                             domain2proc[d1], mpiMsgTag, VISIT_MPI_COMM, &stat);
+                }
+            }
+        }
+    }
+
+    for (size_t d1 = 0; d1 < sdb->boundary.size(); d1++)
+    {
+        Boundary *bi = &sdb->boundary[d1];
+
+        // find matching neighbors
+        for (size_t n=0; n<bi->neighbors.size(); n++)
+        {
+            Neighbor *n1 = &bi->neighbors[n];
+            int d2 = n1->domain;
+            int size = bndmixlen[d1][n];
+
+            if (domain2proc[d1] != domain2proc[d2])
+            {
+            
+                if (domain2proc[d1] == rank)
+                {
+                    if (bnddata)
+                        MPI_Send(bnddata[d1][n], size, mpi_datatype,
+                                 domain2proc[d2], mpiBndDataTag, VISIT_MPI_COMM);
+                    if (bndmixmat)
+                        MPI_Send(bndmixmat[d1][n], size, MPI_INT,
+                                 domain2proc[d2], mpiBndMixMatTag, VISIT_MPI_COMM);
+                    if (bndmixzone)
+                        MPI_Send(bndmixzone[d1][n], size, MPI_INT,
+                                 domain2proc[d2], mpiBndMixZoneTag, VISIT_MPI_COMM);
+                    if (bndmixnext)
+                        MPI_Send(bndmixnext[d1][n], size, MPI_INT,
+                                 domain2proc[d2], mpiBndMixNextTag, VISIT_MPI_COMM);
+                }
+                else if (domain2proc[d2] == rank)
+                {
+                    if (bnddata)
+                    {
+                        bnddata[d1][n] = new T[size];
+                        MPI_Recv(bnddata[d1][n], size, mpi_datatype,
+                                 domain2proc[d1], mpiBndDataTag, VISIT_MPI_COMM, &stat);
+                    }
+                    if (bndmixmat)
+                    {
+                        bndmixmat[d1][n] = new int[size];
+                        MPI_Recv(bndmixmat[d1][n], size, MPI_INT,
+                                 domain2proc[d1], mpiBndMixMatTag, VISIT_MPI_COMM, &stat);
+                    }
+                    if (bndmixzone)
+                    {
+                        bndmixzone[d1][n] = new int[size];
+                        MPI_Recv(bndmixzone[d1][n], size, MPI_INT,
+                                 domain2proc[d1], mpiBndMixZoneTag, VISIT_MPI_COMM, &stat);
+                    }
+                    if (bndmixnext)
+                    {
+                        bndmixnext[d1][n] = new int[size];
+                        MPI_Recv(bndmixnext[d1][n], size, MPI_INT,
+                                 domain2proc[d1], mpiBndMixNextTag, VISIT_MPI_COMM, &stat);
+                    }
+                }
+            }
+        }
+    }
+
+    MPI_Barrier(VISIT_MPI_COMM);
+#endif
+}
+
+// ****************************************************************************
+//  Method:  BoundaryHelperFunctions::CopyOldValues
+//
+//  Purpose:
+//    Copy the values from the old mesh's data array to the new one.
+//
+//  Arguments:
+//    d1             the domain number
+//    olddata        the mesh-sized array which holds the original data
+//    newdata        the mesh-sized array which holds the new data
+//    isPointData    true if this is node-centered, false if cell-centered
+//    ncomp          1 for scalar data, >1 for vector data
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    November 21, 2001
+//
+//  Modifications:
+//    Jeremy Meredith, Thu Dec 13 11:54:58 PST 2001
+//    Templatized this function.
+//
+// ****************************************************************************
+template <class T>
+void
+BoundaryHelperFunctions<T>::CopyOldValues(int      d1,
+                                             const T *olddata,
+                                             T       *newdata,
+                                             bool     isPointData,
+                                             int      ncomp)
+{
+    Boundary *bi = &sdb->boundary[d1];
+    int *biextents = (isPointData ? bi->oldnextents : bi->oldzextents);
+
+    for (int k = biextents[4]; k <= biextents[5]; k++)
+    {
+        for (int j = biextents[2]; j <= biextents[3]; j++)
+        {
+            for (int i = biextents[0]; i <= biextents[1]; i++)
+            {
+                int oldindex, newindex;
+                if (isPointData)
+                {
+                    oldindex = bi->OldPointIndex(i,j,k);
+                    newindex = bi->NewPointIndex(i,j,k);
+                }
+                else
+                {
+                    oldindex = bi->OldCellIndex(i,j,k);
+                    newindex = bi->NewCellIndex(i,j,k);
+                }
+
+                for (int c=0; c<ncomp; c++)
+                    newdata[newindex*ncomp + c] = olddata[oldindex*ncomp + c];
+            }
+        }
+    }
+}
+
+// ****************************************************************************
+//  Method:  BoundaryHelperFunctions::CopyOldRectilinearValues
+//
+//  Purpose:
+//    Copy the values from the old rectilinear mesh's data array to the new
+//    one.
+//
+//  Arguments:
+//    d1             the domain number
+//    olddata        the floats for a certain dimension
+//    newdata        the floats for a certain dimension
+//    comp_num       0=X, 1=Y, 2=Z
+//
+//  Programmer:  Hank Childs
+//  Creation:    November 11, 2003 
+//
+// ****************************************************************************
+template <class T>
+void
+BoundaryHelperFunctions<T>::CopyOldRectilinearValues(int d1, const T *olddata, 
+                                                     T *newdata, int comp_num)
+{
+    Boundary *bi = &sdb->boundary[d1];
+    int *oldbiextents = bi->oldnextents;
+    int *newbiextents = bi->newnextents;
+    int nIold = oldbiextents[1] - oldbiextents[0] + 1;
+    int nJold = oldbiextents[3] - oldbiextents[2] + 1;
+    int nKold = oldbiextents[5] - oldbiextents[4] + 1;
+    int nInew = newbiextents[1] - newbiextents[0] + 1;
+    int nJnew = newbiextents[3] - newbiextents[2] + 1;
+    int nKnew = newbiextents[5] - newbiextents[4] + 1;
+    
+    if (comp_num == 0)
+    {
+        //
+        // We want to copy over all of the X-values.  Since we have existing
+        // infrastructure that will translate indices for us in terms of
+        // 3-tuples (i,j,k), use that infrastructure.  Copy over all of the
+        // (I, j-min, k-min), where I goes from i-min to i-max.
+        //
+        int j_ind = oldbiextents[2];
+        int k_ind = oldbiextents[4];
+        for (int i_ind = oldbiextents[0] ; i_ind <= oldbiextents[1] ; i_ind++)
+        {
+            int oldindex = bi->OldPointIndex(i_ind, j_ind, k_ind);
+            int newindex = bi->NewPointIndex(i_ind, j_ind, k_ind);
+            int oldI = oldindex % nIold;
+            int newI = newindex % nInew;
+            newdata[newI] = olddata[oldI]; 
+        }
+    }
+    else if (comp_num == 1)
+    {
+        int i_ind = oldbiextents[0];
+        int k_ind = oldbiextents[4];
+        for (int j_ind = oldbiextents[2] ; j_ind <= oldbiextents[3] ; j_ind++)
+        {
+            int oldindex = bi->OldPointIndex(i_ind, j_ind, k_ind);
+            int newindex = bi->NewPointIndex(i_ind, j_ind, k_ind);
+            int oldJ = (oldindex/nIold) % nJold;
+            int newJ = (newindex/nInew) % nJnew;
+            newdata[newJ] = olddata[oldJ]; 
+        }
+    }
+    else if (comp_num == 2)
+    {
+        int i_ind = oldbiextents[0];
+        int j_ind = oldbiextents[2];
+        for (int k_ind = oldbiextents[4] ; k_ind <= oldbiextents[5] ; k_ind++)
+        {
+            int oldindex = bi->OldPointIndex(i_ind, j_ind, k_ind);
+            int newindex = bi->NewPointIndex(i_ind, j_ind, k_ind);
+            int oldK = (oldindex/(nIold*nJold)) % nKold;
+            int newK = (newindex/(nInew*nJnew)) % nKnew;
+            newdata[newK] = olddata[oldK]; 
+        }
+    }
+}
+
+// ****************************************************************************
+//  Method:  BoundaryHelperFunctions::CopyOldMixedValues
+//
+//  Purpose:
+//    Copy the values from the old mesh's data array to the new one.
+//
+//  Arguments:
+//    oldmat         the old material
+//    olddata        the mixlen-sized array which holds the original data
+//    newdata        the mixlen-sized array which holds the new data
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    November 21, 2001
+//
+//  Note:  olddata may be NULL if the mixlen is zero.
+//
+// ****************************************************************************
+template <class T>
+void
+BoundaryHelperFunctions<T>::CopyOldMixedValues(avtMaterial *oldmat,
+                                                  const T     *olddata,
+                                                  T           *newdata)
+{
+    for (int i=0; i<oldmat->GetMixlen(); i++)
+        newdata[i] = olddata[i];
+}
+
+// ****************************************************************************
+//  Method:  avtStructuredDomainBoundaries::SetExistence
+//
+//  Purpose:
+//    Create a cell or node-length array containing false if a cell/node
+//    does not actually exist, true otherwise.
+//
+//  Arguments:
+//    d1             the domain number
+//    isPointData    true if this is node-centered, false if cell-centered
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    November 21, 2001
+//
+//  Modifications:
+//    Paul Selby, Tue 18 Nov 12:48:36 GMT 2014
+//    Added skip for RECIPENT_NEIGHBOR to match SetNewBoundaryData.
+//
+// ****************************************************************************
+bool*
+avtStructuredDomainBoundaries::SetExistence(int      d1,
+                                            bool     isPointData)
+{
+    Boundary *bi = &boundary[d1];
+    int       len = (isPointData ? bi->newnpts : bi->newncells);
+    bool     *exists = new bool[len];
+    for (int i=0; i<len; i++)
+        exists[i] = false;
+
+    // set the old domain's cells to exist
+    int *biextents = (isPointData ? bi->oldnextents : bi->oldzextents);
+    for (int k = biextents[4]; k <= biextents[5]; k++)
+    {
+        for (int j = biextents[2]; j <= biextents[3]; j++)
+        {
+            for (int i = biextents[0]; i <= biextents[1]; i++)
+            {
+                int index;
+                if (isPointData)
+                    index = bi->NewPointIndex(i,j,k);
+                else
+                    index = bi->NewCellIndex(i,j,k);
+                exists[index] = true;
+            }
+        }
+    }
+
+    // set any available boundary to exist
+    //  - must match SetNewBoundaryData
+    for (size_t n=0; n<bi->neighbors.size(); n++)
+    {
+        Neighbor *n1 = &bi->neighbors[n];
+        if (n1->neighbor_rel == RECIPIENT_NEIGHBOR)
+        {
+            // d2 is a recipient from d1.  Hence we don't need to copy
+            // anything, since we are setting up ghost data for d1.
+            continue;
+        }
+
+        int *n1extents = (isPointData ? n1->nextents : n1->zextents);
+        for (int k=n1extents[4]; k<=n1extents[5]; k++)
+        {
+            for (int j=n1extents[2]; j<=n1extents[3]; j++)
+            {
+                for (int i=n1extents[0]; i<=n1extents[1]; i++)
+                {
+                    int index = (isPointData ? 
+                                 bi->NewPointIndexFromNeighbor(n1, i,j,k) :
+                                 bi->NewCellIndexFromNeighbor(n1, i,j,k));
+                    if (index >= 0)
+                        exists[index] = true;
+                }
+            }
+        }
+    }
+
+    return exists;
+}
+
+// ****************************************************************************
+//  Method:  BoundaryHelperFunctions::SetNewBoundaryData
+//
+//  Purpose:
+//    Set the ghost values of the given domain using the temporary 
+//    boundary data.
+//
+//  Arguments:
+//    d1             the domain number
+//    bnddata        the temporary boundary data
+//    newdata        the mesh-sized array which holds the new data
+//    isPointData    true if this is node-centered, false if cell-centered
+//    ncomp          1 for scalar data, >1 for vector data
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    November 21, 2001
+//
+//  Modifications:
+//    Jeremy Meredith, Thu Dec 13 11:54:58 PST 2001
+//    Templatized this function.
+//
+//    Hank Childs, Wed Jul  6 06:50:55 PDT 2005
+//    Instead of calculating index into domain's neighbor list in a non-robust
+//    way, use the "match", which is already pre-computed by the client for
+//    this purpose.
+//
+//    Hank Childs, Tue Jan  4 13:35:56 PST 2011
+//    Add support for asymmetric relationships (which occur at coarse/fine
+//    AMR boundaries).
+//
+//    Cyrus Harrison, Tue Dec 22 15:39:48 PST 2015
+//    When match index == -1, find match index instead of using a stored index.
+//
+// ****************************************************************************
+template <class T>
+void
+BoundaryHelperFunctions<T>::SetNewBoundaryData(int       d1,
+                                                  T      ***bnddata,
+                                                  T        *newdata,
+                                                  bool      isPointData,
+                                                  int       ncomp)
+{
+    Boundary *bi = &sdb->boundary[d1];
+    for (size_t n=0; n<bi->neighbors.size(); n++)
+    {
+        Neighbor *n1 = &bi->neighbors[n];
+        int d2 = n1->domain;
+        if (n1->neighbor_rel == RECIPIENT_NEIGHBOR)
+        {
+            // d2 is a recipient from d1.  Hence we don't need to copy
+            // anything, since we are setting up ghost data for d1.
+            continue;
+        }
+
+        int mi = n1->match;
+        // local dbi's case doesn't use an explicit match index
+        if(mi == -1)
+        {
+            // find the match index ourselves
+            mi = FindMatchIndex(d1,d2);
+        }
+
+        T *data = bnddata[d2][mi];
+        if (!data)
+            EXCEPTION1(VisItException,"Null array");
+
+        int bndindex = 0;
+        int *n1extents = (isPointData ? n1->nextents : n1->zextents);
+        for (int k=n1extents[4]; k<=n1extents[5]; k++)
+        {
+            for (int j=n1extents[2]; j<=n1extents[3]; j++)
+            {
+                for (int i=n1extents[0]; i<=n1extents[1]; i++)
+                {
+                    int newindex = (isPointData ? 
+                                    bi->NewPointIndexFromNeighbor(n1, i,j,k) :
+                                    bi->NewCellIndexFromNeighbor(n1, i,j,k));
+                    if (newindex >= 0)
+                    {
+                        for (int c=0; c<ncomp; c++)
+                            newdata[newindex*ncomp + c] = data[bndindex*ncomp + c];
+                    }
+                    bndindex++;
+                }
+            }
+        }
+    }
+}
+
+// ****************************************************************************
+//  Method:  BoundaryHelperFunctions::SetNewRectilinearBoundaryData
+//
+//  Purpose:
+//    Set the ghost values of the given domain using the temporary 
+//    boundary data.
+//
+//  Arguments:
+//    d1             the domain number
+//    coord          the coordinates to set.
+//    newx           the new x-coordinates.
+//    newy           the new y-coordinates.
+//    newz           the new z-coordinates.
+//
+//  Programmer:  Hank Childs
+//  Creation:    November 11, 2003
+//
+//  Modifications:
+//
+//    Hank Childs, Wed Jul  6 06:50:55 PDT 2005
+//    Instead of calculating index into domain's neighbor list in a non-robust
+//    way, use the "match", which is already pre-computed by the client for
+//    this purpose.
+//
+//    Cyrus Harrison, Tue Dec 22 15:39:48 PST 2015
+//    When match index == -1, find match index instead of using a stored index.
+//
+// ****************************************************************************
+template <class T>
+void
+BoundaryHelperFunctions<T>::SetNewRectilinearBoundaryData(int d1,
+                                         T ***coord, T *newx, T *newy, T *newz)
+{
+    Boundary *bi = &sdb->boundary[d1];
+    int *newbiextents = bi->newnextents;
+    int nInew = newbiextents[1] - newbiextents[0] + 1;
+    int nJnew = newbiextents[3] - newbiextents[2] + 1;
+    int nKnew = newbiextents[5] - newbiextents[4] + 1;
+
+    for (int n=0; n<bi->neighbors.size(); n++)
+    {
+        Neighbor *n1 = &bi->neighbors[n];
+        int d2 = n1->domain;
+
+        int mi = n1->match;
+        // local dbi's case doesn't use an explicit match index
+        if(mi == -1)
+        {
+            // find the match index ourselves
+            mi = FindMatchIndex(d1,d2);
+        }
+
+        T *data = coord[d2][mi];
+        if (!data)
+            EXCEPTION1(VisItException,"Null array");
+
+        int bndindex = 0;
+        int *n1extents = n1->nextents;
+        for (int k=n1extents[4]; k<=n1extents[5]; k++)
+        {
+            for (int j=n1extents[2]; j<=n1extents[3]; j++)
+            {
+                for (int i=n1extents[0]; i<=n1extents[1]; i++)
+                {
+                    int newindex = bi->NewPointIndexFromNeighbor(n1, i,j,k);
+                    if (newindex >= 0)
+                    {
+                        int newI = (newindex % nInew);
+                        int newJ = ((newindex/nInew) % nJnew);
+                        int newK = ((newindex/(nInew*nJnew)) % nKnew);
+                        newx[newI] = data[bndindex*3 + 0];
+                        newy[newJ] = data[bndindex*3 + 1];
+                        newz[newK] = data[bndindex*3 + 2];
+                    }
+                    bndindex++;
+                }
+            }
+        }
+    }
+}
+
+// ****************************************************************************
+//  Method:  BoundaryHelperFunctions::SetNewMixedBoundaryData
+//
+//  Purpose:
+//    Set the ghost values of the mixed data for the given domain using the
+//    temporary mixed boundary data.
+//
+//  Arguments:
+//    d1             the domain number
+//    oldmat         the old material
+//    bndmixlen      the temporary boundary mixlen
+//    bnddata        the temporary boundary data
+//    bndmixmat      the temporary boundary material numbers
+//    bndmixzone     the temporary boundary zone numbers
+//    bndmixnext     the temporary boundary next index
+//    newmatlist     the new mesh-sized array which holds the matlist
+//    newdata        the new mixed array which holds the data
+//    newmixmat      the new mixed array which holds the material numbers
+//    newmixzone     the new mixed array which holds the zone numbers
+//    newmixnext     the new mixed array which holds the mix_next data
+//
+//  Output Arguments:
+//    newmixlen      the actual length of the new mixed array.
+//
+//  Note:  bndmixmat, newmixmat, newmixzone, and newmixnext may all be NULL
+//         newmixlen must be returned because until it starts out as a
+//          maximum mixlen of the new domain with ghost zones, but if we
+//          have unselected some domains, it may be much shorter
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    November 21, 2001
+//
+//  Modifications:
+//    Jeremy Meredith, Mon Oct 28 19:29:12 PST 2002
+//    Added newmixlen as an output argument.
+//
+//    Hank Childs, Wed Jul  6 06:50:55 PDT 2005
+//    Instead of calculating index into domain's neighbor list in a non-robust
+//    way, use the "match", which is already pre-computed by the client for
+//    this purpose.
+//
+//    Jeremy Meredith, Tue May  6 14:39:03 EDT 2014
+//    Like other SetNew functions, don't worry about setting new data if
+//    the neighbor relationship is recipient.
+//
+//    Jeremy Meredith, Thu Aug 14 10:24:12 EDT 2014
+//    Use a "mixnext" array to determine when the segment of mixed data
+//    has terminated.  The old way used clues like a zone number changing,
+//    but this fails if we have one zone donating mixed data to multiple
+//    to recipient zones (e.g. in the case of ghosts being communicated
+//    from a coarse to fine refinement level).  By using the mixnext array,
+//    we know directly if the segment of mixed data has ended.
+//
+// ****************************************************************************
+template <class T>
+void
+BoundaryHelperFunctions<T>::SetNewMixedBoundaryData(int       d1,
+                                                    avtMaterial *oldmat,
+                                     const vector< vector<int> > &bndmixlen,
+                                                       int    ***bndmatlist,
+                                                       T      ***bnddata,
+                                                       int    ***bndmixmat,
+                                                       int    ***bndmixzone,
+                                                       int    ***bndmixnext,
+                                                       int      *newmatlist,
+                                                       T        *newdata,
+                                                       int      *newmixmat,
+                                                       int      *newmixzone,
+                                                       int      *newmixnext,
+                                                       int      &newmixlen)
+{
+    int newmixindex = oldmat->GetMixlen();
+
+    Boundary *bi = &sdb->boundary[d1];
+    for (size_t n=0; n<bi->neighbors.size(); n++)
+    {
+        Neighbor *n1 = &bi->neighbors[n];
+        int d2 = n1->domain;
+        if (n1->neighbor_rel == RECIPIENT_NEIGHBOR)
+        {
+            // d2 is a recipient from d1.  Hence we don't need to copy
+            // anything, since we are setting up ghost data for d1.
+            continue;
+        }
+
+        int mi = n1->match;
+
+        if (!bndmatlist[d2][mi])
+            EXCEPTION1(VisItException,"Null array");
+
+        int bndindex = 0;
+        int bndmixindex = 0;
+        int *n1extents = n1->zextents;
+        for (int k=n1extents[4]; k<=n1extents[5]; k++)
+        {
+            for (int j=n1extents[2]; j<=n1extents[3]; j++)
+            {
+                for (int i=n1extents[0]; i<=n1extents[1]; i++)
+                {
+                    int newindex = bi->NewCellIndexFromNeighbor(n1, i,j,k);
+                    if (newindex >= 0 && bndmatlist[d2][mi][bndindex]<0)
+                    {
+                        newmatlist[newindex] = -newmixindex - 1;
+
+                        bool finalMixedEntry = false;
+                        while (!finalMixedEntry)
+                        {
+                            finalMixedEntry = (bndmixnext[d2][mi][bndmixindex] == 0);
+                            if (newdata)
+                                newdata[newmixindex]    = bnddata[d2][mi][bndmixindex];
+                            if (newmixmat)
+                                newmixmat[newmixindex]  = bndmixmat[d2][mi][bndmixindex];
+                            if (newmixzone)
+                                newmixzone[newmixindex] = newindex; // +1 ???
+                            if (newmixnext)
+                                newmixnext[newmixindex] = (finalMixedEntry ? 0 : (newmixindex+1)+1);
+
+                            bndmixindex++;
+                            newmixindex++;
+                        }
+                    }
+                    bndindex++;
+                }
+            }
+        }
+    }
+
+    // Return the real new mixed data array lengths.
+    newmixlen = newmixindex;
+}
+
+// ****************************************************************************
+//  Method:  BoundaryHelperFunctions::FreeBoundaryData
+//
+//  Purpose:
+//    Deallocate the temporary storage for the boundary data.
+//
+//  Arguments:
+//    bnddata    the temporary boundary data
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    November 21, 2001
+//
+//  Modifications:
+//    Jeremy Meredith, Thu Dec 13 12:06:29 PST 2001
+//    Templatized this function.
+//
+// ****************************************************************************
+template <class T>
+void
+BoundaryHelperFunctions<T>::FreeBoundaryData(T ***bnddata)
+{
+    for (size_t b=0; b<sdb->boundary.size(); b++)
+    {
+        Boundary *bi = &sdb->boundary[b];
+
+        for (size_t n=0; n<bi->neighbors.size(); n++)
+            delete[] bnddata[b][n];
+        delete[] bnddata[b];
+    }
+    delete[] bnddata;
+}
+
+
+// ****************************************************************************
+//  Method:  BoundaryHelperFunctions::FakeNonexistentBoundaryData
+//
+//  Purpose:
+//    Fill in non-existent zones with some guess for the value to place there.
+//
+//  Arguments:
+//    d1             the domain number
+//    newdata        the mesh-sized array which holds the new data
+//    isPointData    true if this is node-centered, false if cell-centered
+//    ncomp          1 for scalar data, >1 for vector data
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    December  4, 2001
+//
+// ****************************************************************************
+template <class T>
+void
+BoundaryHelperFunctions<T>::FakeNonexistentBoundaryData(int  d1,
+                                                           T   *newdata,
+                                                           bool isPointData,
+                                                           int  ncomp)
+{
+    Boundary *bi = &sdb->boundary[d1];
+    bool *newexists = sdb->SetExistence(d1, isPointData);
+
+    int  *biextents = (isPointData ? bi->newnextents : bi-> newzextents);
+    for (int k = biextents[4]; k <= biextents[5]; k++)
+    {
+        for (int j = biextents[2]; j <= biextents[3]; j++)
+        {
+            for (int i = biextents[0]; i <= biextents[1]; i++)
+            {
+                int newindex;
+                if (isPointData)
+                    newindex = bi->NewPointIndex(i,j,k);
+                else
+                    newindex = bi->NewCellIndex(i,j,k);
+                if (!newexists[newindex])
+                {
+                    int copyindex = (isPointData ?
+                                     bi->ClosestExistingNewPointIndex(newexists, i,j,k) :
+                                     bi->ClosestExistingNewCellIndex(newexists, i,j,k));
+                    for (int c=0; c<ncomp; c++)
+                        newdata[newindex*ncomp+c] = newdata[copyindex*ncomp+c];
+                }
+            }
+        }
+    }
+    delete[] newexists;
+}
+    
+
+// ----------------------------------------------------------------------------
+//                               public methods
+// ----------------------------------------------------------------------------
+
+
+// ****************************************************************************
+//  Constructor:  avtStructuredDomainBoundaries::avtStructuredDomainBoundaries
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    October 25, 2001
+//
+//  Modifications:
+//
+//    Mark C. Miller, Mon Jan 12 17:29:19 PST 2004
+//    Added optional bool, canComputeNeighborsFromExtents
+//
+//    Hank Childs, Fri Nov 14 10:49:42 PST 2008
+//    Initialize new data members for efficient calculation of AMR boundaries.
+//
+//    Brad Whitlock, Sun Apr 22 08:51:25 PDT 2012
+//    Create double helpers.
+//
+// ****************************************************************************
+
+avtStructuredDomainBoundaries::avtStructuredDomainBoundaries(
+   bool canComputeNeighborsFromExtents)
+{
+    bhf_int   = new BoundaryHelperFunctions<int>(this);
+    bhf_float = new BoundaryHelperFunctions<float>(this);
+    bhf_double = new BoundaryHelperFunctions<double>(this);
+    bhf_uchar = new BoundaryHelperFunctions<unsigned char>(this);
+    shouldComputeNeighborsFromExtents = canComputeNeighborsFromExtents; 
+    haveCalculatedBoundaries = false;
+    maxAMRLevel = 1;
+}
+
+// ****************************************************************************
+//  Destructor:  avtStructuredDomainBoundaries::~avtStructuredDomainBoundaries
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    October 25, 2001
+//
+//  Modifications:
+//    Mark C. Miller, ed Mar 23 15:29:56 PST 2005
+//    Added code to delete stuff new'd in constructor 
+//
+// ****************************************************************************
+avtStructuredDomainBoundaries::~avtStructuredDomainBoundaries()
+{
+    delete bhf_int;
+    delete bhf_float;
+    delete bhf_double;
+    delete bhf_uchar;
+}
+
+// ****************************************************************************
+//  Destructor:  avtStructuredDomainBoundaries::Destruct
+//
+//  Programmer:  Hank Childs
+//  Creation:    September 25, 2002
+//
+//  Modifications:
+//
+//    Hank Childs, Tue Oct  8 14:45:46 PDT 2002
+//    Cleaned up stupid mistake where void pointer was being deleted.
+//
+// ****************************************************************************
+void
+avtStructuredDomainBoundaries::Destruct(void *p)
+{
+    avtStructuredDomainBoundaries *sdb = (avtStructuredDomainBoundaries *) p;
+    delete sdb;
+}
+
+// ****************************************************************************
+//  Method:  avtStructuredDomainBoundaries::SetNumDomains
+//
+//  Purpose:
+//    Set the number of domains in this database.
+//
+//  Arguments:
+//    nd         the number of domains
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    October 25, 2001
+//
+//  Modifications:
+//
+//    Hank Childs, Tue Nov 11 10:08:51 PST 2003
+//    Added call to DeclareNumDomains for the derived types.
+//
+//    Mark C. Miller, Mon Jan 12 17:29:19 PST 2004
+//    Added code to populate extents/levels if
+//    shouldComputeNeighborsFromExtents is true
+//
+// ****************************************************************************
+void
+avtStructuredDomainBoundaries::SetNumDomains(int nd)
+{
+    wholeBoundary.resize(nd);
+
+    if (shouldComputeNeighborsFromExtents)
+    {
+        extents.resize(nd*6);
+        levels.resize(nd);
+    }
+}
+
+// ****************************************************************************
+//  Method:  avtStructuredDomainBoundaries::SetExtents
+//
+//  Purpose:
+//    Set the extents of one domain.
+//
+//  Arguments:
+//    domain     the domain to set the extents of
+//    e          the extents
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    November 21, 2001
+//
+// ****************************************************************************
+void
+avtStructuredDomainBoundaries::SetExtents(int domain, int e[6])
+{
+    if ((size_t)domain >= wholeBoundary.size())
+        EXCEPTION1(VisItException,
+                   "avtStructuredDomainBoundaries: "
+                   "targeted domain more than number of domains");
+
+    wholeBoundary[domain].domain = domain;
+    wholeBoundary[domain].SetExtents(e);
+}
+
+// ****************************************************************************
+//  Method:  avtStructuredDomainBoundaries::AddNeighbor
+//
+//  Purpose:
+//    Add a neighbor to a given domain.
+//
+//  Arguments:
+//    domain     the current domain to add a neighbor for
+//    d          the domain number of the new neigbor
+//    mi         the current domain's index in the neighbor's neighbor list
+//    o          the three orientation values
+//    e          the extents of the matching boundary in the current domain
+//    rr         an enumerated type that describes the refinement ratio.
+//    ref_ratio  the ratio in mesh resolution between neighboring domains.
+//    nr         an enumerated type that describes the neighbor relationship.
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    November 21, 2001
+//
+//  Modifications:
+//
+//    Hank Childs, Tue Jan  4 12:33:17 PST 2011
+//    Add additional arguments for creating ghost data for AMR patches.
+//
+//    Gunther H. Weber, Wed Jul 18 15:38:36 PDT 2012
+//    Support anisotropic refinement.
+//
+// ****************************************************************************
+void
+avtStructuredDomainBoundaries::AddNeighbor(int domain, int d, int mi, int o[3], 
+                                           int e[6], RefinementRelationship rr, 
+                                           const std::vector<int>& ref_ratio,
+                                           NeighborRelationship nr)
+{
+    if ((size_t)domain >= wholeBoundary.size())
+        EXCEPTION1(VisItException,
+                   "avtStructuredDomainBoundaries: "
+                   "targeted domain more than number of domains");
+
+    wholeBoundary[domain].AddNeighbor(d, mi, o, e, rr, ref_ratio, nr);
+}
+
+// ****************************************************************************
+//  Method:  avtStructuredDomainBoundaries::Finish
+//
+//  Purpose:
+//    Finalize a domain
+//
+//  Arguments:
+//    domain     the domain to finalize
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    November 21, 2001
+//
+// ****************************************************************************
+void
+avtStructuredDomainBoundaries::Finish(int domain)
+{
+    if ((size_t)domain >= wholeBoundary.size())
+        EXCEPTION1(VisItException,
+                   "avtStructuredDomainBoundaries: "
+                   "targeted domain more than number of domains");
+
+    wholeBoundary[domain].Finish();
+}
+
+// ****************************************************************************
+//  Method:  avtStructuredDomainBoundaries::ExchangeScalar
+//
+//  Purpose:
+//    Exchange the ghost zone information for some scalars,
+//    returning the new ones.
+//
+//  Arguments:
+//    domainNum    an array of domain numbers for each mesh
+//    isPointData  true if this is node-centered, false if cell-centered
+//    vectors      an array of vectors
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    November  7, 2003
+//
+//  Modifications:
+//    Jeremy Meredith, Wed Nov 19 12:20:52 PST 2003
+//    Added code to get all processors to agree on one data type.
+//    This was causing problems with more procs than domains.
+//
+//    Hank Childs, Tue Nov 25 17:32:53 PST 2003
+//    Fix typo that comes up in parallel only.
+//
+//    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
+//    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
+//
+//    Brad Whitlock, Sun Apr 22 08:52:14 PDT 2012
+//    Double support.
+//
+// ****************************************************************************
+vector<vtkDataArray*>
+avtStructuredDomainBoundaries::ExchangeScalar(vector<int>           domainNum,
+                                              bool                  isPointData,
+                                              vector<vtkDataArray*> scalars)
+{
+    int dataType = (scalars.empty() ? -1 : scalars[0]->GetDataType());
+
+#ifdef PARALLEL
+    // Let's get them all to agree on one data type.
+    int myDataType = dataType;
+    MPI_Allreduce(&myDataType, &dataType, 1, MPI_INT, MPI_MAX, VISIT_MPI_COMM);
+#endif
+
+    if (dataType < 0)
+        return scalars;
+
+    switch (dataType)
+    {
+      case VTK_FLOAT:
+        return ExchangeFloatScalar(domainNum, isPointData, scalars);
+        break;
+      case VTK_DOUBLE:
+        return ExchangeDoubleScalar(domainNum, isPointData, scalars);
+        break;
+      case VTK_INT:
+      case VTK_UNSIGNED_INT:
+        return ExchangeIntScalar(domainNum, isPointData, scalars);
+        break;
+      case VTK_CHAR:
+      case VTK_UNSIGNED_CHAR:
+        return ExchangeUCharScalar(domainNum, isPointData, scalars);
+        break;
+      default:
+        EXCEPTION1(VisItException, "Unknown scalar type in "
+                   "avtStructuredDomainBoundaries::ExchangeScalar");
+    }
+}
+
+// ****************************************************************************
+//  Method:  avtStructuredDomainBoundaries::ExchangeFloatScalar
+//
+//  Purpose:
+//    Exchange the ghost zone information for some scalars,
+//    returning the new ones.
+//
+//  Arguments:
+//    domainNum    an array of domain numbers for each mesh
+//    isPointData  true if this is node-centered, false if cell-centered
+//    scalars      an array of scalars
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    November 21, 2001
+//
+//  Modifications:
+//    Jeremy Meredith, Thu Dec 13 12:06:54 PST 2001
+//    Made use of templatized functions.  Added call to fake boundary
+//    data when it is nonexistent.
+//
+//    Hank Childs, Wed Jan  2 09:28:05 PST 2002
+//    Propagate variable names.
+//
+//    Kathleen Bonnell, Fri Feb  8 11:03:49 PST 2002
+//    vtkScalars has been deprecated in VTK 4.0, use vtkDataArray 
+//    and vtkFloatArray instead.
+//
+//    Jeremy Meredith, Fri Nov  7 15:13:56 PST 2003
+//    Renamed to include the "Float" in the name.
+//
+//    Hank Childs, Wed Jun 29 15:24:35 PDT 2005
+//    Cache domain2proc.
+//
+//    Jeremy Meredith, Thu Apr 12 18:00:17 EDT 2012
+//    Added timings for each phase of ghost zone communication.
+//
+// ****************************************************************************
+vector<vtkDataArray*>
+avtStructuredDomainBoundaries::ExchangeFloatScalar(vector<int>     domainNum,
+                                             bool                  isPointData,
+                                             vector<vtkDataArray*> scalars)
+{
+    if (domain2proc.size() == 0)
+    {
+        int timer_InitializeGhost = visitTimer->StartTimer();
+        domain2proc = CreateDomainToProcessorMap(domainNum);
+        CreateCurrentDomainBoundaryInformation(domain2proc);
+        visitTimer->StopTimer(timer_InitializeGhost, "Ghost Zone Generation phase 1: Initialize (in float version)");
+    }
+
+    int timer_PackData = visitTimer->StartTimer();
+    vector<vtkDataArray*> out(scalars.size(), NULL);
+
+    //
+    // Create the matching arrays for the given scalars
+    //
+    float ***vals = bhf_float->InitializeBoundaryData();
+    for (size_t d = 0; d < scalars.size(); d++)
+    {
+        float *oldvals = (float*)scalars[d]->GetVoidPointer(0);
+        bhf_float->FillBoundaryData(domainNum[d], oldvals, vals, isPointData);
+    }
+    visitTimer->StopTimer(timer_PackData, "Ghost Zone Generation phase 2: Pack Data (in float version)");
+
+    bhf_float->CommunicateBoundaryData(domain2proc, vals, isPointData);
+
+    int timer_UnpackData = visitTimer->StartTimer();
+    for (size_t d = 0; d < scalars.size(); d++)
+    {
+        Boundary *bi = &boundary[domainNum[d]];
+
+        // Create the new VTK objects
+        out[d] = vtkFloatArray::New(); 
+        out[d]->SetName(scalars[d]->GetName());
+        if (isPointData)
+            out[d]->SetNumberOfTuples(bi->newnpts);
+        else
+            out[d]->SetNumberOfTuples(bi->newncells);
+
+        float *oldvals = (float*)scalars[d]->GetVoidPointer(0);
+        float *newvals = (float*)out[d]->GetVoidPointer(0);
+
+        // Set the known ones
+        bhf_float->CopyOldValues(domainNum[d], oldvals, newvals, isPointData);
+
+        // Match the unknown ones
+        bhf_float->SetNewBoundaryData(domainNum[d], vals, newvals, isPointData);
+
+        // Set the remaining unset ones (reduced connectivity, etc.)
+        bhf_float->FakeNonexistentBoundaryData(domainNum[d], newvals, isPointData);
+    }
+    visitTimer->StopTimer(timer_UnpackData, "Ghost Zone Generation phase 4: Unpack Data (in float version)");
+
+    bhf_float->FreeBoundaryData(vals);
+
+    return out;
+}
+
+// ****************************************************************************
+//  Method:  avtStructuredDomainBoundaries::ExchangeDoubleScalar
+//
+//  Purpose:
+//    Exchange the ghost zone information for some scalars,
+//    returning the new ones.
+//
+//  Arguments:
+//    domainNum    an array of domain numbers for each mesh
+//    isPointData  true if this is node-centered, false if cell-centered
+//    scalars      an array of scalars
+//
+//  Programmer:  Brad Whitlock
+//  Creation:    Sun Apr 22 08:53:31 PDT 2012
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+vector<vtkDataArray*>
+avtStructuredDomainBoundaries::ExchangeDoubleScalar(vector<int>     domainNum,
+                                             bool                  isPointData,
+                                             vector<vtkDataArray*> scalars)
+{
+    if (domain2proc.size() == 0)
+    {
+        int timer_InitializeGhost = visitTimer->StartTimer();
+        domain2proc = CreateDomainToProcessorMap(domainNum);
+        CreateCurrentDomainBoundaryInformation(domain2proc);
+        visitTimer->StopTimer(timer_InitializeGhost, "Ghost Zone Generation phase 1: Initialize (in float version)");
+    }
+
+    int timer_PackData = visitTimer->StartTimer();
+    vector<vtkDataArray*> out(scalars.size(), NULL);
+
+    //
+    // Create the matching arrays for the given scalars
+    //
+    double ***vals = bhf_double->InitializeBoundaryData();
+    for (size_t d = 0; d < scalars.size(); d++)
+    {
+        double *oldvals = (double*)scalars[d]->GetVoidPointer(0);
+        bhf_double->FillBoundaryData(domainNum[d], oldvals, vals, isPointData);
+    }
+    visitTimer->StopTimer(timer_PackData, "Ghost Zone Generation phase 2: Pack Data (in double version)");
+
+    bhf_double->CommunicateBoundaryData(domain2proc, vals, isPointData);
+
+    int timer_UnpackData = visitTimer->StartTimer();
+    for (size_t d = 0; d < scalars.size(); d++)
+    {
+        Boundary *bi = &boundary[domainNum[d]];
+
+        // Create the new VTK objects
+        out[d] = vtkDoubleArray::New(); 
+        out[d]->SetName(scalars[d]->GetName());
+        if (isPointData)
+            out[d]->SetNumberOfTuples(bi->newnpts);
+        else
+            out[d]->SetNumberOfTuples(bi->newncells);
+
+        double *oldvals = (double*)scalars[d]->GetVoidPointer(0);
+        double *newvals = (double*)out[d]->GetVoidPointer(0);
+
+        // Set the known ones
+        bhf_double->CopyOldValues(domainNum[d], oldvals, newvals, isPointData);
+
+        // Match the unknown ones
+        bhf_double->SetNewBoundaryData(domainNum[d], vals, newvals, isPointData);
+
+        // Set the remaining unset ones (reduced connectivity, etc.)
+        bhf_double->FakeNonexistentBoundaryData(domainNum[d], newvals, isPointData);
+    }
+    visitTimer->StopTimer(timer_UnpackData, "Ghost Zone Generation phase 4: Unpack Data (in double version)");
+
+    bhf_double->FreeBoundaryData(vals);
+
+    return out;
+}
+
+// ****************************************************************************
+//  Method:  avtStructuredDomainBoundaries::ExchangeIntScalar
+//
+//  Purpose:
+//    Exchange the ghost zone information for some scalars,
+//    returning the new ones.
+//
+//  Arguments:
+//    domainNum    an array of domain numbers for each mesh
+//    isPointData  true if this is node-centered, false if cell-centered
+//    scalars      an array of scalars
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    November  7, 2003
+//
+//  Note: direct copy of ExchangeFloatScalar with modifications for ints.
+//
+//  Modifications:
+//
+//    Hank Childs, Wed Jun 29 15:24:35 PDT 2005
+//    Cache domain2proc.
+//
+//    Jeremy Meredith, Thu Apr 12 18:00:17 EDT 2012
+//    Added timings for each phase of ghost zone communication.
+//
+// ****************************************************************************
+vector<vtkDataArray*>
+avtStructuredDomainBoundaries::ExchangeIntScalar(vector<int>       domainNum,
+                                             bool                  isPointData,
+                                             vector<vtkDataArray*> scalars)
+{
+    if (domain2proc.size() == 0)
+    {
+        int timer_InitializeGhost = visitTimer->StartTimer();
+        domain2proc = CreateDomainToProcessorMap(domainNum);
+        CreateCurrentDomainBoundaryInformation(domain2proc);
+        visitTimer->StopTimer(timer_InitializeGhost, "Ghost Zone Generation phase 1: Initialize (in int version)");
+    }
+
+    int timer_PackData = visitTimer->StartTimer();
+    vector<vtkDataArray*> out(scalars.size(), NULL);
+
+    //
+    // Create the matching arrays for the given scalars
+    //
+    int ***vals = bhf_int->InitializeBoundaryData();
+    for (size_t d = 0; d < scalars.size(); d++)
+    {
+        int *oldvals = (int*)scalars[d]->GetVoidPointer(0);
+        bhf_int->FillBoundaryData(domainNum[d], oldvals, vals, isPointData);
+    }
+    visitTimer->StopTimer(timer_PackData, "Ghost Zone Generation phase 2: Pack Data (in int version)");
+
+    bhf_int->CommunicateBoundaryData(domain2proc, vals, isPointData);
+
+    int timer_UnpackData = visitTimer->StartTimer();
+    for (size_t d = 0; d < scalars.size(); d++)
+    {
+        Boundary *bi = &boundary[domainNum[d]];
+
+        // Create the new VTK objects
+        out[d] = vtkIntArray::New(); 
+        out[d]->SetName(scalars[d]->GetName());
+        if (isPointData)
+            out[d]->SetNumberOfTuples(bi->newnpts);
+        else
+            out[d]->SetNumberOfTuples(bi->newncells);
+
+        int *oldvals = (int*)scalars[d]->GetVoidPointer(0);
+        int *newvals = (int*)out[d]->GetVoidPointer(0);
+
+        // Set the known ones
+        bhf_int->CopyOldValues(domainNum[d], oldvals, newvals, isPointData);
+
+        // Match the unknown ones
+        bhf_int->SetNewBoundaryData(domainNum[d], vals, newvals, isPointData);
+
+        // Set the remaining unset ones (reduced connectivity, etc.)
+        bhf_int->FakeNonexistentBoundaryData(domainNum[d], newvals, isPointData);
+    }
+    visitTimer->StopTimer(timer_UnpackData, "Ghost Zone Generation phase 4: Unpack Data (in int version)");
+
+    bhf_int->FreeBoundaryData(vals);
+
+    return out;
+}
+
+
+// ****************************************************************************
+//  Method:  avtStructuredDomainBoundaries::ExchangeUCharScalar
+//
+//  Purpose:
+//    Exchange the ghost zone information for some scalars,
+//    returning the new ones.
+//
+//  Arguments:
+//    domainNum    an array of domain numbers for each mesh
+//    isPointData  true if this is node-centered, false if cell-centered
+//    scalars      an array of scalars
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    November  7, 2003
+//
+//  Note: direct copy of ExchangeFloatScalar with modifications for uchars.
+//
+//  Modifications:
+//
+//    Hank Childs, Wed Jun 29 15:24:35 PDT 2005
+//    Cache domain2proc.
+//
+//    Jeremy Meredith, Thu Apr 12 18:00:17 EDT 2012
+//    Added timings for each phase of ghost zone communication.
+//
+// ****************************************************************************
+vector<vtkDataArray*>
+avtStructuredDomainBoundaries::ExchangeUCharScalar(vector<int>     domainNum,
+                                             bool                  isPointData,
+                                             vector<vtkDataArray*> scalars)
+{
+    if (domain2proc.size() == 0)
+    {
+        int timer_InitializeGhost = visitTimer->StartTimer();
+        domain2proc = CreateDomainToProcessorMap(domainNum);
+        CreateCurrentDomainBoundaryInformation(domain2proc);
+        visitTimer->StopTimer(timer_InitializeGhost, "Ghost Zone Generation phase 1: Initialize (in uchar version)");
+    }
+
+    int timer_PackData = visitTimer->StartTimer();
+    vector<vtkDataArray*> out(scalars.size(), NULL);
+
+    //
+    // Create the matching arrays for the given scalars
+    //
+    unsigned char ***vals = bhf_uchar->InitializeBoundaryData();
+    for (size_t d = 0; d < scalars.size(); d++)
+    {
+        unsigned char *oldvals = (unsigned char*)scalars[d]->GetVoidPointer(0);
+        bhf_uchar->FillBoundaryData(domainNum[d], oldvals, vals, isPointData);
+    }
+    visitTimer->StopTimer(timer_PackData, "Ghost Zone Generation phase 2: Pack Data (in uchar version)");
+
+    bhf_uchar->CommunicateBoundaryData(domain2proc, vals, isPointData);
+
+    int timer_UnpackData = visitTimer->StartTimer();
+    for (size_t d = 0; d < scalars.size(); d++)
+    {
+        Boundary *bi = &boundary[domainNum[d]];
+
+        // Create the new VTK objects
+        out[d] = vtkUnsignedCharArray::New(); 
+        out[d]->SetName(scalars[d]->GetName());
+        if (isPointData)
+            out[d]->SetNumberOfTuples(bi->newnpts);
+        else
+            out[d]->SetNumberOfTuples(bi->newncells);
+
+        unsigned char *oldvals = (unsigned char*)scalars[d]->GetVoidPointer(0);
+        unsigned char *newvals = (unsigned char*)out[d]->GetVoidPointer(0);
+
+        // Set the known ones
+        bhf_uchar->CopyOldValues(domainNum[d], oldvals, newvals, isPointData);
+
+        // Match the unknown ones
+        bhf_uchar->SetNewBoundaryData(domainNum[d], vals, newvals, isPointData);
+
+        // Set the remaining unset ones (reduced connectivity, etc.)
+        bhf_uchar->FakeNonexistentBoundaryData(domainNum[d], newvals, isPointData);
+    }
+    visitTimer->StopTimer(timer_UnpackData, "Ghost Zone Generation phase 4: Unpack Data (in uchar version)");
+
+    bhf_uchar->FreeBoundaryData(vals);
+
+    return out;
+}
+
+// ****************************************************************************
+//  Method:  avtStructuredDomainBoundaries::ExchangeVector
+//
+//  Purpose:
+//    Exchange the ghost zone information for some vectors,
+//    returning the new ones.
+//
+//  Arguments:
+//    domainNum    an array of domain numbers for each mesh
+//    isPointData  true if this is node-centered, false if cell-centered
+//    vectors      an array of vectors
+//
+//  Programmer:  Kevin Griffin
+//  Creation:    April 21, 2015
+//
+//  Modifications:
+//
+// ****************************************************************************
+vector<vtkDataArray*>
+avtStructuredDomainBoundaries::ExchangeVector(vector<int>           domainNum,
+                                              bool                  isPointData,
+                                              vector<vtkDataArray*> vectors)
+{
+    int dataType = (vectors.empty() ? -1 : vectors[0]->GetDataType());
+    
+#ifdef PARALLEL
+    // Let's get them all to agree on one data type.
+    int myDataType = dataType;    
+    MPI_Allreduce(&myDataType, &dataType, 1, MPI_INT, MPI_MAX, VISIT_MPI_COMM);
+#endif
+    
+    if (dataType < 0)
+        return vectors;
+    
+    switch (dataType)
+    {
+        case VTK_FLOAT:
+            return ExchangeFloatVector(domainNum, isPointData, vectors);
+            break;
+        case VTK_DOUBLE:
+            return ExchangeDoubleVector(domainNum, isPointData, vectors);
+            break;
+        case VTK_INT:
+        case VTK_UNSIGNED_INT:
+            return ExchangeIntVector(domainNum, isPointData, vectors);
+            break;
+        default:
+            EXCEPTION1(VisItException, "Unknown vector type in "
+                       "avtStructuredDomainBoundaries::ExchangeVector");
+    }
+}
+
+
+// ****************************************************************************
+//  Method:  avtStructuredDomainBoundaries::ExchangeFloatVector
+//
+//  Purpose:
+//    Exchange the ghost zone information for some vectors,
+//    returning the new ones.
+//
+//  Arguments:
+//    domainNum    an array of domain numbers for each mesh
+//    isPointData  true if this is node-centered, false if cell-centered
+//    vectors      an array of vectors
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    November 21, 2001
+//
+//  Modifications:
+//    Jeremy Meredith, Thu Dec 13 12:06:54 PST 2001
+//    Made use of templatized functions.  Added call to fake boundary
+//    data when it is nonexistent.
+//
+//    Hank Childs, Wed Jan  2 09:28:05 PST 2002
+//    Propagate variable names.
+//
+//    Kathleen Bonnell, Fri Feb  8 11:03:49 PST 2002
+//    vtkVectors has been deprecated in VTK 4.0, use vtkDataArray 
+//    and vtkFloatArray instead.
+//
+//    Kathleen Bonnell, Mon May 20 13:33:03 PDT 2002 
+//    Change name to reflect underlying data type.  Allow for arbitrary
+//    number of components in the array. 
+//    
+//    Hank Childs, Fri Dec  6 14:56:20 PST 2002
+//    Do not assume that the number of vectors is > 0.
+//
+//    Hank Childs, Wed Jun 29 15:24:35 PDT 2005
+//    Cache domain2proc.
+//
+//    Jeremy Meredith, Thu Apr 12 18:00:17 EDT 2012
+//    Added timings for each phase of ghost zone communication.
+//
+// ****************************************************************************
+vector<vtkDataArray*>
+avtStructuredDomainBoundaries::ExchangeFloatVector(vector<int>      domainNum,
+                                              bool                  isPointData,
+                                              vector<vtkDataArray*> vectors)
+{
+    if (domain2proc.size() == 0)
+    {
+        int timer_InitializeGhost = visitTimer->StartTimer();
+        domain2proc = CreateDomainToProcessorMap(domainNum);
+        CreateCurrentDomainBoundaryInformation(domain2proc);
+        visitTimer->StopTimer(timer_InitializeGhost, "Ghost Zone Generation phase 1: Initialize (in floatvec version)");
+    }
+
+    int timer_PackData = visitTimer->StartTimer();
+    vector<vtkDataArray*> out(vectors.size(), NULL);
+
+    //
+    // Create the matching arrays for the given vectors
+    //
+    float ***vals = bhf_float->InitializeBoundaryData();
+
+    int nComp = (vectors.size() > 0 ? vectors[0]->GetNumberOfComponents() :-1);
+    for (size_t d = 0; d < vectors.size(); d++)
+    {
+        float *oldvals = (float*)vectors[d]->GetVoidPointer(0);
+        bhf_float->FillBoundaryData(domainNum[d], oldvals, vals, isPointData, nComp);
+    }
+    visitTimer->StopTimer(timer_PackData, "Ghost Zone Generation phase 2: Pack Data (in floatvec version)");
+
+    bhf_float->CommunicateBoundaryData(domain2proc, vals, isPointData, nComp);
+
+    int timer_UnpackData = visitTimer->StartTimer();
+    for (size_t d = 0; d < vectors.size(); d++)
+    {
+        // Create the new VTK objects
+        out[d] = vtkFloatArray::New();
+        out[d]->SetNumberOfComponents(nComp); 
+        out[d]->SetName(vectors[d]->GetName());
+        if (isPointData)
+            out[d]->SetNumberOfTuples(boundary[domainNum[d]].newnpts);
+        else
+            out[d]->SetNumberOfTuples(boundary[domainNum[d]].newncells);
+
+        float *oldvals = (float*)vectors[d]->GetVoidPointer(0);
+        float *newvals = (float*)out[d]->GetVoidPointer(0);
+
+        // Set the known ones
+        bhf_float->CopyOldValues(domainNum[d], oldvals, newvals, isPointData, nComp);
+
+        // Match the unknown ones
+        bhf_float->SetNewBoundaryData(domainNum[d], vals, newvals, isPointData, nComp);
+
+        // Set the remaining unset ones (reduced connectivity, etc.)
+        bhf_float->FakeNonexistentBoundaryData(domainNum[d], newvals, isPointData, nComp);
+    }
+    visitTimer->StopTimer(timer_UnpackData, "Ghost Zone Generation phase 4: Unpack Data (in floatvec version)");
+
+    bhf_float->FreeBoundaryData(vals);
+
+    return out;
+}
+
+// ****************************************************************************
+//  Method:  avtStructuredDomainBoundaries::ExchangeDoubleVector
+//
+//  Purpose:
+//    Exchange the ghost zone information for some vectors,
+//    returning the new ones.
+//
+//  Arguments:
+//    domainNum    an array of domain numbers for each mesh
+//    isPointData  true if this is node-centered, false if cell-centered
+//    vectors      an array of vectors
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    November 21, 2001
+//
+//  Modifications:
+//
+// ****************************************************************************
+vector<vtkDataArray*>
+avtStructuredDomainBoundaries::ExchangeDoubleVector(vector<int>      domainNum,
+                                              bool                  isPointData,
+                                              vector<vtkDataArray*> vectors)
+{
+    if (domain2proc.size() == 0)
+    {
+        int timer_InitializeGhost = visitTimer->StartTimer();
+        domain2proc = CreateDomainToProcessorMap(domainNum);
+        CreateCurrentDomainBoundaryInformation(domain2proc);
+        visitTimer->StopTimer(timer_InitializeGhost, "Ghost Zone Generation phase 1: Initialize (in doublevec version)");
+    }
+
+    int timer_PackData = visitTimer->StartTimer();
+    vector<vtkDataArray*> out(vectors.size(), NULL);
+
+    //
+    // Create the matching arrays for the given vectors
+    //
+    double ***vals = bhf_double->InitializeBoundaryData();
+
+    int nComp = (vectors.size() > 0 ? vectors[0]->GetNumberOfComponents() :-1);
+    for (size_t d = 0; d < vectors.size(); d++)
+    {
+        double *oldvals = (double*)vectors[d]->GetVoidPointer(0);
+        bhf_double->FillBoundaryData(domainNum[d], oldvals, vals, isPointData, nComp);
+    }
+    visitTimer->StopTimer(timer_PackData, "Ghost Zone Generation phase 2: Pack Data (in doublevec version)");
+
+    bhf_double->CommunicateBoundaryData(domain2proc, vals, isPointData, nComp);
+
+    int timer_UnpackData = visitTimer->StartTimer();
+    for (size_t d = 0; d < vectors.size(); d++)
+    {
+        // Create the new VTK objects
+        out[d] = vtkDoubleArray::New(); 
+        out[d]->SetNumberOfComponents(nComp); 
+        out[d]->SetName(vectors[d]->GetName());
+        if (isPointData)
+            out[d]->SetNumberOfTuples(boundary[domainNum[d]].newnpts);
+        else
+            out[d]->SetNumberOfTuples(boundary[domainNum[d]].newncells);
+
+        double *oldvals = (double*)vectors[d]->GetVoidPointer(0);
+        double *newvals = (double*)out[d]->GetVoidPointer(0);
+
+        // Set the known ones
+        bhf_double->CopyOldValues(domainNum[d], oldvals, newvals, isPointData, nComp);
+
+        // Match the unknown ones
+        bhf_double->SetNewBoundaryData(domainNum[d], vals, newvals, isPointData, nComp);
+
+        // Set the remaining unset ones (reduced connectivity, etc.)
+        bhf_double->FakeNonexistentBoundaryData(domainNum[d], newvals, isPointData, nComp);
+    }
+    visitTimer->StopTimer(timer_UnpackData, "Ghost Zone Generation phase 4: Unpack Data (in doublevec version)");
+
+    bhf_double->FreeBoundaryData(vals);
+
+    return out;
+}
+
+// ****************************************************************************
+//  Method:  avtStructuredDomainBoundaries::ExchangeIntVector
+//
+//  Purpose:
+//    Exchange the ghost zone information for some vectors,
+//    returning the new ones.
+//
+//  Arguments:
+//    domainNum    an array of domain numbers for each mesh
+//    isPointData  true if this is node-centered, false if cell-centered
+//    vectors      an array of vectors
+//
+//  Notes:
+//    Taken from ExchangeFloatVector and modified for integer data types.
+//
+//  Programmer:  Kathleen Bonnell 
+//  Creation:    May 20, 2002 
+//
+//  Modifications:
+//
+//    Hank Childs, Fri Dec  6 14:56:20 PST 2002
+//    Do not assume that the number of vectors is > 0.
+//
+//    Kathleen Bonnell, Wed Dec 11 09:13:25 PST 2002 
+//    Preserver underlying data type:  use MakeObject instead of New. 
+//
+//    Kathleen Bonnell, Fri Dec 13 14:07:15 PST 2002  
+//    Use NewInstance instead of MakeObject, new vtk api. 
+//
+//    Hank Childs, Wed Jun 29 15:24:35 PDT 2005
+//    Cache domain2proc.
+//
+//    Jeremy Meredith, Thu Apr 12 18:00:17 EDT 2012
+//    Added timings for each phase of ghost zone communication.
+//
+// ****************************************************************************
+vector<vtkDataArray*>
+avtStructuredDomainBoundaries::ExchangeIntVector(vector<int>        domainNum,
+                                                 bool               isPointData,
+                                                 vector<vtkDataArray*> vectors)
+{
+    if (domain2proc.size() == 0)
+    {
+        int timer_InitializeGhost = visitTimer->StartTimer();
+        domain2proc = CreateDomainToProcessorMap(domainNum);
+        CreateCurrentDomainBoundaryInformation(domain2proc);
+        visitTimer->StopTimer(timer_InitializeGhost, "Ghost Zone Generation phase 1: Initialize (in intvec version)");
+    }
+
+    int timer_PackData = visitTimer->StartTimer();
+    vector<vtkDataArray*> out(vectors.size(), NULL);
+
+    //
+    // Create the matching arrays for the given vectors
+    //
+    int ***vals = bhf_int->InitializeBoundaryData();
+
+    int nComp = (vectors.size() > 0 ? vectors[0]->GetNumberOfComponents(): -1);
+    for (size_t d = 0; d < vectors.size(); d++)
+    {
+        int *oldvals = (int*)vectors[d]->GetVoidPointer(0);
+        bhf_int->FillBoundaryData(domainNum[d], oldvals, vals, isPointData, nComp);
+    }
+    visitTimer->StopTimer(timer_PackData, "Ghost Zone Generation phase 2: Pack Data (in intvec version)");
+
+    bhf_int->CommunicateBoundaryData(domain2proc, vals, isPointData, nComp);
+
+    int timer_UnpackData = visitTimer->StartTimer();
+    for (size_t d = 0; d < vectors.size(); d++)
+    {
+        // Create the new VTK objects
+        out[d] = vectors[d]->NewInstance(); 
+        out[d]->SetNumberOfComponents(nComp); 
+        out[d]->SetName(vectors[d]->GetName());
+        if (isPointData)
+            out[d]->SetNumberOfTuples(boundary[domainNum[d]].newnpts);
+        else
+            out[d]->SetNumberOfTuples(boundary[domainNum[d]].newncells);
+
+        int *oldvals = (int*)vectors[d]->GetVoidPointer(0);
+        int *newvals = (int*)out[d]->GetVoidPointer(0);
+
+        // Set the known ones
+        bhf_int->CopyOldValues(domainNum[d], oldvals, newvals, isPointData, nComp);
+
+        // Match the unknown ones
+        bhf_int->SetNewBoundaryData(domainNum[d], vals, newvals, isPointData, nComp);
+
+        // Set the remaining unset ones (reduced connectivity, etc.)
+        bhf_int->FakeNonexistentBoundaryData(domainNum[d], newvals, isPointData, nComp);
+    }
+    visitTimer->StopTimer(timer_UnpackData, "Ghost Zone Generation phase 4: Unpack Data (in intvec version)");
+
+    bhf_int->FreeBoundaryData(vals);
+
+    return out;
+}
+
+// ****************************************************************************
+//  Method:  avtStructuredDomainBoundaries::ExchangeMaterial
+//
+//  Purpose:
+//    Exchange the ghost zone information for some materials,
+//    returning the new ones.
+//
+//  Arguments:
+//    domainNum    an array of domain numbers for each mesh
+//    material     an array of materials
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    December 13, 2001
+//
+//  Modifications:
+//    Jeremy Meredith, Mon Oct 28 19:25:34 PST 2002
+//    Added newmixlen as an argument to SetNewMixedBoundaryData since
+//    it may get shortened when some neighbors are missing.
+//
+//    Hank Childs, Wed Jun 29 15:24:35 PDT 2005
+//    Cache domain2proc.
+//
+//    Hank Childs, Wed Jul  6 06:50:55 PDT 2005
+//    Instead of calculating index into domain's neighbor list in a non-robust
+//    way, use the "match", which is already pre-computed by the client for
+//    this purpose.
+//
+//    Hank Childs, Fri Jun  9 14:18:11 PDT 2006
+//    Remove unused variable.
+//
+//    Jeremy Meredith, Thu Apr 12 18:00:17 EDT 2012
+//    Added timings for each phase of ghost zone communication.
+//
+//    Jeremy Meredith, Thu Aug 14 10:24:12 EDT 2014
+//    Communicate values from the 'mixnext' array for mixed boundary
+//    data.  We can't reliably use any other information (like a change
+//    in zone ID) to determine when a segment of mix data has ended.
+//
+// ****************************************************************************
+vector<avtMaterial*>
+avtStructuredDomainBoundaries::ExchangeMaterial(vector<int>          domainNum,
+                                                vector<avtMaterial*> mats)
+{
+    if (domain2proc.size() == 0)
+    {
+        int timer_InitializeGhost = visitTimer->StartTimer();
+        domain2proc = CreateDomainToProcessorMap(domainNum);
+        CreateCurrentDomainBoundaryInformation(domain2proc);
+        visitTimer->StopTimer(timer_InitializeGhost, "Ghost Zone Generation phase 1: Initialize (in mat version)");
+    }
+
+    int timer_PackData = visitTimer->StartTimer();
+    vector<avtMaterial*> out(mats.size(), NULL);
+
+    //
+    // Create the matching arrays for the given materials
+    //
+    int   ***matlist = bhf_int->InitializeBoundaryData();
+    int   ***mixmat  = bhf_int->InitializeBoundaryData();
+    int   ***mixzone = bhf_int->InitializeBoundaryData();
+    int   ***mixnext = bhf_int->InitializeBoundaryData();
+    float ***mixvf   = bhf_float->InitializeBoundaryData();
+    vector<vector<int> > mixlen(boundary.size());
+    for (size_t b = 0; b < boundary.size(); b++)
+        mixlen[b] = vector<int>(boundary[b].neighbors.size(), 0);
+
+    for (size_t d = 0; d < mats.size(); d++)
+    {
+        const int *oldmatlist = mats[d]->GetMatlist();
+        bhf_int->FillBoundaryData(domainNum[d], oldmatlist, matlist, false);
+    }
+
+    for (size_t d = 0; d < mats.size(); d++)
+    {
+        bhf_float->FillMixedBoundaryData(domainNum[d], mats[d], mats[d]->GetMixVF(),
+                              mixvf, mixmat, mixzone, mixnext, mixlen[domainNum[d]]);
+    }
+    visitTimer->StopTimer(timer_PackData, "Ghost Zone Generation phase 2: Pack Data (in mat version)");
+
+    bhf_int->CommunicateBoundaryData(domain2proc, matlist, false);
+    bhf_float->CommunicateMixedBoundaryData(domain2proc, mixvf, mixmat, mixzone, mixnext, mixlen);
+
+    int timer_UnpackData = visitTimer->StartTimer();
+    for (size_t d = 0; d < mats.size(); d++)
+    {
+        avtMaterial *oldmat = mats[d];
+        Boundary    &bi     = boundary[domainNum[d]];
+
+        // Create the new material objects
+        const int   *oldmatlist = oldmat->GetMatlist();
+        int         *newmatlist = new int[bi.newncells];
+
+        int oldmixlen = oldmat->GetMixlen();
+        int newmixlen = oldmixlen;
+        for (size_t n=0; n<bi.neighbors.size(); n++)
+        {
+            int mi = bi.neighbors[n].match;
+            int d2 = bi.neighbors[n].domain;
+            newmixlen += mixlen[d2][mi];
+        }
+
+        const float *oldmixvf   = oldmat->GetMixVF();
+        float       *newmixvf   = new float[newmixlen];
+        const int   *oldmixmat  = oldmat->GetMixMat();
+        int         *newmixmat  = new int[newmixlen];
+        const int   *oldmixzone = oldmat->GetMixZone();
+        int         *newmixzone = new int[newmixlen];
+        const int   *oldmixnext = oldmat->GetMixNext();
+        int         *newmixnext = new int[newmixlen];
+
+        // Set the known ones
+        bhf_int->CopyOldValues(domainNum[d], oldmatlist, newmatlist, false);
+        if (newmixlen > 0)
+        {
+            bhf_float->CopyOldMixedValues(mats[d], oldmixvf,   newmixvf);
+            bhf_int->CopyOldMixedValues(mats[d], oldmixmat,  newmixmat);
+            // BUG - can't just copy mixed zone nos: old zoneno != new zoneno
+            bhf_int->CopyOldMixedValues(mats[d], oldmixzone, newmixzone);
+            bhf_int->CopyOldMixedValues(mats[d], oldmixnext, newmixnext);
+        }
+
+        // Match the unknown ones
+        bhf_int->SetNewBoundaryData(domainNum[d], matlist, newmatlist, false);
+        if (newmixlen > 0)
+        {
+            bhf_float->SetNewMixedBoundaryData(domainNum[d], oldmat, mixlen,
+                                   matlist, mixvf, mixmat, mixzone, mixnext, newmatlist,
+                                   newmixvf, newmixmat, newmixzone, newmixnext,
+                                   newmixlen);
+        }
+
+        // Set the remaining unset ones (reduced connectivity, etc.)
+        bhf_int->FakeNonexistentBoundaryData(domainNum[d], newmatlist, false);
+
+        out[d] = new avtMaterial(oldmat->GetNMaterials(), 
+                                 oldmat->GetMaterials(),
+                                 boundary[domainNum[d]].newncells,
+                                 newmatlist,
+                                 newmixlen,
+                                 newmixmat,
+                                 newmixnext,
+                                 newmixzone,
+                                 newmixvf);
+
+        delete[] newmatlist;
+        delete[] newmixvf;
+        delete[] newmixmat;
+        delete[] newmixzone;
+        delete[] newmixnext;
+    }
+    visitTimer->StopTimer(timer_UnpackData, "Ghost Zone Generation phase 4: Unpack Data (in mat version)");
+
+    bhf_int->FreeBoundaryData(matlist);
+    bhf_float->FreeBoundaryData(mixvf);
+    bhf_int->FreeBoundaryData(mixmat);
+    bhf_int->FreeBoundaryData(mixzone);
+    bhf_int->FreeBoundaryData(mixnext);
+
+    return out;
+}
+
+// ****************************************************************************
+//  Method:  avtStructuredDomainBoundaries::ExchangeMixVar
+//
+//  Purpose:
+//    Exchange the ghost zone information for some mixvars,
+//    returning the new ones.
+//
+//  Arguments:
+//    domainNum    an array of domain numbers for each mesh
+//    mixvar       an array of mixvars
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    December 13, 2001
+//
+//  Modifications:
+//    Hank Childs, Thu Jul  4 16:51:37 PDT 2002
+//    Add new variable name argument for mixvar constructor.
+//
+//    Jeremy Meredith, Mon Oct 28 19:25:34 PST 2002
+//    Added newmixlen as an argument to SetNewMixedBoundaryData since
+//    it may get shortened when some neighbors are missing.
+//
+//    Jeremy Meredith, Mon Dec  9 12:11:44 PST 2002
+//    Changed the way the mixvar name was communicated in parallel.
+//    IBMs don't seem to like MPI_MAX with a char (even unsigned) data type.
+//
+//    Hank Childs, Wed Jun 29 15:24:35 PDT 2005
+//    Cache domain2proc.
+//
+//    Hank Childs, Wed Jul  6 06:50:55 PDT 2005
+//    Instead of calculating index into domain's neighbor list in a non-robust
+//    way, use the "match", which is already pre-computed by the client for
+//    this purpose.
+//
+//    Hank Childs, Fri Jun  9 14:18:11 PDT 2006
+//    Remove unused variable.
+//
+//    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
+//    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
+//
+//    Jeremy Meredith, Thu Apr 12 18:00:17 EDT 2012
+//    Added timings for each phase of ghost zone communication.
+//
+//    Jeremy Meredith, Thu Aug 14 10:24:12 EDT 2014
+//    Communicate values from the 'mixnext' array for mixed boundary
+//    data.  We can't reliably use any other information (like a change
+//    in zone ID) to determine when a segment of mix data has ended.
+//
+// ****************************************************************************
+vector<avtMixedVariable*>
+avtStructuredDomainBoundaries::ExchangeMixVar(vector<int>            domainNum,
+                                          const vector<avtMaterial*> mats,
+                                          vector<avtMixedVariable*>  mixvars)
+{
+    if (domain2proc.size() == 0)
+    {
+        int timer_InitializeGhost = visitTimer->StartTimer();
+        domain2proc = CreateDomainToProcessorMap(domainNum);
+        CreateCurrentDomainBoundaryInformation(domain2proc);
+        visitTimer->StopTimer(timer_InitializeGhost, "Ghost Zone Generation phase 1: Initialize (in mixvar version)");
+    }
+
+    int timer_PackData = visitTimer->StartTimer();
+    vector<avtMixedVariable*> out(mats.size(), NULL);
+
+    //
+    // Pretty ugly -- we need to come up with the mixed variable's name.  It
+    // could be that not a single domain on the processor has a valid mixed
+    // variable.  In that case we need to do global communication to find it.
+    // (It really does happen that a domain with no mixed zones gets ghost
+    // zones that are mixed.)
+    //
+    const char *mixvarname = NULL;
+    for (size_t  i = 0 ; i < mixvars.size() ; i++)
+        if (mixvars[i] != NULL)
+            mixvarname = mixvars[i]->GetVarname().c_str();
+
+#ifdef PARALLEL
+    int rank;
+    MPI_Comm_rank(VISIT_MPI_COMM, &rank);
+
+    int length = 0;
+    if (mixvarname != NULL)
+    {
+        length = (int)strlen(mixvarname)+1;
+    }
+    struct {int length; int rank;} len_rank_out, len_rank_in={length, rank};
+
+    MPI_Allreduce(&len_rank_in, &len_rank_out, 1, MPI_2INT, MPI_MAXLOC,
+                  VISIT_MPI_COMM);
+    length = len_rank_out.length;
+
+    char *mvname = new char[length];
+    if (mixvarname != NULL)
+    {
+        strcpy(mvname, mixvarname);
+    }
+
+    MPI_Bcast(mvname, length, MPI_CHAR, len_rank_out.rank, VISIT_MPI_COMM);
+    mixvarname = mvname;
+#else
+    char *mvname = NULL;
+#endif
+
+    //
+    // Create the matching arrays for the given materials
+    //
+    int   ***matlist = bhf_int->InitializeBoundaryData();
+    int   ***mixzone = bhf_int->InitializeBoundaryData();
+    int   ***mixnext = bhf_int->InitializeBoundaryData();
+    float ***mixvals = bhf_float->InitializeBoundaryData();
+    vector<vector<int> > mixlen(boundary.size());
+    for (size_t  b = 0; b < boundary.size(); b++)
+        mixlen[b] = vector<int>(boundary[b].neighbors.size(), 0);
+
+    for (size_t d = 0; d < mats.size(); d++)
+    {
+        const int *oldmatlist = mats[d]->GetMatlist();
+        bhf_int->FillBoundaryData(domainNum[d], oldmatlist, matlist, false);
+    }
+
+    for (size_t d = 0; d < mats.size(); d++)
+    {
+        const float *oldmixvals = (mixvars[d] ? mixvars[d]->GetBuffer() : NULL);
+        bhf_float->FillMixedBoundaryData(domainNum[d], mats[d], oldmixvals,
+                              mixvals, NULL, mixzone, mixnext, mixlen[domainNum[d]]);
+    }
+    visitTimer->StopTimer(timer_PackData, "Ghost Zone Generation phase 2: Pack Data (in mixvar version)");
+
+    bhf_int->CommunicateBoundaryData(domain2proc, matlist, false);
+    bhf_float->CommunicateMixedBoundaryData(domain2proc, mixvals, NULL, mixzone, mixnext, mixlen);
+
+    int timer_UnpackData = visitTimer->StartTimer();
+    for (size_t d = 0; d < mats.size(); d++)
+    {
+        avtMaterial *oldmat    = mats[d];
+        avtMixedVariable *oldmixvar = mixvars[d];
+        Boundary    &bi     = boundary[domainNum[d]];
+
+        // Create the new material objects
+        const int   *oldmatlist = oldmat->GetMatlist();
+        int         *newmatlist = new int[bi.newncells];
+
+        int oldmixlen = oldmat->GetMixlen();
+        int newmixlen = oldmixlen;
+        for (size_t n=0; n<bi.neighbors.size(); n++)
+        {
+            int mi = bi.neighbors[n].match;
+            int d2 = bi.neighbors[n].domain;
+            newmixlen += mixlen[d2][mi];
+        }
+
+        const float *oldmixvals = oldmixvar ? oldmixvar->GetBuffer() : NULL;
+        float       *newmixvals = new float[newmixlen];
+
+        // Set the known ones
+        bhf_int->CopyOldValues(domainNum[d], oldmatlist, newmatlist, false);
+        if (newmixlen != 0)
+            bhf_float->CopyOldMixedValues(mats[d], oldmixvals, newmixvals);
+
+        // Match the unknown ones
+        bhf_int->SetNewBoundaryData(domainNum[d], matlist, newmatlist, false);
+        if (newmixlen != 0)
+            bhf_float->SetNewMixedBoundaryData(domainNum[d], oldmat, mixlen,
+                                    matlist, mixvals, NULL, mixzone, mixnext,
+                                    newmatlist, newmixvals, NULL, NULL, NULL,
+                                    newmixlen);
+
+        if (newmixlen == 0)
+            out[d] = NULL;
+        else
+            out[d] = new avtMixedVariable(newmixvals, newmixlen, mixvarname);
+
+        delete[] newmatlist;
+        delete[] newmixvals;
+    }
+    visitTimer->StopTimer(timer_UnpackData, "Ghost Zone Generation phase 4: Unpack Data (in mixvar version)");
+
+    bhf_int->FreeBoundaryData(matlist);
+    bhf_float->FreeBoundaryData(mixvals);
+    bhf_int->FreeBoundaryData(mixzone);
+    bhf_int->FreeBoundaryData(mixnext);
+
+    if (mvname != NULL)
+    {
+        delete [] mvname;
+    }
+    return out;
+}
+
+
+// ****************************************************************************
+//  Method: avtStructuredDomainBoundaries::RequiresCommunication
+//
+//  Purpose:
+//      Determines if this domain boundaries object will need to perform
+//      collective communication to create the type of ghost data requested.
+//
+//  Programmer: Hank Childs
+//  Creation:   February 27, 2005
+//
+// ****************************************************************************
+
+bool
+avtStructuredDomainBoundaries::RequiresCommunication(avtGhostDataType gtype)
+{
+    if (gtype == NO_GHOST_DATA)
+        return false;
+    else if (gtype == GHOST_NODE_DATA)
+        return false;
+
+    // (gtype == GHOST_ZONE_DATA)
+    return true;
+}
+
+
+// ****************************************************************************
+//  Method:  avtStructuredDomainBoundaries::ConfirmMesh
+//
+//  Purpose:
+//      If there is more than one mesh, the boundary information is likely for
+//      only one of them.  Confirm that the mesh has the proper dimensions.
+//
+//  Arguments:
+//    domainNum    an array of domain numbers for each mesh
+//    mesh         an array of meshes
+//
+//  Programmer:  Hank Childs
+//  Creation:    March 27, 2002
+//
+//  Modifications:
+//    Mark C. Miller, Thu Mar  9 11:15:29 PST 2006
+//    Protected deref of meshes[i] with test for non-0
+//
+//    Hank Childs, Mon Oct 29 09:59:04 PDT 2007
+//    Add better debug messages.
+//
+// ****************************************************************************
+bool
+avtStructuredDomainBoundaries::ConfirmMesh(vector<int>         domainNum,
+                                            vector<vtkDataSet*> meshes)
+{
+    for (size_t i = 0 ; i < domainNum.size() ; i++)
+    {
+        if (domainNum[i] < 0 || (size_t)domainNum[i] >= wholeBoundary.size())
+        {
+            //
+            // This mesh is referencing a domain that is not valid for the
+            // boundary information we have ==> this cannot be a match.
+            //
+            return false;
+        }
+        Boundary &b = wholeBoundary[domainNum[i]];
+
+        if (meshes[i] == 0)
+            return false;
+
+        //
+        // Comparing points and cells is probably good enough.
+        //
+        if (meshes[i]->GetNumberOfPoints() != b.oldnpts)
+        {
+            debug1 << "Rejecting domain boundaries because of inconsistency "
+                   << "with domain " << domainNum[i] << endl;
+            debug1 << "File returned " << meshes[i]->GetNumberOfPoints() 
+                   << " points, but dbi object believed it should be " 
+                   << b.oldnpts << endl;
+            return false;
+        }
+        if (meshes[i]->GetNumberOfCells() != b.oldncells)
+        {
+            debug1 << "Rejecting domain boundaries because of inconsistency "
+                   << "with domain " << domainNum[i] << endl;
+            debug1 << "File returned " << meshes[i]->GetNumberOfCells() 
+                   << "cells, but dbi object believed it should be " 
+                   << b.oldncells << endl;
+            return false;
+        }
+    }
+
+    //
+    // It passed all of our tests, so this must work.  However: if there were
+    // no meshes on this processor, this may produce a false positive.
+    //
+    return true;
+}
+
+
+// ****************************************************************************
+//  Method: avtStructuredDomainBoundaries::ResetCachedMembers
+//
+//  Purpose:
+//      Resets cached data members, in this case domain2proc.
+//
+//  Programmer: Hank Childs
+//  Creation:   June 29, 2005
+//
+// ****************************************************************************
+
+void
+avtStructuredDomainBoundaries::ResetCachedMembers(void)
+{
+    domain2proc.clear();
+}
+
+
+// ****************************************************************************
+//  Method: avtStructuredDomainBoundaries::CreateGhostZones
+//
+//  Purpose:
+//      Creates ghost zones for the output mesh.  This uses the boundary info,
+//      as well as previous ghost zone information (if it exists -- this ghost
+//      info comes about from nesting AMR patches), to creat the ghost zones
+//      for the output.
+//
+//  Arguments:
+//      outMesh    The output mesh we just made ghost zones for.
+//      inMesh     The input mesh before it had ghost zones.
+//      bi         The boundary information.
+//
+//  Programmer: Hank Childs
+//  Creation:   November 12, 2003
+//
+//  Modifications:
+//
+//    Hank Childs, Fri Aug 27 16:16:52 PDT 2004
+//    Rename ghost data arrays.
+//
+//    Hank Childs, Thu Sep 29 15:20:29 PDT 2011
+//    Add support for communicating pre-existing ghost zone data.
+//
+//    Hank Childs, Sun Oct 30 10:13:23 PDT 2011
+//    Fix bug with uninitialized data.
+//
+//    Kathleen Biagas, Mon Aug 15 14:09:55 PDT 2016
+//    VTK-8, API for updating GhostLevel changed.
+//
+// ****************************************************************************
+
+void
+avtStructuredDomainBoundaries::CreateGhostZones(vtkDataSet *outMesh,
+                                              vtkDataSet *inMesh, Boundary *bi,
+                                              bool haveCommunicatedGhosts, 
+                                              int domain, unsigned char ***ghosts)
+{
+    vtkUnsignedCharArray *oldGhosts = (vtkUnsignedCharArray *)
+                        inMesh->GetCellData()->GetArray("avtGhostZones");
+
+    // Create the ghost zone array
+    vtkUnsignedCharArray *ghostCells = vtkUnsignedCharArray::New();
+    ghostCells->SetName("avtGhostZones");
+    ghostCells->SetNumberOfTuples(bi->newncells);
+    for (int i = 0 ; i < bi->newncells ; i++)
+        ghostCells->SetValue(i, 0);
+
+    if (haveCommunicatedGhosts)
+    {
+        if (oldGhosts == NULL)
+            EXCEPTION0(ImproperUseException);  // we should never get to this point
+        bhf_uchar->CopyOldValues(domain, 
+                                 (unsigned char *) oldGhosts->GetVoidPointer(0),
+                                 (unsigned char *) ghostCells->GetVoidPointer(0),
+                                 false, 1);
+        bhf_uchar->SetNewBoundaryData(domain, ghosts, 
+                                 (unsigned char *) ghostCells->GetVoidPointer(0),
+                                 false, 1);
+    }
+
+    int cnt = 0;
+    for (int k = bi->newzextents[4]; k <= bi->newzextents[5]; k++)
+        for (int j = bi->newzextents[2]; j <= bi->newzextents[3]; j++)
+            for (int i = bi->newzextents[0]; i <= bi->newzextents[1]; i++)
+            {
+                unsigned char gv = 0;
+                if (haveCommunicatedGhosts)
+                {
+                    // we already got the ghost value from the input data set
+                    // and sent it through a ghost data communication phase.
+                    // Use that value.
+                    gv = ghostCells->GetValue(bi->NewCellIndex(i,j,k));
+                }
+                else if (oldGhosts != NULL)
+                {
+                    int index = bi->OldCellIndex(i, j, k);
+                    if (index >= 0)
+                        gv = oldGhosts->GetValue(index);
+                }
+                if (bi->IsGhostZone(i,j,k))
+                    avtGhostData::AddGhostZoneType(gv,
+                                          DUPLICATED_ZONE_INTERNAL_TO_PROBLEM);
+                ghostCells->SetValue(cnt++, gv);
+            }
+
+    outMesh->GetCellData()->AddArray(ghostCells);
+    ghostCells->Delete();
+    outMesh->GetInformation()->Set(vtkStreamingDemandDrivenPipeline::UPDATE_NUMBER_OF_GHOST_LEVELS(), 0); 
+
+    //
+    //  Create a field-data array indicating the extents of real zones.
+    //  Used during ghostzone removal.
+    //
+    vtkIntArray *realDims = vtkIntArray::New();
+    realDims->SetName("avtRealDims");
+    realDims->SetNumberOfTuples(6);
+    realDims->SetValue(0, bi->oldnextents[0] - bi->newnextents[0]);
+    realDims->SetValue(1, bi->oldnextents[1] - bi->newnextents[0]);
+    realDims->SetValue(2, bi->oldnextents[2] - bi->newnextents[2]);
+    realDims->SetValue(3, bi->oldnextents[3] - bi->newnextents[2]);
+    realDims->SetValue(4, bi->oldnextents[4] - bi->newnextents[4]);
+    realDims->SetValue(5, bi->oldnextents[5] - bi->newnextents[4]);
+    outMesh->GetFieldData()->AddArray(realDims);
+    outMesh->GetFieldData()->CopyFieldOn("avtRealDims");
+    realDims->Delete();
+}
+
+// ****************************************************************************
+//  Method:  avtCurvilinearDomainBoundaries::ExchangeMesh
+//
+//  Purpose:
+//    Exchange the ghost zone information for some meshes,
+//    returning the new ones.
+//
+//  Arguments:
+//    domainNum    an array of domain numbers for each mesh
+//    mesh         an array of meshes
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    November 21, 2001
+//
+//  Modifications:
+//    Jeremy Meredith, Thu Dec 13 12:06:54 PST 2001
+//    Made use of templatized functions.  Added call to fake boundary
+//    data when it is nonexistent.
+//
+//    Kathleen Bonnell, Wed Jul 10 16:02:56 PDT 2002 
+//    Create a field-data array indicating the extents of real zones.
+//    Used during ghostzone removal.
+//
+//    Hank Childs, Mon Nov 10 14:58:43 PST 2003
+//    Made this routine be associated strictly with curvlinear meshes.
+//
+//    Hank Childs, Wed Nov 12 10:53:38 PST 2003
+//    Allowed for pre-existing ghost zones as well.
+//
+//    Hank Childs, Thu Nov 13 08:56:18 PST 2003
+//    Fixed stupid bug where arguments to CreateGhostZones were out of order.
+//
+//    Mark C. Miller, Mon Jan 12 19:21:22 PST 2004
+//    Added check and exception for wrong VTK grid type
+//
+//    Hank Childs, Wed Jun 29 15:24:35 PDT 2005
+//    Cache domain2proc.
+//
+//    Jeremy Meredith, Thu Apr 12 18:00:17 EDT 2012
+//    Added timings for each phase of ghost zone communication.
+//
+//    Brad Whitlock, Sun Apr 22 09:04:09 PDT 2012
+//    Support double coordinates, moving the guts into a template function.
+//
+// ****************************************************************************
+vector<vtkDataSet*>
+avtCurvilinearDomainBoundaries::ExchangeMesh(vector<int>         domainNum,
+                                             vector<vtkDataSet*> meshes)
+{
+    if (domain2proc.size() == 0)
+    {
+        int timer_InitializeGhost = visitTimer->StartTimer();
+        domain2proc = CreateDomainToProcessorMap(domainNum);
+        CreateCurrentDomainBoundaryInformation(domain2proc);
+        visitTimer->StopTimer(timer_InitializeGhost, "Ghost Zone Generation phase 1: Initialize (in curvmesh version)");
+    }
+
+    int vtktype = VTK_FLOAT;
+    if(!meshes.empty())
+    {
+        vtkStructuredGrid *mesh = (vtkStructuredGrid*)(meshes[0]);
+        vtktype = mesh->GetPoints()->GetDataType();
+    }
+
+    vector<vtkDataSet*> out(meshes.size(), NULL);
+    if(vtktype == VTK_FLOAT)
+        ExchangeMesh(bhf_float, VTK_FLOAT, domainNum, meshes, out);
+    else if(vtktype == VTK_DOUBLE)
+        ExchangeMesh(bhf_double, VTK_DOUBLE, domainNum, meshes, out);
+
+    return out;
+}
+
+// ****************************************************************************
+//  Method:  avtCurvilinearDomainBoundaries::ExchangeMesh
+//
+//  Purpose:
+//    Exchange the ghost zone information for some meshes,
+//    returning the new ones.
+//
+//  Arguments:
+//    domainNum    an array of domain numbers for each mesh
+//    mesh         an array of meshes
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    November 21, 2001
+//
+//  Modifications:
+//    Brad Whitlock, Sun Apr 22 09:37:32 PDT 2012
+//    I templated this function so we can support double.
+//
+// ****************************************************************************
+
+template <typename Helper>
+void
+avtCurvilinearDomainBoundaries::ExchangeMesh(Helper *bhf, int vtktype,
+    vector<int> domainNum, vector<vtkDataSet*> meshes, vector<vtkDataSet *> &out)
+{
+    int timer_PackData = visitTimer->StartTimer();
+
+    //
+    // Create the matching arrays for the given meshes
+    //
+    typename Helper::Storage ***coord = bhf->InitializeBoundaryData();
+    for (size_t d = 0; d < meshes.size(); d++)
+    {
+        vtkStructuredGrid *mesh = (vtkStructuredGrid*)(meshes[d]);
+        typename Helper::Storage *oldcoord = (typename Helper::Storage*)mesh->GetPoints()->GetVoidPointer(0);
+        bhf->FillBoundaryData(domainNum[d], oldcoord, coord, true, 3);
+    }
+    visitTimer->StopTimer(timer_PackData, "Ghost Zone Generation phase 2: Pack Data (in curvmesh version)");
+
+    bhf->CommunicateBoundaryData(domain2proc, coord, true, 3);
+
+    int timer_UnpackData = visitTimer->StartTimer();
+    for (size_t d = 0; d < meshes.size(); d++)
+    {
+        if (meshes[d]->GetDataObjectType() != VTK_STRUCTURED_GRID)
+        {
+            EXCEPTION1(VisItException,
+                       "avtStructuredDomainBoundaries: "
+                       "VTK data object type not VTK_STRUCTURED_GRID");
+        }
+
+        int d1 = domainNum[d];
+        vtkStructuredGrid *mesh = (vtkStructuredGrid*)(meshes[d]);
+        Boundary *bi = &boundary[d1];
+
+        // Create the VTK objects
+        vtkStructuredGrid    *outm  = vtkStructuredGrid::New(); 
+        vtkPoints            *outp  = vtkPoints::New(vtktype);
+        outm->SetPoints(outp);
+        outp->Delete();
+        outm->SetDimensions(bi->newndims);
+        outp->SetNumberOfPoints(bi->newnpts);
+
+        typename Helper::Storage *oldcoord = (typename Helper::Storage *)mesh->GetPoints()->GetVoidPointer(0);
+        typename Helper::Storage *newcoord = (typename Helper::Storage *)outp->GetVoidPointer(0);
+
+        // Set the known ones
+        bhf->CopyOldValues(d1, oldcoord, newcoord, true, 3);
+
+        // Match the unknown ones
+        bhf->SetNewBoundaryData(d1, coord, newcoord, true, 3);
+
+        // Set the remaining unset ones (reduced connectivity, etc.)
+        bhf->FakeNonexistentBoundaryData(d1, newcoord, true, 3);
+
+        CreateGhostZones(outm, mesh, bi);
+
+        out[d] = outm;
+    }
+    visitTimer->StopTimer(timer_UnpackData, "Ghost Zone Generation phase 4: Unpack Data (in curvmesh version)");
+ 
+    bhf->FreeBoundaryData(coord);
+}
+
+// ****************************************************************************
+//  Method:  avtRectilinearDomainBoundaries::ExchangeMesh
+//
+//  Purpose:
+//    Exchange the ghost zone information for some meshes,
+//    returning the new ones.
+//
+//  Arguments:
+//    domainNum    an array of domain numbers for each mesh
+//    mesh         an array of meshes
+//
+//  Programmer:  Hank Childs
+//  Creation:    November 10, 2003
+//
+//  Modifications:
+//
+//    Mark C. Miller, Mon Jan 12 19:21:22 PST 2004
+//    Added check and exception for wrong VTK grid type
+//
+//    Mark C. Miller, Thu Apr 21 09:37:41 PDT 2005
+//    Fixed leak for coord arrays
+//
+//    Hank Childs, Tue Jun 21 14:50:55 PDT 2005
+//    Just fake the new coordinates rather than undertaking a painful
+//    communication phase.  This should only bite us if we are doing gradient
+//    calculations, or something that depends on mesh position.
+//
+//    Hank Childs, Wed Jun 29 15:24:35 PDT 2005
+//    Cache domain2proc.
+//
+//    Hank Childs, Tue Dec 14 10:23:35 PST 2010
+//    Fix indexing issue that caused 2D data sets to have Z positions that
+//    used uninitialized memory (and thus be rendered outside the clipping
+//    planes).
+//
+//    Hank Childs, Thu Sep 29 10:23:04 PDT 2011
+//    Exchange ghost data when present.
+//
+//    Hank Childs, Thu Sep 29 15:20:29 PDT 2011
+//    Add support for communicating pre-existing ghost zone data.
+//
+//    Jeremy Meredith, Thu Apr 12 18:00:17 EDT 2012
+//    Added timings for each phase of ghost zone communication.
+//
+//    Brad Whitlock, Sun Apr 22 09:55:30 PDT 2012
+//    Added support for double coordinates.
+//
+// ****************************************************************************
+
+vector<vtkDataSet*>
+avtRectilinearDomainBoundaries::ExchangeMesh(vector<int>         domainNum,
+                                             vector<vtkDataSet*> meshes)
+{
+    size_t d;
+
+    if (domain2proc.size() == 0)
+    {
+        int timer_InitializeGhost = visitTimer->StartTimer();
+        domain2proc = CreateDomainToProcessorMap(domainNum);
+        CreateCurrentDomainBoundaryInformation(domain2proc);
+        visitTimer->StopTimer(timer_InitializeGhost, "Ghost Zone Generation phase 1: Initialize (in rectmesh version)");
+    }
+
+    bool doGhost = true;
+    for (d = 0 ; d < meshes.size() ; d++)
+    {
+        if (meshes[d]->GetCellData()->GetArray("avtGhostZones") == NULL)
+            doGhost = false;
+    }
+    int haveGhost = (doGhost ? 1 : 0);
+    haveGhost = UnifyMinimumValue(haveGhost);
+    doGhost = (haveGhost == 1);
+    unsigned char ***ghosts = NULL;
+    if (doGhost)
+    {
+        int timer_PackData = visitTimer->StartTimer();
+        ghosts = bhf_uchar->InitializeBoundaryData();
+        for (d = 0 ; d < meshes.size() ; d++)
+        {
+            unsigned char *g = (unsigned char*)meshes[d]->GetCellData()->GetArray("avtGhostZones")->GetVoidPointer(0);
+            bhf_uchar->FillBoundaryData(domainNum[d], g, ghosts, false, 1);
+        }
+        visitTimer->StopTimer(timer_PackData, "Ghost Zone Generation phase 2: Pack Data (in rectmesh version)");
+        bhf_uchar->CommunicateBoundaryData(domain2proc, ghosts, false, 1);
+    }
+
+    vector<vtkDataSet*> out(meshes.size(), NULL);
+
+    //
+    // Create the matching arrays for the given meshes
+    //
+    int timer_UnpackData = visitTimer->StartTimer();
+    for (d = 0; d < meshes.size(); d++)
+    {
+        if (meshes[d]->GetDataObjectType() != VTK_RECTILINEAR_GRID)
+        {
+            EXCEPTION1(VisItException,
+                       "avtRectilinearDomainBoundaries: "
+                       "VTK data object type not VTK_RECTILINEAR_GRID");
+        }
+
+        vtkRectilinearGrid *mesh = (vtkRectilinearGrid*)(meshes[d]);
+        vtkDataArray *oldx = mesh->GetXCoordinates();
+        vtkDataArray *oldy = mesh->GetYCoordinates();
+        vtkDataArray *oldz = mesh->GetZCoordinates();
+        int d1 = domainNum[d];
+        Boundary *bi = &boundary[d1];
+
+        vtkRectilinearGrid   *outm  = vtkRectilinearGrid::New(); 
+        vtkDataArray         *newx, *newy, *newz;
+        if(oldx->GetDataType() == VTK_DOUBLE)
+        {
+            newx = vtkDoubleArray::New();
+            newy = vtkDoubleArray::New();
+            newz = vtkDoubleArray::New();
+        }
+        else
+        {
+            newx = vtkFloatArray::New();
+            newy = vtkFloatArray::New();
+            newz = vtkFloatArray::New();
+        }
+        outm->SetXCoordinates(newx);
+        outm->SetYCoordinates(newy);
+        outm->SetZCoordinates(newz);
+        newx->Delete();
+        newy->Delete();
+        newz->Delete();
+        outm->SetDimensions(bi->newndims);
+        newx->SetNumberOfTuples(bi->newndims[0]);
+        newy->SetNumberOfTuples(bi->newndims[1]);
+        newz->SetNumberOfTuples(bi->newndims[2]);
+     
+        int  i;
+        for (i = 0 ; i < bi->newndims[0] ; i++)
+        {
+            int id = i+bi->newnextents[0];
+            if (id < bi->oldnextents[0])
+            {
+                double last_dist = (oldx->GetTuple1(1) - oldx->GetTuple1(0));
+                int   num_off = (bi->oldnextents[0]-id);
+                newx->SetTuple1(i, oldx->GetTuple1(0) - last_dist*num_off);
+            }
+            else if (id > bi->oldnextents[1])
+            {
+                double last_dist = (oldx->GetTuple1(bi->oldndims[0]-1) - 
+                                    oldx->GetTuple1(bi->oldndims[0]-2));
+                int   num_off = (id - bi->oldnextents[1]);
+                newx->SetTuple1(i, oldx->GetTuple1(bi->oldndims[0]-1) + last_dist*num_off);
+            }
+            else
+            {
+                int oldindex = bi->OldPointIndex(id, 0, 0);
+                int newindex = bi->NewPointIndex(id, 0, 0);
+                int oldI = oldindex % bi->oldndims[0];
+                int newI = newindex % bi->newndims[0];
+                newx->SetTuple1(newI, oldx->GetTuple1(oldI));
+            }
+        }
+        for (i = 0 ; i < bi->newndims[1] ; i++)
+        {
+            int id = i+bi->newnextents[2];
+            if (id < bi->oldnextents[2])
+            {
+                double last_dist = (oldy->GetTuple1(1) - oldy->GetTuple1(0));
+                int   num_off = (bi->oldnextents[2]-id);
+                newy->SetTuple1(i, oldy->GetTuple1(0) - last_dist*num_off);
+            }
+            else if (id > bi->oldnextents[3])
+            {
+                double last_dist = (oldy->GetTuple1(bi->oldndims[1]-1) - 
+                                    oldy->GetTuple1(bi->oldndims[1]-2));
+                int   num_off = (id - bi->oldnextents[3]);
+                newy->SetTuple1(i, oldy->GetTuple1(bi->oldndims[1]-1) + last_dist*num_off);
+            }
+            else
+            {
+                int oldindex = bi->OldPointIndex(0, id, 0);
+                int newindex = bi->NewPointIndex(0, id, 0);
+                int oldJ = (oldindex/bi->oldndims[0]) % bi->oldndims[1];
+                int newJ = (newindex/bi->newndims[0]) % bi->newndims[1];
+                newy->SetTuple1(newJ, oldy->GetTuple1(oldJ));
+            }
+        }
+        for (i = 0 ; i < bi->newndims[2] ; i++)
+        {
+            int id = i+bi->newnextents[4];
+            if (id < bi->oldnextents[4])
+            {
+                double last_dist = (oldz->GetTuple1(1) - oldz->GetTuple1(0));
+                int   num_off = (bi->oldnextents[4]-id);
+                newz->SetTuple1(i, oldz->GetTuple1(0) - last_dist*num_off);
+            }
+            else if (id > bi->oldnextents[5])
+            {
+                double last_dist = (oldz->GetTuple1(bi->oldndims[2]-1) - 
+                                    oldz->GetTuple1(bi->oldndims[2]-2));
+                int   num_off = (id - bi->oldnextents[5]);
+                newz->SetTuple1(i, oldz->GetTuple1(bi->oldndims[2]-1) + last_dist*num_off);
+            }
+            else
+            {
+                int oldindex = bi->OldPointIndex(0, 0, id);
+                int newindex = bi->NewPointIndex(0, 0, id);
+                int oldK = (oldindex/(bi->oldndims[0]*bi->oldndims[1])) 
+                         % bi->oldndims[2];
+                int newK = (newindex/(bi->newndims[0]*bi->newndims[1])) 
+                         % bi->newndims[2];
+                newz->SetTuple1(newK, oldz->GetTuple1(oldK));
+            }
+        }
+
+        CreateGhostZones(outm, mesh, bi, doGhost, domainNum[d], ghosts);
+
+        out[d] = outm;
+    }
+    visitTimer->StopTimer(timer_UnpackData, "Ghost Zone Generation phase 4: Unpack Data (in rectmesh version)");
+
+    if (ghosts)
+        bhf_uchar->FreeBoundaryData(ghosts);
+
+    return out;
+}
+
+// ****************************************************************************
+//  Method: avtStructuredDomainBoundaries::CreateGhostNodes
+//
+//  Purpose:
+//      Creates ghost nodes.
+//
+//  Programmer: Hank Childs
+//  Creation:   August 14, 2004
+//
+//  Modifications:
+//
+//    Hank Childs, Tue Aug 24 09:25:39 PDT 2004
+//    Create avtRealDims.
+//
+//    Hank Childs, Fri Aug 27 16:16:52 PDT 2004
+//    Renamed ghost data array.
+//
+//    Hank Childs, Sun Feb 27 14:47:45 PST 2005
+//    Added argument allDomains.
+//
+//    Hank Childs, Mon Mar 28 13:38:14 PST 2005
+//    Do not create domain-processor map, since that requires communication
+//    and cannot be used with dynamic load balancing.
+//
+//    Brad Whitlock, Tue May 10 15:08:21 PST 2005
+//    Fixed for win32.
+//
+//    Gunther H. Weber, Mon Jul 28 17:39:51 PDT 2014
+//    Improve neighbor detection determining whether a face needs to be
+//    ghosted out: (i) Support partially ghosted out faces (for AMR
+//    data set where a patch may only share a partial face with a
+//    neighboring patch (fixes bug encountered by LBNL ANAG); (ii)
+//    Skip neighbors in coarser refinement levels since only faces shared
+//    by neighbors in the same level need to be ghosted out (fixes one
+//    regression test failure when selection the new ghost zone generation
+//    mechanism for crack free isosurfaces).
+//
+//    Eric Brugger, Mon Nov 17 14:57:56 PST 2014
+//    I corrected an out of bounds memory reference when the boundary extents
+//    for a domain didn't start at zero.
+//
+// ****************************************************************************
+
+void
+avtStructuredDomainBoundaries::CreateGhostNodes(vector<int>         domainNum,
+                                                vector<vtkDataSet*> meshes,
+                                                vector<int> &allDomains)
+{
+    //
+    // If we are doing DLB, we want to mark nodes as ghost, even if their
+    // neighboring domains are not being used on this iteration.  Do this by
+    // consulting the "allDomains" list.  Note that we can only play this
+    // trick because the rest of the routine does not care which domains 
+    // are on which processors -- only that we are using them.
+    //
+    int ntotaldomains = (int)wholeBoundary.size();
+    vector<int> domain2proc(ntotaldomains, -1);
+    for (size_t i = 0 ; i < allDomains.size() ; i++)
+    {
+        if (domain2proc[allDomains[i]] < 0)
+            domain2proc[allDomains[i]] = 0;
+    }
+
+    CreateCurrentDomainBoundaryInformation(domain2proc);
+
+    for (size_t i = 0 ; i < domainNum.size() ; i++)
+    {
+        int dom = domainNum[i];
+        Boundary *bi = &boundary[dom];
+
+        vtkDataSet *ds = meshes[i];
+        int npts = ds->GetNumberOfPoints();
+
+        vtkUnsignedCharArray *gn = vtkUnsignedCharArray::New();
+        gn->SetNumberOfTuples(npts);
+        gn->SetName("avtGhostNodes");
+        unsigned char *gnp = gn->GetPointer(0);
+   
+        for (int j = 0 ; j < npts ; j++)
+            gnp[j] = 0;
+
+        int dims[3];
+        dims[0] = bi->oldnextents[1] - bi->oldnextents[0] + 1;
+        dims[1] = bi->oldnextents[3] - bi->oldnextents[2] + 1;
+        dims[2] = bi->oldnextents[5] - bi->oldnextents[4] + 1;
+
+        for (std::vector<Neighbor>::const_iterator it = bi->neighbors.begin(); it != bi->neighbors.end(); ++it)
+        {
+            if (it->refinement_rel != SAME_REFINEMENT_LEVEL)
+                continue;
+
+            if (it->type == Boundary::IMIN)
+            {
+                for (int k = it->nextents[4] - 1 - bi->oldnextents[4] + 1; k < it->nextents[5] - bi->oldnextents[4] + 1; k++)
+                    for (int j = it->nextents[2] - 1 - bi->oldnextents[2] + 1; j < it->nextents[3] - bi->oldnextents[2] + 1; j++)
+                    {
+                        int idx = 0 + j*dims[0] + k*dims[0]*dims[1];
+                        avtGhostData::AddGhostNodeType(gnp[idx], DUPLICATED_NODE);
+                    }
+            }
+            else if (it->type == Boundary::IMAX)
+            {
+                for (int k = it->nextents[4] - 1 - bi->oldnextents[4] + 1; k < it->nextents[5] - bi->oldnextents[4] + 1; k++)
+                    for (int j = it->nextents[2] - 1 - bi->oldnextents[2] + 1; j < it->nextents[3] - bi->oldnextents[2] + 1; j++)
+                    {
+                        int idx = dims[0]-1 + j*dims[0] + k*dims[0]*dims[1];
+                        avtGhostData::AddGhostNodeType(gnp[idx], DUPLICATED_NODE);
+                    }
+            }
+            else if (it->type == Boundary::JMIN)
+            {
+                for (int k = it->nextents[4] - 1 - bi->oldnextents[4] + 1; k < it->nextents[5] - bi->oldnextents[4] + 1; k++)
+                    for (int i = it->nextents[0] - 1 - bi->oldnextents[0] + 1; i < it->nextents[1] - bi->oldnextents[0] + 1; i++)
+                    {
+                        int idx = i + 0*dims[0] + k*dims[0]*dims[1];
+                        avtGhostData::AddGhostNodeType(gnp[idx], DUPLICATED_NODE);
+                    }
+            }
+            else if (it->type == Boundary::JMAX)
+            {
+                for (int k = it->nextents[4] - 1 - bi->oldnextents[4] + 1; k < it->nextents[5] - bi->oldnextents[4] + 1; k++)
+                    for (int i = it->nextents[0] - 1 - bi->oldnextents[0] + 1; i < it->nextents[1] - bi->oldnextents[0] + 1; i++)
+                    {
+                        int idx = i + (dims[1]-1)*dims[0] + k*dims[0]*dims[1];
+                        avtGhostData::AddGhostNodeType(gnp[idx], DUPLICATED_NODE);
+                    }
+            }
+            else if (it->type == Boundary::KMIN)
+            {
+                for (int j = it->nextents[2] - 1 - bi->oldnextents[2] + 1; j < it->nextents[3] - bi->oldnextents[2] + 1; j++)
+                    for (int i = it->nextents[0] - 1 - bi->oldnextents[0] + 1; i < it->nextents[1] - bi->oldnextents[0] + 1; i++)
+                    {
+                        int idx = i + j*dims[0] + 0*dims[0]*dims[1];
+                        avtGhostData::AddGhostNodeType(gnp[idx], DUPLICATED_NODE);
+                    }
+            }
+            else if (it->type == Boundary::KMAX)
+            {
+                for (int j = it->nextents[2] - 1 - bi->oldnextents[2] + 1; j < it->nextents[3] - bi->oldnextents[2] + 1; j++)
+                    for (int i = it->nextents[0] - 1 - bi->oldnextents[0] + 1; i < it->nextents[1] - bi->oldnextents[0] + 1; i++)
+                    {
+                        int idx = i + j*dims[0] + (dims[2]-1)*dims[0]*dims[1];
+                        avtGhostData::AddGhostNodeType(gnp[idx], DUPLICATED_NODE);
+                    }
+            }
+        }
+
+        ds->GetPointData()->AddArray(gn);
+        gn->Delete();
+
+        //
+        //  Create a field-data array indicating the extents of real zones.
+        //  Used during ghostzone removal.
+        //
+        vtkIntArray *realDims = vtkIntArray::New();
+        realDims->SetName("avtRealDims");
+        realDims->SetNumberOfTuples(6);
+        realDims->SetValue(0, 0);
+        realDims->SetValue(1, dims[0]);
+        realDims->SetValue(2, 0);
+        realDims->SetValue(3, dims[1]);
+        realDims->SetValue(4, 0);
+        realDims->SetValue(5, dims[2]);
+        ds->GetFieldData()->AddArray(realDims);
+        ds->GetFieldData()->CopyFieldOn("avtRealDims");
+        realDims->Delete();
+    }
+}
+
+// ****************************************************************************
+//  Method: avtStructuredDomainBoundaries::SetIndicesForRectGrid
+//
+//  Purpose:
+//      Sets the indices for a rectilinear grid.  This just sets some state
+//      information that will be used by 'CalculateBoundaries' later.
+//
+//  Programmer: Hank Childs
+//  Creation:   November 11, 2003
+//
+// ****************************************************************************
+
+void
+avtStructuredDomainBoundaries::SetIndicesForRectGrid(int domain, int e[6])
+{
+    SetIndicesForAMRPatch(domain, 0, e);
+}
+
+// ****************************************************************************
+//  Method: avtStructuredDomainBoundaries::SetRefinementRatios
+//
+//  Purpose:
+//      Sets the refinement ratios for the isotropic case.
+
+//  Programmer: Gunther H. Weber
+//  Creation:   July 18, 2012
+//
+// ****************************************************************************
+
+void
+avtStructuredDomainBoundaries::SetRefinementRatios(const std::vector<int> &r)
+{
+    ref_ratios.clear();
+    for (std::vector<int>::const_iterator it = r.begin(); it != r.end(); ++it)
+    {
+        ref_ratios.push_back(std::vector<int>(3, *it));
+    }
+}
+
+// ****************************************************************************
+//  Method: avtStructuredDomainBoundaries::SetIndicesForAMRPatch
+//
+//  Purpose:
+//      Sets the indices for an AMR patch.  This just sets some state
+//      information that will be used by 'CalculateBoundaries' later.
+//
+//  Programmer: Hank Childs
+//  Creation:   November 11, 2003
+//
+//  Modifications:
+//
+//    Mark C. Miller, Mon Jan 12 17:29:19 PST 2004
+//    Added code to disallow operation if shouldComputeNeighborsFromExtents is
+//    not true.
+//
+//    Kathleen Bonnell, Tue Jan 20 17:26:40 PST 2004
+//    Reversed order of Exceptions, per Mark Miller's request.
+// 
+//    Hank Childs, Fri Nov 14 10:50:06 PST 2008
+//    Set data member for tracking maximum AMR level.
+//
+// ****************************************************************************
+
+void
+avtStructuredDomainBoundaries::SetIndicesForAMRPatch(int domain, 
+                                                     int level, int e[6])
+{
+    if (!shouldComputeNeighborsFromExtents)
+    {
+        EXCEPTION1(VisItException,
+                   "avtStructuredDomainBoundaries: "
+                   "passing indices for a mesh that does not support "
+                   "computation of neighbors from index extents");
+    }
+
+    if ((size_t)domain >= levels.size())
+        EXCEPTION1(VisItException,
+                   "avtStructuredDomainBoundaries: "
+                   "targeted domain more than number of domains");
+
+    levels[domain] = level;
+    maxAMRLevel = (maxAMRLevel > level+1 ? maxAMRLevel : level+1);
+    extents[6*domain+0] = e[0];
+    extents[6*domain+1] = e[1];
+    extents[6*domain+2] = e[2];
+    extents[6*domain+3] = e[3];
+    extents[6*domain+4] = e[4];
+    extents[6*domain+5] = e[5];
+
+    int tmp[6];
+    tmp[0] = 1;
+    tmp[1] = e[1] - e[0] + 1;
+    tmp[2] = 1;
+    tmp[3] = e[3] - e[2] + 1;
+    tmp[4] = 1;
+    tmp[5] = e[5] - e[4] + 1;
+    SetExtents(domain, tmp);
+}
+
+// ****************************************************************************
+//  Method: avtStructuredDomainBoundaries::CalculateBoundaries
+//
+//  Purpose:
+//      Calculates the boundaries between rectilinear grids.
+//
+//  Programmer: Hank Childs
+//  Creation:   November 11, 2003
+//
+//  Modifications:
+//
+//    Mark C. Miller, Mon Jan 12 17:29:19 PST 2004
+//    Added code to disallow operation if shouldComputeNeighborsFromExtents is
+//    not true.
+//
+//    Hank Childs, Mon Jun 27 10:48:41 PDT 2005
+//    Re-wrote to use interval trees for more efficient overlap finding.
+//
+//    Hank Childs, Wed Jul  6 06:56:02 PDT 2005
+//    Do some sorting so that we know the "match" entry for the neighbor
+//    index will be correct.
+//
+//    Hank Childs, Fri Jun  9 14:18:11 PDT 2006
+//    Remove unused variable.
+//
+//    Kathleen Bonnell, Mon Aug 14 16:40:30 PDT 2006
+//    API change for avtIntervalTree.
+//
+//    Hank Childs, Fri Nov 14 10:50:35 PST 2008
+//    Wrote routine to make multiple passes, one for each AMR level.  This
+//    greatly speeds up the execution time of AMR hierarchies with lots
+//    of levels.
+//
+//    Hank Childs, Tue Jan  4 13:35:56 PST 2011
+//    Add support for the types of ghost data needed to create crack-free 
+//    isosurfaces with the AMR stitch operator.  They are:
+//      (1) values from the coarse patch when a fine patch is embedded in a
+//          coarse patch.
+//      (2) values from the coarse patch when a coarse patch abuts a fine
+//          patch.
+//
+//    Jeremy Meredith, Wed Mar 23 16:43:25 EDT 2011
+//    Added corner neighbor information at coarse-fine boundaries.
+//
+//    Hank Childs, Wed Aug 31 08:45:01 PDT 2011
+//    Add support for T-intersections.
+//
+//    Gunther H. Weber, Thu Jan 19 14:35:59 PST 2012
+//    Select new support for T-intersections by defining 
+//    CREATE_GHOSTS_FOR_T_INTERSECTIONS
+//
+//    Gunther H. Weber, Thu Jun 14 17:31:59 PDT 2012
+//    Make it possible to enable new support for T-intersections at runtime.
+//
+//    Gunther H. Weber, Wed Jul 18 15:38:36 PDT 2012
+//    Support anisotropic refinement.
+//
+// ****************************************************************************
+
+void
+avtStructuredDomainBoundaries::CalculateBoundaries(void)
+{
+    if (!createGhostsForTIntersections)
+    {
+        if (haveCalculatedBoundaries)
+            return;
+
+        int t0 = visitTimer->StartTimer();
+
+        if (!shouldComputeNeighborsFromExtents)
+        {
+            EXCEPTION1(VisItException,
+                    "avtStructuredDomainBoundaries: "
+                    "passing indices for a mesh that does not support "
+                    "computation of neighbors from index extents");
+        }
+
+        for (int l = 0 ; l < maxAMRLevel ; l++)
+        {
+            vector<int> doms_at_this_level;
+            int ndoms;
+            bool renumberForEachAMRLevel = false;
+            if (maxAMRLevel == 1)
+            {
+                renumberForEachAMRLevel = false;
+                ndoms = (int)levels.size();
+            }
+            else
+            {
+                renumberForEachAMRLevel = true;
+
+                int totalNDoms = (int)levels.size();
+                for (int i = 0 ; i < totalNDoms ; i++)
+                {
+                    if (levels[i] == l)
+                        doms_at_this_level.push_back(i);
+                }
+                ndoms = (int)doms_at_this_level.size();
+            }
+
+            avtIntervalTree itree(ndoms, 3);
+            double extf[6];
+            for (int i = 0 ; i < ndoms ; i++)
+            {
+                for (int j = 0 ; j < 6 ; j++)
+                {
+                    int dom = (renumberForEachAMRLevel ? doms_at_this_level[i] : i);
+                    extf[j] = (double) extents[6*dom+j];
+                }
+                itree.AddElement(i, extf);
+            }
+            itree.Calculate(true);
+
+            vector<int> neighbors(ndoms, 0);
+            for (int i = 0 ; i < ndoms ; i++)
+            {
+                double min_vec[3], max_vec[3];
+                int dom = (renumberForEachAMRLevel ? doms_at_this_level[i] : i);
+                min_vec[0] = (double) extents[6*dom+0];
+                min_vec[1] = (double) extents[6*dom+2];
+                min_vec[2] = (double) extents[6*dom+4];
+                max_vec[0] = (double) extents[6*dom+1];
+                max_vec[1] = (double) extents[6*dom+3];
+                max_vec[2] = (double) extents[6*dom+5];
+                vector<int> list;
+                itree.GetElementsListFromRange(min_vec, max_vec, list);
+
+                // To get the "match" entry correct, we have to sort the list.  This
+                // will ensure that we can predict what a domain's match number will be
+                // for its neighbor.
+
+                sort(list.begin(), list.end());
+
+                for (size_t j = 0 ; j < list.size() ; j++)
+                {
+                    if (i == list[j])
+                        continue; // Not interested in self-intersection.
+
+                    int orientation[3] = { 1, 2, 3 }; // this doesn't really
+                    // apply for rectilinear.
+                    int d1 = (renumberForEachAMRLevel ? doms_at_this_level[i] : i);
+                    int d2 = (renumberForEachAMRLevel ? doms_at_this_level[list[j]]
+                            : list[j]);
+                    if (levels[d1] != levels[d2])
+                        continue;
+                    int e[6];
+                    e[0] = (extents[6*d1+0] > extents[6*d2+0] ? extents[6*d1+0]
+                            : extents[6*d2+0]);
+                    e[0] -= extents[6*d1+0] - 1;
+                    e[1] = (extents[6*d1+1] < extents[6*d2+1] ? extents[6*d1+1]
+                            : extents[6*d2+1]);
+                    e[1] -= extents[6*d1+0] - 1;
+                    e[2] = (extents[6*d1+2] > extents[6*d2+2] ? extents[6*d1+2]
+                            : extents[6*d2+2]);
+                    e[2] -= extents[6*d1+2] - 1;
+                    e[3] = (extents[6*d1+3] < extents[6*d2+3] ? extents[6*d1+3]
+                            : extents[6*d2+3]);
+                    e[3] -= extents[6*d1+2] - 1;
+                    e[4] = (extents[6*d1+4] > extents[6*d2+4] ? extents[6*d1+4]
+                            : extents[6*d2+4]);
+                    e[4] -= extents[6*d1+4] - 1;
+                    e[5] = (extents[6*d1+5] < extents[6*d2+5] ? extents[6*d1+5]
+                            : extents[6*d2+5]);
+                    e[5] -= extents[6*d1+4] - 1;
+                    int index = neighbors[list[j]];
+                    neighbors[list[j]]++;
+                    AddNeighbor(d1, d2, index, orientation, e);
+                }
+            }
+        }
+
+        // This will perform some calculations that are necessary to do the actual
+        // communication.
+        //
+        for (int i = 0 ; i < (int)levels.size() ; i++)
+        {
+            Finish(i);
+        }
+
+        visitTimer->StopTimer(t0, "avtStructuredDomainBoundaries::Calculate");
+        haveCalculatedBoundaries = true;
+    }
+    else
+    {
+        if (haveCalculatedBoundaries)
+            return;
+
+        int t0 = visitTimer->StartTimer();
+        int totalNumDomains = (int)wholeBoundary.size();
+        vector<int> numNeighbors(totalNumDomains, 0);
+
+        if (!shouldComputeNeighborsFromExtents)
+        {
+            EXCEPTION1(VisItException,
+                    "avtStructuredDomainBoundaries: "
+                    "passing indices for a mesh that does not support "
+                    "computation of neighbors from index extents");
+        }
+
+        // 
+        // The logic for setting up boundaries across AMR levels and within an
+        // AMR level are similar.  So the code is combined into a single loop.
+        // Also, the normal rectilinear case is the same as "within an AMR level".
+        //   Iteration 0: across AMR levels
+        //   Iteration 1: within AMR levels
+        //
+        for (int iteration = 0 ; iteration < 2 ; iteration++)
+        {
+            bool wellFormedAMR = ref_ratios.size() > 0 && ref_ratios.size() == (size_t)maxAMRLevel-1;
+            if (iteration == 0 && !wellFormedAMR)
+                continue;
+
+            int maxLevel = (iteration == 0 ? maxAMRLevel-1 : maxAMRLevel);
+            for (int l = 0 ; l < maxLevel ; l++)
+            {
+                std::vector<int> refrat(3, 1);
+                if (iteration == 0)
+                    for (size_t d = 0; d < std::min(ref_ratios[l].size(), size_t(3)); ++d)
+                        refrat[d] = ref_ratios[l][d];
+
+                vector<int> doms;
+                int totalNDoms = (int)levels.size();
+                for (int i = 0 ; i < totalNDoms ; i++)
+                {
+                    if (iteration == 0)
+                    {
+                        if (levels[i] == l || levels[i] == l+1)
+                        {
+                            doms.push_back(i);
+                        }
+                    }
+                    else
+                    {
+                        if (levels[i] == l)
+                        {
+                            doms.push_back(i);
+                        }
+                    }
+                }
+                int ndoms = (int)doms.size();
+
+                avtIntervalTree itree(ndoms, 3);
+                double extf[6];
+                for (int i = 0 ; i < ndoms ; i++)
+                {
+
+                    for (int j = 0 ; j < 6 ; j++)
+                    {
+                        int dom = doms[i];
+                        if (levels[dom] == l)
+                            extf[j] = (double) (refrat[j/2]*extents[6*dom+j]);
+                        else
+                            extf[j] = (double) extents[6*dom+j];
+                    }
+                    itree.AddElement(i, extf);
+                }
+                itree.Calculate(true);
+
+                for (int i = 0 ; i < ndoms ; i++)
+                {
+                    int d1 = doms[i];
+                    if (levels[d1] != l) // next refinement level.  We'll get this later
+                        continue;
+
+                    double min_vec[3], max_vec[3];
+                    int dom = doms[i];
+                    min_vec[0] = (double) refrat[0]*extents[6*dom+0];
+                    min_vec[1] = (double) refrat[1]*extents[6*dom+2];
+                    min_vec[2] = (double) refrat[2]*extents[6*dom+4];
+                    max_vec[0] = (double) refrat[0]*extents[6*dom+1];
+                    max_vec[1] = (double) refrat[1]*extents[6*dom+3];
+                    max_vec[2] = (double) refrat[2]*extents[6*dom+5];
+
+                    bool dataIs2D = (extents[6*dom+4]==0 && extents[6*dom+5]==0);
+
+                    vector<int> list;
+                    itree.GetElementsListFromRange(min_vec, max_vec, list);
+
+                    // To get the "match" entry correct, we have to sort the list.  This
+                    // will ensure that we can predict what a domain's match number will be
+                    // for its neighbor.
+
+                    sort(list.begin(), list.end());
+
+                    for (size_t j = 0 ; j < list.size() ; j++)
+                    {
+                        if (i == list[j])
+                            continue; // Not interested in self-intersection.
+
+                        int orientation[3] = { 1, 2, 3 }; // this doesn't really
+                        // apply for rectilinear.
+                        int d2 = doms[list[j]];
+                        if (iteration == 0)
+                        {
+                            if (levels[d2] != (l+1)) // at same refinement level
+                                // and we want one finer
+                                continue;
+                        }
+                        else
+                        {
+                            if (levels[d2] != (l)) // at different refinement level
+                                // and we want the same
+                                continue;
+                        }
+
+                        // Determine area of extents overlap and then normalize to d2.
+                        int e[6];
+                        e[0] = (refrat[0]*extents[6*d1+0] > extents[6*d2+0] ? refrat[0]*extents[6*d1+0]
+                                : extents[6*d2+0]);
+                        e[0] -= extents[6*d2+0] - 1;
+                        e[1] = (refrat[0]*extents[6*d1+1] < extents[6*d2+1] ? refrat[0]*extents[6*d1+1]
+                                : extents[6*d2+1]);
+                        e[1] -= extents[6*d2+0] - 1;
+                        e[2] = (refrat[1]*extents[6*d1+2] > extents[6*d2+2] ? refrat[1]*extents[6*d1+2]
+                                : extents[6*d2+2]);
+                        e[2] -= extents[6*d2+2] - 1;
+                        e[3] = (refrat[1]*extents[6*d1+3] < extents[6*d2+3] ? refrat[1]*extents[6*d1+3]
+                                : extents[6*d2+3]);
+                        e[3] -= extents[6*d2+2] - 1;
+                        e[4] = (refrat[2]*extents[6*d1+4] > extents[6*d2+4] ? refrat[2]*extents[6*d1+4]
+                                : extents[6*d2+4]);
+                        e[4] -= extents[6*d2+4] - 1;
+                        e[5] = (refrat[2]*extents[6*d1+5] < extents[6*d2+5] ? refrat[2]*extents[6*d1+5]
+                                : extents[6*d2+5]);
+                        e[5] -= extents[6*d2+4] - 1;
+
+                        bool minFace[3];
+                        bool maxFace[3];
+                        bool tJuncMinFace[3] = { false, false, false };
+                        bool tJuncMaxFace[3] = { false, false, false };
+                        int  idxBeg[3];
+                        int  idxEnd[3];
+
+                        // We are asking the question: "does d1 form a minI face for d2?" for
+                        // mins and maxes in I, J, & K.
+                        //
+                        // And: tJunMaxFace[0] = true -->
+                        //  d2 d2
+                        //  d1 d1 d1 d1
+                        // (d1 extends past d2 in the I direction ... and also overlaps in the I direction)
+
+                        for (int axis=0; axis<3; axis++)
+                        {
+                            minFace[axis]  = (refrat[axis]*extents[6*d1+2*axis+0] < extents[6*d2+2*axis+0]);
+                            if (minFace[axis])
+                                if (refrat[axis]*extents[6*d1+2*axis+1] > extents[6*d2+2*axis+0])
+                                    tJuncMinFace[axis] = true;
+                            maxFace[axis]  = (refrat[axis]*extents[6*d1+2*axis+1] > extents[6*d2+2*axis+1]);
+                            if (maxFace[axis])
+                                if (refrat[axis]*extents[6*d1+2*axis+0] < extents[6*d2+2*axis+1])
+                                    tJuncMaxFace[axis] = true;
+                            idxBeg[axis]   = (refrat[axis]*extents[6*d1+2*axis+0] > extents[6*d2+2*axis+0] ? refrat[axis]*extents[6*d1+2*axis+0]
+                                    : extents[6*d2+2*axis+0]);
+                            idxEnd[axis]   = (refrat[axis]*extents[6*d1+2*axis+1] < extents[6*d2+2*axis+1] ? refrat[axis]*extents[6*d1+2*axis+1]
+                                    : extents[6*d2+2*axis+1]);
+                        }
+
+                        // Loop over all possible 8 (2D) or 26 (3D)
+                        // boundaries, and add them if they apply here.
+                        for (int kOff=-1; kOff<=1; ++kOff)
+                        {
+                            // for 2D data, skip all but kOff==0
+                            if (dataIs2D && kOff!=0)
+                                continue;
+
+                            for (int jOff=-1; jOff<=1; ++jOff)
+                            {
+                                for (int iOff=-1; iOff<=1; ++iOff)
+                                {
+                                    // iOff=jOff=kOff=0 is the current domain; skip it.
+                                    if (iOff==0 && jOff==0 && kOff==0)
+                                        continue;
+
+                                    int axisOffset[3] = {iOff, jOff, kOff};
+
+                                    // if the current boundary doesn't apply, skip it
+                                    if ((axisOffset[0]==-1 && !minFace[0]) ||
+                                            (axisOffset[0]==+1 && !maxFace[0]) || 
+                                            (axisOffset[1]==-1 && !minFace[1]) ||
+                                            (axisOffset[1]==+1 && !maxFace[1]) || 
+                                            (axisOffset[2]==-1 && !minFace[2]) ||
+                                            (axisOffset[2]==+1 && !maxFace[2]))
+                                    {
+                                        continue;
+                                    }
+
+                                    int bnd1[6];
+                                    int bnd2[6];
+                                    bool usedTJunc = false;
+                                    for (int axis = 0; axis < 3; axis++)
+                                    {
+                                        int extAxMin = 2*axis + 0;
+                                        int extAxMax = 2*axis + 1;
+                                        int extD1Start = 6*d1;
+                                        int extD2Start = 6*d2;
+                                        if (axisOffset[axis]==-1 && minFace[axis])
+                                        {
+                                            bnd1[extAxMin] = 1;
+                                            bnd1[extAxMax] = 1;
+
+                                            bnd2[extAxMin] = extents[extD2Start+extAxMin] - refrat[axis]*extents[extD1Start+extAxMin];
+                                            bnd2[extAxMin] /= refrat[axis];
+                                            bnd2[extAxMin] += 1;
+                                            if (tJuncMinFace[axis])
+                                                bnd2[extAxMin] -= 1;  // crazy indexing; only happens at min, not max
+                                            usedTJunc = true;
+                                            bnd2[extAxMax] = bnd2[extAxMin];
+                                        }
+                                        else if (axisOffset[axis]==+1 && maxFace[axis])
+                                        {
+                                            bnd1[extAxMin] = extents[extD2Start+extAxMax] - extents[extD2Start+extAxMin]+1;
+                                            bnd1[extAxMax] = bnd1[extAxMin];
+
+                                            bnd2[extAxMin] = extents[extD2Start+extAxMax] - refrat[axis]*extents[extD1Start+extAxMin];
+                                            bnd2[extAxMin] /= refrat[axis];
+                                            bnd2[extAxMin] += 1;
+                                            bnd2[extAxMax] = bnd2[extAxMin];
+                                            if (tJuncMaxFace[axis])
+                                                usedTJunc = true;
+                                        }
+                                        else
+                                        {
+                                            bnd1[extAxMin] = idxBeg[axis] - extents[extD2Start+extAxMin] + 1;
+                                            bnd1[extAxMax] = idxEnd[axis] - extents[extD2Start+extAxMin] + 1;
+
+                                            bnd2[extAxMin] = idxBeg[axis] - refrat[axis]*extents[extD1Start+extAxMin];
+                                            bnd2[extAxMin] /= refrat[axis];
+                                            bnd2[extAxMin] += 1;
+                                            bnd2[extAxMax] = bnd2[extAxMin] + (bnd1[extAxMax]-bnd1[extAxMin]);
+                                        }
+                                    }
+
+                                    int index = numNeighbors[d1];
+                                    numNeighbors[d1]++;
+                                    if (iteration == 0)
+                                        AddNeighbor(d2, d1, index, orientation, bnd1, MORE_COARSE, refrat, DONOR_NEIGHBOR);
+                                    else if (usedTJunc)
+                                        AddNeighbor(d2, d1, index, orientation, bnd1, SAME_REFINEMENT_LEVEL, std::vector<int>(3, 1), DONOR_NEIGHBOR);
+                                    else
+                                        AddNeighbor(d2, d1, index, orientation, bnd1);
+
+                                    index = numNeighbors[d2];
+                                    numNeighbors[d2]++;
+                                    if (iteration == 0)
+                                        AddNeighbor(d1, d2, index, orientation, bnd2, MORE_FINE, refrat, RECIPIENT_NEIGHBOR);
+                                    else if (usedTJunc)
+                                        AddNeighbor(d1, d2, index, orientation, bnd2, SAME_REFINEMENT_LEVEL, std::vector<int>(3, 1), RECIPIENT_NEIGHBOR);
+                                    else
+                                        AddNeighbor(d1, d2, index, orientation, bnd2);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // This will perform some calculations that are necessary to do the actual
+        // communication.
+        //
+        for (int i = 0 ; i < (int)levels.size() ; i++)
+        {
+            Finish(i);
+        }
+
+        visitTimer->StopTimer(t0, "avtStructuredDomainBoundaries::Calculate");
+        haveCalculatedBoundaries = true;
+    }
+}
+
+
+// ****************************************************************************
+//  Method:  avtStructuredDomainBoundaries::GetExtents
+//
+//  Purpose:
+//    Get the extents of one domain.
+//
+//  Arguments:
+//    domain     the domain to get the extents of
+//    e          the extents
+//
+//  Programmer:  Kathleen Bonnell 
+//  Creation:    February 8, 2005 
+//
+// ****************************************************************************
+
+void
+avtStructuredDomainBoundaries::GetExtents(int domain, int e[6])
+{
+    int ntotaldomains = (int)wholeBoundary.size();
+  
+    if (domain < 0 || ntotaldomains <= domain)
+    {
+        EXCEPTION2(BadIndexException, domain, ntotaldomains);
+    }
+
+    e[0] = wholeBoundary[domain].oldnextents[0];
+    e[1] = wholeBoundary[domain].oldnextents[1];
+    e[2] = wholeBoundary[domain].oldnextents[2];
+    e[3] = wholeBoundary[domain].oldnextents[3];
+    e[4] = wholeBoundary[domain].oldnextents[4];
+    e[5] = wholeBoundary[domain].oldnextents[5];
+}
+
+
+// ****************************************************************************
+//  Method: avtStructuredDomainBoundaries::GetNeighborPresence
+//
+//  Purpose:
+//      Retrieves information about whether there are neighbors present
+//      on each side of the domain.
+//
+//  Programmer: Hank Childs
+//  Creation:   July 31, 2007
+//
+// ****************************************************************************
+
+void
+avtStructuredDomainBoundaries::GetNeighborPresence(int domain, bool *b,
+                                                  std::vector<int> &allDomains)
+{
+    int ntotaldomains = (int)wholeBoundary.size();
+
+    if (domain < 0 || ntotaldomains <= domain)
+    {
+        EXCEPTION2(BadIndexException, domain, ntotaldomains);
+    }
+
+    Boundary &wbi = wholeBoundary[domain];
+    for (int i = 0 ; i < 6 ; i++)
+         b[i] = false;
+    for (size_t i = 0 ; i < wbi.neighbors.size() ; i++)
+    {
+        if  (wbi.neighbors[i].refinement_rel != SAME_REFINEMENT_LEVEL)
+            continue;
+
+        int neighbor = wbi.neighbors[i].domain;
+
+        bool foundIt = false;
+        if (allDomains.size() == 0)
+            foundIt = true;
+        for (size_t j = 0 ; j < allDomains.size() ; j++)
+             if (allDomains[j] == neighbor)
+                 foundIt = true;
+
+        if (!foundIt)
+            continue;
+
+        int btype = wbi.neighbors[i].type;
+        b[0] |= (btype == Boundary::IMIN);
+        b[1] |= (btype == Boundary::IMAX);
+        b[2] |= (btype == Boundary::JMIN);
+        b[3] |= (btype == Boundary::JMAX);
+        b[4] |= (btype == Boundary::KMIN);
+        b[5] |= (btype == Boundary::KMAX);
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtStructuredDomainBoundaries::GetNeighbors
+//
+//  Purpose:
+//     Get the domain ids of domain neighbors on each side of the domain.
+//
+//  Programmer: Eduard Deines
+//  Creation:   Dec 15, 2008
+//
+// ****************************************************************************
+vector<Neighbor> 
+avtStructuredDomainBoundaries::GetNeighbors(int domain)
+{
+    int ntotaldomains = (int)wholeBoundary.size();
+  
+    if (domain < 0 || ntotaldomains <= domain)
+    {
+        EXCEPTION2(BadIndexException, domain, ntotaldomains);
+    }
+
+    return wholeBoundary[domain].neighbors;
+}

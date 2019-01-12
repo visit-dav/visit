@@ -1,0 +1,45 @@
+<?xml version="1.0"?>
+<Object name="MachineProfile">
+    <Field name="host" type="string">photon01.ornl.gov</Field>
+    <Field name="hostAliases" type="string">photon##.ornl.gov photon##</Field>
+    <Field name="hostNickname" type="string">ORNL Photon</Field>
+    <Field name="clientHostDetermination" type="string">ParsedFromSSHCLIENT</Field>
+    <Field name="directory" type="string">/apps/visit</Field>
+    <Object name="LaunchProfile">
+        <Field name="profileName" type="string">photon serial on batch nodes</Field>
+        <Field name="numProcessors" type="int">1</Field>
+        <Field name="launchMethodSet" type="bool">true</Field>
+        <Field name="launchMethod" type="string">srun</Field>
+        <Field name="parallel" type="bool">true</Field>
+        <Field name="arguments" type="stringVector"></Field>
+    </Object>
+    <Object name="LaunchProfile">
+        <Field name="profileName" type="string">photon parallel</Field>
+        <Field name="numProcessors" type="int">2</Field>
+        <Field name="numNodesSet" type="bool">true</Field>
+        <Field name="numNodes" type="int">1</Field>
+        <Field name="launchMethodSet" type="bool">true</Field>
+        <Field name="launchMethod" type="string">srun</Field>
+        <Field name="parallel" type="bool">true</Field>
+        <Field name="arguments" type="stringVector"></Field>
+    </Object>
+    <Object name="LaunchProfile">
+        <Field name="profileName" type="string">photon parallel render</Field>
+        <Field name="numProcessors" type="int">2</Field>
+        <Field name="numNodesSet" type="bool">true</Field>
+        <Field name="numNodes" type="int">2</Field>
+        <Field name="launchMethodSet" type="bool">true</Field>
+        <Field name="launchMethod" type="string">srun</Field>
+        <Field name="parallel" type="bool">true</Field>
+        <Field name="canDoHWAccel" type="bool">true</Field>
+        <Field name="havePreCommand" type="bool">true</Field>
+        <Field name="hwAccelPreCommand" type="string">/usr/X11R6/bin/xinit</Field>
+        <Field name="hwAccelPostCommand" type="string"></Field>
+        <Field name="arguments" type="stringVector"></Field>
+    </Object>
+    <Object name="LaunchProfile">
+        <Field name="profileName" type="string">photon serial on login node</Field>
+        <Field name="arguments" type="stringVector"></Field>
+    </Object>
+    <Field name="activeProfile" type="int">0</Field>
+</Object>

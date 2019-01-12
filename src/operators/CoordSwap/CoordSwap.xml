@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+  <Plugin name="CoordSwap" type="operator" label="CoordSwap" version="1.0" enabled="true" mdspecificcode="false" onlyengine="false" noengine="false" iconFile="CoordSwap.xpm" category="Geometry">
+    <Attribute name="CoordSwapAttributes" purpose="This class contains attributes for the coord swap operator." persistent="true">
+      <Enum name="Coord">
+        Coord1
+        Coord2
+        Coord3
+      </Enum>
+      <Field name="newCoord1" label="New Coordinate 1" type="enum" subtype="Coord">
+        Coord1
+      </Field>
+      <Field name="newCoord2" label="New Coordinate 2" type="enum" subtype="Coord">
+        Coord2
+      </Field>
+      <Field name="newCoord3" label="New Coordinate 3" type="enum" subtype="Coord">
+        Coord3
+      </Field>
+    </Attribute>
+  </Plugin>

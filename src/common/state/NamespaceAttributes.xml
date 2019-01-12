@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+  <Attribute name="NamespaceAttributes" purpose="This class contain the information needed to represent a namespace." exportAPI="STATE_API" exportInclude="state_exports.h">
+    <Field name="type" type="int">-1</Field>
+    <Field name="subsets" type="intVector"></Field>
+    <Field name="min" type="int">-1</Field>
+    <Field name="max" type="int">-1</Field>
+  </Attribute>

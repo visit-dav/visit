@@ -1,0 +1,107 @@
+<?xml version="1.0"?>
+  <Plugin name="WellBore" type="plot" label="Well Bore" version="1.0" enabled="false" mdspecificcode="false" onlyengine="false" noengine="false" vartype="mesh">
+    <CXXFLAGS>
+    </CXXFLAGS>
+    <LIBS>
+    </LIBS>
+    <Files components="V">
+      avtWellBoreFilter.C
+      avtWellBoreNameMapper.C
+    </Files>
+    <Files components="E">
+      avtWellBoreFilter.C
+      avtWellBoreNameMapper.C
+    </Files>
+    <Attribute name="WellBoreAttributes" purpose="This class contains the plot attributes for the well bore plot." persistent="true" codefile="WellBoreAttributes.code">
+      <Enum name="WellRenderingMode">
+        Lines
+        Cylinders
+      </Enum>
+      <Enum name="DetailLevel">
+        Low
+        Medium
+        High
+        Super
+      </Enum>
+      <Enum name="ColoringMethod">
+        ColorBySingleColor
+        ColorByMultipleColors
+        ColorByColorTable
+      </Enum>
+      <Enum name="WellAnnotation">
+        None
+        StemOnly
+        NameOnly
+        StemAndName
+      </Enum>
+      <Field name="defaultPalette" label="Default palette" type="att" subtype="ColorControlPointList" ignoreeq="true">
+      </Field>
+      <Field name="changedColors" label="Changed colors" type="ucharVector" ignoreeq="true">
+      </Field>
+      <Field name="colorType" label="Color type" type="enum" subtype="ColoringMethod">
+        ColorByMultipleColors
+      </Field>
+      <Field name="colorTableName" label="Color table" type="colortable">
+        Default
+      </Field>
+      <Field name="invertColorTable" label="Invert Color table" type="bool">
+        false
+      </Field>
+      <Field name="singleColor" label="singleColor" type="color">
+        255
+        0
+        0
+        255
+      </Field>
+      <Field name="multiColor" label="multiColor" type="att" subtype="ColorAttributeList">
+      </Field>
+      <Field name="drawWellsAs" label="Draw wells as" type="enum" subtype="WellRenderingMode">
+        Cylinders
+      </Field>
+      <Field name="wellCylinderQuality" label="Well cylinder quality" type="enum" subtype="DetailLevel">
+        Medium
+      </Field>
+      <Field name="wellRadius" label="Well radius" type="float" enabler="drawWellsAs:Cylinders">
+        0.120000
+      </Field>
+      <Field name="wellLineWidth" label="Well line width" type="linewidth" enabler="drawWellsAs:Lines">
+        0
+      </Field>
+      <Field name="wellAnnotation" label="Well annotation" type="enum" subtype="WellAnnotation">
+        StemAndName
+      </Field>
+      <Field name="wellStemHeight" label="Well stem height" type="float">
+        10.0
+      </Field>
+      <Field name="wellNameScale" label="Well name scale" type="float">
+        0.2
+      </Field>
+      <Field name="legendFlag" label="Legend" type="bool">
+        true
+      </Field>
+      <Field name="nWellBores" label="nWellBores" type="int">
+        0
+      </Field>
+      <Field name="wellBores" label="Well bores" type="intVector">
+      </Field>
+      <Field name="wellNames" label="Well names" type="stringVector">
+      </Field>
+      <Function name="EnlargeMultiColor" user="true" member="true">
+      </Function>
+      <Function name="ColorIsChanged" user="true" member="true">
+      </Function>
+      <Function name="MarkColorAsChanged" user="true" member="true">
+      </Function>
+      <Function name="ChangesRequireRecalculation" user="true" member="true">
+      </Function>
+      <Function name="WellBoreViewerEnginePluginInfo::InitializeGlobalObjects" user="false" member="true">
+      </Function>
+      <Function name="WellBoreViewerEnginePluginInfo::InitializePlotAtts" user="false" member="true">
+      </Function>
+      <Function name="WellBoreViewerEnginePluginInfo::InitializeDefaultPalette" user="true" member="true" access="private">
+      </Function>
+      <Include file="source" quoted="false">
+        ColorControlPoint.h
+      </Include>
+    </Attribute>
+  </Plugin>

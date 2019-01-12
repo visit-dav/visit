@@ -1,0 +1,247 @@
+<?xml version="1.0"?>
+  <Plugin name="LineSampler" type="operator" label="LineSampler"
+          version="1.0" enabled="false" mdspecificcode="false"
+          engspecificcode="false" onlyengine="false" noengine="false"
+          iconFile="LineSampler.xpm" category="Slicing">
+    <Files components="W">
+    </Files>
+    <Attribute name="LineSamplerAttributes" purpose="This class contains attributes for the line sampler operator." persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="LineSampler.code">
+      <Enum name="MeshGeometry">
+        Cartesian
+        Cylindrical
+        Toroidal
+      </Enum>
+      <Enum name="ArrayConfiguration">
+        Geometry
+        Manual
+      </Enum>
+      <Enum name="Boundary">
+        Data
+        Wall
+      </Enum>
+      <Enum name="ChannelProjection">
+        Divergent
+        Parallel
+        Grid
+      </Enum>
+      <Enum name="ChannelLayoutType">
+        ChannelAbsolute
+        ChannelRelative
+      </Enum>
+      <Enum name="ArrayAxis">
+        R
+        Z
+      </Enum>
+      <Enum name="ViewGeometry">
+        Points
+        Lines
+        Surfaces
+      </Enum>
+      <Enum name="DisplayTime">
+        Step
+        Time
+        Cycle
+      </Enum>
+      <Enum name="ChannelGeometry">
+        Point
+        Line
+        Cylinder
+        Cone
+      </Enum>
+      <Enum name="ViewDimension">
+        One
+        Two
+        Three
+      </Enum>
+      <Enum name="ChannelProfile">
+        TopHat
+        Gaussian
+      </Enum>
+      <Enum name="ChannelIntegration">
+        NoChannelIntegration
+        IntegrateAlongChannel
+      </Enum>
+      <Enum name="ToroidalIntegration">
+        NoToroidalIntegration
+        ToroidalTimeSample
+        IntegrateToroidally
+      </Enum>
+      <Enum name="ToroidalAngleSampling">
+        ToroidalAngleAbsoluteSampling
+        ToroidalAngleRelativeSampling
+      </Enum>
+      <Enum name="TimeSampling">
+        CurrentTimeStep
+        MultipleTimeSteps
+      </Enum>
+      <Field name="meshGeometry" label="Mesh geometry" type="enum" subtype="MeshGeometry">
+        Toroidal
+      </Field>
+      <Field name="arrayConfiguration" label="Array configuration" type="enum" subtype="ArrayConfiguration">
+        Geometry
+      </Field>
+      <Field name="boundary" label="Boundary" type="enum" subtype="Boundary">
+        Data
+      </Field>
+      <Field name="instanceId" label="Instance ID" type="int">
+        0
+      </Field>
+      <Field name="nArrays" label="Number of arrays" type="int">
+        1
+      </Field>
+      <Field name="toroidalArrayAngle" label="Toroidal angle between arrays" type="double">
+        5.000000
+      </Field>
+      <Field name="nChannels" label="Number of channels" type="int">
+        5
+      </Field>
+      <Field name="channelProjection" label="Channel projection" type="enum" subtype="ChannelProjection">
+        Parallel
+      </Field>
+      <Field name="channelLayoutType" label="Channel layout"
+             type="enum" subtype="ChannelLayoutType">
+        ChannelRelative        
+       </Field>
+      <Field name="channelOffset" label="Parallel/Grid: Offset between channels" type="double">
+        0.100
+      </Field>
+      <Field name="channelAngle" label="Divergent: Angle between channels" type="double">
+        5.000000
+      </Field>
+      <Field name="nRows" label="Grid: Number of rows" type="int">
+        1
+      </Field>
+      <Field name="rowOffset" label="Grid: Offset between rows" type="double">
+        0.100
+      </Field>
+      <Field name="arrayOrigin" label="Array origin (R,Phi,Z)" type="doubleArray" length="3">
+        0.000000
+        0.000000
+        0.000000
+      </Field>
+      <Field name="arrayAxis" label="Array axis direction" type="enum" subtype="ArrayAxis">
+        Z
+      </Field>
+      <Field name="poloidalAngleStart" label="Poloidal start angle" type="double">
+        180
+      </Field>
+      <Field name="poloidalAngleStop" label="Poloidal stop angle" type="double">
+        220
+      </Field>
+
+      <Field name="poloialAngle" label="Poloidal angle" type="double">
+        0.000000
+      </Field>
+      <Field name="poloialRTilt" label="Poloidal plane R-tilt" type="double">
+        0.000000
+      </Field>
+      <Field name="poloialZTilt" label="Poloidal plane Z-tilt" type="double">
+        0.000000
+      </Field>
+      <Field name="toroidalAngle" label="Toroidal angle" type="double">
+        0.000000
+      </Field>
+      <Field name="flipToroidalAngle" label="Flip toroidal angle" type="bool">
+        false
+      </Field>
+      <Field name="viewGeometry" label="View geometry" type="enum" subtype="ViewGeometry">
+        Surfaces
+      </Field>
+      <Field name="viewDimension" label="View dimension" type="enum" subtype="ViewDimension">
+        Three
+      </Field>
+      <Field name="donotApplyToAll" label="Donot apply to all" type="bool">
+        True
+      </Field>
+      <Field name="heightPlotScale" label="1D plot height scale" type="double">
+        1.000000
+      </Field>
+      <Field name="channelPlotOffset" label="1D plot channel offset" type="double">
+        0.000000
+      </Field>
+      <Field name="arrayPlotOffset" label="1D plot array offset" type="double">
+        0.000000
+      </Field>
+      <Field name="displayTime" label="View time" type="enum" subtype="DisplayTime">
+        Step
+      </Field>
+      <Field name="channelGeometry" label="Channel geometry" type="enum" subtype="ChannelGeometry">
+        Line
+      </Field>
+      <Field name="radius" label="Cylinder radius" type="double">
+        0.100000
+      </Field>
+      <Field name="divergence" label="Cone divergence" type="double">
+        1.000000
+      </Field>
+      <Field name="channelProfile" label="Channel Profile" type="enum" subtype="ChannelProfile">
+        TopHat
+      </Field>
+      <Field name="standardDeviation" label="Standard deviation" type="double">
+        1.000000
+      </Field>
+      <Field name="sampleDistance" label="Linear sample distance" type="double">
+        0.1
+      </Field>
+      <Field name="sampleVolume" label="Sample volume" type="double">
+        1
+      </Field>
+      <Field name="sampleArc" label="Radial sample arc" type="double">
+        10.0
+      </Field>
+      <Field name="channelIntegration" label="Channel integration" type="enum" subtype="ChannelIntegration">
+        NoChannelIntegration
+      </Field>
+      <Field name="toroidalIntegration" label="Toroidal integration" type="enum" subtype="ToroidalIntegration">
+        NoToroidalIntegration
+      </Field>
+      <Field name="toroidalAngleSampling" label="Toroidal angle sampling" type="enum" subtype="ToroidalAngleSampling">
+        ToroidalAngleAbsoluteSampling
+      </Field>
+      <Field name="toroidalAngleStart" label="Toroidal start angle" type="double">
+        0
+      </Field>
+      <Field name="toroidalAngleStop" label="Toroidal stop angle" type="double">
+        360
+      </Field>
+      <Field name="toroidalAngleStride" label="Toroidal stride angle" type="double">
+        1
+      </Field>
+
+      <Field name="timeSampling" label="Time sampling" type="enum" subtype="TimeSampling">
+        CurrentTimeStep
+      </Field>
+      <Field name="timeStepStart" label="Start time step" type="int">
+        0
+      </Field>
+      <Field name="timeStepStop" label="Stop time step" type="int">
+        0
+      </Field>
+      <Field name="timeStepStride" label="Stride" type="int">
+        1
+      </Field>
+      <Field name="channelList" label="List of Channels" type="doubleVector">
+        0.000000
+        0.000000
+        0.000000
+        90.000000
+      </Field>
+      <Field name="wallList" label="Wall point list" type="doubleVector">
+        0.000000
+        0.000000
+      </Field>
+      <Field name="nChannelListArrays" label="Number of arrays" type="int">
+        1
+      </Field>
+      <Field name="channelListToroidalArrayAngle" label="Toroidal angle between arrays" type="double">
+        5.000000
+      </Field>
+      <Field name="channelListToroidalAngle" label="Toroidal angle" type="double">
+        0.000000
+      </Field>
+      <Function name="LineSamplerViewerEnginePluginInfo::GetClientAtts1" user="false" member="true">
+      </Function>
+      <Function name="LineSamplerViewerEnginePluginInfo::GetClientAtts3" user="false" member="true">
+      </Function>
+    </Attribute>
+  </Plugin>

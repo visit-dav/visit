@@ -1,0 +1,97 @@
+$$index_header
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>VisIt Regression Results ( $run_mode ) - $timestamp</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="css/styles.css" type="text/css" media="screen" />
+    <link rel="stylesheet" href="css/styles.css" type="text/css" media="print" />
+    <script type="text/javascript" src="js/jquery-latest.js"></script>
+    <script type="text/javascript" src="js/jquery.tablesorter.js"></script>
+    <script type="text/javascript" id="js">$(document).ready(function() {
+     // call the tablesorter plugin
+     $("table").tablesorter({ 
+         // sort on the first column and third column, order asc
+         sortList: [[0,0]]
+   });
+}); </script>
+    <script type="text/javascript">
+
+</script>
+
+</head>
+
+<H2>Results of VisIt Regression Test ( $run_mode )</H2>
+Test suite run started at $timestamp.<br>
+(Click on table header to sort)
+<table border=0 class=tablesorter>
+<thead>
+<tr>
+    <th>Index</th>
+    <th>Category </th>
+    <th>Test File </th>
+    <th>Status </th>
+    <th>Runtime (sec) </th>
+    <!--<th>Details</th>-->
+</tr>
+</thead>
+<tbody>
+$$
+
+$$index_entry
+<tr >
+   <td>$test_idx</td>
+    <td>$category</td>
+    <td><a href="$details.html">$name</a></td>
+    <td class="$result_color">$result_text</td>
+    <td>$run_time</td>
+</tr>
+$$
+
+$$index_entry_start
+<tr >
+   <td>$test_idx</td>
+    <td>$category</td>
+    <td><a href="$details.html">$name</a></td>
+    <td class="$result_color">$result_text</td>
+    <td>$run_time</td>
+    <td><button id='$button'>x</button></td>
+</tr>
+<tr id='$details' class='hide'>
+    <td colspan='6' >
+        <table border=0 >
+$$
+
+$$case_entry
+            <tr>
+                <td><a href="$case.html">$case</a></td></td>
+                <td class="$status_color">$status</td>
+            </tr>
+$$
+
+$$index_entry_end
+    </table>
+    </td>
+</tr>
+$$
+
+
+$$index_entry_skip
+<tr >
+   <td>$test_idx</td>
+    <td>$category</td>
+    <td>$name</td>
+    <td class="$result_color">$result_text</td>
+    <td>$run_time</td>
+    <!--<td></td>-->
+</tr>
+$$
+
+
+$$index_footer
+</tbody>
+</table>
+Test suite run complete at $timestamp ($runtime seconds).
+</html>
+$$

@@ -1,0 +1,151 @@
+<?xml version="1.0"?>
+  <Plugin name="Transform" type="operator" label="Transform" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" iconFile="Transform.xpm" category="Transforms">
+    <Attribute name="TransformAttributes" purpose="This class contains attributes for the transform operator." persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="TransformAttributes.code">
+      <Enum name="AngleType">
+        Deg
+        Rad
+      </Enum>
+      <Enum name="TransformType">
+        Similarity
+        Coordinate
+        Linear
+      </Enum>
+      <Enum name="CoordinateSystem">
+        Cartesian
+        Cylindrical
+        Spherical
+      </Enum>
+      <Enum name="VectorTransformMethod">
+        None
+        AsPoint
+        AsDisplacement
+        AsDirection
+      </Enum>
+      <Field name="doRotate" label="Rotate" type="bool">
+        false
+      </Field>
+      <Field name="rotateOrigin" label="Origin" type="doubleArray" length="3" enabler="doRotate:true">
+        0.000000
+        0.000000
+        0.000000
+      </Field>
+      <Field name="rotateAxis" label="Axis" type="doubleArray" length="3" enabler="doRotate:true">
+        0.000000
+        0.000000
+        1.000000
+      </Field>
+      <Field name="rotateAmount" label="Amount" type="double" enabler="doRotate:true">
+        0.000000
+      </Field>
+      <Field name="rotateType" label="Rotate" type="enum" subtype="AngleType" enabler="doRotate:true">
+        Deg
+      </Field>
+      <Field name="doScale" label="Scale" type="bool">
+        false
+      </Field>
+      <Field name="scaleOrigin" label="Origin" type="doubleArray" length="3" enabler="doScale:true">
+        0.000000
+        0.000000
+        0.000000
+      </Field>
+      <Field name="scaleX" label="X" type="double" enabler="doScale:true">
+        1.000000
+      </Field>
+      <Field name="scaleY" label="Y" type="double" enabler="doScale:true">
+        1.000000
+      </Field>
+      <Field name="scaleZ" label="Z" type="double" enabler="doScale:true">
+        1.000000
+      </Field>
+      <Field name="doTranslate" label="Translate" type="bool">
+        false
+      </Field>
+      <Field name="translateX" label="X" type="double" enabler="doTranslate:true">
+        0.000000
+      </Field>
+      <Field name="translateY" label="Y" type="double" enabler="doTranslate:true">
+        0.000000
+      </Field>
+      <Field name="translateZ" label="Z" type="double" enabler="doTranslate:true">
+        0.000000
+      </Field>
+      <Field name="transformType" label="transformType" type="enum" subtype="TransformType">
+        Similarity
+      </Field>
+      <Field name="inputCoordSys" label="Input Coordinate System" type="enum" subtype="CoordinateSystem">
+        Cartesian
+      </Field>
+      <Field name="outputCoordSys" label="Desired Coordinate System" type="enum" subtype="CoordinateSystem">
+        Spherical
+      </Field>
+      <Field name="continuousPhi" label="ContinuousPhi" type="bool">
+        false
+      </Field>
+      <Field name="m00" label="m00" type="double">
+        1.000000
+      </Field>
+      <Field name="m01" label="m01" type="double">
+        0.000000
+      </Field>
+      <Field name="m02" label="m02" type="double">
+        0.000000
+      </Field>
+      <Field name="m03" label="m03" type="double">
+        0.000000
+      </Field>
+      <Field name="m10" label="m10" type="double">
+        0.000000
+      </Field>
+      <Field name="m11" label="m11" type="double">
+        1.000000
+      </Field>
+      <Field name="m12" label="m12" type="double">
+        0.000000
+      </Field>
+      <Field name="m13" label="m13" type="double">
+        0.000000
+      </Field>
+      <Field name="m20" label="m20" type="double">
+        0.000000
+      </Field>
+      <Field name="m21" label="m21" type="double">
+        0.000000
+      </Field>
+      <Field name="m22" label="m22" type="double">
+        1.000000
+      </Field>
+      <Field name="m23" label="m23" type="double">
+        0.000000
+      </Field>
+      <Field name="m30" label="m30" type="double">
+        0.000000
+      </Field>
+      <Field name="m31" label="m31" type="double">
+        0.000000
+      </Field>
+      <Field name="m32" label="m32" type="double">
+        0.000000
+      </Field>
+      <Field name="m33" label="m33" type="double">
+        1.000000
+      </Field>
+      <Field name="invertLinearTransform" label="invertLinearTransform" type="bool">
+        false
+      </Field>
+      <Field name="vectorTransformMethod" label="Method for transforming vectors" type="enum" subtype="VectorTransformMethod" enabler="transformType:Coordinate">
+        AsDirection
+      </Field>
+      <Field name="transformVectors" label="transformVectors" type="bool">
+        true
+      </Field>
+      <Function name="CopyAttributes" user="false" member="true">
+      </Function>
+      <Function name="CreateCompatible" user="false" member="true">
+      </Function>
+      <Function name="ProcessOldVersions" user="true" member="true">
+      </Function>
+      <Include file="source" quoted="false">
+        BoxExtents.h
+      </Include>
+    </Attribute>
+  </Plugin>

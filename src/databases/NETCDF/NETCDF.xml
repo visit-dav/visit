@@ -1,0 +1,59 @@
+<?xml version="1.0"?>
+  <Plugin name="NETCDF" type="database" label="NETCDF" version="1.0" enabled="true" mdspecificcode="true" onlyengine="false" noengine="false" dbtype="MTSD" haswriter="false" hasoptions="false">
+    <CXXFLAGS>
+      ${NETCDF_INCLUDE_DIR}
+    </CXXFLAGS>
+    <LDFLAGS>
+      ${NETCDF_LIBRARY_DIR}
+    </LDFLAGS>
+    <LIBS>
+      ${NETCDF_LIB}
+    </LIBS>
+    <FilePatterns>
+      *.nc
+      *.cdf
+      *.elev
+      *.ncd
+    </FilePatterns>
+    <Files components="M">
+      avtNETCDFFileFormat.C
+      avtBasicNETCDFFileFormat.C
+      avtADAPTFileFormat.C
+      avtBOUTFileFormat.C
+      avtLODIFileFormat.C
+      avtLODIParticleFileFormat.C
+      avtFVCOM_STSDFileFormat.C
+      avtFVCOMReader.C
+      avtFVCOMParticleFileFormat.C
+      avtFVCOM_MTSDFileFormat.C
+      avtFVCOM_MTMDFileFormat.C
+      avtCCSMFileFormat.C
+      avtCCSMReader.C
+      avtNETCDFReaderBase.C
+      avtBasicNETCDFReader.C
+      NETCDFFileObject.C
+    </Files>
+    <Files components="E">
+      avtNETCDFFileFormat.C
+      avtBasicNETCDFFileFormat.C
+      avtADAPTFileFormat.C
+      avtBOUTFileFormat.C
+      avtLODIFileFormat.C
+      avtLODIParticleFileFormat.C
+      avtFVCOM_STSDFileFormat.C
+      avtFVCOMReader.C
+      avtFVCOMParticleFileFormat.C
+      avtFVCOM_MTSDFileFormat.C
+      avtFVCOM_MTMDFileFormat.C
+      avtCCSMFileFormat.C
+      avtCCSMReader.C
+      avtNETCDFReaderBase.C
+      avtBasicNETCDFReader.C
+      NETCDFFileObject.C
+    </Files>
+    <Attribute name="" purpose="" persistent="true" codefile="NETCDF.code">
+      <Function name="NETCDFCommonPluginInfo::SetupDatabase" user="false" member="true">
+      </Function>
+ 
+    </Attribute>
+  </Plugin>

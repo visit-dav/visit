@@ -1,0 +1,34 @@
+Function: operator =
+Declaration: LightAttributes &operator=(const LightAttributes &obj);
+Definition:
+LightAttributes& 
+LightAttributes::operator = (const LightAttributes &obj)
+{
+    if (this == &obj) return *this;
+    enabledFlagCanBeToggled = obj.enabledFlagCanBeToggled;
+    if (enabledFlagCanBeToggled)
+        enabledFlag = obj.enabledFlag;
+    type = obj.type;
+    direction[0] = obj.direction[0];
+    direction[1] = obj.direction[1];
+    direction[2] = obj.direction[2];
+
+    color = obj.color;
+    brightness = obj.brightness;
+
+    SelectAll();
+    return *this;
+}
+
+Function: SetEnabledFlag
+Declaration: void SetEnabledFlag(bool enabledFlag_);
+Definition:
+void
+LightAttributes::SetEnabledFlag(bool enabledFlag_)
+{
+    if (enabledFlagCanBeToggled)
+    {
+        enabledFlag = enabledFlag_;
+        Select(1, (void *)&enabledFlag);
+    }
+}

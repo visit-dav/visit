@@ -1,0 +1,61 @@
+/*
+ * Windows resources shared between PuTTY and PuTTYtel, to be #include'd
+ * after defining appropriate macros.
+ * Note that many of these strings mention PuTTY. Due to restrictions in
+ * VC's handling of string concatenation, this can't easily be fixed.
+ * It's fixed up at runtime.
+ * FIXME: This file is called '.rc2' rather than '.rc' to avoid MSVC trying
+ * to compile it on its own when using the project files. Nicer solutions
+ * welcome.
+ */
+
+#include "win_res.h"
+
+IDI_MAINICON ICON "putty.ico"
+
+IDI_CFGICON ICON "puttycfg.ico"
+
+/* Accelerators used: clw */
+IDD_ABOUTBOX DIALOG DISCARDABLE 140, 40, 214, 74
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "About PuTTY"
+FONT 8, "MS Shell Dlg"
+BEGIN
+    DEFPUSHBUTTON "&Close", IDOK, 160, 56, 48, 14
+    PUSHBUTTON "View &Licence", IDA_LICENCE, 6, 56, 70, 14
+    PUSHBUTTON "Visit &Web Site", IDA_WEB, 84, 56, 70, 14
+    EDITTEXT IDA_TEXT, 10, 6, 194, 48, ES_READONLY | ES_MULTILINE | ES_CENTER, WS_EX_STATICEDGE
+END
+
+/* Accelerators used: aco */
+IDD_MAINBOX DIALOG DISCARDABLE 0, 0, 300, 252
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "PuTTY Configuration"
+FONT 8, "MS Shell Dlg"
+CLASS "PuTTYConfigBox"
+BEGIN
+END
+
+/* Accelerators used: co */
+IDD_LOGBOX DIALOG DISCARDABLE 100, 20, 300, 119
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "PuTTY Event Log"
+FONT 8, "MS Shell Dlg"
+BEGIN
+    DEFPUSHBUTTON "&Close", IDOK, 135, 102, 44, 14
+    PUSHBUTTON "C&opy", IDN_COPY, 81, 102, 44, 14
+    LISTBOX IDN_LIST, 3, 3, 294, 95, LBS_HASSTRINGS | LBS_USETABSTOPS | WS_VSCROLL | LBS_EXTENDEDSEL
+END
+
+/* No accelerators used */
+IDD_LICENCEBOX DIALOG DISCARDABLE 50, 50, 326, 231
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "PuTTY Licence"
+FONT 8, "MS Shell Dlg"
+BEGIN
+    DEFPUSHBUTTON "OK", IDOK, 148, 211, 44, 14
+
+    EDITTEXT IDA_TEXT, 10, 10, 306, 192, ES_READONLY | ES_MULTILINE | ES_LEFT, WS_EX_STATICEDGE
+END
+
+#include "version.rc2"

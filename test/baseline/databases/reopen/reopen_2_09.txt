@@ -1,0 +1,6 @@
+localhost:VISIT_TOP_DIR/test/reopen_wave.visit has 42 states
+activeSource = "localhost:VISIT_TOP_DIR/test/reopen_wave.visit"
+activeTimeSlider = 0
+timeSliders = ("localhost:VISIT_TOP_DIR/test/reopen_wave.visit")
+timeSliderCurrentStates = (41)
+animationMode = 2

@@ -1,0 +1,136 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta http-equiv="Content-Language" content="en-us">
+   <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+   <meta name="ProgId" content="FrontPage.Editor.Document">
+   <title>VisIt 2.2 Release Notes</title>
+</head>
+<body>
+
+<center><b><font size="6">VisIt 2.2 Release Notes</font></b></center>
+
+<p>Welcome to VisIt's release notes page. This page describes the important
+enhancements and bug-fixes that were added to this release.</p>
+
+
+<p><b>Sections</b></p>
+<ul>
+    <li><a href="#General_Features">Features for all users</a></li>
+    <li><a href="#Advanced_Features">Features for advanced users</a></li>
+    <li><a href="#File_format">Changes to file format readers</a></li>
+    <li><a href="#Plot_changes">Changes to plots</a></li>
+    <li><a href="#Operator_changes">Changes to operators</a></li>
+    <li><a href="#Expression_changes">Changes to expressions</a></li>
+    <li><a href="#Query_changes">Changes to picks and queries</a></li>
+    <li><a href="#Bugs_fixed">Other bug fixes</a></li>
+    <li><a href="#Config_changes">Changes to machine configuration files</a></li>
+    <li><a href="#Dev_changes">Changes for VisIt developers</a></li>
+</ul>
+
+<a name="General_Features"></a>
+<p><b><font size="4">General features added in version 2.2</font></b></p>
+<ul>
+   <li>The Selection window was enhanced so users can load selections from a file and save selections to a file. This lets users use precomputed selections for analyses without having to recreate selections from a plot.</li>
+   <li>The Movie wizard was enhanced so you can provide a stride, enabling every Nth frame to be saved.</li>
+   <li>VisIt's filters can now cache intermediate results for later use.  Contours and streamlines should be faster after the first execution.</li>
+   <li>VisIt's simulation instrumentation library, libsim (SimV2), has been ported to the Windows platform, making it possible for simulation developers to attach VisIt to their running simulations.</li>
+   <li>Lineouts can now be directly calculated (i.e. without having to make a Pseudocolor plot to extract a Lineout from).  You can access this feature by making a Curve plot of a scalar listed under operators/Lineout.</li>
+   <li>VisIt now has a "-safe" mode.  This mode will tell you if your data has NaNs, infs, or bad connectivity.  Access this mode by adding "-safe" to VisIt's invocation.  (This mode is not the default because it incurs a performance penalty.)</li>
+   <li>The manner in which operators are copied from existing plots to new plots has changed. The new behavior copies operators from the first selected plot instead of always copying operators from the first plot.</li>
+   <li>Plots that allow setting of different Color Tables now have a toggle that allow the Color Table to be inverted.</li>
+</ul>
+
+<a name="Advanced_Features"></a>
+<p><b><font size="4">Advanced features added in version 2.2</font></b></p>
+<ul>
+   <li>The Y-axis title is now vertically oriented for 2D plots.</li>
+   <li>build_visit was modified to build newer versions of several third party libraries. This includes upgrading Boxlib to version 2010.10.1, CGNS to version 3.0.8, Exodus to version 4.98, GDAL to version 1.7.1, H5Part to version 1.6.2, IceT to version 1.0.0, NetCDF to version 4.1.1, and Silo to version 4.8.</li>
+   <li>build_visit was modified to use anonymous svn checkout as a backup for downloading third party libraries. It tries anonymous svn just before it tries https from the VisIt webs site.</li>
+</ul>
+
+<a name="File_format"></a>
+<p><b><font size="4">File format reader changes in version 2.2</font></b></p>
+<ul>
+   <li>VisIt can now read many GMV files.</li>
+   <li>The MFIX reader was re-written so that it supports multiple domains and ghost zones and scales well.</li>
+   <li>The Xdmf reader was modified so that the GUI displays a single grid, when the grid consists of a collection of grids, rather than all the individual grids in the collection.</li>
+   <li>The Nek5000 reader can now work around the bug in legacy Nek files where the time and cycle are concatenated.  This bug only affected binary, non-parallel files with a new mesh at every time slice.</li>
+   <li>The VTK reader was modified to support materials in a time series of files.</li>
+</ul>
+
+<a name="Plot_changes"></a>
+<p><b><font size="4">Changes to VisIt's plots in version 2.2</font></b></p>
+<ul>
+   <li>The options for the Streamline plot have been significantly modified.  We apologize for any inconvenience regarding backwards compatibility.  Previously, the defaults were such that many users experienced infinite hangs, had inappropriate glyph sizes, etc.  The new options are aimed at making streamline work robustly by default.</li>
+   <li>The Streamline plot now reports progress as it executes.</li>
+   <li>The Streamline plot now has a pathline option that allows the velocity field to vary over time.</li>
+   <li>The Spreadsheet plot can now display curves.</li>
+   <li>The ParallelCoordinates plot now correctly display the extents of the data in the case where cells are removed by operators.</li>
+</ul>
+
+<a name="Operator_changes"></a>
+<p><b><font size="4">Changes to VisIt's operators in version 2.2</font></b></p>
+<ul>
+   <li>IndexSelect now works with BOV files.</li>
+   <li>The InverseGhostZone operator now provides individual controls over which types of ghost zones to display (duplicated zones at the boundary, coarse zones from an AMR simulation, etc).</li>
+   <li>The Elevate operator now works correctly in parallel when combined with a Slice operator.</li>
+</ul>
+
+<a name="Expression_changes"></a>
+<!--
+<p><b><font size="4">Changes to VisIt's expression language in version 2.2</font></b></p>
+<ul>
+   <li></li>
+</ul>
+-->
+
+<a name="Query_changes"></a>
+<p><b><font size="4">Changes to VisIt's picks and queries in version 2.2</font></b></p>
+<ul>
+   <li>The query window now keeps focus at the bottom of the window so that new queries are always visible.</li>
+   <li>The <i>Streamline Info</i> query has beed added to VisIt. It reports seed locations, arc length, and each step (optional) for a Streamline plot.</li>
+   <li>The <i>XRay Image</i> query no longer crashes if it is running in parallel and encounters an RZ mesh with negative R coordinates.</li>
+</ul>
+
+<a name="Bugs_fixed"></a>
+<p><b><font size="4">Other bugs fixed in version 2.2</font></b></p>
+<ul>
+   <li>Operators that create their own expressions now work correctly in -nowin mode.</li>
+   <li>A bug was fixed when creating ghost data for 2D rectilinear or AMR data sets.  This bug manifested itself by causing domains or patches to disappear when you removed materials or contoured the data set (among other operations).</li>
+   <li>A bug was fixed where creating a Contour plot after a Pseudocolor plot was causing AMR data sets to be mishandled.  (Extra geometry showed up that should have been removed.)</li>
+   <li>VisIt can again read mixed material variables from simulations.</li>
+   <li>New windows are now able to create plots from the active source.</li>
+   <li>Using -dump option with Curve plots no longer crashes the engine.</li>
+   <li>A bug was fixed where Contour plots of small data values were not being colored correctly.</li>
+   <li>A bug with building a plugin against Installed verison of VisIt on windows has been fixed.</li>
+   <li>build_visit was modified to use https instead of http for doing anonymous svn checkouts of the source code. Using http failed on some systems.</li>
+   <li>build_visit was modified so that it builds VisIt on Mac OS X 10.5.8 systems. The cmake command incorrectly had the "." before the rest of the command line options instead of after all the command line options.</li>
+   <li>The 'Eval' helper functions in VisIt's python module import correctly when the module is used in an external python interpreter.</li>
+   <li>build_visit was modified to log its invocation command line.</li>
+</ul>
+
+  
+<a name="Config_changes"></a>
+<!--
+<p><b><font size="4">Changes to configuration files in version 2.2</font></b></p>
+<ul>
+   <li></li>
+</ul>
+-->
+  
+<a name="Dev_changes"></a>
+<p><b><font size="4">Changes for VisIt developers in version 2.2</font></b></p>
+<ul>
+   <li>xmledit, xml2info and xml2avt all now support expression-creating-operators.</li>
+   <li>The avtGradientExpression module was re-factored so that other modules can access these gradients without creating a mini-pipeline.</li>
+   <li>The data diretory can now be built on Windows.</li>
+   <li>VISIT_BOXLIB2D_DIR and VISIT_BOXLIB3D_DIR were replaced with VISIT_BOXLIB_DIR. In order to continue being able to build the BoxLib reader you must upgrade to the new BoxLib library and update your config site file. If you don't do this the build system will silently fail to build the BoxLib reader.</li>
+   <li>The function VISIT_OPTION_DEFAULT, used in config-site cmake files, now accepts an optional argument to specify the cmake variable type being set.</li>
+</ul>
+
+<p>Click the following link to view the release notes for the previous version
+of VisIt: <a href="relnotes2.1.2.html">VisIt 2.1.2 Release Notes</a>.</p>
+</body>
+</html>

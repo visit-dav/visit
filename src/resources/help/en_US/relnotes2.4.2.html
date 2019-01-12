@@ -1,0 +1,65 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta http-equiv="Content-Language" content="en-us">
+   <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+   <meta name="ProgId" content="FrontPage.Editor.Document">
+   <title>VisIt 2.4.2 Release Notes</title>
+</head>
+<body>
+
+<center><b><font size="6">VisIt 2.4.2 Release Notes</font></b></center>
+
+<p>Welcome to VisIt's release notes page. Release 2.4.2 is primarily a
+bug fix release to release 2.4.1. It fixes additional bugs in release
+2.4.1.  Look <a href="relnotes2.4.1.html">here</a> to see a complete
+list of changes in release 2.4.1.</p>
+
+<p><b><font size="4">Bugs fixed in version 2.4.2</font></b></p>
+<ul>
+<li>VisIt now runs on Ubuntu systems.</li>
+<li>VisIt's rendering performance has been improved and is now at least as fast as versions prior to the release of VisIt 2.4.0.</li>
+<li>Material selection now works correctly with AMR data sets when changing time steps.</li>
+<li>Picking on nodes or zones where the image has been panned or zoomed now returns information about the correct node or zone.</li>
+<li>The sizing of lines and seeds was improved for the Streamline plot with 2D data sets.</li>
+<li>VisIt now saves regular grids to Wavefront OBJ files.</li>
+<li>A memory leak was fixed in VisIt's GMV reader.</li>
+<li>A memory leak was fixed in VisIt's Nek5000 reader (only occurred with time-varying meshes).</li>
+<li>The GMV reader no longer causes the metadata server to crash on some versions of Windows when reading certain GMV files composed of multiple smaller files.</li>
+<li>An angle conversion in the Cylinder operator was fixed so the operator works again.</li>
+<li>Axis titles and text annotations are no longer sometimes truncated when drawn.</li>
+<li>VisIt no longer crashes when plotting 1D and 2D plots whose axes have been set explicitly to generate tick marks that are outside a dataset's spatial extents.</li>
+<li>The <i>VISIT_ENGINE_ONLY</i> build mode, which builds only the VisIt compute engine and its plugins, works again.</i>
+<li>The <i>VISIT_SERVER_COMPONENTS_ONLY</i> build mode, which builds only the VisIt compute engine, metadata server, launcher, and their plugins works again.</li>
+</ul>
+
+<p><b><font size="4">Enhancements in version 2.4.2</font></b></p>
+<ul>
+<li>The <i>visit -movie</i> script has been enhanced to support a <i>-source</i> command line argument that lets you specify alternate data sources for the files in a session file given by the <i>-sessionfile</i> argument. You pass <i>-source</i> followed by the name of a file that will serve as a replacement file for the one in the session file. When a session file contains multiple sources then you may pass multiple <i>-source</i> arguments to build up a list of sources to be used as replacements. You can use this feature to replace the data files in your session file with other files, thus using it as a template for related visualizations.</li>
+<li>The <i>visit -movie</i> script has been enhanced to support a <i>-adjustview</i> command line argument that resets the view for session-based movies, but preserving the view normal and up vector. This argument is meant to be passed when replacing sources with the <i>-source</i> argument since it can adjust the view to be more suitable to the new datasets' spatial extents.</li>
+<li>The <i>build_visit</i> script was enhanced so that it is possible to enable and disable Ice-T in the graphical interface. The control is listed as the last entry on the "Select 3rd party libraries" screen. It is on by default when building a parallel version and off by default otherwise.</li>
+<li>The <i>build_visit</i> script was modified so that it now builds VisIt without Mangled Mesa support unless explicitly enabled or if building a parallel version. This allows VisIt to run on systems were there are conflicts between VisIt's version of Mesa and the graphics drivers on those systems. The conflicts occured when the drivers were based on Mesa (typically on Ubuntu systems).</li>
+<li>A number of improvements were made to the handling of variables restricted to specific materials. These include:
+  <ul>
+    <li>If you have <i>Apply subset selections to all plots</i> set and you add a  plot, it doesn't apply the subset selection from a compatible plot unless both plots are restricted to the same materials.</li>
+    <li>If you replace the database, it only applies the subset selection from a compatible plot to plots that don't contain material restricted variables.</li>
+    <li>If you overlay another database, it only applies the subset selection from a compatible plot to plots that don't contain material restricted variables.</li>
+    <li>If you have <i>Apply subset selections to all plots</i> set and you change the subset selection, it doesn't apply the subset selection to any non-active plots that contain material restricted variables.</li>
+  </ul>
+</li>
+<li>New command line arguments have been added to the build_visit script:
+  <ul>
+    <li><i>--engine-only</i> lets you build just the compute engine and its dependencies.</li>
+    <li><i>--server-components-only</i> lets you build just the compute engine, metadata server, launcher and their dependencies.</li>
+    <li><i>--build-mode</i> lets you specify whether you want to build VisIt in "Release" or "Debug" mode.</li>
+    <li><i>--prefix</i> lets you pick where VisIt should be installed. When this argument is passed, VisIt is automatically installed at the specified location once it has been built.</li>
+  </ul>
+</li>
+</ul>
+
+<p>Click the following link to view the release notes for the previous
+version of VisIt: <a href="relnotes2.4.1.html">VisIt 2.4.1 Release Notes</a>.</p>
+
+</body>
+</html>

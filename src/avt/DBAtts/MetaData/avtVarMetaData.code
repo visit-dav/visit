@@ -1,0 +1,240 @@
+Function: avtVarMetaData2
+Declaration: avtVarMetaData(private_tmfs_t, std::string, std::string, avtCentering);
+Definition:
+// ****************************************************************************
+//  Method: avtVarMetaData constructor
+//
+//  Arguments:
+//      n           The name of the variable.
+//      mn          The name of the mesh the var is defined on.
+//      c           The centering of the variable.
+//
+//  Programmer: Hank Childs
+//  Creation:   August 25, 2000
+//
+//  Modifications:
+//    Hank Childs, Mon Dec  9 17:04:39 PST 2002
+//    Initialized validVariable.
+//
+//    Brad Whitlock, Tue Jul 20 13:44:42 PST 2004
+//    Added units.
+//
+//    Kathleen Bonnell, Thu Jul 22 12:10:19 PDT 2004 
+//    Initialized treatAsASCII.
+//
+//    Hank Childs, Mon Feb 14 14:16:49 PST 2005
+//    Added original name.
+//
+//    Jeremy Meredith, Fri Aug 25 17:16:38 EDT 2006
+//    Added enumerated scalars.
+//
+//    Mark C. Miller, Wed Mar 26 10:11:46 PDT 2008
+//    Added initialization for other enumerated scalar options
+//    and hideFromGUI.
+//
+// ****************************************************************************
+
+avtVarMetaData::avtVarMetaData(private_tmfs_t tmfs, std::string n, std::string mn,
+    avtCentering c) : avtBaseVarMetaData(tmfs, n, mn)
+{
+    avtVarMetaData::Init();
+    centering = c;
+}
+
+Function: avtVarMetaData3
+Declaration: avtVarMetaData(private_tmfs_t, std::string, std::string, avtCentering, double, double);
+Definition:
+// ****************************************************************************
+//  Method: avtVarMetaData constructor
+//
+//  Arguments:
+//      n           The name of the variable.
+//      mn          The name of the mesh the var is defined on.
+//      c           The centering of the variable.
+//      min         The minimum value of the variable.
+//      max         The maximum value of the variable.
+//
+//  Programmer: Hank Childs
+//  Creation:   August 25, 2000
+//
+//  Modifications:
+//    Hank Childs, Mon Dec  9 17:04:39 PST 2002
+//    Initialized validVariable.
+//
+//    Brad Whitlock, Tue Jul 20 13:45:12 PST 2004
+//    Added units.
+//
+//    Kathleen Bonnell, Thu Jul 22 12:10:19 PDT 2004 
+//    Initialized treatAsASCII.
+//
+//    Hank Childs, Mon Feb 14 14:16:49 PST 2005
+//    Added original name.
+//
+//    Jeremy Meredith, Fri Aug 25 17:16:38 EDT 2006
+//    Added enumerated scalars.
+//
+//    Mark C. Miller, Wed Mar 26 10:11:46 PDT 2008
+//    Added initialization for other enumerated scalar options
+//    and hideFromGUI.
+//
+// ****************************************************************************
+
+avtVarMetaData::avtVarMetaData(private_tmfs_t tmfs, std::string n, std::string mn,
+    avtCentering c, double min, double max) : avtBaseVarMetaData(tmfs, n, mn)
+{
+    avtVarMetaData::Init();
+    centering = c;
+    double  extents[2] = { min, max };
+    SetExtents(extents);
+}
+
+Function: SetExtents
+Declaration: void SetExtents(const double *);
+Definition:
+// ****************************************************************************
+//  Method: avtVarMetaData::SetExtents
+//
+//  Purpose:
+//      Sets the extents of the scalar variable.
+//
+//  Arguments:
+//      extents     Extents as <min value, max value>.
+//
+//  Programmer: Hank Childs
+//  Creation:   August 30, 2000
+//
+//  Modifications:
+//
+//    Hank Childs, Tue May  1 12:53:10 PDT 2001
+//    Check for NULL extents.
+//
+// ****************************************************************************
+
+void
+avtVarMetaData::SetExtents(const double *extents)
+{
+    if (extents == NULL)
+    {
+        hasDataExtents = false;
+    }
+    else
+    {
+        hasDataExtents = true;
+        minDataExtents = extents[0];
+        maxDataExtents = extents[1];
+    }
+}
+
+Function: UnsetExtents
+Declaration: void UnsetExtents();
+Definition:
+void
+avtVarMetaData::UnsetExtents()
+{
+    hasDataExtents = false;
+}
+
+Function: Print
+Declaration: void Print(ostream &, int = 0) const;
+Definition:
+// ****************************************************************************
+//  Method: avtVarMetaData::Print
+//
+//  Purpose:
+//      Print statement for debugging.
+//
+//  Arguments:
+//      out      The stream to output to.
+//      indent   The number of tabs to indent each line with.
+//
+//  Programmer:  Hank Childs
+//  Creation:    August 28, 2000
+//
+//  Modifications:
+//    Hank Childs, Mon Dec  9 17:04:39 PST 2002
+//    Print out validVariable.
+//
+//    Kathleen Bonnell, Thu Jul 22 12:10:19 PDT 2004 
+//    Print out treatAsASCII.
+//
+//    Brad Whitlock, Tue Jul 20 13:47:04 PST 2004
+//    Added units.
+//
+//    Hank Childs, Mon Feb 14 14:16:49 PST 2005
+//    Added original name.
+//
+//    Jeremy Meredith, Fri Aug 25 17:16:38 EDT 2006
+//    Added enumerated scalars.
+//
+//    Mark C. Miller, Thu Oct 21 17:15:46 PDT 2010
+//    Added mat-restricted information.
+// ****************************************************************************
+inline void
+Indent(ostream &out, int indent)
+{
+    for (int i = 0 ; i < indent ; i++)
+    {
+        out << "\t";
+    }
+}
+
+void
+avtVarMetaData::Print(ostream &out, int indent) const
+{
+
+    avtBaseVarMetaData::Print(out, indent);
+
+    Indent(out, indent);
+    out << "Centering = ";
+    switch (centering)
+    {
+      case AVT_NODECENT:
+        out << "node centered.";
+        break;
+
+      case AVT_ZONECENT:
+        out << "zone centered.";
+        break;
+
+      case AVT_UNKNOWN_CENT:
+      default:
+        out << "unknown centering.";
+        break;
+    }
+    out << endl;
+
+    if(hasUnits)
+    {
+        Indent(out, indent);
+        out << "Units are: " << units.c_str() << endl;
+    }
+
+    if (hasDataExtents)
+    {
+        Indent(out, indent);
+        out << "Extents are: (" << minDataExtents << ", " 
+            << maxDataExtents << ")" << endl;
+    }
+    else
+    {
+        Indent(out, indent);
+        out << "The extents are not set." << endl;
+    }
+
+    if (matRestricted.size())
+    {
+        Indent(out, indent);
+        out << "Restricted to material indices: " << matRestricted[0];
+        for (size_t i = 1; i < matRestricted.size(); i++)
+        {
+            out << ", " << matRestricted[i];
+            if (i%20 == 0)
+            {
+                out << endl;
+                Indent(out, indent);
+            }
+        }
+        out << endl;
+    }
+}
+

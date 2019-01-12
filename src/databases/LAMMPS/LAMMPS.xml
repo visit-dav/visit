@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+  <Plugin name="LAMMPS" type="database" label="LAMMPS" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" dbtype="MTSD" haswriter="false" hasoptions="false" filePatternsStrict="false" opensWholeDirectory="false">
+    <FilePatterns>
+      *.eam
+      *.meam
+      *.rigid
+      *.dump
+      *.lammps
+    </FilePatterns>
+    <Files components="M">
+      avtLAMMPSFileFormat.C
+      avtLAMMPSStructureFileFormat.C
+      avtLAMMPSDumpFileFormat.C
+    </Files>
+    <Files components="E">
+      avtLAMMPSFileFormat.C
+      avtLAMMPSStructureFileFormat.C
+      avtLAMMPSDumpFileFormat.C
+    </Files>
+    <Attribute name="" purpose="" persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="LAMMPS.code">
+      <Function name="LAMMPSCommonPluginInfo::SetupDatabase" user="false" member="true">
+      </Function>
+    </Attribute>
+  </Plugin>

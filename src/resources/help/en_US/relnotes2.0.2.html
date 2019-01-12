@@ -1,0 +1,51 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta http-equiv="Content-Language" content="en-us">
+   <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+   <meta name="ProgId" content="FrontPage.Editor.Document">
+   <title>VisIt 2.0.2 Release Notes</title>
+</head>
+<body>
+
+<center><b><font size="6">VisIt 2.0.2 Release Notes</font></b></center>
+
+<p>Welcome to VisIt's release notes page. Release 2.0.2 is primarily a bug fix release to release 2.0. It fixes additional bugs in release 2.0. Look <a href="relnotes2.0.0.html">here</a> to see a complete list of changes in release 2.0.  Look <a href="relnotes2.0.1.html">here</a> to see fixes to 2.0 in release 2.0.1.</p>
+<p><b><font size="4">Bugs fixed in version 2.0.2</font></b></p>
+<ul>
+<li>Color tables that include transparency can now be saved in a session and restored properly.</li>
+<li>The Project operator now correctly works with Vector plots of data sets of cell-centered vector data.</li>
+<li>Groups of Exodus files can now be read correctly.</li>
+<li>Time is now properly reported for all Cosmos++ files.</li>
+<li>Time iterating expressions now work on files that have meshnames that contain the '/' character.</li>
+<li>Tools now cause an extra render to ensure their actors get removed from the vis window.</li>
+<li>The Transform operator attributes window no longer resets its values incorrectly when using auto update and multiple plots. This was causing the wrong values to be applied to the plot with the Transform operator, resulting in unwanted transforms.</li>
+<li>The Lines reader was fixed so objects it creates have the proper reference count.</li>
+<li>Using an average_over_time expression in another expression no longer causes the compute engine to crash.</li>
+<li>The VizSchema reader now properly handles variable components when the user steps through time with the time slider.</li>
+<li>Generating movies using a session file will correctly reuse the saved settings for an engine launch, such as number of processors and job launcher.</li>
+<li>Automatic engine re-launches once again use the previous settings when running with only offscreen rendering, instead of reverting to a serial engine.</li>
+<li>The XMLEdit plugin creartion tool no longer crashes when deleting Enums still referenced by some Field properties.</li>
+<li>Corrected problem reading non-floating point data from Silo plugin related to Silo's force single behavior.</li>
+<li>The Dormand-Prince solver in the Streamline plot now correctly honors the maximum step size in all cases.</li>
+<li>The mpicom python module can now execute a 'gather' call when empty python lists are present.</li>
+<li>A single instance of the python filter environment is now shared for all python filter executions. This improves filter initialization time and avoids known problems with starting up and shutting down an embedded python interpreter multiple times.</li>
+<li>The "Aggregate Ray Length Distribution" query was improved to resolve an error that in some cases cased a small shift in the resulting mass distribution.</li>
+<li>Refresh File List no longer causes gui to crash on Windows.</li>
+<li>The Streamline plot and Inverse Ghost Zone operators have been enabled in the LLNL configuration site file.</li>
+<li>The build_visit script was modified to add "-lz" to the list of dependent libraries for HDF5.</li>
+</ul>
+<p><b><font size="4">Enhancements in version 2.0.2</font></b></p>
+<ul>
+<li>The Basic NETCDF reader was enhanced to expose 2D arrays where one dimension is time as curves that vary over time.</li>
+<li>The Scatter plot was enhanced so it can use data from Curve variables.</li>
+<li>The Tecplot binary reader can now read Tecplot 2009 format.</li>
+<li>The Tecplot ASCII reader allows a trailing dollar sign symbol at the end of the file.</li>
+<li>The VizSchema reader was restructured and simplified for more reliability and ease of development.</li>
+<li>When launching X servers to use GPUs in parallel, VisIt will now do so in a
+more secure fashion.</li>
+</ul>
+<p>Click the following link to view the release notes for the previous version of VisIt: <a href="relnotes2.0.0.html">VisIt 2.0 Release Notes</a>.</p>
+</body>
+</html>

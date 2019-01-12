@@ -1,0 +1,79 @@
+    Interface options
+    ---------------------------------------------------------------------------
+        -gui                 Run with the Graphical User Interface (default).
+        -cli                 Run with the Command Line Interface.
+
+    Movie making options
+    ---------------------------------------------------------------------------
+        -movie               Run the CLI in a movie making mode. Must be
+                             combined with -sessionfile. Will produce a simple
+                             movie by drawing all the plots in the specified
+                             session for every timestep of the database.
+
+    Startup options
+    ---------------------------------------------------------------------------
+        -o <filename>        Open the specified data file at startup.
+        -s <filename>        Run the specified VisIt script. Note: This
+                             argument only takes effect with -cli or -movie.
+        -sessionfile <filename>  Open the specified session file at startup
+                             Note that this argument only takes effect with
+                             -gui or -movie.
+        -config <filename>   Initialize the viewer at startup using the named
+                             config file.  If an absolute path is not given,
+                             the file is assumed to be in the .visit directory.
+        -noconfig            Don't process configuration files at startup.
+        -launchengine <host> Launch an engine at startup. The <host> parameter
+                             is optional. If it is not specified, the engine
+                             will be launched on the local host. If you wish
+                             to launch an engine on a remote host, specify 
+                             the host's name as the <host> parameter.
+        -nosplash            Do not display the splash screen at startup.
+
+    Window options
+    ---------------------------------------------------------------------------
+        -small               Use a smaller desktop area/window size.
+        -geometry <spec>     What portion of the screen to use.  This is a
+                             standard X Windows geometry specification. This
+                             option can be used to set the size of images
+                             generated from scripts and movies.
+
+        -viewer_geometry <spec> What portion of the screen the viewer windows
+                                will use. This is a standard X Windows geometry
+                                specification. This option overrides the
+                                -geometry option that the GUI passes to the
+                                viewer.
+
+        -window_anchor <x,y> The x,y position on the screen where VisIt's GUI
+                             will show its windows (Main window excluded).
+        -style <style>       One of: windows,cde,motif,sgi.
+        -locale <locale>     The locale that you want VisIt to use when displaying
+                             translated menus and controls. VisIt will use the
+                             default locale if the -locale option is not
+                             provided.
+        -background <color>  Background color for GUI.
+        -foreground <color>  Foreground color for GUI.
+        -nowin               Run with viewer windows off-screen (i.e. OSMesa).
+                             This is typically used with the -cli option.
+        -stereo              Enable active stereo, also known as the
+                             page-flipping, or 'CrystalEyes' mode.
+        -nowindowmetrics     Prevents X11 from grabbing and moving a test
+                             widget used in calculating window borders. This
+                             option can be useful if VisIt hangs when 
+                             displaying to an Apple X-server.
+
+    Version options
+    ---------------------------------------------------------------------------
+        -version             Do NOT run VisIt. Just print the current version.
+        -svn_revision        Do NOT run VisIt. Just print the Subversion 
+                             revision it was built from.
+        -beta                Run the current beta version.
+        -v <version>         Run a specified version. Specifying 2 digits,
+                             such as X.Y, will run the latest patch release
+                             for that version. Specifying 3 digits, such as
+                             X.Y.Z, will run that specific version.
+
+    Other resources for help
+    ---------------------------------------------------------------------------
+        run-time:            While running VisIt, look under the "Help" menu.
+        on-line:             https://visit.llnl.gov
+        email:               visit-users@ornl.gov

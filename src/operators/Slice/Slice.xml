@@ -1,0 +1,97 @@
+<?xml version="1.0"?>
+  <Plugin name="Slice" type="operator" label="Slice" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" iconFile="Slice.xpm" category="Slicing" category="Slicing">
+    <Attribute name="SliceAttributes" purpose="This class contains attributes for the arbitrary slice." persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="SliceAttributes.code">
+      <Enum name="AxisType">
+        XAxis
+        YAxis
+        ZAxis
+        Arbitrary
+        ThetaPhi
+      </Enum>
+      <Enum name="OriginType">
+        Point
+        Intercept
+        Percent
+        Zone
+        Node
+      </Enum>
+      <Field name="originType" label="originType" type="enum" subtype="OriginType">
+        Intercept
+      </Field>
+      <Field name="originPoint" label="originPoint" type="doubleArray" length="3" enabler="originType:Point">
+        0.000000
+        0.000000
+        0.000000
+      </Field>
+      <Field name="originIntercept" label="originIntercept" type="double" enabler="originType:Intercept">
+        0.000000
+      </Field>
+      <Field name="originPercent" label="originPercent" type="double" enabler="originType:Percent">
+        0.000000
+      </Field>
+      <Field name="originZone" label="originZone" type="int" enabler="originType:Zone">
+        0
+      </Field>
+      <Field name="originNode" label="originNode" type="int" enabler="originType:Node">
+        0
+      </Field>
+      <Field name="normal" label="normal" type="doubleArray" length="3">
+        0.000000
+        -1.000000
+        0.000000
+      </Field>
+      <Field name="axisType" label="axisType" type="enum" subtype="AxisType" ignoreeq="true">
+        YAxis
+      </Field>
+      <Field name="upAxis" label="upAxis" type="doubleArray" length="3">
+        0.000000
+        0.000000
+        1.000000
+      </Field>
+      <Field name="project2d" label="project2d" type="bool">
+        true
+      </Field>
+      <Field name="interactive" label="interactive" type="bool">
+        true
+      </Field>
+      <Field name="flip" label="flip" type="bool" ignoreeq="true">
+        false
+      </Field>
+      <Field name="originZoneDomain" label="originZoneDomain" type="int">
+        0
+      </Field>
+      <Field name="originNodeDomain" label="originNodeDomain" type="int">
+        0
+      </Field>
+      <Field name="meshName" label="meshName" type="string">
+        default
+      </Field>
+      <Field name="theta" label="theta" type="double">
+        0.000000
+      </Field>
+      <Field name="phi" label="phi" type="double">
+        0.000000
+      </Field>
+      <Function name="CopyAttributes" user="false" member="true">
+      </Function>
+      <Function name="CreateCompatible" user="false" member="true">
+      </Function>
+      <Function name="UpdateOrthogonalAxes" user="true" member="true">
+      </Function>
+      <Function name="EqualTo" user="true" member="true">
+      </Function>
+      <Function name="SetValue1" user="true" member="true">
+      </Function>
+      <Function name="SetValue2" user="true" member="true">
+      </Function>
+      <Include file="source" quoted="false">
+        PlaneAttributes.h
+      </Include>
+      <Include file="header" quoted="false">
+        cmath
+      </Include>
+      <Include file="header" quoted="false">
+        math.h
+      </Include>
+    </Attribute>
+  </Plugin>

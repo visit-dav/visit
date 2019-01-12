@@ -1,0 +1,9 @@
+{"bootstrap_visit":
+ {"version": "2.6.2",
+ "build_types": ["debug"],
+ "arch":   "linux-x86_64",
+ "config_site":"edge83.cmake",
+ "branch": "2.6RC", 
+ "make_nthreads": 8, 
+ "svn": {"mode":"ssh","nersc_uname":"cyrush"}
+}}

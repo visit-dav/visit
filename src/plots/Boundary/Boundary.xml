@@ -1,0 +1,56 @@
+<?xml version="1.0"?>
+  <Plugin name="Boundary" type="plot" label="Boundary" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" vartype="material" iconFile="Boundary.xpm">
+    <Attribute name="BoundaryAttributes" purpose="This class contains the plot attributes for the boundary plot." persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="BoundaryAttributes.code">
+      <Enum name="ColoringMethod">
+        ColorBySingleColor
+        ColorByMultipleColors
+        ColorByColorTable
+      </Enum>
+      <Field name="colorType" label="colorType" type="enum" subtype="ColoringMethod">
+        ColorByMultipleColors
+      </Field>
+      <Field name="colorTableName" label="Color table" type="colortable">
+        Default
+      </Field>
+      <Field name="invertColorTable" label="Invert Color table" type="bool">
+        false
+      </Field>
+      <Field name="legendFlag" label="legendFlag" type="bool">
+        true
+      </Field>
+      <Field name="lineWidth" label="lineWidth" type="linewidth">
+        0
+      </Field>
+      <Field name="singleColor" label="singleColor" type="color" length="4">
+      </Field>
+      <Field name="multiColor" label="multiColor" type="att" subtype="ColorAttributeList">
+      </Field>
+      <Field name="boundaryNames" label="boundaryNames" type="stringVector">
+      </Field>
+      <Field name="opacity" label="opacity" type="opacity">
+        1.000000
+      </Field>
+      <Field name="wireframe" label="wireframe" type="bool">
+        false
+      </Field>
+      <Field name="smoothingLevel" label="Smoothing level" type="int">
+        0
+      </Field>
+      <Function name="ChangesRequireRecalculation" user="true" member="true">
+      </Function>
+      <Function name="VarChangeRequiresReset" user="true" member="true">
+      </Function>
+      <Function name="ProcessOldVersions" user="true" member="true">
+      </Function>
+      <Function name="PyBoundaryAttributes_SetDefaults" user="false" member="true">
+      </Function>
+      <Function name="BoundaryViewerEnginePluginInfo::InitializePlotAtts" user="false" member="true">
+      </Function>
+      <Function name="BoundaryViewerEnginePluginInfo::ReInitializePlotAtts" user="false" member="true">
+      </Function>
+      <Function name="BoundaryViewerEnginePluginInfo::ResetPlotAtts" user="false" member="true">
+      </Function>
+      <Function name="BoundaryViewerEnginePluginInfo::PrivateSetPlotAtts" user="true" member="true" access="private">
+      </Function>
+    </Attribute>
+  </Plugin>

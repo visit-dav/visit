@@ -1,0 +1,6 @@
+localhost:VISIT_TOP_DIR/test/wave*.silo database has 42 states
+activeSource = "localhost:VISIT_TOP_DIR/test/wave*.silo database"
+activeTimeSlider = 0
+timeSliders = ("localhost:VISIT_TOP_DIR/test/wave*.silo database")
+timeSliderCurrentStates = (41)
+animationMode = 2

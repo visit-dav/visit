@@ -1,0 +1,30 @@
+# we don't care about potential memory leaks, only real ones
+suppress PLK *
+
+# known VTK issues
+suppress BSR vtkMatrix4x4::Adjoint(const double*,double*)
+suppress BSR vtkMatrix4x4::Determinant(const double*)
+suppress BSR FTC_CMapCache_Lookup
+suppress BSW vtkMatrix4x4::Adjoint(const double*,double*)
+suppress BSW vtkMatrix4x4::Determinant(const double*)
+suppress BSW FTC_CMapCache_Lookup
+
+# known Silo leaks
+suppress MLK malloc;_SC_prim_alloc 
+suppress MLK malloc;PJ_ReadVariable;PJ_GetObject;PJ_GetComponent;db_pdb_InqMeshname
+suppress MLK calloc;PJ_ReadVariable;PJ_GetObject;PJ_GetComponent;db_pdb_GetComponent
+suppress MLK calloc;PJ_ReadVariable;PJ_GetObject;db_pdb_GetMultivar
+suppress MLK calloc;PJ_ReadVariable;PJ_GetObject;db_pdb_GetMultimesh
+suppress MLK calloc;PJ_ReadVariable;PJ_GetObject;db_pdb_GetMultimat
+suppress MLK malloc;safe_strdup;db_pdb_NewToc
+suppress MLK calloc;db_pdb_NewToc
+
+# known leak if we throw an exception
+suppress MLK malloc;__cxa_get_globals;__cxa_throw
+
+# known UMRs in system call, readdir
+suppress UMR __getdents;readdir
+
+# known VTK memory leak
+suppress MLK ...;vtkDataWriter::WriteScalarData(std::ostream<char, std::char_traits<char> > *,vtkDataArray *, int)
+

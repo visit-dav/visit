@@ -1,0 +1,73 @@
+Function: avtTensorMetaData2
+Declaration: avtTensorMetaData(std::string, std::string, avtCentering, int);
+Definition:
+// ****************************************************************************
+//  Method: avtTensorMetaData constructor
+//
+//  Arguments:
+//      n           The name of the tensor variable.
+//      mn          The name of the mesh the tensor var is defined on.
+//      c           The centering of the variable.
+//      vd          The dimension of the variable.
+//
+//  Programmer: Hank Childs
+//  Creation:   September 20, 2003
+//
+//  Modifications:
+//    Brad Whitlock, Tue Jul 20 13:52:39 PST 2004
+//    Added units.
+//
+//    Hank Childs, Mon Feb 14 14:16:49 PST 2005
+//    Added original name.
+//
+// ****************************************************************************
+
+avtTensorMetaData::avtTensorMetaData(std::string n, std::string mn, 
+                                     avtCentering c, int vd)
+    : avtVarMetaData(avtTensorMetaData::TmfsStruct, n, mn, c)
+{
+    avtTensorMetaData::Init();
+    dim = vd;
+}
+
+Function: Print
+Declaration: void Print(ostream &, int = 0) const;
+Definition:
+// ****************************************************************************
+//  Method: avtTensorMetaData::Print
+//
+//  Purpose:
+//      Print statement for debugging.
+//
+//  Arguments:
+//      out      The stream to output to.
+//      indent   The number of tabs to indent each line with.
+//
+//  Programmer:  Hank Childs
+//  Creation:    September 20, 2003
+//
+//  Modifications:
+//    Brad Whitlock, Tue Jul 20 13:54:42 PST 2004
+//    Added units.
+//
+//    Hank Childs, Mon Feb 14 14:16:49 PST 2005
+//    Added original name.
+//
+// ****************************************************************************
+inline void
+Indent(ostream &out, int indent)
+{
+    for (int i = 0 ; i < indent ; i++)
+    {
+        out << "\t";
+    }
+}
+void
+avtTensorMetaData::Print(ostream &out, int indent) const
+{
+    avtVarMetaData::Print(out, indent);
+
+    Indent(out, indent);
+    out << "Variable Dimension = " << dim << endl;
+}
+

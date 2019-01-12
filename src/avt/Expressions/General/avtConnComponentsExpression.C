@@ -1,0 +1,3695 @@
+/*****************************************************************************
+*
+* Copyright (c) 2000 - 2018, Lawrence Livermore National Security, LLC
+* Produced at the Lawrence Livermore National Laboratory
+* LLNL-CODE-442911
+* All rights reserved.
+*
+* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
+* full copyright notice is contained in the file COPYRIGHT located at the root
+* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
+*
+* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
+* modification, are permitted provided that the following conditions are met:
+*
+*  - Redistributions of  source code must  retain the above  copyright notice,
+*    this list of conditions and the disclaimer below.
+*  - Redistributions in binary form must reproduce the above copyright notice,
+*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
+*    documentation and/or other materials provided with the distribution.
+*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
+*    be used to endorse or promote products derived from this software without
+*    specific prior written permission.
+*
+* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
+* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
+* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
+* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
+* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
+* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
+* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
+* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
+* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
+* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
+* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
+* DAMAGE.
+*
+*****************************************************************************/
+
+// ************************************************************************* //
+//                      avtConnComponentsExpression.C                        //
+// ************************************************************************* //
+#include <avtConnComponentsExpression.h>
+
+#include <math.h>
+
+#include <avtDatabaseMetaData.h>
+#include <avtExprNode.h>
+#include <avtExpressionEvaluatorFilter.h>
+#include <avtFacelistFilter.h>
+#include <avtIntervalTree.h>
+#include <avtMetaData.h>
+#include <avtParallel.h>
+#include <avtOriginatingSource.h>
+
+#include <vtkAppendFilter.h>
+#include <vtkCharArray.h>
+#include <vtkCell.h>
+#include <vtkCellData.h>
+#include <vtkCellType.h>
+#include <vtkDataSet.h>
+#include <vtkDataSetRemoveGhostCells.h>
+#include <vtkIntArray.h>
+#include <vtkPointData.h>
+#include <vtkUnsignedCharArray.h>
+#include <vtkUnstructuredGrid.h>
+#include <vtkUnstructuredGridRelevantPointsFilter.h>
+#include <vtkUnstructuredGridWriter.h>
+#include <vtkUnstructuredGridReader.h>
+#include <vtkVisItUtility.h>
+
+#include <sstream>
+#include <DebugStream.h>
+#include <ExpressionException.h>
+#include <TimingsManager.h>
+#include <Utility.h>
+
+
+#ifdef PARALLEL
+  #include <mpi.h>
+#endif
+
+#include <string>
+#include <vector>
+
+// ****************************************************************************
+//  Method: avtConnComponentsExpression constructor
+//
+//  Purpose:
+//      Defines the constructor.  Note: this should not be inlined in the
+//      header because it causes problems for certain compilers.
+//
+//  Programmer: Hank Childs
+//  Creation:   January 22, 2007
+//
+//  Modifications:
+//    Cyrus Harrison, Thu Aug 23 08:35:12 PDT 2007
+//    Added init of enableGhostNeighbors
+//
+//    Ryan Bleile, Wed Jun 11 09:47:30 CDT 2014
+//    Modifies default for enableGhostNeighbors to fit new scheme
+//
+// ****************************************************************************
+
+avtConnComponentsExpression::avtConnComponentsExpression()
+{
+    nFinalComps = 0;
+    enableGhostNeighbors = 0;
+}
+
+
+// ****************************************************************************
+//  Method: avtConnComponentsExpression destructor
+//
+//  Purpose:
+//      Defines the destructor.  Note: this should not be inlined in the header
+//      because it causes problems for certain compilers.
+//
+//  Programmer: Hank Childs
+//  Creation:   January 22, 2007
+//
+// ****************************************************************************
+
+avtConnComponentsExpression::~avtConnComponentsExpression()
+{
+    ;
+}
+
+
+// ****************************************************************************
+//  Method: avtConnComponentsExpression::ProcessArguments
+//
+//  Purpose:
+//      Parses optional arguments.
+//
+//  Arguments:
+//      args      Expression arguments
+//      state     Expression pipeline state
+//
+//  Programmer:   Cyrus Harrison
+//  Creation:     August 8, 2007
+//
+//  Modificaions:
+//    Ryan Bleile, Wed Jun 11 09:53:23 CDT 2014
+//    modifications enable ghost neighbors or boundary neighbors
+//
+//    Cyrus Harrison, Wed Mar 29 14:03:59 PDT 2017
+//    Fix typo and string parsing logic.
+//
+// ****************************************************************************
+void
+avtConnComponentsExpression::ProcessArguments(ArgsExpr *args,
+                                              ExprPipelineState *state)
+{
+    // get the argument list and # of arguments
+    std::vector<ArgExpr*> *arguments = args->GetArgs();
+    size_t nargs = arguments->size();
+
+    // check for call with no args
+    if (nargs == 0)
+    {
+        EXCEPTION2(ExpressionException, outputVariableName,
+                   "conn_components() Incorrect syntax.\n"
+                   " usage: conn_components(mesh_name,enable_ghost_neighbors)\n"
+                   "The enable_ghost_neighbors parameter is optional "
+                   "and specifies if the ghost neighbors should be used to "
+                   "reduce communication in the parallel case.\n"
+                   "Default: enable_ghost_neighbors = 1 "
+                   "( use ghost neighbors if available )");
+    }
+
+    // first argument is the mesh name, let it do its own magic
+    ArgExpr *first_arg = (*arguments)[0];
+    avtExprNode *first_tree = dynamic_cast<avtExprNode*>(first_arg->GetExpr());
+    first_tree->CreateFilters(state);
+
+    // Check to see if the user passed in the 2nd argument (optional)
+    // that enables/disables the ghost neighbors optimization
+
+    // Options:
+    //  false  (0)
+    //  true   (1)
+
+    if (nargs > 1 )
+    {
+        ArgExpr *second_arg= (*arguments)[1];
+        ExprParseTreeNode *second_tree= second_arg->GetExpr();
+        std::string second_type = second_tree->GetTypeName();
+
+        // check for arg passed as integer
+        if((second_type == "IntegerConst"))
+        {
+            int enable =
+                       dynamic_cast<IntegerConstExpr*>(second_tree)->GetValue();
+
+            if(enable < 0 || enable > 2)
+            {
+                EXCEPTION2(ExpressionException, outputVariableName,
+                "avtConnComponents: Invalid optional second argument.\n"
+                " Valid options are: 1,0 or \"true\",\"false\"");
+            }
+            enableGhostNeighbors = enable;
+        }
+        else if((second_type == "StringConst"))
+        {
+            std::string sval =
+                        dynamic_cast<StringConstExpr*>(second_tree)->GetValue();
+            if(sval == "true")
+                enableGhostNeighbors = 1;
+            else if(sval == "false")
+                enableGhostNeighbors = 0;
+            else
+            {
+                EXCEPTION2(ExpressionException, outputVariableName,
+                           "avtConnComponents: Invalid optional second argument.\n"
+                           " Valid options are: 1,0 or \"true\",\"false\"");
+            }
+        }
+        else // invalid arg type
+        {
+            EXCEPTION2(ExpressionException, outputVariableName,
+                       "avtConnComponents: Invalid optional second argument.\n"
+                       " Valid options are: 1,0 or \"true\",\"false\"");
+        }
+    }
+
+    debug5 << "avtConnComponentsExpression: Enable Ghost Neighbors ? = "
+           << enableGhostNeighbors << endl;
+}
+
+
+// ****************************************************************************
+//  Method: avtConnComponentsExpression::GetNumberOfComponents
+//
+//  Purpose:
+//      After expression execution returns the final number of components.
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   February 2, 2007
+//
+// ****************************************************************************
+int 
+avtConnComponentsExpression::GetNumberOfComponents()
+{
+    return nFinalComps;
+}
+
+
+// ****************************************************************************
+//  Method: avtConnComponentsExpression::Execute
+//
+//  Purpose:
+//      Labels the connected components of an unstructured mesh.
+//
+//  Programmer: Hank Childs & Cyrus Harrison
+//  Creation:   January 22, 2007
+//
+//  Modifications:
+//    Cyrus Harrison, Fri Mar 16 10:46:28 PDT 2007
+//    Added progress update.
+//
+//    Cyrus Harrison, Fri Mar 16 10:46:28 PDT 2007
+//    Added extraction of ghost zone neighbors for the parallel case
+//
+//    Cyrus Harrison, Thu Aug 23 08:53:25 PDT 2007
+//    Support enable ghost neighbors option.
+//
+//    Cyrus Harrison, Wed Feb 27 16:23:56 PST 2008
+//    Special logic for datasets that only contain ghost zones.
+//
+//    Cyrus Harrison, Tue Nov  9 10:32:01 PST 2010
+//    Added more timing info.
+//
+//    Ryan Bleile, Wed Jun 11 09:53:23 CDT 2014
+//    Added changes to handle new ghost zones method, boundary neighbors
+//
+// ****************************************************************************
+void
+avtConnComponentsExpression::Execute()
+{
+    int t_full = visitTimer->StartTimer();
+
+    // loop index
+    int i;
+    // initialize number of components to zero 
+    nFinalComps = 0;
+
+    // get input data tree to obtain datasets
+    avtDataTree_p tree = GetInputDataTree();
+    // holds number of datasets
+    int nsets;
+
+    // get datasets
+    vtkDataSet **data_sets = tree->GetAllLeaves(nsets);
+
+    // get dataset domain ids
+    std::vector<int> domain_ids;
+    tree->GetAllDomainIds(domain_ids);
+
+    // check for ghosts
+    bool have_ghosts = false;
+    if(nsets > 0)
+        have_ghosts = data_sets[0]->GetCellData()->GetArray("avtGhostZones");
+
+    // set progress related vars
+#ifdef PARALLEL
+    totalSteps = nsets *4;
+    if(have_ghosts)
+        totalSteps+= nsets;
+#else
+    totalSteps = nsets *2;
+#endif
+    currentProgress = 0;        
+
+#ifdef PARALLEL
+
+    debug2 << "avtConnComponentsExpression::enableGhostNeighbors = " 
+           << enableGhostNeighbors <<endl;
+    if(enableGhostNeighbors == 0) 
+       if (!  CheckForProperGhostZones(data_sets,nsets))
+       {
+           enableGhostNeighbors = 2;
+       }
+
+    if (enableGhostNeighbors == 0)
+    {
+        debug2 << "avtConnComponentsExpression:: Proper ghost zones found for "
+               << "ghost zone communication enhancement." 
+               << "Labeling ghost zone neighbors."
+               << endl;
+        // if we have ghosts, label ghost neighbors for reduced comm in global
+        // resolve
+        for( i = 0; i <nsets ; i++)
+        {
+            LabelGhostNeighbors(data_sets[i]);
+            UpdateProgress(currentProgress++,totalSteps);
+        }
+    }
+#endif
+
+    int t_gzrm = visitTimer->StartTimer();
+    // filter out any ghost cells
+    vtkDataSetRemoveGhostCells **ghost_filters = NULL;
+
+    if(have_ghosts)
+    {
+        ghost_filters = new vtkDataSetRemoveGhostCells*[nsets];
+
+        for( i = 0 ; i < nsets ; i++)
+        {
+            ghost_filters[i] = vtkDataSetRemoveGhostCells::New();
+            ghost_filters[i]->SetInputData(data_sets[i]);
+            ghost_filters[i]->Update();
+            data_sets[i] = ghost_filters[i]->GetOutput();
+        }
+    }
+    visitTimer->StopTimer(t_gzrm,"Ghost Zone Removal");
+
+#ifdef PARALLEL
+    if (enableGhostNeighbors == 1)
+    {
+        debug2 << "avtConnComponentsExpression:: Proper ghost zones NOT found "
+               << "for ghost zone communication enhancement, using boundary neighbors." << endl;
+        for( i = 0; i <nsets ; i++)
+        {
+            LabelBoundaryNeighbors(data_sets[i]);
+            UpdateProgress(currentProgress++,totalSteps);
+        }
+    }
+    else // enableGhostNeighbors == 2
+    {
+        debug2 << "old method for boundary neighbors." << endl;
+    }
+#endif
+
+    int t_local_lbl = visitTimer->StartTimer();
+    // array to hold output sets
+    avtDataTree_p *leaves = new avtDataTree_p[nsets];
+
+    // vectors to hold result sets and their component labels
+    std::vector<vtkDataSet *>  result_sets;
+    std::vector<vtkIntArray *> result_arrays;
+    // vector to hold the number of components per set
+    std::vector<int> results_num_comps;
+
+    result_sets.resize(nsets);
+    result_arrays.resize(nsets);
+    results_num_comps.resize(nsets);
+
+    int num_local_comps=0;
+    int num_comps = 0;
+    int num_local_cells=0;
+
+    // process all local sets
+    for(i = 0; i < nsets ; i++)
+    {
+        // get current set
+        vtkDataSet *curr_set = data_sets[i];
+        num_local_cells += curr_set->GetNumberOfCells();
+
+        // perform connected components labeling on current set
+        // (this only resolves components within the set)
+        vtkIntArray *res_array = SingleSetLabel(curr_set,results_num_comps[i]);
+
+        // if there are multiple sets, we need to shift the component labels of
+        // the current set to make sure they are unique
+        ShiftLabels(res_array,num_local_comps);
+
+        // update the total number of components found
+        num_local_comps+= results_num_comps[i];
+
+        // create a shallow copy of the current data set to add to output
+        vtkDataSet *res_set = (vtkDataSet *) curr_set->NewInstance();
+        res_set->ShallowCopy(curr_set);
+
+        // add array to dataset
+        res_set->GetCellData()->AddArray(res_array);
+
+        // keep pointers to the result set and labels
+        result_arrays[i] = res_array;
+        result_sets[i]   = res_set;
+
+        if(res_array->GetNumberOfTuples() > 0) // add result as new leaf
+            leaves[i] = new avtDataTree(res_set,domain_ids[i]);
+        else // if the dataset only contained ghost zones we could end up here
+            leaves[i] = NULL;
+
+        // update progress
+        UpdateProgress(currentProgress++,totalSteps);
+    }
+
+    // create a boundary set 
+    // this is used to for fast boundary queries to resolve components across
+    // multiple datasets
+
+    BoundarySet bset;
+    for(i=0;i<nsets;i++)
+    {
+        // add each local mesh to the boundary set
+        bset.AddMesh(result_sets[i]);
+    }
+    // prepare the boundary set for queries
+    bset.Finalize();
+
+    // resolve labels across multiple local sets
+    num_local_comps = MultiSetResolve(num_local_comps,
+                                     bset,
+                                     result_sets,
+                                     result_arrays);
+
+    // update the total number of found components
+    num_comps = num_local_comps;
+
+    std::ostringstream oss;
+    oss << "Connected Components Labeling of " << nsets << " local datasets (" 
+        << num_local_cells << " cells, " << num_comps << " comps)";
+    visitTimer->StopTimer(t_local_lbl,oss.str());
+
+#ifdef PARALLEL
+
+    //
+    // At this point each processor has resolved the labels across all local 
+    // datasets.  Components on each processor are labeled 0 <-> (number of 
+    // local comps - 1).  In the parallel case we need to ensure that every 
+    // component has a unique label so we first perform a global label shift.
+    //
+
+    // Globally shift labels to make sure they are unique
+    int num_global_comps = GlobalLabelShift(num_local_comps,result_arrays);
+
+
+    // We can now globally resolve the labels
+
+    // Resolve components across processors
+    num_global_comps = GlobalResolve(num_global_comps,
+                                     bset,
+                                     result_sets,
+                                     result_arrays);
+
+    // update the total number of found components
+    num_comps = num_global_comps;
+
+#endif
+
+    // create output data trees
+    if(nsets > 0 )
+    {
+        // create output data tree
+        avtDataTree_p result_tree = new avtDataTree(nsets,leaves);
+        // set output data tree
+        SetOutputDataTree(result_tree);
+    }
+
+    // cleanup leaves array
+    delete [] leaves;
+    // cleanup data_sets array
+    delete [] data_sets;
+
+    // cleanup result sets
+    for(i = 0; i< nsets; i++)
+    {
+       // dec ref pointer for each set
+       result_sets[i]->Delete();
+       // dec ref pointer for each set's label array
+       result_arrays[i]->Delete();
+       // cleanup ghost filters
+       if(have_ghosts)
+           ghost_filters[i]->Delete();
+    }
+    // cleanup ghost filters array
+    if(have_ghosts)
+        delete [] ghost_filters;
+
+    // Set progress to complete
+    UpdateProgress(totalSteps,totalSteps);
+
+    // set the final number of components
+    nFinalComps  = num_comps;
+
+    visitTimer->StopTimer(t_full,"Full Connected Components Labeling");
+}
+
+
+// ****************************************************************************
+//  Method: avtConnComponentsExpression::CheckForProperGhostZones
+//
+//  Purpose:
+//     Checks for ghost zone info that can be used in to reduce parallel 
+//     communication. 
+//
+//  Arguments:
+//    sets        Input data sets.
+//    nsets       Number of input data sets. 
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   October 10, 20078
+//
+//  Modifications:
+//    Cyrus Harrison, Tue Nov  9 10:32:01 PST 2010
+//    Added timing info.
+//
+//    Cyrus Harrison, Tue Nov  9 10:32:01 PST 2010
+//    Loosen the check for valid ghost zones.
+//
+// ****************************************************************************
+bool
+avtConnComponentsExpression::CheckForProperGhostZones(vtkDataSet **sets,
+                                                      int nsets)
+{
+    int t0 = visitTimer->StartTimer();
+
+    int found_ghosts = 0;
+    int total_ncells = 0;
+    for(int i=0; i < nsets && found_ghosts == 0; i++)
+    {
+        int ncells = sets[i]->GetNumberOfCells();
+        total_ncells += ncells;
+        vtkUnsignedCharArray *gz_array = (vtkUnsignedCharArray *) sets[i]
+                                    ->GetCellData()->GetArray("avtGhostZones");
+        if(gz_array)
+        {
+            unsigned char *gz_ptr = (unsigned char *)gz_array->GetPointer(0);
+            for(int j=0; j < ncells && found_ghosts == 0; j++)
+            {
+                if(gz_ptr[j] & 1) // Bit 0 == DUPLICATED_ZONE_INTERNAL_TO_PROBLEM
+                    found_ghosts = 1;
+            }
+        }
+    }
+
+    //
+    // If we found a single instance of a proper ghost zone
+    // we want to try to use the ghost zone neighbors optimization.
+    // Note: It would be better if the data attributes simply told
+    // us that the proper type of ghost zones were generated ...
+    //
+
+    found_ghosts = UnifyMaximumValue(found_ghosts);
+
+    visitTimer->StopTimer(t0,"Check For Proper Ghost Zones");
+    return (found_ghosts == 1);
+}
+
+// ****************************************************************************
+//  Method: avtConnComponentsExpression::LabelGhostNeighbors
+//
+//  Purpose:
+//     Identifies cells that have ghost neighbors, storing the info in
+//     a vtkUnsignedCharArray named "avtOnBoundary".
+//
+//  Arguments:
+//    data_set     Input mesh
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   August 11, 2007
+//
+//  Modifications:
+//    Cyrus Harrison, Tue Nov  9 10:32:01 PST 2010
+//    Added timing info.
+//
+//    Cyrus Harrison, Tue Nov  9 10:32:01 PST 2010
+//    Explicit check for DUPLICATED_ZONE_INTERNAL_TO_PROBLEM.
+//
+//    Ryan Bleile, Wed Jun 11 09:53:23 CDT 2014
+//    Changed avtGhostZoneNeighbors to avtOnBoundary
+// ****************************************************************************
+void
+avtConnComponentsExpression::LabelGhostNeighbors(vtkDataSet *data_set)
+{
+    int t0 = visitTimer->StartTimer();
+    // loop indices
+    int i,j,k;
+    vtkUnsignedCharArray *gz_array = (vtkUnsignedCharArray *) data_set
+                             ->GetCellData()->GetArray("avtGhostZones");
+
+    // if the data set does not have ghosts, we are done
+    if (!gz_array)
+        return;
+
+    unsigned char *gz_ptr = (unsigned char *)gz_array->GetPointer(0);
+    int ncells = data_set->GetNumberOfCells();
+
+    vtkUnsignedCharArray *gzn_array = vtkUnsignedCharArray::New();
+    gzn_array->SetName("avtOnBoundary");
+    gzn_array->SetNumberOfComponents(1);
+    gzn_array->SetNumberOfTuples(ncells);
+
+    unsigned char *gzn_ptr = (unsigned char *)gzn_array->GetPointer(0);
+
+    // init the ghost zone neighbors array
+    memset(gzn_ptr,0,ncells * sizeof(unsigned char));
+
+    for ( i=0; i < ncells; i++)
+    {
+        // if this cell has ghost zones, label it's neighbors
+        if(gz_ptr[i] & 1) // Bit 0 == DUPLICATED_ZONE_INTERNAL_TO_PROBLEM
+        {
+            // get cell neighbors
+            vtkIdList *gcell_pts = data_set->GetCell(i)->GetPointIds();
+            int ngcell_pts = gcell_pts->GetNumberOfIds();
+            for( j=0; j < ngcell_pts; j++)
+            {
+                // neighbors share points with the current cell
+                vtkIdList *gpt = vtkIdList::New();
+                gpt->SetNumberOfIds(1);
+                gpt->SetId(0,gcell_pts->GetId(j));
+                vtkIdList *nei_cells = vtkIdList::New();
+                data_set->GetCellNeighbors(i,gpt,nei_cells);
+                int nnei = nei_cells->GetNumberOfIds();
+
+                // tag neighbors
+                for ( k = 0; k < nnei; k++)
+                    gzn_ptr[nei_cells->GetId(k)] = 1;
+
+                gpt->Delete();
+                nei_cells->Delete();
+            }
+        }
+    }
+
+    data_set->GetCellData()->AddArray(gzn_array);
+    gzn_array->Delete();
+    visitTimer->StopTimer(t0,"Labeling Ghost Neighbors");
+}
+
+
+// ****************************************************************************
+//  Method: avtConnComponentsExpression::LabelBoundaryNeighbors
+//
+//  Purpose:
+//     Identifies cells that lie on the boundary, storing the results in 
+//     a vtkUnsignedCharArray named "avtOnBoundary".
+//
+//  Arguments:
+//    data_set     Input mesh
+//
+//  Programmer: Hank Childs
+//  Creation:   November 30, 2013
+//
+//  Modifications:
+//    Eric Brugger, Mon Jul 21 12:06:33 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
+//
+// ****************************************************************************
+
+void
+avtConnComponentsExpression::LabelBoundaryNeighbors(vtkDataSet *data_set)
+{
+    int i;
+    int t0 = visitTimer->StartTimer();
+
+    int ncells = data_set->GetNumberOfCells();
+
+    // make a clone of the input that has no variable
+    // (less variables mean less operations when manipulating it)
+    vtkDataSet *clone_ds = data_set->NewInstance();
+    clone_ds->ShallowCopy(data_set);
+    int numPointArrays = clone_ds->GetPointData()->GetNumberOfArrays();
+    for (i = numPointArrays-1 ; i>=0 ; i--)
+        clone_ds->GetPointData()->RemoveArray(i);
+    int numCellArrays = clone_ds->GetCellData()->GetNumberOfArrays();
+    for (i = numCellArrays-1 ; i>=0 ; i--)
+        clone_ds->GetCellData()->RemoveArray(i);
+
+    // set up a variable that has the cell ID for each cell.
+    vtkIntArray *arr = vtkIntArray::New();
+    arr->SetNumberOfTuples(ncells);
+    for (vtkIdType i = 0 ; i < ncells ; i++)
+        arr->SetValue(i, (int)i);
+    const char *varname = "_avt_id";
+    arr->SetName(varname);
+    clone_ds->GetCellData()->AddArray(arr);
+    arr->Delete();
+
+    // use external routine to find which cells are external
+    avtFacelistFilter *flf = new avtFacelistFilter();
+    avtDataRepresentation clone_dr(clone_ds, -1, "");
+    avtDataTree_p tree = flf->FindFaces(&clone_dr,
+                                  GetInput()->GetInfo(), false, false,
+                                  true, true, NULL);
+    delete flf;
+    clone_ds->Delete();
+    // we do not need to delete tree, since it is a ref_ptr
+
+    // init the boundary neighbors array
+    vtkUnsignedCharArray *b_array = vtkUnsignedCharArray::New();
+    b_array->SetName("avtOnBoundary");
+    b_array->SetNumberOfComponents(1);
+    b_array->SetNumberOfTuples(ncells);
+    unsigned char *b_ptr = (unsigned char *)b_array->GetPointer(0);
+    memset(b_ptr,0,ncells * sizeof(unsigned char));
+
+    // go through external cells and update array for which are on boundary
+    vtkDataSet *just_exteriors = tree->GetSingleLeaf();
+    vtkIntArray *outsides = (vtkIntArray *) just_exteriors->GetCellData()->GetArray(varname);
+    int numOutsideCells = outsides->GetNumberOfTuples();
+    for (i = 0 ; i < numOutsideCells ; i++)
+        b_ptr[outsides->GetValue(i)] = 1;
+
+    data_set->GetCellData()->AddArray(b_array);
+    b_array->Delete();
+
+    visitTimer->StopTimer(t0,"Labeling Boundary Neighbors");
+}
+
+
+// ****************************************************************************
+//  Method: avtConnComponentsExpression::SingleSetLabel
+//
+//  Purpose:
+//      Performs connected components labeling on a single data set.
+//
+//  Arguments:
+//    data_set     Input mesh
+//    num_comps    Resulting number of components (o)
+//
+//  Returns:       A new vtk integer array containing the label result
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   January 23, 2007
+//
+//  Modifications:
+//    Cyrus Harrison, Tue Nov  9 10:32:01 PST 2010
+//    Optimization & more timing info.
+//
+//    Jeremy Meredith, Thu Jul 21 16:45:48 EDT 2011
+//    Add support for single-point cells (VTK_VERTEX, essentially).
+//
+// ****************************************************************************
+vtkIntArray *
+avtConnComponentsExpression::SingleSetLabel(vtkDataSet *data_set,
+                                            int &num_comps)
+{
+    int t0 = visitTimer->StartTimer();
+
+    // loop indices
+    int i,j,k;
+
+    // initialize the number of found components to zero 
+    num_comps = 0;
+
+    // get number of points
+    int npoints = data_set->GetNumberOfPoints();
+    // get number of cells
+    int ncells = data_set->GetNumberOfCells();
+
+    // component label is stored as cell data in a vtkIntArray
+    vtkIntArray *res_array = vtkIntArray::New();
+    // set name of new variable
+    res_array->SetName(outputVariableName);
+    // result only has one component - the label value
+    res_array->SetNumberOfComponents(1);
+    // cell data has a tuple for each cell
+    res_array->SetNumberOfTuples(ncells);
+
+    int *res_ptr = res_array->GetPointer(0);
+
+    //
+    // Connected Components Labeling on an Unstructured Grid.
+    // Our goal is to label connected cells.
+    //
+    // For the single set we start by considering each point as a separate
+    // component. Components that have points that are in the same cell are
+    // merged. The resolution of the disjoint set problem is handled by the
+    // union find data structure.
+    //
+    // In this case points may not be a part of a cell, so their union find
+    // entries may be invalid. If a point is used in an Union operation it
+    // is marked valid. This weeds out points that are not part of any cell.
+    //
+
+    int t_uf_gen = visitTimer->StartTimer();
+    // create a UnionFind object with # of entries  = # of points
+    UnionFind union_find(npoints,false);
+
+    std::ostringstream oss;
+    oss << "Single Set UnionFind Generate (" << npoints << " entries)";
+    visitTimer->StopTimer(t_uf_gen,oss.str());
+    oss.str("");
+
+    int t_uf_sweep = visitTimer->StartTimer();
+
+    // loop over all cells
+    for( i = 0; i < ncells; i++)
+    {
+        // get current cell
+        vtkCell *cell = data_set->GetCell(i);
+
+        // get ids of the cell points
+        vtkIdList *ids = cell->GetPointIds();
+        int nids = ids->GetNumberOfIds();
+
+        // union all point ids from the current cell
+        for( j = 0; j < nids; j++)
+        {
+            // get the point ids
+            int j_id = ids->GetId(j);
+
+            if (nids == 1)
+            {
+                union_find.SetValid(j_id, true);
+            }
+            else
+            {
+                for( k=0; k < j; k++)
+                {
+                    int k_id = ids->GetId(k);
+
+                    // make sure these ids are not already in the same component
+                    if( union_find.Find(j_id) != union_find.Find(k_id) )
+                    {
+                        // join the components connected to these two labels
+                        union_find.Union(j_id,k_id);
+                    }
+                }
+            }
+        }
+    }
+
+    oss << "Single Set UnionFind Sweep (" << ncells << " cells)";
+    visitTimer->StopTimer(t_uf_sweep,oss.str());
+    oss.str("");
+
+    int tfz = visitTimer->StartTimer();
+    // flatten to resolve final labels
+    num_comps = union_find.FinalizeLabels();
+    visitTimer->StopTimer(tfz,"Single Set Label Finalize Labels");
+    // if we only found a single component, make sure to increment
+    // the number of components
+    if(ncells > 0 && num_comps == 0 ) num_comps++;
+
+    // use union find label to set final output value
+    for( i = 0; i < ncells; i++)
+    {
+        // get current cell
+        vtkCell *cell = data_set->GetCell(i);
+        // get label by finding the label of the first point in the cell
+        // (any point would suffice)
+        // place result in array
+        res_ptr[i] = union_find.GetFinalLabel(cell->GetPointId(0));
+    }
+
+    oss << "Single Set Connected Components Labeling (" << ncells << " cells, " << num_comps << " comps)";
+    visitTimer->StopTimer(t0,oss.str());
+
+    return res_array;
+}
+
+
+// ****************************************************************************
+//  Method: avtConnComponentsExpression::MultiSetResolve
+//
+//  Purpose:
+//      Performs connected components labeling across multiple domains.
+//
+//  Arguments:
+//    num_comps    Total number of components in all input meshes
+//    bset         Boundary set used for boundary queries
+//    sets         Input meshes
+//    labels       Component label arrays for the input meshes
+//
+//  Returns:       The number of resolved components
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   January 25, 2007
+//
+//  Modifications:
+//    Cyrus Harrison, Fri Mar 16 15:49:42 PDT 2007
+//    Added progress update. 
+//
+//    Hank Childs, Sun Mar  7 12:55:18 CST 2010
+//    Remove n^2 algorithm.
+//
+//    Hank Childs, Tue Mar 16 19:42:55 PST 2010
+//    One optimization from Mar 7th was too aggressive; back that out.
+//
+// ****************************************************************************
+int
+avtConnComponentsExpression::MultiSetResolve(int num_comps,
+                                            const BoundarySet &bset,
+                                            const std::vector<vtkDataSet*> &sets,
+                                            const std::vector<vtkIntArray*> &labels)
+{
+    // loop indices
+    int i,j;
+
+    // find out the number of sets
+    int nsets = (int)sets.size();
+
+    // if we have 0 or 1 set(s) multi-set resolve is not necessary
+    if(nsets < 2) return num_comps; // not multi-set!
+
+    int t0 = visitTimer->StartTimer();
+
+    // create union find for the multi-set resolve
+    // in this case, all union find representatives are valid
+    UnionFind union_find(num_comps,true);
+
+    // vectors to hold boundary query results
+    std::vector<int> src_cells;
+    std::vector<int> can_cells;
+    int src_label, can_label;
+
+    int dim = GetInput()->GetInfo().GetAttributes().GetSpatialDimension();
+    avtIntervalTree tree(nsets, dim, false);
+    for (i = 0 ; i < nsets ; i++)
+    {
+        double bounds[6];
+        sets[i]->GetBounds(bounds);
+        tree.AddElement(i, bounds);
+    }
+    tree.Calculate(true);
+
+    // loop over all sets
+    for( i = 0; i < nsets; i++)
+    {
+        std::vector<int> possible_matches;
+        double bounds[6];
+        sets[i]->GetBounds(bounds);
+        double lower[3];
+        double upper[3];
+        lower[0] = bounds[0];
+        lower[1] = bounds[2];
+        lower[2] = bounds[4];
+        upper[0] = bounds[1];
+        upper[1] = bounds[3];
+        upper[2] = bounds[5];
+        tree.GetElementsListFromRange(lower, upper, possible_matches);
+
+        vtkIntArray  *src_labels   = labels[i];
+
+        // get intersection between set i and possible matches
+        for (size_t m = 0 ; m < possible_matches.size() ; m++)
+        {
+            j = possible_matches[m];
+            // self intersection test not necessary
+            if ( j == i )
+                continue;
+
+            vtkIntArray  *can_labels   = labels[j]; 
+            bset.GetIntersectionSet(i,j,src_cells,can_cells);
+            
+            size_t nisect = src_cells.size();
+            // check if these cell labels need to be merged. 
+            for(size_t k = 0; k < nisect; k++)
+            {
+                // get the source and candidate component labels
+                src_label = src_labels->GetValue(src_cells[k]);
+                can_label = can_labels->GetValue(can_cells[k]);
+                // merge them if the are not already in the same component
+                if( union_find.Find(src_label) !=  union_find.Find(can_label))
+                {
+                    union_find.Union(src_label,can_label);
+                }
+            }
+        }
+
+        // update progress
+        UpdateProgress(currentProgress++,totalSteps);
+    }
+
+    // flatten the union find object to obtain final labels
+    num_comps = union_find.FinalizeLabels();
+
+    // resolve final labels
+    for( i = 0; i< nsets;i++)
+    {
+        // get the current label array
+        vtkIntArray *curr_array = labels[i];
+        vtkIdType          ncells     = curr_array->GetNumberOfTuples();
+
+        for(vtkIdType jj = 0; jj < ncells; ++jj)
+        {
+            // get the current label value
+            int lbl = curr_array->GetValue(jj);
+            // find the final label value
+            lbl = union_find.GetFinalLabel(lbl);
+            // set the final label 
+            curr_array->SetValue(jj,lbl);
+        }
+    }
+
+    visitTimer->StopTimer(t0,"Multi-Set Component Label Resolve");
+
+    // return the final number of components
+    return num_comps;
+}
+
+
+// ****************************************************************************
+//  Method: avtConnComponentsExpression::MultiSetList
+//
+//  Purpose:
+//      Produces a list of union operations required to resolve the component 
+//      labels of the input sets. 
+// 
+//      This is used by the GlobalResolve function to generate per processor
+//      union lists.
+//
+//  Arguments:
+//    num_comps    Current number of components in all input meshes
+//    bset         Boundary set used for boundary queries
+//    sets         Input meshes
+//    labels       Component label arrays for the input meshes
+//    u_src        Holds the first component each resulting union entry  (o)
+//    u_des        Holds the second component each resulting union entry (o)
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   January 25, 2007
+//
+//  Modifications:
+//
+//    Hank Childs, Sun Mar  7 12:55:18 CST 2010
+//    Remove n^2 algorithm.
+//
+//    Hank Childs, Tue Mar 16 19:42:55 PST 2010
+//    One optimization from Mar 7th was too aggressive; back that out.
+//
+// ****************************************************************************
+void
+avtConnComponentsExpression::MultiSetList(int num_comps,
+                                         const BoundarySet &bset,
+                                         const std::vector<vtkDataSet*> &sets,
+                                         const std::vector<vtkIntArray*> &labels,
+                                         std::vector<int> &u_src,
+                                         std::vector<int> &u_des)
+{
+    // loop indices
+    int i,j;
+
+    // find out the number of sets
+    int nsets = (int)sets.size();
+    // clear the result vectors
+    u_src.clear();
+    u_des.clear();
+
+    // if we have 0 or 1 set(s) multi-set resolve is not necessary
+    if(nsets < 2) return; // not multi-set!
+
+    int t0 = visitTimer->StartTimer();
+
+    //
+    // The final label values are not resolved here, but a union find instance 
+    // provides an efficient way to make sure redundant union operations are 
+    // not listed. 
+    // 
+
+    // create union find for the multi-set resolve
+    // in this case, all union find representatives are valid
+    UnionFind union_find(num_comps,true);
+
+    // vectors to hold boundary query results
+    std::vector<int> src_cells;
+    std::vector<int> can_cells;
+    int src_label, can_label;
+
+    int dim = GetInput()->GetInfo().GetAttributes().GetSpatialDimension();
+    avtIntervalTree tree(nsets, dim, false);
+    for (i = 0 ; i < nsets ; i++)
+    {
+        double bounds[6];
+        sets[i]->GetBounds(bounds);
+        tree.AddElement(i, bounds);
+    }
+    tree.Calculate(true);
+
+    // loop over all sets
+    for( i = 0; i < nsets; i++)
+    {
+        std::vector<int> possible_matches;
+        double bounds[6];
+        sets[i]->GetBounds(bounds);
+        double lower[3];
+        double upper[3];
+        lower[0] = bounds[0];
+        lower[1] = bounds[2];
+        lower[2] = bounds[4];
+        upper[0] = bounds[1];
+        upper[1] = bounds[3];
+        upper[2] = bounds[5];
+        tree.GetElementsListFromRange(lower, upper, possible_matches);
+
+        vtkIntArray  *src_labels   = labels[i];
+
+        // get intersection between set i and possible matches
+        for (size_t m = 0 ; m < possible_matches.size() ; m++)
+        {
+            j = possible_matches[m];
+            // self intersection test not necessary
+            if ( j == i )
+                continue;
+
+            vtkIntArray  *can_labels   = labels[j]; 
+            bset.GetIntersectionSet(i,j,src_cells,can_cells);
+
+            size_t nisect = src_cells.size();
+            // check if these cell labels need to be merged. 
+            for(size_t k = 0; k < nisect; k++)
+            {
+                src_label = src_labels->GetValue(src_cells[k]);
+                can_label = can_labels->GetValue(can_cells[k]);
+                if( union_find.Find(src_label) !=  union_find.Find(can_label))
+                {
+                    // merge them if the are not already in the same component
+                    union_find.Union(src_label,can_label);
+                    // add them to the output list
+                    u_src.push_back(src_label);
+                    u_des.push_back(can_label);
+                }
+            }
+        }
+    }
+
+    visitTimer->StopTimer(t0,"Multi-Set Component Label List");
+}
+
+
+
+
+// ****************************************************************************
+//  Method: avtConnComponentExpression::GlobalLabelShift
+//
+//  Purpose:
+//      Globally shifts component labels to ensure they are unique across all
+//      processors.
+//
+//  Arguments:
+//    num_local_comps  The number of local components
+//    labels           Label arrays for local meshes
+//
+//  Returns:       The global number of components after the shift
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   January 30, 2007
+//
+//  Modifications:
+//    Cyrus Harrison, Fri Mar 16 15:50:10 PDT 2007
+//    Added progress update. 
+//
+//    Hank Childs, Fri Feb 11 14:38:46 PST 2011
+//    Add barrier to improve timings.
+//
+// ****************************************************************************
+int
+avtConnComponentsExpression::GlobalLabelShift
+(int num_local_comps, const std::vector<vtkIntArray*> &labels)
+{
+    // in the serial case the is no shift and the number of labels 
+    // is unchanged
+    int num_comps = num_local_comps;
+
+#ifdef PARALLEL
+    // get the processor id and # of processors
+    int procid = PAR_Rank();
+    int nprocs = PAR_Size();
+
+    if (visitTimer->Enabled())
+    {
+        int tb = visitTimer->StartTimer();
+        Barrier();
+        visitTimer->StopTimer(tb, "Waiting for all processors to enter new stage.");
+    }
+
+    int t0 = visitTimer->StartTimer();
+
+    // get number of labels from all other processors
+    int *rcv_buffer = new int[nprocs]; 
+    // send number of components per processor, gather to all processors
+    MPI_Allgather(&num_local_comps,1,MPI_INT,
+                  rcv_buffer,1,MPI_INT,
+                  VISIT_MPI_COMM);
+
+    // using the received component counts, calculate the shift for this 
+    // processor
+
+    int num_global_comps = 0;
+    int shift = 0;
+    for(int i=0;i<nprocs;i++)
+    {
+        // shift using component count from processors with a lower rank
+        if(i < procid)
+        {
+            shift+= rcv_buffer[i];
+        }
+        // keep a count of the total number of components
+        num_global_comps  += rcv_buffer[i];
+    }
+
+    // cleanup the receive buffer
+    delete [] rcv_buffer;
+
+    // shift the labels
+    size_t nsets = labels.size();
+    for(size_t i = 0; i < nsets ;i++)
+    {
+        ShiftLabels(labels[i],shift);
+        // update progress
+        UpdateProgress(currentProgress++,totalSteps);
+    }
+
+    visitTimer->StopTimer(t0,"Global Label Shift");
+
+    // set the number of components after the global shift
+    num_comps = num_global_comps;
+#endif
+
+    // return the number of components
+    return num_comps;
+
+}
+
+// ****************************************************************************
+//  Method: avtConnComponentsExpression::GlobalResolve
+//
+//  Purpose:
+//     Resolves component labels across all processors. 
+//
+//  Arguments:
+//    num_comps       The current number of global components
+//    bset            Boundary set for boundary queries
+//    local_sets      Local meshes
+//    local_labels    Label arrays for local meshes
+// 
+//  Returns:          The final number of components
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   January 25, 2007
+//
+//  Modifications:
+//    Cyrus Harrison, Fri Mar 16 15:50:10 PDT 2007
+//    Pass label variable name to BoundarySet, it only needs to communicate 
+//    the labels array during relocation.
+//
+// ****************************************************************************
+int
+avtConnComponentsExpression::GlobalResolve(int num_comps,
+                                      BoundarySet &bset,
+                                      const std::vector<vtkDataSet*> &local_sets,
+                                      const std::vector<vtkIntArray*> &local_labels)
+{
+#ifdef PARALLEL
+    int t0 = visitTimer->StartTimer();
+
+    // The spatial partition is used to evenly distributed mesh data
+    // across available processors 
+    SpatialPartition     spart;
+
+    // vectors used to access the relocated datasets and their label arrays
+    std::vector<vtkDataSet*>  sets;
+    std::vector<vtkIntArray*> labels;
+
+    // To create the spatial partition, we first need to know the bounds of 
+    // the entire dataset.
+
+    double bounds[6];
+    // get the bounds of the local sets
+    bset.GetBounds(bounds);
+
+    // unify to get the bounds of the entire dataset
+    UnifyMinMax(bounds,6);
+
+    // create the spatial partition
+    int tp  = visitTimer->StartTimer();
+    spart.CreatePartition(bset,bounds);
+    visitTimer->StopTimer(tp, "Creating spatial partition");
+
+    // Relocate proper cells using boundary set
+    int t1 = visitTimer->StartTimer();
+    bset.RelocateUsingPartition(spart,outputVariableName);
+    visitTimer->StopTimer(t1, "Relocating using spatial partition (communication)");
+
+    // get the relocated datasets
+    sets = bset.GetMeshes();
+    size_t n_reloc_sets = sets.size();
+
+    // get the component label arrays
+    labels.resize(n_reloc_sets);
+    for(size_t i=0; i < n_reloc_sets; i++)
+    {
+        labels[i] = (vtkIntArray*)sets[i]->GetCellData()->
+                                       GetArray(outputVariableName);
+    }
+
+    // list the union operations required to resolve the relocated data
+    std::vector<int> union_src, union_des;
+    MultiSetList(num_comps,bset, sets, labels,  union_src,union_des);
+
+    // perform global union using the listed union operations
+    num_comps = GlobalUnion(num_comps,union_src,union_des,local_labels);
+
+    visitTimer->StopTimer(t0,"Global Label Resolve");
+#endif
+    // return the final number of components
+    return num_comps;
+}
+
+
+// ****************************************************************************
+//  Method: avtConnComponentsExpression::GlobalUnion
+//
+//  Purpose:
+//      Globally resolves component labels. Each processor provides a list of 
+//      local union operations. These are sent to all processors where they are
+//      executed to produce final component labels.
+//
+//  Arguments:
+//    num_comps      The current number of global components
+//    u_src          Holds the first component for each union operation
+//    u_des          Holds the second component for each union operation 
+//    local_labels   Label arrays for local meshes
+// 
+//  Returns:        The final number of components
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   January 25, 2007
+//
+//  Modifications:
+//    Cyrus Harrison, Fri Mar 16 15:51:20 PDT 2007
+//    Added progress update.
+//
+//    Cyrus Harrison, Tue Nov  9 10:32:01 PST 2010
+//    Optimization & more timing info.
+//
+// ****************************************************************************
+int
+avtConnComponentsExpression::GlobalUnion(int num_comps,
+                                      const std::vector<int> &u_src,
+                                      const std::vector<int> &u_des,
+                                      const std::vector<vtkIntArray*> &local_labels)
+{
+#ifdef PARALLEL
+    // loop indices
+    int i,j;
+
+    int t0 = visitTimer->StartTimer();
+
+    // get the number of processors and the current processor id
+    int nprocs = PAR_Size();
+
+    // create a union find data structure for resolving the labels
+    // (in this case all union representatives are valid)
+    UnionFind union_find(num_comps,true);
+
+    // get the number of local union operations
+    int n_local_unions =(int) u_src.size();
+
+    // pack the union operation label ids into an array
+    int msg_size = n_local_unions*2;
+
+    int *snd_msg = new int[msg_size];
+    int *ptr = snd_msg;
+
+    // perform local unions & prepare union list for other processors
+    for( i = 0; i < n_local_unions; i++)
+    {
+        union_find.Union(u_src[i],u_des[i]);
+
+        ptr[0] = u_src[i];
+        ptr[1] = u_des[i];
+        ptr+=2;
+    }
+
+    int t_rcv_pairs = visitTimer->StartTimer();
+    // communicate to find out how much to allocate for incoming union lists
+    int *rcv_count = new int[nprocs];
+    int *rcv_disp  = new int[nprocs];
+
+    MPI_Allgather(&msg_size,1,MPI_INT,
+                  rcv_count,1,MPI_INT,
+                  VISIT_MPI_COMM);
+
+    // calculate the size of the receive message, and the displacements
+    // for each processor
+    rcv_disp[0] = 0;
+    int rcv_msg_size = rcv_count[0];
+    for( i = 1; i < nprocs; i++)
+    {
+        rcv_disp[i] = rcv_count[i-1]  +  rcv_disp[i-1];
+        rcv_msg_size+= rcv_count[i];
+    }
+
+    // allocate memory for the receive message
+    int  *rcv_msg =  new int[rcv_msg_size];
+
+
+    MPI_Allgatherv(snd_msg, msg_size, MPI_INT,
+                   rcv_msg, rcv_count, rcv_disp, MPI_INT,
+                   VISIT_MPI_COMM);
+
+    // cleanup the send message
+    delete [] snd_msg;
+
+    // find the total number of unions
+    int n_rcv_unions  = 0;
+    for( i = 0; i < nprocs; i++)
+    {
+        n_rcv_unions+= rcv_count[i];
+    }
+
+    // each union has 2 entries, so divide by 2
+    n_rcv_unions/=2;
+
+    std::ostringstream oss;
+    oss << "Receive of " << n_rcv_unions << " UnionFind Pairs";
+    visitTimer->StopTimer(t_rcv_pairs,oss.str());
+
+    // perform the union operations
+    ptr = rcv_msg;
+    for( i = 0; i < n_rcv_unions; i++)
+    {
+        union_find.Union(ptr[0],ptr[1]);
+        ptr+=2;
+    }
+
+    // cleanup com related arrays
+    delete [] rcv_msg;
+    delete [] rcv_count;
+    delete [] rcv_disp;
+
+    // flatten union find to obtain the final labels
+    num_comps = union_find.FinalizeLabels();
+
+    int nsets = (int)local_labels.size();
+    // use the union find to resolve all local component ids
+    for( i = 0; i< nsets;i++)
+    {
+        // get the current label array and # of cells
+
+        int          ncells     = local_labels[i]->GetNumberOfTuples();
+        int         *curr_vals  = local_labels[i]->GetPointer(0);
+
+        for(j = 0; j < ncells; j ++)
+        {
+            // lookup the final label value & set
+            curr_vals[j] = union_find.GetFinalLabel(curr_vals[j]);
+        }
+
+        // update progress
+        UpdateProgress(currentProgress++,totalSteps);
+    }
+
+    visitTimer->StopTimer(t0,"Global Label Union");
+
+#endif
+    // return the final number of components
+    return num_comps;
+}
+
+// ****************************************************************************
+//  Method: avtConnComponentsExpression::ShiftLabels
+//
+//  Purpose:
+//      Helper to shift label values by a specified amount.
+//
+//  Arguments:
+//    labels     A component label array
+//    shift      Amount of shift each label by
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   January 25, 2007
+//
+//  Modifications:
+//    Cyrus Harrison, Tue Nov  9 10:32:01 PST 2010
+//    Optimization, use pointer to set array vals.
+//
+// ****************************************************************************
+void
+avtConnComponentsExpression::ShiftLabels(vtkIntArray *labels, int shift)
+{
+    // loop over all tuples
+    vtkIdType nlabels = labels->GetNumberOfTuples();
+    int *labels_ptr = labels->GetPointer(0);
+    for(vtkIdType i = 0; i < nlabels ; i++)
+    {
+        // get the current label value
+        // add the shift amount
+        // & set the new label value
+        labels_ptr[i] += shift;
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtGradientExpression::ModifyContract
+//
+//  Purpose:
+//      Request ghost zones.
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   August 11, 2007
+//
+// ****************************************************************************
+avtContract_p
+avtConnComponentsExpression::ModifyContract(avtContract_p in_spec)
+{
+    avtContract_p spec = 
+                            avtExpressionFilter::ModifyContract(in_spec);
+    spec->GetDataRequest()->SetDesiredGhostDataType(GHOST_ZONE_DATA);
+    return spec;
+}
+
+// ****************************************************************************
+//  Method: UnionFind constructor
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   January  23, 2007
+//
+//  Modifications:
+//    Cyrus Harrison, Tue Nov  9 10:32:01 PST 2010
+//    Optimize alloc & setup pointers for faster access.
+//
+// ****************************************************************************
+
+avtConnComponentsExpression::UnionFind::UnionFind(int num_items,
+                                                  bool all_valid)
+: ranks(num_items,0),
+  parents(num_items,-1),
+  valid(num_items,all_valid),
+  finalLabels(num_items,-1)
+{
+    // pointers used for faster access than std::vector::operator[] 
+    ranksPtr       = (int*)&ranks[0];
+    parentsPtr     = (int*)&parents[0];
+    validPtr       = (int*)&valid[0];
+    finalLabelsPtr = (int*)&finalLabels[0];
+}
+
+
+// ****************************************************************************
+//  Method: UnionFind destructor
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   January  23, 2007
+//
+// ****************************************************************************
+
+avtConnComponentsExpression::UnionFind::~UnionFind()
+{
+    ;
+}
+
+
+// ****************************************************************************
+//  Method: UnionFind::Find
+//
+//  Purpose:
+//      Finds the current representative of a given label.
+//
+//  Arguments:
+//    label     Label to find 
+//
+//  Return: The current component representative of the input label.
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   January  23, 2007
+//
+//  Modifications:
+//    Cyrus Harrison, Tue Nov  9 10:32:01 PST 2010
+//    Use pointers for faster access.
+//
+// ****************************************************************************
+int
+avtConnComponentsExpression::UnionFind::Find(int label)
+{
+    // if the current label does not have a parent, return its value
+    if( parentsPtr[label] == -1)
+    {
+        return label;
+    }
+
+    // path compression
+    parentsPtr[label] = Find(parentsPtr[label]);
+
+    // return the path compressed parent
+    return parentsPtr[label];
+}
+
+// ****************************************************************************
+//  Method: UnionFind::Union
+//
+//  Purpose:
+//      Unions the two components represented by the given labels.
+//
+//  Arguments:
+//    label_x     Input label
+//    label_y     Input label
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   January  23, 2007
+//
+//  Modifications:
+//    Cyrus Harrison, Thu Dec 18 16:14:19 PST 2008
+//    Fixed typo with the first rank test.
+//
+//    Cyrus Harrison, Tue Nov  9 10:32:01 PST 2010
+//    Use pointers for faster access.
+//
+// ****************************************************************************
+void
+avtConnComponentsExpression::UnionFind::Union(int label_x, int label_y)
+{
+    // if labels are used in an union operation, they are
+    // considered valid
+    validPtr[label_x] = true;
+    validPtr[label_y] = true;
+
+    // find the component values for the input labels
+    int find_x = Find(label_x);
+    int find_y = Find(label_y);
+
+    // set parent based on which has higher rank
+    if(ranksPtr[find_x] > ranksPtr[find_y])
+    {
+        parentsPtr[find_y] = find_x;
+    }
+    else if(ranksPtr[find_x] < ranksPtr[find_y])
+    {
+        parentsPtr[find_x] = find_y;
+    }
+    else if( find_x != find_y)
+    {
+        // if their ranks are equal and they are in different components
+        // break the tie, and increase the rank
+        parentsPtr[find_y] =  find_x;
+        ranksPtr[find_x]++;
+    }
+}
+
+// ****************************************************************************
+//  Method: UnionFind::IsValid
+//
+//  Purpose:
+//      Checks if the given label belongs to a valid set. 
+//      A set label is considered valid if it was used in an union operation
+//      or explicitly set to valid (either when the union find object was 
+//      constructed or using SetValid )
+//
+//  Arguments:
+//    label     Label to check
+//
+//  Returns: If the given label is valid
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   January  23, 2007
+//
+//  Modifications:
+//    Cyrus Harrison, Tue Nov  9 10:32:01 PST 2010
+//    Use pointers for faster access.
+//
+// ****************************************************************************
+bool
+avtConnComponentsExpression::UnionFind::IsValid(int label)
+{
+    return validPtr[label];
+}
+
+// ****************************************************************************
+//  Method: UnionFind::SetValid
+//
+//  Purpose:
+//      Allows a user to explicitly set if a label is valid.
+//
+//  Arguments:
+//    label     Label to set
+//    valid     New label validity value
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   January  26, 2007
+//
+//  Modifications:
+//    Cyrus Harrison, Tue Nov  9 10:32:01 PST 2010
+//    Use pointers for faster access.
+//
+// ****************************************************************************
+void
+avtConnComponentsExpression::UnionFind::SetValid(int label, bool value)
+{
+    validPtr[label] =value;
+}
+
+
+// ****************************************************************************
+//  Method: UnionFind::FinalizeLabels
+//
+//  Purpose:
+//      Flattens the merged components to find the final number of unique
+//      components. Assigns final labels ( 0 - (# of unique components -1)
+//      to all valid component representative. These labels may be accessed
+//      using GetFinalLabel()
+//
+//  Returns: The final number of labels.
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   January  23, 2007
+//
+//  Modifications:
+//    Cyrus Harrison, Tue Nov  9 10:32:01 PST 2010
+//    Use vector instead of map & pointers for faster access.
+//
+// ****************************************************************************
+int
+avtConnComponentsExpression::UnionFind::FinalizeLabels()
+{
+    // loop index
+    int i;
+    // get the total number of representatives
+    int nitems = (int)parents.size();
+
+    // used to create a map to final labels
+    std::vector<int> labels(nitems,-1);
+
+    int *labels_ptr = (int*)&labels[0];
+    int current_label = 0;
+
+    // loop over representatives
+    for(i = 0; i < nitems; i++)
+    {
+        // if the label is valid, proceed
+        if(validPtr[i])
+        {
+            // lookup label value
+            int label = Find(i);
+            if(labels_ptr[label] == -1)
+            {
+                labels_ptr[label] = current_label;
+                current_label++;
+            }
+        }
+    }
+
+    // prepare the final labels lookup
+    for(i = 0; i < nitems; i++)
+    {
+        // set final label if representative is valid
+        if(validPtr[i])
+        {
+            finalLabelsPtr[i] = labels_ptr[Find(i)];
+        }
+    }
+    // set and return the final number of of labels
+    nFinalLabels = current_label;
+    return nFinalLabels;
+}
+
+// ****************************************************************************
+//  Method: UnionFind::GetFinalLabel
+//
+//  Purpose:
+//      After FinalizeLabels() has been called, this method provides access
+//      to the final label value of an input label.
+//
+//  Arguments:
+//      label    Input label
+//
+//  Returns: The final label of the given representative, -1 if the input
+//           is invalid.
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   January  23, 2007
+//
+//  Modifications:
+//    Cyrus Harrison, Tue Nov  9 10:32:01 PST 2010
+//    Use pointers for faster access.
+//
+// ****************************************************************************
+int
+avtConnComponentsExpression::UnionFind::GetFinalLabel(int label)
+{
+    return finalLabelsPtr[label];
+}
+
+// ****************************************************************************
+//  Method: UnionFind::GetNumberOfFinalLabels
+//
+//  Purpose:
+//      After FinalizeLabels() has been called this method reports the number
+//      of final labels.
+//
+//  Returns: The final number of labels.
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   January  23, 2007
+//
+//  Modifications:
+//    Cyrus Harrison, Tue Nov  9 10:32:01 PST 2010
+//    Use pointers for faster access.
+//
+// ****************************************************************************
+int
+avtConnComponentsExpression::UnionFind::GetNumberOfFinalLabels()
+{
+    return nFinalLabels;
+}
+
+
+// ****************************************************************************
+//  Method: BoundarySet constructor
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   January  25, 2007
+//
+// ****************************************************************************
+
+avtConnComponentsExpression::BoundarySet::BoundarySet()
+{
+    empty = true;
+}
+
+// ****************************************************************************
+//  Method: BoundarySet destructor
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   January  25, 2007
+//
+// ****************************************************************************
+
+avtConnComponentsExpression::BoundarySet::~BoundarySet()
+{
+    Clear();
+}
+
+
+// ****************************************************************************
+//  Method: BoundarySet::AddMesh
+//
+//  Purpose:
+//      Adds a mesh to the boundary set. After all meshes have been added
+//      use Finalize() to prepare the boundary set for queries.
+//
+//  Arguments:
+//     mesh     Mesh to add to the boundary set
+//
+//  Notes: Based on Hank Child's avtPosCMFEAlgorithm::FastLookupGrouping
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   January  25, 2007
+//
+// ****************************************************************************
+void
+avtConnComponentsExpression::BoundarySet::AddMesh(vtkDataSet *mesh)
+{
+    // increment the vtk ref counter
+    mesh->Register(NULL);
+    // add the mesh the boundary set
+    meshes.push_back(mesh);
+}
+
+// ****************************************************************************
+//  Method: BoundarySet::Finalize
+//
+//  Purpose:
+//      Prepares the boundary set for queries by building the supporting 
+//      interval trees and computing the boundary set bounds.
+// 
+//  Notes: Based on Hank Child's avtPosCMFEAlgorithm::FastLookupGrouping
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   January  25, 2007
+//
+//  Modifications:
+//    Cyrus Harrison, Thu Mar  1 07:47:58 PST 2007
+//    Added guard for empty input datasets. 
+//
+// ****************************************************************************
+void
+avtConnComponentsExpression::BoundarySet::Finalize()
+{
+    // set bounds defaults
+    bounds[0] =  DBL_MAX;
+    bounds[1] = -DBL_MAX;
+    bounds[2] =  DBL_MAX;
+    bounds[3] = -DBL_MAX;
+    bounds[4] =  DBL_MAX;
+    bounds[5] = -DBL_MAX;
+
+    // get the number of sets
+    size_t nsets = meshes.size();
+
+    // cleanup old itrees if they exist 
+    if(itrees.size() > 0)
+    {
+        for (size_t i = 0; i < itrees.size(); i++)
+        {
+            if(itrees[i] != NULL)
+                delete itrees[i];
+        }
+    }
+    itrees.clear();
+
+    // if empty do not try to create the itrees
+    if(nsets == 0)
+    {
+        empty = true;
+        return;
+    }
+
+    empty = false;
+
+    itrees.resize(nsets);
+
+    for(size_t i = 0; i < nsets ; i++)
+    {
+        // for each data set
+        double curr_bounds[6];
+        vtkDataSet *curr_set = meshes[i];
+        curr_set->GetBounds(curr_bounds);
+        // update the bounding box
+        if(curr_bounds[0] < bounds[0])
+            bounds[0] = curr_bounds[0];
+        if(curr_bounds[1] > bounds[1])
+            bounds[1] = curr_bounds[1];
+
+        if(curr_bounds[2] < bounds[2])
+            bounds[2] = curr_bounds[2];
+        if(curr_bounds[3] > bounds[3])
+            bounds[3] = curr_bounds[3];
+
+        if(curr_bounds[4] < bounds[4])
+            bounds[4] = curr_bounds[4];
+        if(curr_bounds[5] > bounds[5])
+            bounds[5] = curr_bounds[5];
+
+        bool is2D = (bounds[4] == bounds[5]);
+        // add cells to the current mesh's interval tree
+        int curr_ncells = curr_set->GetNumberOfCells();
+        // make sure we dont create an empty itree
+        if(curr_ncells > 0 )
+        {
+            avtIntervalTree *curr_itree = new avtIntervalTree(curr_ncells,(is2D ? 2 : 3));
+
+            for(int j = 0; j< curr_ncells; j++)
+            {
+                // add each cell's bounds to the interval tree
+                vtkCell *cell = curr_set->GetCell(j);
+                double bounds[6];
+                cell->GetBounds(bounds);
+                curr_itree->AddElement(j,bounds);
+            }
+            // build the interval tree for the current mesh
+            curr_itree->Calculate(true);
+            itrees[i] = curr_itree;
+        }
+        else
+        {
+            itrees[i] = NULL;
+        }
+    }
+
+}
+
+
+// ****************************************************************************
+//  Method: BoundarySet::Clear
+//
+//  Purpose:
+//      Removes all meshes from the boundary set and cleans up internal 
+//      data structures.
+// 
+//  Programmer: Cyrus Harrison
+//  Creation:   January  25, 2007
+//
+//  Modifications:
+//    Cyrus Harrison, Thu Mar  1 07:46:46 PST 2007
+//    Added check for null itrees
+//
+// ****************************************************************************
+void
+avtConnComponentsExpression::BoundarySet::Clear()
+{
+    // unregister all meshes and clean up per mesh itrees
+    size_t nsets = meshes.size();
+    for(size_t i=0;i<nsets;i++)
+    {
+        meshes[i]->Delete();
+        if(itrees[i])
+            delete itrees[i];
+    }
+    meshes.clear();
+    itrees.clear();
+}
+
+// ****************************************************************************
+//  Method: BoundarySet::GetMeshes
+//
+//  Purpose:
+//      Gets a vector containing pointers to all datasets contained in the
+//      boundary set. 
+// 
+//  Returns: A vector holding pointers to all boundary set meshes. 
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   January  25, 2007
+//
+// ****************************************************************************
+std::vector<vtkDataSet *>
+avtConnComponentsExpression::BoundarySet::GetMeshes() const
+{
+    return meshes;
+}
+
+// ****************************************************************************
+//  Method: BoundarySet::GetBounds
+//
+//  Purpose:
+//      Gets the bounding box of the entire boundary set.
+// 
+//  Arguments:
+//      bounds   Holds bounds output (o)
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   January  25, 2007
+//
+// ****************************************************************************
+void 
+avtConnComponentsExpression::BoundarySet::GetBounds(double *bounds) const
+{
+    if(! empty)
+    {
+        // copy out bounds values
+        memcpy(bounds,this->bounds,sizeof(double)*6);
+    }
+    else
+    {
+        memset(bounds,0,sizeof(double)*6);
+    }
+
+}
+
+
+// ****************************************************************************
+//  Method: BoundarySet::GetIntersectionSet
+//
+//  Purpose:
+//      Gets the intersection between two meshes. 
+//
+//  Arguments:
+//      src_mesh_index       BoundarySet index of the source mesh 
+//      can_mesh_index       BoundarySet index of the candidate mesh 
+//      src_cells            Resulting source cell indices
+//      can_cells            Resulting candidate cell indices
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   February  16, 2007
+//
+//  Modifications:
+//    Cyrus Harrison, Thu Mar  1 07:49:44 PST 2007
+//    Added case for empty input datasets.
+//
+// ****************************************************************************
+void
+avtConnComponentsExpression::BoundarySet::GetIntersectionSet(
+                                       int src_mesh_index,
+                                       int can_mesh_index,
+                                       std::vector<int> &src_cells,
+                                       std::vector<int> &can_cells ) const
+{
+    int i, j, k;
+    double src_bounds[6], can_bounds[6], isect_bounds[6], src_cell_bounds[6];
+    double lb[3],ub[3];
+    std::vector<int> src_isect_cells;
+    std::vector<int> can_isect_cells;
+    int nsrc_isect_cells, ncan_isect_cells;
+
+    // clear result vectors
+    src_cells.clear();
+    can_cells.clear();
+
+    // dont handle self intersect
+    if(src_mesh_index == can_mesh_index)
+        return;
+
+    // get source and candidate meshes & itrees
+    vtkDataSet *src_mesh = meshes[src_mesh_index];
+    vtkDataSet *can_mesh = meshes[can_mesh_index];
+
+    avtIntervalTree *src_itree = itrees[src_mesh_index];
+    avtIntervalTree *can_itree = itrees[can_mesh_index];
+
+    // if an input dataset is empty, its itree will be null
+    // check for this case
+    if(src_itree == NULL || can_itree == NULL)
+        return;
+
+    // get source and candidate bounds
+    src_mesh->GetBounds(src_bounds);
+    can_mesh->GetBounds(can_bounds);
+
+    // make sure they intersect - if not we are done
+    if( !GetBoundsIntersection(src_bounds,can_bounds,isect_bounds) )
+        return;
+
+    // find source cells in the intersection
+    lb[0] = isect_bounds[0];
+    lb[1] = isect_bounds[2];
+    lb[2] = isect_bounds[4];
+
+    ub[0] = isect_bounds[1];
+    ub[1] = isect_bounds[3];
+    ub[2] = isect_bounds[5];
+
+    src_itree->GetElementsListFromRange(lb,ub,src_isect_cells);
+    nsrc_isect_cells = (int)src_isect_cells.size();
+
+    // if there are no source cells in this range, we are done
+    if (nsrc_isect_cells == 0)
+        return;
+
+    // for each source cell, find any candidate cells that may intersect
+    // and test for intersection
+
+    for( i = 0; i< nsrc_isect_cells ; i++)
+    {
+        // get the source cell and its bounds
+        int      src_cell_idx =  src_isect_cells[i];
+        vtkCell *src_cell = src_mesh->GetCell(src_cell_idx);
+        src_cell->GetBounds(src_cell_bounds);
+
+        // query the candidate set itree for cells in the source cells bounds
+        lb[0] = src_cell_bounds[0];
+        lb[1] = src_cell_bounds[2];
+        lb[2] = src_cell_bounds[4];
+
+        ub[0] = src_cell_bounds[1];
+        ub[1] = src_cell_bounds[3];
+        ub[2] = src_cell_bounds[5];
+
+        can_itree->GetElementsListFromRange(lb,ub,can_isect_cells);
+        ncan_isect_cells = (int)can_isect_cells.size();
+        // if there are no source cells in this range, check next source cell
+        if (ncan_isect_cells == 0)
+            continue;
+
+        for( j = 0; j < ncan_isect_cells; j++)
+        {
+            // get the candidate cell, cell index and cell
+            int       can_cell_idx = can_isect_cells[j];
+            vtkCell  *can_cell = can_mesh->GetCell(can_cell_idx);
+            int       n_can_pts  = can_cell->GetNumberOfPoints();
+            int       n_src_pts  = src_cell->GetNumberOfPoints();
+            bool      isect = false;
+
+            double pt_val[3];
+            int    pt_id;
+
+            // check for intersection
+            for( k = 0; k < n_can_pts && !isect ; k++)
+            {
+                // get current point id
+                pt_id = can_cell->GetPointId(k);
+                // get current point value
+                can_mesh->GetPoint(pt_id,pt_val);
+                // check for intersection
+                isect = vtkVisItUtility::CellContainsPoint(src_cell,
+                                                           pt_val);
+            }
+
+            for( k = 0; k < n_src_pts && !isect ; k++)
+            {
+                // get current point id
+                pt_id = src_cell->GetPointId(k);
+                // get current point value
+                src_mesh->GetPoint(pt_id,pt_val);
+                // check for intersection
+                isect = vtkVisItUtility::CellContainsPoint(can_cell,
+                                                           pt_val);
+            }
+
+
+            // if they intersect add to result vectors
+            if(isect)
+            {
+                src_cells.push_back(src_cell_idx);
+                can_cells.push_back(can_cell_idx);
+            }
+        }
+    }
+}
+
+
+// ****************************************************************************
+//  Method: BoundarySet::GetBoundsIntersection
+//
+//  Purpose:
+//      Finds the intersection of two bounding boxes.
+// 
+//  Arguments:
+//      a        Boundary to test
+//      b        Boundary to test
+//      res      The intersection of a and b (o)
+//
+//  Returns: True if the input boxes intersect, false otherwise.
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   February 15, 2007
+//
+// ****************************************************************************
+bool
+avtConnComponentsExpression::BoundarySet::GetBoundsIntersection
+(double *a, double *b, double *res) const
+{
+
+    // check x coord
+    // ax_l, bx_l, ax_h, bx_h
+    if( a[0] <= b[0]  &&  b[0] <= a[1] && a[1] <=b[1] )
+    {
+        res[0] = b[0];
+        res[1] = a[1];
+    }
+    // ax_l, bx_l, bx_h, ax_h
+    else if( a[0] <= b[0]  &&  b[1] <= a[1] )
+    {
+        res[0] = b[0];
+        res[1] = b[1];
+    }
+    // bx_l, ax_l, ax_h, bx_h
+    else if( b[0] <= a[0] && a[1] <= b[1])
+    {
+        res[0] = a[0];
+        res[1] = a[1];
+    }
+    // bx_l, ax_l, bx_h, ax_h
+    else if( b[0] <= a[0]  &&  a[0] <= b[1] && b[1] <=a[1] )
+    {
+        res[0] = a[0];
+        res[1] = b[1];
+    }
+    else
+    {
+        return false;
+    }
+
+    // check y coord
+    // ay_l, by_l, ay_h, by_h
+    if( a[2] <= b[2]  &&  b[2] <= a[3] && a[3] <=b[3] )
+    {
+        res[2] = b[2];
+        res[3] = a[3];
+    }
+    // ay_l, by_l, by_h, ay_h
+    else if( a[2] <= b[2]  &&  b[3] <= a[3] )
+    {
+        res[2] = b[2];
+        res[3] = b[3];
+    }
+    // by_l, ay_l, ay_h, by_h
+    else if( b[2] <= a[2] && a[3] <= b[3])
+    {
+        res[2] = a[2];
+        res[3] = a[3];
+    }
+    // by_l, ay_l, by_h, ay_h
+    else if( b[2] <= a[2]  &&  a[2] <= b[3] && b[3] <=a[3] )
+    {
+        res[2] = a[2];
+        res[3] = b[3];
+    }
+    else
+    {
+        return false;
+    }
+
+    // check z coord
+    // az_l, bz_l, az_h, bz_h
+    if( a[4] <= b[4]  &&  b[4] <= a[5] && a[5] <=b[5] )
+    {
+        res[4] = b[4];
+        res[5] = a[5];
+    }
+    // az_l, bz_l, bz_h, az_h
+    else if( a[4] <= b[4]  &&  b[5] <= a[5] )
+    {
+        res[4] = b[4];
+        res[5] = b[5];
+    }
+    // bz_l, ay_l, az_h, bz_h
+    else if( b[2] <= a[2] && a[3] <= b[3])
+    {
+        res[4] = a[4];
+        res[5] = a[5];
+    }
+    // bz_l, az_l, bz_h, az_h
+    else if( b[4] <= a[4]  &&  a[4] <= b[5] && b[5] <=a[5] )
+    {
+        res[4] = a[4];
+        res[5] = b[5];
+    }
+    else
+    {
+        return false;
+    }
+
+    return true;
+}
+
+// ****************************************************************************
+//  Method: BoundarySet::RelocateUsingPartition
+//
+//  Purpose:
+//      Relocates mesh data to the proper processor in the spatial partition.
+//      Adapted from avtPosCMFEAlgorithm::FastLookupGrouping
+//
+//  Arguments:
+//      spart      Spatial Partition used to relocate cells.
+//
+//  Notes: Adapted from Hank Child's avtPosCMFEAlgorithm::FastLookupGrouping
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   February 2, 2007
+//
+//  Modifications:
+//    Cyrus Harrison, Sat Aug 11 15:08:03 PDT 2007
+//    Added ghost neighbors optimization
+//
+//    Cyrus Harrison, Mon Mar 30 12:06:50 PDT 2009
+//    Only send labels array during relocate.
+//
+//    Ryan Bleile, Wed Jun 11 09:53:23 CDT 2014
+//    Changes avtGhostZoneNeighbors to avtOnBoundary
+// ****************************************************************************
+void
+avtConnComponentsExpression::BoundarySet::RelocateUsingPartition
+(const SpatialPartition &spart, const char *label_var_name) 
+{
+#ifdef PARALLEL
+    // loop indices
+    int i,j,k;
+
+    // get the current processor id and the # of processors
+    int nprocs = PAR_Size();
+
+    char *snd_msg = NULL;
+    int *snd_count = new int[nprocs];
+  
+    // used to hold temporary meshes created to send to other processors
+    vtkUnstructuredGrid **snd_meshes = new vtkUnstructuredGrid*[nprocs];
+
+    // used to hold temporary labels created to send to other processors
+    vtkIntArray **snd_arrays = new vtkIntArray*[nprocs];
+
+    // holds the current number of cells in the temporary meshes
+    int                  *snd_ncells = new int[nprocs];
+
+    // holds appenders used to concatenate temporary data sets 
+    // into a single data set for each processor
+    vtkAppendFilter     **appenders  = new vtkAppendFilter*[nprocs];
+
+    // create the append filters
+    for( i = 0 ; i< nprocs;i++)
+    {
+        appenders[i] = vtkAppendFilter::New();
+    }
+
+    // used to hold which processor a cell needs to be sent to 
+    std::vector<int> proc_list;
+
+    // get number of local meshes
+    int nmeshes = (int)meshes.size();
+
+    // for each local mesh
+    for( i = 0; i < nmeshes ; i++)
+    {
+        // find which cells from the current mesh to send
+        vtkUnstructuredGrid *mesh = (vtkUnstructuredGrid*) meshes[i];
+        vtkDataArray *data_array = mesh->GetCellData()->GetArray(label_var_name);
+        vtkIntArray *mesh_lbls = dynamic_cast<vtkIntArray*>(data_array);
+
+        int ncells = mesh->GetNumberOfCells();
+
+        // get ghost zone neighbor info if available
+        vtkUnsignedCharArray *gzn_array = (vtkUnsignedCharArray *) mesh
+                      ->GetCellData()->GetArray("avtOnBoundary");
+
+        unsigned char *gzn_ptr = NULL;
+        if (gzn_array)
+            gzn_ptr = (unsigned char *)gzn_array->GetPointer(0);
+
+        // initialize temporary mesh and cell count holder        
+        for( j = 0; j < nprocs; j++)
+        {
+            snd_meshes[j] = NULL;
+            snd_arrays[j] = NULL;
+            snd_ncells[j] = 0;
+        }
+
+        // for each cell
+        for( j = 0; j < ncells; j++)
+        {
+            // if we have ghost neighbors labeled, we only need to send them
+            if(gzn_ptr != NULL && gzn_ptr[j] != 1)
+                    continue;
+
+            // find which processors need this cell
+            vtkCell *cell = mesh->GetCell(j);
+            spart.GetProcessorList(cell,proc_list);
+            int n_isect_procs = (int)proc_list.size();
+
+            // copy the cell data to the proper temporary mesh
+            for( k = 0; k < n_isect_procs; k++)
+            {
+                // get the destination processor
+                int des_proc = proc_list[k];
+                // get pointer to the temporary mesh for the dest processor
+                vtkUnstructuredGrid *des_mesh = snd_meshes[des_proc]; 
+                vtkIntArray *des_array        = snd_arrays[des_proc];
+
+                // if this mesh does not exist, create it
+                if( des_mesh == NULL)
+                {
+                    // if this mesh does not exist, create it and
+                    // copy necessary data from the source mesh
+                    des_mesh = vtkUnstructuredGrid::New();
+                    vtkPoints *pts = vtkVisItUtility::GetPoints(mesh);
+                    des_mesh->SetPoints(pts);
+                    // create data array to pack ccl labels into.
+                    des_array = vtkIntArray::New();
+                    des_array->SetName(label_var_name);
+                    // result only has one component - the label value
+                    des_array->SetNumberOfComponents(1);
+                    des_mesh->GetCellData()->AddArray(des_array);
+                    pts->Delete();
+                    snd_meshes[des_proc] = des_mesh;
+                    snd_arrays[des_proc] = des_array;
+                }
+
+                // copy this cell's data to the temporary mesh
+                int cell_type  = mesh->GetCellType(j);
+                vtkIdList *ids = cell->GetPointIds();
+                des_mesh->InsertNextCell(cell_type,ids);
+                // insert the cell's label value into the outgoing dataset.
+                des_array->InsertNextValue(mesh_lbls->GetValue(j));
+                snd_ncells[des_proc]++;
+            }
+
+        }
+
+        // add any temporary meshes to the proper appenders
+        for( j = 0; j < nprocs ; j++)
+        {
+            vtkUnstructuredGrid *des_mesh =  snd_meshes[j];
+            vtkIntArray *des_array =  snd_arrays[j];
+            if(des_mesh != NULL)
+            {
+                // use this filter to remove unnecessary points
+                vtkUnstructuredGridRelevantPointsFilter *ugrpf=
+                    vtkUnstructuredGridRelevantPointsFilter::New();
+                ugrpf->SetInputData(des_mesh);
+                ugrpf->Update();
+                // add the filter output to the proper appender
+                appenders[j]->AddInputData(ugrpf->GetOutput());
+                // dec ref count for the filter
+                ugrpf->Delete();
+                // delete the temporary mesh
+                des_mesh->Delete();
+                des_array->Delete();
+            }
+        }
+
+    }
+    
+    // clean up arrays used for temporary mesh data
+    delete [] snd_meshes;
+    delete [] snd_arrays;
+    delete [] snd_ncells;
+    
+
+    // use the appenders to concatenate mesh data to produce the final dataset
+    // for each processor & and serialize the data for sending
+
+    char **snd_msgs = new char*[nprocs];
+
+    for(i=0;i<nprocs;i++)
+    {
+        // make sure the appender has data
+        if(appenders[i]->GetTotalNumberOfInputConnections() == 0)
+        {
+            // if it does not have any input data sets
+            // set default message values and clean up
+            snd_count[i] = 0;
+            snd_msgs[i] = NULL;
+            // delete the current appender
+            appenders[i]->Delete();
+            continue;
+        }
+
+        // exe the current appender
+        appenders[i]->Update();
+
+        // serialize mesh data to a char array using an UnstructredGrid Writer
+        vtkUnstructuredGridWriter *wtr = vtkUnstructuredGridWriter::New();
+        wtr->SetInputConnection(appenders[i]->GetOutputPort());
+        wtr->SetWriteToOutputString(1);
+        wtr->SetFileTypeToBinary();
+        wtr->Write();
+        // set up the message for the des processor
+        snd_count[i] = wtr->GetOutputStringLength();
+        snd_msgs[i] = wtr->RegisterAndGetOutputString();
+       
+        // delete the writer
+        wtr->Delete();
+        // delete the current appender
+        appenders[i]->Delete();
+    }
+
+    // clean up array used to hold appenders
+    delete [] appenders;
+
+    // calculate the total message size
+    int total_msg_size = 0;
+    for(i = 0; i<nprocs;i++)
+        total_msg_size += snd_count[i];
+
+    // allocate space for the total message
+    snd_msg = new char[total_msg_size];
+    char *ptr = snd_msg;
+    
+    // pack messages into the send buffer
+    for(i=0;i<nprocs;i++)
+    {
+        if(snd_msgs[i] != NULL)
+        {
+            memcpy(ptr,snd_msgs[i],snd_count[i]*sizeof(char));
+            ptr+=snd_count[i]*sizeof(char);
+            delete [] snd_msgs[i];
+        }
+    }
+    // cleanup the array holding the per processor messages
+    delete [] snd_msgs;
+
+    // comm to find out the message sizes from other processors
+    int *rcv_count = new int[nprocs];
+
+    MPI_Alltoall(snd_count,1,MPI_INT,
+                 rcv_count,1,MPI_INT,VISIT_MPI_COMM);
+
+
+    // use a big comm to send mesh data to the proper processors
+    char **rcv_msgs = new char*[nprocs];
+    char *rcv_msg = CreateMessageStrings(rcv_msgs,rcv_count,nprocs);
+    
+    // set up the displacement arrays for send and receive buffers
+    int *snd_disp = new int[nprocs];
+    int *rcv_disp = new int[nprocs];
+    
+    snd_disp[0] = 0;
+    rcv_disp[0] = 0;
+    
+    for(i=1;i<nprocs;i++)
+    {
+        snd_disp[i] = snd_disp[i-1] + snd_count[i-1];
+        rcv_disp[i] = rcv_disp[i-1] + rcv_count[i-1];
+    }
+    
+    // perform big com
+    MPI_Alltoallv(snd_msg,snd_count, snd_disp, MPI_CHAR,
+                  rcv_msg,rcv_count, rcv_disp, MPI_CHAR,
+                  VISIT_MPI_COMM);
+ 
+    // clear all current meshes
+    Clear();
+
+    // read new meshes and rebuild the boundary set
+    for( i = 0; i < nprocs; i++)
+    {
+        if(rcv_count[i] == 0)
+            continue;
+        
+        vtkCharArray *char_array = vtkCharArray::New();
+        // when setting array make sure to tell vtk that 
+        // we own the memory, and it should not delete it
+        // this is what the "1" is for
+        char_array->SetArray(rcv_msgs[i],rcv_count[i],1);
+        
+        // read the mesh data from proc i
+        vtkUnstructuredGridReader *reader = vtkUnstructuredGridReader::New();
+        reader->SetReadFromInputString(1);
+        reader->SetInputArray(char_array);
+        reader->Update();
+
+        vtkUnstructuredGrid *mesh = reader->GetOutput();
+
+        // add new mesh to the boundary set
+        AddMesh(mesh);
+
+        // delete the reader and the data array
+        reader->Delete();
+        char_array->Delete();
+    }
+    // prepare the boundary set
+    Finalize();
+
+
+    // cleanup comm related arrays
+    delete [] snd_count;    
+    delete [] snd_disp;    
+    delete [] snd_msg; 
+
+
+    delete [] rcv_count;
+    delete [] rcv_disp;
+    delete [] rcv_msgs;
+    delete [] rcv_msg;
+
+
+
+#endif
+}
+
+
+// ****************************************************************************
+//  Method: SpatialPartition constructor
+//
+//  Programmer: Hank Childs
+//  Creation:   October 12, 2005
+//
+// ****************************************************************************
+
+avtConnComponentsExpression::SpatialPartition::SpatialPartition()
+{
+    itree = NULL;
+}
+
+
+// ****************************************************************************
+//  Method: SpatialPartition destructor
+//
+//  Programmer: Hank Childs
+//  Creation:   October 12, 2005
+//
+// ****************************************************************************
+
+avtConnComponentsExpression::SpatialPartition::~SpatialPartition()
+{
+    delete itree;
+}
+
+
+// ****************************************************************************
+//  Class: PartitionBoundary
+//
+//  Purpose:
+//      This class is for setting up a spatial partition.  It contains methods
+//      that allow the spatial partitioning routine to not be so cumbersome.
+// 
+//  Notes: Adapted from Hank Childs' Boundary class within 
+//         avtPosCMFEAlgorithm.C. Renamed to PartitionBoundary to avoid
+//         multiple symbol def problems.
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   February 2, 2007
+//
+//  Modifications:
+//
+//    Hank Childs, Mon Sep 13 19:24:34 PDT 2010
+//    Change method names.  General of partition is done (slightly) more
+//    efficiently now.
+//
+// ****************************************************************************
+
+typedef enum
+{
+    X_AXIS,
+    Y_AXIS, 
+    Z_AXIS
+} Axis;
+
+const int npivots = 5;
+class PartitionBoundary
+{
+   public:
+                      PartitionBoundary(const float *, int, Axis);
+     virtual         ~PartitionBoundary() {;};
+
+     int              GetNumberOfRegions(void) { return npivots+1; };
+     void             GetBoundaryForRegion(int, double *);
+     float           *GetFullBoundary() { return bounds; };
+     bool             AttemptSplit(PartitionBoundary *&, PartitionBoundary *&);
+
+     bool             IsDone(void) { return isDone; };
+     bool             IsLeaf(void) { return (numProcs == 1); };
+
+     void             SetNumberOfPointsForRegion(int, int);;
+
+     static void      SetIs2D(bool b) { is2D = b; };
+     static void      PrepareSplitQuery(PartitionBoundary **, int);
+     
+   protected:
+     float            bounds[6];
+     float            pivots[npivots];
+     int              numCells[npivots+1];
+     int              numProcs;
+     int              nAttempts;
+     Axis             axis;
+     bool             isDone;
+     static bool      is2D;
+};
+
+bool PartitionBoundary::is2D = false;
+
+
+// ****************************************************************************
+//  Method: PartitionBoundary constructor
+//
+//  Programmer: Hank Childs
+//  Creation:   January 9, 2006
+// 
+// ****************************************************************************
+
+PartitionBoundary::PartitionBoundary(const float *b, int n, Axis a)
+{
+    int  i;
+
+    for (i = 0 ; i < 6 ; i++)
+        bounds[i] = b[i];
+    numProcs = n;
+    axis = a;
+    isDone = (numProcs == 1);
+    nAttempts = 0;
+
+    //
+    // Set up the pivots.
+    //
+    int index = 0;
+    if (axis == Y_AXIS)
+        index = 2;
+    else if (axis == Z_AXIS)
+        index = 4;
+    float min = bounds[index];
+    float max = bounds[index+1];
+    float step = (max-min) / (npivots+1);
+    for (i = 0 ; i < npivots ; i++)
+    {
+        pivots[i] = min + (i+1)*step;
+    }
+    for (i = 0 ; i < npivots+1 ; i++)
+        numCells[i] = 0;
+}
+
+
+// ****************************************************************************
+//  Method: PartitionBoundary::PrepareSplitQuery
+//
+//  Purpose:
+//      Each Boundary is operating only with the information on this processor.
+//      When it comes time to determine if we can split a boundary, the info
+//      from each processor needs to be unified.  That is the purpose of this
+//      method.  It unifies the information so that Boundaries can later make
+//      good decisions regarding whether or not they can split themselves.
+//
+//  Programmer: Hank Childs
+//  Creation:   January 9, 2006
+// 
+// ****************************************************************************
+
+void
+PartitionBoundary::PrepareSplitQuery(PartitionBoundary **b_list, int listSize)
+{
+    int   i, j;
+    int   idx;
+
+    int  num_vals = listSize*(npivots+1);
+    int *in_vals = new int[num_vals];
+    idx = 0;
+    for (i = 0 ; i < listSize ; i++)
+        for (j = 0 ; j < npivots+1 ; j++)
+            in_vals[idx++] = b_list[i]->numCells[j];
+
+    int *out_vals = new int[num_vals];
+    int t1 = visitTimer->StartTimer();
+    SumIntArrayAcrossAllProcessors(in_vals, out_vals, num_vals);
+    visitTimer->StopTimer(t1, "Waiting for other processors in PrepareSplitQuery");
+
+    idx = 0;
+    for (i = 0 ; i < listSize ; i++)
+        for (j = 0 ; j < npivots+1 ; j++)
+            b_list[i]->numCells[j] = out_vals[idx++];
+
+    delete [] in_vals;
+    delete [] out_vals;
+}
+
+
+// ****************************************************************************
+//  Method: PartitionBoundary::GetBoundaryForRegion
+//
+//  Purpose:
+//      Gets the boundary for a given region (the regions are defined by
+//      the pivot points).
+//
+//  Programmer: Hank Childs
+//  Creation:   August 22, 2010
+// 
+// ****************************************************************************
+
+void
+PartitionBoundary::GetBoundaryForRegion(int region, double *bbox)
+{
+    bbox[0] = bounds[0];
+    bbox[1] = bounds[1];
+    bbox[2] = bounds[2];
+    bbox[3] = bounds[3];
+    bbox[4] = bounds[4];
+    bbox[5] = bounds[5];
+    double *axisToSwitch = (axis == X_AXIS ? bbox : axis == Y_AXIS ? bbox+2 : bbox+4);
+    int nregions = GetNumberOfRegions();
+    if (region == 0)
+        axisToSwitch[1] = pivots[0];
+    else if (region == nregions-1)
+        axisToSwitch[0] = pivots[npivots-1];
+    else
+    {
+        axisToSwitch[0] = pivots[region-1];
+        axisToSwitch[1] = pivots[region];
+    }
+}
+
+
+// ****************************************************************************
+//  Method: PartitionBoundary::SetNumberOfPointsForRegion
+//
+//  Purpose:
+//      Sets the number of points contained in a given region.
+//
+//  Programmer: Hank Childs
+//  Creation:   January 9, 2006
+// 
+// ****************************************************************************
+
+void
+PartitionBoundary::SetNumberOfPointsForRegion(int region, int ncells)
+{
+    numCells[region] += ncells;
+}
+
+
+// ****************************************************************************
+//  Method: PartitionBoundary::AttemptSplit
+//
+//  Purpose:
+//      Sees if the boundary has found an acceptable pivot to split around.
+//
+//  Programmer: Hank Childs
+//  Creation:   January 9, 2006
+//
+// ****************************************************************************
+
+bool
+PartitionBoundary::AttemptSplit(PartitionBoundary *&b1, PartitionBoundary *&b2)
+{
+    int  i;
+
+    int numProcs1 = numProcs/2;
+    int numProcs2 = numProcs-numProcs1;
+
+    int totalCells = 0;
+    for (i = 0 ; i < npivots+1 ; i++)
+        totalCells += numCells[i]; 
+
+    if (totalCells == 0)
+    {
+        // Should never happen...
+        debug1 << "Error condition occurred when making boundaries" << endl;
+        isDone = true;
+        return false;
+    }
+
+    int cellsSoFar = 0;
+    float amtSeen[npivots];
+    for (i = 0 ; i < npivots ; i++)
+    {
+        cellsSoFar += numCells[i];
+        amtSeen[i] = cellsSoFar / ((float) totalCells);
+    }
+
+    float proportion = ((float) numProcs1) / ((float) numProcs);
+    float closest  = fabs(proportion - amtSeen[0]); // == proportion
+    int   closestI = 0;
+    for (i = 1 ; i < npivots ; i++)
+    {
+        float diff = fabs(proportion - amtSeen[i]);
+        if (diff < closest)
+        {
+            closest  = diff;
+            closestI = i;
+        }
+    }
+
+    nAttempts++;
+    if (closest < 0.02 || nAttempts > 3)
+    {
+        float b_tmp[6];
+        for (i = 0 ; i < 6 ; i++)
+            b_tmp[i] = bounds[i];
+        if (axis == X_AXIS)
+        {
+            b_tmp[1] = pivots[closestI];
+            b1 = new PartitionBoundary(b_tmp, numProcs1, Y_AXIS);
+            b_tmp[0] = pivots[closestI];
+            b_tmp[1] = bounds[1];
+            b2 = new PartitionBoundary(b_tmp, numProcs2, Y_AXIS);
+        }
+        else if (axis == Y_AXIS)
+        {
+            Axis next_axis = (is2D ? X_AXIS : Z_AXIS);
+            b_tmp[3] = pivots[closestI];
+            b1 = new PartitionBoundary(b_tmp, numProcs1, next_axis);
+            b_tmp[2] = pivots[closestI];
+            b_tmp[3] = bounds[3];
+            b2 = new PartitionBoundary(b_tmp, numProcs2, next_axis);
+        }
+        else
+        {
+            b_tmp[5] = pivots[closestI];
+            b1 = new PartitionBoundary(b_tmp, numProcs1, X_AXIS);
+            b_tmp[4] = pivots[closestI];
+            b_tmp[5] = bounds[5];
+            b2 = new PartitionBoundary(b_tmp, numProcs2, X_AXIS);
+        }
+        isDone = true;
+    }
+    else
+    {
+        //
+        // Set up the pivots.  We are going to reset the pivot positions to be
+        // in between the two closest pivots.
+        //
+        int firstBigger = -1;
+        int amtSeen = 0;
+        for (i = 0 ; i < npivots+1 ; i++)
+        {
+            amtSeen += numCells[i];
+            float soFar = ((float) amtSeen) / ((float) totalCells);
+            if (soFar > proportion)
+            {
+                firstBigger = i;
+                break;
+            }
+        }
+
+        float min, max;
+
+        if (firstBigger <= 0)
+        {
+            min = pivots[0] - (pivots[1] - pivots[0]);
+            max = pivots[0];
+        } 
+        else if (firstBigger >= npivots)
+        {
+            min = pivots[npivots-1];
+            max = pivots[npivots-1] + (pivots[1] - pivots[0]);
+        }
+        else
+        {
+            min = pivots[firstBigger-1];
+            max = pivots[firstBigger];
+        }
+        float step = (max-min) / (npivots+1);
+        for (i = 0 ; i < npivots ; i++)
+            pivots[i] = min + (i+1)*step;
+        for (i = 0 ; i < npivots+1 ; i++)
+            numCells[i] = 0;
+
+        return false;
+    }
+
+    return true;
+}
+
+
+// ****************************************************************************
+//  Method: SpatialPartition::CreatePartition
+//
+//  Purpose:
+//      Creates a partition that is balanced for both the desired points and
+//      the fast lookup grouping.
+//
+//  Notes: Adapted from Hank Child's avtPosCMFEAlgorithm::SpatialPartition
+//
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   February 2, 2007
+//
+//  Modifications:
+//    Cyrus Harrison, Sat Aug 11 15:08:37 PDT 2007
+//    Added ghost neighbors optimization
+//
+//    Hank Childs, Tue Dec 18 13:50:12 PST 2007
+//    Do not use copy constructor for interval tree, since it was recently 
+//    declared to be private.
+//
+//    Hank Childs, Sat Mar  6 10:46:11 PST 2010
+//    Cache the locations of the cells, rather than calling GetCell repeatedly.
+//
+//    Hank Childs, Mon Sep 13 19:26:53 PDT 2010
+//    More optimization of this routine.
+//
+//    Cyrus Harrison, Wed Sep 29 11:25:41 PDT 2010
+//    Prevent use of interval trees w/ zero elements. This would happen if
+//    some processors have no data. The interval tree class does not behave
+//    well in this case - it currently tries to allocate an array of size "-1"
+//    & blows memory.
+//
+//    Cyrus Harrison, Mon Nov  8 15:52:43 PST 2010
+//    If we have ghost zone neighbors, only use these to create the partition.
+//    
+//    Ryan Bleile, Wed Jun 11 09:53:23 CDT 2014
+//    Replaces interval tree with Octree for rcb searches
+// ****************************************************************************
+
+void
+avtConnComponentsExpression::SpatialPartition::CreatePartition
+(const BoundarySet &bset, double *bounds)
+{
+    int t0 = visitTimer->StartTimer();
+
+    if (itree != NULL)
+        delete itree;
+
+    //
+    // Here's the gameplan:
+    // We are going to start off with a single "boundary".  Ultimately, we
+    // are going to want to have N boundaries, where N is the number of
+    // processors.  So we tell this initial boundary that it represents N
+    // processors.  Then we tell it to choose some pivots that it thinks
+    // might allow itself to split into two boundaries, each with half the 
+    // amount of work and each representing half the number of processor. 
+    // Now we have two boundaries, and we keep splitting them (across 
+    // different axes) until we get N boundaries, where each one represents
+    // a single processor.
+    //
+    // Once we do that, we can construct an interval tree of the boundaries,
+    // which represents our spatial partitioning.
+    //
+    bool is2D = (bounds[4] == bounds[5]);
+    PartitionBoundary::SetIs2D(is2D);
+    int nProcs = PAR_Size();
+    PartitionBoundary **b_list = new PartitionBoundary*[2*nProcs];
+    float fbounds[6];
+    fbounds[0] = bounds[0];
+    fbounds[1] = bounds[1];
+    fbounds[2] = bounds[2];
+    fbounds[3] = bounds[3];
+    fbounds[4] = bounds[4];
+    fbounds[5] = bounds[5];
+    if (is2D)
+    {
+        fbounds[4] -= 1.;
+        fbounds[5] += 1.;
+    }
+    b_list[0] = new PartitionBoundary(fbounds, nProcs, X_AXIS);
+    int listSize = 1;
+    int *bin_lookup = new int[2*nProcs];
+    bool keepGoing = (nProcs > 1);
+
+    int t3 = visitTimer->StartTimer();
+    std::vector<vtkDataSet *> meshes = bset.GetMeshes();
+    vtkIdType total_cells = 0;
+    vtkIdType my_ncells = 0;
+    for (size_t i = 0 ; i < meshes.size() ; i++)
+    {
+        vtkIdType ncells = meshes[i]->GetNumberOfCells();
+        my_ncells += ncells;
+        vtkUnsignedCharArray *gzn_array = (vtkUnsignedCharArray *) meshes[i]
+                                        ->GetCellData()->GetArray("avtOnBoundary");
+        unsigned char *gzn_ptr = NULL;
+        if (gzn_array)
+            gzn_ptr = (unsigned char *)gzn_array->GetPointer(0);
+
+        if(gzn_ptr == NULL)
+        {
+            total_cells += meshes[i]->GetNumberOfCells();
+        }
+        else
+        {
+            for (vtkIdType j = 0 ; j < ncells ; j++)
+            {
+                if(gzn_ptr[j]==1)
+                    total_cells++;
+            }
+        }
+    }
+
+    if(total_cells > 0)
+    {
+        t3 = visitTimer->StartTimer();
+        int cell_index = 0;
+
+        double BBMin[3] = { bounds[0], bounds[2], bounds[4] };
+        double BBMax[3] = { bounds[1], bounds[3], bounds[5] };
+        RcbOcTree ot( BBMin, BBMax );
+
+        double cell_center[6];
+        double cell_pt[3];
+        double bbox[6];
+        
+        for (size_t i = 0 ; i < meshes.size() ; i++)
+        {
+            vtkIdType ncells = meshes[i]->GetNumberOfCells();
+            // get ghost zone neighbor info if available
+            vtkUnsignedCharArray *gzn_array = (vtkUnsignedCharArray *) meshes[i]->GetCellData()->GetArray("avtGhostZoneNeighbors");
+            unsigned char *gzn_ptr = NULL;
+            if (gzn_array)
+                gzn_ptr = (unsigned char *)gzn_array->GetPointer(0);
+
+            for (vtkIdType j = 0 ; j < ncells ; j++)
+            {
+                if(gzn_ptr != NULL && gzn_ptr[j]!=1)
+                        continue;
+
+                vtkCell *cell = meshes[i]->GetCell(j);
+                cell->GetBounds(bbox);
+                cell_center[0] = (bbox[0] + bbox[1]) / 2.;
+                cell_center[1] = cell_center[0];
+                cell_center[2] = (bbox[2] + bbox[3]) / 2.;
+                cell_center[3] = cell_center[2];
+                cell_center[4] = (bbox[4] + bbox[5]) / 2.;
+                cell_center[5] = cell_center[4];
+
+                cell_pt[0] = cell_center[0];
+                cell_pt[1] = cell_center[2];
+                cell_pt[2] = cell_center[4];
+
+                ot.AddPoint(cell_pt, false);
+                cell_index++;
+            }
+        }
+        visitTimer->StopTimer(t3, "Setting up interval tree for spatial partition generation");
+
+        while (keepGoing)
+        {
+            int t5 = visitTimer->StartTimer();
+            // Figure out how many boundaries need to keep going.
+            int nBins = 0;
+            for (int i = 0 ; i < listSize ; i++)
+                if (!(b_list[i]->IsDone()))
+                {
+                    bin_lookup[nBins] = i;
+                    nBins++;
+                }
+
+            // Calculate how many points fall within each region.
+            for (int i = 0 ; i < listSize ; i++)
+            {
+                if (b_list[i]->IsDone())
+                    continue;
+                int nregions = b_list[i]->GetNumberOfRegions();
+                for (int j = 0 ; j < nregions ; j++)
+                {
+                    double b[6];
+                    b_list[i]->GetBoundaryForRegion(j, b);
+                    double min[3] = { b[0], b[2], b[4] };
+                    double max[3] = { b[1], b[3], b[5] };
+                    int nvals = ot.NumPointsInRange( min, max );
+                    b_list[i]->SetNumberOfPointsForRegion(j, nvals);
+                }
+            }
+
+            // See which boundaries found a suitable pivot and can now split.
+            PartitionBoundary::PrepareSplitQuery(b_list, listSize);
+            int numAtStartOfLoop = listSize;
+            for (int i = 0 ; i < numAtStartOfLoop ; i++)
+            {
+                if (b_list[i]->IsDone())
+                    continue;
+                PartitionBoundary *b1, *b2;
+                if (b_list[i]->AttemptSplit(b1, b2))
+                {
+                    b_list[listSize++] = b1;
+                    b_list[listSize++] = b2;
+                }
+            }
+
+            // See if there are any boundaries that need more processing.
+            // Obviously, all the boundaries that were just split need more 
+            // processing, because they haven't done any yet.
+            keepGoing = false;
+            for (int i = 0 ; i < listSize ; i++)
+                if (!(b_list[i]->IsDone()))
+                    keepGoing = true;
+            visitTimer->StopTimer(t5, "One iteration of spatial partition generation");
+        }
+    }
+    else
+    {
+        //
+        // even if this proc has zero cells, we still have to participate in
+        // the construction of the partitions, so we simply return 0 values
+        // we appropriate
+        //
+        while (keepGoing)
+        {
+            int t5 = visitTimer->StartTimer();
+            // Figure out how many boundaries need to keep going.
+            int nBins = 0;
+            for (int i = 0 ; i < listSize ; i++)
+                if (!(b_list[i]->IsDone()))
+                {
+                    bin_lookup[nBins] = i;
+                    nBins++;
+                }
+
+            // Calculate how many points fall within each region.
+            for (int i = 0 ; i < listSize ; i++)
+            {
+                if (b_list[i]->IsDone())
+                    continue;
+                int nregions = b_list[i]->GetNumberOfRegions();
+                for (int j = 0 ; j < nregions ; j++)
+                {
+                    b_list[i]->SetNumberOfPointsForRegion(j, 0);
+                }
+            }
+
+            // See which boundaries found a suitable pivot and can now split.
+            PartitionBoundary::PrepareSplitQuery(b_list, listSize);
+            int numAtStartOfLoop = listSize;
+            for (int i = 0 ; i < numAtStartOfLoop ; i++)
+            {
+                if (b_list[i]->IsDone())
+                    continue;
+                PartitionBoundary *b1, *b2;
+                if (b_list[i]->AttemptSplit(b1, b2))
+                {
+                    b_list[listSize++] = b1;
+                    b_list[listSize++] = b2;
+                }
+            }
+
+            // See if there are any boundaries that need more processing.
+            // Obviously, all the boundaries that were just split need more 
+            // processing, because they haven't done any yet.
+            keepGoing = false;
+            for (int i = 0 ; i < listSize ; i++)
+                if (!(b_list[i]->IsDone()))
+                    keepGoing = true;
+            visitTimer->StopTimer(t5, "One iteration of spatial partition generation");
+        }
+    }
+
+    // Construct an interval tree out of the boundaries.  This interval tree
+    // contains the actual spatial partitioning.
+    itree = new avtIntervalTree(nProcs, (is2D ? 2 : 3));
+    int count = 0;
+    for (int i = 0 ; i < listSize ; i++)
+    {
+        if (b_list[i]->IsLeaf())
+        {
+            float *b = b_list[i]->GetFullBoundary();
+            double db[6] = {b[0], b[1], b[2], b[3], b[4], b[5]};
+            itree->AddElement(count++, db);
+        }
+    }
+
+    // create final interval tree
+    itree->Calculate(true);
+
+    // Clean up.
+    for (int i = 0 ; i < listSize ; i++)
+        delete b_list[i];
+    delete [] b_list;
+    delete [] bin_lookup;
+
+    visitTimer->StopTimer(t0, "Creating spatial partition");
+}
+
+// ****************************************************************************
+//  Method: SpatialPartition::GetProcessorList
+//
+//  Purpose:
+//      Gets the processor that contains this cell.  This should be called
+//      when a list of processors contain a cell.
+//
+// Notes: Adapted from Hank Child's avtPosCMFEAlgorithm::SpatialPartition
+//
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   Feburary 2, 2005
+//
+// ****************************************************************************
+
+void
+avtConnComponentsExpression::SpatialPartition::GetProcessorList(vtkCell *cell,
+                                                  std::vector<int> &list) const
+{
+    list.clear();
+
+    double bounds[6];
+    cell->GetBounds(bounds);
+    double mins[3];
+    mins[0] = bounds[0];
+    mins[1] = bounds[2];
+    mins[2] = bounds[4];
+    double maxs[3];
+    maxs[0] = bounds[1];
+    maxs[1] = bounds[3];
+    maxs[2] = bounds[5];
+
+    itree->GetElementsListFromRange(mins, maxs, list);
+}
+
+
+const int RcbOcTree_splitting_width = 16;
+// ****************************************************************************
+//  Method: OcTree constructor without a bounding box
+//
+//  Programmer: Ryan Bleile
+//  Creation:   October 23, 2013
+//
+// ****************************************************************************
+avtConnComponentsExpression::RcbOcTree::RcbOcTree()
+{
+    this->numPoints = 0;
+    this->child = 0;
+    this->X = new double[RcbOcTree_splitting_width];
+    this->Y = new double[RcbOcTree_splitting_width];
+    this->Z = new double[RcbOcTree_splitting_width];
+}
+
+
+// ****************************************************************************
+//  Method: OcTree constructor with a given bounding box
+//
+//  Programmer: Ryan Bleile
+//  Creation:   October 23, 2013
+//
+// ****************************************************************************
+avtConnComponentsExpression::RcbOcTree::RcbOcTree(double* min, double *max)
+{
+    this->numPoints = 0;
+    this->child = 0;
+    this->X = new double[RcbOcTree_splitting_width];
+    this->Y = new double[RcbOcTree_splitting_width];
+    this->Z = new double[RcbOcTree_splitting_width];
+    this->BBMax[0] = max[0];
+    this->BBMax[1] = max[1];
+    this->BBMax[2] = max[2];
+    this->BBMin[0] = min[0];
+    this->BBMin[1] = min[1];
+    this->BBMin[2] = min[2];
+
+    this->max_extent[0] = max[0];
+    this->max_extent[1] = max[1];
+    this->max_extent[2] = max[2];
+    this->min_extent[0] = min[0];
+    this->min_extent[1] = min[1];
+    this->min_extent[2] = min[2];
+}
+
+
+// ****************************************************************************
+//  Method: OcTree destructor
+//
+//  Programmer: Ryan Bleile
+//  Creation:   October 23, 2013
+//
+// ****************************************************************************  
+avtConnComponentsExpression::RcbOcTree::~RcbOcTree()
+{
+    if (this->X != 0)
+        delete [] this->X;
+
+    if (this->Y != 0)
+        delete [] this->Y;
+
+    if (this->Z != 0)
+        delete [] this->Z;
+
+    if (this->child != 0)
+        delete [] child;
+}
+
+
+// ****************************************************************************
+//  Method: OcTree::AddPoint
+//
+//  Purpose:
+//      Adds a point to the OcTree
+//
+//  Programmer: Ryan Bleile
+//  Creation:   October 23, 2013
+//
+// ****************************************************************************
+void
+avtConnComponentsExpression::RcbOcTree::AddPoint(double *point,
+                                                 bool checkForDuplicates)
+{
+    if (this->child != 0)
+    {
+        this->numPoints++;
+        this->child[this->WhichChild(point)].AddPoint(point, checkForDuplicates);
+    }
+    else
+    {
+        if (checkForDuplicates)
+        {
+            for (int i = 0; i < this->numPoints; i++)
+            {
+                if (point[0] == this->X[i] && 
+                    point[1] == this->Y[i] && 
+                    point[2] == this->Z[i])
+                {
+                    return;
+                }
+            }
+        }
+        if (this->numPoints == RcbOcTree_splitting_width)
+        {
+            this->SplitNode(point);
+        }
+        else
+        {
+            this->numPoints++;
+
+            if (this->min_extent[0] > point[0])
+                this->min_extent[0] = point[0];
+            if (this->min_extent[1] > point[1])
+                this->min_extent[1] = point[1];
+            if (this->min_extent[2] > point[2])
+                this->min_extent[2] = point[2];
+
+            if (this->max_extent[0] < point[0])
+                this->max_extent[0] = point[0];
+            if (this->max_extent[1] < point[1])
+                this->max_extent[1] = point[1];
+            if (this->max_extent[2] < point[2])
+                this->max_extent[2] = point[2];
+
+            X[numPoints-1] = point[0];
+            Y[numPoints-1] = point[1];
+            Z[numPoints-1] = point[2];
+        }
+    }
+}
+
+
+// ****************************************************************************
+//  Method: OcTree::SetBB
+//
+//  Purpose:
+//      Sets the bounding box parameters passed in from variables to node
+//                      max -> input
+//                      min -> input
+//
+//  Programmer: Ryan Bleile
+//  Creation:   October 23, 2013
+//
+// ****************************************************************************
+void
+avtConnComponentsExpression::RcbOcTree::SetBB(double *min, double *max)
+{
+    BBMax[0] = max[0];
+    BBMax[1] = max[1];
+    BBMax[2] = max[2];
+    BBMin[0] = min[0];
+    BBMin[1] = min[1];
+    BBMin[2] = min[2];
+
+    max_extent[0] = max[0];
+    max_extent[1] = max[1];
+    max_extent[2] = max[2];
+    min_extent[0] = min[0];
+    min_extent[1] = min[1];
+    min_extent[2] = min[2];
+}
+
+
+// ****************************************************************************
+//  Method: OcTree::SplitNode
+//
+//  Purpose:
+//      Splits the octree bounding box and adds a new point to the octree
+//
+//  Programmer: Ryan Bleile
+//  Creation:   October 23, 2013
+//
+// ****************************************************************************
+void
+avtConnComponentsExpression::RcbOcTree::SplitNode(double *point)
+{
+    double MidPoint[3] = { ((BBMax[0] + BBMin[0]) / 2.0),
+                           ((BBMax[1] + BBMin[1]) / 2.0),
+                           ((BBMax[2] + BBMin[2]) / 2.0) };
+
+    this->child = new RcbOcTree[8];
+
+    double BB_Children[16][3] = 
+    {
+        { BBMin[0],    BBMin[1],    BBMin[2]    },
+        { MidPoint[0], MidPoint[1], MidPoint[2] },
+        { MidPoint[0], BBMin[1],    BBMin[2]    },
+        { BBMax[0],    MidPoint[1], MidPoint[2] },
+        { BBMin[0],    MidPoint[1], BBMin[2]    },
+        { MidPoint[0], BBMax[1],    MidPoint[2] },
+        { MidPoint[0], MidPoint[1], BBMin[2]    },
+        { BBMax[0],    BBMax[1],    MidPoint[2] },
+        { BBMin[0],    BBMin[1],    MidPoint[2] },
+        { MidPoint[0], MidPoint[1], BBMax[2]    },
+        { MidPoint[0], BBMin[1],    MidPoint[2] },
+        { BBMax[0],    MidPoint[1], BBMax[2]    },
+        { BBMin[0],    MidPoint[1], MidPoint[2] },
+        { MidPoint[0], BBMax[1],    BBMax[2]    },
+        { MidPoint[0], MidPoint[1], MidPoint[2] },
+        { BBMax[0],    BBMax[1],    BBMax[2]    }
+    };
+
+    this->child[0].SetBB(BB_Children[0],  BB_Children[1]);
+    this->child[1].SetBB(BB_Children[2],  BB_Children[3]);
+    this->child[2].SetBB(BB_Children[4],  BB_Children[5]);
+    this->child[3].SetBB(BB_Children[6],  BB_Children[7]);
+    this->child[4].SetBB(BB_Children[8],  BB_Children[9]);
+    this->child[5].SetBB(BB_Children[10], BB_Children[11]);
+    this->child[6].SetBB(BB_Children[12], BB_Children[13]);
+    this->child[7].SetBB(BB_Children[14], BB_Children[15]);
+
+    int num_points = this->numPoints;
+
+    for (int i = 0; i < num_points; i++)
+    {
+        double pnt[3] = {this->X[i], this->Y[i], this->Z[i]};
+        this->child[this->WhichChild(pnt)].AddPoint(pnt, false);
+    }
+
+    this->child[this->WhichChild(point)].AddPoint(point, false);
+    this->numPoints++;
+
+    delete [] this->X;
+    delete [] this->Y;
+    delete [] this->Z;
+
+    this->X = 0;
+    this->Y = 0;
+    this->Z = 0;
+}
+
+
+// ****************************************************************************
+//  Method: OcTree::GetNumPoints
+//
+//  Purpose:
+//      Returns the number of points under that level of an OcTree
+//
+//  Programmer: Ryan Bleile
+//  Creation:   October 23, 2013
+//
+// ****************************************************************************
+int
+avtConnComponentsExpression::RcbOcTree::GetNumPoints()
+{
+    return numPoints;
+}
+
+
+// ****************************************************************************
+//  Method: OcTree::NumPointsInRange
+//
+//  Purpose:
+//      Returns the number of points contained inside this bounding box
+//
+//  Programmer: Ryan Bleile
+//  Creation:   December 3, 2013
+//
+// ****************************************************************************
+int
+avtConnComponentsExpression::RcbOcTree::NumPointsInRange(double* min, 
+                                                         double* max)
+{
+    int sum = 0;
+
+    if (max[0] <= BBMin[0] && max[1] <= BBMin[1] && max[2] <= BBMin[2] &&
+        min[0] >= BBMax[0] && min[1] >= BBMax[1] && min[2] >= BBMax[2])
+    {
+        // Search range is outside of current bounds
+        return 0;
+    }
+
+    if (max[0] >= BBMax[0] && max[1] >= BBMax[1] && max[2] >= BBMax[2] && 
+        min[0] <= BBMin[0] && min[1] <= BBMin[1] && min[2] <= BBMin[2])
+    {
+        // Search range is entirely inside of current bounds
+        return this->numPoints;
+    }
+
+    if (this->child != 0)
+    {
+        if (max[0] <= min_extent[0] || max[1] <= min_extent[1] || max[2] <= min_extent[2] || 
+            min[0] >= max_extent[0] || min[1] >= max_extent[1] || min[2] >= max_extent[2])
+        {
+            // Search range is outside of current bounds
+            return 0;
+        }
+
+        if (max[0] >= max_extent[0] && max[1] >= max_extent[1] && max[2] >= max_extent[2] && 
+            min[0] <= min_extent[0] && min[1] <= min_extent[1] && min[2] <= min_extent[2])
+        {
+            // Search range is entirely inside of current bounds
+            return this->numPoints;
+        }
+
+        sum += this->child[0].NumPointsInRange(min, max);
+        sum += this->child[1].NumPointsInRange(min, max);
+        sum += this->child[2].NumPointsInRange(min, max);
+        sum += this->child[3].NumPointsInRange(min, max);
+        sum += this->child[4].NumPointsInRange(min, max);
+        sum += this->child[5].NumPointsInRange(min, max);
+        sum += this->child[6].NumPointsInRange(min, max);
+        sum += this->child[7].NumPointsInRange(min, max);
+    }
+    else
+    {
+        if (this->numPoints != 0)
+        {
+            for (int i = 0; i < this->numPoints; i++)
+            {
+                if ((X[i] <= max[0] && X[i] >= min[0]) && 
+                    (Y[i] <= max[1] && Y[i] >= min[1]) && 
+                    (Z[i] <= max[2] && Z[i] >= min[2]))
+                {
+                    sum++;
+                }
+            }
+        }
+    }
+
+    return sum;
+}
+
+
+// ****************************************************************************
+//  Method: OcTree::WhichChild
+//
+//  Purpose:
+//      Returns which of 8 children (0-7) contains the box around a given point 
+//
+//  Programmer: Ryan Bleile
+//  Creation:   October 23, 2013
+//
+// ****************************************************************************
+int
+avtConnComponentsExpression::RcbOcTree::WhichChild(double* point)
+{
+    double midPoint[3] = { ((BBMax[0] + BBMin[0]) / 2.0), 
+                           ((BBMax[1] + BBMin[1]) / 2.0), 
+                           ((BBMax[2] + BBMin[2]) / 2.0) };
+    int which_child = 0;
+
+    if (point[0] > midPoint[0])
+        which_child++;
+
+    if (point[1] > midPoint[1])
+        which_child += 2;
+
+    if (point[2] > midPoint[2])
+        which_child += 4;
+
+    return which_child;
+}
+

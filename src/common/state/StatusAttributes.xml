@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+  <Attribute name="StatusAttributes" purpose="This class contains the status that is displayed in the GUI's status bar." persistent="true" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="StatusAttributes.code">
+    <Field name="sender" label="sender" type="string">
+      viewer
+    </Field>
+    <Field name="clearStatus" label="clearStatus" type="bool">
+      false
+    </Field>
+    <Field name="statusMessage" label="statusMessage" type="string">
+      
+    </Field>
+    <Field name="unicode" label="statusMessageUnicode" type="ucharVector">
+    </Field>
+    <Field name="hasUnicode" label="Has unicode" type="bool">
+      false
+    </Field>
+    <Field name="percent" label="percent" type="int">
+      0
+    </Field>
+    <Field name="currentStage" label="currentStage" type="int">
+      1
+    </Field>
+    <Field name="currentStageName" label="currentStageName" type="string">
+      stage1
+    </Field>
+    <Field name="maxStage" label="maxStage" type="int">
+      1
+    </Field>
+    <Field name="messageType" label="messageType" type="int">
+      0
+    </Field>
+    <Field name="duration" label="duration" type="int">
+      5000
+    </Field>
+    <Constant name="DEFAULT_DURATION" member="true">
+    </Constant>
+  </Attribute>

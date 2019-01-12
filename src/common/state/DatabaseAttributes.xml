@@ -1,0 +1,4 @@
+<?xml version="1.0"?>
+  <Attribute name="DatabaseAttributes" purpose="This class contains the database attributes." exportAPI="STATE_API" exportInclude="state_exports.h">
+    <Field name="state"   label="State"             type="int"> 0      </Field>
+  </Attribute>

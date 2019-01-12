@@ -1,0 +1,1 @@
+Found 15 connected components

@@ -1,0 +1,84 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta http-equiv="Content-Language" content="en-us">
+   <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+   <meta name="ProgId" content="FrontPage.Editor.Document">
+   <title>VisIt 2.5.2 Release Notes</title>
+</head>
+<body>
+
+<center><b><font size="6">VisIt 2.5.2 Release Notes</font></b></center>
+
+<p>Welcome to VisIt's release notes page. Release 2.5.2 is primarily a
+bug fix release to release 2.5.1. It fixes additional bugs in release
+2.5.1.  Look <a href="relnotes2.5.1.html">here</a> to see a complete
+list of changes in release 2.5.1.</p>
+
+<p><b><font size="4">Configuration changes in version 2.5.2</font></b></p>
+<ul>
+<li>Host profiles were added for LLNL's <i>cab</i> machine.</li>
+<li>The host profiles for LLNL's atlas machine were removed because the machine was retired.</li>
+<li>The <i>partition</i> in the host profile for ORNL's lens machine was changed from <i>analysis</i> to <i>computation</i>.</li>
+<li>VisIt now runs the chaos 4 version on LLNL's rzbeast and gremlin machines instead of the default chaos 5 version.</li>
+<li>The host profiles for the Flux and Nyx clusters at the University of Michigan Center for Advanced Computing were updated.</li>
+</ul>
+
+<p><b><font size="4">Bugs fixed in version 2.5.2</font></b></p>
+<ul>
+<li>Recent versions of Ubuntu can now make movies and launch the command line interface from the GUI.</li>
+<li>Plots using variables created with the DataBinning operator would delete their actors when changing the active plots in the plot list. This caused the plot to appear in the Pending state and lead to unnecessary re-execution of the plot.</li>
+<li>Clearing the pick points no longer turns off the Spreadsheet plot's tracer plane.</li>
+<li>The Revolve operator now properly handles vector data.</li>
+<li>Build_visit no longer hangs with the message "initializing qt vars" when run in graphical mode.</li>
+<li>Plots made using data from a libsim-instrumented simulation did not update their SIL restrictions when the simulation called <i>VisItTimestepChanged()</i>. This could cause existing plots' SIL restrictions to become out of date with respect to the simulation.</li>
+<li>Volume plots using the splatting renderer now support data with double-precision coordinates.</li>
+<li>The Spheral reader no longer converts its data to floating-point, but passes it down the pipeline in its native double-precision format.</li>
+<li>The text in the "Time slider" annotation object no longer partially overlaps the time slider bar when it contains characters with descenders (i.e. "g", "j", "p", "q" or "y").</li>
+<li>Double-clicking on a '.visit' file on Windows once again starts VisIt with the related database.</li>
+<li>The linux-intel version of VisIt no longer displays the error message:
+<i><p>Error opening plugin file:<br>/usr/local/visit/2.5.1/linux-intel/plugins/databases/libMITAPS_MOABDatabase.so<br>(/usr/local/visit/2.5.1/linux-intel/plugins/databases/libMITAPS_MOABDatabase.so: undefined symbol: H5DSis_scale)</p></i>
+</li>
+<li>The Reflect operator will now correctly show the quadrant graphics on Windows.</li>
+<li>The <i>VisItSetMPICommunicator()</i> function in Libsim has been fixed.</li>
+<li>A bug was corrected with the X Ray Image query where it would crash when run in parallel for some combinations of processor count and image size.</li>
+<li>Curve plots rendered by VisIt's scalable rendering mode are now complete when IceT image compositing is used.</li>
+<li>Pressing stop when playing an animation with multiple plots now results in all the visible plots being drawn.</li>
+<li>A blank image is no longer displayed when frame advancing with scalable rendering mode.</li>
+<li>VisIt no longer runs out of memory when plotting curves with millions of points.</li>
+<li>Command recording for saving a window now includes the actual <i>SaveWindow()</i> function call.</li>
+<li>The VisIt Python module's <i>LaunchNowin()</i> function is now exposed immediately after the module gets imported.</li>
+<li>Command recording now works when the <i>visit</i> Python module is imported into a standard Python interpreter using <i>import visit</i>.</li>
+<li>Saving a window with transparent plots on Windows now correctly renders the transparent image.</li>
+<li>Setting LD_LIBRARY_PATH to VisIt's library directory prior to running a system Python is no longer needed to import the VisIt Python module.</li>
+<li>Importing the VisIt Python module using <i>from visit import *</i> once again adds VisIt module functions to the top-level namespace.</li>
+<li>NETCDF data no longer marks certain cells for later time slices when certain meta-data is set.</li>
+<li>VisIt no longer gives an error message for new plots made from a CSG mesh after changing the mesh management settings.</li>
+<li>Changing a Pseudocolor plot's opacity on Windows will no longer crash the Viewer or yield an empty plot.</li>
+<li>The BOV Reader on Windows can now handle very large files with very large offset specifications.</li>
+<li>The CCM reader can now be used with automatic file grouping.</li>
+</ul>
+
+<p><b><font size="4">Enhancements in version 2.5.2</font></b></p>
+<ul>
+<li>VisIt's support for the Manta raytracing library has been improved, including support for the Molecule plot and improved support for building Manta and integrating it with VisIt.</li>
+<li>VisIt can now export data to Curve2D format, enabling X,Y curves to be saved to a text file. This method of data export is available even when VisIt is in scalable rendering mode <i>(where the save as curve option does not work)</i>. Exporting to Curve2D format can save curves or data from any plot. Non-curve data is written out using the zone or node index of the data array as the X coordinate, with the data value as the Y coordinate. Non-curve data exported from plots of multi-domain databases results in multiple curve files.</li>
+<li>Console output from remote mdserver or compute engines is now routed to VisIt's <i>Output window</i>. This ensures that the output is available for platforms such as MacOS X and Windows where the VisIt application does not use a console. Console output from those programs sometimes indicates the cause of client/server launch failures.</li>
+<li>The Chombo reader can now handle anisotropic refinement ratios.</li>
+<li>Libsim was extended so it can support variables defined on material subregions of the mesh. In order to declare that the variable exists only on a subset of the mesh, you must call the <i>VisIt_VariableMetaData_addMaterialName()</i> function, adding the names of the materials over which the variable is defined. If you do not call that function then, as before, the variable will be defined on the entire mesh. When you return the actual variable data from your simulation's <i>GetVariable</i> data callback function, you must take care to only provide data for cells that belong to the material regions that you specified. You would iterate over all cells in the mesh and if the material (or any mixed material) in the cell belongs to the regions of interest then that cell contributes to the returned data array. The procedure for nodal data is similar except that at each node in a cell, add the nodal data to the return array only if you have not visited that node before. Follow the link to see <a href="http://portal.nersc.gov/svn/visit/trunk/src/tools/DataManualExamples/Simulations/materialvar.c"> an example simulation</a>.</li>
+<li>Libsim was extended so variable data may be returned using the <b>long</b> type.</li>
+<li>Libsim can now accept double-precision material volume fractions via the <i>VisIt_MaterialData_setMixedMaterials()</i> function.</li>
+<li>Libsim can now accept double-precision species mass fractions via the <i>VisIt_SpeciesData_setSpeciesMF()</i> function.</li>
+<li>Command recording will now prepend <i>&quot;visit.&quot;</i> to commands when the <i>visit</i> module is imported into a standard Python interpreter using <i>&quot;import visit&quot;</i>. This ensures that recorded commands can be played back.</li>
+<li>The parallel scaling of the multi-pass CSG discretization has been improved. Additionally, the maximum number of boundaries that the multi-pass CSG discretization can handle has been increased from 128 to 512.</li>
+<li>The NETCDF CCSM reader has improved identification of two-dimensional meshes.</li>
+</ul>
+
+
+<p>Click the following link to view the release notes for the previous
+version of VisIt: <a href="relnotes2.5.1.html">VisIt 2.5.1 Release Notes</a>.</p>
+
+</body>
+</html>
+

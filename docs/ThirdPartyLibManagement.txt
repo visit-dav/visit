@@ -1,0 +1,132 @@
+These are just some notes about third party libraries and how
+they are or perhaps should be managed in VisIt. 
+
+The table below is approximately how things are named currently.
+However, there is much variation and so the table is more to
+capture a desired goal than to document current usage.
+
+Symbol name             Context     Where Defined           Where used       Description and Comments
+------------------------------------------------------------------------------------------------------
+DEFAULT_XXX_INCLUDE     configure   config-site/host.in     configure.in     Default location of XXX includes.
+                                                                             No examples where it is overridden.
+                                                                             Only the path, not with leading '-I'.
+
+DEFAULT_XXX_LIB         configure   config-site/host.in     configure.in     Default location of XXX libs (.a/.so)
+                                                                             No examples where it is overridden.
+                                                                             Only the path, not with leading '-L'.
+                                                                             Associated with --with-XXX=INC,LIB.
+                                                                             Often one path sufficient to define both 
+                                                                             Are there standard places we can search?
+
+XXX_INCLUDE             configure   make-variables.in       make-variables.in config-time def'n for XXX_INCLUDE
+XXX_INCLUDE             make        make-variables          Makefile         Location of XXX includes
+
+XXX_LIB                 configure   make-variables.in       make-variables.in config-time def'n for XXX_LIB
+XXX_LIB                 make        make-variables          Makefile         Location of XXX library file(s)
+
+XXX_LIBS                configure   make-variables.in       make-variables.in config-time def'n for XXX_LIBS
+XXX_LIBS                make        make-variables          Makefile         Linker directives for linking to XXX
+                                                                             (e.g. "-lbox2D -lg2c")
+
+HAVE_XXX_H              preprocessor visit-config           C++ sources      Compile-time symbol to check for
+                                                                             existence of XXX's header files.
+HAVE_XXX_LIB            preprocessor visit-config           C++ sources      Compile-time symbol to check for
+                                                                             existence of XXX's library files.
+                                                                             Why need one for header/lib??
+XXX                     configure   configure.in            Makefile.in      config-time def'n for subdir
+                                                                             containing code depending on XXX
+
+Proposal for when VisIt's internal libraries may introduce dependencies on third party libraries...
+---------------------------------------------------------------------------------------------------
+LIB_VVV_LDFLAGS         configure   make-variables.in       make-variables.in config-time def'n for LIB_VVV_LDFLAGS
+LIB_VVV_LDFLAGS         make        make-variables          Makefile         Location(s) of other libs VisIt's
+                                                                             own VVV library depends on
+
+LIB_VVV_LIBS            configure   make-variables.in       make-variables.in config-time def'n for LIB_VVV_LIBS
+LIB_VVV_LIBS            make        make-variables          Makefile         Linker directives for linking to VVV
+                                                                             when it has dependencies on other libs.
+
+As libs are changed, how do we handle version compatibility so that if we
+introduce code that is useable only in a given version of a lib, VisIt
+can still compile with an older version of that lib?
+
+We create a lot of links in VisIt's main lib directory that point
+at other libs that VisIt uses. If that is so, why isn't it the case
+that all we need everywhere in VisIt link link is a -L for the
+main lib directory?
+
+some libs needed only by given database plugin
+   - if lib not available, plugin is not built. So, no need
+     for HAVE_XXX compile time constants
+   - not necessary to fiddle with LIB symbol because the
+     lib is tacked on in plugin's makefile
+   - libs often installed manually on various local
+     platforms.
+   - architecture specific install points vary and do not
+     match VisIt's internal arch-specific install points.
+   - often built as .a to avoid recursion in load of
+     plugin's .sos with lib's .sos
+   - use --with-lib=inc,lib to turn on off during configure
+   - use DEFAULT_XXX_INCLUDE, DEFAULT_XXX_LIB for site config files
+
+some libs used by visit internally (AND OPTIONALLY)
+   -bzip2, zlib (where), silo (not essential but currently is)
+   -need to fiddle with INCLUDE symbol(s) and LIB symbols
+   -some tested with AC_CHECK_LIB (libsocket for example)
+   -others use --enable-xxx configure controls
+   -often need HAVE_XXX compile time symbols to avoid compiling
+    lib dependent code when lib is not available
+   -often check for existence of *both* .h and .a (.so) file, why?
+   -visit's include point (visit/include) has links to specific
+    lib's include files.
+
+The way that silo's include path is handled is...
+   - for siloobj, SILO_INCLUDE is added to SILOBJVTK_CPPPLAGS
+     which are used specifically in siloobj Makefiles
+   - for avtprep, SILO_INCLUDE is added to PREPROCESSOR_CPPFLAGS
+     which is used specifically in prep Makefiles
+
+Verdict library is part of visit
+
+There are problems with carrying a lib around with visit
+   - bigger distribution tarball
+   - longer compile
+   - multiple installations waste space due to duplicated
+     lib
+   - definately do not want sources being version controlled
+
+
+So, it is best to get libs visit uses and install separately
+   - HDF5, Boxlib and other database libs
+   - verdict library
+   - CSG rendering library if we ever have it
+   - python, gl, vtk, qt
+   - interval library
+   - bzip2 library
+   - other compression libs 
+   - image magick stuff
+   - some libs, like vtk, aren't easily swapable
+   - if a lib is intended to replace something ordinarily
+     found in system places, it requires special handling
+
+
+But, its nice to have the option to produce a tarball with
+all of them.
+
+Here is an ideal scenario...
+
+Visit vob has the tarballs as obtained from various sites
+for various libs it uses, un-edited.
+
+When visit gets installed on a given platform, it checks
+to see if there is already the current (as determined by
+contents of third_party tarballs) library compiled and
+installed on that platform (by doing some comparison
+between what the current tarball thinks it should have
+and the "standard places" where standard places should
+include previous installations of visit). If the lib is
+not found, visit will untar and "install" that lib so
+that not only the current installation of visit can proceed
+with it but future versions of visit can link to it.
+
+

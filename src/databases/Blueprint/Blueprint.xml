@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+  <Plugin name="Blueprint" type="database" label="Blueprint" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" dbtype="STMD" haswriter="false" hasoptions="false" filePatternsStrict="false" opensWholeDirectory="false">
+    <CXXFLAGS>
+      ${CONDUIT_INCLUDE_DIR}
+      ${MFEM_INCLUDE_DIR}
+      ${HDF5_INCLUDE_DIR}
+    </CXXFLAGS>
+    <LDFLAGS>
+      ${MFEM_LIBRARY_DIR}
+      ${CONDUIT_LIBRARY_DIR}
+    </LDFLAGS>
+    <LIBS>
+      ${CONDUIT_LIB}
+      ${MFEM_LIB}
+    </LIBS>
+    <FilePatterns>
+      *.blueprint_root
+      *.blueprint_root_hdf5
+      *.root
+    </FilePatterns>
+    <Files components="M">
+      avtBlueprintFileFormat.C
+      avtBlueprintDataAdaptor.C
+      avtBlueprintTreeCache.C
+    </Files>
+    <Files components="E">
+      avtBlueprintFileFormat.C
+      avtBlueprintDataAdaptor.C
+      avtBlueprintTreeCache.C
+    </Files>
+    <LIBS components="EPar">
+      conduit_relay_mpi
+    </LIBS>
+    <Attribute name="" purpose="" persistent="true" keyframe="true" exportAPI="" exportInclude="">
+    </Attribute>
+  </Plugin>

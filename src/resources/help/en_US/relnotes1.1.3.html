@@ -1,0 +1,66 @@
+<html>
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>VisIt 1.1.3 Release Notes</title>
+</head>
+<body>
+<p align="center"><b><font size="6">VisIt 1.1.3 Release Notes</font></b></p>
+<p>Welcome to VisIt's release notes page. This page describes the important 
+enhancements and bug-fixes that were added to this release.</p>
+<p><b><font size="4">Features added in version 1.1.3</font></b></p>
+<ul>
+  <li>VisIt now supports automatic file grouping so you don't need a .visit file in order to view time-varying data using the Main window's VCR controls. File grouping is turned on/off in the File Selection Window. File grouping is now on by default so large sets of data files should appear as a single option in the window. If you see files that you feel do not belong in a database that has been created through automatic file grouping, you can change the filename filter to try and remove the unwanted files. If you turn off automatic file grouping, files that could otherwise be grouped are available independently as before.</li>
+  <li>Host profiles now have a common name that can be used to identify remote machines. The common name is used to tell VisIt which remote machine to log into but it can also use a list of alias names, which can contain wildcards, for that machine.</li>
+  <li>The Host Profiles window has been modified to make better use of space. All of the parallel options are on a second tab that is only enabled if the active host profile is parallel.</li>
+  <li>VisIt now allows the use of PSUB to launch parallel compute engines on parallel Linux clusters.</li>
+  <li>VisIt now notifies the user when it needs to re-execute a plot network when picking.</li>
+  <li>VisIt now has default host profiles for launching compute engines on emperor, adelie, pengra, edgewater, and whitecap.</li>
+  <li>VisIt allows 2d linear curves to be saved as ULTRA files.</li>
+  <li>VisIt has new data queries for compactness in the Queries window.</li>
+  <li>VisIt writes better quality output to its curve format output files.</li>
+  <li>The Lighting window now has a spinbox (in addition to the old slider) that lets you set the light brightness.</li>
+  <li>The popup menu in VisIt's vis windows now has options in the Customize menu to turn toolbars on and off for all vis windows.</li>
+  <li>VisIt's plugin creation tools now support database plugins for databases with multiple domains and multiple timesteps.</li>
+  <li>VisIt now has a default value of "localhost" for the -launchengine command.</li>
+</ul>
+<p><b><font size="4">Bugs fixed in version 1.1.3</font></b></p>
+<ul>
+  <li>VisIt could not handle .visit files without absolute paths on the Windows operating system.</li>
+  <li>VisIt crashes when creating a Subset plot of bigsil.silo.</li>
+  <li>VisIt crashes when creating a new plot with "Replace plots mode" enabled.</li>
+  <li>The Tube operator does not with on the springs.dat database.</li>
+  <li>Autocloning a window messes up lineouts.</li>
+  <li>VisIt crashes when launching a compute engine and telling it to read certain bad Silo files.</li>
+  <li>VisIt could not produce animations of defvars stored in Silo files because the defvar was not recognized as a valid variable for timesteps other than the first timestep.</li>
+  <li>VisIt is too aggressive about opening files causing lots of unnecessary work when opening files..</li>
+  <li>Pick was malfunctioning when running VisIt with a parallel compute engine.</li>
+  <li>The toolbar in curve windows is enabled when it shouldn't be enabled.</li>
+  <li>When VisIt is used to plot two unrelated time-varying databases in the same window, the number of timesteps used for each database can be wrong in keyframing mode.</li>
+  <li>When the vis window is shrunk to its smallest size with toolbars enabled, some areas of plots are rendered out of sight.</li>
+  <li>The Box operator has occasional problems with point meshes.</li>
+  <li>The password window is obscured by the splashscreen on the Windows platform.</li>
+  <li>Subset plots of points fail.</li>
+  <li>Problem with zoneno in face lists with 1-origin.</li>
+  <li>Vectors do not play well with "actual" spatial extents.</li>
+  <li>VisIt prints out various debug messages to the console.</li>
+  <li>Pick points don't appear if the network that generates a plot has to re-execute.</li>
+  <li>The code generation tool XMLEdit messes up enables that use enums.</li>
+  <li>Picking re-executes networks too often when data has been transformed.</li>
+  <li>VisIt can't onion peel a Subset plot.</li>
+  <li>Example Python scripts are out of date.</li>
+  <li>Mesh plots of point meshes turn to outlines after clicking the Mesh plot window's Apply button.</li>
+  <li>The -foreground, -background, -style options are broken.</li>
+  <li>The Silo database reader makes too many initialization calls.</li>
+  <li>VisIt allows parallel tasks of one processor.</li>
+</ul>
+<p>Click the following link to view the release notes for the previous version 
+of VisIt: <a href="relnotes1.1.2.html">VisIt 1.1.2 Release Notes</a>.</p>
+<p>Click the following link to view the release notes for the next version 
+of VisIt: <a href="relnotes1.1.4.html">VisIt 1.1.4 Release Notes</a>.</p>
+
+</body>
+
+</html>

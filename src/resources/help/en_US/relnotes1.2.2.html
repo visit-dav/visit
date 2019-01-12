@@ -1,0 +1,68 @@
+<html>
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>VisIt 1.2.2 Release Notes</title>
+</head>
+<body>
+<p align="center"><b><font size="6">VisIt 1.2.2 Release Notes</font></b></p>
+<p>Welcome to VisIt's release notes page. This page describes the important 
+enhancements and bug-fixes that were added to this release.</p>
+<p><b><font size="4">Features added in version 1.2.2</font></b></p>
+<ul>
+  <li>VisIt has a new program to convert databases to databases of different formats. The tool, which can be run using: visit -convert, can currently convert any of VisIt's supported data file formats into Silo or VTK files.</li>
+  <li>VisIt has a new material interface reconstruction algorithm that is 3 to 6 times faster than the old algorithm. The new algorithm uses less memory, produces fewer cells, and always has perfect connectivity. Memory usage is lessened and speed is increased for all areas of VisIt's execution pipeline.</li>
+  <li>Windows can now popup posted if you click the "Post windows by default" option in the Preferences window.</li>
+  <li>The Mesh plot now goes opaque when appropriate.</li>
+  <li>The Pick window has a new toggle that allows it to keep its pick points even when they are cleared from the vis window.</li>
+  <li>The Pick window has been changed so that multiple lines of text can be selected and pasted into other applications.</li>
+  <li>The Vector plot window has been reorganized a little to show which options are related.</li>
+  <li>VisIt's CLI has new methods to disable to the toolbar.</li>
+  <li>"Reset view" and "Recenter view" buttons have been added to the View window's Advanced tab.</li>
+  <li>VisIt's CLI has been enhanced so it is not so picky about taking colors that contain floating point numbers.</li>
+  <li><p>The view settings have been completely separated into 2D, 3D and Curve views throughout all of VisIt. This has resulted in a number of changes in the GUI, the Python client and the Java client.</p><p>In the GUI, the view window has an additional panel with curve view attributes. They consist of the viewport, domain and range.</p><p>In the Python interface, Get/SetViewCurve, ViewCurveAttributes, View2DAttributes and View3DAttributes have been added. The ViewAttributes class is still there for backward compatability, but will be removed in release 1.3. ViewCurveAttributes only has curve attributes, View2DAttributes only has 2D attributes and View3DAttributes only has 3D attributes (as opposed to the ViewAttributes which has them all combined.) GetView2D was modified to return a View2DAttributes object and GetView3D was modified to return a View3DAttributes object. SetView2D takes both View2DAttributes and ViewAttributes objects and SetView3D takes both View3DAttributes and ViewAttributes objects (again this was done to help with backward compatibility.)</p><p>In the Java interface, Get/SetViewCurve, ViewCurveAttributes, View2DAttributes and View3DAttributes have been added. ViewAttributes has been removed, which will cause some backward compatability problems.</p></li>
+</ul>
+<p><b><font size="4">Bugs fixed in version 1.2.2</font></b></p>
+<ul>
+  <li>Lineout with endpoints that do not intersect a plot cause VisIt to crash.</li>
+  <li>The ParallelMerge method has been made more flexible so VisIt can tolerate more variation in data among processors.</li>
+  <li>The compute engine crashes when index-selecting out of range in a FilledBoundary plot.</li>
+  <li>VisIt can output inconsistent pick results.</li>
+  <li>Picking on a Pseudocolor plot with materials as a pick variable gives a bad pick result.</li>
+  <li>Configuration files can specify two default hosts for a set of host profiles.</li>
+  <li>The GUI and the CLI do not honor the saved Plot and Operator attributes in the config file.</li>
+  <li>Resetting the Plot options for a Subset plot of materials can result in a plot with zero colors.</li>
+  <li>Extra lines in sliced wireframe subset plot of materials.</li>
+  <li>Setting rendering options no longer takes place immediately.</li>
+  <li>Changing time steps with a virtual database removes the time step highlight.</li>
+  <li>The Replace button does not work with time-varying databases.</li>
+  <li>Spin mode should suspend when the vis window's popup menu is active.</li>
+  <li>The order of "." and ".." in the file list view has changed.</li>
+  <li>The mdserver should print exceptions that make it to the top level in the log file.</li>
+  <li>Picking on the mesh plot returns an unneeded field.</li>
+  <li>Lineout is missing in the Query window.</li>
+  <li>The mouse cursor stays a stopwatch when the viewer can't create a plot.</li>
+  <li>Windows that remember their old positions can popup off screen.</li>
+  <li>Problem with creating plots that want both Scalar and Material variables.</li>
+  <li>Moving the time slider while an animation is playing does not work.</li>
+  <li>It can be difficult to highlight files in the GUI.</li>
+  <li>Material interface reconstruction uses a lot of memory.</li>
+  <li>Using the plot turndown arrow causes the GUI's Hide/Show buttons to be disabled.</li>
+  <li>Make "Select by" options in the Contour Plot window plural.</li>
+  <li>The Reflect operator window does not show the axis labels for the back view.</li>
+  <li>The Threshold operator window does not reset properly.</li>
+  <li>The curve view is not set properly after doing a lineout.</li>
+  <li>Changing a curve attribute causes the curve view to be reset.</li>
+  <li>Curve plots ignore the limits in the view window.</li>
+  <li>Pan and zoom in the 3D view attributes are not interpolated by EvalCubicSpline.</li>
+</ul>
+<p>Click the following link to view the release notes for the previous version 
+of VisIt: <a href="relnotes1.2.1.html">VisIt 1.2.1 Release Notes</a>.</p>
+<p>Click the following link to view the release notes for the next version 
+of VisIt: <a href="relnotes1.2.3.html">VisIt 1.2.3 Release Notes</a>.</p>
+
+</body>
+
+</html>

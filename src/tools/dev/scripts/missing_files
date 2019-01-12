@@ -1,0 +1,76 @@
+#!/bin/sh
+
+#
+# Script to help find files that you might have forgotten to 'svn add'
+#
+# Mark C. Miller, Thu Aug 20 17:14:33 PDT 2009
+# 
+# excluedPatterns and includePatterns are formatted to facilitate ease
+# of either adding or deleting patterns.
+
+# Filename patterns to exclude from consideration as possible NON-versioned
+# source code files.
+excludePatterns="\
+third_party_builtin\|\
+visitlog.py\|\
+include/visit-config.h\|\
+include/visit/fwav.h\|\
+include/visit/gzlib.h\|\
+include/visit/bow.h\|\
+\.o$\|\
+\.d$\|\
+_moc.C$"
+
+# Filename patterns to include (mainly using extension) as possible
+# NON-versioned source code files.
+#
+# Mark C. Miller, Wed Aug 26 11:07:23 PDT 2009
+# Added java files to list.
+includePatterns="\
+\.[Ch]$\|\
+\.code$\|\
+\.xml$\|\
+\.py$\|\
+\.png$\|\
+\.html$\|\
+\.xpm$\|\
+\.in$\|\
+\.java$\|\
+\.bz2$\|\
+\.ini$\|\
+\.java$\|\
+\.conf$"
+
+# Handle tmpdir setting
+tmpDir=$TMPDIR
+if test -z "$tmpDir"; then
+    if test -d /usr/tmp; then
+       tmpDir=/usr/tmp
+    elif test -d /tmp; then
+       tmpDir=/tmp
+    else
+       tmpDir=`(cd ~; pwd -P)`
+    fi
+fi
+
+dtag=$(date +%Y_%m_%d_%p%I%M)
+statfile=$tmpDir/svn_status_${dtag}.out
+svn status -v > $statfile
+if test $? -eq 0; then
+    missing=$(grep ^\? $statfile | grep -v $excludePatterns | grep $includePatterns | tr -s ' ' | cut -d' ' -f2)
+    if test -n "$missing"; then
+        echo "The following files appear to be possible 'source' files"
+        echo "but are currently NOT under revision control by svn..."
+        echo "********************************************************"
+        echo $missing | sed -e 's/^/\t/' -e 's/ / \t/g' | tr ' ' '\n'
+        echo "********************************************************"
+    fi
+else
+    echo "svn status returned $? exit status. No report generated."
+    if test $(wc -l $statfile | tr ' ' '\n' | grep '[0-9]\+') -gt 0; then
+        echo "But svn did generate the following output..."
+        cat $statfile
+    fi
+fi
+rm -f $statfile
+

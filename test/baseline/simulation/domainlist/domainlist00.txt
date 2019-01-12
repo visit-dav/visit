@@ -1,0 +1,3 @@
+Simulation executable "globalids_par" exists.
+Simulation "globalids_par" started.
+VisIt connected to simulation "globalids_par".

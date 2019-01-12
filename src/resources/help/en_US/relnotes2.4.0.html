@@ -1,0 +1,157 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta http-equiv="Content-Language" content="en-us">
+  <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+  <meta name="ProgId" content="FrontPage.Editor.Document">
+  <title>VisIt 2.4 Release Notes</title>
+</head>
+<body>
+
+<center><b><font size="6">VisIt 2.4 Release Notes</font></b></center>
+
+<p>Welcome to VisIt's release notes page. This page describes the important
+enhancements and bug-fixes that were added to this release.</p>
+
+
+<p><b>Sections</b></p>
+<ul>
+  <li><a href="#General_Features">Features for all users</a></li>
+  <li><a href="#Advanced_Features">Features for advanced users</a></li>
+  <li><a href="#GUI_Changes">Changes in GUI behavior</a></li>
+  <li><a href="#File_format">Changes to file format readers</a></li>
+  <li><a href="#Plot_changes">Changes to plots</a></li>
+  <li><a href="#Operator_changes">Changes to operators</a></li>
+  <li><a href="#Expression_changes">Changes to expressions</a></li>
+  <li><a href="#Query_changes">Changes to picks and queries</a></li>
+  <li><a href="#Bugs_fixed">Other bug fixes</a></li>
+  <li><a href="#Config_changes">Changes to machine configuration files</a></li>
+  <li><a href="#Dev_changes">Changes for VisIt developers</a></li>
+</ul>
+
+<a name="General_Features"></a>
+<p><b><font size="4">General features added in version 2.4</font></b></p>
+<ul>
+  <li>The <i>Host profiles</i> window was enhanced so it is possible to set the maximum number of nodes and processors for a given computer. If these limits are set then the viewer's profile chooser dialog prevents the user from choosing more nodes or processors than are allowed.</li>
+  <li>The <i>Compute engine</i> window was enhanced so it can show the number of processors using GPUs for rendering. The window now also shows the domain assignment used by the load balancer. In addition, these statistics are now read back from the engine that was actually launched so differences in number of processors requested vs used are apparent. This means that simulations can now accurately display their number of processors.</li>
+  <li>VisIt is better able to detect the desktop geometry so it should not initially create the main window so it is too tall for the screen. When possible, care is also taken to avoid windows such as the MacOS X dock.</li>
+  <li>Windows distributions now contain MSMPI based parallel components and will be installed if the installer detects multiple CPUs. If MSMPI is not already available on the machine, installation of parallel components will require admin privileges.</li>
+</ul>
+
+<a name="Advanced_Features"></a>
+<p><b><font size="4">Advanced features added in version 2.4</font></b></p>
+<ul>
+  <li>Libsim was enhanced so it offers support for attaching mesh-sized ghost cell arrays to rectilinear, curvilinear, and unstructured meshes. This method for creating ghost cells allows any cell in the mesh to be a ghost cell so it is more flexible than the existing index-based approach to ghost cells, which still works. If a ghost cells array is added to a mesh then those values are used instead of the ghost zone indices. The new ghost zone approach allows different flavors of ghost cell, including VISIT_GHOSTCELL_BLANK, which lets you remove cell from a mesh. When older versions of VisIt connect to a newer Libsim with these ghost cell enhancements, the new functions have no effect.</li>
+  <li>Libsim was enhanced to support setting cell and node origin in mesh metadata.</li>
+  <li>Libsim was enhanced to support setting spatial extents in mesh metadata.</li>
+  <li>Cumulative query selections were enhanced so they can cache intermediate results obtained from executing filters over time. This accelerates operations that modify the histogram such as changing the summation rule, display type, and bin properties. Modifying the selection variable list or ranges do not benefit from caching.</li>
+  <li>Cumulative query selection variable range controls now can use the <i>min</i> and <i>max</i> convention in addition to entering real numbers. This lets a variable's entire range get selected by default instead of forcing default values of 0 and 1 for the range.</li>
+  <li>The constructive solid geometry meshing now supports two-dimensional grids and common 2D primitives like lines and circles.</li>
+  <li>The 'time' portion of the legend can now be turned off.</li>
+  <li>Queries over time no longer display time information in their legends.</li>
+  <li>A 2D multi-resolution rendering capability was added for 2D AMR data. It only reads in and displays patches with cells that are larger than the user specified smallest cell size and are within the current view. The multi-resolution rendering is disabled by default. The controls for the multi-resolution rendering are located on the <i>Basic</i> tab on the <i>Rendering options</i> window, which can be brought up by selecting <i>Options->Rendering...</i> from the menu bar on the main GUI window. The controls can be used to turn on and off the multi-resolution rendering and set the smallest cell size.</li>
+</ul>
+
+<a name="GUI_Changes"></a>
+<p><b><font size="4">Changes in GUI behavior for version 2.4</font></b></p>
+<ul>
+  <li>The shadowing and depth cueing options, available in the <i>Rendering options</i> window, are no longer greyed out by default. These options are only available with VisIt's scalable rendering mode (software rendering). Previously, users had to enable software rendering to activate these buttons. Now, users can directly activate these buttons, which cause VisIt to go into software rendering automatically.</li>
+</ul>
+<a name="File_format"></a>
+<p><b><font size="4">File format reader changes in version 2.4</font></b></p>
+<ul>
+  <li>Anders Petersson of the WPP code project has contributed a reader for WPP's volimage files.</li>
+  <li>The BOV reader now reports time information correctly.</li>
+  <li>A leak in the DDCMD reader was fixed.</li>
+  <li>The ANALYZE reader was improved so it uses less memory.</li>
+  <li>The PDB reader was improved to handle the case where the ireg array was not time-varying but the file was time-varying.</li>
+  <li>The Image reader was enhanced so it can return vector data for image volumes.</li>
+  <li>The CGNS reader was fixed so it can successfully read data from files that have been grouped using automatic file grouping.</li>
+  <li>VisIt can now read XSF (XCrySDen Structure) files containing periodic structures (molecule, polymer, slab, and crystal with lattice vectors) and general grids.</li>
+  <li>The Tecplot reader now supports shared variables, in both its ASCII and binary flavors. It also allows use of the strand ID, though it still assumes zones are equivalent to domains.</li>
+  <li>Tecplot also now supports database options which allow the user to override automatic guessing of coordinate variables.</li>
+  <li>VisIt's VTK reader now serves up 1D rectilinear grids as curve variables as well as scalar variables, making them plottable using the Curve plot.</li>
+  <li>A bug was fixed with the SAMRAI reader with setting up ghost data.</li>
+  <li>XDMF files now report time correctly in all cases, including when being used for pathlines.</li>
+  <li>The Nek5000 reader now supports meshes with moving coordinates over time.</li>
+  <li>The Silo database reader now properly supports UCD meshes with a mix triangles, quads and arbitrary polygons.</li>
+  <li>The Image database reader no longer shifts cell centered grid coordinates by -0.5.</li>
+</ul>
+
+<a name="Plot_changes"></a>
+<p><b><font size="4">Changes to VisIt's plots in version 2.4</font></b></p>
+<ul>
+  <li>Numerous changes were made to improve the robustness of the <i>Streamline</i> plot's pathline feature.</li>
+  <li>Numerous changes were made to improve support in the <i>Streamline</i> plot with AMR data. VisIt's <i>Streamline</i> plot is now believed to work with AMR data in all cases.</li>
+  <li>Multiple memory leaks with the <i>Streamline</i> plot were removed. The <i>Streamline</i> plot is now believed to be leak free.</li>
+  <li>A memory leak was fixed with the <i>Mesh</i> plot.</li>
+  <li>The limit on the number of slices for the volume plot's 3D texturing mode was increased to 1000 slices. Previously, the GUI allowed for up to 1000 slices, but the implementation was limited to 500 slices. This meant that changing the number of slices to numbers greater than 500 had no effect.</li>
+</ul>
+
+<a name="Operator_changes"></a>
+<p><b><font size="4">Changes to VisIt's operators in version 2.4</font></b></p>
+<ul>
+  <li>The <i>Extrude</i> operator was added. The Extrude operator lets you extrude points, lines, and 2D cells along a vector to create lines, surfaces, and volumes.</li>
+  <li>The <i>DataBinning</i> operator now supports spatial coordinates for the binning.</li>
+  <li>The <i>Line Sampler</i> operator was added. This operator is similar to Line Out but what works like a standard operator. Documantation can be found in http://visitusers.org/index.php?title=LineSampler_Operator_in_VisIt</li>
+</ul>
+
+<a name="Expression_changes"></a>
+<p><b><font size="4">Changes to VisIt's expression language in version 2.4</font></b></p>
+<ul>
+  <li>A bug was corrected in the <i>strain_rate</i> expression. </li>
+</ul>
+
+<a name="Query_changes"></a>
+<p><b><font size="4">Changes to VisIt's picks and queries in version 2.4</font></b></p>
+<ul>
+  <li>Arguments for queries in the CLI are now passed as named arguments (keyword args) or a python dictionary. eg <i>Query("MinMax", use_actual_data=1)</i> or <i>Query("NodeCoords", element=1, domain=2)</i></li>
+  <li>Default arguments for a query may be retrieved in the CLI via <i>GetQueryParameters(QueryName)</i> The method returns a python dictionary, which can be modified and used as the argument to the Query.
+  <li>You no longer have to specify all the accepted arguments for a query if the default values will suffice.</li>
+  <li>Picking via the <i>Query</i> window has been consolidated into one method <i>Pick</i> with more options for what type of pick should be performed. The CLI options for Pick currently remain the same.</li>
+  <li>Options for controlling start/end times and stride for queries-over-time can now be specified in the <i>Query</i> window, and as keyword args in the CLI. eg <i>QueryOverTime("Min", start_time=50, end_time=250, stride=5).</i>Defaults if not specified remain <i>start_time=0, end_time=numTimeStates, stride=1)</i>.</li>
+  <li>Pick no longer returns timestep information for single-timestate data.</li>
+  <li>Pick output for Tensors and Arrays has been cleaned up.</li>
+  <li>There is a new method in the CLI for retrieving pick output. <i>GetPickOutputObject()</i> will return pick results as a python dictionary.</li>
+  <li>The <i>Query</i>() method in the CLI now uses case intensive string matching to look up and execute queries.</li>
+</ul>
+
+<a name="Bugs_fixed"></a>
+<p><b><font size="4">Other bugs fixed in version 2.4</font></b></p>
+<ul>
+  <li>Named selections based directly on a database instead of a plot were not recreated when restoring a session.</li>
+  <li>Cumulative query selections based on a database instead of a plot failed to be created when a compute engine did not already exist. Furthermore, if the selection used expressions that had not been previously used in plots, the selection would not be calculated.</li>
+  <li>The VisIt GUI would fail to connect to a remote computer if the remote username was changed in the <i>Change username</i> window while connecting to the remote computer. The viewer would connect to the remote computer but it would also send the gui a message that caused it to stop waiting for a connection from the metadata server.</li>
+  <li>The POV-Ray exporter no longer uses the locale when generating color tables; this could insert commas instead of decimal places and cause errors when parsing the file in POV-Ray.</li>
+  <li>Minimum and Maximum variable range settings for Cumulative Queries could be lost in the <i>Selections</i> window when clicking on the <i>Update Selection</i> button.</li>
+  <li>The histogram display for Cumulative Query variable ranges was not showing valid variable extents.</li>
+  <li>Attempting to use invalid expressions in Cumulative Queries caused an error message about the selection being deleted.</li>
+  <li>Saved lineout results from a multi-domain dataset create single curve instead of one curve per domain.</li>
+  <li>The axis annotations are now always accurate. A user uncovered behavior where the annotation could be misleading when users set the annotation ranges explicitly.</li>
+  <li>AMR nesting info is now being created in cases where the engine has more MPI Tasks than active domains.</li>
+  <li>CMFE Expression generation via the Data-Level Comparisons Wizard was improved.</li>
+  <li>Connecting to a remote machine through a gateway did not work when the name on the remote machine did not match the name on the local machine.</li>
+</ul>
+
+  
+<a name="Config_changes"></a>
+<p><b><font size="4">Changes to configuration files in version 2.4</font></b></p>
+<ul>
+  <li>VisIt's installation script, visit-install, now provides options to install for LLNL's CZ and RZ domains in addition to the entire open network configuration which installs both CZ and RZ host profiles.</li>
+</ul>
+  
+<a name="Dev_changes"></a>
+<p><b><font size="4">Changes for VisIt developers in version 2.4</font></b></p>
+<ul>
+  <li>VisIt was ported to an enhanced version of VTK 5.8.0.</li>
+  <li>There is now an "aprun" option for launching parallel jobs.</li>
+  <li>Queries can now have custom widgets added to the <i>Query</i> window, allowing more useful controls of options.</li>
+  <li>VisIt's static build has been fixed.</li>
+  <li>Simulations that link to libsim can now also link in the rest of VisIt's libraries statically when VisIt has been built statically <i>(pass -DVISIT_STATIC:BOOL=ON to cmake)</i>. This means that the usual loading of the simulation runtime library is not done and all symbols are resolved at link time. This change makes it possible to deploy libsim-instrumented simulations on platforms that lack shared libraries.</li>
+</ul>
+
+<p>Click the following link to view the release notes for the previous version
+of VisIt: <a href="relnotes2.3.2.html">VisIt 2.3.2 Release Notes</a>.</p>
+</body>
+</html>

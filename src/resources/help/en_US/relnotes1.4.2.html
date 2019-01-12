@@ -1,0 +1,101 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta http-equiv="Content-Language" content="en-us">
+   <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+   <meta name="ProgId" content="FrontPage.Editor.Document">
+   <title>VisIt 1.4.2 Release Notes</title>
+</head>
+<body>
+
+<center><b><font size="6">VisIt 1.4.2 Release Notes</font></b></center>
+
+<p>Welcome to VisIt's release notes page. This page describes the important
+enhancements and bug-fixes that were added to this release.</p>
+<p><b><font size="4">Features added in version 1.4.2</font></b></p>
+<ul>
+<li>VisIt's Help menu now contains a <i>Check for new versions</i> option that checks for updates on VisIt's FTP site. If an update is available, VisIt asks whether or not you want to update. If you choose to update, VisIt downloads the new version of VisIt and installs it on your computer. When the installation is complete, VisIt gives you the option of restoring your current session using the new version of VisIt. <b>This feature is not yet available on Windows but will be available in a future version of VisIt</b>.</li>
+<li>VisIt's User's manual has been updated to include all features as of VisIt 1.4.1.</li>
+<li>VisIt's Python Interface Manual has been updated to include all functions and objects as of VisIt 1.4.1.</li>
+<li>VisIt's IndexSelect operator can now use global ijk values instead of requiring domain and group indices if the database provides global node or cell indices.</li>
+<li>VisIt now has a Specific Absorption Rate (SAR) database plugin reader and can read files of that type.</li>
+<li>VisIt's Transform operator has been enhanced so you can specify the coordinate system (Cartesian, Cylindrical, Spherical) for the input and output datasets to allow more flexibility when using the operator in conjunction with other operators like Elevate and Project.</li>
+<li>VisIt has a new Resample operator that can extract regularly spaced sample points from a dataset. The Resample operator can be used to sample two dissimilar databases onto a common sampling grid for comparison purposes. The Resample is not exposed by default but you can enable it in the Plugin Manager window in VisIt's GUI.</li>
+<li>VisIt has a new Elevate operator, which adds a Z component to a 2D mesh, elevating it into 3D. The Elevate operator is similar to the Surface plot in function but it can either use the default plotted variable for the height or it can use a secondary variable for the height, allowing you to color by one variable and elevate by another.</li>
+<li>VisIt's OnionPeel operator can now grow layers out from specific <strong>node</strong> indices.</li>
+<li>VisIt no longer loads plugins that were compiled for an earlier version of VisIt so mysterious crashes are avoided on startup when the user has expired plugins in the .visit directory.</li>
+<li>VisIt now has a side_volume expression, which allows for tangled cells to be found easily. Cells are tangled when their side_volume is negative.</li>
+<li>VisIt now has better support for reading Plot3D files of the 2D, ASCII, multi-grid variety.</li>
+<li>VisIt now presents all unusual characters in variable names as underscores <i>"_"</i> so the expression parser will no longer get confused when a variable in the file contains a reserved character.</li>
+<li>VisIt can now read Enzo files that are written with HDF5.</li>
+<li>VisIt's convert program has been renamed to <i>visitconvert</i> so it does not conflict with other software that may be installed on a computer. The <i>visitconvert</i> program now has a Tecplot writer so it can be used to convert any format read by VisIt into Tecplot files.  The tool now also has options to avoid converting expressions and avoid performing interface reconstruction.</li>
+<li>It is now possible to set the time format string for the time slider annotation object.</li>
+<li>It is now possible for VisIt to generate a new lineout for plots when changing timesteps and have the new lineout join any old lineouts in a Curve window. The new options are available in the Global Lineout Options window, which can be opened by clicking on Controls->Lineout in the Main window's menu. The new options are available in the <i>Dynamic</i> lineout mode controls in the center of the window.</li>
+<li>When VisIt saves image files using the <i>family</i> toggle, which appends a number to the image file's base name, VisIt no longer clobbers files that are already in the directory to which files are being saved. </li>
+<li>VisIt can now read the TFT curve file format used at Sandia.</li>
+<li>The Boxlib reader now recognizes the naming convention for GeoDyne volume fractions and presents a <i>Material</i> object in the user interface.</li>
+<li>Materials read from Boxlib files are now indexed starting at 1.</li>
+<li>VisIt's database plugin XML code generation tool now generates skeleton code that shows how to define default expressions in the database plugin.</li>
+<li>VisIt's Query window now correctly grays out the <i>Domain</i> option when query parameters are set using <i>Use Global Zone</i>.</li>
+<li>VisIt's VTK database reader plugin now converts all unsigned char data into float data to avoid errors when processing the data.</li>
+<li>VisIt now displays its release notes the first time you run a new version of the tool to let you know that VisIt has been updated. After you've run the new version for the first time, the release notes are no longer displayed automatically until the next time the tool is updated.</li>
+<li>VisIt's Help window now synchronizes the Contents tab to the help page that was arrived at via the Index tab.</li>
+</ul>
+<p><b><font size="4">Bugs fixed in version 1.4.2</font></b></p>
+<ul>
+<li>Images printed by VisIt have horizontal bands that reduce their quality.</li>
+<li>VisIt's expression evaluator has a large memory leak.</li>
+<li>VisIt cannot read Boxlib files whose <i>Header</i> file is not located in a <i>plt*</i> directory.</li>
+<li>VisIt's compute engine sometimes crashes when reading Silo files that contain arbitrary polyhedra.</li>
+<li>VisIt's compute engine crashes when reading Enzo files and domain nesting is enabled.</li>
+<li>When VisIt's compute engine exits on the White machine, several <i>MPI was not finalized</i> messages are printed to the console. </li>
+<li>VisIt's viewer crashes when performing an action that regenerates a plot whose database has been reopened after it was actually deleted from the disk.</li>
+<li>Expressions are lost when reopening a database when there are multiple visualization windows.</li>
+<li>VisIt's OnionPeel operator cannot be applied to a FilledBoundary plot or to plots that have had material interface reconstruction applied.</li>
+<li>VisIt's Label plot can cause the compute engine to crash when processing multiple domains where some domains contain empty polygonal data objects.</li>
+<li>VisIt no longer minimizes when changing desktops using the KDE window manager.</li>
+<li>Removing later time states of an open file with multiple time states causes the compute engine to crash when the file is reopened.</li>
+<li>Reflecting a plot that was projected to 2D does not work.</li>
+<li>VisIt lies about saving an image to a specified directory.</li>
+<li>Visualization windows inexplicably go blank on Linux when using a certain graphics driver.</li>
+<li>The view is incorrect after restoring a session file whose plots were not realized.</li>
+<li>Closing a database prompts you to open an engine if you've closed the compute engine that processed the file to be closed.</li>
+<li>No warning is issued during a query involving global node ids when global node ids are not present.</li>
+<li>VisIt's viewer crashes when executing certain queries on the White machine. The crash, now corrected, was due to a flaw in some exception handling code.</li>
+<li>VisIt's Surface plot causes massive memory leaks in the viewer.</li>
+<li>VisIt's Mesh plot does not stay opaque when its <i>Opaque mode</i> is set to <i>Auto</i> and a Label plot is added to the visualization window.</li>
+<li>VisIt won't render plots correctly when their coordinate fields are specified as double for the points in VTK files.</li>
+<li>Query over time does not return expected results when used with databases whose metadata and SILs change over time.</li>
+<li>The SetText method on annotation objects in the CLI does not take immediate effect.</li>
+<li>Slicing through a cell for a history variable does not work.</li>
+<li>VisIt does not allow virtual databases to shrink when they are reopened.</li>
+<li>Contour plot transparency for multicolored Contour plots is not applied when restoring from a session file, resulting in opaque contours.</li>
+<li>VisIt does not provide any indication when image files cannot be saved.</li>
+<li>VisIt should not honor the <i>pipeline caching</i> flag when used with old config files because it can cause the viewer to run out of memory.</li>
+<li>Refreshing the file list in the GUI causes too many files to be removed from the Selected files list. The new behavior only adds new files to the Selected files list.</li>
+<li>VisIt incorrectly issues an error when visualizing certain files created by the convert program.</li>
+<li>The mirvf expression does not work with pick.</li>
+<li>Computers listed in the Host profiles are removed from the list of available hosts in the File selection window after an unsuccessful attempt to connect.</li>
+<li>The Compute Engine Launch Window allows you to specify zero nodes.</li>
+<li>VisIt's noise.silo test database is sensitive to differing implementations of random number generation and it prevents the VisIt test suite from working reliably on multiple platforms.</li>
+<li>Qt issues a warning about some components of the Volume plot attributes window when it is shown for the first time.</li>
+<li>The S machine no longer exists and should be removed from the host profiles.</li>
+<li>The convert program cannot handle pixels.</li>
+<li>The neighbor evaluator filter returns uninitialized memory and does not issue a warning when it is misused.</li>
+<li>VisIt's XML tools for plugin development generate code with minor errors.</li>
+<li>VisIt's first visualization window does not have an open database when you open your first database in another visualization window and then go back to the first visualization window.</li>
+<li>Opening a new database can make existing plots fail during regeneration if the existing plots relied on a database expression that is not present in the new database.</li>
+<li>The plot variable menus can sometimes show database expressions from the wrong database.</li>
+<li>The SaveSession function in VisIt's Python interface can not resolve "~" in directory names.</li>
+<li>The <i>Save window</i> status message does not go away when a window cannot be saved in an object file format.</li>
+<li>The Lighting window resets the direction text field when changing light types.</li>
+<li>The Lighting window's brightness spin box does not work well when the plus/minus arrows are held down.</li>
+<li>The Enzo file format reader failed on files that had multiple root-level grids.</li>
+</ul>
+<p>Click the following link to view the release notes for the next version
+of VisIt: <a href="relnotes1.4.3.html">VisIt 1.4.3 Release Notes</a>.</p>
+<p>Click the following link to view the release notes for the previous version
+of VisIt: <a href="relnotes1.4.1.html">VisIt 1.4.1 Release Notes</a>.</p>
+</body>
+</html>

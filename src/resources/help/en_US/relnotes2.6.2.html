@@ -1,0 +1,67 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta http-equiv="Content-Language" content="en-us">
+   <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+   <meta name="ProgId" content="FrontPage.Editor.Document">
+   <title>VisIt 2.6.2 Release Notes</title>
+</head>
+<body>
+
+<center><b><font size="6">VisIt 2.6.2 Release Notes</font></b></center>
+
+<p>Welcome to VisIt's release notes page. Release 2.6.2 is primarily a
+bug fix release to release 2.6. It fixes additional bugs in release
+2.6.  Look <a href="relnotes2.6.0.html">here</a> to see a complete
+list of changes in release 2.6.</p>
+
+<p><b><font size="4">Bugs fixed in version 2.6.2</font></b></p>
+<ul>
+<li>When VisIt's compute engine was built without support for offscreen software rendering it could crash when drawing plots if the DISPLAY environment variable was not set. The compute engine will now issue a warning message when it needs the DISPLAY environment variable set instead of crashing. This only affects VisIt builds that do not include Mesa.</li>
+<li>A threading error that surfaced when running PySide applications using <i>-pysideviewer</i> was removed from the Python interface. The threading error could cause the PySide application to lock up. This happened mostly on Windows.</li>
+<li>VisIt's <i>frontendlauncher</i> script was fixed so it can be launched from a symbolic link.</li>
+<li>A memory error was corrected in the Silo database reader that sometimes caused plots that involved materials to fail.</li>
+<li>Fixed the filter string for loading/saving Python expressions so that files matching the filter will be displayed.</li>
+<li>The Gadget reader was fixed such that opening a large number of files in a virtual database no longer fails on reopen.</li>
+<li>A bug was fixed that caused a viewer crash when logical coords were selected for output.</li>
+<li>Several problems were fixed with Nameschemes in Silo multi-block objects including using relative paths to reference external arrays.</li>
+<li>Several problems were fixed with build_visit when it was used to build Silo with Silo's Qt-dependenent Silex tool enabled.</li>
+<li>A bug was fixed so that <i>-nopty</i> is no longer required to run client/server from clients running on Red Hat Enterprise Linux 6 systems.</li>
+<li>Importing the VisIt Python module <i>(import visit)</i> in a system Python interpreter works again on UNIX-based platforms.</li>
+<li>The EnSight reader now handles files with trailing spaces in EnSight case files written from FORTAN codes.</li>
+<li>An unnecessary gradient calculation is no longer performed when using the Volume plot with raycasting integration.</li>
+<li>A crash was fixed in the Silo reader when reading a future format that supports packed local domain boundary info.</li>
+<li>Using the <i>-sessionfile</i> command line argument to restore session files could result in a race condition that caused other user settings to be applied after the session file was read, causing restored plots to be deleted.</li>
+<li>A bug was fixed with the UNIC file reader for doing CMFE operations.</li>
+</ul>
+
+<p><b><font size="4">Enhancements in version 2.6.2</font></b></p>
+<ul>
+<li>A Python interpreter is now installed with VisIt when VisIt is built with Python support.</li>
+<li>A number of changes were made to VisIt's <i>frontendlauncher</i> script in an attempt to resolve Python-related startup errors:
+    <ul>
+       <li>The shell and Python portions of the script have been separated, which means that VisIt no longer needs to write temporary script files on startup.</li>
+       <li>The shell portion of the script now attempts to locate a suitable Python interpreter within the current or most recent VisIt installations. If a suitable Python interpreter is located within VisIt's installations then that interpreter is used to execute VisIt's launch scripts. Otherwise, the system Python interpreter is used as before.</li>
+       <li>The Python portion of the script checks the Python interpreter version and quits with an error message when Python 3 is detected.</li>
+    </ul>
+</li>
+<li>If the <i>-X</i> argument is given in the SSH arguments in a host profile, the <i>-X</i> argument will also be passed to the ssh command for gateway computers.</li>
+<li>The Silo reader now reads species names when avalaible in Silo multispecies and species objects. The specified names are added to the end of the species name string shown in VisIt's Subset window.</li>
+<li>The <i>visit_utils</i> module now includes a PySide based module (<i>visit_utils.qannote</i>) for rendering annotations on images.</li>
+<li>The serial paraDIS reader now decomposes higher energy arms into low energy type 111 arms before analyzing the network.</li>
+</ul>
+
+<a name="Dev_changes"></a>
+<p><b><font size="4">Changes for VisIt developers in version 2.6.2</font></b></p>
+<ul>
+<li>The paraDIS reader now requires boost 1.36.0 or later to build.</li>
+<li>The build_visit script now builds Silo 4.9.1. The reader will still work with Silo 4.9, but some of the bugs fixes mentioned above require Silo 4.9.1.</li>
+</ul>
+
+
+<p>Click the following link to view the release notes for the previous
+version of VisIt: <a href="relnotes2.6.1.html">VisIt 2.6.1 Release Notes</a>.</p>
+
+</body>
+</html>

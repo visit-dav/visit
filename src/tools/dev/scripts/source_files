@@ -1,0 +1,161 @@
+#! /bin/sh
+exec perl -x $0 ${1+"$@"};
+#!perl
+
+# ----------------------------------------------------------------------------
+# Modifications:
+#   Mark C. Miller, Thu Mar  5 17:57:37 PST 2009
+#   Added support for dbio-only distribution
+#
+#   Mark C. Miller, Wed May 20 16:43:25 PDT 2009
+#   Added svn_bin to dbio-only distributions
+#
+#   Mark C. Miller, Mon Jun 22 22:05:56 PDT 2009
+#   Adjusted to deal with tree in which there is no 'data' dir.
+#
+#   Brad Whitlock, Tue Nov 17 11:40:57 PST 2009
+#   I made it add the CMake directory to the list of files.
+#
+#   Eric Brugger, Mon Mar  8 16:13:40 PST 2010
+#   I added data/CMakeLists.txt and data/*.h.
+#
+#   Eric Brugger, Fri Mar 12 14:14:37 PST 2010
+#   I deleted data/Makefile.in.
+#
+#   Brad Whitlock, Tue May  1 17:23:07 PDT 2012
+#   Add resources directory.
+#
+#   Brad Whitlock, Fri Oct 12 16:50:08 PDT 2012
+#   Remove help directory since it is now under resources.
+#
+#   Eric Brugger, Fri Aug 12 13:47:44 PDT 2016
+#   Add vtkm directory.
+#
+# ----------------------------------------------------------------------------
+
+if  (! -d "src")
+{
+   die "invoke $0 from the root of the VisIt source tree\n";
+}
+
+
+sub get ($@)
+{
+    my ($dir, $recursearg) = @_;
+    @tmpfiles = `svn status -v $recursearg $dir | grep -v '^?' | tr -s ' ' | cut -d' ' -f5 | grep -v -x \.`;
+    my @files = ();
+    foreach (@tmpfiles)
+    {
+        chomp;
+        push @files, "$_";
+    }
+    return @files
+}
+
+sub get_svn_recursive ($@)
+{
+    my ($dir) = @_;
+    return get($dir, "");
+}
+
+sub get_svn_norecursive ($@)
+{
+    my ($dir) = @_;
+    return get($dir, "-N");
+}
+
+sub get_norecursive ($@)
+{
+    my ($files) = @_;
+    @tmpfiles = `ls $files | egrep -v /\$`;
+    my @files = ();
+    foreach (@tmpfiles)
+    {
+        chomp;
+        push @files, "$_";
+    }
+    return @files
+}
+
+
+@files = ();
+
+if ($ARGV[0] eq "-dbio-only")
+{
+    push @files, get_svn_norecursive  "./src";
+    push @files, get_svn_recursive    "./src/CMake";
+    push @files, get_svn_norecursive  "./src/common";
+    push @files, get_svn_norecursive  "./src/common/Exceptions";
+    push @files, get_svn_recursive    "./src/common/Exceptions/Database";
+    push @files, get_svn_recursive    "./src/common/Exceptions/Pipeline";
+    push @files, get_svn_recursive    "./src/common/comm";
+    push @files, get_svn_recursive    "./src/common/expr";
+    push @files, get_svn_recursive    "./src/common/misc";
+    push @files, get_svn_recursive    "./src/common/parser";
+    push @files, get_svn_recursive    "./src/common/plugin";
+    push @files, get_svn_recursive    "./src/common/proxybase";
+    push @files, get_svn_recursive    "./src/common/state";
+    push @files, get_svn_recursive    "./src/common/utility";
+    push @files, get_svn_norecursive  "./src/visit_vtk";
+    push @files, get_svn_recursive    "./src/visit_vtk/full";
+    push @files, get_svn_recursive    "./src/visit_vtk/lightweight";
+    push @files, get_svn_norecursive  "./src/avt";
+    push @files, get_svn_norecursive  "./src/avt/Math/avtVector.h";
+    push @files, get_svn_norecursive  "./src/avt/Math/avtMatrix.h";
+    push @files, get_svn_norecursive  "./src/avt/Math/math_exports.h";
+    push @files, get_svn_norecursive  "./src/avt/VisWindow/VisWindow/VisWindowTypes.h";
+    push @files, get_svn_recursive    "./src/avt/DBAtts";
+    push @files, get_svn_recursive    "./src/avt/Database";
+    push @files, get_svn_recursive    "./src/avt/Pipeline";
+    push @files, get_svn_recursive    "./src/databases";
+    push @files, get_svn_norecursive  "./src/tools";
+    push @files, get_svn_recursive    "./src/tools/data/convert";
+    push @files, get_svn_recursive    "./src/include";
+    push @files, get_svn_norecursive  "./src/bin";
+    push @files, get_svn_recursive    "./src/exe";
+    push @files, get_svn_norecursive  "./src/lib";
+    push @files, get_svn_recursive    "./src/plugins";
+    push @files, get_svn_recursive    "./src/tools/dev/scripts";
+    push @files, get_svn_norecursive  "./src/third_party_builtin";
+    push @files, get_svn_recursive    "./src/third_party_builtin/bow";
+    push @files, get_svn_recursive    "./src/tools/dev/osfixup";
+}
+else
+{
+    push @files, get_svn_norecursive  "./src";
+    push @files, get_svn_recursive    "./src/CMake";
+    push @files, get_svn_recursive    "./src/common";
+    push @files, get_svn_recursive    "./src/visit_vtk";
+    push @files, get_svn_recursive    "./src/engine";
+    push @files, get_svn_recursive    "./src/launcher";
+    push @files, get_svn_recursive    "./src/avt";
+    push @files, get_svn_recursive    "./src/vtkqt";
+    push @files, get_svn_recursive    "./src/plots";
+    push @files, get_svn_recursive    "./src/operators";
+    push @files, get_svn_recursive    "./src/databases";
+    push @files, get_svn_recursive    "./src/winutil";
+    push @files, get_svn_recursive    "./src/viewer";
+    push @files, get_svn_recursive    "./src/gui";
+    push @files, get_svn_recursive    "./src/mdserver";
+    push @files, get_svn_recursive    "./src/visitpy";
+    push @files, get_svn_recursive    "./src/java";
+    push @files, get_svn_recursive    "./src/tools";
+    push @files, get_svn_recursive    "./src/sim";
+    push @files, get_svn_recursive    "./src/include";
+    push @files, get_svn_recursive    "./src/bin";
+    push @files, get_svn_recursive    "./src/exe";
+    push @files, get_svn_norecursive  "./src/lib";
+    push @files, get_svn_recursive    "./src/archives";
+    push @files, get_svn_recursive    "./src/plugins";
+    push @files, get_svn_recursive    "./src/config-site";
+    push @files, get_svn_recursive    "./src/third_party_builtin";
+    push @files, get_svn_recursive    "./src/resources";
+    push @files, get_svn_recursive    "./src/test";
+    push @files, get_norecursive      "./src/SVN_REVISION";
+}
+
+foreach (sort @files)
+{
+    print "$_\n";
+}
+

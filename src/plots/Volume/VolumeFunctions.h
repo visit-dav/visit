@@ -1,0 +1,98 @@
+/*****************************************************************************
+*
+* Copyright (c) 2000 - 2018, Lawrence Livermore National Security, LLC
+* Produced at the Lawrence Livermore National Laboratory
+* LLNL-CODE-442911
+* All rights reserved.
+*
+* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
+* full copyright notice is contained in the file COPYRIGHT located at the root
+* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
+*
+* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
+* modification, are permitted provided that the following conditions are met:
+*
+*  - Redistributions of  source code must  retain the above  copyright notice,
+*    this list of conditions and the disclaimer below.
+*  - Redistributions in binary form must reproduce the above copyright notice,
+*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
+*    documentation and/or other materials provided with the distribution.
+*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
+*    be used to endorse or promote products derived from this software without
+*    specific prior written permission.
+*
+* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
+* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
+* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
+* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
+* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
+* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
+* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
+* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
+* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
+* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
+* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
+* DAMAGE.
+*
+*****************************************************************************/
+#ifndef VOLUME_FUNCTIONS_H
+#define VOLUME_FUNCTIONS_H
+class vtkDataSet;
+class vtkDataArray;
+class vtkRectilinearGrid;
+class VolumeAttributes;
+
+//
+// These functions are shared between the volume renderer and a filter that
+// does work on the engine.
+//
+// Modifications:
+//   Jeremy Meredith, Tue Jan  5 15:48:10 EST 2010
+//   Added return value from gradient calculation of maximum gradient value.
+//
+//   Allen Harvey, Sunday September 4 09:12:00 EST 2011
+//   Added function VolumeCalculateGradient_SPH to support unstructured data
+
+
+vtkDataArray *VolumeGetScalar(vtkDataSet *ds, const char *);
+
+bool VolumeGetScalars(const VolumeAttributes &atts, vtkDataSet *ds,
+                      vtkDataArray *&data, vtkDataArray *&opac);
+
+void VolumeGetRange(vtkDataArray *s, float &min, float &max);
+
+void VolumeGetVariableExtents(const VolumeAttributes &atts, 
+                              vtkDataArray *data,
+                              float varmin, float varmax, 
+                              float &vmin, float &vmax, float &vsize);
+
+void VolumeGetOpacityExtents(const VolumeAttributes &atts, 
+                             vtkDataArray *opac,
+                             float &omin, float &omax, float &osize);
+
+float VolumeCalculateGradient(const VolumeAttributes &atts,
+                             vtkRectilinearGrid  *grid,
+                             vtkDataArray *opac,
+                             float *gx, float *gy, float *gz,
+                             float *gm, float *gmn, 
+                             float ghostval);
+
+float VolumeCalculateGradient_SPH(
+                             vtkDataSet *ds,
+                             vtkDataArray *opac,
+                             float *gx, float *gy, float *gz,
+                             float *gm, float *gmn, 
+                             float *hs, bool calcHS,
+                             float ghostval);
+
+void VolumeHistograms(const VolumeAttributes &atts, 
+                      vtkDataArray *data, vtkDataArray *gm, 
+                      float *hist, int hist_size);
+
+void VolumeLogTransform(const VolumeAttributes &atts, 
+                        vtkDataArray *linear, vtkDataArray *log);
+
+void VolumeSkewTransform(const VolumeAttributes &atts, 
+                         vtkDataArray *linear, vtkDataArray *skew);
+
+#endif

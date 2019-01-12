@@ -1,0 +1,8 @@
+
+B:  emptydomains.silo
+mesh domain 2 
+Point: <4, 0, 2>
+Node:  100
+Incident Zones:  69  36  70  37  
+density:  <nodal> = 10
+

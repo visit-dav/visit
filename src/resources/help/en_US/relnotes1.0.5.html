@@ -1,0 +1,56 @@
+<html>
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>VisIt 1.0.5 Release Notes</title>
+</head>
+<body>
+<p align="center"><b><font size="6">VisIt 1.0.5 Release Notes</font></b></p>
+<p>Welcome to VisIt's release notes page. This page describes the important 
+enhancements and bug-fixes that were added to this release.</p>
+<p><b><font size="4">Features added in version 1.0.5</font></b></p>
+<ul>
+  <li>VisIt now displays a progress window for launching compute engines and metadata servers. The window is displayed if launching a process takes longer than 6 seconds and it features a cancel button that allows the user to cancel the process launch and return to VisIt.</li>
+  <li>Mesh plots are faster since normals are only calculated when needed.</li>
+  <li>2D plots are generated faster.</li>
+  <li>The Main Window's Windows menu now has an option to clone a window which creates a new window containing the plots and settings of the active window.</li>
+  <li>Plots can now be copied to other windows via a new option in the Windows copy menu.</li>
+  <li>Windows that are posted on startup are now the right size.</li>
+  <li>A better error message is displayed for negative log Pseudocolor plots.</li>
+  <li>Reference lines now have an option to display labels.</li>
+  <li>VisIt now supports Hydra style interdomain connectivity.</li>
+</ul>
+<p><b><font size="4">Bugs fixed in version 1.0.5</font></b></p>
+<ul>
+  <li>VisIt sometimes has trouble launching its metadata server and compute engine on remote computers.</li>
+  <li>The view sometimes resets unexpectedly.</li>
+  <li>Unexpected error message with Pseudocolor plot.</li>
+  <li>Caching material interface reconstruction in parallel when generating ghost zones is broken.</li>
+  <li>The compute engine sometimes crashes when creating ghost zones.</li>
+  <li>The compute engine sometimes crashes when releasing data.</li>
+  <li>Large memory footprint for material interface reconstruction.</li>
+  <li>Index Select of a material Subset plot does not work.</li>
+  <li>Lineout is incorrect.</li>
+  <li>Vectors are not properly drawn for some  2D curvilinear databases.</li>
+  <li>Odd failure when animating Pseudocolor plot.</li>
+  <li>Lighting affects 3D text.</li>
+  <li>Saving out multi-part files creates .visit files that cannot be read.</li>
+  <li>The Windows version now has a single Windows taskbar entry.</li>
+  <li>Transparency can get screwed up about variable centering.</li>
+  <li>Limits are grayed out in the Contour plot window when they do not apply.</li>
+  <li>The active tab in the view window change each time the user changes a field.</li>
+  <li>Crystal Eyes stereo mode now works.</li>
+  <li>Locking windows skips some windows after windows have been deleted.</li>
+  <li>Moving colortable endpoints now has an effect.</li>
+  <li>The Rendering window's stereo buttons are disabled when stereo rendering is turned off.</li>
+</ul>
+<p>Click the following link to view the release notes for the previous version 
+of VisIt: <a href="relnotes1.0.4.html">VisIt 1.0.4 Release Notes</a>.</p>
+<p>Click the following link to view the release notes for the next version 
+of VisIt: <a href="relnotes1.0.6.html">VisIt 1.0.6 Release Notes</a>.</p>
+
+</body>
+
+</html>

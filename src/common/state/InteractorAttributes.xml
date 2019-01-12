@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+  <Attribute name="InteractorAttributes" purpose="This class contains attributes associated with the main window." persistent="true" keyframe="true" exportAPI="STATE_API" exportInclude="state_exports.h">
+    <Enum name="NavigationMode">
+      Trackball
+      Dolly
+      Flythrough
+    </Enum>
+    <Enum name="BoundingBoxMode">
+      Always
+      Never
+      Auto
+    </Enum>
+    <Field name="showGuidelines" label="showGuidelines" type="bool">
+      true
+    </Field>
+    <Field name="clampSquare" label="clampSquare" type="bool">
+      false
+    </Field>
+    <Field name="fillViewportOnZoom" label="fillViewportOnZoom" type="bool">
+      true
+    </Field>
+    <Field name="navigationMode" label="navigationMode" type="enum" subtype="NavigationMode">
+      Trackball
+    </Field>
+    <Field name="axisArraySnap" label="axisArraySnap" type="bool">
+      true
+    </Field>
+    <Field name="boundingBoxMode" label="Bounding Box Mode" type="enum" subtype="BoundingBoxMode">
+      Auto
+    </Field>
+  </Attribute>

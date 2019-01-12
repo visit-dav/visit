@@ -1,0 +1,67 @@
+
+                        VisIt Office Hours Policy
+                       ---------------------------
+
+1)  Office hour slots are assigned in half day slots, consisting of a
+    morning slot and an afternoon slot.
+
+2)  The morning slot is from 8:00 AM to Noon, and the afternoon slot is
+    from Noon - 5:00 PM.
+
+3)  The morning slot is responsible for any calls or e-mails after 5:00 PM
+    from the previous workday.  This means that the Monday morning slot is
+    responsible for all the calls and e-mails from 5:00 PM the previous
+    Friday.  If there are holidays, then the morning slot following the
+    holiday is responsible for all the calls and e-mails from 5:00 PM the
+    previous workday.
+
+4)  The afternoon slot is responsible for any calls or e-mails that occur
+    over lunch.
+
+5)  If the help line rings in your office and you are not helping someone
+    or otherwise occupied, please answer the phone.  This may result in
+    multiple people answering the phone, but it is preferable to no one
+    answering the phone.
+
+6)  When you come on duty you should check the visit phone hotline for
+    any messages.  To do this call 4-MAIL, specify the 4-2801 extension
+    and use "Kill Ed" as the password.
+
+7)  When answering an e-mail, copy visit-help so that everyone can see that
+    you responded. If you want to take the conversation off-line, please
+    send e-mail to visit-help letting everyone know.
+
+8)  If it is a high priority customer (tiers 1 and 2 in section 9 below),
+    please respond within 1 hour if possible, otherwise within 4 hours.
+    If it is going to take a lot of effort to respond, (e.g. the answer
+    involves research on your part or will be very involved) you may
+    respond that you will get back to them.  If it will take any significant
+    effort (over a 1/2 hour) for a low priority customer, check with the
+    VisIt Project Leader.  If it involves code development a ticket should
+    be entered in ClearQuest and if it seems high priority from an important
+    customer, check with the VisIt Project Leader to see if it should be
+    assigned right away (e.g. VisIt no longer working on a platform or a
+    new platform is not supported).
+
+9)  Tiers of customers:
+
+    1st: ASC or DNT related, includes off-site Ale3d users.
+    2nd: Anyone from LLNL, CEA, AWE, DOE, DOD, or an ASC alliance center.
+    3rd: Any group we have a reader for.
+    4th: The rest of the world.
+
+10) The current default schedule is:
+
+                Monday     Tuesday    Wednesday  Thursday   Friday
+               ----------------------------------------------------
+    Morning     Brad       Mark       Brad       Kathleen   Eric
+
+    Afternoon   Hank       Kathleen   Mark       Kathleen   Eric/Kathleen
+
+11) Notify the VisIt Project Leader in the week ahead of time if you will
+    not be able to be on duty during your slot.  You may arrange your own
+    office hour swap (preferred) or you can have the VisIt Project Leader
+    arrange an office hour swap.
+
+12) The VisIt Project Leader will e-mail the office hour schedule on Friday
+    for the following week. 

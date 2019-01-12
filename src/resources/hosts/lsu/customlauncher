@@ -1,0 +1,28 @@
+###############################################################################
+# Class: LSULauncher
+#
+# Purpose:    Custom launcher for LSU
+#
+# Programmer: Brad Whitlock
+# Date:       Thu May 17 14:22:04 PDT 2012
+#
+# Modifications:
+#
+###############################################################################
+
+class LSULauncher(MainLauncher):
+    def __init__(self):
+        super(LSULauncher, self).__init__()
+
+    def Customize(self):
+        # ----
+        # LSU Philip machine:
+        # ----
+        if self.sectorname() == "philip":
+            paths = self.splitpaths(GETENV("LD_LIBRARY_PATH"))
+            addedpaths = ["/usr/local/compilers/GNU/gcc-4.3.2/lib64"]
+            SETENV("LD_LIBRARY_PATH", self.joinpaths(paths + addedpaths))
+
+# Launcher creation function
+def createlauncher():
+    return LSULauncher()

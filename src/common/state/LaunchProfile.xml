@@ -1,0 +1,108 @@
+<?xml version="1.0"?>
+  <Attribute name="LaunchProfile" purpose="This class contains information needed to launch a VisIt engine." persistent="true" keyframe="true" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="LaunchProfile.code">
+    <Field name="profileName" label="profileName" type="string">
+      notset
+    </Field>
+    <Field name="timeout" label="timeout" type="int">
+      480
+    </Field>
+    <Field name="numProcessors" label="numProcessors" type="int">
+      1
+    </Field>
+    <Field name="numNodesSet" label="numNodesSet" type="bool">
+      false
+    </Field>
+    <Field name="numNodes" label="numNodes" type="int">
+      1
+    </Field>
+    <Field name="partitionSet" label="partitionSet" type="bool">
+      false
+    </Field>
+    <Field name="partition" label="partition" type="string">
+    </Field>
+    <Field name="bankSet" label="bankSet" type="bool">
+      false
+    </Field>
+    <Field name="bank" label="bank" type="string">
+    </Field>
+    <Field name="timeLimitSet" label="timeLimitSet" type="bool">
+      false
+    </Field>
+    <Field name="timeLimit" label="timeLimit" type="string">
+    </Field>
+    <Field name="launchMethodSet" label="launchMethodSet" type="bool">
+      false
+    </Field>
+    <Field name="launchMethod" label="launchMethod" type="string">
+    </Field>
+    <Field name="forceStatic" label="forceStatic" type="bool">
+      true
+    </Field>
+    <Field name="forceDynamic" label="forceDynamic" type="bool">
+      false
+    </Field>
+    <Field name="active" label="active" type="bool">
+      false
+    </Field>
+    <Field name="arguments" label="arguments" type="stringVector">
+    </Field>
+    <Field name="parallel" label="parallel" type="bool">
+      false
+    </Field>
+    <Field name="launchArgsSet" label="launchArgsSet" type="bool">
+      false
+    </Field>
+    <Field name="launchArgs" label="launchArgs" type="string">
+    </Field>
+    <Field name="sublaunchArgsSet" label="sublaunchArgsSet" type="bool">
+      false
+    </Field>
+    <Field name="sublaunchArgs" label="sublaunchArgs" type="string">
+    </Field>
+    <Field name="sublaunchPreCmdSet" label="sublaunchPreCmdSet" type="bool">
+      false
+    </Field>
+    <Field name="sublaunchPreCmd" label="sublaunchPreCmd" type="string">
+    </Field>
+    <Field name="sublaunchPostCmdSet" label="sublaunchPostCmdSet" type="bool">
+      false
+    </Field>
+    <Field name="sublaunchPostCmd" label="sublaunchPostCmd" type="string">
+    </Field>
+    <Field name="machinefileSet" label="machinefileSet" type="bool">
+      false
+    </Field>
+    <Field name="machinefile" label="machinefile" type="string">
+    </Field>
+    <Field name="visitSetsUpEnv" label="visitSetsUpEnv" type="bool">
+      false
+    </Field>
+    <Field name="canDoHWAccel" label="Machine can do hardware acceleration" type="bool">
+      false
+    </Field>
+    <Field name="GPUsPerNode" label="Number of GPUs Per Node" type="int">
+      1
+    </Field>
+    <Field name="XArguments" label="Arguments to pass to X servers" type="string">
+    </Field>
+    <Field name="launchXServers" label="Have VisIt launch the X servers" type="bool">
+      false
+    </Field>
+    <Field name="XDisplay" label="DISPLAY to use for X servers" type="string">
+      :%l
+    </Field>
+    <Field name="numThreads" label="numThreads" type="int">
+      0
+    </Field>
+    <Field name="constrainNodeProcs" label="Use allowable nodes/procs" type="bool">
+      false
+    </Field>
+    <Field name="allowableNodes" label="Allowable nodes" type="intVector">
+    </Field>
+    <Field name="allowableProcs" label="Allowable processors" type="intVector">
+    </Field>
+    <Function name="CreateNode" user="false" member="true">
+    </Function>
+    <Function name="SelectOnlyDifferingFields" user="true" member="true">
+    </Function>
+  </Attribute>

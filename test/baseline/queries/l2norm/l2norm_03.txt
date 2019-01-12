@@ -1,0 +1,1 @@
+The minimum relative difference is 0.487300

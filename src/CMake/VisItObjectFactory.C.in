@@ -1,0 +1,52 @@
+#include "@visit-module@ObjectFactory.h"
+#include <vtkVersion.h>
+
+// Include all of the classes we want to create overrides for.
+@_mod_override_includes@
+
+vtkStandardNewMacro(@visit-module@ObjectFactory)
+
+// Now create the functions to create overrides with.
+@_mod_override_creates@
+
+@visit-module@ObjectFactory::@visit-module@ObjectFactory()
+{
+@_mod_override_do@
+}
+
+const char * @visit-module@ObjectFactory::GetVTKSourceVersion()
+{
+  return VTK_SOURCE_VERSION;
+}
+
+void @visit-module@ObjectFactory::PrintSelf(ostream &os, vtkIndent indent)
+{
+  this->Superclass::PrintSelf(os, indent);
+}
+
+// Registration of object factories.
+static unsigned int @visit-module@Count;
+
+void @visit-module@_AutoInit_Construct()
+{
+  if(++@visit-module@Count == 1)
+    {
+    @mod-object-factory-extra-init@
+    @visit-module@ObjectFactory* factory = @visit-module@ObjectFactory::New();
+    if (factory)
+      {
+      // vtkObjectFactory keeps a reference to the "factory",
+      vtkObjectFactory::RegisterFactory(factory);
+      factory->Delete();
+      }
+    }
+}
+
+void @visit-module@_AutoInit_Destruct()
+{
+  if(--@visit-module@Count == 0)
+    {
+    // Do not call vtkObjectFactory::UnRegisterFactory because
+    // vtkObjectFactory.cxx statically unregisters all factories.
+    }
+}

@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+  <Plugin name="Curve2D" type="database" label="Curve2D" version="1.0" enabled="true" mdspecificcode="true" onlyengine="false" noengine="false" dbtype="STSD" haswriter="true" hasoptions="true">
+    <FilePatterns>
+      *.curve
+      *.ultra
+      *.ult
+      *.u
+      *.curve.gz
+      *.ultra.gz
+      *.ult.gz
+      *.u.gz
+    </FilePatterns>
+    <Attribute name="" purpose="" persistent="false">
+    </Attribute>
+  </Plugin>

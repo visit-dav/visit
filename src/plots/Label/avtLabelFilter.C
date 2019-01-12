@@ -1,0 +1,1170 @@
+/*****************************************************************************
+*
+* Copyright (c) 2000 - 2018, Lawrence Livermore National Security, LLC
+* Produced at the Lawrence Livermore National Laboratory
+* LLNL-CODE-442911
+* All rights reserved.
+*
+* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
+* full copyright notice is contained in the file COPYRIGHT located at the root
+* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
+*
+* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
+* modification, are permitted provided that the following conditions are met:
+*
+*  - Redistributions of  source code must  retain the above  copyright notice,
+*    this list of conditions and the disclaimer below.
+*  - Redistributions in binary form must reproduce the above copyright notice,
+*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
+*    documentation and/or other materials provided with the distribution.
+*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
+*    be used to endorse or promote products derived from this software without
+*    specific prior written permission.
+*
+* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
+* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
+* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
+* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
+* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
+* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
+* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
+* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
+* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
+* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
+* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
+* DAMAGE.
+*
+*****************************************************************************/
+
+// ************************************************************************* //
+//                              avtLabelFilter.C                             //
+// ************************************************************************* //
+
+#include <avtLabelFilter.h>
+
+#include <vtkCell.h>
+#include <vtkCellArray.h>
+#include <vtkCellData.h>
+#include <vtkDataArray.h>
+#include <vtkDataSet.h>
+#include <vtkDoubleArray.h>
+#include <vtkFloatArray.h>
+#include <vtkIntArray.h>
+#include <vtkPointData.h>
+#include <vtkUnsignedCharArray.h>
+#include <vtkUnsignedIntArray.h>
+
+#include <DebugStream.h>
+#include <TimingsManager.h>
+
+#include <quant_vector_lookup.C>
+
+// ****************************************************************************
+// Method: avtLabelFilter constructor
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Jan 7 14:58:26 PST 2004
+//
+// Modifications:
+//    Kathleen Biagas, Wed Jun  3 10:28:07 PDT 2015
+//    Added mayBeLogical, cellOrigin, nodeOrigin, to aid in calculating
+//    logical indices.
+//
+// ****************************************************************************
+
+avtLabelFilter::avtLabelFilter()
+{
+    labelVariable = 0;
+    mayBeLogical = false;
+    cellOrigin = 0;
+    nodeOrigin = 0;
+}
+
+
+// ****************************************************************************
+// Method: avtLabelFilter destructor
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Jan 7 14:58:26 PST 2004
+//
+// Modifications:
+//
+// ****************************************************************************
+
+avtLabelFilter::~avtLabelFilter()
+{
+    delete [] labelVariable;
+}
+
+// ****************************************************************************
+// Method: avtLabelFilter::SetLabelVariable
+//
+// Purpose: 
+//   Sets the name of the variable that will be used to create labels.
+//
+// Arguments:
+//   var : The name of the variable.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Oct 25 09:10:25 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+
+void
+avtLabelFilter::SetLabelVariable(const char *var)
+{
+    if(var == 0)
+        debug3 << "avtLabelFilter::SetLabelVariable: var=NULL!" << endl;
+    else
+    {
+        delete [] labelVariable;
+        labelVariable = new char[strlen(var) + 1];
+        strcpy(labelVariable, var);
+    }
+}
+
+#if 1
+void
+print_array_names(vtkDataSet *inDS)
+{
+    vtkPointData *pd = inDS->GetPointData();
+    for (int i = 0 ; i < pd->GetNumberOfArrays() ; i++)
+    {
+        debug3 << "\tPoint Data array[" << i << "] = " << pd->GetArrayName(i) << endl;
+    }
+
+    vtkCellData *cd = inDS->GetCellData();
+    for (int i = 0 ; i < cd->GetNumberOfArrays() ; i++)
+    {
+        debug3 << "\tCell Data array[" << i << "] = " << cd->GetArrayName(i) << endl;
+    }
+
+    vtkFieldData *fd = inDS->GetFieldData();
+    for (int i = 0 ; i < fd->GetNumberOfArrays() ; i++)
+    {
+        debug3 << "\tField Data array[" << i << "] = " << fd->GetArrayName(i) << endl;
+    }
+}
+#endif
+
+
+// ****************************************************************************
+//  Method: avtLabelFilter::ExecuteData
+//
+//  Purpose:
+//      Does the actual VTK code to modify the dataset.
+//
+//  Arguments:
+//      inDR      The input data representation.
+//
+//  Returns:      The output data representation.
+//
+//  Programmer: Brad Whitlock
+//  Creation:   Wed Jan 7 14:58:26 PST 2004
+//
+//  Modifications:
+//    Brad Whitlock, Thu Oct 28 16:07:46 PST 2004
+//    Added a faster algorithm for averaging the cell centers, when needed.
+//    The new algorithm assumes that related cells will be contiguous in
+//    the cell list, which may or may not be a valid assumption. It looks
+//    okay for slices, which is when we do the center averaging anyway.
+//
+//    Brad Whitlock, Mon Apr 4 10:53:28 PDT 2005
+//    Fixed a crash that happened for cells with more than 100 points.
+//
+//    Brad Whitlock, Sat Apr 21 21:34:45 PDT 2012
+//    Change label cell centers from float to double.
+//
+//    Eric Brugger, Tue Aug 19 10:33:45 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
+//
+//    Kathleen Biagas, Wed Jun  3 10:31:28 PDT 2015
+//    Create logical indices here, where each block can be considered
+//    separately, otherwise if block dimensions vary, the indices will be
+//    incorrect.
+//    (Logic mostly copied from NodeLabels_body.C and CellLabels_body.C)
+//
+//    Alister Maguire, Mon Feb 26 09:28:05 PST 2018
+//    Added in capability to correctly label mixed variables. 
+//
+// ****************************************************************************
+
+avtDataRepresentation *
+avtLabelFilter::ExecuteData(avtDataRepresentation *inDR)
+{
+    //
+    // Get the VTK data set.
+    //
+    vtkDataSet *inDS = inDR->GetDataVTK();
+
+    vtkDataSet *newDS = (vtkDataSet *) inDS->NewInstance();
+    newDS->ShallowCopy(inDS);
+    vtkDataSet *outDS = newDS;
+
+    int stageTimer, total = visitTimer->StartTimer();
+
+//    debug3 << "avtLabelFilter::ExecuteData: 1: nCells=" << inDS->GetNumberOfCells() << endl;
+//    debug3 << "avtLabelFilter::ExecuteData: 1.5: The data arrays are:" << endl;
+//    print_array_names(inDS);
+
+    //
+    // Try to determine if the variable is a mesh. I tried using activeVariable
+    // but it was NULL so I added labelVariable and made the plot set it.
+    //
+    bool variableProbablyIsAMesh = false;
+    bool needCellArray = true;
+    bool needNodeArray = true;
+    if(labelVariable != 0)
+    {
+        vtkDataArray *cellVar = inDS->GetCellData()->GetArray(labelVariable);
+        vtkDataArray *pointVar = inDS->GetPointData()->GetArray(labelVariable);
+        variableProbablyIsAMesh = (cellVar == 0 && pointVar == 0);
+        needCellArray = variableProbablyIsAMesh || (cellVar != 0);
+        needNodeArray = variableProbablyIsAMesh || (pointVar != 0);
+    }
+    else
+        variableProbablyIsAMesh = true;
+
+//    debug3 << "avtLabelFilter::ExecuteData: 3.5: The data arrays are:" << endl;
+//    print_array_names(outDS);
+
+    //
+    // If the variable is probably a mesh then rename the original cell numbers
+    // array so it won't be removed by the condense dataset filter. If we
+    // likely have a mesh then we'll need the original cell numbers in order
+    // to correctly label the cells.
+    //
+    stageTimer = visitTimer->StartTimer();
+    vtkDataArray *originalCellNumbers =
+        outDS->GetCellData()->GetArray("avtOriginalCellNumbers");
+    if(needCellArray &&
+       originalCellNumbers != 0 &&
+       originalCellNumbers->IsA("vtkUnsignedIntArray"))
+    {
+        if(originalCellNumbers->GetNumberOfComponents() == 2)
+        {
+            debug3 << "Creating LabelOriginalCellNumbers from avtOriginalCellNumbers"
+                   << endl;
+            int n = originalCellNumbers->GetNumberOfTuples();
+            vtkUnsignedIntArray *newCellNos = vtkUnsignedIntArray::New();
+            newCellNos->SetName("LabelFilterOriginalCellNumbers");
+            newCellNos->SetNumberOfTuples(n);
+            unsigned int *dest = (unsigned int*)newCellNos->GetVoidPointer(0);
+            unsigned int *src = (unsigned int*)originalCellNumbers->GetVoidPointer(0);
+            ++src;
+            for(int i = 0; i < n; ++i, src+=2)
+                *dest++ = *src;
+            outDS->GetCellData()->AddArray(newCellNos);
+            newCellNos->Delete();
+        }
+        else
+        {
+            debug3 << "Renaming avtOriginalCellNumbers->LabelFilterOriginalCellNumbers"
+                   << endl;
+            originalCellNumbers->SetName("LabelFilterOriginalCellNumbers");
+        }
+    }
+    visitTimer->StopTimer(stageTimer, "Creating LabelFilterOriginalCellNumbers");
+
+    //
+    // If the variable is probably a mesh then rename the original cell numbers
+    // array so it won't be removed by the condense dataset filter. If we
+    // likely have a mesh then we'll need the original cell numbers in order
+    // to correctly label the cells.
+    //
+    stageTimer = visitTimer->StartTimer();
+    vtkDataArray *originalNodeNumbers =
+        outDS->GetPointData()->GetArray("avtOriginalNodeNumbers");
+    if(needNodeArray &&
+       originalNodeNumbers != 0 &&
+       originalNodeNumbers->IsA("vtkIntArray"))
+    {
+        if(originalNodeNumbers->GetNumberOfComponents() == 2)
+        {
+            debug3 << "Creating LabelOriginalNodeNumbers from avtOriginalNodeNumbers"
+                   << endl;
+            // Throw out the domain numbers.
+            int n = originalNodeNumbers->GetNumberOfTuples();
+            vtkIntArray *newNodeNos = vtkIntArray::New();
+            newNodeNos->SetName("LabelFilterOriginalNodeNumbers");
+            newNodeNos->SetNumberOfTuples(n);
+            int *dest = (int*)newNodeNos->GetVoidPointer(0);
+            int *src = (int*)originalNodeNumbers->GetVoidPointer(0);
+            ++src;
+            for(int i = 0; i < n; ++i, src+=2)
+                *dest++ = *src;
+            outDS->GetPointData()->AddArray(newNodeNos);
+            newNodeNos->Delete();
+        }
+        else
+        {
+            debug3 << "Renaming avtOriginalNodeNumbers->LabelFilterOriginalNodeNumbers"
+                   << endl;
+            originalNodeNumbers->SetName("LabelFilterOriginalNodeNumbers");
+        }
+    }
+    visitTimer->StopTimer(stageTimer, "Creating LabelFilterOriginalNodeNumbers");
+
+
+    if(variableProbablyIsAMesh && needNodeArray)
+    {
+
+        vtkDataArray *sDims = inDS->GetFieldData()->
+            GetArray("avtOriginalStructuredDimensions");
+        if(mayBeLogical &&
+           sDims != 0 &&
+           sDims->IsA("vtkUnsignedIntArray") &&
+           sDims->GetNumberOfTuples() == 3)
+        {
+            stageTimer = visitTimer->StartTimer();
+debug3 << "LabelFilter: adding LabelFilterNodeLogicalIndices array" << endl;
+            //
+            // Figure out the first real index in x,y,z. This only matters if we
+            // have ghost zones and structured indices.
+            //
+            vtkDataArray *rDims = inDS->GetFieldData()->GetArray("avtRealDims");
+            unsigned int xbase = 0, ybase = 0, zbase = 0;
+            if(rDims != 0 &&
+               rDims->IsA("vtkIntArray") &&
+               rDims->GetNumberOfTuples() == 6)
+            {
+                const unsigned int *iptr = (const unsigned int *)rDims->GetVoidPointer(0);
+                xbase = iptr[0];
+                ybase = iptr[2];
+                zbase = iptr[4];
+            }
+            xbase -= nodeOrigin;
+            ybase -= nodeOrigin;
+            zbase -= nodeOrigin;
+
+
+            vtkIntArray *originalNodes = vtkIntArray::SafeDownCast(
+                outDS->GetPointData()->GetArray("LabelFilterOriginalNodeNumbers"));
+
+            int npts = outDS->GetNumberOfPoints();
+            //
+            // Add the node labels as structured indices.
+            //
+            const unsigned int *iptr = (const unsigned int *)sDims->GetVoidPointer(0);
+            int xdims = (int)iptr[0];
+            int ydims = (int)iptr[1];
+            int zdims = (int)iptr[2];
+
+            vtkIntArray *logicalIndices = vtkIntArray::New();
+            logicalIndices->SetNumberOfComponents(zdims == 1 ? 2 : 3);
+            logicalIndices->SetNumberOfTuples(npts);
+            logicalIndices->SetName("LabelFilterNodeLogicalIndices");
+            int *logI = (int*)logicalIndices->GetVoidPointer(0);
+
+            if(zdims == 1)
+            {
+                // 2D
+                for(vtkIdType id = 0; id < npts; ++id)
+                {
+                    int realNodeId = originalNodes->GetValue(id);
+                    if(realNodeId == -1)
+                    {
+                        logI[2*id+0] = -1;
+                        logI[2*id+1] = -1;
+                    }
+                    else
+                    {
+                        int y = (realNodeId / xdims) - ybase;
+                        int x = (realNodeId % xdims) - xbase;
+                        logI[2*id+0] = x;
+                        logI[2*id+1] = y;
+                    }
+                }
+            }
+            else
+            {
+                // 3D
+                int xydims = xdims * ydims;
+                for(vtkIdType id = 0; id < npts; ++id)
+                {
+                    int realNodeId = originalNodes->GetValue(id);
+                    if(realNodeId == -1)
+                    {
+                        logI[3*id+0] = -1;
+                        logI[3*id+1] = -1;
+                        logI[3*id+2] = -1;
+                    }
+                    else
+                    {
+                        int z = (realNodeId / xydims) - zbase;
+                        int offset = realNodeId % xydims;
+                        int y = (offset / xdims) - ybase;
+                        int x = (offset % xdims) - xbase;
+                        logI[3*id+0] = x;
+                        logI[3*id+1] = y;
+                        logI[3*id+2] = z;
+                    }
+                }
+            }
+            outDS->GetPointData()->AddArray(logicalIndices);
+            logicalIndices->Delete();
+            visitTimer->StopTimer(stageTimer, "Creating LabelFilterNodeLogicalIndices");
+        }
+    }
+
+    //
+    // If we have normals then quantize them so the float3 gets assigned to a
+    // vector that closest matches a vector on a unit sphere. This way we can
+    // store an index to the vector, which takes much less storage and we can
+    // at render time do simple comparisons on the indices of visible cells
+    // instead of doing N vector dot products with the camera vector.
+    //
+    stageTimer = visitTimer->StartTimer();
+    QuantizationRetval cQ, pQ;
+    cQ = CreateQuantizedNormalsFromPointNormals(outDS, variableProbablyIsAMesh);
+    pQ = CreateQuantizedNormalsFromCellNormals(outDS, variableProbablyIsAMesh);
+    visitTimer->StopTimer(stageTimer, "Creating quantized normals");
+
+    //
+    // If the variable is a cell centered scalar, vector or if it
+    // is a mesh then we want to compute the cell centers and
+    // add that array to the dataset.
+    //
+    stageTimer = visitTimer->StartTimer();
+    if(variableProbablyIsAMesh ||
+       GetInput()->GetInfo().GetAttributes().GetCentering() == AVT_ZONECENT)
+    {
+        debug3 << "LabelFilter: adding LabelFilterCellCenters array" << endl;
+        //
+        // Allocate enough memory for a cell-centered vector
+        //
+        vtkDoubleArray *cellCenters = vtkDoubleArray::New();
+        cellCenters->SetName("LabelFilterCellCenters");
+        cellCenters->SetNumberOfComponents(3);
+        cellCenters->SetNumberOfTuples(inDS->GetNumberOfCells());
+
+        //
+        // Figure out the center of each cell.
+        //
+        int    nWeights = 100;
+        double *weights = new double[nWeights];
+        for(vtkIdType cellid = 0; cellid < inDS->GetNumberOfCells(); ++cellid)
+        {
+            double center[] = {0., 0., 0.};
+
+            vtkCell *cell = inDS->GetCell(cellid);
+            if(cell != 0)
+            {
+                int subId = 0;
+                double pcoords[3];
+                cell->GetParametricCenter(pcoords);
+
+                // Make sure that the weights array is big enough.
+                if(cell->GetNumberOfPoints() > nWeights)
+                {
+                    delete [] weights;
+                    nWeights = int(cell->GetNumberOfPoints() * 1.25);
+                    weights = new double[nWeights];
+                }
+                cell->EvaluateLocation(subId, pcoords, center, weights);
+            }
+            cellCenters->SetTuple(cellid, center);
+        }
+        delete [] weights;
+
+        //
+        // Add the new array to the VTK dataset.
+        //
+        outDS->GetCellData()->AddArray(cellCenters);
+        cellCenters->Delete();
+        visitTimer->StopTimer(stageTimer, "Creating LabelFilterCellCenters");
+
+
+        // Create logical index array
+        vtkDataArray *sDims = inDS->GetFieldData()->
+            GetArray("avtOriginalStructuredDimensions");
+        if(mayBeLogical &&
+           sDims != 0 &&
+           sDims->IsA("vtkUnsignedIntArray") &&
+           sDims->GetNumberOfTuples() == 3)
+        {
+           visitTimer->StartTimer();
+debug3 << "LabelFilter: adding LabelFilterCellLogicalIndices array" << endl;
+            vtkIdType nCells = inDS->GetNumberOfCells();
+            vtkUnsignedIntArray *originalCells = vtkUnsignedIntArray::SafeDownCast(
+                outDS->GetCellData()->GetArray("LabelFilterOriginalCellNumbers"));
+            const unsigned int *iptr = (const unsigned int *)sDims->GetVoidPointer(0);
+            unsigned int xdims = iptr[0]-1;
+            unsigned int ydims = iptr[1]-1;
+            unsigned int zdims = iptr[2]-1;
+            unsigned int xbase = 0, ybase = 0, zbase = 0;
+            vtkDataArray *rDims = inDS->GetFieldData()->
+                GetArray("avtRealDims");
+            if(rDims != 0 &&
+               rDims->IsA("vtkIntArray") &&
+               rDims->GetNumberOfTuples() == 6)
+            {
+                const int *iptr2 = (const int *)rDims->GetVoidPointer(0);
+                xbase = iptr2[0];
+                ybase = iptr2[2];
+                zbase = iptr2[4];
+            }
+            xbase -= cellOrigin;
+            ybase -= cellOrigin;
+            zbase -= cellOrigin;
+
+
+            vtkUnsignedIntArray *logicalIndices = vtkUnsignedIntArray::New();
+            logicalIndices->SetNumberOfComponents(zdims == 0? 2 : 3);
+            logicalIndices->SetNumberOfTuples(nCells);
+            logicalIndices->SetName("LabelFilterCellLogicalIndices");
+
+            unsigned int *li = (unsigned int *)logicalIndices->GetVoidPointer(0);
+            if(zdims == 0)
+            {
+                for(vtkIdType id = 0; id < nCells; ++id)
+                {
+                    unsigned int realCellId = originalCells->GetValue(id);
+                    unsigned int y = (realCellId / xdims) - ybase;
+                    unsigned int x = (realCellId % xdims) - xbase;
+                    li[2*id+0] = x;
+                    li[2*id+1] = y;
+                }
+            }
+            else
+            {
+                unsigned int xydims = xdims * ydims;
+                for(vtkIdType id = 0; id < nCells; ++id)
+                {
+                    unsigned int realCellId = originalCells->GetValue(id);
+                    unsigned int z = (realCellId / xydims) - zbase;
+                    unsigned int offset = realCellId % xydims;
+                    unsigned int y = (offset / xdims) - ybase;
+                    unsigned int x = (offset % xdims) - xbase;
+                    li[3*id+0] = x;
+                    li[3*id+1] = y;
+                    li[3*id+2] = z;
+                }
+            }
+            outDS->GetCellData()->AddArray(logicalIndices);
+            logicalIndices->Delete();
+            visitTimer->StopTimer(stageTimer, "Creating LabelFilterCellLogicalIndices");
+        }
+    }
+
+#define CELL_CENTER_HACK
+#ifdef CELL_CENTER_HACK
+    //
+    // If we quantized normals but threw them away because the data was
+    // planar AND the quantized normals were axis aligned then we should
+    // consolidate any original cells into a point mesh where the point
+    // is the average coordinate of the cell centers.
+    //
+    // That would be too much work so for now, just average the cell centers
+    // of cells that share the same original cell. This will give the
+    // appearance of 1 label per triangle on an orthogonal slice.
+    //
+    // Note -- we also do this if we're looking at 2D data that was
+    //         derived from 3D or if we material selected 2D data.
+    //
+    stageTimer = visitTimer->StartTimer();
+    if(cQ == DiscardedQuantizedNormals ||
+       pQ == DiscardedQuantizedNormals ||
+       // Check 2D geometry that's been sliced material selected.
+       (GetInput()->GetInfo().GetAttributes().GetTopologicalDimension() == 2 &&
+        GetInput()->GetInfo().GetAttributes().GetSpatialDimension() == 2 &&
+        (!GetInput()->GetInfo().GetValidity().GetUsingAllData() ||
+         !GetInput()->GetInfo().GetValidity().GetZonesPreserved() ||
+         GetInput()->GetInfo().GetValidity().SubdivisionOccurred()))
+      )
+    {
+        vtkDataArray *d = outDS->GetCellData()->GetArray("LabelFilterOriginalCellNumbers");
+        unsigned int *cellNumbers = (d != 0) ? (unsigned int *)d->GetVoidPointer(0) : 0;
+        d = outDS->GetCellData()->GetArray("LabelFilterCellCenters");
+        vtkDoubleArray *cellCenters = (vtkDoubleArray *)d;
+        if(cellNumbers != 0 && cellCenters != 0)
+        {
+            debug3 << "The geometry seems to be a plane. This "
+                   << "means that we should try and hide that there could "
+                   << "be multiple cells that correspond to the same "
+                   << "original cell." << endl;
+            //
+            // If we have mixed variables, we will need the subset array           
+            // to determine where they exist. 
+            //
+            vtkDataArray *subsetArray = 
+                inDS->GetCellData()->GetArray("avtSubsets");
+            std::vector<unsigned int> subsetList(inDS->GetNumberOfCells());
+            int numMat = 0;
+            if (subsetArray)
+            {
+                int numCells = inDS->GetNumberOfCells();
+                for (int i = 0; i < numCells; ++i)
+                {
+                    subsetList[i] = subsetArray->GetTuple1(i);
+                    numMat = numMat > subsetList[i] ? numMat : subsetList[i];
+                }
+            }
+            else
+            {
+                int numCells = inDS->GetNumberOfCells();
+                for (int i = 0; i < numCells; ++i)
+                {
+                    subsetList[i] = 0;
+                }
+            }
+            numMat++;
+
+#ifdef WORST_NSQUARED_CODE_IN_THE_WORLD
+            vtkIdType dupIds[100];
+            int i, n = outDS->GetNumberOfCells();
+            bool *cellHandled = new bool[n];
+            for(i = 0; i < n; ++i)
+                cellHandled[i] = false;
+
+            for(vtkIdType c1 = 0; c1 < n; ++c1)
+            {
+                if(cellHandled[c1])
+                    continue;
+
+                //
+                // If our cell contains mixed variables, we need to 
+                // consider them when looking for repeats. 
+                //
+                std::vector< std::vector< unsigned int > > matCellIds(numMat);
+                matCellIds[subsetList[c1]].push_back(c1);
+
+                int nDupIds = 0;
+                unsigned int originalNumber = cellNumbers[c1];
+                for(vtkIdType c2 = 0; c2 < n; ++c2)
+                {
+                    if(originalNumber == cellNumbers[c2])
+                    {
+                        dupIds[nDupIds++] = c2;
+                        matCellIds[subsetList[c2]].push_back(c2);
+                    }
+                }
+
+                //
+                // Average the cell center coordinates
+                //
+                if(nDupIds > 1)
+                {
+                    for(int m = 0; m < numMat; ++m)
+                    {
+                        //
+                        // Average repeats in a way that considers mixed
+                        // variables, if they're present. 
+                        //
+                        if (!matCellIds[m].empty())
+                        {
+                            float avgCoord[] = {0,0,0};
+                            for (int idIdx = 0; idIdx < matCellIds[m].size(); 
+                                 ++idIdx) 
+                            {
+                                unsigned int mCellId = matCellIds[m][idIdx];
+                                const double *pt = 
+                                    cellCenters->GetTuple3(mCellId);
+                                avgCoord[0] += pt[0];
+                                avgCoord[1] += pt[1];
+                                avgCoord[2] += pt[2];
+                            }
+                            float scale = 1.f / float(matCellIds[m].size());
+                            avgCoord[0] *= scale;
+                            avgCoord[1] *= scale;
+                            avgCoord[2] *= scale;
+                            for (int idIdx = 0; idIdx < matCellIds[m].size(); 
+                                 ++idIdx) 
+                            {
+                                unsigned int mCellId = matCellIds[m][idIdx];
+                                cellCenters->SetTuple(mCellId, avgCoord);
+                                cellHandled[mCellId] = true;
+                            }
+                        }
+                    }
+                }
+
+                cellHandled[c1] = true;
+            }
+
+            delete [] cellHandled;
+#else 
+            //
+            // Assume that related cells are contiguous in the cell list.
+            //
+            int n = outDS->GetNumberOfCells();
+            for(int i = 0; i < n; )
+            {
+                unsigned int cellId = cellNumbers[i];
+
+                //
+                // If our cell contains mixed variables, we need to 
+                // consider them when looking for repeats. 
+                //
+                std::vector< std::vector< unsigned int > > matCellIds(numMat);
+                matCellIds[subsetList[i]].push_back(i);
+
+                int j = i + 1;
+                for(; j < n; ++j)
+                {
+                    if(cellNumbers[j] != cellId)
+                        break;
+                    matCellIds[subsetList[j]].push_back(j);
+                }
+
+                int repeatCount = j - i;
+
+                if(repeatCount > 1)
+                {
+                    for(int m = 0; m < numMat; ++m)
+                    {
+                        //
+                        // Average repeats in a way that considers mixed
+                        // variables, if they're present. 
+                        //
+                        if (!matCellIds[m].empty())
+                        {
+                            float avgCoord[] = {0,0,0};
+                            for (int idIdx = 0; idIdx < matCellIds[m].size(); 
+                                 ++idIdx) 
+                            {
+                                unsigned int mCellId = matCellIds[m][idIdx];
+                                const double *pt = 
+                                    cellCenters->GetTuple3(mCellId);
+                                avgCoord[0] += pt[0];
+                                avgCoord[1] += pt[1];
+                                avgCoord[2] += pt[2];
+                            }
+                            float scale = 1.f / float(matCellIds[m].size());
+                            avgCoord[0] *= scale;
+                            avgCoord[1] *= scale;
+                            avgCoord[2] *= scale;
+                            for (int idIdx = 0; idIdx < matCellIds[m].size(); 
+                                 ++idIdx) 
+                            {
+                                unsigned int mCellId = matCellIds[m][idIdx];
+                                cellCenters->SetTuple(mCellId, avgCoord);
+                            }
+                        }
+                    }
+                }
+
+                i = j;
+            }
+#endif
+        }
+    }
+    visitTimer->StopTimer(stageTimer, "Averaging cell coordinates");
+#endif
+
+//    debug3 << "avtLabelFilter::ExecuteData: 3.75: The data arrays are:" << endl;
+//    print_array_names(outDS);
+
+    //
+    // Set a flag in the data validity that will prevent the plot from
+    // creating normals since they are not appropriate.
+    //
+    GetOutput()->GetInfo().GetValidity().SetNormalsAreInappropriate(true);
+
+    visitTimer->StopTimer(total, "avtLabelFilter::ExecuteData");
+
+    avtDataRepresentation *outDR = new avtDataRepresentation(outDS,
+        inDR->GetDomain(), inDR->GetLabel());
+
+    outDS->Delete();
+
+    return outDR;
+}
+
+
+// ****************************************************************************
+//  Method: avtLabelFilter::UpdateDataObjectInfo
+//
+//  Purpose:
+//      Allows the filter to change its output's data object information, which
+//      is a description of the data object.
+//
+//  Programmer: Brad Whitlock
+//  Creation:   Wed Jan 7 14:58:26 PST 2004
+//
+// ****************************************************************************
+
+void
+avtLabelFilter::UpdateDataObjectInfo(void)
+{
+//    IF YOU SEE FUNNY THINGS WITH EXTENTS, ETC, YOU CAN CHANGE THAT HERE.
+    debug3 << "avtLabelFilter::UpdateDataObjectInfo" << endl;
+}
+
+
+// ****************************************************************************
+// Method: avtLabelFilter::ModifyContract
+//
+// Purpose: 
+//     Modify the avtContract.
+//
+// Arguments:
+//     contract    an avtContract pointer. 
+//
+// Returns:    
+//     contract    an avtContract pointer. 
+//
+// Programmer: Alister Maguire
+// Creation:   Fri Feb 23 16:19:18 PST 2018
+//
+// Modifications:
+//
+// ****************************************************************************
+
+avtContract_p
+avtLabelFilter::ModifyContract(avtContract_p contract)
+{
+    //
+    // If we have mixed variables, we need to force MIR to 
+    // gain access to the subset array. 
+    //
+    if (contract->GetDataRequest()->NeedMixedVariableReconstruction())
+    {
+        contract->GetDataRequest()->ForceMaterialInterfaceReconstructionOn();
+    }
+    return contract;
+}
+
+
+// ****************************************************************************
+// Method: avtLabelFilter::FindClosestVector
+//
+// Purpose: 
+//   Finds the quantized vector that is closest to the input vector.
+//
+// Arguments:
+//   vert : The input vector.
+//
+// Returns:    The index of the closest quantized normal vector.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Oct 25 09:11:28 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+unsigned char
+avtLabelFilter::FindClosestVector(const double *vert) const
+{
+    //
+    // Figure out the quantized vector index, which is the index of
+    // the vector in the quant_vector_lookup table that most closely
+    // matches the vector that we're considering.
+    //
+    // We find the minimum square of the distance between the tips of
+    // the vectors to get the closest quantized vector.
+    //
+    // The lookup table is broken into octants and we figure out
+    // which octant to use by looking at the signs of the vector components.
+    // We can skip the distance check for a lot of vectors by doing this.
+    //
+#define DIST_SQUARED(I, VAR) \
+    dX = (vert[0] - *lookup++); \
+    dY = (vert[1] - *lookup++); \
+    dZ = (vert[2] - *lookup++); \
+    VAR = dX *dX + dY * dY + dZ * dZ;
+    int bin = (((vert[2] >= 0.f) ? 0 : 1) << 2) | 
+              (((vert[1] >= 0.f) ? 0 : 1) << 1) | 
+               ((vert[0] >= 0.f) ? 0 : 1);
+    unsigned char minIndex = quant_vector_lookup_binbounds[bin];
+    unsigned char endIndex = quant_vector_lookup_binbounds[bin+1];
+    const float *lookup = quant_vector_lookup[minIndex];
+    float dX, dY, dZ;
+    DIST_SQUARED(minIndex, float minDist)
+    for(unsigned char quantIndex = minIndex+1;
+        quantIndex < endIndex; ++quantIndex)
+    {
+        DIST_SQUARED(quantIndex, float distSquared)
+        if(distSquared < minDist)
+        {
+            minIndex = quantIndex;
+            minDist = distSquared;
+        }
+    }
+
+    return minIndex;
+}
+
+// ****************************************************************************
+// Method: avtLabelFilter::CreateQuantizedNormalsFromPointNormals
+//
+// Purpose: 
+//   Transforms the dataset's Normals into quantized normals, which are less
+//   accurate but much faster and smaller.
+//
+// Arguments:
+//   outDS  : The dataset to modify.
+//   isMesh : Whether the dataset being modified corresponds to a mesh var.
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Oct 25 09:12:18 PDT 2004
+//
+// Modifications:
+//   
+//   Hank Childs, Tue Nov  2 05:16:53 PST 2004
+//   Do not delete memory we don't own.
+//
+// ****************************************************************************
+
+avtLabelFilter::QuantizationRetval
+avtLabelFilter::CreateQuantizedNormalsFromPointNormals(vtkDataSet *outDS,
+    bool isMesh)
+{
+    QuantizationRetval retval = NoAction;
+
+    vtkDataArray *normals_array = outDS->GetPointData()->GetArray("Normals");
+    if(normals_array != 0)
+    {
+        vtkFloatArray *normals = (vtkFloatArray *)normals_array;
+        int n = normals->GetNumberOfTuples();
+
+        if(n > 0)
+        {
+            debug3 << "Creating quantized normals from point normals." << endl;
+
+            // 
+            // Create quantized normals for the nodes.
+            //
+            vtkUnsignedCharArray *quantNodeNormals = vtkUnsignedCharArray::New();
+            quantNodeNormals->SetName("LabelFilterQuantizedNodeNormals");
+            quantNodeNormals->SetNumberOfTuples(n);
+            unsigned char *quant = (unsigned char *)quantNodeNormals->GetVoidPointer(0);
+            int i;
+            //
+            // Do the first normal so we can compare subsequent normals to see
+            // if they are equal so we can opt to not save the quantized normals
+            // since the geometry is most likely a slice plane.
+            //
+            const double *vert = normals->GetTuple3(0);
+            unsigned char first_quantized_vector = FindClosestVector(vert);
+            bool vectors_same = true;
+            *quant++ = first_quantized_vector;
+            // Find the opposite vector too in case some cells were inverted.
+            double oppositevec[] = {
+                -quant_vector_lookup[first_quantized_vector][0],
+                -quant_vector_lookup[first_quantized_vector][1],
+                -quant_vector_lookup[first_quantized_vector][2],
+            };
+            unsigned char opposite_quant_vec = FindClosestVector(oppositevec);
+
+            //
+            // Calculate the other quantized normals.
+            //
+            for(i = 1; i < n; ++i)
+            {
+                vert = normals->GetTuple3(i);
+                unsigned char qvec = FindClosestVector(vert);
+                *quant++ = qvec;
+                vectors_same &= (qvec == first_quantized_vector ||
+                                 qvec == opposite_quant_vec);
+            }
+
+            // Add the quantized node vector indices to the outgoing dataset
+            // if the vectors are different. If all of the vectors are the
+            // same then the geometry is or is close to being a plane. Let's
+            // assume that it was a slice plane and not save the quantized
+            // normals since we don't want planes to have a direction.
+            if(vectors_same)
+            {
+                debug3 << "The quantized node vectors were all the same. "
+                       << "Not storing quantized normals." << endl;
+                retval = DiscardedQuantizedNormals;
+            }
+            else
+            {
+                outDS->GetPointData()->AddArray(quantNodeNormals);
+                retval = CreatedQuantizedNormals;
+            }
+            quantNodeNormals->Delete();
+           
+            //
+            // Create quantized normals for the cells.
+            //
+            if(!vectors_same && isMesh)
+            {
+                n = outDS->GetNumberOfCells();
+                vtkUnsignedCharArray *quantCellNormals = vtkUnsignedCharArray::New();
+                quantCellNormals->SetName("LabelFilterQuantizedCellNormals");
+                quantCellNormals->SetNumberOfTuples(n);
+                quant = (unsigned char *)quantNodeNormals->GetVoidPointer(0);
+                unsigned char *cellquant = (unsigned char *)quantCellNormals->
+                    GetVoidPointer(0);
+                for(i = 0; i < n; ++i)
+                {
+                    vtkIdType firstPointId = outDS->GetCell(i)->GetPointId(0);
+    
+                    // Use the quantized normal of the first point. This is not
+                    // that great since for large cells, the cell normal will not
+                    // likely match the point normal but it ought to be okay for now.
+                    *cellquant++ = quant[firstPointId];
+                }
+
+                // Add the quantized cell vector indices to the outgoing dataset.
+                outDS->GetCellData()->AddArray(quantCellNormals);
+                quantCellNormals->Delete();
+            }
+        }
+
+        // Remove the vectors array since we've created the quantized
+        // vectors array.
+        outDS->GetPointData()->RemoveArray("Normals");
+    }
+
+    return retval;
+}
+
+// ****************************************************************************
+// Method: avtLabelFilter::CreateQuantizedNormalsFromCellNormals
+//
+// Purpose: 
+//   Transforms the dataset's Normals into quantized normals, which are less
+//   accurate but much faster and smaller.
+//
+// Arguments:
+//   outDS  : The dataset to modify.
+//   isMesh : Whether the dataset being modified corresponds to a mesh var.
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Oct 25 09:12:18 PDT 2004
+//
+// Modifications:
+//   
+//   Hank Childs, Tue Nov  2 05:16:53 PST 2004
+//   Do not delete memory we don't own.
+//
+// ****************************************************************************
+
+avtLabelFilter::QuantizationRetval
+avtLabelFilter::CreateQuantizedNormalsFromCellNormals(vtkDataSet *outDS,
+    bool isMesh)
+{
+    QuantizationRetval retval = NoAction;
+
+    vtkDataArray *normals_array = outDS->GetCellData()->GetArray("Normals");
+    if(normals_array != 0)
+    {
+        vtkFloatArray *normals = (vtkFloatArray *)normals_array;
+        int n = normals->GetNumberOfTuples();
+
+        if(n > 0)
+        {
+            debug3 << "Creating quantized normals from cell normals." << endl;
+            //
+            // Create quantized normals for the cells.
+            //
+            vtkUnsignedCharArray *quantCellNormals = vtkUnsignedCharArray::New();
+            quantCellNormals->SetName("LabelFilterQuantizedCellNormals");
+            quantCellNormals->SetNumberOfTuples(n);
+            unsigned char *quant = (unsigned char *)quantCellNormals->GetVoidPointer(0);
+            int i;
+            //
+            // Do the first normal so we can compare subsequent normals to see
+            // if they are equal so we can opt to not save the quantized normals
+            // since the geometry is most likely a slice plane.
+            //
+            const double *vert = normals->GetTuple3(0);
+            unsigned char first_quantized_vector = FindClosestVector(vert);
+            bool vectors_same = true;
+            *quant++ = first_quantized_vector;
+            // Find the opposite vector too in case some cells were inverted.
+            double oppositevec[] = {
+                -quant_vector_lookup[first_quantized_vector][0],
+                -quant_vector_lookup[first_quantized_vector][1],
+                -quant_vector_lookup[first_quantized_vector][2],
+            };
+            unsigned char opposite_quant_vec = FindClosestVector(oppositevec);
+
+            //
+            // Calculate the other quantized normals.
+            //
+            for(i = 1; i < n; ++i)
+            {
+                vert = normals->GetTuple3(i);
+                unsigned char qvec = FindClosestVector(vert);
+                *quant++ = qvec;
+                vectors_same &= (qvec == first_quantized_vector ||
+                                 qvec == opposite_quant_vec);
+            }
+            quant = (unsigned char *)quantCellNormals->GetVoidPointer(0);
+
+            // Add the quantized cell vector indices to the outgoing dataset
+            // if the vectors are different. If all of the vectors are the
+            // same then the geometry is or is close to being a plane. Let's
+            // assume that it was a slice plane and not save the quantized
+            // normals since we don't want planes to have a direction.
+            if(vectors_same)
+            {
+                debug3 << "The quantized cell vectors were all the same. "
+                       << "Not storing quantized normals." << endl;
+                retval = DiscardedQuantizedNormals;
+            }
+            else
+            {
+                outDS->GetCellData()->AddArray(quantCellNormals);
+                retval = CreatedQuantizedNormals;
+            }
+            quantCellNormals->Delete();
+
+            //
+            // Create quantized normals for the nodes.
+            //
+            if(!vectors_same && isMesh)
+            {
+                int dsnpts = outDS->GetNumberOfPoints();
+                vtkUnsignedCharArray *quantNodeNormals = vtkUnsignedCharArray::New();
+                quantNodeNormals->SetName("LabelFilterQuantizedNodeNormals");
+                quantNodeNormals->SetNumberOfTuples(dsnpts);
+                unsigned char *nodequant = (unsigned char *)quantNodeNormals->
+                    GetVoidPointer(0);
+
+                // Zero out the nodes.
+                memset(nodequant, 0, dsnpts);
+
+#if 1
+                //
+                // BAD CODE ALERT!!!!
+                //
+                // Iterate over the number cells and for each point in the cell, set the
+                // point's quantized normal to be the same as that of the cell. This is
+                // wasteful and probably slow but it should work.
+                for(i = 0; i < n; ++i)
+                {
+                    vtkCell *cell = outDS->GetCell(i);
+                    unsigned char cellNorm = quant[i];
+                    int nptids = cell->GetNumberOfPoints();
+                    for(int j = 0; j < nptids; ++j)
+                    {
+                        vtkIdType id = cell->GetPointId(j);
+                        if(id < dsnpts)
+                            nodequant[id] = cellNorm;
+                    }
+                }
+#endif
+
+                // Add the quantized node vector indices to the outgoing dataset.
+                outDS->GetPointData()->AddArray(quantNodeNormals);
+                quantNodeNormals->Delete();
+            }
+        }
+
+        // Remove the vectors array since we've created the quantized
+        // vectors array.
+        outDS->GetCellData()->RemoveArray("Normals");
+    }
+
+    return retval;
+}

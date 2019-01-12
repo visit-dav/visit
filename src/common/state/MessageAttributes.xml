@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+  <Attribute name="MessageAttributes" purpose="This class contains attributes for sending messages." persistent="true" keyframe="true" exportAPI="STATE_API" exportInclude="state_exports.h">
+    <Enum name="Severity">
+      Error
+      Warning
+      Message
+      ErrorClear
+      Information
+    </Enum>
+    <Field name="text" label="text" type="string">
+      
+    </Field>
+    <Field name="unicode" label="unicode" type="ucharVector">
+    </Field>
+    <Field name="hasUnicode" label="hasUnicode" type="bool">
+      false
+    </Field>
+    <Field name="severity" label="severity" type="enum" subtype="Severity">
+      Message
+    </Field>
+  </Attribute>

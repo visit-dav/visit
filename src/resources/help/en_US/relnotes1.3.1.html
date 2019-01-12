@@ -1,0 +1,87 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta http-equiv="Content-Language" content="en-us">
+   <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+   <meta name="ProgId" content="FrontPage.Editor.Document">
+   <title>VisIt 1.3.1 Release Notes</title>
+</head>
+<body>
+
+<center><b><font size="6">VisIt 1.3.1 Release Notes</font></b></center>
+
+<p>Welcome to VisIt's release notes page. This page describes the important
+enhancements and bug-fixes that were added to this release.</p>
+<p><b><font size="4">Features added in version 1.3.1</font></b></p>
+<ul>
+<li>VisIt's rendering code has been partially rewritten so that it is much faster.</li>
+<li>The MacOS X version of VisIt now takes as little as 5 seconds to fully start up whereas it used to take over 100 seconds on the same hardware. The MacOS X version of VisIt also has an icon now and the menus no longer switch when you switch between the gui and the viewer. Finally, VisIt has an icon in the dock when VisIt is launched.</li>
+<li>VisIt has a new Displace operator, which is built by default, that allows you to deform a mesh using a vector variable. The amount of deformation can be increased by bumping up the value for its displacement multiplier.</li>
+<li>VisIt can now draw point meshes with OpenGL points, which is over 5 times faster than previous methods used to draw points. If you want to make point meshes be drawn as actual OpenGL points, choose the "Point" point type in the Mesh and Pseudocolor plots.</li>
+<li>You can now set your preferred file format reader when you launch VisIt by providing the <i>-default_format</i> argument on the command line. When you provide this option, you must also give the name of the database reader to use. For example, if you like to use Flash files, you could provide <i>-default_format PDB</i>. This option is useful if you write data to files that do not have the necessary file extensions to help VisIt identify the files.</li>
+<li>Contouring has been made faster.</li>
+<li>The Mili support tools for VisIt, as well as Mili database reader support, has been added for MacOS X.</li>
+<li>The BOV database reader has been enhanced so it can read Ensight BOV files.</li>
+<li>The Isovolume operator now has support for min/max keywords when setting the min and max used to threshold values.</li>
+<li>Filename comparison is now case insensitive on the Windows platform.</li>
+<li>VisIt now issues a warning message when a pick point does not intersect any data.</li>
+<li>VisIt's 2D clipping code has been improved.</li>
+<li>The <i>visit -movie</i> script now supports <i>-first, -last</i> arguments.</li>
+<li>VisIt now reports when there is no data in a visualization window.</li>
+<li>The scalable rendering threshold can now be set so you have control over the point at which VisIt starts to use scalable rendering instead of hardware accelerated rendering.</li>
+</ul>
+<p><b><font size="4">Bugs fixed in version 1.3.1</font></b></p>
+<ul>
+<li>The compute engine crashes with an expression that involves a mesh and a vector.</li>
+<li>Engine ID's in the viewer need to account for closed or crashed compute engines.</li>
+<li>Sometimes the wrong variables are used when setting the time state via replace when there are multiple time sliders.</li>
+<li>Pick reports the wrong values.</li>
+<li>Plotting a nearly degenerate point mesh causes the view to get messed up.</li>
+<li>Pick does not work on a material-selected plot.</li>
+<li>VisIt has issues reading some 2D Cosmos++ files.</li>
+<li>The Pseudocolor plot has the wrong data range.</li>
+<li>Replacing a file on one host with a file from another host fails and causes the vis window to be unable to display plots.</li>
+<li>The movie making script, <i>visit -movie</i> does not work on Windows.</li>
+<li>The MinMax query is reporting -1 for the zone number for Mili files.</li>
+<li>The Volume query does not work over time when the Isovolume operator is used.</li>
+<li>The NumZones query does not work with ghost zones.</li>
+<li>Some FilledBoundary plots use the wrong mixed color when they are drawn with "Clean zones only".</li>
+<li>Slice by percent results in an empty plot at the boundary.</li>
+<li>The Isovolume operator does not show the right results when the maximum value is left at 1e+37.</li>
+<li>The Pseudocolor plot's min/max limits option behaves strangely.</li>
+<li>When the viewer automatically restarts the engine in order to service a scalable rendering request, the viewer crashes.</li>
+<li>The viewer can't redraw plots in scalable rendering mode after the compute engine has been killed or if it exits for some reason.</li>
+<li>The Isovolume operator does not work with 2D databases.</li>
+<li>Problems with state in the viewer. Exceptions in the database have been re-enabled.</li>
+<li>Silex is dropping the first character of text strings.</li>
+<li>When the viewer is set up to use the actual extents, the axes are wrong when in scalable rendering mode.</li>
+<li>Tensor components can't be accessed with an expression.</li>
+<li>The Threshold operator does not work with vector variables.</li>
+<li>The Histogram plot fails on the MacOS X platform.</li>
+<li>The FilledBoundary plot in VisIt yields different results from MeshTV when "Clean zones only" is used.</li>
+<li>Silex does not free any memory obtained vis DBGetVar calls.</li>
+<li>Silex crashes on a 7500-long character array.</li>
+<li>Parallel options are not grayed out on MacOS X when they should be grayed out.</li>
+<li>Hostnames get dropped in the file selection menu on MacOS X.</li>
+<li>Query over time cannot cope with a compute engine crashing.</li>
+<li>Expressions don't work with queries over time.</li>
+<li>Unusual behavior with the Isovolume operator when using expressions.</li>
+<li>Expression centering is incorrect for an expression that combines nodal and zonal variables.</li>
+<li>The MacOS X version of VisIt takes a long time to start up.</li>
+<li>VisIt groups files that end in ".visit" when it probably should not.</li>
+<li>Setting the Tensor plot's scale factor affects the tensor glyph colors.</li>
+<li>The Slice operator shows the wrong orthogonal axis.</li>
+<li>The OnionPeel operator attributes window is not initialized after you add a new vis window.</li>
+<li>Silex does not change its title bar when new files are opened.</li>
+<li>Transparent plots that use variables with different centerings are not lit properly.</li>
+<li>The viewer's menu on MacOS X contains hidden items.</li>
+<li>The <i>visit -movie</i> script does not clean up its MPEG params file.</li>
+</ul>
+<p>Click the following link to view the release notes for the previous version
+of VisIt: <a href="relnotes1.3.html">VisIt 1.3 Release Notes</a>.</p>
+<p>Click the following link to view the release notes for the next version 
+of VisIt: <a href="relnotes1.3.2.html">VisIt 1.3.2 Release Notes</a>.</p>
+
+</body>
+</html>

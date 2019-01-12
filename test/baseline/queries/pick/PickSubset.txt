@@ -1,0 +1,40 @@
+
+A:  globe.silo
+mesh1 
+Point: <-0.468061, -0.0888685, -1.48386>
+Zone:  30
+Incident Nodes:  2  0  561  615  
+mat1:  1 
+
+
+B:  globe.silo
+mesh1 
+Point: <-0.447555, -0.0720271, -1.41253>
+Zone:  30
+Incident Nodes:  2  0  561  615  
+mat1:  1 
+
+
+C:  globe.silo
+mesh1 
+Point: <-0.318815, -0.0543781, -1.00769>
+Zone:  30
+Incident Nodes:  2  0  561  615  
+mat1:  1 
+
+
+D:  globe.silo
+mesh1 
+Point: <-0.500057, -0.0175788, -1.54758>
+Zone:  30
+Incident Nodes:  2  0  561  615  
+mat1:  1 
+
+
+E:  globe.silo
+mesh1 
+Point: <-0.498085, -0.0803787, -1.58576>
+Zone:  30
+Incident Nodes:  2  0  561  615  
+mat1:  1 
+

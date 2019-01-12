@@ -1,0 +1,84 @@
+<html>
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>VisIt 1.1 Release Notes</title>
+</head>
+<body>
+<p align="center"><b><font size="6">VisIt 1.1 Release Notes</font></b></p>
+<p>Welcome to VisIt's release notes page. This page describes the important 
+enhancements and bug-fixes that were added to this release.</p>
+<p><b><font size="4">Features added in version 1.1</font></b></p>
+<ul>
+  <li>VisIt has a new keyframing window that allows you to create sophisticated animations where plot attributes and the view can evolve over time.</li>
+  <li>VisIt's visualization windows now have a set of toolbars that allow quick access to features. The toolbars can be customized by editing VisIt's configuration file and they can be hidden or shown by choosing from the Customize menu in the vis window's popup menu.</li>
+  <li>VisIt now supports discrete color tables for use with the Contour and Subset plots. A discrete color table consists of a fixed number of colors which can be set individually and applied to plots which cycle through color tables. The Color table window has been enhanced to support editing and management of both the traditional continuous color tables and the new discrete color tables.</li>
+  <li>The Contour and Subset plots have a new "color table" coloring mode which uses the selected color table to color the contour levels or subsets. No change is visible if the "levels" color table is used but if a continuous color table such as "hot" is used, the colors in the plot change according to the number of colors that are needed from the continuous color table.</li>
+  <li>The CLI now has a function to open a meta-data server.</li>
+  <li>The Erase operator has been renamed to Clip.</li>
+  <li>The FastVolume plot has been renamed to Volume.</li>
+  <li>The Lineout window now accepts 3d points which allows lineouts to be generated for 3d databases.</li>
+  <li>VisIt's process launching and communication infrastructure has been enhanced so that it is more secure.</li>
+  <li>VisIt is now installed on the sapling cluster.</li>
+  <li>VisIt's view window now understands the legacy "wp" MeshTV command for setting the 2d window.</li>
+  <li>The xml2python plugin generation tool has been enhanced to handle more data types.</li>
+  <li>Host profiles for several LC platforms are now provided when VisIt is installed. This makes it easier to get up and running in distributed mode.</li>
+  <li>The viewer now closes down faster.</li>
+  <li>VisIt has a new "-launchengine" command line flag that allows it to launch engines from the command line. This makes it easier to launch parallel engines without having the use host profiles.</li>
+  <li>Pick now returns coordinates as well as node and zone numbers.</li>
+  <li>The compute engine now opens a database right after the meta-data server does so it appears to open a little faster for large databases.</li>
+  <li>The Host profiles window has a new text field that allows the user to enter additional parallel launch options.</li>
+  <li>The status of compute engines, which is reported in the Engines window, now contains more informative descriptions of pipeline stages.</li>
+  <li>The CLI has a new "-verbose" command line flag that makes it print engine status to the console window.</li>
+  <li>The CLI provides feedback if the TurnDomainsOn and TurnDomainsOff functions encountered errors.</li>
+</ul>
+<p><b><font size="4">Bugs fixed in version 1.1</font></b></p>
+<ul>
+  <li>Vertex normal generation has been sped up.</li>
+  <li>Contour plots sometimes hang the compute engine when the compute engine uses more processors than there are domains in the database.</li>
+  <li>VisIt crashes when the OnionPeel, Slice, and Reflect operators are all applied to a plot.</li>
+  <li>VisIt crashes when trying to render a Volume plot of an expression variable. </li>
+  <li>Subset plots of materials sometimes crash VisIt.</li>
+  <li>The CLI does not wait for the user to enter a password if one is required.</li>
+  <li>Interactive tools are broken.</li>
+  <li>VisIt crashes when picking on a Subset plot.</li>
+  <li>VisIt hangs when subsetting plots after looking at all the timesteps in a database.</li>
+  <li>The Volume plot yields a blank image when it is in software mode.</li>
+  <li>After using pick for an extended period of time, it ceases to work.</li>
+  <li>The viewer loses engine options when it restarts an engine that was launched with special options via the CLI.</li>
+  <li>VisIt sometimes crashes when using the Index Select operator.</li>
+  <li>The TurnMaterialsOff CLI function applies to all plots instead of just the selected plots.</li>
+  <li>Recentering the view sometimes fails.</li>
+  <li>The Host profile window resets values if you don't press Enter after editing a text field.</li>
+  <li>VisIt hangs when doing plots of bad multi-domain databases.</li>
+  <li>Pick does not work on some zones.</li>
+  <li>VisIt's compute engine crashes after processing about 20 database timesteps on AIX computers.</li>
+  <li>The Subset plot has a parallel bottleneck.</li>
+  <li>Not all plots are redrawn after a compute engine crashes when playing an animation.</li>
+  <li>Opening a file when there is no meta-data server crashes the viewer.</li>
+  <li>The Clip operator can result in plots with missing triangles.</li>
+  <li>The Clip operator draws many internal faces.</li>
+  <li>Material smoothing should not be inserted into the pipeline by default.</li>
+  <li>The CLI assumes the presence of a compute engine.</li>
+  <li>The cycle number is not updated for cached database timesteps when playing animations.</li>
+  <li>The Java client can hang with plugin attributes in the VisIt config file.</li>
+  <li>The plane tool does not work properly with the Streamline plot.</li>
+  <li>The viewer should stop animating if it is iconified.</li>
+  <li>Opening a single timestep database after a multiple timestep database leaves the animation controls active.</li>
+  <li>The viewer still opens the Engine chooser window when using the OpenComputeEngine function.</li>
+  <li>The Engine chooser window should turn off the Nodes text field when opening a serial compute engine.</li>
+  <li>Changing the "Select by" method in the Contour plot window while auto update is on causes the window to malfunction.</li>
+  <li>Material interface reconstruction had inverted test cases for wedges which led to problems.</li>
+  <li>The viewer creates a meta-data server before quitting when controlled by the CLI.</li>
+  <li>The Subset plot window does not fully update its list of multiple colors when keyframing the colors.</li>
+</ul>
+<p>Click the following link to view the release notes for the previous version 
+of VisIt: <a href="relnotes1.0.7.html">VisIt 1.0.7 Release Notes</a>.</p>
+<p>Click the following link to view the release notes for the next version 
+of VisIt: <a href="relnotes1.1.1.html">VisIt 1.1.1 Release Notes</a>.</p>
+
+</body>
+
+</html>

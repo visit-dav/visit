@@ -1,0 +1,89 @@
+
+
+                       Installation instructions for VisIt
+                      =====================================
+
+This document contains instructions for installing VisIt on Windows, MacOS X,
+and Unix systems.  The Windows and MacOS X installation instructions are first,
+followed by the Unix installation instructions.
+
+
+Windows:
+========
+
+1.  Download the visit3.0.0b.exe or visit3.0.0b_x64.exe installer program to
+    your desktop.
+
+2.  Double click on the installer program icon to run the installer.
+
+3.  Follow the directions provided by the installer.
+
+
+MacOS X:
+========
+
+Downloads:
+
+1. Download VisIt-3.0.0b.dmg and copy it to the desktop.
+
+2. Double click on the file to open it. This will cause MacOS to mount the
+   disk image and open it in Finder.
+
+3. Once the disk image is open in Finder, copy the VisIt application to
+   the desktop.
+
+4. Eject the disk image in Finder.
+
+5. Double click on the VisIt application to run VisIt.
+
+
+Unix (gzipped tar file):
+========================
+
+1.  Run the visit-install script to install visit.  If you have built your
+    own visit binary distribution, you can find the visit-install script
+    in the svn_bin directory.  The visit-install script can create a new
+    distribution directory or update an existing distribution.  This is
+    handled automatically.
+
+        chmod 755 visit-install3_0_0b
+        ./visit-install3_0_0b "version" "platform" "directory"
+
+    where
+
+        "version" will be 3.0.0b for the current distribution.
+
+        "platform" will be one of the following:  linux-x86_64-rhel6 or
+        linux-x86_64-ubuntu11 depending on the machine.  The one you
+        use should match the name of the accompanying distribution file.
+
+        "directory" is the directory you wish to install visit into.
+        If the directory doesn't exist the script will create it.
+
+    For example
+
+        chmod 755 visit-install3_0_0b
+        ./visit-install3_0_0b 3.0.0b linux-x86_64-rhel6 /usr/local/visit
+
+    will install the linux-x86_64-rhel6, 3.0.0b version of visit in the
+    directory "/usr/local/visit".  Note that you will need to have the
+    file "visit3_0_0b.linux-x86_64-rhel6.tar.gz" present in the current
+    directory for this to function properly.
+
+2.  Add the bin directory below the installation directory
+    (/usr/local/visit/bin in our example) to each user's search path.
+    The best way to do this is to add it to the user's .cshrc file.
+    The bin directory contains the visit script which starts VisIt.
+    It can be run on many machines.  The script determines the type of
+    machine it is running on and starts the appropriate executable.
+    If visit were installed in the directory "/usr/local/visit",
+    then the following commands would set your search path
+    appropriately.
+
+        cd
+        echo "set path = ($path /usr/local/visit/bin)" >> .cshrc
+
+    This completes the installation process for VisIt.
+
+3.  If you are installing VisIt on a Linux system with an NVidia graphics
+    card, we recommend using the latest driver.

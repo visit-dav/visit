@@ -1,0 +1,53 @@
+<html>
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>VisIt 1.1.1 Release Notes</title>
+</head>
+<body>
+<p align="center"><b><font size="6">VisIt 1.1.1 Release Notes</font></b></p>
+<p>Welcome to VisIt's release notes page. This page describes the important 
+enhancements and bug-fixes that were added to this release.</p>
+<p><b><font size="4">Features added in version 1.1.1</font></b></p>
+<ul>
+  <li>The views toolbar has a new icon that lets you save your current view and use it again later so that you can easily save several views and choose between them.</li>
+  <li>The Color Table Window now allows you to change the size of discrete color tables, such as the color table used with the Subset plot, so that they can contain as many colors as you want up to 200 colors.</li>
+  <li>VisIt's CLI can now be run without a display when the -nowin option is provided.</li>
+  <li>VisIt's compute engine now loads its plot, operator, and database plugins on demand so it starts up twice as fast on average.</li>
+  <li>The Subset window now has "turndowns" so that it is easier to expand subsets.</li>
+  <li>The window toolbar now has a clear window icon.</li>
+  <li>The Main Window's file panel has been modified so that when you click on a file that you have opened before, that file becomes the active file. This means that to re-open a file, you have to click on the ReOpen button.</li>
+</ul>
+<p><b><font size="4">Bugs fixed in version 1.1.1</font></b></p>
+<ul>
+  <li>VisIt's GUI sometimes crashes with Qt errors when exiting.</li>
+  <li>Stopping playing animations from VisIt's GUI is much more responsive.</li>
+  <li>Printing the window causes VisIt to crash if you have not set up a printer.</li>
+  <li>The viewer waits for the engine to open a database.</li>
+  <li>Cloning a window containing plots that use a time-varying database causes the viewer to crash.</li>
+  <li>VisIt crashes when attempting to save a window with no plots in it.</li>
+  <li>The rubber-band line flickers when drawing a lineout.</li>
+  <li>Not all file formats honor the family flag, set in the Save options window, when creating a filename.</li>
+  <li>VisIt's documentation has been brought up to date so that it is compliant with VisIt 1.1.</li>
+  <li>VisIt crashes if you do a lineout and the Curve plot and Lineout operator plugins are not loaded.</li>
+  <li>VisIt sometimes unnecessarily redraws windows when locking views.</li>
+  <li>The Reflect operator has a parallel bottleneck.</li>
+  <li>Pick does not work after the compute engine has crashed or exited.</li>
+  <li>The vis window does not immediately redraw when inverting the background and foreground colors using the invert background toolbar button.</li>
+  <li>Globally accessible host profiles now contain the path to VisIt.</li>
+  <li>The toolbar for windows created via lineout now updates after the window is created.</li>
+  <li>VisIt's viewer no longer prints out a warning message when launching a metadata server on a machine where it has not yet been launched.</li>
+  <li>VisIt's launch program, which is used on Windows, has been changed to filter other versions of VisIt from the path so multiple versions of VisIt can be installed and run on the same computer.</li>
+  <li>Pick points are now cleared from the vis window when the animation timestep changes.</li>
+  <li>Changes that you make to system-wide host profiles are now preserved in your local configuration settings.</li>
+</ul>
+<p>Click the following link to view the release notes for the previous version 
+of VisIt: <a href="relnotes1.1.html">VisIt 1.1 Release Notes</a>.</p>
+<p>Click the following link to view the release notes for the next version 
+of VisIt: <a href="relnotes1.1.2.html">VisIt 1.1.2 Release Notes</a>.</p>
+
+</body>
+
+</html>

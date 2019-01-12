@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+  <Attribute name="PlaneAttributes" purpose="Attributes for a plane" exportAPI="STATE_API" exportInclude="state_exports.h">
+    <Field name="origin" type="doubleArray" length="3"> 0. 0. 0. </Field>
+    <Field name="normal" type="doubleArray" length="3"> 0. 0. 1. </Field>
+    <Field name="upAxis" type="doubleArray" length="3"> 0. 1. 0. </Field>
+    <Field name="haveRadius" type="bool">false</Field>
+    <Field name="radius" type="double" >1 </Field>
+    <Field name="threeSpace" label="threeSpace" type="bool" internal="true"> false 
+    </Field>
+  </Attribute>
+

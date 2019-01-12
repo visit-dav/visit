@@ -1,0 +1,165 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta http-equiv="Content-Language" content="en-us">
+   <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+   <meta name="ProgId" content="FrontPage.Editor.Document">
+   <title>VisIt 2.1 Release Notes</title>
+</head>
+<body>
+
+<center><b><font size="6">VisIt 2.1 Release Notes</font></b></center>
+
+<p>Welcome to VisIt's release notes page. This page describes the important
+enhancements and bug-fixes that were added to this release.</p>
+
+
+<p><b>Sections</b></p>
+<ul>
+    <li><a href="#General_Features">Features for all users</a></li>
+    <li><a href="#Advanced_Features">Features for advanced users</a></li>
+    <li><a href="#File_format">Changes to file format readers</a></li>
+    <li><a href="#Plot_changes">Changes to plots</a></li>
+    <li><a href="#Operator_changes">Changes to operators</a></li>
+    <li><a href="#Expression_changes">Changes to expressions</a></li>
+    <li><a href="#Query_changes">Changes to picks and queries</a></li>
+    <li><a href="#Bugs_fixed">Other bug fixes</a></li>
+    <li><a href="#Config_changes">Changes to machine configuration files</a></li>
+    <li><a href="#Dev_changes">Changes for VisIt developers</a></li>
+</ul>
+
+<a name="General_Features"></a>
+<p><b><font size="4">General features added in version 2.1</font></b></p>
+<ul>
+<li>A new wizard was created for setting up comparison-based expressions.  It is available under Controls->Data Level Comparisons.</li>
+<li>A new operator, <i>DataBinning</i>, was added.  This operator calculates statistics over arbitrary spaces.  One example is the calculation of probability density functions (PDFs).  This functionality basically replaces the poorly supported "derived data functions" (DDFs) from previous releases.</li>
+<li>Saving windows now has an "advanced multi-window" option, which allows you to combine the results of multiple windows into one large window.  This goes beyond the "save tiled" option in terms of controls for window layouts, nesting of windows, and transparency.  This option should reduce the need for using image compositing tools when making movies.</li>
+<li>The expressions window now has buttons for managing expressions via separate configuration files.</li>
+<li>Three dimensional plots can now be scaled visually without affecting their axis labels via the View dialog.  This is similar to the 2D "Full Frame" mode.</li>
+<li>Oblique projections are now supported via a new "Shear" setting in the 3D View dialog.</li>
+<li>The cli now provides a <i>RenamePickLabel</i> function that lets you rename the pick markers that VisIt creates so you are not limited to characters A,B,C,etc. An example is <i>RenamePickLabel(&quot;A&quot;, &quot;something more descriptive&quot;)</i>.</li>
+</ul>
+
+<a name="Advanced_Features"></a>
+<p><b><font size="4">Advanced features added in version 2.1</font></b></p>
+<ul>
+   <li>Support for multiresolution databases was added.  AMR databases can
+       also take advantage of this support.  At present, the <TT>STAR</TT> and
+       <TT>Chombo</TT> databases honor resolution requests; documentation on
+       how to enable it in other databases is available in the source
+       repository, under <TT>docs/multiresolution.txt</TT></li>
+   <li>It is now possible to enable and disable warning message popups. The preference <i>Enable warning message popups</i> is located in the <i>Preferences</i> window and is enabled by default.</li>
+   <li>The Selection window was added so users can create selections. A selection is a set of 
+       cellids created by a plot. For example, if you create a ParallelCoordinates plot of several
+       variables, restrict the variable ranges, and create a selection from it then the selection
+       will contain the cellids that fall within the specified ranges. You can name
+       the selection and apply it to other plots, even ones in other windows. In this case, you
+       could use the ParallelCoordinates plot as an interactive thresholding mechanism, modifying 
+       a selection that erodes cells in a plot in another window. You apply a selection to a plot 
+       using new controls in the Subset window. Once a selection is applied to a plot, the set of 
+       cells used to make the plot is restricted to those contained in the selection. When a
+       plot that generates a selection is modified, plots that use the selection are recalculated so 
+       they too match the cells used in the originating plot's selection.
+   </li>
+   <li>The visit_writer library now supports voxels and pixels.</li>
+   <li>Support for variables defined on material subsets was added to the Silo plugin.</li>
+</ul>
+
+<a name="File_format"></a>
+<p><b><font size="4">File format reader changes in version 2.1</font></b></p>
+<ul>
+   <li>When they accept a given file name, preferred file format readers now take precedence over non-preferred file formats.  Preferred formats are still also tried before giving up, when all other attempts to guess files based on their name fail.</li>
+   <li>Files formats that support time natively now can correctly report their time when concatenated inside a <i>.visit</i> file.</li>
+   <li>The PFLOTRAN reader now correctly produces material information. It also recognizes the components of a vector and produces a vector, rather than three scalars.  These changes are courtesy Daniel Schep, Savannah River.</li>
+   <li><i>BOV</i> files now properly supports the <i>TIME</i> keyword.  They also support a new keyword, <i>CYCLE</i>.</li>
+   <li>The <i>STAR</i> database was added.</li>
+   <li>A <i>GULP</i> trajectory file format reader was added.</li>
+   <li>A <i>PuReMD</i> trajectory file format reader was added.</li>
+   <li>A <i>Silo</i> bug involving species data was resolved.</li>
+   <li>The <i>ITAPS</i> implemenation tarballs were all updated to ~ June, 2010</li>
+   <li>Three separate problems were fixed in the <i>Claw</i> plugin: a random crash with reading uninitialized memory, a problem with calculating refinement ratios, and a problem with calculating nesting for patches near the origin.</li>
+</ul>
+
+<a name="Plot_changes"></a>
+<p><b><font size="4">Changes to VisIt's plots in version 2.1</font></b></p>
+<ul>
+  <li>The window for the <i>Volume</i> plot was reorgnized so that it would be shorter.  This change should help for users running on small displays, like laptops.</li>
+  <li>The <i>Volume</i> plot now displays a histogram in the transfer function editor when doing RayCasting, matching the behavior for the other rendering types.</li>
+  <li>The <i>Volume</i> plot is now more efficient in memory and execution time
+      when doing a ray casting with logarithmic scale with a minimum value set.</li>
+  <li>The <i>Vector</i> plot now has an option for placing its glyphs uniformly through the mesh, rather than adapting to the mesh's resolution.</li>
+  <li>The window for the <i>Vector</i> plot was reorganized.  The previous version had scaling controls on the wrong tab.</li>
+  <li>The <i>Curve</i> plot now can add cues to show a location along the curve.  This is anticipated to be a useful feature when animating a curve within a movie.</li>
+  <li>The <i>Molecule</i> plot now supports 2D rendering primitives.</li>
+  <li>The <i>Scatter</i> plot was improved to properly support colored scatter plots when material selection is used.</li>
+  <li>The <i>Scatter</i> plot wizard was condensed to provide faster plot setup.</li>
+  <li>The <i>Subset</i> plot now supports meshes with a single domain.</li>
+  <li>It is no longer necessary to press the <i>Enter</i> key before pressing the <i>Apply</i> button when changing the <i>Format template</i> text field in the <i>Label plot attributes</i> window for the change to take effect.</li>
+</ul>
+
+<a name="Operator_changes"></a>
+<p><b><font size="4">Changes to VisIt's operators in version 2.1</font></b></p>
+<ul>
+  <li>The <i>Transform</i> operator can now apply an arbitrary 4x4 matrix
+      transform.</li>
+  <li>The <i>Inverse Ghost Zone</i> operator can now request ghost zones and does so by default.
+  <li>The warning message that warns about adding the same operator multiple times to a plot now only applies to the <i>Slice</i> operator.</li>
+  </li>
+</ul>
+
+<a name="Expression_changes"></a>
+<p><b><font size="4">Changes to VisIt's expression language in version 2.1</font></b></p>
+<ul>
+   <li>New expressions, min_coord and max_coord, can find the smallest or 
+       largest coordinate value (X, Y, Z, radius, theta, phi) within a cell.</li>
+    <li><i>zonal_constant</i> and <i>nodal_constant</i> expressions were added as aliases for the existing <i>cell_constant</i> and <i>point_constant</i> expressions.</li>
+    <li>A hang was fixed in the key_aggregate expression for the case where there were more processors than chunks of data to process.</li>
+</ul>
+
+
+<a name="Query_changes"></a>
+<p><b><font size="4">Changes to VisIt's picks and queries in version 2.1</font></b></p>
+<ul>
+<li>The <i>Integrate</i> query now works on one dimensional cross sections.</li>
+<li>Python queries now support passing of arbitrary python objects via the 'args' keyword argument of <i>PythonQuery()</i>.</li>
+<li><i>Variable Sum</i> and <i>Weighted Variable Sum</i> now support array variables and summing each individual component to construct an array result.</li>
+<li>The <i>XRay Image</i> query has been added to VisIt. It calculates x ray images by casting rays through the data set and integrating an absorbtivity and emissivity variable along the rays. The absorbtivity and emisivity variables can be array variables in which case you will get one image per array element. The query takes the following inputs:</li>
+<ul>
+<li>Output Image Format: The output image format, which can be either <i>bmp</i>, <i>jpeg</i>, <i>png</i>, <i>tiff</i> or <i>rawfloats</i>.</li>
+<li>Divide Emis by Absorb: A flag indicating if the emissivity should be divided by the absorbtivity.</li>
+<li>Origin: A point along the ray going through the center of the image plane.</li>
+<li>Theta, Phi: The direction of the rays in spherical coordinates. Theta is the angle from the Z axis and phi is the angle around the Z axis from the X-Z plane.</li>
+<li>Image Width, Height: The width and height of the image in the coordinate system of the data set.</li>
+<li>Image Pixel Size: The width and height of the image in pixels. </li>
+</ul>
+</ul>
+
+<a name="Bugs_fixed"></a>
+<p><b><font size="4">Other bugs fixed in version 2.1</font></b></p>
+<ul>
+<li>Data that is larger than 1e+18 can now be rendered (and lit) correctly.</li>
+<li>Macro recording was changed so it generates a function name based on the name supplied for the macro. This eliminates a problem where giving a function name with invalid Python characters caused the macro to be discarded.</li>
+<li>Macro recording for the Chord Length Distribution Query was improved.</li>
+<li>The help text under <i>Working with databases->Supported File Types->File extensions</i>, which describes the order in which the database plugins are tried when attempting to open a file, is now current.</li>
+<li>Printing on the Mac was fixed.</li>
+</ul>
+
+<a name="Config_changes"></a>
+<p><b><font size="4">Changes to configuration files in version 2.1</font></b></p>
+<ul>
+</ul>
+
+<a name="Dev_changes"></a>
+<p><b><font size="4">Changes for VisIt developers in version 2.1</font></b></p>
+<ul>
+<li>build_visit now builds VisIt using Mesa 7.8.2.</li>
+<li>build_visit now builds VisIt using VTK 5.0.0g. VTK 5.0.0g includes all the patches that were made by build_visit. Because of this it is possible to build VTK 5.0.0g on all our supported platforms without applying any patches.</li>
+<li>The cli now has an <i>OpenCLI()</i> method that can be used to spawn another instance of the cli.</li>
+<li>Visit's install process creates a complete python install which supports the installation of additional python modules.</li>
+</ul>
+
+<p>Click the following link to view the release notes for the previous version
+of VisIt: <a href="relnotes2.0.0.html">VisIt 2.0 Release Notes</a>.</p>
+</body>
+</html>

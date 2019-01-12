@@ -1,0 +1,18 @@
+Function: SetFrom
+Declaration: void SetFrom(const std::vector<const VisualCueInfo*>& cues);
+Definition:
+// ****************************************************************************
+// Method: VisualCueList::SetFrom
+//
+// Purpose: Build the VisualCueList AttributeGroupVector directly from
+//          a vector of VisualCueInfo pointers
+//
+// ****************************************************************************
+void
+VisualCueList::SetFrom(const std::vector<const VisualCueInfo*>& cueVec)
+{
+    ClearCues();
+    for (size_t i = 0; i < cueVec.size(); i++)
+        AddCues(*(cueVec[i]));
+}
+

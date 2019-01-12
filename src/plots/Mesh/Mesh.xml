@@ -1,0 +1,89 @@
+<?xml version="1.0"?>
+  <Plugin name="Mesh" type="plot" label="Mesh" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" vartype="mesh" iconFile="Mesh.xpm">
+    <Files components="V">
+      avtMeshFilter.C
+      avtMeshPlotMapper.C
+    </Files>
+    <Files components="E">
+      avtMeshFilter.C
+      avtMeshPlotMapper.C
+    </Files>
+    <Attribute name="MeshAttributes" purpose="Attributes for the mesh plot" persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="MeshAttributes.code">
+      <Enum name="SmoothingLevel">
+        None
+        Fast
+        High
+      </Enum>
+      <Enum name="MeshColor">
+        Foreground
+        MeshCustom
+      </Enum>
+      <Enum name="OpaqueColor">
+        Background
+        OpaqueCustom
+      </Enum>
+      <Enum name="OpaqueMode">
+        Auto
+        On
+        Off
+      </Enum>
+      <Field name="legendFlag" label="Legend" type="bool">
+        true
+      </Field>
+      <Field name="lineWidth" label="Line width" type="linewidth">
+        0
+      </Field>
+      <Field name="meshColor" label="Color" type="color" length="4">
+        0
+        0
+        0
+        255
+      </Field>
+      <Field name="meshColorSource" label="Mesh Color" type="enum" subtype="MeshColor">
+        Foreground
+      </Field>
+      <Field name="opaqueColorSource" label="Opaque Color" type="enum" subtype="OpaqueColor">
+        Background
+      </Field>
+      <Field name="opaqueMode" label="Opaque mode" type="enum" subtype="OpaqueMode">
+        Auto
+      </Field>
+      <Field name="pointSize" label="Point size" type="double">
+        0.050000
+      </Field>
+      <Field name="opaqueColor" label="Color" type="color" length="4">
+        255
+        255
+        255
+        255
+      </Field>
+      <Field name="smoothingLevel" label="Smoothing" type="enum" subtype="SmoothingLevel">
+        None
+      </Field>
+      <Field name="pointSizeVarEnabled" label="Point size by var enabled" type="bool">
+        false
+      </Field>
+      <Field name="pointSizeVar" label="Point size by var" type="variablename" vartypes="01000000000">
+        default
+      </Field>
+      <Field name="pointType" label="Point Type" type="glyphtype">
+        Point
+      </Field>
+      <Field name="opaqueMeshIsAppropriate" label="Opaque Mesh Is Appropriate" type="bool" internal="true">
+        true
+      </Field>
+      <Field name="showInternal" label="Show Internal" type="bool">
+        false
+      </Field>
+      <Field name="pointSizePixels" label="Point size pixels" type="int">
+        2
+      </Field>
+      <Field name="opacity" label="Opacity" type="opacity">
+        1.000000
+      </Field>
+      <Function name="ChangesRequireRecalculation" user="true" member="true">
+      </Function>
+      <Function name="ProcessOldVersions" user="true" member="true">
+      </Function>
+    </Attribute>
+  </Plugin>

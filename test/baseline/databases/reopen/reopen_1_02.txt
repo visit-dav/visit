@@ -1,0 +1,5 @@
+activeSource = "notset"
+activeTimeSlider = -1
+timeSliders = ()
+timeSliderCurrentStates = ()
+animationMode = 2

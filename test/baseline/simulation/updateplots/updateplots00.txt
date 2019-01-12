@@ -1,0 +1,3 @@
+Simulation executable "updateplots" exists.
+Simulation "updateplots" started.
+VisIt connected to simulation "updateplots".

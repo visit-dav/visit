@@ -1,0 +1,310 @@
+<ui version="4.0" >
+ <class>SEQUENCE_1</class>
+ <widget class="QWidget" name="SEQUENCE_1" >
+  <property name="geometry" >
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>431</width>
+    <height>538</height>
+   </rect>
+  </property>
+  <property name="windowTitle" >
+   <string>Form</string>
+  </property>
+  <widget class="QGroupBox" name="groupBox_2" >
+   <property name="geometry" >
+    <rect>
+     <x>6</x>
+     <y>0</y>
+     <width>411</width>
+     <height>151</height>
+    </rect>
+   </property>
+   <property name="sizePolicy" >
+    <sizepolicy vsizetype="Preferred" hsizetype="Preferred" >
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
+   <property name="title" >
+    <string>Upper 2D plot</string>
+   </property>
+   <widget class="QWidget" name="gridLayoutWidget_8" >
+    <property name="geometry" >
+     <rect>
+      <x>9</x>
+      <y>29</y>
+      <width>391</width>
+      <height>111</height>
+     </rect>
+    </property>
+    <layout class="QGridLayout" name="gridLayout_8" >
+     <item row="0" column="1" >
+      <widget class="QLabel" name="label_19" >
+       <property name="text" >
+        <string>Source</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="1" >
+      <widget class="QLabel" name="label_20" >
+       <property name="text" >
+        <string>2D Variable</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1" >
+      <widget class="QLabel" name="label_21" >
+       <property name="text" >
+        <string>Plot type</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="2" >
+      <widget class="QvisVariableButton" name="PLOT_VAR1" >
+       <property name="varTypes" >
+        <number>6</number>
+       </property>
+       <property name="addExpr" >
+        <bool>false</bool>
+       </property>
+       <property name="addDefault" >
+        <bool>false</bool>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="2" >
+      <widget class="QComboBox" name="PLOT_TYPE1" >
+       <item>
+        <property name="text" >
+         <string>FilledBoundary</string>
+        </property>
+       </item>
+       <item>
+        <property name="text" >
+         <string>Boundary</string>
+        </property>
+       </item>
+       <item>
+        <property name="text" >
+         <string>Pseudocolor</string>
+        </property>
+       </item>
+      </widget>
+     </item>
+     <item row="0" column="2" >
+      <widget class="QvisDialogLineEdit" name="DATABASE1" />
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <widget class="QGroupBox" name="groupBox_3" >
+   <property name="geometry" >
+    <rect>
+     <x>6</x>
+     <y>145</y>
+     <width>411</width>
+     <height>151</height>
+    </rect>
+   </property>
+   <property name="sizePolicy" >
+    <sizepolicy vsizetype="Preferred" hsizetype="Preferred" >
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
+   <property name="title" >
+    <string>Lower 2D plot</string>
+   </property>
+   <widget class="QWidget" name="gridLayoutWidget_9" >
+    <property name="geometry" >
+     <rect>
+      <x>9</x>
+      <y>29</y>
+      <width>391</width>
+      <height>122</height>
+     </rect>
+    </property>
+    <layout class="QGridLayout" name="gridLayout_9" >
+     <item row="0" column="1" >
+      <widget class="QLabel" name="label_22" >
+       <property name="text" >
+        <string>Source</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="1" >
+      <widget class="QLabel" name="label_23" >
+       <property name="text" >
+        <string>2D Variable</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1" >
+      <widget class="QLabel" name="label_24" >
+       <property name="text" >
+        <string>Plot type</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="2" >
+      <widget class="QvisVariableButton" name="PLOT_VAR2" >
+       <property name="varTypes" >
+        <number>6</number>
+       </property>
+       <property name="addExpr" >
+        <bool>false</bool>
+       </property>
+       <property name="addDefault" >
+        <bool>false</bool>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="2" >
+      <widget class="QComboBox" name="PLOT_TYPE2" >
+       <item>
+        <property name="text" >
+         <string>FilledBoundary</string>
+        </property>
+       </item>
+       <item>
+        <property name="text" >
+         <string>Boundary</string>
+        </property>
+       </item>
+       <item>
+        <property name="text" >
+         <string>Pseudocolor</string>
+        </property>
+       </item>
+      </widget>
+     </item>
+     <item row="0" column="2" >
+      <widget class="QvisDialogLineEdit" name="DATABASE2" />
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <widget class="QGroupBox" name="ColorsAndAnnotations" >
+   <property name="geometry" >
+    <rect>
+     <x>6</x>
+     <y>296</y>
+     <width>411</width>
+     <height>231</height>
+    </rect>
+   </property>
+   <property name="sizePolicy" >
+    <sizepolicy vsizetype="Preferred" hsizetype="Preferred" >
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
+   <property name="title" >
+    <string>Colors and Annotations</string>
+   </property>
+   <widget class="QWidget" name="gridLayoutWidget" >
+    <property name="geometry" >
+     <rect>
+      <x>9</x>
+      <y>29</y>
+      <width>391</width>
+      <height>190</height>
+     </rect>
+    </property>
+    <layout class="QGridLayout" name="gridLayout_5" >
+     <item row="5" column="0" >
+      <widget class="QLabel" name="label_10" >
+       <property name="text" >
+        <string>Gradient color 1</string>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="0" >
+      <widget class="QLabel" name="label_11" >
+       <property name="text" >
+        <string>Y-Axis title</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="0" >
+      <widget class="QLabel" name="label_12" >
+       <property name="text" >
+        <string>X-Axis title</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="0" >
+      <widget class="QLabel" name="label_13" >
+       <property name="text" >
+        <string>Classification text color</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="0" >
+      <widget class="QLabel" name="label_14" >
+       <property name="text" >
+        <string>Title</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0" >
+      <widget class="QLabel" name="label_15" >
+       <property name="text" >
+        <string>Classification text</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1" colspan="3" >
+      <widget class="QLineEdit" name="TITLE" />
+     </item>
+     <item row="1" column="1" colspan="3" >
+      <widget class="QLineEdit" name="CLASSIFICATION_TEXT" />
+     </item>
+     <item row="3" column="1" colspan="3" >
+      <widget class="QLineEdit" name="XAXIS_TEXT" />
+     </item>
+     <item row="4" column="1" colspan="3" >
+      <widget class="QLineEdit" name="YAXIS_TEXT" />
+     </item>
+     <item row="0" column="1" >
+      <widget class="QvisColorButton" name="CLASSIFICATION_TEXTCOLOR" />
+     </item>
+     <item row="5" column="1" >
+      <widget class="QvisColorButton" name="GRADIENT_BGCOLOR1" />
+     </item>
+     <item row="5" column="2" >
+      <widget class="QLabel" name="label_25" >
+       <property name="text" >
+        <string>Gradient color 2</string>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="3" >
+      <widget class="QvisColorButton" name="GRADIENT_BGCOLOR2" />
+     </item>
+    </layout>
+   </widget>
+  </widget>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>QvisColorButton</class>
+   <extends>QWidget</extends>
+   <header>QvisColorButton.h</header>
+  </customwidget>
+  <customwidget>
+   <class>QvisDialogLineEdit</class>
+   <extends>QWidget</extends>
+   <header>QvisDialogLineEdit.h</header>
+  </customwidget>
+  <customwidget>
+   <class>QvisVariableButton</class>
+   <extends>QPushButton</extends>
+   <header>QvisVariableButton.h</header>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>

@@ -1,0 +1,148 @@
+###############################################################################
+# Class: JobSubmitter_qsub_NICS
+#
+# Purpose:    Custom "qsub" job submitter for NICS.
+#
+# Programmer: Brad Whitlock
+# Date:       Thu May 17 14:22:04 PDT 2012
+#
+# Modifications:
+#
+###############################################################################
+
+class JobSubmitter_qsub_NICS(JobSubmitter_qsub):
+    def __init__(self, launcher):
+        super(JobSubmitter_qsub_NICS, self).__init__(launcher)
+
+    def VisItExecutable(self):
+        if self.launcher.IsRunningOnKraken():
+            return [os.path.join(self.visitsupportdir, "bin", self.launcher.generalArgs.exe_name)]
+        return super(JobSubmitter_qsub_NICS, self).VisItExecutable()
+
+    def TFileSetup(self, tfile):
+        if self.launcher.IsRunningOnKraken():
+            tfile.write("cd /lustre/scratch/%s\n" % GETENV("USER"))
+            tfile.write("ulimit -c 0\n")
+        else:
+            super(JobSubmitter_qsub_NICS, self).TFileSetup(tfile)
+
+    def TFileLoadModules(self, tfile):
+        if self.launcher.IsRunningOnKraken():
+            tfile.write("eval $(modulecmd sh unload PrgEnv-pgi)\n")
+            tfile.write("eval $(modulecmd sh load PrgEnv-gnu)\n")
+
+    def aprun_args(self):
+        mpicmd = self.aprun()
+        if self.parallel.sublaunchargs != None:
+            mpicmd = mpicmd + self.parallel.sublaunchargs
+        if self.parallel.np != None:
+            mpicmd = mpicmd + ["-n", self.parallel.np]
+        if self.parallel.np != None and self.parallel.nn != None:
+            mpicmd = mpicmd + ["-N", self.PPN()]
+
+        # Customized for Kraken
+        if self.launcher.IsRunningOnKraken():
+            env = os.path.join(self.launcher.visitsupportdir, "env")
+            libs = os.path.join(self.launcher.visitsupportdir, "lib")
+            syslibs = os.path.join(self.launcher.visitsupportdir, "system_libs")
+            ldpath = self.launcher.joinpaths(libs, syslibs)
+            mpicmd = mpicmd + ["%s LD_LIBRARY_PATH=%s" % (env, ldpath)]
+
+        mpicmd = mpicmd + self.VisItExecutable() + args
+        if self.parallel.hw_postcmd != None:
+            mpicmd = mpicmd + self.parallel.hw_postcmd
+        return mpicmd
+
+    def SetupPPN(self, nodes, procs, ppn, use_vis):
+        if self.launcher.IsRunningOnKraken():
+            args = ["-l", "size=%s" % procs]
+        elif self.launcher.IsRunningOnNautilus():
+            args = ["-l", "ncpus=%s" % procs]
+        else:
+            args = super(JobSubmitter_qsub_NICS, self).SetupPPN(nodes, procs, ppn, use_vis)
+        return args
+
+
+###############################################################################
+# Class: NICSLauncher
+#
+# Purpose:    Custom launcher for NICS
+#
+# Programmer: Brad Whitlock
+# Date:       Thu May 17 14:22:04 PDT 2012
+#
+# Modifications:
+#
+###############################################################################
+
+class NICSLauncher(MainLauncher):
+    def __init__(self):
+        super(NICSLauncher, self).__init__()
+        self.kraken = -1
+        self.nautilus = -1
+        self.visitsupportdir = ""
+
+    def IsRunningOnKraken(self):
+        if self.kraken == -1:
+            self.kraken = 0
+            if self.parallelArgs.parallel and \
+               self.generalArgs.exe_name == "engine" and \
+               self.sectorname() == "krakenpf" and \
+               self.domainname() == "nics.utk.edu":
+                self.kraken = 1
+        return self.kraken
+
+    def IsRunningOnNautilus(self):
+        if self.nautilus == -1:
+            self.nautilus = 0
+            if self.sectorname() in ("nautilus", "arronax", "conseil") and \
+               self.domainname() == "nics.utk.edu":
+                self.nautilus = 1
+        return self.nautilus
+
+    def PrivatePlugins(self):
+        if self.IsRunningOnKraken():
+            values = (self.username(), self.visitpluginver, self.visitarch)
+            return "/lustre/scratch/%s/.visit/%s/%s/plugins" % values
+        return super(NICSLauncher, self).PrivatePlugins()
+
+    def Customize(self):
+        # ----
+        # kraken.nics.utk.edu
+        #
+        # ----
+        if self.IsRunningOnKraken():
+            self.generalArgs.host = self.hostname()
+            if "krakenpf" in self.generalArgs.host:
+                self.generalArgs.host = string.replace(self.generalArgs.host, "krakenpf", "login")
+
+            # The /sw filesystem is not accessible from the compute nodes.
+            # NICS requires that only required support files be present on /lustre.
+            # Here, we instruct the engine to use support files on /lustre.
+            self.visitsupportdir = "/lustre/scratch/proj/sw/visit/support/%s/linux-x86_64" % self.visitver
+
+            args = ["--mesa-lib", os.path.join(self.visitsupportdir, "lib/libOSMesa.so")]
+            args = args + ["-plugindir", os.path.join(self.visitsupportdir, "plugins")]
+            launcher.generalArgs.arguments = launcher.generalArgs.arguments + args
+
+            # Replace -dir with the visitsupportdir.
+            i = 0
+            while i < len(launcher.generalArgs.arguments):
+                if launcher.generalArgs.arguments[i] == "-dir":
+                    launcher.generalArgs.arguments[i+1] = self.visitsupportdir
+                    i = i + 1
+                i = i + 1
+            
+
+    #
+    # Override the JobSubmitterFactory method so the custom job submitter can
+    # be returned.
+    #
+    def JobSubmitterFactory(self, launch):
+        if launch[:4] == "qsub" or launch[:4] == "msub":
+            return JobSubmitter_qsub_NICS(self)
+        return super(NICSLauncher, self).JobSubmitterFactory(launch)
+
+# Launcher creation function
+def createlauncher():
+    return NICSLauncher()

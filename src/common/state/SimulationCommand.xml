@@ -1,0 +1,5 @@
+<?xml version="1.0"?>
+  <Attribute name="SimulationCommand" purpose="Commands to control simulations" persistent="false" exportAPI="STATE_API" exportInclude="state_exports.h">
+    <Field name="command" label="Command" type="string">
+    </Field>
+  </Attribute>

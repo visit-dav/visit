@@ -1,0 +1,216 @@
+Function: avtCurveMetaData2
+Declaration: avtCurveMetaData(const std::string &n);
+Definition:
+// ****************************************************************************
+//  Method: avtCurveMetaData constructor
+//
+//  Arguments:
+//      n            The name of the curve
+//
+//  Programmer: Hank Childs
+//  Creation:   August 1, 2003
+//
+//  Modifications:
+//    Brad Whitlock, Fri Jul 23 12:50:27 PDT 2004
+//    Added labels and units.
+//
+//    Hank Childs, Mon Feb 14 14:16:49 PST 2005
+//    Added original name.
+//
+//    Kathleen Bonnell, Thu Aug  3 08:42:33 PDT 2006 
+//    Added centering and DataExtents. 
+//
+// ****************************************************************************
+
+avtCurveMetaData::avtCurveMetaData(const std::string &n)
+    : avtVarMetaData(avtCurveMetaData::TmfsStruct)
+{
+    // Initialize all members
+    *this = avtCurveMetaData();
+
+    // Override some values.
+    name          = n;
+    originalName  = name;
+}
+
+Function: avtCurveMetaData3
+Declaration: avtCurveMetaData(const std::string &n, double minS, double maxS, double minE, double maxE);
+Definition:
+// ****************************************************************************
+//  Method: avtCurveMetaData constructor
+//
+//  Arguments:
+//      n       The name of the curve
+//      minS    The minimum spatial extents
+//      maxS    The maximum spatial extents
+//      minE    The minimum data extents
+//      maxE    The maximum data extents
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   August 1, 2006
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+avtCurveMetaData::avtCurveMetaData(const std::string &n, double minS, double maxS, double minE, double maxE)
+    : avtVarMetaData(avtCurveMetaData::TmfsStruct)
+{
+    // Initialize all members
+    *this = avtCurveMetaData();
+
+    // Override some values.
+    name          = n;
+    originalName  = name;
+    hasSpatialExtents = true;
+    minSpatialExtents = minS;
+    maxSpatialExtents = maxS;
+    hasDataExtents = true;
+    minDataExtents = minE;
+    maxDataExtents = maxE;
+}
+
+Function: SetSpatialExtents
+Declaration: void SetSpatialExtents(const double *);
+Definition:
+// ****************************************************************************
+//  Method: avtCurveMetaData::SetSpatialExtents
+//
+//  Purpose:
+//      Sets the spatial extents of the curve variable.
+//
+//  Arguments:
+//      extents     Extents as <min value, max value>.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   August 1, 2006
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtCurveMetaData::SetSpatialExtents(const double *extents)
+{
+    if (extents == NULL)
+    {
+        hasSpatialExtents = false;
+    }
+    else
+    {
+        hasSpatialExtents = true;
+        minSpatialExtents = extents[0];
+        maxSpatialExtents = extents[1];
+    }
+}
+
+Function: UnsetSpatialExtents
+Declaration: void UnsetSpatialExtents();
+Definition:
+void
+avtCurveMetaData::UnsetSpatialExtents()
+{
+    hasSpatialExtents = false;
+}
+
+Function: SetDataExtents
+Declaration: void SetDataExtents(const double *);
+Definition:
+// ****************************************************************************
+//  Method: avtCurveMetaData::SetDataExtents
+//
+//  Purpose:
+//      Sets the data extents of the curve variable.
+//
+//  Arguments:
+//      extents     Extents as <min value, max value>.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   August 1, 2006
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtCurveMetaData::SetDataExtents(const double *extents)
+{
+    if (extents == NULL)
+    {
+        hasDataExtents = false;
+    }
+    else
+    {
+        hasDataExtents = true;
+        minDataExtents = extents[0];
+        maxDataExtents = extents[1];
+    }
+}
+
+Function: UnsetDataExtents
+Declaration: void UnsetDataExtents();
+Definition:
+void
+avtCurveMetaData::UnsetDataExtents()
+{
+    hasDataExtents = false;
+}
+
+Function: Print
+Declaration: void Print(ostream &, int = 0) const;
+Definition:
+// ****************************************************************************
+//  Method: avtCurveMetaData::Print
+//
+//  Purpose:
+//      Print statement for debugging.
+//
+//  Arguments:
+//      out      The stream to output to.
+//      indent   The number of tabs to indent each line with.
+//
+//  Programmer: Hank Childs
+//  Creation:   August 1, 2003
+//
+//  Modifications:
+//    Brad Whitlock, Fri Jul 23 12:54:53 PDT 2004
+//    Added labels and units.
+//
+//    Hank Childs, Mon Feb 14 14:16:49 PST 2005
+//    Added original name.
+//
+//    Kathleen Bonnell, Thu Aug  3 08:42:33 PDT 2006 
+//    Added centering and DataExtents. 
+//
+//    Mark C. Miller, Mon Feb  9 14:20:43 PST 2009
+//    Added from1DScalarName
+//
+//    Mark C. Miller, Wed Feb 11 17:17:13 PST 2009
+//    Removed centering
+// ****************************************************************************
+inline void
+Indent(ostream &out, int indent)
+{
+    for (int i = 0 ; i < indent ; i++)
+    {
+        out << "\t";
+    }
+}
+void
+avtCurveMetaData::Print(ostream &out, int indent) const
+{
+    avtVarMetaData::Print(out, indent);
+
+    Indent(out, indent);
+    out << "Units = x:" << xUnits.c_str() << ", y:" << yUnits.c_str() << endl;
+
+    Indent(out, indent);
+    out << "Labels = x:" << xLabel.c_str() << ", y:" << yLabel.c_str() << endl;
+
+    if (from1DScalarName != "")
+    {
+        Indent(out, indent);
+        out << "Re-interpreted from 1D scalar named \"" << from1DScalarName << "\"" << endl;
+    }
+}
+

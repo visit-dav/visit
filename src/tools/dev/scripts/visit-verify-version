@@ -1,0 +1,140 @@
+#!/bin/sh
+#-----------------------------------------------------------------------
+#
+# visit-version-checker
+#
+# Author: Hank Childs
+# Date:   October 21, 2007
+#
+# Usage:
+#    visit-version-checker <prev-version> <current-version>
+#
+#-----------------------------------------------------------------------
+
+function usage
+{
+   echo ""
+   echo "Usage: <dir for prev version> <dir for current version>"
+   echo "Example: $0 /usr/gapps/visit/1.6 /usr/gapps/visit/1.7"
+   echo ""
+   exit 1
+}
+
+function recursive_differ
+{
+   #echo "Differencing $1 and $2"
+   for i in $1/* ; do
+#echo "I = $i"
+      if [[ "$i" == "$1/\*" ]] ; then
+          continue
+      fi
+      if [[ -d $i ]] ; then
+          if [[ ! -d $4/${i#$3} ]] ; then
+              echo "${i#$3}" >> missing_dirs
+          else
+              recursive_differ $i $4/${i#$3} $3 $4
+          fi
+      fi
+      if [[ -f $i ]] ; then
+          j=$4/${i#$3}
+          if [[ ! -f $j ]] ; then
+              echo "${i#$3}" >> missing_files
+          else
+              # Check to see if their sizes match up.
+              tmp=$(ls -s $i)
+              oldsize=${tmp%$i}
+              tmp=$(ls -s $j)
+              newsize=${tmp%$j}
+              (( twenty_percent = oldsize / 5 ))
+              (( toobig = oldsize + twenty_percent + 4 ))
+              (( toolittle = oldsize - 4 ))
+              if (( newsize > toobig )) ; then
+                 echo "${i#$3}: $oldsize vs $newsize" >> got_bigger
+              elif (( newsize < toolittle )) ;then
+                 echo "${i#$3}: $oldsize vs $newsize" >> got_smaller
+              fi
+          fi
+      fi
+   done
+   for j in $2/* ; do
+      if [[ "$j" == "$2/\*" ]] ; then
+          continue
+      fi
+      if [[ -d $j ]] ; then
+          if [[ ! -d $3/${j#$4} ]] ; then
+              echo "$j#$4" >> new_dirs
+          fi
+      fi
+      if [[ -f $j ]] ; then
+          if [[ ! -f $3/${j#$4} ]] ; then
+              echo "${j#$4}" >> new_files
+          fi
+      fi
+   done
+}
+
+
+if [[ $# != 2 ]] ; then
+   usage
+fi
+
+prev=$1
+next=$2
+
+if [[ ! -d $prev ]] ; then
+   echo ""
+   echo "Cannot locate previous version of VisIt."
+   echo "Remember to specify the full path."
+   usage
+fi
+if [[ ! -d $next ]] ; then
+   echo ""
+   echo "Cannot locate current version of VisIt."
+   echo "Remember to specify the full path."
+   usage
+fi
+
+rm -f new_dirs new_files missing_dirs missing_files got_bigger got_smaller
+
+recursive_differ $prev $next $prev $next
+
+if [[ -f got_bigger ]] ; then
+   num_got_bigger=$(cat got_bigger | wc -l | sed 's/ //g')
+else
+   num_got_bigger=0
+fi
+if [[ -f got_smaller ]] ; then
+   num_got_smaller=$(cat got_smaller | wc -l | sed 's/ //g')
+else
+   num_got_smaller=0
+fi
+if [[ -f new_dirs ]] ; then
+   num_new_dirs=$(cat new_dirs | wc -l | sed 's/ //g')
+else
+   num_new_dirs=0
+fi
+if [[ -f new_files ]] ; then
+   num_new_files=$(cat new_files | wc -l | sed 's/ //g')
+else
+   num_new_files=0
+fi
+if [[ -f missing_dirs ]] ; then
+   num_missing_dirs=$(cat missing_dirs | wc -l | sed 's/ //g')
+else
+   num_missing_dirs=0
+fi
+if [[ -f missing_files ]] ; then
+   num_missing_files=$(cat missing_files | wc -l | sed 's/ //g')
+else
+   num_missing_files=0
+fi
+
+echo "There are:"
+echo "    $num_new_dirs new directories (details located in file new_dirs)"
+echo "    $num_new_files new files (details located in file new_files)"
+echo "    $num_missing_dirs missing directories (details located in file missing_dirs)"
+echo "    $num_missing_files missing files (details located in file missing_files)"
+echo "    $num_got_bigger files got substantially bigger (details located in file got_bigger)"
+echo "    $num_got_smaller files got smaller (details located in file got_smaller)"
+
+exit 0

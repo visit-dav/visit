@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+  <Attribute name="EngineList" purpose="This class contains a list of host names on which engines are running." persistent="true" keyframe="true" exportAPI="STATE_API" exportInclude="state_exports.h">
+    <Field name="engineName" label="engineName" type="stringVector">
+    </Field>
+    <Field name="simulationName" label="simulationName" type="stringVector">
+    </Field>
+    <Field name="properties" label="Properties" type="attVector" subtype="EngineProperties">
+    </Field>
+  </Attribute>

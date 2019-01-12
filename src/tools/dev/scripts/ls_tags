@@ -1,0 +1,25 @@
+#!/bin/sh
+#
+#  Script: ls_tags
+# 
+#  Purpose: 
+#     Lists the contents of the tags directory.
+#
+#  Programmer: Hank Childs
+#  Creation:   January 9, 2008
+#
+#  Modifications:
+#
+#    Hank Childs, Fri Feb 22 11:08:20 PST 2008
+#    Ported from ksh to sh.
+#
+# *****************************************************************************
+
+P=$(which $0)
+P2=${P%/*}
+. ${P2}/visit_svn_helper
+
+svn ls ${VISIT_SVN_TAGS}
+
+exit 0
+

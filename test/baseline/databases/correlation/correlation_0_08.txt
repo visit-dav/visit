@@ -1,0 +1,6 @@
+ABC_Index has 30 states
+activeSource = "localhost:VISIT_TOP_DIR/data/pdb_test_data/dbC00.pdb"
+activeTimeSlider = 0
+timeSliders = ("ABC_Index", "localhost:VISIT_TOP_DIR/data/pdb_test_data/dbA00.pdb", "localhost:VISIT_TOP_DIR/data/pdb_test_data/dbB00.pdb", "localhost:VISIT_TOP_DIR/data/pdb_test_data/dbC00.pdb")
+timeSliderCurrentStates = (15, 9, 15, 15)
+animationMode = 2

@@ -1,0 +1,80 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta http-equiv="Content-Language" content="en-us">
+   <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+   <meta name="ProgId" content="FrontPage.Editor.Document">
+   <title>VisIt 1.2.4 Release Notes</title>
+</head>
+<body>
+
+<center><b><font size="6">VisIt 1.2.4 Release Notes</font></b></center>
+
+<p>Welcome to VisIt's release notes page. This page describes the important
+enhancements and bug-fixes that were added to this release.</p>
+<p><b><font size="4">Features added in version 1.2.4</font></b></p>
+<ul>
+  <li>VisIt now supports AMR meshes as first class mesh types, including reader plugins for SAMRAI and BoxLib (this feature was actually available in 1.2.3 but was not included in the release notes at that time.)</li>
+  <li>VisIt has a new Cylinder operator that slices data with a cylinder.</li>
+  <li>Directories that lack read permission are now grayed out in the File selection window.</li>
+  <li>Reopening a file at a different time state now causes a warning message because reopen should not be used to change active time states.</li>
+  <li>Mili files now return their times to the GUI so they can be displayed when a Mili database is expanded.</li>
+  <li>Plugins can now be off by default so they can be distributed but not necessarily loaded.</li>
+  <li>The xml2plugin tool now generates avtFileFormat code for database plugins.</li>
+  <li>The Mili database reader plugin now does less work on the metadata server so reading metadata is significantly faster.</li>
+  <li>VisIt's GUI has a new -sessionfile argument that lets you open a session when VisIt starts. On the Windows platform, double-clicking a session file opens the session file in the GUI and right clicking on a session file provides the option of using it to generate a movie.</li>
+  <li>The Annotation window now has a "No annotations" button that turns off all annotations.</li>
+  <li>The time in the vis window's user string updates when the plot list is modified.</li>
+</ul>
+<p><b><font size="4">Bugs fixed in version 1.2.4</font></b></p>
+<ul>
+  <li>expose/resize events of a window in scalable rendering mode causes exception then crash.</li>
+  <li>Scalable rendering does not reflect hide/show immediately.</li>
+  <li>&quot;Using Scalable Rendering" label seems to always display "no".</li>
+  <li>Changing to scalable rendering draws un-drawn plot.</li>
+  <li>Scalable rendering mode even though 'never' was set.</li>
+  <li>Auto switch to scalable rendering causes full network re-execution.</li>
+  <li>"Auto" scalable rendering mode is too aggressive.</li>
+  <li>2D plots and 1D curves do not have the right view when rendered using scalable rendering.</li>
+  <li>VisIt's compute engine crashes when you try to make a FilledBoundary plot of data from specmix_quad.silo.</li>
+  <li>NestedDomain ghosting object gets lost after time-step change.</li>
+  <li>VisIt crashes when given an expression that contains no database variables.</li>
+  <li>Kull Lite database reader plugin cannot support more than 20 open files.</li>
+  <li>Cannot do matvf expression for files where ghost zones are communicated.</li>
+  <li>The GUI gets virtual databases confused.</li>
+  <li>VisIt performs too many executions when replacing a database.</li>
+  <li>Pick does not work when an OnionPeel operator has been applied.</li>
+  <li>Reopening a file sometimes crashes the compute engine on AIX</li>
+  <li>Using "white" as the hostname does not pick up the current host profiles.</li>
+  <li>The compute engine is in a bad state after making a bad plot.</li>
+  <li>The if expression is making mistakes with inputs that are constants.</li>
+  <li>Slicing with plots using percent causes the plot to project to a bad view.</li>
+  <li>The GUI's file panel sometimes improperly expands MT databases when there are several open MT databases.</li>
+  <li>The compute engine crashes when the matvf expression is given invalid arguments.</li>
+  <li>The new rectilinear Subset plot drops out subsets in the presence of nested domains.</li>
+  <li>Moving the animation slider requires an execution even when the time state does not change.</li>
+  <li>Expressions from files are lost as you switch between databases.</li>
+  <li>The View window does not allow you to set small 2D view areas.</li>
+  <li>A session file with a Contour plot that uses NLevels to set the number of contours causes the compute engine to crash.</li>
+  <li>Rubberband zoom does not work in a vis window that contains curves.</li>
+  <li>The metadata server crashes when it cannot open a plugin.</li>
+  <li>Saved views are lost when saving a session file.</li>
+  <li>Fullframe mode does not always handle non-square windows.</li>
+  <li>All arrays are treated as floats in ExchangeScalar.</li>
+  <li>Histogram plot bars are not uniform in size.</li>
+  <li>Histogram plot limits are not correct.</li>
+  <li>Bounding box zoom does not work when fullframe mode is on.</li>
+  <li>The validVariable flag is not being honored for material variables.</li>
+  <li>Improve database library robustness with respect to empty file names.</li>
+  <li>VisIt transfers data from white to tidalwave very slowly.</li>
+  <li>The active window should not be saved in the settings; it should only be saved in a session file.</li>
+  <li>Setting the global opacity slider has no effect on a Subset plot that uses a single color.</li>
+</ul>
+<p>Click the following link to view the release notes for the previous version
+of VisIt: <a href="relnotes1.2.3.html">VisIt 1.2.3 Release Notes</a>.</p>
+<p>Click the following link to view the release notes for the next version 
+of VisIt: <a href="relnotes1.2.5.html">VisIt 1.2.5 Release Notes</a>.</p>
+
+</body>
+</html>

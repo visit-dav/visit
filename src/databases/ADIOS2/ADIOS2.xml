@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+  <Plugin name="ADIOS2" type="database" label="ADIOS2" version="1.0" enabled="true" mdspecificcode="true" engspecificcode="true" onlyengine="false" noengine="false" dbtype="MTSD" haswriter="false" hasoptions="false" filePatternsStrict="false" opensWholeDirectory="false">
+    <CXXFLAGS>
+      $(ADIOS2_INCLUDE_DIR)
+    </CXXFLAGS>
+    <FilePatterns>
+      *.bp
+      *.sst
+    </FilePatterns>
+    <Files components="M">
+      avtADIOS2FileFormat.C
+      avtGTCFileFormat.C
+      avtADIOS2BaseFileFormat.C
+      avtADIOS2SSTFileFormat.C
+    </Files>
+    <LIBS components="M">
+      $(ADIOS2_LIBRARY_DIR)/${ADIOS2_LIB}
+    </LIBS>
+    <Files components="E">
+      avtADIOS2FileFormat.C
+      avtGTCFileFormat.C
+      avtADIOS2BaseFileFormat.C
+      avtADIOS2SSTFileFormat.C
+    </Files>
+    <LIBS components="ESer">
+      $(ADIOS2_LIBRARY_DIR)/${ADIOS2_LIB}
+    </LIBS>
+    <LIBS components="EPar">
+      $(ADIOS2_MPI_LIBRARY_DIR)/${ADIOS2_MPI_LIB}
+    </LIBS>
+    <Attribute name="" purpose="" persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="ADIOS2.code">
+    </Attribute>
+  </Plugin>

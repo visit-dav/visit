@@ -1,0 +1,195 @@
+              A work-around exception implementation for VisIt
+              ================================================
+
+Motivation:
+===========
+
+VisIt must work properly on systems with buggy compilers/operating systems
+that prevent standard C++ exceptions from being caught properly when thrown
+from a shared library. After failing to get VisIt to build and run using
+other compilers on the afflicted platforms, the only option was to explore
+an alternative to exception handling. Support for exceptions has been 
+questioned in the past and lead to the development of the  EXCEPTION0,
+EXCEPTION1, ... macros that are used to throw exceptions. Those
+macros make it easy to remove the throwing of exceptions from VisIt. Doing so,
+however, would render useless much exception handling code that is used to
+alter the program control flow during an exception. Now we have gone a step
+further and replaced all C++ exception keywords with macros that allow an
+alternative implementation of exceptions that is based on setjmp/jongjmp
+that will work on platforms with poor exception support.
+
+Information:
+============
+
+Code developed now and in the future should use the new macros so we can
+continue to support buggy platforms without having to remove exceptions from
+the code. It is worth noting that using these macros, in the normal case,
+produces exactly the same code that we had before the switch to macros.
+They are only necessary to convert the exception control structures to other
+control structures when we're building the code using the setjmp/longjmp scheme.
+Care has been taken to make the macros as close to real C++ exception
+handling keywords as possible to make this solution more palatable to
+everyone working on VisIt. It is important that C++ exceptions not be used
+instead of the macros because the macros remove ALL C++ style exception
+handling in favor of a setjmp/longjmp mechanism. This means that C++ exceptions
+are no longer caught and throwing a C++ style exception when the code is built
+with simulated exceptions will cause an unhandled C++ exception. Fortunately,
+this has not been an issue since all exceptions that we handle are based on
+the VisItException base class and others types of exceptions to not seem to
+crop up.
+
+All aspects of standard C++ exceptions are supported so we can pretty much
+do exceptions as usual. This includes multiple catch blocks, exception
+handling based on type, nested try blocks, propagation of unhandled exceptions,
+rethrowing of exceptions, etc. All of the former properties of exception
+handling are provided for free by the macro implementation except for the
+handling based on type which requires the exception name to be placed in a
+table of known exception names. Keep that in mind when adding new exception
+types.
+
+A limitation of this approach is that it does not "unwind the stack".
+Unwinding the stack means that as an exception is being passed up the call
+stack, it calls the destructors of objects that are created in each function
+along the way. This is not done as we use longjmp to jump directly to the
+last TRY statement before the exception. This will, of course, lead to possible
+memory leaks but we may be able to abandon this work-around exception
+implementation in the future when the bad platforms are fixed.
+
+Macros:
+=======
+
+Keyword  Macro(s)            Macro Explanation
+
+try      TRY                 The macro makes a call to setjmp and puts the
+                             jump buffer returned by setjmp on the exception
+                             stack so there is a place we can jump back to
+                             when an exception is thrown.
+
+         ENDTRY              This macro must be placed immediately after the
+                             last CATCH block. It is responsible for rethrowing
+                             uncaught exceptions and popping the exception
+                             stack if the exception was handled.
+
+catch    CATCH(e)            Used in place of catch when there is no named
+                             exception argument but we have an exception type.
+                             Example: CATCH(VisItException)
+
+catch    CATCH2(e,n)         Used in place of catch when there is an exception
+                             type and a named exception argument. This is used
+                             when you want to use the exception object.
+                             Example: CATCH(VisItException, e)
+
+catch    CATCHALL(...)       Used in place of catch where all exceptions are
+                             to be caught. It is handled differently from CATCH
+                             because it needs a special macro expansion.
+                            
+throw    EXCEPTION0(e)       Used in place of throw where we are throwing
+throw    EXCEPTION1(e,a)     an object. This this macro jumps back to the
+throw    EXCEPTION2(e,a,b)   last TRY that put on the exception stack.
+throw    EXCEPTION3(e,a,b,c)
+
+throw    RETHROW             Used in place of throw with no object. This
+                             re-throws the last exception object. If there is
+                             no exception object, the code aborts.
+
+return   CATCH_RETURN(n)     Use this when you want to use a return statement
+                             from inside a catch block. The n value indicates
+                             the number of nested try statements that precede
+                             call to return. It is IMPERATIVE that this macro
+                             is used if you plan on returning from a catch
+                             block.
+
+return   CATCH_RETURN2(n,v)  Used when you want to use a return statement that
+                             returns a value from inside a catch block. The n
+                             value indicates the number of nested try statements
+                             that precede the call to return. It is IMPERATIVE
+                             that this macro is used if you plan on returning
+                             from a catch block.
+
+Examples:
+=========
+
+   // Multiple catch blocks are supported.
+   TRY
+   {
+       // do work
+   }
+   CATCH(PipelineException)
+   {
+       // handle
+   }
+   CATCH2(VisItException, e)
+   {
+       cerr << "message: " << e.GetMessage() << endl;
+   }
+   CATCHALL(...)
+   {
+       // handle
+   }
+   ENDTRY
+
+
+   // Nested try blocks and exception "inheritance" supported
+   TRY
+   {
+       TRY
+       {
+           // do work
+       }
+       CATCH(PipelineException)
+       {
+           // handle then rethrow
+
+           // rethrow supported
+           RETHROW;
+       }
+       ENDTRY
+
+       // more work
+   }
+   CATCH2(VisItException, foo)
+   {
+       // catch all VisItExceptions and derived types.
+   }
+   ENDTRY
+
+
+   // Returning from a catch block
+   void foo()
+   {
+       TRY
+       {
+           // do work
+       }
+       CATCHALL(...)
+       {
+           // handle it
+
+           // return from the catch block. The macro argument 1 indicates
+           // the nesting level of TRY statements where the return is located.
+           CATCH_RETURN(1);
+       }
+   }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

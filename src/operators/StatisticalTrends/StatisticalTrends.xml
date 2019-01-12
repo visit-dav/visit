@@ -1,0 +1,56 @@
+<?xml version="1.0"?>
+  <Plugin name="StatisticalTrends" type="operator" label="StatisticalTrends" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" category="Analysis" createExpression="true" exprInType="scalar" exprOutType="scalar" iconFile="StatisticalTrends.xpm">
+    <Attribute name="StatisticalTrendsAttributes" purpose="This class contains attributes for the StatisticalTrends operator." persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="StatisticalTrendsAttributes.code">
+      <Enum name="TrendTypeEnum">
+        Absolute
+        Relative
+      </Enum>
+      <Enum name="StatisticTypeEnum">
+        Sum
+        Mean
+        Variance
+        StandardDeviation
+        Slope
+        Residuals
+      </Enum>
+      <Enum name="TrendAxisEnum">
+        Step
+        Time
+        Cycle
+      </Enum>
+      <Enum name="VariableSourceEnum">
+        Default
+        OperatorExpression
+      </Enum>
+      <Field name="startIndex" label="Index of first time slice" type="int">
+        0
+      </Field>
+      <Field name="stopIndex" label="Index of last time slice" type="int">
+        1
+      </Field>
+      <Field name="stride" label="Skip rate between time slices" type="int">
+        1
+      </Field>
+      <Field name="startTrendType" label="Type of trend" type="enum" subtype="TrendTypeEnum">
+        Absolute
+      </Field>
+      <Field name="stopTrendType" label="Type of trend" type="enum" subtype="TrendTypeEnum">
+        Absolute
+      </Field>
+      <Field name="statisticType" label="Type of statistic" type="enum" subtype="StatisticTypeEnum">
+        Mean
+      </Field>
+      <Field name="trendAxis" label="Trend axis" type="enum" subtype="TrendAxisEnum">
+        Step
+      </Field>
+      <Field name="variableSource" label="Variable source" type="enum" subtype="VariableSourceEnum">
+        Default
+      </Field>
+      <Function name="StatisticalTrendsCommonPluginInfo::GetCreatedExpressions" user="false" member="true">
+      </Function>
+      <Function name="StatisticalTrendsViewerEnginePluginInfo::UpdateOperatorAtts" user="false" member="true">
+      </Function>
+      <Function name="StatisticalTrendsViewerEnginePluginInfo::GetOperatorVarDescription" user="false" member="true">
+      </Function>
+    </Attribute>
+  </Plugin>

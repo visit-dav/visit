@@ -1,0 +1,371 @@
+Target: xml2python
+Code: PyPseudocolorAttributes_getattr
+Prefix:
+Postfix:
+    // Try and handle legacy fields in PseudocolorAttributes
+    if(strcmp(name, "useColorTableOpacity") == 0)
+    {
+        PseudocolorAttributesObject *meshObj = (PseudocolorAttributesObject *)self;
+        bool useCT = meshObj->data->GetOpacityType() == PseudocolorAttributes::ColorTable;
+        return PyInt_FromLong(useCT?1L:0L);
+    }
+
+    // lineStyle and it's possible enumerations
+    bool lineStyleFound = false;
+    if (strcmp(name, "lineStyle") == 0)
+    {
+        lineStyleFound = true;
+    }
+    else if (strcmp(name, "SOLID") == 0)
+    {
+        lineStyleFound = true;
+    }
+    else if (strcmp(name, "DASH") == 0)
+    {
+        lineStyleFound = true;
+    }
+    else if (strcmp(name, "DOT") == 0)
+    {
+        lineStyleFound = true;
+    }
+    else if (strcmp(name, "DOTDASH") == 0)
+    {
+        lineStyleFound = true;
+    }
+    if (lineStyleFound)
+    {
+        fprintf(stdout, "lineStyle is no longer a valid Pseudocolor "
+                       "attribute.\nIt's value is being ignored, please remove "
+                       "it from your script.\n");
+        return PyInt_FromLong(0L);
+    }
+
+
+
+
+Code: PyPseudocolorAttributes_setattr
+Prefix:
+Postfix:
+    // Try and handle legacy fields in PseudocolorAttributes
+    if(obj == NULL)
+    {
+        PseudocolorAttributesObject *PseudocolorObj = (PseudocolorAttributesObject *)self;
+        if(strcmp(name, "useColorTableOpacity") == 0)
+        {
+            int ival;
+            if(!PyArg_ParseTuple(tuple, "i", &ival))
+            {
+                Py_DECREF(tuple);
+                return -1;
+            }
+            if(ival == 0)
+                PseudocolorObj->data->SetOpacityType(PseudocolorAttributes::Constant);
+            else
+                PseudocolorObj->data->SetOpacityType(PseudocolorAttributes::ColorTable);
+
+            Py_INCREF(Py_None);
+            obj = Py_None;
+        }
+        if(strcmp(name, "lineStyle") == 0)
+        {
+            Py_INCREF(Py_None);
+            obj = Py_None;
+        }
+    }
+
+Target: xml2atts
+Function: ChangesRequireRecalculation
+Declaration: bool ChangesRequireRecalculation(const PseudocolorAttributes &) const;
+Definition:
+// ****************************************************************************
+// Modifications:
+//
+//   Kathleen Bonnell, Fri Aug 31 08:50:30 PDT 2001
+//   Only centering changes require the plot to be recalculated.
+//   Removed scaling, pointsize and skewFactor from test.
+//
+//   Hank Childs, Sun Jun 23 23:54:56 PDT 2002
+//   Also recalculate if the point size changes.
+//
+//   Jeremy Meredith, Mon Dec  9 16:30:54 PST 2002
+//   Added smoothing level.
+//
+//   Jeremy Meredith, Fri Dec 20 11:33:43 PST 2002
+//   Added point size variable and its enabled flag.
+//
+//   Hank Childs, Thu Aug 21 22:28:25 PDT 2003
+//   Added pointType.
+//
+//   Kathleen Bonnell, Wed Aug 18 18:08:52 PDT 2004
+//   Removed pointSize, pointType from test.  Added new conditions for
+//   recalculation when pointSizeVar or pointSizeVarEnabled have changed.
+//
+//   Kathleen Bonnell, Fri Nov 12 11:11:41 PST 2004
+//   Modified determination of when secondary var requires recalc.
+//
+//   Eric Brugger, Wed Oct 26 09:36:37 PDT 2016
+//   I modified the plot to support independently setting the point style
+//   for the two end points of lines.
+//
+// ****************************************************************************
+bool
+PseudocolorAttributes::ChangesRequireRecalculation(const PseudocolorAttributes &obj) const
+{
+   bool needSecondaryVar = (obj.pointType != Point &&
+                            obj.pointType != Sphere &&
+                            obj.pointSizeVarEnabled &&
+                            obj.pointSizeVar != pointSizeVar &&
+                            obj.pointSizeVar != "default" &&
+                            obj.pointSizeVar != "" &&
+                            obj.pointSizeVar != "\0") ||
+
+                           (obj.lineType == Tube &&
+                            obj.tubeRadiusVarEnabled &&
+                            obj.tubeRadiusVar != tubeRadiusVar &&
+                            obj.tubeRadiusVar != "default" &&
+                            obj.tubeRadiusVar != "" &&
+                            obj.tubeRadiusVar != "\0") ||
+
+                           ((obj.tailStyle != None ||
+                             obj.headStyle != None) &&
+                            obj.endPointRadiusVarEnabled &&
+                            obj.endPointRadiusVar != endPointRadiusVar &&
+                            obj.endPointRadiusVar != "default" &&
+                            obj.endPointRadiusVar != "" &&
+                            obj.endPointRadiusVar != "\0") ||
+
+                           (obj.opacityType == VariableRange &&
+                            obj.opacityVariable != opacityVariable &&
+                            obj.opacityVariable != "default" &&
+                            obj.opacityVariable != "" &&
+                            obj.opacityVariable != "\0");
+
+
+    bool geometryChange =  (lineType             != obj.lineType ||
+                            tubeRadiusSizeType   != obj.tubeRadiusSizeType ||
+                            tubeRadiusAbsolute   != obj.tubeRadiusAbsolute ||
+                            tubeRadiusBBox       != obj.tubeRadiusBBox ||
+                            tubeRadiusVarEnabled != obj.tubeRadiusVarEnabled ||
+                            tubeRadiusVar        != obj.tubeRadiusVar ||
+                            tubeRadiusVarRatio   != obj.tubeRadiusVarRatio ||
+                            tubeResolution       != obj.tubeResolution ||
+
+                            tailStyle                != obj.tailStyle ||
+                            headStyle                != obj.headStyle ||
+                            endPointRatio            != obj.endPointRatio ||
+                            endPointRadiusSizeType   != obj.endPointRadiusSizeType ||
+                            endPointRadiusAbsolute   != obj.endPointRadiusAbsolute ||
+                            endPointRadiusBBox       != obj.endPointRadiusBBox ||
+                            endPointRadiusVarEnabled != obj.endPointRadiusVarEnabled ||
+                            endPointRadiusVar        != obj.endPointRadiusVar ||
+                            endPointRadiusVarRatio   != obj.endPointRadiusVarRatio ||
+                            endPointResolution       != obj.endPointResolution ||
+                            0 );
+
+
+    return (centering != obj.centering ||
+            needSecondaryVar ||
+            geometryChange ||
+            smoothingLevel != obj.smoothingLevel ||
+            renderSurfaces != obj.renderSurfaces ||
+            renderWireframe != obj.renderWireframe ||
+            renderPoints != obj.renderPoints ||
+            wireframeColor != obj.wireframeColor ||
+            pointColor != obj.pointColor ||
+            0);
+
+}
+
+Function: Print
+Declaration: void Print(ostream &, bool) const;
+Definition:
+// ****************************************************************************
+// Method: PseudocolorAttributes::Print
+//
+// Purpose: Print the contents
+//
+// Programmer: Jeremy Meredith
+// Creation:   September 22, 2000
+//
+// Modifications:
+//   Kathleen Bonnell, Wed Dec 13 13:17:26 PST 2000
+//   Added opacity.
+//
+//   Brad Whitlock, Tue Apr 23 12:03:27 PDT 2002
+//   Ported to windows.
+//
+// ****************************************************************************
+
+void
+PseudocolorAttributes::Print(ostream &out, bool selected_only) const
+{
+    out << "{";
+
+    for(int i = 0; i < NumAttributes(); ++i)
+    {
+        if(selected_only && !IsSelected(i))
+            continue;
+
+        switch(i)
+        {
+          case  0: out << "legendFlag=" << GetLegendFlag();    break;
+          case  1: out << "lightingFlag=" << GetLightingFlag();break;
+          case  2: out << "minFlag=" << GetMinFlag();          break;
+          case  3: out << "maxFlag=" << GetMaxFlag();          break;
+          case  4: out << "centering=" << GetCentering();      break;
+          case  5: out << "scaling=" << GetScaling();          break;
+          case  6: out << "limitsMode=" << GetLimitsMode();    break;
+          case  7: out << "min=" << GetMin();                  break;
+          case  8: out << "max=" << GetMax();                  break;
+          case  9: out << "pointSize=" << GetPointSize();      break;
+          case 10: out << "skewFactor=" << GetSkewFactor();    break;
+          case 11: out << "opacityType=" << GetOpacityType();  break;
+          case 12: out << "colorTableName=" << GetColorTableName().c_str(); break;
+        }
+        out << ",";
+    }
+
+    out << "}";
+}
+
+Function: ProcessOldVersions
+Declaration: virtual void ProcessOldVersions(DataNode *parentNode, const char *configVersion);
+Definition:
+// ****************************************************************************
+// Method: PseudocolorAttributes::ProcessOldVersions
+//
+// Purpose:
+//   This method handles some old fields by converting them to new fields.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Mar 12 09:33:52 PST 2010
+//
+// Modifications:
+//     Burlen Loring, Wed Jul 23 12:53:09 PDT 2014
+//     fix a typing bug in patch r21912 dealing with new OpacityType
+//     enumeration values added for version 2.7.0. That patch assumed
+//     opacityType is stored as an integer when in reality it is stored
+//     as a std::string.
+//
+// ****************************************************************************
+#include <Utility.h>
+#include <DebugStream.h>
+void
+PseudocolorAttributes::ProcessOldVersions(DataNode *parentNode,
+    const char *configVersion)
+{
+    if(parentNode == 0)
+        return;
+
+    DataNode *searchNode = parentNode->GetNode("PseudocolorAttributes");
+    if(searchNode == 0)
+        return;
+
+    if(VersionLessThan(configVersion, "2.0.0"))
+    {
+        DataNode *k = 0;
+        if((k = searchNode->GetNode("useColorTableOpacity")) != 0)
+        {
+          // Previously a bool for "Explicit" or "ColorTable"
+          // Now ColorTable, FullyOpaque, or Constant
+          // Explicit has been split into FullyOpaque or Constant and
+          // does not rely on the opacity value.
+
+          // Assume false (prevously Explicit) is really Fully Opaque for now
+          PseudocolorAttributes::OpacityType val =
+            k->AsBool() ? ColorTable : FullyOpaque;
+
+            if( val == FullyOpaque )
+            {
+              // If the opacity value is set and valid change to constant
+              DataNode *op = 0;
+              if((op = searchNode->GetNode("opacity")) != 0)
+              {
+                double opacity = op->AsDouble();
+                if( 0.0 <= opacity && opacity < 1.0 )
+                  val = Constant;
+              }
+            }
+
+            // Update the opacityType to the new value.
+            searchNode->RemoveNode(k, true);
+            searchNode->AddNode(new DataNode("opacityType",
+                                             OpacityType_ToString(val)));
+        }
+    }
+
+    if(VersionLessThan(configVersion, "2.7.0"))
+    {
+      DataNode *k = 0;
+      if((k = searchNode->GetNode("opacityType")) != 0)
+      {
+        // Previously "Explicit" or "ColorTable"
+        // Now ColorTable, FullyOpaque, or Constant
+        // Explicit has been split into FullyOpaque or Constant and
+        // does not rely on the opacity value.
+
+        // Assume Explicit is really Fully Opaque for now
+        PseudocolorAttributes::OpacityType val = FullyOpaque;
+
+        std::string strVal = k->AsString();
+        if (strVal == "Explicit")
+        {
+            // If the opacity value is set and valid change to constant
+            DataNode *op = 0;
+            if((op = searchNode->GetNode("opacity")) != 0)
+            {
+                double opacity = op->AsDouble();
+                if ((0.0 <= opacity) && (opacity < 1.0))
+                {
+                    val = Constant;
+                }
+            }
+            else
+            {
+                val = FullyOpaque;
+            }
+        }
+        else
+        if (strVal == "ColorTable")
+        {
+            val = ColorTable;
+        }
+        else
+        {
+            debug1 <<
+              "PseudocolorAttributes::ProcessOldVersions "
+              "2.0.0 < configVersion < 2.7.0 bad value for "
+              "opacityType detected " << strVal << endl;
+        }
+
+        // Update the opacityType to the new value.
+        searchNode->RemoveNode(k, true);
+        searchNode->AddNode(new DataNode("opacityType",
+                                         OpacityType_ToString(val)));
+      }
+
+      // The opacityType may not be set as previously the default
+      // was "Explicit" but the opacity value may be set and valid.
+      else if((k = searchNode->GetNode("opacity")) != 0)
+      {
+        double opacity = k->AsDouble();
+
+        // If the opacity value is set and valid set the opacityType
+        // to constant and a new node for it.
+        if( 0.0 <= opacity && opacity < 1.0 )
+        {
+          PseudocolorAttributes::OpacityType val = Constant;
+
+          searchNode->AddNode(new DataNode("opacityType",
+                                           OpacityType_ToString(val)));
+        }
+      }
+    }
+
+    if (VersionLessThan(configVersion, "3.0.0"))
+    {
+        if (searchNode->GetNode("lineStyle") != 0)
+            searchNode->RemoveNode("lineStyle");
+    }
+}
+

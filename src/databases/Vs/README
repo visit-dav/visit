@@ -1,0 +1,20 @@
+VizSchema Database Reader Plugin for VisIt
+
+VizSchema is a specification for markup added to hdf5 files
+to describe the data contained within.  Properly marked-up
+files can be opened using this database reader, and thus
+displayed in VisIt.  VizSchema also allows users to specify
+run information and other miscellaneous data in a standardized
+manner.  VizSchema is designed to be versatile and can be 
+added to data files after the fact.
+
+VizSchema requires VisIt to be compiled with support for HDF5
+
+For details about VizSchema, and contact information for developers,
+please visit the development website at:
+https://ice.txcorp.com/trac/vizschema/wiki
+
+Tech-X Corporation
+5621 Arapaho Ave, Suite A
+Boulder, CO
+USA

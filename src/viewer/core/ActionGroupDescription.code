@@ -1,0 +1,34 @@
+Function: ActionGroupDescription
+Declaration: ActionGroupDescription(const std::string &n);
+Definition:
+ActionGroupDescription::ActionGroupDescription(const std::string &n) :
+    AttributeSubject("ss*b"), name(n), actions()
+{
+    visible = true;
+}
+
+Function: AddAction
+Declaration: void AddAction(ViewerRPC::ViewerRPCType t);
+Definition:
+void
+ActionGroupDescription::AddAction(ViewerRPC::ViewerRPCType t)
+{
+    actions.push_back(ViewerRPC::ViewerRPCType_ToString(t));
+}
+
+Function: GetAction
+Declaration: ViewerRPC::ViewerRPCType GetAction(int index) const;
+Definition:
+ViewerRPC::ViewerRPCType
+ActionGroupDescription::GetAction(int index) const
+{
+    ViewerRPC::ViewerRPCType retval = ViewerRPC::MaxRPC;
+
+    if(index >= 0 && index < actions.size())
+    {
+        ViewerRPC::ViewerRPCType_FromString(actions[index], retval);
+    }
+
+    return retval;
+}
+

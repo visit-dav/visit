@@ -1,0 +1,47 @@
+#!/bin/ksh
+#
+#  Script: finalize_release
+# 
+#  Purpose: 
+#      Moves the release candidate branch into the tags directory.
+#
+#  Programmer: Hank Childs
+#  Creation:   January 8, 2008
+#
+# *****************************************************************************
+
+issueHelp="no"
+
+export CDPATH=""
+
+P=$(whence $0)
+P2=${P%/*}
+. ${P2}/visit_svn_helper
+
+if [[ $# == 2 ]] ; then
+   is_version_string $2
+   if [[ $? != 1 ]] ; then
+      echo "I do not believe $2 is a valid version string"
+      issueHelp="yes"
+   fi
+else
+   issueHelp="yes"
+fi
+
+if [[ "$issueHelp" == "yes" ]] ; then
+   echo ""
+   echo "Usage:   $0 <RC-name> <tag-name>"
+   echo ""
+   echo "Example: $0 1.7RC 1.7.1"
+   echo "\twill move the release candidate branch 1.7RC to the tags directory with label 1.7.1"
+   echo ""
+   exit 1
+fi
+
+# Move the RC branch to the tags directory.
+SRC=${VISIT_SVN_BRANCHES}/${1}
+DEST=${VISIT_SVN_TAGS}/${2}
+svn_mv_dir $SRC $DEST
+
+return 0
+

@@ -1,0 +1,603 @@
+<!DOCTYPE UI><UI version="3.1" stdsetdef="1">
+<class>SimulationUI</class>
+<comment>Example Simulation UI</comment>
+<author>Shelly Prevost</author>
+<widget class="QDialog">
+    <property name="name">
+        <cstring>Form7</cstring>
+    </property>
+    <property name="geometry">
+        <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>609</width>
+            <height>486</height>
+        </rect>
+    </property>
+    <property name="caption">
+        <string>Form7</string>
+    </property>
+    <widget class="QPushButton">
+        <property name="name">
+            <cstring>pushButton9</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>420</x>
+                <y>420</y>
+                <width>121</width>
+                <height>31</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>Close</string>
+        </property>
+    </widget>
+    <widget class="QLabel">
+        <property name="name">
+            <cstring>MainTextLabel</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>42</x>
+                <y>20</y>
+                <width>410</width>
+                <height>41</height>
+            </rect>
+        </property>
+        <property name="font">
+            <font>
+                <pointsize>20</pointsize>
+            </font>
+        </property>
+        <property name="text">
+            <string>Simulation Custom Commands</string>
+        </property>
+    </widget>
+    <widget class="QPushButton">
+        <property name="name">
+            <cstring>apply</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>50</x>
+                <y>420</y>
+                <width>111</width>
+                <height>31</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>Apply</string>
+        </property>
+    </widget>
+    <widget class="QLabel">
+        <property name="name">
+            <cstring>SignalCatcher</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>530</x>
+                <y>20</y>
+                <width>50</width>
+                <height>50</height>
+            </rect>
+        </property>
+        <property name="pixmap">
+            <pixmap>image0</pixmap>
+        </property>
+        <property name="scaledContents">
+            <bool>true</bool>
+        </property>
+    </widget>
+    <widget class="QProgressBar">
+        <property name="name">
+            <cstring>progressBar1</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>10</x>
+                <y>390</y>
+                <width>560</width>
+                <height>10</height>
+            </rect>
+        </property>
+        <property name="minimumSize">
+            <size>
+                <width>5</width>
+                <height>5</height>
+            </size>
+        </property>
+        <property name="maximumSize">
+            <size>
+                <width>32767</width>
+                <height>10</height>
+            </size>
+        </property>
+        <property name="paletteBackgroundColor">
+            <color>
+                <red>0</red>
+                <green>200</green>
+                <blue>0</blue>
+            </color>
+        </property>
+        <property name="progress">
+            <number>25</number>
+        </property>
+        <property name="percentageVisible">
+            <bool>false</bool>
+        </property>
+    </widget>
+    <widget class="QTimeEdit">
+        <property name="name">
+            <cstring>timeEdit1</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>220</x>
+                <y>420</y>
+                <width>81</width>
+                <height>31</height>
+            </rect>
+        </property>
+    </widget>
+    <widget class="QDateEdit">
+        <property name="name">
+            <cstring>dateEdit1</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>300</x>
+                <y>420</y>
+                <width>91</width>
+                <height>31</height>
+            </rect>
+        </property>
+    </widget>
+    <widget class="QTabWidget">
+        <property name="name">
+            <cstring>ShellyTab</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>10</x>
+                <y>80</y>
+                <width>560</width>
+                <height>301</height>
+            </rect>
+        </property>
+        <widget class="QWidget">
+            <property name="name">
+                <cstring>tab</cstring>
+            </property>
+            <attribute name="title">
+                <string>Dash Board 1</string>
+            </attribute>
+            <widget class="QLabel">
+                <property name="name">
+                    <cstring>pixmapLabel1</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>348</x>
+                        <y>-346</y>
+                        <width>950</width>
+                        <height>330</height>
+                    </rect>
+                </property>
+                <property name="pixmap">
+                    <pixmap>image1</pixmap>
+                </property>
+                <property name="scaledContents">
+                    <bool>true</bool>
+                </property>
+            </widget>
+            <widget class="QFrame">
+                <property name="name">
+                    <cstring>frame9</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>10</x>
+                        <y>60</y>
+                        <width>210</width>
+                        <height>190</height>
+                    </rect>
+                </property>
+                <property name="frameShape">
+                    <enum>StyledPanel</enum>
+                </property>
+                <property name="frameShadow">
+                    <enum>Raised</enum>
+                </property>
+                <widget class="QPushButton">
+                    <property name="name">
+                        <cstring>Shelly_Button_3</cstring>
+                    </property>
+                    <property name="geometry">
+                        <rect>
+                            <x>20</x>
+                            <y>80</y>
+                            <width>161</width>
+                            <height>31</height>
+                        </rect>
+                    </property>
+                    <property name="text">
+                        <string>Shelly Button 3</string>
+                    </property>
+                </widget>
+                <widget class="QPushButton">
+                    <property name="name">
+                        <cstring>Top_Button_1</cstring>
+                    </property>
+                    <property name="geometry">
+                        <rect>
+                            <x>20</x>
+                            <y>20</y>
+                            <width>161</width>
+                            <height>31</height>
+                        </rect>
+                    </property>
+                    <property name="text">
+                        <string>Top Button 1</string>
+                    </property>
+                </widget>
+                <widget class="QPushButton">
+                    <property name="name">
+                        <cstring>Bottom_Button_2</cstring>
+                    </property>
+                    <property name="geometry">
+                        <rect>
+                            <x>20</x>
+                            <y>110</y>
+                            <width>161</width>
+                            <height>31</height>
+                        </rect>
+                    </property>
+                    <property name="text">
+                        <string>Bottom Button 2</string>
+                    </property>
+                </widget>
+                <widget class="QPushButton">
+                    <property name="name">
+                        <cstring>Shelly_Button2</cstring>
+                    </property>
+                    <property name="geometry">
+                        <rect>
+                            <x>20</x>
+                            <y>50</y>
+                            <width>161</width>
+                            <height>31</height>
+                        </rect>
+                    </property>
+                    <property name="text">
+                        <string>Shelly Button 2</string>
+                    </property>
+                </widget>
+            </widget>
+            <widget class="QComboBox">
+                <item>
+                    <property name="text">
+                        <string>First Item</string>
+                    </property>
+                </item>
+                <item>
+                    <property name="text">
+                        <string>Second Item</string>
+                    </property>
+                </item>
+                <item>
+                    <property name="text">
+                        <string>Third Item</string>
+                    </property>
+                </item>
+                <item>
+                    <property name="text">
+                        <string>Shelly</string>
+                    </property>
+                </item>
+                <property name="name">
+                    <cstring>ShellyComboBox1</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>440</x>
+                        <y>10</y>
+                        <width>101</width>
+                        <height>41</height>
+                    </rect>
+                </property>
+            </widget>
+            <widget class="QLabel">
+                <property name="name">
+                    <cstring>textLabel1</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>110</x>
+                        <y>30</y>
+                        <width>100</width>
+                        <height>21</height>
+                    </rect>
+                </property>
+                <property name="text">
+                    <string>Cycle Number</string>
+                </property>
+            </widget>
+            <widget class="QSpinBox">
+                <property name="name">
+                    <cstring>ShellySpinBox1</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>20</x>
+                        <y>30</y>
+                        <width>80</width>
+                        <height>21</height>
+                    </rect>
+                </property>
+                <property name="maxValue">
+                    <number>50</number>
+                </property>
+                <property name="value">
+                    <number>20</number>
+                </property>
+            </widget>
+            <widget class="QLineEdit">
+                <property name="name">
+                    <cstring>ShellyLineEdit1</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>270</x>
+                        <y>0</y>
+                        <width>161</width>
+                        <height>23</height>
+                    </rect>
+                </property>
+                <property name="text">
+                    <string>Starting text</string>
+                </property>
+            </widget>
+            <widget class="QCheckBox">
+                <property name="name">
+                    <cstring>CheckBox1</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>260</x>
+                        <y>200</y>
+                        <width>130</width>
+                        <height>21</height>
+                    </rect>
+                </property>
+                <property name="text">
+                    <string>CheckBox1</string>
+                </property>
+            </widget>
+            <widget class="QButtonGroup">
+                <property name="name">
+                    <cstring>buttonGroup2</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>250</x>
+                        <y>50</y>
+                        <width>190</width>
+                        <height>130</height>
+                    </rect>
+                </property>
+                <property name="title">
+                    <string>Radio Buttons</string>
+                </property>
+                <widget class="QRadioButton">
+                    <property name="name">
+                        <cstring>RadioButton2</cstring>
+                    </property>
+                    <property name="geometry">
+                        <rect>
+                            <x>10</x>
+                            <y>60</y>
+                            <width>130</width>
+                            <height>21</height>
+                        </rect>
+                    </property>
+                    <property name="text">
+                        <string>RadioButton2</string>
+                    </property>
+                </widget>
+                <widget class="QRadioButton">
+                    <property name="name">
+                        <cstring>RadioButton1</cstring>
+                    </property>
+                    <property name="geometry">
+                        <rect>
+                            <x>10</x>
+                            <y>30</y>
+                            <width>120</width>
+                            <height>21</height>
+                        </rect>
+                    </property>
+                    <property name="text">
+                        <string>RadioButton1</string>
+                    </property>
+                </widget>
+                <widget class="QRadioButton">
+                    <property name="name">
+                        <cstring>RadioButton3</cstring>
+                    </property>
+                    <property name="geometry">
+                        <rect>
+                            <x>10</x>
+                            <y>90</y>
+                            <width>120</width>
+                            <height>21</height>
+                        </rect>
+                    </property>
+                    <property name="text">
+                        <string>RadioButton3</string>
+                    </property>
+                </widget>
+            </widget>
+        </widget>
+        <widget class="QWidget">
+            <property name="name">
+                <cstring>tab</cstring>
+            </property>
+            <attribute name="title">
+                <string>Dash Board 2</string>
+            </attribute>
+            <widget class="QScrollBar">
+                <property name="name">
+                    <cstring>scrollBar1</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>298</x>
+                        <y>154</y>
+                        <width>131</width>
+                        <height>21</height>
+                    </rect>
+                </property>
+                <property name="orientation">
+                    <enum>Horizontal</enum>
+                </property>
+            </widget>
+            <widget class="QTable">
+                <property name="name">
+                    <cstring>ShellyTable_1</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>8</x>
+                        <y>14</y>
+                        <width>271</width>
+                        <height>241</height>
+                    </rect>
+                </property>
+                <property name="numRows">
+                    <number>3</number>
+                </property>
+                <property name="numCols">
+                    <number>3</number>
+                </property>
+            </widget>
+            <widget class="QDial">
+                <property name="name">
+                    <cstring>ShellyDial_1</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>330</x>
+                        <y>70</y>
+                        <width>80</width>
+                        <height>70</height>
+                    </rect>
+                </property>
+                <property name="value">
+                    <number>44</number>
+                </property>
+            </widget>
+            <widget class="QSlider">
+                <property name="name">
+                    <cstring>ShellySlider_1</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>300</x>
+                        <y>20</y>
+                        <width>131</width>
+                        <height>21</height>
+                    </rect>
+                </property>
+                <property name="value">
+                    <number>15</number>
+                </property>
+                <property name="orientation">
+                    <enum>Horizontal</enum>
+                </property>
+            </widget>
+            <widget class="QLCDNumber">
+                <property name="name">
+                    <cstring>LCDNumber1</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>450</x>
+                        <y>50</y>
+                        <width>100</width>
+                        <height>80</height>
+                    </rect>
+                </property>
+                <property name="paletteForegroundColor">
+                    <color>
+                        <red>0</red>
+                        <green>85</green>
+                        <blue>0</blue>
+                    </color>
+                </property>
+                <property name="paletteBackgroundColor">
+                    <color>
+                        <red>255</red>
+                        <green>170</green>
+                        <blue>0</blue>
+                    </color>
+                </property>
+                <property name="frameShape">
+                    <enum>Box</enum>
+                </property>
+                <property name="frameShadow">
+                    <enum>Raised</enum>
+                </property>
+                <property name="lineWidth">
+                    <number>2</number>
+                </property>
+                <property name="margin">
+                    <number>0</number>
+                </property>
+                <property name="value" stdset="0">
+                    <number>300</number>
+                </property>
+            </widget>
+            <widget class="QTextEdit">
+                <property name="name">
+                    <cstring>ShellyText_2</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>298</x>
+                        <y>184</y>
+                        <width>121</width>
+                        <height>68</height>
+                    </rect>
+                </property>
+            </widget>
+        </widget>
+    </widget>
+</widget>
+<images>
+    <image name="image0">
+        <data format="XPM.GZ" length="1572">789c7594c18eda301086ef3c45b4bea12acb069addaaea23b4eab152d583c78e21c1499624b0aaaabe7be71fdb40ba3083483efce10c1e9bc765f6e3fbd76cf9b818273dd526333b3d644b7b6cdbdf3f7f7df9b378581719bf8a8fd9d3c387c5439e99ec5bdf55b8dff2bd5a6d1cb902380aeaaa0a38019f56d5da6d8083a0b1ab801db0d898c295c0bda0a1b57b06ee80eb42974e03eb883a602558ea22a0016eca174d32d511584a005f81cf25127812d448a002be9448a0077e9200364071a52a07a402093c089648a015d4482001cd06096c815623816fc0aa44027ba05b21815ab042ca9acf4269c5efc4913eb9e39031f6acdd73aaca9cb5fb4e95b48b737efe9503cd112587b6364a57ce6e57d78d4d0e6db7cece9c1d84daa8b3c34ad3c0b14ab1a394ad11fbbdf2e959ac6c01b96f758896c725f0cde47880b73acea37958edbbae4b35a7695869623dbef7afbe43c47ac439906da1c49a7d9f3bd70dc3c01345676427342af58b2fe4d8191a2bce38be73702182e30fb239c7713a9e42b16a76394d138fc856e13b7ad337a297119947ec5bf3a8691cc33c34f163ddfb7ab872a9541c29cdde74b02ae218763a4757eb9337bab579685270acaca8e375f6149c465b9fcf1c32acec3df7a84ffd12058e0a6b98938d5dae551ffb9e14343238e4781ce1e312d83c3afeb2c70c8ff3ceab2e2d89ca658f41901dfc9fd3342e9d0b32e918cc1deb0ee7f345964fd20d87c2594935375eb49993ce5cac99ec41b4b933ff4fc0c186c6bff4ae93342ee086f3f7f3e21f3368a78f</data>
+    </image>
+    <image name="image1">
+        <data format="XPM.GZ" length="469">789c5d90cd0ac2300c80ef7d8ad0dc86ece7a282f8088a47413c6459871e54d07910f1dd6dd2d616d3b1f6fb92a55d9b0af6bb0d548d794c349d19f84477a886e7e5f23a1cd76f63bb39f867019d9d195b03c3f67675b246bfc65643b04f388e822e20fb2138082e5b198224c8bf2c0b8e1aba8b06621da370946c7042887d1f6c74be0639d95427c4ded280c971b6d9c51af2b33ae9c56a0be7a2e4b2ce455b38e925e81d2547ba43ec98be9574a8a9f35924adaff20ef44f11ffee2587fdaccc177dac6497</data>
+    </image>
+</images>
+<connections>
+    <connection>
+        <sender>pushButton9</sender>
+        <signal>clicked()</signal>
+        <receiver>Form7</receiver>
+        <slot>close()</slot>
+    </connection>
+    <connection>
+        <sender>apply</sender>
+        <signal>clicked()</signal>
+        <receiver>Form7</receiver>
+        <slot>accept()</slot>
+    </connection>
+</connections>
+<slots>
+    <slot>SimCommands()</slot>
+</slots>
+<layoutdefaults spacing="6" margin="11"/>
+</UI>

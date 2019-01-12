@@ -1,0 +1,97 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta http-equiv="Content-Language" content="en-us">
+   <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+   <meta name="ProgId" content="FrontPage.Editor.Document">
+   <title>VisIt 1.4.3 Release Notes</title>
+</head>
+<body>
+
+<center><b><font size="6">VisIt 1.4.3 Release Notes</font></b></center>
+
+<p>Welcome to VisIt's release notes page. This page describes the important
+enhancements and bug-fixes that were added to this release.</p>
+<p><b><font size="4">Features added in version 1.4.3</font></b></p>
+<ul>
+<li><p>VisIt can now connect to simulation codes that have been instrumented with the <i>VisIt Engine Wrapper Library</i> (VEWL). The VEWL allows simulation codes to act as VisIt compute engines, responding to commands from VisIt and producing plottable data using the resources and memory allocated by the simulation code. VisIt can connect to 
+a simulation, plot its data, and later disconnect, leaving the simulation to continue.</p><p>VisIt has a new <i>Simulations</i> window, which is similar in concept to the <i>Compute Engines</i> window but shows information for simulations, which is a superset of the information shown for compute engines. The <i>Simulations</i> window 
+can show progress and more detailed metadata about a simulation. The <i>
+Simulations</i> window also provides buttons that allow the user to execute 
+simulation-defined actions such as stop, resume, dump a file, etc. For more 
+information on instrumenting your simulation code with the VEWL, contact the VisIt team at <i>visit-users@ornl.gov</i>.</p></li>
+<li>VisIt can now chunk up structured meshes into a collection of structured sub-grids and an unstructured grid to preserve the structured nature of the original dataset as much as possible. Many of VisIt's filters can operate on structured grids much faster than unstructured 
+grids while also using less memory. Volume rendering especially benefits from structured grid chunking.</li>
+<li>VisIt has a new database reader plugin that allows VisIt to plot data from ESRI Shapefile databases, which are a standard in the Geographic Information Systems (GIS) field. ESRI Shapefile databases can be used to add extra levels of detail to climate and environmental visualizations by allowing you to incorporate elements such as roads, road names, lakes, rivers, and other geographical or manmade features.</li>
+<li>VisIt now supports Label variables, which are fixed length strings defined on a mesh. The Label plot has been extended so that it can plot Label variables in addition to scalars, and meshes.  VisIt's XML tools have been extended to support label variables. The ESRI Shapefile database reader plugin currently uses label variables to serve up names of geographic features.</li>
+<li>VisIt's smart file grouping now groups ALE3D abort files with other related files so just one virtual database is produced. You can disable this behavior by reverting from "Smart" file grouping to just regular file grouping using the controls in the File selection window.</li>
+<li>VisIt's smart file grouping now groups Flash files that have less related 
+names, allowing Lasnex databases to be more easily viewable in VisIt.</li>
+<li>VisIt's viewer now deletes the encoded VTK data string that is sent from the compute engine in order to 
+substantially reduce its memory footprint.</li>
+<li>VisIt's dynamic load balancing has been repaired so that it works again.</li>
+<li>VisIt's Volume plot now supports log and skew variable scaling.</li>
+<li>It is now possible to set the individual contour or set colors (including transparency) for the Contour, Boundary, FilledBoundary, and Subset plots in VisIt's CLI.</li>
+<li>VisIt's automatic file grouping now supports Diablo's file naming convention.</li>
+<li>VisIt's visualization window now features a <i>Lock time</i> icon that allows you to lock the vis window in time. The lock view icon has been removed from the view toolbar and both lock icons have been added to a new <i>Lock</i> toolbar that is always available.</li>
+<li>VisIt now ensures that a database correlation for a vis window that is locked in time is correct after replacing databases.</li>
+<li>VisIt's Box operator has been modified so that it outputs rectilinear grids when possible, resulting in a large speedup.</li>
+<li>VisIt's new <i>visit_writer</i> library has been wrapped in a Python extension module so that it can be used by Python programs after issuing an "import visit_writer" directive.</li>
+<li>VisIt now provides a <i>var_skew</i> expression that lets you skew variables.</li>
+<li>The BOV database reader plugin has been modified so that it defers more of its work until later, making it open databases faster.</li>
+<li>Choosing the 1x1 window layout now ensures that the window whose 1x1 button was clicked is made the active window and is thus visible when the 1x1 window layout is used.</li>
+<li>Curves created by dynamic lineout mode observe the original plot unless the reference lines in the original plot's vis window are cleared.</li>
+<li>The hosts drop-down list in VisIt's File selection window has been changed so that it is tall enough to display all commonly-used hosts without having to scroll.</li>
+<li>Cloning a window now causes any saved views to be copied to the cloned window.</li>
+<li>VisIt now displays more information when showing the names for available time sliders.</li>
+<li>VisIt now has a host profile for the <i>uv</i> machine on the SCF.</li>
+<li>VisIt now has a host profile for the <i>gviz</i> machine on the OCF.</li>
+<li>VisIt now has a host profile for the <i>sphere</i> machine on the OCF.</li>
+<li>The timeout for VisIt's compute engine has been changed to 10 minutes.</li>
+<li>The AddOperator method in VisIt's Java client source code has been overloaded to support a string argument.</li>
+<li>The <i>visit_writer</i> library now prints double precision numbers with greater accuracy. </li>
+</ul>
+<p><b><font size="4">Bugs fixed in version 1.4.3</font></b></p>
+<ul>
+<li>VisIt cannot restore expressions from session files.</li>
+<li>VisIt's compute engine has problem-sized memory leaks.</li>
+<li>The spin boxes in the IndexSelect operator attributes window need to allow a higher maximum value.</li>
+<li>Copying everything from window 2 to window 1 can crash VisIt's viewer.</li>
+<li>The Compute Engine's Interrupt button has been temporarily disabled.</li>
+<li>VisIt's <i>convert</i> program does not get installed correctly.</li>
+<li>VisIt's Slice operator sometimes returns invalid data that can cause a crash.</li>
+<li>VisIt's compute engine crashes when processing Enzo data on a single-grid mesh.</li>
+<li>VisIt's viewer crashes when plotting a sliced Label plot.</li>
+<li>The time slider does not work when multiple windows are locked in time.</li>
+<li>VisIt is unable to look at more than 20 time states of a PF3D database.</li>
+<li>VisIt is unable to run client/server because of a new SSH message.</li>
+<li>Spheral files cannot be read by VisIt 1.4.2.</li>
+<li>Time queries can cause the compute engine to crash when the Curve plots created by the time queries are deleted.</li>
+<li>The xml2plugin program is missing from binary distributions.</li>
+<li>Uninitialized memory in the Boundary plot is causing extra lines to appear.</li>
+<li>Pick sometimes erroneously returns the <i>Chosen pick did not intersect a surface</i> message.</li>
+<li>The NumZones and NumNodes queries do not work on expressions.</li>
+<li>Calling the Query function after calling QueryOverTime in VisIt's CLI can yield an incorrect result.</li>
+<li>The first variable in the Scatter plot legend is sometimes garbled.</li>
+<li>The selection in the vis window's popup menu marches down the list of available menu options when the popup menu is visible while VisIt is animating.</li>
+<li>The BOV database reader plugin does not return cycle.</li>
+<li>VisIt's L2Norm query does not handle repeated points when calculating the L2Norm of a Curve plot.</li>
+<li>When a vis window is locked in time, causing an existing database correlation to be modified, VisIt does not make sure that the vis window whose database is joining the database correlation has a suitable time slider.</li>
+<li>The Project operator does not save its attributes to the config file or to session files.</li>
+<li>The <i>visit -movie</i> script does not honor the save tiled flag, making it impossible to save a movie of tiled images.</li>
+<li>Single cells and nodes do not appear in the Label plot if the original data has been sliced.</li>
+<li>VisIt cannot plot scalars when a mesh variable name does not quite match the scalar's mesh name. This can happen with Silo files that contain many subdirectories.</li>
+<li>VisIt cannot plot Silo files created by dyna3d.</li>
+<li>The <i>samples</i> field in the Lineout Query should be removed.</li>
+<li>The new Python module <i>visit_writer</i> does not accept empty variable lists.</li>
+<li>The <i>DeleteWindow</i> function in VisIt's CLI should complain if you pass it an argument since it does not take any arguments.</li>
+<li>The <i>OpenComputeEngine</i> function in Visit's CLI does not issue a warning if it does nothing because a compute engine is already running.</li>
+<li>VisIt still provides a host profile for <i>edgewater</i> even though that machine no longer exists.</li>
+</ul>
+<p>Click the following link to view the release notes for the next version
+of VisIt: <a href="relnotes1.4.4.html">VisIt 1.4.4 Release Notes</a>.</p>
+<p>Click the following link to view the release notes for the previous version
+of VisIt: <a href="relnotes1.4.2.html">VisIt 1.4.2 Release Notes</a>.</p>
+</body>
+</html>

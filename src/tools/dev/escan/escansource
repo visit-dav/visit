@@ -1,0 +1,101 @@
+#!/bin/csh -f
+#
+#  Modifications:
+#
+#    Hank Childs, Fri Jan 28 13:17:16 PST 2005
+#    Updated directories.
+#
+#    Mark C. Miller, Tue Nov 22 09:42:57 PST 2005
+#    Removed refs to sl_io subdirectory
+#
+#    Hank Childs, Mon Feb 11 17:13:30 PST 2008
+#    Rename avt to avt to reflect change in directory names.
+#
+# ****************************************************************************
+
+set VISITDIR = "../.."
+
+echo ""
+echo "escansource will issue warnings for the following known spots:"
+echo ""
+echo "     VisItException.C (necessarily has throw/try/catch)"
+echo "     NetworkManager.C (does not use CATCH2 to avoid compiler bug)"
+echo "     FileServerList.C (uses macro that confuses escan)"
+echo "     PyVolumeAttributes.C forces the warning:"
+echo "           Input string too long, limit 1024"
+echo ""
+echo ""
+
+escan $VISITDIR/common/comm/*.C
+escan $VISITDIR/common/expr/*.C
+escan $VISITDIR/common/misc/*.C
+escan $VISITDIR/common/parser/*.C
+escan $VISITDIR/common/plugin/*.C
+escan $VISITDIR/common/proxybase/*.C
+escan $VISITDIR/common/siloobj/*.C
+escan $VISITDIR/common/siloobj_vtk_db/*.C
+escan $VISITDIR/common/state/*.C
+escan $VISITDIR/common/utility/*.C
+escan $VISITDIR/common/Exceptions/Database/*.C
+escan $VISITDIR/common/Exceptions/Pipeline/*.C
+escan $VISITDIR/common/Exceptions/Plotter/*.C
+escan $VISITDIR/common/Exceptions/VisWindow/*.C
+escan $VISITDIR/avt/DBAtts/MetaData/*.C
+escan $VISITDIR/avt/DBAtts/SIL/*.C
+escan $VISITDIR/avt/Database/Database/*.C
+escan $VISITDIR/avt/Database/Formats/*.C
+escan $VISITDIR/avt/Database/Ghost/*.C
+escan $VISITDIR/avt/Expressions/Abstract/*.C
+escan $VISITDIR/avt/Expressions/Conditional/*.C
+escan $VISITDIR/avt/Expressions/Derivations/*.C
+escan $VISITDIR/avt/Expressions/General/*.C
+escan $VISITDIR/avt/Expressions/Management/*.C
+escan $VISITDIR/avt/Expressions/Math/*.C
+escan $VISITDIR/avt/Expressions/MeshQuality/*.C
+escan $VISITDIR/avt/FileWriter/*.C
+escan $VISITDIR/avt/Filters/*.C
+escan $VISITDIR/avt/Math/*.C
+escan $VISITDIR/avt/MIR/Base/*.C
+escan $VISITDIR/avt/MIR/Tet/*.C
+escan $VISITDIR/avt/MIR/Zoo/*.C
+escan $VISITDIR/avt/Pipeline/Data/*.C
+escan $VISITDIR/avt/Pipeline/Pipeline/*.C
+escan $VISITDIR/avt/Pipeline/PrivateFilters/*.C
+escan $VISITDIR/avt/Pipeline/Sinks/*.C
+escan $VISITDIR/avt/Pipeline/Sources/*.C
+escan $VISITDIR/avt/Plotter/*.C
+escan $VISITDIR/avt/Preprocessor/*.C
+escan $VISITDIR/avt/QtVisWindow/*.C
+escan $VISITDIR/avt/Queries/Abstract/*.C
+escan $VISITDIR/avt/Queries/Misc/*.C
+escan $VISITDIR/avt/Queries/Pick/*.C
+escan $VISITDIR/avt/Queries/Queries/*.C
+escan $VISITDIR/avt/View/*.C
+escan $VISITDIR/avt/VisWindow/Colleagues/*.C
+escan $VISITDIR/avt/VisWindow/Interactors/*.C
+escan $VISITDIR/avt/VisWindow/Proxies/*.C
+escan $VISITDIR/avt/VisWindow/Tools/*.C
+escan $VISITDIR/avt/VisWindow/VisWindow/*.C
+escan $VISITDIR/engine/main/*.C
+escan $VISITDIR/engine/parstate/*.C
+escan $VISITDIR/engine/proxy/*.C
+escan $VISITDIR/engine/rpc/*.C
+escan $VISITDIR/gui/*.C
+escan $VISITDIR/launcher/main/*.C
+escan $VISITDIR/launcher/proxy/*.C
+escan $VISITDIR/launcher/rpc/*.C
+escan $VISITDIR/mdserver/main/*.C
+escan $VISITDIR/mdserver/proxy/*.C
+escan $VISITDIR/mdserver/rpc/*.C
+escan $VISITDIR/viewer/main/*.C
+escan $VISITDIR/viewer/proxy/*.C
+escan $VISITDIR/viewer/rpc/*.C
+escan $VISITDIR/visit_vtk/full/*.C
+escan $VISITDIR/visit_vtk/lightweight/*.C
+escan $VISITDIR/visit_vtk/parallel/*.C
+escan $VISITDIR/visitpy/*.C
+escan $VISITDIR/vtkqt/*.C
+escan $VISITDIR/winutil/*.C
+escan $VISITDIR/databases/*/*.C
+escan $VISITDIR/operators/*/*.C
+escan $VISITDIR/plots/*/*.C

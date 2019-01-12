@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+        <key>CFBundleDevelopmentRegion</key>
+        <string>English</string>
+        <key>CFBundleExecutable</key>
+        <string>VisIt</string>
+        <key>CFBundleGetInfoString</key>
+        <string>VisIt Visualization Tool</string>
+        <key>CFBundleIconFile</key>
+        <string>VisIt.icns</string>
+        <key>CFBundleIdentifier</key>
+        <string>VISI</string>
+        <key>CFBundleInfoDictionaryVersion</key>
+        <string>6.0</string>
+        <key>CFBundleLongVersionString</key>
+        <string>VisIt version @VISIT_VERSION@</string>
+        <key>LSEnvironment</key>
+        <dict>
+                <key>TERM_PROGRAM</key>
+                <string>Apple_Terminal</string>
+                <key>VISIT_STARTED_FROM_APPBUNDLE</key>
+                <string>TRUE</string>
+        </dict>
+        <key>CFBundleName</key>
+        <string>VisIt @VISIT_VERSION@</string>
+        <key>CFBundlePackageType</key>
+        <string>APPL</string>
+        <key>CFBundleShortVersionString</key>
+        <string>VisIt @VISIT_VERSION@</string>
+        <key>CFBundleSignature</key>
+        <string>????</string>
+        <key>CFBundleVersion</key>
+        <string>@VISIT_VERSION@</string>
+        <key>CSResourcesFileMapped</key>
+        <true/>
+        <key>LSRequiresCarbon</key>
+        <true/>
+        <key>NSHumanReadableCopyright</key>
+        <string>Copyright (c) 2000 - 2018, Lawrence Livermore National Security, LLC</string>
+</dict>
+</plist>

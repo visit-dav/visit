@@ -1,0 +1,52 @@
+<html>
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>VisIt 1.0.7 Release Notes</title>
+</head>
+<body>
+<p align="center"><b><font size="6">VisIt 1.0.7 Release Notes</font></b></p>
+<p>Welcome to VisIt's release notes page. This page describes the important 
+enhancements and bug-fixes that were added to this release.</p>
+<p><b><font size="4">Features added in version 1.0.7</font></b></p>
+<ul>
+  <li>The Mesh, Pseudocolor, and Subset plots now have options for mesh smoothing. Mesh smoothing removes small points that are common after material interface reconstruction.</li>
+  <li>The Connection Progress window, which shows the status of compute engine launches, is now available on the AIX platform since it now works correctly with compute engines submitted to the batch system.</li>
+  <li>The Engine window now displays the number of processors and nodes used by a compute engine so it is immediately obvious if the compute engine is serial or parallel.</li>
+  <li>VisIt now provides ten different line thicknesses for plots that use lines.</li>
+  <li>VisIt can now save Postscript files.</li>
+  <li>The On/Off buttons in the Subset window have been renamed to All/None.</li>
+</ul>
+<p><b><font size="4">Bugs fixed in version 1.0.7</font></b></p>
+<ul>
+  <li>VisIt hangs or crashes when performing species selection.</li>
+  <li>Material selection sometimes produces results that look erroneous.</li>
+  <li>VisIt crashes when picking on a subset plot of materials containing mixed zones.</li>
+  <li>VisIt sometimes crashes while communicating ghost zones when running in parallel.</li>
+  <li>Pick returns invalid results with material selected plots.</li>
+  <li>Setting a SIL restriction for a plot in a window created by cloning causes VisIt to crash.</li>
+  <li>Slicing along the problem boundary results in a plot with no geometry.</li>
+  <li>The Subset plot does not show all domains after replacing a file.</li>
+  <li>The Surface plot fails to update when certain options are changed.</li>
+  <li>The Mesh plot shows lots of extra junk lines if material selection has been performed.</li>
+  <li>The Host Profile window resets values.</li>
+  <li>The Vector plot is missing a legend.</li>
+  <li>If the compute engine does not have the requested operator, it applies the wrong operator.</li>
+  <li>Having a "config" directory in your current directory crashes VisIt.</li>
+  <li>The Subset plot sometimes has a bad legend.</li>
+  <li>VisIt no longer recenters the view when reopening or replacing files unless the Autocenter view toggle is set in the View window.</li>
+  <li>When the Index Select operator is applied to a Mesh plot that has been thresholded, the resulting plot is incorrect.</li>
+  <li>The Subset plot's legend does not preserve the order of materials in the database.</li>
+  <li>Setting the "Select by" method in the Contour plot window now works correctly with auto update.</li>
+  <li>Adding -L/usr/local/lib causes problems in VisIt's link line.</li>
+</ul>
+<p>Click the following link to view the release notes for the previous version 
+of VisIt: <a href="relnotes1.0.6.html">VisIt 1.0.6 Release Notes</a>.</p>
+<p>Click the following link to view the release notes for the next version 
+of VisIt: <a href="relnotes1.1.html">VisIt 1.1 Release Notes</a>.</p>
+
+</body>
+
+</html>

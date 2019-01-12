@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+  <Plugin name="LineSurface" type="operator" label="LineSurface" version="1.0" enabled="false" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" category="Analysis">
+    <Attribute name="LineSurfaceAttributes" purpose="Attributes for the LineSurface operator" persistent="true" keyframe="true" exportAPI="" exportInclude="">
+      <Field name="startTime" label="Index of first time slice" type="int">
+        0
+      </Field>
+      <Field name="endTime" label="Index of last time slice" type="int">
+        1
+      </Field>
+      <Field name="stride" label="Stride through time slices" type="int">
+        1
+      </Field>
+      <Field name="point1" label="Point 1" type="doubleArray" length="3">
+        0.000000
+        0.000000
+        0.000000
+      </Field>
+      <Field name="point2" label="Point 2" type="doubleArray" length="3">
+        0.000000
+        0.000000
+        0.000000
+      </Field>
+    </Attribute>
+  </Plugin>

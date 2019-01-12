@@ -1,0 +1,9 @@
+The area between the curves is 0.729861.
+The L2Norm between the two curves is 0.976689.
+
+The area between the curves is 0.888465.
+The L2Norm between the two curves is 1.00937.
+
+The area between the curves is 0.641793.
+The L2Norm between the two curves is 0.828803.
+

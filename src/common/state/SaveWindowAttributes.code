@@ -1,0 +1,97 @@
+Initialization: outputToCurrentDirectory
+#if defined(_WIN32)
+    outputToCurrentDirectory = false;
+#else
+    outputToCurrentDirectory = true;
+#endif
+
+Initialization: outputDirectory
+#if defined(_WIN32)
+    const char *visitHome = getenv("VISITUSERHOME");
+    if(visitHome != 0)
+    {
+        outputDirectory = std::string(visitHome) + "\\My images";
+    }
+    else
+    {
+        visitHome = getenv("VISITHOME");
+        if(visitHome != 0)
+        {
+            outputDirectory = std::string(visitHome) + "\\My images";
+        }
+        else
+        {
+            outputDirectory = ".";
+        }
+    }
+#else
+    outputDirectory = ".";
+#endif
+
+Function: CurrentFormatIsImageFormat
+Declaration: bool CurrentFormatIsImageFormat(void);
+Definition:
+// ****************************************************************************
+//  Method: CurrentFormatIsImageFormat
+//
+//  Purpose:
+//      Determines if the current file format is image-based.
+//
+//  Programmer: Hank Childs
+//  Creation:   October 15, 2003
+//
+// ****************************************************************************
+
+bool
+SaveWindowAttributes::CurrentFormatIsImageFormat(void)
+{
+    FileFormat ff = GetFormat();
+    if (ff == BMP)
+        return true;
+    if (ff == JPEG)
+        return true;
+    if (ff == PNG)
+        return true;
+    if (ff == POSTSCRIPT)
+        return true;
+    if (ff == PPM)
+        return true;
+    if (ff == RGB)
+        return true;
+    if (ff == TIFF)
+        return true;
+    if (ff == EXR)
+        return true;
+
+    return false;
+}
+
+Function: CurrentFormatSupportsAlpha
+Declaration: bool CurrentFormatSupportsAlpha();
+Definition:
+// ****************************************************************************
+//  Method: CurrentFormatIsImageFormat
+//
+//  Purpose:
+//      Determines if the current file format supports alpha.
+//
+//  Programmer: Brad Whitlock
+//  Creation:   Wed Sep 20 17:57:23 PDT 2017
+
+//
+// ****************************************************************************
+
+bool
+SaveWindowAttributes::CurrentFormatSupportsAlpha()
+{
+    FileFormat ff = GetFormat();
+    if (ff == PNG)
+        return true;
+    if (ff == TIFF)
+        return true;
+    if (ff == EXR)
+        return true;
+
+    return false;
+}
+

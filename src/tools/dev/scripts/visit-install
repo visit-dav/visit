@@ -1,0 +1,1323 @@
+#!/bin/sh
+#-----------------------------------------------------------------------
+#
+# VISIT_INSTALL - Install a compressed tar file distribution of visit
+#                 in an existing directory.
+#
+# Author: Eric Brugger
+# Date:   October 26, 1996
+#
+# Usage
+#    visit-install    [-c anl | arl | asu | awe | chombo | clemson | cscs |"
+#                         eth_zurich | llnl_open | llnl_open_rz |"
+#                         llnl_open_cz | llnl_closed | lsu | ncar |"
+#                         nersc | nics | ohio | ornl | princeton |"
+#                         sandia | sandia_closed | umich | utah]"
+#                      [-g group] [-b bank] [-gw] [-l] [-dmg] [-test]"
+#                      [-beta | -private] version platform directory"
+#
+#    The default is to install this version as the current version.
+#    The -beta flag makes this version the current beta version instead.
+#    The -private flag simply adds this version to the tree without making
+#        it the current stable or current beta.
+#
+# Notes:
+#    The options must be first.
+#
+# Modifications:
+#    Jeremy Meredith, Mon Mar 19 12:06:55 PST 2001
+#    Made it create symlinks for the current or beta release.
+#    Made it support a -beta and -private flag.
+#
+#    Eric Brugger, Thu Mar 29 14:21:39 PST 2001
+#    Replace incorrect "else if" constructs with "elif".
+#
+#    Eric Brugger, Fri Mar 30 08:45:12 PST 2001
+#    I undid my previous replacement of "else if" with "elif".  I
+#    replaced tests for links (-l) with tests for existance (-e), since
+#    tests for links behaved strangely on AIX systems.
+#
+#    Eric Brugger, Fri Mar 30 10:55:49 PST 2001
+#    Reorder some lines cleaing up old versions and backing up the
+#    current version so that it would work properly.
+#
+#    Eric Brugger, Wed Jul 18 15:51:32 PDT 2001
+#    I added the -a flag.
+#
+#    Eric Brugger, Wed Feb 20 10:52:52 PST 2002
+#    I added support for install sample data files.
+#
+#    Eric Brugger, Wed Aug 21 14:04:25 PDT 2002
+#    I modified the script so that existing distributions would be
+#    consistent as much as possible while being updated.
+#
+#    Eric Brugger, Mon Jul 21 17:53:22 PDT 2003
+#    I added the ability to install a configuration file.
+#
+#    Eric Brugger, Thu Jul 31 12:09:02 PDT 2003
+#    I removed some error tests that were redundant and caused a
+#    maintenance issue.
+#
+#    Brad Whitlock, Wed Oct 8 16:29:25 PST 2003
+#    Added support for clickable scripts in MacOS X.
+#
+#    Brad Whitlock, Tue Oct 21 14:07:33 PST 2003
+#    I made the command script files that we generate on MacOS X have
+#    execute file permissions so they can run when double-clicked in
+#    the Finder.
+#
+#    Eric Brugger, Tue Dec 23 11:05:37 PST 2003
+#    I added an option to enable usage logging.
+#
+#    Eric Brugger, Wed May 12 11:05:58 PDT 2004
+#    I changed the default for append to be true, and replaced the -a
+#    option with -r to make it false.
+#
+#    Eric Brugger, Thu Sep 23 13:41:22 PDT 2004
+#    I corrected a bug where the usage logging flag in the visit script
+#    doesn't get set when logging is enabled.  The sed command that made
+#    the substitution assumed a certain number of spaces in the line,
+#    which changed on a recent update.  The current sed command is more
+#    forgiving of extra whitespace.
+#
+#    Eric Brugger, Thu Sep 30 10:09:21 PDT 2004
+#    I made a chgrp command for installing on the mac conditional on the
+#    user specifying a group on the command line.
+#
+#    Jeremy Meredith, Thu Dec  9 17:41:35 PST 2004
+#    Made the switch to version-specific visit scripts.
+#    Now the main "visit" script is a symlink to frontendlauncher,
+#    legacylauncher is the old "visit" script, and frontendlauncher
+#    is the new main script.  Thus we should just erase the old visit
+#    script and treat legacylauncher and frontendlauncher as two
+#    modern equivalents of the old visit script.  Added the ability to
+#    launch tools without passing them as an argument to the visit script.
+#
+#    Jeremy Meredith, Mon Apr 18 09:27:00 PDT 2005
+#    Renamed convert to visitconvert.
+#
+#    Jeremy Meredith, Wed Apr 20 15:36:36 PDT 2005
+#    I ensured that "internallauncher" had the right permissions.
+#
+#    Jeremy Meredith, Wed Aug 31 16:48:05 PDT 2005
+#    I added xml2plugin.
+#
+#    Brad Whitlock, Tue Mar 7 13:47:00 PST 2006
+#    I added the ability to choose a bank other than bdivp.
+#
+#    Eric Brugger, Fri Mar 10 09:55:15 PST 2006
+#    I added the ability to install a nersc or ornl config site file.
+#    I made a chgrp command conditional on the user having set a group.
+# 
+#    Brad Whitlock, Thu May 25 15:22:32 PST 2006
+#    Added logic to create .installinfo file.
+#
+#    Eric Brugger, Wed Jun  7 16:38:48 PDT 2006
+#    Remove some debug statements.
+#
+#    Hank Childs, Mon Oct 16 09:12:38 PDT 2006
+#    Add support for cli_usagelog.
+#
+#    Brad Whitlock, Wed Sep 20 11:44:49 PDT 2006
+#    I made it use mpeg2encode. I also made it install visit_composite
+#    and visit_transition.
+#
+#    Brad Whitlock, Fri Feb 2 12:14:08 PDT 2007
+#    Added support for spaces in the install directory name.
+#
+#    Thomas R. Treadway, Tue Feb 13 16:20:12 PST 2007
+#    Added an dmg option to create a Mac disk image.
+#
+#    Eric Brugger, Wed Feb 21 15:36:59 PST 2007
+#    Added code to delete the link bin/convert in case it is there
+#    from a previous installation.
+#
+#    Thomas R. Treadway, Wed Apr  4 10:22:37 PDT 2007
+#    Treat the platformDir like all of the others, allowing darwin-ppc,
+#    darwin-i386, or darwin (universal) directory.
+#
+#    Hank Childs, Mon May 14 17:28:28 PDT 2007
+#    Add information to usage statement regarding directory format.
+#
+#    Mark C. Miller, Tue Jun 19 17:29:08 PDT 2007
+#    Added visit_plugin and mkgrdbl
+#
+#    Hank Childs, Wed Nov 14 16:54:09 PST 2007
+#    Make sure we have write permission for the target directory.
+#
+#    Hank Childs, Mon Nov 19 09:20:04 PST 2007
+#    Check for corrupted downloads.
+#
+#    Hank Childs, Mon Nov 26 16:17:06 PST 2007
+#    Add some more checks to issue better error messages for various
+#    common ways to do this wrong.
+#
+#    Sean Ahern, Tue Dec  4 11:42:27 EST 2007
+#    Added documentation for "-c ornl" and "-c nersc" options.
+#
+#    Eric Brugger, Wed Dec 12 17:49:34 PST 2007
+#    I removed the -r option. I modified the behavior of the private
+#    install to leave the name of the newly installed version as
+#    $version+, to avoid the possibility that it would be recognized
+#    as a patch.
+#
+#    Eric Brugger, Fri Jan 11 10:15:40 PST 2008
+#    I corrected a test checking for write permission in the install
+#    directory inadvertently also required that the install directory
+#    already exist.
+#
+#    Dave Bremer, Wed Mar  5 14:02:40 CST 2008
+#    Added anl (Argonne National Lab) site option.
+#
+#    Hank Childs, Tue Jan 20 14:58:07 PST 2009
+#    Added princeton site option.
+#
+#    Hank Childs, Sun Apr 26 09:26:43 CDT 2009
+#    Added TACC option.  Renamed open and closed to llnl_open and llnl_closed.
+#
+#    Hank Childs, Thu Oct 15 06:28:42 PDT 2009
+#    Corrected print statement.
+#
+#    Brad Whitlock, Fri Dec 18 11:06:19 PDT 2009
+#    I changed it to install output from "make package", which is in a
+#    slightly different format than before.
+#
+#    Gunther H. Weber, Fri Jan 29 10:36:46 PST 2010
+#    Added support for ANAG configuration option
+#
+#    Jeremy Meredith, Thu Feb 18 17:07:08 EST 2010
+#    Unified windows and unix host profiles.
+#    Split host profiles from rest of config files.
+#
+#    Eric Brugger, Fri Mar  5 13:18:43 PST 2010
+#    I modified the script so that it handles the case where the name
+#    of the distribution file had been changed from the name created
+#    by "make package".
+#
+#    Gunther H. Weber, Tue Mar 30 15:39:05 PDT 2010
+#    Added Hopper to NERSC config.
+#
+#    Jeremy Meredith, Thu Apr  8 16:14:17 EDT 2010
+#    Changed the way we update banks in installed host profiles.
+#    As part of this, changed it to copy the host profiles instead
+#    of linking to them. (So the copy in allhosts/ uses "bdivp", and
+#    the copy in hosts/ uses $bank.)
+#
+#    Cyrus Harrison, Thu Apr 22 09:29:47 PDT 2010
+#    Changed bin directory detection logic to look for 'engine_ser'
+#    instead of 'cli' b/c the existence of an empty cli include path.
+#
+#    Eric Brugger, Wed May  5 14:25:04 PDT 2010
+#    I made some corrections that worked around some bugs in the c shell
+#    on a newer version of redhat linux.  The first change was to copy the
+#    data files one at a time in a loop instead of all at once and the
+#    second change was to change the default bank in one host file at a
+#    time in a loop instead of all at once.
+#
+#    Cyrus Harrison, Wed Aug 18 10:35:39 PDT 2010
+#    Changed from use of:
+#     sed -e [pattern] -i [file]
+#      to:
+#     sed -i -e [pattern] [file]
+#    B/c of different parsing of the '-i' argument for OSX's sed
+#    implementation.
+#
+#    Hank Childs, Fri Aug 27 16:16:12 PDT 2010
+#    Add profile for U. Mich on behalf of Brock Palen.
+#    Also add TACC longhorn profile.
+#
+#    Hank Childs, Fri Oct 15 21:00:34 PDT 2010
+#    Remove davinci profile.  Also change warning when we use /tmp to 
+#    untar files.
+#
+#    Hank Childs, Wed Oct 20 08:23:39 PDT 2010
+#    Change bank from prompt to false.
+#
+#    Eric Brugger, Fri Oct 29 09:40:23 PDT 2010
+#    Added the profiles for aztec, edge and inca.
+#
+#    Hank Childs, Sun Oct 31 20:48:23 PDT 2010
+#    Add ANL / MCS login profiles.
+#
+#    Eric Brugger, Fri Nov  5 16:13:21 PDT 2010
+#    Deleted the profiles for hopi, purple, um, ilx, up and yana.
+#
+#    Eric Brugger, Fri Dec 10 16:25:23 PST 2010
+#    Deleted the profiles for gauss, ellipse and xchem.
+#
+#    Cyrus Harrison, Fri Dec 10 16:50:44 PST 2010
+#    Added profile for muir.
+#
+#    Cyrus Harrison, Fri Dec 17 11:25:51 PST 2010
+#    Added profile for sierra.
+#
+#    Eric Brugger, Tue Feb 15 09:37:37 PST 2011
+#    Converted from C shell to Posix shell.
+#
+#    Hari Krishnan, Fri Feb 18 16:27:56 PST 2011
+#    Add profiles for NICS @ UTK.
+#
+#    Eric Brugger, Tue Mar  1 16:37:38 PST 2011
+#    I modified the script so that it only changes the bank in the
+#    host profiles if the user specifies a bank with the "-b" option
+#    on the command line.
+#
+#    Eric Brugger, Fri Mar 18 16:32:26 PDT 2011
+#    I corrected a bug in some code that was setting file permissions
+#    on Mac OS X.
+#
+#    Eric Brugger, Mon May 16 14:46:53 PDT 2011
+#    I added host profiles for glory and redsky.
+#
+#    Eric Brugger, Fri Jun 24 09:23:13 PDT 2011
+#    I replaced several "find $dir -exec chgrp $group {} \;" commands
+#    with a single "chgrp -R $group $dir1 $dir2" command, since the
+#    find version is extremely slow on some systems.
+#
+#    Eric Brugger, Fri Jul  8 14:28:46 PDT 2011
+#    I modified the script to accept the version number in either the
+#    form X.Y.Z or X_Y_Z.
+#
+#    Jeremy Meredith, Tue Aug  9 14:41:28 EDT 2011
+#    Changed a redirection syntax to be a little more portable.
+#
+#    Eric Brugger, Wed Aug 24 09:15:39 PDT 2011
+#    I replaced the zeus host profile with rzzeus.
+#
+#    Eric Brugger, Wed Aug 24 10:20:22 PDT 2011
+#    I added host profiles for coastal.
+#
+#    Eric Brugger, Wed Sep  7 09:55:39 PDT 2011
+#    I replaced the alastor host profile with rzalastor.
+#
+#    Brad Whitlock, Wed Oct 12 09:49:37 PDT 2011
+#    I added RZ/CZ options for LLNL.
+#
+#    Eric Brugger, Mon Feb 27 17:52:44 PST 2012
+#    I added host profiles for unity, whitney and redsky-s.
+#
+#    Eric Brugger, Mon Mar  5 10:00:03 PST 2012
+#    I corrected some errors with the changes I made to add host
+#    profiles for unity, whitney and redsky-s.
+#
+#    Brad Whitlock, Fri Mar 30 10:04:31 PDT 2012
+#    Add LSU host profiles.
+#
+#    Eric Brugger, Thu May 10 09:18:54 PDT 2012
+#    I removed the host profile for franklin.
+#
+#    Eric Brugger, Mon May 21 17:16:15 PDT 2012
+#    I added the host profile for zin.
+#
+#    Brad Whitlock, Tue Jun  5 10:16:11 PDT 2012
+#    Remove profiles for minos, rhea.
+#
+#    Brad Whitlock, Fri Jun  8 11:54:58 PDT 2012
+#    Account for different versions of RZ machine profiles.
+#
+#    Eric Brugger, Wed Jun 13 11:41:10 PDT 2012
+#    I added the host profile for rzthriller.
+#
+#    Brad Whitlock, Tue Jul 31 17:03:25 PDT 2012
+#    Add cab.
+#
+#    Brad Whitlock, Thu Sep  6 12:37:59 PDT 2012
+#    I changed how host profiles and configs get installed since they
+#    are in separate directories now. I also added installation of
+#    customlauncher.
+#
+#    Kathleen Biagas, Wed Sep 12 16:03:22 PDT 2012
+#    visit-config.ini, visit-guiconfig.ini and visit-visitrc.ini have
+#    all been renamed in src, so no need to rename on copy.
+#
+#    Eric Brugger, Thu Sep 27 08:01:51 PDT 2012
+#    I deleted the host profile for prism.
+#
+#    Brad Whitlock, Thu Mar 21 10:04:49 PDT 2013
+#    Copy frontendlauncher.py too where we copy frontendlauncher.
+#
+#    Satheesh Maheswaran, Wed May 15 11:01:15 BST 2013
+#    I added a case statement for AWE.
+#
+#    Eric Brugger, Mon Jul 22 12:10:17 PDT 2013
+#    I modified the command that removes an existing .visit directory
+#    to do so recursively. I modified a couple of loops that change the
+#    mode to executable for all the files in the directories of the form
+#    "archicture_name/bin" to exclude "usagelog".
+#   
+#    Cyrus Harrison, Wed Oct 30 18:37:53 EDT 2013
+#    Added option for Clemson network. 
+#
+#    Mark C. Miller, Wed Jan  8 11:25:02 PST 2014
+#    Made handling of 'data' directory conditional
+#
+#    Eric Brugger, Tue Mar 11 10:21:58 PDT 2014
+#    I added missing -c options and added a -test argument that tests
+#    all the -c options.
+#
+#    Cyrus Harrison, Fri May 30 10:42:10 PDT 2014
+#    Added option for Swiss National Supercomputing Center (CSCS). 
+#
+#    Eric Brugger, Wed Oct 22 11:33:35 PDT 2014
+#    I added a host profile for surface.
+#
+#    Kathleen Biagas, Mon Jan 26 07:46:28 PST 2015
+#    Removed host profile for edge.
+#
+#    Kathleen Biagas, Thu May  7 09:48:06 PDT 2015
+#    Fix second 'data' conditional to test for "$distributiondir"/data.
+#
+#    Eric Brugger, Tue Aug 25 16:30:55 PDT 2015
+#    I replaced "LLNL open network (RZ only)", "LLNL open network (CZ only)"
+#    and "LLNL open network (CZ and RZ)" with "LLNL open network" in the
+#    list of profiles that the user selects from when a profile wasn't
+#    specified on the command line. The three options are still supported
+#    on the command line.
+#
+#    Eric Brugger, Wed Oct 14 16:06:52 PDT 2015
+#    I changed the second 'data' conditional to test for ../data. The
+#    previous change to "$distributiondir"/data didn't work because the
+#    script is in the directory $distributiondir/$version at that point
+#    and $distributiondir is not an absolute path.
+#
+#    Eric Brugger, Wed Jan 11 14:45:37 PST 2017
+#    I added a host profile for syrah.
+#
+#    Eric Brugger, Fri Oct 29 09:40:23 PDT 2010
+#    I deleted the host profile for aztec and added host profiles for
+#    borax and quartz.
+#
+#    Eric Brugger, Fri Jan 13 09:41:59 PST 2017
+#    I deleted the host profile for sierra.
+#
+#    Eric Brugger, Fri Feb 17 09:26:52 PST 2017
+#    I corrected the bank setting logic to replace "wbronze" with
+#    the specified bank, since the default bank in all the llnl host
+#    profiles is now "wbronze" instead of "bdivp".
+#
+#    Eric Brugger, Tue Sep  5 08:38:50 PDT 2017
+#    I removed the TACC option. TACC doesn't support client server and
+#    they support their own host profiles and custom launcher for use
+#    on the machines themselves, so there is no need to support it here.
+#    In fact they will only get out of date and cause confusion.
+#
+#    Eric Brugger, Tue Sep  5 17:12:29 PDT 2017
+#    I unified the LLNL custom launchers and configs.
+#
+#    Eric Brugger, Wed Oct 17 17:00:45 PDT 2018
+#    I deleted the host profile for cab.
+#
+#    Eric Brugger, Mon Oct 22 09:55:20 PDT 2018
+#    I added a host profile for pascal.
+#
+#    Eric Brugger, Fri Nov 30 10:02:20 PST 2018
+#    I added a host profile for lassen.
+#
+#    Eric Brugger, Mon Dec  3 14:08:26 PST 2018
+#    I added a host profile for sierra.
+#
+#-----------------------------------------------------------------------
+
+Compress=COMPRESS
+
+beta=false
+private=false
+config=prompt
+bank=false
+logging=false
+group_ownership=none
+dir_permission=755
+file_permission=644
+dmg=false
+test=false
+
+# Figure out the platform so if we're on a platform for which we need to
+# perform extra steps, we know it.
+uname=`which uname`
+os=`$uname -s | tr "[A-Z]" "[a-z]" | tr -d "[0-9]"`
+
+option_found=true
+while [ "$option_found" = "true" ]; do
+   case "$1" in
+      -gw)
+         dir_permission=775
+         file_permission=664
+         shift
+         ;;
+      -g)
+         group_ownership=$2
+         shift
+         shift
+         ;;
+      -beta)
+         beta=true
+         shift
+         ;;
+      -private)
+         private=true
+         shift
+         ;;
+      -c)
+         config=$2
+         shift
+         shift
+         ;;
+      -b)
+         bank=$2
+         shift
+         shift
+         ;;
+      -l)
+         logging=true
+         shift
+         ;;
+      -dmg)
+         dmg=true
+         shift
+         ;;
+      -test)
+         test=true
+         shift
+         ;;
+      *)
+         option_found=false
+         ;;
+   esac
+done
+
+if [ "$#" != "3" ]; then
+   echo "Usage: visit-install [-c anl | arl | asu | awe | chombo | clemson | cscs |"
+   echo "                         eth_zurich | llnl_open | llnl_open_rz |"
+   echo "                         llnl_open_cz | llnl_closed | lsu | ncar |"
+   echo "                         nersc | nics | ohio | ornl | princeton | "
+   echo "                         sandia | sandia_closed | umich | utah]"
+   echo "                     [-g group] [-b bank] [-gw] [-l] [-dmg] [-test]"
+   echo "                     [-beta | -private] version platform directory"
+   echo ""
+   echo "This will install all of its files and subdirectories directly in"
+   echo "the specified directory. (So use /usr/local/visit, not /usr/local)"
+   exit 1
+fi
+
+if [ "$beta" = "true" ]; then
+   if [ "$private" = "true" ]; then
+      echo "Only -beta or -private may be specified, not both."
+      exit 1
+   fi
+fi
+
+version=`echo $1 | tr "_" "."`
+base=`echo visit$version | tr "." "_"`
+platform="$2"
+dir="$3"
+
+fname1=$base.$platform.tar.Z
+if [ ! -e $fname1 ]; then
+   Compress=GZIP
+   fname1=$base.$platform.tar.gz
+   if [ ! -e $fname1 ]; then
+      tarname=$base.$platform.tar
+      if [ -e $tarname ]; then
+          # Note: as far as I can tell, it would be fine to just
+          # accept the unzipped distribution.  But I decided that 
+          # would be a bigger change than I wanted to make.
+          # ** The purpose of the above comment is to communicate to
+          #    a developer that *was* inclined to modify this script to
+          #    accept unzipped distributions that I don't have any 
+          #    special knowledge that this is a bad idea ... I'm just
+          #    not brave enough right now to deal with any potential 
+          #    fallout. **
+          echo "It appears that you unzipped the distribution file yourself."
+          echo "That is not what this script expects."
+          echo "Please download the zipped distribution again."
+      else
+          ls -1 $base.*.tar.* > /dev/null 2>&1
+          if [ "$status" = "0" ]; then
+              echo "You specified your distribution as $platform."
+              echo "I could not locate that distribution."
+              num_dist=`ls -1 $base*.tar.* | wc -l`
+              if [ "$num_dist" = "1" ]; then
+                 echo "But I could find this distribution that you downloaded:"
+              else
+                 echo "But I could find these distributions that you downloaded:"
+              fi
+              ls -1 $base*.tar.* | sed 's/'$base'\./    /g' | sed 's/.tar.gz//g' | sed 's/.tar.Z//g'
+              if [ "$num_dist" = "1" ]; then
+                  echo "Either try specifying visit-install again with this "
+                  echo "distribution, or, if you think you specified the distribution"
+                  echo "name correctly, try downloading the file for $platform ($fname1)"
+              else
+                  echo "Either try specifying visit-install again with one of these "
+                  echo "distributions, or, if you think you specified the distribution"
+                  echo "name correctly, try downloading the file for $platform ($fname1)"
+              fi
+              echo ""
+          else
+              echo "Could not find file containing the distribution."
+              echo "(I was looking for file: $fname1)"
+          fi
+      fi
+      echo "Bailing out..."
+      exit 2
+   fi
+fi
+fname2=$base.$platform.tar
+
+#
+# If the directory name is not an absolute path then make it one.
+#
+absolutepath=`echo "$dir" | grep "^/"`
+if [ "$absolutepath" = "" ]; then
+   dir=`pwd`/"$dir"
+fi
+
+if [ -e $dir ]; then
+   touch $dir/test.$$ 2> /dev/null
+   if [ ! -e $dir/test.$$ ]; then
+      echo ""
+      echo "You do not have write permission to $dir"
+      echo "Bailing out"
+      echo ""
+      exit 3
+   else
+      rm $dir/test.$$
+   fi
+else
+   touch $dir.test.$$ 2> /dev/null
+   if [ ! -e $dir.test.$$ ]; then
+      echo ""
+      echo "You do not have write permission to create $dir"
+      echo "Bailing out"
+      echo ""
+      exit 3
+   else
+      rm $dir.test.$$
+   fi
+fi
+
+#
+# If the user specified test, then test all the config options.
+#
+if [ "$test" = "true" ]; then
+    echo "Testing none configuration..."
+    rm -rf $dir
+    $0 -c none $version $platform $dir > /dev/null 2>&1
+    files=`ls $dir/$version/.visit/hosts` 
+    if [ "$files" != "" ]; then
+       echo "failed"
+       exit 1
+    fi
+    echo "Testing chombo configuration..."
+    rm -rf $dir
+    $0 -c chombo $version $platform $dir > /dev/null 2>&1
+    files=`ls $dir/$version/bin/customlauncher` 
+    if [ "$files" == "" ]; then
+       echo "failed"
+       exit 1
+    fi
+    echo "Testing anl configuration..."
+    rm -rf $dir
+    $0 -c anl $version $platform $dir > /dev/null 2>&1
+    files=`ls $dir/$version/.visit/hosts/host_anl*` 
+    if [ "$files" == "" ]; then
+       echo "failed"
+       exit 1
+    fi
+    echo "Testing arl configuration..."
+    rm -rf $dir
+    $0 -c arl $version $platform $dir > /dev/null 2>&1
+    files=`ls $dir/$version/bin/customlauncher` 
+    if [ "$files" == "" ]; then
+       echo "failed"
+       exit 1
+    fi
+    echo "Testing asu configuration..."
+    rm -rf $dir
+    $0 -c asu $version $platform $dir > /dev/null 2>&1
+    files=`ls $dir/$version/bin/customlauncher` 
+    if [ "$files" == "" ]; then
+       echo "failed"
+       exit 1
+    fi
+    echo "Testing awe configuration..."
+    rm -rf $dir
+    $0 -c awe $version $platform $dir > /dev/null 2>&1
+    files=`ls $dir/$version/.visit/hosts/host_awe*` 
+    if [ "$files" == "" ]; then
+       echo "failed"
+       exit 1
+    fi
+    echo "Testing clemson configuration..."
+    rm -rf $dir
+    $0 -c clemson $version $platform $dir > /dev/null 2>&1
+    files=`ls $dir/$version/.visit/hosts/host_clemson*` 
+    if [ "$files" == "" ]; then
+       echo "failed"
+       exit 1
+    fi
+    echo "Testing cscs configuration..."
+    rm -rf $dir
+    $0 -c cscs $version $platform $dir > /dev/null 2>&1
+    files=`ls $dir/$version/.visit/hosts/host_cscs*` 
+    if [ "$files" == "" ]; then
+       echo "failed"
+       exit 1
+    fi
+    echo "Testing eth_zurich configuration..."
+    rm -rf $dir
+    $0 -c eth_zurich $version $platform $dir > /dev/null 2>&1
+    files=`ls $dir/$version/bin/customlauncher` 
+    if [ "$files" == "" ]; then
+       echo "failed"
+       exit 1
+    fi
+    echo "Testing llnl_open configuration..."
+    rm -rf $dir
+    $0 -c llnl_open $version $platform $dir > /dev/null 2>&1
+    files=`ls $dir/$version/.visit/hosts/host_llnl_rzgw*` 
+    if [ "$files" == "" ]; then
+       echo "failed"
+       exit 1
+    fi
+    echo "Testing llnl_open_rz configuration..."
+    rm -rf $dir
+    $0 -c llnl_open_rz $version $platform $dir > /dev/null 2>&1
+    files=`ls $dir/$version/.visit/hosts/host_llnl_rz*` 
+    if [ "$files" == "" ]; then
+       echo "failed"
+       exit 1
+    fi
+    echo "Testing llnl_open_cz configuration..."
+    rm -rf $dir
+    $0 -c llnl_open_cz $version $platform $dir > /dev/null 2>&1
+    files=`ls $dir/$version/.visit/hosts/host_llnl*` 
+    if [ "$files" == "" ]; then
+       echo "failed"
+       exit 1
+    fi
+    echo "Testing llnl_closed configuration..."
+    rm -rf $dir
+    $0 -c llnl_closed $version $platform $dir > /dev/null 2>&1
+    files=`ls $dir/$version/.visit/hosts/host_llnl_closed*` 
+    if [ "$files" == "" ]; then
+       echo "failed"
+       exit 1
+    fi
+    echo "Testing lsu configuration..."
+    rm -rf $dir
+    $0 -c lsu $version $platform $dir > /dev/null 2>&1
+    files=`ls $dir/$version/.visit/hosts/host_lsu*` 
+    if [ "$files" == "" ]; then
+       echo "failed"
+       exit 1
+    fi
+    echo "Testing ncar configuration..."
+    rm -rf $dir
+    $0 -c ncar $version $platform $dir > /dev/null 2>&1
+    files=`ls $dir/$version/.visit/hosts/host_ncar*` 
+    if [ "$files" == "" ]; then
+       echo "failed"
+       exit 1
+    fi
+    echo "Testing nersc configuration..."
+    rm -rf $dir
+    $0 -c nersc $version $platform $dir > /dev/null 2>&1
+    files=`ls $dir/$version/.visit/hosts/host_nersc*` 
+    if [ "$files" == "" ]; then
+       echo "failed"
+       exit 1
+    fi
+    echo "Testing nics configuration..."
+    rm -rf $dir
+    $0 -c nics $version $platform $dir > /dev/null 2>&1
+    files=`ls $dir/$version/.visit/hosts/host_nics*` 
+    if [ "$files" == "" ]; then
+       echo "failed"
+       exit 1
+    fi
+    echo "Testing ohio configuration..."
+    rm -rf $dir
+    $0 -c ohio $version $platform $dir > /dev/null 2>&1
+    files=`ls $dir/$version/.visit/hosts/host_ohio*`
+    if [ "$files" == "" ]; then
+       echo "failed"
+       exit 1
+    fi
+    echo "Testing ornl configuration..."
+    rm -rf $dir
+    $0 -c ornl $version $platform $dir > /dev/null 2>&1
+    files=`ls $dir/$version/.visit/hosts/host_ornl*` 
+    if [ "$files" == "" ]; then
+       echo "failed"
+       exit 1
+    fi
+    echo "Testing princeton configuration..."
+    rm -rf $dir
+    $0 -c princeton $version $platform $dir > /dev/null 2>&1
+    files=`ls $dir/$version/.visit/hosts/host_princeton*` 
+    if [ "$files" == "" ]; then
+       echo "failed"
+       exit 1
+    fi
+    echo "Testing sandia configuration..."
+    rm -rf $dir
+    $0 -c sandia $version $platform $dir > /dev/null 2>&1
+    files=`ls $dir/$version/.visit/hosts/host_sandia*` 
+    if [ "$files" == "" ]; then
+       echo "failed"
+       exit 1
+    fi
+    echo "Testing sandia_closed configuration..."
+    rm -rf $dir
+    $0 -c sandia_closed $version $platform $dir > /dev/null 2>&1
+    files=`ls $dir/$version/.visit/hosts/host_sandia_closed*` 
+    if [ "$files" == "" ]; then
+       echo "failed"
+       exit 1
+    fi
+    echo "Testing umich configuration..."
+    rm -rf $dir
+    $0 -c umich $version $platform $dir > /dev/null 2>&1
+    files=`ls $dir/$version/.visit/hosts/host_umich*` 
+    if [ "$files" == "" ]; then
+       echo "failed"
+       exit 1
+    fi
+    echo "Testing utah configuration..."
+    rm -rf $dir
+    $0 -c utah $version $platform $dir > /dev/null 2>&1
+    files=`ls $dir/$version/.visit/hosts/host_utah*`
+    if [ "$files" == "" ]; then
+       echo "failed"
+       exit 1
+    fi
+    exit 0
+fi
+
+#
+# If the user hasn't specified a config file, then prompt for one.
+#
+while [ "$config" = "prompt" ]; do
+   echo "Choose a system configuration file.  A system configuration"
+   echo "file contains profiles that make it easy to access VisIt on"
+   echo "remote computers."
+   echo ""
+   echo "   1)  No system configuration"
+   echo "   2)  Configuration for ANAG/APDEC collaborators."
+   echo "   3)  ANL network"
+   echo "   4)  ARL network"
+   echo "   5)  ASU network"
+   echo "   6)  AWE network"
+   echo "   7)  Clemson University network"
+   echo "   8)  ETH Zurich network"
+   echo "   9)  LLNL open network"
+   echo "   10) LLNL closed network"
+   echo "   11) Lousiana State University network"
+   echo "   12) NCAR network"
+   echo "   13) NERSC network"
+   echo "   14) NICS at University of Tennessee at Knoxville"
+   echo "   15) Ohio Supercomputer Center (OSC) network"
+   echo "   16) ORNL network"
+   echo "   17) Princeton network"
+   echo "   18) Sandia network"
+   echo "   19) Sandia closed network"
+   echo "   20) Swiss National Supercomputing Center (CSCS) network"
+   echo "   21) U of Michigan Advanced Research Computing (ARC-TS) network"
+   echo "   22) U of Utah Center for High Performance Computing (CHPC) network"
+   echo ""
+   echo "Enter (1-23):"
+
+   read config
+   case "$config" in
+      1)
+         config=none
+         ;;
+      2)
+         config=chombo
+         ;;
+      3)
+         config=anl
+         ;;
+      4)
+         config=arl
+         ;;
+      5)
+         config=asu
+         ;;
+      6)
+         config=awe
+         ;;
+      7)
+         config=clemson
+         ;;
+      8)
+         config=eth_zurich
+         ;;
+      9)
+         config=llnl_open
+         ;;
+      10)
+         config=llnl_closed
+         ;;
+      11)
+         config=lsu
+         ;;
+      12)
+         config=ncar
+         ;;
+      13)
+         config=nersc
+         ;;
+      14)
+         config=nics
+         ;;
+      15)
+         config=ohio
+         ;;
+      16)
+         config=ornl
+         ;;
+      17)
+         config=princeton
+         ;;
+      18)
+         config=sandia
+         ;;
+      19)
+         config=sandia_closed
+         ;;
+      20)
+         config=cscs
+         ;;
+      21)
+         config=umich
+         ;;
+      22)
+         config=utah
+         ;;
+      *)
+         config=prompt
+         ;;
+   esac
+done
+
+case "$config" in
+   none)
+      ;;
+   chombo)
+      ;;
+   anl)
+      ;;
+   arl)
+      ;;
+   asu)
+      ;;
+   awe)
+      ;;
+   clemson)
+      ;;
+   eth_zurich)
+      ;;
+   llnl_open)
+      ;;
+   llnl_open_cz)
+      ;;
+   llnl_open_rz)
+      ;;
+   llnl_closed)
+      ;;
+   lsu)
+      ;;
+   ncar)
+      ;;
+   nersc)
+      ;;
+   nics)
+      ;; 
+   ohio)
+      ;;
+   ornl)
+      ;;
+   princeton)
+      ;;
+   sandia)
+      ;;
+   sandia_closed)
+      ;;
+   cscs)
+      ;;
+   umich)
+      ;;
+   utah)
+      ;;
+   *)
+      echo "Illegal configuration option, choices are none, chombo, anl,"
+      echo "arl, asu, awe, clemson, cscs, eth_zurich, llnl_open, llnl_open_rz,"
+      echo "llnl_open_cz, llnl_closed, lsu, ncar, nersc, nics, ohio, ornl,"
+      echo "princeton, sandia, sandia_closed, umich, utah"
+      exit 4
+      ;;
+esac
+
+#
+# If both $dir/$version and $dir/$version+ exist it is an error.
+#
+if [ -e "$dir"/$version ]; then
+   if [ -e "$dir"/$version+ ]; then
+      echo "Both the directories $version and $version+ exist. Remove"
+      echo "one or both."
+      exit 5
+   fi
+fi
+
+#
+# Set up the distribution directory
+#
+mkdir testdir && rmdir testdir 2> /dev/null
+if [ "$?" = "0" ]; then
+    echo "Local directory is writable."
+    dist="distribution"
+else
+    echo "Note: local directory is not writable, so we are putting our intermediate files into /tmp instead."
+    dist="/tmp/distribution"
+fi
+rm -rf $dist
+mkdir $dist
+cp $fname1 $dist
+cd "$dist"
+if [ "$Compress" = "COMPRESS" ]; then
+   uncompress $fname1
+else
+   gunzip $fname1
+fi
+if [ ! -e $fname2 ]; then
+   echo ""
+   echo "Unable to unzip $fname1.  The file appears to be corrupted."
+   echo "This is often the case when a download has not yet completed."
+   echo "Bailing out..."
+   echo ""
+   exit 6
+fi
+tar xvbf 20 $fname2
+rm -f $fname2
+cd ..
+
+distributiondir=distribution/`ls distribution`
+
+#
+# If the installation directory doesn't exist, create it.
+#
+[ ! -e "$dir" ] &&          mkdir "$dir"
+[ ! -e "$dir"/bin ] &&      mkdir "$dir"/bin
+if [ -e "$distributiondir"/data ]; then
+    [ ! -e "$dir"/data ] && mkdir "$dir"/data
+fi
+
+#
+# Copy in the new files.  We are careful to leave the current
+# installation in a consistent state with the exception of the
+# data directory.
+#
+cp $distributiondir/bin/frontendlauncher    "$dir"/bin/frontendlauncher+
+cp $distributiondir/bin/frontendlauncher.py "$dir"/bin/frontendlauncher.py+
+cp $distributiondir/bin/xml2plugin          "$dir"/bin/xml2plugin+
+cp $distributiondir/bin/visit_plugin        "$dir"/bin/visit_plugin+
+cp $distributiondir/bin/mkgrdbl             "$dir"/bin/mkgrdbl+
+
+if [ -e "$dir"/$version ]; then
+   mv "$dir"/$version "$dir"/$version+
+   ln -s $version+ "$dir"/$version
+fi
+[ ! -e "$dir"/$version+ ] &&             mkdir "$dir"/$version+
+
+cd "$distributiondir/$version"
+
+
+# Determine the platform
+findbin=`find . -name engine_ser`
+platformBin=`echo "$findbin" | sed -e "s/engine_ser//"`
+savepwd=`pwd`
+cd "$platformBin/.."
+platformPath=`pwd`
+cd "$savepwd"
+platformDir=""
+for f in `echo $platformPath | tr "/" " "`; do
+   platformDir=$f
+done
+# Copy the files
+find . -print | cpio -pmud "$dir"/$version+
+if [ -e ../data ]; then
+    cd ../data
+    find . -print | cpio -pmud "$dir"/data
+fi
+cd ../../..
+
+#
+# Store some of the installation options so they can be used by VisIt when
+# it updates itself later in the "Check for new versions" code.
+#
+echo "1;$config;$bank;$platform" > "$dir"/$version+/$platformDir/.installinfo
+
+#
+# Use the appropriate configuration file, setting the bank to the right value.
+#
+rm -rf "$dir"/$version+/.visit
+mkdir  "$dir"/$version+/.visit
+mkdir  "$dir"/$version+/.visit/hosts
+if [ "$config" = "chombo" ]; then
+   cp "$dir"/$version+/$platformDir/resources/hosts/chombo/config               "$dir"/$version+/.visit/
+   cp "$dir"/$version+/$platformDir/resources/hosts/chombo/guiconfig            "$dir"/$version+/.visit/
+   cp "$dir"/$version+/$platformDir/resources/hosts/chombo/visitrc              "$dir"/$version+/.visit/
+   cp "$dir"/$version+/$platformDir/resources/hosts/chombo/customlauncher       "$dir"/$version+/bin/
+elif [ "$config" = "anl" ]; then
+   cp "$dir"/$version+/$platformDir/resources/hosts/$config/*.xml               "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/$platformDir/resources/hosts/$config/customlauncher      "$dir"/$version+/bin/
+elif [ "$config" = "arl" ]; then
+   cp "$dir"/$version+/$platformDir/resources/hosts/$config/customlauncher      "$dir"/$version+/bin/
+elif [ "$config" = "asu" ]; then
+   cp "$dir"/$version+/$platformDir/resources/hosts/$config/customlauncher      "$dir"/$version+/bin/
+elif [ "$config" = "awe" ]; then
+   cp "$dir"/$version+/$platformDir/resources/hosts/$config/*.xml               "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/$platformDir/resources/hosts/$config/customlauncher      "$dir"/$version+/bin/
+elif [ "$config" = "clemson" ]; then
+   cp "$dir"/$version+/$platformDir/resources/hosts/$config/*.xml               "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/$platformDir/resources/hosts/$config/customlauncher      "$dir"/$version+/bin/
+elif [ "$config" = "cscs" ]; then
+   cp "$dir"/$version+/$platformDir/resources/hosts/$config/*.xml               "$dir"/$version+/.visit/hosts/
+elif [ "$config" = "eth_zurich" ]; then
+   cp "$dir"/$version+/$platformDir/resources/hosts/$config/customlauncher      "$dir"/$version+/bin/
+elif [ "$config" = "llnl_open" ]; then
+   # Install both cz hosts and rzgw hosts. We're most likely in a client
+   cp "$dir"/$version+/$platformDir/resources/hosts/llnl/*.xml                  "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/$platformDir/resources/hosts/llnl/customlauncher         "$dir"/$version+/bin/
+   cp "$dir"/$version+/$platformDir/resources/hosts/llnl/config                 "$dir"/$version+/.visit/
+elif [ "$config" = "llnl_open_rz" ]; then
+   # We're most likely installing on an rz machine.
+   cp "$dir"/$version+/$platformDir/resources/hosts/llnl_rz/*.xml               "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/$platformDir/resources/hosts/llnl/customlauncher         "$dir"/$version+/bin/
+   cp "$dir"/$version+/$platformDir/resources/hosts/llnl/config                 "$dir"/$version+/.visit/
+elif [ "$config" = "llnl_open_cz" ]; then
+   # Copy the files explicitly to avoid the rzgw hosts. We're most likely installing on a cz machine.
+   cp "$dir"/$version+/$platformDir/resources/hosts/llnl/host_llnl_ansel.xml    "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/$platformDir/resources/hosts/llnl/host_llnl_borax.xml    "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/$platformDir/resources/hosts/llnl/host_llnl_lassen.xml    "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/$platformDir/resources/hosts/llnl/host_llnl_oslic.xml    "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/$platformDir/resources/hosts/llnl/host_llnl_pascal.xml   "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/$platformDir/resources/hosts/llnl/host_llnl_quartz.xml   "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/$platformDir/resources/hosts/llnl/host_llnl_sierra.xml    "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/$platformDir/resources/hosts/llnl/host_llnl_surface.xml  "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/$platformDir/resources/hosts/llnl/host_llnl_syrah.xml    "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/$platformDir/resources/hosts/llnl/host_llnl_vulcan.xml   "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/$platformDir/resources/hosts/llnl/host_slac_red.xml      "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/$platformDir/resources/hosts/llnl/customlauncher         "$dir"/$version+/bin/
+   cp "$dir"/$version+/$platformDir/resources/hosts/llnl/config                 "$dir"/$version+/.visit/
+elif [ "$config" = "llnl_closed" ]; then
+   cp "$dir"/$version+/$platformDir/resources/hosts/llnl_closed/*.xml           "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/$platformDir/resources/hosts/llnl/customlauncher         "$dir"/$version+/bin/
+   cp "$dir"/$version+/$platformDir/resources/hosts/llnl/config                 "$dir"/$version+/.visit/
+elif [ "$config" = "lsu" ]; then
+   cp "$dir"/$version+/$platformDir/resources/hosts/$config/*.xml               "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/$platformDir/resources/hosts/$config/customlauncher      "$dir"/$version+/bin/
+elif [ "$config" = "ncar" ]; then
+   cp "$dir"/$version+/$platformDir/resources/hosts/$config/*.xml               "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/$platformDir/resources/hosts/$config/customlauncher      "$dir"/$version+/bin/
+elif [ "$config" = "nersc" ]; then
+   cp "$dir"/$version+/$platformDir/resources/hosts/$config/*.xml               "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/$platformDir/resources/hosts/$config/customlauncher      "$dir"/$version+/bin/
+elif [ "$config" = "nics" ]; then
+   cp "$dir"/$version+/$platformDir/resources/hosts/$config/*.xml               "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/$platformDir/resources/hosts/$config/customlauncher      "$dir"/$version+/bin/
+elif [ "$config" = "ohio" ]; then
+   cp "$dir"/$version+/$platformDir/resources/hosts/$config/*.xml               "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/$platformDir/resources/hosts/$config/customlauncher      "$dir"/$version+/bin/
+elif [ "$config" = "ornl" ]; then
+   cp "$dir"/$version+/$platformDir/resources/hosts/$config/*.xml               "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/$platformDir/resources/hosts/$config/customlauncher      "$dir"/$version+/bin/
+elif [ "$config" = "princeton" ]; then
+   cp "$dir"/$version+/$platformDir/resources/hosts/$config/*.xml               "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/$platformDir/resources/hosts/$config/customlauncher      "$dir"/$version+/bin/
+   cp "$dir"/$version+/$platformDir/resources/hosts/$config/config              "$dir"/$version+/.visit/config
+elif [ "$config" = "sandia" ]; then
+   cp "$dir"/$version+/$platformDir/resources/hosts/$config/*.xml               "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/$platformDir/resources/hosts/$config/customlauncher      "$dir"/$version+/bin/
+elif [ "$config" = "sandia_closed" ]; then
+   cp "$dir"/$version+/$platformDir/resources/hosts/$config/*.xml               "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/$platformDir/resources/hosts/$config/customlauncher      "$dir"/$version+/bin/
+elif [ "$config" = "umich" ]; then
+   cp "$dir"/$version+/$platformDir/resources/hosts/$config/*.xml               "$dir"/$version+/.visit/hosts/
+elif [ "$config" = "utah" ]; then
+   cp "$dir"/$version+/$platformDir/resources/hosts/$config/*.xml               "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/$platformDir/resources/hosts/$config/customlauncher      "$dir"/$version+/bin/
+fi
+
+# Do the bank fixup
+if [ "$bank" != "false" ]; then
+    for hostfile in `ls $dir/$version+/.visit/hosts`; do
+        sed -i -e "s/wbronze/${bank}/" $dir/$version+/.visit/hosts/$hostfile
+    done
+fi
+
+#
+# If we're on MacOS X, then we want to create some small scripts that
+# can be clicked on from the Finder and have VisIt work.
+#
+if [ "$os" = "darwin" ]; then
+    # Create a clickable script to run the cli, and xmledit.
+    csh=`which csh`
+    for appscript in "VisIt" "cli" "XmlEdit"; do
+        app=`echo $appscript | tr "[A-Z]" "[a-z]"`
+        if [ -e "$dir"/bin/$appscript.command ]; then
+            rm -f "$dir"/bin/$appscript.command
+        fi
+        echo "#\!$csh -f"           >  "$dir"/bin/$appscript.command
+        if [ "$i" > "0" ]; then
+            echo "`pwd`/visit -$app" >> "$dir"/bin/$appscript.command
+        else
+            echo "`pwd`/visit"       >> "$dir"/bin/$appscript.command
+        fi
+        echo "exit 0"               >> "$dir"/bin/$appscript.command
+        if [ "$group_ownership" != "none" ]; then
+            chgrp $group_ownership "$dir"/bin/$appscript.command
+        fi
+        chmod $dir_permission  "$dir"/bin/$appscript.command
+    done
+fi
+
+#
+# Set the permissions properly
+#
+chmod $dir_permission "$dir"
+chmod $dir_permission "$dir"/bin
+chmod $dir_permission "$dir"/bin/frontendlauncher+
+chmod $dir_permission "$dir"/bin/frontendlauncher.py+
+chmod $dir_permission "$dir"/bin/xml2plugin+
+chmod $dir_permission "$dir"/bin/visit_plugin+
+chmod $dir_permission "$dir"/bin/mkgrdbl+
+if [ -e "$dir"/data ]; then
+    chmod $dir_permission "$dir"/data
+    find "$dir"/data -type f -exec chmod $file_permission {} \;
+fi
+
+#
+# Note that there is a short period of time when the second command
+# below has set the file permission for some files that should be
+# executable to be non-executable, until the next two commands can
+# set the executable permission back again.  This will leave the install
+# broken for a short period of time (depending on how long the recursive
+# chmod takes to execute).
+#
+find "$dir"/$version+ -type d -exec chmod $dir_permission {} \;
+find "$dir"/$version+ -type f -exec chmod $file_permission {} \;
+
+for arch in `ls "$dir"/$version+`; do
+    if [ "$arch" != "bin" ]; then
+        if [ "$arch" != "usagelog" ]; then
+            find "$dir"/$version+/$arch/bin -exec chmod $dir_permission {} \;
+        fi
+    fi
+done
+find "$dir"/$version+/bin -exec chmod $dir_permission {} \;
+
+if [ "$os" = "darwin" ]; then
+    for arch in `ls "$dir"/$version+`; do
+        if [ "$arch" != "bin" ]; then
+            if [ "$arch" != "usagelog" ]; then
+                for app in `find "$dir"/$version+/$arch/bin -name "*.app" -print`; do
+                    find $app/Contents/MacOS -exec chmod $dir_permission {} \;
+                done
+            fi
+        fi
+    done
+fi
+
+#
+# Set the group ownership properly
+#
+if [ "$group_ownership" != "none" ]; then
+    if [ -e "$dir"/data ]; then
+        chgrp -R $group_ownership "$dir"/bin "$dir"/data "$dir"/$version+
+    else
+        chgrp -R $group_ownership "$dir"/bin "$dir"/$version+
+    fi
+fi
+
+#
+# Enable logging if requested.
+#
+if [ "$logging" = "true" ]; then
+    sed -e "s/logging_enabled=0/logging_enabled=1/" $distributiondir/$version/bin/internallauncher > "$dir"/$version+/bin/internallauncher
+    chmod $dir_permission "$dir"/$version+/bin/internallauncher
+    touch "$dir"/$version+/usagelog
+    chmod 666 "$dir"/$version+/usagelog
+    if [ "$group_ownership" != "none" ]; then
+        chgrp $group_ownership "$dir"/$version+/usagelog
+    fi
+fi
+
+#
+# Clean up the temporary directories.
+#
+rm -rf distribution
+
+#
+# Make the symbolic links for the programs
+#
+programs="curv3dprep makemili mpeg2encode surfcomp text2polys time_annotation visit visitconvert xml2atts xml2avt xml2info xml2java xml2makefile xml2cmake xml2projectfile xml2python xml2window xmledit xmltest visit_composite visit_transition"
+
+cd "$dir"/bin
+for prog in $programs; do
+    rm -f $prog
+    ln -s frontendlauncher $prog
+done
+
+#
+# Remove the symbolic link for "convert" in case it is there from a previous
+# installation.
+#
+rm -f convert
+
+#
+# Make the symbolic links for the version
+#
+cd "$dir"
+
+#
+# If $version exists at this point it is a link and must be removed
+# with the rm command and replaced with the "plus" version.
+#
+if [ -e $version ]; then
+   rm -f $version
+   mv $version+ $version
+fi
+[ -e bin/frontendlauncher ] &&   rm -f bin/frontendlauncher
+mv bin/frontendlauncher+ bin/frontendlauncher
+[ -e bin/frontendlauncher.py ] &&   rm -f bin/frontendlauncher.py
+mv bin/frontendlauncher.py+ bin/frontendlauncher.py
+[ -e bin/xml2plugin ] &&         rm -f bin/xml2plugin
+mv bin/xml2plugin+ bin/xml2plugin
+[ -e bin/visit_plugin ] &&       rm -f bin/visit_plugin
+mv bin/visit_plugin+ bin/visit_plugin
+[ -e bin/mkgrdbl ] &&            rm -f bin/mkgrdbl
+mv bin/mkgrdbl+ bin/mkgrdbl
+if [ "$beta" = "true" ]; then
+   [ -e $version+ ] &&           mv $version+ $version
+   [ -e beta ] &&                rm -f beta
+   ln -s $version beta
+elif [ "$private" = "false" ]; then
+   [ -e $version+ ] &&           mv $version+ $version
+   [ -e current ] &&             rm -f current
+   ln -s $version current
+fi
+
+#
+# Create dmg if requested
+#
+if [ "$dmg" = "true" ]; then
+   /usr/bin/hdiutil create -fs HFS+ -srcfolder $dir -volname VisIt-$version VisIt-$version.dmg
+fi
+
+#
+# Write out a message that we can look for in the visit update process. This is
+# a workaround for a Qt bug.
+#
+echo "visit-install done"

@@ -1,0 +1,6 @@
+localhost:VISIT_TOP_DIR/test/reopen_samrai.visit has 3 states
+activeSource = "localhost:VISIT_TOP_DIR/test/reopen_samrai.visit"
+activeTimeSlider = 0
+timeSliders = ("localhost:VISIT_TOP_DIR/test/reopen_samrai.visit")
+timeSliderCurrentStates = (2)
+animationMode = 2

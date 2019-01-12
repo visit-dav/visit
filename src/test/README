@@ -1,0 +1,60 @@
+
+  The test suite is run using the script "runtest".  This program will
+run the test cases, save the output images into test/current,
+difference them with test/baseline images and output the difference
+images into test/diff.  It will create a log file ("log") and a web
+page (test/html).  When given the "-p" option, it will also send the
+results to the publicly accessible page:
+ 
+      http://hyper.llnl.gov/~visit 
+or    http://hyper.llnl.gov/visit    (which links to the first)
+ 
+Web page: 
+  It color codes tests by green for no error, yellow for small errors,
+and red for major differences.  It also recognizes when test cases
+crash VisIt and reports it with a huge red bar.  :)  It shows a
+thumbnail of the image from the test case in the web page with a link
+to the original, and it will also display the baseline and difference
+images for test cases which fail.
+ 
+Type "runtest -help" for the full list of options. 
+ 
+Known "issues": 
+  1) It only works on sunspot/sunburn for now. 
+  2) The images it is using are uncompressed tiff's. 
+  3) It will require a working -nowin mode to never reporting false 
+     alarms.  It is too sensitive since it is using screen capture. 
+  4) The threshold for "small error" may have to be tuned. 
+ 
+Adding new tests: 
+  To add a test case, simply create a new .py file in test/tests.  When
+you have images to use for the baseline for your test case (e.g. the
+ones in test/current) simply add them to the test/baseline directory.
+ 
+  There are only two important things to know when creating a new test
+case:  First, add a call to Test("my_test_01") for each image you wish to 
+compare.  Second, call Exit() at the end of the test case -- if you don't, 
+the script will assume your test crashed VisIt.  To make debugging a new 
+test case easier, add the "-v" (-verbose) flag to the runtest script, and 
+it should drop you into python at the point of the error.  (It will also 
+do it without the -v flag, but stderr is piped to /dev/null.) 
+
+  Finally, make sure you tag the test in a comment block with a space
+separated list of CLASSES and MODES the test supports. See runtest for
+a further explanation.
+
+  There is a test/data directory to store data files which are not
+going to be generated in the root vob/data directory.  There are none
+yet.
+ 
+  At the moment, there are some simple test scripts which execute about
+20 individual test cases total, covering most plots and operators in
+some form.  This is not meant to be a complete test suite, but some
+infrastructure and a simple set covering some major bases.  Please add
+more as you see fit, and any other suggestions are welcome.
+ 
+  There will shortly be a cron job to rebuild the bugline and run the
+test nightly, emailing offending users when something breaks.
+
+
+-- Jeremy Meredith, April 18, 2002

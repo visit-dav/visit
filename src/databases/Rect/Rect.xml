@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+  <Plugin name="Rect" type="database" label="Rect" version="1.0" dbtype="MTMD">
+    <FilePatterns>
+      *.rect 
+      *.rect.gz
+    </FilePatterns>
+    <Attribute name="" purpose="" persistent="false" exportAPI="" exportInclude="">
+    </Attribute>
+  </Plugin>

@@ -1,0 +1,53 @@
+<?xml version="1.0"?>
+  <Plugin name="CreateBonds" type="operator" label="CreateBonds" version="1.0" enabled="true" mdspecificcode="false" onlyengine="false" noengine="false" iconFile="CreateBonds.xpm" category="Molecular">
+    <Attribute name="CreateBondsAttributes" purpose="Attributes for the CreateBondsOperator" persistent="true" exportAPI="" exportInclude="">
+      <Field name="elementVariable" label="Variable for atomic number" type="variablename" vartypes="01000000000">
+        element
+      </Field>
+      <Field name="atomicNumber1" label="Second atomic number" type="intVector">
+         1 -1
+      </Field>
+      <Field name="atomicNumber2" label="Second atomic number" type="intVector">
+        -1 -1
+      </Field>
+      <Field name="minDist" label="Minimum distance" type="doubleVector">
+        0.4 0.4
+      </Field>
+      <Field name="maxDist" label="Maximum distance" type="doubleVector">
+        1.2 1.9
+      </Field>
+      <Field name="maxBondsClamp" label="maxBondsClamp" type="int">
+        10
+      </Field>
+      <Field name="addPeriodicBonds" label="Add bonds for atoms crossing periodic unit cell boundaries" type="bool">
+        false
+      </Field>
+      <Field name="useUnitCellVectors" label="Use provided unit cell vectors" type="bool">
+        true
+      </Field>
+      <Field name="periodicInX" label="Periodic in X" type="bool">
+        true
+      </Field>
+      <Field name="periodicInY" label="Periodic in Z" type="bool">
+        true
+      </Field>
+      <Field name="periodicInZ" label="Periodic in Y" type="bool">
+        true
+      </Field>
+      <Field name="xVector" label="Vector for X" type="doubleArray" length="3" enabler="useUnitCellVectors:false">
+        1.000000
+        0.000000
+        0.000000
+      </Field>
+      <Field name="yVector" label="Vector for Y" type="doubleArray" length="3" enabler="useUnitCellVectors:false">
+        0.000000
+        1.000000
+        0.000000
+      </Field>
+      <Field name="zVector" label="Vector for Z" type="doubleArray" length="3" enabler="useUnitCellVectors:false">
+        0.000000
+        0.000000
+        1.000000
+      </Field>
+    </Attribute>
+  </Plugin>

@@ -1,0 +1,96 @@
+<?xml version="1.0"?>
+<Object name="TemplateOptions">
+    <Field name="VERSION" type="string">2.10.0</Field>
+    <Field name="TITLE" type="string">"New template"</Field>
+    <Field name="DESCRIPTION" type="string">Description</Field>
+    <Field name="PREVIEWIMAGE" type="string"></Field>
+    <Field name="TEMPLATEFILE" type="string">PATH_TO_VISITMOVIETEMPLATE_PY</Field>
+    <Field name="SESSIONFILE" type="string">TEST_SESSION_FILE</Field>
+    <Object name="VIEWPORTS">
+        <Object name="Viewport 1">
+            <Field name="coordinates" type="floatArray" length="4">0 0 1 1 </Field>
+            <Field name="compositing" type="int">0</Field>
+            <Field name="opacity" type="double">1</Field>
+            <Field name="replaceColor" type="intArray" length="3">255 255 255 </Field>
+            <Field name="dropShadow" type="bool">false</Field>
+            <Field name="sequenceList" type="stringVector">"Window 1" "ScreenRotationY1" </Field>
+        </Object>
+        <Object name="Viewport 2">
+            <Field name="opacity" type="double">1</Field>
+            <Field name="replaceColor" type="intArray" length="3">255 255 255 </Field>
+            <Field name="coordinates" type="floatArray" length="4">0.02208202 0.7691139 0.2776025 0.98 </Field>
+            <Field name="compositing" type="int">3</Field>
+            <Field name="dropShadow" type="bool">false</Field>
+            <Field name="sequenceList" type="stringVector">"Window 2" </Field>
+        </Object>
+        <Object name="Viewport 3">
+            <Field name="compositing" type="int">0</Field>
+            <Field name="opacity" type="double">1</Field>
+            <Field name="replaceColor" type="intArray" length="3">255 255 255 </Field>
+            <Field name="dropShadow" type="bool">true</Field>
+            <Field name="coordinates" type="floatArray" length="4">0.6940063 0.04278483 0.9589905 0.2663291 </Field>
+            <Field name="sequenceList" type="stringVector">"Window 3" "CompositeFadeOut2" </Field>
+        </Object>
+    </Object>
+    <Object name="SEQUENCEDATA">
+        <Object name="Window 1">
+            <Field name="sequenceType" type="string">CurrentPlots</Field>
+        </Object>
+        <Object name="Window 2">
+            <Field name="sequenceType" type="string">CurrentPlots</Field>
+        </Object>
+        <Object name="Window 3">
+            <Field name="sequenceType" type="string">CurrentPlots</Field>
+        </Object>
+        <Object name="Window 4">
+            <Field name="sequenceType" type="string">CurrentPlots</Field>
+        </Object>
+        <Object name="Window 5">
+            <Field name="sequenceType" type="string">CurrentPlots</Field>
+        </Object>
+        <Object name="Window 6">
+            <Field name="sequenceType" type="string">CurrentPlots</Field>
+        </Object>
+        <Object name="Window 7">
+            <Field name="sequenceType" type="string">CurrentPlots</Field>
+        </Object>
+        <Object name="Window 8">
+            <Field name="sequenceType" type="string">CurrentPlots</Field>
+        </Object>
+        <Object name="Window 9">
+            <Field name="sequenceType" type="string">CurrentPlots</Field>
+        </Object>
+        <Object name="Window 10">
+            <Field name="sequenceType" type="string">CurrentPlots</Field>
+        </Object>
+        <Object name="Window 11">
+            <Field name="sequenceType" type="string">CurrentPlots</Field>
+        </Object>
+        <Object name="Window 12">
+            <Field name="sequenceType" type="string">CurrentPlots</Field>
+        </Object>
+        <Object name="Window 13">
+            <Field name="sequenceType" type="string">CurrentPlots</Field>
+        </Object>
+        <Object name="Window 14">
+            <Field name="sequenceType" type="string">CurrentPlots</Field>
+        </Object>
+        <Object name="Window 15">
+            <Field name="sequenceType" type="string">CurrentPlots</Field>
+        </Object>
+        <Object name="Window 16">
+            <Field name="sequenceType" type="string">CurrentPlots</Field>
+        </Object>
+        <Object name="ScreenRotationY1">
+            <Field name="sequenceType" type="string">ScreenRotationY</Field>
+            <Field name="nSteps" type="int">20</Field>
+            <Field name="startAngle" type="int">0</Field>
+            <Field name="endAngle" type="int">360</Field>
+        </Object>
+        <Object name="CompositeFadeOut2">
+            <Field name="sequenceType" type="string">CompositeFadeOut</Field>
+            <Field name="nFrames" type="int">10</Field>
+            <Field name="reverse" type="bool">false</Field>
+        </Object>
+    </Object>
+</Object>

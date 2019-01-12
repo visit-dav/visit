@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+  <Plugin name="STL" type="database" label="STL" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" dbtype="STSD" haswriter="true" hasoptions="true" filePatternsStrict="false" opensWholeDirectory="false">
+    <FilePatterns>
+      *.stl
+    </FilePatterns>
+    <Attribute name="" purpose="" persistent="true" keyframe="true" exportAPI="" exportInclude="">
+    </Attribute>
+    <LIBS>
+      vtkIOGeometry
+    </LIBS>
+  </Plugin>

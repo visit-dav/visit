@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+  <Plugin name="Image" type="database" label="Image" version="1.0" enabled="true" mdspecificcode="true" engspecificcode="false" onlyengine="false" noengine="false" dbtype="STSD" haswriter="true" hasoptions="true" filePatternsStrict="true">
+    <FilePatterns>
+      *.pnm
+      *.ppm
+      *.png
+      *.tiff
+      *.jpeg
+      *.jpg
+      *.tif
+      *.bmp
+      *.sdt
+      *.spr
+      *.imgvol
+    </FilePatterns>
+    <Files components="E">
+      vtkStimulateReader.C
+      avtImageFileFormat.C
+      avtImageOptions.C
+      avtImagePluginWriter.C
+    </Files>
+    <Attribute name="" purpose="" persistent="false" keyframe="true" exportAPI="" exportInclude="">
+    </Attribute>
+  </Plugin>

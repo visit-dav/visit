@@ -1,0 +1,37 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta http-equiv="Content-Language" content="en-us">
+   <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+   <meta name="ProgId" content="FrontPage.Editor.Document">
+   <title>VisIt 1.12.2 Release Notes</title>
+</head>
+<body>
+
+<center><b><font size="6">VisIt 1.12.2 Release Notes</font></b></center>
+
+<p>Welcome to VisIt's release notes page. Release 1.12.2 is primarily a bug fix release to release 1.12. It fixes additional bugs in release 1.12. Look <a href="relnotes1.12.0.html">here</a> to see a complete list of bugs fixed in release 1.12.</p>
+<p><b><font size="4">Enhancements in version 1.12.2</font></b></p>
+<ul>
+<li>Support for the SOLUTIONTIME keyword was added to the Tecplot reader. Values specified for this keyword will appear as the 'time' value for plots.</li>
+<li>The UNIC database reader was enhanced to support several new element types. The new element types consist of triangles, quadrilaterals, tetrahedra, pyramids, wedges and hexahedra ranging from linear to 20th order. The higher order elements are decomposed into linear elements when they are read in.</li>
+</ul>
+<p><b><font size="4">Bugs fixed in version 1.12.2</font></b></p>
+<ul>
+<li>A bug was fixed with the Tube operator that could cause it to crash if the data had previously had an operation applied that removed some of the cells, such as the Subset or Threshold operators.</li>
+<li>A Pseudocolor plot with the PersistentParticles operator now has the correct data extents.</li>
+<li>A bug reading integer data from the Silo plugin, introduced in version 1.12.1, was fixed.</li>
+<li>The ParallelCoordinates plot now works well with FastBit-accelerated indices and expression data.</li>
+<li>The PersistentParticles operator now works with expression data.</li>
+<li>The PersistentParticles operator now works with vector data.</li>
+<li>The PersistentParticles operator no longer causes a parallel hang.</li>
+<li>The PersistentParticles operator now issues a warning if it is not the first operator in a pipeline.</li>
+<li>The VizSchema reader now supports external file links (allowing data spread across multiple h5 files).</li>
+<li>The VizSchema reader now supports polygons and polyhedra.</li>
+<li>A bug in the Silo plugin where block-structured decomposition and mrgtree objects did not play well together was fixed.</li>
+<li>A problem where HDF5-based plugins would wind up terminating the HDF5 library and/or freeing global HDF5 library state out from underneath currently opened files was addressed.</li>
+</ul>
+<p>Click the following link to view the release notes for the previous version of VisIt: <a href="relnotes1.12.1.html">VisIt 1.12.1 Release Notes</a>.</p>
+</body>
+</html>

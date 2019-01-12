@@ -1,0 +1,49 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta http-equiv="Content-Language" content="en-us">
+   <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+   <meta name="ProgId" content="FrontPage.Editor.Document">
+   <title>VisIt 2.3.2 Release Notes</title>
+</head>
+<body>
+
+<center><b><font size="6">VisIt 2.3.2 Release Notes</font></b></center>
+
+<p>Welcome to VisIt's release notes page. Release 2.3.2 is primarily a
+bug fix release to release 2.3. It fixes additional bugs in release
+2.3.1  Look <a href="relnotes2.3.1.html">here</a> to see a complete
+list of changes in release 2.3.1.</p>
+
+<p><b><font size="4">Bugs fixed in version 2.3.2</font></b></p>
+<ul>
+<li>VisIt no longer hangs when displaying from a Linux computer to a MacOS X computer over X11.</li>
+<li>If you have a running session with multiple windows, and you restore a session with one window, VisIt no longer unexpectedly exits.</li>
+<li>Curve plots created via the <i>operators/Lineout</i> variable menu in a plot variable menu are now handled properly when the variable name contains spaces.</li>
+<li>When you using cross-mesh field evaluations, VisIt now correctly issues a warning when accessing invalid time slices.</li>
+<li>The <i>VisIt_RectilinearMesh_setBaseIndex</i> function in Libsim now behave properly.</li>
+<li>A bug was corrected in the Enzo reader that caused it to fail sometimes on Windows.</li>
+<li>A bug was corrected in the PF3D reader where the data was not being properly decompressed for one of the compression schemes.</li>
+<li>The PF3D reader was modified so that it doesn't crash when changing timesteps and some of the subfiles are not readable.</li>
+<li>Repeatedly passing character array variables with different string values to Libsim was broken. In the old scheme, arrays were assumed to contain the same contents and conversion to C-style strings under the covers would only happen once.</li>
+<li>A bug was corrected in the principal_tensor, principal_deviatoric_tensor and tensor_maximum_shear expressions, where a cutoff used to prevent numeric overflows and underflows was too argressive causing the expressions to calculate incorrect values for small values.</li>
+<li>VisIt again honors vis window size information stored in session files and config files for the case where there is a single vis window.</li>
+<li>The InverseGhostZone operator is now more agressive about invalidating data limits so the limits shown in the legend will reflect the values in the ghost data only.</li>
+<li>The Xdmf reader now correctly reports simulation time.</li>
+</ul>
+
+<p><b><font size="4">Enhancements in version 2.3.2</font></b></p>
+<ul>
+<li>The VCell reader from UCHC was added.</li>
+<li>The Enzo reader was enhanced to support the multi-resolution control operator.</li>
+<li>Libsim was enhanced to have a <i>VisItGetSockets</i> function that returns the socket file descriptors used by the <i>VisItDetectInput</i> function. This new function lets you obtain the socket descriptors in case you want to add them to your own <i>select</i>-based event loop.</li>
+<li>VisIt can now read NumPy array files (via the BOV reader). Supported data types are byte, short, 32-bit integeres, float and double.
+<li>Serial and parallel host profiles were added for LLNL's coastal, rzalastor and rzzeus systems.</li>
+</ul>
+
+<p>Click the following link to view the release notes for the previous
+version of VisIt: <a href="relnotes2.3.1.html">VisIt 2.3.1 Release Notes</a>.</p>
+
+</body>
+</html>

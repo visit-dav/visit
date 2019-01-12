@@ -1,0 +1,99 @@
+<ui version="4.0" >
+ <class>SEQUENCE_2</class>
+ <widget class="QWidget" name="SEQUENCE_2" >
+  <property name="geometry" >
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>545</width>
+    <height>252</height>
+   </rect>
+  </property>
+  <property name="windowTitle" >
+   <string>Curve properties</string>
+  </property>
+  <widget class="QWidget" name="layout8" >
+   <property name="geometry" >
+    <rect>
+     <x>10</x>
+     <y>20</y>
+     <width>523</width>
+     <height>114</height>
+    </rect>
+   </property>
+   <layout class="QGridLayout" >
+    <property name="spacing" >
+     <number>10</number>
+    </property>
+    <item row="1" column="0" >
+     <widget class="QLabel" name="CurveVariableLabel" >
+      <property name="text" >
+       <string>Curve variable</string>
+      </property>
+      <property name="wordWrap" >
+       <bool>false</bool>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="0" >
+     <widget class="QLabel" name="CurveTitleLabel" >
+      <property name="text" >
+       <string>Curve title</string>
+      </property>
+      <property name="wordWrap" >
+       <bool>false</bool>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="0" colspan="2" >
+     <spacer name="spacer4" >
+      <property name="orientation" >
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="sizeType" >
+       <enum>QSizePolicy::Expanding</enum>
+      </property>
+      <property name="sizeHint" stdset="0" >
+       <size>
+        <width>521</width>
+        <height>20</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
+    <item row="0" column="1" >
+     <widget class="QvisDialogLineEdit" native="1" name="CURVE_DATABASE" />
+    </item>
+    <item row="1" column="1" >
+     <widget class="QLineEdit" name="CURVE_VARIABLE" />
+    </item>
+    <item row="2" column="1" >
+     <widget class="QLineEdit" name="CURVE_TITLE" />
+    </item>
+    <item row="0" column="0" >
+     <widget class="QLabel" name="CurveDatabaseLabel" >
+      <property name="text" >
+       <string>Curve database</string>
+      </property>
+      <property name="wordWrap" >
+       <bool>false</bool>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+ </widget>
+ <layoutdefault spacing="6" margin="11" />
+ <customwidgets>
+  <customwidget>
+   <class>QvisDialogLineEdit</class>
+   <extends>QWidget</extends>
+   <header location="global" >/data_vobs/VisIt/gui/QvisDialogLineEdit.h</header>
+  </customwidget>
+ </customwidgets>
+ <includes>
+  <include location="local" >QvisDialogLineEdit.h</include>
+ </includes>
+ <resources/>
+ <connections/>
+</ui>

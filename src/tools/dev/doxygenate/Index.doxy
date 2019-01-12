@@ -1,0 +1,19 @@
+/*!
+ * \mainpage VisIt Source Code Documentation
+ * \section intro_sec Introduction
+ * \par Welcome to the VisIt Source Code Documentation.
+ * \section Useful External Links
+ *  - https://wci.llnl.gov/codes/visit/
+ *  - http://www.visitusers.org
+ *
+ * \defgroup group_avt       Analysis and Visualization ToolKit (AVT)
+ * \defgroup group_common    Common
+ * \defgroup group_engine    Engine
+ * \defgroup group_gui       GUI
+ * \defgroup group_mdserver  Metadata Server
+ * \defgroup group_viewer    Viewer
+ * \defgroup group_launcher  Command Launcher
+ * \defgroup group_databases Databases
+ * \defgroup group_operators Operators
+ * \defgroup group_plots     Plots
+ */

@@ -1,0 +1,493 @@
+Target: xml2python
+Code: PyCurveAttributes_getattr
+Prefix:
+Postfix:
+    // Try and handle legacy fields in CurveAttributes
+    if(strcmp(name, "cycleColors") == 0)
+    {
+        CurveAttributesObject *curveObj = (CurveAttributesObject *)self;
+        bool cycleColors = curveObj->data->GetCurveColorSource() == CurveAttributes::Custom;
+        return PyInt_FromLong(cycleColors?1L:0L);
+    }
+    // Try and handle legacy fields in CurveAttributes
+    if(strcmp(name, "color") == 0)
+    {
+        return CurveAttributes_GetCurveColor(self, NULL);
+    }
+    if(strcmp(name, "RenderAsLines") == 0)
+    {
+        return PyInt_FromLong(0L);
+    }
+    if(strcmp(name, "RenderAsPoints") == 0)
+    {
+        return PyInt_FromLong(1L);
+    }
+    // lineStyle and it's possible enumerations
+    bool lineStyleFound = false;
+    if (strcmp(name, "lineStyle") == 0)
+    {
+        lineStyleFound = true; 
+    }
+    else if (strcmp(name, "SOLID") == 0)
+    {
+        lineStyleFound = true; 
+    }
+    else if (strcmp(name, "DASH") == 0)
+    {
+        lineStyleFound = true; 
+    }
+    else if (strcmp(name, "DOT") == 0)
+    {
+        lineStyleFound = true; 
+    }
+    else if (strcmp(name, "DOTDASH") == 0)
+    {
+        lineStyleFound = true; 
+    }
+    if (lineStyleFound)
+    {
+        fprintf(stdout, "lineStyle is no longer a valid Curve "
+                       "attribute.\nIt's value is being ignored, please remove "
+                       "it from your script.\n");
+        return PyInt_FromLong(0L);
+    }
+
+
+Code: PyCurveAttributes_setattr
+Prefix:
+Postfix:
+   // Try and handle legacy fields in CurveAttributes
+    if(obj == NULL)
+    {
+        CurveAttributesObject *CurveObj = (CurveAttributesObject *)self;
+        if(strcmp(name, "color") == 0)
+        {
+            obj = CurveAttributes_SetCurveColor(self, tuple);
+        }
+        if(strcmp(name, "cycleColors") == 0)
+        {
+            int ival;
+            if(!PyArg_ParseTuple(tuple, "i", &ival))
+            {
+                Py_DECREF(tuple);
+                return -1;
+            }
+            if(ival == 0)
+                CurveObj->data->SetCurveColorSource(CurveAttributes::Custom);
+            else
+                CurveObj->data->SetCurveColorSource(CurveAttributes::Cycle);
+    
+            Py_INCREF(Py_None);
+            obj = Py_None;
+        }
+        if(strcmp(name, "renderMode") == 0)
+        {
+            int ival;
+            if(!PyArg_ParseTuple(tuple, "i", &ival))
+            {
+                Py_DECREF(tuple);
+                return -1;
+            }
+            if(ival == 0)
+            {
+                CurveObj->data->SetShowLines(true);
+                CurveObj->data->SetShowPoints(false);
+            }
+            else
+            {
+                CurveObj->data->SetShowLines(false);
+                CurveObj->data->SetShowPoints(true);
+            }
+    
+            Py_INCREF(Py_None);
+            obj = Py_None;
+        }
+        if(strcmp(name, "lineStyle") == 0)
+        {
+            Py_INCREF(Py_None);
+            obj = Py_None;
+        }
+    }
+
+Target: xml2atts
+Function: CopyAttributes
+Declaration: virtual bool CopyAttributes(const AttributeGroup *);
+Definition:
+bool
+CurveAttributes::CopyAttributes(const AttributeGroup *atts)
+{
+    bool retval = false;
+
+    if(TypeName() == atts->TypeName())
+    {
+        // Call assignment operator.
+        const CurveAttributes *tmp = (const CurveAttributes *)atts;
+        *this = *tmp;
+        retval = true;
+    }
+    else if(atts->TypeName() == "Line")
+    {
+        const Line *tmp = (const Line*)atts;
+        SetDesignator(tmp->GetDesignator());
+        SetCurveColor(tmp->GetColor());
+        retval = true;
+    }
+
+    return retval;
+}
+
+Function: CreateCompatible
+Declaration: virtual AttributeSubject *CreateCompatible(const std::string &) const;
+Definition:
+AttributeSubject *
+CurveAttributes::CreateCompatible(const std::string &tname) const
+{
+    AttributeSubject *retval = 0;
+
+    if(TypeName() == tname)
+    {
+        retval = new CurveAttributes(*this);
+    }
+    else if(tname == "Line")
+    {
+        Line *line = new Line;
+        line->SetDesignator(GetDesignator());
+        line->SetColor(GetCurveColor());
+        line->SetLineWidth(GetLineWidth());
+        retval = line;
+    }
+
+    return retval;
+}
+
+Function: ChangesRequireRecalculation
+Declaration: bool ChangesRequireRecalculation(const CurveAttributes &) const;
+Definition:
+// ****************************************************************************
+//
+// Modifications:
+//    Kathleen Biagas, Wed Sep 11 17:16:26 PDT 2013
+//    Return true if converting coordinates.
+//
+// ****************************************************************************
+
+bool
+CurveAttributes::ChangesRequireRecalculation(const CurveAttributes &obj) const
+{
+    if (polarToCartesian != obj.polarToCartesian) return true;
+    if (angleUnits != obj.angleUnits && obj.polarToCartesian) return true;
+    if (polarCoordinateOrder != obj.polarCoordinateOrder && obj.polarToCartesian) return true;
+    return false;
+}
+
+Function: ProcessOldVersions
+Declaration: virtual void  ProcessOldVersions(DataNode *parentNode, const char *configVersion);
+Definition:
+// ****************************************************************************
+// Method: CurveAttributes::ProcessOldVersions
+//
+// Purpose: 
+//   This method creates modifies a DataNode representation of the object
+//   so it conforms to the newest representation of the object, which can
+//   can be read back in.
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   August 16, 2010
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+CurveAttributes::ProcessOldVersions(DataNode *parentNode,
+                                         const char *configVersion)
+{
+    if (parentNode == 0)
+        return;
+
+    DataNode *searchNode = parentNode->GetNode("CurveAttributes");
+    if (searchNode == 0)
+        return;
+
+    if (VersionLessThan(configVersion, "2.1.0"))
+    {
+        DataNode *k = 0;
+        if (( k = searchNode->GetNode("renderMode")) != 0)
+        {
+            std::string mode = k->AsString();
+            searchNode->RemoveNode(k, true);
+            if (mode == "RenderAsLines") // asLines
+            {
+                searchNode->AddNode(new DataNode("showLines", true));
+                searchNode->AddNode(new DataNode("pointFillMode", FillMode_ToString(CurveAttributes::Static)));
+            }
+            else
+            {
+                searchNode->AddNode(new DataNode("showLines", false));
+                searchNode->AddNode(new DataNode("pointFillMode", FillMode_ToString(CurveAttributes::Dynamic)));
+            }
+        }
+    }
+    if (VersionLessThan(configVersion, "3.0.0"))
+    {
+       if (searchNode->GetNode("lineStyle") != 0)
+            searchNode->RemoveNode("lineStyle");
+    }
+}
+
+Target: xml2info
+Function: CurveViewerEnginePluginInfo::InitializeGlobalObjects
+Declaration: static void InitializeGlobalObjects();
+Definition:
+// ****************************************************************************
+//  Method:  CurveViewerEnginePluginInfo::InitializeGlobalObjects
+//
+//  Purpose:
+//    Initialize the plot atts.
+//
+//  Programmer: whitlocb -- generated by xml2info
+//  Creation:   Fri Mar 26 15:09:32 PST 2004
+//
+//  Modifications:
+//    Kathleen Bonnell, Mon Oct 31 17:05:35 PST 2005
+//    Initialize colorIndex. 
+//
+// ****************************************************************************
+static int colorIndex;
+void
+CurveViewerEnginePluginInfo::InitializeGlobalObjects()
+{
+    colorIndex = 0;
+    CurveViewerEnginePluginInfo::clientAtts  = new CurveAttributes;
+    CurveViewerEnginePluginInfo::defaultAtts = new CurveAttributes;
+}
+
+Function: CurveViewerEnginePluginInfo::InitializePlotAtts
+Declaration: virtual void InitializePlotAtts(AttributeSubject *atts, const avtPlotMetaData &);
+Definition:
+// ****************************************************************************
+//  Method: CurveViewerEnginePluginInfo::InitializePlotAtts
+//
+//  Purpose:
+//    Initialize the plot attributes to the default attributes.
+//
+//  Arguments:
+//    atts      The attribute subject to initialize.
+//    md        The metadata used to initialize.
+//    atts      The variable name used to initialize.
+//
+//  Programmer: whitlocb -- generated by xml2info
+//  Creation:   Fri Mar 26 15:09:32 PST 2004
+//
+//  Modifications:
+//    Kathleen Bonnell, Mon Oct 31 17:05:35 PST 2005
+//    Added call to SetColor.
+//
+// ****************************************************************************
+
+void
+CurveViewerEnginePluginInfo::InitializePlotAtts(AttributeSubject *atts,
+    const avtPlotMetaData &)
+{
+    *(CurveAttributes*)atts = *defaultAtts;
+    SetColor(atts);
+}
+
+Function: CurveViewerEnginePluginInfo::SetColor
+Declaration: void SetColor(AttributeSubject *);
+Definition:
+// ****************************************************************************
+//  Method: CurveViewerEnginePluginInfo::SetColor
+//
+//  Purpose:
+//    Sets the color if the CycleColors att is set to true. 
+//
+//  Arguments:
+//    atts      The attribute subject. 
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   October 31, 2005 
+//
+//  Modifications:
+//
+//    Hank Childs, Sat Mar 13 10:35:34 PST 2010
+//    Change Boolean test to comparison with enumeration.
+//
+//    Brad Whitlock, Fri Jul  5 16:55:22 PDT 2013
+//    Set the fill color too.
+//
+// ****************************************************************************
+#include <avtColorTables.h>
+
+void
+CurveViewerEnginePluginInfo::SetColor(AttributeSubject *atts)
+{
+    CurveAttributes *curveAtts = (CurveAttributes *)atts;
+
+    if (curveAtts->GetCurveColorSource() == CurveAttributes::Cycle)
+    {
+        ColorAttribute c;
+        unsigned char rgb[3] = {0,0,0};
+
+        //
+        // Try and get the color for the colorIndex'th color in the default
+        // discrete color table.
+        //
+        avtColorTables *ct = avtColorTables::Instance();
+        if(ct->GetControlPointColor(ct->GetDefaultDiscreteColorTable(),
+           colorIndex, rgb))
+        {
+            c.SetRed(int(rgb[0]));
+            c.SetGreen(int(rgb[1]));
+            c.SetBlue(int(rgb[2]));
+        }
+        curveAtts->SetCurveColor(c);
+        curveAtts->SetFillColor1(c);
+
+        // Make a whiter version of the color for fill color 2.
+        int R = int(rgb[0]) + 100;
+        int G = int(rgb[1]) + 100;
+        int B = int(rgb[2]) + 100;
+        R = (R > 255) ? 255 : R;
+        G = (G > 255) ? 255 : G;
+        B = (B > 255) ? 255 : B;
+        c.SetRed(R);
+        c.SetGreen(G);
+        c.SetBlue(B);
+        curveAtts->SetFillColor2(c);
+
+        // Increment the color index.
+        colorIndex = (colorIndex + 1) % ct->GetNumColors();
+    }
+}
+
+Function: CurveViewerEnginePluginInfo::PermitsCurveViewScaling
+Declaration: virtual bool PermitsCurveViewScaling() const;
+Definition:
+bool
+CurveViewerEnginePluginInfo::PermitsCurveViewScaling() const
+{
+    return true;
+}
+
+
+Function: CurveViewerEnginePluginInfo::SupportsAnimation
+Declaration: virtual bool SupportsAnimation() const;
+Definition:
+// ****************************************************************************
+// Method: CurveViewerEnginePluginInfo::SupportsAnimation
+//
+// Purpose:
+//   Tell VisIt that this plot supports animation.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Sep 13 11:29:59 PDT 2013
+//
+// Modifications:
+//
+// ****************************************************************************
+
+bool
+CurveViewerEnginePluginInfo::SupportsAnimation() const
+{
+    return true;
+}
+
+
+Function: CurveViewerEnginePluginInfo::AnimationReset
+Declaration: virtual bool AnimationReset(AttributeSubject *atts, const avtPlotMetaData &plot);
+Definition:
+// ****************************************************************************
+// Method: CurveViewerEnginePluginInfo::AnimationReset
+//
+// Purpose:
+//   Resets the plot's animation.
+//
+// Arguments:
+//   atts : The attribute subject that we may modify.
+//   plot : The plot that we're animating.
+//
+// Returns:  True if the plot attributes changed as a result of reset.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Sep 13 11:29:59 PDT 2013
+//
+// Modifications:
+//
+// ****************************************************************************
+#include <avtPlotMetaData.h>
+
+bool
+CurveViewerEnginePluginInfo::AnimationReset(AttributeSubject *atts, const avtPlotMetaData &plot)
+{
+    CurveAttributes *cAtts = (CurveAttributes *)atts;
+    bool update = false;
+    if(cAtts->GetDoBallTimeCue() || cAtts->GetDoLineTimeCue())
+    {
+        if(plot.GetActualSpatialExtents().HasExtents())
+        {
+            double ext[6] = {0., 1., 0., 1., 0., 1.};
+            plot.GetActualSpatialExtents().CopyTo(ext);
+
+            cAtts->SetTimeForTimeCue(ext[0]);
+            update = true;
+        }
+    }
+    return update;
+}
+
+
+Function: CurveViewerEnginePluginInfo::AnimationStep
+Declaration: virtual bool AnimationStep(AttributeSubject *atts, const avtPlotMetaData &plot);
+Definition:
+// ****************************************************************************
+// Method: CurveViewerEnginePluginInfo::AnimationStep
+//
+// Purpose:
+//   Take an animation step.
+//
+// Arguments:
+//   atts : The attribute subject that we may modify.
+//   plot : The plot that we're animating.
+//
+// Returns:  True if the plot attributes changed.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Sep 13 11:29:59 PDT 2013
+//
+// Modifications:
+//
+// ****************************************************************************
+
+bool
+CurveViewerEnginePluginInfo::AnimationStep(AttributeSubject *atts, const avtPlotMetaData &plot)
+{
+    CurveAttributes *cAtts = (CurveAttributes *)atts;
+    bool update = false;
+    if(cAtts->GetDoBallTimeCue() || cAtts->GetDoLineTimeCue())
+    {
+        if(plot.GetActualSpatialExtents().HasExtents())
+        {
+            double ext[6] = {0., 1., 0., 1., 0., 1.};
+            plot.GetActualSpatialExtents().CopyTo(ext);
+
+            double EPS = (ext[1] - ext[0]) / 1000.;
+            double currentT = cAtts->GetTimeForTimeCue();
+            if(currentT >= ext[0]-EPS && currentT <= ext[1]+EPS)
+            {
+                double t = (currentT - ext[0]) / (ext[1] - ext[0]);
+                t += 0.01;
+                double newT = (1. - t) * ext[0] + t * ext[1];
+                if(newT > ext[1])
+                    cAtts->SetTimeForTimeCue(ext[0]);
+                else
+                    cAtts->SetTimeForTimeCue(newT);
+            }
+            else
+                cAtts->SetTimeForTimeCue(ext[0]);
+            update = true;
+        }
+    }
+    return update;
+}
+

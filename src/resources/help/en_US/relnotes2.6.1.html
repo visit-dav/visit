@@ -1,0 +1,81 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta http-equiv="Content-Language" content="en-us">
+   <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+   <meta name="ProgId" content="FrontPage.Editor.Document">
+   <title>VisIt 2.6.1 Release Notes</title>
+</head>
+<body>
+
+<center><b><font size="6">VisIt 2.6.1 Release Notes</font></b></center>
+
+<p>Welcome to VisIt's release notes page. Release 2.6.1 is primarily a
+bug fix release to release 2.6. It fixes additional bugs in release
+2.6.  Look <a href="relnotes2.6.0.html">here</a> to see a complete
+list of changes in release 2.6.</p>
+
+<p><b><font size="4">Configuration changes in version 2.6.1</font></b></p>
+<ul>
+<li>The host profiles were updated for TACC. In particular, host profiles were added for lonestar and stampede and deleted for ranger and spur.</li>
+</ul>
+
+<p><b><font size="4">Bugs fixed in version 2.6.1</font></b></p>
+<ul>
+<li>
+    VisIt Launch Script Fixes
+    <ul>
+    <li>A correction was made to fix a problem where some command line arguments would be passed to subsequent components in the wrong order when the "-s script_file" option was used. In particular the internal launcher was modified so that all arguments that are passed on to subsequent components are passed before the "-s script_file" command line option.</li>
+    <li>The launch script was too aggressive about using the loopback interface when launching parallel compute engines on a local node. This interfered with the compute engine's ability to connect back to the viewer when run on a different node in a cluster from where the viewer was running. This problem was limited to running a parallel job on a login node or in an mxterm.</li>
+    <li>Running the <i>visit</i> command through a symlink caused it to fail and print <i>There is no current version of VisIt.</i>.</li>
+    </ul>
+</li>
+<li>A leak in the VTK library was corrected, preventing the viewer from leaking memory as the user interacted with plots. This leak was most likely responsible for instances of VisIt crashing when animating movies on-screen.</li>
+<li>The Mesh plot and Label plot renderers each had a leak that caused the viewer to run out of memory when animating through time.</li>
+<li>The <i>Host</i>, <i>Path</i>, and <i>Filter</i> controls in the <b>File Open</b> window would fail to respond to text input after connecting to a remote computer. Only Mac versions seem to have been affected.</li>
+<li>VisIt will now look up a gateway computer's address, when one is present, instead of looking up the remote host name. This avoids errors when connecting to remote computers which are not visible outside of the gateway computer.</li>
+<li>Performing a <i>Lineout</i> query on an integer field caused the resulting curve to also use integer precision for its coordinates. This prevented the curve from storing correct coordinates for fractional values.</li>
+<li>The DDCMD file format reader was fixed so it can read sets of files whose aggregate size exceeds 4Gb.</li>
+<li>The XRay Image Query has had several bugs corrected that sometimes resulted in artifacts in the output images. The artifacts occured when the cells had faces with small areas (less than approximately 1e-5) or when the cells had quadrilateral faces that were non-planar.</li>
+<li>The compute engine's cell count variables were changed from integer to long precision. This fixes a problem where having over 1 billion cells in a dataset could cause the engine to think it was in scalable rendering mode and never send back an image to the viewer.</li>
+<li>A bug was fixed whereby necessary support libraries were not installed, causing failure with Python Expressions.</li>
+<li>A bug was fixed with exporting BOV files after using the Resample operator.</li>
+<li>A bug was fixed with reading BOV files that have BYTE_OFFSETs bigger than 2^32 bytes.</li>
+<li>A bug was fixed with picking Nek5000 files with more than one variable.</li>
+<li>Several annotation types were not showing the proper time value in movies containing transparency when the parallel version of VisIt's compute engine was used. The <i>time slider</i>, <i>text</i>, and <i>3D text</i> annotations were afflicted.</li>
+<li>A bug was corrected with the Xdmf reader where it would incorrectly report that vector variables defined on multi block meshes were invalid.</li>
+<li>The Xdmf reader was enhanced so that it supports reading the BaseIndex and GhostOffsets properties for structured grids.</li>
+<li>A bug caused by an indexing error was corrected in depth cueing. Thanks Jean Favre for the fix.</li>
+<li>Using 'import visit' from an installed python on Windows is again operational.</li>
+<li>An error was corrected in the WriteScript python function where GetCurveView was incorrectly used instead of GetViewCurve. Thanks Jean Favre for the fix.</li>
+<li>Pathlines again work when running in serial.</li>
+<li>The FTLE operator no longer issues many print statements, which slowed down client-server performance.</li>
+<li>A viewer crash when doing lineouts from the cli with incorrect parameters was fixed. An error message will now be generated instaead.</li>
+<li>Extraneous Pick/Query log messages printed to visitlog.py and during Command recording were cleaned up.</li>
+<li>VisIt's face list filter was fixed so it correctly extracts exterior faces from structured meshes whose dimension indexing does not begin at zero.</li>
+</ul>
+
+<p><b><font size="4">Enhancements in version 2.6.1</font></b></p>
+<ul>
+<li>The <i>procid</i> function was added to the <i>Expressions</i> window in the graphical user interface. It is located in the <i>Miscellaneous</i> category in the list of functions. The function has been in VisIt for a long time, just never visible in the graphical user interface.</li>
+<li>The <i>Cartographic Projection</i> operator now supports poly data inputs and selecting the Central Meridian.</li>
+<li>The UNV database plugin is now available on Windows.</li>
+<li>Added new function isnan(x) to expressions. This function returns 1 if a variable is not a number (tested via z!= x returning true) and 0 otherwise.</li>
+<li>The Silo database reader was enhanced to allow use Silo's DBMakeNamescheme method to handle externally referenced arrays and the support for possibly 'empty' blocks of a namescheme'd multi-block object.</li>
+<li>The MacOS X version of VisIt now comes with MPICH 3.0.1 installed into its application bundle. This allows Macs to run the parallel version of VisIt on newer versions of the operating system, which no longer include MPI.</li>
+</ul>
+
+<a name="Dev_changes"></a>
+<p><b><font size="4">Changes for VisIt developers in version 2.6.1</font></b></p>
+<ul>
+  <li>VisIt's CMake configure system now records cmake invocation command line with passed -D options. This info is displayed at configure time and also used to create a 'reconfig_visit.sh' script.</li>
+  <li>VisIt now requires Silo 4.9. Build_visit was modified to build Silo 4.9.</li>
+</ul>
+
+
+<p>Click the following link to view the release notes for the previous
+version of VisIt: <a href="relnotes2.6.0.html">VisIt 2.6 Release Notes</a>.</p>
+
+</body>
+</html>

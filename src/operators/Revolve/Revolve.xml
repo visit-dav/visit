@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+  <Plugin name="Revolve" type="operator" label="Revolve" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" iconFile="Revolve.xpm" category="Geometry">
+    <Attribute name="RevolveAttributes" purpose="This class contains attributes for the revolve operator." persistent="true" keyframe="true" exportAPI="" exportInclude="">
+      <Enum name="MeshType">
+        Auto
+        XY
+        RZ
+        ZR
+      </Enum>
+      <Field name="meshType" label="Type of Mesh?" type="enum" subtype="MeshType">
+        Auto
+      </Field>
+      <Field name="autoAxis" label="Choose axis based on mesh type?" type="bool">
+        true
+      </Field>
+      <Field name="axis" label="Axis of revolution" type="doubleArray" length="3" enabler="autoAxis:false">
+        1.000000
+        0.000000
+        0.000000
+      </Field>
+      <Field name="startAngle" label="Start angle" type="double">
+        0.000000
+      </Field>
+      <Field name="stopAngle" label="Stop angle" type="double">
+        360.000000
+      </Field>
+      <Field name="steps" label="Number of steps" type="int">
+        30
+      </Field>
+    </Attribute>
+  </Plugin>

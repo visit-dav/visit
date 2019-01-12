@@ -1,0 +1,2765 @@
+/*****************************************************************************
+*
+* Copyright (c) 2000 - 2018, Lawrence Livermore National Security, LLC
+* Produced at the Lawrence Livermore National Laboratory
+* LLNL-CODE-442911
+* All rights reserved.
+*
+* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
+* full copyright notice is contained in the file COPYRIGHT located at the root
+* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
+*
+* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
+* modification, are permitted provided that the following conditions are met:
+*
+*  - Redistributions of  source code must  retain the above  copyright notice,
+*    this list of conditions and the disclaimer below.
+*  - Redistributions in binary form must reproduce the above copyright notice,
+*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
+*    documentation and/or other materials provided with the distribution.
+*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
+*    be used to endorse or promote products derived from this software without
+*    specific prior written permission.
+*
+* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
+* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
+* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
+* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
+* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
+* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
+* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
+* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
+* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
+* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
+* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
+* DAMAGE.
+*
+*****************************************************************************/
+
+// ************************************************************************* //
+//                              avtSiloWriter.C                              //
+// ************************************************************************* //
+
+#include <avtSiloWriter.h>
+#include <avtSiloOptions.h>
+
+#include <float.h>
+#include <ctype.h>
+
+#include <vector>
+
+#include <vtkCell.h>
+#include <vtkCellData.h>
+#include <vtkFloatArray.h>
+#include <vtkIntArray.h>
+#include <vtkPointData.h>
+#include <vtkPolyData.h>
+#include <vtkRectilinearGrid.h>
+#include <vtkUnstructuredGrid.h>
+#include <vtkStructuredGrid.h>
+
+#include <avtDatabaseMetaData.h>
+#include <avtMaterial.h>
+#include <avtMetaData.h>
+#include <avtOriginatingSource.h>
+#include <avtParallel.h>
+
+#include <DBOptionsAttributes.h>
+#include <DebugStream.h>
+#include <ImproperUseException.h>
+#include <FileFunctions.h>
+#include <Utility.h>
+
+#include <silo.h>
+
+
+using std::map;
+using std::string;
+using std::vector;
+using namespace SiloDBOptions;
+
+// ****************************************************************************
+//  Function: VN (Valid Silo Variable Name) 
+//
+//  Purpose: Ensure a given object name being passed to Silo is a valid name
+//      for a silo object. The function is desgined to be used 'in-place' in
+//      a Silo function call where it may be used for multiple args in the 
+///     call. 
+//
+//  Programmer: Mark C. Miller, Tue Aug 26 14:18:13 PDT 2008
+//
+//  Modifications:
+//    Brad Whitlock, Fri Mar 6 09:56:33 PDT 2009
+//    Allow / since we'll get rid of them using another method where we use
+//    them to create directories.
+//
+// ****************************************************************************
+static const char *VN(const string &n)
+{
+    static int k = 0;
+    static string vn[10];
+    int km = k % 10;
+
+    k++;
+    vn[km] = n;
+    for (size_t i = 0; i < vn[km].size(); i++)
+    {
+        if (isalnum(vn[km][i]) || vn[km][i] == '_' || vn[km][i] == '/')
+            continue;
+        vn[km][i] = '_';
+    }
+
+    return vn[km].c_str();
+}
+
+// ****************************************************************************
+// Function: BeginVar
+//
+// Purpose: 
+//   Splits a name containing '/' into separate names and makes Silo directories
+//   for the names up to the last name, which is the name of an object.
+//
+// Arguments:
+//   dbfile  : The Silo file.
+//   name    : The name to be split.
+//   nlevels : The number of levels in the name.
+//
+// Returns:    The object name.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Mar 6 15:31:08 PST 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+static string 
+BeginVar(DBfile *dbfile, const string &name, int &nlevels)
+{
+    stringVector names = SplitValues(name, '/');
+    nlevels = 0;
+    for(size_t i = 0; i < names.size()-1; ++i)
+    {
+        int t = DBInqVarType(dbfile, names[i].c_str());
+        if(t != DB_DIR)
+            DBMkDir(dbfile, names[i].c_str());
+        DBSetDir(dbfile, names[i].c_str());
+        ++nlevels;
+    }
+    string s(name);
+    if(names.size() > 0)
+        s = names[names.size()-1];
+    VN(s);
+    return s;
+}
+
+// ****************************************************************************
+// Function: EndVar
+//
+// Purpose: 
+//   Back out of Silo subdirectories when we're done writing a variable.
+//
+// Arguments:
+//   dbfile : The Silo file.
+//   nlevels : The number of levels to back up.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Mar 6 15:34:57 PST 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+static void
+EndVar(DBfile *dbfile, int nlevels)
+{
+    for(int i = 0; i < nlevels; ++i)
+        DBSetDir(dbfile, "..");
+}
+
+// ****************************************************************************
+// Function: AbsoluteName 
+//
+// Purpose: 
+//   Prepends a '/' on the name when the number of levels > 0. This is good for
+//   determining a mesh name for a variable.
+//
+// Arguments:
+//   name    : The name to decorate.
+//   nlevels : The number of levels.
+//  
+// Returns:    The name to use
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Mar 6 15:40:00 PST 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+static string
+AbsoluteName(const string &name, int nlevels)
+{
+    return (nlevels > 0) ? (string("/") + name) : name;
+}
+
+// ****************************************************************************
+// Function: SaveAndSetSiloLibState / RestoreSiloLibState
+//
+// Purpose: Manage Silo library global state 
+//
+// Programmer: Mark C. Miller
+// Creation:   May 8, 2009
+//
+// Modifications:
+//    Mark C. Miller, Thu May 21 13:20:42 PDT 2009
+//    Worked around bug in Silo-4.7 where once compression is set, it can
+//    never be unset.
+// ****************************************************************************
+static int oldFriendlyHDFNames = 0;
+static int oldCheckSums = 0;
+static string oldCompressionParams;
+
+//
+// This structure is really part of Silo but it is private to Silo. The
+// only reason we can actually manipulate it at all is that it is NOT
+// defined in Silo as a static structure in a given source file. We got
+// a bit lucky in this regard as the SILO_Globals structure is shared
+// among Silo's drivers and so can't be static. Nonetheless, its type
+// is not known outside of Silo and so we wind up (hackishly) having
+// to duplicate the type, here. We need this structure ONLY for Silo
+// version 4.7(.0) to work around a bug in that if enableCompression
+// is ever set to non-zero, it can never be reset. This then prevents
+// DBCreate from working with PDB driver because that driver is
+// designed to detect attempts to apply compression and fail if so.
+//
+#if !defined(WIN32) && defined(SILO_VERSION_GE)
+#if SILO_VERSION_GE(4,7,0) && !SILO_VERSION_GE(4,7,1)
+typedef struct SILO_Globals_copy_t {
+    long dataReadMask;
+    int allowOverwrites;
+    int enableChecksums;
+    int enableCompression;
+    int enableFriendlyHDF5Names;
+    int enableGrabDriver;
+    int maxDeprecateWarnings;
+} SILO_Globals_copy_t;
+extern SILO_Globals_copy_t SILO_Globals;
+#endif
+#endif
+
+static void
+SaveAndSetSiloLibState(int driver, bool checkSums, string compressionParams)
+{
+    int myRank = PAR_Rank();
+#ifdef E_CHECKSUM
+    if (driver == DB_HDF5)
+        oldCheckSums = DBSetEnableChecksums(checkSums);
+    else
+    {
+        if (checkSums && !myRank)
+            cerr << "Checksums supported only on HDF5 driver" << endl;
+        oldCheckSums = DBSetEnableChecksums(0);
+    }
+#endif
+
+#if defined(SILO_VERSION_GE)
+#if SILO_VERSION_GE(4,7,0)
+    oldCompressionParams = string(DBGetCompression()?DBGetCompression():"");
+    if (driver == DB_HDF5)
+    {
+        oldFriendlyHDFNames = DBSetFriendlyHDF5Names(1);
+        DBSetCompression(compressionParams.c_str());
+    }
+    else
+    {
+
+        if (compressionParams != "" && !myRank)
+            cerr << "Compression supported only on HDF5 driver" << endl;
+        oldFriendlyHDFNames = DBSetFriendlyHDF5Names(0);
+#if !defined(WIN32) && !SILO_VERSION_GE(4,7,1)
+        DBSetCompression("");
+        // Hack to work-around bug in Silo lib
+        SILO_Globals.enableCompression = 0;
+#else
+        DBSetCompression(0);
+#endif
+    }
+#endif
+#endif
+}
+
+static void
+RestoreSiloLibState()
+{
+#ifdef E_CHECKSUM
+    DBSetEnableChecksums(oldCheckSums);
+#endif
+
+#if defined(SILO_VERSION_GE)
+#if SILO_VERSION_GE(4,7,0)
+    DBSetFriendlyHDF5Names(oldFriendlyHDFNames);
+#if !defined (WIN32) && !SILO_VERSION_GE(4,7,1)
+    DBSetCompression(oldCompressionParams.c_str());
+    // Hack to work-around bug in Silo lib
+    SILO_Globals.enableCompression = 0;
+#else
+    if (oldCompressionParams == "")
+        DBSetCompression(0);
+    else
+        DBSetCompression(oldCompressionParams.c_str());
+#endif
+#endif
+#endif
+}
+
+// ****************************************************************************
+//  Method: avtSiloWriter constructor
+//
+//  Programmer: Hank Childs
+//  Creation:   September 12, 2003
+//
+//  Modifications:
+//    Mark C. Miller, Tue Mar  9 09:13:03 PST 2004
+//    Added initialization of headerDbMd
+//
+//    Jeremy Meredith, Tue Mar 27 15:09:30 EDT 2007
+//    Initialize nblocks and meshtype -- these were added because we
+//    cannot trust what was in the metadata.
+//
+//    Mark C. Miller, Thu Jul 31 18:06:08 PDT 2008
+//    Added option to write all data to a single file 
+//
+//    Mark C. Miller, Tue Mar 17 18:09:10 PDT 2009
+//    Use const char option names defined in avtSiloOptions.h
+//
+//    Mark C. Miller, Fri May  8 17:04:15 PDT 2009
+//    Added compression and checksum options. Added call to save and set
+//    silo lib's global state.
+//
+//    Eric Brugger, Mon Jun 22 16:39:31 PDT 2009
+//    I modified the writer to handle the case where the meshes in a
+//    multimesh or multivar were not all of the same type.
+//
+// ****************************************************************************
+
+avtSiloWriter::avtSiloWriter(DBOptionsAttributes *dbopts)
+{
+    headerDbMd = 0;
+    optlist = 0;
+    singleFile = false;
+    nblocks = 0;
+    driver = DB_PDB;
+    checkSums = false;
+
+    for (int i = 0; dbopts != 0 && i < dbopts->GetNumberOfOptions(); ++i)
+    {
+        if (dbopts->GetName(i) == SILO_WROPT_DRIVER)
+        {
+            switch (dbopts->GetEnum(SILO_WROPT_DRIVER))
+            {
+                case 0: driver = DB_PDB; break;
+                case 1: driver = DB_HDF5; break;
+            }
+        }
+        else if (dbopts->GetName(i) == SILO_WROPT_COMPRESSION)
+            compressionParams = dbopts->GetString(SILO_WROPT_COMPRESSION);
+        else if (dbopts->GetName(i) == SILO_WROPT_CKSUMS)
+            checkSums = dbopts->GetBool(SILO_WROPT_CKSUMS);
+        else
+            debug1 << "Ignoring unknown option \"" << dbopts->GetName(i) << "\"" << endl;
+    }
+
+    nmeshes = 0;
+    meshtypes = NULL;
+    chunkToFileMap = NULL;
+    SaveAndSetSiloLibState(driver, checkSums, compressionParams);
+}
+
+
+// ****************************************************************************
+//  Method: avtSiloWriter destructor
+//
+//  Programmer: Hank Childs
+//  Creation:   September 12, 2003
+//
+//  Modifications:
+//    Mark C. Miller, Fri May  8 17:05:03 PDT 2009
+//    Added call to restore silo lib's global state.
+//
+//    Eric Brugger, Mon Jun 22 16:39:31 PDT 2009
+//    I modified the writer to handle the case where the meshes in a
+//    multimesh or multivar were not all of the same type.
+//
+// ****************************************************************************
+
+avtSiloWriter::~avtSiloWriter()
+{
+    RestoreSiloLibState();
+
+    if (optlist != NULL)
+    {
+        DBFreeOptlist(optlist);
+        optlist = NULL;
+    }
+    if (meshtypes != NULL) delete [] meshtypes;
+}
+
+
+// ****************************************************************************
+//  Method: WriteContextIsDefault, FileID, ShouldCreateFile
+//
+//  Purpose: Deal with bizarre interface to writeContext. GroupSize()
+//  really isn't the size of a group. Its the # of groups. By definitiion it
+//  it is also the number of files. But, that is only true if the communicator
+//  has been split by enableing group writes. Then, GroupSize() indicates the
+//  number of files or equivalently the number of concurrent writers. If the
+//  communicator hasn't been split (e.g. its the default), then GroupSize() is
+//  set to '1' by fiat even though it means (for almost *all* VisIt STXD plugins
+//  anyways) that every rank writes its own file. Finally, GroupRank() returns
+//  values in the range 1...GroupSize() and not 0...GroupSize()-1 as is typical
+//  of MPI size/rank and C language indexing.
+//
+//  Programmer: Mark C. Miller
+//  Creation:   June 29, 2016
+//
+// ****************************************************************************
+bool avtSiloWriter::WriteContextIsDefault()
+{
+#ifdef PARALLEL
+    int result;
+    int mpi_err = MPI_Comm_compare(VISIT_MPI_COMM, writeContext.GetCommunicator(), &result);
+    if (mpi_err == MPI_SUCCESS && result != MPI_IDENT) return false; 
+#endif
+    return true;
+}
+
+int avtSiloWriter::FileID()
+{
+    if (WriteContextIsDefault())
+        return PAR_Rank();
+    return writeContext.GroupRank()-1;
+}
+
+
+bool avtSiloWriter::ShouldCreateFile()
+{
+    if (WriteContextIsDefault())
+        return true;
+    return writeContext.Rank() == 0;
+}
+
+// ****************************************************************************
+//  Method: avtSiloWriter::OpenFile
+//
+//  Purpose:
+//      Does no actual work.  Just records the Op name for the files.
+//
+//  Programmer: Hank Childs
+//  Creation:   September 11, 2003
+//
+//  Modifications:
+//    Jeremy Meredith, Tue Mar 27 15:10:21 EDT 2007
+//    Added nblocks to this function and save it so we don't have to 
+//    trust the meta data.
+//
+//    Cyrus Harrison, Thu Aug 16 20:26:28 PDT 2007
+//    Separate dir and file name, so only file name can be used as stem 
+//    for mesh and var names.
+//
+//    Eric Brugger, Mon Jun 22 16:39:31 PDT 2009
+//    I modified the writer to handle the case where the meshes in a
+//    multimesh or multivar were not all of the same type.
+//
+// ****************************************************************************
+
+void
+avtSiloWriter::OpenFile(const string &stemname, int nb)
+{
+    stem = stemname;
+    nblocks = nb;
+    dir ="";
+    // find dir if provided
+    size_t idx = stem.rfind("/");
+    if ( idx != string::npos )
+    {
+        int stem_len = stem.size() - (idx+1) ;
+        dir  = stem.substr(0,idx+1);
+        stem = stem.substr(idx+1,stem_len);
+    }
+
+    // Get the number of datasets on this processor and allocate the
+    // meshtypes array using it for the size.
+    avtDataTree_p rootnode = GetInputDataTree();
+    int nchunks = rootnode->GetNumberOfLeaves();
+
+    nmeshes = 0;
+    if (meshtypes != NULL) delete [] meshtypes;
+    meshtypes = new int[nchunks];
+    chunkToFileMap = new int[nchunks];
+
+    if (WriteContextIsDefault())
+    {
+        if (nblocks == 1)
+            singleFile = true;
+        else
+            singleFile = false;
+    }
+    else if (writeContext.GroupSize() == 1)
+        singleFile = true;
+    else if (writeContext.GroupSize() == 2 && GetWriteContextHasNoDataProcs())
+        singleFile = true;
+    else
+    {
+        if (nblocks == 1)
+            singleFile = true;
+        else
+            singleFile = false;
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtSiloWriter::WriteHeaders
+//
+//  Purpose:
+//      This will write out the multi-vars for the Silo constructs.
+//
+//  Programmer: Hank Childs
+//  Creation:   September 11, 2003
+//
+//  Modifications:
+//    Mark C. Miller, Tue Mar  9 09:13:03 PST 2004
+//    Moved bulk of code to CloseFile. Stored away args in data members for
+//    eventual use in CloseFile
+//
+//    Jeremy Meredith, Tue Mar 27 15:10:43 EDT 2007
+//    Added meshtype as a member variable, and only start with the initial
+//    guess from the mesh meta-data.
+//
+//    Eric Brugger, Mon Jun 22 16:39:31 PDT 2009
+//    I modified the writer to handle the case where the meshes in a
+//    multimesh or multivar were not all of the same type.
+//
+//    Brad Whitlock, Tue Oct  6 14:33:41 PDT 2015
+//    Use the right mesh name.
+//
+// ****************************************************************************
+
+void
+avtSiloWriter::WriteHeaders(const avtDatabaseMetaData *md,
+                            const vector<string> &scalars,
+                            const vector<string> &vectors,
+                            const vector<string> &materials)
+{
+    meshname = GetMeshName(md);
+    matname = (materials.size() > 0 ? materials[0] : "");
+    
+    // store args away for eventual use in CloseFile
+    headerDbMd      = md;
+    headerScalars   = scalars;
+    headerVectors   = vectors;
+    headerMaterials = materials;
+
+    ConstructChunkOptlist(md);
+}
+
+
+// ****************************************************************************
+//  Method: avtSiloWriter::ConstructMultimesh
+//
+//  Purpose:
+//      Constructs a multi-mesh based on meta-data.
+//
+//  Programmer: Hank Childs
+//  Creation:   September 12, 2003
+//
+//  Modifications:
+//    Mark C. Miller, Tue Mar  9 12:17:28 PST 2004
+//    Added code to output spatial extents/zone counts
+//
+//    Mark C. Miller, Tue Oct  5 12:41:41 PDT 2004
+//    Changed to use test for DBOPT_EXTENTS_SIZE for code that adds extents
+//    options
+//
+//    Jeremy Meredith, Tue Mar 27 11:36:57 EDT 2007
+//    Use the saved mesh type and number of blocks instead of assuming
+//    the metadata was correct.
+//
+//    Mark C. Miller, Mon Jun  4 17:29:11 PDT 2007
+//    Don't write extents if running in parallel. 
+//
+//    Mark C. Miller, Thu Jul 31 18:06:08 PDT 2008
+//    Added option to write all data to a single file 
+//
+//    Mark C. Miller, Tue Aug 26 14:29:46 PDT 2008
+//    Made it construct valid variable name(s) for silo objects.
+//
+//    Brad Whitlock, Fri Mar 6 15:00:31 PST 2009
+//    Allow subdirectories.
+//
+//    Eric Brugger, Mon Jun 22 16:39:31 PDT 2009
+//    I modified the writer to handle the case where the meshes in a
+//    multimesh or multivar were not all of the same type.  I also commented
+//    out some logic that had to do with outputting spatial extents when
+//    built in parallel since this caused some out of bounds memory
+//    references.
+//
+//    Cyrus Harrison, Tue Feb 15 13:20:20 PST 2011
+//    Preserve axis labels if they exist.
+//
+//    Mark C. Miller, Tue Jun 14 10:34:02 PDT 2016
+//    Added chunkMap so that this code also supports cases where mapping of
+//    chunks to files is not known and cannot be predicted until the chunks
+//    are actually written.
+// ****************************************************************************
+
+void
+avtSiloWriter::ConstructMultimesh(DBfile *dbfile, const avtMeshMetaData *mmd,
+    int const *meshtypes, int const *chunkMap)
+{
+    size_t   i,j,k; (void) j; (void) k;
+
+    int nlevels = 0;
+    string meshName = BeginVar(dbfile, mmd->name, nlevels);
+
+    avtDataAttributes& atts = GetInput()->GetInfo().GetAttributes();
+    int ndims = atts.GetSpatialDimension(); (void) ndims;
+
+    //
+    // Construct the names for each mesh.
+    //
+    char **mesh_names = new char*[nblocks];
+#if defined(DBOPT_EXTENTS_SIZE) && !defined(PARALLEL)
+    double *extents = new double[nblocks * ndims * 2];
+#endif
+    k = 0;
+    for (i = 0 ; i < (size_t)nblocks ; i++)
+    {
+        char tmp[1024];
+        if (singleFile)
+        {
+            if(nlevels > 0)
+                sprintf(tmp, "/domain_%ld/%s", i, VN(mmd->name));
+            else
+                sprintf(tmp, "domain_%ld/%s", i, VN(mmd->name));
+        }
+        else
+        {
+            sprintf(tmp, "%s.%d.silo:/domain_%ld/%s", stem.c_str(), chunkMap[i], i, VN(mmd->name));
+        }
+        mesh_names[i] = new char[strlen(tmp)+1];
+        strcpy(mesh_names[i], tmp);
+
+#if defined(DBOPT_EXTENTS_SIZE) && !defined(PARALLEL)
+        for (j = 0; j < (size_t)ndims; j++)
+           extents[k++] = spatialMins[i*ndims+j];
+        for (j = 0; j < (size_t)ndims; j++)
+           extents[k++] = spatialMaxs[i*ndims+j];
+#endif
+    }
+
+    //
+    // Build zone-counts array
+    //
+#if defined(DBOPT_EXTENTS_SIZE) && !defined(PARALLEL)
+    int *zone_counts = new int[nblocks];
+    for (i = 0; i < (size_t)nblocks; i++)
+        zone_counts[i] = zoneCounts[i];
+#endif
+
+    DBoptlist *tmpOptlist = DBMakeOptlist(20);
+
+    int cycle = atts.GetCycle();
+    DBAddOption(tmpOptlist, DBOPT_CYCLE, &cycle);
+    float ftime = atts.GetTime();
+    DBAddOption(tmpOptlist, DBOPT_TIME, &ftime);
+    double dtime = atts.GetTime();
+    DBAddOption(tmpOptlist, DBOPT_DTIME, &dtime);
+    if (atts.GetXLabel() != "")
+        DBAddOption(tmpOptlist, DBOPT_XLABEL, (char *) atts.GetXLabel().c_str());
+    if (atts.GetXUnits() != "")
+        DBAddOption(tmpOptlist, DBOPT_XUNITS, (char *) atts.GetXUnits().c_str());
+    if (atts.GetYLabel() != "")
+        DBAddOption(tmpOptlist, DBOPT_YLABEL, (char *) atts.GetYLabel().c_str());
+    if (atts.GetYUnits() != "")
+        DBAddOption(tmpOptlist, DBOPT_YUNITS, (char *) atts.GetYUnits().c_str());
+    if (atts.GetZLabel() != "")
+        DBAddOption(tmpOptlist, DBOPT_ZLABEL, (char *) atts.GetZLabel().c_str());
+    if (atts.GetZUnits() != "")
+        DBAddOption(tmpOptlist, DBOPT_ZUNITS, (char *) atts.GetZUnits().c_str());
+
+    // the following silo options exist only for silo 4.4 and later
+#if defined(DBOPT_EXTENTS_SIZE) && !defined(PARALLEL)
+    int extsize = ndims * 2;
+    DBAddOption(tmpOptlist, DBOPT_EXTENTS_SIZE, &extsize);
+    DBAddOption(tmpOptlist, DBOPT_EXTENTS, extents);
+    DBAddOption(tmpOptlist, DBOPT_ZONECOUNTS, zone_counts);
+#endif
+
+    //
+    // Write the actual header information.
+    //
+    DBPutMultimesh(dbfile, (char *) meshName.c_str(),
+        nblocks, mesh_names, meshtypes, tmpOptlist);
+
+    //
+    // Clean up memory.
+    //
+    DBFreeOptlist(tmpOptlist);
+    for (i = 0 ; i < (size_t)nblocks ; i++)
+    {
+        delete [] mesh_names[i];
+    }
+    delete [] mesh_names;
+#if defined(DBOPT_EXTENTS_SIZE) && !defined(PARALLEL)
+    delete [] extents;
+    delete [] zone_counts;
+#endif
+
+    EndVar(dbfile, nlevels);
+}
+
+
+// ****************************************************************************
+//  Method: avtSiloWriter::ConstructMultivar
+//
+//  Purpose:
+//      Constructs a multi-var based on meta-data.
+//
+//  Programmer: Hank Childs
+//  Creation:   September 12, 2003
+//
+//  Modifications:
+//    Mark C. Miller, Tue Oct  5 12:41:41 PDT 2004
+//    Changed code that outputs extents options to use DBOPT_EXTENTS_SIZE for
+//    conditional compilation
+//
+//    Jeremy Meredith, Tue Mar 27 11:36:57 EDT 2007
+//    Use the saved mesh type and number of blocks instead of assuming
+//    the metadata was correct.
+//
+//    Mark C. Miller, Mon Jun  4 17:29:11 PDT 2007
+//    Don't write extents if running in parallel. 
+//
+//    Mark C. Miller, Thu Jul 31 18:06:08 PDT 2008
+//    Added option to write all data to a single file 
+//
+//    Mark C. Miller, Tue Aug 26 14:29:46 PDT 2008
+//    Made it construct valid variable name(s) for silo objects.
+//
+//    Brad Whitlock, Fri Mar 6 15:00:31 PST 2009
+//    Allow subdirectories. I also fixed a bug with adding extentsize to the
+//    option list. The address of a temporary variable was taken and then
+//    it went out of scope.
+//
+//    Eric Brugger, Mon Jun 22 16:39:31 PDT 2009
+//    I modified the writer to handle the case where the meshes in a
+//    multimesh or multivar were not all of the same type.
+//
+//    Cyrus Harrison, Tue Feb 15 13:20:20 PST 2011
+//    Preserve axis labels if they exist.
+//
+//    Mark C. Miller, Tue Jun 14 10:34:02 PDT 2016
+//    Added chunkMap so that this code also supports cases where mapping of
+//    chunks to files is not known and cannot be predicted until the chunks
+//    are actually written.
+// ****************************************************************************
+
+void
+avtSiloWriter::ConstructMultivar(DBfile *dbfile, const string &sname,
+    const avtMeshMetaData *mmd, int const *meshtypes, int const *chunkMap)
+{
+    int   i,j,k;
+
+    //
+    // Begin the variable
+    //
+    int nlevels = 0;
+    string varName = BeginVar(dbfile, sname, nlevels);
+
+    //
+    // lookup extents for this variable and setup the info we'll need
+    //
+    double *extents = 0;
+    int ncomps = 0;
+    vector<double> minVals;
+    vector<double> maxVals;
+    std::map<string, vector<double> >::iterator minsMap;
+    minsMap = dataMins.find(sname);
+    if (minsMap != dataMins.end())
+    {
+        minVals = minsMap->second;
+        maxVals = dataMaxs[sname];
+        ncomps = (int)minVals.size() / nblocks; 
+        extents = new double[nblocks * ncomps * 2];
+    }
+
+    //
+    // Construct the names for each var.
+    //
+    k = 0;
+    int *vartypes = new int[nblocks];
+    char **var_names = new char*[nblocks];
+    for (i = 0 ; i < nblocks ; i++)
+    {
+        switch (meshtypes[i])
+        {
+          case DB_QUADMESH:
+            vartypes[i] = DB_QUADVAR;
+            break;
+
+          case DB_UCDMESH:
+            vartypes[i] = DB_UCDVAR;
+            break;
+
+          default:
+            vartypes[i] = DB_INVALID_OBJECT;
+            break;
+        }
+        char tmp[1024];
+        if (singleFile)
+        {
+            if(nlevels > 0)
+                sprintf(tmp, "/domain_%d/%s", i, VN(sname));
+            else
+                sprintf(tmp, "domain_%d/%s", i, VN(sname));
+        }
+        else
+        {
+            sprintf(tmp, "%s.%d.silo:/domain_%d/%s", stem.c_str(), chunkMap[i], i, VN(sname));
+        }
+        var_names[i] = new char[strlen(tmp)+1];
+        strcpy(var_names[i], tmp);
+
+        if (extents != 0)
+        {
+            for (j = 0; j < ncomps; j++)
+                extents[k++] = minVals[i*ncomps+j];
+            for (j = 0; j < ncomps; j++)
+                extents[k++] = maxVals[i*ncomps+j];
+        }
+    }
+
+    DBoptlist *tmpOptlist = DBMakeOptlist(20);
+
+    avtDataAttributes& atts = GetInput()->GetInfo().GetAttributes();
+    int cycle = atts.GetCycle();
+    DBAddOption(tmpOptlist, DBOPT_CYCLE, &cycle);
+    float ftime = atts.GetTime();
+    DBAddOption(tmpOptlist, DBOPT_TIME, &ftime);
+    double dtime = atts.GetTime();
+    DBAddOption(tmpOptlist, DBOPT_DTIME, &dtime);
+    if (atts.GetXLabel() != "")
+        DBAddOption(tmpOptlist, DBOPT_XLABEL, (char *) atts.GetXLabel().c_str());
+    if (atts.GetXUnits() != "")
+        DBAddOption(tmpOptlist, DBOPT_XUNITS, (char *) atts.GetXUnits().c_str());
+    if (atts.GetYLabel() != "")
+        DBAddOption(tmpOptlist, DBOPT_YLABEL, (char *) atts.GetYLabel().c_str());
+    if (atts.GetYUnits() != "")
+        DBAddOption(tmpOptlist, DBOPT_YUNITS, (char *) atts.GetYUnits().c_str());
+    if (atts.GetZLabel() != "")
+        DBAddOption(tmpOptlist, DBOPT_ZLABEL, (char *) atts.GetZLabel().c_str());
+    if (atts.GetZUnits() != "")
+        DBAddOption(tmpOptlist, DBOPT_ZUNITS, (char *) atts.GetZUnits().c_str());
+
+    // the following silo options exist only for silo 4.4 and later
+    int extsize = ncomps * 2; (void) extsize;
+    if (extents != 0)
+    {
+#if defined(DBOPT_EXTENTS_SIZE) && !defined(PARALLEL)
+        DBAddOption(tmpOptlist, DBOPT_EXTENTS_SIZE, &extsize);
+        DBAddOption(tmpOptlist, DBOPT_EXTENTS, extents);
+#endif
+    }
+
+    //
+    // Write the actual header information.
+    //
+    DBPutMultivar(dbfile, (char *) varName.c_str(),
+        nblocks, var_names, vartypes, tmpOptlist);
+
+    //
+    // Clean up memory.
+    //
+    DBFreeOptlist(tmpOptlist);
+    for (i = 0 ; i < nblocks ; i++)
+    {
+        delete [] var_names[i];
+    }
+    delete [] var_names;
+    delete [] vartypes;
+    if (extents != 0)
+        delete [] extents;
+
+    //
+    // End the variable
+    //
+    EndVar(dbfile, nlevels);
+}
+
+
+// ****************************************************************************
+//  Method: avtSiloWriter::ConstructMultimat
+//
+//  Purpose:
+//      Constructs a multimat based on meta-data.
+//
+//  Programmer: Hank Childs
+//  Creation:   September 12, 2003
+//
+//  Modifications:
+//    Jeremy Meredith, Tue Mar 27 11:36:57 EDT 2007
+//    Use the saved mesh type and number of blocks instead of assuming
+//    the metadata was correct.
+//
+//    Mark C. Miller, Thu Jul 31 18:06:08 PDT 2008
+//    Added option to write all data to a single file 
+//
+//    Mark C. Miller, Tue Aug 26 14:29:46 PDT 2008
+//    Made it construct valid variable name(s) for silo objects.
+//
+//    Brad Whitlock, Fri Mar 6 15:00:31 PST 2009
+//    Allow subdirectories.
+//
+//    Mark C. Miller, Tue Jun 14 10:34:02 PDT 2016
+//    Added chunkMap so that this code also supports cases where mapping of
+//    chunks to files is not known and cannot be predicted until the chunks
+//    are actually written.
+// ****************************************************************************
+
+void
+avtSiloWriter::ConstructMultimat(DBfile *dbfile, const string &mname,
+    const avtMeshMetaData *mmd, int const *chunkMap)
+{
+    int   i;
+
+    int nlevels = 0;
+    string matName = BeginVar(dbfile, mname, nlevels);
+
+    //
+    // Construct the names for each mat
+    //
+    char **mat_names = new char*[nblocks];
+    for (i = 0 ; i < nblocks ; i++)
+    {
+        char tmp[1024];
+        if (singleFile)
+        {
+            if(nlevels > 0)
+                sprintf(tmp, "/domain_%d/%s", i, VN(mname));
+            else
+                sprintf(tmp, "domain_%d/%s", i, VN(mname));
+        }
+        else
+        {
+            sprintf(tmp, "%s.%d.silo:/domain_%d/%s", stem.c_str(), chunkMap[i], i, VN(mname));
+        }
+        mat_names[i] = new char[strlen(tmp)+1];
+        strcpy(mat_names[i], tmp);
+    }
+
+    //
+    // Write the actual header information.
+    //
+    DBPutMultimat(dbfile, (char *) matName.c_str(), nblocks, mat_names, optlist);
+
+    //
+    // Clean up memory.
+    //
+    for (i = 0 ; i < nblocks ; i++)
+    {
+        delete [] mat_names[i];
+    }
+    delete [] mat_names;
+
+    EndVar(dbfile, nlevels);
+}
+
+
+// ****************************************************************************
+//  Method: avtSiloWriter::ConstructChunkOptlist
+//
+//  Purpose:
+//      Constructs an optlist from the input dataset and the database 
+//      meta-data.
+//
+//  Programmer: Hank CHilds
+//  Creation:   September 12, 2003
+//
+//  Modifications:
+//    Mark C. Miller, Tue Mar  9 18:09:45 PST 2004
+//    Made the local vars referenced by optlist static so they live outside
+//    of this call. DBAddOption doesn't copy them. It just records the pointer
+//
+//    Brad Whitlock, Tue May 19 12:17:48 PDT 2009
+//    Make sure that we save out the cellOrigin.
+//
+//    Cyrus Harrison, Tue Feb 15 13:20:20 PST 2011
+//    Preserve axis labels if they exist.
+//
+// ****************************************************************************
+
+void
+avtSiloWriter::ConstructChunkOptlist(const avtDatabaseMetaData *md)
+{
+    optlist = DBMakeOptlist(20);
+    avtDataAttributes &atts = GetInput()->GetInfo().GetAttributes();
+    static int cycle = atts.GetCycle();
+    DBAddOption(optlist, DBOPT_CYCLE, &cycle);
+    static float ftime = atts.GetTime();
+    DBAddOption(optlist, DBOPT_TIME, &ftime);
+    static double dtime = atts.GetTime();
+    DBAddOption(optlist, DBOPT_DTIME, &dtime);
+    static int cellOrigin = atts.GetCellOrigin();
+    DBAddOption(optlist, DBOPT_ORIGIN, &cellOrigin);
+    if (atts.GetXLabel() != "")
+        DBAddOption(optlist, DBOPT_XLABEL, (char *) atts.GetXLabel().c_str());
+    if (atts.GetXUnits() != "")
+        DBAddOption(optlist, DBOPT_XUNITS, (char *) atts.GetXUnits().c_str());
+    if (atts.GetYLabel() != "")
+        DBAddOption(optlist, DBOPT_YLABEL, (char *) atts.GetYLabel().c_str());
+    if (atts.GetYUnits() != "")
+        DBAddOption(optlist, DBOPT_YUNITS, (char *) atts.GetYUnits().c_str());
+    if (atts.GetZLabel() != "")
+        DBAddOption(optlist, DBOPT_ZLABEL, (char *) atts.GetZLabel().c_str());
+    if (atts.GetZUnits() != "")
+        DBAddOption(optlist, DBOPT_ZUNITS, (char *) atts.GetZUnits().c_str());
+
+}
+
+
+// ****************************************************************************
+//  Method: avtSiloWriter::WriteChunk
+//
+//  Purpose:
+//      This writes out one chunk of an avtDataset.
+//
+//  Programmer: Hank Childs
+//  Creation:   September 11, 2003
+//
+//  Modifications:
+//    Mark C. Miller, Tue Jun 13 10:22:35 PDT 2006
+//    Added call to temporarily disable checksums in Silo just in case they
+//    might have been enabled, since PDB driver can't do checksumming.
+//    Nonetheless, PDB only checks during file creation and otherwise silently
+//    ignores the setting.
+//
+//    Jeremy Meredith, Tue Mar 27 11:36:57 EDT 2007
+//    Save off the actual mesh type we encountered, as this may differ
+//    from what was in the metadata.
+//
+//    Hank Childs, Wed Mar 28 10:12:01 PDT 2007
+//    Name the file differently for single block.
+//
+//    Cyrus Harrison, Thu Aug 16 20:42:30 PDT 2007
+//    Use dir+stem to create filename.
+//
+//    Mark C. Miller, Thu Jul 31 18:06:08 PDT 2008
+//    Added option to write all data to a single file 
+//
+//    Mark C. Miller, Thu Aug  7 23:38:24 PDT 2008
+//    Fixed filename generation for single block case
+//
+//    Mark C. Miller, Mon Sep 22 22:03:55 PDT 2008
+//    Fixed single file, single block case to prevent it from making
+//    "domain" subdirs.
+//
+//    Mark C. Miller, Fri May  8 17:05:47 PDT 2009
+//    Moved work dealing with Silo lib's global behavior to
+//    SaveAndSetSiloLibState.
+//
+//    Eric Brugger, Mon Jun 22 16:39:31 PDT 2009
+//    I modified the writer to handle the case where the meshes in a
+//    multimesh or multivar were not all of the same type.
+//
+//    Mark C. Miller, Thu Mar  1 15:03:23 PST 2018
+//    Indicate db metadata is time-varying (even if it may not be). In trunk,
+//    a write option is added to disable.
+// ****************************************************************************
+
+void
+avtSiloWriter::WriteChunk(vtkDataSet *ds, int chunk)
+{
+    //
+    // Now matter what mesh type we have, the file they should go into should
+    // have the same name.  Set up that file now.
+    //
+    string fname = dir + stem;
+    char filename[1024];
+    if (singleFile)
+    {
+        sprintf(filename, "%s.silo", fname.c_str());
+        chunkToFileMap[nmeshes] = -1;
+    }
+    else
+    {
+        sprintf(filename, "%s.%d.silo", fname.c_str(), FileID());
+        chunkToFileMap[nmeshes] = FileID();
+    }
+
+    DBfile *dbfile;
+    if (ShouldCreateFile())
+    {
+        if (FileFunctions::CheckPermissions(filename) == FileFunctions::PERMISSION_RESULT_NOFILE)
+            dbfile = DBCreate(filename, 0, DB_LOCAL, "VisIt ExportDB", driver);
+        else
+            dbfile = DBOpen(filename, DB_UNKNOWN, DB_APPEND);
+    }
+    else
+    {
+        dbfile = DBOpen(filename, DB_UNKNOWN, DB_APPEND);
+    }
+
+    if (!DBInqVarExists(dbfile, "/MetadataIsTimeVarying"))
+    {
+        int const n = 1;
+        DBWrite(dbfile, "/MetadataIsTimeVarying", &n, &n, 1, DB_INT);
+    }
+
+    if (nblocks > 1)
+    {
+        char dirname[32];
+        sprintf(dirname, "domain_%d", chunk);
+        DBMkDir(dbfile, dirname);
+        DBSetDir(dbfile, dirname);
+    }
+
+    //
+    // Use sub-routines to do the mesh-type specific writes.
+    //
+    switch (ds->GetDataObjectType())
+    {
+       case VTK_UNSTRUCTURED_GRID:
+         meshtypes[nmeshes] = DB_UCDMESH;
+         WriteUnstructuredMesh(dbfile, (vtkUnstructuredGrid *) ds, chunk);
+         break;
+
+       case VTK_STRUCTURED_GRID:
+         meshtypes[nmeshes] = DB_QUADMESH;
+         WriteCurvilinearMesh(dbfile, (vtkStructuredGrid *) ds, chunk);
+         break;
+
+       case VTK_RECTILINEAR_GRID:
+         meshtypes[nmeshes] = DB_QUADMESH;
+         WriteRectilinearMesh(dbfile, (vtkRectilinearGrid *) ds, chunk);
+         break;
+
+       case VTK_POLY_DATA:
+         meshtypes[nmeshes] = DB_UCDMESH;
+         WritePolygonalMesh(dbfile, (vtkPolyData *) ds, chunk);
+         break;
+
+       default:
+         EXCEPTION0(ImproperUseException);
+    }
+    nmeshes++;
+
+    DBClose(dbfile);
+}
+
+
+// ****************************************************************************
+//  Method: avtSiloWriter::CloseFile
+//
+//  Purpose:
+//      Closes the file.  This does nothing in this case.
+//
+//  Programmer: Hank Childs
+//  Creation:   September 11, 2003
+//
+//  Modifcations:
+//    Mark C. Miller, Tue Mar  9 09:13:03 PST 2004
+//    Relocated bulk of WriteHeader code to here
+//
+//    Hank Childs, Wed Jun 14 14:05:19 PDT 2006
+//    Added the changes done on June 13th by Mark Miller for "WriteChunk" to
+//    this method as well.  The following are Mark's comments:
+//    Added call to temporarily disable checksums in Silo just in case they
+//    might have been enabled, since PDB driver can't do checksumming.
+//    Nonetheless, PDB only checks during file creation and otherwise silently
+//    ignores the setting.
+//
+//    Hank Childs, Wed Mar 28 10:19:18 PDT 2007
+//    Don't write a root file if there is only one block.
+//
+//    Cyrus Harrison, Fri Aug  3 20:53:34 PDT 2007
+//    Use first processor with data to write the root file.
+//    (processor 0 may not contain data and b/c of this have invalid metadata)
+//
+//    Mark C. Miller, Thu Jul 31 18:06:08 PDT 2008
+//    Added option to write all data to a single file 
+//
+//    Brad Whitlock, Wed Mar 11 11:10:14 PDT 2009
+//    Added code to write expressions that came from the database back out
+//    to the master file.
+//
+//    Mark C. Miller, Fri May  8 17:05:47 PDT 2009
+//    Moved work dealing with Silo lib's global behavior to
+//    SaveAndSetSiloLibState.
+//
+//    Eric Brugger, Mon Jun 22 16:39:31 PDT 2009
+//    I modified the writer to handle the case where the meshes in a
+//    multimesh or multivar were not all of the same type.
+//
+// ****************************************************************************
+
+void
+avtSiloWriter::CloseFile(void)
+{
+    // free the optlist
+    if (optlist != 0)
+    {
+        DBFreeOptlist(optlist);
+        optlist = 0;
+    }
+}
+
+// ****************************************************************************
+//  Method: avtSiloWriter::WriteRootFile
+//
+//  Purpose:
+//      Write a root file for the various domains
+//
+//  Programmer: Hank Childs
+//  Creation:   September 11, 2003
+//
+//  Modifcations:
+//    Brad Whitlock, Tue Aug 18 02:37:54 PDT 2015
+//    I moved most of the code from CloseFile to here. This method will be
+//    allowed to do collective communication on the entire set of MPI ranks.
+//
+//    Brad Whitlock, Tue Oct  6 12:52:59 PDT 2015
+//    I changed the code so it will write the root file on a rank that has 
+//    output data before. This prevents a crash when writing the root file 
+//    when using write groups and rank 0 in the global communicator did not
+//    output any data. Use the write mesh name.
+//
+//    Mark C. Miller, Tue Jun 14 10:36:25 PDT 2016
+//    Added logic to gather the chunk map
+//
+//    Mark C. Miller, Thu Mar  1 15:03:23 PST 2018
+//    Indicate db metadata is time-varying (even if it may not be). In trunk,
+//    a write option is added to disable.
+// ****************************************************************************
+
+void
+avtSiloWriter::WriteRootFile()
+{
+    //
+    // This block involving writeContext was written *assuming* writeContext is
+    // just a (slightly more convenient) global context. That assumption is
+    // made true by the fact that avtDatabaseWriter calls WriteRootFile *after*
+    // restoring the global context. So, here, writeContext is CANNOT be a
+    // split communicator or potentially multiple processors might write the
+    // root file contents. To *emphasize* this assumption, we use GlobalRank()
+    // instead of Rank(). We could use PAR_Rank() too but because we're using
+    // methods in writeContext (CollectIntArraysOnRank), it seemed better to
+    // use GlobalRank() on the writeContext.
+    //
+    int writerRank = 0;
+#ifdef PARALLEL
+    // NOTE: When we have write groups, the rank 0 process does not necessarily
+    //       have the metadata needed to write data. In that case, let's figure
+    //       out a different rank to write the root file.
+    //
+    //       Take the maximum rank with data.
+    writerRank = (headerDbMd == NULL) ? -1 : writeContext.GlobalRank();
+    writerRank = writeContext.UnifyMaximumValue(writerRank);
+    if(writerRank == -1)
+        return;
+#endif
+
+    // Determine the meshtypes of the all the meshes.
+    int *globalMeshtypes = NULL;
+    int *globalNMesh = NULL;
+    writeContext.CollectIntArraysOnRank(globalMeshtypes, globalNMesh,
+                                        meshtypes, nmeshes, writerRank);
+    int *globalChunkToFileMap = NULL;
+    int *globalNMesh2 = NULL;
+    writeContext.CollectIntArraysOnRank(globalChunkToFileMap, globalNMesh2,
+                                        chunkToFileMap, nmeshes, writerRank);
+
+    if (writeContext.GlobalRank() == writerRank && nblocks > 1)
+    {
+        debug5 << "Writing Silo root file on rank " << writerRank << endl;
+
+        size_t i;
+        char filename[1024];
+        string fname = dir + stem;
+        DBfile *dbfile;
+
+        sprintf(filename, "%s.silo", fname.c_str());
+        if (singleFile)
+            dbfile = DBOpen(filename, DB_UNKNOWN, DB_APPEND);
+        else
+            dbfile = DBCreate(filename, 0, DB_LOCAL, "VisIt ExportDB", driver);
+
+        if (!DBInqVarExists(dbfile, "/MetadataIsTimeVarying"))
+        {
+            int const n = 1;
+            DBWrite(dbfile, "/MetadataIsTimeVarying", &n, &n, 1, DB_INT);
+        }
+
+        const avtMeshMetaData *mmd = headerDbMd->GetMesh(meshname);
+        ConstructMultimesh(dbfile, mmd, globalMeshtypes, globalChunkToFileMap);
+        for (i = 0 ; i < headerScalars.size() ; i++)
+            ConstructMultivar(dbfile, headerScalars[i], mmd, globalMeshtypes, globalChunkToFileMap);
+        for (i = 0 ; i < headerVectors.size() ; i++)
+            ConstructMultivar(dbfile, headerVectors[i], mmd, globalMeshtypes, globalChunkToFileMap);
+        for (i = 0 ; i < headerMaterials.size() ; i++)
+            ConstructMultimat(dbfile, headerMaterials[i], mmd, globalChunkToFileMap);
+
+        delete [] globalNMesh;
+        delete [] globalMeshtypes;
+        delete [] globalNMesh2;
+        delete [] globalChunkToFileMap;
+
+        WriteExpressions(dbfile);
+        DBClose(dbfile);
+    }
+}
+
+// ****************************************************************************
+// Method: SeparateCoordinates
+//
+// Purpose: 
+//   Separate a vtkPoints into component arrays that Silo will like.
+//
+// Arguments:
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Apr 11 22:21:56 PDT 2012
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+template <typename T>
+static void
+SeparateCoordinates(vtkPoints *pts, int dim, int npts, T *coords[3],
+    double mins[3], double maxs[3])
+{
+    const T *vtk_ptr = (const T *) pts->GetVoidPointer(0);
+    for (int i = 0 ; i < dim ; i++)
+    {
+        double dimMin = +DBL_MAX;
+        double dimMax = -DBL_MAX;
+        coords[i] = new T[npts];
+        for (int j = 0 ; j < npts ; j++)
+        {
+            coords[i][j] = vtk_ptr[3*j+i];
+            if (coords[i][j] < dimMin)
+                dimMin = coords[i][j];
+            if (coords[i][j] > dimMax)
+                dimMax = coords[i][j];
+        }
+        mins[i] = dimMin;
+        maxs[i] = dimMax;
+    }
+}
+
+// ****************************************************************************
+//  Method: avtSiloWriter::WriteUnstructuredMesh
+//
+//  Purpose:
+//      Writes out an unstructured mesh.
+//
+//  Programmer: Hank Childs
+//  Creation:   September 11, 2003
+//
+//  Modifications:
+//    Mark C. Miller, Tue Mar  9 09:31:21 PST 2004
+//    Added code to compute and store spatial extents and zone counts
+//    for this chunk
+//
+//    Hank Childs, Sun Feb 13 13:19:07 PST 2005
+//    Re-order nodes for pixels.
+//
+//    Cyrus Harrison, Fri Aug  3 20:46:47 PDT 2007
+//    Re-order nodes for tets.
+//
+//    Cyrus Harrison, Tue Sep 11 10:16:11 PDT 2007
+//    Fixed node order for wedges.
+//
+//    Hank Childs, Fri Feb  1 09:15:25 PST 2008
+//    Re-order nodes for voxels.
+//
+//    Cyrus Harrison, Tue Feb 26 17:42:45 PST 2008
+//    Replaced deprecated DBPutZoneList call with  DBPutZoneList2 call
+//
+//    Mark C. Miller, Wed Jul 23 17:48:21 PDT 2008
+//    Added code to detect and output silo point meshes
+//
+//    Mark C. Miller, Tue Aug 26 14:29:46 PDT 2008
+//    Made it construct valid variable name(s) for silo objects.
+//
+//    Brad Whitlock, Fri Mar 6 10:06:49 PDT 2009
+//    Allow for subdirectories.
+//
+//    Brad Whitlock, Tue May 19 11:23:06 PDT 2009
+//    Account for ghost zones so they don't get saved out as real zones.
+//
+//    Brad Whitlock, Wed Apr 11 22:21:19 PDT 2012
+//    Double precision coordinates.
+//
+// ****************************************************************************
+
+void
+avtSiloWriter::WriteUnstructuredMesh(DBfile *dbfile, vtkUnstructuredGrid *ug,
+                                    int chunk)
+{
+    int  i, j;
+
+    int dim = GetInput()->GetInfo().GetAttributes().GetSpatialDimension();
+    int npts = ug->GetNumberOfPoints();
+    int nzones = ug->GetNumberOfCells();
+
+    //
+    // Construct the coordinates.
+    //
+    float  *fcoords[3] = { NULL, NULL, NULL };
+    double *dcoords[3] = { NULL, NULL, NULL };
+    void   *coords[3] = { NULL, NULL, NULL };
+    double mins[3], maxs[3];
+    vtkPoints *vtk_pts = ug->GetPoints();
+    int coordType;
+    if(vtk_pts->GetDataType() == VTK_FLOAT)
+    {
+        SeparateCoordinates(vtk_pts, dim, npts, fcoords, mins, maxs);
+        coords[0] = reinterpret_cast<void *>(fcoords[0]);
+        coords[1] = reinterpret_cast<void *>(fcoords[1]);
+        coords[2] = reinterpret_cast<void *>(fcoords[2]);
+        coordType = DB_FLOAT;
+    }
+    else if(vtk_pts->GetDataType() == VTK_DOUBLE)
+    {
+        SeparateCoordinates(vtk_pts, dim, npts, dcoords, mins, maxs);
+        coords[0] = reinterpret_cast<void *>(dcoords[0]);
+        coords[1] = reinterpret_cast<void *>(dcoords[1]);
+        coords[2] = reinterpret_cast<void *>(dcoords[2]);
+        coordType = DB_DOUBLE;
+    }
+    else
+    {
+        EXCEPTION0(ImproperUseException);
+    }
+
+    for(i = 0; i < dim; ++i)
+    {
+        spatialMins.push_back(mins[i]);
+        spatialMaxs.push_back(maxs[i]);
+    }
+    zoneCounts.push_back(nzones);
+
+    // Get the ghost zone array, if there is one.
+    bool hasGhostZones = false;
+    vtkDataArray *ghostZones = ug->GetCellData()->GetArray("avtGhostZones");
+    unsigned char *gz = 0;
+    if(ghostZones != 0)
+        gz = (unsigned char *)ghostZones->GetVoidPointer(0);
+
+    //
+    // Put the zone list into a digestable form for Silo.
+    //
+    vector<int> shapetype;
+    vector<int> shapecnt;
+    vector<int> shapesize;
+    vector<int> zonelist;
+    int         npointcells = 0;
+    int         nPasses = (gz != 0) ? 2 : 1;
+    int         realZones = 0;
+    for(int pass = 0; pass < nPasses; ++pass)
+    {
+        for (i = 0 ; i < nzones ; i++)
+        {
+            if(pass == 0)
+            {
+                if(gz != 0 && gz[i] > 0)
+                {
+                    hasGhostZones = true;
+                    // Skip this ghost zone.
+                    continue;
+                }
+
+                ++realZones;
+            }
+            else
+            {
+                if(gz[i] == 0)
+                {
+                    // Skip this real zone.
+                    continue;
+                }
+            }
+
+            //
+            // Get the i'th cell and put its connectivity info into the 'zonelist'
+            // array.
+            //
+            vtkCell *cell = ug->GetCell(i);
+            for (j = 0 ; j < cell->GetNumberOfPoints() ; j++)
+            {
+                zonelist.push_back(cell->GetPointId(j));
+            }
+
+            //
+            // Silo keeps track of how many of each shape it has in a row.
+            // (This means that it doesn't have to explicitly store the size
+            // of each individual cell).  Maintain that information.
+            //
+            int lastshape = shapesize.size()-1;
+            int thisshapesize = cell->GetNumberOfPoints();
+            if (lastshape >= 0 && (thisshapesize == shapesize[lastshape]))
+                shapecnt[lastshape]++;
+            else
+            {
+                int silo_type = VTKZoneTypeToSiloZoneType(cell->GetCellType());
+                shapetype.push_back(silo_type);
+                shapesize.push_back(thisshapesize);
+                shapecnt.push_back(1);  // 1 is the # of shapes we have seen with
+                                        // this size ie the one we are processing.
+            }
+
+            // keep count to check if all cells are in fact point cells
+            if (cell->GetCellType() == VTK_VERTEX)
+            {
+                npointcells++;
+            }
+
+            //
+            // Wedges, pyramids, and tets have a different ordering in Silo and VTK.
+            // Make the corrections for these cases.
+            //
+            if (dim == 2 && (cell->GetCellType() == VTK_PIXEL))
+            {
+                int startOfZone = zonelist.size() - 4;
+                int tmp = zonelist[startOfZone+2];
+                zonelist[startOfZone+2] = zonelist[startOfZone+3];
+                zonelist[startOfZone+3] = tmp;
+            }
+            if (dim == 3 && (cell->GetCellType() == VTK_TETRA))
+            {
+                int startOfZone = zonelist.size() - 4;
+                int tmp = zonelist[startOfZone];
+                zonelist[startOfZone]   = zonelist[startOfZone+1];
+                zonelist[startOfZone+1] = tmp;
+            }
+            if (dim == 3 && (cell->GetNumberOfPoints() == 6))
+            {
+                int startOfZone = zonelist.size() - 6;
+                int tmp = zonelist[startOfZone+5];
+                zonelist[startOfZone+5] = zonelist[startOfZone+2];
+                zonelist[startOfZone+2] = zonelist[startOfZone];
+                zonelist[startOfZone]   = zonelist[startOfZone+4];
+                zonelist[startOfZone+4] = tmp;
+            }
+            if (dim == 3 && (cell->GetNumberOfPoints() == 5))
+            {
+                int startOfZone = zonelist.size() - 5;
+                int tmp = zonelist[startOfZone+1];
+                zonelist[startOfZone+1] = zonelist[startOfZone+3];
+                zonelist[startOfZone+3] = tmp;
+            }
+            if (dim == 3 && (cell->GetCellType() == VTK_VOXEL))
+            {
+                int startOfZone = zonelist.size() - 8;
+                int tmp = zonelist[startOfZone+2];
+                zonelist[startOfZone+2] = zonelist[startOfZone+3];
+                zonelist[startOfZone+3] = tmp;
+                tmp = zonelist[startOfZone+6];
+                zonelist[startOfZone+6] = zonelist[startOfZone+7];
+                zonelist[startOfZone+7] = tmp;
+            }
+        }
+    }
+    
+    int nlevels = 0;
+    string meshName = BeginVar(dbfile, meshname, nlevels);
+
+    if (npointcells == nzones && npointcells == npts)
+    {
+        DBPutPointmesh(dbfile, meshName.c_str(), dim, coords,
+            npts, coordType, optlist);
+    }
+    else
+    {
+        //
+        // Now write out the zonelist to the file.
+        //
+        int *zl = &(zonelist[0]);
+        int lzl = zonelist.size();
+        int *st = &(shapetype[0]);
+        int *ss = &(shapesize[0]);
+        int *sc = &(shapecnt[0]);
+        int lo_offset = 0;
+        int hi_offset = hasGhostZones ? (nzones - realZones) : 0;
+        int nshapes = shapesize.size();
+        DBPutZonelist2(dbfile, "zonelist", nzones, dim, zl, lzl, 
+                       0, lo_offset, hi_offset, st, ss, sc,nshapes, NULL);
+    
+        //
+        // Now write the actual mesh.
+        //
+        DBPutUcdmesh(dbfile, (char *) meshName.c_str(), dim, NULL, coords, npts,
+                     nzones, "zonelist", NULL, coordType, optlist);
+    }
+    EndVar(dbfile, nlevels);
+
+    //
+    // Free up memory.
+    //
+    if (fcoords[0] != NULL)
+        delete [] fcoords[0];
+    if (fcoords[1] != NULL)
+        delete [] fcoords[1];
+    if (fcoords[2] != NULL)
+        delete [] fcoords[2];
+    if (dcoords[0] != NULL)
+        delete [] dcoords[0];
+    if (dcoords[1] != NULL)
+        delete [] dcoords[1];
+    if (dcoords[2] != NULL)
+        delete [] dcoords[2];
+
+    WriteUcdvars(dbfile, ug->GetPointData(), ug->GetCellData(),
+                 npointcells == nzones, hasGhostZones ? gz : 0);
+    if(hasGhostZones)
+    {
+        debug1 << "TODO: The materials need to be reordered for this ucdmesh because "
+                  "there are ghost zones." << endl;
+    }
+    WriteMaterials(dbfile, ug->GetCellData(), chunk);
+}
+
+
+// ****************************************************************************
+//  Method: avtSiloWriter::WriteCurvilinearMesh
+//
+//  Purpose:
+//      Writes out an curvilinear mesh.
+//
+//  Programmer: Hank Childs
+//  Creation:   September 11, 2003
+//
+//  Modifications:
+//
+//    Mark C. Miller, Tue Mar  9 09:31:21 PST 2004
+//    Added code to compute and store spatial extents and zone counts
+//    for this chunk
+//
+//    Hank Childs, Fri Oct  5 09:13:56 PDT 2007
+//    Fix some logic in setting up zone count.
+//
+//    Mark C. Miller, Tue Aug 26 14:29:46 PDT 2008
+//    Made it construct valid variable name(s) for silo objects.
+//
+//    Brad Whitlock, Fri Mar 6 10:06:49 PDT 2009
+//    Allow for subdirectories.
+//
+//    Brad Whitlock, Wed Apr 11 22:28:13 PDT 2012
+//    Double precision coordinates.
+//
+// ****************************************************************************
+
+void
+avtSiloWriter::WriteCurvilinearMesh(DBfile *dbfile, vtkStructuredGrid *sg,
+                                    int chunk)
+{
+    int ndims = GetInput()->GetInfo().GetAttributes().GetSpatialDimension();
+
+    //
+    // Construct the coordinates.
+    //
+    float  *fcoords[3] = { NULL, NULL, NULL };
+    double *dcoords[3] = { NULL, NULL, NULL };
+    void   *coords[3] = { NULL, NULL, NULL };
+    double mins[3], maxs[3];
+    vtkPoints *vtk_pts = sg->GetPoints();
+    int npts = vtk_pts->GetNumberOfPoints();
+    int coordType;
+    if(vtk_pts->GetDataType() == VTK_FLOAT)
+    {
+        SeparateCoordinates(vtk_pts, ndims, npts, fcoords, mins, maxs);
+        coords[0] = reinterpret_cast<void *>(fcoords[0]);
+        coords[1] = reinterpret_cast<void *>(fcoords[1]);
+        coords[2] = reinterpret_cast<void *>(fcoords[2]);
+        coordType = DB_FLOAT;
+    }
+    else if(vtk_pts->GetDataType() == VTK_DOUBLE)
+    {
+        SeparateCoordinates(vtk_pts, ndims, npts, dcoords, mins, maxs);
+        coords[0] = reinterpret_cast<void *>(dcoords[0]);
+        coords[1] = reinterpret_cast<void *>(dcoords[1]);
+        coords[2] = reinterpret_cast<void *>(dcoords[2]);
+        coordType = DB_DOUBLE;
+    }
+    else
+    {
+        EXCEPTION0(ImproperUseException);
+    }
+
+    for(int i = 0; i < ndims; ++i)
+    {
+        spatialMins.push_back(mins[i]);
+        spatialMaxs.push_back(maxs[i]);
+    }
+
+    int dims[3];
+    sg->GetDimensions(dims);
+    int nzones = 1;
+    for (int i = 0 ; i < ndims ; i++)
+        if (dims[i] > 1)
+            nzones *= (dims[i]-1);
+    zoneCounts.push_back(nzones);
+
+    //
+    // Write the curvilinear mesh to the Silo file.
+    //
+    int nlevels = 0;
+    string meshName = BeginVar(dbfile, meshname, nlevels);
+    DBPutQuadmesh(dbfile, (char *) meshName.c_str(), NULL, coords, dims, ndims,
+                  coordType, DB_NONCOLLINEAR, optlist);
+    EndVar(dbfile, nlevels);
+
+    //
+    // Free up memory.
+    //
+    if (fcoords[0] != NULL)
+        delete [] fcoords[0];
+    if (fcoords[1] != NULL)
+        delete [] fcoords[1];
+    if (fcoords[2] != NULL)
+        delete [] fcoords[2];
+    if (dcoords[0] != NULL)
+        delete [] dcoords[0];
+    if (dcoords[1] != NULL)
+        delete [] dcoords[1];
+    if (dcoords[2] != NULL)
+        delete [] dcoords[2];
+
+    WriteQuadvars(dbfile, sg->GetPointData(), sg->GetCellData(),ndims,dims);
+    WriteMaterials(dbfile, sg->GetCellData(), chunk);
+}
+
+
+// ****************************************************************************
+//  Method: avtSiloWriter::WriteRectilinearMesh
+//
+//  Purpose:
+//      Writes out an rectilinear mesh.
+//
+//  Programmer: Hank Childs
+//  Creation:   September 12, 2003
+//
+//  Modifications:
+//
+//    Mark C. Miller, Tue Mar  9 09:31:21 PST 2004
+//    Added code to compute and store spatial extents and zone counts
+//    for this chunk
+//
+//    Hank Childs, Fri Oct  5 09:13:56 PDT 2007
+//    Fix some logic in setting up zone count.
+//
+//    Mark C. Miller, Tue Aug 26 14:29:46 PDT 2008
+//    Made it construct valid variable name(s) for silo objects.
+//
+//    Brad Whitlock, Fri Mar 6 10:06:49 PDT 2009
+//    Allow for subdirectories.
+//
+//    Brad Whitlock, Wed Apr 11 22:30:35 PDT 2012
+//    Write double coordinates.
+//
+// ****************************************************************************
+
+void
+avtSiloWriter::WriteRectilinearMesh(DBfile *dbfile, vtkRectilinearGrid *rg,
+                                    int chunk)
+{
+    int  i, j;
+
+    int ndims = GetInput()->GetInfo().GetAttributes().GetSpatialDimension();
+
+    //
+    // Construct the coordinates.
+    //
+    double *coords[3] = { NULL, NULL, NULL };
+    void  *vcoords[3] = { NULL, NULL, NULL };
+    int dims[3];
+    rg->GetDimensions(dims);
+    vtkDataArray *vtk_coords[3] = { NULL, NULL, NULL };
+    if (ndims > 0)
+        vtk_coords[0] = rg->GetXCoordinates();
+    if (ndims > 1)
+        vtk_coords[1] = rg->GetYCoordinates();
+    if (ndims > 2)
+        vtk_coords[2] = rg->GetZCoordinates();
+
+    for (i = 0 ; i < ndims ; i++)
+    {
+        if (vtk_coords[i] == NULL)
+            continue;
+
+        double dimMin = +DBL_MAX;
+        double dimMax = -DBL_MAX;
+        int npts = vtk_coords[i]->GetNumberOfTuples();
+        coords[i] = new double[npts];
+        for (j = 0 ; j < npts ; j++)
+        {
+            coords[i][j] = vtk_coords[i]->GetTuple1(j);
+            if (coords[i][j] < dimMin)
+                dimMin = coords[i][j];
+            if (coords[i][j] > dimMax)
+                dimMax = coords[i][j];
+        }
+        spatialMins.push_back(dimMin);
+        spatialMaxs.push_back(dimMax);
+
+        vcoords[i] = reinterpret_cast<void *>(coords[i]);
+    }
+
+    int nzones = 1;
+    for (i = 0 ; i < ndims ; i++)
+        if (dims[i] > 1)
+            nzones *= (dims[i]-1);
+    zoneCounts.push_back(nzones);
+
+    //
+    // Write the rectilinear mesh to the Silo file.
+    //
+    int nlevels = 0;
+    string meshName = BeginVar(dbfile, meshname, nlevels);
+    DBPutQuadmesh(dbfile, (char *) meshName.c_str(), NULL, vcoords, dims, ndims,
+                  DB_DOUBLE, DB_COLLINEAR, optlist);
+    EndVar(dbfile, nlevels);
+
+    //
+    // Free up memory.
+    //
+    if (coords[0] != NULL)
+        delete [] coords[0];
+    if (coords[1] != NULL)
+        delete [] coords[1];
+    if (coords[2] != NULL)
+        delete [] coords[2];
+
+    WriteQuadvars(dbfile, rg->GetPointData(), rg->GetCellData(),ndims,dims);
+    WriteMaterials(dbfile, rg->GetCellData(), chunk);
+}
+
+
+// ****************************************************************************
+//  Method: avtSiloWriter::WritePolygonalMesh
+//
+//  Purpose:
+//      Writes out a polygonal mesh.
+//
+//  Programmer: Hank Childs
+//  Creation:   September 12, 2003
+//
+//  Modifications:
+//    Mark C. Miller, Tue Mar  9 09:31:21 PST 2004
+//    Added code to compute and store spatial extents and zone counts
+//    for this chunk
+//
+//    Cyrus Harrison, Tue Feb 26 17:42:45 PST 2008
+//    Replaced deprecated DBPutZoneList call with  DBPutZoneList2 call
+//
+//    Mark C. Miller, Wed Jul 23 17:48:21 PDT 2008
+//    Added code to detect and output silo point meshes
+//
+//    Mark C. Miller, Tue Aug 26 14:29:46 PDT 2008
+//    Made it construct valid variable name(s) for silo objects.
+//
+//    Brad Whitlock, Fri Mar 6 10:06:49 PDT 2009
+//    Allow for subdirectories.
+//
+// ****************************************************************************
+
+void
+avtSiloWriter::WritePolygonalMesh(DBfile *dbfile, vtkPolyData *pd,
+                                  int chunk)
+{
+    int  i, j;
+
+    int ndims  = GetInput()->GetInfo().GetAttributes().GetSpatialDimension();
+    int npts   = pd->GetNumberOfPoints();
+    int nzones = pd->GetNumberOfCells();
+
+    //
+    // Construct the coordinates.
+    //
+    float  *fcoords[3] = { NULL, NULL, NULL };
+    double *dcoords[3] = { NULL, NULL, NULL };
+    void   *coords[3] = { NULL, NULL, NULL };
+    double mins[3], maxs[3];
+    vtkPoints *vtk_pts = pd->GetPoints();
+    int coordType;
+    if(vtk_pts->GetDataType() == VTK_FLOAT)
+    {
+        SeparateCoordinates(vtk_pts, ndims, npts, fcoords, mins, maxs);
+        coords[0] = reinterpret_cast<void *>(fcoords[0]);
+        coords[1] = reinterpret_cast<void *>(fcoords[1]);
+        coords[2] = reinterpret_cast<void *>(fcoords[2]);
+        coordType = DB_FLOAT;
+    }
+    else if(vtk_pts->GetDataType() == VTK_DOUBLE)
+    {
+        SeparateCoordinates(vtk_pts, ndims, npts, dcoords, mins, maxs);
+        coords[0] = reinterpret_cast<void *>(dcoords[0]);
+        coords[1] = reinterpret_cast<void *>(dcoords[1]);
+        coords[2] = reinterpret_cast<void *>(dcoords[2]);
+        coordType = DB_DOUBLE;
+    }
+    else
+    {
+        EXCEPTION0(ImproperUseException);
+    }
+
+    for(i = 0; i < ndims; ++i)
+    {
+        spatialMins.push_back(mins[i]);
+        spatialMaxs.push_back(maxs[i]);
+    }
+    zoneCounts.push_back(nzones);
+
+    //
+    // We will be writing this dataset out as an unstructured mesh in Silo.
+    // So we will need a zonelist.  Construct that now.
+    //
+    vector<int> shapetype;
+    vector<int> shapecnt;
+    vector<int> shapesize;
+    vector<int> zonelist;
+    int         npointcells = 0;
+    for (i = 0 ; i < nzones ; i++)
+    {
+        //
+        // Get the i'th cell and put its connectivity info into the 'zonelist'
+        // array.
+        //
+        vtkCell *cell = pd->GetCell(i);
+        for (j = 0 ; j < cell->GetNumberOfPoints() ; j++)
+        {
+            zonelist.push_back(cell->GetPointId(j));
+        }
+
+        //
+        // Silo keeps track of how many of each shape it has in a row.
+        // (This means that it doesn't have to explicitly store the size
+        // of each individual cell).  Maintain that information.
+        //
+        int lastshape = shapesize.size()-1;
+        int thisshapesize = cell->GetNumberOfPoints();
+        if (lastshape >= 0 && (thisshapesize == shapesize[lastshape]))
+            shapecnt[lastshape]++;
+        else
+        {
+            int silo_type = VTKZoneTypeToSiloZoneType(cell->GetCellType());
+            shapetype.push_back(silo_type);
+            shapesize.push_back(thisshapesize);
+            shapecnt.push_back(1);  // 1 is the # of shapes we have seen with
+                                    // this size ie the one we are processing.
+        }
+
+        // keep track to see if all cells are points
+        if (cell->GetCellType() == VTK_VERTEX)
+        {
+            npointcells++;
+        }
+    }
+
+    int nlevels = 0;
+    string meshName = BeginVar(dbfile, meshname, nlevels);
+    if (npointcells == nzones && npointcells == npts)
+    {
+        DBPutPointmesh(dbfile, (char *) meshName.c_str(), ndims, coords,
+            npts, DB_FLOAT, optlist);
+    }
+    else
+    {
+        //
+        // Now write out the zonelist to the file.
+        //
+        int *zl = &(zonelist[0]);
+        int lzl = zonelist.size();
+        int *st = &(shapetype[0]);
+        int *ss = &(shapesize[0]);
+        int *sc = &(shapecnt[0]);
+        int nshapes = shapesize.size();
+
+        DBPutZonelist2(dbfile, "zonelist", nzones, ndims, zl, lzl, 
+                       0, 0, 0, st, ss, sc,nshapes, NULL);
+        //
+        // Now write the actual mesh.
+        //
+        DBPutUcdmesh(dbfile, (char *) meshName.c_str(), ndims, NULL,  coords, npts,
+                     nzones, "zonelist", NULL, coordType, optlist);
+    }
+    EndVar(dbfile, nlevels);
+
+    //
+    // Free up memory.
+    //
+    if (fcoords[0] != NULL)
+        delete [] fcoords[0];
+    if (fcoords[1] != NULL)
+        delete [] fcoords[1];
+    if (fcoords[2] != NULL)
+        delete [] fcoords[2];
+    if (dcoords[0] != NULL)
+        delete [] dcoords[0];
+    if (dcoords[1] != NULL)
+        delete [] dcoords[1];
+    if (dcoords[2] != NULL)
+        delete [] dcoords[2];
+
+    WriteUcdvars(dbfile, pd->GetPointData(), pd->GetCellData(),
+        npointcells == nzones, 0);
+    WriteMaterials(dbfile, pd->GetCellData(), chunk);
+}
+
+// ****************************************************************************
+// Method: GetSiloType
+//
+// Purpose: 
+//   Return Silo type for data stored in vtkDataArray.
+//
+// Arguments:
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Apr 11 22:38:39 PDT 2012
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+static const int INVALID_SILO_TYPE = -100;
+
+static int
+GetSiloType(vtkDataArray *arr)
+{
+    int t = arr->GetDataType();
+    int ret = INVALID_SILO_TYPE;
+    switch(t)
+    {
+    case VTK_UNSIGNED_CHAR:
+    case VTK_CHAR:
+        ret = DB_CHAR;
+        break;
+    case VTK_INT:
+        ret = DB_INT;
+        break;
+    case VTK_LONG:
+        ret = DB_LONG;
+        break;
+    case VTK_FLOAT:
+        ret = DB_FLOAT;
+        break;
+    case VTK_DOUBLE:
+        ret = DB_DOUBLE;
+        break;
+    }
+
+    return ret;
+}
+
+// ****************************************************************************
+// Method: ReorderUcdvarUsingGhostZones
+//
+// Purpose: 
+//   If there are ghost zones then this function creates a copy of the input
+//   data array where the data is reordered such that the real zones come
+//   first and then the ghost zone data comes last. This matches how we're
+//   writing the zones in the ucdmesh. If there are no ghost zones then we
+//   just return in the input array.
+//
+// Arguments:
+//   arr : The data array to reorder.
+//   gz  : The ghost zones.
+//
+// Returns:    A data array having the proper ordering.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue May 19 12:11:41 PDT 2009
+//
+// Modifications:
+//   Brad Whitlock, Wed Apr 11 22:43:02 PDT 2012
+//   Use NewInstance to create the output data array.
+//
+// ****************************************************************************
+
+static vtkDataArray *
+ReorderUcdvarUsingGhostZones(vtkDataArray *arr, const unsigned char *gz)
+{
+    if(gz == 0)
+    {
+        arr->Register(NULL);
+        return arr;
+    }
+
+    // This also converts to float
+    vtkDataArray *retval = NULL;
+    if(GetSiloType(arr) == INVALID_SILO_TYPE)
+        retval = vtkFloatArray::New();
+    else
+        retval = arr->NewInstance();
+    retval->SetNumberOfComponents(arr->GetNumberOfComponents());
+    retval->SetNumberOfTuples(arr->GetNumberOfTuples());
+    vtkIdType id = 0, dest = 0;
+    // Write the real values first
+    for(id = 0; id < arr->GetNumberOfTuples(); ++id)
+    {
+         if(gz[id] == 0)
+             retval->SetTuple(dest++, arr->GetTuple(id));
+    }
+    // Write the ghost values next
+    for(id = 0; id < arr->GetNumberOfTuples(); ++id)
+    {
+         if(gz[id] > 0)
+             retval->SetTuple(dest++, arr->GetTuple(id));
+    }
+
+    return retval;
+}
+
+// ****************************************************************************
+//  Method: avtSiloWriter::WriteUcdvarsHelper
+//
+//  Purpose:
+//      Writes out unstructured cell data variables.
+//
+//  Programmer: Hank Childs
+//  Creation:   September 12, 2003
+//
+//  Modifications:
+//    Mark C. Miller, Tue Mar  9 14:45:40 PST 2004
+//    Added code to compute and store data extents
+//
+//    Mark C. Miller, Wed Jul 23 17:49:12 PDT 2008
+//    Added code to handle point variables for point meshes
+//
+//    Mark C. Miller, Tue Aug 26 14:29:46 PDT 2008
+//    Made it construct valid variable name(s) for silo objects.
+//
+//    Brad Whitlock, Fri Mar 6 10:06:49 PDT 2009
+//    Allow for subdirectories.
+//
+//    Brad Whitlock, Tue May 19 11:50:57 PDT 2009
+//    Added support for reordering data using ghost zones.
+//
+//    Kathleen Biagas, Mon Aug 12 15:56:25 PDT 2013
+//    arr2 may not be float, so don't cast to float.
+//
+// ****************************************************************************
+
+void
+avtSiloWriter::WriteUcdvarsHelper(DBfile *dbfile, vtkDataSetAttributes *ds, 
+    bool isPointMesh, int centering, const unsigned char *gz)
+{
+    size_t i,j,k;
+
+    for (i = 0 ; i < (size_t)ds->GetNumberOfArrays() ; i++)
+    {
+         vtkDataArray *arr = ds->GetArray(i);
+
+         //
+         // find the associated extents vectors to update
+         //
+         vector<double> varMins;
+         vector<double> varMaxs;
+         std::map<string, vector<double> >::iterator minsMap;
+         minsMap = dataMins.find(arr->GetName());
+         if (minsMap != dataMins.end())
+         {
+             varMins = minsMap->second;
+             varMaxs = dataMaxs[arr->GetName()];
+         }
+
+         if (strstr(arr->GetName(), "vtk") != NULL)
+             continue;
+         if (strstr(arr->GetName(), "avt") != NULL)
+             continue;
+         int nTuples = arr->GetNumberOfTuples();
+         int ncomps = arr->GetNumberOfComponents();
+
+         int nlevels = 0;
+         string varName = BeginVar(dbfile, arr->GetName(), nlevels);
+         string meshName = AbsoluteName(meshname, nlevels);
+
+         vtkDataArray *arr2 = ReorderUcdvarUsingGhostZones(arr, gz);
+
+         if (ncomps == 1)
+         {
+             // find min,max in this variable
+             double dimMin = +DBL_MAX;
+             double dimMax = -DBL_MAX;
+             for (k = 0 ; k < (size_t)nTuples ; k++)
+             {
+                 double val = arr->GetTuple1(k);
+                 if (val < dimMin)
+                     dimMin = val;
+                 if (val > dimMax)
+                     dimMax = val;
+             }
+             varMins.push_back(dimMin);
+             varMaxs.push_back(dimMax);
+
+             if (isPointMesh && centering == DB_NODECENT)
+                 DBPutPointvar1(dbfile, (char *) varName.c_str(),
+                          (char *) meshName.c_str(),
+                          arr2->GetVoidPointer(0),
+                          nTuples, GetSiloType(arr2), optlist); 
+             else
+                 DBPutUcdvar1(dbfile, (char *) varName.c_str(),
+                          (char *) meshName.c_str(),
+                          arr2->GetVoidPointer(0), nTuples, NULL, 0,
+                          GetSiloType(arr2), centering, optlist);
+         }
+         else
+         {
+             double **vars     = new double*[ncomps];
+             char  **varnames = new char*[ncomps];
+             for (j = 0 ; j < (size_t)ncomps ; j++)
+             {
+                 double dimMin = +DBL_MAX;
+                 double dimMax = -DBL_MAX;
+                 vars[j] = new double[nTuples];
+                 varnames[j] = new char[1024];
+                 sprintf(varnames[j], "%s_comp%ld", varName.c_str(), j);
+                 for (k = 0 ; k < (size_t)nTuples ; k++)
+                 {
+                     vars[j][k] = arr2->GetComponent(k, j);
+                     if (vars[j][k] < dimMin)
+                         dimMin = vars[j][k];
+                     if (vars[j][k] > dimMax)
+                         dimMax = vars[j][k];
+                 }
+                 varMins.push_back(dimMin);
+                 varMaxs.push_back(dimMax);
+             }
+
+             if (isPointMesh && centering == DB_NODECENT)
+                 DBPutPointvar(dbfile, (char *) varName.c_str(),
+                          (char *) meshName.c_str(),
+                          ncomps, vars, nTuples, DB_DOUBLE, optlist);
+             else
+                 DBPutUcdvar(dbfile, (char *) varName.c_str(),
+                         (char *) meshName.c_str(),
+                         ncomps, varnames, vars, nTuples, NULL, 0, DB_DOUBLE,
+                         centering, optlist);
+
+             for (j = 0 ; j < (size_t)ncomps ; j++)
+             {
+                  delete [] vars[j];
+                  delete [] varnames[j];
+             }
+             delete [] vars;
+             delete [] varnames;
+         }
+         arr2->Delete();
+
+         EndVar(dbfile, nlevels);
+
+         dataMins[arr->GetName()] = varMins;
+         dataMaxs[arr->GetName()] = varMaxs;
+    }
+}
+
+// ****************************************************************************
+//  Method: avtSiloWriter::WriteUcdvars
+//
+//  Purpose:
+//      Writes out unstructured cell data variables.
+//
+//  Programmer: Hank Childs
+//  Creation:   September 12, 2003
+//
+//  Modifications:
+//    Brad Whitlock, Fri Mar 6 14:32:43 PST 2009
+//    Use helper functions.
+//
+//    Brad Whitlock, Tue May 19 11:47:37 PDT 2009
+//    Add support for ghost zones.
+//
+// ****************************************************************************
+
+void
+avtSiloWriter::WriteUcdvars(DBfile *dbfile, vtkPointData *pd,
+    vtkCellData *cd, bool isPointMesh, const unsigned char *gz)
+{
+    WriteUcdvarsHelper(dbfile, pd, isPointMesh, DB_NODECENT, 0);
+    WriteUcdvarsHelper(dbfile, cd, isPointMesh, DB_ZONECENT, gz);
+}
+
+// ****************************************************************************
+//  Method: avtSiloWriter::WriteQuadvarsHelper
+//
+//  Purpose:
+//      Writes out quadvars.
+//
+//  Programmer: Hank Childs
+//  Creation:   September 12, 2003
+//
+//  Modifications:
+//    Mark C. Miller, Tue Aug 26 14:29:46 PDT 2008
+//    Made it construct valid variable name(s) for silo objects.
+//
+//    Brad Whitlock, Fri Mar 6 14:39:51 PST 2009
+//    Allow for subdirectories.
+//
+//    Kathleen Biagas, Mon Aug 12 15:57:39 PDT 2013
+//    Allow for double-precision.
+//
+// ****************************************************************************
+
+void
+avtSiloWriter::WriteQuadvarsHelper(DBfile *dbfile, vtkDataSetAttributes *ds,
+   int ndims, int *dims, int centering)
+{
+    size_t i,j,k;
+
+    for (i = 0 ; i < (size_t)ds->GetNumberOfArrays() ; i++)
+    {
+         vtkDataArray *arr = ds->GetArray(i);
+
+         //
+         // find the associated extents vectors to update
+         //
+         vector<double> varMins;
+         vector<double> varMaxs;
+         std::map<string, vector<double> >::iterator minsMap;
+         minsMap = dataMins.find(arr->GetName());
+         if (minsMap != dataMins.end())
+         {
+             varMins = minsMap->second;
+             varMaxs = dataMaxs[arr->GetName()];
+         }
+
+         if (strstr(arr->GetName(), "vtk") != NULL)
+             continue;
+         if (strstr(arr->GetName(), "avt") != NULL)
+             continue;
+         int ncomps = arr->GetNumberOfComponents();
+         int nTuples = arr->GetNumberOfTuples();
+
+         int nlevels = 0;
+         string varName = BeginVar(dbfile, arr->GetName(), nlevels);
+         string meshName = AbsoluteName(meshname, nlevels);
+
+         if (ncomps == 1)
+         {
+             // find min,max in this variable
+             double dimMin = +DBL_MAX;
+             double dimMax = -DBL_MAX;
+             for (k = 0 ; k < (size_t)nTuples ; k++)
+             {
+                 double val = arr->GetTuple1(k);
+                 if (val < dimMin)
+                     dimMin = val;
+                 if (val > dimMax)
+                     dimMax = val;
+             }
+             varMins.push_back(dimMin);
+             varMaxs.push_back(dimMax);
+
+             DBPutQuadvar1(dbfile, (char *) varName.c_str(),
+                           (char *) meshName.c_str(),
+                           arr->GetVoidPointer(0), dims, ndims, NULL,
+                           0, GetSiloType(arr), centering, optlist);
+         }
+         else
+         {
+             if (arr->GetDataType() == VTK_DOUBLE)
+             {
+                 char  **varnames = new char*[ncomps];
+                 double **vars = new double*[ncomps];
+                 for (j = 0 ; j < (size_t)ncomps ; j++)
+                 {
+                     double dimMin = +DBL_MAX;
+                     double dimMax = -DBL_MAX;
+                     vars[j] = new double[nTuples];
+                     varnames[j] = new char[1024];
+                     sprintf(varnames[j], "%s_comp%ld", arr->GetName(), j);
+                     for (k = 0 ; k < (size_t)nTuples ; k++)
+                     {
+                         vars[j][k] = arr->GetComponent(k, j);
+                         if (vars[j][k] < dimMin)
+                             dimMin = vars[j][k];
+                         if (vars[j][k] > dimMax)
+                             dimMax = vars[j][k];
+                     }
+                     varMins.push_back(dimMin);
+                     varMaxs.push_back(dimMax);
+                 }
+
+                 DBPutQuadvar(dbfile, (char *) varName.c_str(),
+                              (char *) meshName.c_str(),
+                              ncomps, varnames, vars, dims, ndims, NULL, 0, 
+                              DB_DOUBLE, centering, optlist);
+
+                 for (j = 0 ; j < (size_t)ncomps ; j++)
+                 {
+                      delete [] vars[j];
+                      delete [] varnames[j];
+                 }
+                 delete [] vars;
+                 delete [] varnames;
+             }
+             else
+             {
+                 char  **varnames = new char*[ncomps];
+                 float **vars     = new float*[ncomps];
+                 for (j = 0 ; j < (size_t)ncomps ; j++)
+                 {
+                     double dimMin = +DBL_MAX;
+                     double dimMax = -DBL_MAX;
+                     vars[j] = new float[nTuples];
+                     varnames[j] = new char[1024];
+                     sprintf(varnames[j], "%s_comp%ld", arr->GetName(), j);
+                     for (k = 0 ; k < (size_t)nTuples ; k++)
+                     {
+                         vars[j][k] = (float)arr->GetComponent(k, j);
+                         if (vars[j][k] < dimMin)
+                             dimMin = vars[j][k];
+                         if (vars[j][k] > dimMax)
+                             dimMax = vars[j][k];
+                     }
+                     varMins.push_back(dimMin);
+                     varMaxs.push_back(dimMax);
+                 }
+
+                 DBPutQuadvar(dbfile, (char *) varName.c_str(),
+                              (char *) meshName.c_str(),
+                              ncomps, varnames, vars, dims, ndims, NULL, 0, 
+                              DB_FLOAT, centering, optlist);
+
+                 for (j = 0 ; j < (size_t)ncomps ; j++)
+                 {
+                      delete [] vars[j];
+                      delete [] varnames[j];
+                 }
+                 delete [] vars;
+                 delete [] varnames;
+             }
+         }
+
+         EndVar(dbfile, nlevels);
+
+         dataMins[arr->GetName()] = varMins;
+         dataMaxs[arr->GetName()] = varMaxs;
+    }
+}
+
+// ****************************************************************************
+//  Method: avtSiloWriter::WriteQuadvars
+//
+//  Purpose:
+//      Writes out quadvars.
+//
+//  Programmer: Hank Childs
+//  Creation:   September 12, 2003
+//
+//  Modifications:
+//    Brad Whitlock, Fri Mar 6 14:39:51 PST 2009
+//    Use helper functions.
+//
+// ****************************************************************************
+
+void
+avtSiloWriter::WriteQuadvars(DBfile *dbfile, vtkPointData *pd,
+                                vtkCellData *cd, int ndims, int *dims)
+{
+    int zdims[3];
+    zdims[0] = (ndims > 0 ? dims[0]-1 : 0);
+    zdims[1] = (ndims > 1 ? dims[1]-1 : 0);
+    zdims[2] = (ndims > 2 ? dims[2]-1 : 0);
+
+    WriteQuadvarsHelper(dbfile, pd, ndims, dims, DB_NODECENT);
+    WriteQuadvarsHelper(dbfile, cd, ndims, zdims, DB_ZONECENT);
+}
+
+// ****************************************************************************
+//  Method: avtSiloWriter::WriteMaterials
+//
+//  Purpose:
+//      Writes out the materials construct.  This routine will "do the right
+//      thing" based on whether or not MIR has already occurred.
+//
+//  Programmer: Hank Childs
+//  Creation:   September 12, 2003
+//
+//  Modifications:
+//    Mark C. Miller, Tue Aug 26 14:29:46 PDT 2008
+//    Made it construct valid variable name(s) for silo objects.
+//
+//    Brad Whitlock, Fri Mar 6 14:43:31 PST 2009
+//    Allow for subdirectories.
+//
+// ****************************************************************************
+
+void
+avtSiloWriter::WriteMaterials(DBfile *dbfile, vtkCellData *cd, int chunk)
+{
+    size_t   i;
+
+    if (!hasMaterialsInProblem)
+        return;
+
+    if (mustGetMaterialsAdditionally)
+    {
+        avtMaterial *mat = GetInput()->GetOriginatingSource()
+                                           ->GetMetaData()->GetMaterial(chunk);
+        if (mat == NULL)
+        {
+            debug1 << "Not able to get requested material" << endl;
+            return;
+        }
+
+        //
+        // The AVT material structure closely matches that of the Silo
+        // materials.  Just make a few small conversions and write it out.
+        //
+        int nmats = mat->GetNMaterials();
+        int *matnos = new int[nmats];
+        for (i = 0 ; i < (size_t)nmats ; i++)
+            matnos[i] = i;
+        int nzones[1];
+        nzones[0] = mat->GetNZones();
+
+        int nlevels = 0;
+        string matName = BeginVar(dbfile, matname, nlevels);
+        string meshName = AbsoluteName(meshname, nlevels);
+
+        DBPutMaterial(dbfile, (char *) matName.c_str(),
+                      (char *) meshName.c_str(), nmats, matnos,
+                       (int *) mat->GetMatlist(), nzones, 1, 
+                       (int *) mat->GetMixNext(), (int *) mat->GetMixMat(),
+                       (int *) mat->GetMixZone(), (float *) mat->GetMixVF(),
+                       mat->GetMixlen(), DB_FLOAT, optlist);
+        delete [] matnos;
+
+        EndVar(dbfile, nlevels);
+    }
+    else
+    {
+        vtkDataArray *arr = cd->GetArray("avtSubsets");
+        if (arr == NULL)
+        {
+            debug1 << "Subsets array not available" << endl;
+            return;
+        }
+        if (arr->GetDataType() != VTK_INT)
+        {
+            debug1 << "Subsets array not of right type" << endl;
+            return;
+        }
+
+        //
+        // We are going to have to calculate each of the structures we want
+        // to write out.  Start by determining which material numbers are used
+        // and which are not.
+        //
+        vtkIntArray *ia = (vtkIntArray *) arr;
+        vector<bool> matlookup;
+        int nzones = ia->GetNumberOfTuples();
+        for (i = 0 ; i < (size_t)nzones ; i++)
+        {
+            int matno = ia->GetValue(i);
+            while (matlookup.size() <= (size_t)matno)
+            {
+                matlookup.push_back(false);
+            }
+            matlookup[matno] = true;
+        }
+
+        //
+        // Now determine the number of materials.
+        //
+        int nmats = 0;
+        for (i = 0 ; i < matlookup.size() ; i++)
+            if (matlookup[i])
+                nmats++;
+
+        //
+        // Create the matnos array.
+        //
+        int *matnos = new int[nmats];
+        int dummy = 0;
+        for (i = 0 ; i < matlookup.size() ; i++)
+            if (matlookup[i])
+                matnos[dummy++] = i;
+
+        //
+        // Do the actual write.  This isn't too bad since we have all
+        // clean zones.
+        //
+        int nlevels = 0;
+        string matName = BeginVar(dbfile, matname, nlevels);
+        string meshName = AbsoluteName(meshname, nlevels);
+
+        DBPutMaterial(dbfile, (char *) matName.c_str(),
+                      (char *) meshName.c_str(), nmats, matnos,
+                       ia->GetPointer(0), &nzones, 1, NULL, NULL, NULL,
+                       NULL, 0, DB_FLOAT, optlist);
+        delete [] matnos;
+
+        EndVar(dbfile, nlevels);
+    }
+}
+
+// ****************************************************************************
+// Method: avtSiloWriter::WriteExpressions
+//
+// Purpose: 
+//   This method writes out the expressions that originally came from the
+//   database to Silo.
+//
+// Arguments:
+//   dbfile : The Silo file that we're outputting.
+//
+// Returns:    
+//
+// Note:       This is primarily meant to export expressions for the master file.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Mar 11 11:26:22 PDT 2009
+//
+// Modifications:
+//   
+//   Hank Childs, Mon May 25 11:14:23 PDT 2009
+//   Add support for old Silo versions.
+//
+//    Mark C. Miller, Fri Oct 30 11:06:19 PDT 2009
+//    Fixed conditional compilation logic for DBPutDefvars calls.
+// ****************************************************************************
+
+void
+avtSiloWriter::WriteExpressions(DBfile *dbfile)
+{
+    const ExpressionList &expr = headerDbMd->GetExprList();
+    int i, ecount = 0;
+    for(i = 0; i < expr.GetNumExpressions(); ++i)
+        ecount += (expr.GetExpressions(i).GetFromDB() ? 1 : 0);
+    if(ecount > 0)
+    {
+        // Pack up the definitions into arrays that we can write out.
+        char **exprNames = new char*[ecount];
+        int   *exprTypes = new int[ecount];
+        char **exprDefs  = new char*[ecount];
+        ecount = 0;
+        for(i = 0; i < expr.GetNumExpressions(); ++i)
+        {
+            const Expression &e = expr.GetExpressions(i);
+            if(e.GetFromDB())
+            {
+                exprNames[ecount] = new char[e.GetName().size()+1];
+                strcpy(exprNames[ecount], e.GetName().c_str());
+
+                int vartype = 0;
+                switch(e.GetType())
+                {
+                case Expression::ScalarMeshVar: vartype = DB_VARTYPE_SCALAR;   break;
+                case Expression::VectorMeshVar: vartype = DB_VARTYPE_VECTOR;   break;
+                case Expression::TensorMeshVar: vartype = DB_VARTYPE_TENSOR;   break;
+                case Expression::ArrayMeshVar:  vartype = DB_VARTYPE_ARRAY;    break;
+                case Expression::Material:      vartype = DB_VARTYPE_MATERIAL; break;
+                case Expression::Species :      vartype = DB_VARTYPE_SPECIES;  break;
+                default:                        vartype = DB_VARTYPE_SCALAR;   break;
+                }
+                exprTypes[ecount] = vartype;
+
+                exprDefs[ecount] = new char[e.GetDefinition().size()+1];
+                strcpy(exprDefs[ecount], e.GetDefinition().c_str());
+
+                ++ecount;
+            }
+        }
+
+        // Write the definitions
+        // 4.6.1 chosen arbitrarily. 
+#ifdef SILO_VERSION_GE
+#if SILO_VERSION_GE(4,6,1)
+        DBPutDefvars(dbfile, "expressions", ecount, exprNames, exprTypes, exprDefs, NULL);
+#endif
+#endif
+
+        // Clean up
+        for(i = 0; i < ecount; ++i)
+        {
+            delete [] exprNames[i];
+            delete [] exprDefs[i];
+        }
+        delete [] exprNames;
+        delete [] exprTypes;
+        delete [] exprDefs;
+    }
+}
+
+// ****************************************************************************
+//  Method: avtSiloWriter::VTKZoneTypeToSiloZoneType
+//
+//  Purpose:
+//      Converts a VTK cell type to the proper Silo zone type.
+//
+//  Arguments:
+//      vtk_zonetype     Input VTK zone type.
+//
+//  Returns:     Silo zone type
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   February 26, 2007
+//
+// ****************************************************************************
+
+int
+avtSiloWriter::VTKZoneTypeToSiloZoneType(int vtk_zonetype)
+{
+    int  silo_zonetype = -1;
+
+    switch (vtk_zonetype)
+    {
+      case VTK_POLYGON:
+        silo_zonetype = DB_ZONETYPE_POLYGON;
+        break;
+      case VTK_TRIANGLE:
+        silo_zonetype = DB_ZONETYPE_TRIANGLE;
+        break;
+      case VTK_PIXEL:
+      case VTK_QUAD:
+        silo_zonetype = DB_ZONETYPE_QUAD;
+        break;
+      case VTK_TETRA:
+        silo_zonetype = DB_ZONETYPE_TET;
+        break;
+      case VTK_PYRAMID:
+        silo_zonetype = DB_ZONETYPE_PYRAMID;
+        break;
+      case VTK_WEDGE:
+        silo_zonetype = DB_ZONETYPE_PRISM;
+        break;
+      case VTK_VOXEL:
+      case VTK_HEXAHEDRON:
+        silo_zonetype = DB_ZONETYPE_HEX;
+        break;
+      case VTK_LINE:
+        silo_zonetype = DB_ZONETYPE_BEAM;
+        break;
+    }
+
+    return silo_zonetype;
+}

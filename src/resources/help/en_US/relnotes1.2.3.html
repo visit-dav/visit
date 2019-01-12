@@ -1,0 +1,93 @@
+<html>
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>VisIt 1.2.3 Release Notes</title>
+</head>
+<body>
+<p align="center"><b><font size="6">VisIt 1.2.3 Release Notes</font></b></p>
+<p>Welcome to VisIt's release notes page. This page describes the important 
+enhancements and bug-fixes that were added to this release.</p>
+<p><b><font size="4">Features added in version 1.2.3</font></b></p>
+<ul>
+  <li>VisIt's Volume plot has a new rendering mode that uses 3D texturing. The new rendering mode is several times faster than the older splatting algorithm and it produces nicer looking pictures.</li>
+  <li>VisIt now supports tensor data with a new Tensor plot, which plots the tensors as ellipsoids. Tensor data is also now supported in VisIt's plugin generation tools.</li>
+  <li>The initial MacOS X port of VisIt has been released.</li>
+  <li>VisIt can now display simulation times in the File panel instead of always using cycle information. The Preferences window has new controls that allow you to display time states using the cycle, the time, or both. You can also set the number of significant digits to use when displaying time.</li>
+  <li>VisIt now has different animation playback modes, which can be set in the Animation window. The modes are: loop, play once, and swing.</li>
+  <li>VisIt's visit -movie script now takes Python scripts as input in addition to session files. To give the script a Python script, use the -s filename argument like you would with the command line interface (visit -cli).</li>
+  <li>VisIt now uses stereo rendering if you provide the -stereo command line option.</li>
+  <li>VisIt's Host profiles window now has an advanced tab that lets you specify advanced options for connecting to remote computers.</li>
+  <li>The matvf operator should take material numbers in addition to material names.</li>
+  <li>The xmltools now have support for database plugins that have database writers, which let you save out data in the database's actual file format.</li>
+  <li>The Threshold operator now has more useful default min and max settings.</li>
+  <li>The Mili database reader plugin is missing many derived variables.</li>
+  <li>The Volume plot now avoids calculating the gradient whenever possible.</li>
+  <li>VisIt now has an L2-Norm query, and an Integrate query, which both take Curve plots as input.</li>
+  <li>xmledit now forces attributes to be named to avoid errors later.</li>
+  <li>xml2window should disable a widget's label if the widget has an enabler.</li>
+  <li>xmledit should tell the user when the file it's working on is a read-only file.</li>
+  <li>VisIt has a new Path removal window, which is available from the File selection window. The new window allows you to remove directories that you've recently visited from the list so that it does not get to long and cumbersome.</li>
+  <li>The xml tools can now process a list of files on the command line.</li>
+  <li>VisIt's Windows qtssh program should take a -p argument to specify the port.</li>
+</ul>
+<p><b><font size="4">Bugs fixed in version 1.2.3</font></b></p>
+<ul>
+  <li>The "Clean zones only" toggle doesn't work with The FilledBoundary plot when using VisIt's newer material reconstruction interface algorithm.</li>
+  <li>VisIt doesn't update virtual databases for windows other than the active window.</li>
+  <li>Wireframe Subset plots of rectilinear meshes should use fewer line segments.</li>
+  <li>VisIt does not show the right axis labels after projecting a sliced plot to 2D.</li>
+  <li>Lines from mesh plots go beyond the problem boundary.</li>
+  <li>Replace does not replace a database using the time state that you specify. It always uses time state zero.</li>
+  <li>Reflecting a single domain plot in parallel on 2 processors crashes VisIt.</li>
+  <li>VisIt hangs when you minimize the application as the File selection window is opening.</li>
+  <li>VisIt's -o option to open files on the command line is not documented in the usage provided when you type: visit -help.</li>
+  <li>Picking on expression variables causes the compute engine to crash.</li>
+  <li>The Volume plot plugin can't load on gps.</li>
+  <li>The matvf expression fails a sanity check after doing a Subset plot of materials.</li>
+  <li>VisIt's cli crashes sometimes when using the -debug arguments.</li>
+  <li>The viewer should not be able to add default plots for a database when restoring a session.</li>
+  <li>The metadata server exits abnormally with an exception from avtFileFormat.</li>
+  <li>VisIt's GUI hangs when restoring a session file that contains plots that use databases from remote hosts.</li>
+  <li>Invalid expression variables are not cleared from the pipeline, which lead to further bad behavior.</li>
+  <li>The Volume plot does not work with expressions.</li>
+  <li>The GUI's background and foreground colors should not be permitted to match.</li>
+  <li>The database information in the vis window's legend does not go away when told to do so.</li>
+  <li>The xmledit program crashes when parsing Curve2D.xml</li>
+  <li>VisIt does not properly restore sessions that contain Subset plots of materials.</li>
+  <li>The compute engine throws an exception when you pick after querying in another window.</li>
+  <li>Pick doesn't work on small zones.</li>
+  <li>The 3D textured volume renderer does not work in -nowin mode.</li>
+  <li>xml2atts crashes when given an invalid enum initializer.</li>
+  <li>xml2atts crashes when given a bad enum type.</li>
+  <li>xml2plugin generates bad code on riptide, an SGI computer.</li>
+  <li>Save movie does not use the saved view keyframes.</li>
+  <li>Changing the username in one host profile for a particular host should change the username in other profiles for the same host.</li>
+  <li>Generated plugin code is not up to date with the current VisIt API.</li>
+  <li>An empty filter string in the File selection window leads to bad behavior.</li>
+  <li>VisIt displays error messages when starting up if you have several vis windows in your saved settings.</li>
+  <li>Undo view does not always work as expected.</li>
+  <li>The Mesh plot's Auto mode for determining if it should be opaque fails when "use foreground" is toggled.</li>
+  <li>The viewer can't save the color black to a config file.</li>
+  <li>Pick points are not placed correctly on the Surface plot.</li>
+  <li>xmledit is missing the "subset" variable type.</li>
+  <li>The Point3D database reader plugin reads in an extra point.</li>
+  <li>xmledit has a problem parsing bad enablers.</li>
+  <li>xmledit crashes if it cannot open the code file to save it.</li>
+  <li>The Error box won't go away if the File selection window is open.</li>
+  <li>silex does not display the contents in files unless there are subdirectories.</li>
+  <li>xmledit quits when I give it the name of a file that does not exist. It should instead create that file.</li>
+  <li>xml2atts generates code that won't always compile.</li>
+  <li>The Mesh plot should be drawn last if antialiasing is enabled.</li>
+  <li>xmledit throws away function definitions if no code file is specified.</li>
+</ul>
+<p>Click the following link to view the release notes for the previous version 
+of VisIt: <a href="relnotes1.2.2.html">VisIt 1.2.2 Release Notes</a>.</p>
+<p>Click the following link to view the release notes for the next version 
+of VisIt: <a href="relnotes1.2.4.html">VisIt 1.2.4 Release Notes</a>.</p>
+
+</body>
+
+</html>

@@ -1,0 +1,60 @@
+{
+  "constraints": {
+     "image": {
+        "vis": ["plot1", "plot2"]
+     },
+     "plot1": {
+        "vis": "plot1"
+     },
+     "plot2": {
+        "vis": "plot2"
+     }
+  },
+  "metadata": {
+     "type":"composite-image-stack",
+     "version": "0.2",
+     "store_type": "FS",
+     "camera_model" : "static",
+     "endian": "little",
+     "image_size": [300, 300],
+     "value_mode" : 2
+  },
+  "name_pattern":"{time}/{vis}/{image}.png",
+  "parameter_list":{
+    "time": {
+       "default":"-2.000000e+00",
+       "label":"Time",
+       "type":"range",
+       "values":["-2.000000e+00", "0.000000e+00", "2.000000e+00", "4.000000e+00", "6.000000e+00", "8.000000e+00", "1.000000e+01"]
+    },
+    "image": {
+       "default": "pressure",
+       "label": "image",
+       "role": "field",
+       "type": "hidden",
+       "types": [
+          "luminance",
+          "depth",
+          "value",
+          "value"
+       ],
+       "valueRanges": {
+          "pressure": [0, 1],
+          "v": [-0.128859, 0.128859]
+       },
+       "values": [
+          "luminance",
+          "depth",
+          "pressure",
+          "v"
+       ]
+    },
+    "vis": {
+       "default": "plot1",
+       "label": "vis",
+       "role": "layer",
+       "type": "option",
+       "values": ["plot1", "plot2"]
+    }
+  }
+}

@@ -1,0 +1,57 @@
+<?xml version="1.0"?>
+  <Attribute name="InternalResampleAttributes" purpose="This class contains attributes to specify a resampling." persistent="true" exportAPI="STATE_API" exportInclude="state_exports.h">
+    <Field name="useTargetVal" label="useTargetVal" type="bool">
+      false
+    </Field>
+    <Field name="targetVal" label="targetVal" type="int">
+      100000
+    </Field>
+    <Field name="width" label="width" type="int">
+      30
+    </Field>
+    <Field name="height" label="height" type="int">
+      30
+    </Field>
+    <Field name="depth" label="depth" type="int">
+      30
+    </Field>
+    <Field name="prefersPowersOfTwo" label="prefersPowersOfTwo" type="bool">
+      false
+    </Field>
+    <Field name="defaultVal" label="defaultVal" type="float">
+      -99999996802856924650656260769173209088.000000
+    </Field>
+    <Field name="useBounds" label="useBounds" type="bool">
+      false
+    </Field>
+    <Field name="minX" label="minX" type="double">
+      0.000000
+    </Field>
+    <Field name="minY" label="minY" type="double">
+      0.000000
+    </Field>
+    <Field name="minZ" label="minZ" type="double">
+      0.000000
+    </Field>
+    <Field name="maxX" label="maxX" type="double">
+      1.000000
+    </Field>
+    <Field name="maxY" label="maxY" type="double">
+      1.000000
+    </Field>
+    <Field name="maxZ" label="maxZ" type="double">
+      1.000000
+    </Field>
+    <Field name="useArbitrator" label="useArbitrator" type="bool">
+      false
+    </Field>
+    <Field name="arbitratorLessThan" label="arbitratorLessThan" type="bool">
+      false
+    </Field>
+    <Field name="arbitratorVarName" label="arbitratorVarName" type="string">
+      default
+    </Field>
+    <Field name="distributedResample" label="distributedResample" type="bool">
+      false
+    </Field>
+  </Attribute>

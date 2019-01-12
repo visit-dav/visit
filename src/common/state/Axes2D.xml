@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+  <Attribute name="Axes2D" purpose="Contains the properties for the 2D axes." persistent="true" keyframe="true" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="Axes2D.code">
+    <Enum name="Ticks">
+      Off
+      Bottom
+      Left
+      BottomLeft
+      All
+    </Enum>
+    <Enum name="Location">
+      Inside
+      Outside
+      Both
+    </Enum>
+    <Field name="visible" label="Visible" type="bool">
+      true
+    </Field>
+    <Field name="autoSetTicks" label="Auto set ticks" type="bool">
+      true
+    </Field>
+    <Field name="autoSetScaling" label="Auto set scaling" type="bool">
+      true
+    </Field>
+    <Field name="lineWidth" label="lineWidth" type="linewidth">
+      0
+    </Field>
+    <Field name="tickLocation" label="TickLocation" type="enum" subtype="Location">
+      Outside
+    </Field>
+    <Field name="tickAxes" label="Tick axes" type="enum" subtype="Ticks">
+      BottomLeft
+    </Field>
+    <Field name="xAxis" label="X axis" type="att" subtype="AxisAttributes" init="true">
+    </Field>
+    <Field name="yAxis" label="Y axis" type="att" subtype="AxisAttributes" init="true">
+    </Field>
+  </Attribute>

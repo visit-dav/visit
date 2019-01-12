@@ -1,0 +1,71 @@
+<?xml version="1.0"?>
+  <Attribute name="QueryAttributes" purpose="This class contains attributes used for query." persistent="true" keyframe="true" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="QueryAttributes.code">
+    <Enum name="VarType">
+      Mesh
+      Scalar
+      Vector
+      Tensor
+      Symmetric_Tensor
+      Array
+      Label
+      Material
+      Species
+      Curve
+      Unknown
+    </Enum>
+    <Field name="resultsMessage" label="resultsMessage" type="string">
+    </Field>
+    <Field name="resultsValue" label="resultsValue" type="doubleVector">
+      0.000000
+    </Field>
+    <Field name="timeStep" label="timeStep" type="int">
+      0
+    </Field>
+    <Field name="varTypes" label="varTypes" type="intVector" internal="true">
+    </Field>
+    <Field name="pipeIndex" label="pipeIndex" type="int" internal="true">
+      -1
+    </Field>
+    <Field name="xUnits" label="xUnits" type="string">
+    </Field>
+    <Field name="yUnits" label="yUnits" type="string">
+    </Field>
+    <Field name="floatFormat" label="floatFormat" type="string">
+      %g
+    </Field>
+    <Field name="xmlResult" label="xmlResult" type="string">
+    </Field>
+    <Field name="suppressOutput" label="suppressOutput" type="bool" internal="true">
+      false
+    </Field>
+    <Field name="queryInputParams" label="queryInputParams" type="MapNode">
+    </Field>
+    <Field name="defaultName" label="defaultName" type="string" internal="true" ignoreeq="true">
+    </Field>
+    <Field name="defaultVars" label="defaultVars" type="stringVector" internal="true" ignoreeq="true" init="true">
+    </Field>
+    <Function name="SetVariables" user="true" member="true">
+    </Function>
+    <Function name="GetName" user="true" member="true">
+    </Function>
+    <Function name="GetName2" user="true" member="true">
+    </Function>
+    <Function name="GetVariables" user="true" member="true">
+    </Function>
+    <Function name="GetVariables2" user="true" member="true">
+    </Function>
+    <Function name="Reset" user="true" member="true">
+    </Function>
+    <Function name="PrintSelf" user="true" member="true">
+    </Function>
+    <Function name="SetResultsValue" user="true" member="true">
+    </Function>
+    <Function name="SetResultsValues" user="true" member="true">
+    </Function>
+    <Include file="source" quoted="false">
+      stdio.h
+    </Include>
+    <Include file="header" quoted="false">
+      visitstream.h
+    </Include>
+  </Attribute>

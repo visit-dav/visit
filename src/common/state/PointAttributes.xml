@@ -1,0 +1,5 @@
+<?xml version="1.0"?>
+  <Attribute name="PointAttributes" purpose="Attributes for a point" exportAPI="STATE_API" exportInclude="state_exports.h">
+    <Field name="point" type="doubleArray" length="3"> 0. 0. 0. </Field>
+  </Attribute>
+

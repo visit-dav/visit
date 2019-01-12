@@ -1,0 +1,2011 @@
+/*****************************************************************************
+*
+* Copyright (c) 2000 - 2018, Lawrence Livermore National Security, LLC
+* Produced at the Lawrence Livermore National Laboratory
+* LLNL-CODE-442911
+* All rights reserved.
+*
+* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
+* full copyright notice is contained in the file COPYRIGHT located at the root
+* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
+*
+* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
+* modification, are permitted provided that the following conditions are met:
+*
+*  - Redistributions of  source code must  retain the above  copyright notice,
+*    this list of conditions and the disclaimer below.
+*  - Redistributions in binary form must reproduce the above copyright notice,
+*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
+*    documentation and/or other materials provided with the distribution.
+*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
+*    be used to endorse or promote products derived from this software without
+*    specific prior written permission.
+*
+* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
+* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
+* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
+* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
+* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
+* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
+* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
+* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
+* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
+* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
+* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
+* DAMAGE.
+*
+*****************************************************************************/
+
+#include "QvisWellBorePlotWindow.h"
+
+#include <WellBoreAttributes.h>
+#include <ViewerProxy.h>
+
+#include <QButtonGroup>
+#include <QCheckBox>
+#include <QComboBox>
+#include <QFileDialog>
+#include <QGroupBox>
+#include <QLabel>
+#include <QLayout>
+#include <QLineEdit>
+#include <QListWidget>
+#include <QPushButton>
+#include <QRadioButton>
+#include <QSplitter>
+#include <QTextEdit>
+
+#include <QvisColorButton.h>
+#include <QvisColorManagerWidget.h>
+#include <QvisColorTableWidget.h>
+#include <QvisLineWidthWidget.h>
+#include <QvisOpacitySlider.h>
+
+
+#include <string>
+
+using std::string;
+
+// ****************************************************************************
+// Method: QvisWellBorePlotWindow::QvisWellBorePlotWindow
+//
+// Purpose: 
+//   Constructor
+//
+// Note:       
+//
+// Programmer: Eric Brugger
+// Creation:   Fri Oct 3 14:30:00 PST 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+QvisWellBorePlotWindow::QvisWellBorePlotWindow(const int type,
+                         WellBoreAttributes *subj,
+                         const QString &caption,
+                         const QString &shortName,
+                         QvisNotepadArea *notepad)
+    : QvisPostableWindowObserver(subj, caption, shortName, notepad)
+{
+    plotType = type;
+    wellDefinitionChanged = false;
+    wellIndex = -1;
+    atts = subj;
+}
+
+
+// ****************************************************************************
+// Method: QvisWellBorePlotWindow::~QvisWellBorePlotWindow
+//
+// Purpose: 
+//   Destructor
+//
+// Note:       
+//
+// Programmer: Eric Brugger
+// Creation:   Fri Oct 3 14:30:00 PST 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+QvisWellBorePlotWindow::~QvisWellBorePlotWindow()
+{
+}
+
+
+// ****************************************************************************
+// Method: QvisWellBorePlotWindow::CreateWindowContents
+//
+// Purpose: 
+//   Creates the widgets for the window.
+//
+// Note:       
+//
+// Programmer: Eric Brugger
+// Creation:   Fri Oct 3 14:30:00 PST 2008
+//
+// Modifications:
+//   Brad Whitlock, Mon Oct  6 13:52:34 PDT 2008
+//   Qt 4.
+//
+//   Eric Brugger, Mon Nov 10 13:18:02 PST 2008
+//   Added the ability to display well bore names and stems.
+//   
+//   Kathleen Bonnell, Mon Jan 17 18:17:26 MST 2011
+//   Change colorTableButton to colorTableWidget to gain invert toggle.
+//
+// ****************************************************************************
+
+void
+QvisWellBorePlotWindow::CreateWindowContents()
+{
+    QGridLayout *ioLayout = new QGridLayout(0);
+    topLayout->addLayout(ioLayout);
+
+    // Create the button to read the well bores.
+    readWellBoresButton = new QPushButton(tr("Read well bores..."), central);
+    ioLayout->addWidget(readWellBoresButton, 0,0);
+    connect(readWellBoresButton, SIGNAL(pressed()),
+            this, SLOT(readWellBoresButtonPressed()));
+
+    // Create the button to write the well bores.
+    writeWellBoresButton = new QPushButton(tr("Write well bores..."), central);
+    ioLayout->addWidget(writeWellBoresButton, 0,1);
+    connect(writeWellBoresButton, SIGNAL(pressed()),
+            this, SLOT(writeWellBoresButtonPressed()));
+
+    // Create the well edit section.
+    QSplitter *wellEditSplitter = new QSplitter(central);
+    topLayout->addWidget(wellEditSplitter);
+    topLayout->setStretchFactor(wellEditSplitter, 100);
+
+    // Create the well list. 
+    QGroupBox *f1 = new QGroupBox(tr("Well list"), wellEditSplitter);
+    QGridLayout *listLayout = new QGridLayout(f1);
+
+    wellListBox = new QListWidget(f1);
+    listLayout->addWidget(wellListBox, 1, 0, 1, 2);
+    connect(wellListBox, SIGNAL(currentRowChanged(int)),
+            this, SLOT(wellListSelectionChanged()));
+
+    newWellButton = new QPushButton(tr("New"), f1);
+    listLayout->addWidget(newWellButton, 2,0);
+    connect(newWellButton, SIGNAL(pressed()),
+            this, SLOT(newWellButtonPressed()));
+
+    deleteWellButton = new QPushButton(tr("Delete"), f1);
+    listLayout->addWidget(deleteWellButton, 2,1);
+    connect(deleteWellButton, SIGNAL(pressed()),
+            this, SLOT(deleteWellButtonPressed()));
+
+    // Create the well definition.
+    QGroupBox *f2 = new QGroupBox(tr("Definition"), wellEditSplitter);
+    QGridLayout *defLayout = new QGridLayout(f2);
+    wellEditSplitter->setStretchFactor(wellEditSplitter->indexOf(f2), 10);
+
+    wellNameLabel = new QLabel(tr("Name"), f2);
+    defLayout->addWidget(wellNameLabel,1,0);
+    wellName = new QLineEdit(f2);
+    connect(wellName, SIGNAL(textChanged(const QString&)),
+            this, SLOT(wellNameTextChanged(const QString&)));
+    defLayout->addWidget(wellName, 1,1);
+
+    wellDefinitionLabel = new QLabel(tr("Definition"), f2);
+    defLayout->addWidget(wellDefinitionLabel, 2, 0);
+    wellDefinition = new QTextEdit(f2);
+    wellDefinition->setWordWrapMode(QTextOption::WordWrap);
+    defLayout->addWidget(wellDefinition, 3, 0, 1, 2);
+    connect(wellDefinition, SIGNAL(textChanged()),
+            this, SLOT(wellDefinitionTextChanged()));
+
+    // Create the well bore color group box.
+    wellColorGroup = new QGroupBox(central);
+    wellColorGroup->setTitle(tr("Well colors"));
+    topLayout->addWidget(wellColorGroup);
+
+    // Create the mode buttons that determine if the window is in single,
+    // multiple, or color table color mode.
+    colorModeButtons = new QButtonGroup(0);
+    connect(colorModeButtons, SIGNAL(buttonClicked(int)),
+            this, SLOT(colorModeChanged(int)));
+    QGridLayout *colorLayout = new QGridLayout(wellColorGroup);
+    colorLayout->setSpacing(10);
+    colorLayout->setColumnStretch(2, 1000);
+
+    QRadioButton *rb = new QRadioButton(tr("Color table"), wellColorGroup);
+    colorModeButtons->addButton(rb, 0);
+    colorLayout->addWidget(rb, 0, 0);
+    rb = new QRadioButton(tr("Single"), wellColorGroup);
+    colorModeButtons->addButton(rb, 1);
+    colorLayout->addWidget(rb, 1, 0);
+    rb = new QRadioButton(tr("Multiple"), wellColorGroup);
+    colorModeButtons->addButton(rb, 2);
+    colorLayout->addWidget(rb, 2, 0);
+
+    // Create the single color button.
+    singleColor = new QvisColorButton(wellColorGroup);
+    singleColor->setButtonColor(QColor(255, 0, 0));
+    connect(singleColor, SIGNAL(selectedColor(const QColor &)),
+            this, SLOT(singleColorChanged(const QColor &)));
+    colorLayout->addWidget(singleColor, 1, 1);
+    // Create the single color opacity.
+    singleColorOpacity = new QvisOpacitySlider(0,255,64,0,wellColorGroup);
+    connect(singleColorOpacity, SIGNAL(valueChanged(int)),
+            this, SLOT(singleColorOpacityChanged(int)));
+    colorLayout->addWidget(singleColorOpacity, 1, 2);
+
+    // Add the multiple colors widget.
+    multipleColors = new QvisColorManagerWidget(wellColorGroup);
+    multipleColors->setNameLabelText(tr("Well"));
+    connect(multipleColors, SIGNAL(colorChanged(const QColor &, int)),
+            this, SLOT(multipleColorChanged(const QColor &, int)));
+    connect(multipleColors, SIGNAL(opacityChanged(int, int)),
+            this, SLOT(opacityChanged(int, int)));
+    colorLayout->addWidget(multipleColors, 3, 0, 1, 3);
+
+    // Add the color table button.
+    colorTableWidget = new QvisColorTableWidget(wellColorGroup, true);
+    connect(colorTableWidget, SIGNAL(selectedColorTable(bool, const QString &)),
+            this, SLOT(colorTableClicked(bool, const QString &)));
+    connect(colorTableWidget,
+            SIGNAL(invertColorTableToggled(bool)),
+            this,
+            SLOT(invertColorTableToggled(bool)));
+    colorLayout->addWidget(colorTableWidget, 0, 1, 1, 2,
+        Qt::AlignLeft | Qt::AlignVCenter);
+
+    QGridLayout *mainLayout = new QGridLayout(0);
+    topLayout->addLayout(mainLayout);
+
+    // Create the draw wells as widget.
+    drawWellsAsLabel = new QLabel(tr("Draw wells as"), central);
+    mainLayout->addWidget(drawWellsAsLabel,0,0);
+    drawWellsAs = new QComboBox(central);
+    drawWellsAs->addItem(tr("Lines"));
+    drawWellsAs->addItem(tr("Cylinders"));
+    connect(drawWellsAs, SIGNAL(activated(int)),
+            this, SLOT(drawWellsAsChanged(int)));
+    mainLayout->addWidget(drawWellsAs, 0,1);
+
+    // Create the well cylinder quality widget.
+    wellCylinderQualityLabel = new QLabel(tr("Well cylinder quality"), central);
+    mainLayout->addWidget(wellCylinderQualityLabel,1,0);
+    wellCylinderQuality = new QComboBox(central);
+    wellCylinderQuality->addItem(tr("Low"));
+    wellCylinderQuality->addItem(tr("Medium"));
+    wellCylinderQuality->addItem(tr("High"));
+    wellCylinderQuality->addItem(tr("Super"));
+    connect(wellCylinderQuality, SIGNAL(activated(int)),
+            this, SLOT(wellCylinderQualityChanged(int)));
+    mainLayout->addWidget(wellCylinderQuality, 1,1);
+
+    // Create the well radius widget.
+    wellRadiusLabel = new QLabel(tr("Well radius"), central);
+    mainLayout->addWidget(wellRadiusLabel,2,0);
+    wellRadius = new QLineEdit(central);
+    connect(wellRadius, SIGNAL(returnPressed()),
+            this, SLOT(wellRadiusProcessText()));
+    mainLayout->addWidget(wellRadius, 2,1);
+
+    wellLineWidthLabel = new QLabel(tr("Well line width"), central);
+    mainLayout->addWidget(wellLineWidthLabel,3,0);
+    wellLineWidth = new QvisLineWidthWidget(0, central);
+    connect(wellLineWidth, SIGNAL(lineWidthChanged(int)),
+            this, SLOT(wellLineWidthChanged(int)));
+    mainLayout->addWidget(wellLineWidth, 3,1);
+
+    // Create the well annotation widget.
+    wellAnnotationLabel = new QLabel(tr("Well annotation"), central);
+    mainLayout->addWidget(wellAnnotationLabel,5,0);
+    wellAnnotation = new QComboBox(central);
+    wellAnnotation->addItem(tr("None"));
+    wellAnnotation->addItem(tr("Stem only"));
+    wellAnnotation->addItem(tr("Name only"));
+    wellAnnotation->addItem(tr("Stem and name"));
+    connect(wellAnnotation, SIGNAL(activated(int)),
+            this, SLOT(wellAnnotationChanged(int)));
+    mainLayout->addWidget(wellAnnotation, 5,1);
+
+    // Create the well name scale widget.
+    wellStemHeightLabel = new QLabel(tr("Well stem height"), central);
+    mainLayout->addWidget(wellStemHeightLabel,6,0);
+    wellStemHeight = new QLineEdit(central);
+    connect(wellStemHeight, SIGNAL(returnPressed()),
+            this, SLOT(wellStemHeightProcessText()));
+    mainLayout->addWidget(wellStemHeight, 6,1);
+
+#ifdef FIX_WELL_NAME_SCALE
+    // Create the well name scale widget.
+    wellNameScaleLabel = new QLabel(tr("Well name scale"), central);
+    mainLayout->addWidget(wellNameScaleLabel,7,0);
+    wellNameScale = new QLineEdit(central);
+    connect(wellNameScale, SIGNAL(returnPressed()),
+            this, SLOT(wellNameScaleProcessText()));
+    mainLayout->addWidget(wellNameScale, 7,1);
+#endif
+
+    legendFlag = new QCheckBox(tr("Legend"), central);
+    connect(legendFlag, SIGNAL(toggled(bool)),
+            this, SLOT(legendFlagChanged(bool)));
+#ifdef FIX_WELL_NAME_SCALE
+    mainLayout->addWidget(legendFlag, 8,0);
+#else
+    mainLayout->addWidget(legendFlag, 7,0);
+#endif
+}
+
+
+// ****************************************************************************
+// Method: QvisWellBorePlotWindow::UpdateWindow
+//
+// Purpose: 
+//   Updates the widgets in the window when the subject changes.
+//
+// Note:       
+//
+// Programmer: Eric Brugger
+// Creation:   Fri Oct 3 14:30:00 PST 2008
+//
+// Modifications:
+//   Brad Whitlock, Mon Oct  6 14:00:36 PDT 2008
+//   Qt 4.
+//
+//   Eric Brugger, Mon Nov 10 13:18:02 PST 2008
+//   Added the ability to display well bore names and stems.
+//   
+//   Kathleen Bonnell, Mon Jan 17 18:17:26 MST 2011
+//   Change colorTableButton to colorTableWidget to gain invert toggle.
+//
+// ****************************************************************************
+
+void
+QvisWellBorePlotWindow::UpdateWindow(bool doAll)
+{
+    int    index;
+
+    bool updateColors = false;
+    bool updateNames = false;
+    bool updateWellNames = false;
+    bool updateWellBores = false;
+
+    for(int i = 0; i < atts->NumAttributes(); ++i)
+    {
+        if(!doAll)
+        {
+            if(!atts->IsSelected(i))
+            {
+                continue;
+            }
+        }
+
+        QColor                tempcolor;
+        switch(i)
+        {
+          case WellBoreAttributes::ID_colorType:
+            colorModeButtons->blockSignals(true);
+            if(atts->GetColorType() == WellBoreAttributes::ColorByColorTable)
+                index = 0;
+            else if(atts->GetColorType() == WellBoreAttributes::ColorBySingleColor)
+                index = 1;
+            else
+                index = 2;
+            colorModeButtons->button(index)->setChecked(true);
+            colorModeButtons->blockSignals(false);
+
+            singleColor->setEnabled(index == 1);
+            singleColorOpacity->setEnabled(index == 1);
+            colorTableWidget->setEnabled(index == 0);
+            break;
+          case WellBoreAttributes::ID_colorTableName:
+            colorTableWidget->blockSignals(true);
+            colorTableWidget->setColorTable(atts->GetColorTableName().c_str());
+            colorTableWidget->blockSignals(false);
+            break;
+          case WellBoreAttributes::ID_invertColorTable:
+            colorTableWidget->blockSignals(true);
+            colorTableWidget->setInvertColorTable(atts->GetInvertColorTable());
+            colorTableWidget->blockSignals(false);
+            break;
+          case WellBoreAttributes::ID_singleColor:
+            tempcolor = QColor(atts->GetSingleColor().Red(),
+                               atts->GetSingleColor().Green(),
+                               atts->GetSingleColor().Blue());
+            singleColor->blockSignals(true);
+            singleColor->setButtonColor(tempcolor);
+            singleColor->blockSignals(false);
+            break;
+          case WellBoreAttributes::ID_multiColor:
+            updateColors = true;
+            break;
+          case WellBoreAttributes::ID_drawWellsAs:
+            if (atts->GetDrawWellsAs() == WellBoreAttributes::Cylinders)
+            {
+                wellRadius->setEnabled(true);
+                if(wellRadiusLabel)
+                    wellRadiusLabel->setEnabled(true);
+            }
+            else
+            {
+                wellRadius->setEnabled(false);
+                if(wellRadiusLabel)
+                    wellRadiusLabel->setEnabled(false);
+            }
+            if (atts->GetDrawWellsAs() == WellBoreAttributes::Cylinders)
+            {
+                wellCylinderQuality->setEnabled(true);
+                if(wellCylinderQualityLabel)
+                    wellCylinderQualityLabel->setEnabled(true);
+            }
+            else
+            {
+                wellCylinderQuality->setEnabled(false);
+                if(wellCylinderQualityLabel)
+                    wellCylinderQualityLabel->setEnabled(false);
+            }
+            if (atts->GetDrawWellsAs() == WellBoreAttributes::Lines)
+            {
+                wellLineWidth->setEnabled(true);
+                if(wellLineWidthLabel)
+                    wellLineWidthLabel->setEnabled(true);
+            }
+            else
+            {
+                wellLineWidth->setEnabled(false);
+                if(wellLineWidthLabel)
+                    wellLineWidthLabel->setEnabled(false);
+            }
+            drawWellsAs->blockSignals(true);
+            drawWellsAs->setCurrentIndex(atts->GetDrawWellsAs());
+            drawWellsAs->blockSignals(false);
+            break;
+          case WellBoreAttributes::ID_wellCylinderQuality:
+            wellCylinderQuality->blockSignals(true);
+            wellCylinderQuality->setCurrentIndex(atts->GetWellCylinderQuality());
+            wellCylinderQuality->blockSignals(false);
+            break;
+          case WellBoreAttributes::ID_wellRadius:
+            wellRadius->blockSignals(true);
+            wellRadius->setText(FloatToQString(atts->GetWellRadius()));
+            wellRadius->blockSignals(false);
+            break;
+          case WellBoreAttributes::ID_wellLineWidth:
+            wellLineWidth->blockSignals(true);
+            wellLineWidth->SetLineWidth(atts->GetWellLineWidth());
+            wellLineWidth->blockSignals(false);
+            break;
+          case WellBoreAttributes::ID_wellAnnotation:
+            if (atts->GetWellAnnotation() == WellBoreAttributes::StemOnly ||
+                atts->GetWellAnnotation() == WellBoreAttributes::StemAndName)
+            {
+                wellStemHeight->setEnabled(true);
+                if(wellStemHeightLabel)
+                    wellStemHeightLabel->setEnabled(true);
+            }
+            else
+            {
+                wellStemHeight->setEnabled(false);
+                if(wellStemHeightLabel)
+                    wellStemHeightLabel->setEnabled(false);
+            }
+#ifdef FIX_WELL_NAME_SCALE
+            if (atts->GetWellAnnotation() == WellBoreAttributes::NameOnly ||
+                atts->GetWellAnnotation() == WellBoreAttributes::StemAndName)
+            {
+                wellNameScale->setEnabled(true);
+                if(wellNameScaleLabel)
+                    wellNameScaleLabel->setEnabled(true);
+            }
+            else
+            {
+                wellNameScale->setEnabled(false);
+                if(wellNameScaleLabel)
+                    wellNameScaleLabel->setEnabled(false);
+            }
+#endif
+            wellAnnotation->blockSignals(true);
+            wellAnnotation->setCurrentIndex(atts->GetWellAnnotation());
+            wellAnnotation->blockSignals(false);
+            break;
+          case WellBoreAttributes::ID_wellStemHeight:
+            wellStemHeight->blockSignals(true);
+            wellStemHeight->setText(FloatToQString(atts->GetWellStemHeight()));
+            wellStemHeight->blockSignals(false);
+            break;
+          case WellBoreAttributes::ID_wellNameScale:
+#ifdef FIX_WELL_NAME_SCALE
+            wellNameScale->blockSignals(true);
+            wellNameScale->setText(FloatToQString(atts->GetWellNameScale()));
+            wellNameScale->blockSignals(false);
+#endif
+            break;
+          case WellBoreAttributes::ID_legendFlag:
+            legendFlag->blockSignals(true);
+            legendFlag->setChecked(atts->GetLegendFlag());
+            legendFlag->blockSignals(false);
+            break;
+          case WellBoreAttributes::ID_nWellBores:
+            updateColors = true;
+            updateNames = true;
+            break;
+          case WellBoreAttributes::ID_wellBores:
+            updateWellBores = true;
+            break;
+          case WellBoreAttributes::ID_wellNames:
+            updateWellNames = true;
+            break;
+        }
+    }
+
+    //
+    // If we need to update the well bores, update them now. This ensures
+    // that it is done in the correct order.
+    //
+    if (updateWellNames || updateWellBores)
+    {
+        BlockAllSignals(true);
+
+        //
+        // Update the well list. If the index changes then the size of
+        // of the names would have changed and then the well bores would
+        // have changed so the well definition will get updated as well.
+        //
+        const std::vector<string> wellNames = atts->GetWellNames();
+        int index = wellListBox->currentRow();
+        if (index < 0)
+            index = 0;
+        if (index >= (int)wellNames.size())
+            index = (int)wellNames.size() - 1;
+        wellListBox->clear();
+        for (size_t i = 0; i < wellNames.size(); i++)
+            wellListBox->addItem(QString(wellNames[i].c_str()));
+        QListWidgetItem *item = wellListBox->item(index);
+        if(item != 0)
+            item->setSelected(true);
+        if(index >= 0 && index < wellListBox->count())
+            wellListBox->setCurrentRow(index);
+
+        UpdateWellName(index);
+        if (updateWellBores)
+            UpdateWellDefinition(index);
+
+        bool enable = (index < 0) ? false : true;
+        deleteWellButton->setEnabled(enable);
+        wellName->setEnabled(enable);
+        wellDefinition->setEnabled(enable);
+
+        BlockAllSignals(false);
+    }
+
+    //
+    // If we need to update the colors, update them now. This ensures that it
+    // is only done one time no matter what combination of attributes was
+    // selected.
+    //
+    bool multiEnabled = (atts->GetColorType() ==
+        WellBoreAttributes::ColorByMultipleColors);
+    if(updateColors)
+        multiEnabled &= UpdateMultipleAreaColors();
+
+    //
+    // If we need to update the names, update them now.
+    //
+    if(updateNames)
+        multiEnabled &= UpdateMultipleAreaNames();
+
+    //
+    // Set the enabled state for the multiple color widget.
+    //
+    multipleColors->setEnabled(multiEnabled);
+}
+
+
+// ****************************************************************************
+// Method: QvisWellBorePlotWindow::UpdateMultipleAreaColors
+//
+// Purpose:
+//   This method updates the multipleColors widget with the list of well bore
+//   colors.
+//
+// Programmer: Eric Brugger
+// Creation:   October 1, 2008
+//
+// Modifications:
+//
+// ****************************************************************************
+
+bool
+QvisWellBorePlotWindow::UpdateMultipleAreaColors()
+{
+    const ColorAttributeList &wellBoreColors = atts->GetMultiColor();
+    int   nEntries;
+
+    nEntries = atts->GetNWellBores();
+
+    // Block the signals from the multipleColors widget.
+    multipleColors->blockSignals(true);
+
+    if(nEntries == multipleColors->numEntries())
+    {
+        for(int i = 0; i < nEntries; ++i)
+        {
+            QColor temp(wellBoreColors[i].Red(), wellBoreColors[i].Green(),
+                        wellBoreColors[i].Blue());
+
+            multipleColors->setColor(i, temp);
+            multipleColors->setOpacity(i, wellBoreColors[i].Alpha());
+        }
+    }
+    else if(nEntries > multipleColors->numEntries())
+    {
+        // Set all of the existing colors.
+        for(int i = 0; i < multipleColors->numEntries(); ++i)
+        {
+            QColor temp(wellBoreColors[i].Red(), wellBoreColors[i].Green(),
+                        wellBoreColors[i].Blue());
+
+            multipleColors->setColor(i, temp);
+            multipleColors->setOpacity(i, wellBoreColors[i].Alpha());
+        }
+
+        // Add new entries
+        for(int i = multipleColors->numEntries(); i < nEntries; ++i)
+        {
+            QColor temp(wellBoreColors[i].Red(), wellBoreColors[i].Green(),
+                        wellBoreColors[i].Blue());
+
+            multipleColors->addEntry(QString(""), temp, 
+                                     wellBoreColors[i].Alpha());
+        }
+    }
+    else // nEntries < multipleColors->numEntries()
+    {
+        // Set all of the existing names.
+        for(int i = 0; i < nEntries; ++i)
+        {
+            QColor temp(wellBoreColors[i].Red(), wellBoreColors[i].Green(),
+                        wellBoreColors[i].Blue());
+
+            multipleColors->setColor(i, temp);
+            multipleColors->setOpacity(i, wellBoreColors[i].Alpha());
+        }
+
+        // Remove excess entries
+        int numEntries = multipleColors->numEntries();
+        for(int i = nEntries;
+            i < numEntries; ++i)
+        {
+            multipleColors->removeLastEntry();
+        }
+    }
+
+    // Unblock the signals from the multipleColors widget.
+    multipleColors->blockSignals(false);
+
+    return (nEntries > 0);
+}
+
+
+// ****************************************************************************
+// Method: QvisWellBorePlotWindow::UpdateMultipleAreaNames
+//
+// Purpose:
+//   This method updates the multipleColors widget with the list of well bore
+//   names.
+//
+// Programmer: Eric Brugger
+// Creation:   October 1, 2008
+//
+// Modifications:
+//   Brad Whitlock, Mon Oct  6 14:13:16 PDT 2008
+//   Qt 4.
+//
+// ****************************************************************************
+
+bool
+QvisWellBorePlotWindow::UpdateMultipleAreaNames()
+{
+    int     nEntries;
+
+    nEntries = atts->GetNWellBores();
+
+    if(nEntries == multipleColors->numEntries())
+    {
+        for(int i = 0; i < nEntries; ++i)
+        {
+            multipleColors->setAttributeName(i, 
+                            atts->GetWellNames()[i].c_str());
+        }
+    }
+    else if(nEntries > multipleColors->numEntries())
+    {
+        // Set all of the existing names.
+        for(int i = 0; i < multipleColors->numEntries(); ++i)
+        {
+            multipleColors->setAttributeName(i, 
+                            atts->GetWellNames()[i].c_str());
+        }
+
+        // Add new entries
+        for(int i = multipleColors->numEntries(); i < nEntries; ++i)
+        {
+            multipleColors->addEntry(atts->GetWellNames()[i].c_str(),
+                                     QColor(0,0,0), 255);
+        }
+    }
+    else // nEntries < multipleColors->numEntries()
+    {
+        // Set all of the existing names.
+        for(int i = 0; i < nEntries; ++i)
+        {
+            multipleColors->setAttributeName(i, 
+                            atts->GetWellNames()[i].c_str());
+        }
+
+        // Remove excess entries
+        int numEntries = multipleColors->numEntries();
+        for(int i = nEntries; i < numEntries; ++i)
+        {
+            multipleColors->removeLastEntry();
+        }
+    }
+
+    return (nEntries > 0);
+}
+
+
+// ****************************************************************************
+// Method: QvisWellBorePlotWindow::UpdateWellName
+//
+// Purpose:
+//   This method updates the well name widget with the well bore name.
+//
+// Arguments:
+//   index     The index of the current well.
+//
+// Programmer: Eric Brugger
+// Creation:   October 1, 2008
+//
+// Modifications:
+//   Brad Whitlock, Mon Oct  6 14:13:51 PDT 2008
+//   Qt 4.
+//
+// ****************************************************************************
+
+void
+QvisWellBorePlotWindow::UpdateWellName(int index)
+{
+    if (index <  0)
+    {
+        wellName->setText("");
+    }
+    else
+    {
+        wellName->setText(atts->GetWellNames()[index].c_str());
+    }
+}
+
+
+// ****************************************************************************
+// Method: QvisWellBorePlotWindow::UpdateWellDefinition
+//
+// Purpose:
+//   This method updates the well name widget with the well bore definition.
+//
+// Arguments:
+//   index     The index of the current well.
+//
+// Programmer: Eric Brugger
+// Creation:   October 1, 2008
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisWellBorePlotWindow::UpdateWellDefinition(int index)
+{
+    if (index <  0)
+    {
+        wellDefinition->setText("");
+    }
+    else
+    {
+        wellDefinition->setText("");
+        std::vector<int> wellBores = atts->GetWellBores();
+        int wellCount = 0;
+        int i;
+        for (i = 0; wellCount < index; i++)
+        {
+            if (wellBores[i] == -1)
+                wellCount++;
+        }
+        int line[3];
+        int iLine = 0;
+        int nLines = 0;
+        for (; wellBores[i] != -1; i++)
+        {
+            line[iLine++] = wellBores[i];
+            if (iLine == 3)
+            {
+                wellDefinition->insertPlainText(IntsToQString(line, 3));
+                nLines++;
+                iLine = 0;
+            }
+        }
+        if (iLine == 1)
+        {
+            wellDefinition->insertPlainText(IntToQString(line[0]));
+            nLines++;
+        }
+        else if (iLine == 2)
+        {
+            wellDefinition->insertPlainText(IntsToQString(line, 2));
+            nLines++;
+        }
+#if 0
+        //
+        // This is a hack to remove a blank line at the end. From what I can
+        // tell this is a Qt bug. The lines I added above were presumably
+        // added at the end, so why is there a blank line at the end, if
+        // anything it should be at the front.
+        //
+        wellDefinition->removeLine(nLines);
+#endif
+    }
+
+    wellIndex = index;
+
+    wellDefinitionChanged = false;
+}
+
+
+// ****************************************************************************
+// Method: QvisWellBorePlotWindow::GetCurrentValues
+//
+// Purpose: 
+//   Gets values from certain widgets and stores them in the subject.
+//
+// Note:       
+//
+// Programmer: Eric Brugger
+// Creation:   Fri Oct 3 14:30:00 PST 2008
+//
+// Modifications:
+//   Eric Brugger, Mon Nov 10 13:18:02 PST 2008
+//   Added the ability to display well bore names and stems.
+//   
+//   Kathleen Biagas, Thu Apr  9 08:20:43 PDT 2015
+//   Use helpfer functions.
+//
+// ****************************************************************************
+
+void
+QvisWellBorePlotWindow::GetCurrentValues(int which_widget)
+{
+    bool doAll = (which_widget == -1);
+    QString msg, temp;
+
+    // Do wellRadius
+    if(which_widget == WellBoreAttributes::ID_wellRadius || doAll)
+    {
+        float val;
+        if (LineEditGetFloat(wellRadius, val))
+            atts->SetWellRadius(val);
+        else 
+        {
+            ResettingError(tr("Well radius"), FloatToQString(atts->GetWellRadius()));
+            atts->SetWellRadius(atts->GetWellRadius());
+        }
+    }
+
+    // Do wellStemHeight
+    if(which_widget == WellBoreAttributes::ID_wellStemHeight || doAll)
+    {
+        float val;
+        if (LineEditGetFloat(wellStemHeight, val))
+            atts->SetWellStemHeight(val);
+        else 
+        {
+            ResettingError(tr("Well stem height"), FloatToQString(atts->GetWellStemHeight()));
+            atts->SetWellStemHeight(atts->GetWellStemHeight());
+        }
+    }
+
+#ifdef FIX_WELL_NAME_SCALE
+    // Do wellNameScale
+    if(which_widget == WellBoreAttributes::ID_wellNameScale || doAll)
+    {
+        float val;
+        if (LineEditGetFloat(wellNameScale, val))
+            atts->SetWellNameScale(val);
+        else 
+        {
+            ResettingError(tr("Well name scale"), FloatToQString(atts->GetWellNameScale()));
+            atts->SetWellNameScale(atts->GetWellNameScale());
+        }
+    }
+#endif
+}
+
+
+// ****************************************************************************
+// Method: QvisWellBorePlotWindow::Apply
+//
+// Purpose: 
+//   Called to apply changes in the subject.
+//
+// Note:       
+//
+// Programmer: Eric Brugger
+// Creation:   Fri Oct 3 14:30:00 PST 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisWellBorePlotWindow::Apply(bool ignore)
+{
+    if(AutoUpdate() || ignore)
+    {
+        GetCurrentValues(-1);
+        atts->Notify();
+
+        GetViewerMethods()->SetPlotOptions(plotType);
+    }
+    else
+        atts->Notify();
+}
+
+
+// ****************************************************************************
+// Method:  QvisWellBorePlotWindow::BlockAllSignals
+//
+// Purpose:
+//   Block signals for all important widgets.  Or unblock, of course.
+//
+// Arguments:
+//   block     True to block, false to unblock
+//
+// Programmer: Eric Brugger
+// Creation:   October 1, 2008
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisWellBorePlotWindow::BlockAllSignals(bool block)
+{
+    wellListBox->blockSignals(block);
+    wellName->blockSignals(block);
+    wellDefinition->blockSignals(block);
+}
+
+
+// ****************************************************************************
+// Method:  QvisWellBorePlotWindow::ReadWellDefinition
+//
+// Purpose:
+//   Read the well bore definition.
+//
+// Programmer: Eric Brugger
+// Creation:   October 1, 2008
+//
+// Modifications:
+//   Brad Whitlock, Mon Oct  6 14:32:18 PDT 2008
+//   Qt 4.
+//
+// ****************************************************************************
+
+void
+QvisWellBorePlotWindow::ReadWellDefinition()
+{
+    //
+    // Create a vector with the new well definition.
+    //
+    std::vector<int> newWell;
+    QStringList lines(wellDefinition->toPlainText().split("\n"));
+    for (int i = 0; i < lines.size(); i++)
+    {
+        const char *line = lines[i].toStdString().c_str();
+        int j = 0;
+        while (line[j] != '\0')
+        {
+            while (line[j] != 0 && !isdigit(line[j])) j++;
+            int ivalue;
+            sscanf(&line[j], "%d", &ivalue);
+            newWell.push_back(ivalue);
+            while (isdigit(line[j])) j++;
+        }
+    }
+
+    //
+    // Delete the current well definition
+    //
+    std::vector<int> wellBores = atts->GetWellBores();
+    int wellCount = 0;
+    int p1, p2;
+    for (p1 = 0; wellCount < wellIndex; p1++)
+    {
+        if (wellBores[p1] == -1)
+            wellCount++;
+    }
+    for (p2 = p1; wellBores[p2] != -1; p2++)
+        /* Do nothing */;
+    wellBores.erase(wellBores.begin()+p1, wellBores.begin()+p2);
+
+    //
+    // Insert the new well definition.
+    //
+    wellBores.insert(wellBores.begin()+p1, newWell.begin(), newWell.end());
+    atts->SetWellBores(wellBores);
+
+    wellDefinitionChanged = false;
+}
+
+
+//
+// Qt Slot functions
+//
+
+
+// ****************************************************************************
+// Method: QvisWellBorePlotWindow::apply
+//
+// Purpose: 
+//   Qt slot function called when apply button is clicked.
+//
+// Note:       
+//
+// Programmer: Eric Brugger
+// Creation:   Fri Oct 3 14:30:00 PST 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisWellBorePlotWindow::apply()
+{
+    if (wellDefinitionChanged)
+        ReadWellDefinition();
+
+    Apply(true);
+}
+
+
+// ****************************************************************************
+// Method: QvisWellBorePlotWindow::makeDefault
+//
+// Purpose: 
+//   Qt slot function called when "Make default" button is clicked.
+//
+// Note:       
+//
+// Programmer: Eric Brugger
+// Creation:   Fri Oct 3 14:30:00 PST 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisWellBorePlotWindow::makeDefault()
+{
+    GetCurrentValues(-1);
+    atts->Notify();
+    GetViewerMethods()->SetDefaultPlotOptions(plotType);
+}
+
+
+// ****************************************************************************
+// Method: QvisWellBorePlotWindow::reset
+//
+// Purpose: 
+//   Qt slot function called when reset button is clicked.
+//
+// Note:       
+//
+// Programmer: Eric Brugger
+// Creation:   Fri Oct 3 14:30:00 PST 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisWellBorePlotWindow::reset()
+{
+    GetViewerMethods()->ResetPlotOptions(plotType);
+}
+
+
+void
+QvisWellBorePlotWindow::readWellBoresButtonPressed()
+{
+    readWellBoresButton->setDown(false);
+
+    //
+    // Get the name of the file to save.
+    //
+    QString fileName = QFileDialog::getOpenFileName();
+
+    //
+    // If the user chose to save a file, write out the file.
+    // 
+    if (!fileName.isNull())
+    {
+        FILE *file = fopen(fileName.toStdString().c_str(), "r");
+        if (file != NULL)
+        {
+            std::vector<int> wellBores;
+            std::vector<string> wellNames;
+
+            int p1[3], p2[3];
+            char str[20];
+            int nWells = 0;
+            string wellName;
+            bool haveWell = false;
+            bool havePerf = false;
+            bool haveTwoPoints = false;
+
+            TokenType token = GetToken(file);
+            while (token != TOKEN_EOF)
+            {
+                if (token == TOKEN_WELL || token == TOKEN_ENDWELLS)
+                {
+                    if (haveWell)
+                    {
+                        wellNames.push_back(wellName);
+                        if (havePerf)
+                        {
+                            if (p1[0] != -1 && p1[1] != -1 && p1[2] != -1)
+                            {
+                                wellBores.push_back(p1[0]);
+                                wellBores.push_back(p1[1]);
+                                wellBores.push_back(p1[2]);
+                            }
+                            if (haveTwoPoints)
+                            {
+                                if (p2[0] != -1 && p2[1] != -1 && p2[2] != -1)
+                                {
+                                    wellBores.push_back(p2[0]);
+                                    wellBores.push_back(p2[1]);
+                                    wellBores.push_back(p2[2]);
+                                }
+                            }
+                        }
+                        wellBores.push_back(-1);
+                    }
+                    sprintf(str, "unnamed%d", nWells);
+                    wellName = string(str);
+                    haveWell = true;
+                    havePerf = false;
+                    nWells++;
+                    if (token == TOKEN_WELL)
+                        token = GetToken(file);
+                    else
+                        token = TOKEN_EOF;
+                }
+                else if (token == TOKEN_NAME)
+                {
+                    token = GetToken(file);
+                    if (token == TOKEN_EQUAL)
+                        token = GetToken(file);
+                    if (token == TOKEN_STRING)
+                    {
+                        wellName = string(buf);
+                        token = GetToken(file);
+                    }
+                }
+                else if (token == TOKEN_PERF)
+                {
+                    if (havePerf)
+                    {
+                        if (p1[0] != -1 && p1[1] != -1 && p1[2] != -1)
+                        {
+                            wellBores.push_back(p1[0]);
+                            wellBores.push_back(p1[1]);
+                            wellBores.push_back(p1[2]);
+                        }
+                        if (haveTwoPoints)
+                        {
+                            if (p2[0] != -1 && p2[1] != -1 && p2[2] != -1)
+                            {
+                                wellBores.push_back(p2[0]);
+                                wellBores.push_back(p2[1]);
+                                wellBores.push_back(p2[2]);
+                            }
+                        }
+                    }
+                    p1[0] = -1; p1[1] = -1; p1[2] = -1;
+                    p2[0] = -1; p2[1] = -1; p2[2] = -1;
+                    haveTwoPoints = false;
+                    havePerf = true;
+                    token = GetToken(file);
+                }
+                else if (token == TOKEN_I)
+                {
+                    token = GetToken(file);
+                    if (token == TOKEN_EQUAL)
+                        token = GetToken(file);
+                    if (token == TOKEN_INTEGER)
+                    {
+                        p1[0] = atoi(buf);
+                        p2[0] = p1[0];
+                        token = GetToken(file);
+                    }
+                }
+                else if (token == TOKEN_J)
+                {
+                    token = GetToken(file);
+                    if (token == TOKEN_EQUAL)
+                        token = GetToken(file);
+                    if (token == TOKEN_INTEGER)
+                    {
+                        p1[1] = atoi(buf);
+                        p2[1] = p1[1];
+                        token = GetToken(file);
+                    }
+                }
+                else if (token == TOKEN_K)
+                {
+                    token = GetToken(file);
+                    if (token == TOKEN_EQUAL)
+                        token = GetToken(file);
+                    if (token == TOKEN_INTEGER)
+                    {
+                        p1[2] = atoi(buf);
+                        p2[2] = p1[2];
+                        token = GetToken(file);
+                    }
+                }
+                else if (token == TOKEN_I_TOP)
+                {
+                    token = GetToken(file);
+                    if (token == TOKEN_EQUAL)
+                        token = GetToken(file);
+                    if (token == TOKEN_INTEGER)
+                    {
+                        p1[0] = atoi(buf);
+                        token = GetToken(file);
+                    }
+                }
+                else if (token == TOKEN_J_TOP)
+                {
+                    token = GetToken(file);
+                    if (token == TOKEN_EQUAL)
+                        token = GetToken(file);
+                    if (token == TOKEN_INTEGER)
+                    {
+                        p1[1] = atoi(buf);
+                        token = GetToken(file);
+                    }
+                }
+                else if (token == TOKEN_K_TOP)
+                {
+                    token = GetToken(file);
+                    if (token == TOKEN_EQUAL)
+                        token = GetToken(file);
+                    if (token == TOKEN_INTEGER)
+                    {
+                        p1[2] = atoi(buf);
+                        token = GetToken(file);
+                    }
+                }
+                else if (token == TOKEN_I_BOTTOM)
+                {
+                    token = GetToken(file);
+                    if (token == TOKEN_EQUAL)
+                        token = GetToken(file);
+                    if (token == TOKEN_INTEGER)
+                    {
+                        p2[0] = atoi(buf);
+                        haveTwoPoints = true;
+                        token = GetToken(file);
+                    }
+                }
+                else if (token == TOKEN_J_BOTTOM)
+                {
+                    token = GetToken(file);
+                    if (token == TOKEN_EQUAL)
+                        token = GetToken(file);
+                    if (token == TOKEN_INTEGER)
+                    {
+                        p2[1] = atoi(buf);
+                        haveTwoPoints = true;
+                        token = GetToken(file);
+                    }
+                }
+                else if (token == TOKEN_K_BOTTOM)
+                {
+                    token = GetToken(file);
+                    if (token == TOKEN_EQUAL)
+                        token = GetToken(file);
+                    if (token == TOKEN_INTEGER)
+                    {
+                        p2[2] = atoi(buf);
+                        haveTwoPoints = true;
+                        token = GetToken(file);
+                    }
+                }
+                else
+                {
+                    token = GetToken(file);
+                }
+            }
+
+            fclose (file);
+
+            atts->SetNWellBores((int)wellNames.size());
+            atts->SetWellBores(wellBores);
+            atts->SetWellNames(wellNames);
+        }
+
+        Apply();
+    }
+}
+
+
+void
+QvisWellBorePlotWindow::writeWellBoresButtonPressed()
+{
+    writeWellBoresButton->setDown(false);
+
+    //
+    // Get the name of the file to save.
+    //
+    QString fileName = QFileDialog::getSaveFileName(this, tr("VisIt"),
+        "Wellbores.out");
+
+    //
+    // If the user chose to save a file, write out the file.
+    // 
+    if (!fileName.isNull())
+    {
+        FILE *file = fopen(fileName.toStdString().c_str(), "w");
+        if (file != NULL)
+        {
+            int iWellBore = 0;
+            const std::vector<int> wellBores = atts->GetWellBores();
+            const std::vector<string> wellNames = atts->GetWellNames();
+
+            fprintf(file, "WELLS\n");
+            for (size_t i = 0; i < wellNames.size(); i++)
+            {
+                fprintf(file, "&WELL Name='%s' /\n", wellNames[i].c_str());
+
+                int p1[3], p2[3];
+                bool haveP1 = GetPoint(p1, wellBores, iWellBore);
+                bool haveP2 = false;
+                if (haveP1)
+                    haveP2 = GetPoint(p2, wellBores, iWellBore);
+
+                while (haveP2)
+                {
+                    if (WritePoint(file, p1, p2))
+                    {
+                        haveP1 = GetPoint(p1, wellBores, iWellBore);
+                        haveP2 = false;
+                        if (haveP1)
+                            haveP2 = GetPoint(p2, wellBores, iWellBore);
+                    }
+                    else
+                    {
+                        p1[0] = p2[0]; p1[1] = p2[1]; p1[2] = p2[2];
+                        haveP2 = GetPoint(p2, wellBores, iWellBore);
+                    }
+                }
+                if (haveP1)
+                    fprintf(file, "&PERF I=%d J=%d K=%d /\n",
+                            p1[0], p1[1], p1[2]);
+                fprintf(file, "\n");
+            }
+            fprintf(file, "ENDWELLS\n");
+
+            fclose (file);
+        }
+    }
+}
+
+
+void
+QvisWellBorePlotWindow::wellListSelectionChanged()
+{
+    //
+    // If the well definition changed, then read the new definition.
+    //
+    if (wellDefinitionChanged)
+        ReadWellDefinition();
+
+    BlockAllSignals(true);
+    int index = wellListBox->currentRow();
+
+    UpdateWellName(index);
+    UpdateWellDefinition(index);
+
+    BlockAllSignals(false);
+}
+
+
+void
+QvisWellBorePlotWindow::newWellButtonPressed()
+{
+    //
+    // If the well definition changed, then read the new definition.
+    //
+    if (wellDefinitionChanged)
+        ReadWellDefinition();
+
+    //
+    // Find an unused well name.
+    //
+    int  newid = 1;
+    char newName[20];
+    bool okay = false;
+    std::vector<string> wellNames = atts->GetWellNames();
+    while (!okay)
+    {
+        sprintf(newName, "unnamed%d", newid);
+        size_t i = 0; 
+        while (i < wellNames.size() && wellNames[i] != string(newName))
+        {
+            i++;
+        }
+        if (i < wellNames.size())
+            newid++;
+        else
+            okay = true;
+    }
+
+    //
+    // Add the name to the list.
+    //
+    wellNames.push_back(string(newName));
+    atts->SetWellNames(wellNames);
+
+    //
+    // Add an empty well definition.
+    //
+    std::vector<int> wellBores = atts->GetWellBores();
+    wellBores.push_back(-1);
+    atts->SetWellBores(wellBores);
+
+    //
+    // Update the count of wells.
+    //
+    atts->SetNWellBores(atts->GetNWellBores()+1);
+
+    atts->Notify();
+
+    QListWidgetItem *item = wellListBox->item(wellListBox->count()-1);
+    if(item != 0)
+    {
+        item->setSelected(true);
+        wellListBox->setCurrentRow(wellListBox->count()-1);
+    }
+}
+
+
+void
+QvisWellBorePlotWindow::deleteWellButtonPressed()
+{
+    //
+    // There is no point in checking if the well definition changed since
+    // we are deleting it.
+    //
+
+    //
+    // Get the index of the item to delete.
+    //
+    int index = wellListBox->currentRow();
+
+    if (index <  0)
+        return;
+
+    //
+    // Delete the name from the list.
+    //
+    std::vector<string> wellNames = atts->GetWellNames();
+    wellNames.erase(wellNames.begin()+index);
+    atts->SetWellNames(wellNames);
+
+    //
+    // Delete the well definition.
+    //
+    std::vector<int> wellBores = atts->GetWellBores();
+    int wellCount = 0;
+    int p1, p2;
+    for (p1 = 0; wellCount < index; p1++)
+    {
+        if (wellBores[p1] == -1)
+            wellCount++;
+    }
+    for (p2 = p1; wellBores[p2] != -1; p2++)
+        /* Do nothing */;
+    p2++;
+    wellBores.erase(wellBores.begin()+p1, wellBores.begin()+p2);
+    atts->SetWellBores(wellBores);
+
+    //
+    // Update the count of wells.
+    //
+    atts->SetNWellBores(atts->GetNWellBores()-1);
+
+    atts->Notify();
+}
+
+
+void
+QvisWellBorePlotWindow::wellNameTextChanged(const QString &text)
+{
+    int index = wellListBox->currentRow();
+    if (index <  0)
+        return;
+
+    QString newname = text.trimmed();
+
+    std::vector<string> wellNames = atts->GetWellNames();
+
+    if (newname.isEmpty())
+    {
+        int  newid = 1;
+        char newName[20];
+        bool okay = false;
+        while (!okay)
+        {
+            sprintf(newName, "unnamed%d", newid);
+            size_t i = 0; 
+            while (i < wellNames.size() && wellNames[i] != string(newName))
+            {
+                i++;
+            }
+            if (i < wellNames.size())
+                newid++;
+            else
+                okay = true;
+        }
+        newname = QString(newName);
+    }
+
+    wellNames[index] = string(newname.toStdString());
+    atts->SetWellNames(wellNames);
+
+    BlockAllSignals(true);
+    QListWidgetItem *item = wellListBox->item(index);
+    if(item != 0)
+        item->setText(newname);
+    BlockAllSignals(false);
+    multipleColors->setAttributeName(index, 
+                    atts->GetWellNames()[index].c_str()); 
+}
+
+
+void
+QvisWellBorePlotWindow::wellDefinitionTextChanged()
+{
+    wellDefinitionChanged = true;
+}
+
+
+void
+QvisWellBorePlotWindow::colorModeChanged(int index)
+{
+    if(index == 0)
+        atts->SetColorType(WellBoreAttributes::ColorByColorTable);
+    else if(index == 1)
+        atts->SetColorType(WellBoreAttributes::ColorBySingleColor);
+    else
+        atts->SetColorType(WellBoreAttributes::ColorByMultipleColors);
+    Apply();
+}
+
+
+void
+QvisWellBorePlotWindow::singleColorChanged(const QColor &color)
+{
+    ColorAttribute temp(color.red(), color.green(), color.blue());
+    atts->SetSingleColor(temp);
+    SetUpdate(false);
+    Apply();
+}
+
+
+void
+QvisWellBorePlotWindow::singleColorOpacityChanged(int opacity)
+{
+    atts->GetSingleColor().SetAlpha(opacity);
+    atts->SelectSingleColor();
+    Apply();
+}
+
+
+void
+QvisWellBorePlotWindow::multipleColorChanged(const QColor &color, int index)
+{
+    if(index >= 0 &&
+       index < atts->GetMultiColor().GetNumColors())
+    {
+        atts->GetMultiColor()[index].SetRgb(color.red(), color.green(),
+                                                   color.blue());
+        atts->SelectMultiColor();
+        atts->MarkColorAsChanged(index);
+
+        Apply();
+    }
+}
+
+
+void
+QvisWellBorePlotWindow::opacityChanged(int opacity, int index)
+{
+    if(index >= 0 &&
+       index < atts->GetMultiColor().GetNumColors())
+    {
+        atts->GetMultiColor()[index].SetAlpha(opacity);
+        atts->SelectMultiColor();
+        atts->MarkColorAsChanged(index);
+
+        Apply();
+    }
+}
+
+
+void
+QvisWellBorePlotWindow::colorTableClicked(bool, const QString &ctName)
+{
+    atts->SetColorTableName(ctName.toStdString());
+    Apply();
+}
+
+
+// ****************************************************************************
+// Method: QvisWellBorePlotWindow::invertColorTableToggled
+//
+// Purpose: 
+//   This is a Qt slot function that sets the invert color table flag into the
+//   well bore plot attributes.
+//
+// Arguments:
+//   val    :  Whether or not to invert the color table.
+//
+// Programmer: Kathleen Bonnell
+// Creation:   January  17, 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisWellBorePlotWindow::invertColorTableToggled(bool val)
+{
+    atts->SetInvertColorTable(val);
+    Apply();
+}
+
+
+void
+QvisWellBorePlotWindow::drawWellsAsChanged(int val)
+{
+    if(val != atts->GetDrawWellsAs())
+    {
+        atts->SetDrawWellsAs(WellBoreAttributes::WellRenderingMode(val));
+        Apply();
+    }
+}
+
+
+void
+QvisWellBorePlotWindow::wellCylinderQualityChanged(int val)
+{
+    if(val != atts->GetWellCylinderQuality())
+    {
+        atts->SetWellCylinderQuality(WellBoreAttributes::DetailLevel(val));
+        SetUpdate(false);
+        Apply();
+    }
+}
+
+
+void
+QvisWellBorePlotWindow::wellRadiusProcessText()
+{
+    GetCurrentValues(WellBoreAttributes::ID_wellRadius);
+    Apply();
+}
+
+
+void
+QvisWellBorePlotWindow::wellLineWidthChanged(int style)
+{
+    atts->SetWellLineWidth(style);
+    SetUpdate(false);
+    Apply();
+}
+
+
+void
+QvisWellBorePlotWindow::wellAnnotationChanged(int val)
+{
+    if(val != atts->GetWellAnnotation())
+    {
+        atts->SetWellAnnotation(WellBoreAttributes::WellAnnotation(val));
+        Apply();
+    }
+}
+
+
+void
+QvisWellBorePlotWindow::wellStemHeightProcessText()
+{
+    GetCurrentValues(WellBoreAttributes::ID_wellStemHeight);
+    Apply();
+}
+
+
+void
+QvisWellBorePlotWindow::wellNameScaleProcessText()
+{
+    GetCurrentValues(WellBoreAttributes::ID_wellNameScale);
+    Apply();
+}
+
+
+void
+QvisWellBorePlotWindow::legendFlagChanged(bool val)
+{
+    atts->SetLegendFlag(val);
+    SetUpdate(false);
+    Apply();
+}
+
+
+// ****************************************************************************
+// Method:  QvisWellBorePlotWindow::GetPoint
+//
+// Purpose:
+//   Get the next point from the well bores.
+//
+// Returns:    True if a point was present, false otherwise.
+//
+// Arguments:
+//   p         The next point.
+//   wellBores The vector of well bores.
+//   iWellBore The index of the next well bore.
+//
+// Programmer: Eric Brugger
+// Creation:   October 1, 2008
+//
+// Modifications:
+//
+// ****************************************************************************
+
+bool
+QvisWellBorePlotWindow::GetPoint(int p[3], const std::vector<int> &wellBores,
+    int &iWellBore)
+{
+    int i;
+    for (i = 0; i < 3 && (p[i] = wellBores[iWellBore++]) != -1; i++)
+        /* do nothing */;
+    return (i == 3);
+}
+
+
+// ****************************************************************************
+// Method:  QvisWellBorePlotWindow::WritePoint
+//
+// Purpose:
+//   Writes one or two points to the well bore file.
+//
+// Returns:    True if one point was written to the file, false if two points.
+//
+// Arguments:
+//   file      The file to write to.
+//   p1        The first point to write.
+//   p2        The second point to write.
+//
+// Programmer: Eric Brugger
+// Creation:   October 1, 2008
+//
+// Modifications:
+//
+// ****************************************************************************
+
+bool
+QvisWellBorePlotWindow::WritePoint(FILE *file, int p1[3], int p2[3])
+{
+    int nDiff = 0;
+    int iDiff = -1;
+    for (int i = 0; i < 3; i++)
+    {
+        int diff = p2[i] - p1[i];
+        nDiff += (diff != 0) ? 1 : 0;
+        if (diff != 0)
+        {
+            iDiff = i;
+        }
+    }
+    if (nDiff == 1 && iDiff == 0)
+    {
+        fprintf(file, "&PERF I_TOP=%d I_BOTTOM=%d J=%d K=%d /\n",
+                p1[0], p2[0], p1[1], p1[2]);
+    }
+    else if (nDiff == 1 && iDiff == 1)
+    {
+        fprintf(file, "&PERF I=%d J_TOP=%d J_BOTTOM=%d K=%d /\n",
+                p1[0], p1[1], p2[1], p1[2]);
+    }
+    else if (nDiff == 1 && iDiff == 2)
+    {
+        fprintf(file, "&PERF I=%d J=%d K_TOP=%d K_BOTTOM=%d /\n",
+                p1[0], p1[1], p1[2], p2[2]);
+    }
+    else
+    {
+        fprintf(file, "&PERF I=%d J=%d K=%d /\n",
+                p1[0], p1[1], p1[2]);
+    }
+
+    return (nDiff == 1 && iDiff != -1);
+}
+
+
+// ****************************************************************************
+// Method:  QvisWellBorePlotWindow::GetToken
+//
+// Purpose:
+//   Get the next token from the well bore file.
+//
+// Returns:    The token type of the next token in the file.
+//
+// Arguments:
+//   file      The file to read the next token from.
+//
+// Programmer: Eric Brugger
+// Creation:   October 1, 2008
+//
+// Modifications:
+//   Eric Brugger, Thu Nov  6 13:21:36 PST 2008
+//   I corrected an error processing illegal characters that caused an
+//   infinite loop.
+//
+// ****************************************************************************
+
+QvisWellBorePlotWindow::TokenType
+QvisWellBorePlotWindow::GetToken(FILE *file)
+{
+    TokenType token;
+
+    //
+    // Skip over initial white space.
+    //
+    int chr = fgetc(file);
+    while (chr != EOF && isspace(chr))
+        chr = fgetc(file);
+
+    //
+    // Identify the token.
+    //
+    if (chr == EOF)
+    {
+        token = TOKEN_EOF;
+    }
+    else if (chr == '=')
+    {
+        token = TOKEN_EQUAL;
+    }
+    else if (chr == '\'')
+    {
+        int ibuf = 0;
+
+        chr = fgetc(file);
+        while (ibuf < 100 && chr != '\'')
+        {
+            buf[ibuf++] = (char) chr;
+            chr = fgetc(file);
+        }
+        if (ibuf == 100)
+        {
+            while (chr != EOF && chr != '\'')
+                chr = fgetc(file);
+            token = TOKEN_ERROR;
+        }
+        else
+        {
+            buf[ibuf] = '\0';
+            token = TOKEN_STRING;
+        }
+    }
+    else if (chr == '/')
+    {
+        token = TOKEN_SLASH;
+    }
+    else if (chr == '&' || isalpha(chr))
+    {
+        int ibuf = 0;
+        buf[ibuf++] = (char) toupper(chr);
+
+        chr = toupper(fgetc(file));
+        while (ibuf < 100 && (isalpha(chr) || chr == '_'))
+        {
+            buf[ibuf++] = (char) chr;
+            chr = toupper(fgetc(file));
+        }
+        if (ibuf == 100)
+        {
+            while (isalpha(chr) || chr == '_')
+                chr = fgetc(file);
+            if (chr != EOF) ungetc(chr, file);
+            token = TOKEN_ERROR;
+        }
+        else
+        {
+            if (chr != EOF) ungetc(chr, file);
+            buf[ibuf] = '\0';
+            if (strcmp(buf, "WELLS") == 0)
+                token = TOKEN_WELLS;
+            else if (strcmp(buf, "ENDWELLS") == 0)
+                token = TOKEN_ENDWELLS;
+            else if (strcmp(buf, "&WELL") == 0)
+                token = TOKEN_WELL;
+            else if (strcmp(buf, "&PERF") == 0)
+                token = TOKEN_PERF;
+            else if (strcmp(buf, "NAME") == 0)
+                token = TOKEN_NAME;
+            else if (strcmp(buf, "I") == 0)
+                token = TOKEN_I;
+            else if (strcmp(buf, "J") == 0)
+                token = TOKEN_J;
+            else if (strcmp(buf, "K") == 0)
+                token = TOKEN_K;
+            else if (strcmp(buf, "I_BOTTOM") == 0)
+                token = TOKEN_I_BOTTOM;
+            else if (strcmp(buf, "J_BOTTOM") == 0)
+                token = TOKEN_J_BOTTOM;
+            else if (strcmp(buf, "K_BOTTOM") == 0)
+                token = TOKEN_K_BOTTOM;
+            else if (strcmp(buf, "I_TOP") == 0)
+                token = TOKEN_I_TOP;
+            else if (strcmp(buf, "J_TOP") == 0)
+                token = TOKEN_J_TOP;
+            else if (strcmp(buf, "K_TOP") == 0)
+                token = TOKEN_K_TOP;
+            else
+                token = TOKEN_ERROR;
+        }
+    }
+    else if (isdigit(chr))
+    {
+        int ibuf = 0;
+        buf[ibuf++] = (char) chr;
+        
+        chr = fgetc(file);
+        while (ibuf < 10 && isdigit(chr))
+        {
+            buf[ibuf++] = (char) chr;
+            chr = fgetc(file);
+        }
+        if (ibuf == 10)
+        {
+            while (isdigit(chr))
+                chr = fgetc(file);
+            if (chr != EOF) ungetc(chr, file);
+            token = TOKEN_ERROR;
+        }
+        else
+        {
+            if (chr != EOF) ungetc(chr, file);
+            buf[ibuf] = '\0';
+            token = TOKEN_INTEGER;
+        }
+    }
+    else
+    {
+        token = TOKEN_ERROR;
+    }
+
+    return (token);
+}

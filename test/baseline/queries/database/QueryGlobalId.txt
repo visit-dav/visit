@@ -1,0 +1,4 @@
+The center of global zone 15 is (0.258333, 0.00833333, 0.00833333).
+The center of zone 0 (domain 2) is (0.258333, 0.00833333, 0.00833333).
+The coords of global node 16 are (0.266667, 0, 0).
+The coords of node 1 (domain 2) are (0.266667, 0, 0).

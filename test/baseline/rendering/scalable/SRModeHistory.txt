@@ -1,0 +1,12 @@
+force SR mode 0
+single plot, proc 0 >threshold 1
+force SR mode 0
+single plot, proc >0 >threshold 1
+force SR mode 0
+two plots, first <threshold 0
+two plots, second >threshold 1
+delete 2nd, <threshold 0
+force SR mode 0
+auto threshold set < plot 1
+force SR mode 1
+auto threshold set > plot 0

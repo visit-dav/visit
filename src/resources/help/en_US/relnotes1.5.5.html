@@ -1,0 +1,109 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta http-equiv="Content-Language" content="en-us">
+   <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+   <meta name="ProgId" content="FrontPage.Editor.Document">
+   <title>VisIt 1.5.5 Release Notes</title>
+</head>
+<body>
+
+<center><b><font size="6">VisIt 1.5.5 Release Notes</font></b></center>
+
+<p>Welcome to VisIt's release notes page. This page describes the important
+enhancements and bug-fixes that were added to this release.</p>
+<p><b><font size="4">Features added in version 1.5.5</font></b></p>
+<ul>
+<li>VisIt's <b>Save movie wizard</b> has been redesigned to support movie templates. Movie templates
+allow you to set up visualizations, add special effects, and save the
+results in a template that can be used later to make movies with similar data. The <b>Save movie wizard</b>
+looks much as it has in earlier versions of VisIt in the simple case but if you 
+choose to make a movie based on movie templates then there are many new options available. When using a movie template, you can use an
+existing template or you can record a new template. When using an existing movie template, you can
+pick from among the available system-wide and user-recorded movie templates. Once you select a movie
+template, the  movie wizard allows you to fill in values for the various movie template
+parameters on a series of custom wizard pages. After filling in the custom pages, the wizard proceeds to the movie format page and on through
+the rest of the standard movie wizard pages. Before creating a movie template from scratch, you must first set
+up your plots in VisIt's visualization windows. When you create
+a new template, VisIt lets you arrange viewports and map the sequences of animation frames from your
+visualization windows to the viewports. In addition, you can add special sequences such as transitions,
+rotations, and compositing effects to enhance your movie. You can save the new movie as a movie template and
+continue making the movie using the standard wizard pages.</li>
+<li>Session files saved using VisIt 1.5.5 or later can be restored using different sources, making it easier
+to use session files as templates for setting up visualizations for suites of calculations. 
+Session files created before VisIt 1.5.5 can be opened and saved again in VisIt 
+1.5.5's session file format.</li>
+<li>VisIt now renders nodal data much more accurately by interpolating data values instead of interpolating
+color values across a cell. This change to VisIt's renderer ensures that only colors that appear in a color
+table are ever used in plots such as the Pseudocolor plot.</li>
+<li>VisIt's Curve plot has been enhanced so it draw lines composed of various symbols in addition to the
+standard line drawing mode. The new method adaptively adds symbols to fill in areas of the Curve plot that
+require more detail.</li>
+<li>VisIt's simulation libsim interface has been enhanced so that it is possible for a simulation to accept
+data that has been processed in VisIt for use in its own calculations. For example, your simulation can
+provide data to VisIt, have VisIt transform the data (Slice, Clip, etc.), and then take that processed data
+back from VisIt where further calculations can be performed on it outside of VisIt. The writer interface is
+optional and does not require existing simulations to be modified.</li>
+<li>VisIt has improved support for CSG meshes - including multi-block CSG meshes. This version of VisIt also
+offers improved discretization and better continuity across domains.</li>
+<li>VisIt's Simulation window has been enhanced so that it displays a strip chart that tracks simulation
+variables over time and can flag them should they deviate from expected ranges.</li>
+<li>VisIt's Parallel Axis plot has been improved so it works better with the Extents tool in a multi-window
+setting.</li>
+<li>VisIt has a new Length query that calculates the length of a set or line segments or Curve plots.</li>
+<li>VisIt now uses the GLEW (GL Extension Wrangler) library to determine the available OpenGL extensions. The
+Volume plot and the Molecule plot have been enhanced to selectively use OpenGL extensions instead of assuming
+they are always available.</li>
+<li>VisIt now provides a SAMI database reader plug-in.</li>
+<li>VisIt has a new Abel transformation expression that calculates the projection of an axially symmetric object onto 
+a plane. The Abel inversion calculates the inverse of this transformation, allowing the shape of an axially
+symmetric object to be recovered from such a projection. </li>
+<li>VisIt's Mili database reader plug-in has been enhanced so it automatically removes free nodes, making it
+unnecessary for the user to add a Threshold operator in order to remove them.</li>
+<li>VisIt's Compactness query now returns its values as an array that can be accessed from the Python
+interface.</li>
+<li>VisIt now has host profiles for the Prism computer.</li>
+<li>VisIt has been installed on the new Yana computer.</li>
+<li>VisIt has been installed on the new Rhea and Zeus computers.</li>
+</ul>
+<p><b><font size="4">Bugs fixed in version 1.5.5</font></b></p>
+<ul>
+<li>Node pick returns invalid coordinates when used on data that has been modified using the Box operator.</li>
+<li>VisIt's libsim interface for connecting to simulations does not appear to work in VisIt 1.5.4.</li>
+<li>Performing lineouts on data when in client/server mode between computers with different endian
+representations causes VisIt to crash.</li>
+<li>It is not possible to have lineouts from different time steps of a database in the same visualization
+window.</li>
+<li>VisIt's Silo database reader plug-in incorrectly remembers cached domain connectivity from time step 0
+and uses it for other time steps, even when that connectivity could change.</li>
+<li>Using locked tools in a visualization window that uses scalable rendering mode leads to a situation where
+VisIt will not redraw the visualization window.</li>
+<li>VisIt's compute engine crashes when displaying a derived variable from a Mili file.</li>
+<li>Queries over time do not work with material selection.</li>
+<li>3D Boxlib databases cannot be read using the Windows version of VisIt.</li>
+<li>The Subset window and Index Select controls do not work in the Windows version of VisIt for a certain
+dataset.</li>
+<li>The new Threshold operator window does not work as expected.</li>
+<li>The Windows version of VisIt cannot save out timing information.</li>
+<li>Dynamic lineouts fail after a Curve plot from a lineout is deleted.</li>
+<li>Pseudoterminals, which VisIt uses when it needs to redirect Password window output to SSH, do not work on
+newer versions of RedHat Linux.</li>
+<li>Pick can report misleading error messages in the case where one picks on an invalid array expression.</li>
+<li>PDB files cannot be opened with the new "Open as" feature when they are comprised of a virtual database
+whose files have no file extensions.</li>
+<li>The Lineout operator attributes window updates time steps in an unintuitive 
+manner.</li>
+<li>The Splash screen window has the same name as the VisIt Main window, causing certain Window managers to
+create confusing window groups in their taskbars.</li>
+<li>VisIt's Enzo database reader plug-in only accepts 2:1 AMR refinement ratios.</li>
+<li>VisIt's XML tools do not support the <i>-compiler</i> option.</li>
+<li>VisIt's CGNS database reader plug-in cannot read scalars for 2D structured datasets.</li>
+<li>VisIt's OpenFOAM and Fluent database reader plug-ins do not work on Windows platform.</li>
+</ul>
+<p>Click the following link to view the release notes for the previous version
+of VisIt: <a href="relnotes1.5.4.html">VisIt 1.5.4 Release Notes</a>.</p>
+<p>Click the following link to view the release notes for the next version
+of VisIt: <a href="relnotes1.6.html">VisIt 1.6 Release Notes</a>.</p>
+</body>
+</html>

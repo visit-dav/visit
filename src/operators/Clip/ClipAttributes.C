@@ -1,0 +1,1706 @@
+/*****************************************************************************
+*
+* Copyright (c) 2000 - 2018, Lawrence Livermore National Security, LLC
+* Produced at the Lawrence Livermore National Laboratory
+* LLNL-CODE-442911
+* All rights reserved.
+*
+* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
+* full copyright notice is contained in the file COPYRIGHT located at the root
+* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
+*
+* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
+* modification, are permitted provided that the following conditions are met:
+*
+*  - Redistributions of  source code must  retain the above  copyright notice,
+*    this list of conditions and the disclaimer below.
+*  - Redistributions in binary form must reproduce the above copyright notice,
+*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
+*    documentation and/or other materials provided with the distribution.
+*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
+*    be used to endorse or promote products derived from this software without
+*    specific prior written permission.
+*
+* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
+* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
+* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
+* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
+* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
+* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
+* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
+* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
+* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
+* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
+* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
+* DAMAGE.
+*
+*****************************************************************************/
+
+#include <ClipAttributes.h>
+#include <DataNode.h>
+#include <BoxExtents.h>
+#include <SphereAttributes.h>
+
+//
+// Enum conversion methods for ClipAttributes::ClipStyle
+//
+
+static const char *ClipStyle_strings[] = {
+"Plane", "Sphere"};
+
+std::string
+ClipAttributes::ClipStyle_ToString(ClipAttributes::ClipStyle t)
+{
+    int index = int(t);
+    if(index < 0 || index >= 2) index = 0;
+    return ClipStyle_strings[index];
+}
+
+std::string
+ClipAttributes::ClipStyle_ToString(int t)
+{
+    int index = (t < 0 || t >= 2) ? 0 : t;
+    return ClipStyle_strings[index];
+}
+
+bool
+ClipAttributes::ClipStyle_FromString(const std::string &s, ClipAttributes::ClipStyle &val)
+{
+    val = ClipAttributes::Plane;
+    for(int i = 0; i < 2; ++i)
+    {
+        if(s == ClipStyle_strings[i])
+        {
+            val = (ClipStyle)i;
+            return true;
+        }
+    }
+    return false;
+}
+
+//
+// Enum conversion methods for ClipAttributes::WhichClipPlane
+//
+
+static const char *WhichClipPlane_strings[] = {
+"None", "Plane1", "Plane2", 
+"Plane3"};
+
+std::string
+ClipAttributes::WhichClipPlane_ToString(ClipAttributes::WhichClipPlane t)
+{
+    int index = int(t);
+    if(index < 0 || index >= 4) index = 0;
+    return WhichClipPlane_strings[index];
+}
+
+std::string
+ClipAttributes::WhichClipPlane_ToString(int t)
+{
+    int index = (t < 0 || t >= 4) ? 0 : t;
+    return WhichClipPlane_strings[index];
+}
+
+bool
+ClipAttributes::WhichClipPlane_FromString(const std::string &s, ClipAttributes::WhichClipPlane &val)
+{
+    val = ClipAttributes::None;
+    for(int i = 0; i < 4; ++i)
+    {
+        if(s == WhichClipPlane_strings[i])
+        {
+            val = (WhichClipPlane)i;
+            return true;
+        }
+    }
+    return false;
+}
+
+//
+// Enum conversion methods for ClipAttributes::Quality
+//
+
+static const char *Quality_strings[] = {
+"Fast", "Accurate"};
+
+std::string
+ClipAttributes::Quality_ToString(ClipAttributes::Quality t)
+{
+    int index = int(t);
+    if(index < 0 || index >= 2) index = 0;
+    return Quality_strings[index];
+}
+
+std::string
+ClipAttributes::Quality_ToString(int t)
+{
+    int index = (t < 0 || t >= 2) ? 0 : t;
+    return Quality_strings[index];
+}
+
+bool
+ClipAttributes::Quality_FromString(const std::string &s, ClipAttributes::Quality &val)
+{
+    val = ClipAttributes::Fast;
+    for(int i = 0; i < 2; ++i)
+    {
+        if(s == Quality_strings[i])
+        {
+            val = (Quality)i;
+            return true;
+        }
+    }
+    return false;
+}
+
+// ****************************************************************************
+// Method: ClipAttributes::ClipAttributes
+//
+// Purpose: 
+//   Init utility for the ClipAttributes class.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void ClipAttributes::Init()
+{
+    quality = Fast;
+    funcType = Plane;
+    plane1Status = true;
+    plane2Status = false;
+    plane3Status = false;
+    plane1Origin[0] = 0;
+    plane1Origin[1] = 0;
+    plane1Origin[2] = 0;
+    plane2Origin[0] = 0;
+    plane2Origin[1] = 0;
+    plane2Origin[2] = 0;
+    plane3Origin[0] = 0;
+    plane3Origin[1] = 0;
+    plane3Origin[2] = 0;
+    plane1Normal[0] = 1;
+    plane1Normal[1] = 0;
+    plane1Normal[2] = 0;
+    plane2Normal[0] = 0;
+    plane2Normal[1] = 1;
+    plane2Normal[2] = 0;
+    plane3Normal[0] = 0;
+    plane3Normal[1] = 0;
+    plane3Normal[2] = 1;
+    planeInverse = false;
+    planeToolControlledClipPlane = Plane1;
+    center[0] = 0;
+    center[1] = 0;
+    center[2] = 0;
+    radius = 1;
+    sphereInverse = false;
+
+    ClipAttributes::SelectAll();
+}
+
+// ****************************************************************************
+// Method: ClipAttributes::ClipAttributes
+//
+// Purpose: 
+//   Copy utility for the ClipAttributes class.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void ClipAttributes::Copy(const ClipAttributes &obj)
+{
+    quality = obj.quality;
+    funcType = obj.funcType;
+    plane1Status = obj.plane1Status;
+    plane2Status = obj.plane2Status;
+    plane3Status = obj.plane3Status;
+    plane1Origin[0] = obj.plane1Origin[0];
+    plane1Origin[1] = obj.plane1Origin[1];
+    plane1Origin[2] = obj.plane1Origin[2];
+
+    plane2Origin[0] = obj.plane2Origin[0];
+    plane2Origin[1] = obj.plane2Origin[1];
+    plane2Origin[2] = obj.plane2Origin[2];
+
+    plane3Origin[0] = obj.plane3Origin[0];
+    plane3Origin[1] = obj.plane3Origin[1];
+    plane3Origin[2] = obj.plane3Origin[2];
+
+    plane1Normal[0] = obj.plane1Normal[0];
+    plane1Normal[1] = obj.plane1Normal[1];
+    plane1Normal[2] = obj.plane1Normal[2];
+
+    plane2Normal[0] = obj.plane2Normal[0];
+    plane2Normal[1] = obj.plane2Normal[1];
+    plane2Normal[2] = obj.plane2Normal[2];
+
+    plane3Normal[0] = obj.plane3Normal[0];
+    plane3Normal[1] = obj.plane3Normal[1];
+    plane3Normal[2] = obj.plane3Normal[2];
+
+    planeInverse = obj.planeInverse;
+    planeToolControlledClipPlane = obj.planeToolControlledClipPlane;
+    center[0] = obj.center[0];
+    center[1] = obj.center[1];
+    center[2] = obj.center[2];
+
+    radius = obj.radius;
+    sphereInverse = obj.sphereInverse;
+
+    ClipAttributes::SelectAll();
+}
+
+// Type map format string
+const char *ClipAttributes::TypeMapFormatString = CLIPATTRIBUTES_TMFS;
+const AttributeGroup::private_tmfs_t ClipAttributes::TmfsStruct = {CLIPATTRIBUTES_TMFS};
+
+
+// ****************************************************************************
+// Method: ClipAttributes::ClipAttributes
+//
+// Purpose: 
+//   Default constructor for the ClipAttributes class.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+ClipAttributes::ClipAttributes() : 
+    AttributeSubject(ClipAttributes::TypeMapFormatString)
+{
+    ClipAttributes::Init();
+}
+
+// ****************************************************************************
+// Method: ClipAttributes::ClipAttributes
+//
+// Purpose: 
+//   Constructor for the derived classes of ClipAttributes class.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+ClipAttributes::ClipAttributes(private_tmfs_t tmfs) : 
+    AttributeSubject(tmfs.tmfs)
+{
+    ClipAttributes::Init();
+}
+
+// ****************************************************************************
+// Method: ClipAttributes::ClipAttributes
+//
+// Purpose: 
+//   Copy constructor for the ClipAttributes class.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+ClipAttributes::ClipAttributes(const ClipAttributes &obj) : 
+    AttributeSubject(ClipAttributes::TypeMapFormatString)
+{
+    ClipAttributes::Copy(obj);
+}
+
+// ****************************************************************************
+// Method: ClipAttributes::ClipAttributes
+//
+// Purpose: 
+//   Copy constructor for derived classes of the ClipAttributes class.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+ClipAttributes::ClipAttributes(const ClipAttributes &obj, private_tmfs_t tmfs) : 
+    AttributeSubject(tmfs.tmfs)
+{
+    ClipAttributes::Copy(obj);
+}
+
+// ****************************************************************************
+// Method: ClipAttributes::~ClipAttributes
+//
+// Purpose: 
+//   Destructor for the ClipAttributes class.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+ClipAttributes::~ClipAttributes()
+{
+    // nothing here
+}
+
+// ****************************************************************************
+// Method: ClipAttributes::operator = 
+//
+// Purpose: 
+//   Assignment operator for the ClipAttributes class.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+ClipAttributes& 
+ClipAttributes::operator = (const ClipAttributes &obj)
+{
+    if (this == &obj) return *this;
+
+    ClipAttributes::Copy(obj);
+
+    return *this;
+}
+
+// ****************************************************************************
+// Method: ClipAttributes::operator == 
+//
+// Purpose: 
+//   Comparison operator == for the ClipAttributes class.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+ClipAttributes::operator == (const ClipAttributes &obj) const
+{
+    // Compare the plane1Origin arrays.
+    bool plane1Origin_equal = true;
+    for(int i = 0; i < 3 && plane1Origin_equal; ++i)
+        plane1Origin_equal = (plane1Origin[i] == obj.plane1Origin[i]);
+
+    // Compare the plane2Origin arrays.
+    bool plane2Origin_equal = true;
+    for(int i = 0; i < 3 && plane2Origin_equal; ++i)
+        plane2Origin_equal = (plane2Origin[i] == obj.plane2Origin[i]);
+
+    // Compare the plane3Origin arrays.
+    bool plane3Origin_equal = true;
+    for(int i = 0; i < 3 && plane3Origin_equal; ++i)
+        plane3Origin_equal = (plane3Origin[i] == obj.plane3Origin[i]);
+
+    // Compare the plane1Normal arrays.
+    bool plane1Normal_equal = true;
+    for(int i = 0; i < 3 && plane1Normal_equal; ++i)
+        plane1Normal_equal = (plane1Normal[i] == obj.plane1Normal[i]);
+
+    // Compare the plane2Normal arrays.
+    bool plane2Normal_equal = true;
+    for(int i = 0; i < 3 && plane2Normal_equal; ++i)
+        plane2Normal_equal = (plane2Normal[i] == obj.plane2Normal[i]);
+
+    // Compare the plane3Normal arrays.
+    bool plane3Normal_equal = true;
+    for(int i = 0; i < 3 && plane3Normal_equal; ++i)
+        plane3Normal_equal = (plane3Normal[i] == obj.plane3Normal[i]);
+
+    // Compare the center arrays.
+    bool center_equal = true;
+    for(int i = 0; i < 3 && center_equal; ++i)
+        center_equal = (center[i] == obj.center[i]);
+
+    // Create the return value
+    return ((quality == obj.quality) &&
+            (funcType == obj.funcType) &&
+            (plane1Status == obj.plane1Status) &&
+            (plane2Status == obj.plane2Status) &&
+            (plane3Status == obj.plane3Status) &&
+            plane1Origin_equal &&
+            plane2Origin_equal &&
+            plane3Origin_equal &&
+            plane1Normal_equal &&
+            plane2Normal_equal &&
+            plane3Normal_equal &&
+            (planeInverse == obj.planeInverse) &&
+            (planeToolControlledClipPlane == obj.planeToolControlledClipPlane) &&
+            center_equal &&
+            (radius == obj.radius) &&
+            (sphereInverse == obj.sphereInverse));
+}
+
+// ****************************************************************************
+// Method: ClipAttributes::operator != 
+//
+// Purpose: 
+//   Comparison operator != for the ClipAttributes class.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+ClipAttributes::operator != (const ClipAttributes &obj) const
+{
+    return !(this->operator == (obj));
+}
+
+// ****************************************************************************
+// Method: ClipAttributes::TypeName
+//
+// Purpose: 
+//   Type name method for the ClipAttributes class.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+const std::string
+ClipAttributes::TypeName() const
+{
+    return "ClipAttributes";
+}
+
+// ****************************************************************************
+// Method: ClipAttributes::CopyAttributes
+//
+// Purpose: 
+//   CopyAttributes method for the ClipAttributes class.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Oct 29 08:57:18 PDT 2002
+//
+// Modifications:
+//   Gunther H. Weber, Tue Aug 14 12:50:19 PDT 2007
+//   Plane tool can modify clip planes 
+//
+//   Jeremy Meredith, Thu Aug  7 15:34:07 EDT 2008
+//   Add missing case in switch to avoid warnings.
+//
+// ****************************************************************************
+
+bool
+ClipAttributes::CopyAttributes(const AttributeGroup *atts)
+{
+    bool retval = false;
+
+    if(TypeName() == atts->TypeName())
+    {
+        // Call assignment operator.
+        const ClipAttributes *tmp = (const ClipAttributes *)atts;
+        *this = *tmp;
+        retval = true;
+    }
+    else if(atts->TypeName() == "PlaneAttributes")
+    {
+        if(GetFuncType() == Plane && GetPlaneToolControlledClipPlane() != None)
+        {
+            const PlaneAttributes *tmp = (const PlaneAttributes *)atts;
+
+            switch (GetPlaneToolControlledClipPlane())
+            {
+                case Plane1:
+                    if(GetPlane1Status())
+                    {
+                        SetPlane1Origin(tmp->GetOrigin());
+                        SetPlane1Normal(tmp->GetNormal());
+                        retval = true;
+                    }
+                    break;
+                case Plane2:
+                    if(GetPlane2Status())
+                    {
+                        SetPlane2Origin(tmp->GetOrigin());
+                        SetPlane2Normal(tmp->GetNormal());
+                        retval = true;
+                    }
+                    break;
+                case Plane3:
+                    if(GetPlane3Status())
+                    {
+                        SetPlane3Origin(tmp->GetOrigin());
+                        SetPlane3Normal(tmp->GetNormal());
+                        retval = true;
+                    }
+                    break;
+                case None:
+                    break;
+            }
+        }
+    }
+    else if(atts->TypeName() == "BoxExtents")
+    {
+        if(GetFuncType() == Plane)
+        {
+            const BoxExtents *tmp = (const BoxExtents *)atts;
+            const double *extents = tmp->GetExtents();
+            double origin[] = {extents[0], extents[2], extents[4]};
+            double xnorm[] = {1., 0., 0.};
+            double ynorm[] = {0., 1., 0.};
+            double znorm[] = {0., 0., 1.};
+            if(GetPlane1Status())
+            {
+                SetPlane1Origin(origin);
+                SetPlane1Normal(xnorm);
+            }
+            if(GetPlane2Status())
+            {
+                SetPlane2Origin(origin);
+                SetPlane2Normal(ynorm);
+            }
+            if(GetPlane3Status())
+            {
+                SetPlane3Origin(origin);
+                SetPlane3Normal(znorm);
+            }
+
+            retval = true;
+        }
+    }
+    else if(atts->TypeName() == "SphereAttributes")
+    {
+        if(GetFuncType() == Sphere)
+        {
+            const SphereAttributes *sphere = (const SphereAttributes *)atts;
+            SetCenter(sphere->GetOrigin());
+            SetRadius(sphere->GetRadius());
+
+            retval = true;
+        }
+    }
+
+    return retval;
+}
+
+// ****************************************************************************
+// Method: ClipAttributes::CreateCompatible
+//
+// Purpose: 
+//   Creates an object of the specified type initialized with the attributes
+//   from this object.
+//
+// Arguments:
+//   tname : The typename of the object that we want to create.
+//
+// Returns:    A new object of the type specified by tname or 0.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Oct 29 08:57:46 PDT 2002
+//
+// Modifications:
+//   Gunther H. Weber, Tue Aug 14 12:50:19 PDT 2007
+//   Plane tool can modify clip planes 
+//   
+//   Jeremy Meredith, Thu Aug  7 15:34:07 EDT 2008
+//   Add missing case in switch to avoid warnings.
+//
+// ****************************************************************************
+
+AttributeSubject *
+ClipAttributes::CreateCompatible(const std::string &tname) const
+{
+    AttributeSubject *retval = 0;
+
+    if(TypeName() == tname)
+    {
+        retval = new ClipAttributes(*this);
+    }
+    else if(tname == "PlaneAttributes" && GetPlaneToolControlledClipPlane() != None)
+    {
+        PlaneAttributes *p = new PlaneAttributes;
+        const double *normal_arr = NULL;
+
+        switch (GetPlaneToolControlledClipPlane())
+        {
+            case Plane1:
+                p->SetOrigin(GetPlane1Origin());
+                normal_arr = GetPlane1Normal();
+                p->SetNormal(normal_arr);
+                break;
+            case Plane2:
+                p->SetOrigin(GetPlane2Origin());
+                normal_arr = GetPlane2Normal();
+                p->SetNormal(normal_arr);
+                break;
+            case Plane3:
+                p->SetOrigin(GetPlane3Origin());
+                normal_arr = GetPlane3Normal();
+                p->SetNormal(normal_arr);
+                break;
+            case None:
+                break;
+        }
+
+        // Compute up vector
+        double temp[3] = {0, 0, 1};
+        if (normal_arr[0] == 0 && normal_arr[1] == 0)
+            temp[1] = 1;
+        double up[3];
+        up[0] = normal_arr[1]*temp[2] - normal_arr[2]*temp[1];
+        up[1] = normal_arr[2]*temp[0] - normal_arr[0]*temp[2];
+        up[2] = normal_arr[0]*temp[1] - normal_arr[1]*temp[0];
+
+        p->SetUpAxis(up);
+        p->SetThreeSpace(true);
+
+        retval = p;
+    }
+    else if(tname == "BoxExtents")
+    {
+        BoxExtents *b = new BoxExtents;
+        double extents[6];
+        extents[0] = plane1Origin[0];
+        extents[1] = plane1Origin[0]+2.;
+        extents[2] = plane1Origin[1];
+        extents[3] = plane1Origin[1]+2.;
+        extents[4] = plane1Origin[2];
+        extents[5] = plane1Origin[2]+2.;
+        b->SetExtents(extents);
+
+        retval = b;
+    }
+    else if(tname == "SphereAttributes")
+    {
+        SphereAttributes *s = new SphereAttributes;
+        s->SetOrigin(center);
+        s->SetRadius(radius);
+
+        retval = s;
+    }
+
+    return retval;
+}
+
+// ****************************************************************************
+// Method: ClipAttributes::NewInstance
+//
+// Purpose: 
+//   NewInstance method for the ClipAttributes class.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+AttributeSubject *
+ClipAttributes::NewInstance(bool copy) const
+{
+    AttributeSubject *retval = 0;
+    if(copy)
+        retval = new ClipAttributes(*this);
+    else
+        retval = new ClipAttributes;
+
+    return retval;
+}
+
+// ****************************************************************************
+// Method: ClipAttributes::SelectAll
+//
+// Purpose: 
+//   Selects all attributes.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ClipAttributes::SelectAll()
+{
+    Select(ID_quality,                      (void *)&quality);
+    Select(ID_funcType,                     (void *)&funcType);
+    Select(ID_plane1Status,                 (void *)&plane1Status);
+    Select(ID_plane2Status,                 (void *)&plane2Status);
+    Select(ID_plane3Status,                 (void *)&plane3Status);
+    Select(ID_plane1Origin,                 (void *)plane1Origin, 3);
+    Select(ID_plane2Origin,                 (void *)plane2Origin, 3);
+    Select(ID_plane3Origin,                 (void *)plane3Origin, 3);
+    Select(ID_plane1Normal,                 (void *)plane1Normal, 3);
+    Select(ID_plane2Normal,                 (void *)plane2Normal, 3);
+    Select(ID_plane3Normal,                 (void *)plane3Normal, 3);
+    Select(ID_planeInverse,                 (void *)&planeInverse);
+    Select(ID_planeToolControlledClipPlane, (void *)&planeToolControlledClipPlane);
+    Select(ID_center,                       (void *)center, 3);
+    Select(ID_radius,                       (void *)&radius);
+    Select(ID_sphereInverse,                (void *)&sphereInverse);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Persistence methods
+///////////////////////////////////////////////////////////////////////////////
+
+// ****************************************************************************
+// Method: ClipAttributes::CreateNode
+//
+// Purpose: 
+//   This method creates a DataNode representation of the object so it can be saved to a config file.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+ClipAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool forceAdd)
+{
+    if(parentNode == 0)
+        return false;
+
+    ClipAttributes defaultObject;
+    bool addToParent = false;
+    // Create a node for ClipAttributes.
+    DataNode *node = new DataNode("ClipAttributes");
+
+    if(completeSave || !FieldsEqual(ID_quality, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("quality", Quality_ToString(quality)));
+    }
+
+    if(completeSave || !FieldsEqual(ID_funcType, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("funcType", ClipStyle_ToString(funcType)));
+    }
+
+    if(completeSave || !FieldsEqual(ID_plane1Status, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("plane1Status", plane1Status));
+    }
+
+    if(completeSave || !FieldsEqual(ID_plane2Status, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("plane2Status", plane2Status));
+    }
+
+    if(completeSave || !FieldsEqual(ID_plane3Status, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("plane3Status", plane3Status));
+    }
+
+    if(completeSave || !FieldsEqual(ID_plane1Origin, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("plane1Origin", plane1Origin, 3));
+    }
+
+    if(completeSave || !FieldsEqual(ID_plane2Origin, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("plane2Origin", plane2Origin, 3));
+    }
+
+    if(completeSave || !FieldsEqual(ID_plane3Origin, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("plane3Origin", plane3Origin, 3));
+    }
+
+    if(completeSave || !FieldsEqual(ID_plane1Normal, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("plane1Normal", plane1Normal, 3));
+    }
+
+    if(completeSave || !FieldsEqual(ID_plane2Normal, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("plane2Normal", plane2Normal, 3));
+    }
+
+    if(completeSave || !FieldsEqual(ID_plane3Normal, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("plane3Normal", plane3Normal, 3));
+    }
+
+    if(completeSave || !FieldsEqual(ID_planeInverse, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("planeInverse", planeInverse));
+    }
+
+    if(completeSave || !FieldsEqual(ID_planeToolControlledClipPlane, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("planeToolControlledClipPlane", WhichClipPlane_ToString(planeToolControlledClipPlane)));
+    }
+
+    if(completeSave || !FieldsEqual(ID_center, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("center", center, 3));
+    }
+
+    if(completeSave || !FieldsEqual(ID_radius, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("radius", radius));
+    }
+
+    if(completeSave || !FieldsEqual(ID_sphereInverse, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("sphereInverse", sphereInverse));
+    }
+
+
+    // Add the node to the parent node.
+    if(addToParent || forceAdd)
+        parentNode->AddNode(node);
+    else
+        delete node;
+
+    return (addToParent || forceAdd);
+}
+
+// ****************************************************************************
+// Method: ClipAttributes::SetFromNode
+//
+// Purpose: 
+//   This method sets attributes in this object from values in a DataNode representation of the object.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ClipAttributes::SetFromNode(DataNode *parentNode)
+{
+    if(parentNode == 0)
+        return;
+
+    DataNode *searchNode = parentNode->GetNode("ClipAttributes");
+    if(searchNode == 0)
+        return;
+
+    DataNode *node;
+    if((node = searchNode->GetNode("quality")) != 0)
+    {
+        // Allow enums to be int or string in the config file
+        if(node->GetNodeType() == INT_NODE)
+        {
+            int ival = node->AsInt();
+            if(ival >= 0 && ival < 2)
+                SetQuality(Quality(ival));
+        }
+        else if(node->GetNodeType() == STRING_NODE)
+        {
+            Quality value;
+            if(Quality_FromString(node->AsString(), value))
+                SetQuality(value);
+        }
+    }
+    if((node = searchNode->GetNode("funcType")) != 0)
+    {
+        // Allow enums to be int or string in the config file
+        if(node->GetNodeType() == INT_NODE)
+        {
+            int ival = node->AsInt();
+            if(ival >= 0 && ival < 2)
+                SetFuncType(ClipStyle(ival));
+        }
+        else if(node->GetNodeType() == STRING_NODE)
+        {
+            ClipStyle value;
+            if(ClipStyle_FromString(node->AsString(), value))
+                SetFuncType(value);
+        }
+    }
+    if((node = searchNode->GetNode("plane1Status")) != 0)
+        SetPlane1Status(node->AsBool());
+    if((node = searchNode->GetNode("plane2Status")) != 0)
+        SetPlane2Status(node->AsBool());
+    if((node = searchNode->GetNode("plane3Status")) != 0)
+        SetPlane3Status(node->AsBool());
+    if((node = searchNode->GetNode("plane1Origin")) != 0)
+        SetPlane1Origin(node->AsDoubleArray());
+    if((node = searchNode->GetNode("plane2Origin")) != 0)
+        SetPlane2Origin(node->AsDoubleArray());
+    if((node = searchNode->GetNode("plane3Origin")) != 0)
+        SetPlane3Origin(node->AsDoubleArray());
+    if((node = searchNode->GetNode("plane1Normal")) != 0)
+        SetPlane1Normal(node->AsDoubleArray());
+    if((node = searchNode->GetNode("plane2Normal")) != 0)
+        SetPlane2Normal(node->AsDoubleArray());
+    if((node = searchNode->GetNode("plane3Normal")) != 0)
+        SetPlane3Normal(node->AsDoubleArray());
+    if((node = searchNode->GetNode("planeInverse")) != 0)
+        SetPlaneInverse(node->AsBool());
+    if((node = searchNode->GetNode("planeToolControlledClipPlane")) != 0)
+    {
+        // Allow enums to be int or string in the config file
+        if(node->GetNodeType() == INT_NODE)
+        {
+            int ival = node->AsInt();
+            if(ival >= 0 && ival < 4)
+                SetPlaneToolControlledClipPlane(WhichClipPlane(ival));
+        }
+        else if(node->GetNodeType() == STRING_NODE)
+        {
+            WhichClipPlane value;
+            if(WhichClipPlane_FromString(node->AsString(), value))
+                SetPlaneToolControlledClipPlane(value);
+        }
+    }
+    if((node = searchNode->GetNode("center")) != 0)
+        SetCenter(node->AsDoubleArray());
+    if((node = searchNode->GetNode("radius")) != 0)
+        SetRadius(node->AsDouble());
+    if((node = searchNode->GetNode("sphereInverse")) != 0)
+        SetSphereInverse(node->AsBool());
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Set property methods
+///////////////////////////////////////////////////////////////////////////////
+
+void
+ClipAttributes::SetQuality(ClipAttributes::Quality quality_)
+{
+    quality = quality_;
+    Select(ID_quality, (void *)&quality);
+}
+
+void
+ClipAttributes::SetFuncType(ClipAttributes::ClipStyle funcType_)
+{
+    funcType = funcType_;
+    Select(ID_funcType, (void *)&funcType);
+}
+
+void
+ClipAttributes::SetPlane1Status(bool plane1Status_)
+{
+    plane1Status = plane1Status_;
+    Select(ID_plane1Status, (void *)&plane1Status);
+}
+
+void
+ClipAttributes::SetPlane2Status(bool plane2Status_)
+{
+    plane2Status = plane2Status_;
+    Select(ID_plane2Status, (void *)&plane2Status);
+}
+
+void
+ClipAttributes::SetPlane3Status(bool plane3Status_)
+{
+    plane3Status = plane3Status_;
+    Select(ID_plane3Status, (void *)&plane3Status);
+}
+
+void
+ClipAttributes::SetPlane1Origin(const double *plane1Origin_)
+{
+    plane1Origin[0] = plane1Origin_[0];
+    plane1Origin[1] = plane1Origin_[1];
+    plane1Origin[2] = plane1Origin_[2];
+    Select(ID_plane1Origin, (void *)plane1Origin, 3);
+}
+
+void
+ClipAttributes::SetPlane2Origin(const double *plane2Origin_)
+{
+    plane2Origin[0] = plane2Origin_[0];
+    plane2Origin[1] = plane2Origin_[1];
+    plane2Origin[2] = plane2Origin_[2];
+    Select(ID_plane2Origin, (void *)plane2Origin, 3);
+}
+
+void
+ClipAttributes::SetPlane3Origin(const double *plane3Origin_)
+{
+    plane3Origin[0] = plane3Origin_[0];
+    plane3Origin[1] = plane3Origin_[1];
+    plane3Origin[2] = plane3Origin_[2];
+    Select(ID_plane3Origin, (void *)plane3Origin, 3);
+}
+
+void
+ClipAttributes::SetPlane1Normal(const double *plane1Normal_)
+{
+    plane1Normal[0] = plane1Normal_[0];
+    plane1Normal[1] = plane1Normal_[1];
+    plane1Normal[2] = plane1Normal_[2];
+    Select(ID_plane1Normal, (void *)plane1Normal, 3);
+}
+
+void
+ClipAttributes::SetPlane2Normal(const double *plane2Normal_)
+{
+    plane2Normal[0] = plane2Normal_[0];
+    plane2Normal[1] = plane2Normal_[1];
+    plane2Normal[2] = plane2Normal_[2];
+    Select(ID_plane2Normal, (void *)plane2Normal, 3);
+}
+
+void
+ClipAttributes::SetPlane3Normal(const double *plane3Normal_)
+{
+    plane3Normal[0] = plane3Normal_[0];
+    plane3Normal[1] = plane3Normal_[1];
+    plane3Normal[2] = plane3Normal_[2];
+    Select(ID_plane3Normal, (void *)plane3Normal, 3);
+}
+
+void
+ClipAttributes::SetPlaneInverse(bool planeInverse_)
+{
+    planeInverse = planeInverse_;
+    Select(ID_planeInverse, (void *)&planeInverse);
+}
+
+void
+ClipAttributes::SetPlaneToolControlledClipPlane(ClipAttributes::WhichClipPlane planeToolControlledClipPlane_)
+{
+    planeToolControlledClipPlane = planeToolControlledClipPlane_;
+    Select(ID_planeToolControlledClipPlane, (void *)&planeToolControlledClipPlane);
+}
+
+void
+ClipAttributes::SetCenter(const double *center_)
+{
+    center[0] = center_[0];
+    center[1] = center_[1];
+    center[2] = center_[2];
+    Select(ID_center, (void *)center, 3);
+}
+
+void
+ClipAttributes::SetRadius(double radius_)
+{
+    radius = radius_;
+    Select(ID_radius, (void *)&radius);
+}
+
+void
+ClipAttributes::SetSphereInverse(bool sphereInverse_)
+{
+    sphereInverse = sphereInverse_;
+    Select(ID_sphereInverse, (void *)&sphereInverse);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Get property methods
+///////////////////////////////////////////////////////////////////////////////
+
+ClipAttributes::Quality
+ClipAttributes::GetQuality() const
+{
+    return Quality(quality);
+}
+
+ClipAttributes::ClipStyle
+ClipAttributes::GetFuncType() const
+{
+    return ClipStyle(funcType);
+}
+
+bool
+ClipAttributes::GetPlane1Status() const
+{
+    return plane1Status;
+}
+
+bool
+ClipAttributes::GetPlane2Status() const
+{
+    return plane2Status;
+}
+
+bool
+ClipAttributes::GetPlane3Status() const
+{
+    return plane3Status;
+}
+
+const double *
+ClipAttributes::GetPlane1Origin() const
+{
+    return plane1Origin;
+}
+
+double *
+ClipAttributes::GetPlane1Origin()
+{
+    return plane1Origin;
+}
+
+const double *
+ClipAttributes::GetPlane2Origin() const
+{
+    return plane2Origin;
+}
+
+double *
+ClipAttributes::GetPlane2Origin()
+{
+    return plane2Origin;
+}
+
+const double *
+ClipAttributes::GetPlane3Origin() const
+{
+    return plane3Origin;
+}
+
+double *
+ClipAttributes::GetPlane3Origin()
+{
+    return plane3Origin;
+}
+
+const double *
+ClipAttributes::GetPlane1Normal() const
+{
+    return plane1Normal;
+}
+
+double *
+ClipAttributes::GetPlane1Normal()
+{
+    return plane1Normal;
+}
+
+const double *
+ClipAttributes::GetPlane2Normal() const
+{
+    return plane2Normal;
+}
+
+double *
+ClipAttributes::GetPlane2Normal()
+{
+    return plane2Normal;
+}
+
+const double *
+ClipAttributes::GetPlane3Normal() const
+{
+    return plane3Normal;
+}
+
+double *
+ClipAttributes::GetPlane3Normal()
+{
+    return plane3Normal;
+}
+
+bool
+ClipAttributes::GetPlaneInverse() const
+{
+    return planeInverse;
+}
+
+ClipAttributes::WhichClipPlane
+ClipAttributes::GetPlaneToolControlledClipPlane() const
+{
+    return WhichClipPlane(planeToolControlledClipPlane);
+}
+
+const double *
+ClipAttributes::GetCenter() const
+{
+    return center;
+}
+
+double *
+ClipAttributes::GetCenter()
+{
+    return center;
+}
+
+double
+ClipAttributes::GetRadius() const
+{
+    return radius;
+}
+
+bool
+ClipAttributes::GetSphereInverse() const
+{
+    return sphereInverse;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Select property methods
+///////////////////////////////////////////////////////////////////////////////
+
+void
+ClipAttributes::SelectPlane1Origin()
+{
+    Select(ID_plane1Origin, (void *)plane1Origin, 3);
+}
+
+void
+ClipAttributes::SelectPlane2Origin()
+{
+    Select(ID_plane2Origin, (void *)plane2Origin, 3);
+}
+
+void
+ClipAttributes::SelectPlane3Origin()
+{
+    Select(ID_plane3Origin, (void *)plane3Origin, 3);
+}
+
+void
+ClipAttributes::SelectPlane1Normal()
+{
+    Select(ID_plane1Normal, (void *)plane1Normal, 3);
+}
+
+void
+ClipAttributes::SelectPlane2Normal()
+{
+    Select(ID_plane2Normal, (void *)plane2Normal, 3);
+}
+
+void
+ClipAttributes::SelectPlane3Normal()
+{
+    Select(ID_plane3Normal, (void *)plane3Normal, 3);
+}
+
+void
+ClipAttributes::SelectCenter()
+{
+    Select(ID_center, (void *)center, 3);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Keyframing methods
+///////////////////////////////////////////////////////////////////////////////
+
+// ****************************************************************************
+// Method: ClipAttributes::GetFieldName
+//
+// Purpose: 
+//   This method returns the name of a field given its index.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+std::string
+ClipAttributes::GetFieldName(int index) const
+{
+    switch (index)
+    {
+    case ID_quality:                      return "quality";
+    case ID_funcType:                     return "funcType";
+    case ID_plane1Status:                 return "plane1Status";
+    case ID_plane2Status:                 return "plane2Status";
+    case ID_plane3Status:                 return "plane3Status";
+    case ID_plane1Origin:                 return "plane1Origin";
+    case ID_plane2Origin:                 return "plane2Origin";
+    case ID_plane3Origin:                 return "plane3Origin";
+    case ID_plane1Normal:                 return "plane1Normal";
+    case ID_plane2Normal:                 return "plane2Normal";
+    case ID_plane3Normal:                 return "plane3Normal";
+    case ID_planeInverse:                 return "planeInverse";
+    case ID_planeToolControlledClipPlane: return "planeToolControlledClipPlane";
+    case ID_center:                       return "center";
+    case ID_radius:                       return "radius";
+    case ID_sphereInverse:                return "sphereInverse";
+    default:  return "invalid index";
+    }
+}
+
+// ****************************************************************************
+// Method: ClipAttributes::GetFieldType
+//
+// Purpose: 
+//   This method returns the type of a field given its index.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+AttributeGroup::FieldType
+ClipAttributes::GetFieldType(int index) const
+{
+    switch (index)
+    {
+    case ID_quality:                      return FieldType_enum;
+    case ID_funcType:                     return FieldType_enum;
+    case ID_plane1Status:                 return FieldType_bool;
+    case ID_plane2Status:                 return FieldType_bool;
+    case ID_plane3Status:                 return FieldType_bool;
+    case ID_plane1Origin:                 return FieldType_doubleArray;
+    case ID_plane2Origin:                 return FieldType_doubleArray;
+    case ID_plane3Origin:                 return FieldType_doubleArray;
+    case ID_plane1Normal:                 return FieldType_doubleArray;
+    case ID_plane2Normal:                 return FieldType_doubleArray;
+    case ID_plane3Normal:                 return FieldType_doubleArray;
+    case ID_planeInverse:                 return FieldType_bool;
+    case ID_planeToolControlledClipPlane: return FieldType_enum;
+    case ID_center:                       return FieldType_doubleArray;
+    case ID_radius:                       return FieldType_double;
+    case ID_sphereInverse:                return FieldType_bool;
+    default:  return FieldType_unknown;
+    }
+}
+
+// ****************************************************************************
+// Method: ClipAttributes::GetFieldTypeName
+//
+// Purpose: 
+//   This method returns the name of a field type given its index.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+std::string
+ClipAttributes::GetFieldTypeName(int index) const
+{
+    switch (index)
+    {
+    case ID_quality:                      return "enum";
+    case ID_funcType:                     return "enum";
+    case ID_plane1Status:                 return "bool";
+    case ID_plane2Status:                 return "bool";
+    case ID_plane3Status:                 return "bool";
+    case ID_plane1Origin:                 return "doubleArray";
+    case ID_plane2Origin:                 return "doubleArray";
+    case ID_plane3Origin:                 return "doubleArray";
+    case ID_plane1Normal:                 return "doubleArray";
+    case ID_plane2Normal:                 return "doubleArray";
+    case ID_plane3Normal:                 return "doubleArray";
+    case ID_planeInverse:                 return "bool";
+    case ID_planeToolControlledClipPlane: return "enum";
+    case ID_center:                       return "doubleArray";
+    case ID_radius:                       return "double";
+    case ID_sphereInverse:                return "bool";
+    default:  return "invalid index";
+    }
+}
+
+// ****************************************************************************
+// Method: ClipAttributes::FieldsEqual
+//
+// Purpose: 
+//   This method compares two fields and return true if they are equal.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+ClipAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
+{
+    const ClipAttributes &obj = *((const ClipAttributes*)rhs);
+    bool retval = false;
+    switch (index_)
+    {
+    case ID_quality:
+        {  // new scope
+        retval = (quality == obj.quality);
+        }
+        break;
+    case ID_funcType:
+        {  // new scope
+        retval = (funcType == obj.funcType);
+        }
+        break;
+    case ID_plane1Status:
+        {  // new scope
+        retval = (plane1Status == obj.plane1Status);
+        }
+        break;
+    case ID_plane2Status:
+        {  // new scope
+        retval = (plane2Status == obj.plane2Status);
+        }
+        break;
+    case ID_plane3Status:
+        {  // new scope
+        retval = (plane3Status == obj.plane3Status);
+        }
+        break;
+    case ID_plane1Origin:
+        {  // new scope
+        // Compare the plane1Origin arrays.
+        bool plane1Origin_equal = true;
+        for(int i = 0; i < 3 && plane1Origin_equal; ++i)
+            plane1Origin_equal = (plane1Origin[i] == obj.plane1Origin[i]);
+
+        retval = plane1Origin_equal;
+        }
+        break;
+    case ID_plane2Origin:
+        {  // new scope
+        // Compare the plane2Origin arrays.
+        bool plane2Origin_equal = true;
+        for(int i = 0; i < 3 && plane2Origin_equal; ++i)
+            plane2Origin_equal = (plane2Origin[i] == obj.plane2Origin[i]);
+
+        retval = plane2Origin_equal;
+        }
+        break;
+    case ID_plane3Origin:
+        {  // new scope
+        // Compare the plane3Origin arrays.
+        bool plane3Origin_equal = true;
+        for(int i = 0; i < 3 && plane3Origin_equal; ++i)
+            plane3Origin_equal = (plane3Origin[i] == obj.plane3Origin[i]);
+
+        retval = plane3Origin_equal;
+        }
+        break;
+    case ID_plane1Normal:
+        {  // new scope
+        // Compare the plane1Normal arrays.
+        bool plane1Normal_equal = true;
+        for(int i = 0; i < 3 && plane1Normal_equal; ++i)
+            plane1Normal_equal = (plane1Normal[i] == obj.plane1Normal[i]);
+
+        retval = plane1Normal_equal;
+        }
+        break;
+    case ID_plane2Normal:
+        {  // new scope
+        // Compare the plane2Normal arrays.
+        bool plane2Normal_equal = true;
+        for(int i = 0; i < 3 && plane2Normal_equal; ++i)
+            plane2Normal_equal = (plane2Normal[i] == obj.plane2Normal[i]);
+
+        retval = plane2Normal_equal;
+        }
+        break;
+    case ID_plane3Normal:
+        {  // new scope
+        // Compare the plane3Normal arrays.
+        bool plane3Normal_equal = true;
+        for(int i = 0; i < 3 && plane3Normal_equal; ++i)
+            plane3Normal_equal = (plane3Normal[i] == obj.plane3Normal[i]);
+
+        retval = plane3Normal_equal;
+        }
+        break;
+    case ID_planeInverse:
+        {  // new scope
+        retval = (planeInverse == obj.planeInverse);
+        }
+        break;
+    case ID_planeToolControlledClipPlane:
+        {  // new scope
+        retval = (planeToolControlledClipPlane == obj.planeToolControlledClipPlane);
+        }
+        break;
+    case ID_center:
+        {  // new scope
+        // Compare the center arrays.
+        bool center_equal = true;
+        for(int i = 0; i < 3 && center_equal; ++i)
+            center_equal = (center[i] == obj.center[i]);
+
+        retval = center_equal;
+        }
+        break;
+    case ID_radius:
+        {  // new scope
+        retval = (radius == obj.radius);
+        }
+        break;
+    case ID_sphereInverse:
+        {  // new scope
+        retval = (sphereInverse == obj.sphereInverse);
+        }
+        break;
+    default: retval = false;
+    }
+
+    return retval;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// User-defined methods.
+///////////////////////////////////////////////////////////////////////////////
+
+// ****************************************************************************
+// Method: ClipAttributes::EqualTo
+//
+// Purpose:
+//     Determines if the clip attributes are equal to another attributes
+//     object.
+//
+// Arguments:
+//   atts : An attribute group.
+//
+// Returns:    True if this object is equal to atts, false otherwise.
+//
+// Note:
+//
+// Programmer: Hank Childs
+// Creation:   August 28, 2007
+//
+//   Jeremy Meredith, Thu Aug  7 15:34:07 EDT 2008
+//   Add missing case in switch to avoid warnings.
+//
+// ****************************************************************************
+
+bool
+ClipAttributes::EqualTo(const AttributeGroup *atts) const
+{
+    if ((atts->TypeName() != "PlaneAttributes") || 
+        GetPlaneToolControlledClipPlane() == None)
+        return AttributeSubject::EqualTo(atts);
+
+    const PlaneAttributes *tmp = (const PlaneAttributes *) atts;
+
+    switch (GetPlaneToolControlledClipPlane())
+    {
+      case Plane1:
+        if (GetPlane1Origin()[0] != tmp->GetOrigin()[0])
+            return false;
+        if (GetPlane1Origin()[1] != tmp->GetOrigin()[1])
+            return false;
+        if (GetPlane1Origin()[2] != tmp->GetOrigin()[2])
+            return false;
+
+        if (GetPlane1Normal()[0] != tmp->GetNormal()[0])
+            return false;
+        if (GetPlane1Normal()[1] != tmp->GetNormal()[1])
+            return false;
+        if (GetPlane1Normal()[2] != tmp->GetNormal()[2])
+            return false;
+
+        break;
+
+      case Plane2:
+        if (GetPlane2Origin()[0] != tmp->GetOrigin()[0])
+            return false;
+        if (GetPlane2Origin()[1] != tmp->GetOrigin()[1])
+            return false;
+        if (GetPlane2Origin()[2] != tmp->GetOrigin()[2])
+            return false;
+
+        if (GetPlane2Normal()[0] != tmp->GetNormal()[0])
+            return false;
+        if (GetPlane2Normal()[1] != tmp->GetNormal()[1])
+            return false;
+        if (GetPlane2Normal()[2] != tmp->GetNormal()[2])
+            return false;
+
+        break;
+
+      case Plane3:
+        if (GetPlane3Origin()[0] != tmp->GetOrigin()[0])
+            return false;
+        if (GetPlane3Origin()[1] != tmp->GetOrigin()[1])
+            return false;
+        if (GetPlane3Origin()[2] != tmp->GetOrigin()[2])
+            return false;
+
+        if (GetPlane3Normal()[0] != tmp->GetNormal()[0])
+            return false;
+        if (GetPlane3Normal()[1] != tmp->GetNormal()[1])
+            return false;
+        if (GetPlane3Normal()[2] != tmp->GetNormal()[2])
+            return false;
+
+        break;
+
+        case None:
+            break;
+    }
+
+
+    return true;
+}
+

@@ -1,0 +1,66 @@
+<?xml version="1.0"?>
+  <Attribute name="ConstructDataBinningAttributes" purpose="Attributes for constructing a data binning" persistent="true" keyframe="true" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="ConstructDataBinningAttributes.code">
+    <Enum name="BinningScheme">
+      Uniform
+      Unknown
+    </Enum>
+    <Enum name="ReductionOperator">
+      Average
+      Minimum
+      Maximum
+      StandardDeviation
+      Variance
+      Sum
+      Count
+      RMS
+      PDF
+    </Enum>
+    <Enum name="OutOfBoundsBehavior">
+      Clamp
+      Discard
+    </Enum>
+    <Enum name="BinType">
+      Variable
+      X
+      Y
+      Z
+    </Enum>
+    <Field name="name" label="name" type="string">
+    </Field>
+    <Field name="varnames" label="varnames" type="stringVector">
+    </Field>
+    <Field name="binType" label="binType" type="ucharVector">
+    </Field>
+    <Field name="binBoundaries" label="binBoundaries" type="doubleVector">
+    </Field>
+    <Field name="reductionOperator" label="reduction operator" type="enum" subtype="ReductionOperator">
+      Average
+    </Field>
+    <Field name="varForReductionOperator" label="varForReductionOperator" type="string">
+    </Field>
+    <Field name="undefinedValue" label="Undefined Value" type="double">
+      0.000000
+    </Field>
+    <Field name="binningScheme" label="Binning Scheme" type="enum" subtype="BinningScheme">
+      Uniform
+    </Field>
+    <Field name="numBins" label="numBins" type="intVector">
+    </Field>
+    <Field name="overTime" label="OverTime" type="bool">
+      false
+    </Field>
+    <Field name="timeStart" label="TimeStart" type="int">
+      0
+    </Field>
+    <Field name="timeEnd" label="TimeEnd" type="int">
+      1
+    </Field>
+    <Field name="timeStride" label="TimeStride" type="int">
+      1
+    </Field>
+    <Field name="outOfBoundsBehavior" label="Out of Bounds Behavior" type="enum" subtype="OutOfBoundsBehavior">
+      Clamp
+    </Field>
+    <Function name="ReductionRequiresVariable" user="true" member="true">
+    </Function>
+  </Attribute>

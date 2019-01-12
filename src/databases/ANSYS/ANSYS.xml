@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+  <Plugin name="ANSYS" type="database" label="ANSYS" version="1.0" enabled="true" mdspecificcode="true" onlyengine="false" noengine="false" dbtype="STSD" haswriter="false" hasoptions="false">
+    <FilePatterns>
+      *.inp 
+      *.cdb
+    </FilePatterns>
+    <Attribute name="" purpose="" persistent="false">
+    </Attribute>
+  </Plugin>

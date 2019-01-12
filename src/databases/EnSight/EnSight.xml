@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+  <Plugin name="EnSight" type="database" label="EnSight" version="1.0" enabled="true" dbtype="MTMD" haswriter="false">
+    <CXXFLAGS>
+      $(ENSIGHT_FLAGS)
+    </CXXFLAGS>
+    <LIBS>
+      vtkIOEnSight
+    </LIBS>
+    <FilePatterns>
+      *.case
+    </FilePatterns>
+    <Files components="M">
+      avtEnSightFileFormat.C
+    </Files>
+    <Files components="E">
+      avtEnSightFileFormat.C
+    </Files>
+    <Attribute name="" purpose="" persistent="false" exportAPI="" exportInclude="">
+    </Attribute>
+  </Plugin>

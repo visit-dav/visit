@@ -1,0 +1,10 @@
+visit0000.jpeg:    PASSED
+visit0001.jpeg:    PASSED
+visit0002.jpeg:    PASSED
+visit0003.jpeg:    PASSED
+visit0004.jpeg:    PASSED
+visit0005.jpeg:    PASSED
+visit0006.jpeg:    PASSED
+visit0007.jpeg:    PASSED
+visit0008.jpeg:    PASSED
+visit0009.jpeg:    PASSED

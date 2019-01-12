@@ -1,0 +1,84 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta http-equiv="Content-Language" content="en-us">
+   <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+   <meta name="ProgId" content="FrontPage.Editor.Document">
+   <title>VisIt 1.5.2 Release Notes</title>
+</head>
+<body>
+
+<center><b><font size="6">VisIt 1.5.2 Release Notes</font></b></center>
+
+<p>Welcome to VisIt's release notes page. This page describes the important
+enhancements and bug-fixes that were added to this release.</p>
+<p><b><font size="4">Features added in version 1.5.2</font></b></p>
+<ul>
+<li>VisIt's <i>Weighted variable sum</i> query now has an option to weight by the revolved volume for 2D datasets that are revolved into 3D.</li>
+<li>VisIt now intermittently saves the components of your settings that are related to the paths that you've visited so they can be recalled more easily in future VisIt sessions without requiring all settings to be saved.</li>
+<li>Visit's Silo database reader plugin now supports Silo's Curve objects.</li>
+<li>VisIt now supports 1-button mice, which are common on MacOS X systems. The default clicking behavior is still mapped to the left mouse button. Right mouse button is simulated by holding down the <i>Alt-key</i> while you click the mouse. Middle mouse button is simulated by holding down <i>Shift+Alt</i> while you click the mouse.</li>
+<li>VisIt now supports <i>redo view</i> in addition to <i>undo view</i>. Redo view is used to re-apply views that have been undone using <i>undo view</i>.</li>
+<li>VisIt has a new <i>ijk_gradient</i> expression that can be used for more efficiently creating the gradient for structured meshes. The new expression also does not suffer from any potential sampling errors that can happen when sampling the gradient spatially.</li>
+<li>VisIt's Resample operator can now resample variables defined on a point mesh onto a rectilinear mesh.</li>
+<li>VisIt's automatic fullframe detection mode has been made the default so no user intervention is required to stretch long, skinny 2D plots so they use most of the vis window's available space. </li>
+<li>VisIt's IndexSelect operator can now be used to limit the number of points drawn for point meshes.</li>
+<li>VisIt now supports ZR meshes in addition to RZ meshes.</li>
+<li>The <i>visit -movie</i> script now does a better job of using the actual window size stored in a session file when the <i>-geometry</i> option is not specified.</li>
+<li>The <b>Color table window</b> now ensures that the color table you were editing when you saved your settings is the color table that VisIt displays in the <b>Color table window</b> when you next run VisIt.</li>
+<li>VisIt now resets the counter used to create file names for families of saved images and geometry.</li>
+<li>VisIt now uses the <i>Ctrl+P</i> hotkey for printing the active vis window. The 
+<b>Pick window</b> is now activated using <i>Shift+Ctrl+P</i>.</li>
+<li>VisIt's Curve2D database reader plugin now recognizes Ultra files that end in the ".u" file extension.</li>
+<li>The <i>visit-install</i> script now permits you to choose the bank from which your parallel jobs will draw their processors. Note that if you have previously saved settings then you may still have to edit your host profiles to change the bank. This option is mostly for new VisIt installations.</li>
+<li>VisIt's launch script now supports IPV6 host addresses.</li>
+<li>The <i>visit-install</i> script now allows you to pick from ORNL and NERSC network configurations in addition to the supported LLNL configurations.</li>
+</ul>
+<p><b><font size="4">Bugs fixed in version 1.5.2</font></b></p>
+<ul>
+<li>Turning off the last light hangs the X-server when VisIt is displayed via X11 on a diskless Linux computer.</li>
+<li>Saved images were all of the first database time state when saving images 
+off-screen and advancing through time.</li>
+<li>VisIt's viewer crashes when saving a vis window off-screen when the compute engine has timed out.</li>
+<li>Uncaught exceptions thrown from a new plot plugin's custom rendering class can cause VisIt's viewer to crash. VisIt's viewer has been improved so that uncaught VisIt exceptions are now all caught at the top level of the viewer's event loop and are much less likely to cause problems.</li>
+<li>VisIt leaked memory under certain circumstances when compositing z-buffers in the parallel compute engine.</li>
+<li>VisIt's <i>Variable sum</i> query returns the wrong results if material interface reconstruction has occurred.</li>
+<li>VisIt's GUI crashes when you manipulate a color table's color control points when you have saved color tables in your <i>.visit</i> directory that have the same names as built-in color tables.</li>
+<li>Opening files that have enough variables to make automatic variable menu grouping kick in causes VisIt's GUI to crash if there are mesh quality expressions in the variable list.</li>
+<li>VisIt's compute engine crashes when processing a 2D unstructured CGNS file.</li>
+<li>VisIt's compute engine experienced an out of memory error when reading Boxlib data files. The problem was caused by a namespace collision in VisIt's source code.</li>
+<li>Using the log10 scaling option for scalars in the Volume plot when there are negative values causes an uncaught exception in VisIt's viewer, leading VisIt to crash.</li>
+<li>When VisIt draws Volume plots in multiple windows using the Raycasting method, VisIt can become confused and use the plots from one vis window in another vis window, thus producing incorrect pictures.</li>
+<li>VisIt's Volume plot does not correctly resample datasets that have ghost zones.</li>
+<li>Using shadows during scalable rendering for 2D plots causes the compute engine to crash.</li>
+<li>VisIt's viewer hangs when deleting a plot after doing some picks while in scalable rendering mode.</li>
+<li>VisIt crashes when opening LEOS data files with many variables.</li>
+<li>VisIt's CLI hangs when started by the <i>Save movie</i> wizard in the GUI on the Windows platform. The CLI's synchronization code was improved so that it takes far less CPU.</li>
+<li>The InverseGhostZone operator does not work with SIL selections.</li>
+<li>The <i>Spatial extents</i> query does not return the original extents when required. </li>
+<li>If scalable rendering fails when generating a movie in the CLI, the CLI will halt with a Python error instead of fixing the problem and continuing.</li>
+<li>VisIt's viewer crashes when cancelling a connection to a computer where the mdserver and compute engine will share the same batch job.</li>
+<li>Numbers are lost from various controls for annotation objects in VisIt's <b>Annotations window</b> if you don't click the <b>Apply</b> button.</li>
+<li>VisIt's viewer issues a strange warning message about compute engines when scalable rendering mode is set to <i>always</i>.</li>
+<li>When VisIt is forced to perform material interface reconstruction, there can be an erroneous error message: <i>Material selection must be performed on all domains.  Please see a VisIt developer.</i></li>
+<li>Shadow strength is not restored correctly from a session file.</li>
+<li>VisIt 1.5.1 does not honor saved settings with multiple vis windows.</li>
+<li>VisIt's load balancer becomes confused when looking at multiple datasets where one dataset is stored in a format that can do its own domain decomposition and another format that cannot.</li>
+<li>The determinant expression does not work for 2D expressions.</li>
+<li>VisIt's <i>Choose center</i> feature does not work in scalable rendering mode again.</li>
+<li>Middle mouse interaction with 3D interactors does not work using the SGI executable built on that <i>quad</i> machine.</li>
+<li>The OnionPeel operator does not work properly when there are multiple "domain" collections in a dataset's SIL.</li>
+<li>Rubber band lines and boxes for the zoom interactors are not drawn in the MacOS X version of VisIt.</li>
+<li>The option for determining how VisIt picks a vis window for curves created from queries over time has been clarified in the <b>Global Lineout window</b>.</li>
+<li>Various debugging error messages are printed to the terminal where VisIt was launched when zooming in on plots using the MacOS X version of VisIt.</li>
+<li>The screen position control used in the <b>Annotation window</b> to control the position of annotation objects is missing its down arrow.</li>
+<li>Animation toolbar icons are often out of order.</li>
+<li>VisIt's BUILD_NOTES contain a few errors.</li>
+</ul>
+<p>Click the following link to view the release notes for the previous version
+of VisIt: <a href="relnotes1.5.1.html">VisIt 1.5.1 Release Notes</a>.</p>
+<p>Click the following link to view the release notes for the next version
+of VisIt: <a href="relnotes1.5.3.html">VisIt 1.5.3 Release Notes</a>.</p>
+</body>
+</html>

@@ -1,0 +1,509 @@
+/*****************************************************************************
+*
+* Copyright (c) 2000 - 2018, Lawrence Livermore National Security, LLC
+* Produced at the Lawrence Livermore National Laboratory
+* LLNL-CODE-442911
+* All rights reserved.
+*
+* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
+* full copyright notice is contained in the file COPYRIGHT located at the root
+* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
+*
+* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
+* modification, are permitted provided that the following conditions are met:
+*
+*  - Redistributions of  source code must  retain the above  copyright notice,
+*    this list of conditions and the disclaimer below.
+*  - Redistributions in binary form must reproduce the above copyright notice,
+*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
+*    documentation and/or other materials provided with the distribution.
+*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
+*    be used to endorse or promote products derived from this software without
+*    specific prior written permission.
+*
+* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
+* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
+* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
+* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
+* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
+* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
+* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
+* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
+* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
+* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
+* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
+* DAMAGE.
+*
+*****************************************************************************/
+
+#include <GetFileListRPC.h>
+#include <GetFileListException.h>
+#include <DebugStream.h>
+#include <Utility.h>
+#include <algorithm>
+
+// ****************************************************************************
+// Method: GetFileListRPC::GetFileListRPC
+//
+// Purpose: 
+//   Constructor for the GetFileListRPC class.
+//
+// Programmer: Jeremy Meredith
+// Creation:   Tue Aug 29 10:27:15 PDT 2000
+//
+// Modifications:
+//   Brad Whitlock, Tue Aug 29 10:27:36 PDT 2000
+//   I changed the format string to an empty string since this RPC
+//   sends no data when it requests the file list.
+//
+//   Brad Whitlock, Mon Mar 24 14:15:34 PST 2003
+//   I added string and bool arguments.
+//
+//   Brad Whitlock, Thu Jul 29 12:16:45 PDT 2004
+//   I added a bool argument.
+//
+// ****************************************************************************
+
+GetFileListRPC::GetFileListRPC() : BlockingRPC("sbb", &fileList)
+{
+}
+
+// ****************************************************************************
+// Method: GetFileListRPC::~GetFileListRPC
+//
+// Purpose: 
+//   Destructor for the GetFileListRPC class.
+//
+// Programmer: Jeremy Meredith
+// Creation:   Tue Aug 29 10:27:15 PDT 2000
+//
+// Modifications:
+//
+// ****************************************************************************
+
+GetFileListRPC::~GetFileListRPC()
+{
+}
+
+// ****************************************************************************
+// Method: GetFileListRPC::operator()
+//
+// Purpose: 
+//   This is the () operator for the GetFileListRPC class. This method
+//   makes the objects of this class function objects. This method
+//   executes the RPC to get the file list and returns a pointer to
+//   the file list.
+//
+// Arguments:
+//   f : The filter string to use.
+//
+// Programmer: Jeremy Meredith
+// Creation:   Tue Aug 29 10:33:30 PDT 2000
+//
+// Modifications:
+//   Brad Whitlock, Tue Aug 29 18:50:08 PST 2000
+//   Added code to throw an exception if the RPC had an error.
+//
+//   Jeremy Meredith, Fri Nov 17 16:30:39 PST 2000
+//   Made output go to log file instead of cout or cerr.
+//
+//   Brad Whitlock, Mon Mar 24 14:16:35 PST 2003
+//   I added arguments to pass to the mdserver.
+//
+//   Brad Whitlock, Thu Jul 29 12:17:47 PDT 2004
+//   I added the smartGrouping argument.
+//
+// ****************************************************************************
+
+const GetFileListRPC::FileList *
+GetFileListRPC::operator()(const std::string &f, bool grouping,
+    bool smartGrouping)
+{
+    debug3 << "Executing GetFileList(" << f.c_str()
+           << (grouping?"true":"false") << ", "
+           << (smartGrouping?"true":"false") << ", "
+           << ") RPC\n";
+
+    // Store the arguments.
+    filter = f;
+    automaticFileGrouping = grouping;
+    smartFileGrouping = smartGrouping;
+
+    // Try to execute the RPC.
+    Execute();
+
+    // If the RPC returned an error, throw an exception.
+    if(GetReply()->GetStatus() == error)
+    {
+        EXCEPTION0(GetFileListException);
+    }
+
+    return &fileList;
+}
+
+// ****************************************************************************
+// Method: GetFileListRPC::SelectAll
+//
+// Purpose: 
+//   This method selects all of the components in the GetFileListRPC
+//   before the RPC is executed. This is so RPC function parameters
+//   would be communicated.
+//
+// Note:       
+//   This RPC has no parameters so this function selects nothing.
+//
+// Programmer: Jeremy Meredith
+// Creation:   Tue Aug 29 10:34:55 PDT 2000
+//
+// Modifications:
+//   Brad Whitlock, Mon Mar 24 14:17:29 PST 2003
+//   I added a string and a boolean argument.
+//
+//   Brad Whitlock, Thu Jul 29 12:18:30 PDT 2004
+//   I added smartFileGrouping.
+//
+// ****************************************************************************
+
+void
+GetFileListRPC::SelectAll()
+{
+    Select(0, (void *)&filter);
+    Select(1, (void *)&automaticFileGrouping);
+    Select(2, (void *)&smartFileGrouping);
+}
+
+// ****************************************************************************
+// Method: GetFileListRPC::GetFilter
+//
+// Purpose: 
+//   Returns the filter used by the RPC.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Mar 24 14:20:54 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+const std::string &
+GetFileListRPC::GetFilter() const
+{
+    return filter;
+}
+
+// ****************************************************************************
+// Method: GetFileListRPC::GetAutomaticFileGrouping
+//
+// Purpose: 
+//   Returns the automatic file grouping flag.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Mar 27 09:56:21 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+GetFileListRPC::GetAutomaticFileGrouping() const
+{
+    return automaticFileGrouping;
+}
+
+// ****************************************************************************
+// Method: GetFileListRPC::GetSmartFileGrouping
+//
+// Purpose: 
+//   Returns whether smart file grouping is enabled.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jul 29 12:19:18 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+GetFileListRPC::GetSmartFileGrouping() const
+{
+    return smartFileGrouping;
+}
+
+// ****************************************************************************
+// Method: GetFileListRPC::TypeName
+//
+// Purpose: 
+//   Returns the RPC name.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Dec  7 11:09:23 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+const std::string
+GetFileListRPC::TypeName() const
+{
+    return "GetFileListRPC";
+}
+
+// ****************************************************************************
+// Method: GetFileListRPC::FileList::FileList
+//
+// Purpose: 
+//   Constructor for the GetFileListRPC::FileList class.
+//
+// Programmer: Jeremy Meredith
+// Creation:   Tue Aug 29 10:48:07 PDT 2000
+//
+// Modifications:
+//   Brad Whitlock, Mon Mar 31 11:28:34 PDT 2003
+//   I added virtualNames, numVirtualFiles.
+//
+// ****************************************************************************
+
+GetFileListRPC::FileList::FileList() : AttributeSubject("s*i*s*i*"), 
+    names(), types(), virtualNames(), numVirtualFiles()
+{
+}
+
+GetFileListRPC::FileList::FileList(const GetFileListRPC::FileList &obj) :
+    AttributeSubject("s*i*s*i*"), 
+    names(obj.names), types(obj.types),
+    virtualNames(obj.virtualNames), numVirtualFiles(obj.numVirtualFiles)
+{
+}
+
+// ****************************************************************************
+// Method: GetFileListRPC::FileList::~FileList
+//
+// Purpose: 
+//   Destructor for the GetFileListRPC::FileList class.
+//
+// Programmer: Jeremy Meredith
+// Creation:   Tue Aug 29 10:48:07 PDT 2000
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+GetFileListRPC::FileList::~FileList()
+{
+}
+
+// ****************************************************************************
+// Method: GetFileListRPC::FileList::SelectAll
+//
+// Purpose: 
+//   Selects all the attributes in the class so they can be
+//   transmitted across a connection.
+//
+// Programmer: Jeremy Meredith
+// Creation:   Tue Aug 29 10:48:07 PDT 2000
+//
+// Modifications:
+//   Brad Whitlock, Mon Mar 31 11:30:52 PDT 2003
+//   I added virtualNames, numVirtualFiles.
+//
+// ****************************************************************************
+
+void 
+GetFileListRPC::FileList::SelectAll()
+{
+    Select(0, (void *)&names);
+    Select(1, (void *)&types);
+    Select(2, (void *)&virtualNames);
+    Select(3, (void *)&numVirtualFiles);
+}
+
+// ****************************************************************************
+// Method: GetFileListRPC::FileList::Clear
+//
+// Purpose: 
+//   Clears the file list.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Apr 18 15:11:37 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+GetFileListRPC::FileList::Clear()
+{
+    names.clear();
+    types.clear();
+
+    virtualNames.clear();
+    numVirtualFiles.clear();
+}
+
+// ****************************************************************************
+// Method: GetFileListRPC::FileList::TypeName
+//
+// Purpose: 
+//   Returns the RPC name.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Dec  7 11:09:23 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+const std::string
+GetFileListRPC::FileList::TypeName() const
+{
+    return "GetFileListRPC::FileList";
+}
+
+// ****************************************************************************
+// Class: FileListInformation
+//
+// Purpose:
+//   Stores file list information long enough to sort it.
+//
+// Notes:      
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Apr 14 10:18:28 PDT 2003
+//
+// Modifications:
+//   Brad Whitlock, Tue Aug 26 13:28:04 PST 2003
+//   I added the name member and a < operator.
+//
+//   Brad Whitlock, Thu Sep 18 11:27:27 PDT 2003
+//   I changed the < operator a little.
+//
+// ****************************************************************************
+
+struct FileListInformation
+{
+    FileListInformation() : name()
+    {
+    }
+
+    FileListInformation(const std::string &n, int t) : name(n)
+    {
+        type = t;
+    }
+
+    FileListInformation(const FileListInformation &obj) : name(obj.name)
+    {
+        type = obj.type;
+    }
+
+    ~FileListInformation()
+    {
+    }
+
+    void operator = (const FileListInformation &obj)
+    {
+        name = obj.name;
+        type = obj.type;
+    }
+
+    // Use numeric and string comparison to compare the name.
+    bool operator < (const FileListInformation &obj) const
+    {
+        bool retval = false;
+
+        if(name != obj.name)
+            retval = NumericStringCompare(name, obj.name);
+
+        return retval;
+    }
+
+    std::string name;
+    int         type;
+};
+
+// ****************************************************************************
+// Method: GetFileListRPC::FileList::Sort
+//
+// Purpose: 
+//   Sorts the file list but does not touch the virtual file information.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Apr 14 10:18:12 PDT 2003
+//
+// Modifications:
+//   Brad Whitlock, Tue Aug 26 13:24:44 PST 2003
+//   I made it sort numerically.
+//
+// ****************************************************************************
+
+void
+GetFileListRPC::FileList::Sort()
+{
+    std::vector<FileListInformation> sortVector;
+
+    // Fill up the map sorting it in the process.
+    for(size_t i = 0; i < names.size(); ++i)
+    {
+        sortVector.push_back(
+            FileListInformation(names[i], types[i]));
+    }
+
+    // Sort the vector.
+    std::sort(sortVector.begin(), sortVector.end());
+
+    // Iterate through the map and store the values back into the vectors.
+    for(size_t i = 0; i < sortVector.size(); ++i)
+    {
+        names[i]  = sortVector[i].name;
+        types[i]  = sortVector[i].type;
+    }
+}
+
+// *******************************************************************
+// Function: operator <<
+//
+// Purpose:
+//   Prints a GetFileListRPC::FileList to an ostream.
+//
+// Notes:      
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Aug 29 16:05:43 PST 2000
+//
+// Modifications:
+//   Brad Whitlock, Mon Apr 14 10:35:25 PDT 2003
+//   I added code to print virtual files.
+//
+// *******************************************************************
+
+ostream &
+operator << (ostream &os, const GetFileListRPC::FileList &fl)
+{
+    os << "{";
+    for(size_t i = 0; i < fl.names.size(); ++i)
+    {
+        os << "{" << fl.names[i].c_str() << ", " << fl.types[i] << "}";
+
+        if(i < fl.names.size() - 1)
+            os << ", ";
+    }
+    os << "}" << endl;
+    int index = 0;
+    int nvf = 0;
+    for(size_t i = 0; i < fl.names.size(); ++i)
+    {
+        if(fl.types[i] == GetFileListRPC::VIRTUAL)
+        {
+            os << "Virtual file: " << fl.names[i].c_str() << " {" << endl;
+            int start = index;
+            int end = start + fl.numVirtualFiles[nvf];
+            for(int j = start; j < end; ++j)
+                 os << "\t" << fl.virtualNames[j].c_str() << endl;
+            index += fl.numVirtualFiles[nvf];
+            os << "}" << endl;
+            ++nvf;
+        }
+    }
+
+    return os;
+}
+

@@ -1,0 +1,110 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta http-equiv="Content-Language" content="en-us">
+   <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+   <meta name="ProgId" content="FrontPage.Editor.Document">
+   <title>VisIt 1.6.1 Release Notes</title>
+</head>
+<body>
+
+<center><b><font size="6">VisIt 1.6.1 Release Notes</font></b></center>
+
+<p>Welcome to VisIt's release notes page. This page describes the important
+enhancements and bug-fixes that were added to this release.</p>
+<p><b><font size="4">Features added in version 1.6.1</font></b></p>
+<ul>
+<li>VisIt can now read a <i>"visitrc"</i> file at startup for the purpose of Python scripted initialization. The <i>"visitrc"</i> file is a Python script located in <i>~/.visit</i> on most platforms and, if present, it is executed when VisIt starts so users can set up visualizations using Python scripting. Users may also define Python functions and register those functions as macros in VisIt's new <i>Macros window</i> by using the new <i>RegisterMacro(buttonname, function)</i> function in the CLI. When a Python function is registered as a macro using the RegisterMacro() function, VisIt places a button in the Macros window (available from the Controls->Macro menu option). When the user clicks a button in the Macro window, VisIt executes that macro's corresponding user-defined Python function.</li>
+<li>VisIt's <i>Host Profiles</i> window has been modified so that pressing <i>Enter</i> in text fields in order to get changes to apply is no longer necessary. This makes editing multiple profiles much easier without having to click the Apply button as frequently. The window has also been reorganized somewhat so that the <i>Hardware acceleration</i> tab has been moved into the <i>Advanced options</i> tab along with the networking settings.</li>
+<li>VisIt now has <i>color()</i> and <i>color4()</i> expressions that can be used to create color vectors that can be plotted with the Truecolor plot. The <i>color()</i> expression accepts 3 scalars, representing red, green, and blue color channels. The scalars should in the range [0,255]. The <i>color4()</i> expression operates like the <i>color()</i> expression except that it also accepts a fourth scalar for alpha transparency. These expressions allow plotting of multivariate data using colors.</li>
+<li>VisIt now provides an <i>atan2()</i> expression.</li>
+<li>VisIt's Truecolor plot has been enhanced so that it can plot data from vector tuples with 2, 3, or the desired 4 components. This makes it easier to use the Truecolor plot on regular vector data, in addition to color data produced by the <i>color()</i> and <i>color4()</i> expressions.</li>
+<li>VisIt now provides an <i>Argv()</i> function in the CLI to return all VisIt command line arguments that occur after the <i>-s file.py</i> command line argument. The <i>Argv()</i> function is intended to make it easier to create scripts that have positional command line arguments.</li>
+<li>VisIt's resample operator now supports vectors.</li>
+<li>VisIt's Threshold operator now displays attributes of all active threshold variables in a table whose entries can be modified by the user. The table scrolls if it gets long enough.</li>
+<li>Simulation Steering documentation was updated to include the strip chart and message windows for Simulation steering use.</li>
+<li>A Nek3D reader was added for Argonne National Lab.</li>
+<li>VisIt now provides <i>Save As</i> buttons in both the <i>Query</i> and <i>Pick</i> dialog boxes. These will save the query & pick data to a user specified file.</li>
+<li>VisIt now provides a tensor contraction expression <i>contraction</i> and a viscous stress tensor expression <i>viscous_stress</i> for structured grids with quad zones.</li>
+<li>VisIt's database info annotations now have path expansion options.</li>
+<li>VisIt ITAPS plugin (formerly TSTT) was upgraded to use new C-style interface alleviating requirement for sidl/babel.</li>
+<li>A new preference was added to treat all databases as time varying. Although selecting this preference may have negative performance implications, it will eliminate the need to have to re-open databases to see variables added and/or meshes whose decomposition changes at later time steps.</li>
+<li>A new database plugin installation shell-script was added called 'visit_plugin' which can be used to facilitate installing and removing database plugins from users' ~/.visit directory; 'visit_plugin --help' gives more information. </li>
+<li>A new shell script, mkgrprdbl, was added to facilitate sharing of files and directories amoung users with common groups. The tool can be used to easily set group ownership and permissions of files as well as parent directories to enable another user in a common group to gain access to the files; 'mkgrprdbl --help' gives more information</li>
+<li>The ability to overlay curves on 2D plots was added.</li>
+<li>2D plots can now be scaled logarithmically.</li>
+<li>The Cracks Clipper operator can now calculate density.</li>
+<li>The IndexSelect operator now has a dropdown widget for choosing category and set.</li>
+<li>VisIt can now read molecular data in the .XYZ file format.  This new reader supports the enhanced XYZ format with variables for each atom and multiple timesteps in a single file.</li>
+<li>The Parallel Axis plot can now scale to indefinitely large data sets when only the context is drawn.</li>
+<li>VisIt's CLI now supports a "-forceinteractivecli" flag which allows it to enter Python's interactive mode even when run without a terminal.  This can be used to control the CLI through a pipe.</li>
+<li>VisIt can now tunnel its network connections through SSH.  This should be completely transparent and automatic when this flag is set in the Advanced section of the appropriate Host Profile.  However, watch for errors in the console window where VisIt was launched; due to the indeterminate nature of available remote ports, many users tunneling simultaneously to a single machine may cause a failure when initiating the remote connection, but restarting VisIt and attempting the connection again will typically yield success.</li>
+<li>Added support for FreeBSD.</li>
+<li> Significant changes were make to enable build_visit.  The build_visit script performs a complete build of VisIt, its required support libraries, and the optional third-party libraries.  The location build_visit script is in clearcase_bin directory, it is also available as an independent download from http://www.llnl.gov/visit/1.6.1/build_visit.  The build_visit script is still evolving, but is expected to work for Linux, AIX, and Darwin systems. The supported usage assumes that the visit tarball, all for the required and third-party libraries exist with in the same directory that build_visit is being run. The automatic download feature from VisIt's ftp site is not fully supported for all libraries, and currently the SVN downloads are available to registered users only.</li>
+<li>Made Ale3d's 'rlxstat' variable an enumerated variable in VisIt.</li>
+<li>Added 'visit -diff' tool to support visualization and analysis of differences in databases. Run visit -fullhelp for more info.</li>
+<li>Windows version now saves user config files to <i>My Documents</i> instead of VisIt's installation directory.  This also applies to images, sessions, and movie default save directories.</li>
+<li>Python scripts on Windows platform can be 'double-clicked' to start VisIt's cli and run the script.  This association must be chosen during installation.</li>
+<li>VisIt is now added to the PATH environment variable on Windows, allowing execution from the command prompt.<li>
+</ul>
+<p><b><font size="4">Bugs fixed in version 1.6.1</font></b></p>
+<ul>
+<li>VisIt's Spreadsheet plot window can be several times the monitor width when using the MacOS X version of VisIt. This happens when slicing a 3D dataset that produces a large number of tabs to show the slices.</li>
+<li>VisIt's File Selection window is completely disabled when VisIt is started from the CLI using the <i>OpenGUI()</i> function.</li>
+<li>When VisIt's GUI is launched from the CLI using the <i>OpenGUI()</i> function, the Splashscreen window can require the user to move the mouse cursor around in it in order for VisIt to completely initialize.</li>
+<li>The Label plot can draw labels whose exponents are truncated if the values are negative.</li>
+<li>VisIt's Mili database reader plugin produces meshes with one node at the wrong location.</li>
+<li>VisIt's GUI can crash when using the Save Movie wizard if a user's config file was saved with versions of VisIt from before version 1.5.5.</li>
+<li>VisIt's command recording feature sets operator options before an operator has been added, making the recorded script invalid.</li>
+<li>The <i>VisItExecuteCommands()</i> function from VisIt's libsim library is used to cause VisIt's viewer to execute Python commands for a simulation, allowing it to set up its visualizations. However, if a CLI is not already running then the commands are not executed. VisIt now launches a CLI if needed.</li>
+<li>VisIt's <i>specmf</i> expression has an argument parsing flaw that prevents its fourth argument from ever working.</li>
+<li>VisIt's command recording feature does not produce valid code for lighting attributes.</li>
+<li>The File Panel in VisIt's Main window does not show the open database when VisIt's GUI is launched from the CLI using the <i>OpenGUI()</i> function.</li>
+<li>VisIt's command recording feature mistakenly reports rendering attributes instead of material attributes, leading to invalid code.</li>
+<li>VisIt's Truecolor plot should not use texturing for nodal variables.</li>
+<li>VisIt's CLI program ignores the -pid command line argument.</li>
+<li>VisIt's launch program does not pass the -quiet flag on to the viewer and other programs.</li>
+<li>Calling expression definition functions such as <i>DefineScalarExpression()</i> in the CLI to redefine an expression of the same name does not redefine the expression. It instead mistakenly adds a duplicate expression definition that VisIt ultimately ignores.</li>
+<li>Many bugs with exporting databases were fixed.</li>
+<li>If you put a command in the View window (e.g. rotx 90) and press Apply, that command will now take effect.</li>
+<li>VisIt will no longer hang when opening binary files that have the extension <i>.visit</i>.</li>
+<li>VisIt will no longer crash when doing a Streamline plot with a single color.</li>
+<li>VisIt will no longer crash when slicing a point mesh that has been resampled onto a grid.</li>
+<li>VisIt will now properly ignore ghost data when doing a cross-mesh field evaluation expression.</li>
+<li>VisIt will now properly honor multiple light sources with its save window operation.</li>
+<li>VisIt's expression language no longer issues an internal warning when combining the <i>curl</i> expression
+with other expressions.</li>
+<li>A bug was corrected where the legend of a contour plot with three isolevels only displayed two isolevels.</li>
+<li>VisIt's interpolation of point meshes onto a rectilinear grid with the Resample operator now produces results
+that more heavily weight the proximity of the point.  This makes the results more intuitive.</li>
+<li>VisIt no longer places the Y-Axis and Z-Axis labels far away from the bounding box 
+when placing 3D annotations.</li>
+<li>VisIt will no longer swap the opacity and color variables when doing a volume rendering.</li>
+<li>Simulation Qtable widget will now send the value in the row and col in addition to the row and col numbers.</li>
+<li>ValueChanged signal is now generated for QTable widgets in custom simulation dialog widgets</li>
+<li>The integrate query now correctly computes the area under the curve generated by a histogram plot.</li>
+<li>The hohlraum flux query was patched to distribute rays correctly, and enhanced to compute temperature along with flux.</li>
+<li>PDB Database plugin no longer requires variables to have special '@' character in their name.</li>
+<li>Second and later attempts to plot a CSG variable resulted in constant gray plot.</li>
+<li>Binary distribution on Linux reports problems loading TSTT database plugin.</li>
+<li>VisIt reports Invalid Variable 'levels' when plotting SAMRAI files with single patch.</li>
+<li>Silo files written by parallel VisIt have invalid spatial and data extents.</li>
+<li>The CLI Lineout command was fixed so that it no longer ignores the 'numSamples' argument.</li>
+<li>The S3D reader is now available on the windows platform.</li>
+<li>VisIt will no longer crash when animating CosmosPP data through time.</li>
+<li>The help window's <i>Increase/Decrease font size</i> options now work correctly on the Windows platform.</li>
+<li>VisIt's <i>Save movie</i> feature now works on the Windows platform, provided the user has write access to the chosen output directory.</li>
+<li>Specular highlighting could lose settings and become permanently disabled when restoring sessions.</li>
+<li>Tecplot files with no model in the Zone record now load correctly, defaulting to the POINT ordering.</li>
+<li>Tecplot files with no element type in the Zone record now correctly default to return point meshes.</li>
+<li>Fixed time derivative expressions so that they actually divide by delta-time.</li>
+<li>Windows version now honors '-config' command-line directive.</li>
+<li>Double-clicking session files works on Windows again.</li>
+</ul>
+<p>Click the following link to view the release notes for the previous version
+of VisIt: <a href="relnotes1.6.html">VisIt 1.6 Release Notes</a>.</p>
+<p>Click the following link to view the release notes for the next version
+of VisIt: <a href="relnotes1.7.html">VisIt 1.7 Release Notes</a>.</p>
+</body>
+</html>

@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+  <Attribute name="HostProfileList" purpose="This class contains a list of host profiles." persistent="true" keyframe="true" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="HostProfileList.code">
+    <Field name="machines" label="machines" type="attVector" subtype="MachineProfile">
+    </Field>
+    <Function name="GetActiveLaunchProfileForHost" user="true" member="true">
+    </Function>
+    <Function name="GetMachineProfileForHost" user="true" member="true">
+    </Function>
+    <Include file="header" quoted="false">
+      LaunchProfile.h
+    </Include>
+  </Attribute>

@@ -1,0 +1,33 @@
+Function: PrintSelf
+Declaration: void PrintSelf(ostream &os);
+Definition:
+void
+PlotInfoAttributes::PrintSelf(ostream &os)
+{
+    os << "Data:\n" ;
+    os << data.ToXML(); 
+}
+
+
+Function: Reset
+Declaration: void Reset();
+Definition:
+void
+PlotInfoAttributes::Reset()
+{
+    data.Reset();
+    SelectData();
+}
+
+
+Function: Merge
+Declaration: void Merge(const PlotInfoAttributes &obj);
+Definition:
+void
+PlotInfoAttributes::Merge(const PlotInfoAttributes &obj)
+{
+    data.Merge(obj.GetData());
+    SelectData();
+}
+
+

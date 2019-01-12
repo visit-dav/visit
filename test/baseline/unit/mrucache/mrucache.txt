@@ -1,0 +1,81 @@
+Cache size is set to 20 items.
+Iteration 0
+Iteration 1
+Iteration 2
+Iteration 3
+Iteration 4
+Iteration 5
+Iteration 6
+Iteration 7
+Iteration 8
+Iteration 9
+Iteration 10
+Iteration 11
+Iteration 12
+Iteration 13
+Iteration 14
+Iteration 15
+Iteration 16
+Iteration 17
+Iteration 18
+Iteration 19
+Iteration 20
+Iteration 21
+Iteration 22
+Iteration 23
+Iteration 24
+Iteration 25
+Iteration 26
+Iteration 27
+Iteration 28
+Iteration 29
+Iteration 30
+Iteration 31
+Iteration 32
+Iteration 33
+Iteration 34
+Iteration 35
+Iteration 36
+Iteration 37
+Iteration 38
+Iteration 39
+Iterating to find and remove all keys beginning with "item 2"
+Removed item with key "item 20"
+Removed item with key "item 21"
+Removed item with key "item 22"
+Removed item with key "item 23"
+Removed item with key "item 24"
+Removed item with key "item 25"
+Removed item with key "item 26"
+Removed item with key "item 27"
+Removed item with key "item 28"
+Removed item with key "item 29"
+Iterating to see what remains in cache
+Item with key "item 19" still in cache
+Item with key "item 30" still in cache
+Item with key "item 31" still in cache
+Item with key "item 32" still in cache
+Item with key "item 33" still in cache
+Item with key "item 34" still in cache
+Item with key "item 35" still in cache
+Item with key "item 36" still in cache
+Item with key "item 37" still in cache
+Item with key "item 38" still in cache
+Item with key "item 39" still in cache
+Clearing some caches
+Resizing some caches to most recently used 5 items.
+Item with key "item 35" still in Free cache
+Item with key "item 36" still in Free cache
+Item with key "item 37" still in Free cache
+Item with key "item 38" still in Free cache
+Item with key "item 39" still in Free cache
+Item with key "item 35" still in delete [] cache
+Item with key "item 36" still in delete [] cache
+Item with key "item 37" still in delete [] cache
+Item with key "item 38" still in delete [] cache
+Item with key "item 39" still in delete [] cache
+Item with key "item 35" still in callbackCache cache
+Item with key "item 36" still in callbackCache cache
+Item with key "item 37" still in callbackCache cache
+Item with key "item 38" still in callbackCache cache
+Item with key "item 39" still in callbackCache cache

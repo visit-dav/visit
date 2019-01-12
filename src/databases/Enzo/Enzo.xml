@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+  <Plugin name="Enzo" label="Enzo" type="database" dbtype="STMD" version="1.0" filePatternsStrict="true">
+    <FilePatterns>
+      *.hierarchy
+      *.boundary
+    </FilePatterns>
+    <CXXFLAGS> 
+        ${HDF4_INCLUDE_DIR}
+        ${HDF5_INCLUDE_DIR} 
+    </CXXFLAGS>
+    <LDFLAGS> 
+        ${HDF4_LIBRARY_DIR}
+        ${HDF5_LIBRARY_DIR} 
+    </LDFLAGS>
+    <LIBS>     
+        ${HDF4_LIB}  
+        ${HDF5_LIB}  
+    </LIBS>
+  </Plugin>

@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+  <Plugin name="AugDecomp" type="database" label="AugDecomp" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="true" onlyengine="false" noengine="false" dbtype="MTMD" haswriter="false" hasoptions="false" filePatternsStrict="false">
+    <FilePatterns>
+      *.augd
+    </FilePatterns>
+    <Attribute name="" purpose="" persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="AugDecomp.code">
+      <Function name="AugDecompCommonPluginInfo::SetupDatabase" user="false" member="true">
+      </Function>
+    </Attribute>
+  </Plugin>

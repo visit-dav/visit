@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+  <Plugin name="Context" type="operator" label="Context" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" category="Analysis">
+    <Attribute name="ContextAttributes" purpose="This class contains attributes for the context operator." persistent="true" keyframe="true" exportAPI="" exportInclude="">
+      <Enum name="Amount">
+        Some
+        All
+      </Enum>
+      <Field name="offset" label="Offset the primary variable by " type="double">
+        2.000000
+      </Field>
+      <Field name="low" label="Use the primary variable if it is above " type="double">
+        2.000000
+      </Field>
+      <Field name="hi" label="Use the primary variable if it is below " type="double">
+        2.000000
+      </Field>
+      <Field name="context" label="Context Variable" type="variablename" vartypes="01000000000">
+      </Field>
+      <Field name="cutoff" label="Cutoff for context variable" type="double">
+        0.000000
+      </Field>
+      <Field name="below" label="Map values below the cutoff to " type="double">
+        0.000000
+      </Field>
+      <Field name="above" label="Map values above the cutoff to " type="double">
+        1.000000
+      </Field>
+    </Attribute>
+  </Plugin>

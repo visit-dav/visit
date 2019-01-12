@@ -1,0 +1,1727 @@
+/*****************************************************************************
+*
+* Copyright (c) 2000 - 2018, Lawrence Livermore National Security, LLC
+* Produced at the Lawrence Livermore National Laboratory
+* LLNL-CODE-442911
+* All rights reserved.
+*
+* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
+* full copyright notice is contained in the file COPYRIGHT located at the root
+* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
+*
+* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
+* modification, are permitted provided that the following conditions are met:
+*
+*  - Redistributions of  source code must  retain the above  copyright notice,
+*    this list of conditions and the disclaimer below.
+*  - Redistributions in binary form must reproduce the above copyright notice,
+*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
+*    documentation and/or other materials provided with the distribution.
+*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
+*    be used to endorse or promote products derived from this software without
+*    specific prior written permission.
+*
+* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
+* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
+* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
+* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
+* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
+* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
+* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
+* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
+* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
+* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
+* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
+* DAMAGE.
+*
+*****************************************************************************/
+
+#include <VisitBoxTool.h>
+
+#include <vtkActor.h>
+#include <vtkCamera.h>
+#include <vtkCellArray.h>
+#include <vtkCellData.h>
+#include <vtkMatrix4x4.h>
+#include <vtkOutlineSource.h>
+#include <vtkPolyData.h>
+#include <vtkPolyDataMapper.h>
+#include <vtkProperty.h>
+#include <vtkProperty2D.h>
+#include <vtkRenderer.h>
+#include <vtkTextActor.h>
+#include <vtkTextProperty.h>
+
+#include <avtVector.h>
+
+#define BOX_SIZE              1.
+#define NUM_TEXT_ACTORS       7
+#define LAST_HOTPOINT         7
+
+#define NEAR_HOTPOINT_RADIUS (1./60.)
+#define FAR_HOTPOINT_RADIUS  (1./60./2.)
+
+// ****************************************************************************
+// Method: VisitBoxTool::VisitBoxTool
+//
+// Purpose: 
+//   This is the constructor for the plane tool.
+//
+// Arguments:
+//   p : A reference to the tool proxy.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Oct 30 12:22:39 PDT 2002
+//
+// Modifications:
+//   Brad Whitlock, Tue Jul 13 14:11:03 PST 2004
+//   I changed how the hotpoints work for this tool.
+//
+//   Jeremy Meredith, Wed May 19 14:15:58 EDT 2010
+//   Account for 3D axis scaling (3D equivalent of full-frame mode).
+//
+// ****************************************************************************
+
+VisitBoxTool::VisitBoxTool(VisWindowToolProxy &p) : VisitInteractiveTool(p),
+    Interface(p)
+{
+    depthTranslate = false;
+    addedOutline = false;
+    addedBbox = false;
+    activeHotPoint = 0;
+
+    HotPoint h;
+    h.radius = NEAR_HOTPOINT_RADIUS; // See what a good value is.
+    h.tool = this;
+
+    const double boxOrigin[] = {0., 0., 0.};
+    const double boxSize[] = {BOX_SIZE, BOX_SIZE, BOX_SIZE};
+
+    //
+    // Add the box origin hotpoint.
+    //
+    h.pt = avtVector(boxOrigin[0], boxOrigin[1], boxOrigin[2]);
+    h.callback = TranslateCallback;
+    origHotPoints.push_back(h);
+
+    //
+    // Add the XMIN hotpoint.
+    //
+    h.pt = avtVector(boxOrigin[0],
+                     boxOrigin[1] + boxSize[1]/2.,
+                     boxOrigin[2] + boxSize[2]/2.);
+    h.callback = XMINCallback;
+    origHotPoints.push_back(h);
+
+    //
+    // Add the XMAX hotpoint.
+    //
+    h.pt = avtVector(boxOrigin[0] + boxSize[0],
+                     boxOrigin[1] + boxSize[1]/2.,
+                     boxOrigin[2] + boxSize[2]/2.);
+    h.callback = XMAXCallback;
+    origHotPoints.push_back(h);
+
+    //
+    // Add the YMIN hotpoint.
+    //
+    h.pt = avtVector(boxOrigin[0] + boxSize[0]/2.,
+                     boxOrigin[1],
+                     boxOrigin[2] + boxSize[2]/2.);
+    h.callback = YMINCallback;
+    origHotPoints.push_back(h);
+
+    //
+    // Add the YMAX hotpoint.
+    //
+    h.pt = avtVector(boxOrigin[0] + boxSize[0]/2.,
+                     boxOrigin[1] + boxSize[1],
+                     boxOrigin[2] + boxSize[2]/2.);
+    h.callback = YMAXCallback;
+    origHotPoints.push_back(h);
+
+    //
+    // Add the ZMIN hotpoint.
+    //
+    h.pt = avtVector(boxOrigin[0] + boxSize[0]/2.,
+                     boxOrigin[1] + boxSize[1]/2.,
+                     boxOrigin[2]);
+    h.callback = ZMINCallback;
+    origHotPoints.push_back(h);
+
+    //
+    // Add the ZMAX hotpoint.
+    //
+    h.pt = avtVector(boxOrigin[0] + boxSize[0]/2.,
+                     boxOrigin[1] + boxSize[1]/2.,
+                     boxOrigin[2] + boxSize[2]);
+    h.callback = ZMAXCallback;
+    origHotPoints.push_back(h);
+
+    //
+    // Add the resize hotpoint.
+    //
+    h.pt = avtVector(boxOrigin[0] + boxSize[0],
+                     boxOrigin[1] + boxSize[1],
+                     boxOrigin[2] + boxSize[2]);
+    h.callback = ResizeCallback;
+    origHotPoints.push_back(h);
+
+    //
+    // Set up some defaults for the plane equation.
+    //
+    double extents[6];
+    proxy.GetBounds(extents);
+    double axisscale[3];
+    if (proxy.Get3DAxisScalingFactors(axisscale))
+    {
+        extents[0] *= axisscale[0];
+        extents[1] *= axisscale[0];
+        extents[2] *= axisscale[1];
+        extents[3] *= axisscale[1];
+        extents[4] *= axisscale[2];
+        extents[5] *= axisscale[2];
+    }
+    Interface.SetExtents(extents);
+
+    addedOutline = false;
+    addedBbox    = false;
+
+    hotPoints = origHotPoints;
+    CreateBoxActor();
+    CreateTextActors();
+    CreateOutline();
+}
+
+// ****************************************************************************
+// Method: VisitBoxTool::~VisitBoxTool
+//
+// Purpose: 
+//   This is the destructor for the plane tool class.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Oct 30 12:22:15 PDT 2002
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+VisitBoxTool::~VisitBoxTool()
+{
+    if(boxActor != NULL)
+    {
+        boxActor->Delete();
+        boxActor = NULL;
+    }
+
+    if(boxMapper != NULL)
+    {
+        boxMapper->Delete();
+        boxMapper = NULL;
+    }
+
+    if(boxData != NULL)
+    {
+        boxData->Delete();
+        boxData = NULL;
+    }
+
+    // Delete the text mappers and actors
+    DeleteTextActors();
+    DeleteOutline();
+}
+
+// ****************************************************************************
+// Method: VistBoxTool::SetVisibility
+//
+// Purpose: 
+//   Sets visibility of the tool. Use this if you need to temporarily
+//   take the tool out of the scene during transparent rendering.
+//
+// Programmer: Burlen Loring 
+// Creation:   Mon Sep 28 16:06:19 PDT 2015
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+VisitBoxTool::SetVisibility(int val)
+{
+    if (IsEnabled())
+    {
+        boxActor->SetVisibility(val);
+
+        for (int i = 0; i < 3; ++i)
+            outlineActor[i]->SetVisibility(val);
+    
+        for (int i = 0; i < 4; ++i)
+            outlineTextActor[i]->SetVisibility(val);
+    
+        for (int i = 0; i < NUM_TEXT_ACTORS; ++i)
+            labelTextActor[i]->SetVisibility(val);
+    }
+}
+
+// ****************************************************************************
+// Method: VisitBoxTool::Enable
+//
+// Purpose: 
+//   This method enables the tool.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Oct 30 12:22:16 PDT 2002
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+VisitBoxTool::Enable()
+{
+    bool val = IsEnabled();
+    VisitInteractiveTool::Enable();
+
+    // Add the actors to the canvas.
+    if(!val)
+    {
+        UpdateTool();
+        proxy.GetCanvas()->AddActor(boxActor);
+        AddText();
+    }
+}
+
+// ****************************************************************************
+// Method: VisitBoxTool::Disable
+//
+// Purpose: 
+//   This method disables the tool.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Oct 30 12:22:17 PDT 2002
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+VisitBoxTool::Disable()
+{
+    bool val = IsEnabled();
+
+    VisitInteractiveTool::Disable();
+
+    // Remove the actors from the canvas if the tool was enabled.
+    if(val)
+    {
+        proxy.GetCanvas()->RemoveActor(boxActor);
+        RemoveText();
+    }
+
+    // Make sure that the tool does not use the bounds stored in its
+    // interface the next time it is enabled.
+    Interface.UnInitialize();
+}
+
+// ****************************************************************************
+// Method: VisitBoxTool::IsAvailable
+//
+// Purpose: 
+//   Returns whether or not the tool is available for use.
+//
+// Returns:    Whether or not the tool is available for use.
+//
+// Note:       This may have to change later.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Oct 30 12:22:18 PDT 2002
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+VisitBoxTool::IsAvailable() const
+{
+    return (proxy.GetMode() == WINMODE_3D) && proxy.HasPlots();
+}
+
+// ****************************************************************************
+// Method: VisitBoxTool::Start2DMode
+//
+// Purpose: 
+//   This method switches the tool to 2D mode. In this case, the tool is
+//   turned off.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Oct 30 12:22:18 PDT 2002
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+VisitBoxTool::Start2DMode()
+{
+    Disable();
+}
+
+// ****************************************************************************
+// Method: VisitBoxTool::Stop3DMode
+//
+// Purpose: 
+//   This method tells the tool that 3D mode is stopping. The tool is disabled.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Oct 30 12:22:19 PDT 2002
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+VisitBoxTool::Stop3DMode()
+{
+    Disable();
+}
+
+// ****************************************************************************
+// Method: VisitBoxTool::SetForegroundColor
+//
+// Purpose: 
+//   This method sets the tool's foreground color.
+//
+// Arguments:
+//   r : The red color component.
+//   g : The green color component.
+//   b : The blue color component.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Oct 30 12:22:20 PDT 2002
+//
+// Modifications:
+//   Kathleen Bonnell, Fri Dec 13 16:41:12 PST 2002 
+//   Use vtkTextProperty to set actor color instead of vtkProperty.
+//
+//   Brad Whitlock, Tue Jul 13 14:18:21 PST 2004
+//   I changed the number of text actors.
+//
+// ****************************************************************************
+
+void
+VisitBoxTool::SetForegroundColor(double r, double g, double b)
+{
+    double color[3] = {r, g, b};
+
+    // Change the colors in the box.
+    boxActor->GetProperty()->SetColor(color);
+
+    // Set the colors of the text actors.
+    originTextActor->GetTextProperty()->SetColor(color);
+    for(int i = 0; i < NUM_TEXT_ACTORS; ++i)
+        labelTextActor[i]->GetTextProperty()->SetColor(color);
+}
+
+// ****************************************************************************
+// Method: VisitBoxTool::UpdateView
+//
+// Purpose: 
+//   Updates the color of the normal vector based on the camera.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Oct 30 12:22:23 PDT 2002
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+VisitBoxTool::UpdateView()
+{
+    if(IsEnabled())
+    {
+        UpdateText();
+    }
+}
+
+// ****************************************************************************
+// Method: VisitBoxTool::UpdateTool
+//
+// Purpose: 
+//   Repostions the tool using the attributes stored in the Interface.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Oct 30 12:22:25 PDT 2002
+//
+// Modifications:
+//   Jeremy Meredith, Wed May 19 14:15:58 EDT 2010
+//   Account for 3D axis scaling (3D equivalent of full-frame mode).
+//   
+// ****************************************************************************
+
+void
+VisitBoxTool::UpdateTool()
+{
+    // If the interface has not been initialized, use the bounding box
+    // as the extents.
+    if(!Interface.Initialized())
+    {
+        double e[6];
+        proxy.GetBounds(e);
+        // don't modify using axis scaling here -- the interface
+        // stores the true extents
+        Interface.SetExtents(e);
+    }
+
+    // Use the extents from the interface.
+    double extents[6] = {
+        Interface.GetExtents()[0],
+        Interface.GetExtents()[1],
+        Interface.GetExtents()[2],
+        Interface.GetExtents()[3],
+        Interface.GetExtents()[4],
+        Interface.GetExtents()[5]
+    };
+    double axisscale[3];
+    if (proxy.Get3DAxisScalingFactors(axisscale))
+    {
+        extents[0] *= axisscale[0];
+        extents[1] *= axisscale[0];
+        extents[2] *= axisscale[1];
+        extents[3] *= axisscale[1];
+        extents[4] *= axisscale[2];
+        extents[5] *= axisscale[2];
+    }
+    double dX = extents[1] - extents[0];
+    double dY = extents[3] - extents[2];
+    double dZ = extents[5] - extents[4];
+    SMtx.MakeScale(dX, dY, dZ);
+    TMtx.MakeTranslate(extents[0],
+                       extents[2],
+                       extents[4]);
+
+    DoTransformations();
+    UpdateText();
+}
+
+// ****************************************************************************
+// Method: VisitBoxTool::CreateBoxActor
+//
+// Purpose: 
+//   Creates the vector actor.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Oct 30 12:22:25 PDT 2002
+//
+// Modifications:
+//   Brad Whitlock, Wed Feb  4 13:55:32 PST 2015
+//   Update the source so it has some geometry.
+//
+// ****************************************************************************
+
+void
+VisitBoxTool::CreateBoxActor()
+{
+    // Store the colors and points in the polydata.
+    vtkOutlineSource *source = vtkOutlineSource::New();
+    double extents[6];
+    extents[0] = 0.;
+    extents[1] = BOX_SIZE;
+    extents[2] = 0.;
+    extents[3] = BOX_SIZE;
+    extents[4] = 0.;
+    extents[5] = BOX_SIZE;
+    source->SetBounds(extents);
+    source->Update();
+    boxData = source->GetOutput();
+    boxData->Register(NULL);
+
+    boxMapper = vtkPolyDataMapper::New();
+    boxMapper->SetInputData(boxData);
+
+    boxActor = vtkActor::New();
+    boxActor->GetProperty()->SetRepresentationToWireframe();
+    boxActor->GetProperty()->SetLineWidth(2.);
+    vtkMatrix4x4 *m = vtkMatrix4x4::New(); m->Identity();
+    boxActor->SetUserMatrix(m);
+    boxActor->SetMapper(boxMapper);
+    m->Delete();
+    source->Delete();
+}
+
+// ****************************************************************************
+// Method: VisitBoxTool::CreateTextActors
+//
+// Purpose: 
+//   Create the text actors and mappers used to draw the origin/normal info.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Oct 30 12:22:26 PDT 2002
+//
+// Modifications:
+//   Kathleen Bonnell, Fri Dec 13 16:41:12 PST 2002
+//   Replace vtkActor2d/vtkTextMapper pairs with vtkTextActor.
+//
+//   Brad Whitlock, Tue Jul 13 14:18:45 PST 2004
+//   I changed the number of text actors.
+//
+// ****************************************************************************
+
+void
+VisitBoxTool::CreateTextActors()
+{
+    originTextActor = vtkTextActor::New();
+    originTextActor->SetTextScaleMode(vtkTextActor::TEXT_SCALE_MODE_NONE); 
+
+    for(int i = 0; i < NUM_TEXT_ACTORS; ++i)
+    {
+        labelTextActor[i] = vtkTextActor::New();
+        labelTextActor[i]->SetTextScaleMode(vtkTextActor::TEXT_SCALE_MODE_NONE);
+    }
+}
+
+// ****************************************************************************
+// Method: VisitBoxTool::DeleteTextActors
+//
+// Purpose: 
+//   Deletes the text actors and mappers.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Oct 30 12:22:27 PDT 2002
+//
+// Modifications:
+//   Kathleen Bonnell, Fri Dec 13 16:41:12 PST 2002
+//   textMappers no longer required.
+//
+//   Brad Whitlock, Tue Jul 13 14:16:45 PST 2004
+//   Changed the number of text actors.
+//
+// ****************************************************************************
+
+void
+VisitBoxTool::DeleteTextActors()
+{
+    if(originTextActor != NULL)
+    {
+        originTextActor->Delete();
+        originTextActor = NULL;
+    }
+
+    for(int i = 0; i < NUM_TEXT_ACTORS; ++i)
+    {
+        if(labelTextActor[i] != NULL)
+        {
+            labelTextActor[i]->Delete();
+            labelTextActor[i] = NULL;
+        }
+    }
+}
+
+// ****************************************************************************
+// Method: VisitBoxTool::AddText
+//
+// Purpose: 
+//   Adds the text actors to the foreground canvas.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Oct 30 12:22:27 PDT 2002
+//
+// Modifications:
+//   Brad Whitlock, Tue Jul 13 14:35:50 PST 2004
+//   Changed number of actors.
+//
+// ****************************************************************************
+
+void
+VisitBoxTool::AddText()
+{
+#ifndef NO_ANNOTATIONS
+    proxy.GetForeground()->AddActor2D(originTextActor);
+    for(int i = 0; i < NUM_TEXT_ACTORS; ++i)
+        proxy.GetForeground()->AddActor2D(labelTextActor[i]);
+#endif
+}
+
+// ****************************************************************************
+// Method: VisitBoxTool::RemoveText
+//
+// Purpose: 
+//   Removes the text actors from the foreground canvas.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Oct 30 12:22:28 PDT 2002
+//
+// Modifications:
+//   Brad Whitlock, Tue Jul 13 14:35:50 PST 2004
+//   Changed number of actors.
+//
+// ****************************************************************************
+
+void
+VisitBoxTool::RemoveText()
+{
+#ifndef NO_ANNOTATIONS
+    proxy.GetForeground()->RemoveActor2D(originTextActor);
+    for(int i = 0; i < NUM_TEXT_ACTORS; ++i)
+        proxy.GetForeground()->RemoveActor2D(labelTextActor[i]);
+#endif
+}
+
+// ****************************************************************************
+// Method: VisItBoxTool::GetHotPointLabel
+//
+// Purpose: 
+//   Returns the label for the index'th hot point.
+//
+// Arguments:
+//   index : The index of the hot point.
+//   str   : The return string for the label.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Jul 13 14:43:01 PST 2004
+//
+// Modifications:
+//   Jeremy Meredith, Wed May 19 14:15:58 EDT 2010
+//   Account for 3D axis scaling (3D equivalent of full-frame mode).
+//   
+// ****************************************************************************
+
+void
+VisitBoxTool::GetHotPointLabel(int index, char *str)
+{
+    double px = hotPoints[index].pt.x;
+    double py = hotPoints[index].pt.y;
+    double pz = hotPoints[index].pt.z;
+
+    double axisscale[3];
+    if (proxy.Get3DAxisScalingFactors(axisscale))
+    {
+        px /= axisscale[0];
+        py /= axisscale[1];
+        pz /= axisscale[2];
+    }
+
+    if(index == 0)
+        sprintf(str, " Origin<%1.3g %1.3g %1.3g>",
+            px, py, pz);
+    else if(index == 1)
+        sprintf(str, " Xmin = %1.3g", px);
+    else if(index == 2)
+        sprintf(str, " Xmax = %1.3g", px);
+    else if(index == 3)
+        sprintf(str, " Ymin = %1.3g", py);
+    else if(index == 4)
+        sprintf(str, " Ymax = %1.3g", py);
+    else if(index == 5)
+        sprintf(str, " Zmin = %1.3g", pz);
+    else if(index == 6)
+        sprintf(str, " Zmax = %1.3g", pz);
+    else
+        sprintf(str, " XYZ<%1.3g %1.3g %1.3g>",
+            px, py, pz);
+}
+
+// ****************************************************************************
+// Method: VisitBoxTool::UpdateText
+//
+// Purpose: 
+//   Updates the info that the text actors display.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Oct 30 12:22:30 PDT 2002
+//
+// Modifications:
+//   Kathleen Bonnell, Fri Dec 13 16:41:12 PST 2002
+//   Replace mapper with actor.
+//
+//   Brad Whitlock, Tue Jul 13 14:44:02 PST 2004
+//   Moved some code into GetHotPointLabel. I also added code to make hot
+//   points on faces that point away be smaller.
+//
+//   Jeremy Meredith, Wed May 19 14:15:58 EDT 2010
+//   Account for 3D axis scaling (3D equivalent of full-frame mode).
+//
+// ****************************************************************************
+
+void
+VisitBoxTool::UpdateText()
+{
+    char str[100];
+    GetHotPointLabel(0, str);
+    originTextActor->SetInput(str);
+    avtVector originScreen = ComputeWorldToDisplay(hotPoints[0].pt);
+    double pt[3] = {originScreen.x, originScreen.y, 0.};
+    originTextActor->GetPositionCoordinate()->SetValue(pt);
+
+    double bounds[6];
+    proxy.GetBounds(bounds);
+    double axisscale[3];
+    if (proxy.Get3DAxisScalingFactors(axisscale))
+    {
+        bounds[0] *= axisscale[0];
+        bounds[1] *= axisscale[0];
+        bounds[2] *= axisscale[1];
+        bounds[3] *= axisscale[1];
+        bounds[4] *= axisscale[2];
+        bounds[5] *= axisscale[2];
+    }
+    avtVector center((hotPoints[1].pt.x + hotPoints[2].pt.x) * 0.5,
+                     (hotPoints[3].pt.y + hotPoints[4].pt.y) * 0.5,
+                     (hotPoints[5].pt.z + hotPoints[6].pt.z) * 0.5);
+    vtkCamera *camera = proxy.GetCanvas()->GetActiveCamera();
+    const double *pos = camera->GetPosition();
+    const double *focus = camera->GetFocalPoint();
+    avtVector camvec(pos[0]-focus[0],pos[1]-focus[1],pos[2]-focus[2]);
+    camvec.normalize();
+
+    for(int i = 0; i < NUM_TEXT_ACTORS; ++i)
+    {
+        GetHotPointLabel(i+1, str);
+        labelTextActor[i]->SetInput(str);
+        avtVector originScreen = ComputeWorldToDisplay(hotPoints[i+1].pt);
+        double pt[3] = {originScreen.x, originScreen.y, 0.};
+        labelTextActor[i]->GetPositionCoordinate()->SetValue(pt);
+
+        // Alter the hot point's radius based on if its face points towards
+        // the camera.
+        if(i < NUM_TEXT_ACTORS-1)
+        {
+            avtVector N(hotPoints[i+1].pt - center);
+            N.normalize();
+
+            double dot = camvec * N;
+            bool facingAway = (dot < 0.);
+ 
+            if(facingAway)
+                hotPoints[i+1].radius = FAR_HOTPOINT_RADIUS;
+            else
+                hotPoints[i+1].radius = NEAR_HOTPOINT_RADIUS;
+
+        }
+    }
+}
+
+// ****************************************************************************
+// Method: VisitBoxTool::CreateOutline
+//
+// Purpose: 
+//   Creates the outline objects that are shown when moving or resizing.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Oct 30 12:23:58 PDT 2002
+//
+// Modifications:
+//   Kathleen Bonnell, Fri Dec 13 16:41:12 PST 2002 
+//   Replace vtkActor2d/vtkTextMapper pairs with vtkTextActor.
+//   
+// ****************************************************************************
+
+void
+VisitBoxTool::CreateOutline()
+{
+    int i;
+
+    for(i = 0; i < 3; ++i)
+    {
+        outlineData[i] = NULL;
+        outlineMapper[i] = vtkPolyDataMapper::New();
+        outlineActor[i] = vtkActor::New();
+        outlineActor[i]->GetProperty()->SetLineWidth(1.);
+        outlineActor[i]->SetMapper(outlineMapper[i]);
+    }
+
+    for(i = 0; i < 4; ++i)
+    {
+        outlineTextActor[i] = vtkTextActor::New();
+        outlineTextActor[i]->SetTextScaleMode(vtkTextActor::TEXT_SCALE_MODE_NONE);
+    }
+}
+
+// ****************************************************************************
+// Method: VisitBoxTool::DeleteOutline
+//
+// Purpose: 
+//   Deletes the outline objects.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Oct 30 12:24:22 PDT 2002
+//
+// Modifications:
+//   Kathleen Bonnell, Fri Dec 13 16:41:12 PST 2002
+//   textMappers no longer required.
+//   
+// ****************************************************************************
+
+void
+VisitBoxTool::DeleteOutline()
+{
+    int i;
+
+    for(i = 0; i < 3; ++i)
+    {
+        if(outlineActor[i] != NULL)
+        {
+            outlineActor[i]->Delete();
+            outlineActor[i] = NULL;
+        }
+
+        if(outlineMapper[i] != NULL)
+        {
+            outlineMapper[i]->Delete();
+            outlineMapper[i] = NULL;
+        }
+
+        if(outlineData[i] != NULL)
+        {
+            outlineData[i]->Delete();
+            outlineData[i] = NULL;
+        }
+    }
+
+    for(i = 0; i < 4; ++i)
+    {
+        if(outlineTextActor[i] != NULL)
+        {
+            outlineTextActor[i]->Delete();
+            outlineTextActor[i] = NULL;
+        }
+    }
+}
+
+// ****************************************************************************
+// Method: VisitBoxTool::AddOutline
+//
+// Purpose: 
+//   Adds the outline to the renderer.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Oct 30 12:24:42 PDT 2002
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+VisitBoxTool::AddOutline()
+{
+    if(proxy.HasPlots())
+    {
+        addedOutline = true;
+        UpdateOutline();
+
+        int i, n = (activeHotPoint == 0 || activeHotPoint == LAST_HOTPOINT) ? 3 : 2;
+        for(i = 0; i < n; ++i)
+            proxy.GetCanvas()->AddActor(outlineActor[i]);
+
+#ifndef NO_ANNOTATIONS
+        for(i = 0; n == 2 && i < 4; ++i)
+            proxy.GetForeground()->AddActor2D(outlineTextActor[i]);
+#endif
+    }
+    else
+    {
+        addedOutline = false;
+    }
+}
+
+// ****************************************************************************
+// Method: VisitBoxTool::RemoveOutline
+//
+// Purpose: 
+//   Removes the outline from the renderer.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Oct 30 12:25:00 PDT 2002
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+VisitBoxTool::RemoveOutline()
+{
+    if (addedOutline)
+    {
+
+        int i, n = (activeHotPoint == 0 || activeHotPoint == LAST_HOTPOINT) ? 3 : 2;
+        for(i = 0; i < n; ++i)
+            proxy.GetCanvas()->RemoveActor(outlineActor[i]);
+
+#ifndef NO_ANNOTATIONS
+        for(i = 0; n == 2 && i < 4; ++i)
+            proxy.GetForeground()->RemoveActor2D(outlineTextActor[i]);
+#endif
+    }
+    addedOutline = false;
+}
+
+// ****************************************************************************
+// Method: VisitBoxTool:: GetBoundingBoxOutline
+//
+// Purpose: 
+//   Gets the 4 vertices used to draw a outline plane.
+//
+// Arguments:
+//   a       : The index of the plane.
+//   verts   : The return vertex array.
+//   giveMin : Whether or not to return the min plane.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Oct 30 12:25:19 PDT 2002
+//
+// Modifications:
+//   Brad Whitlock, Tue Jul 13 15:59:06 PST 2004
+//   Changed to account for more hotpoints.
+//
+//   Jeremy Meredith, Wed May 19 14:15:58 EDT 2010
+//   Account for 3D axis scaling (3D equivalent of full-frame mode).
+//
+// ****************************************************************************
+
+void
+VisitBoxTool:: GetBoundingBoxOutline(int a, avtVector *verts, bool giveMin)
+{
+    double extents[6];
+    proxy.GetBounds(extents);
+    double axisscale[3];
+    if (proxy.Get3DAxisScalingFactors(axisscale))
+    {
+        extents[0] *= axisscale[0];
+        extents[1] *= axisscale[0];
+        extents[2] *= axisscale[1];
+        extents[3] *= axisscale[1];
+        extents[4] *= axisscale[2];
+        extents[5] *= axisscale[2];
+    }
+
+    if(a == 1)
+    {
+        double x = giveMin ? hotPoints[0].pt.x : hotPoints[2].pt.x;
+        verts[0] = avtVector(x, extents[2], extents[4]);
+        verts[1] = avtVector(x, extents[3], extents[4]);
+        verts[2] = avtVector(x, extents[3], extents[5]);
+        verts[3] = avtVector(x, extents[2], extents[5]);
+    }
+    else if(a == 2)
+    {
+        double y = giveMin ? hotPoints[0].pt.y : hotPoints[4].pt.y;
+        verts[0] = avtVector(extents[0], y, extents[4]);
+        verts[1] = avtVector(extents[1], y, extents[4]);
+        verts[2] = avtVector(extents[1], y, extents[5]);
+        verts[3] = avtVector(extents[0], y, extents[5]);
+    }
+    else if(a == 3)
+    {
+        double z = giveMin ? hotPoints[0].pt.z : hotPoints[6].pt.z;
+        verts[0] = avtVector(extents[0], extents[2], z);
+        verts[1] = avtVector(extents[1], extents[2], z);
+        verts[2] = avtVector(extents[1], extents[3], z);
+        verts[3] = avtVector(extents[0], extents[3], z);
+    }
+}
+
+// ****************************************************************************
+// Method: VisitBoxTool::UpdateOutline
+//
+// Purpose: 
+//   Updates the outline.
+//
+// Note:       Updates the outline as either intersecting boxes or planes. It
+//             depends on the active hot point.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Oct 30 12:26:49 PDT 2002
+//
+// Modifications:
+//   Kathleen Bonnell, Fri Dec 13 16:41:12 PST 2002
+//   Replace mapper with actor.
+//
+//   Brad Whitlock, Tue Jul 13 14:45:22 PST 2004
+//   Moved some code into GetHotPointLabel.
+//
+//   Brad Whitlock, Thu Aug 12 17:42:02 PST 2004
+//   I fixed a potential error.
+//
+//   Jeremy Meredith, Wed May 19 14:15:58 EDT 2010
+//   Account for 3D axis scaling (3D equivalent of full-frame mode).
+//
+//   Brad Whitlock, Wed Feb  4 13:55:32 PST 2015
+//   Update the source so it has some geometry.
+//
+// ****************************************************************************
+
+void
+VisitBoxTool::UpdateOutline()
+{
+    if(!addedOutline)
+        return;
+
+    if(activeHotPoint == 0 || activeHotPoint == LAST_HOTPOINT)
+    {
+        double totalExtents[6];
+        proxy.GetBounds(totalExtents);
+        double axisscale[3];
+        if (proxy.Get3DAxisScalingFactors(axisscale))
+        {
+            totalExtents[0] *= axisscale[0];
+            totalExtents[1] *= axisscale[0];
+            totalExtents[2] *= axisscale[1];
+            totalExtents[3] *= axisscale[1];
+            totalExtents[4] *= axisscale[2];
+            totalExtents[5] *= axisscale[2];
+        }
+
+        for(int i = 0; i < 3; ++i)
+        {
+            if(outlineData[i] != NULL)
+                outlineData[i]->Delete();
+
+             vtkOutlineSource *source = vtkOutlineSource::New();
+             double extents[6];
+             extents[0] = (i == 0) ? totalExtents[0] : hotPoints[0].pt.x;
+             extents[1] = (i == 0) ? totalExtents[1] : hotPoints[LAST_HOTPOINT].pt.x;
+             extents[2] = (i == 1) ? totalExtents[2] : hotPoints[0].pt.y;
+             extents[3] = (i == 1) ? totalExtents[3] : hotPoints[LAST_HOTPOINT].pt.y;
+             extents[4] = (i == 2) ? totalExtents[4] : hotPoints[0].pt.z;
+             extents[5] = (i == 2) ? totalExtents[5] : hotPoints[LAST_HOTPOINT].pt.z;
+             source->SetBounds(extents);
+             source->Update();
+             outlineData[i] = source->GetOutput();
+             outlineData[i]->Register(NULL);
+             source->Delete();
+             // Set the mapper's input to be the new dataset.
+             outlineMapper[i]->SetInputData(outlineData[i]);
+             double color[3];
+             color[0] = (i == 0) ? 1. : 0.;
+             color[1] = (i == 1) ? 1. : 0.;
+             color[2] = (i == 2) ? 1. : 0.;
+             outlineActor[i]->GetProperty()->SetColor(color);
+        }
+    }
+    else
+    {
+        int  nverts = 4;
+        int  plane[2];
+        bool planeFlag[2];
+        avtVector verts[4];
+
+        if(activeHotPoint == 1 || activeHotPoint == 2)
+            plane[0] = plane[1] = 1;
+        else if(activeHotPoint == 3 || activeHotPoint == 4)
+            plane[0] = plane[1] = 2;
+        else
+            plane[0] = plane[1] = 3;
+        planeFlag[0] = true; planeFlag[1] = false;
+
+        for(int j = 0; j < 2; ++j)
+        {
+            if(outlineData[j] != NULL)
+                outlineData[j]->Delete();
+
+            int numPts = 4;
+            int numCells = 4;
+
+            vtkPoints *pts = vtkPoints::New();
+            pts->SetNumberOfPoints(numPts);
+            vtkCellArray *lines = vtkCellArray::New();
+            lines->Allocate(lines->EstimateSize(numCells, 2)); 
+            vtkUnsignedCharArray *colors = vtkUnsignedCharArray::New();
+            colors->SetNumberOfComponents(3);
+            colors->SetNumberOfTuples(numCells);
+
+            // Store the colors and points in the polydata.
+            outlineData[j] = vtkPolyData::New();
+            outlineData[j]->Initialize();
+            outlineData[j]->SetPoints(pts);
+            outlineData[j]->SetLines(lines);
+            outlineData[j]->GetCellData()->SetScalars(colors);
+            pts->Delete(); lines->Delete(); colors->Delete();
+
+            GetBoundingBoxOutline(plane[j], verts, planeFlag[j]);
+
+            //
+            // Now that we have a clipped polygon, create a polydata from that.
+            //
+            double fg[3];
+            proxy.GetForegroundColor(fg);
+            unsigned char r = (unsigned char)((float)fg[0] * 255.f);
+            unsigned char g = (unsigned char)((float)fg[1] * 255.f);
+            unsigned char b = (unsigned char)((float)fg[2] * 255.f);
+            for(int i = 0, index = 0; i < nverts; ++i, index += 3)
+            {
+                // Add points to the vertex list.
+                double coord[3];
+                coord[0] = verts[i].x;
+                coord[1] = verts[i].y;
+                coord[2] = verts[i].z;
+                pts->SetPoint(i, coord);
+
+                // Add a cell to the polydata.
+                vtkIdType   ptIds[2];
+                ptIds[0] = i;
+                ptIds[1] = (i < (nverts - 1)) ? (i + 1) : 0;
+                lines->InsertNextCell(2, ptIds);
+
+                // Store the color.
+                unsigned char *rgb = colors->GetPointer(index);
+                rgb[0] = r;
+                rgb[1] = g;
+                rgb[2] = b;
+            }
+
+            // Set the mapper's input to be the new dataset.
+            outlineMapper[j]->SetInputData(outlineData[j]);
+        }
+
+        //
+        // Update the text along the edge of the outline.
+        //
+        char str[100];
+        GetHotPointLabel(activeHotPoint, str);
+        for(int i = 0; i < 4; ++i)
+        {
+            outlineTextActor[i]->SetInput(str);
+            avtVector originScreen = ComputeWorldToDisplay(verts[i]);
+            double pt[3] = {originScreen.x, originScreen.y, 0.};
+            outlineTextActor[i]->GetPositionCoordinate()->SetValue(pt);
+        }
+    }
+}
+
+// ****************************************************************************
+// Method: VisitBoxTool::CallCallback
+//
+// Purpose: 
+//   Lets the outside world know that the tool has a new slice plane.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Oct 30 12:22:31 PDT 2002
+//
+// Modifications:
+//   Brad Whitlock, Tue Jul 13 15:56:07 PST 2004
+//   Changed to account for more hotpoints.
+//
+//   Jeremy Meredith, Wed May 19 14:15:58 EDT 2010
+//   Account for 3D axis scaling (3D equivalent of full-frame mode).
+//
+// ****************************************************************************
+
+void
+VisitBoxTool::CallCallback()
+{
+    // Fill the extents array that we'll give to the client. Make sure the
+    // min extents are actually first.
+    double extents[6];
+    bool minFirstX = (hotPoints[0].pt.x < hotPoints[2].pt.x);
+    bool minFirstY = (hotPoints[0].pt.y < hotPoints[4].pt.y);
+    bool minFirstZ = (hotPoints[0].pt.z < hotPoints[6].pt.z);
+    extents[0] = minFirstX ? hotPoints[0].pt.x : hotPoints[2].pt.x;
+    extents[1] = minFirstX ? hotPoints[2].pt.x : hotPoints[0].pt.x;
+    extents[2] = minFirstY ? hotPoints[0].pt.y : hotPoints[4].pt.y;
+    extents[3] = minFirstY ? hotPoints[4].pt.y : hotPoints[0].pt.y;
+    extents[4] = minFirstZ ? hotPoints[0].pt.z : hotPoints[6].pt.z;
+    extents[5] = minFirstZ ? hotPoints[6].pt.z : hotPoints[0].pt.z;
+
+    double axisscale[3];
+    if (proxy.Get3DAxisScalingFactors(axisscale))
+    {
+        extents[0] /= axisscale[0];
+        extents[1] /= axisscale[0];
+        extents[2] /= axisscale[1];
+        extents[3] /= axisscale[1];
+        extents[4] /= axisscale[2];
+        extents[5] /= axisscale[2];
+    }
+
+    Interface.SetExtents(extents);
+    Interface.ExecuteCallback();
+}
+
+// ****************************************************************************
+// Method: VisitBoxTool::InitialActorSetup
+//
+// Purpose: 
+//   Makes the text and outline actors active and starts bounding box mode.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Oct 30 12:22:31 PDT 2002
+//
+// Modifications:
+//   Brad Whitlock, Fri Apr  3 11:01:17 PDT 2009
+//   Don't do bounding box mode unless we have it selected.
+//
+// ****************************************************************************
+
+void
+VisitBoxTool::InitialActorSetup()
+{
+    // Enter bounding box mode if there are plots.
+    if(proxy.GetBoundingBoxMode() && proxy.HasPlots())
+    {
+        addedBbox = true;
+        proxy.StartBoundingBox();
+    }
+
+    AddOutline();
+}
+
+// ****************************************************************************
+// Method: VisitBoxTool::FinalActorSetup
+//
+// Purpose: 
+//   Removes certain actors from the renderer and ends bounding box mode.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Oct 30 12:22:32 PDT 2002
+//
+// Modifications:
+//   Kathleen Bonnell, Wed Dec  3 17:03:34 PST 2003 
+//   If transparencies exist, have the plots recalculate render order, so
+//   that this tool is rendered before the transparent actors. 
+//
+// ****************************************************************************
+
+void
+VisitBoxTool::FinalActorSetup()
+{
+    // End bounding box mode.
+    if(addedBbox)
+    {
+        proxy.EndBoundingBox();
+    }
+    addedBbox = false;
+
+    RemoveOutline();
+    if (proxy.TransparenciesExist())
+        proxy.RecalculateRenderOrder();
+}
+
+// ****************************************************************************
+//  Method:  VisitBoxTool::Translate
+//
+//  Purpose:
+//    This is the handler method that is called when the translate hotpoint
+//    is active.
+//
+//  Arguments:
+//    e : The state of the hotpoint activity. (START, MIDDLE, END)
+//    x : The x location of the mouse in pixels.
+//    y : The y location of the mouse in pixels.
+//
+//  Programmer:  Brad Whitlock
+//  Creation:    Wed Oct 30 12:22:33 PDT 2002
+//
+//  Modifications:
+//    Jeremy Meredith, Tue Feb  2 13:18:23 EST 2010
+//    Depending on the tool update mode, either call the callback 
+//    continuously, or don't even call it upon the mouse release.
+//
+// ****************************************************************************
+
+void
+VisitBoxTool::Translate(CB_ENUM e, int, int shift, int x, int y)
+{
+    if(shift)
+        depthTranslate = true;
+
+    if(e == CB_START)
+    {
+        vtkRenderer *ren = proxy.GetCanvas();
+        vtkCamera *camera = ren->GetActiveCamera();
+        double ViewFocus[3];
+        camera->GetFocalPoint(ViewFocus);
+        ComputeWorldToDisplay(ViewFocus[0], ViewFocus[1],
+                              ViewFocus[2], ViewFocus);
+        // Store the focal depth.
+        focalDepth = ViewFocus[2];
+
+        if(depthTranslate)
+            depthTranslationDistance = ComputeDepthTranslationDistance();
+
+        // Make the right actors active.
+        InitialActorSetup();
+    }
+    else if(e == CB_MIDDLE)
+    {
+        avtVector newPoint = ComputeDisplayToWorld(avtVector(x,y,focalDepth));
+        //
+        // Have to recalculate the old mouse point since the viewport has
+        // moved, so we can't move it outside the loop
+        //
+        avtVector oldPoint = ComputeDisplayToWorld(avtVector(lastX,lastY,focalDepth));
+        avtVector motion;
+
+        if(depthTranslate)
+            motion = depthTranslationDistance * double(y - lastY);
+        else
+            motion = newPoint - oldPoint;
+
+        avtMatrix T(avtMatrix::CreateTranslate(motion));
+        TMtx =  T * TMtx;
+        DoTransformations();
+
+        // Update the text and outline actors.
+        UpdateText();
+        UpdateOutline();
+
+        // Render the window
+        proxy.Render();
+
+        if (proxy.GetToolUpdateMode() == UPDATE_CONTINUOUS)
+            CallCallback();
+    }
+    else
+    {
+        // Call the tool's callback.
+        if (proxy.GetToolUpdateMode() != UPDATE_ONCLOSE)
+            CallCallback();
+
+        // Remove the right actors.
+        FinalActorSetup();
+
+        depthTranslate = false;
+    }
+}
+
+// ****************************************************************************
+//  Method:  VisitBoxTool::Resize
+//
+//  Purpose:
+//    This is the handler method that is called when the resize hotpoint
+//    is active.
+//
+//  Arguments:
+//    e : The state of the hotpoint activity. (START, MIDDLE, END)
+//    x : The x location of the mouse in pixels.
+//    y : The y location of the mouse in pixels.
+//
+//  Programmer:  Brad Whitlock
+//  Creation:    Wed Oct 30 12:22:36 PDT 2002
+//
+//  Modifications:
+//    Brad Whitlock, Tue Jul 13 14:48:14 PST 2004
+//    I updated the code so it handles more hotpoints.
+//
+//    Jeremy Meredith, Tue Feb  2 13:18:23 EST 2010
+//    Depending on the tool update mode, either call the callback 
+//    continuously, or don't even call it upon the mouse release.
+//
+//    Jeremy Meredith, Wed May 19 14:15:58 EDT 2010
+//    Account for 3D axis scaling (3D equivalent of full-frame mode).
+//
+// ****************************************************************************
+
+#define TOLERANCE 0.0001
+
+void
+VisitBoxTool::Resize(CB_ENUM e, int, int, int x, int y)
+{
+    HotPoint &origin = hotPoints[0];
+    int idx = (activeHotPoint < LAST_HOTPOINT) ? (
+     (activeHotPoint & 1) ? (activeHotPoint+1) : (activeHotPoint)
+     ) : LAST_HOTPOINT;
+    HotPoint &resize = hotPoints[idx];
+
+    double dX, dY, dZ;
+    avtVector originScreen, resizeScreen;
+
+    if(e == CB_START)
+    {
+        originScreen = ComputeWorldToDisplay(origin.pt);
+        resizeScreen = ComputeWorldToDisplay(resize.pt);
+
+        if(activeHotPoint == LAST_HOTPOINT)
+        {
+            dY = originScreen.y - resizeScreen.y;
+            originalDistance = dY;
+            if(originalDistance < TOLERANCE && originalDistance > -TOLERANCE)
+                originalDistance = TOLERANCE;
+        }
+
+        // Make the right actors active.
+        InitialActorSetup();
+    }
+    else if(e == CB_MIDDLE)
+    {
+        double scale;
+        double currentDist;
+
+        if(activeHotPoint == LAST_HOTPOINT)
+        {
+             originScreen = ComputeWorldToDisplay(origin.pt);
+             dY = originScreen.y - double(y);
+             if(dY < TOLERANCE && dY > -TOLERANCE)
+                 dY = TOLERANCE;
+             scale = dY / originalDistance;
+             if(scale < TOLERANCE && scale > -TOLERANCE)
+                 scale = TOLERANCE;
+        }
+        else
+        {
+            double extents[6];
+            proxy.GetBounds(extents);
+            double axisscale[3];
+            if (proxy.Get3DAxisScalingFactors(axisscale))
+            {
+                extents[0] *= axisscale[0];
+                extents[1] *= axisscale[0];
+                extents[2] *= axisscale[1];
+                extents[3] *= axisscale[1];
+                extents[4] *= axisscale[2];
+                extents[5] *= axisscale[2];
+            }
+            int *size = proxy.GetCanvas()->GetSize();
+
+            int    screenDelta = y - lastY;
+            double wLength;
+            dX = extents[1] - extents[0];
+            dY = extents[3] - extents[2];
+            dZ = extents[5] - extents[4];
+            if(activeHotPoint == 1 || activeHotPoint == 2)
+                wLength = dX;
+            else if(activeHotPoint == 3 || activeHotPoint == 4)
+                wLength = dY;
+            else
+                wLength = dZ;
+
+            if(wLength > TOLERANCE && wLength < TOLERANCE)
+                wLength = TOLERANCE;
+
+            double worldDelta = (double(screenDelta) / double(size[1])) * wLength;
+
+            avtVector motion(resize.pt - origin.pt);
+            if(activeHotPoint == 1 || activeHotPoint == 2)
+                currentDist = motion.x;
+            else if(activeHotPoint == 3 || activeHotPoint == 4)
+                currentDist = motion.y;
+            else
+                currentDist = motion.z;
+
+            if(currentDist > -TOLERANCE && currentDist < TOLERANCE)
+                currentDist = TOLERANCE;
+
+            scale = (worldDelta + currentDist) / currentDist;
+        }
+
+        // Do the hotpoint and actor transformations
+        avtMatrix S;
+        if(activeHotPoint == 1)
+            S = avtMatrix::CreateScale(scale, 1., 1.);
+        else if(activeHotPoint == 2)
+            S = avtMatrix::CreateScale(scale, 1., 1.);
+        else if(activeHotPoint == 3)
+            S = avtMatrix::CreateScale(1., scale, 1.);
+        else if(activeHotPoint == 4)
+            S = avtMatrix::CreateScale(1., scale, 1.);
+        else if(activeHotPoint == 5)
+            S = avtMatrix::CreateScale(1., 1., scale);
+        else if(activeHotPoint == 6)
+            S = avtMatrix::CreateScale(1., 1., scale);
+        else if(activeHotPoint == 7)
+            S = avtMatrix::CreateScale(scale);
+
+        // Record the values of the max hot points before transformation.
+        double Maxes[3];
+        Maxes[0] = hotPoints[2].pt.x;
+        Maxes[1] = hotPoints[4].pt.y;
+        Maxes[2] = hotPoints[6].pt.z;
+
+        SMtx = S * SMtx;
+        DoTransformations();
+
+        // Hot points that scale in the min direction increase the scale
+        // but also have to translate the origin.
+        if(activeHotPoint == 1)
+        {
+            double dX = Maxes[0] - hotPoints[2].pt.x;
+            avtMatrix T(avtMatrix::CreateTranslate(dX, 0., 0.));
+            TMtx =  T * TMtx;
+            DoTransformations();
+        }
+        else if(activeHotPoint == 3)
+        {
+            double dY = Maxes[1] - hotPoints[4].pt.y;
+            avtMatrix T(avtMatrix::CreateTranslate(0., dY, 0.));
+            TMtx =  T * TMtx;
+            DoTransformations();
+        }
+        else if(activeHotPoint == 5)
+        {
+            double dZ = Maxes[2] - hotPoints[6].pt.z;
+            avtMatrix T(avtMatrix::CreateTranslate(0., 0., dZ));
+            TMtx =  T * TMtx;
+            DoTransformations();
+        }
+
+        // Save the distance for next time through.
+        originalDistance = dY;
+
+        UpdateOutline();
+
+        // Render the window
+        proxy.Render();
+
+        if (proxy.GetToolUpdateMode() == UPDATE_CONTINUOUS)
+            CallCallback();
+    }
+    else
+    {
+        // Call the tool's callback.
+        if (proxy.GetToolUpdateMode() != UPDATE_ONCLOSE)
+            CallCallback();
+
+        // Remove the right actors.
+        FinalActorSetup();
+    }
+}
+
+// ****************************************************************************
+//  Method:  VisitBoxTool::DoTransformations
+//
+//  Purpose:
+//    Applies the current transformation to the hotpoints.
+//
+//  Programmer:  Brad Whitlock
+//  Creation:    Wed Oct 30 12:22:38 PDT 2002
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+VisitBoxTool::DoTransformations()
+{
+    avtMatrix M = TMtx * SMtx;
+
+    for (size_t i=0; i<hotPoints.size(); i++)
+        hotPoints[i].pt = M * origHotPoints[i].pt;
+
+    vtkMatrix4x4 *tmp = vtkMatrix4x4::New();
+    tmp->DeepCopy(M.GetElements());
+    boxActor->SetUserMatrix(tmp);
+    tmp->Delete();
+}
+
+
+// ****************************************************************************
+//  Method:  VisitBoxTool::ReAddToWindow
+//
+//  Purpose:
+//    Allows the tool to re-add any actors affected by anti-aliasing to remove
+//    and re-add themselves back to the renderer, so that they will be rendered
+//    after plots.
+//
+//  Programmer:  Kathleen Bonnell 
+//  Creation:    Wed May 28 16:09:47 PDT 2003 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+VisitBoxTool::ReAddToWindow()
+{
+    if(IsEnabled())
+    {
+        proxy.GetCanvas()->RemoveActor(boxActor);
+        proxy.GetCanvas()->AddActor(boxActor);
+    }
+}
+
+// ****************************************************************************
+// Method:  VisitBoxTool::Set3DAxisScalingFactors
+//
+// Purpose:
+//   If the 3D scaling changes, update the tool.
+//
+// Arguments:
+//   ignored
+//
+// Programmer:  Jeremy Meredith
+// Creation:    May 19, 2010
+//
+// ****************************************************************************
+void
+VisitBoxTool::Set3DAxisScalingFactors(bool, const double[3])
+{
+    if(IsEnabled())
+    {
+        UpdateTool();
+    }
+}
+
+//
+// Static callback functions.
+//
+
+void
+VisitBoxTool::TranslateCallback(VisitInteractiveTool *it, CB_ENUM e,
+    int ctrl, int shift, int x, int y, int)
+{
+    VisitBoxTool *bt = (VisitBoxTool *)it;
+    bt->SetActiveHotPoint(0);
+    bt->Translate(e, ctrl, shift, x, y);
+}
+
+void
+VisitBoxTool::XMINCallback(VisitInteractiveTool *it, CB_ENUM e,
+    int ctrl, int shift, int x, int y, int)
+{
+    VisitBoxTool *bt = (VisitBoxTool *)it;
+    bt->SetActiveHotPoint(1);
+    bt->Resize(e, ctrl, shift, x, y);
+}
+
+void
+VisitBoxTool::XMAXCallback(VisitInteractiveTool *it, CB_ENUM e,
+    int ctrl, int shift, int x, int y, int)
+{
+    VisitBoxTool *bt = (VisitBoxTool *)it;
+    bt->SetActiveHotPoint(2);
+    bt->Resize(e, ctrl, shift, x, y);
+}
+
+void
+VisitBoxTool::YMINCallback(VisitInteractiveTool *it, CB_ENUM e,
+    int ctrl, int shift, int x, int y, int)
+{
+    VisitBoxTool *bt = (VisitBoxTool *)it;
+    bt->SetActiveHotPoint(3);
+    bt->Resize(e, ctrl, shift, x, y);
+}
+
+void
+VisitBoxTool::YMAXCallback(VisitInteractiveTool *it, CB_ENUM e,
+    int ctrl, int shift, int x, int y, int)
+{
+    VisitBoxTool *bt = (VisitBoxTool *)it;
+    bt->SetActiveHotPoint(4);
+    bt->Resize(e, ctrl, shift, x, y);
+}
+
+void
+VisitBoxTool::ZMINCallback(VisitInteractiveTool *it, CB_ENUM e,
+    int ctrl, int shift, int x, int y, int)
+{
+    VisitBoxTool *bt = (VisitBoxTool *)it;
+    bt->SetActiveHotPoint(5);
+    bt->Resize(e, ctrl, shift, x, y);
+}
+
+void
+VisitBoxTool::ZMAXCallback(VisitInteractiveTool *it, CB_ENUM e,
+    int ctrl, int shift, int x, int y, int)
+{
+    VisitBoxTool *bt = (VisitBoxTool *)it;
+    bt->SetActiveHotPoint(6);
+    bt->Resize(e, ctrl, shift, x, y);
+}
+
+void
+VisitBoxTool::ResizeCallback(VisitInteractiveTool *it, CB_ENUM e,
+    int ctrl, int shift, int x, int y, int)
+{
+    VisitBoxTool *bt = (VisitBoxTool *)it;
+    bt->SetActiveHotPoint(7);
+    bt->Resize(e, ctrl, shift, x, y);
+}

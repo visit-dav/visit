@@ -1,0 +1,44 @@
+<?xml version="1.0"?>
+  <Plugin name="Elevate" type="operator" label="Elevate" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" iconFile="Elevate.xpm" category="Transforms">
+    <Attribute name="ElevateAttributes" purpose="Attributes for the elevate operator" persistent="true" keyframe="true" exportAPI="" exportInclude="">
+      <Enum name="Scaling">
+        Linear
+        Log
+        Skew
+      </Enum>
+      <Enum name="LimitsMode">
+        OriginalData
+        CurrentPlot
+      </Enum>
+      <Field name="useXYLimits" label="Elevation height relative to XY limits?" type="bool">
+        false
+      </Field>
+      <Field name="limitsMode" label="LimitsMode" type="enum" subtype="LimitsMode" enabler="useXYLimits:true">
+        OriginalData
+      </Field>
+      <Field name="scaling" label="Scale" type="enum" subtype="Scaling" enabler="useXYLimits:true">
+        Linear
+      </Field>
+      <Field name="skewFactor" label="Skew factor" type="double" enabler="scaling:Skew">
+        1.000000
+      </Field>
+      <Field name="minFlag" label="Use min" type="bool" enabler="useXYLimits:true">
+        false
+      </Field>
+      <Field name="min" label="Min" type="double" enabler="minFlag:true">
+        0.000000
+      </Field>
+      <Field name="maxFlag" label="Use max" type="bool" enabler="useXYLimits:true">
+        false
+      </Field>
+      <Field name="max" label="Max" type="double" enabler="maxFlag:true">
+        1.000000
+      </Field>
+      <Field name="zeroFlag" label="Elevate with zero height?" type="bool">
+        false
+      </Field>
+      <Field name="variable" label="Elevate by Variable" type="variablename" enabler="zeroFlag:false" vartypes="01000000000">
+        default
+      </Field>
+    </Attribute>
+  </Plugin>

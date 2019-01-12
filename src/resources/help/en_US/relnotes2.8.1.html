@@ -1,0 +1,49 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta http-equiv="Content-Language" content="en-us">
+   <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+   <meta name="ProgId" content="FrontPage.Editor.Document">
+   <title>VisIt 2.8.1 Release Notes</title>
+</head>
+<body>
+
+<center><b><font size="6">VisIt 2.8.1 Release Notes</font></b></center>
+
+<p>Welcome to VisIt's release notes page. Release 2.8.1 is primarily a bug fix release to release 2.8. It fixes additional bugs in release 2.8. Look <a href="relnotes2.8.0.html">here</a> to see a complete list of changes in release 2.8.</p>
+
+<p><b><font size="4">Bugs fixed in version 2.8.1</font></b></p>
+<ul>
+<li>Eliminated a problem-sized memory leak introduced in VisIt 2.8 that affected many of VisIt's filters.</li>
+<li>Corrected a bug with Python callbacks failing for viewer RPC's with no arguments.</li>
+<li>Corrected a bug with the multipass CSG discretization method where it created incorrect results in regions where one or more boundaries was referenced multiple times and the total number of boundaries in the mesh was greater than 512.</li>
+<li>Corrected a bug where Pick, Query and the Onion Peel operator would return inconsistent results when using the same zone or node ids, when the database supplied ghost zones.</li>
+<li>Mesh plots of arbitrary polyhedra now display properly when the Onion Peel operator has been applied.</li>
+<li>NumZones and NumNodes queries now return the correct count for arbitary polyhedral data when using the original data.</li>
+<li>The VisIt GUI no longer crashes when opening the Preferences window.</li>
+</ul>
+
+<p><b><font size="4">Enhancements in version 2.8.1</font></b></p>
+<ul>
+<li>Several enhancements were made to the BOUT reader. These include:
+<ul>
+<li>The ability to read variables containing ghost zones.</li>
+<li>Being more tolerant of data type variations in the files, such as allowing a "short", "int" or "long" for scalar integer values.</li>
+<li>Adding more error checks for bad values.</li>
+</ul>
+</li>
+<li>Upgraded to Silo version 4.10.1</li>
+<li>VisIt now uses the same version for all components when the user specifies a version number with a minor version number. For example, if the user specifies "visit -v 2.7.1" it will use version 2.7.1 for all the components. If the user specifies a version number without a minor version number then it will behave as before and launch the latest version in that series.</li>
+</ul>
+
+<p><b><font size="4">Changes for VisIt developers in version 2.8.1</font></b></p>
+<ul>
+<li>The build_visit script was modified so that it will use the equivalent of --svn-anon in the absence of any svn related flags when using the trunk version of build_visit. This will avoid the situation of using a specific visit release of the source code with the trunk version of build_visit, which may not be compatible with any releases.</li>
+</ul>
+
+<p>Click the following link to view the release notes for the previous
+version of VisIt: <a href="relnotes2.8.0.html">VisIt 2.8 Release Notes</a>.</p>
+
+</body>
+</html>

@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+  <Attribute name="Line" purpose="Attributes for a line" persistent="true" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="Line.code">
+    <Field name="point1" label="point1" type="doubleArray" length="3">
+      0.000000
+      0.000000
+      0.000000
+    </Field>
+    <Field name="point2" label="point2" type="doubleArray" length="3">
+      1.000000
+      1.000000
+      1.000000
+    </Field>
+    <Field name="designator" label="designator" type="string">
+    </Field>
+    <Field name="color" label="color" type="color">
+      0
+      0
+      0
+      255
+    </Field>
+    <Field name="lineWidth" label="lineWidth" type="linewidth">
+      0
+    </Field>
+    <Field name="interactive" label="interactive" type="bool">
+      false
+    </Field>
+    <Field name="reflineLabels" label="reflineLabels" type="bool">
+      false
+    </Field>
+    <Field name="varName" label="varName" type="string">
+      default
+    </Field>
+    <Field name="samplingOn" label="samplingOn" type="bool">
+      false
+    </Field>
+    <Field name="numSamples" label="numSamples" type="int" enabler="samplingOn:true">
+      50
+    </Field>
+    <Function name="SetPoint1" user="true" member="true">
+    </Function>
+    <Function name="SetPoint2" user="true" member="true">
+    </Function>
+  </Attribute>

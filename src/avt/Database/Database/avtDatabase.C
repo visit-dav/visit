@@ -1,0 +1,2989 @@
+/*****************************************************************************
+*
+* Copyright (c) 2000 - 2018, Lawrence Livermore National Security, LLC
+* Produced at the Lawrence Livermore National Laboratory
+* LLNL-CODE-442911
+* All rights reserved.
+*
+* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
+* full copyright notice is contained in the file COPYRIGHT located at the root
+* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
+*
+* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
+* modification, are permitted provided that the following conditions are met:
+*
+*  - Redistributions of  source code must  retain the above  copyright notice,
+*    this list of conditions and the disclaimer below.
+*  - Redistributions in binary form must reproduce the above copyright notice,
+*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
+*    documentation and/or other materials provided with the distribution.
+*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
+*    be used to endorse or promote products derived from this software without
+*    specific prior written permission.
+*
+* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
+* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
+* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
+* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
+* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
+* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
+* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
+* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
+* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
+* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
+* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
+* DAMAGE.
+*
+*****************************************************************************/
+
+// ************************************************************************* //
+//                              avtDatabase.C                                //
+// ************************************************************************* //
+
+#include <avtDatabase.h>
+
+#include <visitstream.h>
+#include <visit-config.h>
+
+#include <cerrno>
+#include <stdio.h>
+#include <stdlib.h>
+
+#include <Expression.h>
+#include <ExprNode.h>
+#include <ParsingExprList.h>
+#include <PickAttributes.h>
+#include <PickVarInfo.h>
+#include <Utility.h>
+
+#include <avtDatabaseFactory.h>
+#include <avtDatabaseMetaData.h>
+#include <avtDataObjectSource.h>
+#include <avtDataset.h>
+#include <avtExpressionTypeConversions.h>
+#include <avtExtents.h>
+#include <avtIntervalTree.h>
+#include <avtMultiresSelection.h>
+#include <avtSIL.h>
+
+#include <DebugStream.h>
+#include <Environment.h>
+#include <ImproperUseException.h>
+#include <InvalidFilesException.h>
+#include <InvalidDimensionsException.h>
+#include <InvalidVariableException.h>
+#include <TimingsManager.h>
+
+#include <avtExecutionManager.h>
+
+#include <algorithm>
+#include <map>
+#include <string>
+#include <vector>
+
+using std::map;
+using std::string;
+using std::vector;
+
+void
+ConvertSlashes(char *str)
+{
+    size_t len = strlen(str);
+    for (size_t i = 0; i < len; ++i)
+    {
+#ifndef WIN32
+        if (str[i] == '\\')
+            str[i] = '/';
+#else
+        if (str[i] == '/')
+            str[i] = '\\';
+#endif
+    }
+}
+
+
+// size of MD/SIL caches
+unsigned int avtDatabase::mdMaxCacheSize   = 20;
+unsigned int avtDatabase::silMaxCacheSize  = 20;
+
+bool      avtDatabase::onlyServeUpMetaData = false;
+
+
+// ****************************************************************************
+// The following methods are convenience methods to help database plugins
+// do dynamic domain decomposion for rectilinear grids. There are four 
+// methods...
+//
+// 1 DetermineRectilinearDecomposition: Used to compute a domain decomposition
+// 2 ComputeDomainLogicalCoords: Used to compute the logical indices of a domain 
+// 3 ComputeDomainBounds: Used to compute spatial bounds of a domain
+// 4 RectilinearDecompCost: Used *internally* to help compute domain decomp.
+//
+//   DetermineRectilinearDecomposition determines the number of domains in
+//   each dimension to decompose the mesh into. For example, for a mesh that
+//   is 100 zones in X and 50 zones in Y and a total number of domains (e.g.
+//   processor count) of 6, it would return (3,2,0) meaning 3 domains in X
+//   by 2 domains in Y by zero domains in Z like so...
+//   
+//      +---------+---------+---------+
+//   1  |    3    |    4    |    5    |    
+//      +---------+---------+---------+
+//   0  |    0    |    1    |    2    |    
+//      +---------+---------+---------+
+//           0         1         2
+//
+//   The numbers inside each box above are the MPI ranks associated with the
+//   domains or, in other words, the domain numbers.
+//
+//   ComputeDomainLogicalCoords is used to map an MPI rank into a set of 
+//   logical domain indices. It would be called, for example, on processor of
+//   rank 5 to return the indices (2,1,0) meaning that domain '5' has logical
+//   indices 2,1,0.
+//
+//   ComputeDomainBounds is used to compute the logical bounds of a domain
+//   'slot' along a given axis. For example, for the case above, slot 0's
+//   domain in the Y axis would go from 0 to 49 while slot 1 would go from
+//   50 to 99.
+//
+//   These routines could be improved to support simple ghosting.
+//
+// ****************************************************************************
+
+// ****************************************************************************
+//  Function: RectilinearDecompCost 
+//
+//  Purpose:
+//      Compute the "cost" of a decomposition in terms of the amount of
+//      communication algorithms might require. Note, this is part of the
+//      domain decomposition algorithm taken from Matt O'Brien's domain
+//      decomposition library
+//      
+//  Programmer: Mark C. Miller (plagerized from Matt O'Brien)
+//  Creation:   September 20, 2004 
+//
+//  Modification:
+//
+//    Mark C. Miller, Mon Aug 14 13:59:33 PDT 2006
+//    Moved here from ViSUS plugin so it can be used by other plugins
+//
+// ****************************************************************************
+double
+avtDatabase::RectilinearDecompCost(int i, int j, int k, int nx, int ny, int nz)
+{
+    double costtot;
+
+    i--;
+    j--;
+    k--;
+
+    costtot = 0;
+
+    /* estimate cost based on size of communicating surfaces */
+
+    costtot+=i*((ny*nz));
+    costtot+=j*((nx*nz));
+    costtot+=k*((ny*nx));
+    costtot+=2*i*j*((nz));
+    costtot+=2*i*k*((ny));
+    costtot+=2*j*k*((nx));
+    costtot+=4*i*j*k;
+
+    return(costtot);
+}
+
+// ****************************************************************************
+//  Function: DetermineRectilinearDecomposition 
+//
+//  Purpose:
+//      Decides how to decompose a rectilinear mesh into numbers of processors
+//      along each independent axis. This code was taken from Matt O'Brien's
+//      domain decomposition library. 
+//
+//      ndims : is the number of logical dimensions in the mesh
+//      n     : is the number of desired domains
+//      nx    : size of global, logical mesh in x
+//      ny    : size of global, logical mesh in y
+//      nz    : size of global, logical mesh in z
+//      imin  : (named consistent with orig. code) domain count along x axis
+//      jmin  : (named consistent with orig. code) domain count along y axis
+//      kmin  : (named consistent with orig. code) domain count along z axis
+//
+//      After calling, it should be the case that imin * jmin * kmin = n;
+//      Therefore, one can decompose the mesh into an array of 'domains' that
+//      is imin x jmin x kmin.
+//
+//      If n is a prime number, I think the result is imin = n, jmin = kmin = 1
+//      
+//  Programmer: Mark C. Miller (plagerized from Matt O'Brien)
+//  Creation:   September 20, 2004 
+//
+//  Modification:
+//
+//    Mark C. Miller, Mon Aug 14 13:59:33 PDT 2006
+//    Moved here from ViSUS plugin so it can be used by other plugins
+//
+//    Mark C. Miller, Tue Dec  5 18:14:58 PST 2006
+//    Fixed UMR
+//
+// ****************************************************************************
+double
+avtDatabase::ComputeRectilinearDecomposition(int ndims, int n, int nx, int ny, int nz,
+   int *imin, int *jmin, int *kmin)
+{
+    int i,j;
+    double cost, costmin = 1e80;
+
+    if (ndims == 2)
+        nz = 1;
+
+    /* find all two or three product factors of the number of domains
+       and evaluate the communication cost */
+
+   for (i = 1; i <= n; ++i)
+   {
+      if (n%i == 0)
+      {
+         if (ndims == 3)
+         {
+            for (j = 1; j <= i; ++j)
+            {
+               if ((i%j) == 0)
+               {
+                  cost = RectilinearDecompCost(j, i/j, n/i, nx, ny, nz);
+                  
+                  if (cost < costmin)
+                  {
+                     *imin = j;
+                     *jmin = i/j;
+                     *kmin = n/i;
+                     costmin = cost;
+                  }
+               }
+            }
+         }
+         else
+         {
+            cost = RectilinearDecompCost(i, n/i, 1, nx, ny, nz);
+            
+            if (cost < costmin)
+            {
+               *imin = i;
+               *jmin = n/i;
+               *kmin = 1;
+               costmin = cost;
+            }
+         } 
+      }
+   }
+
+   return costmin;
+}
+
+// ****************************************************************************
+//  Function: ComputeRectilinearSpatialDecomposition
+//
+//  Purpose: Just like ComputeRectilinearDecomposition except it is intended
+//  to compute a decomposition of a spatial bounding box instead of a logical
+//  one.
+//
+//      ndims : is the number of logical dimensions in the mesh
+//      n     : is the number of desired domains
+//      wx    : size of global, mesh in x
+//      wy    : size of global, mesh in y
+//      wz    : size of global, mesh in z
+//      imin  : (named consistent with orig. code) domain count along x axis
+//      jmin  : (named consistent with orig. code) domain count along y axis
+//      kmin  : (named consistent with orig. code) domain count along z axis
+//
+//  Programmer: Mark C. Miller
+//  Creation:   September 27, 2007 
+// 
+// ****************************************************************************
+double
+avtDatabase::ComputeRectilinearSpatialDecomposition(int ndims, int n, double wx,
+    double wy, double wz, int *imin, int *jmin, int *kmin)
+{
+    double xscale = 1000.0 / wx;
+    double yscale = 1000.0 / wy;
+    double zscale = ndims == 3 ? (1000.0 / wz ) : xscale;
+    double scale = xscale;
+    if (yscale > xscale)
+        scale = yscale;
+    if (zscale > scale)
+        scale = zscale;
+
+    int nx = (int) (scale * wx);
+    int ny = (int) (scale * wy);
+    int nz = (int) (scale * wz);
+    return ComputeRectilinearDecomposition(ndims, n, nx, ny, nz, imin, jmin, kmin);
+}
+
+// ****************************************************************************
+//  Function: ComputeDomainLogicalCoords
+//
+//  Purpose: Given the number of domains along each axis in a decomposition
+//  and the rank of a processor, this routine will determine the domain logical
+//  coordinates of the processor's domain.
+//
+//  dataDim            : number of logical dimensions in the mesh
+//  domCount[]         : array of counts of domains in each of x, y, z axes
+//  rank               : zero-origin rank of calling processors
+//  domLogicalCoords[] : returned logical indices of the domain associated
+//                       with this rank.
+//
+//  For example, in a 6 processor case decomposed in a 3 x 2 array of domains
+//  like so...
+//
+//      +---------+---------+---------+
+//   1  |    3    |    4    |    5    |    
+//      +---------+---------+---------+
+//   0  |    0    |    1    |    2    |    
+//      +---------+---------+---------+
+//           0         1         2
+//
+//   Calling this method on processor of rank 5 would return
+//   domLogicalCoords = {2,1,0}
+//      
+//  Programmer: Mark C. Miller
+//  Creation:   September 20, 2004 
+//
+//  Modification:
+//
+//    Mark C. Miller, Mon Aug 14 13:59:33 PDT 2006
+//    Moved here from ViSUS plugin so it can be used by other plugins
+//
+// ****************************************************************************
+void
+avtDatabase::ComputeDomainLogicalCoords(int dataDim, int domCount[3], int rank,
+    int domLogicalCoords[3])
+{
+    int r = rank;
+
+    // handle Z (K logical) axis
+    if (dataDim == 3)
+    {
+        domLogicalCoords[2] = r / (domCount[1]*domCount[0]);
+        r = r % (domCount[1]*domCount[0]);
+    }
+
+    // handle Y (J logical) axis
+    domLogicalCoords[1] = r / domCount[0];
+    r = r % domCount[0];
+
+    // handle X (I logical) axis
+    domLogicalCoords[0] = r;
+}
+
+// ****************************************************************************
+//  Function: ComputeDomainBounds 
+//
+//  Purpose: Given the global zone count along an axis, the domain count for
+//  the same axis and a domain's logical index along the same axis, compute
+//  the starting global zone index along this axis and the count of zones
+//  along this axis for the associated domain.
+//
+//  For example, in the case a 2D mesh that is globally 100 zones in X by
+//  100 zones in Y, if we want to obtain the bounds in X of domains (1,0)
+//  (rank 1) or (1,1) (rank 4)...
+//
+//      +---------+---------+---------+
+//   1  |    3    |    4    |    5    |    
+//      +---------+---------+---------+
+//   0  |    0    |    1    |    2    |    
+//      +---------+---------+---------+
+//           0         1         2
+//
+//   We would call this method with globalZoneCount = 100, domCount = 3
+//   because there are 3 domains along the X axis, domLogicalCoord = 1
+//   because we are dealing with the domain whose index is 1 along the
+//   X axis.
+//      
+//  Programmer: Mark C. Miller
+//  Creation:   September 20, 2004 
+//
+//  Modification:
+//
+//    Mark C. Miller, Mon Aug 14 13:59:33 PDT 2006
+//    Moved here from ViSUS plugin so it can be used by other plugins
+//
+// ****************************************************************************
+void
+avtDatabase::ComputeDomainBounds(int globalZoneCount, int domCount, int domLogicalCoord,
+    int *globalZoneStart, int *zoneCount)
+{
+    int domZoneCount       = globalZoneCount / domCount;
+    int domsWithExtraZones = globalZoneCount % domCount;
+    int domZoneCountPlus1  = domZoneCount;
+    if (domsWithExtraZones > 0)
+        domZoneCountPlus1 = domZoneCount + 1;
+
+    int i;
+    int stepSize = domZoneCount;
+    *globalZoneStart = 0;
+    for (i = 0; i < domLogicalCoord; ++i)
+    {
+        *globalZoneStart += stepSize;
+        if (i >= domCount - domsWithExtraZones)
+            stepSize = domZoneCountPlus1;
+    }
+    if (i >= domCount - domsWithExtraZones)
+        stepSize = domZoneCountPlus1;
+    *zoneCount = stepSize;
+}
+
+// ****************************************************************************
+//  Function: ComputeDomainSpatialBounds 
+//
+//  Purpose: Just like ComputeDomainBounds but for sptial case. 
+//
+//  Programmer: Mark C. Miller
+//  Creation:   September 20, 2004 
+// ****************************************************************************
+void
+avtDatabase::ComputeDomainSpatialBounds(double globalWidth, int domCount, int domLogicalCoord,
+    double *globalStart, double *width)
+{
+    double domWidth = globalWidth / domCount;
+    *globalStart = domLogicalCoord * domWidth;
+    *width = domWidth;
+}
+
+
+// ****************************************************************************
+//  Method: avtDatabase constructor
+//
+//  Arguments:
+//      f       The list of files.
+//      nf      The number of files in f.
+//
+//  Programmer: Hank Childs
+//  Creation:   August 9, 2000
+//
+//  Modifications:
+//
+//    Hank Childs, Mon Aug 14 11:49:24 PDT 2000
+//    Made a database be more tied to its files by putting them in constructor.
+//
+//    Hank Childs, Wed Sep 13 20:56:28 PDT 2000
+//    Moved initialization of files to base class.
+//
+//    Hank Childs, Thu Mar  1 13:42:43 PST 2001
+//    Split class so functionality went in derived type, avtGenericDatabase.
+//
+//    Hank Childs, Fri Aug 31 17:01:18 PDT 2001
+//    Initialized gotIOInfo.
+//
+//    Jeremy Meredith/Hank Childs, Tue Mar 23 12:26:55 PST 2004
+//    Initialize file format type.
+//
+//    Mark C. Miller, Tue Jun 10 22:36:25 PDT 2008
+//    Added support for ignoring bad extents from dbs.
+//
+//    Brad Whitlock, Thu Jun 19 10:45:57 PDT 2014
+//    Removed gotIOInfo.
+//
+// ****************************************************************************
+
+avtDatabase::avtDatabase()
+{
+    invariantMetaData = NULL;
+    invariantSIL      = NULL;
+    fileFormat        = "<unknown>";
+    ignoreExtents     = false;
+    isEnsemble        = false;
+}
+
+
+// ****************************************************************************
+//  Method: avtDatabase destructor
+//
+//  Programmer: Hank Childs
+//  Creation:   August 9, 2000
+//
+//  Modifications:
+//
+//    Hank Childs, Mon Aug 14 09:28:41 PDT 2000
+//    Added deletion of variable and source as arrays.
+//
+//    Hank Childs, Wed Sep 13 20:56:28 PDT 2000
+//    Moved deletion of files down to base class.
+//
+//    Hank Childs, Thu Mar  1 13:42:43 PST 2001
+//    Split class so functionality went in derived type, avtGenericDatabase.
+//
+//    Mark C. Miller, 30Sep03
+//    Added support to time-varying SIL/MD
+//
+//    Hank Childs, Tue Mar 22 10:41:23 PST 2005
+//    Fix memory leak.
+//
+//    Mark C. Miller, Thu Feb 12 11:33:59 PST 2009
+//    Removed std:: qualification on some STL classes due to use of using
+//    statements at top 
+// ****************************************************************************
+
+avtDatabase::~avtDatabase()
+{
+    vector<avtDataObjectSource *>::iterator it;
+    for (it = sourcelist.begin() ; it != sourcelist.end() ; ++it)
+    {
+        delete *it;
+    }
+
+    if (invariantMetaData != NULL)
+    {
+        delete invariantMetaData;
+        invariantMetaData = NULL;
+    }
+
+    if (invariantSIL != NULL)
+    {
+        delete invariantSIL;
+        invariantSIL = NULL;
+    }
+
+    std::list<CachedMDEntry>::iterator it2;
+    for (it2 = metadata.begin() ; it2 != metadata.end() ; ++it2)
+    {
+        delete (*it2).md;
+    }
+    std::list<CachedSILEntry>::iterator it3;
+    for (it3 = sil.begin() ; it3 != sil.end() ; ++it3)
+    {
+        delete (*it3).sil;
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtDatabase::GetOutput
+//
+//  Purpose:
+//      Gets an avtDataset object that corresponds to the currently opened
+//      files and specified variable.
+//
+//  Arguments:
+//      var     The variable that the dataset should correspond to.
+//      ts      The timestep that the dataset should correspond to.
+//
+//  Returns:    An avtDataset corresponding to the files and variable.
+//
+//  Programmer: Hank Childs
+//  Creation:   August 9, 2000
+//
+//  Modifications:
+//
+//    Hank Childs, Mon Aug 14 09:42:50 PDT 2000
+//    Re-wrote to handle multiple variables.
+//
+//    Hank Childs, Thu Mar  1 09:01:30 PST 2001
+//    Added timestep argument.  Rewrote to not need data members.
+//
+//    Hank Childs, Fri Aug 17 16:03:44 PDT 2001
+//    Removed dependencies on avtDataset.
+//
+//    Mark C. Miller, Tue Sep 28 19:32:50 PDT 2004
+//    Added dummy argument for c all to PopulateDataObjectInformation
+// ****************************************************************************
+
+avtDataObject_p
+avtDatabase::GetOutput(const char *var, int ts)
+{
+    //
+    // Figure out how many domains there are for the current variable.
+    //
+    int nDomains = GetMetaData(ts)->GetNDomains(var);
+
+    if (nDomains <= 0)
+    {
+        EXCEPTION1(InvalidVariableException, var);
+    }
+
+    //
+    // Create the source object.
+    //
+    avtDataObjectSource *src = CreateSource(var, ts);
+    avtDataObject_p dob = src->GetOutput();
+
+    vector<bool> dummy;
+    PopulateDataObjectInformation(dob, var, ts, dummy);
+
+    sourcelist.push_back(src);
+
+    return dob;
+}
+
+
+// ****************************************************************************
+//  Method: avtDatabase::PopulateDataObjectInformation
+//
+//  Purpose:
+//      Populates the information from a data object from the database 
+//      metadata.
+//
+//  Arguments:
+//      dob       The data object to populate.
+//      var       The variable the data object corresponds to.
+//
+//  Programmer:   Hank Childs
+//  Creation:     October 26, 2000
+//
+//  Modifications:
+//
+//    Hank Childs, Fri Dec 22 14:10:22 PST 2000
+//    Accounted for interface change with dataset information.
+//
+//    Hank Childs, Mon Mar 19 16:22:25 PST 2001
+//    Accounted for centering, vector vars.
+//
+//    Hank Childs, Sun Mar 25 11:55:28 PST 2001
+//    Accounted for new data object information interface.
+//
+//    Hank Childs, Fri Aug 17 16:07:26 PDT 2001
+//    Renamed to get away from avtDataset roots.
+//
+//    Eric Brugger, Mon Nov  5 13:28:45 PST 2001
+//    Modified to always compile the timing code.
+//
+//    Hank Childs, Wed Dec 19 20:18:19 PST 2001
+//    Added species support.
+//
+//    Hank Childs, Fri Dec 21 07:23:47 PST 2001
+//    Write out variable names.
+//
+//    Hank Childs, Sun Jun 16 19:52:06 PDT 2002
+//    Pass on the cell and block origins.
+//
+//    Hank Childs, Sun Aug 18 11:09:55 PDT 2002
+//    Pass on disjoint elements information.
+//
+//    Hank Childs, Fri Sep 27 16:45:38 PDT 2002
+//    Pass on units.
+//
+//    Hank Childs, Mon Sep 30 09:06:44 PDT 2002
+//    Pass on containsGhostZones.
+//
+//    Hank Childs, Tue Oct  1 14:59:20 PDT 2002
+//    If we are doing a material plot, then the output's zones will be
+//    invalidated.
+//
+//    Kathleen Bonnell, Wed Mar 26 13:03:54 PST 2003 
+//    Pass on containsOriginalCells.
+//
+//    Jeremy Meredith, Thu Jun 12 08:48:20 PDT 2003
+//    Added logic to decrement the topo. dimension if we have requested
+//    material boundaries.
+//
+//    Hank Childs, Fri Aug  1 21:54:08 PDT 2003
+//    Add support for curves.
+//
+//    Hank Childs, Wed Aug 13 11:17:58 PDT 2003
+//    No longer assume that requesting a material means that we are doing
+//    material interface reconstruction.
+//
+//    Hank Childs, Tue Sep 23 23:03:07 PDT 2003
+//    Add support for tensors.
+//
+//    Mark C. Miller, 30Sep03
+//    Added timeStep argument
+//
+//    Hank Childs, Mon Feb 23 07:49:51 PST 2004
+//    Update for new data attribute interface.  Now add variables for each of
+//    the secondary variables in data specification.
+//
+//    Kathleen Bonnell, Thu Mar 11 11:17:58 PST 2004
+//    DataExtents now always has only 2 componnts. 
+//
+//    Kathleen Bonnell, Fri May 28 18:26:09 PDT 2004 
+//    Pass on containsOriginalNodes.
+//
+//    Kathleen Bonnell, Thu Jul 22 12:10:19 PDT 2004 
+//    Set avtDataAttributes::treatAsASCII from ScalarMetaData::treatAsASCII.
+//
+//    Brad Whitlock, Tue Jul 20 13:35:38 PST 2004
+//    Added units for scalar, vector, tensor, symmetric tensor, and curve
+//    vars. I also added labels for meshes.
+//
+//    Hank Childs, Fri Aug 20 15:42:34 PDT 2004
+//    Correct cut-and-paste bug for checking units for symmetric tensors.
+//
+//    Mark C. Miller, Tue Sep 28 19:32:50 PDT 2004
+//    Added argument for data selections that have been applied as well
+//    as code to populate data attributes
+//
+//    Mark C. Miller, Tue Oct 19 14:08:56 PDT 2004
+//    Changed 'spec' arg to ref_ptr. Added code to attempt to get spatial/data
+//    extents trees and set true extents from those if available
+//
+//    Mark C. Miller, Wed Oct 20 10:35:53 PDT 2004
+//    Moved code to get extents from auxiliary data to a subroutine. Also,
+//    placed it inside the checks for various variable types.
+//
+//    Kathleen Bonnell, Fri Nov 12 08:13:02 PST 2004 
+//    Throw an exception in the case that BoundarySurfaces are requested but
+//    the topological dimension is zero. 
+//
+//    Kathleen Bonnell, Thu Dec  9 08:43:47 PST 2004 
+//    Set ContainsGlobalNode/ZoneIds in DataAtts from db MetaData. 
+//
+//    Hank Childs, Sat Jan  1 11:33:13 PST 2005
+//    Initialize the mesh name.
+//
+//    Kathleen Bonnell, Thu Jan 27 09:14:35 PST 2005 
+//    Share the number of states with DataAttributes.
+//
+//    Brad Whitlock, Mon Apr 4 09:07:04 PDT 2005
+//    Added support for Label type variables.
+//
+//    Hank Childs, Tue Jul 19 15:54:14 PDT 2005
+//    Add support for array variables.
+//
+//    Hank Childs, Fri Aug  5 16:32:56 PDT 2005
+//    Set the variable type, as well as the array subnames.
+//
+//    Jeremy Meredith, Thu Aug 25 11:06:06 PDT 2005
+//    Added group origin.
+//
+//    Hank Childs, Fri Oct  7 08:21:03 PDT 2005
+//    Added fullDBName.
+//
+//    Kathleen Bonnell, Fri Feb  3 10:32:12 PST 2006 
+//    Added meshCoordType.
+//
+//    Kathleen Bonnell, Thu Aug  3 08:42:33 PDT 2006 
+//    Add Variable and DataExtents from CurveMetaData. 
+//
+//    Jeremy Meredith, Mon Aug 28 16:45:10 EDT 2006
+//    Added unit cell vectors.  Added nodesAreCritical.
+//
+//    Jeremy Meredith, Thu Feb 15 12:53:11 EST 2007
+//    Added support for rectilinear grids with an inherent transform.
+//
+//    Mark C. Miller, Tue Mar 27 08:39:55 PDT 2007
+//    Added support for node origin
+//
+//    Kathleen Bonnell,  Fri Jun 22 13:41:14 PDT 2007
+//    Added meshType.
+//
+//    Hank Childs, Wed Jul 25 14:16:36 PDT 2007
+//    Renamed method: NeedBoundarySurfaces -> GetBoundarySurfaceRepresentation.
+//
+//    Hank Childs, Sun Oct 28 09:51:53 PST 2007
+//    Added support for ghost data on the exterior of the boundary.
+//
+//    Hank Childs, Fri Feb 15 16:19:02 PST 2008
+//    Fix possible buffer overwrite.
+//
+//    Hank Childs, Tue Jan 20 10:36:40 PST 2009
+//    Initialize data member for whether or not the file format does its own
+//    domain decomposition.
+//
+//    Mark C. Miller, Wed Feb 11 17:08:51 PST 2009
+//    Removed 'centering' member from curve metadata
+//
+//    Mark C. Miller, Thu Feb 12 11:33:59 PST 2009
+//    Removed std:: qualification on some STL classes due to use of using
+//    statements at top 
+//
+//    Jeremy Meredith, Tue Jun  2 16:25:01 EDT 2009
+//    Added support for unit cell origin (previously assumed to be 0,0,0);
+//
+//    Tom Fogal, Fri Aug  6 16:53:50 MDT 2010
+//    Set level of detail info from the mesh meta data.
+//
+//    Hank Childs, Thu Aug 26 13:02:28 PDT 2010
+//    Change named of extents object.
+//
+//    Cyrus Harrison,Thu Feb  9 10:26:48 PST 2012
+//    Added logic to support presentGhostZoneTypes, which allows us to
+//    differentiate between ghost zones for boundaries & nesting.
+//
+//    Hank Childs, Tue Oct 23 14:43:37 PDT 2012
+//    Mark the zones and nodes as invalidated if selections were applied.
+//
+//    Eric Brugger, Fri Dec 20 11:44:53 PST 2013
+//    Set the multi resolution data selection information into the meta data.
+//
+//    Burlen Loring, Sun Apr 27 15:17:23 PDT 2014
+//    Cleanup -Wall warnings
+//
+//    Kathleen Biagas, Wed Jul 23 16:45:34 PDT 2014
+//    Invalidate zones if meshmetadata reports the zones were split as can be
+//    the case for arbitrary polyhedral meshes.
+//
+//    David Camp, Mon Jul 28 09:09:40 PDT 2014
+//    Changed 'for loop' to speed up the action. No need to test all if once
+//    any are true we are going to invalidate the zones.
+//
+// ****************************************************************************
+
+void
+avtDatabase::PopulateDataObjectInformation(avtDataObject_p &dob,
+                                          const char *var,
+                                          int ts,
+                                          const vector<bool> &selectionsApplied,
+                                          avtDataRequest_p spec)
+{
+    int timerHandle = visitTimer->StartTimer();
+
+    avtDataAttributes &atts     = dob->GetInfo().GetAttributes();
+    atts.SetFullDBName(fullDBName);
+    avtDataValidity   &validity = dob->GetInfo().GetValidity();
+
+    avtDatabaseMetaData *md = GetMetaData(ts);
+    atts.SetDynamicDomainDecomposition(md->GetFormatCanDoDomainDecomposition());
+    string mesh = md->MeshForVar(var);
+    const avtMeshMetaData *mmd = md->GetMesh(mesh);
+    bool haveSetOriginalSpatialExtents = false;
+    atts.SetNumStates(md->GetNumStates());
+    if (mmd != NULL)
+    {
+        atts.SetCellOrigin(mmd->cellOrigin);
+        atts.SetNodeOrigin(mmd->nodeOrigin);
+        atts.SetBlockOrigin(mmd->blockOrigin);
+        atts.SetGroupOrigin(mmd->groupOrigin);
+        atts.SetTopologicalDimension(mmd->topologicalDimension);
+        atts.SetSpatialDimension(mmd->spatialDimension);
+        atts.SetMeshname(mesh);
+        atts.SetXUnits(mmd->xUnits);
+        atts.SetYUnits(mmd->yUnits);
+        atts.SetZUnits(mmd->zUnits);
+        atts.SetXLabel(mmd->xLabel);
+        atts.SetYLabel(mmd->yLabel);
+        atts.SetZLabel(mmd->zLabel);
+        atts.SetContainsGhostZones(mmd->containsGhostZones);
+        atts.SetGhostZoneTypesPresent(mmd->presentGhostZoneTypes);
+        atts.SetContainsExteriorBoundaryGhosts(
+                             mmd->containsExteriorBoundaryGhosts);
+        atts.SetContainsOriginalCells(mmd->containsOriginalCells);
+        atts.SetContainsOriginalNodes(mmd->containsOriginalNodes);
+        atts.SetContainsGlobalZoneIds(mmd->containsGlobalZoneIds);
+        atts.SetContainsGlobalNodeIds(mmd->containsGlobalNodeIds);
+        validity.SetDisjointElements(mmd->disjointElements);
+        atts.SetLevelsOfDetail(mmd->LODs);
+
+        vector<bool> tmp = selectionsApplied;
+        atts.SetSelectionsApplied(tmp);
+        for (unsigned int i = 0 ; i < selectionsApplied.size() ; ++i)
+        {
+            if (selectionsApplied[i])
+            {
+                // We need to set these as invalid, or else caching could
+                // kick in and we might end up using acceleration structures
+                // across pipeline executions that were no longer valid.
+                validity.InvalidateZones();
+                validity.InvalidateNodes();
+                break;
+            }
+        }
+        if (mmd->zonesWereSplit)
+        {
+            validity.InvalidateZones();
+        }
+
+        //
+        // Note that we are using the spatial extents as both the spatial 
+        // extents and as the global spatial extents (the spatial extents 
+        // across all timesteps).
+        //
+        if (mmd->hasSpatialExtents)
+        {
+            double extents[6];
+            for (int i = 0 ; i < mmd->spatialDimension ; ++i)
+            {
+                extents[2*i]   = mmd->minSpatialExtents[i];
+                extents[2*i+1] = mmd->maxSpatialExtents[i];
+            }
+            atts.GetOriginalSpatialExtents()->Set(extents);
+            haveSetOriginalSpatialExtents = true;
+        }
+        atts.SetMeshType(mmd->meshType);
+        atts.SetMeshCoordType(mmd->meshCoordType);
+        atts.SetNodesAreCritical(mmd->nodesAreCritical);
+        atts.SetUnitCellVectors(mmd->unitCellVectors);
+        atts.SetUnitCellOrigin(mmd->unitCellOrigin);
+        if (mmd->rectilinearGridHasTransform)
+        {
+            atts.SetRectilinearGridHasTransform(true);
+            atts.SetRectilinearGridTransform(mmd->rectilinearGridTransform);
+        }
+    }
+
+    //
+    // If we haven't set spatial extents, try using a data tree
+    //
+    if (haveSetOriginalSpatialExtents == false)
+    {
+        double extents[6];
+        if (GetExtentsFromAuxiliaryData(spec, mesh.c_str(),
+                AUXILIARY_DATA_SPATIAL_EXTENTS, extents))
+        {
+            atts.GetOriginalSpatialExtents()->Set(extents);
+        }
+    }
+        
+    //
+    // We want to add information to the data attributes for each of the 
+    // variables.  Make a big list of the primary and secondary variables.
+    //
+    vector<const char *> var_list;
+    var_list.push_back(var);
+    if (*spec != NULL)
+    {
+        const vector<CharStrRef> &secondaryVariables 
+                                               = spec->GetSecondaryVariables();
+        for (unsigned int i = 0 ; i < secondaryVariables.size() ; ++i)
+        {
+            var_list.push_back(*(secondaryVariables[i]));
+        }
+    }
+
+    //
+    // Now iterate through our variable list and add information about each
+    // variable as we go.
+    //
+    for (unsigned int i = 0 ; i < var_list.size() ; ++i)
+    {
+        const avtScalarMetaData *smd = GetMetaData(ts)->GetScalar(var_list[i]);
+        if (smd != NULL)
+        {
+            if (smd->hasUnits)
+                atts.AddVariable(var_list[i], smd->units);
+            else
+                atts.AddVariable(var_list[i]);
+            atts.SetVariableDimension(1, var_list[i]);
+            atts.SetCentering(smd->centering, var_list[i]);
+            atts.SetTreatAsASCII(smd->treatAsASCII, var_list[i]); 
+            atts.SetVariableType(AVT_SCALAR_VAR, var_list[i]);
+
+            //
+            // Note that we are using the spatial extents as both the spatial 
+            // extents and as the global spatial extents (the spatial extents 
+            // across all timesteps).
+            //
+            if (smd->hasDataExtents)
+            {
+                double extents[2];
+                extents[0] = smd->minDataExtents;
+                extents[1] = smd->maxDataExtents;
+
+                atts.GetOriginalDataExtents(var_list[i])->Set(extents);
+            }
+            else
+            {
+                double extents[2];
+                if (GetExtentsFromAuxiliaryData(spec, var_list[i],
+                        AUXILIARY_DATA_DATA_EXTENTS, extents))
+                {
+                    atts.GetOriginalDataExtents(var_list[i])->Set(extents);
+                }
+            }
+        }
+
+        const avtVectorMetaData *vmd = GetMetaData(ts)->GetVector(var_list[i]);
+        if (vmd != NULL)
+        {
+            if (vmd->hasUnits)
+                atts.AddVariable(var_list[i], vmd->units);
+            else
+                atts.AddVariable(var_list[i]);
+            atts.SetVariableDimension(vmd->varDim, var_list[i]);
+            atts.SetCentering(vmd->centering, var_list[i]);
+            atts.SetVariableType(AVT_VECTOR_VAR, var_list[i]);
+
+            //
+            // Note that we are using the spatial extents as both the spatial 
+            // extents and as the global spatial extents (the spatial extents 
+            // across all timesteps).
+            //
+            if (vmd->hasDataExtents)
+            {
+                double extents[2];
+                extents[0] = vmd->minDataExtents;
+                extents[1] = vmd->maxDataExtents;
+                atts.GetOriginalDataExtents(var_list[i])->Set(extents);
+            }
+            else
+            {
+                double extents[2];
+                if (GetExtentsFromAuxiliaryData(spec, var_list[i],
+                        AUXILIARY_DATA_DATA_EXTENTS, extents))
+                {
+                    atts.GetOriginalDataExtents(var_list[i])->Set(extents);
+                }
+            }
+        }
+
+        const avtTensorMetaData *tmd = GetMetaData(ts)->GetTensor(var_list[i]);
+        if (tmd != NULL)
+        {
+            if (tmd->hasUnits)
+                atts.AddVariable(var_list[i], tmd->units);
+            else
+                atts.AddVariable(var_list[i]);
+            atts.SetVariableDimension(9, var_list[i]);
+            atts.SetCentering(tmd->centering, var_list[i]);
+            atts.SetVariableType(AVT_TENSOR_VAR, var_list[i]);
+        }
+
+        const avtSymmetricTensorMetaData *stmd = 
+                                   GetMetaData(ts)->GetSymmTensor(var_list[i]);
+        if (stmd != NULL)
+        {
+            if (stmd->hasUnits)
+                atts.AddVariable(var_list[i], stmd->units);
+            else
+                atts.AddVariable(var_list[i]);
+            atts.SetVariableType(AVT_SYMMETRIC_TENSOR_VAR, var_list[i]);
+            atts.SetVariableDimension(9, var_list[i]);
+            atts.SetCentering(stmd->centering, var_list[i]);
+        }
+
+        const avtArrayMetaData *amd = GetMetaData(ts)->GetArray(var_list[i]);
+        if (amd != NULL)
+        {
+            if (amd->hasUnits)
+                atts.AddVariable(var_list[i], amd->units);
+            else
+                atts.AddVariable(var_list[i]);
+            atts.SetVariableType(AVT_ARRAY_VAR, var_list[i]);
+            atts.SetVariableDimension(amd->nVars, var_list[i]);
+            atts.SetCentering(amd->centering, var_list[i]);
+            atts.SetVariableSubnames(amd->compNames, var_list[i]);
+        }
+
+        const avtSpeciesMetaData *spmd = 
+                                      GetMetaData(ts)->GetSpecies(var_list[i]);
+        if (spmd != NULL)
+        {
+            atts.AddVariable(var_list[i]);
+            atts.SetVariableDimension(1, var_list[i]);
+            atts.SetCentering(AVT_ZONECENT, var_list[i]);
+            atts.SetVariableType(AVT_MATSPECIES, var_list[i]);
+            double extents[2];
+            extents[0] = 0.;
+            extents[1] = 1.;
+            atts.GetDesiredDataExtents(var_list[i])->Set(extents);
+            atts.GetOriginalDataExtents(var_list[i])->Set(extents);
+        }
+
+        const avtCurveMetaData *cmd = GetMetaData(ts)->GetCurve(var_list[i]);
+        if (cmd != NULL)
+        {
+            atts.AddVariable(var_list[i]);
+            atts.SetVariableDimension(1, var_list[i]);
+            atts.SetVariableType(AVT_CURVE, var_list[i]);
+            atts.SetTopologicalDimension(1);
+            atts.SetSpatialDimension(1);
+            atts.SetXUnits(cmd->xUnits);
+            atts.SetXLabel(cmd->xLabel);
+            atts.SetYUnits(cmd->yUnits);
+            atts.SetYLabel(cmd->yLabel);
+            if (cmd->hasDataExtents)
+            {
+                double extents[2];
+                extents[0] = cmd->minDataExtents;
+                extents[1] = cmd->maxDataExtents;
+                atts.GetOriginalDataExtents(var_list[i])->Set(extents);
+            }
+            else
+            {
+                double extents[6]; // 6 is probably too much, but better to be safe
+                if (GetExtentsFromAuxiliaryData(spec, var_list[i],
+                        AUXILIARY_DATA_DATA_EXTENTS, extents))
+                {
+                    atts.GetOriginalDataExtents(var_list[i])->Set(extents);
+                }
+            }
+        }
+
+        const avtLabelMetaData *lmd = GetMetaData(ts)->GetLabel(var_list[i]);
+        if (lmd != NULL)
+        {
+            atts.AddVariable(var_list[i]);
+            atts.SetVariableDimension(1, var_list[i]);
+            atts.SetCentering(lmd->centering, var_list[i]);
+            atts.SetTreatAsASCII(true, var_list[i]); 
+            atts.SetVariableType(AVT_LABEL_VAR, var_list[i]);
+        }
+    }
+    atts.SetActiveVariable(var);
+
+    //
+    // Transfer the multi resolution data selection information to the 
+    // avtDataAttributes.
+    //
+    if (*spec != NULL)
+    {
+        vector<avtDataSelection_p> selList = spec->GetAllDataSelections();
+        for (unsigned int i = 0; i < selList.size(); ++i)
+        {
+            if (string(selList[i]->GetType()) == "Multi Resolution Data Selection")
+            {
+                avtMultiresSelection *sel= (avtMultiresSelection*)*(selList[i]);
+                double extents[6];
+                sel->GetActualExtents(extents);
+                double cellArea = sel->GetActualCellArea();
+
+                avtExtents multiresExtents(3);
+                multiresExtents.Set(extents);
+                atts.SetMultiresExtents(&multiresExtents);
+                atts.SetMultiresCellSize(cellArea);
+            }
+        }
+    }
+
+    //
+    // SPECIAL CASE:
+    //
+    // We need to decrement the topological dimension if we asked for
+    // an unfilled boundary.  The way this is handles (by directly
+    // checking a data specification) needs to change.
+    //
+    if (*spec && spec->GetBoundarySurfaceRepresentation())
+    {
+        if (atts.GetTopologicalDimension() > 0)
+        {
+            atts.SetTopologicalDimension(atts.GetTopologicalDimension() - 1);
+        }
+        else 
+        {
+            EXCEPTION2(InvalidDimensionsException, "Boundary", ">0"); 
+        }
+    }
+
+    char str[1024];
+    sprintf(str, "Populating Information for %s", var);
+    visitTimer->StopTimer(timerHandle, str);
+    visitTimer->DumpTimings();
+}
+
+
+// ****************************************************************************
+//  Method: avtDatabase::MetaDataIsInvariant
+//
+//  Purpose: Return whether or not database meta data is invariant.
+//
+//  We use a bool* to implement this so that we can know whether or not the
+//  bool has been set and once it is set, never call down to the plugins to
+//  re-acquire this knowledge
+//
+//  Programmer: Mark C. Miller, 30Sep03
+// ****************************************************************************
+bool
+avtDatabase::MetaDataIsInvariant(void)
+{
+   if (invariantMetaData == NULL)
+   {
+      invariantMetaData = new bool;
+      *invariantMetaData = HasInvariantMetaData();
+   }
+
+   return *invariantMetaData;
+}
+
+// ****************************************************************************
+//  Method: avtDatabase::SILIsInvariant
+//
+//  Purpose: Return whether or not SIL is invariant.
+//
+//  We use a bool* to implement this so that we can know whether or not the
+//  bool has been set and once it is set, never call down to the plugins to
+//  re-acquire this knowledge
+//
+//  Programmer: Mark C. Miller, 30Sep03
+// ****************************************************************************
+bool
+avtDatabase::SILIsInvariant(void)
+{
+   if (invariantSIL == NULL)
+   {
+      invariantSIL = new bool;
+      *invariantSIL = HasInvariantSIL();
+   }
+
+   return *invariantSIL;
+}
+
+// ****************************************************************************
+//  Method: avtDatabase::GetMostRecentTimestepQueried
+//
+//  Purpose:
+//      Provide convenience method for caller's that don't have a reasonable
+//      'current' time to pass to GetMetaData and GetSIL which now both
+//      require the caller to specify the time. This function simply returns
+//      the time of the most recent request for either SIL or MetaData. The
+//      idea is that a reasonable time to use when one is not available is
+//      the time of the most recent query for metadata or SIL. 
+//      
+// ****************************************************************************
+int
+avtDatabase::GetMostRecentTimestep(void) const
+{
+   if (sil.empty())
+   {
+      if (metadata.empty())
+         return 0;
+      else
+         return metadata.front().ts;
+   }
+   else
+   {
+      if (metadata.empty())
+         return sil.front().ts;
+      else
+      {
+         if (sil.front().ts > metadata.front().ts)
+            return sil.front().ts;
+         else
+            return metadata.front().ts;
+      }
+   }
+}
+
+// ****************************************************************************
+//  Method: avtDatabase::GetNewMetaData
+//
+//  Purpose:
+//      Provide mechanism for clients to get information about the file
+//      and the variables in the file.
+//
+//  Arguments:
+//     timeState : The time state that we're interested in.
+//
+//  Programmer: Jeremy Meredith
+//  Creation:   August 22, 2000
+//
+//  Modifications:
+//    Hank Childs, Fri May 11 14:10:59 PDT 2001
+//    Also populate the IO info when you get the meta-data.
+//
+//    Brad Whitlock, Wed May 14 09:11:03 PDT 2003
+//    Added timeState argument.
+//
+//    Hank Childs, Thu Aug 14 08:45:39 PDT 2003
+//    Set the database's name with the meta-data.
+//
+//    Mark C. Miller, 22Sep03, changed name to Get'New'MetaData. Put result
+//    in MRU cache
+//
+//    Hank Childs, Tue Nov 25 07:38:18 PST 2003
+//    Add mesh quality expressions.
+//
+//    Hank Childs, Thu Jan 22 10:05:41 PST 2004
+//    Do not populate the I/O information if we are only getting meta-data.
+//
+//    Jeremy Meredith/Hank Childs, Tue Mar 23 12:26:55 PST 2004
+//    Set the file format with the meta-data.
+//
+//    Mark C. Miller, Tue May 17 18:48:38 PDT 2005
+//    Added bool to force reading of all cycles and times 
+//
+//    Kathleen Bonnell, Tue Oct  9 14:40:10 PDT 2007
+//    Only create MeshQuality and TimeDerivative expressions if the option
+//    hasn't been turned off. 
+//
+//    Cyrus Harrison, Wed Nov 28 09:50:46 PST 2007
+//    Added vector magnitude expressions 
+//
+//    Mark C. Miller, Thu Feb 12 11:35:34 PST 2009
+//    Added call to convert 1D vars to curves
+//
+//    Brad Whitlock, Thu Jun 19 10:36:38 PDT 2014
+//    Removed code to get IO info.
+//
+//    Mark C. Miller, Thu Jun  8 14:14:48 PDT 2017
+//    Add logic to disable speculative expression generation (SEG) under
+//    certain conditions.
+// ****************************************************************************
+
+void
+avtDatabase::GetNewMetaData(int timeState, bool forceReadAllCyclesTimes)
+{
+    // sanity check: since SIL info is currently embedded in MetaData,
+    // we cannot have MD invariant but SIL NOT invariant
+    if (MetaDataIsInvariant() && !SILIsInvariant())
+    {
+        EXCEPTION1(ImproperUseException, "invalid MD/SIL invariants condition");
+    }
+
+    // acquire new metadata for the given timestep
+    avtDatabaseMetaData *md = new avtDatabaseMetaData;
+    const char *filename = GetFilename(timeState);
+    string fname;
+    if (filename == NULL)
+        fname = "";
+    else
+        fname = filename;
+    SetDatabaseMetaData(md, timeState, forceReadAllCyclesTimes);
+    md->SetDatabaseName(fname);
+    md->SetFileFormat(fileFormat);
+    md->SetMustRepopulateOnStateChange(!MetaDataIsInvariant() ||
+                                       !SILIsInvariant());
+
+    if (md->ShouldDisableSEG(Environment::exists(md->GetSEGEnvVarName())))
+    {
+        md->IssueSEGWarningMessage();
+    }
+    else
+    {
+        if (avtDatabaseFactory::GetCreateMeshQualityExpressions())
+            AddMeshQualityExpressions(md);
+
+        if (avtDatabaseFactory::GetCreateTimeDerivativeExpressions())
+            AddTimeDerivativeExpressions(md);
+
+        if (avtDatabaseFactory::GetCreateVectorMagnitudeExpressions())
+            AddVectorMagnitudeExpressions(md);
+    }
+
+    Convert1DVarMDsToCurveMDs(md);
+
+    // put the metadata at the front of the MRU cache
+    CachedMDEntry tmp = {md, timeState};
+    metadata.push_front(tmp);
+}
+
+
+// ****************************************************************************
+//  Method: avtDatabase::Convert1DVarMDsToCurveMDs
+//
+//  Purpose: Convert 1D var MDs (vars defined on 1D meshes) to Curve MDs 
+//
+//  Programmer: Mark C. Miller
+//  Creation: February 9, 2009
+//
+//  Modifications:
+//    Mark C. Miller, Wed Feb 18 14:54:59 PST 2009
+//    Fixed naming of curve md objects so their names don't wind up colliding
+//    with thier original scalar var objects.
+//
+//    Mark C. Miller Tue May 22 18:34:15 PDT 2018
+//    Remove single block restriction for re-interpreting 1D meshes as curves.
+// ****************************************************************************
+
+void
+avtDatabase::Convert1DVarMDsToCurveMDs(avtDatabaseMetaData *md)
+{
+    int i;
+
+    //
+    // Look for any 1D meshes. If we don't have any, then we can't
+    // have any 1D vars and we can terminate early.
+    //
+    map<string, int> meshNameToNumMap;
+    for (i = 0; i < md->GetNumMeshes(); ++i)
+    {
+        const avtMeshMetaData *mmd = md->GetMesh(i);
+        if (mmd->spatialDimension == 1)
+            meshNameToNumMap[mmd->name] = i;
+    }
+    if (meshNameToNumMap.empty())
+        return;
+
+    //
+    // Find all scalar vars defined on the meshes found above. These
+    // need to be converted to Curve MD objects.
+    //
+    map<string, int>::iterator it;
+    vector<int> scalarsToHide;
+    for (i = 0; i < md->GetNumScalars(); ++i)
+    {
+        const avtScalarMetaData *smd = md->GetScalar(i);
+        it = meshNameToNumMap.find(smd->meshName);
+        if (it != meshNameToNumMap.end())
+        {
+            const avtMeshMetaData *mmd = md->GetMesh(it->second);
+            scalarsToHide.push_back(i);
+            avtCurveMetaData *cmd = new avtCurveMetaData();
+            cmd->name = "Scalar_Curves/" + smd->name;
+            cmd->meshName = smd->meshName;
+            cmd->originalName = smd->originalName;
+            cmd->validVariable = smd->validVariable;
+            cmd->yUnits = smd->units;
+            cmd->xUnits = mmd->xUnits;
+            cmd->xLabel = mmd->xLabel;
+            cmd->hasDataExtents = smd->hasDataExtents;
+            cmd->minDataExtents = smd->minDataExtents;
+            cmd->maxDataExtents = smd->maxDataExtents;
+            cmd->hideFromGUI = smd->hideFromGUI;
+            cmd->from1DScalarName = smd->name;
+            md->Add(cmd);
+            debug3 << "Re-interpreted 1D avtScalarMetaData \"" << smd->originalName
+                   << "\" as avtCurveMetaData \"" << cmd->name << "\"" << endl;
+        }
+    }
+
+    //
+    // Hide from the GUI, those scalars that got converted as well
+    // as any 1D meshes.
+    //
+    for (i = 0; i < (int) scalarsToHide.size(); ++i)
+        md->GetScalars(scalarsToHide[i]).hideFromGUI = true;
+    for (it = meshNameToNumMap.begin(); it != meshNameToNumMap.end(); ++it)
+        md->GetMeshes(it->second).hideFromGUI = true;
+}
+
+// ****************************************************************************
+//  Method: avtDatabase::AddMeshQualityExpressions
+//
+//  Purpose:
+//      Adds the mesh quality expressions for unstructured and structured
+//      meshes.
+//
+//  Programmer: Hank Childs
+//  Creation:   November 25, 2003
+//
+//  Modifications:
+//
+//    Hank Childs, Mon Dec 15 14:36:03 PST 2003
+//    If there are multiple meshes, put each mesh in its own subdirectory 
+//    ('4214).  Also, if the meshes are in subdirectories, set them up so that
+//    the expressions code will recognize them ('4195).
+//
+//    Hank Childs, Thu Jul 29 09:30:43 PDT 2004
+//    Do not add MQE for nodes or edges.
+//
+//    Hank Childs, Thu Jan 20 15:47:25 PST 2005
+//    Added side volume.
+//
+//    Hank Childs, Thu May 26 15:45:48 PDT 2005
+//    Mark mesh quality expressions as auto-expressions.
+//
+//    Hank Childs, Thu Sep 22 15:49:34 PDT 2005
+//    Change side_volume to min_side_volume.  Add edge length as well.
+//
+//    Brad Whitlock, Thu Mar 23 09:38:44 PDT 2006
+//    Added code to limit the number of meshes that receive mesh quality
+//    expressions to 10.
+//
+//    Mark C. Miller, Tue Apr 15 15:12:26 PDT 2008
+//    Eliminated database objects for which hideFromGUI is true
+//
+//    Hank Childs, Thu Jul 24 13:40:46 PDT 2008
+//    Give priority to names with MESH in it.
+//
+//    Eric Brugger, Thu Aug  7 08:52:06 PDT 2008
+//    Updated for verdict version 110.
+//
+//    Mark C. Miller, Wed Jun  3 14:51:09 PDT 2009
+//    Added face_planarity expressions.
+//
+//    Sean Ahern, Wed Jun 24 17:13:50 EDT 2009
+//    Renamed diagonal to diagonal_ratio.  Added max_diagonal and
+//    min_diagonal.
+//
+//    Matthew Wheeler, Mon 20 May 12:00:00 GMT 2013
+//    Added min_corner_area and min_sin_corner
+//
+//    Mark C. Miller, Thu Jun  8 14:15:28 PDT 2017
+//    Skip invalid variables too
+// ****************************************************************************
+
+void
+avtDatabase::AddMeshQualityExpressions(avtDatabaseMetaData *md)
+{
+    struct MQExprTopoPair
+    {
+        MQExprTopoPair(const char *s, int t) { mq_expr = s; topo = t; };
+        MQExprTopoPair() { ; };
+        string mq_expr;
+        int    topo;
+    };
+
+    int nmeshes = md->GetNumMeshes();
+    int nmeshes_done = 0;
+    int numpasses = 2;
+    int total_iterations = numpasses*nmeshes;
+    for (int iter = 0 ; iter < total_iterations && nmeshes_done < 10 ; ++iter)
+    {
+        int i    = iter % nmeshes;
+        int pass = (iter < nmeshes ? 1 : 2);
+
+        const avtMeshMetaData *mmd = md->GetMesh(i);
+        avtMeshType mt = mmd->meshType;
+
+        if (mt != AVT_CURVILINEAR_MESH && mt != AVT_UNSTRUCTURED_MESH &&
+            mt != AVT_SURFACE_MESH)
+        {
+            continue;
+        }
+
+        int topoDim = mmd->topologicalDimension;
+        if (topoDim == 0 || topoDim == 1)
+            continue;
+
+        if (mmd->hideFromGUI || !mmd->validVariable)
+            continue;
+
+        int pass_for_this_mesh = 2;
+        string name = mmd->name;
+        if (strstr(name.c_str(), "MESH") != NULL || (strstr(name.c_str(), "mesh") != NULL))
+        {
+            pass_for_this_mesh = 1;
+        }
+
+        if (pass != pass_for_this_mesh)
+            continue;
+
+        ++nmeshes_done;
+        const int nPairs = 30;
+        // Static allocation?!  Really??!!
+        MQExprTopoPair exprs[nPairs];
+        exprs[0]  = MQExprTopoPair("area", 2);
+        exprs[1]  = MQExprTopoPair("aspect_gamma", 3);
+        exprs[2]  = MQExprTopoPair("aspect", -1);
+        exprs[3]  = MQExprTopoPair("condition", -1);
+        exprs[4]  = MQExprTopoPair("diagonal_ratio", 3);
+        exprs[5]  = MQExprTopoPair("min_diagonal", 3);
+        exprs[6]  = MQExprTopoPair("max_diagonal", 3);
+        exprs[7]  = MQExprTopoPair("dimension", 3);
+        exprs[8]  = MQExprTopoPair("jacobian", -1);
+        exprs[9]  = MQExprTopoPair("max_edge_length", -1);
+        exprs[10]  = MQExprTopoPair("max_side_volume", 3);
+        exprs[11]  = MQExprTopoPair("maximum_angle", 2);
+        exprs[12] = MQExprTopoPair("min_edge_length", -1);
+        exprs[13] = MQExprTopoPair("min_side_volume", 3);
+        exprs[14] = MQExprTopoPair("minimum_angle", 2);
+        exprs[15] = MQExprTopoPair("oddy", -1);
+        exprs[16] = MQExprTopoPair("relative_size", -1);
+        exprs[17] = MQExprTopoPair("scaled_jacobian", -1);
+        exprs[18] = MQExprTopoPair("shape", -1);
+        exprs[19] = MQExprTopoPair("shape_and_size", -1);
+        exprs[20] = MQExprTopoPair("shear", -1);
+        exprs[21] = MQExprTopoPair("skew", -1);
+        exprs[22] = MQExprTopoPair("stretch", -1);
+        exprs[23] = MQExprTopoPair("taper", -1);
+        exprs[24] = MQExprTopoPair("volume", 3);
+        exprs[25] = MQExprTopoPair("warpage", 2);
+        exprs[26] = MQExprTopoPair("face_planarity", 3);
+        exprs[27] = MQExprTopoPair("relative_face_planarity", 3);
+        exprs[28] = MQExprTopoPair("min_corner_area", 2);
+        exprs[29] = MQExprTopoPair("min_sin_corner", 2);
+        //exprs[30] = MQExprTopoPair("min_sin_corner_cw", 2);
+
+        for (int j = 0 ; j < nPairs ; ++j)
+        {
+            if ((topoDim != exprs[j].topo) && (exprs[j].topo != -1))
+                continue;
+
+            Expression new_expr;
+            char buff[1024];
+            if (nmeshes == 1)
+                sprintf(buff, "mesh_quality/%s", exprs[j].mq_expr.c_str());
+            else
+                sprintf(buff, "mesh_quality/%s/%s", name.c_str(),
+                                                    exprs[j].mq_expr.c_str());
+            new_expr.SetName(buff);
+            bool hasSlash = (strstr(name.c_str(), "/") != NULL);
+            if (hasSlash)
+                sprintf(buff,"%s(<%s>)",exprs[j].mq_expr.c_str(),name.c_str());
+            else
+                sprintf(buff,"%s(%s)",exprs[j].mq_expr.c_str(),name.c_str());
+            new_expr.SetDefinition(buff);
+            new_expr.SetType(Expression::ScalarMeshVar);
+            new_expr.SetAutoExpression(true);
+            md->AddExpression(&new_expr);
+        }
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtDatabase::AddTimeDerivativeExpressions
+//
+//  Purpose:
+//      Adds the time derivative expressions for time-varying databases.
+//
+//  Programmer: Hank Childs
+//  Creation:   January 11, 2006
+//
+//  Modifications:
+//
+//    Hank Childs, Fri Jun  9 13:57:29 PDT 2006
+//    Add default to switch statement.
+//
+//    Mark C. Miller, Tue Jul 17 11:06:37 PDT 2007
+//    Made expressions divided by time difference (instead of assuming unity).
+//
+//    Mark C. Miller, Tue Apr 15 15:12:26 PDT 2008
+//    Eliminated database objects for which hideFromGUI is true
+//
+//    Mark C. Miller, Thu Feb 12 11:33:59 PST 2009
+//    Removed std:: qualification on some STL classes due to use of using
+//    statements at top 
+//
+//    Kathleen Biagas, Wed Jul  3 14:25:43 PDT 2013
+//    Variable names may be compound (eg "mesh/ireg") so make sure they are
+//    enclosed in angle-brackets at the beginning of the created expression.
+//
+//    Mark C. Miller, Thu Jun  8 14:15:50 PDT 2017
+//    Skip invalid variables too
+// ****************************************************************************
+
+void
+avtDatabase::AddTimeDerivativeExpressions(avtDatabaseMetaData *md)
+{
+    int   i, j;
+
+    if (md->GetNumStates() <= 1)
+        return;
+
+    int numMeshes = md->GetNumMeshes();
+    string base1 = "time_derivative";
+
+    for (i = 0 ; i < numMeshes ; ++i)
+    {
+         const avtMeshMetaData *mmd = md->GetMesh(i);
+
+         if (mmd->hideFromGUI || !mmd->validVariable)
+             continue;
+
+         string base2;
+         if (numMeshes == 1)
+             base2 = base1;
+         else
+             base2 = base1 + string("/") + string(mmd->name);
+
+         avtMeshType mt = mmd->meshType;
+         
+         bool doConn = false;
+         bool doPos  = false;
+         switch (mt)
+         {
+           case AVT_RECTILINEAR_MESH:
+             doConn = true;
+             break;
+           case AVT_CURVILINEAR_MESH:
+             doConn = true;
+             doPos  = true;
+             break;
+           case AVT_UNSTRUCTURED_MESH:
+             doConn = true;
+             doPos  = true;
+             break;
+           case AVT_POINT_MESH:
+             doConn = true;
+             break;
+           case AVT_AMR_MESH:
+             doPos  = true;
+             break;
+           default:
+             break;
+         }
+
+         if (!doConn && !doPos)
+             continue;
+
+         bool needPrefix = (doPos && doConn);
+         string conn_base = base2;
+         if (needPrefix)
+             conn_base = base2 + string("/") + string("conn_based");
+         string pos_base = base2;
+         if (needPrefix)
+             pos_base = base2 + string("/") + string("pos_based");
+
+     //
+     // Define expressions for time and last time to use in denominator of expressions
+     //
+     if (doConn)
+     {
+             Expression new_expr;
+             string expr_name = conn_base + string("/") + mmd->name + "_time";
+             new_expr.SetName(expr_name);
+             char buff[1024];
+             SNPRINTF(buff, 1024, "time(%s)", mmd->name.c_str());
+             new_expr.SetDefinition(buff);
+             new_expr.SetType(Expression::ScalarMeshVar);
+             new_expr.SetAutoExpression(true);
+             md->AddExpression(&new_expr);
+
+             expr_name = conn_base + string("/") + mmd->name + "_lasttime";
+             string time_expr_name = conn_base + string("/") + mmd->name + "_time";
+             new_expr.SetName(expr_name);
+             SNPRINTF(buff, 1024, "conn_cmfe(<[-1]id:%s>, %s)",
+             time_expr_name.c_str(), mmd->name.c_str());
+             new_expr.SetDefinition(buff);
+             new_expr.SetType(Expression::ScalarMeshVar);
+             new_expr.SetAutoExpression(true);
+             md->AddExpression(&new_expr);
+     }
+
+     if (doPos)
+     {
+             Expression new_expr;
+             string expr_name = pos_base + string("/") + mmd->name + "_time";
+             new_expr.SetName(expr_name);
+             char buff[1024];
+             SNPRINTF(buff, 1024, "time(%s)", mmd->name.c_str());
+             new_expr.SetDefinition(buff);
+             new_expr.SetType(Expression::ScalarMeshVar);
+             new_expr.SetAutoExpression(true);
+             md->AddExpression(&new_expr);
+
+             expr_name = pos_base + string("/") + mmd->name + "_lasttime";
+             string time_expr_name = pos_base + string("/") + mmd->name + "_time";
+             new_expr.SetName(expr_name);
+             SNPRINTF(buff, 1024, "pos_cmfe(<[-1]id:%s>, %s, 0.)",
+             time_expr_name.c_str(), mmd->name.c_str());
+             new_expr.SetDefinition(buff);
+             new_expr.SetType(Expression::ScalarMeshVar);
+             new_expr.SetAutoExpression(true);
+             md->AddExpression(&new_expr);
+     }
+
+         int numScalars = md->GetNumScalars();
+         for (j = 0 ; j < numScalars ; ++j)
+         {
+             const avtScalarMetaData *smd = md->GetScalar(j);
+             if (smd->meshName == mmd->name && !smd->hideFromGUI)
+             {
+                 if (doConn)
+                 {
+                     Expression new_expr;
+                     string expr_name = conn_base + string("/")
+                                           + smd->name;
+                     string time_expr_name = conn_base + string("/")
+                                   + smd->meshName + "_time";
+                     string last_time_expr_name = conn_base + string("/")
+                                   + smd->meshName + "_lasttime";
+                     new_expr.SetName(expr_name);
+                     char buff[1024];
+                     SNPRINTF(buff, 1024, "(<%s> - conn_cmfe(<[-1]id:%s>, %s)) / (<%s> - <%s>)",
+                         smd->name.c_str(), smd->name.c_str(), smd->meshName.c_str(),
+                         time_expr_name.c_str(), last_time_expr_name.c_str());
+                     new_expr.SetDefinition(buff);
+                     new_expr.SetType(Expression::ScalarMeshVar);
+                     new_expr.SetAutoExpression(true);
+                     md->AddExpression(&new_expr);
+                 }
+                 if (doPos)
+                 {
+                     Expression new_expr;
+                     string expr_name = pos_base + string("/")
+                                           + smd->name;
+                     string time_expr_name = pos_base + string("/")
+                                   + smd->meshName + "_time";
+                     string last_time_expr_name = pos_base + string("/")
+                                   + smd->meshName + "_lasttime";
+                     new_expr.SetName(expr_name);
+                     char buff[1024];
+                     SNPRINTF(buff, 1024, "<%s> - pos_cmfe(<[-1]id:%s>, %s, 0.) / (<%s> - <%s>)",
+                                smd->name.c_str(), smd->name.c_str(), smd->meshName.c_str(),
+                          time_expr_name.c_str(), last_time_expr_name.c_str());
+                     new_expr.SetDefinition(buff);
+                     new_expr.SetType(Expression::ScalarMeshVar);
+                     new_expr.SetAutoExpression(true);
+                     md->AddExpression(&new_expr);
+                 }
+             }
+         }
+
+         int numVectors = md->GetNumVectors();
+         for (j = 0 ; j < numVectors ; ++j)
+         {
+             const avtVectorMetaData *smd = md->GetVector(j);
+             if (smd->meshName == mmd->name && !smd->hideFromGUI)
+             {
+                 if (doConn)
+                 {
+                     Expression new_expr;
+                     string expr_name = conn_base + string("/")
+                                           + smd->name;
+                     string time_expr_name = conn_base + string("/")
+                                   + smd->meshName + "_time";
+                     string last_time_expr_name = conn_base + string("/")
+                                   + smd->meshName + "_lasttime";
+                     new_expr.SetName(expr_name);
+                     char buff[1024];
+                     SNPRINTF(buff, 1024, "<%s> - conn_cmfe(<[-1]id:%s>, %s) / (<%s> - <%s>)",
+                                smd->name.c_str(), smd->name.c_str(), smd->meshName.c_str(),
+                         time_expr_name.c_str(), last_time_expr_name.c_str());
+                     new_expr.SetDefinition(buff);
+                     new_expr.SetType(Expression::VectorMeshVar);
+                     new_expr.SetAutoExpression(true);
+                     md->AddExpression(&new_expr);
+                 }
+                 if (doPos)
+                 {
+                     Expression new_expr;
+                     string expr_name = pos_base + string("/")
+                                           + smd->name;
+                     string time_expr_name = pos_base + string("/")
+                                   + smd->meshName + "_time";
+                     string last_time_expr_name = pos_base + string("/")
+                                   + smd->meshName + "_lasttime";
+                     new_expr.SetName(expr_name);
+                     char buff[1024];
+                     SNPRINTF(buff, 1024, "<%s> - pos_cmfe(<[-1]id:%s>, %s, 0.) / (<%s> - <%s>)",
+                                smd->name.c_str(), smd->name.c_str(), smd->meshName.c_str(),
+                         time_expr_name.c_str(), last_time_expr_name.c_str());
+                     new_expr.SetDefinition(buff);
+                     new_expr.SetType(Expression::VectorMeshVar);
+                     new_expr.SetAutoExpression(true);
+                     md->AddExpression(&new_expr);
+                 }
+             }
+         }
+    }
+}
+
+// ****************************************************************************
+//  Method: avtDatabase::AddVectorMagnitudeExpressions
+//
+//  Purpose:
+//      Adds vector magnitude expressions so vectors can be easily used
+//      in plots that accept scalars. 
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   November 28, 2007
+//
+//  Modifications:
+//    Cyrus Harrison, Thu Feb 14 11:36:45 PST 2008
+//    Enclosed variable name with < & > in the expression defintion to fix 
+//    problems with strange variable names.
+// 
+//    Mark C. Miller, Tue Apr 15 15:12:26 PDT 2008
+//    Eliminated database objects for which hideFromGUI is true
+//
+//    Mark C. Miller, Thu Jun  8 14:16:27 PDT 2017
+//    Skip invalid variables too. Const qualified md pointer and expressions.
+// ****************************************************************************
+
+void
+avtDatabase::AddVectorMagnitudeExpressions(avtDatabaseMetaData *md)
+{
+    avtDatabaseMetaData const *const_md = md;
+
+    char buff[1024];
+    // get vectors from database metadata
+    int nvectors = md->GetNumVectors();
+    for(int i=0; i < nvectors; ++i)
+    {
+        avtVectorMetaData const &vmd = const_md->GetVectors(i);
+
+        if (vmd.hideFromGUI || !vmd.validVariable)
+            continue;
+
+        const char *vec_name = vmd.name.c_str();
+        Expression new_expr;
+        SNPRINTF(buff,1024, "%s_magnitude", vec_name);
+        new_expr.SetName(buff);
+        SNPRINTF(buff,1024, "magnitude(<%s>)", vec_name);
+        new_expr.SetDefinition(buff);
+        new_expr.SetType(Expression::ScalarMeshVar);
+        new_expr.SetAutoExpression(true);
+        md->AddExpression(&new_expr);
+    }
+    
+    // also get any from database expressions
+    ExpressionList const elist = md->GetExprList();
+    int nexprs = elist.GetNumExpressions();
+    for(int i=0; i < nexprs; ++i)
+    {
+        if(elist[i].GetType() == Expression::VectorMeshVar)
+        {
+            const char *vec_name = elist[i].GetName().c_str();
+            Expression new_expr;
+            SNPRINTF(buff,1024, "%s_magnitude", vec_name);
+            new_expr.SetName(buff);
+            SNPRINTF(buff,1024, "magnitude(<%s>)", vec_name);
+            new_expr.SetDefinition(buff);
+            new_expr.SetType(Expression::ScalarMeshVar);
+            new_expr.SetAutoExpression(true);
+            md->AddExpression(&new_expr);
+        }
+    }
+
+}
+
+
+// ****************************************************************************
+//  Method: avtDatabase::GetMetaData
+//
+//  Purpose:
+//      Get and manage metadata from multiple timesteps in an MRU cache 
+//
+//  Arguments:
+//     timeState : The time state that we're interested in.
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   September 30, 2003
+//
+//  Modifications:
+//
+//    Mark C. Miller, Tue May 17 18:48:38 PDT 2005
+//    Added code to handling forcing of reading all cycles and times and
+//    to update cached metadata if we ever do read all cycles and times
+//
+//    Mark C. Miller, Tue May 31 20:12:42 PDT 2005
+//    Added bool to force reading the current state's cycle/time. Added
+//    code to populate the returned metadata with current state's cycle/time
+//    if it was requested AND the metadata about to be returned doesn't think
+//    it already has accurate cycle/time information for that state.
+//
+//    Mark C. Miller, Thu Jun 14 10:26:37 PDT 2007
+//    Added support to treat all databases as time varying
+//
+//    Tom Fogal, Thu Nov 20 12:13:57 MST 2008
+//    Don't re-use the iterator after the find, because the erase invalidates
+//    it.
+//
+//    David Camp, Thu Jul 10 10:07:30 PDT 2014
+//    Need to protect the metadata list in thread mode.
+//    Also change the erase to a splice operation. This is much faster
+//    and less memory movement.
+//
+// ****************************************************************************
+
+avtDatabaseMetaData *
+avtDatabase::GetMetaData(int timeState, bool forceReadAllCyclesTimes,
+    bool forceReadThisStateCycleTime, bool treatAllDBsAsTimeVarying)
+{
+    std::list<CachedMDEntry>::iterator i;
+
+    VisitMutexLock( "avtDatabase::GetMetaData" );
+
+    if (MetaDataIsInvariant() && !treatAllDBsAsTimeVarying)
+    {
+        if (metadata.empty())
+            GetNewMetaData(timeState, forceReadAllCyclesTimes);
+        else
+        {
+            if (forceReadAllCyclesTimes)
+            {
+                //
+                // Ok, we need to read all cycles and times. So,
+                // before we do, we check to see if all cycles/times
+                // in avtDatabaseMetaData are already accurate. If
+                // they already are, then we don't need to do anything.
+                // Otherwise, we need to re-acquire meta data except
+                // this time reading accurate cycles/times.
+                //
+                avtDatabaseMetaData *cachedMd = metadata.front().md;
+                if ((cachedMd->AreAllCyclesAccurateAndValid() == false) ||
+                    (cachedMd->AreAllTimesAccurateAndValid() == false))
+                    GetNewMetaData(timeState, forceReadAllCyclesTimes);
+            }
+        }
+    }
+    else
+    {
+        bool found = false;
+        // see if we've already cached metadata for this timestep
+        for (i = metadata.begin(); i != metadata.end(); ++i)
+        {
+            if (timeState == i->ts)
+            {
+                // move the found entry to front of list
+                if (i != metadata.begin())
+                    metadata.splice(metadata.begin(), metadata, i);
+                found = true;
+                break;
+            }
+        }
+
+        // if we didn't find it in the cache, remove the oldest (last) entry
+        // and read new metadata
+        avtDatabaseMetaData *frontMd;
+        avtDatabaseMetaData *thisMd;
+        if (found == false)
+        {
+            if (metadata.size() >= mdMaxCacheSize)
+            {
+                delete metadata.back().md;
+                metadata.pop_back();
+            }
+
+            GetNewMetaData(timeState, forceReadAllCyclesTimes);
+
+            if (forceReadAllCyclesTimes)
+            {
+                //
+                // At this point, the metadata object we've just obtained is at
+                // the front of the cache and it contains accurate cycles/times
+                // from actually opening and reading every file in the database
+                // (at least for STXX databases anyways) So, we now take that
+                // information and overwrite it for all the other md objects in
+                // the cache so that later requests for these MD's will have the
+                // best available data AND all be in agreement.
+                //
+                frontMd = metadata.front().md;
+                i = metadata.begin();
+                ++i;
+                for (; i != metadata.end(); ++i)
+                {
+                    thisMd = i->md;
+
+                    if (thisMd->AreAllCyclesAccurateAndValid() == false)
+                    {
+                        thisMd->SetCycles(frontMd->GetCycles());
+                        thisMd->SetCyclesAreAccurate(true);
+                    }
+                    if (thisMd->AreAllTimesAccurateAndValid() == false)
+                    {
+                        thisMd->SetTimes(frontMd->GetTimes());
+                        thisMd->SetTimesAreAccurate(true);
+                    }
+                }
+            }
+        }
+        else
+        {
+            if (forceReadAllCyclesTimes)
+            {
+                //
+                // At this point, the metadata object in the cache is the one
+                // we need. However, if it turns out that it DOES NOT have
+                // accurate cycles and times, we're going to have to re-request
+                // it anyways.
+                //
+                frontMd = metadata.front().md;
+                if ((frontMd->AreAllCyclesAccurateAndValid() == false) ||
+                    (frontMd->AreAllTimesAccurateAndValid() == false))
+                {
+
+                    GetNewMetaData(timeState, forceReadAllCyclesTimes);
+
+                    //
+                    // At this point, the metadata object we've just obtained is at
+                    // the front of the cache and it contains accurate cycles/times
+                    // from actually opening and reading every file in the database
+                    // (at least for STXX databases anyways) So, we now take that
+                    // information and overwrite it for all the other md objects in
+                    // the cache so that later requests for these MD's will have the
+                    // best available data AND all be in agreement.
+                    //
+                    frontMd = metadata.front().md;
+                    i = metadata.begin();
+                    ++i;
+                    for (; i != metadata.end(); ++i)
+                    {
+                        thisMd = i->md;
+
+                        if (thisMd->AreAllCyclesAccurateAndValid() == false)
+                        {
+                            thisMd->SetCycles(frontMd->GetCycles());
+                            thisMd->SetCyclesAreAccurate(true);
+                        }
+                        if (thisMd->AreAllTimesAccurateAndValid() == false)
+                        {
+                            thisMd->SetTimes(frontMd->GetTimes());
+                            thisMd->SetTimesAreAccurate(true);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    
+    avtDatabaseMetaData *retval = metadata.front().md;
+    VisitMutexUnlock( "avtDatabase::GetMetaData" );
+
+    if (forceReadThisStateCycleTime)
+    {
+        if (!retval->IsCycleAccurate(timeState) ||
+            !retval->IsTimeAccurate(timeState))
+            SetCycleTimeInDatabaseMetaData(retval, timeState);
+    }
+
+    return retval; 
+}
+
+
+// ****************************************************************************
+//  Method: avtDatabase::GetSIL
+// 
+//  Purpose:
+//     Gets the SIL for this database.
+//
+//  Arguments:
+//     timeState : The time state that we're interested in.
+//
+//  Returns:    The SIL object.
+//
+//  Programmer: Hank Childs
+//  Creation:   March 9, 2001
+//
+//  Modifications:
+//    Brad Whitlock, Wed May 14 09:10:23 PDT 2003
+//    Added timeState argument.
+//
+//    Mark C. Miller, 22Sep03, changed name to Get'New'SIL. Put result
+//    in MRU cache
+//
+//    Mark C. Miller, Wed Aug 22 20:16:59 PDT 2007
+//    Added treatAllDBsAsTimeVarying
+// ****************************************************************************
+
+void
+avtDatabase::GetNewSIL(int timeState, bool treatAllDBsAsTimeVarying)
+{
+    // build a new sil for the given timestep
+    avtSIL *newsil = new avtSIL;
+    PopulateSIL(newsil, timeState, treatAllDBsAsTimeVarying);
+
+    // put result in front of MRU cache
+    CachedSILEntry tmp = {newsil, timeState};
+    sil.push_front(tmp);
+}
+
+// ****************************************************************************
+//  Method: avtDatabase::GetSIL
+//
+//  Purpose:
+//      Get and manage SILs from multiple timesteps in an MRU cache 
+//
+//  Arguments:
+//     timeState : The time state that we're interested in.
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   September 30, 2003
+//
+//  Modifications:
+//
+//    Mark C. Miller, Wed Aug 22 20:16:59 PDT 2007
+//    Added logic for treatAllDBsAsTimeVarying
+//
+//    Tom Fogal, Thu Nov 20 12:28:54 MST 2008
+//    Don't re-use the iterator after an erase.
+//
+//    David Camp, Thu Jul 10 10:07:30 PDT 2014
+//    Need to protect the sil list in thread mode.
+//    Also change the erase to a splice operation. This is much faster
+//    and less memory movement. Other stl changes to speed up the code.
+//
+// ****************************************************************************
+
+avtSIL *
+avtDatabase::GetSIL(int timeState, bool treatAllDBsAsTimeVarying)
+{
+    VisitMutexLock( "avtDatabase::GetSIL" );
+
+    if (!treatAllDBsAsTimeVarying && SILIsInvariant())
+    {
+        // since its invariant, get it at time 0
+        if (sil.empty())
+            GetNewSIL(0);
+    }
+    else
+    {
+        bool found = false;
+        // see if we've already cached sil for this timestep
+        std::list<CachedSILEntry>::iterator i;
+        for (i = sil.begin(); i != sil.end(); ++i)
+        {
+            if (timeState == i->ts)
+            {
+                // move the found entry to front of list
+                if (i != sil.begin())
+                    sil.splice(sil.begin(), sil, i);
+                found = true;
+                break;
+            }
+        }
+
+       // if we didn't find it in the cache, remove the oldest (last) entry
+       // and read new sil
+       if (found == false)
+       {
+           if (sil.size() >= silMaxCacheSize)
+           {
+                delete sil.back().sil;
+                sil.pop_back();
+           }
+
+           GetNewSIL(timeState, treatAllDBsAsTimeVarying);
+       }
+    }
+
+    avtSIL *tmp = sil.front().sil;
+    VisitMutexUnlock( "avtDatabase::GetSIL" );
+
+    return tmp;
+}
+
+
+// ****************************************************************************
+//  Method: avtDatabase::ClearMetaDataAndSILCache
+//
+//  Purpose:
+//      Clears the cached metadata and SILs.  This is needed for simulations
+//      which are single-time but that one time step *changes*.
+//
+//  Programmer: Jeremy Meredith
+//  Creation:   August 24, 2004
+//
+//  Modifications:
+//
+//  Burlen Loring, Sun Apr 27 14:22:26 PDT 2014
+//  fixed leak: delete the cached data before clear'ing the list
+//
+// ****************************************************************************
+
+void
+avtDatabase::ClearMetaDataAndSILCache(void)
+{
+    std::list<CachedMDEntry>::iterator it2;
+    for (it2 = metadata.begin() ; it2 != metadata.end() ; ++it2)
+    {
+        delete (*it2).md;
+    }
+    metadata.clear();
+
+    std::list<CachedSILEntry>::iterator it3;
+    for (it3 = sil.begin() ; it3 != sil.end() ; ++it3)
+    {
+        delete (*it3).sil;
+    }
+    sil.clear();
+}
+
+// ****************************************************************************
+//  Method: avtDatabase::ClearCache
+//
+//  Purpose:
+//      Allows the derived types to clear their caches.  This method does
+//      nothing and should be re-defined for derived types where clearing the
+//      cache is meaningful.
+//
+//  Programmer: Hank Childs
+//  Creation:   May 1, 2001
+//
+// ****************************************************************************
+
+void
+avtDatabase::ClearCache(void)
+{
+    ;
+}
+
+// ****************************************************************************
+//  Method: avtDatabase::FreeUpResources
+//
+//  Purpose:
+//      Allows the derived types to free system resources.  This method does
+//      nothing and should be re-defined for derived types where freeing
+//      system resources is meaningful.
+//
+//  Programmer: Sean Ahern
+//  Creation:   Tue May 21 15:47:28 PDT 2002
+//
+// ****************************************************************************
+void
+avtDatabase::FreeUpResources(void)
+{
+    ;
+}
+
+// ****************************************************************************
+//  Method: avtDatabase::GetIOInformation
+//
+//  Purpose:
+//      Gets the I/O information about the files.
+//
+//  Programmer: Hank Childs
+//  Creation:   August 31, 2001
+//
+//  Modifications:
+//    Mark C. Miller, Tue Mar 16 14:49:26 PST 2004
+//    Made it call PopulateIOInformation directly 
+//
+//    Brad Whitlock, Thu Jun 19 10:45:07 PDT 2014
+//    I made it call/return PopulateIOInformation always.
+//
+// ****************************************************************************
+
+bool
+avtDatabase::GetIOInformation(int stateIndex, const std::string &meshname,
+    avtIOInformation &ioInfo)
+{
+    return PopulateIOInformation(stateIndex, meshname, ioInfo);
+}
+
+
+// ****************************************************************************
+//  Method: avtDatabase::CanDoStreaming
+//
+//  Purpose:
+//      Determines whether or not we can do streaming.
+//
+//  Programmer: Hank Childs
+//  Creation:   October 25, 2001
+//
+//  Modifications:
+//
+//    Hank Childs, Sun Feb 27 11:20:39 PST 2005
+//    Added data specification argument.
+//
+//    Hank Childs, Tue Feb 19 19:45:43 PST 2008
+//    Rename "dynamic" to "streaming", since we really care about whether we
+//    are streaming, not about whether we are doing dynamic load balancing.
+//    And the two are no longer synonymous.
+//
+// ****************************************************************************
+
+bool
+avtDatabase::CanDoStreaming(avtDataRequest_p)
+{
+    return true;
+}
+
+
+// ****************************************************************************
+//  Method: avtDatabase::NumStagesForFetch
+//
+//  Purpose:
+//      This returns how many stages there are for the fetch.  Some databases
+//      have more than one stage (read from file format, perform material
+//      selection, etc).
+//
+//  Returns:    A good default number of stages (1).
+//
+//  Programmer: Hank Childs
+//  Creation:   October 26, 2001
+//
+// ****************************************************************************
+
+int
+avtDatabase::NumStagesForFetch(avtDataRequest_p)
+{
+    return 1;
+}
+
+
+// ****************************************************************************
+//  Function: GetFileListFromTextFile
+//
+//  Purpose:
+//      Gets a file list from inside a text file.
+//
+//  Arguments:
+//      textfile    The name of the text file.
+//      filelist    A place to put the file list.
+//      filelistN   The number of files placed in filelist.
+//
+//  Programmer: Hank Childs
+//  Creation:   October 8, 2001
+//
+//  Modifications:
+//
+//    Hank Childs, Fri Feb 15 08:42:29 PST 2002
+//    Allow for '#' entries.
+//
+//    Jeremy Meredith, Tue Aug 27 11:34:35 PDT 2002
+//    Moved from avtDatabaseFactory to avtDatabase.
+//
+//    Brad Whitlock, Wed Sep 21 16:41:56 PST 2005
+//    Fixed for win32.
+//
+//    Hank Childs, Mon May 14 17:19:30 PDT 2007
+//    Fixed bug with reading binary files.
+//
+//    Kathleen Bonnell, Thu Mar 27 15:24:30 PDT 2008 
+//    Fixed bug with reading DOS/MAC formatted files, where the string returned
+//    from getline ends in '\r'.  Also, convert slashes found in the textfile
+//    to those appropriate for this system.
+//
+//    Mark C. Miller, Mon May 19 23:50:24 PDT 2008
+//    Fixed case where strlen(str_auto) == 0 causing uninitialized data being
+//    used in conditional jump.
+//
+//    Mark C. Miller, Thu Feb 12 11:33:59 PST 2009
+//    Removed std:: qualification on some STL classes due to use of using
+//    statements at top 
+//
+//    Kathleen Biagas, Mon Sep 24 18:32:43 MST 2012
+//    Check for ':' when determining if directory should be prepended.
+//
+//    Mark C. Miller, Wed Jan  8 18:16:00 PST 2014
+//    Added support for !NBLOCKS declaration in the file
+//
+//    Jim Eliot, Wed 18 Nov 11:30:58 GMT 2015
+//    Fixed bug (2461) with reading DOS formatted files which uses '\'r
+//    newline character
+//
+//    Burlen Loring, Fri Apr 28 10:21:30 PDT 2017
+//    Don't count key words when determining if the file count evenly divides
+//    the block count.
+//
+// ****************************************************************************
+
+bool
+avtDatabase::GetFileListFromTextFile(const char *textfile,
+    char **&filelist, int &filelistN, int *bang_nBlocksp)
+{
+    debug1 << "Reading file list from text file \"" << textfile << "\"" << endl;
+
+    ifstream ifile(textfile);
+
+    if (ifile.fail()) return false;
+
+    char          dir[1024];
+    const char   *p = textfile, *q = NULL;
+    while ((q = strstr(p, VISIT_SLASH_STRING)) != NULL)
+    {
+        p = q+1;
+    }
+    strncpy(dir, textfile, p-textfile);
+    dir[p-textfile] = '\0';
+
+    vector<char *>  list;
+    char  str_auto[1024];
+    char  str_with_dir[2048];
+    int   goodCount = 0; // number of valid lines, keywords and files
+    int   badCount = 0; // number of empty and comment lines
+    int   fileCount = 0; // number of non empty, non comment, non keyword, lines
+    int   bang_nBlocks = -1;
+    bool failed = false;
+    while (!ifile.eof() && !failed && badCount < 10000)
+    {
+        str_auto[0] = '\0';
+        ifile.getline(str_auto, 1024, '\n');
+        if (ifile.fail() && !ifile.eof())
+        {
+            failed = true;
+            debug1 << "Got a failure with string \"" << str_auto << "\"" << endl;
+            continue;
+        }
+
+        size_t str_auto_len = strlen(str_auto);
+
+        if (str_auto_len > 0 && str_auto[str_auto_len-1] == '\r')
+            str_auto[--str_auto_len] = '\0';
+
+        for (int i = 0; i < (int) str_auto_len; i++)
+        {
+            if (!isprint(str_auto[i]))
+            {
+                debug1 << "Got a bad string \"" << str_auto << "\"" << endl;
+                failed = true;
+                break;
+            }
+            if (failed) continue;
+        }
+
+        if (str_auto[0] != '\0' && str_auto[0] != '#')
+        {
+            char *bnbp = strstr(str_auto, "!NBLOCKS ");
+            if (bnbp && bnbp == str_auto && !goodCount)
+            {
+                errno = 0;
+                bang_nBlocks = strtol(str_auto + strlen("!NBLOCKS "), 0, 10);
+                if (errno != 0 || bang_nBlocks <= 0)
+                {
+                    debug1 << "BAD SYNTAX FOR !NBLOCKS, \"" << str_auto << "\", RESETTING TO 1"  << endl;
+                    failed = true;
+                }
+                else
+                    debug1 << "Found a multi-block file with " << bang_nBlocks << " blocks." << endl;
+
+                if (bang_nBlocksp)
+                    *bang_nBlocksp = bang_nBlocks;
+
+                continue;
+            }
+
+            ConvertSlashes(str_auto);
+            if (str_auto[0] == VISIT_SLASH_CHAR || str_auto[0] == '!' ||
+                (str_auto_len > 2 && str_auto[1] == ':'))
+            {
+                // already have an absolute path like /something or C:\something,
+                // or a keyword like !SOMETHING
+                strcpy(str_with_dir, str_auto);
+            }
+            else
+            {
+                sprintf(str_with_dir, "%s%s", dir, str_auto);
+            }
+            char *str_heap = CXX_strdup(str_with_dir);
+            list.push_back(str_heap);
+            ++goodCount;
+
+            // lines of the file starting with ! are keywords and
+            // are not part of the block count
+            if (str_auto[0] != '!')
+                ++fileCount;
+        }
+        else
+            ++badCount;
+    }
+
+    if (bang_nBlocks > 0 && !failed)
+    {
+        if (fileCount % bang_nBlocks)
+        {
+            failed = true;
+            debug1 << "File count of " << fileCount << " not evenly divided by "
+                "!NBLOCKS value of " << bang_nBlocks << endl;
+        }
+    }
+
+    vector<char *>::iterator it;
+    if (failed)
+    {
+        for (it = list.begin() ; it != list.end() ; ++it)
+        {
+            delete [] *it;
+        }
+    }
+    else
+    {
+        filelist = new char*[goodCount];
+        filelistN = 0;
+        for (it = list.begin() ; it != list.end() ; ++it)
+        {
+            filelist[filelistN++] = *it;
+        }
+    }
+
+    return !failed;
+}
+
+// ****************************************************************************
+//  Method: avtDatabase::Query
+//
+//  Purpose:
+//    Queries the db regarding var info for a specific pick point.
+//
+//  Arguments:
+//    dataRequest   A database specification.
+//    pa      The pick attributes in which to story the var information. 
+//
+//  Programmer:   Kathleen Bonnell 
+//  Creation:     November 15, 2002 
+//
+//  Modifications:
+//    Kathleen Bonnell, Fri Dec  6 16:25:20 PST 2002
+//    Fill in node information if missing.
+//    
+//    Kathleen Bonnell, Fri Dec 27 14:09:40 PST 2002 
+//    Added nodeCoords argument to QueryNodes, in case user requested to
+//    know the coordinates of nodes. 
+//    
+//    Kathleen Bonnell, Fri Apr 18 14:11:24 PDT 2003   
+//    Added call to QueryMesh.
+//    
+//    Hank Childs, Thu May  8 09:05:12 PDT 2003
+//    Include the correct file name for the query.
+//
+//    Kathleen Bonnell, Fri Jun 27 16:54:31 PDT 2003  
+//    Support NodePicking -- added call to QueryScalars.  Pass to Query
+//    methods whether or not this is a zone pick.  Reflect some name changes
+//    in pickAtts.
+//
+//    Kathleen Bonnell, Tue Sep  9 16:51:10 PDT 2003 
+//    Always call QueryMesh, don't keep vars of type AVT_MESH in pickAtts'
+//    PickVarInfo.
+//   
+//    Kathleen Bonnell, Thu Sep 18 07:43:33 PDT 2003 
+//    QueryMaterial should use 'real' elements when available. 
+//    
+//    Hank Childs, Mon Sep 22 09:20:08 PDT 2003
+//    Added support for tensors and symmetric tensors.
+//
+//    Kathleen Bonnell, Fri Oct 24 15:37:41 PDT 2003 
+//    Re-add code that makes QueryMaterial use 'real' elements when available. 
+//    (was accidentally removed).
+//    
+//    Kathleen Bonnell, Tue Nov 18 14:07:13 PST 2003 
+//    Added support for ZoneCoords. 
+//    
+//    Kathleen Bonnell, Thu Nov 20 15:17:21 PST 2003 
+//    Added support for MATSPECIES vars. 
+//    
+//    Kathleen Bonnell, Wed Dec 17 14:58:31 PST 2003 
+//    Added support for multiple types of coordinates to be returned. 
+//
+//    Kathleen Bonnell, Mon Mar  8 15:34:13 PST 2004 
+//    Allow vars that already have info to be skipped. 
+//    
+//    Kathleen Bonnell, Tue Mar 16 15:55:18 PST 2004 
+//    Don't remove any pickVarInfo's, let Pick handle that.
+//    
+//    Kathleen Bonnell, Mon Apr 19 15:49:05 PDT 2004 
+//    Ensure that the timestep being queried is the active one.
+//    
+//    Kathleen Bonnell, Fri May 28 18:26:09 PDT 2004 
+//    Account for pick type of DomainZone. 
+//    
+//    Kathleen Bonnell, Wed Jun  9 12:44:48 PDT 2004 
+//    Added bool arg to QueryMesh. 
+//    
+//    Kathleen Bonnell, Thu Jul 29 08:34:18 PDT 2004 
+//    If a scalar var derived from an expression already has info, it 
+//    probably isn't a mixed var, so go ahead and skip it. 
+//    
+//    Kathleen Bonnell, Thu Sep 23 17:48:37 PDT 2004 
+//    Added args to QueryZones and QueryNodes, to support ghost-element 
+//    retrieval if requested. 
+//
+//    Kathleen Bonnell, Wed Dec 15 08:31:38 PST 2004 
+//    Changed 'std::vector<int>' to 'intVector' and 'std::vector<std::string>'
+//    to stringVector.  Added call to QueryGlobalIds.
+//
+//    Kathleen Bonnell, Wed Dec 15 17:35:53 PST 2004 
+//    Added call to 'LocalIdForGlobal'.
+//
+//    Kathleen Bonnell, Thu Feb  3 09:27:22 PST 2005 
+//    Determine var type for Expressions from ParsingExprList. 
+//
+//    Brad Whitlock, Mon Apr 4 11:44:28 PDT 2005
+//    Added code to query label variables.
+//
+//    Hank Childs, Tue Jul 19 15:56:13 PDT 2005
+//    Added support for array variables.
+//
+//    Kathleen Bonnell, Fri Jun  9 11:28:49 PDT 2006 
+//    Fix MLK.
+//
+//    Brad Whitlock, Tue Mar 13 11:14:03 PDT 2007
+//    Updated due to code generation changes.
+//
+//    Hank Childs, Fri Aug 31 15:53:23 PDT 2007
+//    Add support for getting the subset name if we are creating a spreadsheet.
+//
+//    Cyrus Harrison, Fri Sep 14 13:59:30 PDT 2007
+//    Added support for user settable floating point format string
+//
+//    Brad Whitlock, Tue Jan 20 16:06:53 PST 2009
+//    I changed a type conversion function.
+//
+//    Mark C. Miller, Thu Feb 12 11:33:59 PST 2009
+//    Removed std:: qualification on some STL classes due to use of using
+//    statements at top 
+//
+//    Hank Childs, Tue Dec 15 13:40:40 PST 2009
+//    Adapt to new SIL interface.
+//
+//    Burlen Loring, Sun Apr 27 15:17:23 PDT 2014
+//    Clean up -Wall warnings
+//
+// ****************************************************************************
+
+void               
+avtDatabase::Query(PickAttributes *pa)
+{
+    int ts          = pa->GetTimeStep();
+    int foundDomain = pa->GetDomain();
+    int foundEl     = pa->GetElementNumber();
+    int zonePick    = pa->GetPickType() == PickAttributes::Zone ||
+                      pa->GetPickType() == PickAttributes::DomainZone;
+    string floatFormat = pa->GetFloatFormat();
+
+    double *PPT, *CPT, ppt[3], cpt[3];
+    intVector incEls  = pa->GetIncidentElements();
+    intVector ghostEls  = pa->GetGhosts();
+    stringVector pnodeCoords  = pa->GetPnodeCoords();
+    stringVector dnodeCoords  = pa->GetDnodeCoords();
+    stringVector bnodeCoords  = pa->GetBnodeCoords();
+    stringVector dzoneCoords  = pa->GetDzoneCoords();
+    stringVector bzoneCoords  = pa->GetBzoneCoords();
+    stringVector userVars = pa->GetVariables();
+    string vName; 
+
+    //
+    //  Ensure that the timestep being queried is the active one. 
+    //
+    ActivateTimestep(ts);
+
+    if (pa->GetCreateSpreadsheet()) 
+    {
+        avtSIL *sil = GetSIL(ts);
+        string mesh = GetMetaData(ts)->MeshForVar(pa->GetActiveVariable());
+        const vector<int> &wholes = sil->GetWholes();
+        avtSILSet_p top = NULL;
+        for (unsigned int i = 0 ; i < wholes.size() ; ++i)
+        {
+            avtSILSet_p candidate = sil->GetSILSet(wholes[i]);
+            if (candidate->GetName() == mesh)
+                top = candidate;
+        }
+        if (*top == NULL)
+        {
+            debug1 << "SERIOUS PROBLEM: unable to identify a top set that "
+                   << "goes along with mesh " << mesh << endl;
+        }
+        else
+        {
+            const vector<int> &mapsOut = top->GetMapsOut();
+            for (unsigned int j = 0; j < mapsOut.size() ; ++j)
+            {
+                int cIndex = mapsOut[j];
+                avtSILCollection_p collection = sil->GetSILCollection(cIndex);
+                if (*collection != NULL && collection->GetRole() == SIL_DOMAIN)
+                {
+                    int nSubsets = collection->GetNumberOfSubsets();
+                    if (foundDomain >= 0 && foundDomain < nSubsets)
+                    {
+                        pa->SetSubsetName(
+                               sil->GetSILSet(collection->GetSubset(foundDomain))->GetName());
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    //
+    //  Filling the incidentElements is usually done by PickQuery,
+    //  but if matSelect has been applied, then the values from PickQuery
+    //  won't make sense.  Instead, retrieve the incidentElements here.
+    //
+    if (incEls.empty())
+    {
+        PPT = pa->GetPickPoint();
+        ppt[0] = PPT[0];
+        ppt[1] = PPT[1];
+        ppt[2] = PPT[2];
+        CPT = pa->GetCellPoint();
+        cpt[0] = CPT[0];
+        cpt[1] = CPT[1];
+        cpt[2] = CPT[2];
+        vName = pa->GetActiveVariable();
+        bool success; 
+
+        bool logicalDNodes = pa->GetShowNodeDomainLogicalCoords();
+        bool logicalBNodes = pa->GetShowNodeBlockLogicalCoords();
+        bool physicalNodes = pa->GetShowNodePhysicalCoords();
+        bool logicalDZones = pa->GetShowZoneDomainLogicalCoords(); 
+        bool logicalBZones = pa->GetShowZoneBlockLogicalCoords();
+        bool includeGhosts = pa->GetIncludeGhosts();
+        bool elIsGhost     = pa->GetElementIsGhost();
+
+        if (pa->GetElementIsGlobal())
+        {
+            foundEl = LocalIdForGlobal(foundDomain, vName, ts, zonePick, foundEl);
+            if (foundEl == -1)
+                return;
+            pa->SetElementNumber(foundEl);
+        }
+
+        if (zonePick)
+        {
+            success = QueryNodes(vName, foundDomain, floatFormat , 
+                          foundEl, elIsGhost, ts, 
+                          incEls, ghostEls, includeGhosts, ppt, 
+                          pa->GetDimension(), physicalNodes, logicalDNodes,
+                          logicalBNodes, pnodeCoords, dnodeCoords, bnodeCoords,
+                          logicalDZones, logicalBZones, dzoneCoords, bzoneCoords);
+        }
+        else       
+        {
+            success = QueryZones(vName, foundDomain, floatFormat,
+                          foundEl, elIsGhost, ts, 
+                          incEls, ghostEls, includeGhosts, cpt, pa->GetDimension(), 
+                          physicalNodes, logicalDNodes, logicalBNodes, pnodeCoords, 
+                          dnodeCoords, bnodeCoords, logicalDZones, logicalBZones, 
+                          dzoneCoords, bzoneCoords);
+            if (success)
+                pa->SetElementNumber(foundEl);
+        }
+        if (success)
+        {
+            pa->SetFulfilled(true);
+            pa->SetIncidentElements(incEls);
+            pa->SetGhosts(ghostEls);
+            pa->SetElementIsGhost(elIsGhost);
+            pa->SetPnodeCoords(pnodeCoords);
+            pa->SetDnodeCoords(dnodeCoords);
+            pa->SetBnodeCoords(bnodeCoords);
+            pa->SetDzoneCoords(dzoneCoords);
+            pa->SetBzoneCoords(bzoneCoords);
+            pa->SetPickPoint(ppt);
+            pa->SetCellPoint(cpt);
+            if (pa->GetShowGlobalIds())
+            {
+                intVector gie;
+                int ge = -1;
+                QueryGlobalIds(foundDomain, vName, ts, zonePick, foundEl,
+                               incEls, ge, gie);
+                pa->SetGlobalElement(ge);
+                pa->SetGlobalIncidentElements(gie);
+            }
+        }
+        else
+        {
+            pa->SetFulfilled(false);
+            return;
+        }
+        for (unsigned int j = 0; j < userVars.size(); ++j)
+        {
+            PickVarInfo varInfo;
+            varInfo.SetVariableName(userVars[j]);
+            varInfo.SetFloatFormat(pa->GetFloatFormat());
+            pa->AddVarInfo(varInfo); 
+        }
+    }
+
+    string meshInfo;
+    QueryMesh(pa->GetActiveVariable(), ts, foundDomain, meshInfo, 
+              pa->GetShowMeshName());
+    pa->SetMeshInfo(meshInfo);
+
+    for (unsigned int varNum = 0; varNum < userVars.size(); ++varNum)
+    {
+        vName = userVars[varNum];
+        if (strcmp(vName.c_str(), "default") == 0)
+        {
+            vName = pa->GetActiveVariable();
+        }
+        // 
+        // Skip any variables that already have info, unless they are scalar,
+        // because then MatFracs might be necessary.
+        // 
+        if (pa->GetVarInfo(varNum).HasInfo() )
+        {
+            if (pa->GetVarInfo(varNum).GetVariableType() == "scalar") 
+            {
+                ExprNode *tree = ParsingExprList::GetExpressionTree(vName);
+                //
+                // If an expression, skip it, otherwise it might be a
+                // mixed-var, so let the db add more info if available.
+                //
+                if (tree != NULL)
+                {
+                   delete tree;
+                   continue;
+                }
+            }
+            else 
+            {
+                continue;
+            }
+        }
+ 
+        TRY
+        {
+            avtVarType varType;
+            ExprNode *tree = ParsingExprList::GetExpressionTree(vName);
+            if (tree != NULL)
+            {
+                varType = ExprType_To_avtVarType
+                          (ParsingExprList::GetExpression(vName)->GetType());
+                delete tree;
+            }
+            else
+            {
+                varType = GetMetaData(ts)->DetermineVarType(vName);
+            }
+ 
+            int matEl = (pa->GetRealElementNumber() != -1 ? 
+                         pa->GetRealElementNumber() : foundEl);
+            intVector matIncEls = (pa->GetRealIncidentElements().size() > 0 ? 
+                                   pa->GetRealIncidentElements() : incEls);
+            switch(varType)
+            {
+                case AVT_SCALAR_VAR :
+                   QueryScalars(vName, foundDomain, foundEl, ts, incEls, 
+                                pa->GetVarInfo(varNum), zonePick);
+                   pa->GetVarInfo(varNum).SetVariableType("scalar");
+                   break; 
+                case AVT_VECTOR_VAR :
+                   QueryVectors(vName, foundDomain, foundEl, ts, incEls, 
+                                pa->GetVarInfo(varNum), zonePick);
+                   pa->GetVarInfo(varNum).SetVariableType("vector");
+                   break; 
+                case AVT_TENSOR_VAR :
+                   QueryTensors(vName, foundDomain, foundEl, ts, incEls, 
+                                pa->GetVarInfo(varNum), zonePick);
+                   pa->GetVarInfo(varNum).SetVariableType("tensor");
+                   break; 
+                case AVT_SYMMETRIC_TENSOR_VAR :
+                   QuerySymmetricTensors(vName, foundDomain, foundEl, ts,
+                                 incEls, pa->GetVarInfo(varNum), zonePick);
+                   pa->GetVarInfo(varNum).SetVariableType("symm_tensor");
+                   break; 
+                case AVT_ARRAY_VAR :
+                   QueryArrays(vName, foundDomain, foundEl, ts,
+                               incEls, pa->GetVarInfo(varNum), zonePick);
+                   pa->GetVarInfo(varNum).SetVariableType("array");
+                   break; 
+                case AVT_MATERIAL :
+                   QueryMaterial(vName, foundDomain, matEl, ts, matIncEls, 
+                                 pa->GetVarInfo(varNum), zonePick);
+                   pa->GetVarInfo(varNum).SetVariableType("material");
+                   break; 
+                case AVT_MATSPECIES :
+                   QuerySpecies(vName, foundDomain, matEl, ts, matIncEls, 
+                                pa->GetVarInfo(varNum), zonePick);
+                   pa->GetVarInfo(varNum).SetVariableType("species");
+                   break; 
+                case AVT_MESH : 
+                   if (!pa->GetVarInfo(varNum).HasInfo())
+                       pa->GetVarInfo(varNum).SetVariableType("mesh");
+                   break; 
+                case AVT_LABEL_VAR :
+                   QueryLabels(vName, foundDomain, foundEl, ts, incEls, 
+                                pa->GetVarInfo(varNum), zonePick);
+                   pa->GetVarInfo(varNum).SetVariableType("label");
+                   break; 
+                default : 
+                   break; 
+            }
+        }
+        CATCH (InvalidVariableException)
+        {
+            // User entered a bad variable, but we want to continue processing
+            // the other variables, so do nothing with the exception. 
+            // "No Information Found" will be listed next to the var in the 
+            // pick window.
+        }
+        ENDTRY 
+    }
+
+    const char *fname = GetFilename(ts);
+    pa->SetDatabaseName(fname);
+}
+
+// ****************************************************************************
+//  Method: avtDatabase::GetExtentsFromAuxiliaryData
+//
+//  Purpose: Obtain extents, if possible, from auxiliary data
+//
+//  Programmer: Mark C. Miller
+//  Creation:   October 20, 2004
+//
+// ****************************************************************************
+
+bool
+avtDatabase::GetExtentsFromAuxiliaryData(avtDataRequest_p spec,
+    const char *var, const char *type, double *extents)
+{
+    if (*spec == NULL)
+        return false;
+
+    VoidRefList list;
+
+    avtDataRequest_p tmp_spec = new avtDataRequest(spec, -1);
+    GetAuxiliaryData(tmp_spec, list, type, (void *) var);
+
+    if (list.nList != 1 || *(list.list[0]) == NULL)
+        return false;
+
+    avtIntervalTree *tree = (avtIntervalTree *) *(list.list[0]);
+    double tree_extents[6] = {0.,0.,0.,0.,0.,0.};
+    tree->GetExtents(tree_extents);
+
+    int nvals = 2;
+    if (strcmp(type, AUXILIARY_DATA_SPATIAL_EXTENTS) == 0)
+        nvals = 6;
+    for (int i = 0; i < nvals; ++i)
+        extents[i] = tree_extents[i];
+
+    return true;
+}
+
+
+void
+avtDatabase::SetIsEnsemble(bool v)
+{
+    isEnsemble = v;
+}
+
+bool
+avtDatabase::GetIsEnsemble()
+{
+    return isEnsemble;
+}

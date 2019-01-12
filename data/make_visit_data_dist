@@ -1,0 +1,89 @@
+#/bin/csh -f
+set dirname="visit_data_files"
+
+# Make the files if they have not been created.
+if ! -e globe.silo then
+    make test
+endif
+
+# Make a destination directory for the files.
+if -e $dirname then
+   rm -rf $dirname
+endif
+mkdir $dirname
+cd $dirname
+
+# Copy protein databank data files
+cp ../ProteinDataBank_test_data/1NTS.pdb .
+cp ../ProteinDataBank_test_data/1UZ9.pdb .
+cp ../ProteinDataBank_test_data/crotamine.pdb .
+
+# Copy PDB data files.
+cp ../db{A,B,C}00.pdb .
+
+# Copy ANALYZE test data
+cp ../ANALYZE_test_data/* .
+
+# Copy Silo files
+cp ../bigsil.silo .
+cp ../csg.silo .
+cp ../curv2d.silo .
+cp ../curv2d_colmajor.silo .
+cp ../curv3d.silo .
+cp ../curv3d_colmajor.silo .
+cp ../emptydomains.silo .
+cp ../fullframe.silo .
+cp ../galaxy0000.silo .
+cp ../ghost1.silo .
+cp ../global_node.silo .
+cp ../globe.silo .
+cp ../globe_mat0.silo .
+cp ../globe_matcolors.silo .
+cp ../lowfrac.silo .
+cp ../meshorigin.silo .
+cp ../multi_curv2d.silo .
+cp ../multi_curv3d.silo .
+cp ../multi_point2d.silo .
+cp ../multi_rect2d.silo .
+cp ../multi_rect3d.silo .
+cp ../multi_ucd3d.silo .
+cp ../noise.silo .
+cp ../noise2d.silo .
+cp ../odd_multi.silo .
+cp ../one_quad.silo .
+cp ../poly3d.silo .
+cp ../quad_disk.silo .
+cp ../rect2d.silo .
+cp ../rect3d.silo .
+cp ../sid97.silo .
+cp ../specmix_quad.silo .
+cp ../specmix_ucd.silo .
+cp ../thinplane.silo .
+cp ../tire.silo .
+cp ../ucd2d.silo .
+cp ../ucd3d.silo .
+cp ../wave????.silo .
+cp ../wave.visit .
+
+# Try and find CThead_mid.silo, one of Brad's files.
+if -e /home/whitlocb/data/CThead_mid.silo then
+    # Hoth
+    cp /home/whitlocb/data/CThead_mid.silo .
+endif
+if -e /Users/whitlocb/home/data/CThead_mid.silo then
+    # Dantooine
+    cp /home/whitlocb/home/data/CThead_mid.silo .
+endif
+
+# Make the tar file
+cd ..
+if -e $dirname.tar then
+    rm -f $dirname.tar
+endif
+if -e $dirname.tar.gz then
+    rm -f $dirname.tar.gz
+endif
+tar cf $dirname.tar $dirname
+gzip $dirname.tar
+echo "The VisIt data distribution is done: $dirname.tar.gz" 
+rm -rf $dirname

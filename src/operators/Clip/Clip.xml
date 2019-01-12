@@ -1,0 +1,96 @@
+<?xml version="1.0"?>
+  <Plugin name="Clip" type="operator" label="Clip" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" iconFile="Clip.xpm" category="Selection">
+    <Attribute name="ClipAttributes" purpose="This class contains attributes for the clip operator." persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="ClipAttributes.code">
+      <Enum name="ClipStyle">
+        Plane
+        Sphere
+      </Enum>
+      <Enum name="WhichClipPlane">
+        None
+        Plane1
+        Plane2
+        Plane3
+      </Enum>
+      <Enum name="Quality">
+        Fast
+        Accurate
+      </Enum>
+      <Field name="quality" label="Quality" type="enum" subtype="Quality">
+        Fast
+      </Field>
+      <Field name="funcType" label="Style" type="enum" subtype="ClipStyle">
+        Plane
+      </Field>
+      <Field name="plane1Status" label="Plane 1" type="bool" enabler="funcType:Plane">
+        true
+      </Field>
+      <Field name="plane2Status" label="Plane 2" type="bool" enabler="funcType:Plane">
+        false
+      </Field>
+      <Field name="plane3Status" label="Plane 3" type="bool" enabler="funcType:Plane">
+        false
+      </Field>
+      <Field name="plane1Origin" label="Plane 1 origin" type="doubleArray" length="3" enabler="funcType:Plane">
+        0.000000
+        0.000000
+        0.000000
+      </Field>
+      <Field name="plane2Origin" label="Plane 2 origin" type="doubleArray" length="3" enabler="funcType:Plane">
+        0.000000
+        0.000000
+        0.000000
+      </Field>
+      <Field name="plane3Origin" label="Plane 3 origin" type="doubleArray" length="3" enabler="funcType:Plane">
+        0.000000
+        0.000000
+        0.000000
+      </Field>
+      <Field name="plane1Normal" label="Plane 1 normal" type="doubleArray" length="3" enabler="funcType:Plane">
+        1.000000
+        0.000000
+        0.000000
+      </Field>
+      <Field name="plane2Normal" label="Plane 2 normal" type="doubleArray" length="3" enabler="funcType:Plane">
+        0.000000
+        1.000000
+        0.000000
+      </Field>
+      <Field name="plane3Normal" label="Plane 3 normal" type="doubleArray" length="3" enabler="funcType:Plane">
+        0.000000
+        0.000000
+        1.000000
+      </Field>
+      <Field name="planeInverse" label="Inverse" type="bool" enabler="funcType:Plane">
+        false
+      </Field>
+      <Field name="planeToolControlledClipPlane" label="Plane tool controls" type="enum" subtype="WhichClipPlane">
+        Plane1
+      </Field>
+      <Field name="center" label="Center" type="doubleArray" length="3" enabler="funcType:Sphere">
+        0.000000
+        0.000000
+        0.000000
+      </Field>
+      <Field name="radius" label="Radius" type="double" enabler="funcType:Sphere">
+        1.000000
+      </Field>
+      <Field name="sphereInverse" label="Inverse" type="bool" enabler="funcType:Sphere">
+        false
+      </Field>
+      <Function name="CopyAttributes" user="false" member="true">
+      </Function>
+      <Function name="CreateCompatible" user="false" member="true">
+      </Function>
+      <Function name="EqualTo" user="true" member="true">
+      </Function>
+      <Include file="source" quoted="false">
+        BoxExtents.h
+      </Include>
+      <Include file="source" quoted="false">
+        SphereAttributes.h
+      </Include>
+      <Include file="header" quoted="false">
+        PlaneAttributes.h
+      </Include>
+    </Attribute>
+  </Plugin>

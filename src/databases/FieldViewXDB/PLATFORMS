@@ -1,0 +1,12 @@
+The binaries were compiled using:
+=================================
+Win64   - MSVC2010-x64
+
+Mac64   - Darwin Kernel Version 12.5.0: Sun Sep 29 13:33:47 PDT 2013; root:xnu-2050.48.12~1/RELEASE_X86_64 x86_64
+          i686-apple-darwin11-llvm-gcc-4.2 (GCC) 4.2.1 (Based on Apple Inc. build 5658) (LLVM build 2336.11.00)
+
+Linux64 - Linux 2.6.32-358.el6.x86_64 #1 SMP
+          gcc (GCC) 4.4.7 20120313 (Red Hat 4.4.7-4)
+
+* I hope AVT doesn't change that much or that could cause some problems.
+* The binaries were built from the trunk at about svn version 23552.

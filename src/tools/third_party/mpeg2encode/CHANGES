@@ -1,0 +1,26 @@
+CHANGES
+=======
+
+Since July 4, 1994 edition:
+
+  Summary:
+   only very minor changes since version 1.1a, distributed two years 
+   ago.  A beta version of this program has significantly greater
+   number of changes (.par file syntax, restructured motion.c ,
+   zero-block test of Note 4.1.1, etc.)
+
+  1. as per suggestion of Peter Loje Hansen <plh@tdr.dk>:
+
+  -  corrected line 631 of motion.c so field_estimate uses 
+     backward search range variables (sxb, syb) instead of 
+     forward search range variables (sxf, syf).
+
+  -  corrected line 250 in putseq.c, replacing .sxf with .syf
+
+
+  2. many user suggestions:
+  -  prevent divide by zero in SNR calculation in stat.c.
+
+  3. general:
+  - eliminated support for non ANSI C compilers  in makefile.
+

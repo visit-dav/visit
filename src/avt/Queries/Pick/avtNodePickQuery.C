@@ -1,0 +1,640 @@
+/*****************************************************************************
+*
+* Copyright (c) 2000 - 2018, Lawrence Livermore National Security, LLC
+* Produced at the Lawrence Livermore National Laboratory
+* LLNL-CODE-442911
+* All rights reserved.
+*
+* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
+* full copyright notice is contained in the file COPYRIGHT located at the root
+* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
+*
+* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
+* modification, are permitted provided that the following conditions are met:
+*
+*  - Redistributions of  source code must  retain the above  copyright notice,
+*    this list of conditions and the disclaimer below.
+*  - Redistributions in binary form must reproduce the above copyright notice,
+*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
+*    documentation and/or other materials provided with the distribution.
+*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
+*    be used to endorse or promote products derived from this software without
+*    specific prior written permission.
+*
+* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
+* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
+* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
+* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
+* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
+* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
+* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
+* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
+* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
+* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
+* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
+* DAMAGE.
+*
+*****************************************************************************/
+
+// ************************************************************************* //
+//                           avtNodePickQuery.C                              //
+// ************************************************************************* //
+
+#include <avtNodePickQuery.h>
+
+#include <float.h>
+
+#include <vtkCell.h>
+#include <vtkCellData.h>
+#include <vtkDataSet.h>
+#include <vtkFieldData.h>
+#include <vtkMath.h>
+#include <vtkPointData.h>
+#include <vtkPoints.h>
+#include <vtkUnsignedCharArray.h>
+#include <vtkVisItUtility.h>
+
+#include <avtGhostData.h>
+#include <avtMatrix.h>
+#include <avtParallel.h>
+#include <avtOriginatingSource.h>
+#include <avtVector.h>
+#include <vtkVisItCellLocator.h>
+
+#include <DebugStream.h>
+
+
+using     std::string;
+
+
+// ****************************************************************************
+//  Method: avtNodePickQuery constructor
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   May 13, 2004
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+avtNodePickQuery::avtNodePickQuery()
+{
+    minDist = +FLT_MAX;
+}
+
+
+// ****************************************************************************
+//  Method: avtNodePickQuery destructor
+//
+//  Purpose:
+//      Defines the destructor.  Note: this should not be inlined in the header
+//      because it causes problems for certain compilers.
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   May 13, 2004
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+avtNodePickQuery::~avtNodePickQuery()
+{
+}
+
+
+// ****************************************************************************
+//  Method: avtNodePickQuery::Execute
+//
+//  Purpose:
+//      Processes a single domain.
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   May 13, 2004
+//
+//  Modifications:
+//    Kathleen Bonnell, Tue Aug 10 09:06:54 PDT 2004
+//    When material-selection has been applied, ensure that RetriveVarInfo
+//    will be using the correct zone ids for this dataset.
+//
+//    Kathleen Bonnell, Thu Aug 26 09:50:31 PDT 2004
+//    Handle case when pickatts.domain has not yet been set. (e.g. when
+//    picking 2d contour or boundary plots.)
+//
+//    Kathleen Bonnell, Mon Aug 30 17:53:58 PDT 2004
+//    Modified early-return test -- split into two, and use new flag
+//    skippedLocate.
+//
+//    Kathleen Bonnell, Thu Sep 23 17:38:15 PDT 2004
+//    Removed 'needRealId' test, no longer needed (we are reporting ghost
+//    zones when ghostType == AVT_HAS_GHOSTS).
+//
+//    Kathleen Bonnell, Mon Dec  6 14:30:39 PST 2004
+//    Added special logic for when locate was skipped.
+//
+//    Hank Childs, Thu Mar 10 10:35:37 PST 2005
+//    Fix memory leak.
+//
+//    Kathleen Bonnell, Tue Jun 28 10:45:28 PDT 2005
+//    Calculate 'real' ids under the proper circumstances (Created ghosts,
+//    the ghost array is available, we don't have the picked node right
+//    away and the ds is structured).
+//
+//    Kathleen Bonnell, Fri Jul  8 14:15:21 PDT 2005
+//    Changed test for determining if the 'real' id needs to be calculated.
+//    Also, transform the point to be used as 'pick letter' when this
+//    pick did not use the locate query to determine that point.
+//
+//    Mark C. Miller, Tue Mar 27 08:39:55 PDT 2007
+//    Added support for node origin
+//
+// ****************************************************************************
+
+void
+avtNodePickQuery::Execute(vtkDataSet *ds, const int dom)
+{
+    if (ds == NULL || pickAtts.GetFulfilled())
+    {
+        return;
+    }
+    if (dom != pickAtts.GetDomain() && !skippedLocate)
+    {
+        return;
+    }
+
+    int pickedNode = pickAtts.GetElementNumber();
+    int type = ds->GetDataObjectType();
+    //
+    // We may need the real id when picking on a Contour plot of
+    // an AMR dataset.
+    //
+    bool needRealId = false;
+
+    if (pickedNode == -1 && ghostType == AVT_CREATED_GHOSTS &&
+        (type == VTK_STRUCTURED_GRID || type == VTK_RECTILINEAR_GRID))
+    {
+        needRealId = vtkVisItUtility::ContainsMixedGhostZoneTypes(ds);
+    }
+
+    if (pickedNode == -1)
+    {
+        pickedNode = DeterminePickedNode(ds);
+        if (pickedNode == -1 && pickAtts.GetDomain() != -1)
+        {
+            // the node could not be found, no further processing required.
+            // SetDomain and ElementNumber to -1 to indicate failure.
+            pickAtts.SetDomain(-1);
+            pickAtts.SetElementNumber(-1);
+            debug4 << "PICK BIG PROBLEM!  "
+                   << "Could not find zone corresponding to pick point"
+                   << endl;
+            pickAtts.SetErrorMessage("Pick encountered an internal "
+                        "error (could not find closest node).\n"
+                        "Please contact a VisIt developer");
+            pickAtts.SetError(true);
+            return;
+        }
+    }
+    if (skippedLocate)
+    {
+        if (pickedNode == -1)
+        {
+            return;
+        }
+
+        double dist = vtkMath::Distance2BetweenPoints(pickAtts.GetPickPoint(),
+                          ds->GetPoint(pickedNode));
+        if (dist < minDist)
+        {
+            minDist = dist;
+
+        }
+        else
+        {
+            return;
+        }
+    }
+
+    pickAtts.SetCellPoint(ds->GetPoint(pickedNode));
+
+    if (!pickAtts.GetMatSelected())
+    {
+        GetNodeCoords(ds, pickedNode);
+        if (RetrieveZones(ds, pickedNode, needRealId))
+        {
+            pickAtts.SetElementNumber(pickedNode);
+            RetrieveVarInfo(ds);
+            pickAtts.SetFulfilled(true);
+        }
+        else
+        {
+            // the zones could not be found, no further processing required.
+            // SetDomain and ElementNumber to -1 to indicate failure.
+            pickAtts.SetDomain(-1);
+            pickAtts.SetElementNumber(-1);
+            pickAtts.SetErrorMessage("Pick encountered an internal "
+                    "error (could not determine incident zones).\n"
+                    "Please contact a VisIt developer");
+            pickAtts.SetError(true);
+            return;
+        }
+    }
+
+    //
+    //  The database needs a valid domain
+    //
+    if (pickAtts.GetDomain() == -1)
+        pickAtts.SetDomain(dom);
+
+    //
+    //  Allow the database to add any missing information.
+    //
+    src->Query(&pickAtts);
+
+    if (pickAtts.GetMatSelected() ||
+        !GetInput()->GetInfo().GetValidity().GetZonesPreserved())
+    {
+        //
+        // The zone numbers stored in IncidentElements are not the correct
+        // ones to use with this dataset ... get the correct ones to use
+        // with RetrieveVarInfo, then reset them.
+        //
+        intVector pickedZones = pickAtts.GetIncidentElements();
+        intVector currentZones = GetCurrentZoneForOriginal(ds, pickedZones);
+        RetrieveVarInfo(ds, pickAtts.GetElementNumber(), currentZones);
+    }
+
+    //
+    // Set the domain and zone of pickAtts in relation to the
+    // blockOrigin and cellOrigin of the problem.
+    //
+    if (singleDomain)
+    {
+        //
+        // Indicate that there was only one domain.
+        // We don't report the domain number for single-domain problems.
+        //
+        pickAtts.SetDomain(-1);
+    }
+    else
+    {
+        pickAtts.SetDomain(dom+blockOrigin);
+    }
+
+    if (needRealId)
+    {
+        SetRealIds(ds);
+        //
+        // Put the real ids in the correct spot for output.
+        //
+        pickAtts.SetElementNumber(pickAtts.GetRealElementNumber());
+        pickAtts.SetIncidentElements(pickAtts.GetRealIncidentElements());
+    }
+
+    pickAtts.SetElementNumber(pickAtts.GetElementNumber() + nodeOrigin);
+
+    //
+    // CellPoint should now contain the actual node coordinates.
+    // This is the value displayed to the user in the PickAtts output.
+    // PickPoint determines where on the screen the pick letter will
+    // be placed.  This should be the actual node coordinates (CellPoint)
+    // if the plot was NOT transformed.
+    //
+    // If the plot was transformed && the inverseTransform is available,
+    // use the NodePoint as determined by avtLocateCellQuery.
+    //
+    // If the plot was transformed && inverseTransform is NOT available,
+    // there is no way to determine the location of the picked node in
+    // transformed space, so leave PickPoint set to the intersection point
+    // with the ray as determined by avtLocateCellQuery.
+    //
+    if (transform != NULL)
+    {
+        if (!skippedLocate)
+        {
+            pickAtts.SetPickPoint(pickAtts.GetNodePoint());
+        }
+        else
+        {
+           avtVector v1(pickAtts.GetCellPoint());
+           v1 = (*transform) *v1;
+           double pp[3] = {v1.x, v1.y, v1.z};
+            pickAtts.SetPickPoint(pp);
+        }
+    }
+    else if (pickAtts.GetNeedTransformMessage())
+    {
+        //
+        // Points were transformed, but we don't need the message because
+        // we are displaying the node coords to the user in pick output.
+        //
+        pickAtts.SetNeedTransformMessage(false);
+        pickAtts.SetPickPoint(pickAtts.GetNodePoint());
+    }
+    else
+    {
+        pickAtts.SetPickPoint(pickAtts.GetCellPoint());
+    }
+
+    if (skippedLocate)
+    {
+        if (!needRealId)
+            foundNode = pickedNode;
+        else
+            foundNode = pickAtts.GetRealElementNumber();
+        foundDomain = dom;
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtNodePickQuery::DeterminePickedNode
+//
+//  Purpose:
+//    Finds the closest node-point to the picked point.
+//
+//  Arguments:
+//    ds        The dataset to retrieve information from.
+//
+//  Returns:
+//    The node id closest to PickPoint. (-1 if there is some kind of failure).
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   May 13, 2004
+//
+//  Modifications:
+//    Kathleen Bonnell, Mon Dec  6 14:30:39 PST 2004
+//    Add logic to return -1 when pickpoint does not lie in dataset bounds,
+//    and if 'FindPoint' returns a ghost node.
+//
+//    Kathleen Bonnell, Tue Jun 28 10:47:35 PDT 2005
+//    Find intersected cell and test if it is a ghost before proceeding
+//    further.
+//
+//    Hank Childs, Fri Jun  9 14:43:27 PDT 2006
+//    Move currently unused variable into section removed by preprocessor
+//    directive.  Purpose is to remove compiler warning.
+//
+//    Kathleen Bonnell, Tue Oct  2 08:30:04 PDT 2007
+//    Don't throw away a 'duplicated node' ghost node.
+//
+//    Kathleen Biagas, Wed Jun 28 08:24:35 PDT 2017
+//    Resolving #2816, Use cell locator instead of vtkVisItUtility::FindCell,
+//    it yields better results in more cases. Added logic to search for
+//    closest node on faces instead of entire cell, as closest node may not
+//    lie on the face that was intersected, but user will be expecting a
+//    result on the intersected face.
+//
+// ****************************************************************************
+
+int
+avtNodePickQuery::DeterminePickedNode(vtkDataSet *ds)
+{
+    double *pp = pickAtts.GetPickPoint();
+
+    int zone = -1;
+    if (!pickAtts.GetLinesData())
+    {
+        vtkVisItCellLocator *cellLocator = vtkVisItCellLocator::New();
+        cellLocator->SetIgnoreGhosts(true);
+        cellLocator->SetDataSet(ds);
+        //
+        // Cells may have been removed, and unused points may still exist,
+        // giving the dataset larger bounds than just the cell bounds, so
+        // tell the locator to use the actual bounds retrieved from the
+        // plot that originated this query.  The locator will use these
+        // bounds only if they are smaller than the dataset bounds.
+        //
+        if (!pickAtts.GetPlotBounds().empty())
+        {
+            cellLocator->SetUserBounds(&pickAtts.GetPlotBounds()[0]);
+        }
+        cellLocator->BuildLocator();
+
+        double dist = -1;
+        double cp[3] = {0., 0., 0.};
+        int subId = 0;
+        vtkIdType foundCell;
+        cellLocator->FindClosestPoint(pp, cp, foundCell, subId, dist);
+        zone = foundCell;
+        cellLocator->Delete();
+    }
+    else
+    {
+        zone = vtkVisItUtility::FindCell(ds, pp);
+    }
+
+    if (zone == -1)
+        return -1;
+
+    vtkDataArray *ghostZones = ds->GetCellData()->GetArray("avtGhostZones");
+    if (ghostZones && ghostZones->GetTuple1(zone) > 0)
+    {
+        return -1;
+    }
+
+    int node = -1;
+    if (GetInput()->GetInfo().GetAttributes().GetSpatialDimension() ==3 &&
+        !pickAtts.GetLinesData() &&
+        ds->GetCell(zone)->GetNumberOfFaces() > 0)
+    {
+        // The closest node to the intersection point may not actually
+        // lie on the same face as the intersection point, so we must
+        // first narrow it down to the correct face.
+        //
+        // find the face, then closest node
+        vtkCell *cell =  ds->GetCell(zone);
+        double dist = DBL_MAX;
+        double cp[3] = {0., 0., 0.};
+        double pc[3] = {0.,0.,0.};
+        double wts[100];
+        double dist2;
+        int subId = 0;
+        int minFace = -1;
+
+        for (int i = 0; i < cell->GetNumberOfFaces(); ++i)
+        {
+            int vp = cell->GetFace(i)->EvaluatePosition(pp, cp, subId, pc, dist2, wts);
+            if (vp == 1 && dist2 < dist)
+            {
+                minFace = i;
+                dist = dist2;
+            }
+        }
+       if (minFace != -1)
+       {
+           dist = DBL_MAX;
+           vtkCell *f = cell->GetFace(minFace);
+           vtkPoints *cpts = f->GetPoints();
+           for (vtkIdType i = 0; i < cpts->GetNumberOfPoints(); ++i)
+           {
+               double dist2 = vtkMath::Distance2BetweenPoints(pp, cpts->GetPoint(i));
+               if (dist2 < dist)
+               {
+                   dist = dist2;
+                   node = f->GetPointId(i);
+               }
+           }
+       }
+    }
+    else
+    {
+        node = ds->FindPoint(pickAtts.GetPickPoint());
+    }
+
+    vtkUnsignedCharArray *ghostNodes = vtkUnsignedCharArray::SafeDownCast(
+        ds->GetPointData()->GetArray("avtGhostNodes"));
+    unsigned char gn = ghostNodes ? ghostNodes->GetValue(node): 0;
+    if (ghostNodes && gn > 0 && !avtGhostData::IsGhostNodeType(gn, DUPLICATED_NODE))
+    {
+        return -1;
+    }
+    else
+    {
+        return node;
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtNodePickQuery::Preparation
+//
+//  Purpose:
+//    Allows this pick to modify pickAtts before filters are applied.
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   June 2, 2004
+//
+//  Modifications:
+//    Kathleen Bonnell, Tue Nov  8 10:45:43 PST 2005
+//    Added avtDatAttributes arg.
+//
+//    Kathleen Biagas, Wed Jun 28 15:22:30 PDT 2017
+//    Changed 'transform' to 'invTransform' now that both are used.
+//
+// ****************************************************************************
+
+void
+avtNodePickQuery::Preparation(const avtDataAttributes &)
+{
+    //
+    // Transform the point that will be used in locating the node.
+    //
+    double *pickPoint  = pickAtts.GetPickPoint();
+    if (invTransform != NULL)
+    {
+        //
+        // Transform the intersection point back to original space.
+        //
+        avtVector v1(pickPoint);
+        v1 = (*invTransform) * v1;
+        pickPoint[0] = v1.x;
+        pickPoint[1] = v1.y;
+        pickPoint[2] = v1.z;
+        //
+        // Reset the pick point to the transformed point.
+        //
+        pickAtts.SetPickPoint(pickPoint);
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtNodePickQuery::SetInvTransform
+//
+//  Purpose:
+//    Sets the inverseTransform, used to transform the intersection point
+//    back into the data's original space, for retrieving correct node ids.
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   June 2, 2004
+//
+// ****************************************************************************
+
+void
+avtNodePickQuery::SetInvTransform(const avtMatrix *m)
+{
+    invTransform = m;
+}
+
+
+// ****************************************************************************
+//  Method: avtNodePickQuery::SetTransform
+//
+//  Purpose:
+//    Sets the transform, used to set the correct location for the PickLetter.
+//
+//  Programmer: Kathleen Biagas
+//  Creation:   June 28, 2017
+//
+// ****************************************************************************
+
+void
+avtNodePickQuery::SetTransform(const avtMatrix *m)
+{
+    transform = m;
+}
+
+
+// ****************************************************************************
+//  Method: avtNodePickQuery::PreExecute
+//
+//  Purpose:
+//      This is called before any of the domains are executed.
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   December 6, 2004
+//
+//  Modifications:
+//    Jeremy Meredith, Thu Feb 15 11:55:03 EST 2007
+//    Call inherited PreExecute before everything else.
+//
+// ****************************************************************************
+
+void
+avtNodePickQuery::PreExecute(void)
+{
+    avtPickQuery::PreExecute();
+
+    minDist = +FLT_MAX;
+    foundNode = -1;
+    foundDomain = -1;
+}
+
+
+// ****************************************************************************
+//  Method: avtNodePickQuery::PostExecute
+//
+//  Purpose:
+//      This is called after all of the domains are executed.
+//      Sets pickAtts elementNumber, Domain, and fulfilled flag.
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   December 6, 2004
+//
+// ****************************************************************************
+
+void
+avtNodePickQuery::PostExecute(void)
+{
+    if (skippedLocate)
+    {
+        if (ThisProcessorHasMinimumValue(minDist) && minDist != +FLT_MAX)
+        {
+            pickAtts.SetFulfilled(true);
+            pickAtts.SetElementNumber(foundNode);
+            if (singleDomain)
+            {
+                //
+                // Indicate that there was only one domain.
+                // We don't report the domain number for single-domain problems.
+                //
+                pickAtts.SetDomain(-1);
+            }
+            else
+            {
+                pickAtts.SetDomain(foundDomain+blockOrigin);
+            }
+        }
+    }
+    avtPickQuery::PostExecute();
+}

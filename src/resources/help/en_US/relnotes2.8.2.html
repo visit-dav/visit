@@ -1,0 +1,79 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta http-equiv="Content-Language" content="en-us">
+  <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+  <meta name="ProgId" content="FrontPage.Editor.Document">
+  <title>VisIt 2.8.2 Release Notes</title>
+</head>
+<body>
+
+<center><b><font size="6">VisIt 2.8.2 Release Notes</font></b></center>
+
+<p>Welcome to VisIt's release notes page. This page describes the important
+enhancements and bug-fixes that were added to this release.</p>
+
+<p><b>Sections</b></p>
+<ul>
+  <li><a href="#Configuration_changes">Configuration changes</a></li>
+  <li><a href="#Bugs_fixed">Bugs fixed</a></li>
+  <li><a href="#Enhancements">Enhancements</a></li>
+  <li><a href="#Dev_changes">Changes for VisIt developers</a></li>
+</ul>
+
+<a name="Configuration_changes"></a>
+<p><b><font size="4">Configuration changes in version 2.8.2</font></b></p>
+<ul>
+<li>A host profile was added for LLNL's <i>Surface</i> system.</li>
+<li>A host profile was added for LLNL's <i>Rzgpu</i> system.</li>
+<li>The host profile for LLNL's <i>Edge</i> system was deleted.</li>
+<li>The default bank was changed from "bbronze" to "wbronze" for all the hosts in the <i>LLNL closed network</i> configuration.</li>
+<li>Fixed OSX Mavericks build issues when using one or more of the following flags: --ccmio, --netcdf, --advio, --uintah, and --cgns</li>
+</ul>
+
+<a name="Bugs_fixed"></a>
+<p><b><font size="4">Bugs fixed in version 2.8.2</font></b></p>
+<ul>
+<li>A node ordering issue for quadratic elements in Exodus files was corrected.</li>
+<li>VisIt is once again able to read multi-file Exodus files.</li>
+<li>The internal launcher was modified so that by default it does not pass -ppn to mpiexec and mpirun when launching a parallel job. If the user needs to have the internal launcher pass -ppn to those commands then they will need to override that behavior in a custom launcher.</li>
+<li>Lineouts that do not intersect the plot no longer issue a 'No input' error message for each successive lineout. The previous behavior of issuing a 'yielded no data' status message for only the lineouts that do not intersect a plot has been restored.</li>
+<li>An issue where blocks in subset plots were not correctly outlined when the wireframe option is selected was corrected.</li> 
+<li>Pseudocolor plots of nodal variables defined on structured multi block meshes no longer crash the compute engine.</li>
+<li>An issue generating structured ghost data that could cause a Filled Boundary plot of an AMR mesh to crash the compute engine was corrected.</li>
+<li>The VisIt launching script was modified so that arguments that it adds to the argument list are added at the beginning of the list instead of the end of the list so that argument passing for scripts works properly.</li>
+<li>VisIt now uses significantly less memory when processing CSG meshes with many regions. In one instance, a subset plot of a CSG mesh consisting of about 36000 spheres that was using over 250 gigabytes is now using about half a gigabyte.</li>
+<li>VisIt no longer crashes when discretizing CSG meshes with the Multi-Pass method when the number of boundaries in a region exceeds an internal limit. It now issues a warning message and tries the uniform discretization method.</li>
+</ul>
+
+<a name="Enhancements"></a>
+<p><b><font size="4">Enhancements in version 2.8.2</font></b></p>
+<ul>
+<li>The zonetype expression now produces labels that are 3 characters long. It also supports most of the VTK element types.</li>
+<li>The XRay Image query now supports specifying the image view with the full generality of the 3d view for plots. The new view parameters currently can only be specified through the Python scripting interface. An example of their usage is:<pre>params = dict(output_type="png", divide_emis_by_absorb=1, focus=(0., 0., 0.), view_up=(0., 1., 0.),</pre><pre>normal=(0., 0., 1.), view_angle=30., parallel_scale = 10., near_plane = -20., far_plane = 20.,</pre><pre>image_pan=(0., 0.), image_zoom = 1., perspective = 1, image_size=(300, 300), vars=("abs", "emis"))</pre><pre>Query("XRay Image", params)</pre></li>
+<li>Several improvements were made to the Exodus database reader. These include:
+<ul>
+<li>Improving the automatic format detection of by adding *.ex.#.# and variants as extension patterns for Exodus files.</li>
+<li>Adding support for meshes with arbitrary polyhedral elements.</li>
+<li>Adding support for global node and element numbers.</li>
+</ul>
+<li>Several improvements were made to the ViSUS IDX database reader. These include:
+<ul>
+<li>Always using view-dependent data loading for clipping, which reduces I/O.</li>
+<li>Forcing the manual selection of the hz level for 3D datasets when the MultiresControl operator is used.</li>
+<li>Adding support for midx metavolumes that facilitate mixing heterogeous volumes and remote data sources.</li>
+</ul>
+<li>The Multi-Pass CSG discretization method was enhanced to only process duplicate boundary surfaces once. This results in better quality discretizations, a reduction in the amount of memory used, and an improvement in processing speed.</ul>
+</ul>
+
+<a name="Dev_changes"></a>
+<p><b><font size="4">Changes for VisIt developers in version 2.8.2</font></b></p>
+<ul>
+<li>The NERSC custom launcher was modified so that the internal launcher will pass -ppn to the mpiexec and mpirun commands when launching parallel jobs.</li>
+</ul>
+
+<p>Click the following link to view the release notes for the previous version
+of VisIt: <a href=relnotes2.8.1.html>2.8.1</a>.</p>
+</body>
+</html>

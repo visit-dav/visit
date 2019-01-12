@@ -1,0 +1,82 @@
+Function: GetAttsForWindow
+Declaration: SaveSubWindowAttributes &GetAttsForWindow(int win);
+Definition:
+// *************************************************************
+//  Method: SaveSubWindowAttributes::GetAttsForWindow
+//
+//  Purpose:
+//      There are 16 window attributes in this class, each 
+//      with their own name.  This is an easy way to access
+//      them according to index.
+//
+//  Programmer: Hank Childs
+//  Creation:   July 21, 2010
+// 
+// *************************************************************
+
+SaveSubWindowAttributes &
+SaveSubWindowsAttributes::GetAttsForWindow(int win)
+{
+    switch (win)
+    {
+        case 1:
+          return GetWin1();
+          break;
+        case 2:
+          return GetWin2();
+          break;
+        case 3:
+          return GetWin3();
+          break;
+        case 4:
+          return GetWin4();
+          break;
+        case 5:
+          return GetWin5();
+          break;
+        case 6:
+          return GetWin6();
+          break;
+        case 7:
+          return GetWin7();
+          break;
+        case 8:
+          return GetWin8();
+          break;
+        case 9:
+          return GetWin9();
+          break;
+        case 10:
+          return GetWin10();
+          break;
+        case 11:
+          return GetWin11();
+          break;
+        case 12:
+          return GetWin12();
+          break;
+        case 13:
+          return GetWin13();
+          break;
+        case 14:
+          return GetWin14();
+          break;
+        case 15:
+          return GetWin15();
+          break;
+        case 16:
+          return GetWin16();
+          break;
+
+    }
+
+    EXCEPTION1(VisItException, "Window ID is out of range");
+}
+
+Target: xml2python
+Code: PySaveSubWindowsAttributes_ToString 
+Prefix:
+    // To squelch a warning
+    (void)tmpStr;
+Postfix:
+

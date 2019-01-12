@@ -1,0 +1,29 @@
+Pick using results of Zone Center query:
+    ZonePick with coordinate succeeded.
+    ZonePick correctly reported incident node
+
+Query for MinMax of 'd': 
+
+d -- Min = 0.0266797 (zone 494 in domain 17 at coord <0.483333, 0.4875, 0.483333>)
+d -- Max = 0.83957 (zone 0 in domain 1 at coord <0.0166667, 0.0125, 0.0166667>)
+
+Pick using results of MinMax Query:
+
+Pick for zone at 'd' minimum: 
+
+C:  multi_rect3d.silo
+mesh1 domain 16 
+Point: <0.15, 0.4875, 0.483333>
+Zone:  494
+Incident Nodes:  587  588  598  599  708  709  719  720  
+d:  <zonal> = 0.350619
+
+Pick for zone at 'd' maximum: 
+
+D:  multi_rect3d.silo
+mesh1 domain 1 
+Point: <0.0166667, 0.0125, 0.0166667>
+Zone:  0
+Incident Nodes:  0  1  11  12  121  122  132  133  
+d:  <zonal> = 0.83957
+

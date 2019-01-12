@@ -1,0 +1,50 @@
+# ----------------------------------------------------------------------------
+# Example VisIt Python Expression
+#
+# Embedded python expression that perturbs the input scale by a simple
+# wave pattern.
+#
+#  Programmer: Cyrus Harrison
+#  Date:       Fri May 21 09:14:07 PDT 2010
+#
+#  Modifications:
+#
+# ----------------------------------------------------------------------------
+
+from math import sin, pi
+class MyExpression(SimplePythonExpression):
+    def __init__(self):
+        SimplePythonExpression.__init__(self)
+        self.name = "MyExpression"
+        self.description = "Perturb input scalar by simple wave pattern."
+        self.output_is_point_var  = False
+        self.output_dimension = 1
+    def modify_contract(self,contract):
+        pass
+    def derive_variable(self,ds_in,domain_id):
+        # ds_in is a vtk dataset, we want
+        # to create and return a new vtkDataArray
+        # that contains a simple sine wave pattern
+        ds_bounds = ds_in.GetBounds()
+        x_ext = ds_bounds[1] - ds_bounds[0]
+        y_ext = ds_bounds[3] - ds_bounds[2]
+        z_ext = ds_bounds[5] - ds_bounds[4]
+        cell_vals = ds_in.GetCellData().GetArray(self.input_var_names[0])
+        ncells = ds_in.GetNumberOfCells()
+        res = vtk.vtkFloatArray()
+        res.SetNumberOfComponents(1)
+        res.SetNumberOfTuples(ncells)
+        for i in xrange(ncells):
+            cell = ds_in.GetCell(i)
+            bounds = cell.GetBounds()
+            xv = bounds[0] + bounds[1] / 2.0
+            yv = bounds[2] + bounds[3] / 2.0
+            zv = bounds[4] + bounds[5] / 2.0
+            val = .05*sin(xv*3*pi/x_ext) + .05*sin(yv * 3*pi / y_ext)
+            if z_ext != 0:
+                val+= .05*sin(zv * 3*pi / z_ext)
+            val += cell_vals.GetTuple1(i)
+            res.SetTuple1(i,val)
+        return res
+
+py_filter = MyExpression

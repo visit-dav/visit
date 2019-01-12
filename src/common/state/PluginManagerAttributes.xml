@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+  <Attribute name="PluginManagerAttributes" purpose="This class contains attributes for managing plugins." persistent="true" keyframe="true" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="PluginManagerAttributes.code">
+    <Field name="name" label="name" type="stringVector">
+    </Field>
+    <Field name="type" label="type" type="stringVector">
+    </Field>
+    <Field name="version" label="version" type="stringVector">
+    </Field>
+    <Field name="id" label="id" type="stringVector">
+    </Field>
+    <Field name="category" label="category" type="stringVector">
+    </Field>
+    <Field name="enabled" label="enabled" type="intVector">
+    </Field>
+    <Function name="GetIndexByID" user="true" member="true">
+    </Function>
+    <Function name="AddPlugin" user="true" member="true">
+    </Function>
+    <Function name="RemovePlugin" user="true" member="true">
+    </Function>
+    <Function name="UniqueCategories" user="true" member="true">
+    </Function>
+    <Function name="GetPluginCategoryName" user="true" member="true">
+    </Function>
+    <Function name="SetPluginCategoryName" user="true" member="true">
+    </Function>
+    <Function name="PluginCategoryNameNotSet" user="true" member="true">
+    </Function>
+  </Attribute>

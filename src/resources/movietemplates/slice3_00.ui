@@ -1,0 +1,453 @@
+<ui version="4.0" >
+ <class>SEQUENCE_1</class>
+ <widget class="QWidget" name="SEQUENCE_1" >
+  <property name="geometry" >
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>600</width>
+    <height>489</height>
+   </rect>
+  </property>
+  <property name="sizePolicy" >
+   <sizepolicy vsizetype="Expanding" hsizetype="Expanding" >
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="windowTitle" >
+   <string>2D plots</string>
+  </property>
+  <widget class="QWidget" name="layout3" >
+   <property name="geometry" >
+    <rect>
+     <x>10</x>
+     <y>10</y>
+     <width>580</width>
+     <height>70</height>
+    </rect>
+   </property>
+   <layout class="QGridLayout" >
+    <item row="1" column="0" >
+     <widget class="QLabel" name="VariableLabel" >
+      <property name="sizePolicy" >
+       <sizepolicy vsizetype="Fixed" hsizetype="Fixed" >
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="minimumSize" >
+       <size>
+        <width>100</width>
+        <height>0</height>
+       </size>
+      </property>
+      <property name="text" >
+       <string>Variable</string>
+      </property>
+      <property name="wordWrap" >
+       <bool>false</bool>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="1" >
+     <widget class="QvisDialogLineEdit" native="1" name="DATABASE" >
+      <property name="sizePolicy" >
+       <sizepolicy vsizetype="Fixed" hsizetype="Expanding" >
+        <horstretch>10</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="0" >
+     <widget class="QLabel" name="DatabaseLabel" >
+      <property name="sizePolicy" >
+       <sizepolicy vsizetype="Fixed" hsizetype="Fixed" >
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="minimumSize" >
+       <size>
+        <width>100</width>
+        <height>0</height>
+       </size>
+      </property>
+      <property name="text" >
+       <string>Source</string>
+      </property>
+      <property name="wordWrap" >
+       <bool>false</bool>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="1" >
+     <widget class="QvisVariableButton" native="1" name="PLOT_VAR" >
+      <property name="sizePolicy" >
+       <sizepolicy vsizetype="Fixed" hsizetype="Fixed" >
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="defaultVariable" stdset="0" >
+       <string>scalar</string>
+      </property>
+      <property name="varTypes" stdset="0" >
+       <number>2</number>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QWidget" name="layout5" >
+   <property name="geometry" >
+    <rect>
+     <x>11</x>
+     <y>171</y>
+     <width>580</width>
+     <height>240</height>
+    </rect>
+   </property>
+   <layout class="QGridLayout" >
+    <item row="1" column="0" >
+     <widget class="QLabel" name="ClassificationLabel" >
+      <property name="sizePolicy" >
+       <sizepolicy vsizetype="Fixed" hsizetype="Fixed" >
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="minimumSize" >
+       <size>
+        <width>100</width>
+        <height>0</height>
+       </size>
+      </property>
+      <property name="text" >
+       <string>Classification text</string>
+      </property>
+      <property name="wordWrap" >
+       <bool>false</bool>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="1" >
+     <widget class="QLineEdit" name="TITLE" />
+    </item>
+    <item row="4" column="1" >
+     <widget class="QLineEdit" name="YAXIS_TEXT" />
+    </item>
+    <item row="4" column="0" >
+     <widget class="QLabel" name="YAxisLabel" >
+      <property name="sizePolicy" >
+       <sizepolicy vsizetype="Fixed" hsizetype="Fixed" >
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="minimumSize" >
+       <size>
+        <width>100</width>
+        <height>0</height>
+       </size>
+      </property>
+      <property name="text" >
+       <string>Y-Axis Title</string>
+      </property>
+      <property name="wordWrap" >
+       <bool>false</bool>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="1" >
+     <widget class="QLineEdit" name="XAXIS_TEXT" />
+    </item>
+    <item row="2" column="0" >
+     <widget class="QLabel" name="TitleLabel" >
+      <property name="sizePolicy" >
+       <sizepolicy vsizetype="Fixed" hsizetype="Fixed" >
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="minimumSize" >
+       <size>
+        <width>100</width>
+        <height>0</height>
+       </size>
+      </property>
+      <property name="text" >
+       <string>Title</string>
+      </property>
+      <property name="wordWrap" >
+       <bool>false</bool>
+      </property>
+     </widget>
+    </item>
+    <item row="6" column="1" >
+     <layout class="QHBoxLayout" >
+      <item>
+       <widget class="QvisColorButton" native="1" name="GRADIENT_BGCOLOR1" >
+        <property name="sizePolicy" >
+         <sizepolicy vsizetype="Fixed" hsizetype="Fixed" >
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="GradientBackground2Label" >
+        <property name="text" >
+         <string>Gradient color 2</string>
+        </property>
+        <property name="alignment" >
+         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        </property>
+        <property name="wordWrap" >
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QvisColorButton" native="1" name="GRADIENT_BGCOLOR2" >
+        <property name="sizePolicy" >
+         <sizepolicy vsizetype="Fixed" hsizetype="Fixed" >
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item row="6" column="0" >
+     <widget class="QLabel" name="GradientBackground1Label" >
+      <property name="sizePolicy" >
+       <sizepolicy vsizetype="Fixed" hsizetype="Fixed" >
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="minimumSize" >
+       <size>
+        <width>100</width>
+        <height>0</height>
+       </size>
+      </property>
+      <property name="text" >
+       <string>Gradient color 1</string>
+      </property>
+      <property name="wordWrap" >
+       <bool>false</bool>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="0" >
+     <widget class="QLabel" name="XAxisLabel" >
+      <property name="sizePolicy" >
+       <sizepolicy vsizetype="Fixed" hsizetype="Fixed" >
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="minimumSize" >
+       <size>
+        <width>100</width>
+        <height>0</height>
+       </size>
+      </property>
+      <property name="text" >
+       <string>X-Axis Title</string>
+      </property>
+      <property name="wordWrap" >
+       <bool>false</bool>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="1" >
+     <widget class="QvisColorButton" native="1" name="CLASSIFICATION_TEXTCOLOR" >
+      <property name="sizePolicy" >
+       <sizepolicy vsizetype="Fixed" hsizetype="Fixed" >
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+     </widget>
+    </item>
+    <item row="5" column="1" >
+     <widget class="QLineEdit" name="ZAXIS_TEXT" />
+    </item>
+    <item row="5" column="0" >
+     <widget class="QLabel" name="ZAxisLabel" >
+      <property name="sizePolicy" >
+       <sizepolicy vsizetype="Fixed" hsizetype="Fixed" >
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="minimumSize" >
+       <size>
+        <width>100</width>
+        <height>0</height>
+       </size>
+      </property>
+      <property name="text" >
+       <string>Z-Axis Title</string>
+      </property>
+      <property name="wordWrap" >
+       <bool>false</bool>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="1" >
+     <widget class="QLineEdit" name="CLASSIFICATION_TEXT" />
+    </item>
+    <item row="0" column="0" >
+     <widget class="QLabel" name="ClassificationLabel_2" >
+      <property name="sizePolicy" >
+       <sizepolicy vsizetype="Fixed" hsizetype="Fixed" >
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="minimumSize" >
+       <size>
+        <width>170</width>
+        <height>0</height>
+       </size>
+      </property>
+      <property name="text" >
+       <string>Classification text color</string>
+      </property>
+      <property name="wordWrap" >
+       <bool>false</bool>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QWidget" name="layout4" >
+   <property name="geometry" >
+    <rect>
+     <x>10</x>
+     <y>90</y>
+     <width>390</width>
+     <height>70</height>
+    </rect>
+   </property>
+   <layout class="QGridLayout" >
+    <item row="0" column="0" >
+     <widget class="QLabel" name="textLabel1" >
+      <property name="sizePolicy" >
+       <sizepolicy vsizetype="Preferred" hsizetype="Fixed" >
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="minimumSize" >
+       <size>
+        <width>270</width>
+        <height>0</height>
+       </size>
+      </property>
+      <property name="text" >
+       <string>Number of slice sequences</string>
+      </property>
+      <property name="wordWrap" >
+       <bool>false</bool>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="1" >
+     <widget class="QSpinBox" name="NSLICE_SEQUENCES" >
+      <property name="minimumSize" >
+       <size>
+        <width>50</width>
+        <height>0</height>
+       </size>
+      </property>
+      <property name="minimum" >
+       <number>1</number>
+      </property>
+      <property name="maximum" >
+       <number>100</number>
+      </property>
+      <property name="value" >
+       <number>3</number>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="0" >
+     <widget class="QLabel" name="textLabel1_2" >
+      <property name="sizePolicy" >
+       <sizepolicy vsizetype="Preferred" hsizetype="Fixed" >
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="minimumSize" >
+       <size>
+        <width>270</width>
+        <height>0</height>
+       </size>
+      </property>
+      <property name="text" >
+       <string>Number of frames per slice sequence</string>
+      </property>
+      <property name="wordWrap" >
+       <bool>false</bool>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="1" >
+     <widget class="QSpinBox" name="NFRAMES_PER_SLICE" >
+      <property name="minimumSize" >
+       <size>
+        <width>50</width>
+        <height>0</height>
+       </size>
+      </property>
+      <property name="minimum" >
+       <number>10</number>
+      </property>
+      <property name="maximum" >
+       <number>1000</number>
+      </property>
+      <property name="value" >
+       <number>30</number>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+ </widget>
+ <layoutdefault spacing="6" margin="11" />
+ <customwidgets>
+  <customwidget>
+   <class>QvisColorButton</class>
+   <extends>QWidget</extends>
+   <header location="global" >/data_vobs/VisIt/gui/QvisColorButton.h</header>
+  </customwidget>
+  <customwidget>
+   <class>QvisVariableButton</class>
+   <extends>QWidget</extends>
+   <header location="global" >/data_vobs/VisIt/gui/QvisVariableButton.h</header>
+  </customwidget>
+  <customwidget>
+   <class>QvisDialogLineEdit</class>
+   <extends>QWidget</extends>
+   <header location="global" >/data_vobs/VisIt/gui/QvisDialogLineEdit.h</header>
+  </customwidget>
+ </customwidgets>
+ <includes>
+  <include location="local" >QvisDialogLineEdit.h</include>
+  <include location="local" >qvisvariablebutton.h</include>
+  <include location="local" >qviscolorbutton.h</include>
+  <include location="local" >qviscolorbutton.h</include>
+  <include location="local" >qviscolorbutton.h</include>
+ </includes>
+ <resources/>
+ <connections/>
+</ui>

@@ -1,0 +1,1447 @@
+/*****************************************************************************
+*
+* Copyright (c) 2000 - 2018, Lawrence Livermore National Security, LLC
+* Produced at the Lawrence Livermore National Laboratory
+* LLNL-CODE-442911
+* All rights reserved.
+*
+* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
+* full copyright notice is contained in the file COPYRIGHT located at the root
+* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
+*
+* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
+* modification, are permitted provided that the following conditions are met:
+*
+*  - Redistributions of  source code must  retain the above  copyright notice,
+*    this list of conditions and the disclaimer below.
+*  - Redistributions in binary form must reproduce the above copyright notice,
+*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
+*    documentation and/or other materials provided with the distribution.
+*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
+*    be used to endorse or promote products derived from this software without
+*    specific prior written permission.
+*
+* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
+* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
+* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
+* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
+* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
+* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
+* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
+* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
+* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
+* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
+* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
+* DAMAGE.
+*
+*****************************************************************************/
+
+#include <MeshAttributes.h>
+#include <DataNode.h>
+
+//
+// Enum conversion methods for MeshAttributes::SmoothingLevel
+//
+
+static const char *SmoothingLevel_strings[] = {
+"None", "Fast", "High"
+};
+
+std::string
+MeshAttributes::SmoothingLevel_ToString(MeshAttributes::SmoothingLevel t)
+{
+    int index = int(t);
+    if(index < 0 || index >= 3) index = 0;
+    return SmoothingLevel_strings[index];
+}
+
+std::string
+MeshAttributes::SmoothingLevel_ToString(int t)
+{
+    int index = (t < 0 || t >= 3) ? 0 : t;
+    return SmoothingLevel_strings[index];
+}
+
+bool
+MeshAttributes::SmoothingLevel_FromString(const std::string &s, MeshAttributes::SmoothingLevel &val)
+{
+    val = MeshAttributes::None;
+    for(int i = 0; i < 3; ++i)
+    {
+        if(s == SmoothingLevel_strings[i])
+        {
+            val = (SmoothingLevel)i;
+            return true;
+        }
+    }
+    return false;
+}
+
+//
+// Enum conversion methods for MeshAttributes::MeshColor
+//
+
+static const char *MeshColor_strings[] = {
+"Foreground", "MeshCustom"};
+
+std::string
+MeshAttributes::MeshColor_ToString(MeshAttributes::MeshColor t)
+{
+    int index = int(t);
+    if(index < 0 || index >= 2) index = 0;
+    return MeshColor_strings[index];
+}
+
+std::string
+MeshAttributes::MeshColor_ToString(int t)
+{
+    int index = (t < 0 || t >= 2) ? 0 : t;
+    return MeshColor_strings[index];
+}
+
+bool
+MeshAttributes::MeshColor_FromString(const std::string &s, MeshAttributes::MeshColor &val)
+{
+    val = MeshAttributes::Foreground;
+    for(int i = 0; i < 2; ++i)
+    {
+        if(s == MeshColor_strings[i])
+        {
+            val = (MeshColor)i;
+            return true;
+        }
+    }
+    return false;
+}
+
+//
+// Enum conversion methods for MeshAttributes::OpaqueColor
+//
+
+static const char *OpaqueColor_strings[] = {
+"Background", "OpaqueCustom"};
+
+std::string
+MeshAttributes::OpaqueColor_ToString(MeshAttributes::OpaqueColor t)
+{
+    int index = int(t);
+    if(index < 0 || index >= 2) index = 0;
+    return OpaqueColor_strings[index];
+}
+
+std::string
+MeshAttributes::OpaqueColor_ToString(int t)
+{
+    int index = (t < 0 || t >= 2) ? 0 : t;
+    return OpaqueColor_strings[index];
+}
+
+bool
+MeshAttributes::OpaqueColor_FromString(const std::string &s, MeshAttributes::OpaqueColor &val)
+{
+    val = MeshAttributes::Background;
+    for(int i = 0; i < 2; ++i)
+    {
+        if(s == OpaqueColor_strings[i])
+        {
+            val = (OpaqueColor)i;
+            return true;
+        }
+    }
+    return false;
+}
+
+//
+// Enum conversion methods for MeshAttributes::OpaqueMode
+//
+
+static const char *OpaqueMode_strings[] = {
+"Auto", "On", "Off"
+};
+
+std::string
+MeshAttributes::OpaqueMode_ToString(MeshAttributes::OpaqueMode t)
+{
+    int index = int(t);
+    if(index < 0 || index >= 3) index = 0;
+    return OpaqueMode_strings[index];
+}
+
+std::string
+MeshAttributes::OpaqueMode_ToString(int t)
+{
+    int index = (t < 0 || t >= 3) ? 0 : t;
+    return OpaqueMode_strings[index];
+}
+
+bool
+MeshAttributes::OpaqueMode_FromString(const std::string &s, MeshAttributes::OpaqueMode &val)
+{
+    val = MeshAttributes::Auto;
+    for(int i = 0; i < 3; ++i)
+    {
+        if(s == OpaqueMode_strings[i])
+        {
+            val = (OpaqueMode)i;
+            return true;
+        }
+    }
+    return false;
+}
+
+// ****************************************************************************
+// Method: MeshAttributes::MeshAttributes
+//
+// Purpose: 
+//   Init utility for the MeshAttributes class.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void MeshAttributes::Init()
+{
+    legendFlag = true;
+    lineWidth = 0;
+    meshColorSource = Foreground;
+    opaqueColorSource = Background;
+    opaqueMode = Auto;
+    pointSize = 0.05;
+    smoothingLevel = None;
+    pointSizeVarEnabled = false;
+    pointType = Point;
+    opaqueMeshIsAppropriate = true;
+    showInternal = false;
+    pointSizePixels = 2;
+    opacity = 1;
+
+    MeshAttributes::SelectAll();
+}
+
+// ****************************************************************************
+// Method: MeshAttributes::MeshAttributes
+//
+// Purpose: 
+//   Copy utility for the MeshAttributes class.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void MeshAttributes::Copy(const MeshAttributes &obj)
+{
+    legendFlag = obj.legendFlag;
+    lineWidth = obj.lineWidth;
+    meshColor = obj.meshColor;
+    meshColorSource = obj.meshColorSource;
+    opaqueColorSource = obj.opaqueColorSource;
+    opaqueMode = obj.opaqueMode;
+    pointSize = obj.pointSize;
+    opaqueColor = obj.opaqueColor;
+    smoothingLevel = obj.smoothingLevel;
+    pointSizeVarEnabled = obj.pointSizeVarEnabled;
+    pointSizeVar = obj.pointSizeVar;
+    pointType = obj.pointType;
+    opaqueMeshIsAppropriate = obj.opaqueMeshIsAppropriate;
+    showInternal = obj.showInternal;
+    pointSizePixels = obj.pointSizePixels;
+    opacity = obj.opacity;
+
+    MeshAttributes::SelectAll();
+}
+
+// Type map format string
+const char *MeshAttributes::TypeMapFormatString = MESHATTRIBUTES_TMFS;
+const AttributeGroup::private_tmfs_t MeshAttributes::TmfsStruct = {MESHATTRIBUTES_TMFS};
+
+
+// ****************************************************************************
+// Method: MeshAttributes::MeshAttributes
+//
+// Purpose: 
+//   Default constructor for the MeshAttributes class.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+MeshAttributes::MeshAttributes() : 
+    AttributeSubject(MeshAttributes::TypeMapFormatString),
+    meshColor(0, 0, 0), opaqueColor(255, 255, 255), 
+    pointSizeVar("default")
+{
+    MeshAttributes::Init();
+}
+
+// ****************************************************************************
+// Method: MeshAttributes::MeshAttributes
+//
+// Purpose: 
+//   Constructor for the derived classes of MeshAttributes class.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+MeshAttributes::MeshAttributes(private_tmfs_t tmfs) : 
+    AttributeSubject(tmfs.tmfs),
+    meshColor(0, 0, 0), opaqueColor(255, 255, 255), 
+    pointSizeVar("default")
+{
+    MeshAttributes::Init();
+}
+
+// ****************************************************************************
+// Method: MeshAttributes::MeshAttributes
+//
+// Purpose: 
+//   Copy constructor for the MeshAttributes class.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+MeshAttributes::MeshAttributes(const MeshAttributes &obj) : 
+    AttributeSubject(MeshAttributes::TypeMapFormatString)
+{
+    MeshAttributes::Copy(obj);
+}
+
+// ****************************************************************************
+// Method: MeshAttributes::MeshAttributes
+//
+// Purpose: 
+//   Copy constructor for derived classes of the MeshAttributes class.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+MeshAttributes::MeshAttributes(const MeshAttributes &obj, private_tmfs_t tmfs) : 
+    AttributeSubject(tmfs.tmfs)
+{
+    MeshAttributes::Copy(obj);
+}
+
+// ****************************************************************************
+// Method: MeshAttributes::~MeshAttributes
+//
+// Purpose: 
+//   Destructor for the MeshAttributes class.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+MeshAttributes::~MeshAttributes()
+{
+    // nothing here
+}
+
+// ****************************************************************************
+// Method: MeshAttributes::operator = 
+//
+// Purpose: 
+//   Assignment operator for the MeshAttributes class.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+MeshAttributes& 
+MeshAttributes::operator = (const MeshAttributes &obj)
+{
+    if (this == &obj) return *this;
+
+    MeshAttributes::Copy(obj);
+
+    return *this;
+}
+
+// ****************************************************************************
+// Method: MeshAttributes::operator == 
+//
+// Purpose: 
+//   Comparison operator == for the MeshAttributes class.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+MeshAttributes::operator == (const MeshAttributes &obj) const
+{
+    // Create the return value
+    return ((legendFlag == obj.legendFlag) &&
+            (lineWidth == obj.lineWidth) &&
+            (meshColor == obj.meshColor) &&
+            (meshColorSource == obj.meshColorSource) &&
+            (opaqueColorSource == obj.opaqueColorSource) &&
+            (opaqueMode == obj.opaqueMode) &&
+            (pointSize == obj.pointSize) &&
+            (opaqueColor == obj.opaqueColor) &&
+            (smoothingLevel == obj.smoothingLevel) &&
+            (pointSizeVarEnabled == obj.pointSizeVarEnabled) &&
+            (pointSizeVar == obj.pointSizeVar) &&
+            (pointType == obj.pointType) &&
+            (opaqueMeshIsAppropriate == obj.opaqueMeshIsAppropriate) &&
+            (showInternal == obj.showInternal) &&
+            (pointSizePixels == obj.pointSizePixels) &&
+            (opacity == obj.opacity));
+}
+
+// ****************************************************************************
+// Method: MeshAttributes::operator != 
+//
+// Purpose: 
+//   Comparison operator != for the MeshAttributes class.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+MeshAttributes::operator != (const MeshAttributes &obj) const
+{
+    return !(this->operator == (obj));
+}
+
+// ****************************************************************************
+// Method: MeshAttributes::TypeName
+//
+// Purpose: 
+//   Type name method for the MeshAttributes class.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+const std::string
+MeshAttributes::TypeName() const
+{
+    return "MeshAttributes";
+}
+
+// ****************************************************************************
+// Method: MeshAttributes::CopyAttributes
+//
+// Purpose: 
+//   CopyAttributes method for the MeshAttributes class.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+MeshAttributes::CopyAttributes(const AttributeGroup *atts)
+{
+    if(TypeName() != atts->TypeName())
+        return false;
+
+    // Call assignment operator.
+    const MeshAttributes *tmp = (const MeshAttributes *)atts;
+    *this = *tmp;
+
+    return true;
+}
+
+// ****************************************************************************
+// Method: MeshAttributes::CreateCompatible
+//
+// Purpose: 
+//   CreateCompatible method for the MeshAttributes class.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+AttributeSubject *
+MeshAttributes::CreateCompatible(const std::string &tname) const
+{
+    AttributeSubject *retval = 0;
+    if(TypeName() == tname)
+        retval = new MeshAttributes(*this);
+    // Other cases could go here too. 
+
+    return retval;
+}
+
+// ****************************************************************************
+// Method: MeshAttributes::NewInstance
+//
+// Purpose: 
+//   NewInstance method for the MeshAttributes class.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+AttributeSubject *
+MeshAttributes::NewInstance(bool copy) const
+{
+    AttributeSubject *retval = 0;
+    if(copy)
+        retval = new MeshAttributes(*this);
+    else
+        retval = new MeshAttributes;
+
+    return retval;
+}
+
+// ****************************************************************************
+// Method: MeshAttributes::SelectAll
+//
+// Purpose: 
+//   Selects all attributes.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+MeshAttributes::SelectAll()
+{
+    Select(ID_legendFlag,              (void *)&legendFlag);
+    Select(ID_lineWidth,               (void *)&lineWidth);
+    Select(ID_meshColor,               (void *)&meshColor);
+    Select(ID_meshColorSource,         (void *)&meshColorSource);
+    Select(ID_opaqueColorSource,       (void *)&opaqueColorSource);
+    Select(ID_opaqueMode,              (void *)&opaqueMode);
+    Select(ID_pointSize,               (void *)&pointSize);
+    Select(ID_opaqueColor,             (void *)&opaqueColor);
+    Select(ID_smoothingLevel,          (void *)&smoothingLevel);
+    Select(ID_pointSizeVarEnabled,     (void *)&pointSizeVarEnabled);
+    Select(ID_pointSizeVar,            (void *)&pointSizeVar);
+    Select(ID_pointType,               (void *)&pointType);
+    Select(ID_opaqueMeshIsAppropriate, (void *)&opaqueMeshIsAppropriate);
+    Select(ID_showInternal,            (void *)&showInternal);
+    Select(ID_pointSizePixels,         (void *)&pointSizePixels);
+    Select(ID_opacity,                 (void *)&opacity);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Persistence methods
+///////////////////////////////////////////////////////////////////////////////
+
+// ****************************************************************************
+// Method: MeshAttributes::CreateNode
+//
+// Purpose: 
+//   This method creates a DataNode representation of the object so it can be saved to a config file.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+MeshAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool forceAdd)
+{
+    if(parentNode == 0)
+        return false;
+
+    MeshAttributes defaultObject;
+    bool addToParent = false;
+    // Create a node for MeshAttributes.
+    DataNode *node = new DataNode("MeshAttributes");
+
+    if(completeSave || !FieldsEqual(ID_legendFlag, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("legendFlag", legendFlag));
+    }
+
+    if(completeSave || !FieldsEqual(ID_lineWidth, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("lineWidth", lineWidth));
+    }
+
+        DataNode *meshColorNode = new DataNode("meshColor");
+        if(meshColor.CreateNode(meshColorNode, completeSave, true))
+        {
+            addToParent = true;
+            node->AddNode(meshColorNode);
+        }
+        else
+            delete meshColorNode;
+    if(completeSave || !FieldsEqual(ID_meshColorSource, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("meshColorSource", MeshColor_ToString(meshColorSource)));
+    }
+
+    if(completeSave || !FieldsEqual(ID_opaqueColorSource, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("opaqueColorSource", OpaqueColor_ToString(opaqueColorSource)));
+    }
+
+    if(completeSave || !FieldsEqual(ID_opaqueMode, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("opaqueMode", OpaqueMode_ToString(opaqueMode)));
+    }
+
+    if(completeSave || !FieldsEqual(ID_pointSize, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("pointSize", pointSize));
+    }
+
+        DataNode *opaqueColorNode = new DataNode("opaqueColor");
+        if(opaqueColor.CreateNode(opaqueColorNode, completeSave, true))
+        {
+            addToParent = true;
+            node->AddNode(opaqueColorNode);
+        }
+        else
+            delete opaqueColorNode;
+    if(completeSave || !FieldsEqual(ID_smoothingLevel, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("smoothingLevel", SmoothingLevel_ToString(smoothingLevel)));
+    }
+
+    if(completeSave || !FieldsEqual(ID_pointSizeVarEnabled, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("pointSizeVarEnabled", pointSizeVarEnabled));
+    }
+
+    if(completeSave || !FieldsEqual(ID_pointSizeVar, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("pointSizeVar", pointSizeVar));
+    }
+
+    if(completeSave || !FieldsEqual(ID_pointType, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("pointType", pointType));
+    }
+
+    if(completeSave || !FieldsEqual(ID_opaqueMeshIsAppropriate, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("opaqueMeshIsAppropriate", opaqueMeshIsAppropriate));
+    }
+
+    if(completeSave || !FieldsEqual(ID_showInternal, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("showInternal", showInternal));
+    }
+
+    if(completeSave || !FieldsEqual(ID_pointSizePixels, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("pointSizePixels", pointSizePixels));
+    }
+
+    if(completeSave || !FieldsEqual(ID_opacity, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("opacity", opacity));
+    }
+
+
+    // Add the node to the parent node.
+    if(addToParent || forceAdd)
+        parentNode->AddNode(node);
+    else
+        delete node;
+
+    return (addToParent || forceAdd);
+}
+
+// ****************************************************************************
+// Method: MeshAttributes::SetFromNode
+//
+// Purpose: 
+//   This method sets attributes in this object from values in a DataNode representation of the object.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+MeshAttributes::SetFromNode(DataNode *parentNode)
+{
+    if(parentNode == 0)
+        return;
+
+    DataNode *searchNode = parentNode->GetNode("MeshAttributes");
+    if(searchNode == 0)
+        return;
+
+    DataNode *node;
+    if((node = searchNode->GetNode("legendFlag")) != 0)
+        SetLegendFlag(node->AsBool());
+    if((node = searchNode->GetNode("lineWidth")) != 0)
+        SetLineWidth(node->AsInt());
+    if((node = searchNode->GetNode("meshColor")) != 0)
+        meshColor.SetFromNode(node);
+    if((node = searchNode->GetNode("meshColorSource")) != 0)
+    {
+        // Allow enums to be int or string in the config file
+        if(node->GetNodeType() == INT_NODE)
+        {
+            int ival = node->AsInt();
+            if(ival >= 0 && ival < 2)
+                SetMeshColorSource(MeshColor(ival));
+        }
+        else if(node->GetNodeType() == STRING_NODE)
+        {
+            MeshColor value;
+            if(MeshColor_FromString(node->AsString(), value))
+                SetMeshColorSource(value);
+        }
+    }
+    if((node = searchNode->GetNode("opaqueColorSource")) != 0)
+    {
+        // Allow enums to be int or string in the config file
+        if(node->GetNodeType() == INT_NODE)
+        {
+            int ival = node->AsInt();
+            if(ival >= 0 && ival < 2)
+                SetOpaqueColorSource(OpaqueColor(ival));
+        }
+        else if(node->GetNodeType() == STRING_NODE)
+        {
+            OpaqueColor value;
+            if(OpaqueColor_FromString(node->AsString(), value))
+                SetOpaqueColorSource(value);
+        }
+    }
+    if((node = searchNode->GetNode("opaqueMode")) != 0)
+    {
+        // Allow enums to be int or string in the config file
+        if(node->GetNodeType() == INT_NODE)
+        {
+            int ival = node->AsInt();
+            if(ival >= 0 && ival < 3)
+                SetOpaqueMode(OpaqueMode(ival));
+        }
+        else if(node->GetNodeType() == STRING_NODE)
+        {
+            OpaqueMode value;
+            if(OpaqueMode_FromString(node->AsString(), value))
+                SetOpaqueMode(value);
+        }
+    }
+    if((node = searchNode->GetNode("pointSize")) != 0)
+        SetPointSize(node->AsDouble());
+    if((node = searchNode->GetNode("opaqueColor")) != 0)
+        opaqueColor.SetFromNode(node);
+    if((node = searchNode->GetNode("smoothingLevel")) != 0)
+    {
+        // Allow enums to be int or string in the config file
+        if(node->GetNodeType() == INT_NODE)
+        {
+            int ival = node->AsInt();
+            if(ival >= 0 && ival < 3)
+                SetSmoothingLevel(SmoothingLevel(ival));
+        }
+        else if(node->GetNodeType() == STRING_NODE)
+        {
+            SmoothingLevel value;
+            if(SmoothingLevel_FromString(node->AsString(), value))
+                SetSmoothingLevel(value);
+        }
+    }
+    if((node = searchNode->GetNode("pointSizeVarEnabled")) != 0)
+        SetPointSizeVarEnabled(node->AsBool());
+    if((node = searchNode->GetNode("pointSizeVar")) != 0)
+        SetPointSizeVar(node->AsString());
+    if((node = searchNode->GetNode("pointType")) != 0)
+    {
+        // Allow enums to be int or string in the config file
+        if(node->GetNodeType() == INT_NODE)
+        {
+            int ival = node->AsInt();
+            if(ival >= 0 && ival < 8)
+                SetPointType(GlyphType(ival));
+        }
+        else if(node->GetNodeType() == STRING_NODE)
+        {
+            GlyphType value;
+            if(GlyphType_FromString(node->AsString(), value))
+                SetPointType(value);
+        }
+    }
+    if((node = searchNode->GetNode("opaqueMeshIsAppropriate")) != 0)
+        SetOpaqueMeshIsAppropriate(node->AsBool());
+    if((node = searchNode->GetNode("showInternal")) != 0)
+        SetShowInternal(node->AsBool());
+    if((node = searchNode->GetNode("pointSizePixels")) != 0)
+        SetPointSizePixels(node->AsInt());
+    if((node = searchNode->GetNode("opacity")) != 0)
+        SetOpacity(node->AsDouble());
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Set property methods
+///////////////////////////////////////////////////////////////////////////////
+
+void
+MeshAttributes::SetLegendFlag(bool legendFlag_)
+{
+    legendFlag = legendFlag_;
+    Select(ID_legendFlag, (void *)&legendFlag);
+}
+
+void
+MeshAttributes::SetLineWidth(int lineWidth_)
+{
+    lineWidth = lineWidth_;
+    Select(ID_lineWidth, (void *)&lineWidth);
+}
+
+void
+MeshAttributes::SetMeshColor(const ColorAttribute &meshColor_)
+{
+    meshColor = meshColor_;
+    Select(ID_meshColor, (void *)&meshColor);
+}
+
+void
+MeshAttributes::SetMeshColorSource(MeshAttributes::MeshColor meshColorSource_)
+{
+    meshColorSource = meshColorSource_;
+    Select(ID_meshColorSource, (void *)&meshColorSource);
+}
+
+void
+MeshAttributes::SetOpaqueColorSource(MeshAttributes::OpaqueColor opaqueColorSource_)
+{
+    opaqueColorSource = opaqueColorSource_;
+    Select(ID_opaqueColorSource, (void *)&opaqueColorSource);
+}
+
+void
+MeshAttributes::SetOpaqueMode(MeshAttributes::OpaqueMode opaqueMode_)
+{
+    opaqueMode = opaqueMode_;
+    Select(ID_opaqueMode, (void *)&opaqueMode);
+}
+
+void
+MeshAttributes::SetPointSize(double pointSize_)
+{
+    pointSize = pointSize_;
+    Select(ID_pointSize, (void *)&pointSize);
+}
+
+void
+MeshAttributes::SetOpaqueColor(const ColorAttribute &opaqueColor_)
+{
+    opaqueColor = opaqueColor_;
+    Select(ID_opaqueColor, (void *)&opaqueColor);
+}
+
+void
+MeshAttributes::SetSmoothingLevel(MeshAttributes::SmoothingLevel smoothingLevel_)
+{
+    smoothingLevel = smoothingLevel_;
+    Select(ID_smoothingLevel, (void *)&smoothingLevel);
+}
+
+void
+MeshAttributes::SetPointSizeVarEnabled(bool pointSizeVarEnabled_)
+{
+    pointSizeVarEnabled = pointSizeVarEnabled_;
+    Select(ID_pointSizeVarEnabled, (void *)&pointSizeVarEnabled);
+}
+
+void
+MeshAttributes::SetPointSizeVar(const std::string &pointSizeVar_)
+{
+    pointSizeVar = pointSizeVar_;
+    Select(ID_pointSizeVar, (void *)&pointSizeVar);
+}
+
+void
+MeshAttributes::SetPointType(GlyphType pointType_)
+{
+    pointType = pointType_;
+    Select(ID_pointType, (void *)&pointType);
+}
+
+void
+MeshAttributes::SetOpaqueMeshIsAppropriate(bool opaqueMeshIsAppropriate_)
+{
+    opaqueMeshIsAppropriate = opaqueMeshIsAppropriate_;
+    Select(ID_opaqueMeshIsAppropriate, (void *)&opaqueMeshIsAppropriate);
+}
+
+void
+MeshAttributes::SetShowInternal(bool showInternal_)
+{
+    showInternal = showInternal_;
+    Select(ID_showInternal, (void *)&showInternal);
+}
+
+void
+MeshAttributes::SetPointSizePixels(int pointSizePixels_)
+{
+    pointSizePixels = pointSizePixels_;
+    Select(ID_pointSizePixels, (void *)&pointSizePixels);
+}
+
+void
+MeshAttributes::SetOpacity(double opacity_)
+{
+    opacity = opacity_;
+    Select(ID_opacity, (void *)&opacity);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Get property methods
+///////////////////////////////////////////////////////////////////////////////
+
+bool
+MeshAttributes::GetLegendFlag() const
+{
+    return legendFlag;
+}
+
+int
+MeshAttributes::GetLineWidth() const
+{
+    return lineWidth;
+}
+
+const ColorAttribute &
+MeshAttributes::GetMeshColor() const
+{
+    return meshColor;
+}
+
+ColorAttribute &
+MeshAttributes::GetMeshColor()
+{
+    return meshColor;
+}
+
+MeshAttributes::MeshColor
+MeshAttributes::GetMeshColorSource() const
+{
+    return MeshColor(meshColorSource);
+}
+
+MeshAttributes::OpaqueColor
+MeshAttributes::GetOpaqueColorSource() const
+{
+    return OpaqueColor(opaqueColorSource);
+}
+
+MeshAttributes::OpaqueMode
+MeshAttributes::GetOpaqueMode() const
+{
+    return OpaqueMode(opaqueMode);
+}
+
+double
+MeshAttributes::GetPointSize() const
+{
+    return pointSize;
+}
+
+const ColorAttribute &
+MeshAttributes::GetOpaqueColor() const
+{
+    return opaqueColor;
+}
+
+ColorAttribute &
+MeshAttributes::GetOpaqueColor()
+{
+    return opaqueColor;
+}
+
+MeshAttributes::SmoothingLevel
+MeshAttributes::GetSmoothingLevel() const
+{
+    return SmoothingLevel(smoothingLevel);
+}
+
+bool
+MeshAttributes::GetPointSizeVarEnabled() const
+{
+    return pointSizeVarEnabled;
+}
+
+const std::string &
+MeshAttributes::GetPointSizeVar() const
+{
+    return pointSizeVar;
+}
+
+std::string &
+MeshAttributes::GetPointSizeVar()
+{
+    return pointSizeVar;
+}
+
+GlyphType
+MeshAttributes::GetPointType() const
+{
+    return pointType;
+}
+
+bool
+MeshAttributes::GetOpaqueMeshIsAppropriate() const
+{
+    return opaqueMeshIsAppropriate;
+}
+
+bool
+MeshAttributes::GetShowInternal() const
+{
+    return showInternal;
+}
+
+int
+MeshAttributes::GetPointSizePixels() const
+{
+    return pointSizePixels;
+}
+
+double
+MeshAttributes::GetOpacity() const
+{
+    return opacity;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Select property methods
+///////////////////////////////////////////////////////////////////////////////
+
+void
+MeshAttributes::SelectMeshColor()
+{
+    Select(ID_meshColor, (void *)&meshColor);
+}
+
+void
+MeshAttributes::SelectOpaqueColor()
+{
+    Select(ID_opaqueColor, (void *)&opaqueColor);
+}
+
+void
+MeshAttributes::SelectPointSizeVar()
+{
+    Select(ID_pointSizeVar, (void *)&pointSizeVar);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Keyframing methods
+///////////////////////////////////////////////////////////////////////////////
+
+// ****************************************************************************
+// Method: MeshAttributes::GetFieldName
+//
+// Purpose: 
+//   This method returns the name of a field given its index.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+std::string
+MeshAttributes::GetFieldName(int index) const
+{
+    switch (index)
+    {
+    case ID_legendFlag:              return "legendFlag";
+    case ID_lineWidth:               return "lineWidth";
+    case ID_meshColor:               return "meshColor";
+    case ID_meshColorSource:         return "meshColorSource";
+    case ID_opaqueColorSource:       return "opaqueColorSource";
+    case ID_opaqueMode:              return "opaqueMode";
+    case ID_pointSize:               return "pointSize";
+    case ID_opaqueColor:             return "opaqueColor";
+    case ID_smoothingLevel:          return "smoothingLevel";
+    case ID_pointSizeVarEnabled:     return "pointSizeVarEnabled";
+    case ID_pointSizeVar:            return "pointSizeVar";
+    case ID_pointType:               return "pointType";
+    case ID_opaqueMeshIsAppropriate: return "opaqueMeshIsAppropriate";
+    case ID_showInternal:            return "showInternal";
+    case ID_pointSizePixels:         return "pointSizePixels";
+    case ID_opacity:                 return "opacity";
+    default:  return "invalid index";
+    }
+}
+
+// ****************************************************************************
+// Method: MeshAttributes::GetFieldType
+//
+// Purpose: 
+//   This method returns the type of a field given its index.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+AttributeGroup::FieldType
+MeshAttributes::GetFieldType(int index) const
+{
+    switch (index)
+    {
+    case ID_legendFlag:              return FieldType_bool;
+    case ID_lineWidth:               return FieldType_linewidth;
+    case ID_meshColor:               return FieldType_color;
+    case ID_meshColorSource:         return FieldType_enum;
+    case ID_opaqueColorSource:       return FieldType_enum;
+    case ID_opaqueMode:              return FieldType_enum;
+    case ID_pointSize:               return FieldType_double;
+    case ID_opaqueColor:             return FieldType_color;
+    case ID_smoothingLevel:          return FieldType_enum;
+    case ID_pointSizeVarEnabled:     return FieldType_bool;
+    case ID_pointSizeVar:            return FieldType_variablename;
+    case ID_pointType:               return FieldType_glyphtype;
+    case ID_opaqueMeshIsAppropriate: return FieldType_bool;
+    case ID_showInternal:            return FieldType_bool;
+    case ID_pointSizePixels:         return FieldType_int;
+    case ID_opacity:                 return FieldType_opacity;
+    default:  return FieldType_unknown;
+    }
+}
+
+// ****************************************************************************
+// Method: MeshAttributes::GetFieldTypeName
+//
+// Purpose: 
+//   This method returns the name of a field type given its index.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+std::string
+MeshAttributes::GetFieldTypeName(int index) const
+{
+    switch (index)
+    {
+    case ID_legendFlag:              return "bool";
+    case ID_lineWidth:               return "linewidth";
+    case ID_meshColor:               return "color";
+    case ID_meshColorSource:         return "enum";
+    case ID_opaqueColorSource:       return "enum";
+    case ID_opaqueMode:              return "enum";
+    case ID_pointSize:               return "double";
+    case ID_opaqueColor:             return "color";
+    case ID_smoothingLevel:          return "enum";
+    case ID_pointSizeVarEnabled:     return "bool";
+    case ID_pointSizeVar:            return "variablename";
+    case ID_pointType:               return "glyphtype";
+    case ID_opaqueMeshIsAppropriate: return "bool";
+    case ID_showInternal:            return "bool";
+    case ID_pointSizePixels:         return "int";
+    case ID_opacity:                 return "opacity";
+    default:  return "invalid index";
+    }
+}
+
+// ****************************************************************************
+// Method: MeshAttributes::FieldsEqual
+//
+// Purpose: 
+//   This method compares two fields and return true if they are equal.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   omitted
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+MeshAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
+{
+    const MeshAttributes &obj = *((const MeshAttributes*)rhs);
+    bool retval = false;
+    switch (index_)
+    {
+    case ID_legendFlag:
+        {  // new scope
+        retval = (legendFlag == obj.legendFlag);
+        }
+        break;
+    case ID_lineWidth:
+        {  // new scope
+        retval = (lineWidth == obj.lineWidth);
+        }
+        break;
+    case ID_meshColor:
+        {  // new scope
+        retval = (meshColor == obj.meshColor);
+        }
+        break;
+    case ID_meshColorSource:
+        {  // new scope
+        retval = (meshColorSource == obj.meshColorSource);
+        }
+        break;
+    case ID_opaqueColorSource:
+        {  // new scope
+        retval = (opaqueColorSource == obj.opaqueColorSource);
+        }
+        break;
+    case ID_opaqueMode:
+        {  // new scope
+        retval = (opaqueMode == obj.opaqueMode);
+        }
+        break;
+    case ID_pointSize:
+        {  // new scope
+        retval = (pointSize == obj.pointSize);
+        }
+        break;
+    case ID_opaqueColor:
+        {  // new scope
+        retval = (opaqueColor == obj.opaqueColor);
+        }
+        break;
+    case ID_smoothingLevel:
+        {  // new scope
+        retval = (smoothingLevel == obj.smoothingLevel);
+        }
+        break;
+    case ID_pointSizeVarEnabled:
+        {  // new scope
+        retval = (pointSizeVarEnabled == obj.pointSizeVarEnabled);
+        }
+        break;
+    case ID_pointSizeVar:
+        {  // new scope
+        retval = (pointSizeVar == obj.pointSizeVar);
+        }
+        break;
+    case ID_pointType:
+        {  // new scope
+        retval = (pointType == obj.pointType);
+        }
+        break;
+    case ID_opaqueMeshIsAppropriate:
+        {  // new scope
+        retval = (opaqueMeshIsAppropriate == obj.opaqueMeshIsAppropriate);
+        }
+        break;
+    case ID_showInternal:
+        {  // new scope
+        retval = (showInternal == obj.showInternal);
+        }
+        break;
+    case ID_pointSizePixels:
+        {  // new scope
+        retval = (pointSizePixels == obj.pointSizePixels);
+        }
+        break;
+    case ID_opacity:
+        {  // new scope
+        retval = (opacity == obj.opacity);
+        }
+        break;
+    default: retval = false;
+    }
+
+    return retval;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// User-defined methods.
+///////////////////////////////////////////////////////////////////////////////
+
+// ****************************************************************************
+//  Modifications:
+//
+//    Kathleen Bonnell, Wed Aug 22 16:00:32 PDT 2001
+//    Changing opaque mode no longer requires recalculation.
+//
+//    Jeremy Meredith, Mon Dec  9 16:30:54 PST 2002
+//    Added smoothing level.
+//
+//    Jeremy Meredith, Fri Dec 20 11:33:43 PST 2002
+//    Added point size variable and its enabled flag.
+//
+//    Hank Childs, Thu Aug 21 23:05:45 PDT 2003
+//    Added point type.
+//
+//    Kathleen Bonnell, Thu Feb  5 13:07:06 PST 2004
+//    Added spatDim argument, added showInternal.
+//
+//    Kathleen Bonnell, Tue Nov  2 10:32:21 PST 2004
+//    Removed point type and point size from test, changed pointSizeVar test
+//    so that only true if changes require adding new secondary varaible.
+//
+//    Kathleen Biagas, Thu Apr 23 13:14:51 PDT 2015
+//    Removed never-used oulineOnly and errorTolerance atts.
+//
+// ****************************************************************************
+
+bool
+MeshAttributes::ChangesRequireRecalculation(const MeshAttributes &obj,
+                                            const int spatDim)
+{
+    bool needSecondaryVar = (obj.pointSizeVarEnabled &&
+                            ((pointSizeVar != obj.pointSizeVar) &&
+                             (obj.pointSizeVar != "default") &&
+                             (obj.pointSizeVar != "") &&
+                             (obj.pointSizeVar != "\0")));
+
+    return ((needSecondaryVar) ||
+            (smoothingLevel != obj.smoothingLevel) ||
+            (showInternal != obj.showInternal && spatDim == 3));
+}
+
+// ****************************************************************************
+// Method: MeshAttributes::ProcessOldVersions
+//
+// Purpose:
+//   This method handles some old fields by converting them to new fields.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Mar 12 09:33:52 PST 2010
+//
+// Modifications:
+//
+// ****************************************************************************
+#include <Utility.h>
+void
+MeshAttributes::ProcessOldVersions(DataNode *parentNode,
+    const char *configVersion)
+{
+    if(parentNode == 0)
+        return;
+
+    DataNode *searchNode = parentNode->GetNode("MeshAttributes");
+    if(searchNode == 0)
+        return;
+
+    if(VersionLessThan(configVersion, "2.0.0"))
+    {
+        DataNode *k = 0;
+        if((k = searchNode->GetNode("foregroundFlag")) != 0)
+        {
+            MeshColor val = k->AsBool() ? Foreground : MeshCustom;
+            searchNode->RemoveNode(k, true);
+            searchNode->AddNode(new DataNode("meshColorSource", MeshColor_ToString(val)));
+        }
+        if((k = searchNode->GetNode("backgroundFlag")) != 0)
+        {
+            OpaqueColor val = k->AsBool() ? Background : OpaqueCustom;
+            searchNode->RemoveNode(k, true);
+            searchNode->AddNode(new DataNode("opaqueColorSource", OpaqueColor_ToString(val)));
+        }
+    }
+    if(VersionLessThan(configVersion, "3.0.0"))
+    {
+        if (searchNode->GetNode("lineStyle") != 0)
+            searchNode->RemoveNode("lineStyle");
+    }
+}
+

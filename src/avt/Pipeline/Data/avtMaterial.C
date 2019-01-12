@@ -1,0 +1,2084 @@
+/*****************************************************************************
+*
+* Copyright (c) 2000 - 2018, Lawrence Livermore National Security, LLC
+* Produced at the Lawrence Livermore National Laboratory
+* LLNL-CODE-442911
+* All rights reserved.
+*
+* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
+* full copyright notice is contained in the file COPYRIGHT located at the root
+* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
+*
+* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
+* modification, are permitted provided that the following conditions are met:
+*
+*  - Redistributions of  source code must  retain the above  copyright notice,
+*    this list of conditions and the disclaimer below.
+*  - Redistributions in binary form must reproduce the above copyright notice,
+*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
+*    documentation and/or other materials provided with the distribution.
+*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
+*    be used to endorse or promote products derived from this software without
+*    specific prior written permission.
+*
+* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
+* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
+* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
+* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
+* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
+* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
+* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
+* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
+* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
+* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
+* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
+* DAMAGE.
+*
+*****************************************************************************/
+
+// ************************************************************************* //
+//                                 avtMaterial.C                             //
+// ************************************************************************* //
+
+#include <avtMaterial.h>
+#include <map>
+
+#include <snprintf.h>
+
+#include <avtCallback.h>
+#include <avtMixedVariable.h>
+
+#include <BadDomainException.h>
+#include <DebugStream.h>
+#include <TimingsManager.h>
+
+#include <climits>
+#include <cassert>
+
+using std::string;
+using std::vector;
+
+
+// ****************************************************************************
+//  Function: Renumber material numbers 0 --> N-1
+//
+//  Arguments:
+//      nMats        The number of materials in mats.
+//      mats         A list of material numbers.
+//      ml           The material list.
+//      mixl         The mix_len.
+//      mixm         The mix_mat.
+//      newml        Returned refrenced new material list filled in
+//      newmixm      Returned refrenced new mix_mat list filled in
+//      matUsed      Returned referenced vector of bools indicating which
+//                   materials in mats are actually used
+//      domain       The domain string (for printing error messages only).
+//      allowmat0    Allow material number = 0 in material list
+//
+//  Programmer: Hank Childs (re-factored by Mark Miller) 
+//  Creation:   April 27, 2004 
+//
+//  Modifications:
+//    Jeremy Meredith, Thu Nov  4 13:36:07 PST 2004
+//    'maxMat' had a +1 from the actual highest used material number, but
+//    checks for invalid numbers were using '> maxMat' instead of '>= maxMat'.
+//    I change maxMat to be the actual highest used material number and
+//    allocated an array of size maxMat+1 for the lut, because having maxMat
+//    mean "highest used material number" seems clearer than changing the
+//    invalid checks to be ">=".
+//
+//    Hank Childs, Sun Feb 13 13:28:52 PST 2005
+//    Fix a bad test that assumes mixlen is > 0.
+//
+//    Jeremy Meredith, Thu Aug 18 13:25:06 PDT 2005
+//    Fixed a test that compared a negative 1-origin matlist entry into the
+//    mix array with mixlen in a way that assumed the entry was 0-origin.
+//
+//    Thomas R. Treadway, Tue Aug 22 14:37:42 PDT 2006
+//    Added the allowmat0 flag so material number = 0 don't display 
+//    error/warning messages.
+//
+// ****************************************************************************
+static void
+RenumberMaterialsZeroToNminusOne(int nMats, const int *const mats,
+                                 int nzon, const int *const ml,
+                                 int mixl, const int *const mixm,
+                                 int* &newml, int* &newmixm,
+                                 vector<bool> &matUsed,
+                                 const char *domain,
+                                 int allowmat0)
+{
+    int i;
+
+    const char *dom = (domain != NULL ? domain : "<not available>");
+    bool haveIssuedWarning = false;
+
+    int maxMat = 0;
+    for (i = 0 ; i < nMats ; i++)
+    {
+        if (mats[i] > maxMat)
+        {
+            maxMat = mats[i];
+        }
+    }
+
+    //
+    // Translate the arbitrarily numbered material lists to 0 -> n-1
+    //
+    if (maxMat < 100000)
+    {
+        //
+        // It is faster to look up the material by lookup table.
+        //
+        int *lut = new int[maxMat+1];
+        for (i = 0 ; i <= maxMat ; i++)
+        {
+            lut[i] = -1;
+        }
+        for (i = 0 ; i < nMats ; i++)
+        {
+            lut[mats[i]] = i;
+        }
+        for (i = 0 ; i < nzon ; i++)
+        {
+            //
+            // If we have a valid index into the mixed portion, tag it and
+            // skip along to the next zone.
+            //
+            if ((ml[i] < 0) && (ml[i] >= -mixl))
+            {
+                newml[i] = ml[i];
+                continue;
+            }
+            else if (ml[i] < 0 && ml[i] < -mixl)
+            {
+                newml[i] = nMats;
+                if (!haveIssuedWarning)
+                {
+                    char msg[1024];
+                    SNPRINTF(msg, sizeof(msg),"Zone %d of %s has a bad entry in its "
+                                 "mixed material structure", i, dom);
+                    avtCallback::IssueWarning(msg);
+                    haveIssuedWarning = true;
+                }
+            }
+            else if (ml[i] > maxMat || lut[ml[i]] == -1)
+            {
+                // Skip the issusing of a warning for matrial=0 if 
+                // allowmat0 flag is set.
+                if (!((allowmat0 > 0) && (ml[i] == 0)))
+                {    
+                    if (!haveIssuedWarning)
+                    {
+                        char msg[1024];
+                        SNPRINTF(msg, sizeof(msg),"Zone %d of %s has an invalid material"
+                                 " number -- %d", i, dom, ml[i]);
+                        avtCallback::IssueWarning(msg);
+                        haveIssuedWarning = true;
+                    }
+                }
+                newml[i] = nMats;
+            }
+            else
+            {
+                newml[i] = lut[ml[i]];
+            }
+            matUsed[newml[i]] = true;
+        }
+        for (i = 0 ; i < mixl ; i++)
+        {
+            if (mixm[i] < 0 || mixm[i] > maxMat || lut[mixm[i]] == -1)
+            {
+                if (!haveIssuedWarning)
+                {
+                    char msg[1024];
+                    SNPRINTF(msg, sizeof(msg),"Mixed mat entry %d of %s has an "
+                                 "invalid material number -- %d", i, 
+                                 dom, mixm[i]);
+                    avtCallback::IssueWarning(msg);
+                    haveIssuedWarning = true;
+                }
+                newmixm[i] = nMats;
+            }
+            else
+            {
+                newmixm[i] = lut[mixm[i]];
+            }
+            matUsed[newmixm[i]] = true;
+        }
+        delete [] lut;
+    }
+    else
+    {
+        //
+        // The materials are being indexed funny -- just do it the slow way.
+        //
+        for (i = 0 ; i < nzon ; i++)
+        {
+            if (ml[i] < 0 && ml[i] > -mixl)
+            {
+                newml[i] = ml[i];
+                continue;
+            }
+
+            newml[i] = nMats;
+            int m;
+            for (m = 0 ; m < nMats ; m++)
+            {
+                if (ml[i] == mats[m])
+                {
+                    newml[i] = m;
+                    matUsed[m] = true;
+                    break;
+                }
+            }
+            if (m == nMats)
+            {
+                if (!haveIssuedWarning)
+                {
+                    char msg[1024];
+                    SNPRINTF(msg, sizeof(msg),"Zone %d of %s has a bad entry in its "
+                                 "material structure", i, dom);
+                    avtCallback::IssueWarning(msg);
+                    haveIssuedWarning = true;
+                }
+                matUsed[nMats] = true;
+            }
+        }
+    
+        for (i = 0 ; i < mixl ; i++)
+        {
+            newmixm[i] = nMats;
+            int m;
+            for (m = 0 ; m < nMats ; m++)
+            {
+                if (mixm[i] == mats[m])
+                {
+                    newmixm[i] = m;
+                    matUsed[m] = true;
+                    break;
+                }
+            }
+            if (m == nMats)
+            {
+                if (!haveIssuedWarning)
+                {
+                    char msg[1024];
+                    SNPRINTF(msg, sizeof(msg),"Mixed mat entry %d of %s has an "
+                                 "invalid material number -- %d", i, 
+                                 dom, mixm[i]);
+                    avtCallback::IssueWarning(msg);
+                    haveIssuedWarning = true;
+                }
+                matUsed[nMats] = true;
+            }
+        }
+    }
+}
+
+// ****************************************************************************
+//  Method: avtMaterial constructor
+//
+//  Arguments:
+//      nMats        The number of materials in mats.
+//      mats         A list of material numbers.
+//      ndims        The number of entries in dims.
+//      dims         The number of material entries in each direction.
+//      major_order  The major order of the material list if multidimensional.
+//      ml           The material list.
+//      mixl         The mix_len.
+//      mixm         The mix_mat.
+//      mixz         The mix_zone.
+//      mixv         The mix_vf.
+//      dom          The domain string (for printing error messages only).
+//      allowmat0    Allow material number = 0
+//
+//  Programmer: Hank Childs
+//  Creation:   November 7, 2000
+//
+//  Modifications:
+//    Jeremy Meredith, Tue Dec  5 15:43:41 PST 2000
+//    Made it translate from arbitrary material numbers to a 0-origin index
+//    in both the matlist (ml) and mix_mat (mixm).
+//
+//    Jeremy Meredith, Thu Dec 13 11:48:52 PST 2001
+//    Made input arrays constants.
+//
+//    Sean Ahern, Fri Feb  8 10:26:05 PST 2002
+//    Added support for Silo material names.
+//
+//    Eric Brugger, Thu May 23 14:39:07 PDT 2002
+//    I added support for taking into account array ordering for material
+//    lists from structured meshes.
+//
+//    Jeremy Meredith, Thu Aug 15 13:55:12 PDT 2002
+//    Added code to figure out which materials were used and which were not.
+//    This allows us to created a packed (i.e. non-sparse) representation.
+//
+//    Hank Childs, Tue Nov 12 11:51:54 PST 2002
+//    Some codes put in material numbers that are not valid to show that they
+//    are 'phoney zones'.  Account for this.
+//
+//    Hank Childs, Mon Nov 18 12:45:12 PST 2002
+//    Fix dumb ABW.
+//
+//    Hank Childs, Tue Dec 10 16:08:48 PST 2002
+//    Do not always include the 'phoney material', because it screws up
+//    species.
+//
+//    Hank Childs, Thu Feb 12 13:57:28 PST 2004
+//    Do a better job of checking for bad materials and also issue a warning
+//    when they are encountered.
+//
+//    Hank Childs, Wed Feb 18 09:36:38 PST 2004
+//    Added the "all materials" list to the Initialize call.
+//
+//    Hank Childs, Wed Apr 14 07:50:31 PDT 2004
+//    Do not force names to have material numbers encoded in them.
+//
+//    Mark C. Miller, Thu Apr 29 12:14:37 PDT 2004
+//    Re-factored section of code having to do with re-numbering materials to
+//    0 to N-1 to a new function, RenumberMaterialsZeroToNminusOne
+//
+//    Thomas R. Treadway, Tue Aug 22 14:37:42 PDT 2006
+//    Added the allowmat0 flag so material number = 0 don't display 
+//    error/warning messages.
+//
+// ****************************************************************************
+
+avtMaterial::avtMaterial(int nMats, const int *mats, char **names,
+                         int ndims, const int *dims, int major_order,
+                         const int *ml, int mixl, const int *mixm,
+                         const int *mixn, const int *mixz, const float *mixv,
+                         const char *domain, int allowmat0)
+{
+    int timerHandle = visitTimer->StartTimer();
+    int  i;
+
+    vector<bool> matUsed(nMats+1, false);
+
+    vector<string>  matnames;
+    for (i = 0 ; i < nMats ; i++)
+    {
+        char name[256];
+        if (names == NULL)
+            SNPRINTF(name, sizeof(name), "%d", mats[i]);
+        else
+            SNPRINTF(name, sizeof(name), "%s", names[i]);
+        matnames.push_back(name);
+    }
+    matnames.push_back("bad material");
+
+    //
+    // Use nzon to avoid name conflict.
+    // ndims == 1   ==>  ucd mesh, dims[0] contains nzon.
+    // ndims == 2   ==>  structured mesh of dim 2, dims[0]*dims[1].
+    // ndims == 3   ==>  structured mesh of dim 3, dims[0]*dims[1]*dims[2].
+    //
+    int  nzon = 1;
+    for (i = 0 ; i < ndims ; i++)
+    {
+        nzon *= dims[i];
+    }
+
+    //
+    // Translate the arbitrarily numbered material lists to 0 -> n-1
+    //
+    int *newml   = new int[nzon];
+    int *newmixm = new int[mixl];
+    RenumberMaterialsZeroToNminusOne(nMats, mats,
+                                     nzon, ml,
+                                     mixl, mixm,
+                                     newml, newmixm,
+                                     matUsed,
+                                     domain,allowmat0);
+
+    int nMatsUsed = 0;
+    for (i = 0 ; i < nMats ; i++)
+    {
+        if (matUsed[i])
+        {
+            nMatsUsed++;
+        }
+    }
+    debug5 << "The number of materials actually used for this domain is "
+           << nMatsUsed << " (out of " << nMats << ")." << endl;
+    int nActualMats = nMats;
+    if (matUsed[nMats] == true)
+    {
+        nActualMats = nMats+1;
+    }
+    Initialize(nActualMats, matnames, matnames, matUsed, nzon, ndims, dims, 
+               major_order, newml, mixl, newmixm, mixn, mixz, mixv);
+    delete[] newml;
+    delete[] newmixm;
+
+    visitTimer->StopTimer(timerHandle, "Constructing avtMaterial object");
+}
+
+
+// ****************************************************************************
+//  Method: avtMaterial constructor
+//
+//  Arguments:
+//      nMats      The number of materials in mats.
+//      mats       A list of material names.
+//      ndims      The number of entries in dims.
+//      dims       The number of material entries in each direction.
+//      ml         The material list.
+//      mixl       The mix_len.
+//      mixm       The mix_mat.
+//      mixz       The mix_zone.
+//      mixv       The mix_vf.
+//
+//  Programmer: Jeremy Meredith
+//  Creation:   November 26, 2001
+//
+//  Modifications:
+//    Jeremy Meredith, Thu Dec 13 11:48:52 PST 2001
+//    Made input arrays constants.
+//
+//    Eric Brugger, Thu May 23 14:39:07 PDT 2002
+//    I added support for taking into account array ordering for material
+//    lists from structured meshes.
+//
+//    Jeremy Meredith, Thu Aug 15 13:53:15 PDT 2002
+//    Added code to figure out which materials were used and which were not.
+//    This allows us to created a packed (i.e. non-sparse) representation.
+//
+//    Hank Childs, Fri Dec 20 12:33:45 PST 2002
+//    Account for phoney materials.
+//
+//    Hank Childs, Wed Feb 18 09:36:38 PST 2004
+//    Added the "all materials" list to the Initialize call.
+//
+// ****************************************************************************
+
+avtMaterial::avtMaterial(int nMats, const vector<string> &mats, int nzon,
+                         const int *ml, int mixl, const int *mixm,
+                         const int *mixn, const int *mixz,
+                         const float *mixv)
+{
+    int i;
+    vector<bool> matUsed(nMats+1, false);
+    for (i = 0 ; i < nzon ; i++)
+    {
+        if (ml[i] >= 0)
+            matUsed[ml[i]] = true;
+    }
+
+    for (i = 0 ; i < mixl ; i++)
+    {
+        matUsed[mixm[i]] = true;
+    }
+
+    int nActualMats = (matUsed[nMats] ? nMats+1 : nMats);
+
+    Initialize(nActualMats, mats, mats, matUsed, nzon, 1, &nzon, 0, ml, mixl,
+               mixm, mixn, mixz, mixv);
+}
+
+
+// ****************************************************************************
+//  Method: avtMaterial constructor for constructing materials from lists of
+//          zones containing them cleanly and/or partially
+//
+//  Arguments:
+//      nTotMats     The total number of materials over all domains
+//      mats         The list of material numbers over all domains
+//      names        The list of material names over all domains
+//      matMap:      a list of MatZoneMap structs for each material indicating
+//                   which zones contain the material cleanly, which zones
+//                   contain it mixing and the associated volume fractions
+//      ndims:       The number of entries in dims. 
+//      dims:        The size of the list of zones in each logical dimension. 
+//      major_order: 0==>row-major, 1==>col-major ordering for ndims>1 
+//      domain:      for use in printing error messages, may be 0
+//    
+//  Programmer: Mark C. Miller 
+//  Creation:   April 28, 2004 
+//
+//  Modifications:
+//    Mark C. Miller, Wed May 19 21:31:28 PDT 2004
+//    corrected off by one error in mixed traversals
+//
+//    Kathleen Bonnell, Mon May 23 16:55:35 PDT 2005
+//    Fix memory leaks.
+//
+// ****************************************************************************
+
+avtMaterial::avtMaterial(int nTotMats, const int *mats, const char **names,
+                         const vector<MatZoneMap> &matMap,
+                         int ndims, const int *dims,
+                         int major_order, const char *domain)
+{
+    int timerHandle = visitTimer->StartTimer();
+    const int notSet = INT_MAX;
+    bool haveIssuedWarning = false;
+
+    //
+    // build material names vector
+    //
+    vector<string>  matnames;
+    for (size_t i = 0 ; i < (size_t)nTotMats ; i++)
+    {
+        char name[256];
+        if (names == NULL)
+            SNPRINTF(name, sizeof(name), "%d", mats[i]);
+        else
+            SNPRINTF(name, sizeof(name), "%s", names[i]);
+        matnames.push_back(name);
+    }
+    matnames.push_back("bad material");
+
+    //
+    // compute total number of zones and allocate mat list
+    //
+    int numZones = 1;
+    for (size_t i = 0; i < (size_t)ndims; i++)
+        numZones *= dims[i];
+    int *ml = new int[numZones];
+
+    //
+    // determine one larger than max material number
+    //
+    int matnoMax = mats[0];
+    for (size_t i = 1; i < (size_t)nTotMats; i++)
+    {
+        if (mats[i] > matnoMax)
+            matnoMax = mats[i]; 
+    }
+    matnoMax++;
+
+    //
+    // determine how big the mix arrays will be
+    //
+    size_t mixl = 0;
+    for (size_t i = 0; i < matMap.size(); i++)
+        mixl += matMap[i].numMixed;
+
+    // set up the mix arrays 
+    float *mixv = 0;
+    int *mixm = 0;
+    int *mixn = 0;
+    int *mixz = 0;
+    if (mixl)
+    {
+        mixv = new float[mixl];
+        mixm = new int[mixl];
+        mixn = new int[mixl];
+        mixz = new int[mixl];
+    }
+
+    //
+    // fill ml with a value we can recognize as having not been visited
+    //
+    for (size_t i = 0; i < (size_t)numZones; i++)
+        ml[i] = notSet;
+
+    //
+    // Process each material in the map, clean part first, then mixed
+    //
+    int mlindex = 0;
+    bool usedBadMaterial = false;
+    vector<bool> matUsed(nTotMats+1, false);
+    for (size_t i = 0; i < matMap.size(); i++)
+    {
+        int matno = matMap[i].matno;
+
+        // set associated matUsed flag 
+        for (size_t j = 0; j < (size_t)nTotMats; j++)
+        {
+            if (matno == mats[j])
+            {
+                matUsed[j] = true;
+                break;
+            }
+        }
+
+        //
+        // fill the clean zones with matno
+        //
+        int  nc = matMap[i].numClean;
+        int *cz = matMap[i].cleanZones;
+        for (size_t j = 0; j < (size_t)nc; j++)
+        {
+            int zoneNum = cz[j];
+
+            if (!haveIssuedWarning && ((zoneNum < 0) || (zoneNum >= numZones)))
+            {
+                char msg[1024];
+                SNPRINTF(msg, sizeof(msg),
+                    "Clean zone index %d of %s is out of range [0,%d] "
+                    "in material %s", zoneNum, domain, numZones,
+                    matnames[matno].c_str());
+                avtCallback::IssueWarning(msg);
+                haveIssuedWarning = true;
+            }
+            else if (!haveIssuedWarning && (ml[zoneNum] != notSet))
+            {
+                char msg[1024];
+                SNPRINTF(msg, sizeof(msg),
+                    "Zone %d of %s is indicated clean in multiple "
+                    "material maps, %s and %s", zoneNum, domain,
+                    matnames[matno].c_str(), matnames[ml[zoneNum]].c_str());
+                avtCallback::IssueWarning(msg);
+                haveIssuedWarning = true;
+                ml[zoneNum] = matnoMax;
+                usedBadMaterial = true;
+            }
+            else
+            {
+                ml[zoneNum] = matno; 
+            }
+        }
+
+        //
+        // fill the mixed zones with matno and vfracs 
+        //
+        int  nm = matMap[i].numMixed;
+        int *mz = matMap[i].mixedZones;
+        float *vf = matMap[i].volFracs;
+        for (size_t j = 0; j < (size_t)nm; j++)
+        {
+            int zoneNum = mz[j];
+
+            if (!haveIssuedWarning && ((zoneNum < 0) || (zoneNum >= numZones)))
+            {
+                char msg[1024];
+                SNPRINTF(msg, sizeof(msg),
+                    "Clean zone index %d of %s is out of range [0,%d] "
+                    "in material %s", zoneNum, domain, numZones,
+                    matnames[matno].c_str());
+                avtCallback::IssueWarning(msg);
+                haveIssuedWarning = true;
+            }
+            else if (!haveIssuedWarning &&
+                     (ml[zoneNum] != notSet) && (ml[zoneNum] >= 0))
+            {
+                char msg[1024];
+                SNPRINTF(msg, sizeof(msg),
+                    "Zone %d of %s is indicated clean in material %s "
+                    "and mixed in material %s", zoneNum, domain,
+                    matnames[ml[zoneNum]].c_str(), matnames[matno].c_str());
+                avtCallback::IssueWarning(msg);
+                haveIssuedWarning = true;
+                ml[zoneNum] = matnoMax;
+                usedBadMaterial = true;
+            }
+            else
+            {
+                if (ml[zoneNum] == notSet)
+                {
+
+                    //
+                    // if we haven't visited this zone yet, just set it
+                    //
+                    ml[zoneNum] = -(mlindex+1);
+
+                    mixm[mlindex] = matno;
+                    mixz[mlindex] = zoneNum;
+                    mixv[mlindex] = vf[j]; 
+                    mixn[mlindex] = 0;
+                }
+                else
+                {
+                    //
+                    // Since we've already visited this zone,
+                    // walk forward through the list for this zone
+                    //
+                    int k = -(ml[zoneNum]+1);
+                    while (true)
+                    {
+                        if (mixn[k] == 0)
+                            break;
+                        k = mixn[k]-1;
+                    }
+ 
+                    // link up last entry in list with the new entry
+                    mixn[k] = mlindex+1;
+ 
+                    // put in the new entry
+                    mixm[mlindex] = matno;
+                    mixz[mlindex] = zoneNum;
+                    mixv[mlindex] = vf[j];
+                    mixn[mlindex] = 0;
+                }
+                mlindex++;
+            }
+        }
+    }
+
+    //
+    // If we encountered a problem, above, we may have notSet values in
+    // the material list. So, we scan for them and replace with matnoMax, the
+    // bad material id.
+    //
+    if (haveIssuedWarning)
+    {
+        for (size_t i = 0; i < (size_t)numZones; i++)
+        {
+            if (ml[i] == notSet)
+            {
+                ml[i] = matnoMax;
+                usedBadMaterial = true;
+            }
+        }
+    }
+
+    //
+    // see if the materials are arbitrarily numbered
+    //
+    bool arbNumbering = false; 
+    for (size_t i = 0; i < (size_t)nTotMats; i++)
+    {
+        if ((size_t)mats[i] != i)
+        {
+            arbNumbering = true;
+            break;
+        }
+    }
+
+    int addOne = 0;
+    if (usedBadMaterial)
+        addOne = 1;
+
+    if (!arbNumbering)
+    {
+        if (usedBadMaterial)
+            matUsed[nTotMats] = true;
+
+        Initialize(nTotMats+addOne, matnames, matnames, matUsed, numZones,
+                   ndims, dims, major_order, ml, mixl, mixm, mixn, mixz, mixv);
+    }
+    else
+    {
+
+        //
+        // Translate the arbitrarily numbered material lists to 0 -> n-1
+        //
+        int *newml   = new int[numZones];
+        int *newmixm = new int[mixl];
+        int *newmats = new int[nTotMats+addOne];
+        newmats[nTotMats+addOne-1] = matnoMax;
+        for (size_t i = 0; i < (size_t)nTotMats; i++)
+            newmats[i] = mats[i];
+        vector<bool> newmatUsed(nTotMats+addOne, false);
+        RenumberMaterialsZeroToNminusOne(nTotMats+addOne, newmats,
+                                         numZones, ml,
+                                         mixl, mixm,
+                                         newml, newmixm,
+                                         newmatUsed,
+                                         domain, 0);
+
+        Initialize(nTotMats+addOne, matnames, matnames, newmatUsed, numZones,
+            ndims, dims, major_order, newml, mixl, newmixm, mixn, mixz, mixv);
+
+        delete [] newml;
+        delete [] newmixm;
+        delete [] newmats;
+
+    }
+
+    if (mixl)
+    {
+        delete [] mixv;
+        delete [] mixm;
+        delete [] mixn;
+        delete [] mixz;
+    }
+    delete [] ml;
+
+
+    visitTimer->StopTimer(timerHandle, "Constructing avtMaterial object from "
+                                       "material map");
+
+}
+
+// ****************************************************************************
+//  Method: avtMaterial constructor for constructing materials from full zonal 
+//          arrays of per-material volume fractions 
+//
+//  Arguments:
+//      nTotMats     The total number of materials over all domains
+//      mats         The list of material numbers over all domains
+//      names        The list of material names over all domains
+//      vfracs       The per-material, per-zone volume fractions for THIS domain
+//                   If vfracs[k] == 0, material k is NOT present on THIS domain
+//      ndims:       The number of entries in dims. 
+//      dims:        The number of zones in each of the ndims logical dimensions
+//      major_order  The major order of the material list if multidimensional.
+//      domain       The domain string (for printing error messages only).
+//    
+//  Programmer: Mark C. Miller 
+//  Creation:   April 28, 2004 
+//
+//  Modifications:
+//    Mark C. Miller, Wed May 19 21:31:28 PDT 2004
+//    corrected off by one error in mixed traversals
+//
+//    Kathleen Bonnell, Mon May 23 16:55:35 PDT 2005
+//    Fix memory leaks.
+//
+//    Mark C. Miller, Wed Feb 11 17:03:53 PST 2015
+//    Made it more robust in the presence of poorly constructed fracs arrays.
+//    
+//    Mark C. Miller, Thu Oct 19 15:25:23 PDT 2017
+//    Fixed number of issues with creation of mixed material structure from
+//    full zonal arrays...reversed loops over zones and materials, do not
+//    increase mixlen for already clean zones for which some non-zero fracs
+//    are encountered, fixed one-origin indexing in mix_zone array, clean
+//    up any zones left in notSet status to one of the used materials.
+//
+//    Kathleen Biagas, Wed Dec  6 07:53:48 PST 2017
+//    Removed asserts.
+//
+// ****************************************************************************
+
+avtMaterial::avtMaterial(int nTotMats, const int *mats, char **names,
+                         int ndims, const int *dims, int major_order,
+                         const float *const *vfracs, 
+                         const char *domain)
+{
+    int timerHandle = visitTimer->StartTimer();
+    const int notSet = INT_MAX;
+    int i,m,z;
+
+    //
+    // build material names vector
+    //
+    vector<string>  matnames;
+    for (i = 0 ; i < nTotMats ; i++)
+    {
+        char name[256];
+        if (names == NULL)
+            SNPRINTF(name, sizeof(name), "%d", mats[i]);
+        else
+            SNPRINTF(name, sizeof(name), "%s", names[i]);
+        matnames.push_back(name);
+    }
+
+    //
+    // compute total number of zones
+    //
+    int ncells = 1;
+    for (i = 0; i < ndims; i++)
+        ncells *= dims[i];
+
+    // allocate and fill ml array with the 'notSet' value
+    int *ml = new int[ncells];
+    for (i = 0; i < ncells; i++)
+        ml[i] = notSet;
+
+    // pre-compute size of mix arrays
+    int mixl = 0;
+    for (m = 0; m < nTotMats; m++)
+    {
+        for (z = 0; z < ncells; z++)
+        {
+            double vf = vfracs[m] ? vfracs[m][z] : 0;
+            if (0 < vf && vf < 1)
+                mixl++;
+        }
+    }
+
+    // allocate mix arrays
+    float *mixv = new float[mixl];
+    int *mixm = new int[mixl];
+    int *mixz = new int[mixl];
+    int *mixn = new int[mixl];
+
+    // loop over materials
+    mixl = 0;
+    vector<bool> matUsed(nTotMats, false);
+    vector<int> emptyZones;
+    for (z = 0; z < ncells; z++)
+    {
+        int reset_mixl = mixl;
+        for (m = 0; m < nTotMats; m++)
+        {
+            double vf = vfracs[m] ? vfracs[m][z] : 0;
+            bool foundNonZeroFrac = false;
+
+            if (vf >= 1.0)
+            {
+                mixl = reset_mixl;
+                ml[z] = mats[m];
+                foundNonZeroFrac = true;
+            }
+            else if (vf > 0.0)
+            {
+                foundNonZeroFrac = true;
+                if (ml[z] == notSet)
+                {
+                    // put the first entry in the list for this zone
+                    ml[z] = -(mixl+1); 
+                    mixm[mixl] = mats[m]; 
+                    mixv[mixl] = vf;
+                    mixz[mixl] = z+1; // one-origin indexing
+                    mixn[mixl] = 0;
+                    mixl++;
+                }
+                else if (ml[z] < 0)
+                {
+                    // walk forward through the list for this zone
+                    int j = -(ml[z]+1);
+                    while (mixn[j]!=0)
+                        j = mixn[j]-1;
+
+                    // link up last entry in list with the new entry
+                    mixn[j] = mixl+1;
+
+                    // put in the new entry
+                    mixm[mixl] = mats[m];
+                    mixv[mixl] = vf;
+                    mixz[mixl] = z+1; // one-origin inexing
+                    mixn[mixl] = 0;
+                    mixl++;
+                }
+                else
+                {
+                    // We've encountered a zone with a frac>=1 *AND* another
+                    // frac > 0. We ignore the frac>0 since we already have
+                    // marked the zone clean for the frac>=1.
+                    (void)0; // no op
+                }
+            }
+            if (foundNonZeroFrac)
+                matUsed[m] = true;
+        }
+        if (ml[z] == notSet)
+            emptyZones.push_back(z);
+    }
+
+    // find at least one material that is actually used
+    int oneUsedMat = notSet;
+    for (i = 0; i < nTotMats && oneUsedMat == notSet; i++)
+    {
+        if (matUsed[i])
+            oneUsedMat = i;
+    }
+
+    // Go back and fix all the empty zones to be clean in the one material
+    for (vector<int>::size_type q = 0; q < emptyZones.size(); q++)
+        ml[emptyZones[q]] = oneUsedMat;
+
+    //
+    // see if the materials are arbitrarily numbered
+    //
+    bool arbNumbering = false; 
+    for (i = 0; i < nTotMats; i++)
+    {
+        if (mats[i] != i)
+        {
+            arbNumbering = true;
+            break;
+        }
+    }
+
+    if (!arbNumbering)
+    {
+        Initialize(nTotMats, matnames, matnames, matUsed, ncells,
+            ndims, dims, major_order, ml, mixl, mixm, mixn, mixz, mixv);
+    }
+    else
+    {
+        //
+        // Translate the arbitrarily numbered material lists to 0 -> n-1
+        //
+        int *newml   = new int[ncells];
+        int *newmixm = new int[mixl];
+        int *newmats = new int[nTotMats];
+        for (i = 0; i < nTotMats; i++)
+            newmats[i] = mats[i];
+        vector<bool> newmatUsed(nTotMats, false);
+        RenumberMaterialsZeroToNminusOne(nTotMats, newmats, ncells, ml,
+            mixl, mixm, newml, newmixm, newmatUsed, domain, 0);
+
+        Initialize(nTotMats, matnames, matnames, newmatUsed, ncells,
+            ndims, dims, major_order, newml, mixl, newmixm, mixn, mixz, mixv);
+
+        delete [] newml;
+        delete [] newmixm;
+        delete [] newmats;
+    }
+    delete [] mixv;
+    delete [] mixm;
+    delete [] mixz;
+    delete [] mixn;
+    delete [] ml;
+
+    visitTimer->StopTimer(timerHandle, "Constructing avtMaterial object from "
+                                       "dense vfrac arrays");
+}
+
+// ****************************************************************************
+//  Method: avtMaterial constructor for packing sparse materials
+//
+//  Arguments:
+//      mat              the material to copy and pack
+//      nUsedMats        the number of materials actually used
+//      mapMatToUsedMat  a map from the original material numbers to compressed
+//      mapUsedMatToMat  a map from the compressed material numbers to original
+//
+//  Programmer: Jeremy Meredith
+//  Creation:   August 15, 2002
+//
+//  Modifications:
+//
+//    Hank Childs, Wed Feb 18 09:36:38 PST 2004
+//    Added the "all materials" list to the Initialize call.
+//
+// ****************************************************************************
+
+avtMaterial::avtMaterial(const avtMaterial *mat,
+                         int                nUsedMats,
+                         vector<int>        mapMatToUsedMat,
+                         vector<int>        mapUsedMatToMat)
+{
+    vector<bool> matUsed(nUsedMats, true);
+
+    if (mat->nMaterials == nUsedMats)
+    {
+        // no packing can occur
+        Initialize(mat->nMaterials, mat->materials, mat->materials, matUsed,
+                   mat->nZones, 1, &mat->nZones, 0,
+                   mat->matlist, mat->mixlen, mat->mix_mat,
+                   mat->mix_next, mat->mix_zone, mat->mix_vf);
+        return;
+    }
+
+    int i;
+    int            *matlist = new int[mat->nZones];
+    int            *mix_mat = new int[mat->mixlen];
+    vector<string>  materials(nUsedMats, "");
+
+    for (i=0; i<mat->nZones; i++)
+    {
+        int matno = mat->matlist[i];
+        if (matno >= 0)
+            matlist[i] = mapMatToUsedMat[matno];
+        else
+            matlist[i] = matno;
+    }
+
+    for (i=0; i<mat->mixlen; i++)
+    {
+        mix_mat[i] = mapMatToUsedMat[mat->mix_mat[i]];
+    }
+
+    for (i=0; i<nUsedMats; i++)
+        materials[i] = mat->materials[mapUsedMatToMat[i]];
+
+    Initialize(nUsedMats, materials, mat->materials, matUsed,
+               mat->nZones, 1, &mat->nZones, 0,
+               matlist, mat->mixlen, mix_mat,
+               mat->mix_next, mat->mix_zone, mat->mix_vf);
+
+    delete[] matlist;
+    delete[] mix_mat;
+}
+
+
+// ****************************************************************************
+//  Method:  CreatePackedMaterial
+//
+//  Purpose:
+//    Create a clone of this material, but with the material numbers packed.
+//
+//  Arguments:
+//    none
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    August 15, 2002
+//
+//  Modifications:
+//    Jeremy Meredith, Thu Aug 21 15:09:17 PDT 2003
+//    Added a timer.
+//
+// ****************************************************************************
+
+avtMaterial *
+avtMaterial::CreatePackedMaterial() const
+{
+    int timerHandle = visitTimer->StartTimer();
+    avtMaterial *m = new avtMaterial(this, nUsedMats,
+                                     mapMatToUsedMat,
+                                     mapUsedMatToMat);
+    visitTimer->StopTimer(timerHandle, "Packing material");
+    return m;
+}
+
+// ****************************************************************************
+//  Method:  SimplifyHeavilyMixedZones
+//
+//  Purpose:
+//    Create a clone of this material, but simplify zones that are heavily 
+//    mixed.
+//    
+//  Arguments:
+//     maxMats   The maximum number of material permitted per zone.
+//
+//  Returns:     A new avtMaterial object.  The calling function must
+//               free this object.
+//
+//  Programmer:  Hank Childs
+//  Creation:    August 16, 2005
+//
+//  Modifications:
+//
+//    Hank Childs, Thu Sep 20 13:14:46 PDT 2007
+//    Maintain reordering information for mixed variables.
+//
+// ****************************************************************************
+
+avtMaterial *
+avtMaterial::SimplifyHeavilyMixedZones(int maxMats) const
+{
+    int   i, j, k;
+
+    //
+    // Start off by creating the matlist and calculating the new mixlen.
+    //
+    int *new_ml = new int[nZones];
+    int new_mixlen = 0;
+    for (i = 0 ; i < nZones ; i++)
+    {
+        if (matlist[i] >= 0)
+            new_ml[i] = matlist[i];
+        else
+        {
+            // We know where we are going to put the zone in our new mixed
+            // arrays, so set that up now.
+            new_ml[i] = -new_mixlen-1;
+
+            // Now calculate how many materials are in the zone and clamp it
+            // to maxMats if necessary.
+            int current = -matlist[i]-1;
+            int nmats = 1;
+            // nmats < 1000 just to prevent infinite loops if someone
+            // set this structure up wrong.
+            while ((mix_next[current] != 0) && (nmats < 1000))
+            {
+                current = mix_next[current]-1;
+                nmats++;
+            }
+            if (nmats > maxMats)
+                nmats = maxMats;
+            new_mixlen += nmats;
+        }
+    }
+
+    vector<int> reorderingInfo(new_mixlen);
+
+    //
+    // Now that we know their sizes, let's construct the mixed arrays.
+    //
+    int   *new_mix_mat  = new int[new_mixlen];
+    int   *new_mix_next = new int[new_mixlen];
+    int   *new_mix_zone = new int[new_mixlen];
+    float *new_mix_vf   = new float[new_mixlen];
+    int    cur_offset   = 0;
+    int   *top_mat      = new int[maxMats];
+    float *top_vf       = new float[maxMats];
+    int   *top_orig_idx = new int[maxMats];
+    for (i = 0 ; i < nZones ; i++)
+    {
+        if (new_ml[i] >= 0)
+            continue;
+
+        int nValid = 0;
+        for (j = 0 ; j < maxMats ; j++)
+            top_mat[j] = -1;
+
+        // Start off by determining how many materials are in the zone.
+        // Also construct mix_next and mix_zone.
+        int current = -matlist[i]-1;
+        int nmats = 1;
+        // nmats < 1000 just to prevent infinite loops if someone
+        // set this structure up wrong.
+        bool keepGoing = true;
+        while (keepGoing)
+        {
+            bool madeCut = false;
+            for (j = 0 ; j < nValid ; j++)
+            {
+                if (mix_vf[current] > top_vf[j])
+                {
+                    int start = (nValid >= maxMats ? maxMats-1 : nValid);
+                    for (k = start ; k > j ; k--)
+                    {
+                        top_vf[k] = top_vf[k-1];
+                        top_mat[k] = top_mat[k-1];
+                        top_orig_idx[k] = top_orig_idx[k-1];
+                    }
+                    if (nValid < maxMats)
+                        nValid++;
+                    top_vf[j] = mix_vf[current];
+                    top_mat[j] = mix_mat[current];
+                    top_orig_idx[j] = current;
+                    madeCut = true;
+                    break;
+                }
+            }
+            if (!madeCut && (nValid < maxMats))
+            {
+                top_vf[nValid] = mix_vf[current];
+                top_mat[nValid] = mix_mat[current];
+                top_orig_idx[nValid] = current;
+                nValid++;
+            }
+            current = mix_next[current]-1;
+            if (current == -1)
+                keepGoing = false;
+            else if (nmats >= 1000)
+                keepGoing = false;
+            else
+                nmats++;
+        }
+
+        // 
+        // Make sure the VF still sums to 1.
+        //
+        if (nmats > maxMats)
+        {
+            nmats = maxMats;
+            float sum = 0.;
+            for (j = 0 ; j < nValid ; j++)
+                 sum += top_vf[j];
+            if (sum > 0)
+                for (j = 0 ; j < nValid ; j++)
+                     top_vf[j] /= sum;
+          
+        }
+
+        //
+        // Now load up the new information.
+        //
+        for (j = 0 ; j < nValid ; j++)
+        {
+            new_mix_zone[cur_offset+j] = i;
+            if (j == nmats-1)
+                new_mix_next[cur_offset+j] = 0;
+            else
+                new_mix_next[cur_offset+j] = cur_offset+j+2;
+            new_mix_mat[cur_offset+j] = top_mat[j];
+            new_mix_vf[cur_offset+j] = top_vf[j];
+            reorderingInfo[cur_offset+j] = top_orig_idx[j];
+        }
+        cur_offset += nmats;
+    }
+
+    avtMaterial *rv = new avtMaterial(nMaterials, materials, nZones,
+                                      new_ml, new_mixlen, new_mix_mat,
+                                      new_mix_next, new_mix_zone, new_mix_vf);
+    rv->SetOriginalMaterialOrdering(reorderingInfo);
+
+    delete [] new_ml;
+    delete [] new_mix_mat;
+    delete [] new_mix_next;
+    delete [] new_mix_zone;
+    delete [] new_mix_vf;
+    delete [] top_mat;
+    delete [] top_vf;
+    delete [] top_orig_idx;
+
+    return rv;
+}
+
+
+// ****************************************************************************
+//  Method: avtMaterial::ReorderMixedVariable
+//
+//  Purpose:
+//      If a material is reordered, then this will take a mixed variable and
+//      reorder its values in the same way.
+//
+//  Arguments:
+//      in     The original mixed variable.
+//
+//  Returns:   A new mixed variable that has been reordered.  The calling
+//             function must free this variable.
+//
+//  Notes: As of now, the only way to reorder a material is through 
+//         "simplify heavily mixed".
+//
+//  Programmer: Hank Childs
+//  Creation:   September 20, 2007
+//
+// ****************************************************************************
+
+avtMixedVariable *
+avtMaterial::ReorderMixedVariable(avtMixedVariable *in)
+{
+    int mixlen = GetMixlen(); // use this material's mixlen, not the mixlen
+                              // of the mixed variable.
+    float       *new_buff = new float[mixlen];
+    const float *in_buff  = in->GetBuffer();
+
+    for (int i = 0 ; i < mixlen ; i++)
+        new_buff[i] = in_buff[originalMaterialOrdering[i]];
+    
+    return new avtMixedVariable(new_buff, mixlen, in->GetVarname());
+}
+
+
+// ****************************************************************************
+//  Method: avtMaterial destructor
+//
+//  Programmer: Hank Childs
+//  Creation:   November 7, 2000
+//
+// ****************************************************************************
+
+avtMaterial::~avtMaterial()
+{
+    if (matlist != NULL)
+    {
+        delete [] matlist;
+    }
+    if (mix_mat != NULL)
+    {
+        delete [] mix_mat;
+    }
+    if (mix_next != NULL)
+    {
+        delete [] mix_next;
+    }
+    if (mix_zone != NULL)
+    {
+        delete [] mix_zone;
+    }
+    if (mix_vf != NULL)
+    {
+        delete [] mix_vf;
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtMaterial::Destruct
+//
+//  Purpose:
+//      A routine that a void_ref_ptr can call to cleanly destruct a material.
+//
+//  Programmer: Hank Childs
+//  Creation:   September 25, 2002
+//
+// ****************************************************************************
+
+void
+avtMaterial::Destruct(void *p)
+{
+    avtMaterial *mat = (avtMaterial *) p;
+    delete mat;
+}
+
+
+// ****************************************************************************
+//  Method: avtMaterial::Initialize
+//
+//  Arguments:
+//      nMats        The number of material in matnames.
+//      matnames     The names of the materials.
+//      all_matnames The names of all the materials, including those discarded
+//                   because they weren't present in this domain.
+//      nzon         The number of zones in ml.
+//      ndims        The number of entries in dims.
+//      dims         The number of material entries in each direction.
+//      major_order  The major order of the material list if multidimensional.
+//      ml           A list of materials for each zone.
+//      mixl         The mixlen.
+//      mixm         The mix_mat.
+//      minn         The mix_next.
+//      mixz         The mix_zone.
+//      mixv         The mix_vf.
+//  
+//  Purpose:
+//      Acts as the real constructor.  The true constructors take in the 
+//      arguments and put it in a format that this routine can handle.
+//
+//  Programmer: Hank Childs
+//  Creation:   November 7, 2000
+//
+//  Modifications:
+//    Jeremy Meredith, Thu Dec 13 11:48:52 PST 2001
+//    Made input arrays constants.
+//
+//    Eric Brugger, Thu May 23 14:39:07 PDT 2002
+//    I added support for taking into account array ordering for material
+//    lists from structured meshes.
+//
+//    Jeremy Meredith, Thu Aug 15 13:53:15 PDT 2002
+//    Added code to figure out which materials were used and to create
+//    the mapping between the sparse material numbers and the packed ones.
+//
+//    Hank Childs, Mon Apr  7 09:26:23 PDT 2003
+//    Do not assume mixz is non-NULL.
+//
+//    Hank Childs, Wed Feb 18 09:36:38 PST 2004
+//    Add an argument for a list of all materials.
+//
+//    Jeremy Meredith, Fri Feb 13 12:06:17 EST 2009
+//    Added an internal variable, mixalloc, which specifies how
+//    long the mixed arrays have been allocated (not the length
+//    of their valid contents).
+//
+//    Mark C. Miller, Wed Feb 11 17:03:27 PST 2015
+//    Added call to AssertSelfIsValid at end of method.
+// ****************************************************************************
+
+void
+avtMaterial::Initialize(int nMats, const vector<string> &matnames,
+                        const vector<string> &all_matnames, 
+                        const vector<bool> &matUsed, int nzon,
+                        int ndims, const int *dims, int major_order,
+                        const int *ml, int mixl, const int *mixm,
+                        const int *mixn, const int *mixz, 
+                        const float *mixv)
+{
+    int   i;
+
+    nUsedMats = 0;
+    mapMatToUsedMat = vector<int>(nMats, -1);
+    for (i=0; i<nMats; i++)
+    {
+        if (matUsed[i])
+        {
+            mapMatToUsedMat[i] = nUsedMats;
+            mapUsedMatToMat.push_back(i);
+            nUsedMats++;
+        }
+    }
+
+    nMaterials = nMats;
+    materials  = matnames;
+    all_materials = all_matnames;
+    nZones     = nzon;
+    matlist    = new int[nZones];
+    if (ndims <= 1 || major_order == 0)
+    {
+        for (i = 0 ; i < nZones ; i++)
+        {
+            matlist[i] = ml[i];
+        }
+    }
+    else
+    {
+        int       i, j, k;
+        int       nx, ny, nz, nxy, nyz;
+
+        switch (ndims)
+        {
+          case 2:
+            nx = dims[0];
+            ny = dims[1];
+
+            for (j = 0; j < ny; j++)
+            {
+                for (i = 0; i < nx; i++)
+                {
+                    matlist[j*nx + i] = ml[j + i*ny];
+                }
+            }
+
+            break;
+
+          case 3:
+            nx = dims[0];
+            ny = dims[1];
+            nz = dims[2];
+            nxy = dims[0] * dims[1];
+            nyz = dims[1] * dims[2];
+
+            for (k = 0; k < nz; k++)
+            {
+                for (j = 0; j < ny; j++)
+                {
+                    for (i = 0; i < nx; i++)
+                    {
+                        matlist[k*nxy + j*nx + i] = ml[k + j*nz + i*nyz];
+                    }
+                }
+            }
+
+            break;
+        }
+    }
+    mixlen     = mixl;
+    mixalloc   = mixlen;
+    mix_mat    = new int[mixlen];
+    mix_next   = new int[mixlen];
+    if (mixz == NULL)
+        mix_zone = NULL;
+    else
+        mix_zone   = new int[mixlen];
+    mix_vf     = new float[mixlen];
+    for (i = 0 ; i < mixlen ; i++)
+    {
+        mix_mat[i]  = mixm[i];
+        mix_next[i] = mixn[i];
+        if (mixz != NULL)
+            mix_zone[i] = mixz[i];
+        mix_vf[i]   = mixv[i];
+    }
+
+    AssertSelfIsValid();
+}
+
+// ****************************************************************************
+//  Method: GetVolFracsForZone
+//
+//  Purpose:
+//    Constructs the per material volume fraction list for the given zone. 
+//
+//  Programmer:  Cyrus Harrison
+//  Creation:    January 30, 2008
+//
+// ****************************************************************************
+void
+avtMaterial::GetVolFracsForZone(int zone_id, std::vector<float> &vfs)
+{
+    // init with zeros
+    vfs.clear();
+    for (int m=0; m<nMaterials; m++)
+        vfs.push_back(0.0);
+
+    // mixed case
+    if(matlist[zone_id] < 0)
+    {
+        int mix_idx = -matlist[zone_id] - 1;
+        while(mix_idx >=0)
+        {
+            vfs[mix_mat[mix_idx]] = mix_vf[mix_idx];
+            mix_idx = mix_next[mix_idx] -1;
+        }
+    }
+    else // clean case the vf  = 1.0 for the only material in the zone
+    {
+        vfs[matlist[zone_id]] = 1.0;
+    }
+}
+
+// ****************************************************************************
+//  Method:  avtMaterial::CheckMixArraySize
+//
+//  Purpose:
+//    Checks to see if we start appending some materials to the
+//    mix arrays if we'll overflow their currently allocated length.
+//    If so, grows those arrays.
+//
+//  Arguments:
+//    none
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    February 13, 2009
+//
+// ****************************************************************************
+
+template <class T>
+static void GrowArray(T *&array, int num_to_copy, int new_size)
+{
+    T *newarray = new T[new_size];
+    for (int i=0; i<num_to_copy; i++)
+        newarray[i] = array[i];
+    delete[] array;
+    array = newarray;
+}
+
+void
+avtMaterial::CheckMixArraySize()
+{
+    const int growth = 100000;
+    if (mixlen + nMaterials >= mixalloc)
+    {
+        mixalloc += growth;
+        GrowArray(mix_mat,  mixlen, mixalloc);
+        GrowArray(mix_zone, mixlen, mixalloc);
+        GrowArray(mix_vf,   mixlen, mixalloc);
+        GrowArray(mix_next, mixlen, mixalloc);
+    }
+}
+
+// ****************************************************************************
+//  Method:  avtMaterial::SetVolFracForZoneAndMat
+//
+//  Purpose:
+//    Change the VF for a single material in a zone.  No guarantees
+//    that the new VFs add to 1.0.
+//
+//  Arguments:
+//    zone_id     the zone (0-origin) where we need to set the new VF
+//    mat_index   the material number for which we need to set the new VF
+//    val         the new VF
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    February 13, 2009
+//
+// ****************************************************************************
+void
+avtMaterial::SetVolFracForZoneAndMat(int zone_id, int mat_index, float val)
+{
+    CheckMixArraySize();
+    int index = mixlen;
+    int next = 0;
+    if (matlist[zone_id] >= 0)
+    {
+        // Clean material case.  We at least need to move this one into the
+        // mix array so we can set its value to something other than 1.0.
+        int old_material = matlist[zone_id];
+        matlist[zone_id] = -(mixlen+1);
+        mixlen++;
+        if (old_material != mat_index)
+        {
+            // In this case, the clean material isn't the one we want to
+            // set to a new value.  Add the clean material into the mix
+            // array, and then set up index+next to add the new material
+            // into the mix array (at the bottom of the function).
+            next = mixlen+1;
+            mix_mat[index] = old_material;
+            mix_vf[index] = 1.0;
+            mix_zone[index] = zone_id+1; // 1-origin
+            mix_next[index] = next;
+            index = next-1;
+            next = 0;
+            mixlen++;
+        }
+    }
+    else
+    {
+        // Mixed mat case.  Search for a mixed mat matching the desired one.
+        index = -matlist[zone_id] - 1;
+        next = mix_next[index];
+        while (next > 0)
+        {
+            if (mix_mat[index] == mat_index)
+            {
+                break;
+            }
+            index = next-1;
+            next = mix_next[index];
+        }
+        if (mix_mat[index] != mat_index)
+        {
+            // Didn't find it.  We need to extend the mix array by one here.
+            next = mixlen+1;
+            mix_next[index] = next;
+            index = next-1;
+            next = 0;
+            mixlen++;
+        }
+    }
+    // Okay, next and index are set such that we just need to
+    // the new, correct values in the mix array.
+    mix_mat[index] = mat_index;
+    mix_vf[index] = val;
+    mix_zone[index] = zone_id+1; // 1-origin
+    mix_next[index] = next;
+}
+
+
+// ****************************************************************************
+//  Method: ExtractCellMatInfo 
+//
+//  Purpose:
+//    Extract the clean/mixed material info for a single cell.
+//
+//  Arguments:
+//    c          the cell
+//    mix_index  the output mixed index array
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    August 22, 2003
+//
+// ****************************************************************************
+void
+avtMaterial::ExtractCellMatInfo(int c, int *mix_index) const
+{
+    for (int m=0; m<nMaterials; m++)
+    {
+        mix_index[m] = -1;
+    }
+
+    if (matlist[c] < 0)
+    {
+        int  mixix  = -matlist[c] - 1;
+
+        while (mixix >= 0)
+        {
+            mix_index[mix_mat[mixix]] = mixix;
+
+            mixix = mix_next[mixix] - 1;
+        }
+    }
+}
+
+
+// ****************************************************************************
+//  Method: ExtractCellMatInfo 
+//
+//  Purpose:
+//    Extract the clean/mixed material info for a single cell.
+//
+//  Arguments:
+//    c          the cell
+//    zone_vf    the output vf array
+//    mix_index  the output mixed index array
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    June 24, 2002
+//
+// ****************************************************************************
+void
+avtMaterial::ExtractCellMatInfo(int c, float *zone_vf, int *mix_index) const
+{
+    for (int m=0; m<nMaterials; m++)
+    {
+        zone_vf[m]   = 0.;
+        mix_index[m] = -1;
+    }
+
+    if (matlist[c] < 0)
+    {
+        int  mixix  = -matlist[c] - 1;
+
+        while (mixix >= 0)
+        {
+            zone_vf[mix_mat[mixix]]   = mix_vf[mixix];
+            mix_index[mix_mat[mixix]] = mixix;
+
+            mixix = mix_next[mixix] - 1;
+        }
+    }
+    else
+    {
+        zone_vf[matlist[c]] = 1.0;
+    }
+}
+
+
+// ****************************************************************************
+//  Method:  ExtractCellMatInfo
+//
+//  Purpose:
+//    Extract the clean/mixed material info for a single cell.
+//
+//  Arguments:
+//    c          the cell
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    June 24, 2002
+//
+//  Modifications:
+//    Jeremy Meredith, Wed Nov 19 14:42:09 PST 2003
+//    Added "material number" to CellMatInfo.  This is more for internal
+//    use than for displaying; for example, if one were to try to extract
+//    species information for each material in this cell.
+//
+// ****************************************************************************
+vector<CellMatInfo>
+avtMaterial::ExtractCellMatInfo(int c) const
+{
+    vector<CellMatInfo> info;
+
+    if (matlist[c] < 0)
+    {
+        int  mixix  = -matlist[c] - 1;
+
+        while (mixix >= 0)
+        {
+            info.push_back(CellMatInfo(materials[mix_mat[mixix]],
+                                       mix_mat[mixix],
+                                       mix_vf[mixix],
+                                       mixix));
+
+            mixix = mix_next[mixix] - 1;
+        }
+    }
+    else
+    {
+        info.push_back(CellMatInfo(materials[matlist[c]], matlist[c], 1.0));
+    }
+
+    return info;
+}
+
+
+// ****************************************************************************
+//  Method: Print material list and mix info passed in 
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   May 19, 2004 
+//
+// ****************************************************************************
+
+void
+avtMaterial::Print(ostream& out, int nzones , const int *matlist, int mixlen,
+    const int *mix_mat, const int *mix_zone, const float *mix_vf,
+    const int *mix_next)
+{
+    std::map<int,bool> matNumsUsed;
+
+    int i;
+    for (i = 0; i < nzones; i++)
+    {
+        if (matlist[i] >= 0)
+        {
+            out << "Zone " << i << " is clean in material " << matlist[i] << endl;
+            matNumsUsed[matlist[i]] = true;
+        }
+        else
+        {
+            out << "Zone " << i << " is mixing as follows..." << endl; 
+            int mixidx = -(matlist[i]+1);
+            float vfsum = 0.0;
+
+            out << "    ";
+            while (true)
+            {
+                out << mix_mat[mixidx] << " (" << (int) (100*mix_vf[mixidx]) << "%), ";
+                matNumsUsed[mix_mat[mixidx]] = true;
+                vfsum += mix_vf[mixidx];
+                if (mix_next[mixidx] == 0)
+                    break;
+                mixidx = mix_next[mixidx]-1;
+            }
+
+            out << " vfrac sum = " << vfsum;
+
+            if ((vfsum > 1 + 0.01) || (vfsum < 1 - 0.01))
+                out << " *** NOT ~1.0 ***" << endl;
+            else
+                out << " OK" << endl;
+        }
+    }
+
+    out << "In traversing the clean and mixed arrays, encountered the following "
+           "material numbers" << endl;
+    std::map<int,bool>::const_iterator pos;
+    for (pos = matNumsUsed.begin(); pos != matNumsUsed.end(); pos++)
+        out << ", " << pos->first;
+    out << endl;
+}
+
+// ****************************************************************************
+//  Method:  avtMaterial::RawPrint
+//
+//  Purpose:
+//    Print out the material in a more raw form.
+//
+//  Arguments:
+//    out        the output stream
+//    (various)  the material structure values array
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    February 13, 2009
+//
+// ****************************************************************************
+void
+avtMaterial::RawPrint(ostream& out, int nzones , const int *matlist,
+                      int mixlen, const int *mix_mat, const int *mix_zone,
+                      const float *mix_vf, const int *mix_next)
+{
+    out << "matlist\n";
+    for (int i=0; i<nzones; i++)
+        out << "   "<<i<<"\t = "<<matlist[i] << endl;
+
+    out << "mix\n";
+    for (int i=0; i<mixlen; i++)
+        out << "   "<<i
+            << "\tmat="<<mix_mat[i]
+            << "\tzone="<<mix_zone[i]
+            << "\tvf="<<mix_vf[i]
+            << "\tnext="<<mix_next[i]<<endl;
+}
+
+// ****************************************************************************
+//  Method:  avtMaterial::Print
+//
+//  Purpose:
+//    Print out the material in a human readable form.
+//
+//  Arguments:
+//    out        the output stream
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    February 13, 2009
+//
+// ****************************************************************************
+void
+avtMaterial::Print(ostream &out)
+{
+    avtMaterial::Print(out,
+                       nZones,
+                       matlist,
+                       mixlen,
+                       mix_mat,
+                       mix_zone,
+                       mix_vf,
+                       mix_next);
+}
+
+// ****************************************************************************
+//  Method:  avtMaterial::RawPrint
+//
+//  Purpose:
+//    Print out the material in a more raw form.
+//
+//  Arguments:
+//    out        the output stream
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    February 13, 2009
+//
+// ****************************************************************************
+void
+avtMaterial::RawPrint(ostream &out)
+{
+    avtMaterial::Print(out,
+                       nZones,
+                       matlist,
+                       mixlen,
+                       mix_mat,
+                       mix_zone,
+                       mix_vf,
+                       mix_next);
+}
+
+// ****************************************************************************
+//  Method:  avtMaterial::AssertSelfIsValid
+//
+//  Purpose: Traverse object and apply numerous assertions.
+//
+//  Programmer: Mark C. Miller, Thu Oct 19 15:29:59 PDT 2017
+//
+//  Modifications:
+//      Fix one-origin indexing assertion for mix_zone.
+//
+// ****************************************************************************
+#ifndef NDEBUG
+void
+avtMaterial::AssertSelfIsValid() const
+{
+    for (int z = 0; z < nZones; z++)
+    {
+        assert(matlist[z] < nMaterials);
+        if (matlist[z] < 0)
+        {
+            int midx = -(matlist[z]+1);
+            assert(midx >= 0);
+            float vfsum = 0.0;
+            while (midx >= 0)
+            {
+                assert(0 <= midx && midx < mixlen);
+                assert(0 <= mix_mat[midx] && mix_mat[midx] < nMaterials);
+                assert(0 <= mix_vf[midx] && mix_vf[midx] <= 1);
+                vfsum += mix_vf[midx];
+                if (mix_zone && mix_zone[midx] >= 0)
+                    assert(mix_zone[midx] < nZones+1); // one-origin
+                midx = mix_next[midx]-1; 
+            }
+            float const eps = 1.0e-5;
+            assert(((1-eps) <= vfsum) && (vfsum <= (1+eps)));
+        }
+    }
+}
+#else
+void avtMaterial::AssertSelfIsValid() const {;}
+#endif
+
+// ****************************************************************************
+//  Method: avtMultiMaterial constructor
+//
+//  Arguments:
+//      nD      The number of domains for the material.
+//
+//  Programmer: Hank Childs
+//  Creation:   November 7, 2000
+//
+// ****************************************************************************
+
+avtMultiMaterial::avtMultiMaterial(int nD)
+{
+    numDomains = nD;
+    materials  = new avtMaterial*[numDomains];
+    for (int i = 0 ; i < numDomains ; i++)
+    {
+         materials[i] = NULL;
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtMultiMaterial destructor
+//
+//  Programmer: Hank Childs
+//  Creation:   November 7, 2000
+//
+// ****************************************************************************
+
+avtMultiMaterial::~avtMultiMaterial()
+{
+    //
+    // We don't own the materials, just the array that holds the pointers.
+    //
+    if (materials != NULL)
+    {
+        delete [] materials;
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtMultiMaterial::GetDomain
+//
+//  Purpose:
+//      Gets the material for a domain.
+//
+//  Arguments:
+//      dom     The domain of interest.
+//
+//  Returns:    The material for dom.
+//
+//  Programmer: Hank Childs
+//  Creation:   November 7, 2000
+//
+// ****************************************************************************
+
+avtMaterial *
+avtMultiMaterial::GetDomain(int dom)
+{
+    if (dom < 0 || dom >= numDomains)
+    {
+        EXCEPTION2(BadDomainException, dom, numDomains);
+    }
+
+    return materials[dom];
+}
+
+
+// ****************************************************************************
+//  Method: avtMultiMaterial::SetDomain
+//
+//  Purpose:
+//      Sets a domain of a material.
+//
+//  Arguments:
+//      mat         The material for this domain.
+//      dom         The domain number for mat.
+//
+//  Programmer: Hank Childs
+//  Creation:   November 7, 2000
+//
+// ****************************************************************************
+
+void
+avtMultiMaterial::SetDomain(avtMaterial *mat, int dom)
+{
+    if (dom < 0 || dom >= numDomains)
+    {
+        EXCEPTION2(BadDomainException, dom, numDomains);
+    }
+
+    materials[dom] = mat;
+}

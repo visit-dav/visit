@@ -1,0 +1,65 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>VisIt 1.0.1 Release Notes</title>
+</head>
+
+<body>
+
+<p align="center"><b><font size="6">VisIt</font><font size="6"> 1.0.1 Release 
+Notes</font></b></p>
+<p>Welcome to VisIt's release notes page. This page describes the important 
+enhancements and bug-fixes that were added to this release.</p>
+<p><b><font size="4">Features added in version 1.0.1</font></b></p>
+<ul>
+  <li>Interactive tools go away when they no longer apply.</li>
+  <li>Alias Wavefront OBJ file writer now writes out a single file per time 
+  step. It also performs correctly in parallel.</li>
+  <li>Plots with errors do not automatically redraw. The &quot;Draw&quot; button must be 
+  clicked to force them redraw.</li>
+  <li>When a compute engine is interrupted, it stops generating the plots in the 
+  plot list instead of moving on to the next unrealized plot.</li>
+  <li>Help chapter pages now have links to sub-pages.</li>
+  <li>Certain functions in the <i>VisIt Python Interface</i> now have return values.</li>
+  <li>VisIt now provides a setting in the File Selection Window that allows you to start in the current directory.</li>
+  <li>Data files can be reloaded so VisIt picks up any changes that were made to a file since it was opened. </li>
+  <li>Plots with errors can now be hidden in the plot list.</li>
+</ul>
+<p><b><font size="4">Bugs fixed in version 1.0.1</font></b></p>
+<ul>
+  <li>Parallel VisIt hangs on sliced mesh after normal mesh plot.</li>
+  <li>Deleting curve plots that are tied to an interactive Lineout operator 
+  crashes the viewer.</li>
+  <li>VisIt's viewer crashes on riptide when a window s deleted.</li>
+  <li>Transforming a vector plot crashes the compute engine.</li>
+  <li>Window 1 must exist for animation to work.</li>
+  <li>After stepping through an animation, random time-steps are displayed.</li>
+  <li>Some beam data files cause empty output and plot errors.</li>
+  <li>Transparent plots don't go away when you are in navigate bbox mode.</li>
+  <li>"Apply to all operators" toggle doesn't affect subset selection.</li>
+  <li>Strange mesh line disappearing behavior on sub-meshes.</li>
+  <li>The viewer is telling the GUI that a plot is finished when it is not.</li>
+  <li>The up axis text field in the Arbitrary slice window should not be enabled 
+  unless the slice is projected to 2d.</li>
+  <li>Animation goes nuts when the last plot is deleted.</li>
+  <li>The Lineout operator matches the Curve plot using the name and version of 
+  the plug-in.</li>
+  <li>VisIt now reports a better error message when an invalid filename is specified.</li>
+  <li>Pick should not report z-coordinate when picking a 2D database.</li>
+  <li>The vis window's zoom mode makes reference lines disappear.</li>
+  <li>Pick throws out "default" variable if the user adds another variable to the Pick Window's picked variable list.</li>
+  <li>The Pick Window incorrectly reports a domain of -1 for single-domain databases.</li>
+  <li>Ghost zones are not removed properly for a file with two meshes.</li>
+</ul>
+<p>Click the following link to view the release notes for the previous version 
+of VisIt: <a href="relnotes1.0.html">VisIt 1.0 Release Notes</a>.</p>
+<p>Click the following link to view the release notes for the next version 
+of VisIt: <a href="relnotes1.0.2.html">VisIt 1.0.2 Release Notes</a>.</p>
+
+</body>
+
+</html>

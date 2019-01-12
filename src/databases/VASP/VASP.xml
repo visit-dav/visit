@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+  <Plugin name="VASP" type="database" label="VASP" version="1.0" enabled="true" mdspecificcode="false" onlyengine="false" noengine="false" dbtype="MTSD" haswriter="false" hasoptions="false">
+    <FilePatterns>
+      OUT*
+      POS*
+      CHG*
+      CONT*
+      XDAT*
+    </FilePatterns>
+    <Files components="M">
+      avtVASPFileFormat.C
+      avtOUTCARFileFormat.C
+      avtCHGCARFileFormat.C
+      avtPOSCARFileFormat.C
+      avtXDATFileFormat.C
+    </Files>
+    <Files components="E">
+      avtVASPFileFormat.C
+      avtOUTCARFileFormat.C
+      avtCHGCARFileFormat.C
+      avtPOSCARFileFormat.C
+      avtXDATFileFormat.C
+    </Files>
+    <Attribute name="" purpose="" persistent="true" exportAPI="" exportInclude="" codefile="VASP.code">
+      <Function name="VASPCommonPluginInfo::SetupDatabase" user="false" member="true">
+      </Function>
+    </Attribute>
+  </Plugin>

@@ -1,0 +1,15 @@
+---------------------------------
+VisIt Plugin for NIMROD HDF5 Data
+---------------------------------
+
+This plugin reads NIMROD HDF5 as described in nimrod.pdf. The plugin will 
+handle only three-dimensional structured meshes in Cartesian coordinates.
+
+This plugin requires that VisIt is compiled with HDF5 support.
+
+-----------------------------------------------------------------------------
+Developer: Cristina Seigerist, CESiegerist@lbl.gov
+           Visualization Group, Computational Research Division
+           Lawrence Berkeley National Laboratory, Berkeley, CA
+Date:      April 23, 2007
+-----------------------------------------------------------------------------

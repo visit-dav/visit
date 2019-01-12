@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+  <Plugin name="InverseGhostZone" type="operator" label="Inverse Ghost Zone" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" iconFile="InverseGhostZone.xpm" category="Debugging">
+    <Attribute name="InverseGhostZoneAttributes" purpose="This class contains attributes for the inverse ghost zone operator." persistent="true" keyframe="true" exportAPI="" exportInclude="">
+      <Field name="requestGhostZones" label="Request Ghost Zones" type="bool">
+        true
+      </Field>
+      <Field name="showDuplicated" label="Show Zones That Are Duplicated At Domain Boundaries" type="bool">
+        true
+      </Field>
+      <Field name="showEnhancedConnectivity" label="Show Enhanced Connectivity Zones" type="bool">
+        true
+      </Field>
+      <Field name="showReducedConnectivity" label="Show Reduced Connectivity Zones" type="bool">
+        true
+      </Field>
+      <Field name="showAMRRefined" label="Show zones refined out by finer patches (AMR)" type="bool">
+        true
+      </Field>
+      <Field name="showExterior" label="Show cells on exterior of data set" type="bool">
+        true
+      </Field>
+      <Field name="showNotApplicable" label="Show zones deemed not applicable to problem" type="bool">
+        true
+      </Field>
+    </Attribute>
+  </Plugin>

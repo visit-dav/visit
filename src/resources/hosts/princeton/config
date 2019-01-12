@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<Object name="VisIt">
+    <Field name="Version" type="string">1.11.0</Field>
+    <Object name="VIEWER">
+        <Object name="DEFAULT_VALUES">
+            <Object name="GlobalAttributes">
+                <Field name="cloneWindowOnFirstRef" type="bool">true</Field>
+            </Object>
+        </Object>
+    </Object>
+</Object>

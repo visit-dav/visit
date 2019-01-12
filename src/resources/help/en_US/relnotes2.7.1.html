@@ -1,0 +1,50 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta http-equiv="Content-Language" content="en-us">
+   <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+   <meta name="ProgId" content="FrontPage.Editor.Document">
+   <title>VisIt 2.7.1 Release Notes</title>
+</head>
+<body>
+
+<center><b><font size="6">VisIt 2.7.1 Release Notes</font></b></center>
+
+<p>Welcome to VisIt's release notes page. Release 2.7.1 is primarily a
+bug fix release to release 2.7. It fixes additional bugs in release
+2.7.  Look <a href="relnotes2.7.0.html">here</a> to see a complete
+list of changes in release 2.7.</p>
+
+<p><b><font size="4">Bugs fixed in version 2.7.1</font></b></p>
+<ul>
+<li>The VTK reader was fixed so that non-integral ORIGIN specifications for StructuredPoints datasets are handled correctly.</li>
+<li>The BOUT reader was fixed so that it will work properly when VisIt is started in a directory other than the one containing the data files.</li>
+<li>The OnionPeel operater was modified to properly handle the case where the seed cell was specified as a global cell number and material interface reconstruction was applied.</li>
+<li>The OpenFOAM reader now accepts '*.foam' files as long as they are in the same directory as the controlDict.</li>
+<li>Sampling options have been added to the Lineout query widget. They apply on a per-lineout basis and override the global settings available in the Controls->Lineout window.</li>
+<li>Memory leaks in the viewer related to operator-created-expressions have been fixed.</li>
+<li>Running the python interpreter no longer fails when running a version of Vist that is not the newest one installed when more than one version of VisIt is installed in the same location.</li>
+<li>A bug that could cause opening a Nek5000 file to fail if the user had a visit config file saved from version 2.6.x has been corrected.</li>
+<li>Tickmarks and gridlines are now properly drawn when saving a window in non screen-capture mode.</li>
+</ul>
+
+<p><b><font size="4">Enhancements in version 2.7.1</font></b></p>
+<ul>
+<li>The basic NetCDF reader was enhanced to load zone-centered variants of all variables under the 'as_zonal' submenu.</li>
+<li>The BOUT reader was enhanced so that it will read grids with a circular geometry and grids with two X points.</li>
+</ul>
+
+<a name="Dev_changes"></a>
+<p><b><font size="4">Changes for VisIt developers in version 2.7.1</font></b></p>
+<ul>
+<li>The windows source distribution has been fixed so that a binary distribution can be sucessfully build from it (the _PACKAGE target).</li>
+<li>An AMRTest reader was added that demonstrates how to create a simple AMR database reader. It generates the data internally. To use the reader you should create a zero length file that ends with ".amrtest" and open it. It has 6 levels and has a single variable that creates a Mandelbrot image. It also works with the 2d multi resolution capabilities. To invoke them bring up the "Rendering options" window and select "Multi resolution for 2d AMR data" on the "Basic" tab.</li>
+</ul>
+
+
+<p>Click the following link to view the release notes for the previous
+version of VisIt: <a href="relnotes2.7.0.html">VisIt 2.7 Release Notes</a>.</p>
+
+</body>
+</html>

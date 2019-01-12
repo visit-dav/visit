@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+  <Plugin name="MultiresControl" type="operator" label="MultiresControl" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" category="Selection">
+    <CXXFLAGS>
+      ${VISIT_INCLUDE_DIR}/avt/Database/Ghost
+    </CXXFLAGS>
+    <Attribute name="MultiresControlAttributes" purpose="" persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="MultiresControlAttributes.code">
+      <Field name="resolution" label="" type="int">
+        0
+      </Field>
+      <Field name="maxResolution" label="Number of available resolutions" type="int">
+        1
+      </Field>
+      <Field name="info" label="Info" type="string" enabler="resolution:-1">
+      </Field>
+      <Function name="resolutionLevelChanged" user="false" member="true">
+      </Function>
+      <Function name="resolutionProcessText" user="false" member="true">
+      </Function>
+    </Attribute>
+  </Plugin>

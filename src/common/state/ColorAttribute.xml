@@ -1,0 +1,58 @@
+<?xml version="1.0"?>
+  <Attribute name="ColorAttribute" purpose="This class contains RGBA color information" persistent="true" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="ColorAttribute.code">
+    <Field name="color" label="color" type="ucharArray" length="4">
+      0
+      0
+      0
+      255
+    </Field>
+    <Function name="ColorAttribute" user="true" member="true">
+    </Function>
+    <Function name="ColorAttribute2" user="true" member="true">
+    </Function>
+    <Function name="ColorAttribute3" user="true" member="true">
+    </Function>
+    <Function name="SetRgb" user="true" member="true">
+    </Function>
+    <Function name="GetRgb" user="true" member="true">
+    </Function>
+    <Function name="SetRgba" user="true" member="true">
+    </Function>
+    <Function name="GetRgba" user="true" member="true">
+    </Function>
+    <Function name="SetRed" user="true" member="true">
+    </Function>
+    <Function name="SetGreen" user="true" member="true">
+    </Function>
+    <Function name="SetBlue" user="true" member="true">
+    </Function>
+    <Function name="SetAlpha" user="true" member="true">
+    </Function>
+    <Function name="Red" user="true" member="true">
+    </Function>
+    <Function name="Green" user="true" member="true">
+    </Function>
+    <Function name="Blue" user="true" member="true">
+    </Function>
+    <Function name="Alpha" user="true" member="true">
+    </Function>
+    <Function name="CreateNode" user="false" member="true">
+    </Function>
+    <Function name="SetRgba2" user="true" member="true">
+    </Function>
+    <Function name="SetByName" user="true" member="true">
+    </Function>
+    <Function name="GetByName" user="true" member="true">
+    </Function>
+    <Function name="RgbStrToRgb" user="true" member="true">
+    </Function>
+    <Function name="RgbToRgbStr" user="true" member="true">
+    </Function>
+    <Function name="Blend" user="true" member="true">
+    </Function>
+    <Constant name="namedColors" member="false">
+    </Constant>
+    <Include file="source" quoted="false">
+      cstring 
+    </Include>
+  </Attribute>

@@ -1,0 +1,46 @@
+<?xml version="1.0"?>
+  <Attribute name="MaterialAttributes" purpose="Attributes to control material interface reconstruction" persistent="true" keyframe="true" exportAPI="STATE_API" exportInclude="state_exports.h">
+    <Enum name="Algorithm">
+      EquiT
+      EquiZ
+      Isovolume
+      PLIC
+      Discrete
+    </Enum>
+    <Field name="smoothing" label="Enable interface smoothing" type="bool">
+      false
+    </Field>
+    <Field name="forceMIR" label="Force interface reconstruction" type="bool">
+      false
+    </Field>
+    <Field name="cleanZonesOnly" label="Clean zones only" type="bool">
+      false
+    </Field>
+    <Field name="needValidConnectivity" label="Force perfect connectivity" type="bool">
+      false
+    </Field>
+    <Field name="algorithm" label="Algorithm" type="enum" subtype="Algorithm">
+      EquiZ
+    </Field>
+    <Field name="iterationEnabled" label="Iteration enabled" type="bool">
+      false
+    </Field>
+    <Field name="numIterations" label="Number of iterations" type="int">
+      5
+    </Field>
+    <Field name="iterationDamping" label="Iteration damping factor" type="float">
+      0.4
+    </Field>
+    <Field name="simplifyHeavilyMixedZones" label="Simplify Heavily Mixed Zones" type="bool">
+      false
+    </Field>
+    <Field name="maxMaterialsPerZone" label="Maximum Materials Per Zone" type="int" enabler="simplifyHeavilyMixedZones:true">
+      3
+    </Field>
+    <Field name="isoVolumeFraction" label="VF for Isovolume" type="float" enabler="algorithm:Isovolume">
+      0.500000
+    </Field>
+    <Field name="annealingTime" label="Maximum time for simulated annealing." type="int" enabler="algorithm:Discrete">
+      10
+    </Field>
+  </Attribute>

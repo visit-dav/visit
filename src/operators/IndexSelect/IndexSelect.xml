@@ -1,0 +1,74 @@
+<?xml version="1.0"?>
+  <Plugin name="IndexSelect" type="operator" label="Index Select" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" iconFile="IndexSelect.xpm" category="Selection">
+    <Attribute name="IndexSelectAttributes" purpose="This class contains attributes for the index select operator." persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="IndexSelectAttributes.code">
+      <Enum name="Dimension">
+        OneD
+        TwoD
+        ThreeD
+      </Enum>
+      <Field name="maxDim" label="MaxDimension" type="enum" subtype="Dimension">
+        ThreeD
+      </Field>
+      <Field name="dim" label="Dimension" type="enum" subtype="Dimension">
+        TwoD
+      </Field>
+      <Field name="xAbsMax" label="X-absolute-Max" type="int">
+        -1
+      </Field>
+      <Field name="xMin" label="X-Min" type="int">
+        0
+      </Field>
+      <Field name="xMax" label="X-Max" type="int">
+        -1
+      </Field>
+      <Field name="xIncr" label="X-Incr" type="int">
+        1
+      </Field>
+      <Field name="xWrap" label="X-Wrap" type="bool">
+        false
+      </Field>
+      <Field name="yAbsMax" label="Y-absolute-Max" type="int">
+        -1
+      </Field>
+      <Field name="yMin" label="Y-Min" type="int" enabler="dim:TwoD,ThreeD">
+        0
+      </Field>
+      <Field name="yMax" label="Y-Max" type="int">
+        -1
+      </Field>
+      <Field name="yIncr" label="Y-Incr" type="int">
+        1
+      </Field>
+      <Field name="yWrap" label="Y-Wrap" type="bool">
+        false
+      </Field>
+      <Field name="zAbsMax" label="Z-absolute-Max" type="int">
+        -1
+      </Field>
+      <Field name="zMin" label="Z-Min" type="int" enabler="dim:ThreeD">
+        0
+      </Field>
+      <Field name="zMax" label="Z-Max" type="int">
+        -1
+      </Field>
+      <Field name="zIncr" label="Z-Incr" type="int">
+        1
+      </Field>
+      <Field name="zWrap" label="Z-Wrap" type="bool">
+        false
+      </Field>
+      <Field name="useWholeCollection" label="useWholeCollection" type="bool">
+        true
+      </Field>
+      <Field name="categoryName" label="Category" type="string" enabler="useWholeCollection:false">
+        Whole
+      </Field>
+      <Field name="subsetName" label="Set" type="string" enabler="useWholeCollection:false">
+        Whole
+      </Field>
+      <Function name="ProcessOldVersions" user="true" member="true">
+      </Function>
+      <Function name="IndexSelectViewerEnginePluginInfo::InitializeOperatorAtts" user="false" member="true">
+      </Function>
+    </Attribute>
+  </Plugin>

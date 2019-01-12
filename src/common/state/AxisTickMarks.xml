@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+  <Attribute name="AxisTickMarks" purpose="Contains the tick mark properties for one axis." persistent="true" keyframe="true" exportAPI="STATE_API" exportInclude="state_exports.h">
+    <Field name="visible" label="Visible" type="bool">
+        true
+    </Field>
+    <Field name="majorMinimum" label="Major minimum" type="double">
+        0.
+    </Field>
+    <Field name="majorMaximum" label="Major maximum" type="double">
+        1.
+    </Field>
+    <Field name="minorSpacing" label="Minor spacing" type="double">
+        0.02
+    </Field>
+    <Field name="majorSpacing" label="Major spacing" type="double">
+        0.2
+    </Field>
+  </Attribute>

@@ -1,0 +1,55 @@
+Target: xml2sim
+Function: simv2_VariableMetaData_check
+Declaration: SIMV2_API int simv2_VariableMetaData_check(visit_handle);
+Definition:
+int
+simv2_VariableMetaData_check(visit_handle h)
+{
+    VisIt_VariableMetaData *obj = GetObject(h, "simv2_VariableMetaData_check");
+    int retval = VISIT_ERROR;
+    if(obj != NULL)
+    {
+        if(obj->name == "")
+        {
+            VisItError("VariableMetaData needs a name");
+            return VISIT_ERROR;
+        }
+        if(obj->meshName == "")
+        {
+            VisItError("VariableMetaData needs a mesh name");
+            return VISIT_ERROR;
+        }
+        // Check/override the number of components.
+        switch(obj->type)
+        {
+        case VISIT_VARTYPE_SCALAR:
+        case VISIT_VARTYPE_MATERIAL:
+        case VISIT_VARTYPE_MATSPECIES:
+        case VISIT_VARTYPE_MESH:
+        case VISIT_VARTYPE_CURVE:
+            obj->numComponents = 1;
+            break;
+        case VISIT_VARTYPE_VECTOR:
+            obj->numComponents = 3;
+            break;
+        case VISIT_VARTYPE_TENSOR:
+            obj->numComponents = 9;
+            break;
+        case VISIT_VARTYPE_SYMMETRIC_TENSOR:
+            obj->numComponents = 6;
+            break;
+        case VISIT_VARTYPE_LABEL:
+        case VISIT_VARTYPE_ARRAY:
+            if(obj->numComponents < 1)
+            {
+                VisItError("VariableMetaData needs numComponents >= 1 for labels and arrays.");
+                return VISIT_ERROR;
+            }
+            break;
+        }
+
+        retval = VISIT_OKAY;
+    }
+    return retval;
+}
+

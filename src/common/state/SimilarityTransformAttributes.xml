@@ -1,0 +1,67 @@
+<?xml version="1.0"?>
+  <Attribute name="SimilarityTransformAttributes" purpose="This class contains attributes for the similarity transform." persistent="true" keyframe="true" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="SimilarityTransformAttributes.code">
+    <Enum name="AngleType">
+      Deg
+      Rad
+    </Enum>
+    <Field name="doRotate" label="Rotate" type="bool">
+      false
+    </Field>
+    <Field name="rotateOrigin" label="Origin" type="doubleArray" length="3" enabler="doRotate:true">
+      0.000000
+      0.000000
+      0.000000
+    </Field>
+    <Field name="rotateAxis" label="Axis" type="doubleArray" length="3" enabler="doRotate:true">
+      0.000000
+      0.000000
+      1.000000
+    </Field>
+    <Field name="rotateAmount" label="Amount" type="double" enabler="doRotate:true">
+      0.000000
+    </Field>
+    <Field name="rotateType" label="Rotate" type="enum" subtype="AngleType" enabler="doRotate:true">
+      Deg
+    </Field>
+    <Field name="doScale" label="Scale" type="bool">
+      false
+    </Field>
+    <Field name="scaleOrigin" label="Origin" type="doubleArray" length="3" enabler="doScale:true">
+      0.000000
+      0.000000
+      0.000000
+    </Field>
+    <Field name="scaleX" label="X" type="double" enabler="doScale:true">
+      1.000000
+    </Field>
+    <Field name="scaleY" label="Y" type="double" enabler="doScale:true">
+      1.000000
+    </Field>
+    <Field name="scaleZ" label="Z" type="double" enabler="doScale:true">
+      1.000000
+    </Field>
+    <Field name="doTranslate" label="Translate" type="bool">
+      false
+    </Field>
+    <Field name="translateX" label="X" type="double" enabler="doTranslate:true">
+      0.000000
+    </Field>
+    <Field name="translateY" label="Y" type="double" enabler="doTranslate:true">
+      0.000000
+    </Field>
+    <Field name="translateZ" label="Z" type="double" enabler="doTranslate:true">
+      0.000000
+    </Field>
+    <Field name="transformVectors" label="transformVectors" type="bool">
+      true
+    </Field>
+    <Function name="CopyAttributes" user="false" member="true">
+    </Function>
+    <Function name="CreateCompatible" user="false" member="true">
+    </Function>
+    <Function name="SetFromNode" user="false" member="true">
+    </Function>
+    <Include file="source" quoted="false">
+      BoxExtents.h
+    </Include>
+  </Attribute>

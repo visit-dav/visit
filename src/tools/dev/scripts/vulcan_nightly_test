@@ -1,0 +1,170 @@
+#!/bin/sh
+
+# Function: vulcan_test
+#
+#    destDir : The destination directory that contains tarballs, etc.
+#    tmpDir  : The temporary directory where we'll install.
+#    user    : The local username.
+#    vulcanbank : The bank to use on vulcan.
+#    testhost   : The host that runs the test suite.
+#
+# Notes: We install the vulcan build of VisIt and then make a script for
+#        surface that uses the existing build, which would have completed by now,
+#        to fire off a run of some test suite commands that do client/server to
+#        the vulcan installation.
+#
+function vulcan_test
+{
+    destDir=$1
+    tmpDir=$2
+    user=$3
+    vulcanbank=$4
+    testhost=$5
+    datahost=$6
+    submit=$7
+    workingDir="nightly_install"
+
+    #echo "destDir=$destDir"
+    #echo "tmpDir=$tmpDir"
+    #echo "user=$user"
+    #echo "vulcanbank=$vulcanbank"
+    #echo "testhost=$testhost"
+    #echo "datahost=$datahost"
+    #echo "submit=$submit"
+
+    # Create the install container directory.
+    echo "Removing any old installs at: $tmpDir/$user/$workingDir"
+    rm -rf $tmpDir/$user/$workingDir
+    mkdir $tmpDir/$user/$workingDir
+
+    # Install the vulcan binary distribution to a temporary directory
+    ver=`cat $destDir/VERSION`
+    cd $destDir
+    ./visit-install -c llnl_open_cz -b $vulcanbank $ver linux-ppc64-BGQ $tmpDir/$user/$workingDir
+    if test ! -e $tmpDir/$user/$workingDir/bin/visit ; then
+        echo "vulcan_test: VisIt for BGQ was not installed."
+        return 1
+    fi
+
+    cd $tmpDir/$user/$workingDir
+    # Make a testing script that we can scp to surface and submit to msub.
+    testscript="vulcan_${testhost}_test"
+    rm -f $testscript
+
+    # If we're not submitting the job then limit the number of procs since
+    # the script will run on the login node.
+    if test "$submit" == "no" ; then
+        limitprocs="-n 1"
+    fi
+
+cat <<EOF > $testscript
+#!/bin/sh
+##############################################################################
+cd $tmpDir/$user
+if test -e vulcan_test ; then
+    rm -rf vulcan_test
+fi
+mkdir vulcan_test
+
+# list of tests to run. 2 tests for now...
+TESTS="$tmpDir/$user/test_trunk/test/tests"
+testlist="\$TESTS/databases/bov.py \$TESTS/rendering/scalable.py"
+
+# Run the test suite with arguments that make it use data and the engine on vulcan.
+# NOTE: This relies on the regular surface test suite already running since the 
+#       runtest script and all tests/data are from that test suite.
+#
+# HACK: Adding -debug 1 since it seems to work better for some reason.
+#
+cd $tmpDir/$user/test_trunk/test
+./runtest $limitprocs --no-timings --vargs "-debug 1" --data-host $datahost.llnl.gov --host-profile-dir $tmpDir/$user/test_trunk/src/resources/hosts/llnl --parallel-launch "-dir $tmpDir/$user/$workingDir -b $vulcanbank" -o $tmpDir/$user/vulcan_test -m scalable,parallel,icet \$testlist
+echo "Test completed at: \`date\`"
+
+# FUTURE WORK: add code to post the results to LBL. Borrow from regressiontest_surface script.
+
+##############################################################################
+EOF
+    chmod 750 $testscript
+
+    # Run the test suite.
+    scp $testscript $testhost:$testscript
+    if test "$submit" == "no" ; then
+        ssh $testhost ./$testscript
+    else
+        subTag=`date +%Y-%m-%d-%H:%M`
+        ssh $testhost "msub -l nodes=1:ppn=12 -l gres=ignore -l walltime=12:00:00 -o $testscript_$subTag.out -q pbatch -A wbronze -z ./$testscript"
+    fi
+    return 0
+}
+
+function main
+{
+    # Defaults
+    user=`whoami`
+    tmpDir="/nfs/tmp2/"
+    tonight=`date "+visit%Y-%m-%d"`
+    vulcanbank="sspwork"
+    testhost="surface"
+    datahost="vulcan"
+    submit="no"
+
+    # Handle command line args.
+    for abc
+    do
+        case $1 in
+            -user)
+                 user=$2
+                 shift 2
+                 ;;
+            -tmpdir)
+                 tmpDir=$2
+                 shift 2
+                 ;;
+            -tonight)
+                 tonight=$2
+                 shift 2
+                 ;;
+            -vulcanbank)
+                 vulcanbank=$2
+                 shift 2
+                 ;;
+            -testhost)
+                 testhost=$2
+                 shift 2
+                 ;;
+            -datahost)
+                 datahost=$2
+                 shift 2
+                 ;;
+            -submit)
+                 submit="yes"
+                 shift
+                 ;;
+        esac
+    done
+
+    # Make sure that there is a destination directory for tonight's tarball.
+    if test ! -e $HOME/visit_nightly; then
+        mkdir $HOME/visit_nightly
+    fi
+    if test ! -e $HOME/visit_nightly/$tonight; then
+        mkdir $HOME/visit_nightly/$tonight
+    fi
+    chmod 755 $HOME/visit_nightly
+    chmod 755 $HOME/visit_nightly/$tonight
+
+    # Make sure that there's a temp directory.
+    if test ! -e $tmpDir/$user; then
+        mkdir $tmpDir/$user
+    fi
+
+    # Do some tests for vulcan
+    vulcan_test $HOME/visit_nightly/$tonight $tmpDir $user $vulcanbank $testhost $datahost $submit
+    if [[ $? != 0 ]] ; then
+        echo "Nightly vulcan testing could not be completed. `date`" 
+        exit 1
+    fi
+}
+
+# Run main
+main $@

@@ -1,0 +1,56 @@
+<?xml version="1.0"?>
+  <Plugin name="Exodus" label="Exodus" type="database" dbtype="MTSD" version="1.0" hasoptions="true">
+    <FilePatterns>
+    *.ex
+    *.e
+    *.exo
+    *.ex2
+    *.exii
+    *.exoii
+    *.e.#.#
+    *.e.##.##
+    *.e.###.###
+    *.e.####.####
+    *.e.#####.#####
+    *.ex.#.#
+    *.ex.##.##
+    *.ex.###.###
+    *.ex.####.####
+    *.ex.#####.#####
+    *.exo.#.#
+    *.exo.##.##
+    *.exo.###.###
+    *.exo.####.####
+    *.exo.#####.#####
+    *.ex2.#.#
+    *.ex2.##.##
+    *.ex2.###.###
+    *.ex2.####.####
+    *.ex2.#####.#####
+    *.exii.#.#
+    *.exii.##.##
+    *.exii.###.###
+    *.exii.####.####
+    *.exii.#####.#####
+    *.gen
+    *.exodus
+    *.nemesis
+    </FilePatterns>
+    <Files components="M,E">
+      avtExodusFileFormat.C
+      avtExodusOptions.C
+    </Files>
+    <CXXFLAGS>
+      ${NETCDF_INCLUDE_DIR}
+    </CXXFLAGS>
+    <LDFLAGS>
+      ${NETCDF_LIBRARY_DIR}
+    </LDFLAGS>
+    <LIBS>
+      ${NETCDF_LIB}
+    </LIBS>
+    <Attribute name="" purpose="" persistent="true" exportAPI="" exportInclude="" codefile="Exodus.code">
+      <Function name="ExodusCommonPluginInfo::SetupDatabase" user="false" member="true">
+      </Function>
+    </Attribute>
+  </Plugin>

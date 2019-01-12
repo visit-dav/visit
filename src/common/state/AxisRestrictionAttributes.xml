@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+  <Attribute name="AxisRestrictionAttributes" purpose="Attributes for axis restrictions" persistent="true" exportAPI="STATE_API" exportInclude="state_exports.h">
+    <Field name="names" label="names" type="stringVector">
+    </Field>
+    <Field name="minima" label="minima" type="doubleVector">
+    </Field>
+    <Field name="maxima" label="maxima" type="doubleVector">
+    </Field>
+  </Attribute>

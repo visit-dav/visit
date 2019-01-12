@@ -1,0 +1,374 @@
+#!/bin/ksh
+# Script: visit_ss (VisIt scaling study)
+#
+# Purpose:
+#     Performs a scaling study.  Tests VisIt, but also tests the underlying
+#     machine.
+# 
+# Arguments:
+#     "-v"    Execute in a verbose mode.
+#
+# Outputs:    This script produces a file called visit_ss.stats, which
+#             contains a summary of the runs.
+#
+# Notes:      This script will create a temporary data file to be processed
+#             by VisIt.  It will create the file in the current working 
+#             directory.  It is important that your parallel engine be able
+#             to access the directory this data file is generated in.
+#
+# Programmer: Hank Childs
+# Creation:   January 26, 2007
+#
+# *****************************************************************************
+
+# *****************************************************************************
+# BEGIN USER MODIFYABLE SECTION
+# *****************************************************************************
+
+# Should we use one big data set, or should we use a constant amount of data
+# per processor.
+FIXED_SIZE="no"  # or "yes"
+
+# If we use one big data set, then this is the number of points in one
+# direction.  The total number of points would be DS_SIZE^3.
+#DS_SIZE="2048"
+DS_SIZE="28"
+
+# If we use a constant amount of data, then this is the number of data points
+# per processor
+#PER_PROC_SIZE=10000000
+PER_PROC_SIZE=10000000
+
+# One test will be run for each of these processor counts.
+PROC_COUNTS="2 4 8 16 32 64"
+PROCS_PER_NODE=2
+
+# These are the arguments for launching the engine with the command 
+# OpenComputeEngine in VisIt's Python-based command line interface.
+# Note: PROC_COUNT and NODE_COUNT are special keywords that this script will
+# replace for each processor count.  (Processor counts are obtained above 
+# from $PROC_COUNTS ... note a trailing 'S'.)
+#
+# More information can be obtained about these launch arguments by running
+# "visit -fullhelp", where they are documented under "Parallel launch options".
+#
+#ENGINE_LAUNCH_ARGS="(\"-np\", PROC_COUNT, \"-nn\", NODE_COUNT)"
+#
+ENGINE_LAUNCH_ARGS="(\"-np\", PROC_COUNT, \"-nn\", NODE_COUNT, \"-dir\", \"/usr/gapps/visit\", \"-l\", \"psub/srun\", \"-p\", \"sphere,pbatch\", \"-b\", \"bdivp\", \"-t\", \"30m\")"
+
+
+# *****************************************************************************
+# END USER MODIFYABLE SECTION
+# *****************************************************************************
+
+
+# *****************************************************************************
+# Function: check_setup
+# Purpose:  Look for obvious problems.
+# Note:     Other functions in this script assume that check_setup is called
+#           first.
+# *****************************************************************************
+function check_setup
+{
+   visit_path=$(whence visit)
+   if [[ $? != 0 ]] ; then
+       echo "Cannot locate VisIt.  Please put VisIt in your path"
+       exit 1
+   fi
+
+   # Create the big data file
+   whence visitconvert > /dev/null
+   if [[ $? != 0 ]] ; then
+       echo "Cannot locate \"visitconvert\", which is used to create the large "
+       echo "data set used for scaling studies"
+       exit 1
+   fi
+}
+
+
+# *****************************************************************************
+# Function: create_data
+# Arguments:
+#    $1:    The data set size
+# Purpose:  Creates data to be used for scaling study.
+# *****************************************************************************
+function create_data
+{
+   # Start by trying to locate the file noise.silo
+
+   # We know this will return a valid value, because we checked for it in 
+   # check_setup.
+   visit_path=$(whence visit)
+   # strip off "/visit"
+   path1=${visit_path%/*}
+
+   if [[ $path1 == "." ]] ; then
+       noise_loc="../data/noise.silo"
+   else
+       # strip off "/bin" from /bin/visit
+       path2=${path1%/*}
+       noise_loc="$path2/data/noise.silo"
+   fi
+
+   # See if we found the file and exit if not.
+   if [[ ! -f $noise_loc ]] ; then
+       echo "Cannot locate the data file \"noise.silo\".  This file is"
+       echo "necessary to do the scaling study.  This script tries to locate"
+       echo "that file by looking in a location relative to the location of"
+       echo "the VisIt program.  This test can fail if you have set up an "
+       echo " alias for \"visit\" or if the file noise.silo is not located "
+       echo "in the data directory.  The script looked for the file "
+       echo "at ${noise_loc}."
+       exit 1
+   fi
+
+   echo "Making data set of size $1"
+   visitconvert $noise_loc noise BOV -target_chunks 512 -target_zones $1 -variable hardyglobal 2>/dev/null
+
+   # VisIt 1.5.X has a bug where the data produced by visitconvert is read
+   # in incorrectly.  The bug is fixed in V1.6.  The way to sidestep this
+   # bug is to remove two lines from the noise.bov header file that was
+   # generated.
+   cat noise.bov | grep -v PALETTE > noise2.bov
+   mv -f noise2.bov noise.bov
+}
+
+
+# ****************************************************************************
+#  Function:  generate_script
+#  Arguments:
+#    $1:      The number of processors to run with.
+#  Purpose:   Generates a Python script for VisIt to run in batch.
+# ****************************************************************************
+function generate_script
+{
+    # This will generate a script that will launch a compute engine with 
+    # $1 processors, open the data file we generated, make a contour with
+    # 10 isolevels, and save a window.
+    PROC_STRING=$1
+    NODE_STRING=$(echo "print $1/$PROCS_PER_NODE" | python)
+    script="
+OpenComputeEngine(\"localhost\", $ENGINE_LAUNCH_ARGS)\n\
+r = RenderingAttributes()\n\
+r.scalableActivationMode = r.Always\n\
+SetRenderingAttributes(r)\n\
+OpenDatabase(\"noise.bov\")\n\
+AddPlot(\"Contour\", \"hardyglobal\")\n\
+DrawPlots()\n\
+SaveWindow()\n\
+CloseComputeEngine()\n\
+import sys\n\
+sys.exit()\n"
+    echo $script | sed "s/PROC_COUNT/\"${PROC_STRING}\"/g" | sed "s/NODE_COUNT/\"${NODE_STRING}\"/g" > visit_ss.py
+}
+
+
+# ****************************************************************************
+#  Function: run_visit
+#  Purpose:  Runs VisIt using the script visit_ss.py
+# ****************************************************************************
+function run_visit
+{
+    verbose_flag=""
+    if [[ "$verbose" == true ]] ; then
+        verbose_flag="-verbose"
+    fi
+
+    # Stride of 100000 will guarantee that only processor 0 will output timing
+    # info.  (Don't overwhelm file system!)
+    #visit -nowin -cli -s visit_ss.py -timing -withhold-timing-output -timing-processor-stride 100000
+    visit -nowin -cli -s visit_ss.py -timing -withhold-timing-output $verbose_flag
+}
+
+
+# *****************************************************************************
+#  Function: get_number
+#  Arguments:
+#    $*:     A string obtained from a text file.
+#  Returns:  Puts the number in an environment variable called "$num"
+#  Purpose:  Gets the first number in the string.
+# *****************************************************************************
+function get_number
+{
+   for i in $* ; do
+      if [[ "$i" == "0" ]] ; then
+          num=$i
+          return 0
+      fi
+      decimalGrabber=$(echo $i | grep "\.")
+      if [[ "$decimalGrabber" != "" ]] ; then
+          num=$i
+          return 0
+      fi
+   done
+
+   num="0"
+   return 1
+}
+
+# *****************************************************************************
+#  Function: get_stats
+#  Arguments:
+#    $*:     A list of numbers
+#  Returns:  Puts statistics in an environment variable called "$stats"
+#  Purpose:  Gets statistics from a list of numbers
+# *****************************************************************************
+function get_stats
+{
+   # Build up a list
+   list=""
+   for i in $* ; do
+      list="$i, ${list}"
+   done
+
+   # Define the script as a string
+   script="\
+X=[$list]\n\
+min=X[0]\n\
+for i in range(len(X)):\n\
+  if (X[i]<min):\n\
+     min=X[i]\n\
+\n\
+max=X[0]\n\
+for i in range(len(X)):\n\
+  if (X[i]>max):\n\
+     max=X[i]\n\
+\n\
+sum=0.\n\
+for i in range(len(X)):\n\
+  sum=sum+X[i]\n\
+\n\
+avg=sum/len(X)\n\
+print \"Avg: %f, Min: %f, Max: %f\" %(avg, min, max)\n"
+   
+   stats=$(echo "$script" | python)
+}
+
+
+# ****************************************************************************
+#  Function: parse_output
+#  Arguments:
+#    $1:      The number of processors which generated output.
+#  Purpose:  Parses the output of the VisIt run ... engine_par.000.timings.
+# ****************************************************************************
+function parse_output
+{
+   X=0
+   myProcIO=""
+   waitIO=""
+   totalIO=""
+   contour=""
+   totalPipeline=""
+   parallelWait=""
+   myProcRender=""
+   parRender=""
+   
+   while (( X < $1 )) ; do
+      file=$(printf engine_par.%03d.timings $X)
+
+      rawMyProcIO=$(cat $file | grep "Reading dataset took")
+      get_number $rawMyProcIO
+      myProcIO="$myProcIO $num"
+
+      rawWaitIO=$(cat $file | grep "Waiting for all processors to catch up")
+      get_number $rawWaitIO
+      waitIO="$waitIO $num"
+
+      rawTotalIO=$(cat $file | grep "Getting data")
+      get_number $rawTotalIO
+      totalIO="$totalIO $num"
+
+      rawContour=$(cat $file | grep "avtContourFilter took")
+      get_number $rawContour
+      contour="$contour $num"
+
+      rawTotalPipeline=$(cat $file | grep "Executing network took")
+      get_number $rawTotalPipeline
+      totalPipeline="$totalPipeline $num"
+
+      if [[ "$X" == "0" ]] ; then
+         rawParallelWait=$(cat $file | grep "Collecting data")
+         get_number $rawParallelWait
+         parallelWait=$num
+      fi
+
+      rawMyProcRender=$(cat $file | grep "Screen capture for SR")
+      get_number $rawMyProcRender
+      myProcRender="$myProcRender $num"
+
+      rawParRender=$(cat $file | grep "Total time for NetworkManager::Render")
+      get_number $rawParRender
+      parRender="$parRender $num"
+
+      (( X += 1 ))
+   done
+ 
+   echo "\n\nStatistics for $1 processors:" >> visit_ss.stats
+   echo "-----------------------------" >> visit_ss.stats
+
+   get_stats $totalPipeline
+   echo "Total pipeline time: $stats" >> visit_ss.stats
+
+   get_stats $totalIO
+   echo "\tTotal time spent on I/O: $stats" >> visit_ss.stats
+   get_stats $myProcIO
+   echo "\t\tI/O on each processor: $stats" >> visit_ss.stats
+   get_stats $waitIO
+   echo "\t\tWaiting on other processor's I/O: $stats" >> visit_ss.stats
+   get_stats $contour
+   echo "\tTime spent contouring: $stats" >> visit_ss.stats
+   echo "\tTime spent waiting on processor 0 for all other processors to finish: $parallelWait" >> visit_ss.stats
+   echo " " >> visit_ss.stats
+   get_stats $parRender
+   echo "Time spent rendering: $stats" >> visit_ss.stats
+   get_stats $myProcRender
+   echo "\tTime spent doing GL draws: $stats" >> visit_ss.stats
+}
+
+
+#
+# Parse arguments to script.
+#
+
+verbose="false"
+while (( $# > 0 )) ; do
+   if [[ "$1" == "-v" ]] ; then
+       print "Running in verbose mode."
+       verbose="true"
+   else
+       print "Unknown argument: $1.  See script header for usage."
+       exit 1
+   fi
+   shift
+done
+export verbose
+
+#
+# Now actually perform the scaling study
+#
+check_setup
+
+if [[ "$FIXED_SIZE" == "yes" ]] ; then
+   S=$(echo "print ${DS_SIZE}*${DS_SIZE}*${DS_SIZE}" | python)
+   create_data $S
+fi
+
+for proc in $PROC_COUNTS ; do
+   print "Running with processor count $proc"
+   if [[ "$FIXED_SIZE" == "no" ]] ; then
+     S=$(echo "print $proc*$PER_PROC_SIZE" | python)
+     echo "Making a data set of size $S for processor count $proc"
+     create_data $S
+     echo "Done creating data"
+   fi
+
+   print "Generating the script"
+   generate_script $proc
+   print "Running VisIt"
+   run_visit
+   print "Parsing the output"
+   parse_output $proc
+   print "Done with processor count $proc"
+done
+
+

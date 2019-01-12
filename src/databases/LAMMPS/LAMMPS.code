@@ -1,0 +1,57 @@
+Target: xml2info
+Function: LAMMPSCommonPluginInfo::SetupDatabase
+Declaration: virtual avtDatabase * LAMMPSCommonPluginInfo::SetupDatabase(const char *const *list, int nList, int nBlock);
+Definition:
+// ****************************************************************************
+//  Method: LAMMPSCommonPluginInfo::SetupDatabase
+//
+//  Purpose:
+//      Sets up a LAMMPS database.
+//
+//  Arguments:
+//      list    A list of file names.
+//      nList   The number of timesteps in list.
+//      nBlocks The number of blocks in the list.
+//
+//  Returns:    A LAMMPS database from list.
+//
+//  Programmer: Jeremy Meredith
+//  Creation:   February  9, 2009
+//
+// ****************************************************************************
+
+avtDatabase *
+LAMMPSCommonPluginInfo::SetupDatabase(const char *const *list,
+                                   int nList, int nBlock)
+{
+    avtDatabase *db = 0;
+
+    //
+    // Create a file format interface.
+    //
+    avtFileFormatInterface *ffi = LAMMPS_CreateFileFormatInterface(list,
+                                                                   nList,
+                                                                   nBlock);
+
+    //
+    // If we created a file format interface, try creating a database.
+    //
+    if(ffi)
+    {
+        // Try and create the database using the interface that was created.
+        TRY
+        {
+            db = new avtGenericDatabase(ffi);
+        }
+        CATCH(VisItException)
+        {
+            delete ffi;
+            delete db;
+            RETHROW;
+        }
+        ENDTRY
+    }
+
+    return db;
+}
+

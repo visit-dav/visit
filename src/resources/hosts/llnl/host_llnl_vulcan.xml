@@ -1,0 +1,142 @@
+<?xml version="1.0"?>
+<Object name="MachineProfile">
+    <Field name="hostNickname" type="string">"LLNL Vulcan"</Field>
+    <Field name="host" type="string">vulcan.llnl.gov</Field>
+    <Field name="hostAliases" type="string">"vulcanlac#.llnl.gov vulcanlac#"</Field>
+    <Field name="directory" type="string">/usr/gapps/visit</Field>
+    <Field name="shareOneBatchJob" type="bool">false</Field>
+    <Field name="sshPortSpecified" type="bool">false</Field>
+    <Field name="sshPort" type="int">22</Field>
+    <Field name="sshCommandSpecified" type="bool">false</Field>
+    <Field name="sshCommand" type="stringVector">"" </Field>
+    <Field name="useGateway" type="bool">false</Field>
+    <Field name="gatewayHost" type="string"></Field>
+    <Field name="clientHostDetermination" type="string">MachineName</Field>
+    <Field name="manualClientHostName" type="string"></Field>
+    <Field name="tunnelSSH" type="bool">true</Field>
+    <Field name="maximumNodesValid" type="bool">false</Field>
+    <Field name="maximumNodes" type="int">1</Field>
+    <Field name="maximumProcessorsValid" type="bool">false</Field>
+    <Field name="maximumProcessors" type="int">1</Field>
+    <Object name="LaunchProfile">
+        <Field name="timeout" type="int">240</Field>
+        <Field name="numProcessors" type="int">16</Field>
+        <Field name="numNodesSet" type="bool">true</Field>
+        <Field name="numNodes" type="int">1</Field>
+        <Field name="partitionSet" type="bool">true</Field>
+        <Field name="partition" type="string">pdebug</Field>
+        <Field name="bankSet" type="bool">true</Field>
+        <Field name="bank" type="string">sspwork</Field>
+        <Field name="timeLimitSet" type="bool">true</Field>
+        <Field name="timeLimit" type="string">60</Field>
+        <Field name="launchMethodSet" type="bool">true</Field>
+        <Field name="launchMethod" type="string">srun</Field>
+        <Field name="forceStatic" type="bool">true</Field>
+        <Field name="forceDynamic" type="bool">false</Field>
+        <Field name="active" type="bool">false</Field>
+        <Field name="arguments" type="stringVector">"-fixed-buffer-sockets" </Field>
+        <Field name="parallel" type="bool">true</Field>
+        <Field name="launchArgsSet" type="bool">true</Field>
+        <Field name="launchArgs" type="string">"-o slurm.out"</Field>
+        <Field name="sublaunchArgsSet" type="bool">false</Field>
+        <Field name="sublaunchArgs" type="string"></Field>
+        <Field name="sublaunchPreCmdSet" type="bool">false</Field>
+        <Field name="sublaunchPreCmd" type="string"></Field>
+        <Field name="sublaunchPostCmdSet" type="bool">false</Field>
+        <Field name="sublaunchPostCmd" type="string"></Field>
+        <Field name="machinefileSet" type="bool">false</Field>
+        <Field name="machinefile" type="string"></Field>
+        <Field name="visitSetsUpEnv" type="bool">false</Field>
+        <Field name="canDoHWAccel" type="bool">false</Field>
+        <Field name="GPUsPerNode" type="int">1</Field>
+        <Field name="XArguments" type="string"></Field>
+        <Field name="launchXServers" type="bool">false</Field>
+        <Field name="XDisplay" type="string">:%l</Field>
+        <Field name="numThreads" type="int">1</Field>
+        <Field name="constrainNodeProcs" type="bool">true</Field>
+        <Field name="allowableNodes" type="intVector">1 2 4 8 16 32 64 128 256 512 1024 1536 </Field>
+        <Field name="allowableProcs" type="intVector">16 32 64 128 256 512 1024 2048 4096 8192 16384 24576 </Field>
+        <Field name="profileName" type="string">"parallel pdebug"</Field>
+    </Object>
+    <Object name="LaunchProfile">
+        <Field name="timeout" type="int">240</Field>
+        <Field name="numProcessors" type="int">8192</Field>
+        <Field name="numNodesSet" type="bool">true</Field>
+        <Field name="numNodes" type="int">512</Field>
+        <Field name="partitionSet" type="bool">true</Field>
+        <Field name="partition" type="string">psmall</Field>
+        <Field name="bankSet" type="bool">true</Field>
+        <Field name="bank" type="string">sspwork</Field>
+        <Field name="timeLimitSet" type="bool">true</Field>
+        <Field name="timeLimit" type="string">60</Field>
+        <Field name="launchMethodSet" type="bool">true</Field>
+        <Field name="launchMethod" type="string">srun</Field>
+        <Field name="forceStatic" type="bool">true</Field>
+        <Field name="forceDynamic" type="bool">false</Field>
+        <Field name="active" type="bool">false</Field>
+        <Field name="arguments" type="stringVector">"-fixed-buffer-sockets" </Field>
+        <Field name="parallel" type="bool">true</Field>
+        <Field name="launchArgsSet" type="bool">true</Field>
+        <Field name="launchArgs" type="string">"-o slurm.out"</Field>
+        <Field name="sublaunchArgsSet" type="bool">false</Field>
+        <Field name="sublaunchArgs" type="string"></Field>
+        <Field name="sublaunchPreCmdSet" type="bool">false</Field>
+        <Field name="sublaunchPreCmd" type="string"></Field>
+        <Field name="sublaunchPostCmdSet" type="bool">false</Field>
+        <Field name="sublaunchPostCmd" type="string"></Field>
+        <Field name="machinefileSet" type="bool">false</Field>
+        <Field name="machinefile" type="string"></Field>
+        <Field name="visitSetsUpEnv" type="bool">false</Field>
+        <Field name="canDoHWAccel" type="bool">false</Field>
+        <Field name="GPUsPerNode" type="int">1</Field>
+        <Field name="XArguments" type="string"></Field>
+        <Field name="launchXServers" type="bool">false</Field>
+        <Field name="XDisplay" type="string">:%l</Field>
+        <Field name="numThreads" type="int">1</Field>
+        <Field name="constrainNodeProcs" type="bool">true</Field>
+        <Field name="allowableNodes" type="intVector">1 2 4 8 16 32 64 128 256 512 1024 1536 2048 3072 4096 4608 6144 </Field>
+        <Field name="allowableProcs" type="intVector">16 32 64 128 256 512 1024 2048 4096 8192 16384 24576 32768 49152 65536 73728 98304 </Field>
+        <Field name="profileName" type="string">"parallel psmall"</Field>
+    </Object>
+    <Object name="LaunchProfile">
+        <Field name="timeout" type="int">240</Field>
+        <Field name="numProcessors" type="int">16384</Field>
+        <Field name="numNodesSet" type="bool">true</Field>
+        <Field name="numNodes" type="int">1024</Field>
+        <Field name="partitionSet" type="bool">true</Field>
+        <Field name="partition" type="string">pbatch</Field>
+        <Field name="bankSet" type="bool">true</Field>
+        <Field name="bank" type="string">sspwork</Field>
+        <Field name="timeLimitSet" type="bool">true</Field>
+        <Field name="timeLimit" type="string">60</Field>
+        <Field name="launchMethodSet" type="bool">true</Field>
+        <Field name="launchMethod" type="string">srun</Field>
+        <Field name="forceStatic" type="bool">true</Field>
+        <Field name="forceDynamic" type="bool">false</Field>
+        <Field name="active" type="bool">false</Field>
+        <Field name="arguments" type="stringVector">"-fixed-buffer-sockets" </Field>
+        <Field name="parallel" type="bool">true</Field>
+        <Field name="launchArgsSet" type="bool">true</Field>
+        <Field name="launchArgs" type="string">"-o slurm.out"</Field>
+        <Field name="sublaunchArgsSet" type="bool">false</Field>
+        <Field name="sublaunchArgs" type="string"></Field>
+        <Field name="sublaunchPreCmdSet" type="bool">false</Field>
+        <Field name="sublaunchPreCmd" type="string"></Field>
+        <Field name="sublaunchPostCmdSet" type="bool">false</Field>
+        <Field name="sublaunchPostCmd" type="string"></Field>
+        <Field name="machinefileSet" type="bool">false</Field>
+        <Field name="machinefile" type="string"></Field>
+        <Field name="visitSetsUpEnv" type="bool">false</Field>
+        <Field name="canDoHWAccel" type="bool">false</Field>
+        <Field name="GPUsPerNode" type="int">1</Field>
+        <Field name="XArguments" type="string"></Field>
+        <Field name="launchXServers" type="bool">false</Field>
+        <Field name="XDisplay" type="string">:%l</Field>
+        <Field name="numThreads" type="int">1</Field>
+        <Field name="constrainNodeProcs" type="bool">true</Field>
+        <Field name="allowableNodes" type="intVector">2048 3072 4096 4608 6144 8192 9216 12288 13824 16384 </Field>
+        <Field name="allowableProcs" type="intVector">32768 49152 65536 73728 98304 131072 147456 196608 221184 262144 </Field>
+        <Field name="profileName" type="string">"parallel pbatch"</Field>
+    </Object>
+    <Field name="activeProfile" type="int">0</Field>
+</Object>

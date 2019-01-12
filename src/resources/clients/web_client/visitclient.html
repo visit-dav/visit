@@ -1,0 +1,325 @@
+<html>
+    <head>
+        <title>VisIt client</title>
+    </head>
+    <body onunload="vp.stopWebSocket()">
+       <table>
+            <col width="35%"/>
+            <tr>
+                <td valign="top">
+            <table border=1>
+                    <tr><td>
+                        <input type="text" name="host" id="host" value="starsky.lbl.gov" size=14 />
+                        <input type="text" name="port" id="port" value="9002" size=5 />
+                        <input type="password" name="password" id="password" value="bob" size=5 /><br>
+            </tr></td>
+            <tr><td>
+            Username:
+                        <input type="text" name="userName" id="userName" value="" size=20 /><br>
+            Window Id: (-1 for new):
+                        <input type="text" name="windowId" id="windowId" value="1" size=5 /><br>
+                    </td></tr>
+                    <tr><td>
+                        Dimensions: <input type="text" name="windowWidth" id="windowWidth" value="600" size=5 />
+                        <input type="text" name="windowHeight" id="windowHeight" value="600" size=5 /><br>
+                        <button onClick="connect();">Connect</button>
+                        <button onClick="vp.stopWebSocket();">Disconnect</button>
+                    </td></tr>
+                    <!-- VisIt Methods -->
+            </table>
+            <table border=1>
+                    <tr><td>
+                        Database :
+                        <input type="text" name="database" id="database" size=14 />
+                        <button onClick="OpenDatabase();">Load</button><br>
+                        <button onClick="vp.GetViewerMethods().InvertBackgroundColor();">InvertBGColor</button>
+                        <button onClick="vp.GetViewerMethods().DeleteActivePlots();">DeleteActivePlot</button>
+                    </td></tr>
+                    <tr><td>
+                        Variable :
+                        <input type="text" name="variable" id="variable" size=14 />
+                        <button onClick="vp.GetViewerMethods().DrawPlots();">Draw</button><br>
+                        <button onClick="AddPseudocolorPlot();">Pseudocolor</button>
+                        <button onClick="AddContourPlot();">Contour</button>
+                    </td></tr>
+                </table>
+                <table border=1>
+                    <tr><td>
+                        Inspect:
+                        <input type="text" name="inspect" id="inspect" size=15></input><br>
+                        <button onClick="inspectClass();">Inspect</button>
+                        <button onClick="showAllClasses();">Show All</button>
+                        <button onClick="clearScreen();">Clear Screen</button><br>
+                        <!-- <canvas id="myCanvas" width="200" height="200" style="border:1px solid"></canvas><br> -->
+                        Output:<br>
+                        <textarea id="debugTextArea" style="width:250;height:50;"></textarea><br>
+                        Recording: <button onClick="macroStart();">Start</button>
+                        <button onClick="macroStop();">End</button>
+                        <button onClick="writeState();">Current</button><br>
+                        <textarea id="historyTextArea" style="width:250;height:50;"></textarea><br>
+                        Message:<br>
+                        <textarea id="messageTextArea" style="width:250;height:50;"></textarea><br>
+                        <button onClick="sendMessage();">Send</button>
+                        <button onClick="interpretMessage();">Interpret</button>
+                    </td></tr>
+        </table>
+                </td>
+                <td valign="top">
+                    <div id="container"></div><br>
+                </td>
+            </tr>
+        </table>
+
+        <script src="js/jquery.min.js"> </script>
+        <script>
+        function debug(message)
+        {
+            debugTextArea.value += message + "\n";
+            debugTextArea.scrollTop = debugTextArea.scrollHeight;
+        }
+
+        function history(message)
+        {
+            historyTextArea.value += message + "\n";
+            historyTextArea.scrollTop = historyTextArea.scrollHeight;
+        }
+
+        function showAllClasses()
+        {
+            var states = vp.GetViewerState().getStates();
+            for(var i = 0; i < states.length; ++i)
+            {
+                id = states[i].getId();
+                key = states[i].getTypename();
+                
+                debug("key: " + id + " " + key);
+            }
+        }
+
+        function inspectClass()
+        {
+            var key = document.getElementById("inspect").value;
+            var index = parseInt(key);
+            
+            if(isNaN(index)) {
+                index = vp.GetViewerState().getIndexFromTypename(key);
+            }
+
+            var as = vp.GetViewerState().getAttributeSubject(index);
+           
+            debug("Index: " + index);
+            debug(as.toString());
+        }
+
+        function clearScreen()
+        {
+            debugTextArea.value = "";
+            debugTextArea.scrollTop = debugTextArea.scrollHeight;
+        }
+
+        </script>
+        <script src="js/visit.js"> </script>
+        <script src="js/visitKineticCanvas.js"> </script>
+
+<!--
+        <script src="js/sylvester.js"> </script>
+        <script src="js/trackball.js"> </script>
+-->
+        <script src="http://d3lp1msu2r81bx.cloudfront.net/kjs/js/lib/kinetic-v4.4.0.min.js"></script>
+     
+        <script>
+
+        //var stage, layer, imageObj, kineticImage;
+
+        
+        var canvas = null;
+        var vp = new VisItProxy();
+
+        function connect()
+        {
+            var hostname = document.getElementById("host").value;
+            var port = document.getElementById("port").value;
+            var password = document.getElementById("password").value;
+            var userName = document.getElementById("userName").value;
+            var windowId = document.getElementById("windowId").value;
+            var windowWidth = document.getElementById("windowWidth").value;
+            var windowHeight = document.getElementById("windowHeight").value;
+
+/*
+            stage = new Kinetic.Stage({
+                    container: 'container',
+                    width: windowWidth,
+                    height: windowHeight
+                    });
+                layer = new Kinetic.Layer();
+                imageObj = new Image();
+                
+                imageObj.onload = function() {
+                layer.removeChildren();
+
+                kineticImage = new Kinetic.Image({
+                x: 0, y: 0,
+                image: imageObj,
+                width: stage.getWidth(),
+                height: stage.getHeight()
+                });
+
+                kineticImage.setListening(false);
+    
+                layer.add(kineticImage);
+                stage.add(layer);
+                };
+
+                trackball.init(stage); 
+*/
+                canvas = new VisItCanvas('container', windowWidth, windowHeight);
+                vp.connect(hostname, port, password,
+                           userName, windowId, windowWidth, 
+                           windowHeight, visitInitialized);
+            }
+
+            function visitInitialized(){
+                /// only register when visit has initialized..
+                /// todo: fix this by letting viewerState handle 
+                /// this situation gracefully.
+
+                canvas.setVisItConnection(vp);
+                //vp.GetViewerState().registerCallback("ViewerClientInformation",
+                //                                      updateViewerClientInformation);
+                vp.GetViewerState().registerCallback("ClientMethod",
+                                                      updateClientMethod);
+            }
+
+            function sendMessage()
+            {
+                message = document.getElementById("messageTextArea").value;
+                //vp.SendMessage(message);
+                document.getElementById("messageTextArea").value = "";
+            }
+
+            function AddPseudocolorPlot()
+            {
+                var variable = document.getElementById("variable").value;
+
+                if(variable === "")
+                {
+                    alert("please add variable");
+                    return;
+                }
+
+                vp.GetViewerMethods().AddPseudocolorPlot(variable);
+                vp.GetViewerMethods().DrawPlots();
+            }
+
+            function AddContourPlot()
+            {
+                var variable = document.getElementById("variable").value;
+
+                if(variable === "")
+                {
+                    alert("please add variable");
+                    return;
+                }
+
+                vp.GetViewerMethods().AddContourPlot(variable);
+                vp.GetViewerMethods().DrawPlots();
+            }
+
+            function OpenDatabase()
+            {
+                var filename = document.getElementById("database").value;
+
+                if(filename !== "")
+                {
+                    debug("loading filename: " + filename);
+                    //viewerMethods.SetActiveWindow(windowId);
+                    vp.GetViewerMethods().OpenDatabase(filename);
+                }
+            }
+
+            function updateClientMethod(obj) 
+            {
+                var name = obj.get("methodName");
+                if(name === "AcceptRecordedMacro") {
+                    var args = obj.get("stringArgs");
+
+                    for(var i = 0; i < args.length; ++i) {
+                        history(args[i]);
+                    }
+                }
+            }
+
+            function updateViewerClientAttributes(obj) 
+            {
+                var state = obj.get("state");                
+                if(state === "message") debug(obj.get("message"));
+            }
+
+            function macroStart() {
+                var vs = vp.GetViewerState();
+                var index = vs.getIndexFromTypename("ClientMethod");
+                var as = vs.getAttributeSubject(index);
+                var stringArgs = [];
+
+                stringArgs.push("ClientMethod('MacroStart')");
+                as.set("stringArgs", stringArgs);
+                as.set("methodName", "Interpret");
+                vs.notify(index);
+
+            }
+
+            function macroStop() {
+                var vs = vp.GetViewerState();
+                var index = vs.getIndexFromTypename("ClientMethod");
+                var as = vs.getAttributeSubject(index);
+                var stringArgs = [];
+
+                stringArgs.push("ClientMethod('MacroEnd')");
+                as.set("stringArgs", stringArgs);
+                as.set("methodName", "Interpret");
+                vs.notify(index);
+            }
+
+            function writeState() {
+                var vs = vp.GetViewerState();
+                var index = vs.getIndexFromTypename("ClientMethod");
+                var as = vs.getAttributeSubject(index);
+                var stringArgs = [];
+
+                stringArgs.push("ClientMethod('WriteState')");
+                as.set("stringArgs", stringArgs);
+                as.set("methodName", "Interpret");
+                vs.notify(index);
+            }
+
+            function interpretMessage() {
+
+                var message = document.getElementById("messageTextArea").value;
+
+                if (message.length == 0) {
+                    alert("Please enter an appropriate command");
+                    return;
+                }
+                var vs = vp.GetViewerState();
+                var index = vs.getIndexFromTypename("ClientMethod");
+                var as = vs.getAttributeSubject(index);
+                var stringArgs = [];
+
+                message += "\n";
+                message = "raw:" + message;
+                //message.replace("\n","\\n");
+                //message.replace("\"","\\\"");
+
+                //var splitMessage = message.split("\n");
+                //for(var i = 0; i < splitMessage.length; ++i)
+                    //stringArgs.push(splitMessage[i]);
+                stringArgs.push(message);
+                as.set("stringArgs", stringArgs);
+                as.set("methodName", "Interpret");
+                vs.notify(index);
+
+                document.getElementById("messageTextArea").value = "";
+            }
+        </script>
+    </body>
+</html>

@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+  <Plugin name="FFT" type="operator" label="FFT" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false"  category="Transforms">
+    <Attribute name="FFTAttributes" purpose="This class contains attributes for the FFT operator." persistent="true" keyframe="true" exportAPI="" exportInclude="">
+      <Field name="dummy" label="Dummy attribute" type="int">
+        0
+      </Field>
+    </Attribute>
+  </Plugin>

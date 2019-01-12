@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+  <Plugin name="Geqdsk" type="database" label="avtGeqdsk" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" dbtype="MTSD" haswriter="false" hasoptions="true" filePatternsStrict="false" opensWholeDirectory="false">
+    <CXXFLAGS>
+      ${GEQDSK_INCLUDE_DIR}
+    </CXXFLAGS>
+    <LDFLAGS>
+      ${GEQDSK_LIBRARY_DIR}
+    </LDFLAGS>
+    <LIBS>
+      ${GEQDSK_LIB}
+    </LIBS>
+    <FilePatterns>
+      *.geq
+    </FilePatterns>
+    <Files components="M">
+      avtGeqdskFileFormat.C
+      avtGeqdskOptions.C
+    </Files>
+    <Files components="E">
+      avtGeqdskFileFormat.C
+      avtGeqdskOptions.C
+    </Files>
+    <Attribute name="" purpose="" persistent="false" keyframe="true" exportAPI="" exportInclude="">
+    </Attribute>
+  </Plugin>

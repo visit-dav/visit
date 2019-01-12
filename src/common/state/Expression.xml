@@ -1,0 +1,52 @@
+<?xml version="1.0"?>
+  <Attribute name="Expression" purpose="This class contains an expression." persistent="true" keyframe="true" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="Expression.code">
+    <Enum name="ExprType">
+      Unknown
+      ScalarMeshVar
+      VectorMeshVar
+      TensorMeshVar
+      SymmetricTensorMeshVar
+      ArrayMeshVar
+      CurveMeshVar
+      Mesh
+      Material
+      Species
+    </Enum>
+    <Field name="name" label="name" type="string">
+      notset
+    </Field>
+    <Field name="definition" label="definition" type="string">
+      notset
+    </Field>
+    <Field name="hidden" label="hidden" type="bool">
+      false
+    </Field>
+    <Field name="type" label="type" type="enum" subtype="ExprType">
+      ScalarMeshVar
+    </Field>
+    <Field name="fromDB" label="fromDB" type="bool">
+      false
+    </Field>
+    <Field name="fromOperator" label="fromOperator" type="bool">
+      false
+    </Field>
+    <Field name="operatorName" label="operatorName" type="string">
+      __none__
+    </Field>
+    <Field name="meshName" label="meshName" type="string">
+    </Field>
+    <Field name="dbName" label="dbName" type="string">
+      __none__
+    </Field>
+    <Field name="autoExpression" label="Expression created automatically by VisIt" type="bool">
+      false
+    </Field>
+    <Function name="GetNumTypes" user="true" member="true">
+    </Function>
+    <Function name="GetTypeString" user="true" member="true">
+    </Function>
+    <Function name="GetTypeId" user="true" member="true">
+    </Function>
+    <Function name="AddMeshName" user="true" member="true">
+    </Function>
+  </Attribute>

@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+  <Attribute name="ClientMethod" purpose="This class contains the attributes needed to make one client execute a method on another client." persistent="false" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="ClientMethod.code">
+    <Field name="methodName" label="methodName" type="string">
+    </Field>
+    <Field name="intArgs" label="Integer arguments" type="intVector">
+    </Field>
+    <Field name="doubleArgs" label="Double arguments" type="doubleVector">
+    </Field>
+    <Field name="stringArgs" label="String arguments" type="stringVector">
+    </Field>
+    <Function name="ClearArgs" user="true" member="true">
+    </Function>
+    <Function name="AddArgument" user="true" member="true">
+    </Function>
+    <Function name="AddArgument2" user="true" member="true">
+    </Function>
+    <Function name="AddArgument3" user="true" member="true">
+    </Function>
+  </Attribute>

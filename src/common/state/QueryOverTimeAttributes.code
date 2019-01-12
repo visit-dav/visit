@@ -1,0 +1,177 @@
+Function: CreateNode
+Declaration: virtual bool CreateNode(DataNode *parentNode, bool completeSave, bool forceAdd);
+Definition:
+// ****************************************************************************
+// Method: QueryOverTimeAttributes::CreateNode
+//
+// Purpose: 
+//   This method creates a DataNode representation of the object so it can be 
+//   saved to a config file.
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   May 26, 2004
+//
+// Modifications:
+//   Brad Whitlock, Fri Dec 14 15:59:43 PST 2007
+//   Made it use ids.
+//
+// ****************************************************************************
+
+bool
+QueryOverTimeAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool forceAdd)
+{
+    if(parentNode == 0)
+        return false;
+
+    QueryOverTimeAttributes defaultObject;
+    bool addToParent = false;
+    // Create a node for QueryOverTimeAttributes.
+    DataNode *node = new DataNode("QueryOverTimeAttributes");
+
+    if(completeSave || !FieldsEqual(ID_timeType, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("timeType", TimeType_ToString(timeType)));
+    }
+
+    if(completeSave || !FieldsEqual(ID_startTimeFlag, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("startTimeFlag", startTimeFlag));
+    }
+
+    if(completeSave || !FieldsEqual(ID_startTime, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("startTime", startTime));
+    }
+
+    if(completeSave || !FieldsEqual(ID_endTimeFlag, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("endTimeFlag", endTimeFlag));
+    }
+
+    if(completeSave || !FieldsEqual(ID_endTime, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("endTime", endTime));
+    }
+
+    if(completeSave || !FieldsEqual(ID_stride, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("stride", stride));
+    }
+
+    if(completeSave || !FieldsEqual(ID_createWindow, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("createWindow", createWindow));
+    }
+
+    if(completeSave || !FieldsEqual(7, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("windowId", windowId));
+    }
+
+    // Add the node to the parent node.
+    if(addToParent || forceAdd)
+        parentNode->AddNode(node);
+    else
+        delete node;
+
+    return (addToParent || forceAdd);
+}
+
+Function: SetFromNode
+Declaration: virtual void SetFromNode(DataNode *parentNode);
+Definition:
+// ****************************************************************************
+// Method: QueryOverTimeAttributes::SetFromNode
+//
+// Purpose: 
+//   This method sets attributes in this object from values in a DataNode 
+//   representation of the object.
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   May 26, 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QueryOverTimeAttributes::SetFromNode(DataNode *parentNode)
+{
+    if(parentNode == 0)
+        return;
+
+    DataNode *searchNode = parentNode->GetNode("QueryOverTimeAttributes");
+    if(searchNode == 0)
+        return;
+
+    DataNode *node;
+    if((node = searchNode->GetNode("timeType")) != 0)
+    {
+        // Allow enums to be int or string in the config file
+        if(node->GetNodeType() == INT_NODE)
+        {
+            int ival = node->AsInt();
+            if(ival >= 0 && ival < 3)
+                SetTimeType(TimeType(ival));
+        }
+        else if(node->GetNodeType() == STRING_NODE)
+        {
+            TimeType value;
+            if(TimeType_FromString(node->AsString(), value))
+                SetTimeType(value);
+        }
+    }
+    if((node = searchNode->GetNode("startTimeFlag")) != 0)
+        SetStartTimeFlag(node->AsBool());
+    if((node = searchNode->GetNode("startTime")) != 0)
+        SetStartTime(node->AsInt());
+    if((node = searchNode->GetNode("endTimeFlag")) != 0)
+        SetEndTimeFlag(node->AsBool());
+    if((node = searchNode->GetNode("endTime")) != 0)
+        SetEndTime(node->AsInt());
+    if((node = searchNode->GetNode("stride")) != 0)
+        SetStride(node->AsInt());
+    if((node = searchNode->GetNode("createWindow")) != 0)
+        SetCreateWindow(node->AsBool());
+    if((node = searchNode->GetNode("windowId")) != 0)
+        SetWindowId(node->AsInt());
+}
+
+Target: xml2python
+Function: PyQueryOverTimeAttributes_GetLogString
+Declaration: std::string PyQueryOverTimeAttributes_GetLogString()
+Definition:
+std::string
+PyQueryOverTimeAttributes_GetLogString()
+{
+    std::string s("QueryOverTimeAtts = GetQueryOverTimeAttributes()\n");
+    if(currentAtts != 0)
+        s += PyQueryOverTimeAttributes_ToString(currentAtts, "QueryOverTimeAtts.");
+    return s;
+}
+
+Function: PyQueryOverTimeAttributes_CallLogRoutine
+Declaration: static void PyQueryOverTimeAttributes_CallLogRoutine(Subject *subj, void *data)
+Definition:
+static void
+PyQueryOverTimeAttributes_CallLogRoutine(Subject *subj, void *data)
+{
+    typedef void (*logCallback)(const std::string &);
+    logCallback cb = (logCallback)data;
+
+    if(cb != 0)
+    {
+        std::string s("QueryOverTimeAtts = GetQueryOverTimeAttributes()\n");
+        s += PyQueryOverTimeAttributes_ToString(currentAtts, "QueryOverTimeAtts.");
+        cb(s);
+    }
+}
+

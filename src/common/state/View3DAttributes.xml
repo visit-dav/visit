@@ -1,0 +1,76 @@
+<?xml version="1.0"?>
+  <Attribute name="View3DAttributes" purpose="This class contains the 3d view attributes." persistent="true" keyframe="true" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="View3DAttributes.code">
+    <Field name="viewNormal" label="viewNormal" type="doubleArray" length="3">
+      0.000000
+      0.000000
+      1.000000
+    </Field>
+    <Field name="focus" label="focus" type="doubleArray" length="3">
+      0.000000
+      0.000000
+      0.000000
+    </Field>
+    <Field name="viewUp" label="viewUp" type="doubleArray" length="3">
+      0.000000
+      1.000000
+      0.000000
+    </Field>
+    <Field name="viewAngle" label="viewAngle" type="double">
+      30.000000
+    </Field>
+    <Field name="parallelScale" label="parallelScale" type="double">
+      1.000000
+    </Field>
+    <Field name="nearPlane" label="nearPlane" type="double">
+      0.001000
+    </Field>
+    <Field name="farPlane" label="farPlane" type="double">
+      100.000000
+    </Field>
+    <Field name="imagePan" label="imagePan" type="doubleArray" length="2">
+      0.000000
+      0.000000
+    </Field>
+    <Field name="imageZoom" label="imageZoom" type="double">
+      1.000000
+    </Field>
+    <Field name="perspective" label="perspective" type="bool">
+      true
+    </Field>
+    <Field name="eyeAngle" label="eyeAngle" type="double">
+      2.000000
+    </Field>
+    <Field name="centerOfRotationSet" label="centerOfRotationSet" type="bool">
+      false
+    </Field>
+    <Field name="centerOfRotation" label="centerOfRotation" type="doubleArray" length="3">
+      0.000000
+      0.000000
+      0.000000
+    </Field>
+    <Field name="axis3DScaleFlag" label="axis3DScaleFlag" type="bool">
+      false
+    </Field>
+    <Field name="axis3DScales" label="axis3DScales" type="doubleArray" length="3">
+      1.000000
+      1.000000
+      1.000000
+    </Field>
+    <Field name="shear" label="shear" type="doubleArray" length="3">
+      0.000000
+      0.000000
+      1.000000
+    </Field>
+    <Field name="windowValid" label="windowValid" type="bool">
+      false
+    </Field>
+    <Function name="RotateAxis" user="true" member="true">
+    </Function>
+    <Function name="ResetView" user="true" member="true">
+    </Function>
+    <Function name="View3DAttributes_RotateAxis" user="true" member="true">
+    </Function>
+    <Include file="source" quoted="false">
+      math.h
+    </Include>
+  </Attribute>

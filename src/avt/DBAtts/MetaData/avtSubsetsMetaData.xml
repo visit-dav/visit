@@ -1,0 +1,65 @@
+<?xml version="1.0"?>
+  <Attribute name="avtSubsetsMetaData" purpose="Information about a particular category of subsets of a mesh (even for material subsets)" persistent="false" keyframe="true" exportAPI="DBATTS_API" exportInclude="dbatts_exports.h" codefile="avtSubsetsMetaData.code" baseClass="avtVarMetaData">
+    <Enum name="PartialCellModes">
+      Include
+      Exclude
+      Dissect
+    </Enum>
+    <Enum name="DecompMode">
+      None
+      Cover
+      Partition
+    </Enum>
+    <Field name="catName" label="Name (singular form) of category of subsets" type="string">
+    </Field>
+    <Field name="catCount" label="Number of sets in this category" type="int">
+      0
+    </Field>
+    <Field name="nameScheme" label="Namescheme for how members of this group of sets are named" type="att" subtype="NameschemeAttributes">
+    </Field>
+    <Field name="colorScheme" label="Colors to be associated with each set in this category" type="stringVector" access="public">
+    </Field>
+    <Field name="setsToChunksMaps" label="A mapping which indicates for each set in this category which chunk(s) it exists on." type="intVector">
+    </Field>
+    <Field name="graphEdges" label="Edges indicating subset/superset relationships between sets in this category" type="intVector">
+    </Field>
+    <Field name="isChunkCat" label="Indicates if this category represents (storage) chunks of the mesh (e.g. domains)" type="bool" access="public">
+      false
+    </Field>
+    <Field name="isMaterialCat" label="Indicates if this category represents a material decomposition" type="bool" access="public">
+      false
+    </Field>
+    <Field name="isUnionOfChunks" label="Indicates if sets in this category are a simple union of chunks." type="bool" access="public">
+      false
+    </Field>
+    <Field name="hasPartialCells" label="Indicates if sets in this category involves cells (zones) that are partially included (e.g. mixing)" type="bool" access="public">
+      false
+    </Field>
+    <Field name="decompMode" label="Indicates if/how union of all sets in this category covers the whole mesh" type="enum" subtype="DecompMode" access="public">
+      None
+    </Field>
+    <Field name="maxTopoDim" label="Maximum topological dimension of the subset" type="int" access="public">
+      0
+    </Field>
+    <Function name="Print" user="true" member="true">
+    </Function>
+    <Function name="AddGraphEdge" user="true" member="true">
+    </Function>
+    <Function name="SetChunksForSet" user="true" member="true">
+    </Function>
+    <Function name="avtSubsetsMetaData1" user="true" member="true">
+    </Function>
+    <Function name="avtSubsetsMetaData2" user="true" member="true">
+    </Function>
+    <Function name="SetChunksForSet2" user="true" member="true">
+    </Function>
+    <Include file="header" quoted="false">
+      vector
+    </Include>
+    <Include file="header" quoted="false">
+      algorithm
+    </Include>
+    <Include file="header" quoted="false">
+      NameschemeAttributes.h
+    </Include>
+  </Attribute>

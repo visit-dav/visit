@@ -1,0 +1,47 @@
+<?xml version="1.0"?>
+  <Plugin name="MetricThreshold" label="Metric Threshold" type="operator" version="1.0" category="Selection">
+    <Attribute name="MetricThresholdAttributes" purpose="This class contains attributes for the MetricThreshold operator.">
+      <Enum name="Preset">
+	None
+	Aspect_Ratio
+	Aspect_Gamma
+	Skew
+	Taper
+	Volume
+	Stretch
+	Diagonal
+	Dimension
+	Oddy
+	Condition
+	Jacobian
+	Scaled_Jacobian
+	Shear
+	Shape
+	Relative_Size
+	Shape_and_Size
+	Area
+	Warpage
+	Smallest_Angle
+	Largest_Angle
+      </Enum>
+      <Field name="preset" type="enum" subtype="Preset">None</Field>
+      <Field name="Hexahedron" type="bool">false</Field>
+      <Field name="hex_lower" type="double">0.</Field>
+      <Field name="hex_upper" type="double">0.</Field>
+      <Field name="Tetrahedron" type="bool">false</Field>
+      <Field name="tet_lower" type="double">0.</Field>
+      <Field name="tet_upper" type="double">0.</Field>
+      <Field name="Wedge" type="bool">false</Field>
+      <Field name="wed_lower" type="double">0.</Field>
+      <Field name="wed_upper" type="double">0.</Field>
+      <Field name="Pyramid" type="bool">false</Field>
+      <Field name="pyr_lower" type="double">0.</Field>
+      <Field name="pyr_upper" type="double">0.</Field>
+      <Field name="Triangle" type="bool">false</Field>
+      <Field name="tri_lower" type="double">0.</Field>
+      <Field name="tri_upper" type="double">0.</Field>
+      <Field name="Quad" type="bool">false</Field>
+      <Field name="quad_lower" type="double">0.</Field>
+      <Field name="quad_upper" type="double">0.</Field>
+    </Attribute>
+  </Plugin>

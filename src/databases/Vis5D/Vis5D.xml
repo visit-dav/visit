@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+  <Plugin name="Vis5D" type="database" label="Vis5D" version="1.0" enabled="true" mdspecificcode="false" onlyengine="false" noengine="false" dbtype="MTSD" haswriter="false">
+    <FilePatterns>
+      *.v5d
+    </FilePatterns>
+    <Files components="M">
+      avtVis5DFileFormat.C
+      v5d.C
+      binio.C
+    </Files>
+    <Files components="E">
+      avtVis5DFileFormat.C
+      v5d.C
+      binio.C
+    </Files>
+    <Attribute name="" purpose="" persistent="false">
+    </Attribute>
+  </Plugin>

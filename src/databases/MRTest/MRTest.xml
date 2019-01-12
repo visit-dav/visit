@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+  <Plugin name="MRTest" label="MRTest" type="database" dbtype="STMD" version="1.0">
+    <CXXFLAGS>
+      ${VISIT_INCLUDE_DIR}/avt/View
+    </CXXFLAGS>
+    <LIBS>
+      avtview
+    </LIBS>
+    <FilePatterns> *.mrtest </FilePatterns>
+  </Plugin>

@@ -1,0 +1,178 @@
+import math
+
+###############################################################################
+# Class: JobSubmitter_sbatch_NERSC
+#
+# Purpose:    Custom "sbatch" job submitter for NERSC.
+#
+# Programmer: David Camp
+# Date:       Thu Oct  1 08:39:34 PDT 2015
+#
+# Modifications:
+#   Brad Whitlock, Wed Sep 14 15:44:46 PDT 2016
+#   Implement socket relay hack as for qsub.
+#
+###############################################################################
+
+class JobSubmitter_sbatch_NERSC(JobSubmitter_sbatch):
+    def __init__(self, launcher):
+        super(JobSubmitter_sbatch_NERSC, self).__init__(launcher)
+
+    def CreateFilename(self):
+        tdate = time.asctime()[11:19]
+        tuser = self.launcher.username()
+        return os.path.join(GETENV("HOME"), "visit.%s.%s" % (tuser, tdate))
+
+###############################################################################
+# Class: JobSubmitter_salloc_NERSC
+#
+# Purpose:    Custom "salloc" job submitter for NERSC.
+#
+# Programmer: Brad Whitlock
+# Date:       Tue Jun 27 14:41:58 PDT 2017
+#
+# Note: This derives from the sbatch job submitter to make a script that gets
+#       run under salloc. We use salloc so we can submit interactive jobs.
+#
+# Modifications:
+#
+###############################################################################
+
+class JobSubmitter_salloc_NERSC(JobSubmitter_sbatch_NERSC):
+    def __init__(self, launcher):
+        super(JobSubmitter_salloc_NERSC, self).__init__(launcher)
+        print "JobSubmitter_salloc_NERSC"
+
+    def Executable(self):
+        return ["salloc"]
+
+    def LauncherAndSubLauncher(self):
+        return ("salloc", "srun")
+
+    def HandleCWDPermissions(self):
+        return []
+
+    def AddEnvironment(self):
+        return []
+
+    def TFileSetup(self, tfile):
+        tfile.write("cd %s\n" % os.path.abspath(os.curdir))
+        tfile.write("ulimit -c 0\n")
+        #tfile.write("/sbin/ifconfig\n")
+        tfile.write("export HOME=" + GETENV("HOME") + "\n")
+        tfile.write("export LIBPATH=" + GETENV("LIBPATH") + "\n")
+        tfile.write("export LD_LIBRARY_PATH=" + GETENV("LD_LIBRARY_PATH") + "\n")
+        tfile.write("export VISITHOME=" + GETENV("VISITHOME") + "\n")
+        tfile.write("export VISITARCHHOME=" + GETENV("VISITARCHHOME") + "\n")
+        tfile.write("export VISITPLUGINDIR=" + GETENV("VISITPLUGINDIR") + "\n")
+
+
+###############################################################################
+# Class: NERSCLauncher
+#
+# Purpose:    Custom launcher for NERSC
+#
+# Programmer: Brad Whitlock
+# Date:       Thu May 17 14:22:04 PDT 2012
+#
+# Modifications:
+#   Eric Brugger, Wed Oct 22 16:26:54 PDT 2014
+#   Modify the launcher so that -ppn gets passed to mpiexec and mpirun.
+#
+#   David Camp, Thu Oct  1 08:39:34 PDT 2015
+#   Added sbatch for Cori system.
+#
+#   Brad Whitlock, Tue Jun 27 16:41:17 PDT 2017
+#   Added salloc job submitter for interactive. I also added GetIPAddress()
+#   trick so the engine can talk to the login node without the socket relay.
+#
+###############################################################################
+
+class NERSCLauncher(MainLauncher):
+    def __init__(self):
+        super(NERSCLauncher, self).__init__()
+        self.nersc_host = GETENV("NERSC_HOST")
+        if not self.nersc_host:
+            exit("Cannot determine NERSC host.", 1)
+
+    # Get the IP address for eth0.
+    def GetIPAddress(self):
+        p = subprocess.Popen(["/sbin/ifconfig"], stdin=subprocess.PIPE, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
+        output = p.communicate()
+        iplines = [x for x in string.split(output[0], "\n") if string.find(x, "inet addr") != -1]
+        start = string.find(iplines[0], "inet addr")
+        end = string.find(iplines[0], "Bcast:")
+        IP = string.replace(iplines[0][start + 10:end], " ", "")
+        return IP
+
+    def Customize(self):
+       if self.nersc_host == "cori":
+            # ----
+            # Cori @ NERSC
+            # ----
+            # Add GCC libraries to LD_LIBRARY_PATH
+            ld_library_path = self.splitpaths(GETENV("LD_LIBRARY_PATH"))
+            added_ld_library_paths = ["/opt/gcc/4.9.3/snos/lib64"]
+            SETENV("LD_LIBRARY_PATH", self.joinpaths(added_ld_library_paths + ld_library_path))
+
+            #
+            # Networking changes for parallel engine. We override the host
+            # with an IP address.
+            #
+            if self.parallelArgs.parallel and \
+               (string.find(self.generalArgs.exe_name, "_par") != -1 or \
+                string.find(self.generalArgs.exe_name, "_ser") != -1):
+                self.generalArgs.host = self.GetIPAddress()
+                self.generalArgs.guesshost = 0
+                self.generalArgs.sshtunneling = 0
+                self.generalArgs.noloopback = 1
+
+            # Running the gui on Cori or a serial engine on a login node are "verboten"
+            if not self.generalArgs.env and self.generalArgs.exe_name == "gui":
+                msg = """
+Do not run the VisIt GUI on Cori. Run it on your local workstation (preferred/best performance)!
+
+For more information about running VisIt at NERSC: http://www.nersc.gov/nusers/resources/software/apps/visualization/visit/
+"""
+                exit(msg, 0)
+            if self.generalArgs.exe_name == "engine" and not self.parallelArgs.parallel:
+                exit("The VisIt install on Edison does not support running a serial engine on the login nodes!", 1)
+       elif self.nersc_host == "edison":
+            # ----
+            # Edison @ NERSC
+            # ----
+            # Add GCC libraries to LD_LIBRARY_PATH
+            ld_library_path = self.splitpaths(GETENV("LD_LIBRARY_PATH"))
+            added_ld_library_paths = ["/opt/gcc/4.9.0/snos/lib64"]
+            SETENV("LD_LIBRARY_PATH", self.joinpaths(added_ld_library_paths + ld_library_path))
+
+            # Set Python path
+            python_path = self.splitpaths(GETENV("PYTHONPATH"))
+            added_python_paths = [self.visitlibdir + "/python/lib/python2.6/lib-dynload"]
+            SETENV("PYTHONPATH", self.joinpaths(added_python_paths + python_path))
+
+            # Running the gui on Edison or a serial engine on a login node are "verboten"
+            if not self.generalArgs.env and self.generalArgs.exe_name == "gui":
+                msg = """
+Do not run the VisIt GUI on Edison. Run it on your local workstation (preferred/best performance)!
+
+For more information about running VisIt at NERSC: http://www.nersc.gov/nusers/resources/software/apps/visualization/visit/
+"""
+                exit(msg, 0)
+            if self.generalArgs.exe_name == "engine" and not self.parallelArgs.parallel:
+                exit("The VisIt install on Edison does not support running a serial engine on the login nodes!", 1)
+
+    #
+    # Override the JobSubmitterFactory method so the custom job submitter can
+    # be returned.
+    #
+    def JobSubmitterFactory(self, launch):
+        if launch[:6] == "sbatch":
+            return JobSubmitter_sbatch_NERSC(self)
+        elif launch[:6] == "salloc":
+            return JobSubmitter_salloc_NERSC(self)
+        return super(NERSCLauncher, self).JobSubmitterFactory(launch)
+
+# Launcher creation function
+def createlauncher():
+    return NERSCLauncher()

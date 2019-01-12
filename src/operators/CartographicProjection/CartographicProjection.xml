@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+  <Plugin name="CartographicProjection" type="operator" label="Cartographic Projection" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" iconFile="CartographicProjection.xpm" category="Transforms">
+    <LIBS components="ESer">
+      vtkGeovisCore
+    </LIBS>
+    <LIBS components="EPar">
+      vtkGeovisCore
+    </LIBS>
+    <Attribute name="CartographicProjectionAttributes" purpose="" persistent="true" keyframe="true" exportAPI="" exportInclude="">
+      <Enum name="ProjectionID">
+        aitoff
+        eck4
+        eqdc
+        hammer
+        laea
+        lcc
+        merc
+        mill
+        moll
+        ortho
+        wink2
+      </Enum>
+      <Field name="projectionID" label="projectionID" type="enum" subtype="ProjectionID">
+        aitoff
+      </Field>
+      <Field name="centralMeridian" label="Central Meridian" type="double">
+        0.000000
+      </Field>
+    </Attribute>
+  </Plugin>

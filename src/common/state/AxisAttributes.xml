@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+  <Attribute name="AxisAttributes" purpose="Contains the properties for one axis." persistent="true" keyframe="true" exportAPI="STATE_API" exportInclude="state_exports.h">
+    <Field name="title" label="Title" type="att" subtype="AxisTitles">
+    </Field>
+    <Field name="label" label="Label" type="att" subtype="AxisLabels">
+    </Field>
+    <Field name="tickMarks" label="Tick marks" type="att" subtype="AxisTickMarks">
+    </Field>
+    <Field name="grid" label="Grid visible" type="bool">
+      false
+    </Field>
+  </Attribute>

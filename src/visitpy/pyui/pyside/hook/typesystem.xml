@@ -1,0 +1,40 @@
+<?xml version="1.0"?>
+<typesystem package="pyside_hook">
+
+  <inject-code class="native" position="beginning">
+
+#include &lt;QCoreApplication&gt;
+#include &lt;QThread&gt;
+
+
+static int input_hook()
+{
+    QCoreApplication *app = QCoreApplication::instance();
+
+    if ( !app ) return 0;
+    if ( app->thread() != QThread::currentThread() ) return 0;
+
+    QCoreApplication::exec();
+
+    return 0;
+}
+
+  </inject-code>
+
+  <add-function signature="SetHook(void)" return-type="void">
+  <inject-code class="target" position="beginning">
+    PyOS_InputHook = input_hook;
+  </inject-code>
+  </add-function>
+
+  <add-function signature="UnSetHook(void)" return-type="void">
+  <inject-code class="target" position="beginning">
+    PyOS_InputHook = 0;
+  </inject-code>
+  </add-function>
+
+  <object-type name="PySideHook">
+  </object-type>
+
+</typesystem>
+

@@ -1,0 +1,2 @@
+wg_OBJ.1.obj
+wg_OBJ.2.obj

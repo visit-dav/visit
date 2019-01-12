@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+  <Plugin name="Point3D" type="database" label="Point3D" version="1.0" dbtype="STSD">
+    <FilePatterns>
+      *.3D
+      *.3D.gz
+    </FilePatterns>
+    <Attribute name="" purpose="" persistent="false" exportAPI="" exportInclude="">
+    </Attribute>
+  </Plugin>

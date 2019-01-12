@@ -1,0 +1,105 @@
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="css/styles.css" type="text/css" media="screen" />
+    <link rel="stylesheet" href="css/styles.css" type="text/css" media="print" />
+    <script type="text/javascript" src="js/jquery-latest.js"></script>
+    <script type="text/javascript" src="js/jquery.tablesorter.js"></script>
+    <script type="text/javascript" src="js/purl.js"></script>
+    <script type="text/javascript" id="js">
+
+    var rmap = {111:{"color":"good","text":"Succeeded"},
+                112:{"color":"good","text":"Acceptable"},
+                113:{"color":"bad","text":"Unacceptable"},
+                114:{"color":"unknown","text":"Unknown"},
+                115:{"color":"killed","text":"Self-Killed"},
+                116:{"color":"skipped","text":"Skipped"},
+                118:{"color":"killed","text":"OS-Killed"},
+                119:{"color":"good_with_skips","text":"Succeeded With Skips"},
+                120:{"color":"good_with_skips","text":"Acceptable With Skips"},
+                121:{"color":"na","text":"Not Applicable"}}
+
+    function set_header(data)
+    {
+        var ttl ='VisIt Regression Results for (' + data.options.modes  + ') - '+ data.info.start_timestamp
+        $("title").append(ttl)
+        var hdr  = '<H2>Results of VisIt Regression Test (' +  data.options.modes + ')</H2>'
+        hdr += '<p>Test suite run started at ' + data.info.start_timestamp + '</p>';
+        $("#header").append(hdr)
+    }
+
+    function set_footer(data)
+    {
+        if("end_timestamp" in data.info)
+        {
+            var ftr = '<p>Test suite run complete at '+ data.info.end_timestamp +' (' +data.info.runtime + ' seconds)</p>'
+            $("#footer").append(ftr)
+        }
+    }
+
+    function index_entry(db,val)
+    {
+        var r_color = "failed"
+        var r_text  = "Failed: exit == " + val.returncode + " unknown"
+        if(val.returncode in rmap)
+        {
+            r_color = rmap[val.returncode].color
+            r_text  = rmap[val.returncode].text
+        }
+
+        var entry = '<tr id="' + val.category + '_' + val.base + '">\n';
+        entry += '<td>' + val.index + '</td>\n';
+        entry = entry + '<td>' + val.category + '</td>\n';
+        if(r_color != "skipped")
+            entry = entry + '<td><a href="prototype_json_script_details.html?db=' + db +'&category=' + val.category + '&name=' + val.base + '">' + val.file + '</a></td>\n';
+        else
+            entry = entry + '<td>' + val.file + '</td>\n';
+        entry = entry + '<td class="' + r_color  +'">' + r_text + '</td>\n'
+        entry = entry + '<td>' + val.runtime + '</td>\n';
+        entry = entry + '</tr>\n';
+        return entry;
+    } 
+    $(document).ready(function()
+    {
+        var opts =$.url().param();
+        var rjson = opts.db;
+        $.getJSON(rjson,function(data)
+        {
+            set_header(data);
+            set_footer(data);
+            var index_items = [];
+            $.each(data.results, function(key, val)
+            {
+                index_items.push(index_entry(opts.db,val))
+            });
+            $("#results tbody").append(index_items.join(''))
+        });
+        // call the tablesorter plugin
+        $("table").tablesorter(
+        {
+         // sort on the first column and third column, order asc
+         sortList: [[0,0]]
+        });
+    });
+    </script>
+</head>
+<div id="header"><!-- jquery will fill this in --></div>
+(Click on table header to sort)
+<table border="0" class="tablesorter" id="results">
+    <thead>
+    <tr>
+        <th>Index</th>
+        <th>Category </th>
+        <th>Test File </th>
+        <th>Status </th>
+        <th>Runtime (sec) </th>
+    </tr>
+    </thead>
+    <tbody>
+        <!-- jquery will fill this in -->
+    </tbody>
+</table>
+<div id="footer"><!-- jquery will fill this in --></div>
+</html>

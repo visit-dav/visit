@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+  <Attribute name="FontAttributes" purpose="Describes font properties that we can set through VTK" persistent="true" keyframe="true" exportAPI="STATE_API" exportInclude="state_exports.h">
+    <Enum name="FontName">
+      Arial
+      Courier
+      Times
+    </Enum>
+    <Field name="font" label="Font" type="enum" subtype="FontName">
+      Arial
+    </Field>
+    <Field name="scale" label="Scale" type="double">
+      1.000000
+    </Field>
+    <Field name="useForegroundColor" label="Use foreground color" type="bool">
+      true
+    </Field>
+    <Field name="color" label="Color" type="color" length="4" enabler="useForegroundColor:false">
+      0
+      0
+      0
+      255
+    </Field>
+    <Field name="bold" label="Bold" type="bool">
+      false
+    </Field>
+    <Field name="italic" label="italic" type="bool">
+      false
+    </Field>
+  </Attribute>

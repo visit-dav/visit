@@ -1,0 +1,6 @@
+<!ELEMENT Object (Field*|Object*)*>
+<!ATTLIST Object name CDATA #REQUIRED>
+<!ELEMENT Field (#PCDATA)>
+<!ATTLIST Field name CDATA #REQUIRED>
+<!ATTLIST Field type CDATA #REQUIRED>
+<!ATTLIST Field length CDATA #IMPLIED>

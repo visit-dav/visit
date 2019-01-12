@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+  <Attribute name="avtSimulationInformation" purpose="Contains information about simulation connections" persistent="false" keyframe="true" exportAPI="DBATTS_API" exportInclude="dbatts_exports.h">
+    <Enum name="RunMode">
+      Unknown
+      Running
+      Stopped
+    </Enum>
+    <Field name="host" label="host" type="string">
+    </Field>
+    <Field name="port" label="port" type="int">
+      0
+    </Field>
+    <Field name="securityKey" label="securityKey" type="string">
+    </Field>
+    <Field name="otherNames" label="otherNames" type="stringVector">
+    </Field>
+    <Field name="otherValues" label="otherValues" type="stringVector">
+    </Field>
+    <Field name="genericCommands" label="genericCommands" type="attVector" subtype="avtSimulationCommandSpecification">
+    </Field>
+    <Field name="mode" label="mode" type="enum" subtype="RunMode">
+      Unknown
+    </Field>
+    <Field name="customCommands" label="customCommands" type="attVector" subtype="avtSimulationCommandSpecification">
+    </Field>
+    <Field name="message" label="message" type="string">
+    </Field>
+  </Attribute>

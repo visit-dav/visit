@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+  <Plugin name="OnionPeel" type="operator" label="Onion Peel" version="1.0" enabled="true" mdspecificcode="false" onlyengine="false" noengine="false" iconFile="OnionPeel.xpm" category="Selection">
+    <Attribute name="OnionPeelAttributes" purpose="Attributes for the onion peel operator" persistent="true" codefile="OnionPeel.code">
+      <Enum name="NodeFace">
+        Node
+        Face
+      </Enum>
+      <Enum name="SeedIdType">
+        SeedCell
+        SeedNode
+      </Enum>
+      <Field name="adjacencyType" label="Adjacency" type="enum" subtype="NodeFace">
+        Node
+      </Field>
+      <Field name="useGlobalId" label="useGlobalId" type="bool">
+        false
+      </Field>
+      <Field name="categoryName" label="Category" type="string" enabler="useGlobalId:false">
+        Whole
+      </Field>
+      <Field name="subsetName" label="Set" type="string" enabler="useGlobalId:false">
+        Whole
+      </Field>
+      <Field name="index" label="Location" type="intVector">
+        0
+      </Field>
+      <Field name="logical" label="Logical" type="bool">
+        false
+      </Field>
+      <Field name="requestedLayer" label="Layers" type="int">
+        0
+      </Field>
+      <Field name="seedType" label="Seed Type" type="enum" subtype="SeedIdType">
+        SeedCell
+      </Field>
+      <Field name="honorOriginalMesh" label="honorOriginalMesh" type="bool">
+        true
+      </Field>
+      <Function name="OnionPeelViewerEnginePluginInfo::InitializeOperatorAtts" user="false" member="true">
+      </Function>
+    </Attribute>
+  </Plugin>

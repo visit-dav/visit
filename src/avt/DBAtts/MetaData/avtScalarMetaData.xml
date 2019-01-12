@@ -1,0 +1,104 @@
+<?xml version="1.0"?>
+  <Attribute name="avtScalarMetaData" purpose="Contains scalar metadata attributes" persistent="false" keyframe="true" exportAPI="DBATTS_API" exportInclude="dbatts_exports.h" codefile="avtScalarMetaData.code" baseClass="avtVarMetaData">
+    <Enum name="PartialCellModes">
+      Include
+      Exclude
+      Dissect
+    </Enum>
+    <Enum name="EnumTypes">
+      None
+      ByValue
+      ByRange
+      ByBitMask
+      ByNChooseR
+    </Enum>
+    <Enum name="MissingData">
+      MissingData_None
+      MissingData_Value
+      MissingData_Valid_Min
+      MissingData_Valid_Max
+      MissingData_Valid_Range
+    </Enum>
+    <Field name="treatAsASCII" label="Treat value as ASCII when displayed" type="bool" access="public">
+      false
+    </Field>
+    <Field name="enumerationType" label="Enumeration type" type="enum" subtype="EnumTypes">
+      None
+    </Field>
+    <Field name="enumNames" label="Enumeration names" type="stringVector" access="public">
+    </Field>
+    <Field name="enumRanges" label="Enumeration ranges" type="doubleVector" access="public">
+    </Field>
+    <Field name="enumAlwaysExclude" label="Always exclude value" type="doubleArray" length="2" init="true" access="public">
+      0.000000
+      0.000000
+    </Field>
+    <Field name="enumAlwaysInclude" label="Always include value" type="doubleArray" length="2" init="true" access="public">
+      0.000000
+      0.000000
+    </Field>
+    <Field name="enumPartialCellMode" label="Partial cell modes" type="enum" subtype="PartialCellModes">
+      Exclude
+    </Field>
+    <Field name="enumGraphEdges" label="Enumeration values graph" type="intVector" access="public">
+    </Field>
+    <Field name="enumGraphEdgeNames" label="Enumeration values graph edge names" type="stringVector" access="public">
+    </Field>
+    <Field name="enumGraphEdgeNameIndexs" label="Enumeration values graph edge name indexs" type="intVector" access="public">
+    </Field>
+    <Field name="enumNChooseRN" label="N value for NChooseR mode" type="int">
+      0
+    </Field>
+    <Field name="enumNChooseRMaxR" label="MaxR value for NChooseR mode" type="int">
+      0
+    </Field>
+    <Field name="missingDataType" label="Missing data type" type="enum" subtype="MissingData">
+      MissingData_None
+    </Field>
+    <Field name="missingData" label="Values for missing data" type="doubleArray" length="2">
+      0.000000
+      0.000000
+    </Field>
+    <Function name="avtScalarMetaData2" user="true" member="true">
+    </Function>
+    <Function name="avtScalarMetaData3" user="true" member="true">
+    </Function>
+    <Function name="Print" user="true" member="true">
+    </Function>
+    <Function name="AddEnumGraphEdge" user="true" member="true">
+    </Function>
+    <Function name="AddEnumNameValue" user="true" member="true">
+    </Function>
+    <Function name="AddEnumNameRange" user="true" member="true">
+    </Function>
+    <Function name="SetEnumAlwaysExcludeValue" user="true" member="true">
+    </Function>
+    <Function name="SetEnumAlwaysExcludeRange" user="true" member="true">
+    </Function>
+    <Function name="SetEnumAlwaysIncludeValue" user="true" member="true">
+    </Function>
+    <Function name="SetEnumAlwaysIncludeRange" user="true" member="true">
+    </Function>
+    <Function name="BuildEnumNChooseRMap" user="true" member="true">
+    </Function>
+    <Function name="NChooseR" user="true" member="true">
+    </Function>
+    <Function name="ComboValFromDigits" user="true" member="true">
+    </Function>
+    <Function name="ComboDigitsFromVal" user="true" member="true">
+    </Function>
+    <Function name="UpdateValByInsertingDigit" user="true" member="true">
+    </Function>
+    <Include file="header" quoted="false">
+      float.h
+    </Include>
+    <Include file="source" quoted="false">
+      ImproperUseException.h
+    </Include>
+    <Include file="header" quoted="false">
+      vector
+    </Include>
+    <Include file="header" quoted="false">
+      list
+    </Include>
+  </Attribute>

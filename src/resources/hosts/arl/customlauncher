@@ -1,0 +1,117 @@
+###############################################################################
+# Class: JobSubmitter_qsub_ARL
+#
+# Purpose:    Custom qsub launcher for ARL
+#
+# Programmer: Rick Angelini
+# Date:       Thu Sep 20 14:30:17 EDT 2012
+#
+# Modifications:
+#
+###############################################################################
+
+class JobSubmitter_qsub_ARL(JobSubmitter_qsub):
+    def __init__(self, launcher):
+        super(JobSubmitter_qsub_ARL, self).__init__(launcher)
+
+    # mpirun command line that does not have -np #.
+    def mpirun_args(self, args):
+        mpicmd = self.mpirun()
+        if self.parallel.sublaunchargs != None:
+            mpicmd = mpicmd + self.parallel.sublaunchargs
+        if self.parallel.machinefile != None:
+            mpicmd = mpicmd + ["-machinefile", self.parallel.machinefile]
+        mpicmd = mpicmd + self.VisItExecutable()
+        mpicmd = mpicmd + ["-plugindir", GETENV("VISITPLUGINDIR")]
+        mpicmd = mpicmd + args
+        return mpicmd
+
+    def SetupPPN(self, nodes, procs, ppn, use_vis):
+        # We could use nodes, procs, ppn to construct the arguments if a variable number
+        # of nodes or processors would be appropriate.
+        args = ["--l", "select=2:mpiprocs=2:ncpus=2"]
+        return args
+
+###############################################################################
+# Class: ARLLauncher
+#
+# Purpose:    Custom launcher for ARL
+#
+# Programmer: Rick Angelini
+# Date:       Thu Sep 20 14:30:17 EDT 2012
+#
+# Modifications:
+#
+###############################################################################
+
+class ARLLauncher(MainLauncher):
+    def __init__(self):
+        super(ARLLauncher, self).__init__()
+
+    def Customize(self):
+        # ----
+        # ARL Pitch machine:
+        # ----
+        print "self.sectorname=" + self.sectorname()
+        if self.sectorname() == "pitch":
+            print "Inside of self.sectorname customization"
+            paths = self.splitpaths(GETENV("LD_LIBRARY_PATH"))
+            addedpaths = ["/usr/cta/unsupported/openmpi/gcc/4.4.0/openmpi-1.6/lib:/opt/pbs/default/lib"]
+            SETENV("LD_LIBRARY_PATH", self.joinpaths(paths + addedpaths))
+
+            paths = self.splitpaths(GETENV("PATH"))
+            addedpaths = ["/usr/cta/unsupported/openmpi/gcc/4.4.0/openmpi-1.6/bin"]
+            SETENV("PATH", self.joinpaths(paths + addedpaths))
+
+    # Determine when we're doing server side logging.
+    def ServerSideLogging(self):
+        # Maybe we just want to log engine runs...
+        comp = self.generalArgs.exe_name in ["engine", "engine_ser", "engine_par"]
+        # On these hosts.
+        runningOnHosts = self.sectorname() in ["host1", "host2"]
+        return comp and runningOnHosts
+
+    # Override the Logging() method. This method gets called from self.call when 
+    # we launch a program and we're doing logging.
+    def Logging(self, args):
+        if self.logging:
+            logger = []
+            if self.ServerSideLogging():
+                short_host = self.sectorname()
+                nodes = ""
+                if self.parallelArgs.nn != None:
+                    nodes = self.parallelArgs.nn
+                procs = ""
+                if self.parallelArgs.np != None:
+                    nodes = self.parallelArgs.np
+                time = ""
+                if self.parallelArgs.time != None:
+                    nodes = self.parallelArgs.time
+                logger = ["/app/visit/utils/daac_logger", "remote", "visit_server", self.visitver, short_host, nodes, procs, time)
+            elif self.generalArgs.exe_name == "viewer":
+                logger = ["/usr/cta/visit/utils/daac_logger", "local", "LINUX_Visit", self.visitver]
+
+            if len(logging) > 0:
+                # Do not log the logging program :)
+                self.logging = 0
+
+                # Call out to an external program to log the launch.
+                self.call(logger)
+
+                # Restore logging
+                self.logging = 1
+
+    #
+    # Override the JobSubmitterFactory method so the custom job submitter can
+    # be returned.
+    #
+    def JobSubmitterFactory(self, launch):
+        if launch[:4] == "qsub" or launch[:4] == "msub":
+            return JobSubmitter_qsub_ARL(self)
+        return super(ARLLauncher, self).JobSubmitterFactory(launch)
+
+
+# Launcher creation function
+def createlauncher():
+    print "Inside of createLauncher ARLLauncher"
+    return ARLLauncher()

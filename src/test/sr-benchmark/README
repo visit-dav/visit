@@ -1,0 +1,17 @@
+These are a collection of scripts for benchmarking the SR mode renderers in
+VisIt.  The meat of the work happens in `scaling-pixels.sh', which runs a set
+of tests at varying resolutions and processor counts.  The results are stored
+in a sqlite3 database named `${HOSTNAME}.db' by default.
+
+At this point, you can develop your own scripts to extract out the information
+of interest in the format you want.  Some ready-made scripts to utilize gnuplot
+might suit your needs.
+    * format-gnu.py takes a database and creates 2 gnuplot data files, one for
+      each renderer type.  With the -a option, it will average the rendering
+      times appropriately.
+      For 2D plots, I suggest using the `smooth unique' option of gnuplot
+      rather than the averaging done by the script.  gnuplot does not support a
+      similar option for 3D plots.
+    * rendering.gnu is a batch gnuplot file which generates a series of plots
+      detailing performance.  It uses the output files generated from
+      format-gnu.py.

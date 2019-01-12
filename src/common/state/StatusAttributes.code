@@ -1,0 +1,10 @@
+Constant: DEFAULT_DURATION
+Declaration: static const int DEFAULT_DURATION;
+Definition: const int StatusAttributes::DEFAULT_DURATION = 5000;
+
+Target: xml2java
+Constant: DEFAULT_DURATION
+Declaration: DEFAULT_DURATION
+Definition: 
+    public final static int DEFAULT_DURATION = 5000;
+

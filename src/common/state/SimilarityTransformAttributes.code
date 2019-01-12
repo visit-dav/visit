@@ -1,0 +1,238 @@
+Function: CopyAttributes
+Declaration: virtual bool CopyAttributes(const AttributeGroup *);
+Definition:
+// ****************************************************************************
+// Method: SimilarityTransformAttributes::CopyAttributes
+//
+// Purpose: 
+//   CopyAttributes method for the SimilarityTransformAttributes class.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Oct 29 08:57:18 PDT 2002
+//
+// Modifications:
+//
+// ****************************************************************************
+
+bool
+SimilarityTransformAttributes::CopyAttributes(const AttributeGroup *atts)
+{
+    bool retval = false;
+
+    if(TypeName() == atts->TypeName())
+    {
+        // Call assignment operator.
+        const SimilarityTransformAttributes *tmp = (const SimilarityTransformAttributes *)atts;
+        *this = *tmp;
+        retval = true;
+    }
+    else if(atts->TypeName() == "BoxExtents")
+    {
+        const BoxExtents *tmp = (const BoxExtents *)atts;
+        const double *extents = tmp->GetExtents();
+        if(doTranslate)
+        {
+            SetTranslateX(extents[0]);
+            SetTranslateY(extents[2]);
+            SetTranslateZ(extents[4]);
+            retval = true;
+        }
+    }
+
+    return retval;
+}
+
+Function: CreateCompatible
+Declaration: virtual AttributeSubject *CreateCompatible(const std::string &) const;
+Definition:
+// ****************************************************************************
+// Method: SimilarityTransformAttributes::CreateCompatible
+//
+// Purpose: 
+//   Creates an object of the specified type initialized with the attributes
+//   from this object.
+//
+// Arguments:
+//   tname : The typename of the object that we want to create.
+//
+// Returns:    A new object of the type specified by tname or 0.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Oct 29 08:57:46 PDT 2002
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+AttributeSubject *
+SimilarityTransformAttributes::CreateCompatible(const std::string &tname) const
+{
+    AttributeSubject *retval = 0;
+
+    if(TypeName() == tname)
+    {
+        retval = new SimilarityTransformAttributes(*this);
+    }
+    else if(tname == "BoxExtents")
+    {
+        BoxExtents *b = new BoxExtents;
+        double extents[6];
+        extents[0] = translateX;
+        extents[1] = translateX + 1.;
+        extents[2] = translateY;
+        extents[3] = translateY + 1.;
+        extents[4] = translateZ;
+        extents[5] = translateZ + 1.;
+        b->SetExtents(extents);
+
+        retval = b;
+    }
+
+    return retval;
+}
+
+Function: SetFromNode
+Declaration: void SetFromNode(DataNode *parentNode)
+Definition:
+// ****************************************************************************
+// Method: SimilarityTransformAttributes::SetFromNode
+//
+// Purpose: 
+//   This method sets attributes in this object from values in a DataNode 
+//    representation of the object.
+//
+// Programmer:  Kathleen Biagas
+// Creation:    August 28, 2012 
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+SimilarityTransformAttributes::SetFromNode(DataNode *parentNode)
+{
+    if(parentNode == 0)
+        return;
+
+    DataNode *searchNode = parentNode->GetNode("SimilarityTransformAttributes");
+    if(searchNode == 0)
+        return;
+
+    DataNode *node;
+    if((node = searchNode->GetNode("doRotate")) != 0)
+        SetDoRotate(node->AsBool());
+    if((node = searchNode->GetNode("rotateOrigin")) != 0)
+    {
+        if(node->GetNodeType() == DOUBLE_ARRAY_NODE)
+        {
+            SetRotateOrigin(node->AsDoubleArray());
+        }
+        else if(node->GetNodeType() == FLOAT_ARRAY_NODE)
+        {
+            const float *fa = node->AsFloatArray();
+            double da[3] = {fa[0], fa[1], fa[2]};
+            SetRotateOrigin(da);
+        }
+    }
+    if((node = searchNode->GetNode("rotateAxis")) != 0)
+    {
+        if(node->GetNodeType() == DOUBLE_ARRAY_NODE)
+        {
+            SetRotateAxis(node->AsDoubleArray());
+        }
+        else if(node->GetNodeType() == FLOAT_ARRAY_NODE)
+        {
+            const float *fa = node->AsFloatArray();
+            double da[3] = {fa[0], fa[1], fa[2]};
+            SetRotateAxis(da);
+        }
+    }
+    if((node = searchNode->GetNode("rotateAmount")) != 0)
+    {
+        if(node->GetNodeType() == DOUBLE_NODE)
+            SetRotateAmount(node->AsDouble());
+        else if(node->GetNodeType() == FLOAT_NODE)
+            SetRotateAmount((double)node->AsFloat());
+    }
+    if((node = searchNode->GetNode("rotateType")) != 0)
+    {
+        // Allow enums to be int or string in the config file
+        if(node->GetNodeType() == INT_NODE)
+        {
+            int ival = node->AsInt();
+            if(ival >= 0 && ival < 2)
+                SetRotateType(AngleType(ival));
+        }
+        else if(node->GetNodeType() == STRING_NODE)
+        {
+            AngleType value;
+            if(AngleType_FromString(node->AsString(), value))
+                SetRotateType(value);
+        }
+    }
+    if((node = searchNode->GetNode("doScale")) != 0)
+        SetDoScale(node->AsBool());
+    if((node = searchNode->GetNode("scaleOrigin")) != 0)
+    {
+        if(node->GetNodeType() == DOUBLE_ARRAY_NODE)
+        {
+            SetScaleOrigin(node->AsDoubleArray());
+        }
+        else if(node->GetNodeType() == FLOAT_ARRAY_NODE)
+        {
+            const float *fa = node->AsFloatArray();
+            double da[3] = {fa[0], fa[1], fa[2]};
+            SetScaleOrigin(da);
+        }
+    }
+    if((node = searchNode->GetNode("scaleX")) != 0)
+    {
+        if(node->GetNodeType() == DOUBLE_NODE)
+            SetScaleX(node->AsDouble());
+        else if(node->GetNodeType() == FLOAT_NODE)
+            SetScaleX((double)node->AsFloat());
+    }
+    if((node = searchNode->GetNode("scaleY")) != 0)
+    {
+        if(node->GetNodeType() == DOUBLE_NODE)
+            SetScaleY(node->AsDouble());
+        else if(node->GetNodeType() == FLOAT_NODE)
+            SetScaleY((double)node->AsFloat());
+    }
+    if((node = searchNode->GetNode("scaleZ")) != 0)
+    {
+        if(node->GetNodeType() == DOUBLE_NODE)
+            SetScaleZ(node->AsDouble());
+        else if(node->GetNodeType() == FLOAT_NODE)
+            SetScaleZ((double)node->AsFloat());
+    }
+    if((node = searchNode->GetNode("doTranslate")) != 0)
+        SetDoTranslate(node->AsBool());
+    if((node = searchNode->GetNode("translateX")) != 0)
+    {
+        if(node->GetNodeType() == DOUBLE_NODE)
+            SetTranslateX(node->AsDouble());
+        else if(node->GetNodeType() == FLOAT_NODE)
+            SetTranslateX((double)node->AsFloat());
+    }
+    if((node = searchNode->GetNode("translateY")) != 0)
+    {
+        if(node->GetNodeType() == DOUBLE_NODE)
+            SetTranslateY(node->AsDouble());
+        else if(node->GetNodeType() == FLOAT_NODE)
+            SetTranslateY((double)node->AsFloat());
+    }
+    if((node = searchNode->GetNode("translateZ")) != 0)
+    {
+        if(node->GetNodeType() == DOUBLE_NODE)
+            SetTranslateZ(node->AsDouble());
+        else if(node->GetNodeType() == FLOAT_NODE)
+            SetTranslateZ((double)node->AsFloat());
+    }
+    if((node = searchNode->GetNode("transformVectors")) != 0)
+        SetTransformVectors(node->AsBool());
+}
+
+

@@ -1,0 +1,739 @@
+#!/usr/bin/python
+
+from xml.dom import minidom
+import os, string, sys, time
+
+def MakePath(outputdir, filename):
+    return "%s/%s" % (outputdir, filename)
+
+def MakeDirectory(dirname):
+    try:
+        os.mkdir(dirname)
+    except:
+        pass
+    return dirname
+
+def printAtts(element):
+    return # unless we're debugging
+    for i in range(element.attributes.length):
+        att = element.attributes.item(i)
+        print "    att = "
+        print "        name=",att.name
+        print "        localName=",att.localName
+        print "        prefix=",att.prefix
+        print "        value=",att.value
+    
+
+################################################################################
+# Function: HTMLpages
+#
+# Purpose:
+#    This class contains a set of HTML pages. This class also knows how to write
+#    out those HTML pages and create the index needed by our online help.
+#
+# Programmer: Brad Whitlock
+# Date: Tue Sep 14 13:36:59 PDT 2010
+#
+# Modifications:
+#
+################################################################################
+
+class HTMLpages:
+    def __init__(self):
+        self.bookName = ""
+        self.chapters = []
+        self.pages = []
+        self.htmlIndex = 0
+        self.currentPage = -1
+        self.figure = 1
+        self.invocationDate = time.asctime()
+        self.paragraphStyles = {}
+        self.textStyles = {}
+        
+    def SetBookName(self, value):
+        self.bookName = value
+
+    def BeginChapter(self, title):
+        self.chapters = self.chapters + [title]
+        self.figure = 1
+
+    def BeginHTML(self, title, level):
+        filename = "help%04d.html" % self.htmlIndex
+        self.htmlIndex = self.htmlIndex + 1
+        chapter = len(self.chapters)
+        self.pages = self.pages + [[chapter,title,level,filename,""]]
+        self.currentPage = len(self.pages)-1
+
+    def AppendHTML(self, html):
+        self.pages[self.currentPage][4] += html      
+
+    def AddParagraphStyle(self, name, props):
+        #if name in self.paragraphStyles.keys():
+        #    self.paragraphStyles[name] = self.paragraphStyles[name] + props
+        #else:
+        self.paragraphStyles[name] = props
+
+    def AddTextStyle(self, name, props):
+        #if name in self.textStyles.keys():
+        #    self.textStyles[name] = self.textStyles[name] + props
+        #else:
+        self.textStyles[name] = props
+
+    def BeginTextStyle(self, name):
+        html = ""
+        if name in self.textStyles.keys():
+            props = self.textStyles[name]
+            if props.has_key("bold"):
+                html += '<b>'
+            if props.has_key("italic"):
+                html += '<i>'
+            if props.has_key("superscript"):
+                html += '<sup>'
+            if props.has_key("subscript"):
+                html += '<sub>'
+        return html
+        
+    def EndTextStyle(self, name):
+        html = ""
+        if name in self.textStyles.keys():
+            props = self.textStyles[name]
+            if props.has_key("subscript"):
+                html += '</sub>'
+            if props.has_key("superscript"):
+                html += '</sup>'
+            if props.has_key("italic"):
+                html += '</i>'
+            if props.has_key("bold"):
+                html += '</b>'
+        return html
+        
+    def CountChapters(self):
+        ids = {}
+        for page in self.pages:
+            ids[page[0]] = 0
+        return len(ids.keys())
+
+    def GetPagesForChapter(self, chapter):
+        pp = []
+        for page in self.pages:
+            if page[0] == chapter:
+                pp = pp + [[page[2], page[1], page[3]]]
+        return pp
+
+    def WriteMainPage(self, outputdir):
+        filename = MakePath(outputdir, "list0000.html")
+        f = open(filename, "wt")
+        f.write('<html>\n')
+        f.write('<head>\n')
+        f.write('<title>%s</title>\n' % self.bookName)
+        f.write('</head>\n')
+        f.write('<body link="#0000FF" vlink="#800080" alink="#FF0000" bgcolor="#FFFFFF">\n')
+        f.write('<center><h2>%s</h2></center>\n' % self.bookName)
+        f.write('<ul>\n')
+        for i in range(len(self.chapters)):
+            f.write('<li><a href="list%04d.html">%s</a></li>\n' % (i+1,self.chapters[i]))
+        f.write('</ul>\n')
+        self.WriteGenerationComment(f)
+        f.write('</body>\n')
+        f.write('</html>\n')
+        f.close()     
+
+    def WriteIndexPage(self, outputdir, chapter, nChapters):
+        filename = MakePath(outputdir, "list%04d.html" % chapter)
+        f = open(filename, "wt")
+        f.write('<html>\n')
+        f.write('<head>\n')
+        f.write('<title>%s</title>\n' % self.chapters[chapter-1])
+        f.write('</head>\n')
+        f.write('<body link="#0000FF" vlink="#800080" alink="#FF0000" bgcolor="#FFFFFF">\n')
+        if chapter == 1:
+            f.write('<center align="right">[Back] [<a href="list0000.html">Up</a>] [<a href="list0002.html">Next</a>]</center>')
+        elif chapter == nChapters:
+            f.write('<center align="right">[<a href="list%04d.html">Back</a>] [<a href="list0000.html">Up</a>] [Next]</center>' % (chapter-1))
+        else:
+            f.write('<center align="right">[<a href="list%04d.html">Back</a>] [<a href="list0000.html">Up</a>] [<a href="list%04d.html">Next</a>]</center>' % (chapter-1, chapter+1))
+        f.write('<h2>%s</h2>\n' % self.chapters[chapter-1])
+        f.write('<ul>\n')
+        pages = self.GetPagesForChapter(chapter)
+        curLevel = 0
+        npages = len(pages)
+        for i in range(npages):
+            page = pages[i]
+            pageLevel = page[0]
+            pageLink = page[2]
+            pageTitle = page[1]
+
+            goUp = 0
+            goDown = 0
+            if i < npages-1:
+                goUp = pages[i+1][0] > pages[i][0]
+                goDown = pages[i+1][0] < pages[i][0]
+                
+            indent = '    ' * pages[i][0]
+
+            if goUp:
+                curLevel += 1
+                f.write('%s<li><a href="%s">%s</a>\n' % (indent, pageLink, pageTitle))
+                f.write('%s<ul>\n' % indent)
+            else:
+                f.write('%s<li><a href="%s">%s</a></li>\n' % (indent, pageLink, pageTitle))
+
+            if goDown:
+                while curLevel >= pages[i+1][0]:
+                    indent = '    ' * curLevel
+                    f.write('%s</ul></li>\n' % indent)
+                    curLevel -= 1
+        while curLevel > 0:
+            f.write('%s</ul></li>\n' % ('    ' * curLevel))
+            curLevel = curLevel - 1
+        f.write('</ul>\n')
+        self.WriteGenerationComment(f)
+        f.write('</body>\n')
+        f.write('</html>\n')
+        f.close()
+
+    def GetParentPageIndex(self, pageIndex):
+        index = pageIndex
+        level = self.pages[index][2]
+        # go until we hit a level less than the current page's level
+        while self.pages[index][2] >= level:
+            index = index - 1
+        return index
+
+    def FirstPageInChapter(self, pageIndex):
+        if pageIndex == 0 or \
+            self.pages[pageIndex][0] != self.pages[pageIndex-1][0]:
+            return 1
+        return 0
+
+    def LastPageInChapter(self, pageIndex):
+        if pageIndex == len(self.pages)-1 or \
+            self.pages[pageIndex][0] != self.pages[pageIndex+1][0]:
+            return 1
+        return 0
+
+    def WriteHelpML(self, outputdir, filename):
+        f = open(MakePath(outputdir, filename), "wt")
+        f.write('<?xml version="1.0" encoding="ISO-8859-1"?>\n')
+        f.write('<helpml version="1.1">\n')
+        f.write('    <head>\n')
+        f.write('        <title>VisIt Help Contents</title>\n')
+        f.write('        <dateCreated>%s</dateCreated>\n' % self.invocationDate)
+        f.write('        <version>2.1</version>\n')
+        f.write('    </head>\n')
+        f.write('    <body>\n')
+        for i in range(len(self.chapters)):
+            f.write('        <help topic="%s" doc="list%04d.html">\n' % (self.chapters[i], i+1))
+            pp = self.GetPagesForChapter(i+1)
+            npages = len(pp)
+            curLevel = 0
+            for j in range(npages):
+                # Does the page have children
+                goUp = 0
+                goDown = 0
+                if j < npages-1:
+                    goUp = pp[j+1][0] > pp[j][0]
+                    goDown = pp[j+1][0] < pp[j][0]
+
+                indent = '    ' * (pp[j][0] + 2)
+
+                if goUp:
+                    curLevel += 1
+                    f.write('%s<help topic="%s" doc="%s">\n' % (indent, pp[j][1], pp[j][2]))
+                else:
+                    f.write('%s<help topic="%s" doc="%s"/>\n' % (indent, pp[j][1], pp[j][2]))
+
+                if goDown: 
+                    while curLevel >= pp[j+1][0]:
+                        indent = '    ' * (curLevel+2)
+                        f.write('%s</help>\n' % indent)
+                        curLevel -= 1
+            while curLevel >= 0:
+                f.write('%s</help>\n' % ('    ' * (curLevel+2)))
+                curLevel = curLevel - 1
+        f.write('    </body>\n')
+        f.write('</helpml>\n')
+        f.close()
+
+    def WritePages(self, outputdir):
+        # Write the index pages first. 
+        self.WriteMainPage(outputdir)
+        nChapters = self.CountChapters()
+        for i in range(nChapters):
+            self.WriteIndexPage(outputdir, i+1, nChapters)
+       
+        # Now write the individual html pages.        
+        for i in range(len(self.pages)):
+            page = self.pages[i]
+
+            f = open(MakePath(outputdir, page[3]), "wt")
+            f.write('<html>\n')
+            f.write('<head>\n')
+            f.write('<title>%s</title>\n' % page[1])
+            f.write('</head>\n')
+            f.write('<body link="#0000FF" vlink="#800080" alink="#FF0000" bgcolor="#FFFFFF">\n')
+
+            if page[2] == 1:
+                up = "list%04d.html" % page[0]
+            else:
+                up = "help%04d.html" % self.GetParentPageIndex(i)
+
+            f.write('<center align="right">')
+            if self.FirstPageInChapter(i):
+                if page[0] > 1:
+                    f.write('[<a href="list%04d.html">Back</a>] ' % (page[0]-1))
+                    f.write('[<a href="%s">Up</a>] ' % up)
+                    f.write('[<a href="help%04d.html">Next</a>]' % (i+1))
+                else:
+                    f.write('[Back] ')
+                    f.write('[<a href="%s">Up</a>] ' % up)
+                    f.write('[<a href="help%04d.html">Next</a>]' % (i+1))
+            elif self.LastPageInChapter(i):
+                if page[0] < nChapters:
+                    f.write('[<a href="help%04d.html">Back</a>] ' % (i-1))
+                    f.write('[<a href="%s">Up</a>] ' % up)
+                    f.write('[<a href="list%04d.html">Next</a>]' % (page[0]+1))
+                else:
+                    f.write('[<a href="help%04d.html">Back</a>] ' % (i-1))
+                    f.write('[<a href="%s">Up</a>] [Next]' % (up))
+            else:
+                f.write('[<a href="help%04d.html">Back</a>] ' % (i-1))
+                f.write('[<a href="%s">Up</a>] ' % up)
+                f.write('[<a href="help%04d.html">Next</a>]' % (i+1))
+            f.write('</center>\n')
+
+            f.write("<h2>%s</h2>\n" % page[1])
+            f.write("%s\n" % page[4])
+            self.WriteGenerationComment(f)
+            f.write("</body>\n")
+            f.write("</html>\n")
+            f.close()
+
+        # Write the helpml file.
+        self.WriteHelpML(outputdir, "visit.helpml")
+
+    def WriteGenerationComment(self, f):
+        return
+        #f.write('<br><br><p><i><font color="#888888">Generated from %s on %s</font></i></p>\n' % (self.bookName, self.invocationDate))
+
+################################################################################
+# Function: HTMLize
+#
+# Purpose:
+#    This function reads a contents.xml file and digests it into HTML pages
+#    that get added to the pages object.
+#
+# Programmer: Brad Whitlock
+# Date: Tue Sep 14 13:36:59 PDT 2010
+#
+# Modifications:
+#
+################################################################################
+
+def HTMLize(chapterName, filename, pages):
+    def filter_text(s):
+        ret = string.replace(s, "<", "&lt;")
+        ret = string.replace(ret, ">", "&gt;")
+        return ret
+
+    #
+    # Iterate over the document and create HTML
+    #
+    def dom_iterate(element, docs):
+        handled = 0
+        html = ""
+        if element.nodeType == 1:
+            #
+            # Headings
+            #
+            if element.tagName == "text:h":
+                headerLevel = element.getAttribute("text:outline-level")
+                if headerLevel == "2":
+                    #print "***************************** NEW PAGE *****************************"
+                    title = ""
+                    for e in element.childNodes:            
+                        title += dom_iterate(e,docs)
+                    docs.BeginHTML(title, 1)
+                    handled = 1
+                elif headerLevel == "3":
+                    #print "***************************** NEW PAGE *****************************"
+                    title = ""
+                    for e in element.childNodes:            
+                        title += dom_iterate(e,docs)
+                    docs.BeginHTML(title, 2)
+                    handled = 1
+                elif headerLevel == "4":
+                    #print "***************************** NEW PAGE *****************************"
+                    title = ""
+                    for e in element.childNodes:            
+                        title += dom_iterate(e,docs)
+                    docs.BeginHTML(title, 3)
+                    handled = 1
+                #else:
+                #    print element, element.nodeType, element.tagName
+                #    printAtts(element)
+
+            #
+            # Paragraphs
+            #
+            elif element.tagName == "text:p":
+                #print element, element.nodeType, element.tagName
+                #printAtts(element)
+                paraStyle = element.getAttribute("text:style-name")
+                if paraStyle == "Body":
+                    docs.AppendHTML("<p>\n")
+                    for e in element.childNodes:            
+                        docs.AppendHTML(dom_iterate(e, docs))
+                    docs.AppendHTML("\n</p>\n")
+                    handled = 1
+                elif paraStyle == "P11" or paraStyle == "P12":
+                    html += "<p>"
+                    for e in element.childNodes:
+                        html += dom_iterate(e, docs)
+                    html += "</p>"
+                    handled = 1
+                elif paraStyle=="Figure" or string.find(paraStyle, "Frame") == 0:
+                    for e in element.childNodes:            
+                        dom_iterate(e, docs)
+                    html = ""
+                    handled = 1
+                else:
+                    #print "PARAGRAPH STYLE: ",paraStyle
+                    #printAtts(element)
+                    for e in element.childNodes:            
+                        html += dom_iterate(e, docs)
+
+            #
+            # Character formatting
+            #
+            elif element.tagName == "text:span":
+                textStyle = element.getAttribute("text:style-name")
+                html += docs.BeginTextStyle(textStyle)
+                for e in element.childNodes:            
+                    html += dom_iterate(e, docs)
+                html += docs.EndTextStyle(textStyle)
+
+            #
+            # Figures
+            #
+            elif element.tagName == "text:sequence-ref":
+                html += "figure"
+                handled = 1
+            elif element.tagName  == "draw:image":
+                imageRef = element.getAttribute("xlink:href")
+                if imageRef != "":
+                    imagefile = string.replace(imageRef, ".gif", ".png")
+                    img = '<br><center>'
+                    img += '<table border="0"><tr><td>'
+                    img += '<a name="Figure%d"></a>' % docs.figure
+                    img += '<img src="%s">' % imagefile
+                    img += '</td></tr>'
+                    img += '<tr><td halign="left"><i>Figure %d</i></td></tr>' % docs.figure
+                    img += '</table>'
+                    img += '</center><br>'
+                    docs.figure = docs.figure + 1
+                    docs.AppendHTML(img)
+                html = ""
+                handled = 1
+
+            #
+            # Tables
+            #
+            elif element.tagName == "table:table":
+                html += '<center><table border="1" width="80%">\n'
+                for e in element.childNodes:
+                    html += dom_iterate(e, docs)
+                html += '</table></center>\n'
+                docs.AppendHTML(html)
+                html = ""                
+                handled = 1
+            elif element.tagName == "table:table-row":
+                html += '<tr>\n'
+                for e in element.childNodes:
+                    html += dom_iterate(e, docs)
+                html += '</tr>\n'
+                handled = 1
+            elif element.tagName == "table:table-header-rows":
+                html += '<tr>\n'
+                for e in element.childNodes:
+                    html += dom_iterate(e, docs)
+                html += '</tr>\n'
+                html = string.replace(html, '<td>', '<th>')
+                html = string.replace(html, '</td>', '</th>')
+                handled = 1
+            elif element.tagName == "table:table-cell":
+                html += '<td>\n'
+                for e in element.childNodes:
+                    html += dom_iterate(e, docs)
+                html += '</td>\n'
+                handled = 1
+
+            #else:
+            #    print element.tagName
+            #    printAtts(element)
+
+        elif element.nodeType == 3:
+            #
+            # Text
+            #
+            html += filter_text(element.data)
+            handled = 1
+
+        if handled == 0:
+            for e in element.childNodes:            
+                dom_iterate(e, docs)
+
+        return html
+
+    def temp_directory():
+        import random
+        d = "/var/tmp/"
+        for i in range(20):
+            d = d + chr(65 + random.randint(0,25))
+        return d
+
+    # Make a temporary directory and unzip the file to it.
+    tmpdir = temp_directory()
+    os.mkdir(tmpdir)
+    cmd = "cd %s; unzip %s > /dev/null" % (tmpdir, filename)
+    s = os.system(cmd)
+    xmlfile = MakePath(tmpdir, "content.xml")
+
+    # Open the XML file and parse it
+    f = open(xmlfile, "rt")
+    dom = minidom.parse(f)
+    f.close()
+    
+    #
+    # Learn the styles
+    #
+    def style_iterate(element, obj):
+        handled = 0
+        checkIt = 1
+        if hasattr(element, "nodeType"):
+            if element.nodeType == 1:
+                checkIt = 1
+            else:
+                checkIt = 0                
+        if checkIt == 1:
+            if element.tagName == "style:style":
+                family = element.getAttribute("style:family")
+                if family == "text":
+                    props = {}
+                    for e in element.childNodes:            
+                        style_iterate(e, props)
+                    obj.AddTextStyle(element.getAttribute("style:name"), props)
+                    handled = 1
+                elif family == "paragraph":
+                    props = {}
+                    for e in element.childNodes:            
+                        style_iterate(e, props)
+                    obj.AddParagraphStyle(element.getAttribute("style:name"), props)
+                    handled = 1
+            elif element.tagName == "style:text-properties":
+                #print element.tagName
+                #printAtts(element)
+                bold = element.getAttribute("fo:font-weight")
+                if bold == "bold":
+                    obj["bold"] = 1
+                italic = element.getAttribute("fo:font-style")
+                if italic == "italic":
+                    obj["italic"] = 1
+                size = element.getAttribute("fo:font-size")
+                if size != "":
+                    obj["size"] = size
+                pos = element.getAttribute("style:text-position")
+                if pos[:3] == "sub":
+                    obj["subscript"] = 1
+                elif pos[:3] == "sup":
+                    obj["superscript"] = 1
+                handled = 1
+            elif element.tagName == "style:default-style":
+                handled = 1
+        if handled == 0:
+            for e in element.childNodes:            
+                style_iterate(e, obj)
+                
+    # Learn the styles
+    f = open(MakePath(tmpdir, "styles.xml"), "rt")
+    sdom = minidom.parse(f)
+    f.close()
+    style_iterate(sdom.documentElement, pages)
+    styles = dom.documentElement.getElementsByTagName("office:automatic-styles")
+    for i in range(styles.length):
+        style_iterate(styles.item(i), pages)
+    #print pages.textStyles
+    
+    # Iterate over the XML file and make HTML pages
+    pages.BeginChapter(chapterName)
+    body = dom.documentElement.getElementsByTagName("office:body")[0]
+    dom_iterate(body, pages)
+
+    # Clean up the temporary directory
+    s = os.system("rm -rf %s" % tmpdir)
+
+################################################################################
+# Function: ResizeImage
+#
+# Purpose:
+#    This function reads an image, resizes it, and writes it to another file.
+#
+# Programmer: Brad Whitlock
+# Date: Tue Sep 14 13:36:59 PDT 2010
+#
+# Modifications:
+#
+################################################################################
+
+def ResizeImage(input, output):
+    try:
+        from PIL import Image
+        maxSize = 500
+        image = Image.open(input)
+        image = image.convert("RGB")
+        width = image.size[0]
+        height = image.size[1]
+        if width > maxSize:
+            # Scale down so we have an image that's maxSize pixels wide
+            s = float(maxSize) / float(width)
+            width = maxSize
+            height *= s
+        if height > maxSize:
+            # Scale down so we have an image that's maxSize pixels tall
+            s = float(maxSize) / float(height)
+            width *= s
+            height = maxSize
+        small = image.resize((int(width),int(height)), Image.BICUBIC)
+        small.save(output)
+    except ImportError:
+        print "PIL was not imported so",output,"was not saved."
+
+################################################################################
+# Function: ResizeImageDirectory
+#
+# Purpose:
+#    This function resizes all of the png files in a directory.
+#
+# Programmer: Brad Whitlock
+# Date: Tue Sep 14 13:36:59 PDT 2010
+#
+# Modifications:
+#
+################################################################################
+
+def ResizeImageDirectory(imagedir, outputdir):
+    files = os.listdir(imagedir)
+    for f in files:
+        if f[-4:] == ".png":
+            ResizeImage(MakePath(imagedir,f), MakePath(outputdir,f))
+
+################################################################################
+# Function: ProcessHelpImages
+#
+# Purpose:
+#    This function reads resizes all of the User Manual's images and saves them
+#    to a new output directory.
+#
+# Programmer: Brad Whitlock
+# Date: Tue Sep 14 13:36:59 PDT 2010
+#
+# Modifications:
+#
+################################################################################
+
+def ProcessHelpImages(inputdir, outputdir):
+    inputimages = MakePath(inputdir, "images")
+    outputimages = MakeDirectory(MakePath(outputdir, "images"))
+    #
+    # Iterate over the manual image directories and resize the images so they
+    # are small and get copied into help/images.  
+    #
+    manualDirs = (
+    "Animation",
+    "Help",
+    "InteractiveTools",
+    "Intro",
+    "MakingItPretty",
+    "MultipleDatabaseAndWindows",
+    "Operators",
+    "Plots",
+    "Preferences",
+    "Quantitative",
+    "RemoteVisualization",
+    "SavingPrinting",
+    "Subsetting",
+    "VisualizationWindows",
+    "WorkingWithFiles")
+    for d in manualDirs:
+        inputdir = MakePath(inputimages, d)
+        outputdir = MakeDirectory(MakePath(outputimages, d))
+        ResizeImageDirectory(inputdir, outputdir)
+
+################################################################################
+# Function: ProcessUserManual
+#
+# Purpose:
+#    This function reads each chapter from the User Manual and outputs the
+#    content in a format suitable for the online help.
+#
+# Programmer: Brad Whitlock
+# Date: Tue Sep 14 13:36:59 PDT 2010
+#
+# Modifications:
+#
+################################################################################
+
+def ProcessUserManual(inputdir, outputdir, writeImages):
+    pages = HTMLpages()
+    pages.SetBookName("VisIt User's Manual")
+
+    HTMLize("Introduction to VisIt",    MakePath(inputdir, "Intro.odt"), pages)
+    HTMLize("Working with Databases",   MakePath(inputdir, "WorkingWithFiles.odt"), pages)
+    HTMLize("Plots",                    MakePath(inputdir, "Plots.odt"), pages)
+    HTMLize("Operators",                MakePath(inputdir, "Operators.odt"), pages)
+    HTMLize("Saving and Printing",      MakePath(inputdir, "SavingPrinting.odt"), pages)
+    HTMLize("Visualization Windows",    MakePath(inputdir, "VisualizationWindows.odt"), pages)
+    HTMLize("Subsetting",               MakePath(inputdir, "Subsetting.odt"), pages)
+    HTMLize("Quantitative Analysis",    MakePath(inputdir, "Quantitative.odt"), pages)
+    HTMLize("Making it Pretty",         MakePath(inputdir, "MakingItPretty.odt"), pages)
+    HTMLize("Animation and Keyframing", MakePath(inputdir, "Animation.odt"), pages)
+    HTMLize("Interactive Tools",        MakePath(inputdir, "InteractiveTools.odt"), pages)
+    HTMLize("Multiple Databases and Windows", MakePath(inputdir, "MultipleDatabaseAndWindows.odt"), pages)
+    HTMLize("Remote Visualization",     MakePath(inputdir, "RemoteVisualization.odt"), pages)
+    HTMLize("Setting Preferences",      MakePath(inputdir, "Preferences.odt"), pages)
+    HTMLize("Help",                     MakePath(inputdir, "Help.odt"), pages)
+
+    pages.WritePages(MakePath(outputdir, "en_US"))
+
+    if writeImages:
+        ProcessHelpImages(inputdir, outputdir)  
+
+#
+# Check the arguments
+#
+writeImages = 0
+for arg in sys.argv[1:]:
+    if arg == "-images":
+        writeImages = 1
+    else:
+        print "Error!", arg, "is not a supported argument."
+        print "Usage: makehelp [-images]"
+
+#
+# Make sure the manual and help paths exist
+#
+manualPath = os.path.abspath(os.path.abspath(".") + os.path.sep + "../../docs/UserManual")
+helpPath = os.path.abspath(os.path.abspath(".") + os.path.sep + "../resources/help")
+if not os.path.exists(manualPath):
+    print "The manual does not exist at the path %s. Did you check out the docs directory? Did you run makehelp from the src/svn_bin directory?" % manualPath
+    sys.exit(1)
+if not os.path.exists(helpPath):
+    print "The help directory does not exist at the path %s. Did you run makehelp from the src/svn_bin directory?" % helpPath
+    sys.exit(1)
+
+#
+# Generate the new help files.
+#
+ProcessUserManual(manualPath, helpPath, writeImages)
+
+sys.exit(0)

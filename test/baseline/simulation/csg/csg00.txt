@@ -1,0 +1,3 @@
+Simulation executable "csg" exists.
+Simulation "csg" started.
+VisIt connected to simulation "csg".

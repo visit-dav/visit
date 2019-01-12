@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+  <Plugin name="GDAL" type="database" label="GDAL" version="1.0" enabled="true" mdspecificcode="true" onlyengine="false" noengine="false" dbtype="STMD" haswriter="false">
+    <CXXFLAGS>
+      ${GDAL_INCLUDE_DIR}
+    </CXXFLAGS>
+    <LDFLAGS>
+      ${GDAL_LIBRARY_DIR}
+    </LDFLAGS>
+    <LIBS>
+      ${GDAL_LIB}
+    </LIBS>
+    <FilePatterns>
+      *.adf
+      *.asc
+      *.bt
+      *.ddf
+      *.dem
+      *.ecw
+      *.gxf
+      *.jp2
+      *.map
+      *.mem
+      *.mpl
+      *.mpr
+      *.n1
+      *.nat
+      *.ntf
+      *.pix
+      *.rsw
+      *.sid
+      *.vrt
+      *.xpm
+    </FilePatterns>
+    <Attribute name="" purpose="" persistent="false" exportAPI="" exportInclude="">
+    </Attribute>
+  </Plugin>

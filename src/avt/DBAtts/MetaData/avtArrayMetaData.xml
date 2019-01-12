@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+  <Attribute name="avtArrayMetaData" purpose="Contains array metadata attributes" persistent="false" keyframe="true" exportAPI="DBATTS_API" exportInclude="dbatts_exports.h" codefile="avtArrayMetaData.code" baseClass="avtVarMetaData">
+    <Field name="nVars" label="Number of variables" type="int" access="public">
+      0
+    </Field>
+    <Field name="compNames" label="Component names" type="stringVector" access="public">
+    </Field>
+    <Function name="avtArrayMetaData2" user="true" member="true">
+    </Function>
+    <Function name="avtArrayMetaData3" user="true" member="true">
+    </Function>
+    <Function name="Print" user="true" member="true">
+    </Function>
+    <Include file="source" quoted="false">
+      snprintf.h
+    </Include>
+  </Attribute>

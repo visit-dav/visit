@@ -1,0 +1,119 @@
+Function: GetNumTypes
+Declaration: static int GetNumTypes();
+Definition:
+// ****************************************************************************
+//  Method:  Expression::GetNumTypes
+//
+//  Programmer:  ?
+//  Creation:    ?
+//
+//  Modifications:
+//    Jeremy Meredith, Sun Oct 10 22:58:21 PDT 2004
+//    Changed it to 8 to reflect the current number of actual expressions.
+//
+//    Hank Childs, Tue Jul 19 13:25:53 PDT 2005
+//    Changed it to 9 for Array expressions.
+// 
+//    Kathlen Bonnell, Tue Aug  1 08:26:14 PDT 2006 
+//    Changed it to 10 for Curve expressions.
+//
+//    Tom Fogal, Tue Jun 23 20:57:07 MDT 2009
+//    Const is ignored on by-value return types.
+// 
+// ****************************************************************************
+int
+Expression::GetNumTypes()
+{
+    return 10;
+}
+
+Function: GetTypeString
+Declaration: static const char * GetTypeString(const Expression::ExprType t);
+Definition:
+// ****************************************************************************
+//  Method:  Expression::GetTypeString
+//
+//  Programmer:  ?
+//  Creation:    ?
+//
+//  Modifications:
+//    Kathlen Bonnell, Tue Aug  1 08:26:14 PDT 2006 
+//    Added CurveMeshVar. 
+// 
+// ****************************************************************************
+
+const char *
+Expression::GetTypeString(const Expression::ExprType t)
+{
+    switch(t)
+    {
+    case ScalarMeshVar:
+        return "Scalar Mesh Variable";
+    case VectorMeshVar:
+        return "Vector Mesh Variable";
+    case TensorMeshVar:
+        return "Tensor Mesh Variable";
+    case SymmetricTensorMeshVar:
+        return "Symmetric Tensor Mesh Variable";
+    case ArrayMeshVar:
+        return "Array Mesh Variable";
+    case CurveMeshVar:
+        return "Curve Mesh Variable";
+    case Mesh:
+        return "Mesh";
+    case Material:
+        return "Material";
+    case Species:
+        return "Species";
+    default:
+        return "Unknown Type";
+    }
+}
+
+Function: GetTypeId
+Declaration: static Expression::ExprType GetTypeId(const std::string s);
+Definition:
+// ****************************************************************************
+//  Method:  Expression::GetTypeId
+//
+//  Programmer:  ?
+//  Creation:    ?
+//
+//  Modifications:
+//    Kathlen Bonnell, Tue Aug  1 08:26:14 PDT 2006 
+//    Added CurveMeshVar. 
+//
+//    Tom Fogal, Tue Jun 23 20:58:01 MDT 2009
+//    Const is ignored on by-value return types.
+// 
+// ****************************************************************************
+
+Expression::ExprType
+Expression::GetTypeId(const std::string s)
+{
+    if (s == "Scalar Mesh Variable")
+        return ScalarMeshVar;
+    else if (s == "Vector Mesh Variable")
+        return VectorMeshVar;
+    else if (s == "Tensor Mesh Variable")
+        return TensorMeshVar;
+    else if (s == "Symmetric Tensor Mesh Variable")
+        return SymmetricTensorMeshVar;
+    else if (s == "Array Mesh Variable")
+        return ArrayMeshVar;
+    else if (s == "Curve Mesh Variable")
+        return CurveMeshVar;
+    else if (s == "Mesh")
+        return Mesh;
+    else if (s == "Material")
+        return Material;
+    else if (s == "Species")
+        return Species;
+    else
+        return Unknown;
+}
+
+Function: AddMeshName
+Declaration: 
+Definition:
+

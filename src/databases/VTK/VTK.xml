@@ -1,0 +1,40 @@
+<?xml version="1.0"?>
+  <Plugin name="VTK" type="database" label="VTK" version="1.0" enabled="true" mdspecificcode="false" onlyengine="false" noengine="false" dbtype="STMD" haswriter="true" hasoptions="true">
+    <FilePatterns>
+      *.vtk
+      *.vti
+      *.vtp
+      *.vtr 
+      *.vts
+      *.vtu
+      *.vtm
+      *.pvti
+      *.pvtk
+      *.pvtp
+      *.pvtr 
+      *.pvts
+      *.pvtu
+    </FilePatterns>
+    <Files components="M">
+      avtVTKFileFormat.C
+      avtVTKFileReader.C
+      avtVTKOptions.C
+      vtkVisItXMLPDataReader.C
+      PVTKParser.C
+      VTMParser.C
+    </Files>
+    <Files components="E">
+      avtVTKFileFormat.C
+      avtVTKFileReader.C
+      avtVTKOptions.C
+      avtVTKWriter.C
+      vtkVisItXMLPDataReader.C
+      PVTKParser.C
+      VTMParser.C
+    </Files>
+    <LIBS>
+      vtkIOXML
+    </LIBS>
+    <Attribute name="" purpose="" persistent="true">
+    </Attribute>
+  </Plugin>

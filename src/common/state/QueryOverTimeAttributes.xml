@@ -1,0 +1,52 @@
+<?xml version="1.0"?>
+  <Attribute name="QueryOverTimeAttributes" purpose="Attributes for queries over time." persistent="true" keyframe="true" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="QueryOverTimeAttributes.code">
+    <Enum name="TimeType">
+      Cycle
+      DTime
+      Timestep
+    </Enum>
+    <Field name="timeType" label="timeType" type="enum" subtype="TimeType">
+      Cycle
+    </Field>
+    <Field name="startTimeFlag" label="startTimeFlag" type="bool">
+      false
+    </Field>
+    <Field name="startTime" label="startTime" type="int" enabler="startTimeFlag:true">
+      0
+    </Field>
+    <Field name="endTimeFlag" label="endTimeFlag" type="bool">
+      false
+    </Field>
+    <Field name="endTime" label="endTime" type="int" enabler="endTimeFlag:true">
+      1
+    </Field>
+    <Field name="strideFlag" label="strideFlag" type="bool">
+      false
+    </Field>
+    <Field name="stride" label="stride" type="int">
+      1
+    </Field>
+    <Field name="createWindow" label="createWindow" type="bool">
+      true
+    </Field>
+    <Field name="windowId" label="windowId" type="int" enabler="createWindow:false">
+      2
+    </Field>
+    <Field name="queryAtts" label="queryAtts" type="att" subtype="QueryAttributes" internal="true">
+    </Field>
+    <Field name="pickAtts" label="pickAtts" type="att" subtype="PickAttributes" internal="true">
+    </Field>
+    <Field name="cachedCurvePts" label="cachedCurvePts" type="doubleVector" access="protected">
+    </Field>
+    <Field name="useCachedPts" label="useCachedPts" type="bool" access="protected">
+      false
+    </Field>
+    <Function name="CreateNode" user="false" member="true">
+    </Function>
+    <Function name="SetFromNode" user="false" member="true">
+    </Function>
+    <Function name="PyQueryOverTimeAttributes_GetLogString" user="false" member="true">
+    </Function>
+    <Function name="PyQueryOverTimeAttributes_CallLogRoutine" user="false" member="true">
+    </Function>
+  </Attribute>

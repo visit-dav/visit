@@ -1,0 +1,313 @@
+Function: CopyAttributes
+Declaration: virtual bool CopyAttributes(const AttributeGroup *);
+Definition:
+// ****************************************************************************
+// Method: ClipAttributes::CopyAttributes
+//
+// Purpose: 
+//   CopyAttributes method for the ClipAttributes class.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Oct 29 08:57:18 PDT 2002
+//
+// Modifications:
+//   Gunther H. Weber, Tue Aug 14 12:50:19 PDT 2007
+//   Plane tool can modify clip planes 
+//
+//   Jeremy Meredith, Thu Aug  7 15:34:07 EDT 2008
+//   Add missing case in switch to avoid warnings.
+//
+// ****************************************************************************
+
+bool
+ClipAttributes::CopyAttributes(const AttributeGroup *atts)
+{
+    bool retval = false;
+
+    if(TypeName() == atts->TypeName())
+    {
+        // Call assignment operator.
+        const ClipAttributes *tmp = (const ClipAttributes *)atts;
+        *this = *tmp;
+        retval = true;
+    }
+    else if(atts->TypeName() == "PlaneAttributes")
+    {
+        if(GetFuncType() == Plane && GetPlaneToolControlledClipPlane() != None)
+        {
+            const PlaneAttributes *tmp = (const PlaneAttributes *)atts;
+
+            switch (GetPlaneToolControlledClipPlane())
+            {
+                case Plane1:
+                    if(GetPlane1Status())
+                    {
+                        SetPlane1Origin(tmp->GetOrigin());
+                        SetPlane1Normal(tmp->GetNormal());
+                        retval = true;
+                    }
+                    break;
+                case Plane2:
+                    if(GetPlane2Status())
+                    {
+                        SetPlane2Origin(tmp->GetOrigin());
+                        SetPlane2Normal(tmp->GetNormal());
+                        retval = true;
+                    }
+                    break;
+                case Plane3:
+                    if(GetPlane3Status())
+                    {
+                        SetPlane3Origin(tmp->GetOrigin());
+                        SetPlane3Normal(tmp->GetNormal());
+                        retval = true;
+                    }
+                    break;
+                case None:
+                    break;
+            }
+        }
+    }
+    else if(atts->TypeName() == "BoxExtents")
+    {
+        if(GetFuncType() == Plane)
+        {
+            const BoxExtents *tmp = (const BoxExtents *)atts;
+            const double *extents = tmp->GetExtents();
+            double origin[] = {extents[0], extents[2], extents[4]};
+            double xnorm[] = {1., 0., 0.};
+            double ynorm[] = {0., 1., 0.};
+            double znorm[] = {0., 0., 1.};
+            if(GetPlane1Status())
+            {
+                SetPlane1Origin(origin);
+                SetPlane1Normal(xnorm);
+            }
+            if(GetPlane2Status())
+            {
+                SetPlane2Origin(origin);
+                SetPlane2Normal(ynorm);
+            }
+            if(GetPlane3Status())
+            {
+                SetPlane3Origin(origin);
+                SetPlane3Normal(znorm);
+            }
+
+            retval = true;
+        }
+    }
+    else if(atts->TypeName() == "SphereAttributes")
+    {
+        if(GetFuncType() == Sphere)
+        {
+            const SphereAttributes *sphere = (const SphereAttributes *)atts;
+            SetCenter(sphere->GetOrigin());
+            SetRadius(sphere->GetRadius());
+
+            retval = true;
+        }
+    }
+
+    return retval;
+}
+
+Function: CreateCompatible
+Declaration: virtual AttributeSubject *CreateCompatible(const std::string &) const;
+Definition:
+// ****************************************************************************
+// Method: ClipAttributes::CreateCompatible
+//
+// Purpose: 
+//   Creates an object of the specified type initialized with the attributes
+//   from this object.
+//
+// Arguments:
+//   tname : The typename of the object that we want to create.
+//
+// Returns:    A new object of the type specified by tname or 0.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Oct 29 08:57:46 PDT 2002
+//
+// Modifications:
+//   Gunther H. Weber, Tue Aug 14 12:50:19 PDT 2007
+//   Plane tool can modify clip planes 
+//   
+//   Jeremy Meredith, Thu Aug  7 15:34:07 EDT 2008
+//   Add missing case in switch to avoid warnings.
+//
+// ****************************************************************************
+
+AttributeSubject *
+ClipAttributes::CreateCompatible(const std::string &tname) const
+{
+    AttributeSubject *retval = 0;
+
+    if(TypeName() == tname)
+    {
+        retval = new ClipAttributes(*this);
+    }
+    else if(tname == "PlaneAttributes" && GetPlaneToolControlledClipPlane() != None)
+    {
+        PlaneAttributes *p = new PlaneAttributes;
+        const double *normal_arr = NULL;
+
+        switch (GetPlaneToolControlledClipPlane())
+        {
+            case Plane1:
+                p->SetOrigin(GetPlane1Origin());
+                normal_arr = GetPlane1Normal();
+                p->SetNormal(normal_arr);
+                break;
+            case Plane2:
+                p->SetOrigin(GetPlane2Origin());
+                normal_arr = GetPlane2Normal();
+                p->SetNormal(normal_arr);
+                break;
+            case Plane3:
+                p->SetOrigin(GetPlane3Origin());
+                normal_arr = GetPlane3Normal();
+                p->SetNormal(normal_arr);
+                break;
+            case None:
+                break;
+        }
+
+        // Compute up vector
+        double temp[3] = {0, 0, 1};
+        if (normal_arr[0] == 0 && normal_arr[1] == 0)
+            temp[1] = 1;
+        double up[3];
+        up[0] = normal_arr[1]*temp[2] - normal_arr[2]*temp[1];
+        up[1] = normal_arr[2]*temp[0] - normal_arr[0]*temp[2];
+        up[2] = normal_arr[0]*temp[1] - normal_arr[1]*temp[0];
+
+        p->SetUpAxis(up);
+        p->SetThreeSpace(true);
+
+        retval = p;
+    }
+    else if(tname == "BoxExtents")
+    {
+        BoxExtents *b = new BoxExtents;
+        double extents[6];
+        extents[0] = plane1Origin[0];
+        extents[1] = plane1Origin[0]+2.;
+        extents[2] = plane1Origin[1];
+        extents[3] = plane1Origin[1]+2.;
+        extents[4] = plane1Origin[2];
+        extents[5] = plane1Origin[2]+2.;
+        b->SetExtents(extents);
+
+        retval = b;
+    }
+    else if(tname == "SphereAttributes")
+    {
+        SphereAttributes *s = new SphereAttributes;
+        s->SetOrigin(center);
+        s->SetRadius(radius);
+
+        retval = s;
+    }
+
+    return retval;
+}
+
+Function: EqualTo
+Declaration: virtual bool EqualTo(const AttributeGroup *atts) const;
+Definition:
+// ****************************************************************************
+// Method: ClipAttributes::EqualTo
+//
+// Purpose:
+//     Determines if the clip attributes are equal to another attributes
+//     object.
+//
+// Arguments:
+//   atts : An attribute group.
+//
+// Returns:    True if this object is equal to atts, false otherwise.
+//
+// Note:
+//
+// Programmer: Hank Childs
+// Creation:   August 28, 2007
+//
+//   Jeremy Meredith, Thu Aug  7 15:34:07 EDT 2008
+//   Add missing case in switch to avoid warnings.
+//
+// ****************************************************************************
+
+bool
+ClipAttributes::EqualTo(const AttributeGroup *atts) const
+{
+    if ((atts->TypeName() != "PlaneAttributes") || 
+        GetPlaneToolControlledClipPlane() == None)
+        return AttributeSubject::EqualTo(atts);
+
+    const PlaneAttributes *tmp = (const PlaneAttributes *) atts;
+
+    switch (GetPlaneToolControlledClipPlane())
+    {
+      case Plane1:
+        if (GetPlane1Origin()[0] != tmp->GetOrigin()[0])
+            return false;
+        if (GetPlane1Origin()[1] != tmp->GetOrigin()[1])
+            return false;
+        if (GetPlane1Origin()[2] != tmp->GetOrigin()[2])
+            return false;
+
+        if (GetPlane1Normal()[0] != tmp->GetNormal()[0])
+            return false;
+        if (GetPlane1Normal()[1] != tmp->GetNormal()[1])
+            return false;
+        if (GetPlane1Normal()[2] != tmp->GetNormal()[2])
+            return false;
+
+        break;
+
+      case Plane2:
+        if (GetPlane2Origin()[0] != tmp->GetOrigin()[0])
+            return false;
+        if (GetPlane2Origin()[1] != tmp->GetOrigin()[1])
+            return false;
+        if (GetPlane2Origin()[2] != tmp->GetOrigin()[2])
+            return false;
+
+        if (GetPlane2Normal()[0] != tmp->GetNormal()[0])
+            return false;
+        if (GetPlane2Normal()[1] != tmp->GetNormal()[1])
+            return false;
+        if (GetPlane2Normal()[2] != tmp->GetNormal()[2])
+            return false;
+
+        break;
+
+      case Plane3:
+        if (GetPlane3Origin()[0] != tmp->GetOrigin()[0])
+            return false;
+        if (GetPlane3Origin()[1] != tmp->GetOrigin()[1])
+            return false;
+        if (GetPlane3Origin()[2] != tmp->GetOrigin()[2])
+            return false;
+
+        if (GetPlane3Normal()[0] != tmp->GetNormal()[0])
+            return false;
+        if (GetPlane3Normal()[1] != tmp->GetNormal()[1])
+            return false;
+        if (GetPlane3Normal()[2] != tmp->GetNormal()[2])
+            return false;
+
+        break;
+
+        case None:
+            break;
+    }
+
+
+    return true;
+}
+

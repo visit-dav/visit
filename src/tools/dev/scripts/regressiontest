@@ -1,0 +1,590 @@
+#!/bin/sh
+
+# ----------------------------------------------------------------------------
+#       Rebuild VisIt, run the VisIt regression test, and post the results.
+#
+#  Programmer: Jeremy Meredith
+#  Date:       April 18, 2002
+#
+#  Modifications:
+#    Jeremy Meredith, Thu Aug 29 15:16:06 PDT 2002
+#    I added code to email the nightly log to a list of interested users.
+#    I disabled to code to email offending users when something breaks 
+#    and instead send the results to only the log recipients.
+#    When VTK ofscreen rendering stabilizes, email to all offending users
+#    should be enabled again.
+#
+#    Jeremy Meredith, Fri Nov 15 12:58:50 PST 2002
+#    Turned back on the email notification, and reorganized the email code.
+#
+#    Jeremy Meredith, Tue May  6 13:36:04 PDT 2003
+#    Added a link to the new web location into the message.
+#
+#    Mark C. Miller, Thu Jan  8 17:10:01 PST 2004 
+#    Added path to mpich/bin
+#    Added code to run test in multiple modes
+#
+#    Mark C. Miller, Thu Jan 15 16:43:27 PST 2004 
+#    Added time limit argument of 1800 seconds to runtest
+#
+#    Mark C. Miller, Mon Jan 19 16:24:16 PST 2004
+#    Changed time limit argument to 30 minutes
+#
+#    Mark C. Miller, Tue Jan 20 14:23:19 PST 2004
+#    Modified email message generation to loop over all modes
+#    tested for summary/log catenation. Modified mail message to
+#    log recipients to include information on skipped tests
+#
+#    Mark C. Miller, Mon Feb  9 20:36:34 PST 2004
+#    Modified skipList
+#
+#    Mark C. Miller, Sat Feb 21 18:44:01 PST 2004
+#    Added scalable mode and entries to skipList
+#
+#    Mark C. Miller, Tue Feb 24 12:44:12 PST 2004
+#    Changed scalable mode to 'scalable,parallel'
+#
+#    Hank Childs, Fri Mar 19 21:58:15 PST 2004
+#    Re-enabled database.py and viewChange.py for "scalable,paralle", since
+#    they now pass.
+#
+#    Jeremy Meredith, Tue Mar 23 12:49:45 PST 2004
+#    Added the new test multi_format2.py to the parallel skip list since
+#    it forces an engine restart.
+#
+#    Brad Whitlock, Mon Mar 29 12:05:18 PDT 2004
+#    I added keyframe and simplekeyframe to the skip list until I
+#    fix keyframing.
+#
+#    Brad Whitlock, Wed Apr 7 17:21:25 PST 2004
+#    I removed keyframing tests from the skip list.
+#
+#    Brad Whitlock, Tue Apr 13 11:30:09 PDT 2004
+#    I added -notrackmem to runtest so memory checking will be disabled so
+#    we can see if that is what was hanging the test suite.
+#
+#    Mark C. Miller, Mon Apr 12 17:11:22 PDT 2004
+#    I removed multi-format2.py,  operators.py, and gradient.py tests
+#    from scalable,parallel skip
+#
+#    Mark C. Miller, Tue Apr 13 08:16:51 PDT 2004
+#    Removed sil.py and samrai.py from parallel skip list
+#
+#    Mark C. Miller, Thu Apr 22 22:35:17 PDT 2004
+#    Made clearmake parallel since we're already running tests in parallel
+#
+#    Kathleen Bonnell, Wed May 19 16:31:04 PDT 2004
+#    Added queryMultiWindow.py to skipList for parallel and scalable,parallel. 
+#
+#    Hank Childs, Wed Jul  7 08:32:25 PDT 2004
+#    Remove volume.py from the skipList.
+#
+#    Hank Childs, Thu Jul  8 10:31:20 PDT 2004
+#    Add volume.py back to the skipList for scalable mode.
+#
+#    Jeremy Meredith, Fri Aug 13 09:11:55 PDT 2004
+#    Moved /usr/local/bin ahead of /usr/bin in the PATH so it would get
+#    the GNU date program.
+#
+#    Hank Childs, Thu Aug 19 16:40:07 PDT 2004
+#    Add reflect2.py to the skipList for SR-mode.
+#
+#    Kathleen Bonnell, Thu Sep  2 16:45:02 PDT 2004 
+#    Removed queryMultiWindow.py from skipList for parallel and 
+#    scalable,parallel. 
+#
+#    Jeremy Meredith, Thu Oct 21 11:54:58 PDT 2004
+#    Removed reflect2.py from skip list for scalable,parallel.
+#
+#    Hank Childs, Fri Dec  3 11:08:55 PST 2004
+#    Removed volume.py from skipList.
+#
+#    Mark C. Miller, Tue Jan 18 12:44:34 PST 2005
+#    Removed 'scalable,parallel:lineout.py' from skip list. Last one, yeah!
+#
+#    Hank Childs, Sat Mar  5 12:33:28 PST 2005
+#    Add skips for dynamic load balancing mode.  Run the DLB mode every Sunday.
+#
+#    Mark C. Miller Mon Mar 21 18:57:08 PST 2005
+#    Added skips for purify mode, added code to make clean in data dir
+#
+#    Mark C. Miller, Tue Mar 22 08:54:39 PST 2005
+#    Added cat of output from make clean in data dir to /dev/null
+#
+#    Jeremy Meredith, Thu Mar 31 18:25:45 PST 2005
+#    Made MPICH for Linux to the beginning of the path.  (Putting it at the
+#    beginning helps us avoid LAM.)
+#
+#    Jeremy Meredith, Fri Apr  8 10:49:19 PDT 2005
+#    Added -e to the echo commands.  Apparently this needs to be explicitly
+#    set on linux (i.e. -E is the default) instead of the old behavior we
+#    are used to from the suns.
+#
+#    Jeremy Meredith, Mon Apr 11 09:15:13 PDT 2005
+#    Only show failed results.  Separated summary from log.
+#
+#    Mark C. Miller, Wed Apr 27 08:29:28 PDT 2005
+#    Removed '~' from URL for test web site
+#
+#    Mark C. Miller, Tue May  3 21:49:22 PDT 2005
+#    Modified skipList
+#
+#    Mark C. Miller, Tue May 10 19:53:08 PDT 2005
+#    Removed HDF5 from nightly. Changed Sunday morning's modes
+#    Added a pass for an optimized build 
+#    Added calls to clean up ipc resources
+#
+#    Mark C. Miller, Tue May 31 20:12:42 PDT 2005
+#    Updated skipList
+#
+#    Mark C. Miller, Fri Aug 19 10:16:30 PDT 2005
+#    Added label.py to skipList for optimized mode
+#
+#    Jeremy Meredith, Tue Oct 11 13:10:37 PDT 2005
+#    Changed website address.
+#
+#    Hank Childs, Fri Oct 14 08:42:34 PDT 2005
+#    Temporarily add defer_expr to the skipList.
+#
+#    Hank Childs, Wed Jan  4 14:07:19 PST 2006
+#    Remove defer_expr from the skipList.
+#
+#    Mark C. Miller, Wed Feb  1 19:30:18 PST 2006
+#    Removed meredith from logrecipients, added miller
+#    Changed DISPLAY from elysium to staples
+#
+#    Mark C. Miller, Fri Feb 10 20:47:24 PST 2006
+#    Put defer_expr.py back into skip list for a few modes
+#
+#    Brad Whitlock, Wed Mar 29 14:07:00 PST 2006
+#    Added ProteinDataBank.py to skip list for scalable, parallel.
+#
+#    Mark C. Miller, Wed Jun  7 16:46:19 PDT 2006
+#    Added several items to skip list to get test suite passing again
+#
+#    Mark C. Miller, Wed Aug 16 15:48:21 PDT 2006
+#    Added code to clean view before remaking. Increased processor
+#    count for make from 2 to 4. Added checks for whether make clean
+#    removed all .o files. Added stuff to create cores dir in test
+#    directory.
+#
+#    Mark C. Miller, Fri Nov 17 22:03:34 PST 2006
+#    Temporarily disabled purify runs
+#    Added locus to serial and parallel skip lists, defer_expr to serial
+#
+#    Mark C. Miller, Mon Nov 27 18:06:02 PST 2006
+#    Copied data from debug build to optimized. Added sending of failed build
+#    email for optimized runs
+#
+#    Mark C. Miller, Tue Nov 28 23:13:08 PST 2006
+#    Changed CL args for setting error thresholds during tests
+#
+#    Mark C. Miller, Tue Nov 28 23:50:15 PST 2006
+#    Changed maxdiff to meddiff
+#
+#    Mark C. Miller, Wed Nov 29 08:19:52 PST 2006 
+#    Changed meddiff to avgdiff
+#
+#    Hank Childs, Mon Oct 18 09:02:32 PDT 2010
+#    Add persistent_particles to the skipList until the source of crash is
+#    discovered.
+#
+# ----------------------------------------------------------------------------
+
+# list of users who want email every night with the log file
+logrecipients="miller childs"
+
+# list of modes to run the test in
+testmodes="serial parallel"
+
+# build error message
+msghdr_build="From: visit-developers@ornl.gov\n\
+Subject: failed nightly build\n\
+\n\
+This is an automated error message: \n\
+\n\
+There were errors building VisIt bugline during an automatic run.\n"
+
+msgftr_build="\n\n------ build log follows ------\n\n"
+
+
+# regression error message
+msghdr_testfailed="From: visit-developers@ornl.gov\n\
+Subject: failed regression test\n\
+\n\
+Results posted at http://alderaan.llnl.gov/visit/\
+\n\
+This is an automated error message: \n\
+\n\
+The VisIt regression test failed during an automatic run\n"
+
+msghdr_testpassed="From: visit-developers@ornl.gov\n\
+Subject: passed regression test\n\
+\n\
+Results posted at http://alderaan.llnl.gov/visit/\
+\n\
+This is an automated message: \n\
+\n\
+The VisIt regression test passed the automatic run\n"
+
+msghdr_partialpass="From: visit-developers@ornl.gov\n\
+Subject: partially passed regression test\n\
+\n\
+Results posted at http://alderaan.llnl.gov/visit/\
+\n\
+This is an automated message: \n\
+\n\
+The VisIt regression test passed the automatic run\n\
+but skipped the following cases"
+
+msgftr_testsum="\n\n------ test summary follows ------\n\n"
+msgftr_testlog="\n\n------ full log follows ------\n\n"
+
+
+# list of offending users
+users=""
+
+if test -f "/home/visit/public_html/modifiers"; then
+    users=`cat /home/visit/public_html/modifiers | sort | uniq`
+    msg_userlist="\nThe complete list of users who have modified VisIt is:\n"$users
+    msg_yourfault="\nYour name is on the list of users who have locked the bugline\n""since the last time the regression suite was run.\n"
+else
+    users="visit"
+    msg_userlist="\nNo one is listed as having modified VisIt.\n"
+    msg_yourfault=""
+fi
+
+# set up the environment
+umask 002
+DISPLAY=staples:0
+export DISPLAY
+PATH=/misc/gapps/mpich/1.2.4/Linux/serial/64/debug/bin:/home/visit/bin:/data_vobs/VisIt/clearcase_bin:/home/visit/clearcase_bin:/usr/atria/bin:/usr/security/bin:/sbin:/usr/sbin:/usr/bsd:/usr/local/bin:/usr/bin:/bin:/etc:/usr/bin/X11:/usr/local/X11:/usr/etc:/usr/lib:/usr/atria/bin:/usr/ccs/bin:/usr/SUNWspro/bin:.
+export PATH
+
+# clean up ipc resources
+ipcs -m | grep visit | cut -d' ' -f2 | xargs -n 1 ipcrm -m 1> /dev/null 2>&1
+ipcs -s | grep visit | cut -d' ' -f2 | xargs -n 1 ipcrm -s 1> /dev/null 2>&1
+ipcs -q | grep visit | cut -d' ' -f2 | xargs -n 1 ipcrm -q 1> /dev/null 2>&1
+
+# rebuild visit
+cleartool startview visit_VOBowner_test  1> /dev/null 2>&1
+cd /view/visit_VOBowner_test/data_vobs/VisIt 
+rm -f config.cache
+rm -f buildlog
+echo -e "LD_LIBRARY_PATH = $LD_LIBRARY_PATH" 1> buildlog 2>&1
+echo -e "Forcing LD_LIBRARY_PATH to /usr/local/lib" 1> buildlog 2>&1
+LD_LIBRARY_PATH=/usr/local/lib
+export LD_LIBRARY_PATH
+env CXXFLAGS="-g" MAKE=clearmake ./configure --enable-parallel 1>> buildlog 2>&1
+rm -f plugins/*/*.so
+(cd data; clearmake clean 1> /dev/null 2>&1 )
+
+# clean everything
+clearmake clean 1> /dev/null 2>&1
+uncleanedFiles=`find . -regex '.*\.o$' | grep -v -e '_pure_p9_c0_'`
+if test ! "$uncleanedFiles" = ""; then
+    rm -f mailmsg
+    echo -e $msghdr_build  >> mailmsg
+    echo -e "make clean missed these files..." >> mailmsg
+    echo -e $uncleanedFiles >> mailmsg
+    echo -e "They are being removed manually" >> mailmsg
+    echo -e $msg_yourfault >> mailmsg
+    echo -e $msg_userlist  >> mailmsg
+    for user in $users; do
+        sendregressionmail $user mailmsg
+    done
+    rm -f mailmsg
+    echo -e $msghdr_build  >> mailmsg
+    echo -e "make clean missed some files..." >> mailmsg
+    echo -e $uncleanedFiles >> mailmsg
+    echo -e "They are being removed manually" >> mailmsg
+    echo -e $msg_userlist  >> mailmsg
+    for user in $logrecipients; do
+        sendregressionmail $user mailmsg
+    done
+    # explicitly remove these .o files
+    find . -regex '.*\.o$' -exec rm -f {} \; 1> /dev/null 2>&1
+fi
+
+clearmake -J 4 1>> buildlog 2>&1
+error=$?
+
+# email if the build failed
+if test ! "$error" = "0"; then
+    # email the users
+    rm -f mailmsg
+    echo -e $msghdr_build  >> mailmsg
+    echo -e $msg_yourfault >> mailmsg
+    echo -e $msg_userlist  >> mailmsg
+    echo -e $msgftr_build  >> mailmsg
+    cat buildlog        >> mailmsg
+    for user in $users; do
+        sendregressionmail $user mailmsg
+    done
+
+    # email the log recipients
+    rm -f mailmsg
+    echo -e $msghdr_build  >> mailmsg
+    echo -e $msg_userlist  >> mailmsg
+    echo -e $msgftr_build  >> mailmsg
+    cat buildlog        >> mailmsg
+    for user in $logrecipients; do
+        sendregressionmail $user mailmsg
+    done
+
+    rm -f mailmsg
+    exit
+fi
+
+# make sure all needed data files exist
+cd data
+make test 1> /dev/null 2>&1
+#          (we should probably check for errors here)
+cd ..
+
+# set the datestamp used for all test modes
+curdate=`date +%Y-%m-%d-%p%I%M`
+theDay=`date +%A`
+
+# set mode to run in (optimized mode is handled below)
+modes="serial parallel scalable,parallel"
+case $theDay in
+    "Saturday")
+        modes="serial parallel scalable,parallel"
+	;;
+    "Sunday")
+        modes="hdf5 dlb serial scalable,parallel"
+	;;
+esac
+
+# set list of tests/modes to skip
+skipList="scalable,parallel:tests/databases/boxlib.py \
+          scalable,parallel:tests/hybrid/locus.py \
+          parallel:tests/hybrid/locus.py \
+          serial:tests/operators/persistent_particles.py \
+          parallel:tests/operators/persistent_particles.py \
+          scalable,parallel:tests/operators/persistent_particles.py \
+          scalable,parallel:tests/rendering/saveformats.py \
+          dlb:tests/databases/global_node_ids.py \
+          dlb:tests/queries/pick.py \
+	  optimized:tests/plots/tensor.py \
+	  optimized:tests/hybrid/lineout.py \
+	  optimized:tests/queries/database.py \
+	  optimized:tests/plots/label.py \
+	  parallel:tests/operators/defer_expr.py \
+	  scalable,parallel:tests/operators/defer_expr.py \
+	  optimized:tests/operators/defer_expr.py \
+          scalable,parallel:tests/queries/bestfitline.py \
+          parallel:tests/databases/ProteinDataBank.py \
+          scalable,parallel:tests/databases/ProteinDataBank.py \
+	  scalable,parallel:tests/operators/transform.py" 
+
+#
+# Make sure that there isn't anything in ~/.visit that could
+# effect the test suite
+#
+rm -rf ~/.visit 1> /dev/null 2>&1
+
+#
+# Make directory for where to store core files
+#
+rm -rf test/cores
+mkdir test/cores
+
+#
+# run the test(s)
+error=0
+cd test
+for m in $modes; do
+    if test "$m" = "purify"; then
+        theTests=""
+        case $theDay in
+           "Monday")
+              theTests="tests/databases/*.py"
+              ;;
+           "Tuesday")
+              theTests="tests/hybrid/*.py"
+              ;;
+           "Wednesday")
+              theTests="tests/meshtype/*.py tests/operators/*.py tests/plots/*.py"
+              ;;
+           "Thursday")
+              theTests="tests/queries/*.py"
+              ;;
+           "Friday")
+              theTests="tests/rendering/*.py tests/session/*.py"
+              ;;
+        esac
+        if test "$skipList" = ""; then
+            ./runtest -q -p -m "$m" -d "$curdate" -notrackmem $theTests
+        else
+            ./runtest -q -s "$skipList" -p -m "$m" -d "$curdate" -notrackmem $theTests
+        fi
+    else
+        if test "$skipList" = ""; then
+            ./runtest -q -p -m "$m" -d "$curdate" -notrackmem
+        else
+            ./runtest -q -s "$skipList" -p -m "$m" -d "$curdate" -notrackmem
+        fi
+    fi
+    curerror=$?
+    if test ! "$curerror" = "0"; then
+        error=1
+    fi
+done
+
+# clean up ipc resources
+ipcs -m | grep visit | cut -d' ' -f2 | xargs -n 1 ipcrm -m 1> /dev/null 2>&1
+ipcs -s | grep visit | cut -d' ' -f2 | xargs -n 1 ipcrm -s 1> /dev/null 2>&1
+ipcs -q | grep visit | cut -d' ' -f2 | xargs -n 1 ipcrm -q 1> /dev/null 2>&1
+
+# copy the data dir for use in optimized testing
+rm -rf /gscratch/visit_test/data
+cp -R data /gscratch/visit_test/. 1> /dev/null 2>&1
+chmod -R g+rX /gscratch/visit_test/data 1> /dev/null 2>&1
+
+# rebuild an optimized visit
+cleartool startview visit_VOBowner_testopt  1> /dev/null 2>&1
+cd /view/visit_VOBowner_testopt/data_vobs/VisIt 
+rm -f config.cache
+rm -f buildlog
+echo -e "LD_LIBRARY_PATH = $LD_LIBRARY_PATH" 1> buildlog 2>&1
+echo -e "Forcing LD_LIBRARY_PATH to /usr/local/lib" 1> buildlog 2>&1
+LD_LIBRARY_PATH=/usr/local/lib
+export LD_LIBRARY_PATH
+env CXXFLAGS="-O2" MAKE=clearmake ./configure --enable-parallel 1>> buildlog 2>&1
+rm -f plugins/*/*.so
+(cd data; clearmake clean 1> /dev/null 2>&1)
+clearmake clean 1> /dev/null 2>&1
+clearmake -J 4 1>> buildlog 2>&1
+error=$?
+
+# email if the build failed
+if test ! "$error" = "0"; then
+    # email the users
+    rm -f mailmsg
+    echo -e $msghdr_build  >> mailmsg
+    echo -e $msg_yourfault >> mailmsg
+    echo -e $msg_userlist  >> mailmsg
+    echo -e $msgftr_build  >> mailmsg
+    cat buildlog        >> mailmsg
+    for user in $users; do
+        sendregressionmail $user mailmsg
+    done
+
+    # email the log recipients
+    rm -f mailmsg
+    echo -e $msghdr_build  >> mailmsg
+    echo -e $msg_userlist  >> mailmsg
+    echo -e $msgftr_build  >> mailmsg
+    cat buildlog        >> mailmsg
+    for user in $logrecipients; do
+        sendregressionmail $user mailmsg
+    done
+
+    rm -f mailmsg
+    exit
+fi
+
+#
+# Copy the debug version of data
+#
+cp -R /gscratch/visit_test/data . 1> /dev/null 2>&1
+rm -rf /gscratch/visit_test/data 1> /dev/null 2>&1
+
+#
+# Make directory for where to store core files
+#
+rm -rf test/cores
+mkdir test/cores
+
+# run the test
+#    - pixdiff is max % of pixels that can be different
+#    - avgdiff is max median diff (in grayscale) of in any one pixel
+cd test
+if test "$skipList" = ""; then
+    ./runtest -q -p -m optimized -d "$curdate" -notrackmem -pixdiff 10 -avgdiff 10
+else
+    ./runtest -q -s "$skipList" -p -m optimized -d "$curdate" -notrackmem -pixdiff 10 -avgdiff 10
+fi
+curerror=$?
+if test ! "$curerror" = "0"; then
+    error=1
+fi
+
+# clean up ipc resources
+ipcs -m | grep visit | cut -d' ' -f2 | xargs -n 1 ipcrm -m 1> /dev/null 2>&1
+ipcs -s | grep visit | cut -d' ' -f2 | xargs -n 1 ipcrm -s 1> /dev/null 2>&1
+ipcs -q | grep visit | cut -d' ' -f2 | xargs -n 1 ipcrm -q 1> /dev/null 2>&1
+
+# restart the list of modifiers
+if test -f "/home/visit/public_html/modifiers"; then
+    mv /home/visit/public_html/modifiers /home/visit/public_html/current
+fi
+
+# email if the run showed differences or crashed
+if test ! "$error" = "0"; then
+    # email the users
+    rm -f mailmsg
+    echo -e $msghdr_testfailed   >> mailmsg
+    echo -e $msg_yourfault       >> mailmsg
+    echo -e $msg_userlist        >> mailmsg
+    echo -e $msgftr_testsum      >> mailmsg
+    for m in $modes; do
+        modesdir=`echo $m | sed s/,/_/`
+        echo -e "" >> mailmsg
+        echo -e "--------------------------------------" >> mailmsg
+        echo -e "Summary of failed results for $m" >> mailmsg
+        cat /home/visit/public_html/current/$modesdir/summary | fgrep -v succeeded >> mailmsg
+    done
+    for user in $users; do
+        sendregressionmail $user mailmsg
+    done
+    rm -f mailmsg
+fi
+
+# always email summary to interested users
+if true; then
+    rm -f mailmsg
+    if test ! "$error" = "0"; then
+        echo -e $msghdr_testfailed >> mailmsg
+        echo -e $msg_userlist      >> mailmsg
+        echo -e $msgftr_testsum   >> mailmsg
+        for m in $modes; do
+            modesdir=`echo $m | sed s/,/_/`
+            echo -e "" >> mailmsg
+            echo -e "--------------------------------------" >> mailmsg
+            echo -e "Summary of failed results for $m" >> mailmsg
+            cat /home/visit/public_html/current/$modesdir/summary | fgrep -v succeeded >> mailmsg
+        done
+        echo -e $msgftr_testlog   >> mailmsg
+        for m in $modes; do
+            modesdir=`echo $m | sed s/,/_/`
+            echo -e "" >> mailmsg
+            echo -e "--------------------------------------" >> mailmsg
+            echo -e "Full log of failed results for $m" >> mailmsg
+            cat /home/visit/public_html/current/$modesdir/log     >> mailmsg
+        done
+    else
+        if test "$skipList" = ""; then
+            echo -e $msghdr_testpassed >> mailmsg
+        else
+            echo -e $msghdr_partialpass >> mailmsg
+            for s in $skipList; do
+                echo -e "   $s" >> mailmsg
+            done
+        fi
+        echo -e $msgftr_testsum   >> mailmsg
+        for m in $modes; do
+            modesdir=`echo $m | sed s/,/_/`
+            echo -e "Summary of all results for $m" >> mailmsg
+            cat /home/visit/public_html/current/$modesdir/summary >> mailmsg
+        done
+    fi
+    for user in $logrecipients; do
+        sendregressionmail $user mailmsg
+    done
+    rm -f mailmsg
+fi
+
+exit

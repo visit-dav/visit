@@ -1,0 +1,647 @@
+Function: InsertAxis
+Declaration: void InsertAxis(const std::string &axisName_);
+Definition:
+// ****************************************************************************
+// Method: ParallelCoordinatesAttributes::InsertAxis
+//
+// Purpose: Inserts an axis (assuming at the end)
+//
+// Programmer: Jeremy Meredith
+// Creation:   January 31, 2008
+//
+// Note: Taken largely from Mark Blair's Parallel Axis plot.
+//
+// Modifications:
+//    Jeremy Meredith, Fri Feb  1 17:55:14 EST 2008
+//    Made it use float min/max for non-limiting extents values.
+//   
+//    Jeremy Meredith, Mon Feb  4 16:07:37 EST 2008
+//    Remove the axis extents; they were unusued.
+//
+//    Jeremy Meredith, Fri Feb 15 13:16:46 EST 2008
+//    Renamed orderedAxisNames to scalarAxisNames to distinguish these
+//    as names of actual scalars instead of just display names.  Added
+//    visualAxisNames.
+//
+// ****************************************************************************
+
+void
+ParallelCoordinatesAttributes::InsertAxis(const std::string &axisName_)
+{
+    std::string newAxisName = axisName_;
+
+    size_t curAxisCount = scalarAxisNames.size();
+    size_t axisOrdinal;
+    double saveExtentMin, saveExtentMax;
+
+    stringVector::iterator saxisNamesIt;
+    stringVector::iterator vaxisNamesIt;
+    doubleVector::iterator extentMinIt;
+    doubleVector::iterator extentMaxIt;
+    
+    for (axisOrdinal = 0; axisOrdinal < curAxisCount; axisOrdinal++)
+    {
+        if (scalarAxisNames[axisOrdinal] == newAxisName) break;
+    }
+
+    if (axisOrdinal < curAxisCount)
+    {
+        saveExtentMin  = extentMinima[axisOrdinal];
+        saveExtentMax  = extentMaxima[axisOrdinal];
+
+        saxisNamesIt = scalarAxisNames.begin()  + axisOrdinal;
+        vaxisNamesIt = visualAxisNames.begin()  + axisOrdinal;
+        extentMinIt  = extentMinima.begin()     + axisOrdinal;
+        extentMaxIt  = extentMaxima.begin()     + axisOrdinal;
+
+        scalarAxisNames.erase(saxisNamesIt);
+        visualAxisNames.erase(vaxisNamesIt);
+        extentMinima.erase(extentMinIt);
+        extentMaxima.erase(extentMaxIt);
+    }
+    else
+    {
+        saveExtentMin  = -1e+37;
+        saveExtentMax  = +1e+37;
+    }
+
+    size_t insertOrdinal = scalarAxisNames.size();
+
+    saxisNamesIt = scalarAxisNames.begin()  + insertOrdinal;
+    vaxisNamesIt = visualAxisNames.begin()  + insertOrdinal;
+    extentMinIt  = extentMinima.begin()     + insertOrdinal;
+    extentMaxIt  = extentMaxima.begin()     + insertOrdinal;
+
+    scalarAxisNames.insert(saxisNamesIt, newAxisName);
+    visualAxisNames.insert(vaxisNamesIt, newAxisName);
+    extentMinima.insert(extentMinIt, saveExtentMin);
+    extentMaxima.insert(extentMaxIt, saveExtentMax);
+    
+    SelectAll();
+}
+
+Function: DeleteAxis
+Declaration: void DeleteAxis(const std::string &axisName_, int minAxisCount);
+Definition:
+// ****************************************************************************
+// Method: ParallelCoordinatesAttributes::DeleteAxis
+//
+// Purpose: Deletes an axis (as long as there are enough remaining)
+//
+// Programmer: Jeremy Meredith
+// Creation:   January 31, 2008
+//
+// Note: Taken largely from Mark Blair's Parallel Axis plot.
+//
+// Modifications:
+//    Jeremy Meredith, Mon Feb  4 16:07:37 EST 2008
+//    Remove the axis extents; they were unusued.
+//   
+//    Jeremy Meredith, Fri Feb 15 13:16:46 EST 2008
+//    Renamed orderedAxisNames to scalarAxisNames to distinguish these
+//    as names of actual scalars instead of just display names.  Added
+//    visualAxisNames.
+//
+//    Kathleen Bonnell, Wed Jun 4 07:54:16 PDT 2008 
+//    Removed unused variables leftSelectedAxisID, rightSelectedAxisID.
+//
+// ****************************************************************************
+
+void
+ParallelCoordinatesAttributes::DeleteAxis(const std::string &axisName_,
+                                          int minAxisCount)
+{
+    if ((int)scalarAxisNames.size() <= minAxisCount) return;
+
+    std::string newAxisName = axisName_;
+
+    size_t curAxisCount = scalarAxisNames.size();
+    size_t axisOrdinal;
+
+    for (axisOrdinal = 0; axisOrdinal < curAxisCount; axisOrdinal++)
+    {
+        if (scalarAxisNames[axisOrdinal] == newAxisName) break;
+    }
+
+    if (axisOrdinal < curAxisCount)
+    {
+        visualAxisNames.erase(visualAxisNames.begin() + axisOrdinal);
+        scalarAxisNames.erase(scalarAxisNames.begin() + axisOrdinal);
+        extentMinima.erase(extentMinima.begin() + axisOrdinal);
+        extentMaxima.erase(extentMaxima.begin() + axisOrdinal);
+        
+        SelectAll();
+    }
+}
+
+Function: AttributesAreConsistent
+Declaration: bool AttributesAreConsistent() const;
+Definition:
+// ****************************************************************************
+// Method: ParallelCoordinatesAttributes::AttributesAreConsistent
+//
+// Purpose: Returns true only if (1) all vector attributes are the same length,
+//          (2) all axis names are unique, and (3) the index of the currently
+//          displayable axis information in the GUI is in range.
+//
+// Programmer: Jeremy Meredith
+// Creation:   January 31, 2008
+//
+// Note: Taken largely from Mark Blair's Parallel Axis plot.
+//
+// Modifications:
+//    Jeremy Meredith, Mon Feb  4 16:07:37 EST 2008
+//    Remove the axis extents; they were unusued.
+//   
+//    Jeremy Meredith, Thu Feb  7 17:45:11 EST 2008
+//    Allow empty axis name list; this happens for array variables.
+//
+//    Jeremy Meredith, Fri Feb 15 13:16:46 EST 2008
+//    Renamed orderedAxisNames to scalarAxisNames to distinguish these
+//    as names of actual scalars instead of just display names.  Added
+//    visualAxisNames.
+//
+// ****************************************************************************
+
+bool
+ParallelCoordinatesAttributes::AttributesAreConsistent() const
+{
+    size_t axisNamesSize = scalarAxisNames.size();
+    size_t axisNum, axis2Num;
+    std::string axisName;
+    
+    if (axisNamesSize == 0)
+    {
+        if (extentMinima.size() != extentMaxima.size())
+            return false;
+
+        return true;
+    }
+    
+    if (axisNamesSize == 1)
+        return false;
+
+    if ((extentMinima.size()     != axisNamesSize) ||
+        (extentMaxima.size()     != axisNamesSize))
+    {
+        return false;
+    }
+    
+    for (axisNum = 0; axisNum < axisNamesSize - 1; axisNum++)
+    {
+        axisName = scalarAxisNames[axisNum];
+
+        for (axis2Num = axisNum + 1; axis2Num < axisNamesSize; axis2Num++ )
+        {
+            if (scalarAxisNames[axis2Num] == axisName)
+                return false;
+        }
+    }
+    
+    return true;
+}
+
+Function: ChangesRequireRecalculation
+Declaration: bool ChangesRequireRecalculation(const ParallelCoordinatesAttributes &obj);
+Definition:
+// ****************************************************************************
+// Method: ParallelCoordinatesAttributes::ChangesRequireRecalculation
+//
+// Purpose: Sets the attributes from another attribute group
+//
+// Programmer: Jeremy Meredith
+// Creation:   January 31, 2008
+//
+// Modifications:
+//    Jeremy Meredith, Fri Feb  8 12:35:47 EST 2008
+//    Added unifyAxisExtents.
+//
+//    Jeremy Meredith, Fri Feb 15 13:16:46 EST 2008
+//    Renamed orderedAxisNames to scalarAxisNames to distinguish these
+//    as names of actual scalars instead of just display names.  Added
+//    visualAxisNames (though visualnames not matching will not force
+//    recalculation.)
+//
+//    Jeremy Meredith, Tue Mar  4 18:17:13 EST 2008
+//    Added linesNumPartitions.
+//
+//    Jeremy Meredith, Fri Mar  7 11:43:37 EST 2008
+//    Added named selection and time iteration fields.
+//
+//    Jeremy Meredith, Thu Mar 27 16:38:18 EDT 2008
+//    Allow user to force into the mode using individual data point lines
+//    for the focus instead of using a histogram.
+//
+//    Jeremy Meredith, Wed Feb 25 16:55:12 EST 2009
+//    Port to trunk.  Removed time iteration (for now) and
+//    named selections (since they are done differently now).
+//
+//    Jeremy Meredith, Fri Apr 24 15:36:05 EDT 2009
+//    Changed focus drawing method to be an enum.  Added focus gamma.
+//
+// ****************************************************************************
+bool
+ParallelCoordinatesAttributes::ChangesRequireRecalculation(
+    const ParallelCoordinatesAttributes &obj)
+{
+    if (extentMinima != obj.extentMinima ||
+        extentMaxima != obj.extentMaxima ||
+        drawLines != obj.drawLines ||
+        linesNumPartitions != obj.linesNumPartitions ||
+        drawContext != obj.drawContext ||
+        drawLinesOnlyIfExtentsOn != obj.drawLinesOnlyIfExtentsOn ||
+        contextNumPartitions != obj.contextNumPartitions ||
+        contextGamma != obj.contextGamma ||
+        focusGamma != obj.focusGamma ||
+        scalarAxisNames != obj.scalarAxisNames ||
+        unifyAxisExtents != obj.unifyAxisExtents ||
+        drawFocusAs != obj.drawFocusAs
+        )
+    {
+        return true;
+    }
+    return false;
+}
+
+Function: CopyAttributes
+Declaration: virtual bool CopyAttributes(const AttributeGroup *);
+Definition:
+// ****************************************************************************
+// Method: ParallelCoordinatesAttributes::CopyAttributes
+//
+// Purpose: Sets the attributes from another attribute group
+//
+// Programmer: Jeremy Meredith
+// Creation:   January 31, 2008
+//
+// Modifications:
+//    Jeremy Meredith, Fri Feb  1 17:56:21 EST 2008
+//    Added support for axis restrictions.
+//   
+//    Jeremy Meredith, Thu Feb  7 17:45:11 EST 2008
+//    Allow empty axis name list; this happens for array variables.
+//
+//    Jeremy Meredith, Fri Feb 15 13:16:46 EST 2008
+//    Renamed orderedAxisNames to scalarAxisNames to distinguish these
+//    as names of actual scalars instead of just display names.  Added
+//    visualAxisNames.
+//
+// ****************************************************************************
+bool
+ParallelCoordinatesAttributes::CopyAttributes(const AttributeGroup *atts)
+{
+    bool retval = false;
+
+    if(TypeName() == atts->TypeName())
+    {
+        // Call assignment operator.
+        const ParallelCoordinatesAttributes *tmp =
+            (const ParallelCoordinatesAttributes *)atts;
+        *this = *tmp;
+        retval = true;
+    }
+    else if (atts->TypeName() == "AxisRestrictionAttributes")
+    {
+        const AxisRestrictionAttributes *ar =
+            (const AxisRestrictionAttributes *)atts;
+
+        if (scalarAxisNames.size() == 0)
+        {
+            visualAxisNames = ar->GetNames();
+            extentMinima = ar->GetMinima();
+            extentMaxima = ar->GetMaxima();
+        }
+        else
+        {
+            for (size_t i=0; i<extentMinima.size(); i++)
+            {
+                extentMinima[i] = ar->GetMinima()[i];
+                extentMaxima[i] = ar->GetMaxima()[i];
+            }
+        }
+        SelectVisualAxisNames();
+        SelectExtentMinima();
+        SelectExtentMaxima();
+
+        retval = true;
+    }
+    return retval;
+}
+
+Function: CreateCompatible
+Declaration: virtual AttributeSubject *CreateCompatible(const std::string &) const;
+Definition:
+// ****************************************************************************
+//  Method:  ParallelCoordinatesAttributes::CreateCompatible
+//
+//  Purpose:
+//    Creates an object of the specified type initialized with the
+//    attributes from this object.
+//
+//  Arguments:
+//    tname : The typename of the object that we want to create.
+//
+//  Returns:    A new object of the type specified by tname or 0.
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    February  8, 2008
+//
+//  Modifications:
+//    Jeremy Meredith, Fri Feb 15 13:13:56 EST 2008
+//    Added better support for axis names.
+//
+// ****************************************************************************
+AttributeSubject *
+ParallelCoordinatesAttributes::CreateCompatible(const std::string &tname) const
+{
+    AttributeSubject *retval = 0;
+
+    if(TypeName() == tname)
+    {
+        retval = new ParallelCoordinatesAttributes(*this);
+    }
+    else if (tname == "AxisRestrictionAttributes" ||
+             tname == "ThresholdAttributes")
+    {
+        // Note: my hope was that we could update the plot attributes
+        // and have it connect with a threshold tool in another window.
+        // Unfortunately, CreateCompatible("ThresholdAttributes") isn't
+        // called, so there's a missing path issue.  We could probably
+        // get rid of the support for Threshold here.
+        AxisRestrictionAttributes *ar = new AxisRestrictionAttributes;
+
+        ar->SetNames(visualAxisNames);
+        ar->SetMinima(extentMinima);
+        ar->SetMaxima(extentMaxima);
+
+        if (tname == "AxisRestrictionAttributes")
+        {
+            retval = ar;
+        }
+        else
+        {
+            retval = ar->CreateCompatible(tname);
+            delete ar;
+        }
+    }
+
+    return retval;
+}
+
+Function: ResetAxes
+Declaration: void ResetAxes();
+Definition:
+// ****************************************************************************
+//  Method:  ParallelCoordinatesAttributes::ResetAxes
+//
+//  Purpose:
+//    Clear out all the variable axes.
+//
+//  Arguments:
+//    none
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    February  7, 2008
+//
+//  Modifications:
+//    Jeremy Meredith, Fri Feb 15 13:16:46 EST 2008
+//    Renamed orderedAxisNames to scalarAxisNames to distinguish these
+//    as names of actual scalars instead of just display names.  Added
+//    visualAxisNames.
+//
+// ****************************************************************************
+void
+ParallelCoordinatesAttributes::ResetAxes()
+{
+    scalarAxisNames.clear();
+    visualAxisNames.clear();
+    extentMinima.clear();
+    extentMaxima.clear();
+    
+    SelectAll();
+}
+
+Target: xml2info
+Function: ParallelCoordinatesGUIPluginInfo::CreatePluginWizard
+Declaration: QvisWizard *ParallelCoordinatesGUIPluginInfo::CreatePluginWizard(...);
+Definition:
+// ****************************************************************************
+// Method:ParallelCoordinatesGUIPluginInfo::CreatePluginWizard
+//
+// Purpose:
+//   Creates a ParallelCoordinates plot wizard and returns a pointer to it.
+//
+// Arguments:
+//   attr        : Attributes that should be used for the plot.
+//   parent      : Wizard's parent widget.
+//   plotVarName : Name of the plot's variable
+//   plotVarType : Data type of the plot's variable
+//   name        : Name of the wizard
+//
+// Returns:    A pointer to the new wizard
+//
+// Note:
+//
+// Programmer: Mark Blair
+// Creation:   Wed Jun 21 19:02:00 PDT 2006
+//
+// Modifications:
+//    Jeremy Meredith, Thu Feb  7 12:58:15 EST 2008
+//    A wizard is needed because you can't reset the default plot attributes
+//    without a wizard's accept action having been called.  If you don't, then
+//    you'll have the wrong number of axes defined in the plot attributes.
+//    As such, I extended the wizard to support a "no-op" mode.
+//
+//    Cyrus Harrison, Mon Jul 21 08:33:47 PDT 2008
+//    Initial Qt4 Port.
+//
+//    Cyrus Harrison, Mon Jul 21 08:33:47 PDT 2008
+//    Pass metadata & expression list to the QWizard constructor.
+//
+//    Cyrus Harrison, Thu Jul  8 08:59:35 PDT 2010
+//    Do not use wizard if the user selected an array variable.
+//
+// ****************************************************************************
+#include <QvisParallelCoordinatesPlotWizard.h>
+#include <Expression.h>
+#include <avtDatabaseMetaData.h>
+#include <ViewerMethods.h>
+
+QvisWizard *
+ParallelCoordinatesGUIPluginInfo::CreatePluginWizard(AttributeSubject *attr,
+    QWidget *parent, const std::string &varName, const avtDatabaseMetaData *md,
+    const ExpressionList *expList)
+{
+    bool showWizard  = true;
+    if (md->GetScalar(varName) == NULL && md->GetCurve(varName) == NULL)
+    {
+        int expressionCount = expList->GetNumExpressions();
+        int expNum;
+
+        for (expNum = 0; expNum < expressionCount; expNum++)
+        {
+            if (expList->GetExpressions(expNum).GetName() == varName)
+            {
+                if (expList->GetExpressions(expNum).GetType() ==
+                    Expression::ScalarMeshVar)
+                    break;
+            }
+        }
+        if (expNum >= expressionCount)
+            showWizard = false;
+    }
+
+    // use wizard if we are starting with a scalar.
+    if(showWizard)
+        return (new QvisParallelCoordinatesPlotWizard(attr, parent, varName,md,expList));
+    else
+    {
+        // setup para coords plot of array var without wizard
+        stringVector saxisNames;
+        stringVector vaxisNames;
+        doubleVector extMins;
+        doubleVector extMaxs;
+        saxisNames.push_back(varName);
+        vaxisNames.push_back(varName);
+        extMins.push_back(-1e+37);
+        extMaxs.push_back(+1e+37);
+        ParallelCoordinatesAttributes *pcoord_atts =(ParallelCoordinatesAttributes *)attr;
+
+        pcoord_atts->SetScalarAxisNames(saxisNames);
+        pcoord_atts->SetVisualAxisNames(vaxisNames);
+        pcoord_atts->SetExtentMinima(extMins);
+        pcoord_atts->SetExtentMaxima(extMaxs);
+        return NULL;
+    }
+
+}
+
+Function: ParallelCoordinatesViewerEnginePluginInfo::InitializePlotAtts
+Declaration: virtual void InitializePlotAtts(AttributeSubject *atts, const avtPlotMetaData &);
+Definition:
+// ****************************************************************************
+//  Method: ParallelCoordinatesViewerEnginePluginInfo::InitializePlotAtts
+//
+//  Purpose:
+//    Initialize the plot attributes to the default attributes.
+//
+//  Arguments:
+//    atts      The attribute subject to initialize.
+//    md        The metadata used to initialize.
+//    atts      The variable name used to initialize.
+//
+//  Programmer: Jeremy Meredith
+//  Creation:   February  6, 2008
+//
+//  Modifications:
+//    Jeremy Meredith, Thu Feb  7 17:49:50 EST 2008
+//    Took out all the parsing.  It was never a good idea.
+//
+//    Jeremy Meredith, Mon Feb 18 14:51:40 EST 2008
+//    Added a little smarts to attempt to populate the axis names.
+//    Note that this did require adding some minimal parsing in -- however,
+//    we are not relying on it; if it fails, everything still works, except
+//    that the GUI window can't tell the user what the axis names are until
+//    the axis restriction tool has been used to limit the axis extents.
+//
+// ****************************************************************************
+#include <avtPlotMetaData.h>
+#include <ParsingExprList.h>
+#include <Expression.h>
+#include <ColorAttribute.h>
+#include <ExprNode.h>
+#include <avtArrayMetaData.h>
+#include <avtDatabaseMetaData.h>
+
+#include <InvalidVariableException.h>
+#include <ImproperUseException.h>
+#include <DebugStream.h>
+
+void
+ParallelCoordinatesViewerEnginePluginInfo::InitializePlotAtts(
+    AttributeSubject *atts, const avtPlotMetaData &plot)
+{
+    // If we had scalar names, we can just copy the default atts
+    // and return.
+    if (defaultAtts->GetScalarAxisNames().size() != 0)
+    {
+        // One helpful thing we can do: make sure the user set the
+        // visual axis names.  They really should have, but since
+        // we can blindly copy them from the scalar axis names in
+        // this case, no harm doing it for them.
+        if (defaultAtts->GetVisualAxisNames().size() == 0)
+            defaultAtts->SetVisualAxisNames(defaultAtts->GetScalarAxisNames());
+
+        *(ParallelCoordinatesAttributes*)atts = *defaultAtts;
+
+        return;
+    }
+
+    // Otherwise,  we must be an array variable; try to get
+    // some names for its components....
+    const avtDatabaseMetaData *md = plot.GetMetaData();
+    const std::string &var = plot.GetVariableName();
+    const avtArrayMetaData *array = md->GetArray(var);
+    stringVector subNames;
+    if (array)
+    {
+        subNames = array->compNames;
+    }
+    else
+    {
+        Expression const *exp =
+            ParsingExprList::GetExpression(plot.GetVariableName());
+        if (exp == NULL || exp->GetType() != Expression::ArrayMeshVar)
+        {
+            debug3 << "ParallelCoordinatesAttributes::InitializePlotAtts: "
+                   << "variable wasn't an array database variable, an "
+                   << "array expression, or a list of scalars.  This can "
+                   << "happen if the user attempts to create this plot "
+                   << "without the use off a wizard, e.g. in the case of "
+                   << "the cli.  Assuming this is the case and continuing "
+                   << "without error.\n";
+            return;
+        }
+        // If we have any problems walking the expression tree, just return;
+        // the worst case scenario if we don't populate the visual axis
+        // name list is that the GUI window is temporarily blank.
+        ExprNode *root = ParsingExprList::GetExpressionTree(exp);
+        if (root->GetTypeName() != "Function")
+            return;
+        FunctionExpr *fn = dynamic_cast<FunctionExpr*>(root);
+        if (fn->GetName() != "array_compose" &&
+            fn->GetName() != "array_compose_with_bins")
+            return;
+        ArgsExpr *argsExpr = fn->GetArgsExpr();
+        std::vector<ArgExpr*> *args = argsExpr ? argsExpr->GetArgs() : NULL;
+        if (!args)
+            return;
+        for (size_t i=0; i<args->size(); i++)
+        {
+            ExprNode *arg = (ExprNode*)((*args)[i]->GetExpr());
+            if (arg->GetTypeName() == "List")
+                break;
+            subNames.push_back(arg->GetPos().GetText(exp->GetDefinition()));
+        }
+    }
+
+    doubleVector extMin(subNames.size(), -1e+37);
+    doubleVector extMax(subNames.size(), +1e+37);
+
+    // Set up the default attributes to contain these values, so
+    // if the user hits reset, the axis names are retained.
+    defaultAtts->SetVisualAxisNames(subNames);
+    defaultAtts->SetExtentMinima(extMin);
+    defaultAtts->SetExtentMaxima(extMax);
+    *(ParallelCoordinatesAttributes*)atts = *defaultAtts;
+}
+
+Function: ParallelCoordinatesViewerEnginePluginInfo::Permits2DViewScaling
+Declaration: virtual bool Permits2DViewScaling() const;
+Definition:
+bool
+ParallelCoordinatesViewerEnginePluginInfo::Permits2DViewScaling() const
+{
+    return false;
+}
+

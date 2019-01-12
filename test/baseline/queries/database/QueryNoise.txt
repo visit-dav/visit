@@ -1,0 +1,56 @@
+For noise.silo(haryglobal)
+Eulerian for domain 0 is 2
+
+
+hardyglobal -- Min = 1.09554 (node 105026 at coord <0.612245, -10, 7.14286>)
+hardyglobal -- Max = 5.88965 (node 83943 at coord <7.55102, 1.42857, 3.46939>)
+
+
+The total Surface Area is 2400 parsec^2
+The total Volume is 8000 parsec^3
+The actual number of nodes is 125000.
+The actual number of zones is 117649.
+
+For noise.silo(hgslice)
+Total cross sectional area (XSA): 400
+Total rotated (x=0) volume (VOL): -7.40386e-12
+
+Distance to boundary WRT dA / XSA = 5.56917
+Distance to boundary WRT dA / VOL = 2227.67
+Distance to boundary WRT dV / XSA = -100.807
+Distance to boundary WRT dV / VOL = -40322.9
+Distance to origin   WRT dA       = 3060.28
+
+NOTE -- additional calculations are available if
+        a density plot is selected for this query.
+
+Eulerian for domain 0 is 1
+
+
+hgslice -- Min = 1.20445 (node 42 at coord <7.14286, -10>)
+hgslice -- Max = 5.02409 (node 670 at coord <-1.83673, -4.69388>)
+
+
+The total RevolvedVolume is 12565.5 parsec^3
+The total Surface Area is 400 parsec^2
+The actual number of nodes is 2500.
+The actual number of zones is 2401.
+
+MinMax Actual:
+airVfGradient -- Min = 0.004 (zone 18341 at coord <-3.67347, 2.85714, -6.93878>)
+airVfGradient -- Max = 0.787188 (zone 13361 at coord <3.67347, 1.22449, -7.7551>)
+
+
+MinMax Original:
+airVfGradient -- Min = 0.004 (zone 18341 at coord <-3.67347, 2.85714, -6.93878>)
+airVfGradient -- Max = 0.787188 (zone 13361 at coord <3.67347, 1.22449, -7.7551>)
+
+MinMax Actual:
+grad -- Min = 0.00145262 (node 69914 at coord <-4.28571, 9.59184, 1.02041>)
+grad -- Max = 1.23754 (node 98491 at coord <6.73469, -2.2449, 5.91837>)
+
+
+MinMax Original:
+grad -- Min = 0.00145262 (node 69914 at coord <-4.28571, 9.59184, 1.02041>)
+grad -- Max = 1.23754 (node 98491 at coord <6.73469, -2.2449, 5.91837>)
+

@@ -1,0 +1,103 @@
+Function: avtArrayMetaData2
+Declaration: avtArrayMetaData(std::string, std::string, avtCentering, int);
+Definition:
+// ****************************************************************************
+//  Method: avtArrayMetaData constructor
+//
+//  Arguments:
+//      n           The name of the array variable.
+//      mn          The name of the mesh the array var is defined on.
+//      nv          The number of components.
+//      c           The centering of the variable.
+//
+//  Programmer: Hank Childs
+//  Creation:   July 19, 2005
+//
+// ****************************************************************************
+
+avtArrayMetaData::avtArrayMetaData(std::string n, std::string mn,
+                                   avtCentering c, int nv)
+    : avtVarMetaData(avtArrayMetaData::TmfsStruct, n, mn, c)
+{
+    avtArrayMetaData::Init();
+    nVars = nv;
+    compNames.resize(nVars);
+    for (int i = 0 ; i < nVars ; i++)
+    {
+        char name[1024];
+        SNPRINTF(name, 1024, "comp%d", i);
+    }
+}
+
+Function: avtArrayMetaData3
+Declaration: avtArrayMetaData(std::string, std::string, avtCentering, int, const stringVector &);
+Definition:
+// ****************************************************************************
+//  Method: avtArrayMetaData constructor
+//
+//  Arguments:
+//      n           The name of the array variable.
+//      mn          The name of the mesh the array var is defined on.
+//      c           The centering of the variable.
+//      nv          The number of components.
+//      cn          The component names.
+//
+//  Programmer: Hank Childs
+//  Creation:   July 19, 2005
+//
+// ****************************************************************************
+
+avtArrayMetaData::avtArrayMetaData(std::string n, std::string mn, 
+                                   avtCentering c, int nv,
+                                   const stringVector &cn)
+    : avtVarMetaData(avtArrayMetaData::TmfsStruct, n, mn, c)
+{
+    avtArrayMetaData::Init();
+    nVars = nv;
+    compNames = cn;
+}
+
+Function: Print
+Declaration: void Print(ostream &, int = 0) const;
+Definition:
+// ****************************************************************************
+//  Method: avtArrayMetaData::Print
+//
+//  Purpose:
+//      Print statement for debugging.
+//
+//  Arguments:
+//      out      The stream to output to.
+//      indent   The number of tabs to indent each line with.
+//
+//  Programmer:  Hank Childs
+//  Creation:    July 19, 2005
+//
+// ****************************************************************************
+inline void
+Indent(ostream &out, int indent)
+{
+    for (int i = 0 ; i < indent ; i++)
+    {
+        out << "\t";
+    }
+}
+void
+avtArrayMetaData::Print(ostream &out, int indent) const
+{
+    avtVarMetaData::Print(out, indent);
+
+    Indent(out, indent);
+    out << "Number of variables = " << nVars << endl;
+    Indent(out, indent);
+    out << "Components are: ";
+    for (size_t i = 0 ; i < compNames.size() ; i++)
+    {
+        out << compNames[i].c_str();
+        if (i != compNames.size()-1)
+            out << ", ";
+        else
+            out << endl;
+    }
+}
+

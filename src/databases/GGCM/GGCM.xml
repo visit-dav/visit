@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+  <Plugin name="GGCM" type="database" label="GGCM" version="1.0" enabled="true" mdspecificcode="false" onlyengine="false" noengine="false" dbtype="MTSD" haswriter="false" hasoptions="true">
+    <FilePatterns>
+        *.3df.*
+        *.mer.*
+    </FilePatterns>
+    <Files components="M">
+        avtGGCMFileFormat.C
+        avtGGCMOptions.C
+        ggcm_grid.C
+        ggcm_grid_gse.C
+        ggcm_field_matrix.C
+        ggcm_mhd_gse.C
+        ggcm_read_mhd.C
+        matrix.C
+    </Files>
+    <Files components="E">
+        avtGGCMFileFormat.C
+        avtGGCMOptions.C
+        ggcm_grid.C
+        ggcm_grid_gse.C
+        ggcm_field_matrix.C
+        ggcm_mhd_gse.C
+        ggcm_read_mhd.C
+        matrix.C
+    </Files>
+    <Attribute name="none" purpose="none" persistent="true" exportAPI="" exportInclude="">
+      <Include file="header" quoted="true">
+        vtkGGCMReader.h
+      </Include>
+      <Include file="source" quoted="true">
+        vtkGGCMReader.C
+      </Include>
+    </Attribute>
+  </Plugin>

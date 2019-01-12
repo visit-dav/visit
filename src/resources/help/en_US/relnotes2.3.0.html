@@ -1,0 +1,153 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta http-equiv="Content-Language" content="en-us">
+  <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+  <meta name="ProgId" content="FrontPage.Editor.Document">
+  <title>VisIt 2.3 Release Notes</title>
+</head>
+<body>
+
+<center><b><font size="6">VisIt 2.3 Release Notes</font></b></center>
+
+<p>Welcome to VisIt's release notes page. This page describes the important
+enhancements and bug-fixes that were added to this release.</p>
+
+
+<p><b>Sections</b></p>
+<ul>
+  <li><a href="#General_Features">Features for all users</a></li>
+  <li><a href="#Advanced_Features">Features for advanced users</a></li>
+  <li><a href="#File_format">Changes to file format readers</a></li>
+  <li><a href="#Operator_changes">Changes to operators</a></li>
+  <li><a href="#Expression_changes">Changes to expressions</a></li>
+  <li><a href="#Query_changes">Changes to picks and queries</a></li>
+  <li><a href="#Bugs_fixed">Other bug fixes</a></li>
+  <li><a href="#Config_changes">Changes to machine configuration files</a></li>
+  <li><a href="#Dev_changes">Changes for VisIt developers</a></li>
+</ul>
+
+<a name="General_Features"></a>
+<p><b><font size="4">General features added in version 2.3</font></b></p>
+<ul>
+  <li>Selections have been enhanced to support <i>cumulative queries</i>. A cumulative query lets you threshold multiple variables on a dataset for a range of time steps and then combine the results into a single time-aware selection that can then be further reduced using a histogram. The results from each time step can be combined such that the final selection will contain cells that are present in either <i>all</i> or <i>any</i> time steps. The number of cells for each time step can be displayed as a histogram. The other histogram modes are: <i>Matches, ID, Variable</i>. The matches histogram mode takes the selection and sorts the cells in the selection into bins based on how frequently they appear over time. The ID histogram mode sorts the selection based on cell id, creating bins of cell ids. The variable histogram mode sorts the cells in the selection using an auxiliary variable and uses that variable to create bins that group the cells. Once cells have been binned into a histogram, the histogram is returned to the GUI where users can turn off a number of start end end bins to focus on high or low histogram bins. Cumulative query selections can be created using the Selections window.</li>
+  <li>Selections are no longer required to be tied to plots. This lets you create complex selections using datasets that have not yet been plotted. Note that data is read and processed to create the selection but it is not plotted.</li>
+  <li>The <b>Expression</b> window's <b>Load</b> button now causes expressions from XML files to be appended to the expression list instead of replacing the expressions in the list.</li>
+  <li> The cli method <i>GetAnnotationObject</i> now only accepts a string argument for the desired object's name.
+  To access an object by index, use the index in combination with the result of <i>GetAnnotationObjectNames</i>.
+  </li>
+  <li>For Windows installs: comand-line options have been added allowing for silent installs (see <A HREF="http://visitusers.org/index.php?title=Downloading_and_Installing_VisIt#Installing_on_Windows">the wiki</A> for more information); and you can now associate curve file types <i>(*.curve, *.ultra, *.ult, *.u)</i> with VisIt, allowing double-clicking to start VisIt and open the file.</li>
+  <li>When restoring a Session with different sources via the GUI, if the data directory specified in the session file no longer exists, VisIt will present the session file location as the default data directory instead of the User's home directory.</li>
+</ul>
+
+<a name="Advanced_Features"></a>
+<p><b><font size="4">Advanced features added in version 2.3</font></b></p>
+<ul>
+  <li>VisIt now provides a SWIG-generated Python binding for libsim that allows you to instrument your Python simulations so VisIt can connect to them and access their data.</li>
+  <li>Libsim's <i>VisItSetupEnvironment</i> function was enhanced so it can automatically broadcast the environment from the rank 0 processor to other processors in order to reduce simulation startup time. To ensure that you benefit from this behavior, you must call <i>VisItSetupEnvironment</i> after making calls to <i>VisItSetParallel</i>, <i>VisItSetParallelRank</i>, and <i>VisItSetBroadcastStringFunction</i>.</li>
+  <li>Libsim has new <i>VisItGetEnvironment</i> and <i>VisItSetupEnvironment2</i> functions. The <i>VisItGetEnvironment</i> function returns the environment that VisIt needs to run. This string must be passed to <i>VisItSetupEnvironment2</i> which is identical to <i>VisItSetupEnvironment</i> except that it lets you pass in the environment string. This is useful in the event that you need to determine the environment prior to calling MPI_Init. If you pass NULL to <i>VisItSetupEnvironment2</i> for non rank 0 processes then they will participate in a broadcast of the environment from rank 0 if you have informed libsim that your simulation is parallel.</li>
+  <li>VisIt's X launching and parallel GPU acceleration features have been rewritten to mesh better with modern cluster installations. See <a HREF="http://www.visitusers.org/index.php?title=Parallel_Hardware_Acceleration"> the wiki</a> for more information.</li>
+  <li>VisIt can now start a remote compute engine through a gateway machine. This capability has been implemented by using ssh to login to the gateway machine and then using ssh to login to the remote machine from there. It can handle giving a password to the gateway machine, but not the remote machine. To enable launching a remote compute engine in this manner, enable the <b>Use gateway</b> toggle button and enter the name of the gateway machine in the text field next to it on the <b>Host settings</b> tab on the <b>Host profiles</b> window.</li>
+  <li>Preliminary support has been added for custom user interfaces for simulations that use Libsim. Simulations can provide custom user inferfaces via a Qt-designer ui file that lets VisIt create the simulation user interface on demand.</li>
+</ul>
+
+<a name="File_format"></a>
+<p><b><font size="4">File format reader changes in version 2.3</font></b></p>
+<ul>
+  <li>Corvid Technologies contributed a VelodyneCLE <i>AMR</i> reader.</li>
+  <li>The Nek5000 reader now properly marks interior elements as "ghost", meaning they will not show up with transparent Pseudocolor plots.</li>
+  <li>Kenneth Leiter from ARL enhanced the Xdmf reader. The changes include:</li>
+    <ul>
+      <li>Fixing a bug that caused a seg fault when hyperslabs were read by the reader.</li>
+      <li>Improving the performance for reading spatially partitioned meshes. In one case, loading an Xdmf file composed of 1024 spatially partitioned blocks was taking around an hour. Now the load time for the same data is less than 30 seconds.</li>
+      <li>Adding support for additional topology types. These include:</li>
+        <ul>
+          <li>vtkQuadraticLinearQuad (quad 6)</li>
+          <li>vtkQuadraticLinearWedge (wedge 12)</li>
+          <li>vtkBiQuadraticQuad (quad 9)</li>
+          <li>vtkBiQuadraticQuadraticHexahedron (hex 24)</li>
+          <li>vtkBiQuadraticQuadraticWedge (wedge 18)</li>
+          <li>vtkBiQuadraiticTriangle (triangle 7)</li>
+          <li>vtkTriQuadraticHexahedron (hex 27)</li>
+        </ul>
+    </ul>
+   <li>VisIt can now read Cale HDF5 files.</li>
+   <li>VisIt now exposes more data from Cale PDB files.</li>
+   <li>VisIt now exposes point meshes from all Tecplot files with spatial coordinates and handles a few new conventions for multi-zone files.</li>
+   <li>Initial support for vface2d cells was added to the GMV reader.</li>
+</ul>
+
+<a name="Operator_changes"></a>
+<p><b><font size="4">Changes to VisIt's operators in version 2.3</font></b></p>
+<ul>
+  <li>The coordinate transformation option in the Transform operator now correctly fixes up "wrap-arounds" over angles for polygonal data as well.  (It previously only worked with volumetric data.)</li>
+  <li>The Transform operator now correctly handles the case where rectilinear meshes are scaled with a negative scaling factor.</li>
+  <li>The Cylinder operator was changed so it clips the plot, leaving the interior of the cylinder intact. If you need to calculate results on the cylinder surface, you can apply an ExternalSurface operator to achieve the operator's former behavior.</li>
+</ul>
+
+<a name="Expression_changes"></a>
+<p><b><font size="4">Changes to VisIt's expression language in version 2.3</font></b></p>
+<ul>
+  <li>There is now an <i>external_cell</i> expression that assigns 1.0 to cells on the exterior of a domain and 0.0 to cells on the interior.</li>
+  <li>A bug was fixed with the gradient expression where NaNs could be generated because of a divide by zero when a neighboring cell had an extent of zero in either of the X, Y, or Z directions. Now it ignores those cells.</li>
+</ul>
+
+<a name="Query_changes"></a>
+<p><b><font size="4">Changes to VisIt's picks and queries in version 2.3</font></b></p>
+<ul>
+  <li>Pick over time now supports multiple variables. There are options in the Pick window and the Query window (pick options) to select whether the time curve creates a plot with a single Y-Axis or Multiple Y-Axes. The default is a single Y Axis.</li>
+  <li>There is now a query that calculates the average value of a scalar or vector field. The calculation uses area-based weighting for 2D and volume-based weighting for 3D.</li>
+  <li>A <i>Connected Components Length</i> query was added. This query provides length of each connected component of a line mesh. The Connected Components Weighted Variable Sum and Connected Components Summary queries were also updated to support line meshes. Note: The summary query now provides 17 entries per component packed into the <i>GetQueryOutputValue()</i> result.</li>
+</ul>
+
+<a name="Bugs_fixed"></a>
+<p><b><font size="4">Other bugs fixed in version 2.3</font></b></p>
+<ul>
+  <li>Launching the gui from the viewer no longer causes the gui to hang on startup on Windows after having first opened a database.</li>
+  <li>The plot list's context menu now shows the right checked state that indicates whether the selected plot follows the time slider.</li>
+  <li>Command recording issues on Windows have been corrected.</li>
+  <li>Fixed problem with pick on transformed rectilinear grids.</li>
+  <li>Applying the OnionPeel operator to a transformed rectilinear grid no longer crashes the engine.</li>
+  <li>Fixed issue with File Open dialog's focus on Windows when restoring session with different sources and the directory specified by the session file does not exist.</li>
+  <li>On Windows, default save location for Picks, Queries, Python Filters and Transfer functions via the GUI will only be the 'current working directory' if the user has write-permissions there.  Otherwise, it will be the user's VisIt directory.</li>
+  <li>On Windows, double clicking a Silo file will open VisIt instead of Silex.  Using silex is still available in the context menu.</li>
+  <li>VisIt's command recording window failed to record commands when the CLI could not write its visitlog.py log file.</li>
+  <li>The Windows version of VisIt crashed when executing a time curve of Volume for a material-selected plot.</li>
+  <li>The Data Level Comparison Wizard generated invalid expressions when Windows-style filenames, including a drive letter, were included in the expressions. In addition, the wizard generated invalid expressions for difference variables that contained slashes or spaces.</li>
+  <li>The Gadget2 reader now works on Windows.</li>
+</ul>
+
+  
+<a name="Config_changes"></a>
+<p><b><font size="4">Changes to configuration files in version 2.3</font></b></p>
+<ul>
+  <li>VisIt was ported to and installed on Sandia's Glory and Redsky systems. Serial and parallel host profiles are available for both systems.</li>
+  <li>VisIt was ported to and installed on LANL's Cielo system. Serial and parallel host profiles are available for both systems.</li>
+</ul>
+  
+<a name="Dev_changes"></a>
+<p><b><font size="4">Changes for VisIt developers in version 2.3</font></b></p>
+<ul>
+  <li>Private plugins are now installed to <i>~/.visit/&lt;version&gt;/&lt;architecture&gt;</i> instead of the former location <i>~/.visit/&lt;architecture&gt;</i>. This is meant to enable the user to keep several versions of a plugin matched to specific versions of VisIt. Note that loading plugins from the former location will also still work.</li>
+  <li>A bug was fixed with the build_visit script with the building of the hdf4 library when the script was run multiple times. The problem arose because a patch was implemented with the "sed" command, which corrupted the code if it was run multiple times. The patch is now implemented using the "patch" command, which detects if it has already applied the patch and doesn't apply the patch in that situation.</li>
+  <li>VisIt now requires the use of several new libraries. These include vtk 5.0.0i, hdf4 4.2.5, and Xdmf 2.1.1. The build_visit has been enhanced to build these new versions of the libraries.</li>
+  <li>It is now possible to build a version of VisIt that always forces ssh tunneling for all data connections. This code is dependent on VISIT_FORCE_SSH_TUNNELING, which is off by default. To enable forcing of ssh tunneling do one of the following:</li>
+    <ul>
+      <p>a)  Add the line</p>
+        <ul>
+          <p>VISIT_OPTION_DEFAULT(VISIT_FORCE_SSH_TUNNELING ON)</p>
+        </ul>
+      <p>to your config site file.</p>
+      <p>b)  Run cmake with VISIT_FORCE_SSH_TUNNELING defined on the execute line as shown below.</p>
+        <ul>
+          <p>cmake . -DVISIT_FORCE_SSH_TUNNELING:BOOL=ON</p>
+        </ul>
+    </ul>
+  <li>VisIt now uses /dev/urandom to create the random seed used to generate the key used to set up data connections between components. The code is unix specific.</li>
+</ul>
+
+<p>Click the following link to view the release notes for the previous version
+of VisIt: <a href="relnotes2.2.2.html">VisIt 2.2.2 Release Notes</a>.</p>
+</body>
+</html>

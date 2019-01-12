@@ -1,0 +1,1242 @@
+#include <AMRreader.h>
+
+#include <DebugStream.h>
+
+#include <math.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include <iomanip>
+
+#define AMRFREE(ptr) {if(ptr != NULL) { free(ptr); ptr = NULL; }}
+
+void
+AMRreader::init()
+{
+    filename_ = "";
+    ncycle_ = 0;
+    tttttt_ = 0.;
+    blktag_ = 0;
+
+    nblks_=0;
+    blkdim_[0] = blkdim_[1] = blkdim_[2] = blkdim_[3] = 0;
+    blksz_ = 0;
+
+    blkxs_ = NULL;
+    blkdx_ = NULL;
+    blkkey_ = NULL;
+    datbuf_ = NULL;
+    prebuf_ = NULL;
+    sndbuf_ = NULL;
+    tmpbuf_ = NULL;
+    tagbuf_ = NULL;
+
+    nrect_ = nvert_ = 0;
+
+    eos_ = NULL;
+}
+
+// Modifications:
+//   Brad Whitlock, Fri Jun  6 10:45:53 PDT 2014
+//   Use AMRFREE macro.
+// *****************************************************************************
+int
+AMRreader::freedata()
+{
+    AMRFREE(blkkey_);
+    AMRFREE( blkxs_ );
+    AMRFREE( blkdx_ );
+    AMRFREE( datbuf_ );
+    AMRFREE( prebuf_ );
+    AMRFREE( sndbuf_ );
+    AMRFREE( tmpbuf_ );
+    AMRFREE( tagbuf_ );
+    if( eos_!=NULL )
+    {
+        delete eos_;
+        eos_ = NULL;
+    }
+    nblks_=0;
+    nrect_=nvert_=0;
+
+    return 0;
+}
+
+
+
+
+int
+AMRreader::getInfo( const char* filename )
+{
+    debug2 << "opening AMR file " << filename << "\n";
+
+    filename_ = filename;
+
+    hid_t file_id = H5Fopen( filename, H5F_ACC_RDONLY, H5P_DEFAULT );
+    if( file_id<0 )
+    {
+        debug1 << "Failed to open AMR file: " << filename << ".\n";
+        return -1;
+    }
+
+    hsize_t nobjs;
+    H5Gget_num_objs( file_id, &nobjs );
+    debug2 << "nobjs in " << filename << " is " << nobjs << "\n";
+    for( hsize_t i=0; i<nobjs; i++ )
+    {
+        int type = H5Gget_objtype_by_idx( file_id, i );
+        if( type == H5G_GROUP )
+        {
+            char name[1000];
+            H5Gget_objname_by_idx( file_id, i, name, 1000 );
+
+            hid_t gid = H5Gopen1( file_id, name );
+
+            if( strcmp( name, amr_grpname )==0 )
+            {
+                if( getAMRinfo( gid )!=0 )
+                {
+                    debug1 << "Failed to retrieve AMR info in " << filename << "\n";
+                    H5Gclose(gid);
+                    return -2;
+                }
+                if( getAMRtagInfo(gid)!=0 )
+                {
+                    debug1 << "Failed to retrieve AMR tag info in " << filename << "\n";
+                    H5Gclose(gid);
+                    return -2;
+                }
+            }
+            else if( strcmp( name, intf_grp_name )==0 )
+            {
+                if( getIntfInfo( gid ) != 0 )
+                {
+                    debug1 << "Failed to retrieve Interface info in " << filename << "\n";
+                    return -3;
+                }
+            }
+            else
+            {
+                debug1 << "Find a unrecongnized group " << name << " in " << filename << "\n";
+            }
+
+            H5Gclose(gid);
+        }
+    }
+
+    H5Fclose( file_id );
+    return 0;
+}
+
+
+
+int AMRreader::
+getAMRinfo( hid_t gid )
+{
+    float rbuf[20];
+
+    hid_t aid = H5Aopen_name( gid, "number" );
+    if( aid<0 )
+    {
+        nblks_=0;
+        debug1 << "Failed to find number of blocks.\n";
+        return -1;
+    }
+    else
+    {
+        H5Aread( aid, H5T_NATIVE_INT, &nblks_ );
+        H5Aclose(aid);
+    }
+    debug2 << "Number of blocks is " << nblks_ << "\n";
+
+    aid = H5Aopen_name( gid, amr_dimname );
+    if( aid<0 )
+    {
+        debug1 << "Failed to find dimensions of block.\n";
+        return -2;
+    }
+    else
+    {
+        int dd[10];
+        H5Aread( aid, H5T_NATIVE_INT, dd );
+        H5Aclose(aid);
+        blkdim_[0]=dd[0];
+        blkdim_[1]=dd[1];
+        blkdim_[2]=dd[2];
+        blkdim_[3]=dd[3];
+        blksz_ = blkdim_[0]*blkdim_[1]*blkdim_[2];
+    }
+    debug2 << "Dimensions of blocks are ["
+           << blkdim_[0] << ","
+           << blkdim_[1] << ","
+           << blkdim_[2] << ","
+           << blkdim_[3] << " ].\n";
+
+    aid = H5Aopen_name( gid, amr_time_name );
+    if( aid<0 )
+    {
+        debug1 << "Failed to find SimuTime.\n";
+        return -3;
+    }
+    H5Aread( aid, H5T_NATIVE_DOUBLE, &tttttt_ );
+    H5Aclose(aid);
+    debug2 << "SimuTime= " << tttttt_ << "\n";
+
+    aid = H5Aopen_name( gid, amr_iter_name );
+    if( aid<0 )
+    {
+        debug1 << "Failed to find Ncycles.\n";
+        return -4;
+    }
+    H5Aread( aid, H5T_NATIVE_INT, &ncycle_ );
+    H5Aclose(aid);
+    debug2 << "Ncycles= " << ncycle_ << "\n";
+
+    // eos
+    htri_t est = H5Aexists( gid, amr_idealname );
+    if( est>0 )
+    {
+        aid = H5Aopen_name( gid, amr_idealname );
+        H5Aread( aid, H5T_NATIVE_FLOAT, rbuf );
+        H5Aclose(aid);
+        eos_ = new IdealEOS( rbuf[0], rbuf[1] );
+        return 0;
+    }
+
+    est = H5Aexists( gid, amr_jwlname );
+    if( est>0 )
+    {
+        aid = H5Aopen_name( gid, amr_jwlname );
+        H5Aread( aid, H5T_NATIVE_FLOAT, rbuf );
+        H5Aclose(aid);
+        eos_ = new JwlEOS( rbuf[0], rbuf[1], rbuf[2], rbuf[3],
+                           rbuf[4], rbuf[5], rbuf[6] );
+        return 0;
+    }
+
+    est = H5Aexists( gid, amr_sesamename );
+    if( est>0 )
+    {
+        eos_ = new SesameEOS();
+        return 0;
+    }
+
+    eos_ = new IdealEOS( 1.4, 1.0 );
+    return 0;
+}
+
+
+
+
+int AMRreader::
+getAMRtagInfo( hid_t gid )
+{
+    char buf[100];
+    hsize_t nobj,idx;
+
+    blktag_=0;
+
+    H5Gget_num_objs( gid, &nobj );
+    idx=0;
+    while(idx<nobj)
+    {
+        if( H5Gget_objname_by_idx( gid, idx, buf, 50 )>0 )
+        {
+            if( strcmp( buf, amr_tagname )==0 )
+            {
+                blktag_=1;
+                break;
+            }
+        }
+        idx++;
+    }
+    return 0;
+}
+
+
+
+
+int AMRreader::
+getIntfInfo( hid_t gid )
+{
+    hid_t aid = H5Aopen_name( gid, intf_np_name );
+    if( aid<0 )
+    {
+        nvert_=0;
+        debug1 << "Failed to find number of interface points.\n";
+        return -1;
+    }
+    else
+    {
+        H5Aread( aid, H5T_NATIVE_INT, &nvert_ );
+        H5Aclose(aid);
+    }
+    debug2 << "nvert is " << nvert_ << "\n";
+
+    aid = H5Aopen_name( gid, intf_ne_name );
+    if( aid<0 )
+    {
+        nrect_=0;
+        debug1 << "Failed to find number of interface elements.\n";
+        return -2;
+    }
+    else
+    {
+        H5Aread( aid, H5T_NATIVE_INT, &nrect_ );
+        H5Aclose(aid);
+    }
+    debug2 << "nrect is " << nrect_ << "\n";
+
+    return 0;
+}
+
+// ****************************************************************************
+// Method:
+//
+// Purpose:
+//
+//
+// Arguments:
+//
+//
+// Returns:
+//
+// Note:
+//
+// Programmer:
+// Creation:   Fri May 23 11:36:18 PDT 2014
+//
+// Modifications:
+//    Brad Whitlock, Fri May 23 11:36:26 PDT 2014
+//    I made it always read the block key. I changed the control flow so it
+//    is better about closing HDF5 files/data under error conditions.
+//
+// ****************************************************************************
+
+int AMRreader::
+readAMRmesh()
+{
+    //if( blkxs_!=NULL ) return 0;
+    int retval = 0;
+    hid_t file_id = H5Fopen( filename_.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT );
+    if( file_id<0 )
+    {
+        debug1 << "Failed to open AMR file: " << filename_ << " when read in mesh.\n";
+        retval = -1;
+    }
+    else
+    {
+        hid_t gid = H5Gopen1( file_id, amr_grpname );
+        if( gid<0 )
+        {
+            debug1 << "Failed to open AMR group in " << filename_ << " when read in mesh.\n";
+            retval = -2;
+        }
+        else
+        {
+            blkxs_ = (float*)malloc( 3*nblks_*sizeof(float) );
+            blkdx_ = (float*)malloc( 3*nblks_*sizeof(float) );
+            blkkey_ = (OctKey *)malloc(nblks_ * sizeof(OctKey));
+            if( blkxs_==NULL ||  blkdx_==NULL || blkkey_ == NULL)
+            {
+                debug1 << "Failed to allocate blkxs_ or blkddx_ or blkkey_ for " << filename_ << ".\n";
+                retval = -3;
+            }
+            else
+            {
+                if(retval == 0)
+                {
+                    hid_t xsid = H5Dopen1( gid, amr_crdname );
+                    if( xsid<0 )
+                    {
+                        memset(blkxs_, 0, 3*nblks_*sizeof(float) );
+                        debug1 << "Failed to open block coordinates in " << filename_ << ".\n";
+                        retval = -4;
+                    }
+                    else
+                    {
+                        herr_t herr = H5Dread( xsid, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, blkxs_ );
+                        if( herr<0 )
+                        {
+                            memset(blkxs_, 0, 3*nblks_*sizeof(float) );
+                            debug1 << "Failed to read block coordinates in " << filename_ << ".\n";
+                            retval = -5;
+                        }
+                        H5Dclose(xsid);
+                    }
+                }
+
+                if(retval == 0)
+                {
+                    hid_t dxid = H5Dopen1( gid, amr_stpname );
+                    if( dxid<0 )
+                    {
+                        memset(blkdx_, 0, 3*nblks_*sizeof(float) );
+                        debug1 << "Failed to open block steps in " << filename_ << ".\n";
+                        retval = -6;
+                    }
+                    else
+                    {
+                        herr_t herr = H5Dread( dxid, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, blkdx_ );
+                        if( herr<0 )
+                        {
+                            memset(blkdx_, 0, 3*nblks_*sizeof(float) );
+                            debug1 << "Failed to read block steps in " << filename_ << ".\n";
+                            retval = -7;
+                        }
+                        H5Dclose(dxid);
+                    }
+                }
+
+                if(retval == 0)
+                {
+                    hid_t tpid = H5Dopen1( gid, amr_keyname );
+                    if( tpid<0 )
+                    {
+                        for(int i = 0; i < nblks_; ++i)
+                            blkkey_[i] = OctKey_Root();
+                        debug1 << "Failed to open block key in " << filename_ << ".\n";
+                        retval = -8;
+                    }
+                    else
+                    {
+                        herr_t herr = H5Dread( tpid, H5T_STD_U32LE, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(blkkey_[0].fv[0]) );
+                        if( herr<0 )
+                        {
+                            for(int i = 0; i < nblks_; ++i)
+                                blkkey_[i] = OctKey_Root();
+                            debug1 << "Failed to read block key in " << filename_ << ".\n";
+                            retval = -9;
+                        }
+                        else
+                        {
+#if 0
+                            // write out OctKey to check
+                            debug2 << "write in 64b\n";
+                            for( int i=0; i<nblks_; i++ )
+                            {
+                                debug2 << std::setw(8) << i << std::hex
+                                       << std::setw(20) << blkkey_[i].eb << std::dec
+                                       << "  binary: " << blkkey_[i]
+                                       << " nlevels=" << OctKey_NumLevels(blkkey_[i]) << endl;
+                            }
+#endif
+                        }
+                        H5Dclose(tpid);
+                    }
+                }
+            }
+            H5Gclose( gid );
+        }
+        H5Fclose( file_id );
+    }
+
+    return retval;
+}
+
+// *****************************************************************************
+// Modifications:
+//   Brad Whitlock, Fri Jun  6 10:09:08 PDT 2014
+//   Change control flow so HDF5 file/data gets closed under error conditions.
+// *****************************************************************************
+
+int AMRreader::
+readAMRdata()
+{
+    //  if( datbuf_!=NULL ) return 0;
+    int retval = 0;
+    hid_t file_id = H5Fopen( filename_.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT );
+    if( file_id<0 )
+    {
+        debug1 << "Failed to open AMR file: " << filename_ << " when read in mesh.\n";
+        retval = -1;
+    }
+    else
+    {
+        hid_t gid = H5Gopen1( file_id, amr_grpname );
+        if( gid<0 )
+        {
+            debug1 << "Failed to open AMR group in " << filename_ << " when read in mesh.\n";
+            retval = -2;
+        }
+        else
+        {
+            datbuf_ = (float*)malloc( 5*blksz_*nblks_*sizeof(float) );
+            if( datbuf_==NULL )
+            {
+                debug1 << "Failed to allocate datbuf_ for " << filename_ << ".\n";
+                retval = -3;
+            }
+            else
+            {
+                hid_t datid = H5Dopen1( gid, amr_datname );
+                if( datid<0 )
+                {
+                    debug1 << "Failed to open block data in " << filename_ << ".\n";
+                    retval = -4;
+                }
+                else
+                {
+                    herr_t herr = H5Dread( datid, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, datbuf_ );
+                    if( herr<0 )
+                    {
+                        debug1 << "Failed to read block data in " << filename_ << ".\n";
+                        retval = -5;
+                    }
+                    H5Dclose(datid);
+                }
+            }
+            H5Gclose( gid );
+        }
+        H5Fclose( file_id );
+    }
+
+    return retval;
+}
+
+
+
+int AMRreader::
+readAMRadditionData()
+{
+    hid_t file_id = H5Fopen( filename_.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT );
+    if( file_id<0 )
+    {
+        debug1 << "Failed to open AMR file: " << filename_ << " when read in mesh.\n";
+        return -1;
+    }
+
+    hid_t gid = H5Gopen1( file_id, amr_grpname );
+    if( gid<0 )
+    {
+        debug1 << "Failed to open AMR group in " << filename_ << " when read in mesh.\n";
+        return -2;
+    }
+
+    //prebuf_ = new float[ blksz_*nblks_ ];
+    //sndbuf_ = new float[ blksz_*nblks_ ];
+    //tmpbuf_ = new float[ blksz_*nblks_ ];
+    prebuf_ = (float*)malloc( (size_t)blksz_*(size_t)nblks_*sizeof(float) );
+    sndbuf_ = (float*)malloc( (size_t)blksz_*(size_t)nblks_*sizeof(float) );
+    tmpbuf_ = (float*)malloc( (size_t)blksz_*(size_t)nblks_*sizeof(float) );
+    if( prebuf_==NULL  || sndbuf_==NULL  || tmpbuf_==NULL )
+    {
+        debug1 << "Failed to allocate additional datbuf for " << filename_ << ".\n";
+        return -3;
+    }
+
+    hid_t datid = H5Dopen1( gid, amr_prename );
+    if( datid<0 )
+    {
+        debug1 << "Failed to open " << amr_prename << " data in " << filename_ << ".\n";
+        return -4;
+    }
+    herr_t herr = H5Dread( datid, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, prebuf_ );
+    H5Dclose(datid);
+    if( herr<0 )
+    {
+        debug1 << "Failed to read " << amr_prename << " in " << filename_ << ".\n";
+        return -5;
+    }
+
+    datid = H5Dopen1( gid, amr_sndname );
+    if( datid<0 )
+    {
+        debug1 << "Failed to open " << amr_sndname << " data in " << filename_ << ".\n";
+        return -4;
+    }
+    herr = H5Dread( datid, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, sndbuf_ );
+    H5Dclose(datid);
+    if( herr<0 )
+    {
+        debug1 << "Failed to read " << amr_sndname << " in " << filename_ << ".\n";
+        return -5;
+    }
+
+    datid = H5Dopen1( gid, amr_tmpname );
+    if( datid<0 )
+    {
+        debug1 << "Failed to open " << amr_tmpname << " data in " << filename_ << ".\n";
+        return -4;
+    }
+    herr = H5Dread( datid, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, tmpbuf_ );
+    H5Dclose(datid);
+    if( herr<0 )
+    {
+        debug1 << "Failed to read " << amr_tmpname << " in " << filename_ << ".\n";
+        return -5;
+    }
+
+    H5Gclose( gid );
+    H5Fclose( file_id );
+    return 0;
+}
+
+
+
+
+
+int AMRreader::
+readAMRtagData()
+{
+    if( blktag_!=1 ) return 0;
+
+    hid_t file_id = H5Fopen( filename_.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT );
+    if( file_id<0 )
+    {
+        debug1 << "Failed to open AMR file: " << filename_ << " when read in mesh.\n";
+        return -1;
+    }
+
+    hid_t gid = H5Gopen1( file_id, amr_grpname );
+    if( gid<0 )
+    {
+        debug1 << "Failed to open AMR group in " << filename_ << " when read in mesh.\n";
+        return -2;
+    }
+
+    tagbuf_ = (float*)malloc( (size_t)blksz_*(size_t)nblks_*sizeof(float) );
+    if( tagbuf_==NULL )
+    {
+        debug1 << "Failed to allocate additional datbuf for " << filename_ << ".\n";
+        return -3;
+    }
+
+    hid_t datid = H5Dopen1( gid, amr_tagname );
+    if( datid<0 )
+    {
+        debug1 << "Failed to open " << amr_tagname << " data in " << filename_ << ".\n";
+        return -4;
+    }
+    herr_t herr = H5Dread( datid, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, tagbuf_ );
+    H5Dclose(datid);
+    if( herr<0 )
+    {
+        debug1 << "Failed to read " << amr_tagname << " in " << filename_ << ".\n";
+        return -5;
+    }
+
+    H5Gclose( gid );
+    H5Fclose( file_id );
+    return 0;
+}
+
+
+
+
+int AMRreader::
+GetBlockMesh( int bid, float* xs, float* dx )
+{
+    if( blkxs_==NULL )
+    {
+        if( readAMRmesh()!=0 )
+        {
+            debug1 << "Failed to read AMR mesh.\n";
+            return -1;
+        }
+    }
+
+    if(bid < 0 || bid >= nblks_)
+    {
+        debug1 << "GetBlockMesh: invalid bid=" << bid << endl;
+    }
+
+    int sft=3*bid;
+
+    xs[0] = blkxs_[sft];
+    xs[1] = blkxs_[sft+1];
+    xs[2] = blkxs_[sft+2];
+
+    dx[0] = blkdx_[sft];
+    dx[1] = blkdx_[sft+1];
+    dx[2] = blkdx_[sft+2];
+    return 0;
+}
+
+OctKey
+AMRreader::GetBlockKey(int bid)
+{
+    if( blkkey_==NULL )
+    {
+        if( readAMRmesh()!=0 )
+        {
+            debug1 << "Failed to read AMR mesh.\n";
+            return OctKey();
+        }
+    }
+
+    return blkkey_[bid];
+}
+
+int AMRreader::
+PreprocessData()
+{
+    if( datbuf_==NULL )
+    {
+        if( readAMRdata()!=0 )
+        {
+            debug1 << "Failed to read in AMR data.\n";
+            return -1;
+        }
+        if( eos_->EOStype()==SesameEOS_type )
+        {
+            if( readAMRadditionData()!=0 )
+            {
+                debug1 << "Failed to read in AMR additional data.\n";
+                return -1;
+            }
+        }
+        if( readAMRtagData()!=0 )
+        {
+            debug1 << "Failed to read in AMR tag data.\n";
+            return -1;
+        }
+    }
+    return 0;
+}
+
+
+
+int AMRreader::
+GetBlockVariable( int bid, int vid, float* dat )
+{
+    int ierr = PreprocessData();
+    if( ierr!=0 )
+    {
+        debug1 << "Failed to PreprocessData() in GetBlockVariable()\n";
+        return ierr;
+    }
+//#define RADIAL_TEST_PATTERN
+#ifdef RADIAL_TEST_PATTERN
+    // Compute distance from 0,0,0 to cell centers so we return data
+    // that makes sense for testing.
+    int dims[3];
+    GetBlockDimensions(bid, dims);
+
+    float xs[3], dx[3];
+    GetBlockMesh(bid, xs, dx);
+    float *ptr = dat;
+    for(int k = 0; k < dims[2]; ++k)
+        for(int j = 0; j < dims[1]; ++j)
+            for(int i = 0; i < dims[0]; ++i)
+            {
+                float x = xs[0] + (float(i) + 0.5) * dx[0];
+                float y = xs[1] + (float(j) + 0.5) * dx[1];
+                float z = xs[2] + (float(k) + 0.5) * dx[2];
+
+                *ptr++ = sqrt(x*x + y*y + z*z);
+            }
+    return 0;
+#endif
+    ierr = compvar( vid, datbuf_+(5*blksz_*bid), dat, blksz_ );
+    if( ierr!=0 )
+    {
+        debug1 << "Failed to compute requested variable: " << vid << " .\n";
+        return ierr;
+    }
+    return 0;
+}
+
+
+
+
+int AMRreader::
+GetInterfaceVariable( int vid, void* dat )
+{
+    std::string vname;
+    hid_t  mtype;
+    switch(vid)
+    {
+    case(i_coor):
+        vname = intf_coor_name;
+        mtype=H5T_NATIVE_FLOAT;
+        break;
+    case(i_velo):
+        vname = intf_velo_name;
+        mtype=H5T_NATIVE_FLOAT;
+        break;
+    case(i_pres):
+        vname = intf_pres_name;
+        mtype=H5T_NATIVE_FLOAT;
+        break;
+    case(i_segt):
+        vname = intf_segt_name;
+        mtype=H5T_NATIVE_INT;
+        break;
+    case(i_matl):
+        vname = intf_matl_name;
+        mtype=H5T_NATIVE_FLOAT;
+        break;
+    default:
+        debug1 << "Unknown variable id " << vid << " .\n";
+        return -1;
+    }
+
+    int retval = 0;
+    hid_t file_id = H5Fopen( filename_.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT );
+    if( file_id<0 )
+    {
+        debug1 << "Failed to open AMR file: " << filename_ << " when read in mesh.\n";
+        retval = -2;
+    }
+    else
+    {
+        hid_t gid = H5Gopen1( file_id, intf_grp_name );
+        if( gid<0 )
+        {
+            debug1 << "Failed to open interface group in " << filename_ << " when read in mesh.\n";
+            retval = -3;
+        }
+        else
+        {
+            hid_t dtid = H5Dopen1( gid, vname.c_str() );
+            if( dtid<0 )
+            {
+                debug1 << "Failed to open interface variable " << vname << " in " << filename_ << ".\n";
+                retval = -4;
+            }
+            else
+            {
+                herr_t herr = H5Dread( dtid, mtype, H5S_ALL, H5S_ALL, H5P_DEFAULT, dat );
+                if( herr<0 )
+                {
+                    debug1 << "Failed to read interface variable " << vname << " in " << filename_ << ".\n";
+                    retval = -5;
+                }
+                H5Dclose(dtid);
+            }
+            H5Gclose( gid );
+        }
+        H5Fclose( file_id );
+    }
+
+    return retval;
+}
+
+
+
+
+
+int AMRreader::
+compvar( int vid, float* blk, float* buf, int sz )
+{
+    switch( vid )
+    {
+    case(v_dens):
+        comp_dens( blk, buf, sz );
+        break;
+    case(v_uvel):
+        comp_uvel( blk, buf, sz );
+        break;
+    case(v_vvel):
+        comp_vvel( blk, buf, sz );
+        break;
+    case(v_wvel):
+        comp_wvel( blk, buf, sz );
+        break;
+    case(v_pres):
+        comp_pres( blk, buf, sz );
+        break;
+    case(v_temp):
+        comp_temp( blk, buf, sz );
+        break;
+    case(v_sndv):
+        comp_sndv( blk, buf, sz );
+        break;
+    case(v_xmnt):
+        comp_xmnt( blk, buf, sz );
+        break;
+    case(v_ymnt):
+        comp_ymnt( blk, buf, sz );
+        break;
+    case(v_zmnt):
+        comp_zmnt( blk, buf, sz );
+        break;
+    case(v_etot):
+        comp_etot( blk, buf, sz );
+        break;
+    case(v_eint):
+        comp_eint( blk, buf, sz );
+        break;
+    case(v_eknt):
+        comp_eknt( blk, buf, sz );
+        break;
+    case(v_velo):
+        comp_velo( blk, buf, sz );
+        break;
+    case(v_tags):
+        comp_tags( blk, buf, sz );
+        break;
+
+    default:
+        debug1 << "Unknown variable id " << vid << " .\n";
+        return -1;
+    }
+    return 0;
+}
+
+
+
+
+int AMRreader::
+comp_dens( float* blkdt, float* buf, int sz )
+{
+//   for( int i=0; i<blkdim_[2]; i++ )
+//     for( int j=0; j<blkdim_[1]; j++ )
+//       for( int k=0; k<blkdim_[0]; k++ ) {
+//     int sft = k + ( j + i*blkdim_[1] )*blkdim_[0];
+    for( int sft=0; sft<sz; sft++ )
+    {
+        buf[sft] = blkdt[5*sft];
+    }
+    return 0;
+}
+
+int AMRreader::
+comp_uvel( float* blkdt, float* buf, int sz )
+{
+    for( int sft=0; sft<sz; sft++ )
+    {
+        buf[sft] = blkdt[5*sft+1] / blkdt[5*sft];
+    }
+    return 0;
+}
+
+int AMRreader::
+comp_vvel( float* blkdt, float* buf, int sz )
+{
+    for( int sft=0; sft<sz; sft++ )
+    {
+        buf[sft] = blkdt[5*sft+2] / blkdt[5*sft];
+    }
+    return 0;
+}
+
+int AMRreader::
+comp_wvel( float* blkdt, float* buf, int sz )
+{
+    for( int sft=0; sft<sz; sft++ )
+    {
+        buf[sft] = blkdt[5*sft+3] / blkdt[5*sft];
+    }
+    return 0;
+}
+
+int AMRreader::
+comp_pres( float* blkdt, float* buf, int sz )
+{
+    if( eos_->EOStype()==SesameEOS_type )
+    {
+        long off = (blkdt - datbuf_)/5;
+        float* pbuf = prebuf_ + off;
+        for( int sft=0; sft<sz; sft++ )
+        {
+            buf[sft] = pbuf[sft];
+        }
+    }
+    else
+    {
+        for( int sft=0; sft<sz; sft++ )
+        {
+            float rr = blkdt[5*sft];
+            float uu = blkdt[5*sft+1] / rr;
+            float vv = blkdt[5*sft+2] / rr;
+            float ww = blkdt[5*sft+3] / rr;
+            float et = blkdt[5*sft+4] / rr;
+            float ei = et - 0.5*( uu*uu + vv*vv + ww*ww );
+            buf[sft] = eos_->p_from_r_e( rr, ei );
+        }
+    }
+    return 0;
+}
+
+int AMRreader::
+comp_temp( float* blkdt, float* buf, int sz )
+{
+    if( eos_->EOStype()==SesameEOS_type )
+    {
+        long off = (blkdt - datbuf_)/5;
+        float* pbuf = tmpbuf_ + off;
+        for( int sft=0; sft<sz; sft++ )
+        {
+            buf[sft] = pbuf[sft];
+        }
+    }
+    else
+    {
+        for( int sft=0; sft<sz; sft++ )
+        {
+            float rr = blkdt[5*sft];
+            float uu = blkdt[5*sft+1] / rr;
+            float vv = blkdt[5*sft+2] / rr;
+            float ww = blkdt[5*sft+3] / rr;
+            float et = blkdt[5*sft+4] / rr;
+            float ei = et - 0.5*( uu*uu + vv*vv + ww*ww );
+            buf[sft] = eos_->T_from_r_e( rr, ei );
+        }
+    }
+    return 0;
+}
+
+int AMRreader::
+comp_sndv( float* blkdt, float* buf, int sz )
+{
+    if( eos_->EOStype()==SesameEOS_type )
+    {
+        long off = (blkdt - datbuf_)/5;
+        float* pbuf = sndbuf_ + off;
+        for( int sft=0; sft<sz; sft++ )
+        {
+            buf[sft] = pbuf[sft];
+        }
+    }
+    else
+    {
+        for( int sft=0; sft<sz; sft++ )
+        {
+            float rr = blkdt[5*sft];
+            float uu = blkdt[5*sft+1] / rr;
+            float vv = blkdt[5*sft+2] / rr;
+            float ww = blkdt[5*sft+3] / rr;
+            float et = blkdt[5*sft+4] / rr;
+            float ei = et - 0.5*( uu*uu + vv*vv + ww*ww );
+            buf[sft] = eos_->a_from_r_e( rr, ei );
+        }
+    }
+    return 0;
+}
+
+int AMRreader::
+comp_xmnt( float* blkdt, float* buf, int sz )
+{
+    for( int sft=0; sft<sz; sft++ )
+    {
+        buf[sft] = blkdt[5*sft+1];
+    }
+    return 0;
+}
+
+int AMRreader::
+comp_ymnt( float* blkdt, float* buf, int sz )
+{
+    for( int sft=0; sft<sz; sft++ )
+    {
+        buf[sft] = blkdt[5*sft+2];
+    }
+    return 0;
+}
+
+int AMRreader::
+comp_zmnt( float* blkdt, float* buf, int sz )
+{
+    for( int sft=0; sft<sz; sft++ )
+    {
+        buf[sft] = blkdt[5*sft+3];
+    }
+    return 0;
+}
+
+int AMRreader::
+comp_etot( float* blkdt, float* buf, int sz )
+{
+    for( int sft=0; sft<sz; sft++ )
+    {
+        buf[sft] = blkdt[5*sft+4];
+    }
+    return 0;
+}
+
+int AMRreader::
+comp_eint( float* blkdt, float* buf, int sz )
+{
+    for( int sft=0; sft<sz; sft++ )
+    {
+        float rr = blkdt[5*sft];
+        float uu = blkdt[5*sft+1] / rr;
+        float vv = blkdt[5*sft+2] / rr;
+        float ww = blkdt[5*sft+3] / rr;
+        float et = blkdt[5*sft+4] / rr;
+        buf[sft] = et - 0.5*( uu*uu + vv*vv + ww*ww );
+    }
+    return 0;
+}
+
+int AMRreader::
+comp_eknt( float* blkdt, float* buf, int sz )
+{
+    for( int sft=0; sft<sz; sft++ )
+    {
+        float rr = blkdt[5*sft];
+        float uu = blkdt[5*sft+1] / rr;
+        float vv = blkdt[5*sft+2] / rr;
+        float ww = blkdt[5*sft+3] / rr;
+        buf[sft] = 0.5*( uu*uu + vv*vv + ww*ww );
+    }
+    return 0;
+}
+
+int AMRreader::
+comp_velo( float* blkdt, float* buf, int sz )
+{
+    for( int sft=0; sft<sz; sft++ )
+    {
+        float rr = blkdt[5*sft];
+        float uu = blkdt[5*sft+1] / rr;
+        float vv = blkdt[5*sft+2] / rr;
+        float ww = blkdt[5*sft+3] / rr;
+        buf[3*sft]   = uu;
+        buf[3*sft+1] = vv;
+        buf[3*sft+2] = ww;
+    }
+    return 0;
+}
+
+int AMRreader::
+comp_tags( float* blkdt, float* buf, int sz )
+{
+    long off = (blkdt - datbuf_)/5;
+    float* pbuf = tagbuf_ + off;
+    for( int sft=0; sft<sz; sft++ )
+    {
+        buf[sft] = pbuf[sft];
+    }
+    return 0;
+}
+
+
+
+#define MeshEqual( x0, x1, dx )  ( fabs(x0-x1)<1.e-3*dx )
+int CompareKid2Kid0( const float* xs0, const float* xe0, const float* dx0,
+                     int kid, const float* xsk, const float* dxk )
+{
+    int res=1;
+    if( !MeshEqual( dx0[0], dxk[0], dx0[0] ) ||
+            !MeshEqual( dx0[1], dxk[1], dx0[1] ) ||
+            !MeshEqual( dx0[2], dxk[2], dx0[2] ) )
+        return res;
+
+    switch( kid )
+    {
+    case(1):
+        if( MeshEqual( xe0[0], xsk[0], dx0[0] ) &&
+                MeshEqual( xs0[1], xsk[1], dx0[1] ) &&
+                MeshEqual( xs0[2], xsk[2], dx0[2] ) )
+            res=0;
+        break;
+
+    case(2):
+        if( MeshEqual( xs0[0], xsk[0], dx0[0] ) &&
+                MeshEqual( xe0[1], xsk[1], dx0[1] ) &&
+                MeshEqual( xs0[2], xsk[2], dx0[2] ) )
+            res=0;
+        break;
+
+    case(3):
+        if( MeshEqual( xe0[0], xsk[0], dx0[0] ) &&
+                MeshEqual( xe0[1], xsk[1], dx0[1] ) &&
+                MeshEqual( xs0[2], xsk[2], dx0[2] ) )
+            res=0;
+        break;
+
+    case(4):
+        if( MeshEqual( xs0[0], xsk[0], dx0[0] ) &&
+                MeshEqual( xs0[1], xsk[1], dx0[1] ) &&
+                MeshEqual( xe0[2], xsk[2], dx0[2] ) )
+            res=0;
+        break;
+
+    case(5):
+        if( MeshEqual( xe0[0], xsk[0], dx0[0] ) &&
+                MeshEqual( xs0[1], xsk[1], dx0[1] ) &&
+                MeshEqual( xe0[2], xsk[2], dx0[2] ) )
+            res=0;
+        break;
+
+    case(6):
+        if( MeshEqual( xs0[0], xsk[0], dx0[0] ) &&
+                MeshEqual( xe0[1], xsk[1], dx0[1] ) &&
+                MeshEqual( xe0[2], xsk[2], dx0[2] ) )
+            res=0;
+        break;
+
+    case(7):
+        if( MeshEqual( xe0[0], xsk[0], dx0[0] ) &&
+                MeshEqual( xe0[1], xsk[1], dx0[1] ) &&
+                MeshEqual( xe0[2], xsk[2], dx0[2] ) )
+            res=0;
+        break;
+    }
+    return res;
+}
+
+
+
+int isSeqEightSibling( const int* blkdim, const float*blkxs, const float* blkdx, const int fst )
+{
+    float xs[3],dx[3],xe[3],xk[3],dk[3];
+
+    int sft=3*fst;
+    xs[0] = blkxs[sft];
+    xs[1] = blkxs[sft+1];
+    xs[2] = blkxs[sft+2];
+
+    dx[0] = blkdx[sft];
+    dx[1] = blkdx[sft+1];
+    dx[2] = blkdx[sft+2];
+
+    xe[0] = xs[0] + float(blkdim[0])*dx[0];
+    xe[1] = xs[1] + float(blkdim[1])*dx[1];
+    xe[2] = xs[2] + float(blkdim[2])*dx[2];
+
+    int sib=1;
+    for( int j=1; j<8; j++ )
+    {
+        int ttt=3*(fst+j);
+
+        xk[0] = blkxs[ttt];
+        xk[1] = blkxs[ttt+1];
+        xk[2] = blkxs[ttt+2];
+
+        dk[0] = blkdx[ttt];
+        dk[1] = blkdx[ttt+1];
+        dk[2] = blkdx[ttt+2];
+
+        if( CompareKid2Kid0( xs,xe,dx, j,xk,dk )!=0 )
+        {
+            sib=0;
+            break;
+        }
+    }
+    return sib;
+}
+
+
+int ConsolidateBlocks( int nblks, const int* blkdim,
+                       const float* blkxs, const float* blkdx,
+                       int* ncb, int* sft )
+{
+    int cnt=0;
+    int bid=0;
+    while(1)
+    {
+        sft[cnt++] = bid;
+
+        if( bid+7<nblks )
+        {
+            if( isSeqEightSibling( blkdim, blkxs, blkdx, bid ) )
+                bid+=8;
+            else
+                ++bid;
+        }
+        else
+            ++bid;
+
+        if( bid>=nblks )
+        {
+            sft[cnt]=bid;
+            break;
+        }
+    }
+    *ncb=cnt;
+    return 0;
+}

@@ -1,0 +1,64 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta http-equiv="Content-Language" content="en-us">
+   <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+   <meta name="ProgId" content="FrontPage.Editor.Document">
+   <title>VisIt 1.3.2 Release Notes</title>
+</head>
+<body>
+
+<center><b><font size="6">VisIt 1.3.2 Release Notes</font></b></center>
+
+<p>Welcome to VisIt's release notes page. This page describes the important
+enhancements and bug-fixes that were added to this release.</p>
+<p><b><font size="4">Features added in version 1.3.2</font></b></p>
+<ul>
+<li>VisIt's online documentation has been updated so it includes all of VisIt's features as of version 1.3.2. All areas of the User's Manual have additional information and there is a new chapter called: <i>Multiple Databases and Windows</i> that explains how to work with multiple databases, database correlations, and multiple windows.</li>
+<li>VisIt's PDB database reader plugin, which reads Flash files, has been improved so that it can read Flash files that contain single precision floating point numbers in addition to double precision floating point numbers.</li>
+<li>VisIt now has a specmf expression that lets you extract species mass fractions from the Species variable and use them in expressions.</li>
+<li>VisIt has a new query called <i>QueryZoneCenter</i> that returns the center of a zone when provided a zone identifier.</li>
+<li>VisIt uses a larger number of small display lists instead of using a smaller number of large display lists. This makes display list creation faster by a factor of 2 to 75, depending on the size of the database being plotted.</li>
+<li>VisIt's Query capability has been improved so it can handle multiple input databases, each having a different time state.</li>
+<li>VisIt's Pick window can now display pick information in a more concise form.</li>
+<li>VisIt's OpenGL renderer now uses flat shading when it can in order to speed up rendering.</li>
+<li>VisIt's Curve file database reader plugin has been enhanced so it can support less common ULTRA keywords in curve files.</li>
+<li>VisIt's Slice operator has been improved so slicing by a zone more accurately creates a slice plane that intersects the center of the specified zone.</li>
+</ul>
+<p><b><font size="4">Bugs fixed in version 1.3.2</font></b></p>
+<ul>
+<li>Node pick is putting the node marker in the wrong location.</li>
+<li>VisIt's viewer crashes when told to draw a Vector plot of an expression variable without vector heads.</li>
+<li>Lineout does not work in scalable rendering mode for very large databases.</li>
+<li>The first principle stress is calculated incorrectly.</li>
+<li>Pick returns different results when slicing Pseudocolor plots and FilledBoundary plots through the same zone.</li>
+<li>Pick returns different results depending on whether a plot is sliced through a zone or through an intercept.</li>
+<li>Pick points don't show up in scalable rendering mode.</li>
+<li>VisIt can't open a Silo file that has the _meshtv_searchpath variable defined.</li>
+<li>VisIt produces bad normals with small extents on SunOS.</li>
+<li>Node pick sometimes returned information for the wrong node.</li>
+<li>Plots are drawn all black when they have small extents and lighting is on.</li>
+<li>VisIt's Vista database reader plugin does not build on an Opteron x86_64 Linux computer.</li>
+<li>Pick returns the wrong values when picking on a Pseudocolor plot of Species when species selection has been applied.</li>
+<li>Pick points are very far away from the plots in Fullframe mode.</li>
+<li>Changes to the view focus are not honored when saving and restoring a session file.</li>
+<li>Annotation objects such as the time slider annotation object are not drawn when you save an offscreen image.</li>
+<li>The compute engine's parallel "Synchronizing" stage has been renamed to "Calculating current extents".</li>
+<li>Plots with small extents are cut off by clipping planes.</li>
+<li>Scalably rendered images don't update when altering color tables.</li>
+<li>Setting the transparency for a FilledBoundary plot has no effect if you've ever done a Volume plot in the visualization window.</li>
+<li>Sliced plots sometimes have incorrect extents.</li>
+<li>Query over time information is not saved in the settings file.</li>
+<li>Pick point labels move each time pick is done on a Curve produced by Lineout.</li>
+<li>The Color table window and Query over time window both map to the CTRL+T keyboard shortcut.</li>
+<li>New plots are not centered in the visualization window after deleting a different plot when you use the "Actual" view extents type.</li>
+<li>The SunOS version of VisIt's GUI hangs on exit when given the <i>-timings</i> command line flag.</li>
+</ul>
+<p>Click the following link to view the release notes for the previous version
+of VisIt: <a href="relnotes1.3.1.html">VisIt 1.3.1 Release Notes</a>.</p>
+<p>Click the following link to view the release notes for the next version 
+of VisIt: <a href="relnotes1.3.3.html">VisIt 1.3.3 Release Notes</a>.</p>
+
+</body>
+</html>

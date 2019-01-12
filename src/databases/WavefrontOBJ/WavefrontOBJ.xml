@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+  <Plugin name="WavefrontOBJ" type="database" label="WavefrontOBJ" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" dbtype="STSD" haswriter="true" hasoptions="false" filePatternsStrict="false" opensWholeDirectory="false">
+    <FilePatterns>
+      *.obj
+    </FilePatterns>
+    <Files components="M">
+      avtWavefrontOBJFileFormat.C
+      vtkVisItOBJReader.C
+    </Files>
+    <Files components="E">
+      avtWavefrontOBJFileFormat.C
+      avtWavefrontOBJWriter.C
+      vtkVisItOBJReader.C
+    </Files>
+    <Attribute name="" purpose="" persistent="true" keyframe="true" exportAPI="" exportInclude="">
+    </Attribute>
+  </Plugin>

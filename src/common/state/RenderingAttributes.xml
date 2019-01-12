@@ -1,0 +1,149 @@
+<?xml version="1.0"?>
+  <Attribute name="RenderingAttributes" purpose="This class contains special rendering attributes like antialiasing and stero settings." persistent="true" keyframe="true" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="RenderingAttributes.code">
+    <Enum name="GeometryRepresentation">
+      Surfaces
+      Wireframe
+      Points
+    </Enum>
+    <Enum name="StereoTypes">
+      RedBlue
+      Interlaced
+      CrystalEyes
+      RedGreen
+    </Enum>
+    <Enum name="TriStateMode">
+      Never
+      Always
+      Auto
+    </Enum>
+    <Field name="antialiasing" label="antialiasing" type="bool">
+      false
+    </Field>
+    <Field name="orderComposite" label="Order Composite" type="bool">
+      true
+    </Field>
+    <Field name="depthCompositeThreads" label="Depth Compositer Threads" type="int">
+      2
+    </Field>
+    <Field name="depthCompositeBlocking" label="Depth Compositer Blocking" type="int">
+      65536
+    </Field>
+    <Field name="alphaCompositeThreads" label="Alpha Compositer Threads" type="int">
+      2
+    </Field>
+    <Field name="alphaCompositeBlocking" label="Alpha Compositer Blocking" type="int">
+      65536
+    </Field>
+    <Field name="depthPeeling" label="Depth Peeling" type="bool">
+      false
+    </Field>
+    <Field name="occlusionRatio" label="occlusion ratio" type="double">
+      0.000000
+    </Field>
+    <Field name="numberOfPeels" label="number of peels" type="int">
+      16
+    </Field>
+    <Field name="multiresolutionMode" label="multiresolutionMode" type="bool">
+      false
+    </Field>
+    <Field name="multiresolutionCellSize" label="multiresolutionCellSize" type="float">
+      0.002000
+    </Field>
+    <Field name="geometryRepresentation" label="geometryRepresentation" type="enum" subtype="GeometryRepresentation">
+      Surfaces
+    </Field>
+    <Field name="stereoRendering" label="stereoRendering" type="bool">
+      false
+    </Field>
+    <Field name="stereoType" label="stereoType" type="enum" subtype="StereoTypes">
+      CrystalEyes
+    </Field>
+    <Field name="notifyForEachRender" label="notifyForEachRender" type="bool">
+      false
+    </Field>
+    <Field name="scalableActivationMode" label="scalableActivationMode" type="enum" subtype="TriStateMode">
+      Auto
+    </Field>
+    <Field name="scalableAutoThreshold" label="scalableAutoThreshold" type="int">
+      2000000
+    </Field>
+    <Field name="specularFlag" label="specularFlag" type="bool">
+      false
+    </Field>
+    <Field name="specularCoeff" label="specularCoeff" type="float">
+      0.600000
+    </Field>
+    <Field name="specularPower" label="specularPower" type="float">
+      10.000000
+    </Field>
+    <Field name="specularColor" label="specularColor" type="color" length="4">
+      255
+      255
+      255
+      255
+    </Field>
+    <Field name="doShadowing" label="Do Shadowing" type="bool">
+      false
+    </Field>
+    <Field name="shadowStrength" label="Shadow Strength" type="double">
+      0.500000
+    </Field>
+    <Field name="doDepthCueing" label="Do Depth Cueing" type="bool">
+      false
+    </Field>
+    <Field name="depthCueingAutomatic" label="Depth Cueing Automatic" type="bool">
+      true
+    </Field>
+    <Field name="startCuePoint" label="startCuePoint" type="doubleArray" length="3">
+      -10.000000
+      0.000000
+      0.000000
+    </Field>
+    <Field name="endCuePoint" label="endCuePoint" type="doubleArray" length="3">
+      10.000000
+      0.000000
+      0.000000
+    </Field>
+    <Field name="compressionActivationMode" label="compressionActivationMode" type="enum" subtype="TriStateMode">
+      Never
+    </Field>
+    <Field name="colorTexturingFlag" label="colorTexturingFlag" type="bool">
+      true
+    </Field>
+    <Field name="compactDomainsActivationMode" label="compactDomainsActivationMode" type="enum" subtype="TriStateMode">
+      Never
+    </Field>
+    <Field name="compactDomainsAutoThreshold" label="compactDomainsAutoThreshold" type="int">
+      256
+    </Field>
+    <Field name="osprayRendering" label="OSPRay Rendering" type="bool">
+      false
+    </Field>
+    <Field name="ospraySPP" label="OSPRay samples per pixel" type="int">
+      1
+    </Field>
+    <Field name="osprayAO" label="OSPRay ambient occlusion samples" type="int">
+      0
+    </Field>
+    <Field name="osprayShadows" label="OSPRay shadows" type="bool">
+      false
+    </Field>
+    <Function name="GetEffectiveScalableThreshold" user="true" member="true">
+    </Function>
+    <Function name="GetEffectiveCompactDomainsThreshold" user="true" member="true">
+    </Function>
+    <Constant name="DEFAULT_SCALABLE_AUTO_THRESHOLD" member="true">
+    </Constant>
+    <Constant name="DEFAULT_SCALABLE_ACTIVATION_MODE" member="true">
+    </Constant>
+    <Constant name="DEFAULT_COMPACT_DOMAINS_ACTIVATION_MODE" member="true">
+    </Constant>
+    <Constant name="DEFAULT_COMPACT_DOMAINS_AUTO_THRESHOLD" member="true">
+    </Constant>
+    <Include file="source" quoted="false">
+      climits
+    </Include>
+    <Include file="header" quoted="false">
+      float.h
+    </Include>
+  </Attribute>

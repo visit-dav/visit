@@ -1,0 +1,5 @@
+activeSource = "localhost:VISIT_TOP_DIR/data/pdb_test_data/dbB00.pdb"
+activeTimeSlider = 1
+timeSliders = ("localhost:VISIT_TOP_DIR/data/pdb_test_data/dbA00.pdb", "localhost:VISIT_TOP_DIR/data/pdb_test_data/dbB00.pdb")
+timeSliderCurrentStates = (0, 0)
+animationMode = 2

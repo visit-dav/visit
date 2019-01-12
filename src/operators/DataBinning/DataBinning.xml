@@ -1,0 +1,124 @@
+<?xml version="1.0"?>
+  <Plugin name="DataBinning" type="operator" label="DataBinning" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" category="Analysis" createExpression="true" exprInType="mesh" exprOutType="scalar,curve">
+    <CXXFLAGS>
+      ${VISIT_INCLUDE_DIR}/avt/DataBinning
+    </CXXFLAGS>
+    <Attribute name="DataBinningAttributes" purpose="The attributes for the DataBinning operator" persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="DataBinningAttributes.code">
+      <Enum name="ReductionOperator">
+        Average
+        Minimum
+        Maximum
+        StandardDeviation
+        Variance
+        Sum
+        Count
+        RMS
+        PDF
+      </Enum>
+      <Enum name="NumDimensions">
+        One
+        Two
+        Three
+      </Enum>
+      <Enum name="OutOfBoundsBehavior">
+        Clamp
+        Discard
+      </Enum>
+      <Enum name="BinBasedOn">
+        X
+        Y
+        Z
+        Variable
+      </Enum>
+      <Enum name="OutputType">
+        OutputOnBins
+        OutputOnInputMesh
+      </Enum>
+      <Field name="numDimensions" label="Dimensions" type="enum" subtype="NumDimensions">
+        One
+      </Field>
+      <Field name="dim1BinBasedOn" label="Bin Based On" type="enum" subtype="BinBasedOn">
+        Variable
+      </Field>
+      <Field name="dim1Var" label="Variable" type="variablename" vartypes="01000000000">
+      </Field>
+      <Field name="dim1SpecifyRange" label="Specify Range for Dim1?" type="bool">
+        false
+      </Field>
+      <Field name="dim1MinRange" label="Min" type="double">
+        0.000000
+      </Field>
+      <Field name="dim1MaxRange" label="Max" type="double">
+        1.000000
+      </Field>
+      <Field name="dim1NumBins" label="Number of bins" type="int">
+        50
+      </Field>
+      <Field name="dim2BinBasedOn" label="Bin Based On" type="enum" subtype="BinBasedOn">
+        Variable
+      </Field>
+      <Field name="dim2Var" label="Variable" type="variablename" enabler="numDimensions:Two,Three" vartypes="01000000000">
+      </Field>
+      <Field name="dim2SpecifyRange" label="Specify Range for Dim 2?" type="bool">
+        false
+      </Field>
+      <Field name="dim2MinRange" label="Min" type="double" enabler="numDimensions:Two,Three">
+        0.000000
+      </Field>
+      <Field name="dim2MaxRange" label="Max" type="double" enabler="numDimensions:Two,Three">
+        1.000000
+      </Field>
+      <Field name="dim2NumBins" label="Number of bins" type="int" enabler="numDimensions:Two,Three">
+        50
+      </Field>
+      <Field name="dim3BinBasedOn" label="Bin Based On" type="enum" subtype="BinBasedOn">
+        Variable
+      </Field>
+      <Field name="dim3Var" label="Variable" type="variablename" enabler="numDimensions:Three" vartypes="01000000000">
+      </Field>
+      <Field name="dim3SpecifyRange" label="Specify Range for Dim 3?" type="bool">
+        false
+      </Field>
+      <Field name="dim3MinRange" label="Min" type="double" enabler="numDimensions:Three">
+        0.000000
+      </Field>
+      <Field name="dim3MaxRange" label="Max" type="double" enabler="numDimensions:Three">
+        1.000000
+      </Field>
+      <Field name="dim3NumBins" label="Number of bins" type="int" enabler="numDimensions:Three">
+        50
+      </Field>
+      <Field name="outOfBoundsBehavior" label="Behavior for data outside range" type="enum" subtype="OutOfBoundsBehavior">
+        Clamp
+      </Field>
+      <Field name="reductionOperator" label="Reduction Operator" type="enum" subtype="ReductionOperator">
+        Average
+      </Field>
+      <Field name="varForReduction" label="Variable" type="variablename" enabler="reductionOperator:Average,Minimum,Maximum,StandardDeviation,Variance,Sum" vartypes="01000000000">
+      </Field>
+      <Field name="emptyVal" label="Value for Bins With No Data" type="double">
+        0.000000
+      </Field>
+      <Field name="outputType" label="Output Type" type="enum" subtype="OutputType">
+        OutputOnBins
+      </Field>
+      <Field name="removeEmptyValFromCurve" label="Remove bins with emptyVal from curves?" type="bool">
+        true
+      </Field>
+      <Function name="CreateConstructionAtts" user="true" member="true">
+      </Function>
+      <Function name="DataBinningCommonPluginInfo::GetCreatedExpressions" user="false" member="true">
+      </Function>
+      <Function name="DataBinningViewerEnginePluginInfo::UpdateOperatorAtts" user="false" member="true">
+      </Function>
+      <Include file="header" quoted="false">
+        ConstructDataBinningAttributes.h
+      </Include>
+      <Include file="header" quoted="false">
+        Expression.h
+      </Include>
+      <Include file="header" quoted="false">
+        cstring
+      </Include>
+    </Attribute>
+  </Plugin>
