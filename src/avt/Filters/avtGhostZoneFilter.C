@@ -164,7 +164,9 @@ ExamineGhostArray(vtkDataSet *in_ds, bool zones, bool haveGhost,
 
         //
         // This nesting of loops looks bad but has plenty of
-        // opportunities to terminate early.
+        // opportunities to terminate early. In addition, the
+        // loop body is written to execute index arithmetic
+        // and data lookup only on the indices of interest.
         //
         for (int k = 0; k < dims[2] && allLogBndGhost; k++)
         {
@@ -300,6 +302,10 @@ avtGhostZoneFilter::ExecuteData(avtDataRepresentation *in_dr)
     bool allLogBndZonesGhost = false;
     ExamineGhostArray(in_ds, zones, haveGhostZones, ghostZoneTypesToRemove,
         &allGhost, &allLogBndZonesGhost);
+    if (allLogBndZonesGhost)
+    {
+        debug5 << "Domain " << domain << " is wholly embedded in at least one layer of ghost zones." << endl;
+    }
     if (allGhost)
     {
         debug5 << "Domain " << domain << " contains only ghost zones.  Removing" << endl;
@@ -310,6 +316,10 @@ avtGhostZoneFilter::ExecuteData(avtDataRepresentation *in_dr)
     bool allLogBndNodesGhost = false;
     ExamineGhostArray(in_ds, !zones, haveGhostNodes, ghostNodeTypesToRemove,
         &allGhost, &allLogBndNodesGhost);
+    if (allLogBndNodesGhost)
+    {
+        debug5 << "Domain " << domain << " is wholly embedded in at least one layer of ghost nodes." << endl;
+    }
     if (allGhost)
     {
         debug5 << "Domain " << domain << " contains only ghost nodes.  Removing" << endl;
