@@ -1,0 +1,1 @@
+git lfs pull --include="test/*"
