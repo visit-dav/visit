@@ -1,0 +1,14 @@
+#!/bin/sh
+
+branch="$(git rev-parse --abbrev-ref HEAD)"
+
+if [ "$branch" == "develop" ]; then
+  echo "ERROR: You can't commit directly to the develop branch. Please do work on a feature branch."
+  exit 1
+fi
+
+if [[ $branch == *RC ]]; then
+  echo "ERROR: You can't commit directly to a RC branch. Please do work on a feature branch."
+  exit 1
+fi
+
