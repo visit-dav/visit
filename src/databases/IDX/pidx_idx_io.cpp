@@ -12,15 +12,21 @@
  **                                                **
  ****************************************************/
 
-#include "pidx_idx_io.h"
-#include "PIDX.h"
-
 #include <InvalidFilesException.h>
 #include <DebugStream.h>
 #include <cstdarg>
 #include <string>
+
+#ifdef PARALLEL
+#include <mpi.h>
+#include <avtParallel.h>
+#define PIDX_MPI_COMM VISIT_MPI_COMM
+#else
+#define PIDX_MPI_COMM MPI_COMM_WORLD
+#endif
+
 #include "pidx_idx_io.h"
-#include "PIDX.h"
+
 //#include "data_handle/PIDX_data_types.h"
 
 static PIDX_point global_size, local_offset, local_size;
@@ -28,17 +34,16 @@ static PIDX_file pidx_file;
 static String input_filename;
 
 #define PIDX_HAVE_MPI 1
-
-#if PIDX_HAVE_MPI
-static MPI_Comm NEW_COMM_WORLD;
-#endif
+// #if PIDX_HAVE_MPI
+// static MPI_Comm NEW_COMM_WORLD;
+// #endif
 
 static int process_count = 1, rank = 0;
 
 static void terminate(int out)
 {
-#if PIDX_HAVE_MPI
-  MPI_Abort(NEW_COMM_WORLD, out);
+#if PARALLEL
+  MPI_Abort(PIDX_MPI_COMM, out);
 #else
   EXCEPTION1(InvalidFilesException, "PIDX terminated.");
 #endif
@@ -55,8 +60,7 @@ static void terminate_with_error_msg(const char *format, ...)
 
 void init_mpi()
 {
-
-#ifdef MPI_VERSION//PIDX_HAVE_MPI
+#ifdef PIDX_HAVE_MPI
   int mpi_init;
   MPI_Initialized(&mpi_init);
   
@@ -64,10 +68,10 @@ void init_mpi()
     if (MPI_Init(NULL, NULL) != MPI_SUCCESS)
       terminate_with_error_msg("ERROR: MPI_Init error\n");
   }
-  MPI_Comm_dup(MPI_COMM_WORLD, &NEW_COMM_WORLD);
-  if (MPI_Comm_size(NEW_COMM_WORLD, &process_count) != MPI_SUCCESS)
-    terminate_with_error_msg("ERROR: MPI_Comm_size error\n");
-  if (MPI_Comm_rank(NEW_COMM_WORLD, &rank) != MPI_SUCCESS)
+  // MPI_Comm_dup(PIDX_MPI_COMM, &NEW_COMM_WORLD);
+  // if (MPI_Comm_size(NEW_COMM_WORLD, &process_count) != MPI_SUCCESS)
+  //   terminate_with_error_msg("ERROR: MPI_Comm_size error\n");
+  if (MPI_Comm_rank(PIDX_MPI_COMM, &rank) != MPI_SUCCESS)
     terminate_with_error_msg("ERROR: MPI_Comm_rank error\n");
 #endif
 }
@@ -156,8 +160,8 @@ bool PIDXIO::openDataset(const String filename){
   if (ret != PIDX_success)  terminate_with_error_msg("PIDX_get_last_tstep");
 
 #ifdef PARALELL  
-  MPI_Bcast(&first_tstep, 1, MPI_INT, 0, NEW_COMM_WORLD);
-  MPI_Bcast(&last_tstep, 1, MPI_INT, 0, NEW_COMM_WORLD);
+  MPI_Bcast(&first_tstep, 1, MPI_INT, 0, PIDX_MPI_COMM);
+  MPI_Bcast(&last_tstep, 1, MPI_INT, 0, PIDX_MPI_COMM);
 #endif
   
   tsteps.clear();
@@ -305,8 +309,8 @@ unsigned char* PIDXIO::getData(const VisitIDXIO::Box box, const int timestate, c
   
   PIDX_access pidx_access;
   PIDX_create_access(&pidx_access);
-#if PIDX_HAVE_MPI
-  PIDX_set_mpi_access(pidx_access, MPI_COMM_WORLD);
+#ifdef PIDX_HAVE_MPI
+  PIDX_set_mpi_access(pidx_access, PIDX_MPI_COMM);
 #endif
 
   ret = PIDX_file_open(input_filename.c_str(), PIDX_MODE_RDONLY, pidx_access, global_size, &pidx_file);
