@@ -163,6 +163,10 @@ vtkDataSetRemoveGhostCells::RequestData(
 //    Eric Brugger, Wed Jan  9 14:56:57 PST 2013
 //    Modified to inherit from vtkDataSetAlgorithm.
 //
+//    Mark C. Miller, Sun Jan 13 23:43:14 CST 2019
+//    Fix to filter on GhostZoneTypesToRemove. Also add optimizations for
+//    when GhostZoneTypesToRemove is 0xFF (255), meaning all types.
+//
 // ****************************************************************************
 
 void
@@ -170,9 +174,10 @@ vtkDataSetRemoveGhostCells::GenericExecute()
 {
     int  i;
 
+
     vtkDataSet *ds = input;
     vtkDataArray *arr = ds->GetCellData()->GetArray("avtGhostZones");
-    if (arr == NULL)
+    if (GhostZoneTypesToRemove == 255 || arr == NULL)
     {
         output->ShallowCopy(ds);
         return;
@@ -180,8 +185,11 @@ vtkDataSetRemoveGhostCells::GenericExecute()
     int nOut = 0;
     int nCells = ds->GetNumberOfCells();
     for (i = 0 ; i < nCells ; i++)
-        if (arr->GetTuple1(i) == 0)
+    {
+        unsigned char effectiveVal = (unsigned char) arr->GetTuple1(i) & GhostZoneTypesToRemove;
+        if (!avtGhostData::IsGhostZone(effectiveVal))
             nOut++;
+    }
 
     // If *all* the cells are selected, exit early, returning the input
     if (nOut == nCells)
@@ -204,7 +212,8 @@ vtkDataSetRemoveGhostCells::GenericExecute()
     vtkIdList *ptList = vtkIdList::New();
     for (i = 0 ; i < nCells ; i++)
     {
-        if (arr->GetTuple1(i) != 0)
+        unsigned char effectiveVal = (unsigned char) arr->GetTuple1(i) & GhostZoneTypesToRemove;
+        if (avtGhostData::IsGhostZone(effectiveVal))
             continue;
    
         ds->GetCellPoints(i, ptList);
@@ -215,6 +224,10 @@ vtkDataSetRemoveGhostCells::GenericExecute()
     ptList->Delete();
 
     ugrid->Squeeze();
+    if (GhostZoneTypesToRemove == 255)
+    {
+        ugrid->GetCellData()->RemoveArray("avtGhostZones");
+    }
     this->GetExecutive()->SetOutputData(0, ugrid);
     ugrid->Delete();
 }

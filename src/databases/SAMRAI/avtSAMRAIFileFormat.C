@@ -721,6 +721,10 @@ avtSAMRAIFileFormat::GetMesh(int patch, const char *)
 //    Mark C. Miller, Thu Sep 14 11:11:10 PDT 2017
 //    Add logic to support boundary ghosts vs. internal duplicate ghosts
 //    provided patch_bdry_type array is populated.
+//
+//    Mark C. Miller, Sun Jan 13 23:45:48 CST 2019
+//    Add specification of "avtRealDims" array to support proper ghosting.
+//    Simplified looping logic for internal/external ghosting.
 // ****************************************************************************
 vtkDataSet *
 avtSAMRAIFileFormat::ReadMesh(int patch)
@@ -866,15 +870,17 @@ avtSAMRAIFileFormat::ReadMesh(int patch)
         ghostCells->Allocate(ncells);
 
         // fill in appropriate ghost value for each cell
-        unsigned char realVal=0, internalGhost=0, externalGhost=0;
+        unsigned char internalGhost=0, externalGhost=0;
         avtGhostData::AddGhostZoneType(internalGhost, DUPLICATED_ZONE_INTERNAL_TO_PROBLEM);
         avtGhostData::AddGhostZoneType(externalGhost, ZONE_EXTERIOR_TO_PROBLEM);
         for (i = 0; i < ncells; i++)
         {
-            bool in_ghost_layers = false;
-            unsigned char ghostVal;
+            unsigned char ghostVal = 0;
 
-            // determine if cell is in ghost layers
+            // Determine if cell is in ghost layers
+            // Note: We cannot terminate the search along all of the 'dim' dimensions
+            // early because for corner cells, we need to ensure we set all possible
+            // ghost designations, both internal and external.
             int cell_idx = i;
             for (int j = 0; j < dim; j++)
             {
@@ -883,42 +889,30 @@ avtSAMRAIFileFormat::ReadMesh(int patch)
 
                 if (jidx < num_ghosts[j])
                 {
-                    in_ghost_layers = true;
-                    if (j == 0 && bdry_type && bdry_type[0]) { // xlo
-                        ghostVal = externalGhost; break;
-                    } else if (j == 1 && bdry_type && bdry_type[2]) { // ylo
-                        ghostVal = externalGhost; break;
-                    } else if (j == 2 && bdry_type && bdry_type[4]) { // zlo
-                        ghostVal = externalGhost; break;
-                    } else {
-                        ghostVal = internalGhost; break;
-                    }
+                    ghostVal |= internalGhost;
+                    if (j == 0 && bdry_type && bdry_type[0]) // xlo
+                        ghostVal |= externalGhost;
+                    else if (j == 1 && bdry_type && bdry_type[2]) // ylo
+                        ghostVal |= externalGhost;
+                    else if (j == 2 && bdry_type && bdry_type[4]) // zlo
+                        ghostVal |= externalGhost;
                 }
                 else if (jidx >= nj - num_ghosts[j])
                 {
-                    in_ghost_layers = true;
-                    if (j == 0 && bdry_type && bdry_type[1]) { // xhi
-                        ghostVal = externalGhost; break;
-                    } else if (j == 1 && bdry_type && bdry_type[3]) { // yhi
-                        ghostVal = externalGhost; break;
-                    } else if (j == 2 && bdry_type && bdry_type[5]) { // zhi
-                        ghostVal = externalGhost; break;
-                    } else {
-                        ghostVal = internalGhost; break;
-                    }
+                    ghostVal |= internalGhost;
+                    if (j == 0 && bdry_type && bdry_type[1]) // xhi
+                        ghostVal |= externalGhost;
+                    else if (j == 1 && bdry_type && bdry_type[3]) // yhi
+                        ghostVal |= externalGhost;
+                    else if (j == 2 && bdry_type && bdry_type[5]) // zhi
+                        ghostVal |= externalGhost;
                 }
                 cell_idx = cell_idx / nj;
             }
 
-            if (in_ghost_layers)
-            {
-                ghostCells->InsertNextValue(ghostVal);
+            ghostCells->InsertNextValue(ghostVal);
+            if (ghostVal)
                 nghost++;
-            }   
-            else
-            {
-                ghostCells->InsertNextValue(realVal);
-            }
         }
 
         // now, attach the ghost data to the grid
@@ -926,6 +920,26 @@ avtSAMRAIFileFormat::ReadMesh(int patch)
         retval->GetInformation()->Set(
                 vtkStreamingDemandDrivenPipeline::UPDATE_NUMBER_OF_GHOST_LEVELS(), 0);
         ghostCells->Delete();
+
+        int iMin[3] = {0,0,0}, iMax[3] = {0,0,0};
+        for (int i = 0; i < dim; i++)
+        {
+            iMin[i] = num_ghosts[i];
+            iMax[i] = dimensions[i] - 1 - num_ghosts[i];
+        }
+
+        vtkIntArray *realDims = vtkIntArray::New();
+        realDims->SetName("avtRealDims");
+        realDims->SetNumberOfValues(6);
+        realDims->SetValue(0, iMin[0]);
+        realDims->SetValue(1, iMax[0]);
+        realDims->SetValue(2, iMin[1]);
+        realDims->SetValue(3, iMax[1]);
+        realDims->SetValue(4, iMin[2]);
+        realDims->SetValue(5, iMax[2]);
+        retval->GetFieldData()->AddArray(realDims);
+        retval->GetFieldData()->CopyFieldOn("avtRealDims");
+        realDims->Delete();
 
         debug5 << "avtSAMRAIFileFormat::ReadMesh ghosted " <<
             100*nghost/ncells << "% of cells" << endl;
@@ -946,7 +960,6 @@ avtSAMRAIFileFormat::ReadMesh(int patch)
     arr->Delete();
 
     return retval;
-
 }
 
 
@@ -4372,6 +4385,7 @@ avtSAMRAIFileFormat::BuildDomainAuxiliaryInfo()
     void_ref_ptr dbTmp = cache->GetVoidRef("any_mesh",
                                            AUXILIARY_DATA_DOMAIN_BOUNDARY_INFORMATION,
                                            timestep, -1);
+
     if ((*dbTmp == NULL) && !has_ghost)
     {
         bool canComputeNeighborsFromExtents = true;
