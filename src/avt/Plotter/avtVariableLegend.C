@@ -655,6 +655,9 @@ avtVariableLegend::SetColorBarVisibility(const bool val)
 //    Kathleen Bonnell, Thu Oct  1 14:27:34 PDT 2009
 //    Use numTicks to set NumberOfLabels instead of setting to default.
 //
+//    Alister Maguire, Wed Jan 16 13:54:14 PST 2019
+//    Tell the lookup table to grey out nan values. 
+//
 // ****************************************************************************
 
 void
@@ -684,7 +687,14 @@ avtVariableLegend::SetRange(double nmin, double nmax)
     {
         sBar->SetNumberOfLabels(numTicks);
         if (lut != NULL)
+        {
             lut->SetTableRange(min, max);
+
+            //
+            // Let's grey out nan values by default. 
+            //
+            lut->SetNanColor(0.89, 0.89, 0.89, 1.0);
+        }
         sBar->SetRange(min, max);
     }
 }
