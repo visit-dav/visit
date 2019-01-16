@@ -45,15 +45,14 @@
 #include <vtkRectilinearGrid.h>
 #include <vtkUnstructuredGrid.h>
 #include <vtkRenderer.h>
+#include <vtkVolumeProperty.h>
+#include <vtkImageData.h>
+#include <vtkSmartVolumeMapper.h>
 
 #include <VolumeAttributes.h>
 #include <avtCallback.h>
 #include <DebugStream.h>
 
-#include <vtkColorTransferFunction.h>
-#include <vtkVolumeProperty.h>
-#include <vtkImageData.h>
-#include <vtkPiecewiseFunction.h>
 
 #ifndef NO_DATA_VALUE
 #define NO_DATA_VALUE -1e+37
@@ -81,12 +80,17 @@
 
 avtDefaultRenderer::avtDefaultRenderer()
 {
-    VTKRen        = NULL;
-    curVolume     = NULL;
-    imageToRender = NULL;
-    resetColorMap = false;
-    volumeProp    = vtkSmartPointer<vtkVolumeProperty>::New();
-    mapper        = vtkSmartPointer<vtkSmartVolumeMapper>::New();
+    VTKRen           = NULL;
+    imageToRender    = NULL;
+
+    volumeProp       = vtkVolumeProperty::New();
+    mapper           = vtkSmartVolumeMapper::New();
+    curVolume        = vtkVolume::New();
+    transFunc        = vtkColorTransferFunction::New();
+    opacity          = vtkPiecewiseFunction::New();
+
+    resetColorMap    = false;
+    useInterpolation = true;
 }
 
 
@@ -101,10 +105,38 @@ avtDefaultRenderer::avtDefaultRenderer()
 //
 //  Modifications:
 //
+//    Alister Maguire, Tue Dec 11 10:18:31 PST 2018
+//    Added deletions for curVolume, imageToRender, volumeProp, 
+//    and mapper. 
+//
 // ****************************************************************************
 
 avtDefaultRenderer::~avtDefaultRenderer()
 {
+    if (curVolume != NULL)
+    {
+        curVolume->Delete();
+    }
+    if (imageToRender != NULL)
+    {
+        imageToRender->Delete();
+    }
+    if (volumeProp != NULL)
+    {
+        volumeProp->Delete();
+    }
+    if (mapper != NULL)
+    {
+        mapper->Delete();
+    }
+    if (transFunc != NULL)
+    {
+        transFunc->Delete();
+    }
+    if (opacity != NULL)
+    {
+        opacity->Delete();
+    }
 }
 
 
@@ -123,6 +155,11 @@ avtDefaultRenderer::~avtDefaultRenderer()
 //
 //  Modifications:
 //
+//    Alister Maguire, Tue Dec 11 13:02:20 PST 2018
+//    Refactored to appropriately handle the NO_DATA_VALUE. Also
+//    changed smart pointers to standard pointers and added memory
+//    management. 
+//
 // ****************************************************************************
 
 void
@@ -130,10 +167,11 @@ avtDefaultRenderer::Render(
     const avtVolumeRendererImplementation::RenderProperties &props,
     const avtVolumeRendererImplementation::VolumeData &volume)
 { 
-    bool needsReset   = false;
     const char *mName = "avtDefaultRenderer::Render: ";
 
-    //2D data has no volume, so we don't try to render this. 
+    // 
+    // 2D data has no volume, so we don't try to render this. 
+    // 
     if (props.dataIs2D)
     {
         debug5 << mName << "Cannot perform volume rendering on " 
@@ -141,12 +179,15 @@ avtDefaultRenderer::Render(
         return;
     }
 
-    if(imageToRender == NULL)
+    if (imageToRender == NULL)
     {
         debug5 << mName << "Converting from rectilinear grid " 
             << "to image data" << endl;
 
-        //Need to create a vtkImageData object to feed into the mapper. 
+        //
+        // Our mapper requires a vtkImageData as input. We must 
+        // create one. 
+        //
         int dims[3], extent[6];
         ((vtkRectilinearGrid *)volume.grid)->GetDimensions(dims);
         ((vtkRectilinearGrid *)volume.grid)->GetExtent(extent);
@@ -161,31 +202,46 @@ avtDefaultRenderer::Render(
         double spacingZ = rgrid->GetZCoordinates()->GetTuple1(1)-
             rgrid->GetZCoordinates()->GetTuple1(0);
 
-        imageToRender = vtkSmartPointer<vtkImageData>::New();
+        imageToRender = vtkImageData::New();
         imageToRender->SetDimensions(dims);
         imageToRender->SetExtent(extent);
         imageToRender->SetSpacing(spacingX, spacingY, spacingZ);
         imageToRender->AllocateScalars(VTK_FLOAT, 1);
-        int limit = dims[0] * dims[1] * dims[2];
 
-        //Set the origin to match the lower bounds of the grid
+        //
+        // Set the origin to match the lower bounds of the grid
+        //
         double bounds[6];
         ((vtkRectilinearGrid *)volume.grid)->GetBounds(bounds);
         imageToRender->SetOrigin(bounds[0], bounds[2], bounds[4]);
 
         float magnitude = volume.data.max - volume.data.min;
-        
-        //We need to transfer the rgrid data over to the image data, 
-        //but we also need to scale the values to a range that opengl
-        //can handle.
-        float *scalarP = (float *)imageToRender->GetScalarPointer();
-        for (int i = 0 ; i < limit ; i++)
+        int nScalars    = dims[0] * dims[1] * dims[2];
+        float *scalarP  = (float *)imageToRender->GetScalarPointer();
+
+        //
+        // We need to transfer the rgrid data over to the image data
+        // and scale to the proper range. 
+        // VisIt populates empty space with the NO_DATA_VALUE. 
+        // We need to map this to a value that our mapper accepts, 
+        // and then clamp it out of vision.  
+        //
+        for (int i = 0 ; i < nScalars; i++)
         {
             float tuple1 = dataArr->GetTuple1(i);
             if (tuple1 <= NO_DATA_VALUE)
-                scalarP[i] = -1.0;//just below our color map
+            {
+                //
+                // Our color map is 0 -> 255. For no data values, 
+                // assign a new value just out side of the map. 
+                //
+                scalarP[i]       = -1.0;
+                useInterpolation = false;
+            }
             else
-                scalarP[i] = ((255*(tuple1-volume.data.min))/magnitude);
+            {
+                scalarP[i] = ((256.0 * (tuple1 - volume.data.min)) / magnitude);
+            }
         }
 
         debug5 << mName << "Adding data to the SmartVolumeMapper" << endl;
@@ -194,80 +250,93 @@ avtDefaultRenderer::Render(
         mapper->SetScalarModeToUsePointData();
         mapper->SetBlendModeToComposite();
         resetColorMap = true;
-        needsReset    = true;
     }
 
-    if(resetColorMap || oldAtts != props.atts)
+    if (resetColorMap || oldAtts != props.atts)
     {
-
         debug5 << mName << "Resetting color" << endl;
 
-        //Getting color/alpha transfer function from VisIt
+        //
+        // Getting color/alpha transfer function from VisIt
+        //
         unsigned char rgba[256*4];
         props.atts.GetTransferFunction(rgba);
 
-        vtkSmartPointer<vtkColorTransferFunction> transFunc = 
-            vtkSmartPointer<vtkColorTransferFunction>::New();
-        vtkSmartPointer<vtkPiecewiseFunction> opacity = 
-            vtkSmartPointer<vtkPiecewiseFunction>::New();
-
-        //We don't want to see the default values, so we turn clamping
-        //off (opacity becomes 0.0)
+        //
+        // We don't want to see the no data values, so we turn clamping
+        // off (opacity becomes 0.0)
+        //
         transFunc->SetScaleToLinear();
         transFunc->SetClamping(0);
         opacity->SetClamping(0);
 
-        float atten = props.atts.GetOpacityAttenuation()/256.f;
+        float atten = props.atts.GetOpacityAttenuation() / 256.f;
 
-        //Add the color map to vtk's transfer function
+        //
+        // Add the color map to vtk's transfer function
+        //
         for(int i = 0; i < 256; i++) 
         {
-            int rgbIdx  = 4*i;
-            float curOp = rgba[rgbIdx+3]*atten; 
-            transFunc->AddRGBPoint(i, rgba[rgbIdx]/255.f, rgba[rgbIdx+1]/255.f, 
-                rgba[rgbIdx+2]/255.f);
+            int rgbIdx  = 4 * i;
+            float curOp = rgba[rgbIdx + 3] * atten; 
+            transFunc->AddRGBPoint(i, rgba[rgbIdx] / 256.f, 
+                rgba[rgbIdx + 1] / 256.f, 
+                rgba[rgbIdx + 2] / 256.f);
             opacity->AddPoint(i, MAX(0.0, MIN(1.0, curOp)));
         }
  
-        //For some reason, the endpoints aren't included when clamping 
-        //is turned off. So, let's put some padding on the ends of our
-        //mapping functions. 
-        int lastIdx = 255*4;
-        transFunc->AddRGBPoint(-1, rgba[0]/255.f, rgba[1]/255.f, 
-            rgba[2]/255.f);
-        transFunc->AddRGBPoint(256, rgba[lastIdx]/255.f, rgba[lastIdx+1]/255.f, 
-            rgba[lastIdx+2]/255.f);
-        opacity->AddPoint(-1, rgba[3]*atten);
-        opacity->AddPoint(256, rgba[lastIdx+3]*atten);
+        //
+        // For some reason, the endpoints aren't included when clamping 
+        // is turned off. So, let's put some padding on the ends of our
+        // mapping functions. 
+        //
+        int lastIdx = 256*4;
+        transFunc->AddRGBPoint(-1, rgba[0] / 256.f, 
+            rgba[1] / 256.f, 
+            rgba[2] / 256.f);
+        transFunc->AddRGBPoint(256, rgba[lastIdx] / 256.f, 
+            rgba[lastIdx + 1] / 256.f, 
+            rgba[lastIdx + 2] / 256.f);
+        opacity->AddPoint(-1, rgba[3] * atten);
+        opacity->AddPoint(256, rgba[lastIdx + 3] * atten);
 
-        //Set the volume properties
+        //
+        // Set the volume properties.
+        //
         if (props.atts.GetLightingFlag()) 
+        {
             volumeProp->SetShade(1);
+        }
         else
+        {
             volumeProp->SetShade(0);
+        }
+
         volumeProp->SetScalarOpacity(opacity);
         volumeProp->SetColor(transFunc);
-        volumeProp->SetInterpolationType(VTK_LINEAR_INTERPOLATION);
+
+        //
+        // If our dataset contains NO_DATA_VALUEs, interpolation will
+        // not work correctly on the boundaries (between a real value and
+        // a no data value). Hopefully this will be addressed in the 
+        // future. For now, we only interpolate when our dataset contains
+        // none of these values. 
+        //
+        if (useInterpolation)
+        {
+            volumeProp->SetInterpolationTypeToLinear();
+        }
+        else
+        {
+            volumeProp->SetInterpolationTypeToNearest();
+        }
 
         resetColorMap = false;
-        needsReset    = true;
         oldAtts       = props.atts;
-    }
 
-    debug5 << mName << "Checking if volume needs to be updated" << endl;
-
-    //Create the volume to be rendered and
-    //set its mapper to our SmartVolumeMapper. 
-    if (curVolume  == NULL || needsReset)
-    {
-        debug5 << mName << "Updating the volume!" << endl;
- 
-        curVolume = vtkSmartPointer<vtkVolume>::New();
         curVolume->SetMapper(mapper);
         curVolume->SetProperty(volumeProp);
     }
-
-    debug5 << mName << "Rendering!" << endl;
 
     mapper->Render(VTKRen, curVolume);
 }

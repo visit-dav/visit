@@ -46,9 +46,10 @@
 #include <avtVolumeRendererImplementation.h>
 #include <VolumeAttributes.h>
 
-#include <vtkSmartPointer.h>
 #include <vtkVolume.h>
 #include <vtkSmartVolumeMapper.h>
+#include <vtkColorTransferFunction.h>
+#include <vtkPiecewiseFunction.h>
 
 // ****************************************************************************
 //  Class: avtDefaultRenderer
@@ -62,27 +63,34 @@
 //  Creation:   April  3, 2017
 //
 //  Modifications:
+//  
+//    Alister Maguire, Tue Dec 11 10:18:31 PST 2018
+//    Changed pointers to standard instead of smart. 
+//    Added transfer function and opacity. 
 //
 // ****************************************************************************
 
 class avtDefaultRenderer : public avtVolumeRendererImplementation
 {
   public:
-                            avtDefaultRenderer();
-    virtual                ~avtDefaultRenderer();
+                               avtDefaultRenderer();
+    virtual                   ~avtDefaultRenderer();
 
   protected:
-    virtual void            Render(const RenderProperties &props,
-                                   const VolumeData &volume);
+    virtual void               Render(const RenderProperties &props,
+                                      const VolumeData &volume);
 
-    vtkSmartPointer<vtkVolume>            curVolume;
-    vtkSmartPointer<vtkImageData>         imageToRender;
-    vtkSmartPointer<vtkVolumeProperty>    volumeProp;
-    vtkSmartPointer<vtkSmartVolumeMapper> mapper;
+    vtkColorTransferFunction  *transFunc;
+    vtkPiecewiseFunction      *opacity;
+    vtkVolume                 *curVolume;
+    vtkImageData              *imageToRender;
+    vtkVolumeProperty         *volumeProp;
+    vtkSmartVolumeMapper      *mapper;
 
-    VolumeAttributes                      oldAtts;
+    VolumeAttributes           oldAtts;
 
-    bool                                  resetColorMap;
+    bool                       resetColorMap;
+    bool                       useInterpolation;
 };
 
 #endif 

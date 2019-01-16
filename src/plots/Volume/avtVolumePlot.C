@@ -56,6 +56,7 @@
 #include <avtUserDefinedMapper.h>
 #include <avtVolumeFilter.h>
 #include <avtLowerResolutionVolumeFilter.h>
+#include <avtTypes.h>
 
 #include <VolumeAttributes.h>
 
@@ -582,22 +583,47 @@ bool GetLogicalBounds(avtDataObject_p input,int &width,int &height, int &depth)
 //    an operator that produces a variable that doesn't
 //    exist in the database.
 //
+//    Alister Maguire, Tue Dec 11 10:18:31 PST 2018
+//    With the new default renderer, the only time we don't resample
+//    is when we have a single domain rectilinear mesh. 
+//
 // ****************************************************************************
 
 bool DataMustBeResampled(avtDataObject_p input)
 {
-    //NOTE: We currently rely on the existence of logical bounds to
-    //      determine if data must be resampled or not. There are
-    //      likely other cases.
+    // 
+    // Unless we have a single domain rectilinear mesh, 
+    // we must resample. 
+    // 
+    avtMeshType mt = input->GetInfo().GetAttributes().GetMeshType();
+    if (mt != AVT_RECTILINEAR_MESH)
+    {
+        return true;
+    }
 
-    int width,height,depth;
+    const avtDataAttributes &datts = input->GetInfo().GetAttributes();
+    std::string db = input->GetInfo().GetAttributes().GetFullDBName();
+
+    ref_ptr<avtDatabase> dbp = avtCallback::GetDatabase(db, datts.GetTimeIndex(), NULL);
+    avtDatabaseMetaData *md = dbp->GetMetaData(datts.GetTimeIndex(), 1);
+
     try
     {
-        return GetLogicalBounds(input,width,height,depth);
+         //
+         // If we have multiple domains, we still need to resample
+         // onto a single domain. 
+         //
+         if (md->GetNDomains(datts.GetVariableName()) > 1)
+             return true;
+         return false;
     }
     catch(...)
     {
-        return false;
+        //
+        // We don't know how many domains we have... resample to
+        // be safe. 
+        //
+        return true;
     }
 }
 
@@ -652,6 +678,10 @@ bool DataMustBeResampled(avtDataObject_p input)
 //
 //    Alister Maguire, Fri May 12 10:15:45 PDT 2017
 //    Replaced the Texture3D renderer with the Default renderer.
+//
+//    Alister Maguire, Tue Dec 11 10:18:31 PST 2018
+//    The new default renderer requires a single domain rectilinear dataset. 
+//    I've updated the logic to address this. 
 //
 // ****************************************************************************
 
@@ -740,39 +770,19 @@ avtVolumePlot::ApplyRenderingTransformation(avtDataObject_p input)
 
         if (DataMustBeResampled(input) || forceResample)
         {
+            //
             // Resample the data
+            //
             InternalResampleAttributes resampleAtts;
             resampleAtts.SetDistributedResample(false);
             resampleAtts.SetTargetVal(atts.GetResampleTarget());
             resampleAtts.SetPrefersPowersOfTwo(atts.GetRendererType() == VolumeAttributes::Default);
             resampleAtts.SetUseTargetVal(true);
 
-            // Unless user forced resampling use actual logical bounds if they exist.
-            if (!forceResample)
-            {
-                int width,height,depth;
-                if (GetLogicalBounds(input,width,height,depth))
-                {
-                    resampleAtts.SetWidth(width);
-                    resampleAtts.SetHeight(height);
-                    resampleAtts.SetDepth(depth);
-                    resampleAtts.SetUseTargetVal(false);
-                }
-            }
-
             resampleFilter = new avtResampleFilter(&resampleAtts);
             resampleFilter->SetInput(input);
 
             dob = resampleFilter->GetOutput();
-        }
-        else
-        {
-            // Combine multiple domains into a single domain.
-            compactTree = new avtCompactTreeFilter();
-            compactTree->SetInput(input);
-            compactTree->SetParallelMerge(true);
-            compactTree->SetCompactDomainsMode(avtCompactTreeFilter::Always);
-            dob = compactTree->GetOutput();
         }
 
         // Apply a filter that will work on the combined data to make histograms.
