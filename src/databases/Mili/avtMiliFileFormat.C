@@ -170,61 +170,63 @@ avtMiliFileFormat::avtMiliFileFormat(const char *fname)
 // ****************************************************************************
 //  Destructor:  avtMiliFileFormat::~avtMiliFileFormat
 //
-//  Programmer:  Hank Childs
-//  Creation:    April 11, 2003
+//  Programmer:  Alister Maguire
+//  Creation:    Jan 16, 2019
 //
 //  Modifications:
-//    Akira Haddox, Fri May 23 08:51:11 PDT 2003
-//    Added in support for multiple meshes. Changed to MTMD.
 //
-//    Akira Haddox, Wed Jul 23 12:57:14 PDT 2003
-//    Moved allocation of cached information to FreeUpResources.
-//
-//    Hank Childs, Tue Jul 27 10:40:44 PDT 2004
-//    Sucked in code from FreeUpResources.
-//
-//    Mark C. Miller, Mon Jul 18 13:41:13 PDT 2005
-//    Free structures having to do with free nodes mesh
-//
-//    Mark C. Miller, Wed Mar  8 08:40:55 PST 2006
-//    Added code to cleanse Mili subrecords
 // ****************************************************************************
 
 avtMiliFileFormat::~avtMiliFileFormat()
 {
     //
-    // Close mili databases, and delete non-essential allocated memory.
-    // Keep the original sizes of vectors though.
+    // Close the open databases. 
     //
-    int i, j;
-    for (i = 0; i < nDomains; ++i)
+    for (int i = 0; i < nDomains; ++i)
+    {
         if (dbid[i] != -1)
         {
             mc_close(dbid[i]);
             dbid[i] = -1;
         }
-    for (i = 0; i < datasets.size(); ++i)
-        for (j = 0; j < datasets[i].size(); ++j)
+    }
+
+    //
+    // Delete whatever datasets we have created. 
+    //
+    for (int i = 0; i < datasets.size(); ++i)
+    {
+        for (int j = 0; j < datasets[i].size(); ++j)
+        {
             if (datasets[i][j] != NULL)
             {
                 datasets[i][j]->Delete();
                 datasets[i][j] = NULL;
             }
-    for (i = 0; i < materials.size(); ++i)
-        for (j = 0; j < materials[i].size(); ++j)
+        }
+    }
+    datasets.clear();
+
+    //
+    // Delete whatever materials we have created. 
+    //
+    for (int i = 0; i < materials.size(); ++i)
+    {
+        for (int j = 0; j < materials[i].size(); ++j)
+        {
             if (materials[i][j])
             {
                 delete materials[i][j];
                 materials[i][j] = NULL;
             }
-
-    datasets.clear();
+        }
+    }
     materials.clear();
 
     //
     // Reset flags to indicate the meshes needs to be read in again.
     //
-    for (i = 0; i < nDomains; ++i)
+    for (int i = 0; i < nDomains; ++i)
     {
         readMesh[i] = false;
     }
@@ -235,7 +237,9 @@ avtMiliFileFormat::~avtMiliFileFormat()
     for (int i = 0; i < nMeshes; ++i)
     {
         if (miliMetaData[i] != NULL)
+        {
             delete miliMetaData[i];
+        }
     }
     delete [] miliMetaData;
 
@@ -377,41 +381,11 @@ read_results(Famid &dbid, int ts, int sr, int rank,
 //    dom        the domain
 //    mesh       the name of the mesh to read
 //
-//  Programmer:  Hank Childs
-//  Creation:    April 11, 2003
+//  Programmer:  Alister Maguire
+//  Creation:    Jan 16, 2019
 //
 //  Modifications:
-//    Akira Haddox, Fri May 23 08:51:11 PDT 2003
-//    Added in support for multiple meshes. Changed to MTMD. 
 //
-//    Akira Haddox, Tue Jul 22 08:09:28 PDT 2003
-//    Fixed the try block. Properly dealt with cell variable blocks.
-//
-//    Akira Haddox, Mon Aug 18 14:33:15 PDT 2003
-//    Commented out previous sand-based ghosts.
-//
-//    Hank Childs, Sat Jun 26 11:24:47 PDT 2004
-//    Check for bad files where number of timesteps is incorrectly reported.
-//
-//    Hank Childs, Fri Aug 27 17:12:50 PDT 2004
-//    Rename ghost data array.
-//
-//    Mark C. Miller, Mon Jul 18 13:41:13 PDT 2005
-//    Added logic to read the "free nodes" mesh, too. Removed huge block of
-//    unused #ifdef'd code having to do with ghost zones.
-//
-//    Mark C. Miller, Tue Jan  3 17:55:22 PST 2006
-//    Added code to deal with case where nodal positions are time invariant.
-//    They are not stored as "results" but instead part of the mesh read
-//    in the ReadMesh() call.
-//
-//    Mark C. Miller, Wed Nov 15 01:46:16 PST 2006
-//    Added a "no_free_nodes" mesh by ghost labeling sanded nodes. Added
-//    the logic to label sanded nodes here.
-//
-//    Mark C. Miller, Tue Nov 21 10:16:42 PST 2006
-//    Fixed leak of sand_arr. Made it request sand_arr only if the
-//    no_free_nodes mesh was requested
 // ****************************************************************************
 
 vtkDataSet *
@@ -617,23 +591,10 @@ avtMiliFileFormat::DecodeMultiLevelVarname(const string &inname, string &decoded
 //  Purpose:
 //      Open up a family database for a given domain.
 //
-//  Programmer: Akira Haddox
-//  Creation:   June 26, 2003
+//  Programmer: Alister Maguire
+//  Creation:   Jan 16, 2019
 //
 //  Modifications:
-//
-//    Akira Haddox, Tue Jul 22 15:34:40 PDT 2003
-//    Added in setting of times.
-//
-//    Hank Childs, Mon Oct 20 10:03:58 PDT 2003
-//    Made a new data member for storing times.  Populated that here.
-//
-//    Hank Childs, Wed Aug 18 16:17:52 PDT 2004
-//    Add some special handling for single domain families.
-//
-//    Eric Brugger, Mon Sep 21 11:01:46 PDT 2015
-//    The reader now returns the cycles and times in the meta data and 
-//    marks them as accurate so that they are used where needed.
 //
 // ****************************************************************************
 
@@ -684,8 +645,8 @@ avtMiliFileFormat::OpenDB(int dom)
 // ****************************************************************************
 //  Method: avtMiliFileFormat::ReadMesh
 //
-//
 //  Purpose:
+//      Read the given domain of the mesh. 
 //
 //  Programmer: Alister Maguire
 //  Creation:   Jan 15, 2019
@@ -1091,29 +1052,18 @@ avtMiliFileFormat::ValidateVariables(int dom, int meshId)
 //    ts         the time step
 //    var        the name of the variable to read
 //
-//  Programmer:  Hank Childs
-//  Creation:    April 11, 2003
+//
+//      Note: zone and node label handling was kept as originally written
+//            by Matt Larsen in 2017.
+//
+//  Programmer:  Alister Maguire
+//  Creation:    Jan 16, 2019
 //
 //  Modifications
-//    Akira Haddox, Fri May 23 08:13:09 PDT 2003
-//    Added in support for multiple meshes. Changed to MTMD.
-//
-//    Akira Haddox, Thu Jul 24 13:36:38 PDT 2003
-//    Properly dealt with cell variable blocks.
-//
-//    Hank Childs, Tue Jul 20 15:53:30 PDT 2004
-//    Add support for more data types (float, double, char, int, etc).
-//
-//    Mark C. Miller, Mon Jul 18 13:41:13 PDT 2005
-//    Added code to deal with param array variables
-//    Added code to deal with variables defined on the free nodes mesh
-//
-//    Mark C. Miller, Wed Nov 15 01:46:16 PST 2006
-//    Added "no_free_nodes" variants of variables. Changed names of
-//    free_node variables from 'xxx_free_nodes' to 'free_nodes/xxx'
 //
 //    Matt Larsen, Wed May 17 01:46:16 PST 2017
 //    Added OriginalZoneLabels and OriginalNodeLabels
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -1451,35 +1401,22 @@ avtMiliFileFormat::GetVar(int ts, int dom, const char *name)
 //  Purpose:
 //      Gets variable 'var' for timestep 'ts'.
 //
+//      Note: code for transferring symmetric tensors to normal
+//            tensors has been kept as originally written by
+//            Hank Childs in 2004. 
+//
 //  Arguments:
 //    ts         the time step
 //    var        the name of the variable to read
 //
-//  Programmer:  Hank Childs
-//  Creation:    April 11, 2003
+//  Programmer:  Alister Maguire
+//  Creation:    Jan 16, 2019
 //
 //  Modifications
-//    Akira Haddox, Fri May 23 08:13:09 PDT 2003
-//    Added in support for multiple meshes. Changed to MTMD.
-//
-//    Akira Haddox, Thu Jul 24 13:36:38 PDT 2003
-//    Properly dealt with cell variable blocks.
 //
 //    Hank Childs, Mon Sep 22 07:36:48 PDT 2003
 //    Add support for reading in tensors.
 //
-//    Hank Childs, Tue Jul 20 15:53:30 PDT 2004
-//    Add support for more data types (float, double, char, int, etc).
-//
-//    Hank Childs, Tue Jul 27 12:42:12 PDT 2004
-//    Fix problem with reading in double nodal vectors.
-//
-//    Mark C. Miller, Mon Jul 18 13:41:13 PDT 2005
-//    Added code to deal with variables defined on the free nodes mesh
-//
-//    Mark C. Miller, Wed Nov 15 01:46:16 PST 2006
-//    Added "no_free_nodes" variants of variables. Changed names of
-//    free_node variables from 'xxx_free_nodes' to 'free_nodes/xxx'
 // ****************************************************************************
 
 vtkDataArray *
@@ -1581,7 +1518,11 @@ avtMiliFileFormat::GetVectorVar(int ts, int dom, const char *name)
         //
         for (int i = 0 ; i < dBuffSize; i++)
         {
+            //FIXME: using nan solves the "empty space" issue, 
+            //       but it breaks the tensor renderings (whole, 
+            //       not components).
             dataBuffer[i] = std::numeric_limits<float>::quiet_NaN();
+            //dataBuffer[i] = 0.0;
         }
         
         //TODO: what cases do variables have multiple sr associations. 
@@ -1740,6 +1681,8 @@ avtMiliFileFormat::GetVectorVar(int ts, int dom, const char *name)
 //  Purpose:
 //      Returns the actual cycle numbers for each time step.
 //
+//      Note: unchanged from original filter.
+//
 //  Arguments:
 //   cycles      the output vector of cycle numbers 
 //
@@ -1766,6 +1709,8 @@ avtMiliFileFormat::GetCycles(vector<int> &out_cycles)
 //  Purpose:
 //      Returns the actual times for each time step.
 //
+//      Note: unchanged from original filter.
+//
 //  Arguments:
 //   out_times   the output vector of times 
 //
@@ -1787,6 +1732,8 @@ avtMiliFileFormat::GetTimes(vector<double> &out_times)
 //  Purpose:
 //      Returns the number of timesteps
 //
+//      Note: unchanged from original filter.
+//
 //  Programmer:  Hank Childs
 //  Creation:    April 11, 2003
 //
@@ -1804,65 +1751,17 @@ avtMiliFileFormat::GetNTimesteps()
 //  Purpose:
 //    Returns meta-data about the database.
 //
+//    Note: label handling has been kept as originally written by Matt Larsen
+//          in 2017.
+//
 //  Arguments:
 //    md         The meta-data structure to populate
 //    timeState  The time index to use (if metadata varies with time)
 //
-//  Programmer:  Hank Childs
-//  Creation:    April 11, 2003
+//  Programmer:  Alister Maguire
+//  Creation:    Jan 16, 2019
 //
 //  Modifications
-//    Akira Haddox, Fri May 23 08:13:09 PDT 2003
-//    Added in support for multiple meshes. Changed for MTMD.
-//
-//    Hank Childs, Sat Sep 20 08:15:54 PDT 2003
-//    Added support for tensors and add some expressions based on tensors.
-//
-//    Hank Childs, Sat Oct 18 09:51:03 PDT 2003
-//    Fix typo for strain/stress expressions.
-//
-//    Hank Childs, Sat Oct 18 10:53:51 PDT 2003
-//    Do not read in the partition info if we are on the mdserver.
-//
-//    Hank Childs, Mon Oct 20 10:07:00 PDT 2003
-//    Call OpenDB for domain 0 to populate the times.
-//
-//    Hank Childs, Sat Jun 26 10:28:45 PDT 2004
-//    Make the materials start at "1" and go up.  Also make the domain 
-//    decomposition say processor instead of block.
-//
-//    Hank Childs, Wed Aug 18 16:25:15 PDT 2004
-//    Added new expressions for displacement and position.
-//
-//    Mark C. Miller, Tue May 17 18:48:38 PDT 2005
-//    Added timeState arg to satisfy new interface
-//
-//    Mark C. Miller, Mon Jul 18 13:41:13 PDT 2005
-//    Added code to add free nodes mesh and variables
-//
-//    Mark C. Miller, Wed Nov 15 01:46:16 PST 2006
-//    Added "no_free_nodes" variants of meshes, material and variables.
-//    Changed names of free_node variables from 'xxx_free_nodes' to
-//    'free_nodes/xxx'. Populated any node-centered expressions for both
-//    original and free_node variants and zone-centered expressions for
-//    both original and no_free_node variants. Changed cellOrigin to 1
-//    to address off-by-one errors during pick. Bob Corey says that so far,
-//    all clients that write mili data are Fortran clients. They expect to
-//    get node/zone numbers from pick starting from '1'. 
-//
-//    Mark C. Miller, Wed Nov 29 12:08:49 PST 2006
-//    Suppress creation of "no_free_nodes" flavors of expressions when
-//    not needed
-//    
-//    Thomas R. Treadway, Tue Dec  5 15:14:11 PST 2006
-//    Added a derived strain and displacement algorithms
-//
-//    Mark C. Miller, Tue Mar 27 08:39:55 PDT 2007
-//    Added support for node origin
-//
-//    Eric Brugger, Mon Sep 21 11:01:46 PDT 2015
-//    The reader now returns the cycles and times in the meta data and 
-//    marks them as accurate so that they are used where needed.
 //
 //    Matt Larsen, Fri May 26 07:45:12 PDT 2017
 //    Adding zone and node labels to meta data
@@ -2165,11 +2064,14 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
 
 }
 
+
 // ****************************************************************************
 //  Method: avtMiliFileFormat::GetAuxiliaryData
 //
 //  Purpose:
 //      Gets the auxiliary data specified.
+//
+//      Note: unchanged from original filter. 
 //
 //  Arguments:
 //      var        The variable of interest.
@@ -2262,15 +2164,13 @@ avtMiliFileFormat::GetAuxiliaryData(const char *var, int ts, int dom,
 //  Method: avtMiliFileFormat::FreeUpResources
 //
 //  Purpose:
-//      Close databases and free up non-essential memory.
+//      TODO: is this still needed?
 //
-//  Programmer: Akira Haddox
-//  Creation:   July 23, 2003
+//  Programmer: Alister Maguire
+//  Creation:   Jan 16, 2019
 //
 //  Modifications:
 //
-//    Hank Childs, Tue Jul 27 10:18:26 PDT 2004
-//    Moved the code to free up resources to the destructor.
 // ****************************************************************************
 
 void
@@ -2783,6 +2683,9 @@ avtMiliFileFormat::LoadMiliInfoJson(const char *fname)
 //  Purpose:
 //      Populate data structures to implement a reverse mapping between
 //      a zone label and a zone id
+//
+//      Note: unchanged from original filter. 
+//
 //  Arguments: 
 //             fam_id - mili familiy id
 //             meshId - id of the mesh associtated with the labels 
@@ -2874,6 +2777,9 @@ avtMiliFileFormat::PopulateZoneLabels(const int fam_id, const int meshId,
 //  Purpose:
 //      Populate data structures to implement a reverse mapping between
 //      a zone label and a zone id
+//
+//      Note: unchanged from original filter. 
+//
 //  Arguments: 
 //             fam_id - mili familiy id
 //             meshId - id of the mesh associtated with the labels 

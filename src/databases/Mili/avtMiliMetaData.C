@@ -74,7 +74,6 @@ MiliVariableMetaData::MiliVariableMetaData()
     vectorSize        = -1;
     meshAssociation   = -1;
     numType           = M_FLOAT;
-    isPrimal          = true;
     isElementSet      = false;
     isMatVar          = false;
     isGlobal          = false;
@@ -227,7 +226,6 @@ MiliClassMetaData::MiliClassMetaData(int numDomains)
     totalNumElements   = 0;
     superClassId       = -1;
     classType          = UNKNOWN;
-    connectivityCount  =  -1;
     numDomainElements.resize(numDomains, -1);
     connectivityOffset.resize(numDomains, -1);
 }
@@ -266,11 +264,6 @@ void
 MiliClassMetaData::SetSuperClassId(int superClass)
 {
     superClassId = superClass;
-    //
-    // class_conns is a mili defined array that associates 
-    // each class with a connectivity count (number of nodes). 
-    //
-    connectivityCount = class_conns[superClass];
     DetermineType(superClassId);
 }
 
@@ -775,34 +768,6 @@ MiliMetaData::GetMiliClassMD(const char *vName)
     }
 
     return NULL; 
-}
-
-
-// ***************************************************************************
-//  Function: 
-//
-//  Purpose:
-//
-//  Arguments: 
-//           
-//  Author:
-//
-//  Modifications:
-//
-// ****************************************************************************
-vector<MiliClassMetaData *>
-MiliMetaData::GetMiliClassMDOfType(int classType)
-{
-    vector<MiliClassMetaData *> classMD;
-
-    for (int i = 0; i < numClasses; ++i)
-    {
-        if (miliClasses[i]->GetClassType() == classType)
-        {
-            classMD.push_back(miliClasses[i]);
-        }
-    }
-    return classMD;
 }
 
 
