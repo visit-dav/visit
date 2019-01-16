@@ -78,46 +78,16 @@ using std::string;
 //  Purpose:
 //      A file format reader for Mili.
 //
-//  Notes:       Much of the code was taken from Doug Speck's GRIZ reader.
-//      
-//  Programmer:  Hank Childs
-//  Creation:    April  11, 2003
+//  Notes:  This filter was largely re-written in Jan 2019 in order to better 
+//          handle scalability, extensibility, and the in-coming requests from
+//          mili users. Methods that retain significant portions of the original
+//          code contain notes about such in their docstrings. The original 
+//          filter was first created by Hank Childs on April 11, 2003. 
+//
+//  Programmer:  Alister Maguire
+//  Creation:    Jan 16, 2019
 //
 //  Modifications:
-//    Akira Haddox, Fri May 23 08:30:01 PDT 2003
-//    Added in support for multiple meshes within a Mili database.
-//    Changed into a MTMD file format.
-//
-//    Akira Haddox, Tue Jul 22 09:21:39 PDT 2003
-//    Added meshId argument to ConstructMaterials.
-//    Added reading in of times. Added FreeUpResources.
-//    Changed sub_records to hold mili type 'Subrecord'.
-//
-//    Akira Haddox, Fri Jul 25 11:09:13 PDT 2003
-//    Added var_dimension.
-//
-//    Akira Haddox, Mon Aug 18 14:31:55 PDT 2003
-//    Added dyna partition support for ghostzones.
-//
-//    Hank Childs, Mon Oct 20 10:07:00 PDT 2003
-//    Added GetTimes and times data member.
-//
-//    Hank Childs, Tue Jul 20 14:47:31 PDT 2004
-//    Added an array for the variable type.
-//
-//    Mark C. Miller, Tue May 17 18:48:38 PDT 2005
-//    Added timeState arg to PopulateDatabaseMetaData to satisfy new interface
-//
-//    Mark C. Miller, Mon Jul 18 13:41:13 PDT 2005
-//    Added CanCacheVariable since we handle caching of "param arrays" here
-//    in the plugin and added data members to handle free nodes mesh
-//
-//    Mark C. Miller, Wed Jan  4 16:51:34 PST 2006
-//    Added IssueWarning private method and warn_map data member
-//
-//    Eric Brugger, Mon Sep 21 10:54:40 PDT 2015
-//    The reader now returns the cycles and times in the meta data and 
-//    marks them as accurate so that they are used where needed.
 //
 //    Matt Larsen, Wed May 31  08:15:42 PDT 2017
 //    Adding functions and data structures for node and zone labels
@@ -152,17 +122,17 @@ class avtMiliFileFormat : public avtMTMDFileFormat
 
   protected:
 
-    //Alister testing
-    MiliMetaData         **miliMetaData;
+    MiliMetaData        **miliMetaData;
 
-    char *famroot;
-    char *fampath;
-    char filepath[512];
+    char                 *famroot;
+    char                 *fampath;
+    char                  filepath[512];
 
-    vector<Famid>         dbid;
     int                   nTimesteps;
     int                   nDomains;
     int                   nMeshes;
+
+    vector<Famid>         dbid;
     bool                  setTimesteps;
     vector<int>           cycles;
     vector<double>        times;
@@ -172,13 +142,14 @@ class avtMiliFileFormat : public avtMTMDFileFormat
     vector<bool>          readMesh;
     int                   dims;
 
-
     vector<vector<vtkUnstructuredGrid *> > datasets;
     vector<vector<avtMaterial *> >         materials;
 
     void                  IssueWarning(const char *msg, 
                                        int key);
+
     void                  ReadMesh(int dom);
+
     void                  ValidateVariables(int dom, int meshId);
 
     void                  DecodeMultiMeshVarname(const string &, 
@@ -189,7 +160,7 @@ class avtMiliFileFormat : public avtMTMDFileFormat
     inline void           OpenDB(int dom);
 
 
-    //Alister's additions
+    //TODO: move the json reading to meta data
     int                   CountJsonClassVariables(const rapidjson::Document &);
 
     void                  ExtractJsonVariable(MiliVariableMetaData *,
@@ -208,6 +179,7 @@ class avtMiliFileFormat : public avtMTMDFileFormat
                                              int);
     void                  LoadMiliInfoJson(const char *fname);
 
+    //TODO: re-work the expression generators
     Expression            CreateGenericExpression(const char *, 
                                                   const char *,
                                                   Expression::ExprType);
@@ -220,37 +192,7 @@ class avtMiliFileFormat : public avtMTMDFileFormat
                                                          const char *,
                                                          int *);
 
-    bool                  SuperclassIsCell(int);
-
-
-
-
-
-
-    // The following functions are new to support GrizIt
-    inline void           PopulateMiliClassData(int, int);
-    inline void           PopulateMiliVarData(int, int);
-    inline void           PopulatePrimalMetaData(int dom, avtDatabaseMetaData *md);
-    inline void           PopulateClassMetaData( int dom, avtDatabaseMetaData *md);
-
-    vtkFloatArray        *GetClassDomains(const char *elemClass);
-    vtkFloatArray        *GetNodeLabels();
-    vtkFloatArray        *GetNodeIds();
-    vtkFloatArray        *GetClassLabels(const char *elemClass);
-    vtkFloatArray        *GetClassElemIds(const char *elemClass);
-    vtkFloatArray        *GetClassMats(const char *elemClass);
-    vtkFloatArray        *GetClassTypes(const char *elemClass);
-
-    vtkFloatArray        *GetMiliResult(int ts, const char *var_name);
-    vtkFloatArray        *GetMiliVar(int ts, const char *var_name);
-    void                  CreateCompIndex(const char *comp_name, int comp_len,
-                                          int comp_index,
-                                          char *comp_index_string);
-
-    std::list<string> GetClassesForVar(char *varName);
-    void                  AddClassSubsets(char *meshname, avtDatabaseMetaData *md);
-    vtkFloatArray        *GetClassSubsets();
-
+    //TODO: inspect label integration
     struct Label_mapping
     {
         vector<int> label_ranges_begin;

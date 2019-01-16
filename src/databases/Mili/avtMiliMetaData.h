@@ -58,6 +58,18 @@ extern "C" {
 using std::string;
 using std::vector;
 
+// ****************************************************************************
+//  Class: MiliVariableMetaData
+//
+//  Purpose:
+//      A container for mili variable meta data. 
+//
+//  Programmer:  Alister Maguire
+//  Creation:    Jan 16, 2019
+//
+//  Modifications:
+//
+// ****************************************************************************
 class MiliVariableMetaData
 {
 
@@ -120,11 +132,6 @@ class MiliVariableMetaData
     int                       GetMeshAssociation(void)
                                 { return meshAssociation; }; 
     
-    void                      SetIsPrimal(bool primal)
-                                { isPrimal = primal; };
-    bool                      GetIsPrimal(void)
-                                { return isPrimal; };
-
     void                      SetIsElementSet(bool es)
                                 { isElementSet = es; };
     bool                      GetIsElementSet(void)
@@ -174,7 +181,7 @@ class MiliVariableMetaData
     int                          vectorSize;
     int                          meshAssociation;
     int                          numType;
-    bool                         isPrimal;
+
     bool                         isElementSet;
     bool                         isMatVar;
     bool                         isGlobal;
@@ -184,6 +191,18 @@ class MiliVariableMetaData
 };
 
 
+// ****************************************************************************
+//  Class: MiliClassMetaData
+//
+//  Purpose:
+//      A container for mili class meta data. 
+//
+//  Programmer:  Alister Maguire
+//  Creation:    Jan 16, 2019
+//
+//  Modifications:
+//
+// ****************************************************************************
 class MiliClassMetaData
 {
 
@@ -193,7 +212,6 @@ class MiliClassMetaData
 
     enum ClassType 
       { CELL, NODE, MATERIAL, GLOBAL, SURFACE, PARTICLE, UNKNOWN };
-
 
     void                              SetLongName(string lName)
                                         { longName = lName; };
@@ -225,13 +243,9 @@ class MiliClassMetaData
     ClassType                         GetClassType(void)
                                         { return classType; };
 
-    int                               GetConnectivityCount(void)
-                                        { return connectivityCount; };
-
     void                              SetConnectivityOffset(int dom, 
                                                             int offset);
     int                               GetConnectivityOffset(int dom);
-    
 
   private:
 
@@ -240,10 +254,9 @@ class MiliClassMetaData
     int                               totalNumElements;
     int                               superClassId;
 
-    vector<string>                    variables;//TODO: we could probably make this memory malloc. 
+    vector<string>                    variables;
     vector<int>                       numDomainElements;
 
-    int                               connectivityCount;
     vector<int>                       connectivityOffset;
     ClassType                         classType;
 
@@ -252,6 +265,18 @@ class MiliClassMetaData
 };
 
 
+// ****************************************************************************
+//  Class: MiliMaterialMetaData
+//
+//  Purpose:
+//      A container for mili material meta data. 
+//
+//  Programmer:  Alister Maguire
+//  Creation:    Jan 16, 2019
+//
+//  Modifications:
+//
+// ****************************************************************************
 class MiliMaterialMetaData
 {
   public:
@@ -273,6 +298,19 @@ class MiliMaterialMetaData
 };
 
 
+// ****************************************************************************
+//  Class: MiliMetaData
+//
+//  Purpose:
+//      A container storing and accessing all mili meta data. This is the 
+//      main interface between avtMiliFileFormat and the meta data info. 
+//
+//  Programmer:  Alister Maguire
+//  Creation:    Jan 16, 2019
+//
+//  Modifications:
+//
+// ****************************************************************************
 class MiliMetaData
 {
   public:
@@ -304,13 +342,11 @@ class MiliMetaData
                                                       MiliClassMetaData *);
     MiliClassMetaData                 *GetMiliClassMD(const char *);
     int                                GetMiliClassMDIdx(const char *);
-    //FIXME: may not need now                                       
-    vector<MiliClassMetaData *>        GetMiliClassMDOfType(int);
  
     void                               GetCellTypeCounts(vector<int> &,
                                                          vector<int> &);
 
-    //FIXME: use this or direct access?
+    //TODO: use this or direct access?
     void                               AddMiliVariableMD(int, 
                                                          MiliVariableMetaData *);
     MiliVariableMetaData              *GetMiliVariableMD(int varIdx);
