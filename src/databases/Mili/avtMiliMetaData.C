@@ -202,7 +202,6 @@ MiliVariableMetaData::GetPath()
 {
     //TODO: what we want is "classLName (classSName)/shortName"
     //      but visit seems to garble this...
-    //return classLName + " " + classSName + "/" + shortName;
     return classSName + "/" + shortName;
 }
 
@@ -362,7 +361,7 @@ MiliClassMetaData::GetNumElements(int domain)
 //  Modifications:
 //
 // ****************************************************************************
-// FIXME: is this still needed?
+
 void
 MiliClassMetaData::DetermineType(int superClass)
 {
@@ -420,7 +419,9 @@ MiliMaterialMetaData::MiliMaterialMetaData(void)
 {
     name = "";
     for (int i = 0; i < 3; ++i)
+    {
         color[i] = 0.0;
+    }
 }
 
 
@@ -457,7 +458,9 @@ void
 MiliMaterialMetaData::SetColor(float *inColor)
 {
     for (int i = 0; i < 3; ++i)
+    {
         color[i] = inColor[i];
+    }
 }
 
 
@@ -506,7 +509,9 @@ MiliMetaData::~MiliMetaData()
         for (int i = 0; i < numVariables; ++i)
         {
             if (miliVariables[i] != NULL)
+            {
                 delete miliVariables[i];
+            }
         }
 
         delete [] miliVariables;
@@ -517,7 +522,9 @@ MiliMetaData::~MiliMetaData()
         for (int i = 0; i < numClasses; ++i)
         {
             if (miliClasses[i] != NULL)
+            {
                 delete miliClasses[i];
+            }
         }
 
         delete [] miliClasses;
@@ -572,7 +579,9 @@ MiliMetaData::SetNumVariables(int nVars)
         for (int i = 0; i < numVariables; ++i)
         {
             if (miliVariables[i] != NULL)
+            {
                 delete miliVariables[i];
+            }
         }
 
         delete [] miliVariables;
@@ -581,7 +590,9 @@ MiliMetaData::SetNumVariables(int nVars)
     numVariables  = nVars;
     miliVariables = new MiliVariableMetaData *[numVariables];
     for (int i = 0; i < numVariables; ++i)
+    {
         miliVariables[i] = NULL;
+    }
 }
 
 
@@ -626,7 +637,9 @@ MiliMetaData::SetNumClasses(int nClasses)
         for (int i = 0; i < numClasses; ++i)
         {
             if (miliClasses[i] != NULL)
+            {
                 delete miliClasses[i];
+            }
         }
 
         delete [] miliClasses;
@@ -635,7 +648,9 @@ MiliMetaData::SetNumClasses(int nClasses)
     numClasses  = nClasses;
     miliClasses = new MiliClassMetaData *[numClasses];
     for (int i = 0; i < numClasses; ++i)
+    {
         miliClasses[i] = NULL;
+    }
 }
 
 
@@ -692,7 +707,9 @@ int
 MiliMetaData::GetNumCells(int domain)
 {
     if (domain >= 0 && domain < numCells.size())
+    {
         return numCells[domain];
+    }
     return 0;
 }
 
@@ -713,7 +730,9 @@ int
 MiliMetaData::GetNumNodes(int domain)
 {
     if (domain >= 0 && domain < numNodes.size())
+    {
         return numNodes[domain];
+    }
     return 0;
 }
 
@@ -733,13 +752,17 @@ int
 MiliMetaData::GetMiliClassMDIdx(const char *cName)
 {
     if (miliClasses == NULL)
+    {
         return -1;
+    }
     for (int i = 0; i < numClasses; ++i)
     {
         if (miliClasses[i] != NULL) 
         {
             if (miliClasses[i]->GetShortName() == cName)
+            {
                 return i;
+            }
         }
     }
     return -1;
@@ -793,7 +816,9 @@ MiliMetaData::GetCellTypeCounts(vector<int> &cTypes,
     //
     int miliSuperClassCount[M_QTY_SUPERCLASS];
     for (int i = 0; i < M_QTY_SUPERCLASS; ++i)
+    {
         miliSuperClassCount[i] = 0;
+    }
 
     ctCounts.reserve(numMiliCellTypes);
     cTypes.reserve(numMiliCellTypes);
@@ -930,13 +955,17 @@ int
 MiliMetaData::GetMiliVariableMDIdx(const char *vName)
 {
     if (miliVariables == NULL)
+    {
         return -1;
+    }
     for (int i = 0; i < numVariables; ++i)
     {
         if (miliVariables[i] != NULL) 
         {
             if (miliVariables[i]->GetShortName() == vName)
+            {
                 return i;
+            }
         }
     }
     return -1;
@@ -1081,7 +1110,9 @@ MiliMetaData::GetMaterialNames(void)
     stringVector matNames;
     matNames.reserve(numMaterials);
     for (int i = 0; i < numMaterials; ++i)
+    {
         matNames.push_back(miliMaterials[i].GetName());
+    }
     return matNames;
 }
 
