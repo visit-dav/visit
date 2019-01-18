@@ -1,6 +1,6 @@
 # VisIt
 
-[![Documentation Status](https://readthedocs.org/projects/visit-sphinx-github-user-manual/badge/?version=latest)](http://visit-sphinx-github-user-manual.readthedocs.io) [![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause) [![Scale](https://img.shields.io/badge/Scale-Peta-green.svg)](https://img.shields.io/badge/Scale-Peta-green.svg) [![VTK-Version](https://img.shields.io/badge/VTK-8.0-blue.svg)](https://img.shields.io/badge/VTK-8.0-blue-green.svg)
+[![Documentation Status](https://readthedocs.org/projects/visit-sphinx-github-user-manual/badge/?version=latest)](http://visit-sphinx-github-user-manual.readthedocs.io) [![Scale](https://img.shields.io/badge/Scale-Peta-green.svg)](https://img.shields.io/badge/Scale-Peta-green.svg) [![VTK-Version](https://img.shields.io/badge/VTK-8.0-blue.svg)](https://img.shields.io/badge/VTK-8.0-blue-green.svg)
 
 Project Website: https://visit.llnl.gov
 
