@@ -78,25 +78,25 @@ void init_mpi()
 
 VisitIDXIO::DTypes convertType(PIDX_data_type intype){
   
-  if(strcmp(intype,INT8) == 0)
+  if(strcmp(intype,PIDX_DType.INT8) == 0)
     return VisitIDXIO::IDX_INT8;
-  else if(strcmp(intype,UINT8) == 0)
+  else if(strcmp(intype,PIDX_DType.UINT8) == 0)
     return VisitIDXIO::IDX_UINT8;
-  else if(strcmp(intype, INT16)==0)
+  else if(strcmp(intype, PIDX_DType.INT16)==0)
     return VisitIDXIO::IDX_INT16;
-  else if(strcmp(intype, UINT16)==0)
+  else if(strcmp(intype, PIDX_DType.UINT16)==0)
     return VisitIDXIO::IDX_UINT16;
-  else if(strcmp(intype, INT32)==0)
+  else if(strcmp(intype, PIDX_DType.INT32)==0)
     return VisitIDXIO::IDX_INT32;
-  else if(strcmp(intype, UINT32)==0)
+  else if(strcmp(intype, PIDX_DType.UINT32)==0)
     return VisitIDXIO::IDX_UINT32;
-  else if(strcmp(intype, INT64)==0)
+  else if(strcmp(intype, PIDX_DType.INT64)==0)
     return VisitIDXIO::IDX_INT64;
-  else if(strcmp(intype, UINT64)==0)
+  else if(strcmp(intype, PIDX_DType.UINT64)==0)
     return VisitIDXIO::IDX_UINT64;
-  else if(strcmp(intype,FLOAT32)==0)
+  else if(strcmp(intype, PIDX_DType.FLOAT32)==0)
     return VisitIDXIO::IDX_FLOAT32;
-  else if(strcmp(intype, FLOAT64)==0){
+  else if(strcmp(intype, PIDX_DType.FLOAT64)==0){
     return VisitIDXIO::IDX_FLOAT64;
   }
   
