@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2018, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-442911
 * All rights reserved.
@@ -48,7 +48,7 @@ class DBOptionsAttributes;
 namespace UintahDBOptions
 {
   // Read options
-  const char *const UINTAH_LOAD_EXTRA = "Load extra elements";
+  const char *const UINTAH_LOAD_EXTRA = "Load extra geometry";
   const char *const UINTAH_LOAD_EXTRA_NONE    = "None";
   const char *const UINTAH_LOAD_EXTRA_CELLS   = "Cells";
   const char *const UINTAH_LOAD_EXTRA_PATCHES = "Patches";
