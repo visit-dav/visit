@@ -1,0 +1,8 @@
+current/
+diff/
+html/
+json/
+_run/
+*.pyc
+results.json
+tests.json
