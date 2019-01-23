@@ -476,7 +476,7 @@ MiliMaterialMetaData::SetColor(float *inColor)
 //  Modifications:
 //
 // ****************************************************************************
-MiliMetaData::MiliMetaData(int nDomains)
+avtMiliMetaData::avtMiliMetaData(int nDomains)
 :
   numDomains(nDomains),
   numClasses(0),
@@ -502,7 +502,7 @@ MiliMetaData::MiliMetaData(int nDomains)
 //  Modifications:
 //
 // ****************************************************************************
-MiliMetaData::~MiliMetaData()
+avtMiliMetaData::~avtMiliMetaData()
 {
     if (miliVariables != NULL)
     {
@@ -547,7 +547,7 @@ MiliMetaData::~MiliMetaData()
 //
 // ****************************************************************************
 void
-MiliMetaData::CleanseSubrecords()
+avtMiliMetaData::CleanseSubrecords()
 {
     //
     // Cleanse the variable subrecords. 
@@ -572,7 +572,7 @@ MiliMetaData::CleanseSubrecords()
 //
 // ****************************************************************************
 void
-MiliMetaData::SetNumVariables(int nVars)
+avtMiliMetaData::SetNumVariables(int nVars)
 {
     if (miliVariables != NULL)
     {
@@ -609,7 +609,7 @@ MiliMetaData::SetNumVariables(int nVars)
 //
 // ****************************************************************************
 void
-MiliMetaData::SetNumMaterials(int nMats)
+avtMiliMetaData::SetNumMaterials(int nMats)
 {
     numMaterials = nMats;
     miliMaterials.clear();
@@ -630,7 +630,7 @@ MiliMetaData::SetNumMaterials(int nMats)
 //
 // ****************************************************************************
 void
-MiliMetaData::SetNumClasses(int nClasses)
+avtMiliMetaData::SetNumClasses(int nClasses)
 {
     if (miliClasses != NULL)
     {
@@ -667,7 +667,7 @@ MiliMetaData::SetNumClasses(int nClasses)
 //
 // ****************************************************************************
 void
-MiliMetaData::AddMiliClassMD(int classIdx, MiliClassMetaData *mcmd)
+avtMiliMetaData::AddMiliClassMD(int classIdx, MiliClassMetaData *mcmd)
 {
     if (classIdx < 0 || classIdx > numClasses)
     {
@@ -704,7 +704,7 @@ MiliMetaData::AddMiliClassMD(int classIdx, MiliClassMetaData *mcmd)
 // ****************************************************************************
 
 int
-MiliMetaData::GetNumCells(int domain)
+avtMiliMetaData::GetNumCells(int domain)
 {
     if (domain >= 0 && domain < numCells.size())
     {
@@ -727,7 +727,7 @@ MiliMetaData::GetNumCells(int domain)
 //
 // ****************************************************************************
 int
-MiliMetaData::GetNumNodes(int domain)
+avtMiliMetaData::GetNumNodes(int domain)
 {
     if (domain >= 0 && domain < numNodes.size())
     {
@@ -749,7 +749,7 @@ MiliMetaData::GetNumNodes(int domain)
 //
 // ****************************************************************************
 int
-MiliMetaData::GetMiliClassMDIdx(const char *cName)
+avtMiliMetaData::GetMiliClassMDIdx(const char *cName)
 {
     if (miliClasses == NULL)
     {
@@ -782,7 +782,7 @@ MiliMetaData::GetMiliClassMDIdx(const char *cName)
 //
 // ****************************************************************************
 MiliClassMetaData *
-MiliMetaData::GetMiliClassMD(const char *vName)
+avtMiliMetaData::GetMiliClassMD(const char *vName)
 {
     int idx = GetMiliClassMDIdx(vName);
     if (idx > -1 && idx < numClasses)
@@ -807,7 +807,7 @@ MiliMetaData::GetMiliClassMD(const char *vName)
 //
 // ****************************************************************************
 void
-MiliMetaData::GetCellTypeCounts(vector<int> &cTypes, 
+avtMiliMetaData::GetCellTypeCounts(vector<int> &cTypes, 
                                 vector<int> &ctCounts)
 {
     //
@@ -858,7 +858,7 @@ MiliMetaData::GetCellTypeCounts(vector<int> &cTypes,
 // ****************************************************************************
 
 void
-MiliMetaData::AddMiliVariableMD(int varIdx, 
+avtMiliMetaData::AddMiliVariableMD(int varIdx, 
                                 MiliVariableMetaData *mvmd)
 {
     std::string sName = mvmd->GetShortName();
@@ -903,7 +903,7 @@ MiliMetaData::AddMiliVariableMD(int varIdx,
 //
 // ****************************************************************************
 MiliVariableMetaData *
-MiliMetaData::GetMiliVariableMD(const char *vName)
+avtMiliMetaData::GetMiliVariableMD(const char *vName)
 {
     int idx = GetMiliVariableMDIdx(vName);
     if (idx > -1)
@@ -928,7 +928,7 @@ MiliMetaData::GetMiliVariableMD(const char *vName)
 //
 // ****************************************************************************
 MiliVariableMetaData *
-MiliMetaData::GetMiliVariableMD(int varIdx)
+avtMiliMetaData::GetMiliVariableMD(int varIdx)
 {
     if (varIdx >= 0 && varIdx < numVariables)
     {
@@ -952,7 +952,7 @@ MiliMetaData::GetMiliVariableMD(int varIdx)
 //
 // ****************************************************************************
 int
-MiliMetaData::GetMiliVariableMDIdx(const char *vName)
+avtMiliMetaData::GetMiliVariableMDIdx(const char *vName)
 {
     if (miliVariables == NULL)
     {
@@ -985,7 +985,7 @@ MiliMetaData::GetMiliVariableMDIdx(const char *vName)
 //
 // ****************************************************************************
 void
-MiliMetaData::AddMiliVariableSubrecord(const char *vName, 
+avtMiliMetaData::AddMiliVariableSubrecord(const char *vName, 
                                        int dom,
                                        int srId)
 {
@@ -1007,7 +1007,7 @@ MiliMetaData::AddMiliVariableSubrecord(const char *vName,
 //
 // ****************************************************************************
 void
-MiliMetaData::AddMiliVariableSubrecord(int varIdx,
+avtMiliMetaData::AddMiliVariableSubrecord(int varIdx,
                                        int dom,
                                        int srId)
 {
@@ -1039,7 +1039,7 @@ MiliMetaData::AddMiliVariableSubrecord(int varIdx,
 //
 // ****************************************************************************
 vector<Subrecord *> 
-MiliMetaData::GetMiliVariableSubrecords(int dom,
+avtMiliMetaData::GetMiliVariableSubrecords(int dom,
                                         const char *vName)
 {
     int varIdx = GetMiliVariableMDIdx(vName);
@@ -1060,7 +1060,7 @@ MiliMetaData::GetMiliVariableSubrecords(int dom,
 //
 // ****************************************************************************
 vector<Subrecord *> 
-MiliMetaData::GetMiliVariableSubrecords(int dom,
+avtMiliMetaData::GetMiliVariableSubrecords(int dom,
                                         int varIdx)
 {
     if (dom < 0 || dom > numDomains)
@@ -1105,7 +1105,7 @@ MiliMetaData::GetMiliVariableSubrecords(int dom,
 //
 // ****************************************************************************
 stringVector
-MiliMetaData::GetMaterialNames(void)
+avtMiliMetaData::GetMaterialNames(void)
 {
     stringVector matNames;
     matNames.reserve(numMaterials);
@@ -1130,7 +1130,7 @@ MiliMetaData::GetMaterialNames(void)
 //
 // ****************************************************************************
 void
-MiliMetaData::AddSubrecord(int srId, Subrecord sr)
+avtMiliMetaData::AddSubrecord(int srId, Subrecord sr)
 {
     subrecords.push_back(sr);
 }

@@ -67,7 +67,7 @@ class vtkFloatArray;
 
 class MiliVariableMetaData;
 class MiliClassMetaData;
-class MiliMetaData;
+class avtMiliMetaData;
 
 using std::vector;
 using std::string;
@@ -122,7 +122,7 @@ class avtMiliFileFormat : public avtMTMDFileFormat
 
   protected:
 
-    MiliMetaData        **miliMetaData;
+    avtMiliMetaData     **miliMetaData;
 
     char                 *famroot;
     char                 *fampath;

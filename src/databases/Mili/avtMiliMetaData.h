@@ -299,7 +299,7 @@ class MiliMaterialMetaData
 
 
 // ****************************************************************************
-//  Class: MiliMetaData
+//  Class: avtMiliMetaData
 //
 //  Purpose:
 //      A container storing and accessing all mili meta data. This is the 
@@ -311,16 +311,15 @@ class MiliMaterialMetaData
 //  Modifications:
 //
 // ****************************************************************************
-class MiliMetaData
+class avtMiliMetaData
 {
   public:
 
-    //TODO: should we put this in mili to ensure future compatibility?
     const int MiliCellTypes[8] =
       { M_TRUSS, M_BEAM, M_TRI, M_QUAD, M_TET, M_PYRAMID, M_WEDGE, M_HEX };
 
-                                       MiliMetaData(int);
-                                      ~MiliMetaData(void);
+                                       avtMiliMetaData(int);
+                                      ~avtMiliMetaData(void);
 
     void                               CleanseSubrecords(void);
 
@@ -346,7 +345,6 @@ class MiliMetaData
     void                               GetCellTypeCounts(vector<int> &,
                                                          vector<int> &);
 
-    //TODO: use this or direct access?
     void                               AddMiliVariableMD(int, 
                                                          MiliVariableMetaData *);
     MiliVariableMetaData              *GetMiliVariableMD(int varIdx);
@@ -394,9 +392,9 @@ class MiliMetaData
 
   private:
 
-    //TODO: refactor to use malloc (save space). 
     MiliClassMetaData                **miliClasses;
     MiliVariableMetaData             **miliVariables;
+    //TODO: refactor to use malloc 
     vector<MiliMaterialMetaData>       miliMaterials;
 
     int                                numDomains;
