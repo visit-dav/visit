@@ -1,8 +1,9 @@
-current/
-diff/
-html/
-json/
-_run/
-*.pyc
-results.json
-tests.json
+/src/test/current/
+/src/test/diff/
+/src/test/html/
+/src/test/json/
+/src/test/_run/
+/src/test/*.pyc
+/src/test/results.json
+/src/test/tests.json
+
