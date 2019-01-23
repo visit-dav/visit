@@ -994,20 +994,6 @@ avtMiliFileFormat::ValidateVariables(int dom, int meshId)
             //TODO: error check 
             
             miliMetaData[meshId]->AddSubrecord(srId, sr);
-        
-            //
-            // glob vars are associated with the entire mesh.
-            // mat vars deal with materials.
-            //
-            //TODO: we now need to visualize these
-            //if (strcmp(sr.class_name, "glob") == 0)
-            //{
-            //    continue;
-            //}
-            //if (strcmp(sr.class_name, "mat") == 0)
-            //{
-            //    continue;
-            //}
            
             for (int k = 0 ; k < sr.qty_svars ; k++)
             {
@@ -2543,7 +2529,7 @@ avtMiliFileFormat::LoadMiliInfoJson(const char *fname)
     }
     materials.resize(nDomains);
     
-    miliMetaData = new MiliMetaData *[nMeshes];
+    miliMetaData = new avtMiliMetaData *[nMeshes];
 
     for (int i = 0; i < nMeshes; ++i) 
         miliMetaData[i] = NULL;
@@ -2558,7 +2544,7 @@ avtMiliFileFormat::LoadMiliInfoJson(const char *fname)
     for (int meshId = 0; meshId < nMeshes; ++meshId)
     {
 
-        miliMetaData[meshId] = new MiliMetaData(nDomains);
+        miliMetaData[meshId] = new avtMiliMetaData(nDomains);
 
         if (jDoc.HasMember("Materials"))
         {

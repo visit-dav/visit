@@ -1380,6 +1380,9 @@ GetDataRange(vtkDataSet *ds, double *de, const char *vname,
 //    Brad Whitlock, Tue Jul 21 10:37:29 PDT 2015
 //    Add support for non-standard memory layout.
 //
+//    Alister Maguire, Wed Jan 23 10:26:44 PST 2019
+//    Added support for Nan values. 
+//
 // ****************************************************************************
 
 template <typename T>
@@ -1423,6 +1426,9 @@ GetScalarRangeTemplate(Array buf, Scalar &min, Scalar &max,
         if (checkFinite)
             if (! visitIsFinite(buf[i]))
                 continue;
+
+        if (std::isnan(buf[i]))
+            continue;
 
         if (!setOne)
         {
@@ -1490,6 +1496,9 @@ GetNodalScalarRangeViaCellsTemplate(Array buf, Scalar &min, Scalar &max,
             if (checkFinite)
                 if (! visitIsFinite(buf[id]))
                     continue;
+
+            if (std::isnan(buf[id]))
+                continue;
 
             if (!setOne)
             {
@@ -1807,6 +1816,9 @@ GetDataAllComponentsRange(vtkDataSet *ds, double *exts, const char *vname,
 //    Brad Whitlock, Tue Jul 21 13:39:32 PDT 2015
 //    Added support for non-standard memory layouts.
 //
+//    Alister Maguire, Wed Jan 23 10:26:44 PST 2019
+//    Added support for Nan values. 
+//
 // ****************************************************************************
 
 template <typename ScalarPtr>
@@ -1824,6 +1836,8 @@ public:
         for (int j = 0; j < this->nComponents; j++)
         {
             double value = static_cast<double>(tuple[j]);
+            if (std::isnan(value))
+                return value;
             mag += (value * value);
         }
         return mag;
@@ -1846,6 +1860,8 @@ public:
         for (int j = 0; j < array->GetNumberOfComponents(); j++)
         {
             double value = array->GetComponent(tupleId, j);
+            if (std::isnan(value))
+                return value;
             mag += (value * value);
         }
         return mag;
@@ -1865,6 +1881,9 @@ GetMagnitudeRange(MagFunctor func, int n, int ncomps, double *exts,
             continue;
 
         double mag = func(i);
+
+        if (std::isnan(mag))
+            continue;
 
         if (checkFinite)
             if (! visitIsFinite(mag))
@@ -1907,6 +1926,9 @@ GetNodalMagnitudeRangeViaCells(MagFunctor func, int n, int ncomps, double *exts,
             vtkIdType id = ptIds->GetId(i);
 
             double mag = func(id);
+      
+            if (std::isnan(mag))
+                continue;
 
             if (checkFinite)
                 if (! visitIsFinite(mag))
@@ -2054,6 +2076,9 @@ GetDataMagnitudeRange(vtkDataSet *ds, double *exts, const char *vname,
 //    Burlen Loring, Fri Oct  2 17:02:27 PDT 2015
 //    clean up a warning
 //
+//    Alister Maguire, Wed Jan 23 10:26:44 PST 2019
+//    Added support for Nan values. 
+//
 // ****************************************************************************
 
 template <class T> static double
@@ -2096,6 +2121,19 @@ GetMajorEigenvalueRange(T *ptr, int n, int ncomps, double *exts,
         if ((ghosts != NULL) && (ghosts[i] != '\0'))
             continue;
 
+        bool containsNan = false;
+        for (int j = 0; j < ncomps && !containsNan; ++j)
+        {
+            double val = (double) ptr[j];
+            if (std::isnan(val))
+                containsNan = true;
+        }
+        if (containsNan)
+        {
+            ptr+=ncomps;
+            continue;
+        }
+
         double val = MajorEigenvalueT(ptr);
 
         if (!visitIsFinite(val))
@@ -2121,7 +2159,19 @@ GetNodalMajorEigenvalueRangeViaCells(T *ptr, int n, int ncomps, double *exts,
         {
             vtkIdType id = ptIds->GetId(i);
 
-            double val = MajorEigenvalueT(&ptr[id*ncomps]);
+            int startIdx     = id*ncomps;
+            bool containsNan = false;
+
+            for (int j = 0; j < ncomps && !containsNan; ++j)
+            {
+                double val = (double) ptr[startIdx + j];
+                if (std::isnan(val))
+                    containsNan = true;
+            }
+            if (containsNan)
+                continue;
+
+            double val = MajorEigenvalueT(&ptr[startIdx]);
 
             if (!visitIsFinite(val))
                 continue;
