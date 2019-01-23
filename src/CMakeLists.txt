@@ -1240,10 +1240,10 @@ IF(VISIT_OSPRAY)
     #      libospray[xxx].dll
     #
     # -- installing headers
-    IF(NOT VISIT_HEADERS_SKIP_INSTALL)
-      INSTALL(DIRECTORY ${OSPRAY_INCLUDE_DIR}
+    IF(VISIT_INSTALL_THIRD_PARTY AND NOT VISIT_HEADERS_SKIP_INSTALL)
+      INSTALL(DIRECTORY ${OSPRAY_INCLUDE_DIR}/ospray
         DESTINATION
-        DESTINATION ${VISIT_INSTALLED_VERSION_INCLUDE}/ospray
+        DESTINATION ${VISIT_INSTALLED_VERSION_INCLUDE}
         FILE_PERMISSIONS OWNER_WRITE OWNER_READ
                          GROUP_WRITE GROUP_READ
                          WORLD_READ
@@ -1251,9 +1251,9 @@ IF(VISIT_OSPRAY)
                               GROUP_WRITE GROUP_READ GROUP_EXECUTE
                                           WORLD_READ WORLD_EXECUTE
         PATTERN ".svn" EXCLUDE)
-    ENDIF(NOT VISIT_HEADERS_SKIP_INSTALL)
+    ENDIF()
     # -- installing libs
-    IF(NOT VISIT_OSPRAY_SKIP_INSTALL)
+    IF(VISIT_INSTALL_THIRD_PARTY AND NOT VISIT_OSPRAY_SKIP_INSTALL)
       FOREACH(l ${OSPRAY_LIBRARIES})
         # here because the CMake variable OSPRAY_LIBRARIES contains words
         # like 'optimized' and 'debug', we should skip them
@@ -1270,7 +1270,7 @@ IF(VISIT_OSPRAY)
           THIRD_PARTY_INSTALL_LIBRARY(${l})
         ENDIF()
       ENDFOREACH()
-    ENDIF(NOT VISIT_OSPRAY_SKIP_INSTALL)
+    ENDIF()
 
     # debug
     MESSAGE(STATUS "OSPRAY_INCLUDE_DIR: " ${OSPRAY_INCLUDE_DIR})
