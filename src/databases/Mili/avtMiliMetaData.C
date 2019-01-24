@@ -43,19 +43,22 @@
 #include <avtMiliMetaData.h>
 #include <visitstream.h>
 
+#include <ImproperUseException.h>
+#include <DebugStream.h>
+
 using std::ifstream;
 using std::endl;
 using std::cerr;
 
 
 // ***************************************************************************
-//  Function: 
+//  constructor: MiliVariableMetaData::MiliVariableMetaData
 //
 //  Purpose:
+//      Initialized the MiliVariableMetaData. 
 //
-//  Arguments: 
-//           
-//  Author:
+//  Programmer: Alister Maguire
+//  Creation:   Jan 15, 2019
 //
 //  Modifications:
 //
@@ -67,6 +70,7 @@ MiliVariableMetaData::MiliVariableMetaData()
     shortName         = ""; 
     classLName        = "";
     classSName        = "";
+    path              = "";
     cellTypeAvt       = -1;
     cellTypeMili      = -1;
     centering         = AVT_NODECENT;;
@@ -81,13 +85,12 @@ MiliVariableMetaData::MiliVariableMetaData()
 
 
 // ***************************************************************************
-//  Function: 
-//
-//  Purpose:
+//  Destructor: MiliVariableMetaData::~MiliVariableMetaData
 //
 //  Arguments: 
 //           
-//  Author:
+//  Programmer: Alister Maguire
+//  Creation:   Jan 15, 2019
 //
 //  Modifications:
 //
@@ -98,13 +101,21 @@ MiliVariableMetaData::~MiliVariableMetaData()
 
 
 // ***************************************************************************
-//  Function: 
+//  Method: MiliVariableMetaData::GetVectorComponent
 //
 //  Purpose:
+//     Get the component of a vector variable.  
 //
 //  Arguments: 
+//      idx    The index of the vector component. 
+//
+//  Returns:
+//      If the index is valid, the variable name of the
+//      component is returned as a string. 
+//      Otherwise, an empty string is returned. 
 //           
-//  Author:
+//  Programmer: Alister Maguire
+//  Creation:   Jan 15, 2019
 //
 //  Modifications:
 //
@@ -114,110 +125,186 @@ MiliVariableMetaData::GetVectorComponent(int idx)
 {
     if (idx >= 0 && idx < vectorComponents.size())
         return vectorComponents[idx];
-    //FIXME: raise error?
     return "";
 }
 
 
 // ***************************************************************************
-//  Function: 
+//  Method: MiliVariableMetaData::InitSRcontainers
 //
 //  Purpose:
+//      Initialize the subrecord containers. 
 //
 //  Arguments: 
+//      numDomains    The number of domains. 
 //           
-//  Author:
+//  Programmer: Alister Maguire
+//  Creation:   Jan 15, 2019
 //
 //  Modifications:
 //
 // ****************************************************************************
+
 void
 MiliVariableMetaData::InitSRContainers(int numDomains)
 {
-    subrecordIds.resize(numDomains);
+    subrecInfo.resize(numDomains);
 }
 
 
 // ***************************************************************************
-//  Function: 
+//  Method: MiliVariableMetaData::GetSubrecordIds
 //
 //  Purpose:
+//      Get the subrecord ids for a given domain. 
 //
 //  Arguments: 
+//
+//  Returns:
+//      A reference to the subrecord id vector 
+//      for the given domain. 
 //           
-//  Author:
+//  Programmer: Alister Maguire
+//  Creation:   Jan 15, 2019
 //
 //  Modifications:
 //
 // ****************************************************************************
+
 vector<int> &
 MiliVariableMetaData::GetSubrecordIds(int dom)
 {
-    if (dom > subrecordIds.size() || dom < 0)
+    if (dom > subrecInfo[dom].nSR || dom < 0)
     {
-        //TODO: raise error
-        cerr << "ERROR: Trying to retieve invalid subrecord ID!" << endl;
+        char msg[1024];
+        sprintf(msg, "Invalid domain index for subrecord ids!\n");
+        EXCEPTION1(ImproperUseException, msg);
     }
-    return subrecordIds[dom];
+    return subrecInfo[dom].SRIDs;
 }
 
 
 // ***************************************************************************
-//  Function: 
+//  Method: MiliVariableMetaData::AddSubrecordInfo
 //
 //  Purpose:
 //
 //  Arguments: 
 //           
-//  Author:
+//  Programmer: Alister Maguire
+//  Creation:   Jan 15, 2019
 //
 //  Modifications:
 //
 // ****************************************************************************
+
 void
-MiliVariableMetaData::AddSubrecordIds(int dom, 
-                                      int srIdx)
+MiliVariableMetaData::AddSubrecordInfo(int dom, 
+                                       int srId,
+                                       int nElems,
+                                       int nDB,
+                                       int *DBRanges)
 {
-    if (dom >= 0 && dom < subrecordIds.size())
+    subrecInfo[dom].nSR++;
+    subrecInfo[dom].nElements.push_back(nElems);
+    subrecInfo[dom].SRIDs.push_back(srId);
+    subrecInfo[dom].nDataBlocks.push_back(nDB);
+
+    //
+    // Deep copy the ranges so that we don't have to keep 
+    // the subrecords in memory. 
+    //
+    int limit = nDB * 2;
+    vector<int> nxtRange(limit);
+    for (int i = 0; i < limit; ++i)
     {
-        subrecordIds[dom].push_back(srIdx);        
+        nxtRange[i] = DBRanges[i]; 
     }
+
+    subrecInfo[dom].dataBlockRanges.push_back(nxtRange);
 }
 
 
 // ***************************************************************************
-//  Function: 
+//  Method: MiliVariableMetaData::GetSubrecordInfo
 //
 //  Purpose:
 //
 //  Arguments: 
 //           
-//  Author:
+//  Programmer: Alister Maguire
+//  Creation:   Jan 15, 2019
 //
 //  Modifications:
 //
 // ****************************************************************************
+
+SubrecInfo &
+MiliVariableMetaData::GetSubrecordInfo(int dom)
+{
+    if (dom > subrecInfo.size() || dom < 0)
+    {
+        char msg[1024];
+        sprintf(msg, "Invalid domain index for subrecord ids!\n");
+        EXCEPTION1(ImproperUseException, msg);
+    }
+    return subrecInfo[dom];
+}
+
+
+// ***************************************************************************
+//  Method: MiliVariableMetaData::GetPath
+//
+//  Purpose:
+//      Get the visit path for a variable. 
+//
+//  Arguments: 
+//
+//  Returns:
+//      The path as a string. 
+//           
+//  Programmer: Alister Maguire
+//  Creation:   Jan 15, 2019
+//
+//  Modifications:
+//
+// ****************************************************************************
+
 string
 MiliVariableMetaData::GetPath()
 {
     //TODO: what we want is "classLName (classSName)/shortName"
     //      but visit seems to garble this...
-    return classSName + "/" + shortName;
+
+    if (path.empty())
+    {
+        path = "Primal/";
+        if (!classSName.empty())
+        {
+            path += classSName + "/";
+        }
+        path += shortName;
+    }
+    return path;
 }
 
 
 // ***************************************************************************
-//  Function: 
+//  Constructor: MiliClassMetaData::MiliClassMetaData
 //
 //  Purpose:
+//      Initialize the MiliClassMetaData. 
 //
 //  Arguments: 
+//      numDomains    The number of domains. 
 //           
-//  Author:
+//  Programmer: Alister Maguire
+//  Creation:   Jan 15, 2019
 //
 //  Modifications:
 //
 // ****************************************************************************
+
 MiliClassMetaData::MiliClassMetaData(int numDomains)
 {
     longName           = "";
@@ -231,34 +318,36 @@ MiliClassMetaData::MiliClassMetaData(int numDomains)
 
 
 // ***************************************************************************
-//  Function: 
+//  Destructor: MiliClassMetaData::MiliClassMetaData
 //
-//  Purpose:
-//
-//  Arguments: 
-//           
-//  Author:
+//  Programmer: Alister Maguire
+//  Creation:   Jan 15, 2019
 //
 //  Modifications:
 //
 // ****************************************************************************
+
 MiliClassMetaData::~MiliClassMetaData()
 {
 }
 
 
 // ***************************************************************************
-//  Function: 
+//  Method: MiliClassMetaData::SetSuperClassId
 //
 //  Purpose:
+//      Set the superclass id. 
 //
 //  Arguments: 
+//      superClass    The superclass id. 
 //           
-//  Author:
+//  Programmer: Alister Maguire
+//  Creation:   Jan 15, 2019
 //
 //  Modifications:
 //
 // ****************************************************************************
+
 void
 MiliClassMetaData::SetSuperClassId(int superClass)
 {
@@ -268,17 +357,22 @@ MiliClassMetaData::SetSuperClassId(int superClass)
 
 
 // ***************************************************************************
-//  Function: 
+//  Method: MiliClassMetaData::SetConnectivityOffset
 //
 //  Purpose:
+//      Set the connectivity offset for this class. 
 //
 //  Arguments: 
+//      domain     The domain. 
+//      offest     The offset. 
 //           
-//  Author:
+//  Programmer: Alister Maguire
+//  Creation:   Jan 15, 2019
 //
 //  Modifications:
 //
 // ****************************************************************************
+
 void 
 MiliClassMetaData::SetConnectivityOffset(int domain, int offset)
 {
@@ -288,17 +382,19 @@ MiliClassMetaData::SetConnectivityOffset(int domain, int offset)
 
 
 // ***************************************************************************
-//  Function: 
+//  Method: 
 //
 //  Purpose:
 //
 //  Arguments: 
 //           
-//  Author:
+//  Programmer: Alister Maguire
+//  Creation:   Jan 15, 2019
 //
 //  Modifications:
 //
 // ****************************************************************************
+
 int 
 MiliClassMetaData::GetConnectivityOffset(int domain)
 {
@@ -309,17 +405,19 @@ MiliClassMetaData::GetConnectivityOffset(int domain)
 
 
 // ***************************************************************************
-//  Function: 
+//  Method: 
 //
 //  Purpose:
 //
 //  Arguments: 
 //           
-//  Author:
+//  Programmer: Alister Maguire
+//  Creation:   Jan 15, 2019
 //
 //  Modifications:
 //
 // ****************************************************************************
+
 void 
 MiliClassMetaData::SetNumElements(int domain, int nEl)
 {
@@ -329,17 +427,19 @@ MiliClassMetaData::SetNumElements(int domain, int nEl)
 
 
 // ***************************************************************************
-//  Function: 
+//  Method: 
 //
 //  Purpose:
 //
 //  Arguments: 
 //           
-//  Author:
+//  Programmer: Alister Maguire
+//  Creation:   Jan 15, 2019
 //
 //  Modifications:
 //
 // ****************************************************************************
+
 int 
 MiliClassMetaData::GetNumElements(int domain)
 {
@@ -350,13 +450,14 @@ MiliClassMetaData::GetNumElements(int domain)
 
 
 // ***************************************************************************
-//  Function: 
+//  Method: 
 //
 //  Purpose:
 //
 //  Arguments: 
 //           
-//  Author:
+//  Programmer: Alister Maguire
+//  Creation:   Jan 15, 2019
 //
 //  Modifications:
 //
@@ -404,17 +505,19 @@ MiliClassMetaData::DetermineType(int superClass)
 
 
 // ***************************************************************************
-//  Function: 
+//  Method: 
 //
 //  Purpose:
 //
 //  Arguments: 
 //           
-//  Author:
+//  Programmer: Alister Maguire
+//  Creation:   Jan 15, 2019
 //
 //  Modifications:
 //
 // ****************************************************************************
+
 MiliMaterialMetaData::MiliMaterialMetaData(void)
 {
     name = "";
@@ -426,34 +529,38 @@ MiliMaterialMetaData::MiliMaterialMetaData(void)
 
 
 // ***************************************************************************
-//  Function: 
+//  Method: 
 //
 //  Purpose:
 //
 //  Arguments: 
 //           
-//  Author:
+//  Programmer: Alister Maguire
+//  Creation:   Jan 15, 2019
 //
 //  Modifications:
 //
 // ****************************************************************************
+
 MiliMaterialMetaData::~MiliMaterialMetaData(void)
 {
 }
 
 
 // ***************************************************************************
-//  Function: 
+//  Method: 
 //
 //  Purpose:
 //
 //  Arguments: 
 //           
-//  Author:
+//  Programmer: Alister Maguire
+//  Creation:   Jan 15, 2019
 //
 //  Modifications:
 //
 // ****************************************************************************
+
 void
 MiliMaterialMetaData::SetColor(float *inColor)
 {
@@ -465,17 +572,19 @@ MiliMaterialMetaData::SetColor(float *inColor)
 
 
 // ***************************************************************************
-//  Function: 
+//  Method: 
 //
 //  Purpose:
 //
 //  Arguments: 
 //           
-//  Author:
+//  Programmer: Alister Maguire
+//  Creation:   Jan 15, 2019
 //
 //  Modifications:
 //
 // ****************************************************************************
+
 avtMiliMetaData::avtMiliMetaData(int nDomains)
 :
   numDomains(nDomains),
@@ -491,17 +600,19 @@ avtMiliMetaData::avtMiliMetaData(int nDomains)
 
 
 // ***************************************************************************
-//  Function: 
+//  Method: 
 //
 //  Purpose:
 //
 //  Arguments: 
 //           
-//  Author:
+//  Programmer: Alister Maguire
+//  Creation:   Jan 15, 2019
 //
 //  Modifications:
 //
 // ****************************************************************************
+
 avtMiliMetaData::~avtMiliMetaData()
 {
     if (miliVariables != NULL)
@@ -529,48 +640,23 @@ avtMiliMetaData::~avtMiliMetaData()
 
         delete [] miliClasses;
     }
-
-    CleanseSubrecords();
 }
 
 
 // ***************************************************************************
-//  Function: 
+//  Method: 
 //
 //  Purpose:
 //
 //  Arguments: 
 //           
-//  Author:
+//  Programmer: Alister Maguire
+//  Creation:   Jan 15, 2019
 //
 //  Modifications:
 //
 // ****************************************************************************
-void
-avtMiliMetaData::CleanseSubrecords()
-{
-    //
-    // Cleanse the variable subrecords. 
-    //
-    for (int i = 0; i < subrecords.size(); ++i)
-    {
-        mc_cleanse_subrec(&subrecords[i]);
-    }
-}
 
-
-// ***************************************************************************
-//  Function: 
-//
-//  Purpose:
-//
-//  Arguments: 
-//           
-//  Author:
-//
-//  Modifications:
-//
-// ****************************************************************************
 void
 avtMiliMetaData::SetNumVariables(int nVars)
 {
@@ -597,17 +683,19 @@ avtMiliMetaData::SetNumVariables(int nVars)
 
 
 // ***************************************************************************
-//  Function: 
+//  Method: 
 //
 //  Purpose:
 //
 //  Arguments: 
 //           
-//  Author:
+//  Programmer: Alister Maguire
+//  Creation:   Jan 15, 2019
 //
 //  Modifications:
 //
 // ****************************************************************************
+
 void
 avtMiliMetaData::SetNumMaterials(int nMats)
 {
@@ -618,17 +706,19 @@ avtMiliMetaData::SetNumMaterials(int nMats)
 
 
 // ***************************************************************************
-//  Function: 
+//  Method: 
 //
 //  Purpose:
 //
 //  Arguments: 
 //           
-//  Author:
+//  Programmer: Alister Maguire
+//  Creation:   Jan 15, 2019
 //
 //  Modifications:
 //
 // ****************************************************************************
+
 void
 avtMiliMetaData::SetNumClasses(int nClasses)
 {
@@ -655,19 +745,22 @@ avtMiliMetaData::SetNumClasses(int nClasses)
 
 
 // ***************************************************************************
-//  Function: 
+//  Method: 
 //
 //  Purpose:
 //
 //  Arguments: 
 //           
-//  Author:
+//  Programmer: Alister Maguire
+//  Creation:   Jan 15, 2019
 //
 //  Modifications:
 //
 // ****************************************************************************
+
 void
-avtMiliMetaData::AddMiliClassMD(int classIdx, MiliClassMetaData *mcmd)
+avtMiliMetaData::AddMiliClassMD(int classIdx, 
+                                MiliClassMetaData *mcmd)
 {
     if (classIdx < 0 || classIdx > numClasses)
     {
@@ -691,13 +784,14 @@ avtMiliMetaData::AddMiliClassMD(int classIdx, MiliClassMetaData *mcmd)
 
 
 // ***************************************************************************
-//  Function: 
+//  Method: 
 //
 //  Purpose:
 //
 //  Arguments: 
 //           
-//  Author:
+//  Programmer: Alister Maguire
+//  Creation:   Jan 15, 2019
 //
 //  Modifications:
 //
@@ -715,17 +809,19 @@ avtMiliMetaData::GetNumCells(int domain)
 
 
 // ***************************************************************************
-//  Function: 
+//  Method: 
 //
 //  Purpose:
 //
 //  Arguments: 
 //           
-//  Author:
+//  Programmer: Alister Maguire
+//  Creation:   Jan 15, 2019
 //
 //  Modifications:
 //
 // ****************************************************************************
+
 int
 avtMiliMetaData::GetNumNodes(int domain)
 {
@@ -736,18 +832,21 @@ avtMiliMetaData::GetNumNodes(int domain)
     return 0;
 }
 
+
 // ***************************************************************************
-//  Function: 
+//  Method: 
 //
 //  Purpose:
 //
 //  Arguments: 
 //           
-//  Author:
+//  Programmer: Alister Maguire
+//  Creation:   Jan 15, 2019
 //
 //  Modifications:
 //
 // ****************************************************************************
+
 int
 avtMiliMetaData::GetMiliClassMDIdx(const char *cName)
 {
@@ -770,17 +869,19 @@ avtMiliMetaData::GetMiliClassMDIdx(const char *cName)
 
 
 // ***************************************************************************
-//  Function: 
+//  Method: 
 //
 //  Purpose:
 //
 //  Arguments: 
 //           
-//  Author:
+//  Programmer: Alister Maguire
+//  Creation:   Jan 15, 2019
 //
 //  Modifications:
 //
 // ****************************************************************************
+
 MiliClassMetaData *
 avtMiliMetaData::GetMiliClassMD(const char *vName)
 {
@@ -795,20 +896,22 @@ avtMiliMetaData::GetMiliClassMD(const char *vName)
 
 
 // ***************************************************************************
-//  Function: 
+//  Method: 
 //
 //  Purpose:
 //
 //  Arguments: 
 //           
-//  Author:
+//  Programmer: Alister Maguire
+//  Creation:   Jan 15, 2019
 //
 //  Modifications:
 //
 // ****************************************************************************
+
 void
 avtMiliMetaData::GetCellTypeCounts(vector<int> &cTypes, 
-                                vector<int> &ctCounts)
+                                   vector<int> &ctCounts)
 {
     //
     // First, count the occurrence of each super class
@@ -846,20 +949,22 @@ avtMiliMetaData::GetCellTypeCounts(vector<int> &cTypes,
 
 
 // ***************************************************************************
-//  Function: 
+//  Method: 
 //
 //  Purpose:
 //
 //  Arguments: 
 //           
-//  Author:
+//  Programmer: Alister Maguire
+//  Creation:   Jan 15, 2019
 //
 //  Modifications:
+//
 // ****************************************************************************
 
 void
 avtMiliMetaData::AddMiliVariableMD(int varIdx, 
-                                MiliVariableMetaData *mvmd)
+                                   MiliVariableMetaData *mvmd)
 {
     std::string sName = mvmd->GetShortName();
 
@@ -891,19 +996,21 @@ avtMiliMetaData::AddMiliVariableMD(int varIdx,
 
 
 // ***************************************************************************
-//  Function: 
+//  Method: 
 //
 //  Purpose:
 //
 //  Arguments: 
 //           
-//  Author:
+//  Programmer: Alister Maguire
+//  Creation:   Jan 15, 2019
 //
 //  Modifications:
 //
 // ****************************************************************************
+
 MiliVariableMetaData *
-avtMiliMetaData::GetMiliVariableMD(const char *vName)
+avtMiliMetaData::GetMiliVariableMDByName(const char *vName)
 {
     int idx = GetMiliVariableMDIdx(vName);
     if (idx > -1)
@@ -916,17 +1023,19 @@ avtMiliMetaData::GetMiliVariableMD(const char *vName)
 
 
 // ***************************************************************************
-//  Function: 
+//  Method: 
 //
 //  Purpose:
 //
 //  Arguments: 
 //           
-//  Author:
+//  Programmer: Alister Maguire
+//  Creation:   Jan 15, 2019
 //
 //  Modifications:
 //
 // ****************************************************************************
+
 MiliVariableMetaData *
 avtMiliMetaData::GetMiliVariableMD(int varIdx)
 {
@@ -940,17 +1049,19 @@ avtMiliMetaData::GetMiliVariableMD(int varIdx)
 
 
 // ***************************************************************************
-//  Function: 
+//  Method: 
 //
 //  Purpose:
 //
 //  Arguments: 
 //           
-//  Author:
+//  Programmer: Alister Maguire
+//  Creation:   Jan 15, 2019
 //
 //  Modifications:
 //
 // ****************************************************************************
+
 int
 avtMiliMetaData::GetMiliVariableMDIdx(const char *vName)
 {
@@ -973,51 +1084,38 @@ avtMiliMetaData::GetMiliVariableMDIdx(const char *vName)
 
 
 // ***************************************************************************
-//  Function: 
+//  Method: 
 //
 //  Purpose:
 //
 //  Arguments: 
 //           
-//  Author:
+//  Programmer: Alister Maguire
+//  Creation:   Jan 15, 2019
 //
 //  Modifications:
 //
 // ****************************************************************************
-void
-avtMiliMetaData::AddMiliVariableSubrecord(const char *vName, 
-                                       int dom,
-                                       int srId)
-{
-    int varIdx = GetMiliVariableMDIdx(vName);
-    AddMiliVariableSubrecord(varIdx, dom, srId);
-}
 
-
-// ***************************************************************************
-//  Function: 
-//
-//  Purpose:
-//
-//  Arguments: 
-//           
-//  Author:
-//
-//  Modifications:
-//
-// ****************************************************************************
 void
-avtMiliMetaData::AddMiliVariableSubrecord(int varIdx,
-                                       int dom,
-                                       int srId)
+avtMiliMetaData::AddMiliVariableSubrecInfo(int varIdx,
+                                           int dom,
+                                           int srId,
+                                           Subrecord *sr)
+ 
 {
     if (varIdx >= 0 && varIdx < numVariables && 
         miliVariables != NULL && dom < numDomains)
     {
         if (miliVariables[varIdx] != NULL)
         {
-            miliVariables[varIdx]->AddSubrecordIds(dom, srId);
+            miliVariables[varIdx]->AddSubrecordInfo(dom, 
+                                                    srId,
+                                                    sr->qty_objects,
+                                                    sr->qty_blocks,
+                                                    sr->mo_blocks);
         }
+        //FIXME: add error handling. 
         else
             cerr << "INVALID ADD TO VAR SR!!!!!!!!!!" << endl;
     }
@@ -1027,83 +1125,19 @@ avtMiliMetaData::AddMiliVariableSubrecord(int varIdx,
 
 
 // ***************************************************************************
-//  Function: 
+//  Method: 
 //
 //  Purpose:
 //
 //  Arguments: 
 //           
-//  Author:
+//  Programmer: Alister Maguire
+//  Creation:   Jan 15, 2019
 //
 //  Modifications:
 //
 // ****************************************************************************
-vector<Subrecord *> 
-avtMiliMetaData::GetMiliVariableSubrecords(int dom,
-                                        const char *vName)
-{
-    int varIdx = GetMiliVariableMDIdx(vName);
-    return GetMiliVariableSubrecords(dom, varIdx);
-}
 
-
-// ***************************************************************************
-//  Function: 
-//
-//  Purpose:
-//
-//  Arguments: 
-//           
-//  Author:
-//
-//  Modifications:
-//
-// ****************************************************************************
-vector<Subrecord *> 
-avtMiliMetaData::GetMiliVariableSubrecords(int dom,
-                                        int varIdx)
-{
-    if (dom < 0 || dom > numDomains)
-    {
-        //TODO: error
-        cerr << "INVALID DOMAIN" << endl;
-    }
-
-    if (varIdx > numVariables)
-    {
-        cerr << "INVALID VAR INDEX" << endl;
-    }
-
-    if (miliVariables == NULL)
-    {
-        cerr << "MILI VARIABLES ARE NULL!!" << endl; 
-    }
-     
-    vector<int> srIdxs = miliVariables[varIdx]->GetSubrecordIds(dom);
-    vector<Subrecord *> SRs; 
-    for (vector<int>::iterator it = srIdxs.begin(); 
-         it < srIdxs.end(); ++it)
-    {
-        SRs.push_back(&subrecords[*it]);
-    }
-
-    return SRs;
-}
-
-
-
-// ***************************************************************************
-//  Function: 
-//
-//  Purpose:
-//
-//  Arguments: 
-//           
-//  Author:
-//
-//  Modifications:
-//
-// ****************************************************************************
 stringVector
 avtMiliMetaData::GetMaterialNames(void)
 {
@@ -1114,24 +1148,5 @@ avtMiliMetaData::GetMaterialNames(void)
         matNames.push_back(miliMaterials[i].GetName());
     }
     return matNames;
-}
-
-
-// ***************************************************************************
-//  Function: 
-//
-//  Purpose:
-//
-//  Arguments: 
-//           
-//  Author:
-//
-//  Modifications:
-//
-// ****************************************************************************
-void
-avtMiliMetaData::AddSubrecord(int srId, Subrecord sr)
-{
-    subrecords.push_back(sr);
 }
 
