@@ -150,7 +150,8 @@ class avtMiliFileFormat : public avtMTMDFileFormat
 
     void                  ReadMesh(int dom);
 
-    void                  ValidateVariables(int dom, int meshId);
+    void                  PopulateSubrecordInfo(int dom, 
+                                                int meshId);
 
     void                  DecodeMultiMeshVarname(const string &, 
                                                  string &, int &);

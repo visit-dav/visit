@@ -58,6 +58,26 @@ extern "C" {
 using std::string;
 using std::vector;
 
+//
+// We don't need the entire subrecord, so let's just keep 
+// a small verison instead. 
+//
+typedef struct SubrecInfo
+{
+    SubrecInfo(void)
+    {
+        nSR = 0;          
+    };
+
+    //TODO: add squeeze?
+    int                   nSR;        
+    vector<int>           nElements;
+    vector<int>           SRIDs;
+    vector<int>           nDataBlocks;
+    vector< vector<int> > dataBlockRanges;   
+} SubrecInfo;
+
+
 // ****************************************************************************
 //  Class: MiliVariableMetaData
 //
@@ -70,10 +90,12 @@ using std::vector;
 //  Modifications:
 //
 // ****************************************************************************
+
 class MiliVariableMetaData
 {
 
   public:
+
                               MiliVariableMetaData();
                              ~MiliVariableMetaData(void);
 
@@ -148,15 +170,16 @@ class MiliVariableMetaData
                                 { return isGlobal; };
 
     void                      InitSRContainers(int);
-    void                      AddSubrecord(int, 
-                                           int,
-                                           Subrecord); 
 
-    void                      AddSubrecordIds(int,
-                                              int);
+    void                      AddSubrecordInfo(int, 
+                                               int, 
+                                               int,
+                                               int, 
+                                               int *);
+    SubrecInfo               &GetSubrecordInfo(int); 
+
     vector<int>              &GetSubrecordIds(int);
     
-
     string                    GetPath(void);
 
     void                      AddVectorComponent(string compName)
@@ -181,13 +204,18 @@ class MiliVariableMetaData
     int                          vectorSize;
     int                          meshAssociation;
     int                          numType;
+ 
+    //
+    // Subrecord info
+    //
+    vector< SubrecInfo >         subrecInfo;
 
     bool                         isElementSet;
     bool                         isMatVar;
     bool                         isGlobal;
 
-    vector< vector<int> >        subrecordIds; 
     vector<string>               vectorComponents;
+
 };
 
 
@@ -203,6 +231,7 @@ class MiliVariableMetaData
 //  Modifications:
 //
 // ****************************************************************************
+
 class MiliClassMetaData
 {
 
@@ -277,6 +306,7 @@ class MiliClassMetaData
 //  Modifications:
 //
 // ****************************************************************************
+
 class MiliMaterialMetaData
 {
   public:
@@ -311,6 +341,7 @@ class MiliMaterialMetaData
 //  Modifications:
 //
 // ****************************************************************************
+
 class avtMiliMetaData
 {
   public:
@@ -320,8 +351,6 @@ class avtMiliMetaData
 
                                        avtMiliMetaData(int);
                                       ~avtMiliMetaData(void);
-
-    void                               CleanseSubrecords(void);
 
     //TODO: create a method to populate meta data from a json file?
 
@@ -348,21 +377,14 @@ class avtMiliMetaData
     void                               AddMiliVariableMD(int, 
                                                          MiliVariableMetaData *);
     MiliVariableMetaData              *GetMiliVariableMD(int varIdx);
-    MiliVariableMetaData              *GetMiliVariableMD(const char *);
+    MiliVariableMetaData              *GetMiliVariableMDByName(const char *);
+    //MiliVariableMetaData              *GetMiliVariableMDByPath(const char *);
     int                                GetMiliVariableMDIdx(const char *);
 
-    void                               AddMiliVariableSubrecord(int,
-                                                                int,
-                                                                int);
-
-    void                               AddMiliVariableSubrecord(const char *, 
-                                                                int,
-                                                                int);
-
-    vector<Subrecord *>                GetMiliVariableSubrecords(int,
-                                                                 const char *);
-    vector<Subrecord *>                GetMiliVariableSubrecords(int,
-                                                                 int);
+    void                               AddMiliVariableSubrecInfo(int,
+                                                                 int,
+                                                                 int,
+                                                                 Subrecord *);
 
     void                               AddMiliMaterialMD(MiliMaterialMetaData mmd)
                                          { miliMaterials.push_back(mmd); };
@@ -384,8 +406,6 @@ class avtMiliMetaData
 
     //vector<vector<float>>    GetMaterialColors(void)
     //                                     { return materialColors; };
-
-    void                               AddSubrecord(int, Subrecord); 
 
     void                               InitMaterialAssociations(int size);
                                        
@@ -413,8 +433,6 @@ class avtMiliMetaData
 
     MapNode                            varIdxMap;
     MapNode                            classIdxMap;
-
-    vector<Subrecord>                  subrecords;
 };
 
 #endif
