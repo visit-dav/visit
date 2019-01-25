@@ -101,8 +101,7 @@ fi
 # Build the email list of modifiers.
 #
 modifiersEmails=
-for user in `cat modifiers` ; do
-    useremail=`./src/tools/dev/scripts/nersc_username_to_email $user`
+for useremail in `cat modifiers` ; do
     modifiersEmails="$modifiersEmails $useremail"
 done
 rm -f modifiers
@@ -119,7 +118,6 @@ emailList=`echo $emailList | tr ' ' '\n' | sort | uniq`
 #
 rm -rf mailmsg
 cat > mailmsg << EOF
-From: visit-developers@ornl.gov
 Subject: The test suite run on $host failed
 The test suite run on $host failed.
 
