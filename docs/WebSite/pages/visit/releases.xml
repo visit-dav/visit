@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <page>
   <title><![CDATA[Archive of VisIt Releases]]></title>
-  <IM>LLNL-WEB-760254</IM>
+  <IM>LLNL-WEB-765113</IM>
   <owner><![CDATA[Page Owner Name]]></owner>
-  <lastchanged><![CDATA[October 30, 2018]]></lastchanged>
+  <lastchanged><![CDATA[January 28, 2019]]></lastchanged>
   <template><![CDATA[l2]]></template> 
   <content>
     <![CDATA[
@@ -22,8 +22,16 @@
 	<li><a href="simulation/computer-codes/visit/faqs">FAQs</a></li>
 </ul>
 
+<h2>October, 2019 - VisIt 3.0 Beta released</h2>
+<p>VisIt is a distributed, parallel visualization and graphical analysis tool for data defined on two- and three-dimensional (2D and 3D) meshes. Version 3.0 Beta contains many bug-fixes and new features. For a complete list of changes see the <a href="simulation/computer-codes/visit/releases/release-notes-3.0.0">VisIt 3.0 Beta Release Notes</a>.</p>
+<h4>1.  VisIt now supports outputting Cinema databases.</h4>
+<p>Cinema is an image-based database that offers low-cost interaction with simulation data. When viewing a Cinema database through a Cinema viewer, the viewer merely changes the image from the database in response to changes in camera angle and other visualization parameters rather than performing potentially expensive I/O, computational and rendering operations.</p>
+<h4>2.  VisIt now supports rendering 3D images using the OSPRay.</h4>
+<p>OSPRay features interactive CPU rendering capabilities geared towards scientific visualization applications. Advanced shading effects such as ambient occlusion, shadows, and transparency can be rendered interactively, enabling new insights into data exploration.</p>
+<h4>3.  VisIt now supports plot animations.</h4>
+<p>VisIt has been enhanced so plots can provide custom animation behaviors. These behaviors are plot-specific and are independent of the time slider animation controls. For example, the <i>Vector</i> plot can alter the length of its glyphs periodically lengthening and shortening them. Plot animation is enabled for the <i>Curve</i> and <i>Vector</i> plugins.</p>
 <h2>October, 2018 - VisIt 2.13.3 released</h2>
-<p>VisIt is a distributed, parallel visualization and graphical analysis tool for data defined on two- and three-dimensional (2D and 3D) meshes. Version 2.13.3 contains two dozen bug-fixes and new features. For a complete list of changes see the <a href="simulation/computer-codes/visit/releases/release-notes-2.13.3">VisIt 2.13.3 Release Notes</a>.</p>
+<p>VisIt 2.13.3 contains two dozen bug-fixes and new features. For a complete list of changes see the <a href="simulation/computer-codes/visit/releases/release-notes-2.13.3">VisIt 2.13.3 Release Notes</a>.</p>
 <h2>May, 2018 - VisIt 2.13.2 released</h2>
 <p>VisIt 2.13.2 contains several critical bug-fixes. For a complete list of changes see the <a href="simulation/computer-codes/visit/releases/release-notes-2.13.2">VisIt 2.13.2 Release Notes</a>.</p>
 <h2>March, 2018 - VisIt 2.13.1 released</h2>
