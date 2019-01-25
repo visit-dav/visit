@@ -458,11 +458,11 @@ if test "$post" = "true" ; then
     cd ../..
     if test "\$hasFailed" = ""; then
         gitHead=\`git log -1 | grep "^commit" | cut -d' ' -f2\`
-        git checkout src/tools/dev/scripts/lastpass_pascal
+        git checkout src/tools/dev/scripts/lastpass_$testHost
         rm -f src/tools/dev/scripts/lastpass_$testHost
         echo "\$gitHead" > src/tools/dev/scripts/lastpass_$testHost
-        git add src/tools/dev/scripts/lastpass_pascal
-        git commit -m "Update the last test suite pass on pascal."
+        git add src/tools/dev/scripts/lastpass_$testHost
+        git commit -m "Update the last test suite pass on $testHost."
         git pull
         git push
     fi
