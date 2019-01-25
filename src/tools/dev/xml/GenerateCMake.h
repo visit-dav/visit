@@ -308,77 +308,47 @@ class CMakeGeneratorPlugin : public Plugin
 #endif
 
     bool
-    HasCondition(const QString &c) const
+    GetCondition(const QString &c, QStringList &cond, QStringList &val) const
     {
         bool retval = false;
         if (atts != NULL && atts->codeFile != NULL)
         {
-            retval =  atts->codeFile->HasCondition(c);
-        }
-        return retval;
-    }
-
-    bool
-    GetCondition(const QString &c, QString &cond, QString &val) const
-    {
-        bool retval = false;
-        if (HasCondition(c))
-        {
-            QStringList targets, first, second;
-            atts->codeFile->GetCondition(c, targets, first, second);
-            for (int i = 0; i < targets.size(); ++i)
-            {
-                if (targets[i] == "xml2cmake")
-                {
-                    cond = first[i];
-                    val = second[i];
-                    retval = true;
-                    break;
-                }
-            }
+            retval = atts->codeFile->GetCondition("xml2cmake", c, cond, val);
         }
         return retval;
     }
 
     void WriteCMake_ConditionalIncludes(QTextStream &out)
     {
-        QString condition, incs;
-        if(GetCondition("Includes:", condition, incs))
+        QStringList conditions, incs;
+        if(GetCondition("Includes:", conditions, incs))
         {
-            out << "IF(" << condition << ")" << endl;
-            out << "    INCLUDE_DIRECTORIES(";
-            out << incs;
-            out << ")" << endl;
-            out << "ENDIF(" << condition << ")" << endl;
-            out << endl;
+           for (int i = 0; i < conditions.size(); ++i)
+           {
+                out << "if(" << conditions[i] << ")" << endl;
+                out << "    include_directories(";
+                out << incs[i];
+                out << ")" << endl;
+                out << "endif()" << endl;
+                out << endl;
+            }
         }
     }
 
     void WriteCMake_ConditionalDefinitions(QTextStream &out)
     {
-        QString condition, defs;
-        if(GetCondition("Definitions:", condition, defs))
+        QStringList conditions, defs;
+        if(GetCondition("Definitions:", conditions, defs))
         {
-            out << "IF(" << condition << ")" << endl;
-            out << "    ADD_DEFINITIONS(";
-            out << defs;
-            out << ")" << endl;
-            out << "ENDIF(" << condition << ")" << endl;
-            out << endl;
-        }
-    }
-
-    void WriteCMake_ConditionalLinkDirs(QTextStream &out, std::vector<QString> &linkDirs)
-    {
-        QString condition, dirs;
-        if (GetCondition("LinkDirectories:", condition, dirs))
-        {
-            out << "IF(" << condition << ")" << endl;
-            out << "    LINK_DIRECTORIES(" << ToString(linkDirs) << dirs << ")" << endl;
-            out << "ELSE(" << condition << ")" << endl;
-            out << "    LINK_DIRECTORIES(" << ToString(linkDirs) << ")" << endl;
-            out << "ENDIF(" << condition << ")" << endl;
-            out << endl;
+            for (int i = 0; i < conditions.size(); ++i)
+            {
+                out << "if(" << conditions[i] << ")" << endl;
+                out << "    add_definitions(";
+                out << defs[i];
+                out << ")" << endl;
+                out << "endif()" << endl;
+                out << endl;
+            }
         }
     }
 
@@ -386,13 +356,16 @@ class CMakeGeneratorPlugin : public Plugin
     {
         QString c(libType);
         c += "LinkLibraries:";
-        QString condition, link;
-        if (GetCondition(c, condition, link))
+        QStringList conditions, links;
+        if (GetCondition(c, conditions, links))
         {
-            out << indent << "IF(" << condition << ")" << endl;
-            out << indent << "    TARGET_LINK_LIBRARIES(" << libType << target << plugType << " " << link << ")" << endl;
-            out << indent << "ENDIF(" << condition << ")" << endl;
-            out << endl;
+            for (int i = 0; i < conditions.size(); ++i)
+            {
+                out << indent << "if(" << conditions[i] << ")" << endl;
+                out << indent << "    target_link_libraries(" << libType << target << plugType << " " << links[i] << ")" << endl;
+                out << indent << "endif()" << endl;
+                out << endl;
+            }
         }
     }
 
@@ -400,13 +373,16 @@ class CMakeGeneratorPlugin : public Plugin
     {
         QString c(libType);
         c += "Sources:";
-        QString condition, src;
-        if (GetCondition(c, condition, src))
+        QStringList conditions, srcs;
+        if (GetCondition(c, conditions, srcs))
         {
-            out << indent << "IF(" << condition << ")" << endl;
-            out << indent << "    SET(LIB" << libType << "_SOURCES ${LIB" << libType << "_SOURCES} " << src << ")" << endl;
-            out << indent << "ENDIF(" << condition << ")" << endl;
-            out << endl;
+            for (int i = 0; i < conditions.size(); ++i)
+            {
+                out << indent << "if(" << conditions[i] << ")" << endl;
+                out << indent << "    set(LIB" << libType << "_SOURCES ${LIB" << libType << "_SOURCES} " << srcs[i] << ")" << endl;
+                out << indent << "endif()" << endl;
+                out << endl;
+            }
         }
     }
 
@@ -558,7 +534,7 @@ class CMakeGeneratorPlugin : public Plugin
         out << atts->name << ".C" << endl;
         out << ")" << endl;
         out << endl;
-        out << "SET(LIBI_SOURCES " << endl;
+        out << "SET(LIBI_SOURCES" << endl;
         out << name << "PluginInfo.C" << endl;
         out << ")" << endl;
         out << endl;
@@ -638,25 +614,6 @@ class CMakeGeneratorPlugin : public Plugin
             out << "ENABLE_LANGUAGE(Fortran)" << endl;
         }
 
-        // Special rules for OpenGL sources.
-        std::set<QString> openglFiles;
-        GetFilesWith("OpenGL", customvfiles ? vfiles : defaultvfiles, openglFiles);
-        GetFilesWith("OpenGL", customefiles ? efiles : defaultefiles, openglFiles);
-        if(openglFiles.size() > 0)
-        {
-            out << "IF (NOT WIN32)" << endl;
-            out << "    SET_SOURCE_FILES_PROPERTIES(";
-            for(std::set<QString>::iterator it = openglFiles.begin();
-                it != openglFiles.end(); ++it)
-            {
-                 out << *it << " ";
-            }
-            out << "\n        PROPERTIES" << endl;
-            out << "        COMPILE_FLAGS \"-I ${OPENGL_INCLUDE_DIR}\"" << endl;
-            out << "    )" << endl;
-            out << "ENDIF (NOT WIN32)" << endl;
-        }
-
         WriteCMake_PlotOperator_Includes(out, false);
         WriteCMake_ConditionalIncludes(out);
 
@@ -700,14 +657,7 @@ class CMakeGeneratorPlugin : public Plugin
                  linkDirs.push_back(ldflags[i].right(ldflags[i].size()-2));
         }
 
-        if (HasCondition("LinkDirectories:"))
-        {
-            WriteCMake_ConditionalLinkDirs(out, linkDirs);
-        }
-        else
-        {
-            out << "LINK_DIRECTORIES(" << ToString(linkDirs) << ")" << endl;
-        }
+        out << "LINK_DIRECTORIES(" << ToString(linkDirs) << ")" << endl;
         out << endl;
         out << "ADD_LIBRARY(I"<<name<<"Plot ${LIBI_SOURCES})" << endl;
         out << "TARGET_LINK_LIBRARIES(I"<<name<<"Plot visitcommon)" << endl;
@@ -821,7 +771,7 @@ class CMakeGeneratorPlugin : public Plugin
         out << atts->name << ".C" << endl;
         out << ")" << endl;
         out << endl;
-        out << "SET(LIBI_SOURCES " << endl;
+        out << "SET(LIBI_SOURCES" << endl;
         out << name << "PluginInfo.C" << endl;
         out << ")" << endl;
         out << endl;
@@ -942,14 +892,7 @@ class CMakeGeneratorPlugin : public Plugin
                  linkDirs.push_back(ldflags[i].right(ldflags[i].size()-2));
         }
 
-        if (HasCondition("LinkDirectories:"))
-        {
-            WriteCMake_ConditionalLinkDirs(out, linkDirs);
-        }
-        else
-        {
-            out << "LINK_DIRECTORIES(" << ToString(linkDirs) << ")" << endl;
-        }
+        out << "LINK_DIRECTORIES(" << ToString(linkDirs) << ")" << endl;
         out << endl;
         out << "ADD_LIBRARY(I"<<name<<"Operator ${LIBI_SOURCES})" << endl;
         out << "TARGET_LINK_LIBRARIES(I"<<name<<"Operator visitcommon)" << endl;
@@ -1051,7 +994,7 @@ class CMakeGeneratorPlugin : public Plugin
         out << ""<<name<<"CommonPluginInfo.C" << endl;
         out << ")" << endl;
         out << endl;
-        out << "SET(LIBI_SOURCES " << endl;
+        out << "SET(LIBI_SOURCES" << endl;
         out << ""<<name<<"PluginInfo.C" << endl;
         out << ")" << endl;
         out << endl;
@@ -1242,7 +1185,6 @@ class CMakeGeneratorPlugin : public Plugin
         // Extract extra link directories from LDFLAGS if they have ${},$(),-L
         std::vector<QString> linkDirs;
         linkDirs.push_back("${VISIT_LIBRARY_DIR}");
-        linkDirs.push_back("${EAVL_LIBRARY_DIR}");
         for (size_t i=0; i<ldflags.size(); i++)
         {
             if(ldflags[i].startsWith("${") || ldflags[i].startsWith("$("))
@@ -1250,14 +1192,7 @@ class CMakeGeneratorPlugin : public Plugin
             else if(ldflags[i].startsWith("-L"))
                  linkDirs.push_back(ldflags[i].right(ldflags[i].size()-2));
         }
-        if (HasCondition("LinkDirectories:"))
-        {
-            WriteCMake_ConditionalLinkDirs(out, linkDirs);
-        }
-        else
-        {
-            out << "LINK_DIRECTORIES(" << ToString(linkDirs) << ")" << endl;
-        }
+        out << "LINK_DIRECTORIES(" << ToString(linkDirs) << ")" << endl;
         out << endl;
         out << "ADD_LIBRARY(I"<<name<<"Database ${LIBI_SOURCES})" << endl;
         out << "TARGET_LINK_LIBRARIES(I"<<name<<"Database visitcommon)" << endl;
