@@ -524,6 +524,9 @@ avtTecplotWriter::WriteRectilinearMesh(vtkRectilinearGrid *rgrid, int chunk)
 // Creation:   Wed Feb 9 13:44:32 PST 2005
 //
 // Modifications:
+//    Andy Bauer, Mon Jan  28 10:04:15 PDT 2019
+//    Added support for pixel and voxel zones.
+//
 //    Brad Whitlock, Wed Sep  2 10:04:15 PDT 2009
 //    I made the variables get written here instead of in WriteHeaders. I also
 //    added support for 2D.
@@ -563,6 +566,7 @@ avtTecplotWriter::WriteUnstructuredMesh(vtkUnstructuredGrid *ug, int chunk)
         vtkCell *cell = ug->GetCell(c);
         switch (cell->GetCellType())
         {
+          case VTK_VOXEL: // output voxels as hexes
           case VTK_HEXAHEDRON:
             nhex++;
             break;
@@ -578,6 +582,7 @@ avtTecplotWriter::WriteUnstructuredMesh(vtkUnstructuredGrid *ug, int chunk)
           case VTK_TRIANGLE:
             ntri++;
             break;
+          case VTK_PIXEL: // output pixels as quads
           case VTK_QUAD:
             nquad++;
             break;
@@ -640,7 +645,7 @@ avtTecplotWriter::WriteUnstructuredMesh(vtkUnstructuredGrid *ug, int chunk)
         {
             vtkCell *cell = ug->GetCell(c);
             int n = cell->GetNumberOfPoints();
-            vtkIdType ids[8];
+            vtkIdType ids[8], tmp;
             for (int i=0; i<n; i++)
                 ids[i] = cell->GetPointId(i);
 
@@ -650,6 +655,16 @@ avtTecplotWriter::WriteUnstructuredMesh(vtkUnstructuredGrid *ug, int chunk)
 #ifndef DBIO_ONLY
             switch (cell->GetCellType())
             {
+              case VTK_VOXEL:
+                // reorder the voxel nodes to look like a hex
+                tmp = ids[2];
+                ids[2] = ids[3];
+                ids[3] = ids[2];
+                tmp = ids[6];
+                ids[6] = ids[7];
+                ids[7] = ids[6];
+                // intentional fallthrough to VTK_HEHAHEDRON case now that ids are sorted out
+                // because of identical behavior to avoid duplicating code
               case VTK_HEXAHEDRON:
                 nelements+=Tetrahedralizer::GetLowTetNodesForHex(n,ids,tetids);
                 break;
@@ -666,6 +681,7 @@ avtTecplotWriter::WriteUnstructuredMesh(vtkUnstructuredGrid *ug, int chunk)
                 if(tdims == 2)
                     nelements += 1;
                 break;
+              case VTK_PIXEL: // treat pixels like quads
               case VTK_QUAD:
                 if(tdims == 2)
                     nelements += 2;
@@ -678,7 +694,6 @@ avtTecplotWriter::WriteUnstructuredMesh(vtkUnstructuredGrid *ug, int chunk)
         nelements =   ntet  +   nhex  +  npyr  +   nwdg;
     else if(tdims == 2)
         nelements = ntri + nquad;
-
 
     file() << "ZONE "
          << "T=\"DOMAIN "<<chunk<<"\", "
@@ -699,7 +714,7 @@ avtTecplotWriter::WriteUnstructuredMesh(vtkUnstructuredGrid *ug, int chunk)
         {
             vtkCell *cell = ug->GetCell(c);
             int n = cell->GetNumberOfPoints();
-            vtkIdType ids[8];
+            vtkIdType ids[8], tmp;
             for (int i=0; i<n; i++)
                 ids[i] = cell->GetPointId(i);
 
@@ -710,6 +725,15 @@ avtTecplotWriter::WriteUnstructuredMesh(vtkUnstructuredGrid *ug, int chunk)
 #ifndef DBIO_ONLY
             switch (cell->GetCellType())
             {
+              case VTK_VOXEL:
+                // reorder the voxel nodes to look like a hex
+                tmp = ids[2];
+                ids[2] = ids[3];
+                ids[3] = ids[2];
+                tmp = ids[6];
+                ids[6] = ids[7];
+                ids[7] = ids[6];
+                // intentional fallthrough to VTK_HEHAHEDRON case now that ids are sorted out
               case VTK_HEXAHEDRON:
                 ntets = Tetrahedralizer::GetLowTetNodesForHex(n,ids,subids);
                 break;
@@ -733,6 +757,12 @@ avtTecplotWriter::WriteUnstructuredMesh(vtkUnstructuredGrid *ug, int chunk)
                 ntris = (tdims == 2) ? 1 : 0;
                 break;
 
+              case VTK_PIXEL:
+                // reorder the pixel nodes to look like a quad
+                tmp = ids[2];
+                ids[2] = ids[3];
+                ids[3] = ids[2];
+                // intentional fallthrough to VTK_QUAD case now that ids are sorted out
               case VTK_QUAD:
                 subids[0] = 0;
                 subids[1] = 1;
@@ -773,7 +803,7 @@ avtTecplotWriter::WriteUnstructuredMesh(vtkUnstructuredGrid *ug, int chunk)
         {
             vtkCell *cell = ug->GetCell(c);
             // if we're not subdividing, we better only be getting
-            // hexes or tets for 3D and triangles or quads for 2D.
+            // hexes/voxels or tets for 3D and triangles or quads/pixels for 2D.
             // in either case, if we're here then the cell types
             // for all cells were the same.
             if (cell->GetCellType() == VTK_HEXAHEDRON ||
@@ -788,7 +818,21 @@ avtTecplotWriter::WriteUnstructuredMesh(vtkUnstructuredGrid *ug, int chunk)
                 }
                 file() << endl;
             }
-        }
+            else if (cell->GetCellType() == VTK_VOXEL)
+            {
+                file().width(INT_COLUMN_WIDTH);
+                file() << cell->GetPointId(0)+1 << " " << cell->GetPointId(1)+1 << " "
+                       << cell->GetPointId(3)+1 << " " << cell->GetPointId(2)+1 << " "
+                       << cell->GetPointId(4)+1 << " " << cell->GetPointId(5)+1 << " "
+                       << cell->GetPointId(7)+1 << " " << cell->GetPointId(6)+1 << endl;
+            }
+            else if (cell->GetCellType() == VTK_PIXEL)
+            {
+                file().width(INT_COLUMN_WIDTH);
+                file() << cell->GetPointId(0)+1 << " " << cell->GetPointId(1)+1 << " "
+                       << cell->GetPointId(3)+1 << " " << cell->GetPointId(2)+1 << endl;
+            }
+       }
     }
 }
 
