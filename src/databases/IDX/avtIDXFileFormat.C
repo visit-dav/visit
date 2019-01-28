@@ -87,7 +87,12 @@
 #include <Expression.h>
 
 #include <InvalidVariableException.h>
+
+#ifdef _WIN32
+#include <win_dirent.h>
+#else
 #include <dirent.h>
+#endif
 
 #include "uintah_utils.h"
 #include "visit_idx_utils.h"

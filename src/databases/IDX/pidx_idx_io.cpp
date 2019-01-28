@@ -20,11 +20,12 @@
 #ifdef PARALLEL
 #include <mpi.h>
 #include <avtParallel.h>
+#define PIDX_MPI_COMM VISIT_MPI_COMM
+#else 
+#define PIDX_MPI_COMM MPI_COMM_WORLD
 #endif
 
 #include "pidx_idx_io.h"
-
-//#include "data_handle/PIDX_data_types.h"
 
 static PIDX_point global_size, local_offset, local_size;
 static PIDX_file pidx_file;
