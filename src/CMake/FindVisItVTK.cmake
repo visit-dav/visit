@@ -204,9 +204,7 @@ ELSE(VISIT_VTK_SKIP_INSTALL)
         FOREACH(VTKLIB ${VTK_LIBRARIES})
             SETUP_INSTALL("${VTKLIB}Python${PYVER}D")
         ENDFOREACH(VTKLIB)  
-        FOREACH(VTKLIB vtkWrappingPython${PYVER} vtkWrappingPython${PYVER}Core)
-            SETUP_INSTALL("${VTKLIB}")
-        ENDFOREACH(VTKLIB)  
+        SETUP_INSTALL(vtkWrappingPython${PYVER}Core)
     ENDIF(PYTHON_VERSION)
 
     # Add install targets for VTK headers too -- but just the vtk-5.0 dir.

@@ -1,5 +1,7 @@
+acbauer, Andy Bauer, DAAC DoD
+allen, Allen Sanderson, U of Utah SCI
 biagas, Kathleen Biagas, LLNL
 brugger, Eric Brugger, LLNL
 cyrush, Cyrus Harrison, LLNL
+spetruzza, Steve Petruzza, U of Utah SCI
 rusu1, Eddie Rusu, LLNL
-spetruzza, Steve Petruzza, University of Utah

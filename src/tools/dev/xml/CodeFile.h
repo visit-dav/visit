@@ -82,6 +82,10 @@ class CodeFile
   private:
     typedef std::map<QString, std::pair<QString,QString> > QStringPairMap;
     typedef std::map<QString, QString> QStringQStringMap;
+    typedef std::vector<std::pair<QString,QString> > QStringPairVector;
+    typedef std::map<QString, QStringPairVector > QStringQStringPairVectorMap;
+    typedef QStringQStringPairVectorMap::iterator PVMit;
+    typedef QStringQStringPairVectorMap::const_iterator cPVMit;
     QString currentTarget;
     QString filename;
     QString filepath;
@@ -91,7 +95,7 @@ class CodeFile
     QStringPairMap    var;
     QStringPairMap    constant;
     QStringQStringMap init;
-    QStringPairMap    condition;
+    QStringQStringPairVectorMap    condition;
   public:
     CodeFile(const QString &f) : filename(f)
     {
@@ -236,19 +240,25 @@ class CodeFile
         GetAllItems(init, targets, names, def);
     }
 
-    bool HasCondition(const QString &name) const
-    { 
-        return HasItem(condition, name); 
-    }
-    bool GetCondition(const QString &name, QStringList &targets, QStringList &first, 
-                 QStringList &second) const
+    bool GetCondition(const QString &target, const QString &condType,
+                      QStringList &cond, QStringList &val) const
     {
-        return GetItem(condition, name, targets, first, second);
-    }
-    void GetAllConditions(QStringList &targets, QStringList &names, QStringList &first, 
-                 QStringList &second) const
-    {
-        GetAllItems(condition, targets, names, first, second);
+        bool retval = false;
+        QString key = MakeKey(target, condType);
+        for(cPVMit it = condition.begin(); it != condition.end(); ++it)
+        {
+            if(it->first == key)
+            {
+                QStringPairVector sec = it->second;  
+                for (size_t i = 0; i < sec.size(); ++i)
+                {
+                    cond += sec[i].first;
+                    val  += sec[i].second;
+                }
+                retval = true;
+            }
+        }
+        return retval;
     }
 
 private:
@@ -412,15 +422,24 @@ private:
 
     void ParseCondition(QString &buff, const QString &name, QTextStream &in)
     {
-        const char *keys[15] = {"Includes:", "Definitions:", "LinkDirectories:", \
-                        "ILinkLibraries:", "GLinkLibraries:", "VLinkLibraries:", \
-                        "SLinkLibraries:",  "MLinkLibraries:", "ELinkLibraries:", \
-                        "ISources:", "GSources:", "VSources:", "SSources:", "MSources:", \
-                        "ESources:"};
+        const char *keys[14] = {"Includes:", \
+                                "Definitions:", \
+                                "ILinkLibraries:", \
+                                "GLinkLibraries:", \
+                                "VLinkLibraries:", \
+                                "SLinkLibraries:", \
+                                "MLinkLibraries:", \
+                                "ELinkLibraries:", \
+                                "ISources:", \
+                                "GSources:", \
+                                "VSources:", \
+                                "SSources:", \
+                                "MSources:", \
+                                "ESources:"};
         buff = in.readLine();
         while (!in.atEnd() && GetKeyword(buff).isNull())
         {
-            for (int i = 0; i < 15; ++i)
+            for (int i = 0; i < 14; ++i)
             {
                 QString key(keys[i]);
                 if (buff.left(key.size()) == key)
@@ -430,7 +449,24 @@ private:
                         value = value.left(value.length() - 1);
                     if (!value.isEmpty())
                     {
-                        condition[Key(key)] = std::pair<QString,QString>(name,value);
+                        QString thisKey = Key(key);
+                        PVMit it;
+                        std::pair<QString, QString> p(name, value);
+                        for(it = condition.begin(); it != condition.end(); ++it)
+                        { 
+                            if (thisKey == it->first)
+                                break;
+                        }
+                        if (it == condition.end())
+                        {
+                            QStringPairVector pv;
+                            pv.push_back(p);
+                            condition[thisKey] = pv;
+                        }
+                        else
+                        {
+                            it->second.push_back(p);
+                        }
                     }
                     break;
                 }

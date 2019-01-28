@@ -52,7 +52,7 @@ function bv_p7zip_host_profile
         echo "## P7ZIP" >> $HOSTCONF
         echo "##" >> $HOSTCONF
         echo \
-            "VISIT_OPTION_DEFAULT(VISIT_P7ZIP_DIR \${VISITHOME}/p7zip/$P7ZIP_VERSION/\${VISITARCH})" \
+            "VISIT_OPTION_DEFAULT(VISIT_SEVEN_ZIP_DIR \${VISITHOME}/p7zip/$P7ZIP_VERSION/\${VISITARCH})" \
             >> $HOSTCONF
     fi
 }
@@ -120,7 +120,7 @@ function build_p7zip
     #
     info "Installing P7ZIP"
     grep -v '^DEST_HOME=' install.sh > install2.sh
-    env DEST_HOME=$VISITDIR/p7zip sh install2.sh
+    env DEST_HOME="$VISITDIR/p7zip/$P7ZIP_VERSION/$VISITARCH" sh install2.sh
     if [[ $? != 0 ]] ; then
         warn "P7ZIP install failed.  Giving up"
         return 1
