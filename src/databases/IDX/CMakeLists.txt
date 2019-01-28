@@ -56,21 +56,7 @@ ${EAVL_INCLUDE_DIR}
 ${VTK_INCLUDE_DIRS} 
 )
 
-# Read pidx_config.h to see if we need to link MPI
-#FILE(STRINGS "${PIDX_INCLUDE_DIR}/PIDX_config.h" config)
-#LIST(FIND config "#define PIDX_HAVE_MPI 1" have_mpi)
-#IF (have_mpi GREATER 0)
-#  IF (NOT MPI_C_INCLUDE_PATH)
-#    FIND_PACKAGE(MPI REQUIRED)
-#  ENDIF()
-
-#  IF (MPI_C_INCLUDE_PATH)
-#    SET(PIDX_INCLUDE_DIR ${PIDX_INCLUDE_DIR} ${MPI_C_INCLUDE_PATH})
-#    SET(PIDX_MPI_LIBS ${MPI_C_LIBRARIES})
-#  ELSE()
-#    MESSAGE("PIDX was configured with MPI support, but we could not locate MPI on your system!")
-#  ENDIF()
-#ENDIF()  
+### Note: This reader always requires MPI
 
 # Use same MPI libs as Visit
 IF(VISIT_PARALLEL)

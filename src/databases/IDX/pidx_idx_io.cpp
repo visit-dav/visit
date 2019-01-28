@@ -20,9 +20,6 @@
 #ifdef PARALLEL
 #include <mpi.h>
 #include <avtParallel.h>
-#define PIDX_MPI_COMM VISIT_MPI_COMM
-#else
-#define PIDX_MPI_COMM MPI_COMM_WORLD
 #endif
 
 #include "pidx_idx_io.h"
@@ -33,20 +30,11 @@ static PIDX_point global_size, local_offset, local_size;
 static PIDX_file pidx_file;
 static String input_filename;
 
-#define PIDX_HAVE_MPI 1
-// #if PIDX_HAVE_MPI
-// static MPI_Comm NEW_COMM_WORLD;
-// #endif
-
 static int process_count = 1, rank = 0;
 
 static void terminate(int out)
 {
-#if PARALLEL
   MPI_Abort(PIDX_MPI_COMM, out);
-#else
-  EXCEPTION1(InvalidFilesException, "PIDX terminated.");
-#endif
 }
 
 static void terminate_with_error_msg(const char *format, ...)
@@ -60,7 +48,6 @@ static void terminate_with_error_msg(const char *format, ...)
 
 void init_mpi()
 {
-#ifdef PIDX_HAVE_MPI
   int mpi_init;
   MPI_Initialized(&mpi_init);
   
@@ -73,7 +60,6 @@ void init_mpi()
   //   terminate_with_error_msg("ERROR: MPI_Comm_size error\n");
   if (MPI_Comm_rank(PIDX_MPI_COMM, &rank) != MPI_SUCCESS)
     terminate_with_error_msg("ERROR: MPI_Comm_rank error\n");
-#endif
 }
 
 VisitIDXIO::DTypes convertType(PIDX_data_type intype){
@@ -309,9 +295,7 @@ unsigned char* PIDXIO::getData(const VisitIDXIO::Box box, const int timestate, c
   
   PIDX_access pidx_access;
   PIDX_create_access(&pidx_access);
-#ifdef PIDX_HAVE_MPI
   PIDX_set_mpi_access(pidx_access, PIDX_MPI_COMM);
-#endif
 
   ret = PIDX_file_open(input_filename.c_str(), PIDX_MODE_RDONLY, pidx_access, global_size, &pidx_file);
   if (ret != PIDX_success)  terminate_with_error_msg("PIDX_file_create");
