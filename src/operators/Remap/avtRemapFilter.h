@@ -43,7 +43,8 @@
 #ifndef AVT_Remap_FILTER_H
 #define AVT_Remap_FILTER_H
 
-#include <avtPluginDataTreeIterator.h>
+#include <avtDatasetToDatasetFilter.h>
+#include <avtPluginFilter.h>
 
 #include <RemapAttributes.h>
 
@@ -65,7 +66,8 @@
 //
 // ****************************************************************************
 
-class avtRemapFilter : public avtPluginDataTreeIterator
+class avtRemapFilter : public avtDatasetToDatasetFilter,
+                       public virtual avtPluginFilter
 {
   public:
                          avtRemapFilter();
@@ -83,7 +85,10 @@ class avtRemapFilter : public avtPluginDataTreeIterator
   protected:
     RemapAttributes   atts;
 
-    virtual avtDataRepresentation *ExecuteData(avtDataRepresentation *);
+    // virtual avtDataRepresentation *ExecuteData(avtDataRepresentation *);
+    virtual void        Execute(void);
+    avtDataTree_p       ExtractVariablesFromDomains(avtDataTree_p);
+    avtDataRepresentation *GetVariableSubsets(avtDataRepresentation *);
     
   private:
     vtkDoubleArray      *CalculateCellVolumes(vtkDataSet*, const char* name = "");

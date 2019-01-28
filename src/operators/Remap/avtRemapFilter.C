@@ -60,6 +60,10 @@
 
 #include <avtExtents.h>
 #include <avtDataAttributes.h>
+#include <avtDataTree.h>
+#include <avtSourceFromAVTDataset.h>
+// #include <avtSamplePoints.h>
+#include <avtSamplePointExtractor.h>
 #include <vtkVisItClipper.h>
 
 
@@ -173,10 +177,54 @@ avtRemapFilter::Equivalent(const AttributeGroup *a)
 //
 // ****************************************************************************
 
-avtDataRepresentation *
-avtRemapFilter::ExecuteData(avtDataRepresentation *in_dr)
+void
+avtRemapFilter::Execute(void)
 {
+    avtDataTree_p inTree = GetInputDataTree();
+    std::vector<int> domainIds;
+    stringVector inLabels;
+    inTree->GetAllDomainIds(domainIds);
+    inTree->GetAllLabels(inLabels);
+    
+    for (std::vector<int>::const_iterator i = domainIds.begin();
+         i != domainIds.end(); ++i) {
+        std::cout << "Domain Id: " << *i << std::endl;    
+    }
+    /*
+    avtDataTree_p variableTree = ExtractVariablesFromDomains(inTree);
+    SetOutputDataTree(variableTree);
+    return;
+    */
+    
+    int numChildren = inTree->GetNChildren();
+    avtDataTree_p *outDT = new avtDataTree_p[numChildren];
+    for (int i = 0; i < numChildren; ++i)
+    {
+        outDT[i] = ExtractVariablesFromDomains(inTree->GetChild(i));
+    }
+    
+    avtDataTree_p outTree = new avtDataTree(numChildren, outDT);
+    SetOutputDataTree(outTree);
+    delete [] outDT;
+    return;
+}
 
+// Extract the variables from the domains
+avtDataTree_p
+avtRemapFilter::ExtractVariablesFromDomains(avtDataTree_p inTree)
+{
+    avtDataRepresentation domain_dr = inTree->GetDataRepresentation();
+    avtDataRepresentation *out_dr = GetVariableSubsets(&domain_dr);
+    avtDataTree_p variableTree = new avtDataTree(out_dr);
+    return variableTree;
+}
+
+
+
+// Remap kernel
+avtDataRepresentation*
+avtRemapFilter::GetVariableSubsets(avtDataRepresentation *in_dr)
+{
 
 // --- DEBUG --- DEBUG --- DEBUG --- DEBUG --- DEBUG --- DEBUG --- DEBUG ---- //
 DEBUG_CellTypeList.insert(std::pair<std::string, int>("VTK_TRIANGLE",   0));
@@ -743,7 +791,7 @@ bool avtRemapFilter::GetBounds(double bounds[6])
     }
     else
     {
-        const avtDataAttributes &datts = avtPluginDataTreeIterator::GetInput()->GetInfo().GetAttributes();
+        const avtDataAttributes &datts = GetInput()->GetInfo().GetAttributes();
         avtExtents *exts = datts.GetDesiredSpatialExtents();
         if (exts->HasExtents())
         {
