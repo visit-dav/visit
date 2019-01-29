@@ -89,18 +89,28 @@ class avtRemapFilter : public avtDatasetToDatasetFilter,
     virtual void        Execute(void);
     avtDataTree_p       ExtractVariablesFromDomains(avtDataTree_p);
     avtDataRepresentation *GetVariableSubsets(avtDataRepresentation *);
+    void                ClipDomain(avtDataTree_p, vtkRectilinearGrid*);
     
   private:
+  
+    // ------------------------ //
+    // --- Helper Functions --- //
+    // ------------------------ //
     vtkDoubleArray      *CalculateCellVolumes(vtkDataSet*, const char* name = "");
     bool                GetBounds(double bounds[6]);
     vtkRectilinearGrid  *CreateGrid(const double*, int, int, int, int, int, int, int, int, int);
     vtkRectilinearGrid  *CreateGrid(const double*, int, int, int, int, int, int);
     vtkDataArray        *GetCoordinates(double, double, int, int, int);
+    void                Output(vtkRectilinearGrid*);
     
+    
+    // -------------------- //
+    // --- Class Fields --- //
+    // -------------------- //
     bool                is3D;
     
     
-    // Delete these:
+    // TODO: Delete these
     void PrintData(avtDataRepresentation*);
     void PrintData(vtkDataSet*);
     void PrintData(vtkDataArray*);

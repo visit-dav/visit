@@ -181,7 +181,9 @@ void
 avtRemapFilter::Execute(void)
 {
 
+    // --------------------------------- //
     // --- Generate Rectilinear Grid --- //
+    // --------------------------------- //
     double bounds[6] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
     is3D = GetBounds(bounds);
     int width = atts.GetCellsX();
@@ -193,6 +195,7 @@ avtRemapFilter::Execute(void)
     int nCellsOut = width*height;
     double rCellVolume = (bounds[1] - bounds[0]) * (bounds[3] - bounds[2]) / nCellsOut;
     vtkRectilinearGrid* rg;
+    // TODO: consider making the rectilinearGrid a class field.
     
     if (is3D) 
     {
@@ -210,18 +213,39 @@ avtRemapFilter::Execute(void)
     int nVariables = GetInput()->GetInfo().GetAttributes().GetNumberOfVariables();
     if (nVariables <= 0)
     {
-        avtDataTree_p outTree = new avtDataTree(rg, 0);
-        rg->Delete();
-        SetOutputDataTree(outTree);
+        std::cout << "There are no variables" << std::endl;
+        Output(rg);
         return;
     }
-    else
+    
+    // ----------------------------------------------------- //
+    // --- Clip the domains against the rectilinear grid --- //
+    // ----------------------------------------------------- //
+    avtDataTree_p inTree = GetInputDataTree();
+    
+    // TODO: The input data tree needs to be unravelled recursively
+    for (int i = 0; i < inTree->GetNChildren(); ++i)
     {
-        SetOutputDataTree(GetInputDataTree());
-        rg->Delete();
-        return;
+        std::cout << "Child number: " << i << std::endl;
+        ClipDomain(inTree->GetChild(i), rg);
     }
+    
+    Output(rg);
+    return;
 }
+
+void
+avtRemapFilter::ClipDomain(avtDataTree_p inChild, vtkRectilinearGrid* rg) {
+    std::cout << "In ClipDomain" << std::endl;
+}
+
+void
+avtRemapFilter::Output(vtkRectilinearGrid* rg) {
+    avtDataTree_p outTree = new avtDataTree(rg, 0);
+    rg->Delete();
+    SetOutputDataTree(outTree);
+}
+
     
     
     
