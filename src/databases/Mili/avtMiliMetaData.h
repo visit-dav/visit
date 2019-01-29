@@ -96,7 +96,7 @@ class MiliVariableMetaData
 
   public:
 
-                              MiliVariableMetaData();
+                              MiliVariableMetaData(void);
                              ~MiliVariableMetaData(void);
 
     void                      SetLongName(string lName)
@@ -106,6 +106,8 @@ class MiliVariableMetaData
 
     void                      SetShortName(string sName)
                                 { shortName = sName; };
+
+    //TODO: we should considering returning references to strings. 
     string                    GetShortName(void)
                                 { return shortName; };
 
@@ -149,8 +151,10 @@ class MiliVariableMetaData
     int                       GetVectorSize(void)
                                 { return vectorSize; };
 
-    void                      SetMeshAssociation(int meshIdx) 
-                                { meshAssociation = meshIdx; };
+    void                      SetMeshAssociation(bool isMulti,
+                                                 int meshIdx) 
+                                { meshAssociation = meshIdx; 
+                                  multiMesh       = isMulti; };
     int                       GetMeshAssociation(void)
                                 { return meshAssociation; }; 
     
@@ -170,17 +174,15 @@ class MiliVariableMetaData
                                 { return isGlobal; };
 
     void                      InitSRContainers(int);
-
     void                      AddSubrecordInfo(int, 
                                                int, 
                                                int,
                                                int, 
                                                int *);
     SubrecInfo               &GetSubrecordInfo(int); 
-
     vector<int>              &GetSubrecordIds(int);
     
-    string                    GetPath(void);
+    const string             &GetPath(void);
 
     void                      AddVectorComponent(string compName)
                                 { vectorComponents.push_back(compName); };
@@ -213,6 +215,7 @@ class MiliVariableMetaData
     bool                         isElementSet;
     bool                         isMatVar;
     bool                         isGlobal;
+    bool                         multiMesh;
 
     vector<string>               vectorComponents;
 
@@ -366,30 +369,29 @@ class avtMiliMetaData
     int                                GetNumMaterials(void)
                                          { return numMaterials; };
 
-    void                               AddMiliClassMD(int,
-                                                      MiliClassMetaData *);
-    MiliClassMetaData                 *GetMiliClassMD(const char *);
-    int                                GetMiliClassMDIdx(const char *);
+    void                               AddClassMD(int,
+                                                  MiliClassMetaData *);
+    MiliClassMetaData                 *GetClassMD(const char *);
+    int                                GetClassMDIdx(const char *);
  
     void                               GetCellTypeCounts(vector<int> &,
                                                          vector<int> &);
 
-    void                               AddMiliVariableMD(int, 
-                                                         MiliVariableMetaData *);
-    MiliVariableMetaData              *GetMiliVariableMD(int varIdx);
-    MiliVariableMetaData              *GetMiliVariableMDByName(const char *);
-    //MiliVariableMetaData              *GetMiliVariableMDByPath(const char *);
-    int                                GetMiliVariableMDIdx(const char *);
+    void                               AddVarMD(int, 
+                                                MiliVariableMetaData *);
+    MiliVariableMetaData              *GetVarMD(int varIdx);
+    MiliVariableMetaData              *GetVarMDByShortName(const char *);
+    MiliVariableMetaData              *GetVarMDByPath(const char *);
+    int                                GetVarMDIdxByShortName(const char *);
+    int                                GetVarMDIdxByPath(const char *);
 
-    void                               AddMiliVariableSubrecInfo(int,
-                                                                 int,
-                                                                 int,
-                                                                 Subrecord *);
+    void                               AddVarSubrecInfo(int,
+                                                        int,
+                                                        int,
+                                                        Subrecord *);
 
-    void                               AddMiliMaterialMD(MiliMaterialMetaData mmd)
-                                         { miliMaterials.push_back(mmd); };
-    vector<MiliMaterialMetaData>      &GetAllMiliMaterialMD(void)
-                                         { return miliMaterials; };
+    void                               AddMaterialMD(int, 
+                                                     MiliMaterialMetaData *);
 
     vector<string>                     GetMaterialNames(void);
 
@@ -407,32 +409,23 @@ class avtMiliMetaData
     //vector<vector<float>>    GetMaterialColors(void)
     //                                     { return materialColors; };
 
-    void                               InitMaterialAssociations(int size);
-                                       
-
   private:
 
     MiliClassMetaData                **miliClasses;
     MiliVariableMetaData             **miliVariables;
-    //TODO: refactor to use malloc 
-    vector<MiliMaterialMetaData>       miliMaterials;
+    MiliMaterialMetaData             **miliMaterials;
 
     int                                numDomains;
     int                                numClasses;
-    int                                numVariables;//TODO: we should probably name this "numClassVariables"
-                                                    // as it is NOT the total number of variables. 
+    int                                numVariables;
+    int                                numMaterials;
+    vector<int>                        numCells;
+    vector<int>                        numNodes;
 
     //
     // The number of available mili cell types. 
     //
     const int                          numMiliCellTypes = 8;
-
-    int                                numMaterials;
-    vector<int>                        numCells;
-    vector<int>                        numNodes;
-
-    MapNode                            varIdxMap;
-    MapNode                            classIdxMap;
 };
 
 #endif

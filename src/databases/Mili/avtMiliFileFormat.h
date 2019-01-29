@@ -137,9 +137,8 @@ class avtMiliFileFormat : public avtMTMDFileFormat
     vector<int>           cycles;
     vector<double>        times;
 
-    std::map<int, int>    warn_map;
-    vector<bool>          validateVars;
-    vector<bool>          readMesh;
+    std::map<int, int>    warnMap;
+    vector<bool>          meshRead;
     int                   dims;
 
     vector<vector<vtkUnstructuredGrid *> > datasets;
@@ -158,6 +157,9 @@ class avtMiliFileFormat : public avtMTMDFileFormat
 
     void                  DecodeMultiLevelVarname(const string &, 
                                                   string &);
+
+    int                   ExtractMeshIdFromPath(const string &);
+
     inline void           OpenDB(int dom);
 
 

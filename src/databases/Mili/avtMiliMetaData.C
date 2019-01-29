@@ -81,6 +81,7 @@ MiliVariableMetaData::MiliVariableMetaData()
     isElementSet      = false;
     isMatVar          = false;
     isGlobal          = false;
+    multiMesh         = false;
 }
 
 
@@ -270,7 +271,7 @@ MiliVariableMetaData::GetSubrecordInfo(int dom)
 //
 // ****************************************************************************
 
-string
+const string &
 MiliVariableMetaData::GetPath()
 {
     //TODO: what we want is "classLName (classSName)/shortName"
@@ -278,10 +279,30 @@ MiliVariableMetaData::GetPath()
 
     if (path.empty())
     {
-        path = "Primal/";
+        if (multiMesh)
+        {
+            char mmStart[1024];
+            sprintf(mmStart, "Primal (mesh%d)/", meshAssociation);
+            path = mmStart;
+        }
+        else
+        {
+            path = "Primal/";
+        }
+
         if (!classSName.empty())
         {
             path += classSName + "/";
+        }
+
+        //
+        // We don't include the element set name in the path. 
+        //
+        if (!isElementSet) 
+        {
+            //TODO: if we are an element set, we need
+            //      to replace the es name with a 
+            //      common var name (stress, strain, etc). 
         }
         path += shortName;
     }
@@ -312,8 +333,8 @@ MiliClassMetaData::MiliClassMetaData(int numDomains)
     totalNumElements   = 0;
     superClassId       = -1;
     classType          = UNKNOWN;
-    numDomainElements.resize(numDomains, -1);
-    connectivityOffset.resize(numDomains, -1);
+    numDomainElements.resize(numDomains, 0);
+    connectivityOffset.resize(numDomains, 0);
 }
 
 
@@ -592,8 +613,9 @@ avtMiliMetaData::avtMiliMetaData(int nDomains)
   numVariables(0),
   numMaterials(0)
 {
-    miliVariables   = NULL;
-    miliClasses     = NULL;
+    miliVariables = NULL;
+    miliClasses   = NULL;
+    miliMaterials = NULL;
     numCells.resize(numDomains, -1);
     numNodes.resize(numDomains, -1);
 }
@@ -639,6 +661,19 @@ avtMiliMetaData::~avtMiliMetaData()
         }
 
         delete [] miliClasses;
+    }
+
+    if (miliMaterials != NULL)
+    {
+        for (int i = 0; i < numMaterials; ++i)
+        {
+            if (miliMaterials[i] != NULL)
+            {
+                delete miliMaterials[i];
+            }
+        }
+
+        delete [] miliMaterials;
     }
 }
 
@@ -699,9 +734,25 @@ avtMiliMetaData::SetNumVariables(int nVars)
 void
 avtMiliMetaData::SetNumMaterials(int nMats)
 {
-    numMaterials = nMats;
-    miliMaterials.clear();
-    miliMaterials.reserve(nMats);
+    if (miliMaterials != NULL)
+    {
+        for (int i = 0; i < numMaterials; ++i)
+        {
+            if (miliMaterials[i] != NULL)
+            {
+                delete miliMaterials[i];
+            }
+        }
+
+        delete [] miliMaterials;
+    }
+
+    numMaterials  = nMats;
+    miliMaterials = new MiliMaterialMetaData *[numMaterials];
+    for (int i = 0; i < numMaterials; ++i)
+    {
+        miliMaterials[i] = NULL;
+    }
 }
 
 
@@ -759,8 +810,8 @@ avtMiliMetaData::SetNumClasses(int nClasses)
 // ****************************************************************************
 
 void
-avtMiliMetaData::AddMiliClassMD(int classIdx, 
-                                MiliClassMetaData *mcmd)
+avtMiliMetaData::AddClassMD(int classIdx, 
+                            MiliClassMetaData *mcmd)
 {
     if (classIdx < 0 || classIdx > numClasses)
     {
@@ -848,7 +899,7 @@ avtMiliMetaData::GetNumNodes(int domain)
 // ****************************************************************************
 
 int
-avtMiliMetaData::GetMiliClassMDIdx(const char *cName)
+avtMiliMetaData::GetClassMDIdx(const char *cName)
 {
     if (miliClasses == NULL)
     {
@@ -883,9 +934,9 @@ avtMiliMetaData::GetMiliClassMDIdx(const char *cName)
 // ****************************************************************************
 
 MiliClassMetaData *
-avtMiliMetaData::GetMiliClassMD(const char *vName)
+avtMiliMetaData::GetClassMD(const char *vName)
 {
-    int idx = GetMiliClassMDIdx(vName);
+    int idx = GetClassMDIdx(vName);
     if (idx > -1 && idx < numClasses)
     {
         return miliClasses[idx];
@@ -963,8 +1014,8 @@ avtMiliMetaData::GetCellTypeCounts(vector<int> &cTypes,
 // ****************************************************************************
 
 void
-avtMiliMetaData::AddMiliVariableMD(int varIdx, 
-                                   MiliVariableMetaData *mvmd)
+avtMiliMetaData::AddVarMD(int varIdx, 
+                          MiliVariableMetaData *mvmd)
 {
     std::string sName = mvmd->GetShortName();
 
@@ -1010,9 +1061,9 @@ avtMiliMetaData::AddMiliVariableMD(int varIdx,
 // ****************************************************************************
 
 MiliVariableMetaData *
-avtMiliMetaData::GetMiliVariableMDByName(const char *vName)
+avtMiliMetaData::GetVarMDByShortName(const char *vName)
 {
-    int idx = GetMiliVariableMDIdx(vName);
+    int idx = GetVarMDIdxByShortName(vName);
     if (idx > -1)
     {
         return miliVariables[idx];
@@ -1037,7 +1088,34 @@ avtMiliMetaData::GetMiliVariableMDByName(const char *vName)
 // ****************************************************************************
 
 MiliVariableMetaData *
-avtMiliMetaData::GetMiliVariableMD(int varIdx)
+avtMiliMetaData::GetVarMDByPath(const char *vPath)
+{
+    int idx = GetVarMDIdxByPath(vPath);
+    if (idx > -1)
+    {
+        return miliVariables[idx];
+    }
+
+    return NULL; 
+}
+
+
+// ***************************************************************************
+//  Method: 
+//
+//  Purpose:
+//
+//  Arguments: 
+//           
+//  Programmer: Alister Maguire
+//  Creation:   Jan 15, 2019
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+MiliVariableMetaData *
+avtMiliMetaData::GetVarMD(int varIdx)
 {
     if (varIdx >= 0 && varIdx < numVariables)
     {
@@ -1063,7 +1141,7 @@ avtMiliMetaData::GetMiliVariableMD(int varIdx)
 // ****************************************************************************
 
 int
-avtMiliMetaData::GetMiliVariableMDIdx(const char *vName)
+avtMiliMetaData::GetVarMDIdxByShortName(const char *vName)
 {
     if (miliVariables == NULL)
     {
@@ -1097,11 +1175,46 @@ avtMiliMetaData::GetMiliVariableMDIdx(const char *vName)
 //
 // ****************************************************************************
 
+int
+avtMiliMetaData::GetVarMDIdxByPath(const char *vPath)
+{
+    if (miliVariables == NULL)
+    {
+        return -1;
+    }
+    for (int i = 0; i < numVariables; ++i)
+    {
+        if (miliVariables[i] != NULL) 
+        {
+            if (miliVariables[i]->GetPath() == vPath)
+            {
+                return i;
+            }
+        }
+    }
+    return -1;
+}
+
+
+// ***************************************************************************
+//  Method: 
+//
+//  Purpose:
+//
+//  Arguments: 
+//           
+//  Programmer: Alister Maguire
+//  Creation:   Jan 15, 2019
+//
+//  Modifications:
+//
+// ****************************************************************************
+
 void
-avtMiliMetaData::AddMiliVariableSubrecInfo(int varIdx,
-                                           int dom,
-                                           int srId,
-                                           Subrecord *sr)
+avtMiliMetaData::AddVarSubrecInfo(int varIdx,
+                                  int dom,
+                                  int srId,
+                                  Subrecord *sr)
  
 {
     if (varIdx >= 0 && varIdx < numVariables && 
@@ -1138,6 +1251,45 @@ avtMiliMetaData::AddMiliVariableSubrecInfo(int varIdx,
 //
 // ****************************************************************************
 
+void
+avtMiliMetaData::AddMaterialMD(int matIdx, 
+                               MiliMaterialMetaData *mmmd)
+{
+    if (matIdx < 0 || matIdx > numMaterials)
+    {
+        //TODO: throw error
+        return;
+    }
+
+    if (miliMaterials == NULL)
+    {
+        //TODO: throw error
+        return; 
+    }
+
+    if (miliMaterials[matIdx] != NULL)
+    {
+        delete miliMaterials[matIdx];
+    }
+
+    miliMaterials[matIdx] = mmmd;
+}
+
+
+// ***************************************************************************
+//  Method: 
+//
+//  Purpose:
+//
+//  Arguments: 
+//           
+//  Programmer: Alister Maguire
+//  Creation:   Jan 15, 2019
+//
+//  Modifications:
+//
+// ****************************************************************************
+
 stringVector
 avtMiliMetaData::GetMaterialNames(void)
 {
@@ -1145,7 +1297,7 @@ avtMiliMetaData::GetMaterialNames(void)
     matNames.reserve(numMaterials);
     for (int i = 0; i < numMaterials; ++i)
     {
-        matNames.push_back(miliMaterials[i].GetName());
+        matNames.push_back(miliMaterials[i]->GetName());
     }
     return matNames;
 }
