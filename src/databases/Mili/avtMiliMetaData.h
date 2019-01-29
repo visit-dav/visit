@@ -96,80 +96,62 @@ class MiliVariableMetaData
 
   public:
 
-                              MiliVariableMetaData(void);
+                              MiliVariableMetaData(string,
+                                                   string,
+                                                   string,
+                                                   string,
+                                                   bool,
+                                                   bool,
+                                                   bool,
+                                                   avtCentering,
+                                                   int,
+                                                   int,
+                                                   int,
+                                                   int,
+                                                   int,
+                                                   int,
+                                                   vector<string> );
                              ~MiliVariableMetaData(void);
 
-    void                      SetLongName(string lName)
-                                { longName = lName; };
     string                    GetLongName(void)
                                 { return longName; };
 
-    void                      SetShortName(string sName)
-                                { shortName = sName; };
-
-    //TODO: we should considering returning references to strings. 
     string                    GetShortName(void)
                                 { return shortName; };
 
-    void                      SetClassLongName(string cName)
-                                { classLName = cName; };
     string                    GetClassLongName(void)
                                 { return classLName; }; 
 
-    void                      SetClassShortName(string cName)
-                                { classSName = cName; };
     string                    GetClassShortName(void)
                                 { return classSName; }; 
 
-    void                      SetAvtCellType(int cType)
-                                { cellTypeAvt = cType; };
     int                       GetAvtCellType(void)
                                 { return cellTypeAvt; };
 
-    void                      SetMiliCellType(int cType)
-                                { cellTypeMili = cType; };
     int                       GetMiliCellType(void)
                                 { return cellTypeMili; };
 
-    void                      SetCentering(int cent)
-                                { centering = avtCentering(cent); }; 
     avtCentering              GetCentering(void)
                                 { return centering; };
 
-    void                      SetNumType(int nType)
-                                { numType = nType; };
     int                       GetNumType(void)
                                 { return numType; };
          
-    void                      SetComponentDims(int d)
-                                { componentDims = d; };
     int                       GetComponentDims(void) 
                                 { return componentDims; }; 
 
-    void                      SetVectorSize(int vs)
-                                { vectorSize = vs; };
     int                       GetVectorSize(void)
                                 { return vectorSize; };
 
-    void                      SetMeshAssociation(bool isMulti,
-                                                 int meshIdx) 
-                                { meshAssociation = meshIdx; 
-                                  multiMesh       = isMulti; };
     int                       GetMeshAssociation(void)
                                 { return meshAssociation; }; 
     
-    void                      SetIsElementSet(bool es)
-                                { isElementSet = es; };
     bool                      GetIsElementSet(void)
                                 { return isElementSet; };
 
-    void                      SetIsMatVar(bool isMat)
-                                { isMatVar = isMat; };
     bool                      GetIsMatVar(void)
                                 { return isMatVar; };
 
-    void                      SetIsGlobal(bool isG)
-                                { isGlobal = isG; };
     bool                      GetIsGlobal(void)
                                 { return isGlobal; };
 
@@ -190,9 +172,11 @@ class MiliVariableMetaData
     vector<string>           &GetVectorComponents(void)
                                 { return vectorComponents; };
 
-    void                      FinalizeMiliFileExtract(void);
+    void                      PrintSelf(void);
 
   private:
+
+    void                         DetermineESStatus(void);
     
     string                       longName;
     string                       shortName;
@@ -205,10 +189,10 @@ class MiliVariableMetaData
     int                          cellTypeMili;
 
     avtCentering                 centering;
-    int                          componentDims;
-    int                          vectorSize;
     int                          meshAssociation;
     int                          numType;
+    int                          vectorSize;
+    int                          componentDims;
  
     //
     // Subrecord info
@@ -243,30 +227,28 @@ class MiliClassMetaData
 
   public:
                                       MiliClassMetaData(int);
+                                      MiliClassMetaData(string,
+                                                        string,
+                                                        int,
+                                                        int,
+                                                        int);
                                      ~MiliClassMetaData(void);
 
     enum ClassType 
       { CELL, NODE, MATERIAL, GLOBAL, SURFACE, PARTICLE, UNKNOWN };
 
-    void                              SetLongName(string lName)
-                                        { longName = lName; };
     string                            GetLongName(void)
                                         { return longName; };
 
-    void                              SetShortName(string sName)
-                                        { shortName = sName; };
     string                            GetShortName(void)
                                         { return shortName; };
 
-    void                              SetTotalNumElements(int nEl)
-                                        { totalNumElements = nEl; };
     int                               GetTotalNumElements(void)
                                         { return totalNumElements; };
 
     void                              SetNumElements(int, int);
     int                               GetNumElements(int);
 
-    void                              SetSuperClassId(int);
     int                               GetSuperClassId(void)
                                         { return superClassId; };
 
@@ -316,15 +298,13 @@ class MiliClassMetaData
 class MiliMaterialMetaData
 {
   public:
-                                        MiliMaterialMetaData(void);
+                                        MiliMaterialMetaData(string,
+                                                             float *);
                                        ~MiliMaterialMetaData(void);
 
-    void                                SetName(string nm)
-                                          { name = nm; };
     string                              GetName(void)
                                           { return name; };
 
-    void                                SetColor(float *);
     float                              *GetColor(void) 
                                           { return color; };
  
@@ -357,8 +337,6 @@ class avtMiliMetaData
 
                                        avtMiliMetaData(int);
                                       ~avtMiliMetaData(void);
-
-    //TODO: create a method to populate meta data from a json file
 
     void                               SetNumClasses(int);
     int                                GetNumClasses(void)
@@ -408,9 +386,6 @@ class avtMiliMetaData
 
     int                                GetNumMiliCellTypes(void)
                                          { return numMiliCellTypes; };
-
-    //vector<vector<float>>    GetMaterialColors(void)
-    //                                     { return materialColors; };
 
   private:
 
