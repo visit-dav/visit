@@ -76,6 +76,9 @@
 // ****************************************************************************
 
 avtRemapFilter::avtRemapFilter()
+: rGridBounds{0., 0., 0., 0., 0., 0.},
+  rCellVolume(0.),
+  is3D(false)
 {
 }
 
@@ -184,8 +187,7 @@ avtRemapFilter::Execute(void)
     // --------------------------------- //
     // --- Generate Rectilinear Grid --- //
     // --------------------------------- //
-    double bounds[6] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
-    is3D = GetBounds(bounds);
+    is3D = GetBounds(rGridBounds);
     int width = atts.GetCellsX();
     int height = atts.GetCellsY();
     
@@ -193,20 +195,19 @@ avtRemapFilter::Execute(void)
     // is actually 3D. If so, modify parameters and build rg. Otherwise, build
     // rg with 2D variable values.
     int nCellsOut = width*height;
-    double rCellVolume = (bounds[1] - bounds[0]) * (bounds[3] - bounds[2]) / nCellsOut;
-    vtkRectilinearGrid* rg;
-    // TODO: consider making the rectilinearGrid a class field.
-    
+    rCellVolume = (rGridBounds[1] - rGridBounds[0]) *
+                  (rGridBounds[3] - rGridBounds[2]) /
+                  (nCellsOut);    
     if (is3D) 
     {
         int depth = atts.GetCellsZ();
         nCellsOut *= depth;
-        rCellVolume *= (bounds[5] - bounds[4]) / depth;
-        rg = CreateGrid(bounds, width, height, depth, 0, width, 0, height, 0, depth);
+        rCellVolume *= (rGridBounds[5] - rGridBounds[4]) / depth;
+        CreateGrid(width, height, depth, 0, width, 0, height, 0, depth);
     }
     else
     {
-        rg = CreateGrid(bounds, width, height, 0, width, 0, height);
+        CreateGrid(width, height, 0, width, 0, height);
     }
     
     // If there are no variables, then just create the mesh and exit
@@ -214,7 +215,7 @@ avtRemapFilter::Execute(void)
     if (nVariables <= 0)
     {
         std::cout << "There are no variables" << std::endl;
-        Output(rg);
+        Output();
         return;
     }
     
@@ -241,10 +242,10 @@ avtRemapFilter::Execute(void)
     for (int i = 0; i < inTree->GetNChildren(); ++i)
     {
         std::cout << "Child number: " << domainIds[i] << std::endl;
-        ClipDomain(inTree->GetChild(i), rg);
+        ClipDomain(inTree->GetChild(i));
     }
     
-    Output(rg);
+    Output();
     std:: cout << "DONE" << std::endl;
     return;
 }
@@ -256,7 +257,7 @@ avtRemapFilter::Execute(void)
 
 
 void
-avtRemapFilter::ClipDomain(avtDataTree_p inLeaf, vtkRectilinearGrid* rg) {
+avtRemapFilter::ClipDomain(avtDataTree_p inLeaf) {
 
 // --- DEBUG --- DEBUG --- DEBUG --- DEBUG --- DEBUG --- DEBUG --- DEBUG ---- //
 DEBUG_CellTypeList.insert(std::pair<std::string, int>("VTK_TRIANGLE",   0));
@@ -356,8 +357,8 @@ double DEBUG_maxDiff = DBL_MIN;
     
     for (vtkIdType rCell = 0; rCell < rg->GetNumberOfCells(); rCell++) {
         // Get the bounds from the cell.
-        double bounds[6] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
-        rg->GetCell(rCell)->GetBounds(bounds);
+        double cellBounds[6] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+        rg->GetCell(rCell)->GetBounds(cellBounds);
         
         // Loop over each plane and clip the cells
         vtkVisItClipper* last = NULL; 
@@ -374,22 +375,22 @@ double DEBUG_maxDiff = DBL_MIN;
             double origin[3] = {0., 0., 0.};
             double normal[3] = {0., 0., 0.};
             if (cdx == 0) {
-                origin[0] = bounds[cdx];
+                origin[0] = cellBounds[cdx];
                 normal[0] = -1.0;
             } else if (cdx == 1) {
-                origin[0] = bounds[cdx];
+                origin[0] = cellBounds[cdx];
                 normal[0] = 1.0;
             } else if (cdx == 2) {
-                origin[1] = bounds[cdx];
+                origin[1] = cellBounds[cdx];
                 normal[1] = -1.0;
             } else if (cdx == 3) {
-                origin[1] = bounds[cdx];
+                origin[1] = cellBounds[cdx];
                 normal[1] = 1.0;
             } else if (cdx == 4) {
-                origin[2] = bounds[cdx];
+                origin[2] = cellBounds[cdx];
                 normal[2] = -1.0;
             } else if (cdx == 5) {
-                origin[2] = bounds[cdx];
+                origin[2] = cellBounds[cdx];
                 normal[2] = 1.0;
             }
             vtkPlane* plane = vtkPlane::New();
@@ -415,7 +416,7 @@ double DEBUG_maxDiff = DBL_MIN;
         } // end clipping loop
         
         // Collection of clipped cells from the original grid that now take the shape
-        // of the rgrid cell, something like this:
+        // of the rgrid cell, could be something like this:
         // + -------------- +
         // |   |      /     |
         // |   |     /      |
@@ -787,7 +788,7 @@ for (std::map<std::string,int>::const_iterator iter = DEBUG_CellTypeList.begin()
 
 
 void
-avtRemapFilter::Output(vtkRectilinearGrid* rg) {
+avtRemapFilter::Output() {
     avtDataTree_p outTree = new avtDataTree(rg, 0);
     rg->Delete();
     SetOutputDataTree(outTree);
@@ -1041,59 +1042,55 @@ bool avtRemapFilter::GetBounds(double bounds[6])
 //
 // ****************************************************************************
 
-vtkRectilinearGrid *
-avtRemapFilter::CreateGrid(const double *bounds, int numX, int numY, int numZ,
+void
+avtRemapFilter::CreateGrid(int numX, int numY, int numZ,
         int minX, int maxX, int minY, int maxY, int minZ, int maxZ)
 {
     vtkDataArray *xc = NULL;
     vtkDataArray *yc = NULL;
     vtkDataArray *zc = NULL;
 
-    double width  = bounds[1] - bounds[0];
-    double height = bounds[3] - bounds[2];
-    double depth  = bounds[5] - bounds[4];
+    double width  = rGridBounds[1] - rGridBounds[0];
+    double height = rGridBounds[3] - rGridBounds[2];
+    double depth  = rGridBounds[5] - rGridBounds[4];
 
-    xc = GetCoordinates(bounds[0], width, numX+1, minX, maxX+1);
-    yc = GetCoordinates(bounds[2], height, numY+1, minY, maxY+1);
-    zc = GetCoordinates(bounds[4], depth, numZ+1, minZ, maxZ+1);
+    xc = GetCoordinates(rGridBounds[0], width, numX+1, minX, maxX+1);
+    yc = GetCoordinates(rGridBounds[2], height, numY+1, minY, maxY+1);
+    zc = GetCoordinates(rGridBounds[4], depth, numZ+1, minZ, maxZ+1);
 
-    vtkRectilinearGrid *rv = vtkRectilinearGrid::New();
-    rv->SetDimensions(maxX-minX+1, maxY-minY+1, maxZ-minZ+1);
-    rv->SetXCoordinates(xc);
+    rg = vtkRectilinearGrid::New();
+    rg->SetDimensions(maxX-minX+1, maxY-minY+1, maxZ-minZ+1);
+    rg->SetXCoordinates(xc);
     xc->Delete();
-    rv->SetYCoordinates(yc);
+    rg->SetYCoordinates(yc);
     yc->Delete();
-    rv->SetZCoordinates(zc);
+    rg->SetZCoordinates(zc);
     zc->Delete();
-
-    return rv;
 }
 
-vtkRectilinearGrid *
-avtRemapFilter::CreateGrid(const double *bounds,
+void
+avtRemapFilter::CreateGrid(
         int numX, int numY, int minX, int maxX, int minY, int maxY)
 {
     vtkDataArray *xc = NULL;
     vtkDataArray *yc = NULL;
     vtkDataArray *zc = NULL;
 
-    double width  = bounds[1] - bounds[0];
-    double height = bounds[3] - bounds[2];
+    double width  = rGridBounds[1] - rGridBounds[0];
+    double height = rGridBounds[3] - rGridBounds[2];
 
-    xc = GetCoordinates(bounds[0], width, numX+1, minX, maxX+1);
-    yc = GetCoordinates(bounds[2], height, numY+1, minY, maxY+1);
-    zc = GetCoordinates(bounds[4], 0, 1, 0, 1);
+    xc = GetCoordinates(rGridBounds[0], width, numX+1, minX, maxX+1);
+    yc = GetCoordinates(rGridBounds[2], height, numY+1, minY, maxY+1);
+    zc = GetCoordinates(rGridBounds[4], 0, 1, 0, 1);
 
-    vtkRectilinearGrid *rv = vtkRectilinearGrid::New();
-    rv->SetDimensions(maxX-minX+1, maxY-minY+1, 1);
-    rv->SetXCoordinates(xc);
+    rg = vtkRectilinearGrid::New();
+    rg->SetDimensions(maxX-minX+1, maxY-minY+1, 1);
+    rg->SetXCoordinates(xc);
     xc->Delete();
-    rv->SetYCoordinates(yc);
+    rg->SetYCoordinates(yc);
     yc->Delete();
-    rv->SetZCoordinates(zc);
+    rg->SetZCoordinates(zc);
     zc->Delete();
-
-    return rv;
 }
 
 
