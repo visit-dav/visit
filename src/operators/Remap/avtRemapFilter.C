@@ -222,11 +222,15 @@ avtRemapFilter::Execute(void)
     // --- Clip the domains against the rectilinear grid --- //
     // ----------------------------------------------------- //
     avtDataTree_p inTree = GetInputDataTree();
+    std::vector<int> domainIds;
+    inTree->GetAllDomainIds(domainIds); // Populate domainIds
     
     // TODO: The input data tree needs to be unravelled recursively
+    // NOTE: Looks like when a domain is turned off, then it is not a part of
+    // the inTree anymore, so it does not get processed.
     for (int i = 0; i < inTree->GetNChildren(); ++i)
     {
-        std::cout << "Child number: " << i << std::endl;
+        std::cout << "Child number: " << domainIds[i] << std::endl;
         ClipDomain(inTree->GetChild(i), rg);
     }
     
@@ -234,9 +238,35 @@ avtRemapFilter::Execute(void)
     return;
 }
 
+
+
+
+
+
+
 void
-avtRemapFilter::ClipDomain(avtDataTree_p inChild, vtkRectilinearGrid* rg) {
-    std::cout << "In ClipDomain" << std::endl;
+avtRemapFilter::ClipDomain(avtDataTree_p inLeaf, vtkRectilinearGrid* rg) {
+    
+    // --- Convert avtDataTree_p to a vtkDataSet --- //
+    avtDataRepresentation in_dr = inLeaf->GetDataRepresentation();
+    int domainId = in_dr.GetDomain();
+    vtkDataSet* in_ds = in_dr.GetDataVTK();
+    
+    // If there are no cells, then return null.
+    // NOTE: When a domain is turned off, it is not a part of the input tree anymore,
+    // so it is unlikely that we will hit this code.
+    double nCellsIn = in_ds->GetNumberOfCells();
+    if (in_ds == NULL || in_ds->GetNumberOfPoints() == 0 || nCellsIn == 0)
+    {
+        std::cout << "Domain " << domainId << " is invalid." << std::endl;
+        in_ds->Delete();
+        return;
+    }
+    
+    std::cout << "Number of cells in domain " << domainId << ": " << nCellsIn << std::endl;
+    
+    in_ds->Delete();
+    return;
 }
 
 void
