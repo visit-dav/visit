@@ -71,7 +71,7 @@
 
         <group name="optional" comment="All optional libraries" enabled="no">
             <lib name="adios"/>
-            <lib name="adios2"/>
+<!--        <lib name="adios2"/>     Removed for now by Eric Brugger-->
             <lib name="advio"/>
             <lib name="boost"/>
             <lib name="boxlib"/>
@@ -79,27 +79,42 @@
             <lib name="cfitsio"/>
             <lib name="conduit"/>
             <lib name="cgns"/>
+<!--        <lib name="eavl"/>       Removed for now by Eric Brugger-->
             <lib name="embree"/>
+<!--        <lib name="fastbit"/>    Removed for now by Eric Brugger-->
+<!--        <lib name="fastquery"/>  Removed for now by Eric Brugger-->
             <lib name="gdal"/>
-            <lib name="fastbit"/>
-            <lib name="fastquery"/>
-            <lib name="hdf5"/>
+            <lib name="glu"/>
             <lib name="h5part"/>
+            <lib name="hdf4"/>
+            <lib name="hdf5"/>
+            <lib name="icet"/>
             <lib name="ispc"/>
+            <lib name="llvm"/>
+<!--        <lib name="mdsplus"/>    Removed for now by Allen Sanderson-->
+            <lib name="mesagl"/>
+            <lib name="mfem"/>
+            <lib name="mili"/>
+            <lib name="moab"/>
             <lib name="mpich"/>
             <lib name="mxml"/>
+<!--        <lib name="nektarpp"/>   Removed for now by Eric Brugger-->
             <lib name="netcdf"/>
-            <lib name="nektarpp"/>
             <lib name="openexr"/>
             <lib name="openssl"/>
+            <lib name="osmesa"/>
             <lib name="ospray"/>
             <lib name="pidx"/>
-            <lib name="pyside"/>
+            <lib name="p7zip"/>
+<!--        <lib name="pyside"/>     Removed for now by Eric Brugger-->
             <lib name="silo"/>
             <lib name="szip"/>
             <lib name="tbb"/>
-            <lib name="uintah"/>
+<!--        <lib name="tcmalloc"/>   Removed for now by Eric Brugger-->
+<!--        <lib name="uintah"/>     Removed for now by Eric Brugger-->
             <lib name="visus"/>
+            <lib name="vtkm"/>
+            <lib name="vtkh"/>
             <lib name="xdmf"/>
             <lib name="zlib"/>
         </group>
