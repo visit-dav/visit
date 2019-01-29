@@ -218,6 +218,14 @@ avtRemapFilter::Execute(void)
         return;
     }
     
+    // Add variables to the rectilinear grid
+    vtkDoubleArray* vars = vtkDoubleArray::New();
+    vars->SetNumberOfComponents(1);
+    vars->SetNumberOfTuples(nCellsOut);
+    vars->SetName(GetInput()->GetInfo().GetAttributes().GetVariableName().c_str());
+    rg->GetCellData()->AddArray(vars);
+    rg->GetCellData()->SetScalars(vars);
+    
     // ----------------------------------------------------- //
     // --- Clip the domains against the rectilinear grid --- //
     // ----------------------------------------------------- //
@@ -235,6 +243,7 @@ avtRemapFilter::Execute(void)
     }
     
     Output(rg);
+    std:: cout << "DONE" << std::endl;
     return;
 }
 
@@ -246,8 +255,22 @@ avtRemapFilter::Execute(void)
 
 void
 avtRemapFilter::ClipDomain(avtDataTree_p inLeaf, vtkRectilinearGrid* rg) {
+
+// --- DEBUG --- DEBUG --- DEBUG --- DEBUG --- DEBUG --- DEBUG --- DEBUG ---- //
+DEBUG_CellTypeList.insert(std::pair<std::string, int>("VTK_TRIANGLE",   0));
+DEBUG_CellTypeList.insert(std::pair<std::string, int>("VTK_QUAD",       0));
+DEBUG_CellTypeList.insert(std::pair<std::string, int>("VTK_PIXEL",      0));
+DEBUG_CellTypeList.insert(std::pair<std::string, int>("VTK_VOXEL",      0));
+DEBUG_CellTypeList.insert(std::pair<std::string, int>("VTK_HEXAHEDRON", 0));
+DEBUG_CellTypeList.insert(std::pair<std::string, int>("VTK_TETRA",      0));
+DEBUG_CellTypeList.insert(std::pair<std::string, int>("VTK_WEDGE",      0));
+DEBUG_CellTypeList.insert(std::pair<std::string, int>("VTK_PYRAMID",    0));
+DEBUG_CellTypeList.insert(std::pair<std::string, int>("unknown",        0));
+// --- DEBUG --- DEBUG --- DEBUG --- DEBUG --- DEBUG --- DEBUG --- DEBUG ---- //
     
-    // --- Convert avtDataTree_p to a vtkDataSet --- //
+    // --------------------------------------------------- //
+    // --- Convert the avtDataTree_p into a vtkDataSet --- //
+    // --------------------------------------------------- //
     avtDataRepresentation in_dr = inLeaf->GetDataRepresentation();
     int domainId = in_dr.GetDomain();
     vtkDataSet* in_ds = in_dr.GetDataVTK();
@@ -262,151 +285,44 @@ avtRemapFilter::ClipDomain(avtDataTree_p inLeaf, vtkRectilinearGrid* rg) {
         in_ds->Delete();
         return;
     }
-    
     std::cout << "Number of cells in domain " << domainId << ": " << nCellsIn << std::endl;
-    
-    in_ds->Delete();
-    return;
-}
-
-void
-avtRemapFilter::Output(vtkRectilinearGrid* rg) {
-    avtDataTree_p outTree = new avtDataTree(rg, 0);
-    rg->Delete();
-    SetOutputDataTree(outTree);
-}
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    // --- Each domain contributes the grid --- //
-    
-    /*
-    avtDataTree_p inTree = GetInputDataTree();
-    std::vector<int> domainIds;
-    stringVector inLabels;
-    inTree->GetAllDomainIds(domainIds);
-    inTree->GetAllLabels(inLabels);
-    
-    for (std::vector<int>::const_iterator i = domainIds.begin();
-         i != domainIds.end(); ++i) {
-        std::cout << "Domain Id: " << *i << std::endl;    
-    }
-    
-    // avtDataTree_p variableTree = ExtractVariablesFromDomains(inTree);
-    // SetOutputDataTree(variableTree);
-    // return;
-    
-    
-    int numChildren = inTree->GetNChildren();
-    avtDataTree_p *outDT = new avtDataTree_p[numChildren];
-    for (int i = 0; i < numChildren; ++i)
-    {
-        outDT[i] = ExtractVariablesFromDomains(inTree->GetChild(i));
-    }
-    
-    avtDataTree_p outTree = new avtDataTree(numChildren, outDT);
-    SetOutputDataTree(outTree);
-    delete [] outDT;
-    return;
-}
-
-// Extract the variables from the domains
-avtDataTree_p
-avtRemapFilter::ExtractVariablesFromDomains(avtDataTree_p inTree)
-{
-    avtDataRepresentation domain_dr = inTree->GetDataRepresentation();
-    avtDataRepresentation *out_dr = GetVariableSubsets(&domain_dr);
-    avtDataTree_p variableTree = new avtDataTree(out_dr);
-    return variableTree;
-}
-
-
-
-// Remap kernel
-avtDataRepresentation*
-avtRemapFilter::GetVariableSubsets(avtDataRepresentation *in_dr)
-{
-
-// --- DEBUG --- DEBUG --- DEBUG --- DEBUG --- DEBUG --- DEBUG --- DEBUG ---- //
-DEBUG_CellTypeList.insert(std::pair<std::string, int>("VTK_TRIANGLE",   0));
-DEBUG_CellTypeList.insert(std::pair<std::string, int>("VTK_QUAD",       0));
-DEBUG_CellTypeList.insert(std::pair<std::string, int>("VTK_PIXEL",      0));
-DEBUG_CellTypeList.insert(std::pair<std::string, int>("VTK_VOXEL",      0));
-DEBUG_CellTypeList.insert(std::pair<std::string, int>("VTK_HEXAHEDRON", 0));
-DEBUG_CellTypeList.insert(std::pair<std::string, int>("VTK_TETRA",      0));
-DEBUG_CellTypeList.insert(std::pair<std::string, int>("VTK_WEDGE",      0));
-DEBUG_CellTypeList.insert(std::pair<std::string, int>("VTK_PYRAMID",    0));
-DEBUG_CellTypeList.insert(std::pair<std::string, int>("unknown",        0));
-// --- DEBUG --- DEBUG --- DEBUG --- DEBUG --- DEBUG --- DEBUG --- DEBUG ---- //
-
-    // ----------------------------------------------------------- //
-    // --- Convert the avtDataRepresentation into a vtkDataSet --- //
-    // ----------------------------------------------------------- //
-    vtkDataSet *in_ds = in_dr->GetDataVTK();
-    int domain = in_dr->GetDomain();
-    std::string label = in_dr->GetLabel();
-    
-    // If there are no cells, then return null. This check is okay for now because
-    // we only support cell-centered operations for the time being. Soon, we will support
-    // node-centered operations, and we will need to revise this.
-    // TODO: revise this when we support node operations.
-    double nCellsIn = in_ds->GetNumberOfCells();
-    if (in_ds == NULL || in_ds->GetNumberOfPoints() == 0 || nCellsIn == 0)
-    {
-        return NULL;
-    }
-    
-    
-    
-    // ------------------------------------- //
-    // --- Generate the rectilinear grid --- //
-    // ------------------------------------- //
-    
-    double bounds[6] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
-    is3D = GetBounds(bounds);
-std::cout << "is3D: " << is3D << std::endl;
-
-    int width = atts.GetCellsX();
-    int height = atts.GetCellsY();
-    
-    //
-    // Setup whatever variables I can assuming the grid is 2D. Then, check if it
-    // is actually 3D. If so, modify parameters and build rg. Otherwise, build
-    // rg with 2D variable values.
-    //
-    int nCellsOut = width*height;
-    double rCellVolume = (bounds[1] - bounds[0]) * (bounds[3] - bounds[2]) / (nCellsOut);
-    vtkRectilinearGrid* rg;
-    if (is3D)
-    {
-        int depth = atts.GetCellsZ();
-        nCellsOut *= depth;
-        rCellVolume *= (bounds[5] - bounds[4])/depth;
-        rg = CreateGrid(bounds, width, height, depth, 0, width, 0, height, 0, depth);
-    }
-    else
-    {
-        rg = CreateGrid(bounds, width, height, 0, width, 0, height);
-    }
-std::cout << "rCellVolume: " << rCellVolume << std::endl;
-std::cout << "Just generated rectilinear grid. Here it is:" << std::endl;
-rg->Print(std::cout);
     
     // --------------------------- //
     // --- Setup the variables --- //
     // --------------------------- //
     
+    // Because the rgrid is now global, we need some way to enforce the tracking
+    // of each variable across the entire mesh in a consistent way. If all domains
+    // have the same variables and if they are all ordered the same way,
+    // then we get this automatically. However, that may not be the case. So I
+    // have to use a Map to track the variables instead of an array.
+    // For now, just assume that there is one variable. Add multivariables later.
+    // TODO: use a Map to track multliple variables across the domains.
+    
+    // OLD CODE: might be useful for when I switch to a map
+    // int nVariables = in_ds->GetCellData()->GetNumberOfArrays();    
+    // vtkDataArray** vars;
+    // vars = new vtkDataArray*[nVariables];
+    // for (int vdx = 0, vdy = 0; vdx < nVariables; vdx++)
+    // {
+    //     vars[vdx] = vtkDoubleArray::New();
+    //     vars[vdx]->SetNumberOfComponents(1); // Can only handle scalar values now
+    //     vars[vdx]->SetNumberOfTuples(nCellsOut);
+    //     vars[vdx]->SetName(in_ds->GetCellData()->GetArray(vdx)->GetName());
+    //     
+    //     rg->GetCellData()->AddArray(vars[vdx]);
+    //     rg->GetCellData()->SetScalars(vars[vdx]);
+    // }
+    
+    
+    
+    in_ds->Delete();
+    return;
+}
+     
+
+    
+    /*
     // Some datasets include avtOriginalCellNumbers, which I might want to include
     // in my remapped dataset, but I don't want to remap that array. So for now,
     // I will just remove them.
@@ -712,6 +628,16 @@ for (std::map<std::string,int>::const_iterator iter = DEBUG_CellTypeList.begin()
     return out_dr;
     
 }*/
+
+
+
+
+void
+avtRemapFilter::Output(vtkRectilinearGrid* rg) {
+    avtDataTree_p outTree = new avtDataTree(rg, 0);
+    rg->Delete();
+    SetOutputDataTree(outTree);
+}
 
 // ****************************************************************************
 //  Method: avtResampleFilter::CalculateCellVolumes
