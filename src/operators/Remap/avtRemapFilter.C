@@ -180,6 +180,64 @@ avtRemapFilter::Equivalent(const AttributeGroup *a)
 void
 avtRemapFilter::Execute(void)
 {
+
+    // --- Generate Rectilinear Grid --- //
+    double bounds[6] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+    is3D = GetBounds(bounds);
+    int width = atts.GetCellsX();
+    int height = atts.GetCellsY();
+    
+    // Setup whatever variables I can assuming the grid is 2D. Then, check if it
+    // is actually 3D. If so, modify parameters and build rg. Otherwise, build
+    // rg with 2D variable values.
+    int nCellsOut = width*height;
+    double rCellVolume = (bounds[1] - bounds[0]) * (bounds[3] - bounds[2]) / nCellsOut;
+    vtkRectilinearGrid* rg;
+    
+    if (is3D) 
+    {
+        int depth = atts.GetCellsZ();
+        nCellsOut *= depth;
+        rCellVolume *= (bounds[5] - bounds[4]) / depth;
+        rg = CreateGrid(bounds, width, height, depth, 0, width, 0, height, 0, depth);
+    }
+    else
+    {
+        rg = CreateGrid(bounds, width, height, 0, width, 0, height);
+    }
+    
+    // If there are no variables, then just create the mesh and exit
+    int nVariables = GetInput()->GetInfo().GetAttributes().GetNumberOfVariables();
+    if (nVariables <= 0)
+    {
+        avtDataTree_p outTree = new avtDataTree(rg, 0);
+        rg->Delete();
+        SetOutputDataTree(outTree);
+        return;
+    }
+    else
+    {
+        SetOutputDataTree(GetInputDataTree());
+        rg->Delete();
+        return;
+    }
+}
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    // --- Each domain contributes the grid --- //
+    
+    /*
     avtDataTree_p inTree = GetInputDataTree();
     std::vector<int> domainIds;
     stringVector inLabels;
@@ -190,11 +248,11 @@ avtRemapFilter::Execute(void)
          i != domainIds.end(); ++i) {
         std::cout << "Domain Id: " << *i << std::endl;    
     }
-    /*
-    avtDataTree_p variableTree = ExtractVariablesFromDomains(inTree);
-    SetOutputDataTree(variableTree);
-    return;
-    */
+    
+    // avtDataTree_p variableTree = ExtractVariablesFromDomains(inTree);
+    // SetOutputDataTree(variableTree);
+    // return;
+    
     
     int numChildren = inTree->GetNChildren();
     avtDataTree_p *outDT = new avtDataTree_p[numChildren];
@@ -521,19 +579,19 @@ double DEBUG_maxDiff = DBL_MIN;
         // In order to calculate the avtRemapRectilinearDensities, I need to
         // normalize up to mass, sum the masses, and the normalize to density
         // using the new mass and new volume.
-/*        vtkDoubleArray* subCellDensities =
-            vtkDoubleArray::SafeDownCast(ug->GetCellData()->GetArray("d"));
-        double newCellMass = 0.0;
-        for (vtkIdType j = 0; j < subCellVolumes->GetNumberOfTuples(); j++) {
-            newCellMass += subCellDensities->GetComponent(j,0) * 
-                subCellVolumes->GetComponent(j,0);
-        }
+//        vtkDoubleArray* subCellDensities =
+//            vtkDoubleArray::SafeDownCast(ug->GetCellData()->GetArray("d"));
+//        double newCellMass = 0.0;
+//        for (vtkIdType j = 0; j < subCellVolumes->GetNumberOfTuples(); j++) {
+//            newCellMass += subCellDensities->GetComponent(j,0) * 
+//                subCellVolumes->GetComponent(j,0);
+//        }
 
-        double newCellDensity = 0.0;
-        if (newCellVolume != 0.0)
-            newCellDensity = newCellMass / newCellVolume;
-        avtRemapRectilinearDensity->SetComponent(i, 0, newCellDensity);
-*/
+//        double newCellDensity = 0.0;
+//        if (newCellVolume != 0.0)
+//            newCellDensity = newCellMass / newCellVolume;
+//        avtRemapRectilinearDensity->SetComponent(i, 0, newCellDensity);
+
         
         // --- Clean up --- //
         subCellVolumes->Delete();
@@ -561,19 +619,19 @@ PrintData(rg);
     //rg->GetCellData()->AddArray(avtRemapRectilinearVolume);
     //rg->GetCellData()->CopyFieldOn("avtRemapRectilinearVolume");
     
-/*    avtRemapRectilinearDensity->SetName("d");
-    rg->GetCellData()->AddArray(avtRemapRectilinearDensity);
-    rg->GetCellData()->SetScalars(avtRemapRectilinearDensity);
-    rg->GetCellData()->CopyFieldOn("d");
-    avtRemapRectilinearDensity->Delete();
-*/
+//    avtRemapRectilinearDensity->SetName("d");
+//    rg->GetCellData()->AddArray(avtRemapRectilinearDensity);
+//    rg->GetCellData()->SetScalars(avtRemapRectilinearDensity);
+//    rg->GetCellData()->CopyFieldOn("d");
+//    avtRemapRectilinearDensity->Delete();
+
     
-/*    for (int vdx = 0; vdx < nVariables; vdx++)
-    {
-        rg->GetCellData()->AddArray(vars[vdx]);
-        rg->GetCellData()->SetScalars(vars[vdx]);
-    }
-*/    
+//    for (int vdx = 0; vdx < nVariables; vdx++)
+//    {
+//        rg->GetCellData()->AddArray(vars[vdx]);
+//        rg->GetCellData()->SetScalars(vars[vdx]);
+//    }
+    
     avtDataRepresentation *out_dr =
             new avtDataRepresentation(rg, 0, "", false);
             
@@ -599,7 +657,7 @@ for (std::map<std::string,int>::const_iterator iter = DEBUG_CellTypeList.begin()
     
     return out_dr;
     
-}
+}*/
 
 // ****************************************************************************
 //  Method: avtResampleFilter::CalculateCellVolumes
