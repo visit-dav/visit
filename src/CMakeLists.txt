@@ -443,6 +443,9 @@
 #    Kevin Griffin, Wed Dec 12 18:00:27 PST 2018
 #    Added back osxfixup logic.
 #
+#    Eric Brugger, Mon Jan 28 15:14:54 PST 2019
+#    Changed SVN_REVISION to GIT_VERSION.
+#
 #****************************************************************************/
 
 CMAKE_MINIMUM_REQUIRED(VERSION 3.8 FATAL_ERROR)
@@ -1802,32 +1805,32 @@ FUNCTION(MAC_NIB_INSTALL exename)
 ENDFUNCTION(MAC_NIB_INSTALL)
 
 #-----------------------------------------------------------------------------
-# Read the SVN revision
+# Read the GIT version
 #-----------------------------------------------------------------------------
 #dummy revision, in case commands fail
-SET(VISIT_SVN_REVISION "Unknown")
+SET(VISIT_GIT_VERSION "Unknown")
 # Get the subversion revision number
-IF(EXISTS ${VISIT_SOURCE_DIR}/SVN_REVISION)
-    FILE(STRINGS ${VISIT_SOURCE_DIR}/SVN_REVISION VISIT_SVN_REVISION)
-ELSE(EXISTS ${VISIT_SOURCE_DIR}/SVN_REVISION)
-    IF (EXISTS ${VISIT_SOURCE_DIR}/.svn)
+IF(EXISTS ${VISIT_SOURCE_DIR}/GIT_VERSION)
+    FILE(STRINGS ${VISIT_SOURCE_DIR}/GIT_VERSION VISIT_GIT_VERSION)
+ELSE(EXISTS ${VISIT_SOURCE_DIR}/GIT_VERSION)
+    IF (EXISTS ${VISIT_SOURCE_DIR}/../.git)
         # Only try and determine the version number if it looks like
-        # we're in a working copy (a .svn directory should be present)
-        FIND_PACKAGE(Subversion)
-        IF(Subversion_FOUND)
-            Subversion_WC_INFO(${PROJECT_SOURCE_DIR} VISIT)
-            SET(VISIT_SVN_REVISION "${VISIT_WC_REVISION}")
-        ELSE(Subversion_FOUND)
-            IF(WIN32)
-                INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindTortoiseSVN.cmake)
-                IF(TortoiseSVN_FOUND)
-                    TortoiseSVN_WC_INFO(${PROJECT_SOURCE_DIR} VISIT)
-                    SET(VISIT_SVN_REVISION "${VISIT_WC_REVISION}")
-                ENDIF(TortoiseSVN_FOUND)
-            ENDIF(WIN32)
-        ENDIF(Subversion_FOUND)
-    ENDIF (EXISTS ${VISIT_SOURCE_DIR}/.svn)
-ENDIF(EXISTS ${VISIT_SOURCE_DIR}/SVN_REVISION)
+        # we're in a working copy (a .git directory should be present)
+#        FIND_PACKAGE(Subversion)
+#        IF(Subversion_FOUND)
+#            Subversion_WC_INFO(${PROJECT_SOURCE_DIR} VISIT)
+#            SET(VISIT_SVN_REVISION "${VISIT_WC_REVISION}")
+#        ELSE(Subversion_FOUND)
+#            IF(WIN32)
+#                INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindTortoiseSVN.cmake)
+#                IF(TortoiseSVN_FOUND)
+#                    TortoiseSVN_WC_INFO(${PROJECT_SOURCE_DIR} VISIT)
+#                    SET(VISIT_SVN_REVISION "${VISIT_WC_REVISION}")
+#                ENDIF(TortoiseSVN_FOUND)
+#            ENDIF(WIN32)
+#        ENDIF(Subversion_FOUND)
+    ENDIF (EXISTS ${VISIT_SOURCE_DIR}/../.git)
+ENDIF(EXISTS ${VISIT_SOURCE_DIR}/GIT_VERSION)
 
 #-----------------------------------------------------------------------------
 # Set up resource files for Windows applications.
