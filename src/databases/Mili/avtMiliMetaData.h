@@ -190,10 +190,13 @@ class MiliVariableMetaData
     vector<string>           &GetVectorComponents(void)
                                 { return vectorComponents; };
 
+    void                      FinalizeMiliFileExtract(void);
+
   private:
     
     string                       longName;
     string                       shortName;
+    string                       esMappedName;
     string                       classLName;
     string                       classSName;
     string                       path;
@@ -355,7 +358,7 @@ class avtMiliMetaData
                                        avtMiliMetaData(int);
                                       ~avtMiliMetaData(void);
 
-    //TODO: create a method to populate meta data from a json file?
+    //TODO: create a method to populate meta data from a json file
 
     void                               SetNumClasses(int);
     int                                GetNumClasses(void)
