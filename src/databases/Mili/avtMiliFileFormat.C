@@ -120,7 +120,7 @@ avtMiliFileFormat::IssueWarning(const char *msg, int key)
 //  This method was re-written from its original version. 
 //
 //  Arguments:
-//    fname      the file name of one of the Mili files.
+//    fpath      The path to a .mili json file. 
 //
 //  Programmer:  Alister Maguire
 //  Creation:    Jan 15, 2019
@@ -129,17 +129,18 @@ avtMiliFileFormat::IssueWarning(const char *msg, int key)
 //     
 // ****************************************************************************
 
-avtMiliFileFormat::avtMiliFileFormat(const char *fname)
-    : avtMTMDFileFormat(fname)
+avtMiliFileFormat::avtMiliFileFormat(const char *fpath)
+    : avtMTMDFileFormat(fpath)
 {
-    LoadMiliInfoJson(fname);
+    dims = nDomains = nMeshes = 1;
+    LoadMiliInfoJson(fpath);
 
-    string fnameStr(fname);
+    string fnamePth(fpath);
 
     //TODO: make sure this works for windows paths as well. 
-    size_t fNPos   = fnameStr.find_last_of("\\/");
-    string pthTmp  = fnameStr.substr(0, fNPos + 1);
-    string root    = fnameStr.substr(fNPos + 1);
+    size_t fNPos   = fnamePth.find_last_of("\\/");
+    string pthTmp  = fnamePth.substr(0, fNPos + 1);
+    string root    = fnamePth.substr(fNPos + 1);
 
     //
     // Set the family path.
@@ -2045,8 +2046,11 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
 // ****************************************************************************
  
 void *
-avtMiliFileFormat::GetAuxiliaryData(const char *var, int ts, int dom, 
-                                    const char * type, void *,
+avtMiliFileFormat::GetAuxiliaryData(const char *var, 
+                                    int ts, 
+                                    int dom, 
+                                    const char *type, 
+                                    void *,
                                     DestructorFunction &df) 
 {
     if (strcmp(type, AUXILIARY_DATA_MATERIAL) && strcmp(type, "AUXILIARY_DATA_IDENTIFIERS"))
@@ -2076,6 +2080,7 @@ avtMiliFileFormat::GetAuxiliaryData(const char *var, int ts, int dom,
     {
         return NULL;
     }
+
     //
     // The valid variables are meshX, where X is an int > 0.
     // We need to verify the name, and get the meshId.
@@ -2112,89 +2117,86 @@ avtMiliFileFormat::GetAuxiliaryData(const char *var, int ts, int dom,
 }
 
 
-// ****************************************************************************
-//  Method: avtMiliFileFormat::FreeUpResources
-//
-//  Purpose:
-//      TODO: is this still needed?
-//
-//  Programmer: Alister Maguire
-//  Creation:   Jan 16, 2019
-//
-//  Modifications:
-//
-// ****************************************************************************
-
-void
-avtMiliFileFormat::FreeUpResources()
-{
-}
-
-
-//TODO: move json extraction to miliMetaData
 // ***************************************************************************
-//  Function: 
+//  Function: avtMiliFileFormat::ExtractJsonVariable
 //
 //  Purpose:
+//      Extract a mili variable from our .mili json file. 
 //
 //  Arguments: 
+//      val          A json Value type to extract from.
+//      shortName    The variable's short name.        
+//      cShortName   The variable's class' short name. 
+//      cLongName    The Variable's class' long name. 
+//      meshId       The associated mesh ID. 
+//      isMatVar     Is this a material variable?
+//      isGlobal     Is this a global variable?
 //           
-//  Author:
+//  Author: Alister Maguire
+//  Date:   January 29, 2019
 //
 //  Modifications:
 //
 // ****************************************************************************
 
-void 
-avtMiliFileFormat::ExtractJsonVariable(MiliVariableMetaData *mVar,
-                                       const Value &val,
-                                       string name,
+MiliVariableMetaData * 
+avtMiliFileFormat::ExtractJsonVariable(const Value &val,
+                                       string shortName,
                                        string cShortName,
                                        string cLongName,
-                                       int meshId)
+                                       int meshId,
+                                       bool isMatVar,
+                                       bool isGlobal)
 {
     if (val.IsObject())
     {
-        //
-        // Extract our variable info. 
-        //
-        mVar->SetShortName(name);
-        
-        //
-        // If the variable begins with es_, it is an element set. 
-        //
-        string esId    = "es_";
-        string nameSub = name.substr(0, 3);
-
-        if (esId == nameSub)
-            mVar->SetIsElementSet(true); 
+        string longName        = "";
+        avtCentering centering = AVT_NODECENT;
+        int avtType            = -1;
+        int aggType            = -1;
+        int vecSize            = 0;
+        int compDims           = 1;
+        int numType            = M_FLOAT;
+        vector<string> comps;
 
         if (val.HasMember("LongName"))
-            mVar->SetLongName(val["LongName"].GetString());
+        {
+            longName = val["LongName"].GetString();
+        }
 
         if (val.HasMember("Center"))
-            mVar->SetCentering(val["Center"].GetInt());
+        {
+            centering = avtCentering(val["Center"].GetInt());
+        }
 
         if (val.HasMember("VTK_TYPE"))
-            mVar->SetAvtCellType(val["VTK_TYPE"].GetInt());
+        {
+            avtType = val["VTK_TYPE"].GetInt();
+        }
 
         if (val.HasMember("agg_type"))
-            mVar->SetMiliCellType(val["agg_type"] .GetInt());
+        {
+            aggType = val["agg_type"].GetInt();
+        }
 
         if (val.HasMember("vector_size"))
-            mVar->SetVectorSize(val["vector_size"].GetInt());
+        {
+            vecSize = val["vector_size"].GetInt(); 
+        }
 
         if (val.HasMember("dims"))
         {
-            int cDims = val["dims"].GetInt();
-            if (cDims == 0)
-                cDims = 1;
-
-            mVar->SetComponentDims(cDims);
+            compDims = val["dims"].GetInt();
+            if (compDims == 0)
+            {
+                compDims = 1;
+            }
         }
   
         if (val.HasMember("num_type"))
-            mVar->SetNumType(val["num_type"].GetInt());
+        {
+            numType = val["num_type"].GetInt();
+        }
 
         if (val.HasMember("vector_components"))
         {
@@ -2204,16 +2206,31 @@ avtMiliFileFormat::ExtractJsonVariable(MiliVariableMetaData *mVar,
             {
                 for (SizeType i = 0; i < vComps.Size(); ++i)
                 {
-                    mVar->AddVectorComponent(vComps[i].GetString());
+                    comps.push_back(vComps[i].GetString());
                 }
             }
         }
 
-        mVar->SetClassShortName(cShortName);
-        mVar->SetClassLongName(cLongName);
         bool isMulti = (nMeshes > 1);
-        mVar->SetMeshAssociation(isMulti, meshId);
+
+        return new MiliVariableMetaData(shortName, 
+                                        longName,
+                                        cShortName,
+                                        cLongName,
+                                        isMulti,
+                                        isMatVar,
+                                        isGlobal,
+                                        centering,
+                                        meshId,
+                                        avtType,
+                                        aggType,
+                                        numType,
+                                        vecSize,
+                                        compDims,
+                                        comps);
     }
+
+    return NULL;
 }
 
 
@@ -2229,13 +2246,17 @@ avtMiliFileFormat::CanCacheVariable(const char *varname)
 
 
 // ***************************************************************************
-//  Function: 
+//  Function: avtMiliFileFormat::CountJsonClassVariables
 //
 //  Purpose:
+//      Count the total number of variables that belong to all 
+//      mili Classes within the .mili json file. 
 //
 //  Arguments: 
+//      jDoc    The json document. 
 //           
-//  Author:
+//  Author: Alister Maguire
+//  Date:   January 29, 2019
 //
 //  Modifications:
 //
@@ -2266,13 +2287,17 @@ avtMiliFileFormat::CountJsonClassVariables(const Document &jDoc)
 
 
 // ***************************************************************************
-//  Function: 
+//  Function: avtMiliFileFormat::ExtractJsonClasses
 //
 //  Purpose:
+//      Extract mili Class information from our .mili json file. 
 //
 //  Arguments: 
+//      jDoc    The json document. 
+//      meshId  The current mesh ID. 
 //           
-//  Author:
+//  Author: Alister Maguire
+//  Date:   January 29, 2019
 //
 //  Modifications:
 //
@@ -2311,13 +2336,6 @@ avtMiliFileFormat::ExtractJsonClasses(Document &jDoc,
         if (val.IsObject())
         { 
             //
-            // Store the class meta data. 
-            //
-            MiliClassMetaData *miliClass = 
-                new MiliClassMetaData(nDomains);
-            miliClass->SetShortName(sName);
-
-            //
             // Check for special cases. As of now, these are material
             // and global variables. 
             //
@@ -2333,16 +2351,20 @@ avtMiliFileFormat::ExtractJsonClasses(Document &jDoc,
             {
                 isGlobal = true;
             }
-            
+
             string lName = "";
+            int scID     = -1;
+            int elCount  = 0;
+
             if (val.HasMember("LongName"))
             {
                 lName = val["LongName"].GetString();
-                miliClass->SetLongName(lName);
             }
 
             if (val.HasMember("ElementCount"))
-                miliClass->SetTotalNumElements(val["ElementCount"].GetInt());
+            {
+                elCount = val["ElementCount"].GetInt();
+            }
             else
             {
                 char msg[256];
@@ -2352,16 +2374,22 @@ avtMiliFileFormat::ExtractJsonClasses(Document &jDoc,
                
             if (val.HasMember("SuperClass"))
             {
-                int sClass = val["SuperClass"].GetInt();
-                miliClass->SetSuperClassId(sClass);
+                scID= val["SuperClass"].GetInt();
             }
             else
             {
-                char msg[256];
-                sprintf("%s", "Mili file classes must contain SuperClass ID");
-                EXCEPTION1(UnexpectedValueException, msg);
+                
+                EXCEPTION2(UnexpectedValueException, "Superclass ID",
+                    "");
             }
 
+            MiliClassMetaData *miliClass = 
+                new MiliClassMetaData(sName,
+                                      lName,
+                                      scID,
+                                      elCount,
+                                      nDomains);
+       
             if (val.HasMember("variables"))
             {
                 const Value &cVars = val["variables"];
@@ -2378,28 +2406,15 @@ avtMiliFileFormat::ExtractJsonClasses(Document &jDoc,
                         const Value &var = jVars[cVars[i]];
                         string varName   = cVars[i].GetString();
 
-                        miliClass->AddMiliVariable(varName);
-                        MiliVariableMetaData *varMD = new MiliVariableMetaData;
-                        
-                        if (isMatVar)
+                        MiliVariableMetaData *varMD = ExtractJsonVariable(var, 
+                            varName, sName, lName, meshId, isMatVar, isGlobal);
+
+                        if (varMD != NULL)
                         {
-                            varMD->SetIsMatVar(isMatVar);
+                            miliClass->AddMiliVariable(varName);
+                            miliMetaData[meshId]->AddVarMD(varIdx, varMD);
+                            varIdx++;
                         }
-                        else if (isGlobal)
-                        {
-                            varMD->SetIsGlobal(isGlobal);
-                        }
-
-                        ExtractJsonVariable(varMD, var, varName,
-                            sName, lName, meshId);
-
-                        //
-                        // This call will wrap up any loose ends. 
-                        //
-                        varMD->FinalizeMiliFileExtract();
-
-                        miliMetaData[meshId]->AddVarMD(varIdx, varMD);
-                        varIdx++;
 
                     } // end jVars.HasMember
 
@@ -2420,11 +2435,13 @@ avtMiliFileFormat::ExtractJsonClasses(Document &jDoc,
 
 
 // ***************************************************************************
-//  Function: 
+//  Function: avtMiliFileFormat::LoadMiliInfoJson
 //
 //  Purpose:
+//      Extract mili meta data from a json file. 
 //
 //  Arguments: 
+//      fpath    The name and path of the file to open. 
 //           
 //  Author:
 //
@@ -2432,31 +2449,14 @@ avtMiliFileFormat::ExtractJsonClasses(Document &jDoc,
 //
 // ****************************************************************************
 void
-avtMiliFileFormat::LoadMiliInfoJson(const char *fname)
+avtMiliFileFormat::LoadMiliInfoJson(const char *fpath)
 {
     ifstream jfile;
-    jfile.open(fname);
+    jfile.open(fpath);
 
     IStreamWrapper isw(jfile);
     Document jDoc;
     jDoc.ParseStream(isw);
-
-    string path = "";
-    nDomains = nMeshes = 1;
-
-    //
-    // Retrieve the file path. 
-    //
-    if (jDoc.HasMember("Path"))
-    {
-        //FIXME: do we even need this anymore?
-        path = jDoc["Path"].GetString();
-
-        //FIXME: filepath is only 512 chars long... is that really enough?
-        //       we could just turn this into a string for safety. 
-        strcpy(filepath, path.c_str());
-        filepath[path.size() + 1] = '\0';
-    }
 
     if (jDoc.HasMember("Domains"))
     {
@@ -2464,56 +2464,33 @@ avtMiliFileFormat::LoadMiliInfoJson(const char *fname)
     }
 
     if (jDoc.HasMember("Number_of_Meshes"))
+    {
         nMeshes = jDoc["Number_of_Meshes"].GetInt();
+    }
 
     if (jDoc.HasMember("Dimensions"))
+    {
         dims = jDoc["Dimensions"].GetInt();
+    }
 
     if (jDoc.HasMember("States"))
     {
         const Value &jStates = jDoc["States"];
         if (jStates.HasMember("count"))
+        {
             nTimesteps = jStates["count"].GetInt();
-        //TODO:
-        //else
-        // RAISE ERROR 
+        }
     }
-    
-    setTimesteps = false;
-    
-    dbid.resize(nDomains, -1);
-    meshRead.resize(nDomains, false);
-    datasets.resize(nDomains);
-
-    zoneLabels.resize(nDomains);
-    nodeLabels.resize(nDomains);
-    zone_label_mappings.resize(nDomains);
-    node_label_mappings.resize(nDomains);
-    max_zone_label_lengths.resize(nDomains);
-    max_node_label_lengths.resize(nDomains);
-
-    for(int i = 0; i < nDomains; ++i)
-    {
-        max_zone_label_lengths[i] = 0;
-        max_node_label_lengths[i] = 0;
-    }
-    materials.resize(nDomains);
     
     miliMetaData = new avtMiliMetaData *[nMeshes];
 
     for (int i = 0; i < nMeshes; ++i) 
-        miliMetaData[i] = NULL;
-
-    int dom;
-    for (dom = 0; dom < nDomains; ++dom)
     {
-        datasets[dom].resize(nMeshes, NULL);
-        materials[dom].resize(nMeshes, NULL);
+        miliMetaData[i] = NULL;
     }
 
     for (int meshId = 0; meshId < nMeshes; ++meshId)
     {
-
         miliMetaData[meshId] = new avtMiliMetaData(nDomains);
 
         if (jDoc.HasMember("Materials"))
@@ -2538,20 +2515,17 @@ avtMiliFileFormat::LoadMiliInfoJson(const char *fname)
             for (Value::ConstMemberIterator jItr = jMats.MemberBegin();
                  jItr != jMats.MemberEnd(); ++jItr)
             { 
-                string name = jItr->name.GetString();
+                string name      = jItr->name.GetString();
                 const Value &mat = jItr->value;
+
+                string matName = "";
+                float matColor[] = {0.0, 0.0, 0.0};
                   
                 if (mat.IsObject())
                 {
-                    MiliMaterialMetaData *miliMaterial = new MiliMaterialMetaData();
                     if (mat.HasMember("name"))
                     {
-                        miliMaterial->SetName(mat["name"].GetString());
-                    }
-                    //TODO: can we better handle this somehow?
-                    else
-                    {
-                        miliMaterial->SetName("");
+                        matName = mat["name"].GetString();
                     }
 
                     if (mat.HasMember("COLOR"))
@@ -2560,38 +2534,16 @@ avtMiliFileFormat::LoadMiliInfoJson(const char *fname)
 
                         if (mColors.IsArray())
                         {
-                            float matColors[3];
-                            setTimesteps = true;
                             for (SizeType i = 0; i < mColors.Size(); ++i)
                             {
-                                matColors[i] = mColors[i].GetFloat();
+                                matColor[i] = mColors[i].GetFloat();
                             }
-                            miliMaterial->SetColor(matColors);
-                        }
-
-                        else
-                        {
-                            //FIXME: Raise error
                         }
                     }
-                    //TODO: it may be better to let VisIt handle
-                    //      this coloring...
-                    else
-                    {
-                        //
-                        // If the material doesn't have a color
-                        // associated with it, generate a random color. 
-                        //
-                        float matColor[3];
-                        for (int i = 0; i < 3; ++i)
-                        {
-                            float cChannel = static_cast<float> (rand()) /
-                                             static_cast<float> (RAND_MAX);
-                            matColor[i] = cChannel;
-                        }
 
-                        miliMaterial->SetColor(matColor);
-                    }
+                    MiliMaterialMetaData *miliMaterial = 
+                        new MiliMaterialMetaData(matName,
+                                                 matColor);
 
                     miliMetaData[meshId]->AddMaterialMD(matCount++, miliMaterial);
                 }// end mat.IsObject
@@ -2618,7 +2570,6 @@ avtMiliFileFormat::LoadMiliInfoJson(const char *fname)
 
                 if (jTimes.IsArray())
                 {
-                    setTimesteps = true;
                     for (SizeType i = 0; i < jTimes.Size(); ++i)
                     {
                         times.push_back(jTimes[i].GetDouble());
@@ -2628,6 +2579,30 @@ avtMiliFileFormat::LoadMiliInfoJson(const char *fname)
             }
         }
     }        
+
+    dbid.resize(nDomains, -1);
+    meshRead.resize(nDomains, false);
+    datasets.resize(nDomains);
+
+    zoneLabels.resize(nDomains);
+    nodeLabels.resize(nDomains);
+    zone_label_mappings.resize(nDomains);
+    node_label_mappings.resize(nDomains);
+    max_zone_label_lengths.resize(nDomains);
+    max_node_label_lengths.resize(nDomains);
+
+    materials.resize(nDomains);
+    for (int dom = 0; dom < nDomains; ++dom)
+    {
+        datasets[dom].resize(nMeshes, NULL);
+        materials[dom].resize(nMeshes, NULL);
+    }
+
+    for(int i = 0; i < nDomains; ++i)
+    {
+        max_zone_label_lengths[i] = 0;
+        max_node_label_lengths[i] = 0;
+    }
 
     jfile.close();
 }

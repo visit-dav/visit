@@ -116,7 +116,7 @@ class avtMiliFileFormat : public avtMTMDFileFormat
                                            const char *type, void *args,
                                            DestructorFunction &); 
 
-    virtual void          FreeUpResources(void);
+    virtual void          FreeUpResources(void) {};
 
     virtual bool          CanCacheVariable(const char *varname);
 
@@ -162,25 +162,24 @@ class avtMiliFileFormat : public avtMTMDFileFormat
 
     inline void           OpenDB(int dom);
 
-
-    //TODO: move the json reading to meta data
+    //
+    // Json extraction methods. 
+    //
+    void                  LoadMiliInfoJson(const char *fname);
     int                   CountJsonClassVariables(const rapidjson::Document &);
-
-    void                  ExtractJsonVariable(MiliVariableMetaData *,
-                                              const rapidjson::Value &,
+    MiliVariableMetaData *ExtractJsonVariable(const rapidjson::Value &,
                                               string,
                                               string,
                                               string,
-                                              int);
-
+                                              int,
+                                              bool,
+                                              bool);
     void                  ExtractJsonVectorComponents(const rapidjson::Value &,
                                                       const rapidjson::Value &,
                                                       string,
                                                       int);
-
     void                  ExtractJsonClasses(rapidjson::Document &,
                                              int);
-    void                  LoadMiliInfoJson(const char *fname);
 
     //TODO: re-work the expression generators
     Expression            CreateGenericExpression(const char *, 

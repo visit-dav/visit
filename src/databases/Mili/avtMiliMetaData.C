@@ -59,6 +59,23 @@ using std::cerr;
 //  Purpose:
 //      Initialized the MiliVariableMetaData. 
 //
+//  Arguments:
+//      sName        The short name. 
+//      lName        The long name.
+//      cSName       The class short name. 
+//      cLName       The class long name.
+//      isMultiM     Is multi mesh or not. 
+//      isMat        Is a material var. 
+//      isGlob       Is global. 
+//      cent         centering (node/cell). 
+//      meshAssoc    ID of associated mesh (used for multi-mesh).  
+//      avtType      Avt cell type. 
+//      aggType      Mili cell type.
+//      nType        The type of scalar (float/int/etc.)
+//      vecSize      Size of vector (if it is a vector).  
+//      cDims        Component dimensions. 
+//      vComps       Vector components (as shortnames). 
+//
 //  Programmer: Alister Maguire
 //  Creation:   Jan 15, 2019
 //
@@ -66,25 +83,48 @@ using std::cerr;
 //
 // ****************************************************************************
 
-MiliVariableMetaData::MiliVariableMetaData()
+MiliVariableMetaData::MiliVariableMetaData(string sName,
+                                           string lName,
+                                           string cSName,
+                                           string cLName,
+                                           bool isMultiM,
+                                           bool isMat,
+                                           bool isGlob,
+                                           avtCentering cent,
+                                           int meshAssoc,  
+                                           int avtType,
+                                           int aggType,
+                                           int nType,
+                                           int vecSize,
+                                           int cDims,
+                                           vector<string> vComps)
 {
-    longName          = "";
-    shortName         = ""; 
-    esMappedName      = "";
-    classLName        = "";
-    classSName        = "";
-    path              = "";
-    cellTypeAvt       = -1;
-    cellTypeMili      = -1;
-    centering         = AVT_NODECENT;;
-    componentDims     = -1;
-    vectorSize        = -1;
-    meshAssociation   = -1;
-    numType           = M_FLOAT;
+    shortName         = sName; 
+    longName          = lName;
+    classSName        = cSName;
+    classLName        = cLName;
+    multiMesh         = isMultiM;
+    isMatVar          = isMat;
+    isGlobal          = isGlob;
+    meshAssociation   = meshAssoc;
+    centering         = cent;
+    cellTypeAvt       = avtType;
+    cellTypeMili      = aggType;
+    componentDims     = cDims;
+    numType           = nType;
+    vectorSize        = vecSize;
+
+    vectorComponents.resize(vComps.size());
+    for (int i = 0; i < vComps.size(); ++i)
+    {
+        vectorComponents[i] = vComps[i];
+    }
+
     isElementSet      = false;
-    isMatVar          = false;
-    isGlobal          = false;
-    multiMesh         = false;
+    esMappedName      = "";
+    path              = "";
+
+    DetermineESStatus();
 }
 
 
@@ -314,14 +354,10 @@ MiliVariableMetaData::GetPath()
 
 
 // ***************************************************************************
-//  Method: MiliVariableMetaData::FinalizeMiliFileExtract
+//  Method: MiliVariableMetaData::DetermineESStatus
 //
 //  Purpose:
-//      This method should be called when all of the metadata 
-//      from the .mili file has been extracted. It allows us 
-//      to perform any operations that rely on all of the md
-//      from the .mili file being present. 
-//           
+//
 //  Programmer: Alister Maguire
 //  Creation:   Jan 15, 2019
 //
@@ -330,8 +366,15 @@ MiliVariableMetaData::GetPath()
 // ****************************************************************************
 
 void
-MiliVariableMetaData::FinalizeMiliFileExtract(void)
+MiliVariableMetaData::DetermineESStatus(void)
 {
+    string esId    = "es_";
+    string nameSub = shortName.substr(0, 3);
+    if (esId == nameSub)
+    {
+        isElementSet = true;
+    }
+
     //
     // If this is an element set, we need to determine and
     // assign it another name to be used in the visit path
@@ -376,6 +419,45 @@ MiliVariableMetaData::FinalizeMiliFileExtract(void)
 
 
 // ***************************************************************************
+//  Method: MiliVariableMetaData::PrintSelf
+//
+//  Purpose:
+//
+//  Programmer: Alister Maguire
+//  Creation:   Jan 15, 2019
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+MiliVariableMetaData::PrintSelf(void)
+{
+    cerr << "long name: " << longName << endl;
+    cerr << "short name: " << shortName << endl;
+    cerr << "es mapped name: " << esMappedName << endl;
+    cerr << "class long Name: " << classLName << endl;
+    cerr << "class short Name: " << classSName << endl;
+    cerr << "path: " << path << endl;
+    cerr << "cell type avt: " << cellTypeAvt << endl;
+    cerr << "cell type mili: " << cellTypeMili << endl;
+    cerr << "centering: " << centering << endl;
+    cerr << "mesh assoc: " << meshAssociation << endl;
+    cerr << "num type: " << numType << endl;
+    cerr << "vec size: " << vectorSize << endl;
+    cerr << "component dims: " << componentDims << endl;
+    cerr << "is element set: " << isElementSet << endl;
+    cerr << "is global: " << isGlobal << endl;
+    cerr << "is multi mesh: " << multiMesh << endl;
+    cerr << "vector components: " << endl;
+    for (int i = 0; i < vectorComponents.size(); ++i)
+    {
+        cerr << vectorComponents[i] << endl;
+    }
+}
+
+
+// ***************************************************************************
 //  Constructor: MiliClassMetaData::MiliClassMetaData
 //
 //  Purpose:
@@ -404,6 +486,38 @@ MiliClassMetaData::MiliClassMetaData(int numDomains)
 
 
 // ***************************************************************************
+//  Constructor: MiliClassMetaData::MiliClassMetaData
+//
+//  Purpose:
+//      Initialize the MiliClassMetaData. 
+//
+//  Arguments: 
+//      numDomains    The number of domains. 
+//           
+//  Programmer: Alister Maguire
+//  Creation:   Jan 15, 2019
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+MiliClassMetaData::MiliClassMetaData(string sName,
+                                     string lName,
+                                     int scID,
+                                     int totalNEl,
+                                     int numDomains)
+{
+    shortName          = sName;
+    longName           = lName;
+    totalNumElements   = totalNEl;
+    superClassId       = scID;
+    DetermineType(superClassId);
+    numDomainElements.resize(numDomains, 0);
+    connectivityOffset.resize(numDomains, 0);
+}
+
+
+// ***************************************************************************
 //  Destructor: MiliClassMetaData::MiliClassMetaData
 //
 //  Programmer: Alister Maguire
@@ -415,30 +529,6 @@ MiliClassMetaData::MiliClassMetaData(int numDomains)
 
 MiliClassMetaData::~MiliClassMetaData()
 {
-}
-
-
-// ***************************************************************************
-//  Method: MiliClassMetaData::SetSuperClassId
-//
-//  Purpose:
-//      Set the superclass id. 
-//
-//  Arguments: 
-//      superClass    The superclass id. 
-//           
-//  Programmer: Alister Maguire
-//  Creation:   Jan 15, 2019
-//
-//  Modifications:
-//
-// ****************************************************************************
-
-void
-MiliClassMetaData::SetSuperClassId(int superClass)
-{
-    superClassId = superClass;
-    DetermineType(superClassId);
 }
 
 
@@ -613,12 +703,13 @@ MiliClassMetaData::DetermineType(int superClass)
 //
 // ****************************************************************************
 
-MiliMaterialMetaData::MiliMaterialMetaData(void)
+MiliMaterialMetaData::MiliMaterialMetaData(string matName,
+                                           float *matColor)
 {
-    name = "";
+    name = matName;
     for (int i = 0; i < 3; ++i)
     {
-        color[i] = 0.0;
+        color[i] = matColor[i];
     }
 }
 
@@ -639,30 +730,6 @@ MiliMaterialMetaData::MiliMaterialMetaData(void)
 
 MiliMaterialMetaData::~MiliMaterialMetaData(void)
 {
-}
-
-
-// ***************************************************************************
-//  Method: 
-//
-//  Purpose:
-//
-//  Arguments: 
-//           
-//  Programmer: Alister Maguire
-//  Creation:   Jan 15, 2019
-//
-//  Modifications:
-//
-// ****************************************************************************
-
-void
-MiliMaterialMetaData::SetColor(float *inColor)
-{
-    for (int i = 0; i < 3; ++i)
-    {
-        color[i] = inColor[i];
-    }
 }
 
 
