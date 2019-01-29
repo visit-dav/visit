@@ -31,6 +31,9 @@ exec perl -x $0 ${1+"$@"};
 #   Eric Brugger, Fri Aug 12 13:47:44 PDT 2016
 #   Add vtkm directory.
 #
+#   Eric Brugger, Mon Jan 28 14:39:03 PST 2019
+#   Modify to work with git.
+#
 # ----------------------------------------------------------------------------
 
 if  (! -d "src")
@@ -42,7 +45,9 @@ if  (! -d "src")
 sub get ($@)
 {
     my ($dir, $recursearg) = @_;
-    @tmpfiles = `svn status -v $recursearg $dir | grep -v '^?' | tr -s ' ' | cut -d' ' -f5 | grep -v -x \.`;
+    $curbranch = `git branch | grep "^*" | cut -d ' ' -f 2`;
+    chomp $curbranch;
+    @tmpfiles = `git ls-tree --name-only $recursearg $curbranch $dir`;
     my @files = ();
     foreach (@tmpfiles)
     {
@@ -52,16 +57,16 @@ sub get ($@)
     return @files
 }
 
-sub get_svn_recursive ($@)
+sub get_git_recursive ($@)
 {
     my ($dir) = @_;
     return get($dir, "");
 }
 
-sub get_svn_norecursive ($@)
+sub get_git_norecursive ($@)
 {
     my ($dir) = @_;
-    return get($dir, "-N");
+    return get($dir, "-r");
 }
 
 sub get_norecursive ($@)
@@ -82,76 +87,76 @@ sub get_norecursive ($@)
 
 if ($ARGV[0] eq "-dbio-only")
 {
-    push @files, get_svn_norecursive  "./src";
-    push @files, get_svn_recursive    "./src/CMake";
-    push @files, get_svn_norecursive  "./src/common";
-    push @files, get_svn_norecursive  "./src/common/Exceptions";
-    push @files, get_svn_recursive    "./src/common/Exceptions/Database";
-    push @files, get_svn_recursive    "./src/common/Exceptions/Pipeline";
-    push @files, get_svn_recursive    "./src/common/comm";
-    push @files, get_svn_recursive    "./src/common/expr";
-    push @files, get_svn_recursive    "./src/common/misc";
-    push @files, get_svn_recursive    "./src/common/parser";
-    push @files, get_svn_recursive    "./src/common/plugin";
-    push @files, get_svn_recursive    "./src/common/proxybase";
-    push @files, get_svn_recursive    "./src/common/state";
-    push @files, get_svn_recursive    "./src/common/utility";
-    push @files, get_svn_norecursive  "./src/visit_vtk";
-    push @files, get_svn_recursive    "./src/visit_vtk/full";
-    push @files, get_svn_recursive    "./src/visit_vtk/lightweight";
-    push @files, get_svn_norecursive  "./src/avt";
-    push @files, get_svn_norecursive  "./src/avt/Math/avtVector.h";
-    push @files, get_svn_norecursive  "./src/avt/Math/avtMatrix.h";
-    push @files, get_svn_norecursive  "./src/avt/Math/math_exports.h";
-    push @files, get_svn_norecursive  "./src/avt/VisWindow/VisWindow/VisWindowTypes.h";
-    push @files, get_svn_recursive    "./src/avt/DBAtts";
-    push @files, get_svn_recursive    "./src/avt/Database";
-    push @files, get_svn_recursive    "./src/avt/Pipeline";
-    push @files, get_svn_recursive    "./src/databases";
-    push @files, get_svn_norecursive  "./src/tools";
-    push @files, get_svn_recursive    "./src/tools/data/convert";
-    push @files, get_svn_recursive    "./src/include";
-    push @files, get_svn_norecursive  "./src/bin";
-    push @files, get_svn_recursive    "./src/exe";
-    push @files, get_svn_norecursive  "./src/lib";
-    push @files, get_svn_recursive    "./src/plugins";
-    push @files, get_svn_recursive    "./src/tools/dev/scripts";
-    push @files, get_svn_norecursive  "./src/third_party_builtin";
-    push @files, get_svn_recursive    "./src/third_party_builtin/bow";
-    push @files, get_svn_recursive    "./src/tools/dev/osfixup";
+    push @files, get_git_norecursive  "./src";
+    push @files, get_git_recursive    "./src/CMake";
+    push @files, get_git_norecursive  "./src/common";
+    push @files, get_git_norecursive  "./src/common/Exceptions";
+    push @files, get_git_recursive    "./src/common/Exceptions/Database";
+    push @files, get_git_recursive    "./src/common/Exceptions/Pipeline";
+    push @files, get_git_recursive    "./src/common/comm";
+    push @files, get_git_recursive    "./src/common/expr";
+    push @files, get_git_recursive    "./src/common/misc";
+    push @files, get_git_recursive    "./src/common/parser";
+    push @files, get_git_recursive    "./src/common/plugin";
+    push @files, get_git_recursive    "./src/common/proxybase";
+    push @files, get_git_recursive    "./src/common/state";
+    push @files, get_git_recursive    "./src/common/utility";
+    push @files, get_git_norecursive  "./src/visit_vtk";
+    push @files, get_git_recursive    "./src/visit_vtk/full";
+    push @files, get_git_recursive    "./src/visit_vtk/lightweight";
+    push @files, get_git_norecursive  "./src/avt";
+    push @files, get_git_norecursive  "./src/avt/Math/avtVector.h";
+    push @files, get_git_norecursive  "./src/avt/Math/avtMatrix.h";
+    push @files, get_git_norecursive  "./src/avt/Math/math_exports.h";
+    push @files, get_git_norecursive  "./src/avt/VisWindow/VisWindow/VisWindowTypes.h";
+    push @files, get_git_recursive    "./src/avt/DBAtts";
+    push @files, get_git_recursive    "./src/avt/Database";
+    push @files, get_git_recursive    "./src/avt/Pipeline";
+    push @files, get_git_recursive    "./src/databases";
+    push @files, get_git_norecursive  "./src/tools";
+    push @files, get_git_recursive    "./src/tools/data/convert";
+    push @files, get_git_recursive    "./src/include";
+    push @files, get_git_norecursive  "./src/bin";
+    push @files, get_git_recursive    "./src/exe";
+    push @files, get_git_norecursive  "./src/lib";
+    push @files, get_git_recursive    "./src/plugins";
+    push @files, get_git_recursive    "./src/tools/dev/scripts";
+    push @files, get_git_norecursive  "./src/third_party_builtin";
+    push @files, get_git_recursive    "./src/third_party_builtin/bow";
+    push @files, get_git_recursive    "./src/tools/dev/osfixup";
 }
 else
 {
-    push @files, get_svn_norecursive  "./src";
-    push @files, get_svn_recursive    "./src/CMake";
-    push @files, get_svn_recursive    "./src/common";
-    push @files, get_svn_recursive    "./src/visit_vtk";
-    push @files, get_svn_recursive    "./src/engine";
-    push @files, get_svn_recursive    "./src/launcher";
-    push @files, get_svn_recursive    "./src/avt";
-    push @files, get_svn_recursive    "./src/vtkqt";
-    push @files, get_svn_recursive    "./src/plots";
-    push @files, get_svn_recursive    "./src/operators";
-    push @files, get_svn_recursive    "./src/databases";
-    push @files, get_svn_recursive    "./src/winutil";
-    push @files, get_svn_recursive    "./src/viewer";
-    push @files, get_svn_recursive    "./src/gui";
-    push @files, get_svn_recursive    "./src/mdserver";
-    push @files, get_svn_recursive    "./src/visitpy";
-    push @files, get_svn_recursive    "./src/java";
-    push @files, get_svn_recursive    "./src/tools";
-    push @files, get_svn_recursive    "./src/sim";
-    push @files, get_svn_recursive    "./src/include";
-    push @files, get_svn_recursive    "./src/bin";
-    push @files, get_svn_recursive    "./src/exe";
-    push @files, get_svn_norecursive  "./src/lib";
-    push @files, get_svn_recursive    "./src/archives";
-    push @files, get_svn_recursive    "./src/plugins";
-    push @files, get_svn_recursive    "./src/config-site";
-    push @files, get_svn_recursive    "./src/third_party_builtin";
-    push @files, get_svn_recursive    "./src/resources";
-    push @files, get_svn_recursive    "./src/test";
-    push @files, get_norecursive      "./src/SVN_REVISION";
+    push @files, get_git_norecursive  "./src";
+    push @files, get_git_recursive    "./src/CMake";
+    push @files, get_git_recursive    "./src/common";
+    push @files, get_git_recursive    "./src/visit_vtk";
+    push @files, get_git_recursive    "./src/engine";
+    push @files, get_git_recursive    "./src/launcher";
+    push @files, get_git_recursive    "./src/avt";
+    push @files, get_git_recursive    "./src/vtkqt";
+    push @files, get_git_recursive    "./src/plots";
+    push @files, get_git_recursive    "./src/operators";
+    push @files, get_git_recursive    "./src/databases";
+    push @files, get_git_recursive    "./src/winutil";
+    push @files, get_git_recursive    "./src/viewer";
+    push @files, get_git_recursive    "./src/gui";
+    push @files, get_git_recursive    "./src/mdserver";
+    push @files, get_git_recursive    "./src/visitpy";
+    push @files, get_git_recursive    "./src/java";
+    push @files, get_git_recursive    "./src/tools";
+    push @files, get_git_recursive    "./src/sim";
+    push @files, get_git_recursive    "./src/include";
+    push @files, get_git_recursive    "./src/bin";
+    push @files, get_git_recursive    "./src/exe";
+    push @files, get_git_norecursive  "./src/lib";
+    push @files, get_git_recursive    "./src/archives";
+    push @files, get_git_recursive    "./src/plugins";
+    push @files, get_git_recursive    "./src/config-site";
+    push @files, get_git_recursive    "./src/third_party_builtin";
+    push @files, get_git_recursive    "./src/resources";
+    push @files, get_git_recursive    "./src/test";
+    push @files, get_norecursive      "./src/GIT_VERSION";
 }
 
 foreach (sort @files)

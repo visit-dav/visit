@@ -1,4 +1,4 @@
-#svn import -m "added Uintah to the fold" Uintah-2.5.0_beta.tar.gz svn+ssh://allens@edison.nersc.gov/project/projectdirs/visit/svn/visit/trunk/third_party/Uintah-2.5.0_beta.tar.gz
+#svn import -m "added Uintah to the fold" Uintah-2.6.0_beta.tar.gz svn+ssh://allens@edison.nersc.gov/project/projectdirs/visit/svn/visit/trunk/third_party/Uintah-2.6.0_beta.tar.gz
 
 function bv_uintah_initialize
 {
@@ -64,9 +64,9 @@ function bv_uintah_initialize_vars
 
 function bv_uintah_info
 {
-    export UINTAH_VERSION=${UINTAH_VERSION:-"2.5.0"}
+    export UINTAH_VERSION=${UINTAH_VERSION:-"2.6.0"}
     export UINTAH_FILE=${UINTAH_FILE:-"Uintah-${UINTAH_VERSION}_beta.tar.gz"}
-    export UINTAH_COMPATIBILITY_VERSION=${UINTAH_COMPATIBILITY_VERSION:-"2.5"}
+    export UINTAH_COMPATIBILITY_VERSION=${UINTAH_COMPATIBILITY_VERSION:-"2.6"}
     export UINTAH_BUILD_DIR=${UINTAH_BUILD_DIR:-"Uintah-${UINTAH_VERSION}/optimized"}
     export UINTAH_URL=${UINTAH_URL:-"http://www.sci.utah.edu/releases/uintah_v${UINTAH_VERSION}"}
     
@@ -97,8 +97,8 @@ function bv_uintah_host_profile
         echo "##" >> $HOSTCONF
 
         if [[ "$USE_SYSTEM_UINTAH" == "yes" ]]; then
-            warn "Assuming version 2.5.1 for Uintah"
-            echo "SETUP_APP_VERSION(UINTAH 2.5.1)" >> $HOSTCONF
+            warn "Assuming version 2.6.1 for Uintah"
+            echo "SETUP_APP_VERSION(UINTAH 2.6.1)" >> $HOSTCONF
             echo "VISIT_OPTION_DEFAULT(VISIT_UINTAH_DIR $UINTAH_INSTALL_DIR)" >> $HOSTCONF 
             echo "SET(VISIT_USE_SYSTEM_UINTAH TRUE)" >> $HOSTCONF
         else
@@ -356,13 +356,13 @@ function build_uintah
         rm -rf $VISITDIR/uintah/$UINTAH_VERSION/$VISITARCH/* || error "Can't remove old UINTAH install dir."
     fi
 
-    mkdir $VISITDIR/uintah/$UINTAH_VERSION/$VISITARCH/lib || error "Can't make UINTAH install dir."
-    mkdir $VISITDIR/uintah/$UINTAH_VERSION/$VISITARCH/include || error "Can't make UINTAH install dir."
-    mkdir $VISITDIR/uintah/$UINTAH_VERSION/$VISITARCH/include/VisIt || error "Can't make UINTAH install dir."
-    mkdir $VISITDIR/uintah/$UINTAH_VERSION/$VISITARCH/include/VisIt/uda2vis || error "Can't make UINTAH install dir."
+    mkdir $VISITDIR/uintah/$UINTAH_VERSION/$VISITARCH/lib || error "Can't make UINTAH install lib dir."
+    mkdir $VISITDIR/uintah/$UINTAH_VERSION/$VISITARCH/include || error "Can't make UINTAH install include dir."
+    mkdir $VISITDIR/uintah/$UINTAH_VERSION/$VISITARCH/include/VisIt || error "Can't make UINTAH install include/VisIt dir."
+    mkdir $VISITDIR/uintah/$UINTAH_VERSION/$VISITARCH/include/VisIt/interfaces || error "Can't make UINTAH install include/VisIt/interfaces dir."
 
     cp lib/* $VISITDIR/uintah/$UINTAH_VERSION/$VISITARCH/lib
-    cp ../src/VisIt/uda2vis/udaData.h $VISITDIR/uintah/$UINTAH_VERSION/$VISITARCH/include/VisIt/uda2vis
+    cp ../src/VisIt/interfaces/datatypes.h $VISITDIR/uintah/$UINTAH_VERSION/$VISITARCH/include/VisIt/interfaces/datatypes.h
 
     #    $MAKE install
     if [[ $? != 0 ]] ; then

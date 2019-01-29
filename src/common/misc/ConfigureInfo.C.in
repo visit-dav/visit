@@ -54,11 +54,11 @@ Version()
 }
 
 std::string 
-SVNVersion()
+GITVersion()
 {
-#cmakedefine VISIT_SVN_REVISION "@VISIT_SVN_REVISION@"
-#ifdef VISIT_SVN_REVISION
-    return std::string(VISIT_SVN_REVISION);
+#cmakedefine VISIT_GIT_VERSION "@VISIT_GIT_VERSION@"
+#ifdef VISIT_GIT_VERSION
+    return std::string(VISIT_GIT_VERSION);
 #else
     return std::string("");
 #endif
@@ -71,7 +71,7 @@ VersionControlVersionString()
 #ifdef VISIT_VERSION_STRING
     return std::string(VISIT_VERSION_STRING);
 #else
-    return std::string("svn version ") + SVNVersion();
+    return std::string("git version ") + GITVersion();
 #endif
 }
 

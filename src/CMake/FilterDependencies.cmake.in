@@ -51,6 +51,7 @@ set(VISIT_OPENEXR_DIR @VISIT_OPENEXR_DIR@)
 set(VISIT_QWT_DIR     @VISIT_QWT_DIR@)
 set(VTK_TARGETS       @VTK_VALID_TARGETS@)
 set(VTK_SMALL_VERSION @VTK_MAJOR_VERSION@.@VTK_MINOR_VERSION@)
+set(PYTHON_SMALL_VERSION @PYTHON_MAJOR_VERSION@@PYTHON_MINOR_VERSION@)
 set(VISIT_MESAGL_DIR  @VISIT_MESAGL_DIR@)
 set(VISIT_LLVM_DIR    @VISIT_LLVM_DIR@)
 
@@ -90,11 +91,6 @@ function(FILTER_VISIT_LIB_DEPENDENCIES filename)
             continue()
         endif()
 
-        # When we get here, we need to output a filtered line.
-        # The line is tokenized to make filtering easier (albeit slower).
-        #   * Replace vtk<lib> with vtk<lib>-<vtk_small_version>
-        #   * Replace Qt5::<lib> with Qt5<lib>
-        #   * Remove quotes surrounding 'xxx_LIB_DEPENDS'
         if(VISIT_PYTHON_DIR)
             string(REPLACE "${VISIT_PYTHON_DIR}/lib"
                            "\${VISIT_LIBRARY_DIR}"
@@ -136,6 +132,12 @@ function(FILTER_VISIT_LIB_DEPENDENCIES filename)
                            "\${VISIT_LIBRARY_DIR}/mesagl"
                             line "${line}")
         endif()
+
+        # When we get here, we need to output a filtered line.
+        # The line is tokenized to make filtering easier (albeit slower).
+        #   * Replace vtk<lib> with vtk<lib>-<vtk_small_version>
+        #   * Replace Qt5::<lib> with Qt5<lib>
+        #   * Remove quotes surrounding 'xxx_LIB_DEPENDS'
         set(skip_next_token FALSE)
         foreach(token ${line})
             if(skip_next_token)
@@ -164,7 +166,16 @@ function(FILTER_VISIT_LIB_DEPENDENCIES filename)
                        newtoken ${token})
             elseif(${token} IN_LIST VTK_TARGETS)
                 # append VTK version to vtk lib names
-                set(newtoken "${token}-${VTK_SMALL_VERSION}")
+                if(token MATCHES "WrappingPythonCore")
+                    string(REPLACE "PythonCore" 
+                           "Python${PYTHON_SMALL_VERSION}Core-${VTK_SMALL_VERSION}" newtoken ${token})
+                elseif(${token} MATCHES "vtkWrappingTools")
+                  # Skip this static library.
+                  set(skip_next_token TRUE) 
+                  continue()
+                else()
+                    set(newtoken "${token}-${VTK_SMALL_VERSION}")
+                endif()
             elseif(${token} MATCHES "mpich")
               # If we are installing mpich, then VISIT_PARALLEL_LINKER_FLAGS
               # points to our installed mpich, so having it in depds list
@@ -174,6 +185,15 @@ function(FILTER_VISIT_LIB_DEPENDENCIES filename)
               continue()
             elseif(${token} MATCHES "OSMesa")
                 string(REPLACE "mesagl" "osmesa" newtoken ${token})
+            elseif(${token} MATCHES "tbb")
+                get_filename_component(libname ${token} NAME)
+                set(newtoken "${libname}")
+            elseif(${token} MATCHES "embree")
+                get_filename_component(libname ${token} NAME)
+                set(newtoken "${libname}")
+            elseif(${token} MATCHES "ospray")
+                get_filename_component(libname ${token} NAME)
+                set(newtoken "${libname}")
             else()
                 if(WIN32)
                     if(token MATCHES "windowsbuild")

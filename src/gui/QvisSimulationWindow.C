@@ -850,6 +850,11 @@ QvisSimulationWindow::UpdateUIComponent(QWidget *window, const QString &name,
                   delete item;
               }
             }                                 
+            else if( text == std::string("CURRENT_ROW") &&
+                     row < lWidget->count() )
+            {
+              lWidget->setCurrentRow( row );
+            }                                 
             else if( text == std::string("REMOVE_ROW") &&
                      row < lWidget->count() )
             {
