@@ -226,6 +226,8 @@ avtRemapFilter::Execute(void)
     rg->GetCellData()->AddArray(vars);
     rg->GetCellData()->SetScalars(vars);
     
+    // Get the variable type from the attributes
+    
     // ----------------------------------------------------- //
     // --- Clip the domains against the rectilinear grid --- //
     // ----------------------------------------------------- //
@@ -291,6 +293,7 @@ DEBUG_CellTypeList.insert(std::pair<std::string, int>("unknown",        0));
     // --- Setup the variables --- //
     // --------------------------- //
     
+    // THIS HAS BEEN MOVED UP TO EXECUTE //
     // Because the rgrid is now global, we need some way to enforce the tracking
     // of each variable across the entire mesh in a consistent way. If all domains
     // have the same variables and if they are all ordered the same way,
@@ -315,44 +318,195 @@ DEBUG_CellTypeList.insert(std::pair<std::string, int>("unknown",        0));
     // }
     
     
+    // ------------------------------------------------------- //
+    // --- Calculate volumes of each cell in Original Grid --- //
+    // ------------------------------------------------------- //
+    // add the original volume to the in_ds AFTER the variables have already
+    // been added to rg so that we don't add an artificial variable.
+    
+    vtkDoubleArray* avtRemapOriginalVolume = CalculateCellVolumes(in_ds,
+            "avtRemapOriginalVolume");
+    in_ds->GetCellData()->AddArray(avtRemapOriginalVolume);
+    
+    std::cout << "In_ds after adding volumes" << std::endl;   
+    PrintData(in_ds);
+    
+    
+    // -------------------------------------------------------- //
+    // --- Clip the input grid against the rectilinear grid --- //
+    // -------------------------------------------------------- //
+    
+    // CURRENT CODE NEEDS REFACTOR.
+    // We calculate all 6 planes each time, which costs xDim*yDim*zDim*6, but we can
+    // precompute and setup a mapping between cells and planes to cost xDim+yDim+zDim
+    // vtkUnstructuredGrid* allGrids = vtkUnstructuredGrid::New(); 
+    //vtkAppendFilter* appender = vtkAppendFilter::New();
+
+// --- DEBUG --- DEBUG -------- //
+#include <float.h>
+#include <cstdlib>
+double DEBUG_maxDiff = DBL_MIN;
+// --- DEBUG --- DEBUG -------- //
+    
+    // + ----- +
+    // |   3   |
+    // |0     1|
+    // |   2   |
+    // + ----- +
+    
+    for (vtkIdType rCell = 0; rCell < rg->GetNumberOfCells(); rCell++) {
+        // Get the bounds from the cell.
+        double bounds[6] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+        rg->GetCell(rCell)->GetBounds(bounds);
+        
+        // Loop over each plane and clip the cells
+        vtkVisItClipper* last = NULL; 
+        std::vector<vtkVisItClipper*> clipperArray;      
+        std::vector<vtkImplicitBoolean*> funcsArray;
+        std::vector<vtkPlane*> planeArray;
+        for (int cdx = 0; cdx < 6; cdx++) {
+
+            if (cdx == 4 && !is3D) // Stop if only 2D
+            {
+                break;
+            }
+        
+            double origin[3] = {0., 0., 0.};
+            double normal[3] = {0., 0., 0.};
+            if (cdx == 0) {
+                origin[0] = bounds[cdx];
+                normal[0] = -1.0;
+            } else if (cdx == 1) {
+                origin[0] = bounds[cdx];
+                normal[0] = 1.0;
+            } else if (cdx == 2) {
+                origin[1] = bounds[cdx];
+                normal[1] = -1.0;
+            } else if (cdx == 3) {
+                origin[1] = bounds[cdx];
+                normal[1] = 1.0;
+            } else if (cdx == 4) {
+                origin[2] = bounds[cdx];
+                normal[2] = -1.0;
+            } else if (cdx == 5) {
+                origin[2] = bounds[cdx];
+                normal[2] = 1.0;
+            }
+            vtkPlane* plane = vtkPlane::New();
+            plane->SetOrigin(origin);
+            plane->SetNormal(normal);
+            planeArray.push_back(plane);
+        
+            vtkImplicitBoolean* funcs = vtkImplicitBoolean::New();
+            funcs->AddFunction(plane);
+            funcsArray.push_back(funcs);
+            
+            vtkVisItClipper* clipper = vtkVisItClipper::New();
+            clipper->SetInputData(in_ds);
+            clipper->SetClipFunction(funcs);
+            clipper->SetInsideOut(true);
+            clipper->SetRemoveWholeCells(false);
+            
+            if (last != NULL) {
+                clipper->SetInputConnection(last->GetOutputPort());
+            }
+            last = clipper;
+            clipperArray.push_back(clipper);
+        } // end clipping loop
+        
+        // Collection of clipped cells from the original grid that now take the shape
+        // of the rgrid cell, something like this:
+        // + -------------- +
+        // |   |      /     |
+        // |   |     /      |
+        // |   ^    /------ |
+        // |  / \  /    |   |
+        // | /   \/     |   |
+        // |/     \     |   |
+        // + -------------- +
+        last->Update();
+        vtkUnstructuredGrid* ug = vtkUnstructuredGrid::New();
+        ug->DeepCopy(last->GetOutput());
+    
+        // --- Calculate volume of subcells --- //
+        // Now that we have the unstrucutred grid from the clipping, we can loop
+        // over the subcells in that grid, calculate the volumes, and generate
+        // a new volume for the rectilinear grid. We also need the ratio
+        // between old and new volumes to weigh the variables (like mass, density,
+        // pressure, etc.).
+        
+        vtkDoubleArray* subCellVolumes = CalculateCellVolumes(ug, "subCellVolume");
+        
+// --- DEBUG --- DEBUG --- DEBUG --- DEBUG --- DEBUG --- DEBUG --- DEBUG ---- //
+double DEBUG_rCellVolumeTEST = 0.0;
+for (vtkIdType j = 0; j < subCellVolumes->GetNumberOfTuples(); j++) {
+    DEBUG_rCellVolumeTEST += subCellVolumes->GetComponent(j,0);
+}
+if (DEBUG_rCellVolumeTEST != rCellVolume)
+{
+    double diff = std::abs(DEBUG_rCellVolumeTEST - rCellVolume);
+    DEBUG_maxDiff = diff > DEBUG_maxDiff ? diff : DEBUG_maxDiff;
+    // std::cout << "Volume from subcells: " << DEBUG_rCellVolumeTEST << std::endl;
+}
+// --- DEBUG --- DEBUG --- DEBUG --- DEBUG --- DEBUG --- DEBUG --- DEBUG ---- //
+        
+        // Get the volume of the original cells for this ugrid
+        vtkDoubleArray* originalCellVolumes = vtkDoubleArray::SafeDownCast(
+            ug->GetCellData()->GetArray("avtRemapOriginalVolume"));
+        
+        
+        // --- Calculate variable updates --- //
+        // Two types of variables: intrinsic (like density) and extrinsic (like
+        // mass). To update the variables:
+        //        (1) Intrinsic values must be made extrinsic within the volume of
+        //            the sub cell, then totaled among the set of sub cells, then
+        //            made intrinsic again within the volume of the new cell.
+        //        (2) Extrinsic values must be made intrisic within the volume of
+        //            original cell, then made extrinsic within the volume of the
+        //            sub cell, then totaled among the set of sub cells.
+        
+        //for (int vdx = 0; vdx < nVariables; vdx++)
+        //{
+            double value = 0.0;
+            vtkDataArray* myVariable = ug->GetCellData()->GetArray(0);
+            if (atts.GetVariableType() == RemapAttributes::intrinsic) // like density
+            {
+                for (vtkIdType tuple = 0;
+                     tuple < myVariable->GetNumberOfTuples(); tuple++)
+                {
+                    value += myVariable->GetComponent(tuple, 0) *
+                        subCellVolumes->GetComponent(tuple, 0);
+                }
+                value /= rCellVolume;
+                //vars[vdx]->SetComponent(rCell, 0, value);
+            }
+            else if (atts.GetVariableType() == RemapAttributes::extrinsic) // like mass
+            {
+                for (vtkIdType tuple = 0;
+                     tuple < myVariable->GetNumberOfTuples(); tuple++)
+                {
+                    value += myVariable->GetComponent(tuple, 0) / 
+                        originalCellVolumes->GetComponent(tuple, 0) *
+                        subCellVolumes->GetComponent(tuple, 0);
+                }
+                //vars[vdx]->SetComponent(rCell, 0, value);
+            }
+            else
+            {
+                std::cout << "Should not be possible to get here... " << std::endl;
+            }
+        //} // end vars loop
+        
+    }
+    
+    
+    
+    
     
     in_ds->Delete();
     return;
 }
-     
-
-    
     /*
-    // Some datasets include avtOriginalCellNumbers, which I might want to include
-    // in my remapped dataset, but I don't want to remap that array. So for now,
-    // I will just remove them.
-    // TODO: Figure out how to better handle avtOriginalCellNumbers
-    in_ds->GetCellData()->RemoveArray("avtOriginalCellNumbers");
-    
-    //
-    // If there are no variables, then just output the mesh.
-    //
-    int nVariables = in_ds->GetCellData()->GetNumberOfArrays();
-    
-    if (nVariables <= 0)
-    {
-std::cout << "Number of variables is 0, so just outputting mesh " << std::endl;
-        return new avtDataRepresentation(rg, 0, "", false);
-    }
-    
-    vtkDataArray** vars;
-    vars = new vtkDataArray*[nVariables];
-    for (int vdx = 0, vdy = 0; vdx < nVariables; vdx++)
-    {
-        vars[vdx] = vtkDoubleArray::New();
-        vars[vdx]->SetNumberOfComponents(1); // Can only handle scalar values now
-        vars[vdx]->SetNumberOfTuples(nCellsOut);
-        vars[vdx]->SetName(in_ds->GetCellData()->GetArray(vdx)->GetName());
-        
-        rg->GetCellData()->AddArray(vars[vdx]);
-        rg->GetCellData()->SetScalars(vars[vdx]);
-    }
-    
     // Determine the variable type from the attributes
     RemapAttributes::VariableTypes varType =
         atts.GetVariableType();
@@ -514,7 +668,7 @@ double DEBUG_maxDiff = DBL_MIN;
             double value = 0.0;
             vtkDataArray* myVariable = ug->GetCellData()->GetArray(vdx);
                 // vtkDoubleArray::SafeDownCast(ug->GetCellData()->GetArray(vdx));
-            if (varType == RemapAttributes::intrinsic) // like density
+            if (atts.GetVariableType() == RemapAttributes::intrinsic) // like density
             {
                 for (vtkIdType tuple = 0;
                      tuple < myVariable->GetNumberOfTuples(); tuple++)
@@ -525,7 +679,7 @@ double DEBUG_maxDiff = DBL_MIN;
                 value /= rCellVolume;
                 vars[vdx]->SetComponent(rCell, 0, value);
             }
-            else if (varType == RemapAttributes::extrinsic) // like mass
+            else if (atts.GetVariableType() == RemapAttributes::extrinsic) // like mass
             {
                 for (vtkIdType tuple = 0;
                      tuple < myVariable->GetNumberOfTuples(); tuple++)
