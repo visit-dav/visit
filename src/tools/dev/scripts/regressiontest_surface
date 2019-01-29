@@ -234,6 +234,7 @@ fi
 
 # Update the repository.
 cd visit
+rm -f .git/index.lock >> ../buildlog 2>&1
 git pull >> ../buildlog 2>&1
 
 if test "$branch" = "trunk" ; then
