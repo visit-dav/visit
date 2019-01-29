@@ -44,6 +44,8 @@
 #include <visitstream.h>
 
 #include <ImproperUseException.h>
+#include <InvalidVariableException.h>
+#include <UnexpectedValueException.h>
 #include <DebugStream.h>
 
 using std::ifstream;
@@ -68,6 +70,7 @@ MiliVariableMetaData::MiliVariableMetaData()
 {
     longName          = "";
     shortName         = ""; 
+    esMappedName      = "";
     classLName        = "";
     classSName        = "";
     path              = "";
@@ -262,7 +265,7 @@ MiliVariableMetaData::GetSubrecordInfo(int dom)
 //  Arguments: 
 //
 //  Returns:
-//      The path as a string. 
+//      A reference to our path string. 
 //           
 //  Programmer: Alister Maguire
 //  Creation:   Jan 15, 2019
@@ -271,12 +274,11 @@ MiliVariableMetaData::GetSubrecordInfo(int dom)
 //
 // ****************************************************************************
 
-const string &
+const string&
 MiliVariableMetaData::GetPath()
 {
     //TODO: what we want is "classLName (classSName)/shortName"
     //      but visit seems to garble this...
-
     if (path.empty())
     {
         if (multiMesh)
@@ -287,26 +289,89 @@ MiliVariableMetaData::GetPath()
         }
         else
         {
-            path = "Primal/";
+            path = "Primal";
         }
 
         if (!classSName.empty())
         {
-            path += classSName + "/";
+            path += "/" + classSName;
         }
 
         //
-        // We don't include the element set name in the path. 
+        // If we have an element set, we need to use the mapped name.
         //
-        if (!isElementSet) 
+        if (isElementSet) 
         {
-            //TODO: if we are an element set, we need
-            //      to replace the es name with a 
-            //      common var name (stress, strain, etc). 
+            path += "/" + esMappedName;
         }
-        path += shortName;
+        else
+        {
+            path += "/" + shortName;
+        }
     }
     return path;
+}
+
+
+// ***************************************************************************
+//  Method: MiliVariableMetaData::FinalizeMiliFileExtract
+//
+//  Purpose:
+//      This method should be called when all of the metadata 
+//      from the .mili file has been extracted. It allows us 
+//      to perform any operations that rely on all of the md
+//      from the .mili file being present. 
+//           
+//  Programmer: Alister Maguire
+//  Creation:   Jan 15, 2019
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+MiliVariableMetaData::FinalizeMiliFileExtract(void)
+{
+    //
+    // If this is an element set, we need to determine and
+    // assign it another name to be used in the visit path
+    // besides its element set name. 
+    //
+    if (isElementSet)
+    {
+        if (vectorSize <= 0)
+        {
+            debug1 << "ERROR: we've found an element set that"
+                << " is not a vector!" << endl;
+            EXCEPTION1(InvalidVariableException, shortName.c_str());
+        }
+
+        //
+        // The first character will allow us to map to the 
+        // non-element set name. 
+        //
+        char leadingChar = vectorComponents[0][0];
+
+        switch (leadingChar)
+        {
+            //
+            // These are the known variables that can be element sets. 
+            // This may need to be updated in the future. 
+            //
+            case 'e':
+                esMappedName = "strain";
+                break;
+            case 's':
+                esMappedName = "stress";
+                break;
+            default:
+                char msg[1024]; 
+                sprintf(msg, "An element set of unknown type has been "
+                    "encountered! If valid, code needs to be updated");
+                EXCEPTION2(UnexpectedValueException, shortName, msg);
+                break;
+        }
+    }
 }
 
 
@@ -403,11 +468,20 @@ MiliClassMetaData::SetConnectivityOffset(int domain, int offset)
 
 
 // ***************************************************************************
-//  Method: 
+//  Method: MiliClassMetaData::GetConnectivityOffset
 //
 //  Purpose:
+//      Get the Class offset in the given domain. If we have N elements, 
+//      and a variable of this Class type, the connectivity offset 
+//      will be the starting position of this variable in our 
+//      array of N scalars/vectors/etc. This is valuable when a scalar
+//      is not applied to all elements. 
 //
 //  Arguments: 
+//      domain    The domain. 
+//
+//  Returns:
+//      The connectivity offset. 
 //           
 //  Programmer: Alister Maguire
 //  Creation:   Jan 15, 2019

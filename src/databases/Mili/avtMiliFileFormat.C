@@ -2357,10 +2357,9 @@ avtMiliFileFormat::ExtractJsonClasses(Document &jDoc,
             }
             else
             {
-                //TODO: handle this?
-                //char msg[256];
-                //sprintf("%s", "Mili file classes must contain SuperClass ID");
-                //EXCEPTION1(ImproperUseException, msg);
+                char msg[256];
+                sprintf("%s", "Mili file classes must contain SuperClass ID");
+                EXCEPTION1(UnexpectedValueException, msg);
             }
 
             if (val.HasMember("variables"))
@@ -2393,6 +2392,11 @@ avtMiliFileFormat::ExtractJsonClasses(Document &jDoc,
 
                         ExtractJsonVariable(varMD, var, varName,
                             sName, lName, meshId);
+
+                        //
+                        // This call will wrap up any loose ends. 
+                        //
+                        varMD->FinalizeMiliFileExtract();
 
                         miliMetaData[meshId]->AddVarMD(varIdx, varMD);
                         varIdx++;
