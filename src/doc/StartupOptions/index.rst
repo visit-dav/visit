@@ -80,8 +80,8 @@ USAGE: visit [options]::
     Version options
     ---------------------------------------------------------------------------
         -version             Do NOT run VisIt. Just print the current version.
-        -svn_revision        Do NOT run VisIt. Just print the Subversion 
-                             revision it was built from.
+        -git_version         Do NOT run VisIt. Just print the Git version it
+                             was built from.
         -beta                Run the current beta version.
         -v <version>         Run a specified version. Specifying 2 digits,
                              such as X.Y, will run the latest patch release
