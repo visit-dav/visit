@@ -220,7 +220,7 @@ avtRemapFilter::Execute(void)
     }
     
     // Add variables to the rectilinear grid
-    vtkDoubleArray* vars = vtkDoubleArray::New();
+    vars = vtkDoubleArray::New();
     vars->SetNumberOfComponents(1);
     vars->SetNumberOfTuples(nCellsOut);
     vars->SetName(GetInput()->GetInfo().GetAttributes().GetVariableName().c_str());
@@ -285,6 +285,7 @@ DEBUG_CellTypeList.insert(std::pair<std::string, int>("unknown",        0));
     if (in_ds == NULL || in_ds->GetNumberOfPoints() == 0 || nCellsIn == 0)
     {
         std::cout << "Domain " << domainId << " is invalid." << std::endl;
+        std::cout << "Deleting in_ds" << std::endl;
         in_ds->Delete();
         return;
     }
@@ -329,8 +330,8 @@ DEBUG_CellTypeList.insert(std::pair<std::string, int>("unknown",        0));
             "avtRemapOriginalVolume");
     in_ds->GetCellData()->AddArray(avtRemapOriginalVolume);
     
-    std::cout << "In_ds after adding volumes" << std::endl;   
-    PrintData(in_ds);
+    //std::cout << "In_ds after adding volumes" << std::endl;   
+    //PrintData(in_ds);
     
     
     // -------------------------------------------------------- //
@@ -355,13 +356,15 @@ double DEBUG_maxDiff = DBL_MIN;
     // |   2   |
     // + ----- +
     
-    for (vtkIdType rCell = 0; rCell < rg->GetNumberOfCells(); rCell++) {
+    for (vtkIdType rCell = 0; rCell < rg->GetNumberOfCells(); rCell++)
+    {
         // Get the bounds from the cell.
         double cellBounds[6] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
         rg->GetCell(rCell)->GetBounds(cellBounds);
         
         // Loop over each plane and clip the cells
-        vtkVisItClipper* last = NULL; 
+        vtkVisItClipper* last = NULL;
+        // TODO: Why do I have these in vectors?
         std::vector<vtkVisItClipper*> clipperArray;      
         std::vector<vtkImplicitBoolean*> funcsArray;
         std::vector<vtkPlane*> planeArray;
@@ -428,6 +431,7 @@ double DEBUG_maxDiff = DBL_MIN;
         last->Update();
         vtkUnstructuredGrid* ug = vtkUnstructuredGrid::New();
         ug->DeepCopy(last->GetOutput());
+        // vtkUnstructuredGrid* ug = last->GetOutput();
     
         // --- Calculate volume of subcells --- //
         // Now that we have the unstrucutred grid from the clipping, we can loop
@@ -466,45 +470,63 @@ if (DEBUG_rCellVolumeTEST != rCellVolume)
         //            original cell, then made extrinsic within the volume of the
         //            sub cell, then totaled among the set of sub cells.
         
-        //for (int vdx = 0; vdx < nVariables; vdx++)
-        //{
-            double value = 0.0;
-            vtkDataArray* myVariable = ug->GetCellData()->GetArray(0);
-            if (atts.GetVariableType() == RemapAttributes::intrinsic) // like density
+        double value = 0.0;
+        vtkDataArray* myVariable = ug->GetCellData()->GetArray(0);
+        if (atts.GetVariableType() == RemapAttributes::intrinsic) // like density
+        {
+            for (vtkIdType tuple = 0;
+                 tuple < myVariable->GetNumberOfTuples(); tuple++)
             {
-                for (vtkIdType tuple = 0;
-                     tuple < myVariable->GetNumberOfTuples(); tuple++)
-                {
-                    value += myVariable->GetComponent(tuple, 0) *
-                        subCellVolumes->GetComponent(tuple, 0);
-                }
-                value /= rCellVolume;
-                //vars[vdx]->SetComponent(rCell, 0, value);
+                value += myVariable->GetComponent(tuple, 0) *
+                    subCellVolumes->GetComponent(tuple, 0);
             }
-            else if (atts.GetVariableType() == RemapAttributes::extrinsic) // like mass
+            value /= rCellVolume;
+            vars->SetComponent(rCell, 0, value + vars->GetComponent(rCell, 0));
+        }
+        else if (atts.GetVariableType() == RemapAttributes::extrinsic) // like mass
+        {
+            for (vtkIdType tuple = 0;
+                 tuple < myVariable->GetNumberOfTuples(); tuple++)
             {
-                for (vtkIdType tuple = 0;
-                     tuple < myVariable->GetNumberOfTuples(); tuple++)
-                {
-                    value += myVariable->GetComponent(tuple, 0) / 
-                        originalCellVolumes->GetComponent(tuple, 0) *
-                        subCellVolumes->GetComponent(tuple, 0);
-                }
-                //vars[vdx]->SetComponent(rCell, 0, value);
+                value += myVariable->GetComponent(tuple, 0) / 
+                    originalCellVolumes->GetComponent(tuple, 0) *
+                    subCellVolumes->GetComponent(tuple, 0);
             }
-            else
-            {
-                std::cout << "Should not be possible to get here... " << std::endl;
-            }
-        //} // end vars loop
+            vars->SetComponent(rCell, 0, value + vars->GetComponent(rCell, 0));
+        }
+        else
+        {
+            std::cout << "Should not be possible to get here... " << std::endl;
+        }
         
-    }
+        // --- Clean up --- //
+        //std::cout << "Deleting myVariable" << std::endl;
+        //myVariable->Delete();
+        //std::cout << "Deleting originalCellVolumes" << std::endl;
+        //originalCellVolumes->Delete();
+        //std::cout << "Deleting subCellVolumes" << std::endl;
+        //subCellVolumes->Delete();
+        //std::cout << "Deleting ug" << std::endl;
+        // ug->Delete();
+        //std::cout << "Does not like trying to delete ug" << std::endl;
+        //std::cout << "Deleting vectors" << std::endl;
+        //std::cout << "Does not like trying to delete vectors" << std::endl;
+        //int stop = is3D ? 6 : 4;
+        //for (int i = 0; i < stop; ++i)
+        //{
+            //clipperArray[i]->Delete();
+            //funcsArray[i]->Delete();
+            //planeArray[i]->Delete();
+        //}
+        //std::cout << "Deleting last" << std::endl;
+        //last->Delete();
+    } // End loop over rCells
     
-    
-    
-    
-    
-    in_ds->Delete();
+    // --- More Clean up --- //
+    //std::cout << "Deleting avtRemapOriginVolume" << std::endl;
+    //avtRemapOriginalVolume->Delete();
+    //std::cout << "Deleting in_ds" << std::endl;
+    //in_ds->Delete();
     return;
 }
     /*

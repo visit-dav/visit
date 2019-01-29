@@ -110,6 +110,7 @@ class avtRemapFilter : public avtDatasetToDatasetFilter,
     vtkRectilinearGrid* rg;
     double              rGridBounds[6];
     double              rCellVolume;
+    vtkDoubleArray*     vars;
     bool                is3D;
     
     
