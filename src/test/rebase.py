@@ -91,14 +91,8 @@ def confirm_startup_dir_is_visit_test_root():
     if not os.getcwd().split('/')[-1] == 'test':
         print '"test" does not appear to be current working directory name.'
         retval = False
-    if not os.access(".svn", os.F_OK):
-        print '".svn" does not appear to be present in the current working directory.'
-        retval = False
     if not os.access("baseline", os.F_OK):
         print '"baseline" does not appear to be present in the current working directory.'
-        retval = False
-    if not os.access("visit_test_suite.py", os.F_OK):
-        print '"visit_test_suite.py" does not appear to be present in the current working directory.'
         retval = False
     if not retval:
         print "Run this script only from the root of the VisIt test dir tree"
@@ -194,7 +188,7 @@ def copy_currents_from_html_pages(filelist, datetag, prompt, test_type):
             print "Warning: file \"%s\" is not PNG format!"%target_file
         newsize = os.stat(target_file).st_size
         if newsize < (1-0.25)*cursize or newsize > (1+0.25)*cursize:
-            print "Warning: dramatic change in size of file \"%s\"!"%target_file
+            print "Warning: dramatic change in size of file (old=%d/new=%d)\"%s\"!"%(cursize,newsize,target_file)
 
 #
 # Confirm in correct dir
