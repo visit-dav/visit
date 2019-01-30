@@ -80,7 +80,8 @@ avtRemapFilter::avtRemapFilter()
   rCellVolume(0.),
   is3D(false)
 {
-    // TODO: initialize rg and vars here
+    rg = vtkRectilinearGrid::New();
+    vars = vtkDoubleArray::New();
 }
 
 
@@ -96,7 +97,8 @@ avtRemapFilter::avtRemapFilter()
 
 avtRemapFilter::~avtRemapFilter()
 {
-    // TODO: delete rg and vars here
+    rg->Delete();
+    vars->Delete();
 }
 
 
@@ -219,8 +221,6 @@ avtRemapFilter::Execute(void)
     }
     
     // Add variables to the rectilinear grid
-    vars = vtkDoubleArray::New();
-    // TODO: initialize vars in constructor
     vars->SetNumberOfComponents(1);
     vars->SetNumberOfTuples(nCellsOut);
     for (vtkIdType i = 0; i < vars->GetNumberOfTuples(); ++i) {
@@ -544,8 +544,6 @@ for (std::map<std::string,int>::const_iterator iter = DEBUG_CellTypeList.begin()
 void
 avtRemapFilter::Output() {
     avtDataTree_p outTree = new avtDataTree(rg, 0);
-    rg->Delete();
-    // TODO: delete rg in the destructor
     SetOutputDataTree(outTree);
 }
 
@@ -815,7 +813,6 @@ avtRemapFilter::CreateGrid(int numX, int numY, int numZ,
     yc = GetCoordinates(rGridBounds[2], height, numY+1, minY, maxY+1);
     zc = GetCoordinates(rGridBounds[4], depth, numZ+1, minZ, maxZ+1);
 
-    rg = vtkRectilinearGrid::New();
     rg->SetDimensions(maxX-minX+1, maxY-minY+1, maxZ-minZ+1);
     rg->SetXCoordinates(xc);
     xc->Delete();
@@ -840,7 +837,6 @@ avtRemapFilter::CreateGrid(
     yc = GetCoordinates(rGridBounds[2], height, numY+1, minY, maxY+1);
     zc = GetCoordinates(rGridBounds[4], 0, 1, 0, 1);
 
-    rg = vtkRectilinearGrid::New();
     rg->SetDimensions(maxX-minX+1, maxY-minY+1, 1);
     rg->SetXCoordinates(xc);
     xc->Delete();
