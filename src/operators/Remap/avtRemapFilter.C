@@ -187,7 +187,7 @@ avtRemapFilter::Execute(void)
     // --------------------------------- //
     // --- Generate Rectilinear Grid --- //
     // --------------------------------- //
-    is3D = GetBounds(rGridBounds);
+    GetBounds();
     int width = atts.GetCellsX();
     int height = atts.GetCellsY();
     
@@ -993,16 +993,17 @@ DEBUG_CellTypeList["unknown"]++;
 //    Remove const qualification.
 //
 // ****************************************************************************
-bool avtRemapFilter::GetBounds(double bounds[6])
+void
+avtRemapFilter::GetBounds()
 {
     if (!atts.GetUseExtents())
     {
-        bounds[0] = atts.GetStartX();
-        bounds[1] = atts.GetEndX();
-        bounds[2] = atts.GetStartY();
-        bounds[3] = atts.GetEndY();
-        bounds[4] = atts.GetStartZ();
-        bounds[5] = atts.GetEndZ();
+        rGridBounds[0] = atts.GetStartX();
+        rGridBounds[1] = atts.GetEndX();
+        rGridBounds[2] = atts.GetStartY();
+        rGridBounds[3] = atts.GetEndY();
+        rGridBounds[4] = atts.GetStartZ();
+        rGridBounds[5] = atts.GetEndZ();
     }
     else
     {
@@ -1010,19 +1011,19 @@ bool avtRemapFilter::GetBounds(double bounds[6])
         avtExtents *exts = datts.GetDesiredSpatialExtents();
         if (exts->HasExtents())
         {
-            exts->CopyTo(bounds);
+            exts->CopyTo(rGridBounds);
         }
         else
         {
-            GetSpatialExtents(bounds);
+            GetSpatialExtents(rGridBounds);
         }
     }
-    if (fabs(bounds[4]) < 1e-100 && fabs(bounds[5]) < 1e-100)
+    if (fabs(rGridBounds[4]) < 1e-100 && fabs(rGridBounds[5]) < 1e-100)
     {
-        return false;
+        is3D = false;
     }
     else {
-        return atts.GetIs3D();
+        is3D = atts.GetIs3D();
     }
 }
 

@@ -85,7 +85,6 @@ class avtRemapFilter : public avtDatasetToDatasetFilter,
   protected:
     RemapAttributes   atts;
 
-    // virtual avtDataRepresentation *ExecuteData(avtDataRepresentation *);
     virtual void        Execute(void);
     avtDataTree_p       ExtractVariablesFromDomains(avtDataTree_p);
     avtDataRepresentation *GetVariableSubsets(avtDataRepresentation *);
@@ -97,7 +96,7 @@ class avtRemapFilter : public avtDatasetToDatasetFilter,
     // --- Helper Functions --- //
     // ------------------------ //
     vtkDoubleArray      *CalculateCellVolumes(vtkDataSet*, const char* name = "");
-    bool                GetBounds(double bounds[6]);
+    void                GetBounds();
     void                CreateGrid(int, int, int, int, int, int, int, int, int);
     void                CreateGrid(int, int, int, int, int, int);
     vtkDataArray        *GetCoordinates(double, double, int, int, int);
