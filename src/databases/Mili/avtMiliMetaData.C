@@ -91,6 +91,7 @@ MiliVariableMetaData::MiliVariableMetaData(string sName,
                                            bool isMat,
                                            bool isGlob,
                                            avtCentering cent,
+                                           int nDomains,
                                            int meshAssoc,  
                                            int avtType,
                                            int aggType,
@@ -114,6 +115,8 @@ MiliVariableMetaData::MiliVariableMetaData(string sName,
     numType           = nType;
     vectorSize        = vecSize;
 
+    subrecInfo.resize(nDomains);
+
     vectorComponents.resize(vComps.size());
     for (int i = 0; i < vComps.size(); ++i)
     {
@@ -131,8 +134,6 @@ MiliVariableMetaData::MiliVariableMetaData(string sName,
 // ***************************************************************************
 //  Destructor: MiliVariableMetaData::~MiliVariableMetaData
 //
-//  Arguments: 
-//           
 //  Programmer: Alister Maguire
 //  Creation:   Jan 15, 2019
 //
@@ -170,29 +171,6 @@ MiliVariableMetaData::GetVectorComponent(int idx)
     if (idx >= 0 && idx < vectorComponents.size())
         return vectorComponents[idx];
     return "";
-}
-
-
-// ***************************************************************************
-//  Method: MiliVariableMetaData::InitSRcontainers
-//
-//  Purpose:
-//      Initialize the subrecord containers. 
-//
-//  Arguments: 
-//      numDomains    The number of domains. 
-//           
-//  Programmer: Alister Maguire
-//  Creation:   Jan 15, 2019
-//
-//  Modifications:
-//
-// ****************************************************************************
-
-void
-MiliVariableMetaData::InitSRContainers(int numDomains)
-{
-    subrecInfo.resize(numDomains);
 }
 
 
@@ -357,6 +335,9 @@ MiliVariableMetaData::GetPath()
 //  Method: MiliVariableMetaData::DetermineESStatus
 //
 //  Purpose:
+//      Determine if this variable is an element set. If it is
+//      perform the neccessary extra steps required for 
+//      functionality. 
 //
 //  Programmer: Alister Maguire
 //  Creation:   Jan 15, 2019
@@ -422,6 +403,7 @@ MiliVariableMetaData::DetermineESStatus(void)
 //  Method: MiliVariableMetaData::PrintSelf
 //
 //  Purpose:
+//      Print the class members that are set from the .mili file. 
 //
 //  Programmer: Alister Maguire
 //  Creation:   Jan 15, 2019
@@ -464,34 +446,10 @@ MiliVariableMetaData::PrintSelf(void)
 //      Initialize the MiliClassMetaData. 
 //
 //  Arguments: 
-//      numDomains    The number of domains. 
-//           
-//  Programmer: Alister Maguire
-//  Creation:   Jan 15, 2019
-//
-//  Modifications:
-//
-// ****************************************************************************
-
-MiliClassMetaData::MiliClassMetaData(int numDomains)
-{
-    longName           = "";
-    shortName          = "";
-    totalNumElements   = 0;
-    superClassId       = -1;
-    classType          = UNKNOWN;
-    numDomainElements.resize(numDomains, 0);
-    connectivityOffset.resize(numDomains, 0);
-}
-
-
-// ***************************************************************************
-//  Constructor: MiliClassMetaData::MiliClassMetaData
-//
-//  Purpose:
-//      Initialize the MiliClassMetaData. 
-//
-//  Arguments: 
+//      sName         The class' short name.
+//      lName         The class' long name.
+//      scID          The class' superclass ID.
+//      totalNEl      The total number of elements belonging to this class. 
 //      numDomains    The number of domains. 
 //           
 //  Programmer: Alister Maguire
@@ -511,7 +469,7 @@ MiliClassMetaData::MiliClassMetaData(string sName,
     longName           = lName;
     totalNumElements   = totalNEl;
     superClassId       = scID;
-    DetermineType(superClassId);
+    DetermineType();
     numDomainElements.resize(numDomains, 0);
     connectivityOffset.resize(numDomains, 0);
 }
@@ -553,7 +511,9 @@ void
 MiliClassMetaData::SetConnectivityOffset(int domain, int offset)
 {
     if (domain >= 0 && domain < connectivityOffset.size())
+    {
         connectivityOffset[domain] = offset;
+    }
 }
 
 
@@ -584,17 +544,23 @@ int
 MiliClassMetaData::GetConnectivityOffset(int domain)
 {
     if (domain >= 0 && domain < connectivityOffset.size())
+    {
         return connectivityOffset[domain];
+    }
     return -1;
 }
 
 
 // ***************************************************************************
-//  Method: 
+//  Method: MiliClassMetaData::SetNumElements
 //
 //  Purpose:
+//      Set the number of elements belonging to this class 
+//      on a specified domain. 
 //
 //  Arguments: 
+//      domain    The domain of interest. 
+//      nEl       The number of elements on this domain. 
 //           
 //  Programmer: Alister Maguire
 //  Creation:   Jan 15, 2019
@@ -607,16 +573,21 @@ void
 MiliClassMetaData::SetNumElements(int domain, int nEl)
 {
     if (domain >= 0 && domain < numDomainElements.size())
+    {
         numDomainElements[domain] = nEl;
+    }
 }
 
 
 // ***************************************************************************
-//  Method: 
+//  Method: MiliClassMetaData::GetNumElements
 //
 //  Purpose:
+//      Get the number of elements belonging to this class
+//      on a given domain. 
 //
 //  Arguments: 
+//      domain    The domain of interest. 
 //           
 //  Programmer: Alister Maguire
 //  Creation:   Jan 15, 2019
@@ -629,17 +600,21 @@ int
 MiliClassMetaData::GetNumElements(int domain)
 {
     if (domain >= 0 && domain < numDomainElements.size())
+    {
         return numDomainElements[domain];
+    }
     return -1;
 }
 
 
 // ***************************************************************************
-//  Method: 
+//  Method: MiliClassMetaData::DetermineType
 //
 //  Purpose:
+//      Determine a generalized type for this class. 
 //
 //  Arguments: 
+//      superClass    The superclass ID.
 //           
 //  Programmer: Alister Maguire
 //  Creation:   Jan 15, 2019
@@ -649,9 +624,9 @@ MiliClassMetaData::GetNumElements(int domain)
 // ****************************************************************************
 
 void
-MiliClassMetaData::DetermineType(int superClass)
+MiliClassMetaData::DetermineType()
 {
-    switch(superClass)
+    switch(superClassId)
     {
         case M_UNIT:
             classType = UNKNOWN;
@@ -690,11 +665,11 @@ MiliClassMetaData::DetermineType(int superClass)
 
 
 // ***************************************************************************
-//  Method: 
-//
-//  Purpose:
+//  Constructor: MiliMaterialMetaData::MiliMaterialMetaData
 //
 //  Arguments: 
+//      matName    The name of this material. 
+//      matColor   The color of this material. 
 //           
 //  Programmer: Alister Maguire
 //  Creation:   Jan 15, 2019
@@ -715,12 +690,8 @@ MiliMaterialMetaData::MiliMaterialMetaData(string matName,
 
 
 // ***************************************************************************
-//  Method: 
+//  Destructor: MiliMaterialMetaData::~MiliMaterialMetaData
 //
-//  Purpose:
-//
-//  Arguments: 
-//           
 //  Programmer: Alister Maguire
 //  Creation:   Jan 15, 2019
 //
@@ -734,11 +705,10 @@ MiliMaterialMetaData::~MiliMaterialMetaData(void)
 
 
 // ***************************************************************************
-//  Method: 
-//
-//  Purpose:
+//  Constructor: avtMiliMetaData::avtMiliMetaData
 //
 //  Arguments: 
+//      nDomains    The number of domains present in this data. 
 //           
 //  Programmer: Alister Maguire
 //  Creation:   Jan 15, 2019
@@ -748,12 +718,10 @@ MiliMaterialMetaData::~MiliMaterialMetaData(void)
 // ****************************************************************************
 
 avtMiliMetaData::avtMiliMetaData(int nDomains)
-:
-  numDomains(nDomains),
-  numClasses(0),
-  numVariables(0),
-  numMaterials(0)
 {
+    numDomains    = nDomains;
+    numClasses    = 0;
+    numMaterials  = 0;
     miliVariables = NULL;
     miliClasses   = NULL;
     miliMaterials = NULL;
@@ -763,12 +731,8 @@ avtMiliMetaData::avtMiliMetaData(int nDomains)
 
 
 // ***************************************************************************
-//  Method: 
+//  Destructor: avtMiliMetaData::~avtMiliMetaData
 //
-//  Purpose:
-//
-//  Arguments: 
-//           
 //  Programmer: Alister Maguire
 //  Creation:   Jan 15, 2019
 //
@@ -820,11 +784,14 @@ avtMiliMetaData::~avtMiliMetaData()
 
 
 // ***************************************************************************
-//  Method: 
+//  Method: avtMiliMetaData::SetNumVariables
 //
 //  Purpose:
+//      Set the number of variables in our data, and instantiate
+//      the miliVariables container. 
 //
 //  Arguments: 
+//      nVars    The number of variables present in our data. 
 //           
 //  Programmer: Alister Maguire
 //  Creation:   Jan 15, 2019
@@ -859,11 +826,14 @@ avtMiliMetaData::SetNumVariables(int nVars)
 
 
 // ***************************************************************************
-//  Method: 
+//  Method: avtMiliMetaData::SetNumMaterials
 //
 //  Purpose:
+//      Set the number of materials in our data, and initialize the 
+//      miliMaterials container. 
 //
 //  Arguments: 
+//      nMats    The number of materials in our dataset. 
 //           
 //  Programmer: Alister Maguire
 //  Creation:   Jan 15, 2019
@@ -898,11 +868,14 @@ avtMiliMetaData::SetNumMaterials(int nMats)
 
 
 // ***************************************************************************
-//  Method: 
+//  Method: avtMiliMetaData::SetNumClasses
 //
 //  Purpose:
+//      Set the number of classes in our dataset, and initialize the 
+//      miliClasses container. 
 //
 //  Arguments: 
+//      nClasses    The number of classes in our dataset.
 //           
 //  Programmer: Alister Maguire
 //  Creation:   Jan 15, 2019
@@ -937,11 +910,14 @@ avtMiliMetaData::SetNumClasses(int nClasses)
 
 
 // ***************************************************************************
-//  Method: 
+//  Method: avtMiliMetaData::AddClassMD
 //
 //  Purpose:
+//      Add a mili Class meta data object to our container. 
 //
 //  Arguments: 
+//      classIdx    The index of the Clas md. 
+//      mcmd        The mili class meta data. 
 //           
 //  Programmer: Alister Maguire
 //  Creation:   Jan 15, 2019
@@ -954,16 +930,20 @@ void
 avtMiliMetaData::AddClassMD(int classIdx, 
                             MiliClassMetaData *mcmd)
 {
-    if (classIdx < 0 || classIdx > numClasses)
+    if (classIdx < 0 || classIdx >= numClasses)
     {
-        //TODO: throw error
-        return;
+        char expected[1024]; 
+        char recieved[1024];
+        sprintf(expected, "an index betwen 0 and %d", numClasses - 1);
+        sprintf(recieved, "%d", classIdx);
+        EXCEPTION2(UnexpectedValueException, expected, recieved);
     }
 
     if (miliClasses == NULL)
     {
-        //TODO: throw error
-        return; 
+        char msg[1024];
+        sprintf(msg, "Attempting to add MD to uninitialized container!");
+        EXCEPTION1(ImproperUseException, msg);
     }
 
     if (miliClasses[classIdx] != NULL)
@@ -1162,8 +1142,7 @@ avtMiliMetaData::AddVarMD(int varIdx,
 
     if (varIdx < 0 || varIdx > numVariables)
     {
-        //TODO: throw error
-        return;
+        
     }
 
     if (miliVariables == NULL)
@@ -1178,11 +1157,9 @@ avtMiliMetaData::AddVarMD(int varIdx,
         // For some reason, the subrecords don't like
         // to be cleansed in the destructor. 
         //
-        //TODO: uncomment or move when done changing. 
         delete miliVariables[varIdx];
     }
 
-    mvmd->InitSRContainers(numDomains);
     miliVariables[varIdx] = mvmd;
 }
 

@@ -1702,10 +1702,36 @@ avtMiliFileFormat::GetTimes(vector<double> &out_times)
 //  Creation:    April 11, 2003
 //
 // ****************************************************************************
+
 int
 avtMiliFileFormat::GetNTimesteps()
 {
     return nTimesteps;
+}
+
+
+// ****************************************************************************
+//  Method:  avtMiliFileFormat::CanCacheVariable
+//
+//  Purpose:
+//      Note: unchanged from original filter.
+//
+//  Programmer:  Alister Maguire
+//  Creation:    January 29, 2019
+//
+// ****************************************************************************
+
+bool
+avtMiliFileFormat::CanCacheVariable(const char *varname)
+{
+    if (strncmp(varname, "params/", 7) == 0)
+    {
+        return false;
+    }
+    else
+    {
+        return true;
+    }
 }
 
 
@@ -2221,6 +2247,7 @@ avtMiliFileFormat::ExtractJsonVariable(const Value &val,
                                         isMatVar,
                                         isGlobal,
                                         centering,
+                                        nDomains,
                                         meshId,
                                         avtType,
                                         aggType,
@@ -2231,17 +2258,6 @@ avtMiliFileFormat::ExtractJsonVariable(const Value &val,
     }
 
     return NULL;
-}
-
-
-//TODO: is this inherited? Needs doc
-bool
-avtMiliFileFormat::CanCacheVariable(const char *varname)
-{
-    if (strncmp(varname, "params/", 7) == 0)
-        return false;
-    else
-        return true;
 }
 
 
@@ -2261,6 +2277,7 @@ avtMiliFileFormat::CanCacheVariable(const char *varname)
 //  Modifications:
 //
 // ****************************************************************************
+
 int
 avtMiliFileFormat::CountJsonClassVariables(const Document &jDoc)
 {
