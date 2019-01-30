@@ -223,7 +223,7 @@ ${VTK_INCLUDE_DIRS}
 )
 
 # Add link directories
-LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY} ${EAVL_LIBRARY_DIR} )
+LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY})
 
 
 #********************************* SERIAL ************************************
