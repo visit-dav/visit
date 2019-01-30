@@ -70,7 +70,6 @@ public:
     enum BackendType
     {
         VTK,
-        EAVL,
         VTKM
     };
 
