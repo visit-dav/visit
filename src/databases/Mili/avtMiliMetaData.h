@@ -110,6 +110,7 @@ class MiliVariableMetaData
                                                    int,
                                                    int,
                                                    int,
+                                                   int,
                                                    vector<string> );
                              ~MiliVariableMetaData(void);
 
@@ -226,7 +227,6 @@ class MiliClassMetaData
 {
 
   public:
-                                      MiliClassMetaData(int);
                                       MiliClassMetaData(string,
                                                         string,
                                                         int,
@@ -277,7 +277,7 @@ class MiliClassMetaData
     vector<int>                       connectivityOffset;
     ClassType                         classType;
 
-    void                              DetermineType(int);
+    void                              DetermineType();
 
 };
 
