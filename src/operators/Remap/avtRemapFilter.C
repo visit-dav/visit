@@ -223,6 +223,9 @@ avtRemapFilter::Execute(void)
     // TODO: initialize vars in constructor
     vars->SetNumberOfComponents(1);
     vars->SetNumberOfTuples(nCellsOut);
+    for (vtkIdType i = 0; i < vars->GetNumberOfTuples(); ++i) {
+        vars->SetComponent(i, 0, 0); // Initialize vars to 0
+    }
     vars->SetName(GetInput()->GetInfo().GetAttributes().GetVariableName().c_str());
     rg->GetCellData()->AddArray(vars);
     rg->GetCellData()->SetScalars(vars);
@@ -471,7 +474,6 @@ if (DEBUG_rCellVolumeTEST != rCellVolume)
                 value += myVariable->GetComponent(tuple, 0) *
                     subCellVolumes->GetComponent(tuple, 0);
             }
-            // TODO: I think this may be wrong
             value /= rCellVolume;
             vars->SetComponent(rCell, 0, value + vars->GetComponent(rCell, 0));
         }
