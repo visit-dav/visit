@@ -299,18 +299,21 @@ class MiliMaterialMetaData
 {
   public:
                                         MiliMaterialMetaData(string,
-                                                             float *);
+                                                             string);
                                        ~MiliMaterialMetaData(void);
 
     string                              GetName(void)
                                           { return name; };
 
-    float                              *GetColor(void) 
-                                          { return color; };
+    //float                              *GetColor(void) 
+    //                                      { return color; };
+    string                              GetColor(void)
+                                           { return hexColor; };
  
   private:
     string name;
     float  color[3];
+    string hexColor;
 };
 
 
@@ -346,10 +349,6 @@ class avtMiliMetaData
     int                                GetNumVariables(void)
                                          { return numVariables; };
 
-    void                               SetNumMaterials(int);
-    int                                GetNumMaterials(void)
-                                         { return numMaterials; };
-
     void                               AddClassMD(int,
                                                   MiliClassMetaData *);
     MiliClassMetaData                 *GetClassMD(const char *);
@@ -373,8 +372,11 @@ class avtMiliMetaData
 
     void                               AddMaterialMD(int, 
                                                      MiliMaterialMetaData *);
-
-    vector<string>                     GetMaterialNames(void);
+    void                               SetNumMaterials(int);
+    int                                GetNumMaterials(void)
+                                         { return numMaterials; };
+    void                               GetMaterialNames(stringVector &);
+    void                               GetMaterialColors(vector<string> &);
 
     int                                GetNumCells(int);
     void                               SetNumCells(int domain, int nCells)
