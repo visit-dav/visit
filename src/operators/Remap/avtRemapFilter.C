@@ -221,6 +221,8 @@ avtRemapFilter::Execute(void)
     }
     
     // Add variables to the rectilinear grid
+    // TODO: Look for cases with multiple variables:
+    std::cout << "The number of variables: " << nVariables << std::endl;
     vars->SetNumberOfComponents(1);
     vars->SetNumberOfTuples(nCellsOut);
     for (vtkIdType i = 0; i < vars->GetNumberOfTuples(); ++i) {
@@ -359,7 +361,8 @@ double DEBUG_maxDiff = DBL_MIN;
         
         // Loop over each plane and clip the cells
         vtkVisItClipper* last = NULL;
-        // TODO: Why do I have these in vectors?
+        // Store these in vectors to maintain access to the pointers so that
+        // I can delete them when clipping is done.
         std::vector<vtkVisItClipper*> clipperArray;      
         std::vector<vtkImplicitBoolean*> funcsArray;
         std::vector<vtkPlane*> planeArray;
@@ -426,6 +429,7 @@ double DEBUG_maxDiff = DBL_MIN;
         last->Update();
         vtkUnstructuredGrid* ug = vtkUnstructuredGrid::New();
         ug->DeepCopy(last->GetOutput());
+        //vtkUnstructuredGrid* ug = last->GetOutput();
     
         // --- Calculate volume of subcells --- //
         // Now that we have the unstrucutred grid from the clipping, we can loop
@@ -498,29 +502,31 @@ if (DEBUG_rCellVolumeTEST != rCellVolume)
         //myVariable->Delete();
         //std::cout << "Deleting originalCellVolumes" << std::endl;
         //originalCellVolumes->Delete();
-        //std::cout << "Deleting subCellVolumes" << std::endl;
-        //subCellVolumes->Delete();
-        //std::cout << "Deleting ug" << std::endl;
-        // ug->Delete();
+        std::cout << "Deleting subCellVolumes" << std::endl;
+        subCellVolumes->Delete();
+        std::cout << "Deleting ug" << std::endl;
+        ug->Delete();
         //std::cout << "Does not like trying to delete ug" << std::endl;
-        //std::cout << "Deleting vectors" << std::endl;
+        std::cout << "Deleting vectors" << std::endl;
         //std::cout << "Does not like trying to delete vectors" << std::endl;
-        //int stop = is3D ? 6 : 4;
-        //for (int i = 0; i < stop; ++i)
-        //{
-            //clipperArray[i]->Delete();
-            //funcsArray[i]->Delete();
-            //planeArray[i]->Delete();
-        //}
+        int stop = is3D ? 6 : 4;
+        for (int i = 0; i < stop; ++i)
+        {
+            clipperArray[i]->Delete();
+            funcsArray[i]->Delete();
+            planeArray[i]->Delete();
+        }
         //std::cout << "Deleting last" << std::endl;
         //last->Delete();
+        //std::cout << "Does not like trying to delete last" << std::endl;
     } // End loop over rCells
     
     // --- More Clean up --- //
-    //std::cout << "Deleting avtRemapOriginVolume" << std::endl;
-    //avtRemapOriginalVolume->Delete();
-    //std::cout << "Deleting in_ds" << std::endl;
-    //in_ds->Delete();
+    std::cout << "Deleting avtRemapOriginVolume" << std::endl;
+    avtRemapOriginalVolume->Delete();
+    std::cout << "Deleting in_ds" << std::endl;
+    in_ds->Delete();
+    
     
 // --- DEBUG --- DEBUG --- DEBUG --- DEBUG --- DEBUG --- DEBUG --- DEBUG ---- //
 std::cout << "Types and numbers of cells in sub meshes" << std::endl;
@@ -690,10 +696,6 @@ DEBUG_CellTypeList["unknown"]++;
         } // End switch
         
         volumeArray->SetComponent(i, 0, volume); // store the volume in our array
-        
-        // --- Clean up --- //
-        // pointData->Delete();
-        // cell->Delete();
     }
     
     
@@ -748,7 +750,6 @@ avtRemapFilter::GetBounds()
         {
             GetSpatialExtents(rGridBounds);
         }
-        // exts->Delete();
     }
     if (fabs(rGridBounds[4]) < 1e-100 && fabs(rGridBounds[5]) < 1e-100)
     {
