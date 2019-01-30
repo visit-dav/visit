@@ -9,7 +9,7 @@ SpreadsheetCommonPluginInfo.C
 SpreadsheetAttributes.C
 )
 
-SET(LIBI_SOURCES 
+SET(LIBI_SOURCES
 SpreadsheetPluginInfo.C
 )
 
@@ -56,6 +56,7 @@ avtOpenGLSpreadsheetTraceRenderer.C
 ${COMMON_SOURCES}
 )
 
+
 IF(VISIT_PYTHON_SCRIPTING)
     SET(PYINCLUDES ${PYTHON_INCLUDE_PATH} ${VISIT_INCLUDE_DIR}/visitpy/visitpy)
 ENDIF(VISIT_PYTHON_SCRIPTING)
@@ -92,13 +93,11 @@ ${VISIT_INCLUDE_DIR}/viewer/rpc
 ${VISIT_INCLUDE_DIR}/winutil
 ${VISIT_INCLUDE_DIR}/visit_vtk/full
 ${VISIT_INCLUDE_DIR}/visit_vtk/lightweight
-${EAVL_INCLUDE_DIR}
-${VTKM_INCLUDE_DIR}
 ${VTK_INCLUDE_DIRS}
 ${PYINCLUDES}
 )
 
-LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} ${EAVL_LIBRARY_DIR} ${VTKM_LIBRARY_DIR} )
+LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} )
 
 ADD_LIBRARY(ISpreadsheetPlot ${LIBI_SOURCES})
 TARGET_LINK_LIBRARIES(ISpreadsheetPlot visitcommon)
