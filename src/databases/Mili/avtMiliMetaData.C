@@ -199,7 +199,7 @@ MiliVariableMetaData::GetSubrecordIds(int dom)
     if (dom > subrecInfo[dom].nSR || dom < 0)
     {
         char msg[1024];
-        sprintf(msg, "Invalid domain index for subrecord ids!\n");
+        sprintf(msg, "Invalid domain index for subrecord ids!");
         EXCEPTION1(ImproperUseException, msg);
     }
     return subrecInfo[dom].SRIDs;
@@ -267,7 +267,7 @@ MiliVariableMetaData::GetSubrecordInfo(int dom)
     if (dom > subrecInfo.size() || dom < 0)
     {
         char msg[1024];
-        sprintf(msg, "Invalid domain index for subrecord ids!\n");
+        sprintf(msg, "Invalid domain index for subrecord ids!");
         EXCEPTION1(ImproperUseException, msg);
     }
     return subrecInfo[dom];
@@ -679,13 +679,15 @@ MiliClassMetaData::DetermineType()
 // ****************************************************************************
 
 MiliMaterialMetaData::MiliMaterialMetaData(string matName,
-                                           float *matColor)
+                                           string matColor)
 {
-    name = matName;
-    for (int i = 0; i < 3; ++i)
-    {
-        color[i] = matColor[i];
-    }
+    name     = matName;
+    hexColor =  matColor;
+    //FIXME: clean up
+    //for (int i = 0; i < 3; ++i)
+    //{
+    //    color[i] = matColor[i];
+    //}
 }
 
 
@@ -956,11 +958,17 @@ avtMiliMetaData::AddClassMD(int classIdx,
 
 
 // ***************************************************************************
-//  Method: 
+//  Method: avtMiliMetaData::GetNumCells
 //
 //  Purpose:
+//      Get the number of cells on the given domain. 
 //
 //  Arguments: 
+//      domain    The domain of interest. 
+//
+//  Returns:
+//      The number of cells on the given domain, if it's valid. 
+//      If it's not valid, 0 is returned. 
 //           
 //  Programmer: Alister Maguire
 //  Creation:   Jan 15, 2019
@@ -981,11 +989,17 @@ avtMiliMetaData::GetNumCells(int domain)
 
 
 // ***************************************************************************
-//  Method: 
+//  Method: avtMiliMetaData::GetNumNodes
 //
 //  Purpose:
+//      Get the number of nodes on the given domain. 
 //
 //  Arguments: 
+//      domain    The domain of interest. 
+//
+//  Returns:
+//      The number of nodes on the given domain, if it's valid. 
+//      If it's not valid, 0 is returned. 
 //           
 //  Programmer: Alister Maguire
 //  Creation:   Jan 15, 2019
@@ -1006,11 +1020,17 @@ avtMiliMetaData::GetNumNodes(int domain)
 
 
 // ***************************************************************************
-//  Method: 
+//  Method: avtMiliMetaData::GetClassMDIdx
 //
 //  Purpose:
+//      Get the index of a MiliClassMetaData in our container. 
 //
 //  Arguments: 
+//      cName    The shortname of the class.
+//
+//  Returns:
+//      If valid, the index to the requested class. If not valid, 
+//      NULL is returned. 
 //           
 //  Programmer: Alister Maguire
 //  Creation:   Jan 15, 2019
@@ -1039,13 +1059,18 @@ avtMiliMetaData::GetClassMDIdx(const char *cName)
     return -1;
 }
 
-
+//TODO: change name to GetClassMDByShortName
 // ***************************************************************************
-//  Method: 
+//  Method: avtMiliMetaData::GetClassMD
 //
 //  Purpose:
+//      Get the meta data for a Class with the given name. 
 //
 //  Arguments: 
+//      vName    The Class name.  
+//
+//  Returns:
+//      If valid, the Class is returned. Otherwise, NULL is returned. 
 //           
 //  Programmer: Alister Maguire
 //  Creation:   Jan 15, 2019
@@ -1068,11 +1093,23 @@ avtMiliMetaData::GetClassMD(const char *vName)
 
 
 // ***************************************************************************
-//  Method: 
+//  Method: avtMiliMetaData::GetCellTypeCounts
 //
 //  Purpose:
+//       Retrieve two pieces of information; First, a list designating
+//       which mili superclasses are in our data and are a cell type. 
+//       Second, a list designating the number of Classes in our
+//       data the corresond to each superclass.
+//
+//       Example: suppose our data contains 2 Classes that are under
+//       the superclass with ID 3 and 1 Class that is under the superclass
+//       with ID 5. Our arrays would be populated as follows:
+//           cTypes   = {3, 5} 
+//           ctCounts = {2, 1}
 //
 //  Arguments: 
+//      cTypes    A reference to an array to hold superclass IDs. 
+//      ctCounts  A reference to an array to hold superclass counts. 
 //           
 //  Programmer: Alister Maguire
 //  Creation:   Jan 15, 2019
@@ -1121,11 +1158,14 @@ avtMiliMetaData::GetCellTypeCounts(vector<int> &cTypes,
 
 
 // ***************************************************************************
-//  Method: 
+//  Method: avtMiliMetaData::AddVarMD
 //
 //  Purpose:
+//      Add a MiliVariableMetaData object to our container. 
 //
 //  Arguments: 
+//      varIdx    Where in our container to store the object.
+//      mvmd      The MiliVariableMetaData object. 
 //           
 //  Programmer: Alister Maguire
 //  Creation:   Jan 15, 2019
@@ -1142,13 +1182,17 @@ avtMiliMetaData::AddVarMD(int varIdx,
 
     if (varIdx < 0 || varIdx > numVariables)
     {
-        
+        char msg[1024];
+        sprintf(msg, "Invalid index for adding MiliVariableMetaData!");
+        EXCEPTION1(ImproperUseException, msg);
     }
 
     if (miliVariables == NULL)
     {
-        //TODO: throw error
-        return; 
+        char msg[1024];
+        sprintf(msg, "Attempting to add MiliVariableMetaData to "
+            "an uninitialized container!");
+        EXCEPTION1(ImproperUseException, msg);
     }
 
     if (miliVariables[varIdx] != NULL)
@@ -1165,11 +1209,18 @@ avtMiliMetaData::AddVarMD(int varIdx,
 
 
 // ***************************************************************************
-//  Method: 
+//  Method: GetVarMDByShortName
 //
 //  Purpose:
+//      Get a MiliVariableMetaData from our container given 
+//      its shortname. 
 //
 //  Arguments: 
+//      vName    The shortname of our desired variable. 
+//
+//  Returns:
+//      The desired MiliVariableMetaData if it's valid. If not valid,
+//      NULL is returned. 
 //           
 //  Programmer: Alister Maguire
 //  Creation:   Jan 15, 2019
@@ -1192,11 +1243,18 @@ avtMiliMetaData::GetVarMDByShortName(const char *vName)
 
 
 // ***************************************************************************
-//  Method: 
+//  Method: avtMiliMetaData::GetVarMDByPath
 //
 //  Purpose:
+//      Get a MiliVariableMetaData from our container given
+//      its visit path. 
 //
 //  Arguments: 
+//      vPath    The visit path (ex: Primal/beams/stress)
+//
+//  Returns:
+//      The desired MiliVariableMetaData if it's valid. If not valid,
+//      NULL is returned. 
 //           
 //  Programmer: Alister Maguire
 //  Creation:   Jan 15, 2019
@@ -1217,13 +1275,20 @@ avtMiliMetaData::GetVarMDByPath(const char *vPath)
     return NULL; 
 }
 
-
+//TODO: change this name to GetVarMDByIdx
+//      Also consider option to return all variables at once (more efficient). 
 // ***************************************************************************
-//  Method: 
+//  Method: avtMiliMetaData::GetVarMD
 //
 //  Purpose:
+//      Get a MiliVariableMetaData given its container index. 
 //
 //  Arguments: 
+//      varIdx    The container index. 
+//      
+//  Returns:
+//      The desired MiliVariableMetaData if it's valid. If not valid,
+//      NULL is returned. 
 //           
 //  Programmer: Alister Maguire
 //  Creation:   Jan 15, 2019
@@ -1245,11 +1310,18 @@ avtMiliMetaData::GetVarMD(int varIdx)
 
 
 // ***************************************************************************
-//  Method: 
+//  Method: GetVarMDIdxByShortName
 //
 //  Purpose:
+//      Get a container index to the MiliVariableMetaData having
+//      the given name. 
 //
 //  Arguments: 
+//      vName    The variable name. 
+//
+//  Returns:
+//      If the name is valid, the container index is returned. Otherwise, 
+//      -1 is returned. 
 //           
 //  Programmer: Alister Maguire
 //  Creation:   Jan 15, 2019
@@ -1280,11 +1352,18 @@ avtMiliMetaData::GetVarMDIdxByShortName(const char *vName)
 
 
 // ***************************************************************************
-//  Method: 
+//  Method: avtMiliMetaData::GetVarMDIdxByPath
 //
 //  Purpose:
+//      Get a container index to the MiliVariableMetaData having
+//      the given path. 
 //
 //  Arguments: 
+//      vPath    The variable's visit path. 
+//
+//  Returns:
+//      If the path is valid, the container index is returned. Otherwise,
+//      -1 is returned. 
 //           
 //  Programmer: Alister Maguire
 //  Creation:   Jan 15, 2019
@@ -1408,15 +1487,42 @@ avtMiliMetaData::AddMaterialMD(int matIdx,
 //
 // ****************************************************************************
 
-stringVector
-avtMiliMetaData::GetMaterialNames(void)
+void
+avtMiliMetaData::GetMaterialNames(stringVector &matNames)
 {
-    stringVector matNames;
+    matNames.clear();
     matNames.reserve(numMaterials);
     for (int i = 0; i < numMaterials; ++i)
     {
         matNames.push_back(miliMaterials[i]->GetName());
     }
-    return matNames;
 }
 
+
+// ***************************************************************************
+//  Method: avtMiliMetaData::GetMaterialColors
+//
+//  Purpose:
+//      Get the material colors. 
+//
+//  Returns:
+//      A vector of material colors. 
+//           
+//  Programmer: Alister Maguire
+//  Creation:   Jan 15, 2019
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtMiliMetaData::GetMaterialColors(vector<string> &matColors)
+{
+    matColors.clear();    
+    matColors.reserve(numMaterials);
+
+    for (int i = 0; i < numMaterials; ++i)
+    {
+        matColors.push_back(miliMaterials[i]->GetColor());
+    }
+}

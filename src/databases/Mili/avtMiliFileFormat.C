@@ -927,12 +927,13 @@ avtMiliFileFormat::ReadMesh(int dom)
         //
         // Create our avtMaterial. 
         //
-        int numMats           = miliMetaData[meshId]->GetNumMaterials();
-        stringVector matNames = miliMetaData[meshId]->GetMaterialNames();
-        avtMaterial *avtMat   = new avtMaterial(numMats, matNames,
-                                                nDomCells, matList, 0, 
-                                                NULL, NULL, 
-                                                NULL, NULL);
+        int numMats = miliMetaData[meshId]->GetNumMaterials();
+        stringVector matNames;
+        miliMetaData[meshId]->GetMaterialNames(matNames);
+        avtMaterial *avtMat = new avtMaterial(numMats, matNames,
+                                              nDomCells, matList, 0, 
+                                              NULL, NULL, 
+                                              NULL, NULL);
 
         materials[dom][meshId] = avtMat;
         delete [] matList;
@@ -1764,12 +1765,12 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
 {
     for (int meshId = 0; meshId < nMeshes; ++meshId)
     {
-        char meshname[32];
-        char matname[32];
-        sprintf(meshname, "mesh%d", meshId + 1);
-        sprintf(matname, "materials%d", meshId + 1);
+        char meshName[32];
+        char matName[32];
+        sprintf(meshName, "mesh%d", meshId + 1);
+        sprintf(matName, "materials%d", meshId + 1);
         avtMeshMetaData *mesh = new avtMeshMetaData;
-        mesh->name = meshname;
+        mesh->name = meshName;
         mesh->meshType = AVT_UNSTRUCTURED_MESH;
         mesh->numBlocks = nDomains;
         mesh->blockOrigin = 0;
@@ -1782,27 +1783,35 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
         mesh->hasSpatialExtents = false;
         md->Add(mesh);
 
-        //TODO: need to add material color somehow. 
         //
         // Adding material to the meta data. 
         //
-        int numMats           = miliMetaData[meshId]->GetNumMaterials();
-        stringVector matNames = miliMetaData[meshId]->GetMaterialNames();
-        AddMaterialToMetaData(md, matname, meshname, 
-                              numMats, matNames);
+        int numMats = miliMetaData[meshId]->GetNumMaterials();
+        vector<string> matColors;
+        miliMetaData[meshId]->GetMaterialColors(matColors);
+
+        stringVector matNames;
+        miliMetaData[meshId]->GetMaterialNames(matNames);
+        AddMaterialToMetaData(md, 
+                              matName, 
+                              meshName, 
+                              numMats, 
+                              matNames, 
+                              matColors);
 
         AddLabelVarToMetaData(md, 
                               "OriginalZoneLabels", 
-                              meshname, 
+                              meshName, 
                               AVT_ZONECENT, 
                               dims);
+
         //TODO: look into this. 
         // Visit is intercepting these labels and displaying something
         // else, so current work around is just to hide them
         bool hideFromGui = true;
         AddLabelVarToMetaData(md, 
                               "OriginalNodeLabels", 
-                              meshname, 
+                              meshName, 
                               AVT_NODECENT, 
                               dims, 
                               hideFromGui);
@@ -1813,10 +1822,12 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
         int numVars = miliMetaData[meshId]->GetNumVariables();
         for (int i = 0 ; i < numVars; i++)
         {
+            //TODO: Error check these calls. NULL returned is bad. 
+            //      Also, error chec, calls that can return -1. 
             MiliVariableMetaData *varMD = miliMetaData[meshId]->
                 GetVarMD(i);
-            char meshname[32];
-            sprintf(meshname, "mesh%d", varMD->GetMeshAssociation() + 1);
+            char meshName[32];
+            sprintf(meshName, "mesh%d", varMD->GetMeshAssociation() + 1);
 
             int cellType           = varMD->GetAvtCellType();
             avtCentering centering = varMD->GetCentering();
@@ -1889,12 +1900,12 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
             {
                 case AVT_SCALAR_VAR:
                 {
-                    AddScalarVarToMetaData(md, vPath, meshname, centering);
+                    AddScalarVarToMetaData(md, vPath, meshName, centering);
                     break;
                 }
                 case AVT_VECTOR_VAR:
                 {
-                    AddVectorVarToMetaData(md, vPath, meshname, 
+                    AddVectorVarToMetaData(md, vPath, meshName, 
                         centering, nComps);
 
                     //
@@ -1922,7 +1933,7 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
 		    // symmetric tensor. 
                     //
                     AddSymmetricTensorVarToMetaData(md, vPath, 
-                        meshname, centering, 9);
+                        meshName, centering, 9);
 
                     //
                     // Now we add the individual components. 
@@ -1962,7 +1973,7 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
                 case AVT_TENSOR_VAR:
                 {
                     AddTensorVarToMetaData(md, vPath, 
-                        meshname, centering, nComps);
+                        meshName, centering, nComps);
 
                     //
                     // Now we add the individual components. 
@@ -2017,7 +2028,7 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
                         md->AddExpression(&expr);
                     }
 
-                    AddArrayVarToMetaData(md, vPath, compNames, meshname, 
+                    AddArrayVarToMetaData(md, vPath, compNames, meshName, 
                         centering); 
                     break;
                 }
@@ -2536,7 +2547,8 @@ avtMiliFileFormat::LoadMiliInfoJson(const char *fpath)
                 const Value &mat = jItr->value;
 
                 string matName = "";
-                float matColor[] = {0.0, 0.0, 0.0};
+                std::stringstream colorSS;
+                colorSS << "#";
                   
                 if (mat.IsObject())
                 {
@@ -2549,18 +2561,39 @@ avtMiliFileFormat::LoadMiliInfoJson(const char *fpath)
                     {
                         const Value &mColors = mat["COLOR"];
 
+                        //
+                        // Mili stores its mat color as a float rgb. We
+                        // need to convert this to a hex string. 
+                        //
                         if (mColors.IsArray())
                         {
                             for (SizeType i = 0; i < mColors.Size(); ++i)
                             {
-                                matColor[i] = mColors[i].GetFloat();
+                                int iVal = (int) floor(
+                                    mColors[i].GetFloat() * 256);
+
+                                colorSS << std::hex << 
+                                    std::max(0, std::min(255, iVal));
                             }
+                            
+                        }
+                    }
+                    else
+                    {
+                        //
+                        // If this material doesn't have a color, 
+                        // assign a random color. 
+                        //
+                        for (int i = 0; i < 3; ++i)
+                        {
+                            int randInt = (rand() % static_cast<int> (256));
+                            colorSS << std::hex << randInt;
                         }
                     }
 
                     MiliMaterialMetaData *miliMaterial = 
                         new MiliMaterialMetaData(matName,
-                                                 matColor);
+                                                 string(colorSS.str()));
 
                     miliMetaData[meshId]->AddMaterialMD(matCount++, miliMaterial);
                 }// end mat.IsObject
