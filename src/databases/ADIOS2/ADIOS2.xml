@@ -9,6 +9,7 @@
     </FilePatterns>
     <Files components="M">
       avtADIOS2FileFormat.C
+      avtMEUMMAPSFileFormat.C
       avtGTCFileFormat.C
       avtADIOS2BaseFileFormat.C
       avtADIOS2SSTFileFormat.C
@@ -18,6 +19,7 @@
     </LIBS>
     <Files components="E">
       avtADIOS2FileFormat.C
+      avtMEUMMAPSFileFormat.C
       avtGTCFileFormat.C
       avtADIOS2BaseFileFormat.C
       avtADIOS2SSTFileFormat.C
