@@ -104,7 +104,7 @@ ${VISIT_SOURCE_DIR}/winutil
 ${VTK_INCLUDE_DIRS}
 )
 
-LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY} ${EAVL_LIBRARY_DIR} )
+LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY})
 
 #*************************** The viewer library ******************************
 ADD_LIBRARY(viewersubjectproxy ${VIEWERLIB_SOURCES} ${VIEWERLIB_MOC_SOURCES})

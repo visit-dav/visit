@@ -208,6 +208,9 @@ avtPrecisionTypeToString(avtPrecisionType v)
 //    Eric Brugger, Thu Dec 10 11:14:07 PST 2015
 //    I added support for VTKm.
 //
+//    Kathleen Biagas, Thu Jan 10 10:02:14 PST 2019
+//    Removed EAVL support.
+//
 // ****************************************************************************
 
 std::string
@@ -217,8 +220,6 @@ avtBackendTypeToString(avtBackendType v)
     {
       case AVT_BACKEND_VTK:
         return "VTK";
-      case AVT_BACKEND_EAVL:
-        return "EAVL";
       case AVT_BACKEND_VTKM:
         return "VTKm";
       default:

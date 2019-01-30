@@ -213,6 +213,9 @@ QvisPreferencesWindow::~QvisPreferencesWindow()
 //   Eric Brugger, Thu Dec 10 11:15:48 PST 2015
 //   I added support for the VTKm backend type.
 //
+//   Kathleen Biagas, Wed Jan 30 10:43:52 PST 2019
+//   Removed support for EAVL.
+//
 // ****************************************************************************
 
 void
@@ -285,7 +288,7 @@ QvisPreferencesWindow::CreateWindowContents()
     precisionType->addButton(inc,2);
     precLayout->addWidget(inc);
 
-#if defined(HAVE_LIBEAVL) || defined(HAVE_LIBVTKH)
+#if defined(HAVE_LIBVTKH)
     //
     // Create radio button controls to change the backend.
     //
@@ -300,16 +303,9 @@ QvisPreferencesWindow::CreateWindowContents()
     QRadioButton *b0 = new QRadioButton(tr("VTK"), backendGroup);
     backendType->addButton(b0,0);
     backendLayout->addWidget(b0);
-#endif
-#if defined(HAVE_LIBEAVL)
-    QRadioButton *b1 = new QRadioButton(tr("EAVL"), backendGroup);
+    QRadioButton *b1 = new QRadioButton(tr("VTKm"), backendGroup);
     backendType->addButton(b1,1);
     backendLayout->addWidget(b1);
-#endif
-#if defined(HAVE_LIBVTKH)
-    QRadioButton *b2 = new QRadioButton(tr("VTKm"), backendGroup);
-    backendType->addButton(b2,2);
-    backendLayout->addWidget(b2);
 #endif
 
     //
