@@ -185,6 +185,19 @@ void
 avtRemapFilter::Execute(void)
 {
 
+// --- DEBUG --- DEBUG --- DEBUG --- DEBUG --- DEBUG --- DEBUG --- DEBUG ---- //
+DEBUG_CellTypeList.insert(std::pair<std::string, int>("VTK_TRIANGLE",   0));
+DEBUG_CellTypeList.insert(std::pair<std::string, int>("VTK_QUAD",       0));
+DEBUG_CellTypeList.insert(std::pair<std::string, int>("VTK_PIXEL",      0));
+DEBUG_CellTypeList.insert(std::pair<std::string, int>("VTK_VOXEL",      0));
+DEBUG_CellTypeList.insert(std::pair<std::string, int>("VTK_HEXAHEDRON", 0));
+DEBUG_CellTypeList.insert(std::pair<std::string, int>("VTK_TETRA",      0));
+DEBUG_CellTypeList.insert(std::pair<std::string, int>("VTK_WEDGE",      0));
+DEBUG_CellTypeList.insert(std::pair<std::string, int>("VTK_PYRAMID",    0));
+DEBUG_CellTypeList.insert(std::pair<std::string, int>("unknown",        0));
+// --- DEBUG --- DEBUG --- DEBUG --- DEBUG --- DEBUG --- DEBUG --- DEBUG ---- //
+    
+
     // --------------------------------- //
     // --- Generate Rectilinear Grid --- //
     // --------------------------------- //
@@ -222,7 +235,7 @@ avtRemapFilter::Execute(void)
     
     // Add variables to the rectilinear grid
     // TODO: What about the case with more than 1 variable?
-    std::cout << "Number of variables: " << nVariables << std::endl;
+    std::cout << "Number of variables: " << nVariables << std::endl;    
     vars->SetNumberOfComponents(1);
     vars->SetNumberOfTuples(nCellsOut);
     for (vtkIdType i = 0; i < vars->GetNumberOfTuples(); ++i) {
@@ -249,8 +262,21 @@ avtRemapFilter::Execute(void)
     //}
     TraverseDomainTree(inTree);
     
+// --- DEBUG --- DEBUG --- DEBUG --- DEBUG --- DEBUG --- DEBUG --- DEBUG ---- //
+std::cout << "Types and numbers of cells in sub meshes" << std::endl;
+for (std::map<std::string,int>::const_iterator iter = DEBUG_CellTypeList.begin();
+        iter != DEBUG_CellTypeList.end(); ++iter)
+{
+    if (iter->second > 0)
+    {
+        std::cout << iter->first << ": " << iter->second << std::endl;
+    }
+}
+// --- DEBUG --- DEBUG --- DEBUG --- DEBUG --- DEBUG --- DEBUG --- DEBUG ---- //
+
+    
     Output();
-    std:: cout << "DONE" << std::endl;
+    std::cout << "DONE" << std::endl;
     return;
 }
 
@@ -294,7 +320,6 @@ avtRemapFilter::TraverseDomainTree(avtDataTree_p inTree)
             }
         }
     }
-    
 }
 
 
@@ -306,18 +331,6 @@ avtRemapFilter::TraverseDomainTree(avtDataTree_p inTree)
 void
 avtRemapFilter::ClipDomain(avtDataTree_p inLeaf) {
 
-// --- DEBUG --- DEBUG --- DEBUG --- DEBUG --- DEBUG --- DEBUG --- DEBUG ---- //
-DEBUG_CellTypeList.insert(std::pair<std::string, int>("VTK_TRIANGLE",   0));
-DEBUG_CellTypeList.insert(std::pair<std::string, int>("VTK_QUAD",       0));
-DEBUG_CellTypeList.insert(std::pair<std::string, int>("VTK_PIXEL",      0));
-DEBUG_CellTypeList.insert(std::pair<std::string, int>("VTK_VOXEL",      0));
-DEBUG_CellTypeList.insert(std::pair<std::string, int>("VTK_HEXAHEDRON", 0));
-DEBUG_CellTypeList.insert(std::pair<std::string, int>("VTK_TETRA",      0));
-DEBUG_CellTypeList.insert(std::pair<std::string, int>("VTK_WEDGE",      0));
-DEBUG_CellTypeList.insert(std::pair<std::string, int>("VTK_PYRAMID",    0));
-DEBUG_CellTypeList.insert(std::pair<std::string, int>("unknown",        0));
-// --- DEBUG --- DEBUG --- DEBUG --- DEBUG --- DEBUG --- DEBUG --- DEBUG ---- //
-    
     // --------------------------------------------------- //
     // --- Convert the avtDataTree_p into a vtkDataSet --- //
     // --------------------------------------------------- //
@@ -569,18 +582,6 @@ if (DEBUG_rCellVolumeTEST != rCellVolume)
     //std::cout << "Deleting in_ds" << std::endl;
     //in_ds->Delete();
     
-// --- DEBUG --- DEBUG --- DEBUG --- DEBUG --- DEBUG --- DEBUG --- DEBUG ---- //
-std::cout << "Types and numbers of cells in sub meshes" << std::endl;
-for (std::map<std::string,int>::const_iterator iter = DEBUG_CellTypeList.begin();
-        iter != DEBUG_CellTypeList.end(); ++iter)
-{
-    if (iter->second > 0)
-    {
-        std::cout << iter->first << ": " << iter->second << std::endl;
-    }
-}
-// --- DEBUG --- DEBUG --- DEBUG --- DEBUG --- DEBUG --- DEBUG --- DEBUG ---- //
-
     return;
 } // End ClipDomain
 
