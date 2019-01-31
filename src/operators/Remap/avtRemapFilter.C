@@ -221,6 +221,8 @@ avtRemapFilter::Execute(void)
     }
     
     // Add variables to the rectilinear grid
+    // TODO: What about the case with more than 1 variable?
+    std::cout << "Number of variables: " << nVariables << std::endl;
     vars->SetNumberOfComponents(1);
     vars->SetNumberOfTuples(nCellsOut);
     for (vtkIdType i = 0; i < vars->GetNumberOfTuples(); ++i) {
@@ -240,15 +242,59 @@ avtRemapFilter::Execute(void)
     // TODO: The input data tree needs to be unravelled recursively
     // NOTE: Looks like when a domain is turned off, then it is not a part of
     // the inTree anymore, so it does not get processed.
-    for (int i = 0; i < inTree->GetNChildren(); ++i)
-    {
-        std::cout << "Child number: " << domainIds[i] << std::endl;
-        ClipDomain(inTree->GetChild(i));
-    }
+    //for (int i = 0; i < inTree->GetNChildren(); ++i)
+    //{
+    //    std::cout << "Child number: " << domainIds[i] << std::endl;
+    //    ClipDomain(inTree->GetChild(i));
+    //}
+    TraverseDomainTree(inTree);
     
     Output();
     std:: cout << "DONE" << std::endl;
     return;
+}
+
+
+void
+avtRemapFilter::TraverseDomainTree(avtDataTree_p inTree)
+{
+    if (*inTree == NULL)
+    {
+        std::cout << "inTree is null" << std::endl;
+        return;
+    }
+    
+    std::vector<int> domainIds;
+    inTree->GetAllDomainIds(domainIds);
+    
+    int numChildren = inTree->GetNChildren();
+    
+    if (numChildren <= 0 && !inTree->HasData())
+    {
+        std::cout << "No children and no data" << std::endl;
+    }
+    
+    if (numChildren == 0)
+    {
+        std::cout << "Number of children is 0. Clipping this domain." << std::endl;
+        std::cout << "Domain Id: " << domainIds[0] << std::endl;
+        ClipDomain(inTree);
+        return;
+    }
+    else
+    {
+        std::cout << "Number of children is " << numChildren
+                  << ". Looping over children." << std::endl;
+        for (int i = 0; i < numChildren; ++i)
+        {
+            if (inTree->ChildIsPresent(i))
+            {
+                std::cout << "Domain Id: " << domainIds[i] << std::endl;
+                TraverseDomainTree(inTree->GetChild(i));
+            }
+        }
+    }
+    
 }
 
 
@@ -359,7 +405,8 @@ double DEBUG_maxDiff = DBL_MIN;
         
         // Loop over each plane and clip the cells
         vtkVisItClipper* last = NULL;
-        // TODO: Why do I have these in vectors?
+        // These are stored in vectors so that I can delete the pointers
+        // after the clipping occurs
         std::vector<vtkVisItClipper*> clipperArray;      
         std::vector<vtkImplicitBoolean*> funcsArray;
         std::vector<vtkPlane*> planeArray;
@@ -727,6 +774,7 @@ DEBUG_CellTypeList["unknown"]++;
 void
 avtRemapFilter::GetBounds()
 {
+    // TODO: fix errors that arise from the bounds
     if (!atts.GetUseExtents())
     {
         rGridBounds[0] = atts.GetStartX();

@@ -83,11 +83,10 @@ class avtRemapFilter : public avtDatasetToDatasetFilter,
     virtual bool         Equivalent(const AttributeGroup*);
 
   protected:
-    RemapAttributes   atts;
+    RemapAttributes     atts;
 
     virtual void        Execute(void);
-    avtDataTree_p       ExtractVariablesFromDomains(avtDataTree_p);
-    avtDataRepresentation *GetVariableSubsets(avtDataRepresentation *);
+    void                TraverseDomainTree(avtDataTree_p);
     void                ClipDomain(avtDataTree_p);
     
   private:
