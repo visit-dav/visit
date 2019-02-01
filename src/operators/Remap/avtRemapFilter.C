@@ -253,15 +253,6 @@ DEBUG_CellTypeList.insert(std::pair<std::string, int>("unknown",        0));
     avtDataTree_p inTree = GetInputDataTree();
     std::vector<int> domainIds;
     inTree->GetAllDomainIds(domainIds); // Populate domainIds
-    
-    // TODO: The input data tree needs to be unravelled recursively
-    // NOTE: Looks like when a domain is turned off, then it is not a part of
-    // the inTree anymore, so it does not get processed.
-    //for (int i = 0; i < inTree->GetNChildren(); ++i)
-    //{
-    //    std::cout << "Child number: " << domainIds[i] << std::endl;
-    //    ClipDomain(inTree->GetChild(i));
-    //}
     TraverseDomainTree(inTree);
     
 // --- DEBUG --- DEBUG --- DEBUG --- DEBUG --- DEBUG --- DEBUG --- DEBUG ---- //
@@ -404,7 +395,7 @@ avtRemapFilter::ClipDomain(avtDataTree_p inLeaf) {
     // --- Clip the input grid against the rectilinear grid --- //
     // -------------------------------------------------------- //
     
-    // CURRENT CODE NEEDS REFACTOR.
+    // TODO: CURRENT CODE NEEDS REFACTOR.
     // We calculate all 6 planes each time, which costs xDim*yDim*zDim*6, but we can
     // precompute and setup a mapping between cells and planes to cost xDim+yDim+zDim
 
@@ -538,6 +529,10 @@ if (DEBUG_rCellVolumeTEST != rCellVolume)
         double value = 0.0;
         //vtkDataArray* myVariable = ug->GetCellData()->GetArray(0);
         vtkDataArray* myVariable = ug->GetCellData()->GetArray(vars->GetName());
+        // TODO: if the zone is flagged as a ghost zone (avtGhostZones nonzero), then
+        // ignore that original cell. avtGhostZones is not a separate array from
+        // the data. It is an array that sits on top of the data and tells the system
+        // if the cell is a ghost zone. So if it is a ghost zone, don't count it!
         if (atts.GetVariableType() == RemapAttributes::intrinsic) // like density
         {
             for (vtkIdType tuple = 0;
@@ -748,6 +743,12 @@ DEBUG_CellTypeList["unknown"]++;
                 std::cout << "Cannot calculate volume for cell of type: "
                           << cell->GetCellType() << std::endl
                           << "Scalars won't be remapped." << std::endl;
+                // TODO: If the subCells cannot be classified, then we can't do
+                // anything. However, I don't think this will ever happen because
+                // the clipper is designed to output cells that we can process.
+                // If the original cells cannot be classified, then extrinsic
+                // will not work, but instrinsic will still work. Need a better
+                // error messaging here to handle these cases.
                 break;
         } // End switch
         
