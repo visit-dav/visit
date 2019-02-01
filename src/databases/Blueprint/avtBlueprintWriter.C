@@ -37,7 +37,7 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                               avtBlueprintWriter.C                              //
+//                               avtBlueprintWriter.C                        //
 // ************************************************************************* //
 
 #include <avtBlueprintWriter.h>
@@ -50,6 +50,9 @@
 #include <vtkStringArray.h>
 #include <vtkIntArray.h>
 #include <vtkDoubleArray.h>
+#include <vtkRectilinearGrid.h>
+#include <vtkCellData.h>
+#include <vtkPointData.h>
 #include <vtkXMLPolyDataWriter.h>
 #include <vtkXMLRectilinearGridWriter.h>
 #include <vtkXMLStructuredGridWriter.h>
@@ -210,29 +213,118 @@ avtBlueprintWriter::WriteHeaders(const avtDatabaseMetaData *md,
 //
 //  Modifications:
 //
-//    Hank Childs, Thu May 26 17:23:39 PDT 2005
-//    Add support for binary writes through DB options.
-//
-//    Hank Childs, Thu Mar 30 12:20:24 PST 2006
-//    Change name based on whether or not we are doing multi-block.
-//
-//    Kathleen Biagas, Thu Dec 18 14:10:06 PST 2014
-//    Add support for XML format through DB options.
-//
-//    Kathleen Biagas, Wed Feb 25 13:25:07 PST 2015
-//    Use meshName if not empty.
-//
-//    Kathleen Biagas, Tue Sep  1 11:28:50 PDT 2015
-//    For multi-block xml, save chunk name in fileNames for later processing.
-//
-//    Kathleen Biagas, Fri Feb 17 15:43:28 PST 2017
-//    Multi-block files now write individual files (chunks) to subdir.
-//
-//    Kathleen Biagas, Mon Nov 20 13:06:01 PST 2017
-//    When writing ascii xml files, set DataMode to Ascii to prevent data
-//    being appended, which is always binary.
 //
 // ****************************************************************************
+void
+CopyTuple1(Node &node, vtkDataArray *da)
+{
+
+    int nvals= da->GetNumberOfTuples();
+    node.set(DataType::float64(nvals));
+    conduit::float64 *vals = node.value();
+    for(int i = 0; i < nvals; ++i)
+    {
+      vals[i] = da->GetTuple1(i);
+    }
+}
+
+void
+CopyComponent64(Node &node, vtkDataArray *da, int component)
+{
+
+    int nvals= da->GetNumberOfTuples();
+    node.set(DataType::float64(nvals));
+    conduit::float64 *vals = node.value();
+    for(int i = 0; i < nvals; ++i)
+    {
+      vals[i] = da->GetComponent(i, component);
+    }
+}
+
+void
+CopyComponent32(Node &node, vtkDataArray *da, int component)
+{
+
+    int nvals= da->GetNumberOfTuples();
+    node.set(DataType::float32(nvals));
+    conduit::float32 *vals = node.value();
+    for(int i = 0; i < nvals; ++i)
+    {
+      vals[i] = (float)da->GetComponent(i, component);
+    }
+}
+
+void VTKDataArrayToNode(Node &node, vtkDataArray *arr)
+{
+    // copy up to 3 components
+    int ncomps = std::min(3,arr->GetNumberOfComponents());
+    std::vector<std::string> cnames;
+    cnames.push_back("/x");
+    cnames.push_back("/y");
+    cnames.push_back("/z");
+
+    int nTuples = arr->GetNumberOfTuples();
+    if (ncomps == 1)
+    {
+        CopyTuple1(node, arr);
+    }
+    else if(arr->GetDataType() == VTK_DOUBLE)
+    {
+        for(int comp = 0; comp < ncomps; ++comp)
+        {
+          CopyComponent64(node[cnames[comp]], arr, comp);
+        }
+    }
+    else
+    {
+        for(int comp = 0; comp < ncomps; ++comp)
+        {
+          CopyComponent32(node[cnames[comp]], arr, comp);
+        }
+    }
+
+}
+
+void WriteVars(Node &node,
+               const string topo_name,
+               vtkPointData *pd,
+               vtkCellData *cd)
+{
+
+    for (size_t i = 0 ; i < (size_t)pd->GetNumberOfArrays() ; i++)
+    {
+         vtkDataArray *arr = pd->GetArray(i);
+         // skip special variables
+         if (strstr(arr->GetName(), "vtk") != NULL)
+             continue;
+         if (strstr(arr->GetName(), "avt") != NULL)
+             continue;
+
+         std::string fname = arr->GetName();
+         std::string field_path = "fields/" + fname;
+         node[field_path + "/association"] = "vertex";
+         node[field_path + "/topology"] = topo_name;
+
+         VTKDataArrayToNode(node[field_path + "/values"], arr);
+    }
+
+    for (size_t i = 0 ; i < (size_t)cd->GetNumberOfArrays() ; i++)
+    {
+         vtkDataArray *arr = pd->GetArray(i);
+         // skip special variables
+         if (strstr(arr->GetName(), "vtk") != NULL)
+             continue;
+         if (strstr(arr->GetName(), "avt") != NULL)
+             continue;
+
+         std::string fname = arr->GetName();
+         std::string field_path = "fields/" + fname;
+         node[field_path + "/association"] = "element";
+         node[field_path + "/topology"] = topo_name;
+
+         VTKDataArrayToNode(node[field_path + "/values"], arr);
+    }
+}
 
 void
 avtBlueprintWriter::WriteChunk(vtkDataSet *ds, int chunk)
@@ -243,95 +335,98 @@ avtBlueprintWriter::WriteChunk(vtkDataSet *ds, int chunk)
     else
         sprintf(chunkname, "%s", stem.c_str());
 
-
+    Node mesh;
+    std::string topo_name = "topo";
     if (!meshName.empty())
     {
-        vtkStringArray *mn = vtkStringArray::New();
-        mn->SetNumberOfValues(1);
-        mn->SetValue(0, meshName);
-        mn->SetName("MeshName");
-        ds->GetFieldData()->AddArray(mn);
-        mn->Delete();
+       // topo_name = meshName;
     }
 
     if (cycle != INVALID_CYCLE)
     {
-        vtkIntArray *mn = vtkIntArray::New();
-        mn->SetNumberOfValues(1);
-        mn->SetValue(0, cycle);
-        mn->SetName("CYCLE");
-        ds->GetFieldData()->AddArray(mn);
-        mn->Delete();
+        mesh["state/cycle"] = cycle;
     }
 
     if (time != INVALID_TIME )
     {
-        vtkDoubleArray *mn = vtkDoubleArray::New();
-        mn->SetNumberOfValues(1);
-        mn->SetValue(0, time);
-        mn->SetName("TIME");
-        ds->GetFieldData()->AddArray(mn);
-        mn->Delete();
+        mesh["state/time"] = time;
     }
 
-    if (!doXML)
+    std::string topo_path = "topologies/" + topo_name;
+    std::string coord_path = "coordsets/coords";
+    mesh[topo_path + "/coordset"] = "coords";
+
+    int ndims = GetInput()->GetInfo().GetAttributes().GetSpatialDimension();
+    std::cout<<"DIMS "<<ndims<<"\n";
+
+    if (ds->GetDataObjectType() == VTK_RECTILINEAR_GRID)
     {
-        sprintf(chunkname, "%s.vtk", chunkname);
-        vtkDataSetWriter *wrtr = vtkDataSetWriter::New();
-        if (doBinary)
-            wrtr->SetFileTypeToBinary();
-        wrtr->SetInputData(ds);
-        wrtr->SetFileName(chunkname);
-        wrtr->Write();
-
-        wrtr->Delete();
-        if (nblocks > 1)
-            fileNames.push_back(chunkname);
+       mesh[coord_path+ "/type"] = "rectilinear";
+       mesh[topo_path + "/type"] = "structured";
+       vtkRectilinearGrid *rgrid = (vtkRectilinearGrid *) ds;
+       if(ndims > 0)
+       {
+          int dimx = rgrid->GetXCoordinates()->GetNumberOfTuples();
+          CopyTuple1(mesh[coord_path+ "/values/x"], rgrid->GetXCoordinates());
+          mesh[topo_path+ "/elements/dims/i"] = dimx;
+       }
+       if(ndims > 1)
+       {
+          int dimy = rgrid->GetYCoordinates()->GetNumberOfTuples();
+          CopyTuple1(mesh[coord_path + "/values/y"], rgrid->GetYCoordinates());
+          mesh[topo_path+ "/elements/dims/j"] = dimy;
+       }
+       if(ndims > 2)
+       {
+          int dimz = rgrid->GetZCoordinates()->GetNumberOfTuples();
+          CopyTuple1(mesh[coord_path + "/values/z"], rgrid->GetZCoordinates());
+          mesh[topo_path+ "/elements/dims/k"] = dimz;
+       }
+       WriteVars(mesh, topo_name, rgrid->GetPointData(), rgrid->GetCellData());
     }
-    else
+    else if (ds->GetDataObjectType() == VTK_STRUCTURED_GRID)
     {
-        vtkXMLWriter *wrtr = NULL;
-        if (ds->GetDataObjectType() == VTK_RECTILINEAR_GRID)
-        {
-           sprintf(chunkname, "%s.vtr", chunkname);
-           wrtr = vtkXMLRectilinearGridWriter::New();
-        }
-        else if (ds->GetDataObjectType() == VTK_STRUCTURED_GRID)
-        {
-           sprintf(chunkname, "%s.vts", chunkname);
-           wrtr = vtkXMLStructuredGridWriter::New();
-        }
-        else if (ds->GetDataObjectType() == VTK_UNSTRUCTURED_GRID)
-        {
-           sprintf(chunkname, "%s.vtu", chunkname);
-           wrtr = vtkXMLUnstructuredGridWriter::New();
-        }
-        else if (ds->GetDataObjectType() == VTK_POLY_DATA)
-        {
-           sprintf(chunkname, "%s.vtp", chunkname);
-           wrtr = vtkXMLPolyDataWriter::New();
-        }
-
-        if (wrtr)
-        {
-            if (nblocks > 1)
-                fileNames.push_back(chunkname);
-            if(doBinary)
-            {
-                wrtr->SetDataModeToBinary();
-            }
-            else
-            {
-                wrtr->SetDataModeToAscii();
-                wrtr->SetCompressorTypeToNone();
-            }
-            wrtr->SetInputData(ds);
-            wrtr->SetFileName(chunkname);
-            wrtr->Write();
-
-            wrtr->Delete();
-        }
+       mesh[coord_path + "/type"] = "explicit";
+       mesh[topo_path + "/type"] = "structured";
     }
+    else if (ds->GetDataObjectType() == VTK_UNSTRUCTURED_GRID)
+    {
+       mesh[topo_path + "/type"] = "explicit";
+       mesh[coord_path + "/type"] = "explicit";
+       //sprintf(chunkname, "%s.vtu", chunkname);
+       //wrtr = vtkXMLUnstructuredGridWriter::New();
+    }
+
+    Node verify_info;
+    if(!blueprint::mesh::verify(mesh,verify_info))
+    {
+        //BP_PLUGIN_INFO("Skipping mesh named \"" << mesh_name << "\"" << endl
+        //               << "blueprint::mesh::index::verify failed " << endl
+        //               << verify_info.to_json());
+        std::cout<<verify_info.to_json()<<"\n";
+        mesh.print();
+        return;
+    }
+    else std::cout<<"MESH smells good\n";
+    //if (wrtr)
+    //{
+    //    if (nblocks > 1)
+    //        fileNames.push_back(chunkname);
+    //    if(doBinary)
+    //    {
+    //        wrtr->SetDataModeToBinary();
+    //    }
+    //    else
+    //    {
+    //        wrtr->SetDataModeToAscii();
+    //        wrtr->SetCompressorTypeToNone();
+    //    }
+    //    wrtr->SetInputData(ds);
+    //    wrtr->SetFileName(chunkname);
+    //    wrtr->Write();
+
+    //    wrtr->Delete();
+    //}
 }
 
 
