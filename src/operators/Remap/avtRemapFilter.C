@@ -245,6 +245,8 @@ DEBUG_CellTypeList.insert(std::pair<std::string, int>("unknown",        0));
     rg->GetCellData()->AddArray(vars);
     rg->GetCellData()->SetScalars(vars);
     
+    std::cout << "Name of the variable: " << vars->GetName() << std::endl;
+    
     // ----------------------------------------------------- //
     // --- Clip the domains against the rectilinear grid --- //
     // ----------------------------------------------------- //
@@ -318,6 +320,11 @@ avtRemapFilter::TraverseDomainTree(avtDataTree_p inTree)
                 std::cout << "Domain Id: " << domainIds[i] << std::endl;
                 TraverseDomainTree(inTree->GetChild(i));
             }
+            else
+            {
+                std::cout << "Child " << i << " is not present. Skipping."
+                          << std::endl;
+            }
         }
     }
 }
@@ -363,20 +370,23 @@ avtRemapFilter::ClipDomain(avtDataTree_p inLeaf) {
     // For now, just assume that there is one variable. Add multivariables later.
     // TODO: use a Map to track multliple variables across the domains.
     // 
-    // int nVariables = in_ds->GetCellData()->GetNumberOfArrays();    
+     int nVariables = in_ds->GetCellData()->GetNumberOfArrays();    
+     std::cout << "Names of variables from in_ds: ";
     // vtkDataArray** vars;
     // vars = new vtkDataArray*[nVariables];
-    // for (int vdx = 0, vdy = 0; vdx < nVariables; vdx++)
+     for (int vdx = 0; vdx < nVariables; vdx++)
     // {
     //     vars[vdx] = vtkDoubleArray::New();
     //     vars[vdx]->SetNumberOfComponents(1); // Can only handle scalar values now
     //     vars[vdx]->SetNumberOfTuples(nCellsOut);
     //     vars[vdx]->SetName(in_ds->GetCellData()->GetArray(vdx)->GetName());
+         std::cout << in_ds->GetCellData()->GetArray(vdx)->GetName() << ", ";
     //     
     //     rg->GetCellData()->AddArray(vars[vdx]);
     //     rg->GetCellData()->SetScalars(vars[vdx]);
     // }
     // OLD CODE END
+    std::cout << std::endl;
     
     
     // ------------------------------------------------------- //
@@ -526,7 +536,8 @@ if (DEBUG_rCellVolumeTEST != rCellVolume)
         //            sub cell, then totaled among the set of sub cells.
         
         double value = 0.0;
-        vtkDataArray* myVariable = ug->GetCellData()->GetArray(0);
+        //vtkDataArray* myVariable = ug->GetCellData()->GetArray(0);
+        vtkDataArray* myVariable = ug->GetCellData()->GetArray(vars->GetName());
         if (atts.GetVariableType() == RemapAttributes::intrinsic) // like density
         {
             for (vtkIdType tuple = 0;
@@ -555,34 +566,34 @@ if (DEBUG_rCellVolumeTEST != rCellVolume)
         }
         
         // --- Clean up --- //
-        //std::cout << "Deleting myVariable" << std::endl;
-        //myVariable->Delete();
-        //std::cout << "Deleting originalCellVolumes" << std::endl;
-        //originalCellVolumes->Delete();
-        std::cout << "Deleting subCellVolumes" << std::endl;
-        subCellVolumes->Delete();
-        std::cout << "Deleting ug" << std::endl;
-        ug->Delete();
-        //std::cout << "Does not like trying to delete ug" << std::endl;
-        std::cout << "Deleting vectors" << std::endl;
-        //std::cout << "Does not like trying to delete vectors" << std::endl;
-        int stop = is3D ? 6 : 4;
-        for (int i = 0; i < stop; ++i)
-        {
-            clipperArray[i]->Delete();
-            funcsArray[i]->Delete();
-            planeArray[i]->Delete();
-        }
-        //std::cout << "Deleting last" << std::endl;
-        //last->Delete();
-        //std::cout << "Does not like trying to delete last" << std::endl;
+        ////std::cout << "Deleting myVariable" << std::endl;
+        ////myVariable->Delete();
+        ////std::cout << "Deleting originalCellVolumes" << std::endl;
+        ////originalCellVolumes->Delete();
+        ////std::cout << "Deleting subCellVolumes" << std::endl;
+        //subCellVolumes->Delete();
+        ////std::cout << "Deleting ug" << std::endl;
+        //ug->Delete();
+        ////std::cout << "Does not like trying to delete ug" << std::endl;
+        ////std::cout << "Deleting vectors" << std::endl;
+        ////std::cout << "Does not like trying to delete vectors" << std::endl;
+        //int stop = is3D ? 6 : 4;
+        //for (int i = 0; i < stop; ++i)
+        //{
+        //    clipperArray[i]->Delete();
+        //    funcsArray[i]->Delete();
+        //    planeArray[i]->Delete();
+        //}
+        ////std::cout << "Deleting last" << std::endl;
+        ////last->Delete();
+        ////std::cout << "Does not like trying to delete last" << std::endl;
     } // End loop over rCells
     
     // --- More Clean up --- //
-    std::cout << "Deleting avtRemapOriginVolume" << std::endl;
-    avtRemapOriginalVolume->Delete();
-    std::cout << "Deleting in_ds" << std::endl;
-    in_ds->Delete();
+    ////std::cout << "Deleting avtRemapOriginVolume" << std::endl;
+    //avtRemapOriginalVolume->Delete();
+    ////std::cout << "Deleting in_ds" << std::endl;
+    //in_ds->Delete();
     
     
     return;
@@ -774,7 +785,6 @@ DEBUG_CellTypeList["unknown"]++;
 void
 avtRemapFilter::GetBounds()
 {
-    // TODO: fix errors that arise from the bounds
     if (!atts.GetUseExtents())
     {
         rGridBounds[0] = atts.GetStartX();
