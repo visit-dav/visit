@@ -45,9 +45,10 @@
 #ifndef vtkOSPRayVisItAxisActorNode_h
 #define vtkOSPRayVisItAxisActorNode_h
 
-#include "vtkOSPRayActorNode.h"
+#include <viswindow_exports.h>
+#include <vtkOSPRayActorNode.h>
 
-class VTKRENDERINGOSPRAY_EXPORT vtkOSPRayVisItAxisActorNode :
+class  VISWINDOW_API vtkOSPRayVisItAxisActorNode :
   public vtkOSPRayActorNode
 {
 public:
