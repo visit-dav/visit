@@ -86,32 +86,14 @@ double avtBlueprintWriter::INVALID_TIME = -DBL_MAX;
 // ****************************************************************************
 //  Method: avtBlueprintWriter constructor
 //
-//  Programmer: Hank Childs
-//  Creation:   May 24, 2005
+//  Programmer: Matt Larsen
+//  Creation:   Feb 1, 2019
 //
 //  Modifications:
 //
-//    Hank Childs, Thu Mar 30 12:20:24 PST 2006
-//    Initialize doMultiBlock.
-//
-//    Jeremy Meredith, Tue Mar 27 15:10:21 EDT 2007
-//    Added nblocks so we don't have to trust the meta data.
-//
-//    Kathleen Biagas, Thu Dec 18 14:10:36 PST 2014
-//    Add doXML.
-//
-//    Kathleen Biagas, Wed Feb 25 13:25:07 PST 2015
-//    Added meshName.
-//
-//    Kathleen Biagas, Tue Sep  1 11:27:23 PDT 2015
-//    Added fileNames.
-//
-//    Kathleen Biagas, Fri Feb 17 15:41:33 PST 2017
-//    Handle new Write options.
-//
 // ****************************************************************************
 
-avtBlueprintWriter::avtBlueprintWriter() :stem(), meshName(), fileNames()
+avtBlueprintWriter::avtBlueprintWriter() :stem(), meshName()
 {
     doBinary = false;
     doXML = false;
@@ -125,19 +107,10 @@ avtBlueprintWriter::avtBlueprintWriter() :stem(), meshName(), fileNames()
 //  Purpose:
 //      Does no actual work.  Just records the stem name for the files.
 //
-//  Programmer: Hank Childs
-//  Creation:   September 12, 2003
+//  Programmer: Matt Larsen
+//  Creation:   Feb 1, 2019
 //
 //  Modifications:
-//    Jeremy Meredith, Tue Mar 27 15:10:21 EDT 2007
-//    Added nblocks to this function and save it so we don't have to
-//    trust the meta data.
-//
-//    Kathleen Biagas, Tue Sep  1 11:27:23 PDT 2015
-//    Clear fileNames if necessary.
-//
-//    Kathleen Biagas, Fri Feb 17 15:43:28 PST 2017
-//    Multi-block files now write individual files to subdir of the same name.
 //
 // ****************************************************************************
 
@@ -146,47 +119,40 @@ avtBlueprintWriter::OpenFile(const string &stemname, int nb)
 {
     stem = stemname;
     nblocks = nb;
-    if (!fileNames.empty())
-        fileNames.clear();
 
-    if(nb > 1)
+    int c = GetCycle();
+    if (c != INVALID_CYCLE)
     {
-       // we want the basename without the extension to use as a sub-dir name
-       mbDirName = FileFunctions::Basename(stem);
-#ifdef WIN32
-       _mkdir(stem.c_str());
-#else
-       mkdir(stem.c_str(), 0777);
-#endif
+        c = 0;
     }
+    char fmt_buff[64];
+    snprintf(fmt_buff, sizeof(fmt_buff), "%06d",c);
+    // we want the basename without the extension to use as a sub-dir name
+    mbDirName = FileFunctions::Basename(stem);
+    std::ostringstream oss;
+    oss << stem << ".cycle_" << fmt_buff;
+    output_dir  =  oss.str();
+
+#ifdef WIN32
+    _mkdir(output_dir.c_str());
+#else
+    mkdir(output_dir.c_str(), 0777);
+#endif
+    genRoot = true;
+    n_root_file.reset();
 }
 
 
 // ****************************************************************************
-//  Method: avtBlueprintWriter::WriteHeaders
+//  Method: avtBlueprintWriter::WriteHeader
 //
 //  Purpose:
-//      Writes out a VisIt file to tie the VTK files together.
+//      Get any info from the metadata that we need to wrtie data
 //
-//  Programmer: Hank Childs
-//  Creation:   September 12, 2003
+//  Programmer: Matt Larsen
+//  Creation:   Feb 1, 2019
 //
 //  Modifications:
-//
-//    Hank Childs, Thu Mar 30 12:20:24 PST 2006
-//    Add support for curves.
-//
-//    Hank Childs, Thu Mar 30 12:20:24 PST 2006
-//    Initialize doMultiBlock.
-//
-//    Jeremy Meredith, Tue Mar 27 11:36:57 EDT 2007
-//    Use the saved nblocks because we can't trust the meta data.
-//
-//    Hank Childs, Thu Oct 29 17:21:14 PDT 2009
-//    Only have processor 0 write out the header file.
-//
-//    Kathleen Biagas, Wed Feb 25 13:25:07 PST 2015
-//    Retrieve meshName.
 //
 // ****************************************************************************
 
@@ -202,19 +168,6 @@ avtBlueprintWriter::WriteHeaders(const avtDatabaseMetaData *md,
 }
 
 
-// ****************************************************************************
-//  Method: avtBlueprintWriter::WriteChunk
-//
-//  Purpose:
-//      This writes out one chunk of an avtDataset.
-//
-//  Programmer: Hank Childs
-//  Creation:   September 12, 2003
-//
-//  Modifications:
-//
-//
-// ****************************************************************************
 void
 CopyTuple1(Node &node, vtkDataArray *da)
 {
@@ -326,6 +279,19 @@ void WriteVars(Node &node,
     }
 }
 
+// ****************************************************************************
+//  Method: avtBlueprintWriter::WriteChunk
+//
+//  Purpose:
+//      This writes out one chunk of an avtDataset.
+//
+//  Programmer: Matt Larsen
+//  Creation:  Feb 1, 2019
+//
+//  Modifications:
+//
+//
+// ****************************************************************************
 void
 avtBlueprintWriter::WriteChunk(vtkDataSet *ds, int chunk)
 {
@@ -336,6 +302,8 @@ avtBlueprintWriter::WriteChunk(vtkDataSet *ds, int chunk)
         sprintf(chunkname, "%s", stem.c_str());
 
     Node mesh;
+    mesh["state/domain_id"] = chunk;
+    std::cout<<"Chunk id "<<chunk<<"\n";
     std::string topo_name = "topo";
     if (!meshName.empty())
     {
@@ -408,27 +376,90 @@ avtBlueprintWriter::WriteChunk(vtkDataSet *ds, int chunk)
         return;
     }
     else std::cout<<"MESH smells good\n";
-    //if (wrtr)
-    //{
-    //    if (nblocks > 1)
-    //        fileNames.push_back(chunkname);
-    //    if(doBinary)
-    //    {
-    //        wrtr->SetDataModeToBinary();
-    //    }
-    //    else
-    //    {
-    //        wrtr->SetDataModeToAscii();
-    //        wrtr->SetCompressorTypeToNone();
-    //    }
-    //    wrtr->SetInputData(ds);
-    //    wrtr->SetFileName(chunkname);
-    //    wrtr->Write();
 
-    //    wrtr->Delete();
-    //}
+    char fmt_buff[64];
+    snprintf(fmt_buff, sizeof(fmt_buff), "%06llu",chunk);
+    std::stringstream oss;
+    oss << "domain_" << fmt_buff << "." << "hdf5";
+    string output_file  = conduit::utils::join_file_path(output_dir,oss.str());
+    std::cout<<"mdDirName "<<mbDirName<<"\n";
+    std::cout<<"outfile "<<output_file<<"\n";
+    relay::io::save(mesh, output_file);
+    if(genRoot)
+    {
+        GenRootNode(mesh, output_dir);
+        genRoot = false;
+    }
 }
 
+
+// ****************************************************************************
+//  Method: avtBlueprintWriter::GenRootNode
+//
+//  Purpose:
+//      Generates the conduit node that contains the root file info
+//
+//  Programmer: Matt Larsen
+//  Creation:   Feb 1, 2019
+//
+//  Modifications:
+//
+// ****************************************************************************
+void
+avtBlueprintWriter::GenRootNode(conduit::Node &mesh,
+                                const std::string output_dir)
+{
+
+    int c = GetCycle();
+    if (c != INVALID_CYCLE)
+    {
+        c = 0;
+    }
+
+    char fmt_buff[64];
+    snprintf(fmt_buff, sizeof(fmt_buff), "%06llu",c);
+
+    std::stringstream oss;
+    std::string root_dir = FileFunctions::Dirname(output_dir);
+    std::cout<<"root dir "<<root_dir<<"\n";
+    oss << mbDirName << ".cycle_" << fmt_buff << ".root";
+    root_file = oss.str();
+
+    root_file = utils::join_file_path(root_dir,
+                                      root_file);
+
+    std::cout<<"Full root "<<root_file<<"\n";
+    std::string output_file_pattern;
+    output_file_pattern = utils::join_file_path(output_dir,
+                                                "domain_%06d.hdf5");
+    n_root_file.reset();
+    Node &bp_idx = n_root_file["blueprint_index"];
+    blueprint::mesh::generate_index(mesh,
+                                    "",
+                                    nblocks,
+                                    bp_idx["mesh"]);
+    // work around conduit bug
+    if(mesh.has_path("state/cycle"))
+    {
+      bp_idx["mesh/state/cycle"] = mesh["state/cycle"].to_int32();
+    }
+
+    if(mesh.has_path("state/time"))
+    {
+      bp_idx["mesh/state/time"] = mesh["state/time"].to_double();
+    }
+
+    n_root_file["protocol/name"]    =  "hdf5";
+    n_root_file["protocol/version"] = "0.4.0";
+
+    n_root_file["number_of_files"]  = nblocks;
+    // for now we will save one file per domain, so trees == files
+    n_root_file["number_of_trees"]  = nblocks;
+    n_root_file["file_pattern"]     = output_file_pattern;
+    n_root_file["tree_pattern"]     = "/";
+
+    //n_root_file.print();
+}
 
 // ****************************************************************************
 //  Method: avtBlueprintWriter::CloseFile
@@ -436,12 +467,8 @@ avtBlueprintWriter::WriteChunk(vtkDataSet *ds, int chunk)
 //  Purpose:
 //      Closes the file.
 //
-//  Programmer: Hank Childs
-//  Creation:   September 12, 2003
-//
-//  Modifications:
-//    Kathleen Biagas, Tue Sep  1 08:58:23 PDT 2015
-//    Create 'vtm' file for multi-block XML.
+//  Programmer: Matt Larsen
+//  Creation:   Feb 1, 2019
 //
 //  Modifications:
 //
@@ -458,111 +485,41 @@ avtBlueprintWriter::CloseFile(void)
 //  Purpose:
 //      Writes a root file.
 //
-//  Programmer: Brad Whitlock
-//  Creation:
+//  Programmer: Matt Larsen
+//  Creation:   Feb 1, 2019
 //
 //  Modifications:
-//    Kathleen Biagas, Tue Sep  1 08:58:23 PDT 2015
-//    Create 'vtm' file for multi-block XML.
-//
-//    Kathleen Biagas, Wed Oct  7 08:32:53 PDT 2015
-//    Collect fileNames from all processors to proc 0 before writing .vtm file.
-//
-//    Kathleen Biagas, Fri Feb 17 15:45:30 PST 2017
-//    Use short filenames instead of full-path for writing names to root.
-//    .vtm expects relative not full paths.
 //
 // ****************************************************************************
 
 void
 avtBlueprintWriter::WriteRootFile()
 {
-    if (nblocks > 1)
-    {
-        // shorten our full-path-filenames to just the filename
-        for (size_t i = 0; i < fileNames.size(); ++i)
-        {
-            fileNames[i] = mbDirName + string("/") + FileFunctions::Basename(fileNames[i]);
-        }
-    }
+    int root_writer = 0;
+    int rank = 0;
 #ifdef PARALLEL
-    if (nblocks > 1)
+    // assume nothing about what rank was given a chunk;
+    rank = writeContext.Rank();
+    bool has_root_file = n_root_file.has_path("blueprint_index");
+    int i_has_root = has_root_file ? 1 : 0;
+    int *roots = new int[writeContext.Size()];
+
+    MPI_Allgather(&i_has_root, 1, MPI_INT, roots, 1, MPI_INT,
+                  writeContext.GetCommunicator());
+
+    for(int i = 0; i < writeContext.Size(); ++i)
     {
-        int tags[3];
-        writeContext.GetUniqueMessageTags(tags, 3);
-        int nFNTag  = tags[0];
-        int sizeTag = tags[1];
-        int dataTag = tags[2];
-
-
-        if (writeContext.Rank() == 0)
+        if(roots[i] == 1)
         {
-            for (int i = 1; i < writeContext.Size(); ++i)
-            {
-                MPI_Status stat;
-                MPI_Status stat2;
-                int nfn = 0, size = 0;
-                MPI_Recv(&nfn, 1, MPI_INT, MPI_ANY_SOURCE, nFNTag,
-                         writeContext.GetCommunicator(), &stat);
-                for (int j = 0; j < nfn; ++j)
-                {
-                    MPI_Recv(&size, 1, MPI_INT, stat.MPI_SOURCE, sizeTag,
-                             writeContext.GetCommunicator(), &stat2);
-                    char *str = new char[size+1];
-                    MPI_Recv(str, size, MPI_CHAR, stat.MPI_SOURCE, dataTag,
-                             writeContext.GetCommunicator(), &stat2);
-                    str[size] = '\0';
-                    fileNames.push_back(str);
-                    delete [] str;
-                }
-            }
-        }
-        else
-        {
-            int nfn = (int)fileNames.size();
-            MPI_Send(&nfn, 1, MPI_INT, 0, nFNTag, writeContext.GetCommunicator());
-            for (int i = 0; i < nfn; ++i)
-            {
-                int len = (int)fileNames[i].length();
-                MPI_Send(&len, 1, MPI_INT, 0, sizeTag, writeContext.GetCommunicator());
-                char *str = const_cast<char*>(fileNames[i].c_str());
-                MPI_Send(str, len, MPI_CHAR, 0, dataTag, writeContext.GetCommunicator());
-            }
+            root_writer = i;
+            break;
         }
     }
+
+    delete[] roots;
 #endif
-    if (nblocks > 1 && writeContext.Rank() == 0)
+    if(rank == root_writer)
     {
-        char filename[1024];
-        if(doXML)
-        {
-            if(writeContext.GroupSize() > 1)
-                SNPRINTF(filename, 1024, "%s.%d.vtm", stem.c_str(), writeContext.GroupRank());
-            else
-                SNPRINTF(filename, 1024, "%s.vtm", stem.c_str());
-            ofstream ofile(filename);
-            ofile << "<?xml version=\"1.0\"?>" << endl;
-            ofile << "<VTKFile type=\"vtkMultiBlockDataSet\" version=\"1.0\">" << endl;
-            ofile << "  <vtkMultiBlockDataSet>"<< endl;
-            ofile << "    <Block index =\"0\">" << endl;
-            for (int i = 0 ; i < nblocks ; i++)
-            {
-                ofile << "      <DataSet index=\"" << i << "\" file=\""
-                      << fileNames[i] << "\"/>" << endl;
-            }
-            ofile << "    </Block>" << endl;
-            ofile << "  </vtkMultiBlockDataSet>"<< endl;
-            ofile << "</VTKFile>" << endl;
-        }
-        else
-        {
-            sprintf(filename, "%s.visit", stem.c_str());
-            ofstream ofile(filename);
-            ofile << "!NBLOCKS " << nblocks << endl;
-            for (int i = 0 ; i < nblocks ; i++)
-            {
-                ofile << fileNames[i] << endl;
-            }
-        }
+        relay::io::save(n_root_file, root_file,"hdf5");
     }
 }

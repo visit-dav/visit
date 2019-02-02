@@ -48,6 +48,8 @@
 #include <string>
 #include <vector>
 
+#include "conduit.hpp"
+
 class DBOptionsAttributes;
 
 // ****************************************************************************
@@ -78,12 +80,18 @@ avtBlueprintWriter : public virtual avtDatabaseWriter
     std::string    stem;
     std::string    meshName;
     std::string    mbDirName;
+    std::string    output_dir;
     double         time;
     int            cycle;
     bool           doBinary;
     bool           doXML;
     int            nblocks;
-    std::vector<std::string> fileNames;
+    bool           genRoot;
+    conduit::Node  n_root_file;
+    std::string    root_file;
+
+    void           GenRootNode(conduit::Node &mesh,
+                               const std::string output_dir);
 
     virtual void   OpenFile(const std::string &, int);
     virtual void   WriteHeaders(const avtDatabaseMetaData *,
