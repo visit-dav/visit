@@ -115,7 +115,7 @@ MiliVariableMetaData::MiliVariableMetaData(string sName,
     numType           = nType;
     vectorSize        = vecSize;
 
-    subrecInfo.resize(nDomains);
+    SRIds.resize(nDomains);
 
     vectorComponents.resize(vComps.size());
     for (int i = 0; i < vComps.size(); ++i)
@@ -175,43 +175,13 @@ MiliVariableMetaData::GetVectorComponent(int idx)
 
 
 // ***************************************************************************
-//  Method: MiliVariableMetaData::GetSubrecordIds
+//  Method: MiliVariableMetaData::AddSubrecId
 //
 //  Purpose:
-//      Get the subrecord ids for a given domain. 
+//      Add a subrecord index for this variable.
 //
 //  Arguments: 
-//
-//  Returns:
-//      A reference to the subrecord id vector 
-//      for the given domain. 
-//           
-//  Programmer: Alister Maguire
-//  Creation:   Jan 15, 2019
-//
-//  Modifications:
-//
-// ****************************************************************************
-
-vector<int> &
-MiliVariableMetaData::GetSubrecordIds(int dom)
-{
-    if (dom > subrecInfo[dom].nSR || dom < 0)
-    {
-        char msg[1024];
-        sprintf(msg, "Invalid domain index for subrecord ids!");
-        EXCEPTION1(ImproperUseException, msg);
-    }
-    return subrecInfo[dom].SRIDs;
-}
-
-
-// ***************************************************************************
-//  Method: MiliVariableMetaData::AddSubrecordInfo
-//
-//  Purpose:
-//
-//  Arguments: 
+//      dom    The domain that this subrecord resides on. 
 //           
 //  Programmer: Alister Maguire
 //  Creation:   Jan 15, 2019
@@ -221,38 +191,31 @@ MiliVariableMetaData::GetSubrecordIds(int dom)
 // ****************************************************************************
 
 void
-MiliVariableMetaData::AddSubrecordInfo(int dom, 
-                                       int srId,
-                                       int nElems,
-                                       int nDB,
-                                       int *DBRanges)
+MiliVariableMetaData::AddSubrecId(int dom, int SRId)
 {
-    subrecInfo[dom].nSR++;
-    subrecInfo[dom].nElements.push_back(nElems);
-    subrecInfo[dom].SRIDs.push_back(srId);
-    subrecInfo[dom].nDataBlocks.push_back(nDB);
-
-    //
-    // Deep copy the ranges so that we don't have to keep 
-    // the subrecords in memory. 
-    //
-    int limit = nDB * 2;
-    vector<int> nxtRange(limit);
-    for (int i = 0; i < limit; ++i)
+    if (dom > SRIds.size() || dom < 0)
     {
-        nxtRange[i] = DBRanges[i]; 
+        char msg[1024];
+        sprintf(msg, "Invalid domain index for subrecord idxs!");
+        EXCEPTION1(ImproperUseException, msg);
     }
-
-    subrecInfo[dom].dataBlockRanges.push_back(nxtRange);
+    SRIds[dom].push_back(SRId);
 }
 
 
 // ***************************************************************************
-//  Method: MiliVariableMetaData::GetSubrecordInfo
+//  Method: MiliVariableMetaData::GetSubrecIds
 //
 //  Purpose:
+//      Get the subrecord indicies for a given domain. 
 //
 //  Arguments: 
+//      dom    The domain of interest. 
+//
+//  Returns:
+//      A reference to the subrecord index vector 
+//      for the given domain. These indicies correspond
+//      to the subrecordInfo stored by avtMiliMetaData.
 //           
 //  Programmer: Alister Maguire
 //  Creation:   Jan 15, 2019
@@ -261,16 +224,16 @@ MiliVariableMetaData::AddSubrecordInfo(int dom,
 //
 // ****************************************************************************
 
-SubrecInfo &
-MiliVariableMetaData::GetSubrecordInfo(int dom)
+vector<int> &
+MiliVariableMetaData::GetSubrecIds(int dom)
 {
-    if (dom > subrecInfo.size() || dom < 0)
+    if (dom > SRIds.size() || dom < 0)
     {
         char msg[1024];
-        sprintf(msg, "Invalid domain index for subrecord ids!");
+        sprintf(msg, "Invalid domain index for subrecord idxs!");
         EXCEPTION1(ImproperUseException, msg);
     }
-    return subrecInfo[dom];
+    return SRIds[dom];
 }
 
 
@@ -465,10 +428,10 @@ MiliClassMetaData::MiliClassMetaData(string sName,
                                      int totalNEl,
                                      int numDomains)
 {
-    shortName          = sName;
-    longName           = lName;
-    totalNumElements   = totalNEl;
-    superClassId       = scID;
+    shortName        = sName;
+    longName         = lName;
+    totalNumElements = totalNEl;
+    superClassId     = scID;
     DetermineType();
     numDomainElements.resize(numDomains, 0);
     connectivityOffset.resize(numDomains, 0);
@@ -588,6 +551,10 @@ MiliClassMetaData::SetNumElements(int domain, int nEl)
 //
 //  Arguments: 
 //      domain    The domain of interest. 
+//
+//  Returns:
+//      The number of elements belonging to this class on the
+//      given domain. 
 //           
 //  Programmer: Alister Maguire
 //  Creation:   Jan 15, 2019
@@ -683,11 +650,6 @@ MiliMaterialMetaData::MiliMaterialMetaData(string matName,
 {
     name     = matName;
     hexColor =  matColor;
-    //FIXME: clean up
-    //for (int i = 0; i < 3; ++i)
-    //{
-    //    color[i] = matColor[i];
-    //}
 }
 
 
@@ -729,6 +691,7 @@ avtMiliMetaData::avtMiliMetaData(int nDomains)
     miliMaterials = NULL;
     numCells.resize(numDomains, -1);
     numNodes.resize(numDomains, -1);
+    subrecInfo.resize(numDomains);
 }
 
 
@@ -920,6 +883,9 @@ avtMiliMetaData::SetNumClasses(int nClasses)
 //  Arguments: 
 //      classIdx    The index of the Clas md. 
 //      mcmd        The mili class meta data. 
+//
+//      NOTE: mcmd enters ownership of avtMiliMetaData and all
+//            memory is managed internally from then on. 
 //           
 //  Programmer: Alister Maguire
 //  Creation:   Jan 15, 2019
@@ -1020,7 +986,7 @@ avtMiliMetaData::GetNumNodes(int domain)
 
 
 // ***************************************************************************
-//  Method: avtMiliMetaData::GetClassMDIdx
+//  Method: avtMiliMetaData::GetClassMDIdxByShortName
 //
 //  Purpose:
 //      Get the index of a MiliClassMetaData in our container. 
@@ -1040,7 +1006,7 @@ avtMiliMetaData::GetNumNodes(int domain)
 // ****************************************************************************
 
 int
-avtMiliMetaData::GetClassMDIdx(const char *cName)
+avtMiliMetaData::GetClassMDIdxByShortName(const char *cName)
 {
     if (miliClasses == NULL)
     {
@@ -1059,9 +1025,8 @@ avtMiliMetaData::GetClassMDIdx(const char *cName)
     return -1;
 }
 
-//TODO: change name to GetClassMDByShortName
 // ***************************************************************************
-//  Method: avtMiliMetaData::GetClassMD
+//  Method: avtMiliMetaData::GetClassMDByShortName
 //
 //  Purpose:
 //      Get the meta data for a Class with the given name. 
@@ -1080,9 +1045,9 @@ avtMiliMetaData::GetClassMDIdx(const char *cName)
 // ****************************************************************************
 
 MiliClassMetaData *
-avtMiliMetaData::GetClassMD(const char *vName)
+avtMiliMetaData::GetClassMDByShortName(const char *vName)
 {
-    int idx = GetClassMDIdx(vName);
+    int idx = GetClassMDIdxByShortName(vName);
     if (idx > -1 && idx < numClasses)
     {
         return miliClasses[idx];
@@ -1166,6 +1131,9 @@ avtMiliMetaData::GetCellTypeCounts(vector<int> &cTypes,
 //  Arguments: 
 //      varIdx    Where in our container to store the object.
 //      mvmd      The MiliVariableMetaData object. 
+//
+//      NOTE: mvmd enters ownership of avtMiliMetaData and all
+//            memory is managed internally from then on. 
 //           
 //  Programmer: Alister Maguire
 //  Creation:   Jan 15, 2019
@@ -1275,10 +1243,8 @@ avtMiliMetaData::GetVarMDByPath(const char *vPath)
     return NULL; 
 }
 
-//TODO: change this name to GetVarMDByIdx
-//      Also consider option to return all variables at once (more efficient). 
 // ***************************************************************************
-//  Method: avtMiliMetaData::GetVarMD
+//  Method: avtMiliMetaData::GetVarMDByIdx
 //
 //  Purpose:
 //      Get a MiliVariableMetaData given its container index. 
@@ -1298,7 +1264,7 @@ avtMiliMetaData::GetVarMDByPath(const char *vPath)
 // ****************************************************************************
 
 MiliVariableMetaData *
-avtMiliMetaData::GetVarMD(int varIdx)
+avtMiliMetaData::GetVarMDByIdx(int varIdx)
 {
     if (varIdx >= 0 && varIdx < numVariables)
     {
@@ -1394,11 +1360,17 @@ avtMiliMetaData::GetVarMDIdxByPath(const char *vPath)
 
 
 // ***************************************************************************
-//  Method: 
+//  Method: avtMiliMetaData::AddVarSubrecInfo
 //
 //  Purpose:
+//      Add subrecord information, and tell an associated variable
+//      where to find it. 
 //
 //  Arguments: 
+//      varIdx    The index of the associated variable. 
+//      dom       The domain of interest. 
+//      srId      The subrecord Id. 
+//      SR        A pointer to the subrecord. 
 //           
 //  Programmer: Alister Maguire
 //  Creation:   Jan 15, 2019
@@ -1411,7 +1383,7 @@ void
 avtMiliMetaData::AddVarSubrecInfo(int varIdx,
                                   int dom,
                                   int srId,
-                                  Subrecord *sr)
+                                  Subrecord *SR)
  
 {
     if (varIdx >= 0 && varIdx < numVariables && 
@@ -1419,27 +1391,117 @@ avtMiliMetaData::AddVarSubrecInfo(int varIdx,
     {
         if (miliVariables[varIdx] != NULL)
         {
-            miliVariables[varIdx]->AddSubrecordInfo(dom, 
-                                                    srId,
-                                                    sr->qty_objects,
-                                                    sr->qty_blocks,
-                                                    sr->mo_blocks);
+            //
+            // Check if we've added the info for this subrecord
+            // yet. SR IDs map to their index.  
+            //
+            if (srId >= subrecInfo.size())
+            {
+                AddSubrecInfo(dom, 
+                              SR->qty_objects,
+                              SR->qty_blocks,
+                              SR->mo_blocks);
+            }
+
+            miliVariables[varIdx]->AddSubrecId(dom, srId);
         }
-        //FIXME: add error handling. 
         else
-            cerr << "INVALID ADD TO VAR SR!!!!!!!!!!" << endl;
+        {
+            char msg[1024];
+            sprintf(msg, "Attempting to add MD to uninitialized container!");
+            EXCEPTION1(ImproperUseException, msg);
+        }
     }
     else
-        cerr << "INVALID ADD TO VAR SR!!!!!!!!!!" << endl;
+    {
+        char msg[1024];
+        sprintf(msg, "Invalid index assignment requested!");
+        EXCEPTION1(ImproperUseException, msg);
+    }
 }
 
 
 // ***************************************************************************
-//  Method: 
+//  Method: avtMiliMetaData::AddSubrecInfo
 //
 //  Purpose:
+//      Create a SubrecInfo object, and store it in our list
+//      of subrecord information for later retrieval.  
 //
 //  Arguments: 
+//      dom         The domain of this subrecord. 
+//      nElems      The number of elements (zones/nodes) associated with 
+//                  this subrecrod. 
+//      nDB         The number of "data blocks" associated with this subrecord.
+//      DBRanges    The ranges associated with the data blocks. 
+//           
+//  Programmer: Alister Maguire
+//  Creation:   Jan 15, 2019
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtMiliMetaData::AddSubrecInfo(int dom, 
+                               int nElems,
+                               int nDB,
+                               int *DBRanges)
+{
+    subrecInfo[dom].nSR++;
+    subrecInfo[dom].nElements.push_back(nElems);
+    subrecInfo[dom].nDataBlocks.push_back(nDB);
+
+    //
+    // Deep copy the ranges so that we don't have to keep 
+    // the subrecords in memory. 
+    //
+    int limit = nDB * 2;
+    vector<int> nxtRange(limit);
+    for (int i = 0; i < limit; ++i)
+    {
+        nxtRange[i] = DBRanges[i]; 
+    }
+
+    subrecInfo[dom].dataBlockRanges.push_back(nxtRange);
+}
+
+
+// ***************************************************************************
+//  Method: avtMiliMetaData::GetSubrecInfo
+//
+//  Purpose:
+//      Get the subrecord info for a given domain. 
+//
+//  Arguments: 
+//      dom    The domain of interest.  
+//           
+//  Programmer: Alister Maguire
+//  Creation:   Jan 15, 2019
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+SubrecInfo&
+avtMiliMetaData::GetSubrecInfo(int dom)
+{
+    return subrecInfo[dom];
+}
+
+
+// ***************************************************************************
+//  Method: avtMiliMetaData::AddMaterialMD
+//
+//  Purpose:
+//      Add information about a material to our meta data. 
+//
+//  Arguments: 
+//      matIdx    The index to add the MD to. 
+//      mmmd      The material meta data to add 
+//
+//      NOTE: mmmd enters ownership of avtMiliMetaData and all
+//            memory is managed internally from then on. 
 //           
 //  Programmer: Alister Maguire
 //  Creation:   Jan 15, 2019
@@ -1454,14 +1516,16 @@ avtMiliMetaData::AddMaterialMD(int matIdx,
 {
     if (matIdx < 0 || matIdx > numMaterials)
     {
-        //TODO: throw error
-        return;
+        char msg[1024];
+        sprintf(msg, "Invalid index assignment requested!");
+        EXCEPTION1(ImproperUseException, msg);
     }
 
     if (miliMaterials == NULL)
     {
-        //TODO: throw error
-        return; 
+        char msg[1024];
+        sprintf(msg, "Attempting to add MD to uninitialized container!");
+        EXCEPTION1(ImproperUseException, msg);
     }
 
     if (miliMaterials[matIdx] != NULL)
@@ -1474,11 +1538,14 @@ avtMiliMetaData::AddMaterialMD(int matIdx,
 
 
 // ***************************************************************************
-//  Method: 
+//  Method: avtMiliMetaData::GetMaterialNames
 //
 //  Purpose:
+//      Retrieve the list of material names associated with
+//      this dataset. 
 //
 //  Arguments: 
+//      matNames    The material names. 
 //           
 //  Programmer: Alister Maguire
 //  Creation:   Jan 15, 2019

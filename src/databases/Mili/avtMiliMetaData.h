@@ -69,10 +69,8 @@ typedef struct SubrecInfo
         nSR = 0;          
     };
 
-    //TODO: add squeeze?
     int                   nSR;        
     vector<int>           nElements;
-    vector<int>           SRIDs;
     vector<int>           nDataBlocks;
     vector< vector<int> > dataBlockRanges;   
 } SubrecInfo;
@@ -156,14 +154,11 @@ class MiliVariableMetaData
     bool                      GetIsGlobal(void)
                                 { return isGlobal; };
 
-    void                      InitSRContainers(int);
-    void                      AddSubrecordInfo(int, 
-                                               int, 
-                                               int,
-                                               int, 
-                                               int *);
-    SubrecInfo               &GetSubrecordInfo(int); 
-    vector<int>              &GetSubrecordIds(int);
+    
+    //SubrecInfo               &GetSubrecordInfo(int); 
+    //vector<int>              &GetSubrecordIds(int);
+    void                      AddSubrecId(int, int);
+    vector<int>              &GetSubrecIds(int);
     
     const string             &GetPath(void);
 
@@ -198,7 +193,9 @@ class MiliVariableMetaData
     //
     // Subrecord info
     //
-    vector< SubrecInfo >         subrecInfo;
+    //vector< SubrecInfo &>        subrecInfoRef;
+    vector< vector<int> >        SRIds;
+    
 
     bool                         isElementSet;
     bool                         isMatVar;
@@ -351,15 +348,15 @@ class avtMiliMetaData
 
     void                               AddClassMD(int,
                                                   MiliClassMetaData *);
-    MiliClassMetaData                 *GetClassMD(const char *);
-    int                                GetClassMDIdx(const char *);
+    MiliClassMetaData                 *GetClassMDByShortName(const char *);
+    int                                GetClassMDIdxByShortName(const char *);
  
     void                               GetCellTypeCounts(vector<int> &,
                                                          vector<int> &);
 
     void                               AddVarMD(int, 
                                                 MiliVariableMetaData *);
-    MiliVariableMetaData              *GetVarMD(int varIdx);
+    MiliVariableMetaData              *GetVarMDByIdx(int varIdx);
     MiliVariableMetaData              *GetVarMDByShortName(const char *);
     MiliVariableMetaData              *GetVarMDByPath(const char *);
     int                                GetVarMDIdxByShortName(const char *);
@@ -389,7 +386,14 @@ class avtMiliMetaData
     int                                GetNumMiliCellTypes(void)
                                          { return numMiliCellTypes; };
 
+    SubrecInfo                        &GetSubrecInfo(int);
+
   private:
+
+    void                               AddSubrecInfo(int, 
+                                                     int,
+                                                     int, 
+                                                     int *);
 
     MiliClassMetaData                **miliClasses;
     MiliVariableMetaData             **miliVariables;
@@ -401,6 +405,11 @@ class avtMiliMetaData
     int                                numMaterials;
     vector<int>                        numCells;
     vector<int>                        numNodes;
+
+    //
+    // Subrecord info
+    //
+    vector< SubrecInfo >               subrecInfo;
 
     //
     // The number of available mili cell types. 
