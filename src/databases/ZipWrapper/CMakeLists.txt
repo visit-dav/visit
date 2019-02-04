@@ -8,7 +8,7 @@ ZipWrapperPluginInfo.C
 ZipWrapperCommonPluginInfo.C
 )
 
-SET(LIBI_SOURCES 
+SET(LIBI_SOURCES
 ZipWrapperPluginInfo.C
 )
 
@@ -48,12 +48,10 @@ ${VISIT_INCLUDE_DIR}/avt/Pipeline/Sources
 ${VISIT_INCLUDE_DIR}/avt/VisWindow/VisWindow
 ${VISIT_INCLUDE_DIR}/visit_vtk/full
 ${VISIT_INCLUDE_DIR}/visit_vtk/lightweight
-${EAVL_INCLUDE_DIR}
-${VTKM_INCLUDE_DIR}
 ${VTK_INCLUDE_DIRS}
 )
 
-LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} ${EAVL_LIBRARY_DIR} ${VTKM_LIBRARY_DIR} )
+LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} )
 
 ADD_LIBRARY(IZipWrapperDatabase ${LIBI_SOURCES})
 TARGET_LINK_LIBRARIES(IZipWrapperDatabase visitcommon)

@@ -104,14 +104,6 @@ IF(OSMESA_FOUND)
     set(pyside_gui_link_libs ${pyside_gui_link_libs} ${OSMESA_LIBRARIES})
 ENDIF()
 
-#
-# If we enable eavl, it will appear in the link line, so add ${EAVL_LIBRARY_DIR}
-#
-IF(EAVL_FOUND)
-    LINK_DIRECTORIES(${EAVL_LIBRARY_DIR})
-ENDIF()
-
-
 PYSIDE_ADD_MODULE(pyside_gui
                   site-packages/visit
                   pyside_gui_sources

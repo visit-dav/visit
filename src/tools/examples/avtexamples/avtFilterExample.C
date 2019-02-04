@@ -42,9 +42,9 @@ main(int argc, char *argv[])
     VisItInit::Initialize(argc, argv);
 
     //
-    // Turn on EAVL.
+    // Turn on VTKM.
     //
-    avtCallback::SetBackendType(GlobalAttributes::EAVL);
+    avtCallback::SetBackendType(GlobalAttributes::VTKM);
 
     //
     // Create the database plugin manager.

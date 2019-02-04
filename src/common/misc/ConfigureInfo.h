@@ -44,7 +44,7 @@ namespace visitcommon {
 
 std::string MISC_API Version();
 
-std::string MISC_API SVNVersion();
+std::string MISC_API GITVersion();
 
 std::string MISC_API VersionControlVersionString();
 

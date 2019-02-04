@@ -58,7 +58,7 @@ ${VISIT_SOURCE_DIR}/avt/VisWindow/VisWindow
 ${VISIT_SOURCE_DIR}/engine/rpc
 )
 
-LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY} ${EAVL_LIBRARY_DIR} )
+LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY})
 
 ADD_LIBRARY(engineproxy ${ENGINEPROXY_SOURCES})
 TARGET_LINK_LIBRARIES(engineproxy enginerpc visitcommon avtdbatts avtpipeline_ser)

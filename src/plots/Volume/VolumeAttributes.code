@@ -670,6 +670,10 @@ Condition: VISIT_SLIVR
 Definitions: -DVISIT_SLIVR
 
 Target: xml2cmake
-Condition: VISIT_OSPRAY
-Definitions: -DVISIT_OSPRAY
+Condition:       VISIT_OSPRAY
+Definitions:     -DVISIT_OSPRAY
+Includes:        ${OSPRAY_INCLUDE_DIR}
+VLinkLibraries:  ${OSPRAY_LIBRARIES}
+ELinkLibraries:  ${OSPRAY_LIBRARIES}
+
 

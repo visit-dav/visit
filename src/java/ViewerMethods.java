@@ -3471,7 +3471,7 @@ public class ViewerMethods
     /**
      * Sets the backend type used in the pipeline.
      *
-     * @param flag  The requested backend type (0 = VTK, 1 = DAX, 2 = EAVL, 3 = PISTON)
+     * @param flag  The requested backend type (0 = VTK, 1 = VTKM)
      * @return true on success; false otherwise.
      */
     public boolean SetBackendType(int flag)

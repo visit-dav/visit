@@ -102,6 +102,9 @@
 //    Eric Brugger, Thu Jan 14 08:46:42 PST 2016
 //    Modified the class to work with VTKM.
 //
+//    Kathleen Biagas, Wed Jan 30 10:41:17 PST 2019
+//    Removed EAVL support.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtContourFilter : public avtSIMODataTreeIterator
@@ -145,7 +148,6 @@ class AVTFILTERS_API avtContourFilter : public avtSIMODataTreeIterator
     void                       CreateLabels(void);
 
  private:
-    avtDataTree_p      ExecuteDataTree_EAVL(avtDataRepresentation *);
     avtDataTree_p      ExecuteDataTree_VTK(avtDataRepresentation *);
     avtDataTree_p      ExecuteDataTree_VTKM(avtDataRepresentation *);
 

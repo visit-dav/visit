@@ -66,8 +66,7 @@ public class GlobalAttributes extends AttributeSubject
     public final static int PRECISIONTYPE_DOUBLE = 2;
 
     public final static int BACKENDTYPE_VTK = 0;
-    public final static int BACKENDTYPE_EAVL = 1;
-    public final static int BACKENDTYPE_VTKM = 2;
+    public final static int BACKENDTYPE_VTKM = 1;
 
 
     public GlobalAttributes()
@@ -637,8 +636,6 @@ public class GlobalAttributes extends AttributeSubject
         str = str + indent + "backendType = ";
         if(backendType == BACKENDTYPE_VTK)
             str = str + "BACKENDTYPE_VTK";
-        if(backendType == BACKENDTYPE_EAVL)
-            str = str + "BACKENDTYPE_EAVL";
         if(backendType == BACKENDTYPE_VTKM)
             str = str + "BACKENDTYPE_VTKM";
         str = str + "\n";
