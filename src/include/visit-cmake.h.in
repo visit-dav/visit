@@ -50,9 +50,6 @@
 /* Define if you have the Damaris library. */
 #cmakedefine HAVE_DAMARIS
 
-/* Define if you have the EAVL library. */
-#cmakedefine HAVE_LIBEAVL
-
 /* Define if you have the FastBit library. */
 #cmakedefine HAVE_LIBFASTBIT 
 

@@ -88,28 +88,6 @@
 #
 #****************************************************************************/
 
-#if(VISIT_OSPRAY)
-#   SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}
-#       ${VISIT_SOURCE_DIR}/avt/Plotter/OSPRay/CMake)
-#   FIND_PACKAGE(OSPRay REQUIRED)
-#    SET(VISIT_VTK_OSPRAY_SOURCES
-#        OSPRay/vtkOSPRay/vtkOSPRay.h
-#        OSPRay/vtkOSPRay/vtkOSPRayActor.cxx
-#        OSPRay/vtkOSPRay/vtkOSPRayCamera.cxx
-#        OSPRay/vtkOSPRay/vtkOSPRayLight.cxx
-#        OSPRay/vtkOSPRay/vtkOSPRayManager.cxx
-#        OSPRay/vtkOSPRay/vtkOSPRayObjectFactory.cxx
-#        OSPRay/vtkOSPRay/vtkOSPRayObjectFactory.h
-#        OSPRay/vtkOSPRay/vtkOSPRayPolyDataMapper.cxx
-#        OSPRay/vtkOSPRay/vtkOSPRayProperty.cxx
-#        OSPRay/vtkOSPRay/vtkOSPRayRenderer.cxx
-#        OSPRay/vtkOSPRay/vtkOSPRayTexture.cxx
-#        OSPRay/vtkOSPRay/vtkOSPRayVolumeRayCastMapper.h
-#        OSPRay/vtkOSPRay/vtkOSPRayVolumeRayCastMapper.cxx
-#        OSPRay/vtkOSPRayModule.h
-#    )
-#endif()
-
 # create configuration file to pass off cmake options
 CONFIGURE_FILE(
   "${VISIT_SOURCE_DIR}/avt/Plotter/vtk/InitVTKRenderingConfig.h.in"
@@ -192,12 +170,6 @@ ${AVTPLOTTER_VTK_SOURCES}
 ${AVTPLOTTER_OPENGL_SOURCES}
 )
 
-#IF(VISIT_OSPRAY)
-#    SET(AVTPLOTTER_SOURCES ${AVTPLOTTER_SOURCES} ${VISIT_VTK_OSPRAY_SOURCES} )
-#    SET(VTK_INCLUDE_DIRS ${VTK_INCLUDE_DIRS}
-#        ${VISIT_SOURCE_DIR}/../../VTK-6.1.0/Rendering/Volume)
-#ENDIF(VISIT_OSPRAY)
-
 INCLUDE_DIRECTORIES(
 ${VISIT_COMMON_INCLUDES}
 ${CMAKE_CURRENT_SOURCE_DIR}
@@ -213,8 +185,6 @@ ${VISIT_SOURCE_DIR}/avt/Pipeline/Data
 ${VISIT_SOURCE_DIR}/avt/Pipeline/Pipeline
 ${VISIT_SOURCE_DIR}/avt/Pipeline/Sinks
 ${VISIT_SOURCE_DIR}/avt/Pipeline/Sources
-#${VISIT_SOURCE_DIR}/avt/Plotter/OSPRay
-#${VISIT_SOURCE_DIR}/avt/Plotter/OSPRay/vtkOSPRay
 ${VISIT_SOURCE_DIR}/avt/View
 ${VISIT_SOURCE_DIR}/visit_vtk/full
 ${VISIT_SOURCE_DIR}/visit_vtk/lightweight
@@ -223,7 +193,7 @@ ${VTK_INCLUDE_DIRS}
 )
 
 # Add link directories
-LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY} ${EAVL_LIBRARY_DIR} )
+LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY})
 
 
 #********************************* SERIAL ************************************
@@ -233,7 +203,7 @@ TARGET_LINK_LIBRARIES(avtplotter_ser
     lightweight_visit_vtk vtkFiltersHybrid vtkRenderingOpenGL2 
     vtkRenderingFreeType ${OPENGL_LIBRARIES})
 IF(VISIT_OSPRAY)
-    TARGET_LINK_LIBRARIES(avtplotter_ser ${OSPRAY_LIBRARIES} ${VTK_LIBRARIES})
+    TARGET_LINK_LIBRARIES(avtplotter_ser ${OSPRAY_LIBRARIES})
     INCLUDE_DIRECTORIES(${OSPRAY_INCLUDE_DIRS})
 ENDIF(VISIT_OSPRAY)
 VISIT_INSTALL_TARGETS(avtplotter_ser)

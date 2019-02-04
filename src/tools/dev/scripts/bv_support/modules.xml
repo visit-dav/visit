@@ -86,7 +86,6 @@
             <lib name="icet"/>
             <lib name="ispc"/>
             <lib name="llvm"/>
-            <lib name="mesagl"/>
             <lib name="mfem"/>
             <lib name="mili"/>
             <lib name="moab"/>
@@ -95,6 +94,7 @@
             <lib name="netcdf"/>
             <lib name="openexr"/>
             <lib name="openssl"/>
+            <lib name="osmesa"/>
             <lib name="ospray"/>
             <lib name="pidx"/>
             <lib name="p7zip"/>

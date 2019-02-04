@@ -80,8 +80,6 @@
 #include <avtMultiresSelection.h>
 #include <avtStructuredDomainNesting.h>
 #include <avtCallback.h>
-#include <avtView2D.h>
-#include <avtView3D.h>
 
 #include <DBOptionsAttributes.h>
 #include <Expression.h>

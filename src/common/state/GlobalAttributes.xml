@@ -7,7 +7,6 @@
     </Enum>
     <Enum name="BackendType">
       VTK
-      EAVL
       VTKM
     </Enum>
     <Field name="sources" label="Sources" type="stringVector">

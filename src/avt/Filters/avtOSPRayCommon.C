@@ -81,8 +81,6 @@ std::ostream *ospray::osp_err = (ospray::visit::CheckVerbose()) ?
 //
 // ***************************************************************************
 
-using namespace ospcommon;
-
 namespace ospray {
   namespace visit {
     
@@ -121,7 +119,7 @@ namespace ospray {
       }
       // create OSP data
       const Color* table = reinterpret_cast<const Color*>(_table);
-      std::vector<vec3f> cdata;
+      std::vector<ospcommon::vec3f> cdata;
       std::vector<float> odata;
       for (unsigned int i = 0; i < size; ++i)
       {
@@ -401,12 +399,12 @@ namespace ospray {
                      const osp::vec3f& scale,
                      OSPTransferFunction tfn)
     {
-      const vec3i dims(nX, nY, nZ);
-      const vec3f data_lower(vec3f(dbox[0], dbox[1], dbox[2]) * (const vec3f&)scale);
-      const vec3f data_upper(vec3f(dbox[3], dbox[4], dbox[5]) * (const vec3f&)scale);
-      const vec3f clip_lower(vec3f(cbox[0], cbox[1], cbox[2]) * (const vec3f&)scale);
-      const vec3f clip_upper(vec3f(cbox[3], cbox[4], cbox[5]) * (const vec3f&)scale);
-      const vec3f spacing = (data_upper - data_lower)/((const vec3f)dims - 1.0f);
+      const ospcommon::vec3i dims(nX, nY, nZ);
+      const ospcommon::vec3f data_lower(ospcommon::vec3f(dbox[0], dbox[1], dbox[2]) * (const ospcommon::vec3f&)scale);
+      const ospcommon::vec3f data_upper(ospcommon::vec3f(dbox[3], dbox[4], dbox[5]) * (const ospcommon::vec3f&)scale);
+      const ospcommon::vec3f clip_lower(ospcommon::vec3f(cbox[0], cbox[1], cbox[2]) * (const ospcommon::vec3f&)scale);
+      const ospcommon::vec3f clip_upper(ospcommon::vec3f(cbox[3], cbox[4], cbox[5]) * (const ospcommon::vec3f&)scale);
+      const ospcommon::vec3f spacing = (data_upper - data_lower)/((const ospcommon::vec3f)dims - 1.0f);
       ospSetVec3f(core->self, "volumeGlobalBoundingBoxLower", 
                   (const osp::vec3f&) global_upper);
       ospSetVec3f(core->self, "volumeGlobalBoundingBoxUpper",
@@ -439,7 +437,7 @@ namespace ospray {
                            OSPRenderer renderer,
                            float*& dest)
   {
-    const vec2i fb_size(tile_w, tile_h);
+    const ospcommon::vec2i fb_size(tile_w, tile_h);
     // prepare the maxDepthDexture
     {
       // The reason I use round(r * (N-1)) instead of floor(r * N) is that

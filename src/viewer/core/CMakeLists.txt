@@ -128,7 +128,7 @@ ${VISIT_SOURCE_DIR}/visit_vtk/osmesa
 ${VTK_INCLUDE_DIRS}
 )
 
-link_directories(${LIBRARY_OUTPUT_DIRECTORY} ${EAVL_LIBRARY_DIR})
+link_directories(${LIBRARY_OUTPUT_DIRECTORY})
 
 
 #******************** The viewercore_ser library ******************************

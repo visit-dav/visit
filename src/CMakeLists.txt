@@ -854,7 +854,6 @@ VISIT_3RDPARTY_DEP(CGNS_LIBDEP   "CGNS library dependencies")
 VISIT_3RDPARTY_VAR(CONDUIT_DIR   "Path containing the Conduit library's include and lib")
 VISIT_3RDPARTY_VAR(CONDUIT_LIBDEP "Conduit library dependencies")
 VISIT_3RDPARTY_VAR(DAMARIS_DIR   "Path containing the Damaris library's include and lib")
-VISIT_3RDPARTY_VAR(EAVL_DIR      "Path containing the eavl library's include and lib")
 VISIT_3RDPARTY_VAR(FASTBIT_DIR   "Path containing the FastBit library's include and lib")
 VISIT_3RDPARTY_VAR(FASTQUERY_DIR   "Path containing the FastQuery library's include and lib")
 VISIT_3RDPARTY_VAR(GDAL_DIR      "Path containing the GDAL library's include and lib")
@@ -1398,9 +1397,6 @@ IF(NOT VISIT_BUILD_MINIMAL_PLUGINS OR VISIT_SELECTED_DATABASE_PLUGINS)
 
     # Configure Conduit support.
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindConduit.cmake)
-
-    # Configure eavl support.
-    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindEAVL.cmake)
 
     # Configure FastBit support.
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindFastBit.cmake)
