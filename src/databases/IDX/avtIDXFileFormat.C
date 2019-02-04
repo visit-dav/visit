@@ -552,84 +552,73 @@ void avtIDXFileFormat::createTimeIndex(){
   timeIndex.clear();
   logTimeIndex.clear();
 
+  // try to get timesteps metadata from uintah index.xml file
   vtkSmartPointer<vtkXMLDataParser> parser = vtkSmartPointer<vtkXMLDataParser>::New();
   size_t folder_point = dataset_filename.find_last_of("/\\");
   String folder = dataset_filename.substr(0,folder_point);
 
+  bool time_from_uintah = false;
   String udafilename = folder + "/index.xml";
   debug5 <<"looking for index.xml here " << udafilename.c_str() << std::endl;
 
   parser->SetFileName(udafilename.c_str());
   if (!parser->Parse()){
     parser->SetFileName(metadata_filename.c_str());
-    if (!parser->Parse()){
-      debug5 << "No metadata XML file found " << udafilename << std::endl;
+  
+    debug4 << udafilename << " file found" << std::endl;
+    cout << udafilename << " file found" << std::endl;
+    vtkXMLDataElement *root = parser->GetRootElement();
+    vtkXMLDataElement *tsteps = root->FindNestedElementWithName("timesteps");
+    if(tsteps != NULL){
+      time_from_uintah=true;
+      int ntimesteps = tsteps->GetNumberOfNestedElements();
 
-      std::vector<double> times = reader->getTimes();
+      debug4 << "Found " << ntimesteps << " timesteps" << std::endl;
 
+      for(int i=0; i < ntimesteps; i++){
+
+        vtkXMLDataElement *xmltime = tsteps->GetNestedElement(i);
+        String timestr(xmltime->GetAttribute("time"));
+        String logtimestr(xmltime->GetCharacterData());
+
+        debug4 << "time " << timestr << " index " << logtimestr << std::endl;
+       
+        double time = cdouble(timestr);
+        int logtime = cint(logtimestr);
+
+        logTimeIndex.push_back(logtime);
+
+        timeIndex.push_back(time);
+      }
+    }
+    else
+      fprintf(stderr, "No timesteps field found in index.xml, no physical time available\n");
+  }
+
+  if(time_from_uintah==false){
+    std::vector<double> times = reader->getTimes();
+    debug4 << "adding " << times.size() << " timesteps " << std::endl;
+
+    if(is_gidx){
+        for(int i=0; i< gidx_datasets.size(); i++){
+         timeIndex.push_back(gidx_datasets[i].log_time);
+         logTimeIndex.push_back(gidx_datasets[i].log_time);            
+           } 
+      }else{
       for(int i=0; i< times.size(); i++){
         timeIndex.push_back(times.at(i));
-        logTimeIndex.push_back(times.at(i));
+        logTimeIndex.push_back(times.at(i));            
       }
-
-      return;
     }
   }
 
-  debug4 << "Found metadata file" << std::endl;
-  
-  vtkXMLDataElement *root = parser->GetRootElement();
-  vtkXMLDataElement *level = root->FindNestedElementWithName("timesteps");
-  if(level != NULL){
-    int ntimesteps = level->GetNumberOfNestedElements();
+  debug4 << "loaded " << timeIndex.size() << " timesteps"<< std::endl;
+  debug4 << reader->getNTimesteps() << " in the timesteps range of the IDX file" << std::endl;
 
-    debug4 << "Found " << ntimesteps << " timesteps" << std::endl;
-  
-    for(int i=0; i < ntimesteps; i++){
+      //if(timeIndex.size() != reader->getNTimesteps())
+      //  std::cout << "ERROR: the timesteps in the IDX file and in the index.xml are not consistent!\n You will not be able to use the physical time"<< std::endl;
 
-      vtkXMLDataElement *xmltime = level->GetNestedElement(i);
-      String timestr(xmltime->GetAttribute("time"));
-      String logtimestr(xmltime->GetCharacterData());
-
-      debug4 << "time " << timestr << " index " << logtimestr << std::endl;
-     
-      double time = cdouble(timestr);
-      int logtime = cint(logtimestr);
-
-      logTimeIndex.push_back(logtime);
-
-      timeIndex.push_back(time);
-    }
-  }
-  else{
-    fprintf(stderr, "No timesteps field found in index.xml, no physical time available\n");
-
-    if(is_gidx)
-    {
-      for(int i=0; i< gidx_datasets.size(); i++){
-       timeIndex.push_back(gidx_datasets[i].log_time);
-       logTimeIndex.push_back(gidx_datasets[i].log_time);            
-     } 
-
-   }else
-   {
-    std::vector<double> times = reader->getTimes();
-
-    for(int i=0; i< times.size(); i++){
-      timeIndex.push_back(times.at(i));
-      logTimeIndex.push_back(times.at(i));            
-    }
-  }
-
-}
-
-debug4 << "loaded " << timeIndex.size() << " timesteps"<< std::endl;
-debug4 << reader->getNTimesteps() << " in the timesteps range of the IDX file" << std::endl;
-
-    //if(timeIndex.size() != reader->getNTimesteps())
-    //  std::cout << "ERROR: the timesteps in the IDX file and in the index.xml are not consistent!\n You will not be able to use the physical time"<< std::endl;
-
-return;
+  return;
 
 }
 
