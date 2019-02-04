@@ -143,8 +143,7 @@ enum avtPrecisionType
 enum avtBackendType
 {
     AVT_BACKEND_VTK     = 0,
-    AVT_BACKEND_EAVL,  /* 1 */
-    AVT_BACKEND_VTKM   /* 2 */
+    AVT_BACKEND_VTKM   /* 1 */
 };
 
 enum SetState

@@ -179,6 +179,9 @@
 //    For non-dev builds: Filter VTK libs (to include version number), add
 //    VISIT_ARCHIVE_DIR as linkDir.  Add QtWidgets include dir.
 //
+//    Kathleen Biagas, Wed Jan 30 10:44:21 PST 2019
+//    Removed support for EAVL.
+//
 // ****************************************************************************
 
 class CMakeGeneratorPlugin : public Plugin
@@ -488,7 +491,6 @@ class CMakeGeneratorPlugin : public Plugin
             out << "${QT_QTGUI_INCLUDE_DIR}" << endl;
             out << "${QT_QTWIDGETS_INCLUDE_DIR}" << endl;
         }
-        out << "${EAVL_INCLUDE_DIR}" << endl;
         out << "${VTKh_INCLUDE_DIRS}" << endl;
         out << "${VTKM_DIR}/include/vtkm-1.2" << endl;
         out << "${VTKM_DIR}/include/vtkm-1.2/vtkm/thirdparty/taotuple" << endl;
@@ -647,7 +649,6 @@ class CMakeGeneratorPlugin : public Plugin
         {
             linkDirs.push_back("${VISIT_ARCHIVE_DIR}");
         }
-        linkDirs.push_back("${EAVL_LIBRARY_DIR}");
         // Extract extra link directories from LDFLAGS if they have ${},$(),-L
         for (size_t i=0; i<ldflags.size(); i++)
         {
@@ -883,7 +884,6 @@ class CMakeGeneratorPlugin : public Plugin
         {
             linkDirs.push_back("${VISIT_ARCHIVE_DIR}");
         }
-        linkDirs.push_back("${EAVL_LIBRARY_DIR}");
         for (size_t i=0; i<ldflags.size(); i++)
         {
             if(ldflags[i].startsWith("${") || ldflags[i].startsWith("$("))
@@ -1110,7 +1110,6 @@ class CMakeGeneratorPlugin : public Plugin
         out << VisItIncludeDir() << "/avt/VisWindow/VisWindow" << endl;
         out << VisItIncludeDir() << "/visit_vtk/full" << endl;
         out << VisItIncludeDir() << "/visit_vtk/lightweight" << endl;
-        out << "${EAVL_INCLUDE_DIR}" << endl;
         out << "${VTKh_INCLUDE_DIRS}" << endl;
         out << "${VTKM_DIR}/include/vtkm-1.2" << endl;
         out << "${VTKM_DIR}/include/vtkm-1.2/vtkm/thirdparty/taotuple" << endl;

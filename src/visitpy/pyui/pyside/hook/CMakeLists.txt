@@ -49,13 +49,6 @@ set(pyside_hook_include_paths ${Qt5Core_INCLUDE_DIRS})
 
 set(pyside_hook_link_libs ${QT_QTCORE_LIBRARY})
 
-#
-# If we enable eavl, it will appear in the link line, so add ${EAVL_LIBRARY_DIR}
-#
-IF(EAVL_FOUND)
-    LINK_DIRECTORIES(${EAVL_LIBRARY_DIR})
-ENDIF()
-
 PYSIDE_ADD_MODULE(pyside_hook
                   site-packages/visit
                   pyside_hook_sources

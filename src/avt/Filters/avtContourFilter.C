@@ -46,24 +46,6 @@
 #include <float.h>
 #include <vector>
 
-#ifdef HAVE_LIBEAVL
-
-#include <eavlDataSet.h>
-#include <eavlTimer.h>
-#include <eavlExecutor.h>
-#include <eavlIsosurfaceFilter.h>
-#include <eavlCellToNodeRecenterMutator.h>
-
-#ifdef PARALLEL
-#include <mpi.h>
-#endif
-
-#ifdef VISIT_OMP
-#include <omp.h>
-#endif
-
-#endif
-
 #ifdef HAVE_LIBVTKH
 #include <vtkh/vtkh.hpp>
 #include <vtkh/DataSet.hpp>
@@ -539,6 +521,9 @@ avtContourFilter::PreExecute(void)
 //    Eric Brugger, Thu Jan 14 08:48:41 PST 2016
 //    I modified the class to work VTKM.
 //
+//    Kathleen Biagas, Wed Jan 30 10:41:17 PST 2019
+//    Removed EAVL support.
+//
 // ****************************************************************************
 
 avtDataTree_p
@@ -550,12 +535,7 @@ avtContourFilter::ExecuteDataTree(avtDataRepresentation *in_dr)
     }
 
     avtDataTree_p outDT;
-    if (in_dr->GetDataRepType() == DATA_REP_TYPE_EAVL ||
-        avtCallback::GetBackendType() == GlobalAttributes::EAVL)
-    {
-        outDT = this->ExecuteDataTree_EAVL(in_dr);
-    }
-    else if (in_dr->GetDataRepType() == DATA_REP_TYPE_VTKM ||
+    if (in_dr->GetDataRepType() == DATA_REP_TYPE_VTKM ||
         avtCallback::GetBackendType() == GlobalAttributes::VTKM)
     {
         outDT = this->ExecuteDataTree_VTKM(in_dr);
@@ -566,196 +546,6 @@ avtContourFilter::ExecuteDataTree(avtDataRepresentation *in_dr)
     }
 
     return outDT;
-}
-
-
-// ****************************************************************************
-//  Method: avtContourFilter::ExecuteDataTree_EAVL
-//
-//  Purpose:
-//      Sends the specified input and output through the EAVL contour filter.
-//
-//  Arguments:
-//      in_dr      The input data representation.
-//
-//  Returns:       The output data tree.
-//
-//  Programmer: Cameron Christensen
-//  Creation:   June 10, 2014
-//
-//  Modifications:
-//    Eric Brugger, Tue Sep 30 15:09:28 PDT 2014
-//    I modified the EAVL version of the avtDataRepresentation constructor
-//    to also have domain and label arguments.
-//
-// ****************************************************************************
-
-avtDataTree_p
-avtContourFilter::ExecuteDataTree_EAVL(avtDataRepresentation *in_dr)
-{
-#ifndef HAVE_LIBEAVL
-    return NULL;
-#else
-    //
-    // Get the EAVL data set, the domain number, and the label.
-    //
-    eavlDataSet *in_ds = in_dr->GetDataEAVL();
-    int domain = in_dr->GetDomain();
-    std::string label = in_dr->GetLabel();
-
-    int timerHandle = visitTimer->StartTimer();
-
-    if (!in_ds)
-    {
-        return NULL;
-    }
-
-    if (isoValues.empty())
-    {
-        debug3 << "No levels to calculate! " << endl;
-        GetOutput()->GetInfo().GetValidity().InvalidateOperation();
-        return NULL;
-    }
-
-    int cellsetindex = -1;
-    for (int i=0; i<in_ds->GetNumCellSets(); i++)
-    {
-        if (in_ds->GetCellSet(i)->GetDimensionality() == 1 ||
-            in_ds->GetCellSet(i)->GetDimensionality() == 2 ||
-            in_ds->GetCellSet(i)->GetDimensionality() == 3)
-        {
-            cellsetindex = i;
-            break;
-        }
-    }
-
-    if (cellsetindex < 0)
-    {
-        debug5 << "Couldn't find a 1D, 2D or 3D cell set. Aborting.\n";
-        return NULL;
-    }
-
-    std::string contourVar = (activeVariable != NULL ? activeVariable 
-                                                     : pipelineVariable);
-
-    //Initialize GPU
-    //TODO: This should query the actual number of gpus and procs.
-    int nprocs = 12;
-    int ngpus = 2;
-    int mpirank = 0;
-#ifdef PARALLEL
-    MPI_Comm_rank(MPI_COMM_WORLD,&mpirank);
-#endif
-    const char *eavlforce = getenv("EAVLFORCECPU");
-    if (eavlforce)
-    {
-#ifdef VISIT_OMP
-        debug5<<"Initializing EAVL to use OpenMP for all "<<nprocs<<" processors"<<endl;
-        omp_set_num_threads(nprocs);
-#else
-        debug5<<"Initializing EAVL to use the CPU"<<endl;
-#endif
-        eavlExecutor::SetExecutionMode(eavlExecutor::ForceCPU);
-    }
-    else
-    {
-        if (mpirank >= 0 && mpirank < ngpus)
-        {
-            debug5<<"Initializing EAVL to use GPU #"<<mpirank<<endl;
-            eavlInitializeGPU();
-        }
-        else
-        {
-            debug5<<"Initializing EAVL to use OpenMP for remaining "<<(nprocs-ngpus)<<" processors\n";
-#ifdef VISIT_OMP
-            omp_set_num_threads(nprocs - ngpus);
-#endif
-            eavlExecutor::SetExecutionMode(eavlExecutor::ForceCPU);
-        }
-    }
-
-    //
-    // Contouring only works on nodal variables -- make sure that we have
-    // a nodal variable before progressing.
-    //
-    eavlField   *inField = in_ds->GetField(contourVar);
-    if (inField->GetAssociation() != eavlField::ASSOC_POINTS)
-    {
-        debug5<<"eavl Isosurface expected point-centered field: converting...\n";
-        int t3 = visitTimer->StartTimer();
-
-        eavlCellToNodeRecenterMutator *cell2node = new eavlCellToNodeRecenterMutator;
-        cell2node->SetDataSet(in_ds);
-        cell2node->SetField(contourVar);
-        cell2node->SetCellSet(in_ds->GetCellSet(cellsetindex)->GetName());
-        TRY
-        {
-            cell2node->Execute();
-        }
-        CATCH(eavlException &e)
-        {
-            debug5<<"caught eavlException: "<<e.GetMessage()<<"\n";
-        }
-        CATCHALL
-        {
-            debug5<<"caught some other exception\n";
-            RETHROW;
-        }
-        ENDTRY
-        delete cell2node;
-        contourVar = std::string("nodecentered_") + contourVar;
-
-        visitTimer->StopTimer(t3, "Recentering");
-    }
-
-    //execute once per isovalue
-    avtDataRepresentation **output = new avtDataRepresentation*[isoValues.size()];
-    for (int i=0; i<isoValues.size(); i++)
-    {
-        int eavlHandle = visitTimer->StartTimer();
-
-        //set up the input data
-        eavlIsosurfaceFilter *iso = new eavlIsosurfaceFilter;
-        iso->SetInput(in_ds);
-        iso->SetCellSet(in_ds->GetCellSet(cellsetindex)->GetName());
-        iso->SetField(contourVar);
-        iso->SetIsoValue(isoValues[i]);
-        TRY
-        {
-            iso->Execute();
-            if (shouldCreateLabels)
-            {   
-                output[i] = new avtDataRepresentation(iso->GetOutput(),
-                    domain, isoLabels[i]);
-            }
-            else
-            {   
-                output[i] = new avtDataRepresentation(iso->GetOutput(),
-                    domain, label);
-            }
-        }
-        CATCH(eavlException &e)
-        {
-            debug5<<"caught eavlException: "<<e.GetMessage()<<"\n";
-        }
-        CATCHALL
-        {
-            debug5<<"caught some other exception\n";
-            RETHROW;
-        }
-        ENDTRY
-        delete iso;
-
-        visitTimer->StopTimer(eavlHandle, "eavlIsosurfaceFilter");
-    }
-
-    //create the output data tree
-    avtDataTree_p outtree = new avtDataTree(isoValues.size(), output);
-
-    visitTimer->StopTimer(timerHandle, "avtContourFilter::ExecuteDataTree_EAVL");
-
-    return outtree;
-#endif
 }
 
 

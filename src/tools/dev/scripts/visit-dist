@@ -107,7 +107,7 @@ if (! -d "src")
     exit(-1);
 }
 
-system("cd src; svn info . | grep \"Revision:\" | cut -d' ' -f2 > SVN_REVISION; cd ..");
+system("git log -1 | grep \"^commit\" | cut -d' ' -f2 | head -c 7 > ./src/GIT_VERSION");
 
 # Parse the argument list.
 &NGetOpt("withtest","dbioonly");
@@ -211,5 +211,5 @@ Unable to remove temporary directory \"$dist\".
 EOF
 }
 
-system("rm -f ./src/SVN_REVISION");
+system("rm -f ./src/GIT_VERSION");
 print "Finished.\nYour distribution is in the file \"$fulldist.tar.gz\".\n";
