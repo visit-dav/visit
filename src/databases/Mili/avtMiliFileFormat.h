@@ -152,12 +152,6 @@ class avtMiliFileFormat : public avtMTMDFileFormat
     void                  PopulateSubrecordInfo(int dom, 
                                                 int meshId);
 
-    void                  DecodeMultiMeshVarname(const string &, 
-                                                 string &, int &);
-
-    void                  DecodeMultiLevelVarname(const string &, 
-                                                  string &);
-
     int                   ExtractMeshIdFromPath(const string &);
 
     inline void           OpenDB(int dom);
