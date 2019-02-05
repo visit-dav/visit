@@ -1338,10 +1338,10 @@ function run_build_visit()
     log "Started:" $(date)
     log $LINES
 
-    if [[ "$DO_SVN" == "yes" ]] ; then
-        check_svn_client
+    if [[ "$DO_GIT" == "yes" ]] ; then
+        check_git_client
         if [[ $? != 0 ]]; then
-            error "Fatal Error: SVN mode selected, but svn client is not available."
+            error "Fatal Error: GIT mode selected, but git client is not available."
         fi
     fi
 
