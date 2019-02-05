@@ -2305,11 +2305,13 @@ ELSE (NOT WIN32)
         # Make sure it won't run unless specifically called.
         #
         FILE(TO_NATIVE_PATH ${VISIT_SOURCE_DIR} VSD_NATIVE)
+        FILE(TO_NATIVE_PATH ${VISIT_WINDOWS_DIR} VWD_NATIVE)
         FILE(TO_NATIVE_PATH ${CMAKE_INSTALL_PREFIX} CIP_NATIVE)
         FILE(TO_NATIVE_PATH ${CMAKE_CURRENT_BINARY_DIR} CBD_NATIVE)
         ADD_CUSTOM_COMMAND(OUTPUT visit${VISIT_VERSION}.exe
             COMMAND ${MAKENSIS}
                     /DVISIT_SOURCE_DIR=${VSD_NATIVE}
+                    /DVISIT_WINDOWS_DIR=${VWD_NATIVE}
                     /DINSTALL_PREFIX=${CIP_NATIVE}
                     /DBIN_DIR=${CBD_NATIVE}
                     ${VISIT_WINDOWS_DIR}/distribution/installation/CreateDBSections.nsi
@@ -2317,6 +2319,7 @@ ELSE (NOT WIN32)
                     /DVisItVersion=${VISIT_VERSION}
                     /DCOMPILER=${VISIT_MSVC_VERSION}
                     /DVISIT_SOURCE_DIR=${VSD_NATIVE}
+                    /DVISIT_WINDOWS_DIR=${VWD_NATIVE}
                     /DINSTALL_PREFIX=${CIP_NATIVE}
                     /DBIN_DIR=${CBD_NATIVE}
                     /DMPI_VERSION=${VISIT_MSMPI_VERSION}
