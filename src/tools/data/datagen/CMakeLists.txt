@@ -439,7 +439,7 @@ IF(EXISTS ${VISIT_SOURCE_DIR}/../data/visit_dist_data.tar.gz)
             GROUP_READ GROUP_WRITE GROUP_EXECUTE
             WORLD_READ WORLD_EXECUTE)
 
-ELSE(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/visit_dist_data.tar.gz)
+ELSE()
 
     IF(SILO_FOUND)
         SET(EXE_EXT "")
@@ -557,6 +557,6 @@ ELSE(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/visit_dist_data.tar.gz)
         MESSAGE(STATUS "is missing and VisIt is not being built with Silo")
         MESSAGE(STATUS "support.")
     ENDIF(SILO_FOUND)
-ENDIF(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/visit_dist_data.tar.gz)
+ENDIF()
 
 
