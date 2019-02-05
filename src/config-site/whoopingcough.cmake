@@ -1,14 +1,14 @@
-#/usr/local/bin/cmake
+#/apps/visit/trunk3.0/thirdparty/visit/cmake/3.9.3/linux-x86_64_gcc-5.4/bin/cmake
 ##
 ## ./build_visit generated host.cmake
-## created: Wed Sep 12 14:27:00 EDT 2018
-## system: Linux whoopingcough 4.4.0-134-generic #160-Ubuntu SMP Wed Aug 15 14:58:00 UTC 2018 x86_64 x86_64 x86_64 GNU/Linux
+## created: Wed Jan 23 12:21:09 EST 2019
+## system: Linux whoopingcough 4.15.0-43-generic #46~16.04.1-Ubuntu SMP Fri Dec 7 13:31:08 UTC 2018 x86_64 x86_64 x86_64 GNU/Linux
 ## by: dpn
 
 ##
 ## Setup VISITHOME & VISITARCH variables.
 ##
-SET(VISITHOME /apps/visit/trunk/thirdparty/visit)
+SET(VISITHOME /apps/visit/trunk3.0/thirdparty/visit)
 SET(VISITARCH linux-x86_64_gcc-5.4)
 
 ## Compiler flags.
@@ -47,7 +47,12 @@ VISIT_OPTION_DEFAULT(VISIT_THREAD OFF TYPE BOOL)
 ##
 ## Python
 ##
-VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR ${VISITHOME}/python/2.7.14/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR /usr)
+VISIT_OPTION_DEFAULT(PYTHON_INCLUDE_PATH /usr/include/python2.7 )
+VISIT_OPTION_DEFAULT(PYTHON_LIBRARY /usr/lib/x86_64-linux-gnu/libpython2.7.so)
+VISIT_OPTION_DEFAULT(PYTHON_LIBRARY_DIR /usr/lib/x86_64-linux-gnu)
+VISIT_OPTION_DEFAULT(PYTHON_VERSION 2.7)
+SET(VISIT_PYTHON_SKIP_INSTALL ON)
 
 ##
 ## Qt
@@ -86,27 +91,10 @@ SETUP_APP_VERSION(ADIOS 1.13.1)
 VISIT_OPTION_DEFAULT(VISIT_ADIOS_DIR ${VISITHOME}/adios/${ADIOS_VERSION}/${VISITARCH})
 
 ##
-## ADIOS2
-##
-#SETUP_APP_VERSION(ADIOS2 0.1.0)
-#VISIT_OPTION_DEFAULT(VISIT_ADIOS2_DIR ${VISITHOME}/adios2-ser/${ADIOS2_VERSION}/${VISITARCH})
-### (configured w/ mpi compiler wrapper)
-#VISIT_OPTION_DEFAULT(VISIT_ADIOS2_PAR_DIR ${VISITHOME}/adios2-par/${ADIOS2_VERSION}/${VISITARCH})
-
-VISIT_OPTION_DEFAULT(VISIT_ADIOS2_DIR /apps/adios2/install_serial)
-VISIT_OPTION_DEFAULT(VISIT_ADIOS2_PAR_DIR /apps/adios2/install_parallel)
-
-##
 ## Ice-T
 ##
 VISIT_OPTION_DEFAULT(VISIT_ICET_DIR ${VISITHOME}/icet/77c708f9090236b576669b74c53e9f105eedbd7e/${VISITARCH})
 ##
-
-##
-## NetCDF
-##
-VISIT_OPTION_DEFAULT(VISIT_NETCDF_DIR ${VISITHOME}/netcdf/4.1.1/${VISITARCH})
-VISIT_OPTION_DEFAULT(VISIT_NETCDF_LIBDEP HDF5_LIBRARY_DIR hdf5_hl HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP} TYPE STRING)
 
 ##
 ## Silo
