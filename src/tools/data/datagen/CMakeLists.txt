@@ -361,9 +361,6 @@ ENDIF(SILO_FOUND)
 #-----------------------------------------------------------------------------
 # Setup the Data Generation Target.
 #-----------------------------------------------------------------------------
-# We have a single target "testdata" that generates all of our test data.
-# This untars all archived datasets.
-#-----------------------------------------------------------------------------
 
 
 #-----------------------------------------------------------------------------
@@ -421,8 +418,8 @@ endif()
 #-----------------------------------------------------------------------------
 # Add install command for contents of "data"
 #-----------------------------------------------------------------------------
-IF(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/visit_dist_data.tar.gz)
 
+IF(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/visit_dist_data.tar.gz)
     IF(VISIT_USE_7ZIP AND NOT "${SEVEN_ZIP_EXE}" STREQUAL "SEVEN_ZIP_EXE-NOTFOUND")
         SET (DIST_UNTAR_CMD1 "\"${SEVEN_ZIP_EXE}\" x -y \"${CMAKE_CURRENT_SOURCE_DIR}/visit_dist_data.tar.gz\"")
         SET (DIST_UNTAR_CMD2 "\"${SEVEN_ZIP_EXE}\" x -y visit_dist_data.tar")
@@ -530,11 +527,14 @@ ELSE(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/visit_dist_data.tar.gz)
         VISIT_DATA_ADD_FOLDER(datagen create_data_examples)
 
         # Create data install target
-if(NOT WIN32)
-        STRING(REGEX REPLACE "([a-zA-Z0-9_\\.+]+)(;|$)" "${DATA_OUT_DIR}/\\1\\2" install_files "${all_example_output}")
-else()
-        STRING(REGEX REPLACE "([a-zA-Z0-9_\\.+]+)(;|$)" "${CMAKE_CURRENT_BINARY_DIR}/\${CMAKE_INSTALL_CONFIG_NAME}/\\1\\2" install_files "${all_example_output}")
-endif()
+        if(NOT WIN32)
+            STRING(REGEX REPLACE "([a-zA-Z0-9_\\.+]+)(;|$)" "${DATA_OUT_DIR}/\\1\\2" install_files "${all_example_output}")
+        else()
+            if(VISIT_NO_ALLBUILD)
+                add_dependencies(visit_special_builds create_data_examples)
+            endif()
+            STRING(REGEX REPLACE "([a-zA-Z0-9_\\.+]+)(;|$)" "${CMAKE_CURRENT_BINARY_DIR}/\${CMAKE_INSTALL_CONFIG_NAME}/\\1\\2" install_files "${all_example_output}")
+        endif()
         INSTALL(FILES ${install_files} DESTINATION data
            PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ GROUP_WRITE WORLD_READ)
 
