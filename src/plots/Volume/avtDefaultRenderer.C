@@ -240,7 +240,7 @@ avtDefaultRenderer::Render(
             }
             else
             {
-                scalarP[i] = ((256.0 * (tuple1 - volume.data.min)) / magnitude);
+                scalarP[i] = ((255.0 * (tuple1 - volume.data.min)) / magnitude);
             }
         }
 
@@ -270,7 +270,7 @@ avtDefaultRenderer::Render(
         transFunc->SetClamping(0);
         opacity->SetClamping(0);
 
-        float atten = props.atts.GetOpacityAttenuation() / 256.f;
+        float atten = props.atts.GetOpacityAttenuation() / 255.f;
 
         //
         // Add the color map to vtk's transfer function
@@ -279,9 +279,9 @@ avtDefaultRenderer::Render(
         {
             int rgbIdx  = 4 * i;
             float curOp = rgba[rgbIdx + 3] * atten; 
-            transFunc->AddRGBPoint(i, rgba[rgbIdx] / 256.f, 
-                rgba[rgbIdx + 1] / 256.f, 
-                rgba[rgbIdx + 2] / 256.f);
+            transFunc->AddRGBPoint(i, rgba[rgbIdx] / 255.f, 
+                rgba[rgbIdx + 1] / 255.f, 
+                rgba[rgbIdx + 2] / 255.f);
             opacity->AddPoint(i, MAX(0.0, MIN(1.0, curOp)));
         }
  
@@ -290,13 +290,13 @@ avtDefaultRenderer::Render(
         // is turned off. So, let's put some padding on the ends of our
         // mapping functions. 
         //
-        int lastIdx = 256*4;
-        transFunc->AddRGBPoint(-1, rgba[0] / 256.f, 
-            rgba[1] / 256.f, 
-            rgba[2] / 256.f);
-        transFunc->AddRGBPoint(256, rgba[lastIdx] / 256.f, 
-            rgba[lastIdx + 1] / 256.f, 
-            rgba[lastIdx + 2] / 256.f);
+        int lastIdx = 255*4;
+        transFunc->AddRGBPoint(-1, rgba[0] / 255.f, 
+            rgba[1] / 255.f, 
+            rgba[2] / 255.f);
+        transFunc->AddRGBPoint(256, rgba[lastIdx] / 255.f, 
+            rgba[lastIdx + 1] / 255.f, 
+            rgba[lastIdx + 2] / 255.f);
         opacity->AddPoint(-1, rgba[3] * atten);
         opacity->AddPoint(256, rgba[lastIdx + 3] * atten);
 
