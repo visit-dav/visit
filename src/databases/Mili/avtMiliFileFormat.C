@@ -1230,7 +1230,7 @@ avtMiliFileFormat::GetVar(int ts, int dom, const char *varPath)
         }
 
         //
-        // If our variable doesn't cover the entire dataset, we 
+        // If our variable doesn't cover the entire dataset, we want
         // the "empty space" to be rendered grey. Nan values will
         // be mapped to grey. 
         //
@@ -1251,7 +1251,7 @@ avtMiliFileFormat::GetVar(int ts, int dom, const char *varPath)
                 GetClassMDByShortName(className.c_str())->
                 GetConnectivityOffset(dom);                                   
 
-            nTargetCells  = SRInfo.nElements[SRId];
+            nTargetCells = SRInfo.nElements[SRId];
             
             // Simple read in: one block 
             if (SRInfo.nDataBlocks[SRId] == 1)
@@ -1386,6 +1386,9 @@ avtMiliFileFormat::GetVectorVar(int ts, int dom, const char *varPath)
     int compDims = varMD->GetComponentDims();
     int dataSize = vecSize * compDims;
 
+    bool isGlobal = varMD->GetIsGlobal();
+    bool isES     = varMD->GetIsElementSet();
+
     //
     // Create a copy of our name to pass into mili. 
     //
@@ -1420,20 +1423,30 @@ avtMiliFileFormat::GetVectorVar(int ts, int dom, const char *varPath)
     //
     else
     {
-        int nCells      = miliMetaData[meshId]->GetNumCells(dom);
-        int dBuffSize  = nCells * dataSize;
+        int nCells    = miliMetaData[meshId]->GetNumCells(dom);
+        int dBuffSize = 0;;
 
         fltArray->SetNumberOfTuples(nCells);
 
         //
-        // If we have an element set, we need our data buffer to 
-        // be larger than the final result to include integration 
-        // points. Otherwise, just use the VTK pointer. 
+        // We have two special cases to consider.
+        // Element sets:
+        //   The vector components of this variable will be arrays 
+        //   of integration points. Only one value in the array 
+        //   will be displayed at any given moment. 
+        // Global variables:
+        //   We recieve a single vector that is applied to all cells. 
         //
         float *dataBuffer = NULL;
-        if (varMD->GetIsElementSet())
+        if (isES)
         {
+            dBuffSize  = nCells * dataSize;
             dataBuffer = new float[dBuffSize];
+        }
+        else if (isGlobal)
+        {
+            int dBuffSize = dataSize;
+            dataBuffer    = new float[dBuffSize]; 
         }
         else
         {
@@ -1441,7 +1454,7 @@ avtMiliFileFormat::GetVectorVar(int ts, int dom, const char *varPath)
         }
 
         //
-        // If our variable doesn't cover the entire dataset, we 
+        // If our variable doesn't cover the entire dataset, we want
         // the "empty space" to be rendered grey. Nan values will
         // be mapped to grey. 
         //
@@ -1465,12 +1478,11 @@ avtMiliFileFormat::GetVectorVar(int ts, int dom, const char *varPath)
                 GetClassMDByShortName(className.c_str())->
                 GetConnectivityOffset(dom);                                   
 
-            nTargetCells   = SRInfo.nElements[SRId];
-  
+            nTargetCells = SRInfo.nElements[SRId];
 
             //
             // This handles the case where all of our data is in a single
-            // contiguous chunkc of cells. 
+            // contiguous chunk of cells. 
             // 
             if (SRInfo.nDataBlocks[SRId] == 1)
             {
@@ -1481,6 +1493,7 @@ avtMiliFileFormat::GetVectorVar(int ts, int dom, const char *varPath)
                 read_results(dbid[dom], ts+1, SRId,
                              1, &namePtr, vType, resultSize,
                              dbPtr + (start * dataSize));
+
             }
             else
             {
@@ -1555,6 +1568,22 @@ avtMiliFileFormat::GetVectorVar(int ts, int dom, const char *varPath)
 
                 fltArray->SetTuple(i, vecPts);
             }
+            delete [] dataBuffer;
+        }
+        else if (isGlobal)
+        {
+            //
+            // This vector is global. Just apply it to every cell. 
+            //
+            float *fltArrayPtr = (float *) fltArray->GetVoidPointer(0);
+            for (int i = 0; i < nCells; ++i)
+            { 
+                for (int j = 0; j < dataSize; ++j)
+                {
+                    fltArrayPtr[i*dataSize + j] = dataBuffer[j];
+                }
+            }
+
             delete [] dataBuffer;
         }
     }
@@ -2337,7 +2366,7 @@ avtMiliFileFormat::ExtractJsonClasses(Document &jDoc,
             {
                 isGlobal = true;
             }
-
+ 
             string lName = "";
             int scID     = -1;
             int elCount  = 0;
@@ -2391,7 +2420,7 @@ avtMiliFileFormat::ExtractJsonClasses(Document &jDoc,
                     {
                         const Value &var = jVars[cVars[i]];
                         string varName   = cVars[i].GetString();
-
+ 
                         MiliVariableMetaData *varMD = ExtractJsonVariable(var, 
                             varName, sName, lName, meshId, isMatVar, isGlobal);
 
