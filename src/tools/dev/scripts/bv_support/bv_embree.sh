@@ -25,7 +25,7 @@ function bv_embree_alt_embree_dir
 
 function bv_embree_depends_on
 {
-    echo ""
+    echo "tbb"
 }
 
 function bv_embree_initialize_vars
