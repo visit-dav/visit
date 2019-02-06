@@ -187,11 +187,18 @@ bool PIDXIO::openDataset(const String filename){
   //  if(rank == 0){    
       VisitIDXIO::Field my_field;
 
-      my_field.ncomponents = atoi((const char*)(variable[var]->type_name)); // trick to resolve type easilty and get ncomponents
+      my_field.ncomponents = variable[var]->vps;//atoi((const char*)(variable[var]->type_name)); 
       char typetocheck[32];
       strncpy(typetocheck, variable[var]->type_name, 32);
-      typetocheck[0] = '1';
-      my_field.type = convertType(typetocheck);
+      if(isdigit(typetocheck[0])){
+        typetocheck[0] = '1';
+        my_field.type = convertType(typetocheck);
+      }
+      else{
+        char temp_type[64];
+        sprintf(temp_type, "%d*%s", my_field.ncomponents, typetocheck);
+        my_field.type = convertType(temp_type);
+      }
       
       my_field.isVector = my_field.ncomponents > 1 ? true : false;
 

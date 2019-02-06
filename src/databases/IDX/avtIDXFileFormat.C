@@ -313,7 +313,7 @@ void avtIDXFileFormat::domainDecomposition(){
     }
 #endif
 
-  level_info.patchInfo.swap(newboxes);
+  level_info.patchInfo=newboxes;
 
   // if(rank == 0){ 
   // std::cout<< "Total number of boxes/domains: " << level_info.patchInfo.size() << std::endl<< std::flush;
@@ -560,11 +560,11 @@ void avtIDXFileFormat::createTimeIndex(){
   debug5 <<"looking for index.xml here " << udafilename.c_str() << std::endl;
 
   parser->SetFileName(udafilename.c_str());
-  if (!parser->Parse()){
+  if (parser->Parse()){
     parser->SetFileName(metadata_filename.c_str());
   
     debug4 << udafilename << " file found" << std::endl;
-    cout << udafilename << " file found" << std::endl;
+
     vtkXMLDataElement *root = parser->GetRootElement();
     vtkXMLDataElement *tsteps = root->FindNestedElementWithName("timesteps");
     if(tsteps != NULL){
@@ -593,7 +593,7 @@ void avtIDXFileFormat::createTimeIndex(){
       fprintf(stderr, "No timesteps field found in index.xml, no physical time available\n");
   }
 
-  if(time_from_uintah==false){
+  if(!time_from_uintah){
     std::vector<double> times = reader->getTimes();
     debug4 << "adding " << times.size() << " timesteps " << std::endl;
 
@@ -1459,7 +1459,7 @@ avtIDXFileFormat::GetCycles(std::vector<int> &cycles)
   cycles.clear();
 
   if(logTimeIndex.size()>0)
-    cycles.swap(logTimeIndex);
+    cycles=logTimeIndex;
   else{
     for(int i = 0; i < reader->getNTimesteps(); ++i)
       cycles.push_back(i);
@@ -1469,7 +1469,7 @@ avtIDXFileFormat::GetCycles(std::vector<int> &cycles)
 void
 avtIDXFileFormat::GetTimes(std::vector<double> &times)
 {
-  times.swap(timeIndex);
+  times=timeIndex;
 }
 
 vtkDataArray* avtIDXFileFormat::queryToVtk(int timestate, int domain, const char *varname){
@@ -1544,6 +1544,7 @@ vtkDataArray* avtIDXFileFormat::queryToVtk(int timestate, int domain, const char
   reverse_endian = reverse_endian * !reader->isCompressed();
 
   if(type == VisitIDXIO::IDX_UINT8){
+
     vtkUnsignedCharArray*rv = vtkUnsignedCharArray::New();
     rv->SetNumberOfComponents(ncomponents); //<ctc> eventually handle vector data, since visit can actually render it!
     
