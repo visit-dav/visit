@@ -202,20 +202,12 @@ TARGET_LINK_LIBRARIES(avtplotter_ser
     visitcommon avtmath avtview avtfilters_ser avtpipeline_ser visit_vtk 
     lightweight_visit_vtk vtkFiltersHybrid vtkRenderingOpenGL2 
     vtkRenderingFreeType ${OPENGL_LIBRARIES})
-IF(VISIT_OSPRAY)
-    TARGET_LINK_LIBRARIES(avtplotter_ser ${OSPRAY_LIBRARIES})
-    INCLUDE_DIRECTORIES(${OSPRAY_INCLUDE_DIRS})
-ENDIF(VISIT_OSPRAY)
 VISIT_INSTALL_TARGETS(avtplotter_ser)
 
 #********************************* PARALLEL **********************************
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(avtplotter_par ${AVTPLOTTER_SOURCES})
     TARGET_LINK_LIBRARIES(avtplotter_par visitcommon avtmath avtview avtfilters_par avtpipeline_par visit_vtk lightweight_visit_vtk vtkFiltersHybrid vtkRenderingOpenGL2 vtkRenderingFreeType ${OPENGL_LIBRARIES})
-    IF(VISIT_OSPRAY)
-      TARGET_LINK_LIBRARIES(avtplotter_par ${OSPRAY_LIBRARIES})
-      INCLUDE_DIRECTORIES(${OSPRAY_INCLUDE_DIRS})
-    ENDIF(VISIT_OSPRAY)
     VISIT_INSTALL_TARGETS(avtplotter_par)
 ENDIF(VISIT_PARALLEL)
 
