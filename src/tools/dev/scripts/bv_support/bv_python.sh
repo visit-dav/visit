@@ -865,6 +865,11 @@ function bv_python_build
             fi
             info "Done building Python"
 
+            # Do not build those packages for a static build!
+            if [[ "$DO_STATIC_BUILD" == "yes" ]]; then
+                return 0
+            fi
+
             info "Building the Python Imaging Library"
             build_pil
             if [[ $? != 0 ]] ; then

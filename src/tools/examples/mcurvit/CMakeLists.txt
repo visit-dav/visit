@@ -60,7 +60,7 @@ Synchronizer.C
 
 # If the viewer is static then we need some static symbol lookup functions
 IF(VISIT_STATIC)
-    SET(STATIC_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/../../viewer/main/ViewerStaticSymbolLocator.C)
+    SET(STATIC_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/../../../viewer/main/ViewerStaticSymbolLocator.C)
 ENDIF(VISIT_STATIC)
 
 SET(MCURVIT_MOC_SOURCES
