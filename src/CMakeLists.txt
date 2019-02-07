@@ -2339,6 +2339,7 @@ ELSE (NOT WIN32)
             COMMAND ${MAKENSIS}
                     /DVisItVersion=${VISIT_VERSION}
                     /DVISIT_SOURCE_DIR=${VSD_NATIVE}
+                    /DVISIT_WINDOWS_DIR=${VWD_NATIVE}
                     /DINSTALLER_LOCATION=${VISIT_BINARY_DIR}
                      ${VISIT_WINDOWS_DIR}/distribution/installation/sourceinstallation.nsi
             DEPENDS ${VISIT_WINDOWS_DIR}/distribution/installation/sourceinstallation.nsi
