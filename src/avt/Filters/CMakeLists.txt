@@ -152,7 +152,6 @@ IF(VISIT_OSPRAY)
          avtOSPRaySamplePointExtractor.C
          avtOSPRayVoxelExtractor.C
          )
-    ADD_DEFINITIONS(-DVISIT_OSPRAY)
     IF(ICET_FOUND)
         # If we have Ice-T then add -DHAVE_ICET to the compilation flags.
         # We need to link with OpenGL on Mac when we have IceT.
@@ -198,6 +197,10 @@ ${VTKM_DIR}/include/vtkm-1.2
 ${VTKM_DIR}/include/vtkm-1.2/vtkm/thirdparty/taotuple
 ${VTK_INCLUDE_DIRS}
 )
+
+if(VISIT_OSPRAY)
+    include_directories(${OSPRAY_INCLUDE_DIR})
+endif()
 
 # Add link directories
 LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY})

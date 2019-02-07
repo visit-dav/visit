@@ -102,10 +102,6 @@ if(VISIT_SLIVR)
     add_definitions(-DVISIT_SLIVR)
 endif()
 
-if(VISIT_OSPRAY)
-    add_definitions(-DVISIT_OSPRAY)
-endif()
-
 LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} )
 
 ADD_LIBRARY(IVolumePlot ${LIBI_SOURCES})
