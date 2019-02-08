@@ -1282,6 +1282,9 @@ static int GetConnectionParameters(VISIT_SOCKET desc)
 *   Brad Whitlock, Tue Nov 11 17:32:10 PST 2014
 *   Get batch mode options from visit_options string.
 *
+*   Brad Whitlock, Thu Feb  7 18:01:53 PST 2019
+*   Fix buffer size allocation to prevent a crash.   
+*
 *******************************************************************************/
 
 static int CreateEngine(int batch)
@@ -1312,16 +1315,17 @@ static int CreateEngine(int batch)
              */
             if(engine_argc == 0)
             {
+                size_t argv_size = LIBSIM_MAX_STRING_LIST_SIZE * sizeof(char *);
                 engine_argc = 1;
-                engine_argv = (char **)malloc(LIBSIM_MAX_STRING_LIST_SIZE * sizeof(char));
-                memset(engine_argv, 0, sizeof(char*)*LIBSIM_MAX_STRING_LIST_SIZE);
+                engine_argv = (char **)malloc(argv_size);
+                memset(engine_argv, 0, argv_size);
                 engine_argv[0] = strdup("/usr/gapps/visit/bin/visit");
 #if 1
                 if(visit_options != NULL)
                 {
                     char *start, *end, *tmpstr;
                     start = end = visit_options;
-                    tmpstr = (char *)malloc(LIBSIM_MAX_STRING_SIZE * sizeof(char));
+                    tmpstr = (char *)malloc(argv_size);
                     while(start != NULL)
                     {
                         int len = 0;
