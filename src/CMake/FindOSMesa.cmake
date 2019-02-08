@@ -63,6 +63,16 @@
 #
 #****************************************************************************/
 
+# HAVE_OSMESA is used to inidicate if VTK is built with OSMESA, which is
+# only the case if using MESAGL. That said, I don't think HAVE_OSMESA
+# should ever be set.
+set(HAVE_OSMESA false)
+#if (VISIT_MESAGL_DIR)
+#    set(HAVE_OSMESA true CACHE BOOL "Have OSMesa library")
+#else(VISIT_MESAGL_DIR)
+#    set(HAVE_OSMESA false)
+#endif(VISIT_MESAGL_DIR)
+
 # Use the OSMESA_DIR hint from the config-site .cmake file
 
 if (VISIT_OSMESA_DIR)
@@ -71,7 +81,6 @@ if (VISIT_OSMESA_DIR)
                  NO_DEFAULT_PATH)
     if (OSMESA_LIBRARY)
         set(OSMESA_FOUND true)
-        set(HAVE_OSMESA true CACHE BOOL "Have OSMesa library")
         get_filename_component(OSMESA_LIB ${OSMESA_LIBRARY} NAME)
         execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory
                       ${VISIT_BINARY_DIR}/lib/osmesa
@@ -103,7 +112,6 @@ if (VISIT_OSMESA_DIR)
 
 
     else()
-        set(HAVE_OSMESA false)
         message(STATUS "OSMesa not found, OSMESA_SIZE_LIMIT defaulting to 4096")
         set(HAVE_OSMESA_SIZE 0 CACHE INTERNAL "support for osmesa_size")
         set(OSMESA_SIZE_LIMIT 4096)
