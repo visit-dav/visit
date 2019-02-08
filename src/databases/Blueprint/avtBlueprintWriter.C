@@ -53,6 +53,8 @@
 #include <vtkRectilinearGrid.h>
 #include <vtkCellData.h>
 #include <vtkPointData.h>
+#include <vtkStructuredGrid.h>
+#include <vtkUnstructuredGrid.h>
 #include <vtkXMLPolyDataWriter.h>
 #include <vtkXMLRectilinearGridWriter.h>
 #include <vtkXMLStructuredGridWriter.h>
@@ -279,6 +281,42 @@ void WriteVars(Node &node,
     }
 }
 
+void vtkPointsToNode(Node &node, vtkPoints *points, const int dims)
+{
+
+  const int num_points = points->GetNumberOfPoints();
+  if(points->GetDataType() == VTK_FLOAT)
+  {
+    float *vtk_ptr = (float *) points->GetVoidPointer(0);
+    index_t stride = sizeof(conduit::float32) * 3;
+    index_t size = sizeof(conduit::float32);
+    node["x"].set_external(DataType::float32(num_points,0,stride), vtk_ptr);
+    if(dims > 1)
+    {
+      node["y"].set_external(DataType::float32(num_points,size,stride), vtk_ptr);
+    }
+    if(dims > 2)
+    {
+      node["z"].set_external(DataType::float32(num_points,size*2,stride), vtk_ptr);
+    }
+  }
+  else if(points->GetDataType() == VTK_DOUBLE)
+  {
+    double *vtk_ptr = (double *) points->GetVoidPointer(0);
+    index_t stride = sizeof(conduit::float64) * 3;
+    index_t size = sizeof(conduit::float64);
+    node["x"].set_external(DataType::float64(num_points,0,stride), vtk_ptr);
+    if(dims > 1)
+    {
+      node["y"].set_external(DataType::float64(num_points,size,stride), vtk_ptr);
+    }
+    if(dims > 2)
+    {
+      node["z"].set_external(DataType::float64(num_points,size*2,stride), vtk_ptr);
+    }
+  }
+}
+
 // ****************************************************************************
 //  Method: avtBlueprintWriter::WriteChunk
 //
@@ -356,11 +394,18 @@ avtBlueprintWriter::WriteChunk(vtkDataSet *ds, int chunk)
     {
        mesh[coord_path + "/type"] = "explicit";
        mesh[topo_path + "/type"] = "structured";
+       vtkStructuredGrid *grid = (vtkStructuredGrid *) ds;
+
+       vtkPoints *vtk_pts = grid->GetPoints();
+       vtkPointsToNode(mesh[coord_path + "/values"], vtk_pts, ndims);
     }
     else if (ds->GetDataObjectType() == VTK_UNSTRUCTURED_GRID)
     {
        mesh[topo_path + "/type"] = "explicit";
        mesh[coord_path + "/type"] = "explicit";
+       vtkUnstructuredGrid *grid = (vtkUnstructuredGrid *) ds;
+       vtkPoints *vtk_pts = grid->GetPoints();
+       vtkPointsToNode(mesh[coord_path + "/values"], vtk_pts, ndims);
        //sprintf(chunkname, "%s.vtu", chunkname);
        //wrtr = vtkXMLUnstructuredGridWriter::New();
     }
