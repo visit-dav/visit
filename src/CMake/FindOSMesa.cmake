@@ -61,17 +61,14 @@
 #   Kathleen Biagas, Wed Jun 27 14:40:39 MST 2018
 #   Set OSMESA_INCLUDE_DIR OSMESA_LIBRARIES in cache.
 #
+#   Eric Brugger, Mon Feb 11 13:20:34 PST 2019
+#   Remove the setting of HAVE_OSMESA. Setting it when OSMESA is specified
+#   doesn't make sense, since VTK isn't built with mesa in this case and when
+#   VTK is built with mesa HAVE_OSMESA isn't set, the case where MESAGL is
+#   specified. I think all the code involving HAVE_OSMESA can actually be
+#   removed.
+#
 #****************************************************************************/
-
-# HAVE_OSMESA is used to inidicate if VTK is built with OSMESA, which is
-# only the case if using MESAGL. That said, I don't think HAVE_OSMESA
-# should ever be set.
-set(HAVE_OSMESA false)
-#if (VISIT_MESAGL_DIR)
-#    set(HAVE_OSMESA true CACHE BOOL "Have OSMesa library")
-#else(VISIT_MESAGL_DIR)
-#    set(HAVE_OSMESA false)
-#endif(VISIT_MESAGL_DIR)
 
 # Use the OSMESA_DIR hint from the config-site .cmake file
 
