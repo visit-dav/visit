@@ -1046,7 +1046,7 @@ avtMiliFileFormat::GetVar(int ts, int dom, const char *varPath)
     bool isParamArray = false;
     int meshId = ExtractMeshIdFromPath(varPath);
 
-    vtkFloatArray *floatArr = NULL;
+    vtkFloatArray *fltArray = NULL;
 
     if( strcmp("OriginalZoneLabels", varPath) == 0 )
     {
@@ -1179,17 +1179,17 @@ avtMiliFileFormat::GetVar(int ts, int dom, const char *varPath)
         //
         if (isParamArray)
         {
-            floatArr = (vtkFloatArray*) cache->GetVTKObject(vShortName.c_str(),
+            fltArray = (vtkFloatArray*) cache->GetVTKObject(vShortName.c_str(),
                      avtVariableCache::SCALARS_NAME, -1, dom, "none");
         }
 
-        if (floatArr == 0)
+        if (fltArray == 0)
         {
             int nNodes = miliMetaData[meshId]->GetNumNodes(dom);
-            floatArr   = vtkFloatArray::New();
-            floatArr->SetNumberOfTuples(nNodes);
+            fltArray   = vtkFloatArray::New();
+            fltArray->SetNumberOfTuples(nNodes);
  
-            float *fArrPtr = (float *) floatArr->GetVoidPointer(0);
+            float *fArrPtr = (float *) fltArray->GetVoidPointer(0);
 
             read_results(dbid[dom], ts+1, SRIds[0], 1,
                          &namePtr, vType, nNodes, fArrPtr);
@@ -1201,14 +1201,14 @@ avtMiliFileFormat::GetVar(int ts, int dom, const char *varPath)
             {
                 cache->CacheVTKObject(vShortName.c_str(), 
                                   avtVariableCache::SCALARS_NAME,
-                                  -1, dom, "none", floatArr);
+                                  -1, dom, "none", fltArray);
             }
         }
         else
         {
             // The reference count will be decremented by the generic database,
             // because it will assume it owns it.
-            floatArr->Register(NULL);
+            fltArray->Register(NULL);
         }
     }
     //
@@ -1216,9 +1216,9 @@ avtMiliFileFormat::GetVar(int ts, int dom, const char *varPath)
     //
     else
     {
-        floatArr   = vtkFloatArray::New();
+        fltArray   = vtkFloatArray::New();
         int nCells = miliMetaData[meshId]->GetNumCells(dom);
-        floatArr->SetNumberOfTuples(nCells);
+        fltArray->SetNumberOfTuples(nCells);
         float *dataBuffer = NULL;
 
         //
@@ -1326,7 +1326,7 @@ avtMiliFileFormat::GetVar(int ts, int dom, const char *varPath)
 
             for (int i = 0; i < nCells; ++i)
             { 
-                floatArr->SetTuple1(i, dataBuffer[matList[i]]);
+                fltArray->SetTuple1(i, dataBuffer[matList[i]]);
             }
         }
         else if (isGlobal)
@@ -1336,7 +1336,7 @@ avtMiliFileFormat::GetVar(int ts, int dom, const char *varPath)
             //
             for (int i = 0; i < nCells; ++i)
             { 
-                floatArr->SetTuple1(i, dataBuffer[0]);
+                fltArray->SetTuple1(i, dataBuffer[0]);
             }
         }
         else
@@ -1346,7 +1346,7 @@ avtMiliFileFormat::GetVar(int ts, int dom, const char *varPath)
             //
             for (int i = 0; i < nCells; ++i)
             { 
-                floatArr->SetTuple1(i, dataBuffer[i]);
+                fltArray->SetTuple1(i, dataBuffer[i]);
             }
         }
 
@@ -1354,7 +1354,7 @@ avtMiliFileFormat::GetVar(int ts, int dom, const char *varPath)
        
     }
 
-    return floatArr;
+    return fltArray;
 }
 
 
@@ -1385,10 +1385,6 @@ avtMiliFileFormat::GetVar(int ts, int dom, const char *varPath)
 vtkDataArray *
 avtMiliFileFormat::GetVectorVar(int ts, int dom, const char *varPath)
 {
-    //FIXME: there is a mem error somewhere in here...
-    //it's not specific to ES or global...
-    //It's above the if (node centered) statement...
-    
     int meshId = ExtractMeshIdFromPath(varPath);
     
     //
