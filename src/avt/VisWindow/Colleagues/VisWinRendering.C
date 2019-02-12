@@ -214,13 +214,20 @@ VisWinRendering::VisWinRendering(VisWindowColleagueProxy &p) :
 #ifdef VISIT_OSPRAY
     osprayPass = vtkOSPRayPass::New();
     vtkViewNodeFactory* factory = osprayPass->GetViewNodeFactory();
-    factory->RegisterOverride("vtkDataSetMapper", pd_maker);
-    factory->RegisterOverride("vtkPointGlyphMapper", pd_maker);
-    factory->RegisterOverride("vtkMultiRepMapper", pd_maker);
-    factory->RegisterOverride("vtkMeshPlotMapper", pd_maker);
-    factory->RegisterOverride("vtkOpenGLMeshPlotMapper", pd_maker);
-    factory->RegisterOverride("vtkVisItCubeAxesActor", cube_axes_act_maker);
-    factory->RegisterOverride("vtkVisItAxisActor", axis_act_maker);
+    factory->RegisterOverride("vtkDataSetMapper",
+                              vtkVisItViewNodeFactory::pd_maker);
+    factory->RegisterOverride("vtkPointGlyphMapper",
+                              vtkVisItViewNodeFactory::pd_maker);
+    factory->RegisterOverride("vtkMultiRepMapper",
+                              vtkVisItViewNodeFactory::pd_maker);
+    factory->RegisterOverride("vtkMeshPlotMapper",
+                              vtkVisItViewNodeFactory::pd_maker);
+    factory->RegisterOverride("vtkOpenGLMeshPlotMapper",
+                              vtkVisItViewNodeFactory::pd_maker);
+    factory->RegisterOverride("vtkVisItCubeAxesActor",
+                              vtkVisItViewNodeFactory::cube_axes_act_maker);
+    factory->RegisterOverride("vtkVisItAxisActor",
+                              vtkVisItViewNodeFactory::axis_act_maker);
 #endif
 }
 

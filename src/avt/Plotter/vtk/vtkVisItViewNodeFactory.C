@@ -42,21 +42,21 @@
 #include <vtkOSPRayVisItCubeAxesActorNode.h>
 
 //============================================================================
-vtkViewNode *pd_maker()
+vtkViewNode *vtkVisItViewNodeFactory::pd_maker()
 {
   vtkOSPRayPolyDataMapperNode *vn = vtkOSPRayPolyDataMapperNode::New();
   return vn;
 }
 
 //-----------------------------------------------------------------------------
-vtkViewNode *cube_axes_act_maker()
+vtkViewNode *vtkVisItViewNodeFactory::cube_axes_act_maker()
 {
   vtkOSPRayVisItCubeAxesActorNode *vn = vtkOSPRayVisItCubeAxesActorNode::New();
   return vn;
 }
 
 //-----------------------------------------------------------------------------
-vtkViewNode *axis_act_maker()
+vtkViewNode *vtkVisItViewNodeFactory::axis_act_maker()
 {
   vtkOSPRayVisItAxisActorNode *vn = vtkOSPRayVisItAxisActorNode::New();
   return vn;
