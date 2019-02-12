@@ -35,36 +35,17 @@
 * DAMAGE.
 *
 *****************************************************************************/
-/**
- * @class   vtkOSPRayVisItAxisActorNode
- * @brief   links vtkVisItAxisActor to OSPRay
- *
- * Translates vtkVisItAxisActor state into OSPRay rendering calls
-*/
 
-#ifndef vtkOSPRayVisItAxisActorNode_h
-#define vtkOSPRayVisItAxisActorNode_h
+#ifndef VTK_VISIT_VIEWNODEFACTORY_H
+#define VTK_VISIT_VIEWNODEFACTORY_H
 
-#include <viswindow_exports.h>
-#include <vtkOSPRayActorNode.h>
+#include <plotter_exports.h>
 
-class  VISWINDOW_API vtkOSPRayVisItAxisActorNode :
-  public vtkOSPRayActorNode
-{
-public:
-  static vtkOSPRayVisItAxisActorNode* New();
-  vtkTypeMacro(vtkOSPRayVisItAxisActorNode, vtkOSPRayActorNode);
+class vtkViewNode;
 
-  vtkMTimeType GetMTime() override;
+//============================================================================
+vtkViewNode PLOTTER_API *pd_maker();
+vtkViewNode PLOTTER_API *cube_axes_act_maker();
+vtkViewNode PLOTTER_API *axis_act_maker();
 
-  void Build(bool prepass) override;
-
-protected:
-  vtkOSPRayVisItAxisActorNode();
-  ~vtkOSPRayVisItAxisActorNode();
-
-private:
-  vtkOSPRayVisItAxisActorNode(const vtkOSPRayVisItAxisActorNode&) = delete;
-  void operator=(const vtkOSPRayVisItAxisActorNode&) = delete;
-};
 #endif

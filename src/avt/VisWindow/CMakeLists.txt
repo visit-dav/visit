@@ -80,15 +80,6 @@ Colleagues/avtText3DColleague.C
 Colleagues/avtTimeSliderColleague.C
 )
 
-IF(VISIT_OSPRAY)
-  SET(COLLEAGUES_SOURCES
-  ${COLLEAGUES_SOURCES}
-  Colleagues/vtkOSPRayVisItCubeAxesActorNode.C
-  Colleagues/vtkOSPRayVisItAxisActorNode.C
-  Colleagues/vtkVisItViewNodeFactory.C
-  )
-ENDIF(VISIT_OSPRAY)
-
 SET(EXCEPTIONS_SOURCES
 Exceptions/BadColleagueException.C
 Exceptions/BadInteractorException.C

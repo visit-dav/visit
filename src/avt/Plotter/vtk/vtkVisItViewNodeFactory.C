@@ -37,6 +37,9 @@
 *****************************************************************************/
 
 #include <vtkVisItViewNodeFactory.h>
+#include <vtkOSPRayPolyDataMapperNode.h>
+#include <vtkOSPRayVisItAxisActorNode.h>
+#include <vtkOSPRayVisItCubeAxesActorNode.h>
 
 //============================================================================
 vtkViewNode *pd_maker()

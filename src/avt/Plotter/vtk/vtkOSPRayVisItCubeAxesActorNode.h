@@ -45,10 +45,10 @@
 #ifndef vtkOSPRayVisItCubeAxesActorNode_h
 #define vtkOSPRayVisItCubeAxesActorNode_h
 
-#include <viswindow_exports.h>
+#include <plotter_exports.h>
 #include <vtkOSPRayActorNode.h>
 
-class VISWINDOW_API vtkOSPRayVisItCubeAxesActorNode :
+class PLOTTER_API vtkOSPRayVisItCubeAxesActorNode :
   public vtkOSPRayActorNode
 {
 public:
