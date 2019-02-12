@@ -1087,6 +1087,11 @@ void
 avtMiliMetaData::GetCellTypeCounts(vector<int> &cTypes, 
                                    vector<int> &ctCounts)
 {
+    if (miliClasses == NULL)
+    {
+        return;
+    }
+
     //
     // First, count the occurrence of each super class
     // that is a cell. 
@@ -1102,9 +1107,12 @@ avtMiliMetaData::GetCellTypeCounts(vector<int> &cTypes,
 
     for (int i = 0; i < numClasses; ++i)
     {
-        if (miliClasses[i]->GetClassType() == MiliClassMetaData::CELL)
+        if (miliClasses[i] != NULL)
         {
-            miliSuperClassCount[miliClasses[i]->GetSuperClassId()]++;
+            if (miliClasses[i]->GetClassType() == MiliClassMetaData::CELL)
+            {
+                miliSuperClassCount[miliClasses[i]->GetSuperClassId()]++;
+            }
         }
     }
 
@@ -1170,6 +1178,7 @@ avtMiliMetaData::AddVarMD(int varIdx,
         // to be cleansed in the destructor. 
         //
         delete miliVariables[varIdx];
+        miliVariables[varIdx] = NULL;
     }
 
     miliVariables[varIdx] = mvmd;
@@ -1531,6 +1540,7 @@ avtMiliMetaData::AddMaterialMD(int matIdx,
     if (miliMaterials[matIdx] != NULL)
     {
         delete miliMaterials[matIdx];
+        miliMaterials = NULL;
     }
 
     miliMaterials[matIdx] = mmmd;
@@ -1557,11 +1567,20 @@ avtMiliMetaData::AddMaterialMD(int matIdx,
 void
 avtMiliMetaData::GetMaterialNames(stringVector &matNames)
 {
+    if (miliMaterials == NULL)
+    {
+        return;
+    }
+
     matNames.clear();
     matNames.reserve(numMaterials);
+
     for (int i = 0; i < numMaterials; ++i)
     {
-        matNames.push_back(miliMaterials[i]->GetName());
+        if (miliMaterials[i] != NULL)
+        {
+            matNames.push_back(miliMaterials[i]->GetName());
+        }
     }
 }
 
@@ -1585,11 +1604,19 @@ avtMiliMetaData::GetMaterialNames(stringVector &matNames)
 void
 avtMiliMetaData::GetMaterialColors(vector<string> &matColors)
 {
+    if (miliMaterials == NULL)
+    {
+        return;
+    }
+
     matColors.clear();    
     matColors.reserve(numMaterials);
 
     for (int i = 0; i < numMaterials; ++i)
     {
-        matColors.push_back(miliMaterials[i]->GetColor());
+        if (miliMaterials[i] != NULL)
+        {
+            matColors.push_back(miliMaterials[i]->GetColor());
+        }
     }
 }
