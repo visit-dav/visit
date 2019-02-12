@@ -189,9 +189,10 @@ void avtIDXFileFormat::domainDecomposition(){
       int curr_p2[3] = {curr_p1[0]+block_dim[0], curr_p1[1]+block_dim[1], curr_p1[2]+block_dim[2]};
 
       for(int d=0; d <3; d++){
-        //curr_p1[d] = curr_p1[d] > 0 ? curr_p1[d]-1 : curr_p1[d];
-        //curr_p2[d] = (curr_p2[d] < global_size[d]-1) ? curr_p2[d]+1 : global_size[d]-1;
-        curr_p2[d] = (curr_p2[d] < global_size[d]-1) ? curr_p2[d] : global_size[d];
+        if(uintah_metadata && use_extracells)
+          curr_p1[d] = curr_p1[d] > 0 ? curr_p1[d]+2 : curr_p1[d];
+
+          curr_p2[d] = (curr_p2[d] < global_size[d]-1) ? curr_p2[d] : global_size[d];
       }
 
       PatchInfo newbox;
@@ -1100,7 +1101,7 @@ void avtIDXFileFormat::computeDomainBoundaries(const char* meshname, int timesta
   for(int domain=0; domain < level_info.patchInfo.size(); domain++){
 
     int low[3], high[3];//, extracells[6];
-    level_info.patchInfo[domain].getBounds(low,high,meshname);
+    level_info.patchInfo[domain].getBounds(low,high,meshname,use_extracells);
 
     // int e[6] = { low[0]+extracells[0], high[0]+extracells[1],
     //  low[1]+extracells[2], high[1]+extracells[3],
@@ -1482,7 +1483,7 @@ vtkDataArray* avtIDXFileFormat::queryToVtk(int timestate, int domain, const char
   debug5 << "read data " << level_info.patchInfo[domain].toString();
   for(int k=0; k<3; k++){
     if(uintah_metadata){
-      if(!use_extracells) // cause uintah low starts from -1
+      //if(!use_extracells) // cause uintah low starts from -1
         low[k]++;
 
       high[k] += sfc_offset[k];
