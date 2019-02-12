@@ -132,15 +132,17 @@ avtMiliFileFormat::IssueWarning(const char *msg, int key)
 avtMiliFileFormat::avtMiliFileFormat(const char *fpath)
     : avtMTMDFileFormat(fpath)
 {
-    dims = nDomains = nMeshes = 1;
+    dims     = 0;
+    nDomains = 0;
+    nMeshes  = 0;
     LoadMiliInfoJson(fpath);
 
     string fnamePth(fpath);
 
     //TODO: make sure this works for windows paths as well. 
-    size_t fNPos   = fnamePth.find_last_of("\\/");
-    string pthTmp  = fnamePth.substr(0, fNPos + 1);
-    string root    = fnamePth.substr(fNPos + 1);
+    size_t fNPos  = fnamePth.find_last_of("\\/");
+    string pthTmp = fnamePth.substr(0, fNPos + 1);
+    string root   = fnamePth.substr(fNPos + 1);
 
     //
     // Set the family path.
@@ -148,7 +150,7 @@ avtMiliFileFormat::avtMiliFileFormat(const char *fpath)
     size_t pSize = pthTmp.size();
     fampath      = new char[pSize + 1];
     strcpy(fampath, pthTmp.c_str());
-    fampath[pSize + 1] = '\0';
+    fampath[pSize] = '\0';
 
     //
     // Extract and set the family root. 
@@ -159,12 +161,14 @@ avtMiliFileFormat::avtMiliFileFormat(const char *fpath)
     string mExt    = "mili";
 
     if (lastSub == mExt)
+    {
         root = root.substr(0, lastPos);
+    }
 
     size_t rSize = root.size();
     famroot      = new char[rSize + 1];
     strcpy(famroot, root.c_str());
-    famroot[rSize + 1] = '\0';
+    famroot[rSize] = '\0';
 }
 
 
@@ -244,8 +248,12 @@ avtMiliFileFormat::~avtMiliFileFormat()
     }
     delete [] miliMetaData;
 
-    delete [] famroot;
-    if (fampath)
+    if (famroot != NULL)
+    {
+        delete [] famroot;
+    }
+
+    if (fampath != NULL)
     {
         delete [] fampath;
     }
@@ -307,11 +315,14 @@ read_results(Famid &dbid, int ts, int sr, int rank,
         char tmpName[256];
         strcpy(tmpName, &(*name)[7]);
         rval = mc_read_param_array(dbid, tmpName, &buff_to_read_into);
+
         if (rval == OK && (vtype == M_FLOAT || vtype == M_FLOAT4))
         {
             float *pflt = (float *) buff_to_read_into;
             for (int i = 0 ; i < amount ; i++)
+            {
                 buff[i] = (float)(pflt[i]);
+            }
         }
     }
     else
@@ -403,6 +414,17 @@ avtMiliFileFormat::GetMesh(int ts, int dom, const char *mesh)
     {
         EXCEPTION1(InvalidVariableException, mesh);
     }
+
+    //TODO: allow sand mesh. 
+    //bool isSandMesh = false;
+    //else if (strstr(mesh, "sand_mesh") == mesh)
+    //{
+    //    isSandMesh == true;
+    //}
+    //else if (strstr(mesh, "mesh") != mesh)
+    //{
+    //    EXCEPTION1(InvalidVariableException, mesh);
+    //}
     
     //
     // Do a checked conversion to integer.
@@ -440,7 +462,6 @@ avtMiliFileFormat::GetMesh(int ts, int dom, const char *mesh)
 
     int nNodes   = miliMetaData[meshId]->GetNumNodes(dom);
     int nPts     = dims * nNodes;
-    float *fPts  = NULL;
     int subrec   = -1;
     int vType    = M_FLOAT;
 
@@ -467,7 +488,7 @@ avtMiliFileFormat::GetMesh(int ts, int dom, const char *mesh)
         }
         else
         {
-            fPts = new float[nPts];
+            float fPts[nPts];
             read_results(dbid[dom], ts+1, subrec, 1, 
                 &npCharPtr, vType, nPts, fPts);
 
@@ -492,6 +513,9 @@ avtMiliFileFormat::GetMesh(int ts, int dom, const char *mesh)
 
             rv->SetPoints(vtkPts);
             vtkPts->Delete();
+
+            //TODO: handle sanded elements. 
+
         }
     }
     else
@@ -578,25 +602,29 @@ avtMiliFileFormat::OpenDB(int dom)
         {
             debug3 << "Attempting mc_open on root=\"" << famroot << 
                 "\", path=\"" << fampath << "\"." << endl;
-            rval = mc_open( famroot, fampath, rFlag, &(dbid[dom]) );
+            rval = mc_open(famroot, fampath, rFlag, &(dbid[dom]) );
 
             if ( rval != OK )
+            {
                 EXCEPTION1(InvalidFilesException, famroot);
+            }
         }
         else
         {
-            int i; char famname[128];
-            for (i = 0; i < 4; i++)
+            char famname[128];
+            for (int i = 0; i < 4; i++)
             {
                 sprintf(famname, root_fmtstrs[i], famroot, dom);
                 debug3 << "Attempting mc_open on root=\"" << famname 
                     << "\", path=\"" << fampath << "\"." << endl;
-                rval = mc_open( famname, fampath, rFlag, &(dbid[dom]) );
+                rval = mc_open(famname, fampath, rFlag, &(dbid[dom]) );
                 if (rval == OK) 
                     break;
             }
             if ( rval != OK )
+            {
                 EXCEPTION1(InvalidFilesException, famname);
+            }
         }
     }
 }
@@ -649,7 +677,7 @@ avtMiliFileFormat::ReadMesh(int dom)
 
         miliMetaData[meshId]->SetNumNodes(dom, nNodes);
 
-        PopulateNodeLabels(dbid[dom], meshId, nodeSName, dom);
+        //PopulateNodeLabels(dbid[dom], meshId, nodeSName, dom);//FIXME: 
 
         //
         // Read initial nodal position information, if available. 
@@ -745,7 +773,7 @@ avtMiliFileFormat::ReadMesh(int dom)
         //
         int cellIdx   = 0;
         int cpcIdx    = 0;
-        int *matList  = new int[nDomCells];
+        int matList[nDomCells];
         max_zone_label_lengths[dom] = 0;
 
         for (int i = 0; i < nCellTypes; ++i)
@@ -766,9 +794,9 @@ avtMiliFileFormat::ReadMesh(int dom)
                 // mat:  materials that each element belongs to. 
                 // part: Not used...
                 //
-                int *conn = new int[nCells * connCount];
-                int *mats = new int[nCells];
-                int *part = new int[nCells];
+                int conn[nCells * connCount];
+                int mats[nCells];
+                int part[nCells];
                 char shortName[classNames[cpcIdx].size() + 1];
                 strcpy(shortName, classNames[cpcIdx].c_str());
                 cpcIdx++;
@@ -784,9 +812,6 @@ avtMiliFileFormat::ReadMesh(int dom)
 
                 if (rval != OK)
                 {
-                    delete [] conn;
-                    delete [] mats;
-                    delete [] part;
                     EXCEPTION1(InvalidVariableException, shortName);
                 }
     
@@ -865,11 +890,8 @@ avtMiliFileFormat::ReadMesh(int dom)
                     connPtr += connCount;
                 }
 
-                PopulateZoneLabels(dbid[dom], meshId, shortName, dom, 
-                                   nCells);
-                delete [] conn;
-                delete [] mats;
-                delete [] part;
+                //PopulateZoneLabels(dbid[dom], meshId, shortName, dom, 
+                //                   nCells);//FIXME
             }
         }
        
@@ -885,7 +907,6 @@ avtMiliFileFormat::ReadMesh(int dom)
                                               NULL, NULL);
 
         materials[dom][meshId] = avtMat;
-        delete [] matList;
 
         //
         // Hook up points to mesh if we have 'em
@@ -1126,7 +1147,6 @@ avtMiliFileFormat::GetVar(int ts, int dom, const char *varPath)
     }
 
     avtCentering centering = varMD->GetCentering();
-    meshId                 = varMD->GetMeshAssociation(); 
     vector<int> SRIds      = varMD->GetSubrecIds(dom);
     int nSRs               = SRIds.size();
     string vShortName      = varMD->GetShortName();
@@ -1165,8 +1185,8 @@ avtMiliFileFormat::GetVar(int ts, int dom, const char *varPath)
 
         if (floatArr == 0)
         {
-            int nNodes  = miliMetaData[meshId]->GetNumNodes(dom);
-            floatArr    = vtkFloatArray::New();
+            int nNodes = miliMetaData[meshId]->GetNumNodes(dom);
+            floatArr   = vtkFloatArray::New();
             floatArr->SetNumberOfTuples(nNodes);
  
             float *fArrPtr = (float *) floatArr->GetVoidPointer(0);
@@ -1225,8 +1245,8 @@ avtMiliFileFormat::GetVar(int ts, int dom, const char *varPath)
         }
         else
         {
-            dataBuffer = (float *) floatArr->GetVoidPointer(0);
             dBuffSize  = nCells;
+            dataBuffer = new float[dBuffSize];
         }
 
         //
@@ -1276,15 +1296,15 @@ avtMiliFileFormat::GetVar(int ts, int dom, const char *varPath)
                     totalBlocksSize += start - stop + 1;
                 }
 
-                float *mBBuffer = new float[totalBlocksSize];
+                float MBBuffer[totalBlocksSize];
 
                 read_results(dbid[dom], ts + 1, SRId,
-                             1, &namePtr, vType, totalBlocksSize, mBBuffer);
+                             1, &namePtr, vType, totalBlocksSize, MBBuffer);
 
                 //
                 // Fill up the blocks into the array.
                 //
-                float *mbPtr = mBBuffer;
+                float *mbPtr = MBBuffer;
                 for (int b = 0; b < nBlocks; ++b)
                 {
                     for (int c = (*blocks)[b * 2] - 1; 
@@ -1293,38 +1313,45 @@ avtMiliFileFormat::GetVar(int ts, int dom, const char *varPath)
                         dataBuffer[c + start] = *(mbPtr++);
                     }
                 }
-                
-                delete [] mBBuffer;
             }
         }
 
-        //
-        // If we have a material variable, we need to distribute the 
-        // values across cells by material ID. 
-        //
         if (isMatVar)
         {
+            //
+            // This is a material variable. We need to distribute the 
+            // values across cells by material ID. 
+            //
             const int *matList = materials[dom][meshId]->GetMatlist();
 
             for (int i = 0; i < nCells; ++i)
             { 
                 floatArr->SetTuple1(i, dataBuffer[matList[i]]);
             }
-
-            delete [] dataBuffer;
         }
-        //
-        // If we have a global var, just apply it to all cells. 
-        //
         else if (isGlobal)
         {
+            //
+            // This is a global var. Just apply it to all cells. 
+            //
             for (int i = 0; i < nCells; ++i)
             { 
                 floatArr->SetTuple1(i, dataBuffer[0]);
             }
-
-            delete [] dataBuffer;
         }
+        else
+        {
+            //
+            // Nothing special here. Just copy the values over. 
+            //
+            for (int i = 0; i < nCells; ++i)
+            { 
+                floatArr->SetTuple1(i, dataBuffer[i]);
+            }
+        }
+
+        delete [] dataBuffer;
+       
     }
 
     return floatArr;
@@ -1358,6 +1385,10 @@ avtMiliFileFormat::GetVar(int ts, int dom, const char *varPath)
 vtkDataArray *
 avtMiliFileFormat::GetVectorVar(int ts, int dom, const char *varPath)
 {
+    //FIXME: there is a mem error somewhere in here...
+    //it's not specific to ES or global...
+    //It's above the if (node centered) statement...
+    
     int meshId = ExtractMeshIdFromPath(varPath);
     
     //
@@ -1374,7 +1405,6 @@ avtMiliFileFormat::GetVectorVar(int ts, int dom, const char *varPath)
     }
 
     avtCentering centering = varMD->GetCentering();
-    meshId                 = varMD->GetMeshAssociation(); 
     vector<int> SRIds      = varMD->GetSubrecIds(dom);
     string vShortName      = varMD->GetShortName();
 
@@ -1382,9 +1412,9 @@ avtMiliFileFormat::GetVectorVar(int ts, int dom, const char *varPath)
     // Component dimensions will only be > 1 if we have
     // an element set. 
     //
-    int vecSize  = varMD->GetVectorSize();
-    int compDims = varMD->GetComponentDims();
-    int dataSize = vecSize * compDims;
+    int vecSize   = varMD->GetVectorSize();
+    int compDims  = varMD->GetComponentDims();
+    int dataSize  = vecSize * compDims;
 
     bool isGlobal = varMD->GetIsGlobal();
     bool isES     = varMD->GetIsElementSet();
@@ -1428,29 +1458,19 @@ avtMiliFileFormat::GetVectorVar(int ts, int dom, const char *varPath)
 
         fltArray->SetNumberOfTuples(nCells);
 
-        //
-        // We have two special cases to consider.
-        // Element sets:
-        //   The vector components of this variable will be arrays 
-        //   of integration points. Only one value in the array 
-        //   will be displayed at any given moment. 
-        // Global variables:
-        //   We recieve a single vector that is applied to all cells. 
-        //
         float *dataBuffer = NULL;
-        if (isES)
+        if (isGlobal)
         {
-            dBuffSize  = nCells * dataSize;
-            dataBuffer = new float[dBuffSize];
-        }
-        else if (isGlobal)
-        {
-            int dBuffSize = dataSize;
-            dataBuffer    = new float[dBuffSize]; 
+            //
+            // A global vector will be a single vector of size dataSize. 
+            //
+            dBuffSize  = dataSize;
+            dataBuffer = new float[dBuffSize]; 
         }
         else
         {
-            dataBuffer = (float *) fltArray->GetVoidPointer(0);
+            dBuffSize  = nCells * dataSize;
+            dataBuffer = new float[dBuffSize];
         }
 
         //
@@ -1509,7 +1529,7 @@ avtMiliFileFormat::GetVectorVar(int ts, int dom, const char *varPath)
                     totalBlocksSize += start - stop + 1;
                 }
 
-                float *MBBuffer = new float[totalBlocksSize * dataSize];
+                float MBBuffer[totalBlocksSize * dataSize];
                 int resultSize  = totalBlocksSize * dataSize;
 
                 read_results(dbid[dom], ts + 1, SRId,
@@ -1532,7 +1552,6 @@ avtMiliFileFormat::GetVectorVar(int ts, int dom, const char *varPath)
                         }
                     }
                 }
-                delete [] MBBuffer;
             } 
         }
 
@@ -1542,7 +1561,7 @@ avtMiliFileFormat::GetVectorVar(int ts, int dom, const char *varPath)
         // integration points, and copy then over to our 
         // VTK data array. 
         //
-        if (varMD->GetIsElementSet())
+        if (isES)
         {
             //
             // Let's take the mid integration point. 
@@ -1568,7 +1587,6 @@ avtMiliFileFormat::GetVectorVar(int ts, int dom, const char *varPath)
 
                 fltArray->SetTuple(i, vecPts);
             }
-            delete [] dataBuffer;
         }
         else if (isGlobal)
         {
@@ -1583,9 +1601,20 @@ avtMiliFileFormat::GetVectorVar(int ts, int dom, const char *varPath)
                     fltArrayPtr[i*dataSize + j] = dataBuffer[j];
                 }
             }
-
-            delete [] dataBuffer;
         }
+        else
+        {
+            //
+            // Nothing special here. Just copy over the elements. 
+            //
+            float *fltArrayPtr = (float *) fltArray->GetVoidPointer(0);
+            for (int i = 0 ; i < dBuffSize; i++)
+            {
+                fltArrayPtr[i] = dataBuffer[i];
+            }
+        }
+
+        delete [] dataBuffer;
     }
 
     //
@@ -1594,28 +1623,28 @@ avtMiliFileFormat::GetVectorVar(int ts, int dom, const char *varPath)
     //
     if (vecSize == 6)
     {
-        vtkFloatArray *new_fltArray = vtkFloatArray::New();
-        int ntups = fltArray->GetNumberOfTuples();
-        new_fltArray->SetNumberOfComponents(9);
-        new_fltArray->SetNumberOfTuples(ntups);
-        for (int i = 0 ; i < ntups ; i++)
+        vtkFloatArray *newFltArray = vtkFloatArray::New();
+        int nTups = fltArray->GetNumberOfTuples();
+        newFltArray->SetNumberOfComponents(9);
+        newFltArray->SetNumberOfTuples(nTups);
+        for (int i = 0 ; i < nTups ; i++)
         {
-            double orig_vals[6];
-            float new_vals[9];
-            fltArray->GetTuple(i, orig_vals);
-            new_vals[0] = orig_vals[0];  // XX
-            new_vals[1] = orig_vals[3];  // XY
-            new_vals[2] = orig_vals[5];  // XZ
-            new_vals[3] = orig_vals[3];  // YX
-            new_vals[4] = orig_vals[1];  // YY
-            new_vals[5] = orig_vals[4];  // YZ
-            new_vals[6] = orig_vals[5];  // ZX
-            new_vals[7] = orig_vals[4];  // ZY
-            new_vals[8] = orig_vals[2];  // ZZ
-            new_fltArray->SetTuple(i, new_vals);
+            double origVals[6];
+            float newVals[9];
+            fltArray->GetTuple(i, origVals);
+            newVals[0] = origVals[0];  // XX
+            newVals[1] = origVals[3];  // XY
+            newVals[2] = origVals[5];  // XZ
+            newVals[3] = origVals[3];  // YX
+            newVals[4] = origVals[1];  // YY
+            newVals[5] = origVals[4];  // YZ
+            newVals[6] = origVals[5];  // ZX
+            newVals[7] = origVals[4];  // ZY
+            newVals[8] = origVals[2];  // ZZ
+            newFltArray->SetTuple(i, newVals);
         }
         fltArray->Delete();
-        fltArray = new_fltArray;
+        fltArray = newFltArray;
     }
 
     return fltArray;
@@ -1751,18 +1780,18 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
         char matName[32];
         sprintf(meshName, "mesh%d", meshId + 1);
         sprintf(matName, "materials%d", meshId + 1);
-        avtMeshMetaData *mesh = new avtMeshMetaData;
-        mesh->name = meshName;
-        mesh->meshType = AVT_UNSTRUCTURED_MESH;
-        mesh->numBlocks = nDomains;
-        mesh->blockOrigin = 0;
-        mesh->cellOrigin = 1; // Bob Corey says all mili writers so far are Fortran
-        mesh->nodeOrigin = 1; // Bob Corey says all mili writers so far are Fortran
-        mesh->spatialDimension = dims;
+        avtMeshMetaData *mesh      = new avtMeshMetaData;
+        mesh->name                 = meshName;
+        mesh->meshType             = AVT_UNSTRUCTURED_MESH;
+        mesh->numBlocks            = nDomains;
+        mesh->blockOrigin          = 0;
+        mesh->cellOrigin           = 1; // mili writers are Fortran
+        mesh->nodeOrigin           = 1; 
+        mesh->spatialDimension     = dims;
         mesh->topologicalDimension = dims;
-        mesh->blockTitle = "processors";
-        mesh->blockPieceName = "processor";
-        mesh->hasSpatialExtents = false;
+        mesh->blockTitle           = "processors";
+        mesh->blockPieceName       = "processor";
+        mesh->hasSpatialExtents    = false;
         md->Add(mesh);
 
         //
@@ -2077,7 +2106,8 @@ avtMiliFileFormat::GetAuxiliaryData(const char *var,
                                     void *,
                                     DestructorFunction &df) 
 {
-    if (strcmp(type, AUXILIARY_DATA_MATERIAL) && strcmp(type, "AUXILIARY_DATA_IDENTIFIERS"))
+    if (strcmp(type, AUXILIARY_DATA_MATERIAL) && 
+        strcmp(type, "AUXILIARY_DATA_IDENTIFIERS"))
     {
         return NULL;
     }
@@ -2656,13 +2686,13 @@ avtMiliFileFormat::LoadMiliInfoJson(const char *fpath)
 //      Note: unchanged from original filter. 
 //
 //  Arguments: 
-//             fam_id - mili familiy id
+//             famId - mili familiy id
 //             meshId - id of the mesh associtated with the labels 
-//             short_name - the short name of the mili class (e.g., "brick") 
+//             shortName - the short name of the mili class (e.g., "brick") 
 //             dom - id of the domain 
 //             num_zones - running count of the total number of zones in
 //                         the mesh. Needed for the reverse mapping
-//             elems_in_group - number of elements in this group
+//             nElemsInGroup - number of elements in this group
 //           
 //  Author: Matt Larsen May 10 2017
 //
@@ -2670,31 +2700,38 @@ avtMiliFileFormat::LoadMiliInfoJson(const char *fpath)
 //
 // ****************************************************************************
 void 
-avtMiliFileFormat::PopulateZoneLabels(const int fam_id, const int meshId, 
-                                      char *short_name, const int dom, 
-                                      const int elems_in_group)
+avtMiliFileFormat::PopulateZoneLabels(const int famId, const int meshId, 
+                                      char *shortName, const int dom, 
+                                      const int nElemsInGroup)
 {
 
-    int num_zones = 0;
-    int num_blocks = 0; 
-    int **block_range = new int*[1];
-    block_range[0] = NULL;
-    int *elem_list = new int[elems_in_group];
-    int *label_ids = new int[elems_in_group];
+    int num_zones   = 0;
+    int numBlocks   = 0; 
+    int *blockRange = NULL;
+    int elem_list[nElemsInGroup];
+    int label_ids[nElemsInGroup];
     
     //
     // Check for labels
     //
-    int num_expected_labels = elems_in_group;
-    mc_load_conn_labels(dbid[dom], meshId, short_name, 
-                        num_expected_labels, &num_blocks, 
-                        block_range, elem_list ,label_ids);
-    
-    if(num_blocks == 0)
+    int nExpectedLabels = nElemsInGroup;
+    int rval = mc_load_conn_labels(dbid[dom], meshId, shortName, 
+                                   nExpectedLabels, &numBlocks, 
+                                   &blockRange, elem_list, label_ids);
+
+    if (rval != OK)
     {
-        debug4<<"mili block contains no labels\n";
+        debug1 << "mc_load_conn_labels failed at " << shortName << "!\n";
+        num_zones    = 0;
+        numBlocks   = 0; 
+        blockRange  = NULL;
+    }
+    
+    if (numBlocks == 0)
+    {
+        debug4 << "mili block contains no labels\n";
         //Create default labels
-        for(int elem_num = 1; elem_num <= elems_in_group; ++ elem_num)
+        for(int elem_num = 1; elem_num <= nElemsInGroup; ++ elem_num)
         {
             // create the label strings for each cell
             std::stringstream sstream;
@@ -2703,41 +2740,37 @@ avtMiliFileFormat::PopulateZoneLabels(const int fam_id, const int meshId,
             max_zone_label_lengths[dom] = 
                 std::max(int(sstream.str().size()), max_zone_label_lengths[dom]);
         }
-        num_zones += elems_in_group;
+        num_zones += nElemsInGroup;
     }
     else
     {
-        debug4<<"Mili labels found. There are "<<num_blocks<<" blocks in class "<<short_name<<" in dom "<<dom<<"\n";
-        for(int el = 0; el < elems_in_group; ++el)
+        debug4 << "Mili labels found. There are " << numBlocks
+               << " blocks in class " << shortName << " in dom " 
+               << dom << "\n";
+        for(int el = 0; el < nElemsInGroup; ++el)
         {
             std::stringstream sstream;
-            sstream<<short_name;
+            sstream<<shortName;
             sstream<<" "<<label_ids[el];
             zoneLabels[dom].push_back(sstream.str());
             max_zone_label_lengths[dom] = 
                 std::max(int(sstream.str().size()), max_zone_label_lengths[dom]);
         }
         Label_mapping label_map;
-        for(int block = 0; block < num_blocks; ++block)
+        for(int block = 0; block < numBlocks; ++block)
         {
-          int range_size = block_range[0][block * 2 + 1] - block_range[0][block * 2] + 1;
-          label_map.label_ranges_begin.push_back(block_range[0][block*2]);
-          label_map.label_ranges_end.push_back(block_range[0][block*2+1]);
+          int rangeSize = blockRange[block * 2 + 1] - blockRange[block * 2] + 1;
+          label_map.label_ranges_begin.push_back(blockRange[block * 2]);
+          label_map.label_ranges_end.push_back(blockRange[block * 2 + 1]);
           label_map.el_ids_begin.push_back(num_zones);
-          label_map.el_ids_end.push_back(num_zones - 1 + range_size);
+          label_map.el_ids_end.push_back(num_zones - 1 + rangeSize);
 
-          num_zones += range_size;
+          num_zones += rangeSize;
         }
 
-        zone_label_mappings[dom][std::string(short_name)] = label_map;
+        zone_label_mappings[dom][std::string(shortName)] = label_map;
 
     }
-
-    if(block_range[0]) delete[] block_range[0];
-    delete[] block_range;
-
-    delete [] label_ids;
-    delete [] elem_list;
 }
 
 // ***************************************************************************
@@ -2750,9 +2783,9 @@ avtMiliFileFormat::PopulateZoneLabels(const int fam_id, const int meshId,
 //      Note: unchanged from original filter. 
 //
 //  Arguments: 
-//             fam_id - mili familiy id
+//             famId - mili familiy id
 //             meshId - id of the mesh associtated with the labels 
-//             short_name - the short name of the mili class (e.g., "brick") 
+//             shortNamshortName the short name of the mili class (e.g., "brick") 
 //             dom - id of the domain 
 //             num_zones - running count of the total number of zones in
 //                         the mesh. Needed for the reverse mapping
@@ -2762,77 +2795,78 @@ avtMiliFileFormat::PopulateZoneLabels(const int fam_id, const int meshId,
 //  Modifications:
 //
 // ****************************************************************************
+// FIXME: famId isn't used??
 void 
-avtMiliFileFormat::PopulateNodeLabels(const int fam_id, const int meshId, 
-                                      char *short_name, const int dom)
+avtMiliFileFormat::PopulateNodeLabels(const int famId, const int meshId, 
+                                      char *shortName, const int dom)
 {
 
-    int num_nodes = 0;
-    int n_nodes = miliMetaData[meshId]->GetNumNodes(dom);
+    int nLabeledNodes = 0;
+    int nNodes        = miliMetaData[meshId]->GetNumNodes(dom);
     max_node_label_lengths[dom] = 0;
-    int num_blocks = 0; 
-    int **block_range = new int*[1];
-    block_range[0] = NULL;
-    int *elem_list = new int[n_nodes];
-    int *label_ids = new int[n_nodes];
 
-    mc_load_node_labels(dbid[dom], meshId, short_name, 
-                        &num_blocks,block_range,label_ids);
+    int numBlocks   = 0; 
+    int *blockRange = NULL;
+    int elemList[nNodes];
+    int labelIds[nNodes];
 
+    int rval = mc_load_node_labels(dbid[dom], meshId, shortName, 
+                                   &numBlocks, &blockRange, labelIds);
 
-    if(num_blocks == 0)
+    if (rval != OK)
     {
-        debug4<<"Mili block does not contain node labels\n";
+        debug1 << "mc_load_conn_labels failed at " << shortName << "!\n";
+        numBlocks   = 0; 
+        blockRange  = NULL;
+    }
+
+    if (numBlocks == 0)
+    {
+        debug4 << "Mili block does not contain node labels\n";
         
         //Create default labels
-        for(int elem_num = 1; elem_num <= n_nodes; ++elem_num)
+        for(int elemNum = 1; elemNum <= nNodes; ++elemNum)
         {
             // create the label strings for each cell
             std::stringstream sstream;
             sstream<<"";
             zoneLabels[dom].push_back(sstream.str());
             max_node_label_lengths[dom] = 
-                std::max(int(sstream.str().size()), max_node_label_lengths[dom]);
+                std::max(int(sstream.str().size()), 
+                max_node_label_lengths[dom]);
         }
-        num_nodes += n_nodes;
+        nLabeledNodes += nNodes;
     }
     else
     {
-        debug4<<"Mili labels node found. There are "<<num_blocks<<" blocks in class "<<short_name<<" in dom "<<dom<<"\n";
-        for(int el = 0; el < n_nodes; ++el)
+        debug4 << "Mili labels node found. There are " << numBlocks 
+               << " blocks in class " << shortName << " in dom " 
+               << dom << "\n";
+        for(int el = 0; el < nNodes; ++el)
         {
             std::stringstream sstream;
-            sstream<<short_name;
-            sstream<<" "<<label_ids[el];
+            sstream << shortName;
+            sstream << " " << labelIds[el];
             nodeLabels[dom].push_back(sstream.str());
             max_node_label_lengths[dom] = 
-                std::max(int(sstream.str().size()), max_node_label_lengths[dom]);
+                std::max(int(sstream.str().size()), 
+                max_node_label_lengths[dom]);
         }
         Label_mapping label_map;
-        for(int block = 0; block < num_blocks; ++block)
+        for(int block = 0; block < numBlocks; ++block)
         {
-          int range_size = block_range[0][block * 2 + 1] - block_range[0][block * 2] + 1;
-          label_map.label_ranges_begin.push_back(block_range[0][block*2]);
-          label_map.label_ranges_end.push_back(block_range[0][block*2+1]);
-          label_map.el_ids_begin.push_back(num_nodes);
-          label_map.el_ids_end.push_back(num_nodes - 1 + range_size);
+            int rangeSize = (blockRange[block * 2 + 1] - 
+                blockRange[block * 2] + 1);
+            label_map.label_ranges_begin.push_back(blockRange[block * 2]);
+            label_map.label_ranges_end.push_back(blockRange[block * 2 + 1]);
+            label_map.el_ids_begin.push_back(nLabeledNodes);
+            label_map.el_ids_end.push_back(nLabeledNodes - 1 + rangeSize);
 
-           num_nodes += range_size;
+            nLabeledNodes += rangeSize;
         }
 
-        node_label_mappings[dom][std::string(short_name)] = label_map;
-
+        node_label_mappings[dom][std::string(shortName)] = label_map;
     }
-    
-    //
-    // cleanup
-    //
-    if(block_range[0]) delete[] block_range[0];
-    delete[] block_range;
-
-    delete [] label_ids;
-    delete [] elem_list;
-
 }
 
 
