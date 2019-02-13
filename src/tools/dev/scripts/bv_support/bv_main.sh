@@ -599,8 +599,8 @@ function initialize_build_visit()
 
 
     # Setup git path
-    export GIT_ANON_ROOT_PATH="http://github.com/visit-dav"
-    export GIT_REPO_ROOT_PATH="ssh://git@github.com/visit-dav"
+    export GIT_ANON_ROOT_PATH="http://github.com/visit-dav/visit.git"
+    export GIT_REPO_ROOT_PATH="ssh://git@github.com/visit-dav/visit.git"
 
 
     if [[ "$OPSYS" != "Darwin" ]]; then

@@ -63,28 +63,26 @@ function bv_visit_ensure_built_or_ready
 {
     # Check-out the latest git sources, before building VisIt
     if [[ "$DO_GIT" == "yes" && "$USE_VISIT_FILE" == "no" ]] ; then
-        if [[ -d $GIT_DESTINATION_PATH ]] ; then
-            info "Found existing VisIt GIT visit directory, using that . . ."
+        if [[ -d visit ]] ; then
+            info "Found existing GIT visit directory, using that . . ."
         else
-            mkdir -p $GIT_DESTINATION_PATH
-
             # Print a dialog screen
-            info "GIT check-out of VisIt ($GIT_ROOT_PATH/$GIT_SOURCE_PATH) . . ."
+            info "GIT clone of visit ($GIT_ROOT_PATH) . . ."
             if [[ "$DO_REVISION" == "yes" && "$GITREVISION" != "" ]] ; then
-                git clone --revision "$GITREVISION" \
-                    $GIT_ROOT_PATH/$GIT_SOURCE_PATH $GIT_DESTINATION_PATH
+                # FIXME: Actually get the specified revision.
+                git clone $GIT_ROOT_PATH
             else
-                git clone $GIT_ROOT_PATH/$GIT_SOURCE_PATH $GIT_DESTINATION_PATH
+                git clone $GIT_ROOT_PATH
             fi
             if [[ $? != 0 ]] ; then
-                warn "Unable to build VisIt. GIT download failed."
+                warn "Unable to build VisIt. GIT clone failed."
                 return 1
             fi
         fi
 
-    # Build using (the assumed) existing VisIt git "visit" directory
-    elif [[ -d $GIT_DESTINATION_PATH ]] ; then
-        info "Found VisIt GIT src directory found, using it."
+    # Build using (the assumed) existing GIT "visit" directory
+    elif [[ -d visit ]] ; then
+        info "Found existing GIT visit directory, using that . . ."
         #resetting any values that have mixup the build between Trunk and RC
         VISIT_FILE="" #erase any accidental setting of these values
         USE_VISIT_FILE="no"
@@ -94,12 +92,12 @@ function bv_visit_ensure_built_or_ready
     else
         if [[ -e ${VISIT_FILE%.gz} || -e ${VISIT_FILE} ]] ; then
             info \
-                "Got VisIt source code. Lets look for 3rd party libraries."
+                "Got VisIt source code. Let's look for 3rd party libraries."
         else
             download_file $VISIT_FILE
             if [[ $? != 0 ]] ; then
                 warn \
-                    "Unable to build VisIt.  Can't find source code: ${VISIT_FILE}."
+                    "Unable to build VisIt. Can't find source code: ${VISIT_FILE}."
                 return 1
             fi
         fi
@@ -281,7 +279,7 @@ function build_visit
     #
     if [[ "$DO_GIT" == "yes" && "$USE_VISIT_FILE" == "no" ]] ; then
         #remove the src from the destination path and replace it with build.
-        VISIT_BUILD_DIR="${GIT_DESTINATION_PATH/src/build}"
+        VISIT_BUILD_DIR="visit/build}"
     else
         VISIT_BUILD_DIR="${VISIT_FILE%.tar*}/build"
     fi
