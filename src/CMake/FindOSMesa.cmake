@@ -61,13 +61,6 @@
 #   Kathleen Biagas, Wed Jun 27 14:40:39 MST 2018
 #   Set OSMESA_INCLUDE_DIR OSMESA_LIBRARIES in cache.
 #
-#   Eric Brugger, Mon Feb 11 13:20:34 PST 2019
-#   Remove the setting of HAVE_OSMESA. Setting it when OSMESA is specified
-#   doesn't make sense, since VTK isn't built with mesa in this case and when
-#   VTK is built with mesa HAVE_OSMESA isn't set, the case where MESAGL is
-#   specified. I think all the code involving HAVE_OSMESA can actually be
-#   removed.
-#
 #****************************************************************************/
 
 # Use the OSMESA_DIR hint from the config-site .cmake file
@@ -78,6 +71,7 @@ if (VISIT_OSMESA_DIR)
                  NO_DEFAULT_PATH)
     if (OSMESA_LIBRARY)
         set(OSMESA_FOUND true)
+        set(HAVE_OSMESA true CACHE BOOL "Have OSMesa library")
         get_filename_component(OSMESA_LIB ${OSMESA_LIBRARY} NAME)
         execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory
                       ${VISIT_BINARY_DIR}/lib/osmesa
@@ -109,6 +103,7 @@ if (VISIT_OSMESA_DIR)
 
 
     else()
+        set(HAVE_OSMESA false)
         message(STATUS "OSMesa not found, OSMESA_SIZE_LIMIT defaulting to 4096")
         set(HAVE_OSMESA_SIZE 0 CACHE INTERNAL "support for osmesa_size")
         set(OSMESA_SIZE_LIMIT 4096)
