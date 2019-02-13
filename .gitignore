@@ -1,4 +1,5 @@
 *.pyc
+*.swp
 /src/test/current/
 /src/test/diff/
 /src/test/html/
