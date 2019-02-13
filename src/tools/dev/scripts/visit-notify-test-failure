@@ -46,7 +46,6 @@ if test "$status" = "pass" ; then
    #
    rm -rf mailmsg
    cat > mailmsg << EOF
-From: visit-developers@ornl.gov
 Subject: The test suite run on $host passed
 The test suite run on $host passed.
 EOF
