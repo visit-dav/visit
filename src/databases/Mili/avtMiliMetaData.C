@@ -127,6 +127,17 @@ MiliVariableMetaData::MiliVariableMetaData(string sName,
     esMappedName      = "";
     path              = "";
 
+    //
+    // As of now, sand variables are denoted by their shortname. 
+    //
+    isSand = false;
+    string sanded = "sand";
+
+    if (shortName == sanded)
+    {
+        isSand = true;
+    }
+
     DetermineESStatus();
 }
 
@@ -686,6 +697,7 @@ avtMiliMetaData::avtMiliMetaData(int nDomains)
     numDomains    = nDomains;
     numClasses    = 0;
     numMaterials  = 0;
+    containsSand  = false;
     miliVariables = NULL;
     miliClasses   = NULL;
     miliMaterials = NULL;
@@ -1181,6 +1193,10 @@ avtMiliMetaData::AddVarMD(int varIdx,
         miliVariables[varIdx] = NULL;
     }
 
+    if (mvmd->IsSand())
+    {
+        containsSand = true;
+    }
     miliVariables[varIdx] = mvmd;
 }
 
