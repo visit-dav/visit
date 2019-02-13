@@ -410,21 +410,20 @@ avtMiliFileFormat::GetMesh(int ts, int dom, const char *mesh)
     // The valid meshnames are meshX, where X is an int > 0.
     // We need to verify the name, and get the meshId.
     //
-    if (strstr(mesh, "mesh") != mesh)
-    {
-        EXCEPTION1(InvalidVariableException, mesh);
-    }
-
-    //TODO: allow sand mesh. 
-    //bool isSandMesh = false;
-    //else if (strstr(mesh, "sand_mesh") == mesh)
-    //{
-    //    isSandMesh == true;
-    //}
-    //else if (strstr(mesh, "mesh") != mesh)
+    //if (strstr(mesh, "mesh") != mesh)
     //{
     //    EXCEPTION1(InvalidVariableException, mesh);
     //}
+
+    bool isSandMesh = false;
+    if (strstr(mesh, "sand_mesh") == mesh)
+    {
+        isSandMesh == true;
+    }
+    else if (strstr(mesh, "mesh") != mesh)
+    {
+        EXCEPTION1(InvalidVariableException, mesh);
+    }
     
     //
     // Do a checked conversion to integer.
@@ -438,9 +437,21 @@ avtMiliFileFormat::GetMesh(int ts, int dom, const char *mesh)
     }
     --meshId;
 
+    //
+    // Actually read in the mesh if we haven't already.  
+    //
     if (!meshRead[dom])
     {
         ReadMesh(dom);
+    }
+
+    if (!miliMetaData[meshId]->ContainsSand())
+    {
+        debug1 << "The user has requested a sand mesh that doesn't exist!"
+               << "This shouldn't be possible...";
+        char msg[1024];
+        sprintf(msg, "Cannot view a non-existent sand mesh!");
+        EXCEPTION1(ImproperUseException, msg);
     }
 
     //
@@ -515,6 +526,15 @@ avtMiliFileFormat::GetMesh(int ts, int dom, const char *mesh)
             vtkPts->Delete();
 
             //TODO: handle sanded elements. 
+            if (isSandMesh)
+            {
+                //Get a list of indicies corresponding with 
+                //sand variables?
+                //OR, we could add an option to GetVar that 
+                //allows us to retrieve the sand class? Is that
+                //possible, though? Nope. Don't think so...
+                //MiliVariableMetaData *sand = 
+            }
 
         }
     }
@@ -1231,8 +1251,8 @@ avtMiliFileFormat::GetVar(int ts, int dom, const char *varPath)
         //   We recieve a single value that is applied to all cells. 
         //
         int dBuffSize = 0;
-        bool isMatVar = varMD->GetIsMatVar();
-        bool isGlobal = varMD->GetIsGlobal();
+        bool isMatVar = varMD->IsMatVar();
+        bool isGlobal = varMD->IsGlobal();
         if (isMatVar)
         {
             dBuffSize  = materials[dom][meshId]->GetNMaterials();
@@ -1412,8 +1432,8 @@ avtMiliFileFormat::GetVectorVar(int ts, int dom, const char *varPath)
     int compDims  = varMD->GetComponentDims();
     int dataSize  = vecSize * compDims;
 
-    bool isGlobal = varMD->GetIsGlobal();
-    bool isES     = varMD->GetIsElementSet();
+    bool isGlobal = varMD->IsGlobal();
+    bool isES     = varMD->IsElementSet();
 
     //
     // Create a copy of our name to pass into mili. 

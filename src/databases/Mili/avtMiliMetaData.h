@@ -145,18 +145,18 @@ class MiliVariableMetaData
     int                       GetMeshAssociation(void)
                                 { return meshAssociation; }; 
     
-    bool                      GetIsElementSet(void)
+    bool                      IsElementSet(void)
                                 { return isElementSet; };
 
-    bool                      GetIsMatVar(void)
+    bool                      IsMatVar(void)
                                 { return isMatVar; };
 
-    bool                      GetIsGlobal(void)
+    bool                      IsGlobal(void)
                                 { return isGlobal; };
 
-    
-    //SubrecInfo               &GetSubrecordInfo(int); 
-    //vector<int>              &GetSubrecordIds(int);
+    bool                      IsSand(void)
+                                { return isSand; };
+
     void                      AddSubrecId(int, int);
     vector<int>              &GetSubrecIds(int);
     
@@ -172,37 +172,36 @@ class MiliVariableMetaData
 
   private:
 
-    void                         DetermineESStatus(void);
+    void                      DetermineESStatus(void);
     
-    string                       longName;
-    string                       shortName;
-    string                       esMappedName;
-    string                       classLName;
-    string                       classSName;
-    string                       path;
+    string                    longName;
+    string                    shortName;
+    string                    esMappedName;
+    string                    classLName;
+    string                    classSName;
+    string                    path;
     
-    int                          cellTypeAvt;
-    int                          cellTypeMili;
+    int                       cellTypeAvt;
+    int                       cellTypeMili;
 
-    avtCentering                 centering;
-    int                          meshAssociation;
-    int                          numType;
-    int                          vectorSize;
-    int                          componentDims;
+    avtCentering              centering;
+    int                       meshAssociation;
+    int                       numType;
+    int                       vectorSize;
+    int                       componentDims;
  
     //
     // Subrecord info
     //
-    //vector< SubrecInfo &>        subrecInfoRef;
-    vector< vector<int> >        SRIds;
-    
+    vector< vector<int> >     SRIds;
 
-    bool                         isElementSet;
-    bool                         isMatVar;
-    bool                         isGlobal;
-    bool                         multiMesh;
+    bool                      isElementSet;
+    bool                      isMatVar;
+    bool                      isGlobal;
+    bool                      isSand;
+    bool                      multiMesh;
 
-    vector<string>               vectorComponents;
+    vector<string>            vectorComponents;
 
 };
 
@@ -302,8 +301,6 @@ class MiliMaterialMetaData
     string                              GetName(void)
                                           { return name; };
 
-    //float                              *GetColor(void) 
-    //                                      { return color; };
     string                              GetColor(void)
                                            { return hexColor; };
  
@@ -375,6 +372,9 @@ class avtMiliMetaData
     void                               GetMaterialNames(stringVector &);
     void                               GetMaterialColors(vector<string> &);
 
+    bool                               ContainsSand(void)
+                                         { return containsSand; };
+
     int                                GetNumCells(int);
     void                               SetNumCells(int domain, int nCells)
                                          { numCells[domain] = nCells; };
@@ -403,8 +403,10 @@ class avtMiliMetaData
     int                                numClasses;
     int                                numVariables;
     int                                numMaterials;
+    bool                               containsSand;
     vector<int>                        numCells;
     vector<int>                        numNodes;
+    vector<int>                        sandedVarIdxs;//TODO: needed?
 
     //
     // Subrecord info
