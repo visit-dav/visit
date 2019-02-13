@@ -44,23 +44,5 @@ ls -1t /project/projectdirs/visit/www/tests/*/*/index.html | while read testLine
     echo "</tr>" >> index.html
 done
 
-echo "</table>" >> index.html
-quota=`prjquota visit | grep visit | tr -s ' '`
-quota_gb_used=`echo $quota | cut -d ' ' -f2`
-quota_gb_quota=`echo $quota | cut -d ' ' -f3`
-quota_in_used=`echo $quota | cut -d ' ' -f5`
-quota_in_quota=`echo $quota | cut -d ' ' -f6`
-echo "<h2> Quota Info </h2>" >> index.html
-echo "<table border=1>" >> index.html 
-echo "<tr>" >> index.html
-echo "<td>Space used (GB)</td><td>Space Quota (GB)</td>" >> index.html
-echo "<td>Inodes used</td><td>Inode Quota</td>"  >> index.html
-echo "</tr>"  >> index.html
-echo "<tr>"  >> index.html
-echo "<td>$quota_gb_used</td><td>$quota_gb_quota</td>"  >> index.html
-echo "<td>$quota_in_used</td><td>$quota_in_quota</td>"  >> index.html
-echo "</tr>"  >> index.html
-echo "</table>"  >> index.html
-
 chgrp -R visit index.html
 chmod -R g+rwX,o+rX index.html
