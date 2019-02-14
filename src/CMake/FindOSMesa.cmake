@@ -71,7 +71,9 @@ if (VISIT_OSMESA_DIR)
                  NO_DEFAULT_PATH)
     if (OSMESA_LIBRARY)
         set(OSMESA_FOUND true)
-        set(HAVE_OSMESA true CACHE BOOL "Have OSMesa library")
+        if (MESAGL_LIBRARY)
+            set(HAVE_OSMESA true CACHE BOOL "Have OSMesa library")
+        endif()
         get_filename_component(OSMESA_LIB ${OSMESA_LIBRARY} NAME)
         execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory
                       ${VISIT_BINARY_DIR}/lib/osmesa
@@ -103,7 +105,6 @@ if (VISIT_OSMESA_DIR)
 
 
     else()
-        set(HAVE_OSMESA false)
         message(STATUS "OSMesa not found, OSMESA_SIZE_LIMIT defaulting to 4096")
         set(HAVE_OSMESA_SIZE 0 CACHE INTERNAL "support for osmesa_size")
         set(OSMESA_SIZE_LIMIT 4096)

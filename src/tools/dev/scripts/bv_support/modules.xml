@@ -89,7 +89,6 @@
             <lib name="mfem"/>
             <lib name="mili"/>
             <lib name="moab"/>
-            <lib name="mpich"/>
             <lib name="mxml"/>
             <lib name="netcdf"/>
             <lib name="openexr"/>

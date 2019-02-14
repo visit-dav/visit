@@ -279,7 +279,7 @@ function build_visit
     #
     if [[ "$DO_GIT" == "yes" && "$USE_VISIT_FILE" == "no" ]] ; then
         #remove the src from the destination path and replace it with build.
-        VISIT_BUILD_DIR="visit/build}"
+        VISIT_BUILD_DIR="visit/build"
     else
         VISIT_BUILD_DIR="${VISIT_FILE%.tar*}/build"
     fi
@@ -361,7 +361,7 @@ function build_visit
         FEATURES="${FEATURES} -DCPACK_RPM_SPEC_MORE_DEFINE:STRING=\"%global_python_bytecompile_errors_terminate_build 0\""
     fi
 
-    issue_command "${CMAKE_BIN}" ${FEATURES} .
+    issue_command "${CMAKE_BIN}" ${FEATURES} ../src
 
     if [[ $? != 0 ]] ; then
         echo "VisIt configure failed.  Giving up"
