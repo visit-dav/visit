@@ -93,7 +93,6 @@
             <lib name="netcdf"/>
             <lib name="openexr"/>
             <lib name="openssl"/>
-            <lib name="osmesa"/>
             <lib name="ospray"/>
             <lib name="pidx"/>
             <lib name="p7zip"/>

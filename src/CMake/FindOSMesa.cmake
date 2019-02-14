@@ -61,6 +61,10 @@
 #   Kathleen Biagas, Wed Jun 27 14:40:39 MST 2018
 #   Set OSMESA_INCLUDE_DIR OSMESA_LIBRARIES in cache.
 #
+#   Eric Brugger, Thu Feb 14 13:02:53 PST 2019
+#   Only set HAVE_OSMESA flag when both OSMESA_LIBRARY and MESAGL_LIBRARY
+#   are set.
+#
 #****************************************************************************/
 
 # Use the OSMESA_DIR hint from the config-site .cmake file
