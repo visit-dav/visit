@@ -8,4 +8,5 @@ rm -f regressiontest_pascal
 wget https://raw.githubusercontent.com/visit-dav/visit/develop/src/tools/dev/scripts/regressiontest_pascal
 
 # Run the test suite.
+chmod 755 regressiontest_pascal
 ./regressiontest_pascal
