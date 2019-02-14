@@ -48,7 +48,11 @@ if(VISIT_MESAGL_DIR)
 elseif(VISIT_OSMESA_DIR)
     # OSMesa, LLVM libs
     include(${VISIT_SOURCE_DIR}/CMake/FindOSMesa.cmake)
-elseif(VISIT_OPENGL_DIR)
+endif()
+
+
+if(NOT VISIT_MESAGL_DIR)
+    if(VISIT_OPENGL_DIR)
     # not sure if this section is still needed ????
     set(OPENGL_FOUND ON)
     set(OPENGL_GLU_FOUND ON)
@@ -83,10 +87,11 @@ elseif(VISIT_OPENGL_DIR)
     set(OPENGL_LIBRARIES ${OPENGL_gl_LIBRARY} ${OPENGL_glu_LIBRARY})
     message(STATUS "Found OpenGL ${OPENGL_gl_LIBRARY}")
     message(STATUS "Found GLU ${OPENGL_glu_LIBRARY}")
-else()
+    else()
     # Standard find of system GL
     include(${CMAKE_ROOT}/Modules/FindOpenGL.cmake)
     set(OPENGL_LIBRARIES ${OPENGL_gl_LIBRARY} ${OPENGL_glu_LIBRARY})
+    endif()
 endif()
 
 
