@@ -512,7 +512,7 @@ function initialize_build_visit()
     export THIRD_PARTY_PATH=${THIRD_PARTY_PATH:-"./visit"}
     export GROUP=${GROUP:-"visit"}
     #export LOG_FILE=${LOG_FILE:-"${0##*/}_log"}
-    export SVNREVISION=${SVNREVISION:-"HEAD"}
+    export GITREVISION=${GITREVISION:-"HEAD"}
     # Created a temporary value because the user can override most of
     # the components, which for the GUI happens at a later time.
     # the tmp value is useful for user feedback.
@@ -559,8 +559,8 @@ function initialize_build_visit()
     export DO_GROUP="no"
     export DO_LOG="no"
     parallel="no"
-    export DO_SVN="no"
-    export DO_SVN_ANON="no"
+    export DO_GIT="no"
+    export DO_GIT_ANON="no"
     export DO_REVISION="no"
     USE_VISIT_FILE="no"
     export DO_PATH="no"
@@ -598,15 +598,9 @@ function initialize_build_visit()
     fi
 
 
-    export SVN_ANON_ROOT_PATH="http://visit.ilight.com/svn/visit"
-    # Setup svn path: use SVN_NERSC_NAME if set
-    if test -z "$SVN_NERSC_NAME" ; then
-        export SVN_REPO_ROOT_PATH="svn+ssh://cori.nersc.gov/project/projectdirs/visit/svn/visit"
-    else
-        export SVN_REPO_ROOT_PATH="svn+ssh://$SVN_NERSC_NAME@cori.nersc.gov/project/projectdirs/visit/svn/visit"
-    fi
-
-
+    # Setup git path
+    export GIT_ANON_ROOT_PATH="http://github.com/visit-dav/visit.git"
+    export GIT_REPO_ROOT_PATH="ssh://git@github.com/visit-dav/visit.git"
 
 
     if [[ "$OPSYS" != "Darwin" ]]; then
@@ -1096,7 +1090,7 @@ function run_build_visit()
                 prefix) VISIT_INSTALL_PREFIX="${arg}";;
                 install-network) VISIT_INSTALL_NETWORK="${arg}";;
                 group) GROUP="${arg}";;
-                svn) SVNREVISION="${arg}";;
+                git) GITREVISION="${arg}";;
                 tarball) VISIT_FILE="${arg}";;
                 thirdparty-path) THIRD_PARTY_PATH="${arg}";;
                 version) VISIT_VERSION="${arg}"
@@ -1215,10 +1209,10 @@ function run_build_visit()
                       ;;
             --thread) DO_THREAD_BUILD="yes";;
             --stdout) LOG_FILE="/dev/tty";;
-            --svn) DO_SVN="yes"; export SVN_ROOT_PATH=$SVN_REPO_ROOT_PATH;;
-            --svn-anon) DO_SVN="yes"; DO_SVN_ANON="yes" ; export SVN_ROOT_PATH=$SVN_ANON_ROOT_PATH ;;
-            --svn-anonymous) DO_SVN="yes"; DO_SVN_ANON="yes" ; export SVN_ROOT_PATH=$SVN_ANON_ROOT_PATH ;;
-            --svn-revision) next_arg="svn"; DO_SVN="yes"; DO_REVISION="yes"; DO_SVN_ANON="yes" ; export SVN_ROOT_PATH=$SVN_ANON_ROOT_PATH ;;
+            --git) DO_GIT="yes"; export GIT_ROOT_PATH=$GIT_REPO_ROOT_PATH;;
+            --git-anon) DO_GIT="yes"; DO_GIT_ANON="yes" ; export GIT_ROOT_PATH=$GIT_ANON_ROOT_PATH ;;
+            --git-anonymous) DO_GIT="yes"; DO_GIT_ANON="yes" ; export GIT_ROOT_PATH=$GIT_ANON_ROOT_PATH ;;
+            --git-revision) next_arg="git"; DO_GIT="yes"; DO_REVISION="yes"; DO_GIT_ANON="yes" ; export GIT_ROOT_PATH=$GIT_ANON_ROOT_PATH ;;
             --tarball) next_arg="tarball"
                        USE_VISIT_FILE="yes";;
             --thirdparty-path) next_arg="thirdparty-path";;
@@ -1274,13 +1268,13 @@ function run_build_visit()
     fi
 
     #
-    # If we doing a trunk build then make sure we are using SVN
+    # If we doing a trunk build then make sure we are using GIT
     #
     if [[ "$TRUNK_BUILD" == "yes" ]]; then
-        if [[ "$DO_SVN" == "no" ]]; then
-            DO_SVN="yes"
-            DO_SVN_ANON="yes"
-            export SVN_ROOT_PATH=$SVN_ANON_ROOT_PATH
+        if [[ "$DO_GIT" == "no" ]]; then
+            DO_GIT="yes"
+            DO_GIT_ANON="yes"
+            export GIT_ROOT_PATH=$GIT_ANON_ROOT_PATH
         fi
     fi
 

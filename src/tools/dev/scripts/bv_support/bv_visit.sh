@@ -61,45 +61,43 @@ function bv_visit_host_profile
 #prepare the module and check whether it is built or is ready to be built.
 function bv_visit_ensure_built_or_ready
 {
-    # Check-out the latest svn sources, before building VisIt
-    if [[ "$DO_SVN" == "yes" && "$USE_VISIT_FILE" == "no" ]] ; then
-        if [[ -d $SVN_DESTINATION_PATH ]] ; then
-            info "Found existing VisIt SVN src directory, using that . . ."
+    # Check-out the latest git sources, before building VisIt
+    if [[ "$DO_GIT" == "yes" && "$USE_VISIT_FILE" == "no" ]] ; then
+        if [[ -d visit ]] ; then
+            info "Found existing GIT visit directory, using that . . ."
         else
-            mkdir -p $SVN_DESTINATION_PATH
-
             # Print a dialog screen
-            info "SVN check-out of VisIt ($SVN_ROOT_PATH/$SVN_SOURCE_PATH) . . ."
-            if [[ "$DO_REVISION" == "yes" && "$SVNREVISION" != "" ]] ; then
-                svn co --quiet --non-interactive --revision "$SVNREVISION" \
-                    $SVN_ROOT_PATH/$SVN_SOURCE_PATH $SVN_DESTINATION_PATH
+            info "GIT clone of visit ($GIT_ROOT_PATH) . . ."
+            if [[ "$DO_REVISION" == "yes" && "$GITREVISION" != "" ]] ; then
+                # FIXME: Actually get the specified revision.
+                git clone $GIT_ROOT_PATH
             else
-                svn co --quiet --non-interactive $SVN_ROOT_PATH/$SVN_SOURCE_PATH $SVN_DESTINATION_PATH
+                git clone $GIT_ROOT_PATH
             fi
             if [[ $? != 0 ]] ; then
-                warn "Unable to build VisIt. SVN download failed."
+                warn "Unable to build VisIt. GIT clone failed."
                 return 1
             fi
         fi
 
-    # Build using (the assumed) existing VisIt svn "src" directory
-    elif [[ -d $SVN_DESTINATION_PATH ]] ; then
-        info "Found VisIt SVN src directory found, using it."
+    # Build using (the assumed) existing GIT "visit" directory
+    elif [[ -d visit ]] ; then
+        info "Found existing GIT visit directory, using that . . ."
         #resetting any values that have mixup the build between Trunk and RC
         VISIT_FILE="" #erase any accidental setting of these values
         USE_VISIT_FILE="no"
-        DO_SVN="yes" #if src directory exists it may have come from svn.
+        DO_GIT="yes" #if visit directory exists it may have come from git.
 
     # Build using a VisIt source tarball
     else
         if [[ -e ${VISIT_FILE%.gz} || -e ${VISIT_FILE} ]] ; then
             info \
-                "Got VisIt source code. Lets look for 3rd party libraries."
+                "Got VisIt source code. Let's look for 3rd party libraries."
         else
             download_file $VISIT_FILE
             if [[ $? != 0 ]] ; then
                 warn \
-                    "Unable to build VisIt.  Can't find source code: ${VISIT_FILE}."
+                    "Unable to build VisIt. Can't find source code: ${VISIT_FILE}."
                 return 1
             fi
         fi
@@ -253,7 +251,7 @@ function bv_visit_modify_makefiles
 
 function build_visit
 {
-    if [[ "$DO_SVN" != "yes" || "$USE_VISIT_FILE" == "yes" ]] ; then
+    if [[ "$DO_GIT" != "yes" || "$USE_VISIT_FILE" == "yes" ]] ; then
         #
         # Unzip the file, provided a gzipped file exists.
         #
@@ -279,9 +277,9 @@ function build_visit
     #
     # Set up the VisIt build dir which is a sibling to the VisIt src dir
     #
-    if [[ "$DO_SVN" == "yes" && "$USE_VISIT_FILE" == "no" ]] ; then
+    if [[ "$DO_GIT" == "yes" && "$USE_VISIT_FILE" == "no" ]] ; then
         #remove the src from the destination path and replace it with build.
-        VISIT_BUILD_DIR="${SVN_DESTINATION_PATH/src/build}"
+        VISIT_BUILD_DIR="visit/build"
     else
         VISIT_BUILD_DIR="${VISIT_FILE%.tar*}/build"
     fi
@@ -302,7 +300,7 @@ function build_visit
     #
 
     # No real need to do this as it is defined on the cmake line BUT
-    # Users may rebuild visit with updated svn
+    # Users may rebuild visit with updated git
     cp ${START_DIR}/${HOSTCONF} config-site
 
     #
@@ -363,7 +361,7 @@ function build_visit
         FEATURES="${FEATURES} -DCPACK_RPM_SPEC_MORE_DEFINE:STRING=\"%global_python_bytecompile_errors_terminate_build 0\""
     fi
 
-    issue_command "${CMAKE_BIN}" ${FEATURES} .
+    issue_command "${CMAKE_BIN}" ${FEATURES} ../src
 
     if [[ $? != 0 ]] ; then
         echo "VisIt configure failed.  Giving up"
@@ -471,7 +469,7 @@ function bv_visit_build
         info "VERSION is the version number, and ARCH is the OS architecure."
         info
         info "To install the above tarball in a directory called \"INSTALL_DIR_PATH\""
-        info "enter: svn_bin/visit-install VERSION ARCH INSTALL_DIR_PATH"
+        info "enter: tools/dev/scripts/visit-install VERSION ARCH INSTALL_DIR_PATH"
         info
         info "If you run into problems, contact visit-users@ornl.gov."
     else
