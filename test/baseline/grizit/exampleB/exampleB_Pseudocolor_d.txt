@@ -1,0 +1,6 @@
+
+d -- Min = 0.0235702 (zone 434 at coord <0.483333, 0.483333>)
+d -- Max = 0.948976 (zone 1170 at coord <0.0166667, 1.31667>)
+
+
+The actual extents are (0, 1, 0, 1.33333)

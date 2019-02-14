@@ -1,0 +1,6 @@
+setroot /Users/miller86/visit/trunk/data/silo_hdf5_test_data
+opendb rect2d.silo
+plot Pseudocolor d
+query Pseudocolor d MinMax SpatialExtents
+closedb rect2d.silo
+exit

@@ -200,7 +200,7 @@ def test_root_path(*args):
     """
     Generates proper absolute path relative to the 'test/' directory.
     """
-    rargs = [TestEnv.params["top_dir"],"test"]
+    rargs = [TestEnv.params["top_dir"],"src","test"]
     rargs.extend(args)
     return abs_path(*rargs)
 

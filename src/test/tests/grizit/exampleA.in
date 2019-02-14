@@ -1,0 +1,6 @@
+setroot /Users/miller86/visit/trunk/data/silo_hdf5_test_data
+opendb globe.silo
+plot Pseudocolor dx
+query Mesh mesh1 NumNodes NumZones
+closedb globe.silo
+exit

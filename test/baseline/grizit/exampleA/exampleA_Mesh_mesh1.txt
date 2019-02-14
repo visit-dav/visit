@@ -1,0 +1,2 @@
+The actual number of nodes is 1093.
+The actual number of zones is 1200.

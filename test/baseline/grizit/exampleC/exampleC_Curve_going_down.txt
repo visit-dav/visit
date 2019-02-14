@@ -1,0 +1,8 @@
+
+going_down -- Min = 0 (node 99 at coord <1>)
+
+
+
+going_down -- Max = 1 (node 0 at coord <0>)
+
+

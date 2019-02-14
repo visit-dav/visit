@@ -1,0 +1,7 @@
+setroot /Users/miller86/visit/trunk/data/curve_test_data
+opendb c027.curve
+query Curve going_down Min Max
+plot Curve parabolic
+query Curve going_up NumNodes
+closedb c027.silo
+exit
