@@ -199,7 +199,7 @@ function build_glu
 
     # NOTE: we install the library into the MesaGL directories.
     if [[ "$DO_MESAGL" == "yes" ]] ; then
-        issue_command env PKG_CONFIG_LIBDIR=${MESAGL_INSTALL_DIR}/lib \
+        issue_command env GL_LIBS="-L${MESAGL_INSTALL_DIR}/lib" GL_CFLAGS="-I${MESAGL_INSTALL_DIR}/include" \
             CC=${C_COMPILER} CFLAGS="${C_OPT_FLAGS}" \
             CXX=${CXX_COMPILER} CXXFLAGS="${CXX_OPT_FLAGS}" \
            ./configure --prefix=${MESAGL_INSTALL_DIR} ${GLU_STATIC_DYNAMIC}
