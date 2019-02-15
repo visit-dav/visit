@@ -293,7 +293,7 @@ function build_visit
     # Create the GIT_VERSION file.
     #
     if [[ "$DO_GIT" == "yes" && "$USE_VISIT_FILE" == "no" ]] ; then
-        git log -1 | grep \"^commit\" | cut -d' ' -f2 | head -c 7 > ./visit/src/GIT_VERSION");
+        git log -1 | grep "^commit" | cut -d' ' -f2 | head -c 7 > ./visit/src/GIT_VERSION
     fi
 
     info "Building VisIt in ${VISIT_BUILD_DIR} . . ."
