@@ -1,8 +1,10 @@
-.. _Basic Usage
-      
+.. _Basic Usage:
 
 Basic Usage
 -----------
+
+Doing a minimal build
+~~~~~~~~~~~~~~~~~~~~~
 
 When using ``build_visit`` without any arguments it will do a minimal build
 of VisIt_ downloading the VisIt_ source code by making an anonymous git clone
@@ -16,16 +18,36 @@ you the highest probability of success.
 
   ./build_visit3_0_0b
 
-When ``build_visit`` is run it will build the code using a single core. This
-may take a half a day or longer. Modern computers have anywhere from 4 to 80
-cores at the time of writing chapter. You can speed up the build process by
-specify that ``build_visit`` use more cores. If you using a shared resource
-you probably shouldn't use all the cores in consideration of other users of
-the system. The following example specifies using 4 cores.
+Building with multiple cores
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+When ``build_visit`` is run by default it will build the code using a single
+core. This may take a half a day or longer. Modern computers have anywhere
+from 4 to 80 cores at the time of writing chapter. You can speed up the build
+process by specify that ``build_visit`` use more cores. If you using a shared
+resource you probably shouldn't use all the cores in consideration of other
+users of the system. The following example specifies using 4 cores.
 
 .. code:: bash
 
   ./build_visit3_0_0b --makeflags -j4
+
+Specifying the third party library install location
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+When ``build_visit`` is run by default it will install the third party
+libraries in the directory ``third_party`` in the current directory. If you
+would like to install the libraries in another directory for the purposes
+of sharing them with other users of the system, you can have ``build_visit``
+install them in a different directory. The following example specifies
+installing the third party libraries in a another location.
+
+.. code:: bash
+
+  ./build_visit3_0_0b --thirdparty-path /usr/gapps/visit/third_party --makeflags -j4
+
+Building with the HDF5 and Silo libraries
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Some of the more common I/O libraries that will result in building a larger
 number of file readers are HDF5 and Silo. The following example specifies
@@ -35,6 +57,9 @@ building HDF5 and Silo.
 
   ./build_visit3_0_0b --hdf5 --silo --makeflags -j4
 
+Building the stable optional libraries
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 If you are feeling lucky you can have ``build_visit`` build all of the optional
 I/O libraries that have a high probability of building. The following example
 specifies building more reliable of the optional I/O libraries.
@@ -42,3 +67,22 @@ specifies building more reliable of the optional I/O libraries.
 .. code:: bash
 
   ./build_visit3_0_0b --optional --makeflags -j4
+
+Using a VisIt_ source code tar file
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+You can also have visit use the prepackaged source code for a specific version
+of VisIt_ instead of doing a git download of the source code. The tar file
+should be considerably smaller than a git clone. The following example uses
+the visit source code corresponding to the official 3.0.0b release of VisIt_.
+
+.. code:: bash
+
+  ./build_visit3_0_0b --optional --tarball visit3.0.0b.tar.gz --makeflags -j4
+
+If ``build_visit`` is interrupted
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If the ``build_visit`` script is interrupted while it is executing, it is
+suggested that you remove the directories associated with the last package
+it was in the process of building.
