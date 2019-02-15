@@ -509,7 +509,7 @@ function initialize_build_visit()
     fi
 
     export MAKE=${MAKE:-"make"}
-    export THIRD_PARTY_PATH=${THIRD_PARTY_PATH:-"./visit"}
+    export THIRD_PARTY_PATH=${THIRD_PARTY_PATH:-"./third_party"}
     export GROUP=${GROUP:-"visit"}
     #export LOG_FILE=${LOG_FILE:-"${0##*/}_log"}
     export GITREVISION=${GITREVISION:-"HEAD"}
