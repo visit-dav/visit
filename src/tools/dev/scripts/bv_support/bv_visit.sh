@@ -278,7 +278,6 @@ function build_visit
     # Set up the VisIt build dir which is a sibling to the VisIt src dir
     #
     if [[ "$DO_GIT" == "yes" && "$USE_VISIT_FILE" == "no" ]] ; then
-        #remove the src from the destination path and replace it with build.
         VISIT_BUILD_DIR="visit/build"
     else
         VISIT_BUILD_DIR="${VISIT_FILE%.tar*}/build"
@@ -293,6 +292,13 @@ function build_visit
     info "Building VisIt in ${VISIT_BUILD_DIR} . . ."
     
     cd $VISIT_BUILD_DIR
+
+    #
+    # Create the GIT_VERSION file.
+    #
+    if [[ "$DO_GIT" == "yes" && "$USE_VISIT_FILE" == "no" ]] ; then
+        git log -1 | grep "^commit" | cut -d' ' -f2 | head -c 7 > ../src/GIT_VERSION
+    fi
 
     #
     # Set up the config-site file, which gives configure the information it
