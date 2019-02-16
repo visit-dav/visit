@@ -44,6 +44,7 @@
 
 #include <vector>
 
+#include <vtkCell.h>
 #include <vtkDataSet.h>
 #include <vtkDataSetWriter.h>
 #include <vtkFieldData.h>
@@ -51,8 +52,6 @@
 #include <vtkIntArray.h>
 #include <vtkDoubleArray.h>
 #include <vtkRectilinearGrid.h>
-#include <vtkCellData.h>
-#include <vtkPointData.h>
 #include <vtkStructuredGrid.h>
 #include <vtkUnstructuredGrid.h>
 #include <vtkXMLPolyDataWriter.h>
@@ -65,6 +64,9 @@
 #include <FileFunctions.h>
 
 #include <DBOptionsAttributes.h>
+#include <DebugStream.h>
+#include <ImproperUseException.h>
+
 #ifdef WIN32
 #include <direct.h>
 #endif
@@ -76,6 +78,9 @@
 #include "conduit_relay.hpp"
 #include "conduit_relay_hdf5.hpp"
 #include "conduit_blueprint.hpp"
+
+#include "avtBlueprintDataAdaptor.h"
+#include "avtBlueprintLogging.h"
 
 using     std::string;
 using     std::vector;
@@ -170,153 +175,6 @@ avtBlueprintWriter::WriteHeaders(const avtDatabaseMetaData *md,
 }
 
 
-void
-CopyTuple1(Node &node, vtkDataArray *da)
-{
-
-    int nvals= da->GetNumberOfTuples();
-    node.set(DataType::float64(nvals));
-    conduit::float64 *vals = node.value();
-    for(int i = 0; i < nvals; ++i)
-    {
-      vals[i] = da->GetTuple1(i);
-    }
-}
-
-void
-CopyComponent64(Node &node, vtkDataArray *da, int component)
-{
-
-    int nvals= da->GetNumberOfTuples();
-    node.set(DataType::float64(nvals));
-    conduit::float64 *vals = node.value();
-    for(int i = 0; i < nvals; ++i)
-    {
-      vals[i] = da->GetComponent(i, component);
-    }
-}
-
-void
-CopyComponent32(Node &node, vtkDataArray *da, int component)
-{
-
-    int nvals= da->GetNumberOfTuples();
-    node.set(DataType::float32(nvals));
-    conduit::float32 *vals = node.value();
-    for(int i = 0; i < nvals; ++i)
-    {
-      vals[i] = (float)da->GetComponent(i, component);
-    }
-}
-
-void VTKDataArrayToNode(Node &node, vtkDataArray *arr)
-{
-    // copy up to 3 components
-    int ncomps = std::min(3,arr->GetNumberOfComponents());
-    std::vector<std::string> cnames;
-    cnames.push_back("/x");
-    cnames.push_back("/y");
-    cnames.push_back("/z");
-
-    int nTuples = arr->GetNumberOfTuples();
-    if (ncomps == 1)
-    {
-        CopyTuple1(node, arr);
-    }
-    else if(arr->GetDataType() == VTK_DOUBLE)
-    {
-        for(int comp = 0; comp < ncomps; ++comp)
-        {
-          CopyComponent64(node[cnames[comp]], arr, comp);
-        }
-    }
-    else
-    {
-        for(int comp = 0; comp < ncomps; ++comp)
-        {
-          CopyComponent32(node[cnames[comp]], arr, comp);
-        }
-    }
-
-}
-
-void WriteVars(Node &node,
-               const string topo_name,
-               vtkPointData *pd,
-               vtkCellData *cd)
-{
-
-    for (size_t i = 0 ; i < (size_t)pd->GetNumberOfArrays() ; i++)
-    {
-         vtkDataArray *arr = pd->GetArray(i);
-         // skip special variables
-         if (strstr(arr->GetName(), "vtk") != NULL)
-             continue;
-         if (strstr(arr->GetName(), "avt") != NULL)
-             continue;
-
-         std::string fname = arr->GetName();
-         std::string field_path = "fields/" + fname;
-         node[field_path + "/association"] = "vertex";
-         node[field_path + "/topology"] = topo_name;
-
-         VTKDataArrayToNode(node[field_path + "/values"], arr);
-    }
-
-    for (size_t i = 0 ; i < (size_t)cd->GetNumberOfArrays() ; i++)
-    {
-         vtkDataArray *arr = pd->GetArray(i);
-         // skip special variables
-         if (strstr(arr->GetName(), "vtk") != NULL)
-             continue;
-         if (strstr(arr->GetName(), "avt") != NULL)
-             continue;
-
-         std::string fname = arr->GetName();
-         std::string field_path = "fields/" + fname;
-         node[field_path + "/association"] = "element";
-         node[field_path + "/topology"] = topo_name;
-
-         VTKDataArrayToNode(node[field_path + "/values"], arr);
-    }
-}
-
-void vtkPointsToNode(Node &node, vtkPoints *points, const int dims)
-{
-
-  const int num_points = points->GetNumberOfPoints();
-  if(points->GetDataType() == VTK_FLOAT)
-  {
-    float *vtk_ptr = (float *) points->GetVoidPointer(0);
-    index_t stride = sizeof(conduit::float32) * 3;
-    index_t size = sizeof(conduit::float32);
-    node["x"].set_external(DataType::float32(num_points,0,stride), vtk_ptr);
-    if(dims > 1)
-    {
-      node["y"].set_external(DataType::float32(num_points,size,stride), vtk_ptr);
-    }
-    if(dims > 2)
-    {
-      node["z"].set_external(DataType::float32(num_points,size*2,stride), vtk_ptr);
-    }
-  }
-  else if(points->GetDataType() == VTK_DOUBLE)
-  {
-    double *vtk_ptr = (double *) points->GetVoidPointer(0);
-    index_t stride = sizeof(conduit::float64) * 3;
-    index_t size = sizeof(conduit::float64);
-    node["x"].set_external(DataType::float64(num_points,0,stride), vtk_ptr);
-    if(dims > 1)
-    {
-      node["y"].set_external(DataType::float64(num_points,size,stride), vtk_ptr);
-    }
-    if(dims > 2)
-    {
-      node["z"].set_external(DataType::float64(num_points,size*2,stride), vtk_ptr);
-    }
-  }
-}
-
 // ****************************************************************************
 //  Method: avtBlueprintWriter::WriteChunk
 //
@@ -341,8 +199,8 @@ avtBlueprintWriter::WriteChunk(vtkDataSet *ds, int chunk)
 
     Node mesh;
     mesh["state/domain_id"] = chunk;
-    std::cout<<"Chunk id "<<chunk<<"\n";
-    std::string topo_name = "topo";
+    //std::string topo_name = "topo";
+
     if (!meshName.empty())
     {
        // topo_name = meshName;
@@ -358,78 +216,24 @@ avtBlueprintWriter::WriteChunk(vtkDataSet *ds, int chunk)
         mesh["state/time"] = time;
     }
 
-    std::string topo_path = "topologies/" + topo_name;
-    std::string coord_path = "coordsets/coords";
-    mesh[topo_path + "/coordset"] = "coords";
-
     int ndims = GetInput()->GetInfo().GetAttributes().GetSpatialDimension();
-    std::cout<<"DIMS "<<ndims<<"\n";
-
-    if (ds->GetDataObjectType() == VTK_RECTILINEAR_GRID)
-    {
-       mesh[coord_path+ "/type"] = "rectilinear";
-       mesh[topo_path + "/type"] = "structured";
-       vtkRectilinearGrid *rgrid = (vtkRectilinearGrid *) ds;
-       if(ndims > 0)
-       {
-          int dimx = rgrid->GetXCoordinates()->GetNumberOfTuples();
-          CopyTuple1(mesh[coord_path+ "/values/x"], rgrid->GetXCoordinates());
-          mesh[topo_path+ "/elements/dims/i"] = dimx;
-       }
-       if(ndims > 1)
-       {
-          int dimy = rgrid->GetYCoordinates()->GetNumberOfTuples();
-          CopyTuple1(mesh[coord_path + "/values/y"], rgrid->GetYCoordinates());
-          mesh[topo_path+ "/elements/dims/j"] = dimy;
-       }
-       if(ndims > 2)
-       {
-          int dimz = rgrid->GetZCoordinates()->GetNumberOfTuples();
-          CopyTuple1(mesh[coord_path + "/values/z"], rgrid->GetZCoordinates());
-          mesh[topo_path+ "/elements/dims/k"] = dimz;
-       }
-       WriteVars(mesh, topo_name, rgrid->GetPointData(), rgrid->GetCellData());
-    }
-    else if (ds->GetDataObjectType() == VTK_STRUCTURED_GRID)
-    {
-       mesh[coord_path + "/type"] = "explicit";
-       mesh[topo_path + "/type"] = "structured";
-       vtkStructuredGrid *grid = (vtkStructuredGrid *) ds;
-
-       vtkPoints *vtk_pts = grid->GetPoints();
-       vtkPointsToNode(mesh[coord_path + "/values"], vtk_pts, ndims);
-    }
-    else if (ds->GetDataObjectType() == VTK_UNSTRUCTURED_GRID)
-    {
-       mesh[topo_path + "/type"] = "explicit";
-       mesh[coord_path + "/type"] = "explicit";
-       vtkUnstructuredGrid *grid = (vtkUnstructuredGrid *) ds;
-       vtkPoints *vtk_pts = grid->GetPoints();
-       vtkPointsToNode(mesh[coord_path + "/values"], vtk_pts, ndims);
-       //sprintf(chunkname, "%s.vtu", chunkname);
-       //wrtr = vtkXMLUnstructuredGridWriter::New();
-    }
+    avtBlueprintDataAdaptor::BP::VTKToBlueprint(mesh, ds, ndims);
 
     Node verify_info;
     if(!blueprint::mesh::verify(mesh,verify_info))
     {
-        //BP_PLUGIN_INFO("Skipping mesh named \"" << mesh_name << "\"" << endl
-        //               << "blueprint::mesh::index::verify failed " << endl
-        //               << verify_info.to_json());
-        std::cout<<verify_info.to_json()<<"\n";
-        mesh.print();
+         BP_PLUGIN_EXCEPTION1(InvalidVariableException,
+                              "VTK to Blueprint convertion failed " << verify_info.to_json());
         return;
     }
-    else std::cout<<"MESH smells good\n";
 
     char fmt_buff[64];
     snprintf(fmt_buff, sizeof(fmt_buff), "%06llu",chunk);
     std::stringstream oss;
     oss << "domain_" << fmt_buff << "." << "hdf5";
     string output_file  = conduit::utils::join_file_path(output_dir,oss.str());
-    std::cout<<"mdDirName "<<mbDirName<<"\n";
-    std::cout<<"outfile "<<output_file<<"\n";
     relay::io::save(mesh, output_file);
+
     if(genRoot)
     {
         GenRootNode(mesh, output_dir);
