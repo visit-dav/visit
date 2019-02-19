@@ -60,8 +60,8 @@ main.C
 
 # If the viewer is static then we need some static symbol lookup functions
 IF(VISIT_STATIC)
-    SET(STATIC_SOURCES1 ${CMAKE_CURRENT_SOURCE_DIR}/../../viewer/main/ViewerStaticSymbolLocator.C)
-    SET(STATIC_SOURCES2 ${CMAKE_CURRENT_SOURCE_DIR}/../../viewer/main/ViewerStaticSymbolLocator.C)
+    SET(STATIC_SOURCES1 ${CMAKE_CURRENT_SOURCE_DIR}/../../../viewer/main/ViewerStaticSymbolLocator.C)
+    SET(STATIC_SOURCES2 ${CMAKE_CURRENT_SOURCE_DIR}/../../../viewer/main/ViewerStaticSymbolLocator.C)
 ENDIF(VISIT_STATIC)
 
 # The subset of the sources that have Q_OBJECT in their header.
@@ -96,7 +96,7 @@ ${VISIT_SOURCE_DIR}/vtkqt
 ${VTK_INCLUDE_DIRS}
 )
 
-LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY} ${EAVL_LIBRARY_DIR} )
+LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY})
 
 IF(NOT APPLE)
     ADD_EXECUTABLE(embedded ${VISIT_APPLICATION_STYLE} ${SOURCES1} ${STATIC_SOURCES1})

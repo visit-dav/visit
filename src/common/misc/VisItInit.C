@@ -244,6 +244,10 @@ NewHandler(void)
 //    Added logic to manage decoration of level 1 debug logs with __FILE__
 //    and __LINE__; an extra 'd' in debug level arg will turn on these log
 //    decorations.
+//
+//    Eric Brugger, Tue Jan 29 09:09:44 PST 2019
+//    I modified the method to work with Git.
+//
 // ****************************************************************************
 
 void
@@ -369,12 +373,12 @@ VisItInit::Initialize(int &argc, char *argv[], int r, int n, bool strip, bool si
         {
             SetIsDevelopmentVersion(true);
         }
-        else if (strcmp("-svn_revision",  argv[i]) == 0)
+        else if (strcmp("-git_revision",  argv[i]) == 0)
         {
-            if(visitcommon::SVNVersion() == "")
-                cerr << "SVN revision is unknown!" << endl;
+            if(visitcommon::GITVersion() == "")
+                cerr << "GIT version is unknown!" << endl;
             else
-                cerr << "Built from revision " << visitcommon::SVNVersion() << endl;
+                cerr << "Built from version " << visitcommon::GITVersion() << endl;
             exit(0); // HOOKS_IGNORE
         }
     }

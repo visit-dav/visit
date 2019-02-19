@@ -36,34 +36,35 @@
 *
 *****************************************************************************/
 /**
- * @class   vtkOSPRayVisItCubeAxesActorNode
- * @brief   links vtkVisItCubeAxesActor to OSPRay
+ * @class   vtkOSPRayVisItAxisActorNode
+ * @brief   links vtkVisItAxisActor to OSPRay
  *
- * Translates vtkVisItCubeAxesActor state into OSPRay rendering calls
+ * Translates vtkVisItAxisActor state into OSPRay rendering calls
 */
 
-#ifndef vtkOSPRayVisItCubeAxesActorNode_h
-#define vtkOSPRayVisItCubeAxesActorNode_h
+#ifndef vtkOSPRayVisItAxisActorNode_h
+#define vtkOSPRayVisItAxisActorNode_h
 
-#include "vtkOSPRayActorNode.h"
+#include <plotter_exports.h>
+#include <vtkOSPRayActorNode.h>
 
-class VTKRENDERINGOSPRAY_EXPORT vtkOSPRayVisItCubeAxesActorNode :
+class  PLOTTER_API vtkOSPRayVisItAxisActorNode :
   public vtkOSPRayActorNode
 {
 public:
-  static vtkOSPRayVisItCubeAxesActorNode* New();
-  vtkTypeMacro(vtkOSPRayVisItCubeAxesActorNode, vtkOSPRayActorNode);
+  static vtkOSPRayVisItAxisActorNode* New();
+  vtkTypeMacro(vtkOSPRayVisItAxisActorNode, vtkOSPRayActorNode);
 
   vtkMTimeType GetMTime() override;
 
   void Build(bool prepass) override;
 
 protected:
-  vtkOSPRayVisItCubeAxesActorNode();
-  ~vtkOSPRayVisItCubeAxesActorNode();
+  vtkOSPRayVisItAxisActorNode();
+  ~vtkOSPRayVisItAxisActorNode();
 
 private:
-  vtkOSPRayVisItCubeAxesActorNode(const vtkOSPRayVisItCubeAxesActorNode&) = delete;
-  void operator=(const vtkOSPRayVisItCubeAxesActorNode&) = delete;
+  vtkOSPRayVisItAxisActorNode(const vtkOSPRayVisItAxisActorNode&) = delete;
+  void operator=(const vtkOSPRayVisItAxisActorNode&) = delete;
 };
 #endif

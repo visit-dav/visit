@@ -186,7 +186,7 @@ function build_pidx
     ntopts="${ntopts} -DCMAKE_BUILD_TYPE:STRING=${pidx_build_mode}"
     ntopts="${ntopts} -DCMAKE_INSTALL_PREFIX:PATH=${pidx_inst_path}"
 
-    # Currently does nto work but sould be used.
+    # Currently does not work but should be used.
 #    ntopts="${ntopts} -DBUILD_SHARED_LIBS:BOOL=ON"
 
     # Because above the build type is specificed the compiler flags are set
@@ -211,16 +211,18 @@ function build_pidx
 #        ntopts="${ntopts} -DCMAKE_INSTALL_NAME_DIR:PATH=${pidx_inst_path}/lib"
 #    fi
 
-#    if test "x${DO_MPICH}" = "xyes"; then
-#        info "mpich requested.  Configuring PIDX with mpich support."
-#        ntopts="${ntopts} -DMPI_ROOT:PATH=${VISITDIR}/mpich/${MPICH_VERSION}/${VISITARCH}"
+    if test "x${DO_MPICH}" = "xyes"; then
+        info "mpich requested.  Configuring PIDX with mpich support."
+        ntopts="${ntopts} -DENABLE_MPI:BOOL=ON"
+        ntopts="${ntopts} -DMPI_C_COMPILER:STRING=${VISITDIR}/mpich/${MPICH_VERSION}/${VISITARCH}/bin/mpicc"
+        ntopts="${ntopts} -DMPI_CXX_COMPILER:STRING=${VISITDIR}/mpich/${MPICH_VERSION}/${VISITARCH}/bin/mpicc"
 
-#        if [[ "$OPSYS" == "Darwin" ]]; then
-#            export DYLD_LIBRARY_PATH="$VISITDIR/mpich/$MPICH_VERSION/$VISITARCH/lib":$DYLD_LIBRARY_PATH
-#        else
-#            export LD_LIBRARY_PATH="$VISITDIR/mpich/$MPICH_VERSION/$VISITARCH/lib":$LD_LIBRARY_PATH
-#        fi
-#    fi
+        if [[ "$OPSYS" == "Darwin" ]]; then
+            export DYLD_LIBRARY_PATH="$VISITDIR/mpich/$MPICH_VERSION/$VISITARCH/lib":$DYLD_LIBRARY_PATH
+        else
+            export LD_LIBRARY_PATH="$VISITDIR/mpich/$MPICH_VERSION/$VISITARCH/lib":$LD_LIBRARY_PATH
+        fi
+    fi
 
     cd "$START_DIR"
 
@@ -270,8 +272,6 @@ function build_pidx
         warn "pidx install failed.  Giving up"
         return 1
     fi
-
-#    mv ${pidx_inst_path}/lib64/* ${pidx_inst_path}/lib
 
     if [[ "$DO_GROUP" == "yes" ]] ; then
         chmod -R ug+w,a+rX "$VISITDIR/pidx"

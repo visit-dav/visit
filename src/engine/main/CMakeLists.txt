@@ -149,7 +149,6 @@ endif()
 # Add link directories
 link_directories(
   ${LIBRARY_OUTPUT_DIRECTORY}
-  ${EAVL_LIBRARY_DIR}
   ${TCMALLOC_LIBRARY_DIR}
   ${ALL_THIRDPARTY_IO_LIBRARY_DIR}
 )
@@ -207,7 +206,6 @@ target_link_libraries(engine_ser_exe
     ${TCMALLOC_LIB}
     ${CMAKE_THREAD_LIBS}
     ${ZLIB_LIB}
-    ${EAVL_LIB}
 )
 
 # If we're building statically then the engine can't be linked until the plugin

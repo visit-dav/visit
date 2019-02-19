@@ -405,55 +405,36 @@ function verify_checksum
 #   I made it use the anonymous svn site as the fallback download site        #
 #   instead of llnl's web site.                                               #
 #                                                                             #
+#   Eric Brugger, Fri Feb  1 14:56:58 PST 2019
+#   I modified it to work post git transition.
+#
 # *************************************************************************** #
 
 function download_file
 {
     # $1 is the file name to download
     # $2...$* [OPTIONAL] list of sites to obtain the file from
-    #
-    # Since we always pass optional download sites to this function for
-    # some third party libs - we can't skip svn mode just b/c this info is given.
-    #
+
     typeset dfile=$1
     info "Downloading $dfile . . ."
     shift
 
-    SVN_ROOT_PREFIX="${SVN_ROOT_PATH}/${SVN_THIRDPARTY_PATH}"
-    SVN_ANON_ROOT_PREFIX="${SVN_ANON_ROOT_PATH}/${SVN_THIRDPARTY_PATH}"
-    # If SVN is requested, try that first before anything else
-    if [[ "$DO_SVN" == "yes" ]] ; then
-        svn cat $SVN_ROOT_PREFIX/$dfile > $dfile
-        if [[ $? == 0 && -e $dfile ]] ; then
-            info "SVN download succeeded: $SVN_ROOT_PREFIX/$dfile"
-            return 0
-        else
-            warn "Normal svn failed. Trying anonymous svn."
-            svn cat $SVN_ANON_ROOT_PREFIX/$dfile > $dfile
-            if [[ $? == 0 && -e $dfile ]] ; then
-                info "Anonymous SVN download succeeded: $SVN_ANON_ROOT_PREFIX/$dfile"
-                return 0
-            fi
-        fi
-        warn "SVN download attempt failed: $SVN_ROOT_PATH/$SVN_THIRDPARTY_PATH/$dfile"
-        warn "Anonymous SVN download attempt failed: $SVN_ANON_ROOT_PREFIX/$dfile"
-        rm -f $dfile
-    elif [[ "$DO_SVN_ANON" == "yes" ]] ; then
-        svn cat $SVN_ANON_ROOT_PREFIX/$dfile > $dfile
-        if [[ $? == 0 && -e $dfile ]] ; then
-            info "Anonymous SVN download succeeded: $SVN_ANON_ROOT_PREFIX/$dfile"
-            return 0
-        fi
-        warn "Anonymous SVN download attempt failed: $SVN_ANON_ROOT_PREFIX/$dfile"
-        rm -f $dfile
-    fi
-
-    # If the visit source code is requested try that next.
+    # If the visit source code is requested, handle that now.
+    site="${nerscroot}/${VISIT_VERSION}"
     if [[ "$dfile" == "$VISIT_FILE" ]] ; then
-        try_download_file $SVN_ANON_ROOT_PATH/trunk/releases/$VISIT_VERSION/$dfile $dfile
+        try_download_file $site/$dfile $dfile
         if [[ $? == 0 ]] ; then
             return 0
         fi
+    fi
+
+    # It must be a third party library, handle that now.
+    #
+    # First try NERSC.
+    site="${nerscroot}/${VISIT_VERSION}/third_party"
+    try_download_file $site/$dfile $dfile
+    if [[ $? == 0 ]] ; then
+        return 0
     fi
 
     # Now try the various places listed.
@@ -475,23 +456,6 @@ function download_file
         done
     fi
 
-    # Now try anonymous svn unless we tried it above.
-    if [[ "$DO_SVN" != "yes" && "$DO_ANON_SVN" != "yes" ]] ; then
-        svn cat $SVN_ANON_ROOT_PREFIX/$dfile > $dfile
-        if [[ $? == 0 && -e $dfile ]] ; then
-            info "Anonymous SVN download succeeded: $SVN_ANON_ROOT_PREFIX/$dfile"
-            return 0
-        fi
-        warn "Anonymous SVN download attempt failed: $SVN_ANON_ROOT_PREFIX/$dfile"
-        rm -f $dfile
-    fi
-
-    # Now try the anonymous svn site with wget or curl.
-    try_download_file $SVN_ANON_ROOT_PREFIX/$dfile $dfile
-    if [[ $? == 0 ]] ; then
-        return 0
-    fi
-    info "Failed to download $dfile"
     return 1
 }
 
@@ -584,20 +548,24 @@ function try_download_file_from_shortened_url
 
 
 # *************************************************************************** #
-# Function: check_svn_client                                                  #
+# Function: check_git_client                                                  #
 #                                                                             #
-# Purpose: Helper that checks if a svn client is available.                    #
+# Purpose: Helper that checks if a git client is available.                    #
 #                                                                             #
 # Programmer: Cyrus Harrison                                                  #
 # Date:  Mon Nov 17 14:52:37 PST 2008                                         #
 #                                                                             #
+# Modifications:
+#   Eric Brugger, Fri Feb  1 14:56:58 PST 2019
+#   I modified it to work post git transition.
+#
 # *************************************************************************** #
 
-function check_svn_client
+function check_git_client
 {
-    # check for svn client
-    SVN_CLIENT=$(which svn)
-    if [[ $SVN_CLIENT == "" ]] ; then
+    # check for git client
+    GIT_CLIENT=$(which git)
+    if [[ $GIT_CLIENT == "" ]] ; then
         return 1
     fi
     return 0
@@ -1341,6 +1309,14 @@ function build_hostconf
  return 0
 }
 
+# *************************************************************************** #
+#
+# Modifications:
+#   Eric Brugger, Fri Feb  1 14:56:58 PST 2019
+#   I modified it to work post git transition.
+#
+# *************************************************************************** #
+
 function printvariables
 {
     printf "The following is a list of user settable environment variables\n"
@@ -1367,7 +1343,6 @@ function printvariables
     printf "%s%s\n" "LOG_FILE=" "${LOG_FILE}"
     printf "%s%s\n" "LOG_FILE=" "${LOG_FILE}"
     printf "%s%s\n" "WGET_OPTS=" "${WGET_OPTS}"
-    printf "%s%s\n" "SVNREVISION=" "${SVNREVISION}"
 
     bv_visit_print
     for (( bv_i=0; bv_i<${#reqlibs[*]}; ++bv_i ))
@@ -1483,16 +1458,11 @@ function usage
     done
 
     printf "\n"
-    printf "SVN OPTIONS\n"
+    printf "GIT OPTIONS\n"
     printf "\n"
 
-    printf "%-26s %s\n"      "--svn" "Obtain VisIt source code and third party libraries"
-    printf "%-26s %s [%s]\n" "" "from the SVN server" "$DO_SVN"
-    printf "%-26s %s\n"      "--svn-anonymous" "Obtain VisIt source code and third party libraries"
-    printf "%-26s %s [%s]\n" "" "using the anonymous SVN mirror." "$DO_SVN_ANON"
-    printf "%-14s <%s>  %s\n" "--svn-revision" "revision" "Specify the SVN revision of the VisIt source code"
-    printf "%-26s %s\n"     "" "and third party libraries to download."
-    printf "%-26s %s\n"     "" "Used in conjunction with --svn or --svn-anonymous."
+    printf "%-26s %s\n"      "--git" "Obtain the VisIt source code"
+    printf "%-26s %s [%s]\n" "" "from the GIT server" "$DO_GIT"
 
     printf "\n"
     printf "MISC OPTIONS\n"

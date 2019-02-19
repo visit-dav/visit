@@ -251,7 +251,6 @@ ${VISIT_SOURCE_DIR}/avt/Pipeline/Sinks
 ${VISIT_SOURCE_DIR}/avt/Pipeline/Sources
 ${VISIT_SOURCE_DIR}/visit_vtk/full
 ${VISIT_SOURCE_DIR}/visit_vtk/lightweight
-${EAVL_INCLUDE_DIR}
 ${VTKh_INCLUDE_DIRS}
 ${VTKM_DIR}/include/vtkm-1.2
 ${VTKM_DIR}/include/vtkm-1.2/vtkm/thirdparty/taotuple
@@ -260,7 +259,7 @@ ${ZLIB_INCLUDE_DIR}
 )
 
 # Add link directories
-LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY} ${EAVL_LIBRARY_DIR} )
+LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY})
 
 # Unless we're doing a VISIT_DBIO_ONLY build then we need avtmath
 IF(NOT VISIT_DBIO_ONLY)
@@ -273,7 +272,7 @@ TARGET_LINK_LIBRARIES(avtpipeline_ser
                       visitcommon ${AVTMATH} avtdbatts
                       visit_vtk lightweight_visit_vtk vtkCommonCore
                       vtkCommonDataModel vtkFiltersGeometry
-                      ${ZLIB_LIB} ${EAVL_LIB})
+                      ${ZLIB_LIB})
 if(VTKH_FOUND)
     target_link_libraries(avtpipeline_ser vtkh)
 endif()
@@ -288,7 +287,7 @@ IF(VISIT_PARALLEL)
                           visitcommon ${AVTMATH} avtdbatts
                           visit_vtk lightweight_visit_vtk vtkCommonCore
                           vtkCommonDataModel vtkFiltersGeometry
-                          ${ZLIB_LIB} ${EAVL_LIB})
+                          ${ZLIB_LIB})
     if(VTKH_FOUND)
         target_link_libraries(avtpipeline_par vtkh)
     endif()

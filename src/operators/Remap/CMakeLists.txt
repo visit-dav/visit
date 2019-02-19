@@ -9,7 +9,7 @@ RemapCommonPluginInfo.C
 RemapAttributes.C
 )
 
-SET(LIBI_SOURCES 
+SET(LIBI_SOURCES
 RemapPluginInfo.C
 )
 
@@ -84,16 +84,15 @@ ${VISIT_INCLUDE_DIR}/viewer/rpc
 ${VISIT_INCLUDE_DIR}/winutil
 ${VISIT_INCLUDE_DIR}/visit_vtk/full
 ${VISIT_INCLUDE_DIR}/visit_vtk/lightweight
-${VISIT_INCLUDE_DIR}/third_party_builtin/verdict
-${EAVL_INCLUDE_DIR}
 ${VTKh_INCLUDE_DIRS}
 ${VTKM_DIR}/include/vtkm-1.2
 ${VTKM_DIR}/include/vtkm-1.2/vtkm/thirdparty/taotuple
 ${VTK_INCLUDE_DIRS}
 ${PYINCLUDES}
+${VISIT_INCLUDE_DIR}/third_party_builtin/verdict
 )
 
-LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} ${EAVL_LIBRARY_DIR} )
+LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} )
 
 ADD_LIBRARY(IRemapOperator ${LIBI_SOURCES})
 TARGET_LINK_LIBRARIES(IRemapOperator visitcommon)

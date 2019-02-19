@@ -654,6 +654,9 @@ avtDataTree::avtDataTree(int n, avtDataRepresentation *drep)
 //    I modified the EAVL version of the avtDataRepresentation constructor
 //    to also have domain and label arguments.
 //
+//    Kathleen Biagas, Thu Jan 10 10:00:04 PST 2019
+//    Removed support for EAVL, added VTKh.
+//
 // ****************************************************************************
 
 avtDataTree::avtDataTree(avtDataTree_p dt, bool dontCopyData)
@@ -692,7 +695,7 @@ avtDataTree::avtDataTree(avtDataTree_p dt, bool dontCopyData)
             }
             else
             {
-                dataRep  = new avtDataRepresentation((eavlDataSet *)NULL,
+                dataRep  = new avtDataRepresentation((vtkh::DataSet *)NULL,
                                                      oldRep.GetDomain(),
                                                      oldRep.GetLabel(),
                                                      dontCopyData);

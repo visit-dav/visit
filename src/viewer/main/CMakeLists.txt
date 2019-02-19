@@ -116,7 +116,6 @@ ui/VisItPasswordWindow.h
 SET(VIEWERLIB_SOURCES
 ${VIEWER_UI}
 ${VIEWER_DDT}
-#QWsSocket.C
 SharedDaemon.C
 ViewerBaseUI.C
 ViewerClientConnection.C
@@ -146,7 +145,6 @@ ENDIF(VISIT_STATIC)
 SET(VIEWERLIB_MOC_SOURCES
 ${VIEWER_UI_MOC}
 ${VIEWER_DDT_MOC}
-#QWsSocket.h
 SharedDaemon.h
 ViewerBaseUI.h
 ViewerClientConnection.h
@@ -209,7 +207,7 @@ if(HAVE_OSMESA OR HAVE_EGL)
     include_directories(${VISIT_SOURCE_DIR}/visit_vtk/offscreen)
 endif()
 
-LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY} ${EAVL_LIBRARY_DIR} )
+LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY})
 
 
 #*************************** The viewer library ******************************

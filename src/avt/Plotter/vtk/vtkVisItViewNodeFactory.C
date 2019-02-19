@@ -35,35 +35,29 @@
 * DAMAGE.
 *
 *****************************************************************************/
-/**
- * @class   vtkOSPRayVisItAxisActorNode
- * @brief   links vtkVisItAxisActor to OSPRay
- *
- * Translates vtkVisItAxisActor state into OSPRay rendering calls
-*/
 
-#ifndef vtkOSPRayVisItAxisActorNode_h
-#define vtkOSPRayVisItAxisActorNode_h
+#include <vtkVisItViewNodeFactory.h>
+#include <vtkOSPRayPolyDataMapperNode.h>
+#include <vtkOSPRayVisItAxisActorNode.h>
+#include <vtkOSPRayVisItCubeAxesActorNode.h>
 
-#include "vtkOSPRayActorNode.h"
-
-class VTKRENDERINGOSPRAY_EXPORT vtkOSPRayVisItAxisActorNode :
-  public vtkOSPRayActorNode
+//============================================================================
+vtkViewNode *vtkVisItViewNodeFactory::pd_maker()
 {
-public:
-  static vtkOSPRayVisItAxisActorNode* New();
-  vtkTypeMacro(vtkOSPRayVisItAxisActorNode, vtkOSPRayActorNode);
+  vtkOSPRayPolyDataMapperNode *vn = vtkOSPRayPolyDataMapperNode::New();
+  return vn;
+}
 
-  vtkMTimeType GetMTime() override;
+//-----------------------------------------------------------------------------
+vtkViewNode *vtkVisItViewNodeFactory::cube_axes_act_maker()
+{
+  vtkOSPRayVisItCubeAxesActorNode *vn = vtkOSPRayVisItCubeAxesActorNode::New();
+  return vn;
+}
 
-  void Build(bool prepass) override;
-
-protected:
-  vtkOSPRayVisItAxisActorNode();
-  ~vtkOSPRayVisItAxisActorNode();
-
-private:
-  vtkOSPRayVisItAxisActorNode(const vtkOSPRayVisItAxisActorNode&) = delete;
-  void operator=(const vtkOSPRayVisItAxisActorNode&) = delete;
-};
-#endif
+//-----------------------------------------------------------------------------
+vtkViewNode *vtkVisItViewNodeFactory::axis_act_maker()
+{
+  vtkOSPRayVisItAxisActorNode *vn = vtkOSPRayVisItAxisActorNode::New();
+  return vn;
+}

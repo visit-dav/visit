@@ -50,7 +50,6 @@
 
 
 class  avtWebpage;
-class  eavlDataSet;
 class  vtkDataSet;
 namespace vtkh
 {
@@ -61,7 +60,6 @@ class  DataSet;
 typedef enum
 {
     DATA_REP_TYPE_VTK,
-    DATA_REP_TYPE_EAVL,
     DATA_REP_TYPE_VTKM
 } DataRepType;
 
@@ -137,6 +135,9 @@ typedef enum
 //    Eric Brugger, Thu Dec 10 11:47:06 PST 2015
 //    Added support for VTKm.
 //
+//    Kathleen Biagas, Wed Jan 30 10:41:55 PST 2019
+//    Removed support for EAVL.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataRepresentation
@@ -144,8 +145,6 @@ class PIPELINE_API avtDataRepresentation
   public:
                         avtDataRepresentation();
                         avtDataRepresentation(vtkDataSet *, int, std::string,
-                                              bool dontCopyData = false);
-                        avtDataRepresentation(eavlDataSet *, int, std::string,
                                               bool dontCopyData = false);
                         avtDataRepresentation(vtkh::DataSet *, int, std::string,
                                               bool dontCopyData = false);
@@ -159,7 +158,6 @@ class PIPELINE_API avtDataRepresentation
 
     DataRepType         GetDataRepType() const { return dataRepType; }
     vtkDataSet         *GetDataVTK(void);
-    eavlDataSet        *GetDataEAVL(void);
     vtkh::DataSet      *GetDataVTKm(void);
     unsigned char      *GetDataString(int &, DataSetType &);
     unsigned char      *GetCompressedDataString(int &, DataSetType &);
@@ -178,7 +176,6 @@ class PIPELINE_API avtDataRepresentation
 
   protected:
     vtkDataSet         *asVTK;
-    eavlDataSet        *asEAVL;
     vtkh::DataSet      *asVTKm;
     unsigned char      *asChar;
     int                 asCharLength;
@@ -195,7 +192,6 @@ class PIPELINE_API avtDataRepresentation
 
     static bool           initializedNullDatasets;
     static vtkDataSet    *nullVTKDataset;
-    static eavlDataSet   *nullEAVLDataset;
     static vtkh::DataSet *nullVTKmDataset;
 
     unsigned char      *GetDataString(int &, DataSetType &, bool);
@@ -205,8 +201,6 @@ class PIPELINE_API avtDataRepresentation
     static DataSetType  DatasetTypeForVTK(vtkDataSet *);
 
  private:
-    vtkDataSet*         EAVLToVTK(eavlDataSet *data);
-    eavlDataSet*        VTKToEAVL(vtkDataSet *data);
     vtkDataSet*         VTKmToVTK(vtkh::DataSet *data);
     vtkh::DataSet*      VTKToVTKm(vtkDataSet *data);
 };

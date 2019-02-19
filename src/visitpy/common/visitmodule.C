@@ -244,9 +244,9 @@
 //
 extern "C"
 {
-    VISITMODULE_API void initvisit();
-    VISITMODULE_API void cli_initvisit(int, bool, int, char **, int, char **);
-    VISITMODULE_API void cli_runscript(const char *);
+    void VISITMODULE_API initvisit();
+    void VISITMODULE_API cli_initvisit(int, bool, int, char **, int, char **);
+    void VISITMODULE_API cli_runscript(const char *);
 
     // Expose these functions so we can call them from a facade
     // VisIt module from "import visit" inside of Python.
@@ -474,12 +474,11 @@ static std::map<std::string, AnnotationObjectRef> localObjectMap;
 
 static bool                  suppressQueryOutputState = false;
 
-typedef enum QueryOutputReturnType {
+static enum QueryOutputReturnType {
     QueryString = 0,
     QueryValue,
     QueryObject
-};
-static QueryOutputReturnType queryOutputReturnType = QueryString;
+} queryOutputReturnType = QueryString;
 
 // pickle related
 bool      pickleReady=false;
@@ -2087,13 +2086,9 @@ visit_SetBackendType(PyObject *self, PyObject *args)
         return NULL;
 
     int index = 0;
-#if defined(HAVE_LIBEAVL)
-    if(strcmp(name, "eavl") == 0 || strcmp(name, "EAVL") == 0)
-        index = 1;
-#endif
 #if defined(HAVE_LIBVTKH)
     if(strcmp(name, "vtkm") == 0 || strcmp(name, "VTKM") == 0 || strcmp(name, "VTKm") == 0)
-        index = 2;
+        index = 1;
 #endif
 
     MUTEX_LOCK();

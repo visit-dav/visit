@@ -64,12 +64,11 @@ ${VISIT_SOURCE_DIR}/avt/VisWindow/VisWindow
 
 # If static then we need some static symbol lookup functions
 IF(VISIT_STATIC)
-    SET(STATIC_SOURCES ../../engine/main/EngineStaticSymbolLocator.C)
+    SET(STATIC_SOURCES ../../../engine/main/EngineStaticSymbolLocator.C)
 ENDIF(VISIT_STATIC)
 
 LINK_DIRECTORIES(
 ${LIBRARY_OUTPUT_DIRECTORY}
-${EAVL_LIBRARY_DIR} 
 ${ALL_THIRDPARTY_IO_LIBRARY_DIR}
 )
 

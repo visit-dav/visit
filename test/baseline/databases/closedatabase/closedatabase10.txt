@@ -25,5 +25,5 @@ ignoreExtentsFromDbs = 0
 expandNewPlots = 0
 userRestoreSessionFile = 0
 precisionType = Native  # Float, Native, Double
-backendType = VTK  # VTK, EAVL, VTKM
+backendType = VTK  # VTK, VTKM
 removeDuplicateNodes = 0

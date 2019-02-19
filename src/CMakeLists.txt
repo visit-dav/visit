@@ -443,6 +443,9 @@
 #    Kevin Griffin, Wed Dec 12 18:00:27 PST 2018
 #    Added back osxfixup logic.
 #
+#    Eric Brugger, Mon Jan 28 15:14:54 PST 2019
+#    Changed SVN_REVISION to GIT_VERSION.
+#
 #****************************************************************************/
 
 CMAKE_MINIMUM_REQUIRED(VERSION 3.8 FATAL_ERROR)
@@ -851,7 +854,6 @@ VISIT_3RDPARTY_DEP(CGNS_LIBDEP   "CGNS library dependencies")
 VISIT_3RDPARTY_VAR(CONDUIT_DIR   "Path containing the Conduit library's include and lib")
 VISIT_3RDPARTY_VAR(CONDUIT_LIBDEP "Conduit library dependencies")
 VISIT_3RDPARTY_VAR(DAMARIS_DIR   "Path containing the Damaris library's include and lib")
-VISIT_3RDPARTY_VAR(EAVL_DIR      "Path containing the eavl library's include and lib")
 VISIT_3RDPARTY_VAR(FASTBIT_DIR   "Path containing the FastBit library's include and lib")
 VISIT_3RDPARTY_VAR(FASTQUERY_DIR   "Path containing the FastQuery library's include and lib")
 VISIT_3RDPARTY_VAR(GDAL_DIR      "Path containing the GDAL library's include and lib")
@@ -1183,103 +1185,9 @@ ELSE(VISIT_THREAD)
     MESSAGE(STATUS "Threading for VisIt: OFF")
 ENDIF(VISIT_THREAD)
 
-# Enable OSPRay for VisIt
-#
-# Note by Qi: maybe we should put this section into a .cmake file ?
-#
-IF(VISIT_OSPRAY)
 
-    # -- this is a hack for TBB_ROOT
-    IF(NOT DEFINED TBB_ROOT)
-      SET(TBB_ROOT ${VISIT_TBB_ROOT})
-    ENDIF()
-    # we have to search for the osprayConfig.cmake file in the ospray install
-    # folder. Because ospray sometimes install its library in <...>/lib64 folder
-    # instead of the <...>/lib folder, we have to check both possibilities
-    IF(EXISTS ${OSPRAY_DIR}/lib)
-      SET(ospray_DIR ${OSPRAY_DIR}/lib/cmake/ospray-${OSPRAY_VERSION})
-    ELSEIF(EXISTS ${OSPRAY_DIR}/lib64)
-      SET(ospray_DIR ${OSPRAY_DIR}/lib64/cmake/ospray-${OSPRAY_VERSION})
-    ELSE()
-      MESSAGE(ERROR "Cannot determine ospray_DIR, given OSPRAY_DIR=${OSPRAY_DIR}")
-    ENDIF()
-    SET(embree_DIR ${EMBREE_DIR})
-    MARK_AS_ADVANCED(ospray_DIR)
-    MARK_AS_ADVANCED(embree_DIR)
+include(${VISIT_SOURCE_DIR}/CMake/FindOSPRay.cmake)
 
-    # setup ospray
-    FIND_PACKAGE(ospray REQUIRED)
-    ADD_DEFINITIONS(-DVISIT_OSPRAY)
-    INCLUDE_DIRECTORIES(${OSPRAY_INCLUDE_DIR})
-    LINK_DIRECTORIES(${VISIT_OSPRAY_DIR}/lib)
-    SET(OSPRAY_LIBRARIES # additional module library
-      ${OSPRAY_LIBRARIES}
-      ${LIBRARY_PATH_PREFIX}ospray_module_ispc${LIBRARY_SUFFIX}
-      ${LIBRARY_PATH_PREFIX}ospray_module_visit${LIBRARY_SUFFIX}
-      ${LIBRARY_PATH_PREFIX}ospray_module_visit_common${LIBRARY_SUFFIX})
-
-    # install ospray libs follow visit's standard
-    #
-    # -- OSPRAY_LIBRARIES contains also libtbb and libembree, so we dont
-    #    have to handle embree and tbb seperately. As for ISPC, since ISPC
-    #    is only a compiler and will only be needed when we are compiling
-    #    ospray source, we dont have to install ISPC at all here for VisIt.
-    #
-    # on linux ospray have libraries in a form of:
-    #      libospray[xxx].so
-    #      libospray[xxx].so.0
-    #      libospray[xxx].so.[version]
-    #
-    # on mac ospray have libraries in a form of:
-    #      libospray[xxx].dylib
-    #      libospray[xxx].0.dylib
-    #      libospray[xxx].[version].dylib
-    #
-    # on windows
-    #      libospray[xxx].lib
-    #      libospray[xxx].dll
-    #
-    # -- installing headers
-    IF(VISIT_INSTALL_THIRD_PARTY AND NOT VISIT_HEADERS_SKIP_INSTALL)
-      INSTALL(DIRECTORY ${OSPRAY_INCLUDE_DIR}/ospray
-        DESTINATION
-        DESTINATION ${VISIT_INSTALLED_VERSION_INCLUDE}
-        FILE_PERMISSIONS OWNER_WRITE OWNER_READ
-                         GROUP_WRITE GROUP_READ
-                         WORLD_READ
-        DIRECTORY_PERMISSIONS OWNER_WRITE OWNER_READ OWNER_EXECUTE
-                              GROUP_WRITE GROUP_READ GROUP_EXECUTE
-                                          WORLD_READ WORLD_EXECUTE
-        PATTERN ".svn" EXCLUDE)
-    ENDIF()
-    # -- installing libs
-    IF(VISIT_INSTALL_THIRD_PARTY AND NOT VISIT_OSPRAY_SKIP_INSTALL)
-      FOREACH(l ${OSPRAY_LIBRARIES})
-        # here because the CMake variable OSPRAY_LIBRARIES contains words
-        # like 'optimized' and 'debug', we should skip them
-        IF( (NOT "${l}" STREQUAL "optimized") AND
-            (NOT "${l}" STREQUAL "debug"))
-          GET_FILENAME_COMPONENT(_name_ ${l} NAME_WE)
-          IF( (NOT "${_name_}" STREQUAL "libtbb_debug") AND
-              (NOT "${_name_}" STREQUAL "libtbbmalloc_debug") AND
-              (NOT "${_name_}" STREQUAL "libtbb") AND
-              (NOT "${_name_}" STREQUAL "libtbbmalloc") AND
-              (NOT "${_name_}" STREQUAL "libembree3") )
-            THIRD_PARTY_INSTALL_LIBRARY(${l}.0)
-          ENDIF()
-          THIRD_PARTY_INSTALL_LIBRARY(${l})
-        ENDIF()
-      ENDFOREACH()
-    ENDIF()
-
-    # debug
-    MESSAGE(STATUS "OSPRAY_INCLUDE_DIR: " ${OSPRAY_INCLUDE_DIR})
-    MESSAGE(STATUS "OSPRAY_LIBRARIES: " ${OSPRAY_LIBRARIES})
-    MESSAGE(STATUS "OSPRay for VisIt: ON")
-
-ELSE(VISIT_OSPRAY)
-    MESSAGE(STATUS "OSPRay for VisIt: OFF")
-ENDIF(VISIT_OSPRAY)
 
 #-----------------------------------------------------------------------------
 # If we are doing a static build or the VTK Python wrappers do not exist:
@@ -1395,9 +1303,6 @@ IF(NOT VISIT_BUILD_MINIMAL_PLUGINS OR VISIT_SELECTED_DATABASE_PLUGINS)
 
     # Configure Conduit support.
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindConduit.cmake)
-
-    # Configure eavl support.
-    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindEAVL.cmake)
 
     # Configure FastBit support.
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindFastBit.cmake)
@@ -1802,32 +1707,32 @@ FUNCTION(MAC_NIB_INSTALL exename)
 ENDFUNCTION(MAC_NIB_INSTALL)
 
 #-----------------------------------------------------------------------------
-# Read the SVN revision
+# Read the GIT version
 #-----------------------------------------------------------------------------
 #dummy revision, in case commands fail
-SET(VISIT_SVN_REVISION "Unknown")
+SET(VISIT_GIT_VERSION "Unknown")
 # Get the subversion revision number
-IF(EXISTS ${VISIT_SOURCE_DIR}/SVN_REVISION)
-    FILE(STRINGS ${VISIT_SOURCE_DIR}/SVN_REVISION VISIT_SVN_REVISION)
-ELSE(EXISTS ${VISIT_SOURCE_DIR}/SVN_REVISION)
-    IF (EXISTS ${VISIT_SOURCE_DIR}/.svn)
+IF(EXISTS ${VISIT_SOURCE_DIR}/GIT_VERSION)
+    FILE(STRINGS ${VISIT_SOURCE_DIR}/GIT_VERSION VISIT_GIT_VERSION)
+ELSE(EXISTS ${VISIT_SOURCE_DIR}/GIT_VERSION)
+    IF (EXISTS ${VISIT_SOURCE_DIR}/../.git)
         # Only try and determine the version number if it looks like
-        # we're in a working copy (a .svn directory should be present)
-        FIND_PACKAGE(Subversion)
-        IF(Subversion_FOUND)
-            Subversion_WC_INFO(${PROJECT_SOURCE_DIR} VISIT)
-            SET(VISIT_SVN_REVISION "${VISIT_WC_REVISION}")
-        ELSE(Subversion_FOUND)
-            IF(WIN32)
-                INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindTortoiseSVN.cmake)
-                IF(TortoiseSVN_FOUND)
-                    TortoiseSVN_WC_INFO(${PROJECT_SOURCE_DIR} VISIT)
-                    SET(VISIT_SVN_REVISION "${VISIT_WC_REVISION}")
-                ENDIF(TortoiseSVN_FOUND)
-            ENDIF(WIN32)
-        ENDIF(Subversion_FOUND)
-    ENDIF (EXISTS ${VISIT_SOURCE_DIR}/.svn)
-ENDIF(EXISTS ${VISIT_SOURCE_DIR}/SVN_REVISION)
+        # we're in a working copy (a .git directory should be present)
+#        FIND_PACKAGE(Subversion)
+#        IF(Subversion_FOUND)
+#            Subversion_WC_INFO(${PROJECT_SOURCE_DIR} VISIT)
+#            SET(VISIT_SVN_REVISION "${VISIT_WC_REVISION}")
+#        ELSE(Subversion_FOUND)
+#            IF(WIN32)
+#                INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindTortoiseSVN.cmake)
+#                IF(TortoiseSVN_FOUND)
+#                    TortoiseSVN_WC_INFO(${PROJECT_SOURCE_DIR} VISIT)
+#                    SET(VISIT_SVN_REVISION "${VISIT_WC_REVISION}")
+#                ENDIF(TortoiseSVN_FOUND)
+#            ENDIF(WIN32)
+#        ENDIF(Subversion_FOUND)
+    ENDIF (EXISTS ${VISIT_SOURCE_DIR}/../.git)
+ENDIF(EXISTS ${VISIT_SOURCE_DIR}/GIT_VERSION)
 
 #-----------------------------------------------------------------------------
 # Set up resource files for Windows applications.
@@ -2306,11 +2211,13 @@ ELSE (NOT WIN32)
         # Make sure it won't run unless specifically called.
         #
         FILE(TO_NATIVE_PATH ${VISIT_SOURCE_DIR} VSD_NATIVE)
+        FILE(TO_NATIVE_PATH ${VISIT_WINDOWS_DIR} VWD_NATIVE)
         FILE(TO_NATIVE_PATH ${CMAKE_INSTALL_PREFIX} CIP_NATIVE)
         FILE(TO_NATIVE_PATH ${CMAKE_CURRENT_BINARY_DIR} CBD_NATIVE)
         ADD_CUSTOM_COMMAND(OUTPUT visit${VISIT_VERSION}.exe
             COMMAND ${MAKENSIS}
                     /DVISIT_SOURCE_DIR=${VSD_NATIVE}
+                    /DVISIT_WINDOWS_DIR=${VWD_NATIVE}
                     /DINSTALL_PREFIX=${CIP_NATIVE}
                     /DBIN_DIR=${CBD_NATIVE}
                     ${VISIT_WINDOWS_DIR}/distribution/installation/CreateDBSections.nsi
@@ -2318,6 +2225,7 @@ ELSE (NOT WIN32)
                     /DVisItVersion=${VISIT_VERSION}
                     /DCOMPILER=${VISIT_MSVC_VERSION}
                     /DVISIT_SOURCE_DIR=${VSD_NATIVE}
+                    /DVISIT_WINDOWS_DIR=${VWD_NATIVE}
                     /DINSTALL_PREFIX=${CIP_NATIVE}
                     /DBIN_DIR=${CBD_NATIVE}
                     /DMPI_VERSION=${VISIT_MSMPI_VERSION}
@@ -2337,6 +2245,7 @@ ELSE (NOT WIN32)
             COMMAND ${MAKENSIS}
                     /DVisItVersion=${VISIT_VERSION}
                     /DVISIT_SOURCE_DIR=${VSD_NATIVE}
+                    /DVISIT_WINDOWS_DIR=${VWD_NATIVE}
                     /DINSTALLER_LOCATION=${VISIT_BINARY_DIR}
                      ${VISIT_WINDOWS_DIR}/distribution/installation/sourceinstallation.nsi
             DEPENDS ${VISIT_WINDOWS_DIR}/distribution/installation/sourceinstallation.nsi

@@ -231,6 +231,11 @@ function bv_osmesa_build
         check_if_installed "osmesa" $OSMESA_VERSION
         if [[ $? == 0 ]] ; then
             info "Skipping OSMesa build.  OSMesa is already installed."
+            return 0
+        fi
+        check_if_installed "mesagl" $MESAGL_VERSION
+        if [[ $? == 0 ]] ; then
+            info "Skipping OSMesa build.  MesaGL is already installed."
         else
             info "Building OSMesa (~20 minutes)"
             build_osmesa
