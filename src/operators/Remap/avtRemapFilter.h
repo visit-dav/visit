@@ -43,7 +43,8 @@
 #ifndef AVT_Remap_FILTER_H
 #define AVT_Remap_FILTER_H
 
-#include <avtPluginDataTreeIterator.h>
+#include <avtDatasetToDatasetFilter.h>
+#include <avtPluginFilter.h>
 
 #include <RemapAttributes.h>
 
@@ -65,7 +66,8 @@
 //
 // ****************************************************************************
 
-class avtRemapFilter : public avtPluginDataTreeIterator
+class avtRemapFilter : public avtDatasetToDatasetFilter,
+                       public virtual avtPluginFilter
 {
   public:
                          avtRemapFilter();
@@ -81,21 +83,36 @@ class avtRemapFilter : public avtPluginDataTreeIterator
     virtual bool         Equivalent(const AttributeGroup*);
 
   protected:
-    RemapAttributes   atts;
+    RemapAttributes     atts;
 
-    virtual avtDataRepresentation *ExecuteData(avtDataRepresentation *);
+    virtual void        Execute(void);
+    void                TraverseDomainTree(avtDataTree_p);
+    void                ClipDomain(avtDataTree_p);
     
   private:
+  
+    // ------------------------ //
+    // --- Helper Functions --- //
+    // ------------------------ //
     vtkDoubleArray      *CalculateCellVolumes(vtkDataSet*, const char* name = "");
-    bool                GetBounds(double bounds[6]);
-    vtkRectilinearGrid  *CreateGrid(const double*, int, int, int, int, int, int, int, int, int);
-    vtkRectilinearGrid  *CreateGrid(const double*, int, int, int, int, int, int);
+    void                GetBounds();
+    void                CreateGrid(int, int, int, int, int, int, int, int, int);
+    void                CreateGrid(int, int, int, int, int, int);
     vtkDataArray        *GetCoordinates(double, double, int, int, int);
+    void                Output();
     
+    
+    // -------------------- //
+    // --- Class Fields --- //
+    // -------------------- //
+    vtkRectilinearGrid* rg;
+    double              rGridBounds[6];
+    double              rCellVolume;
+    vtkDoubleArray*     vars;
     bool                is3D;
     
     
-    // Delete these:
+    // TODO: Delete these
     void PrintData(avtDataRepresentation*);
     void PrintData(vtkDataSet*);
     void PrintData(vtkDataArray*);
