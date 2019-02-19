@@ -202,6 +202,7 @@ DEBUG_CellTypeList.insert(std::pair<std::string, int>("unknown",        0));
     // --- Generate Rectilinear Grid --- //
     // --------------------------------- //
     GetBounds();
+    // TODO: restrict the bounds to the extents of the selected domains
     int width = atts.GetCellsX();
     int height = atts.GetCellsY();
     
@@ -527,19 +528,23 @@ if (DEBUG_rCellVolumeTEST != rCellVolume)
         //            sub cell, then totaled among the set of sub cells.
         
         double value = 0.0;
-        //vtkDataArray* myVariable = ug->GetCellData()->GetArray(0);
         vtkDataArray* myVariable = ug->GetCellData()->GetArray(vars->GetName());
-        // TODO: if the zone is flagged as a ghost zone (avtGhostZones nonzero), then
-        // ignore that original cell. avtGhostZones is not a separate array from
-        // the data. It is an array that sits on top of the data and tells the system
-        // if the cell is a ghost zone. So if it is a ghost zone, don't count it!
+        // TODO: check that myVariable is not null. Example curv2d::speed.
+        vtkDataArray* ghostVariable = ug->GetCellData()->GetArray("avtGhostZones");
         if (atts.GetVariableType() == RemapAttributes::intrinsic) // like density
         {
             for (vtkIdType tuple = 0;
                  tuple < myVariable->GetNumberOfTuples(); tuple++)
             {
-                value += myVariable->GetComponent(tuple, 0) *
-                    subCellVolumes->GetComponent(tuple, 0);
+                if (ghostVariable != NULL &&
+                    ghostVariable->GetComponent(tuple, 0) == 1)
+                {
+                    continue;
+                }
+                else {
+                    value += myVariable->GetComponent(tuple, 0) *
+                        subCellVolumes->GetComponent(tuple, 0);
+                }
             }
             value /= rCellVolume;
             vars->SetComponent(rCell, 0, value + vars->GetComponent(rCell, 0));
@@ -549,9 +554,16 @@ if (DEBUG_rCellVolumeTEST != rCellVolume)
             for (vtkIdType tuple = 0;
                  tuple < myVariable->GetNumberOfTuples(); tuple++)
             {
-                value += myVariable->GetComponent(tuple, 0) / 
-                    originalCellVolumes->GetComponent(tuple, 0) *
-                    subCellVolumes->GetComponent(tuple, 0);
+                if (ghostVariable != NULL &&
+                    ghostVariable->GetComponent(tuple, 0) == 1)
+                {
+                    continue;
+                }
+                else {
+                    value += myVariable->GetComponent(tuple, 0) / 
+                        originalCellVolumes->GetComponent(tuple, 0) *
+                        subCellVolumes->GetComponent(tuple, 0);
+                }
             }
             vars->SetComponent(rCell, 0, value + vars->GetComponent(rCell, 0));
         }
