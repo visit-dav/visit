@@ -337,11 +337,13 @@ avtRemapFilter::ClipDomain(avtDataTree_p inLeaf) {
     int domainId = in_dr.GetDomain();
     vtkDataSet* in_ds = in_dr.GetDataVTK();
     
-    // If there are no cells, then return null.
-    // NOTE: When a domain is turned off, it is not a part of the input tree anymore,
-    // so it is unlikely that we will hit this code.
+    // If there are no cells, then return.
+    // If the variable does not exist, then return.
+    // If there are no points, then return.
+    // If there are no cells, then return.
     double nCellsIn = in_ds->GetNumberOfCells();
-    if (in_ds == NULL || in_ds->GetNumberOfPoints() == 0 || nCellsIn == 0)
+    if (in_ds == NULL || in_ds->GetCellData()->GetArray(vars->GetName()) == NULL ||
+        in_ds->GetNumberOfPoints() == 0 || nCellsIn == 0)
     {
         std::cout << "Domain " << domainId << " is invalid." << std::endl;
         in_ds->Delete();
@@ -529,7 +531,10 @@ if (DEBUG_rCellVolumeTEST != rCellVolume)
         
         double value = 0.0;
         vtkDataArray* myVariable = ug->GetCellData()->GetArray(vars->GetName());
-        // TODO: check that myVariable is not null. Example curv2d::speed.
+        if (myVariable == NULL)
+        { // in_ds has the variable, but ug does not
+            continue; // Go to the next rgrid cell
+        }
         vtkDataArray* ghostVariable = ug->GetCellData()->GetArray("avtGhostZones");
         if (atts.GetVariableType() == RemapAttributes::intrinsic) // like density
         {
@@ -538,7 +543,7 @@ if (DEBUG_rCellVolumeTEST != rCellVolume)
             {
                 if (ghostVariable != NULL &&
                     ghostVariable->GetComponent(tuple, 0) == 1)
-                {
+                { // Ignore ghost cells
                     continue;
                 }
                 else {
@@ -556,7 +561,7 @@ if (DEBUG_rCellVolumeTEST != rCellVolume)
             {
                 if (ghostVariable != NULL &&
                     ghostVariable->GetComponent(tuple, 0) == 1)
-                {
+                { // Ignore ghost cells
                     continue;
                 }
                 else {
