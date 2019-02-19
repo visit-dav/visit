@@ -3,10 +3,10 @@
 Advanced Usage
 --------------
 
-``build_visit`` comes with many features for building a parallel version,
-overcoming issues with OpenGL, a rendering library used by VisIt_ to
-render images, and controlling precisely what libraries VisIt_ is built
-with.
+``build_visit`` comes with many options for features such as building a
+parallel version, overcoming issues with OpenGL, a rendering library used
+by VisIt_ to render images, and controlling precisely what libraries
+VisIt_ is built with.
 
 Building a parallel version
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -22,7 +22,7 @@ MPICH.
 
 .. code:: bash
 
-  ./build_visit3_0_0b --mpich --makeflags -j4
+  ./build_visit3_0_0b --mpich
 
 If your system already has MPI installed on it, which is typically the case
 with a large system at a computer center, you can set several environment
@@ -31,11 +31,11 @@ The following example uses a system installed MPI library.
 
 .. code:: bash
 
-   env PAR_COMPILER=/usr/tce/packages/mvapich2/mvapich2-2.2-gcc-4.9.3/bin/mpicc \
-       PAR_COMPILER_CXX=/usr/tce/packages/mvapich2/mvapich2-2.2-gcc-4.9.3/bin/mpicxx \
-       PAR_INCLUDE=-I/usr/tce/packages/mvapich2/mvapich2-2.2-gcc-4.9.3/include \
+   env PAR_COMPILER=/usr/packages/mvapich2/bin/mpicc \
+       PAR_COMPILER_CXX=/usr/packages/mvapich2/bin/mpicxx \
+       PAR_INCLUDE=-I/usr/packages/mvapich2/include \
        PAR_LIBS=-lmpl \
-  ./build_visit3_0_0b --parallel --makeflags -j4
+  ./build_visit3_0_0b --parallel
 
 When running in parallel, the user will typically use scalable rendering for
 rendering images in parallel. VisIt does this through the use of the Mesa 3D
@@ -45,7 +45,7 @@ building with the Mesa 3D library.
 
 .. code:: bash
 
-  ./build_visit3_0_0b --mpich --osmesa --makeflags -j4
+  ./build_visit3_0_0b --mpich --osmesa
 
 Building with Mesa as the OpenGL implementation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -60,7 +60,7 @@ instead of the system OpenGL.
 
 .. code:: bash
 
-  ./build_visit3_0_0b --mesagl --makeflags -j4
+  ./build_visit3_0_0b --mesagl
 
 The difference between ``--mesagl`` and ``--osmesa``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -77,8 +77,8 @@ Building on a system without internet access
 When you want to build visit on a system without internet access, you can
 use ``build_visit`` to download the third party libraries and source code
 to a system that has internet access and then move those files to your
-machine without access. The following example downloads all the optional
-libraries and mpich and osmesa.
+machine without access. The following example downloads the optional
+libraries, mpich and osmesa.
 
 .. code:: bash
 
@@ -105,15 +105,28 @@ Python.
 
 .. code:: bash
 
-  ./build_visit3_0_0b --no-thirdparty --no-visit --python --makeflags -j4
+  ./build_visit3_0_0b --no-thirdparty --no-visit --python
 
 Different versions of ``build_visit``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 When you use a version of ``build_visit`` that has a version number in it,
-for example ``build_visit3_0_0b`` then it build that tagged version of
+for example ``build_visit3_0_0b`` then it builds that tagged version of
 VisIt_. If the version of ``build_visit`` was from the develop branch of
 VisIt_, then it will grab the latest version of VisIt_ from the devlop
-branch. If the version of ``build_visit`` came from a branch corresponding
-to release candidate corresponding to a major release, for example the
-v3.0 branch, then it will grab the latest version of VisIt_ from that branch.
+branch. If the version of ``build_visit`` came from a release candidate
+branch, for example the v3.0 branch, then it will grab the latest version
+of VisIt_ from that branch.
+
+Troubleshooting ``build_visit`` failures
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+When ``build_visit`` runs, it generates a log file with ``_log`` added to
+the name of the script. For example, if you are running ``build_visit3_0_0b``
+then the log file will be named ``build_visit3_0_0b_log``. The error that
+caused the failure should be near the end of the log file. When ``build_visit``
+finishes running, it will leave the directories that it used to build
+the packages intact. You can go into the directory of the package that
+failed and correct the issue and finish building and installing the package.
+You can then execute the ``build_visit`` command again to have it continue
+the build.
