@@ -124,12 +124,12 @@ def Main():
     arbpoly()
     csg()
     ghost1()
-    # globalNode() # broken
+    globalNode()
     mCurve2()
     mCurve3()
     mRect2()
     mRect3()
-    # mUcd3() # This is still broken
+    # mUcd3() # Extrinsic results are still broken
     
 Main()
 Exit()
