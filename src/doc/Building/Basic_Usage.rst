@@ -107,7 +107,7 @@ if you built using a git clone.
 
 .. code:: bash
 
-  visit3.0.0b/visit/build/bin/visit
+  visit3.0.0b/build/bin/visit
 
 if you built using a tar file.
 
@@ -124,7 +124,7 @@ if you built using a git clone.
 
 .. code:: bash
 
-  cd visit3.0.0b/visit/build
+  cd visit3.0.0b/build
   make package
 
 if you built using a tar file.
