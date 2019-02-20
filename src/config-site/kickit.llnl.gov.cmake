@@ -1,8 +1,8 @@
 #/usr/gapps/visit/thirdparty_shared/3.0.0b/cmake/3.9.3/linux-x86_64_gcc-4.8/bin/cmake
 ##
 ## ./build_visit3_0_0b generated host.cmake
-## created: Wed Feb  6 21:15:55 PST 2019
-## system: Linux kickit 4.18.9-1.el7.elrepo.x86_64 #1 SMP Thu Sep 20 09:04:54 EDT 2018 x86_64 x86_64 x86_64 GNU/Linux
+## created: Fri Feb 15 09:13:27 PST 2019
+## system: Linux kickit 4.20.2-1.el7.elrepo.x86_64 #1 SMP Sun Jan 13 09:57:55 EST 2019 x86_64 x86_64 x86_64 GNU/Linux
 ## by: brugger1
 
 ##
@@ -10,6 +10,7 @@
 ##
 SET(VISITHOME /usr/gapps/visit/thirdparty_shared/3.0.0b)
 SET(VISITARCH linux-x86_64_gcc-4.8)
+VISIT_OPTION_DEFAULT(VISIT_SLIVR TRUE TYPE BOOL)
 
 ## Compiler flags.
 ##
