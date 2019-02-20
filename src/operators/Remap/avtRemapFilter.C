@@ -66,6 +66,8 @@
 #include <avtSamplePointExtractor.h>
 #include <vtkVisItClipper.h>
 
+#include <DebugStream.h>
+
 
 // ****************************************************************************
 //  Method: avtRemapFilter constructor
@@ -80,6 +82,7 @@ avtRemapFilter::avtRemapFilter()
   rCellVolume(0.),
   is3D(false)
 {
+    debug5 << "avtRemapFilter::avtRemapFilter" << std::endl;
     rg = vtkRectilinearGrid::New();
     vars = vtkDoubleArray::New();
 }
@@ -97,6 +100,7 @@ avtRemapFilter::avtRemapFilter()
 
 avtRemapFilter::~avtRemapFilter()
 {
+    debug5 << "avtRemapFilter::~avtRemapFilter" << std::endl;
     rg->Delete();
     vars->Delete();
 }
@@ -113,6 +117,7 @@ avtRemapFilter::~avtRemapFilter()
 avtFilter *
 avtRemapFilter::Create()
 {
+    debug5 << "avtRemapFilter::Create" << endl;
     return new avtRemapFilter();
 }
 
@@ -134,6 +139,7 @@ avtRemapFilter::Create()
 void
 avtRemapFilter::SetAtts(const AttributeGroup *a)
 {
+    debug5 << "avtRemapFilter::SetAtts" << std::endl;
     atts = *(const RemapAttributes*)a;
 }
 
@@ -153,6 +159,7 @@ avtRemapFilter::SetAtts(const AttributeGroup *a)
 bool
 avtRemapFilter::Equivalent(const AttributeGroup *a)
 {
+    debug5 << "avtRemapFilter::Equivalent(" << std::endl;
     return (atts == *(RemapAttributes*)a);
 }
 
@@ -185,6 +192,7 @@ avtRemapFilter::Equivalent(const AttributeGroup *a)
 void
 avtRemapFilter::Execute(void)
 {
+    debug1 << "avtRemapFilter::Execute" << std::endl;
 
 // --- DEBUG --- DEBUG --- DEBUG --- DEBUG --- DEBUG --- DEBUG --- DEBUG ---- //
 DEBUG_CellTypeList.insert(std::pair<std::string, int>("VTK_TRIANGLE",   0));
@@ -216,6 +224,7 @@ DEBUG_CellTypeList.insert(std::pair<std::string, int>("unknown",        0));
                   (nCellsOut);    
     if (is3D) 
     {
+        debug5 << "Generating 2D grid" << std::endl;
         int depth = atts.GetCellsZ();
         nCellsOut *= depth;
         rCellVolume *= (rGridBounds[5] - rGridBounds[4]) / depth;
@@ -223,6 +232,7 @@ DEBUG_CellTypeList.insert(std::pair<std::string, int>("unknown",        0));
     }
     else
     {
+        debug5 << "Generating 3D grid" << std::endl;
         CreateGrid(width, height, 0, width, 0, height);
     }
     
@@ -230,7 +240,7 @@ DEBUG_CellTypeList.insert(std::pair<std::string, int>("unknown",        0));
     int nVariables = GetInput()->GetInfo().GetAttributes().GetNumberOfVariables();
     if (nVariables <= 0)
     {
-        std::cout << "There are no variables" << std::endl;
+        debug5 << "There are no variables." << std::endl;
         Output();
         return;
     }
@@ -244,6 +254,7 @@ DEBUG_CellTypeList.insert(std::pair<std::string, int>("unknown",        0));
     vars->SetName(GetInput()->GetInfo().GetAttributes().GetVariableName().c_str());
     rg->GetCellData()->AddArray(vars);
     rg->GetCellData()->SetScalars(vars);
+    debug5 << "Variable " << vars->GetName() << " added to grid." << std::endl;
     
     // ----------------------------------------------------- //
     // --- Clip the domains against the rectilinear grid --- //
@@ -267,17 +278,21 @@ for (std::map<std::string,int>::const_iterator iter = DEBUG_CellTypeList.begin()
 
     
     Output();
-    std::cout << "DONE" << std::endl;
+    debug5 << "DONE Remapping" << std::endl;
     return;
 }
+
+
+
 
 
 void
 avtRemapFilter::TraverseDomainTree(avtDataTree_p inTree)
 {
+    debug3 << "avtRemapFilter::TraverseDomainTree" << std::endl;
     if (*inTree == NULL)
     {
-        std::cout << "inTree is null" << std::endl;
+        debug4 << "inTree is null" << std::endl;
         return;
     }
     
@@ -288,31 +303,30 @@ avtRemapFilter::TraverseDomainTree(avtDataTree_p inTree)
     
     if (numChildren <= 0 && !inTree->HasData())
     {
-        std::cout << "No children and no data" << std::endl;
+        debug4 << "No children and no data" << std::endl;
+        return;
     }
     
     if (numChildren == 0)
     {
-        std::cout << "Number of children is 0. Clipping this domain." << std::endl;
-        std::cout << "Domain Id: " << domainIds[0] << std::endl;
+        debug5 << "Number of children is 0. Clipping this domain." << std::endl;
+        debug5 << "Domain Id: " << domainIds[0] << std::endl;
         ClipDomain(inTree);
         return;
     }
     else
     {
-        std::cout << "Number of children is " << numChildren
-                  << ". Looping over children." << std::endl;
+        debug5 << "Number of children is " << numChildren
+               << ". Looping over children." << std::endl;
         for (int i = 0; i < numChildren; ++i)
         {
             if (inTree->ChildIsPresent(i))
             {
-                std::cout << "Domain Id: " << domainIds[i] << std::endl;
                 TraverseDomainTree(inTree->GetChild(i));
             }
             else
             {
-                std::cout << "Child " << i << " is not present. Skipping."
-                          << std::endl;
+                debug4 << "Child " << i << " is not present. Skipping." << std::endl;
             }
         }
     }
@@ -326,6 +340,7 @@ avtRemapFilter::TraverseDomainTree(avtDataTree_p inTree)
 
 void
 avtRemapFilter::ClipDomain(avtDataTree_p inLeaf) {
+    debug3 << "avtRemapFilter::ClipDomain" << std::endl;
 
     // --------------------------------------------------- //
     // --- Convert the avtDataTree_p into a vtkDataSet --- //
@@ -342,7 +357,7 @@ avtRemapFilter::ClipDomain(avtDataTree_p inLeaf) {
     if (in_ds == NULL || in_ds->GetCellData()->GetArray(vars->GetName()) == NULL ||
         in_ds->GetNumberOfPoints() == 0 || nCellsIn == 0)
     {
-        std::cout << "Domain " << domainId << " is invalid." << std::endl;
+        debug4 << "Domain " << domainId << " is invalid." << std::endl;
         in_ds->Delete();
         return;
     }
@@ -357,6 +372,7 @@ avtRemapFilter::ClipDomain(avtDataTree_p inLeaf) {
     vtkDoubleArray* avtRemapOriginalVolume = CalculateCellVolumes(in_ds,
             "avtRemapOriginalVolume");
     in_ds->GetCellData()->AddArray(avtRemapOriginalVolume);
+    debug5 << "Added cell volumes to in_ds" << std::endl;
     
     
     // -------------------------------------------------------- //
@@ -441,6 +457,7 @@ double DEBUG_maxDiff = DBL_MIN;
             last = clipper;
             clipperArray.push_back(clipper);
         } // end clipping loop
+        debug5 << "Cell " << rCell << " has been clipped" << std::endl;
         
         // Collection of clipped cells from the original grid that now take the shape
         // of the rgrid cell, could be something like this:
@@ -465,6 +482,7 @@ double DEBUG_maxDiff = DBL_MIN;
         // pressure, etc.).
         
         vtkDoubleArray* subCellVolumes = CalculateCellVolumes(ug, "subCellVolume");
+        debug5 << "Calculated volumes of subCells" << std::endl;
         
 // --- DEBUG --- DEBUG --- DEBUG --- DEBUG --- DEBUG --- DEBUG --- DEBUG ---- //
 double DEBUG_rCellVolumeTEST = 0.0;
@@ -498,6 +516,7 @@ if (DEBUG_rCellVolumeTEST != rCellVolume)
         vtkDataArray* myVariable = ug->GetCellData()->GetArray(vars->GetName());
         if (myVariable == NULL)
         { // in_ds has the variable, but ug does not
+            debug4 << "Clipped cell-grid does not have the variable" << std::endl;
             continue; // Go to the next rgrid cell
         }
         vtkDataArray* ghostVariable = ug->GetCellData()->GetArray("avtGhostZones");
@@ -539,8 +558,9 @@ if (DEBUG_rCellVolumeTEST != rCellVolume)
         }
         else
         {
-            std::cout << "Should not be possible to get here... " << std::endl;
+            debug1 << "Should not be possible to get here... " << std::endl;
         }
+        debug5 << "Remapped the variable to cell " << rCell << std::endl;
         
         // --- Clean up --- //
         ////std::cout << "Deleting myVariable" << std::endl;
@@ -582,6 +602,7 @@ if (DEBUG_rCellVolumeTEST != rCellVolume)
 
 void
 avtRemapFilter::Output() {
+    debug4 << "avtRemapFilter::Output" << std::endl;
     avtDataTree_p outTree = new avtDataTree(rg, 0);
     SetOutputDataTree(outTree);
 }
@@ -621,8 +642,8 @@ Swap3(double c[][3], int a, int b)
     Swap1(c[a][2], c[b][2]);
 }
 
-inline
-void Copy3(double coords[][3], double a[], int i)
+inline void
+Copy3(double coords[][3], double a[], int i)
 {
     a[0] = coords[i][0];
     a[1] = coords[i][1];
@@ -632,6 +653,7 @@ void Copy3(double coords[][3], double a[], int i)
 vtkDoubleArray*
 avtRemapFilter::CalculateCellVolumes(vtkDataSet* in_ds, const char* name)
 {
+    debug4 << "avtRemapFilter::CalculateCellVolumes" << std::endl;
     vtkDoubleArray* volumeArray = vtkDoubleArray::New(); // return element
     
     // Set up necessary variables
@@ -662,36 +684,43 @@ avtRemapFilter::CalculateCellVolumes(vtkDataSet* in_ds, const char* name)
         
         int subdiv[3][4] = { {0,5,4,3}, {0,2,1,4}, {0,4,5,2} };
         // ^ Need this to be before switch otherwise ill-formed program.
-        switch(cell->GetCellType()) // right now only support Triangle and Quad
+        switch(cell->GetCellType())
         {
             case VTK_TRIANGLE:
+                debug5 << "VTK_TRIANGLE" << std::endl;
 DEBUG_CellTypeList["VTK_TRIANGLE"]++;
                 volume = v_tri_area(3, coordinates);
                 break;
             case VTK_QUAD:
+                debug5 << "VTK_QUAD" << std::endl;
 DEBUG_CellTypeList["VTK_QUAD"]++;
                 volume = v_quad_area(4, coordinates);
                 break;
             case VTK_PIXEL:
+                debug5 << "VTK_PIXEL" << std::endl;
 DEBUG_CellTypeList["VTK_PIXEL"]++;
                 Swap3(coordinates, 2, 3);
                 volume = v_quad_area(4, coordinates);
                 break;
             case VTK_VOXEL:
+                debug5 << "VTK_VOXEL" << std::endl;
 DEBUG_CellTypeList["VTK_VOXEL"]++;
                 Swap3(coordinates, 2, 3);
                 Swap3(coordinates, 6, 7);
                 volume = v_hex_volume(8, coordinates);
                 break;
             case VTK_HEXAHEDRON:
+                debug5 << "VTK_HEXAHEDRON" << std::endl;
 DEBUG_CellTypeList["VTK_HEXAHEDRON"]++;
                 volume = v_hex_volume(8, coordinates);
                 break;
             case VTK_TETRA:
+                debug5 << "VTK_TETRA" << std::endl;
 DEBUG_CellTypeList["VTK_TETRA"]++;
                 volume = v_tet_volume(4, coordinates);
                 break;
             case VTK_WEDGE:
+                debug5 << "VTK_WEDGE" << std::endl;
 DEBUG_CellTypeList["VTK_WEDGE"]++;
                 double tet_coordinates[4][3];
                 volume = 0;
@@ -704,6 +733,7 @@ DEBUG_CellTypeList["VTK_WEDGE"]++;
                 }
                 break;
             case VTK_PYRAMID:
+                debug5 << "VTK_PYRAMID" << std::endl;
 DEBUG_CellTypeList["VTK_PYRAMID"]++;
                 double one[4][3];
                 double two[4][3];
@@ -718,10 +748,11 @@ DEBUG_CellTypeList["VTK_PYRAMID"]++;
                 volume = v_tet_volume(4,one) + v_tet_volume(4, two);
                 break;
             default:
+                debug5 << "Unknown_Type" << std::endl;
 DEBUG_CellTypeList["unknown"]++;
-                std::cout << "Cannot calculate volume for cell of type: "
-                          << cell->GetCellType() << std::endl
-                          << "Scalars won't be remapped." << std::endl;
+                debug4 << "Cannot calculate volume for cell of type: "
+                       << cell->GetCellType() << std::endl
+                       << "Scalars won't be remapped." << std::endl;
                 // TODO: If the subCells cannot be classified, then we can't do
                 // anything. However, I don't think this will ever happen because
                 // the clipper is designed to output cells that we can process.
@@ -734,7 +765,7 @@ DEBUG_CellTypeList["unknown"]++;
         volumeArray->SetComponent(i, 0, volume); // store the volume in our array
     }
     
-    
+    debug5 << "Done calculating volume" << std::endl;
     return volumeArray;
 }
 
@@ -765,8 +796,10 @@ DEBUG_CellTypeList["unknown"]++;
 void
 avtRemapFilter::GetBounds()
 {
+    debug4 << "avtRemapFilter::GetBounds" << std::endl;
     if (!atts.GetUseExtents())
     {
+        debug5 << "Getting bounds from Start and End fields" << std::endl;
         rGridBounds[0] = atts.GetStartX();
         rGridBounds[1] = atts.GetEndX();
         rGridBounds[2] = atts.GetStartY();
@@ -776,6 +809,7 @@ avtRemapFilter::GetBounds()
     }
     else
     {
+        debug5 << "Using extents" << std::endl;
         const avtDataAttributes &datts = GetInput()->GetInfo().GetAttributes();
         avtExtents *exts = datts.GetDesiredSpatialExtents();
         if (exts->HasExtents())
@@ -789,6 +823,7 @@ avtRemapFilter::GetBounds()
     }
     if (fabs(rGridBounds[4]) < 1e-100 && fabs(rGridBounds[5]) < 1e-100)
     {
+        debug5 << "2D Remapping" << std::endl;
         is3D = false;
     }
     else {
@@ -838,6 +873,7 @@ void
 avtRemapFilter::CreateGrid(int numX, int numY, int numZ,
         int minX, int maxX, int minY, int maxY, int minZ, int maxZ)
 {
+    debug4 << "avtRemapFilter::CreateGrid" << std::endl;
     vtkDataArray *xc = NULL;
     vtkDataArray *yc = NULL;
     vtkDataArray *zc = NULL;
@@ -863,6 +899,7 @@ void
 avtRemapFilter::CreateGrid(
         int numX, int numY, int minX, int maxX, int minY, int maxY)
 {
+    debug4 << "avtRemapFilter::CreateGrid" << std::endl;
     vtkDataArray *xc = NULL;
     vtkDataArray *yc = NULL;
     vtkDataArray *zc = NULL;
@@ -913,6 +950,7 @@ avtRemapFilter::CreateGrid(
 vtkDataArray *
 avtRemapFilter::GetCoordinates(double start, double length, int numEls, int myStart, int myStop)
 {
+    debug4 << "avtRemapFilter::GetCoordinates" << std::endl;
     vtkDoubleArray *rv = vtkDoubleArray::New();
 
     //
@@ -920,6 +958,7 @@ avtRemapFilter::GetCoordinates(double start, double length, int numEls, int mySt
     //
     if (length <= 0. || numEls <= 1 || myStart >= myStop)
     {
+        debug4 << "Degenerate cell" << std::endl;
         rv->SetNumberOfValues(1);
         rv->SetValue(0, start);
         return rv;
