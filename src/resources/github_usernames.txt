@@ -5,3 +5,4 @@ cyrush, Cyrus Harrison, LLNL
 rusu1, Eddie Rusu, LLNL
 acbauer, Andy Bauer, DAAC DoD
 BradWhitlock, Brad Whitlock, Intelligent Light
+griffin28, Kevin Griffin, LLNL
