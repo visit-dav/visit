@@ -30,6 +30,10 @@ def load_opts(opts_json):
     print "[build directory: %s]" % opts["build_dir"] 
     if not opts.has_key("force_clean"):
         opts["force_clean"] = False
+    if opts.has_key("skip_checkout"):
+        opts["skip_checkout"] = True
+    else:
+        opts["skip_checkout"] = False
     # Setup bb env vars
     env = {'VISITARCH' : opts["arch"]}
     if opts.has_key("par_compiler"):
@@ -45,7 +49,7 @@ def load_opts(opts_json):
     if not opts.has_key("tarball"):
         opts["tarball"] = None
     if not opts.has_key("branch"):
-        opts["branch"] = None
+        opts["branch"] = "develop" 
     if not opts.has_key("tag"):
         opts["tag"] = None
     if opts.has_key("env"):
@@ -70,10 +74,19 @@ def visit_svn_path(path,svn_opts,branch=None,tag=None):
         res = res + "trunk/" + path
     return res
 
+def visit_git_path(git_opts):
+    if git_opts["mode"] == "ssh":
+        res = "ssh://git@github.com/visit-dav/visit.git"
+    else:
+        git_uname = git_opts["git_uname"]
+        res = "https://%s@github.com/visit-dav/visit.git"
+        res = res % git_uname
+
+    return res
 
 def cmake_bin(opts):
     if "build_visit" in opts: # use cmake created by build_visit
-        cmake_cmd = "../thirdparty_shared/visit/cmake/%s/%s/bin/cmake"
+        cmake_cmd = "../thirdparty_shared/third_party/cmake/%s/%s/bin/cmake"
         cmake_cmd = cmake_cmd % (opts["build_visit"]["cmake_ver"],opts["arch"])
     else: 
         # assume a suitable cmake exists in the user's PATH
@@ -83,24 +96,22 @@ def cmake_bin(opts):
 
 
 def steps_bv(opts,ctx):
+    if(opts["force_clean"] == True):
+        cmd_clean = "rm -rf *"
+    else:
+        cmd_clean = "pwd"
     bv_working = pjoin(opts["build_dir"],"thirdparty_shared")
-    ctx.actions["bv_checkout"] = svn(svn_url=visit_svn_path("src/tools/dev/scripts",
-                                                            branch=opts["branch"],
-                                                            tag=opts["tag"],
-                                                            svn_opts=opts["svn"]),
-                                     svn_cmd="co",
-                                     description="checkout build_visit",
-                                     working_dir=bv_working)
+    thirdparty_dir = pjoin(bv_working,"third_party")
+
+    ctx.actions["create_third_party"]  =  shell(cmd=cmd_clean,
+                                                working_dir=thirdparty_dir,
+                                                description="create %s" % thirdparty_dir)
     bv_args = " --console "
     if opts["build_visit"].has_key("make_flags"):
         bv_args    += " --makeflags '%s'" % opts["build_visit"]["make_flags"]
     elif opts.has_key("make_nthreads"):
         bv_args   += " --makeflags '-j%d'" % opts["make_nthreads"]
     bv_args   += " --no-visit"
-    if opts["svn"]["mode"] == "anon":
-        bv_args +=" --svn-anonymous"
-    else:
-        bv_args +=" --svn"
     if opts.has_key("c_compiler"):
         bv_args += " --cc " + opts["c_compiler"]
     if opts.has_key("cxx_compiler"):
@@ -109,39 +120,25 @@ def steps_bv(opts,ctx):
         bv_args += " " + opts["build_visit"]["args"]
     if opts["build_visit"].has_key("libs"):
         bv_args +=  " " + " ".join(["--%s" % l for l in opts["build_visit"]["libs"]])
-    bv_cmd   = "echo yes | scripts/build_visit %s" % bv_args
+    bv_cmd   = "echo yes | ../visit/src/tools/dev/scripts/build_visit %s" % bv_args
     ctx.actions["bv_run"] = shell(cmd=bv_cmd,
                                   description="building dependencies",
                                   working_dir=bv_working,
                                   env = opts["env"])
-    ctx.triggers["build"].extend(["bv_checkout",
-              "bv_run"])
+    ctx.triggers["build"].extend(["create_third_party", "bv_run"])
+
 
 def steps_checkout(opts,ctx):
-    ctx.actions["src_checkout"] = svn(svn_url=visit_svn_path("src",
-                                                            branch=opts["branch"],
-                                                            tag=opts["tag"],
-                                                            svn_opts=opts["svn"]),
+    git_working = pjoin(opts["build_dir"], "visit")
+    ctx.actions["src_checkout"] = git(git_url=visit_git_path(git_opts=opts["git"]),
+                                      git_cmd="clone",
                                       description="checkout visit src",
-                                      svn_cmd="co",
                                       working_dir=opts["build_dir"])
-    #ctx.actions["data_checkout"] = svn(svn_url=visit_svn_path("src/tools/data/datagen",
-     #                                                       branch=opts["branch"],
-      #                                                      tag=opts["tag"],
-       #                                                     svn_opts=opts["svn"]),
-        #                               description="checkout visit src",
-         #                              svn_cmd="co",
-          #                             working_dir=opts["build_dir"])
-    #ctx.actions["test_checkout"] = svn(svn_url=visit_svn_path("test",
-     #                                                       branch=opts["branch"],
-      #                                                      tag=opts["tag"],
-      #                                                      svn_opts=opts["svn"]),
-       #                                description="checkout visit src",
-        #                               svn_cmd="co",
-         #                              working_dir=opts["build_dir"])
-    ctx.triggers["build"].extend(["src_checkout"])
-                                  #"data_checkout",
-                                  #"test_checkout"])
+    ctx.actions["switch_branch"] = shell(cmd="git checkout %s" % opts["branch"],
+                                         description="switch to branch",
+                                         working_dir=git_working)
+    ctx.triggers["build"].extend(["src_checkout", "switch_branch"])
+
 
 def steps_untar(opts,ctx):
     tar_base = os.path.basename(opts["tarball"])
@@ -159,6 +156,7 @@ def steps_configure(opts,build_type,ctx):
         cmd_clean = "pwd"
     build_dir   = pjoin(opts["build_dir"],"build.%s"   % build_type.lower())
     install_dir = pjoin(opts["build_dir"],"install.%s" % build_type.lower())
+    config_dir = pjoin(opts["build_dir"], "thirdparty_shared")
     ctx.actions["create_build.%s"   % build_type.lower() ]    = shell(cmd=cmd_clean,
                                                   working_dir=build_dir,
                                                   description="create %s" % build_dir)
@@ -179,18 +177,18 @@ def steps_configure(opts,build_type,ctx):
         if opts["build_xdb"]:
             cmake_opts += " -DVISIT_ENABLE_XDB:BOOL=ON"    
     if opts.has_key("build_visit"):
-        cmake_opts += " -DVISIT_CONFIG_SITE:PATH=../thirdparty_shared/$(hostname).cmake"
+        cmake_opts += " -DVISIT_CONFIG_SITE:PATH=%s/$(hostname).cmake" % config_dir
     if opts.has_key("cmake_extra_args"):
         cmake_opts += opts["cmake_extra_args"]
     elif opts.has_key("config_site"):
         cfg_site = opts["config_site"]
         cfg_site_abs = os.path.abspath(cfg_site)
         if not os.path.isfile(cfg_site_abs):
-            cfg_site = pjoin("..","src","config-site",cfg_site)
+            cfg_site = pjoin("..","visit/src","config-site",cfg_site)
         else:
             cfg_site = cfg_site_abs
         cmake_opts += " -DVISIT_CONFIG_SITE:PATH=%s" % cfg_site
-    ctx.actions["cmake_" + build_type ] = cmake(src_dir=pjoin(opts["build_dir"],"src"),
+    ctx.actions["cmake_" + build_type ] = cmake(src_dir=pjoin(opts["build_dir"],"visit/src"),
                                                 cmake_bin=cmake_bin(opts),
                                                 cmake_opts=cmake_opts,
                                                 working_dir=build_dir,
@@ -230,7 +228,7 @@ def steps_package(opts,build_type,ctx):
         cmake_opts += ' -DCPACK_BUNDLE_APPLE_CERT_APP="%s"' % opts["cert"]
         a_cmake_bundle = "cmake_cfg_bundle_" + build_type
         a_make_bundle  = "package_osx_bundle." + build_type
-        ctx.actions[a_cmake_bundle] = cmake(src_dir=pjoin(opts["build_dir"],"src"),
+        ctx.actions[a_cmake_bundle] = cmake(src_dir=pjoin(opts["build_dir"],"visit/src"),
                                             cmake_bin=cmake_bin(opts),
                                             cmake_opts=cmake_opts,
                                             working_dir=build_dir,
@@ -257,7 +255,7 @@ def steps_osx_sanity_check(opts,build_type,ctx):
     # names will include what is in the src/VERSION file.
     #
     actual_version = opts["version"] 
-    actual_version_file = pjoin(opts["build_dir"],"src","VERSION")
+    actual_version_file = pjoin(opts["build_dir"],"visit/src","VERSION")
     if os.path.isfile(actual_version_file):
         actual_version = open(actual_version_file).readline().strip()
     test_base = "mount/VisIt.app/Contents/Resources/%s/%s" % (actual_version, 
@@ -284,12 +282,16 @@ def steps_osx_sanity_check(opts,build_type,ctx):
 
 def steps_visit(opts,ctx):
     ctx.triggers["build"] = inorder()
+    #if not opts["tarball"] is None:
+    #    steps_untar(opts,ctx)
+    #else:
+    #    steps_checkout(opts,ctx)
+    if not opts["skip_checkout"]:
+        steps_checkout(opts,ctx)
+
     if opts.has_key("build_visit"):
         steps_bv(opts,ctx)
-    if not opts["tarball"] is None:
-        steps_untar(opts,ctx)
-    else:
-        steps_checkout(opts,ctx)
+
     for build_type in opts["build_types"]:
         steps_configure(opts,build_type,ctx)
         steps_build(opts,build_type,ctx)
