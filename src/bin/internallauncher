@@ -2915,7 +2915,6 @@ class MainLauncher(object):
         #
         mesa_gl_dir = os.path.join(self.visitlibdir,"mesagl")
         mesa_gl_lib = os.path.join(mesa_gl_dir,"libGL.so.1")
-        need_osmesa = 0
         if ( os.path.isfile(mesa_gl_lib) and
             ( self.generalArgs.exe_name.startswith("gui") or
               self.generalArgs.exe_name.startswith("engine") or
@@ -2927,7 +2926,7 @@ class MainLauncher(object):
         # OSMesa GL Settings
         #
         osmesa_gl_dir = os.path.join(self.visitlibdir,"osmesa")
-        osmesa_gl_lib = os.path.join(osmesa_gl_dir,"libOSMesa.so.8")
+        osmesa_gl_lib = os.path.join(osmesa_gl_dir,"libGL.so.1")
         #
         # if we have osmesa, use it for the engine & viewer -nowin
         #
@@ -2938,7 +2937,7 @@ class MainLauncher(object):
             # if we are using OSMesa in the viewer or engine we need to set VISIT_MESA_LIB
             # and adjust the LD_LIBRARY_PATH so VTK can pick up OSMesa instead of standard GL
             #
-            if ( (need_osmesa) or (self.generalArgs.osmesa) or
+            if ( (self.generalArgs.osmesa) or
                  (self.generalArgs.exe_name == "viewer" and self.generalArgs.nowin == 1) or
                  (self.generalArgs.exe_name.startswith("engine") and not self.generalArgs.hw_accel)):
                 SETENV("LD_LIBRARY_PATH", self.joinpaths([osmesa_gl_dir, GETENV("LD_LIBRARY_PATH")]))
