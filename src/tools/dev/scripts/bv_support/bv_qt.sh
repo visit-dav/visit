@@ -197,8 +197,20 @@ function qt_license_prompt
     return 0
 }
 
+
 function apply_qt_patch
 {
+    if [[ "$DO_MESAGL" == "yes" ]] ; then
+        if [[ ${QT_VERSION} == 5.10.1 ]] ; then
+            if [[ "$OPSYS" == "Linux" ]]; then
+                apply_qt_5101_linux_mesagl_patch
+                if [[ $? != 0 ]] ; then
+                    return 1
+                fi
+            fi
+        fi
+    fi
+
     if [[ ${QT_VERSION} == 5.6.1 ]] ; then
         if [[ "$OPSYS" == "Darwin" ]]; then
 
@@ -223,6 +235,39 @@ function apply_qt_patch
 
     return 0
 }
+
+function apply_qt_5101_linux_mesagl_patch
+{   
+    info "Patching qt 5.10.1 for Linux and Mesa-as-GL"
+    patch -p0 << EOF
+    diff -c qtbase/mkspecs/linux-g++-64/qmake.conf.orig  qtbase/mkspecs/linux-g++-64/qmake.conf     
+    *** qtbase/mkspecs/linux-g++-64/qmake.conf.orig     Thu Feb  8 18:24:48 2018
+    --- qtbase/mkspecs/linux-g++-64/qmake.conf  Fri Feb 22 22:04:50 2019
+    ***************
+    *** 19,24 ****
+  
+  
+      QMAKE_LIBDIR_X11        = /usr/X11R6/lib64
+    ! QMAKE_LIBDIR_OPENGL     = /usr/X11R6/lib64
+  
+      load(qt_config)
+    --- 19,25 ----
+  
+  
+      QMAKE_LIBDIR_X11        = /usr/X11R6/lib64
+    ! QMAKE_LIBDIR_OPENGL=$MESAGL_LIB_DIR
+    ! QMAKE_INCDIR_OPENGL=$MESAGL_INCLUDE_DIR
+  
+      load(qt_config)
+EOF 
+    if [[ $? != 0 ]] ; then
+        warn "qt 5.10.1 linux conf patch 1 failed."
+        return 1
+    fi
+    
+    return 0;
+}
+
 
 function apply_qt_561_osx10_13_patch
 {
