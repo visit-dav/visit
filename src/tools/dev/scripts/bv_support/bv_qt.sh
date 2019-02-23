@@ -210,14 +210,15 @@ function apply_qt_patch
             fi
         fi
     fi
+
     return 0
 }
 
 function apply_qt_5101_linux_mesagl_patch
 {   
     info "Patching qt 5.10.1 for Linux and Mesa-as-GL"
-    patch -p0 << EOF
-    diff -c qtbase/mkspecs/linux-g++-64/qmake.conf.orig  qtbase/mkspecs/linux-g++-64/qmake.conf     
+    patch -p0 <<EOF
+    diff -c qtbase/mkspecs/linux-g++-64/qmake.conf.orig  qtbase/mkspecs/linux-g++-64/qmake.conf
     *** qtbase/mkspecs/linux-g++-64/qmake.conf.orig     Thu Feb  8 18:24:48 2018
     --- qtbase/mkspecs/linux-g++-64/qmake.conf  Fri Feb 22 22:04:50 2019
     ***************
@@ -236,7 +237,7 @@ function apply_qt_5101_linux_mesagl_patch
     ! QMAKE_INCDIR_OPENGL=$MESAGL_INCLUDE_DIR
   
       load(qt_config)
-EOF 
+EOF
     if [[ $? != 0 ]] ; then
         warn "qt 5.10.1 linux conf patch 1 failed."
         return 1
@@ -244,6 +245,7 @@ EOF
     
     return 0;
 }
+
 
 function build_qt
 {
