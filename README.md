@@ -1,8 +1,12 @@
+
+![GitHub commit activity](https://img.shields.io/github/commit-activity/m/visit-dav/visit.svg) ![GitHub contributors](https://img.shields.io/github/contributors-anon/visit-dav/visit.svg)
+
 # VisIt
+
+Source code repository for the VisIt Scientific Visualization and Data Analysis Application
 
 [Project Website](https://visit.llnl.gov) | [Nightly Test Status](http://portal.nersc.gov/project/visit/)
 
-Source code repository for the VisIt Scientific Visualization and Data Analysis Application
 
 ##  Documentation
 
