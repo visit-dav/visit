@@ -94,7 +94,11 @@ function bv_qt_initialize_vars
 
 function bv_qt_depends_on
 {
-    echo ""
+    if [[ "$DO_MESAGL" == "yes" ]] ; then
+       echo "mesagl glu"
+    else
+        echo ""
+    fi
 }
 
 
