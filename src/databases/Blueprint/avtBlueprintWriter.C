@@ -90,6 +90,59 @@ using namespace conduit;
 int    avtBlueprintWriter::INVALID_CYCLE = -INT_MAX;
 double avtBlueprintWriter::INVALID_TIME = -DBL_MAX;
 
+//-----------------------------------------------------------------------------
+// These methods are used to re-wire conduit's default error handling
+//-----------------------------------------------------------------------------
+void
+blueprint_writer_plugin_print_msg(const std::string &msg,
+                           const std::string &file,
+                           int line)
+{
+    // Uncomment for very verbose traces:
+    //
+    // debug5 << "File:"    << file << std::endl
+    //        << "Line:"    << line << std::endl
+    //        << "Message:" << msg  << std::endl;
+    debug5 << msg  << std::endl;
+}
+
+//-----------------------------------------------------------------------------
+void
+blueprint_writer_plugin_info_handler(const std::string &msg,
+                              const std::string &file,
+                              int line)
+{
+    blueprint_writer_plugin_print_msg(msg,file,line);
+}
+
+
+//-----------------------------------------------------------------------------
+void
+blueprint_writer_plugin_warning_handler(const std::string &msg,
+                                 const std::string &file,
+                                 int line)
+{
+    blueprint_writer_plugin_print_msg(msg,file,line);
+}
+
+//-----------------------------------------------------------------------------
+void
+blueprint_writer_plugin_error_handler(const std::string &msg,
+                               const std::string &file,
+                               int line)
+{
+    std::ostringstream bp_err_oss;
+    bp_err_oss << "[ERROR]"
+               << "File:"    << file << std::endl
+               << "Line:"    << line << std::endl
+               << "Message:" << msg  << std::endl;
+
+    debug1 << bp_err_oss.str();
+
+    BP_PLUGIN_EXCEPTION1(InvalidVariableException, bp_err_oss.str());
+
+}
+
 // ****************************************************************************
 //  Method: avtBlueprintWriter constructor
 //
@@ -100,11 +153,15 @@ double avtBlueprintWriter::INVALID_TIME = -DBL_MAX;
 //
 // ****************************************************************************
 
-avtBlueprintWriter::avtBlueprintWriter() :stem(), meshName()
+avtBlueprintWriter::avtBlueprintWriter() :m_stem(), m_meshName()
 {
-    doBinary = false;
-    doXML = false;
-    nblocks = 0;
+    m_nblocks = 0;
+
+    conduit::utils::set_info_handler(blueprint_writer_plugin_info_handler);
+    conduit::utils::set_warning_handler(blueprint_writer_plugin_warning_handler);
+    // this catches any uncaught conduit errors, logs them to debug 1
+    // and  converts them into a VisIt Exception
+    conduit::utils::set_error_handler(blueprint_writer_plugin_error_handler);
 }
 
 
@@ -124,8 +181,8 @@ avtBlueprintWriter::avtBlueprintWriter() :stem(), meshName()
 void
 avtBlueprintWriter::OpenFile(const string &stemname, int nb)
 {
-    stem = stemname;
-    nblocks = nb;
+    m_stem = stemname;
+    m_nblocks = nb;
 
     int c = GetCycle();
     if (c != INVALID_CYCLE)
@@ -135,18 +192,19 @@ avtBlueprintWriter::OpenFile(const string &stemname, int nb)
     char fmt_buff[64];
     snprintf(fmt_buff, sizeof(fmt_buff), "%06d",c);
     // we want the basename without the extension to use as a sub-dir name
-    mbDirName = FileFunctions::Basename(stem);
+    m_mbDirName = FileFunctions::Basename(m_stem);
     std::ostringstream oss;
-    oss << stem << ".cycle_" << fmt_buff;
-    output_dir  =  oss.str();
+    oss << m_stem << ".cycle_" << fmt_buff;
+    m_output_dir  =  oss.str();
 
 #ifdef WIN32
-    _mkdir(output_dir.c_str());
+    _mkdir(m_output_dir.c_str());
 #else
-    mkdir(output_dir.c_str(), 0777);
+    mkdir(m_output_dir.c_str(), 0777);
 #endif
-    genRoot = true;
+    m_genRoot = true;
     n_root_file.reset();
+    BP_PLUGIN_INFO("BlueprintMeshWriter: create output dir "<<m_output_dir);
 }
 
 
@@ -169,9 +227,9 @@ avtBlueprintWriter::WriteHeaders(const avtDatabaseMetaData *md,
                            const vector<string> &vectors,
                            const vector<string> &materials)
 {
-    meshName = GetMeshName(md);
-    time     = GetTime();
-    cycle    = GetCycle();
+    m_meshName = GetMeshName(md);
+    m_time     = GetTime();
+    m_cycle    = GetCycle();
 }
 
 
@@ -192,28 +250,30 @@ void
 avtBlueprintWriter::WriteChunk(vtkDataSet *ds, int chunk)
 {
     char chunkname[1024];
-    if (nblocks > 1)
-        sprintf(chunkname, "%s/%s.%d", stem.c_str(), mbDirName.c_str(), chunk);
+    if (m_nblocks > 1)
+        sprintf(chunkname, "%s/%s.%d", m_stem.c_str(), m_mbDirName.c_str(), chunk);
     else
-        sprintf(chunkname, "%s", stem.c_str());
+        sprintf(chunkname, "%s", m_stem.c_str());
 
+    BP_PLUGIN_INFO("BlueprintMeshWriter: " << chunkname
+                    << " [domain " << chunk<< "]");
     Node mesh;
     mesh["state/domain_id"] = chunk;
     //std::string topo_name = "topo";
 
-    if (!meshName.empty())
+    if (!m_meshName.empty())
     {
-       // topo_name = meshName;
+       // topo_name = m_meshName;
     }
 
-    if (cycle != INVALID_CYCLE)
+    if (m_cycle != INVALID_CYCLE)
     {
-        mesh["state/cycle"] = cycle;
+        mesh["state/cycle"] = m_cycle;
     }
 
-    if (time != INVALID_TIME )
+    if (m_time != INVALID_TIME )
     {
-        mesh["state/time"] = time;
+        mesh["state/time"] = m_time;
     }
 
     int ndims = GetInput()->GetInfo().GetAttributes().GetSpatialDimension();
@@ -231,13 +291,14 @@ avtBlueprintWriter::WriteChunk(vtkDataSet *ds, int chunk)
     snprintf(fmt_buff, sizeof(fmt_buff), "%06llu",chunk);
     std::stringstream oss;
     oss << "domain_" << fmt_buff << "." << "hdf5";
-    string output_file  = conduit::utils::join_file_path(output_dir,oss.str());
+    string output_file  = conduit::utils::join_file_path(m_output_dir,oss.str());
     relay::io::save(mesh, output_file);
 
-    if(genRoot)
+    if(m_genRoot)
     {
-        GenRootNode(mesh, output_dir);
-        genRoot = false;
+        BP_PLUGIN_INFO("BlueprintMeshWriter: generating root");
+        GenRootNode(mesh, m_output_dir);
+        m_genRoot = false;
     }
 }
 
@@ -270,14 +331,12 @@ avtBlueprintWriter::GenRootNode(conduit::Node &mesh,
 
     std::stringstream oss;
     std::string root_dir = FileFunctions::Dirname(output_dir);
-    std::cout<<"root dir "<<root_dir<<"\n";
-    oss << mbDirName << ".cycle_" << fmt_buff << ".root";
-    root_file = oss.str();
+    oss << m_mbDirName << ".cycle_" << fmt_buff << ".root";
+    m_root_file = oss.str();
 
-    root_file = utils::join_file_path(root_dir,
-                                      root_file);
+    m_root_file = utils::join_file_path(root_dir,
+                                        m_root_file);
 
-    std::cout<<"Full root "<<root_file<<"\n";
     std::string output_file_pattern;
     output_file_pattern = utils::join_file_path(output_dir,
                                                 "domain_%06d.hdf5");
@@ -285,7 +344,7 @@ avtBlueprintWriter::GenRootNode(conduit::Node &mesh,
     Node &bp_idx = n_root_file["blueprint_index"];
     blueprint::mesh::generate_index(mesh,
                                     "",
-                                    nblocks,
+                                    m_nblocks,
                                     bp_idx["mesh"]);
     // work around conduit bug
     if(mesh.has_path("state/cycle"))
@@ -301,9 +360,9 @@ avtBlueprintWriter::GenRootNode(conduit::Node &mesh,
     n_root_file["protocol/name"]    =  "hdf5";
     n_root_file["protocol/version"] = "0.4.0";
 
-    n_root_file["number_of_files"]  = nblocks;
+    n_root_file["number_of_files"]  = m_nblocks;
     // for now we will save one file per domain, so trees == files
-    n_root_file["number_of_trees"]  = nblocks;
+    n_root_file["number_of_trees"]  = m_nblocks;
     n_root_file["file_pattern"]     = output_file_pattern;
     n_root_file["tree_pattern"]     = "/";
 
@@ -369,6 +428,7 @@ avtBlueprintWriter::WriteRootFile()
 #endif
     if(rank == root_writer)
     {
-        relay::io::save(n_root_file, root_file,"hdf5");
+        BP_PLUGIN_INFO("BlueprintMeshWriter: writing root "<<m_root_file);
+        relay::io::save(n_root_file, m_root_file,"hdf5");
     }
 }

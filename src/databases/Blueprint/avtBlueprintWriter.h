@@ -77,18 +77,16 @@ avtBlueprintWriter : public virtual avtDatabaseWriter
     static int            INVALID_CYCLE;
     static double         INVALID_TIME;
 
-    std::string    stem;
-    std::string    meshName;
-    std::string    mbDirName;
-    std::string    output_dir;
-    double         time;
-    int            cycle;
-    bool           doBinary;
-    bool           doXML;
-    int            nblocks;
-    bool           genRoot;
+    std::string    m_stem;
+    std::string    m_meshName;
+    std::string    m_mbDirName;
+    std::string    m_output_dir;
+    double         m_time;
+    int            m_cycle;
+    int            m_nblocks;
+    bool           m_genRoot;
     conduit::Node  n_root_file;
-    std::string    root_file;
+    std::string    m_root_file;
 
     void           GenRootNode(conduit::Node &mesh,
                                const std::string output_dir);
