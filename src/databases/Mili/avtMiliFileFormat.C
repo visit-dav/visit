@@ -41,7 +41,6 @@
 // ************************************************************************* //
 
 #include <avtMiliFileFormat.h>
-#include <avtMiliMetaData.h>
 
 #include <vector>
 #include <string>
@@ -261,7 +260,7 @@ avtMiliFileFormat::~avtMiliFileFormat()
 
 
 // ****************************************************************************
-//  Function: read_results
+//  Function: ReadMiliResults
 //
 //  Purpose:
 //      A wrapper around mc_read_results that handles multiple types (floats,
@@ -278,15 +277,15 @@ avtMiliFileFormat::~avtMiliFileFormat()
 // ****************************************************************************
 
 static void
-read_results(Famid &dbid, int ts, int sr, int rank,
-             char **name, int vtype, int amount, float *buff)
+ReadMiliResults(Famid &dbid, int ts, int sr, int nStateVars,
+            char **name, int vType, int amount, float *buff)
 {
     bool isParamArray = strncmp(*name, "params/", 7) == 0;
 
     void *buff_to_read_into = NULL;
     if (!isParamArray)
     {
-        switch (vtype)
+        switch (vType)
         {
           case M_STRING:
             buff_to_read_into = new char[amount];
@@ -316,7 +315,7 @@ read_results(Famid &dbid, int ts, int sr, int rank,
         strcpy(tmpName, &(*name)[7]);
         rval = mc_read_param_array(dbid, tmpName, &buff_to_read_into);
 
-        if (rval == OK && (vtype == M_FLOAT || vtype == M_FLOAT4))
+        if (rval == OK && (vType == M_FLOAT || vType == M_FLOAT4))
         {
             float *pflt = (float *) buff_to_read_into;
             for (int i = 0 ; i < amount ; i++)
@@ -327,9 +326,7 @@ read_results(Famid &dbid, int ts, int sr, int rank,
     }
     else
     {
-        //TODO: the rank variable is very missleading. This is supposed to be
-        // the number of state variables we wish to retrieve. Change this. 
-        rval = mc_read_results(dbid, ts, sr, rank, name, buff_to_read_into);
+        rval = mc_read_results(dbid, ts, sr, nStateVars, name, buff_to_read_into);
     }
 
     if (rval != OK)
@@ -341,7 +338,7 @@ read_results(Famid &dbid, int ts, int sr, int rank,
     double *d_tmp = NULL;
     int    *i_tmp = NULL;
     long   *l_tmp = NULL;
-    switch (vtype)
+    switch (vType)
     {
        case M_STRING:
          c_tmp = (char *) buff_to_read_into;
@@ -378,6 +375,108 @@ read_results(Famid &dbid, int ts, int sr, int rank,
     if (isParamArray)
     {
         free(buff_to_read_into);
+    }
+}
+
+
+// ****************************************************************************
+//  Method:  avtMiliFileFormat::ReadMiliVarToBuffer
+//
+//  Purpose:
+//      Read mili variable data into a given buffer. 
+//
+//      IMPORTANT: The caller is responsible for all memory management of 
+//      the buffer. This includes allocating the appropriate amount of
+//      space to hold the variable data. 
+//
+//  Arguments:
+//      varName      The variable's short name. 
+//      SRIds        The variable's subrecord ids. 
+//      SRInfo       The subrecord info that includes this variable. 
+//      vType        The type of value (int, float, etc). 
+//      start        The offset of this variable data in the mesh. 
+//      varSize      The size of the variable (vec vs single, etc).
+//      ts           The timestep (in mili format => one based). 
+//      dom          The variable's domain.
+//      dataBuffer   The buffer to read into. 
+//
+//  Programmer:  Alister Maguire
+//  Creation:    Feb 25, 2019
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtMiliFileFormat::ReadMiliVarToBuffer(char *varName,
+                                       const vector<int> &SRIds,
+                                       const SubrecInfo &SRInfo, 
+                                       int vType,
+                                       int start,
+                                       int varSize,
+                                       int ts,
+                                       int dom,
+                                       float *dataBuffer)
+{
+    //
+    // Loop over the subrecords, and retreive the variable
+    // data from mili. 
+    //
+    for (int i = 0 ; i < SRIds.size(); i++)
+    {
+        int nTargetCells = 0;
+        int SRId         = SRIds[i];
+
+        nTargetCells = SRInfo.nElements[SRId];
+        
+        // Simple read in: one block 
+        if (SRInfo.nDataBlocks[SRId] == 1)
+        {
+            // Adjust start
+            start         += (SRInfo.dataBlockRanges[SRId][0] - 1);
+            int resultSize = nTargetCells * varSize;
+            float *dbPtr   = dataBuffer;
+        
+            ReadMiliResults(dbid[dom], ts, SRId,
+                1, &varName, vType, resultSize, 
+                dbPtr + (start * varSize));
+        }
+        else
+        {
+            int nBlocks               = SRInfo.nDataBlocks[SRId];
+            const vector<int> *blocks = &SRInfo.dataBlockRanges[SRId];
+
+            int totalBlocksSize = 0;
+            for (int b = 0; b < nBlocks; ++b)
+            {
+                int start = (*blocks)[b * 2 + 1]; 
+                int stop  = (*blocks)[b * 2];
+                totalBlocksSize += start - stop + 1;
+            }
+
+            float MBBuffer[totalBlocksSize * varSize];
+            int resultSize  = totalBlocksSize * varSize;
+
+            ReadMiliResults(dbid[dom], ts, SRId,
+                1, &varName, vType, resultSize, MBBuffer);
+
+            float *MBPtr = MBBuffer;
+            //
+            // Fill up the blocks into the array.
+            //
+            for (int b = 0; b < nBlocks; ++b)
+            {
+                for (int c = (*blocks)[b * 2] - 1; 
+                     c <= (*blocks)[b * 2 + 1] - 1; ++c)
+                {
+                    for (int k = 0; k < varSize; ++k)
+                    {
+                        int idx = (varSize * (c + start)) + k;
+                        dataBuffer[idx] = *(MBPtr++);
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -500,7 +599,7 @@ avtMiliFileFormat::GetMesh(int ts, int dom, const char *mesh)
         else
         {
             float fPts[nPts];
-            read_results(dbid[dom], ts+1, subrec, 1, 
+            ReadMiliResults(dbid[dom], ts+1, subrec, 1, 
                 &npCharPtr, vType, nPts, fPts);
 
             vtkPoints *vtkPts = vtkPoints::New();
@@ -697,7 +796,9 @@ avtMiliFileFormat::ReadMesh(int dom)
 
         miliMetaData[meshId]->SetNumNodes(dom, nNodes);
 
-        //PopulateNodeLabels(dbid[dom], meshId, nodeSName, dom);//FIXME: 
+        //FIXME: there is a memory error associated with this 
+        //       call. 
+        PopulateNodeLabels(dbid[dom], meshId, nodeSName, dom);
 
         //
         // Read initial nodal position information, if available. 
@@ -910,8 +1011,9 @@ avtMiliFileFormat::ReadMesh(int dom)
                     connPtr += connCount;
                 }
 
-                //PopulateZoneLabels(dbid[dom], meshId, shortName, dom, 
-                //                   nCells);//FIXME
+                //FIXME: there is a mem error associated with this call. 
+                PopulateZoneLabels(dbid[dom], meshId, shortName, dom, 
+                                   nCells);
             }
         }
        
@@ -1211,8 +1313,8 @@ avtMiliFileFormat::GetVar(int ts, int dom, const char *varPath)
  
             float *fArrPtr = (float *) fltArray->GetVoidPointer(0);
 
-            read_results(dbid[dom], ts+1, SRIds[0], 1,
-                         &namePtr, vType, nNodes, fArrPtr);
+            ReadMiliResults(dbid[dom], ts+1, SRIds[0], 1,
+                &namePtr, vType, nNodes, fArrPtr);
 
             //
             // We explicitly cache param arrays at ts=-1
@@ -1279,62 +1381,17 @@ avtMiliFileFormat::GetVar(int ts, int dom, const char *varPath)
             dataBuffer[i] = std::numeric_limits<float>::quiet_NaN();
         }
 
-        for (int i = 0 ; i < SRIds.size(); i++)
-        {
-            int vType        = varMD->GetNumType();
-            int start        = 0;
-            int nTargetCells = 0;
-            string className = varMD->GetClassShortName();
-            int SRId         = SRIds[i];
+        //
+        // Read the data into our buffer. 
+        //
+        int vType        = varMD->GetNumType();
+        string className = varMD->GetClassShortName();
+        int start = miliMetaData[meshId]->
+            GetClassMDByShortName(className.c_str())->
+            GetConnectivityOffset(dom);                                   
 
-            start = miliMetaData[meshId]->
-                GetClassMDByShortName(className.c_str())->
-                GetConnectivityOffset(dom);                                   
-
-            nTargetCells = SRInfo.nElements[SRId];
-            
-            // Simple read in: one block 
-            if (SRInfo.nDataBlocks[SRId] == 1)
-            {
-                // Adjust start
-                start += (SRInfo.dataBlockRanges[SRId][0] - 1);
-            
-                read_results(dbid[dom], ts+1, SRId,
-                             1, &namePtr, vType, nTargetCells, 
-                             dataBuffer + start);
-            }
-            else
-            {
-                int nBlocks         = SRInfo.nDataBlocks[SRId];
-                vector<int> *blocks = &SRInfo.dataBlockRanges[SRId];
-
-                int totalBlocksSize = 0;
-                for (int b = 0; b < nBlocks; ++b)
-                {
-                    int start = (*blocks)[b * 2 + 1]; 
-                    int stop  = (*blocks)[b * 2];
-                    totalBlocksSize += start - stop + 1;
-                }
-
-                float MBBuffer[totalBlocksSize];
-
-                read_results(dbid[dom], ts + 1, SRId,
-                             1, &namePtr, vType, totalBlocksSize, MBBuffer);
-
-                //
-                // Fill up the blocks into the array.
-                //
-                float *mbPtr = MBBuffer;
-                for (int b = 0; b < nBlocks; ++b)
-                {
-                    for (int c = (*blocks)[b * 2] - 1; 
-                         c <= (*blocks)[b * 2 + 1] - 1; ++c)
-                    {
-                        dataBuffer[c + start] = *(mbPtr++);
-                    }
-                }
-            }
-        }
+        ReadMiliVarToBuffer(namePtr, SRIds, SRInfo, vType, 
+            start, 1, ts + 1, dom, dataBuffer);
 
         if (isMatVar)
         {
@@ -1461,8 +1518,8 @@ avtMiliFileFormat::GetVectorVar(int ts, int dom, const char *varPath)
         fltArray->SetNumberOfTuples(nNodes);
         float *fArrPtr = (float *) fltArray->GetVoidPointer(0);
         
-        read_results(dbid[dom], ts+1, SRIds[0], 1,
-                     &namePtr, vType, nNodes * dataSize, fArrPtr);
+        ReadMiliResults(dbid[dom], ts+1, SRIds[0], 1,
+            &namePtr, vType, nNodes * dataSize, fArrPtr);
     }
     //
     // Cell centered variable. 
@@ -1498,78 +1555,18 @@ avtMiliFileFormat::GetVectorVar(int ts, int dom, const char *varPath)
         {
             dataBuffer[i] = std::numeric_limits<float>::quiet_NaN();
         }
-        
+
         //
-        // Iterate through the variable's subrecords. 
+        // Read the data into our buffer. 
         //
-        for (int i = 0 ; i < SRIds.size(); i++)
-        {
-            int vType        = varMD->GetNumType();
-            int start        = 0;
-            int nTargetCells = 0;
-            string className = varMD->GetClassShortName();
-            int SRId         = SRIds[i];
+        int vType        = varMD->GetNumType();
+        string className = varMD->GetClassShortName();
+        int start = miliMetaData[meshId]->
+            GetClassMDByShortName(className.c_str())->
+            GetConnectivityOffset(dom);                                   
 
-            start = miliMetaData[meshId]->
-                GetClassMDByShortName(className.c_str())->
-                GetConnectivityOffset(dom);                                   
-
-            nTargetCells = SRInfo.nElements[SRId];
-
-            //
-            // This handles the case where all of our data is in a single
-            // contiguous chunk of cells. 
-            // 
-            if (SRInfo.nDataBlocks[SRId] == 1)
-            {
-                start         += (SRInfo.dataBlockRanges[SRId][0] - 1);
-                int resultSize = nTargetCells * dataSize;
-                float *dbPtr   = dataBuffer;
-
-                read_results(dbid[dom], ts+1, SRId,
-                             1, &namePtr, vType, resultSize,
-                             dbPtr + (start * dataSize));
-
-            }
-            else
-            {
-                //TODO: need data that tests multiple blocks.
-                int nBlocks         = SRInfo.nDataBlocks[SRId];
-                vector<int> *blocks = &SRInfo.dataBlockRanges[SRId];
-
-                int totalBlocksSize = 0;
-                for (int b = 0; b < nBlocks; ++b)
-                {
-                    int start = (*blocks)[b * 2 + 1]; 
-                    int stop  = (*blocks)[b * 2];
-                    totalBlocksSize += start - stop + 1;
-                }
-
-                float MBBuffer[totalBlocksSize * dataSize];
-                int resultSize  = totalBlocksSize * dataSize;
-
-                read_results(dbid[dom], ts + 1, SRId,
-                             1, &namePtr, vType, resultSize, MBBuffer);
-
-                float *MBPtr = MBBuffer;
-
-                //
-                // Fill up the blocks into the array.
-                //
-                for (int b = 0; b < nBlocks; ++b)
-                {
-                    for (int c = (*blocks)[b * 2] - 1; 
-                         c <= (*blocks)[b * 2 + 1] - 1; ++c)
-                    {
-                        for (int k = 0; k < dataSize; ++k)
-                        {
-                            int idx = (dataSize * (c + start)) + k;
-                            dataBuffer[idx] = *(MBPtr++);
-                        }
-                    }
-                }
-            } 
-        }
+        ReadMiliVarToBuffer(namePtr, SRIds, SRInfo, vType, 
+            start, dataSize, ts + 1, dom, dataBuffer);
 
         //TODO: Need to test the multiple block case. 
         //
@@ -1851,6 +1848,14 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
         {
             MiliVariableMetaData *varMD = miliMetaData[meshId]->
                 GetVarMDByIdx(i);
+
+            //
+            // We don't render sand. 
+            //
+            if (varMD->IsSand())
+            {
+                continue;
+            }
 
             if (varMD == NULL)
             {

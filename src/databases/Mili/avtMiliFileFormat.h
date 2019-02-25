@@ -56,6 +56,7 @@ extern "C" {
 }
 
 #include <avtMTMDFileFormat.h>
+#include <avtMiliMetaData.h>
 
 #include "rapidjson/document.h"
 #include "rapidjson/istreamwrapper.h"
@@ -105,6 +106,16 @@ class avtMiliFileFormat : public avtMTMDFileFormat
     virtual void          GetCycles(vector<int> &);
     virtual void          GetTimes(vector<double> &);
     virtual int           GetNTimesteps(void);
+
+    void                  ReadMiliVarToBuffer(char *,
+                                              const vector<int> &,
+                                              const SubrecInfo &,
+                                              int,
+                                              int,
+                                              int,
+                                              int,
+                                              int,
+                                              float *);
  
     virtual vtkDataSet   *GetMesh(int, int, const char *); 
     virtual vtkDataArray *GetVar(int, int, const char *);
