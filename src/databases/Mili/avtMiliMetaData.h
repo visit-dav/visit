@@ -375,6 +375,9 @@ class avtMiliMetaData
     bool                               ContainsSand(void)
                                          { return containsSand; };
 
+    string                             GetSandDir(void)
+                                         { return sandDir; };
+
     int                                GetNumCells(int);
     void                               SetNumCells(int domain, int nCells)
                                          { numCells[domain] = nCells; };
@@ -404,6 +407,7 @@ class avtMiliMetaData
     int                                numVariables;
     int                                numMaterials;
     bool                               containsSand;
+    string                             sandDir;
     vector<int>                        numCells;
     vector<int>                        numNodes;
     vector<int>                        sandedVarIdxs;//TODO: needed?

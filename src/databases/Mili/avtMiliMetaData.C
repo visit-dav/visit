@@ -697,7 +697,17 @@ avtMiliMetaData::avtMiliMetaData(int nDomains)
     numDomains    = nDomains;
     numClasses    = 0;
     numMaterials  = 0;
+
+    //
+    // In mili, sanded elements are those that have been
+    // "destroyed" during the simulation process. By default,
+    // we ghost them out. However, we also allow access to 
+    // a mesh that keeps these elements intact. These variables
+    // are all found under the sandDir. 
+    //
     containsSand  = false;
+    sandDir       = "sand_mesh";
+
     miliVariables = NULL;
     miliClasses   = NULL;
     miliMaterials = NULL;
@@ -1259,7 +1269,19 @@ avtMiliMetaData::GetVarMDByShortName(const char *vName)
 MiliVariableMetaData *
 avtMiliMetaData::GetVarMDByPath(const char *vPath)
 {
-    int idx = GetVarMDIdxByPath(vPath);
+    int idx = -1;
+    if (strstr(vPath, sandDir.c_str()) == vPath) 
+    {
+        string strVPath(vPath);
+        size_t sDirPos  = strVPath.find_first_of("/");
+        string truePath = strVPath.substr(sDirPos + 1);
+        idx = GetVarMDIdxByPath(truePath.c_str());
+    }
+    else
+    {
+        idx = GetVarMDIdxByPath(vPath);
+    }
+
     if (idx > -1)
     {
         return miliVariables[idx];
@@ -1366,6 +1388,14 @@ avtMiliMetaData::GetVarMDIdxByShortName(const char *vName)
 int
 avtMiliMetaData::GetVarMDIdxByPath(const char *vPath)
 {
+    string strVPath(vPath);
+
+    if (strstr(vPath, sandDir.c_str()) == vPath) 
+    {
+        size_t sDirPos = strVPath.find_first_of("/");
+        strVPath       = strVPath.substr(sDirPos + 1);
+    }
+
     if (miliVariables == NULL)
     {
         return -1;
@@ -1374,7 +1404,7 @@ avtMiliMetaData::GetVarMDIdxByPath(const char *vPath)
     {
         if (miliVariables[i] != NULL) 
         {
-            if (miliVariables[i]->GetPath() == vPath)
+            if (miliVariables[i]->GetPath() == strVPath.c_str())
             {
                 return i;
             }
