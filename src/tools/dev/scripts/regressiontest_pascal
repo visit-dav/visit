@@ -470,7 +470,7 @@ if test "$post" = "true" ; then
 
     # Copy the results to nersc
     cd src/test
-    scp html.tar.gz $userNersc@$nerscHost:${branch}_html.tar.gz
+    scp -i ~/.ssh/nersc html.tar.gz $userNersc@$nerscHost:${branch}_html.tar.gz
     if test "$debug" = "true" ; then
         echo "Results copied to $nerscHost at: `date`" | mail -s "Results copied" $userEmail
     fi
@@ -479,8 +479,8 @@ if test "$post" = "true" ; then
 
     # Post the results.
     cd ../..
-    scp src/tools/dev/scripts/visit-copy-test-results $userNersc@$nerscHost:
-    ssh $userNersc@$nerscHost "./visit-copy-test-results ${branch}_html.tar.gz"
+    scp -i ~/.ssh/nersc src/tools/dev/scripts/visit-copy-test-results $userNersc@$nerscHost:
+    ssh -i ~/.ssh/nersc $userNersc@$nerscHost "./visit-copy-test-results ${branch}_html.tar.gz"
     if test "$debug" = "true" ; then
         echo "Results posted at: `date`" | mail -s "Results posted" $userEmail
     fi
@@ -496,13 +496,13 @@ if test "$post" = "true" ; then
 
     # If its a sunday, purge old test results
     if test "$(date +%A)" = "Sunday" ; then
-        scp src/tools/dev/scripts/purge_old_test_results.sh $userNersc@$nerscHost:
-        ssh $userNersc@$nerscHost "./purge_old_test_results.sh"
+        scp -i ~/.ssh/nersc src/tools/dev/scripts/purge_old_test_results.sh $userNersc@$nerscHost:
+        ssh -i ~/.ssh/nersc $userNersc@$nerscHost "./purge_old_test_results.sh"
     fi
 
     # Copy the update script to nersc and execute it.
-    scp src/tools/dev/scripts/visit-update-test-website $userNersc@$nerscHost:
-    ssh $userNersc@$nerscHost "./visit-update-test-website"
+    scp -i ~/.ssh/nersc src/tools/dev/scripts/visit-update-test-website $userNersc@$nerscHost:
+    ssh -i ~/.ssh/nersc $userNersc@$nerscHost "./visit-update-test-website"
 
     # Set the permissions so that others may access the test directory.
     cd ../..
