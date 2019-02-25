@@ -506,18 +506,13 @@ avtMiliFileFormat::GetMesh(int ts, int dom, const char *mesh)
         dom << ',' << ts << endl;
 
     //
-    // The valid meshnames are meshX, where X is an int > 0.
+    // The valid meshnames are meshX or sand_meshX, where X is an int > 0.
     // We need to verify the name, and get the meshId.
     //
-    //if (strstr(mesh, "mesh") != mesh)
-    //{
-    //    EXCEPTION1(InvalidVariableException, mesh);
-    //}
-
     bool isSandMesh = false;
     if (strstr(mesh, "sand_mesh") == mesh)
     {
-        isSandMesh == true;
+        isSandMesh = true;
     }
     else if (strstr(mesh, "mesh") != mesh)
     {
@@ -529,8 +524,14 @@ avtMiliFileFormat::GetMesh(int ts, int dom, const char *mesh)
     //
     char *check = 0;
     int meshId;
-    meshId = (int) strtol(mesh + 4, &check, 10);
-    if (meshId == 0 || check == mesh + 4)
+    int offset = 4;
+    if (isSandMesh)
+    {
+        offset = 9;
+    }
+
+    meshId = (int) strtol(mesh + offset, &check, 10);
+    if (meshId == 0 || check == mesh + offset)
     {
         EXCEPTION1(InvalidVariableException, mesh)
     }
@@ -624,17 +625,107 @@ avtMiliFileFormat::GetMesh(int ts, int dom, const char *mesh)
             rv->SetPoints(vtkPts);
             vtkPts->Delete();
 
-            //TODO: handle sanded elements. 
-            if (isSandMesh)
+            //
+            // Only ghost out sand nodes if the mesh isn't the sand mesh. 
+            //
+            if (!isSandMesh)
             {
-                //Get a list of indicies corresponding with 
-                //sand variables?
-                //OR, we could add an option to GetVar that 
-                //allows us to retrieve the sand class? Is that
-                //possible, though? Nope. Don't think so...
-                //MiliVariableMetaData *sand = 
-            }
+                SubrecInfo SRInfo = miliMetaData[meshId]->GetSubrecInfo(dom);
+                int numVars       = miliMetaData[meshId]->GetNumVariables();
+                int nCells        = miliMetaData[meshId]->GetNumCells(dom);
+                int nNodes = miliMetaData[meshId]->GetNumNodes(dom);
+                
+                float sandBuffer[nCells];
 
+                //
+                // Begin by assuming the status of every cell is good. 
+                //
+                for (int i = 0; i < nCells; ++i)
+                {
+                    sandBuffer[i] = 1.0;
+                }
+
+                //
+                // Because sand can appear on multiple variables, we need
+                // to check them all and populate the buffer iteratively.  
+                //
+                for (int i = 0 ; i < numVars; i++)
+                {
+                    MiliVariableMetaData *varMD = miliMetaData[meshId]->
+                        GetVarMDByIdx(i);
+
+                    if (varMD->IsSand())
+                    {
+                        avtCentering centering = varMD->GetCentering();
+
+                        if (centering != AVT_ZONECENT)
+                        {
+                            debug1 << "Sanded variable is not " << 
+                                "zone centered?!?" << endl;
+                            continue;
+                        }
+
+                        string varName    = varMD->GetShortName();
+                        vector<int> SRIds = varMD->GetSubrecIds(dom);
+                        int vType         = varMD->GetNumType();
+                        string className  = varMD->GetClassShortName();
+                        int start = miliMetaData[meshId]->
+                            GetClassMDByShortName(className.c_str())->
+                            GetConnectivityOffset(dom);                                   
+
+                        //
+                        // Create a copy of our name to pass into mili. 
+                        //
+                        char charName[1024];
+                        sprintf(charName, varName.c_str());
+                        char *namePtr = (char *) charName;
+
+                        ReadMiliVarToBuffer(namePtr, SRIds, SRInfo, vType, 
+                            start, 1, ts + 1, dom, sandBuffer);
+                    }
+                }
+
+                vtkUnsignedCharArray *ghostNodes = vtkUnsignedCharArray::New();
+                ghostNodes->SetName("avtGhostNodes");
+                ghostNodes->SetNumberOfTuples(nNodes);
+
+                unsigned char *ghostNodePtr = ghostNodes->GetPointer(0);
+
+                for (int i = 0; i < nNodes; ++i)
+                {
+                    ghostNodePtr[i] = 0;
+                    avtGhostData::AddGhostNodeType(ghostNodePtr[i], 
+                        NODE_NOT_APPLICABLE_TO_PROBLEM);
+                }
+     
+                for (int i = 0; i < nCells; ++i)
+                {
+                    //
+                    // Element status > .5 is good. 
+                    //
+                    if (sandBuffer[i] > 0.5)
+                    {
+                        vtkIdType nCellPts = 0;
+                        vtkIdType *cellPts = NULL;
+
+                        rv->GetCellPoints(i, nCellPts, cellPts);
+                        
+                        if (nCellPts && cellPts)
+                        {
+                            for (int j = 0; j < nCellPts; ++j)
+                            {
+                                avtGhostData::RemoveGhostNodeType(
+                                    ghostNodePtr[cellPts[j]],
+                                    NODE_NOT_APPLICABLE_TO_PROBLEM);
+                            }
+                        }
+                    }
+                }
+          
+                rv->GetPointData()->AddArray(ghostNodes);
+                ghostNodes->Delete();
+
+            }
         }
     }
     else
@@ -1790,15 +1881,19 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
     for (int meshId = 0; meshId < nMeshes; ++meshId)
     {
         char meshName[32];
+        char sandMeshName[64];
         char matName[32];
+
         sprintf(meshName, "mesh%d", meshId + 1);
+        sprintf(sandMeshName, "sand_mesh%d", meshId + 1);
         sprintf(matName, "materials%d", meshId + 1);
+
         avtMeshMetaData *mesh      = new avtMeshMetaData;
         mesh->name                 = meshName;
         mesh->meshType             = AVT_UNSTRUCTURED_MESH;
         mesh->numBlocks            = nDomains;
         mesh->blockOrigin          = 0;
-        mesh->cellOrigin           = 1; // mili writers are Fortran
+        mesh->cellOrigin           = 1; // mili indexing is 1 based.
         mesh->nodeOrigin           = 1; 
         mesh->spatialDimension     = dims;
         mesh->topologicalDimension = dims;
@@ -1839,6 +1934,54 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
                               AVT_NODECENT, 
                               dims, 
                               hideFromGui);
+
+        //
+        // If the dataset contains sanded elements, the default mesh
+        // will have them ghosted, but we need to give the option
+        // of a mesh that does contain them. 
+        //
+        bool doSand = miliMetaData[meshId]->ContainsSand();
+        if  (doSand)
+        {
+            avtMeshMetaData *sandMesh      = new avtMeshMetaData;
+            sandMesh->name                 = sandMeshName;
+            sandMesh->meshType             = AVT_UNSTRUCTURED_MESH;
+            sandMesh->numBlocks            = nDomains;
+            sandMesh->blockOrigin          = 0;
+            sandMesh->cellOrigin           = 1; // mili indexing is 1 based
+            sandMesh->nodeOrigin           = 1; 
+            sandMesh->spatialDimension     = dims;
+            sandMesh->topologicalDimension = dims;
+            sandMesh->blockTitle           = "processors";
+            sandMesh->blockPieceName       = "processor";
+            sandMesh->hasSpatialExtents    = false;
+
+            md->Add(sandMesh);
+
+            AddMaterialToMetaData(md, 
+                                  matName, 
+                                  sandMeshName, 
+                                  numMats, 
+                                  matNames, 
+                                  matColors);
+
+            AddLabelVarToMetaData(md, 
+                                  "OriginalZoneLabels", 
+                                  sandMeshName, 
+                                  AVT_ZONECENT, 
+                                  dims);
+
+            //TODO: look into this. 
+            // Visit is intercepting these labels and displaying something
+            // else, so current work around is just to hide them
+            bool hideFromGui = true;
+            AddLabelVarToMetaData(md, 
+                                  "OriginalNodeLabels", 
+                                  sandMeshName, 
+                                  AVT_NODECENT, 
+                                  dims, 
+                                  hideFromGui);
+        }
 
         //
         // Adding variables
@@ -1931,19 +2074,34 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
                 }
             }
 
-            string vPath = varMD->GetPath();
+            string vPath   = varMD->GetPath();
+            string sandDir = miliMetaData[meshId]->GetSandDir();
            
             switch (cellTypeCast)
             {
                 case AVT_SCALAR_VAR:
                 {
                     AddScalarVarToMetaData(md, vPath, meshName, centering);
+   
+                    if (doSand)
+                    {
+                        string sandPath = sandDir + "/" + vPath;
+                        AddScalarVarToMetaData(md, sandPath, 
+                            sandMeshName, centering);
+                    }
                     break;
                 }
                 case AVT_VECTOR_VAR:
                 {
                     AddVectorVarToMetaData(md, vPath, meshName, 
                         centering, nComps);
+
+                    if (doSand)
+                    {
+                        string sandPath = sandDir + "/" + vPath;
+                        AddVectorVarToMetaData(md, sandPath, sandMeshName, 
+                            centering, nComps);
+                    }
 
                     //
                     // Add expressions for displaying each component. 
@@ -1972,6 +2130,13 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
                     AddSymmetricTensorVarToMetaData(md, vPath, 
                         meshName, centering, 9);
 
+                    if (doSand)
+                    {
+                        string sandPath = sandDir + "/" + vPath;
+                        AddSymmetricTensorVarToMetaData(md, sandPath, 
+                            sandMeshName, centering, 9);
+                    }
+
                     //
                     // Now we add the individual components. 
                     //
@@ -1985,7 +2150,8 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
                         Expression singleDim;
                         char singleDef[256];
                         sprintf(singleDef, "<%s>[%d][%d]", vPath.c_str(), j, j);
-                        string singleName = vPath + "/" + varMD->GetVectorComponent(j);
+                        string singleName = vPath + "/" + 
+                            varMD->GetVectorComponent(j);
                         singleDim.SetName(singleName);
                         singleDim.SetDefinition(singleDef);
                         singleDim.SetType(Expression::ScalarMeshVar);
@@ -1997,8 +2163,10 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
                         int compIdx = j + 3;
                         Expression multDim;
                         char multDef[256];
-                        sprintf(multDef, "<%s>[%d][%d]", vPath.c_str(), j, multDimIdxs[j]);
-                        string multName = vPath + "/" + varMD->GetVectorComponent(compIdx);
+                        sprintf(multDef, "<%s>[%d][%d]", vPath.c_str(), 
+                            j, multDimIdxs[j]);
+                        string multName = vPath + "/" + 
+                            varMD->GetVectorComponent(compIdx);
                         multDim.SetName(multName);
                         multDim.SetDefinition(multDef);
                         multDim.SetType(Expression::ScalarMeshVar);
@@ -2012,6 +2180,13 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
                     AddTensorVarToMetaData(md, vPath, 
                         meshName, centering, nComps);
 
+                    if (doSand)
+                    {
+                        string sandPath = sandDir + "/" + vPath;
+                        AddTensorVarToMetaData(md, sandPath, 
+                            sandMeshName, centering, nComps);
+                    }
+
                     //
                     // Now we add the individual components. 
                     //
@@ -2025,7 +2200,8 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
                         Expression singleDim;
                         char singleDef[256];
                         sprintf(singleDef, "<%s>[%d][%d]", vPath.c_str(), j, j);
-                        string singleName = vPath + "/" + varMD->GetVectorComponent(j);
+                        string singleName = vPath + "/" + 
+                            varMD->GetVectorComponent(j);
                         singleDim.SetName(singleName);
                         singleDim.SetDefinition(singleDef);
                         singleDim.SetType(Expression::ScalarMeshVar);
@@ -2037,8 +2213,10 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
                         int compIdx = j + 3;
                         Expression multDim;
                         char multDef[256];
-                        sprintf(multDef, "<%s>[%d][%d]", vPath.c_str(), j, multDimIdxs[j]);
-                        string multName = vPath + "/" + varMD->GetVectorComponent(compIdx);
+                        sprintf(multDef, "<%s>[%d][%d]", vPath.c_str(), 
+                            j, multDimIdxs[j]);
+                        string multName = vPath + "/" + 
+                            varMD->GetVectorComponent(compIdx);
                         multDim.SetName(multName);
                         multDim.SetDefinition(multDef);
                         multDim.SetType(Expression::ScalarMeshVar);
@@ -2067,6 +2245,13 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
 
                     AddArrayVarToMetaData(md, vPath, compNames, meshName, 
                         centering); 
+
+                    if (doSand)
+                    {
+                        string sandPath = sandDir + "/" + vPath;
+                        AddArrayVarToMetaData(md, sandPath, compNames, 
+                            sandMeshName, centering); 
+                    }
                     break;
                 }
                 default:

@@ -33,7 +33,7 @@
 RequiredDatabasePlugin("Mili")
 
 def TestComponentVis():
-    OpenDatabase("/usr/workspace/wsrzd/maguire7/MiliTestData/new/d3samp6new.plt.mili")
+    OpenDatabase("/usr/workspace/wsrzd/maguire7/MiliTestData/single_proc/new/d3samp6new.plt.mili")
     v = GetView3D()
     v.viewNormal = (0.9, 0.35, -0.88)
     SetView3D(v)
