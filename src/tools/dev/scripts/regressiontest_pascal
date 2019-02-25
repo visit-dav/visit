@@ -471,6 +471,7 @@ if test "$post" = "true" ; then
     # Copy the results to nersc
     cd src/test
     scp -i ~/.ssh/weekly html.tar.gz $userNersc@$nerscHost:${branch}_html.tar.gz
+
     if test "$debug" = "true" ; then
         echo "Results copied to $nerscHost at: `date`" | mail -s "Results copied" $userEmail
     fi
@@ -481,6 +482,7 @@ if test "$post" = "true" ; then
     cd ../..
     scp -i ~/.ssh/weekly src/tools/dev/scripts/visit-copy-test-results $userNersc@$nerscHost:
     ssh -i ~/.ssh/weekly $userNersc@$nerscHost "./visit-copy-test-results ${branch}_html.tar.gz"
+
     if test "$debug" = "true" ; then
         echo "Results posted at: `date`" | mail -s "Results posted" $userEmail
     fi
