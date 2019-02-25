@@ -1,1 +1,0 @@
-git lfs pull --include="src/*,data/*,test/*"
