@@ -67,12 +67,14 @@ class vtkDataArray;
 //
 //  Programmer: Cyrus Harrison
 //  Creation:   Tue Dec 27 14:14:40 PST 2016
+//  Modifications:
+//      Matt Larsen, Feb 15, 2019 -- adding conversions from vtk to bp
 //
 //-----------------------------------------------------------------------------
 class avtBlueprintDataAdaptor
 {
 public:
-    
+
   /// Helpers for converting Mesh and Field Blueprint conforming data
   /// to vtk instances.
   class VTK
@@ -83,21 +85,34 @@ public:
 
   };
 
+  /// Helpers for converting vtk datasets to Mesh and Field Blueprint
+  /// conforming data
+  class BP
+  {
+    public:
+      static void VTKFieldsToBlueprint(conduit::Node &node,
+                                       const std::string topo_name,
+                                       vtkDataSet* dataset);
+
+      static void VTKToBlueprint(conduit::Node &mesh,
+                                 vtkDataSet* dataset,
+                                 const int ndims);
+  };
   /// Helpers for converting Mesh and Field Blueprint conforming data
-  /// to mfem instances + helpers for refining mfem data to vtk. 
+  /// to mfem instances + helpers for refining mfem data to vtk.
   class MFEM
   {
     public:
     //-------------------------------------------------------------------------
-    // blueprint to mfem 
+    // blueprint to mfem
     //-------------------------------------------------------------------------
     static mfem::Mesh         *MeshToMFEM(const conduit::Node &mesh,
                                           const std::string &topo_name = "");
 
-    static mfem::GridFunction *FieldToMFEM(mfem::Mesh *mesh, 
+    static mfem::GridFunction *FieldToMFEM(mfem::Mesh *mesh,
                                            const conduit::Node &field);
     //-------------------------------------------------------------------------
-    // mfem to vtk 
+    // mfem to vtk
     //-------------------------------------------------------------------------
     static vtkDataSet   *RefineMeshToVTK(mfem::Mesh *mesh,
                                              int lod);
