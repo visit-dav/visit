@@ -214,6 +214,7 @@ DEBUG_CellTypeList.insert(std::pair<std::string, int>("unknown",        0));
     // TODO: restrict the bounds to the extents of the selected domains
     int width = atts.GetCellsX();
     int height = atts.GetCellsY();
+    int depth;
     
     // Setup whatever variables I can assuming the grid is 2D. Then, check if it
     // is actually 3D. If so, modify parameters and build rg. Otherwise, build
@@ -225,7 +226,7 @@ DEBUG_CellTypeList.insert(std::pair<std::string, int>("unknown",        0));
     if (is3D) 
     {
         debug5 << "Generating 2D grid" << std::endl;
-        int depth = atts.GetCellsZ();
+        depth = atts.GetCellsZ();
         nCellsOut *= depth;
         rCellVolume *= (rGridBounds[5] - rGridBounds[4]) / depth;
         CreateGrid(width, height, depth, 0, width, 0, height, 0, depth);
@@ -259,6 +260,32 @@ DEBUG_CellTypeList.insert(std::pair<std::string, int>("unknown",        0));
     // ----------------------------------------------------- //
     // --- Clip the domains against the rectilinear grid --- //
     // ----------------------------------------------------- //
+
+    // --- Generate a clipping list to reference later --- //
+    
+    // Get the planes from first dimension
+    MakeFunction(0, 0);
+    for (vtkIdType rCell = 0; rCell < width; ++rCell) {
+    	MakeFunction(rCell, 1); // Get all the planes on the "right"
+    }
+
+    // Get the planes from the second dimension
+    MakeFunction(0, 2);
+    for (vtkIdType rCell = 0; rCell < width*height; rCell+=width) {
+    	MakeFunction(rCell, 3); // Get all the planes on the "bottom"
+    }
+
+    if (is3D) {
+    	return;
+	    MakeFunction(0, 4);
+	    for (vtkIdType rCell = 0; rCell < width*height*depth; rCell+=width*height) {
+	    	MakeFunction(rCell, 5); // Get all the planes on the "back"
+	    }
+	}
+
+	return;
+
+
     avtDataTree_p inTree = GetInputDataTree();
     std::vector<int> domainIds;
     inTree->GetAllDomainIds(domainIds); // Populate domainIds
@@ -349,7 +376,7 @@ avtRemapFilter::ClipDomain(avtDataTree_p inLeaf) {
     int domainId = in_dr.GetDomain();
     vtkDataSet* in_ds = in_dr.GetDataVTK();
     
-    // If there are no cells, then return.
+    // If the dataset does not exist, then return.
     // If the variable does not exist, then return.
     // If there are no points, then return.
     // If there are no cells, then return.
@@ -597,6 +624,31 @@ if (DEBUG_rCellVolumeTEST != rCellVolume)
 } // End ClipDomain
 
 
+
+void
+avtRemapFilter::MakeFunction(const vtkIdType& rCell, int side) {
+	double cellBounds[6] = {0., 0., 0., 0., 0., 0.};
+	double origin[3] = {0., 0., 0.};
+	double normal[3] = {0., 0., 0.};
+	rg->GetCell(rCell)->GetBounds(cellBounds);
+	origin[side/2] = cellBounds[side];
+	normal[side/2] = 1.;
+	std::cout << "Origin: ["
+			  << origin[0] << ", "
+			  << origin[1] << ", "
+			  << origin[2] << "]" << std::endl;
+	std::cout << "Normal: ["
+			  << normal[0] << ", "
+			  << normal[1] << ", "
+			  << normal[2] << "]" << std::endl;
+
+	// vtkPlane* plane = vtkPlane::New();
+	// plane->SetOrigin(origin);
+	// plane->SetNormal(normal);
+	// vtkImplicitBoolean* funcs = vtkImplictBoolean::New();
+	// funcs->AddFunction(plane);
+	// Store the funcs in some collection.
+}
 
 
 

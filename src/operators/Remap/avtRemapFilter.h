@@ -100,6 +100,7 @@ class avtRemapFilter : public avtDatasetToDatasetFilter,
     void                CreateGrid(int, int, int, int, int, int);
     vtkDataArray        *GetCoordinates(double, double, int, int, int);
     void                Output();
+    void				MakeFunction(const vtkIdType&, int);
     
     
     // -------------------- //
