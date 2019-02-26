@@ -52,6 +52,7 @@ def myCloseDatabase(db):
     CloseDatabase('%s/%s'%(dbroot,db))
 
 def myPlot(plot,var):
+    global imgIdx, txtIdx
     AddPlot(plot,var)
     DrawPlots()
     if plot == 'Curve': # we'll treat as text
@@ -79,6 +80,7 @@ def myPlot(plot,var):
     DeleteAllPlots()
 
 def myQuery(plot,var,queryList):
+    global txtIdx
     AddPlot(plot,var)
     DrawPlots()
     s = ''
