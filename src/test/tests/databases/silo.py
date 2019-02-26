@@ -638,11 +638,9 @@ CloseDatabase(data_path("silo_ghost_test_data/specmix_ucd.pdb"))
 #
 # Test the way silo reads in curve data with expressions
 #
-OpenDatabase(data_path("silo_pdb_test_data/multi_rect2d.silo"))
-DefineCurveExpression("log10", "log+10")
+OpenDatabase(silo_data_path("multi_rect2d.silo"))
+DefineCurveExpression("alias","wave")
 DefineCurveExpression("waveSquared", "wave*wave")
-DefineCurveExpression("line2", "line+line")
-DefineCurveExpression("waveLine", "line+wave")
 ResetView()
 
 AddPlot("Curve","wave")
@@ -652,27 +650,13 @@ Test("silo_%d"%testNum)
 testNum = testNum + 1
 DeleteAllPlots()
 
-AddPlot("Curve","line")
-AddPlot("Curve","line2")
+AddPlot("Curve","alias")
 DrawPlots()
 Test("silo_%d"%testNum)
 testNum = testNum + 1
 DeleteAllPlots()
 
-AddPlot("Curve","log")
-AddPlot("Curve","log10")
-DrawPlots()
-Test("silo_%d"%testNum)
-testNum = testNum + 1
-DeleteAllPlots()
-
-AddPlot("Curve","waveLine")
-DrawPlots()
-Test("silo_%d"%testNum)
-testNum = testNum + 1
-DeleteAllPlots()
-
-CloseDatabase(data_path("silo_pdb_test_data/multi_rect2d.silo"))
+CloseDatabase(silo_data_path("multi_rect2d.silo"))
 
 
 
