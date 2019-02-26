@@ -11,11 +11,11 @@
 # GrizIt testing with VisIt's test harness
 #
 # The commands this simple example recognizes are
-#     setroot <path>                       sets root prefix for databases
+#     setroot <path>                          sets root prefix for databases
 #     opendb <db-name>
 #     closedb <db-name>
-#     plot <plot-name> <var-name>             plots and saves to png file
-#     query <plot-name> <query-name>       queries and saves to text file
+#     plot <plot-name> <var-name>                plots and saves to png file
+#     query <plot-name> <var-name> <query-list> queries & saves to text file
 #     exit
 #
 # The question this example answers is...if I have a .py file that does
@@ -27,6 +27,9 @@
 import sys
 
 dbroot = ''
+imgIdx = 0
+txtIdx = 0
+
 #
 # Telltale signs this is running as a VisIt Test
 #
@@ -56,19 +59,23 @@ def myPlot(plot,var):
        s = ''
        for i in range(0,len(cdata),2):
            s = s + '%f %f\n'%(cdata[i], cdata[i+1])
-       with open('%s_%s_%s.txt'%(testName,plot,var), 'w') as txtfil:
+       fname = '%s_%s_%s_%02d'%(testName,plot,var,txtIdx)
+       with open('%s.txt'%fname, 'w') as txtfil:
            txtfil.write(s)
        if isRunningAsVisItTest():
-           TestText('%s_%s_%s'%(testName,plot,var),s) # VisIt Test Text Output
+           TestText(fname,s) # VisIt Test Text Output
+       txtIdx = txtIdx + 1
     else:
         swa = SaveWindowAttributes()
         swa.family = 0
         swa.format = swa.PNG
-        swa.fileName = '%s_%s_%s.png'%(testName,plot,var)
+        fname = '%s_%s_%s_%02d'%(testName,plot,var,imgIdx)
+        swa.fileName = '%s.png'%fname
         SetSaveWindowAttributes(swa)
         SaveWindow()
         if isRunningAsVisItTest():
-            Test('%s_%s_%s'%(testName,plot,var)) # VisIt Test Image Output
+            Test(fname) # VisIt Test Image Output
+        imgIdx = imgIdx + 1
     DeleteAllPlots()
 
 def myQuery(plot,var,queryList):
@@ -78,10 +85,12 @@ def myQuery(plot,var,queryList):
     for q in queryList:
         Query(q)
         s = s + GetQueryOutputString() + '\n'
-    with open('%s_%s_%s.txt'%(testName,plot,var), 'w') as txtfil:
+    fname = '%s_%s_%s_%02d'%(testName,plot,var,txtIdx)
+    with open('%s.txt'%fname, 'w') as txtfil:
         txtfil.write(s)
     if isRunningAsVisItTest():
-        TestText('%s_%s_%s'%(testName,plot,var),s) # VisIt Test Text Output
+        TestText(fname,s) # VisIt Test Text Output
+    txtIdx = txtIdx + 1
     DeleteAllPlots()
 
 #
