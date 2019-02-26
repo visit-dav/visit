@@ -135,6 +135,25 @@ def TestVectors():
     DeleteAllPlots()
 
 
+def TestSandMesh():
+    OpenDatabase("/usr/workspace/wsrzd/maguire7/MiliTestData/single_proc/new/d3samp6new.plt.mili")
+    v = GetView3D()
+    v.viewNormal = (0.9, 0.35, -0.88)
+    SetView3D(v)
+    SetTimeSliderState(70)
+    
+    AddPlot("Pseudocolor", "sand_mesh/Primal/brick/edrate")
+    DrawPlots()
+    Test("mili_sand_mesh_01")
+    
+    ChangeActivePlotsVar("sand_mesh/Primal/beam/svec/svec_x")
+    Test("mili_sand_mesh_02")
+    ChangeActivePlotsVar("sand_mesh/Primal/node/nodacc/ax")
+    Test("mili_sand_mesh_03")
+    
+    DeleteAllPlots()
+
+
 def Main():
     TestComponentVis()    
     TestElementSetComponents()
@@ -142,6 +161,7 @@ def Main():
     TestMaterials()
     TestTensors()
     TestVectors()
+    TestSandMesh()
 
 Main()
 Exit()

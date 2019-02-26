@@ -698,6 +698,11 @@ avtMiliFileFormat::GetMesh(int ts, int dom, const char *mesh)
                         NODE_NOT_APPLICABLE_TO_PROBLEM);
                 }
      
+                //
+                // FYI: sand elements are those that have been 
+                // "destroyed" during the simulation. We ghost them
+                // out by default. 
+                //
                 for (int i = 0; i < nCells; ++i)
                 {
                     //
@@ -1992,18 +1997,36 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
             MiliVariableMetaData *varMD = miliMetaData[meshId]->
                 GetVarMDByIdx(i);
 
-            //
-            // We don't render sand. 
-            //
-            if (varMD->IsSand())
-            {
-                continue;
-            }
-
             if (varMD == NULL)
             {
                 debug1 << "Missing variable meta data???";
                 continue;
+            }
+
+            //
+            // If this variable is sand or cause, we only add it to 
+            // the sand mesh.
+            //
+            bool addToDefault = !(varMD->IsSand() || varMD->IsCause());
+            if (!addToDefault && !doSand)
+            {
+                continue;
+            }
+
+            //
+            // Create a container for all mesh paths that the current
+            // variable must be added to. 
+            //
+            vector<string> meshPaths;
+            if (addToDefault)
+            {  
+                meshPaths.push_back(varMD->GetPath());
+            }
+            if (doSand)
+            {
+                string sandDir  = miliMetaData[meshId]->GetSandDir();
+                string sandPath = sandDir + "/" + varMD->GetPath();
+                meshPaths.push_back(sandPath);
             }
 
             char meshName[32];
@@ -2073,59 +2096,41 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
                     continue;
                 }
             }
-
-            string vPath   = varMD->GetPath();
-            string sandDir = miliMetaData[meshId]->GetSandDir();
            
             switch (cellTypeCast)
             {
                 case AVT_SCALAR_VAR:
                 {
-                    AddScalarVarToMetaData(md, vPath, meshName, centering);
-   
-                    if (doSand)
+                    for (vector<string>::iterator pathIt = meshPaths.begin();
+                         pathIt != meshPaths.end(); ++pathIt)
                     {
-                        string sandPath = sandDir + "/" + vPath;
-                        AddScalarVarToMetaData(md, sandPath, 
-                            sandMeshName, centering);
+                        AddScalarVarToMetaData(md, (*pathIt), 
+                            meshName, centering);
                     }
                     break;
                 }
                 case AVT_VECTOR_VAR:
                 {
-                    AddVectorVarToMetaData(md, vPath, meshName, 
-                        centering, nComps);
-
-                    string sandPath = sandDir + "/" + vPath;
-                    if (doSand)
+                    for (vector<string>::iterator pathIt = meshPaths.begin();
+                         pathIt != meshPaths.end(); ++pathIt)
                     {
-                        AddVectorVarToMetaData(md, sandPath, sandMeshName, 
+                        AddVectorVarToMetaData(md, (*pathIt), meshName, 
                             centering, nComps);
-                    }
 
-                    //
-                    // Add expressions for displaying each component. 
-                    //
-                    for (int j = 0; j < nComps; ++j)
-                    {
                         //
-                        // Add the x, y, z expressions. 
+                        // Add expressions for displaying each component. 
                         //
-                        char name[1024];
-                        sprintf(name, "%s/%s", vPath.c_str(), 
-                            vComps[j].c_str());
-                        Expression expr = ScalarExpressionFromVec(vPath.c_str(),
-                                              name, j);
-                        md->AddExpression(&expr);
-
-                        if (doSand)
+                        for (int j = 0; j < nComps; ++j)
                         {
-                            char sName[1024];
-                            sprintf(sName, "%s/%s", sandPath.c_str(), 
+                            //
+                            // Add the x, y, z expressions. 
+                            //
+                            char name[1024];
+                            sprintf(name, "%s/%s", (*pathIt).c_str(), 
                                 vComps[j].c_str());
                             Expression expr = ScalarExpressionFromVec(
-                                                  sandPath.c_str(),
-                                                  sName, 
+                                                  (*pathIt).c_str(),
+                                                  name, 
                                                   j);
                             md->AddExpression(&expr);
                         }
@@ -2134,135 +2139,107 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
                 }
                 case AVT_SYMMETRIC_TENSOR_VAR:
                 {
-                    //
-                    // When we come across a vector of length 6, we change it 
-		    // to a normal vector of length 9 and render it as a 
-		    // symmetric tensor. 
-                    //
-                    AddSymmetricTensorVarToMetaData(md, vPath, 
-                        meshName, centering, 9);
-
-                    string sandPath = sandDir + "/" + vPath;
-                    if (doSand)
+                    for (vector<string>::iterator pathIt = meshPaths.begin();
+                         pathIt != meshPaths.end(); ++pathIt)
                     {
-                        AddSymmetricTensorVarToMetaData(md, sandPath, 
-                            sandMeshName, centering, 9);
-                    }
+                        //
+                        // When we come across a vector of length 6, we change it 
+		        // to a normal vector of length 9 and render it as a 
+		        // symmetric tensor. 
+                        //
+                        AddSymmetricTensorVarToMetaData(md, (*pathIt), 
+                            meshName, centering, 9);
 
-                    //
-                    // Now we add the individual components. 
-                    //
-                    int multDimIdxs[] = {1, 2, 0};
+                        //
+                        // Now we add the individual components. 
+                        //
+                        int multDimIdxs[] = {1, 2, 0};
 
-                    for (int j = 0; j < 3; ++j)
-                    {
-                        // 
-                        // First, get the "single-dim" values: xx, yy, zz. 
-                        // 
-                        Expression singleDim;
-                        char singleDef[256];
-                        sprintf(singleDef, "<%s>[%d][%d]", vPath.c_str(), j, j);
-                        string singleName = vPath + "/" + 
-                            varMD->GetVectorComponent(j);
-                        singleDim.SetName(singleName);
-                        singleDim.SetDefinition(singleDef);
-                        singleDim.SetType(Expression::ScalarMeshVar);
-                        md->AddExpression(&singleDim);
-
-                        if (doSand)
+                        for (int j = 0; j < 3; ++j)
                         {
-                            string singleName = sandPath + "/" + 
+                            // 
+                            // First, get the "single-dim" values: xx, yy, zz. 
+                            // 
+                            Expression singleDim;
+                            singleDim.SetType(Expression::ScalarMeshVar);
+                  
+                            char singleDef[256];
+                            sprintf(singleDef, "<%s>[%d][%d]", 
+                                (*pathIt).c_str(), j, j);
+                            singleDim.SetDefinition(singleDef);
+
+                            string singleName = (*pathIt) + "/" + 
                                 varMD->GetVectorComponent(j);
                             singleDim.SetName(singleName);
+
                             md->AddExpression(&singleDim);
-                        }
 
-                        //
-                        // Next, get the "multi-dim" values: xy, yz, zx
-                        //
-                        int compIdx = j + 3;
-                        Expression multDim;
-                        char multDef[256];
-                        sprintf(multDef, "<%s>[%d][%d]", vPath.c_str(), 
-                            j, multDimIdxs[j]);
-                        string multName = vPath + "/" + 
-                            varMD->GetVectorComponent(compIdx);
-                        multDim.SetName(multName);
-                        multDim.SetDefinition(multDef);
-                        multDim.SetType(Expression::ScalarMeshVar);
-                        md->AddExpression(&multDim);
+                            //
+                            // Next, get the "multi-dim" values: xy, yz, zx
+                            //
+                            int compIdx = j + 3;
+                            Expression multDim;
+                            multDim.SetType(Expression::ScalarMeshVar);
 
-                        if (doSand)
-                        {
-                            string multName = sandPath + "/" + 
+                            char multDef[256];
+                            sprintf(multDef, "<%s>[%d][%d]", (*pathIt).c_str(), 
+                                j, multDimIdxs[j]);
+                            multDim.SetDefinition(multDef);
+
+                            string multName = (*pathIt) + "/" + 
                                 varMD->GetVectorComponent(compIdx);
                             multDim.SetName(multName);
+
                             md->AddExpression(&multDim);
                         }
                     }
-
                     break;
                 }
                 case AVT_TENSOR_VAR:
                 {
-                    AddTensorVarToMetaData(md, vPath, 
-                        meshName, centering, nComps);
-
-                    string sandPath = sandDir + "/" + vPath;
-                    if (doSand)
+                    for (vector<string>::iterator pathIt = meshPaths.begin();
+                         pathIt != meshPaths.end(); ++pathIt)
                     {
-                        AddTensorVarToMetaData(md, sandPath, 
-                            sandMeshName, centering, nComps);
-                    }
+                        AddTensorVarToMetaData(md, (*pathIt), 
+                            meshName, centering, nComps);
 
-                    //
-                    // Now we add the individual components. 
-                    //
-                    int multDimIdxs[] = {1, 2, 0};
+                        //
+                        // Now we add the individual components. 
+                        //
+                        int multDimIdxs[] = {1, 2, 0};
 
-                    for (int j = 0; j < 3; ++j)
-                    {
-                        // 
-                        // First, get the "single-dim" values: xx, yy, zz. 
-                        // 
-                        Expression singleDim;
-                        char singleDef[256];
-                        sprintf(singleDef, "<%s>[%d][%d]", vPath.c_str(), j, j);
-                        string singleName = vPath + "/" + 
-                            varMD->GetVectorComponent(j);
-                        singleDim.SetName(singleName);
-                        singleDim.SetDefinition(singleDef);
-                        singleDim.SetType(Expression::ScalarMeshVar);
-                        md->AddExpression(&singleDim);
-
-                        if (doSand)
+                        for (int j = 0; j < 3; ++j)
                         {
-                            string singleName = sandPath + "/" + 
+                            // 
+                            // First, get the "single-dim" values: xx, yy, zz. 
+                            // 
+                            Expression singleDim;
+                            singleDim.SetType(Expression::ScalarMeshVar);
+
+                            char singleDef[256];
+                            sprintf(singleDef, "<%s>[%d][%d]", 
+                                (*pathIt).c_str(), j, j);
+                            singleDim.SetDefinition(singleDef);
+
+                            string singleName = (*pathIt) + "/" + 
                                 varMD->GetVectorComponent(j);
                             singleDim.SetName(singleName);
+
                             md->AddExpression(&singleDim);
-                        }
 
-                        //
-                        // Next, get the "multi-dim" values: xy, yz, zx
-                        //
-                        int compIdx = j + 3;
-                        Expression multDim;
-                        char multDef[256];
-                        sprintf(multDef, "<%s>[%d][%d]", vPath.c_str(), 
-                            j, multDimIdxs[j]);
-                        string multName = vPath + "/" + 
-                            varMD->GetVectorComponent(compIdx);
-                        multDim.SetName(multName);
-                        multDim.SetDefinition(multDef);
-                        multDim.SetType(Expression::ScalarMeshVar);
-                        md->AddExpression(&multDim);
-
-                        if (doSand)
-                        {
-                            string multName = sandPath + "/" + 
+                            //
+                            // Next, get the "multi-dim" values: xy, yz, zx
+                            //
+                            int compIdx = j + 3;
+                            Expression multDim;
+                            char multDef[256];
+                            sprintf(multDef, "<%s>[%d][%d]", (*pathIt).c_str(), 
+                                j, multDimIdxs[j]);
+                            string multName = (*pathIt) + "/" + 
                                 varMD->GetVectorComponent(compIdx);
                             multDim.SetName(multName);
+                            multDim.SetDefinition(multDef);
+                            multDim.SetType(Expression::ScalarMeshVar);
                             md->AddExpression(&multDim);
                         }
                     }
@@ -2270,43 +2247,30 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
                 }
                 case AVT_ARRAY_VAR:
                 {
-                    //
-                    // For array vars, we just want to display the 
-                    // individual components. 
-                    //
-                    string sandPath = sandDir + "/" + vPath;
-                    vector<string> compNames;
-
-                    for (int j = 0; j < nComps; ++j)
+                    for (vector<string>::iterator pathIt = meshPaths.begin();
+                         pathIt != meshPaths.end(); ++pathIt)
                     {
-                        compNames.push_back(varMD->GetVectorComponent(j));
-                        char name[1024];
-                        sprintf(name, "%s/%s", vPath.c_str(), 
-                            varMD->GetVectorComponent(j).c_str());
-                        Expression expr = ScalarExpressionFromVec(vPath.c_str(),
-                                              name, j);
-                        md->AddExpression(&expr);
+                        //
+                        // For array vars, we just want to display the 
+                        // individual components. 
+                        //
+                        vector<string> compNames;
 
-                        if (doSand)
+                        for (int j = 0; j < nComps; ++j)
                         {
-                            char sName[1024];
-                            sprintf(sName, "%s/%s", sandPath.c_str(), 
+                            compNames.push_back(varMD->GetVectorComponent(j));
+                            char name[1024];
+                            sprintf(name, "%s/%s", (*pathIt).c_str(), 
                                 varMD->GetVectorComponent(j).c_str());
                             Expression expr = ScalarExpressionFromVec(
-                                                  sandPath.c_str(),
-                                                  sName, 
+                                                  (*pathIt).c_str(),
+                                                  name, 
                                                   j);
                             md->AddExpression(&expr);
                         }
-                    }
 
-                    AddArrayVarToMetaData(md, vPath, compNames, meshName, 
-                        centering); 
-
-                    if (doSand)
-                    {
-                        AddArrayVarToMetaData(md, sandPath, compNames, 
-                            sandMeshName, centering); 
+                        AddArrayVarToMetaData(md, (*pathIt), compNames, meshName, 
+                            centering); 
                     }
                     break;
                 }
