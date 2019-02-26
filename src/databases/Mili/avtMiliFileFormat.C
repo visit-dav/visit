@@ -2096,9 +2096,9 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
                     AddVectorVarToMetaData(md, vPath, meshName, 
                         centering, nComps);
 
+                    string sandPath = sandDir + "/" + vPath;
                     if (doSand)
                     {
-                        string sandPath = sandDir + "/" + vPath;
                         AddVectorVarToMetaData(md, sandPath, sandMeshName, 
                             centering, nComps);
                     }
@@ -2117,6 +2117,18 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
                         Expression expr = ScalarExpressionFromVec(vPath.c_str(),
                                               name, j);
                         md->AddExpression(&expr);
+
+                        if (doSand)
+                        {
+                            char sName[1024];
+                            sprintf(sName, "%s/%s", sandPath.c_str(), 
+                                vComps[j].c_str());
+                            Expression expr = ScalarExpressionFromVec(
+                                                  sandPath.c_str(),
+                                                  sName, 
+                                                  j);
+                            md->AddExpression(&expr);
+                        }
                     }
                     break;
                 }
@@ -2130,9 +2142,9 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
                     AddSymmetricTensorVarToMetaData(md, vPath, 
                         meshName, centering, 9);
 
+                    string sandPath = sandDir + "/" + vPath;
                     if (doSand)
                     {
-                        string sandPath = sandDir + "/" + vPath;
                         AddSymmetricTensorVarToMetaData(md, sandPath, 
                             sandMeshName, centering, 9);
                     }
@@ -2157,6 +2169,14 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
                         singleDim.SetType(Expression::ScalarMeshVar);
                         md->AddExpression(&singleDim);
 
+                        if (doSand)
+                        {
+                            string singleName = sandPath + "/" + 
+                                varMD->GetVectorComponent(j);
+                            singleDim.SetName(singleName);
+                            md->AddExpression(&singleDim);
+                        }
+
                         //
                         // Next, get the "multi-dim" values: xy, yz, zx
                         //
@@ -2171,6 +2191,14 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
                         multDim.SetDefinition(multDef);
                         multDim.SetType(Expression::ScalarMeshVar);
                         md->AddExpression(&multDim);
+
+                        if (doSand)
+                        {
+                            string multName = sandPath + "/" + 
+                                varMD->GetVectorComponent(compIdx);
+                            multDim.SetName(multName);
+                            md->AddExpression(&multDim);
+                        }
                     }
 
                     break;
@@ -2180,9 +2208,9 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
                     AddTensorVarToMetaData(md, vPath, 
                         meshName, centering, nComps);
 
+                    string sandPath = sandDir + "/" + vPath;
                     if (doSand)
                     {
-                        string sandPath = sandDir + "/" + vPath;
                         AddTensorVarToMetaData(md, sandPath, 
                             sandMeshName, centering, nComps);
                     }
@@ -2207,6 +2235,14 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
                         singleDim.SetType(Expression::ScalarMeshVar);
                         md->AddExpression(&singleDim);
 
+                        if (doSand)
+                        {
+                            string singleName = sandPath + "/" + 
+                                varMD->GetVectorComponent(j);
+                            singleDim.SetName(singleName);
+                            md->AddExpression(&singleDim);
+                        }
+
                         //
                         // Next, get the "multi-dim" values: xy, yz, zx
                         //
@@ -2221,6 +2257,14 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
                         multDim.SetDefinition(multDef);
                         multDim.SetType(Expression::ScalarMeshVar);
                         md->AddExpression(&multDim);
+
+                        if (doSand)
+                        {
+                            string multName = sandPath + "/" + 
+                                varMD->GetVectorComponent(compIdx);
+                            multDim.SetName(multName);
+                            md->AddExpression(&multDim);
+                        }
                     }
                     break;
                 }
@@ -2230,6 +2274,7 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
                     // For array vars, we just want to display the 
                     // individual components. 
                     //
+                    string sandPath = sandDir + "/" + vPath;
                     vector<string> compNames;
 
                     for (int j = 0; j < nComps; ++j)
@@ -2241,6 +2286,18 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
                         Expression expr = ScalarExpressionFromVec(vPath.c_str(),
                                               name, j);
                         md->AddExpression(&expr);
+
+                        if (doSand)
+                        {
+                            char sName[1024];
+                            sprintf(sName, "%s/%s", sandPath.c_str(), 
+                                varMD->GetVectorComponent(j).c_str());
+                            Expression expr = ScalarExpressionFromVec(
+                                                  sandPath.c_str(),
+                                                  sName, 
+                                                  j);
+                            md->AddExpression(&expr);
+                        }
                     }
 
                     AddArrayVarToMetaData(md, vPath, compNames, meshName, 
@@ -2248,7 +2305,6 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
 
                     if (doSand)
                     {
-                        string sandPath = sandDir + "/" + vPath;
                         AddArrayVarToMetaData(md, sandPath, compNames, 
                             sandMeshName, centering); 
                     }
