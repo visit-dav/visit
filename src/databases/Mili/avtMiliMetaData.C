@@ -128,14 +128,21 @@ MiliVariableMetaData::MiliVariableMetaData(string sName,
     path              = "";
 
     //
-    // As of now, sand variables are denoted by their shortname. 
+    // Sand and cause are two special cases dealing with 
+    // destroyed elements. 
     //
-    isSand = false;
+    isSand  = false;
+    isCause = false;
     string sanded = "sand";
+    string cause  = "cause";
 
     if (shortName == sanded)
     {
         isSand = true;
+    }
+    else if (shortName == cause)
+    {
+        isCause = true;
     }
 
     DetermineESStatus();

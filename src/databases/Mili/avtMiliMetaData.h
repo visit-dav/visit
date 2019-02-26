@@ -157,6 +157,9 @@ class MiliVariableMetaData
     bool                      IsSand(void)
                                 { return isSand; };
 
+    bool                      IsCause(void)
+                                { return isCause; };
+
     void                      AddSubrecId(int, int);
     vector<int>              &GetSubrecIds(int);
     
@@ -199,6 +202,7 @@ class MiliVariableMetaData
     bool                      isMatVar;
     bool                      isGlobal;
     bool                      isSand;
+    bool                      isCause;
     bool                      multiMesh;
 
     vector<string>            vectorComponents;
