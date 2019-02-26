@@ -63,6 +63,7 @@
 #include "vtkCellData.h"
 #include "vtkIdTypeArray.h"
 #include "vtkPoints.h"
+#include "vtkPointData.h"
 #include "vtkRectilinearGrid.h"
 #include "vtkStructuredGrid.h"
 #include "vtkUnstructuredGrid.h"
@@ -144,7 +145,21 @@ VTKCellTypeSize(int cell_type)
     return 0;
 }
 
+// ****************************************************************************
+std::string
+VTKCellTypeToElementShapeName(const int vtk_cell_type)
+{
+    if (vtk_cell_type == VTK_VERTEX)     return "point";
+    if (vtk_cell_type == VTK_LINE)       return "line";
+    if (vtk_cell_type == VTK_TRIANGLE)   return "tri";
+    if (vtk_cell_type == VTK_QUAD)       return "quad";
+    if (vtk_cell_type == VTK_HEXAHEDRON) return "hex";
+    if (vtk_cell_type == VTK_VOXEL)      return "hex";
+    if (vtk_cell_type == VTK_TETRA)      return "tet";
 
+    BP_PLUGIN_INFO("Warning: Unsupported vtkCellType : " << vtk_cell_type);
+    return "";
+}
 
 //---------------------------------------------------------------------------//
 //---------------------------------------------------------------------------//
@@ -155,7 +170,7 @@ VTKCellTypeSize(int cell_type)
 //---------------------------------------------------------------------------//
 
 // ****************************************************************************
-template<typename T> void 
+template<typename T> void
 Blueprint_MultiCompArray_To_VTKDataArray(const Node &n,
                                          int ncomps,
                                          int ntuples,
@@ -168,7 +183,7 @@ Blueprint_MultiCompArray_To_VTKDataArray(const Node &n,
             darray->SetNumberOfComponents(ncomps);
         // set number of tuples
         darray->SetNumberOfTuples(ntuples);
-        
+
         // handle multi-component case
         if(n.number_of_children() > 0)
         {
@@ -207,7 +222,7 @@ ConduitArrayToVTKDataArray(const conduit::Node &n)
     BP_PLUGIN_INFO("Creating VTKDataArray from Node");
     vtkDataArray *retval = NULL;
 
-    
+
     int nchildren = n.number_of_children();
     int ntuples = 0;
     int ncomps  = 1;
@@ -223,7 +238,7 @@ ConduitArrayToVTKDataArray(const conduit::Node &n)
             BP_PLUGIN_EXCEPTION1(InvalidVariableException,
                                  "Node is not a mcarray " << v_info.to_json());
         }
-        
+
         // in this case, each child is a component of the array
         ncomps = nchildren;
         // This assumes all children have the same leaf type
@@ -233,11 +248,11 @@ ConduitArrayToVTKDataArray(const conduit::Node &n)
     {
         vals_dtype = n.dtype();
     }
-    
+
     // get the number of tuples
     ntuples = (int) vals_dtype.number_of_elements();
-    
-    BP_PLUGIN_INFO("VTKDataArray num_tuples = " << ntuples << " " 
+
+    BP_PLUGIN_INFO("VTKDataArray num_tuples = " << ntuples << " "
                     << " num_comps = " << ncomps);
 
     if (vals_dtype.is_unsigned_char())
@@ -362,14 +377,14 @@ UniformCoordsToVTKRectilinearGrid(const Node &n_coords)
     }
 
     double x0[3] = {0.0, 0.0, 0.0};
-    
+
     if(n_coords.has_child("origin"))
     {
         const Node &n_origin =  n_coords["origin"];
 
         if(n_origin.has_child("x"))
             x0[0] = n_origin["x"].to_double();
-        
+
         if(n_origin.has_child("y"))
             x0[1] = n_origin["y"].to_double();
 
@@ -387,7 +402,7 @@ UniformCoordsToVTKRectilinearGrid(const Node &n_coords)
         {
             dt = n_coords["origin"]["x"].dtype();
         }
-        
+
         // since vtk uses the c-native style types
         // only need to check for native types in conduit
         if (dt.is_unsigned_char())
@@ -407,7 +422,7 @@ UniformCoordsToVTKRectilinearGrid(const Node &n_coords)
 #if CONDUIT_USE_LONG_LONG
         else if (dt.id() == CONDUIT_NATIVE_LONG_LONG_ID)
             da = vtkLongLongArray::New();
-#endif 
+#endif
         else if (dt.is_float())
             da = vtkFloatArray::New();
         else if (dt.is_double())
@@ -486,22 +501,22 @@ vtkPoints *
 ExplicitCoordsToVTKPoints(const Node &n_coords)
 {
     vtkPoints *points = vtkPoints::New();
-        
+
     const Node &n_vals = n_coords["values"];
-    
+
     // We always use doubles
 
     int npts = (int) n_vals["x"].dtype().number_of_elements();
-    
+
     double_array x_vals;
     double_array y_vals;
     double_array z_vals;
-    
+
     bool have_y = false;
     bool have_z = false;
-    
+
     Node n_vals_double;
-    
+
     if(!n_vals["x"].dtype().is_double())
     {
         n_vals["x"].to_double_array(n_vals_double["x"]);
@@ -511,12 +526,12 @@ ExplicitCoordsToVTKPoints(const Node &n_coords)
     {
         x_vals = n_vals["x"].value();
     }
-    
-    
+
+
     if(n_vals.has_child("y"))
     {
         have_y = true;
-        
+
         if(!n_vals["y"].dtype().is_double())
         {
             n_vals["y"].to_double_array(n_vals_double["y"]);
@@ -527,11 +542,11 @@ ExplicitCoordsToVTKPoints(const Node &n_coords)
             y_vals = n_vals["y"].value();
         }
     }
-    
+
     if(n_vals.has_child("z"))
     {
         have_z = true;
-        
+
         if(!n_vals["z"].dtype().is_double())
         {
             n_vals["z"].to_double_array(n_vals_double["z"]);
@@ -547,8 +562,8 @@ ExplicitCoordsToVTKPoints(const Node &n_coords)
     points->SetDataTypeToDouble();
     points->SetNumberOfPoints(npts);
 
-    //TODO: we could describe the VTK data array via 
-    // and push the conversion directly into its memory. 
+    //TODO: we could describe the VTK data array via
+    // and push the conversion directly into its memory.
 
     for (vtkIdType i = 0; i < npts; i++)
     {
@@ -628,7 +643,7 @@ HomogeneousShapeTopologyToVTKCellArray(const Node &n_topo,
                 n_topo["elements/connectivity"].to_int_array(n_tmp);
                 topo_conn = n_tmp.as_int_array();
             }
-            
+
             ida->SetComponent((csize+1)*i, 0, csize);
             for (int j = 0; j < csize; j++)
             {
@@ -658,7 +673,7 @@ UnstructuredTopologyToVTKUnstructuredGrid(const Node &n_coords,
     vtkCellArray *ca = HomogeneousShapeTopologyToVTKCellArray(n_topo, points->GetNumberOfPoints());
     ugrid->SetCells(ElementShapeNameToVTKCellType(n_topo["elements/shape"].as_string()), ca);
     ca->Delete();
-    
+
     return ugrid;
 }
 
@@ -669,7 +684,7 @@ avtBlueprintDataAdaptor::VTK::MeshToVTK(const Node &n_mesh)
 {
     //NOTE: this assumes one coordset and one topo
     // that is the case for the blueprint plugin, but may not be the case
-    // generally if we want to reuse this code. 
+    // generally if we want to reuse this code.
     BP_PLUGIN_INFO("BlueprintVTK::MeshToVTKDataSet Begin");
 
     const Node &n_coords = n_mesh["coordsets"][0];
@@ -708,7 +723,7 @@ avtBlueprintDataAdaptor::VTK::MeshToVTK(const Node &n_mesh)
     }
 
     BP_PLUGIN_INFO("BlueprintVTK::MeshToVTKDataSet End");
-    
+
     return res;
 }
 
@@ -747,8 +762,8 @@ ConduitElementShapeSize(const std::string &shape_name)
 mfem::Geometry::Type
 ElementShapeNameToMFEMShape(const std::string &shape_name)
 {
-    // init to somethign to avoid invalid memory access 
-    // in the mfem mesh constructor 
+    // init to somethign to avoid invalid memory access
+    // in the mfem mesh constructor
     mfem::Geometry::Type res = mfem::Geometry::POINT;
     if(shape_name == "point")
         res = mfem::Geometry::POINT;
@@ -837,7 +852,7 @@ ShapeNameToGeomType(const std::string &shape_name)
 
 //---------------------------------------------------------------------------//
 //---------------------------------------------------------------------------//
-// TODO: 
+// TODO:
 // In the future: these methods will be in MFEM's ConduitDataCollection
 // we will those, instead of VisIt's own implementation.
 //---------------------------------------------------------------------------//
@@ -851,17 +866,17 @@ avtBlueprintDataAdaptor::MFEM::MeshToMFEM(const Node &n_mesh,
    // now that some data allocation was necessary, so we
    // can't return a mesh that zero copies the conduit data
    Node n_conv;
-   
+
    // we need to find the topology and its coordset.
    //
-   
+
    std::string topo_name = topology_name;
    // if topo name is not set, look for first topology
    if (topo_name == "")
    {
        topo_name = n_mesh["topologies"].schema().child_name(0);
    }
-   
+
    if(!n_mesh.has_path("topologies/" + topo_name))
    {
        BP_PLUGIN_EXCEPTION1(InvalidVariableException,
@@ -870,11 +885,11 @@ avtBlueprintDataAdaptor::MFEM::MeshToMFEM(const Node &n_mesh,
                             "(node is missing path \"topologies/"
                             << topo_name << "\")");
    }
-   
+
    // find coord set
-   
+
    std::string coords_name = n_mesh["topologies"][topo_name]["coordset"].as_string();
-   
+
 
    if(!n_mesh.has_path("coordsets/" + coords_name))
    {
@@ -990,17 +1005,17 @@ avtBlueprintDataAdaptor::MFEM::MeshToMFEM(const Node &n_mesh,
    if ( n_mesh_topo.has_child("boundary_topology") )
    {
       std::string bndry_topo_name = n_mesh_topo["boundary_topology"].as_string();
-      
-      // We encountered a case were a mesh specified the boundary 
+
+      // We encountered a case were a mesh specified the boundary
       // topology, but the boundary topology was was omitted from the blueprint
       // index, so it's data could not be obtained.
-      // 
+      //
       // This guard prevents an error in that case, allowing the mesh to be
       // created without boundary info
-      
+
       if(n_mesh["topologies"].has_child(bndry_topo_name))
       {
-      
+
          const Node &n_bndry_topo    = n_mesh["topologies"][bndry_topo_name];
          std::string bndry_ele_shape = n_bndry_topo["elements/shape"].as_string();
 
@@ -1195,11 +1210,11 @@ avtBlueprintDataAdaptor::MFEM::MeshToMFEM(const Node &n_mesh,
 
 //---------------------------------------------------------------------------//
 mfem::GridFunction *
-avtBlueprintDataAdaptor::MFEM::FieldToMFEM(mfem::Mesh *mesh, 
+avtBlueprintDataAdaptor::MFEM::FieldToMFEM(mfem::Mesh *mesh,
                                            const Node &n_field)
 {
     bool zero_copy = true;
-    
+
    // n_conv holds converted data (when necessary for mfem api)
    // if n_conv is used ( !n_conv.dtype().empty() ) we
    // know that some data allocation was necessary, so we
@@ -1335,8 +1350,8 @@ avtBlueprintDataAdaptor::MFEM::FieldToMFEM(mfem::Mesh *mesh,
 // Helpers for creating VTK objects from MFEM Objects
 //
 // These methods all support refinement (sub-divison) of mfem objects
-// to create higher resolution low-order VTK data objects to represent the 
-// high order mfem objects. 
+// to create higher resolution low-order VTK data objects to represent the
+// high order mfem objects.
 //
 //---------------------------------------------------------------------------//
 //---------------------------------------------------------------------------//
@@ -1344,12 +1359,12 @@ avtBlueprintDataAdaptor::MFEM::FieldToMFEM(mfem::Mesh *mesh,
 // ****************************************************************************
 //  Method: RefineMeshToVTK
 //
-//  Purpose: 
+//  Purpose:
 //    Constructs a vtkUnstructuredGrid that contains a refined mfem mesh.
 //
 //  Arguments:
 //    mesh:      string with desired mesh name
-//    lod:       number of refinement steps 
+//    lod:       number of refinement steps
 //
 //  Programmer: Cyrus Harrison
 //  Creation:   Sat Jul  5 11:38:31 PDT 2014
@@ -1364,17 +1379,17 @@ avtBlueprintDataAdaptor::MFEM::RefineMeshToVTK(mfem::Mesh *mesh,
     BP_PLUGIN_INFO("Creating Refined MFEM Mesh with lod:" << lod);
 
     // create output objects
-    vtkUnstructuredGrid *res_ds  = vtkUnstructuredGrid::New(); 
+    vtkUnstructuredGrid *res_ds  = vtkUnstructuredGrid::New();
     vtkPoints           *res_pts = vtkPoints::New();
-   
+
     int npts=0;
     int neles=0;
-    
+
     RefinedGeometry *refined_geo;
     DenseMatrix      pmat;
-   
+
     //
-    // find the # of output points and cells at the selected level of 
+    // find the # of output points and cells at the selected level of
     // refinement (we may want to cache this...)
     //
     for (int i = 0; i < mesh->GetNE(); i++)
@@ -1386,10 +1401,10 @@ avtBlueprintDataAdaptor::MFEM::RefineMeshToVTK(mfem::Mesh *mesh,
         neles += refined_geo->RefGeoms.Size() / ele_nverts;
     }
 
-    // create the points for the refined topoloy   
+    // create the points for the refined topoloy
     res_pts->Allocate(npts);
     res_pts->SetNumberOfPoints((vtkIdType) npts);
-   
+
     // create the points for the refined topoloy
     int pt_idx=0;
     for (int i = 0; i < mesh->GetNE(); i++)
@@ -1410,12 +1425,12 @@ avtBlueprintDataAdaptor::MFEM::RefineMeshToVTK(mfem::Mesh *mesh,
             pt_idx++;
         }
     }
-    
+
     res_ds->SetPoints(res_pts);
-    res_pts->Delete();  
-    // create the cells for the refined topology   
+    res_pts->Delete();
+    // create the cells for the refined topology
     res_ds->Allocate(neles);
-    
+
     pt_idx=0;
     for (int i = 0; i <  mesh->GetNE(); i++)
     {
@@ -1448,20 +1463,20 @@ avtBlueprintDataAdaptor::MFEM::RefineMeshToVTK(mfem::Mesh *mesh,
 
         pt_idx += refined_geo->RefPts.GetNPoints();
    }
-       
+
    return res_ds;
 }
 
 // ****************************************************************************
 //  Method: RefineGridFunctionToVTK
 //
-//  Purpose: 
+//  Purpose:
 //   Constructs a vtkDataArray that contains a refined mfem mesh field variable.
 //
 //  Arguments:
 //   mesh:      MFEM mesh for the field
 //   gf:        MFEM Grid Function for the field
-//   lod:       number of refinement steps 
+//   lod:       number of refinement steps
 //
 //  Programmer: Cyrus Harrison
 //  Creation:   Sat Jul  5 11:38:31 PDT 2014
@@ -1477,14 +1492,14 @@ avtBlueprintDataAdaptor::MFEM::RefineGridFunctionToVTK(mfem::Mesh *mesh,
     BP_PLUGIN_INFO("Creating Refined MFEM Field with lod:" << lod);
     int npts=0;
     int neles=0;
-    
+
     RefinedGeometry *refined_geo;
     Vector           scalar_vals;
     DenseMatrix      vec_vals;
     DenseMatrix      pmat;
 
     //
-    // find the # of output points and cells at the selected level of 
+    // find the # of output points and cells at the selected level of
     // refinement (we may want to cache this...)
     //
     for (int i = 0; i < mesh->GetNE(); i++)
@@ -1495,9 +1510,9 @@ avtBlueprintDataAdaptor::MFEM::RefineGridFunctionToVTK(mfem::Mesh *mesh,
         npts  += refined_geo->RefPts.GetNPoints();
         neles += refined_geo->RefGeoms.Size() / ele_nverts;
     }
-    
+
     vtkFloatArray *rv = vtkFloatArray::New();
-    
+
     int ncomps =gf->VectorDim();
 
     if(ncomps == 2)
@@ -1519,7 +1534,7 @@ avtBlueprintDataAdaptor::MFEM::RefineGridFunctionToVTK(mfem::Mesh *mesh,
             for (int j = 0; j < scalar_vals.Size();j++)
             {
                 tuple_vals[0] = scalar_vals(j);
-                rv->SetTuple(ref_idx, tuple_vals); 
+                rv->SetTuple(ref_idx, tuple_vals);
                 ref_idx++;
             }
         }
@@ -1533,12 +1548,12 @@ avtBlueprintDataAdaptor::MFEM::RefineGridFunctionToVTK(mfem::Mesh *mesh,
                 tuple_vals[1] = vec_vals(1,j);
                 if (vec_vals.Height() > 2)
                     tuple_vals[2] = vec_vals(2,j);
-                rv->SetTuple(ref_idx, tuple_vals); 
+                rv->SetTuple(ref_idx, tuple_vals);
                 ref_idx++;
             }
         }
     }
-    
+
     return rv;
 }
 
@@ -1552,7 +1567,7 @@ avtBlueprintDataAdaptor::MFEM::RefineGridFunctionToVTK(mfem::Mesh *mesh,
 //  Arguments:
 //   mesh:        MFEM mesh object
 //   domain_id :  domain id, use for rng seed
-//   lod:         number of refinement steps 
+//   lod:         number of refinement steps
 //
 //  Programmer: Cyrus Harrison
 //  Creation:   Sat Jul  5 11:38:31 PDT 2014
@@ -1568,12 +1583,12 @@ avtBlueprintDataAdaptor::MFEM::RefineElementColoringToVTK(mfem::Mesh *mesh,
     BP_PLUGIN_INFO("Creating Refined MFEM Element Coloring with lod:" << lod);
     int npts=0;
     int neles=0;
-    
+
     RefinedGeometry *refined_geo;
     Array<int>       coloring;
-    
+
     //
-    // find the # of output points and cells at the selected level of 
+    // find the # of output points and cells at the selected level of
     // refinement (we may want to cache this...)
     //
     for (int i = 0; i < mesh->GetNE(); i++)
@@ -1592,10 +1607,10 @@ avtBlueprintDataAdaptor::MFEM::RefineElementColoringToVTK(mfem::Mesh *mesh,
     //
     // Use mfem's mesh coloring algo
     //
-    
+
     // seed using domain id for predictable results
     srand(domain_id);
-    
+
 #ifdef _WIN32
     double a = double(rand()) / (double(RAND_MAX) + 1.);
 #else
@@ -1625,12 +1640,12 @@ avtBlueprintDataAdaptor::MFEM::RefineElementColoringToVTK(mfem::Mesh *mesh,
 //  Method: RefineElementAttributeToVTK
 //
 //  Purpose:
-//   Constructs a vtkDataArray that contains the refined "attribute" value 
+//   Constructs a vtkDataArray that contains the refined "attribute" value
 //   for finite elements in a mfem mesh.
 //
 //  Arguments:
 //   mesh:      MFEM mesh object
-//   lod:       number of refinement steps 
+//   lod:       number of refinement steps
 //
 //  Programmer: Cyrus Harrison
 //  Creation:   Sat Jul  5 11:38:31 PDT 2014
@@ -1643,12 +1658,12 @@ avtBlueprintDataAdaptor::MFEM::RefineElementAttributeToVTK(mfem::Mesh *mesh,
     BP_PLUGIN_INFO("Creating Refined MFEM Element Attribute with lod:" << lod);
     int npts=0;
     int neles=0;
-    
+
     RefinedGeometry *refined_geo;
     Array<int>       coloring;
-    
+
     //
-    // find the # of output points and cells at the selected level of 
+    // find the # of output points and cells at the selected level of
     // refinement (we may want to cache this...)
     //
     for (int i = 0; i < mesh->GetNE(); i++)
@@ -1681,4 +1696,339 @@ avtBlueprintDataAdaptor::MFEM::RefineElementAttributeToVTK(mfem::Mesh *mesh,
    return rv;
 }
 
+// ****************************************************************************
+// ****************************************************************************
+///
+/// VTK Data to Blueprint Adaptor Functions
+///
+// ****************************************************************************
+// ****************************************************************************
 
+void
+CopyComponent64(Node &node, vtkDataArray *da, int component)
+{
+
+    int nvals= da->GetNumberOfTuples();
+    node.set(DataType::float64(nvals));
+    conduit::float64 *vals = node.value();
+    for(int i = 0; i < nvals; ++i)
+    {
+      vals[i] = da->GetComponent(i, component);
+    }
+}
+
+// ****************************************************************************
+void
+CopyComponent32(Node &node, vtkDataArray *da, int component)
+{
+
+    int nvals= da->GetNumberOfTuples();
+    node.set(DataType::float32(nvals));
+    conduit::float32 *vals = node.value();
+    for(int i = 0; i < nvals; ++i)
+    {
+      vals[i] = (float)da->GetComponent(i, component);
+    }
+}
+
+// ****************************************************************************
+void
+CopyTuple1(Node &node, vtkDataArray *da)
+{
+
+    int nvals= da->GetNumberOfTuples();
+    node.set(DataType::float64(nvals));
+    conduit::float64 *vals = node.value();
+    for(int i = 0; i < nvals; ++i)
+    {
+      vals[i] = da->GetTuple1(i);
+    }
+}
+
+// ****************************************************************************
+void VTKDataArrayToNode(Node &node, vtkDataArray *arr)
+{
+    int ncomps = arr->GetNumberOfComponents();
+
+    for(int i = 0; i < ncomps; ++i)
+    {
+      std::stringstream ss;
+      ss<<"/c"<<i;
+
+      if(arr->GetDataType() == VTK_DOUBLE)
+      {
+         CopyComponent64(node[ss.str()], arr, i);
+      }
+      else
+      {
+         CopyComponent32(node[ss.str()], arr, i);
+      }
+
+    }
+}
+
+// ****************************************************************************
+void vtkPointsToNode(Node &node, vtkPoints *points, const int dims)
+{
+
+  const int num_points = points->GetNumberOfPoints();
+  if(points->GetDataType() == VTK_FLOAT)
+  {
+    float *vtk_ptr = (float *) points->GetVoidPointer(0);
+    index_t stride = sizeof(conduit::float32) * 3;
+    index_t size = sizeof(conduit::float32);
+    node["x"].set_external(DataType::float32(num_points,0,stride), vtk_ptr);
+    if(dims > 1)
+    {
+      node["y"].set_external(DataType::float32(num_points,size,stride), vtk_ptr);
+    }
+    if(dims > 2)
+    {
+      node["z"].set_external(DataType::float32(num_points,size*2,stride), vtk_ptr);
+    }
+  }
+  else if(points->GetDataType() == VTK_DOUBLE)
+  {
+    double *vtk_ptr = (double *) points->GetVoidPointer(0);
+    index_t stride = sizeof(conduit::float64) * 3;
+    index_t size = sizeof(conduit::float64);
+    node["x"].set_external(DataType::float64(num_points,0,stride), vtk_ptr);
+    if(dims > 1)
+    {
+      node["y"].set_external(DataType::float64(num_points,size,stride), vtk_ptr);
+    }
+    if(dims > 2)
+    {
+      node["z"].set_external(DataType::float64(num_points,size*2,stride), vtk_ptr);
+    }
+  }
+}
+
+// ****************************************************************************
+void vtkUnstructuredToNode(Node &node, vtkUnstructuredGrid *grid, const int dims)
+{
+  const int npts = grid->GetNumberOfPoints();
+  const int nzones = grid->GetNumberOfCells();
+
+  if(nzones == 0)
+  {
+    BP_PLUGIN_EXCEPTION1(InvalidVariableException,
+                         "Unstructured grids must have at least one zone");
+  }
+
+  bool single_shape = true;
+  int cell_type = grid->GetCell(0)->GetCellType();
+  for(int i = 1; i < nzones; ++i)
+  {
+    vtkCell *cell = grid->GetCell(i);
+    if(cell->GetCellType() != cell_type)
+    {
+      single_shape = false;
+      break;
+    }
+  }
+
+  if(!single_shape)
+  {
+    BP_PLUGIN_EXCEPTION1(InvalidVariableException,
+                         "Only usntructured grids with a single cell type is currently supported");
+  }
+
+  const std::string shape_name = VTKCellTypeToElementShapeName(cell_type);
+  if(shape_name == "")
+  {
+    BP_PLUGIN_EXCEPTION1(InvalidVariableException,
+                         "Unsupported vtk cell type "<<cell_type);
+  }
+
+  node["shape"] = shape_name;
+
+  const int cell_points = grid->GetCell(0)->GetNumberOfPoints();
+  node["connectivity"].set(DataType::int32(cell_points * nzones));
+  conduit::int32 *conn = node["connectivity"].value();
+  // vtk connectivity is in the form npts, p0, p1,..
+  // and we need p0, p1, .. so just iterate and copy
+  if(cell_type != VTK_VOXEL)
+  {
+    for(int i = 0; i < nzones; ++i)
+    {
+      vtkCell *cell = grid->GetCell(i);
+      const int offset = i * cell_points;
+      for(int c = 0; c < cell_points; ++c)
+      {
+        conn[offset + c]  = cell->GetPointId(c);
+      }
+    }
+  }
+  else
+  {
+    // We need to reorder the voxel indices to be a hex
+    int reorder[8] = {0, 1, 3, 2, 4, 5, 7, 6};
+    for(int i = 0; i < nzones; ++i)
+    {
+      vtkCell *cell = grid->GetCell(i);
+      const int offset = i * cell_points;
+      for(int c = 0; c < cell_points; ++c)
+      {
+        int index = reorder[c];
+        conn[offset + index]  = cell->GetPointId(c);
+      }
+    }
+
+  }
+}
+
+// ****************************************************************************
+//  Method: avtBlueprintDataAdapter::VTKFieldsToBlueprint
+//
+//  Purpose:
+//      Takes a vtk data set and converts all the fields into blueprint nodes.
+//      node is the mesh["fields"] node in the blueprint dataset
+//
+//  Programmer: Matt Larsen
+//  Creation:   Feb 15, 2019
+//
+//  Modifications:
+//
+// ****************************************************************************
+void avtBlueprintDataAdaptor::BP::VTKFieldsToBlueprint(conduit::Node &node,
+                                                       const std::string topo_name,
+                                                       vtkDataSet* dataset)
+{
+  vtkPointData *pd = dataset->GetPointData();
+  vtkCellData *cd  = dataset->GetCellData();
+
+  if(pd != NULL)
+  {
+    for (size_t i = 0 ; i < (size_t)pd->GetNumberOfArrays() ; i++)
+    {
+         vtkDataArray *arr = pd->GetArray(i);
+
+         // skip special variables
+         if (strstr(arr->GetName(), "vtk") != NULL)
+             continue;
+         // keep fields like avtGhostZones
+         std::string fname = arr->GetName();
+         std::string field_path = "fields/" + fname;
+         node[field_path + "/association"] = "vertex";
+         node[field_path + "/topology"] = topo_name;
+
+         VTKDataArrayToNode(node[field_path + "/values"], arr);
+         BP_PLUGIN_INFO("VTKBlueprint:: converted point field "<<fname);
+    }
+  }
+
+  if(cd != NULL)
+  {
+    for (size_t i = 0 ; i < (size_t)cd->GetNumberOfArrays() ; i++)
+    {
+         vtkDataArray *arr = cd->GetArray(i);
+         // skip special variables
+         if (strstr(arr->GetName(), "vtk") != NULL)
+             continue;
+         // keep fields like avtGhostZones
+         std::string fname = arr->GetName();
+         std::string field_path = "fields/" + fname;
+         node[field_path + "/association"] = "element";
+         node[field_path + "/topology"] = topo_name;
+
+         BP_PLUGIN_INFO("VTKBlueprint:: converted cell field "<<fname);
+         VTKDataArrayToNode(node[field_path + "/values"], arr);
+    }
+  }
+}
+
+// ****************************************************************************
+//  Method: avtBlueprintDataAdapter::VTKToBlueprint
+//
+//  Purpose:
+//      Takes a vtk data set and converts into a  blueprint mesh.
+//
+//  Programmer: Matt Larsen
+//  Creation:   Feb 15, 2019
+//
+//  Modifications:
+//
+// ****************************************************************************
+void
+avtBlueprintDataAdaptor::BP::VTKToBlueprint(conduit::Node &mesh,
+                                            vtkDataSet* dataset,
+                                            const int ndims)
+{
+
+
+   std::string coord_path = "coordsets/coords";
+   std::string topo_name = "topo";
+   std::string topo_path = "topologies/" + topo_name;
+   mesh[topo_path + "/coordset"] = "coords";
+
+   if (dataset->GetDataObjectType() == VTK_RECTILINEAR_GRID)
+   {
+     BP_PLUGIN_INFO("VTKToBlueprint:: Rectilinear");
+      vtkRectilinearGrid *rgrid = (vtkRectilinearGrid *) dataset;
+
+      mesh[coord_path+ "/type"] = "rectilinear";
+      mesh[topo_path + "/type"] = "structured";
+
+      if(ndims > 0)
+      {
+         int dimx = rgrid->GetXCoordinates()->GetNumberOfTuples();
+         CopyTuple1(mesh[coord_path+ "/values/x"], rgrid->GetXCoordinates());
+         mesh[topo_path+ "/elements/dims/i"] = dimx;
+      }
+      if(ndims > 1)
+      {
+         int dimy = rgrid->GetYCoordinates()->GetNumberOfTuples();
+         CopyTuple1(mesh[coord_path + "/values/y"], rgrid->GetYCoordinates());
+         mesh[topo_path+ "/elements/dims/j"] = dimy;
+      }
+      if(ndims > 2)
+      {
+         int dimz = rgrid->GetZCoordinates()->GetNumberOfTuples();
+         CopyTuple1(mesh[coord_path + "/values/z"], rgrid->GetZCoordinates());
+         mesh[topo_path+ "/elements/dims/k"] = dimz;
+      }
+   }
+   else if (dataset->GetDataObjectType() == VTK_STRUCTURED_GRID)
+   {
+     BP_PLUGIN_INFO("VTKToBlueprint:: StructuredGrid");
+     vtkStructuredGrid *grid = (vtkStructuredGrid *) dataset;
+
+     mesh[coord_path + "/type"] = "explicit";
+     mesh[topo_path + "/type"] = "structured";
+
+     vtkPoints *vtk_pts = grid->GetPoints();
+     vtkPointsToNode(mesh[coord_path + "/values"], vtk_pts, ndims);
+
+     int dims[3];
+     grid->GetCellDims(dims);
+     BP_PLUGIN_INFO("VTKBlueprint:: StructuredGrid4");
+      if(ndims > 0)
+      {
+         mesh[topo_path+ "/elements/dims/i"] = dims[0];
+      }
+      if(ndims > 1)
+      {
+         mesh[topo_path+ "/elements/dims/j"] = dims[1];
+      }
+      if(ndims > 2)
+      {
+         mesh[topo_path+ "/elements/dims/k"] = dims[2];
+      }
+   }
+   else if (dataset->GetDataObjectType() == VTK_UNSTRUCTURED_GRID)
+   {
+     BP_PLUGIN_INFO("VTKToBlueprint:: UntructuredGrid");
+     vtkUnstructuredGrid *grid = (vtkUnstructuredGrid *) dataset;
+
+     mesh[topo_path + "/type"] = "unstructured";
+     mesh[coord_path + "/type"] = "explicit";
+
+     vtkPoints *vtk_pts = grid->GetPoints();
+     vtkPointsToNode(mesh[coord_path + "/values"], vtk_pts, ndims);
+     vtkUnstructuredToNode(mesh[topo_path + "/elements"], grid, ndims);
+   }
+
+   avtBlueprintDataAdaptor::BP::VTKFieldsToBlueprint(mesh, topo_name, dataset);
+
+}

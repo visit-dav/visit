@@ -94,7 +94,11 @@ function bv_qt_initialize_vars
 
 function bv_qt_depends_on
 {
-    echo ""
+    if [[ "$DO_MESAGL" == "yes" ]] ; then
+       echo "mesagl glu"
+    else
+        echo ""
+    fi
 }
 
 
@@ -197,201 +201,52 @@ function qt_license_prompt
     return 0
 }
 
+
 function apply_qt_patch
 {
-    if [[ ${QT_VERSION} == 5.6.1 ]] ; then
-        if [[ "$OPSYS" == "Darwin" ]]; then
-
-            XCODE_VERSION="$(/usr/bin/xcodebuild -version)"
-#           info ${XCODE_VERSION}
-            if [[ "$XCODE_VERSION" == "Xcode 8"* ||
-                  "$XCODE_VERSION" == "Xcode 9"* ]]; then
-                apply_qt_561_osx_xcode_8_patch
+    if [[ "$DO_MESAGL" == "yes" ]] ; then
+        if [[ ${QT_VERSION} == 5.10.1 ]] ; then
+            if [[ "$OPSYS" == "Linux" ]]; then
+                apply_qt_5101_linux_mesagl_patch
+                if [[ $? != 0 ]] ; then
+                    return 1
+                fi
             fi
-
-            if [[ "${MACOSX_DEPLOYMENT_TARGET}" == "10.13" ]]; then 
-                    if [[ "$XCODE_VERSION" == "Xcode 9"* ]]; then
-                            apply_qt_561_osx10_13_patch
-                    fi
-            fi
-        fi
-    elif [[ ${QT_VERSION} == 5.8.0 ]] ; then
-        if [[ "$OPSYS" == "Darwin" ]]; then
-            apply_qt_580_osx_patch
         fi
     fi
 
     return 0
 }
 
-function apply_qt_561_osx10_13_patch
-{
-    info "Patching qt 5.6.1 for OS X 10.13 and Xcode 9"
-    patch -p0 << \EOF
-diff -c qtbase/src/plugins/platforms/cocoa/orig/qcocoahelpers.h qtbase/src/plugins/platforms/cocoa/qcocoahelpers.h
-*** qtbase/src/plugins/platforms/cocoa/orig/qcocoahelpers.h	Thu Aug 23 20:59:43 2018
---- qtbase/src/plugins/platforms/cocoa/qcocoahelpers.h	Thu Aug 23 19:50:04 2018
-***************
-*** 78,84 ****
-  // Creates a mutable shape, it's the caller's responsibility to release.
-  HIMutableShapeRef qt_mac_QRegionToHIMutableShape(const QRegion &region);
-
-! OSStatus qt_mac_drawCGImage(CGContextRef inContext, const CGRect *inBounds, CGImageRef inImage);
-
-  NSDragOperation qt_mac_mapDropAction(Qt::DropAction action);
-  NSDragOperation qt_mac_mapDropActions(Qt::DropActions actions);
---- 78,84 ----
-  // Creates a mutable shape, it's the caller's responsibility to release.
-  HIMutableShapeRef qt_mac_QRegionToHIMutableShape(const QRegion &region);
-
-! void qt_mac_drawCGImage(CGContextRef inContext, const CGRect *inBounds, CGImageRef inImage);
-
-  NSDragOperation qt_mac_mapDropAction(Qt::DropAction action);
-  NSDragOperation qt_mac_mapDropActions(Qt::DropActions actions);
-
-diff -c qtbase/src/plugins/platforms/cocoa/orig/qcocoahelpers.mm qtbase/src/plugins/platforms/cocoa/qcocoahelpers.mm
-*** qtbase/src/plugins/platforms/cocoa/orig/qcocoahelpers.mm	Thu Aug 23 20:59:43 2018
---- qtbase/src/plugins/platforms/cocoa/qcocoahelpers.mm	Thu Aug 23 19:52:25 2018
-***************
-*** 539,553 ****
-      return NSMakeRect(rect.x(), flippedY, rect.width(), rect.height());
-  }
-
-! OSStatus qt_mac_drawCGImage(CGContextRef inContext, const CGRect *inBounds, CGImageRef inImage)
-  {
--     // Verbatim copy if HIViewDrawCGImage (as shown on Carbon-Dev)
--     OSStatus err = noErr;
--
--     require_action(inContext != NULL, InvalidContext, err = paramErr);
--     require_action(inBounds != NULL, InvalidBounds, err = paramErr);
--     require_action(inImage != NULL, InvalidImage, err = paramErr);
--
-      CGContextSaveGState( inContext );
-      CGContextTranslateCTM (inContext, 0, inBounds->origin.y + CGRectGetMaxY(*inBounds));
-      CGContextScaleCTM(inContext, 1, -1);
---- 539,546 ----
-      return NSMakeRect(rect.x(), flippedY, rect.width(), rect.height());
-  }
-
-! void qt_mac_drawCGImage(CGContextRef inContext, const CGRect *inBounds, CGImageRef inImage)
-  {
-      CGContextSaveGState( inContext );
-      CGContextTranslateCTM (inContext, 0, inBounds->origin.y + CGRectGetMaxY(*inBounds));
-      CGContextScaleCTM(inContext, 1, -1);
-***************
-*** 555,564 ****
-      CGContextDrawImage(inContext, *inBounds, inImage);
-
-      CGContextRestoreGState(inContext);
-- InvalidImage:
-- InvalidBounds:
-- InvalidContext:
--         return err;
-  }
-
-  Qt::MouseButton cocoaButton2QtButton(NSInteger buttonNum)
---- 548,553 ----
+function apply_qt_5101_linux_mesagl_patch
+{   
+    info "Patching qt 5.10.1 for Linux and Mesa-as-GL"
+    patch -p0 <<EOF
+    diff -c qtbase/mkspecs/linux-g++-64/qmake.conf.orig  qtbase/mkspecs/linux-g++-64/qmake.conf
+    *** qtbase/mkspecs/linux-g++-64/qmake.conf.orig     Thu Feb  8 18:24:48 2018
+    --- qtbase/mkspecs/linux-g++-64/qmake.conf  Fri Feb 22 22:04:50 2019
+    ***************
+    *** 19,24 ****
+  
+  
+      QMAKE_LIBDIR_X11        = /usr/X11R6/lib64
+    ! QMAKE_LIBDIR_OPENGL     = /usr/X11R6/lib64
+  
+      load(qt_config)
+    --- 19,25 ----
+  
+  
+      QMAKE_LIBDIR_X11        = /usr/X11R6/lib64
+    ! QMAKE_LIBDIR_OPENGL=$MESAGL_LIB_DIR
+    ! QMAKE_INCDIR_OPENGL=$MESAGL_INCLUDE_DIR
+  
+      load(qt_config)
 EOF
     if [[ $? != 0 ]] ; then
-        warn "qt 5.6.1 OSX 10.13 patch failed."
+        warn "qt 5.10.1 linux conf patch 1 failed."
         return 1
     fi
-
-    return 0;
-}
-
-function apply_qt_561_osx_xcode_8_patch
-{
-    # fix for OS X 10.11 or 10.12 with Xcode 8
-    info "Patching qt 5.6.1 for OS X and Xcode 8 or Xcode 9"
-    patch -p0 << \EOF
-diff -c  qtbase/configure.orig qtbase/configure
-*** qtbase/configure.orig       2017-10-16 15:48:39.000000000 -0600
---- qtbase/configure    2017-10-16 15:48:54.000000000 -0600
-***************
-*** 543,549 ****
-          exit 2
-      fi
-  
-!     if ! /usr/bin/xcrun -find xcrun >/dev/null 2>&1; then
-          echo >&2
-          echo "   Xcode not set up properly. You may need to confirm the license" >&2
-          echo "   agreement by running /usr/bin/xcodebuild without arguments." >&2
---- 543,549 ----
-          exit 2
-      fi
-  
-!     if ! /usr/bin/xcrun -find xcodebuild >/dev/null 2>&1; then
-          echo >&2
-          echo "   Xcode not set up properly. You may need to confirm the license" >&2
-          echo "   agreement by running /usr/bin/xcodebuild without arguments." >&2
-
-diff -c qtbase/mkspecs/features/mac/default_pre.prf.orig qtbase/mkspecs/features/mac/default_pre.prf
-*** qtbase/mkspecs/features/mac/default_pre.prf.orig    2017-10-16 15:33:57.000000000 -0600
---- qtbase/mkspecs/features/mac/default_pre.prf 2017-10-16 15:35:02.000000000 -0600
-***************
-*** 12,18 ****
-          error("Xcode is not installed in $${QMAKE_XCODE_DEVELOPER_PATH}. Please use xcode-select to choose Xcode installation path.")
-  
-      # Make sure Xcode is set up properly
-!     isEmpty($$list($$system("/usr/bin/xcrun -find xcrun 2>/dev/null"))): \
-          error("Xcode not set up properly. You may need to confirm the license agreement by running /usr/bin/xcodebuild.")
-  }
-  
---- 12,18 ----
-          error("Xcode is not installed in $${QMAKE_XCODE_DEVELOPER_PATH}. Please use xcode-select to choose Xcode installation path.")
-  
-      # Make sure Xcode is set up properly
-!     isEmpty($$list($$system("/usr/bin/xcrun -find xcodebuild 2>/dev/null"))): \
-          error("Xcode not set up properly. You may need to confirm the license agreement by running /usr/bin/xcodebuild.")
-  }
-  
-EOF
-    if [[ $? != 0 ]] ; then
-        warn "qt 5.6.1 patch failed."
-        return 1
-    fi
-
-    return 0;
-}
-
-function apply_qt_580_osx_patch
-{
-    # fix for OS X 10.11 
-    info "Patching qt 5.8.0 for OS X"
-    patch -p0 << \EOF
-
-diff -c qtbase/mkspecs/features/qt_module.prf.orig qtbase/mkspecs/features/qt_module.prf
-*** qtbase/mkspecs/features/qt_module.prf.orig  Wed Jan 18 06:20:58 2017
---- qtbase/mkspecs/features/qt_module.prf       Thu Apr 20 07:42:05 2017
-***************
-*** 68,76 ****
-  
-  header_module {
-      TEMPLATE     = aux
-!     CONFIG      += \
-!         force_qt \  # Needed for the headers_clean tests.
-!         qt_no_install_library
-  } else {
-      TEMPLATE     = lib
-  }
---- 68,76 ----
-  
-  header_module {
-      TEMPLATE     = aux
-!     CONFIG      += force_qt  # Needed for the headers_clean tests.
-!     !lib_bundle: \
-!         CONFIG += qt_no_install_library 
-  } else {
-      TEMPLATE     = lib
-  }
-
-EOF
-    if [[ $? != 0 ]] ; then
-        warn "qt 5.8.0 patch failed."
-        return 1
-    fi
-
+    
     return 0;
 }
 
