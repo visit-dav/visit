@@ -50,14 +50,33 @@ def set3DView():
     SetView3D(View3DAtts)
     
 def plotVariables(varName, saveName, cells = 10):
+    #Switch to TestText later. For now, just examine it yourself
     AddPlot("Pseudocolor", varName, 1, 1)
     DrawPlots()
+    Query("Variable Sum")
+    varSum = GetQueryOutputValue()
+    #TestText(saveName + "_varSum", str(varSum))
+    Query("Weighted Variable Sum")
+    varSumWeighted = GetQueryOutputValue()
+    #TestText(saveName + "_varSumWeighted", str(varSumWeighted))
+    
     remap(cells)
     Test(saveName + "_int")
+    Query("Weighted Variable Sum")
+    varSumWeightedRemap = GetQueryOutputValue()
+    # TestText(saveName + "_varSumWeightedRemap", str(varSumWeightedRemap))
     
     RemoveOperator(0, 1)
     remap(cells, 1)
-    Test(saveName + "_ext")
+    #Test(saveName + "_ext")
+    Query("Variable Sum")
+    varSumRemap = GetQueryOutputValue()
+    #TestText(saveName + "_varSumRemap", str(varSumRemap))
+    
+    intError = (varSumWeighted-varSumWeightedRemap)/(varSumWeighted)*100
+    extError = (varSum-varSumRemap)/(varSum)*100
+    TestText(saveName + "_int", str(intError))
+    TestText(saveName + "_ext", str(extError))
     
     DeleteAllPlots()
     
@@ -111,6 +130,7 @@ def mRect2():
     plotVariables("d_dup", "mRect2_d_dup")
     plotVariables("nmats", "mRect2_nmats")
     plotVariables("p", "mRect2_p")
+    CloseDatabase(silo_data_path("multi_rect2d.silo"))
     
 def mRect3():
     set3DView()
