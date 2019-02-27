@@ -55,6 +55,7 @@ def plotVariables(varName, saveName, cells = 10):
     remap(cells)
     Test(saveName + "_int")
     
+    RemoveOperator(0, 1)
     remap(cells, 1)
     Test(saveName + "_ext")
     
