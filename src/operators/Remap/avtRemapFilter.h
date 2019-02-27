@@ -53,6 +53,9 @@
 #include <vtkDoubleArray.h>
 #include <vtkImplicitBoolean.h>
 
+// For debugging
+#include <vtkUnstructuredGrid.h>
+
 
 
 
@@ -118,6 +121,7 @@ class avtRemapFilter : public avtDatasetToDatasetFilter,
     
     
     // TODO: Delete these
+    vtkUnstructuredGrid* tmpUg;
     void PrintData(avtDataRepresentation*);
     void PrintData(vtkDataSet*);
     void PrintData(vtkDataArray*);

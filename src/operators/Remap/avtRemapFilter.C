@@ -49,7 +49,7 @@
 #include <vtkInformationVector.h>
 #include <vtkInformation.h>
 //#include <vtkUnstructuredGridAlgorithm.h>
-#include <vtkUnstructuredGrid.h>
+// #include <vtkUnstructuredGrid.h>
 #include <vtkPlane.h>
 #include <vtkCell.h>
 #include <vtkAppendFilter.h>
@@ -214,6 +214,7 @@ DEBUG_CellTypeList.insert(std::pair<std::string, int>("unknown",        0));
     int width = atts.GetCellsX();
     int height = atts.GetCellsY();
     int depth;
+    std::cout << "GetCellsZ: " << atts.GetCellsZ() << std::endl;
     
     // Setup whatever variables I can assuming the grid is 2D. Then, check if it
     // is actually 3D. If so, modify parameters and build rg. Otherwise, build
@@ -224,7 +225,7 @@ DEBUG_CellTypeList.insert(std::pair<std::string, int>("unknown",        0));
                   (nCellsOut);    
     if (is3D) 
     {
-        debug5 << "Generating 2D grid" << std::endl;
+        debug5 << "Generating 3D grid" << std::endl;
         depth = atts.GetCellsZ();
         nCellsOut *= depth;
         rCellVolume *= (rGridBounds[5] - rGridBounds[4]) / depth;
@@ -232,29 +233,29 @@ DEBUG_CellTypeList.insert(std::pair<std::string, int>("unknown",        0));
     }
     else
     {
-        debug5 << "Generating 3D grid" << std::endl;
+        debug5 << "Generating 2D grid" << std::endl;
         CreateGrid(width, height, 0, width, 0, height);
     }
     
     // If there are no variables, then just create the mesh and exit
-    int nVariables = GetInput()->GetInfo().GetAttributes().GetNumberOfVariables();
-    if (nVariables <= 0)
-    {
-        debug5 << "There are no variables." << std::endl;
-        Output();
-        return;
-    }
+    // int nVariables = GetInput()->GetInfo().GetAttributes().GetNumberOfVariables();
+    // if (nVariables <= 0)
+    // {
+    //     debug5 << "There are no variables." << std::endl;
+    //     Output();
+    //     return;
+    // }
     
     // Add variables to the rectilinear grid   
-    vars->SetNumberOfComponents(1);
-    vars->SetNumberOfTuples(nCellsOut);
-    for (vtkIdType i = 0; i < vars->GetNumberOfTuples(); ++i) {
-        vars->SetComponent(i, 0, 0); // Initialize vars to 0
-    }
-    vars->SetName(GetInput()->GetInfo().GetAttributes().GetVariableName().c_str());
-    rg->GetCellData()->AddArray(vars);
-    rg->GetCellData()->SetScalars(vars);
-    debug5 << "Variable " << vars->GetName() << " added to grid." << std::endl;
+    // vars->SetNumberOfComponents(1);
+    // vars->SetNumberOfTuples(nCellsOut);
+    // for (vtkIdType i = 0; i < vars->GetNumberOfTuples(); ++i) {
+    //     vars->SetComponent(i, 0, 0); // Initialize vars to 0
+    // }
+    // vars->SetName(GetInput()->GetInfo().GetAttributes().GetVariableName().c_str());
+    // rg->GetCellData()->AddArray(vars);
+    // rg->GetCellData()->SetScalars(vars);
+    // debug5 << "Variable " << vars->GetName() << " added to grid." << std::endl;
     
     // ----------------------------------------------------- //
     // --- Clip the domains against the rectilinear grid --- //
@@ -263,6 +264,7 @@ DEBUG_CellTypeList.insert(std::pair<std::string, int>("unknown",        0));
     // --- Generate a clipping list to reference later --- //
     
     // Get the planes from first dimension
+    debug5 << "Creating functions" << std::endl;
     MakeFunction(0, 0);
     for (vtkIdType rCell = 0; rCell < width; ++rCell) {
     	MakeFunction(rCell, 1); // Get all the planes on the "right"
@@ -275,6 +277,7 @@ DEBUG_CellTypeList.insert(std::pair<std::string, int>("unknown",        0));
     }
 
     if (is3D) {
+    	// Get the planes from the third dimension
 	    MakeFunction(0, 4);
 	    for (vtkIdType rCell = 0; rCell < width*height*depth; rCell+=width*height) {
 	    	MakeFunction(rCell, 5); // Get all the planes on the "back"
@@ -296,8 +299,6 @@ DEBUG_CellTypeList.insert(std::pair<std::string, int>("unknown",        0));
 	//     	iter != funcsArrayZ.end(); ++iter) {
 	// 	std::cout << *iter << ", " << std::endl;
 	// }
-
-	return;
 
 
     avtDataTree_p inTree = GetInputDataTree();
@@ -395,13 +396,13 @@ avtRemapFilter::ClipDomain(avtDataTree_p inLeaf) {
     // If there are no points, then return.
     // If there are no cells, then return.
     double nCellsIn = in_ds->GetNumberOfCells();
-    if (in_ds == NULL || in_ds->GetCellData()->GetArray(vars->GetName()) == NULL ||
-        in_ds->GetNumberOfPoints() == 0 || nCellsIn == 0)
-    {
-        debug4 << "Domain " << domainId << " is invalid." << std::endl;
-        in_ds->Delete();
-        return;
-    }
+    // if (in_ds == NULL || in_ds->GetCellData()->GetArray(vars->GetName()) == NULL ||
+    //     in_ds->GetNumberOfPoints() == 0 || nCellsIn == 0)
+    // {
+    //     debug4 << "Domain " << domainId << " is invalid." << std::endl;
+    //     in_ds->Delete();
+    //     return;
+    // }
     
     
     // ------------------------------------------------------- //
@@ -410,10 +411,10 @@ avtRemapFilter::ClipDomain(avtDataTree_p inLeaf) {
     
     // Add the original volume to the in_ds AFTER the variables have already
     // been added to rg so that we don't add an artificial variable.
-    vtkDoubleArray* avtRemapOriginalVolume = CalculateCellVolumes(in_ds,
-            "avtRemapOriginalVolume");
-    in_ds->GetCellData()->AddArray(avtRemapOriginalVolume);
-    debug5 << "Added cell volumes to in_ds" << std::endl;
+    // vtkDoubleArray* avtRemapOriginalVolume = CalculateCellVolumes(in_ds,
+    //         "avtRemapOriginalVolume");
+    // in_ds->GetCellData()->AddArray(avtRemapOriginalVolume);
+    // debug5 << "Added cell volumes to in_ds" << std::endl;
     
     
     // -------------------------------------------------------- //
@@ -436,8 +437,122 @@ double DEBUG_maxDiff = DBL_MIN;
     // |   2   |
     // + ----- +
     
+    debug5 << "Beginning the clipping loop" << std::endl;
+	for (int k = 0; k < (is3D ? atts.GetCellsZ() : 1); ++k)
+	{
+		std::cout << "k is : " << k << std::endl;
+		for (int j = 0; j < atts.GetCellsY(); ++j)
+		{
+			std::cout << "j is : " << j << std::endl;
+			for (int i = 0; i < atts.GetCellsX(); ++i)
+			{
+				if (i == 3 && j == 4) {
+					return;
+				}
+
+				std::cout << "i is : " << i << std::endl;
+				vtkIdType rCell = i +
+						atts.GetCellsX() * j +
+						atts.GetCellsX() * atts.GetCellsY() * k;
+				std::cout << "rCell is: " << rCell << std::endl;
+				std::cout << "rCell is: " << rCell << std::endl;
+				// std::vector<vtkVisItClipper*> clipperArray;
+				// Not sure if I need this ^
+				std::cout << "Making last" << std::endl;
+				vtkVisItClipper* last = NULL;
+				std::cout << "Making clippers" << std::endl;
+				vtkVisItClipper* clipperLeft = vtkVisItClipper::New();
+				vtkVisItClipper* clipperRight = vtkVisItClipper::New();
+				vtkVisItClipper* clipperTop = vtkVisItClipper::New();
+				vtkVisItClipper* clipperBottom = vtkVisItClipper::New();
+				vtkVisItClipper* clipperFront = vtkVisItClipper::New();
+				vtkVisItClipper* clipperBack = vtkVisItClipper::New();
+
+				// TODO: don't use "clipper" for each plane?
+
+				// Left plane
+				std::cout << "Clipping left plane." << std::endl;
+				clipperLeft->SetInputData(in_ds);
+				clipperLeft->SetClipFunction(funcsArrayX[i]);
+				clipperLeft->SetInsideOut(false);
+				clipperLeft->SetRemoveWholeCells(false);
+				last = clipperLeft;
+
+				// Right plane
+				std::cout << "Clipping right plane." << std::endl;
+				clipperRight->SetInputData(in_ds);
+				clipperRight->SetClipFunction(funcsArrayX[i+1]);
+				clipperRight->SetInsideOut(true);
+				clipperRight->SetRemoveWholeCells(false);
+				clipperRight->SetInputConnection(last->GetOutputPort());
+				last = clipperRight;
+
+				// Top plane
+				std::cout << "Clipping top plane." << std::endl;
+				clipperTop->SetInputData(in_ds);
+				clipperTop->SetClipFunction(funcsArrayY[i]);
+				clipperTop->SetInsideOut(false);
+				clipperTop->SetRemoveWholeCells(false);
+				clipperTop->SetInputConnection(last->GetOutputPort());
+				last = clipperTop;
+
+				// Bottom plane
+				std::cout << "Clipping bottom plane." << std::endl;
+				clipperBottom->SetInputData(in_ds);
+				clipperBottom->SetClipFunction(funcsArrayY[i+1]);
+				clipperBottom->SetInsideOut(true);
+				clipperBottom->SetRemoveWholeCells(false);
+				clipperBottom->SetInputConnection(last->GetOutputPort());
+				last = clipperBottom;
+
+				if (is3D)
+				{
+					// Front plane
+					std::cout << "Clipping front plane." << std::endl;
+					clipperFront->SetInputData(in_ds);
+					clipperFront->SetClipFunction(funcsArrayZ[i]);
+					clipperFront->SetInsideOut(false);
+					clipperFront->SetRemoveWholeCells(false);
+					clipperFront->SetInputConnection(last->GetOutputPort());
+					last = clipperFront;
+
+					// Back plane
+					std::cout << "Clipping back plane." << std::endl;
+					clipperBack->SetInputData(in_ds);
+					clipperBack->SetClipFunction(funcsArrayZ[i+1]);
+					clipperBack->SetInsideOut(true);
+					clipperBack->SetRemoveWholeCells(false);
+					clipperBack->SetInputConnection(last->GetOutputPort());
+					last = clipperBack;
+				}
+
+				std::cout << "Getting update." << std::endl;
+				last->Update();
+				std::cout << "Getting output into ug" << std::endl;
+				vtkUnstructuredGrid* ug = last->GetOutput();
+
+				std::cout << "Setting tmpUg to ug" << std::endl;
+				tmpUg = ug;
+			}
+		}
+	}
+
+	return;
+
     for (vtkIdType rCell = 0; rCell < rg->GetNumberOfCells(); rCell++)
     {
+    	// vtkVisItClipper* last = NULL;
+    	// vtkVisItClipper* clipper = vtkVisItClipper::New();
+    	// clipper->SetInputData(in_ds);
+    	// // std::vector<vtkVisItClipper*> clipperArray;
+    	// // Not sure if I need this ^
+
+
+    	// // Add planes for 3D case
+    	// if (is3D)
+    	// {
+
+    	// }
         // Get the bounds from the cell.
         double cellBounds[6] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
         rg->GetCell(rCell)->GetBounds(cellBounds);
@@ -642,6 +757,7 @@ if (DEBUG_rCellVolumeTEST != rCellVolume)
 void
 avtRemapFilter::MakeFunction(const vtkIdType& rCell, int side)
 {
+	debug3 << "avtRemapFilter::MakeFunction" << std::endl;
 	double cellBounds[6] = {0., 0., 0., 0., 0., 0.};
 	double origin[3] = {0., 0., 0.};
 	double normal[3] = {0., 0., 0.};
@@ -680,7 +796,9 @@ avtRemapFilter::MakeFunction(const vtkIdType& rCell, int side)
 void
 avtRemapFilter::Output() {
     debug4 << "avtRemapFilter::Output" << std::endl;
-    avtDataTree_p outTree = new avtDataTree(rg, 0);
+    // avtDataTree_p outTree = new avtDataTree(rg, 0);
+    // DEBUG
+    avtDataTree_p outTree = new avtDataTree(tmpUg, 0);
     SetOutputDataTree(outTree);
 }
 
@@ -979,22 +1097,22 @@ avtRemapFilter::CreateGrid(
     debug4 << "avtRemapFilter::CreateGrid" << std::endl;
     vtkDataArray *xc = NULL;
     vtkDataArray *yc = NULL;
-    vtkDataArray *zc = NULL;
+    // vtkDataArray *zc = NULL;
 
     double width  = rGridBounds[1] - rGridBounds[0];
     double height = rGridBounds[3] - rGridBounds[2];
 
     xc = GetCoordinates(rGridBounds[0], width, numX+1, minX, maxX+1);
     yc = GetCoordinates(rGridBounds[2], height, numY+1, minY, maxY+1);
-    zc = GetCoordinates(rGridBounds[4], 0, 1, 0, 1);
+    // zc = GetCoordinates(rGridBounds[4], 0, 1, 0, 1);
 
     rg->SetDimensions(maxX-minX+1, maxY-minY+1, 1);
     rg->SetXCoordinates(xc);
     xc->Delete();
     rg->SetYCoordinates(yc);
     yc->Delete();
-    rg->SetZCoordinates(zc);
-    zc->Delete();
+    // rg->SetZCoordinates(zc);
+    // zc->Delete();
 }
 
 
