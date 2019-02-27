@@ -51,6 +51,7 @@
 #include <vtkDataSet.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkDoubleArray.h>
+#include <vtkImplicitBoolean.h>
 
 
 
@@ -110,7 +111,10 @@ class avtRemapFilter : public avtDatasetToDatasetFilter,
     double              rGridBounds[6];
     double              rCellVolume;
     vtkDoubleArray*     vars;
-    bool                is3D;
+    bool                is3D;      
+    std::vector<vtkImplicitBoolean*> funcsArrayX;
+    std::vector<vtkImplicitBoolean*> funcsArrayY;
+    std::vector<vtkImplicitBoolean*> funcsArrayZ;
     
     
     // TODO: Delete these

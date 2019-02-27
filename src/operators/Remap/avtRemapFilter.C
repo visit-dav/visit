@@ -50,7 +50,6 @@
 #include <vtkInformation.h>
 //#include <vtkUnstructuredGridAlgorithm.h>
 #include <vtkUnstructuredGrid.h>
-#include <vtkImplicitBoolean.h>
 #include <vtkPlane.h>
 #include <vtkCell.h>
 #include <vtkAppendFilter.h>
@@ -276,12 +275,27 @@ DEBUG_CellTypeList.insert(std::pair<std::string, int>("unknown",        0));
     }
 
     if (is3D) {
-    	return;
 	    MakeFunction(0, 4);
 	    for (vtkIdType rCell = 0; rCell < width*height*depth; rCell+=width*height) {
 	    	MakeFunction(rCell, 5); // Get all the planes on the "back"
 	    }
 	}
+
+	// std::cout << "Funcs Array X" << std::endl;
+	// for (std::vector<vtkImplicitBoolean*>::const_iterator iter = funcsArrayX.begin();
+	//     	iter != funcsArrayX.end(); ++iter) {
+	// 	std::cout << *iter << ", " << std::endl;
+	// }
+	// std::cout << "Funcs Array Y" << std::endl;
+	// for (std::vector<vtkImplicitBoolean*>::const_iterator iter = funcsArrayY.begin();
+	//     	iter != funcsArrayY.end(); ++iter) {
+	// 	std::cout << *iter << ", " << std::endl;
+	// }
+	// std::cout << "Funcs Array Z" << std::endl;
+	// for (std::vector<vtkImplicitBoolean*>::const_iterator iter = funcsArrayZ.begin();
+	//     	iter != funcsArrayZ.end(); ++iter) {
+	// 	std::cout << *iter << ", " << std::endl;
+	// }
 
 	return;
 
@@ -626,28 +640,39 @@ if (DEBUG_rCellVolumeTEST != rCellVolume)
 
 
 void
-avtRemapFilter::MakeFunction(const vtkIdType& rCell, int side) {
+avtRemapFilter::MakeFunction(const vtkIdType& rCell, int side)
+{
 	double cellBounds[6] = {0., 0., 0., 0., 0., 0.};
 	double origin[3] = {0., 0., 0.};
 	double normal[3] = {0., 0., 0.};
 	rg->GetCell(rCell)->GetBounds(cellBounds);
 	origin[side/2] = cellBounds[side];
 	normal[side/2] = 1.;
-	std::cout << "Origin: ["
-			  << origin[0] << ", "
-			  << origin[1] << ", "
-			  << origin[2] << "]" << std::endl;
-	std::cout << "Normal: ["
-			  << normal[0] << ", "
-			  << normal[1] << ", "
-			  << normal[2] << "]" << std::endl;
 
-	// vtkPlane* plane = vtkPlane::New();
-	// plane->SetOrigin(origin);
-	// plane->SetNormal(normal);
-	// vtkImplicitBoolean* funcs = vtkImplictBoolean::New();
-	// funcs->AddFunction(plane);
-	// Store the funcs in some collection.
+	vtkPlane* plane = vtkPlane::New();
+	plane->SetOrigin(origin);
+	plane->SetNormal(normal);
+	vtkImplicitBoolean* funcs = vtkImplicitBoolean::New();
+	funcs->AddFunction(plane);
+
+	if (side == 0 || side == 1) {
+		funcsArrayX.push_back(funcs);
+	} else if (side == 2 || side == 3) {
+		funcsArrayY.push_back(funcs);
+	} else { //if (side == 4 || side == 5) {
+		funcsArrayZ.push_back(funcs);
+	}
+
+// --- DEBUG --- DEBUG --- DEBUG --- DEBUG --- DEBUG --- //
+	// std::cout << "Origin: ["
+	// 		  << origin[0] << ", "
+	// 		  << origin[1] << ", "
+	// 		  << origin[2] << "]" << std::endl;
+	// std::cout << "Normal: ["
+	// 		  << normal[0] << ", "
+	// 		  << normal[1] << ", "
+	// 		  << normal[2] << "]" << std::endl;
+// --- DEBUG --- DEBUG --- DEBUG --- DEBUG --- DEBUG --- //
 }
 
 
