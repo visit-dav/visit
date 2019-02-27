@@ -1,15 +1,15 @@
-#/usr/gapps/visit/thirdparty_shared/3.0.0b/cmake/3.9.3/linux-x86_64_gcc-4.8/bin/cmake
+#/home/ebrugger/buildvisit/third_party/cmake/3.9.3/linux-rhel_7-x86_64_gcc-4.8/bin/cmake
 ##
 ## ./build_visit3_0_0b generated host.cmake
-## created: Fri Feb 15 09:13:27 PST 2019
-## system: Linux kickit 4.20.2-1.el7.elrepo.x86_64 #1 SMP Sun Jan 13 09:57:55 EST 2019 x86_64 x86_64 x86_64 GNU/Linux
-## by: brugger1
+## created: Tue Feb 26 21:07:23 UTC 2019
+## system: Linux cooleylogin2 3.10.0-957.1.3.el7.x86_64 #1 SMP Thu Nov 15 17:36:42 UTC 2018 x86_64 x86_64 x86_64 GNU/Linux
+## by: ebrugger
 
 ##
 ## Setup VISITHOME & VISITARCH variables.
 ##
-SET(VISITHOME /usr/gapps/visit/thirdparty_shared/3.0.0b)
-SET(VISITARCH linux-x86_64_gcc-4.8)
+SET(VISITHOME /home/ebrugger/buildvisit/third_party)
+SET(VISITARCH linux-rhel_7-x86_64_gcc-4.8)
 VISIT_OPTION_DEFAULT(VISIT_SLIVR TRUE TYPE BOOL)
 
 ## Compiler flags.
@@ -25,7 +25,12 @@ VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS " -m64 -fPIC -fvisibility=hidden" TYPE STRI
 ##
 VISIT_OPTION_DEFAULT(VISIT_PARALLEL ON TYPE BOOL)
 ## (configured w/ mpi compiler wrapper)
-VISIT_OPTION_DEFAULT(VISIT_MPI_COMPILER /usr/gapps/visit/thirdparty_shared/3.0.0b/mpich/3.0.4/linux-x86_64_gcc-4.8/bin/mpicc TYPE FILEPATH)
+## VISIT_OPTION_DEFAULT(VISIT_MPI_COMPILER /soft/libraries/mpi/mvapich2/gcc/bin/mpicc TYPE FILEPATH)
+VISIT_OPTION_DEFAULT(VISIT_MPI_CXX_FLAGS -I/soft/libraries/mpi/mvapich2/gcc/include TYPE STRING)
+VISIT_OPTION_DEFAULT(VISIT_MPI_C_FLAGS   -I/soft/libraries/mpi/mvapich2/gcc/include TYPE STRING)
+VISIT_OPTION_DEFAULT(VISIT_MPI_LD_FLAGS  "-L/soft/libraries/mpi/mvapich2/gcc/lib -Wl,-rpath=/soft/libraries/mpi/mvapich2/gcc/lib" TYPE STRING)
+VISIT_OPTION_DEFAULT(VISIT_MPI_LIBS     mpich mpl)
+VISIT_OPTION_DEFAULT(VISIT_PARALLEL_RPATH  "/soft/libraries/mpi/mvapich2/gcc/lib")
 
 ##
 ## VisIt Thread Option
@@ -73,6 +78,16 @@ SETUP_APP_VERSION(QWT 6.1.2)
 VISIT_OPTION_DEFAULT(VISIT_QWT_DIR ${VISITHOME}/qwt/${QWT_VERSION}/${VISITARCH})
 
 ##
+## LLVM
+##
+VISIT_OPTION_DEFAULT(VISIT_LLVM_DIR ${VISITHOME}/llvm/5.0.0/${VISITARCH})
+
+##
+## MesaGL
+##
+VISIT_OPTION_DEFAULT(VISIT_MESAGL_DIR ${VISITHOME}/mesagl/17.2.8/${VISITARCH})
+
+##
 ## ISPC
 ##
 VISIT_OPTION_DEFAULT(VISIT_ISPC_DIR ${VISITHOME}/ispc/1.9.2/${VISITARCH})
@@ -102,17 +117,6 @@ SETUP_APP_VERSION(VTK 8.1.0)
 VISIT_OPTION_DEFAULT(VISIT_VTK_DIR ${VISITHOME}/vtk/${VTK_VERSION}/${VISITARCH})
 
 ##
-## MPICH
-##
-# Give VisIt information so it can install MPI into the binary distribution.
-VISIT_OPTION_DEFAULT(VISIT_MPICH_DIR ${VISITHOME}/mpich/3.0.4/${VISITARCH})
-VISIT_OPTION_DEFAULT(VISIT_MPICH_INSTALL ON TYPE BOOL)
-
-# Tell VisIt the parallel compiler so it can deduce parallel flags
-VISIT_OPTION_DEFAULT(VISIT_MPI_COMPILER ${VISIT_MPICH_DIR}/bin/mpicc TYPE FILEPATH)
-VISIT_OPTION_DEFAULT(VISIT_PARALLEL ON TYPE BOOL)
-
-##
 ## SZIP
 ##
 VISIT_OPTION_DEFAULT(VISIT_SZIP_DIR ${VISITHOME}/szip/2.1/${VISITARCH})
@@ -131,6 +135,14 @@ VISIT_OPTION_DEFAULT(VISIT_HDF5_MPI_LIBDEP ${VISITHOME}/szip/2.1/${VISITARCH}/li
 ##
 SETUP_APP_VERSION(ADIOS 1.13.1)
 VISIT_OPTION_DEFAULT(VISIT_ADIOS_DIR ${VISITHOME}/adios/${ADIOS_VERSION}/${VISITARCH})
+
+##
+## ADIOS2
+##
+SETUP_APP_VERSION(ADIOS2 2.3.0)
+VISIT_OPTION_DEFAULT(VISIT_ADIOS2_DIR ${VISITHOME}/adios2-ser/${ADIOS2_VERSION}/${VISITARCH})
+## (configured w/ mpi compiler wrapper)
+VISIT_OPTION_DEFAULT(VISIT_ADIOS2_PAR_DIR ${VISITHOME}/adios2-par/${ADIOS2_VERSION}/${VISITARCH})
 
 ##
 ## AdvIO
@@ -194,11 +206,6 @@ VISIT_OPTION_DEFAULT(VISIT_HDF4_LIBDEP ${VISITHOME}/szip/2.1/${VISITARCH}/lib sz
 VISIT_OPTION_DEFAULT(VISIT_ICET_DIR ${VISITHOME}/icet/77c708f9090236b576669b74c53e9f105eedbd7e/${VISITARCH})
 
 ##
-## LLVM
-##
-VISIT_OPTION_DEFAULT(VISIT_LLVM_DIR ${VISITHOME}/llvm/5.0.0/${VISITARCH})
-
-##
 ## MFEM 
 ##
 VISIT_OPTION_DEFAULT(VISIT_MFEM_DIR ${VISITHOME}/mfem/3.3/${VISITARCH})
@@ -245,6 +252,12 @@ VISIT_OPTION_DEFAULT(VISIT_PIDX_DIR ${VISITHOME}/pidx/${PIDX_VERSION}/${VISITARC
 ##
 VISIT_OPTION_DEFAULT(VISIT_SILO_DIR ${VISITHOME}/silo/4.10.2/${VISITARCH})
 VISIT_OPTION_DEFAULT(VISIT_SILO_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP} ZLIB_LIBRARY_DIR z TYPE STRING)
+
+##
+## Uintah
+##
+SETUP_APP_VERSION(UINTAH 2.6.0)
+VISIT_OPTION_DEFAULT(VISIT_UINTAH_DIR ${VISITHOME}/uintah/${UINTAH_VERSION}/${VISITARCH})
 
 ##
 ## VISUS 

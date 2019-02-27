@@ -17,6 +17,7 @@ from os.path import join as pjoin
 __all__ = ["Context",
            "shell",
            "svn",
+           "git",
            "cmake",
            "make",
            "inorder"]
@@ -318,6 +319,27 @@ class SVNAction(ShellAction):
         self.params["svn_bin"] = svn_bin
 
 
+class GitAction(ShellAction):
+    def __init__(self,
+                 git_url,
+                 git_cmd,
+                 git_bin="git",
+                 working_dir=None,
+                 description=None,
+                 halt_on_error=True,
+                 env=None):
+        cmd = " ".join([git_bin,git_cmd,git_url])
+        super(GitAction,self).__init__(cmd=cmd,
+                                       type="git",
+                                       working_dir=working_dir,
+                                       description=description,
+                                       halt_on_error=halt_on_error,
+                                       env=env)
+        self.params["git_url"] = git_url
+        self.params["git_cmd"] = git_cmd
+        self.params["git_bin"] = git_bin
+
+
 class CMakeAction(ShellAction):
     def __init__(self,
                  src_dir,
@@ -409,6 +431,7 @@ class InorderTrigger(Action):
 
 shell   = ShellAction
 svn     = SVNAction
+git     = GitAction
 cmake   = CMakeAction
 make    = MakeAction
 
