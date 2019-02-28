@@ -18,8 +18,8 @@
             <lib name="boxlib"/>
             <lib name="ccmio"/>
             <lib name="cfitsio"/>
-            <lib name="conduit"/>
             <lib name="cgns"/>
+            <lib name="conduit"/>
             <lib name="embree"/>
             <lib name="fastbit"/>
             <lib name="fastquery"/>
@@ -44,8 +44,8 @@
             <lib name="openssl"/>
             <lib name="osmesa"/>
             <lib name="ospray"/>
-            <lib name="pidx"/>
             <lib name="p7zip"/>
+            <lib name="pidx"/>
             <lib name="pyside"/>
             <lib name="silo"/>
             <lib name="szip"/>
@@ -75,8 +75,8 @@
             <lib name="boxlib"/>
             <lib name="ccmio"/>
             <lib name="cfitsio"/>
-            <lib name="conduit"/>
             <lib name="cgns"/>
+            <lib name="conduit"/>
             <lib name="embree"/>
             <lib name="gdal"/>
             <lib name="glu"/>
@@ -94,8 +94,8 @@
             <lib name="openexr"/>
             <lib name="openssl"/>
             <lib name="ospray"/>
-            <lib name="pidx"/>
             <lib name="p7zip"/>
+            <lib name="pidx"/>
             <lib name="silo"/>
             <lib name="szip"/>
             <lib name="tbb"/>
