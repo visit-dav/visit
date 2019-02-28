@@ -237,7 +237,7 @@ function apply_qt_5101_linux_mesagl_patch
   
   
       QMAKE_LIBDIR_X11        = /usr/X11R6/lib64
-    ! QMAKE_LIBDIR_OPENGL=$MESAGL_LIB_DIR
+    ! QMAKE_LIBDIR_OPENGL=$MESAGL_LIB_DIR $LLVM_LIB_DIR
     ! QMAKE_INCDIR_OPENGL=$MESAGL_INCLUDE_DIR
   
       load(qt_config)
@@ -312,20 +312,20 @@ function build_qt
             QT_PLATFORM="aix-solaris-64"
         fi
     elif [[ "$OPSYS" == "Linux" ]] ; then
-	if [[ "$C_COMPILER" == "clang" ]]; then
+        if [[ "$C_COMPILER" == "clang" ]]; then
             QT_PLATFORM="linux-clang"
-	elif [[ "$C_COMPILER" == "llvm" ]]; then
+        elif [[ "$C_COMPILER" == "llvm" ]]; then
             QT_PLATFORM="linux-llvm"
-
         elif [[ "$(uname -m)" == "ia64" ]]; then
-                QT_PLATFORM="linux-g++-64"
-
+            QT_PLATFORM="linux-g++-64"
         elif [[ "$(uname -m)" == "x86_64" ]] ; then
             if [[ "$C_COMPILER" == "icc" || "$CXX_COMPILER" == "icpc" ]]; then
                 QT_PLATFORM="linux-icc-64"
             else
                 QT_PLATFORM="linux-g++-64"
             fi
+        elif [[ "$(uname -m)" == "ppc64" || "$(uname -m)" == "ppc64le" ]]; then
+            QT_PLATFORM="linux-g++-64"
         else
             if [[ "$C_COMPILER" == "icc" || "$CXX_COMPILER" == "icpc" ]]; then
                 QT_PLATFORM="linux-icc-32"
@@ -412,6 +412,14 @@ function build_qt
     if [[ $? != 0 ]] ; then
         warn "${QT_VER_MSG} configure failed. Giving up."
         return 1
+    fi
+
+    if [[ "$DO_MESAGL" == "yes" ]] ; then
+        if [[ ${QT_VERSION} == 5.10.1 ]] ; then
+            if [[ "$OPSYS" == "Linux" ]]; then
+                sed -i 's/-o Makefile/-o Makefile -after "QMAKE_LIBS_OPENGL+=-lLLVM"/' Makefile
+            fi
+        fi
     fi
 
     #
