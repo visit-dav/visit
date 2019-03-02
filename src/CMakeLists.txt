@@ -943,6 +943,27 @@ ELSE(WIN32)
         SET(CMAKE_INSTALL_RPATH "$ORIGIN/../lib")
         SET(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
     ENDIF(VISIT_RPATH_RELATIVE_TO_EXECUTABLE_PATH)
+
+    if (APPLE)
+# Follow convention that libraries are installed with full path
+      set(CMAKE_MACOSX_RPATH FALSE)
+      if (NOT DEFINED CMAKE_INSTALL_NAME_DIR)
+# Set library directory as needed by package managers
+        set(CMAKE_INSTALL_NAME_DIR ${CMAKE_INSTALL_PREFIX}/${VISIT_VERSION}/${VISIT_INSTALL_PLATFORM}/lib)
+      endif ()
+    elseif (LINUX)
+      set(CMAKE_EXE_LINKER_FLAGS "-Wl,-rpath,\$ORIGIN ${CMAKE_EXE_LINKER_FLAGS}")
+      set(CMAKE_SHARED_LINKER_FLAGS "-Wl,-rpath,\$ORIGIN ${CMAKE_SHARED_LINKER_FLAGS}")
+    endif ()
+# Add the automatically determined parts of the RPATH that
+# point to directories outside the build tree to the install RPATH
+# See: http://www.itk.org/Wiki/CMake_RPATH_handling
+    if (NOT DEFINED CMAKE_INSTALL_RPATH_USE_LINK_PATH)
+# Add the automatically determined parts of the RPATH that
+# point to directories outside the build tree to the install RPATH
+      set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+    endif ()
+
     #
     # Note that the last line in the EXECUTE_PROCESS command below should
     # have a "\" before the ${CMAKE_INSTALL_PREFIX} to be truely correct.
@@ -1839,6 +1860,17 @@ if(HAVE_ZLIB_H)
     list(APPEND VISIT_COMMON_INCLUDES ${ZLIB_INCLUDE_DIR})
 endif()
 
+if(WIN32)
+  if(EXISTS ${VISIT_ZLIB_DIR}/bin/zlib1.dll)
+    INSTALL(FILES ${VISIT_ZLIB_DIR}/bin/zlib1.dll
+        DESTINATION ${VISIT_INSTALLED_VERSION_BIN}
+        PERMISSIONS OWNER_READ OWNER_WRITE
+                    GROUP_READ GROUP_WRITE
+                    WORLD_READ
+    )
+  endif()
+endif()
+
 # macros/defines needed by CMake/VisItMacros.cmake
 if (NOT DEFINED VISIT_REPLACE_DEBUG_FLAGS)
   set(VISIT_REPLACE_DEBUG_FLAGS TRUE)
@@ -2458,9 +2490,9 @@ ENDIF (NOT WIN32)
 #ADD_DEPENDENCIES(osxfixup install)
 
 #todo: replace add_subdirectory with the lines above
-IF(APPLE)
-    ADD_SUBDIRECTORY(osxfixup)
-ENDIF(APPLE)
+#IF(APPLE)
+#    ADD_SUBDIRECTORY(osxfixup)
+#ENDIF(APPLE)
 
 IF (NOT WIN32)
     MESSAGE(STATUS "\n\nUse recmake_visit.sh or search for `CMAKE_INVOKE' in CMakeCache.txt to re-run CMake with the same arguments\n\n")

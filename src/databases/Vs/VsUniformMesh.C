@@ -285,7 +285,8 @@ bool VsUniformMesh::initialize()
                         << std::endl;
       return false;
     }
-
+// SS: These restrictions are commented out because we have cases that have mismatched dimensions but they should work anyway.
+/*
     if( iNumCells.size() != iStartCell.size() )
     {
       VsLog::errorLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
@@ -309,7 +310,7 @@ bool VsUniformMesh::initialize()
                         << std::endl;
       return false;
     }
-
+*/
     VsLog::errorLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                       << "Found a start cell for this mesh, "
                       << "but not sure how it should be used, "

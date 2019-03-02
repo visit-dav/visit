@@ -183,6 +183,13 @@ class avtVsFileFormat: public avtSTMDFileFormat {
    */
   HighOrderUnstructuredData thisData;
 
+  /**
+   * Change the default behavior so that the plugin does not populate spatial extent information.
+   */
+  bool HasInvariantMetaData(void) const { 
+    return false; 
+  }
+
   private:
 
   /**
