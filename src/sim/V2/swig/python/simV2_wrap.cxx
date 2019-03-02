@@ -3692,6 +3692,7 @@ SWIG_AsVal_unsigned_SS_char (PyObject * obj, unsigned char *val)
 # if defined(isfinite)
 #  define SWIG_isfinite(X) (isfinite(X))
 # elif defined __cplusplus && __cplusplus >= 201103L
+#  include <cmath>
 #  define SWIG_isfinite(X) (std::isfinite(X))
 # elif defined(_MSC_VER)
 #  define SWIG_isfinite(X) (_finite(X))
