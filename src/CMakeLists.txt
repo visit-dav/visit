@@ -2490,7 +2490,8 @@ ENDIF (NOT WIN32)
 #ADD_DEPENDENCIES(osxfixup install)
 
 #todo: replace add_subdirectory with the lines above
-IF(APPLE)
+SET(FIXUP_OSX TRUE CACHE BOOL "Whether to fix up osx.")
+IF(APPLE AND FIXUP_OSX)
     ADD_SUBDIRECTORY(osxfixup)
 ENDIF(APPLE)
 
