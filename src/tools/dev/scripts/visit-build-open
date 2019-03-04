@@ -167,6 +167,12 @@
 #   Eric Brugger, Fri Dec 14 11:50:07 PST 2018
 #   I updated quartz for 3.0.0b.
 #
+#   Eric Brugger, Mon Feb 25 12:30:13 PST 2019
+#   I updated rztrona for 3.0.0b and removed rzalastor.
+#
+#   Eric Brugger, Mon Mar  4 08:19:03 PST 2019
+#   I added cooley.
+#
 #-----------------------------------------------------------------------
 
 test=no
@@ -213,11 +219,11 @@ ifyou=false
 quartz=true
 lassen=true
 rztrona=true
-rzalastor=true
 rzuseq=false
 carver=true
 glory=false
 vulcan=true
+cooley=true
 
 dist=undefined
 
@@ -236,11 +242,11 @@ do
          quartz=false
          lassen=false
          rztrona=false
-         rzalastor=false
          rzuseq=false
          carver=false
          glory=false
          vulcan=false
+         cooley=false
          shift
          ;;
       -kickit)
@@ -291,14 +297,6 @@ do
          rztrona=true
          shift
          ;;
-      -rzalastor)
-         rzalastor=false
-         shift
-         ;;
-      +rzalastor)
-         rzalastor=true
-         shift
-         ;;
       -rzuseq)
          rzuseq=false
          shift
@@ -331,6 +329,14 @@ do
          vulcan=true
          shift
          ;;
+      -cooley)
+         cooley=false
+         shift
+         ;;
+      +cooley)
+         cooley=true
+         shift
+         ;;
       -d)
          dist=$2
          shift 2
@@ -351,7 +357,6 @@ then
    echo "    quartz (LC, Linux, x86_64),"
    echo "    lassen (LC, Linux, x86_64),"
    echo "    rztrona (LC, Linux, x86_64),"
-   echo "    rzalastor (LC, Linux, x86_64),"
    echo "    rzuesq (LC, Linux, ppc64-BG/Q),"
    echo "    carver (LBNL, Linux, x86_64),"
    echo "    glory (Sandia, Linux)"
@@ -385,7 +390,7 @@ gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
 cd $dist/src
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
-/usr/gapps/visit/thirdparty_shared/2.13.0/cmake/3.8.1/linux-x86_64_gcc-4.8/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON -DVISIT_ENABLE_XDB:BOOL=ON -DVISIT_PARADIS:BOOL=ON >> ../../buildlog 2>&1
+/usr/gapps/visit/thirdparty_shared/3.0.0b/cmake/3.9.3/linux-x86_64_gcc-4.8/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON -DVISIT_ENABLE_XDB:BOOL=ON -DVISIT_PARADIS:BOOL=ON >> ../../buildlog 2>&1
 make -j 4 package >> ../../buildlog 2>&1
 mv visit\$ver2.linux-x86_64.tar.gz ../..
 cd ../..
@@ -404,7 +409,7 @@ ls $dist/src/plugins/databases/libI* | sed "s/$dist\/src\/plugins\/databases\/li
 rm -rf $dist
 gunzip -c $dist.tar.gz | tar xvf - >> buildlog 2>&1
 cd $dist/src
-/usr/gapps/visit/thirdparty_shared/2.13.0/cmake/3.8.1/linux-x86_64_gcc-4.8/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON -DVISIT_ENABLE_XDB:BOOL=ON -DVISIT_PARADIS:BOOL=ON -DVISIT_MESA_DIR="/usr/gapps/visit/thirdparty_shared/2.13.0/mesa/7.10.2/linux-x86_64_gcc-4.8" >> ../../buildlog 2>&1
+/usr/gapps/visit/thirdparty_shared/3.0.0b/cmake/3.9.3/linux-x86_64_gcc-4.8/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON -DVISIT_ENABLE_XDB:BOOL=ON -DVISIT_PARADIS:BOOL=ON -DVISIT_OSMESA_DIR="/usr/gapps/visit/thirdparty_shared/3.0.0b/osmesa/17.2.8/linux-x86_64_gcc-4.8" >> ../../buildlog 2>&1
 make -j 4 package >> ../../buildlog 2>&1
 mv visit\$ver2.linux-x86_64.tar.gz ../../visit\$ver2.linux-x86_64-wmesa.tar.gz
 cd ../..
@@ -634,14 +639,14 @@ gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
 cd $dist/src
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
-/usr/workspace/wsa/visit/visit/thirdparty_shared/2.13.3/blueos3/cmake/3.8.1/linux-ppc64le_gcc-4.9/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON >> ../../buildlog 2>&1
+/usr/workspace/wsa/visit/visit/thirdparty_shared/3.0.0b/blueos/cmake/3.9.3/linux-ppc64le_gcc-4.9/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON >> ../../buildlog 2>&1
 make -j 6 >> ../../buildlog 2>&1
 make -j 6 package >> ../../buildlog 2>&1
 mv visit\$ver2.linux-intel.tar.gz ../..
 cd ../..
 rm -f resultlog
 echo "        build of visit on lassen"       > resultlog 2>&1
-echo "       ------------------------- "      >> resultlog 2>&1
+echo "       -------------------------- "     >> resultlog 2>&1
 echo ""                                       >> resultlog 2>&1
 ls -l                                         >> resultlog 2>&1
 echo ""                                       >> resultlog 2>&1
@@ -685,7 +690,7 @@ cd $dist/src
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
 export PATH=\$PATH:/usr/bin/X11
-/usr/workspace/wsrzc/visit/visit/thirdparty_shared/2.13.0/toss3/cmake/3.8.1/linux-x86_64_gcc-4.9/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON -DVISIT_PARADIS:BOOL=ON >> ../../buildlog 2>&1
+/usr/workspace/visit/visit/thirdparty_shared/3.0.0b/toss3/cmake/3.9.3/linux-x86_64_gcc-4.9/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON -DVISIT_PARADIS:BOOL=ON >> ../../buildlog 2>&1
 make -j 12 package >> ../../buildlog 2>&1
 mv visit\$ver2.linux-x86_64.tar.gz ../..
 cd ../..
@@ -712,57 +717,6 @@ then
       scp rztrona rztrona:rztrona_buildit
       scp $dist.tar.gz rztrona:rztrona_$dist.tar.gz
       ssh rztrona5 "chmod 750 rztrona_buildit;./rztrona_buildit" &
-   fi
-fi
-
-#
-# Build on rzalastor.
-#
-rm -f rzalastor
-cat <<EOF > rzalastor
-#!/bin/sh
-if test ! -d /usr/tmp/$user ; then
-   mkdir /usr/tmp/$user
-fi
-if test ! -d /usr/tmp/$user/rzalastor ; then
-   mkdir /usr/tmp/$user/rzalastor
-fi
-rm -rf /usr/tmp/$user/rzalastor/visitbuild
-mkdir /usr/tmp/$user/rzalastor/visitbuild
-mv rzalastor_$dist.tar.gz /usr/tmp/$user/rzalastor/visitbuild/$dist.tar.gz
-cd /usr/tmp/$user/rzalastor/visitbuild
-gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
-cd $dist/src
-ver=\`cat VERSION\`
-ver2=\`echo \$ver | tr "." "_"\`
-export PATH=\$PATH:/usr/bin/X11
-/usr/workspace/wsrzc/visit/visit/thirdparty_shared/2.13.0/chaos5/cmake/3.8.1/linux-x86_64_gcc-4.9/bin/cmake . -DVISIT_CONFIG_SITE:PATH=config-site/rzalastor4.cmake -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON -DVISIT_PARADIS:BOOL=ON >> ../../buildlog 2>&1
-make -j 16 package >> ../../buildlog 2>&1
-mv visit\$ver2.linux-x86_64.tar.gz ../..
-cd ../..
-rm -f resultlog
-echo "        build of visit on rzalastor"    > resultlog 2>&1
-echo "       -----------------------------"   >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-ls -l                                         >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-echo "number of database plugins = "\`ls $dist/src/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls $dist/src/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls $dist/src/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-echo "The database plugins:"                  >> resultlog 2>&1
-ls $dist/src/plugins/databases/libI* | sed "s/$dist\/src\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-mail  -s "VisIt build ($dist): rzalastor" $emailName < resultlog
-EOF
-
-if [ $rzalastor = true ]
-then
-   if [ $test = no ]
-   then
-      echo "Building on rzalastor"
-      cp rzalastor rzalastor_buildit
-      cp $dist.tar.gz rzalastor_$dist.tar.gz
-      chmod 750 rzalastor_buildit;./rzalastor_buildit &
    fi
 fi
 
@@ -1012,9 +966,57 @@ then
 fi
 
 #
+# Build on cooley
+#
+rm -f cooley
+cat <<EOF > cooley
+#!/bin/sh
+if test ! -d /home/ebrugger/cooley; then
+   mkdir /home/ebrugger/cooley
+fi
+rm -rf /home/ebrugger/cooley/visitbuild
+mkdir /home/ebrugger/cooley/visitbuild
+mv cooley_$dist.tar.gz /home/ebrugger/cooley/visitbuild/$dist.tar.gz
+cd /home/ebrugger/cooley/visitbuild
+gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
+cd $dist/src
+ver=\`cat VERSION\`
+ver2=\`echo \$ver | tr "." "_"\`
+/home/ebrugger/buildvisit/third_party/cmake/3.0.2/linux-x86_64_gcc-4.3/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release >> ../../buildlog 2>&1
+make -j 6 package >> ../../buildlog 2>&1
+mv visit\$ver2.linux-x86_64.tar.gz ../..
+cd ../..
+rm -f resultlog
+echo "        build of visit on cooley"       > resultlog 2>&1
+echo "       --------------------------"      >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+ls -l                                         >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+echo "number of database plugins = "\`ls $dist/src/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls $dist/src/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls $dist/src/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+echo "The database plugins:"                  >> resultlog 2>&1
+ls $dist/src/plugins/databases/libI* | sed "s/$dist\/src\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+mail  -s "VisIt build ($dist): cooley" $emailName < resultlog
+EOF
+
+if [ $cooley = true ]
+then
+   if [ $test = no ]
+   then
+      echo "Building on cooley"
+      cp cooley cooley_buildit
+      cp $dist.tar.gz cooley_$dist.tar.gz
+      chmod 750 cooley_buildit;./cooley_buildit &
+   fi
+fi
+
+
+#
 # Clean up.
 #
 if [ $test = no ]
 then
-   rm -f kickit ubuntu1404_64 ifyou quartz lassen rztrona rzalastor rzuseq carver glory vulcan
+   rm -f kickit ubuntu1404_64 ifyou quartz lassen rztrona rzuseq carver glory vulcan cooley
 fi

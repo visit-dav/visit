@@ -539,6 +539,11 @@ vtkCurveMapper::SetUpPoints(vtkRenderer *ren)
 //
 //    Kathleen Biagas, Thu Dec 27 08:14:09 PST 2018
 //    Don't display the ball if TimeForTimeCue is out of range.
+//
+//    Kathleen Biagas, Thu Feb 28 08:19:42 PST 2019
+//    Per ticket #3266, display the ball even if TimeForTimeCue is out of 
+//    range.  Use pt[0] for < and pt[nPts-1] for >.
+//
 //----------------------------------------------------------------------------
 
 void
@@ -554,33 +559,32 @@ vtkCurveMapper::SetUpBallCue(vtkRenderer *ren)
   {
     vtkPoints *inPts = this->GetInput()->GetPoints();
     vtkIdType nPts   = inPts->GetNumberOfPoints();
-    if (this->TimeForTimeCue < inPts->GetPoint(0)[0] ||
-        this->TimeForTimeCue > inPts->GetPoint(nPts-1)[0])
-    {
-        return;
-    }
-
     vtkCellArray *ca = vtkCellArray::New();
     vtkPoints *newPts = this->BallCuePolyData->GetPoints()->NewInstance();
 
-    double ix = 0.;
+    double ix = this->TimeForTimeCue;
     double iy = 0.;
-
-    for(vtkIdType i = 0; i < nPts-1 ; i++)
+    if (this->TimeForTimeCue < inPts->GetPoint(0)[0])
+        iy = inPts->GetPoint(0)[1];
+    else if (this->TimeForTimeCue > inPts->GetPoint(nPts-1)[0])
+        iy = inPts->GetPoint(nPts-1)[1];
+    else
     {
-      double ptr[6];
-      inPts->GetPoint(i, ptr);
-      inPts->GetPoint(i+1, ptr+3);
-      if (ptr[0] <= this->TimeForTimeCue && this->TimeForTimeCue <= ptr[3])
-      {
-        double lastX = ptr[0];
-        double curX = ptr[3];
-        double lastY = ptr[1];
-        double curY = ptr[4];
-        ix = this->TimeForTimeCue;
-        iy = (ix-lastX)/(curX-lastX)*(curY-lastY) + lastY;
-        break;
-      }
+        for(vtkIdType i = 0; i < nPts-1 ; i++)
+        {
+          double ptr[6];
+          inPts->GetPoint(i, ptr);
+          inPts->GetPoint(i+1, ptr+3);
+          if (ptr[0] <= this->TimeForTimeCue && this->TimeForTimeCue <= ptr[3])
+          {
+            double lastX = ptr[0];
+            double curX = ptr[3];
+            double lastY = ptr[1];
+            double curY = ptr[4];
+            iy = (ix-lastX)/(curX-lastX)*(curY-lastY) + lastY;
+            break;
+          }
+        }
     }
 
     std::vector<vtkIdType> ids;

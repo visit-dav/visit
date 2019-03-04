@@ -117,7 +117,7 @@ AddPlot("Volume", "charge")
 DrawPlots()
 VolumeAtts = VolumeAttributes()
 VolumeAtts.lightingFlag = 0
-VolumeAtts.opacityAttenuation = .1
+VolumeAtts.opacityAttenuation = .6
 VolumeAtts.resampleTarget = 450000
 SetPlotOptions(VolumeAtts)
 
@@ -128,7 +128,7 @@ Test("chgcar_06")
 ReplaceDatabase(data_path("chgcar_test_data/CHGCAR"))
 
 
-VolumeAtts.opacityAttenuation = .2
+VolumeAtts.opacityAttenuation = .9
 SetPlotOptions(VolumeAtts)
 
 Test("chgcar_07")

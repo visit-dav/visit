@@ -28,6 +28,7 @@ Contents:
    Preferences/index
    Help/index
    StartupOptions/index
+   Building/index
    Acknowledgements/index
    glossary
    Contributing/index

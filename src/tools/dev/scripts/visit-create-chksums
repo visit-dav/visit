@@ -5,6 +5,10 @@
 #                        checksums, and file sizes for the visit
 #                        distribution.
 #
+#                        This script should be run in the 
+#                        /project/projectdirs/visit/www/releases
+#                        directory at NERSC.
+#
 # Author: Eric Brugger
 # Date:   August 30, 2005
 #
@@ -53,38 +57,32 @@ fi
 version2=`echo $version | tr "." "_"`
 
 #
-# Download the files.
-#
-rm -rf checksum_dir
-mkdir checksum_dir
-cd checksum_dir
-echo "Downloading third_party..."
-svn co svn+ssh://brugger@cori.nersc.gov/project/projectdirs/visit/svn/visit/tags/$version/third_party
-echo "Downloading $version..."
-svn co svn+ssh://brugger@cori.nersc.gov/project/projectdirs/visit/svn/visit/trunk/releases/$version
-
-#
 # Create an awk script for use with the filesize command
 #
-rm -f format_filesize
+rm -f format_filesize $version/format_filesize
 cat <<EOF > format_filesize
 BEGIN { FS = " " }
       { printf "%-25s %s\n", \$5, \$9}
 EOF
+cp format_filesize $version
 
 #
 # Create a script to generate the file size.
 #
-rm -f filesize
+rm -f filesize $version/filesize
 cat <<EOF > filesize
 #!/bin/sh
 ls -l \$1 | sed "s/  */ /g" | gawk -f ../format_filesize
 EOF
 chmod 755 filesize
+cp filesize $version
 
 #
 # Create the md5 checksums, the sha1 checksums, and the file sizes.
 #
+cd $version
+rm -f visit_md5_checksums visit_sha1_checksums
+rm -f visit_sha256_checksums visit_filesizes
 cmds="md5sum sha1sum sha256sum ../filesize"
 for cmd in $cmds
 do
@@ -108,31 +106,29 @@ do
    esac
 
    rm -f $output
+   echo ""                                                >  $output
+   echo "The VisIt executable $property"                  >> $output
+   echo ""                                                >> $output
+   $cmd INSTALL_NOTES                                     >> $output
+   $cmd VisIt-$version.dmg                                >> $output
+   $cmd VisIt-$version-10.13.dmg                          >> $output
+   $cmd jvisit$version.tar.gz                             >> $output
+   $cmd visit-install$version2                            >> $output
+   $cmd visit${version}_x64.exe                           >> $output
+   $cmd visit$version2.darwin-x86_64.tar.gz               >> $output
+   $cmd visit${version2}-10.13.darwin-x86_64.tar.gz       >> $output
+   $cmd visit$version2.linux-x86_64-ubuntu18.tar.gz       >> $output
+   $cmd visit$version2.linux-x86_64-ubuntu18-wmesa.tar.gz >> $output
+   $cmd visit$version2.linux-x86_64-rhel7.tar.gz          >> $output
+   $cmd visit$version2.linux-x86_64-rhel7-wmesa.tar.gz    >> $output
 
-   cd $version
-   echo ""                                                >  ../$output
-   echo "The VisIt executable $property"                  >> ../$output
-   echo ""                                                >> ../$output
-   $cmd INSTALL_NOTES                                     >> ../$output
-   $cmd VisIt-$version.dmg                                >> ../$output
-   $cmd VisIt-$version-10.13.dmg                          >> ../$output
-   $cmd jvisit$version.tar.gz                             >> ../$output
-   $cmd visit-install$version2                            >> ../$output
-   $cmd visit${version}_x64.exe                           >> ../$output
-   $cmd visit$version2.darwin-x86_64.tar.gz               >> ../$output
-   $cmd visit${version2}-10.13.darwin-x86_64.tar.gz       >> ../$output
-   $cmd visit$version2.linux-x86_64-ubuntu18.tar.gz       >> ../$output
-   $cmd visit$version2.linux-x86_64-ubuntu18-wmesa.tar.gz >> ../$output
-   $cmd visit$version2.linux-x86_64-rhel7.tar.gz          >> ../$output
-   $cmd visit$version2.linux-x86_64-rhel7-wmesa.tar.gz    >> ../$output
-
-   echo ""                                                >> ../$output
-   echo "The VisIt source code $property"                 >> ../$output
-   echo ""                                                >> ../$output
-   $cmd build_visit$version2                              >> ../$output
-   $cmd $dist.tar.gz                                      >> ../$output
-   $cmd visitdev$version.exe                              >> ../$output
-   cd ../third_party
+   echo ""                                                >> $output
+   echo "The VisIt source code $property"                 >> $output
+   echo ""                                                >> $output
+   $cmd build_visit$version2                              >> $output
+   $cmd $dist.tar.gz                                      >> $output
+   $cmd visitdev$version.exe                              >> $output
+   cd third_party
    files=`ls`
    for file in $files
    do
@@ -143,3 +139,18 @@ do
 
    shift
 done
+
+#
+# Set permissions on the output files.
+#
+chmod 664 visit_md5_checksums visit_sha1_checksums
+chmod 664 visit_sha256_checksums visit_filesizes
+chgrp visit visit_md5_checksums visit_sha1_checksums
+chgrp visit visit_sha256_checksums visit_filesizes
+
+#
+# Clean up temporary files.
+#
+cd ..
+rm -f format_filesize $version/format_filesize
+rm -f filesize $version/filesize

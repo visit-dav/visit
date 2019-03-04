@@ -16,6 +16,7 @@ ca.showPoints = 1
 SetDefaultPlotOptions(ca)
 
 OpenDatabase(data_path("curve_test_data/zonecent.ultra"))
+DefineCurveExpression("curve2Expr","curve2+10")
 
 AddPlot("Curve","curve2")
 DrawPlots()
@@ -37,5 +38,15 @@ DrawPlots()
 v.domainCoords = (-4, 25)
 SetViewCurve(v)
 Test("curve3")
+
+DeleteActivePlots()
+
+AddPlot("Curve","curve2")
+AddPlot("Curve","curve2Expr")
+ResetView()
+DrawPlots()
+Test("curve2Expr")
+
+DeleteActivePlots()
 
 Exit()

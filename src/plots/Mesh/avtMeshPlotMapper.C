@@ -197,7 +197,7 @@ avtMeshPlotMapper::SetSurfaceVisibility(bool val)
 //
 // ****************************************************************************
 
-bool
+static bool
 ColorsAreDifferent(double a[3], double b[3])
 {
    return ((a[0] != b[0]) ||

@@ -35,36 +35,29 @@
 * DAMAGE.
 *
 *****************************************************************************/
-/**
- * @class   vtkOSPRayVisItCubeAxesActorNode
- * @brief   links vtkVisItCubeAxesActor to OSPRay
- *
- * Translates vtkVisItCubeAxesActor state into OSPRay rendering calls
-*/
 
-#ifndef vtkOSPRayVisItCubeAxesActorNode_h
-#define vtkOSPRayVisItCubeAxesActorNode_h
+#include <vtkVisItViewNodeFactory.h>
+#include <vtkOSPRayPolyDataMapperNode.h>
+#include <vtkOSPRayVisItAxisActorNode.h>
+#include <vtkOSPRayVisItCubeAxesActorNode.h>
 
-#include <viswindow_exports.h>
-#include <vtkOSPRayActorNode.h>
-
-class VISWINDOW_API vtkOSPRayVisItCubeAxesActorNode :
-  public vtkOSPRayActorNode
+//============================================================================
+vtkViewNode *vtkVisItViewNodeFactory::pd_maker()
 {
-public:
-  static vtkOSPRayVisItCubeAxesActorNode* New();
-  vtkTypeMacro(vtkOSPRayVisItCubeAxesActorNode, vtkOSPRayActorNode);
+  vtkOSPRayPolyDataMapperNode *vn = vtkOSPRayPolyDataMapperNode::New();
+  return vn;
+}
 
-  vtkMTimeType GetMTime() override;
+//-----------------------------------------------------------------------------
+vtkViewNode *vtkVisItViewNodeFactory::cube_axes_act_maker()
+{
+  vtkOSPRayVisItCubeAxesActorNode *vn = vtkOSPRayVisItCubeAxesActorNode::New();
+  return vn;
+}
 
-  void Build(bool prepass) override;
-
-protected:
-  vtkOSPRayVisItCubeAxesActorNode();
-  ~vtkOSPRayVisItCubeAxesActorNode();
-
-private:
-  vtkOSPRayVisItCubeAxesActorNode(const vtkOSPRayVisItCubeAxesActorNode&) = delete;
-  void operator=(const vtkOSPRayVisItCubeAxesActorNode&) = delete;
-};
-#endif
+//-----------------------------------------------------------------------------
+vtkViewNode *vtkVisItViewNodeFactory::axis_act_maker()
+{
+  vtkOSPRayVisItAxisActorNode *vn = vtkOSPRayVisItAxisActorNode::New();
+  return vn;
+}

@@ -112,6 +112,12 @@
 #   Eric Brugger, Fri Dec 14 11:52:47 PST 2018
 #   I updated quartz for 3.0.0b.
 #
+#   Eric Brugger, Mon Feb 25 12:31:14 PST 2019
+#   I updated rztrona for 3.0.0b and removed rzalastor.
+#
+#   Eric Brugger, Mon Mar  4 08:28:54 PST 2019
+#   I added cooley
+#
 #-----------------------------------------------------------------------
 
 test=no
@@ -158,11 +164,11 @@ ifyou=false
 quartz=true
 lassen=true
 rztrona=true
-rzalastor=true
 rzuseq=false
 carver=true
 glory=false
 vulcan=false
+cooley=false
 
 ver=undefined
 
@@ -181,7 +187,6 @@ do
          quartz=false
          lassen=false
          rztrona=false
-         rzalastor=false
          carver=false
          glory=false
          shift
@@ -234,14 +239,6 @@ do
          rztrona=true
          shift
          ;;
-      -rzalastor)
-         rzalastor=false
-         shift
-         ;;
-      +rzalastor)
-         rzalastor=true
-         shift
-         ;;
       -rzuseq)
          rzuseq=false
          shift
@@ -272,6 +269,14 @@ do
          ;;
       +vulcan)
          vulcan=true
+         shift
+         ;;
+      -cooley)
+         cooley=false
+         shift
+         ;;
+      +cooley)
+         cooley=true
          shift
          ;;
       -v)
@@ -487,14 +492,8 @@ fi
 rm -f rztrona
 cat <<EOF > rztrona
 #!/bin/sh
-./visit-install -private -c llnl_open_rz -g visit -b wbronze -gw -l $ver linux-rztrona /usr/gapps/visit/toss3 > installlog 2>&1
-mv /usr/gapps/visit/toss3/$ver+/linux-x86_64 /usr/gapps/visit/$ver+/linux-x86_64-toss3
-rm -rf /usr/gapps/visit/toss3
-cp /usr/gapps/visit/nvidia304-libs/*.304.54 /usr/gapps/visit/$ver+/linux-x86_64-toss3/lib
-ln -s libGL.so.304.54 /usr/gapps/visit/$ver+/linux-x86_64-toss3/lib/libGL.so
-ln -s libGL.so.304.54 /usr/gapps/visit/$ver+/linux-x86_64-toss3/lib/libGL.so.1
-chmod 775 /usr/gapps/visit/$ver+/linux-x86_64-toss3/lib/*.304.54
-chgrp visit /usr/gapps/visit/$ver+/linux-x86_64-toss3/lib/*.304.54
+./visit-install -private -c llnl_open_rz -g visit -b wbronze -gw -l $ver linux-rztrona /usr/gapps/visit > installlog 2>&1
+mv /usr/gapps/visit/$ver+/linux-x86_64 /usr/gapps/visit/$ver+/linux-x86_64-toss3
 rm -f resultlog
 echo "        install of visit on rztrona"          > resultlog 2>&1
 echo "       -----------------------------"         >> resultlog 2>&1
@@ -521,45 +520,6 @@ then
       scp visit-install rztrona:
       scp rztrona rztrona:rztrona_install
       ssh rztrona "chmod 750 rztrona_install;./rztrona_install"
-   fi
-fi
-
-#
-# Install on rzalastor.
-#
-rm -f rzalastor
-cat <<EOF > rzalastor
-#!/bin/sh
-./visit-install -private -c llnl_open_rz -g visit -b wbronze -gw -l $ver linux-rzalastor /usr/gapps/visit > installlog 2>&1
-cp /usr/gapps/visit/nvidia304-libs/*.304.54 /usr/gapps/visit/$ver+/linux-x86_64/lib
-ln -s libGL.so.304.54 /usr/gapps/visit/$ver+/linux-x86_64/lib/libGL.so
-ln -s libGL.so.304.54 /usr/gapps/visit/$ver+/linux-x86_64/lib/libGL.so.1
-chmod 775 /usr/gapps/visit/$ver+/linux-x86_64/lib/*.304.54
-chgrp visit /usr/gapps/visit/$ver+/linux-x86_64/lib/*.304.54
-rm -f resultlog
-echo "        install of visit on rzalastor"       > resultlog 2>&1
-echo "       -------------------------------"      >> resultlog 2>&1
-echo ""                                            >> resultlog 2>&1
-df -k /usr/gapps/visit                             >> resultlog 2>&1
-echo ""                                            >> resultlog 2>&1
-ls -l /usr/gapps/visit/$ver+/linux-x86_64/bin      >> resultlog 2>&1
-echo ""                                            >> resultlog 2>&1
-echo "number of database plugins = "\`ls /usr/gapps/visit/$ver+/linux-x86_64/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls /usr/gapps/visit/$ver+/linux-x86_64/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver+/linux-x86_64/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
-echo ""                                            >> resultlog 2>&1
-echo "The database plugins:"                       >> resultlog 2>&1
-ls /usr/gapps/visit/$ver+/linux-x86_64/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver+\/linux-x86_64\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-mail -s "VisIt install ($ver): rzalastor" $emailName < resultlog
-EOF
-
-if [ $rzalastor = true ]
-then
-   if [ $test = no ]
-   then
-      cp /usr/tmp/$user/rzalastor/visitbuild/visit$ver2.linux-x86_64.tar.gz visit$ver2.linux-rzalastor.tar.gz
-      cp rzalastor rzalastor_install
-      chmod 750 rzalastor_install;./rzalastor_install
    fi
 fi
 
@@ -700,9 +660,43 @@ then
 fi
 
 #
+# Install on cooley
+#
+rm -f cooley
+cat <<EOF > cooley
+#!/bin/sh
+./visit-install -private -c sandia -l $ver linux-cooley /projects/visit > installlog 2>&1
+rm -f resultlog
+echo "        install of visit on cooley"          > resultlog 2>&1
+echo "       ----------------------------"         >> resultlog 2>&1
+echo ""                                            >> resultlog 2>&1
+df -k /projects/visit                              >> resultlog 2>&1
+echo ""                                            >> resultlog 2>&1
+ls -l /projects/visit/$ver+/linux-x86_64/bin       >> resultlog 2>&1
+echo ""                                            >> resultlog 2>&1
+echo "number of database plugins = "\`ls /soft/visualization/visit/$ver+/linux-x86_64/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls /soft/visualization/visit/$ver+/linux-x86_64/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls /soft/visualization/visit/$ver+/linux-x86_64/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo ""                                            >> resultlog 2>&1
+echo "The database plugins:"                       >> resultlog 2>&1
+ls /soft/visualization/visit/$ver+/linux-x86_64/plugins/databases/libI* | sed "s/soft\/visualization\/visit\/$ver+\/linux-x86_64\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+mail -s "VisIt install ($ver): cooley" $emailName < resultlog
+EOF
+
+if [ $cooley = true ]
+then
+   if [ $test = no ]
+   then
+      cp /home/ebrugger/cooley/visitbuild/visit$ver2.linux-x86_64.tar.gz visit$ver2.linux-cooley.tar.gz
+      cp cooley cooley_install
+      chmod 750 cooley_install;./cooley_install
+   fi
+fi
+
+#
 # Clean up.
 #
 if [ $test = no ]
 then
-   rm -f kickit ubuntu1404_64 ifyou quartz lassen rztrona rzalastor rzuseq carver glory vulcan
+   rm -f kickit ubuntu1404_64 ifyou quartz lassen rztrona rzuseq carver glory vulcan cooley
 fi

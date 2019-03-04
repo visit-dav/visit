@@ -148,43 +148,59 @@ function apply_qwt_static_patch
     # must patch a file in order to create static library
     info "Patching qwt for static build"
     patch -p0 << \EOF
-diff -c qwtconfig.pri.orig qwtconfig.pri
-*** qwtconfig.pri.orig  2016-05-24 14:09:02.000000000 -0700
---- qwtconfig.pri       2016-05-24 14:10:06.268628351 -0700
+*** qwtconfig.pri.orig	2019-02-07 09:54:46.000000000 -0800
+--- qwtconfig.pri	2019-02-07 09:54:58.000000000 -0800
 ***************
 *** 72,78 ****
   # it will be a static library.
   ######################################################################
-
+  
 ! QWT_CONFIG           += QwtDll
-
+  
   ######################################################################
-  # QwtPlot enables all classes, that are needed to use the QwtPlot
+  # QwtPlot enables all classes, that are needed to use the QwtPlot 
 --- 72,78 ----
   # it will be a static library.
   ######################################################################
-
+  
 ! #QWT_CONFIG           += QwtDll
-
+  
   ######################################################################
-  # QwtPlot enables all classes, that are needed to use the QwtPlot
+  # QwtPlot enables all classes, that are needed to use the QwtPlot 
 ***************
 *** 93,99 ****
   # export a plot to a SVG document
   ######################################################################
-
+  
 ! QWT_CONFIG     += QwtSvg
-
+  
   ######################################################################
   # If you want to use a OpenGL plot canvas
 --- 93,99 ----
   # export a plot to a SVG document
   ######################################################################
-
+  
 ! #QWT_CONFIG     += QwtSvg
-
+  
   ######################################################################
   # If you want to use a OpenGL plot canvas
+***************
+*** 118,124 ****
+  # Otherwise you have to build it from the designer directory.
+  ######################################################################
+  
+! QWT_CONFIG     += QwtDesigner
+  
+  ######################################################################
+  # Compile all Qwt classes into the designer plugin instead
+--- 118,124 ----
+  # Otherwise you have to build it from the designer directory.
+  ######################################################################
+  
+! #QWT_CONFIG     += QwtDesigner
+  
+  ######################################################################
+  # Compile all Qwt classes into the designer plugin instead
 
 
 EOF
@@ -280,20 +296,26 @@ function build_qwt
         return 1
     fi
 
-    if [[ "$DO_STATIC_BUILD" == "no" && "$OPSYS" == "Darwin" ]]; then
-        #
-        # Make dynamic executable, need to patch up the install path and
-        # version information.
-        #
-        info "Creating dynamic libraries for Qwt . . ."
+    if [[ "$OPSYS" == "Darwin" ]]; then
+        if [[ "$DO_STATIC_BUILD" == "no" ]]; then
+            #
+            # Make dynamic executable, need to patch up the install path and
+            # version information.
+            #
+            info "Creating dynamic libraries for Qwt . . ."
 
-	fulllibname="${QWT_INSTALL_DIR}/lib/qwt.framework/Versions/6/qwt"
+            fulllibname="${QWT_INSTALL_DIR}/lib/qwt.framework/Versions/6/qwt"
 	
-        install_name_tool -id $fulllibname $fulllibname
-	
-        if [[ $? != 0 ]] ; then
-            warn "Qwt dynamic library build failed.  Giving up"
-            return 1
+            install_name_tool -id $fulllibname $fulllibname
+
+            if [[ $? != 0 ]] ; then
+                warn "Qwt dynamic library build failed.  Giving up"
+                return 1
+            fi
+        else
+            # Static build. For whatever reason, it was not installing headers.
+            mkdir "${QWT_INSTALL_DIR}/include"
+            cp -f src/*.h "${QWT_INSTALL_DIR}/include"
         fi
     fi
 
