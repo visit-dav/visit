@@ -31,9 +31,11 @@
 #
 # ----------------------------------------------------------------------------
 RequiredDatabasePlugin("Mili")
+single_proc_path = data_path("mili_test_data/single_proc/d3samp6new.plt.mili")
 
 def TestComponentVis():
-    OpenDatabase("/usr/workspace/wsrzd/maguire7/MiliTestData/single_proc/new/d3samp6new.plt.mili")
+    #OpenDatabase("/usr/workspace/wsrzd/maguire7/MiliTestData/single_proc/new/d3samp6new.plt.mili")
+    OpenDatabase(single_proc_path)
     v = GetView3D()
     v.viewNormal = (0.9, 0.35, -0.88)
     SetView3D(v)
@@ -53,7 +55,8 @@ def TestComponentVis():
 
 
 def TestElementSetComponents():
-    OpenDatabase("/usr/workspace/wsrzd/maguire7/MiliTestData/new/d3samp6new.plt.mili")
+    #OpenDatabase("/usr/workspace/wsrzd/maguire7/MiliTestData/new/d3samp6new.plt.mili")
+    OpenDatabase(single_proc_path)
     v = GetView3D()
     v.viewNormal = (0.9, 0.35, -0.88)
     SetView3D(v)
@@ -69,7 +72,8 @@ def TestElementSetComponents():
 
 
 def TestMaterialVar():
-    OpenDatabase("/usr/workspace/wsrzd/maguire7/MiliTestData/new/d3samp6new.plt.mili")
+    #OpenDatabase("/usr/workspace/wsrzd/maguire7/MiliTestData/new/d3samp6new.plt.mili")
+    OpenDatabase(single_proc_path)
     v = GetView3D()
     v.viewNormal = (0.9, 0.35, -0.88)
     SetView3D(v)
@@ -84,7 +88,8 @@ def TestMaterialVar():
 
 
 def TestMaterials():
-    OpenDatabase("/usr/workspace/wsrzd/maguire7/MiliTestData/new/d3samp6new.plt.mili")
+    #OpenDatabase("/usr/workspace/wsrzd/maguire7/MiliTestData/new/d3samp6new.plt.mili")
+    OpenDatabase(single_proc_path)
     v = GetView3D()
     v.viewNormal = (0.9, 0.35, -0.88)
     SetView3D(v)
@@ -98,7 +103,8 @@ def TestMaterials():
 
 
 def TestTensors():
-    OpenDatabase("/usr/workspace/wsrzd/maguire7/MiliTestData/new/d3samp6new.plt.mili")
+    #OpenDatabase("/usr/workspace/wsrzd/maguire7/MiliTestData/new/d3samp6new.plt.mili")
+    OpenDatabase(single_proc_path)
     v = GetView3D()
     v.viewNormal = (0.9, 0.35, -0.88)
     SetView3D(v)
@@ -117,7 +123,8 @@ def TestTensors():
 
 
 def TestVectors():
-    OpenDatabase("/usr/workspace/wsrzd/maguire7/MiliTestData/new/d3samp6new.plt.mili")
+    #OpenDatabase("/usr/workspace/wsrzd/maguire7/MiliTestData/new/d3samp6new.plt.mili")
+    OpenDatabase(single_proc_path)
     v = GetView3D()
     v.viewNormal = (0.9, 0.35, -0.88)
     SetView3D(v)
@@ -136,7 +143,8 @@ def TestVectors():
 
 
 def TestSandMesh():
-    OpenDatabase("/usr/workspace/wsrzd/maguire7/MiliTestData/single_proc/new/d3samp6new.plt.mili")
+    #OpenDatabase("/usr/workspace/wsrzd/maguire7/MiliTestData/single_proc/new/d3samp6new.plt.mili")
+    OpenDatabase(single_proc_path)
     v = GetView3D()
     v.viewNormal = (0.9, 0.35, -0.88)
     SetView3D(v)
