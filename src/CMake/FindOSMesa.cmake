@@ -222,7 +222,11 @@ if (VISIT_OSMESA_DIR)
                                   GROUP_READ GROUP_WRITE GROUP_EXECUTE
                                   WORLD_READ             WORLD_EXECUTE
             CONFIGURATIONS "" None Debug Release RelWithDebInfo MinSizeRel)
-    install(FILES ${OSMESA_LIBRARY}
+
+    # OSMESA_LIBRARY is a symbolic link, so we need to install the real
+    # library as well as the link.
+    get_filename_component(OSMESA_LIBRARY_REAL ${OSMESA_LIBRARY} REALPATH)
+    install(FILES ${OSMESA_LIBRARY} ${OSMESA_LIBRARY_REAL}
             DESTINATION ${VISIT_INSTALLED_VERSION_LIB}
             PERMISSIONS      OWNER_READ OWNER_WRITE OWNER_EXECUTE
                              GROUP_READ GROUP_WRITE GROUP_EXECUTE
