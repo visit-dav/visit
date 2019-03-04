@@ -31,7 +31,7 @@
 #
 # ----------------------------------------------------------------------------
 RequiredDatabasePlugin("Mili")
-single_proc_path = data_path("mili_test_data/single_proc/d3samp6new.plt.mili")
+single_proc_path = data_path("mili_test_data/single_proc/d3samp6.plt.mili")
 
 def TestComponentVis():
     #OpenDatabase("/usr/workspace/wsrzd/maguire7/MiliTestData/single_proc/new/d3samp6new.plt.mili")
