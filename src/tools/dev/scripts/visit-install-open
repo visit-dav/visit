@@ -115,6 +115,9 @@
 #   Eric Brugger, Mon Feb 25 12:31:14 PST 2019
 #   I updated rztrona for 3.0.0b and removed rzalastor.
 #
+#   Eric Brugger, Mon Mar  4 08:28:54 PST 2019
+#   I added cooley
+#
 #-----------------------------------------------------------------------
 
 test=no
@@ -165,6 +168,7 @@ rzuseq=false
 carver=true
 glory=false
 vulcan=false
+cooley=false
 
 ver=undefined
 
@@ -265,6 +269,14 @@ do
          ;;
       +vulcan)
          vulcan=true
+         shift
+         ;;
+      -cooley)
+         cooley=false
+         shift
+         ;;
+      +cooley)
+         cooley=true
          shift
          ;;
       -v)
@@ -648,9 +660,43 @@ then
 fi
 
 #
+# Install on cooley
+#
+rm -f cooley
+cat <<EOF > cooley
+#!/bin/sh
+./visit-install -private -c sandia -l $ver linux-cooley /projects/visit > installlog 2>&1
+rm -f resultlog
+echo "        install of visit on cooley"          > resultlog 2>&1
+echo "       ----------------------------"         >> resultlog 2>&1
+echo ""                                            >> resultlog 2>&1
+df -k /projects/visit                              >> resultlog 2>&1
+echo ""                                            >> resultlog 2>&1
+ls -l /projects/visit/$ver+/linux-x86_64/bin       >> resultlog 2>&1
+echo ""                                            >> resultlog 2>&1
+echo "number of database plugins = "\`ls /soft/visualization/visit/$ver+/linux-x86_64/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls /soft/visualization/visit/$ver+/linux-x86_64/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls /soft/visualization/visit/$ver+/linux-x86_64/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo ""                                            >> resultlog 2>&1
+echo "The database plugins:"                       >> resultlog 2>&1
+ls /soft/visualization/visit/$ver+/linux-x86_64/plugins/databases/libI* | sed "s/soft\/visualization\/visit\/$ver+\/linux-x86_64\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+mail -s "VisIt install ($ver): cooley" $emailName < resultlog
+EOF
+
+if [ $cooley = true ]
+then
+   if [ $test = no ]
+   then
+      cp /home/ebrugger/cooley/visitbuild/visit$ver2.linux-x86_64.tar.gz visit$ver2.linux-cooley.tar.gz
+      cp cooley cooley_install
+      chmod 750 cooley_install;./cooley_install
+   fi
+fi
+
+#
 # Clean up.
 #
 if [ $test = no ]
 then
-   rm -f kickit ubuntu1404_64 ifyou quartz lassen rztrona rzuseq carver glory vulcan
+   rm -f kickit ubuntu1404_64 ifyou quartz lassen rztrona rzuseq carver glory vulcan cooley
 fi
