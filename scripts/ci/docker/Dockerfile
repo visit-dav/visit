@@ -35,8 +35,12 @@ RUN apt-get update && apt-get install -y \
 
 RUN cd /usr/include && ln -s freetype2 freetype
 
-# untar the current source  (created as part of example_build.sh)
+# untar the current masonry source  (created as part of build_docker_visit_ci.sh)
 COPY visit.masonry.docker.src.tar /
 RUN tar -xzf visit.masonry.docker.src.tar
 RUN rm -rf visit.masonry.docker.src.tar
+# call masonry to build tpls
 RUN cd masonry && python bootstrap_visit.py opts/mb-develop-ci-smoke.json
+# cleanup extract build dirs and obtain the config site file
+COPY masonry_docker_ci_cleanup.py /
+RUN python masonry_docker_ci_cleanup.py

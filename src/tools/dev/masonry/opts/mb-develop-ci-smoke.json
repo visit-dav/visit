@@ -1,8 +1,9 @@
 {"bootstrap_visit":
- {"version": "trunk",
- "build_types": ["release"],
+ {"version": "develop",
+ "build_types": [],
  "arch":   "ci",
- "make_nthreads": 8, 
+ "skip_checkout": "yes",
+ "make_nthreads": 4, 
  "git": {"mode":"https",
          "depth":"1"},
  "build_visit":  { "cmake_ver": "3.9.3",
