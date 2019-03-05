@@ -2,7 +2,6 @@
  {"version": "develop",
  "build_types": [],
  "arch":   "ci",
- "skip_checkout": "yes",
  "make_nthreads": 4, 
  "git": {"mode":"https",
          "depth":"1"},
