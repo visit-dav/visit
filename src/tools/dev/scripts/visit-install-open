@@ -665,20 +665,20 @@ fi
 rm -f cooley
 cat <<EOF > cooley
 #!/bin/sh
-./visit-install -private -c sandia -l $ver linux-cooley /projects/visit > installlog 2>&1
+./visit-install -private -c anl -l $ver linux-cooley /soft/visualization/visit > installlog 2>&1
 rm -f resultlog
-echo "        install of visit on cooley"          > resultlog 2>&1
-echo "       ----------------------------"         >> resultlog 2>&1
-echo ""                                            >> resultlog 2>&1
-df -k /projects/visit                              >> resultlog 2>&1
-echo ""                                            >> resultlog 2>&1
-ls -l /projects/visit/$ver+/linux-x86_64/bin       >> resultlog 2>&1
-echo ""                                            >> resultlog 2>&1
+echo "        install of visit on cooley"               > resultlog 2>&1
+echo "       ----------------------------"              >> resultlog 2>&1
+echo ""                                                 >> resultlog 2>&1
+df -k /soft/visualization/visit                         >> resultlog 2>&1
+echo ""                                                 >> resultlog 2>&1
+ls -l /soft/visualization/visit/$ver+/linux-x86_64/bin  >> resultlog 2>&1
+echo ""                                                 >> resultlog 2>&1
 echo "number of database plugins = "\`ls /soft/visualization/visit/$ver+/linux-x86_64/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
 echo "number of operator plugins = "\`ls /soft/visualization/visit/$ver+/linux-x86_64/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
 echo "number of plot plugins = "\`ls /soft/visualization/visit/$ver+/linux-x86_64/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
-echo ""                                            >> resultlog 2>&1
-echo "The database plugins:"                       >> resultlog 2>&1
+echo ""                                                 >> resultlog 2>&1
+echo "The database plugins:"                            >> resultlog 2>&1
 ls /soft/visualization/visit/$ver+/linux-x86_64/plugins/databases/libI* | sed "s/soft\/visualization\/visit\/$ver+\/linux-x86_64\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
 mail -s "VisIt install ($ver): cooley" $emailName < resultlog
 EOF
