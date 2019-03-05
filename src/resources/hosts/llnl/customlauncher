@@ -267,7 +267,7 @@ class LLNLLauncher(MainLauncher):
             return JobSubmitter_mpirun_LLNL(self)
         if launch[:4] == "bsub":
             if self.sectorname() == "lassen" or \
-                self.sectorname() == "rzansel":
+                self.sectorname() == "rzansel" or \
                 self.sectorname() == "sierra":
                 return JobSubmitter_bsub_LLNL(self)
         return super(LLNLLauncher, self).JobSubmitterFactory(launch)
