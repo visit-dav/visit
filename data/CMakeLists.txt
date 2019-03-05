@@ -106,11 +106,9 @@
 #   Beefed up error message if 7-zip not found.
 #
 #****************************************************************************/
-CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.8)
 CMAKE_POLICY(PUSH)
-IF(${CMAKE_VERSION} VERSION_GREATER "2.8.13")
-    CMAKE_POLICY(SET CMP0037 OLD) # allow defining help target
-ENDIF(${CMAKE_VERSION} VERSION_GREATER "2.8.13")
+CMAKE_POLICY(SET CMP0037 OLD) # allow defining help target
 
 IF(WIN32)
     PROJECT(VISIT_DATA)
@@ -122,8 +120,8 @@ MESSAGE(STATUS "Configuring VisIt Binary Tarball Data Targets")
 # Set up archiver executable name (7z, 7za and p7zip are common ones)
 #-----------------------------------------------------------------------------
 IF(NOT VISIT_DATA_ARCHIVER_NAME)
-    SET(VISIT_DATA_ARCHIVER_NAME "7z")
-ENDIF(NOT VISIT_DATA_ARCHIVER_NAME)
+    list(APPEND VISIT_DATA_ARCHIVER_NAME "7z" "7za" "p7zip")
+ENDIF()
 
 #-----------------------------------------------------------------------------
 # Find the archiver exectuable
@@ -131,14 +129,15 @@ ENDIF(NOT VISIT_DATA_ARCHIVER_NAME)
 IF(WIN32)
     SET(PF1 "PROGRAMFILES")
     SET(PF2 "PROGRAMFILES(X86)")
-    FIND_PROGRAM(ARCHIVER_EXE "${VISIT_DATA_ARCHIVER_NAME}" "${VISIT_SEVEN_ZIP_DIR}"
-        "$ENV{${PF1}}/7-Zip" 
-        "$ENV{${PF2}}/7-Zip")
+    FIND_PROGRAM(ARCHIVER_EXE NAMES ${VISIT_DATA_ARCHIVER_NAME}
+        PATHS ${VISIT_SEVEN_ZIP_DIR} 
+              $ENV{${PF1}}/7-Zip 
+              $ENV{${PF2}}/7-Zip)
     UNSET(PF2)
     UNSET(PF1)
 ELSE(WIN32)
-    FIND_PROGRAM(ARCHIVER_EXE "${VISIT_DATA_ARCHIVER_NAME}"
-                              PATHS "${VISIT_SEVEN_ZIP_DIR}"
+    FIND_PROGRAM(ARCHIVER_EXE NAMES ${VISIT_DATA_ARCHIVER_NAME}
+                              PATHS ${VISIT_SEVEN_ZIP_DIR}
                               PATH_SUFFIXES bin)
 ENDIF(WIN32)
 
