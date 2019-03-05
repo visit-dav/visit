@@ -65,6 +65,9 @@
 #   Only set HAVE_OSMESA flag when both OSMESA_LIBRARY and MESAGL_LIBRARY
 #   are set.
 #
+#   Eric Brugger, Tue Feb 26 12:55:26 PST 2019
+#   Add logic to install libOSMesa in lib directory.
+#
 #****************************************************************************/
 
 # Use the OSMESA_DIR hint from the config-site .cmake file
@@ -218,6 +221,16 @@ if (VISIT_OSMESA_DIR)
             FILE_PERMISSIONS      OWNER_READ OWNER_WRITE OWNER_EXECUTE
                                   GROUP_READ GROUP_WRITE GROUP_EXECUTE
                                   WORLD_READ             WORLD_EXECUTE
+            CONFIGURATIONS "" None Debug Release RelWithDebInfo MinSizeRel)
+
+    # OSMESA_LIBRARY is a symbolic link, so we need to install the real
+    # library as well as the link.
+    get_filename_component(OSMESA_LIBRARY_REAL ${OSMESA_LIBRARY} REALPATH)
+    install(FILES ${OSMESA_LIBRARY} ${OSMESA_LIBRARY_REAL}
+            DESTINATION ${VISIT_INSTALLED_VERSION_LIB}
+            PERMISSIONS      OWNER_READ OWNER_WRITE OWNER_EXECUTE
+                             GROUP_READ GROUP_WRITE GROUP_EXECUTE
+                             WORLD_READ             WORLD_EXECUTE
             CONFIGURATIONS "" None Debug Release RelWithDebInfo MinSizeRel)
 
 endif(VISIT_OSMESA_DIR) 

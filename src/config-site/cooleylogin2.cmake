@@ -1,15 +1,15 @@
-#/usr/workspace/visit/visit/thirdparty_shared/3.0.0b/toss3/cmake/3.9.3/linux-x86_64_gcc-4.9/bin/cmake
+#/home/ebrugger/buildvisit/third_party/cmake/3.9.3/linux-rhel_7-x86_64_gcc-4.8/bin/cmake
 ##
 ## ./build_visit3_0_0b generated host.cmake
-## created: Mon Mar  4 15:45:44 PST 2019
-## system: Linux rztopaz188 3.10.0-957.1.3.1chaos.ch6.x86_64 #1 SMP Thu Dec 6 11:45:08 PST 2018 x86_64 x86_64 x86_64 GNU/Linux
-## by: brugger
+## created: Tue Feb 26 21:07:23 UTC 2019
+## system: Linux cooleylogin2 3.10.0-957.1.3.el7.x86_64 #1 SMP Thu Nov 15 17:36:42 UTC 2018 x86_64 x86_64 x86_64 GNU/Linux
+## by: ebrugger
 
 ##
 ## Setup VISITHOME & VISITARCH variables.
 ##
-SET(VISITHOME /usr/workspace/visit/visit/thirdparty_shared/3.0.0b/toss3)
-SET(VISITARCH linux-x86_64_gcc-4.9)
+SET(VISITHOME /home/ebrugger/buildvisit/third_party)
+SET(VISITARCH linux-rhel_7-x86_64_gcc-4.8)
 VISIT_OPTION_DEFAULT(VISIT_SLIVR TRUE TYPE BOOL)
 
 ## Compiler flags.
@@ -19,27 +19,23 @@ VISIT_OPTION_DEFAULT(VISIT_CXX_COMPILER g++ TYPE FILEPATH)
 VISIT_OPTION_DEFAULT(VISIT_FORTRAN_COMPILER no TYPE FILEPATH)
 VISIT_OPTION_DEFAULT(VISIT_C_FLAGS " -m64 -fPIC -fvisibility=hidden" TYPE STRING)
 VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS " -m64 -fPIC -fvisibility=hidden" TYPE STRING)
-SET(CMAKE_INSTALL_RPATH "/usr/tce/packages/gcc/gcc-4.9.3/lib64")
 
 ##
 ## Parallel Build Setup.
 ##
 VISIT_OPTION_DEFAULT(VISIT_PARALLEL ON TYPE BOOL)
-VISIT_OPTION_DEFAULT(VISIT_MPI_CXX_FLAGS -I/usr/tce/packages/mvapich2/mvapich2-2.2-gcc-4.9.3/include TYPE STRING)
-VISIT_OPTION_DEFAULT(VISIT_MPI_C_FLAGS   -I/usr/tce/packages/mvapich2/mvapich2-2.2-gcc-4.9.3/include TYPE STRING)
-VISIT_OPTION_DEFAULT(VISIT_MPI_LD_FLAGS  "-L/usr/tce/packages/mvapich2/mvapich2-2.2-gcc-4.9.3/lib -Wl,-rpath=/usr/tce/packages/mvapich2/mvapich2-2.2-gcc-4.9.3/lib" TYPE STRING)
+## (configured w/ mpi compiler wrapper)
+## VISIT_OPTION_DEFAULT(VISIT_MPI_COMPILER /soft/libraries/mpi/mvapich2/gcc/bin/mpicc TYPE FILEPATH)
+VISIT_OPTION_DEFAULT(VISIT_MPI_CXX_FLAGS -I/soft/libraries/mpi/mvapich2/gcc/include TYPE STRING)
+VISIT_OPTION_DEFAULT(VISIT_MPI_C_FLAGS   -I/soft/libraries/mpi/mvapich2/gcc/include TYPE STRING)
+VISIT_OPTION_DEFAULT(VISIT_MPI_LD_FLAGS  "-L/soft/libraries/mpi/mvapich2/gcc/lib -Wl,-rpath=/soft/libraries/mpi/mvapich2/gcc/lib" TYPE STRING)
 VISIT_OPTION_DEFAULT(VISIT_MPI_LIBS     mpich mpl)
-VISIT_OPTION_DEFAULT(VISIT_PARALLEL_RPATH  "/usr/tce/packages/mvapich2/mvapich2-2.2-gcc-4.9.3/lib")
+VISIT_OPTION_DEFAULT(VISIT_PARALLEL_RPATH  "/soft/libraries/mpi/mvapich2/gcc/lib")
 
 ##
 ## VisIt Thread Option
 ##
 VISIT_OPTION_DEFAULT(VISIT_THREAD OFF TYPE BOOL)
-
-##
-## Turn on DDT support.
-##
-VISIT_OPTION_DEFAULT(VISIT_DDT ON TYPE BOOL)
 
 ##############################################################
 ##
@@ -139,6 +135,14 @@ VISIT_OPTION_DEFAULT(VISIT_HDF5_MPI_LIBDEP ${VISITHOME}/szip/2.1/${VISITARCH}/li
 ##
 SETUP_APP_VERSION(ADIOS 1.13.1)
 VISIT_OPTION_DEFAULT(VISIT_ADIOS_DIR ${VISITHOME}/adios/${ADIOS_VERSION}/${VISITARCH})
+
+##
+## ADIOS2
+##
+SETUP_APP_VERSION(ADIOS2 2.3.0)
+VISIT_OPTION_DEFAULT(VISIT_ADIOS2_DIR ${VISITHOME}/adios2-ser/${ADIOS2_VERSION}/${VISITARCH})
+## (configured w/ mpi compiler wrapper)
+VISIT_OPTION_DEFAULT(VISIT_ADIOS2_PAR_DIR ${VISITHOME}/adios2-par/${ADIOS2_VERSION}/${VISITARCH})
 
 ##
 ## AdvIO
