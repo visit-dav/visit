@@ -39,15 +39,16 @@
 #ifndef VTK_VISIT_VIEWNODEFACTORY_H
 #define VTK_VISIT_VIEWNODEFACTORY_H
 
-#include <vtkOSPRayRendererNode.h>
-#include <vtkOSPRayPolyDataMapperNode.h>
-#include <vtkOSPRayVisItCubeAxesActorNode.h>
-#include <vtkOSPRayVisItAxisActorNode.h>
-#include <vtkViewNodeFactory.h>
+#include <plotter_exports.h>
+
+class vtkViewNode;
 
 //============================================================================
-vtkViewNode *pd_maker();
-vtkViewNode *cube_axes_act_maker();
-vtkViewNode *axis_act_maker();
+namespace vtkVisItViewNodeFactory
+{
+vtkViewNode PLOTTER_API *pd_maker();
+vtkViewNode PLOTTER_API *cube_axes_act_maker();
+vtkViewNode PLOTTER_API *axis_act_maker();
+}
 
 #endif

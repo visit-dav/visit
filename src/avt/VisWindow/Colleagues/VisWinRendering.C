@@ -79,6 +79,7 @@
 #endif
 
 #ifdef VISIT_OSPRAY
+#include <vtkOSPRayRendererNode.h>
 #include <vtkOSPRayPass.h>
 #include <vtkViewNodeFactory.h>
 #include <vtkVisItViewNodeFactory.h>
@@ -211,15 +212,29 @@ VisWinRendering::VisWinRendering(VisWindowColleagueProxy &p) :
     curRenderTimes[0] = curRenderTimes[1] = curRenderTimes[2] = 0.0;
 
 #ifdef VISIT_OSPRAY
+    osprayRendering = false;
+    ospraySPP = 1;
+    osprayAO = 0;
+    osprayShadows = false;
+    modeIsPerspective = true;
+    canvas->SetPass(0);
+
     osprayPass = vtkOSPRayPass::New();
     vtkViewNodeFactory* factory = osprayPass->GetViewNodeFactory();
-    factory->RegisterOverride("vtkDataSetMapper", pd_maker);
-    factory->RegisterOverride("vtkPointGlyphMapper", pd_maker);
-    factory->RegisterOverride("vtkMultiRepMapper", pd_maker);
-    factory->RegisterOverride("vtkMeshPlotMapper", pd_maker);
-    factory->RegisterOverride("vtkOpenGLMeshPlotMapper", pd_maker);
-    factory->RegisterOverride("vtkVisItCubeAxesActor", cube_axes_act_maker);
-    factory->RegisterOverride("vtkVisItAxisActor", axis_act_maker);
+    factory->RegisterOverride("vtkDataSetMapper",
+                              vtkVisItViewNodeFactory::pd_maker);
+    factory->RegisterOverride("vtkPointGlyphMapper",
+                              vtkVisItViewNodeFactory::pd_maker);
+    factory->RegisterOverride("vtkMultiRepMapper",
+                              vtkVisItViewNodeFactory::pd_maker);
+    factory->RegisterOverride("vtkMeshPlotMapper",
+                              vtkVisItViewNodeFactory::pd_maker);
+    factory->RegisterOverride("vtkOpenGLMeshPlotMapper",
+                              vtkVisItViewNodeFactory::pd_maker);
+    factory->RegisterOverride("vtkVisItCubeAxesActor",
+                              vtkVisItViewNodeFactory::cube_axes_act_maker);
+    factory->RegisterOverride("vtkVisItAxisActor",
+                              vtkVisItViewNodeFactory::axis_act_maker);
 #endif
 }
 
@@ -608,7 +623,7 @@ VisWinRendering::Start2DMode(void)
     canvas->ComputeAspect();
 
 #ifdef VISIT_OSPRAY 
-    SetModePerspective(true);
+    SetModePerspective(false);
 #endif
 }
 
@@ -647,7 +662,7 @@ VisWinRendering::Stop2DMode(void)
     canvas->ComputeAspect();
 
 #ifdef VISIT_OSPRAY 
-    SetModePerspective(false);
+    SetModePerspective(true);
 #endif
 }
 
@@ -679,7 +694,7 @@ VisWinRendering::StartCurveMode(void)
     canvas->ComputeAspect();
 
 #ifdef VISIT_OSPRAY 
-    SetModePerspective(true);
+    SetModePerspective(false);
 #endif
 }
 
@@ -712,7 +727,7 @@ VisWinRendering::StopCurveMode(void)
     canvas->ComputeAspect();
 
 #ifdef VISIT_OSPRAY
-    SetModePerspective(false);
+    SetModePerspective(true);
 #endif
 }
      
@@ -744,7 +759,7 @@ VisWinRendering::StartAxisArrayMode(void)
     canvas->ComputeAspect();
 
 #ifdef VISIT_OSPRAY 
-    SetModePerspective(true);
+    SetModePerspective(false);
 #endif
 }
 
@@ -777,7 +792,7 @@ VisWinRendering::StopAxisArrayMode(void)
     canvas->ComputeAspect();
 
 #ifdef VISIT_OSPRAY 
-    SetModePerspective(false);
+    SetModePerspective(true);
 #endif
 }
 
@@ -809,7 +824,7 @@ VisWinRendering::StartParallelAxesMode(void)
     canvas->ComputeAspect();
 
 #ifdef VISIT_OSPRAY 
-    SetModePerspective(true);
+    SetModePerspective(false);
 #endif
 }
 
@@ -842,7 +857,7 @@ VisWinRendering::StopParallelAxesMode(void)
     canvas->ComputeAspect();
 
 #ifdef VISIT_OSPRAY 
-    SetModePerspective(false);
+    SetModePerspective(true);
 #endif
 }
 
@@ -1121,14 +1136,14 @@ void
 VisWinRendering::RenderRenderWindow(void)
 {
 #ifdef VISIT_OSPRAY
-    if (!GetOsprayRendering())
+    if (GetOsprayRendering() && modeIsPerspective)
     {
-        canvas->SetPass(0);
-        canvas->SetUseShadows(false);
+        canvas->SetPass(osprayPass);
     }
     else
     {
-        canvas->SetPass(osprayPass);
+        canvas->SetUseShadows(false);
+        canvas->SetPass(0);
     }
 #endif
 
@@ -2795,11 +2810,7 @@ VisWinRendering::UpdateMouseActions(std::string action, double start_dx, double 
 void
 VisWinRendering::SetModePerspective(bool modePerspective)
 {
-    if (modePerspective != modeIsPerspective)
-    {
-        modeIsPerspective = modePerspective;
-        SetOsprayRendering(modeIsPerspective);
-    }
+    modeIsPerspective = modePerspective;
 }
 
 
@@ -2825,12 +2836,9 @@ VisWinRendering::SetModePerspective(bool modePerspective)
 void
 VisWinRendering::SetOsprayRendering(bool enabled)
 {
-    if (enabled != GetOsprayRendering())
-    {
-        osprayRendering = enabled;
-    }
+    osprayRendering = enabled;
 
-    if (GetOsprayRendering() && !modeIsPerspective)
+    if (GetOsprayRendering() && modeIsPerspective)
     {
         canvas->SetPass(osprayPass);
     }
@@ -2915,12 +2923,9 @@ VisWinRendering::SetOsprayAO(int val)
 void
 VisWinRendering::SetOsprayShadows(bool enabled)
 {
-    if(enabled != osprayShadows)
-    {
-        osprayShadows = enabled;
-    }
+    osprayShadows = enabled;
     
-    if(osprayShadows && !modeIsPerspective)
+    if(osprayShadows && modeIsPerspective)
     {
         canvas->SetUseShadows(true);
     }

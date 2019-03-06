@@ -82,6 +82,8 @@
 #include <GlobalAttributes.h>
 #include <LightAttributes.h>
 #include <LightList.h>
+#include <Plot.h>
+#include <PlotList.h>
 #include <WindowInformation.h>
 
 #include <string>
@@ -755,13 +757,33 @@ static std::string log_SetDefaultOperatorOptionsRPC(ViewerRPC *rpc)
     return atts;
 }
 
+
+// ****************************************************************************
+//
+// Modifications:
+//   Kathleen Biagas, Thu Feb 28 10:21:40 PST 2019
+//   Look up the active operator index, as it should be the second argument
+//   to SetOperatorOptions. Fixes #3273.
+//
+// ****************************************************************************
+
 static std::string log_SetOperatorOptionsRPC(ViewerRPC *rpc)
 {
     std::string atts(""), operatorName("");
     bool  applyOperator = viewer->GetViewerState()->GetGlobalAttributes()->GetApplyOperator();
     log_SetOperatorOptionsHelper(rpc, atts, operatorName);
+    int activeOperator = -1;
+    PlotList *plotList = viewer->GetViewerState()->GetPlotList();
+    for (int i = 0; i < plotList->GetNumPlots() && -1==activeOperator; ++i)
+    {
+        const Plot &current = plotList->operator[](i);
+        if(current.GetActiveFlag())
+            activeOperator = current.GetActiveOperator();
+    }
     atts += visitmodule() + "SetOperatorOptions(";
     atts += operatorName;
+    atts += ", ";
+    atts+= std::to_string(activeOperator);
     atts += ", ";
     atts += (applyOperator ? "1" : "0");
     atts += ")\n";

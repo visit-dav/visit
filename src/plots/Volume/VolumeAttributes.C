@@ -339,7 +339,7 @@ void VolumeAttributes::Init()
     opacityAttenuation = 1;
     opacityMode = FreeformMode;
     resampleFlag = true;
-    resampleTarget = 50000;
+    resampleTarget = 1000000;
     for(int i = 0; i < 256; ++i)
         freeformOpacity[i] = (unsigned char)i;
     useColorVarMin = false;

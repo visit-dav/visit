@@ -12235,7 +12235,14 @@ CreateCurve(DBcurve *cur, const char *curvename, int vtkType)
     Tarr *yv = Tarr::New();
     yv->SetNumberOfComponents(1);
     yv->SetNumberOfTuples(cur->npts);
-    yv->SetName(curvename);
+    if (curvename[0] == '.' && curvename[1] == '/')
+    {
+        yv->SetName(&curvename[2]);
+    }
+    else
+    {
+        yv->SetName(curvename);
+    }
     if (cur->coord_sys == DB_SPHERICAL || cur->coord_sys == DB_CYLINDRICAL)
     {
         for (int i = 0 ; i < cur->npts; i++)
