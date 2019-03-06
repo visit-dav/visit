@@ -173,6 +173,9 @@
 #   Eric Brugger, Mon Mar  4 08:19:03 PST 2019
 #   I added cooley.
 #
+#   Eric Brugger, Tue Mar  5 11:19:39 PST 2019
+#   I added rzansel. I removed carver and glory.
+#
 #-----------------------------------------------------------------------
 
 test=no
@@ -219,9 +222,8 @@ ifyou=false
 quartz=true
 lassen=true
 rztrona=true
+rzansel=true
 rzuseq=false
-carver=true
-glory=false
 vulcan=true
 cooley=true
 
@@ -242,9 +244,8 @@ do
          quartz=false
          lassen=false
          rztrona=false
+         rzansel=false
          rzuseq=false
-         carver=false
-         glory=false
          vulcan=false
          cooley=false
          shift
@@ -297,28 +298,20 @@ do
          rztrona=true
          shift
          ;;
+      -rzansel)
+         rzansel=false
+         shift
+         ;;
+      +rzansel)
+         rzansel=true
+         shift
+         ;;
       -rzuseq)
          rzuseq=false
          shift
          ;;
       +rzuseq)
          rzuseq=true
-         shift
-         ;;
-      -carver)
-         carver=false
-         shift
-         ;;
-      +carver)
-         carver=true
-         shift
-         ;;
-      -glory)
-         glory=false
-         shift
-         ;;
-      +glory)
-         glory=true
          shift
          ;;
       -vulcan)
@@ -355,11 +348,10 @@ then
    echo "    ubuntu1404_64(B-Div, Linux, x86_64),"
    echo "    ifyou (LC, Linux, x86_64),"
    echo "    quartz (LC, Linux, x86_64),"
-   echo "    lassen (LC, Linux, x86_64),"
+   echo "    lassen (LC, Linux, power9),"
    echo "    rztrona (LC, Linux, x86_64),"
+   echo "    rzansel (LC, Linux, power9),"
    echo "    rzuesq (LC, Linux, ppc64-BG/Q),"
-   echo "    carver (LBNL, Linux, x86_64),"
-   echo "    glory (Sandia, Linux)"
    exit
 fi
 
@@ -721,6 +713,57 @@ then
 fi
 
 #
+# Build on rzansel
+#
+rm -f rzansel
+cat <<EOF > rzansel
+#!/bin/sh
+if test ! -d /usr/tmp/$user ; then
+   mkdir /usr/tmp/$user
+fi
+if test ! -d /usr/tmp/$user/rzansel ; then
+   mkdir /usr/tmp/$user/rzansel
+fi
+rm -rf /usr/tmp/$user/rzansel/visitbuild
+mkdir /usr/tmp/$user/rzansel/visitbuild
+mv rzansel_$dist.tar.gz /usr/tmp/$user/rzansel/visitbuild/$dist.tar.gz
+cd /usr/tmp/$user/rzansel/visitbuild
+gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
+cd $dist/src
+ver=\`cat VERSION\`
+ver2=\`echo \$ver | tr "." "_"\`
+export PATH=\$PATH:/usr/bin/X11
+/usr/workspace/visit/visit/thirdparty_shared/3.0.0b/blueos/cmake/3.9.3/linux-ppc64le_gcc-4.9/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON -DVISIT_PARADIS:BOOL=ON >> ../../buildlog 2>&1
+make -j 12 package >> ../../buildlog 2>&1
+mv visit\$ver2.linux-intel.tar.gz ../..
+cd ../..
+rm -f resultlog
+echo "        build of visit on rzansel"      > resultlog 2>&1
+echo "       ---------------------------"     >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+ls -l                                         >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+echo "number of database plugins = "\`ls $dist/src/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls $dist/src/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls $dist/src/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+echo "The database plugins:"                  >> resultlog 2>&1
+ls $dist/src/plugins/databases/libI* | sed "s/$dist\/src\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+mail  -s "VisIt build ($dist): rzansel" $emailName < resultlog
+EOF
+
+if [ $rzansel = true ]
+then
+   if [ $test = no ]
+   then
+      echo "Building on rzansel"
+      scp rzansel rzansel:rzansel_buildit
+      scp $dist.tar.gz rzansel:rzansel_$dist.tar.gz
+      ssh rzansel61 "chmod 750 rzansel_buildit;./rzansel_buildit" &
+   fi
+fi
+
+#
 # Build on rzuseq.
 #
 rm -f rzuseq
@@ -789,111 +832,6 @@ then
       ssh rzuseqlac2 "chmod 750 rzuseq_buildit;./rzuseq_buildit" &
    fi
 fi
-
-#
-# Build on carver.
-#
-rm -f carver
-cat <<EOF > carver
-#!/bin/sh
-if test ! -d /usr/tmp/$user ; then
-   mkdir /usr/tmp/$user
-fi
-if test ! -d /usr/tmp/$user/carver; then
-   mkdir /usr/tmp/$user/carver
-fi
-rm -rf /usr/tmp/$user/carver/visitbuild
-mkdir /usr/tmp/$user/carver/visitbuild
-mv carver_$dist.tar.gz /usr/tmp/$user/carver/visitbuild/$dist.tar.gz
-cd /usr/tmp/$user/carver/visitbuild
-gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
-cd $dist/src
-ver=\`cat VERSION\`
-ver2=\`echo \$ver | tr "." "_"\`
-/project/projectdirs/visit/visit_3rdparty/carver_2_6_0/cmake/2.8.8/linux-x86_64_gcc-4.1/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON >> ../../buildlog 2>&1
-make -j 4 package >> ../../buildlog 2>&1
-mv visit\$ver2.linux-x86_64.tar.gz ../..
-cd ../..
-rm -f resultlog
-echo "        build of visit on carver"       > resultlog 2>&1
-echo "       --------------------------"      >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-ls -l                                         >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-echo "number of database plugins = "\`ls $dist/src/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls $dist/src/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls $dist/src/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-echo "The database plugins:"                  >> resultlog 2>&1
-ls $dist/src/plugins/databases/libI* | sed "s/$dist\/src\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-mail  -s "VisIt build ($dist): carver" $emailName < resultlog
-EOF
-
-if [ $carver = true ]
-then
-   if [ $test = no ]
-   then
-      echo "Building on carver"
-      scp carver carver.nersc.gov:carver_buildit
-      scp $dist.tar.gz carver.nersc.gov:carver_$dist.tar.gz
-      ssh carver.nersc.gov "chmod 750 carver_buildit;./carver_buildit" &
-   fi
-fi
-
-#
-# Build on glory.
-#
-rm -f glory
-cat <<EOF > glory
-#!/bin/sh
-module load compilers/gcc-4.3.4
-if test ! -d /usr/tmp ; then
-   mkdir /usr/tmp
-fi
-if test ! -d /usr/tmp/$user ; then
-   mkdir /usr/tmp/$user
-fi
-if test ! -d /usr/tmp/$user/glory; then
-   mkdir /usr/tmp/$user/glory
-fi
-rm -rf /usr/tmp/$user/glory/visitbuild
-mkdir /usr/tmp/$user/glory/visitbuild
-mv glory_$dist.tar.gz /usr/tmp/$user/glory/visitbuild/$dist.tar.gz
-cd /usr/tmp/$user/glory/visitbuild
-gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
-cd $dist/src
-ver=\`cat VERSION\`
-ver2=\`echo \$ver | tr "." "_"\`
-/projects/visit/thirdparty_shared/2.12.0/cmake/3.0.2/linux-x86_64_gcc-4.3/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release >> ../../buildlog 2>&1
-make -j 2 package >> ../../buildlog 2>&1
-mv visit\$ver2.linux-x86_64.tar.gz ../..
-cd ../..
-rm -f resultlog
-echo "        build of visit on glory"        > resultlog 2>&1
-echo "       -------------------------"       >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-ls -l                                         >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-echo "number of database plugins = "\`ls $dist/src/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls $dist/src/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls $dist/src/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-echo "The database plugins:"                  >> resultlog 2>&1
-ls $dist/src/plugins/databases/libI* | sed "s/$dist\/src\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-mail  -s "VisIt build ($dist): glory" $emailName < resultlog
-EOF
-
-if [ $glory = true ]
-then
-   if [ $test = no ]
-   then
-      echo "Building on glory"
-      cp glory glory_buildit
-      cp $dist.tar.gz glory_$dist.tar.gz
-      chmod 750 glory_buildit;./glory_buildit &
-   fi
-fi
-
 
 #
 # Build on vulcan.
@@ -1018,5 +956,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f kickit ubuntu1404_64 ifyou quartz lassen rztrona rzuseq carver glory vulcan cooley
+   rm -f kickit ubuntu1404_64 ifyou quartz lassen rztrona rzansel rzuseq carver glory vulcan cooley
 fi
