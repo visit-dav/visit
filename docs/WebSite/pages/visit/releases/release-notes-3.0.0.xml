@@ -3,7 +3,7 @@
   <title><![CDATA[Release Notes for VisIt 3.0]]></title>
   <owner><![CDATA[Page Owner Name]]></owner>
   <IM>LLNL-WEB-765113</IM>
-  <lastchanged><![CDATA[January 28, 2019]]></lastchanged>
+  <lastchanged><![CDATA[February 25, 2019]]></lastchanged>
   <template><![CDATA[l2]]></template> 
   <content>
     <![CDATA[
@@ -61,6 +61,7 @@ SetBackendType("VTKm")
   </ul>
   <p>VTK-m functionality is currently enabled for 3D rectilinear, curvilinear and unstructured grids with only hexahedral elements. VTK-m supports both single block and multi-block grids.</p>
   </li>
+  <li>Due to lack of availability of C++11 compliant compilers, support for OSX 10.8 has been dropped.</li>
 </ul>
 
 <h2>Changes in GUI behavior in version 3.0</h2>
@@ -100,15 +101,17 @@ SetBackendType("VTKm")
 
 <h2>Other bugs fixed in version 3.0</h2>
 <ul>
+  <li>Corrected a bug where VisIt would crash rendering transparent geometry on the Cooley system at the Argonne Leadership Computing Facility.</li>
   <li><i>ANNOTATION_INT</i> facelists with faces appearing in more than one sublist are now handled correctly.</li>
   <li>Corrected a bug that caused empty plots when using the <i>OnionPeel</i> operator with data containing enumerated subsets.</li>
-  <li>Corrected a few usability issues for the <i>Save Movie Wizard</i> including:
+  <li>Corrected a few usability issues for the <i>Save Movie Wizard</i> including: 
     <ul>
       <li>The ability to save a movie template file.</li>
       <li>The ability to set start and end frames when creating a movie template.</li>
       <li>Pressing the enter key while modifying will no longer advance to the next page.</li>
     </ul>
   </li>
+  <li> Corrected a bug in creating expressions with curves read from multi-domain silo files. </li>
 </ul>
 
 <h2>Configuration changes in version 3.0</h2>
@@ -125,6 +128,7 @@ SetBackendType("VTKm")
 <ul>
   <li>VisIt has been ported to use the git/master branch of the IceT compositing library.</li>
   <li>avtGenericDatabase now dumps some intermmediate results of its dataset collection when -dump is in effect.</li>
+  <li>The command line option <i>-svn_revision</i> was replaced with <i>-git_version</i>.</li>
 </ul>
 
 

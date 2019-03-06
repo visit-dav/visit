@@ -61,26 +61,17 @@ export VISIT_VERSION=${VISIT_VERSION:-"3.0.0b"}
 # Trunk:
 ####
 export TRUNK_BUILD="yes"
-export SVN_SOURCE_PATH=${SVN_SOURCE_PATH:-"trunk/src"}
-export SVN_DESTINATION_PATH=${SVN_DESTINATION_PATH:-"trunk/src"}
-export SVN_THIRDPARTY_PATH=${SVN_THIRDPARTY_PATH:-"trunk/third_party"}
 
 ###
 # RC Branch:
 ###
 #export TRUNK_BUILD="no"
-#export SVN_SOURCE_PATH="branches/2.13RC/src"
-#export SVN_DESTINATION_PATH="2.13RC/src"
-#export SVN_THIRDPARTY_PATH="branches/2.13RC/third_party"
 
 
 ###
 # Tagged Release:
 ###
 #export TRUNK_BUILD="no"
-#export SVN_SOURCE_PATH="tags/${VISIT_VERSION}/src"
-#export SVN_DESTINATION_PATH="${VISIT_VERSION}/src"
-#export SVN_THIRDPARTY_PATH="tags/${VISIT_VERSION}/third_party"
 
 export INITIAL_PWD=$PWD
 
@@ -128,88 +119,6 @@ function check_for_versioning
       webaddr="${webroot}/tags/$VISIT_VERSION/src/tools/dev/scripts/build_visit"
       echo "using $webaddr for source"
     fi
-}
-
-# This function is not used, it is meant to be injected into older versions of VisIt..
-# This code is a duplicate of the one in helperfuncs.sh because build_visit needs to be
-# stand alone..
-function download_file
-{
-# $1 is the file name to download
-# $2...$* [OPTIONAL] list of sites to obtain the file from
-#
-# Since we always pass optional download sites to this function for
-# some third party libs - we can't skip svn mode just b/c this info is given.
-#
-    typeset dfile=$1
-    info "Downloading $dfile . . ."
-    shift
-
-    SVN_ROOT_PREFIX="${SVN_ROOT_PATH}/${SVN_THIRDPARTY_PATH}"
-    SVN_ANON_ROOT_PREFIX="${SVN_ANON_ROOT_PATH}/${SVN_THIRDPARTY_PATH}"
-    # If SVN is requested, try that first before anything else
-    if [[ "$DO_SVN" == "yes" ]] ; then
-        svn cat $SVN_ROOT_PREFIX/$dfile > $dfile
-        if [[ $? == 0 && -e $dfile ]] ; then
-            info "SVN download succeeded: $SVN_ROOT_PREFIX/$dfile"
-            return 0
-        else
-            warn "Normal svn failed. Trying anonymous svn."
-            svn cat $SVN_ANON_ROOT_PREFIX/$dfile > $dfile
-            if [[ $? == 0 && -e $dfile ]] ; then
-                info "Anonymous SVN download succeeded: $SVN_ANON_ROOT_PREFIX/$dfile"
-                return 0
-            fi
-        fi
-        warn "SVN download attempt failed: $SVN_ROOT_PATH/$SVN_THIRDPARTY_PATH/$dfile"
-        warn "Anonymous SVN download attempt failed: $SVN_ANON_ROOT_PREFIX/$dfile"
-        rm -f $dfile
-    elif [[ "$DO_SVN_ANON" == "yes" ]] ; then
-        svn cat $SVN_ANON_ROOT_PREFIX/$dfile > $dfile
-        if [[ $? == 0 && -e $dfile ]] ; then
-            info "Anonymous SVN download succeeded: $SVN_ANON_ROOT_PREFIX/$dfile"
-            return 0
-        fi
-        warn "Anonymous SVN download attempt failed: $SVN_ANON_ROOT_PREFIX/$dfile"
-        rm -f $dfile
-    fi
-
-    # If the visit source code is requested try that next.
-    if [[ "$dfile" == "$VISIT_FILE" ]] ; then
-        try_download_file $SVN_ANON_ROOT_PATH/trunk/releases/$VISIT_VERSION/$dfile $dfile
-        if [[ $? == 0 ]] ; then
-            return 0
-        fi
-    fi
-
-    # Now try the various places listed.
-    if [[ "$1" != "" ]] ; then
-        for site in $* ; do
-            try_download_file $site/$dfile $dfile
-            if [[ $? == 0 ]] ; then
-                return 0
-            fi
-        done
-    fi
-
-    # Now try anonymous svn unless we tried it above.
-    if [[ "$DO_SVN" != "yes" && "$DO_ANON_SVN" != "yes" ]] ; then
-        svn cat $SVN_ANON_ROOT_PREFIX/$dfile > $dfile
-        if [[ $? == 0 && -e $dfile ]] ; then
-            info "Anonymous SVN download succeeded: $SVN_ANON_ROOT_PREFIX/$dfile"
-            return 0
-        fi
-        warn "Anonymous SVN download attempt failed: $SVN_ANON_ROOT_PREFIX/$dfile"
-        rm -f $dfile
-    fi
-
-    # Now try the anonymous svn site with wget or curl.
-    try_download_file $SVN_ANON_ROOT_PREFIX/$dfile $dfile
-    if [[ $? == 0 ]] ; then
-        return 0
-    fi
-    info "Failed to download $dfile"
-    return 1
 }
 
 function configure_support_files
@@ -331,17 +240,12 @@ function call_build_visit
             rm -fR bv_support
         fi
 
-        SVN_SOURCE_PATH="tags/${VISIT_VERSION}/src"
-        SVN_THIRDPARTY_PATH="tags/${VISIT_VERSION}/third_party"
-
         # have to inject a hack for versions older than 2.6.3
         bv_PREFIX=$PWD/bv_support
         webaddr="$webroot/tags/$build_version/src/tools/dev/scripts/bv_support/"
         echo "rerouting support from $webaddr"
         configure_support_files
 
-        echo "SVN_SOURCE_PATH=$SVN_SOURCE_PATH" >> bv_support/helper_funcs.sh
-        echo "SVN_THIRDPARTY_PATH=$SVN_THIRDPARTY_PATH" >> bv_support/helper_funcs.sh
         declare -f download_file >> bv_support/helper_funcs.sh
 
         # execute build_visit (exec should terminate current
@@ -504,10 +408,6 @@ function bv_write_unified_file
     echo "export VISIT_VERSION=\${VISIT_VERSION:-\"$VISIT_VERSION\"}" >> $OUTPUT_bv_FILE
 
     echo "export TRUNK_BUILD=\"$TRUNK_BUILD\"" >> $OUTPUT_bv_FILE
-
-    echo "export SVN_SOURCE_PATH=\${SVN_SOURCE_PATH-\"$SVN_SOURCE_PATH\"}" >> $OUTPUT_bv_FILE
-    echo "export SVN_DESTINATION_PATH=\"$SVN_DESTINATION_PATH\"" >> $OUTPUT_bv_FILE
-    echo "export SVN_THIRDPARTY_PATH=\${SVN_THIRDPARTY_PATH-\"$SVN_THIRDPARTY_PATH\"}" >> $OUTPUT_bv_FILE
 
     echo "export INITIAL_PWD=\$PWD" >> $OUTPUT_bv_FILE
 

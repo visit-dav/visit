@@ -60,8 +60,8 @@ main.C
 
 # If the viewer is static then we need some static symbol lookup functions
 IF(VISIT_STATIC)
-    SET(STATIC_SOURCES1 ${CMAKE_CURRENT_SOURCE_DIR}/../../viewer/main/ViewerStaticSymbolLocator.C)
-    SET(STATIC_SOURCES2 ${CMAKE_CURRENT_SOURCE_DIR}/../../viewer/main/ViewerStaticSymbolLocator.C)
+    SET(STATIC_SOURCES1 ${CMAKE_CURRENT_SOURCE_DIR}/../../../viewer/main/ViewerStaticSymbolLocator.C)
+    SET(STATIC_SOURCES2 ${CMAKE_CURRENT_SOURCE_DIR}/../../../viewer/main/ViewerStaticSymbolLocator.C)
 ENDIF(VISIT_STATIC)
 
 # The subset of the sources that have Q_OBJECT in their header.

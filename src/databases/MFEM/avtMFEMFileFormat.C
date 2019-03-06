@@ -65,6 +65,7 @@
 #include <avtResolutionSelection.h>
 
 #include <StringHelpers.h>
+#include <visit_gzstream.h>
 #include <vtkUnstructuredGrid.h>
 #include <vtkCell.h>
 #include <vtkLine.h>
@@ -664,8 +665,8 @@ avtMFEMFileFormat::FetchMesh(const std::string &mesh_name,int domain)
             return new Mesh(imeshstr, 1, 0, false);
     }
 
-    ifstream imesh(mesh_path.c_str());
-    if(!imesh)
+    visit_ifstream imesh(mesh_path.c_str());
+    if(imesh().fail())
     {
         //failed to open mesh file
         ostringstream msg;
@@ -678,7 +679,7 @@ avtMFEMFileFormat::FetchMesh(const std::string &mesh_name,int domain)
         EXCEPTION1(InvalidFilesException, msg.str());
     }
    
-    return new Mesh(imesh, 1, 0, false);
+    return new Mesh(imesh(), 1, 0, false);
 }
 
 // ****************************************************************************
@@ -867,8 +868,8 @@ avtMFEMFileFormat::GetRefinedVar(const std::string &var_name,
 
     if (!gf)
     {
-        ifstream igf(field_path.c_str());
-        if (!igf)
+        visit_ifstream igf(field_path.c_str());
+        if (igf().fail())
         {
             //failed to open gf file
             ostringstream msg;
@@ -881,7 +882,7 @@ avtMFEMFileFormat::GetRefinedVar(const std::string &var_name,
 
             EXCEPTION1(InvalidFilesException, msg.str());
         }
-        gf = new GridFunction(mesh,igf);   
+        gf = new GridFunction(mesh,igf());   
     }
 
     int npts=0;

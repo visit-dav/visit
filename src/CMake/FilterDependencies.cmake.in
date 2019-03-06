@@ -39,6 +39,9 @@
 #    Added VISIT_MESAGL_DIR, VISIT_LLVM_DIR, guard some of the string
 #    replacements with tests for whether the VISIT_XXX_DIR var exists.
 #
+#    Kathleen Biagas, Mon Feb 25 15:53:24 PST 2019
+#    Skip icet, rename OSMesa to GL.
+#
 #****************************************************************************/
 cmake_policy(SET CMP0011 NEW)
 cmake_policy(SET CMP0057 NEW)
@@ -183,8 +186,12 @@ function(FILTER_VISIT_LIB_DEPENDENCIES filename)
               # want to say skip the next token which should be 'general'
               set(skip_next_token TRUE) 
               continue()
+            elseif(${token} MATCHES "icet")
+              # Static libs, not necessary to be listed as a dependency here
+              continue()
             elseif(${token} MATCHES "OSMesa")
                 string(REPLACE "mesagl" "osmesa" newtoken ${token})
+                string(REPLACE "OSMesa.so.8" "GL.so.1" newtoken ${newtoken})
             elseif(${token} MATCHES "tbb")
                 get_filename_component(libname ${token} NAME)
                 set(newtoken "${libname}")
