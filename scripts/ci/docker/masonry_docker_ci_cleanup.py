@@ -14,7 +14,7 @@ def tpl_build_dir():
 
 def check_to_keep(path):
     res = False
-    if path.count("third_party") == 0:
+    if path.count("third_party") > 0:
         res = True
     elif path.endswith(".cmake"):
         res = True
@@ -23,9 +23,12 @@ def check_to_keep(path):
 def cleanup_tpl_build_dirs():
     paths = glob.glob( pjoin(tpl_build_dir(),"*") )
     for path in paths:
-        if check_to_keep(path):
+        if not check_to_keep(path):
             print "[removing %s]" % path
-            #shutil.rmtree(path)
+            if os.path.isdir(path):
+                shutil.rmtree(path)
+            else:
+                os.remove(path)
 
 def copy_config_site():
      cfg_site = glob.glob( pjoin(tpl_build_dir(),"*.cmake") )[0]

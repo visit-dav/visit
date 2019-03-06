@@ -1,0 +1,16 @@
+sudo: required
+services: docker
+dist: trusty
+env:
+  global:
+    - TRAVIS_HOME=`pwd`
+  matrix:
+    - BUILD_SHARED_LIBS=ON
+script:
+- docker run -v ${TRAVIS_BUILD_DIR}:/home/build visitdav/visit-ci-develop:current /home/build/scripts/ci/travis/travis-test-visit-ci-develop.sh 
+notifications:
+  email:
+    recipients:
+      - cyrush@llnl.gov
+    on_success: always
+    on_failure: always
