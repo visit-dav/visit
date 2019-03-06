@@ -7,7 +7,7 @@ env:
   matrix:
     - BUILD_SHARED_LIBS=ON
 script:
-- docker run -v ${TRAVIS_BUILD_DIR}:/home/build visitdav/visit-ci-develop:current /home/build/scripts/ci/travis/travis-test-visit-ci-develop.sh 
+- docker run -v ${TRAVIS_BUILD_DIR}:/visit-clone visitdav/visit-ci-develop:current /visit-clone/scripts/ci/travis/travis-test-visit-ci-develop.sh 
 notifications:
   email:
     recipients:
