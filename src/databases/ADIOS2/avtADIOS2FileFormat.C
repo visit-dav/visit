@@ -47,6 +47,7 @@
 #include <avtADIOS2SSTFileFormat.h>
 #include <avtADIOS2BaseFileFormat.h>
 #include <avtGTCFileFormat.h>
+#include <avtLAMMPSFileFormat.h>
 #include <avtMEUMMAPSFileFormat.h>
 #include <string>
 
@@ -85,10 +86,9 @@ avtFileFormatInterface *
 ADIOS2_CreateFileFormatInterface(const char * const *list, int nList, int nBlock)
 {
     avtFileFormatInterface *ffi = NULL;
-    enum Flavor {GTC, BASIC, SST, MEUMMAPS, FAIL};
+    enum Flavor {GTC, BASIC, SST, MEUMMAPS, LAMMPS, FAIL};
     bool isSST = (std::string(list[0]).find(".sst") != std::string::npos);
 
-    cout<<__FILE__<<" "<<__LINE__<<" isSST "<<isSST<<endl;
     Flavor flavor = FAIL;
     if (list != NULL || nList > 0)
     {
@@ -100,6 +100,8 @@ ADIOS2_CreateFileFormatInterface(const char * const *list, int nList, int nBlock
                 flavor = BASIC;
             else if (avtGTCFileFormat::Identify(list[0]))
                 flavor = GTC;
+            else if (avtLAMMPSFileFormat::Identify(list[0]))
+                flavor = LAMMPS;
             else if (avtMEUMMAPSFileFormat::Identify(list[0]))
                 flavor = MEUMMAPS;
             else if (avtADIOS2BaseFileFormat::Identify(list[0]))
@@ -111,17 +113,18 @@ ADIOS2_CreateFileFormatInterface(const char * const *list, int nList, int nBlock
         }
         ENDTRY
 
-        cout<<"FLAVOR= "<<flavor<<endl;
         switch(flavor)
         {
           case GTC:
             ffi = avtGTCFileFormat::CreateInterface(list, nList, nBlock);
             break;
+          case LAMMPS:
+            ffi = avtLAMMPSFileFormat::CreateInterface(list, nList, nBlock);
+            break;
           case MEUMMAPS:
             ffi = avtMEUMMAPSFileFormat::CreateInterface(list, nList, nBlock);
             break;
           case BASIC:
-              cout<<"OPEN A BASIC READER"<<endl;
             ffi = avtADIOS2BaseFileFormat::CreateInterface(list, nList, nBlock);
             break;
           case SST:
