@@ -38,6 +38,11 @@
 #   Kathleen Biagas, Wed Oct 31 11:53:01 PDT 2018
 #   Added install logic.
 #
+#   Eric Brugger, Wed Mar  6 16:55:54 PST 2019
+#   Adjusted install logic so that VISIT_INSTALL_THIRD_PARTY didn't need
+#   to be defined to execute it. Adjusted install logic to only consider
+#   libraries that started with vtkh or vtkm.
+#
 #****************************************************************************/
 
 IF (DEFINED VISIT_VTKH_DIR)
@@ -85,11 +90,16 @@ IF (DEFINED VISIT_VTKH_DIR)
        get_target_property(VTKH_LL_DEP ${vtkhll} INTERFACE_LINK_LIBRARIES)
        if(VTKH_LL_DEP)
            foreach(ll_dep ${VTKH_LL_DEP})
-               # don't process duplicates
-               if (NOT ${ll_dep} IN_LIST VTKH_INT_LL AND
-                   NOT ${ll_dep} IN_LIST addl_ll)
-                   get_lib_loc_and_install(${ll_dep})
-                   list(APPEND addl_ll ${ll_dep})
+               string(SUBSTRING ll_dep 0 4 ll_dep_prefix)
+               # only process libraries that start with vtkh or vtkm
+               if ("${ll_dep_prefix}" STREQUAL "vtkh" OR
+                   "${ll_dep_prefix}" STREQUAL "vtkm")
+                   # don't process duplicates
+                   if (NOT ${ll_dep} IN_LIST VTKH_INT_LL AND
+                       NOT ${ll_dep} IN_LIST addl_ll)
+                       get_lib_loc_and_install(${ll_dep})
+                       list(APPEND addl_ll ${ll_dep})
+                   endif()
                endif()
            endforeach()
        endif()
