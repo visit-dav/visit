@@ -242,7 +242,7 @@ avtLAMMPSStructureFileFormat::GetMesh(int timestep, const char *meshname)
                       y[timestep][j],
                       z[timestep][j]);
     }
- 
+
     vtkCellArray *verts = vtkCellArray::New();
     pd->SetVerts(verts);
     verts->Delete();
@@ -444,7 +444,7 @@ avtLAMMPSStructureFileFormat::ReadAllMetaData()
     in.getline(buff,1000); // skip rest of num atoms line
 
     int nAtomTypes;
-    in >> nAtomTypes; 
+    in >> nAtomTypes;
     in.getline(buff,1000); // num atom types
 
     in.getline(buff,1000); // x extents
@@ -453,7 +453,7 @@ avtLAMMPSStructureFileFormat::ReadAllMetaData()
     in.getline(buff,1000); // blank
     in.getline(buff,1000); // "Atoms"
     in.getline(buff,1000); // blank
-    
+
     // data starts here
     istream::pos_type current_pos = in.tellg();
     file_positions.push_back(current_pos);
@@ -470,7 +470,7 @@ avtLAMMPSStructureFileFormat::ReadAllMetaData()
     {
         v[i].resize(nTimeSteps);
     }
-    
+
 }
 
 
@@ -478,7 +478,7 @@ avtLAMMPSStructureFileFormat::ReadAllMetaData()
 //  Method:  avtLAMMPSStructureFileFormat::FileExtensionIdentify
 //
 //  Purpose:
-//    Return true if the file given is an LAMMPS structure file, 
+//    Return true if the file given is an LAMMPS structure file,
 //    based on its file name.
 //
 //  Arguments:
@@ -519,7 +519,7 @@ avtLAMMPSStructureFileFormat::FileExtensionIdentify(const std::string &filename)
 //  Method:  avtLAMMPSStructureFileFormat::FileContentsdentify
 //
 //  Purpose:
-//    Return true if the file given is an LAMMPS structure file, 
+//    Return true if the file given is an LAMMPS structure file,
 //    based on its initial contents.  If the file has the keyword
 //    "atoms" somewhere in the first ~20 lines, there's a good
 //    chance it's a LAMMPS Structure file for use with the LAMMPS
