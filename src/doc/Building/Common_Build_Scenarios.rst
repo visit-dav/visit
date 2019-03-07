@@ -1,4 +1,4 @@
-.. _Common Build Scenarios
+.. _Common Build Scenarios:
 
 Common Build Scenarios
 ----------------------
@@ -63,7 +63,7 @@ Quartz, a Linux X86_64 TOSS3 cluster
 ``build_visit`` was run to generate the third party libraries. In this
 case the system MPI was used, so information about the system MPI had to
 be provided with environment variables and the ``--parallel`` flag had
-to be specified. In this case all the required and optional third party
+to be specified. In this case, all the required and optional third party
 libraries build without problem, so ``--required --optional`` could be
 used. Also, the system OpenGL implementation was outdated and ``--mesagl``
 had to be included to provide an OpenGL implementation suitable for
@@ -127,12 +127,12 @@ Lassen, a Linux Power9 BlueOS cluster
 ``build_visit`` was run to generate the third party libraries. In this
 case the system MPI was used, so information about the system MPI had to
 be provided with environment variables and the ``--parallel`` flag had
-to be specified. A few of the optional third party libraries do not build
-on the system so all the desired optional third party libraries had to be
-explicitly listed. Also, the system OpenGL implementation was outdated and
-``--mesagl`` had to be included to provide an OpenGL implementation
-suitable for VisIt_. Lastly, the Uintah library was built to enable
-building the Uintah reader.
+to be specified. In this case, a few of the optional third party libraries
+do not build on the system so all the desired optional third party libraries
+had to be explicitly listed. Also, the system OpenGL implementation was
+outdated and ``--mesagl`` had to be included to provide an OpenGL
+implementation suitable for VisIt_. Lastly, the Uintah library was built
+to enable building the Uintah reader.
 
 .. code:: bash
 
