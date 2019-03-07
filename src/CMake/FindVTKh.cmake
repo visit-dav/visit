@@ -90,7 +90,7 @@ IF (DEFINED VISIT_VTKH_DIR)
        get_target_property(VTKH_LL_DEP ${vtkhll} INTERFACE_LINK_LIBRARIES)
        if(VTKH_LL_DEP)
            foreach(ll_dep ${VTKH_LL_DEP})
-               string(SUBSTRING ll_dep 0 4 ll_dep_prefix)
+               string(SUBSTRING "${ll_dep}" 0 4 ll_dep_prefix)
                # only process libraries that start with vtkh or vtkm
                if ("${ll_dep_prefix}" STREQUAL "vtkh" OR
                    "${ll_dep_prefix}" STREQUAL "vtkm")
