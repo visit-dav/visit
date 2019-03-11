@@ -114,6 +114,43 @@ ElevateAttributes::LimitsMode_FromString(const std::string &s, ElevateAttributes
     return false;
 }
 
+//
+// Enum conversion methods for ElevateAttributes::ScalingMode
+//
+
+static const char *ScalingMode_strings[] = {
+"False", "True"};
+
+std::string
+ElevateAttributes::ScalingMode_ToString(ElevateAttributes::ScalingMode t)
+{
+    int index = int(t);
+    if(index < 0 || index >= 2) index = 0;
+    return ScalingMode_strings[index];
+}
+
+std::string
+ElevateAttributes::ScalingMode_ToString(int t)
+{
+    int index = (t < 0 || t >= 2) ? 0 : t;
+    return ScalingMode_strings[index];
+}
+
+bool
+ElevateAttributes::ScalingMode_FromString(const std::string &s, ElevateAttributes::ScalingMode &val)
+{
+    val = ElevateAttributes::False;
+    for(int i = 0; i < 2; ++i)
+    {
+        if(s == ScalingMode_strings[i])
+        {
+            val = (ScalingMode)i;
+            return true;
+        }
+    }
+    return false;
+}
+
 // ****************************************************************************
 // Method: ElevateAttributes::ElevateAttributes
 //
@@ -131,7 +168,7 @@ ElevateAttributes::LimitsMode_FromString(const std::string &s, ElevateAttributes
 
 void ElevateAttributes::Init()
 {
-    useXYLimits = false;
+    useXYLimits = False;
     limitsMode = OriginalData;
     scaling = Linear;
     skewFactor = 1;
@@ -528,7 +565,7 @@ ElevateAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool forc
     if(completeSave || !FieldsEqual(ID_useXYLimits, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("useXYLimits", useXYLimits));
+        node->AddNode(new DataNode("useXYLimits", ScalingMode_ToString(useXYLimits)));
     }
 
     if(completeSave || !FieldsEqual(ID_limitsMode, &defaultObject))
@@ -622,7 +659,21 @@ ElevateAttributes::SetFromNode(DataNode *parentNode)
 
     DataNode *node;
     if((node = searchNode->GetNode("useXYLimits")) != 0)
-        SetUseXYLimits(node->AsBool());
+    {
+        // Allow enums to be int or string in the config file
+        if(node->GetNodeType() == INT_NODE)
+        {
+            int ival = node->AsInt();
+            if(ival >= 0 && ival < 2)
+                SetUseXYLimits(ScalingMode(ival));
+        }
+        else if(node->GetNodeType() == STRING_NODE)
+        {
+            ScalingMode value;
+            if(ScalingMode_FromString(node->AsString(), value))
+                SetUseXYLimits(value);
+        }
+    }
     if((node = searchNode->GetNode("limitsMode")) != 0)
     {
         // Allow enums to be int or string in the config file
@@ -676,7 +727,7 @@ ElevateAttributes::SetFromNode(DataNode *parentNode)
 ///////////////////////////////////////////////////////////////////////////////
 
 void
-ElevateAttributes::SetUseXYLimits(bool useXYLimits_)
+ElevateAttributes::SetUseXYLimits(ElevateAttributes::ScalingMode useXYLimits_)
 {
     useXYLimits = useXYLimits_;
     Select(ID_useXYLimits, (void *)&useXYLimits);
@@ -749,10 +800,10 @@ ElevateAttributes::SetVariable(const std::string &variable_)
 // Get property methods
 ///////////////////////////////////////////////////////////////////////////////
 
-bool
+ElevateAttributes::ScalingMode
 ElevateAttributes::GetUseXYLimits() const
 {
-    return useXYLimits;
+    return ScalingMode(useXYLimits);
 }
 
 ElevateAttributes::LimitsMode
@@ -883,7 +934,7 @@ ElevateAttributes::GetFieldType(int index) const
 {
     switch (index)
     {
-    case ID_useXYLimits: return FieldType_bool;
+    case ID_useXYLimits: return FieldType_enum;
     case ID_limitsMode:  return FieldType_enum;
     case ID_scaling:     return FieldType_enum;
     case ID_skewFactor:  return FieldType_double;
@@ -917,7 +968,7 @@ ElevateAttributes::GetFieldTypeName(int index) const
 {
     switch (index)
     {
-    case ID_useXYLimits: return "bool";
+    case ID_useXYLimits: return "enum";
     case ID_limitsMode:  return "enum";
     case ID_scaling:     return "enum";
     case ID_skewFactor:  return "double";

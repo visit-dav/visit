@@ -68,28 +68,42 @@ Test("elevate05")
 
 #Primary variable nodal, secondary zonal.
 elevate_atts.variable = "p"
-elevate_atts.useXYLimits = 1
+elevate_atts.useXYLimits = elevate_atts.True
 SetOperatorOptions(elevate_atts)
 Test("elevate06")
+
+# elevate_atts.useXYLimits = elevate_atts.Auto
+# SetOperatorOptions(elevate_atts)
+# Test("elevate13")
 
 DeleteAllPlots()
 
 AddPlot("Mesh", "quadmesh2d")
 AddOperator("Elevate")
 elevate_atts.variable = "p"
-elevate_atts.useXYLimits = 1
+elevate_atts.useXYLimits = elevate_atts.True
 SetOperatorOptions(elevate_atts)
 DrawPlots()
 Test("elevate07")
+
+# elevate_atts.useXYLimits = elevate_atts.Auto
+# SetOperatorOptions(elevate_atts)
+# DrawPlots()
+# Test("elevate14")
 
 DeleteAllPlots()
 AddPlot("FilledBoundary", "mat1")
 AddOperator("Elevate")
 elevate_atts.variable = "u"
-elevate_atts.useXYLimits = 1
+elevate_atts.useXYLimits = elevate_atts.True
 SetOperatorOptions(elevate_atts)
 DrawPlots()
 Test("elevate08")
+
+# elevate_atts.useXYLimits = elevate_atts.Auto
+# SetOperatorOptions(elevate_atts)
+# DrawPlots()
+# Test("elevate15")
 
 DeleteAllPlots()
 OpenDatabase(silo_data_path("rect3d.silo"))

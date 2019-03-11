@@ -44,6 +44,7 @@
 #include <QLabel>
 #include <QLayout>
 #include <QLineEdit>
+#include <QSpinBox>
 #include <QButtonGroup>
 #include <QRadioButton>
 #include <QvisVariableButton.h>
@@ -87,9 +88,7 @@ QvisElevateWindow::QvisElevateWindow(const int type,
 // Creation:   omitted
 //
 // Modifications:
-//   Cyrus Harrison, Tue Aug 19 10:58:31 PDT 2008
-//   Qt4 Port.
-//
+//   
 // ****************************************************************************
 
 QvisElevateWindow::~QvisElevateWindow()
@@ -109,9 +108,7 @@ QvisElevateWindow::~QvisElevateWindow()
 // Creation:   omitted
 //
 // Modifications:
-//   Cyrus Harrison, Tue Aug 19 10:58:31 PDT 2008
-//   Qt4 Port.
-//
+//   
 // ****************************************************************************
 
 void
@@ -120,47 +117,59 @@ QvisElevateWindow::CreateWindowContents()
     QGridLayout *mainLayout = new QGridLayout(0);
     topLayout->addLayout(mainLayout);
 
-    useXYLimits = new QCheckBox(tr("Elevation height relative to XY limits?"), central);
-    connect(useXYLimits, SIGNAL(toggled(bool)),
-            this, SLOT(useXYLimitsChanged(bool)));
-    mainLayout->addWidget(useXYLimits, 0,0,1,2);
+    useXYLimitsLabel = new QLabel(tr("Elevation height relative to XY limits?"), central);
+    mainLayout->addWidget(useXYLimitsLabel,0,0);
+    useXYLimits = new QWidget(central);
+    useXYLimitsButtonGroup= new QButtonGroup(useXYLimits);
+    QHBoxLayout *useXYLimitsLayout = new QHBoxLayout(useXYLimits);
+    useXYLimitsLayout->setMargin(0);
+    useXYLimitsLayout->setSpacing(10);
+    QRadioButton *useXYLimitsScalingModeFalse = new QRadioButton(tr("False"), useXYLimits);
+    useXYLimitsButtonGroup->addButton(useXYLimitsScalingModeFalse,0);
+    useXYLimitsLayout->addWidget(useXYLimitsScalingModeFalse);
+    QRadioButton *useXYLimitsScalingModeTrue = new QRadioButton(tr("True"), useXYLimits);
+    useXYLimitsButtonGroup->addButton(useXYLimitsScalingModeTrue,1);
+    useXYLimitsLayout->addWidget(useXYLimitsScalingModeTrue);
+    connect(useXYLimitsButtonGroup, SIGNAL(buttonClicked(int)),
+            this, SLOT(useXYLimitsChanged(int)));
+    mainLayout->addWidget(useXYLimits, 0,1);
 
-    limitsModeLabel = new QLabel(tr("Limits Mode"), central);
+    limitsModeLabel = new QLabel(tr("LimitsMode"), central);
     mainLayout->addWidget(limitsModeLabel,1,0);
-    limitsModeWidget = new QWidget(central);
-    limitsMode = new QButtonGroup(limitsModeWidget);
-    QHBoxLayout *limitsModeLayout = new QHBoxLayout(limitsModeWidget);
+    limitsMode = new QWidget(central);
+    limitsModeButtonGroup= new QButtonGroup(limitsMode);
+    QHBoxLayout *limitsModeLayout = new QHBoxLayout(limitsMode);
     limitsModeLayout->setMargin(0);
     limitsModeLayout->setSpacing(10);
-    QRadioButton *limitsModeLimitsModeOriginalData = new QRadioButton(tr("Original Data"), limitsModeWidget);
-    limitsMode->addButton(limitsModeLimitsModeOriginalData,0);
+    QRadioButton *limitsModeLimitsModeOriginalData = new QRadioButton(tr("OriginalData"), limitsMode);
+    limitsModeButtonGroup->addButton(limitsModeLimitsModeOriginalData,0);
     limitsModeLayout->addWidget(limitsModeLimitsModeOriginalData);
-    QRadioButton *limitsModeLimitsModeCurrentPlot = new QRadioButton(tr("Current Plot"), limitsModeWidget);
-    limitsMode->addButton(limitsModeLimitsModeCurrentPlot,1);
+    QRadioButton *limitsModeLimitsModeCurrentPlot = new QRadioButton(tr("CurrentPlot"), limitsMode);
+    limitsModeButtonGroup->addButton(limitsModeLimitsModeCurrentPlot,1);
     limitsModeLayout->addWidget(limitsModeLimitsModeCurrentPlot);
-    connect(limitsMode, SIGNAL(buttonClicked(int)),
+    connect(limitsModeButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(limitsModeChanged(int)));
-    mainLayout->addWidget(limitsModeWidget, 1,1);
+    mainLayout->addWidget(limitsMode, 1,1);
 
     scalingLabel = new QLabel(tr("Scale"), central);
     mainLayout->addWidget(scalingLabel,2,0);
-    scalingWidget = new QWidget(central);
-    scaling = new QButtonGroup(scalingWidget);
-    QHBoxLayout *scalingLayout = new QHBoxLayout(scalingWidget);
+    scaling = new QWidget(central);
+    scalingButtonGroup= new QButtonGroup(scaling);
+    QHBoxLayout *scalingLayout = new QHBoxLayout(scaling);
     scalingLayout->setMargin(0);
     scalingLayout->setSpacing(10);
-    QRadioButton *scalingScalingLinear = new QRadioButton(tr("Linear"), scalingWidget);
-    scaling->addButton(scalingScalingLinear,0);
+    QRadioButton *scalingScalingLinear = new QRadioButton(tr("Linear"), scaling);
+    scalingButtonGroup->addButton(scalingScalingLinear,0);
     scalingLayout->addWidget(scalingScalingLinear);
-    QRadioButton *scalingScalingLog = new QRadioButton(tr("Log"), scalingWidget);
-    scaling->addButton(scalingScalingLog,1);
+    QRadioButton *scalingScalingLog = new QRadioButton(tr("Log"), scaling);
+    scalingButtonGroup->addButton(scalingScalingLog,1);
     scalingLayout->addWidget(scalingScalingLog);
-    QRadioButton *scalingScalingSkew = new QRadioButton(tr("Skew"), scalingWidget);
-    scaling->addButton(scalingScalingSkew,2);
+    QRadioButton *scalingScalingSkew = new QRadioButton(tr("Skew"), scaling);
+    scalingButtonGroup->addButton(scalingScalingSkew,2);
     scalingLayout->addWidget(scalingScalingSkew);
-    connect(scaling, SIGNAL(buttonClicked(int)),
+    connect(scalingButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(scalingChanged(int)));
-    mainLayout->addWidget(scalingWidget, 2,1);
+    mainLayout->addWidget(scaling, 2,1);
 
     skewFactorLabel = new QLabel(tr("Skew factor"), central);
     mainLayout->addWidget(skewFactorLabel,3,0);
@@ -196,7 +205,7 @@ QvisElevateWindow::CreateWindowContents()
     zeroFlag = new QCheckBox(tr("Elevate with zero height?"), central);
     connect(zeroFlag, SIGNAL(toggled(bool)),
             this, SLOT(zeroFlagChanged(bool)));
-    mainLayout->addWidget(zeroFlag, 8,0,1,2);
+    mainLayout->addWidget(zeroFlag, 8,0);
 
     variableLabel = new QLabel(tr("Elevate by Variable"), central);
     mainLayout->addWidget(variableLabel,9,0);
@@ -222,9 +231,7 @@ QvisElevateWindow::CreateWindowContents()
 // Creation:   omitted
 //
 // Modifications:
-//   Cyrus Harrison, Tue Aug 19 10:58:31 PDT 2008
-//   Qt4 Port.
-//
+//   
 // ****************************************************************************
 
 void
@@ -244,31 +251,31 @@ QvisElevateWindow::UpdateWindow(bool doAll)
         switch(i)
         {
           case ElevateAttributes::ID_useXYLimits:
-            if (atts->GetUseXYLimits() == true)
+            if (atts->GetUseXYLimits() == ElevateAttributes::ScalingMode::True)
             {
-                limitsModeWidget->setEnabled(true);
+                limitsMode->setEnabled(true);
                 if(limitsModeLabel)
                     limitsModeLabel->setEnabled(true);
             }
             else
             {
-                limitsModeWidget->setEnabled(false);
+                limitsMode->setEnabled(false);
                 if(limitsModeLabel)
                     limitsModeLabel->setEnabled(false);
             }
-            if (atts->GetUseXYLimits() == true)
+            if (atts->GetUseXYLimits() == ElevateAttributes::ScalingMode::True)
             {
-                scalingWidget->setEnabled(true);
+                scaling->setEnabled(true);
                 if(scalingLabel)
                     scalingLabel->setEnabled(true);
             }
             else
             {
-                scalingWidget->setEnabled(false);
+                scaling->setEnabled(false);
                 if(scalingLabel)
                     scalingLabel->setEnabled(false);
             }
-            if (atts->GetUseXYLimits() == true)
+            if (atts->GetUseXYLimits() == ElevateAttributes::ScalingMode::True)
             {
                 minFlag->setEnabled(true);
             }
@@ -276,7 +283,7 @@ QvisElevateWindow::UpdateWindow(bool doAll)
             {
                 minFlag->setEnabled(false);
             }
-            if (atts->GetUseXYLimits() == true)
+            if (atts->GetUseXYLimits() == ElevateAttributes::ScalingMode::True)
             {
                 maxFlag->setEnabled(true);
             }
@@ -284,15 +291,16 @@ QvisElevateWindow::UpdateWindow(bool doAll)
             {
                 maxFlag->setEnabled(false);
             }
-            useXYLimits->blockSignals(true);
-            useXYLimits->setChecked(atts->GetUseXYLimits());
-            useXYLimits->blockSignals(false);
+            useXYLimitsButtonGroup->blockSignals(true);
+            if(useXYLimitsButtonGroup->button((int)atts->GetUseXYLimits()) != 0)
+                useXYLimitsButtonGroup->button((int)atts->GetUseXYLimits())->setChecked(true);
+            useXYLimitsButtonGroup->blockSignals(false);
             break;
           case ElevateAttributes::ID_limitsMode:
-            limitsMode->blockSignals(true);
-            if(limitsMode->button((int)atts->GetLimitsMode()) != 0)
-                limitsMode->button((int)atts->GetLimitsMode())->setChecked(true);
-            limitsMode->blockSignals(false);
+            limitsModeButtonGroup->blockSignals(true);
+            if(limitsModeButtonGroup->button((int)atts->GetLimitsMode()) != 0)
+                limitsModeButtonGroup->button((int)atts->GetLimitsMode())->setChecked(true);
+            limitsModeButtonGroup->blockSignals(false);
             break;
           case ElevateAttributes::ID_scaling:
             if (atts->GetScaling() == ElevateAttributes::Skew)
@@ -307,10 +315,10 @@ QvisElevateWindow::UpdateWindow(bool doAll)
                 if(skewFactorLabel)
                     skewFactorLabel->setEnabled(false);
             }
-            scaling->blockSignals(true);
-            if(scaling->button((int)atts->GetScaling()) != 0)
-                scaling->button((int)atts->GetScaling())->setChecked(true);
-            scaling->blockSignals(false);
+            scalingButtonGroup->blockSignals(true);
+            if(scalingButtonGroup->button((int)atts->GetScaling()) != 0)
+                scalingButtonGroup->button((int)atts->GetScaling())->setChecked(true);
+            scalingButtonGroup->blockSignals(false);
             break;
           case ElevateAttributes::ID_skewFactor:
             skewFactor->setText(DoubleToQString(atts->GetSkewFactor()));
@@ -453,10 +461,13 @@ QvisElevateWindow::GetCurrentValues(int which_widget)
 
 
 void
-QvisElevateWindow::useXYLimitsChanged(bool val)
+QvisElevateWindow::useXYLimitsChanged(int val)
 {
-    atts->SetUseXYLimits(val);
-    Apply();
+    if(val != atts->GetUseXYLimits())
+    {
+        atts->SetUseXYLimits(ElevateAttributes::ScalingMode(val));
+        Apply();
+    }
 }
 
 

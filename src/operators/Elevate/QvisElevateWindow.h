@@ -46,6 +46,7 @@ class ElevateAttributes;
 class QLabel;
 class QCheckBox;
 class QLineEdit;
+class QSpinBox;
 class QButtonGroup;
 class QvisVariableButton;
 
@@ -61,9 +62,7 @@ class QvisVariableButton;
 // Creation:   omitted
 //
 // Modifications:
-//   Cyrus Harrison, Tue Aug 19 10:58:31 PDT 2008
-//   Qt4 Port.
-//
+//   
 // ****************************************************************************
 
 class QvisElevateWindow : public QvisOperatorWindow
@@ -81,7 +80,7 @@ class QvisElevateWindow : public QvisOperatorWindow
     void UpdateWindow(bool doAll);
     virtual void GetCurrentValues(int which_widget);
   private slots:
-    void useXYLimitsChanged(bool val);
+    void useXYLimitsChanged(int val);
     void limitsModeChanged(int val);
     void scalingChanged(int val);
     void skewFactorProcessText();
@@ -92,11 +91,12 @@ class QvisElevateWindow : public QvisOperatorWindow
     void zeroFlagChanged(bool val);
     void variableChanged(const QString &varName);
   private:
-    QCheckBox *useXYLimits;
-    QButtonGroup *limitsMode;
-    QWidget      *limitsModeWidget;
-    QButtonGroup *scaling;
-    QWidget      *scalingWidget;
+    QWidget      *useXYLimits;
+    QButtonGroup *useXYLimitsButtonGroup;
+    QWidget      *limitsMode;
+    QButtonGroup *limitsModeButtonGroup;
+    QWidget      *scaling;
+    QButtonGroup *scalingButtonGroup;
     QLineEdit *skewFactor;
     QCheckBox *minFlag;
     QLineEdit *min;
@@ -104,6 +104,7 @@ class QvisElevateWindow : public QvisOperatorWindow
     QLineEdit *max;
     QCheckBox *zeroFlag;
     QvisVariableButton *variable;
+    QLabel *useXYLimitsLabel;
     QLabel *limitsModeLabel;
     QLabel *scalingLabel;
     QLabel *skewFactorLabel;
