@@ -3,9 +3,6 @@ jobs:
   build:
     docker:
       - image: visitdav/visit-ci-develop:current
-jobs:
-  build:
-    machine: true
     steps:
       - checkout
       - run:
