@@ -69,15 +69,16 @@ public class ElevateAttributes extends AttributeSubject implements Plugin
     public final static int LIMITSMODE_ORIGINALDATA = 0;
     public final static int LIMITSMODE_CURRENTPLOT = 1;
 
-    public final static int SCALINGMODE_FALSE = 0;
-    public final static int SCALINGMODE_TRUE = 1;
+    public final static int SCALINGMODE_NEVER = 0;
+    public final static int SCALINGMODE_AUTO = 1;
+    public final static int SCALINGMODE_ALWAYS = 2;
 
 
     public ElevateAttributes()
     {
         super(ElevateAttributes_numAdditionalAtts);
 
-        useXYLimits = SCALINGMODE_FALSE;
+        useXYLimits = SCALINGMODE_AUTO;
         limitsMode = LIMITSMODE_ORIGINALDATA;
         scaling = SCALING_LINEAR;
         skewFactor = 1;
@@ -93,7 +94,7 @@ public class ElevateAttributes extends AttributeSubject implements Plugin
     {
         super(ElevateAttributes_numAdditionalAtts + nMoreFields);
 
-        useXYLimits = SCALINGMODE_FALSE;
+        useXYLimits = SCALINGMODE_AUTO;
         limitsMode = LIMITSMODE_ORIGINALDATA;
         scaling = SCALING_LINEAR;
         skewFactor = 1;
@@ -290,10 +291,12 @@ public class ElevateAttributes extends AttributeSubject implements Plugin
     {
         String str = new String();
         str = str + indent + "useXYLimits = ";
-        if(useXYLimits == SCALINGMODE_FALSE)
-            str = str + "SCALINGMODE_FALSE";
-        if(useXYLimits == SCALINGMODE_TRUE)
-            str = str + "SCALINGMODE_TRUE";
+        if(useXYLimits == SCALINGMODE_NEVER)
+            str = str + "SCALINGMODE_NEVER";
+        if(useXYLimits == SCALINGMODE_AUTO)
+            str = str + "SCALINGMODE_AUTO";
+        if(useXYLimits == SCALINGMODE_ALWAYS)
+            str = str + "SCALINGMODE_ALWAYS";
         str = str + "\n";
         str = str + indent + "limitsMode = ";
         if(limitsMode == LIMITSMODE_ORIGINALDATA)

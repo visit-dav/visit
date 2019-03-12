@@ -11,11 +11,12 @@
         CurrentPlot
       </Enum>
       <Enum name="ScalingMode">
-        False
-        True
+        Never
+        Auto
+        Always
       </Enum>
       <Field name="useXYLimits" label="Elevation height relative to XY limits?" type="enum" subtype="ScalingMode">
-        False
+        Auto
       </Field>
       <Field name="limitsMode" label="LimitsMode" type="enum" subtype="LimitsMode" enabler="useXYLimits:true">
         OriginalData

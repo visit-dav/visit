@@ -73,8 +73,9 @@ public:
     };
     enum ScalingMode
     {
-        False,
-        True
+        Never,
+        Auto,
+        Always
     };
 
     // These constructors are for objects of this class

@@ -124,12 +124,15 @@ QvisElevateWindow::CreateWindowContents()
     QHBoxLayout *useXYLimitsLayout = new QHBoxLayout(useXYLimits);
     useXYLimitsLayout->setMargin(0);
     useXYLimitsLayout->setSpacing(10);
-    QRadioButton *useXYLimitsScalingModeFalse = new QRadioButton(tr("False"), useXYLimits);
-    useXYLimitsButtonGroup->addButton(useXYLimitsScalingModeFalse,0);
-    useXYLimitsLayout->addWidget(useXYLimitsScalingModeFalse);
-    QRadioButton *useXYLimitsScalingModeTrue = new QRadioButton(tr("True"), useXYLimits);
-    useXYLimitsButtonGroup->addButton(useXYLimitsScalingModeTrue,1);
-    useXYLimitsLayout->addWidget(useXYLimitsScalingModeTrue);
+    QRadioButton *useXYLimitsScalingModeNever = new QRadioButton(tr("Never"), useXYLimits);
+    useXYLimitsButtonGroup->addButton(useXYLimitsScalingModeNever,0);
+    useXYLimitsLayout->addWidget(useXYLimitsScalingModeNever);
+    QRadioButton *useXYLimitsScalingModeAuto = new QRadioButton(tr("Auto"), useXYLimits);
+    useXYLimitsButtonGroup->addButton(useXYLimitsScalingModeAuto,1);
+    useXYLimitsLayout->addWidget(useXYLimitsScalingModeAuto);
+    QRadioButton *useXYLimitsScalingModeAlways = new QRadioButton(tr("Always"), useXYLimits);
+    useXYLimitsButtonGroup->addButton(useXYLimitsScalingModeAlways,2);
+    useXYLimitsLayout->addWidget(useXYLimitsScalingModeAlways);
     connect(useXYLimitsButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(useXYLimitsChanged(int)));
     mainLayout->addWidget(useXYLimits, 0,1);
@@ -251,7 +254,7 @@ QvisElevateWindow::UpdateWindow(bool doAll)
         switch(i)
         {
           case ElevateAttributes::ID_useXYLimits:
-            if (atts->GetUseXYLimits() == ElevateAttributes::ScalingMode::True)
+            if (atts->GetUseXYLimits() == ElevateAttributes::ScalingMode::Always)
             {
                 limitsMode->setEnabled(true);
                 if(limitsModeLabel)
@@ -263,7 +266,7 @@ QvisElevateWindow::UpdateWindow(bool doAll)
                 if(limitsModeLabel)
                     limitsModeLabel->setEnabled(false);
             }
-            if (atts->GetUseXYLimits() == ElevateAttributes::ScalingMode::True)
+            if (atts->GetUseXYLimits() == ElevateAttributes::ScalingMode::Always)
             {
                 scaling->setEnabled(true);
                 if(scalingLabel)
@@ -275,7 +278,7 @@ QvisElevateWindow::UpdateWindow(bool doAll)
                 if(scalingLabel)
                     scalingLabel->setEnabled(false);
             }
-            if (atts->GetUseXYLimits() == ElevateAttributes::ScalingMode::True)
+            if (atts->GetUseXYLimits() == ElevateAttributes::ScalingMode::Always)
             {
                 minFlag->setEnabled(true);
             }
@@ -283,7 +286,7 @@ QvisElevateWindow::UpdateWindow(bool doAll)
             {
                 minFlag->setEnabled(false);
             }
-            if (atts->GetUseXYLimits() == ElevateAttributes::ScalingMode::True)
+            if (atts->GetUseXYLimits() == ElevateAttributes::ScalingMode::Always)
             {
                 maxFlag->setEnabled(true);
             }

@@ -119,28 +119,29 @@ ElevateAttributes::LimitsMode_FromString(const std::string &s, ElevateAttributes
 //
 
 static const char *ScalingMode_strings[] = {
-"False", "True"};
+"Never", "Auto", "Always"
+};
 
 std::string
 ElevateAttributes::ScalingMode_ToString(ElevateAttributes::ScalingMode t)
 {
     int index = int(t);
-    if(index < 0 || index >= 2) index = 0;
+    if(index < 0 || index >= 3) index = 0;
     return ScalingMode_strings[index];
 }
 
 std::string
 ElevateAttributes::ScalingMode_ToString(int t)
 {
-    int index = (t < 0 || t >= 2) ? 0 : t;
+    int index = (t < 0 || t >= 3) ? 0 : t;
     return ScalingMode_strings[index];
 }
 
 bool
 ElevateAttributes::ScalingMode_FromString(const std::string &s, ElevateAttributes::ScalingMode &val)
 {
-    val = ElevateAttributes::False;
-    for(int i = 0; i < 2; ++i)
+    val = ElevateAttributes::Never;
+    for(int i = 0; i < 3; ++i)
     {
         if(s == ScalingMode_strings[i])
         {
@@ -168,7 +169,7 @@ ElevateAttributes::ScalingMode_FromString(const std::string &s, ElevateAttribute
 
 void ElevateAttributes::Init()
 {
-    useXYLimits = False;
+    useXYLimits = Auto;
     limitsMode = OriginalData;
     scaling = Linear;
     skewFactor = 1;
@@ -664,7 +665,7 @@ ElevateAttributes::SetFromNode(DataNode *parentNode)
         if(node->GetNodeType() == INT_NODE)
         {
             int ival = node->AsInt();
-            if(ival >= 0 && ival < 2)
+            if(ival >= 0 && ival < 3)
                 SetUseXYLimits(ScalingMode(ival));
         }
         else if(node->GetNodeType() == STRING_NODE)

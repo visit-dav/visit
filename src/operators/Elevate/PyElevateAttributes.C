@@ -76,15 +76,19 @@ PyElevateAttributes_ToString(const ElevateAttributes *atts, const char *prefix)
     std::string str;
     char tmpStr[1000];
 
-    const char *useXYLimits_names = "False, True";
+    const char *useXYLimits_names = "Never, Auto, Always";
     switch (atts->GetUseXYLimits())
     {
-      case ElevateAttributes::False:
-          SNPRINTF(tmpStr, 1000, "%suseXYLimits = %sFalse  # %s\n", prefix, prefix, useXYLimits_names);
+      case ElevateAttributes::Never:
+          SNPRINTF(tmpStr, 1000, "%suseXYLimits = %sNever  # %s\n", prefix, prefix, useXYLimits_names);
           str += tmpStr;
           break;
-      case ElevateAttributes::True:
-          SNPRINTF(tmpStr, 1000, "%suseXYLimits = %sTrue  # %s\n", prefix, prefix, useXYLimits_names);
+      case ElevateAttributes::Auto:
+          SNPRINTF(tmpStr, 1000, "%suseXYLimits = %sAuto  # %s\n", prefix, prefix, useXYLimits_names);
+          str += tmpStr;
+          break;
+      case ElevateAttributes::Always:
+          SNPRINTF(tmpStr, 1000, "%suseXYLimits = %sAlways  # %s\n", prefix, prefix, useXYLimits_names);
           str += tmpStr;
           break;
       default:
@@ -170,14 +174,14 @@ ElevateAttributes_SetUseXYLimits(PyObject *self, PyObject *args)
         return NULL;
 
     // Set the useXYLimits in the object.
-    if(ival >= 0 && ival < 2)
+    if(ival >= 0 && ival < 3)
         obj->data->SetUseXYLimits(ElevateAttributes::ScalingMode(ival));
     else
     {
         fprintf(stderr, "An invalid useXYLimits value was given. "
-                        "Valid values are in the range of [0,1]. "
+                        "Valid values are in the range of [0,2]. "
                         "You can also use the following names: "
-                        "False, True.");
+                        "Never, Auto, Always.");
         return NULL;
     }
 
@@ -481,10 +485,12 @@ PyElevateAttributes_getattr(PyObject *self, char *name)
 {
     if(strcmp(name, "useXYLimits") == 0)
         return ElevateAttributes_GetUseXYLimits(self, NULL);
-    if(strcmp(name, "False") == 0)
-        return PyInt_FromLong(long(ElevateAttributes::False));
-    if(strcmp(name, "True") == 0)
-        return PyInt_FromLong(long(ElevateAttributes::True));
+    if(strcmp(name, "Never") == 0)
+        return PyInt_FromLong(long(ElevateAttributes::Never));
+    if(strcmp(name, "Auto") == 0)
+        return PyInt_FromLong(long(ElevateAttributes::Auto));
+    if(strcmp(name, "Always") == 0)
+        return PyInt_FromLong(long(ElevateAttributes::Always));
 
     if(strcmp(name, "limitsMode") == 0)
         return ElevateAttributes_GetLimitsMode(self, NULL);
