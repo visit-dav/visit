@@ -136,9 +136,14 @@ avtElevateFilter::SetAtts(const AttributeGroup *a)
     sf_atts.SetMin(atts.GetMin());
     sf_atts.SetMax(atts.GetMax());
     sf_atts.SetVariable(atts.GetVariable());
-    sf_atts.SetUseXYLimits(atts.GetUseXYLimits());
-    // rusu1 - This is where the code is having some issues. Looks like we have an automatic casting from int to bool,
-    // which is setting the attribute in sf_atts incorrectly.
+    if (atts.GetUseXYLimits() == ElevateAttributes::ScalingMode::Always)
+    {
+    	sf_atts.SetUseXYLimits(true);
+    }
+    else
+    {
+    	sf_atts.SetUseXYLimits(false);
+    }
     sf_atts.SetGenerateNodalOutput(false);
 
     surface_filter = new avtSurfaceFilter(&sf_atts);
