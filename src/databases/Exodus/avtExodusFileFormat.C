@@ -1120,7 +1120,7 @@ MakeVTKDataArrayByTakingOwnershipOfNCVarData(nc_type type,
             }
             vtkUnsignedLongLongArray *arr = vtkUnsignedLongLongArray::New();
             arr->SetNumberOfComponents(num_comps);
-            arr->SetArray((uint64_t*)buf, num_comps * num_vals, SAVE_ARRAY, VTK_DA_FREE);
+            arr->SetArray((unsigned long long*)buf, num_comps * num_vals, SAVE_ARRAY, VTK_DA_FREE);
             return arr;
         }
 #endif
