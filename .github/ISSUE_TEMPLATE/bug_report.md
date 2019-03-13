@@ -11,12 +11,12 @@ assignees: ''
 A clear and concise description of what the bug is.
 
 **Helpful additional information**
-(*Add X inside the boxes or click them after submitting ticket*)
+(*Please click check boxes AFTER submitting ticket*)
 - [ ] Did VisIt crash?
 - [ ] Did you get wrong results?
 
 **Severity**
-- [ ] High - ruins user productivity; no know mitigation
+- [ ] High - ruins user productivity; no known mitigation
 - [ ] Medium - partially degrades user productivity; not easily mitigated
 - [ ] Low - little or no impact on user productivity; easily mitigated
 
@@ -37,8 +37,12 @@ Steps to reproduce the behavior. For example:
 ### Expected behavior
 A clear and concise description of what you expected to happen.
 
-### Screenshots
-If applicable, add screenshots to help explain your problem.
+### Attachments
+* Can you reproduce the bug on our test data?
+  * If so, which file?
+  * If not, access to your data would be very helpful. If the data set is small, please zip and upload it as an attachment. If it is large, please provide instructions for how we can contact you to obtain this data.
+* Please attach a (zipped) sessionfile to easily reproduce (In the viewer, use File->Save Session).
+* Please attach any screenshots relevant to understanding the issue.
 
 ### Desktop
  - OS and version: [e.g. Ubuntu 14.04]
@@ -47,3 +51,4 @@ If applicable, add screenshots to help explain your problem.
 
 ### Additional context
 Add any other context about the problem here. Attach any (zipped) relevant files, such as data, configurations, sessionfiles, etc.
+

@@ -7,13 +7,18 @@ assignees: ''
 
 ---
 
-### Describe what needs to be documented
-A clear and concise description of what you want to happen.
+### Describe what needs to be documented.
+A clear and concise description of what you would like to see.
 
-- [ ] Is documentation missing?
-- [ ] Do we need need to update already existing documentation?
-(*Add X inside the boxes or click them after submitting ticket*)
+### Is the documentation missing?
+If so, please describe where have you looked for the documentation and where you expect to see it.
+
+### Is the documentation there but needs improvement?
+
+   *Please provide the url of the documentation.*
+
 
 
 ### Additional context
-Add any other context or screenshots about the feature request here.
+Add any other context or screenshots about the desired documentation.
+
