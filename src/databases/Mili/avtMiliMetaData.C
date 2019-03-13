@@ -1426,6 +1426,10 @@ avtMiliMetaData::GetVarMDIdxByPath(const char *vPath)
 //      Add subrecord information, and tell an associated variable
 //      where to find it. 
 //
+//      IMPORTANT: this method assumes that the subrecord ids are added
+//          sequentially. This method SHOULD NOT be used for adding 
+//          subrecord ids in non-sequential order. 
+//
 //  Arguments: 
 //      varIdx    The index of the associated variable. 
 //      dom       The domain of interest. 

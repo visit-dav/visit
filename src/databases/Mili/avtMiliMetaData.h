@@ -194,7 +194,7 @@ class MiliVariableMetaData
     int                       componentDims;
  
     //
-    // Subrecord info
+    // Subrecord ids
     //
     vector< vector<int> >     SRIds;
 

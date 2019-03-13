@@ -1081,10 +1081,13 @@ avtMiliFileFormat::ReadMesh(int dom)
                     switch (miliCellTypes[i])
                     {
                         case M_TRUSS:
+                        {
                             datasets[dom][meshId]->InsertNextCell(VTK_LINE,
                                                      connCount, verts);
                             break;
+                        }
                         case M_BEAM:
+                        {
                             //
                             // Beams are lines that have a third point to 
                             // define the normal. Since we don't need to 
@@ -1093,31 +1096,67 @@ avtMiliFileFormat::ReadMesh(int dom)
                             datasets[dom][meshId]->InsertNextCell(VTK_LINE,
                                                      2, verts);
                             break;
+                        }
                         case M_TRI:
+                        {
                             datasets[dom][meshId]->InsertNextCell(VTK_TRIANGLE,
                                                      connCount, verts);
                             break;
+                        }
                         case M_QUAD:
+                        {
                             datasets[dom][meshId]->InsertNextCell(VTK_QUAD,
                                                      connCount, verts);
                             break;
+                        }
                         case M_TET:
+                        {
                             datasets[dom][meshId]->InsertNextCell(VTK_TETRA,
                                                      connCount, verts);
                             break;
+                        }
                         case M_PYRAMID:
+                        {
                             datasets[dom][meshId]->InsertNextCell(VTK_PYRAMID,
                                                      connCount, verts);
                             break;
+                        }
                         case M_WEDGE:
+                        {
                             datasets[dom][meshId]->InsertNextCell(VTK_WEDGE,
                                                      connCount, verts);
                             break;
+                        }
                         case M_HEX:
-                            if (connPtr[2] == connPtr[3] && 
-                                connPtr[4] == connPtr[5] &&
-                                connPtr[5] == connPtr[6] && 
-                                connPtr[6] == connPtr[7])
+                        {
+                            //
+                            // If all of the node ids are equal, this is 
+                            // actually a particle (Mili hack). 
+                            //
+                            bool isParticle = true;
+                            int prevNode    = connPtr[0];
+                            for (int nIdx = 0; nIdx < 8; ++nIdx)
+                            {
+                                if (prevNode != connPtr[nIdx])
+                                {
+                                    isParticle = false;
+                                    break;
+                                }
+                                prevNode = connPtr[nIdx];
+                            }
+                            
+                            if (isParticle)
+                            {
+                                vtkIdType vert[1];
+                                vert[0] = connPtr[0];
+                                datasets[dom][meshId]->InsertNextCell(
+                                                         VTK_VERTEX,
+                                                         1, vert);
+                            }
+                            else if (connPtr[2] == connPtr[3] && 
+                                     connPtr[4] == connPtr[5] &&
+                                     connPtr[5] == connPtr[6] && 
+                                     connPtr[6] == connPtr[7])
                             {
                                 vtkIdType tet[4];
                                 tet[0] = verts[0]; tet[1] = verts[1];
@@ -1133,10 +1172,20 @@ avtMiliFileFormat::ReadMesh(int dom)
                                                          connCount, verts);
                             }
                             break;
+                        }
+                        case M_PARTICLE:
+                        {
+                            datasets[dom][meshId]->InsertNextCell(
+                                                     VTK_VERTEX,
+                                                     connCount, verts);
+                            break;
+                        }
                         default:
+                        {
                             debug1 << "Unable to add cell of type "
                                 << miliCellTypes[i] << endl;
                             break;
+                        }
                     }
                     connPtr += connCount;
                 }
@@ -1205,62 +1254,74 @@ avtMiliFileFormat::PopulateSubrecordInfo(int dom, int meshId)
 
     if (rval != OK)
     {
-        debug1 << "Cannot query mili family! This is bad..." << endl;
+        debug1 << "Cannot query QTY_SREC_FMTS! This is bad..." << endl;
+        return;
+    }
+    else if (srec_qty > 1) 
+    {
+        //
+        // According to Kevin, the state record format count is never
+        // actually greater than 1. 
+        //
+        debug1 << "Encountered multiple state record formats! Is this in "
+               << "use now???";
+        char msg[1024];
+        sprintf(msg, "The Mili plugin is not set-up to handle multiple ",
+            "state record formats. Bailing.");
+        EXCEPTION1(ImproperUseException, msg);
+    }
+
+    int sRFId     = 0;
+    int substates = 0;
+    rval = mc_query_family(dbid[dom], QTY_SUBRECS, (void *) &sRFId, NULL,
+                           (void *) &substates);
+    
+    if (rval != OK)
+    {
+        debug1 << "Cannot query QTY_SUBRECS! This is bad..." << endl;
         return;
     }
 
-    for (int i = 0 ; i < srec_qty ; i++)
+    for (int srId = 0 ; srId < substates ; srId++)
     {
-        int substates = 0;
-        rval = mc_query_family(dbid[dom], QTY_SUBRECS, (void *) &i, NULL,
-                               (void *) &substates);
-       
+        Subrecord sr;
+        memset(&sr, 0, sizeof(sr));
+        rval = mc_get_subrec_def(dbid[dom], sRFId, srId, &sr);
+
         if (rval != OK)
         {
             continue;
         }
-
-        for (int srId = 0 ; srId < substates ; srId++)
+        
+        for (int k = 0 ; k < sr.qty_svars ; k++)
         {
-            Subrecord sr;
-            memset(&sr, 0, sizeof(sr));
-            rval = mc_get_subrec_def(dbid[dom], i, srId, &sr);
+             State_variable sv;
+             memset(&sv, 0, sizeof(sv));
+             mc_get_svar_def(dbid[dom], sr.svar_names[k], &sv);
+             
+             int MDVarIdx = -1;
+             MDVarIdx     = miliMetaData[meshId]->
+                 GetVarMDIdxByShortName(sv.short_name); 
+             if (MDVarIdx != -1)
+             {
+                 miliMetaData[meshId]->AddVarSubrecInfo(MDVarIdx,
+                                                        dom,
+                                                        srId,
+                                                        &sr);
+             }
+             
+             //
+             // Assume all desired variables are in the mili file. 
+             //
+             if (MDVarIdx == -1)
+             {
+                 continue;
+             }
 
-            if (rval != OK)
-            {
-                continue;
-            }
-            
-            for (int k = 0 ; k < sr.qty_svars ; k++)
-            {
-                 State_variable sv;
-                 memset(&sv, 0, sizeof(sv));
-                 mc_get_svar_def(dbid[dom], sr.svar_names[k], &sv);
-                 
-                 int MDVarIdx = -1;
-                 MDVarIdx     = miliMetaData[meshId]->
-                     GetVarMDIdxByShortName(sv.short_name); 
-                 if (MDVarIdx != -1)
-                 {
-                     miliMetaData[meshId]->AddVarSubrecInfo(MDVarIdx,
-                                                            dom,
-                                                            srId,
-                                                            &sr);
-                 }
-                 
-                 //
-                 // Assume all desired variables are in the mili file. 
-                 //
-                 if (MDVarIdx == -1)
-                 {
-                     continue;
-                 }
-
-                 mc_cleanse_st_variable(&sv);
-            }
-
-            mc_cleanse_subrec(&sr);
+             mc_cleanse_st_variable(&sv);
         }
+
+        mc_cleanse_subrec(&sr);
     }
 }
 
