@@ -1,4 +1,4 @@
-.. _Lineout_gui:
+.. _Lineout:
 
 Lineout
 -------
