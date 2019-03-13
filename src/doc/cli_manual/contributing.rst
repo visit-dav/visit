@@ -27,16 +27,37 @@ Steps to update the CLI Manual
 #. Build and run the VisIt_ cli and assure yourself ``help(<your-new-func-doc>)``
    produces the desired output 
 #. Run the ``sphinx_cli_extractor.py`` tool producing new ``attributes.rst``,
-   ``events.rst`` and ``functions.rst`` files. To do so, you need to tell it
-   where to find VisIt_'s ``site-packages`` Python directory. On my OSX machine,
+   ``events.rst`` and ``functions.rst`` files. To do so, you may need to use
+   a combination of the ``PATH`` and ``PYTHONPATH`` environment variables to tell the
+   ``sphinx_cli_extractor.py`` script where to find the VisIt_ module, ``visit`` in
+   VisIt_'s ``site-packages`` and where to find the Python installation that that
+   module is expecting to run with. In addition, you may need to use the ``PTHONHOME``
+   environment variable to tell VisIt_'s ``visit`` module where to find standard Python
+   libraries. For example, to use an installed version of VisIt_ on my OSX machine,
    the command would look like...
 
    .. code-block:: shell
 
-     env VISIT_SITE_PACKAGES=/Applications/VisIt.app/Contents/Resources/2.13.3/darwin-x86_64/lib/python/lib/python2.7/site-packages/ ./sphinx_cli_extractor.py
+     env PATH=/Applications/VisIt.app/Contents/Resources/2.13.3/darwin-x86_64/bin:/Applications/VisIt.app/Contents/Resources/bin:$PATH \
+     PYTHONHOME=/Applications/VisIt.app//Contents/Resources/2.13.3/darwin-x86_64/lib/python \
+     PYTHONPATH=/Applications/VisIt.app/Contents/Resources/2.13.3/darwin-x86_64/lib/site-packages \
+     ./sphinx_cli_extractor.py 
 
-#. Do a local build of the documentation here and confirm there are no errors
-   in the build
+   Note that the above command would produce CLI documentation for version 2.13.3 of VisIt_.
+   Or, to use a current build of VisIt_ on which you are working on documentation related
+   to changes you have made to VisIt_, the command would look something like...
+
+   .. code-block:: shell
+
+     env PATH=../../build/third_party/python/2.7.14/i386-apple-darwin17_clang/bin:../../build/visit/build/bin:$PATH \
+     PYTHONPATH=../../build/visit/build/lib/site-packages/ \
+     ./sphinx_cli_extractor.py 
+
+   The whole process only takes a few seconds.
+
+#. Assuming you succesfully run the above command, producing new ``attributes.rts``,
+   ``events.rst`` and ``functions.rst`` files, then do a local build of the
+   documentation here and confirm there are no errors in the build
 
    .. code-block:: shell
 

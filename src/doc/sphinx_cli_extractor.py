@@ -22,21 +22,8 @@
 #
 ############################################################################################
 
-import os, sys
-###
-### SET UP SCRIPT SO IT CAN RUN ON YOUR MACHINE.  THIS WILL CHANGE FROM PLATFORM TO PLATFORM
-### AND RELEASE TO RELEASE
-###
-#sys.path.insert(0, "/usr/gapps/visit/2.13.1/linux-x86_64/lib/site-packages/")
-#sys.path.insert(0, "/Users/miller86/visit/thirdparty_shared/3.0/python/2.7.11/i386-apple-darwin15_clang/lib/python2.7/site-packages/")
-if os.environ.get('VISIT_SITE_PACKAGES'):
-    sys.path.insert(0, os.environ.get('VISIT_SITE_PACKAGES'))
-else:
-    sys.path.insert(0, "/usr/gapps/visit/current/linux-x86_64/lib/site-packages")
-
-import re
+import os, sys, re
 import visit
-import argparse
 
 ################# CLASSES #################
 
@@ -388,7 +375,8 @@ class ArgumentsContainer(object):
         #
         if add_on.islower() and add_on[0] != ' ':
             add_on_cpy = ' ' + add_on
-        self.descriptions[self.cur_idx] += add_on_cpy
+        if self.cur_idx > -1:
+            self.descriptions[self.cur_idx] += add_on_cpy
 
     def add_argument(self, name, description=''):
         """
@@ -536,7 +524,7 @@ class DescriptionContainer(object):
         output += self.description
 
         if self.table.table_rows != []:
-            output += "|\n\n%s\n" % (self.table.build_sphinx_table(title=True))
+            output += "\n\n%s\n" % (self.table.build_sphinx_table(title=True))
 
         return output
 
@@ -731,8 +719,7 @@ def functions_to_sphinx(funclist):
         #
         # Extract documentation for this function.
         #
-        #visitStr="visit."+func
-        visitStr=func
+        visitStr="visit."+func
         fulldoc = eval(visitStr).__doc__
 
         #
@@ -750,7 +737,6 @@ def functions_to_sphinx(funclist):
 
         func_name  = str(func)
         full_doc   = full_doc[1:]
-        print("full_doc is ", full_doc)
         if len(full_doc) == 0:
             continue
         start      = 0
@@ -883,8 +869,7 @@ def attributes_to_sphinx(atts):
     
         table       = AttributesTable(attr) 
 
-        #visitString = "visit."+attr_names[attr]
-        visitString = attr_names[attr]
+        visitString = "visit."+attr_names[attr]
         alist       = str(eval(visitString)()).splitlines()
         if not alist:
             print >> sys.stderr, "** Warning: function "+attr_names[attr]+" does not return any attributes"
@@ -934,19 +919,13 @@ def cli_events_to_sphinx(event_names):
 
 if __name__ == '__main__':
 
-    parser = argparse.ArgumentParser()
-    parser.add_argument("visit_bin_path", type=str, 
-                         help="path to visit's bin. Ex: /usr/home/VisIt/src/bin")
-    args    = parser.parse_args()
-    os.environ["PATH"] += os.pathsep + args.visit_bin_path
-
-    func_pre_file = open("preambles/functions_preamble", "r")
-    atts_pre_file = open("preambles/attributes_preamble", "r")
-    cli_pre_file  = open("preambles/events_preamble", "r")
+    func_pre_file = open("cli_manual/preambles/functions_preamble", "r")
+    atts_pre_file = open("cli_manual/preambles/attributes_preamble", "r")
+    cli_pre_file  = open("cli_manual/preambles/events_preamble", "r")
   
-    func_file     = open("functions.rst", "w")
-    atts_file     = open("attributes.rst", "w")
-    cli_file      = open("events.rst", "w")
+    func_file     = open("cli_manual/functions.rst", "w")
+    atts_file     = open("cli_manual/attributes.rst", "w")
+    cli_file      = open("cli_manual/events.rst", "w")
 
     func_preamble = ''.join(func_pre_file.readlines())
     atts_preamble = ''.join(atts_pre_file.readlines())
@@ -969,9 +948,9 @@ if __name__ == '__main__':
     # the Eval* functions in the visit-namespace.
     #
     
-#    visit.AddArgument("-nowin")
-#    visit.AddArgument("-noconfig")
-#    visit.Launch()
+    visit.AddArgument("-nowin")
+    visit.AddArgument("-noconfig")
+    visit.Launch()
     print >> sys.stderr, "**\n**  Running VisIt", visit.Version(), "\n**"
     
     for func in dir(visit):
