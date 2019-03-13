@@ -61,7 +61,7 @@ configure_file(
     "${CMAKE_CURRENT_BINARY_DIR}/conf.py"
     @ONLY)
  
-add_custom_target(gui_manual ALL
+add_custom_target(user_manuals ALL
     ${SPHINX_EXECUTABLE}
         -a -q -b html
         "${CMAKE_CURRENT_SOURCE_DIR}"
