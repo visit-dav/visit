@@ -15,5 +15,8 @@ echo "cd ../../../scripts/ci/docker"
 cd ../../../scripts/ci/docker
 
 # exec docker build to create image
+# note: --squash requires docker runtime with experimental 
+# docker features enabled. It combines all the layers into
+# a more compact final image to save disk space.
 echo "docker build -t visit-ci-develop:current ."
 docker build -t visit-ci-develop:current . --squash
