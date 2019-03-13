@@ -15,10 +15,10 @@ A clear and concise description of what the bug is.
 - [ ] Did VisIt crash?
 - [ ] Did you get wrong results?
 
-**Severity**
-- [ ] High - ruins user productivity; no known mitigation
-- [ ] Medium - partially degrades user productivity; not easily mitigated
-- [ ] Low - little or no impact on user productivity; easily mitigated
+**Impact**
+- [ ] High - User productivity significantly degraded
+- [ ] Medium - User productivity partially degraded
+- [ ] Low - User productivity trivially degraded
 
 **Likelihood**
 - [ ] High - occurrence is not specific to platform, data, config, a combination of operators, queries, etc.
