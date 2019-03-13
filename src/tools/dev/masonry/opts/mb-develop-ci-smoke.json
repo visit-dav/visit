@@ -1,0 +1,23 @@
+{"bootstrap_visit":
+ {"version": "develop",
+ "build_types": [],
+ "arch":   "ci",
+ "make_nthreads": 4, 
+ "git": {"mode":"https",
+         "depth":"1"},
+ "build_visit":  { "cmake_ver": "3.9.3",
+                    "args":"--no-thirdparty",
+                    "comments": "setup for travis ci smoke testing",
+          "libs":["cmake",
+                  "python",
+                  "vtk",
+                  "qt",
+                  "qwt",
+                  "llvm",
+                  "mesagl",
+                  "hdf5",
+                  "silo",
+                  "szip",
+                  "zlib",
+                  "mpich"]}
+}}
