@@ -38,6 +38,17 @@ if '-b' in sys.argv and 'spelling' in sys.argv:
 extensions = ['sphinx.ext.mathjax']
 if BuilderIsSpelling:
     extensions += ['sphinxcontrib.spelling']
+    spelling_filters = []
+    has_spelling_filters = False
+    sys.path.append(os.getcwd())
+    try:
+        from spelling_filters import VisItPythonSymbolFilter
+        has_spelling_filters = True
+    except:
+        print "Warning: Custom spelling filters are disabled"
+        pass
+    if has_spelling_filters:
+        spelling_filters += [VisItPythonSymbolFilter]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -63,7 +74,7 @@ author = u'LLNL'
 # built documents.
 #
 # The short X.Y version.
-version = u'2.11'
+#version = u'2.11'
 # The full version, including alpha/beta/rc tags.
 release = u'2.11'
 
@@ -134,9 +145,14 @@ rst_epilog = """
 # Add any paths that contain custom themes here, relative to this directory.
 #html_theme_path = ["_themes"]
 
+if not os.environ.get('READTHEDOCS'):
+    html_theme = 'sphinx_rtd_theme'
+    html_theme_path = ["_themes"]
+    version = "local build"
+
 # The name for this set of Sphinx documents.
 # "<project> v<release> documentation" by default.
-#html_title = u'VisIt User Manual v2.11'
+#html_title = u'VisIt User Manual'
 
 # A shorter title for the navigation bar.  Default is the same as html_title.
 #html_short_title = None

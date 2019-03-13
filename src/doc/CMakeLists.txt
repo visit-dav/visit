@@ -66,4 +66,4 @@ add_custom_target(gui_manual ALL
         -a -q -b html
         "${CMAKE_CURRENT_SOURCE_DIR}"
         "${SPHINX_HTML_DIR}"
-    COMMENT "Building Sphinx-HTML documentation for GUI")
+    COMMENT "Building Sphinx-HTML documentation for GUI and CLI")
