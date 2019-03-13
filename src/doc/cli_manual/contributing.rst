@@ -16,13 +16,9 @@ restructured text and then generate the contents of ``../../visitpy/common/Metho
 from the restructured text.
 
 The documentation here is then generated from the ``MethodDoc.C`` file using the script
-``../sphinx_cli_extractor.py``. That script produces the following files...
-
-* ``attributes.rst``
-* ``events.rst``
-* ``functions.rst``
-
-The other ``.rst`` files here are manually managed and can be modified as needed.
+``../sphinx_cli_extractor.py``. That script produces ``attributes.rst``, ``events.rst``
+and ``functions.rst`` files. The other ``.rst`` files here are manually managed and can
+be modified normally as needed.
 
 Steps to update the CLI Manual
 ------------------------------
@@ -35,17 +31,17 @@ Steps to update the CLI Manual
    where to find VisIt_'s ``site-packages`` Python directory. On my OSX machine,
    the command would look like...
 
-.. code-block:: shell
+   .. code-block:: shell
 
-    env VISIT_SITE_PACKAGES=/Applications/VisIt.app/Contents/Resources/2.13.3/darwin-x86_64/lib/python/lib/python2.7/site-packages/ ./sphinx_cli_extractor.py
+     env VISIT_SITE_PACKAGES=/Applications/VisIt.app/Contents/Resources/2.13.3/darwin-x86_64/lib/python/lib/python2.7/site-packages/ ./sphinx_cli_extractor.py
 
 #. Do a local build of the documentation here and confirm there are no errors
    in the build
 
-.. code-block:: shell
+   .. code-block:: shell
 
-    sphinx-build -b html . _build -a
+     sphinx-build -b html . _build -a
 
-#. Add all the changes files to a commit and push to GitHub
+#. Add all the changed files to a commit and push to GitHub
 #. The GitHub integration with ReadTheDocs should result in your documentation
-   updates going live a short while (<15 mins) later.
+   updates going live a short while (<15 mins) after it has been merged to develop.
