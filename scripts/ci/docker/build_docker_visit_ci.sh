@@ -16,4 +16,4 @@ cd ../../../scripts/ci/docker
 
 # exec docker build to create image
 echo "docker build -t visit-ci-develop:current ."
-docker build -t visit-ci-develop:current .
+docker build -t visit-ci-develop:current . --squash
