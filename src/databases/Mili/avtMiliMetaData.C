@@ -443,12 +443,10 @@ MiliVariableMetaData::PrintSelf(void)
 MiliClassMetaData::MiliClassMetaData(string sName,
                                      string lName,
                                      int scID,
-                                     int totalNEl,
                                      int numDomains)
 {
     shortName        = sName;
     longName         = lName;
-    totalNumElements = totalNEl;
     superClassId     = scID;
     DetermineType();
     numDomainElements.resize(numDomains, 0);
@@ -1457,7 +1455,7 @@ avtMiliMetaData::AddVarSubrecInfo(int varIdx,
             // Check if we've added the info for this subrecord
             // yet. SR IDs map to their index.  
             //
-            if (srId >= subrecInfo.size())
+            if (srId >= subrecInfo[dom].nSR)
             {
                 AddSubrecInfo(dom, 
                               SR->qty_objects,
@@ -1505,9 +1503,9 @@ avtMiliMetaData::AddVarSubrecInfo(int varIdx,
 // ****************************************************************************
 
 void
-avtMiliMetaData::AddSubrecInfo(int dom, 
-                               int nElems,
-                               int nDB,
+avtMiliMetaData::AddSubrecInfo(int  dom, 
+                               int  nElems,
+                               int  nDB,
                                int *DBRanges)
 {
     subrecInfo[dom].nSR++;

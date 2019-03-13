@@ -230,7 +230,6 @@ class MiliClassMetaData
                                       MiliClassMetaData(string,
                                                         string,
                                                         int,
-                                                        int,
                                                         int);
                                      ~MiliClassMetaData(void);
 
@@ -242,9 +241,6 @@ class MiliClassMetaData
 
     string                            GetShortName(void)
                                         { return shortName; };
-
-    int                               GetTotalNumElements(void)
-                                        { return totalNumElements; };
 
     void                              SetNumElements(int, int);
     int                               GetNumElements(int);
@@ -268,7 +264,6 @@ class MiliClassMetaData
 
     string                            longName;
     string                            shortName;
-    int                               totalNumElements;
     int                               superClassId;
 
     vector<string>                    variables;

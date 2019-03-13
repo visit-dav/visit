@@ -137,7 +137,6 @@ class avtMiliFileFormat : public avtMTMDFileFormat
 
     char                 *famroot;
     char                 *fampath;
-    char                  filepath[512];
 
     int                   nTimesteps;
     int                   nDomains;
