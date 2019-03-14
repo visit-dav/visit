@@ -202,6 +202,9 @@ avtMeshFilter::~avtMeshFilter()
 //    Added show internal check to draw opaque polys to fix issue if using vtk
 //    ospray render passes
 //
+//    Kathleen Biagas, Thu Mar 14 14:41:12 PDT 2019
+//    Remove Line cells from opaquePolys.
+//
 // ****************************************************************************
 
 avtDataTree_p
@@ -272,6 +275,11 @@ avtMeshFilter::ExecuteDataTree(avtDataRepresentation *inDR)
             geometryFilter->SetInputData(revisedInput);
             geometryFilter->Update();
             opaquePolys = geometryFilter->GetOutput();
+        }
+        // don't want line cells showing up in our rendering of the surfaces as opaque.
+        if (opaquePolys->GetNumberOfLines() > 0)
+        {
+            opaquePolys->SetLines(NULL);
         }
     }
 

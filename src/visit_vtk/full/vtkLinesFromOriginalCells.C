@@ -113,6 +113,9 @@ vtkLinesFromOriginalCells::~vtkLinesFromOriginalCells()
 //    Kathleen Biagas, Wed Sep 10 14:36:03 PDT 2014
 //    Make a final attempt with vtkExtractEdges if other logic yields no cells.
 //
+//    Kathleen Biagas, Thu Mar 14 14:38:25 PDT 2019
+//    Add VTK_LINE cells if they don't duplicate cell edges.
+//
 // ****************************************************************************
 int vtkLinesFromOriginalCells::RequestData(
   vtkInformation *vtkNotUsed(request),
@@ -213,7 +216,7 @@ int vtkLinesFromOriginalCells::RequestData(
       {
           edge = cell->GetEdge(edgeNum);
           numEdgePts = edge->GetNumberOfPoints();
-      
+
           for ( i=0; i < numEdgePts; i++, pt1=pt2, pts[0]=pts[1] )
           {
               pt2 = edge->PointIds->GetId(i);
@@ -255,6 +258,22 @@ int vtkLinesFromOriginalCells::RequestData(
               } // if unique edge
           } // for all edge points
       }//for all edges of cell
+
+      // Lines have 0 edges, so won't be processed by above logic.
+      if(cell->GetCellType() == VTK_LINE)
+      {
+          // should these always be inserted?
+          pt1 = cell->GetPointId(0);
+          pt2 = cell->GetPointId(1);
+          if ( edgeTable->IsEdge(pt1,pt2) == -1 )
+          {
+              edgeTable->InsertEdge(pt1, pt2);
+              pts[0] = pt1;
+              pts[1] = pt2;
+              newId = newLines->InsertNextCell(2,pts);
+              outCD->CopyData(inCD, cellNum, newId);
+          }
+      }
   }//for all cells
 
   if (newLines->GetNumberOfCells() > 0)
