@@ -114,6 +114,44 @@ SurfaceFilterAttributes::LimitsMode_FromString(const std::string &s, SurfaceFilt
     return false;
 }
 
+//
+// Enum conversion methods for SurfaceFilterAttributes::ScalingMode
+//
+
+static const char *ScalingMode_strings[] = {
+"Never", "Auto", "Always"
+};
+
+std::string
+SurfaceFilterAttributes::ScalingMode_ToString(SurfaceFilterAttributes::ScalingMode t)
+{
+    int index = int(t);
+    if(index < 0 || index >= 3) index = 0;
+    return ScalingMode_strings[index];
+}
+
+std::string
+SurfaceFilterAttributes::ScalingMode_ToString(int t)
+{
+    int index = (t < 0 || t >= 3) ? 0 : t;
+    return ScalingMode_strings[index];
+}
+
+bool
+SurfaceFilterAttributes::ScalingMode_FromString(const std::string &s, SurfaceFilterAttributes::ScalingMode &val)
+{
+    val = SurfaceFilterAttributes::Never;
+    for(int i = 0; i < 3; ++i)
+    {
+        if(s == ScalingMode_strings[i])
+        {
+            val = (ScalingMode)i;
+            return true;
+        }
+    }
+    return false;
+}
+
 // ****************************************************************************
 // Method: SurfaceFilterAttributes::SurfaceFilterAttributes
 //
@@ -139,7 +177,7 @@ void SurfaceFilterAttributes::Init()
     min = 0;
     max = 1;
     zeroFlag = false;
-    useXYLimits = true;
+    useXYLimits = Auto;
     generateNodalOutput = true;
 
     SurfaceFilterAttributes::SelectAll();
@@ -586,7 +624,7 @@ SurfaceFilterAttributes::CreateNode(DataNode *parentNode, bool completeSave, boo
     if(completeSave || !FieldsEqual(ID_useXYLimits, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("useXYLimits", useXYLimits));
+        node->AddNode(new DataNode("useXYLimits", ScalingMode_ToString(useXYLimits)));
     }
 
     if(completeSave || !FieldsEqual(ID_generateNodalOutput, &defaultObject))
@@ -678,7 +716,21 @@ SurfaceFilterAttributes::SetFromNode(DataNode *parentNode)
     if((node = searchNode->GetNode("variable")) != 0)
         SetVariable(node->AsString());
     if((node = searchNode->GetNode("useXYLimits")) != 0)
-        SetUseXYLimits(node->AsBool());
+    {
+        // Allow enums to be int or string in the config file
+        if(node->GetNodeType() == INT_NODE)
+        {
+            int ival = node->AsInt();
+            if(ival >= 0 && ival < 3)
+                SetUseXYLimits(ScalingMode(ival));
+        }
+        else if(node->GetNodeType() == STRING_NODE)
+        {
+            ScalingMode value;
+            if(ScalingMode_FromString(node->AsString(), value))
+                SetUseXYLimits(value);
+        }
+    }
     if((node = searchNode->GetNode("generateNodalOutput")) != 0)
         SetGenerateNodalOutput(node->AsBool());
 }
@@ -751,7 +803,7 @@ SurfaceFilterAttributes::SetVariable(const std::string &variable_)
 }
 
 void
-SurfaceFilterAttributes::SetUseXYLimits(bool useXYLimits_)
+SurfaceFilterAttributes::SetUseXYLimits(SurfaceFilterAttributes::ScalingMode useXYLimits_)
 {
     useXYLimits = useXYLimits_;
     Select(ID_useXYLimits, (void *)&useXYLimits);
@@ -828,10 +880,10 @@ SurfaceFilterAttributes::GetVariable()
     return variable;
 }
 
-bool
+SurfaceFilterAttributes::ScalingMode
 SurfaceFilterAttributes::GetUseXYLimits() const
 {
-    return useXYLimits;
+    return ScalingMode(useXYLimits);
 }
 
 bool
@@ -918,7 +970,7 @@ SurfaceFilterAttributes::GetFieldType(int index) const
     case ID_max:                 return FieldType_double;
     case ID_zeroFlag:            return FieldType_bool;
     case ID_variable:            return FieldType_variablename;
-    case ID_useXYLimits:         return FieldType_bool;
+    case ID_useXYLimits:         return FieldType_enum;
     case ID_generateNodalOutput: return FieldType_bool;
     default:  return FieldType_unknown;
     }
@@ -953,7 +1005,7 @@ SurfaceFilterAttributes::GetFieldTypeName(int index) const
     case ID_max:                 return "double";
     case ID_zeroFlag:            return "bool";
     case ID_variable:            return "variablename";
-    case ID_useXYLimits:         return "bool";
+    case ID_useXYLimits:         return "enum";
     case ID_generateNodalOutput: return "bool";
     default:  return "invalid index";
     }

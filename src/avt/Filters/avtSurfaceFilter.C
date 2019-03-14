@@ -394,7 +394,7 @@ avtSurfaceFilter::ExecuteData(avtDataRepresentation *inDR)
 
     bool doLog = false;
     bool doSkew = false;
-    if (atts.GetUseXYLimits())
+    if (atts.GetUseXYLimits() == SurfaceFilterAttributes::ScalingMode::Always)
     {
         doLog = atts.GetScaling() == SurfaceFilterAttributes::Log;
         doSkew = atts.GetScaling() == SurfaceFilterAttributes::Skew;
@@ -817,7 +817,7 @@ avtSurfaceFilter::CalculateScaleValues(double *de, double *se)
         dZ = max - min;
     dXY = (dX > dY ? dX : dY);
 
-    if (atts.GetUseXYLimits() == false || 0. == dZ)
+    if (atts.GetUseXYLimits() == SurfaceFilterAttributes::ScalingMode::Never || 0. == dZ)
     {
         Ms = 1.;
         Bs = 0.;

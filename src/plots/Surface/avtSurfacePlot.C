@@ -248,7 +248,7 @@ avtSurfacePlot::ApplyOperators(avtDataObject_p input)
     sf_atts.SetMin(atts.GetMin());
     sf_atts.SetMax(atts.GetMax());
     sf_atts.SetVariable("default");
-    sf_atts.SetUseXYLimits(true);
+    sf_atts.SetUseXYLimits(SurfaceFilterAttributes::ScalingMode::Always);
     sf_atts.SetGenerateNodalOutput(true);
     surfaceFilter = new avtSurfaceFilter((const AttributeGroup *)&sf_atts);
 
