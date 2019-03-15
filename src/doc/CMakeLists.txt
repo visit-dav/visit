@@ -37,8 +37,6 @@
 # Modifications:
 #   Kathleen Biagas, Thu March 7, 2019
 #   Added sphinx_launcher (python executable) for Windows.
-#   Removed configure_file in favor of passing options via arguments to
-#   sphinx build
 #
 #****************************************************************************/
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindSphinx.cmake)
@@ -59,9 +57,9 @@ endif()
  
 # HTML output directory
 set(SPHINX_HTML_DIR "${CMAKE_CURRENT_BINARY_DIR}/html")
- 
+
 if(WIN32)
-    set(sphinx_launcher ${PYTHON_EXECUTABLE}) 
+    set(sphinx_launcher ${PYTHON_EXECUTABLE})
 endif()
 
 configure_file(
@@ -73,9 +71,6 @@ add_custom_target(user_manuals ALL
     ${sphinx_launcher}
     ${SPHINX_EXECUTABLE}
         -a -q -b html
-        -D html_theme_path=${SPHINX_THEME_DIR}
-        -D html_theme=${SPHINX_THEME}
-        -D version="${VISIT_VERSION_MAJOR}.${VISIT_VERSION_MINOR}"
         "${CMAKE_CURRENT_SOURCE_DIR}"
         "${SPHINX_HTML_DIR}"
     COMMENT "Building Sphinx-HTML documentation for GUI and CLI")
