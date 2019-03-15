@@ -146,9 +146,12 @@ rst_epilog = """
 #html_theme_path = ["_themes"]
 
 if not os.environ.get('READTHEDOCS'):
-    html_theme = 'sphinx_rtd_theme'
-    html_theme_path = ["_themes"]
-    version = "local build"
+    try: html_theme
+    except: html_theme = 'sphinx_rtd_theme'
+    try: html_theme_path
+    except: html_theme_path = ["_themes"]
+    try: version
+    except: version = "local build"
 
 # The name for this set of Sphinx documents.
 # "<project> v<release> documentation" by default.
