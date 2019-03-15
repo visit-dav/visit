@@ -66,7 +66,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'VisIt User Manual'
-copyright = u'2008-2017, LLNL, UCRL-SM-220449'
+copyright = u'2008-2019, LLNL, UCRL-SM-220449'
 author = u'LLNL'
 
 # The version info for the project you're documenting, acts as replacement for
