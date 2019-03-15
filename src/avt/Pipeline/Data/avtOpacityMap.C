@@ -252,6 +252,9 @@ avtOpacityMap::SetIntermediateVars(void)
 //    Brad Whitlock, Thu Feb 16 10:42:43 PST 2017
 //    fix alpha calculation. Set transferFn1D too.
 //
+//    Eric Brugger, Thu Mar  7 16:27:32 PST 2019
+//    Fix alpha calculation so that it isn't truncated to an unsigned char.
+//
 // ****************************************************************************
 
 void
@@ -276,13 +279,12 @@ avtOpacityMap::SetTable(unsigned char *arr, int te, double attenuation)
         table[i].R = arr[i*4];
         table[i].G = arr[i*4+1];
         table[i].B = arr[i*4+2];
-        double alpha = (static_cast<double>(arr[i*4+3]) / 255.) * attenuation;
-        table[i].A = static_cast<unsigned char>(static_cast<int>(alpha * 255.));
+        table[i].A = (static_cast<float>(arr[i*4+3]) / 255.f) * attenuation;
 
         transferFn1D[i].R = static_cast<float>(arr[i*4]) / 255.f;
         transferFn1D[i].G = static_cast<float>(arr[i*4+1]) / 255.f;
         transferFn1D[i].B = static_cast<float>(arr[i*4+2]) / 255.f;
-        transferFn1D[i].A = alpha;
+        transferFn1D[i].A = (static_cast<float>(arr[i*4+3]) / 255.f) * attenuation;
     }
 
     //

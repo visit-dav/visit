@@ -64,7 +64,12 @@ if(WIN32)
     set(sphinx_launcher ${PYTHON_EXECUTABLE}) 
 endif()
 
-add_custom_target(gui_manual ALL
+configure_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/conf.py"
+    "${CMAKE_CURRENT_BINARY_DIR}/conf.py"
+    @ONLY)
+ 
+add_custom_target(user_manuals ALL
     ${sphinx_launcher}
     ${SPHINX_EXECUTABLE}
         -a -q -b html
@@ -73,8 +78,9 @@ add_custom_target(gui_manual ALL
         -D version="${VISIT_VERSION_MAJOR}.${VISIT_VERSION_MINOR}"
         "${CMAKE_CURRENT_SOURCE_DIR}"
         "${SPHINX_HTML_DIR}"
-    COMMENT "Building Sphinx-HTML documentation for GUI")
+    COMMENT "Building Sphinx-HTML documentation for GUI and CLI")
 
 if(WIN32)
     unset(sphinx_launcher)
 endif()
+

@@ -5,6 +5,7 @@
 #
 #
 
+import sys
 import os
 import subprocess
 import datetime
@@ -20,7 +21,8 @@ __all__ = ["Context",
            "git",
            "cmake",
            "make",
-           "inorder"]
+           "inorder",
+           "view_log"]
 # ----------------------------------------------------------------------------
 #  Method: mkdir_p
 #
@@ -434,17 +436,23 @@ svn     = SVNAction
 git     = GitAction
 cmake   = CMakeAction
 make    = MakeAction
-
 inorder = InorderTrigger
-
 
 
 def view_log(fname):
     port = 8000
-    html_src = pjoin(os.path.split(os.path.abspath(__file__)[0],"html"))
-    log_dir  = os.path.split(os.path.abspath(fname))[0]
-    subprocess("cp -f %s/* %s" % html_src,log_dir)
+    html_src = pjoin(os.path.split(os.path.abspath(__file__))[0],"html")
+    log_dir,log_fname  = os.path.split(os.path.abspath(fname))
+    subprocess.call("cp -fr %s/* %s" % (html_src,log_dir),shell=True)
     os.chdir(log_dir)
-    subprocess.Popen([sys.executable, '-m', 'SimpleHTTPServer', str(port)])
-    webbrowser.open_new_tab('localhost:8000/log_view?log=%s' % fname)
+    try:
+        child = subprocess.Popen([sys.executable, 
+                                  '-m',
+                                  'SimpleHTTPServer',
+                                  str(port)])
+        url = 'http://localhost:8000/view_log.html?log=%s' % log_fname
+        webbrowser.open(url)
+        child.wait() 
+    except KeyboardInterrupt:
+        child.terminate()
 

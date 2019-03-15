@@ -8,7 +8,11 @@ set(VISIT_MSVC_VERSION "MSVC2017")
 message(STATUS "Prebuilt library directory name: ${VISIT_MSVC_VERSION}")
 
 if(NOT DEFINED VISIT_WINDOWS_DIR)
-    if(EXISTS ${VISIT_SOURCE_DIR}/../windowsbuild)
+    # this works for development builds
+    if(EXISTS ${VISIT_SOURCE_DIR}/../../visit-deps/windowsbuild)
+        set(VISIT_WINDOWS_DIR ${VISIT_SOURCE_DIR}/../../visit-deps/windowsbuild)
+    # this works for our released source distros
+    elseif(EXISTS ${VISIT_SOURCE_DIR}/../windowsbuild)
         set(VISIT_WINDOWS_DIR ${VISIT_SOURCE_DIR}/../windowsbuild)
     else()
         message(FATAL_ERROR "Please set VISIT_WINDOWS_DIR to location of 'windowsbuild' files")
