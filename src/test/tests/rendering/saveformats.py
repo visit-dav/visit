@@ -135,6 +135,7 @@ def TestSaveFormat(fmt):
     (ext, isC, isI, isG) = SaveFileInfo(fmt)
     swatmp = swa
     swatmp.format = fmt
+    swatmp.outputToCurrentDirectory = 1
     if isI:
         swatmp.fileName = "saveformat_tmp.%s"%ext
     else:
@@ -173,7 +174,7 @@ def TestSaveFormat(fmt):
     elif isI:
         if swatmp.screenCapture == 0:
             mode = "offscreen_"
-        tiffFileName = "saveformat_tmp.tif"
+        tiffFileName = "%s/saveformat_tmp.tif"%TestEnv.params["run_dir"]
         tiffFileExists = 0
         imageFileExists = FileExists(swatmp.fileName, 1, 0)
         # TODO_WINDOWS ?
