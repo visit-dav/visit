@@ -2391,7 +2391,6 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
     md->SetCycles(cycles);
     md->SetTimesAreAccurate(true);
     md->SetTimes(times);
-
 }
 
 
