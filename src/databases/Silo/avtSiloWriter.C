@@ -616,6 +616,12 @@ avtSiloWriter::WriteHeaders(const avtDatabaseMetaData *md,
 //    Added chunkMap so that this code also supports cases where mapping of
 //    chunks to files is not known and cannot be predicted until the chunks
 //    are actually written.
+//
+//    Alister Maguire, Mon Mar 18 14:08:39 PDT 2019
+//    Updated cycle, ftime, and dtime to be class variables to avoid 
+//    local reference issues. They are now curCycle, curFTime, and
+//    curDTime. 
+//
 // ****************************************************************************
 
 void
@@ -674,12 +680,12 @@ avtSiloWriter::ConstructMultimesh(DBfile *dbfile, const avtMeshMetaData *mmd,
 
     DBoptlist *tmpOptlist = DBMakeOptlist(20);
 
-    int cycle = atts.GetCycle();
-    DBAddOption(tmpOptlist, DBOPT_CYCLE, &cycle);
-    float ftime = atts.GetTime();
-    DBAddOption(tmpOptlist, DBOPT_TIME, &ftime);
-    double dtime = atts.GetTime();
-    DBAddOption(tmpOptlist, DBOPT_DTIME, &dtime);
+    curCycle = atts.GetCycle();
+    DBAddOption(tmpOptlist, DBOPT_CYCLE, &curCycle);
+    curFTime = atts.GetTime();
+    DBAddOption(tmpOptlist, DBOPT_TIME, &curFTime);
+    curDTime = atts.GetTime();
+    DBAddOption(tmpOptlist, DBOPT_DTIME, &curDTime);
     if (atts.GetXLabel() != "")
         DBAddOption(tmpOptlist, DBOPT_XLABEL, (char *) atts.GetXLabel().c_str());
     if (atts.GetXUnits() != "")
@@ -768,6 +774,12 @@ avtSiloWriter::ConstructMultimesh(DBfile *dbfile, const avtMeshMetaData *mmd,
 //    Added chunkMap so that this code also supports cases where mapping of
 //    chunks to files is not known and cannot be predicted until the chunks
 //    are actually written.
+//
+//    Alister Maguire, Mon Mar 18 14:08:39 PDT 2019
+//    Updated cycle, ftime, and dtime to be class variables to avoid 
+//    local reference issues. They are now curCycle, curFTime, and 
+//    curDTime.
+//
 // ****************************************************************************
 
 void
@@ -848,12 +860,12 @@ avtSiloWriter::ConstructMultivar(DBfile *dbfile, const string &sname,
     DBoptlist *tmpOptlist = DBMakeOptlist(20);
 
     avtDataAttributes& atts = GetInput()->GetInfo().GetAttributes();
-    int cycle = atts.GetCycle();
-    DBAddOption(tmpOptlist, DBOPT_CYCLE, &cycle);
-    float ftime = atts.GetTime();
-    DBAddOption(tmpOptlist, DBOPT_TIME, &ftime);
-    double dtime = atts.GetTime();
-    DBAddOption(tmpOptlist, DBOPT_DTIME, &dtime);
+    curCycle = atts.GetCycle();
+    DBAddOption(tmpOptlist, DBOPT_CYCLE, &curCycle);
+    curFTime = atts.GetTime();
+    DBAddOption(tmpOptlist, DBOPT_TIME, &curFTime);
+    curDTime = atts.GetTime();
+    DBAddOption(tmpOptlist, DBOPT_DTIME, &curDTime);
     if (atts.GetXLabel() != "")
         DBAddOption(tmpOptlist, DBOPT_XLABEL, (char *) atts.GetXLabel().c_str());
     if (atts.GetXUnits() != "")
@@ -1002,6 +1014,11 @@ avtSiloWriter::ConstructMultimat(DBfile *dbfile, const string &mname,
 //    Cyrus Harrison, Tue Feb 15 13:20:20 PST 2011
 //    Preserve axis labels if they exist.
 //
+//    Alister Maguire, Mon Mar 18 14:08:39 PDT 2019
+//    Updated cycle, ftime, and dtime to be class variables to avoid 
+//    local reference issues. They are now curCycle, curFTime, and
+//    curDTime. 
+//
 // ****************************************************************************
 
 void
@@ -1009,13 +1026,13 @@ avtSiloWriter::ConstructChunkOptlist(const avtDatabaseMetaData *md)
 {
     optlist = DBMakeOptlist(20);
     avtDataAttributes &atts = GetInput()->GetInfo().GetAttributes();
-    static int cycle = atts.GetCycle();
-    DBAddOption(optlist, DBOPT_CYCLE, &cycle);
-    static float ftime = atts.GetTime();
-    DBAddOption(optlist, DBOPT_TIME, &ftime);
-    static double dtime = atts.GetTime();
-    DBAddOption(optlist, DBOPT_DTIME, &dtime);
-    static int cellOrigin = atts.GetCellOrigin();
+    curCycle = atts.GetCycle();
+    DBAddOption(optlist, DBOPT_CYCLE, &curCycle);
+    curFTime = atts.GetTime();
+    DBAddOption(optlist, DBOPT_TIME, &curFTime);
+    curDTime = atts.GetTime();
+    DBAddOption(optlist, DBOPT_DTIME, &curDTime);
+    int cellOrigin = atts.GetCellOrigin();
     DBAddOption(optlist, DBOPT_ORIGIN, &cellOrigin);
     if (atts.GetXLabel() != "")
         DBAddOption(optlist, DBOPT_XLABEL, (char *) atts.GetXLabel().c_str());
