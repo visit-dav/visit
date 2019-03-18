@@ -29,7 +29,10 @@ def load_opts(opts_json):
     if not opts.has_key("force_clean"):
         opts["force_clean"] = False
     if opts.has_key("skip_checkout"):
-        opts["skip_checkout"] = True
+        if opts["skip_checkout"].upper() == "NO":
+            opts["skip_checkout"] = False
+        else:
+            opts["skip_checkout"] = True
     else:
         opts["skip_checkout"] = False
     # Setup bb env vars
