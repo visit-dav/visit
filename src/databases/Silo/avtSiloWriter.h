@@ -114,8 +114,8 @@ class DBOptionsAttributes;
 //    subsume functionality of singleFile write option.
 //
 //    Alister Maguire, Mon Mar 18 14:08:39 PDT 2019
-//    Added curCycle, curFTime, curDTime to avoid issues with silo
-//    referencing local variables. 
+//    Added curCycle, curFTime, curDTime to avoid issues with static
+//    members. 
 //
 // ****************************************************************************
 
