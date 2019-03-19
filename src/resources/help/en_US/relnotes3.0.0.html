@@ -21,6 +21,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li><a href="#File_format">Changes to file format readers</a></li>
   <li><a href="#Plot_changes">Changes to plots</a></li>
   <li><a href="#Operator_changes">Changes to operators</a></li>
+  <li><a href="#Expression_changes">Changes to expressions</a></li>
   <li><a href="#Query_changes">Changes to picks and queries</a></li>
   <li><a href="#Bugs_fixed">Other bug fixes</a></li>
   <li><a href="#Configuration_changes">Configuration changes</a></li>
@@ -96,6 +97,12 @@ SetBackendType("VTKm")
 <p><b><font size="4">Changes to VisIt's operators in version 3.0</font></b></p>
 <ul>
   <li>A new <i>Grid Information</i> query was added so the individual types, sizes, and extents of domains in a multidomain mesh can be obtained. This feature is useful in scripts.</li>
+</ul>
+
+<a name="Expression_changes"></a>
+<p><b><font size="4">Changes to VisIt's expression language in version 3.0</font></b></p>
+<ul>
+  <li>The <i>conn_cmfe</i> expression was enhanced to handle mapping cell data between point meshes and polyhedral meshes where the number of points and polyhedra match. This didn't work previously because polyhedra are split into zoo elements, which results in the number of cells not matching. Now the splitting is taken into account.</li>
 </ul>
 
 <a name="Query_changes"></a>
