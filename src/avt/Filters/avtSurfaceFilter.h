@@ -128,7 +128,7 @@ class AVTFILTERS_API avtSurfaceFilter : public avtDataTreeIterator
     double                     zValMin, zValMax;
     bool                       stillNeedExtents;
     bool                       haveIssuedWarning;
-    bool					   doScale;
+    bool                       doScale;
 
     double                  SkewTheValue(const double);
     void                    CalculateScaleValues(double *, double*);

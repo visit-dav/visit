@@ -140,16 +140,6 @@ avtElevateFilter::SetAtts(const AttributeGroup *a)
 
     // Convert ElevateAttributes::ScalingMode to SurfaceFilterAttributes::ScalingMode
     sf_atts.SetUseXYLimits((SurfaceFilterAttributes::ScalingMode) atts.GetUseXYLimits());
-    // if (atts.GetUseXYLimits() == ElevateAttributes::ScalingMode::Always) {
-    // 	sf_atts.SetUseXYLimits(SurfaceFilterAttributes::ScalingMode::Always);
-    // }
-    // else if (atts.GetUseXYLimits() == ElevateAttributes::ScalingMode::Auto) {
-    // 	sf_atts.SetUseXYLimits(SurfaceFilterAttributes::ScalingMode::Auto);
-    // }
-    // else if (atts.GetUseXYLimits() == ElevateAttributes::ScalingMode::Never) {
-    // 	sf_atts.SetUseXYLimits(SurfaceFilterAttributes::ScalingMode::Never);
-    // }
-
     surface_filter = new avtSurfaceFilter(&sf_atts);
     surface_filter->SetUpdateDataObjectInfoCallback(UpdateDataObjectInfoCB, (void*)this);
 }

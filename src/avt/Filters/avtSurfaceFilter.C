@@ -115,11 +115,11 @@ avtSurfaceFilter::avtSurfaceFilter(const AttributeGroup *a)
 
     if (atts.GetUseXYLimits() == SurfaceFilterAttributes::ScalingMode::Always)
     {
-    	doScale = true;
+        doScale = true;
     }
     else
     {
-    	doScale = false;
+        doScale = false;
     }
 
     if (atts.GetVariable() != "default")
@@ -827,17 +827,17 @@ avtSurfaceFilter::CalculateScaleValues(double *de, double *se)
 
     if (atts.GetUseXYLimits() == SurfaceFilterAttributes::ScalingMode::Auto)
     {
-		double zOverX = dZ / dX;
-		double zOverY = dZ / dY;
-		double upperRatio = zOverX > zOverY ? zOverX : zOverY;
-		double lowerRatio = zOverX < zOverY ? zOverX : zOverY;
-		if (upperRatio > 10.0 || lowerRatio < 0.1)
-		{
-			doScale = true;
-		}
-		else {
-			doScale = false;
-		}
+        double zOverX = dZ / dX;
+        double zOverY = dZ / dY;
+        double upperRatio = zOverX > zOverY ? zOverX : zOverY;
+        double lowerRatio = zOverX < zOverY ? zOverX : zOverY;
+        if (upperRatio > 10.0 || lowerRatio < 0.1)
+        {
+            doScale = true;
+        }
+        else {
+            doScale = false;
+        }
     }
 
 
