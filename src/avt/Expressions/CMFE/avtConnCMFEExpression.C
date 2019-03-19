@@ -45,17 +45,10 @@
 #include <math.h>
 
 #include <vtkCellData.h>
-#include <vtkCellType.h>
-#include <vtkCharArray.h>
 #include <vtkDataArray.h>
 #include <vtkDataSet.h>
-#include <vtkDoubleArray.h>
-#include <vtkFloatArray.h>
-#include <vtkIntArray.h>
 #include <vtkLongArray.h>
 #include <vtkPointData.h>
-#include <vtkType.h>
-#include <vtkUnstructuredGrid.h>
 
 #include <avtSILRestrictionTraverser.h>
 
