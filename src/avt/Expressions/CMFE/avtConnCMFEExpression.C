@@ -47,8 +47,8 @@
 #include <vtkCellData.h>
 #include <vtkDataArray.h>
 #include <vtkDataSet.h>
-#include <vtkPointData.h>
 #include <vtkLongArray.h>
+#include <vtkPointData.h>
 
 #include <avtSILRestrictionTraverser.h>
 
@@ -135,6 +135,11 @@ avtConnCMFEExpression::PerformCMFE(avtDataTree_p in1, avtDataTree_p in2,
 //    Hank Childs, Sun Mar 22 14:13:16 CDT 2009
 //    Beef up debug statements in exception case.
 //
+//    Eric Brugger, Tue Mar 19 10:31:48 PDT 2019
+//    I added special handling for the case where we are mapping cell
+//    data between a point mesh and a polyhedral mesh and the number of
+//    points is the same as the number of polyhedra.
+//
 // ****************************************************************************
 
 avtDataTree_p
@@ -183,12 +188,81 @@ avtConnCMFEExpression::ExecuteTree(avtDataTree_p in1, avtDataTree_p in2,
         vtkDataSet *in_ds1 = in1->GetDataRepresentation().GetDataVTK();
         vtkDataSet *in_ds2 = in2->GetDataRepresentation().GetDataVTK();
 
+        vtkIdType nRealCells1 = in_ds1->GetNumberOfCells();
+        vtkIdType nRealCells2 = in_ds2->GetNumberOfCells();
+        vtkIdType nRealPoints1 = in_ds1->GetNumberOfPoints();
+        vtkIdType nRealPoints2 = in_ds2->GetNumberOfPoints();
+
+        //
+        // Check for the case where we are mapping between a point mesh
+        // and a polyhedral mesh and the number of polyhedra is the same
+        // as the number of points.
+        //
+        bool handlePointPolyhedralMapping = false;
+        if (nRealCells1 != nRealCells2 &&
+            in_ds1->GetDataObjectType() == VTK_UNSTRUCTURED_GRID &&
+            in_ds2->GetDataObjectType() == VTK_UNSTRUCTURED_GRID)
+        {
+            debug5 << "avtConnCMFEExpression::ExecuteTree: The cell counts"
+                   << " don't match and both grids are unstructured." << endl;
+            //
+            // Get the real number of cells in each dataset.
+            //
+            vtkDataArray *orig1 =
+                in_ds1->GetCellData()->GetArray("avtOriginalCellNumbers");
+            vtkDataArray *orig2 =
+                in_ds2->GetCellData()->GetArray("avtOriginalCellNumbers");
+            bool isCell =
+                in_ds2->GetPointData()->GetArray(invar.c_str()) == NULL &&
+                in_ds2->GetCellData()->GetArray(invar.c_str()) != NULL;
+            if ((orig1 == NULL && orig2 != NULL) || 
+                (orig1 != NULL && orig2 == NULL) && isCell)
+            {
+                if (orig1 != NULL)
+                {
+                    vtkIdType nTuples = orig1->GetNumberOfTuples();
+                    double maxVal = orig1->GetTuple2(0)[1];
+                    for (vtkIdType id = 1; id < nTuples; ++id)
+                    {
+                        double *vals = orig1->GetTuple2(id);
+                        if (vals[1] > maxVal) maxVal = vals[1];
+                    }
+                    nRealCells1 = static_cast<vtkIdType>(maxVal) + 1;
+                }
+
+                if (orig2 != NULL)
+                {
+                    vtkIdType nTuples = orig2->GetNumberOfTuples();
+                    double maxVal = orig2->GetTuple2(0)[1];
+                    for (vtkIdType id = 1; id < nTuples; ++id)
+                    {
+                        double *vals = orig2->GetTuple2(id);
+                        if (vals[1] > maxVal) maxVal = vals[1];
+                    }
+                    nRealCells2 = static_cast<vtkIdType>(maxVal) + 1;
+                }
+
+                //
+                // If the cell counts now match, we can do the special
+                // processing of mapping between a point mesh and a
+                // polyhedral mesh.
+                //
+                if (nRealCells1 == nRealCells2)
+                {
+                    debug5 << "avtConnCMFEExpression::ExecuteTree:"
+                           << " Doing special processing of mapping between"
+                           << " a point mesh and a polyhedral mesh." << endl;
+                    nRealPoints1 = nRealPoints2;
+                    handlePointPolyhedralMapping = true;
+                }
+            }
+        }
+
         //
         // Make some basic checks to make sure the connectivities really do
         // agree.
-        //
         char msg[1024];
-        if (in_ds1->GetNumberOfCells() != in_ds2->GetNumberOfCells())
+        if (nRealCells1 != nRealCells2)
         {
             avtSILRestrictionTraverser trav(firstDBSIL);
             if (trav.UsesAllMaterials())
@@ -198,8 +272,8 @@ avtConnCMFEExpression::ExecuteTree(avtDataTree_p in1, avtDataTree_p in2,
                              "have a different number of cells for domain %d."
                              " The cell counts are %d and %d.",
                              in1->GetDataRepresentation().GetDomain(),
-                             static_cast<int>(in_ds1->GetNumberOfCells()),
-                             static_cast<int>(in_ds2->GetNumberOfCells()));
+                             static_cast<int>(nRealCells1),
+                             static_cast<int>(nRealCells2));
             }
             else
             {
@@ -212,12 +286,12 @@ avtConnCMFEExpression::ExecuteTree(avtDataTree_p in1, avtDataTree_p in2,
                              " have been removed (and the simulation is "
                              "Eulerian).",
                              in1->GetDataRepresentation().GetDomain(),
-                             static_cast<int>(in_ds1->GetNumberOfCells()), 
-                             static_cast<int>(in_ds2->GetNumberOfCells()));
+                             static_cast<int>(nRealCells1), 
+                             static_cast<int>(nRealCells2));
             }
             EXCEPTION1(InvalidMergeException, msg);
         }
-        if (in_ds1->GetNumberOfPoints() != in_ds2->GetNumberOfPoints())
+        if (nRealPoints1 != nRealPoints2)
         {
             avtSILRestrictionTraverser trav(firstDBSIL);
             if (trav.UsesAllMaterials())
@@ -227,8 +301,8 @@ avtConnCMFEExpression::ExecuteTree(avtDataTree_p in1, avtDataTree_p in2,
                              "have a different number of points for domain %d."
                              "  The point counts are %d and %d.", 
                          in1->GetDataRepresentation().GetDomain(),
-                         static_cast<int>(in_ds1->GetNumberOfPoints()), 
-                         static_cast<int>(in_ds2->GetNumberOfPoints()));
+                         static_cast<int>(nRealPoints1), 
+                         static_cast<int>(nRealPoints2));
             }
             else
             {
@@ -241,21 +315,25 @@ avtConnCMFEExpression::ExecuteTree(avtDataTree_p in1, avtDataTree_p in2,
                              " have been removed (and the simulation is "
                              "Eulerian).",
                          in1->GetDataRepresentation().GetDomain(),
-                         static_cast<int>(in_ds1->GetNumberOfPoints()), 
-                         static_cast<int>(in_ds2->GetNumberOfPoints()));
+                         static_cast<int>(nRealPoints1), 
+                         static_cast<int>(nRealPoints2));
             }
             EXCEPTION1(InvalidMergeException, msg);
         }
 
-        bool isPoint      = true;
-        vtkDataArray *arr = NULL;
-        arr               = in_ds2->GetPointData()->GetArray(invar.c_str());
-        if (arr == NULL)
+        //
+        // Get the data array you are copying from and note whether it is
+        // a point or cell variable.
+        //
+        bool isPoint       = true;
+        vtkDataArray *var2 = NULL;
+        var2               = in_ds2->GetPointData()->GetArray(invar.c_str());
+        if (var2 == NULL)
         {
-            arr     = in_ds2->GetCellData()->GetArray(invar.c_str());
+            var2  = in_ds2->GetCellData()->GetArray(invar.c_str());
             isPoint = false;
         }
-        if (arr == NULL)
+        if (var2 == NULL)
         {
             sprintf(msg, "The databases cannot be compared because variable "
                          " \"%s\" cannot be located.", invar.c_str());
@@ -273,47 +351,95 @@ avtConnCMFEExpression::ExecuteTree(avtDataTree_p in1, avtDataTree_p in2,
 
         if( fd1->GetNumberOfArrays() && fd2->GetNumberOfArrays() )
         {
-          for( int i=0; i<fd1->GetNumberOfArrays(); ++i )
-          {
-            // Copy only arrays found in both datasets.
-            const char *name1 = fd1->GetArrayName(i);
-            vtkAbstractArray *fp2 = fd2->GetAbstractArray(name1);
-        
-            if( fp2 )
+            for( int i=0; i<fd1->GetNumberOfArrays(); ++i )
             {
-              // Make a copy of the array found in dataset2
-              vtkAbstractArray *fp = (vtkAbstractArray *) fp2->NewInstance();
-              fp->DeepCopy( fp2 );
+                // Copy only arrays found in both datasets.
+                const char *name1 = fd1->GetArrayName(i);
+                vtkAbstractArray *fp2 = fd2->GetAbstractArray(name1);
+        
+                if( fp2 )
+                {
+                    // Make a copy of the array found in dataset2
+                    vtkAbstractArray *fp = fp2->NewInstance();
+                    fp->DeepCopy( fp2 );
 
-              // Append '2' to the name so not to have any name conflicts.
-              char name[128];
-              sprintf( name, "%s2", name1);
+                    // Append '2' to the name so not to have any name
+                    // conflicts.
+                    char name[128];
+                    sprintf( name, "%s2", name1);
 
-              fp->SetName(name);
-              in_ds1->GetFieldData()->AddArray(fp);
-              fp->Delete();
+                    fp->SetName(name);
+                    in_ds1->GetFieldData()->AddArray(fp);
+                    fp->Delete();
+                }
             }
-          }
         }
 
         //
-        // 
+        // Copy the variable from input2 to input1.
         //
         vtkDataArray *addvar = NULL;
         bool deleteAddvar = false;
-        if (invar == outvar)
+        
+        if (handlePointPolyhedralMapping)
         {
-            addvar       = arr;
+            //
+            // This is the special case of mapping between a point mesh and
+            // a polyhedral mesh.
+            //
+            addvar = var2->NewInstance();
+            addvar->SetName(outvar.c_str());
+            addvar->SetNumberOfTuples(nRealCells1);
+            vtkDataArray *orig1 =
+                in_ds1->GetCellData()->GetArray("avtOriginalCellNumbers");
+            vtkDataArray *orig2 =
+                in_ds2->GetCellData()->GetArray("avtOriginalCellNumbers");
+            if (orig2 != NULL)
+            {
+                // Polyhedral mesh onto a point mesh.
+                int ntuples = orig2->GetNumberOfTuples();
+                for (vtkIdType src = 0; src < ntuples; ++src)
+                {
+                    vtkIdType dst =
+                        static_cast<vtkIdType>(orig2->GetTuple2(src)[1]);
+                    addvar->SetTuple(dst, src, var2); 
+                }
+            }
+            else
+            {
+                // Point mesh onto a polyhedral mesh.
+                int ntuples = orig1->GetNumberOfTuples();
+                for (vtkIdType dst = 0; dst < ntuples; ++dst)
+                {
+                    vtkIdType src =
+                        static_cast<vtkIdType>(orig1->GetTuple2(dst)[1]);
+                    addvar->SetTuple(dst, src, var2); 
+                }
+            }
+            deleteAddvar = true;
+        }
+        else if (invar == outvar)
+        {
+            //
+            // This is the case where the input and output are the same.
+            //
+            addvar       = var2;
             deleteAddvar = false;
         }
         else
         {
-            addvar = arr->NewInstance();
-            addvar->DeepCopy(arr);
+            //
+            // This is the normal case.
+            //
+            addvar = var2->NewInstance();
+            addvar->DeepCopy(var2);
             addvar->SetName(outvar.c_str());
             deleteAddvar = true;
         }
-        
+
+        //
+        //  Create the output data tree.
+        //
         vtkDataSet *new_obj = (vtkDataSet *) in_ds1->NewInstance();
         new_obj->ShallowCopy(in_ds1);
         if (isPoint)
