@@ -636,7 +636,11 @@ public:
    /** Simple factory to create ifstream or igzstream depending on whether
        named file appears to be a gzip'd compressed file.
        https://refspecs.linuxbase.org/LSB_3.0.0/LSB-PDA/LSB-PDA/zlib-gzopen-1.html. */
+#ifdef HAVE_LIBZ
     visit_ifstream() : strm(0),ifstrm(0),igzstrm(0) {};
+#else
+    visit_ifstream() : strm(0),ifstrm(0) {};
+#endif
     visit_ifstream(char const *name, char const *mode = "r") {
 #ifdef HAVE_LIBZ
         if (maybe_gz(name))
@@ -653,13 +657,15 @@ public:
             if (strchr(mode,'b')) m |= std::ios_base::binary;
             ifstrm = new std::ifstream(name,m);
             strm = ifstrm;
+#ifdef HAVE_LIBZ
             igzstrm = 0;
+#endif
         }
     };
     void open(char const *name, char const *mode = "rb") {
+#ifdef HAVE_LIBZ
         if (igzstrm) delete igzstrm;
         else if (ifstrm) delete ifstrm;
-#ifdef HAVE_LIBZ
         if (maybe_gz(name))
         {
             igzstrm = new igzstream(name,mode);
@@ -667,6 +673,8 @@ public:
             ifstrm = 0;
         }
         else
+#else
+        if (ifstrm) delete ifstrm;
 #endif
         {
             std::ios_base::openmode m = (std::ios_base::openmode) 0x0;
@@ -674,14 +682,20 @@ public:
             if (strchr(mode,'b')) m |= std::ios_base::binary;
             ifstrm = new std::ifstream(name,m);
             strm = ifstrm;
+#ifdef HAVE_LIBZ
             igzstrm = 0;
+#endif
         }
     };
     std::istream &operator()(void) const { return *strm; };
     void close(void)
     {
+#ifdef HAVE_LIBZ
         if (igzstrm) igzstrm->close();
         else if (ifstrm) ifstrm->close();
+#else
+        if (ifstrm) ifstrm->close();
+#endif
     };
    ~visit_ifstream() { delete strm; };
 private:
