@@ -129,6 +129,11 @@ function build_mesagl
     if [[ "$VISIT_BUILD_MODE" == "Debug" ]]; then
         MESAGL_DEBUG_BUILD="--enable-debug"
     fi
+    if [[ "$(uname -m)" == "x86_64" ]] ; then
+        MESAGL_GALLIUM_DRIVERS="swrast,swr"
+    else
+        MESAGL_GALLIUM_DRIVERS="swrast"
+    fi
 
     info "Configuring MesaGL . . ."
     echo CXXFLAGS="${CXXFLAGS} ${CXX_OPT_FLAGS}" \
@@ -149,7 +154,7 @@ function build_mesagl
         --disable-va \
         --enable-glx \
         --enable-llvm \
-        --with-gallium-drivers=swrast,swr \
+        --with-gallium-drivers=${MESAGL_GALLIUM_DRIVERS} \
         --enable-gallium-osmesa $MESAGL_STATIC_DYNAMIC $MESAGL_DEBUG_BUILD \
         --with-llvm-prefix=${VISIT_LLVM_DIR}
     env CXXFLAGS="${CXXFLAGS} ${CXX_OPT_FLAGS}" \
@@ -170,7 +175,7 @@ function build_mesagl
         --disable-va \
         --enable-glx \
         --enable-llvm \
-        --with-gallium-drivers=swrast,swr \
+        --with-gallium-drivers=${MESAGL_GALLIUM_DRIVERS} \
         --enable-gallium-osmesa $MESAGL_STATIC_DYNAMIC $MESAGL_DEBUG_BUILD \
         --with-llvm-prefix=${VISIT_LLVM_DIR}
 

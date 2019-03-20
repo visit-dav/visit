@@ -101,7 +101,7 @@ double avtVTKWriter::INVALID_TIME = -DBL_MAX;
 avtVTKWriter::avtVTKWriter(DBOptionsAttributes *atts) :stem(), meshName(), fileNames()
 {
     doBinary = false;
-    doXML = false; 
+    doXML = false;
     nblocks = 0;
 
     switch(atts->GetEnum("FileFormat"))
@@ -125,7 +125,7 @@ avtVTKWriter::avtVTKWriter(DBOptionsAttributes *atts) :stem(), meshName(), fileN
 //
 //  Modifications:
 //    Jeremy Meredith, Tue Mar 27 15:10:21 EDT 2007
-//    Added nblocks to this function and save it so we don't have to 
+//    Added nblocks to this function and save it so we don't have to
 //    trust the meta data.
 //
 //    Kathleen Biagas, Tue Sep  1 11:27:23 PDT 2015
@@ -361,7 +361,7 @@ avtVTKWriter::CloseFile(void)
 //      Writes a root file.
 //
 //  Programmer: Brad Whitlock
-//  Creation:   
+//  Creation:
 //
 //  Modifications:
 //    Kathleen Biagas, Tue Sep  1 08:58:23 PDT 2015
@@ -449,7 +449,7 @@ avtVTKWriter::WriteRootFile()
             ofile << "    <Block index =\"0\">" << endl;
             for (int i = 0 ; i < nblocks ; i++)
             {
-                ofile << "      <DataSet index=\"" << i << "\" file=\"" 
+                ofile << "      <DataSet index=\"" << i << "\" file=\""
                       << fileNames[i] << "\"/>" << endl;
             }
             ofile << "    </Block>" << endl;

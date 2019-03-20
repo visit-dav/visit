@@ -202,7 +202,7 @@ private:
 
 #include <iostream>
 #include <cstdlib>
-#ifndef HAVE_ALIGNED_ALLOC
+#if ! defined HAVE_ALIGNED_ALLOC || ! defined USE_ALIGNED_ALLOC
 #define aligned_alloc(_a, _n) \
     malloc(_n)
 #endif

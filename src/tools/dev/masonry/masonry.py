@@ -5,6 +5,7 @@
 #
 #
 
+import sys
 import os
 import subprocess
 import datetime
@@ -17,9 +18,11 @@ from os.path import join as pjoin
 __all__ = ["Context",
            "shell",
            "svn",
+           "git",
            "cmake",
            "make",
-           "inorder"]
+           "inorder",
+           "view_log"]
 # ----------------------------------------------------------------------------
 #  Method: mkdir_p
 #
@@ -318,6 +321,27 @@ class SVNAction(ShellAction):
         self.params["svn_bin"] = svn_bin
 
 
+class GitAction(ShellAction):
+    def __init__(self,
+                 git_url,
+                 git_cmd,
+                 git_bin="git",
+                 working_dir=None,
+                 description=None,
+                 halt_on_error=True,
+                 env=None):
+        cmd = " ".join([git_bin,git_cmd,git_url])
+        super(GitAction,self).__init__(cmd=cmd,
+                                       type="git",
+                                       working_dir=working_dir,
+                                       description=description,
+                                       halt_on_error=halt_on_error,
+                                       env=env)
+        self.params["git_url"] = git_url
+        self.params["git_cmd"] = git_cmd
+        self.params["git_bin"] = git_bin
+
+
 class CMakeAction(ShellAction):
     def __init__(self,
                  src_dir,
@@ -409,19 +433,26 @@ class InorderTrigger(Action):
 
 shell   = ShellAction
 svn     = SVNAction
+git     = GitAction
 cmake   = CMakeAction
 make    = MakeAction
-
 inorder = InorderTrigger
-
 
 
 def view_log(fname):
     port = 8000
-    html_src = pjoin(os.path.split(os.path.abspath(__file__)[0],"html"))
-    log_dir  = os.path.split(os.path.abspath(fname))[0]
-    subprocess("cp -f %s/* %s" % html_src,log_dir)
+    html_src = pjoin(os.path.split(os.path.abspath(__file__))[0],"html")
+    log_dir,log_fname  = os.path.split(os.path.abspath(fname))
+    subprocess.call("cp -fr %s/* %s" % (html_src,log_dir),shell=True)
     os.chdir(log_dir)
-    subprocess.Popen([sys.executable, '-m', 'SimpleHTTPServer', str(port)])
-    webbrowser.open_new_tab('localhost:8000/log_view?log=%s' % fname)
+    try:
+        child = subprocess.Popen([sys.executable, 
+                                  '-m',
+                                  'SimpleHTTPServer',
+                                  str(port)])
+        url = 'http://localhost:8000/view_log.html?log=%s' % log_fname
+        webbrowser.open(url)
+        child.wait() 
+    except KeyboardInterrupt:
+        child.terminate()
 

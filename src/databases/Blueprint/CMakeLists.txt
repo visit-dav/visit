@@ -26,6 +26,7 @@ ${COMMON_SOURCES}
 avtBlueprintFileFormat.C
 avtBlueprintDataAdaptor.C
 avtBlueprintTreeCache.C
+avtBlueprintWriter.C
 )
 
 INCLUDE_DIRECTORIES(

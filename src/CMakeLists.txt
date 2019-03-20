@@ -911,6 +911,19 @@ IF(NOT VERSION)
 ENDIF(NOT VERSION)
 SET(VISIT_VERSION ${VERSION})
 
+# Want to split VISIT_VERSION into major,minor and patch vars.
+# Could use SETUP_APP_VERSION, but it sets the vars as CACHE (needed for TP).
+# This conflicts with the non-cache var VISIT_VERSION automagically set by
+# the call to PROJECT(VISIT).  (Non-cache vars overshadow cache vars).
+# There is a 'VERSION' argument to PROJECT, but it only accepts integers, thus
+# it bails on things like '3.0.0b'.  So we will parse the visit version here
+# instead.
+string(REPLACE "." ";" v_list ${VERSION})
+list(GET v_list 0 VISIT_VERSION_MAJOR)
+list(GET v_list 1 VISIT_VERSION_MINOR)
+list(GET v_list 2 VISIT_VERSION_PATCH)
+unset(v_list)
+
 #-----------------------------------------------------------------------------
 # Set up some installation related value and macros (needs version).
 #-----------------------------------------------------------------------------
@@ -2190,11 +2203,11 @@ IF (NOT WIN32)
         SET(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/resources/help/en_US/copyright.html")
 
         # We should probably parse ${VISIT_VERSION} into its component parts instead.
-        SET(CPACK_PACKAGE_VERSION_MAJOR "2")
-        SET(CPACK_PACKAGE_VERSION_MINOR "0")
-        SET(CPACK_PACKAGE_VERSION_PATCH "0")
+        SET(CPACK_PACKAGE_VERSION_MAJOR ${VISIT_VERSION_MAJOR})
+        SET(CPACK_PACKAGE_VERSION_MINOR ${VISIT_VERSION_MINOR})
+        SET(CPACK_PACKAGE_VERSION_PATCH ${VISIT_VERSION_PATCH})
 
-        STRING(REPLACE "." "_" UL_VERSION ${VISIT_VERSION})
+        SET(UL_VERSION "${VISIT_VERSION_MAJOR}_${VISIT_VERSION_MINOR}_${VISIT_VERSION_PATCH}")
         SET(CPACK_PACKAGE_FILE_NAME "visit${UL_VERSION}.${VISIT_INSTALL_PLATFORM}")
 
         IF(NOT APPLE)

@@ -7,4 +7,6 @@
 /src/test/_run/
 /src/test/results.json
 /src/test/tests.json
-
+visit.masonry.docker.src.tar
+build-mb-*
+_logs

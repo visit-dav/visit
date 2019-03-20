@@ -102,7 +102,7 @@ function build_damaris
     # so we create it now. This is pretty much a copy-past of some
     # content from bv_visit.sh.
     #
-    if [[ "$DO_SVN" != "yes" || "$USE_VISIT_FILE" == "yes" ]] ; then
+    if [[ "$DO_GIT" != "yes" || "$USE_VISIT_FILE" == "yes" ]] ; then
         #
         # Unzip the file, provided a gzipped file exists.
         #
@@ -124,8 +124,8 @@ function build_damaris
     fi
 
     local LIBSIMV2_INCLUDE="../${VISIT_FILE%.tar*}/src/sim/V2/lib"
-    if [[ "$DO_SVN" == "yes" && "$USE_VISIT_FILE" == "no" ]] ; then
-        LIBSIMV2_INCLUDE="../src/sim/V2/lib"
+    if [[ "$DO_GIT" == "yes" && "$USE_VISIT_FILE" == "no" ]] ; then
+        LIBSIMV2_INCLUDE="../visit/src/sim/V2/lib"
     fi
     
     #

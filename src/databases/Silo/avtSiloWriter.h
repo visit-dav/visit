@@ -112,6 +112,11 @@ class DBOptionsAttributes;
 //    Mark C. Miller, Tue Jun 14 10:35:34 PDT 2016
 //    Added arg to ConstrutMulti... methods. Added SingleFile() method to
 //    subsume functionality of singleFile write option.
+//
+//    Alister Maguire, Mon Mar 18 14:08:39 PDT 2019
+//    Added curCycle, curFTime, curDTime to avoid issues with static
+//    members. 
+//
 // ****************************************************************************
 
 class
@@ -135,6 +140,10 @@ avtSiloWriter : public virtual avtDatabaseWriter
     bool           singleFile;
     bool           checkSums;
     std::string    compressionParams;
+
+    int            curCycle;
+    float          curFTime;
+    double         curDTime;
 
     // places to hold args passed in WriteHeaders
     const avtDatabaseMetaData           *headerDbMd;

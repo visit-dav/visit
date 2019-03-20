@@ -59,5 +59,6 @@ rm -f visit-update-test-website
 wget https://raw.githubusercontent.com/visit-dav/visit/develop/src/tools/dev/scripts/visit-update-test-website
 
 # Copy the update script to nersc and execute it.
-scp scripts/visit-update-test-website $userNersc@$nerscHost:
+chmod 755 visit-update-test-website
+scp visit-update-test-website $userNersc@$nerscHost:
 ssh $userNersc@$nerscHost "./visit-update-test-website"

@@ -21,6 +21,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li><a href="#File_format">Changes to file format readers</a></li>
   <li><a href="#Plot_changes">Changes to plots</a></li>
   <li><a href="#Operator_changes">Changes to operators</a></li>
+  <li><a href="#Expression_changes">Changes to expressions</a></li>
   <li><a href="#Query_changes">Changes to picks and queries</a></li>
   <li><a href="#Bugs_fixed">Other bug fixes</a></li>
   <li><a href="#Configuration_changes">Configuration changes</a></li>
@@ -64,6 +65,7 @@ SetBackendType("VTKm")
   </ul>
   <p>VTK-m functionality is currently enabled for 3D rectilinear, curvilinear and unstructured grids with only hexahedral elements. VTK-m supports both single block and multi-block grids.</p>
   </li>
+  <li>Due to lack of availability of C++11 compliant compilers, support for OSX 10.8 has been dropped.</li>
 </ul>
 
 <a name="GUI_changes"></a>
@@ -97,6 +99,12 @@ SetBackendType("VTKm")
   <li>A new <i>Grid Information</i> query was added so the individual types, sizes, and extents of domains in a multidomain mesh can be obtained. This feature is useful in scripts.</li>
 </ul>
 
+<a name="Expression_changes"></a>
+<p><b><font size="4">Changes to VisIt's expression language in version 3.0</font></b></p>
+<ul>
+  <li>The <i>conn_cmfe</i> expression was enhanced to handle mapping cell data between point meshes and polyhedral meshes where the number of points and polyhedra match. This didn't work previously because polyhedra are split into zoo elements, which results in the number of cells not matching. Now the splitting is taken into account.</li>
+</ul>
+
 <a name="Query_changes"></a>
 <p><b><font size="4">Changes to VisIt's picks and queries in version 3.0</font></b></p>
 <ul>
@@ -109,6 +117,7 @@ SetBackendType("VTKm")
 <a name="Bugs_fixed"></a>
 <p><b><font size="4">Other bugs fixed in version 3.0</font></b></p>
 <ul>
+  <li>Corrected a bug where VisIt would crash rendering transparent geometry on the Cooley system at the Argonne Leadership Computing Facility.</li>
   <li><i>ANNOTATION_INT</i> facelists with faces appearing in more than one sublist are now handled correctly.</li>
   <li>Corrected a bug that caused empty plots when using the <i>OnionPeel</i> operator with data containing enumerated subsets.</li>
   <li>Corrected a few usability issues for the <i>Save Movie Wizard</i> including: 
@@ -118,6 +127,7 @@ SetBackendType("VTKm")
       <li>Pressing the enter key while modifying will no longer advance to the next page.</li>
     </ul>
   </li>
+  <li> Corrected a bug in creating expressions with curves read from multi-domain silo files. </li>
 </ul>
 
 <a name="Configuration_changes"></a>
