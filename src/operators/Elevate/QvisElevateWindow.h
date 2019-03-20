@@ -62,7 +62,9 @@ class QvisVariableButton;
 // Creation:   omitted
 //
 // Modifications:
-//   
+//   Cyrus Harrison, Tue Aug 19 10:58:31 PDT 2008
+//   Qt4 Port.
+//
 // ****************************************************************************
 
 class QvisElevateWindow : public QvisOperatorWindow
@@ -91,12 +93,12 @@ class QvisElevateWindow : public QvisOperatorWindow
     void zeroFlagChanged(bool val);
     void variableChanged(const QString &varName);
   private:
-    QWidget      *useXYLimits;
-    QButtonGroup *useXYLimitsButtonGroup;
-    QWidget      *limitsMode;
-    QButtonGroup *limitsModeButtonGroup;
-    QWidget      *scaling;
-    QButtonGroup *scalingButtonGroup;
+    QButtonGroup *useXYLimits;
+    QWidget      *useXYLimitsWidget;
+    QButtonGroup *limitsMode;
+    QWidget      *limitsModeWidget;
+    QButtonGroup *scaling;
+    QWidget      *scalingWidget;
     QLineEdit *skewFactor;
     QCheckBox *minFlag;
     QLineEdit *min;
