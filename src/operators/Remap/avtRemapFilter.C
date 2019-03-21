@@ -46,13 +46,9 @@
 #include <vector>
 
 #include <vtkDataArray.h>
-#include <vtkInformationVector.h>
-#include <vtkInformation.h>
-//#include <vtkUnstructuredGridAlgorithm.h>
 #include <vtkUnstructuredGrid.h>
 #include <vtkPlane.h>
 #include <vtkCell.h>
-#include <vtkAppendFilter.h>
 #include <vtkCellData.h>
 
 #include <verdict.h>
@@ -60,9 +56,6 @@
 #include <avtExtents.h>
 #include <avtDataAttributes.h>
 #include <avtDataTree.h>
-#include <avtSourceFromAVTDataset.h>
-// #include <avtSamplePoints.h>
-#include <avtSamplePointExtractor.h>
 #include <vtkVisItClipper.h>
 
 #include <DebugStream.h>
