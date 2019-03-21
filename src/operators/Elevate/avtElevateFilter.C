@@ -136,9 +136,10 @@ avtElevateFilter::SetAtts(const AttributeGroup *a)
     sf_atts.SetMin(atts.GetMin());
     sf_atts.SetMax(atts.GetMax());
     sf_atts.SetVariable(atts.GetVariable());
-    sf_atts.SetUseXYLimits(atts.GetUseXYLimits());
     sf_atts.SetGenerateNodalOutput(false);
 
+    // Convert ElevateAttributes::ScalingMode to SurfaceFilterAttributes::ScalingMode
+    sf_atts.SetUseXYLimits((SurfaceFilterAttributes::ScalingMode) atts.GetUseXYLimits());
     surface_filter = new avtSurfaceFilter(&sf_atts);
     surface_filter->SetUpdateDataObjectInfoCallback(UpdateDataObjectInfoCB, (void*)this);
 }
