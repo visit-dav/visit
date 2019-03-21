@@ -121,7 +121,7 @@ QvisElevateWindow::CreateWindowContents()
     QGridLayout *mainLayout = new QGridLayout(0);
     topLayout->addLayout(mainLayout);
 
-    useXYLimitsLabel = new QLabel(tr("Elevation height relative to XY limits"), central);
+    useXYLimitsLabel = new QLabel(tr("Scale Elevation Height"), central);
     mainLayout->addWidget(useXYLimitsLabel,0,0);
     useXYLimitsWidget = new QWidget(central);
     useXYLimits= new QButtonGroup(useXYLimits);
