@@ -50,9 +50,19 @@ Test("elevate01")
 ChangeActivePlotsVar("d")
 Test("elevate02")
 
+elevate_atts = ElevateAttributes()
+DefineScalarExpression("d_mod", "0.1*d")
+elevate_atts.variable = "d_mod"
+elevate_atts.useXYLimits = elevate_atts.Never
+SetOperatorOptions(elevate_atts)
+Test("elevate15")
+
+elevate_atts.useXYLimits = elevate_atts.Auto
+SetOperatorOptions(elevate_atts)
+Test("elevate16")
+
 #Primary variable zonal, Secondary variable zonal 
 ChangeActivePlotsVar("p")
-elevate_atts = ElevateAttributes()
 elevate_atts.variable = "d"
 SetOperatorOptions(elevate_atts)
 Test("elevate03")
@@ -68,13 +78,12 @@ Test("elevate05")
 
 #Primary variable nodal, secondary zonal.
 elevate_atts.variable = "p"
-elevate_atts.useXYLimits = elevate_atts.Always
 SetOperatorOptions(elevate_atts)
 Test("elevate06")
 
-# elevate_atts.useXYLimits = elevate_atts.Auto
-# SetOperatorOptions(elevate_atts)
-# Test("elevate13")
+elevate_atts.useXYLimits = elevate_atts.Never
+SetOperatorOptions(elevate_atts)
+Test("elevate13")
 
 DeleteAllPlots()
 
@@ -86,11 +95,6 @@ SetOperatorOptions(elevate_atts)
 DrawPlots()
 Test("elevate07")
 
-# elevate_atts.useXYLimits = elevate_atts.Auto
-# SetOperatorOptions(elevate_atts)
-# DrawPlots()
-# Test("elevate14")
-
 DeleteAllPlots()
 AddPlot("FilledBoundary", "mat1")
 AddOperator("Elevate")
@@ -100,10 +104,10 @@ SetOperatorOptions(elevate_atts)
 DrawPlots()
 Test("elevate08")
 
-# elevate_atts.useXYLimits = elevate_atts.Auto
-# SetOperatorOptions(elevate_atts)
-# DrawPlots()
-# Test("elevate15")
+elevate_atts.useXYLimits = elevate_atts.Never
+SetOperatorOptions(elevate_atts)
+DrawPlots()
+Test("elevate14")
 
 DeleteAllPlots()
 OpenDatabase(silo_data_path("rect3d.silo"))
@@ -123,6 +127,7 @@ DefineScalarExpression("vv", "hgslice+polar_radius(Mesh2D)")
 AddPlot("Pseudocolor", "hgslice")
 AddOperator("Elevate")
 elevate_atts.variable = "vv"
+elevate_atts.useXYLimits = elevate_atts.Always
 SetOperatorOptions(elevate_atts)
 DrawPlots()
 Test("elevate10")
@@ -135,6 +140,7 @@ DefineScalarExpression("d2", "recenter(d)")
 AddPlot("FilledBoundary", "mat1")
 AddOperator("Elevate")
 elevate_atts.variable = "d2"
+elevate_atts.useXYLimits = elevate_atts.Always
 SetOperatorOptions(elevate_atts)
 DrawPlots()
 Test("elevate11")
