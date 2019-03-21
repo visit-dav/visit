@@ -163,6 +163,25 @@ def fixup_items(items,lib_maps,prefix_path):
             id_cmd  =  id_cmd.format(item.replace(prefix_path,""), item) 
         subprocess.call(id_cmd,shell=True)
 
+        # Remove rpaths containing user home directory 
+        load_cmd = "otool -l {0}"
+        home = os.path.expanduser("~")
+        invalid_paths = []
+        try:
+            lc_rpaths = subprocess.check_output(load_cmd.format(item), shell=True)
+            lc_rpaths = [ path for path in lc_rpaths.split("\n")[1:] if path.find(" path") != -1]
+            for lc_rpath in lc_rpaths:
+                invalid_path = lc_rpath.split()[1]
+                if invalid_path.find(home) != -1:
+                    invalid_paths.append(invalid_path)
+        except:
+            print "[info: no invalid LC_RPATHS for '%s']" % item
+
+        del_rpath_cmd = "install_name_tool -delete_rpath {0} {1} 2>&1"
+        for invalid_path in invalid_paths:
+            subprocess.call(del_rpath_cmd.format(invalid_path, item), shell=True)
+
+        # Add rpaths relative to the bundle
         deps_cmd = "otool -L {0}"
         try:
             dependencies = subprocess.check_output(deps_cmd.format(item), shell=True)
@@ -171,11 +190,10 @@ def fixup_items(items,lib_maps,prefix_path):
             print "[warning: failed to obtain dependencies for '%s']" % item
             dependencies = []
         
-        rpath_base_cmd =  "install_name_tool -add_rpath {0} {1} 2>&1"
-        
         # if we have an exe exe_rpaths[0]
         # if we have a bundle exe_rpaths[1]
         # it doens't hurt to add both for now
+        rpath_base_cmd =  "install_name_tool -add_rpath {0} {1} 2>&1"
         rpath_cmds = [rpath_base_cmd.format(rp, item) for rp in exe_rpaths]
         for rp_cmd in rpath_cmds:
             subprocess.call(rp_cmd,shell=True)
