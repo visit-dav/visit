@@ -311,7 +311,7 @@ if [ $sierra = true ]
 then
    if [ $test = no ]
    then
-      scp sierra4358:/usr/tmp/$user/sierra/visitbuild/visit$ver2.linux-intel.tar.gz visit$ver2.linux-intel-sierra
+      scp sierra4358:/usr/tmp/$user/sierra/visitbuild/visit$ver2.linux-intel.tar.gz visit$ver2.linux-intel-sierra.tar.gz
       scp visit$ver2.linux-intel-sierra.tar.gz sierra:
       scp visit-install sierra:
       scp sierra sierra:sierra_install
