@@ -101,7 +101,7 @@ class avtRemapFilter : public avtDatasetToDatasetFilter,
     void                CreateGrid(int, int, int, int, int, int);
     vtkDataArray        *GetCoordinates(double, double, int, int, int);
     void                Output();
-    void				MakeFunction(const vtkIdType&, int);
+    void				MakeClippingFunction(const vtkIdType&, int);
     
     
     // -------------------- //
@@ -115,13 +115,6 @@ class avtRemapFilter : public avtDatasetToDatasetFilter,
     std::vector<vtkImplicitBoolean*> funcsArrayX;
     std::vector<vtkImplicitBoolean*> funcsArrayY;
     std::vector<vtkImplicitBoolean*> funcsArrayZ;
-    
-    
-    // TODO: Delete these
-    void PrintData(avtDataRepresentation*);
-    void PrintData(vtkDataSet*);
-    void PrintData(vtkDataArray*);
-    std::map<std::string, int> DEBUG_CellTypeList;
   
 };
 

@@ -74,7 +74,7 @@ avtRemapFilter::avtRemapFilter()
   rCellVolume(0.),
   is3D(false)
 {
-    debug5 << "avtRemapFilter::avtRemapFilter" << std::endl;
+    debug4 << "avtRemapFilter::avtRemapFilter" << std::endl;
     rg = vtkRectilinearGrid::New();
     vars = vtkDoubleArray::New();
 }
@@ -92,7 +92,7 @@ avtRemapFilter::avtRemapFilter()
 
 avtRemapFilter::~avtRemapFilter()
 {
-    debug5 << "avtRemapFilter::~avtRemapFilter" << std::endl;
+    debug4 << "avtRemapFilter::~avtRemapFilter" << std::endl;
     rg->Delete();
     vars->Delete();
 }
@@ -109,7 +109,7 @@ avtRemapFilter::~avtRemapFilter()
 avtFilter *
 avtRemapFilter::Create()
 {
-    debug5 << "avtRemapFilter::Create" << endl;
+    debug4 << "avtRemapFilter::Create" << endl;
     return new avtRemapFilter();
 }
 
@@ -131,7 +131,7 @@ avtRemapFilter::Create()
 void
 avtRemapFilter::SetAtts(const AttributeGroup *a)
 {
-    debug5 << "avtRemapFilter::SetAtts" << std::endl;
+    debug4 << "avtRemapFilter::SetAtts" << std::endl;
     atts = *(const RemapAttributes*)a;
 }
 
@@ -151,7 +151,7 @@ avtRemapFilter::SetAtts(const AttributeGroup *a)
 bool
 avtRemapFilter::Equivalent(const AttributeGroup *a)
 {
-    debug5 << "avtRemapFilter::Equivalent(" << std::endl;
+    debug4 << "avtRemapFilter::Equivalent(" << std::endl;
     return (atts == *(RemapAttributes*)a);
 }
 
@@ -184,26 +184,12 @@ avtRemapFilter::Equivalent(const AttributeGroup *a)
 void
 avtRemapFilter::Execute(void)
 {
-    debug1 << "avtRemapFilter::Execute" << std::endl;
-
-// --- DEBUG --- DEBUG --- DEBUG --- DEBUG --- DEBUG --- DEBUG --- DEBUG ---- //
-DEBUG_CellTypeList.insert(std::pair<std::string, int>("VTK_TRIANGLE",   0));
-DEBUG_CellTypeList.insert(std::pair<std::string, int>("VTK_QUAD",       0));
-DEBUG_CellTypeList.insert(std::pair<std::string, int>("VTK_PIXEL",      0));
-DEBUG_CellTypeList.insert(std::pair<std::string, int>("VTK_VOXEL",      0));
-DEBUG_CellTypeList.insert(std::pair<std::string, int>("VTK_HEXAHEDRON", 0));
-DEBUG_CellTypeList.insert(std::pair<std::string, int>("VTK_TETRA",      0));
-DEBUG_CellTypeList.insert(std::pair<std::string, int>("VTK_WEDGE",      0));
-DEBUG_CellTypeList.insert(std::pair<std::string, int>("VTK_PYRAMID",    0));
-DEBUG_CellTypeList.insert(std::pair<std::string, int>("unknown",        0));
-// --- DEBUG --- DEBUG --- DEBUG --- DEBUG --- DEBUG --- DEBUG --- DEBUG ---- //
-    
+    debug1 << "avtRemapFilter::Execute" << std::endl;    
 
     // --------------------------------- //
     // --- Generate Rectilinear Grid --- //
     // --------------------------------- //
     GetBounds();
-    // TODO: restrict the bounds to the extents of the selected domains
     int width = atts.GetCellsX();
     int height = atts.GetCellsY();
     int depth;
@@ -233,7 +219,7 @@ DEBUG_CellTypeList.insert(std::pair<std::string, int>("unknown",        0));
     int nVariables = GetInput()->GetInfo().GetAttributes().GetNumberOfVariables();
     if (nVariables <= 0)
     {
-        debug5 << "There are no variables." << std::endl;
+        debug5 << "There are no variables. Outputting empty mesh." << std::endl;
         Output();
         return;
     }
@@ -249,67 +235,43 @@ DEBUG_CellTypeList.insert(std::pair<std::string, int>("unknown",        0));
     rg->GetCellData()->SetScalars(vars);
     debug5 << "Variable " << vars->GetName() << " added to grid." << std::endl;
     
-    // ----------------------------------------------------- //
-    // --- Clip the domains against the rectilinear grid --- //
-    // ----------------------------------------------------- //
 
-    // --- Generate a clipping list to reference later --- //
+
+    // ----------------------------------------------------------- //
+    // --- Setup the clipping planes for the recitilinear grid --- //
+    // ----------------------------------------------------------- //
     
-    // Get the planes from first dimension
-    debug5 << "Creating functions" << std::endl;
-    MakeFunction(0, 0);
+    // Get the planes for first dimension
+    debug5 << "Creating clipping functions" << std::endl;
+    MakeClippingFunction(0, 0); // Get the leftmost plane
     for (vtkIdType rCell = 0; rCell < width; ++rCell) {
-    	MakeFunction(rCell, 1); // Get all the planes on the "right"
+    	MakeClippingFunction(rCell, 1); // Get all the planes on the "right"
     }
 
-    // Get the planes from the second dimension
-    MakeFunction(0, 2);
+    // Get the planes for the second dimension
+    MakeClippingFunction(0, 2); // Get the topmost plane
     for (vtkIdType rCell = 0; rCell < width*height; rCell+=width) {
-    	MakeFunction(rCell, 3); // Get all the planes on the "bottom"
+    	MakeClippingFunction(rCell, 3); // Get all the planes on the "bottom"
     }
 
     if (is3D) {
-    	// Get the planes from the third dimension
-	    MakeFunction(0, 4);
+    	// Get the planes for the third dimension
+	    MakeClippingFunction(0, 4); // Get the frontmost plane
 	    for (vtkIdType rCell = 0; rCell < width*height*depth; rCell+=width*height) {
-	    	MakeFunction(rCell, 5); // Get all the planes on the "back"
+	    	MakeClippingFunction(rCell, 5); // Get all the planes on the "back"
 	    }
 	}
 
-	// std::cout << "Funcs Array X" << std::endl;
-	// for (std::vector<vtkImplicitBoolean*>::const_iterator iter = funcsArrayX.begin();
-	//     	iter != funcsArrayX.end(); ++iter) {
-	// 	std::cout << *iter << ", " << std::endl;
-	// }
-	// std::cout << "Funcs Array Y" << std::endl;
-	// for (std::vector<vtkImplicitBoolean*>::const_iterator iter = funcsArrayY.begin();
-	//     	iter != funcsArrayY.end(); ++iter) {
-	// 	std::cout << *iter << ", " << std::endl;
-	// }
-	// std::cout << "Funcs Array Z" << std::endl;
-	// for (std::vector<vtkImplicitBoolean*>::const_iterator iter = funcsArrayZ.begin();
-	//     	iter != funcsArrayZ.end(); ++iter) {
-	// 	std::cout << *iter << ", " << std::endl;
-	// }
 
+
+    // ------------------------------------ //
+    // --- Unravel the domains and clip --- //
+    // ------------------------------------ //
 
     avtDataTree_p inTree = GetInputDataTree();
     std::vector<int> domainIds;
     inTree->GetAllDomainIds(domainIds); // Populate domainIds
     TraverseDomainTree(inTree);
-    
-// --- DEBUG --- DEBUG --- DEBUG --- DEBUG --- DEBUG --- DEBUG --- DEBUG ---- //
-std::cout << "Types and numbers of cells in sub meshes" << std::endl;
-for (std::map<std::string,int>::const_iterator iter = DEBUG_CellTypeList.begin();
-        iter != DEBUG_CellTypeList.end(); ++iter)
-{
-    if (iter->second > 0)
-    {
-        std::cout << iter->first << ": " << iter->second << std::endl;
-    }
-}
-// --- DEBUG --- DEBUG --- DEBUG --- DEBUG --- DEBUG --- DEBUG --- DEBUG ---- //
-
     
     Output();
     debug5 << "DONE Remapping" << std::endl;
@@ -513,7 +475,6 @@ double DEBUG_maxDiff = DBL_MIN;
 				// std::cout << "Getting output into ug" << std::endl;
 				vtkUnstructuredGrid* ug = last->GetOutput();
 				// ug->Print(std::cout);
-				// PrintData(ug);
 				debug5 << "Cell " << rCell << " has been clipped." << std::endl;
 				// Done clipping
         
@@ -842,9 +803,9 @@ if (DEBUG_rCellVolumeTEST != rCellVolume)
 
 
 void
-avtRemapFilter::MakeFunction(const vtkIdType& rCell, int side)
+avtRemapFilter::MakeClippingFunction(const vtkIdType& rCell, int side)
 {
-	debug3 << "avtRemapFilter::MakeFunction" << std::endl;
+	debug4 << "avtRemapFilter::MakeFunction" << std::endl;
 	double cellBounds[6] = {0., 0., 0., 0., 0., 0.};
 	double origin[3] = {0., 0., 0.};
 	double normal[3] = {0., 0., 0.};
@@ -968,40 +929,33 @@ avtRemapFilter::CalculateCellVolumes(vtkDataSet* in_ds, const char* name)
         {
             case VTK_TRIANGLE:
                 debug5 << "VTK_TRIANGLE" << std::endl;
-DEBUG_CellTypeList["VTK_TRIANGLE"]++;
                 volume = v_tri_area(3, coordinates);
                 break;
             case VTK_QUAD:
                 debug5 << "VTK_QUAD" << std::endl;
-DEBUG_CellTypeList["VTK_QUAD"]++;
                 volume = v_quad_area(4, coordinates);
                 break;
             case VTK_PIXEL:
                 debug5 << "VTK_PIXEL" << std::endl;
-DEBUG_CellTypeList["VTK_PIXEL"]++;
                 Swap3(coordinates, 2, 3);
                 volume = v_quad_area(4, coordinates);
                 break;
             case VTK_VOXEL:
                 debug5 << "VTK_VOXEL" << std::endl;
-DEBUG_CellTypeList["VTK_VOXEL"]++;
                 Swap3(coordinates, 2, 3);
                 Swap3(coordinates, 6, 7);
                 volume = v_hex_volume(8, coordinates);
                 break;
             case VTK_HEXAHEDRON:
                 debug5 << "VTK_HEXAHEDRON" << std::endl;
-DEBUG_CellTypeList["VTK_HEXAHEDRON"]++;
                 volume = v_hex_volume(8, coordinates);
                 break;
             case VTK_TETRA:
                 debug5 << "VTK_TETRA" << std::endl;
-DEBUG_CellTypeList["VTK_TETRA"]++;
                 volume = v_tet_volume(4, coordinates);
                 break;
             case VTK_WEDGE:
                 debug5 << "VTK_WEDGE" << std::endl;
-DEBUG_CellTypeList["VTK_WEDGE"]++;
                 double tet_coordinates[4][3];
                 volume = 0;
                 for (int i = 0 ; i < 3 ; i++)
@@ -1014,7 +968,6 @@ DEBUG_CellTypeList["VTK_WEDGE"]++;
                 break;
             case VTK_PYRAMID:
                 debug5 << "VTK_PYRAMID" << std::endl;
-DEBUG_CellTypeList["VTK_PYRAMID"]++;
                 double one[4][3];
                 double two[4][3];
                 Copy3(coordinates,one[0], 0);
@@ -1029,7 +982,6 @@ DEBUG_CellTypeList["VTK_PYRAMID"]++;
                 break;
             default:
                 debug5 << "Unknown_Type" << std::endl;
-DEBUG_CellTypeList["unknown"]++;
                 debug4 << "Cannot calculate volume for cell of type: "
                        << cell->GetCellType() << std::endl
                        << "Scalars won't be remapped." << std::endl;
@@ -1254,88 +1206,3 @@ avtRemapFilter::GetCoordinates(double start, double length, int numEls, int mySt
 
     return rv;
 }
-
-
-
-
-
-
-
-
-
-
-
-// **
-// This function isn't real. Just using it to debug.
-// **
-
-void avtRemapFilter::PrintData(avtDataRepresentation* in_dr)
-{
-    PrintData(in_dr->GetDataVTK());
-}
-
-void avtRemapFilter::PrintData(vtkDataSet* in_ds)
-{
-    for (int i = 0; i < in_ds->GetCellData()->GetNumberOfArrays(); i++)
-    {
-        PrintData(in_ds->GetCellData()->GetArray(i));
-        /*
-        vtkDataArray* myArray = in_ds->GetCellData()->GetArray(i);
-        std::cout << "Array name: " << myArray->GetName()
-                  << std::endl;
-        std::cout << "Values: ";
-        for (int j = 0; j < myArray->GetNumberOfTuples(); j++)
-        {
-            std::cout << "{";
-            for (int k = 0; k < myArray->GetNumberOfComponents(); k++)
-            {
-                std::cout << myArray->GetComponent(j,k);
-                if (k != myArray->GetNumberOfComponents() - 1)
-                {
-                    std::cout << ", ";
-                }
-            }
-            std::cout << "}";
-            if (j != myArray->GetNumberOfTuples() - 1)
-            {
-                std::cout << "; ";
-            }
-        }
-        std::cout << std::endl ;
-        */
-    }
-    std::cout << std::endl;
-}
-
-void avtRemapFilter::PrintData(vtkDataArray* myArray)
-{
-    if (myArray->GetName()) {
-        std::cout << "Array name: " << myArray->GetName()
-                  << std::endl;
-    }
-    std::cout << "Values: ";
-    for (int j = 0; j < myArray->GetNumberOfTuples(); j++)
-    {
-        std::cout << "{";
-        for (int k = 0; k < myArray->GetNumberOfComponents(); k++)
-        {
-            std::cout << myArray->GetComponent(j,k);
-            if (k != myArray->GetNumberOfComponents() - 1)
-            {
-                std::cout << ", ";
-            }
-        }
-        std::cout << "}";
-        if (j != myArray->GetNumberOfTuples() - 1)
-        {
-            std::cout << "; ";
-        }
-    }
-    std::cout << std::endl ;
-}
-
-
-
-
-
-
