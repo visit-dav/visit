@@ -86,10 +86,6 @@ using namespace UintahDBOptions;
 
 const double NAN_REPLACE_VAL = 1.0E9;
 
-// Macros to stringize the define value so it can be used in a string context.
-#define XSTR(x) #x
-#define STR(x) XSTR(x)
-
 // ****************************************************************************
 //  Method: avtUintahFileFormat Constructor
 //
@@ -152,7 +148,7 @@ avtUintahFileFormat::avtUintahFileFormat(const char *filename,
   int dlopen_mode = RTLD_NOW;
 
 #ifdef UINTAH_INTERFACES_LIB
-  const char * lib_name = STR( UINTAH_INTERFACES_LIB );
+  const char * lib_name = UINTAH_INTERFACES_LIB;
 #else
 #error  "UINTAH_INTERFACES_LIB has not been defined"
   const char * lib_name = "UINTAH_INTERFACES_LIB";
@@ -299,7 +295,7 @@ avtUintahFileFormat::avtUintahFileFormat(const char *filename,
   if (!libHandle)
   {
 #ifdef UINTAH_LIBRARY_DIR
-  const char * lib_path = STR( UINTAH_LIBRARY_DIR );
+    const char * lib_path = UINTAH_LIBRARY_DIR;
 #else
 #error  "UINTAH_LIBRARY_DIR has not been defined"
 #endif
