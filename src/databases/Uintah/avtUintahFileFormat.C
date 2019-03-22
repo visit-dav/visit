@@ -110,7 +110,7 @@ avtUintahFileFormat::avtUintahFileFormat(const char *filename,
       dataVariesOverTime = attrs->GetBool(UINTAH_DATA_VARIES_OVER_TIME);
     }
   }
-  
+
   // Verify that it is a UDA index.xml file:
   // The 2nd line should look like this <Uintah_DataArchive>.
   FILE * fp = fopen( filename, "r" );
