@@ -2276,6 +2276,18 @@ ELSE (NOT WIN32)
     ENDIF(VISIT_MAKE_NSIS_INSTALLER)
 ENDIF (NOT WIN32)
 
+#CMake add subdirectory forces this action to go last
+#todo: find way for this function to execute as last
+#step of make install process
+#ADD_CUSTOM_TARGET(osxfixup ALL
+#     COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_SOURCE_DIR}/osxfixup/osxfixup.py \$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/${VISIT_INSTALLED_VERSION} @executable_path/.. 3)
+#ADD_DEPENDENCIES(osxfixup install)
+
+# todo: replace below with lines above
+IF(APPLE)
+    ADD_SUBDIRECTORY(osxfixup)
+ENDIF(APPLE)
+
 IF (NOT WIN32)
     MESSAGE(STATUS "\n\nUse recmake_visit.sh or search for `CMAKE_INVOKE' in CMakeCache.txt to re-run CMake with the same arguments\n\n")
 ELSE (NOT WIN32)
