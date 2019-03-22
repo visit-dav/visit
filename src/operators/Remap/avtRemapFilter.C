@@ -227,7 +227,7 @@ avtRemapFilter::Execute(void)
     // Add variables to the rectilinear grid   
     vars->SetNumberOfComponents(1);
     vars->SetNumberOfTuples(nCellsOut);
-    for (vtkIdType i = 0; i < vars->GetNumberOfTuples(); ++i) {
+    for (int i = 0; i < vars->GetNumberOfTuples(); ++i) {
         vars->SetComponent(i, 0, 0); // Initialize vars to 0
     }
     vars->SetName(GetInput()->GetInfo().GetAttributes().GetVariableName().c_str());
@@ -244,20 +244,20 @@ avtRemapFilter::Execute(void)
     // Get the planes for first dimension
     debug5 << "Creating clipping functions" << std::endl;
     MakeClippingFunction(0, 0); // Get the leftmost plane
-    for (vtkIdType rCell = 0; rCell < width; ++rCell) {
+    for (int rCell = 0; rCell < width; ++rCell) {
     	MakeClippingFunction(rCell, 1); // Get all the planes on the "right"
     }
 
     // Get the planes for the second dimension
     MakeClippingFunction(0, 2); // Get the topmost plane
-    for (vtkIdType rCell = 0; rCell < width*height; rCell+=width) {
+    for (int rCell = 0; rCell < width*height; rCell+=width) {
     	MakeClippingFunction(rCell, 3); // Get all the planes on the "bottom"
     }
 
     if (is3D) {
     	// Get the planes for the third dimension
 	    MakeClippingFunction(0, 4); // Get the frontmost plane
-	    for (vtkIdType rCell = 0; rCell < width*height*depth; rCell+=width*height) {
+	    for (int rCell = 0; rCell < width*height*depth; rCell+=width*height) {
 	    	MakeClippingFunction(rCell, 5); // Get all the planes on the "back"
 	    }
 	}
@@ -389,7 +389,7 @@ avtRemapFilter::ClipDomain(avtDataTree_p inLeaf) {
 			for (int i = 0; i < atts.GetCellsX(); ++i) // Loop over i-dim
 			{
 				// Get the index for rg
-				vtkIdType rCell = i +
+				int rCell = i +
 						atts.GetCellsX() * j +
 						atts.GetCellsX() * atts.GetCellsY() * k;
 
@@ -503,7 +503,7 @@ avtRemapFilter::ClipDomain(avtDataTree_p inLeaf) {
 		        vtkDataArray* ghostVariable = ug->GetCellData()->GetArray("avtGhostZones");
 		        if (atts.GetVariableType() == RemapAttributes::extrinsic) // like mass
 		        {
-		            for (vtkIdType tuple = 0;
+		            for (int tuple = 0;
 		                 tuple < myVariable->GetNumberOfTuples(); tuple++)
 		            {
 		                if (ghostVariable != NULL &&
@@ -521,7 +521,7 @@ avtRemapFilter::ClipDomain(avtDataTree_p inLeaf) {
 		        }
 		        else // intrinsic (like density) is the default
 		        {
-		            for (vtkIdType tuple = 0;
+		            for (int tuple = 0;
 		                 tuple < myVariable->GetNumberOfTuples(); tuple++)
 		            {
 		                if (ghostVariable != NULL &&
@@ -538,15 +538,33 @@ avtRemapFilter::ClipDomain(avtDataTree_p inLeaf) {
 		            vars->SetComponent(rCell, 0, value + vars->GetComponent(rCell, 0));
 		        }
 		        // Done updating variable
+
+				std::cout << "clipperLeft: " << clipperLeft->GetReferenceCount() << std::endl;
+				std::cout << "clipperRight: " << clipperRight->GetReferenceCount() << std::endl;
+				std::cout << "clipperTop: " << clipperTop->GetReferenceCount() << std::endl;
+				std::cout << "clipperBottom: " << clipperBottom->GetReferenceCount() << std::endl;
+				std::cout << "clipperFront: " << clipperFront->GetReferenceCount() << std::endl;
+				std::cout << "clipperBack: " << clipperBack->GetReferenceCount() << std::endl;
+				std::cout << "last: " << last->GetReferenceCount() << std::endl;
+				std::cout << "ug: " << ug->GetReferenceCount() << std::endl;
+				std::cout << "subCellVolumes: " << subCellVolumes->GetReferenceCount() << std::endl;
+				std::cout << "originalCellVolumes: " << originalCellVolumes->GetReferenceCount() << std::endl;
+				std::cout << "myVariable: " << myVariable->GetReferenceCount() << std::endl;
+				if (ghostVariable != NULL) {
+					std::cout << "ghostVariable: " << ghostVariable->GetReferenceCount() << std::endl;
+				}
+				std::cout << std::endl;
 			}
 		}
 	} // Finished looping over cells
+	std::cout << "avtRemapOriginalVolume: " << avtRemapOriginalVolume->GetReferenceCount() << std::endl;
+	std::cout << "in_ds: " << in_ds->GetReferenceCount() << std::endl;
 } // End ClipDomain
 
 
 
 void
-avtRemapFilter::MakeClippingFunction(const vtkIdType& rCell, int side)
+avtRemapFilter::MakeClippingFunction(int rCell, int side)
 {
 	debug4 << "avtRemapFilter::MakeFunction" << std::endl;
 	double cellBounds[6] = {0., 0., 0., 0., 0., 0.};
@@ -635,12 +653,12 @@ avtRemapFilter::CalculateCellVolumes(vtkDataSet* in_ds, const char* name)
     volumeArray->SetNumberOfComponents(1);
     volumeArray->SetNumberOfTuples(nCells);
     
-    for (vtkIdType i = 0; i < nCells; i++)
+    for (int i = 0; i < nCells; i++)
     {
         double volume = 0.0;
         vtkCell* cell = in_ds->GetCell(i); // Get the cell
         vtkDataArray* pointData = cell->GetPoints()->GetData(); // Get the points
-        for (vtkIdType j = 0; j < cell->GetNumberOfPoints(); j++)
+        for (int j = 0; j < cell->GetNumberOfPoints(); j++)
         {
             coordinates[j][2] = 0; // Set to 0 in case 2D
             pointData->GetTuple(j, coordinates[j]); // Set the j-th entry in coordiantes to the tuple from pointData at j
