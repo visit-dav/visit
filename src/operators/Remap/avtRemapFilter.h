@@ -100,7 +100,6 @@ class avtRemapFilter : public avtDatasetToDatasetFilter,
     void                CreateGrid(int, int, int, int, int, int, int, int, int);
     void                CreateGrid(int, int, int, int, int, int);
     vtkDataArray        *GetCoordinates(double, double, int, int, int);
-    void                Output();
     void				MakeClippingFunction(const vtkIdType&, int);
     
     

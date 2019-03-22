@@ -170,7 +170,7 @@ avtRemapFilter::Equivalent(const AttributeGroup *a)
 //  TODO:          (-) Refactor the clipping so that the planes of the
 //                     rectilinear grid are only generated once.
 //                 (-) Make it work in parallel.
-//                 (-) Restrict bounds to the extents of selected domains
+//                 (-) Clip only overlapping domains and cells
 //                 (-) Add debug outputs to all cases
 //                 (-) Better message/behavior for unsupported cell types
 //                 (-) Add query output testing to remap.py
@@ -220,7 +220,7 @@ avtRemapFilter::Execute(void)
     if (nVariables <= 0)
     {
         debug5 << "There are no variables. Outputting empty mesh." << std::endl;
-        Output();
+        SetOutputDataTree(new avtDataTree(rg, 0));
         return;
     }
     
@@ -273,7 +273,7 @@ avtRemapFilter::Execute(void)
     inTree->GetAllDomainIds(domainIds); // Populate domainIds
     TraverseDomainTree(inTree);
     
-    Output();
+    SetOutputDataTree(new avtDataTree(rg, 0));
     debug5 << "DONE Remapping" << std::endl;
     return;
 }
@@ -349,9 +349,8 @@ avtRemapFilter::ClipDomain(avtDataTree_p inLeaf) {
     // If the variable does not exist, then return.
     // If there are no points, then return.
     // If there are no cells, then return.
-    double nCellsIn = in_ds->GetNumberOfCells();
     if (in_ds == NULL || in_ds->GetCellData()->GetArray(vars->GetName()) == NULL ||
-        in_ds->GetNumberOfPoints() == 0 || nCellsIn == 0)
+        in_ds->GetNumberOfPoints() == 0 || in_ds->GetNumberOfCells() == 0)
     {
         debug4 << "Domain " << domainId << " is invalid." << std::endl;
         in_ds->Delete();
@@ -374,12 +373,6 @@ avtRemapFilter::ClipDomain(avtDataTree_p inLeaf) {
     // -------------------------------------------------------- //
     // --- Clip the input grid against the rectilinear grid --- //
     // -------------------------------------------------------- //
-
-// --- DEBUG --- DEBUG -------- //
-#include <float.h>
-#include <cstdlib>
-double DEBUG_maxDiff = DBL_MIN;
-// --- DEBUG --- DEBUG -------- //
     
     // + ----- +
     // |   3   |
@@ -388,24 +381,19 @@ double DEBUG_maxDiff = DBL_MIN;
     // + ----- +
     
     // --- Loop over each cell --- //
-	// TODO: update these loops for multidomain support.
     debug5 << "Beginning the clipping loop" << std::endl;
 	for (int k = 0; k < (is3D ? atts.GetCellsZ() : 1); ++k) // Loop over z-dim
 	{
-		//std::cout << "k is : " << k << std::endl;
 		for (int j = 0; j < atts.GetCellsY(); ++j) // Loop over y-dim
 		{
-			//std::cout << "j is : " << j << std::endl;
 			for (int i = 0; i < atts.GetCellsX(); ++i) // Loop over i-dim
 			{
-				//std::cout << "i is : " << i << std::endl;
+				// Get the index for rg
 				vtkIdType rCell = i +
 						atts.GetCellsX() * j +
 						atts.GetCellsX() * atts.GetCellsY() * k;
-				// std::cout << "\nrCell is: " << rCell << std::endl;
 
 				// --- Clip the cell --- //
-				// std::cout << "Making clippers" << std::endl;
 				vtkVisItClipper* last = NULL;
 				vtkVisItClipper* clipperLeft = vtkVisItClipper::New();
 				vtkVisItClipper* clipperRight = vtkVisItClipper::New();
@@ -415,7 +403,6 @@ double DEBUG_maxDiff = DBL_MIN;
 				vtkVisItClipper* clipperBack = vtkVisItClipper::New();
 
 				// Left plane
-				// std::cout << "Clipping left plane." << std::endl;
 				clipperLeft->SetInputData(in_ds);
 				clipperLeft->SetClipFunction(funcsArrayX[i]);
 				clipperLeft->SetInsideOut(false);
@@ -423,7 +410,6 @@ double DEBUG_maxDiff = DBL_MIN;
 				last = clipperLeft;
 
 				// Right plane
-				// std::cout << "Clipping right plane." << std::endl;
 				clipperRight->SetInputData(in_ds);
 				clipperRight->SetClipFunction(funcsArrayX[i+1]);
 				clipperRight->SetInsideOut(true);
@@ -432,7 +418,6 @@ double DEBUG_maxDiff = DBL_MIN;
 				last = clipperRight;
 
 				// Top plane
-				// std::cout << "Clipping top plane." << std::endl;
 				clipperTop->SetInputData(in_ds);
 				clipperTop->SetClipFunction(funcsArrayY[j]);
 				clipperTop->SetInsideOut(false);
@@ -441,7 +426,6 @@ double DEBUG_maxDiff = DBL_MIN;
 				last = clipperTop;
 
 				// Bottom plane
-				// std::cout << "Clipping bottom plane." << std::endl;
 				clipperBottom->SetInputData(in_ds);
 				clipperBottom->SetClipFunction(funcsArrayY[j+1]);
 				clipperBottom->SetInsideOut(true);
@@ -452,7 +436,6 @@ double DEBUG_maxDiff = DBL_MIN;
 				if (is3D)
 				{
 					// Front plane
-					// std::cout << "Clipping front plane." << std::endl;
 					clipperFront->SetInputData(in_ds);
 					clipperFront->SetClipFunction(funcsArrayZ[k]);
 					clipperFront->SetInsideOut(false);
@@ -461,7 +444,6 @@ double DEBUG_maxDiff = DBL_MIN;
 					last = clipperFront;
 
 					// Back plane
-					// std::cout << "Clipping back plane." << std::endl;
 					clipperBack->SetInputData(in_ds);
 					clipperBack->SetClipFunction(funcsArrayZ[k+1]);
 					clipperBack->SetInsideOut(true);
@@ -470,11 +452,8 @@ double DEBUG_maxDiff = DBL_MIN;
 					last = clipperBack;
 				}
 
-				// std::cout << "Getting update." << std::endl;
 				last->Update();
-				// std::cout << "Getting output into ug" << std::endl;
 				vtkUnstructuredGrid* ug = last->GetOutput();
-				// ug->Print(std::cout);
 				debug5 << "Cell " << rCell << " has been clipped." << std::endl;
 				// Done clipping
         
@@ -482,37 +461,21 @@ double DEBUG_maxDiff = DBL_MIN;
 		        // of the rgrid cell, could be something like this:
 		        // + -------------- +
 		        // |   |      /     |
-		        // |   |     /      |
+		        // | 1 | 3   /  5   |
 		        // |   ^    /------ |
 		        // |  / \  /    |   |
-		        // | /   \/     |   |
-		        // |/     \     |   |
+		        // | /   \/  4  | 6 |
+		        // |/  2  \     |   |
 		        // + -------------- +
     
 		        // --- Calculate volume of subcells --- //
 		        // Now that we have the unstrucutred grid from the clipping, we can loop
-		        // over the subcells in that grid, calculate the volumes, and generate
-		        // a new volume for the rectilinear grid. We also need the ratio
-		        // between old and new volumes to weigh the variables (like mass, density,
-		        // pressure, etc.).
-
+		        // over the subcells in that grid and calculate the volumes. We also need
+		        // the ratio between old and new volumes to weigh the variables (like mass,
+		        // density, pressure, etc.).
 
 		        vtkDoubleArray* subCellVolumes = CalculateCellVolumes(ug, "subCellVolume");
 		        debug5 << "Calculated volumes of subCells" << std::endl;
-		        
-				// --- DEBUG --- DEBUG --- DEBUG --- DEBUG --- DEBUG --- DEBUG --- DEBUG ---- //
-				double DEBUG_rCellVolumeTEST = 0.0;
-				for (vtkIdType tmp = 0; tmp < subCellVolumes->GetNumberOfTuples(); tmp++)
-				{
-				    DEBUG_rCellVolumeTEST += subCellVolumes->GetComponent(tmp,0);
-				}
-				if (DEBUG_rCellVolumeTEST != rCellVolume)
-				{
-				    double diff = std::abs(DEBUG_rCellVolumeTEST - rCellVolume);
-				    DEBUG_maxDiff = diff > DEBUG_maxDiff ? diff : DEBUG_maxDiff;
-				    // std::cout << "Volume from subcells: " << DEBUG_rCellVolumeTEST << std::endl;
-				}
-				// --- DEBUG --- DEBUG --- DEBUG --- DEBUG --- DEBUG --- DEBUG --- DEBUG ---- //
 
 		        // Get the volume of the original cells for this ugrid
 		        vtkDoubleArray* originalCellVolumes = vtkDoubleArray::SafeDownCast(
@@ -538,26 +501,7 @@ double DEBUG_maxDiff = DBL_MIN;
 		            continue; // Go to the next rgrid cell
 		        }
 		        vtkDataArray* ghostVariable = ug->GetCellData()->GetArray("avtGhostZones");
-// std::cout << "Number of clipped cells: " << myVariable->GetNumberOfTuples() << std::endl;
-		        if (atts.GetVariableType() == RemapAttributes::intrinsic) // like density
-		        {
-		            for (vtkIdType tuple = 0;
-		                 tuple < myVariable->GetNumberOfTuples(); tuple++)
-		            {
-		                if (ghostVariable != NULL &&
-		                    ghostVariable->GetComponent(tuple, 0) == 1)
-		                { // Ignore ghost cells
-		                    continue;
-		                }
-		                else {
-		                    value += myVariable->GetComponent(tuple, 0) *
-		                        subCellVolumes->GetComponent(tuple, 0);
-		                }
-		            }
-		            value /= rCellVolume;
-		            vars->SetComponent(rCell, 0, value + vars->GetComponent(rCell, 0));
-		        }
-		        else if (atts.GetVariableType() == RemapAttributes::extrinsic) // like mass
+		        if (atts.GetVariableType() == RemapAttributes::extrinsic) // like mass
 		        {
 		            for (vtkIdType tuple = 0;
 		                 tuple < myVariable->GetNumberOfTuples(); tuple++)
@@ -575,229 +519,28 @@ double DEBUG_maxDiff = DBL_MIN;
 		            }
 		            vars->SetComponent(rCell, 0, value + vars->GetComponent(rCell, 0));
 		        }
-		        else
+		        else // intrinsic (like density) is the default
 		        {
-		            debug1 << "Should not be possible to get here... " << std::endl;
+		            for (vtkIdType tuple = 0;
+		                 tuple < myVariable->GetNumberOfTuples(); tuple++)
+		            {
+		                if (ghostVariable != NULL &&
+		                    ghostVariable->GetComponent(tuple, 0) == 1)
+		                { // Ignore ghost cells
+		                    continue;
+		                }
+		                else {
+		                    value += myVariable->GetComponent(tuple, 0) *
+		                        subCellVolumes->GetComponent(tuple, 0);
+		                }
+		            }
+		            value /= rCellVolume;
+		            vars->SetComponent(rCell, 0, value + vars->GetComponent(rCell, 0));
 		        }
-		        debug5 << "Remapped the variable to cell " << rCell << std::endl;
 		        // Done updating variable
 			}
 		}
-	}
-
-	return;
-
-    for (vtkIdType rCell = 0; rCell < rg->GetNumberOfCells(); rCell++)
-    {
-    	// vtkVisItClipper* last = NULL;
-    	// vtkVisItClipper* clipper = vtkVisItClipper::New();
-    	// clipper->SetInputData(in_ds);
-    	// // std::vector<vtkVisItClipper*> clipperArray;
-    	// // Not sure if I need this ^
-
-
-    	// // Add planes for 3D case
-    	// if (is3D)
-    	// {
-
-    	// }
-        // Get the bounds from the cell.
-        double cellBounds[6] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
-        rg->GetCell(rCell)->GetBounds(cellBounds);
-        
-        // Loop over each plane and clip the cells
-        vtkVisItClipper* last = NULL;
-        // Store these in vectors to maintain access to the pointers so that
-        // I can delete them when clipping is done.
-        std::vector<vtkVisItClipper*> clipperArray;      
-        std::vector<vtkImplicitBoolean*> funcsArray;
-        std::vector<vtkPlane*> planeArray;
-        for (int cdx = 0; cdx < 6; cdx++) {
-
-            if (cdx == 4 && !is3D) // Stop if only 2D
-            {
-                break;
-            }
-        
-            double origin[3] = {0., 0., 0.};
-            double normal[3] = {0., 0., 0.};
-            if (cdx == 0) {
-                origin[0] = cellBounds[cdx];
-                normal[0] = -1.0;
-            } else if (cdx == 1) {
-                origin[0] = cellBounds[cdx];
-                normal[0] = 1.0;
-            } else if (cdx == 2) {
-                origin[1] = cellBounds[cdx];
-                normal[1] = -1.0;
-            } else if (cdx == 3) {
-                origin[1] = cellBounds[cdx];
-                normal[1] = 1.0;
-            } else if (cdx == 4) {
-                origin[2] = cellBounds[cdx];
-                normal[2] = -1.0;
-            } else if (cdx == 5) {
-                origin[2] = cellBounds[cdx];
-                normal[2] = 1.0;
-            }
-            vtkPlane* plane = vtkPlane::New();
-            plane->SetOrigin(origin);
-            plane->SetNormal(normal);
-            planeArray.push_back(plane);
-        
-            vtkImplicitBoolean* funcs = vtkImplicitBoolean::New();
-            funcs->AddFunction(plane);
-            funcsArray.push_back(funcs);
-            
-            vtkVisItClipper* clipper = vtkVisItClipper::New();
-            clipper->SetInputData(in_ds);
-            clipper->SetClipFunction(funcs);
-            clipper->SetInsideOut(true);
-            clipper->SetRemoveWholeCells(false);
-            
-            if (last != NULL) {
-                clipper->SetInputConnection(last->GetOutputPort());
-            }
-            last = clipper;
-            clipperArray.push_back(clipper);
-        } // end clipping loop
-        debug5 << "Cell " << rCell << " has been clipped" << std::endl;
-        
-        // Collection of clipped cells from the original grid that now take the shape
-        // of the rgrid cell, could be something like this:
-        // + -------------- +
-        // |   |      /     |
-        // |   |     /      |
-        // |   ^    /------ |
-        // |  / \  /    |   |
-        // | /   \/     |   |
-        // |/     \     |   |
-        // + -------------- +
-        last->Update();
-        vtkUnstructuredGrid* ug = vtkUnstructuredGrid::New();
-        ug->DeepCopy(last->GetOutput());
-        //vtkUnstructuredGrid* ug = last->GetOutput();
-    
-        // --- Calculate volume of subcells --- //
-        // Now that we have the unstrucutred grid from the clipping, we can loop
-        // over the subcells in that grid, calculate the volumes, and generate
-        // a new volume for the rectilinear grid. We also need the ratio
-        // between old and new volumes to weigh the variables (like mass, density,
-        // pressure, etc.).
-        
-        vtkDoubleArray* subCellVolumes = CalculateCellVolumes(ug, "subCellVolume");
-        debug5 << "Calculated volumes of subCells" << std::endl;
-        
-// --- DEBUG --- DEBUG --- DEBUG --- DEBUG --- DEBUG --- DEBUG --- DEBUG ---- //
-double DEBUG_rCellVolumeTEST = 0.0;
-for (vtkIdType j = 0; j < subCellVolumes->GetNumberOfTuples(); j++) {
-    DEBUG_rCellVolumeTEST += subCellVolumes->GetComponent(j,0);
-}
-if (DEBUG_rCellVolumeTEST != rCellVolume)
-{
-    double diff = std::abs(DEBUG_rCellVolumeTEST - rCellVolume);
-    DEBUG_maxDiff = diff > DEBUG_maxDiff ? diff : DEBUG_maxDiff;
-    // std::cout << "Volume from subcells: " << DEBUG_rCellVolumeTEST << std::endl;
-}
-// --- DEBUG --- DEBUG --- DEBUG --- DEBUG --- DEBUG --- DEBUG --- DEBUG ---- //
-        
-        // Get the volume of the original cells for this ugrid
-        vtkDoubleArray* originalCellVolumes = vtkDoubleArray::SafeDownCast(
-            ug->GetCellData()->GetArray("avtRemapOriginalVolume"));
-        
-        
-        // --- Calculate variable updates --- //
-        // Two types of variables: intrinsic (like density) and extrinsic (like
-        // mass). To update the variables:
-        //        (1) Intrinsic values must be made extrinsic within the volume of
-        //            the sub cell, then totaled among the set of sub cells, then
-        //            made intrinsic again within the volume of the new cell.
-        //        (2) Extrinsic values must be made intrisic within the volume of
-        //            original cell, then made extrinsic within the volume of the
-        //            sub cell, then totaled among the set of sub cells.
-        
-        double value = 0.0;
-        vtkDataArray* myVariable = ug->GetCellData()->GetArray(vars->GetName());
-        if (myVariable == NULL)
-        { // in_ds has the variable, but ug does not
-            debug4 << "Clipped cell-grid does not have the variable" << std::endl;
-            continue; // Go to the next rgrid cell
-        }
-        vtkDataArray* ghostVariable = ug->GetCellData()->GetArray("avtGhostZones");
-        if (atts.GetVariableType() == RemapAttributes::intrinsic) // like density
-        {
-            for (vtkIdType tuple = 0;
-                 tuple < myVariable->GetNumberOfTuples(); tuple++)
-            {
-                if (ghostVariable != NULL &&
-                    ghostVariable->GetComponent(tuple, 0) == 1)
-                { // Ignore ghost cells
-                    continue;
-                }
-                else {
-                    value += myVariable->GetComponent(tuple, 0) *
-                        subCellVolumes->GetComponent(tuple, 0);
-                }
-            }
-            value /= rCellVolume;
-            vars->SetComponent(rCell, 0, value + vars->GetComponent(rCell, 0));
-        }
-        else if (atts.GetVariableType() == RemapAttributes::extrinsic) // like mass
-        {
-            for (vtkIdType tuple = 0;
-                 tuple < myVariable->GetNumberOfTuples(); tuple++)
-            {
-                if (ghostVariable != NULL &&
-                    ghostVariable->GetComponent(tuple, 0) == 1)
-                { // Ignore ghost cells
-                    continue;
-                }
-                else {
-                    value += myVariable->GetComponent(tuple, 0) / 
-                        originalCellVolumes->GetComponent(tuple, 0) *
-                        subCellVolumes->GetComponent(tuple, 0);
-                }
-            }
-            vars->SetComponent(rCell, 0, value + vars->GetComponent(rCell, 0));
-        }
-        else
-        {
-            debug1 << "Should not be possible to get here... " << std::endl;
-        }
-        debug5 << "Remapped the variable to cell " << rCell << std::endl;
-        
-        // --- Clean up --- //
-        ////std::cout << "Deleting myVariable" << std::endl;
-        ////myVariable->Delete();
-        ////std::cout << "Deleting originalCellVolumes" << std::endl;
-        ////originalCellVolumes->Delete();
-        ////std::cout << "Deleting subCellVolumes" << std::endl;
-        //subCellVolumes->Delete();
-        ////std::cout << "Deleting ug" << std::endl;
-        //ug->Delete();
-        ////std::cout << "Does not like trying to delete ug" << std::endl;
-        ////std::cout << "Deleting vectors" << std::endl;
-        ////std::cout << "Does not like trying to delete vectors" << std::endl;
-        //int stop = is3D ? 6 : 4;
-        //for (int i = 0; i < stop; ++i)
-        //{
-        //    clipperArray[i]->Delete();
-        //    funcsArray[i]->Delete();
-        //    planeArray[i]->Delete();
-        //}
-        ////std::cout << "Deleting last" << std::endl;
-        ////last->Delete();
-        ////std::cout << "Does not like trying to delete last" << std::endl;
-    } // End loop over rCells
-    
-    // --- More Clean up --- //
-    ////std::cout << "Deleting avtRemapOriginVolume" << std::endl;
-    //avtRemapOriginalVolume->Delete();
-    ////std::cout << "Deleting in_ds" << std::endl;
-    //in_ds->Delete();
-    
-    
-    return;
+	} // Finished looping over cells
 } // End ClipDomain
 
 
@@ -826,26 +569,6 @@ avtRemapFilter::MakeClippingFunction(const vtkIdType& rCell, int side)
 	} else { //if (side == 4 || side == 5) {
 		funcsArrayZ.push_back(funcs);
 	}
-
-// --- DEBUG --- DEBUG --- DEBUG --- DEBUG --- DEBUG --- //
-	// std::cout << "Origin: ["
-	// 		  << origin[0] << ", "
-	// 		  << origin[1] << ", "
-	// 		  << origin[2] << "]" << std::endl;
-	// std::cout << "Normal: ["
-	// 		  << normal[0] << ", "
-	// 		  << normal[1] << ", "
-	// 		  << normal[2] << "]" << std::endl;
-// --- DEBUG --- DEBUG --- DEBUG --- DEBUG --- DEBUG --- //
-}
-
-
-
-void
-avtRemapFilter::Output() {
-    debug4 << "avtRemapFilter::Output" << std::endl;
-    avtDataTree_p outTree = new avtDataTree(rg, 0);
-    SetOutputDataTree(outTree);
 }
 
 // ****************************************************************************
@@ -928,34 +651,27 @@ avtRemapFilter::CalculateCellVolumes(vtkDataSet* in_ds, const char* name)
         switch(cell->GetCellType())
         {
             case VTK_TRIANGLE:
-                debug5 << "VTK_TRIANGLE" << std::endl;
                 volume = v_tri_area(3, coordinates);
                 break;
             case VTK_QUAD:
-                debug5 << "VTK_QUAD" << std::endl;
                 volume = v_quad_area(4, coordinates);
                 break;
             case VTK_PIXEL:
-                debug5 << "VTK_PIXEL" << std::endl;
                 Swap3(coordinates, 2, 3);
                 volume = v_quad_area(4, coordinates);
                 break;
             case VTK_VOXEL:
-                debug5 << "VTK_VOXEL" << std::endl;
                 Swap3(coordinates, 2, 3);
                 Swap3(coordinates, 6, 7);
                 volume = v_hex_volume(8, coordinates);
                 break;
             case VTK_HEXAHEDRON:
-                debug5 << "VTK_HEXAHEDRON" << std::endl;
                 volume = v_hex_volume(8, coordinates);
                 break;
             case VTK_TETRA:
-                debug5 << "VTK_TETRA" << std::endl;
                 volume = v_tet_volume(4, coordinates);
                 break;
             case VTK_WEDGE:
-                debug5 << "VTK_WEDGE" << std::endl;
                 double tet_coordinates[4][3];
                 volume = 0;
                 for (int i = 0 ; i < 3 ; i++)
@@ -967,7 +683,6 @@ avtRemapFilter::CalculateCellVolumes(vtkDataSet* in_ds, const char* name)
                 }
                 break;
             case VTK_PYRAMID:
-                debug5 << "VTK_PYRAMID" << std::endl;
                 double one[4][3];
                 double two[4][3];
                 Copy3(coordinates,one[0], 0);
@@ -981,23 +696,15 @@ avtRemapFilter::CalculateCellVolumes(vtkDataSet* in_ds, const char* name)
                 volume = v_tet_volume(4,one) + v_tet_volume(4, two);
                 break;
             default:
-                debug5 << "Unknown_Type" << std::endl;
                 debug4 << "Cannot calculate volume for cell of type: "
                        << cell->GetCellType() << std::endl
-                       << "Scalars won't be remapped." << std::endl;
-                // TODO: If the subCells cannot be classified, then we can't do
-                // anything. However, I don't think this will ever happen because
-                // the clipper is designed to output cells that we can process.
-                // If the original cells cannot be classified, then extrinsic
-                // will not work, but instrinsic will still work. Need a better
-                // error messaging here to handle these cases.
+                       << "Extrinsic scalars may not be accurately remapped." << std::endl;
                 break;
         } // End switch
         
         volumeArray->SetComponent(i, 0, volume); // store the volume in our array
     }
     
-    debug5 << "Done calculating volume" << std::endl;
     return volumeArray;
 }
 
@@ -1134,22 +841,18 @@ avtRemapFilter::CreateGrid(
     debug4 << "avtRemapFilter::CreateGrid" << std::endl;
     vtkDataArray *xc = NULL;
     vtkDataArray *yc = NULL;
-    // vtkDataArray *zc = NULL;
 
     double width  = rGridBounds[1] - rGridBounds[0];
     double height = rGridBounds[3] - rGridBounds[2];
 
     xc = GetCoordinates(rGridBounds[0], width, numX+1, minX, maxX+1);
     yc = GetCoordinates(rGridBounds[2], height, numY+1, minY, maxY+1);
-    // zc = GetCoordinates(rGridBounds[4], 0, 1, 0, 1);
 
     rg->SetDimensions(maxX-minX+1, maxY-minY+1, 1);
     rg->SetXCoordinates(xc);
     xc->Delete();
     rg->SetYCoordinates(yc);
     yc->Delete();
-    // rg->SetZCoordinates(zc);
-    // zc->Delete();
 }
 
 
