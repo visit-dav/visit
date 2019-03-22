@@ -219,7 +219,7 @@ def test3():
     ClearWindow()
     AddOperator("Elevate")
     e = ElevateAttributes()
-    e.useXYLimits = 1
+    e.useXYLimits = e.Always
     SetOperatorOptions(e)
     AddOperator("Transform")
     t = TransformAttributes()
