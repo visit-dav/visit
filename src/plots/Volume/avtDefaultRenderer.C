@@ -160,6 +160,9 @@ avtDefaultRenderer::~avtDefaultRenderer()
 //    changed smart pointers to standard pointers and added memory
 //    management. 
 //
+//    Alister Maguire, Mon Mar 25 09:20:43 PDT 2019
+//    Updated to use different scalars for opacity and color. 
+//
 // ****************************************************************************
 
 void
@@ -231,14 +234,17 @@ avtDefaultRenderer::Render(
         // We need to map this to a value that our mapper accepts, 
         // and then clamp it out of vision.  
         //
-        //FIXME: the x, y, z doesn't match the tuples correctly...
         int ptId = 0;
-        for (int x = 0; x < dims[0]; ++x)
+        for (int z = 0; z < dims[2]; ++z)
         {
             for (int y = 0; y < dims[1]; ++y)
             {
-                for (int z = 0; z < dims[2]; ++z)
+                for (int x = 0; x < dims[0]; ++x)
                 {
+                    //
+                    // Our opacity and color data may differ. We
+                    // need to add both as two separate components. 
+                    //
                     float dataTuple = dataArr->GetTuple1(ptId);
                     if (dataTuple <= NO_DATA_VALUE)
                     {
@@ -279,7 +285,6 @@ avtDefaultRenderer::Render(
                 }
             }
         }
-
 
         debug5 << mName << "Adding data to the SmartVolumeMapper" << endl;
 
