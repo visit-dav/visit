@@ -38,6 +38,9 @@
 #    better visibility. Updated the scaling test to not use shading (again
 #    for better visibility).  
 #
+#    Alister Maguire, Mon Mar 25 11:19:54 PDT 2019
+#    Added an opacity test that changes the opacity variable. 
+#
 # ----------------------------------------------------------------------------
 
 def InitAnnotations():
@@ -157,6 +160,19 @@ def TestVolumeOpacity():
     volAtts.SetFreeformOpacity(opac2)
     SetPlotOptions(volAtts)
     Test("volumeOpacity_04")
+
+    #
+    # Make sure we can change out opacity variable. 
+    #
+    DeleteAllPlots()
+    OpenDatabase(silo_data_path("globe.silo"))
+    AddPlot("Volume", "dz")
+    volAtts = VolumeAttributes()
+    volAtts.opacityVariable = "v"
+    volAtts.lightingFlag = 0
+    SetPlotOptions(volAtts)
+    DrawPlots()
+    Test("volumeOpacity_05")
 
     DeleteAllPlots()
 
@@ -308,6 +324,7 @@ def TestVolumeSampling():
     Test("volumeSampling_03")
 
     DeleteAllPlots()
+
 
 InitAnnotationsLegendOn()
 TestVolumeColorControlPoints()
