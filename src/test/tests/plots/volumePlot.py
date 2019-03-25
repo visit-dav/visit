@@ -325,7 +325,6 @@ def TestVolumeSampling():
 
     DeleteAllPlots()
 
-
 InitAnnotationsLegendOn()
 TestVolumeColorControlPoints()
 TestVolumeGaussianControlPoints()
