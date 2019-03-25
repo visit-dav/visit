@@ -276,7 +276,8 @@ avtDefaultRenderer::Render(
                     }
                     else
                     {
-                        float numerator = 255.0 * (opacTuple - volume.opacity.min);
+                        float numerator = 255.0 * 
+                            (opacTuple - volume.opacity.min);
                         imageToRender->SetScalarComponentFromFloat(
                             x, y, z, 1, (numerator / opacMag));
                     }
