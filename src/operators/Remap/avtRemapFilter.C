@@ -539,26 +539,20 @@ avtRemapFilter::ClipDomain(avtDataTree_p inLeaf) {
 		        }
 		        // Done updating variable
 
-				std::cout << "clipperLeft: " << clipperLeft->GetReferenceCount() << std::endl;
-				std::cout << "clipperRight: " << clipperRight->GetReferenceCount() << std::endl;
-				std::cout << "clipperTop: " << clipperTop->GetReferenceCount() << std::endl;
-				std::cout << "clipperBottom: " << clipperBottom->GetReferenceCount() << std::endl;
-				std::cout << "clipperFront: " << clipperFront->GetReferenceCount() << std::endl;
-				std::cout << "clipperBack: " << clipperBack->GetReferenceCount() << std::endl;
-				std::cout << "last: " << last->GetReferenceCount() << std::endl;
-				std::cout << "ug: " << ug->GetReferenceCount() << std::endl;
-				std::cout << "subCellVolumes: " << subCellVolumes->GetReferenceCount() << std::endl;
-				std::cout << "originalCellVolumes: " << originalCellVolumes->GetReferenceCount() << std::endl;
-				std::cout << "myVariable: " << myVariable->GetReferenceCount() << std::endl;
-				if (ghostVariable != NULL) {
-					std::cout << "ghostVariable: " << ghostVariable->GetReferenceCount() << std::endl;
-				}
-				std::cout << std::endl;
+				clipperLeft->Delete();
+				clipperRight->Delete();
+				clipperTop->Delete();
+				clipperBottom->Delete();
+				clipperFront->Delete();
+				clipperBack->Delete();
+				subCellVolumes->Delete();
 			}
 		}
 	} // Finished looping over cells
-	std::cout << "avtRemapOriginalVolume: " << avtRemapOriginalVolume->GetReferenceCount() << std::endl;
-	std::cout << "in_ds: " << in_ds->GetReferenceCount() << std::endl;
+	
+	in_ds->GetCellData()->RemoveArray(avtRemapOriginalVolume->GetName());
+	avtRemapOriginalVolume->Delete();
+	in_ds->Delete();
 } // End ClipDomain
 
 
