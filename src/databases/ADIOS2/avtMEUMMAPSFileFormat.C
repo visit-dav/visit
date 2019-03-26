@@ -74,8 +74,6 @@ avtMEUMMAPSFileFormat::Identify(const char *fname)
     int afind = 0;
     for (auto it = attributes.begin(); it != attributes.end(); it++)
     {
-        cout<<"attr: "<<it->first<<" "<<it->second<<endl;
-        cout<<"   "<<it->second["Value"]<<endl;
         if (it->first == "app" && it->second["Value"] == "\"meumapps\"")
             afind++;
     }
@@ -86,7 +84,6 @@ avtMEUMMAPSFileFormat::Identify(const char *fname)
         if (std::find(reqVars.begin(), reqVars.end(), vi->first) != reqVars.end())
             vfind++;
 
-    cout<<"Meuumaps check: "<<afind<<" "<<vfind<<endl;
     return afind == 1 && vfind==reqVars.size();
 }
 

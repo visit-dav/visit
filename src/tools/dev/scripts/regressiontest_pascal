@@ -1,0 +1,527 @@
+#!/bin/sh -x
+#
+# Modifications:
+#   Mark C. Miller, Thu Jul 29 23:35:19 PDT 2010
+#   Added option to ignore third party lib problems to cmake invokation.
+#
+#   Eric Brugger, Thu Mar 31 09:38:38 PDT 2011
+#   Modified the script to work with the 2.2RC instead of the 2.0RC.
+#
+#   Eric Brugger, Tue Apr 12 10:53:02 PDT 2011
+#   Removed the specular lighting tests from the skip list.
+#
+#   Jeremy Meredith, Tue Aug  9 17:19:55 EDT 2011
+#   Updated the subversion host/path.
+#
+#   Eric Brugger, Thu Aug 25 11:22:39 PDT 2011
+#   Modified the script to work on edge.
+#
+#   Eric Brugger, Thu Aug 25 14:11:16 PDT 2011
+#   Modified the script to send out the e-mail only after the results
+#   were posted.
+#
+#   Eric Brugger, Wed Jan 25 13:26:36 PST 2012
+#   Modified the command that submits the batch job to run the test suite
+#   to specify that it isn't using any of the Lustre file systems so that
+#   the job will run even if one of the Lustre file systems is down.
+#
+#   Eric Brugger, Fri Jun 22 07:54:19 PDT 2012
+#   I modified the script to use cmake 2.8.8. I also added several failing
+#   tests to the skip list.
+#
+#   Mark C. Miller, Wed Jun 27 12:30:13 PDT 2012
+#   Removed zipwrapper tests from skip list because the tests were updated
+#   to use STL in place of VTK.
+#
+#   Cyrus Harrison, Wed Aug 15 12:31:00 PDT 2012
+#   Update to use python test suite
+#
+#   Eric Brugger, Fri Oct 11 14:10:51 PDT 2013
+#   Change the path to the cmake used to build visit to the latest 2.8.10.2
+#   version.
+#
+#   Eric Brugger, Fri Oct 18 15:01:56 PDT 2013
+#   I changed "make test" to "make testdata" in the data directory since the
+#   name of the target changed.
+#
+#   Eric Brugger, Fri Aug 15 11:02:18 PDT 2014
+#   I added "--parallel-launch srun" to the runtest command to specify srun
+#   as the parallel launch method.
+#
+#   Eric Brugger, Fri Aug 15 12:54:39 PDT 2014
+#   I modified the script to use cmake 2.8.12.2 to configure visit.
+#
+#   Eric Brugger, Wed Oct 29 08:04:01 PDT 2014
+#   I modified the script to use surface.
+#
+#   Eric Brugger, Tue Jan 13 14:09:04 PST 2015
+#   I modified the script to use the account views for submitting the batch
+#   job.
+#
+#   Eric Brugger, Thu Feb 12 08:17:18 PST 2015
+#   I modified the script to use cmake 3.0.2 to configure visit.
+#
+#   Eric Brugger, Fri Sep 11 14:05:18 PDT 2015
+#   I added the command line option "-branch", which takes a branch name.
+#   While I was at it I also modified the script to use 16 cores instead of
+#   12 since it is grabbing an entire node of surface, which has 16 cores.
+#
+#   Eric Brugger, Wed Sep  7 09:17:29 PDT 2016
+#   I updated the script to build using the newly built 2.12 libraries.
+#
+#   Eric Brugger, Mon Jun 25 14:35:01 PDT 2018
+#   I modified the script to run on pascal.
+#
+#   Kathleen Biagas, Thu Nov  8 10:14:27 PST 2018
+#   Added creation and installation of package to the build.
+#   Added cmakeCmd, pass it to test suite.
+#
+#   Eric Brugger, Wed Dec  5 13:06:31 PST 2018
+#   I modified the script to handle the new structure of the src, data and
+#   test directories.
+#
+#   Eric Brugger, Fri Jan  4 09:34:59 PST 2019
+#   I modified the script to work with the GitHub repository.
+#
+
+
+#
+# Determine the users name and e-mail address.
+#
+user=`whoami`
+
+#
+# Set the user e-mail address.
+#
+userNersc=unknown
+userEmail=unknown
+case $user in
+    bonnell)
+        userNersc=bonnell
+        userEmail=biagas2@llnl.gov
+        ;;
+    kbonnell)
+        userNersc=bonnell
+        userEmail=biagas2@llnl.gov
+        ;;
+    brugger)
+        userNersc=brugger
+        userEmail=brugger1@llnl.gov
+        ;;
+    cyrush)
+        userNersc=cyrush
+        userEmail=cyrush@llnl.gov
+        ;;
+    hrchilds)
+        userNersc=hrchilds
+        userEmail=hank@uoregon.edu
+        ;;
+    mcmiller)
+        userNersc=miller86
+        userEmail=miller86@llnl.gov
+        ;;
+    miller)
+        userNersc=miller86
+        userEmail=miller86@llnl.gov
+        ;;
+    miller86)
+        userNersc=miller86
+        userEmail=miller86@llnl.gov
+        ;;
+    harrison37)
+        userNersc=cyrush
+        userEmail=cyrush@llnl.gov
+        ;;
+    cyrush)
+        userNersc=cyrush
+        userEmail=cyrush@llnl.gov
+        ;;
+esac
+
+if test "$userEmail" = "unknown" ; then
+    echo "Unknown user name. Exiting."
+    exit 1
+fi
+
+#
+# Parse the command line to determine if we should run the test suite
+# on the trunk or RC.
+#
+debug="false"
+branch="trunk"
+revision="latest"
+serial="false"
+testHost="pascal"
+testDir="/usr/workspace/wsa/visit"
+post="true"
+nerscHost="cori.nersc.gov"
+
+for abc
+do
+    case $1 in
+        -trunk)
+            branch="trunk"
+            shift
+            ;;
+        -branch)
+            branch=$2
+            shift 2
+            ;;
+        -serial)
+            serial="true"
+            shift
+            ;;
+        -parallel)
+            serial="false"
+            shift
+            ;;
+        -d)
+            debug="true"
+            shift
+            ;;
+        -r)
+            revision=$2
+            shift 2
+            ;;
+        -host)
+            testHost=$2
+            shift 2
+            ;;
+        -no-post)
+            post="false"
+            shift
+            ;;
+    esac
+done
+
+if test "$branch" = "trunk" ; then
+    workingDir="test_trunk"
+    cmakeCmd="/usr/workspace/wsa/visit/visit/thirdparty_shared/3.0.0b/toss3/cmake/3.9.3/linux-x86_64_gcc-4.9/bin/cmake"
+else
+    workingDir="test_branch"
+    cmakeCmd="/usr/gapps/visit/thirdparty_shared/2.12.0/cmake/3.0.2/linux-x86_64_gcc-4.4/bin/cmake"
+fi
+
+#
+# Create the script to checkout the source code.
+#
+rm -f checkout_${testHost}
+cat <<EOF > checkout_${testHost}
+#!/bin/sh
+
+dateTag=\$1
+
+# Update the repository.
+if test "$debug" = "true" ; then
+   echo "Checkout of $branch started at: \`date\`" | mail -s "Checkout started" $userEmail
+fi
+
+echo "Checkout of $branch started at: \`date\`"
+
+# Create the working directory if necessary.
+if test ! -e $testDir/$workingDir; then
+    mkdir $testDir/$workingDir
+fi
+
+cd $testDir/$workingDir
+
+rm -f buildlog
+
+# Clone the repository if necessary.
+if test ! -e $testDir/$workingDir/visit; then
+    git clone ssh://git@github.com/visit-dav/visit.git >> buildlog 2>&1
+fi
+
+# Update the repository.
+cd visit
+rm -f .git/index.lock >> ../buildlog 2>&1
+git pull >> ../buildlog 2>&1
+
+if test "$branch" = "trunk" ; then
+    if test "$revision" = "latest" ; then
+        echo "Using the trunk"
+        # Do nothing.
+    else
+        echo "Using a version on the trunk"
+        # Set to a specific revision
+    fi
+else
+    if test "$revision" = "latest" ; then
+        echo "Using a branch"
+        # Set to a specific branch.
+    else
+        echo "Using a specific version on a branch"
+        # Set to a specific revision on a specific branch.
+    fi
+fi
+
+if test "$debug" = "true" ; then
+    echo "Checkout of $branch completed at: \`date\`" | mail -s "Checkout completed" $userEmail
+fi
+
+echo "Checkout of $branch completed at: \`date\`"
+
+EOF
+
+chmod 750 checkout_${testHost}
+
+#
+# Create the script to build and run the test suite on $testHost.
+#
+rm -f runit_${testHost}
+cat <<EOF > runit_${testHost}
+#!/bin/sh
+
+dateTag=\$1
+
+if test "$serial" = "true" ; then
+    modes="$testHost,$branch,serial"
+else
+    modes="$testHost,$branch,serial $testHost,$branch,parallel $testHost,$branch,scalable,parallel,icet"
+fi
+
+cd $testDir/$workingDir/visit
+
+# Build the code
+rm -rf build
+mkdir build
+cd build
+export PATH=\$PATH:/usr/bin/X11
+export PATH=/usr/tce/packages/cuda/cuda-8.0/bin:\$PATH
+export CUDA_HOME=/usr/tce/packages/cuda/cuda-8.0
+export LD_LIBRARY_PATH=/usr/tce/packages/cuda/cuda-8.0/lib64:\$LD_LIBRARY_PATH
+
+if test "$serial" = "true" ; then
+    sed -i "s/VISIT_PARALLEL ON/VISIT_PARALLEL OFF/" config-site/pascal83.cmake
+fi
+if test "$branch" = "trunk" ; then
+    $cmakeCmd \
+        -DVISIT_CONFIG_SITE=config-site/pascal83.cmake \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DVISIT_BUILD_ALL_PLUGINS=1 \
+        -DVISIT_DATA_MANUAL_EXAMPLES:BOOL=ON \
+        -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON \
+        -DIGNORE_THIRD_PARTY_LIB_PROBLEMS:BOOL=ON \
+        -DCMAKE_CXX_FLAGS_RELEASE:STRING="-fopenmp -O3 -DNDEBUG -Wall -pedantic -Wextra -Wno-long-long -Wno-unused-parameter" \
+        -DCMAKE_C_FLAGS_RELEASE:STRING="-O3 -DNDEBUG -Wall -pedantic -Wextra -Wno-long-long -Wno-unused-parameter" \
+        ../src >> ../../buildlog 2>&1
+else
+    $cmakeCmd \
+        -DVISIT_CONFIG_SITE=config-site/pascal83.cmake \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DVISIT_BUILD_ALL_PLUGINS=1 \
+        -DVISIT_DATA_MANUAL_EXAMPLES:BOOL=ON \
+        -DIGNORE_THIRD_PARTY_LIB_PROBLEMS:BOOL=ON \
+        -DCMAKE_CXX_FLAGS_RELEASE:STRING="-fopenmp -O3 -DNDEBUG -Wall -pedantic -Wextra -Wno-long-long -Wno-unused-parameter" \
+        -DCMAKE_C_FLAGS_RELEASE:STRING="-O3 -DNDEBUG -Wall -pedantic -Wextra -Wno-long-long -Wno-unused-parameter" \
+        -DCMAKE_MAKE_PROGRAM:FILEPATH="/usr/gapps/visit/gmake/4.0/chaos_5_x86_64_ib/bin/make" \
+        ../src >> ../../buildlog 2>&1
+fi
+rm -f ../make.out ../make.err
+make -k -j 36 package 1>../make.out 2>../make.err
+if test $? -ne 0; then
+    echo "Source build FAILED at: \`date\`" | mail -s "Source build FAILED" $userEmail
+    exit 1
+fi
+if test "$debug" = "true" ; then
+    echo "Source build completed at: \`date\`" | mail -s "Source build completed" $userEmail
+fi
+cat ../make.out >> ../../buildlog
+cat ../make.err >> ../../buildlog
+
+echo "Source build completed at: \`date\`"
+
+# Build the test data
+cd ../data
+git lfs pull
+cd ../build
+cd testdata
+make -j 8 data >> ../../../buildlog 2>&1
+if test "$debug" = "true" ; then
+    echo "Data build completed at: \`date\`" | mail -s "Data build completed" $userEmail
+fi
+
+echo "Data build completed at: \`date\`"
+
+if test "$debug" = "true" ; then
+    echo "Starting install:\`date\`" | mail -s "Starting install" $userEmail
+fi
+
+echo "Starting install:\`date\`"
+
+# Install the package
+cd ../
+version=`cat $testDir/$workingDir/visit/src/VERSION`
+
+../src/tools/dev/scripts/visit-install -c llnl_open \$version linux-x86_64 ./_install >> ../../installlog 2>&1
+
+if test "$testHost" = "pascal"     || \
+   test "$testHost" = "borax"      || \
+   test "$testHost" = "catalyst"   || \
+   test "$testHost" = "jade"       || \
+   test "$testHost" = "max"        || \
+   test "$testHost" = "mica"       || \
+   test "$testHost" = "quarts"     || \
+   test "$testHost" = "rzgenie"    || \
+   test "$testHost" = "rzhasgpu"   || \
+   test "$testHost" = "rztopaz"    || \
+   test "$testHost" = "rztrona"    || \
+   test "$testHost" = "rzsurface"  || \
+   test "$testHost" = "syrah"      || \
+   test "$testHost" = "agate"  ; then
+    mv ./_install/\$version/linux-x86_64 ./_install/\$version/linux-x86_64-toss3
+fi
+
+
+if test "$debug" = "true" ; then
+    echo "Install completed at: \`date\`" | mail -s "Install completed" $userEmail
+fi
+
+echo "Install completed at: \`date\`"
+
+if test "$debug" = "true" ; then
+    echo "Starting tests:\`date\`" | mail -s "Starting tests" $userEmail
+fi
+
+echo "Starting tests:\`date\`"
+
+# Run the tests, consolidating the results in one directory
+cd ../src/test
+rm -rf 2019-??-??-??:?? py_src output *.pyc
+mkdir \$dateTag output
+for m in \$modes; do
+    theMode=\`echo \$m | tr ',' '_'\`
+    resDir=output/\$theMode
+
+    if test "$debug" = "true" ; then
+        echo "runtest with mode = \$m" | mail -s "runtest with mode = \$m" $userEmail
+    fi
+
+    echo "runtest with mode = \$m"
+
+
+    # Run the test
+    ../../src/test/runtest --parallel-launch "srun" -b ../../test/baseline -d ../../build/testdata -e ../../build/bin/visit -o \$resDir -m "\$m" -n 1 --cmake $cmakeCmd >> ../../../buildlog 2>&1
+    mv \$resDir/html \$dateTag/\$theMode
+
+    # Move the results to the consolidation directory
+    if test "$debug" = "true" ; then
+        echo "Test \$m completed at: \`date\`" | mail -s "Tests completed" $userEmail
+    fi
+    echo "Test \$m completed at: \`date\`"
+done
+
+# Tar up the results
+rm -f html.tar.gz
+tar -czvf  html.tar.gz \$dateTag
+
+EOF
+
+chmod 750 runit_${testHost}
+
+#
+# Create the script to post the test results from the test suite run
+# on $testHost.
+#
+rm -f postit_${testHost}
+cat <<EOF > postit_${testHost}
+#!/bin/sh
+
+dateTag=\$1
+
+if test "$serial" = "true" ; then
+    modes="$testHost,$branch,serial"
+else
+    modes="$testHost,$branch,serial $testHost,$branch,parallel $testHost,$branch,scalable,parallel,icet"
+fi
+
+cd $testDir/$workingDir/visit
+cd src/test
+
+# Determine if the test suite passed or failed.
+hasFailed=""
+for m in \$modes; do
+    theMode=\`echo \$m | tr ',' '_'\`
+    if test "\$hasFailed" = ""; then
+        hasFailed=\`cat "\$dateTag/\$theMode/index.html" | grep -m 1 Failed 2>/dev/null\`
+    fi
+    if test "\$hasFailed" = ""; then
+        hasFailed=\`cat "\$dateTag/\$theMode/index.html" | grep -m 1 Unacceptable 2>/dev/null\`
+    fi
+    if test "\$hasFailed" = ""; then
+        hasFailed=\`cat "\$dateTag/\$theMode/index.html" | grep -m 1 OS-Killed 2>/dev/null\`
+    fi
+done
+
+if test "$post" = "true" ; then
+    # If the test suite passed then update the revision number indicating the
+    # last pass.
+    cd ../..
+    if test "\$hasFailed" = ""; then
+        gitHead=\`git log -1 | grep "^commit" | cut -d' ' -f2\`
+        git checkout src/tools/dev/scripts/lastpass_$testHost
+        rm -f src/tools/dev/scripts/lastpass_$testHost
+        echo "\$gitHead" > src/tools/dev/scripts/lastpass_$testHost
+        git add src/tools/dev/scripts/lastpass_$testHost
+        git commit -m "Update the last test suite pass on $testHost."
+        git pull
+        git push
+    fi
+
+    # Copy the results to nersc
+    cd src/test
+    scp -i ~/.ssh/weekly html.tar.gz $userNersc@$nerscHost:${branch}_html.tar.gz
+    if test "$debug" = "true" ; then
+        echo "Results copied to $nerscHost at: `date`" | mail -s "Results copied" $userEmail
+    fi
+
+    echo "Results copied to $nerscHost at: `date`"
+
+    # Post the results.
+    cd ../..
+    scp -i ~/.ssh/weekly src/tools/dev/scripts/visit-copy-test-results $userNersc@$nerscHost:
+    ssh -i ~/.ssh/weekly $userNersc@$nerscHost "./visit-copy-test-results ${branch}_html.tar.gz"
+    if test "$debug" = "true" ; then
+        echo "Results posted at: `date`" | mail -s "Results posted" $userEmail
+    fi
+
+    echo "Results posted at: `date`"
+
+    # Send out an e-mail notifying the users of the test suite status.
+    if test "\$hasFailed" = ""; then
+        src/tools/dev/scripts/visit-notify-test-failure -pass -host $testHost
+    else
+        src/tools/dev/scripts/visit-notify-test-failure -host $testHost
+    fi
+
+    # If its a sunday, purge old test results
+    if test "$(date +%A)" = "Sunday" ; then
+        scp -i ~/.ssh/weekly src/tools/dev/scripts/purge_old_test_results.sh $userNersc@$nerscHost:
+        ssh -i ~/.ssh/weekly $userNersc@$nerscHost "./purge_old_test_results.sh"
+    fi
+
+    # Copy the update script to nersc and execute it.
+    scp -i ~/.ssh/weekly src/tools/dev/scripts/visit-update-test-website $userNersc@$nerscHost:
+    ssh -i ~/.ssh/weekly $userNersc@$nerscHost "./visit-update-test-website"
+
+    # Set the permissions so that others may access the test directory.
+    cd ../..
+    chgrp -R visit $workingDir
+    chmod -R g+rwX,o+rX $workingDir
+fi
+
+EOF
+
+chmod 750 postit_${testHost}
+
+# Run the test suite.
+if test "$testHost" = "pascal" ; then
+    scp checkout_pascal pascal:
+    scp runit_pascal pascal:
+    scp postit_pascal pascal:
+    subTag=`date +%Y-%m-%d-%H:%M`
+    ssh pascal "./checkout_pascal $subTag"
+    ssh pascal "msub -l nodes=1:ppn=16 -l gres=ignore -l walltime=10:00:00 -o pascal_testit_$subTag.out -q pvis -A wbronze -z ./runit_pascal $subTag"
+    sleep 28800
+    ssh pascal "./postit_pascal $subTag"
+fi

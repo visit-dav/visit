@@ -33,6 +33,14 @@
 #    Brad Whitlock, Thu May 10 15:21:51 PDT 2018
 #    Add test case for sampling types.
 #
+#    Alister Maguire, Tue Feb  5 14:17:13 PST 2019
+#    Updated the aspect test to use a larger multiplier and no shading for 
+#    better visibility. Updated the scaling test to not use shading (again
+#    for better visibility).  
+#
+#    Alister Maguire, Mon Mar 25 11:19:54 PDT 2019
+#    Added an opacity test that changes the opacity variable. 
+#
 # ----------------------------------------------------------------------------
 
 def InitAnnotations():
@@ -51,6 +59,7 @@ def TestVolumeScaling():
 
     AddPlot("Volume", "t")
     volAtts = VolumeAttributes()
+    volAtts.lightingFlag = 0
     SetPlotOptions(volAtts)
     DrawPlots()
     v = GetView3D()
@@ -152,13 +161,32 @@ def TestVolumeOpacity():
     SetPlotOptions(volAtts)
     Test("volumeOpacity_04")
 
+    #
+    # Make sure we can change out opacity variable. 
+    #
+    DeleteAllPlots()
+    OpenDatabase(silo_data_path("globe.silo"))
+    AddPlot("Volume", "dz")
+    volAtts = VolumeAttributes()
+    volAtts.opacityVariable = "v"
+    volAtts.lightingFlag = 0
+    SetPlotOptions(volAtts)
+    DrawPlots()
+    Test("volumeOpacity_05")
+
     DeleteAllPlots()
 
 def TestVolumeAspect():
     OpenDatabase(silo_data_path("noise.silo"))
 
+    orig_atts = VolumeAttributes()
+    new_atts  = VolumeAttributes()
+    new_atts.lightingFlag = 0
+
     AddPlot("Volume", "hardyglobal")
-    DefineVectorExpression("disp", "{0,0,-0.9999*coord(Mesh)[2]}")
+    SetPlotOptions(new_atts)
+
+    DefineVectorExpression("disp", "{0,0,-0.9*coord(Mesh)[2]}")
     AddOperator("Displace")
     d = DisplaceAttributes()
     d.variable = "disp"
@@ -170,6 +198,7 @@ def TestVolumeAspect():
     SetView3D(v)
     Test("volumeAspect_01")
     DeleteAllPlots()
+    SetPlotOptions(orig_atts)
 
 def TestVolumeColorControlPoints():
     OpenDatabase(silo_data_path("noise.silo"))

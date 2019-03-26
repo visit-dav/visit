@@ -1,18 +1,16 @@
+
+![GitHub commit activity](https://img.shields.io/github/commit-activity/m/visit-dav/visit.svg) ![GitHub contributors](https://img.shields.io/github/contributors-anon/visit-dav/visit.svg)
+
 # VisIt
-
-[![Documentation Status](https://readthedocs.org/projects/visit-sphinx-github-user-manual/badge/?version=latest)](http://visit-sphinx-github-user-manual.readthedocs.io) [![Scale](https://img.shields.io/badge/Scale-Peta-green.svg)](https://img.shields.io/badge/Scale-Peta-green.svg) [![VTK-Version](https://img.shields.io/badge/VTK-8.0-blue.svg)](https://img.shields.io/badge/VTK-8.0-blue-green.svg)
-
-Project Website: https://visit.llnl.gov
 
 Source code repository for the VisIt Scientific Visualization and Data Analysis Application
 
-##  User Resources
+[Project Website](https://visit.llnl.gov) | [Nightly Test Status](http://portal.nersc.gov/project/visit/)
 
-VisIt Users Wiki: https://www.visitusers.org
 
-VisIt Users Manual: https://visit-sphinx-user-manual.readthedocs.io/en/latest/index.html
+##  Documentation
 
-VisIt Python Manual: https://visit-sphinx-python-manual.readthedocs.io/en/latest/
+[Users Wiki](https://www.visitusers.org) | [GUI and CLI Users Manuals](https://visit-sphinx-github-user-manual.readthedocs.io/en/develop) [![Documentation Status](https://readthedocs.org/projects/visit-sphinx-github-user-manual/badge/?version=develop)](https://visit-sphinx-github-user-manual.readthedocs.io/en/develop/?badge=develop)
 
 ##  Developer Resources
 

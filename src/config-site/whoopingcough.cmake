@@ -1,14 +1,14 @@
 #/usr/local/bin/cmake
 ##
 ## ./build_visit generated host.cmake
-## created: Wed Sep 12 14:27:00 EDT 2018
-## system: Linux whoopingcough 4.4.0-134-generic #160-Ubuntu SMP Wed Aug 15 14:58:00 UTC 2018 x86_64 x86_64 x86_64 GNU/Linux
+## created: Tue Mar  5 09:15:55 EST 2019
+## system: Linux whoopingcough 4.15.0-45-generic #48~16.04.1-Ubuntu SMP Tue Jan 29 18:03:48 UTC 2019 x86_64 x86_64 x86_64 GNU/Linux
 ## by: dpn
 
 ##
 ## Setup VISITHOME & VISITARCH variables.
 ##
-SET(VISITHOME /apps/visit/trunk/thirdparty/visit)
+SET(VISITHOME /apps/visit/trunk3.0/thirdparty/visit)
 SET(VISITARCH linux-x86_64_gcc-5.4)
 
 ## Compiler flags.
@@ -24,7 +24,7 @@ VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS " -m64 -fPIC  -O2 -fvisibility=hidden" TYPE
 ##
 VISIT_OPTION_DEFAULT(VISIT_PARALLEL ON TYPE BOOL)
 ## (configured w/ mpi compiler wrapper)
-VISIT_OPTION_DEFAULT(VISIT_MPI_COMPILER /usr/bin/mpicxx TYPE FILEPATH)
+VISIT_OPTION_DEFAULT(VISIT_MPI_COMPILER /usr/bin/mpicc TYPE FILEPATH)
 
 ##
 ## VisIt Thread Option
@@ -79,22 +79,12 @@ VISIT_OPTION_DEFAULT(VISIT_HDF5_DIR ${VISITHOME}/hdf5/1.8.14/${VISITARCH})
 VISIT_OPTION_DEFAULT(VISIT_HDF5_LIBDEP ${VISITHOME}/szip/2.1/${VISITARCH}/lib sz /usr/lib/x86_64-linux-gnu z TYPE STRING)
 
 ##
-## ADIOS
-## (configured w/ mpi compiler wrapper)
-##
-SETUP_APP_VERSION(ADIOS 1.13.1)
-VISIT_OPTION_DEFAULT(VISIT_ADIOS_DIR ${VISITHOME}/adios/${ADIOS_VERSION}/${VISITARCH})
-
-##
 ## ADIOS2
 ##
-#SETUP_APP_VERSION(ADIOS2 0.1.0)
-#VISIT_OPTION_DEFAULT(VISIT_ADIOS2_DIR ${VISITHOME}/adios2-ser/${ADIOS2_VERSION}/${VISITARCH})
-### (configured w/ mpi compiler wrapper)
-#VISIT_OPTION_DEFAULT(VISIT_ADIOS2_PAR_DIR ${VISITHOME}/adios2-par/${ADIOS2_VERSION}/${VISITARCH})
-
-VISIT_OPTION_DEFAULT(VISIT_ADIOS2_DIR /apps/adios2/install_serial)
-VISIT_OPTION_DEFAULT(VISIT_ADIOS2_PAR_DIR /apps/adios2/install_parallel)
+SETUP_APP_VERSION(ADIOS2 2.3.1)
+VISIT_OPTION_DEFAULT(VISIT_ADIOS2_DIR ${VISITHOME}/adios2-ser/${ADIOS2_VERSION}/${VISITARCH})
+## (configured w/ mpi compiler wrapper)
+VISIT_OPTION_DEFAULT(VISIT_ADIOS2_PAR_DIR ${VISITHOME}/adios2-par/${ADIOS2_VERSION}/${VISITARCH})
 
 ##
 ## Ice-T
@@ -113,3 +103,4 @@ VISIT_OPTION_DEFAULT(VISIT_NETCDF_LIBDEP HDF5_LIBRARY_DIR hdf5_hl HDF5_LIBRARY_D
 ##
 VISIT_OPTION_DEFAULT(VISIT_SILO_DIR ${VISITHOME}/silo/4.10.2/${VISITARCH})
 VISIT_OPTION_DEFAULT(VISIT_SILO_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP} /usr/lib/x86_64-linux-gnu z TYPE STRING)
+

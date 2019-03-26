@@ -4,5 +4,5 @@ biagas, Kathleen Biagas, LLNL
 BradWhitlock, Brad Whitlock, Intelligent Light
 brugger, Eric Brugger, LLNL
 cyrush, Cyrus Harrison, LLNL
+griffin28, Kevin Griffin, LLNL
 spetruzza, Steve Petruzza, U of Utah SCI
-rusu1, Eddie Rusu, LLNL

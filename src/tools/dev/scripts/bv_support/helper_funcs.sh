@@ -1053,6 +1053,17 @@ function hostconf_library
     hostconf_library_success="${hostconf_library_success} ${build_lib}"
 }
 
+# *************************************************************************** #
+# Function: build_hostconf                                                    #
+#                                                                             #
+# Purpose: builds the config-site file for this host                          #
+#                                                                             #
+# Modifications:                                                              #
+#   Kathleen Biagas, Thu Mar 14 11:28:38 PDT 2019                             #
+#   Don't put the C or CXX OPT_FLAGS in the host file. These will be handled  #
+#   by CMake when CMAKE_BUILD_TYPE is selected.                               #
+#                                                                             #
+# *************************************************************************** #
 
 function build_hostconf
 {
@@ -1114,14 +1125,14 @@ function build_hostconf
     fi
 
     if [[ "$USE_VISIBILITY_HIDDEN" == "yes" ]] ; then
-        echo "VISIT_OPTION_DEFAULT(VISIT_C_FLAGS \"$CFLAGS ${C_OPT_FLAGS} -fvisibility=hidden\" TYPE STRING)" >> $HOSTCONF
-        echo "VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS \"$CXXFLAGS ${CXX_OPT_FLAGS} -fvisibility=hidden\" TYPE STRING)" >> $HOSTCONF
+        echo "VISIT_OPTION_DEFAULT(VISIT_C_FLAGS \"$CFLAGS -fvisibility=hidden\" TYPE STRING)" >> $HOSTCONF
+        echo "VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS \"$CXXFLAGS -fvisibility=hidden\" TYPE STRING)" >> $HOSTCONF
     else
         if test -n "$CFLAGS" ; then
-            echo "VISIT_OPTION_DEFAULT(VISIT_C_FLAGS \"$CFLAGS ${C_OPT_FLAGS}\" TYPE STRING)" >> $HOSTCONF
+            echo "VISIT_OPTION_DEFAULT(VISIT_C_FLAGS \"$CFLAGS\" TYPE STRING)" >> $HOSTCONF
         fi
         if test -n "$CXXFLAGS" ; then
-            echo "VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS \"$CXXFLAGS ${CXX_OPT_FLAGS}\" TYPE STRING)" >> $HOSTCONF
+            echo "VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS \"$CXXFLAGS\" TYPE STRING)" >> $HOSTCONF
         fi
     fi
 

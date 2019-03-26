@@ -192,6 +192,15 @@ function build_llvm
         LLVM_CMAKE_PYTHON="-DPYTHON_EXECUTABLE:FILEPATH=$PYTHON_COMMAND"
     fi
 
+    #
+    # Determine the LLVM_TARGET_TO_BUILD.
+    #
+    if [[ "$(uname -m)" == "ppc64" || "$(uname -m)" == "ppc64le" ]]; then
+        LLVM_TARGET="PowerPC"
+    else
+        LLVM_TARGET="X86"
+    fi
+
     # LLVM documentation states thet BUILD_SHARED_LIBS is not to be used
     # in conjuction with LLVM_BUILD_LLVM_DYLIB, and should only be used
     # by LLVM developers.
@@ -204,7 +213,7 @@ function build_llvm
         -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER} \
         -DCMAKE_C_FLAGS:STRING="${CFLAGS} ${C_OPT_FLAGS}" \
         -DCMAKE_C_COMPILER:STRING=${C_COMPILER} \
-        -DLLVM_TARGETS_TO_BUILD=X86 \
+        -DLLVM_TARGETS_TO_BUILD=${LLVM_TARGET} \
         -DLLVM_ENABLE_RTTI:BOOL=ON \
         -DLLVM_BUILD_LLVM_DYLIB:BOOL=ON \
         $LLVM_CMAKE_PYTHON \

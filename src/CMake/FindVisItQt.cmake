@@ -128,7 +128,10 @@ set(QT_QTOPENGL_LIBRARY ${Qt5OpenGL_LIBRARIES})
 # add Widgets or PrintSupport only where needed
 set(QT_QTGUI_LIBRARY ${Qt5Gui_LIBRARIES}
                      ${Qt5Widgets_LIBRARIES}
-                     ${Qt5PrintSupport_LIBRARIES})
+                     ${Qt5PrintSupport_LIBRARIES}
+                     # Qt's GUI lib Depends on OpenGL ...
+                     ${OPENGL_LIBRARIES}) 
+
 set(QT_QTNETWORK_LIBRARY ${Qt5Network_LIBRARIES})
 set(QT_QTXML_LIBRARY ${Qt5Xml_LIBRARIES})
 
