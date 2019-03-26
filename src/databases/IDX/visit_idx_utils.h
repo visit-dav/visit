@@ -25,6 +25,8 @@
 static inline int        cint   (std::string s) {int    value;std::istringstream iss(s);iss>>value;return value;}
 static inline float      cfloat (std::string s) {float  value;std::istringstream iss(s);iss>>value;return value;}
 static inline double     cdouble(std::string s) {double value;std::istringstream iss(s);iss>>value;return value;}
+static inline int        cround (double x) { x = x + 0.5 - (x<0); return (int)x; }
+
 // trim from start
 static inline std::string &ltrim(std::string &s) {
   s.erase(s.begin(), std::find_if(s.begin(), s.end(), std::not1(std::ptr_fun<int, int>(std::isspace))));

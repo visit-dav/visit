@@ -176,25 +176,47 @@ void avtIDXFileFormat::domainDecomposition(){
     int eCells[6];
 
     box.getBounds(box_low,box_high,eCells,grid_type);
-
+    //printf("extracells %d %d %d %d %d %d\n", eCells[0], eCells[1], eCells[2], eCells[3], eCells[4], eCells[5]);
     int box_dim[3] = {box_high[0]-box_low[0],box_high[1]-box_low[1],box_high[2]-box_low[2]};  // should be +1
+    /*
+    if(uintah_metadata && use_extracells)
+      for(int d=0;d<3;d++)
+	box_dim[d] += eCells[d*2]+eCells[d*2+1]; // add size of extracells on + and -
+    */	  
     int block_dim[3] = {box_dim[0]/block_decomp[0],box_dim[1]/block_decomp[1],box_dim[2]/block_decomp[2]};
-
-    //printf("block dim [%d %d %d]\n", block_dim[0],block_dim[1],block_dim[2]);
-    //printf("box low [%d %d %d] [%d %d %d]\n", box_low[0],box_low[1],box_low[2],box_high[0],box_high[1],box_high[2]);
+    int residual[3] = {box_dim[0]%block_decomp[0],box_dim[1]%block_decomp[1],box_dim[2]%block_decomp[2]};
+    /*
+    printf("block dim [%d %d %d]\n", block_dim[0],block_dim[1],block_dim[2]);
+    printf("box low [%d %d %d] high [%d %d %d]\n", box_low[0],box_low[1],box_low[2],box_high[0],box_high[1],box_high[2]);
+    printf("residual [%d %d %d]\n", residual[0], residual[1], residual[2]);
+    */
     for(int nb=0; nb<c; nb++){
 
       int bid[3] = {nb % block_decomp[0], (nb / block_decomp[0]) % block_decomp[1], nb / (block_decomp[0] * block_decomp[1])};
+      //printf("bid %d %d %d\n", bid[0], bid[1], bid[2]);
       int curr_p1[3] = {box_low[0]+(bid[0]*block_dim[0]),box_low[1]+(bid[1]*block_dim[1]),box_low[2]+(bid[2]*block_dim[2])};
-      int curr_p2[3] = {curr_p1[0]+block_dim[0], curr_p1[1]+block_dim[1], curr_p1[2]+block_dim[2]};
 
+      int curr_p2[3] = {curr_p1[0]+block_dim[0], curr_p1[1]+block_dim[1], curr_p1[2]+block_dim[2]};
+      /*
+      printf("p ");
+      for(int d=0; d<3; d++)
+	printf("[%d %d] ", curr_p1[d], curr_p2[d]);
+      printf("\n");
+      */
+      /*
       for(int d=0; d <3; d++){
-        if(uintah_metadata && use_extracells)
-          curr_p1[d] = curr_p1[d] > 0 ? curr_p1[d]+2 : curr_p1[d];
+        //if(uintah_metadata && use_extracells)
+        //  curr_p1[d] = curr_p1[d] > 0 ? curr_p1[d]+2 : curr_p1[d];
 
           curr_p2[d] = (curr_p2[d] < global_size[d]-1) ? curr_p2[d] : global_size[d];
       }
+      */
 
+      // add residual to patches at the boundaries
+      for(int d=0; d<3; d++)
+	if(curr_p2[d]+residual[d]==box_high[d])
+	 curr_p2[d] += residual[d];
+      
       PatchInfo newbox;
       newbox.setBounds(curr_p1,curr_p2,eCells,grid_type);
       newboxes.push_back(newbox);
@@ -315,16 +337,16 @@ void avtIDXFileFormat::domainDecomposition(){
 #endif
 
   level_info.patchInfo=newboxes;
-
-  // if(rank == 0){ 
-  // std::cout<< "Total number of boxes/domains: " << level_info.patchInfo.size() << std::endl<< std::flush;
-  // std::cout << "----------Boxes----------" << std::endl<< std::flush;
-  //   for(int i=0; i< level_info.patchInfo.size(); i++){
-  //     std::cout << i << " = "<<level_info.patchInfo[i].toString();
-  //   }
-  //   std::cout << "-------------------------" << std::endl<< std::flush;
-  //   }
-
+  /*
+  if(rank == 0){ 
+   std::cout<< "Total number of boxes/domains: " << level_info.patchInfo.size() << std::endl<< std::flush;
+   std::cout << "----------Boxes----------" << std::endl<< std::flush;
+     for(int i=0; i< level_info.patchInfo.size(); i++){
+       std::cout << i << " = "<<level_info.patchInfo[i].toString();
+     }
+     std::cout << "-------------------------" << std::endl<< std::flush;
+     }
+  */
   if(level_info.patchInfo.size() % nprocs != 0){
     fprintf(stderr,"ERROR: wrong domain decomposition, patches %d procs %d\n", level_info.patchInfo.size(), nprocs);
     assert(false);
@@ -498,7 +520,6 @@ t[0]=36; t[1]=18; t[2]=0; lows.push_back(t); t[0]=42; t[1]=24; t[2]=6; highs.pus
 // t={36,6,0}; lows.push_back(t); t={42,12,6}; highs.push_back(t);
 // t={36,12,0}; lows.push_back(t); t={42,18,6}; highs.push_back(t);
 // t={36,18,0}; lows.push_back(t); t={42,24,6}; highs.push_back(t);
-
 
   for(int i=0; i< lows.size(); i++){
     PatchInfo box;
@@ -1107,10 +1128,12 @@ void avtIDXFileFormat::computeDomainBoundaries(const char* meshname, int timesta
     //  low[1]+extracells[2], high[1]+extracells[3],
     //  low[2]+extracells[4], high[2]+extracells[5]};
 
+    
     int e[6] = { low[0], high[0],
                  low[1], high[1],
                  low[2], high[2]};
 
+    
     rdb->SetIndicesForAMRPatch(domain,0,e);
 
     //printf("domain %d ext %d %d %d, %d %d %d\n", domain, low[0],low[1],low[2],high[0],high[1],high[2]);

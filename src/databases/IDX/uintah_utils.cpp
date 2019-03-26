@@ -177,8 +177,8 @@ void compute_anchor(vtkXMLDataElement *level, double* anchor){
       eCells[k] = cint(espace);
       resdata[k] = cint(res);
       
-      p1phy[k] = cfloat(p1s);
-      p2phy[k] = cfloat(p2s);
+      p1phy[k] = cdouble(p1s);
+      p2phy[k] = cdouble(p2s);
     
       anchor[k] = std::min(anchor[k], p1phy[k]);
 
@@ -263,8 +263,8 @@ void parse_ups(vtkSmartPointer<vtkXMLDataParser> parser, LevelInfo& level_info, 
       box.eCells[k] = cint(espace);
       resdata[k] = cint(res);
       
-      p1phy[k] = cfloat(p1s);
-      p2phy[k] = cfloat(p2s);
+      p1phy[k] = cdouble(p1s);
+      p2phy[k] = cdouble(p2s);
     
       phy2log[k] = (p2phy[k]-p1phy[k])/(resdata[k]);
  
@@ -273,7 +273,8 @@ void parse_ups(vtkSmartPointer<vtkXMLDataParser> parser, LevelInfo& level_info, 
         box.high[k] = box.low[k] + resdata[k];
       }
       else{ // multibox case 
-        box.low[k] = std::fabs(p1phy[k]-level_info.anchor[k]) / phy2log[k];// + eCells[k];
+        box.low[k] = cround(std::fabs(p1phy[k]-level_info.anchor[k]) / phy2log[k]);// + eCells[k];
+	//printf("low[%d] %d p1phy %f\n", k, box.low[k], p1phy[k]);
         // if(k==0 && low[k]>0)
         //   low[k] += 1;
         box.high[k] = box.low[k] + resdata[k];
