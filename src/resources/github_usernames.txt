@@ -6,3 +6,4 @@ brugger, Eric Brugger, LLNL
 cyrush, Cyrus Harrison, LLNL
 griffin28, Kevin Griffin, LLNL
 spetruzza, Steve Petruzza, U of Utah SCI
+rusu1, Eddie Rusu, LLNL
