@@ -306,6 +306,7 @@ avtCompositeRF::GetRayValue(const avtRay *ray,
         }
         else
         {
+            float prevOpac = 0.0;
             // No opacity weighting.
             for (z = 0 ; z < maxSample ; z++)
             {
@@ -318,7 +319,9 @@ avtCompositeRF::GetRayValue(const avtRay *ray,
                     //
                     if (opacityValue > 0)
                     {
-                        float samplesOpacity = opacityValue * oneSamplesContribution;
+                        //float samplesOpacity = opacityValue * oneSamplesContribution;
+                        //FIXME: testing
+                        float samplesOpacity = opacityValue;
                         samplesOpacity = (samplesOpacity > 1.f ? 1.f : samplesOpacity);
 
                         const RGBA &color = table[map->Quantize(sample[z])];
@@ -326,6 +329,11 @@ avtCompositeRF::GetRayValue(const avtRay *ray,
                         lighting->AddLighting(z, ray, rgb);
 
                         float ff = (1.f-opacity)*samplesOpacity;
+
+                        //FIXME: testing
+                        ff = 1. - pow((1. - ff), .2);//need to find pow value: new sample rate / ref sample rate
+                        ff = (ff < 0.f ? 0.f : ff);
+
                         trgb[0] = trgb[0] + ff*rgb[0];
                         trgb[1] = trgb[1] + ff*rgb[1];
                         trgb[2] = trgb[2] + ff*rgb[2];
