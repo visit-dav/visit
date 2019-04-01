@@ -214,11 +214,13 @@ class avtMiliFileFormat : public avtMTMDFileFormat
     vector<std::map<string,Label_mapping> > zone_label_mappings;
     vector<std::map<string,Label_mapping> > node_label_mappings;
 
-    void PopulateNodeLabels(const int fam_id, const int mesh_id, 
-                            char *short_name, const int dom);
+    void PopulateNodeLabels(const int mesh_id, 
+                            char *short_name, 
+                            const int dom);
 
-    void PopulateZoneLabels(const int fam_id, const int mesh_id, 
-                            char *short_name, const int dom, 
+    void PopulateZoneLabels(const int mesh_id, 
+                            char *short_name, 
+                            const int dom, 
                             const int elems_in_group);
 };
 

@@ -44,9 +44,9 @@
 
 #include <vector>
 #include <string>
-#include <sstream> 
 #include <snprintf.h>
 #include <limits>
+#include <sstream>
 #include <visitstream.h>
 
 #include <vtkCellData.h>
@@ -72,8 +72,6 @@
 #include <UnexpectedValueException.h>
 
 #include <TimingsManager.h>
-
-#include <sstream>
 
 using namespace rapidjson;
 using std::ifstream;
@@ -512,7 +510,7 @@ avtMiliFileFormat::ReadMiliVarToBuffer(char *varName,
 vtkDataSet *
 avtMiliFileFormat::GetMesh(int ts, int dom, const char *mesh)
 {
-    int timer2 = visitTimer->StartTimer();
+    int gmTimer = visitTimer->StartTimer();
 
     debug5 << "Reading in " << mesh << " for domain/ts : " << 
         dom << ',' << ts << endl;
@@ -587,6 +585,8 @@ avtMiliFileFormat::GetMesh(int ts, int dom, const char *mesh)
     int nPts     = dims * nNodes;
     int subrec   = -1;
     int vType    = M_FLOAT;
+
+    int gmTimer2 = visitTimer->StartTimer();
 
     if (nodpos != NULL)
     {
@@ -771,8 +771,8 @@ avtMiliFileFormat::GetMesh(int ts, int dom, const char *mesh)
             return rv;
         }
     }
-
-    visitTimer->StopTimer(timer2, "MILI: Getting Mesh");
+    visitTimer->StopTimer(gmTimer2, "MILI: Transfering data in GetMesh");
+    visitTimer->StopTimer(gmTimer, "MILI: Getting Mesh");
     visitTimer->DumpTimings();
 
     return rv;
@@ -819,6 +819,8 @@ avtMiliFileFormat::ExtractMeshIdFromPath(const string &varPath)
 void
 avtMiliFileFormat::OpenDB(int dom)
 {
+    int openDBTimer = visitTimer->StartTimer();
+
     //TODO: do the filenames still have this much variety?
     char const * const root_fmtstrs[] = {
         "%s%.3d",
@@ -863,6 +865,8 @@ avtMiliFileFormat::OpenDB(int dom)
             }
         }
     }
+
+    visitTimer->StopTimer(openDBTimer, "MILI: Opening database");
 }
 
 
@@ -882,7 +886,7 @@ avtMiliFileFormat::OpenDB(int dom)
 void
 avtMiliFileFormat::ReadMesh(int dom)
 {
-    int timer3 = visitTimer->StartTimer();
+    int readMeshTimer = visitTimer->StartTimer();
 
     if (dbid[dom] == -1)
     {
@@ -918,7 +922,11 @@ avtMiliFileFormat::ReadMesh(int dom)
 
         //FIXME: there is a memory error associated with this 
         //       call. 
-        PopulateNodeLabels(dbid[dom], meshId, nodeSName, dom);
+        int popNodeLabels = visitTimer->StartTimer();
+
+        PopulateNodeLabels(meshId, nodeSName, dom);
+
+        visitTimer->StopTimer(popNodeLabels, "MILI: PopulateNodeLabels");
 
         //
         // Read initial nodal position information, if available. 
@@ -1019,6 +1027,8 @@ avtMiliFileFormat::ReadMesh(int dom)
         datasets[dom][meshId] = vtkUnstructuredGrid::New();
         datasets[dom][meshId]->Allocate(nDomCells);
 
+        int buildDSTimer = visitTimer->StartTimer();
+
         //
         // Now that we have the needed counts, retrieve the connectivity
         // and build our dataset. 
@@ -1026,7 +1036,6 @@ avtMiliFileFormat::ReadMesh(int dom)
         int cellIdx   = 0;
         int cpcIdx    = 0;
         int matList[nDomCells];
-        max_zone_label_lengths[dom] = 0;
         for (int i = 0; i < nCellTypes; ++i)
         {
             for (int j = 0; j < nClassesPerCellType[i]; ++j)
@@ -1191,10 +1200,12 @@ avtMiliFileFormat::ReadMesh(int dom)
                 }
 
                 //FIXME: there is a mem error associated with this call. 
-                PopulateZoneLabels(dbid[dom], meshId, shortName, dom, 
+                PopulateZoneLabels(meshId, shortName, dom, 
                                    nCells);
             }
         }
+
+        visitTimer->StopTimer(buildDSTimer, "MILI: Building DS");
        
         //
         // Create our avtMaterial. 
@@ -1227,7 +1238,7 @@ avtMiliFileFormat::ReadMesh(int dom)
 
     meshRead[dom] = true;
 
-    visitTimer->StopTimer(timer3, "MILI: Reading Mesh");
+    visitTimer->StopTimer(readMeshTimer, "MILI: Reading Mesh");
 }
 
 
@@ -1984,6 +1995,8 @@ void
 avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
     int timeState)
 {
+    int pdmdTimer = visitTimer->StartTimer();
+
     for (int meshId = 0; meshId < nMeshes; ++meshId)
     {
         char meshName[32];
@@ -2391,6 +2404,9 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
     md->SetCycles(cycles);
     md->SetTimesAreAccurate(true);
     md->SetTimes(times);
+
+    visitTimer->StopTimer(pdmdTimer, "MILI: PopulateDatabaseMetaData timer");
+    visitTimer->DumpTimings();
 }
 
 
@@ -2844,7 +2860,13 @@ avtMiliFileFormat::LoadMiliInfoJson(const char *fpath)
 
     int jsonTimer2 = visitTimer->StartTimer(); 
 
-    //TODO: how will the meshes be distinguished in the mili file?
+    //
+    //TODO: It's yet unlcear how meshes will be distinguished in 
+    //      the mili files. According to Kevin, this might not
+    //      even be possible for mili to contain multiple meshes
+    //      right now. We're putting the logistics of this on 
+    //      the backburner. 
+    //
     for (int meshId = 0; meshId < nMeshes; ++meshId)
     {
         miliMetaData[meshId] = new avtMiliMetaData(nDomains);
@@ -2883,6 +2905,12 @@ avtMiliFileFormat::LoadMiliInfoJson(const char *fpath)
                     if (mat.HasMember("name"))
                     {
                         matName = mat["name"].GetString();
+                    }
+                    else
+                    {
+                        char buff[128];
+                        sprintf(buff, "%d", matCount);
+                        matName = string(buff);
                     }
 
                     if (mat.HasMember("COLOR"))
@@ -3006,91 +3034,110 @@ avtMiliFileFormat::LoadMiliInfoJson(const char *fpath)
 //      Note: unchanged from original filter. 
 //
 //  Arguments: 
-//             famId - mili familiy id
 //             meshId - id of the mesh associtated with the labels 
 //             shortName - the short name of the mili class (e.g., "brick") 
 //             dom - id of the domain 
-//             num_zones - running count of the total number of zones in
-//                         the mesh. Needed for the reverse mapping
 //             nElemsInGroup - number of elements in this group
 //           
 //  Author: Matt Larsen May 10 2017
 //
 //  Modifications:
 //
+//      Alister Maguire, Mon Apr  1 14:00:30 PDT 2019
+//      Reformatted to use syntax similar to the rest of the 
+//      plugin, fixed memory error, and altered string method
+//      to reduce time. 
+//
 // ****************************************************************************
 void 
-avtMiliFileFormat::PopulateZoneLabels(const int famId, const int meshId, 
-                                      char *shortName, const int dom, 
-                                      const int nElemsInGroup)
+avtMiliFileFormat::PopulateZoneLabels(const int meshId, char *shortName, 
+                                      const int dom, const int nElemsInGroup)
 {
 
-    int num_zones   = 0;
+    int numZones    = 0;
     int numBlocks   = 0; 
     int *blockRange = NULL;
-    int elem_list[nElemsInGroup];
-    int label_ids[nElemsInGroup];
+    int elemList[nElemsInGroup];
+    int labelIds[nElemsInGroup];
     
+    int loadZoneLabels = visitTimer->StartTimer();
+
     //
     // Check for labels
     //
     int nExpectedLabels = nElemsInGroup;
     int rval = mc_load_conn_labels(dbid[dom], meshId, shortName, 
                                    nExpectedLabels, &numBlocks, 
-                                   &blockRange, elem_list, label_ids);
+                                   &blockRange, elemList, labelIds);
 
     if (rval != OK)
     {
         debug1 << "mc_load_conn_labels failed at " << shortName << "!\n";
-        num_zones    = 0;
+        numZones    = 0;
         numBlocks   = 0; 
         blockRange  = NULL;
     }
     
+    int zoneLabelsTimer = visitTimer->StartTimer();
+
     if (numBlocks == 0)
     {
         debug4 << "mili block contains no labels\n";
-        //Create default labels
+
+        //
+        // Create default labels
+        //
         for(int elem_num = 1; elem_num <= nElemsInGroup; ++ elem_num)
         {
+            //
             // create the label strings for each cell
-            std::stringstream sstream;
-            sstream<<"";
-            zoneLabels[dom].push_back(sstream.str());
-            max_zone_label_lengths[dom] = 
-                std::max(int(sstream.str().size()), max_zone_label_lengths[dom]);
+            //
+            string empty = "";
+            zoneLabels[dom].push_back(empty);
         }
-        num_zones += nElemsInGroup;
+        numZones += nElemsInGroup;
     }
     else
     {
         debug4 << "Mili labels found. There are " << numBlocks
                << " blocks in class " << shortName << " in dom " 
                << dom << "\n";
+
+        int popZonLabel = visitTimer->StartTimer();
+
         for(int el = 0; el < nElemsInGroup; ++el)
         {
-            std::stringstream sstream;
-            sstream<<shortName;
-            sstream<<" "<<label_ids[el];
-            zoneLabels[dom].push_back(sstream.str());
+            char cLabel[256];
+            sprintf(cLabel, "%s %i", shortName, labelIds[el]); 
+            string label = string(cLabel);
+            zoneLabels[dom].push_back(label);
             max_zone_label_lengths[dom] = 
-                std::max(int(sstream.str().size()), max_zone_label_lengths[dom]);
+                std::max(int(label.size()), 
+                max_zone_label_lengths[dom]);
         }
+
+        visitTimer->StopTimer(popZonLabel, "MILI: Populating zone labels");
+
+        int zoneLabelMap = visitTimer->StartTimer();
+
         Label_mapping label_map;
         for(int block = 0; block < numBlocks; ++block)
         {
           int rangeSize = blockRange[block * 2 + 1] - blockRange[block * 2] + 1;
           label_map.label_ranges_begin.push_back(blockRange[block * 2]);
           label_map.label_ranges_end.push_back(blockRange[block * 2 + 1]);
-          label_map.el_ids_begin.push_back(num_zones);
-          label_map.el_ids_end.push_back(num_zones - 1 + rangeSize);
+          label_map.el_ids_begin.push_back(numZones);
+          label_map.el_ids_end.push_back(numZones - 1 + rangeSize);
 
-          num_zones += rangeSize;
+          numZones += rangeSize;
         }
 
-        zone_label_mappings[dom][std::string(shortName)] = label_map;
+        zone_label_mappings[dom][string(shortName)] = label_map;
+
+        visitTimer->StopTimer(zoneLabelMap, "MILI: Building zone label map");
 
     }
+    visitTimer->StopTimer(zoneLabelsTimer, "MILI: Building zone labels");
 }
 
 // ***************************************************************************
@@ -3103,30 +3150,25 @@ avtMiliFileFormat::PopulateZoneLabels(const int famId, const int meshId,
 //      Note: unchanged from original filter. 
 //
 //  Arguments: 
-//             famId - mili familiy id
 //             meshId - id of the mesh associtated with the labels 
 //             shortNamshortName the short name of the mili class (e.g., "brick") 
 //             dom - id of the domain 
-//             num_zones - running count of the total number of zones in
-//                         the mesh. Needed for the reverse mapping
 //           
 //  Author: Matt Larsen May 10 2017
 //
 //  Modifications:
 //
 // ****************************************************************************
-// FIXME: famId isn't used??
+
 void 
-avtMiliFileFormat::PopulateNodeLabels(const int famId, const int meshId, 
-                                      char *shortName, const int dom)
+avtMiliFileFormat::PopulateNodeLabels(const int meshId, char *shortName, 
+                                      const int dom)
 {
 
     int nLabeledNodes = 0;
     int nNodes        = miliMetaData[meshId]->GetNumNodes(dom);
-    max_node_label_lengths[dom] = 0;
-
-    int numBlocks   = 0; 
-    int *blockRange = NULL;
+    int numBlocks     = 0; 
+    int *blockRange   = NULL;
     int elemList[nNodes];
     int labelIds[nNodes];
 
@@ -3140,20 +3182,22 @@ avtMiliFileFormat::PopulateNodeLabels(const int famId, const int meshId,
         blockRange  = NULL;
     }
 
+    int nodeLabelsTimer = visitTimer->StartTimer();
+
     if (numBlocks == 0)
     {
         debug4 << "Mili block does not contain node labels\n";
-        
-        //Create default labels
+
+        //
+        // Create default labels
+        //
         for(int elemNum = 1; elemNum <= nNodes; ++elemNum)
         {
+            //
             // create the label strings for each cell
-            std::stringstream sstream;
-            sstream<<"";
-            zoneLabels[dom].push_back(sstream.str());
-            max_node_label_lengths[dom] = 
-                std::max(int(sstream.str().size()), 
-                max_node_label_lengths[dom]);
+            //
+            string empty = "";
+            zoneLabels[dom].push_back(empty);
         }
         nLabeledNodes += nNodes;
     }
@@ -3162,16 +3206,23 @@ avtMiliFileFormat::PopulateNodeLabels(const int famId, const int meshId,
         debug4 << "Mili labels node found. There are " << numBlocks 
                << " blocks in class " << shortName << " in dom " 
                << dom << "\n";
+
+        int popNodeLabels = visitTimer->StartTimer();
+
         for(int el = 0; el < nNodes; ++el)
         {
-            std::stringstream sstream;
-            sstream << shortName;
-            sstream << " " << labelIds[el];
-            nodeLabels[dom].push_back(sstream.str());
+            char cLabel[256];
+            sprintf(cLabel, "%s %i", shortName, labelIds[el]); 
+            string label = cLabel;
+            nodeLabels[dom].push_back(label);
             max_node_label_lengths[dom] = 
-                std::max(int(sstream.str().size()), 
+                std::max(int(label.size()), 
                 max_node_label_lengths[dom]);
         }
+
+        visitTimer->StopTimer(popNodeLabels, "MILI: Populating node labels");
+        int nodeLabelMap = visitTimer->StartTimer();
+
         Label_mapping label_map;
         for(int block = 0; block < numBlocks; ++block)
         {
@@ -3186,7 +3237,11 @@ avtMiliFileFormat::PopulateNodeLabels(const int famId, const int meshId,
         }
 
         node_label_mappings[dom][std::string(shortName)] = label_map;
+
+        visitTimer->StopTimer(nodeLabelMap, "MILI: Building node label map");
     }
+
+    visitTimer->StopTimer(nodeLabelsTimer, "MILI: Building node labels");
 }
 
 
