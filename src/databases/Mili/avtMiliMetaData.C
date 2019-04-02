@@ -123,16 +123,16 @@ MiliVariableMetaData::MiliVariableMetaData(string sName,
         vectorComponents[i] = vComps[i];
     }
 
-    isElementSet      = false;
-    esMappedName      = "";
-    path              = "";
+    isElementSet = false;
+    esMappedName = "";
+    path         = "";
 
     //
     // Sand and cause are two special cases dealing with 
     // destroyed elements. 
     //
-    isSand  = false;
-    isCause = false;
+    isSand        = false;
+    isCause       = false;
     string sanded = "sand";
     string cause  = "cause";
 
@@ -1225,6 +1225,8 @@ avtMiliMetaData::AddVarMD(int varIdx,
 //
 //  Arguments: 
 //      vName    The shortname of our desired variable. 
+//      cName    The shortname of the variables class (a single
+//               variable can be associated with multiple classes). 
 //
 //  Returns:
 //      The desired MiliVariableMetaData if it's valid. If not valid,
@@ -1238,9 +1240,10 @@ avtMiliMetaData::AddVarMD(int varIdx,
 // ****************************************************************************
 
 MiliVariableMetaData *
-avtMiliMetaData::GetVarMDByShortName(const char *vName)
+avtMiliMetaData::GetVarMDByShortName(const char *vName,
+                                     const char *cName)
 {
-    int idx = GetVarMDIdxByShortName(vName);
+    int idx = GetVarMDIdxByShortName(vName, cName);
     if (idx > -1)
     {
         return miliVariables[idx];
@@ -1336,6 +1339,8 @@ avtMiliMetaData::GetVarMDByIdx(int varIdx)
 //
 //  Arguments: 
 //      vName    The variable name. 
+//      cName    The shortname of the variables class (a single
+//               variable can be associated with multiple classes). 
 //
 //  Returns:
 //      If the name is valid, the container index is returned. Otherwise, 
@@ -1349,7 +1354,8 @@ avtMiliMetaData::GetVarMDByIdx(int varIdx)
 // ****************************************************************************
 
 int
-avtMiliMetaData::GetVarMDIdxByShortName(const char *vName)
+avtMiliMetaData::GetVarMDIdxByShortName(const char *vName,
+                                        const char *cName)
 {
     if (miliVariables == NULL)
     {
@@ -1359,7 +1365,8 @@ avtMiliMetaData::GetVarMDIdxByShortName(const char *vName)
     {
         if (miliVariables[i] != NULL) 
         {
-            if (miliVariables[i]->GetShortName() == vName)
+            if (miliVariables[i]->GetShortName() == vName &&
+                miliVariables[i]->GetClassShortName() == cName)
             {
                 return i;
             }
@@ -1507,10 +1514,10 @@ avtMiliMetaData::AddVarSubrecInfo(int varIdx,
 // ****************************************************************************
 
 void
-avtMiliMetaData::AddSubrecInfo(int  dom, 
-                               int  nElems,
-                               int  nDB,
-                               int *DBRanges)
+avtMiliMetaData::AddSubrecInfo(int   dom, 
+                               int   nElems,
+                               int   nDB,
+                               int  *DBRanges)
 {
     subrecInfo[dom].nSR++;
     subrecInfo[dom].nElements.push_back(nElems);

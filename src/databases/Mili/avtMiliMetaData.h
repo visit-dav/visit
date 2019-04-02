@@ -110,6 +110,7 @@ class MiliVariableMetaData
                                                    int,
                                                    int,
                                                    vector<string> );
+
                              ~MiliVariableMetaData(void);
 
     string                    GetLongName(void)
@@ -118,11 +119,11 @@ class MiliVariableMetaData
     string                    GetShortName(void)
                                 { return shortName; };
 
-    string                    GetClassLongName(void)
-                                { return classLName; }; 
-
     string                    GetClassShortName(void)
-                                { return classSName; }; 
+                                { return classSName; };
+
+    string                    GetClassLongName(void)
+                                { return classLName; };
 
     int                       GetAvtCellType(void)
                                 { return cellTypeAvt; };
@@ -177,11 +178,11 @@ class MiliVariableMetaData
 
     void                      DetermineESStatus(void);
     
+    string                    classLName;
+    string                    classSName;
     string                    longName;
     string                    shortName;
     string                    esMappedName;
-    string                    classLName;
-    string                    classSName;
     string                    path;
     
     int                       cellTypeAvt;
@@ -353,9 +354,9 @@ class avtMiliMetaData
     void                               AddVarMD(int, 
                                                 MiliVariableMetaData *);
     MiliVariableMetaData              *GetVarMDByIdx(int varIdx);
-    MiliVariableMetaData              *GetVarMDByShortName(const char *);
+    MiliVariableMetaData              *GetVarMDByShortName(const char *, const char *);
     MiliVariableMetaData              *GetVarMDByPath(const char *);
-    int                                GetVarMDIdxByShortName(const char *);
+    int                                GetVarMDIdxByShortName(const char *, const char *);
     int                                GetVarMDIdxByPath(const char *);
 
     void                               AddVarSubrecInfo(int,

@@ -395,6 +395,7 @@ ReadMiliResults(Famid &dbid, int ts, int sr, int nStateVars,
 //      varName      The variable's short name. 
 //      SRIds        The variable's subrecord ids. 
 //      SRInfo       The subrecord info that includes this variable. 
+//      start        The start position of the data. 
 //      vType        The type of value (int, float, etc). 
 //      start        The offset of this variable data in the mesh. 
 //      varSize      The size of the variable (vec vs single, etc).
@@ -413,8 +414,8 @@ void
 avtMiliFileFormat::ReadMiliVarToBuffer(char *varName,
                                        const vector<int> &SRIds,
                                        const SubrecInfo &SRInfo, 
-                                       int vType,
                                        int start,
+                                       int vType,
                                        int varSize,
                                        int ts,
                                        int dom,
@@ -428,17 +429,20 @@ avtMiliFileFormat::ReadMiliVarToBuffer(char *varName,
     {
         int nTargetCells = 0;
         int SRId         = SRIds[i];
-
-        nTargetCells = SRInfo.nElements[SRId];
+        nTargetCells     = SRInfo.nElements[SRId];
         
+        //
         // Simple read in: one block 
+        //
         if (SRInfo.nDataBlocks[SRId] == 1)
         {
+            //
             // Adjust start
+            //
             start         += (SRInfo.dataBlockRanges[SRId][0] - 1);
             int resultSize = nTargetCells * varSize;
             float *dbPtr   = dataBuffer;
-        
+
             ReadMiliResults(dbid[dom], ts, SRId,
                 1, &varName, vType, resultSize, 
                 dbPtr + (start * varSize));
@@ -579,7 +583,7 @@ avtMiliFileFormat::GetMesh(int ts, int dom, const char *mesh)
     char *npCharPtr = (char *)npChar;
 
     MiliVariableMetaData *nodpos = miliMetaData[meshId]->
-        GetVarMDByShortName("nodpos");
+        GetVarMDByShortName("nodpos", "node");
 
     int nNodes   = miliMetaData[meshId]->GetNumNodes(dom);
     int nPts     = dims * nNodes;
@@ -685,7 +689,8 @@ avtMiliFileFormat::GetMesh(int ts, int dom, const char *mesh)
                         string varName    = varMD->GetShortName();
                         vector<int> SRIds = varMD->GetSubrecIds(dom);
                         int vType         = varMD->GetNumType();
-                        string className  = varMD->GetClassShortName();
+
+                        string className  = varMD->GetClassShortName(); 
                         int start = miliMetaData[meshId]->
                             GetClassMDByShortName(className.c_str())->
                             GetConnectivityOffset(dom);                                   
@@ -697,8 +702,8 @@ avtMiliFileFormat::GetMesh(int ts, int dom, const char *mesh)
                         sprintf(charName, varName.c_str());
                         char *namePtr = (char *) charName;
 
-                        ReadMiliVarToBuffer(namePtr, SRIds, SRInfo, vType, 
-                            start, 1, ts + 1, dom, sandBuffer);
+                        ReadMiliVarToBuffer(namePtr, SRIds, SRInfo, start,
+                            vType, 1, ts + 1, dom, sandBuffer);
                     }
                 }
 
@@ -920,10 +925,10 @@ avtMiliFileFormat::ReadMesh(int dom)
 
         miliMetaData[meshId]->SetNumNodes(dom, nNodes);
 
-        //FIXME: there is a memory error associated with this 
-        //       call. 
         int popNodeLabels = visitTimer->StartTimer();
 
+        //FIXME: there is a memory error associated with this 
+        //       call. 
         PopulateNodeLabels(meshId, nodeSName, dom);
 
         visitTimer->StopTimer(popNodeLabels, "MILI: PopulateNodeLabels");
@@ -1312,7 +1317,7 @@ avtMiliFileFormat::PopulateSubrecordInfo(int dom, int meshId)
              
              int MDVarIdx = -1;
              MDVarIdx     = miliMetaData[meshId]->
-                 GetVarMDIdxByShortName(sv.short_name); 
+                 GetVarMDIdxByShortName(sv.short_name, sr.class_name); 
              if (MDVarIdx != -1)
              {
                  miliMetaData[meshId]->AddVarSubrecInfo(MDVarIdx,
@@ -1587,13 +1592,13 @@ avtMiliFileFormat::GetVar(int ts, int dom, const char *varPath)
         // Read the data into our buffer. 
         //
         int vType        = varMD->GetNumType();
-        string className = varMD->GetClassShortName();
+        string className = varMD->GetClassShortName(); 
         int start = miliMetaData[meshId]->
             GetClassMDByShortName(className.c_str())->
             GetConnectivityOffset(dom);                                   
 
-        ReadMiliVarToBuffer(namePtr, SRIds, SRInfo, vType, 
-            start, 1, ts + 1, dom, dataBuffer);
+        ReadMiliVarToBuffer(namePtr, SRIds, SRInfo, start, 
+            vType, 1, ts + 1, dom, dataBuffer);
 
         if (isMatVar)
         {
@@ -1766,13 +1771,13 @@ avtMiliFileFormat::GetVectorVar(int ts, int dom, const char *varPath)
         // Read the data into our buffer. 
         //
         int vType        = varMD->GetNumType();
-        string className = varMD->GetClassShortName();
+        string className = varMD->GetClassShortName(); 
         int start = miliMetaData[meshId]->
             GetClassMDByShortName(className.c_str())->
             GetConnectivityOffset(dom);                                   
 
-        ReadMiliVarToBuffer(namePtr, SRIds, SRInfo, vType, 
-            start, dataSize, ts + 1, dom, dataBuffer);
+        ReadMiliVarToBuffer(namePtr, SRIds, SRInfo, start,
+            vType, dataSize, ts + 1, dom, dataBuffer);
 
         //TODO: Need to test the multiple block case. 
         //
@@ -2689,6 +2694,7 @@ avtMiliFileFormat::CountJsonClassVariables(const Document &jDoc)
 //  Modifications:
 //
 // ****************************************************************************
+
 void 
 avtMiliFileFormat::ExtractJsonClasses(Document &jDoc,
                                       int meshId) 
@@ -2754,9 +2760,7 @@ avtMiliFileFormat::ExtractJsonClasses(Document &jDoc,
             }
             else
             {
-                
-                EXCEPTION2(UnexpectedValueException, "Superclass ID",
-                    "");
+                EXCEPTION2(UnexpectedValueException, "Superclass ID", "");
             }
 
             MiliClassMetaData *miliClass = 
@@ -2840,15 +2844,36 @@ avtMiliFileFormat::LoadMiliInfoJson(const char *fpath)
     {
         nDomains = jDoc["Domains"].GetInt(); 
     }
+    else
+    {
+        debug1 << "Mili file missing domains?!?!?!\n";
+        char msg[1024];
+        sprintf(msg, "Mili file is missing domains!!");
+        EXCEPTION1(ImproperUseException, msg);
+    }
 
     if (jDoc.HasMember("Number_of_Meshes"))
     {
         nMeshes = jDoc["Number_of_Meshes"].GetInt();
     }
+    else
+    {
+        //
+        // Older formats don't seem to include this info. 
+        //
+        nMeshes = 1;
+    }
 
     if (jDoc.HasMember("Dimensions"))
     {
         dims = jDoc["Dimensions"].GetInt();
+    }
+    else
+    {
+        debug1 << "Mili file missing dims?!?!?!\n";
+        char msg[1024];
+        sprintf(msg, "Mili file is missing dims!!");
+        EXCEPTION1(ImproperUseException, msg);
     }
     
     miliMetaData = new avtMiliMetaData *[nMeshes];
