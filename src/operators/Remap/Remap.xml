@@ -41,9 +41,6 @@
       <Field name="cellsZ" label="Cells in Z" type="int" enabler="is3D:true">
         10
       </Field>
-      <Field name="defaultValue" label="Value for uncovered regions" type="double">
-        0.000000
-      </Field>
       <Field name="variableType" label="Variable type" type="enum" subtype="VariableTypes">
         intrinsic
       </Field>

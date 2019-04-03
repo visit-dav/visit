@@ -104,7 +104,6 @@ void RemapAttributes::Init()
     startZ = 0;
     endZ = 1;
     cellsZ = 10;
-    defaultValue = 0;
     variableType = intrinsic;
 
     RemapAttributes::SelectAll();
@@ -138,7 +137,6 @@ void RemapAttributes::Copy(const RemapAttributes &obj)
     startZ = obj.startZ;
     endZ = obj.endZ;
     cellsZ = obj.cellsZ;
-    defaultValue = obj.defaultValue;
     variableType = obj.variableType;
 
     RemapAttributes::SelectAll();
@@ -308,7 +306,6 @@ RemapAttributes::operator == (const RemapAttributes &obj) const
             (startZ == obj.startZ) &&
             (endZ == obj.endZ) &&
             (cellsZ == obj.cellsZ) &&
-            (defaultValue == obj.defaultValue) &&
             (variableType == obj.variableType));
 }
 
@@ -464,7 +461,6 @@ RemapAttributes::SelectAll()
     Select(ID_startZ,       (void *)&startZ);
     Select(ID_endZ,         (void *)&endZ);
     Select(ID_cellsZ,       (void *)&cellsZ);
-    Select(ID_defaultValue, (void *)&defaultValue);
     Select(ID_variableType, (void *)&variableType);
 }
 
@@ -564,12 +560,6 @@ RemapAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool forceA
         node->AddNode(new DataNode("cellsZ", cellsZ));
     }
 
-    if(completeSave || !FieldsEqual(ID_defaultValue, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("defaultValue", defaultValue));
-    }
-
     if(completeSave || !FieldsEqual(ID_variableType, &defaultObject))
     {
         addToParent = true;
@@ -634,8 +624,6 @@ RemapAttributes::SetFromNode(DataNode *parentNode)
         SetEndZ(node->AsDouble());
     if((node = searchNode->GetNode("cellsZ")) != 0)
         SetCellsZ(node->AsInt());
-    if((node = searchNode->GetNode("defaultValue")) != 0)
-        SetDefaultValue(node->AsDouble());
     if((node = searchNode->GetNode("variableType")) != 0)
     {
         // Allow enums to be int or string in the config file
@@ -736,13 +724,6 @@ RemapAttributes::SetCellsZ(int cellsZ_)
 }
 
 void
-RemapAttributes::SetDefaultValue(double defaultValue_)
-{
-    defaultValue = defaultValue_;
-    Select(ID_defaultValue, (void *)&defaultValue);
-}
-
-void
 RemapAttributes::SetVariableType(RemapAttributes::VariableTypes variableType_)
 {
     variableType = variableType_;
@@ -819,12 +800,6 @@ RemapAttributes::GetCellsZ() const
     return cellsZ;
 }
 
-double
-RemapAttributes::GetDefaultValue() const
-{
-    return defaultValue;
-}
-
 RemapAttributes::VariableTypes
 RemapAttributes::GetVariableType() const
 {
@@ -866,7 +841,6 @@ RemapAttributes::GetFieldName(int index) const
     case ID_startZ:       return "startZ";
     case ID_endZ:         return "endZ";
     case ID_cellsZ:       return "cellsZ";
-    case ID_defaultValue: return "defaultValue";
     case ID_variableType: return "variableType";
     default:  return "invalid index";
     }
@@ -903,7 +877,6 @@ RemapAttributes::GetFieldType(int index) const
     case ID_startZ:       return FieldType_double;
     case ID_endZ:         return FieldType_double;
     case ID_cellsZ:       return FieldType_int;
-    case ID_defaultValue: return FieldType_double;
     case ID_variableType: return FieldType_enum;
     default:  return FieldType_unknown;
     }
@@ -940,7 +913,6 @@ RemapAttributes::GetFieldTypeName(int index) const
     case ID_startZ:       return "double";
     case ID_endZ:         return "double";
     case ID_cellsZ:       return "int";
-    case ID_defaultValue: return "double";
     case ID_variableType: return "enum";
     default:  return "invalid index";
     }
@@ -1021,11 +993,6 @@ RemapAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_cellsZ:
         {  // new scope
         retval = (cellsZ == obj.cellsZ);
-        }
-        break;
-    case ID_defaultValue:
-        {  // new scope
-        retval = (defaultValue == obj.defaultValue);
         }
         break;
     case ID_variableType:
