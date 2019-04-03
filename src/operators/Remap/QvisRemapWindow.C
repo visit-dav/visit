@@ -290,6 +290,30 @@ QvisRemapWindow::UpdateWindow(bool doAll)
                 if(endYLabel)
                     endYLabel->setEnabled(false);
             }
+            if (atts->GetIs3D() == true && atts->GetUseExtents() == false)
+            {
+                startZ->setEnabled(true);
+                if(startZLabel)
+                    startZLabel->setEnabled(true);
+            }
+            else
+            {
+                startZ->setEnabled(false);
+                if(startZLabel)
+                    startZLabel->setEnabled(false);
+            }
+            if (atts->GetIs3D() == true && atts->GetUseExtents() == false)
+            {
+                endZ->setEnabled(true);
+                if(endZLabel)
+                    endZLabel->setEnabled(true);
+            }
+            else
+            {
+                endZ->setEnabled(false);
+                if(endZLabel)
+                    endZLabel->setEnabled(false);
+            }
             useExtents->blockSignals(true);
             useExtents->setChecked(atts->GetUseExtents());
             useExtents->blockSignals(false);
