@@ -199,20 +199,20 @@ class avtMiliFileFormat : public avtMTMDFileFormat
                                                          int *);
 
     //TODO: inspect label integration
-    struct Label_mapping
+    struct LabelMapping
     {
-        vector<int> label_ranges_begin;
-        vector<int> label_ranges_end;
-        vector<int> el_ids_begin;
-        vector<int> el_ids_end;
+        vector<int> labelRangesBegin;
+        vector<int> labelRangesEnd;
+        vector<int> elIdsBegin;
+        vector<int> elIdsEnd;
     };
 
-    vector<int>                             max_zone_label_lengths;
-    vector<int>                             max_node_label_lengths;
+    vector<int>                             maxZoneLabelLengths;
+    vector<int>                             maxNodeLabelLengths;
     vector<vector<string> >                 zoneLabels;
     vector<vector<string> >                 nodeLabels;
-    vector<std::map<string,Label_mapping> > zone_label_mappings;
-    vector<std::map<string,Label_mapping> > node_label_mappings;
+    vector<std::map<string, LabelMapping> > zoneLabelMappings;
+    vector<std::map<string, LabelMapping> > nodeLabelMappings;
 
     void PopulateNodeLabels(const int mesh_id, 
                             char *short_name, 

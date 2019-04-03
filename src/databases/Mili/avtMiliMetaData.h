@@ -261,19 +261,31 @@ class MiliClassMetaData
                                                             int offset);
     int                               GetConnectivityOffset(int dom);
 
+    void                              PopulateLabelIds(int, int *);
+
+    bool                              GetElementLabels(int, vector<string> &);
+
+    int                               GetMaxLabelLength(int);
+
   private:
+
+    void                              DetermineType(void);
+
+    void                              GenerateElementLabels(int);
 
     string                            longName;
     string                            shortName;
     int                               superClassId;
 
+    vector< vector<int> >             labelIds;
+    vector< vector<string> >          elementLabels;
+    vector<bool>                      labelsGenerated;
+    vector<int>                       maxLabelLengths;
     vector<string>                    variables;
     vector<int>                       numDomainElements;
-
     vector<int>                       connectivityOffset;
-    ClassType                         classType;
 
-    void                              DetermineType();
+    ClassType                         classType;
 
 };
 
@@ -398,6 +410,9 @@ class avtMiliMetaData
                                                      int, 
                                                      int *);
 
+    void                               GenerateClassElementLabels(int);
+
+
     MiliClassMetaData                **miliClasses;
     MiliVariableMetaData             **miliVariables;
     MiliMaterialMetaData             **miliMaterials;
@@ -410,7 +425,10 @@ class avtMiliMetaData
     string                             sandDir;
     vector<int>                        numCells;
     vector<int>                        numNodes;
-    vector<int>                        sandedVarIdxs;//TODO: needed?
+
+    vector< vector<string> >           classElementLabels;
+    vector<int>                        maxClassLabelLengths;
+    vector<bool>                       labelsGenerated;
 
     //
     // Subrecord info

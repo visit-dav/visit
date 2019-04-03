@@ -445,12 +445,16 @@ MiliClassMetaData::MiliClassMetaData(string sName,
                                      int scID,
                                      int numDomains)
 {
-    shortName        = sName;
-    longName         = lName;
-    superClassId     = scID;
+    shortName       = sName;
+    longName        = lName;
+    superClassId    = scID;
     DetermineType();
     numDomainElements.resize(numDomains, 0);
     connectivityOffset.resize(numDomains, 0);
+    labelIds.resize(numDomains);
+    elementLabels.resize(numDomains);
+    labelsGenerated.resize(numDomains, false);
+    maxLabelLengths.resize(numDomains, 0);
 }
 
 
@@ -531,6 +535,110 @@ MiliClassMetaData::GetConnectivityOffset(int domain)
 
 
 // ***************************************************************************
+//  Method: MiliClassMetaData::PopulateLabelIds
+//
+//  Purpose:
+//      Populate the class' label ids. 
+//
+//  Arguments: 
+//      domain    The domain of interest. 
+//      ids       An array of ids of size "number of elements on this domain".
+//           
+//  Programmer: Alister Maguire
+//  Creation:   April 3, 2019
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void 
+MiliClassMetaData::PopulateLabelIds(int domain, int *ids)
+{
+    if (domain >= 0 && domain < labelIds.size())
+    {
+        int nEl = numDomainElements[domain];
+
+        for (int i = 0; i < nEl; ++i)
+        {
+            labelIds[domain][i] = ids[i];
+        }
+    }
+}
+
+
+// ***************************************************************************
+//  Method: MiliClassMetaData::GetElementLabels
+//
+//  Purpose:
+//      Get the class'labels.
+//
+//  Arguments: 
+//      domain    The domain of interest. 
+//
+//  Returns:
+//      An array of labels if the domain is valid. 
+//           
+//  Programmer: Alister Maguire
+//  Creation:   April 3, 2019
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+bool
+MiliClassMetaData::GetElementLabels(int domain, vector<string> &outLabels)
+{
+    if (domain >= 0 && domain < elementLabels.size())
+    {
+        if (!labelsGenerated[domain])        
+        {
+            GenerateElementLabels(domain);
+        }
+
+        outLabels = elementLabels[domain];
+        return true;
+    }
+
+    return false;
+}
+
+
+// ***************************************************************************
+//  Method: MiliClassMetaData::GetMaxLabelLength
+//
+//  Purpose:
+//      Get the max label length for this class. 
+//
+//  Arguments: 
+//      domain    The domain of interest. 
+//
+//  Returns:
+//      The max label length on the given domain.
+//           
+//  Programmer: Alister Maguire
+//  Creation:   April 3, 2019
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+int
+MiliClassMetaData::GetMaxLabelLength(int domain)
+{
+    if (domain >= 0 && domain < maxLabelLengths.size())
+    {
+        if (!labelsGenerated[domain])
+        {
+            GenerateElementLabels(domain);
+        }
+        return maxLabelLengths[domain];
+    }
+
+    return 0;
+}
+
+
+// ***************************************************************************
 //  Method: MiliClassMetaData::SetNumElements
 //
 //  Purpose:
@@ -554,6 +662,8 @@ MiliClassMetaData::SetNumElements(int domain, int nEl)
     if (domain >= 0 && domain < numDomainElements.size())
     {
         numDomainElements[domain] = nEl;
+        labelIds[domain].resize(nEl, -1);
+        elementLabels[domain].resize(nEl, "");
     }
 }
 
@@ -648,6 +758,47 @@ MiliClassMetaData::DetermineType()
 
 
 // ***************************************************************************
+//  Method: MiliClassMetaData::GenerateElementLabels
+//
+//  Purpose:
+//      Attempt to generate the class labels. 
+//
+//  Arguments:
+//      domain    The domain of interest. 
+//           
+//  Programmer: Alister Maguire
+//  Creation:   April 3, 2019
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+MiliClassMetaData::GenerateElementLabels(int domain)
+{
+    if (domain >= 0 && domain < labelIds.size())
+    {
+        const char *cSName = shortName.c_str();
+        int pos            = 0;
+
+        for (vector<int>::iterator idItr = labelIds[domain].begin();
+             idItr < labelIds[domain].end(); idItr++)
+        {
+            char cLabel[256];
+            sprintf(cLabel, "%s %i", cSName, (*idItr));
+            string sLabel = string(cLabel);
+            elementLabels[domain][pos++] = sLabel;
+            
+            maxLabelLengths[domain] = std::max(int(sLabel.size()), 
+                maxLabelLengths[domain]);
+        }
+
+        labelsGenerated[domain] = true;
+    }
+}
+
+
+// ***************************************************************************
 //  Constructor: MiliMaterialMetaData::MiliMaterialMetaData
 //
 //  Arguments: 
@@ -719,6 +870,9 @@ avtMiliMetaData::avtMiliMetaData(int nDomains)
     numCells.resize(numDomains, -1);
     numNodes.resize(numDomains, -1);
     subrecInfo.resize(numDomains);
+    classElementLabels.resize(numDomains, "");
+    maxClassLabelLengths.resize(numDomains, 0);
+    labelsGenerated.resize(numDomains, false);
 }
 
 
@@ -1535,6 +1689,41 @@ avtMiliMetaData::AddSubrecInfo(int   dom,
     }
 
     subrecInfo[dom].dataBlockRanges.push_back(nxtRange);
+}
+
+
+// ***************************************************************************
+//  Method: avtMiliMetaData::GenerateClassElementLabels
+//
+//  Purpose:
+//      Generate the element labels for the mili classes. 
+//
+//  Arguments: 
+//      domain         The domain of this subrecord. 
+//           
+//  Programmer: Alister Maguire
+//  Creation:   April 3, 2019
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtMiliMetaData::GenerateElementClassLabels(int domain)
+{
+    //FIXME: complete this
+    if (domain >= 0 &&  domain < classElementLabels.size())
+    {
+        vector<string> fullLabels.resize(numCells[domain], ""); 
+        for (int classIdx = 0; classIdx < numClasses; ++classIdx)
+        {
+            vector<string> classLabels; 
+            if (miliClasses[classIdx]->GetElementLabels(domain, classLabels))
+            {
+           
+            }
+        }
+    }
 }
 
 
