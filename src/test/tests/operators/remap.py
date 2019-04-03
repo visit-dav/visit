@@ -52,51 +52,15 @@ def set3DView():
 def plotVariables(varName, saveName, cells = 10):
     AddPlot("Pseudocolor", varName, 1, 1)
     DrawPlots()
-    Query("Variable Sum")
-    varSum = GetQueryOutputValue()
-    Query("Weighted Variable Sum")
-    varSumWeighted = GetQueryOutputValue()
     
     remap(cells)
     Test(saveName + "_int")
-    Query("Weighted Variable Sum")
-    varSumWeightedRemap = GetQueryOutputValue()
     
     RemoveOperator(0, 1)
     remap(cells, 1)
-    Query("Variable Sum")
-    varSumRemap = GetQueryOutputValue()
-    
-    intError = (varSumWeighted-varSumWeightedRemap)/(varSumWeighted)*100
-    extError = (varSum-varSumRemap)/(varSum)*100
-    if intError > 1 or intError != intError:
-        TestText(saveName + "_int", "Failed: " + str(intError))
-    else:
-        TestText(saveName + "_int", "Passed")
-    if extError > 1 or extError != extError:
-        TestText(saveName + "_ext", "Failed: " + str(extError))
-    else:
-        TestText(saveName + "_ext", "Passed")
+    Test(saveName + "_ext")
     
     DeleteAllPlots()
-    
-def arbpoly():
-    OpenDatabase(silo_data_path("arbpoly-zoohybrid.silo"))
-    plotVariables("2D/z11", "arbpoly-zoohybrid_2dz11")
-    plotVariables("2D/z1phzl", "arbpoly-zoohybrid_2dz1phzl")
-    plotVariables("2D/z1phzl2", "arbpoly-zoohybrid_2dz1phzl2")
-    # Do 3D tests now
-    set3DView()
-    plotVariables("3D/z1", "arbpoly-zoohybrid_3dz1")
-    plotVariables("3D/z2", "arbpoly-zoohybrid_3dz2")
-    plotVariables("3D/z3", "arbpoly-zoohybrid_3dz3")
-    ResetView()
-    
-def csg():
-    OpenDatabase(silo_data_path("csg.silo"))
-    set3DView()
-    plotVariables("var1", "cgs_var1")
-    ResetView()
     
 def ghost1():
     OpenDatabase(silo_data_path("ghost1.silo"))
@@ -142,15 +106,12 @@ def mRect3():
     ResetView()
 
 def Main():
-    arbpoly()
-    csg()
     ghost1()
     globalNode()
     mCurve2()
     mCurve3()
     mRect2()
     mRect3()
-    # mUcd3() # Extrinsic results are still broken
     
 Main()
 Exit()
