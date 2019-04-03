@@ -320,7 +320,7 @@ QvisRemapWindow::UpdateWindow(bool doAll)
             cellsY->setText(IntToQString(atts->GetCellsY()));
             break;
           case RemapAttributes::ID_is3D:
-            if (atts->GetIs3D() == true)
+            if (atts->GetIs3D() == true && atts->GetUseExtents() == false)
             {
                 startZ->setEnabled(true);
                 if(startZLabel)
@@ -332,7 +332,7 @@ QvisRemapWindow::UpdateWindow(bool doAll)
                 if(startZLabel)
                     startZLabel->setEnabled(false);
             }
-            if (atts->GetIs3D() == true)
+            if (atts->GetIs3D() == true && atts->GetUseExtents() == false)
             {
                 endZ->setEnabled(true);
                 if(endZLabel)
