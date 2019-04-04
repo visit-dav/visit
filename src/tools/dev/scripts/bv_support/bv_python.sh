@@ -139,37 +139,53 @@ function bv_python_info
     export PYTHON_FILE="Python-$PYTHON_VERSION.$PYTHON_FILE_SUFFIX"
     export PYTHON_BUILD_DIR="Python-$PYTHON_VERSION"
     export PYTHON_MD5_CHECKSUM="cee2e4b33ad3750da77b2e85f2f8b724"
-    export PYTHON_SHA256_CHECKSUM=""
+    export PYTHON_SHA256_CHECKSUM="304c9b202ea6fbd0a4a8e0ad3733715fbd4749f2204a9173a58ec53c32ea73e8"
 
     export PIL_URL=${PIL_URL:-"http://effbot.org/media/downloads"}
     export PIL_FILE=${PIL_FILE:-"Imaging-1.1.7.tar.gz"}
     export PIL_BUILD_DIR=${PIL_BUILD_DIR:-"Imaging-1.1.7"}
+    export PIL_MD5_CHECKSUM="fc14a54e1ce02a0225be8854bfba478e"
+    export PIL_SHA256_CHECKSUM="895bc7c2498c8e1f9b99938f1a40dc86b3f149741f105cf7c7bd2e0725405211"
 
     export PYPARSING_FILE=${PYPARSING_FILE:-"pyparsing-1.5.2.tar.gz"}
     export PYPARSING_BUILD_DIR=${PYPARSING_BUILD_DIR:-"pyparsing-1.5.2"}
+    export PYPARSING_MD5_CHECKSUM="13aed3cb21a427f8aeb0fe7ca472ba42"
+    export PYPARSING_SHA256_CHECKSUM="1021fd2cfdf9c3b6ac0191b018c15d591501b77d977baded59d8ef76d375f21c"
 
     export PYREQUESTS_FILE=${PYREQUESTS_FILE:-"requests-2.5.1.tar.gz"}
     export PYREQUESTS_BUILD_DIR=${PYREQUESTS_BUILD_DIR:-"requests-2.5.1"}
+    export PYREQUESTS_MD5_CHECKSUM="a89558d5dd35a5cb667e9a6e5d4f06f1"
+    export PYREQUESTS_SHA256_CHECKSUM="1e5ea203d49273be90dcae2b98120481b2ecfc9f2ae512ce545baab96f57b58c"
 
     export SEEDME_URL=${SEEDME_URL:-"https://seedme.org/sites/seedme.org/files/downloads/clients/"}
     export SEEDME_FILE=${SEEDME_FILE:-"seedme-python-client-v1.2.4.zip"}
     export SEEDME_BUILD_DIR=${SEEDME_BUILD_DIR:-"seedme-python-client-v1.2.4"}
+    export SEEDME_MD5_CHECKSUM="84960d455073fd2f51c31b7fcbc64d58"
+    export SEEDME_SHA256_CHECKSUM="71fb233d3b20e95ecd14db1d9cb5deefe775c6ac8bb0ab7604240df7f0e5c5f3"
 
     export SETUPTOOLS_URL=${SETUPTOOLS_URL:-"https://pypi.python.org/packages/f7/94/eee867605a99ac113c4108534ad7c292ed48bf1d06dfe7b63daa51e49987/"}
     export SETUPTOOLS_FILE=${SETUPTOOLS_FILE:-"setuptools-28.0.0.tar.gz"}
     export SETUPTOOLS_BUILD_DIR=${SETUPTOOLS_BUILD_DIR:-"setuptools-28.0.0"}
+    export SETUPTOOLS_MD5_CHECKSUM="9b23df90e1510c7353a5cf07873dcd22"
+    export SETUPTOOLS_SHA256_CHECKSUM="e1a2850bb7ad820e4dd3643a6c597bea97a35de2909e9bf0afa3f337836b5ea3"
 
     export CYTHON_URL=${CYTHON_URL:-"https://pypi.python.org/packages/c6/fe/97319581905de40f1be7015a0ea1bd336a756f6249914b148a17eefa75dc/"}
     export CYTHON_FILE=${CYTHON_FILE:-"Cython-0.25.2.tar.gz"}
     export CYTHON_BUILD_DIR=${CYTHON_BUILD_DIR:-"Cython-0.25.2"}
+    export CYTHON_MD5_CHECKSUM="642c81285e1bb833b14ab3f439964086"
+    export CYTHON_SHA256_CHECKSUM="f141d1f9c27a07b5a93f7dc5339472067e2d7140d1c5a9e20112a5665ca60306"
 
     export NUMPY_URL=${NUMPY_URL:-"https://pypi.python.org/packages/a3/99/74aa456fc740a7e8f733af4e8302d8e61e123367ec660cd89c53a3cd4d70/"}
     export NUMPY_FILE=${NUMPY_FILE:-"numpy-1.14.1.zip"}
     export NUMPY_BUILD_DIR=${NUMPY_BUILD_DIR:-"numpy-1.14.1"}
+    export NUMPY_MD5_CHECKSUM="b8324ef90ac9064cd0eac46b8b388674"
+    export NUMPY_SHA256_CHECKSUM="fa0944650d5d3fb95869eaacd8eedbd2d83610c85e271bd9d3495ffa9bc4dc9c"
 
     export MPI4PY_URL=${MPI4PY_URL:-"https://pypi.python.org/pypi/mpi4py"}
     export MPI4PY_FILE=${MPI4PY_FILE:-"mpi4py-2.0.0.tar.gz"}
     export MPI4PY_BUILD_DIR=${MPI4PY_BUILD_DIR:-"mpi4py-2.0.0"}
+    export MPI4PY_MD5_CHECKSUM="4f7d8126d7367c239fd67615680990e3"
+    export MPI4PY_SHA256_CHECKSUM="6543a05851a7aa1e6d165e673d422ba24e45c41e4221f0993fe1e5924a00cb81"
 }
 
 function bv_python_print
