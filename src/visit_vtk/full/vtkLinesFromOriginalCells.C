@@ -50,6 +50,8 @@
 #include <vtkPointData.h>
 #include <vtkUnsignedIntArray.h>
 
+#include <vtkVisItUtility.h>
+
 //------------------------------------------------------------------------------
 // Modifications:
 //   Kathleen Bonnell, Wed Mar  6 15:14:29 PST 2002 
