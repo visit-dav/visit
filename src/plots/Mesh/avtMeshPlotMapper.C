@@ -65,6 +65,8 @@ using std::vector;
 //  Creation:   June 30, 2016
 //
 //  Modifications:
+//    Kathleen Biagas, Wed Apr  3 16:11:45 PDT 2019
+//    Added pointSize.
 //
 // ****************************************************************************
 
@@ -75,6 +77,7 @@ avtMeshPlotMapper::avtMeshPlotMapper()
     polysColor[0] = polysColor[1] = polysColor[2] = 1.;
     opacity = 1.;
     surfaceVis = true;
+    pointSize = 1;
 }
 
 
@@ -101,6 +104,10 @@ avtMeshPlotMapper::~avtMeshPlotMapper()
 //  Programmer: Kathleen Biagas
 //  Creation:   June 30, 2016
 //
+//  Modifications:
+//    Kathleen Biagas, Wed Apr  3 16:11:45 PDT 2019
+//    Added pointSize.
+//
 // ****************************************************************************
 
 void
@@ -123,6 +130,7 @@ avtMeshPlotMapper::CustomizeMappers()
             prop->SetColor(linesColor);
             prop->SetLineWidth(lineWidth);
             prop->SetOpacity(opacity);
+            prop->SetPointSize(pointSize);
         }
         else if (labels[i].compare(0, 6, string("polys_")) == 0)
         {
@@ -327,6 +335,39 @@ avtMeshPlotMapper::SetLineWidth(int lw)
             if (actors[i] != NULL)
             {
                 actors[i]->GetProperty()->SetLineWidth(lw);
+            }
+        }
+        NotifyTransparencyActor();
+    }
+}
+
+// ****************************************************************************
+//  Method: avtMeshPlotMapper::SetPointSize
+//
+//  Purpose:
+//     Sets the point size.
+//
+//  Programmer: Kathleen Biagas
+//  Creation:   April 3, 2019
+//
+// ****************************************************************************
+
+void
+avtMeshPlotMapper::SetPointSize(int ps)
+{
+    if (pointSize != ps)
+    {
+        pointSize = ps;
+        for (int i = 0; i < nMappers; ++i)
+        {
+            // should not need to set this for polys, but avtTransparencyActor
+            // doesn't handle properties correctly in this instance, so set
+            // line width for all actors
+            //if (actors[i] != NULL && !labels.empty() && labels[i] == "lines_")
+
+            if (actors[i] != NULL)
+            {
+                actors[i]->GetProperty()->SetPointSize(ps);
             }
         }
         NotifyTransparencyActor();
