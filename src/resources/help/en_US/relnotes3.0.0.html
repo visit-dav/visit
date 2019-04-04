@@ -102,7 +102,7 @@ SetBackendType("VTKm")
 <a name="Expression_changes"></a>
 <p><b><font size="4">Changes to VisIt's expression language in version 3.0</font></b></p>
 <ul>
-  <li>The <i>conn_cmfe</i> expression was enhanced to handle mapping cell data between point meshes and polyhedral meshes where the number of points and polyhedra match. This didn't work previously because polyhedra are split into zoo elements, which results in the number of cells not matching. Now the splitting is taken into account.</li>
+  <li>The <i>conn_cmfe</i> expression was enhanced to handle mapping cell data between point meshes and polygonal or polyhedral meshes where the number of points and polygons or polyhedra match. This didn't work previously in the case of polygons because while the number of cells matched the number of points didn't. Now the number of points is ignored. It didn't work in the case of polyhedral meshes because polyhedra are split into zoo elements, which results in the number of cells not matching. Now the splitting is taken into account.</li>
 </ul>
 
 <a name="Query_changes"></a>
