@@ -287,19 +287,25 @@ function verify_md5_checksum
 {
     checksum=$1
     dfile=$2
+    md5cmd=md5sum
 
-    tmp=`which md5sum`
+    tmp=`which $md5cmd`
     if [[ $? != 0 ]]; then
-        info "could not find md5sum, disabling check"
-        return 0
+        tmp=`which md5`
+        if [[ $? != 0 ]]; then
+            info "could not find md5sum or md5 commands, disabling check"
+            return 0
+        fi
+        md5cmd=md5
     fi
-    tmp=`md5sum $dfile | awk '{print $1}'`
+    $md5cmd $dfile | tr ' ' '\n' | grep '^[0-9a-f]\{32\}'
+    tmp=`$md5cmd $dfile | tr ' ' '\n' | grep '^[0-9a-f]\{32\}'`
     if [[ $tmp == ${checksum} ]]; then
         info "verified"
         return 0
     fi
 
-    info "md5sum failed: looking for $checksum got $tmp"
+    info "md5 checksum failed: looking for $checksum got $tmp"
     return 1
 }
 
@@ -359,6 +365,37 @@ function verify_checksum
     return 0
 }
 
+function verify_checksum_by_lookup
+{
+    dlfile=$(basename $1) # the downloaded file name
+
+    # search for all shell vars with name of the form XXX_FILE defined
+    # that have a value that is this file. The +-o posix stuff is to cull
+    # out function names and definitions from the search
+    for var in $(set -o posix; set | grep _FILE=; set +o posix); do
+        var=$(echo $var | cut -d '=' -f1)
+        if [ ${!var} = $dlfile ]; then
+            varbase=$(echo $var | sed -e 's/_FILE$//')
+            md5sum_varname=${varbase}_MD5_CHECKSUM
+            sha256_varname=${varbase}_SHA256_CHECKSUM
+            sha512_varname=${varbase}_SHA512_CHECKSUM
+            if [ ! -z ${!sha512_varname+x} ]; then
+                verify_checksum SHA512 ${!sha512_varname} $dlfile
+                return $?
+            elif [ ! -z ${!sha256_varname+x} ]; then
+                verify_checksum SHA256 ${!sha256_varname} $dlfile
+                return $?
+            elif [ ! -z ${!md5sum_varname+x} ]; then
+                verify_checksum MD5 ${!md5sum_varname} $dlfile
+                return $?
+            fi
+        fi
+    done
+
+    #since this is an optional check, all cases should pass if it gets here..
+    info "unable to find a MD5, SHA256, or SHA512, checksum associated with $dlfile; check disabled"
+    return 0
+}
 
 # *************************************************************************** #
 # Function: download_file                                                     #
@@ -498,6 +535,7 @@ function try_download_file
         wget $WGET_OPTS -o /dev/null $1
     fi
 
+    verify_checksum_by_lookup `basename $1`
     if [[ $? == 0 && -e `basename $1` ]] ; then
         info "Download succeeded: $1"
         return 0
@@ -506,6 +544,7 @@ function try_download_file
         rm -f `basename $1`
         return 1
     fi
+
 }
 
 # ***************************************************************************
@@ -535,6 +574,7 @@ function try_download_file_from_shortened_url
         wget $WGET_OPTS -O $2 -o /dev/null $1
     fi
 
+    verify_checksum_by_lookup $2
     if [[ $? == 0 && -e $2 ]] ; then
         info "Download succeeded: $1"
         return 0
