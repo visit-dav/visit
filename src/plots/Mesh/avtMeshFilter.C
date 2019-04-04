@@ -46,7 +46,6 @@
 #include <vtkCellArray.h>
 #include <vtkCellData.h>
 #include <vtkDataSetRemoveGhostCells.h>
-#include <vtkExtractEdges.h>
 #include <vtkGeometryFilter.h>
 #include <vtkLinesFromOriginalCells.h>
 #include <vtkPolyData.h>
@@ -205,6 +204,11 @@ avtMeshFilter::~avtMeshFilter()
 //    Kathleen Biagas, Thu Mar 14 14:41:12 PDT 2019
 //    Remove Line cells from opaquePolys.
 //
+//    Kathleen Biagas, Wed Apr  3 16:02:16 PDT 2019
+//    In place of vtkExtractEdges, use vtkLinesFromOriginalCells, as it has
+//    been modified to add line and vertex primitives, and to have a flag
+//    requesting use of OriginalCells, or not.
+//
 // ****************************************************************************
 
 avtDataTree_p
@@ -228,7 +232,7 @@ avtMeshFilter::ExecuteDataTree(avtDataRepresentation *inDR)
 
     vtkLinesFromOriginalCells *lineFilter = vtkLinesFromOriginalCells::New();
     vtkGeometryFilter *geometryFilter = vtkGeometryFilter::New();
-    vtkExtractEdges *extractEdges = vtkExtractEdges::New();
+    vtkLinesFromOriginalCells *extractEdges = vtkLinesFromOriginalCells::New();
     vtkDataSetRemoveGhostCells *ghostFilter =vtkDataSetRemoveGhostCells::New();
     vtkRectilinearGridFacelistFilter *rectFacesFilter =
         vtkRectilinearGridFacelistFilter::New();
@@ -277,15 +281,14 @@ avtMeshFilter::ExecuteDataTree(avtDataRepresentation *inDR)
             opaquePolys = geometryFilter->GetOutput();
         }
         // don't want line cells showing up in our rendering of the surfaces as opaque.
-        if (opaquePolys->GetNumberOfLines() > 0)
-        {
-            opaquePolys->SetLines(NULL);
-        }
+        opaquePolys->SetLines(NULL);
+        opaquePolys->SetVerts(NULL);
     }
 
     if (atts.GetShowInternal() &&
         revisedInput->GetDataObjectType() != VTK_POLY_DATA)
     {
+        extractEdges->UseOriginalCellsOff();
         extractEdges->SetInputData(revisedInput);
         extractEdges->Update();
         revisedInput2 = extractEdges->GetOutput();
@@ -348,9 +351,23 @@ avtMeshFilter::ExecuteDataTree(avtDataRepresentation *inDR)
 
         if (topoDim == 2)
         {
+            lineFilter->UseOriginalCellsOn();
             lineFilter->SetInputData((vtkPolyData*)revisedInput3);
             lineFilter->Update();
             outDS = lineFilter->GetOutput();
+
+            // this can occur due to use of 3DCellNums array by the lines
+            // filter.  The Lines filter used to call vtkExtractEdges in
+            // this case, but that filter loses disconnected lines and 
+            // vertices, so we will call the lines filter again and turn
+            // off the use of OriginalCells.
+            if (outDS->GetNumberOfLines() == 0)
+            {
+                lineFilter->UseOriginalCellsOff();
+                lineFilter->SetInputData((vtkPolyData*)revisedInput3);
+                lineFilter->Update();
+                outDS = lineFilter->GetOutput();
+            }
         }
         else
         {

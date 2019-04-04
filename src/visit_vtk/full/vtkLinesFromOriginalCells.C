@@ -40,15 +40,14 @@
 
 #include <vtkCellArray.h>
 #include <vtkCellData.h>
+#include <vtkDataSet.h>
 #include <vtkEdgeTable.h>
-#include <vtkExtractEdges.h>
+#include <vtkGenericCell.h>
+#include <vtkPolyData.h>
 #include <vtkInformation.h>
 #include <vtkInformationVector.h>
-#include <vtkMergePoints.h>
 #include <vtkObjectFactory.h>
 #include <vtkPointData.h>
-#include <vtkVisItUtility.h>
-#include <vtkPolyData.h>
 #include <vtkUnsignedIntArray.h>
 
 //------------------------------------------------------------------------------
@@ -67,6 +66,7 @@ vtkStandardNewMacro(vtkLinesFromOriginalCells);
 //------------------------------------------------------------------------------
 vtkLinesFromOriginalCells::vtkLinesFromOriginalCells()
 {
+  this->UseOriginalCells = false;
 }
 
 vtkLinesFromOriginalCells::~vtkLinesFromOriginalCells()
@@ -116,75 +116,57 @@ vtkLinesFromOriginalCells::~vtkLinesFromOriginalCells()
 //    Kathleen Biagas, Thu Mar 14 14:38:25 PDT 2019
 //    Add VTK_LINE cells if they don't duplicate cell edges.
 //
+//    Kathleen Biagas, Wed Apr  3 17:46:48 PDT 2019
+//    Modified Input to be vtkDataSet, and also add VTK_POLY_LINE, VTK_VERTEX
+//    and VTK_POLY_VERTEX cells.
+//
 // ****************************************************************************
 int vtkLinesFromOriginalCells::RequestData(
   vtkInformation *vtkNotUsed(request),
   vtkInformationVector **inputVector,
   vtkInformationVector *outputVector)
 {
-  // get the info objects
+  // get the input info object
   vtkInformation *inInfo = inputVector[0]->GetInformationObject(0);
+
+  // get the input 
+  vtkDataSet *input = vtkDataSet::SafeDownCast(
+    inInfo->Get(vtkDataObject::DATA_OBJECT()));
+
+  vtkIdType numCells, numPts; 
+  //  Check input
+  //
+  numPts=input->GetNumberOfPoints();
+  if ( (numCells=input->GetNumberOfCells()) < 1 || numPts < 1 )
+  {
+    return 1;
+  }
+
+  vtkDebugMacro(<<"Executing edge extractor");
+
+  // get the output info object
   vtkInformation *outInfo = outputVector->GetInformationObject(0);
 
-  //
-  // Initialize some frequently used values.
-  //
-  vtkPolyData  *input = vtkPolyData::SafeDownCast(
-    inInfo->Get(vtkDataObject::DATA_OBJECT()));
+  // get the output 
   vtkPolyData *output = vtkPolyData::SafeDownCast(
     outInfo->Get(vtkDataObject::DATA_OBJECT()));
 
-  vtkCellData  *inCD   = input->GetCellData();
-  vtkCellData  *outCD  = output->GetCellData();
+  vtkCellData *inCD = input->GetCellData();
+  vtkCellData *outCD = output->GetCellData();
 
   vtkPoints *pts2 = vtkVisItUtility::GetPoints(input);
   output->SetPoints(pts2);
   pts2->Delete();
   output->GetPointData()->ShallowCopy(input->GetPointData());
 
-  vtkCellArray *newLines;
-  vtkIdList *edgeNeighbors;
-  int numCells, cellNum, edgeNum, numEdgePts, numCellEdges;
-  int numPts, i, k, pt2, newId;
-  vtkIdType pts[2] = { 0, 0 };
-  int pt1 = 0, neighbor;
+  vtkCellArray *newLines, *newVerts;
+  vtkIdType newId;
+  int edgeNum, numEdgePts, numCellEdges;
+  int abort = 0;
+  vtkIdType pts[2];
   vtkEdgeTable *edgeTable;
-  vtkCell *cell, *edge;
-  bool insert;
-
-  vtkDataArray* origCellsArr = inCD->GetArray("avtOriginalCellNumbers");
-  if ( (!origCellsArr) || (origCellsArr->GetDataType() != VTK_UNSIGNED_INT)
-    || (origCellsArr->GetNumberOfComponents() != 2))
-  {
-      vtkDebugMacro(<<"No proper match for OriginalCellNumbers found in "
-                    "field data. Using vtkExtractEdges.");
-      vtkExtractEdges *extractor = vtkExtractEdges::New();
-      extractor->SetInputData(input);
-      extractor->Update();
-      output->ShallowCopy(extractor->GetOutput());
-      extractor->Delete();
-      return 1;
-  }
-  unsigned int* origCellNums =
-      ((vtkUnsignedIntArray*)origCellsArr)->GetPointer(0);
-
-  vtkDataArray* cellNums3DArr = inCD->GetArray("avt3DCellNumbers");
-  unsigned int* cellNums3D = NULL;
-  if (cellNums3DArr && cellNums3DArr->GetDataType() == VTK_UNSIGNED_INT)
-  {
-      cellNums3D = ((vtkUnsignedIntArray*)cellNums3DArr)->GetPointer(0);
-  }
-
-  //  Check input
-  //
-  input->BuildLinks();
-  numPts=input->GetNumberOfPoints();
-  numCells=input->GetNumberOfCells();
-  if ( numCells < 1 || numPts < 1 )
-    {
-    vtkErrorMacro(<<"No input data!");
-    return 1;
-    }
+  vtkGenericCell *cell;
+  vtkCell *edge;
 
   // Set up processing
   //
@@ -192,116 +174,175 @@ int vtkLinesFromOriginalCells::RequestData(
   edgeTable->InitEdgeInsertion(numPts);
   newLines = vtkCellArray::New();
   newLines->EstimateSize(numPts*4,2);
+  newVerts = vtkCellArray::New();
+  newVerts->EstimateSize(numPts,1);
 
-  outCD->CopyAllocate(outCD,numCells);
+  outCD->CopyAllocate(inCD,numCells);
 
-  edgeNeighbors = vtkIdList::New();
-  // Loop over all cells, extracting non-visited edges. 
-  //
+  cell = vtkGenericCell::New();
+  vtkIdList *edgeIds;
 
-  for (cellNum=0; cellNum < numCells; cellNum++ )
+  // Set up for OriginalCell usage, if requested
+  unsigned int* origCellNums = NULL;
+  unsigned int* cellNums3D = NULL;
+  vtkPolyData *polys = NULL;
+  if(this->UseOriginalCells && input->GetDataObjectType() == VTK_POLY_DATA)
   {
-      if ( ! (cellNum % 10000) ) //manage progress reports / early abort
-      {
-          this->UpdateProgress ((float)cellNum / numCells);
-          if ( this->GetAbortExecute() ) 
-          {
-            break;
-          }
-      }
+    vtkDataArray* origCellsArr = inCD->GetArray("avtOriginalCellNumbers");
+    if ( (origCellsArr) && (origCellsArr->GetDataType() == VTK_UNSIGNED_INT)
+      && (origCellsArr->GetNumberOfComponents() == 2))
+    {
+      origCellNums = ((vtkUnsignedIntArray*)origCellsArr)->GetPointer(0);
+    }
 
-      cell = input->GetCell(cellNum);
-      numCellEdges = cell->GetNumberOfEdges();
-      for (edgeNum=0; edgeNum < numCellEdges; edgeNum++ )
-      {
-          edge = cell->GetEdge(edgeNum);
-          numEdgePts = edge->GetNumberOfPoints();
+    vtkDataArray* cellNums3DArr = inCD->GetArray("avt3DCellNumbers");
+    if (cellNums3DArr && cellNums3DArr->GetDataType() == VTK_UNSIGNED_INT)
+    {
+      cellNums3D = ((vtkUnsignedIntArray*)cellNums3DArr)->GetPointer(0);
+    }
+    polys = vtkPolyData::SafeDownCast(inInfo->Get(vtkDataObject::DATA_OBJECT()));
+    polys->BuildLinks();  
+  }
 
-          for ( i=0; i < numEdgePts; i++, pt1=pt2, pts[0]=pts[1] )
+  // Loop over all cells, extracting non-visited edges.
+  //
+  vtkIdType tenth = numCells/10 + 1;
+
+  vtkIdList *edgeNeighbors = vtkIdList::New();
+  for (vtkIdType cellNum=0; cellNum < numCells && !abort; cellNum++ )
+  {
+    if ( ! (cellNum % tenth) ) //manage progress reports / early abort
+    {
+      this->UpdateProgress (static_cast<double>(cellNum) / numCells);
+      abort = this->GetAbortExecute();
+    }
+
+    input->GetCell(cellNum,cell);
+    numCellEdges = cell->GetNumberOfEdges();
+    for (edgeNum=0; edgeNum < numCellEdges; edgeNum++ )
+    {
+      edge = cell->GetEdge(edgeNum);
+      numEdgePts = edge->GetNumberOfPoints();
+      pts[0] = edge->PointIds->GetId(0);
+      for ( vtkIdType i=1; i < numEdgePts; i++, pts[0]=pts[1] )
+      {
+        pts[1] = edge->PointIds->GetId(i);
+        if ( edgeTable->IsEdge(pts[0],pts[1]) == -1 )
+        {
+          bool insert = true;
+          if(this->UseOriginalCells && polys)
           {
-              pt2 = edge->PointIds->GetId(i);
-              pts[1] = pt2;
-              
-              if ( i > 0 && edgeTable->IsEdge(pt1,pt2) == -1 )
+            polys->GetCellEdgeNeighbors(cellNum, pts[0], pts[1],edgeNeighbors);
+            vtkIdType *neighborIdList = edgeNeighbors->GetPointer(0);
+            for (vtkIdType k = 0; k < edgeNeighbors->GetNumberOfIds(); k++)
+            {
+              vtkIdType neighbor = neighborIdList[k];
+              if (origCellNums)
               {
-                  insert = true;
-                  input->GetCellEdgeNeighbors(cellNum, pt1, pt2,edgeNeighbors);
+                if (origCellNums[2*cellNum+1] == origCellNums[2*neighbor+1]
+                            && (!cellNums3D || cellNums3D[cellNum] != cellNums3D[neighbor]))
+                {
+                  // don't insert this edge if any of its neighbors 
+                  // which were generated from different 3D cells
+                  // belong to the same *original* cell.
 
-                  vtkIdType *neighborIdList = edgeNeighbors->GetPointer(0);
-                  for (k = 0; k < edgeNeighbors->GetNumberOfIds(); k++)
-                  {
-                      neighbor = neighborIdList[k];
-                      if (origCellNums[2*cellNum+1] == origCellNums[2*neighbor+1]
-                          && (!cellNums3D || cellNums3D[cellNum] != cellNums3D[neighbor]))
-                      {
-                          // don't insert this edge if any of its neighbors 
-                          // which were generated from different 3D cells
-                          // belong to the same *original* cell.
-
-                          // NOTE -- the additional cellNums3D logic was
-                          // put in because all 3D mesh plots now go through
-                          // this filter, and without the extra logic,
-                          // mesh lines at corners disappear.
-                          // It also corrects some corner mesh lines
-                          // disappearing on subdivided meshes (e.g. MIR),
-                          // though not all.
-                          insert = false;
-                          break;
-                      }
-                  }
-                  if (insert)
-                  {
-                      edgeTable->InsertEdge(pt1, pt2);
-                      newId = newLines->InsertNextCell(2,pts);
-                      outCD->CopyData(inCD, cellNum, newId);
-                  }
-              } // if unique edge
-          } // for all edge points
-      }//for all edges of cell
-
-      // Lines have 0 edges, so won't be processed by above logic.
-      if(cell->GetCellType() == VTK_LINE)
-      {
-          // should these always be inserted?
-          pt1 = cell->GetPointId(0);
-          pt2 = cell->GetPointId(1);
-          if ( edgeTable->IsEdge(pt1,pt2) == -1 )
-          {
-              edgeTable->InsertEdge(pt1, pt2);
-              pts[0] = pt1;
-              pts[1] = pt2;
-              newId = newLines->InsertNextCell(2,pts);
-              outCD->CopyData(inCD, cellNum, newId);
+                  // NOTE -- the additional cellNums3D logic was
+                  // put in because all 3D mesh plots now go through
+                  // this filter, and without the extra logic,
+                  // mesh lines at corners disappear.
+                  // It also corrects some corner mesh lines
+                  // disappearing on subdivided meshes (e.g. MIR),
+                  // though not all.
+                  insert = false;
+                  break;
+                }
+              }
+            }
           }
+          if(insert)
+          {
+            edgeTable->InsertEdge(pts[0], pts[1]);
+            newId = newLines->InsertNextCell(2,pts);
+            outCD->CopyData(inCD, cellNum, newId);
+          }
+        }
       }
+    }//for all edges of cell
+
+    // Lines have 0 edges, so won't be processed by above logic.
+    if(cell->GetCellType() == VTK_LINE)
+    {
+      // should these always be inserted?
+      pts[0] = cell->GetPointId(0);
+      pts[1] = cell->GetPointId(1);
+      if ( edgeTable->IsEdge(pts[0],pts[1]) == -1 )
+      {
+        edgeTable->InsertEdge(pts[0], pts[1]);
+        newId = newLines->InsertNextCell(2,pts);
+        outCD->CopyData(inCD, cellNum, newId);
+      }
+    }
+    else if(cell->GetCellType() == VTK_POLY_LINE)
+    {
+      vtkIdType numCellPts = cell->GetNumberOfPoints();
+      pts[0] = cell->GetPointId(0);
+      for (vtkIdType i = 1; i < numCellPts; ++i, pts[0] = pts[1])
+      {
+        pts[1] = cell->GetPointId(i);
+        if ( edgeTable->IsEdge(pts[0], pts[1]) == -1 )
+        {
+          edgeTable->InsertEdge(pts[0], pts[1]);
+          newId = newLines->InsertNextCell(2,pts);
+          outCD->CopyData(inCD, cellNum, newId);
+        }
+      }
+    }
+    else if(cell->GetCellType() == VTK_VERTEX)
+    {
+      pts[0] = cell->GetPointId(0);
+      newVerts->InsertNextCell(1, pts);
+    }
+    else if(cell->GetCellType() == VTK_POLY_VERTEX)
+    {
+      for (vtkIdType i = 0; i < cell->GetNumberOfPoints(); ++i) 
+      {
+        pts[0] = cell->GetPointId(i);
+        newVerts->InsertNextCell(1, pts);
+      }
+    }
+
   }//for all cells
 
-  if (newLines->GetNumberOfCells() > 0)
-  {
-      output->SetLines(newLines);
-      vtkDebugMacro(<<"Created " << newLines->GetNumberOfCells() << " edges");
-  }
-  else
-  {
-      // HACK to work-around problem with arb-poly data. The logic above
-      // using 3DCellNumbers may not allow any edges to be added, so if that
-      // is the case, use the edges filter.
-      vtkDebugMacro(<<"Finding unique edges failed. Using vtkExtractEdges.");
-      vtkExtractEdges *extractor = vtkExtractEdges::New();
-      extractor->SetInputData(input);
-      extractor->Update();
-      output->ShallowCopy(extractor->GetOutput());
-      extractor->Delete();
-      vtkDebugMacro(<<"Created " << output->GetNumberOfCells() << " edges");
-  }
+  vtkDebugMacro(<<"Created " << newLines->GetNumberOfCells() << " edges");
 
-  //
   //  Update ourselves.
   //
-  edgeTable->Delete();
   edgeNeighbors->Delete();
+  edgeTable->Delete();
+  cell->Delete();
+
+  output->SetLines(newLines);
   newLines->Delete();
+
+  output->SetVerts(newVerts);
+  newVerts->Delete();
+
   output->Squeeze();
 
   return 1;
+}
+
+
+//----------------------------------------------------------------------------
+int vtkLinesFromOriginalCells::FillInputPortInformation(int, vtkInformation *info)
+{
+  info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkDataSet");
+  return 1;
+}
+
+//----------------------------------------------------------------------------
+void vtkLinesFromOriginalCells::PrintSelf(ostream& os, vtkIndent indent)
+{
+  this->Superclass::PrintSelf(os,indent);
+  os << indent << "Requesting use of OriginalCells: " << this->UseOriginalCells << "\n";
 }

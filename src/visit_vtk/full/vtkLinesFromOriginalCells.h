@@ -50,26 +50,34 @@
 #ifndef __vtkLinesFromOriginalCells_h
 #define __vtkLinesFromOriginalCells_h
 #include <visit_vtk_exports.h>
+#include <vtkPolyDataAlgorithm.h>
 
-#include "vtkPolyDataAlgorithm.h"
 
 class VISIT_VTK_API vtkLinesFromOriginalCells : public vtkPolyDataAlgorithm
 {
 public:
   static vtkLinesFromOriginalCells *New();
   vtkTypeMacro(vtkLinesFromOriginalCells,vtkPolyDataAlgorithm);
+  void PrintSelf(ostream& os, vtkIndent indent) override;
+
+  vtkSetMacro(UseOriginalCells, bool);
+  vtkGetMacro(UseOriginalCells, bool);
+  vtkBooleanMacro(UseOriginalCells, bool);
 
 protected:
   vtkLinesFromOriginalCells();
-  ~vtkLinesFromOriginalCells();
+  ~vtkLinesFromOriginalCells() override;
 
-  virtual int RequestData(vtkInformation *,
-                          vtkInformationVector **,
-                          vtkInformationVector *) override;
+  int RequestData(vtkInformation *,
+                  vtkInformationVector **,
+                  vtkInformationVector *) override;
 
+  int FillInputPortInformation(int port, vtkInformation *info) override;
+
+  bool UseOriginalCells;
 private:
-  vtkLinesFromOriginalCells(const vtkLinesFromOriginalCells&);
-  void operator=(const vtkLinesFromOriginalCells&);
+  vtkLinesFromOriginalCells(const vtkLinesFromOriginalCells&) = delete;
+  void operator=(const vtkLinesFromOriginalCells&) = delete;
 };
 
 #endif
