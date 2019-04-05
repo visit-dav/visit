@@ -140,6 +140,11 @@ avtConnCMFEExpression::PerformCMFE(avtDataTree_p in1, avtDataTree_p in2,
 //    data between a point mesh and a polyhedral mesh and the number of
 //    points is the same as the number of polyhedra.
 //
+//    Eric Brugger, Thu Apr  4 14:58:20 PDT 2019
+//    I added additional special handling for the case where we are mapping
+//    cell data between a point mesh and a polygonal mesh and the number of
+//    points is the same as the number of polygons.
+//
 // ****************************************************************************
 
 avtDataTree_p
@@ -195,8 +200,8 @@ avtConnCMFEExpression::ExecuteTree(avtDataTree_p in1, avtDataTree_p in2,
 
         //
         // Check for the case where we are mapping between a point mesh
-        // and a polyhedral mesh and the number of polyhedra is the same
-        // as the number of points.
+        // and either a polyhedral or polygonal mesh and the number of
+        // polyhedra or polygons is the same as the number of points.
         //
         bool handlePointPolyhedralMapping = false;
         if (nRealCells1 != nRealCells2 &&
@@ -255,6 +260,24 @@ avtConnCMFEExpression::ExecuteTree(avtDataTree_p in1, avtDataTree_p in2,
                     nRealPoints1 = nRealPoints2;
                     handlePointPolyhedralMapping = true;
                 }
+            }
+        }
+        else if (nRealCells1 == nRealCells2 && nRealPoints1 != nRealPoints2 &&
+            in_ds1->GetDataObjectType() == VTK_UNSTRUCTURED_GRID &&
+            in_ds2->GetDataObjectType() == VTK_UNSTRUCTURED_GRID)
+        {
+            debug5 << "avtConnCMFEExpression::ExecuteTree: The cell counts"
+                   << " match, the point counts don't match and both grids"
+                   << " are unstructured." << endl;
+            bool isCell =
+                in_ds2->GetPointData()->GetArray(invar.c_str()) == NULL &&
+                in_ds2->GetCellData()->GetArray(invar.c_str()) != NULL;
+            if (isCell)
+            {
+                debug5 << "avtConnCMFEExpression::ExecuteTree:"
+                       << " Doing special processing of mapping between"
+                       << " a point mesh and a polyhedral mesh." << endl;
+                nRealPoints1 = nRealPoints2;
             }
         }
 
