@@ -2061,10 +2061,7 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
                               AVT_ZONECENT, 
                               dims);
 
-        //TODO: look into this. 
-        // Visit is intercepting these labels and displaying something
-        // else, so current work around is just to hide them
-        bool hideFromGui = true;
+        bool hideFromGui = false;
         AddLabelVarToMetaData(md, 
                               "OriginalNodeLabels", 
                               meshName, 
@@ -2108,10 +2105,7 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
                                   AVT_ZONECENT, 
                                   dims);
 
-            //TODO: look into this. 
-            // Visit is intercepting these labels and displaying something
-            // else, so current work around is just to hide them
-            bool hideFromGui = true;
+            bool hideFromGui = false;
             AddLabelVarToMetaData(md, 
                                   "OriginalNodeLabels", 
                                   sandMeshName, 

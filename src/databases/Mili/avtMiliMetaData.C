@@ -1227,6 +1227,17 @@ avtMiliMetaData::SetNumNodes(int domain, int nNodes)
     {
         numNodes[domain] = nNodes;
         nodeBasedLabels[domain].resize(nNodes, string(""));
+
+        //
+        // See if we have a node class. If so, tell it 
+        // how many elements it has. 
+        //
+        MiliClassMetaData *nodeMD = GetClassMDByShortName("node");
+
+        if (nodeMD != NULL)
+        {
+            nodeMD->SetNumElements(domain, nNodes);
+        }
     }
 }
 
