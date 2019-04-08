@@ -265,6 +265,8 @@ class MiliClassMetaData
 
     bool                              GetElementLabels(int, vector<string> &);
 
+    vector<string>                   *GetElementLabelsPtr(int);
+
     int                               GetMaxLabelLength(int);
 
   private:
@@ -390,16 +392,20 @@ class avtMiliMetaData
     string                             GetSandDir(void)
                                          { return sandDir; };
 
+    void                               SetNumCells(int, int);
     int                                GetNumCells(int);
-    void                               SetNumCells(int domain, int nCells)
-                                         { numCells[domain] = nCells; };
 
+    void                               SetNumNodes(int , int);
     int                                GetNumNodes(int);
-    void                               SetNumNodes(int domain, int nNodes)
-                                         { numNodes[domain] = nNodes; };
 
     int                                GetNumMiliCellTypes(void)
                                          { return numMiliCellTypes; };
+
+    vector<string>                    *GetZoneBasedLabelsPtr(int);
+    vector<string>                    *GetNodeBasedLabelsPtr(int);
+
+    int                                GetMaxZoneLabelLength(int);
+    int                                GetMaxNodeLabelLength(int);
 
     SubrecInfo                        &GetSubrecInfo(int);
 
@@ -410,7 +416,8 @@ class avtMiliMetaData
                                                      int, 
                                                      int *);
 
-    void                               GenerateClassElementLabels(int);
+    void                               GenerateZoneBasedLabels(int);
+    void                               GenerateNodeBasedLabels(int);
 
 
     MiliClassMetaData                **miliClasses;
@@ -426,9 +433,12 @@ class avtMiliMetaData
     vector<int>                        numCells;
     vector<int>                        numNodes;
 
-    vector< vector<string> >           classElementLabels;
-    vector<int>                        maxClassLabelLengths;
-    vector<bool>                       labelsGenerated;
+    vector <vector<string> >           zoneBasedLabels;
+    vector <vector<string> >           nodeBasedLabels;
+    vector<int>                        maxZoneLabelLengths;
+    vector<int>                        maxNodeLabelLengths;
+    vector<bool>                       zoneLabelsGenerated;
+    vector<bool>                       nodeLabelsGenerated;
 
     //
     // Subrecord info

@@ -352,10 +352,23 @@ MiliVariableMetaData::DetermineESStatus(void)
         }
 
         //
-        // The first character will allow us to map to the 
-        // non-element set name. 
+        // The vector should contain dimensional based variables
+        // with a leading charact signifiyting it's mapped name. 
+        // Since the vectors can also contain other elements, let's
+        // first find a dimensional variable. 
         //
-        char leadingChar = vectorComponents[0][0];
+        int targetIdx;
+        for (targetIdx = 0; targetIdx < vectorSize; ++targetIdx)
+        {
+            if (vectorComponents[targetIdx].size() > 1)
+            {
+                if (vectorComponents[targetIdx][1] == 'x')
+                {
+                    break;
+                }
+            }
+        }
+        char leadingChar = vectorComponents[targetIdx][0];
 
         switch (leadingChar)
         {
@@ -557,7 +570,6 @@ MiliClassMetaData::PopulateLabelIds(int domain, int *ids)
     if (domain >= 0 && domain < labelIds.size())
     {
         int nEl = numDomainElements[domain];
-
         for (int i = 0; i < nEl; ++i)
         {
             labelIds[domain][i] = ids[i];
@@ -570,13 +582,14 @@ MiliClassMetaData::PopulateLabelIds(int domain, int *ids)
 //  Method: MiliClassMetaData::GetElementLabels
 //
 //  Purpose:
-//      Get the class'labels.
+//      Get the class labels.
 //
 //  Arguments: 
-//      domain    The domain of interest. 
+//      domain        The domain of interest. 
+//      outLabels     A reference to a vector for storing the requested labels.
 //
 //  Returns:
-//      An array of labels if the domain is valid. 
+//      true if the retrieval was successful. Otherwise, false. 
 //           
 //  Programmer: Alister Maguire
 //  Creation:   April 3, 2019
@@ -600,6 +613,42 @@ MiliClassMetaData::GetElementLabels(int domain, vector<string> &outLabels)
     }
 
     return false;
+}
+
+
+// ***************************************************************************
+//  Method: MiliClassMetaData::GetElementLabelsPtr
+//
+//  Purpose:
+//      Get a pointer to the class labels.
+//
+//  Arguments: 
+//      domain    The domain of interest. 
+//
+//  Returns:
+//      A pointer to the desired labels if successful. Otherwise, NULL. 
+//           
+//  Programmer: Alister Maguire
+//  Creation:   April 3, 2019
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+vector<string> *
+MiliClassMetaData::GetElementLabelsPtr(int domain)
+{
+    if (domain >= 0 && domain < elementLabels.size())
+    {
+        if (!labelsGenerated[domain])        
+        {
+            GenerateElementLabels(domain);
+        }
+
+        return &elementLabels[domain];
+    }
+
+    return NULL;
 }
 
 
@@ -659,7 +708,7 @@ MiliClassMetaData::GetMaxLabelLength(int domain)
 void 
 MiliClassMetaData::SetNumElements(int domain, int nEl)
 {
-    if (domain >= 0 && domain < numDomainElements.size())
+    if (domain >= 0 && domain < labelIds.size())
     {
         numDomainElements[domain] = nEl;
         labelIds[domain].resize(nEl, -1);
@@ -778,21 +827,40 @@ MiliClassMetaData::GenerateElementLabels(int domain)
 {
     if (domain >= 0 && domain < labelIds.size())
     {
-        const char *cSName = shortName.c_str();
-        int pos            = 0;
-
-        for (vector<int>::iterator idItr = labelIds[domain].begin();
-             idItr < labelIds[domain].end(); idItr++)
+        if (labelIds[domain].size() == 0)
         {
-            char cLabel[256];
-            sprintf(cLabel, "%s %i", cSName, (*idItr));
-            string sLabel = string(cLabel);
-            elementLabels[domain][pos++] = sLabel;
-            
-            maxLabelLengths[domain] = std::max(int(sLabel.size()), 
-                maxLabelLengths[domain]);
+            return;
         }
+        else if (labelIds[domain][0] == -1)
+        {
+            //
+            // If we don't have label ids, just use the short name. 
+            //
+            int numEl = numDomainElements[domain];
+            for (int i = 0; i < numEl; ++i)
+            { 
+                elementLabels[domain][i] = shortName;
+                maxLabelLengths[domain]  = std::max(int(shortName.size()), 
+                    maxLabelLengths[domain]);
+            }
+        }
+        else
+        {
+            const char *cSName = shortName.c_str();
+            int pos = 0;
 
+            for (vector<int>::iterator idItr = labelIds[domain].begin();
+                 idItr != labelIds[domain].end(); idItr++)
+            {
+                char cLabel[256];
+                sprintf(cLabel, "%s %i", cSName, (*idItr));
+                string sLabel = string(cLabel);
+                elementLabels[domain][pos++] = sLabel;
+
+                maxLabelLengths[domain] = std::max(int(sLabel.size()), 
+                    maxLabelLengths[domain]);
+            }
+        }
         labelsGenerated[domain] = true;
     }
 }
@@ -870,9 +938,12 @@ avtMiliMetaData::avtMiliMetaData(int nDomains)
     numCells.resize(numDomains, -1);
     numNodes.resize(numDomains, -1);
     subrecInfo.resize(numDomains);
-    classElementLabels.resize(numDomains, "");
-    maxClassLabelLengths.resize(numDomains, 0);
-    labelsGenerated.resize(numDomains, false);
+    zoneBasedLabels.resize(numDomains, vector<string>());
+    nodeBasedLabels.resize(numDomains, vector<string>());
+    maxZoneLabelLengths.resize(numDomains, 0);
+    maxNodeLabelLengths.resize(numDomains, 0);
+    zoneLabelsGenerated.resize(numDomains, false);
+    nodeLabelsGenerated.resize(numDomains, false);
 }
 
 
@@ -1101,6 +1172,62 @@ avtMiliMetaData::AddClassMD(int classIdx,
     }
 
     miliClasses[classIdx] = mcmd;
+}
+
+
+// ***************************************************************************
+//  Method: avtMiliMetaData::SetNumCells
+//
+//  Purpose:
+//      Set the number of cells for a given domain. 
+//
+//  Arguments: 
+//      domain    The domain of interest. 
+//      nCells    The number of cells on the given domain. 
+//
+//  Programmer: Alister Maguire
+//  Creation:   Jan 15, 2019
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtMiliMetaData::SetNumCells(int domain, int nCells)
+{
+    if (domain >= 0 and domain < numDomains)
+    {
+        numCells[domain] = nCells;
+        zoneBasedLabels[domain].resize(nCells, string(""));
+    }
+}
+
+
+// ***************************************************************************
+//  Method: avtMiliMetaData::SetNumNodes
+//
+//  Purpose:
+//      Set the number of nodes for the given domain. 
+//
+//  Arguments: 
+//      domain    The domain of interest. 
+//      nNodes    The number of nodes on the given domain. 
+//           
+//  Programmer: Alister Maguire
+//  Creation:   Jan 15, 2019
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtMiliMetaData::SetNumNodes(int domain, int nNodes)
+{
+    if (domain >= 0 && domain < numDomains)
+    {
+        numNodes[domain] = nNodes;
+        nodeBasedLabels[domain].resize(nNodes, string(""));
+    }
 }
 
 
@@ -1693,13 +1820,13 @@ avtMiliMetaData::AddSubrecInfo(int   dom,
 
 
 // ***************************************************************************
-//  Method: avtMiliMetaData::GenerateClassElementLabels
+//  Method: avtMiliMetaData::GenerateZoneBasedLabels
 //
 //  Purpose:
-//      Generate the element labels for the mili classes. 
+//      Generated the zone based labels. 
 //
 //  Arguments: 
-//      domain         The domain of this subrecord. 
+//      domain    The domain of interest. 
 //           
 //  Programmer: Alister Maguire
 //  Creation:   April 3, 2019
@@ -1709,21 +1836,258 @@ avtMiliMetaData::AddSubrecInfo(int   dom,
 // ****************************************************************************
 
 void
-avtMiliMetaData::GenerateElementClassLabels(int domain)
+avtMiliMetaData::GenerateZoneBasedLabels(int domain)
 {
-    //FIXME: complete this
-    if (domain >= 0 &&  domain < classElementLabels.size())
+    if (domain >= 0 &&  domain < numDomains)
     {
-        vector<string> fullLabels.resize(numCells[domain], ""); 
         for (int classIdx = 0; classIdx < numClasses; ++classIdx)
         {
-            vector<string> classLabels; 
-            if (miliClasses[classIdx]->GetElementLabels(domain, classLabels))
+            vector<string> *classLabels = 
+                miliClasses[classIdx]->GetElementLabelsPtr(domain);
+            if (classLabels != NULL)
             {
-           
+                int offset = miliClasses[classIdx]->GetConnectivityOffset(domain);
+                MiliClassMetaData::ClassType classType = 
+                    miliClasses[classIdx]->GetClassType();
+
+                if (classType == MiliClassMetaData::CELL)
+                {
+                    if ((offset + (classLabels->size())) > numCells[domain])
+                    {
+                        char msg[1024];
+                        sprintf(msg, "Number of cell labels " 
+                            "exceeds number of cells?!?");
+                        EXCEPTION1(ImproperUseException, msg);
+                    }
+
+                    if (zoneBasedLabels.size() == 0)
+                    {
+                        debug2 << "zone labels haven't been initialized yet??";
+                        zoneBasedLabels[domain].resize(numCells[domain], ""); 
+                    }
+
+                    int cIdx = offset;
+                    for (vector<string>::iterator labelItr = classLabels->begin();
+                         labelItr != classLabels->end(); labelItr++)
+                    {
+                        if (cIdx >= numCells[domain])
+                        {
+                            debug1 << "label index out of bounds?!?";
+                            break;
+                        }
+                        zoneBasedLabels[domain][cIdx++] = (*labelItr);
+                        maxZoneLabelLengths[domain] = 
+                            std::max(int(labelItr->size()), 
+                            maxZoneLabelLengths[domain]);
+                    }
+                }
             }
         }
+        zoneLabelsGenerated[domain] = true;
     }
+}
+
+
+// ***************************************************************************
+//  Method: avtMiliMetaData::GenerateNodeBasedLabels
+//
+//  Purpose:
+//      Generated the node based labels. 
+//
+//  Arguments: 
+//      domain    The domain of interest. 
+//           
+//  Programmer: Alister Maguire
+//  Creation:   April 3, 2019
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtMiliMetaData::GenerateNodeBasedLabels(int domain)
+{
+    if (domain >= 0 &&  domain < numDomains)
+    {
+        for (int classIdx = 0; classIdx < numClasses; ++classIdx)
+        {
+            vector<string> *classLabels = 
+                miliClasses[classIdx]->GetElementLabelsPtr(domain);
+            if (classLabels != NULL)
+            {
+                int offset = miliClasses[classIdx]->GetConnectivityOffset(domain);
+                MiliClassMetaData::ClassType classType = 
+                    miliClasses[classIdx]->GetClassType();
+
+                if(classType == MiliClassMetaData::NODE)
+                {
+                    if ((offset + (classLabels->size())) > numNodes[domain])
+                    {
+                        char msg[1024];
+                        sprintf(msg, "Number of node labels "
+                            "exceeds number of nodes?!?");
+                        EXCEPTION1(ImproperUseException, msg);
+                    }
+
+                    if (nodeBasedLabels.size() == 0)
+                    {
+                        debug2 << "node labels haven't been initialized yet??";
+                        nodeBasedLabels[domain].resize(numNodes[domain], ""); 
+                    }
+
+                    int nIdx = offset;
+                    for (vector<string>::iterator labelItr = classLabels->begin();
+                         labelItr != classLabels->end(); labelItr++)
+                    {
+                        if (nIdx >= numNodes[domain])
+                        {
+                            debug1 << "label index out of bounds?!?";
+                            break;
+                        }
+                        nodeBasedLabels[domain][nIdx++] = (*labelItr);
+                        maxNodeLabelLengths[domain] = 
+                            std::max(int(labelItr->size()), 
+                            maxNodeLabelLengths[domain]);
+                    }
+                }
+            }
+        }
+        nodeLabelsGenerated[domain] = true;
+    }
+}
+
+
+// ***************************************************************************
+//  Method: avtMiliMetaData::GetZoneBasedLabelsPtr
+//
+//  Purpose:
+//      Get a pointer to the zone labels vector.
+//
+//  Arguments: 
+//      domain    The domain of interest.  
+//           
+//  Programmer: Alister Maguire
+//  Creation:   Jan 15, 2019
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+vector<string> *
+avtMiliMetaData::GetZoneBasedLabelsPtr(int domain)
+{
+    if (domain < 0 || domain >= numDomains)
+    {
+        char msg[1024];
+        sprintf(msg, "Invalid domain for labels pointer!");
+        EXCEPTION1(ImproperUseException, msg);
+    }
+
+    if (!zoneLabelsGenerated[domain])
+    {
+        GenerateZoneBasedLabels(domain);
+    }
+    return &zoneBasedLabels[domain];
+}
+
+
+// ***************************************************************************
+//  Method: avtMiliMetaData::GetNodeBasedLabelsPtr
+//
+//  Purpose:
+//      Get a pointer to the node labels vector.
+//
+//  Arguments: 
+//      domain    The domain of interest.  
+//           
+//  Programmer: Alister Maguire
+//  Creation:   Jan 15, 2019
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+vector<string> *
+avtMiliMetaData::GetNodeBasedLabelsPtr(int domain)
+{
+    if (domain < 0 || domain >= numDomains)
+    {
+        char msg[1024];
+        sprintf(msg, "Invalid domain for labels pointer!");
+        EXCEPTION1(ImproperUseException, msg);
+    }
+
+    if (!nodeLabelsGenerated[domain])
+    {
+        GenerateNodeBasedLabels(domain);
+    }
+    return &nodeBasedLabels[domain];
+}
+
+
+// ***************************************************************************
+//  Method: avtMiliMetaData::GetMaxZoneLabelLength
+//
+//  Purpose:
+//      Get the maximum zone label length. 
+//
+//  Arguments: 
+//      domain    The domain of interest.  
+//           
+//  Programmer: Alister Maguire
+//  Creation:   Jan 15, 2019
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+int
+avtMiliMetaData::GetMaxZoneLabelLength(int domain)
+{
+    if (domain >= 0 && domain < numDomains)
+    {
+        if (!zoneLabelsGenerated[domain])
+        {
+            GenerateZoneBasedLabels(domain);
+        }
+
+        return maxZoneLabelLengths[domain];
+    }
+
+    return 0;
+}
+
+
+// ***************************************************************************
+//  Method: avtMiliMetaData::GetMaxNodeLabelLength
+//
+//  Purpose:
+//      Get the maximum node label length. 
+//
+//  Arguments: 
+//      domain    The domain of interest.  
+//           
+//  Programmer: Alister Maguire
+//  Creation:   Jan 15, 2019
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+int
+avtMiliMetaData::GetMaxNodeLabelLength(int domain)
+{
+    if (domain >= 0 && domain < numDomains)
+    {
+        if (!nodeLabelsGenerated[domain])
+        {
+            GenerateNodeBasedLabels(domain);
+        }
+
+        return maxNodeLabelLengths[domain];
+    }
+
+    return 0;
 }
 
 

@@ -90,9 +90,6 @@ using std::string;
 //
 //  Modifications:
 //
-//    Matt Larsen, Wed May 31  08:15:42 PDT 2017
-//    Adding functions and data structures for node and zone labels
-//
 // ****************************************************************************
 
 class avtMiliFileFormat : public avtMTMDFileFormat
@@ -198,7 +195,6 @@ class avtMiliFileFormat : public avtMTMDFileFormat
                                                          const char *,
                                                          int *);
 
-    //TODO: inspect label integration
     struct LabelMapping
     {
         vector<int> labelRangesBegin;
@@ -207,21 +203,17 @@ class avtMiliFileFormat : public avtMTMDFileFormat
         vector<int> elIdsEnd;
     };
 
-    vector<int>                             maxZoneLabelLengths;
-    vector<int>                             maxNodeLabelLengths;
-    vector<vector<string> >                 zoneLabels;
-    vector<vector<string> >                 nodeLabels;
     vector<std::map<string, LabelMapping> > zoneLabelMappings;
     vector<std::map<string, LabelMapping> > nodeLabelMappings;
 
-    void PopulateNodeLabels(const int mesh_id, 
-                            char *short_name, 
-                            const int dom);
+    void RetrieveNodeLabelInfo(const int meshId, 
+                               char *shortName, 
+                               const int dom);
 
-    void PopulateZoneLabels(const int mesh_id, 
-                            char *short_name, 
-                            const int dom, 
-                            const int elems_in_group);
+    void RetrieveCellLabelInfo(const int meshId, 
+                               char *shortName, 
+                               const int dom, 
+                               const int elemsInGroup);
 };
 
 #endif
