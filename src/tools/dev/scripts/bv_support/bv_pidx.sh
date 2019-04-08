@@ -186,7 +186,7 @@ function build_pidx
     ntopts="${ntopts} -DCMAKE_BUILD_TYPE:STRING=${pidx_build_mode}"
     ntopts="${ntopts} -DCMAKE_INSTALL_PREFIX:PATH=${pidx_inst_path}"
 
-    # Currently does nto work but sould be used.
+    # Currently does not work but should be used.
 #    ntopts="${ntopts} -DBUILD_SHARED_LIBS:BOOL=ON"
 
     # Because above the build type is specificed the compiler flags are set

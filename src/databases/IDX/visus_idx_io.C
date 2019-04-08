@@ -27,10 +27,11 @@ using namespace Visus;
 static Application app;
 #endif
 
-class DatasetImpl{
-    
+class DatasetImpl
+{
 public:
-    DatasetImpl(String filename){
+    DatasetImpl(String filename)
+    {
         dataset = Dataset::loadDataset(filename);
     }
 
@@ -40,14 +41,15 @@ public:
     
     Dataset* dataset;
     
-    ~DatasetImpl(){
+    ~DatasetImpl()
+    {
         if(dataset != nullptr)
             delete dataset;
     }
 };
 
-VisitIDXIO::DTypes convertType(DType intype){
-    
+VisitIDXIO::DTypes convertType(DType intype)
+{
   if(intype == Visus::DTypes::INT8 || intype.isVectorOf(Visus::DTypes::INT8))
         return VisitIDXIO::IDX_INT8;
     else if(intype == Visus::DTypes::UINT8 || intype.isVectorOf(Visus::DTypes::UINT8))
@@ -72,16 +74,16 @@ VisitIDXIO::DTypes convertType(DType intype){
 
     VisusWarning() << "No type found for conversion";
     VisusAssert(false);
-    
 }
 
-VisusIDXIO::~VisusIDXIO(){
+VisusIDXIO::~VisusIDXIO()
+{
     if (datasetImpl != nullptr)
         delete datasetImpl;
 }
 
-bool VisusIDXIO::openDataset(const String filename){
-
+bool VisusIDXIO::openDataset(const String filename)
+{
     String name("file://"); name += Path(filename).toString();
     
     datasetImpl = new DatasetImpl(name);
@@ -155,8 +157,8 @@ bool VisusIDXIO::openDataset(const String filename){
     
 }
 
-unsigned char* VisusIDXIO::getData(const VisitIDXIO::Box box, const int timestate, const char* varname){
-
+unsigned char* VisusIDXIO::getData(const VisitIDXIO::Box box, const int timestate, const char* varname)
+{
     Dataset* dataset = datasetImpl->get();
     
     if (dataset == nullptr)
@@ -216,13 +218,11 @@ unsigned char* VisusIDXIO::getData(const VisitIDXIO::Box box, const int timestat
     
     VisusReleaseAssert(!box_query->end());
   
-  if(!compressed_dataset){
+  if(!compressed_dataset)
       VisusReleaseAssert(box_query->execute());
-  }
-  else{
+  else
       VisusReleaseAssert(box_query->executeAndDecompress());
-  }
-  
+
     // -------- This can be used for lower resolution queries
     //    box_query->next();
     //    VisusReleaseAssert(!box_query->end());

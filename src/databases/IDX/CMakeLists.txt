@@ -15,8 +15,8 @@ IDXPluginInfo.C
 SET(LIBM_SOURCES
 IDXMDServerPluginInfo.C
 ${COMMON_SOURCES}
-pidx_idx_io.cpp
-uintah_utils.cpp
+pidx_idx_io.C
+uintah_utils.C
 avtIDXFileFormat.C
 avtIDXOptions.C
 )
@@ -24,8 +24,8 @@ avtIDXOptions.C
 SET(LIBE_SOURCES
 IDXEnginePluginInfo.C
 ${COMMON_SOURCES}
-pidx_idx_io.cpp
-uintah_utils.cpp
+pidx_idx_io.C
+uintah_utils.C
 avtIDXFileFormat.C
 avtIDXOptions.C
 )
