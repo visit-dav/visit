@@ -1056,7 +1056,7 @@ avtUintahFileFormat::GetDomainBoundariesAndNesting(int timestate,
       int plow[3], phigh[3];
       patchInfo.getBounds(plow, phigh, meshname);
 
-      // For node based meshes add one if there is a neighbor.
+      // For node based meshes add one if there is a neighbor patch.
       if( meshname.find("NC_") == 0 )
       {
         int nlow[3], nhigh[3];
@@ -1066,16 +1066,18 @@ avtUintahFileFormat::GetDomainBoundariesAndNesting(int timestate,
           phigh[i] += nhigh[i];
       }
 
+      // These are indices, the high values are exclusive.
       int extents[6] = { plow[0], phigh[0],
                          plow[1], phigh[1],
                          plow[2], phigh[2] };
 
+      // These extents are exclusive.
       rdb->SetIndicesForAMRPatch(patch, my_level, extents);
 
-      // debug5 <<"\trdb->SetIndicesForAMRPatch(" <<patch << "," << my_level
-      //             << ", <" << extents[0] << "," << extents[2] << "," <<extents[4]
-      //             << "> to <" <<extents[1] << "," <<extents[3] << "," << extents[5]
-      //             << ">)\n";
+      // debug5 << "\trdb->SetIndicesForAMRPatch(" << patch << "," << my_level
+      //        << ", <" << extents[0] << "," << extents[2] << "," << extents[4]
+      //        << "> to <" << extents[1] << "," << extents[3] << "," << extents[5]
+      //        << ">)\n";
     }
 
     rdb->CalculateBoundaries();
@@ -1190,44 +1192,56 @@ avtUintahFileFormat::GetDomainBoundariesAndNesting(int timestate,
       int plow[3], phigh[3];
       patchInfo.getBounds(plow, phigh, meshname);
 
+      std::vector<int> extents(6);
+
       // For node based meshes add one if there is a neighbor patch.
       if( meshname.find("NC_") == 0 )
       {
         int nlow[3], nhigh[3];
         patchInfo.getBounds(nlow, nhigh, "NEIGHBORS");
         
+        // For node meshes always subtract two because the domain is
+        // inclusive.
         for (int i=0; i<3; i++)
+        {
           phigh[i] += nhigh[i];
+
+          extents[i+0] = plow[i];
+          extents[i+3] = phigh[i] - 2;
+        }
       }
-
-      std::vector<int> extents(6);
-
-      for (int i=0; i<3; i++)
+      else
       {
-        extents[i+0] = plow[i];
-        extents[i+3] = phigh[i] - 1;
+        // For cell and face meshes always subtract one because the
+        // domain is inclusive.
+        for (int i=0; i<3; i++)
+        {
+          extents[i+0] = plow[i];
+          extents[i+3] = phigh[i] - 1;
+        }
       }
+
+      // These extents are inclusive.
+      dn->SetNestingForDomain(p, my_level, childPatches[p], extents);
 
       // debug5 << "\tdn->SetNestingForDomain("
-      //             << my_level << "," << local_patch << ") <"
-      //             << extents[0] << "," << extents[1] << "," << extents[2] << "> to <"
-      //             << extents[3] << "," << extents[4] << "," << extents[5] << ">";
-      
+      //        << my_level << "," << local_patch << ") <"
+      //        << extents[0] << "," << extents[1] << "," << extents[2] << "> to <"
+      //        << extents[3] << "," << extents[4] << "," << extents[5] << ">";
+
       // debug5 << "\t children patches <";
-        
+
       // for (int i=0; i<childPatches[p].size(); ++i)
       // {
-      //        int child_level, child_patch;
-      //        GetLevelAndLocalPatchNumber(childPatches[p][i], child_level, child_patch);
+      //   int child_level, child_patch;
+      //   GetLevelAndLocalPatchNumber(childPatches[p][i], child_level, child_patch);
 
-        // debug5 << "(" << child_level << "," << child_patch << "),  ";
+      //   debug5 << "(" << child_level << "," << child_patch << "),  ";
 
-        // debug5 << childPatches[p][i] << ",  ";
+      //   debug5 << childPatches[p][i] << ",  ";
       // }
-      
-      // debug5 << ">" << std::endl;;
-      
-      dn->SetNestingForDomain(p, my_level, childPatches[p], extents);
+
+      // debug5 << ">" << std::endl;
     }
 
     this->mesh_domains[meshname] =
@@ -1547,7 +1561,7 @@ avtUintahFileFormat::GetMesh(int timestate, int domain, const char *meshname)
     int plow[3], phigh[3];
     patchInfo.getBounds(plow, phigh, meshName);
 
-    // For node based meshes add one if there is a neighbor.
+    // For node based meshes add one if there is a neighbor patch.
     if( meshName.find("NC_") == 0 )
     {
       int nlow[3], nhigh[3];
@@ -1887,7 +1901,7 @@ avtUintahFileFormat::GetVar(int timestate, int domain, const char *varname)
     int plow[3], phigh[3];
     patchInfo.getBounds(plow, phigh, varType);
     
-    // For node based meshes add one if there is a neighbor.
+    // For node based meshes add one if there is a neighbor patch.
     bool nodeCentered = (varType.find("NC") != std::string::npos);
     
     if( nodeCentered )
