@@ -634,6 +634,8 @@ avtStructuredDomainNesting::ConfirmMesh(vector<int> &domains,
             continue;
 
         int do_type = meshes[i]->GetDataObjectType();
+
+	// Get the number of nodes in the grid.
         if (do_type == VTK_STRUCTURED_GRID)
         {
             vtkStructuredGrid *sgrid = (vtkStructuredGrid *) meshes[i];
@@ -651,7 +653,9 @@ avtStructuredDomainNesting::ConfirmMesh(vector<int> &domains,
                    << "happen." << endl;
             return false;
         }
-         
+
+	// avtRealDims is holding the smallest and biggest *zonal* indexes.
+	// The biggest indexes are exclusive, so add one.
         if (meshes[i]->GetFieldData()->GetArray("avtRealDims") != NULL)
         {
             vtkIntArray *realDims = (vtkIntArray *) 
@@ -678,12 +682,15 @@ avtStructuredDomainNesting::ConfirmMesh(vector<int> &domains,
                    << " did not have the correct size (6) " << extents.size() << endl;
             return false;
         }
+
+	// The extents are *zonal* and are inclusive so to get the
+	// number of nodes it is necessary to add two.
         if ((extents[3]-extents[0]+2) != dims[0])
         {
             debug1 << "Warning: avtStructuredDomainNesting failing "
                    << " because the declared extents in I " 
                    << extents[3]-extents[0]+2 
-                   << " is not the same as the data set size " << dims[0]
+                   << " do not equal the data set size " << dims[0]
                    << "." << endl;
             return false;
         }
@@ -692,7 +699,7 @@ avtStructuredDomainNesting::ConfirmMesh(vector<int> &domains,
             debug1 << "Warning: avtStructuredDomainNesting failing "
                    << " because the declared extents in J " 
                    << extents[4]-extents[1]+2 
-                   << " is not the same as the data set size " << dims[1]
+                   << " do not equal the data set size " << dims[1]
                    << "." << endl;
             return false;
         }
@@ -701,7 +708,7 @@ avtStructuredDomainNesting::ConfirmMesh(vector<int> &domains,
             debug1 << "Warning: avtStructuredDomainNesting failing "
                    << " because the declared extents in K " 
                    << extents[5]-extents[2]+2 
-                   << " is not the same as the data set size " << dims[2]
+                   << " do not equal the data set size " << dims[2]
                    << "." << endl;
             return false;
         }
