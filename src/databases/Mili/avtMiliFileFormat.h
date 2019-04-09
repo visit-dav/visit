@@ -43,11 +43,8 @@
 #ifndef AVT_MILI_FILE_FORMAT_H
 #define AVT_MILI_FILE_FORMAT_H
 
-#include <list>
 #include <map>
-#include <vector>
-#include <string>
-#include <visitstream.h>
+#include <vectortypes.h>
 
 #include <Expression.h>
 
@@ -64,14 +61,7 @@ extern "C" {
 class avtMaterial;
 class vtkDataArray;
 class vtkUnstructuredGrid;
-class vtkFloatArray;
 
-class MiliVariableMetaData;
-class MiliClassMetaData;
-class avtMiliMetaData;
-
-using std::vector;
-using std::string;
 
 // ****************************************************************************
 //  Class: avtMiliFileFormat
@@ -96,16 +86,19 @@ class avtMiliFileFormat : public avtMTMDFileFormat
 {
   public:
                           avtMiliFileFormat(const char *);
+
     virtual              ~avtMiliFileFormat();
     
     virtual const char   *GetType(void) { return "Mili File Format"; };
     
-    virtual void          GetCycles(vector<int> &);
-    virtual void          GetTimes(vector<double> &);
+    virtual void          GetCycles(intVector &);
+
+    virtual void          GetTimes(doubleVector &);
+
     virtual int           GetNTimesteps(void);
 
     void                  ReadMiliVarToBuffer(char *,
-                                              const vector<int> &,
+                                              const intVector &,
                                               const SubrecInfo &,
                                               int,
                                               int,
@@ -115,7 +108,9 @@ class avtMiliFileFormat : public avtMTMDFileFormat
                                               float *);
  
     virtual vtkDataSet   *GetMesh(int, int, const char *); 
+
     virtual vtkDataArray *GetVar(int, int, const char *);
+
     virtual vtkDataArray *GetVectorVar(int, int, const char *);
 
     virtual void          PopulateDatabaseMetaData(avtDatabaseMetaData *, int);
@@ -130,82 +125,44 @@ class avtMiliFileFormat : public avtMTMDFileFormat
 
   protected:
 
-    avtMiliMetaData     **miliMetaData;
-
-    char                 *famroot;
-    char                 *fampath;
-
-    int                   nTimesteps;
-    int                   nDomains;
-    int                   nMeshes;
-
-    vector<Famid>         dbid;
-    bool                  setTimesteps;
-    vector<int>           cycles;
-    vector<double>        times;
-
-    std::map<int, int>    warnMap;
-    vector<bool>          meshRead;
-    int                   dims;
-
-    vector<vector<vtkUnstructuredGrid *> > datasets;
-    vector<vector<avtMaterial *> >         materials;
-
     void                  IssueWarning(const char *msg, 
                                        int key);
+
+    inline void           OpenDB(int dom);
 
     void                  ReadMesh(int dom);
 
     void                  PopulateSubrecordInfo(int dom, 
                                                 int meshId);
 
-    int                   ExtractMeshIdFromPath(const string &);
-
-    inline void           OpenDB(int dom);
+    int                   ExtractMeshIdFromPath(const std::string &);
 
     //
     // Json extraction methods. 
     //
     void                  LoadMiliInfoJson(const char *fname);
+
     int                   CountJsonClassVariables(const rapidjson::Document &);
+
     MiliVariableMetaData *ExtractJsonVariable(const rapidjson::Value &,
-                                              string,
-                                              string,
-                                              string,
+                                              std::string,
+                                              std::string,
+                                              std::string,
                                               int,
                                               bool,
                                               bool);
+
     void                  ExtractJsonVectorComponents(const rapidjson::Value &,
                                                       const rapidjson::Value &,
-                                                      string,
+                                                      std::string,
                                                       int);
+
     void                  ExtractJsonClasses(rapidjson::Document &,
                                              int);
 
-    //TODO: re-work the expression generators
-    Expression            CreateGenericExpression(const char *, 
-                                                  const char *,
-                                                  Expression::ExprType);
-
-    Expression            ScalarExpressionFromVec(const char *,
-                                                  const char *, 
-                                                  int);
-
-    Expression            ScalarExpressionFromElementSet(const char *,
-                                                         const char *,
-                                                         int *);
-
-    struct LabelMapping
-    {
-        vector<int> labelRangesBegin;
-        vector<int> labelRangesEnd;
-        vector<int> elIdsBegin;
-        vector<int> elIdsEnd;
-    };
-
-    vector<std::map<string, LabelMapping> > zoneLabelMappings;
-    vector<std::map<string, LabelMapping> > nodeLabelMappings;
-
+    //
+    // Label info retrieval.
+    //
     void RetrieveNodeLabelInfo(const int meshId, 
                                char *shortName, 
                                const int dom);
@@ -214,8 +171,50 @@ class avtMiliFileFormat : public avtMTMDFileFormat
                                char *shortName, 
                                const int dom, 
                                const int elemsInGroup);
+
+    //
+    // Expression helpers. 
+    //
+    Expression            CreateGenericExpression(const char *, 
+                                                  const char *,
+                                                  Expression::ExprType);
+
+    Expression            ScalarExpressionFromVec(const char *,
+                                                  const char *, 
+                                                  int);
+
+    //
+    // Protected data. 
+    //
+    std::vector<std::vector<vtkUnstructuredGrid *> >   datasets;
+    std::vector<std::vector<avtMaterial *> >           materials;
+
+    avtMiliMetaData     **miliMetaData;
+
+    char                 *famroot;
+    char                 *fampath;
+
+    int                   nTimesteps;
+    int                   nDomains;
+    int                   nMeshes;
+    int                   dims;
+
+    intVector             cycles;
+    doubleVector          times;
+    boolVector            meshRead;
+    std::vector<Famid>    dbid;
+
+    struct LabelMapping
+    {
+        intVector labelRangesBegin;
+        intVector labelRangesEnd;
+        intVector elIdsBegin;
+        intVector elIdsEnd;
+    };
+
+    std::vector<std::map<std::string, LabelMapping> >  zoneLabelMappings;
+    std::vector<std::map<std::string, LabelMapping> >  nodeLabelMappings;
+
 };
 
 #endif
-
-

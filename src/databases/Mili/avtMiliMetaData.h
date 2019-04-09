@@ -43,10 +43,8 @@
 #ifndef AVT_MILI_META_DATA_H 
 #define AVT_MILI_META_DATA_H
 
-#include <vector>
-#include <string>
 #include <avtTypes.h>
-#include <MapNode.h>
+#include <vectortypes.h>
 
 extern "C" {
 #include <mili.h>
@@ -55,8 +53,6 @@ extern "C" {
 #include "rapidjson/document.h"
 #include "rapidjson/istreamwrapper.h"
 
-using std::string;
-using std::vector;
 
 //
 // We don't need the entire subrecord, so let's just keep 
@@ -69,10 +65,10 @@ typedef struct SubrecInfo
         nSR = 0;          
     };
 
-    int                   nSR;        
-    vector<int>           nElements;
-    vector<int>           nDataBlocks;
-    vector< vector<int> > dataBlockRanges;   
+    int                      nSR;        
+    intVector                nElements;
+    intVector                nDataBlocks;
+    std::vector< intVector > dataBlockRanges;   
 } SubrecInfo;
 
 
@@ -94,10 +90,10 @@ class MiliVariableMetaData
 
   public:
 
-                              MiliVariableMetaData(string,
-                                                   string,
-                                                   string,
-                                                   string,
+                              MiliVariableMetaData(std::string,
+                                                   std::string,
+                                                   std::string,
+                                                   std::string,
                                                    bool,
                                                    bool,
                                                    bool,
@@ -109,20 +105,20 @@ class MiliVariableMetaData
                                                    int,
                                                    int,
                                                    int,
-                                                   vector<string> );
+                                                   stringVector);
 
                              ~MiliVariableMetaData(void);
 
-    string                    GetLongName(void)
+    std::string               GetLongName(void)
                                 { return longName; };
 
-    string                    GetShortName(void)
+    std::string               GetShortName(void)
                                 { return shortName; };
 
-    string                    GetClassShortName(void)
+    std::string               GetClassShortName(void)
                                 { return classSName; };
 
-    string                    GetClassLongName(void)
+    std::string               GetClassLongName(void)
                                 { return classLName; };
 
     int                       GetAvtCellType(void)
@@ -162,14 +158,14 @@ class MiliVariableMetaData
                                 { return isCause; };
 
     void                      AddSubrecId(int, int);
-    vector<int>              &GetSubrecIds(int);
+    intVector                &GetSubrecIds(int);
     
-    const string             &GetPath(void);
+    const std::string        &GetPath(void);
 
-    void                      AddVectorComponent(string compName)
+    void                      AddVectorComponent(std::string compName)
                                 { vectorComponents.push_back(compName); };
-    string                    GetVectorComponent(int);
-    vector<string>           &GetVectorComponents(void)
+    std::string               GetVectorComponent(int);
+    stringVector             &GetVectorComponents(void)
                                 { return vectorComponents; };
 
     void                      PrintSelf(void);
@@ -178,12 +174,12 @@ class MiliVariableMetaData
 
     void                      DetermineESStatus(void);
     
-    string                    classLName;
-    string                    classSName;
-    string                    longName;
-    string                    shortName;
-    string                    esMappedName;
-    string                    path;
+    std::string               classLName;
+    std::string               classSName;
+    std::string               longName;
+    std::string               shortName;
+    std::string               esMappedName;
+    std::string               path;
     
     int                       cellTypeAvt;
     int                       cellTypeMili;
@@ -197,7 +193,7 @@ class MiliVariableMetaData
     //
     // Subrecord ids
     //
-    vector< vector<int> >     SRIds;
+    std::vector< intVector >  SRIds;
 
     bool                      isElementSet;
     bool                      isMatVar;
@@ -206,7 +202,7 @@ class MiliVariableMetaData
     bool                      isCause;
     bool                      multiMesh;
 
-    vector<string>            vectorComponents;
+    stringVector              vectorComponents;
 
 };
 
@@ -228,8 +224,8 @@ class MiliClassMetaData
 {
 
   public:
-                                      MiliClassMetaData(string,
-                                                        string,
+                                      MiliClassMetaData(std::string,
+                                                        std::string,
                                                         int,
                                                         int);
                                      ~MiliClassMetaData(void);
@@ -237,10 +233,10 @@ class MiliClassMetaData
     enum ClassType 
       { CELL, NODE, MATERIAL, GLOBAL, SURFACE, PARTICLE, UNKNOWN };
 
-    string                            GetLongName(void)
+    std::string                       GetLongName(void)
                                         { return longName; };
 
-    string                            GetShortName(void)
+    std::string                       GetShortName(void)
                                         { return shortName; };
 
     void                              SetNumElements(int, int);
@@ -249,9 +245,9 @@ class MiliClassMetaData
     int                               GetSuperClassId(void)
                                         { return superClassId; };
 
-    vector<string>                    GetMiliVariables(void)
+    stringVector                      GetMiliVariables(void)
                                         { return variables; };
-    void                              AddMiliVariable(string mv)
+    void                              AddMiliVariable(std::string mv)
                                         { variables.push_back(mv); };
 
     ClassType                         GetClassType(void)
@@ -263,9 +259,9 @@ class MiliClassMetaData
 
     void                              PopulateLabelIds(int, int *);
 
-    bool                              GetElementLabels(int, vector<string> &);
+    bool                              GetElementLabels(int, stringVector &);
 
-    vector<string>                   *GetElementLabelsPtr(int);
+    stringVector                     *GetElementLabelsPtr(int);
 
     int                               GetMaxLabelLength(int);
 
@@ -275,17 +271,17 @@ class MiliClassMetaData
 
     void                              GenerateElementLabels(int);
 
-    string                            longName;
-    string                            shortName;
+    std::string                       longName;
+    std::string                       shortName;
     int                               superClassId;
 
-    vector< vector<int> >             labelIds;
-    vector< vector<string> >          elementLabels;
-    vector<bool>                      labelsGenerated;
-    vector<int>                       maxLabelLengths;
-    vector<string>                    variables;
-    vector<int>                       numDomainElements;
-    vector<int>                       connectivityOffset;
+    std::vector< intVector >          labelIds;
+    std::vector< stringVector >       elementLabels;
+    boolVector                        labelsGenerated;
+    intVector                         maxLabelLengths;
+    stringVector                      variables;
+    intVector                         numDomainElements;
+    intVector                         connectivityOffset;
 
     ClassType                         classType;
 
@@ -308,20 +304,20 @@ class MiliClassMetaData
 class MiliMaterialMetaData
 {
   public:
-                                        MiliMaterialMetaData(string,
-                                                             string);
+                                        MiliMaterialMetaData(std::string,
+                                                             std::string);
                                        ~MiliMaterialMetaData(void);
 
-    string                              GetName(void)
+    std::string                         GetName(void)
                                           { return name; };
 
-    string                              GetColor(void)
+    std::string                         GetColor(void)
                                            { return hexColor; };
  
   private:
-    string name;
-    float  color[3];
-    string hexColor;
+    std::string name;
+    float       color[3];
+    std::string hexColor;
 };
 
 
@@ -362,8 +358,8 @@ class avtMiliMetaData
     MiliClassMetaData                 *GetClassMDByShortName(const char *);
     int                                GetClassMDIdxByShortName(const char *);
  
-    void                               GetCellTypeCounts(vector<int> &,
-                                                         vector<int> &);
+    void                               GetCellTypeCounts(intVector &,
+                                                         intVector &);
 
     void                               AddVarMD(int, 
                                                 MiliVariableMetaData *);
@@ -384,12 +380,12 @@ class avtMiliMetaData
     int                                GetNumMaterials(void)
                                          { return numMaterials; };
     void                               GetMaterialNames(stringVector &);
-    void                               GetMaterialColors(vector<string> &);
+    void                               GetMaterialColors(stringVector &);
 
     bool                               ContainsSand(void)
                                          { return containsSand; };
 
-    string                             GetSandDir(void)
+    std::string                        GetSandDir(void)
                                          { return sandDir; };
 
     void                               SetNumCells(int, int);
@@ -401,8 +397,8 @@ class avtMiliMetaData
     int                                GetNumMiliCellTypes(void)
                                          { return numMiliCellTypes; };
 
-    vector<string>                    *GetZoneBasedLabelsPtr(int);
-    vector<string>                    *GetNodeBasedLabelsPtr(int);
+    stringVector                      *GetZoneBasedLabelsPtr(int);
+    stringVector                      *GetNodeBasedLabelsPtr(int);
 
     int                                GetMaxZoneLabelLength(int);
     int                                GetMaxNodeLabelLength(int);
@@ -429,21 +425,21 @@ class avtMiliMetaData
     int                                numVariables;
     int                                numMaterials;
     bool                               containsSand;
-    string                             sandDir;
-    vector<int>                        numCells;
-    vector<int>                        numNodes;
+    std::string                        sandDir;
+    intVector                          numCells;
+    intVector                          numNodes;
 
-    vector <vector<string> >           zoneBasedLabels;
-    vector <vector<string> >           nodeBasedLabels;
-    vector<int>                        maxZoneLabelLengths;
-    vector<int>                        maxNodeLabelLengths;
-    vector<bool>                       zoneLabelsGenerated;
-    vector<bool>                       nodeLabelsGenerated;
+    std::vector <stringVector >        zoneBasedLabels;
+    std::vector <stringVector >        nodeBasedLabels;
+    intVector                          maxZoneLabelLengths;
+    intVector                          maxNodeLabelLengths;
+    boolVector                         zoneLabelsGenerated;
+    boolVector                         nodeLabelsGenerated;
 
     //
     // Subrecord info
     //
-    vector< SubrecInfo >               subrecInfo;
+    std::vector< SubrecInfo >          subrecInfo;
 
     //
     // The number of available mili cell types. 

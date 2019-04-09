@@ -48,10 +48,6 @@
 #include <UnexpectedValueException.h>
 #include <DebugStream.h>
 
-using std::ifstream;
-using std::endl;
-using std::cerr;
-
 
 // ***************************************************************************
 //  constructor: MiliVariableMetaData::MiliVariableMetaData
@@ -83,10 +79,10 @@ using std::cerr;
 //
 // ****************************************************************************
 
-MiliVariableMetaData::MiliVariableMetaData(string sName,
-                                           string lName,
-                                           string cSName,
-                                           string cLName,
+MiliVariableMetaData::MiliVariableMetaData(std::string sName,
+                                           std::string lName,
+                                           std::string cSName,
+                                           std::string cLName,
                                            bool isMultiM,
                                            bool isMat,
                                            bool isGlob,
@@ -98,7 +94,7 @@ MiliVariableMetaData::MiliVariableMetaData(string sName,
                                            int nType,
                                            int vecSize,
                                            int cDims,
-                                           vector<string> vComps)
+                                           stringVector vComps)
 {
     shortName         = sName; 
     longName          = lName;
@@ -131,10 +127,10 @@ MiliVariableMetaData::MiliVariableMetaData(string sName,
     // Sand and cause are two special cases dealing with 
     // destroyed elements. 
     //
-    isSand        = false;
-    isCause       = false;
-    string sanded = "sand";
-    string cause  = "cause";
+    isSand             = false;
+    isCause            = false;
+    std::string sanded = "sand";
+    std::string cause  = "cause";
 
     if (shortName == sanded)
     {
@@ -200,6 +196,7 @@ MiliVariableMetaData::GetVectorComponent(int idx)
 //
 //  Arguments: 
 //      dom    The domain that this subrecord resides on. 
+//      SRId   The subrecord index/ID.
 //           
 //  Programmer: Alister Maguire
 //  Creation:   Jan 15, 2019
@@ -242,7 +239,7 @@ MiliVariableMetaData::AddSubrecId(int dom, int SRId)
 //
 // ****************************************************************************
 
-vector<int> &
+intVector &
 MiliVariableMetaData::GetSubrecIds(int dom)
 {
     if (dom > SRIds.size() || dom < 0)
@@ -273,7 +270,7 @@ MiliVariableMetaData::GetSubrecIds(int dom)
 //
 // ****************************************************************************
 
-const string&
+const std::string&
 MiliVariableMetaData::GetPath()
 {
     //TODO: what we want is "classLName (classSName)/shortName"
@@ -330,8 +327,8 @@ MiliVariableMetaData::GetPath()
 void
 MiliVariableMetaData::DetermineESStatus(void)
 {
-    string esId    = "es_";
-    string nameSub = shortName.substr(0, 3);
+    std::string esId    = "es_";
+    std::string nameSub = shortName.substr(0, 3);
     if (esId == nameSub)
     {
         isElementSet = true;
@@ -347,7 +344,7 @@ MiliVariableMetaData::DetermineESStatus(void)
         if (vectorSize <= 0)
         {
             debug1 << "ERROR: we've found an element set that"
-                << " is not a vector!" << endl;
+                << " is not a vector!";
             EXCEPTION1(InvalidVariableException, shortName.c_str());
         }
 
@@ -409,26 +406,26 @@ MiliVariableMetaData::DetermineESStatus(void)
 void
 MiliVariableMetaData::PrintSelf(void)
 {
-    cerr << "long name: " << longName << endl;
-    cerr << "short name: " << shortName << endl;
-    cerr << "es mapped name: " << esMappedName << endl;
-    cerr << "class long Name: " << classLName << endl;
-    cerr << "class short Name: " << classSName << endl;
-    cerr << "path: " << path << endl;
-    cerr << "cell type avt: " << cellTypeAvt << endl;
-    cerr << "cell type mili: " << cellTypeMili << endl;
-    cerr << "centering: " << centering << endl;
-    cerr << "mesh assoc: " << meshAssociation << endl;
-    cerr << "num type: " << numType << endl;
-    cerr << "vec size: " << vectorSize << endl;
-    cerr << "component dims: " << componentDims << endl;
-    cerr << "is element set: " << isElementSet << endl;
-    cerr << "is global: " << isGlobal << endl;
-    cerr << "is multi mesh: " << multiMesh << endl;
-    cerr << "vector components: " << endl;
+    std::cerr << "long name: " << longName << std::endl;
+    std::cerr << "short name: " << shortName << std::endl;
+    std::cerr << "es mapped name: " << esMappedName << std::endl;
+    std::cerr << "class long Name: " << classLName << std::endl;
+    std::cerr << "class short Name: " << classSName << std::endl;
+    std::cerr << "path: " << path << std::endl;
+    std::cerr << "cell type avt: " << cellTypeAvt << std::endl;
+    std::cerr << "cell type mili: " << cellTypeMili << std::endl;
+    std::cerr << "centering: " << centering << std::endl;
+    std::cerr << "mesh assoc: " << meshAssociation << std::endl;
+    std::cerr << "num type: " << numType << std::endl;
+    std::cerr << "vec size: " << vectorSize << std::endl;
+    std::cerr << "component dims: " << componentDims << std::endl;
+    std::cerr << "is element set: " << isElementSet << std::endl;
+    std::cerr << "is global: " << isGlobal << std::endl;
+    std::cerr << "is multi mesh: " << multiMesh << std::endl;
+    std::cerr << "vector components: " << std::endl;
     for (int i = 0; i < vectorComponents.size(); ++i)
     {
-        cerr << vectorComponents[i] << endl;
+        std::cerr << vectorComponents[i] << std::endl;
     }
 }
 
@@ -453,8 +450,8 @@ MiliVariableMetaData::PrintSelf(void)
 //
 // ****************************************************************************
 
-MiliClassMetaData::MiliClassMetaData(string sName,
-                                     string lName,
+MiliClassMetaData::MiliClassMetaData(std::string sName,
+                                     std::string lName,
                                      int scID,
                                      int numDomains)
 {
@@ -599,7 +596,7 @@ MiliClassMetaData::PopulateLabelIds(int domain, int *ids)
 // ****************************************************************************
 
 bool
-MiliClassMetaData::GetElementLabels(int domain, vector<string> &outLabels)
+MiliClassMetaData::GetElementLabels(int domain, stringVector &outLabels)
 {
     if (domain >= 0 && domain < elementLabels.size())
     {
@@ -635,7 +632,7 @@ MiliClassMetaData::GetElementLabels(int domain, vector<string> &outLabels)
 //
 // ****************************************************************************
 
-vector<string> *
+stringVector *
 MiliClassMetaData::GetElementLabelsPtr(int domain)
 {
     if (domain >= 0 && domain < elementLabels.size())
@@ -849,12 +846,12 @@ MiliClassMetaData::GenerateElementLabels(int domain)
             const char *cSName = shortName.c_str();
             int pos = 0;
 
-            for (vector<int>::iterator idItr = labelIds[domain].begin();
+            for (intVector::iterator idItr = labelIds[domain].begin();
                  idItr != labelIds[domain].end(); idItr++)
             {
                 char cLabel[256];
                 sprintf(cLabel, "%s %i", cSName, (*idItr));
-                string sLabel = string(cLabel);
+                std::string sLabel = std::string(cLabel);
                 elementLabels[domain][pos++] = sLabel;
 
                 maxLabelLengths[domain] = std::max(int(sLabel.size()), 
@@ -880,8 +877,8 @@ MiliClassMetaData::GenerateElementLabels(int domain)
 //
 // ****************************************************************************
 
-MiliMaterialMetaData::MiliMaterialMetaData(string matName,
-                                           string matColor)
+MiliMaterialMetaData::MiliMaterialMetaData(std::string matName,
+                                           std::string matColor)
 {
     name     = matName;
     hexColor =  matColor;
@@ -938,8 +935,8 @@ avtMiliMetaData::avtMiliMetaData(int nDomains)
     numCells.resize(numDomains, -1);
     numNodes.resize(numDomains, -1);
     subrecInfo.resize(numDomains);
-    zoneBasedLabels.resize(numDomains, vector<string>());
-    nodeBasedLabels.resize(numDomains, vector<string>());
+    zoneBasedLabels.resize(numDomains, stringVector());
+    nodeBasedLabels.resize(numDomains, stringVector());
     maxZoneLabelLengths.resize(numDomains, 0);
     maxNodeLabelLengths.resize(numDomains, 0);
     zoneLabelsGenerated.resize(numDomains, false);
@@ -1198,7 +1195,7 @@ avtMiliMetaData::SetNumCells(int domain, int nCells)
     if (domain >= 0 and domain < numDomains)
     {
         numCells[domain] = nCells;
-        zoneBasedLabels[domain].resize(nCells, string(""));
+        zoneBasedLabels[domain].resize(nCells, std::string(""));
     }
 }
 
@@ -1226,7 +1223,7 @@ avtMiliMetaData::SetNumNodes(int domain, int nNodes)
     if (domain >= 0 && domain < numDomains)
     {
         numNodes[domain] = nNodes;
-        nodeBasedLabels[domain].resize(nNodes, string(""));
+        nodeBasedLabels[domain].resize(nNodes, std::string(""));
 
         //
         // See if we have a node class. If so, tell it 
@@ -1403,8 +1400,8 @@ avtMiliMetaData::GetClassMDByShortName(const char *vName)
 // ****************************************************************************
 
 void
-avtMiliMetaData::GetCellTypeCounts(vector<int> &cTypes, 
-                                   vector<int> &ctCounts)
+avtMiliMetaData::GetCellTypeCounts(intVector &cTypes, 
+                                   intVector &ctCounts)
 {
     if (miliClasses == NULL)
     {
@@ -1572,9 +1569,9 @@ avtMiliMetaData::GetVarMDByPath(const char *vPath)
     int idx = -1;
     if (strstr(vPath, sandDir.c_str()) == vPath) 
     {
-        string strVPath(vPath);
+        std::string strVPath(vPath);
         size_t sDirPos  = strVPath.find_first_of("/");
-        string truePath = strVPath.substr(sDirPos + 1);
+        std::string truePath = strVPath.substr(sDirPos + 1);
         idx = GetVarMDIdxByPath(truePath.c_str());
     }
     else
@@ -1692,7 +1689,7 @@ avtMiliMetaData::GetVarMDIdxByShortName(const char *vName,
 int
 avtMiliMetaData::GetVarMDIdxByPath(const char *vPath)
 {
-    string strVPath(vPath);
+    std::string strVPath(vPath);
 
     if (strstr(vPath, sandDir.c_str()) == vPath) 
     {
@@ -1820,7 +1817,7 @@ avtMiliMetaData::AddSubrecInfo(int   dom,
     // the subrecords in memory. 
     //
     int limit = nDB * 2;
-    vector<int> nxtRange(limit);
+    intVector nxtRange(limit);
     for (int i = 0; i < limit; ++i)
     {
         nxtRange[i] = DBRanges[i]; 
@@ -1853,7 +1850,7 @@ avtMiliMetaData::GenerateZoneBasedLabels(int domain)
     {
         for (int classIdx = 0; classIdx < numClasses; ++classIdx)
         {
-            vector<string> *classLabels = 
+            stringVector *classLabels = 
                 miliClasses[classIdx]->GetElementLabelsPtr(domain);
             if (classLabels != NULL)
             {
@@ -1878,7 +1875,7 @@ avtMiliMetaData::GenerateZoneBasedLabels(int domain)
                     }
 
                     int cIdx = offset;
-                    for (vector<string>::iterator labelItr = classLabels->begin();
+                    for (stringVector::iterator labelItr = classLabels->begin();
                          labelItr != classLabels->end(); labelItr++)
                     {
                         if (cIdx >= numCells[domain])
@@ -1922,7 +1919,7 @@ avtMiliMetaData::GenerateNodeBasedLabels(int domain)
     {
         for (int classIdx = 0; classIdx < numClasses; ++classIdx)
         {
-            vector<string> *classLabels = 
+            stringVector *classLabels = 
                 miliClasses[classIdx]->GetElementLabelsPtr(domain);
             if (classLabels != NULL)
             {
@@ -1947,7 +1944,7 @@ avtMiliMetaData::GenerateNodeBasedLabels(int domain)
                     }
 
                     int nIdx = offset;
-                    for (vector<string>::iterator labelItr = classLabels->begin();
+                    for (stringVector::iterator labelItr = classLabels->begin();
                          labelItr != classLabels->end(); labelItr++)
                     {
                         if (nIdx >= numNodes[domain])
@@ -1984,7 +1981,7 @@ avtMiliMetaData::GenerateNodeBasedLabels(int domain)
 //
 // ****************************************************************************
 
-vector<string> *
+stringVector *
 avtMiliMetaData::GetZoneBasedLabelsPtr(int domain)
 {
     if (domain < 0 || domain >= numDomains)
@@ -2018,7 +2015,7 @@ avtMiliMetaData::GetZoneBasedLabelsPtr(int domain)
 //
 // ****************************************************************************
 
-vector<string> *
+stringVector *
 avtMiliMetaData::GetNodeBasedLabelsPtr(int domain)
 {
     if (domain < 0 || domain >= numDomains)
@@ -2228,7 +2225,7 @@ avtMiliMetaData::GetMaterialNames(stringVector &matNames)
 // ****************************************************************************
 
 void
-avtMiliMetaData::GetMaterialColors(vector<string> &matColors)
+avtMiliMetaData::GetMaterialColors(stringVector &matColors)
 {
     if (miliMaterials == NULL)
     {
