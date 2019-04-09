@@ -681,7 +681,7 @@ avtStructuredDomainNesting::ConfirmMesh(vector<int> &domains,
         if ((extents[3]-extents[0]+2) != dims[0])
         {
             debug1 << "Warning: avtStructuredDomainNesting failing "
-                   << " because declared extents in I " 
+                   << " because the declared extents in I " 
                    << extents[3]-extents[0]+2 
                    << " is not the same as the data set size " << dims[0]
                    << "." << endl;
@@ -690,7 +690,7 @@ avtStructuredDomainNesting::ConfirmMesh(vector<int> &domains,
         if ((extents[4]-extents[1]+2) != dims[1])
         {
             debug1 << "Warning: avtStructuredDomainNesting failing "
-                   << " because declared extents in J " 
+                   << " because the declared extents in J " 
                    << extents[4]-extents[1]+2 
                    << " is not the same as the data set size " << dims[1]
                    << "." << endl;
@@ -699,7 +699,7 @@ avtStructuredDomainNesting::ConfirmMesh(vector<int> &domains,
         if (dims[2] > 1 && (extents[5]-extents[2]+2) != dims[2])
         {
             debug1 << "Warning: avtStructuredDomainNesting failing "
-                   << " because declared extents in K " 
+                   << " because the declared extents in K " 
                    << extents[5]-extents[2]+2 
                    << " is not the same as the data set size " << dims[2]
                    << "." << endl;
