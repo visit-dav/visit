@@ -3459,7 +3459,6 @@ ViewerQueryManager::PointQuery(const MapNode &queryParams)
     {
         string elementName = queryParams.GetEntry("element_label")->AsString();
         pickAtts->SetElementLabel(elementName);
-        cerr << "ELEMENT LABEL: " << elementName << endl;//FIXME
     }
     else if (pType == "ZoneLabel" || pType == "NodeLabel")
     {
@@ -3740,8 +3739,6 @@ ViewerQueryManager::PointQuery(const MapNode &queryParams)
         pickAtts->SetElementLabel("");
         return;
     }
-
-    cerr << "HERE" << endl;//FIXME
 
     if (!vars.empty())
         pickAtts->SetVariables(vars);

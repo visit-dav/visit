@@ -203,18 +203,6 @@ class avtMiliFileFormat : public avtMTMDFileFormat
     doubleVector          times;
     boolVector            meshRead;
     std::vector<Famid>    dbid;
-
-    struct LabelMapping
-    {
-        intVector labelRangesBegin;
-        intVector labelRangesEnd;
-        intVector elIdsBegin;
-        intVector elIdsEnd;
-    };
-
-    std::vector<std::map<std::string, LabelMapping> >  zoneLabelMappings;
-    std::vector<std::map<std::string, LabelMapping> >  nodeLabelMappings;
-
 };
 
 #endif

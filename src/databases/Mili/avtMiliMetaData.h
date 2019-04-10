@@ -77,8 +77,6 @@ typedef struct SubrecInfo
 typedef struct LabelPositionInfo
 {
     int          numBlocks;
-    //TODO: best way to handle names?
-    std::string  shortName;
     intVector    rangesBegin;      
     intVector    rangesEnd;
     intVector    idsBegin;
@@ -365,114 +363,116 @@ class avtMiliMetaData
     const int MiliCellTypes[8] =
       { M_TRUSS, M_BEAM, M_TRI, M_QUAD, M_TET, M_PYRAMID, M_WEDGE, M_HEX };
 
-                                       avtMiliMetaData(int);
-                                      ~avtMiliMetaData(void);
+                                   avtMiliMetaData(int);
+                                  ~avtMiliMetaData(void);
 
-    void                               SetNumClasses(int);
-    int                                GetNumClasses(void)
-                                         { return numClasses; }; 
+    void                           SetNumClasses(int);
+    int                            GetNumClasses(void)
+                                     { return numClasses; }; 
 
-    void                               SetNumVariables(int nVars);
-    int                                GetNumVariables(void)
-                                         { return numVariables; };
+    void                           SetNumVariables(int nVars);
+    int                            GetNumVariables(void)
+                                     { return numVariables; };
 
-    void                               AddClassMD(int,
-                                                  MiliClassMetaData *);
-    MiliClassMetaData                 *GetClassMDByShortName(const char *);
-    int                                GetClassMDIdxByShortName(const char *);
+    void                           AddClassMD(int,
+                                              MiliClassMetaData *);
+    MiliClassMetaData             *GetClassMDByShortName(const char *);
+    int                            GetClassMDIdxByShortName(const char *);
+    void                           GetCellBasedClassMD(
+                                       std::vector<MiliClassMetaData *> &);
+    void                           GetNodeBasedClassMD(
+                                       std::vector<MiliClassMetaData *> &);
  
-    void                               GetCellTypeCounts(intVector &,
-                                                         intVector &);
+    void                           GetCellTypeCounts(intVector &,
+                                                     intVector &);
 
-    void                               AddVarMD(int, 
-                                                MiliVariableMetaData *);
-    MiliVariableMetaData              *GetVarMDByIdx(int varIdx);
-    MiliVariableMetaData              *GetVarMDByShortName(const char *, const char *);
-    MiliVariableMetaData              *GetVarMDByPath(const char *);
-    int                                GetVarMDIdxByShortName(const char *, const char *);
-    int                                GetVarMDIdxByPath(const char *);
+    void                           AddVarMD(int, 
+                                            MiliVariableMetaData *);
+    MiliVariableMetaData          *GetVarMDByIdx(int varIdx);
+    MiliVariableMetaData          *GetVarMDByShortName(const char *, 
+                                                       const char *);
+    MiliVariableMetaData          *GetVarMDByPath(const char *);
+    int                            GetVarMDIdxByShortName(const char *, 
+                                                          const char *);
+    int                            GetVarMDIdxByPath(const char *);
 
-    void                               AddVarSubrecInfo(int,
-                                                        int,
-                                                        int,
-                                                        Subrecord *);
+    void                           AddVarSubrecInfo(int,
+                                                    int,
+                                                    int,
+                                                    Subrecord *);
 
-    void                               AddMaterialMD(int, 
-                                                     MiliMaterialMetaData *);
-    void                               SetNumMaterials(int);
-    int                                GetNumMaterials(void)
-                                         { return numMaterials; };
-    void                               GetMaterialNames(stringVector &);
-    void                               GetMaterialColors(stringVector &);
+    void                           AddMaterialMD(int, 
+                                                 MiliMaterialMetaData *);
+    void                           SetNumMaterials(int);
+    int                            GetNumMaterials(void)
+                                     { return numMaterials; };
+    void                           GetMaterialNames(stringVector &);
+    void                           GetMaterialColors(stringVector &);
 
-    bool                               ContainsSand(void)
-                                         { return containsSand; };
+    bool                           ContainsSand(void)
+                                     { return containsSand; };
 
-    std::string                        GetSandDir(void)
-                                         { return sandDir; };
+    std::string                    GetSandDir(void)
+                                     { return sandDir; };
 
-    void                               SetNumCells(int, int);
-    int                                GetNumCells(int);
+    void                           SetNumCells(int, int);
+    int                            GetNumCells(int);
 
-    void                               SetNumNodes(int , int);
-    int                                GetNumNodes(int);
+    void                           SetNumNodes(int , int);
+    int                            GetNumNodes(int);
 
-    int                                GetNumMiliCellTypes(void)
-                                         { return numMiliCellTypes; };
+    int                            GetNumMiliCellTypes(void)
+                                     { return numMiliCellTypes; };
 
-    const stringVector                *GetZoneBasedLabelsPtr(int);
-    const stringVector                *GetNodeBasedLabelsPtr(int);
-    const LabelPositionInfo           *GetZoneLabelPositionsPtr(int);
-    const LabelPositionInfo           *GetNodeLabelPositionsPtr(int);
+    const stringVector            *GetZoneBasedLabelsPtr(int);
+    const stringVector            *GetNodeBasedLabelsPtr(int);
 
-    int                                GetMaxZoneLabelLength(int);
-    int                                GetMaxNodeLabelLength(int);
+    int                            GetMaxZoneLabelLength(int);
+    int                            GetMaxNodeLabelLength(int);
 
-    SubrecInfo                        &GetSubrecInfo(int);
+    SubrecInfo                    &GetSubrecInfo(int);
 
   private:
 
-    void                               AddSubrecInfo(int, 
-                                                     int,
-                                                     int, 
-                                                     int *);
+    void                           AddSubrecInfo(int, 
+                                                 int,
+                                                 int, 
+                                                 int *);
 
-    void                               GenerateZoneBasedLabels(int);
-    void                               GenerateNodeBasedLabels(int);
+    void                           GenerateZoneBasedLabels(int);
+    void                           GenerateNodeBasedLabels(int);
 
 
-    MiliClassMetaData                **miliClasses;
-    MiliVariableMetaData             **miliVariables;
-    MiliMaterialMetaData             **miliMaterials;
+    MiliClassMetaData            **miliClasses;
+    MiliVariableMetaData         **miliVariables;
+    MiliMaterialMetaData         **miliMaterials;
 
-    int                                numDomains;
-    int                                numClasses;
-    int                                numVariables;
-    int                                numMaterials;
-    bool                               containsSand;
-    std::string                        sandDir;
-    intVector                          numCells;
-    intVector                          numNodes;
+    int                            numDomains;
+    int                            numClasses;
+    int                            numVariables;
+    int                            numMaterials;
+    bool                           containsSand;
+    std::string                    sandDir;
+    intVector                      numCells;
+    intVector                      numNodes;
 
-    std::vector <stringVector >        zoneBasedLabels;
-    std::vector <stringVector >        nodeBasedLabels;
-    std::vector<LabelPositionInfo>     zoneLabelPositions;
-    std::vector<LabelPositionInfo>     nodeLabelPositions;
+    std::vector <stringVector >    zoneBasedLabels;
+    std::vector <stringVector >    nodeBasedLabels;
 
-    intVector                          maxZoneLabelLengths;
-    intVector                          maxNodeLabelLengths;
-    boolVector                         zoneLabelsGenerated;
-    boolVector                         nodeLabelsGenerated;
+    intVector                      maxZoneLabelLengths;
+    intVector                      maxNodeLabelLengths;
+    boolVector                     zoneLabelsGenerated;
+    boolVector                     nodeLabelsGenerated;
 
     //
     // Subrecord info
     //
-    std::vector< SubrecInfo >          subrecInfo;
+    std::vector< SubrecInfo >      subrecInfo;
 
     //
     // The number of available mili cell types. 
     //
-    const int                          numMiliCellTypes = 8;
+    const int                      numMiliCellTypes = 8;
 };
 
 #endif
