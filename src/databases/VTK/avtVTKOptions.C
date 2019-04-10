@@ -43,6 +43,7 @@
 #include <avtVTKOptions.h>
 
 #include <DBOptionsAttributes.h>
+#include <snprintf.h>
 
 #include <string>
 #include <vector>
@@ -90,6 +91,8 @@ GetVTKReadOptions(void)
 //    Kathleen Biagas, Fri Feb 17 15:50:34 PST 2017
 //    New options so as to be more explicit.
 //
+//    Mark C. Miller, Tue Apr  9 18:49:37 PDT 2019
+//    Add tetrahedralize option and help string.
 // ****************************************************************************
 
 DBOptionsAttributes *
@@ -103,9 +106,20 @@ GetVTKWriteOptions(void)
     fileFormat.push_back("XML Binary");
     rv->SetEnum("FileFormat", 0);
     rv->SetEnumStrings("FileFormat", fileFormat);
+    rv->SetBool("Tetrahedralize", false);
 
     rv->SetObsolete("Binary format");
     rv->SetObsolete("XML format");
+
+    char helpStr[256];
+    SNPRINTF(helpStr, sizeof(helpStr),
+        "<p><b>Tetrahedralize</b>:"
+        "<ul>"
+        "<li>Works only for UNstructured grids.</li>"
+        "<li>In 2D, converts all polygons to triangles.</li>"
+        "<li>In 3D, converts all polyhedra to tets.</li>"
+        "</ul>");
+    rv->SetHelp(helpStr);
 
     return rv;
 }
