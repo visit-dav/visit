@@ -22,6 +22,7 @@ Please describe the tests you've added or any tests that already cover this chan
 - [ ] My code follows the style guidelines of this project
 - [ ] I have performed a self-review of my own code
 - [ ] I have commented my code, particularly in hard-to-understand areas
+- [ ] I have updated the release notes
 - [ ] I have made corresponding changes to the documentation
 - [ ] I have added debugging support to my changes
 - [ ] I have added tests that prove my fix is effective or that my feature works
