@@ -124,9 +124,12 @@ GetSiloReadOptions(void)
 //
 //    Mark C. Miller, Tue Mar 17 18:13:22 PDT 2009
 //    Use const char * option name symbols defined in avtSiloOptions.h
-
+//
 //    Mark C. Miller, Fri May  8 17:09:39 PDT 2009
 //    Added compression/checksum options.
+//
+//    Mark C. Miller, Wed Apr 10 11:43:29 PDT 2019
+//    Add help string.
 // ****************************************************************************
 
 DBOptionsAttributes *
