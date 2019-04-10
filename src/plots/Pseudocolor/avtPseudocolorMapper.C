@@ -42,8 +42,10 @@
 
 #include <avtPseudocolorMapper.h>
 
+#include <vtkActor.h>
 #include <vtkDataSet.h>
 #include <vtkMultiRepMapper.h>
+#include <vtkProperty.h>
 
 
 // ****************************************************************************
@@ -61,6 +63,7 @@ avtPseudocolorMapper::avtPseudocolorMapper() : avtVariableMapper()
     drawSurface   = true;
     drawWireframe = false;
     drawPoints    = false;
+    pointSize = 2;
     wireframeColor[0] = wireframeColor[1] = wireframeColor[2] = 0.;
     pointsColor[0] = pointsColor[1] = pointsColor[2] = 0.;
 }
@@ -123,6 +126,7 @@ avtPseudocolorMapper::CustomizeMappers()
         mrm->SetDrawPoints(drawPoints);
         mrm->SetWireframeColor(wireframeColor);
         mrm->SetPointsColor(pointsColor);
+        actors[i]->GetProperty()->SetPointSize(pointSize);
     }
 }
 
@@ -203,6 +207,31 @@ avtPseudocolorMapper::SetDrawPoints(bool val)
     }
 }
 
+
+// ****************************************************************************
+//  Method: avtPseudocolorMapper::SetPointSize
+//
+//  Purpose:
+//     Sets the point size.
+// 
+//  Programmer: Kathleen Biagas
+//  Creation:   April 10, 2019
+//
+// ****************************************************************************
+
+void
+avtPseudocolorMapper::SetPointSize(int ps)
+{
+    if (pointSize != ps)
+    {
+        pointSize = ps;
+        for (int i = 0; i < nMappers; ++i)
+        {
+            if (actors[i] != NULL)
+                actors[i]->GetProperty()->SetPointSize(pointSize);
+        }
+    }
+}
 
 
 // ****************************************************************************
