@@ -3989,7 +3989,7 @@ GetPickOutput
 ::
 
   GetPickOutput() -> string
-  GetPickOutputObject() -> dictonary
+  GetPickOutputObject() -> dictionary
 
 return value : integer
     GetPickOutput returns a string containing the output from the last pick.
@@ -4027,7 +4027,7 @@ GetPickOutputObject
 ::
 
   GetPickOutput() -> string
-  GetPickOutputObject() -> dictonary
+  GetPickOutputObject() -> dictionary
 
 return value : integer
     GetPickOutput returns a string containing the output from the last pick.
@@ -4234,7 +4234,7 @@ GetQueryOutputObject
   GetQueryOutputString() -> string
   GetQueryOutputValue() -> double, tuple of doubles
   GetQueryOutputXML() -> string
-  GetQueryOutputObject() -> dictonary or value
+  GetQueryOutputObject() -> dictionary or value
 
 return value : integer
     GetQueryOutputString returns a string.
@@ -4277,7 +4277,7 @@ GetQueryOutputString
   GetQueryOutputString() -> string
   GetQueryOutputValue() -> double, tuple of doubles
   GetQueryOutputXML() -> string
-  GetQueryOutputObject() -> dictonary or value
+  GetQueryOutputObject() -> dictionary or value
 
 return value : integer
     GetQueryOutputString returns a string.
@@ -4320,7 +4320,7 @@ GetQueryOutputValue
   GetQueryOutputString() -> string
   GetQueryOutputValue() -> double, tuple of doubles
   GetQueryOutputXML() -> string
-  GetQueryOutputObject() -> dictonary or value
+  GetQueryOutputObject() -> dictionary or value
 
 return value : integer
     GetQueryOutputString returns a string.
@@ -4363,7 +4363,7 @@ GetQueryOutputXML
   GetQueryOutputString() -> string
   GetQueryOutputValue() -> double, tuple of doubles
   GetQueryOutputXML() -> string
-  GetQueryOutputObject() -> dictonary or value
+  GetQueryOutputObject() -> dictionary or value
 
 return value : integer
     GetQueryOutputString returns a string.
@@ -4446,7 +4446,7 @@ GetQueryParameters
 
 ::
 
-  GetQueryParameters(name) -> python dictonary
+  GetQueryParameters(name) -> python dictionary
 
 return value : integer
     A python dictionary.
