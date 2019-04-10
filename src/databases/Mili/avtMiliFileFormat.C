@@ -1375,17 +1375,17 @@ avtMiliFileFormat::GetVar(int ts, int dom, const char *varPath)
     {
         int maxSize = miliMetaData[meshId]->GetMaxZoneLabelLength(dom) + 1;
 
-        vtkElementLabelArray *labelNames = 0;
-        labelNames = vtkElementLabelArray::New();
-        labelNames->SetNumberOfComponents(maxSize);
+        vtkElementLabelArray *vtkLabels = 0;
+        vtkLabels = vtkElementLabelArray::New();
+        vtkLabels->SetNumberOfComponents(maxSize);
 
-        stringVector *miliZoneLabels = 
+        const stringVector *miliZoneLabels = 
             miliMetaData[meshId]->GetZoneBasedLabelsPtr(dom);
 
         const int nEls = miliZoneLabels->size();
-        labelNames->SetNumberOfTuples(nEls);
+        vtkLabels->SetNumberOfTuples(nEls);
 
-        char *ptr = (char *) labelNames->GetVoidPointer(0);
+        char *ptr = (char *) vtkLabels->GetVoidPointer(0);
 
         for(int i = 0; i < nEls; ++i)
         {
@@ -1408,19 +1408,31 @@ avtMiliFileFormat::GetVar(int ts, int dom, const char *varPath)
         //
         // Add the data so we can do reverse lookups
         //
-        std::map<std::string, LabelMapping>::iterator it;
-        for(it = zoneLabelMappings[dom].begin(); 
-            it != zoneLabelMappings[dom].end(); ++it)
-        {
-             std::string name = it->first;
-             LabelMapping labelMap = it->second;
-             labelNames->AddName(name,
-                            labelMap.labelRangesBegin,
-                            labelMap.labelRangesEnd,
-                            labelMap.elIdsBegin,
-                            labelMap.elIdsEnd);
-        }
-        return labelNames;
+        //std::map<std::string, LabelMapping>::iterator it;
+        //for(it = zoneLabelMappings[dom].begin(); 
+        //    it != zoneLabelMappings[dom].end(); ++it)
+        //{
+        //     std::string name = it->first;
+        //     LabelMapping labelMap = it->second;
+        //     vtkLabels->AddName(name,
+        //                    labelMap.labelRangesBegin,
+        //                    labelMap.labelRangesEnd,
+        //                    labelMap.elIdsBegin,
+        //                    labelMap.elIdsEnd);
+        //}
+
+        const LabelPositionInfo *posInfo = 
+            miliMetaData[meshId]->GetZoneLabelPositionsPtr(dom);
+    
+        //FIXME: need name for every class. The best way to handle this
+        //       might be to add them indidually from each class (the way
+        //       it's done above... get rid of integration into mmd.  
+        //vtkLabels->AddName(posInfo->shortName,
+        //                    posInfo->rangesBegin,
+        //                    posInfo->rangesEnd,
+        //                    posInfo->idsBegin,
+        //                    posInfo->idsEnd);
+        return vtkLabels;
 
     }
 
@@ -1428,17 +1440,17 @@ avtMiliFileFormat::GetVar(int ts, int dom, const char *varPath)
     {
         int maxSize = miliMetaData[meshId]->GetMaxNodeLabelLength(dom) + 1;
  
-        vtkElementLabelArray *labelNames = 0;
-        labelNames = vtkElementLabelArray::New();
-        labelNames->SetNumberOfComponents(maxSize);
+        vtkElementLabelArray *vtkLabels = 0;
+        vtkLabels = vtkElementLabelArray::New();
+        vtkLabels->SetNumberOfComponents(maxSize);
 
-        stringVector *miliNodeLabels = 
+        const stringVector *miliNodeLabels = 
             miliMetaData[meshId]->GetNodeBasedLabelsPtr(dom);
 
         const int nEls = (*miliNodeLabels).size();
-        labelNames->SetNumberOfTuples(nEls);
+        vtkLabels->SetNumberOfTuples(nEls);
 
-        char * ptr = (char *) labelNames->GetVoidPointer(0);
+        char * ptr = (char *) vtkLabels->GetVoidPointer(0);
 
         for(int i = 0; i < nEls; ++i)
         {
@@ -1467,13 +1479,13 @@ avtMiliFileFormat::GetVar(int ts, int dom, const char *varPath)
         {
              std::string name = it->first;
              LabelMapping labelMap = it->second;
-             labelNames->AddName(name,
+             vtkLabels->AddName(name,
                             labelMap.labelRangesBegin,
                             labelMap.labelRangesEnd,
                             labelMap.elIdsBegin,
                             labelMap.elIdsEnd);
         }
-        return labelNames;
+        return vtkLabels;
     }
 
     //
@@ -2763,10 +2775,8 @@ avtMiliFileFormat::ExtractJsonClasses(Document &jDoc,
                             miliMetaData[meshId]->AddVarMD(varIdx, varMD);
                             varIdx++;
                         }
-
-                    } // end jVars.HasMember
-
-                } // end for i in length of cVars
+                    }
+                }
                
                 //
                 // Cache the mili class md. 
@@ -3033,8 +3043,8 @@ avtMiliFileFormat::RetrieveCellLabelInfo(const int meshId,
                                          const int dom, 
                                          const int nElemsInClass)
 {
-    int numBlocks   = 0; 
-    int *blockRange = NULL;
+    int numBlocks    = 0; 
+    int *blockRanges = NULL;
     int elemList[nElemsInClass];
     int labelIds[nElemsInClass];
 
@@ -3053,18 +3063,21 @@ avtMiliFileFormat::RetrieveCellLabelInfo(const int meshId,
     int nExpectedLabels = nElemsInClass;
     int rval = mc_load_conn_labels(dbid[dom], meshId, shortName, 
                                    nExpectedLabels, &numBlocks, 
-                                   &blockRange, elemList, labelIds);
+                                   &blockRanges, elemList, labelIds);
 
     if (rval != OK)
     {
         debug1 << "mc_load_conn_labels failed at " << shortName << "!\n";
         numBlocks   = 0; 
-        blockRange  = NULL;
+        blockRanges  = NULL;
     }
 
     MiliClassMetaData *miliClass = 
         miliMetaData[meshId]->GetClassMDByShortName(shortName);
-    miliClass->PopulateLabelIds(dom, labelIds);
+    miliClass->PopulateLabelIds(dom, 
+                                labelIds,
+                                numBlocks,
+                                blockRanges);
     
     if (numBlocks == 0)
     {
@@ -3073,21 +3086,22 @@ avtMiliFileFormat::RetrieveCellLabelInfo(const int meshId,
     else
     {
         int zoneLabelMap = visitTimer->StartTimer();
-        int numZones     = 0;
+        //miliClass->PopulateLabelPositions(dom, numBlocks, blockRanges);
+        //int numZones     = 0;
 
-        LabelMapping labelMap;
-        for(int block = 0; block < numBlocks; ++block)
-        {
-          int rangeSize = blockRange[block * 2 + 1] - blockRange[block * 2] + 1;
-          labelMap.labelRangesBegin.push_back(blockRange[block * 2]);
-          labelMap.labelRangesEnd.push_back(blockRange[block * 2 + 1]);
-          labelMap.elIdsBegin.push_back(numZones);
-          labelMap.elIdsEnd.push_back(numZones - 1 + rangeSize);
+        //LabelMapping labelMap;
+        //for(int block = 0; block < numBlocks; ++block)
+        //{
+        //  int rangeSize = blockRanges[block * 2 + 1] - blockRanges[block * 2] + 1;
+        //  labelMap.labelRangesBegin.push_back(blockRanges[block * 2]);
+        //  labelMap.labelRangesEnd.push_back(blockRanges[block * 2 + 1]);
+        //  labelMap.elIdsBegin.push_back(numZones);
+        //  labelMap.elIdsEnd.push_back(numZones - 1 + rangeSize);
 
-          numZones += rangeSize;
-        }
+        //  numZones += rangeSize;
+        //}
 
-        zoneLabelMappings[dom][std::string(shortName)] = labelMap;
+        //zoneLabelMappings[dom][std::string(shortName)] = labelMap;
 
         visitTimer->StopTimer(zoneLabelMap, "MILI: Building zone label map");
     }
@@ -3126,7 +3140,7 @@ avtMiliFileFormat::RetrieveNodeLabelInfo(const int meshId, char *shortName,
     int nLabeledNodes = 0;
     int nNodes        = miliMetaData[meshId]->GetNumNodes(dom);
     int numBlocks     = 0; 
-    int *blockRange   = NULL;
+    int *blockRanges  = NULL;
     int elemList[nNodes];
     int labelIds[nNodes];
 
@@ -3137,18 +3151,21 @@ avtMiliFileFormat::RetrieveNodeLabelInfo(const int meshId, char *shortName,
     }
 
     int rval = mc_load_node_labels(dbid[dom], meshId, shortName, 
-                                   &numBlocks, &blockRange, labelIds);
+                                   &numBlocks, &blockRanges, labelIds);
 
     if (rval != OK)
     {
         debug1 << "mc_load_node_labels failed!\n";
         numBlocks   = 0; 
-        blockRange  = NULL;
+        blockRanges  = NULL;
     }
 
     MiliClassMetaData *miliClass = 
         miliMetaData[meshId]->GetClassMDByShortName(shortName);
-    miliClass->PopulateLabelIds(dom, labelIds);
+    miliClass->PopulateLabelIds(dom, 
+                                labelIds,
+                                numBlocks,
+                                blockRanges);
 
     if (numBlocks == 0)
     {
@@ -3158,20 +3175,20 @@ avtMiliFileFormat::RetrieveNodeLabelInfo(const int meshId, char *shortName,
     {
         int nodeLabelMap = visitTimer->StartTimer();
 
-        LabelMapping labelMap;
-        for(int block = 0; block < numBlocks; ++block)
-        {
-            int rangeSize = (blockRange[block * 2 + 1] - 
-                blockRange[block * 2] + 1);
-            labelMap.labelRangesBegin.push_back(blockRange[block * 2]);
-            labelMap.labelRangesEnd.push_back(blockRange[block * 2 + 1]);
-            labelMap.elIdsBegin.push_back(nLabeledNodes);
-            labelMap.elIdsEnd.push_back(nLabeledNodes - 1 + rangeSize);
+        //LabelMapping labelMap;
+        //for(int block = 0; block < numBlocks; ++block)
+        //{
+        //    int rangeSize = (blockRanges[block * 2 + 1] - 
+        //        blockRanges[block * 2] + 1);
+        //    labelMap.labelRangesBegin.push_back(blockRanges[block * 2]);
+        //    labelMap.labelRangesEnd.push_back(blockRanges[block * 2 + 1]);
+        //    labelMap.elIdsBegin.push_back(nLabeledNodes);
+        //    labelMap.elIdsEnd.push_back(nLabeledNodes - 1 + rangeSize);
 
-            nLabeledNodes += rangeSize;
-        }
+        //    nLabeledNodes += rangeSize;
+        //}
 
-        nodeLabelMappings[dom][std::string(shortName)] = labelMap;
+        //nodeLabelMappings[dom][std::string(shortName)] = labelMap;
 
         visitTimer->StopTimer(nodeLabelMap, "MILI: Building node label map");
     }

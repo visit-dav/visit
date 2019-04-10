@@ -3459,6 +3459,7 @@ ViewerQueryManager::PointQuery(const MapNode &queryParams)
     {
         string elementName = queryParams.GetEntry("element_label")->AsString();
         pickAtts->SetElementLabel(elementName);
+        cerr << "ELEMENT LABEL: " << elementName << endl;//FIXME
     }
     else if (pType == "ZoneLabel" || pType == "NodeLabel")
     {
@@ -3740,6 +3741,8 @@ ViewerQueryManager::PointQuery(const MapNode &queryParams)
         return;
     }
 
+    cerr << "HERE" << endl;//FIXME
+
     if (!vars.empty())
         pickAtts->SetVariables(vars);
 
@@ -3928,7 +3931,7 @@ ViewerQueryManager::PointQuery(const MapNode &queryParams)
                     pointQueryParams["element_label"] = label;
                     pointQueryParams["do_time"] = 0;
                     pointQueryParams["preserve_coord"] = false;
-
+   
                     pickAtts->SetDoTimeCurve(false);
                     PointQuery(pointQueryParams);
                     pickAtts->SetDoTimeCurve(true);

@@ -465,6 +465,13 @@ MiliClassMetaData::MiliClassMetaData(std::string sName,
     elementLabels.resize(numDomains);
     labelsGenerated.resize(numDomains, false);
     maxLabelLengths.resize(numDomains, 0);
+    labelPositions.resize(numDomains);
+
+    for (int i = 0; i < numDomains; ++i)
+    {
+        labelPositions[i].numBlocks = 0;
+        labelPositions[i].shortName = sName;
+    }
 }
 
 
@@ -548,11 +555,14 @@ MiliClassMetaData::GetConnectivityOffset(int domain)
 //  Method: MiliClassMetaData::PopulateLabelIds
 //
 //  Purpose:
-//      Populate the class' label ids. 
+//      Populate the class label ids and ranges. 
 //
 //  Arguments: 
-//      domain    The domain of interest. 
-//      ids       An array of ids of size "number of elements on this domain".
+//      domain        The domain of interest. 
+//      ids           An array of ids of size "number of 
+//                    elements on this domain".
+//      numBlocks     The number of blocks that our labels span.
+//      blockRanges   The block ranges for the labels. 
 //           
 //  Programmer: Alister Maguire
 //  Creation:   April 3, 2019
@@ -562,7 +572,10 @@ MiliClassMetaData::GetConnectivityOffset(int domain)
 // ****************************************************************************
 
 void 
-MiliClassMetaData::PopulateLabelIds(int domain, int *ids)
+MiliClassMetaData::PopulateLabelIds(int domain, 
+                                    int *ids,
+                                    int numBlocks,
+                                    int *blockRanges)
 {
     if (domain >= 0 && domain < labelIds.size())
     {
@@ -571,7 +584,88 @@ MiliClassMetaData::PopulateLabelIds(int domain, int *ids)
         {
             labelIds[domain][i] = ids[i];
         }
+
+        if (numBlocks > 0)
+        {
+            PopulateLabelPositions(domain, numBlocks, blockRanges);
+        }
     }
+}
+
+
+// ***************************************************************************
+//  Method: MiliClassMetaData::PopulateLabelPositions
+//
+//  Purpose:
+//      Populate the class label positions. This information is needed by
+//      the vtkElementLabelArray.
+//
+//  Arguments: 
+//      domain        The domain of interest. 
+//      numBlocks     The number of blocks/segments of labels for this class. 
+//      blockRanges   The block ranges. 
+//           
+//  Programmer: Alister Maguire
+//  Creation:   April 9, 2019
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void 
+MiliClassMetaData::PopulateLabelPositions(int  domain, 
+                                          int  numBlocks,
+                                          int *blockRanges)
+{
+    if (domain >= 0 && domain < labelPositions.size())
+    {
+        //int offset = GetConnectivityOffset(domain);//FIXME: needed?
+        int numEl = 0;
+        for (int i = 0; i < numBlocks; ++i)
+        {
+            int baseIdx   = i * 2;
+            int begin     = blockRanges[baseIdx];
+            int end       = blockRanges[baseIdx + 1];
+            int rangeSize = end - begin + 1;
+            labelPositions[domain].rangesBegin.push_back(begin);
+            labelPositions[domain].rangesEnd.push_back(end);
+            labelPositions[domain].idsBegin.push_back(numEl);
+            labelPositions[domain].idsEnd.push_back(numEl + rangeSize - 1);
+            numEl++; 
+        }
+        labelPositions[domain].numBlocks = numBlocks;
+    }
+}
+
+
+// ***************************************************************************
+//  Method: MiliClassMetaData::GetLabelPositionInfoPtr
+//
+//  Purpose:
+//      Get label position info for this class. 
+//
+//  Arguments: 
+//      domain        The domain of interest. 
+//
+//  Returns:
+//      A const pointer to the label position info for this class if it 
+//      exists. Otherwise, NULL. 
+//           
+//  Programmer: Alister Maguire
+//  Creation:   April 9, 2019
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+const LabelPositionInfo * 
+MiliClassMetaData::GetLabelPositionInfoPtr(int domain)
+{
+    if (domain >= 0 && domain < labelPositions.size())
+    { 
+        return &labelPositions[domain];
+    }
+    return NULL;
 }
 
 
@@ -937,10 +1031,20 @@ avtMiliMetaData::avtMiliMetaData(int nDomains)
     subrecInfo.resize(numDomains);
     zoneBasedLabels.resize(numDomains, stringVector());
     nodeBasedLabels.resize(numDomains, stringVector());
+    zoneLabelPositions.resize(numDomains);
+    nodeLabelPositions.resize(numDomains);
     maxZoneLabelLengths.resize(numDomains, 0);
     maxNodeLabelLengths.resize(numDomains, 0);
     zoneLabelsGenerated.resize(numDomains, false);
     nodeLabelsGenerated.resize(numDomains, false);
+
+    for (int i = 0; i < numDomains; ++i)
+    {
+        zoneLabelPositions[i].numBlocks = 0;
+        zoneLabelPositions[i].shortName = "";
+        nodeLabelPositions[i].numBlocks = 0;
+        nodeLabelPositions[i].shortName = "";
+    }
 }
 
 
@@ -1489,10 +1593,6 @@ avtMiliMetaData::AddVarMD(int varIdx,
 
     if (miliVariables[varIdx] != NULL)
     {
-        //
-        // For some reason, the subrecords don't like
-        // to be cleansed in the destructor. 
-        //
         delete miliVariables[varIdx];
         miliVariables[varIdx] = NULL;
     }
@@ -1570,7 +1670,7 @@ avtMiliMetaData::GetVarMDByPath(const char *vPath)
     if (strstr(vPath, sandDir.c_str()) == vPath) 
     {
         std::string strVPath(vPath);
-        size_t sDirPos  = strVPath.find_first_of("/");
+        size_t sDirPos       = strVPath.find_first_of("/");
         std::string truePath = strVPath.substr(sDirPos + 1);
         idx = GetVarMDIdxByPath(truePath.c_str());
     }
@@ -1888,6 +1988,29 @@ avtMiliMetaData::GenerateZoneBasedLabels(int domain)
                             std::max(int(labelItr->size()), 
                             maxZoneLabelLengths[domain]);
                     }
+
+                    const LabelPositionInfo *posInfo = miliClasses[classIdx]->
+                        GetLabelPositionInfoPtr(domain);
+
+                    if (posInfo == NULL)
+                    {
+                        continue;
+                    }
+
+                    for (int i = 0; i < posInfo->numBlocks; ++i)
+                    {
+                        zoneLabelPositions[domain].rangesBegin.push_back(
+                            posInfo->rangesBegin[i]);
+                        zoneLabelPositions[domain].rangesEnd.push_back(
+                            posInfo->rangesEnd[i]);
+                        zoneLabelPositions[domain].idsBegin.push_back(
+                            posInfo->idsBegin[i]);
+                        zoneLabelPositions[domain].idsEnd.push_back(
+                            posInfo->idsEnd[i]);
+                    }
+                    //FIXME: need to add shortname for every class...
+                    zoneLabelPositions[domain].numBlocks += posInfo->numBlocks;
+                    zoneLabelPositions[domain].shortName  = posInfo->shortName;
                 }
             }
         }
@@ -1957,6 +2080,28 @@ avtMiliMetaData::GenerateNodeBasedLabels(int domain)
                             std::max(int(labelItr->size()), 
                             maxNodeLabelLengths[domain]);
                     }
+
+                    const LabelPositionInfo *posInfo = miliClasses[classIdx]->
+                        GetLabelPositionInfoPtr(domain);
+
+                    if (posInfo == NULL)
+                    {
+                        continue;
+                    }
+
+                    for (int i = 0; i < posInfo->numBlocks; ++i)
+                    {
+                        nodeLabelPositions[domain].rangesBegin.push_back(
+                            posInfo->rangesBegin[i]);
+                        nodeLabelPositions[domain].rangesEnd.push_back(
+                            posInfo->rangesEnd[i]);
+                        nodeLabelPositions[domain].idsBegin.push_back(
+                            posInfo->idsBegin[i]);
+                        nodeLabelPositions[domain].idsEnd.push_back(
+                            posInfo->idsEnd[i]);
+                    }
+                    nodeLabelPositions[domain].numBlocks += posInfo->numBlocks;
+                    nodeLabelPositions[domain].shortName  = posInfo->shortName;
                 }
             }
         }
@@ -1974,6 +2119,9 @@ avtMiliMetaData::GenerateNodeBasedLabels(int domain)
 //  Arguments: 
 //      domain    The domain of interest.  
 //           
+//  Returns:
+//      If valid, a pointer to the labels. NULL otherwise. 
+//
 //  Programmer: Alister Maguire
 //  Creation:   Jan 15, 2019
 //
@@ -1981,7 +2129,7 @@ avtMiliMetaData::GenerateNodeBasedLabels(int domain)
 //
 // ****************************************************************************
 
-stringVector *
+const stringVector *
 avtMiliMetaData::GetZoneBasedLabelsPtr(int domain)
 {
     if (domain < 0 || domain >= numDomains)
@@ -2007,6 +2155,9 @@ avtMiliMetaData::GetZoneBasedLabelsPtr(int domain)
 //
 //  Arguments: 
 //      domain    The domain of interest.  
+//
+//  Returns:
+//      If valid, a pointer to the labels. NULL otherwise. 
 //           
 //  Programmer: Alister Maguire
 //  Creation:   Jan 15, 2019
@@ -2015,7 +2166,7 @@ avtMiliMetaData::GetZoneBasedLabelsPtr(int domain)
 //
 // ****************************************************************************
 
-stringVector *
+const stringVector *
 avtMiliMetaData::GetNodeBasedLabelsPtr(int domain)
 {
     if (domain < 0 || domain >= numDomains)
@@ -2030,6 +2181,68 @@ avtMiliMetaData::GetNodeBasedLabelsPtr(int domain)
         GenerateNodeBasedLabels(domain);
     }
     return &nodeBasedLabels[domain];
+}
+
+
+// ***************************************************************************
+//  Method: avtMiliMetaData::GetZoneLabelPositionsPtr
+//
+//  Purpose:
+//      Get a const pointer to the zone label positions.
+//
+//  Arguments: 
+//      domain    The domain of interest.  
+//
+//  Returns:
+//      If valid, a const pointer to the zone label position info. Otherwise,
+//      NULL. 
+//           
+//  Programmer: Alister Maguire
+//  Creation:   Jan 15, 2019
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+const LabelPositionInfo *
+avtMiliMetaData::GetZoneLabelPositionsPtr(int domain)
+{
+    if (domain < 0 || domain >= numDomains)
+    { 
+        return &zoneLabelPositions[domain];
+    }
+    return NULL;
+}
+
+
+// ***************************************************************************
+//  Method: avtMiliMetaData::GetNodeLabelPositionsPtr
+//
+//  Purpose:
+//      Get a const pointer to the node label positions.
+//
+//  Arguments: 
+//      domain    The domain of interest.  
+//
+//  Returns:
+//      If valid, a const pointer to the zone label position info. Otherwise,
+//      NULL. 
+//           
+//  Programmer: Alister Maguire
+//  Creation:   Jan 15, 2019
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+const LabelPositionInfo*
+avtMiliMetaData::GetNodeLabelPositionsPtr(int domain)
+{
+    if (domain < 0 || domain >= numDomains)
+    { 
+        return &nodeLabelPositions[domain];
+    }
+    return NULL;
 }
 
 

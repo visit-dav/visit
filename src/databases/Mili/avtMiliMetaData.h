@@ -71,6 +71,20 @@ typedef struct SubrecInfo
     std::vector< intVector > dataBlockRanges;   
 } SubrecInfo;
 
+//
+// Info needed by the vtkLabel class. 
+//
+typedef struct LabelPositionInfo
+{
+    int          numBlocks;
+    //TODO: best way to handle names?
+    std::string  shortName;
+    intVector    rangesBegin;      
+    intVector    rangesEnd;
+    intVector    idsBegin;
+    intVector    idsEnd;
+} LabelPositionInfo;
+
 
 // ****************************************************************************
 //  Class: MiliVariableMetaData
@@ -253,11 +267,16 @@ class MiliClassMetaData
     ClassType                         GetClassType(void)
                                         { return classType; };
 
-    void                              SetConnectivityOffset(int dom, 
-                                                            int offset);
-    int                               GetConnectivityOffset(int dom);
+    void                              SetConnectivityOffset(int, 
+                                                            int);
+    int                               GetConnectivityOffset(int);
 
-    void                              PopulateLabelIds(int, int *);
+    void                              PopulateLabelIds(int, 
+                                                       int *,
+                                                       int,
+                                                       int *);
+
+    const LabelPositionInfo          *GetLabelPositionInfoPtr(int);
 
     bool                              GetElementLabels(int, stringVector &);
 
@@ -271,14 +290,18 @@ class MiliClassMetaData
 
     void                              GenerateElementLabels(int);
 
+    void                              PopulateLabelPositions(int, int, int *);
+
     std::string                       longName;
     std::string                       shortName;
     int                               superClassId;
 
+    std::vector<LabelPositionInfo>    labelPositions;
     std::vector< intVector >          labelIds;
     std::vector< stringVector >       elementLabels;
     boolVector                        labelsGenerated;
     intVector                         maxLabelLengths;
+
     stringVector                      variables;
     intVector                         numDomainElements;
     intVector                         connectivityOffset;
@@ -397,8 +420,10 @@ class avtMiliMetaData
     int                                GetNumMiliCellTypes(void)
                                          { return numMiliCellTypes; };
 
-    stringVector                      *GetZoneBasedLabelsPtr(int);
-    stringVector                      *GetNodeBasedLabelsPtr(int);
+    const stringVector                *GetZoneBasedLabelsPtr(int);
+    const stringVector                *GetNodeBasedLabelsPtr(int);
+    const LabelPositionInfo           *GetZoneLabelPositionsPtr(int);
+    const LabelPositionInfo           *GetNodeLabelPositionsPtr(int);
 
     int                                GetMaxZoneLabelLength(int);
     int                                GetMaxNodeLabelLength(int);
@@ -431,6 +456,9 @@ class avtMiliMetaData
 
     std::vector <stringVector >        zoneBasedLabels;
     std::vector <stringVector >        nodeBasedLabels;
+    std::vector<LabelPositionInfo>     zoneLabelPositions;
+    std::vector<LabelPositionInfo>     nodeLabelPositions;
+
     intVector                          maxZoneLabelLengths;
     intVector                          maxNodeLabelLengths;
     boolVector                         zoneLabelsGenerated;
