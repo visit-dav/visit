@@ -42,6 +42,7 @@
 
 #include <avtSiloOptions.h>
 
+#include <snprintf.h>
 #include <DBOptionsAttributes.h>
 
 #include <string>
@@ -143,6 +144,27 @@ GetSiloWriteOptions(void)
     rv->SetEnumStrings(SILO_WROPT_DRIVER, drivers);
     rv->SetBool(SILO_WROPT_CKSUMS, false);
     rv->SetString(SILO_WROPT_COMPRESSION, "");
+
+    char helpStr[512];
+    SNPRINTF(helpStr, sizeof(helpStr),
+        "<p><b>%s</b>:"
+        "<ul>"
+        "<li>PDB: Silo library will create a PDB file.</li>"
+        "<li>HDF5: Silo library will create an HDF5 file.</li>"
+        "</ul>"
+        "<p><b>%s</b>:"
+        "<ul>"
+        "<li>Valid only for HDF5 files.</li>"
+        "<li>Enables HDF5's Fletcher32 checksum filter.</li>"
+        "</ul>"
+        "<p><b>%s</b>:"
+        "Enter any compression string that would be valid to pass to Silo's"
+        "<a href=\"https://wci.llnl.gov/content/assets/docs/simulation/computer-codes/silo/LLNL-SM-654357.pdf#page=49\">"
+        "DBSetCompression()</a> method.",
+        SILO_WROPT_DRIVER,
+        SILO_WROPT_CKSUMS,
+        SILO_WROPT_COMPRESSION);
+    rv->SetHelp(helpStr);
 
     return rv;
 }
