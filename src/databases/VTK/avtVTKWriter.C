@@ -107,7 +107,6 @@ avtVTKWriter::avtVTKWriter(DBOptionsAttributes *atts) :stem(), meshName(), fileN
     doBinary = false;
     doXML = false;
     nblocks = 0;
-    tetrahedralize = false;
 
     switch(atts->GetEnum("FileFormat"))
     {
