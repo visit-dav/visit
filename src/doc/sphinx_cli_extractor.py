@@ -595,7 +595,26 @@ class AttributesTable(Table):
               
         """
         r_one = group_one.split('=')
-        self.insert_two_columns(r_one[0], group_two)
+        
+        #
+        # Prep the default option. White space needs to be stripped. Also, some defaults
+        # will come in with their "full name", such as "colorControlPoints.Linear" instead
+        # of just "Linear". So we split it on the period too and use the last string in the
+        # split list if it exists.
+        #
+        default_stripped = r_one[1].strip()
+        period_split = default_stripped.split('.')
+        default_option = period_split[-1]
+        
+        #
+        # Find the default option within the string of options add add asterisks around it
+        # for italics
+        #
+        ndx1 = group_two.find(default_option)
+        if ndx1 != -1:
+            ndx2 = ndx1 + len(default_option)
+            group_two_mod = group_two[:ndx1] + '**' + group_two[ndx1:ndx2] + '**' + group_two[ndx2:]
+        self.insert_two_columns(r_one[0], group_two_mod)
     
     def row_from_basic_match(self, group_one, group_two):
         """
