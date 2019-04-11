@@ -125,70 +125,53 @@ Opacity
 """""""
 
 You can make the Pseudocolor plot transparent by changing its opacity using the
-**Opacity** slider. Moving the opacity slider to the left makes the plot more
-transparent while moving the slider to the right makes the plot more opaque.
-The default is fully opaque.
-
-Changing the point size
-"""""""""""""""""""""""
-
-Some databases scalar variables defined on meshes of topological dimension zero.
-When these point variables are 2D, VisIt draws them using small points that are
-colored by the value of the variable. When a point variable is 3D, VisIt draws
-it as a set of 3D cubes colored by the value of the variable. To control how
-large the points appear, change the point size attribute by typing a new number
-into the **Point size** text field. Larger point size values result in larger
-points in the visualization window. The point size can also be scaled by a
-scalar variable if you check the **Scale point size by variable** check box and
-select a new scalar variable from the **Variable** button. The value ``default``
-must be replaced with the name of another scalar variable if you want VisIt to
-scale the points with a variable other than the one being plotted by the
-Pseudocolor plot.
-
-Changing the point type
-"""""""""""""""""""""""
-
-.. _pointtypes3:
-
-.. figure:: ../images/pointtypes.png
-
-   Color table button
-
-The Pseudocolor plot can use five different point types for drawing point meshes
-(see :numref:`Figure %s <pointtypes3>`). The Pseudocolor plot draws an object of the
-desired point type, scaled by the point size, for each point in a point mesh.
-Setting the point type has no effect if the plotted mesh is not a point mesh.
-The different point types are as follows: Box, Axis, Icosahedron, Point, and
-Sphere. To set the point type choose a new point type from the **Point Type**
-combo box. When the point type is set to Box, the Pseudocolor plot draws a small
-cube for each point in the point mesh. When the point type is set to Axis, the
-Pseudocolor plot draws there small axis-aligned planes for each point in the
-point mesh. When the point type is set to Icosahedron, the Pseudocolor plot
-draws small icosahedra at each point in the point mesh. When the point type
-is set to Point, the Pseudocolor plot uses flat quadrilateral points. When the
-point type is set to Sphere, the Pseudocolor plot uses flat quadrilateral
-points with an applied texture to make them look like spheres. In general,
-setting the point type to Point will cause the Pseudocolor plot to have the
-fastest rendering performance.
-
-Geometry smoothing
-""""""""""""""""""
-
-Sometimes visualization operations such as material interface reconstruction can
-alter mesh surfaces so they are pointy or distorted. The Pseudocolor plot
-provides an optional Geometry smoothing option to smooth out the mesh surfaces
-so they look better when the plot is visualized. Geometry smoothing is not done
-by default, you must click the **Fast** or **High** radio buttons to enable it.
-The **Fast** geometry smoothing setting smooths out the geometry a little while
-the **High** setting works produces smoother surfaces.
+**Opacity** dropdown. There are four options: 
+1. Fully opaque (the default), no transparency is applied.
+2. From color table, opacity values are obtained from the active color table
+for the plot.  If the color table doesn't support opacities, the plot will
+be fully opaque.
+3. Constant.  A constant opacity is applied everywhere. A slider is provided
+to modify the opacity value. Moving the opacity slider to the left makes the 
+plot more transparent while moving the slider to the right makes the 
+plot more opaque.
+4. Ramp.  Opacity is applied on a sliding scale ranging from fully transparent 
+(applied to the lowest values), to the opacity value chosen on the slider. If
+the the slider is fully to the right, then the maximum values being plotted
+will be fully opaque.
 
 Legend Behavior
 """""""""""""""
 
 The legend for the Pseudocolor plot is a color bar annotated with tick marks and
 numerical values. Below the color bar the minimum and maximum data values are
-also displayed. Setting the limits for the plot changes *only* the color-bar portion
-of the plot's legend. It *does not change* the *Min* and *Max* values printed
-just below the color bar. Those values will always display the original data's 
-minimum and maximum values, regardless of the limits set for the plot or the
-effect of any operators applied to the plot.
+also displayed. Setting the limits for the plot changes *only* the color-bar 
+portion of the plot's legend. It *does not change* the *Min* and *Max* values 
+printed just below the color bar. Those values will always display the original 
+data's minimum and maximum values, regardless of the limits set for the plot or 
+the effect of any operators applied to the plot.
+
+Geometry smoothing
+""""""""""""""""""
+
+Sometimes visualization operations such as material interface reconstruction can
+alter mesh surfaces so they are pointy or distorted. The Pseudocolor plot
+provides an optional Geometry smoothing option (on the bottom of the Geometry
+tab of the window :numref:`Figure %s <pseudocolorgeometrytab>`), to smooth out 
+the mesh surfaces so they look better when the plot is visualized. Geometry 
+smoothing is not done by default, you must click the **Fast** or **High** 
+radio buttons to enable it.  The **Fast** geometry smoothing setting smooths 
+out the geometry a little while the **High** setting works produces smoother 
+surfaces.
+
+.. _pseudocolorgeometrytab:
+
+.. figure:: ../images/pseudocolorwindow2.png
+
+   Pseudocolor plot attributes window, geometry tab
+
+Lines
+"""""
+
+The lines section can be useful when visualizing the results of a Poincare or
+Integral Curve operation.
+

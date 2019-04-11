@@ -57,3 +57,75 @@ For more information about
 In addition, many plots have options to control colors and
 transparency (opacity) of individual plot elements such as lines on
 the **Mesh plot** or contours on the **Contour plot**.
+
+Point type and size
+"""""""""""""""""""
+
+The Pseudocolor, Mesh and Scatter plots can use eight different point types
+for drawing point meshes (see :numref:`Figure %s <glyphtypes>`). Each of these
+plots will draw an object of the desired point type, scaled by the point size
+for each point in a point mesh. Setting the point type to anything other than
+**Point** will have no effect if the plotted mesh is not a point mesh.
+
+.. _glyphtypes:
+
+.. figure:: ../images/glyph_types2.png
+
+   Point types: Box, Axis, Icosahedron, Octahedron, Tetrahedron, Sphere Geometry, Point, Sphere
+
+To set the point type choose a new point type from the **Point type** combo 
+box. 
+
+.. _pointtypecombo:
+
+.. figure:: ../images/point_type_dropdown.png
+
+   Point type combo box, expanded
+
+The following table describes the shape associated with each point type
+for 2D and 3D.
+
++------------------+------------------------+-----------------------+
+| Point type       |  2D shape              | 3D Shape              |
+|                  |                        |                       |
++==================+========================+=======================+
+| Box              |  Square                | Cube                  |
+|                  |                        |                       |
++------------------+------------------------+-----------------------+
+| Axis             |  2 Axis aligned lines  | 3 Axis Aligned planes |
+|                  |                        |                       |
++------------------+------------------------+-----------------------+
+| Icosahedron      |  Dodecagon             | Icosahedron           |
+|                  |                        |                       |
++------------------+------------------------+-----------------------+
+| Octahedron       |  Diamond               | Octahedron            |
+|                  |                        |                       |
++------------------+------------------------+-----------------------+
+| Sphere Geometry  |  Dodecagon             | Sphere                |
+|                  |                        |                       |
++------------------+------------------------+-----------------------+
+| Point            |  Quadrilateral         | Quadrilateral         |
+|                  |                        |                       |
++------------------+------------------------+-----------------------+
+| Sphere           |  Quadrilateral         | Quadrilateral         |
+|                  |  textured to look like | textured to look like |
+|                  |  a sphere              | a sphere              |
++------------------+------------------------+-----------------------+
+
+
+In general, setting the **Point type** to *Point* will cause the plot to 
+have the fastest rendering performance.
+
+
+To control how large the points appear, enter a new number into the 
+**Point size**  text field. Larger point size values result in larger points 
+in the visualization window. For *Point* type, the value is specified as
+an integer representing pixels, for all others, the value is a floating point
+value representing relative size in object space..
+
+For Mesh and Pseudocolor plots, the point size can also be scaled by a scalar 
+variable if you check the **Scale point size by variable** check box and
+select a new scalar variable from the **Variable** button. The value ``default``
+must be replaced with the name of another scalar variable if you want VisIt to
+scale the points with a variable other than the one being plotted.
+
