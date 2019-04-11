@@ -97,7 +97,8 @@ class Table(object):
                 is_ext        = False
                 col_one       = col_one.strip()
                 count         = len(words[0])
-                col_two       = " | %s%s" % (italic_insert, words[0])
+                # col_two       = " | %s%s" % (italic_insert, words[0])
+                col_two       = " %s%s" % (italic_insert, words[0])
 
                 for i in range(1, len(words)):
 
@@ -112,7 +113,8 @@ class Table(object):
                         nxt_row.is_extension = is_ext
                         self.table_rows.append(nxt_row)
                         col_one = ""
-                        col_two = " | %s%s" % (italic_insert, words[i]) 
+                        #col_two = " | %s%s" % (italic_insert, words[i])
+                        col_two = " %s%s" % (italic_insert, words[i])
                         count   = len(words[i])
                         if not is_ext:
                             is_ext = True
@@ -596,6 +598,7 @@ class AttributesTable(Table):
         """
         r_one = group_one.split('=')
         self.insert_two_columns(r_one[0], r_one[1])
+        #self.insert_two_columns(r_one[0], group_two)
 
         g_two = group_two.split(',')
         g_two = [el.strip() for el in g_two]
