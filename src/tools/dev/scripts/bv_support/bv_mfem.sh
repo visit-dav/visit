@@ -72,8 +72,14 @@ function bv_mfem_host_profile
             fi
         fi
 
+        CONDUIT_LIBDEP=""
+        if [[ "$DO_CONDUIT" == "yes" ]] ; then
+            CONDUIT_LIBDEP="\${VISIT_CONDUIT_LIBDEP}"
+        fi
+
+
         echo \
-            "VISIT_OPTION_DEFAULT(VISIT_MFEM_LIBDEP $ZLIB_LIBDEP TYPE STRING)" \
+            "VISIT_OPTION_DEFAULT(VISIT_MFEM_LIBDEP $CONDUIT_LIBDEP $ZLIB_LIBDEP TYPE STRING)" \
                 >> $HOSTCONF
     fi
 }
