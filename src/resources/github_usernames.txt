@@ -1,8 +1,9 @@
+acbauer, Andy Bauer, DAAC DoD
 allen, Allen Sanderson, U of Utah SCI
 biagas, Kathleen Biagas, LLNL
+BradWhitlock, Brad Whitlock, Intelligent Light
 brugger, Eric Brugger, LLNL
 cyrush, Cyrus Harrison, LLNL
-rusu1, Eddie Rusu, LLNL
-acbauer, Andy Bauer, DAAC DoD
-BradWhitlock, Brad Whitlock, Intelligent Light
 griffin28, Kevin Griffin, LLNL
+spetruzza, Steve Petruzza, U of Utah SCI
+rusu1, Eddie Rusu, LLNL
