@@ -389,13 +389,13 @@ function verify_checksum_by_lookup
             md5sum_varname=${varbase}_MD5_CHECKSUM
             sha256_varname=${varbase}_SHA256_CHECKSUM
             sha512_varname=${varbase}_SHA512_CHECKSUM
-            if [ ! -z ${!sha512_varname+x} && ! -z "${sha512_varname}" ]; then
+            if [[ ! -z ${!sha512_varname+x} && ! -z "${!sha512_varname}" ]]; then
                 verify_checksum SHA512 ${!sha512_varname} $dlfile
                 return $?
-            elif [ ! -z ${!sha256_varname+x} && ! -z "${sha256_varname}" ]; then
+            elif [[ ! -z ${!sha256_varname+x} && ! -z "${!sha256_varname}" ]]; then
                 verify_checksum SHA256 ${!sha256_varname} $dlfile
                 return $?
-            elif [ ! -z ${!md5sum_varname+x} && ! -z "${md5sum_varname}" ]; then
+            elif [[ ! -z ${!md5sum_varname+x} && ! -z "${!md5sum_varname}" ]]; then
                 verify_checksum MD5 ${!md5sum_varname} $dlfile
                 return $?
             fi
