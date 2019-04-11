@@ -6760,7 +6760,7 @@ NetworkManager::RenderSetup(avtImageType imgT, int windowID, intVector& plotIds,
         }
     }
 
-    // farce transparency actor recalulate it's transparency
+    // force transparency actor recalulate it's transparency
     avtTransparencyActor* tact = viswin->GetTransparencyActor();
     tact->InvalidateTransparencyCache();
 

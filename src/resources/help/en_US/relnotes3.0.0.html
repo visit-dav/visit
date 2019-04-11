@@ -82,6 +82,7 @@ SetBackendType("VTKm")
   <li>An OpenEXR reader was added to VisIt.</li>
   <li>An ffp database reader was added to VisIt courtesy of Olivier Cessenat.</li>
   <li>The Curve2D reader can now read curve files with Matlab-style comments.</li>
+  <li>VTK writer was enhanced to optionally triangulate (2D) or tetrahedralize (3D) any UNstructured mesh output.</li>
 </ul>
 
 <a name="Plot_changes"></a>
@@ -91,6 +92,7 @@ SetBackendType("VTKm")
   <li>The Vector plot supports plot animation. The vector glyphs alternate between 50% and 100% of their glyph length while the plot animates, helping to see features in the vector field.</li>
   <li>The Curve plot supports plot animation. The line and time cue features in the plot can respond to plot animation and they advance from left to right while the plot animates.</li>
   <li>When Min or Max is chosen for Pseudocolor plot, a color can now be chosen for those values below the minimum or above the maximum.</li>
+  <li>The setting for Label Plot's textHeight has been replaced with a Font Scale.  Other options affecting font were added: Font name, Bold, Italic. Attempts were made to ensure old settings from python script, session file snd configuration files would be replicated as closely as possible, however the new label size may not exactly match how things looked in previous versions of VisIt.</li>
 </ul>
 
 <a name="Operator_changes"></a>
@@ -102,7 +104,7 @@ SetBackendType("VTKm")
 <a name="Expression_changes"></a>
 <p><b><font size="4">Changes to VisIt's expression language in version 3.0</font></b></p>
 <ul>
-  <li>The <i>conn_cmfe</i> expression was enhanced to handle mapping cell data between point meshes and polyhedral meshes where the number of points and polyhedra match. This didn't work previously because polyhedra are split into zoo elements, which results in the number of cells not matching. Now the splitting is taken into account.</li>
+  <li>The <i>conn_cmfe</i> expression was enhanced to handle mapping cell data between point meshes and polygonal or polyhedral meshes where the number of points and polygons or polyhedra match. This didn't work previously in the case of polygons because while the number of cells matched the number of points didn't. Now the number of points is ignored. It didn't work in the case of polyhedral meshes because polyhedra are split into zoo elements, which results in the number of cells not matching. Now the splitting is taken into account.</li>
 </ul>
 
 <a name="Query_changes"></a>
@@ -118,6 +120,7 @@ SetBackendType("VTKm")
 <p><b><font size="4">Other bugs fixed in version 3.0</font></b></p>
 <ul>
   <li>Corrected a bug where VisIt would crash rendering transparent geometry on the Cooley system at the Argonne Leadership Computing Facility.</li>
+  <li>Corrected a bug where VisIt would randomly crash rendering transparent geometry due to memory corruption.</li>
   <li><i>ANNOTATION_INT</i> facelists with faces appearing in more than one sublist are now handled correctly.</li>
   <li>Corrected a bug that caused empty plots when using the <i>OnionPeel</i> operator with data containing enumerated subsets.</li>
   <li>Corrected a few usability issues for the <i>Save Movie Wizard</i> including: 
@@ -140,6 +143,8 @@ SetBackendType("VTKm")
 <p><b><font size="4">Build features added in version 3.0</font></b></p>
 <ul>
   <li>Added the ability to create RPM packages via --create-rpm in build_visit.</li>
+  <li>Improved checksum checking of downloads such that python sub-modules are
+    also checked and md5 sums are handled correctly on OSX.</li>
 </ul>
 
 <a name="Dev_changes"></a>

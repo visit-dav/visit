@@ -148,6 +148,8 @@ avtXYZWriter::WriteChunk(vtkDataSet *ds, int chunk)
 
     std::ofstream  out;
     out.open(filename.c_str());
+    out << std::scientific << std::setprecision(8);
+    
 
     // Collect up the data arrays, and find the atomic number one
 #define MAX_XYZ_VARS 6
@@ -193,7 +195,7 @@ avtXYZWriter::WriteChunk(vtkDataSet *ds, int chunk)
         double *coord = ds->GetPoint((vtkIdType)a);
 
         // Get a viable atomic number
-        int atomicNumber = 0;
+        int atomicNumber = -1;
         if (element)
             atomicNumber = element->GetTuple1((vtkIdType)a);
         if (atomicNumber < 0 || atomicNumber > MAX_ELEMENT_NUMBER)

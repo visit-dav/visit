@@ -2636,6 +2636,10 @@ QvisGUIApplication::CustomizeAppearance(bool notify)
 //   Brad Whitlock, Wed Oct  6 12:14:21 PDT 2010
 //   I made it call SetWindowArea for this class.
 //
+//   Kevin Griffin, Tue Apr  9 17:23:47 PDT 2019
+//   Invoked MoveAndResizeMainWindow using QTimer::singleShot to make sure the
+//   resize operation is performed after this widget is laid out.
+//
 // ****************************************************************************
 
 void
@@ -2647,7 +2651,7 @@ QvisGUIApplication::SetOrientation(int orientation)
     // Tell the main window to set its orientation.
     //
     mainWin->SetOrientation(orientation);
-    MoveAndResizeMainWindow(orientation);
+    QTimer::singleShot(0, this, SLOT(MoveAndResizeMainWindow(orientation)));
 
     //
     // Tell the viewer to move its vis windows.
@@ -3086,6 +3090,10 @@ QvisGUIApplication::AddViewerSpaceArguments()
 //   Brad Whitlock, Thu Sep 14 13:10:36 PDT 2017
 //   Cinema support.
 //
+//   Kevin Griffin, Tue Apr  9 17:23:47 PDT 2019
+//   Invoked MoveAndResizeMainWindow using QTimer::singleShot to make sure the
+//   resize operation is performed after this widget is laid out.
+//
 // ****************************************************************************
 
 void
@@ -3150,7 +3158,7 @@ QvisGUIApplication::CreateMainWindow()
     // Move and resize the GUI so that we can get accurate size and
     // position information from it.
     mainWin->SetOrientation(orientation);
-    MoveAndResizeMainWindow(orientation);
+    QTimer::singleShot(0, this, SLOT(MoveAndResizeMainWindow(orientation)));
 }
 
 // ****************************************************************************

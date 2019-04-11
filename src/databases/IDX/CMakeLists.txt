@@ -15,8 +15,8 @@ IDXPluginInfo.C
 SET(LIBM_SOURCES
 IDXMDServerPluginInfo.C
 ${COMMON_SOURCES}
-pidx_idx_io.cpp
-uintah_utils.cpp
+pidx_idx_io.C
+uintah_utils.C
 avtIDXFileFormat.C
 avtIDXOptions.C
 )
@@ -24,8 +24,8 @@ avtIDXOptions.C
 SET(LIBE_SOURCES
 IDXEnginePluginInfo.C
 ${COMMON_SOURCES}
-pidx_idx_io.cpp
-uintah_utils.cpp
+pidx_idx_io.C
+uintah_utils.C
 avtIDXFileFormat.C
 avtIDXOptions.C
 )
@@ -56,27 +56,17 @@ ${VISIT_INCLUDE_DIR}/visit_vtk/lightweight
 ${VTK_INCLUDE_DIRS}
 )
 
-# Read pidx_config.h to see if we need to link MPI
-FILE(STRINGS "${PIDX_INCLUDE_DIR}/PIDX_config.h" config)
-LIST(FIND config "#define PIDX_HAVE_MPI 1" have_mpi)
-IF (have_mpi GREATER 0)
-  IF (NOT MPI_C_INCLUDE_PATH)
-    FIND_PACKAGE(MPI REQUIRED)
-  ENDIF()
+### Note: This reader always requires MPI
 
-  IF (MPI_C_INCLUDE_PATH)
-    SET(PIDX_INCLUDE_DIR ${PIDX_INCLUDE_DIR} ${MPI_C_INCLUDE_PATH})
-    SET(PIDX_MPI_LIBS ${MPI_C_LIBRARIES})
-  ELSE()
-    MESSAGE("PIDX was configured with MPI support, but we could not locate MPI on your system!")
-  ENDIF()
-ENDIF()  
+# Use same MPI libs as Visit
+IF(VISIT_PARALLEL)
+  SET(PIDX_LIBRARIES ${PIDX_LIBRARIES} ${VISIT_PARALLEL_LIBS} zfp)
+ENDIF()
 
-SET(PIDX_LIBRARIES ${PIDX_LIBRARIES} ${PIDX_MPI_LIBS} zfp)
-INCLUDE_DIRECTORIES(${PIDX_INCLUDE_DIR})
+# Use ${VISIT_PARALLEL_RPATH} because VISIT_PARALLEL_INCLUDE is not set
+INCLUDE_DIRECTORIES(${PIDX_INCLUDE_DIR} ${VISIT_PARALLEL_RPATH}/../include)
 
 SET(PIDX_LIBRARY_DIR ${PIDX_DIR}/lib)
-#message(${PIDX_LIBRARY_DIR})
 
 LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} ${PIDX_LIBRARY_DIR} )
 
