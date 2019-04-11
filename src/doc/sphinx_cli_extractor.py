@@ -849,7 +849,7 @@ def attributes_to_sphinx(atts):
     # will return them.
     #
     attr_names = {}
-    for func in attrlist:
+    for func in atts:
         aname = attr_matcher.match(func)
         attr_names[aname.group(2)] = func
     
