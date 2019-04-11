@@ -138,12 +138,12 @@ Postfix:
 Target: xml2atts
 Initialization: textFont1
     textFont1.GetColor().SetRgb(255, 0, 0);
-    textFont1.SetScale(0.04);
+    textFont1.SetScale(4);
 
 
 Initialization: textFont2
     textFont2.GetColor().SetRgb(0, 0, 255);
-    textFont2.SetScale(0.04);
+    textFont2.SetScale(4);
 
 
 Function: ChangesRequireRecalculation
