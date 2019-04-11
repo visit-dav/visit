@@ -40,8 +40,8 @@ these attributes is printed in italic.
     +-------------------------+----------------------------+
     | **Attribute**           | **Default/Allowed Values** |
     +-------------------------+----------------------------+
-    | animationMode           |  ReversePlayMode,          |
-    |                         |  **StopMode**,             |
+    | animationMode           |  **StopMode**,             |
+    |                         |  ReversePlayMode,          |
     |                         |  PlayMode                  |
     +-------------------------+----------------------------+
     | pipelineCachingMode     | 0                          |
@@ -50,8 +50,8 @@ these attributes is printed in italic.
     +-------------------------+----------------------------+
     | timeout                 | 1                          |
     +-------------------------+----------------------------+
-    | playbackMode            |  Looping,                  |
-    |                         |  **PlayOnce**, Swing       |
+    | playbackMode            |  **PlayOnce**,             |
+    |                         |  Looping, Swing            |
     +-------------------------+----------------------------+
 
 |
@@ -73,15 +73,15 @@ these attributes is printed in italic.
     +--------------------------------------------------+----------------------------+
     | axes2D.lineWidth                                 | 0                          |
     +--------------------------------------------------+----------------------------+
-    | axes2D.tickLocation                              |  Inside, **Outside**,      |
+    | axes2D.tickLocation                              |  **Outside**, Inside,      |
     |                                                  |  Both                      |
     +--------------------------------------------------+----------------------------+
-    | axes2D.tickAxes                                  |  Off, Bottom, Left,        |
-    |                                                  |  **BottomLeft**, All       |
+    | axes2D.tickAxes                                  |  **BottomLeft**, Off,      |
+    |                                                  |  Bottom, Left, All         |
     +--------------------------------------------------+----------------------------+
     | axes2D.xAxis.title.visible                       | 1                          |
     +--------------------------------------------------+----------------------------+
-    | axes2D.xAxis.title.font.font                     |  Arial, **Courier**,       |
+    | axes2D.xAxis.title.font.font                     |  **Courier**, Arial,       |
     |                                                  |  Times                     |
     +--------------------------------------------------+----------------------------+
     | axes2D.xAxis.title.font.scale                    | 1                          |
@@ -104,7 +104,7 @@ these attributes is printed in italic.
     +--------------------------------------------------+----------------------------+
     | axes2D.xAxis.label.visible                       | 1                          |
     +--------------------------------------------------+----------------------------+
-    | axes2D.xAxis.label.font.font                     |  Arial, **Courier**,       |
+    | axes2D.xAxis.label.font.font                     |  **Courier**, Arial,       |
     |                                                  |  Times                     |
     +--------------------------------------------------+----------------------------+
     | axes2D.xAxis.label.font.scale                    | 1                          |
@@ -133,7 +133,7 @@ these attributes is printed in italic.
     +--------------------------------------------------+----------------------------+
     | axes2D.yAxis.title.visible                       | 1                          |
     +--------------------------------------------------+----------------------------+
-    | axes2D.yAxis.title.font.font                     |  Arial, **Courier**,       |
+    | axes2D.yAxis.title.font.font                     |  **Courier**, Arial,       |
     |                                                  |  Times                     |
     +--------------------------------------------------+----------------------------+
     | axes2D.yAxis.title.font.scale                    | 1                          |
@@ -156,7 +156,7 @@ these attributes is printed in italic.
     +--------------------------------------------------+----------------------------+
     | axes2D.yAxis.label.visible                       | 1                          |
     +--------------------------------------------------+----------------------------+
-    | axes2D.yAxis.label.font.font                     |  Arial, **Courier**,       |
+    | axes2D.yAxis.label.font.font                     |  **Courier**, Arial,       |
     |                                                  |  Times                     |
     +--------------------------------------------------+----------------------------+
     | axes2D.yAxis.label.font.scale                    | 1                          |
@@ -422,11 +422,11 @@ these attributes is printed in italic.
     +--------------------------------------------------+----------------------------+
     | foregroundColor                                  | (0, 0, 0, 255)             |
     +--------------------------------------------------+----------------------------+
-    | gradientBackgroundStyle                          |  TopToBottom,              |
+    | gradientBackgroundStyle                          |  **Radial**,               |
+    |                                                  |  TopToBottom,              |
     |                                                  |  BottomToTop,              |
     |                                                  |  LeftToRight,              |
-    |                                                  |  RightToLeft,              |
-    |                                                  |  **Radial**                |
+    |                                                  |  RightToLeft               |
     +--------------------------------------------------+----------------------------+
     | gradientColor1                                   | (0, 0, 255, 255)           |
     +--------------------------------------------------+----------------------------+
@@ -599,8 +599,8 @@ these attributes is printed in italic.
     +----------------------+-----------------------------+
     | **Attribute**        | **Default/Allowed Values**  |
     +----------------------+-----------------------------+
-    | colorType            |  ColorBySingleColor,        |
-    |                      |  **ColorByMultipleColors**, |
+    | colorType            |  **ColorByMultipleColors**, |
+    |                      |  ColorBySingleColor,        |
     |                      |  ColorByColorTable          |
     +----------------------+-----------------------------+
     | colorTableName       | "Default"                   |
@@ -718,7 +718,7 @@ these attributes is printed in italic.
     +----------------------------------+----------------------------+
     | planeInverse                     | 0                          |
     +----------------------------------+----------------------------+
-    | planeToolControlledClipPlane     |  None, **Plane1**,         |
+    | planeToolControlledClipPlane     |  **Plane1**, None,         |
     |                                  |  Plane2, Plane3            |
     +----------------------------------+----------------------------+
     | center                           | (0, 0, 0)                  |
@@ -745,9 +745,8 @@ these attributes is printed in italic.
     +--------------------+----------------------------+
     | normal             | (0, 0, 1)                  |
     +--------------------+----------------------------+
-    | representation     |  ThreeD,                   |
-    |                    |  **Flattened**,            |
-    |                    |  R_Theta                   |
+    | representation     |  **Flattened**,            |
+    |                    |  ThreeD, R_Theta           |
     +--------------------+----------------------------+
     | upAxis             | (0, 1, 0)                  |
     +--------------------+----------------------------+
@@ -956,8 +955,8 @@ these attributes is printed in italic.
     +--------------------------------------------------+-----------------------------+
     | changedColors                                    | ()                          |
     +--------------------------------------------------+-----------------------------+
-    | colorType                                        |  ColorBySingleColor,        |
-    |                                                  |  **ColorByMultipleColors**, |
+    | colorType                                        |  **ColorByMultipleColors**, |
+    |                                                  |  ColorBySingleColor,        |
     |                                                  |  ColorByColorTable          |
     +--------------------------------------------------+-----------------------------+
     | colorTableName                                   | "Default"                   |
@@ -1036,11 +1035,11 @@ these attributes is printed in italic.
     | newCoord1     |  **Coord1**, Coord2,       |
     |               |  Coord3                    |
     +---------------+----------------------------+
-    | newCoord2     |  Coord1, **Coord2**,       |
+    | newCoord2     |  **Coord2**, Coord1,       |
     |               |  Coord3                    |
     +---------------+----------------------------+
-    | newCoord3     |  Coord1, Coord2,           |
-    |               |  **Coord3**                |
+    | newCoord3     |  **Coord3**, Coord1,       |
+    |               |  Coord2                    |
     +---------------+----------------------------+
 
 |
@@ -1187,7 +1186,7 @@ these attributes is printed in italic.
     +-----------------------------+----------------------------+
     | numDimensions               | **One**, Two, Three        |
     +-----------------------------+----------------------------+
-    | dim1BinBasedOn              | X, Y, Z, **Variable**      |
+    | dim1BinBasedOn              | **Variable**, X, Y, Z      |
     +-----------------------------+----------------------------+
     | dim1Var                     | "default"                  |
     +-----------------------------+----------------------------+
@@ -1199,7 +1198,7 @@ these attributes is printed in italic.
     +-----------------------------+----------------------------+
     | dim1NumBins                 | 50                         |
     +-----------------------------+----------------------------+
-    | dim2BinBasedOn              | X, Y, Z, **Variable**      |
+    | dim2BinBasedOn              | **Variable**, X, Y, Z      |
     +-----------------------------+----------------------------+
     | dim2Var                     | "default"                  |
     +-----------------------------+----------------------------+
@@ -1211,7 +1210,7 @@ these attributes is printed in italic.
     +-----------------------------+----------------------------+
     | dim2NumBins                 | 50                         |
     +-----------------------------+----------------------------+
-    | dim3BinBasedOn              | X, Y, Z, **Variable**      |
+    | dim3BinBasedOn              | **Variable**, X, Y, Z      |
     +-----------------------------+----------------------------+
     | dim3Var                     | "default"                  |
     +-----------------------------+----------------------------+
@@ -1312,7 +1311,7 @@ these attributes is printed in italic.
     +-----------------+----------------------------+
     | **Attribute**   | **Default/Allowed Values** |
     +-----------------+----------------------------+
-    | useXYLimits     |  Never, **Auto**,          |
+    | useXYLimits     |  **Auto**, Never,          |
     |                 |  Always                    |
     +-----------------+----------------------------+
     | limitsMode      |  **OriginalData**,         |
@@ -1498,8 +1497,8 @@ these attributes is printed in italic.
     +-------------------------+-----------------------------+
     | **Attribute**           | **Default/Allowed Values**  |
     +-------------------------+-----------------------------+
-    | colorType               |  ColorBySingleColor,        |
-    |                         |  **ColorByMultipleColors**, |
+    | colorType               |  **ColorByMultipleColors**, |
+    |                         |  ColorBySingleColor,        |
     |                         |  ColorByColorTable          |
     +-------------------------+-----------------------------+
     | colorTableName          | "Default"                   |
@@ -1528,12 +1527,12 @@ these attributes is printed in italic.
     +-------------------------+-----------------------------+
     | pointSize               | 0.05                        |
     +-------------------------+-----------------------------+
-    | pointType               |  Box, Axis,                 |
+    | pointType               |  **Point**, Box, Axis,      |
     |                         |  Icosahedron,               |
     |                         |  Octahedron,                |
     |                         |  Tetrahedron,               |
     |                         |  SphereGeometry,            |
-    |                         |  **Point**, Sphere          |
+    |                         |  Sphere                     |
     +-------------------------+-----------------------------+
     | pointSizeVarEnabled     | 0                           |
     +-------------------------+-----------------------------+
@@ -1646,7 +1645,7 @@ these attributes is printed in italic.
     +--------------------------------------+----------------------------+
     | userRestoreSessionFile               | 0                          |
     +--------------------------------------+----------------------------+
-    | precisionType                        |  Float, **Native**,        |
+    | precisionType                        |  **Native**, Float,        |
     |                                      |  Double                    |
     +--------------------------------------+----------------------------+
     | backendType                          | **VTK**, VTKM              |
@@ -1662,52 +1661,52 @@ these attributes is printed in italic.
 --------------------------------------
 |
 
-    +------------------------+----------------------------+
-    | **Attribute**          | **Default/Allowed Values** |
-    +------------------------+----------------------------+
-    | basedOn                |  ManyVarsForSingleZone,    |
-    |                        |  **ManyZonesForSingleVar** |
-    +------------------------+----------------------------+
-    | histogramType          |  **Frequency**,            |
-    |                        |  Weighted, Variable        |
-    +------------------------+----------------------------+
-    | weightVariable         | "default"                  |
-    +------------------------+----------------------------+
-    | limitsMode             |  **OriginalData**,         |
-    |                        |  CurrentPlot               |
-    +------------------------+----------------------------+
-    | minFlag                | 0                          |
-    +------------------------+----------------------------+
-    | maxFlag                | 0                          |
-    +------------------------+----------------------------+
-    | min                    | 0                          |
-    +------------------------+----------------------------+
-    | max                    | 1                          |
-    +------------------------+----------------------------+
-    | numBins                | 32                         |
-    +------------------------+----------------------------+
-    | domain                 | 0                          |
-    +------------------------+----------------------------+
-    | zone                   | 0                          |
-    +------------------------+----------------------------+
-    | useBinWidths           | 1                          |
-    +------------------------+----------------------------+
-    | outputType             | Curve, **Block**           |
-    +------------------------+----------------------------+
-    | lineWidth              | 0                          |
-    +------------------------+----------------------------+
-    | color                  | (200, 80, 40, 255)         |
-    +------------------------+----------------------------+
-    | dataScale              |  **Linear**, Log,          |
-    |                        |  SquareRoot                |
-    +------------------------+----------------------------+
-    | binScale               |  **Linear**, Log,          |
-    |                        |  SquareRoot                |
-    +------------------------+----------------------------+
-    | normalizeHistogram     | 0                          |
-    +------------------------+----------------------------+
-    | computeAsCDF           | 0                          |
-    +------------------------+----------------------------+
+    +------------------------+-----------------------------+
+    | **Attribute**          | **Default/Allowed Values**  |
+    +------------------------+-----------------------------+
+    | basedOn                |  **ManyZonesForSingleVar**, |
+    |                        |  ManyVarsForSingleZone      |
+    +------------------------+-----------------------------+
+    | histogramType          |  **Frequency**,             |
+    |                        |  Weighted, Variable         |
+    +------------------------+-----------------------------+
+    | weightVariable         | "default"                   |
+    +------------------------+-----------------------------+
+    | limitsMode             |  **OriginalData**,          |
+    |                        |  CurrentPlot                |
+    +------------------------+-----------------------------+
+    | minFlag                | 0                           |
+    +------------------------+-----------------------------+
+    | maxFlag                | 0                           |
+    +------------------------+-----------------------------+
+    | min                    | 0                           |
+    +------------------------+-----------------------------+
+    | max                    | 1                           |
+    +------------------------+-----------------------------+
+    | numBins                | 32                          |
+    +------------------------+-----------------------------+
+    | domain                 | 0                           |
+    +------------------------+-----------------------------+
+    | zone                   | 0                           |
+    +------------------------+-----------------------------+
+    | useBinWidths           | 1                           |
+    +------------------------+-----------------------------+
+    | outputType             | **Block**, Curve            |
+    +------------------------+-----------------------------+
+    | lineWidth              | 0                           |
+    +------------------------+-----------------------------+
+    | color                  | (200, 80, 40, 255)          |
+    +------------------------+-----------------------------+
+    | dataScale              |  **Linear**, Log,           |
+    |                        |  SquareRoot                 |
+    +------------------------+-----------------------------+
+    | binScale               |  **Linear**, Log,           |
+    |                        |  SquareRoot                 |
+    +------------------------+-----------------------------+
+    | normalizeHistogram     | 0                           |
+    +------------------------+-----------------------------+
+    | computeAsCDF           | 0                           |
+    +------------------------+-----------------------------+
 
 |
 
@@ -1720,9 +1719,9 @@ these attributes is printed in italic.
     +------------------------+----------------------------+
     | **Attribute**          | **Default/Allowed Values** |
     +------------------------+----------------------------+
-    | maxDim                 | OneD, TwoD, **ThreeD**     |
+    | maxDim                 | **ThreeD**, OneD, TwoD     |
     +------------------------+----------------------------+
-    | dim                    | OneD, **TwoD**, ThreeD     |
+    | dim                    | **TwoD**, OneD, ThreeD     |
     +------------------------+----------------------------+
     | xAbsMax                | -1                         |
     +------------------------+----------------------------+
@@ -1811,10 +1810,10 @@ these attributes is printed in italic.
     +----------------------------------------+-----------------------------+
     | sampleDensity2                         | 2                           |
     +----------------------------------------+-----------------------------+
-    | dataValue                              |  Solid, SeedPointID,        |
+    | dataValue                              |  **TimeAbsolute**,          |
+    |                                        |  Solid, SeedPointID,        |
     |                                        |  Speed, Vorticity,          |
     |                                        |  ArcLength,                 |
-    |                                        |  **TimeAbsolute**,          |
     |                                        |  TimeRelative,              |
     |                                        |  AverageDistanceFromSeed,   |
     |                                        |  CorrelationDistance,       |
@@ -1846,8 +1845,8 @@ these attributes is printed in italic.
     +----------------------------------------+-----------------------------+
     | relTol                                 | 0.0001                      |
     +----------------------------------------+-----------------------------+
-    | absTolSizeType                         |  Absolute,                  |
-    |                                        |  **FractionOfBBox**         |
+    | absTolSizeType                         |  **FractionOfBBox**,        |
+    |                                        |  Absolute                   |
     +----------------------------------------+-----------------------------+
     | absTolAbsolute                         | 1e-06                       |
     +----------------------------------------+-----------------------------+
@@ -1865,15 +1864,15 @@ these attributes is printed in italic.
     +----------------------------------------+-----------------------------+
     | velocitySource                         | (0, 0, 0)                   |
     +----------------------------------------+-----------------------------+
-    | integrationType                        |  Euler, Leapfrog,           |
-    |                                        |  **DormandPrince**,         |
+    | integrationType                        |  **DormandPrince**,         |
+    |                                        |  Euler, Leapfrog,           |
     |                                        |  AdamsBashforth, RK4,       |
     |                                        |  M3DC12DIntegrator          |
     +----------------------------------------+-----------------------------+
-    | parallelizationAlgorithmType           |  LoadOnDemand,              |
+    | parallelizationAlgorithmType           |  **VisItSelects**,          |
+    |                                        |  LoadOnDemand,              |
     |                                        |  ParallelStaticDomains,     |
-    |                                        |  MasterSlave,               |
-    |                                        |  **VisItSelects**           |
+    |                                        |  MasterSlave                |
     +----------------------------------------+-----------------------------+
     | maxProcessCount                        | 10                          |
     +----------------------------------------+-----------------------------+
@@ -1889,8 +1888,8 @@ these attributes is printed in italic.
     +----------------------------------------+-----------------------------+
     | pathlinesPeriod                        | 0                           |
     +----------------------------------------+-----------------------------+
-    | pathlinesCMFE                          |  CONN_CMFE,                 |
-    |                                        |  **POS_CMFE**               |
+    | pathlinesCMFE                          |  **POS_CMFE**,              |
+    |                                        |  CONN_CMFE                  |
     +----------------------------------------+-----------------------------+
     | displayGeometry                        |  **Lines**, Tubes,          |
     |                                        |  Ribbons                    |
@@ -1908,7 +1907,7 @@ these attributes is printed in italic.
     +----------------------------------------+-----------------------------+
     | cropEnd                                | 0                           |
     +----------------------------------------+-----------------------------+
-    | cropValue                              |  Distance, **Time**,        |
+    | cropValue                              |  **Time**, Distance,        |
     |                                        |  StepNumber                 |
     +----------------------------------------+-----------------------------+
     | sampleDistance0                        | 10                          |
@@ -1945,8 +1944,8 @@ these attributes is printed in italic.
     +----------------------------------------+-----------------------------+
     | correlationDistanceMinDistBBox         | 0.005                       |
     +----------------------------------------+-----------------------------+
-    | correlationDistanceMinDistType         |  Absolute,                  |
-    |                                        |  **FractionOfBBox**         |
+    | correlationDistanceMinDistType         |  **FractionOfBBox**,        |
+    |                                        |  Absolute                   |
     +----------------------------------------+-----------------------------+
     | selection                              | ""                          |
     +----------------------------------------+-----------------------------+
@@ -2080,18 +2079,18 @@ these attributes is printed in italic.
     +---------------------------------------+----------------------------+
     | maxSteps                              | 1000                       |
     +---------------------------------------+----------------------------+
-    | operationType                         |  IntegrationTime,          |
+    | operationType                         |  **Lyapunov**,             |
+    |                                       |  IntegrationTime,          |
     |                                       |  ArcLength,                |
     |                                       |  AverageDistanceFromSeed,  |
     |                                       |  EigenValue,               |
-    |                                       |  EigenVector,              |
-    |                                       |  **Lyapunov**              |
+    |                                       |  EigenVector               |
     +---------------------------------------+----------------------------+
-    | cauchyGreenTensor                     | Left, **Right**            |
+    | cauchyGreenTensor                     | **Right**, Left            |
     +---------------------------------------+----------------------------+
-    | eigenComponent                        |  Smallest,                 |
+    | eigenComponent                        |  **Largest**,              |
+    |                                       |  Smallest,                 |
     |                                       |  Intermediate,             |
-    |                                       |  **Largest**,              |
     |                                       |  PosShearVector,           |
     |                                       |  NegShearVector,           |
     |                                       |  PosLambdaShearVector,     |
@@ -2125,8 +2124,8 @@ these attributes is printed in italic.
     +---------------------------------------+----------------------------+
     | relTol                                | 0.0001                     |
     +---------------------------------------+----------------------------+
-    | absTolSizeType                        |  Absolute,                 |
-    |                                       |  **FractionOfBBox**        |
+    | absTolSizeType                        |  **FractionOfBBox**,       |
+    |                                       |  Absolute                  |
     +---------------------------------------+----------------------------+
     | absTolAbsolute                        | 1e-06                      |
     +---------------------------------------+----------------------------+
@@ -2144,17 +2143,17 @@ these attributes is printed in italic.
     +---------------------------------------+----------------------------+
     | velocitySource                        | (0, 0, 0)                  |
     +---------------------------------------+----------------------------+
-    | integrationType                       |  Euler, Leapfrog,          |
-    |                                       |  **DormandPrince**,        |
+    | integrationType                       |  **DormandPrince**,        |
+    |                                       |  Euler, Leapfrog,          |
     |                                       |  AdamsBashforth, RK4,      |
     |                                       |  M3DC12DIntegrator         |
     +---------------------------------------+----------------------------+
     | clampLogValues                        | 0                          |
     +---------------------------------------+----------------------------+
-    | parallelizationAlgorithmType          |  LoadOnDemand,             |
+    | parallelizationAlgorithmType          |  **VisItSelects**,         |
+    |                                       |  LoadOnDemand,             |
     |                                       |  ParallelStaticDomains,    |
-    |                                       |  MasterSlave,              |
-    |                                       |  **VisItSelects**          |
+    |                                       |  MasterSlave               |
     +---------------------------------------+----------------------------+
     | maxProcessCount                       | 10                         |
     +---------------------------------------+----------------------------+
@@ -2170,8 +2169,8 @@ these attributes is printed in italic.
     +---------------------------------------+----------------------------+
     | pathlinesPeriod                       | 0                          |
     +---------------------------------------+----------------------------+
-    | pathlinesCMFE                         |  CONN_CMFE,                |
-    |                                       |  **POS_CMFE**              |
+    | pathlinesCMFE                         |  **POS_CMFE**,             |
+    |                                       |  CONN_CMFE                 |
     +---------------------------------------+----------------------------+
     | thresholdLimit                        | 0.1                        |
     +---------------------------------------+----------------------------+
@@ -2301,8 +2300,8 @@ these attributes is printed in italic.
     +-----------------+----------------------------+
     | enabledFlag     | 1                          |
     +-----------------+----------------------------+
-    | type            |  Ambient, Object,          |
-    |                 |  **Camera**                |
+    | type            |  **Camera**, Ambient,      |
+    |                 |  Object                    |
     +-----------------+----------------------------+
     | direction       | (0, 0, -1)                 |
     +-----------------+----------------------------+
@@ -2339,10 +2338,10 @@ these attributes is printed in italic.
     +----------------------------------------+----------------------------+
     | sampleDensity1                         | 2                          |
     +----------------------------------------+----------------------------+
-    | dataValue                              |  Solid, SeedPointID,       |
+    | dataValue                              |  **TimeAbsolute**,         |
+    |                                        |  Solid, SeedPointID,       |
     |                                        |  Speed, Vorticity,         |
     |                                        |  ArcLength,                |
-    |                                        |  **TimeAbsolute**,         |
     |                                        |  TimeRelative,             |
     |                                        |  AverageDistanceFromSeed,  |
     |                                        |  CorrelationDistance,      |
@@ -2374,8 +2373,8 @@ these attributes is printed in italic.
     +----------------------------------------+----------------------------+
     | relTol                                 | 0.0001                     |
     +----------------------------------------+----------------------------+
-    | absTolSizeType                         |  Absolute,                 |
-    |                                        |  **FractionOfBBox**        |
+    | absTolSizeType                         |  **FractionOfBBox**,       |
+    |                                        |  Absolute                  |
     +----------------------------------------+----------------------------+
     | absTolAbsolute                         | 1e-06                      |
     +----------------------------------------+----------------------------+
@@ -2393,15 +2392,15 @@ these attributes is printed in italic.
     +----------------------------------------+----------------------------+
     | velocitySource                         | (0, 0, 0)                  |
     +----------------------------------------+----------------------------+
-    | integrationType                        |  Euler, Leapfrog,          |
-    |                                        |  **DormandPrince**,        |
+    | integrationType                        |  **DormandPrince**,        |
+    |                                        |  Euler, Leapfrog,          |
     |                                        |  AdamsBashforth, RK4,      |
     |                                        |  M3DC12DIntegrator         |
     +----------------------------------------+----------------------------+
-    | parallelizationAlgorithmType           |  LoadOnDemand,             |
+    | parallelizationAlgorithmType           |  **VisItSelects**,         |
+    |                                        |  LoadOnDemand,             |
     |                                        |  ParallelStaticDomains,    |
-    |                                        |  MasterSlave,              |
-    |                                        |  **VisItSelects**          |
+    |                                        |  MasterSlave               |
     +----------------------------------------+----------------------------+
     | maxProcessCount                        | 10                         |
     +----------------------------------------+----------------------------+
@@ -2417,8 +2416,8 @@ these attributes is printed in italic.
     +----------------------------------------+----------------------------+
     | pathlinesPeriod                        | 0                          |
     +----------------------------------------+----------------------------+
-    | pathlinesCMFE                          |  CONN_CMFE,                |
-    |                                        |  **POS_CMFE**              |
+    | pathlinesCMFE                          |  **POS_CMFE**,             |
+    |                                        |  CONN_CMFE                 |
     +----------------------------------------+----------------------------+
     | sampleDistance0                        | 10                         |
     +----------------------------------------+----------------------------+
@@ -2464,8 +2463,8 @@ these attributes is printed in italic.
     +----------------------------------------+----------------------------+
     | correlationDistanceMinDistBBox         | 0.005                      |
     +----------------------------------------+----------------------------+
-    | correlationDistanceMinDistType         |  Absolute,                 |
-    |                                        |  **FractionOfBBox**        |
+    | correlationDistanceMinDistType         |  **FractionOfBBox**,       |
+    |                                        |  Absolute                  |
     +----------------------------------------+----------------------------+
 
 |
@@ -2513,7 +2512,7 @@ these attributes is printed in italic.
     +-------------------------------+----------------------------+
     | needValidConnectivity         | 0                          |
     +-------------------------------+----------------------------+
-    | algorithm                     |  EquiT, **EquiZ**,         |
+    | algorithm                     |  **EquiZ**, EquiT,         |
     |                               |  Isovolume, PLIC,          |
     |                               |  Discrete                  |
     +-------------------------------+----------------------------+
@@ -2567,12 +2566,12 @@ these attributes is printed in italic.
     +-------------------------+----------------------------+
     | pointSizeVar            | "default"                  |
     +-------------------------+----------------------------+
-    | pointType               |  Box, Axis,                |
+    | pointType               |  **Point**, Box, Axis,     |
     |                         |  Icosahedron,              |
     |                         |  Octahedron,               |
     |                         |  Tetrahedron,              |
     |                         |  SphereGeometry,           |
-    |                         |  **Point**, Sphere         |
+    |                         |  Sphere                    |
     +-------------------------+----------------------------+
     | showInternal            | 0                          |
     +-------------------------+----------------------------+
@@ -2619,15 +2618,15 @@ these attributes is printed in italic.
     +-------------------------------+----------------------------+
     | **Attribute**                 | **Default/Allowed Values** |
     +-------------------------------+----------------------------+
-    | drawAtomsAs                   |  NoAtoms,                  |
-    |                               |  **SphereAtoms**,          |
+    | drawAtomsAs                   |  **SphereAtoms**,          |
+    |                               |  NoAtoms,                  |
     |                               |  ImposterAtoms             |
     +-------------------------------+----------------------------+
     | scaleRadiusBy                 |  **Fixed**, Covalent,      |
     |                               |  Atomic, Variable          |
     +-------------------------------+----------------------------+
-    | drawBondsAs                   |  NoBonds, LineBonds,       |
-    |                               |  **CylinderBonds**         |
+    | drawBondsAs                   |  **CylinderBonds**,        |
+    |                               |  NoBonds, LineBonds        |
     +-------------------------------+----------------------------+
     | colorBonds                    |  **ColorByAtom**,          |
     |                               |  SingleColor               |
@@ -2640,10 +2639,10 @@ these attributes is printed in italic.
     +-------------------------------+----------------------------+
     | radiusFixed                   | 0.3                        |
     +-------------------------------+----------------------------+
-    | atomSphereQuality             |  Low, **Medium**, High,    |
+    | atomSphereQuality             |  **Medium**, Low, High,    |
     |                               |  Super                     |
     +-------------------------------+----------------------------+
-    | bondCylinderQuality           |  Low, **Medium**, High,    |
+    | bondCylinderQuality           |  **Medium**, Low, High,    |
     |                               |  Super                     |
     +-------------------------------+----------------------------+
     | bondRadius                    | 0.12                       |
@@ -2677,215 +2676,215 @@ these attributes is printed in italic.
 ----------------------------------------
 |
 
-    +--------------------------------------------------+----------------------------+
-    | **Attribute**                                    | **Default/Allowed Values** |
-    +--------------------------------------------------+----------------------------+
-    | defaultPalette.GetControlPoints(0).colors        | (255, 0, 0, 255)           |
-    +--------------------------------------------------+----------------------------+
-    | defaultPalette.GetControlPoints(0).position      | 0                          |
-    +--------------------------------------------------+----------------------------+
-    | defaultPalette.GetControlPoints(1).colors        | (0, 255, 0, 255)           |
-    +--------------------------------------------------+----------------------------+
-    | defaultPalette.GetControlPoints(1).position      | 0.034                      |
-    +--------------------------------------------------+----------------------------+
-    | defaultPalette.GetControlPoints(2).colors        | (0, 0, 255, 255)           |
-    +--------------------------------------------------+----------------------------+
-    | defaultPalette.GetControlPoints(2).position      | 0.069                      |
-    +--------------------------------------------------+----------------------------+
-    | defaultPalette.GetControlPoints(3).colors        | (0, 255, 255, 255)         |
-    +--------------------------------------------------+----------------------------+
-    | defaultPalette.GetControlPoints(3).position      | 0.103                      |
-    +--------------------------------------------------+----------------------------+
-    | defaultPalette.GetControlPoints(4).colors        | (255, 0, 255, 255)         |
-    +--------------------------------------------------+----------------------------+
-    | defaultPalette.GetControlPoints(4).position      | 0.138                      |
-    +--------------------------------------------------+----------------------------+
-    | defaultPalette.GetControlPoints(5).colors        | (255, 255, 0, 255)         |
-    +--------------------------------------------------+----------------------------+
-    | defaultPalette.GetControlPoints(5).position      | 0.172                      |
-    +--------------------------------------------------+----------------------------+
-    | defaultPalette.GetControlPoints(6).colors        | (255, 135, 0, 255)         |
-    +--------------------------------------------------+----------------------------+
-    | defaultPalette.GetControlPoints(6).position      | 0.207                      |
-    +--------------------------------------------------+----------------------------+
-    | defaultPalette.GetControlPoints(7).colors        | (255, 0, 135, 255)         |
-    +--------------------------------------------------+----------------------------+
-    | defaultPalette.GetControlPoints(7).position      | 0.241                      |
-    +--------------------------------------------------+----------------------------+
-    | defaultPalette.GetControlPoints(8).colors        | (168, 168, 168, 255)       |
-    +--------------------------------------------------+----------------------------+
-    | defaultPalette.GetControlPoints(8).position      | 0.276                      |
-    +--------------------------------------------------+----------------------------+
-    | defaultPalette.GetControlPoints(9).colors        | (255, 68, 68, 255)         |
-    +--------------------------------------------------+----------------------------+
-    | defaultPalette.GetControlPoints(9).position      | 0.31                       |
-    +--------------------------------------------------+----------------------------+
-    | defaultPalette.GetControlPoints(10).colors       | (99, 255, 99, 255)         |
-    +--------------------------------------------------+----------------------------+
-    | defaultPalette.GetControlPoints(10).position     | 0.345                      |
-    +--------------------------------------------------+----------------------------+
-    | defaultPalette.GetControlPoints(11).colors       | (99, 99, 255, 255)         |
-    +--------------------------------------------------+----------------------------+
-    | defaultPalette.GetControlPoints(11).position     | 0.379                      |
-    +--------------------------------------------------+----------------------------+
-    | defaultPalette.GetControlPoints(12).colors       | (40, 165, 165, 255)        |
-    +--------------------------------------------------+----------------------------+
-    | defaultPalette.GetControlPoints(12).position     | 0.414                      |
-    +--------------------------------------------------+----------------------------+
-    | defaultPalette.GetControlPoints(13).colors       | (255, 99, 255, 255)        |
-    +--------------------------------------------------+----------------------------+
-    | defaultPalette.GetControlPoints(13).position     | 0.448                      |
-    +--------------------------------------------------+----------------------------+
-    | defaultPalette.GetControlPoints(14).colors       | (255, 255, 99, 255)        |
-    +--------------------------------------------------+----------------------------+
-    | defaultPalette.GetControlPoints(14).position     | 0.483                      |
-    +--------------------------------------------------+----------------------------+
-    | defaultPalette.GetControlPoints(15).colors       | (255, 170, 99, 255)        |
-    +--------------------------------------------------+----------------------------+
-    | defaultPalette.GetControlPoints(15).position     | 0.517                      |
-    +--------------------------------------------------+----------------------------+
-    | defaultPalette.GetControlPoints(16).colors       | (170, 79, 255, 255)        |
-    +--------------------------------------------------+----------------------------+
-    | defaultPalette.GetControlPoints(16).position     | 0.552                      |
-    +--------------------------------------------------+----------------------------+
-    | defaultPalette.GetControlPoints(17).colors       | (150, 0, 0, 255)           |
-    +--------------------------------------------------+----------------------------+
-    | defaultPalette.GetControlPoints(17).position     | 0.586                      |
-    +--------------------------------------------------+----------------------------+
-    | defaultPalette.GetControlPoints(18).colors       | (0, 150, 0, 255)           |
-    +--------------------------------------------------+----------------------------+
-    | defaultPalette.GetControlPoints(18).position     | 0.621                      |
-    +--------------------------------------------------+----------------------------+
-    | defaultPalette.GetControlPoints(19).colors       | (0, 0, 150, 255)           |
-    +--------------------------------------------------+----------------------------+
-    | defaultPalette.GetControlPoints(19).position     | 0.655                      |
-    +--------------------------------------------------+----------------------------+
-    | defaultPalette.GetControlPoints(20).colors       | (0, 109, 109, 255)         |
-    +--------------------------------------------------+----------------------------+
-    | defaultPalette.GetControlPoints(20).position     | 0.69                       |
-    +--------------------------------------------------+----------------------------+
-    | defaultPalette.GetControlPoints(21).colors       | (150, 0, 150, 255)         |
-    +--------------------------------------------------+----------------------------+
-    | defaultPalette.GetControlPoints(21).position     | 0.724                      |
-    +--------------------------------------------------+----------------------------+
-    | defaultPalette.GetControlPoints(22).colors       | (150, 150, 0, 255)         |
-    +--------------------------------------------------+----------------------------+
-    | defaultPalette.GetControlPoints(22).position     | 0.759                      |
-    +--------------------------------------------------+----------------------------+
-    | defaultPalette.GetControlPoints(23).colors       | (150, 84, 0, 255)          |
-    +--------------------------------------------------+----------------------------+
-    | defaultPalette.GetControlPoints(23).position     | 0.793                      |
-    +--------------------------------------------------+----------------------------+
-    | defaultPalette.GetControlPoints(24).colors       | (160, 0, 79, 255)          |
-    +--------------------------------------------------+----------------------------+
-    | defaultPalette.GetControlPoints(24).position     | 0.828                      |
-    +--------------------------------------------------+----------------------------+
-    | defaultPalette.GetControlPoints(25).colors       | (255, 104, 28, 255)        |
-    +--------------------------------------------------+----------------------------+
-    | defaultPalette.GetControlPoints(25).position     | 0.862                      |
-    +--------------------------------------------------+----------------------------+
-    | defaultPalette.GetControlPoints(26).colors       | (0, 170, 81, 255)          |
-    +--------------------------------------------------+----------------------------+
-    | defaultPalette.GetControlPoints(26).position     | 0.897                      |
-    +--------------------------------------------------+----------------------------+
-    | defaultPalette.GetControlPoints(27).colors       | (68, 255, 124, 255)        |
-    +--------------------------------------------------+----------------------------+
-    | defaultPalette.GetControlPoints(27).position     | 0.931                      |
-    +--------------------------------------------------+----------------------------+
-    | defaultPalette.GetControlPoints(28).colors       | (0, 130, 255, 255)         |
-    +--------------------------------------------------+----------------------------+
-    | defaultPalette.GetControlPoints(28).position     | 0.966                      |
-    +--------------------------------------------------+----------------------------+
-    | defaultPalette.GetControlPoints(29).colors       | (130, 0, 255, 255)         |
-    +--------------------------------------------------+----------------------------+
-    | defaultPalette.GetControlPoints(29).position     | 1                          |
-    +--------------------------------------------------+----------------------------+
-    | defaultPalette.smoothing                         |  **None**, Linear,         |
-    |                                                  |  CubicSpline               |
-    +--------------------------------------------------+----------------------------+
-    | defaultPalette.equalSpacingFlag                  | 1                          |
-    +--------------------------------------------------+----------------------------+
-    | defaultPalette.discreteFlag                      | 1                          |
-    +--------------------------------------------------+----------------------------+
-    | defaultPalette.categoryName                      | "Standard"                 |
-    +--------------------------------------------------+----------------------------+
-    | changedColors                                    | ()                         |
-    +--------------------------------------------------+----------------------------+
-    | colorType                                        |  ColorBySingleColor,       |
-    |                                                  |  **ColorByMultipleColors** |
-    +--------------------------------------------------+----------------------------+
-    | singleColor                                      | (255, 0, 0, 255)           |
-    +--------------------------------------------------+----------------------------+
-    |                                                  |  *SetMultiColor(0,*        |
-    |                                                  |  *(255, 0, 0, 255))*       |
-    +--------------------------------------------------+----------------------------+
-    |                                                  |  *SetMultiColor(1, (0,*    |
-    |                                                  |  *255, 0, 255))*           |
-    +--------------------------------------------------+----------------------------+
-    |                                                  |  *SetMultiColor(2, (0,*    |
-    |                                                  |  *0, 255, 255))*           |
-    +--------------------------------------------------+----------------------------+
-    |                                                  |  *SetMultiColor(3, (0,*    |
-    |                                                  |  *255, 255, 255))*         |
-    +--------------------------------------------------+----------------------------+
-    |                                                  |  *SetMultiColor(4,*        |
-    |                                                  |  *(255, 0, 255, 255))*     |
-    +--------------------------------------------------+----------------------------+
-    |                                                  |  *SetMultiColor(5,*        |
-    |                                                  |  *(255, 255, 0, 255))*     |
-    +--------------------------------------------------+----------------------------+
-    |                                                  |  *SetMultiColor(6,*        |
-    |                                                  |  *(255, 135, 0, 255))*     |
-    +--------------------------------------------------+----------------------------+
-    |                                                  |  *SetMultiColor(7,*        |
-    |                                                  |  *(255, 0, 135, 255))*     |
-    +--------------------------------------------------+----------------------------+
-    |                                                  |  *SetMultiColor(8,*        |
-    |                                                  |  *(168, 168, 168, 255))*   |
-    +--------------------------------------------------+----------------------------+
-    |                                                  |  *SetMultiColor(9,*        |
-    |                                                  |  *(255, 68, 68, 255))*     |
-    +--------------------------------------------------+----------------------------+
-    |                                                  |  *SetMultiColor(10,*       |
-    |                                                  |  *(99, 255, 99, 255))*     |
-    +--------------------------------------------------+----------------------------+
-    |                                                  |  *SetMultiColor(11,*       |
-    |                                                  |  *(99, 99, 255, 255))*     |
-    +--------------------------------------------------+----------------------------+
-    |                                                  |  *SetMultiColor(12,*       |
-    |                                                  |  *(40, 165, 165, 255))*    |
-    +--------------------------------------------------+----------------------------+
-    |                                                  |  *SetMultiColor(13,*       |
-    |                                                  |  *(255, 99, 255, 255))*    |
-    +--------------------------------------------------+----------------------------+
-    |                                                  |  *SetMultiColor(14,*       |
-    |                                                  |  *(255, 255, 99, 255))*    |
-    +--------------------------------------------------+----------------------------+
-    |                                                  |  *SetMultiColor(15,*       |
-    |                                                  |  *(255, 170, 99, 255))*    |
-    +--------------------------------------------------+----------------------------+
-    | lineWidth                                        | 0                          |
-    +--------------------------------------------------+----------------------------+
-    | yAxisTitleFormat                                 | "%g"                       |
-    +--------------------------------------------------+----------------------------+
-    | useYAxisTickSpacing                              | 0                          |
-    +--------------------------------------------------+----------------------------+
-    | yAxisTickSpacing                                 | 1                          |
-    +--------------------------------------------------+----------------------------+
-    | displayMarkers                                   | 1                          |
-    +--------------------------------------------------+----------------------------+
-    | markerScale                                      | 1                          |
-    +--------------------------------------------------+----------------------------+
-    | markerLineWidth                                  | 0                          |
-    +--------------------------------------------------+----------------------------+
-    | markerVariable                                   | "default"                  |
-    +--------------------------------------------------+----------------------------+
-    | displayIds                                       | 0                          |
-    +--------------------------------------------------+----------------------------+
-    | idVariable                                       | "default"                  |
-    +--------------------------------------------------+----------------------------+
-    | legendFlag                                       | 1                          |
-    +--------------------------------------------------+----------------------------+
+    +--------------------------------------------------+-----------------------------+
+    | **Attribute**                                    | **Default/Allowed Values**  |
+    +--------------------------------------------------+-----------------------------+
+    | defaultPalette.GetControlPoints(0).colors        | (255, 0, 0, 255)            |
+    +--------------------------------------------------+-----------------------------+
+    | defaultPalette.GetControlPoints(0).position      | 0                           |
+    +--------------------------------------------------+-----------------------------+
+    | defaultPalette.GetControlPoints(1).colors        | (0, 255, 0, 255)            |
+    +--------------------------------------------------+-----------------------------+
+    | defaultPalette.GetControlPoints(1).position      | 0.034                       |
+    +--------------------------------------------------+-----------------------------+
+    | defaultPalette.GetControlPoints(2).colors        | (0, 0, 255, 255)            |
+    +--------------------------------------------------+-----------------------------+
+    | defaultPalette.GetControlPoints(2).position      | 0.069                       |
+    +--------------------------------------------------+-----------------------------+
+    | defaultPalette.GetControlPoints(3).colors        | (0, 255, 255, 255)          |
+    +--------------------------------------------------+-----------------------------+
+    | defaultPalette.GetControlPoints(3).position      | 0.103                       |
+    +--------------------------------------------------+-----------------------------+
+    | defaultPalette.GetControlPoints(4).colors        | (255, 0, 255, 255)          |
+    +--------------------------------------------------+-----------------------------+
+    | defaultPalette.GetControlPoints(4).position      | 0.138                       |
+    +--------------------------------------------------+-----------------------------+
+    | defaultPalette.GetControlPoints(5).colors        | (255, 255, 0, 255)          |
+    +--------------------------------------------------+-----------------------------+
+    | defaultPalette.GetControlPoints(5).position      | 0.172                       |
+    +--------------------------------------------------+-----------------------------+
+    | defaultPalette.GetControlPoints(6).colors        | (255, 135, 0, 255)          |
+    +--------------------------------------------------+-----------------------------+
+    | defaultPalette.GetControlPoints(6).position      | 0.207                       |
+    +--------------------------------------------------+-----------------------------+
+    | defaultPalette.GetControlPoints(7).colors        | (255, 0, 135, 255)          |
+    +--------------------------------------------------+-----------------------------+
+    | defaultPalette.GetControlPoints(7).position      | 0.241                       |
+    +--------------------------------------------------+-----------------------------+
+    | defaultPalette.GetControlPoints(8).colors        | (168, 168, 168, 255)        |
+    +--------------------------------------------------+-----------------------------+
+    | defaultPalette.GetControlPoints(8).position      | 0.276                       |
+    +--------------------------------------------------+-----------------------------+
+    | defaultPalette.GetControlPoints(9).colors        | (255, 68, 68, 255)          |
+    +--------------------------------------------------+-----------------------------+
+    | defaultPalette.GetControlPoints(9).position      | 0.31                        |
+    +--------------------------------------------------+-----------------------------+
+    | defaultPalette.GetControlPoints(10).colors       | (99, 255, 99, 255)          |
+    +--------------------------------------------------+-----------------------------+
+    | defaultPalette.GetControlPoints(10).position     | 0.345                       |
+    +--------------------------------------------------+-----------------------------+
+    | defaultPalette.GetControlPoints(11).colors       | (99, 99, 255, 255)          |
+    +--------------------------------------------------+-----------------------------+
+    | defaultPalette.GetControlPoints(11).position     | 0.379                       |
+    +--------------------------------------------------+-----------------------------+
+    | defaultPalette.GetControlPoints(12).colors       | (40, 165, 165, 255)         |
+    +--------------------------------------------------+-----------------------------+
+    | defaultPalette.GetControlPoints(12).position     | 0.414                       |
+    +--------------------------------------------------+-----------------------------+
+    | defaultPalette.GetControlPoints(13).colors       | (255, 99, 255, 255)         |
+    +--------------------------------------------------+-----------------------------+
+    | defaultPalette.GetControlPoints(13).position     | 0.448                       |
+    +--------------------------------------------------+-----------------------------+
+    | defaultPalette.GetControlPoints(14).colors       | (255, 255, 99, 255)         |
+    +--------------------------------------------------+-----------------------------+
+    | defaultPalette.GetControlPoints(14).position     | 0.483                       |
+    +--------------------------------------------------+-----------------------------+
+    | defaultPalette.GetControlPoints(15).colors       | (255, 170, 99, 255)         |
+    +--------------------------------------------------+-----------------------------+
+    | defaultPalette.GetControlPoints(15).position     | 0.517                       |
+    +--------------------------------------------------+-----------------------------+
+    | defaultPalette.GetControlPoints(16).colors       | (170, 79, 255, 255)         |
+    +--------------------------------------------------+-----------------------------+
+    | defaultPalette.GetControlPoints(16).position     | 0.552                       |
+    +--------------------------------------------------+-----------------------------+
+    | defaultPalette.GetControlPoints(17).colors       | (150, 0, 0, 255)            |
+    +--------------------------------------------------+-----------------------------+
+    | defaultPalette.GetControlPoints(17).position     | 0.586                       |
+    +--------------------------------------------------+-----------------------------+
+    | defaultPalette.GetControlPoints(18).colors       | (0, 150, 0, 255)            |
+    +--------------------------------------------------+-----------------------------+
+    | defaultPalette.GetControlPoints(18).position     | 0.621                       |
+    +--------------------------------------------------+-----------------------------+
+    | defaultPalette.GetControlPoints(19).colors       | (0, 0, 150, 255)            |
+    +--------------------------------------------------+-----------------------------+
+    | defaultPalette.GetControlPoints(19).position     | 0.655                       |
+    +--------------------------------------------------+-----------------------------+
+    | defaultPalette.GetControlPoints(20).colors       | (0, 109, 109, 255)          |
+    +--------------------------------------------------+-----------------------------+
+    | defaultPalette.GetControlPoints(20).position     | 0.69                        |
+    +--------------------------------------------------+-----------------------------+
+    | defaultPalette.GetControlPoints(21).colors       | (150, 0, 150, 255)          |
+    +--------------------------------------------------+-----------------------------+
+    | defaultPalette.GetControlPoints(21).position     | 0.724                       |
+    +--------------------------------------------------+-----------------------------+
+    | defaultPalette.GetControlPoints(22).colors       | (150, 150, 0, 255)          |
+    +--------------------------------------------------+-----------------------------+
+    | defaultPalette.GetControlPoints(22).position     | 0.759                       |
+    +--------------------------------------------------+-----------------------------+
+    | defaultPalette.GetControlPoints(23).colors       | (150, 84, 0, 255)           |
+    +--------------------------------------------------+-----------------------------+
+    | defaultPalette.GetControlPoints(23).position     | 0.793                       |
+    +--------------------------------------------------+-----------------------------+
+    | defaultPalette.GetControlPoints(24).colors       | (160, 0, 79, 255)           |
+    +--------------------------------------------------+-----------------------------+
+    | defaultPalette.GetControlPoints(24).position     | 0.828                       |
+    +--------------------------------------------------+-----------------------------+
+    | defaultPalette.GetControlPoints(25).colors       | (255, 104, 28, 255)         |
+    +--------------------------------------------------+-----------------------------+
+    | defaultPalette.GetControlPoints(25).position     | 0.862                       |
+    +--------------------------------------------------+-----------------------------+
+    | defaultPalette.GetControlPoints(26).colors       | (0, 170, 81, 255)           |
+    +--------------------------------------------------+-----------------------------+
+    | defaultPalette.GetControlPoints(26).position     | 0.897                       |
+    +--------------------------------------------------+-----------------------------+
+    | defaultPalette.GetControlPoints(27).colors       | (68, 255, 124, 255)         |
+    +--------------------------------------------------+-----------------------------+
+    | defaultPalette.GetControlPoints(27).position     | 0.931                       |
+    +--------------------------------------------------+-----------------------------+
+    | defaultPalette.GetControlPoints(28).colors       | (0, 130, 255, 255)          |
+    +--------------------------------------------------+-----------------------------+
+    | defaultPalette.GetControlPoints(28).position     | 0.966                       |
+    +--------------------------------------------------+-----------------------------+
+    | defaultPalette.GetControlPoints(29).colors       | (130, 0, 255, 255)          |
+    +--------------------------------------------------+-----------------------------+
+    | defaultPalette.GetControlPoints(29).position     | 1                           |
+    +--------------------------------------------------+-----------------------------+
+    | defaultPalette.smoothing                         |  **None**, Linear,          |
+    |                                                  |  CubicSpline                |
+    +--------------------------------------------------+-----------------------------+
+    | defaultPalette.equalSpacingFlag                  | 1                           |
+    +--------------------------------------------------+-----------------------------+
+    | defaultPalette.discreteFlag                      | 1                           |
+    +--------------------------------------------------+-----------------------------+
+    | defaultPalette.categoryName                      | "Standard"                  |
+    +--------------------------------------------------+-----------------------------+
+    | changedColors                                    | ()                          |
+    +--------------------------------------------------+-----------------------------+
+    | colorType                                        |  **ColorByMultipleColors**, |
+    |                                                  |  ColorBySingleColor         |
+    +--------------------------------------------------+-----------------------------+
+    | singleColor                                      | (255, 0, 0, 255)            |
+    +--------------------------------------------------+-----------------------------+
+    |                                                  |  *SetMultiColor(0,*         |
+    |                                                  |  *(255, 0, 0, 255))*        |
+    +--------------------------------------------------+-----------------------------+
+    |                                                  |  *SetMultiColor(1, (0,*     |
+    |                                                  |  *255, 0, 255))*            |
+    +--------------------------------------------------+-----------------------------+
+    |                                                  |  *SetMultiColor(2, (0,*     |
+    |                                                  |  *0, 255, 255))*            |
+    +--------------------------------------------------+-----------------------------+
+    |                                                  |  *SetMultiColor(3, (0,*     |
+    |                                                  |  *255, 255, 255))*          |
+    +--------------------------------------------------+-----------------------------+
+    |                                                  |  *SetMultiColor(4,*         |
+    |                                                  |  *(255, 0, 255, 255))*      |
+    +--------------------------------------------------+-----------------------------+
+    |                                                  |  *SetMultiColor(5,*         |
+    |                                                  |  *(255, 255, 0, 255))*      |
+    +--------------------------------------------------+-----------------------------+
+    |                                                  |  *SetMultiColor(6,*         |
+    |                                                  |  *(255, 135, 0, 255))*      |
+    +--------------------------------------------------+-----------------------------+
+    |                                                  |  *SetMultiColor(7,*         |
+    |                                                  |  *(255, 0, 135, 255))*      |
+    +--------------------------------------------------+-----------------------------+
+    |                                                  |  *SetMultiColor(8,*         |
+    |                                                  |  *(168, 168, 168, 255))*    |
+    +--------------------------------------------------+-----------------------------+
+    |                                                  |  *SetMultiColor(9,*         |
+    |                                                  |  *(255, 68, 68, 255))*      |
+    +--------------------------------------------------+-----------------------------+
+    |                                                  |  *SetMultiColor(10,*        |
+    |                                                  |  *(99, 255, 99, 255))*      |
+    +--------------------------------------------------+-----------------------------+
+    |                                                  |  *SetMultiColor(11,*        |
+    |                                                  |  *(99, 99, 255, 255))*      |
+    +--------------------------------------------------+-----------------------------+
+    |                                                  |  *SetMultiColor(12,*        |
+    |                                                  |  *(40, 165, 165, 255))*     |
+    +--------------------------------------------------+-----------------------------+
+    |                                                  |  *SetMultiColor(13,*        |
+    |                                                  |  *(255, 99, 255, 255))*     |
+    +--------------------------------------------------+-----------------------------+
+    |                                                  |  *SetMultiColor(14,*        |
+    |                                                  |  *(255, 255, 99, 255))*     |
+    +--------------------------------------------------+-----------------------------+
+    |                                                  |  *SetMultiColor(15,*        |
+    |                                                  |  *(255, 170, 99, 255))*     |
+    +--------------------------------------------------+-----------------------------+
+    | lineWidth                                        | 0                           |
+    +--------------------------------------------------+-----------------------------+
+    | yAxisTitleFormat                                 | "%g"                        |
+    +--------------------------------------------------+-----------------------------+
+    | useYAxisTickSpacing                              | 0                           |
+    +--------------------------------------------------+-----------------------------+
+    | yAxisTickSpacing                                 | 1                           |
+    +--------------------------------------------------+-----------------------------+
+    | displayMarkers                                   | 1                           |
+    +--------------------------------------------------+-----------------------------+
+    | markerScale                                      | 1                           |
+    +--------------------------------------------------+-----------------------------+
+    | markerLineWidth                                  | 0                           |
+    +--------------------------------------------------+-----------------------------+
+    | markerVariable                                   | "default"                   |
+    +--------------------------------------------------+-----------------------------+
+    | displayIds                                       | 0                           |
+    +--------------------------------------------------+-----------------------------+
+    | idVariable                                       | "default"                   |
+    +--------------------------------------------------+-----------------------------+
+    | legendFlag                                       | 1                           |
+    +--------------------------------------------------+-----------------------------+
 
 |
 
@@ -2975,8 +2974,8 @@ these attributes is printed in italic.
     +------------------------------+----------------------------+
     | focusGamma                   | 4                          |
     +------------------------------+----------------------------+
-    | drawFocusAs                  |  IndividualLines,          |
-    |                              |  **BinsOfConstantColor**,  |
+    | drawFocusAs                  |  **BinsOfConstantColor**,  |
+    |                              |  IndividualLines,          |
     |                              |  BinsColoredByPopulation   |
     +------------------------------+----------------------------+
 
@@ -3077,10 +3076,9 @@ these attributes is printed in italic.
     +---------------------------------------+-----------------------------+
     | velocitySource                        | (0, 0, 0)                   |
     +---------------------------------------+-----------------------------+
-    | integrationType                       |  Euler, Leapfrog,           |
-    |                                       |  DormandPrince,             |
-    |                                       |  **AdamsBashforth**,        |
-    |                                       |  RK4,                       |
+    | integrationType                       |  **AdamsBashforth**,        |
+    |                                       |  Euler, Leapfrog,           |
+    |                                       |  DormandPrince, RK4,        |
     |                                       |  M3DC12DIntegrator          |
     +---------------------------------------+-----------------------------+
     | coordinateSystem                      |  **Cartesian**,             |
@@ -3094,14 +3092,14 @@ these attributes is printed in italic.
     +---------------------------------------+-----------------------------+
     | relTol                                | 0.0001                      |
     +---------------------------------------+-----------------------------+
-    | absTolSizeType                        |  Absolute,                  |
-    |                                       |  **FractionOfBBox**         |
+    | absTolSizeType                        |  **FractionOfBBox**,        |
+    |                                       |  Absolute                   |
     +---------------------------------------+-----------------------------+
     | absTolAbsolute                        | 1e-05                       |
     +---------------------------------------+-----------------------------+
     | absTolBBox                            | 1e-06                       |
     +---------------------------------------+-----------------------------+
-    | analysis                              | None, **Normal**            |
+    | analysis                              | **Normal**, None            |
     +---------------------------------------+-----------------------------+
     | maximumToroidalWinding                | 0                           |
     +---------------------------------------+-----------------------------+
@@ -3113,7 +3111,7 @@ these attributes is printed in italic.
     +---------------------------------------+-----------------------------+
     | rationalSurfaceFactor                 | 0.1                         |
     +---------------------------------------+-----------------------------+
-    | overlaps                              |  Raw, **Remove**,           |
+    | overlaps                              |  **Remove**, Raw,           |
     |                                       |  Merge, Smooth              |
     +---------------------------------------+-----------------------------+
     | meshType                              | **Curves**, Surfaces        |
@@ -3130,16 +3128,15 @@ these attributes is printed in italic.
     +---------------------------------------+-----------------------------+
     | maxFlag                               | 0                           |
     +---------------------------------------+-----------------------------+
-    | colorType                             |  ColorBySingleColor,        |
-    |                                       |  **ColorByColorTable**      |
+    | colorType                             |  **ColorByColorTable**,     |
+    |                                       |  ColorBySingleColor         |
     +---------------------------------------+-----------------------------+
     | singleColor                           | (0, 0, 0, 255)              |
     +---------------------------------------+-----------------------------+
     | colorTableName                        | "Default"                   |
     +---------------------------------------+-----------------------------+
-    | dataValue                             |  Solid,                     |
-    |                                       |  **SafetyFactorQ**,         |
-    |                                       |  SafetyFactorP,             |
+    | dataValue                             |  **SafetyFactorQ**,         |
+    |                                       |  Solid, SafetyFactorP,      |
     |                                       |  SafetyFactorQ_NotP,        |
     |                                       |  SafetyFactorP_NotQ,        |
     |                                       |  ToroidalWindings,          |
@@ -3184,10 +3181,10 @@ these attributes is printed in italic.
     +---------------------------------------+-----------------------------+
     | showPoints                            | 0                           |
     +---------------------------------------+-----------------------------+
-    | parallelizationAlgorithmType          |  LoadOnDemand,              |
+    | parallelizationAlgorithmType          |  **VisItSelects**,          |
+    |                                       |  LoadOnDemand,              |
     |                                       |  ParallelStaticDomains,     |
-    |                                       |  MasterSlave,               |
-    |                                       |  **VisItSelects**           |
+    |                                       |  MasterSlave                |
     +---------------------------------------+-----------------------------+
     | maxProcessCount                       | 10                          |
     +---------------------------------------+-----------------------------+
@@ -3203,8 +3200,8 @@ these attributes is printed in italic.
     +---------------------------------------+-----------------------------+
     | pathlinesPeriod                       | 0                           |
     +---------------------------------------+-----------------------------+
-    | pathlinesCMFE                         |  CONN_CMFE,                 |
-    |                                       |  **POS_CMFE**               |
+    | pathlinesCMFE                         |  **POS_CMFE**,              |
+    |                                       |  CONN_CMFE                  |
     +---------------------------------------+-----------------------------+
     | issueTerminationWarnings              | 1                           |
     +---------------------------------------+-----------------------------+
@@ -3284,16 +3281,16 @@ these attributes is printed in italic.
     +---------------------------+----------------------------+
     | **Attribute**             | **Default/Allowed Values** |
     +---------------------------+----------------------------+
-    | projectionType            |  ZYCartesian,              |
+    | projectionType            |  **XYCartesian**,          |
+    |                           |  ZYCartesian,              |
     |                           |  XZCartesian,              |
-    |                           |  **XYCartesian**,          |
     |                           |  XRCylindrical,            |
     |                           |  YRCylindrical,            |
     |                           |  ZRCylindrical             |
     +---------------------------+----------------------------+
-    | vectorTransformMethod     |  None, AsPoint,            |
-    |                           |  AsDisplacement,           |
-    |                           |  **AsDirection**           |
+    | vectorTransformMethod     |  **AsDirection**,          |
+    |                           |  None, AsPoint,            |
+    |                           |  AsDisplacement            |
     +---------------------------+----------------------------+
 
 |
@@ -3337,10 +3334,9 @@ these attributes is printed in italic.
     +------------------------------+----------------------------+
     | invertColorTable             | 0                          |
     +------------------------------+----------------------------+
-    | opacityType                  |  ColorTable,               |
-    |                              |  **FullyOpaque**,          |
-    |                              |  Constant, Ramp,           |
-    |                              |  VariableRange             |
+    | opacityType                  |  **FullyOpaque**,          |
+    |                              |  ColorTable, Constant,     |
+    |                              |  Ramp, VariableRange       |
     +------------------------------+----------------------------+
     | opacityVariable              | ""                         |
     +------------------------------+----------------------------+
@@ -3356,12 +3352,12 @@ these attributes is printed in italic.
     +------------------------------+----------------------------+
     | pointSize                    | 0.05                       |
     +------------------------------+----------------------------+
-    | pointType                    |  Box, Axis,                |
+    | pointType                    |  **Point**, Box, Axis,     |
     |                              |  Icosahedron,              |
     |                              |  Octahedron,               |
     |                              |  Tetrahedron,              |
     |                              |  SphereGeometry,           |
-    |                              |  **Point**, Sphere         |
+    |                              |  Sphere                    |
     +------------------------------+----------------------------+
     | pointSizeVarEnabled          | 0                          |
     +------------------------------+----------------------------+
@@ -3375,8 +3371,8 @@ these attributes is printed in italic.
     +------------------------------+----------------------------+
     | tubeResolution               | 10                         |
     +------------------------------+----------------------------+
-    | tubeRadiusSizeType           |  Absolute,                 |
-    |                              |  **FractionOfBBox**        |
+    | tubeRadiusSizeType           |  **FractionOfBBox**,       |
+    |                              |  Absolute                  |
     +------------------------------+----------------------------+
     | tubeRadiusAbsolute           | 0.125                      |
     +------------------------------+----------------------------+
@@ -3394,8 +3390,8 @@ these attributes is printed in italic.
     | headStyle                    |  **None**, Spheres,        |
     |                              |  Cones                     |
     +------------------------------+----------------------------+
-    | endPointRadiusSizeType       |  Absolute,                 |
-    |                              |  **FractionOfBBox**        |
+    | endPointRadiusSizeType       |  **FractionOfBBox**,       |
+    |                              |  Absolute                  |
     +------------------------------+----------------------------+
     | endPointRadiusAbsolute       | 0.125                      |
     +------------------------------+----------------------------+
@@ -3496,7 +3492,7 @@ these attributes is printed in italic.
     +------------------+----------------------------+
     | planeNormal      | (0, 0, 0)                  |
     +------------------+----------------------------+
-    | reflectType      | Plane, **Axis**            |
+    | reflectType      | **Axis**, Plane            |
     +------------------+----------------------------+
 
 |
@@ -3537,14 +3533,14 @@ these attributes is printed in italic.
     +----------------------------------+----------------------------+
     | stereoRendering                  | 0                          |
     +----------------------------------+----------------------------+
-    | stereoType                       |  RedBlue, Interlaced,      |
-    |                                  |  **CrystalEyes**,          |
+    | stereoType                       |  **CrystalEyes**,          |
+    |                                  |  RedBlue, Interlaced,      |
     |                                  |  RedGreen                  |
     +----------------------------------+----------------------------+
     | notifyForEachRender              | 0                          |
     +----------------------------------+----------------------------+
-    | scalableActivationMode           |  Never, Always,            |
-    |                                  |  **Auto**                  |
+    | scalableActivationMode           |  **Auto**, Never,          |
+    |                                  |  Always                    |
     +----------------------------------+----------------------------+
     | scalableAutoThreshold            | 2000000                    |
     +----------------------------------+----------------------------+
@@ -3745,8 +3741,8 @@ these attributes is printed in italic.
     +--------------------------------------+----------------------------+
     | family                               | 1                          |
     +--------------------------------------+----------------------------+
-    | format                               |  BMP, CURVE, JPEG, OBJ,    |
-    |                                      |  **PNG**, POSTSCRIPT,      |
+    | format                               |  **PNG**, BMP, CURVE,      |
+    |                                      |  JPEG, OBJ, POSTSCRIPT,    |
     |                                      |  POVRAY, PPM, RGB, STL,    |
     |                                      |  TIFF, ULTRA, VTK, PLY,    |
     |                                      |  EXR                       |
@@ -3772,9 +3768,9 @@ these attributes is printed in italic.
     +--------------------------------------+----------------------------+
     | forceMerge                           | 0                          |
     +--------------------------------------+----------------------------+
-    | resConstraint                        |  NoConstraint,             |
-    |                                      |  EqualWidthHeight,         |
-    |                                      |  **ScreenProportions**     |
+    | resConstraint                        |  **ScreenProportions**,    |
+    |                                      |  NoConstraint,             |
+    |                                      |  EqualWidthHeight          |
     +--------------------------------------+----------------------------+
     | pixelData                            | 1                          |
     +--------------------------------------+----------------------------+
@@ -3975,8 +3971,8 @@ these attributes is printed in italic.
     +----------------------+------------------------------+
     | var1SkewFactor       | 1                            |
     +----------------------+------------------------------+
-    | var2Role             |  Coordinate0,                |
-    |                      |  **Coordinate1**,            |
+    | var2Role             |  **Coordinate1**,            |
+    |                      |  Coordinate0,                |
     |                      |  Coordinate2, Color,         |
     |                      |  None                        |
     +----------------------+------------------------------+
@@ -3994,10 +3990,10 @@ these attributes is printed in italic.
     +----------------------+------------------------------+
     | var2SkewFactor       | 1                            |
     +----------------------+------------------------------+
-    | var3Role             |  Coordinate0,                |
+    | var3Role             |  **None**,                   |
+    |                      |  Coordinate0,                |
     |                      |  Coordinate1,                |
-    |                      |  Coordinate2, Color,         |
-    |                      |  **None**                    |
+    |                      |  Coordinate2, Color          |
     +----------------------+------------------------------+
     | var3                 | "default"                    |
     +----------------------+------------------------------+
@@ -4013,10 +4009,10 @@ these attributes is printed in italic.
     +----------------------+------------------------------+
     | var3SkewFactor       | 1                            |
     +----------------------+------------------------------+
-    | var4Role             |  Coordinate0,                |
+    | var4Role             |  **None**,                   |
+    |                      |  Coordinate0,                |
     |                      |  Coordinate1,                |
-    |                      |  Coordinate2, Color,         |
-    |                      |  **None**                    |
+    |                      |  Coordinate2, Color          |
     +----------------------+------------------------------+
     | var4                 | "default"                    |
     +----------------------+------------------------------+
@@ -4036,12 +4032,12 @@ these attributes is printed in italic.
     +----------------------+------------------------------+
     | pointSizePixels      | 1                            |
     +----------------------+------------------------------+
-    | pointType            |  Box, Axis,                  |
+    | pointType            |  **Point**, Box, Axis,       |
     |                      |  Icosahedron,                |
     |                      |  Octahedron,                 |
     |                      |  Tetrahedron,                |
     |                      |  SphereGeometry,             |
-    |                      |  **Point**, Sphere           |
+    |                      |  Sphere                      |
     +----------------------+------------------------------+
     | scaleCube            | 1                            |
     +----------------------+------------------------------+
@@ -4069,7 +4065,7 @@ these attributes is printed in italic.
     +----------------------+----------------------------+
     | **Attribute**        | **Default/Allowed Values** |
     +----------------------+----------------------------+
-    | originType           |  Point, **Intercept**,     |
+    | originType           |  **Intercept**, Point,     |
     |                      |  Percent, Zone, Node       |
     +----------------------+----------------------------+
     | originPoint          | (0, 0, 0)                  |
@@ -4084,7 +4080,7 @@ these attributes is printed in italic.
     +----------------------+----------------------------+
     | normal               | (0, -1, 0)                 |
     +----------------------+----------------------------+
-    | axisType             |  XAxis, **YAxis**,         |
+    | axisType             |  **YAxis**, XAxis,         |
     |                      |  ZAxis, Arbitrary,         |
     |                      |  ThetaPhi                  |
     +----------------------+----------------------------+
@@ -4172,7 +4168,7 @@ these attributes is printed in italic.
     +----------------------------+--------------------------------+
     | tracerColor                | (255, 0, 0, 150)               |
     +----------------------------+--------------------------------+
-    | normal                     | X, Y, **Z**                    |
+    | normal                     | **Z**, X, Y                    |
     +----------------------------+--------------------------------+
     | sliceIndex                 | 0                              |
     +----------------------------+--------------------------------+
@@ -4230,7 +4226,7 @@ these attributes is printed in italic.
     | stopTrendType      |  **Absolute**,             |
     |                    |  Relative                  |
     +--------------------+----------------------------+
-    | statisticType      |  Sum, **Mean**,            |
+    | statisticType      |  **Mean**, Sum,            |
     |                    |  Variance,                 |
     |                    |  StandardDeviation,        |
     |                    |  Slope, Residuals          |
@@ -4274,8 +4270,8 @@ these attributes is printed in italic.
     +-------------------------+-----------------------------+
     | **Attribute**           | **Default/Allowed Values**  |
     +-------------------------+-----------------------------+
-    | colorType               |  ColorBySingleColor,        |
-    |                         |  **ColorByMultipleColors**, |
+    | colorType               |  **ColorByMultipleColors**, |
+    |                         |  ColorBySingleColor,        |
     |                         |  ColorByColorTable          |
     +-------------------------+-----------------------------+
     | colorTableName          | "Default"                   |
@@ -4300,12 +4296,12 @@ these attributes is printed in italic.
     +-------------------------+-----------------------------+
     | pointSize               | 0.05                        |
     +-------------------------+-----------------------------+
-    | pointType               |  Box, Axis,                 |
+    | pointType               |  **Point**, Box, Axis,      |
     |                         |  Icosahedron,               |
     |                         |  Octahedron,                |
     |                         |  Tetrahedron,               |
     |                         |  SphereGeometry,            |
-    |                         |  **Point**, Sphere          |
+    |                         |  Sphere                     |
     +-------------------------+-----------------------------+
     | pointSizeVarEnabled     | 0                           |
     +-------------------------+-----------------------------+
@@ -4458,9 +4454,9 @@ these attributes is printed in italic.
     |                           |  Cylindrical,              |
     |                           |  Spherical                 |
     +---------------------------+----------------------------+
-    | outputCoordSys            |  Cartesian,                |
-    |                           |  Cylindrical,              |
-    |                           |  **Spherical**             |
+    | outputCoordSys            |  **Spherical**,            |
+    |                           |  Cartesian,                |
+    |                           |  Cylindrical               |
     +---------------------------+----------------------------+
     | continuousPhi             | 0                          |
     +---------------------------+----------------------------+
@@ -4498,9 +4494,9 @@ these attributes is printed in italic.
     +---------------------------+----------------------------+
     | invertLinearTransform     | 0                          |
     +---------------------------+----------------------------+
-    | vectorTransformMethod     |  None, AsPoint,            |
-    |                           |  AsDisplacement,           |
-    |                           |  **AsDirection**           |
+    | vectorTransformMethod     |  **AsDirection**,          |
+    |                           |  None, AsPoint,            |
+    |                           |  AsDisplacement            |
     +---------------------------+----------------------------+
     | transformVectors          | 1                          |
     +---------------------------+----------------------------+
@@ -4610,7 +4606,7 @@ these attributes is printed in italic.
     +----------------------+------------------------------+
     | invertColorTable     | 0                            |
     +----------------------+------------------------------+
-    | vectorOrigin         | Head, Middle, **Tail**       |
+    | vectorOrigin         | **Tail**, Head, Middle       |
     +----------------------+------------------------------+
     | minFlag              | 0                            |
     +----------------------+------------------------------+
@@ -4623,7 +4619,7 @@ these attributes is printed in italic.
     +----------------------+------------------------------+
     | max                  | 1                            |
     +----------------------+------------------------------+
-    | lineStem             | Cylinder, **Line**           |
+    | lineStem             | **Line**, Cylinder           |
     +----------------------+------------------------------+
     | geometryQuality      | **Fast**, High               |
     +----------------------+------------------------------+
@@ -4691,7 +4687,7 @@ these attributes is printed in italic.
     +-----------------------------+----------------------------+
     | viewportCoords              | (0.2, 0.95, 0.15, 0.95)    |
     +-----------------------------+----------------------------+
-    | fullFrameActivationMode     | On, Off, **Auto**          |
+    | fullFrameActivationMode     | **Auto**, On, Off          |
     +-----------------------------+----------------------------+
     | fullFrameAutoThreshold      | 100                        |
     +-----------------------------+----------------------------+
@@ -4843,7 +4839,7 @@ these attributes is printed in italic.
     +-----------------------------------------------------+------------------------------+
     | colorControlPoints.GetControlPoints(4).position     | 1                            |
     +-----------------------------------------------------+------------------------------+
-    | colorControlPoints.smoothing                        |  None, **Linear**,           |
+    | colorControlPoints.smoothing                        |  **Linear**, None,           |
     |                                                     |  CubicSpline                 |
     +-----------------------------------------------------+------------------------------+
     | colorControlPoints.equalSpacingFlag                 | 0                            |
@@ -4946,8 +4942,8 @@ these attributes is printed in italic.
     |                                                     |  RayCastingSLIVR,            |
     |                                                     |  RayCastingOSPRay            |
     +-----------------------------------------------------+------------------------------+
-    | gradientType                                        |  CenteredDifferences,        |
-    |                                                     |  **SobelOperator**           |
+    | gradientType                                        |  **SobelOperator**,          |
+    |                                                     |  CenteredDifferences         |
     +-----------------------------------------------------+------------------------------+
     | scaling                                             | **Linear**, Log, Skew        |
     +-----------------------------------------------------+------------------------------+
@@ -4956,16 +4952,15 @@ these attributes is printed in italic.
     | limitsMode                                          |  **OriginalData**,           |
     |                                                     |  CurrentPlot                 |
     +-----------------------------------------------------+------------------------------+
-    | sampling                                            |  KernelBased,                |
-    |                                                     |  **Rasterization**,          |
+    | sampling                                            |  **Rasterization**,          |
+    |                                                     |  KernelBased,                |
     |                                                     |  Trilinear                   |
     +-----------------------------------------------------+------------------------------+
     | rendererSamples                                     | 3                            |
     +-----------------------------------------------------+------------------------------+
-    | lowGradientLightingReduction                        |  Off, Lowest,                |
-    |                                                     |  **Lower**, Low,             |
-    |                                                     |  Medium, High, Higher,       |
-    |                                                     |  Highest                     |
+    | lowGradientLightingReduction                        |  **Lower**, Off,             |
+    |                                                     |  Lowest, Low, Medium,        |
+    |                                                     |  High, Higher, Highest       |
     +-----------------------------------------------------+------------------------------+
     | lowGradientLightingClampFlag                        | 0                            |
     +-----------------------------------------------------+------------------------------+

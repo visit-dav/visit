@@ -607,13 +607,18 @@ class AttributesTable(Table):
         default_option = period_split[-1]
         
         #
-        # Find the default option within the string of options add add asterisks around it
-        # for italics
+        # Find the default option within the string of options, add asterisks around it
+        # for bold, and move it to the beginning of the list.
         #
-        ndx1 = group_two.find(default_option)
-        if ndx1 != -1:
-            ndx2 = ndx1 + len(default_option)
-            group_two_mod = group_two[:ndx1] + '**' + group_two[ndx1:ndx2] + '**' + group_two[ndx2:]
+        word_start = group_two.find(default_option)
+        if word_start != -1:
+            word_end = word_start + len(default_option)
+            if word_start != 1: # it is not first in the list of options
+                group_two_mod = '**' + group_two[word_start:word_end] + '**,' + \
+                                group_two[:word_start-2] + group_two[word_end:]
+            else: # it is first in the list of options
+                group_two_mod = '**' + group_two[word_start:word_end] + '**,' + \
+                                group_two[word_end+1:]
         self.insert_two_columns(r_one[0], group_two_mod)
     
     def row_from_basic_match(self, group_one, group_two):
