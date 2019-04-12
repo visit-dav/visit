@@ -25,7 +25,7 @@ function bv_ccmio_info
     export CCMIO_COMPATIBILITY_VERSION=${CCMIO_COMPATIBILITY_VERSION:-"2.0"}
     export CCMIO_BUILD_DIR=${CCMIO_BUILD_DIR:-"libccmio-2.6.1"}
     export CCMIO_MD5_CHECKSUM="f81fbdfb960b1a4f3bcc7feee491efe4"
-    export CCMIO_SHA256_CHECKSUM=""
+    export CCMIO_SHA256_CHECKSUM="d639d9ad6391df0307f7278844e939e44325e1d08664f57149aa92da125c3d13"
 }
 
 function bv_ccmio_print
