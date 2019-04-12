@@ -59,7 +59,7 @@ PY_3RDPARTY_TEST(PY_TESTS SILO
         silo_datatypes silo timesliders xform_precision
         wave_tv)
 IF(NOT WIN32)
-    PY_3RDPARTY_TEST(PY_TESTS SILO vista)
+    PY_3RDPARTY_TEST(PY_TESTS SILO)
 ENDIF()
 PY_3RDPARTY_TEST(PY_TESTS HDF5 Chombo flash pixie samrai Velodyne)
 IF(TARGET vtkIOEnSight)

@@ -194,6 +194,9 @@
 #
 #    Mark C. Miller, Tue May  8 21:18:35 PDT 2018
 #    Add ffp plugin (from Olivier Cessenat)
+#
+#    Mark C. Miller, Fri Apr 12 10:03:55 PDT 2019
+#    Remove Vista plugin
 #****************************************************************************/
 
 IF(NOT WIN32)
@@ -380,7 +383,6 @@ ELSE()
     ELSE()
         CHECK_THIRDPARTY_SATISFIED(H5Part H5PART)
     ENDIF()
-    CHECK_THIRDPARTY_SATISFIED(Vista SILO)
     if(VISIT_PARADIS)
         CHECK_THIRDPARTY_SATISFIED(paraDIS BOOST)
         CHECK_THIRDPARTY_SATISFIED(paraDIS_tecplot BOOST)
