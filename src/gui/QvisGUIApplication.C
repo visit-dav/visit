@@ -3106,7 +3106,7 @@ QvisGUIApplication::AddViewerSpaceArguments()
 //   resize operation is performed after this widget is laid out.
 //
 //   Kathleen Biagas, Fri Apr 12 15:06:48 PDT 2019
-//   Removed orienation from MoveAndResizeMainWindow args.
+//   Removed orientation from MoveAndResizeMainWindow args.
 //
 // ****************************************************************************
 
