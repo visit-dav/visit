@@ -2702,7 +2702,7 @@ QvisGUIApplication::SetOrientation(int _orientation)
 //   being drawn partly offscreen when running VisIt remotely.
 // 
 //   Kathleen Biagas, Fri Apr 12 15:05:18 PDT 2019
-//   Remove orienation from args, it is now an ivar.
+//   Remove orientation from args, it is now an ivar.
 //
 // ****************************************************************************
 
