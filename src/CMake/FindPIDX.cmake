@@ -27,38 +27,41 @@
 # Execute cmake with "-DPIDX_DIR=/path/to/pidx" to help find the library.
 #
 
-FIND_PATH(PIDX_INCLUDE_DIR NAMES PIDX.h PATHS ${PIDX_DIR}/include NO_DEFAULT_PATH)
-FIND_PATH(HDF5_INCLUDE_DIR NAMES PIDX.h)
+IF(VISIT_PARALLEL)
+  FIND_PATH(PIDX_INCLUDE_DIR NAMES PIDX.h PATHS ${PIDX_DIR}/include NO_DEFAULT_PATH)
+  FIND_PATH(HDF5_INCLUDE_DIR NAMES PIDX.h)
 
-IF (PIDX_INCLUDE_DIR)
-    
-  SET(PIDX_INCLUDE_DIRS "${PIDX_INCLUDE_DIR}")
+  IF (PIDX_INCLUDE_DIR)
 
-  FIND_LIBRARY(PIDX_LIBRARY     pidx    PATHS ${PIDX_DIR}/lib NO_DEFAULT_PATH)
-  
-  SET(PIDX_LIBRARIES 
-    ${PIDX_LIBRARY}
-  )
+    SET(PIDX_INCLUDE_DIRS "${PIDX_INCLUDE_DIR}")
 
-  SET(PIDX_FOUND   true CACHE BOOL "PIDX library found" FORCE)
-  SET(HAVE_LIBPIDX true CACHE BOOL "Have PIDX library" FORCE)
+    FIND_LIBRARY(PIDX_LIBRARY     pidx    PATHS ${PIDX_DIR}/lib NO_DEFAULT_PATH)
+    FIND_LIBRARY(ZFP_LIBRARY      zfp     PATHS ${PIDX_DIR}/lib NO_DEFAULT_PATH)
 
-  IF (CMAKE_VERBOSE_MAKEFILE)
-    MESSAGE("Using PIDX_INCLUDE_DIR  = ") 
-    FOREACH(inc ${PIDX_INCLUDE_DIR})
-      MESSAGE("  " ${inc})
-    ENDFOREACH()
-    MESSAGE("Found PIDX_LIBRARIES    = ")
-    FOREACH(lib ${PIDX_LIBRARIES})
-      MESSAGE("  " ${lib})
-    ENDFOREACH()
-  ENDIF (CMAKE_VERBOSE_MAKEFILE)
+    SET(PIDX_LIBRARIES 
+      ${PIDX_LIBRARY}
+      ${ZFP_LIBRARY}
+    )
 
-ELSE ()
-  IF (PIDX_FIND_REQUIRED)
-    MESSAGE(FATAL_ERROR "PIDX library not found. Try setting PIDX_DIR")
-  ELSE()
-    MESSAGE(STATUS "PIDX library not found. Try setting PIDX_DIR")
-  ENDIF()
-ENDIF ()
-                         
+    SET(PIDX_FOUND   true CACHE BOOL "PIDX library found" FORCE)
+    SET(HAVE_LIBPIDX true CACHE BOOL "Have PIDX library" FORCE)
+
+    IF (CMAKE_VERBOSE_MAKEFILE)
+      MESSAGE("Using PIDX_INCLUDE_DIR  = ") 
+      FOREACH(inc ${PIDX_INCLUDE_DIR})
+        MESSAGE("  " ${inc})
+      ENDFOREACH()
+      MESSAGE("Found PIDX_LIBRARIES    = ")
+      FOREACH(lib ${PIDX_LIBRARIES})
+        MESSAGE("  " ${lib})
+      ENDFOREACH()
+    ENDIF (CMAKE_VERBOSE_MAKEFILE)
+
+  ELSE ()
+    IF (PIDX_FIND_REQUIRED)
+      MESSAGE(FATAL_ERROR "PIDX library not found. Try setting PIDX_DIR")
+    ELSE()
+      MESSAGE(STATUS "PIDX library not found. Try setting PIDX_DIR")
+    ENDIF()
+  ENDIF ()
+ENDIF()
