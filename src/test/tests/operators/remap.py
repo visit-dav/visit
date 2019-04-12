@@ -65,12 +65,14 @@ def plotVariables(varName, saveName, cells = 10):
 def ghost1():
     OpenDatabase(silo_data_path("ghost1.silo"))
     plotVariables("zvar", "ghost_zvar")
+    CloseDatabase(silo_data_path("ghost1.silo"))
     
 def globalNode():
     OpenDatabase(silo_data_path("global_node.silo"))
     set3DView()
     plotVariables("p", "globalNode_p", 4) # Wrong results.
     ResetView()
+    CloseDatabase(silo_data_path("global_node.silo"))
     
 def mCurve2():
     OpenDatabase(silo_data_path("multi_curv2d.silo"))
@@ -78,6 +80,7 @@ def mCurve2():
     plotVariables("d_dup", "mCurve2_d_dup")
     plotVariables("nmats", "mCurve2_nmats")
     plotVariables("p", "mCurve2_p")
+    CloseDatabase(silo_data_path("multi_curv2d.silo"))
     
 def mCurve3():
     OpenDatabase(silo_data_path("multi_curv3d.silo"))
@@ -87,6 +90,7 @@ def mCurve3():
     plotVariables("nmats", "mCurve3_nmats", 4)
     plotVariables("p", "mCurve3_p", 4)
     ResetView()
+    CloseDatabase(silo_data_path("multi_curv3d.silo"))
     
 def mRect2():
     OpenDatabase(silo_data_path("multi_rect2d.silo"))
@@ -97,13 +101,19 @@ def mRect2():
     CloseDatabase(silo_data_path("multi_rect2d.silo"))
     
 def mRect3():
-    set3DView()
     OpenDatabase(silo_data_path("multi_rect3d.silo"))
+    set3DView()
     plotVariables("d", "mRect3_d", 4)
     plotVariables("d_dup", "mRect3_d_dup", 4)
     plotVariables("nmats", "mRect3_nmats", 4)
     plotVariables("p", "mRect3_p", 4)
     ResetView()
+    CloseDatabase(silo_data_path("multi_rect3d.silo"))
+
+def ucd2():
+    OpenDatabase(silo_data_path("ucd2d.silo"))
+    plotVariables("p", "ucd2_p")
+    CloseDatabase(silo_data_path("ucd2d.silo"))
 
 def Main():
     ghost1()
@@ -112,6 +122,7 @@ def Main():
     mCurve3()
     mRect2()
     mRect3()
+    ucd2()
     
 Main()
 Exit()
