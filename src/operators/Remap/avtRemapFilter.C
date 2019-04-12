@@ -251,7 +251,6 @@ avtRemapFilter::Execute(void)
     // ------------------------------------ //
 
     avtDataTree_p inTree = GetInputDataTree();
-    std::vector<int> domainIds;
     inTree->GetAllDomainIds(domainIds); // Populate domainIds
     TraverseDomainTree(inTree);
     
