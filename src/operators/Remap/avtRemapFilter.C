@@ -663,10 +663,10 @@ avtRemapFilter::CalculateCellVolumes(vtkDataSet* in_ds, const char* name)
     volumeArray->SetNumberOfComponents(1);
     volumeArray->SetNumberOfTuples(nCells);
     
-    for (int i = 0; i < nCells; i++)
+    for (int n = 0; n < nCells; n++)
     {
         double volume = 0.0;
-        vtkCell* cell = in_ds->GetCell(i); // Get the cell
+        vtkCell* cell = in_ds->GetCell(n); // Get the cell
         vtkDataArray* pointData = cell->GetPoints()->GetData(); // Get the points
         for (vtkIdType j = 0; j < cell->GetNumberOfPoints(); j++)
         {
@@ -730,7 +730,7 @@ avtRemapFilter::CalculateCellVolumes(vtkDataSet* in_ds, const char* name)
                 break;
         } // End switch
         
-        volumeArray->SetComponent(i, 0, volume); // store the volume in our array
+        volumeArray->SetComponent(n, 0, volume); // store the volume in our array
     }
     
     return volumeArray;
