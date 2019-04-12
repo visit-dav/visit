@@ -668,7 +668,7 @@ avtRemapFilter::CalculateCellVolumes(vtkDataSet* in_ds, const char* name)
         double volume = 0.0;
         vtkCell* cell = in_ds->GetCell(i); // Get the cell
         vtkDataArray* pointData = cell->GetPoints()->GetData(); // Get the points
-        for (int j = 0; j < cell->GetNumberOfPoints(); j++)
+        for (vtkIdType j = 0; j < cell->GetNumberOfPoints(); j++)
         {
             coordinates[j][2] = 0; // Set to 0 in case 2D
             pointData->GetTuple(j, coordinates[j]); // Set the j-th entry in coordiantes to the tuple from pointData at j
