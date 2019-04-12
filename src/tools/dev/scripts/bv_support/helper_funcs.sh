@@ -353,7 +353,7 @@ function verify_checksum
     checksum=$2
     dfile=$3
 
-    info "verifying type $checksum_type, checksum $checksum for $dfile . . ."
+    info "verifying $checksum_type checksum $checksum for $dfile . . ."
 
     if [[ "$checksum_type" == "MD5" ]]; then
         verify_md5_checksum $checksum $dfile
