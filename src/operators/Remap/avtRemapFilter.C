@@ -251,7 +251,6 @@ avtRemapFilter::Execute(void)
     // ------------------------------------ //
 
     avtDataTree_p inTree = GetInputDataTree();
-    inTree->GetAllDomainIds(domainIds); // Populate domainIds
     TraverseDomainTree(inTree);
     
     SetOutputDataTree(new avtDataTree(rg, 0));
@@ -355,7 +354,6 @@ avtRemapFilter::ClipDomain(avtDataTree_p inLeaf) {
         in_ds->GetNumberOfPoints() == 0 || in_ds->GetNumberOfCells() == 0)
     {
         debug4 << "Domain " << domainId << " is invalid." << std::endl;
-        in_ds->Delete();
         return;
     }
     
