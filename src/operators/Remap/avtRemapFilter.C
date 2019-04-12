@@ -211,7 +211,8 @@ avtRemapFilter::Execute(void)
     // Add variables to the rectilinear grid   
     vars->SetNumberOfComponents(1);
     vars->SetNumberOfTuples(nCellsOut);
-    for (int i = 0; i < vars->GetNumberOfTuples(); ++i) {
+    for (int i = 0; i < vars->GetNumberOfTuples(); ++i)
+    {
         vars->SetComponent(i, 0, 0); // Initialize vars to 0
     }
     vars->SetName(GetInput()->GetInfo().GetAttributes().GetVariableName().c_str());
@@ -227,20 +228,24 @@ avtRemapFilter::Execute(void)
     // Get the planes for first dimension
     debug5 << "Creating clipping functions" << std::endl;
     MakeClippingFunction(0, 0); // Get the leftmost plane
-    for (int rCell = 0; rCell < width; ++rCell) {
+    for (int rCell = 0; rCell < width; ++rCell)
+    {
         MakeClippingFunction(rCell, 1); // Get all the planes on the "right"
     }
 
     // Get the planes for the second dimension
     MakeClippingFunction(0, 2); // Get the topmost plane
-    for (int rCell = 0; rCell < width*height; rCell+=width) {
+    for (int rCell = 0; rCell < width*height; rCell+=width)
+    {
         MakeClippingFunction(rCell, 3); // Get all the planes on the "bottom"
     }
 
-    if (is3D) {
+    if (is3D)
+    {
         // Get the planes for the third dimension
         MakeClippingFunction(0, 4); // Get the frontmost plane
-        for (int rCell = 0; rCell < width*height*depth; rCell+=width*height) {
+        for (int rCell = 0; rCell < width*height*depth; rCell+=width*height)
+        {
             MakeClippingFunction(rCell, 5); // Get all the planes on the "back"
         }
     }
@@ -336,7 +341,8 @@ avtRemapFilter::TraverseDomainTree(avtDataTree_p inTree)
 // ****************************************************************************
 
 void
-avtRemapFilter::ClipDomain(avtDataTree_p inLeaf) {
+avtRemapFilter::ClipDomain(avtDataTree_p inLeaf)
+{
     debug3 << "avtRemapFilter::ClipDomain" << std::endl;
 
     // --------------------------------------------------- //
@@ -511,7 +517,8 @@ avtRemapFilter::ClipDomain(avtDataTree_p inLeaf) {
                         { // Ignore ghost cells
                             continue;
                         }
-                        else {
+                        else
+                        {
                             value += myVariable->GetComponent(tuple, 0) / 
                                 originalCellVolumes->GetComponent(tuple, 0) *
                                 subCellVolumes->GetComponent(tuple, 0);
@@ -529,7 +536,8 @@ avtRemapFilter::ClipDomain(avtDataTree_p inLeaf) {
                         { // Ignore ghost cells
                             continue;
                         }
-                        else {
+                        else
+                        {
                             value += myVariable->GetComponent(tuple, 0) *
                                 subCellVolumes->GetComponent(tuple, 0);
                         }
@@ -577,11 +585,16 @@ avtRemapFilter::MakeClippingFunction(int rCell, int side)
     vtkImplicitBoolean* funcs = vtkImplicitBoolean::New();
     funcs->AddFunction(plane);
 
-    if (side == 0 || side == 1) {
+    if (side == 0 || side == 1)
+    {
         funcsArrayX.push_back(funcs);
-    } else if (side == 2 || side == 3) {
+    }
+    else if (side == 2 || side == 3)
+    {
         funcsArrayY.push_back(funcs);
-    } else { //if (side == 4 || side == 5) {
+    }
+    else //if (side == 4 || side == 5)
+    { 
         funcsArrayZ.push_back(funcs);
     }
 }
@@ -768,7 +781,8 @@ avtRemapFilter::GetBounds()
         debug5 << "2D Remapping" << std::endl;
         is3D = false;
     }
-    else {
+    else
+    {
         is3D = atts.GetIs3D();
     }
 }
