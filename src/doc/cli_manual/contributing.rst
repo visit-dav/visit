@@ -63,7 +63,7 @@ Steps to update the CLI Manual
 
      sphinx-build -b html . _build -a
 
-#. Then, open the file `_build/index.html` in your favorite browser to view.
+#. Then, open the file ``_build/index.html`` in your favorite browser to view.
 #. Add all the changed files to a commit and push to GitHub
 #. The GitHub integration with ReadTheDocs should result in your documentation
    updates going live a short while (<15 mins) after it has been merged to develop.
