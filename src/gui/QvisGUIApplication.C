@@ -2645,7 +2645,7 @@ QvisGUIApplication::CustomizeAppearance(bool notify)
 //   resize operation is performed after this widget is laid out.
 //
 //   Kathleen Biagas, Fri Apr 12 15:05:18 PDT 2019
-//   Saved the orienation arg. Remove orienation from MoveAndResizeMainWindow.
+//   Saved the orientation arg. Remove orientation from MoveAndResizeMainWindow.
 //
 // ****************************************************************************
 
