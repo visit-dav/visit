@@ -245,74 +245,62 @@ QvisRemapWindow::UpdateWindow(bool doAll)
             if (atts->GetUseExtents() == false)
             {
                 startX->setEnabled(true);
-                if(startXLabel)
-                    startXLabel->setEnabled(true);
+                startXLabel->setEnabled(true);
             }
             else
             {
                 startX->setEnabled(false);
-                if(startXLabel)
-                    startXLabel->setEnabled(false);
+                startXLabel->setEnabled(false);
             }
             if (atts->GetUseExtents() == false)
             {
                 endX->setEnabled(true);
-                if(endXLabel)
-                    endXLabel->setEnabled(true);
+                endXLabel->setEnabled(true);
             }
             else
             {
                 endX->setEnabled(false);
-                if(endXLabel)
-                    endXLabel->setEnabled(false);
+                endXLabel->setEnabled(false);
             }
             if (atts->GetUseExtents() == false)
             {
                 startY->setEnabled(true);
-                if(startYLabel)
-                    startYLabel->setEnabled(true);
+                startYLabel->setEnabled(true);
             }
             else
             {
                 startY->setEnabled(false);
-                if(startYLabel)
-                    startYLabel->setEnabled(false);
+                startYLabel->setEnabled(false);
             }
             if (atts->GetUseExtents() == false)
             {
                 endY->setEnabled(true);
-                if(endYLabel)
-                    endYLabel->setEnabled(true);
+                endYLabel->setEnabled(true);
             }
             else
             {
                 endY->setEnabled(false);
-                if(endYLabel)
-                    endYLabel->setEnabled(false);
+                endYLabel->setEnabled(false);
             }
             if (atts->GetIs3D() == true && atts->GetUseExtents() == false)
             {
                 startZ->setEnabled(true);
-                if(startZLabel)
-                    startZLabel->setEnabled(true);
+                startZLabel->setEnabled(true);
             }
             else
             {
                 startZ->setEnabled(false);
-                if(startZLabel)
-                    startZLabel->setEnabled(false);
+                   startZLabel->setEnabled(false);
             }
             if (atts->GetIs3D() == true && atts->GetUseExtents() == false)
             {
                 endZ->setEnabled(true);
-                if(endZLabel)
-                    endZLabel->setEnabled(true);
+                endZLabel->setEnabled(true);
             }
             else
             {
                 endZ->setEnabled(false);
-                if(endZLabel)
-                    endZLabel->setEnabled(false);
+                endZLabel->setEnabled(false);
             }
             useExtents->blockSignals(true);
             useExtents->setChecked(atts->GetUseExtents());
@@ -340,38 +328,32 @@ QvisRemapWindow::UpdateWindow(bool doAll)
             if (atts->GetIs3D() == true && atts->GetUseExtents() == false)
             {
                 startZ->setEnabled(true);
-                if(startZLabel)
-                    startZLabel->setEnabled(true);
+                startZLabel->setEnabled(true);
             }
             else
             {
                 startZ->setEnabled(false);
-                if(startZLabel)
-                    startZLabel->setEnabled(false);
+                startZLabel->setEnabled(false);
             }
             if (atts->GetIs3D() == true && atts->GetUseExtents() == false)
             {
                 endZ->setEnabled(true);
-                if(endZLabel)
-                    endZLabel->setEnabled(true);
+                endZLabel->setEnabled(true);
             }
             else
             {
                 endZ->setEnabled(false);
-                if(endZLabel)
-                    endZLabel->setEnabled(false);
+                endZLabel->setEnabled(false);
             }
             if (atts->GetIs3D() == true)
             {
                 cellsZ->setEnabled(true);
-                if(cellsZLabel)
-                    cellsZLabel->setEnabled(true);
+                cellsZLabel->setEnabled(true);
             }
             else
             {
                 cellsZ->setEnabled(false);
-                if(cellsZLabel)
-                    cellsZLabel->setEnabled(false);
+                cellsZLabel->setEnabled(false);
             }
             is3D->blockSignals(true);
             is3D->setChecked(atts->GetIs3D());
