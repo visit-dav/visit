@@ -246,59 +246,36 @@ QvisRemapWindow::UpdateWindow(bool doAll)
             {
                 startX->setEnabled(true);
                 startXLabel->setEnabled(true);
-            }
-            else
-            {
-                startX->setEnabled(false);
-                startXLabel->setEnabled(false);
-            }
-            if (atts->GetUseExtents() == false)
-            {
                 endX->setEnabled(true);
                 endXLabel->setEnabled(true);
-            }
-            else
-            {
-                endX->setEnabled(false);
-                endXLabel->setEnabled(false);
-            }
-            if (atts->GetUseExtents() == false)
-            {
                 startY->setEnabled(true);
                 startYLabel->setEnabled(true);
-            }
-            else
-            {
-                startY->setEnabled(false);
-                startYLabel->setEnabled(false);
-            }
-            if (atts->GetUseExtents() == false)
-            {
                 endY->setEnabled(true);
                 endYLabel->setEnabled(true);
             }
             else
             {
+                startX->setEnabled(false);
+                startXLabel->setEnabled(false);
+                endX->setEnabled(false);
+                endXLabel->setEnabled(false);
+                startY->setEnabled(false);
+                startYLabel->setEnabled(false);
                 endY->setEnabled(false);
                 endYLabel->setEnabled(false);
             }
+
             if (atts->GetIs3D() == true && atts->GetUseExtents() == false)
             {
                 startZ->setEnabled(true);
                 startZLabel->setEnabled(true);
-            }
-            else
-            {
-                startZ->setEnabled(false);
-                   startZLabel->setEnabled(false);
-            }
-            if (atts->GetIs3D() == true && atts->GetUseExtents() == false)
-            {
                 endZ->setEnabled(true);
                 endZLabel->setEnabled(true);
             }
             else
             {
+                startZ->setEnabled(false);
+                startZLabel->setEnabled(false);
                 endZ->setEnabled(false);
                 endZLabel->setEnabled(false);
             }
@@ -329,19 +306,13 @@ QvisRemapWindow::UpdateWindow(bool doAll)
             {
                 startZ->setEnabled(true);
                 startZLabel->setEnabled(true);
-            }
-            else
-            {
-                startZ->setEnabled(false);
-                startZLabel->setEnabled(false);
-            }
-            if (atts->GetIs3D() == true && atts->GetUseExtents() == false)
-            {
                 endZ->setEnabled(true);
                 endZLabel->setEnabled(true);
             }
             else
             {
+                startZ->setEnabled(false);
+                startZLabel->setEnabled(false);
                 endZ->setEnabled(false);
                 endZLabel->setEnabled(false);
             }
