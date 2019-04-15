@@ -143,13 +143,17 @@ VsStaggeredField<TYPE>::getNewNodalData(TYPE* dataPtr) const
 template <class TYPE>
 std::valarray<int>
 VsStaggeredField<TYPE>::getOriCellIndexSet(size_t bigIndex) const {
-  return (bigIndex / static_cast<TYPE>(this->oriCellDimProd)) % this->oriCellDims;
+  std::valarray output(1);
+  output[0] = (bigIndex / this->oriCellDimProd) % this->oriCellDims;
+  return output;
 }
 
 template <class TYPE>
 std::valarray<int>
 VsStaggeredField<TYPE>::getOriDisplacements(size_t subBigIndex) const {
-  return (subBigIndex / this->twoPowSubRes) % 2;
+  std::valarray output(1);
+  output[0] = (subBigIndex / this->towPowSubRes) % 2;
+  return output;
 }
 
 template <class TYPE>
