@@ -260,6 +260,8 @@ avtRemapFilter::Execute(void)
     
     SetOutputDataTree(new avtDataTree(rg, 0));
     debug5 << "DONE Remapping" << std::endl;
+
+    CleanClippingFunctions();
     return;
 }
 
@@ -545,7 +547,7 @@ avtRemapFilter::ClipDomain(avtDataTree_p inLeaf)
                     value /= rCellVolume;
                     vars->SetComponent(rCell, 0, value + vars->GetComponent(rCell, 0));
                 }
-                
+
                 subCellVolumes->Delete();
                 // Done updating variable
             }
@@ -573,7 +575,7 @@ avtRemapFilter::ClipDomain(avtDataTree_p inLeaf)
 void
 avtRemapFilter::MakeClippingFunction(int rCell, int side)
 {
-    debug4 << "avtRemapFilter::MakeFunction" << std::endl;
+    debug4 << "avtRemapFilter::MakeClippingFunction" << std::endl;
     double cellBounds[6] = {0., 0., 0., 0., 0., 0.};
     double origin[3] = {0., 0., 0.};
     double normal[3] = {0., 0., 0.};
@@ -599,6 +601,37 @@ avtRemapFilter::MakeClippingFunction(int rCell, int side)
     else //if (side == 4 || side == 5)
     { 
         funcsArrayZ.push_back(funcs);
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtRemapFilter::CleanClippingFunctions
+//
+//  Purpose:
+//      Clean out all the vtkImplicitBooleans from the funcs arrays.
+//
+//  Programmer: rusu1
+//  Creation:   Mon Apr 15 10:56:53 PDT 2019
+//
+// ****************************************************************************
+
+void
+avtRemapFilter::CleanClippingFunctions()
+{
+    debug4 << "avtRemapFilter::CleanClippingFunctions" << std::endl;
+
+    for (std::vector<vtkImplicitBoolean*>::iterator iter = funcsArrayX.begin();
+         iter != funcsArrayX.end(); ++iter) {
+    	(*iter)->Delete();
+    }
+    for (std::vector<vtkImplicitBoolean*>::iterator iter = funcsArrayY.begin();
+         iter != funcsArrayY.end(); ++iter) {
+    	(*iter)->Delete();
+    }
+    for (std::vector<vtkImplicitBoolean*>::iterator iter = funcsArrayZ.begin();
+         iter != funcsArrayZ.end(); ++iter) {
+    	(*iter)->Delete();
     }
 }
 
