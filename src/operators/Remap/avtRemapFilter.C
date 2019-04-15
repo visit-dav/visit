@@ -584,6 +584,7 @@ avtRemapFilter::MakeClippingFunction(int rCell, int side)
     plane->SetNormal(normal);
     vtkImplicitBoolean* funcs = vtkImplicitBoolean::New();
     funcs->AddFunction(plane);
+    plane->Delete();
 
     if (side == 0 || side == 1)
     {
