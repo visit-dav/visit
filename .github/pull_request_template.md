@@ -12,6 +12,7 @@ Please select one below (*Please click check boxes AFTER submitting ticket*)
 - [ ] Bug fix
 - [ ] New feature
 - [ ] New Documentation
+- [ ] Other (please describe below)
 
 ### How Has This Been Tested?
 
