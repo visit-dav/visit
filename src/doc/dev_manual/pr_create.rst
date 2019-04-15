@@ -94,13 +94,13 @@ Review processes are iterative by nature, and PR reviews are no exception. A typ
 #. Repeat steps 2 and 3 until reviewer is satisfied with the PR.
 #. The reviewer approves the PR when he is satisifed.
 
-The actual amount of time it takes to perform a review or update the changes is relatively small compared to the amount of time the PR *waits* for the next step in the iteration. The wait time can be exacerbated in two ways: (1) The reviewer or developer is unaware that the PR is ready for the next step in the iteration process, and (2) the reviewer or developer is too busy with other work. To help alleviate the situation, we recommend the following guidelines for the developer (guidelines for the reviewer can be found AT THIS PAGE WHICH I STILL NEED TO CREATE AND LINK TO).
+The actual amount of time it takes to perform a review or update the changes is relatively small compared to the amount of time the PR *waits* for the next step in the iteration. The wait time can be exacerbated in two ways: (1) The reviewer or developer is unaware that the PR is ready for the next step in the iteration process, and (2) the reviewer or developer is too busy with other work. To help alleviate the situation, we recommend the following guidelines for the developer (guidelines for the reviewer can be found `here <https://visit-sphinx-github-user-manual.readthedocs.io/en/develop/dev_manual/pr_review.html#iteration-process>`_).
 
 * Make sure your code is clear and well commented and that your PR is descriptive. This helps your reviewer quickly familiarize himself with the context of your changes. If code is unclear, the reviewer may spend a lot of time trying to grasp the purpose and effects of your changes.
 * Immediately answer any questions your reviewer asks about the PR. You should turn on notifications for the repo.
 * When the reviewer has finished reviewing (step 2), make it a top priority to update your code according to the requested changes. Use the @<username> feature to notifiy the reviewer of any questions you have about the suggestions/comments.
 * When you have finished updating your PR (step 3), leave a comment on the PR using @<username> to let the reviewer know that the PR is ready to be looked at again.
-* Reviewers won't always merge a PR after they approve it, especially if the squash-merge involves combining many commits into a single, descriptive comment. When your PR is approved, you should squash-merge to develop with a succinct description. (CHECK IF NON-OWNERS CAN MERGE INTO DEV).
+* Reviewers won't always merge a PR after they approve it, especially if the squash-merge involves combining many commits into a single, descriptive comment. When your PR is approved, you should squash-merge to develop with a succinct description.
 
 
 
