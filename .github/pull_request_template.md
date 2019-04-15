@@ -28,7 +28,7 @@ Please describe the tests you've added or any tests that already cover this chan
 - [ ] I have added tests that prove my fix is effective or that my feature works
 - [ ] New and existing unit tests pass locally with my changes
 - [ ] I have added any new baselines to the repo
-- [ ] I have assigned reviewers (see LINK LINK LINK for information on VisIt procedures for PR reviewers)
+- [ ] I have assigned reviewers (see [VisIt's PR procedures](https://visit-sphinx-github-user-manual.readthedocs.io/en/develop/dev_manual/pr_create.html#reviewers) for more information).
 
 
 *Don't forget to squash merge when this pull request is approved.*
