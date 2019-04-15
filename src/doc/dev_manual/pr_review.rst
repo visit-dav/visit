@@ -79,6 +79,8 @@ The actual amount of time it takes to perform a review or update the changes is 
 * When the developer has updated the PR, make it a top priority to review it again.
 * When the PR is ready to be merged into dev, approve the PR and either (1) squash-merge the PR into dev with a succinct description of the changes or (2) ping the developer to squash-merge the PR himself.
 
+If you are chosen as a reviewer and you know that you will not be able to review the PR in a timely manner, please let the developer know and provide suggestions for who to choose instead. Once you start a PR review, you should make it a priority and stick with it until the end.
+
 
 
 
