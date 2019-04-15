@@ -545,6 +545,8 @@ avtRemapFilter::ClipDomain(avtDataTree_p inLeaf)
                     value /= rCellVolume;
                     vars->SetComponent(rCell, 0, value + vars->GetComponent(rCell, 0));
                 }
+                
+                subCellVolumes->Delete();
                 // Done updating variable
             }
         }
