@@ -28,6 +28,8 @@ Please describe the tests you've added or any tests that already cover this chan
 - [ ] I have added tests that prove my fix is effective or that my feature works
 - [ ] New and existing unit tests pass locally with my changes
 - [ ] I have added any new baselines to the repo
+- [ ] I have assigned reviewers (see LINK LINK LINK for information on VisIt procedures for PR reviewers)
 
 
-*Don't forget to squash merge when this pull request is approved*
+*Don't forget to squash merge when this pull request is approved.*
+*Wait for CI tests to pass before approving/merging the PR.*

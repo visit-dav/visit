@@ -104,9 +104,3 @@ The actual amount of time it takes to perform a review or update the changes is 
 
 
 
-
-
-This process can take a long time, especially if steps 2 and 3 need to be repeated several times.  To expedite the review process
-
-
-
