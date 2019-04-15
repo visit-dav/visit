@@ -66,6 +66,7 @@ SetBackendType("VTKm")
   <p>VTK-m functionality is currently enabled for 3D rectilinear, curvilinear and unstructured grids with only hexahedral elements. VTK-m supports both single block and multi-block grids.</p>
   </li>
   <li>Due to lack of availability of C++11 compliant compilers, support for OSX 10.8 has been dropped.</li>
+  <li>The <i>Remote Profiles</i> tab in the <i>Host profiles</i> will now allow importing profiles from the currently running release as well as from the trunk.</li>
 </ul>
 
 <a name="GUI_changes"></a>
@@ -84,6 +85,7 @@ SetBackendType("VTKm")
   <li>The Curve2D reader can now read curve files with Matlab-style comments.</li>
   <li>The Vista plugin was removed.</li>
   <li>VTK writer was enhanced to optionally triangulate (2D) or tetrahedralize (3D) any UNstructured mesh output.</li>
+  <li>Corrected a bug plotting Nek5000 data, where VisIt displayed an error message indicating that the plot yielded no data when plotting the result of an expression involving a gradient with 2D data.</li>
 </ul>
 
 <a name="Plot_changes"></a>
@@ -106,6 +108,7 @@ SetBackendType("VTKm")
 <p><b><font size="4">Changes to VisIt's expression language in version 3.0</font></b></p>
 <ul>
   <li>The <i>conn_cmfe</i> expression was enhanced to handle mapping cell data between point meshes and polygonal or polyhedral meshes where the number of points and polygons or polyhedra match. This didn't work previously in the case of polygons because while the number of cells matched the number of points didn't. Now the number of points is ignored. It didn't work in the case of polyhedral meshes because polyhedra are split into zoo elements, which results in the number of cells not matching. Now the splitting is taken into account.</li>
+  <li>Improved the pos_cmfe expression so that it better handles pyramid and wedge cells in the donor mesh.</li>
 </ul>
 
 <a name="Query_changes"></a>
@@ -132,12 +135,17 @@ SetBackendType("VTKm")
     </ul>
   </li>
   <li> Corrected a bug in creating expressions with curves read from multi-domain silo files. </li>
+  <li>Fixed parallel engine hang when attempting to plot data from VTU (.vtu) files.</li>
+  <li>Fixed viewer crash when using the 'Transparent color' option for an Image annotation object.</li>
 </ul>
 
 <a name="Configuration_changes"></a>
 <p><b><font size="4">Configuration changes in version 3.0</font></b></p>
 <ul>
-  <li></li>
+  <li>Host profiles were added for the Lawrence Livermore National Laboratories' Shark system.</li>
+  <li>Host profiles were added for the Lawrence Livermore National Laboratories' Lassen and Sierra systems.</li>
+  <li>Host profiles were added for the Argonne National Laboratories' Theta system.</li>
+  <li>Enhanced the Lawrence Livermore National Laboratories' custom launcher so that VisIt would display to VNC displays.</li>
 </ul>
 
 <a name="Build_features"></a>
