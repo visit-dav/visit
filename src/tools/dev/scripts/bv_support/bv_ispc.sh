@@ -52,9 +52,8 @@ function bv_ispc_info
     fi
     export ISPC_COMPATIBILITY_VERSION=${ISPC_COMPATIBILITY_VERSION:-"${ISPC_VERSION}"}
     export ISPC_BUILD_DIR=${ISPC_BUILD_DIR:-"${ISPC_VERSION}"}
-
-    export ISPC_MD5_CHECKSUM=""
-    export ISPC_SHA256_CHECKSUM=""
+    export ISPC_MD5_CHECKSUM="0178a33a065ae65d0be00be23871cf9f"
+    export ISPC_SHA256_CHECKSUM="5513fbf8a2f6e889232ec1e7aa42f6f0b47954dcb9797e1e3d5e8d6f59301e40"
 }
 
 function bv_ispc_print

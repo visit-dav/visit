@@ -43,8 +43,10 @@ function bv_visus_info
     export VISUS_OS=`uname`
     export VISUS_VERSION=${VISUS_VERSION:-"5f5fd6c"}
     export VISUS_FILE=${VISUS_FILE:-"ViSUS-${VISUS_VERSION}-${VISUS_OS}.tgz"}
-    export VISUS_BUILD_DIR=${VISUS_BUILD_DIR:-"ViSUS"}
     export VISUS_URL=${VISUS_URL:-"http://atlantis.sci.utah.edu/builds/visit-plugin"}
+    export VISUS_BUILD_DIR=${VISUS_BUILD_DIR:-"ViSUS"}
+    export VISUS_MD5_CHECKSUM="79ed0196efe22f30b6368a92bd2df481"
+    export VISUS_SHA256_CHECKSUM="0b05301aee13ec70f55606a89d8fa27ceb970925f600eb4d52b5378d82c930e6"
 }
 
 function bv_visus_print

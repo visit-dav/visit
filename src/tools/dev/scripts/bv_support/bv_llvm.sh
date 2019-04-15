@@ -27,10 +27,10 @@ function bv_llvm_info
 {
     export BV_LLVM_VERSION=${BV_LLVM_VERSION:-"5.0.0"}
     export BV_LLVM_FILE=${BV_LLVM_FILE:-"llvm-${BV_LLVM_VERSION}.src.tar.xz"}
-    export BV_LLVM_BUILD_DIR=${BV_LLVM_BUILD_DIR:-"llvm-${BV_LLVM_VERSION}.src"}
     export BV_LLVM_URL=${BV_LLVM_URL:-"http://releases.llvm.org/${BV_LLVM_VERSION}/"}
-    export LLVM_MD5_CHECKSUM=""
-    export LLVM_SHA256_CHECKSUM=""
+    export BV_LLVM_BUILD_DIR=${BV_LLVM_BUILD_DIR:-"llvm-${BV_LLVM_VERSION}.src"}
+    export LLVM_MD5_CHECKSUM="5ce9c5ad55243347ea0fdb4c16754be0"
+    export LLVM_SHA256_CHECKSUM="e35dcbae6084adcf4abb32514127c5eabd7d63b733852ccdb31e06f1373136da"
 }
 
 function bv_llvm_print
