@@ -352,7 +352,9 @@ avtRemapFilter::ClipDomain(avtDataTree_p inLeaf)
     // --------------------------------------------------- //
     avtDataRepresentation in_dr = inLeaf->GetDataRepresentation();
     int domainId = in_dr.GetDomain();
-    vtkDataSet* in_ds = in_dr.GetDataVTK();
+    vtkDataSet* in_ds_tmp = in_dr.GetDataVTK();
+    vtkDataSet* in_ds = in_ds_tmp->NewInstance();
+    in_ds->ShallowCopy(in_ds_tmp);
     
     // If the dataset does not exist, then return.
     // If the variable does not exist, then return.
