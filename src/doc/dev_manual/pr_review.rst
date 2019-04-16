@@ -63,11 +63,11 @@ Iteration Process
 
 Review processes are iterative by nature, and PR reviews are no exception. A typical review process looks like this:
 
-#. Developer submits a pull request and selects you as a reviewer.
+#. The developer submits a pull request and selects you as a reviewer.
 #. You leave comments and submit a "Request change" review or an "Approve" review.
-#. Developer updates the PR according to your suggestions.
+#. The developer updates the PR according to your suggestions.
 #. Repeat steps 2 and 3 until you is satisfied with the PR.
-#. Approve the PR when you are satisfied.
+#. You approve the PR when you are satisfied.
 
 The actual amount of time it takes to perform a review or update the changes is relatively small compared to the amount of time the PR *waits* for the next step in the iteration. The wait time can be exacerbated in two ways: (1) The reviewer or developer is unaware that the PR is ready for the next step in the iteration process, and (2) the reviewer or developer is too busy with other work. To help alleviate the situation, we recommend the following guidelines for the reviewer (guidelines for the developer can be found `here <https://visit-sphinx-github-user-manual.readthedocs.io/en/develop/dev_manual/pr_create.html#iteration-process>`_)
 
@@ -79,7 +79,3 @@ The actual amount of time it takes to perform a review or update the changes is 
 * When the PR is ready to be merged into dev, approve the PR and either (1) squash-merge the PR into dev with a succinct description of the changes or (2) ping the developer to squash-merge the PR himself.
 
 If you are chosen as a reviewer and you know that you will not be able to review the PR in a timely manner, please let the developer know and provide suggestions for who to choose instead. Once you start a PR review, you should make it a priority and stick with it until the end.
-
-
-
-
