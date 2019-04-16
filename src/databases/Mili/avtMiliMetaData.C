@@ -63,6 +63,7 @@
 //      isMultiM     Is multi mesh or not. 
 //      isMat        Is a material var. 
 //      isGlob       Is global. 
+//      shared       Is a shared variable. 
 //      cent         centering (node/cell). 
 //      meshAssoc    ID of associated mesh (used for multi-mesh).  
 //      avtType      Avt cell type. 
@@ -86,6 +87,7 @@ MiliVariableMetaData::MiliVariableMetaData(std::string sName,
                                            bool isMultiM,
                                            bool isMat,
                                            bool isGlob,
+                                           bool shared,
                                            avtCentering cent,
                                            int nDomains,
                                            int meshAssoc,  
@@ -103,6 +105,7 @@ MiliVariableMetaData::MiliVariableMetaData(std::string sName,
     multiMesh         = isMultiM;
     isMatVar          = isMat;
     isGlobal          = isGlob;
+    isShared          = shared;
     meshAssociation   = meshAssoc;
     centering         = cent;
     cellTypeAvt       = avtType;
@@ -288,7 +291,13 @@ MiliVariableMetaData::GetPath()
             path = "Primal";
         }
 
-        if (!classSName.empty())
+        //TODO: include element sets in shared once
+        //      issues are worked out. 
+        if (isShared && !isElementSet)
+        {
+            path += "/Shared";
+        }
+        else if (!classSName.empty())
         {
             path += "/" + classSName;
         }
@@ -310,6 +319,98 @@ MiliVariableMetaData::GetPath()
 
 
 // ***************************************************************************
+//  Method: MiliVariableMetaData::DetermineTrueName
+//
+//  Purpose:
+//      Determine a variable's true name. If it's an element set, its
+//      name is hidden, and we have to infer what it really is. This 
+//      method is static for use outside of the class as well. 
+//
+//  Arguments:
+//      name    The variable name to be assessed for truth. 
+//      comps   The variables component names (if any).
+//      isEs    If the variable is an element set, this will be set to true. 
+//
+//  Programmer: Alister Maguire
+//  Creation:   Jan 15, 2019
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+std::string
+MiliVariableMetaData::DetermineTrueName(const std::string name,
+                                        const std::vector<std::string> comps,
+                                        bool &isEs)
+{
+    std::string esId    = "es_";
+    std::string nameSub = name.substr(0, 3);
+    if (esId != nameSub)
+    {
+        isEs = false;
+        return name; 
+    }
+
+    if (comps.size() <= 0)
+    {
+        debug1 << "ERROR: we've found an element set that"
+            << " is not a vector!";
+        EXCEPTION1(InvalidVariableException, name.c_str());
+    }
+
+    //
+    // We're dealing with an element set. 
+    //
+    isEs = true;
+
+    //
+    // The vector should contain dimensional based variables
+    // with a leading charact signifiyting it's mapped name. 
+    // Since the vectors can also contain other elements, let's
+    // first find a dimensional variable. 
+    //
+    int targetIdx;
+    for (targetIdx = 0; targetIdx < comps.size(); ++targetIdx)
+    {
+        if (comps[targetIdx].size() > 1)
+        {
+            if (comps[targetIdx][1] == 'x')
+            {
+                break;
+            }
+        }
+    }
+    char leadingChar = comps[targetIdx][0];
+
+    switch (leadingChar)
+    {
+        //
+        // These are the known variables that can be element sets. 
+        // This may need to be updated in the future. 
+        //
+        case 'e':
+        {
+            std::string trueName = "strain";
+            return trueName;
+        }
+        case 's':
+        {
+            std::string trueName = "stress";
+            return trueName;
+        }
+        default:
+        {
+            char msg[1024]; 
+            sprintf(msg, "An element set of unknown type has been "
+                "encountered! If valid, code needs to be updated");
+            EXCEPTION2(UnexpectedValueException, name, msg);
+            break;
+        }
+    }
+}
+
+
+// ***************************************************************************
 //  Method: MiliVariableMetaData::DetermineESStatus
 //
 //  Purpose:
@@ -327,65 +428,17 @@ MiliVariableMetaData::GetPath()
 void
 MiliVariableMetaData::DetermineESStatus(void)
 {
-    std::string esId    = "es_";
-    std::string nameSub = shortName.substr(0, 3);
-    if (esId == nameSub)
-    {
-        isElementSet = true;
-    }
-
     //
     // If this is an element set, we need to determine and
     // assign it another name to be used in the visit path
     // besides its element set name. 
     //
+    std::string tName = DetermineTrueName(shortName, 
+        vectorComponents, isElementSet);
+
     if (isElementSet)
     {
-        if (vectorSize <= 0)
-        {
-            debug1 << "ERROR: we've found an element set that"
-                << " is not a vector!";
-            EXCEPTION1(InvalidVariableException, shortName.c_str());
-        }
-
-        //
-        // The vector should contain dimensional based variables
-        // with a leading charact signifiyting it's mapped name. 
-        // Since the vectors can also contain other elements, let's
-        // first find a dimensional variable. 
-        //
-        int targetIdx;
-        for (targetIdx = 0; targetIdx < vectorSize; ++targetIdx)
-        {
-            if (vectorComponents[targetIdx].size() > 1)
-            {
-                if (vectorComponents[targetIdx][1] == 'x')
-                {
-                    break;
-                }
-            }
-        }
-        char leadingChar = vectorComponents[targetIdx][0];
-
-        switch (leadingChar)
-        {
-            //
-            // These are the known variables that can be element sets. 
-            // This may need to be updated in the future. 
-            //
-            case 'e':
-                esMappedName = "strain";
-                break;
-            case 's':
-                esMappedName = "stress";
-                break;
-            default:
-                char msg[1024]; 
-                sprintf(msg, "An element set of unknown type has been "
-                    "encountered! If valid, code needs to be updated");
-                EXCEPTION2(UnexpectedValueException, shortName, msg);
-                break;
-        }
+        esMappedName = tName;
     }
 }
 
@@ -1086,6 +1139,17 @@ avtMiliMetaData::~avtMiliMetaData()
 
         delete [] miliMaterials;
     }
+
+    const size_t sharedSize = sharedVariables.size();
+    for (int i = 0; i < sharedSize; ++i) 
+    {
+        if (sharedVariables[i] != NULL)
+        {
+            delete sharedVariables[i];
+            sharedVariables[i] = NULL;
+        }
+    }
+    sharedVariables.clear();
 }
 
 
@@ -1663,6 +1727,16 @@ avtMiliMetaData::AddVarMD(int varIdx,
         containsSand = true;
     }
     miliVariables[varIdx] = mvmd;
+
+    //
+    // If this is a shared variable, add some info about it
+    // for easy access in the future. 
+    //
+    if (mvmd->IsShared())
+    {
+        AddSharedVariableInfo(mvmd->GetShortName(), 
+            varIdx);
+    }
 }
 
 
@@ -2408,5 +2482,99 @@ avtMiliMetaData::GetMaterialColors(stringVector &matColors)
         {
             matColors.push_back(miliMaterials[i]->GetColor());
         }
+    }
+}
+
+
+// ***************************************************************************
+//  Method: avtMiliMetaData::GetSharedVariableInfo
+//
+//  Purpose:
+//      Retrieve info about a shared variable.
+//
+//  Arguments: 
+//      shortName     The short name of the desired variable. 
+//           
+//  Programmer: Alister Maguire
+//  Creation:   Jan 15, 2019
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+SharedVariableInfo *
+avtMiliMetaData::GetSharedVariableInfo(const char *shortName)
+{
+    std::vector<SharedVariableInfo *>::iterator sItr;
+    for (sItr = sharedVariables.begin(); sItr != sharedVariables.end();
+         ++sItr)
+    {
+        //
+        // If this is a known shared variable, just add the 
+        // indicies. 
+        //
+        if ((*sItr)->shortName == shortName)
+        {
+            return (*sItr);
+        }
+    }
+
+    return NULL;
+}
+
+
+// ***************************************************************************
+//  Method: avtMiliMetaData::AddSharedVariableInfo
+//
+//  Purpose:
+//      Add info about a shared variable. This can either be a new
+//      shared var or information about a known shared var. 
+//
+//      FYI: mili allows a single variable to be shared across
+//      multiple classes. This can complicate things when one
+//      is an element set and another is not. We keep track of
+//      some lookup info to ease future access. 
+//
+//  Arguments: 
+//      shortName     The short name of our variable. 
+//      varIdx        The variable index in relation to the MD container. 
+//           
+//  Programmer: Alister Maguire
+//  Creation:   Jan 15, 2019
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtMiliMetaData::AddSharedVariableInfo(std::string shortName,
+                                       int varIdx)
+{
+    bool newVar = true;
+
+    std::vector<SharedVariableInfo *>::iterator sItr;
+    for (sItr = sharedVariables.begin(); sItr != sharedVariables.end();
+         ++sItr)
+    {
+        //
+        // If this is a known shared variable, just add the 
+        // indicies. 
+        //
+        if ((*sItr)->shortName == shortName)
+        {
+            newVar = false;
+            (*sItr)->variableIndicies.push_back(varIdx);
+        }
+    }
+
+    if (newVar)
+    {
+        //
+        // This is a new variable. Add it. 
+        //
+        SharedVariableInfo *newShared = new SharedVariableInfo();
+        newShared->shortName = shortName;
+        newShared->variableIndicies.push_back(varIdx);
+        sharedVariables.push_back(newShared);
     }
 }

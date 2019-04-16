@@ -90,13 +90,15 @@ def TestTensors():
     SetView3D(v)
     SetTimeSliderState(90)
 
-    AddPlot("Tensor", "Primal/brick/stress")
+    #AddPlot("Tensor", "Primal/Shared/brick/stress")
+    AddPlot("Tensor", "Primal/Shared/stress")
     DrawPlots()
     Test("mili_tensors_01")
 
-    ChangeActivePlotsVar("Primal/brick/stress")
-    Test("mili_tensors_02")
+    #ChangeActivePlotsVar("Primal/Shared/brick/stress")
+    #Test("mili_tensors_02")
     
+    #ChangeActivePlotsVar("Primal/Shared/shell/stress")
     ChangeActivePlotsVar("Primal/shell/stress")
     Test("mili_tensors_03")
     DeleteAllPlots()

@@ -43,7 +43,7 @@
 #ifndef AVT_MILI_FILE_FORMAT_H
 #define AVT_MILI_FILE_FORMAT_H
 
-#include <map>
+#include <unordered_map>
 #include <vectortypes.h>
 
 #include <Expression.h>
@@ -61,6 +61,8 @@ extern "C" {
 class avtMaterial;
 class vtkDataArray;
 class vtkUnstructuredGrid;
+class vtkFloatArray;
+class vtkPoints;
 
 
 // ****************************************************************************
@@ -107,48 +109,68 @@ class avtMiliFileFormat : public avtMTMDFileFormat
                                               int,
                                               float *);
  
-    virtual vtkDataSet   *GetMesh(int, int, const char *); 
+    virtual vtkDataSet   *GetMesh(int, 
+                                  int, 
+                                  const char *); 
 
-    virtual vtkDataArray *GetVar(int, int, const char *);
+    virtual vtkDataArray *GetVar(int, 
+                                 int, 
+                                 const char *);
+    void                  GetVar(int, 
+                                 int, 
+                                 int,
+                                 MiliVariableMetaData *varMD,
+                                 vtkFloatArray *);
 
-    virtual vtkDataArray *GetVectorVar(int, int, const char *);
+    virtual vtkDataArray *GetVectorVar(int, 
+                                       int, 
+                                       const char *);
+    void                  GetVectorVar(int, 
+                                       int, 
+                                       int,
+                                       MiliVariableMetaData *varMD,
+                                       vtkFloatArray *);
 
     virtual void          PopulateDatabaseMetaData(avtDatabaseMetaData *, int);
 
-    virtual void         *GetAuxiliaryData(const char *var, int, int,
-                                           const char *type, void *args,
+    virtual void         *GetAuxiliaryData(const char *, 
+                                           int, 
+                                           int,
+                                           const char *, 
+                                           void *,
                                            DestructorFunction &); 
 
     virtual void          FreeUpResources(void) {};
 
-    virtual bool          CanCacheVariable(const char *varname);
+    virtual bool          CanCacheVariable(const char *);
 
   protected:
 
-    void                  IssueWarning(const char *msg, 
-                                       int key);
+    inline void           OpenDB(int);
 
-    inline void           OpenDB(int dom);
+    void                  ReadMesh(int);
 
-    void                  ReadMesh(int dom);
+    vtkPoints            *GetMeshPoints(int, int, int);
 
-    void                  PopulateSubrecordInfo(int dom, 
-                                                int meshId);
+    void                  PopulateSubrecordInfo(int, 
+                                                int);
 
     int                   ExtractMeshIdFromPath(const std::string &);
 
     //
     // Json extraction methods. 
     //
-    void                  LoadMiliInfoJson(const char *fname);
+    void                  LoadMiliInfoJson(const char *);
 
-    int                   CountJsonClassVariables(const rapidjson::Document &);
+    int                   CountJsonClassVariables(const rapidjson::Document &,
+                                       std::unordered_map<std::string, int> &);
 
     MiliVariableMetaData *ExtractJsonVariable(const rapidjson::Value &,
                                               std::string,
                                               std::string,
                                               std::string,
                                               int,
+                                              bool,
                                               bool,
                                               bool);
 
@@ -158,19 +180,20 @@ class avtMiliFileFormat : public avtMTMDFileFormat
                                                       int);
 
     void                  ExtractJsonClasses(rapidjson::Document &,
-                                             int);
+                                             int,
+                                       std::unordered_map<std::string, int> &);
 
     //
     // Label info retrieval.
     //
-    void RetrieveNodeLabelInfo(const int meshId, 
-                               char *shortName, 
-                               const int dom);
+    void RetrieveNodeLabelInfo(const int, 
+                               char *, 
+                               const int);
 
-    void RetrieveCellLabelInfo(const int meshId, 
-                               char *shortName, 
-                               const int dom, 
-                               const int elemsInGroup);
+    void RetrieveCellLabelInfo(const int, 
+                               char *, 
+                               const int, 
+                               const int);
 
     //
     // Expression helpers. 
