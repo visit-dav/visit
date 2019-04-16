@@ -42,7 +42,7 @@ Replace the content of this section with a description of how you tested the cha
 The Checklist
 ~~~~~~~~~~~~~
 
-The Checklist serves as a list of tasks you should do before submitting the PR, and you should check them off when you've doing them. Any items that do not relate to your PR should be erased (for example, if you did not submit a bugfix or feature, you probably won't need to add an additional test; this line in the checklist should be erased).
+The Checklist serves as a list of tasks you should do before submitting the PR, and you should check them off when you've done them. Any items that do not relate to your PR should be erased (for example, if you did not submit a bugfix or feature, you probably won't need to add an additional test; this line in the checklist should be erased).
 
 
 Notes
@@ -92,9 +92,9 @@ Iteration Process
 Review processes are iterative by nature, and PR reviews are no exception. A typical review process looks like this:
 
 #. You submit a pull request and select a reviewer.
-#. Reviewer goes through and leave comments, suggestions, and tasks for you to do.
+#. The reviewer goes through and leave comments, suggestions, and tasks for you to do.
 #. You get clarification for anything that us unclear and update your PR according to the suggestions.
-#. Repeat steps 2 and 3 until reviewer is satisfied with the PR.
+#. Repeat steps 2 and 3 until the reviewer is satisfied with the PR.
 #. The reviewer approves the PR.
 
 The actual amount of time it takes to perform a review or update the changes is relatively small compared to the amount of time the PR *waits* for the next step in the iteration. The wait time can be exacerbated in two ways: (1) The reviewer or developer is unaware that the PR is ready for the next step in the iteration process, and (2) the reviewer or developer is too busy with other work. To help alleviate the situation, we recommend the following guidelines for the developer (guidelines for the reviewer can be found `here <https://visit-sphinx-github-user-manual.readthedocs.io/en/develop/dev_manual/pr_review.html#iteration-process>`_).
@@ -104,6 +104,3 @@ The actual amount of time it takes to perform a review or update the changes is 
 * When the reviewers have finished reviewing (step 2), make it a top priority to update your code according to the requested changes. Use the @<username> feature to notifiy the reviewers of any questions you have about the suggestions/comments.
 * When you have finished updating your PR (step 3), leave a comment on the PR using @<username> to let the reviewers know that the PR is ready to be looked at again.
 * Reviewers won't always merge a PR after they approve it, especially if the squash-merge involves combining many commits into a single, descriptive comment. When your PR is approved, you should squash-merge to develop with a succinct description.
-
-
-
