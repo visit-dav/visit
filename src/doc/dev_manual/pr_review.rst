@@ -4,13 +4,13 @@ Reviewing a Pull Request
 Overview
 --------
 
-The Pull Request (PR) is a mechanism that allows other developers on the team to review your work before merging your branch into develop. It is extremely useful for preventing bugs, enforcing coding practicing, and ensuring changes are consistent with VisIt's overall vision. Although a review does slow down the developmenet process, there are several policies we put into place to ensure a review is completed in a timely manner, and the benefits of a review outweight the additional development time.
+The Pull Request (PR) is a mechanism that allows other developers on the team to review your work before merging your branch into develop. It is extremely useful for preventing bugs, enforcing coding practicing, and ensuring changes are consistent with VisIt's overall vision. Although a review does slow down the developmenet process, there are several policies we put into place to ensure a review is completed in a timely manner, and the benefits of a review outweigh the added time.
 
 
 Checklist
 ---------
 
-In the course of reviewing a PR, you should use the following as a checklist for things to look for. This is the same checklist as the one in the template, but the developer may delete items from the list. You should verify that any deleted items are rightfully so.
+In the course of reviewing a PR, you should use the following as a checklist for things to look for. This is the same checklist as the one in the template, but the developer may delete items from the list, so we've provided it here as well. You should verify that any deleted items are rightfully so.
 
 * My code follows the style guidelines of this project
 * I have performed a self-review of my own code
@@ -21,7 +21,6 @@ In the course of reviewing a PR, you should use the following as a checklist for
 * I have added tests that prove my fix is effective or that my feature works
 * New and existing unit tests pass locally with my changes
 * I have added any new baselines to the repo
-* I have assigned reviewers (see LINK LINK LINK for information on VisIt procedures for PR reviewers)
 
 
 Comments and Tasks
@@ -49,11 +48,11 @@ Leaving comments does not mean that you have left a review. In addition to the c
 
 When you leave a code related comment, you can select the "Start a review" button, which will initiate a review. For each new comment you leave, you should click "Add review comment". When you are done, navigate to the top-right of the page, where you will find a green button that says "Finish your review".
 
-Alternatley, you can leave all your comments first and then submit a review. Use the "Add single comment" button for each code related comment. Then, once you have finished commenting. Navigate to the top-right of the "Files changd" page and click "Finish your review"
+Alternatley, you can leave all your comments first and then submit a review. Use the "Add single comment" button for each code related comment. Then, once you have finished commenting, navigate to the top-right of the page and click "Finish your review".
 
 Upon clicking the green "Finish your review", you are presented with the ability to add additional generic comments and to update the state of the PR. If you left comments via the "Add single comment" button, then you **must** add an additional comment here to be able to submit a review. These are the three options for updating the PR:
 
-#. Comment - Submit general feedback without explicit approval. This is ambiguous and should not be used because the developer does not know what to do. It does not update the state of the PR.
+#. Comment - Submit general feedback without explicit approval. This is ambiguous and should not be used because the developer does not know if you think changes should be made. It does not update the state of the PR.
 #. Approve - Submit feedback and approve merging these changes. Use this when you you think the PR is ready to be merged into develop.
 #. Request changes - Submit feedback that must be addressed before merging. Use this when you want the developer to make additional changes to the PR.
 
