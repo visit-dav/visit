@@ -561,6 +561,7 @@ avtRemapFilter::ClipDomain(avtDataTree_p inLeaf)
             }
         }
     } // Finished looping over cells
+    in_ds->Delete();
 } // End ClipDomain
 
 
