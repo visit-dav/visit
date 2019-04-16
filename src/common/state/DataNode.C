@@ -511,6 +511,14 @@ DataNode::FreeData()
             delete mptr;
         }
         break;
+    case MAX_NODE_TYPES: // unused
+        {
+            // we should never hit this case
+            // but the case is here to avoid
+            // warnings related to not
+            // testing all enum values
+        };
+        break;
     }
 
     Data = 0;
