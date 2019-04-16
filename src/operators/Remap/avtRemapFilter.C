@@ -389,6 +389,16 @@ avtRemapFilter::ClipDomain(avtDataTree_p inLeaf)
     // |0     1|
     // |   2   |
     // + ----- +
+
+    // --- Instantiate the clippers --- //
+    vtkVisItClipper* last = NULL;
+    vtkVisItClipper* clipperLeft = vtkVisItClipper::New();
+    vtkVisItClipper* clipperRight = vtkVisItClipper::New();
+    vtkVisItClipper* clipperTop = vtkVisItClipper::New();
+    vtkVisItClipper* clipperBottom = vtkVisItClipper::New();
+    vtkVisItClipper* clipperFront = vtkVisItClipper::New();
+    vtkVisItClipper* clipperBack = vtkVisItClipper::New();
+
     
     // --- Loop over each cell --- //
     debug5 << "Beginning the clipping loop" << std::endl;
@@ -404,13 +414,6 @@ avtRemapFilter::ClipDomain(avtDataTree_p inLeaf)
                         atts.GetCellsX() * atts.GetCellsY() * k;
 
                 // --- Clip the cell --- //
-                vtkVisItClipper* last = NULL;
-                vtkVisItClipper* clipperLeft = vtkVisItClipper::New();
-                vtkVisItClipper* clipperRight = vtkVisItClipper::New();
-                vtkVisItClipper* clipperTop = vtkVisItClipper::New();
-                vtkVisItClipper* clipperBottom = vtkVisItClipper::New();
-                vtkVisItClipper* clipperFront = vtkVisItClipper::New();
-                vtkVisItClipper* clipperBack = vtkVisItClipper::New();
 
                 // Left plane
                 clipperLeft->SetInputData(in_ds);
@@ -552,15 +555,21 @@ avtRemapFilter::ClipDomain(avtDataTree_p inLeaf)
                 // Done updating variable
 
                 subCellVolumes->Delete();
-                clipperLeft->Delete();
-                clipperRight->Delete();
-                clipperTop->Delete();
-                clipperBottom->Delete();
-                clipperFront->Delete();
-                clipperBack->Delete();
+                clipperLeft->RemoveAllInputs();
+                clipperRight->RemoveAllInputs();
+                clipperTop->RemoveAllInputs();
+                clipperBottom->RemoveAllInputs();
+                clipperFront->RemoveAllInputs();
+                clipperBack->RemoveAllInputs();
             }
         }
     } // Finished looping over cells
+    clipperLeft->Delete();
+    clipperRight->Delete();
+    clipperTop->Delete();
+    clipperBottom->Delete();
+    clipperFront->Delete();
+    clipperBack->Delete();
     in_ds->Delete();
 } // End ClipDomain
 
