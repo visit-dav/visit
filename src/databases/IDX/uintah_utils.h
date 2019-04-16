@@ -23,26 +23,33 @@ static bool overlap(const int& a,const int& b,const int& p,const int& q)
 
 static bool intersect(bool* over, int* a_low, int* a_high,int* b_low, int* b_high, int* inter_low, int* inter_high){
    
-  int min_dist=999999999; 
-  int d_min =-1;
   int overlap_size =1;
+  int res1=0;
+  int res2=0;
   for(int i=0;i<3;i++){
     inter_low[i]=std::max(a_low[i],b_low[i]);
     inter_high[i]=std::min(a_high[i],b_high[i]);
     int size= (inter_high[i]-inter_low[i]);
-    if(size<min_dist){
-      d_min=i;
-      min_dist=size;
-    }
-   
-    overlap_size*=size;
-  }    
 
-  for(int i=0;i<3;i++)
-    if(i==d_min)
-      over[i]=true;
-    else 
-      over[i]=false; 
+    over[i] = size >= 0;//overlap(a_low[i], a_high[i], b_low[i], b_high[i]);
+    // if(size<min_dist){
+    //   d_min=i;
+    //   min_dist=size;
+    // }
+    //res1 += ((a_low[i] <= b_high[i]) && (a_high[i] >= b_low[i]));
+    //res2 += ((b_low[i] <= a_high[i]) && (b_high[i] >= a_low[i]));
+
+    overlap_size*=size;
+  }
+
+  //return (res1==3);// || (res2==3);
+
+
+  // for(int i=0;i<3;i++)
+  //   if(i==d_min)
+  //     over[i]=true;
+  //   else 
+  //     over[i]=false; 
 
   //printf("direction overlap %d size %d\n", d_min, overlap_size);
   return overlap_size>0; 
@@ -51,7 +58,7 @@ static bool intersect(bool* over, int* a_low, int* a_high,int* b_low, int* b_hig
 static bool touch(bool* over, int* a_low, int* a_high,int* b_low, int* b_high, int* inter_low, int* inter_high){
    
   int min_dist=999999999; 
-  int d_min =-1;
+  int d_min =-999999;
   int overlap_size =1;
   int size_0 = 0;
   int size_0_d = 0;
@@ -69,7 +76,6 @@ static bool touch(bool* over, int* a_low, int* a_high,int* b_low, int* b_high, i
       d_min=i;
       min_dist=size;
     }
-   
     overlap_size*=size;
   }
 

@@ -2104,6 +2104,9 @@ QvisAnnotationWindow::UpdateAnnotationObjectControls(bool doAll)
 //   Kathleen Biagas, Wed Jun  8 17:10:30 PDT 2016
 //   Ensure spinbox values are retrieved.
 //
+//   Kathleen Biagas, Mon Apr  8 15:43:24 PDT 2019
+//   Set userInfoFont, not databaseInfoFont when processing userInfoFont.
+//
 // ****************************************************************************
 
 void
@@ -2141,7 +2144,7 @@ QvisAnnotationWindow::GetCurrentValues(int which_widget)
 
     if(which_widget == AnnotationAttributes::ID_userInfoFont || doAll)
     {
-        annotationAtts->SetDatabaseInfoFont(userInfoFont->getFontAttributes());
+        annotationAtts->SetUserInfoFont(userInfoFont->getFontAttributes());
     }
 
     if(which_widget == AnnotationAttributes::ID_databaseInfoFont || doAll)

@@ -15,10 +15,14 @@ if(PYTHON_EXECUTABLE)
     )
 endif()
 
+if(WIN32)
+    # prefer the python script over the executable
+    set(sphinx_script "sphinx-build-script.py")
+endif()
 
 find_program(SPHINX_EXECUTABLE
   NAMES
-    sphinx-build sphinx-build.exe
+    ${sphinx_script} sphinx-build sphinx-build.exe
   HINTS
     ${_python_paths}
   PATHS
@@ -27,6 +31,10 @@ find_program(SPHINX_EXECUTABLE
     /opt/local/bin
   DOC "Sphinx documentation generator"
 )
+
+if(WIN32)
+    unset(sphinx_script)
+endif()
 
 if( NOT SPHINX_EXECUTABLE )
   set(_Python_VERSIONS

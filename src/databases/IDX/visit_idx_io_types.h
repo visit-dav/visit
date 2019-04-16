@@ -18,6 +18,7 @@
 #include <cmath>
 #include <sstream>
 #include <cassert>
+#include <algorithm>
 
 namespace VisitIDXIO{
 enum DTypes{

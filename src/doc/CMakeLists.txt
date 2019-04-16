@@ -35,6 +35,8 @@
 # DAMAGE.
 #
 # Modifications:
+#   Kathleen Biagas, Thu March 7, 2019
+#   Added sphinx_launcher (python executable) for Windows.
 #
 #****************************************************************************/
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindSphinx.cmake)
@@ -55,15 +57,25 @@ endif()
  
 # HTML output directory
 set(SPHINX_HTML_DIR "${CMAKE_CURRENT_BINARY_DIR}/html")
- 
+
+if(WIN32)
+    set(sphinx_launcher ${PYTHON_EXECUTABLE})
+endif()
+
 configure_file(
     "${CMAKE_CURRENT_SOURCE_DIR}/conf.py"
     "${CMAKE_CURRENT_BINARY_DIR}/conf.py"
     @ONLY)
  
-add_custom_target(gui_manual ALL
+add_custom_target(user_manuals ALL
+    ${sphinx_launcher}
     ${SPHINX_EXECUTABLE}
         -a -q -b html
         "${CMAKE_CURRENT_SOURCE_DIR}"
         "${SPHINX_HTML_DIR}"
-    COMMENT "Building Sphinx-HTML documentation for GUI")
+    COMMENT "Building Sphinx-HTML documentation for GUI and CLI")
+
+if(WIN32)
+    unset(sphinx_launcher)
+endif()
+

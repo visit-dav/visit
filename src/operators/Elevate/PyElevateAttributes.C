@@ -76,11 +76,25 @@ PyElevateAttributes_ToString(const ElevateAttributes *atts, const char *prefix)
     std::string str;
     char tmpStr[1000];
 
-    if(atts->GetUseXYLimits())
-        SNPRINTF(tmpStr, 1000, "%suseXYLimits = 1\n", prefix);
-    else
-        SNPRINTF(tmpStr, 1000, "%suseXYLimits = 0\n", prefix);
-    str += tmpStr;
+    const char *useXYLimits_names = "Never, Auto, Always";
+    switch (atts->GetUseXYLimits())
+    {
+      case ElevateAttributes::Never:
+          SNPRINTF(tmpStr, 1000, "%suseXYLimits = %sNever  # %s\n", prefix, prefix, useXYLimits_names);
+          str += tmpStr;
+          break;
+      case ElevateAttributes::Auto:
+          SNPRINTF(tmpStr, 1000, "%suseXYLimits = %sAuto  # %s\n", prefix, prefix, useXYLimits_names);
+          str += tmpStr;
+          break;
+      case ElevateAttributes::Always:
+          SNPRINTF(tmpStr, 1000, "%suseXYLimits = %sAlways  # %s\n", prefix, prefix, useXYLimits_names);
+          str += tmpStr;
+          break;
+      default:
+          break;
+    }
+
     const char *limitsMode_names = "OriginalData, CurrentPlot";
     switch (atts->GetLimitsMode())
     {
@@ -160,7 +174,16 @@ ElevateAttributes_SetUseXYLimits(PyObject *self, PyObject *args)
         return NULL;
 
     // Set the useXYLimits in the object.
-    obj->data->SetUseXYLimits(ival != 0);
+    if(ival >= 0 && ival < 3)
+        obj->data->SetUseXYLimits(ElevateAttributes::ScalingMode(ival));
+    else
+    {
+        fprintf(stderr, "An invalid useXYLimits value was given. "
+                        "Valid values are in the range of [0,2]. "
+                        "You can also use the following names: "
+                        "Never, Auto, Always.");
+        return NULL;
+    }
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -170,7 +193,7 @@ ElevateAttributes_SetUseXYLimits(PyObject *self, PyObject *args)
 ElevateAttributes_GetUseXYLimits(PyObject *self, PyObject *args)
 {
     ElevateAttributesObject *obj = (ElevateAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(obj->data->GetUseXYLimits()?1L:0L);
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetUseXYLimits()));
     return retval;
 }
 
@@ -462,6 +485,13 @@ PyElevateAttributes_getattr(PyObject *self, char *name)
 {
     if(strcmp(name, "useXYLimits") == 0)
         return ElevateAttributes_GetUseXYLimits(self, NULL);
+    if(strcmp(name, "Never") == 0)
+        return PyInt_FromLong(long(ElevateAttributes::Never));
+    if(strcmp(name, "Auto") == 0)
+        return PyInt_FromLong(long(ElevateAttributes::Auto));
+    if(strcmp(name, "Always") == 0)
+        return PyInt_FromLong(long(ElevateAttributes::Always));
+
     if(strcmp(name, "limitsMode") == 0)
         return ElevateAttributes_GetLimitsMode(self, NULL);
     if(strcmp(name, "OriginalData") == 0)

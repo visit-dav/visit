@@ -134,6 +134,10 @@ def TestSizeAndPosition(a):
     AddOperator("Elevate")
     AddPlot("Pseudocolor", "p")
     AddOperator("Elevate")
+    elevate_atts = ElevateAttributes()
+    elevate_atts.useXYLimits = elevate_atts.Never
+    SetOperatorOptions(elevate_atts)
+    
     DrawPlots()
     Test("legends_06")
     DeleteAllPlots()

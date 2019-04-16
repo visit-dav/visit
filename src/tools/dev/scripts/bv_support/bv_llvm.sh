@@ -27,10 +27,10 @@ function bv_llvm_info
 {
     export BV_LLVM_VERSION=${BV_LLVM_VERSION:-"5.0.0"}
     export BV_LLVM_FILE=${BV_LLVM_FILE:-"llvm-${BV_LLVM_VERSION}.src.tar.xz"}
-    export BV_LLVM_BUILD_DIR=${BV_LLVM_BUILD_DIR:-"llvm-${BV_LLVM_VERSION}.src"}
     export BV_LLVM_URL=${BV_LLVM_URL:-"http://releases.llvm.org/${BV_LLVM_VERSION}/"}
-    export LLVM_MD5_CHECKSUM=""
-    export LLVM_SHA256_CHECKSUM=""
+    export BV_LLVM_BUILD_DIR=${BV_LLVM_BUILD_DIR:-"llvm-${BV_LLVM_VERSION}.src"}
+    export LLVM_MD5_CHECKSUM="5ce9c5ad55243347ea0fdb4c16754be0"
+    export LLVM_SHA256_CHECKSUM="e35dcbae6084adcf4abb32514127c5eabd7d63b733852ccdb31e06f1373136da"
 }
 
 function bv_llvm_print
@@ -192,6 +192,15 @@ function build_llvm
         LLVM_CMAKE_PYTHON="-DPYTHON_EXECUTABLE:FILEPATH=$PYTHON_COMMAND"
     fi
 
+    #
+    # Determine the LLVM_TARGET_TO_BUILD.
+    #
+    if [[ "$(uname -m)" == "ppc64" || "$(uname -m)" == "ppc64le" ]]; then
+        LLVM_TARGET="PowerPC"
+    else
+        LLVM_TARGET="X86"
+    fi
+
     # LLVM documentation states thet BUILD_SHARED_LIBS is not to be used
     # in conjuction with LLVM_BUILD_LLVM_DYLIB, and should only be used
     # by LLVM developers.
@@ -204,7 +213,7 @@ function build_llvm
         -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER} \
         -DCMAKE_C_FLAGS:STRING="${CFLAGS} ${C_OPT_FLAGS}" \
         -DCMAKE_C_COMPILER:STRING=${C_COMPILER} \
-        -DLLVM_TARGETS_TO_BUILD=X86 \
+        -DLLVM_TARGETS_TO_BUILD=${LLVM_TARGET} \
         -DLLVM_ENABLE_RTTI:BOOL=ON \
         -DLLVM_BUILD_LLVM_DYLIB:BOOL=ON \
         $LLVM_CMAKE_PYTHON \

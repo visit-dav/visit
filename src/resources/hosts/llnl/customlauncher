@@ -165,6 +165,10 @@ class JobSubmitter_bsub_LLNL(JobSubmitter):
 #   Eric Brugger, Tue Dec 18 14:32:09 PST 2018
 #   I added czvnc and rzvnc to the list of toss3 machines.
 #
+#   Eric Brugger, Fri Nov 30 14:15:23 PST 2018
+#   I removed rzansel from the list of toss3 machines. I modified the
+#   launcher to use a custom launcher on rzansel.
+#
 ###############################################################################
 
 class LLNLLauncher(MainLauncher):
@@ -238,7 +242,6 @@ class LLNLLauncher(MainLauncher):
             self.sectorname() == "pinot" or \
             self.sectorname() == "quartz" or \
             self.sectorname() == "rzalastor" or \
-            self.sectorname() == "rzansel" or \
             self.sectorname() == "rzgenie" or \
             self.sectorname() == "rzhasgpu" or \
             self.sectorname() == "rzslic" or \
@@ -264,6 +267,7 @@ class LLNLLauncher(MainLauncher):
             return JobSubmitter_mpirun_LLNL(self)
         if launch[:4] == "bsub":
             if self.sectorname() == "lassen" or \
+                self.sectorname() == "rzansel" or \
                 self.sectorname() == "sierra":
                 return JobSubmitter_bsub_LLNL(self)
         return super(LLNLLauncher, self).JobSubmitterFactory(launch)

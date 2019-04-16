@@ -28,8 +28,10 @@ function bv_openssl_info
 {
     export OPENSSL_VERSION=${OPENSSL_VERSION:-"1.0.2j"}
     export OPENSSL_FILE=${OPENSSL_FILE:-"openssl-${OPENSSL_VERSION}.tar.gz"}
-    export OPENSSL_BUILD_DIR=${OPENSSL_BUILD_DIR:-"openssl-${OPENSSL_VERSION}"}
     export OPENSSL_URL=${OPENSSL_URL:-"https://www.openssl.org/source/"}
+    export OPENSSL_BUILD_DIR=${OPENSSL_BUILD_DIR:-"openssl-${OPENSSL_VERSION}"}
+    export OPENSSL_MD5_CHECKSUM="96322138f0b69e61b7212bc53d5e912b"
+    export OPENSSL_SHA256_CHECKSUM="e7aff292be21c259c6af26469c7a9b3ba26e9abaaffd325e3dccc9785256c431"
 }
 
 function bv_openssl_print

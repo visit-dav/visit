@@ -21,17 +21,21 @@ function bv_mfem_depends_on
         depends_on="$depends_on zlib"
     fi
 
+    if [[ "$DO_CONDUIT" == "yes" ]] ; then
+        depends_on="$depends_on conduit"
+    fi
+
     echo $depends_on
 }
 
 function bv_mfem_info
 {
-    export MFEM_VERSION=${MFEM_VERSION:-"3.3"}
+    export MFEM_VERSION=${MFEM_VERSION:-"3.4"}
     export MFEM_FILE=${MFEM_FILE:-"mfem-${MFEM_VERSION}.tgz"}
     export MFEM_BUILD_DIR=${MFEM_BUILD_DIR:-"mfem-${MFEM_VERSION}"}
-    export MFEM_URL=${MFEM_URL:-"http://goo.gl/Vrpsns"}
-    export MFEM_MD5_CHECKSUM="7c6d66af6d48fb096133d6001fe684d0"
-    export MFEM_SHA256_CHECKSUM="b17bd452593aada93dc0fee748fcfbbf4f04ce3e7d77fdd0341cc9103bcacd0b"
+    export MFEM_URL=${MFEM_URL:-"https://bit.ly/mfem-3-4"}
+    export MFEM_MD5_CHECKSUM="59aff55ba3d7d7816cb3efbf84af7724"
+    export MFEM_SHA256_CHECKSUM="4e73e4fe0482636de3c5dc983cd395839a83cb16f6f509bd88b053e8b3858e05"
 }
 
 function bv_mfem_print
@@ -68,8 +72,17 @@ function bv_mfem_host_profile
             fi
         fi
 
+        CONDUIT_LIBDEP=""
+        if [[ "$DO_CONDUIT" == "yes" ]] ; then
+            CONDUIT_LIBDEP="\${VISIT_CONDUIT_LIBDEP}"
+            echo \
+                "VISIT_OPTION_DEFAULT(VISIT_MFEM_INCDEP CONDUIT_INCLUDE_DIR TYPE STRING)" \
+                    >> $HOSTCONF
+        fi
+
+
         echo \
-            "VISIT_OPTION_DEFAULT(VISIT_MFEM_LIBDEP $ZLIB_LIBDEP TYPE STRING)" \
+            "VISIT_OPTION_DEFAULT(VISIT_MFEM_LIBDEP $CONDUIT_LIBDEP $ZLIB_LIBDEP TYPE STRING)" \
                 >> $HOSTCONF
     fi
 }
@@ -114,12 +127,28 @@ function build_mfem
         ZLIBARG=-L${VISITDIR}/zlib/${ZLIB_VERSION}/${VISITARCH}/lib
     fi
 
+    MFEM_USE_CONDUIT=NO
+
+    if [[ "$DO_CONDUIT" == "yes" ]] ; then
+        MFEM_USE_CONDUIT=YES
+        CONDUIT_OPT_VALS="-I${VISITDIR}/conduit/${CONDUIT_VERSION}/${VISITARCH}/include/conduit"
+        CONDUIT_LIB_VALS="-L${VISITDIR}/conduit/${CONDUIT_VERSION}/${VISITARCH}/lib/ -lconduit_relay -lconduit_blueprint -lconduit"
+        # we may also need HDF5, conduit's config.mk includes this info, but mfem isn't using it yet
+        if [[ "$DO_HDF5" == "yes" ]] ; then
+            CONDUIT_OPT_VALS="${CONDUIT_OPT_VALS} -I${VISITDIR}/hdf5/${HDF5_VERSION}/${VISITARCH}/include/"
+            CONDUIT_LIB_VALS="${CONDUIT_OPT_VALS} -L${VISITDIR}/hdf5/${HDF5_VERSION}/${VISITARCH}/ -lhdf5"
+        fi
+    fi
+
     #
     # Call configure
     #
     info "Configuring mfem . . ."
-    info $MAKE config CXX="$CXX_COMPILER" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" MFEM_USE_GZSTREAM=YES LDFLAGS="$ZLIBARG -lz"
-    $MAKE config CXX="$CXX_COMPILER" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" MFEM_USE_GZSTREAM=YES LDFLAGS="$ZLIBARG -lz"
+    info $MAKE config CXX="$CXX_COMPILER" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" MFEM_USE_GZSTREAM=YES LDFLAGS="$ZLIBARG -lz" \
+              MFEM_USE_CONDUIT=${MFEM_USE_CONDUIT} CONDUIT_OPT="${CONDUIT_OPT_VALS}" CONDUIT_LIB="${CONDUIT_LIB_VALS}"
+
+    $MAKE config CXX="$CXX_COMPILER" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" MFEM_USE_GZSTREAM=YES LDFLAGS="$ZLIBARG -lz" \
+              MFEM_USE_CONDUIT=${MFEM_USE_CONDUIT} CONDUIT_OPT="${CONDUIT_OPT_VALS}" CONDUIT_LIB="${CONDUIT_LIB_VALS}"
 
     #
     # Build mfem

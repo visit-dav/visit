@@ -71,6 +71,12 @@ public:
         OriginalData,
         CurrentPlot
     };
+    enum ScalingMode
+    {
+        Never,
+        Auto,
+        Always
+    };
 
     // These constructors are for objects of this class
     ElevateAttributes();
@@ -100,7 +106,7 @@ public:
     void SelectVariable();
 
     // Property setting methods
-    void SetUseXYLimits(bool useXYLimits_);
+    void SetUseXYLimits(ScalingMode useXYLimits_);
     void SetLimitsMode(LimitsMode limitsMode_);
     void SetScaling(Scaling scaling_);
     void SetSkewFactor(double skewFactor_);
@@ -112,7 +118,7 @@ public:
     void SetVariable(const std::string &variable_);
 
     // Property getting methods
-    bool              GetUseXYLimits() const;
+    ScalingMode       GetUseXYLimits() const;
     LimitsMode        GetLimitsMode() const;
     Scaling           GetScaling() const;
     double            GetSkewFactor() const;
@@ -139,6 +145,11 @@ public:
 protected:
     static std::string LimitsMode_ToString(int);
 public:
+    static std::string ScalingMode_ToString(ScalingMode);
+    static bool ScalingMode_FromString(const std::string &, ScalingMode &);
+protected:
+    static std::string ScalingMode_ToString(int);
+public:
 
     // Keyframing methods
     virtual std::string               GetFieldName(int index) const;
@@ -163,7 +174,7 @@ public:
     };
 
 private:
-    bool        useXYLimits;
+    int         useXYLimits;
     int         limitsMode;
     int         scaling;
     double      skewFactor;
@@ -178,6 +189,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define ELEVATEATTRIBUTES_TMFS "biidbdbdbs"
+#define ELEVATEATTRIBUTES_TMFS "iiidbdbdbs"
 
 #endif

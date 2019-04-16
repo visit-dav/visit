@@ -33,8 +33,8 @@ function bv_glu_info
     export GLU_FILE=${GLU_FILE:-"glu-9.0.0.tar.gz"}
     export GLU_VERSION=${GLU_VERSION:-"9.0.0"}
     export GLU_BUILD_DIR=${GLU_BUILD_DIR:-"glu-9.0.0"}
-    export GLU_MD5_CHECKSUM=""
-    export GLU_SHA256_CHECKSUM=""
+    export GLU_MD5_CHECKSUM="bbc57d4fe3bd3fb095bdbef6fcb977c4"
+    export GLU_SHA256_CHECKSUM="4387476a1933f36fec1531178ea204057bbeb04cc2d8396c9ea32720a1f7e264"
     export GLU_URL=${GLU_URL:-"ftp://ftp.freedesktop.org/pub/mesa/glu"}
 }
 
@@ -199,7 +199,7 @@ function build_glu
 
     # NOTE: we install the library into the MesaGL directories.
     if [[ "$DO_MESAGL" == "yes" ]] ; then
-        issue_command env PKG_CONFIG_LIBDIR=${MESAGL_INSTALL_DIR}/lib \
+        issue_command env GL_LIBS="-L${MESAGL_INSTALL_DIR}/lib" GL_CFLAGS="-I${MESAGL_INSTALL_DIR}/include" \
             CC=${C_COMPILER} CFLAGS="${C_OPT_FLAGS}" \
             CXX=${CXX_COMPILER} CXXFLAGS="${CXX_OPT_FLAGS}" \
            ./configure --prefix=${MESAGL_INSTALL_DIR} ${GLU_STATIC_DYNAMIC}

@@ -65,6 +65,9 @@
 #   Only set HAVE_OSMESA flag when both OSMESA_LIBRARY and MESAGL_LIBRARY
 #   are set.
 #
+#   Eric Brugger, Tue Feb 26 12:55:26 PST 2019
+#   Add logic to install libOSMesa in lib directory.
+#
 #****************************************************************************/
 
 # Use the OSMESA_DIR hint from the config-site .cmake file
@@ -103,10 +106,11 @@ if (VISIT_OSMESA_DIR)
         set(OSMESA_LIBRARIES ${OSMESA_LIBRARY} CACHE STRING "OSMesa libraries")
         set(OSMESA_INCLUDE_DIR ${VISIT_OSMESA_DIR}/include)
 
+        # for LD_LIB_PATH swap to work, libOSMesa needs to be 
+        # called libGL.so.1
         execute_process(COMMAND ${CMAKE_COMMAND} -E copy
                                 ${OSMESA_LIBRARY}
-                                ${VISIT_BINARY_DIR}/lib/osmesa/)
-
+                                ${VISIT_BINARY_DIR}/lib/osmesa/libGL.so.1)
 
     else()
         message(STATUS "OSMesa not found, OSMESA_SIZE_LIMIT defaulting to 4096")
@@ -217,6 +221,16 @@ if (VISIT_OSMESA_DIR)
             FILE_PERMISSIONS      OWNER_READ OWNER_WRITE OWNER_EXECUTE
                                   GROUP_READ GROUP_WRITE GROUP_EXECUTE
                                   WORLD_READ             WORLD_EXECUTE
+            CONFIGURATIONS "" None Debug Release RelWithDebInfo MinSizeRel)
+
+    # OSMESA_LIBRARY is a symbolic link, so we need to install the real
+    # library as well as the link.
+    get_filename_component(OSMESA_LIBRARY_REAL ${OSMESA_LIBRARY} REALPATH)
+    install(FILES ${OSMESA_LIBRARY} ${OSMESA_LIBRARY_REAL}
+            DESTINATION ${VISIT_INSTALLED_VERSION_LIB}
+            PERMISSIONS      OWNER_READ OWNER_WRITE OWNER_EXECUTE
+                             GROUP_READ GROUP_WRITE GROUP_EXECUTE
+                             WORLD_READ             WORLD_EXECUTE
             CONFIGURATIONS "" None Debug Release RelWithDebInfo MinSizeRel)
 
 endif(VISIT_OSMESA_DIR) 

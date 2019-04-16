@@ -128,7 +128,10 @@ set(QT_QTOPENGL_LIBRARY ${Qt5OpenGL_LIBRARIES})
 # add Widgets or PrintSupport only where needed
 set(QT_QTGUI_LIBRARY ${Qt5Gui_LIBRARIES}
                      ${Qt5Widgets_LIBRARIES}
-                     ${Qt5PrintSupport_LIBRARIES})
+                     ${Qt5PrintSupport_LIBRARIES}
+                     # Qt's GUI lib Depends on OpenGL ...
+                     ${OPENGL_LIBRARIES}) 
+
 set(QT_QTNETWORK_LIBRARY ${Qt5Network_LIBRARIES})
 set(QT_QTXML_LIBRARY ${Qt5Xml_LIBRARIES})
 
@@ -254,6 +257,12 @@ if(NOT VISIT_QT_SKIP_INSTALL)
               DESTINATION ${VISIT_INSTALLED_VERSION_BIN}/gui.app/Contents/MacOS)
 
       install(DIRECTORY ${VISIT_QT_DIR}/plugins/platforms
+              DESTINATION ${VISIT_INSTALLED_VERSION_BIN}/viewer.app/Contents/MacOS)
+
+      install(DIRECTORY ${VISIT_QT_DIR}/plugins/styles
+              DESTINATION ${VISIT_INSTALLED_VERSION_BIN}/gui.app/Contents/MacOS)
+
+      install(DIRECTORY ${VISIT_QT_DIR}/plugins/styles
               DESTINATION ${VISIT_INSTALLED_VERSION_BIN}/viewer.app/Contents/MacOS)
   else()
       install(DIRECTORY ${VISIT_QT_DIR}/plugins/platforms
