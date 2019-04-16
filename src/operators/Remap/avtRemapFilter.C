@@ -628,16 +628,19 @@ avtRemapFilter::CleanClippingFunctions()
     debug4 << "avtRemapFilter::CleanClippingFunctions" << std::endl;
 
     for (std::vector<vtkImplicitBoolean*>::iterator iter = funcsArrayX.begin();
-         iter != funcsArrayX.end(); ++iter) {
-    	(*iter)->Delete();
+         iter != funcsArrayX.end(); ++iter)
+    {
+        (*iter)->Delete();
     }
     for (std::vector<vtkImplicitBoolean*>::iterator iter = funcsArrayY.begin();
-         iter != funcsArrayY.end(); ++iter) {
-    	(*iter)->Delete();
+         iter != funcsArrayY.end(); ++iter)
+    {
+        (*iter)->Delete();
     }
     for (std::vector<vtkImplicitBoolean*>::iterator iter = funcsArrayZ.begin();
-         iter != funcsArrayZ.end(); ++iter) {
-    	(*iter)->Delete();
+         iter != funcsArrayZ.end(); ++iter)
+    {
+        (*iter)->Delete();
     }
 }
 
