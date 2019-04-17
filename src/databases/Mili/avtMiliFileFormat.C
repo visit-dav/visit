@@ -221,6 +221,75 @@ avtMiliFileFormat::~avtMiliFileFormat()
 
 
 // ****************************************************************************
+//  Method: avtMiliFileFormat::OpenDB
+//
+//  Purpose:
+//      Open up a family database for a given domain.
+//
+//  Programmer: Alister Maguire
+//  Creation:   Jan 16, 2019
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtMiliFileFormat::OpenDB(int dom)
+{
+    int openDBTimer = visitTimer->StartTimer();
+
+    //TODO: do the filenames still have this much variety?
+    char const * const root_fmtstrs[] = {
+        "%s%.3d",
+        "%s%.4d",
+        "%s%.5d",
+        "%s%.6d",
+    };
+
+    char rFlag[] = "r";
+
+    if (dbid[dom] == -1)
+    {
+        int rval;
+        if (nDomains == 1)
+        {
+            debug3 << "MILI: Attempting mc_open on root=\"" << famroot << 
+                "\", path=\"" << fampath << "\"." << endl;
+
+            rval = mc_open(famroot, fampath, rFlag, &(dbid[dom]) );
+
+            if ( rval != OK )
+            {
+                EXCEPTION1(InvalidFilesException, famroot);
+            }
+        }
+        else
+        {
+            char famname[128];
+            for (int i = 0; i < 4; i++)
+            {
+                sprintf(famname, root_fmtstrs[i], famroot, dom);
+                debug3 << "MILI: Attempting mc_open on root=\"" << famname 
+                    << "\", path=\"" << fampath << "\"." << endl;
+
+                rval = mc_open(famname, fampath, rFlag, &(dbid[dom]) );
+                if (rval == OK) 
+                {
+                    break;
+                }
+            }
+            if ( rval != OK )
+            {
+                EXCEPTION1(InvalidFilesException, famname);
+            }
+        }
+    }
+
+    visitTimer->StopTimer(openDBTimer, "MILI: Opening database");
+}
+
+
+// ****************************************************************************
 //  Function: ReadMiliResults
 //
 //  Purpose:
@@ -428,12 +497,12 @@ avtMiliFileFormat::ReadMiliVarToBuffer(char *varName,
         nTargetCells     = SRInfo.nElements[SRId];
         
         //
-        // Simple read in: one block 
+        // We only have one block to read. 
         //
         if (SRInfo.nDataBlocks[SRId] == 1)
         {
             //
-            // Adjust start
+            // Adjust the start.
             //
             start         += (SRInfo.dataBlockRanges[SRId][0] - 1);
             int resultSize = nTargetCells * varSize;
@@ -490,13 +559,15 @@ avtMiliFileFormat::ReadMiliVarToBuffer(char *varName,
 
 
 // ****************************************************************************
-//  Method:  avtMiliFileFormat::GetMeshPoints
+//  Method:  avtMiliFileFormat::GetNodePositions
 //
 //  Purpose:
+//      Retrieve the node positions for the given timestep.
 //
 //  Arguments:
-//    teimestep  The timestep of interest.
+//    timestep   The timestep of interest.
 //    dom        The domain of interested.
+//    meshId     The mesh id of interest. 
 //
 //  Programmer:  Alister Maguire
 //  Creation:    
@@ -506,9 +577,9 @@ avtMiliFileFormat::ReadMiliVarToBuffer(char *varName,
 // ****************************************************************************
 
 vtkPoints *
-avtMiliFileFormat::GetMeshPoints(int timestep, 
-                                 int dom, 
-                                 int meshId)
+avtMiliFileFormat::GetNodePositions(int timestep, 
+                                    int dom, 
+                                    int meshId)
 {
     //
     // The node positions are stored in 'nodpos'.
@@ -520,15 +591,20 @@ avtMiliFileFormat::GetMeshPoints(int timestep,
     MiliVariableMetaData *nodpos = miliMetaData[meshId]->
         GetVarMDByShortName("nodpos", "node");
 
-    int numNodes = miliMetaData[meshId]->GetNumNodes(dom);
-
     vtkPoints *vtkNodePos = NULL;
 
+    //
+    // There are datasets whose nodes remain constant throughout time. 
+    // In these cases, we will not have a "nodpos" to retrieve and
+    // will instead rely on the initial positions retrieved during
+    // ReadMesh. 
+    //
     if (nodpos != NULL)
     {
-        int nPts   = dims * numNodes;
-        int vType  = nodpos->GetNumType();
-        int subrec = nodpos->GetSubrecIds(dom)[0];
+        int numNodes = miliMetaData[meshId]->GetNumNodes(dom);
+        int nPts     = dims * numNodes;
+        int vType    = nodpos->GetNumType();
+        int subrec   = nodpos->GetSubrecIds(dom)[0];
         float fPts[nPts];
 
         ReadMiliResults(dbid[dom], timestep+1, subrec, 1, 
@@ -551,41 +627,6 @@ avtMiliFileFormat::GetMeshPoints(int timestep,
             else
             {
                 *(vtkNPPtr++) = 0.;
-            }
-        }
-    }
-    else
-    {
-        vtkNodePos = vtkPoints::New();
-        vtkNodePos->SetNumberOfPoints(numNodes);
-
-        float *vtkNPPtr = (float *) vtkNodePos->GetVoidPointer(0);
-
-        char nodeChar[128];
-        sprintf(nodeChar, "node");
-        char *nodeCharPtr = (char *)nodeCharPtr;
-
-        int rval = mc_load_nodes(dbid[dom], meshId, nodeCharPtr, vtkNPPtr);
-
-        if (rval != OK)
-        {
-            debug1 << "MILI: unable to load node positions!";
-            vtkNodePos->Delete();
-            return NULL;
-        }
-
-        if (dims == 2)
-        {
-            for (int p = numNodes - 1; p >= 0; p--)
-            {
-                int q = p*3, r = p*2;
-                //
-                // Store the coordinates in reverse so we 
-                // don't mess up at node 1.
-                //
-                vtkNPPtr[q+2] = 0.0;
-                vtkNPPtr[q+1] = vtkNPPtr[r+1];
-                vtkNPPtr[q+0] = vtkNPPtr[r+0];
             }
         }
     }
@@ -667,128 +708,137 @@ avtMiliFileFormat::GetMesh(int timestep, int dom, const char *mesh)
         EXCEPTION1(ImproperUseException, msg);
     }
 
-    //FIXME: testing
-    vtkPoints *nodePosPts = GetMeshPoints(timestep, dom, meshId);
+    vtkPoints *nodePosPts = GetNodePositions(timestep, dom, meshId);
 
     vtkUnstructuredGrid *rv = vtkUnstructuredGrid::New();
     rv->ShallowCopy(datasets[dom][meshId]);
 
     if (nodePosPts != NULL)
     {
-        //FIXME: why do we set points twice?? In readmesh, we use mc_load_nodes.  
-        cerr << "SETTING NODE POS POINTS" << endl;//FIXME
         rv->SetPoints(nodePosPts);
         nodePosPts->Delete();
-
-        if (!isSandMesh)
+    }
+    else if (datasets[dom][meshId] != NULL)
+    {
+        if (datasets[dom][meshId]->GetPoints() == NULL)
         {
-            SubrecInfo SRInfo = miliMetaData[meshId]->GetSubrecInfo(dom);
-            int numVars       = miliMetaData[meshId]->GetNumVariables();
-            int nCells        = miliMetaData[meshId]->GetNumCells(dom);
-            int nNodes        = miliMetaData[meshId]->GetNumNodes(dom);
-            
-            float sandBuffer[nCells];
-
-            //
-            // Begin by assuming the status of every cell is good. 
-            //
-            for (int i = 0; i < nCells; ++i)
-            {
-                sandBuffer[i] = 1.0;
-            }
-
-            //
-            // Because sand can appear on multiple variables, we need
-            // to check them all and populate the buffer iteratively.  
-            //
-            for (int i = 0 ; i < numVars; i++)
-            {
-                MiliVariableMetaData *varMD = miliMetaData[meshId]->
-                    GetVarMDByIdx(i);
-
-                if (varMD == NULL)
-                {
-                    continue;
-                }
-                
-                if (varMD->IsSand())
-                {
-                    avtCentering centering = varMD->GetCentering();
-
-                    if (centering != AVT_ZONECENT)
-                    {
-                        debug1 << "MILI: Sanded variable is not " << 
-                            "zone centered?!?" << endl;
-                        continue;
-                    }
-
-                    std::string varName = varMD->GetShortName();
-                    intVector SRIds     = varMD->GetSubrecIds(dom);
-                    int vType           = varMD->GetNumType();
-
-                    std::string className = varMD->GetClassShortName(); 
-                    int start = miliMetaData[meshId]->
-                        GetClassMDByShortName(className.c_str())->
-                        GetConnectivityOffset(dom);                                   
-
-                    //
-                    // Create a copy of our name to pass into mili. 
-                    //
-                    char charName[1024];
-                    sprintf(charName, varName.c_str());
-                    char *namePtr = (char *) charName;
-
-                    ReadMiliVarToBuffer(namePtr, SRIds, SRInfo, start,
-                        vType, 1, timestep + 1, dom, sandBuffer);
-                }
-            }
-
-            vtkUnsignedCharArray *ghostNodes = vtkUnsignedCharArray::New();
-            ghostNodes->SetName("avtGhostNodes");
-            ghostNodes->SetNumberOfTuples(nNodes);
-
-            unsigned char *ghostNodePtr = ghostNodes->GetPointer(0);
-
-            for (int i = 0; i < nNodes; ++i)
-            {
-                ghostNodePtr[i] = 0;
-                avtGhostData::AddGhostNodeType(ghostNodePtr[i], 
-                    NODE_NOT_APPLICABLE_TO_PROBLEM);
-            }
-        
-            //
-            // FYI: sand elements are those that have been 
-            // "destroyed" during the simulation. We ghost them
-            // out by default. 
-            //
-            for (int i = 0; i < nCells; ++i)
-            {
-                //
-                // Element status > .5 is good. 
-                //
-                if (sandBuffer[i] > 0.5)
-                {
-                    vtkIdType nCellPts = 0;
-                    vtkIdType *cellPts = NULL;
-
-                    rv->GetCellPoints(i, nCellPts, cellPts);
-                    
-                    if (nCellPts && cellPts)
-                    {
-                        for (int j = 0; j < nCellPts; ++j)
-                        {
-                            avtGhostData::RemoveGhostNodeType(
-                                ghostNodePtr[cellPts[j]],
-                                NODE_NOT_APPLICABLE_TO_PROBLEM);
-                        }
-                    }
-                }
-            }
-        
-            rv->GetPointData()->AddArray(ghostNodes);
-            ghostNodes->Delete();
+            debug1 << "MILI: Unable to find nodes! This shouldn't happen..";
+            char msg[1024];
+            sprintf(msg, "Unable to load nodes from Mili!");
+            EXCEPTION1(ImproperUseException, msg);
         }
     }
+
+    //
+    // If our dataset contains sand, and the user has not requested
+    // the sand mesh, we need to ghost out the sanded elements. 
+    // FYI: sand elements are those that have been 
+    // "destroyed" during the simulation. 
+    //
+    if (!isSandMesh && miliMetaData[meshId]->ContainsSand())
+    {
+        SubrecInfo SRInfo = miliMetaData[meshId]->GetSubrecInfo(dom);
+        int numVars       = miliMetaData[meshId]->GetNumVariables();
+        int nCells        = miliMetaData[meshId]->GetNumCells(dom);
+        int nNodes        = miliMetaData[meshId]->GetNumNodes(dom);
+        
+        float sandBuffer[nCells];
+
+        //
+        // Begin by assuming the status of every cell is good. 
+        //
+        for (int i = 0; i < nCells; ++i)
+        {
+            sandBuffer[i] = 1.0;
+        }
+
+        //
+        // Because sand can appear on multiple variables, we need
+        // to check them all and populate the buffer iteratively.  
+        //
+        for (int i = 0 ; i < numVars; i++)
+        {
+            MiliVariableMetaData *varMD = miliMetaData[meshId]->
+                GetVarMDByIdx(i);
+
+            if (varMD == NULL)
+            {
+                continue;
+            }
+            
+            if (varMD->IsSand())
+            {
+                avtCentering centering = varMD->GetCentering();
+
+                if (centering != AVT_ZONECENT)
+                {
+                    debug1 << "MILI: Sanded variable is not " << 
+                        "zone centered?!?" << endl;
+                    continue;
+                }
+
+                std::string varName = varMD->GetShortName();
+                intVector SRIds     = varMD->GetSubrecIds(dom);
+                int vType           = varMD->GetNumType();
+
+                std::string className = varMD->GetClassShortName(); 
+                int start = miliMetaData[meshId]->
+                    GetClassMDByShortName(className.c_str())->
+                    GetConnectivityOffset(dom);                                   
+
+                //
+                // Create a copy of our name to pass into mili. 
+                //
+                char charName[1024];
+                sprintf(charName, varName.c_str());
+                char *namePtr = (char *) charName;
+
+                ReadMiliVarToBuffer(namePtr, SRIds, SRInfo, start,
+                    vType, 1, timestep + 1, dom, sandBuffer);
+            }
+        }
+
+        vtkUnsignedCharArray *ghostNodes = vtkUnsignedCharArray::New();
+        ghostNodes->SetName("avtGhostNodes");
+        ghostNodes->SetNumberOfTuples(nNodes);
+
+        unsigned char *ghostNodePtr = ghostNodes->GetPointer(0);
+
+        for (int i = 0; i < nNodes; ++i)
+        {
+            ghostNodePtr[i] = 0;
+            avtGhostData::AddGhostNodeType(ghostNodePtr[i], 
+                NODE_NOT_APPLICABLE_TO_PROBLEM);
+        }
+    
+        for (int i = 0; i < nCells; ++i)
+        {
+            //
+            // Element status > .5 is good. 
+            //
+            if (sandBuffer[i] > 0.5)
+            {
+                vtkIdType nCellPts = 0;
+                vtkIdType *cellPts = NULL;
+
+                rv->GetCellPoints(i, nCellPts, cellPts);
+                
+                if (nCellPts && cellPts)
+                {
+                    for (int j = 0; j < nCellPts; ++j)
+                    {
+                        avtGhostData::RemoveGhostNodeType(
+                            ghostNodePtr[cellPts[j]],
+                            NODE_NOT_APPLICABLE_TO_PROBLEM);
+                    }
+                }
+            }
+        }
+    
+        rv->GetPointData()->AddArray(ghostNodes);
+        ghostNodes->Delete();
+    }
+    
 
     visitTimer->StopTimer(gmTimer, "MILI: Getting Mesh");
     visitTimer->DumpTimings();
@@ -818,75 +868,6 @@ avtMiliFileFormat::ExtractMeshIdFromPath(const std::string &varPath)
         return (int) (cNum - '0');
     }
     return 0;
-}
-
-
-// ****************************************************************************
-//  Method: avtMiliFileFormat::OpenDB
-//
-//  Purpose:
-//      Open up a family database for a given domain.
-//
-//  Programmer: Alister Maguire
-//  Creation:   Jan 16, 2019
-//
-//  Modifications:
-//
-// ****************************************************************************
-
-void
-avtMiliFileFormat::OpenDB(int dom)
-{
-    int openDBTimer = visitTimer->StartTimer();
-
-    //TODO: do the filenames still have this much variety?
-    char const * const root_fmtstrs[] = {
-        "%s%.3d",
-        "%s%.4d",
-        "%s%.5d",
-        "%s%.6d",
-    };
-
-    char rFlag[] = "r";
-
-    if (dbid[dom] == -1)
-    {
-        int rval;
-        if (nDomains == 1)
-        {
-            debug3 << "MILI: Attempting mc_open on root=\"" << famroot << 
-                "\", path=\"" << fampath << "\"." << endl;
-
-            rval = mc_open(famroot, fampath, rFlag, &(dbid[dom]) );
-
-            if ( rval != OK )
-            {
-                EXCEPTION1(InvalidFilesException, famroot);
-            }
-        }
-        else
-        {
-            char famname[128];
-            for (int i = 0; i < 4; i++)
-            {
-                sprintf(famname, root_fmtstrs[i], famroot, dom);
-                debug3 << "MILI: Attempting mc_open on root=\"" << famname 
-                    << "\", path=\"" << fampath << "\"." << endl;
-
-                rval = mc_open(famname, fampath, rFlag, &(dbid[dom]) );
-                if (rval == OK) 
-                {
-                    break;
-                }
-            }
-            if ( rval != OK )
-            {
-                EXCEPTION1(InvalidFilesException, famname);
-            }
-        }
-    }
-
-    visitTimer->StopTimer(openDBTimer, "MILI: Opening database");
 }
 
 
@@ -947,40 +928,6 @@ avtMiliFileFormat::ReadMesh(int dom)
         //
         RetrieveNodeLabelInfo(meshId, nodeSName, dom);
 
-        //FIXME: why was this being done twice?
-        //
-        // Read initial nodal position information, if available. 
-        //
-        //vtkPoints *vtkPts = vtkPoints::New();
-        //vtkPts->SetNumberOfPoints(nNodes);
-        //float *vtkPtsPtr  = (float *) vtkPts->GetVoidPointer(0);
-
-        //if (mc_load_nodes(dbid[dom], meshId, nodeSName, vtkPtsPtr) == OK)
-        //{
-        //    cerr << "LOAD NODES OK" << endl;//FIXME
-        //    if (dims == 2)
-        //    {
-        //        //
-        //        // We need to insert zeros if we're in 2D
-        //        //
-        //        for (int p = nNodes - 1; p >= 0; p--)
-        //        {
-        //            int q = p*3, r = p*2;
-        //            //
-        //            // Store the coordinates in reverse so we 
-        //            // don't mess up at node 1.
-        //            //
-        //            vtkPtsPtr[q+2] = 0.0;
-        //            vtkPtsPtr[q+1] = vtkPtsPtr[r+1];
-        //            vtkPtsPtr[q+0] = vtkPtsPtr[r+0];
-        //        }
-        //    }
-        //}
-        //else
-        //{
-        //    vtkPts->Delete();
-        //    vtkPts = NULL;
-        //}
 
         //
         // Mili has its own definitions for cell types. The
@@ -1009,7 +956,7 @@ avtMiliFileFormat::ReadMesh(int dom)
                 int nCells = 0;
                 char shortName[1024];
                 char longName[1024];
-
+ 
                 int rval = mc_get_class_info(dbid[dom], meshId, 
                                              miliCellTypes[i], j,
                                              shortName, longName, &nCells);
@@ -1240,15 +1187,40 @@ avtMiliFileFormat::ReadMesh(int dom)
         materials[dom][meshId] = avtMat;
 
         //
-        // Hook up points to mesh if we have 'em
+        // Read initial nodal position information, if available. 
         //
-        //FIXME: why are we setting points twice?
-        //if (vtkPts)
-        //{
-        //    cerr << "HOOKING UP POINTS" << endl;//FIXME
-        //    datasets[dom][meshId]->SetPoints(vtkPts);
-        //    vtkPts->Delete();
-        //}
+        vtkPoints *initialNodePos = vtkPoints::New();
+        initialNodePos->SetNumberOfPoints(nNodes);
+        float *nodePosPtr  = (float *) initialNodePos->GetVoidPointer(0);
+
+        if (mc_load_nodes(dbid[dom], meshId, nodeSName, nodePosPtr) == OK)
+        {
+            if (dims == 2)
+            {
+                //
+                // We need to insert zeros if we're in 2D
+                //
+                for (int p = nNodes - 1; p >= 0; p--)
+                {
+                    int q = p*3, r = p*2;
+                    //
+                    // Store the coordinates in reverse so we 
+                    // don't mess up at node 1.
+                    //
+                    nodePosPtr[q+2] = 0.0;
+                    nodePosPtr[q+1] = nodePosPtr[r+1];
+                    nodePosPtr[q+0] = nodePosPtr[r+0];
+                }
+            }
+
+            datasets[dom][meshId]->SetPoints(initialNodePos);
+            initialNodePos->Delete();
+        }
+        else
+        {
+            initialNodePos->Delete();
+            initialNodePos = NULL;
+        }
 
         //
         // Grab the subrecord info while we're here. 
@@ -3052,13 +3024,12 @@ avtMiliFileFormat::ExtractJsonClasses(Document &jDoc,
                         }
                     }
                 }
-               
-                //
-                // Cache the mili class md. 
-                //
-                miliMetaData[meshId]->AddClassMD(classIdx, miliClass);
-                classIdx++;
             }
+            //
+            // Cache the mili class md. 
+            //
+            miliMetaData[meshId]->AddClassMD(classIdx, miliClass);
+            classIdx++;
         }
     } 
 }

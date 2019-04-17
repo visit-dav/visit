@@ -150,7 +150,7 @@ class avtMiliFileFormat : public avtMTMDFileFormat
 
     void                  ReadMesh(int);
 
-    vtkPoints            *GetMeshPoints(int, int, int);
+    vtkPoints            *GetNodePositions(int, int, int);
 
     void                  PopulateSubrecordInfo(int, 
                                                 int);
@@ -209,6 +209,7 @@ class avtMiliFileFormat : public avtMTMDFileFormat
     //
     // Protected data. 
     //
+    //TODO: malloc these instead of vectors. 
     std::vector<std::vector<vtkUnstructuredGrid *> >   datasets;
     std::vector<std::vector<avtMaterial *> >           materials;
 

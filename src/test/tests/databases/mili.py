@@ -3,7 +3,7 @@
 #
 #  Test Case:  mili.py
 #
-#  Tests:      mesh      - 3D unstructured,multi-domain, 
+#  Tests:      mesh      - 3D unstructured, multi-domain
 #              plots     - Pseudocolor, material, vector, tensor
 #
 #  Defect ID:  none
@@ -15,11 +15,11 @@
 #
 # ----------------------------------------------------------------------------
 RequiredDatabasePlugin("Mili")
-serial_path       = data_path("mili_test_data/single_proc/d3samp6.plt.mili")
-multi_domain_path = data_path("mili_test_data/multi_proc/d3samp6.plt.mili")
+single_domain_path = data_path("mili_test_data/single_proc/")
+multi_domain_path  = data_path("mili_test_data/multi_proc/")
 
 def TestComponentVis():
-    OpenDatabase(serial_path)
+    OpenDatabase(single_domain_path + "/d3samp6.plt.mili")
     v = GetView3D()
     v.viewNormal = (0.9, 0.35, -0.88)
     SetView3D(v)
@@ -39,7 +39,7 @@ def TestComponentVis():
 
 
 def TestElementSetComponents():
-    OpenDatabase(serial_path)
+    OpenDatabase(single_domain_path + "/d3samp6.plt.mili")
     v = GetView3D()
     v.viewNormal = (0.9, 0.35, -0.88)
     SetView3D(v)
@@ -55,7 +55,7 @@ def TestElementSetComponents():
 
 
 def TestMaterialVar():
-    OpenDatabase(serial_path)
+    OpenDatabase(single_domain_path + "/d3samp6.plt.mili")
     v = GetView3D()
     v.viewNormal = (0.9, 0.35, -0.88)
     SetView3D(v)
@@ -70,7 +70,7 @@ def TestMaterialVar():
 
 
 def TestMaterials():
-    OpenDatabase(serial_path)
+    OpenDatabase(single_domain_path + "/d3samp6.plt.mili")
     v = GetView3D()
     v.viewNormal = (0.9, 0.35, -0.88)
     SetView3D(v)
@@ -84,28 +84,23 @@ def TestMaterials():
 
 
 def TestTensors():
-    OpenDatabase(serial_path)
+    OpenDatabase(single_domain_path + "/d3samp6.plt.mili")
     v = GetView3D()
     v.viewNormal = (0.9, 0.35, -0.88)
     SetView3D(v)
     SetTimeSliderState(90)
 
-    #AddPlot("Tensor", "Primal/Shared/brick/stress")
     AddPlot("Tensor", "Primal/Shared/stress")
     DrawPlots()
     Test("mili_tensors_01")
 
-    #ChangeActivePlotsVar("Primal/Shared/brick/stress")
-    #Test("mili_tensors_02")
-    
-    #ChangeActivePlotsVar("Primal/Shared/shell/stress")
     ChangeActivePlotsVar("Primal/shell/stress")
-    Test("mili_tensors_03")
+    Test("mili_tensors_02")
     DeleteAllPlots()
 
 
 def TestVectors():
-    OpenDatabase(serial_path)
+    OpenDatabase(single_domain_path + "/d3samp6.plt.mili")
     v = GetView3D()
     v.viewNormal = (0.9, 0.35, -0.88)
     SetView3D(v)
@@ -124,25 +119,42 @@ def TestVectors():
 
 
 def TestSandMesh():
-    OpenDatabase(serial_path)
+    OpenDatabase(single_domain_path + "/m_plot.mili")
     v = GetView3D()
     v.viewNormal = (0.9, 0.35, -0.88)
     SetView3D(v)
-    SetTimeSliderState(70)
+    SetTimeSliderState(101)
     
-    AddPlot("Pseudocolor", "sand_mesh/Primal/brick/edrate")
+    # 
+    # First, let's test the mesh without sand. It should
+    # look well formed. 
+    # 
+    AddPlot("Mesh", "mesh1")
+    AddPlot("Pseudocolor", "Primal/shell/stress_in/sx")
     DrawPlots()
     Test("mili_sand_mesh_01")
     
-    ChangeActivePlotsVar("sand_mesh/Primal/beam/svec/svec_x")
+    #
+    # Now let's add the sand mesh. It's a mess. 
+    #
+    AddPlot("Mesh", "sand_mesh1")
+    DrawPlots()
     Test("mili_sand_mesh_02")
-    ChangeActivePlotsVar("sand_mesh/Primal/node/nodacc/ax")
+
+    DeleteAllPlots()
+
+    #
+    # Now let's look at the sanded elements. 
+    #
+    AddPlot("Mesh", "mesh1")
+    AddPlot("Pseudocolor", "sand_mesh/Primal/Shared/sand")
+    DrawPlots()
     Test("mili_sand_mesh_03")
     
     DeleteAllPlots()
 
 def TestMaterials():
-    OpenDatabase(serial_path)
+    OpenDatabase(single_domain_path + "/d3samp6.plt.mili")
     v = GetView3D()
     v.viewNormal = (0.9, 0.35, -0.88)
     SetView3D(v)
@@ -154,7 +166,7 @@ def TestMaterials():
     DeleteAllPlots()
 
 def TestMultiDomain():
-    OpenDatabase(multi_domain_path)
+    OpenDatabase(multi_domain_path + "/d3samp6.plt.mili")
     v = GetView3D()
     v.viewNormal = (0.9, 0.35, -0.88)
     SetView3D(v)
@@ -169,6 +181,44 @@ def TestMultiDomain():
     DeleteAllPlots()
 
 
+def TestParticles():
+    OpenDatabase(single_domain_path + "/sslide14ball_l.plt.mili")
+    v = GetView3D()
+    v.viewNormal = (0.9, 0.35, -0.88)
+    SetView3D(v)
+
+    AddPlot("Pseudocolor", "Primal/particle/stress/szx")
+    DrawPlots()
+    Test("mili_particle_01")
+    DeleteAllPlots()
+
+
+def TestStaticNodes():
+    OpenDatabase(single_domain_path + "/m1_plot.mili")
+    v = GetView3D()
+    v.viewNormal = (0.9, 0.35, -0.88)
+    SetView3D(v)
+
+    AddPlot("Mesh", "mesh1")
+    AddPlot("Pseudocolor", "Primal/node/temp")
+    SetTimeSliderState(10)
+    DrawPlots()
+    Test("mili_static_nodes_01")
+    DeleteAllPlots()
+
+
+def TestSharedVariables():
+    OpenDatabase(single_domain_path + "/d3samp6.plt.mili")
+    v = GetView3D()
+    v.viewNormal = (0.9, 0.35, -0.88)
+    SetView3D(v)
+
+    AddPlot("Pseudocolor", "sand_mesh/Primal/Shared/sand")
+    SetTimeSliderState(100)
+    DrawPlots()
+    Test("mili_shared_01")
+    DeleteAllPlots()
+
 
 def Main():
     TestComponentVis()    
@@ -179,6 +229,9 @@ def Main():
     TestSandMesh()
     TestMaterials()
     TestMultiDomain()
+    TestParticles()
+    TestStaticNodes()
+    TestSharedVariables()
 
 Main()
 Exit()
