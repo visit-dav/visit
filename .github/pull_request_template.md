@@ -33,4 +33,3 @@ Please describe the tests you've added or any tests that already cover this chan
 
 
 *Don't forget to squash merge when this pull request is approved.*
-*Wait for CI tests to pass before merging this pull request.*
