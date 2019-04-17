@@ -209,24 +209,23 @@ class avtMiliFileFormat : public avtMTMDFileFormat
     //
     // Protected data. 
     //
-    //TODO: malloc these instead of vectors. 
-    std::vector<std::vector<vtkUnstructuredGrid *> >   datasets;
-    std::vector<std::vector<avtMaterial *> >           materials;
+    vtkUnstructuredGrid ***datasets;
+    avtMaterial         ***materials;
 
-    avtMiliMetaData     **miliMetaData;
+    avtMiliMetaData      **miliMetaData;
 
-    char                 *famroot;
-    char                 *fampath;
+    char                  *famroot;
+    char                  *fampath;
 
-    int                   nTimesteps;
-    int                   nDomains;
-    int                   nMeshes;
-    int                   dims;
+    int                    nTimesteps;
+    int                    nDomains;
+    int                    nMeshes;
+    int                    dims;
 
-    intVector             cycles;
-    doubleVector          times;
-    boolVector            meshRead;
-    std::vector<Famid>    dbid;
+    intVector              cycles;
+    doubleVector           times;
+    boolVector             meshRead;
+    std::vector<Famid>     dbid;
 };
 
 #endif

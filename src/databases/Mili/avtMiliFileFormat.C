@@ -94,6 +94,8 @@ avtMiliFileFormat::avtMiliFileFormat(const char *fpath)
     nDomains   = 0;
     nMeshes    = 0;
     nTimesteps = 0;
+    datasets   = NULL;
+    materials  = NULL;
 
     LoadMiliInfoJson(fpath);
 
@@ -145,7 +147,7 @@ avtMiliFileFormat::avtMiliFileFormat(const char *fpath)
 avtMiliFileFormat::~avtMiliFileFormat()
 {
     //
-    // Close the open databases. 
+    // Close the open databases.
     //
     for (int i = 0; i < nDomains; ++i)
     {
@@ -157,36 +159,46 @@ avtMiliFileFormat::~avtMiliFileFormat()
     }
 
     //
-    // Delete whatever datasets we have created. 
+    // Clean up our dataset memory.
     //
-    for (int i = 0; i < datasets.size(); ++i)
+    if (datasets != NULL)
     {
-        for (int j = 0; j < datasets[i].size(); ++j)
+        for (int i = 0; i < nDomains; ++i)
         {
-            if (datasets[i][j] != NULL)
+            for (int j = 0; j < nMeshes; ++j) 
             {
-                datasets[i][j]->Delete();
-                datasets[i][j] = NULL;
+                if (datasets[i][j] != NULL)
+                {
+                    datasets[i][j]->Delete();
+                    datasets[i][j] = NULL;
+                }
             }
+            delete [] datasets[i];
         }
     }
-    datasets.clear();
+
+    delete [] datasets;
 
     //
-    // Delete whatever materials we have created. 
+    // Clean up our material memory.
     //
-    for (int i = 0; i < materials.size(); ++i)
+    if (materials != NULL)
     {
-        for (int j = 0; j < materials[i].size(); ++j)
+        for (int i = 0; i < nDomains; ++i)
         {
-            if (materials[i][j])
+            for (int j = 0; j < nMeshes; ++j) 
             {
-                delete materials[i][j];
-                materials[i][j] = NULL;
+                if (materials[i][j] != NULL)
+                {
+                    delete materials[i][j];
+                    materials[i][j] = NULL;
+                }
             }
+            delete [] materials[i];
         }
     }
-    materials.clear();
+
+    delete [] materials;
 
     //
     // Reset flags to indicate the meshes needs to be read in again.
@@ -2648,7 +2660,6 @@ avtMiliFileFormat::GetAuxiliaryData(const char *varName,
         //
         // Retrieve the materials. 
         //
-
         if (strstr(varName, "materials") != varName)
         {
             EXCEPTION1(InvalidVariableException, varName);
@@ -3242,13 +3253,19 @@ avtMiliFileFormat::LoadMiliInfoJson(const char *fpath)
     dbid.resize(nDomains, -1);
     meshRead.resize(nDomains, false);
 
-    datasets.resize(nDomains);
-    materials.resize(nDomains);
+    datasets  = new vtkUnstructuredGrid**[nDomains];
+    materials = new avtMaterial**[nDomains];
 
     for (int dom = 0; dom < nDomains; ++dom)
     {
-        datasets[dom].resize(nMeshes, NULL);
-        materials[dom].resize(nMeshes, NULL);
+        datasets[dom]  = new vtkUnstructuredGrid*[nMeshes];
+        materials[dom] = new avtMaterial*[nMeshes];
+
+        for (int m = 0; m < nMeshes; ++m)
+        {
+            datasets[dom][m]  = NULL;
+            materials[dom][m] = NULL;
+        }
     }
 
     jfile.close();
