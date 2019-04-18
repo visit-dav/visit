@@ -103,6 +103,10 @@
 #   Kathleen Biagas, Thu Nov  8 10:10:06 PST 2018
 #   Added VTKh_INCLUDE_DIRS and VTKM_DIR.
 #
+#   Kathleen Biagas, Wed Apr 17 12:54:40 PDT 2019
+#   MFEM has an include dependency on conduit, move it below conduit in the
+#   list and add conduit include to it's include.
+#
 #****************************************************************************/
 
 ##
@@ -325,9 +329,6 @@ set(XDMF_INCLUDE_DIR  ${VISIT_INCLUDE_DIR}/xdmf/include)
 set(XDMF_LIBRARY_DIR  ${VISIT_LIBRARY_DIR} ${VISIT_ARCHIVE_DIR})
 set(XDMF_LIB @XDMF_LIB@)
 
-set(MFEM_INCLUDE_DIR  ${VISIT_INCLUDE_DIR}/mfem/include)
-set(MFEM_LIBRARY_DIR  ${VISIT_LIBRARY_DIR} ${VISIT_ARCHIVE_DIR})
-set(MFEM_LIB @MFEM_LIB@)
 
 set(CONDUIT_INCLUDE_DIR  ${VISIT_INCLUDE_DIR}/conduit/conduit)
 set(CONDUIT_LIBRARY_DIR  ${VISIT_LIBRARY_DIR} ${VISIT_ARCHIVE_DIR})
@@ -337,6 +338,10 @@ if(VISIT_PARALLEL)
     set(CONDUIT_MPI_LIBRARY_DIR ${VISIT_LIBRARY_DIR} ${VISIT_ARCHIVE_DIR})
     set(CONDUIT_MPI_LIB @CONDUIT_MPI_LIB@)
 endif()
+
+set(MFEM_INCLUDE_DIR  ${VISIT_INCLUDE_DIR}/mfem/include;${CONDUIT_INCLUDE_DIR})
+set(MFEM_LIBRARY_DIR  ${VISIT_LIBRARY_DIR} ${VISIT_ARCHIVE_DIR})
+set(MFEM_LIB @MFEM_LIB@)
 
 set(OPENEXR_INCLUDE_DIR  ${VISIT_INCLUDE_DIR}/openexr/OpenEXR)
 set(OPENEXR_LIBRARY_DIR  ${VISIT_LIBRARY_DIR} ${VISIT_ARCHIVE_DIR})

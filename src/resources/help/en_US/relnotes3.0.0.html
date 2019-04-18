@@ -67,6 +67,7 @@ SetBackendType("VTKm")
   </li>
   <li>Due to lack of availability of C++11 compliant compilers, support for OSX 10.8 has been dropped.</li>
   <li>The <i>Remote Profiles</i> tab in the <i>Host profiles</i> will now allow importing profiles from the currently running release as well as from the trunk.</li>
+  <li>VisIt now has a Remap operator under the Geometry menu. This operator supports datasets of single- and multi-domain cell-centered scalars on structured and unstructured grids. It converts the data to a rectlinear grid with user-defined resolution and span. Variables can be specifed as intrisic (like density) or extrinsic (like mass).
 </ul>
 
 <a name="GUI_changes"></a>
@@ -152,8 +153,10 @@ SetBackendType("VTKm")
 <p><b><font size="4">Build features added in version 3.0</font></b></p>
 <ul>
   <li>Added the ability to create RPM packages via --create-rpm in build_visit.</li>
-  <li>Improved checksum checking of downloads such that python sub-modules are
-    also checked and md5 sums are handled correctly on OSX.</li>
+  <li>Improved checksum checking of downloads such that python sub-modules are also checked.</li>
+  <li>Ensure md5 and shasum checksum commands are handled correctly on OSX.</li>
+  <li>Added checksum variables for most packages thereby triggering checksum verifcation upon download.</li>
+  <li>Add support for all supported ViSUS architecture downloads.</li>
 </ul>
 
 <a name="Dev_changes"></a>

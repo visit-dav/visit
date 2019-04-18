@@ -104,7 +104,6 @@ public:
     void SetStartZ(double startZ_);
     void SetEndZ(double endZ_);
     void SetCellsZ(int cellsZ_);
-    void SetDefaultValue(double defaultValue_);
     void SetVariableType(VariableTypes variableType_);
 
     // Property getting methods
@@ -119,7 +118,6 @@ public:
     double GetStartZ() const;
     double GetEndZ() const;
     int    GetCellsZ() const;
-    double GetDefaultValue() const;
     VariableTypes GetVariableType() const;
 
     // Persistence methods
@@ -153,7 +151,6 @@ public:
         ID_startZ,
         ID_endZ,
         ID_cellsZ,
-        ID_defaultValue,
         ID_variableType,
         ID__LAST
     };
@@ -170,7 +167,6 @@ private:
     double startZ;
     double endZ;
     int    cellsZ;
-    double defaultValue;
     int    variableType;
 
     // Static class format string for type map.
