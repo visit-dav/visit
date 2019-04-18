@@ -1,5 +1,6 @@
 function bv_visus_initialize
 {
+    export VISUS_OS=`uname` # Used later to determine which ViSUS binary to download
     export DO_VISUS="no"
     export USE_SYSTEM_VISUS="no"
     add_extra_commandline_args "visus" "alt-visus-dir" 1 "Use alternative directory for ViSUS"
@@ -16,11 +17,15 @@ function bv_visus_alt_visus_dir
 function bv_visus_enable
 {
     DO_VISUS="yes"
+    if [[ -z "$(echo $VISUS_OS | grep Linux\\\|Darwin\\\|Win64\\\|Win32)" ]]; then
+        warn "ViSUS not available on this [$VISUS_OS] architecture. Disabling it."
+        DO_VISUS="no"
+    fi
 }
 
 function bv_visus_disable
 {
-    DOVISUS_="no"
+    DO_VISUS="no"
 }
 
 function bv_visus_depends_on
@@ -39,14 +44,27 @@ function bv_visus_initialize_vars
 
 function bv_visus_info
 {
-    #todo: add query system info to be used here to determine which file to download, and change build_dir to install_dir or something
-    export VISUS_OS=`uname`
+    #todo: change build_dir to install_dir or something
     export VISUS_VERSION=${VISUS_VERSION:-"5f5fd6c"}
-    export VISUS_FILE=${VISUS_FILE:-"ViSUS-${VISUS_VERSION}-${VISUS_OS}.tgz"}
+    export VISUS_EXTENSION=${VISUS_EXTENSION:-"tgz"}
+    if [[ "$VISUS_OS" == "Linux" ]]; then
+        export VISUS_MD5_CHECKSUM="79ed0196efe22f30b6368a92bd2df481"
+        export VISUS_SHA256_CHECKSUM="0b05301aee13ec70f55606a89d8fa27ceb970925f600eb4d52b5378d82c930e6"
+    elif [[ "$VISUS_OS" == "Darwin" ]]; then
+        export VISUS_MD5_CHECKSUM="b335ca6c4d4f366cf53857e4cc933d60"
+        export VISUS_SHA256_CHECKSUM="7de8b2349a84269424e1b7ee8a835bc2ba25653db84ebfdf6b6a97f05531890b"
+    elif [[ "$VISUS_OS" == "Win64" ]]; then
+        export VISUS_MD5_CHECKSUM="7d7c68d28d9dc45d1dfbddadf774b9c8"
+        export VISUS_SHA256_CHECKSUM="2da2995795bed3bc9b58f962aac9c451759b05645c100b3ee0160c9d66eca70b"
+        export VISUS_EXTENSION="zip"
+    elif [[ "$VISUS_OS" == "Win32" ]]; then
+        export VISUS_MD5_CHECKSUM="9affb263318a2f87a270e8d78d1f01fe"
+        export VISUS_SHA256_CHECKSUM="fe8af6e27b929f0d1dc3849bacbc5f3e5f437e87dbfa711a18a27563f763b7ba"
+        export VISUS_EXTENSION="zip"
+    fi
+    export VISUS_FILE=${VISUS_FILE:-"ViSUS-${VISUS_VERSION}-${VISUS_OS}.${VISUS_EXTENSION}"}
     export VISUS_URL=${VISUS_URL:-"http://atlantis.sci.utah.edu/builds/visit-plugin"}
     export VISUS_BUILD_DIR=${VISUS_BUILD_DIR:-"ViSUS"}
-    export VISUS_MD5_CHECKSUM="79ed0196efe22f30b6368a92bd2df481"
-    export VISUS_SHA256_CHECKSUM="0b05301aee13ec70f55606a89d8fa27ceb970925f600eb4d52b5378d82c930e6"
 }
 
 function bv_visus_print
@@ -98,6 +116,10 @@ function bv_visus_dry_run
 
 function install_visus
 {
+    if [[ "$DO_VISUS" == "no" ]] ; then
+        return
+    fi
+
     #
     # Prepare install dir
     #
