@@ -64,6 +64,7 @@ SetBackendType("VTKm")
     <li>Slice operator: Restrictions - Only works when <i>Project to 2D</i> is disabled.</li>
   </ul>
   <p>VTK-m functionality is currently enabled for 3D rectilinear, curvilinear and unstructured grids with only hexahedral elements. VTK-m supports both single block and multi-block grids.</p>
+  <p>In order for VTK-m filters to perform better than VTK filters the number of cells in a block must be fairly large, typically at least 1 million cells. Furthermore, there is some overhead in converting between VTK and VTK-m representations that will impact performance. Lastly, checks have been put in to make sure that the data sets being operated on are supported by VTK-m and these can impact performance as well. Checking if a variable is node centered or 3D is inexpensive, whereas checking if an unstructured grid contains only hexahedra is expensive.</p>
   </li>
   <li>Due to lack of availability of C++11 compliant compilers, support for OSX 10.8 has been dropped.</li>
   <li>The <i>Remote Profiles</i> tab in the <i>Host profiles</i> will now allow importing profiles from the currently running release as well as from the trunk.</li>
