@@ -67,56 +67,11 @@ width and line style. You can set the line width and line style are set by
 selecting new options from the **Line style** or **Line width** menus at the top
 of the **Mesh plot attributes window**.
 
-Changing the point size
-"""""""""""""""""""""""
+Changing point type and size
+""""""""""""""""""""""""""""
 
-Some databases contain point meshes, which are meshes of topological dimension
-zero. When the point mesh is 2D, VisIt draws it using small points. When the
-point mesh is 3D, VisIt draws its points as 3D cubes. To control how large the
-points appear, change the point size attribute by typing a new number into the
-**Point size** text field. Larger point size values result in larger points in
-the visualization window. The point size can also be scaled by a scalar variable
-if you check the **Scale point size by variable** check box and optionally
-select a variable name from the **Variable** button's menu. The initial value of
-"default" must be replaced with a valid scalar variable name in order for VisIt
-to scale the point size with a variable.
+Controls for points are described in :ref:`plot_point_type_and_size`.
 
-Changing the point type
-"""""""""""""""""""""""
-
-The Mesh plot can use seven different point types for drawing point meshes. The
-Mesh plot draws an object of the desired point type, scaled by the point size,
-for each point in the point mesh. Setting the point type has no effect if the
-plotted mesh is not a point mesh. The different point types are as follows:
-
-  - Box 
-  - Axis
-  - Icosahedron
-  - Octahedron
-  - Tetrahedron
-  - Point
-  - Sphere 
-
-Examples of some of the different point
-types are shown below. To set the point type, select a new point type from the
-**Point Type** combo box. When the point type is set to Box, the Mesh plot
-draws a small cube for each point in the point mesh. When the point type is
-set to Axis, the Mesh plot draws there small axis-aligned planes for each point
-in the point mesh. When the point type is set to Icosahedron, the Mesh plot
-draws small icosahedra at each point in the point mesh. When the point type is
-set to Point, the Mesh plot uses flat quadrilateral points. When the point type
-is set to Sphere, the Mesh plot uses flat quadrilateral points with an applied
-texture to make them look like spheres. In general, setting the point type to:
-Point will cause the Mesh plot to have the fastest rendering performance. The
-sphere point type is the second fastest but perhaps the best looking. Other
-point types can take longer to generate and render because they use additional
-geometry.
-
-.. _pointtypes_mesh:
-
-.. figure:: ../images/pointtypes.png
-
-   Point types: Box, Axis, Icosahedron, Point, Sphere
 
 Geometry smoothing
 """"""""""""""""""

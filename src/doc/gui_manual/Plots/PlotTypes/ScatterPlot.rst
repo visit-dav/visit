@@ -131,34 +131,12 @@ in a cube. If you prefer to see the Scatter plot without this corrective
 scaling, you can turn off the Scale to cube check box on the
 **Scatter plot attribute window's Appearance** tab.
 
-Setting point properties
-""""""""""""""""""""""""
-
 .. _scatterplot_appearance:
 
 .. figure:: ../images/scatterplot_appearance.png
 
    Scatter plot attributes window's Appearance tab 
 
-The Scatter plot can draw its points in eight different styles: Box, Axis,
-Icosahedron, Octahedron, Tetrahedron, Point, and Sphere. The default value 
-of Point is the fastest and
-forces the Scatter plot to draw all of its points as tiny points. When the
-Scatter plot uses the Sphere point type, it draws points but applies textures
-to the points so it is nearly as fast as the Point point type. Any of the other
-point styles place a glyph at each point in the Scatter plot's created point
-mesh, taking longer to render. To change the point type used to draw the
-Scatter plot's points, click on the **Appearance** tab in the
-**Scatter plot attributes window** and choose a new option from the
-**Point Type** combo box shown in :numref:`Figure %s <scatterplot_appearance>`.
-If you choose any of the glyphed point types
-(all except Point and Sphere) then you can also specify a point size by typing
-a new value into the **Point size** text field. The point size is used to
-determine the size of the glyph. For example, if you choose the Box point type
-and you enter a point size of: 0.1 then the length of all of the edges on the
-Box glyphs will be 0.1. If you use Point or Sphere point types then the
-**Point size** text field becomes the **Point size (pixels)** text field and
-you can set the point size in terms of pixels.
 
 Setting the colors
 """"""""""""""""""
@@ -176,3 +154,9 @@ using a single color, its default behavior is to color the points using the vis
 window's foreground color. If you want to instead use a different color, turn
 off the **Use foreground** check box and click on the **Single color** color
 button to select a new color.
+
+
+Setting point properties
+""""""""""""""""""""""""
+
+Controls for points are described in :ref:`plot_point_type_and_size`.
