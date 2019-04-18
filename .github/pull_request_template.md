@@ -30,6 +30,3 @@ Please describe the tests you've added or any tests that already cover this chan
 - [ ] New and existing unit tests pass locally with my changes
 - [ ] I have added any new baselines to the repo
 - [ ] I have assigned reviewers (see [VisIt's PR procedures](https://visit-sphinx-github-user-manual.readthedocs.io/en/develop/dev_manual/pr_create.html#reviewers) for more information).
-
-
-*Don't forget to squash merge when this pull request is approved.*

@@ -77,11 +77,6 @@ Any items that do not relate to the PR should be deleted. For example, if
 the PR is not for a bugfix or feature, adding a test may not be required
 and this checklist item *should* be deleted.
 
-Notes
-~~~~~
-
-The template ends with two notes. The first is a note to squash merge the PR when it is ready to be merged. This allows you to turn several commits for one branch into one descriptive commit that encapsulates the work done on the branch. This keeps our git history clean and short. The second is a note to wait for the CI testing to pass before merging the PR. This is crucial because *if a CI test fails, then the branch should not be merged.* CI tests take approximately 30 minutes to complete.
-
 
 .. choose-a-reviewer:
 
