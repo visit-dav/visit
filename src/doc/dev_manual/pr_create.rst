@@ -86,33 +86,49 @@ The template ends with two notes. The first is a note to squash merge the PR whe
 Reviewers
 ---------
 
-If you are not an owner, then GitHub will not allow your PR to be merged into develop without a reviewer's approval, so you will need at least one reviewer. If you are an owner, then you can merge the PR into develop without review, but that doesn't necessarily mean you should. Follow these guidelines to determine the need and number of reviewers. Note, these guidelines serve as a "lower bound"; you may always add more reviewers to your PR if you feel that is necessary.
+GitHub will not allow non-owners to merge PRs into develop without a reviewer's
+approval. Non-owners will need at least one reviewer. Owner may merge a PR into
+develop without review. But, that doesn't necessarily mean they should.
+Follow the guidelines below to determine the need for and number of reviewers.
+Note, these guidelines serve as a "lower bound"; you may always add more
+reviewers to your PR if you feel that is necessary.
 
 
 No Reviewers (owners only)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-If your changes are localized and you have satsified all the testing requirements and you are confident in the correctness of your changes (where correctness is measured by both the correctness of your code for accomplishing the desired task and the correctness of *how* you implemented the code according to VisIt_'s standard practices) then you may merge the PR without a reviewer *after* the CI tests pass.
+If your changes are localized, you have satsified all the testing
+requirements and you are confident in the correctness of your changes
+(where correctness is measured by both the correctness of your code for
+accomplishing the desired task and the correctness of *how* you implemented
+the code according to VisIt_'s standard practices) then you may merge the PR
+without a reviewer *after* the CI tests pass.
 
 
 One reviewer
 ~~~~~~~~~~~~
 
-If your changes have a broader impact or you are working in an area of VisIt_ with which you are not familiar or you are changing existing behavior, then you should add a reviewer.
+If the changes have a broader impact or involve an unfamiliar area of VisIt_
+or existing behavior is being changed, then a reviewer should be added.
 
-If you are not an owner, then you must always have at least one reviewer, even if you satisfy the guidelines for the "No Reviewers" case. 
+Non-owners must always have at least one reviewer even if you satisfy all other
+guidelines for the *No Reviewers* case are satisfied.
 
 
 Two or more reviewers
 ~~~~~~~~~~~~~~~~~~~~~
 
-If your changes substantially modify existing behavior or you are updating significant amounts of the code or you are designing new architectures or interfacess, then you should have at least two reviewers.
+If your changes substantially modify existing behavior or you are updating
+significant amounts of the code or you are designing new architectures or
+interfacess, then you should have at least two reviewers.
 
 
 Choosing Reviewers
 ~~~~~~~~~~~~~~~~~~
 
-GitHub automatically suggests reviewers based on the blame data for the files you have modified. So unless you have a specific need for a specific reviewer, then you're probably safe to go with GitHub's suggestions.
+GitHub automatically suggests reviewers based on the blame data for the files
+you have modified. So unless you have a specific need for a specific reviewer,
+then you're probably safe to go with GitHub's suggestions.
 
 .. developer-process:
 
