@@ -308,7 +308,6 @@ function verify_md5_checksum
         fi
         md5cmd=md5
     fi
-    $md5cmd $dfile | tr ' ' '\n' | grep '^[0-9a-f]\{32\}'
     tmp=`$md5cmd $dfile | tr ' ' '\n' | grep '^[0-9a-f]\{32\}'`
     if [[ $tmp == ${checksum} ]]; then
         info "verified"
@@ -331,16 +330,19 @@ function verify_sha_checksum
         return 0
     fi
 
-    tmp=`shasum -a $checksum_algo $dfile`
-    if [[ $? == 0 ]]; then
-        tmp=`echo $tmp| awk '{print $1}'`
-        if [[ $tmp == $checksum ]]; then
-            info "verified"
-            return 0
-        else
-            info "shasum -a $checksum_algo failed: looking for $checksum got $tmp"
-            return 1
-        fi
+    set -x
+
+    if [[ $checksum_algo == 512 ]]; then
+        tmp=`shasum -a $checksum_algo $dfile | tr ' ' '\n' | grep '^[0-9a-f]\{128\}'`
+    else
+        tmp=`shasum -a $checksum_algo $dfile | tr ' ' '\n' | grep '^[0-9a-f]\{64\}'`
+    fi
+    if [[ "$tmp" == "$checksum" ]]; then
+        info "verified"
+        return 0
+    else
+        info "shasum -a $checksum_algo failed: looking for $checksum got $tmp"
+        return 1
     fi
 
     info "shasum does not support $checksum_algo, check disabled"
