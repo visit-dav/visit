@@ -10,12 +10,12 @@ practices, and ensuring changes are consistent with VisIt_'s overall architectur
 Because PR reviews can take time, we have adopted policies to help tailor the
 review effort and balance the load among developers. We hope these policies will
 help ensure PR reviews are completed in a timely manner. The benefits of reviews
-outweigh the added time.  
+outweigh the added time.
 
 Working with the Template
 -------------------------
 
-PR submissions are pre-populated with a template to help guide the content.
+PR submissions are populated with a template to help guide the content.
 Developers do not have to use this template. Keep in mind, however, that
 reviewers need structured context in order to accurately and quickly review
 a PR. So, it is best to use the template or something very similar to it. The
