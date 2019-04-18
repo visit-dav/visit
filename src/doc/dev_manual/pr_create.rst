@@ -129,8 +129,6 @@ GitHub automatically suggests reviewers based on the blame data for the files
 you have modified. You should choose the GitHub suggested reviewer unless you
 have a specific need for a specific reviewer.
 
-.. developer-process:
-
 Iteration Process
 -----------------
 
@@ -138,12 +136,12 @@ Review processes are iterative by nature, and :abbr:`PR (Pull Request)` reviews
 are no exception. A typical review process looks like this:
 
 #. The developer submits a PR and selects a reviewer.
-#. The reviewer reviews the PR and leave comments, suggestions, and tasks.
+#. The reviewer reviews the PR and writes comments, suggestions, and tasks.
 #. The developer gets clarification for anything that us unclear and updates the PR according to the suggestions.
 #. Repeat steps 2 and 3 until the reviewer is satisfied with the PR.
 #. The reviewer approves the PR.
 
-The actual amount of time it takes to perform a review or update the changes
+The actual amount of time it takes to perform a review or update the PR
 is relatively small compared to the amount of time the PR *waits* for the next
 step in the iteration. The wait time can be exacerbated in two ways: (1) The
 reviewer or developer is unaware that the PR is ready for the next step in the
@@ -155,4 +153,4 @@ developer (guidelines for the reviewer can be found
 * Make sure the code is clear and well commented and that the PR is descriptive. This helps the reviewers quickly familiarize themselves with the context of the changes. If the code is unclear, the reviewers may spend a lot of time trying to grasp the purpose and effects of the PR.
 * Immediately answer any questions the reviewers ask about the PR. Enabling notifications will help speed this along.
 * When the reviewers have finished reviewing (step 2), quickly update the PR according to the requested changes. Use the ``@username`` idiom to notifiy the reviewers for any clarification
-* When you have finished updating your PR (step 3), leave a comment on the PR using ``@username`` to let the reviewers know that the PR is ready to be looked at again.
+* When you have finished updating your PR (step 3), write a comment on the PR using ``@username`` to let the reviewers know that the PR is ready to be looked at again.
