@@ -53,7 +53,7 @@ Type of Change
 ~~~~~~~~~~~~~~
 
 Bug fixes, features, and documentation improvements are among the most common
-types of PR's. You may select from the menu by replacing the space between the
+types of PRs. You may select from the menu by replacing the space between the
 square brackets (``[ ]``) with an uppercase X, so that it looks exactly like
 ``[X]``. You can also make this selection *after* submitting the PR by checking
 the box that appears on the submitted PR page.
@@ -85,7 +85,7 @@ Reviewers
 
 GitHub will not allow non-owners to merge PRs into develop without a reviewer's
 approval. Non-owners will need at least one reviewer. Owners may merge a PR into
-develop without review. But, that doesn't necessarily mean they should.
+develop without review. But, that does not necessarily mean they should.
 Follow the guidelines below to determine the need for and number of reviewers.
 Note, these guidelines serve as a "lower bound"; you may always add more
 reviewers to your PR if you feel that is necessary.
