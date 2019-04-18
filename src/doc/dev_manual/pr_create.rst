@@ -4,46 +4,76 @@ Creating a Pull Request
 Overview
 --------
 
-The Pull Request (PR) is a mechanism that allows other developers on the team to review your work before merging your branch into develop. It is extremely useful for preventing bugs, enforcing coding practices, and ensuring changes are consistent with VisIt's overall vision. Although a review does slow down the developmenet process, there are several policies we put into place to ensure a review is completed in a timely manner, and the benefits of a review outweigh the added time.
-
+Pull Requests (PRs) allow developers to review work before merging it into the
+develop branch. PRs are extremely useful for preventing bugs, enforcing coding
+practices, and ensuring changes are consistent with VisIt_'s overall architecture. 
+Because PR reviews can take time, we have adopted policies to help tailor the
+review effort and balance the load among developers. We hope these policies will
+help ensure PR reviews are completed in a timely manner. The benefits of reviews
+outweigh the added time.  
 
 Working with the Template
 -------------------------
 
-PR's come pre-populated with a template to help guide the content. You do not have to use this template, but keep in mind that a reviewer needs structured context in order to accurately and quickly review your PR, so it is best to use the template or something very similar to it. The text in the template is designed to be **replaced** by your information. For example, you should replace the line that says "Please include a summary of the change" with the actual summary of the change.
+PR submissions are pre-populated with a template to help guide the content.
+Developers do not have to use this template. Keep in mind, however, that
+reviewers need structured context in order to accurately and quickly review
+a PR. S, it is best to use the template or something very similar to it. The
+text sections in the template are designed to be **replaced** by information
+relevant to the work involved. For example, replace a line that says
+*Please include a summary of the change* with an actual summary of the change.
 
-In general, if there is part of the template you will not use, please delete it before submitting the PR. For example, delete any items in the checklist that are not relevant to your pull request (see Checklist below).
+In general, if part of the template is not relevant, please delete it before
+submitting the PR. For example, delete any items in the :ref:`checklist <checklist>`
+that are not relevant.
 
-If you plan to add additional structured units to the template, please use markdown styling.
+If additional structured sections in the PR submission are needed, please
+use `GitHub markdown <https://guides.github.com/features/mastering-markdown/>`_
+styling.
 
+In the sections below, we describe each of the sections of the PR template in
+more detail.
 
 Description
 ~~~~~~~~~~~
 
-By using the '#<number>' feature, we can link issues and PR's to one another. For example, when we type '#' followed by a number, a search menu will appear providing potential matches. Once we have selected the correct number and submitted the ticket/PR, the items will be linked. In addition, GitHub provides several keywords that update Issues based on the given state of the related PR, such as "Resolves". When a PR and ticket are linked via "Resolves", then the ticket will automatically close when the branch is merged into develop. We use these feature to keep our tickets and PR's organized, and our template sets it up for you. All you have to do is start typing the number next to the '#'.
+GitHub supports a number of
+`idioms and keywords <https://help.github.com/en/articles/closing-issues-using-keywords<`_
+in PR submissions to help automatically link related items. Please use them.
 
-If your PR is unrelated to a ticket, please delete the "Resolves #..." line for clarity.
+For example, when typing a hashtag (``#``) followed by a number or text, a search menu will
+appear providing potential matches based on issue or PR numbers or headlines. Sometimes no
+matches will be produced even if the number being entered is correct.
 
-Replace the line "Please include a summary of the change" with the actual summary of the change.
+If a PR is unrelated to a ticket, please delete the "Resolves #..." line for clarity.
 
 Type of Change
 ~~~~~~~~~~~~~~
 
-Bug fixes, features, and documentation improvements are among the most common types of PR's. You may select from the menu by replacing the space between the '[ ]' with a capital X, so that it looks exactly like '[X]'. You can also make the selection *after* submitting the PR by checking the box that appears.
+Bug fixes, features, and documentation improvements are among the most common
+types of PR's. You may select from the menu by replacing the space between the
+square brackets (``[ ]``) with an uppercase X, so that it looks exactly like
+``[X]``. You can also make this selection *after* submitting the PR by checking
+the box that appears on the submitted PR page.
 
-If you check "Other", please describe the type below.
+If "Other" is checked, please describe the type of change in the space below.
 
 Testing
 ~~~~~~~
 
-Replace the content of this section with a description of how you tested the change.
+Replace the content of this section with a description of how the change was tested.
 
+
+.. _checklist:
 
 The Checklist
 ~~~~~~~~~~~~~
 
-The Checklist serves as a list of tasks you should do before submitting the PR, and you should check them off when you've done them. Any items that do not relate to your PR should be erased (for example, if you did not submit a bugfix or feature, you probably won't need to add an additional test; this line in the checklist should be erased).
-
+The Checklist serves as a list of suggested tasks to be performed before
+submitting the PR. Those that have been completed should be chedked off.
+Any items that do not relate to the PR should be deleted. For example, if
+the PR is not for a bugfix or feature, adding a test may not be required
+and this checklist item *should* be deleted.
 
 Notes
 ~~~~~
@@ -62,13 +92,13 @@ If you are not an owner, then GitHub will not allow your PR to be merged into de
 No Reviewers (owners only)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-If your changes are localized and you have satsified all the testing requirements and you are confident in the correctness of your changes (where correctness is measured by both the correctness of your code for accomplishing the desired task and the correctness of *how* you implemented the code according to VisIt's standard practices) then you may merge the PR without a reviewer *after* the CI tests pass.
+If your changes are localized and you have satsified all the testing requirements and you are confident in the correctness of your changes (where correctness is measured by both the correctness of your code for accomplishing the desired task and the correctness of *how* you implemented the code according to VisIt_'s standard practices) then you may merge the PR without a reviewer *after* the CI tests pass.
 
 
 One reviewer
 ~~~~~~~~~~~~
 
-If your changes have a broader impact or you are working in an area of VisIt with which you are not familiar or you are changing existing behavior, then you should add a reviewer.
+If your changes have a broader impact or you are working in an area of VisIt_ with which you are not familiar or you are changing existing behavior, then you should add a reviewer.
 
 If you are not an owner, then you must always have at least one reviewer, even if you satisfy the guidelines for the "No Reviewers" case. 
 
