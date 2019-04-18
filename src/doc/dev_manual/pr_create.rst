@@ -18,7 +18,7 @@ Working with the Template
 PR submissions are pre-populated with a template to help guide the content.
 Developers do not have to use this template. Keep in mind, however, that
 reviewers need structured context in order to accurately and quickly review
-a PR. S, it is best to use the template or something very similar to it. The
+a PR. So, it is best to use the template or something very similar to it. The
 text sections in the template are designed to be **replaced** by information
 relevant to the work involved. For example, replace a line that says
 *Please include a summary of the change* with an actual summary of the change.
@@ -38,12 +38,14 @@ Description
 ~~~~~~~~~~~
 
 GitHub supports a number of
-`idioms and keywords <https://help.github.com/en/articles/closing-issues-using-keywords<`_
+`idioms and keywords <https://help.github.com/en/articles/closing-issues-using-keywords>`_
 in PR submissions to help automatically link related items. Please use them.
 
 For example, when typing a hashtag (``#``) followed by a number or text, a search menu will
 appear providing potential matches based on issue or PR numbers or headlines. Sometimes no
-matches will be produced even if the number being entered is correct.
+matches will be produced even if the number being entered is correct, but the link will
+still occur when the PR is submitted. By placing the keyword "Resolves" in front of a
+link to an issue, the issue will automatically close when the PR is merged.
 
 If a PR is unrelated to a ticket, please delete the "Resolves #..." line for clarity.
 
@@ -70,7 +72,7 @@ The Checklist
 ~~~~~~~~~~~~~
 
 The Checklist serves as a list of suggested tasks to be performed before
-submitting the PR. Those that have been completed should be chedked off.
+submitting the PR. Those that have been completed should be checked off.
 Any items that do not relate to the PR should be deleted. For example, if
 the PR is not for a bugfix or feature, adding a test may not be required
 and this checklist item *should* be deleted.
@@ -87,7 +89,7 @@ Reviewers
 ---------
 
 GitHub will not allow non-owners to merge PRs into develop without a reviewer's
-approval. Non-owners will need at least one reviewer. Owner may merge a PR into
+approval. Non-owners will need at least one reviewer. Owners may merge a PR into
 develop without review. But, that doesn't necessarily mean they should.
 Follow the guidelines below to determine the need for and number of reviewers.
 Note, these guidelines serve as a "lower bound"; you may always add more
@@ -112,7 +114,7 @@ If the changes have a broader impact or involve an unfamiliar area of VisIt_
 or existing behavior is being changed, then a reviewer should be added.
 
 Non-owners must always have at least one reviewer even if you satisfy all other
-guidelines for the *No Reviewers* case are satisfied.
+guidelines for the *No Reviewers* case.
 
 
 Two or more reviewers
@@ -120,33 +122,40 @@ Two or more reviewers
 
 If your changes substantially modify existing behavior or you are updating
 significant amounts of the code or you are designing new architectures or
-interfacess, then you should have at least two reviewers.
+interfaces, then you should have at least two reviewers.
 
 
 Choosing Reviewers
 ~~~~~~~~~~~~~~~~~~
 
 GitHub automatically suggests reviewers based on the blame data for the files
-you have modified. So unless you have a specific need for a specific reviewer,
-then you're probably safe to go with GitHub's suggestions.
+you have modified. You should choose the GitHub suggested reviewer unless you
+have a specific need for a specific reviewer.
 
 .. developer-process:
 
 Iteration Process
 -----------------
 
-Review processes are iterative by nature, and PR reviews are no exception. A typical review process looks like this:
+Review processes are iterative by nature, and PR reviews are no exception.
+A typical review process looks like this:
 
-#. You submit a pull request and select a reviewer.
-#. The reviewer goes through and leave comments, suggestions, and tasks for you to do.
-#. You get clarification for anything that us unclear and update your PR according to the suggestions.
+#. The developer submits a PR and selects a reviewer.
+#. The reviewer reviews the PR and leave comments, suggestions, and tasks.
+#. The developer gets clarification for anything that us unclear and updates the PR according to the suggestions.
 #. Repeat steps 2 and 3 until the reviewer is satisfied with the PR.
 #. The reviewer approves the PR.
 
-The actual amount of time it takes to perform a review or update the changes is relatively small compared to the amount of time the PR *waits* for the next step in the iteration. The wait time can be exacerbated in two ways: (1) The reviewer or developer is unaware that the PR is ready for the next step in the iteration process, and (2) the reviewer or developer is too busy with other work. To help alleviate the situation, we recommend the following guidelines for the developer (guidelines for the reviewer can be found `here <https://visit-sphinx-github-user-manual.readthedocs.io/en/develop/dev_manual/pr_review.html#iteration-process>`_).
+The actual amount of time it takes to perform a review or update the changes
+is relatively small compared to the amount of time the PR *waits* for the next
+step in the iteration. The wait time can be exacerbated in two ways: (1) The
+reviewer or developer is unaware that the PR is ready for the next step in the
+iteration process, and (2) the reviewer or developer is too busy with other work.
+To help alleviate the situation, we recommend the following guidelines for the
+developer (guidelines for the reviewer can be found
+`here <https://visit-sphinx-github-user-manual.readthedocs.io/en/develop/dev_manual/pr_review.html#iteration-process>`_).
 
-* Make sure your code is clear and well commented and that your PR is descriptive. This helps your reviewers quickly familiarize themselves with the context of your changes. If code is unclear, the reviewers may spend a lot of time trying to grasp the purpose and effects of your changes.
-* Immediately answer any questions your reviewers ask about the PR. You should turn on notifications for this.
-* When the reviewers have finished reviewing (step 2), make it a top priority to update your code according to the requested changes. Use the @<username> feature to notifiy the reviewers of any questions you have about the suggestions/comments.
+* Make sure the code is clear and well commented and that the PR is descriptive. This helps the reviewers quickly familiarize themselves with the context of the changes. If the code is unclear, the reviewers may spend a lot of time trying to grasp the purpose and effects of the PR.
+* Immediately answer any questions the reviewers ask about the PR. Enabling notifications will help speed this along.
+* When the reviewers have finished reviewing (step 2), quickly update the PR according to the requested changes. Use the @<username> feature to notifiy the reviewers for any clarification
 * When you have finished updating your PR (step 3), leave a comment on the PR using @<username> to let the reviewers know that the PR is ready to be looked at again.
-* Reviewers won't always merge a PR after they approve it, especially if the squash-merge involves combining many commits into a single, descriptive comment. When your PR is approved, you should squash-merge to develop with a succinct description.
