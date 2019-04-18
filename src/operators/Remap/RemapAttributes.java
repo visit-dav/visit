@@ -81,7 +81,6 @@ public class RemapAttributes extends AttributeSubject implements Plugin
         startZ = 0;
         endZ = 1;
         cellsZ = 10;
-        defaultValue = 0;
         variableType = VARIABLETYPES_INTRINSIC;
     }
 
@@ -100,7 +99,6 @@ public class RemapAttributes extends AttributeSubject implements Plugin
         startZ = 0;
         endZ = 1;
         cellsZ = 10;
-        defaultValue = 0;
         variableType = VARIABLETYPES_INTRINSIC;
     }
 
@@ -119,7 +117,6 @@ public class RemapAttributes extends AttributeSubject implements Plugin
         startZ = obj.startZ;
         endZ = obj.endZ;
         cellsZ = obj.cellsZ;
-        defaultValue = obj.defaultValue;
         variableType = obj.variableType;
 
         SelectAll();
@@ -149,7 +146,6 @@ public class RemapAttributes extends AttributeSubject implements Plugin
                 (startZ == obj.startZ) &&
                 (endZ == obj.endZ) &&
                 (cellsZ == obj.cellsZ) &&
-                (defaultValue == obj.defaultValue) &&
                 (variableType == obj.variableType));
     }
 
@@ -223,12 +219,6 @@ public class RemapAttributes extends AttributeSubject implements Plugin
         Select(10);
     }
 
-    public void SetDefaultValue(double defaultValue_)
-    {
-        defaultValue = defaultValue_;
-        Select(11);
-    }
-
     public void SetVariableType(int variableType_)
     {
         variableType = variableType_;
@@ -247,7 +237,6 @@ public class RemapAttributes extends AttributeSubject implements Plugin
     public double  GetStartZ() { return startZ; }
     public double  GetEndZ() { return endZ; }
     public int     GetCellsZ() { return cellsZ; }
-    public double  GetDefaultValue() { return defaultValue; }
     public int     GetVariableType() { return variableType; }
 
     // Write and read methods.
@@ -275,8 +264,6 @@ public class RemapAttributes extends AttributeSubject implements Plugin
             buf.WriteDouble(endZ);
         if(WriteSelect(10, buf))
             buf.WriteInt(cellsZ);
-        if(WriteSelect(11, buf))
-            buf.WriteDouble(defaultValue);
         if(WriteSelect(12, buf))
             buf.WriteInt(variableType);
     }
@@ -319,9 +306,6 @@ public class RemapAttributes extends AttributeSubject implements Plugin
             SetCellsZ(buf.ReadInt());
             break;
         case 11:
-            SetDefaultValue(buf.ReadDouble());
-            break;
-        case 12:
             SetVariableType(buf.ReadInt());
             break;
         }
@@ -341,7 +325,6 @@ public class RemapAttributes extends AttributeSubject implements Plugin
         str = str + doubleToString("startZ", startZ, indent) + "\n";
         str = str + doubleToString("endZ", endZ, indent) + "\n";
         str = str + intToString("cellsZ", cellsZ, indent) + "\n";
-        str = str + doubleToString("defaultValue", defaultValue, indent) + "\n";
         str = str + indent + "variableType = ";
         if(variableType == VARIABLETYPES_INTRINSIC)
             str = str + "VARIABLETYPES_INTRINSIC";
@@ -364,7 +347,6 @@ public class RemapAttributes extends AttributeSubject implements Plugin
     private double  startZ;
     private double  endZ;
     private int     cellsZ;
-    private double  defaultValue;
     private int     variableType;
 }
 

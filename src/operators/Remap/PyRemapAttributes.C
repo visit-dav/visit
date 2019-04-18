@@ -104,8 +104,6 @@ PyRemapAttributes_ToString(const RemapAttributes *atts, const char *prefix)
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%scellsZ = %d\n", prefix, atts->GetCellsZ());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sdefaultValue = %g\n", prefix, atts->GetDefaultValue());
-    str += tmpStr;
     const char *variableType_names = "intrinsic, extrinsic";
     switch (atts->GetVariableType())
     {
@@ -398,30 +396,6 @@ RemapAttributes_GetCellsZ(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-RemapAttributes_SetDefaultValue(PyObject *self, PyObject *args)
-{
-    RemapAttributesObject *obj = (RemapAttributesObject *)self;
-
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
-
-    // Set the defaultValue in the object.
-    obj->data->SetDefaultValue(dval);
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-RemapAttributes_GetDefaultValue(PyObject *self, PyObject *args)
-{
-    RemapAttributesObject *obj = (RemapAttributesObject *)self;
-    PyObject *retval = PyFloat_FromDouble(obj->data->GetDefaultValue());
-    return retval;
-}
-
-/*static*/ PyObject *
 RemapAttributes_SetVariableType(PyObject *self, PyObject *args)
 {
     RemapAttributesObject *obj = (RemapAttributesObject *)self;
@@ -480,8 +454,6 @@ PyMethodDef PyRemapAttributes_methods[REMAPATTRIBUTES_NMETH] = {
     {"GetEndZ", RemapAttributes_GetEndZ, METH_VARARGS},
     {"SetCellsZ", RemapAttributes_SetCellsZ, METH_VARARGS},
     {"GetCellsZ", RemapAttributes_GetCellsZ, METH_VARARGS},
-    {"SetDefaultValue", RemapAttributes_SetDefaultValue, METH_VARARGS},
-    {"GetDefaultValue", RemapAttributes_GetDefaultValue, METH_VARARGS},
     {"SetVariableType", RemapAttributes_SetVariableType, METH_VARARGS},
     {"GetVariableType", RemapAttributes_GetVariableType, METH_VARARGS},
     {NULL, NULL}
@@ -534,8 +506,6 @@ PyRemapAttributes_getattr(PyObject *self, char *name)
         return RemapAttributes_GetEndZ(self, NULL);
     if(strcmp(name, "cellsZ") == 0)
         return RemapAttributes_GetCellsZ(self, NULL);
-    if(strcmp(name, "defaultValue") == 0)
-        return RemapAttributes_GetDefaultValue(self, NULL);
     if(strcmp(name, "variableType") == 0)
         return RemapAttributes_GetVariableType(self, NULL);
     if(strcmp(name, "intrinsic") == 0)
@@ -579,8 +549,6 @@ PyRemapAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = RemapAttributes_SetEndZ(self, tuple);
     else if(strcmp(name, "cellsZ") == 0)
         obj = RemapAttributes_SetCellsZ(self, tuple);
-    else if(strcmp(name, "defaultValue") == 0)
-        obj = RemapAttributes_SetDefaultValue(self, tuple);
     else if(strcmp(name, "variableType") == 0)
         obj = RemapAttributes_SetVariableType(self, tuple);
 

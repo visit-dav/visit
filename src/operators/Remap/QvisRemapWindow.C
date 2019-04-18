@@ -190,13 +190,6 @@ QvisRemapWindow::CreateWindowContents()
             this, SLOT(cellsZProcessText()));
     mainLayout->addWidget(cellsZ, 10,1);
 
-    defaultValueLabel = new QLabel(tr("Value for uncovered regions"), central);
-    mainLayout->addWidget(defaultValueLabel,11,0);
-    defaultValue = new QLineEdit(central);
-    connect(defaultValue, SIGNAL(returnPressed()),
-            this, SLOT(defaultValueProcessText()));
-    mainLayout->addWidget(defaultValue, 11,1);
-
     variableTypeLabel = new QLabel(tr("Variable type"), central);
     mainLayout->addWidget(variableTypeLabel,12,0);
     variableType = new QWidget(central);
@@ -252,50 +245,39 @@ QvisRemapWindow::UpdateWindow(bool doAll)
             if (atts->GetUseExtents() == false)
             {
                 startX->setEnabled(true);
-                if(startXLabel)
-                    startXLabel->setEnabled(true);
+                startXLabel->setEnabled(true);
+                endX->setEnabled(true);
+                endXLabel->setEnabled(true);
+                startY->setEnabled(true);
+                startYLabel->setEnabled(true);
+                endY->setEnabled(true);
+                endYLabel->setEnabled(true);
             }
             else
             {
                 startX->setEnabled(false);
-                if(startXLabel)
-                    startXLabel->setEnabled(false);
-            }
-            if (atts->GetUseExtents() == false)
-            {
-                endX->setEnabled(true);
-                if(endXLabel)
-                    endXLabel->setEnabled(true);
-            }
-            else
-            {
+                startXLabel->setEnabled(false);
                 endX->setEnabled(false);
-                if(endXLabel)
-                    endXLabel->setEnabled(false);
-            }
-            if (atts->GetUseExtents() == false)
-            {
-                startY->setEnabled(true);
-                if(startYLabel)
-                    startYLabel->setEnabled(true);
-            }
-            else
-            {
+                endXLabel->setEnabled(false);
                 startY->setEnabled(false);
-                if(startYLabel)
-                    startYLabel->setEnabled(false);
+                startYLabel->setEnabled(false);
+                endY->setEnabled(false);
+                endYLabel->setEnabled(false);
             }
-            if (atts->GetUseExtents() == false)
+
+            if (atts->GetIs3D() == true && atts->GetUseExtents() == false)
             {
-                endY->setEnabled(true);
-                if(endYLabel)
-                    endYLabel->setEnabled(true);
+                startZ->setEnabled(true);
+                startZLabel->setEnabled(true);
+                endZ->setEnabled(true);
+                endZLabel->setEnabled(true);
             }
             else
             {
-                endY->setEnabled(false);
-                if(endYLabel)
-                    endYLabel->setEnabled(false);
+                startZ->setEnabled(false);
+                startZLabel->setEnabled(false);
+                endZ->setEnabled(false);
+                endZLabel->setEnabled(false);
             }
             useExtents->blockSignals(true);
             useExtents->setChecked(atts->GetUseExtents());
@@ -320,41 +302,29 @@ QvisRemapWindow::UpdateWindow(bool doAll)
             cellsY->setText(IntToQString(atts->GetCellsY()));
             break;
           case RemapAttributes::ID_is3D:
-            if (atts->GetIs3D() == true)
+            if (atts->GetIs3D() == true && atts->GetUseExtents() == false)
             {
                 startZ->setEnabled(true);
-                if(startZLabel)
-                    startZLabel->setEnabled(true);
+                startZLabel->setEnabled(true);
+                endZ->setEnabled(true);
+                endZLabel->setEnabled(true);
             }
             else
             {
                 startZ->setEnabled(false);
-                if(startZLabel)
-                    startZLabel->setEnabled(false);
-            }
-            if (atts->GetIs3D() == true)
-            {
-                endZ->setEnabled(true);
-                if(endZLabel)
-                    endZLabel->setEnabled(true);
-            }
-            else
-            {
+                startZLabel->setEnabled(false);
                 endZ->setEnabled(false);
-                if(endZLabel)
-                    endZLabel->setEnabled(false);
+                endZLabel->setEnabled(false);
             }
             if (atts->GetIs3D() == true)
             {
                 cellsZ->setEnabled(true);
-                if(cellsZLabel)
-                    cellsZLabel->setEnabled(true);
+                cellsZLabel->setEnabled(true);
             }
             else
             {
                 cellsZ->setEnabled(false);
-                if(cellsZLabel)
-                    cellsZLabel->setEnabled(false);
+                cellsZLabel->setEnabled(false);
             }
             is3D->blockSignals(true);
             is3D->setChecked(atts->GetIs3D());
@@ -368,9 +338,6 @@ QvisRemapWindow::UpdateWindow(bool doAll)
             break;
           case RemapAttributes::ID_cellsZ:
             cellsZ->setText(IntToQString(atts->GetCellsZ()));
-            break;
-          case RemapAttributes::ID_defaultValue:
-            defaultValue->setText(DoubleToQString(atts->GetDefaultValue()));
             break;
           case RemapAttributes::ID_variableType:
             variableTypeButtonGroup->blockSignals(true);
@@ -528,21 +495,6 @@ QvisRemapWindow::GetCurrentValues(int which_widget)
             atts->SetCellsZ(atts->GetCellsZ());
         }
     }
-
-    // Do defaultValue
-    if(which_widget == RemapAttributes::ID_defaultValue || doAll)
-    {
-        double val;
-        if(LineEditGetDouble(defaultValue, val))
-            atts->SetDefaultValue(val);
-        else
-        {
-            ResettingError(tr("Value for uncovered regions"),
-                DoubleToQString(atts->GetDefaultValue()));
-            atts->SetDefaultValue(atts->GetDefaultValue());
-        }
-    }
-
 }
 
 
@@ -635,14 +587,6 @@ void
 QvisRemapWindow::cellsZProcessText()
 {
     GetCurrentValues(RemapAttributes::ID_cellsZ);
-    Apply();
-}
-
-
-void
-QvisRemapWindow::defaultValueProcessText()
-{
-    GetCurrentValues(RemapAttributes::ID_defaultValue);
     Apply();
 }
 
