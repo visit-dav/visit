@@ -24,12 +24,12 @@ All plot attribute windows have several buttons at the bottom for
 common operations. Use the **Apply** after you have changed one or
 more attributes of a plot to make the new settings take effect.
 The **Make default** button is used to take the current settings
-and make those the default for the remainder of the VisIt session.
+and make those the default for the remainder of the VisIt_ session.
 Each time a new plot of that type is created, it will be created
 with whatever the current defaults are for that plot. If you want
-these settings to persist across VisIt sessions, you can either
+these settings to persist across VisIt_ sessions, you can either
 **Save session**, and then restart from this saved session later,
-or **Save settings** and then all VisIt sessions will use those
+or **Save settings** and then all VisIt_ sessions will use those
 defaults. For more about saving sessions and settings, see
 :ref:`How to Save Settings`. The **Save** and
 **Load** buttons give you the option of saving and loading plot
@@ -43,7 +43,7 @@ button will place the window in the **Notepad area**
 Plot colors
 """""""""""
 
-By default, VisIt uses the **Hot** color table which maps values at
+By default, VisIt_ uses the **Hot** color table which maps values at
 the minimum of the data range to blues, values at the maximum of
 the data range to reds with transitions from blue to violet, to
 green, to yellow in between. However, many plots offer the option of
@@ -63,21 +63,22 @@ the **Mesh plot** or contours on the **Contour plot**.
 Point type and size
 """""""""""""""""""
 
-The Pseudocolor, Mesh and Scatter plots can use eight different point types
-for drawing point meshes (see :numref:`Figure %s <glyphtypes>`).  The default
-value of Point is fastest and forces the plot to draw all of its points as tiny 
-points.  Sphere point type applies textures to the points so it is nearly as 
-fast as the Point point type. Any of the other point styles place a glyph at 
-each point, taking longer to render.  To set the point type choose a new type
-from the **Point type** combo box.  Setting the point type to anything other 
-than **Point** will have no effect if the plotted mesh is not a point mesh.
+The **Pseudocolor**, **Mesh** and **Scatter** plots can use eight different
+point types for drawing point meshes (see :numref:`Figure %s <glyphtypes>`).
+The default option of **Point** is fastest and forces the plot to draw all of
+its points as tiny points.  The **Sphere** option applies textures to the
+points so it is nearly as fast as **Point**. Any of the other options place a
+glyph at each point, taking longer to render.  To set the point type choose an
+option from the **Point type** menu.  Setting the **Point type** to anything
+other than **Point** will have no effect if the plotted mesh is not a point
+mesh.
 
-If you choose any of the point types except Point, then you can also specify a 
-point size by typing a new value into the **Point size** text field. The point 
-size is used to determine the size of the glyph. For example, if you choose 
-the Box point type and you enter a point size of: 0.1 then the length of all 
-of the edges on the Box glyphs will be 0.1. If you use Point point types then 
-the **Point size** text field becomes the **Point size (pixels)** text field 
+If you choose any of the point types except **Point**, then you can also
+specify a point size by typing a new value into the **Point size** text field.
+The point size is used to determine the size of the glyph. For example, if you
+choose **Box**, and you enter a **Point size** of 0.1, then the length of all 
+of the edges on the Box glyphs will be 0.1. If you use **Point**, then the
+**Point size** text field becomes the **Point size (pixels)** text field 
 and you can set the point size in terms of pixels.
 
 
@@ -92,11 +93,11 @@ and you can set the point size in terms of pixels.
 
 .. figure:: ../images/point_type_dropdown.png
 
-   Point type combo box, expanded
+   Point type menu, expanded
 
-For Mesh and Pseudocolor plots, the point size can also be scaled by a scalar 
-variable if you check the **Scale point size by variable** check box and
-select a new scalar variable from the **Variable** button. The value ``default``
-must be replaced with the name of another scalar variable if you want VisIt to
+For **Mesh** and **Pseudocolor** plots, the point size can also be scaled by a
+scalar variable if you check the **Scale point size by variable** check box and
+select a new scalar variable from the **Variable** menu. The value ``default``
+must be replaced with the name of another scalar variable if you want VisIt_ to
 scale the points with a variable other than the one being plotted.
 
