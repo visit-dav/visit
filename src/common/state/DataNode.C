@@ -330,7 +330,9 @@ DataNode::~DataNode()
 // Creation:   Fri Mar 21 10:47:29 PDT 2003
 //
 // Modifications:
-//   
+//   Cyrus Harrison, Thu Apr 18 10:37:46 PDT 2019
+//   Added default case to switch.
+// 
 // ****************************************************************************
 
 void
@@ -511,13 +513,10 @@ DataNode::FreeData()
             delete mptr;
         }
         break;
-    case MAX_NODE_TYPES: // unused
+    default: // unused cases - including: MAX_NODE_TYPES
         {
-            // we should never hit this case
-            // but the case is here to avoid
-            // warnings related to not
-            // testing all enum values
-        };
+            // no cleanup for unused cases
+        }
         break;
     }
 
