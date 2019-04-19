@@ -48,8 +48,8 @@ function bv_pyside_info
     export PYSIDE_VERSION=${PYSIDE_VERSION:-"2.0.0-2017.08.30"}
     export PYSIDE_FILE=${PYSIDE_FILE:-"pyside2-combined.2017.08.30.tar.gz"}
     export PYSIDE_BUILD_DIR=${PYSIDE_BUILD_DIR:-"pyside2-combined"}
-    export PYSIDE_MD5_CHECKSUM=""
-    export PYSIDE_SHA256_CHECKSUM=""
+    export PYSIDE_MD5_CHECKSUM="e3916fe9ffa0887c01bb0e22f78a559a"
+    export PYSIDE_SHA256_CHECKSUM="9479bc5d0bc1dc7eecdf474701ac8540a6c833cdad81fa22adecda1ff790d9bf"
 }
 
 function bv_pyside_print

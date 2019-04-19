@@ -57,8 +57,8 @@ function bv_qwt_info
     export QWT_VERSION=${QWT_VERSION:-"6.1.2"}
     export QWT_COMPATIBILITY_VERSION=${QWT_COMPATIBILITY_VERSION:-"6.0"}
     export QWT_BUILD_DIR=${QWT_BUILD_DIR:-"qwt-6.1.2"}
-#    export QWT_MD5_CHECKSUM="9cc9125a58b905a4148e4e2fda3fabc6"
-#    export QWT_SHA256_CHECKSUM=""
+    export QWT_MD5_CHECKSUM="9c88db1774fa7e3045af063bbde44d7d"
+    export QWT_SHA256_CHECKSUM="2b08f18d1d3970e7c3c6096d850f17aea6b54459389731d3ce715d193e243d0c"
 }
 
 function bv_qwt_print

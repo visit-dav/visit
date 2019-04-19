@@ -636,6 +636,9 @@ GUI_LogQtMessages(QtMsgType type, const QMessageLogContext &context, const QStri
 //   Brad Whitlock, Tue Jan 15 10:30:20 PST 2013
 //   Give the file server list a pointer to the host profiles.
 //
+//   Kathleen Biagas, Fri Apr 12 15:04:39 PDT 2019
+//   Initialize orientation (used same init value as AppearanceAtts).
+//
 // ****************************************************************************
 
 QvisGUIApplication::QvisGUIApplication(int &argc, char **argv, ViewerProxy *proxy) :
@@ -720,6 +723,7 @@ QvisGUIApplication::QvisGUIApplication(int &argc, char **argv, ViewerProxy *prox
     savedGUISize[1] = 0;
     savedGUILocation[0] = 0;
     savedGUILocation[1] = 0;
+    orientation = 0;
 
     // Create the viewer, statusSubject, and fileServer for GUIBase.
     SetViewerProxy( proxy ? proxy : new ViewerProxy());
@@ -2640,18 +2644,22 @@ QvisGUIApplication::CustomizeAppearance(bool notify)
 //   Invoked MoveAndResizeMainWindow using QTimer::singleShot to make sure the
 //   resize operation is performed after this widget is laid out.
 //
+//   Kathleen Biagas, Fri Apr 12 15:05:18 PDT 2019
+//   Saved the orientation arg. Remove orientation from MoveAndResizeMainWindow.
+//
 // ****************************************************************************
 
 void
-QvisGUIApplication::SetOrientation(int orientation)
+QvisGUIApplication::SetOrientation(int _orientation)
 {
     if(mainWin == 0)
         return;
+    orientation = _orientation;
     //
     // Tell the main window to set its orientation.
     //
     mainWin->SetOrientation(orientation);
-    QTimer::singleShot(0, this, SLOT(MoveAndResizeMainWindow(orientation)));
+    QTimer::singleShot(0, this, SLOT(MoveAndResizeMainWindow()));
 
     //
     // Tell the viewer to move its vis windows.
@@ -2693,10 +2701,13 @@ QvisGUIApplication::SetOrientation(int orientation)
 //   Added logic specific to restoring session, to prevent window from
 //   being drawn partly offscreen when running VisIt remotely.
 // 
+//   Kathleen Biagas, Fri Apr 12 15:05:18 PDT 2019
+//   Remove orientation from args, it is now an ivar.
+//
 // ****************************************************************************
 
 void
-QvisGUIApplication::MoveAndResizeMainWindow(int orientation)
+QvisGUIApplication::MoveAndResizeMainWindow()
 {
     const char *mName = "QvisGUIApplication::MoveAndResizeMainWindow: ";
     int x, y, w, h;
@@ -3094,6 +3105,9 @@ QvisGUIApplication::AddViewerSpaceArguments()
 //   Invoked MoveAndResizeMainWindow using QTimer::singleShot to make sure the
 //   resize operation is performed after this widget is laid out.
 //
+//   Kathleen Biagas, Fri Apr 12 15:06:48 PDT 2019
+//   Removed orientation from MoveAndResizeMainWindow args.
+//
 // ****************************************************************************
 
 void
@@ -3158,7 +3172,7 @@ QvisGUIApplication::CreateMainWindow()
     // Move and resize the GUI so that we can get accurate size and
     // position information from it.
     mainWin->SetOrientation(orientation);
-    QTimer::singleShot(0, this, SLOT(MoveAndResizeMainWindow(orientation)));
+    QTimer::singleShot(0, this, SLOT(MoveAndResizeMainWindow()));
 }
 
 // ****************************************************************************

@@ -20,8 +20,27 @@
 SetBackendType("vtkm")
 
 #
-# Test a rectilinear mesh.
+# Test a 2d rectilinear mesh.
 #
+OpenDatabase(silo_data_path("rect2d.silo"))
+
+AddPlot("Contour", "u")
+DrawPlots()
+
+Test("vtkm_rect2d_01")
+
+DeleteAllPlots()
+
+AddPlot("Contour", "d")
+DrawPlots()
+
+Test("vtkm_rect2d_02")
+
+#
+# Test a 3d rectilinear mesh.
+#
+DeleteAllPlots()
+
 OpenDatabase(silo_data_path("rect3d.silo"))
 
 AddPlot("Contour", "u")
@@ -37,6 +56,13 @@ v.farPlane = 1.7321
 SetView3D(v)
 
 Test("vtkm_rect3d_01")
+
+DeleteAllPlots()
+
+AddPlot("Contour", "d")
+DrawPlots()
+
+Test("vtkm_rect3d_01a")
 
 DeleteAllPlots()
 
@@ -97,7 +123,26 @@ DrawPlots()
 Test("vtkm_rect3d_05")
 
 #
-# Test an curvilinear mesh.
+# Test a 2d curvilinear mesh.
+#
+DeleteAllPlots()
+
+OpenDatabase(silo_data_path("curv3d.silo"))
+
+AddPlot("Contour", "u")
+DrawPlots()
+
+Test("vtkm_curv2d_01")
+
+DeleteAllPlots()
+
+AddPlot("Contour", "d")
+DrawPlots()
+
+Test("vtkm_curv2d_02")
+
+#
+# Test a 3d curvilinear mesh.
 #
 DeleteAllPlots()
 
@@ -116,6 +161,13 @@ v.farPlane = 32.0156
 SetView3D(v)
 
 Test("vtkm_curv3d_01")
+
+DeleteAllPlots()
+
+AddPlot("Contour", "d")
+DrawPlots()
+
+Test("vtkm_curv3d_01a")
 
 DeleteAllPlots()
 
@@ -176,7 +228,26 @@ DrawPlots()
 Test("vtkm_curv3d_05")
 
 #
-# Test an unstructured mesh.
+# Test a 2d unstructured mesh.
+#
+DeleteAllPlots()
+
+OpenDatabase(silo_data_path("ucd2d.silo"))
+
+AddPlot("Contour", "u")
+DrawPlots()
+
+Test("vtkm_ucd2d_01")
+
+DeleteAllPlots()
+
+AddPlot("Contour", "d")
+DrawPlots()
+
+Test("vtkm_ucd2d_02")
+
+#
+# Test a 3d unstructured mesh.
 #
 DeleteAllPlots()
 
@@ -195,6 +266,13 @@ v.farPlane = 22.9129
 SetView3D(v)
 
 Test("vtkm_ucd3d_01")
+
+DeleteAllPlots()
+
+AddPlot("Contour", "d")
+DrawPlots()
+
+Test("vtkm_ucd3d_01a")
 
 DeleteAllPlots()
 

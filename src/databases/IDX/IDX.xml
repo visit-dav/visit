@@ -2,10 +2,8 @@
   <Plugin name="IDX" type="database" label="IDX files" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" dbtype="MTMD" haswriter="false" hasoptions="true" filePatternsStrict="true" opensWholeDirectory="false">
     <CXXFLAGS>
       ${PIDX_INCLUDE_DIR}
+      ${VISIT_PARALLEL_RPATH}/../include
     </CXXFLAGS>
-    <LDFLAGS>
-      ${PIDX_LIBRARY_DIR}
-    </LDFLAGS>
     <LIBS>
       ${PIDX_LIBRARIES}
        vtkIOXML
@@ -14,8 +12,8 @@
       *.idx *.midx *.gidx
     </FilePatterns>
     <Files components="M,E">
-        pidx_idx_io.cpp
-        uintah_utils.cpp
+        pidx_idx_io.C
+        uintah_utils.C
         avtIDXFileFormat.C
         avtIDXOptions.C
     </Files>
