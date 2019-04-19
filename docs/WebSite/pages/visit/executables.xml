@@ -3,7 +3,7 @@
   <title><![CDATA[VisIt Executables]]></title>
   <IM>LLNL-WEB-765113</IM>
   <owner><![CDATA[Page Owner Name]]></owner>
-  <lastchanged><![CDATA[February 25, 2019]]></lastchanged>
+  <lastchanged><![CDATA[April 29, 2019]]></lastchanged>
   <template><![CDATA[l2]]></template> 
   <content>
     <![CDATA[
@@ -24,7 +24,7 @@
 
 <p>This page contains links to download VisIt executables for Unix, Windows, and Mac OS X systems. The page contains several versions of VisIt, organized from the most recent to the oldest. The unix executable requires downloading an install script along with the file containing the executable. The Mac executable comes in a DMG file that you use to install VisIt. The Windows executables are packaged in a self contained installer. Instructions for installing VisIt can be found in the install notes. The checksums and file sizes are provided for checking that the files were properly downloaded if corruption of the files is suspected during the download process.</p>
 
-<p>All the executables listed on this page only contain serial versions of VisIt unless the platform description indicates that it contains parallel support. If you need a parallel version for a platform not already provided you will need to build visit from source using the <a href="http://portal.nersc.gov/project/visit/releases/3.0.0b/build_visit3_0_0b">build_visit</a> script.</p>
+<p>All the executables listed on this page only contain serial versions of VisIt unless the platform description indicates that it contains parallel support. If you need a parallel version for a platform not already provided you will need to build visit from source using the <a href="http://portal.nersc.gov/project/visit/releases/3.0.0/build_visit3_0_0">build_visit</a> script.</p>
 
 <p>If you encounter problems downloading files from this page, NERSC's <code>/project</code> filesystem may be down. You can go <a href="https://www.nersc.gov/users/live-status">here</a> to check for yourself. There, you should find a page that looks something like <a href="content/assets/images/simulation/computer-codes/visit/nersc_live_status3.png" target="_blank">this one</a>. If it shows that <code>/project</code> is down, please try again later.</p>
 
@@ -36,6 +36,50 @@
 
 <p>VisIt is supported by the Department of Energy with funding from the Advanced Simulation and Computing Program and the Scientific Discovery through Advanced Computing Program.</p>
 
+<h2>VisIt 3.0</h2>
+
+<ul>
+  <li><a href="simulation/computer-codes/visit/releases/release-notes-3.0.0">VisIt release notes</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/3.0.0/visit-install3_0_0">VisIt install script</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/3.0.0/INSTALL_NOTES">VisIt install notes</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/3.0.0/visit_md5_checksums">VisIt md5 checksums</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/3.0.0/visit_sha1_checksums">VisIt sha1 checksums</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/3.0.0/visit_sha256_checksums">VisIt sha256 checksums</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/3.0.0/visit_filesizes">VisIt file sizes</a><br><br> </li>
+</ul>
+
+<br /><br />
+
+<table class="table table-striped" border="0" cellpadding="3" cellspacing="1">
+        <tr> 
+          <th width="615">Platform</th>
+          <th width="138">Executable</th>
+        </tr>
+        <tr>
+          <td>Windows (Vista / 7 / 8) 64 bit<br />
+          Visual Studio 2012</td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/3.0.0/visit3.0.0_x64.exe">Download</a></td>
+        </tr>
+        <tr>
+          <td>Mac OS X 10.13 - Intel 64 bit<br />
+          Darwin 10.13, Darwin Kernel Version 17.7.0, clang-900.39.2, MPICH<br />
+          <i>(Includes parallel VisIt with self-contained MPICH MPI, Uintah. Works on Mac OS X 10.13 and later.)</i></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/3.0.0/VisIt-3.0.0-10.13.dmg">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64 bit<br />
+          Redhat Enterprise Linux 7.5, 4.18.9-1.el7.elrepo.x86_64 #1 SMP, gcc 4.8.5<br />
+          <i>(Includes parallel VisIt with self-contained MPICH MPI)</i></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/3.0.0/visit3_0_0.linux-x86_64-rhel7.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64 bit<br />
+          Redhat Enterprise Linux 7.5, 4.18.9-1.el7.elrepo.x86_64 #1 SMP, gcc 4.8.5<br />
+          <i>(Includes parallel VisIt with self-contained MPICH MPI and Mesa support for rendering without a display. Only use on servers without a display.)</i></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/3.0.0/visit3_0_0.linux-x86_64-rhel7-wmesa.tar.gz">Download</a></td>
+        </tr>
+      </table>  
+  
 <h2>VisIt 3.0 Beta</h2>
 
 <ul>
