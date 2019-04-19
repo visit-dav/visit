@@ -248,5 +248,8 @@ Test("exodus_26")
 
 DeleteAllPlots()
 CloseDatabase(data_path("exodus_test_data/sphere-HEX27.ex2"))
+OpenDatabase(data_path("exodus_test_data/abl_551/abl_5km_5km_1km_neutral.e.8.* database"))
+AddPlot("Pseudocolor","velocity_magnitude")
+DrawPlots()
 
 Exit()

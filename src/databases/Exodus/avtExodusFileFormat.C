@@ -3152,6 +3152,60 @@ avtExodusFileFormat::GetVectorVar(int ts, const char *var)
     return arr;
 }
 
+// Temporary hack to work-around vtkIntArray assumptions upstream
+static vtkIntArray *
+EnsureGlobalElementIdsAreInt(vtkDataArray *da)
+{
+    if (!da) return 0;
+
+    debug1 << "Converting to integer global element ids." << endl;
+
+    int nids = da->GetNumberOfTuples();
+    vtkIntArray *iarr = vtkIntArray::New();
+    iarr->SetNumberOfComponents(1);
+    iarr->SetNumberOfTuples(nids);
+
+    if (da->IsA("vtkLongLongArray"))
+    {
+        vtkLongLongArray *llarr = vtkLongLongArray::SafeDownCast(da);
+        int *piarr = iarr->GetPointer(0);
+        long long *pllarr = llarr->GetPointer(0);
+        for (int q = 0; q < nids; q++)
+        {
+            piarr[q] = (int) pllarr[q];
+            if ((long long) piarr[q] != pllarr[q])
+            {
+                debug1 << "...value " << pllarr[q] << " out of range for int"
+                    "...aborting; no ghost elements possible." << endl;
+                iarr->Delete();
+                iarr = NULL;
+                break;
+            }
+        }
+    }
+    else if (da->IsA("vtkUnsignedLongLongArray"))
+    {
+        vtkUnsignedLongLongArray *ullarr = vtkUnsignedLongLongArray::SafeDownCast(da);
+        int *piarr = iarr->GetPointer(0);
+        unsigned long long *pullarr = ullarr->GetPointer(0);
+        for (int q = 0; q < nids; q++)
+        {
+            piarr[q] = (int) pullarr[q];
+            if ((unsigned long long) piarr[q] != pullarr[q])
+            {
+                debug1 << "...value " << pullarr[q] << " out of range for int"
+                    "...aborting; no ghost elements possible." << endl;
+                iarr->Delete();
+                iarr = NULL;
+                break;
+            }
+        }
+    }
+
+    da->Delete();
+    return iarr;
+}
+
 // ****************************************************************************
 //  Method: avtExodusFileFormat::GetAuxiliaryData
 //
@@ -3263,6 +3317,7 @@ avtExodusFileFormat::GetAuxiliaryData(const char *var, int ts,
         TRY
         {
             gnodeIds = GetVar(ts, "node_num_map");
+            gnodeIds = EnsureGlobalElementIdsAreInt(gnodeIds);
         }
         CATCH(InvalidVariableException)
         {
@@ -3280,6 +3335,7 @@ avtExodusFileFormat::GetAuxiliaryData(const char *var, int ts,
         TRY
         {
             gzoneIds = GetVar(ts, "elem_num_map");
+            gzoneIds = EnsureGlobalElementIdsAreInt(gzoneIds);
         }
         CATCH(InvalidVariableException)
         {
