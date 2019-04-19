@@ -22,7 +22,7 @@
 	<li><a href="simulation/computer-codes/visit/faqs">FAQs</a></li>
 </ul>
 
-<h2>February, 2019 - VisIt 3.0 released</h2>
+<h2>April, 2019 - VisIt 3.0 released</h2>
 <p>VisIt is a distributed, parallel visualization and graphical analysis tool for data defined on two- and three-dimensional (2D and 3D) meshes. Version 3.0 contains many bug-fixes and new features. For a complete list of changes see the <a href="simulation/computer-codes/visit/releases/release-notes-3.0.0">VisIt 3.0 Release Notes</a>.</p>
 <h4>1.  VisIt now supports outputting Cinema databases.</h4>
 <p>Cinema is an image-based database that offers low-cost interaction with simulation data. When viewing a Cinema database through a Cinema viewer, the viewer merely changes the image from the database in response to changes in camera angle and other visualization parameters rather than performing potentially expensive I/O, computational and rendering operations.</p>
