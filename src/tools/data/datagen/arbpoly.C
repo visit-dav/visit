@@ -42,9 +42,9 @@
 
 #include <silo.h>
 
-// supress the following since silo uses char * in its API
+// suppress the following since silo uses char * in its API
 #if defined(__clang__)
-# pragma GCC diagnostic ignored "-Wdeprecated-writable-strings"
+# pragma clang diagnostic ignored "-Wwritable-strings"
 #elif defined(__GNUC__)
 # pragma GCC diagnostic ignored "-Wwrite-strings"
 #endif
@@ -70,7 +70,7 @@ main(int argc, char **argv)
         else if (strcmp(argv[i], "DB_PDB") == 0)
             driver = DB_PDB;
         else
-           fprintf(stderr,"Uncrecognized driver name \"%s\"%d\n", argv[i]);
+           fprintf(stderr,"Uncrecognized driver name \"%s\"\n", argv[i]);
         i++;
     }
 

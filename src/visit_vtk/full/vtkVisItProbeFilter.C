@@ -286,7 +286,19 @@ int vtkVisItProbeFilter::RequestUpdateExtent(
   
   // Use the whole input in all processes, and use the requested update
   // extent of the output to divide up the source.
-  if (this->SpatialMatch == 2)
+
+  // NOTE: Here is the old version of this if test
+  //
+  // if (this->SpatialMatch == 2)
+  //
+  // this->SpatialMatch is actually a bool, the logic above triggers the
+  // following warning in clang:
+  //  comparison of constant 2 with expression of type 'bool' is always false
+  //  [-Wtautological-constant-out-of-range-compare]
+  //
+  // On 4/16/19, we removed the == 2, assuming this code path is actually
+  // something we want to leverage
+  if (this->SpatialMatch)
     {
     inInfo->Set(vtkStreamingDemandDrivenPipeline::UPDATE_PIECE_NUMBER(), 0);
     inInfo->Set(vtkStreamingDemandDrivenPipeline::UPDATE_NUMBER_OF_PIECES(), 1);

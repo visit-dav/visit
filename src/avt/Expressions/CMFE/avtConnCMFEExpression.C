@@ -145,6 +145,10 @@ avtConnCMFEExpression::PerformCMFE(avtDataTree_p in1, avtDataTree_p in2,
 //    cell data between a point mesh and a polygonal mesh and the number of
 //    points is the same as the number of polygons.
 //
+//    Cyrus Harrison, Wed Apr 17 13:39:18 PDT 2019
+//    Added parens to resolve "warning: '&&' within '||'"
+//    [Wlogical-op-parentheses]
+//
 // ****************************************************************************
 
 avtDataTree_p
@@ -220,8 +224,9 @@ avtConnCMFEExpression::ExecuteTree(avtDataTree_p in1, avtDataTree_p in2,
             bool isCell =
                 in_ds2->GetPointData()->GetArray(invar.c_str()) == NULL &&
                 in_ds2->GetCellData()->GetArray(invar.c_str()) != NULL;
-            if ((orig1 == NULL && orig2 != NULL) || 
-                (orig1 != NULL && orig2 == NULL) && isCell)
+
+            if ( ( (orig1 == NULL && orig2 != NULL) || 
+                   (orig1 != NULL && orig2 == NULL) ) && isCell)
             {
                 if (orig1 != NULL)
                 {

@@ -151,6 +151,98 @@ inline void Cross(double result[3], const double v1[3], const double v2[3])
     result[2] = (v1[0] * v2[1]) - (v1[1] * v2[0]);
 }
 
+// ------------------------------------------------------------------------- //
+#ifdef PARALLEL
+// ------------------------------------------------------------------------- //
+// these helpers are only needed for MPI case
+// ------------------------------------------------------------------------- //
+// ****************************************************************************
+//  Method: VisIt_XRay_MPI_Alltoallv + VisIt_XRay_MPI_Gatherv
+//
+//  Purpose:
+//    Wrappers for Alltoallv and Gatherv that we can use safely in 
+//    avtXRayFilter's templated double vs float calling scenarios.
+//
+//  Programmer: Cyrus Harrison + Matt Larsen
+//  Creation:   Tue Apr 16 16:24:28 PDT 2019
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+//-----------------------------
+// Templated MPI_Alltoallv 
+//-----------------------------
+// method def
+template <typename T>
+int VisIt_XRay_MPI_Alltoallv(T *sendbuf, const int *sendcounts,
+                             const int *sdispls, T *recvbuf,
+                             const int *recvcounts, const int *rdispls,
+                             MPI_Comm comm);
+
+// case specifically for floats
+template<>
+int VisIt_XRay_MPI_Alltoallv<float>(float *sendbuf, const int *sendcounts,
+                                    const int *sdispls, float *recvbuf,
+                                    const int *recvcounts, const int *rdispls,
+                                    MPI_Comm comm)
+{
+    return MPI_Alltoallv(sendbuf, sendcounts, sdispls, MPI_FLOAT,
+                         recvbuf, recvcounts, rdispls, MPI_FLOAT,
+                         comm);
+}
+
+// case specifically for double
+template<>
+int VisIt_XRay_MPI_Alltoallv<double>(double *sendbuf, const int *sendcounts,
+                                     const int *sdispls, double *recvbuf,
+                                     const int *recvcounts, const int *rdispls,
+                                     MPI_Comm comm)
+{
+    return MPI_Alltoallv(sendbuf, sendcounts, sdispls, MPI_DOUBLE,
+                         recvbuf, recvcounts, rdispls, MPI_DOUBLE,
+                         comm);
+}
+
+//-----------------------------
+// Templated MPI_Gatherv
+//-----------------------------
+template <typename T>
+int VisIt_XRay_MPI_Gatherv(T *sendbuf, int sendcnt,
+                           T *recvbuf, int *recvcnts, int *displs,
+                           int root,
+                           MPI_Comm comm);
+
+// case specifically for floats
+template<>
+int VisIt_XRay_MPI_Gatherv<float>(float *sendbuf, int sendcnt,
+                                  float *recvbuf, int *recvcnts, int *displs,
+                                  int root,
+                                  MPI_Comm comm)
+{
+    return MPI_Gatherv(sendbuf, sendcnt, MPI_FLOAT,
+                       recvbuf, recvcnts, displs, MPI_FLOAT,
+                       root, comm);
+}
+
+// case specifically for doubles
+template<>
+int VisIt_XRay_MPI_Gatherv<double>(double *sendbuf, int sendcnt,
+                                   double *recvbuf, int *recvcnts, int *displs,
+                                   int root,
+                                   MPI_Comm comm)
+{
+    return MPI_Gatherv(sendbuf, sendcnt, MPI_DOUBLE,
+                       recvbuf, recvcnts, displs, MPI_DOUBLE,
+                       root, comm);
+}
+
+// ------------------------------------------------------------------------- //
+// endif -- these helpers are only needed for MPI case
+// ------------------------------------------------------------------------- //
+#endif
+// ------------------------------------------------------------------------- //
+
 // ****************************************************************************
 //  Method: IntersectLineWithTri
 //
@@ -682,8 +774,12 @@ avtXRayFilter::Execute(void)
 
         if (cellDataType == VTK_FLOAT)
             ImageStripExecute<float>(totalNodes, dataSets);
-        else // if (cellDataType == VTK_DOUBLE)
+        else if (cellDataType == VTK_DOUBLE)
             ImageStripExecute<double>(totalNodes, dataSets);
+        else
+            {
+                // TODO: else error
+            }
 
         int extraMsg = 100;
         int totalProg = numPasses * extraMsg;
@@ -1913,7 +2009,6 @@ AssignToProc(int val, int linesPerProc)
 //    Templatized this method, for double-precision support.
 //
 // ****************************************************************************
-
 template <typename T>
 void 
 avtXRayFilter::RedistributeLines(int nLeaves, int *nLinesPerDataset,
@@ -2098,19 +2193,16 @@ avtXRayFilter::RedistributeLines(int nLeaves, int *nLinesPerDataset,
         //
         // Exchange the cell data.
         //
-
-        if (cellDataType == VTK_FLOAT)
-        {
-            MPI_Alltoallv(sendCellData[i], sendCounts, sendOffsets, MPI_FLOAT,
-                          outCellData[i], recvCounts, recvOffsets, MPI_FLOAT,
-                          VISIT_MPI_COMM);
-        }
-        else // if (cellDataType == VTK_DOUBLE)
-        {
-            MPI_Alltoallv(sendCellData[i], sendCounts, sendOffsets, MPI_DOUBLE,
-                          outCellData[i], recvCounts, recvOffsets, MPI_DOUBLE,
-                          VISIT_MPI_COMM);
-        }
+        
+        //
+        // Note: this helper is defined at the top of this file
+        // it allows us to call the proper template double vs float 
+        // variants of this function and avoid MPI type matching 
+        // warnings.
+        // 
+        VisIt_XRay_MPI_Alltoallv(sendCellData[i], sendCounts, sendOffsets,
+                                 outCellData[i], recvCounts, recvOffsets,
+                                 VISIT_MPI_COMM);
 
         //
         // Restore the send and receive counts.
@@ -2836,16 +2928,15 @@ avtXRayFilter::CollectFragments(int root, int nFragments, int *fragmentSizes,
         recvBuf = new T[numPixels * numBins];
     }
 
-    if (cellDataType == VTK_FLOAT)
-    {
-        MPI_Gatherv(sendBuf, sendCount, MPI_FLOAT, recvBuf, recvCounts,
-            displs, MPI_FLOAT, root, VISIT_MPI_COMM);
-    }
-    else // if (cellDataType == VTK_DOUBLE)
-    {
-        MPI_Gatherv(sendBuf, sendCount, MPI_DOUBLE, recvBuf, recvCounts,
-            displs, MPI_DOUBLE, root, VISIT_MPI_COMM);
-    }
+    //
+    // Note: this helper is defined at the top of this file
+    // it allows us to call the proper template double vs float 
+    // variants of this function and avoid MPI type matching 
+    // warnings.
+    // 
+    VisIt_XRay_MPI_Gatherv(sendBuf, sendCount,
+                           recvBuf, recvCounts, displs,
+                           root, VISIT_MPI_COMM);
 
     if (PAR_Rank() == 0)
     {
