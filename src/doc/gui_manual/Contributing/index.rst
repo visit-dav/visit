@@ -295,8 +295,32 @@ a lot of guidance on constructing math equations with LaTeX.
 
 .. _contributing_spell:
 
-Spell Checking
---------------
+Spell Checking Using Aspell
+---------------------------
+You can do a pretty good job of spell checking using the Unix/Linux ``aspell``
+command.
+
+1. Run ``aspell`` looking for candidate miss-spelled words.
+   .. code-block:: shell
+       find . -name '*.rst' -exec cat {} \; | grep -v '^ *.. image:\|figure:\|code:\|_' | tr '`' '@' | sed -e 's/\(@.*@\)//' | aspell --ignore-case -p ./aspell.en.pws list | sort | uniq > maybe_bad.out
+  The find command will find all ``.rst`` files. Succeeding ``grep``, ``tr`` and
+  ``sed`` pipes filter some of the ``.rst`` syntax away. The final pipe through
+  ``aspell`` uses the *personal word list* option, ``-p ./aspell.en.pws``, to
+  specify a file containing a list of words we allow (that ``aspell`` would
+  otherwise flag as incorrect). The whole process produces a list of candidate
+  miss-spelled words in ``maybe_bad.out``.
+1. Examine ``maybe_bad.out`` for words that you think are correctly spelled.
+  If you find any, remove them from ``maybe_bad.out`` and add them to the end
+  of ``aspell.en.pws`` being careful to update the total word count on line
+  one of that file
+1. To find instances of remaining (miss-spelled words), use the following
+  command.
+   .. code-block:: shell
+      find . -name '*.rst' -exec grep -wnHFf maybe_bad.out {} \;
+
+Spell Checking Using Sphinx
+---------------------------
+
 If you have the required Sphinx extension and prerequisite python library,
 you can run a spell check like so::
 
@@ -500,9 +524,9 @@ Things To Consider Going Forward
    # Change something in PC atts to force it to map
    pcatts = PseudocolorAttributes()
    pcatts.colorTableName = 'Blue'
-   SetPlotOptions(pcatts) # PC Attrs widget maps due to state change
+   SetPlotOptions(pcatts) # Causes widget to map due to state change
    pcatts.colorTableName = 'hot'
-   SetPlotOptions(pcatts) # PC Attrs widget maps due to state change
+   SetPlotOptions(pcatts) # Causes widget to map due to state change
    gui_image = pyscreenshot.grab()
 
    # Save image of VisIt PC Attr window
@@ -513,7 +537,7 @@ Things To Consider Going Forward
 
    # Make a change to another PC att, capture and save it
    pcatts.limitsMode = pcatts.CurrentPlot
-   SetPlotOptions(pcatts) # PC Attrs widget maps due to state change
+   SetPlotOptions(pcatts) # Causes widget to map due to state change
    gui_image = pyscreenshot.grab()
    SaveBBoxedImage(gui_image, diff_bbox, 'Plots/PlotTypes/Pseudocolor/images/pcatts_limit_mode_window.png')
 
