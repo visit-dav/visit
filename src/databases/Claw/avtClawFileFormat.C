@@ -1213,6 +1213,9 @@ avtClawFileFormat::GetMesh(int timeState, int domain, const char *meshname)
 //    Use VISIT_SLASH_STRING when appending fname to rootDir.
 //    Added support for Windows.
 //
+//    Cyrus Harrison, Wed Apr 17 12:45:13 PDT 2019
+//    Fix warning related to signed vs unsigned: nread needs to be an int
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -1263,7 +1266,7 @@ avtClawFileFormat::GetVar(int timeState, int domain, const char *varname)
         EXCEPTION1(InvalidFilesException, oss.str().c_str());
     }
     lseek(fd, dsOffset, SEEK_SET);
-    size_t nread =
+    int nread =
 #ifndef WIN32
         read(fd, buf, dsLength);
 #else

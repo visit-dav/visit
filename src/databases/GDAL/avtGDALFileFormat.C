@@ -1139,7 +1139,9 @@ avtGDALFileFormat::GetVectorVar(int domain, const char *varname)
 // Creation:   Thu Sep 8 16:30:42 PST 2005
 //
 // Modifications:
-//   
+//   Cyrus Harrison,
+//   Use return value of poBand->RasterIO for errors
+//
 // ****************************************************************************
 
 vtkFloatArray *
@@ -1201,9 +1203,16 @@ avtGDALFileFormat::ReadVar(const avtGDALFileFormat::MeshInfo &info,
            << x << ", " << y << ", "
            << xsize << ", " << ysize << "] into float["
            << xSampleSize << ", " << ySampleSize << "]" << endl;
-    poBand->RasterIO( GF_Read, x, y, xsize, ysize,
-              dest, xSampleSize, ySampleSize, GDT_Float32, 
-              0, 0 );
+
+    CPLErr err = poBand->RasterIO( GF_Read, x, y, xsize, ysize,
+                                   dest, xSampleSize, ySampleSize, GDT_Float32, 
+                                   0, 0 );
+
+    if(err == CE_Failure)
+    {
+        // Read failed, throw the proper error
+        EXCEPTION1( InvalidFilesException, "Call to GDALRasterBand::RasterIO failed" );
+    }
 
     // Zero out any numbers below the min.
     int haveMin = 0;
