@@ -314,8 +314,10 @@ command.
    ``tr`` and ``sed`` pipes filter some of the ``.rst`` syntax away. The final
    pipe through ``aspell`` uses the *personal word list* option,
    ``-p ./aspell.en.pws`` (**note:** the ``./`` is critical so don't ignore it),
-   to specify a file containing a list of words we allow (that ``aspell`` would
-   otherwise flag as incorrect). The whole process produces a list of candidate
+   to specify a file containing a list of words we allow that ``aspell`` would
+   otherwise flag as incorrect. The ``sort`` and ``uniq`` pipes ensure the
+   result doesn't contain duplicates. But, be aware that a given miss-spelling
+   can have multiple occurrences. The whole process produces a list of candidate
    miss-spelled words in ``maybe_bad.out``.
 
 #. Examine ``maybe_bad.out`` for words that you think are correctly spelled.
@@ -330,6 +332,9 @@ command.
    .. code-block:: shell
 
       find . -name '*.rst' -exec grep -wnHFf maybe_bad.out {} \;
+
+#. It may be necessary to iterate through these steps a few times to find
+   and correct all the miss-spellings.
 
 Spell Checking Using Sphinx
 ---------------------------
