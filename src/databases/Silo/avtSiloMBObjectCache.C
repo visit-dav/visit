@@ -152,9 +152,9 @@ avtSiloMBNameGenerator::Name(int idx) const
 
     if (emptyLst)
     {
-        register int bot = 0;
-        register int top = emptyCnt - 1;
-        register int mid;
+        int bot = 0;
+        int top = emptyCnt - 1;
+        int mid;
         while (bot <= top)
         {
             mid = (bot + top) >> 1;
