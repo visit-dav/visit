@@ -96,13 +96,3 @@ implicitly with the right arguments and saves out the movie frames to the same
 directory that contains the session file, and will have the same name as the 
 session file. The movie generation options in a session file's context menu 
 are shown in :numref:`Figure %s<windows_movie_context_menu>`. 
-
-.. spelling::
-    fmt
-    mpeg
-    sm
-    png
-    jpeg
-    bmp
-    rgb
-    WxH

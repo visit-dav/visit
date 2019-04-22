@@ -336,102 +336,10 @@ command.
 #. It may be necessary to iterate through these steps a few times to find
    and correct all the miss-spellings.
 
-Spell Checking Using Sphinx
----------------------------
-
-If you have the required Sphinx extension and prerequisite python library,
-you can run a spell check like so::
-
-    sphinx-build -b spelling . _spelling
-
-We use a third party extension (e.g. not a builtin) to Sphinx for spell checking
-`sphinx-contrib.spelling <http://sphinxcontrib-spelling.readthedocs.io/en/latest/index.html>`_
-which requires `PyEnchant <https://pythonhosted.org/pyenchant/>`_ and adds
-support for a custom ``.. spelling::`` directive.
-
-If a spell check encounters any spelling errors, it will emit them along
-with the file name and approximate line number at which they occur. It will
-also output any spelling errors to a file, ``output.txt`` in the ``_spelling``
-build directory. The line numbers Sphinx reports for the spelling errors it
-encounters are not the input text file line numbers. They are close but rarely
-exactly the line numbers of the input text file. Its best to simply search the
-document for the flagged words.
-
-Correcting Flagged Words
-~~~~~~~~~~~~~~~~~~~~~~~~
-To correct a given spelling error, your options are...
-
-* Make a correction or other adjustment to the flagged word(s).
-* Add *special cases* to a ``.. spelling::`` directive at the end of the
-  ``.rst`` file.
-* Add *common* words, to the global ``spelling_wordlist.txt`` file.
-
-Much of the VisIt_ documentation includes the names of executable applications,
-their arguments, GUI widgets, VisIt_ components and VisIt_ architectural details
-and which are often not real words. It is best to typeset such names *exactly*
-as a user might encounter them while using VisIt_. But, adding such words to the
-global ``spelling_wordlist.txt`` makes sense only if the word is commonly used
-*throughout* VisIt_ documentation. Otherwise, it is best to treat it and other
-situations like it as a *special case* and add it *only* to a ``.. spelling::``
-directive at the end of the ``.rst`` file where it is used. For example, ``fmt``
-is a word used in describing :ref:`movie tools <Movie tools>` but not elsewhere
-in VisIt_. So, rather than add ``fmt`` to the global ``spelling_wordlist.txt``
-file, we add it at the end of :file:`../Animation/Movie_tools.rst` like so...
-
-.. code-block:: RST
-
-    .. spelling::
-        fmt
-
-How Spell Check Works
-~~~~~~~~~~~~~~~~~~~~~
-The ``.. spelling::`` directive is a *custom* extension to Sphinx. It is not
-a builtin extension. This means that other documentation contributors wanting
-to make a local build of the documentation before committing their changes would
-be *required* to have the additional dependencies installed to support spell
-checking whether or not they ever needed to run a spell check.
-
-To avoid this, we define a *default custom* ``.. spelling::`` directive in 
-``conf.py`` which causes a normal Sphinx build to simply ignore those
-directives. In addition, we add some logic in ``conf.py`` to detect if the build
-is for doing a spell check and, if so, sets ``BuilderIsSpelling`` to ``True``.
-The relevant lines of ``conf.py`` are shown below.
-
-
-.. code-block:: python
-
-    import sys
-    .
-    .
-    .
-    # Detect if this is a spell check build
-    BuilderIsSpelling = False
-    if '-b' in sys.argv and 'spelling' in sys.argv:
-        if sys.argv.index('-b') == sys.argv.index('spelling')-1:
-            BuilderIsSpelling = True
-    .
-    .
-    .
-    # Add extension for spell checking
-    extensions = ['sphinx.ext.mathjax']
-    if BuilderIsSpelling:
-        extensions += ['sphinxcontrib.spelling']
-    .
-    .
-    .
-    # If spell check, DO NOT override .. spelling:: directive
-    def setup(app):
-        if not BuilderIsSpelling:
-            app.add_directive('spelling', SpellingDirective)
-    
-    # Override candidate for .. spelling:: directive
-    from docutils.parsers.rst import Directive
-    class SpellingDirective(Directive):
-    
-        has_content = True
-    
-        def run(self):
-            return []
+It would be nice to create a ``make spellcheck`` target that does much of
+the above automatically. However, that involves implementing the above 
+steps as a ``cmake`` program and involves more effort than available when
+this was implemented.
 
 .. _contributing_forward:
 
@@ -558,7 +466,3 @@ Things To Consider Going Forward
    SetPlotOptions(pcatts) # Causes widget to map due to state change
    gui_image = pyscreenshot.grab()
    SaveBBoxedImage(gui_image, diff_bbox, 'Plots/PlotTypes/Pseudocolor/images/pcatts_limit_mode_window.png')
-
-.. spelling::
-    mc
-    doctree
