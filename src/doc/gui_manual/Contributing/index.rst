@@ -172,6 +172,12 @@ use of Sphinx as we move forward. These are discussed at the
     Link to a downloadable file *within* this documentation like
     :download:`this one <../Quantitative/VerdictManual-revA.pdf>`
 
+* If you are having trouble getting the formatting for a section worked
+  out and the time involved to re-gen the documentation is too much, you
+  could try an
+  `on-line, real-time reStructuredText Renderer <http://rst.ninjs.org>`_
+  to quickly try different things and see how they work.
+
 .. _contributing_images:
 
 More on Images
@@ -312,13 +318,14 @@ command.
 
    The ``find`` command will find all ``.rst`` files. Succeeding ``grep``,
    ``tr`` and ``sed`` pipes filter some of the ``.rst`` syntax away. The final
-   pipe through ``aspell`` uses the *personal word list* option,
-   ``-p ./aspell.en.pws`` (**note:** the ``./`` is critical so don't ignore it),
-   to specify a file containing a list of words we allow that ``aspell`` would
-   otherwise flag as incorrect. The ``sort`` and ``uniq`` pipes ensure the
-   result doesn't contain duplicates. But, be aware that a given miss-spelling
-   can have multiple occurrences. The whole process produces a list of candidate
-   miss-spelled words in ``maybe_bad.out``.
+   pipe through ``aspell`` uses the
+   `personal word list (also called the personal dictionary) <http://aspell.net/man-html/Format-of-the-Personal-and-Replacement-Dictionaries.html#Format-of-the-Personal-Dictionary-1>`_
+   option, ``-p ./aspell.en.pws`` (**note:** the ``./`` is critical so don't
+   ignore it), to specify a file containing a list of words we allow that
+   ``aspell`` would otherwise flag as incorrect. The ``sort`` and ``uniq``
+   pipes ensure the result doesn't contain duplicates. But, be aware that a
+   given miss-spelling can have multiple occurrences. The whole process produces
+   a list of candidate miss-spelled words in ``maybe_bad.out``.
 
 #. Examine ``maybe_bad.out`` for words that you think are correctly spelled.
    If you find any, remove them from ``maybe_bad.out`` and add them to the end
