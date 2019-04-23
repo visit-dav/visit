@@ -27,7 +27,7 @@ Other Software
 ~~~~~~~~~~~~~~
 1. `CMake <https://cmake.org/download>`_ version 3.8 or greater.
 
- *Don't use the CMake included with cywin if you plan on using the pre-built thirdparty libraries*.
+ *Don't use the CMake included with cygwin if you plan on using the pre-built thirdparty libraries*.
 
 2. Visual Studio 2017 64-bit
  (if you want to use our pre-built thirdparty libraries).

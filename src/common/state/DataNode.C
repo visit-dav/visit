@@ -330,7 +330,9 @@ DataNode::~DataNode()
 // Creation:   Fri Mar 21 10:47:29 PDT 2003
 //
 // Modifications:
-//   
+//   Cyrus Harrison, Thu Apr 18 10:37:46 PDT 2019
+//   Added default case to switch.
+// 
 // ****************************************************************************
 
 void
@@ -509,6 +511,11 @@ DataNode::FreeData()
         { // new scope
             MapNode *mptr = (MapNode *)Data;
             delete mptr;
+        }
+        break;
+    default: // unused cases - including: MAX_NODE_TYPES
+        {
+            // no cleanup for unused cases
         }
         break;
     }

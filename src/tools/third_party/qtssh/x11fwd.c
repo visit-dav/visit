@@ -366,7 +366,7 @@ static char *x11_verify(unsigned long peer_ip, int peer_port,
     struct X11FakeAuth *auth;
 
     /*
-     * First, do a lookup in our tree to find the only authorisation
+     * First, do a lookup in our tree to find the only authorization
      * record that _might_ match.
      */
     if (!strcmp(proto, x11_authnames[X11_MIT])) {
@@ -420,7 +420,8 @@ static char *x11_verify(unsigned long peer_ip, int peer_port,
 	    if (data[i] != 0)	       /* zero padding wrong */
 		return "XDM-AUTHORIZATION-1 data failed check";
 	tim = time(NULL);
-	if (abs(t - tim) > XDM_MAXSKEW)
+    // promote to long long, to avoid issues with unsigned subtraction
+	if (llabs((long long)(t) - (long long)(tim)) > XDM_MAXSKEW)
 	    return "XDM-AUTHORIZATION-1 time stamp was too far out";
 	seen = snew(struct XDMSeen);
 	seen->time = t;

@@ -24,7 +24,7 @@ Vector, and Volume. This section explains each plot in detail.
     :maxdepth: 2
 
     Common
-    BoundryPlot
+    BoundaryPlot
     ContourPlot
     CurvePlot
     HistogramPlot

@@ -566,9 +566,9 @@ bool vtkEnumThreshold::IsInEnumerationRanges(double val)
     // the 'end' of the array because it is an array of min/max
     // pairs. This search works because we've sorted the range bins.
     //
-    register int bot = 0;
-    register int top = (int)enumerationRanges.size() / 2 - 1;
-    register int mid;
+    int bot = 0;
+    int top = (int)enumerationRanges.size() / 2 - 1;
+    int mid;
     while (bot <= top)
     {
         mid = (bot + top) >> 1;
