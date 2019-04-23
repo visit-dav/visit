@@ -105,8 +105,10 @@
 #   Add 'PATHS' and 'PATH_SUFFIXES' when finding 7zip on non-windows.
 #   Beefed up error message if 7-zip not found.
 #
+#   Mark C. Miller, Tue Apr 16 13:11:15 PDT 2019
+#   Reduced min cmake vesion required to 3.7
 #****************************************************************************/
-CMAKE_MINIMUM_REQUIRED(VERSION 3.8)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.7)
 CMAKE_POLICY(PUSH)
 CMAKE_POLICY(SET CMP0037 OLD) # allow defining help target
 

@@ -124,13 +124,18 @@ PVTKParser::SetFileName(const char *fn)
 //  Programmer: Kathleen Biagas
 //  Creation:   September 21, 2017
 //
+//  Modifications:
+//   Cyrus Harrison, Wed Apr 17 12:48:31 PDT 2019
+//   Change valid check, size_t is unsigned, no need to check for lower bound
+//
 // ****************************************************************************
 
 string &
 PVTKParser::GetPieceFileName(size_t index)
 {
     pieceName.clear();
-    if(index >=0 && index < pieceFileNames.size())
+    // index is unsigned, it will always be >=0
+    if( index < pieceFileNames.size() )
     {
         pieceName = pieceFileNames[index];
     }
@@ -150,13 +155,18 @@ PVTKParser::GetPieceFileName(size_t index)
 //  Programmer: Kathleen Biagas
 //  Creation:   September 21, 2017
 //
+//  Modifications:
+//   Cyrus Harrison, Wed Apr 17 12:48:31 PDT 2019
+//   Change valid check, size_t is unsigned, no need to check for lower bound
+//
 // ****************************************************************************
 
 vector <int>  &
 PVTKParser::GetPieceExtent(size_t index)
 {
     pieceExtent.clear();
-    if(index >=0 && index < pieceExtents.size())
+    // index is unsigned, it will always be >=0
+    if( index < pieceExtents.size() )
     {
         pieceExtent = pieceExtents[index];
     }
@@ -188,6 +198,10 @@ PVTKParser::GetNumberOfPieces()
 //
 //  Programmer: Kathleen Biagas
 //  Creation:   September 21, 2017
+//
+//  Modifications:
+//   Cyrus Harrison, Wed Apr 17 12:48:31 PDT 2019
+//   Add parents to clarify if statement and avoid compiler warning
 //
 // ****************************************************************************
 
@@ -251,7 +265,7 @@ PVTKParser::Parse()
 
         string pfn(pieceNode->GetAttribute("fileName"));
         string pieceBase = FileFunctions::Dirname(pfn);
-        if (!pieceBase.empty() && pieceBase[0] == '/' || pieceBase[1] == ':')
+        if (!pieceBase.empty() && ( pieceBase[0] == '/' || pieceBase[1] == ':') )
             pieceFileNames.push_back(pfn);
         else
             pieceFileNames.push_back(baseDir + VISIT_SLASH_STRING + pfn);

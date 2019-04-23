@@ -103,7 +103,9 @@ qtssh_handle_prompt(prompts_t *p, int i, unsigned char *in, int inlen)
 // Creation:   Wed Jun 13 14:02:02 PDT 2012
 //
 // Modifications:
-//   
+//   Cyrus Harrison, Wed Apr 17 12:34:05 PDT 2019
+//   Switched to term string with '\0' instead of NULL, to avoid a compiler
+//   warning.
 // ****************************************************************************
 
 static char *
@@ -124,7 +126,7 @@ qtssh_strdup_with_quotes(const std::string &s)
         s2[0] = '\"';
         strcpy(&s2[1], s.c_str());
         s2[s.size()+1] = '\"';
-        s2[s.size()+2] = NULL;
+        s2[s.size()+2] = '\0';
         return s2;
     }
     return qtssh_strdup(s);

@@ -339,6 +339,10 @@ avtOSPRaySamplePointExtractor::DoSampling(vtkDataSet *ds, int idx)
 //    Kevin Griffin, Fri Apr 22 16:31:57 PDT 2016
 //    Added support for polygons.
 //
+//    Eric Brugger, Thu Apr 18 14:15:53 PDT 2019
+//    Converted the generation of the exception from ospray::Exception
+//    to EXCEPTION1.
+//
 // ****************************************************************************
 
 void
@@ -420,13 +424,9 @@ avtOSPRaySamplePointExtractor::RasterBasedSample(vtkDataSet *ds, int num)
         //---------------------------------------------------------
         if (num == 0) {
             const std::string msg = 
-                "Dataset type " + std::to_string((int)(ds->GetDataObjectType())) + " "
-                "is not a VTK_RECTILINEAR_GRID. "
-                "Currently the RayCasting:OSPRay renderer "
-                "only supports rectilinear grid, " 
-                "thus the volume cannot be rendered\n";
-            //ospray::Warning(msg);
-            ospray::Exception(msg);
+                "The data wasn't rendered because OSPRay currently only "
+                "supports volume rendering rectilinear grids.";
+            EXCEPTION1(ImproperUseException, msg);
         }
     }
 }
