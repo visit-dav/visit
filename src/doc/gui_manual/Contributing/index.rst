@@ -313,7 +313,7 @@ command.
        find . -name '*.rst' -exec cat {} \; | \
        grep -v '^ *.. image:\|figure:\|code:\|_' | \
        tr '`' '@' | sed -e 's/\(@.*@\)//' | \
-       aspell --ignore-case -p ./aspell.en.pws list | \
+       aspell -p ./aspell.en.pws list | \
        sort | uniq > maybe_bad.out
 
    The ``find`` command will find all ``.rst`` files. Succeeding ``grep``,
