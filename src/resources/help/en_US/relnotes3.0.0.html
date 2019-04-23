@@ -32,12 +32,15 @@ enhancements and bug-fixes that were added to this release.</p>
 <a name="General_features"></a>
 <p><b><font size="4">General features added in version 3.0</font></b></p>
 <ul>
-  <li>VisIt has been enhanced with support for outputting Cinema databases. Cinema is an image-based database that offers low-cost interaction with simulation data. When viewing a Cinema database through a Cinema viewer, the viewer merely changes the image from the database in response to changes in camera angle and other visualization parameters rather than performing potentially expensive I/O, computational and rendering operations. Viewers and more information about Cinema can be found at <a href=https://cinemascience.org>CinemaScience</a>.
+  <li>VisIt has been enhanced to support outputting Cinema databases. Cinema is an image-based database that offers low-cost interaction with simulation data. When viewing a Cinema database through a Cinema viewer, the viewer merely changes the image from the database in response to changes in camera angle and other visualization parameters rather than performing potentially expensive I/O, computational and rendering operations. Viewers and more information about Cinema can be found at <a href=https://cinemascience.org>CinemaScience</a>.
   <p>Images can consist of RGB pixel images and composite images that enable VisIt to bring together multiple plots independently in the Cinema viewer. Cinema databases can be created using the <i>Save Cinema wizard</i>, accessible by selecting <i>Save to Cinema...</i> from the <i>File</i> pulldown menu on the main control panel.</p>
   </li>
-  <li>VisIt has been enhanced to support rendering 3D images using the OSPRay. OSPRay features interactive CPU rendering capabilities geared towards scientific visualization applications. Advanced shading effects such as ambient occlusion, shadows, and transparency can be rendered interactively, enabling new insights into data exploration. OSPRay rendering is only available if VisIt has been compiled with OSPRay support. To enable OSPRay rendering bring up the <i>Rendering options</i> window by selecting <i>Rendering...</i> from the <i>Options</i> pulldown menu, switch to the <i>Advanced</i> tab and select <i>OSPRay rendering</i> at the bottom of the tab.</li>
+  <li>VisIt has been enhanced to support rendering 3D images using the OSPRay. OSPRay features interactive CPU rendering capabilities geared towards scientific visualization applications. Advanced shading effects such as ambient occlusion, shadows, and transparency can be rendered interactively, enabling new insights into data exploration. OSPRay rendering is only available if VisIt has been compiled with OSPRay support. OSPRay is currently supported on Linux and Windows platforms.
+  <p>To enable OSPRay rendering bring up the <i>Rendering options</i> window by selecting <i>Rendering...</i> from the <i>Options</i> pulldown menu, switch to the <i>Advanced</i> tab and select <i>OSPRay rendering</i> at the bottom of the tab. All plots except for the <i>Volume</i> will use OSPRay for 3D rendering when enabled through the <i>Rendering options</i>. OSPRay rendering for the <i>Volume</i> plot is enabled through the <i>Volume plot attributes</i> window by setting the <i>Rendering Method</i> to <i>Ray casting: OSPRay</i>.</p>
+  <p>Note that panning and zooming doesn't currently work with OSPRay rendering.</p>
+  </li>
   <li>The CLI now provides a <i>DatabasePlugins()</i> function that returns a dictionary containing a tuple of the available database plugins for a host.</li>
-  <li>VisIt has been enhanced so plots can provide custom animation behaviors. These behaviors are plot-specific and are independent of the time slider animation controls. For example, the Vector plot can alter the length of its glyphs periodically lengthening and shortening them. Plot animation is enabled for the Curve and Vector plugins and can be activated by right-clicking on a plot in the Main window's plot list area and selecting <i>Animate</i> from the context menu. Note, this features work best for plots and data that can be rendered quickly.</li>
+  <li>VisIt has been enhanced so plots can provide custom animation behaviors. These behaviors are plot-specific and are independent of the time slider animation controls. For example, the Vector plot can alter the length of its glyphs periodically lengthening and shortening them. Plot animation is enabled for the Curve and Vector plugins and can be activated by right-clicking on a plot in the Main window's plot list area and selecting <i>Animate</i> from the context menu. Note, this features works best for plots and data that can be rendered quickly.</li>
   <li>Some of VisIt's expressions can be built with support for OpenMP, letting them parallelize over multiple threads. This is available when passing <i>-fopenmp</i> to the C++ compiler when building VisIt. The observed speedups are between 2x and 10x when using the serial compute engine. These expressions are enhanced with OpenMP support:
     <ul>
       <li><i>addition +</i></li>
@@ -64,7 +67,7 @@ SetBackendType("VTKm")
     <li>Slice operator: Restrictions - Only works when <i>Project to 2D</i> is disabled.</li>
   </ul>
   <p>VTK-m functionality is currently enabled for 3D rectilinear, curvilinear and unstructured grids with only hexahedral elements. VTK-m supports both single block and multi-block grids.</p>
-  <p>In order for VTK-m filters to perform better than VTK filters the number of cells in a block must be fairly large, typically at least 1 million cells. Furthermore, there is some overhead in converting between VTK and VTK-m representations that will impact performance. Lastly, checks have been put in to make sure that the data sets being operated on are supported by VTK-m and these can impact performance as well. Checking if a variable is node centered or 3D is inexpensive, whereas checking if an unstructured grid contains only hexahedra is expensive.</p>
+  <p>In order for VTK-m filters to perform better than VTK filters the number of cells in a block must be fairly large, typically at least 1 million cells. Furthermore, there is some overhead in converting between VTK and VTK-m representations that will impact performance. Lastly, checks have been put in to make sure that the data sets being processed are supported by VTK-m and these can impact performance as well. Checking if a variable is node centered or 3D is inexpensive, whereas checking if an unstructured grid contains only hexahedra is expensive.</p>
   </li>
   <li>Due to lack of availability of C++11 compliant compilers, support for OSX 10.8 has been dropped.</li>
   <li>The <i>Remote Profiles</i> tab in the <i>Host profiles</i> will now allow importing profiles from the currently running release as well as from the trunk.</li>
@@ -86,7 +89,7 @@ SetBackendType("VTKm")
   <li>An ffp database reader was added to VisIt courtesy of Olivier Cessenat.</li>
   <li>The Curve2D reader can now read curve files with Matlab-style comments.</li>
   <li>The Vista plugin was removed.</li>
-  <li>VTK writer was enhanced to optionally triangulate (2D) or tetrahedralize (3D) any UNstructured mesh output.</li>
+  <li>The VTK writer was enhanced to optionally triangulate (2D) or tetrahedralize (3D) any UNstructured mesh output.</li>
   <li>Corrected a bug plotting Nek5000 data, where VisIt displayed an error message indicating that the plot yielded no data when plotting the result of an expression involving a gradient with 2D data.</li>
 </ul>
 
@@ -97,8 +100,8 @@ SetBackendType("VTKm")
   <li>The Vector plot supports plot animation. The vector glyphs alternate between 50% and 100% of their glyph length while the plot animates, helping to see features in the vector field.</li>
   <li>The Curve plot supports plot animation. The line and time cue features in the plot can respond to plot animation and they advance from left to right while the plot animates.</li>
   <li>When Min or Max is chosen for Pseudocolor plot, a color can now be chosen for those values below the minimum or above the maximum.</li>
-  <li>The setting for Label Plot's textHeight has been replaced with a Font Scale.  Other options affecting font were added: Font name, Bold, Italic. Attempts were made to ensure old settings from python script, session file and configuration files would be replicated as closely as possible, however the new label size may not exactly match how things looked in previous versions of VisIt.</li>
   <li>The sizing of <i>Sphere</i> glyph option for points in the Mesh, Pseudocolor and Scatter plots was changed from <i>Point size (pixels)</i> to <i>Point size</i> (similar to other options except <i>Point</i>). From the cli the size option for <i>Sphere</i> point type is now <i>pointSize</i>.  Every effort was made to map old settings from python scripts, session files and configuration files to the new sizing option, but the new Sphere sizing may not exactly match previous versions of VisIt.</li>
+  <li>The setting for the Label plot's <i>Label height</i> has been replaced with a <i>Font scale</i>.  Other options affecting font that were added include <i>Font name</i>, <i>Bold</i>, and <i>Italic</i>. We attempt to ensure old settings from python scripts, session files and configuration files are replicated as closely as possible, however the new label size may not exactly match how things looked in previous versions of VisIt.</li>
 </ul>
 
 <a name="Operator_changes"></a>
@@ -117,10 +120,10 @@ SetBackendType("VTKm")
 <a name="Query_changes"></a>
 <p><b><font size="4">Changes to VisIt's picks and queries in version 3.0</font></b></p>
 <ul>
-  <li>The <i>Pick Operator</i> now supports swivelling the camera focus to center on the current pick. This can be accessed through the GUI by checking the "Swivel Focus" box. If you are using the python interface, you can turn this ability on and off by setting the boolean variable "swivelFocusToPick" within the pick attributes.</li>
-  <li>Two related features have been added to the <i>Pick Operator</i>, and these are the ability to force a user-defined pick label and the ability to remove all previous picks that have the same label as the current pick. When used in conjunction, you can create a specialized pick operator that, with every new pick, removes all previous picks that contain the same user-defined label. As of now, these options are only accessible through the python interface pick attributes. To force a user-defined label, set the boolean variable "overridePickLabel" to True, and set "forcedPickLabel" to your chosen label. To remove all previous picks with the same label, set "removeLabelTwins" to True.</li>
-  <li>The <i>Pick Operator</i> now supports highlighting node picks.</li>
-  <li>Default index for <i>OnionPeel</i> operator was changed from 1 to 0.</li>
+  <li>The <i>Pick Operator</i> now supports swivelling the camera focus to center on the current pick. This can be accessed through the GUI by checking the <i>Swivel focus</i> check box. If you are using the python interface, you can turn this ability on and off by setting the boolean variable <i>swivelFocusToPick</i> within the pick attributes.</li>
+  <li>Two related features have been added to the <i>Pick</i> operator, and these are the ability to force a user-defined pick label and the ability to remove all previous picks that have the same label as the current pick. When used in conjunction, you can create a specialized pick operator that, with every new pick, removes all previous picks that contain the same user-defined label. As of now, these options are only accessible through the python interface pick attributes. To force a user-defined label, set the boolean variable <i>overridePickLabel</i> to True, and set <i>forcedPickLabel</i> to your chosen label. To remove all previous picks with the same label, set <i>removeLabelTwins</i> to True.</li>
+  <li>The <i>Pick</i> operator now supports highlighting node picks.</li>
+  <li>Default index for <i>Onion Peel</i> operator was changed from 1 to 0.</li>
 </ul>
 
 <a name="Bugs_fixed"></a>
@@ -129,8 +132,8 @@ SetBackendType("VTKm")
   <li>Corrected a bug where VisIt would crash rendering transparent geometry on the Cooley system at the Argonne Leadership Computing Facility.</li>
   <li>Corrected a bug where VisIt would randomly crash rendering transparent geometry due to memory corruption.</li>
   <li><i>ANNOTATION_INT</i> facelists with faces appearing in more than one sublist are now handled correctly.</li>
-  <li>Corrected a bug that caused empty plots when using the <i>OnionPeel</i> operator with data containing enumerated subsets.</li>
-  <li>Corrected a few usability issues for the <i>Save Movie Wizard</i> including: 
+  <li>Corrected a bug that caused empty plots when using the <i>Onion Peel</i> operator with data containing enumerated subsets.</li>
+  <li>Corrected a few usability issues for the <i>Save movie wizard</i> including: 
     <ul>
       <li>The ability to save a movie template file.</li>
       <li>The ability to set start and end frames when creating a movie template.</li>
@@ -139,7 +142,7 @@ SetBackendType("VTKm")
   </li>
   <li> Corrected a bug in creating expressions with curves read from multi-domain silo files. </li>
   <li>Fixed parallel engine hang when attempting to plot data from VTU (.vtu) files.</li>
-  <li>Fixed viewer crash when using the 'Transparent color' option for an Image annotation object.</li>
+  <li>Fixed viewer crash when using the <i>Transparent Color</i> option for an <i>Image</i> annotation object.</li>
 </ul>
 
 <a name="Configuration_changes"></a>
@@ -158,7 +161,6 @@ SetBackendType("VTKm")
   <li>Improved checksum checking of downloads such that python sub-modules are also checked.</li>
   <li>Ensure md5 and shasum checksum commands are handled correctly on OSX.</li>
   <li>Added checksum variables for most packages thereby triggering checksum verifcation upon download.</li>
-  <li>Add support for all supported ViSUS architecture downloads.</li>
 </ul>
 
 <a name="Dev_changes"></a>

@@ -64,7 +64,7 @@ using std::vector;
 
 // supress the following since silo uses char * in its API
 #if defined(__clang__)
-# pragma GCC diagnostic ignored "-Wdeprecated-writable-strings"
+# pragma clang diagnostic ignored "-Wwritable-strings"
 #elif defined(__GNUC__)
 # pragma GCC diagnostic ignored "-Wwrite-strings"
 #endif
