@@ -27,7 +27,7 @@ rightfully so.
 * The developer added debugging support
 * The developer added tests that prove the fix is effective or that the feature works
 * New and existing unit tests pass
-* If necessary, the developer added any new baselines to the repo
+* If necessary, the developer added any new baselines to the repository
 
 
 Comments and Tasks
@@ -69,7 +69,7 @@ Upon writing a code related comment, select the "Start a review" button. This wi
 initiate a review. Click "Add review comment" for each new comment. When you are
 done, navigate to the top-right of the page and click "Finish your review".
 
-Alternatley, the reviewer can frist write all the comments and then submit a review.
+Alternately, the reviewer can first write all the comments and then submit a review.
 Use the "Add single comment" button for each code related comment. Then, once you
 have finished commenting, navigate to the top-right of the page and click "Finish
 your review".
@@ -82,7 +82,7 @@ updating the PR:
 
 #. Comment - Submit general feedback without explicit approval. This is ambiguous and should not be used because the developer does not always know if the reviewer think changes should be made. It does not update the state of the PR.
 #. Approve - Submit feedback and approve merging these changes. Use this when the PR is ready to be merged into develop.
-#. Request changes - Submit feedback that must be addressed before merging. Use this when the develeoper should make additional changes to the PR.
+#. Request changes - Submit feedback that must be addressed before merging. Use this when the developer should make additional changes to the PR.
 
 
 .. _iteration-process:
@@ -94,7 +94,7 @@ Review processes are iterative by nature, and :abbr:`PR (Pull Request)` reviews
 are no exception. A typical review process looks like this:
 
 #. The developer submits a pull request and selects a reviewer.
-#. The reveiewer writes comments and submit a "Request change" review or an "Approve" review.
+#. The reviewer writes comments and submit a "Request change" review or an "Approve" review.
 #. The developer updates the PR according to the suggestions.
 #. Repeat steps 2 and 3 until the PR is ready.
 #. The reviewer approves the PR.

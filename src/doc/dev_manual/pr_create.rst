@@ -96,7 +96,7 @@ reviewers to your PR if you feel that is necessary.
 No Reviewers (owners only)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-If your changes are localized, you have satsified all the testing
+If your changes are localized, you have satisfied all the testing
 requirements and you are confident in the correctness of your changes
 (where correctness is measured by both the correctness of your code for
 accomplishing the desired task and the correctness of *how* you implemented
@@ -152,5 +152,5 @@ developer (guidelines for the reviewer can be found
 
 * Make sure the code is clear and well commented and that the PR is descriptive. This helps the reviewers quickly familiarize themselves with the context of the changes. If the code is unclear, the reviewers may spend a lot of time trying to grasp the purpose and effects of the PR.
 * Immediately answer any questions the reviewers ask about the PR. Enabling notifications will help speed this along.
-* When the reviewers have finished reviewing (step 2), quickly update the PR according to the requested changes. Use the ``@username`` idiom to notifiy the reviewers for any clarification
+* When the reviewers have finished reviewing (step 2), quickly update the PR according to the requested changes. Use the ``@username`` idiom to notify the reviewers for any clarification
 * When you have finished updating your PR (step 3), write a comment on the PR using ``@username`` to let the reviewers know that the PR is ready to be looked at again.
