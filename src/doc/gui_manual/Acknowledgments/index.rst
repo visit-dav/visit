@@ -1,7 +1,7 @@
-.. _Acknowledgements:
+.. _Acknowledgments:
 
-Acknowledgements
-================
+Acknowledgments
+===============
 
 This document was prepared as an account of work sponsored by an agency of
 the United States government. Neither the United States government nor

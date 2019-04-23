@@ -210,7 +210,3 @@ object is created and populated like this: ::
   VisIt_NameList_addName(hvar, "pressure");
   VisIt_NameList_addName(hvar, "rho");
   VisIt_NameList_addName(hvar, "energy");
-
-.. spelling::
-    Libsim
-    cdb

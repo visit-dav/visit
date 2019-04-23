@@ -20,7 +20,7 @@ in :numref:`Figure %s <transform>`.
 
 .. figure:: images/transform.png
 
-   Tranform operator example
+   Transform operator example
 
 Rotation
 """"""""

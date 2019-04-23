@@ -30,7 +30,7 @@ Contents:
    StartupOptions/index
    Building/index
    BuildingOnWindows/index
-   Acknowledgements/index
+   Acknowledgments/index
    glossary
    Contributing/index
 
