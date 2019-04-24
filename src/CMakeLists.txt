@@ -872,7 +872,6 @@ VISIT_3RDPARTY_VAR(OPENEXR_DIR   "Path containing the OpenEXR library's include 
 VISIT_3RDPARTY_VAR(NETCDF_DIR    "Path containing the NETCDF library's include and lib")
 VISIT_3RDPARTY_DEP(NETCDF_LIBDEP "NETCDF library dependencies")
 VISIT_3RDPARTY_VAR(PYSIDE_DIR    "Path containing the PySide installation")
-VISIT_3RDPARTY_VAR(R_DIR         "Path containing the R library's include and lib")
 VISIT_3RDPARTY_VAR(SILO_DIR      "Path containing the Silo library's include and lib")
 VISIT_3RDPARTY_DEP(SILO_LIBDEP   "Silo library dependencies")
 VISIT_3RDPARTY_VAR(UINTAH_DIR    "Path containing the Uintah library's include and lib")
