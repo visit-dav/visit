@@ -89,6 +89,3 @@ exporting data.
 
 When the meaning of an export option is not clear, try also pressing the **Help**
 button in **Export options for XXX writer** window to get more information.
-
-.. spelling::
-    Xmdv

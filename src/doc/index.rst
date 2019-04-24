@@ -8,6 +8,7 @@ VisIt User Manuals
 
    GUI Manual <gui_manual/index>
    CLI Manual <cli_manual/index>
+   Developer Manual <dev_manual/index>
 
 .. Indices and tables
 .. ==================

@@ -57,6 +57,3 @@ If you apply this operator to a plot that does not operator on scalar variables
 such as the Mesh or Subset plots, be sure to set the variable because the
 default variables for those plots is never a scalar variable. Without a scalar
 variable, the Isovolume operator will not work.
-
-.. spelling::
-    mL 

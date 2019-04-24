@@ -150,7 +150,7 @@ options are:
   - **Axis**
   - **Icosahedron**
   - **Octahedron**
-  - **Tertrahedron**
+  - **Tetrahedron**
   - **Point**
   - **Sphere**
 
