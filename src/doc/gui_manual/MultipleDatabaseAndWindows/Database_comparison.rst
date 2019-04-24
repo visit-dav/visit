@@ -142,12 +142,3 @@ plot of a time derivative.
 .. figure:: images/a_minus_preva.png
 
    Plot of a variable and its time derivative plot
-
-.. spelling::
-
-    cmfe
-    ireg
-    dbA
-    dbB
-    pdb
-    pos
