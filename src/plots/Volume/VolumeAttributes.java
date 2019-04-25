@@ -119,7 +119,7 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
         opacityMode = OPACITYMODES_FREEFORMMODE;
         opacityControlPoints = new GaussianControlPointList();
         resampleFlag = true;
-        resampleTarget = 50000;
+        resampleTarget = 1000000;
         opacityVariable = new String("default");
         compactVariable = new String("default");
         freeformOpacity = new byte[256];
@@ -173,7 +173,7 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
         opacityMode = OPACITYMODES_FREEFORMMODE;
         opacityControlPoints = new GaussianControlPointList();
         resampleFlag = true;
-        resampleTarget = 50000;
+        resampleTarget = 1000000;
         opacityVariable = new String("default");
         compactVariable = new String("default");
         freeformOpacity = new byte[256];
