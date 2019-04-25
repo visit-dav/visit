@@ -204,7 +204,6 @@
         <required>
             <lib name="cmake"/>
             <lib name="python"/>
-            <lib name="R"/>
             <lib name="vtk"/>
             <lib name="qt"/>
             <lib name="qwt"/>
@@ -233,7 +232,6 @@
         <group name="required" comment="All required libraries" enabled="yes">
             <lib name="cmake"/>
             <lib name="python"/>
-            <lib name="R"/>
             <lib name="vtk"/>
             <lib name="qt"/>
             <lib name="qwt"/>
