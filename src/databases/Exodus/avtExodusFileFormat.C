@@ -3203,6 +3203,8 @@ EnsureGlobalElementIdsAreInt(vtkDataArray *da)
     else if (da->IsA("vtkUnsignedIntArray"))
         return ConvertGlobalElementIdsToInt<vtkUnsignedIntArray, unsigned int>(da);
     
+    // safer to return zero here to avert possible segvs downstream in
+    // ghost-zone comm where vtkIntArray is assumed
     return 0;
 }
 
