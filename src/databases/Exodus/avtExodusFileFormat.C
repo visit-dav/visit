@@ -54,10 +54,12 @@
 #include <vtkDataArray.h>
 #include <vtkFloatArray.h>
 #include <vtkIntArray.h>
+#include <vtkLongArray.h>
 #include <vtkLongLongArray.h>
 #include <vtkShortArray.h>
 #include <vtkUnsignedCharArray.h>
 #include <vtkUnsignedIntArray.h>
+#include <vtkUnsignedLongArray.h>
 #include <vtkUnsignedLongLongArray.h>
 #include <vtkUnsignedShortArray.h>
 #include <vtkInformation.h>
@@ -3152,58 +3154,56 @@ avtExodusFileFormat::GetVectorVar(int ts, const char *var)
     return arr;
 }
 
-// Temporary hack to work-around vtkIntArray assumptions upstream
-static vtkIntArray *
-EnsureGlobalElementIdsAreInt(vtkDataArray *da)
+template <typename vT, typename cT>
+vtkDataArray *
+ConvertGlobalElementIdsToInt(vtkDataArray *da)
 {
-    if (!da) return 0;
-
-    debug1 << "Converting to integer global element ids." << endl;
-
     int nids = da->GetNumberOfTuples();
     vtkIntArray *iarr = vtkIntArray::New();
     iarr->SetNumberOfComponents(1);
     iarr->SetNumberOfTuples(nids);
 
-    if (da->IsA("vtkLongLongArray"))
+    vT *varr = vT::SafeDownCast(da);
+    int *piarr = iarr->GetPointer(0);
+    cT *pvarr = varr->GetPointer(0);
+    for (int q = 0; q < nids; q++)
     {
-        vtkLongLongArray *llarr = vtkLongLongArray::SafeDownCast(da);
-        int *piarr = iarr->GetPointer(0);
-        long long *pllarr = llarr->GetPointer(0);
-        for (int q = 0; q < nids; q++)
+        piarr[q] = (int) pvarr[q];
+        if ((cT) piarr[q] != pvarr[q])
         {
-            piarr[q] = (int) pllarr[q];
-            if ((long long) piarr[q] != pllarr[q])
-            {
-                debug1 << "...value " << pllarr[q] << " out of range for int"
-                    "...aborting; no ghost elements possible." << endl;
-                iarr->Delete();
-                iarr = NULL;
-                break;
-            }
+            debug1 << "...value " << pvarr[q] << " out of range for int"
+                "...aborting; no ghost elements possible." << endl;
+            iarr->Delete();
+            iarr = NULL;
+            break;
         }
     }
-    else if (da->IsA("vtkUnsignedLongLongArray"))
-    {
-        vtkUnsignedLongLongArray *ullarr = vtkUnsignedLongLongArray::SafeDownCast(da);
-        int *piarr = iarr->GetPointer(0);
-        unsigned long long *pullarr = ullarr->GetPointer(0);
-        for (int q = 0; q < nids; q++)
-        {
-            piarr[q] = (int) pullarr[q];
-            if ((unsigned long long) piarr[q] != pullarr[q])
-            {
-                debug1 << "...value " << pullarr[q] << " out of range for int"
-                    "...aborting; no ghost elements possible." << endl;
-                iarr->Delete();
-                iarr = NULL;
-                break;
-            }
-        }
-    }
-
     da->Delete();
     return iarr;
+}
+
+// Temporary hack to work-around vtkIntArray assumptions upstream
+static vtkDataArray *
+EnsureGlobalElementIdsAreInt(vtkDataArray *da)
+{
+    if (!da) return 0;
+
+    if (da->IsA("vtkIntArray")) return da;
+
+    debug1 << "Converting to integer global element ids." << endl;
+
+    if      (da->IsA("vtkLongLongArray"))
+        return ConvertGlobalElementIdsToInt<vtkLongLongArray, long long>(da);
+    else if (da->IsA("vtkUnsignedLongLongArray"))
+        return ConvertGlobalElementIdsToInt<vtkUnsignedLongLongArray, unsigned long long>(da);
+    else if (da->IsA("vtkLongArray"))
+        return ConvertGlobalElementIdsToInt<vtkLongArray, long>(da);
+    else if (da->IsA("vtkUnsignedLongArray"))
+        return ConvertGlobalElementIdsToInt<vtkUnsignedLongArray, unsigned long>(da);
+    else if (da->IsA("vtkUnsignedIntArray"))
+        return ConvertGlobalElementIdsToInt<vtkUnsignedIntArray, unsigned int>(da);
+    
+    return 0;
 }
 
 // ****************************************************************************
