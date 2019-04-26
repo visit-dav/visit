@@ -173,6 +173,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define REMAPATTRIBUTES_TMFS "bddiddibddidi"
+#define REMAPATTRIBUTES_TMFS "bddiddibddii"
 
 #endif

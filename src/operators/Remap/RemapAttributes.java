@@ -59,7 +59,7 @@ import llnl.visit.Plugin;
 
 public class RemapAttributes extends AttributeSubject implements Plugin
 {
-    private static int RemapAttributes_numAdditionalAtts = 13;
+    private static int RemapAttributes_numAdditionalAtts = 12;
 
     // Enum values
     public final static int VARIABLETYPES_INTRINSIC = 0;
@@ -222,7 +222,7 @@ public class RemapAttributes extends AttributeSubject implements Plugin
     public void SetVariableType(int variableType_)
     {
         variableType = variableType_;
-        Select(12);
+        Select(11);
     }
 
     // Property getting methods
@@ -264,7 +264,7 @@ public class RemapAttributes extends AttributeSubject implements Plugin
             buf.WriteDouble(endZ);
         if(WriteSelect(10, buf))
             buf.WriteInt(cellsZ);
-        if(WriteSelect(12, buf))
+        if(WriteSelect(11, buf))
             buf.WriteInt(variableType);
     }
 

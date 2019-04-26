@@ -44,7 +44,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define REMAPATTRIBUTES_NMETH 28
+#define REMAPATTRIBUTES_NMETH 26
 void           PyRemapAttributes_StartUp(RemapAttributes *subj, void *data);
 void           PyRemapAttributes_CloseDown();
 PyMethodDef *  PyRemapAttributes_GetMethodTable(int *nMethods);
