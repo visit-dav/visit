@@ -295,9 +295,9 @@ void LabelAttributes::Init()
     labelDisplayFormat = Natural;
     numberOfLabels = 200;
     textFont1.GetColor().SetRgb(255, 0, 0);
-    textFont1.SetScale(0.04);
+    textFont1.SetScale(4);
     textFont2.GetColor().SetRgb(0, 0, 255);
-    textFont2.SetScale(0.04);
+    textFont2.SetScale(4);
     horizontalJustification = HCenter;
     verticalJustification = VCenter;
     depthTestMode = LABEL_DT_AUTO;
@@ -1449,13 +1449,13 @@ LabelAttributes::ProcessOldVersions(DataNode *parentNode,
         {
             float height = k->AsFloat();
             searchNode->RemoveNode(k, true);
-            textFont1.SetScale((double) height);
+            textFont1.SetScale((double) (height+0.02)*100);
         }
         if ((k = searchNode->GetNode("textHeight2")) != 0)
         {
             float height = k->AsFloat();
             searchNode->RemoveNode(k, true);
-            textFont2.SetScale((double) height);
+            textFont2.SetScale((double) (height+0.02)*100);
         }
         if ((k = searchNode->GetNode("textColor1")) != 0)
         {

@@ -27,7 +27,7 @@ function bv_hdf4_info
     export HDF4_BUILD_DIR=${HDF4_BUILD_DIR:-"hdf-4.2.5"}
     export HDF4_URL=${HDF4_URL:-"http://www.hdfgroup.org/ftp/HDF/HDF_Current/src"}
     export HDF4_MD5_CHECKSUM="7241a34b722d29d8561da0947c06069f"
-    export HDF4_SHA256_CHECKSUM=""
+    export HDF4_SHA256_CHECKSUM="73b0021210bae8c779f9f1435a393ded0f344cfb01f7ee8b8794ec9d41dcd427"
 }
 
 function bv_hdf4_initialize_vars

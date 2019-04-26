@@ -116,7 +116,10 @@
 #   I updated rztrona for 3.0.0b and removed rzalastor.
 #
 #   Eric Brugger, Mon Mar  4 08:28:54 PST 2019
-#   I added cooley
+#   I added cooley.
+#
+#   Eric Brugger, Tue Mar  5 12:35:11 PST 2019
+#   I added rzansel. I deleted carver and glory.
 #
 #-----------------------------------------------------------------------
 
@@ -164,9 +167,8 @@ ifyou=false
 quartz=true
 lassen=true
 rztrona=true
+rzansel=true
 rzuseq=false
-carver=true
-glory=false
 vulcan=false
 cooley=false
 
@@ -187,8 +189,7 @@ do
          quartz=false
          lassen=false
          rztrona=false
-         carver=false
-         glory=false
+         rzansel=false
          shift
          ;;
       -kickit)
@@ -239,28 +240,20 @@ do
          rztrona=true
          shift
          ;;
+      -rzansel)
+         rzansel=false
+         shift
+         ;;
+      +rzansel)
+         rzansel=true
+         shift
+         ;;
       -rzuseq)
          rzuseq=false
          shift
          ;;
       +rzuseq)
          rzuseq=true
-         shift
-         ;;
-      -carver)
-         carver=false
-         shift
-         ;;
-      +carver)
-         carver=true
-         shift
-         ;;
-      -glory)
-         glory=false
-         shift
-         ;;
-      +glory)
-         glory=true
          shift
          ;;
       -vulcan)
@@ -524,6 +517,42 @@ then
 fi
 
 #
+# Install on rzansel
+#
+rm -f rzansel
+cat <<EOF > rzansel
+#!/bin/sh
+./visit-install -private -c llnl_open_rz -g visit -b wbronze -gw -l $ver linux-rzansel /usr/gapps/visit > installlog 2>&1
+rm -f resultlog
+echo "        install of visit on rzansel"          > resultlog 2>&1
+echo "       -----------------------------"         >> resultlog 2>&1
+echo ""                                             >> resultlog 2>&1
+df -k /usr/gapps/visit                              >> resultlog 2>&1
+echo ""                                             >> resultlog 2>&1
+ls -l /usr/gapps/visit/$ver+/linux-intel/bin        >> resultlog 2>&1
+echo ""                                             >> resultlog 2>&1
+echo "number of database plugins = "\`ls /usr/gapps/visit/$ver+/linux-intel/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls /usr/gapps/visit/$ver+/linux-intel/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver+/linux-intel/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo ""                                             >> resultlog 2>&1
+echo "The database plugins:"                        >> resultlog 2>&1
+ls /usr/gapps/visit/$ver+/linux-intel/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver+\/linux-intel\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+mail -s "VisIt install ($ver): rzansel" $emailName < resultlog
+EOF
+
+if [ $rzansel = true ]
+then
+   if [ $test = no ]
+   then
+      scp rzansel61:/usr/tmp/$user/rzansel/visitbuild/visit$ver2.linux-intel.tar.gz visit$ver2.linux-rzansel.tar.gz
+      scp visit$ver2.linux-rzansel.tar.gz rzansel:
+      scp visit-install rzansel:
+      scp rzansel rzansel:rzansel_install
+      ssh rzansel "chmod 750 rzansel_install;./rzansel_install"
+   fi
+fi
+
+#
 # Install on rzuseq.
 #
 rm -f rzuseq
@@ -553,76 +582,6 @@ then
       scp visit-install rzuseqlac2:
       scp rzuseq rzuseqlac2:rzuseq_install
       ssh rzuseqlac2 "chmod 750 rzuseq_install;./rzuseq_install"
-   fi
-fi
-
-#
-# Install on carver.
-#
-rm -f carver
-cat <<EOF > carver
-#!/bin/sh
-./visit-install -private -c nersc $ver linux-carver visit > installlog 2>&1
-rm -f resultlog
-echo "        install of visit on carver"          > resultlog 2>&1
-echo "       ----------------------------"         >> resultlog 2>&1
-echo ""                                            >> resultlog 2>&1
-df -k visit                                        >> resultlog 2>&1
-echo ""                                            >> resultlog 2>&1
-ls -l visit/$ver+/linux-x86_64/bin                 >> resultlog 2>&1
-echo ""                                            >> resultlog 2>&1
-echo "number of database plugins = "\`ls visit/$ver+/linux-x86_64/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls visit/$ver+/linux-x86_64/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls visit/$ver+/linux-x86_64/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
-echo ""                                            >> resultlog 2>&1
-echo "The database plugins:"                       >> resultlog 2>&1
-ls visit/$ver+/linux-x86_64/plugins/databases/libI* | sed "s/visit\/$ver+\/linux-x86_64\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-mail -s "VisIt install ($ver): carver " $emailName < resultlog
-EOF
-
-if [ $carver = true ]
-then
-   if [ $test = no ]
-   then
-      scp carver.nersc.gov:/usr/tmp/$user/carver/visitbuild/visit$ver2.linux-x86_64.tar.gz visit$ver2.linux-carver.tar.gz
-      scp visit$ver2.linux-carver.tar.gz carver.nersc.gov:
-      scp visit-install carver.nersc.gov:
-      scp carver carver.nersc.gov:carver_install
-      ssh carver.nersc.gov "chmod 750 carver_install;./carver_install"
-   fi
-fi
-
-#
-# Install on glory.
-#
-rm -f glory
-cat <<EOF > glory
-#!/bin/sh
-./visit-install -private -c sandia -l $ver linux-glory /projects/visit > installlog 2>&1
-rm -f resultlog
-echo "        install of visit on glory"           > resultlog 2>&1
-echo "       ---------------------------"          >> resultlog 2>&1
-echo ""                                            >> resultlog 2>&1
-df -k /projects/visit                              >> resultlog 2>&1
-echo ""                                            >> resultlog 2>&1
-ls -l /projects/visit/$ver+/linux-x86_64/bin       >> resultlog 2>&1
-echo ""                                            >> resultlog 2>&1
-echo "number of database plugins = "\`ls /projects/visit/$ver+/linux-x86_64/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls /projects/visit/$ver+/linux-x86_64/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls /projects/visit/$ver+/linux-x86_64/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
-echo ""                                            >> resultlog 2>&1
-echo "The database plugins:"                       >> resultlog 2>&1
-ls /projects/visit/$ver+/linux-x86_64/plugins/databases/libI* | sed "s/projects\/visit\/$ver+\/linux-x86_64\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-mail -s "VisIt install ($ver): glory" $emailName < resultlog
-EOF
-
-if [ $glory = true ]
-then
-   if [ $test = no ]
-   then
-      cp /usr/tmp/$user/glory/visitbuild/visit$ver2.linux-x86_64.tar.gz visit$ver2.linux-glory.tar.gz
-      cp glory glory_install
-      chmod 750 glory_install;./glory_install
    fi
 fi
 
@@ -665,20 +624,20 @@ fi
 rm -f cooley
 cat <<EOF > cooley
 #!/bin/sh
-./visit-install -private -c sandia -l $ver linux-cooley /projects/visit > installlog 2>&1
+./visit-install -private -c anl -l $ver linux-cooley /soft/visualization/visit > installlog 2>&1
 rm -f resultlog
-echo "        install of visit on cooley"          > resultlog 2>&1
-echo "       ----------------------------"         >> resultlog 2>&1
-echo ""                                            >> resultlog 2>&1
-df -k /projects/visit                              >> resultlog 2>&1
-echo ""                                            >> resultlog 2>&1
-ls -l /projects/visit/$ver+/linux-x86_64/bin       >> resultlog 2>&1
-echo ""                                            >> resultlog 2>&1
+echo "        install of visit on cooley"               > resultlog 2>&1
+echo "       ----------------------------"              >> resultlog 2>&1
+echo ""                                                 >> resultlog 2>&1
+df -k /soft/visualization/visit                         >> resultlog 2>&1
+echo ""                                                 >> resultlog 2>&1
+ls -l /soft/visualization/visit/$ver+/linux-x86_64/bin  >> resultlog 2>&1
+echo ""                                                 >> resultlog 2>&1
 echo "number of database plugins = "\`ls /soft/visualization/visit/$ver+/linux-x86_64/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
 echo "number of operator plugins = "\`ls /soft/visualization/visit/$ver+/linux-x86_64/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
 echo "number of plot plugins = "\`ls /soft/visualization/visit/$ver+/linux-x86_64/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
-echo ""                                            >> resultlog 2>&1
-echo "The database plugins:"                       >> resultlog 2>&1
+echo ""                                                 >> resultlog 2>&1
+echo "The database plugins:"                            >> resultlog 2>&1
 ls /soft/visualization/visit/$ver+/linux-x86_64/plugins/databases/libI* | sed "s/soft\/visualization\/visit\/$ver+\/linux-x86_64\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
 mail -s "VisIt install ($ver): cooley" $emailName < resultlog
 EOF
@@ -698,5 +657,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f kickit ubuntu1404_64 ifyou quartz lassen rztrona rzuseq carver glory vulcan cooley
+   rm -f kickit ubuntu1404_64 ifyou quartz lassen rztrona rzansel rzuseq vulcan cooley
 fi

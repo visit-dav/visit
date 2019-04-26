@@ -31,7 +31,7 @@ function bv_vtkh_info
     export VTKH_FILE=${VTKH_FILE:-"vtkh-${VTKH_VERSION}.tar.gz"}
     export VTKH_BUILD_DIR=${VTKH_BUILD_DIR:-"vtkh-${VTKH_VERSION}"}
     export VTKH_MD5_CHECKSUM="993cbd4b7a1bc5d5c0e9ff900ec2eacc"
-    export VTKH_SHA256_CHECKSUM=""
+    export VTKH_SHA256_CHECKSUM="ad3ed46ba9f435d367572bc3015ce0c546800b5cdf470dd494f1584142f48dbc"
 }
 
 function bv_vtkh_print

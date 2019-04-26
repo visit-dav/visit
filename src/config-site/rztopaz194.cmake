@@ -1,8 +1,8 @@
 #/usr/workspace/visit/visit/thirdparty_shared/3.0.0b/toss3/cmake/3.9.3/linux-x86_64_gcc-4.9/bin/cmake
 ##
 ## ./build_visit3_0_0b generated host.cmake
-## created: Fri Feb 22 16:39:18 PST 2019
-## system: Linux rztopaz572 3.10.0-957.1.3.1chaos.ch6.x86_64 #1 SMP Thu Dec 6 11:45:08 PST 2018 x86_64 x86_64 x86_64 GNU/Linux
+## created: Mon Mar  4 15:45:44 PST 2019
+## system: Linux rztopaz188 3.10.0-957.1.3.1chaos.ch6.x86_64 #1 SMP Thu Dec 6 11:45:08 PST 2018 x86_64 x86_64 x86_64 GNU/Linux
 ## by: brugger
 
 ##
@@ -254,11 +254,6 @@ VISIT_OPTION_DEFAULT(VISIT_SILO_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP
 ##
 SETUP_APP_VERSION(UINTAH 2.6.0)
 VISIT_OPTION_DEFAULT(VISIT_UINTAH_DIR ${VISITHOME}/uintah/${UINTAH_VERSION}/${VISITARCH})
-
-##
-## VISUS 
-##
-VISIT_OPTION_DEFAULT(VISIT_VISUS_DIR ${VISITHOME}/visus/5f5fd6c/${VISITARCH})
 
 ##
 ## VTKM

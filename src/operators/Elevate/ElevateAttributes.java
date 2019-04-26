@@ -69,12 +69,16 @@ public class ElevateAttributes extends AttributeSubject implements Plugin
     public final static int LIMITSMODE_ORIGINALDATA = 0;
     public final static int LIMITSMODE_CURRENTPLOT = 1;
 
+    public final static int SCALINGMODE_NEVER = 0;
+    public final static int SCALINGMODE_AUTO = 1;
+    public final static int SCALINGMODE_ALWAYS = 2;
+
 
     public ElevateAttributes()
     {
         super(ElevateAttributes_numAdditionalAtts);
 
-        useXYLimits = false;
+        useXYLimits = SCALINGMODE_AUTO;
         limitsMode = LIMITSMODE_ORIGINALDATA;
         scaling = SCALING_LINEAR;
         skewFactor = 1;
@@ -90,7 +94,7 @@ public class ElevateAttributes extends AttributeSubject implements Plugin
     {
         super(ElevateAttributes_numAdditionalAtts + nMoreFields);
 
-        useXYLimits = false;
+        useXYLimits = SCALINGMODE_AUTO;
         limitsMode = LIMITSMODE_ORIGINALDATA;
         scaling = SCALING_LINEAR;
         skewFactor = 1;
@@ -149,7 +153,7 @@ public class ElevateAttributes extends AttributeSubject implements Plugin
     public String GetVersion() { return "1.0"; }
 
     // Property setting methods
-    public void SetUseXYLimits(boolean useXYLimits_)
+    public void SetUseXYLimits(int useXYLimits_)
     {
         useXYLimits = useXYLimits_;
         Select(0);
@@ -210,7 +214,7 @@ public class ElevateAttributes extends AttributeSubject implements Plugin
     }
 
     // Property getting methods
-    public boolean GetUseXYLimits() { return useXYLimits; }
+    public int     GetUseXYLimits() { return useXYLimits; }
     public int     GetLimitsMode() { return limitsMode; }
     public int     GetScaling() { return scaling; }
     public double  GetSkewFactor() { return skewFactor; }
@@ -225,7 +229,7 @@ public class ElevateAttributes extends AttributeSubject implements Plugin
     public void WriteAtts(CommunicationBuffer buf)
     {
         if(WriteSelect(0, buf))
-            buf.WriteBool(useXYLimits);
+            buf.WriteInt(useXYLimits);
         if(WriteSelect(1, buf))
             buf.WriteInt(limitsMode);
         if(WriteSelect(2, buf))
@@ -251,7 +255,7 @@ public class ElevateAttributes extends AttributeSubject implements Plugin
         switch(index)
         {
         case 0:
-            SetUseXYLimits(buf.ReadBool());
+            SetUseXYLimits(buf.ReadInt());
             break;
         case 1:
             SetLimitsMode(buf.ReadInt());
@@ -286,7 +290,14 @@ public class ElevateAttributes extends AttributeSubject implements Plugin
     public String toString(String indent)
     {
         String str = new String();
-        str = str + boolToString("useXYLimits", useXYLimits, indent) + "\n";
+        str = str + indent + "useXYLimits = ";
+        if(useXYLimits == SCALINGMODE_NEVER)
+            str = str + "SCALINGMODE_NEVER";
+        if(useXYLimits == SCALINGMODE_AUTO)
+            str = str + "SCALINGMODE_AUTO";
+        if(useXYLimits == SCALINGMODE_ALWAYS)
+            str = str + "SCALINGMODE_ALWAYS";
+        str = str + "\n";
         str = str + indent + "limitsMode = ";
         if(limitsMode == LIMITSMODE_ORIGINALDATA)
             str = str + "LIMITSMODE_ORIGINALDATA";
@@ -313,7 +324,7 @@ public class ElevateAttributes extends AttributeSubject implements Plugin
 
 
     // Attributes
-    private boolean useXYLimits;
+    private int     useXYLimits;
     private int     limitsMode;
     private int     scaling;
     private double  skewFactor;

@@ -34,6 +34,7 @@
 #include <vector>
 #include <iostream>
 #include <climits>
+#include <algorithm>
 
 class PatchInfo {
 public:

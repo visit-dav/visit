@@ -258,6 +258,12 @@ if(NOT VISIT_QT_SKIP_INSTALL)
 
       install(DIRECTORY ${VISIT_QT_DIR}/plugins/platforms
               DESTINATION ${VISIT_INSTALLED_VERSION_BIN}/viewer.app/Contents/MacOS)
+
+      install(DIRECTORY ${VISIT_QT_DIR}/plugins/styles
+              DESTINATION ${VISIT_INSTALLED_VERSION_BIN}/gui.app/Contents/MacOS)
+
+      install(DIRECTORY ${VISIT_QT_DIR}/plugins/styles
+              DESTINATION ${VISIT_INSTALLED_VERSION_BIN}/viewer.app/Contents/MacOS)
   else()
       install(DIRECTORY ${VISIT_QT_DIR}/plugins/platforms
               DESTINATION ${VISIT_INSTALLED_VERSION_LIB}/qtplugins)

@@ -49,6 +49,7 @@ def TestNetworkReset():
     s.height = 400
     s.format = s.PNG
     s.fileName = base
+    s.outputToCurrentDirectory = 1
     s.family = 1
     SetSaveWindowAttributes(s)
 

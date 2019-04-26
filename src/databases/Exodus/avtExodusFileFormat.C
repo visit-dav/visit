@@ -54,14 +54,13 @@
 #include <vtkDataArray.h>
 #include <vtkFloatArray.h>
 #include <vtkIntArray.h>
+#include <vtkLongArray.h>
 #include <vtkLongLongArray.h>
 #include <vtkShortArray.h>
 #include <vtkUnsignedCharArray.h>
 #include <vtkUnsignedIntArray.h>
-#ifdef HAVE_VTK_SIZEOF___INT64
-#include <vtk__Int64Array.h>
-#include <vtkUnsigned__Int64Array.h>
-#endif
+#include <vtkUnsignedLongArray.h>
+#include <vtkUnsignedLongLongArray.h>
 #include <vtkUnsignedShortArray.h>
 #include <vtkInformation.h>
 #include <vtkMultiBlockDataSet.h>
@@ -583,10 +582,10 @@ static int SizeOfNCType(int type)
         case NC_UINT:
 #endif
             return sizeof(int);
-#if defined(NC_NETCDF4) && defined(HAVE_VTK_SIZEOF___INT64)
+#if defined(NC_NETCDF4)
         case NC_INT64:
         case NC_UINT64:
-            return sizeof(__int64);
+            return sizeof(long long);
 #endif
         case NC_FLOAT:
             return sizeof(float);
@@ -1099,31 +1098,31 @@ MakeVTKDataArrayByTakingOwnershipOfNCVarData(nc_type type,
             arr->SetArray((unsigned int*)buf, num_comps * num_vals, SAVE_ARRAY, VTK_DA_FREE);
             return arr;
         }
-#if defined(NC_NETCDF4) && defined(HAVE_VTK_SIZEOF___INT64)
+#if defined(NC_NETCDF4)
         case NC_INT64:
         {
             if (num_comps > 1)
             {
-                void *newbuf = (void*) Interleave<__int64>((__int64*) buf, num_comps, num_vals);
+                void *newbuf = (void*) Interleave<long long>((long long*) buf, num_comps, num_vals);
                 free(buf);
                 buf = newbuf;
             }
-            vtk__Int64Array *arr = vtk__Int64Array::New();
+            vtkLongLongArray *arr = vtkLongLongArray::New();
             arr->SetNumberOfComponents(num_comps);
-            arr->SetArray((__int64*)buf, num_comps * num_vals, SAVE_ARRAY, VTK_DA_FREE);
+            arr->SetArray((long long*)buf, num_comps * num_vals, SAVE_ARRAY, VTK_DA_FREE);
             return arr;
         }
         case NC_UINT64:
         {
             if (num_comps > 1)
             {
-                void *newbuf = (void*) Interleave<unsigned __int64>((unsigned __int64*) buf, num_comps, num_vals);
+                void *newbuf = (void*) Interleave<unsigned long long>((unsigned long long*) buf, num_comps, num_vals);
                 free(buf);
                 buf = newbuf;
             }
-            vtkUnsigned__Int64Array *arr = vtkUnsigned__Int64Array::New();
+            vtkUnsignedLongLongArray *arr = vtkUnsignedLongLongArray::New();
             arr->SetNumberOfComponents(num_comps);
-            arr->SetArray((unsigned __int64*)buf, num_comps * num_vals, SAVE_ARRAY, VTK_DA_FREE);
+            arr->SetArray((unsigned long long*)buf, num_comps * num_vals, SAVE_ARRAY, VTK_DA_FREE);
             return arr;
         }
 #endif
@@ -1335,7 +1334,7 @@ GetExodusSetsVar(int exncfid, int ts, char const *var, int numNodes, int numElem
 // ****************************************************************************
 
 template <class T>
-static void ReadBlockIds(int fid, int vid, int numBlocks, vector<int>& blockId, int (*NcRdFunc)(int,int,int*))
+static void ReadBlockIds(int fid, int vid, int numBlocks, vector<int>& blockId, int (*NcRdFunc)(int,int,T*))
 {
     int ncerr;
     T *buf = new T [numBlocks];
@@ -1355,7 +1354,7 @@ static void ReadBlockIds(int fid, int vid, int numBlocks, vector<int>& blockId, 
 // Convenient shorter name for instancing a block id read
 // ****************************************************************************
 
-#define READ_BLOCK_IDS(F,V,N,BIDS,TYPE) ReadBlockIds<TYPE>(F,V,N,BIDS,nc_get_var_ ## TYPE);
+#define READ_BLOCK_IDS(F,V,N,BIDS,TYPE,NCTNAME) ReadBlockIds<TYPE>(F,V,N,BIDS,nc_get_var_ ## NCTNAME);
 
 // ****************************************************************************
 // Reads a string-valued variables and attributes from the netcdf file known
@@ -1421,9 +1420,9 @@ GetElementBlockNamesAndIds(int ncExIIId, int numBlocks,
     nc_inq_vartype(ncExIIId, eb_blockid_varid, &vtype);
     switch (vtype)
     {
-        case NC_INT:   READ_BLOCK_IDS(ncExIIId, eb_blockid_varid, numBlocks, blockId, int); break;
-#if defined(NC_NETCDF4) && defined(HAVE_VTK_SIZEOF___INT64)
-        case NC_INT64: READ_BLOCK_IDS(ncExIIId, eb_blockid_varid, numBlocks, blockId, __int64); break;
+        case NC_INT:   READ_BLOCK_IDS(ncExIIId, eb_blockid_varid, numBlocks, blockId, int, int); break;
+#if defined(NC_NETCDF4)
+        case NC_INT64: READ_BLOCK_IDS(ncExIIId, eb_blockid_varid, numBlocks, blockId, long long, longlong); break;
 #endif
     }
 }
@@ -2817,7 +2816,7 @@ avtExodusFileFormat::GetMesh(int ts, const char *mesh)
                 delete [] conn_buf;
                 break;
             }
-#if defined(NC_NETCDF4) && defined(HAVE_VTK_SIZEOF___INT64)
+#if defined(NC_NETCDF4)
             case NC_INT64:
             {
                 long long *conn_buf = new long long[connect_varlen];
@@ -3155,6 +3154,60 @@ avtExodusFileFormat::GetVectorVar(int ts, const char *var)
     return arr;
 }
 
+template <typename vT, typename cT>
+vtkDataArray *
+ConvertGlobalElementIdsToInt(vtkDataArray *da)
+{
+    int nids = da->GetNumberOfTuples();
+    vtkIntArray *iarr = vtkIntArray::New();
+    iarr->SetNumberOfComponents(1);
+    iarr->SetNumberOfTuples(nids);
+
+    vT *varr = vT::SafeDownCast(da);
+    int *piarr = iarr->GetPointer(0);
+    cT *pvarr = varr->GetPointer(0);
+    for (int q = 0; q < nids; q++)
+    {
+        piarr[q] = (int) pvarr[q];
+        if ((cT) piarr[q] != pvarr[q])
+        {
+            debug1 << "...value " << pvarr[q] << " out of range for int"
+                "...aborting; no ghost elements possible." << endl;
+            iarr->Delete();
+            iarr = NULL;
+            break;
+        }
+    }
+    da->Delete();
+    return iarr;
+}
+
+// Temporary hack to work-around vtkIntArray assumptions upstream
+static vtkDataArray *
+EnsureGlobalElementIdsAreInt(vtkDataArray *da)
+{
+    if (!da) return 0;
+
+    if (da->IsA("vtkIntArray")) return da;
+
+    debug1 << "Converting to integer global element ids." << endl;
+
+    if      (da->IsA("vtkLongLongArray"))
+        return ConvertGlobalElementIdsToInt<vtkLongLongArray, long long>(da);
+    else if (da->IsA("vtkUnsignedLongLongArray"))
+        return ConvertGlobalElementIdsToInt<vtkUnsignedLongLongArray, unsigned long long>(da);
+    else if (da->IsA("vtkLongArray"))
+        return ConvertGlobalElementIdsToInt<vtkLongArray, long>(da);
+    else if (da->IsA("vtkUnsignedLongArray"))
+        return ConvertGlobalElementIdsToInt<vtkUnsignedLongArray, unsigned long>(da);
+    else if (da->IsA("vtkUnsignedIntArray"))
+        return ConvertGlobalElementIdsToInt<vtkUnsignedIntArray, unsigned int>(da);
+    
+    // safer to return zero here to avert possible segvs downstream in
+    // ghost-zone comm where vtkIntArray is assumed
+    return 0;
+}
+
 // ****************************************************************************
 //  Method: avtExodusFileFormat::GetAuxiliaryData
 //
@@ -3266,6 +3319,7 @@ avtExodusFileFormat::GetAuxiliaryData(const char *var, int ts,
         TRY
         {
             gnodeIds = GetVar(ts, "node_num_map");
+            gnodeIds = EnsureGlobalElementIdsAreInt(gnodeIds);
         }
         CATCH(InvalidVariableException)
         {
@@ -3283,6 +3337,7 @@ avtExodusFileFormat::GetAuxiliaryData(const char *var, int ts,
         TRY
         {
             gzoneIds = GetVar(ts, "elem_num_map");
+            gzoneIds = EnsureGlobalElementIdsAreInt(gzoneIds);
         }
         CATCH(InvalidVariableException)
         {

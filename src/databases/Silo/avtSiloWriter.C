@@ -618,9 +618,8 @@ avtSiloWriter::WriteHeaders(const avtDatabaseMetaData *md,
 //    are actually written.
 //
 //    Alister Maguire, Mon Mar 18 14:08:39 PDT 2019
-//    Updated cycle, ftime, and dtime to be class variables to avoid 
-//    local reference issues. They are now curCycle, curFTime, and
-//    curDTime. 
+//    Updated cycle, ftime, and dtime to be class members to avoid
+//    various issues. They are now curCycle, curFTime, curDTime. 
 //
 // ****************************************************************************
 
@@ -776,9 +775,8 @@ avtSiloWriter::ConstructMultimesh(DBfile *dbfile, const avtMeshMetaData *mmd,
 //    are actually written.
 //
 //    Alister Maguire, Mon Mar 18 14:08:39 PDT 2019
-//    Updated cycle, ftime, and dtime to be class variables to avoid 
-//    local reference issues. They are now curCycle, curFTime, and 
-//    curDTime.
+//    Updated cycle, ftime, and dtime to be class members to avoid
+//    various issues. They are now curCycle, curFTime, curDTime. 
 //
 // ****************************************************************************
 
@@ -1015,9 +1013,8 @@ avtSiloWriter::ConstructMultimat(DBfile *dbfile, const string &mname,
 //    Preserve axis labels if they exist.
 //
 //    Alister Maguire, Mon Mar 18 14:08:39 PDT 2019
-//    Updated cycle, ftime, and dtime to be class variables to avoid 
-//    local reference issues. They are now curCycle, curFTime, and
-//    curDTime. 
+//    Updated cycle, ftime, and dtime to be class members to avoid
+//    various issues. They are now curCycle, curFTime, curDTime. 
 //
 // ****************************************************************************
 

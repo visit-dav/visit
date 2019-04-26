@@ -50,46 +50,64 @@ Test("elevate01")
 ChangeActivePlotsVar("d")
 Test("elevate02")
 
-#Primary variable zonal, Secondary variable zonal 
-ChangeActivePlotsVar("p")
 elevate_atts = ElevateAttributes()
-elevate_atts.variable = "d"
+DefineScalarExpression("d_mod", "0.1*d")
+elevate_atts.variable = "d_mod"
+elevate_atts.useXYLimits = elevate_atts.Never
 SetOperatorOptions(elevate_atts)
 Test("elevate03")
+
+elevate_atts.useXYLimits = elevate_atts.Auto
+SetOperatorOptions(elevate_atts)
+Test("elevate04")
+
+#Primary variable zonal, Secondary variable zonal 
+ChangeActivePlotsVar("p")
+elevate_atts.variable = "d"
+SetOperatorOptions(elevate_atts)
+Test("elevate05")
 
 #Primary variable zonal, secondary nodal.
 elevate_atts.variable = "u"
 SetOperatorOptions(elevate_atts)
-Test("elevate04")
+Test("elevate06")
 
 #Primary variable nodal, secondary nodal.
 ChangeActivePlotsVar("v")
-Test("elevate05")
+Test("elevate07")
 
 #Primary variable nodal, secondary zonal.
 elevate_atts.variable = "p"
-elevate_atts.useXYLimits = 1
 SetOperatorOptions(elevate_atts)
-Test("elevate06")
+Test("elevate08")
+
+elevate_atts.useXYLimits = elevate_atts.Never
+SetOperatorOptions(elevate_atts)
+Test("elevate09")
 
 DeleteAllPlots()
 
 AddPlot("Mesh", "quadmesh2d")
 AddOperator("Elevate")
 elevate_atts.variable = "p"
-elevate_atts.useXYLimits = 1
+elevate_atts.useXYLimits = elevate_atts.Always
 SetOperatorOptions(elevate_atts)
 DrawPlots()
-Test("elevate07")
+Test("elevate10")
 
 DeleteAllPlots()
 AddPlot("FilledBoundary", "mat1")
 AddOperator("Elevate")
 elevate_atts.variable = "u"
-elevate_atts.useXYLimits = 1
+elevate_atts.useXYLimits = elevate_atts.Always
 SetOperatorOptions(elevate_atts)
 DrawPlots()
-Test("elevate08")
+Test("elevate11")
+
+elevate_atts.useXYLimits = elevate_atts.Never
+SetOperatorOptions(elevate_atts)
+DrawPlots()
+Test("elevate12")
 
 DeleteAllPlots()
 OpenDatabase(silo_data_path("rect3d.silo"))
@@ -98,7 +116,7 @@ AddPlot("Pseudocolor", "d")
 AddOperator("Slice")
 AddOperator("Elevate")
 DrawPlots()
-Test("elevate09")
+Test("elevate13")
 
 # Testing expressions.  Test that macro expressions work as secondary
 # variables ('6768).
@@ -109,9 +127,10 @@ DefineScalarExpression("vv", "hgslice+polar_radius(Mesh2D)")
 AddPlot("Pseudocolor", "hgslice")
 AddOperator("Elevate")
 elevate_atts.variable = "vv"
+elevate_atts.useXYLimits = elevate_atts.Always
 SetOperatorOptions(elevate_atts)
 DrawPlots()
-Test("elevate10")
+Test("elevate14")
 
 # Filled boundary with recentered expression
 DeleteAllPlots()
@@ -121,9 +140,10 @@ DefineScalarExpression("d2", "recenter(d)")
 AddPlot("FilledBoundary", "mat1")
 AddOperator("Elevate")
 elevate_atts.variable = "d2"
+elevate_atts.useXYLimits = elevate_atts.Always
 SetOperatorOptions(elevate_atts)
 DrawPlots()
-Test("elevate11")
+Test("elevate15")
 
 # Boundary plots that are elevated by zero height (no variable). '8346.
 DeleteAllPlots()
@@ -138,6 +158,6 @@ DrawPlots()
 v = GetView3D()
 v.viewNormal = (0.5, 0.5, 0.5)
 SetView3D(v)
-Test("elevate12")
+Test("elevate16")
 
 Exit()

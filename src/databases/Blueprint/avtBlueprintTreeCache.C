@@ -59,7 +59,7 @@
 //-----------------------------------------------------------------------------
 #include "conduit.hpp"
 #include "conduit_relay.hpp"
-#include "conduit_relay_hdf5.hpp"
+#include "conduit_relay_io_hdf5.hpp"
 
 //-----------------------------------------------------------------------------
 // mfem includes

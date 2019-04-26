@@ -1104,7 +1104,6 @@ elif [ "$config" = "llnl_open_cz" ]; then
    cp "$dir"/$version+/$platformDir/resources/hosts/llnl/host_llnl_oslic.xml    "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/$platformDir/resources/hosts/llnl/host_llnl_pascal.xml   "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/$platformDir/resources/hosts/llnl/host_llnl_quartz.xml   "$dir"/$version+/.visit/hosts/
-   cp "$dir"/$version+/$platformDir/resources/hosts/llnl/host_llnl_sierra.xml    "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/$platformDir/resources/hosts/llnl/host_llnl_surface.xml  "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/$platformDir/resources/hosts/llnl/host_llnl_syrah.xml    "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/$platformDir/resources/hosts/llnl/host_llnl_vulcan.xml   "$dir"/$version+/.visit/hosts/
