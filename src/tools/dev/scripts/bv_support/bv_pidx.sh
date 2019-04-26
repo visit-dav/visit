@@ -211,16 +211,17 @@ function build_pidx
 #        ntopts="${ntopts} -DCMAKE_INSTALL_NAME_DIR:PATH=${pidx_inst_path}/lib"
 #    fi
 
-#    if test "x${DO_MPICH}" = "xyes"; then
-#        info "mpich requested.  Configuring PIDX with mpich support."
-#        ntopts="${ntopts} -DMPI_ROOT:PATH=${VISITDIR}/mpich/${MPICH_VERSION}/${VISITARCH}"
+    if test "x${DO_MPICH}" = "xyes"; then
+        info "mpich requested.  Configuring PIDX with mpich support."
+        ntopts="${ntopts} -DMPI_C_COMPILER:PATH=${VISITDIR}/mpich/${MPICH_VERSION}/${VISITARCH}/bin/mpicc"
+        ntopts="${ntopts} -DMPI_CXX_COMPILER:PATH=${VISITDIR}/mpich/${MPICH_VERSION}/${VISITARCH}/bin/mpicxx"
 
 #        if [[ "$OPSYS" == "Darwin" ]]; then
 #            export DYLD_LIBRARY_PATH="$VISITDIR/mpich/$MPICH_VERSION/$VISITARCH/lib":$DYLD_LIBRARY_PATH
 #        else
 #            export LD_LIBRARY_PATH="$VISITDIR/mpich/$MPICH_VERSION/$VISITARCH/lib":$LD_LIBRARY_PATH
 #        fi
-#    fi
+    fi
 
     cd "$START_DIR"
 
