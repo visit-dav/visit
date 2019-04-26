@@ -193,6 +193,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define SURFACEFILTERATTRIBUTES_TMFS "ibbidddbsbb"
+#define SURFACEFILTERATTRIBUTES_TMFS "ibbidddbsib"
 
 #endif
