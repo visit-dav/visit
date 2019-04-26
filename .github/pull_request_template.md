@@ -12,6 +12,7 @@ Please select one below (*Please click check boxes AFTER submitting ticket*)
 - [ ] Bug fix
 - [ ] New feature
 - [ ] New Documentation
+- [ ] Other (please describe below)
 
 ### How Has This Been Tested?
 
@@ -28,6 +29,4 @@ Please describe the tests you've added or any tests that already cover this chan
 - [ ] I have added tests that prove my fix is effective or that my feature works
 - [ ] New and existing unit tests pass locally with my changes
 - [ ] I have added any new baselines to the repo
-
-
-*Don't forget to squash merge when this pull request is approved*
+- [ ] I have assigned reviewers (see [VisIt's PR procedures](https://visit-sphinx-github-user-manual.readthedocs.io/en/develop/dev_manual/pr_create.html#reviewers) for more information).

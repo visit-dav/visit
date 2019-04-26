@@ -70,7 +70,7 @@ Exploding domains
 """"""""""""""""""""""""""""
 
 To explode the domains of a dataset, you must first make sure that your dataset has 
-domains that can be ploted using the Subset plot. If this condition is met, all you 
+domains that can be plotted using the Subset plot. If this condition is met, all you 
 need to do is apply the Explode operator to a Subset plot of your domains. The domains
 will then be substituted in for materials and treated as such. You can then refer to
 the section on exploding materials for usage tips. 

@@ -170,7 +170,7 @@ USAGE: visit [options]::
                              to processor 0, every Pth domain starting from the
                              second to processor 1, etc.
         -lb-absolute         Assign domains by absolute domain number % P. This
-                             guarentees a given domain is always processed
+                             guarantees a given domain is always processed
                              by the same processor but can also lead to poor
                              balance when only a subset of domains is selected.
         -lb-random           Randomly assign domains to processors.
@@ -223,15 +223,15 @@ USAGE: visit [options]::
                              differencing mode and specify the two databases
                              to difference.
 
-                             Note: All options occuring on the command-line
+                             Note: All options occurring on the command-line
                              *after* the '-diff' option are treated as options
                              to the differencing script while all options
-                             occuring *before* the '-diff' option are treated
+                             occurring *before* the '-diff' option are treated
                              as options to VisIt.
 
         -diffsum <ldb> <rdb> Run only the difference summary method of the
                              'visit -diff' script, in nowin mode so its fast,
-                             print the results, and immediatly exit.
+                             print the results, and immediately exit.
 
         -force_pos_cmfe      Force use of position-based CMFE expressions.
 
@@ -287,7 +287,7 @@ USAGE: visit [options]::
                              MPI_Bcast for this. However, many implementations
                              of MPI_Bcast use a polling loop that winds up
                              keeping all processors busy and can make them
-                             unuseable by other processes. This is particulary
+                             unuseable by other processes. This is particularly
                              bad for SMPs. So, VisIt implemented its own
                              broadcast using MPI's send/receive methods. <int1>
                              specifies the number of nanoseconds a processor
@@ -312,7 +312,7 @@ USAGE: visit [options]::
                              times per second.
         -idle-timeout <int>  An integer representing the number of minutes an
                              engine is allowed to idle (e.g. sit there doing no
-                             executation whatsoever, waiting for commands from
+                             execution whatsoever, waiting for commands from
                              the viewer). If this timeout is reached, the engine
                              will terminate itself. The default is 480 minutes
                              (8 hours).
@@ -350,7 +350,7 @@ USAGE: visit [options]::
                              logs will be buffered. This can substantially improve
                              performance when a lot of debug output is generated.
                              However, also beware that when debug logs are buffered,
-                             there isn't necessarily any guarentee they will contain
+                             there isn't necessarily any guarantee they will contain
                              the most recent debug output just prior to a crash.
         -debug_<compname> <level>
                              Run specified component with <level> of output
@@ -363,7 +363,7 @@ USAGE: visit [options]::
                              Have only every Nth processor output debug logs.
                              Prevents overwhelming parallel file systems.
         -clobber_vlogs       By default, VisIt maintains debug logs from the 5
-                             most recent invokations or restarts of each VisIt
+                             most recent invocations or restarts of each VisIt
                              component. They are named something like
                              A.mdserver.5.vlog, A.engine_ser.5.vlog, etc with
                              the leading letter (A-E) indicating most to least

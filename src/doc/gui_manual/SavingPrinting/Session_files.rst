@@ -38,6 +38,3 @@ dialog. Once a file is chosen, VisIt restores the session using the
 selected session file. If you are on the Windows platform, you can
 double-click session files (.vses files) stored on your computer in order to
 directly open them with VisIt.
-
-.. spelling::
-    vses

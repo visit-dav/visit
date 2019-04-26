@@ -176,7 +176,7 @@ checked. If you made this change click **Configure** again.
 You can automate this step in your host.cmake file by adding this line to your host.cmake file:
  ``set(CMAKE_SUPPRESS_REGENERATION TRUE)``
 
-Note that setting this flag means that CMake won't automaticaly reconfigure 
+Note that setting this flag means that CMake won't automatically reconfigure 
 from within the VS IDE when changes are made to the build scripts 
 (CMakeLists.txt) or Cache entries.  You will have to manually reconfigure.
 Once reconfigured, Visual Studio will notify you the project files have been
