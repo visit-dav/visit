@@ -313,7 +313,7 @@ MultiCurveViewerEnginePluginInfo::InitializeDefaultPalette(
     multiCurve->EnlargeMultiColor(16);
 }
 
-arget: xml2python
+Target: xml2python
 Code: PyMultiCurveAttributes_getattr
 Prefix:
 Postfix:
