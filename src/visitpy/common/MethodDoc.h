@@ -146,7 +146,7 @@ extern const char *visit_List_doc;
 extern const char *visit_LoadNamedSelection_doc;
 extern const char *visit_LoadSaveAttribute_doc;
 extern const char *visit_LoadUltra_doc;
-extern const char *visit_LocalNamespace_doc;
+extern const char *visit_LocalNameSpace_doc;
 extern const char *visit_LongFileName_doc;
 extern const char *visit_MoveAndResizeWindow_doc;
 extern const char *visit_MovePlotDatabaseKeyframe_doc;

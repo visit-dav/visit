@@ -17599,7 +17599,7 @@ AddDefaultMethods()
     AddMethod("Close",  visit_Close, visit_Close_doc);
     AddMethod("Launch", visit_Launch, visit_Launch_doc);
     AddMethod("LaunchNowin", visit_LaunchNowin, visit_Launch_doc);
-    AddMethod("LocalNameSpace", visit_LocalNameSpace,visit_LocalNamespace_doc);
+    AddMethod("LocalNameSpace", visit_LocalNameSpace,visit_LocalNameSpace_doc);
     AddMethod("GetDebugLevel", visit_GetDebugLevel, visit_DebugLevel_doc);
     AddMethod("GetLastError", visit_GetLastError, visit_GetLastError_doc);
     AddMethod("SetDebugLevel", visit_SetDebugLevel, visit_DebugLevel_doc);
