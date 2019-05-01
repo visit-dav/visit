@@ -448,9 +448,10 @@ class ReturnsContainer(object):
         information of a function. 
     """
 
-    def __init__(self, title = ""):
+    def __init__(self, _return_type, title = ""):
         self.title   = ""
         self.returns = ""
+        self.return_type = _return_type
 
     def extend_current_returns(self, extension):
 	"""
@@ -470,8 +471,15 @@ class ReturnsContainer(object):
             returns:
                 A restructuredText formatted string. 
         """
-        output  = "return value : integer\n%s\n" %(self.returns)
-        return output
+        if self.return_type != "NONE":
+            if self.return_type == "AMBIGUOUS":
+                output = "return : \n%s\n" %(self.returns)
+                return output
+            else:
+                output  = "return type : %s\n%s\n" %(self.return_type, self.returns)
+                return output
+        else:
+            return ""
 
 
 class DescriptionContainer(object):
@@ -754,6 +762,8 @@ def functions_to_sphinx(funclist):
         block_list = block_dict.keys()
 
         func_name  = str(func)
+        return_type = "STARTING_VALUE"
+        print "\nFUNCTION: " + func_name
         full_doc   = full_doc[1:]
         if len(full_doc) == 0:
             continue
@@ -799,6 +809,30 @@ def functions_to_sphinx(funclist):
             elif cur_block == 'Synopsis:':
                 if not block_dict[cur_block]:
                     block_dict[cur_block] = SynopsisContainer()
+                # find output type:
+                if element.find(str(func_name + '(')) > -1:
+                    print element
+                    arrow_index = element.find('->')
+                    if arrow_index < 0:
+                        return_type_helper = "NONE"
+                    else:
+                        return_type_helper = element[arrow_index+3:]
+                    if return_type == "STARTING_VALUE":
+                        return_type = return_type_helper
+                    elif return_type != return_type_helper:
+                        return_type = "AMBIGUOUS"
+                    print "return_type: " + return_type
+                      
+                # Here I could parse element looking for func_name. Isolate the
+                # line that contains it, and extract the string following the
+                # arrow ->. This is the ouput type for the function.
+                # Extracting for func_name will sometimes return a list of
+                # locations (because there are multiple) and each of these
+                # should be checked to be the same. If they are not the same,
+                # then return type should say something like "see_below".
+                # Catches: some functions don't return anything
+                # Catches: if there is only one finding of func_name, then
+                # we can just grab the type after -> and trust it.
                 block_dict[cur_block].extend_current_synopsis(element)
 
             elif cur_block == 'Description:':
@@ -813,8 +847,18 @@ def functions_to_sphinx(funclist):
 
             elif cur_block == 'Returns:':
                 if not block_dict[cur_block]:
-                    block_dict[cur_block] = ReturnsContainer()
+                    block_dict[cur_block] = ReturnsContainer(return_type)
                 block_dict[cur_block].extend_current_returns(element)
+        if return_type == "":
+            return_type = "COULDN'T FIND"
+            print return_type
+            print block_dict['Synopsis:']
+        # Cannot get the return type for aliased functions unless I dig
+        # into the alias, which I think I might be able to do....
+        # SetDefaultMeshManagementAttributes -> SetMeshManagementAttributes
+        # SetMeshManagementAttributes *-> GetMeshManagementAttributes
+        # TimeSliderSetState -> SetTimeSliderState
+        # ToggleLockTools -> ToggleMode (this will still fail...)
                
 
         #

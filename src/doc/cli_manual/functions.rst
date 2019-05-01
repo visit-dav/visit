@@ -18,7 +18,7 @@ ActivateDatabase
 argument : type
     A string object containing the name of the database to be activated.
 
-return value : integer
+return type : integer
     ActivateDatabase returns 1 on success and 0 on failure.
 
 
@@ -66,9 +66,6 @@ AddArgument
 
 argument : type
     A string object that is added to the viewer's command line argument list.
-
-return value : integer
-    AddArgument does not return a value.
 
 
 **Description:**
@@ -125,7 +122,7 @@ operator : type
 all : type
     This is an optional integer argument that applies the operator to all plots if the value of the argument is not zero.
 
-return value : integer
+return type : integer
     The AddOperator function returns an integer value of 1 for success and 0
     for failure.
 
@@ -182,7 +179,7 @@ inheritSIL : type
 applyOperators : type
     This is an integer flag indicating whether the operators from the active plot should be applied to the new plot.
 
-return value : integer
+return type : integer
     The AddPlot function returns an integer value of 1 for success and 0 for
     failure.
 
@@ -216,9 +213,6 @@ AddWindow
 ::
 
   AddWindow()
-
-return value : integer
-    The AddWindow function does not a return value.
 
 
 **Description:**
@@ -257,7 +251,7 @@ databases : type
 method : type
     The method argument must be an integer in the range [0,3].
 
-return value : integer
+return type : integer
     The AlterDatabaseCorrelation function returns 1 on success and 0 on
     failure.
 
@@ -314,7 +308,7 @@ ApplyNamedSelection
 name : type
     The name of a named selection.  (This should have been previously createdwith a CreateNamedSelection call.)
 
-return value : integer
+return type : integer
     The ApplyNamedSelection function returns 1 for success and 0 for failure.
 
 
@@ -360,7 +354,7 @@ ChangeActivePlotsVar
 variableName : type
     The name of the new plot variable.
 
-return value : integer
+return type : integer
     The ChangeActivePlotsVar function returns an integer value of 1 for
     success and 0 for failure.
 
@@ -399,7 +393,7 @@ CheckForNewStates
 name : type
     The name argument must be a string that contains the name of a database that has been opened previously.
 
-return value : integer
+return type : integer
     The CheckForNewStates function returns 1 for success and 0 for failure.
 
 
@@ -445,7 +439,7 @@ screenX : type
 screenY : type
     The Y cooridinate of the pick point in normalized [0,1] screen space.
 
-return value : integer
+return type : integer
     The ChooseCenterOfRotation function returns 1 if successful and 0 if it
     fails.
 
@@ -492,7 +486,7 @@ ClearAllWindows
   ClearAllWindows() -> integer
   ClearWindow() -> integer
 
-return value : integer
+return type : integer
     1 on success, 0 on failure.
 
 
@@ -542,7 +536,7 @@ host : type
 simulation : type
     The name of the simulation being processed by the compute engine.
 
-return value : integer
+return type : integer
     The ClearCache and ClearCacheForAllEngines functions return 1 on success
     and 0 on failure.
 
@@ -597,7 +591,7 @@ host : type
 simulation : type
     The name of the simulation being processed by the compute engine.
 
-return value : integer
+return type : integer
     The ClearCache and ClearCacheForAllEngines functions return 1 on success
     and 0 on failure.
 
@@ -647,9 +641,6 @@ ClearMacros
 none : type
     
 
-return value : integer
-    The ClearMacros function does not return a value.
-
 
 **Description:**
 
@@ -672,9 +663,6 @@ ClearPickPoints
 ::
 
   ClearPickPoints()
-
-return value : integer
-    The ClearPickPoints function does not return a value.
 
 
 **Description:**
@@ -705,9 +693,6 @@ ClearReferenceLines
 
   ClearReferenceLines()
 
-return value : integer
-    The ClearReferenceLines function does not return a value.
-
 
 **Description:**
 
@@ -736,7 +721,7 @@ ClearViewKeyframes
 
   ClearViewKeyframes() -> integer
 
-return value : integer
+return type : integer
     The ClearViewKeyframes function returns 1 on success and 0 on failure.
 
 
@@ -781,7 +766,7 @@ ClearWindow
   ClearAllWindows() -> integer
   ClearWindow() -> integer
 
-return value : integer
+return type : integer
     1 on success, 0 on failure.
 
 
@@ -822,7 +807,7 @@ CloneWindow
 
   CloneWindow() -> integer
 
-return value : integer
+return type : integer
     The CloneWindow function returns an integer value of 1 for success and 0
     for failure.
 
@@ -873,9 +858,6 @@ Close
 none : type
     
 
-return value : integer
-    The Close function does not return a value.
-
 
 **Description:**
 
@@ -911,7 +893,7 @@ hostName : type
 simulation : type
     Optional name of a simulation.
 
-return value : integer
+return type : integer
     The CloseComputeEngine function returns an integer value of 1 for success
     and 0 for failure.
 
@@ -955,7 +937,7 @@ CloseDatabase
 name : type
     A string object containing the name of the database to close.
 
-return value : integer
+return type : integer
     The CloseDatabase function returns 1 on success and 0 on failure.
 
 
@@ -994,7 +976,7 @@ ColorTableNames
 
   ColorTableNames() -> tuple
 
-return value : integer
+return type : tuple
     The ColorTableNames function returns a tuple of strings containing the
     names of the color tables that have been defined.
 
@@ -1033,7 +1015,7 @@ ConstructDataBinning
 i : type
     An object of type ConstructDataBinningAttributes. This object specifies the options for constructing a data binning.
 
-return value : integer
+return type : integer
     Returns 1 on success, 0 on failure.
 
 
@@ -1077,7 +1059,7 @@ CopyAnnotationsToWindow
 
   CopyAnnotationsToWindow(source, dest) -> integer
   CopyLightingToWindow(source, dest) -> integer
-  CopyViewTowindow(source, dest) -> integer
+  CopyViewToWindow(source, dest) -> integer
   CopyPlotsToWindow(source, dest) -> integer
 
 
@@ -1087,7 +1069,7 @@ source : type
 dest : type
     The index (an integer from 1 to 16) of the destination window.
 
-return value : integer
+return type : integer
     The Copy functions return an integer value of 1 for success and 0 for
     failure.
 
@@ -1133,7 +1115,7 @@ CopyLightingToWindow
 
   CopyAnnotationsToWindow(source, dest) -> integer
   CopyLightingToWindow(source, dest) -> integer
-  CopyViewTowindow(source, dest) -> integer
+  CopyViewToWindow(source, dest) -> integer
   CopyPlotsToWindow(source, dest) -> integer
 
 
@@ -1143,7 +1125,7 @@ source : type
 dest : type
     The index (an integer from 1 to 16) of the destination window.
 
-return value : integer
+return type : integer
     The Copy functions return an integer value of 1 for success and 0 for
     failure.
 
@@ -1189,7 +1171,7 @@ CopyPlotsToWindow
 
   CopyAnnotationsToWindow(source, dest) -> integer
   CopyLightingToWindow(source, dest) -> integer
-  CopyViewTowindow(source, dest) -> integer
+  CopyViewToWindow(source, dest) -> integer
   CopyPlotsToWindow(source, dest) -> integer
 
 
@@ -1199,7 +1181,7 @@ source : type
 dest : type
     The index (an integer from 1 to 16) of the destination window.
 
-return value : integer
+return type : integer
     The Copy functions return an integer value of 1 for success and 0 for
     failure.
 
@@ -1245,7 +1227,7 @@ CopyViewToWindow
 
   CopyAnnotationsToWindow(source, dest) -> integer
   CopyLightingToWindow(source, dest) -> integer
-  CopyViewTowindow(source, dest) -> integer
+  CopyViewToWindow(source, dest) -> integer
   CopyPlotsToWindow(source, dest) -> integer
 
 
@@ -1255,7 +1237,7 @@ source : type
 dest : type
     The index (an integer from 1 to 16) of the destination window.
 
-return value : integer
+return type : integer
     The Copy functions return an integer value of 1 for success and 0 for
     failure.
 
@@ -1311,7 +1293,7 @@ annotName : type
 visibleFlag : type
     An optional integer to indicate if the annotation object should be createdwith initial visibility on or off. Pass 0 for off and non-zero for on.By default, VisIt creates annotation objects with visibility on. If youwish only to pass the visibleFlag argument, there is no need to also passthe annotName argument.
 
-return value : integer
+return type : annotation object
     CreateAnnotationObject is a factory function that creates annotation
     objects of different types. The return value, if a valid annotation type is
     provided, is an annotation object. If the function fails, VisItException is
@@ -1376,7 +1358,7 @@ databases : type
 method : type
     An integer in the range [0,3] that determines the correlation method.
 
-return value : integer
+return type : integer
     The CreateDatabaseCorrelation function returns 1 on success and 0 on
     failure.
 
@@ -1457,7 +1439,7 @@ name : type
 properties : type
     This optional argument lets you pass a SelectionProperties object containingthe properties that will be used to create the named selection. When this argument is omitted, the named selection will always be associated withthe active plot. You can use this argument to set up more complex named selections that may be associated with plots or databases.
 
-return value : integer
+return type : integer
     The CreateNamedSelection function returns 1 for success and 0 for failure.
 
 
@@ -1504,7 +1486,7 @@ DatabasePlugins
 host : type
     The name of the host for which we want database plugins.
 
-return value : integer
+return type : dictionary
     The DatabasePlugins functions returns a dictionary.
 
 
@@ -1533,9 +1515,6 @@ DeIconifyAllWindows
 ::
 
   DeIconifyAllWindows()
-
-return value : integer
-    The DeIconifyAllWindows function does not return a value.
 
 
 **Description:**
@@ -1578,7 +1557,7 @@ variableName : type
 expression : type
     The expression definition.
 
-return value : integer
+return type : integer
     The DefineExpression functions return 1 on success and 0 on failure.
 
 
@@ -1641,7 +1620,7 @@ variableName : type
 expression : type
     The expression definition.
 
-return value : integer
+return type : integer
     The DefineExpression functions return 1 on success and 0 on failure.
 
 
@@ -1704,7 +1683,7 @@ variableName : type
 expression : type
     The expression definition.
 
-return value : integer
+return type : integer
     The DefineExpression functions return 1 on success and 0 on failure.
 
 
@@ -1767,7 +1746,7 @@ variableName : type
 expression : type
     The expression definition.
 
-return value : integer
+return type : integer
     The DefineExpression functions return 1 on success and 0 on failure.
 
 
@@ -1834,9 +1813,6 @@ file : type
 type : type
     An optional string defining the output type of the expression.Default type: 'scalar'Avalaible types: 'scalar','vector','tensor','array','curve'Note: Use only one of the 'source' or 'file' arguments.If both are used the 'source' argument overrides 'file'.
 
-return value : integer
-    The DefineExpression functions do not return a value.
-
 
 **Description:**
 
@@ -1866,7 +1842,7 @@ variableName : type
 expression : type
     The expression definition.
 
-return value : integer
+return type : integer
     The DefineExpression functions return 1 on success and 0 on failure.
 
 
@@ -1929,7 +1905,7 @@ variableName : type
 expression : type
     The expression definition.
 
-return value : integer
+return type : integer
     The DefineExpression functions return 1 on success and 0 on failure.
 
 
@@ -1992,7 +1968,7 @@ variableName : type
 expression : type
     The expression definition.
 
-return value : integer
+return type : integer
     The DefineExpression functions return 1 on success and 0 on failure.
 
 
@@ -2055,7 +2031,7 @@ variableName : type
 expression : type
     The expression definition.
 
-return value : integer
+return type : integer
     The DefineExpression functions return 1 on success and 0 on failure.
 
 
@@ -2105,7 +2081,7 @@ DeleteActivePlots
   DeleteActivePlots() -> integer
   DeleteAllPlots() -> integer
 
-return value : integer
+return type : integer
     The Delete functions return an integer value of 1 for success and 0 for
     failure.
 
@@ -2144,7 +2120,7 @@ DeleteAllPlots
   DeleteActivePlots() -> integer
   DeleteAllPlots() -> integer
 
-return value : integer
+return type : integer
     The Delete functions return an integer value of 1 for success and 0 for
     failure.
 
@@ -2186,7 +2162,7 @@ DeleteDatabaseCorrelation
 name : type
     A string object containing the name of the database correlation to delete.
 
-return value : integer
+return type : integer
     The DeleteDatabaseCorrelation function returns 1 on success and 0 on
     failure.
 
@@ -2235,7 +2211,7 @@ DeleteExpression
 variableName : type
     The name of the expression variable to be deleted.
 
-return value : integer
+return type : integer
     The DeleteExpression function returns 1 on success and 0 on failure.
 
 
@@ -2272,7 +2248,7 @@ DeleteNamedSelection
 name : type
     The name of a named selection.
 
-return value : integer
+return type : integer
     The DeleteNamedSelection function returns 1 for success and 0 for failure.
 
 
@@ -2321,9 +2297,6 @@ plotIndex : type
 
 frame : type
     A zero-based integer value corresponding to a database keyframe at a particular animation frame.
-
-return value : integer
-    DeletePlotDatabaseKeyframe does not return a value.
 
 
 **Description:**
@@ -2374,9 +2347,6 @@ plotIndex : type
 
 frame : type
     A zero-based integer value corresponding to a plot keyframe at a particular animation frame.
-
-return value : integer
-    DeletePlotKeyframe does not return a value.
 
 
 **Description:**
@@ -2435,9 +2405,6 @@ DeleteViewKeyframe
 frame : type
     A zero-based integer value corresponding to a view keyframe at a particular animation frame.
 
-return value : integer
-    DeleteViewKeyframe returns 1 on success and 0 on failure.
-
 
 **Description:**
 
@@ -2488,7 +2455,7 @@ DeleteWindow
 
   DeleteWindow() -> integer
 
-return value : integer
+return type : integer
     The DeleteWindow function returns an integer value of 1 for success and 0
     for failure.
 
@@ -2528,7 +2495,7 @@ opIndex : type
 applyAll : type
     An integer flag that causes all plots in the plot list to be affected when it is non-zero.
 
-return value : integer
+return type : integer
     DemoteOperator returns 1 on success and 0 on failure.
 
 
@@ -2575,9 +2542,6 @@ DisableRedraw
 
   DisableRedraw()
 
-return value : integer
-    The DisableRedraw function does not return a value.
-
 
 **Description:**
 
@@ -2614,7 +2578,7 @@ DrawPlots
 
   DrawPlots() -> integer
 
-return value : integer
+return type : integer
     The DrawPlots function returns an integer value of 1 for success and 0 for
     failure.
 
@@ -2645,7 +2609,7 @@ EnableTool
 
 ::
 
-  EnabledTool(toolIndex, activeFlag)
+  EnableTool(toolIndex, activeFlag)
 
 
 toolIndex : type
@@ -2653,9 +2617,6 @@ toolIndex : type
 
 activeFlag : type
     A value of 1 enables the tool while a value of 0 disables the tool.
-
-return value : integer
-    The EnableTool function returns 1 on success and 0 on failure.
 
 
 **Description:**
@@ -2694,7 +2655,7 @@ ExecuteMacro
 name : type
     The name of the macro to execute.
 
-return value : integer
+return type : value
     The ExecuteMacro function returns the value returned from the user's macro function.
 
 
@@ -2737,7 +2698,7 @@ e : type
 o (optional) : type
     A dictionary containing a key/value mapping to set options needed by thedatabase exporter.  The default values can be obtained in the appropriateformat using GetExportOptions('plugin').
 
-return value : integer
+return type : integer
     Returns 1 on success, 0 on failure.
 
 
@@ -2777,7 +2738,7 @@ Expressions
 
   Expressions() -> tuple of expression tuples
 
-return value : integer
+return type : tuple of expression tuples
     The Expressions function returns a tuple of tuples that contain two
     strings that give the expression name and definition.
 
@@ -2818,7 +2779,7 @@ GetActiveContinuousColorTable
   GetActiveContinuousColorTable() -> string
   GetActiveDiscreteColorTable() -> string
 
-return value : integer
+return type : string
     Both functions return a string object containing the name of a color table.
 
 
@@ -2861,7 +2822,7 @@ GetActiveDiscreteColorTable
   GetActiveContinuousColorTable() -> string
   GetActiveDiscreteColorTable() -> string
 
-return value : integer
+return type : string
     Both functions return a string object containing the name of a color table.
 
 
@@ -2903,7 +2864,7 @@ GetActiveTimeSlider
 
   GetActiveTimeSlider() -> string
 
-return value : integer
+return type : string
     The GetActiveTimeSlider function returns a string containing the name of
     the active time slider.
 
@@ -2947,7 +2908,7 @@ GetAnimationAttributes
 none : type
     
 
-return value : integer
+return type : AnimationAttributes object
     The GetAnimationAttributes function returns an AnimationAttributes object.
 
 
@@ -2974,7 +2935,7 @@ GetAnimationTimeout
 
   GetAnimationTimeout() -> integer
 
-return value : integer
+return type : integer
     The GetAnimationTimeout function returns an integer that contains the time
     interval, measured in milliseconds, between the rendering of animation
     frames.
@@ -3004,7 +2965,7 @@ GetAnnotationAttributes
 
   GetAnnotationAttributes() -> AnnotationAttributes object
 
-return value : integer
+return type : AnnotationAttributes object
     The GetAnnotationAttributes function returns an AnnotationAttributes
     object that contains the annotation settings for the active visualization
     window.
@@ -3046,7 +3007,7 @@ GetAnnotationObject
 string : type
     The name of the annotation object as returned by GetAnnotationObjectNames.
 
-return value : integer
+return type : Annotation object
     GetAnnotationObject returns a reference to an annotation object that was
     created using the CreateAnnotationObject function.
 
@@ -3088,7 +3049,7 @@ GetAnnotationObjectNames
 
   GetAnnotationObjectNames() -> tuple of strings
 
-return value : integer
+return type : tuple of strings
     GetAnnotationObjectNames returns a tuple of strings of the names of all
     annotation objects defined for the currently active window.
 
@@ -3116,7 +3077,7 @@ GetCallbackArgumentCount
 callbackName : type
     The name of a callback function. This name is a member of the tuple returnedby GetCallbackNames().
 
-return value : integer
+return type : integer
     The GetCallbackArgumentCount function returns the number of arguments
     associated with a particular callback function.
 
@@ -3141,7 +3102,7 @@ GetCallbackNames
 
   GetCallbackNames() -> tuple of string objects
 
-return value : integer
+return type : tuple of string objects
     GetCallbackNames returns a tuple containing the names of valid callback
     function identifiers for use in RegisterCallback().
 
@@ -3169,7 +3130,7 @@ GetDatabaseNStates
 
   GetDatabaseNStates() -> integer
 
-return value : integer
+return type : integer
     Returns the number of time states in the active database or 0 if there is
     no active database.
 
@@ -3206,7 +3167,7 @@ GetDebugLevel
 level : type
     A string '1', '2', '3', '4', '5' with an optional 'b' suffix to indicatewhether the output should be buffered. A value of '1' is a low debug level , which should be used to produce little output while a value of 5 should produce a lot of debug output.
 
-return value : integer
+return type : integer
     The GetDebugLevel function returns the debug level of the VisIt module.
 
 
@@ -3242,7 +3203,7 @@ GetDefaultFileOpenOptions
 pluginName : type
     The name of a plugin.
 
-return value : integer
+return type : Dictionary
     Returns a dictionary containing the options.
 
 
@@ -3273,7 +3234,7 @@ GetDomains
 
   GetDomains() -> tuple of strings
 
-return value : integer
+return type : tuple of strings
     GetDomains returns a tuple of strings.
 
 
@@ -3314,7 +3275,7 @@ GetEngineList
 flag (optional) : type
     If flag is a non-zero integer then the function returns a tuple of tuples with information about simulations.
 
-return value : integer
+return : 
     GetEngineList returns a tuple of strings that contain the names of the
     computers on which compute engines are running. If flag is a non-zero
     integer argument then the function returns a tuple of tuples where each
@@ -3366,7 +3327,7 @@ engine (optional) : type
 sim (optional) : type
     When both engine and sim arguments are passed, then the EngineProperties object for the simulation is returned.
 
-return value : integer
+return type : EngineProperties
     The EngineProperties object for the specified compute engine/sim.
 
 
@@ -3396,7 +3357,7 @@ GetGlobalAttributes
 
   GetGlobalAttributes() -> GlobalAttributes object
 
-return value : integer
+return type : GlobalAttributes object
     Returns a GlobalAttributes object that has been initialized.
 
 
@@ -3430,7 +3391,7 @@ GetGlobalLineoutAttributes
 
   GetGlobalLineoutAttributes() -> GlobalLineoutAttributes object
 
-return value : integer
+return type : GlobalLineoutAttributes object
     Returns an initialized GlobalLineoutAttributes object.
 
 
@@ -3474,7 +3435,7 @@ GetInteractorAttributes
 
   GetInteractorAttributes() -> InteractorAttributes object
 
-return value : integer
+return type : InteractorAttributes object
     Returns an initialized InteractorAttributes object.
 
 
@@ -3510,7 +3471,7 @@ GetKeyframeAttributes
 
   GetKeyframeAttributes() -> KeyframeAttributes object
 
-return value : integer
+return type : KeyframeAttributes object
     GetKeyframeAttributes returns an initialized KeyframeAttributes object.
 
 
@@ -3543,7 +3504,7 @@ GetLastError
 
   GetLastError() -> string
 
-return value : integer
+return type : string
     GetLastError returns a string containing the last error message that VisIt
     issued.
 
@@ -3576,7 +3537,7 @@ GetLight
 index : type
     A zero-based integer index into the light list. Index can be in the range [0,7].
 
-return value : integer
+return type : LightAttributes object
     GetLight returns a LightAttributes object.
 
 
@@ -3620,7 +3581,7 @@ GetLocalHostName
   GetLocalHostName() -> string
   GetLocalUserName() -> string
 
-return value : integer
+return type : string
     Both functions return a string.
 
 
@@ -3652,7 +3613,7 @@ GetLocalUserName
   GetLocalHostName() -> string
   GetLocalUserName() -> string
 
-return value : integer
+return type : string
     Both functions return a string.
 
 
@@ -3687,7 +3648,7 @@ GetMachineProfile
 hostname : type
     
 
-return value : integer
+return type : MachineProfile
     MachineProfile for hostname
 
 
@@ -3705,7 +3666,7 @@ GetMachineProfileNames
 
   GetMachineProfileNames() -> [hostname1, hostname2, ...]
 
-return value : integer
+return type : [hostname1, hostname2, ...]
     List of MachineProfile hostnames
 
 
@@ -3723,7 +3684,7 @@ GetMaterialAttributes
 
   GetMaterialAttributes() -> MaterialAttributes object
 
-return value : integer
+return type : MaterialAttributes object
     Returns a MaterialAttributes object.
 
 
@@ -3766,7 +3727,7 @@ GetMaterials
 
   GetMaterials() -> tuple of strings
 
-return value : integer
+return type : tuple of strings
     The GetMaterials function returns a tuple of strings.
 
 
@@ -3800,9 +3761,9 @@ GetMeshManagementAttributes
 
 ::
 
-  GetMeshmanagementAttributes() -> MeshmanagementAttributes object
+  GetMeshManagementAttributes() -> MeshmanagementAttributes object
 
-return value : integer
+return type : MeshmanagementAttributes object
     Returns a MeshmanagementAttributes object.
 
 
@@ -3849,7 +3810,7 @@ db : type
 ts : type
     An optional integer indicating the time state at which to open the database.
 
-return value : integer
+return type : avtDatabaseMetaData object
     The GetMetaData function returns an avtDatabaseMetaData object.
 
 
@@ -3879,7 +3840,7 @@ GetNumPlots
 
   GetNumPlots() -> integer
 
-return value : integer
+return type : integer
     Returns the number of plots in the active window.
 
 
@@ -3915,7 +3876,7 @@ GetOperatorOptions
 index : type
     The index of the operator within the plot's list of operators.
 
-return value : integer
+return type : operator attributes object
     The GetOperatorOptions function returns an operator attributes object.
 
 
@@ -3945,7 +3906,7 @@ GetPickAttributes
 
   GetPickAttributes() -> PickAttributes object
 
-return value : integer
+return type : PickAttributes object
     GetPickAttributes returns a PickAttributes object.
 
 
@@ -3991,7 +3952,7 @@ GetPickOutput
   GetPickOutput() -> string
   GetPickOutputObject() -> dictionary
 
-return value : integer
+return type : string
     GetPickOutput returns a string containing the output from the last pick.
     GetPickOutputObject returns a dictionary produced by the last pick.
 
@@ -4029,7 +3990,7 @@ GetPickOutputObject
   GetPickOutput() -> string
   GetPickOutputObject() -> dictionary
 
-return value : integer
+return type : dictionary
     GetPickOutput returns a string containing the output from the last pick.
     GetPickOutputObject returns a dictionary produced by the last pick.
 
@@ -4066,7 +4027,7 @@ GetPipelineCachingMode
 
   GetPipelineCachingMode() -> integer
 
-return value : integer
+return type : integer
     The GetPipelineCachingMode function returns 1 if pipelines are being
     cached and 0 otherwise.
 
@@ -4097,7 +4058,7 @@ GetPlotInformation
 
   GetPlotInformation() -> dictionary
 
-return value : integer
+return type : dictionary
     GetPlotInformation returns a dictionary.
 
 
@@ -4136,7 +4097,7 @@ GetPlotList
 none : type
     
 
-return value : integer
+return type : PlotList object
     The GetPlotList function returns a PlotList object.
 
 
@@ -4175,7 +4136,7 @@ GetPlotOptions
 none : type
     
 
-return value : integer
+return type : plot attributes object
     The GetPlotOptions function returns a plot attributes object whose type varies
     depending the selected plots.
 
@@ -4205,7 +4166,7 @@ GetPreferredFileFormats
   GetPreferredFileFormats() -> tuple of strings
   Arguments: none
 
-return value : integer
+return type : tuple of strings
     The GetPreferredFileFormats returns the current list of preferred plugins.
 
 
@@ -4236,7 +4197,7 @@ GetQueryOutputObject
   GetQueryOutputXML() -> string
   GetQueryOutputObject() -> dictionary or value
 
-return value : integer
+return type : dictionary or value
     GetQueryOutputString returns a string.
     GetQueryOutputValue returns a single double precision number or a tuple of
     double precision numbers.
@@ -4279,7 +4240,7 @@ GetQueryOutputString
   GetQueryOutputXML() -> string
   GetQueryOutputObject() -> dictionary or value
 
-return value : integer
+return type : string
     GetQueryOutputString returns a string.
     GetQueryOutputValue returns a single double precision number or a tuple of
     double precision numbers.
@@ -4322,7 +4283,7 @@ GetQueryOutputValue
   GetQueryOutputXML() -> string
   GetQueryOutputObject() -> dictionary or value
 
-return value : integer
+return type : double, tuple of doubles
     GetQueryOutputString returns a string.
     GetQueryOutputValue returns a single double precision number or a tuple of
     double precision numbers.
@@ -4365,7 +4326,7 @@ GetQueryOutputXML
   GetQueryOutputXML() -> string
   GetQueryOutputObject() -> dictionary or value
 
-return value : integer
+return type : string
     GetQueryOutputString returns a string.
     GetQueryOutputValue returns a single double precision number or a tuple of
     double precision numbers.
@@ -4405,7 +4366,7 @@ GetQueryOverTimeAttributes
 
   GetQueryOverTimeAttributes() -> QueryOverTimeAttributes object
 
-return value : integer
+return type : QueryOverTimeAttributes object
     GetQueryOverTimeAttributes returns a QueryOverTimeAttributes object.
 
 
@@ -4448,7 +4409,7 @@ GetQueryParameters
 
   GetQueryParameters(name) -> python dictionary
 
-return value : integer
+return type : python dictionary
     A python dictionary.
 
 
@@ -4485,7 +4446,7 @@ GetRenderingAttributes
 
   GetRenderingAttributes() -> RenderingAttributes object
 
-return value : integer
+return type : RenderingAttributes object
     Returns a RenderingAttributes object.
 
 
@@ -4531,7 +4492,7 @@ GetSaveWindowAttributes
 
   GetSaveWindowAttributes() -> SaveWindowAttributes object
 
-return value : integer
+return type : SaveWindowAttributes object
     This function returns a VisIt SaveWindowAttributes object that contains
     the attributes used in saving windows.
 
@@ -4570,7 +4531,7 @@ GetSelection
 name : type
     The name of the selection whose properties we want to retrieve.
 
-return value : integer
+return type : SelectionProperties object
     The GetSelection function returns a SelectionProperties object.
 
 
@@ -4608,7 +4569,7 @@ GetSelectionList
 none : type
     
 
-return value : integer
+return type : SelectionList object
     The GetSelectionList function returns a SelectionList object.
 
 
@@ -4639,7 +4600,7 @@ GetSelectionSummary
 name : type
     The name of the selection whose summary we want to retrieve.
 
-return value : integer
+return type : SelectionSummary object
     The GetSelectionSummary function returns a SelectionSummary object.
 
 
@@ -4668,7 +4629,7 @@ GetTimeSliders
 
   GetTimeSliders() -> tuple of strings
 
-return value : integer
+return type : tuple of strings
     GetTimeSliders returns a tuple of strings.
 
 
@@ -4708,7 +4669,7 @@ GetUltraScript
 none : type
     
 
-return value : integer
+return type : string
     The GetUltraScript function returns a filename.
 
 
@@ -4730,7 +4691,7 @@ GetView2D
   GetView3D() -> View3DAttributes object
   GetViewAxisArray() -> ViewAxisArrayAttributes object
 
-return value : integer
+return type : View2DAttributes object
     Both functions return objects that represent the curve, 2D, or 3D view
     information.
 
@@ -4778,7 +4739,7 @@ GetView3D
   GetView3D() -> View3DAttributes object
   GetViewAxisArray() -> ViewAxisArrayAttributes object
 
-return value : integer
+return type : View3DAttributes object
     Both functions return objects that represent the curve, 2D, or 3D view
     information.
 
@@ -4826,7 +4787,7 @@ GetViewAxisArray
   GetView3D() -> View3DAttributes object
   GetViewAxisArray() -> ViewAxisArrayAttributes object
 
-return value : integer
+return type : ViewAxisArrayAttributes object
     Both functions return objects that represent the curve, 2D, or 3D view
     information.
 
@@ -4874,7 +4835,7 @@ GetViewCurve
   GetView3D() -> View3DAttributes object
   GetViewAxisArray() -> ViewAxisArrayAttributes object
 
-return value : integer
+return type : ViewCurveAttributes object
     Both functions return objects that represent the curve, 2D, or 3D view
     information.
 
@@ -4919,7 +4880,7 @@ GetWindowInformation
 
   GetWindowInformation() -> WindowInformation object
 
-return value : integer
+return type : WindowInformation object
     The GetWindowInformation object returns a WindowInformation object.
 
 
@@ -4967,7 +4928,7 @@ HideActivePlots
 
   HideActivePlots() -> integer
 
-return value : integer
+return type : integer
     The HideActivePlots function returns an integer value of 1 for success and
     0 for failure.
 
@@ -5001,13 +4962,13 @@ HideToolbars
 ::
 
   HideToolbars() -> integer
-  HideToolbars(allWindows) ->integer
+  HideToolbars(allWindows) -> integer
 
 
 allWindows : type
     An optional integer value that tells VisIt to hide the toolbars for all windows when it is non-zero.
 
-return value : integer
+return type : integer
     The HideToolbars function returns 1 on success and 0 on failure.
 
 
@@ -5039,9 +5000,6 @@ IconifyAllWindows
 
   IconifyAllWindows()
 
-return value : integer
-    The IconifyAllWindows function does not return a value.
-
 
 **Description:**
 
@@ -5072,7 +5030,7 @@ InitializeNamedSelectionVariables
 name : type
     The name of the named selection to initialize.
 
-return value : integer
+return type : integer
     The InitializeNamedSelectionVariables function returns 1 on success and 0 on failure.
 
 
@@ -5098,9 +5056,6 @@ InvertBackgroundColor
 ::
 
   InvertBackgroundColor()
-
-return value : integer
-    The InvertBackgroundColor function does not return a value.
 
 
 **Description:**
@@ -5142,7 +5097,7 @@ Launch
 program : type
     The complete path to the top level 'visit' script.
 
-return value : integer
+return type : integer
     The Launch functions return 1 for success and 0 for failure
 
 
@@ -5182,7 +5137,7 @@ LaunchNowin
 program : type
     The complete path to the top level 'visit' script.
 
-return value : integer
+return type : integer
     The Launch functions return 1 for success and 0 for failure
 
 
@@ -5220,7 +5175,7 @@ Lineout
   Lineout(keywordarg1=arg1, keywrdarg2=arg2,...,keywordargn=argn ) -> integer
 
 
-return value : integer
+return type : integer
     The Lineout function returns 1 on success and 0 on failure.
 
 
@@ -5263,9 +5218,6 @@ ListDomains
   ListDomains()
   ListMaterials()
 
-return value : integer
-    The List functions do not return a value.
-
 
 **Description:**
 
@@ -5296,9 +5248,6 @@ ListMaterials
 
   ListDomains()
   ListMaterials()
-
-return value : integer
-    The List functions do not return a value.
 
 
 **Description:**
@@ -5331,7 +5280,7 @@ ListPlots
   ListPlots() -> string
   ListPlots(stringOnly) -> string
 
-return value : integer
+return type : string
     The ListPlots function returns a string containing a representation of the.
     plot list.
 
@@ -5371,9 +5320,6 @@ filename : type
 
 object : type
     The object to load or save.
-
-return value : integer
-    success or failure
 
 
 **Description:**
@@ -5417,7 +5363,7 @@ engineName : type
 simName : type
     (optional) The name of the simulation that saved the selection.
 
-return value : integer
+return type : integer
     The LoadNamedSelection function returns 1 for success and 0 for failure.
 
 
@@ -5458,9 +5404,6 @@ LoadUltra
 none : type
     
 
-return value : integer
-    LoadUltra does not return a value.
-
 
 **Description:**
 
@@ -5492,19 +5435,16 @@ LocalNameSpace
 
 ::
 
-  LocalNamespace()
+  LocalNameSpace()
 
 
 none : type
     
 
-return value : integer
-    The LocalNamespace function does not return a value.
-
 
 **Description:**
 
-    The LocalNamespace function tells the VisIt module to add plugin functions
+    The LocalNameSpace function tells the VisIt module to add plugin functions
     to the global namespace when the VisIt module is imported into a
     stand-alone Python interpreter. This is the default behavior when using
     VisIt's cli program.
@@ -5515,7 +5455,7 @@ return value : integer
 ::
 
   import visit
-  visit.LocalNamespace()
+  visit.LocalNameSpace()
   visit.Launch()
 
 
@@ -5532,7 +5472,7 @@ LongFileName
 filename : type
     A string object containing the short filename to expand.
 
-return value : integer
+return type : string
     The LongFileName function returns a string.
     Notes:
     This function returns the input argument unless you are on the Windows
@@ -5576,7 +5516,7 @@ w : type
 h : type
     The new height for the window being moved.
 
-return value : integer
+return type : integer
     MoveAndResizeWindow returns 1 on success and 0 on failure.
 
 
@@ -5611,9 +5551,6 @@ oldFrame : type
 
 newFrame : type
     The new animation frame where the keyframe will be moved.
-
-return value : integer
-    MovePlotDatabaseKeyframe does not return a value.
 
 
 **Description:**
@@ -5663,9 +5600,6 @@ oldFrame : type
 
 newFrame : type
     The new animation frame where the keyframe will be moved.
-
-return value : integer
-    MovePlotKeyframe does not return a value.
 
 
 **Description:**
@@ -5722,7 +5656,7 @@ MovePlotOrderTowardFirst
 index : type
     The index of the plot that will be moved within the plot list.
 
-return value : integer
+return type : integer
     The MovePlotOrderTowardFirst function returns 1 on success and 0 on failure.
 
 
@@ -5751,7 +5685,7 @@ MovePlotOrderTowardLast
 index : type
     The index of the plot that will be moved within the plot list.
 
-return value : integer
+return type : integer
     The MovePlotOrderTowardLast function returns 1 on success and 0 on failure.
 
 
@@ -5783,7 +5717,7 @@ oldFrame : type
 newFrame : type
     The new animation frame where the keyframe will be moved.
 
-return value : integer
+return type : integer
     MoveViewKeyframe returns 1 on success and 0 on failure.
 
 
@@ -5836,7 +5770,7 @@ x : type
 y : type
     The new y location for the window being moved.
 
-return value : integer
+return type : integer
     MoveWindow returns 1 on success and 0 on failure.
 
 
@@ -5893,7 +5827,7 @@ preserve_coord (optional) : type
 curve_plot_type (optional) : type
     An integer indicating whether the output should be on a single axis orwith multiple axes. 0 -> single Y axis (default), 1 -> multiple Y Axes.
 
-return value : integer
+return type : dictionary
     NodePick returns a python dictionary of the pick results, unless do_time is specified,
     then a time curve is created in a new window.
 
@@ -5932,7 +5866,7 @@ NumColorTableNames
 
   NumColorTableNames() -> integer
 
-return value : integer
+return type : integer
     The NumColorTableNames function return an integer.
 
 
@@ -5968,7 +5902,7 @@ NumOperatorPlugins
 
   NumOperatorPlugins() -> integer
 
-return value : integer
+return type : integer
     The NumOperatorPlugins function returns an integer.
 
 
@@ -5996,7 +5930,7 @@ NumPlotPlugins
 
   NumPlotPlugins() -> integer
 
-return value : integer
+return type : integer
     The NumPlotPlugins function returns an integer.
 
 
@@ -6034,7 +5968,7 @@ hostName : type
 args : type
     Optional tuple of command line arguments for the engine.Alternative arguments:MachineProfile object to load with OpenComputeEngine call
 
-return value : integer
+return type : integer
     The OpenComputeEngine function returns an integer value of 1 for success
     and 0 for failure.
 
@@ -6086,7 +6020,7 @@ timeIndex : type
 dbPluginIndex : type
     An optional string containing the name of the plugin to use. Note that this string must also include the plugin's version number (with few exceptions,almost all plugins' version numbers are 1.0). Note also that you must capitalize the spelling identically to what the plugin'sGeneralPluginInfo::GetName() method returns. For example, "XYZ_1.0"is the string you would use for the XYZ plugin.
 
-return value : integer
+return type : integer
     The OpenDatabase function returns an integer value of 1 for success and 0
     for failure.
 
@@ -6132,7 +6066,7 @@ host : type
 args : type
     A tuple of strings containing command line flags for the metadata server.Alternative arguments:MachineProfile object to load with OpenMDServer call
 
-return value : integer
+return type : integer
     The OpenMDServer function returns 1 on success and 0 on failure.
 
 
@@ -6192,7 +6126,7 @@ OperatorPlugins
 
   OperatorPlugins() -> tuple of strings
 
-return value : integer
+return type : tuple of strings
     The OperatorPlugins function returns a tuple of strings.
 
 
@@ -6230,7 +6164,7 @@ databaseName : type
 state : type
     The time state at which to open the database.
 
-return value : integer
+return type : integer
     The OverlayDatabase function returns an integer value of 1 for success and
     0 for failure.
 
@@ -6298,7 +6232,7 @@ preserve_coord (optional) : type
 curve_plot_type (optional) : type
     An integer indicating whether the output should be on a single axis orwith multiple axes. 0 -> single Y axis (default), 1 -> multiple Y Axes.
 
-return value : integer
+return type : dictionary
     ZonePick returns a python dictionary of the pick results, unless do_time is specified,
     then a time curve is created in a new window.
     If the picked variable is node centered, the variable values are grouped according to
@@ -6365,7 +6299,7 @@ preserve_coord (optional) : type
 curve_plot_type (optional) : type
     An integer indicating whether the output should be on a single axis orwith multiple axes. 0 -> single Y axis (default), 1 -> multiple Y Axes.
 
-return value : integer
+return type : dictionary
     PickByGlobalNode returns a python dictionary of pick results.
 
 
@@ -6432,7 +6366,7 @@ preserve_coord (optional) : type
 curve_plot_type (optional) : type
     An integer indicating whether the output should be on a single axis orwith multiple axes. 0 -> single Y axis (default), 1 -> multiple Y Axes.
 
-return value : integer
+return type : dictionary
     PickByGlobalZone returns a python dictionary of pick results.
 
 
@@ -6504,7 +6438,7 @@ curve_plot_type (optional) : type
 return_curves (optional) : type
     An integer indicating whether or not to return the curve points. 1 ->return points, 0 (default) -> do not return points. Currently, this is only available when performing a pick range
 
-return value : integer
+return type : dictionary
     PickByNode returns a python dictionary of the pick results, unless do_time is specified,
     then a time curve is created in a new window.
     If the picked variable is zone centered, the variable values are grouped according to
@@ -6577,7 +6511,7 @@ preserve_coord (optional) : type
 curve_plot_type (optional) : type
     An integer indicating whether the output should be on a single axis orwith multiple axes. 0 -> single Y axis (default), 1 -> multiple Y Axes.
 
-return value : integer
+return type : dictionary
     PickByNodeLabel returns a python dictionary of the pick results, unless do_time is specified,
     then a time curve is created in a new window.
     If the picked variable is node centered, the variable values are grouped according to
@@ -6660,7 +6594,7 @@ curve_plot_type (optional) : type
 return_curves (optional) : type
     An integer indicating whether or not to return the curve points. 1 ->return points, 0 (default) -> do not return points. Currently, this is only available when performing a pick range
 
-return value : integer
+return type : dictionary
     PickByZone returns a python dictionary of the pick results, unless do_time is specified,
     then a time curve is created in a new window.
     If the picked variable is node centered, the variable values are grouped according to
@@ -6733,7 +6667,7 @@ preserve_coord (optional) : type
 curve_plot_type (optional) : type
     An integer indicating whether the output should be on a single axis orwith multiple axes. 0 -> single Y axis (default), 1 -> multiple Y Axes.
 
-return value : integer
+return type : dictionary
     PickByZoneLabel returns a python dictionary of the pick results, unless do_time is specified,
     then a time curve is created in a new window.
     If the picked variable is node centered, the variable values are grouped according to
@@ -6785,7 +6719,7 @@ PlotPlugins
 
   PlotPlugins() -> tuple of strings
 
-return value : integer
+return type : tuple of strings
     The PlotPlugins function returns a tuple of strings.
 
 
@@ -6845,7 +6779,7 @@ preserve_coord (optional) : type
 curve_plot_type (optional) : type
     An integer indicating whether the output should be on a single axis orwith multiple axes. 0 -> single Y axis (default), 1 -> multiple Y Axes.
 
-return value : integer
+return type : STARTING_VALUE
     NodePick returns a python dictionary of the pick results, unless do_time is specified,
     then a time curve is created in a new window.
 
@@ -6884,7 +6818,7 @@ PrintWindow
 
   PrintWindow() -> integer
 
-return value : integer
+return type : integer
     The PrintWindow function returns an integer value of 1 for success and 0
     for failure.
 
@@ -6924,7 +6858,7 @@ opIndex : type
 applyAll : type
     An integer flag that causes all plots in the plot list to be affected when it is non-zero.
 
-return value : integer
+return type : integer
     PromoteOperator returns 1 on success and 0 on failure.
 
 
@@ -6978,7 +6912,7 @@ source : type
 file : type
     A string containing the path to a Python Query Filter script file.Note: Use only one of the 'source' or 'file' arguments.If both are used the 'source' argument overrides 'file'.
 
-return value : integer
+return type : integer
     The PythonQuery function returns 1 on success and 0 on failure.
 
 
@@ -6996,7 +6930,7 @@ Queries
 
   Queries() -> tuple of strings
 
-return value : integer
+return type : tuple of strings
     The Queries function returns a tuple of strings.
 
 
@@ -7023,7 +6957,7 @@ QueriesOverTime
 
   QueriesOverTime() -> tuple of strings
 
-return value : integer
+return type : tuple of strings
     Returns a tuple of strings.
 
 
@@ -7074,7 +7008,7 @@ name : type
 dict : type
     An optional dictionary containing additional query arguments. namedarg1, namedarg2,...An optional list of named arguments supplying additional query parameters.
 
-return value : integer
+return : 
     The Query function returns either a String (default), Value(s), or Object.
     The return type can be customized via calls to SetQueryOutputToXXX(), where
     'XXX' is 'String', 'Value', or 'Object'. For more information on these
@@ -7132,7 +7066,7 @@ name : type
 dict : type
     An optional dictionary containing additional query arguments. namedarg1, namedarg2,...An optional list of named arguments supplying additional query parameters.
 
-return value : integer
+return type : integer
     The QueryOverTime function returns 1 on success and 0 on failure.
 
 
@@ -7179,7 +7113,7 @@ ReOpenDatabase
 databaseName : type
     A string containing the name of the database to open.
 
-return value : integer
+return type : integer
     The ReOpenDatabase function returns an integer value of 1 for success and
     0 for failure.
 
@@ -7236,7 +7170,7 @@ directory : type
 clear : type
     A flag indicating whether the host profile list should cleared first.
 
-return value : integer
+return type : integer
     The ReadHostProfilesFromDirectory function returns an integer value of 1 for success and
     0 for failure.
 
@@ -7265,7 +7199,7 @@ RecenterView
 
   RecenterView() -> integer
 
-return value : integer
+return type : integer
     The RecenterView function returns 1 on success and 0 on failure.
 
 
@@ -7299,7 +7233,7 @@ RedoView
 
   RedoView() -> integer
 
-return value : integer
+return type : integer
     The RedoView function returns 1 on success and 0 on failure.
 
 
@@ -7335,7 +7269,7 @@ RedrawWindow
 
   RedrawWindow() -> integer
 
-return value : integer
+return type : integer
     The RedrawWindow function returns 1 on success and 0 on failure.
 
 
@@ -7363,39 +7297,6 @@ return value : integer
   RedrawWindow()
 
 
-ReenamePickLabel
-----------------
-
-**Synopsis:**
-
-::
-
-  RenamePickLabel(oldLabel, newLabel) -> integer
-
-
-oldLabel : type
-    The old pick label to replace. (e.g. 'A', 'B').
-
-newLabel : type
-    A new label to display in place of the old label.
-
-return value : integer
-    The RenamePickLabel function returns 1 on success and 0 on failure.
-
-
-**Description:**
-
-    The RenamePickLabel function can be used to replace an automatically generated
-    pick label such as 'A' with a user-defined string.
-
-
-**Example:**
-
-::
-
-  RenamePickLabel('A', 'Point of interest')
-
-
 RegisterCallback
 ----------------
 
@@ -7412,7 +7313,7 @@ callbackname : type
 callback : type
     A Python function, typically with one argument by which VisIt passes the object that caused the callback to be called.
 
-return value : integer
+return type : integer
     RegisterCallback returns 1 on success.
 
 
@@ -7448,9 +7349,6 @@ name : type
 
 callable : type
     A Python function that will be associated with the macro name.
-
-return value : integer
-    The RegisterMacro function does not return a value.
 
 
 **Description:**
@@ -7496,7 +7394,7 @@ all : type
 index : type
     The zero-based integer index into a plot's operator list that specifies which operator is to be deleted.
 
-return value : integer
+return type : integer
     All functions return an integer value of 1 for success and 0 for failure.
 
 
@@ -7548,7 +7446,7 @@ all : type
 index : type
     The zero-based integer index into a plot's operator list that specifies which operator is to be deleted.
 
-return value : integer
+return type : integer
     All functions return an integer value of 1 for success and 0 for failure.
 
 
@@ -7618,7 +7516,7 @@ all : type
 index : type
     The zero-based integer index into a plot's operator list that specifies which operator is to be deleted.
 
-return value : integer
+return type : integer
     All functions return an integer value of 1 for success and 0 for failure.
 
 
@@ -7658,10 +7556,6 @@ RemovePicks
 
   RemovePicks()
 
-return value : integer
-    A string containing the letters of all picks that were removed,
-    sepparated by comma.
-
 
 **Description:**
 
@@ -7682,6 +7576,39 @@ return value : integer
   RemovePicks('A, B, D')
 
 
+RenamePickLabel
+---------------
+
+**Synopsis:**
+
+::
+
+  RenamePickLabel(oldLabel, newLabel) -> integer
+
+
+oldLabel : type
+    The old pick label to replace. (e.g. 'A', 'B').
+
+newLabel : type
+    A new label to display in place of the old label.
+
+return type : integer
+    The RenamePickLabel function returns 1 on success and 0 on failure.
+
+
+**Description:**
+
+    The RenamePickLabel function can be used to replace an automatically generated
+    pick label such as 'A' with a user-defined string.
+
+
+**Example:**
+
+::
+
+  RenamePickLabel('A', 'Point of interest')
+
+
 ReplaceDatabase
 ---------------
 
@@ -7699,7 +7626,7 @@ databaseName : type
 timeState : type
     A zero-based integer containing the time state that should be made active once the database has been replaced.
 
-return value : integer
+return type : integer
     The ReplaceDatabase function returns an integer value of 1 for success and
     0 for failure.
 
@@ -7739,7 +7666,7 @@ ResetLineoutColor
 
   ResetLineoutColor() -> integer
 
-return value : integer
+return type : integer
     ResetLineoutColor returns 1 on success and 0 on failure.
 
 
@@ -7771,7 +7698,7 @@ operatorType : type
 all : type
     An optional integer argument that tells the function to reset the operator options for all plots regardless of whether or not they are active.
 
-return value : integer
+return type : integer
     The ResetOperatorOptions function returns an integer value of 1 for
     success and 0 for failure.
 
@@ -7813,7 +7740,7 @@ ResetPickLetter
 
   ResetPickLetter() -> integer
 
-return value : integer
+return type : integer
     ResetPickLetter returns 1 on success and 0 on failure.
 
 
@@ -7836,7 +7763,7 @@ ResetPlotOptions
 plotType : type
     A string containing the name of the plot type.
 
-return value : integer
+return type : integer
     The ResetPlotOptions function returns an integer value of 1 for success
     and 0 for failure.
 
@@ -7874,7 +7801,7 @@ ResetView
 
   ResetView() -> integer
 
-return value : integer
+return type : integer
     The ResetView function returns 1 on success and 0 on failure.
 
 
@@ -7924,7 +7851,7 @@ w : type
 h : type
     The new height for the window.
 
-return value : integer
+return type : integer
     ResizeWindow returns 1 on success and 0 on failure.
 
 
@@ -7958,7 +7885,7 @@ filename : type
 visitDir : type
     An integer flag that indicates whether the filename to be restored islocated in the user's VisIt directory. If the flag is set to 1 then thesession file is assumed to be located in the user's VisIt directory otherwise the filename must contain an absolute path. tuple of stringsA tuple of strings representing the maping from sources as specifiedin the original session file to new sources. Sources in the originalsession file are numbered starting from 0. So, this tuple of strings simply contains the new names for each of the sources, in order.
 
-return value : integer
+return type : integer
     RestoreSession returns 1 on success and 0 on failure.
 
 
@@ -8005,7 +7932,7 @@ filename : type
 visitDir : type
     An integer flag that indicates whether the filename to be restored islocated in the user's VisIt directory. If the flag is set to 1 then thesession file is assumed to be located in the user's VisIt directory otherwise the filename must contain an absolute path. tuple of stringsA tuple of strings representing the maping from sources as specifiedin the original session file to new sources. Sources in the originalsession file are numbered starting from 0. So, this tuple of strings simply contains the new names for each of the sources, in order.
 
-return value : integer
+return type : integer
     RestoreSession returns 1 on success and 0 on failure.
 
 
@@ -8052,9 +7979,6 @@ filename : type
 object : type
     The object to load or save.
 
-return value : integer
-    success or failure
-
 
 **Description:**
 
@@ -8089,7 +8013,7 @@ SaveNamedSelection
 name : type
     The name of a named selection.
 
-return value : integer
+return type : integer
     The SaveNamedSelection function returns 1 for success and 0 for failure.
 
 
@@ -8135,7 +8059,7 @@ SaveSession
 filename : type
     The filename argument is the filename that is used to save the sessionfile. The filename is relative to the current working directory.
 
-return value : integer
+return type : integer
     The SaveSession function returns 1 on success and 0 on failure.
 
 
@@ -8182,7 +8106,7 @@ SaveWindow
 
   SaveWindow() -> string
 
-return value : integer
+return type : string
     The SaveWindow function returns a string containing the name of the file
     that was saved.
 
@@ -8239,9 +8163,6 @@ command : type
 argument : type
     An argument to the command.
 
-return value : integer
-    The SendSimulationCommand method does not return a value.
-
 
 **Description:**
 
@@ -8266,7 +8187,7 @@ SetActiveContinuousColorTable
 name : type
     The name of the color table to use for the active color table. The namemust be present in the tuple returned by the ColorTableNames function.
 
-return value : integer
+return type : integer
     Both functions return 1 on success and 0 on failure.
 
 
@@ -8312,7 +8233,7 @@ SetActiveDiscreteColorTable
 name : type
     The name of the color table to use for the active color table. The namemust be present in the tuple returned by the ColorTableNames function.
 
-return value : integer
+return type : integer
     Both functions return 1 on success and 0 on failure.
 
 
@@ -8357,7 +8278,7 @@ SetActivePlots
 plots : type
     A tuple of integer plot indices starting at zero. A single integer is also accepted
 
-return value : integer
+return type : integer
     The SetActivePlots function returns an integer value of 1 for success and
     0 for failure.
 
@@ -8398,7 +8319,7 @@ SetActiveTimeSlider
 tsName : type
     A string containing the name of the time slider that should be made active.
 
-return value : integer
+return type : integer
     SetActiveTimeSlider returns 1 on success and 0 on failure.
 
 
@@ -8444,7 +8365,7 @@ windowIndex : type
 raiseWindow : type
     This is an optional integer argument that raises and activates the window ifset to 1. If omitted, the default behavior is to raise and activate the window.
 
-return value : integer
+return type : integer
     The SetActiveWindow function returns an integer value of 1 for success and
     0 for failure.
 
@@ -8481,7 +8402,7 @@ SetAnimationTimeout
 
   SetAnimationTimeout(milliseconds) -> integer
 
-return value : integer
+return type : integer
     The SetAnimationTimeout function returns 1 for success and 0 for failure.
 
 
@@ -8520,7 +8441,7 @@ SetAnnotationAttributes
 atts : type
     An AnnotationAttributes object containing the annotation settings.
 
-return value : integer
+return type : integer
     Both functions return 1 on success and 0 on failure.
 
 
@@ -8567,7 +8488,7 @@ SetBackendType
 name : type
     VTK, VTKM.
 
-return value : integer
+return type : integer
     Both functions return 1 on success and 0 on failure.
 
 
@@ -8610,7 +8531,7 @@ y : type
 z : type
     The z component of the center of rotation.
 
-return value : integer
+return type : integer
     The SetCenterOfRotation function returns 1 on success and 0 on failure.
 
 
@@ -8654,7 +8575,7 @@ SetColorTexturingEnabled
 enabled : type
     A integer value. Non-zero values enable color texturing and zero disables it.
 
-return value : integer
+return type : integer
     The SetColorTexturingEnabled function returns 1 on success and 0 on failure.
 
 
@@ -8689,7 +8610,7 @@ SetCreateMeshQualityExpressions
 val : type
     Either a zero (false) or non-zero (true) integer value to indicate ifMesh Quality expressions should be automatically created when a database is opened.
 
-return value : integer
+return type : integer
     The SetCreateMeshQualityExpressions function returns 1 on success and 0 on failure.
 
 
@@ -8726,7 +8647,7 @@ SetCreateTimeDerivativeExpressions
 val : type
     Either a zero (false) or non-zero (true) integer value to indicate ifTime Derivative expressions should be automatically created when a database is opened.
 
-return value : integer
+return type : integer
     The SetCreateTimeDerivativeExpressions function returns 1 on success and 0 on failure.
 
 
@@ -8763,7 +8684,7 @@ SetCreateVectorMagnitudeExpressions
 val : type
     Either a zero (false) or non-zero (true) integer value to indicate ifVector magnitude expressions should be automatically created when a database is opened.
 
-return value : integer
+return type : integer
     The SetCreateVectorMagnitudeExpressions function returns 1 on success and 0 on failure.
 
 
@@ -8803,7 +8724,7 @@ method : type
 whenToCreate : type
     An integer that tells VisIt when to automatically create database correlations.
 
-return value : integer
+return type : integer
     SetDatabaseCorrelationOptions returns 1 on success and 0 on failure.
 
 
@@ -8876,9 +8797,6 @@ SetDebugLevel
 level : type
     A string '1', '2', '3', '4', '5' with an optional 'b' suffix to indicatewhether the output should be buffered. A value of '1' is a low debug level , which should be used to produce little output while a value of 5 should produce a lot of debug output.
 
-return value : integer
-    The GetDebugLevel function returns the debug level of the VisIt module.
-
 
 **Description:**
 
@@ -8913,7 +8831,7 @@ SetDefaultAnnotationAttributes
 atts : type
     An AnnotationAttributes object containing the annotation settings.
 
-return value : integer
+return type : integer
     Both functions return 1 on success and 0 on failure.
 
 
@@ -8954,7 +8872,7 @@ SetDefaultFileOpenOptions
 
 ::
 
-  GetDefaultFileOpenOptions(pluginName, options) -> integer
+  SetDefaultFileOpenOptions(pluginName, options) -> integer
 
 
 pluginName : type
@@ -8963,7 +8881,7 @@ pluginName : type
 options : type
     A dictionary containing the new default options for that plugin.
 
-return value : integer
+return type : integer
     The SetDefaultFileOpenOptions function returns 1 on success and 0 on
     failure.
 
@@ -9000,7 +8918,7 @@ SetDefaultInteractorAttributes
 atts : type
     An InteractorAttributes object that contains the new interactor attributes that you want to use.
 
-return value : integer
+return type : integer
     SetInteractorAttributes returns 1 on success and 0 on failure.
 
 
@@ -9045,7 +8963,7 @@ SetDefaultMaterialAttributes
 atts : type
     A MaterialAttributes object containing the new settings.
 
-return value : integer
+return type : integer
     Both functions return 1 on success and 0 on failure.
 
 
@@ -9087,9 +9005,9 @@ SetDefaultMeshManagementAttributes
 
 ::
 
-  GetMeshmanagementAttributes() -> MeshmanagementAttributes object
+  GetMeshManagementAttributes() -> MeshmanagementAttributes object
 
-return value : integer
+return type : STARTING_VALUE
     Returns a MeshmanagementAttributes object.
 
 
@@ -9141,7 +9059,7 @@ operatorIndex : type
 all : type
     An optional integer argument that tells the function to apply the operator attributes to all plots containing the specified operator if the value of the argument is non-zero.
 
-return value : integer
+return type : integer
     All functions return an integer value of 1 for success and 0 for failure.
 
 
@@ -9198,7 +9116,7 @@ SetDefaultPickAttributes
 atts : type
     A PickAttributes object containing the new pick settings.
 
-return value : integer
+return type : integer
     All functions return 1 on success and 0 on failure.
 
 
@@ -9240,7 +9158,7 @@ SetDefaultPlotOptions
 atts : type
     Any type of plot attributes object.
 
-return value : integer
+return type : integer
     All functions return an integer value of 1 for success and 0 for failure.
 
 
@@ -9289,7 +9207,7 @@ SetGlobalLineoutAttributes
 atts : type
     A GlobalLineoutAttributes object that contains the new settings.
 
-return value : integer
+return type : integer
     The SetGlobalLineoutAttributes function returns 1 on success and 0 on
     failure.
 
@@ -9334,7 +9252,7 @@ SetInteractorAttributes
 atts : type
     An InteractorAttributes object that contains the new interactor attributes that you want to use.
 
-return value : integer
+return type : integer
     SetInteractorAttributes returns 1 on success and 0 on failure.
 
 
@@ -9378,7 +9296,7 @@ SetKeyframeAttributes
 kfAtts : type
     A KeyframeAttributes object that contains the new keyframing attributes to use.
 
-return value : integer
+return type : integer
     SetKeyframeAttributes returns 1 on success and 0 on failure.
 
 
@@ -9420,7 +9338,7 @@ index : type
 light : type
     A LightAttributes object containing the properties to use for the specified light.
 
-return value : integer
+return type : integer
     SetLight returns 1 on success and 0 on failure.
 
 
@@ -9484,7 +9402,7 @@ SetMaterialAttributes
 atts : type
     A MaterialAttributes object containing the new settings.
 
-return value : integer
+return type : integer
     Both functions return 1 on success and 0 on failure.
 
 
@@ -9526,9 +9444,9 @@ SetMeshManagementAttributes
 
 ::
 
-  GetMeshmanagementAttributes() -> MeshmanagementAttributes object
+  GetMeshManagementAttributes() -> MeshmanagementAttributes object
 
-return value : integer
+return type : STARTING_VALUE
     Returns a MeshmanagementAttributes object.
 
 
@@ -9571,7 +9489,7 @@ SetNamedSelectionAutoApply
 flag : type
     Non-zero values turn on selection auto apply mode.
 
-return value : integer
+return type : integer
     The SetNamedSelectionAutoApply function returns 1 on success and 0 on failure.
 
 
@@ -9613,7 +9531,7 @@ operatorIndex : type
 all : type
     An optional integer argument that tells the function to apply the operator attributes to all plots containing the specified operator if the value of the argument is non-zero.
 
-return value : integer
+return type : integer
     All functions return an integer value of 1 for success and 0 for failure.
 
 
@@ -9670,7 +9588,7 @@ SetPickAttributes
 atts : type
     A PickAttributes object containing the new pick settings.
 
-return value : integer
+return type : integer
     All functions return 1 on success and 0 on failure.
 
 
@@ -9707,7 +9625,7 @@ SetPipelineCachingMode
 
   SetPipelineCachingMode(mode) -> integer
 
-return value : integer
+return type : integer
     The SetPipelineCachingMode function returns 1 for success and 0 for
     failure.
 
@@ -9755,9 +9673,6 @@ frame : type
 
 state : type
     A zero-based integer index representating the database time state that we're going to use at the specified animation frame.
-
-return value : integer
-    The SetPlotDatabaseState function does not return a value.
 
 
 **Description:**
@@ -9808,7 +9723,7 @@ index : type
 description : type
     A new description that will be shown in the plot list so the plot can be identified readily.
 
-return value : integer
+return type : integer
     The SetPlotDescription function returns 1 on success and 0 on failure.
 
 
@@ -9839,7 +9754,7 @@ SetPlotFollowsTime
 val : type
     An optional flag indicating whether the plot should follow the time slider.The default behavior is for the plot to follow the time slider.
 
-return value : integer
+return type : integer
     The function returns 1 on success and 0 on failure.
 
 
@@ -9873,9 +9788,6 @@ start : type
 
 end : type
     A zero-based integer representing the animation frame where the plot disappears from the visualization.
-
-return value : integer
-    The SetPlotFrameRange function does not return a value.
 
 
 **Description:**
@@ -9925,7 +9837,7 @@ SetPlotOptions
 atts : type
     Any type of plot attributes object.
 
-return value : integer
+return type : integer
     All functions return an integer value of 1 for success and 0 for failure.
 
 
@@ -9974,7 +9886,7 @@ SetPlotOrderToFirst
 index : type
     The index of the plot within the plot list.
 
-return value : integer
+return type : integer
     The SetPlotOrderToFirst function returns 1 on success and 0 on failure.
 
 
@@ -10006,7 +9918,7 @@ SetPlotOrderToLast
 index : type
     The index of the plot within the plot list.
 
-return value : integer
+return type : integer
     The SetPlotOrderToLast function returns 1 on success and 0 on failure.
 
 
@@ -10042,7 +9954,7 @@ silr : type
 all : type
     An optional argument that tells the function if the SIL restriction should be applied to all plots in the plot list.
 
-return value : integer
+return type : integer
     The SetPlotSILRestriction function returns an integer value of 1 for
     success and 0 for failure.
 
@@ -10104,9 +10016,6 @@ Options: : type
 "double" : type
     
 
-return value : integer
-    The SetPrecisionType function does not return a value.
-
 
 **Description:**
 
@@ -10132,7 +10041,7 @@ SetPreferredFileFormats
 pluginIDs : type
     A tuple of plugin IDs to be attempted first when opening files.
 
-return value : integer
+return type : integer
     The SetPreferredFileFormats method does not return a value.
 
 
@@ -10163,9 +10072,6 @@ SetPrinterAttributes
 
 atts : type
     A PrinterAttributes object.
-
-return value : integer
-    The SetPrinterAttributes function does not return a value.
 
 
 **Description:**
@@ -10207,9 +10113,6 @@ SetQueryFloatFormat
 format_string : type
     A string object that provides a printf style floating point format.
 
-return value : integer
-    The SetQueryFloatFormat does not return a value.
-
 
 **Description:**
 
@@ -10240,9 +10143,6 @@ SetQueryOutputToObject
 ::
 
   SetQueryOutputToObject()
-
-return value : integer
-    SetQueryOutputToObject does not return a value.
 
 
 **Description:**
@@ -10277,9 +10177,6 @@ SetQueryOutputToString
 ::
 
   SetQueryOutputToString()
-
-return value : integer
-    SetQueryOutputToString does not return a value.
 
 
 **Description:**
@@ -10317,9 +10214,6 @@ SetQueryOutputToValue
 ::
 
   SetQueryOutputToValue()
-
-return value : integer
-    SetQueryOutputToValue does not return a value.
 
 
 **Description:**
@@ -10361,7 +10255,7 @@ SetQueryOverTimeAttributes
 atts : type
     A QueryOverTimeAttributes object containing the new settings to use for queries over time.
 
-return value : integer
+return type : integer
     All functions return 1 on success and 0 on failure.
 
 
@@ -10409,7 +10303,7 @@ SetRemoveDuplicateNodes
 val : type
     Either a zero (false) or non-zero (true) integer value to indicate if duplicate nodes in fully disconnected unstructured grids should be automatically removed by visit.
 
-return value : integer
+return type : integer
     The SetRemoveDuplicateNodes function returns 1 on success and 0 on failure.
 
 
@@ -10446,7 +10340,7 @@ SetRenderingAttributes
 atts : type
     A RenderingAttributes object that contains the rendering attributes thatwe want to make VisIt use.
 
-return value : integer
+return type : integer
     The SetRenderingAttributes function returns 1 on success and 0 on failure.
 
 
@@ -10494,9 +10388,6 @@ SetSaveWindowAttributes
 atts : type
     A SaveWindowAttributes object.
 
-return value : integer
-    The SetSaveWindowAttributes object does not return a value.
-
 
 **Description:**
 
@@ -10542,7 +10433,7 @@ SetTimeSliderState
 state : type
     A zero-based integer containing the time state that we want to make active.
 
-return value : integer
+return type : integer
     The SetTimeSliderState function returns 1 on success and 0 on failure.
 
 
@@ -10585,7 +10476,7 @@ SetTreatAllDBsAsTimeVarying
 val : type
     Either a zero (false) or non-zero (true) integer value to indicate if all databases should be treated as time varying (true) or not (false).
 
-return value : integer
+return type : integer
     The SetTreatAllDBsAsTimeVarying function returns 1 on success and 0 on failure.
 
 
@@ -10624,7 +10515,7 @@ SetTryHarderCyclesTimes
 val : type
     Either a zero (false) or non-zero (true) integer value to indicate ifVisIt read cycle/time information for all timestates when opening a database.
 
-return value : integer
+return type : integer
     The SetTryHarderCyclesTimes function returns 1 on success and 0 on failure.
 
 
@@ -10662,7 +10553,7 @@ SetUltraScript
 filename : type
     The name of the file to be used as the ultra script when LoadUltra is called.
 
-return value : integer
+return type : integer
     The SetUltraScript function returns 1.
 
 
@@ -10688,7 +10579,7 @@ SetView2D
 view : type
     A ViewAttributes object containing the view.
 
-return value : integer
+return type : integer
     All functions returns 1 on success and 0 on failure.
 
 
@@ -10744,7 +10635,7 @@ SetView3D
 view : type
     A ViewAttributes object containing the view.
 
-return value : integer
+return type : integer
     All functions returns 1 on success and 0 on failure.
 
 
@@ -10800,7 +10691,7 @@ SetViewAxisArray
 view : type
     A ViewAttributes object containing the view.
 
-return value : integer
+return type : integer
     All functions returns 1 on success and 0 on failure.
 
 
@@ -10856,7 +10747,7 @@ SetViewCurve
 view : type
     A ViewAttributes object containing the view.
 
-return value : integer
+return type : integer
     All functions returns 1 on success and 0 on failure.
 
 
@@ -10909,7 +10800,7 @@ SetViewExtentsType
 type : type
     An integer 0, 1 or one of the strings: "original", "actual".
 
-return value : integer
+return type : integer
     SetViewExtentsType returns 1 on success and 0 on failure.
 
 
@@ -10957,7 +10848,7 @@ SetViewKeyframe
 
   SetViewKeyframe() -> integer
 
-return value : integer
+return type : integer
     The SetViewKeyframe function returns 1 on success and 0 on failure.
 
 
@@ -11024,7 +10915,7 @@ width : type
 height : type
     Height of the window area in pixels.
 
-return value : integer
+return type : integer
     The SetWindowArea function returns 1 on success and 0 on failure.
 
 
@@ -11058,7 +10949,7 @@ SetWindowLayout
 layout : type
     An integer that specifies the window layout. (1,2,4,8,9,16 are valid)
 
-return value : integer
+return type : integer
     The SetWindowLayout function returns an integer value of 1 for success and
     0 for failure.
 
@@ -11095,7 +10986,7 @@ SetWindowMode
 mode : type
     A string containing the new mode: 'navigate', 'zoom', 'lineout', 'pick', 'zone pick', 'node pick', 'spreadsheet pick'.
 
-return value : integer
+return type : integer
     The SetWindowMode function returns 1 on success and 0 on failure.
 
 
@@ -11131,7 +11022,7 @@ ShowAllWindows
 
   ShowAllWindows() -> integer
 
-return value : integer
+return type : integer
     The ShowAllWindows function returns 1 on success and 0 on failure.
 
 
@@ -11163,13 +11054,13 @@ ShowToolbars
 ::
 
   ShowToolbars() -> integer
-  ShowToolbars(allWindows) ->integer
+  ShowToolbars(allWindows) -> integer
 
 
 allWindows : type
     An integer value that tells VisIt to show the toolbars for all windows when it is non-zero.
 
-return value : integer
+return type : integer
     The ShowToolbars function returns 1 on success and 0 on failure.
 
 
@@ -11200,9 +11091,6 @@ Source
 ::
 
   Source(filename)
-
-return value : integer
-    The Source function does not return a value.
 
 
 **Description:**
@@ -11238,7 +11126,7 @@ SuppressMessages
 int level : type
     An integer value of 1,2,3 or 4
 
-return value : integer
+return type : nteger
     The SuppressMessages function returns the previous suppression level on success and 0 on failure.
 
 
@@ -11274,7 +11162,7 @@ SuppressQueryOutputOff
   SuppressQueryOutputOn() ->integer
   SuppressQueryOutputOff() ->integer
 
-return value : integer
+return type : nteger
     The SuppressQueryOutput function returns 1 on success and 0 on failure.
 
 
@@ -11312,7 +11200,7 @@ SuppressQueryOutputOn
   SuppressQueryOutputOn() ->integer
   SuppressQueryOutputOff() ->integer
 
-return value : integer
+return type : nteger
     The SuppressQueryOutput function returns 1 on success and 0 on failure.
 
 
@@ -11349,7 +11237,7 @@ TimeSliderGetNStates
 
   TimeSliderGetNStates() -> integer
 
-return value : integer
+return type : integer
     Returns an integer containing the number of time states for the current
     time slider.
 
@@ -11385,7 +11273,7 @@ TimeSliderNextState
 
   TimeSliderNextState() -> integer
 
-return value : integer
+return type : integer
     The TimeSliderNextState function returns 1 on success and 0 on failure.
 
 
@@ -11420,7 +11308,7 @@ TimeSliderPreviousState
 
   TimeSliderPreviousState() -> integer
 
-return value : integer
+return type : integer
     The TimeSliderPreviousState function returns 1 on success and 0 on failure.
 
 
@@ -11458,7 +11346,7 @@ TimeSliderSetState
 state : type
     A zero-based integer containing the time state that we want to make active.
 
-return value : integer
+return type : STARTING_VALUE
     The SetTimeSliderState function returns 1 on success and 0 on failure.
 
 
@@ -11504,7 +11392,7 @@ ToggleBoundingBoxMode
   ToggleMaintainViewMode() -> integer
   ToggleSpinMode() -> integer
 
-return value : integer
+return type : integer
     All functions return 1 on success and 0 on failure.
 
 
@@ -11576,7 +11464,7 @@ ToggleCameraViewMode
   ToggleMaintainViewMode() -> integer
   ToggleSpinMode() -> integer
 
-return value : integer
+return type : integer
     All functions return 1 on success and 0 on failure.
 
 
@@ -11648,7 +11536,7 @@ ToggleFullFrameMode
   ToggleMaintainViewMode() -> integer
   ToggleSpinMode() -> integer
 
-return value : integer
+return type : integer
     All functions return 1 on success and 0 on failure.
 
 
@@ -11720,7 +11608,7 @@ ToggleLockTime
   ToggleMaintainViewMode() -> integer
   ToggleSpinMode() -> integer
 
-return value : integer
+return type : integer
     All functions return 1 on success and 0 on failure.
 
 
@@ -11792,7 +11680,7 @@ ToggleLockTools
   ToggleMaintainViewMode() -> integer
   ToggleSpinMode() -> integer
 
-return value : integer
+return type : STARTING_VALUE
     All functions return 1 on success and 0 on failure.
 
 
@@ -11864,7 +11752,7 @@ ToggleLockViewMode
   ToggleMaintainViewMode() -> integer
   ToggleSpinMode() -> integer
 
-return value : integer
+return type : integer
     All functions return 1 on success and 0 on failure.
 
 
@@ -11936,7 +11824,7 @@ ToggleMaintainViewMode
   ToggleMaintainViewMode() -> integer
   ToggleSpinMode() -> integer
 
-return value : integer
+return type : integer
     All functions return 1 on success and 0 on failure.
 
 
@@ -12008,7 +11896,7 @@ ToggleSpinMode
   ToggleMaintainViewMode() -> integer
   ToggleSpinMode() -> integer
 
-return value : integer
+return type : integer
     All functions return 1 on success and 0 on failure.
 
 
@@ -12084,7 +11972,7 @@ TurnDomainsOff
   TurnDomainsOff(string) -> integer
   TurnDomainsOff(tuple of strings) -> integer
 
-return value : integer
+return type : integer
     The Turn functions return an integer with a value of 1 for success or 0
     for failure.
 
@@ -12144,7 +12032,7 @@ TurnDomainsOn
   TurnDomainsOff(string) -> integer
   TurnDomainsOff(tuple of strings) -> integer
 
-return value : integer
+return type : integer
     The Turn functions return an integer with a value of 1 for success or 0
     for failure.
 
@@ -12204,7 +12092,7 @@ TurnMaterialsOff
   TurnDomainsOff(string) -> integer
   TurnDomainsOff(tuple of strings) -> integer
 
-return value : integer
+return type : integer
     The Turn functions return an integer with a value of 1 for success or 0
     for failure.
 
@@ -12264,7 +12152,7 @@ TurnMaterialsOn
   TurnDomainsOff(string) -> integer
   TurnDomainsOff(tuple of strings) -> integer
 
-return value : integer
+return type : integer
     The Turn functions return an integer with a value of 1 for success or 0
     for failure.
 
@@ -12313,9 +12201,6 @@ UndoView
 
   UndoView()
 
-return value : integer
-    The UndoView function does not return a value.
-
 
 **Description:**
 
@@ -12355,7 +12240,7 @@ name : type
 properties : type
     An optional SelectionProperties object that contains the selection properties to use when reevaluating the selection.
 
-return value : integer
+return type : integer
     The UpdateNamedSelection function returns 1 on success and 0 on failure.
 
 
@@ -12391,7 +12276,7 @@ Version
 
   Version() -> string
 
-return value : integer
+return type : string
     The Version function return a string that represents VisIt's version.
 
 
@@ -12418,9 +12303,6 @@ WriteConfigFile
 ::
 
   WriteConfigFile()
-
-return value : integer
-    The WriteconfigFile function does not return a value.
 
 
 **Description:**
@@ -12499,7 +12381,7 @@ preserve_coord (optional) : type
 curve_plot_type (optional) : type
     An integer indicating whether the output should be on a single axis orwith multiple axes. 0 -> single Y axis (default), 1 -> multiple Y Axes.
 
-return value : integer
+return type : dictionary
     ZonePick returns a python dictionary of the pick results, unless do_time is specified,
     then a time curve is created in a new window.
     If the picked variable is node centered, the variable values are grouped according to
