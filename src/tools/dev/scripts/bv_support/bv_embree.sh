@@ -49,11 +49,10 @@ function bv_embree_info
         export EMBREE_INSTALL_DIR_NAME=embree-$EMBREE_VERSION.x86_64.linux
     fi
     export EMBREE_COMPATIBILITY_VERSION=${EMBREE_COMPATIBILITY_VERSION:-"${EMBREE_VERSION}"}
-    export EMBREE_BUILD_DIR=${EMBREE_BUILD_DIR:-"${EMBREE_VERSION}"}
     export EMBREE_URL=${EMBREE_URL:-"https://github.com/embree/embree/releases/download/v${EMBREE_VERSION}/"}
-
-    export EMBREE_MD5_CHECKSUM=""
-    export EMBREE_SHA256_CHECKSUM=""
+    export EMBREE_BUILD_DIR=${EMBREE_BUILD_DIR:-"${EMBREE_VERSION}"}
+    export EMBREE_MD5_CHECKSUM="7a1c3d12e8732cfee7d389f81d008798"
+    export EMBREE_SHA256_CHECKSUM="7671cc37c4dc4e3da00b2b299b906b35816f058efea92701e7b89574b15e652d"
 }
 
 function bv_embree_print

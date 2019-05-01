@@ -243,7 +243,3 @@ windows that have plots. If you want to save tiled images, make sure to check
 the **Save tiled** check box in the **Set Save options** window. To get an idea of how VisIt
 saves your visualization windows into a tiled image, see :numref:`Figure %s<save_tiled_fig>` and 
 :numref:`Figure %s<save_tiled_fig1>`.
-
-.. spelling::
-   lum
-   exr

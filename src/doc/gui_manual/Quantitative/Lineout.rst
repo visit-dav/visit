@@ -273,6 +273,3 @@ Sampling and Refline labels
 
 These options are the same as described for individual lineouts.  Use these
 options when you want your choices to apply to *all* lineouts.
-
-.. spelling::
-    Refline

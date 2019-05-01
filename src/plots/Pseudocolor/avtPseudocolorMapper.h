@@ -57,6 +57,8 @@
 //  Creation:   August 24, 2016 
 //
 //  Modifications:
+//    Kathleen Biagas, Wed Apr 10 09:06:05 PDT 2019
+//    Added pointSize.
 //
 // ****************************************************************************
 
@@ -70,6 +72,7 @@ class avtPseudocolorMapper : public avtVariableMapper
     void                       SetDrawSurface(bool);
     void                       SetDrawWireframe(bool);
     void                       SetDrawPoints(bool);
+    void                       SetPointSize(int);
     void                       SetWireframeColor(double rgb[3]);
     void                       SetPointsColor(double rgb[3]);
 
@@ -86,6 +89,7 @@ class avtPseudocolorMapper : public avtVariableMapper
     bool   drawSurface;
     bool   drawWireframe;
     bool   drawPoints;
+    int    pointSize;
     double wireframeColor[3];
     double pointsColor[3];
 };

@@ -46,13 +46,13 @@ function bv_pidx_initialize_vars
 
 function bv_pidx_info
 {
-    export PIDX_VERSION=${PIDX_VERSION:-"0.9.2"}
+    export PIDX_VERSION=${PIDX_VERSION:-"0.9.3"}
     export PIDX_FILE=${PIDX_FILE:-"PIDX-${PIDX_VERSION}.tar.gz"}
     export PIDX_COMPATIBILITY_VERSION=${PIDX_COMPATIBILITY_VERSION:-"1.8"}
     export PIDX_BUILD_DIR=${PIDX_BUILD_DIR:-"PIDX-${PIDX_VERSION}"}
-    export PIDX_URL=${PIDX_URL:-"https://github.com/sci-visus/PIDX/archive/v$PIDX_VERSION"}
-    export PIDX_MD5_CHECKSUM=""
-    export PIDX_SHA256_CHECKSUM=""
+    export PIDX_URL=${PIDX_URL:-"https://github.com/sci-visus/PIDX/releases/download/v${PIDX_VERSION}"}
+    export PIDX_MD5_CHECKSUM="bddd00f980e8e8e2ee701b4d816aa6dd"
+    export PIDX_SHA256_CHECKSUM="e6c91546821134f87b80ab1d3ed6aa0930c4507d84ad1f19ec51a7ae10152888"
 }
 
 function bv_pidx_print
@@ -213,15 +213,14 @@ function build_pidx
 
     if test "x${DO_MPICH}" = "xyes"; then
         info "mpich requested.  Configuring PIDX with mpich support."
-        ntopts="${ntopts} -DENABLE_MPI:BOOL=ON"
-        ntopts="${ntopts} -DMPI_C_COMPILER:STRING=${VISITDIR}/mpich/${MPICH_VERSION}/${VISITARCH}/bin/mpicc"
-        ntopts="${ntopts} -DMPI_CXX_COMPILER:STRING=${VISITDIR}/mpich/${MPICH_VERSION}/${VISITARCH}/bin/mpicc"
+        ntopts="${ntopts} -DMPI_C_COMPILER:PATH=${VISITDIR}/mpich/${MPICH_VERSION}/${VISITARCH}/bin/mpicc"
+        ntopts="${ntopts} -DMPI_CXX_COMPILER:PATH=${VISITDIR}/mpich/${MPICH_VERSION}/${VISITARCH}/bin/mpicxx"
 
-        if [[ "$OPSYS" == "Darwin" ]]; then
-            export DYLD_LIBRARY_PATH="$VISITDIR/mpich/$MPICH_VERSION/$VISITARCH/lib":$DYLD_LIBRARY_PATH
-        else
-            export LD_LIBRARY_PATH="$VISITDIR/mpich/$MPICH_VERSION/$VISITARCH/lib":$LD_LIBRARY_PATH
-        fi
+#        if [[ "$OPSYS" == "Darwin" ]]; then
+#            export DYLD_LIBRARY_PATH="$VISITDIR/mpich/$MPICH_VERSION/$VISITARCH/lib":$DYLD_LIBRARY_PATH
+#        else
+#            export LD_LIBRARY_PATH="$VISITDIR/mpich/$MPICH_VERSION/$VISITARCH/lib":$LD_LIBRARY_PATH
+#        fi
     fi
 
     cd "$START_DIR"
@@ -272,6 +271,8 @@ function build_pidx
         warn "pidx install failed.  Giving up"
         return 1
     fi
+
+#    mv ${pidx_inst_path}/lib64/* ${pidx_inst_path}/lib
 
     if [[ "$DO_GROUP" == "yes" ]] ; then
         chmod -R ug+w,a+rX "$VISITDIR/pidx"

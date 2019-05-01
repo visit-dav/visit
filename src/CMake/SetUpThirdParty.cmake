@@ -87,215 +87,228 @@ INCLUDE(${VISIT_SOURCE_DIR}/CMake/ThirdPartyInstallLibrary.cmake)
 #
 
 FUNCTION(SET_UP_THIRD_PARTY pkg libdirextensions incdirextension libs)
-  MESSAGE(STATUS "Looking for ${pkg}")
-  SET(base_dir "${pkg}_DIR")
-  SET(base_dir_val "${${base_dir}}")
-  SET(base_dir_NF "VISIT_${base_dir}-NOTFOUND")
+    MESSAGE(STATUS "Looking for ${pkg}")
+    SET(base_dir "${pkg}_DIR")
+    SET(base_dir_val "${${base_dir}}")
+    SET(base_dir_NF "VISIT_${base_dir}-NOTFOUND")
 
-  # If this packaged wasn't requested, thats ok so just return.
-  IF ("${base_dir_val}" STREQUAL "" OR "${base_dir_val}" STREQUAL "${base_dir_NF}")
-    MESSAGE(STATUS "  ${pkg} not requested")
-    RETURN()
-  ENDIF ("${base_dir_val}" STREQUAL "" OR "${base_dir_val}" STREQUAL "${base_dir_NF}")
+    # If this package wasn't requested, thats ok so just return.
+    IF ("${base_dir_val}" STREQUAL "" OR "${base_dir_val}" STREQUAL "${base_dir_NF}")
+        MESSAGE(STATUS "  ${pkg} not requested")
+        RETURN()
+    ENDIF ("${base_dir_val}" STREQUAL "" OR "${base_dir_val}" STREQUAL "${base_dir_NF}")
 
-  # If base dir doesn't exist, we can't go further.
-  IF (NOT (EXISTS "${base_dir_val}"))
-    IF(IGNORE_THIRD_PARTY_LIB_PROBLEMS)
-      MESSAGE(STATUS "\n** \n** \n** Base Directory for ${pkg} ${base_dir_val} does not exist.\n**\n**")
-    ELSE(IGNORE_THIRD_PARTY_LIB_PROBLEMS)
-      MESSAGE(FATAL_ERROR "  Base Directory for ${pkg} ${base_dir_val} does not exist.")
-    ENDIF(IGNORE_THIRD_PARTY_LIB_PROBLEMS)
-    RETURN()
-  ENDIF (NOT (EXISTS "${base_dir_val}"))
+    # If base dir doesn't exist, we can't go further.
+    IF (NOT (EXISTS "${base_dir_val}"))
+        IF(IGNORE_THIRD_PARTY_LIB_PROBLEMS)
+            MESSAGE(STATUS "\n** \n** \n** Base Directory for ${pkg} ${base_dir_val} does not exist.\n**\n**")
+        ELSE(IGNORE_THIRD_PARTY_LIB_PROBLEMS)
+            MESSAGE(FATAL_ERROR "  Base Directory for ${pkg} ${base_dir_val} does not exist.")
+        ENDIF(IGNORE_THIRD_PARTY_LIB_PROBLEMS)
+        RETURN()
+    ENDIF (NOT (EXISTS "${base_dir_val}"))
 
-  SET(inc_dir_var "${pkg}_INCLUDE_DIR")
-  SET(lib_dir_var "${pkg}_LIBRARY_DIR")
-  SET(lib_var "${pkg}_LIB")
-  SET(tp_found "${pkg}_FOUND")
-  SET(have_tp "HAVE_LIB${pkg}")
-  SET(lib_skip_install "VISIT_${pkg}_SKIP_INSTALL")
+    SET(inc_dir_var "${pkg}_INCLUDE_DIR")
+    SET(lib_dir_var "${pkg}_LIBRARY_DIR")
+    SET(lib_var "${pkg}_LIB")
+    SET(tp_found "${pkg}_FOUND")
+    SET(have_tp "HAVE_LIB${pkg}")
+    SET(lib_skip_install "VISIT_${pkg}_SKIP_INSTALL")
 
-  #
-  # Zero out lib names b/c they may be hanging around from a previous 
-  # configure.
-  #
-  UNSET("${tp_found}")
-  UNSET("${have_tp}")
-  SET("${lib_var}" "")
+    #
+    # Zero out lib names b/c they may be hanging around from a previous 
+    # configure.
+    #
+    UNSET("${tp_found}")
+    UNSET("${have_tp}")
+    SET("${lib_var}" "")
 
-  SET("${inc_dir_var}" "${base_dir_val}/${incdirextension}")
+    SET("${inc_dir_var}" "${base_dir_val}/${incdirextension}")
 
-  IF(NOT EXISTS ${${inc_dir_var}})
-      IF(IGNORE_THIRD_PARTY_LIB_PROBLEMS)
-          MESSAGE(STATUS "\n** \n** \n** Include Directory for ${pkg} (${${inc_dir_var}}) does not exist.\n**\n**")
-      ELSE(IGNORE_THIRD_PARTY_LIB_PROBLEMS)
-          MESSAGE(FATAL_ERROR "  Include Directory for ${pkg} (${${inc_dir_var}}) does not exist.")
-      ENDIF(IGNORE_THIRD_PARTY_LIB_PROBLEMS)
-      RETURN()
-  ENDIF(NOT EXISTS ${${inc_dir_var}})
-##
-# Set lib dir to fitst existing of base_dir/extensions
-# Minimal intrusion on existing logic, but one might wnat
-# to allow libs to exist in multiple directories, as
-# they do for Qt.
-##
-  SET(${lib_dir_var} "")
-  IF(NOT "${libs}" STREQUAL "NO_LIBS")
-    FOREACH(X ${libdirextensions})
-      IF(EXISTS ${base_dir_val}/${X} AND "${${lib_dir_var}}" STREQUAL "")
-        SET(${lib_dir_var} ${base_dir_val}/${X})
-      ENDIF()
-    ENDFOREACH(X)
-  ENDIF()
-
-#
-# If the library is NO_LIBS then header only installation
-#
-IF( "${libs}" STREQUAL "NO_LIBS")
-
-  IF(${${lib_skip_install}})
-    MESSAGE(STATUS "Skipping installation of ${pkg}")
-  ELSE(${${lib_skip_install}})
-    THIRD_PARTY_INSTALL_INCLUDE(${pkg} ${${inc_dir_var}})
-  ENDIF(${${lib_skip_install}})
-
-ELSE()
-#
-# If non empty string, lib_dir was found
-#
-  IF("${${lib_dir_var}}" STREQUAL "")
-    IF(IGNORE_THIRD_PARTY_LIB_PROBLEMS)
-        MESSAGE(STATUS "\n** \n** \n** None of library directories for ${pkg} (${base_dir_val}/${libdirextensions}) exist.\n**\n**")
-    ELSE(IGNORE_THIRD_PARTY_LIB_PROBLEMS)
-        MESSAGE(FATAL_ERROR "   None of library directories for ${pkg} (${base_dir_val}/${libdirextensions}) exist.\n**\n**")
-    ENDIF(IGNORE_THIRD_PARTY_LIB_PROBLEMS)
-    RETURN()
-  ENDIF()
-
-  # If the inc and lib directories are different then attempt to
-  # install the include directory.
-  IF(${${lib_skip_install}})
-    MESSAGE(STATUS "Skipping installation of ${pkg}")
-  ELSE(${${lib_skip_install}})
-    IF(NOT ${${inc_dir_var}} STREQUAL ${${lib_dir_var}})
-      THIRD_PARTY_INSTALL_INCLUDE(${pkg} ${${inc_dir_var}})
-    ENDIF(NOT ${${inc_dir_var}} STREQUAL ${${lib_dir_var}})
-  ENDIF(${${lib_skip_install}})
-
-    SET(all_libs ${libs})
-    FOREACH (X ${ARGN})
-        SET(all_libs ${all_libs} ${X})
-    ENDFOREACH (X ${ARGN})
-
-    FOREACH (X ${all_libs})
-      FIND_LIBRARY(full_lib_path ${X}
-                   PATHS ${${lib_dir_var}}
-                   NO_DEFAULT_PATH
-                   NO_CMAKE_ENVIRONMENT_PATH
-                   NO_CMAKE_PATH
-                   NO_SYSTEM_ENVIRONMENT_PATH
-                   NO_CMAKE_SYSTEM_PATH)
-      IF(full_lib_path)
-          IF(${${lib_skip_install}})
-            MESSAGE(STATUS "Skipping installation of ${full_lib_path}")
-          ELSE(${${lib_skip_install}})
-            IF(NOT ${lib_dir_var} STREQUAL "/usr/lib")
-                THIRD_PARTY_INSTALL_LIBRARY(${full_lib_path})
+    IF(NOT EXISTS ${${inc_dir_var}})
+        IF(IGNORE_THIRD_PARTY_LIB_PROBLEMS)
+            MESSAGE(STATUS "\n** \n** \n** Include Directory for ${pkg} (${${inc_dir_var}}) does not exist.\n**\n**")
+        ELSE(IGNORE_THIRD_PARTY_LIB_PROBLEMS)
+            MESSAGE(FATAL_ERROR "  Include Directory for ${pkg} (${${inc_dir_var}}) does not exist.")
+        ENDIF(IGNORE_THIRD_PARTY_LIB_PROBLEMS)
+        RETURN()
+    ENDIF(NOT EXISTS ${${inc_dir_var}})
+    ##
+    # Set lib dir to fitst existing of base_dir/extensions
+    # Minimal intrusion on existing logic, but one might wnat
+    # to allow libs to exist in multiple directories, as
+    # they do for Qt.
+    ##
+    SET(${lib_dir_var} "")
+    IF(NOT "${libs}" STREQUAL "NO_LIBS")
+        FOREACH(X ${libdirextensions})
+            IF(EXISTS ${base_dir_val}/${X} AND "${${lib_dir_var}}" STREQUAL "")
+                SET(${lib_dir_var} ${base_dir_val}/${X})
             ENDIF()
-          ENDIF(${${lib_skip_install}})
-          GET_FILENAME_COMPONENT(alib ${full_lib_path} NAME)
-          IF(SET_UP_THIRD_PARTY_FULL_PATH)
-              LIST(APPEND "${lib_var}" ${full_lib_path})
-          ELSE(SET_UP_THIRD_PARTY_FULL_PATH)
-              LIST(APPEND "${lib_var}" ${alib})
-          ENDIF(SET_UP_THIRD_PARTY_FULL_PATH)
-          MESSAGE(STATUS "  Found library ${X} in ${${lib_dir_var}}")
-      ELSE(full_lib_path)
-          IF(IGNORE_THIRD_PARTY_LIB_PROBLEMS)
-              MESSAGE(STATUS "\n** \n** \n** Library ${X} not found in ${${lib_dir_var}}.\n**\n**")
-          ELSE(IGNORE_THIRD_PARTY_LIB_PROBLEMS)
-              MESSAGE(FATAL_ERROR "Library ${X} not found in ${${lib_dir_var}}")
-          ENDIF(IGNORE_THIRD_PARTY_LIB_PROBLEMS)
-          RETURN()
-      ENDIF(full_lib_path)
-      UNSET(full_lib_path CACHE)
-    ENDFOREACH (X ${all_libs})
+        ENDFOREACH(X)
+    ENDIF()
 
-    SET(lib_dep "${pkg}_LIBDEP")
-    IF(NOT "${${lib_dep}}" STREQUAL "")
-      MESSAGE(STATUS "  Looking for dependent libraries for ${pkg}")
-    ENDIF(NOT "${${lib_dep}}" STREQUAL "")
+    #
+    # If the library is NO_LIBS then header only installation
+    #
+    IF("${libs}" STREQUAL "NO_LIBS")
+        IF(${${lib_skip_install}})
+            MESSAGE(STATUS "Skipping installation of ${pkg}")
+        ELSE(${${lib_skip_install}})
+            THIRD_PARTY_INSTALL_INCLUDE(${pkg} ${${inc_dir_var}})
+        ENDIF(${${lib_skip_install}})
+    ELSE("${libs}" STREQUAL "NO_LIBS")
+        #
+        # If non empty string, lib_dir was found
+        #
+        IF("${${lib_dir_var}}" STREQUAL "")
+            IF(IGNORE_THIRD_PARTY_LIB_PROBLEMS)
+                MESSAGE(STATUS "\n** \n** \n** None of library directories for ${pkg} (${base_dir_val}/${libdirextensions}) exist.\n**\n**")
+            ELSE(IGNORE_THIRD_PARTY_LIB_PROBLEMS)
+                MESSAGE(FATAL_ERROR "   None of library directories for ${pkg} (${base_dir_val}/${libdirextensions}) exist.\n**\n**")
+            ENDIF(IGNORE_THIRD_PARTY_LIB_PROBLEMS)
+            RETURN()
+        ENDIF()
+
+        # If the inc and lib directories are different then attempt to
+        # install the include directory.
+        IF(${${lib_skip_install}})
+            MESSAGE(STATUS "Skipping installation of ${pkg}")
+        ELSE(${${lib_skip_install}})
+            IF(NOT ${${inc_dir_var}} STREQUAL ${${lib_dir_var}})
+                THIRD_PARTY_INSTALL_INCLUDE(${pkg} ${${inc_dir_var}})
+            ENDIF(NOT ${${inc_dir_var}} STREQUAL ${${lib_dir_var}})
+        ENDIF(${${lib_skip_install}})
+
+        SET(all_libs ${libs})
+        FOREACH (X ${ARGN})
+            SET(all_libs ${all_libs} ${X})
+        ENDFOREACH (X ${ARGN})
+
+        FOREACH (X ${all_libs})
+            FIND_LIBRARY(full_lib_path ${X}
+                         PATHS ${${lib_dir_var}}
+                         NO_DEFAULT_PATH
+                         NO_CMAKE_ENVIRONMENT_PATH
+                         NO_CMAKE_PATH
+                         NO_SYSTEM_ENVIRONMENT_PATH
+                         NO_CMAKE_SYSTEM_PATH)
+            IF(full_lib_path)
+                IF(${${lib_skip_install}})
+                    MESSAGE(STATUS "Skipping installation of ${full_lib_path}")
+                ELSE(${${lib_skip_install}})
+                    IF(NOT ${lib_dir_var} STREQUAL "/usr/lib")
+                        THIRD_PARTY_INSTALL_LIBRARY(${full_lib_path})
+                    ENDIF()
+                ENDIF(${${lib_skip_install}})
+                GET_FILENAME_COMPONENT(alib ${full_lib_path} NAME)
+                IF(SET_UP_THIRD_PARTY_FULL_PATH)
+                    LIST(APPEND "${lib_var}" ${full_lib_path})
+                ELSE(SET_UP_THIRD_PARTY_FULL_PATH)
+                    LIST(APPEND "${lib_var}" ${alib})
+                ENDIF(SET_UP_THIRD_PARTY_FULL_PATH)
+                MESSAGE(STATUS "  Found library ${X} in ${${lib_dir_var}}")
+            ELSE(full_lib_path)
+                IF(IGNORE_THIRD_PARTY_LIB_PROBLEMS)
+                    MESSAGE(STATUS "\n** \n** \n** Library ${X} not found in ${${lib_dir_var}}.\n**\n**")
+                ELSE(IGNORE_THIRD_PARTY_LIB_PROBLEMS)
+                    MESSAGE(FATAL_ERROR "Library ${X} not found in ${${lib_dir_var}}")
+                ENDIF(IGNORE_THIRD_PARTY_LIB_PROBLEMS)
+                RETURN()
+            ENDIF(full_lib_path)
+            UNSET(full_lib_path CACHE)
+        ENDFOREACH (X ${all_libs})
+
+        SET(lib_dep "${pkg}_LIBDEP")
+        IF(NOT "${${lib_dep}}" STREQUAL "")
+            MESSAGE(STATUS "  Looking for dependent libraries for ${pkg}")
+        ENDIF(NOT "${${lib_dep}}" STREQUAL "")
   
-    #
-    # This alternates between a reading path & a lib from ${pkg}_LIBDEP
-    #
-    SET(is_lib 1)
-    FOREACH (X ${${lib_dep}})
-      IF(${X})
-          SET(X_VALUE ${${X}})
-      ELSE(${X})
-          SET(X_VALUE ${X})
-      ENDIF(${X})
-      IF(is_lib)
-          SET(is_lib 0)
-          LIST(APPEND "${lib_dir_var}" ${X_VALUE})
-          SET(current_lib_dir ${X_VALUE})
-      ELSE(is_lib)
-          SET(is_lib 1)
-          FIND_LIBRARY(full_lib_path
-                       NAMES ${X_VALUE}
-                       PATHS ${current_lib_dir}
-                       NO_DEFAULT_PATH
-                       NO_CMAKE_ENVIRONMENT_PATH
-                       NO_CMAKE_PATH
-                       NO_SYSTEM_ENVIRONMENT_PATH
-                       NO_CMAKE_SYSTEM_PATH)
-          IF(full_lib_path)
-            IF(${${lib_skip_install}})
-                MESSAGE(STATUS "Skipping installation of ${full_lib_path}") 
-            ELSE(${${lib_skip_install}})
-              IF(NOT "${current_lib_dir}" STREQUAL "/usr/lib")
-                  THIRD_PARTY_INSTALL_LIBRARY(${full_lib_path})
-              ENDIF(NOT "${current_lib_dir}" STREQUAL "/usr/lib")
-            ENDIF(${${lib_skip_install}})
-              GET_FILENAME_COMPONENT(alib ${full_lib_path} NAME)
-              LIST(APPEND "${lib_var}" ${alib})
-              MESSAGE(STATUS "     Found library ${X_VALUE} in ${current_lib_dir}")
-          ELSE(full_lib_path)
-              IF(IGNORE_THIRD_PARTY_LIB_PROBLEMS)
-                  MESSAGE(STATUS "\n** \n** \n**     Library ${X_VALUE} not found in ${current_lib_dir}.\n**\n**")
-              ELSE(IGNORE_THIRD_PARTY_LIB_PROBLEMS)
-                  MESSAGE(FATAL_ERROR "     Library ${X_VALUE} not found in ${current_lib_dir}")
-              ENDIF(IGNORE_THIRD_PARTY_LIB_PROBLEMS)
-              RETURN()
-          ENDIF(full_lib_path)
-          UNSET(full_lib_path CACHE)
-      ENDIF(is_lib)
-    ENDFOREACH (X ${${lib_dep}})
-  ENDIF()
+        #
+        # This alternates between a reading path & a lib from ${pkg}_LIBDEP
+        #
+        SET(is_lib_path 1)
+        FOREACH (X ${${lib_dep}})
+            IF(${X})
+                SET(X_VALUE ${${X}})
+            ELSE(${X})
+                SET(X_VALUE ${X})
+            ENDIF(${X})
+            IF(is_lib_path)
+                SET(is_lib_path 0)
+                LIST(APPEND "${lib_dir_var}" ${X_VALUE})
+                SET(current_lib_dir ${X_VALUE})
+            ELSE(is_lib_path)
+                SET(is_lib_path 1)
+                FIND_LIBRARY(full_lib_path
+                             NAMES ${X_VALUE}
+                             PATHS ${current_lib_dir}
+                             NO_DEFAULT_PATH
+                             NO_CMAKE_ENVIRONMENT_PATH
+                             NO_CMAKE_PATH
+                             NO_SYSTEM_ENVIRONMENT_PATH
+                             NO_CMAKE_SYSTEM_PATH)
+                IF(full_lib_path)
+                    IF(${${lib_skip_install}})
+                        MESSAGE(STATUS "Skipping installation of ${full_lib_path}") 
+                    ELSE(${${lib_skip_install}})
+                        IF(NOT "${current_lib_dir}" STREQUAL "/usr/lib")
+                            THIRD_PARTY_INSTALL_LIBRARY(${full_lib_path})
+                        ENDIF(NOT "${current_lib_dir}" STREQUAL "/usr/lib")
+                    ENDIF(${${lib_skip_install}})
+                    GET_FILENAME_COMPONENT(alib ${full_lib_path} NAME)
+                    LIST(APPEND "${lib_var}" ${alib})
+                    MESSAGE(STATUS "     Found library ${X_VALUE} in ${current_lib_dir}")
+                ELSE(full_lib_path)
+                    IF(IGNORE_THIRD_PARTY_LIB_PROBLEMS)
+                        MESSAGE(STATUS "\n** \n** \n**     Library ${X_VALUE} not found in ${current_lib_dir}.\n**\n**")
+                    ELSE(IGNORE_THIRD_PARTY_LIB_PROBLEMS)
+                        MESSAGE(FATAL_ERROR "     Library ${X_VALUE} not found in ${current_lib_dir}")
+                    ENDIF(IGNORE_THIRD_PARTY_LIB_PROBLEMS)
+                    RETURN()
+                ENDIF(full_lib_path)
+                UNSET(full_lib_path CACHE)
+            ENDIF(is_lib_path)
+        ENDFOREACH (X ${${lib_dep}})
 
-  # Cache final results
-  SET("${tp_found}" true CACHE BOOL "${pkg} library found" FORCE)
-  SET("${have_tp}"  true CACHE BOOL "Have ${pkg} library" FORCE)
-  SET("${base_dir}"    ${${base_dir}}    CACHE PATH   "${pkg} base directory" FORCE)
-  SET("${inc_dir_var}" ${${inc_dir_var}} CACHE PATH   "${pkg} include directory" FORCE)
+        #
+        # Look for include dependencies, if any
+        #
+        SET(inc_dep "${pkg}_INCDEP")
+        IF(NOT "${${inc_dep}}" STREQUAL "")
+            MESSAGE(STATUS "  Looking for dependent includes for ${pkg}")
+        ENDIF()
+  
+        FOREACH(X ${${inc_dep}})
+            MESSAGE("looking for include dependency: ${X}")
+            if(EXISTS ${${X}})
+                list(APPEND ${inc_dir_var} "${${X}}")
+            endif()
+        ENDFOREACH()
+    ENDIF("${libs}" STREQUAL "NO_LIBS")
 
-  IF(NOT "${libs}" STREQUAL "NO_LIBS")
-    SET("${lib_dir_var}" ${${lib_dir_var}} CACHE PATH   "${pkg} library directory" FORCE)
-    SET("${lib_var}"     ${${lib_var}}     CACHE STRING "${pkg} library" FORCE)
-  ENDIF()
+    # Cache final results
+    SET("${tp_found}" true CACHE BOOL "${pkg} library found" FORCE)
+    SET("${have_tp}"  true CACHE BOOL "Have ${pkg} library" FORCE)
+    SET("${base_dir}"    ${${base_dir}}    CACHE PATH   "${pkg} base directory" FORCE)
+    SET("${inc_dir_var}" ${${inc_dir_var}} CACHE PATH   "${pkg} include directory" FORCE)
 
-  MARK_AS_ADVANCED("${tp_found}"
-                   "${base_dir}"
-                   "${inc_dir_var}"
-                   "${lib_dir_var}"
-                   "${lib_var}")
+    IF(NOT "${libs}" STREQUAL "NO_LIBS")
+        SET("${lib_dir_var}" ${${lib_dir_var}} CACHE PATH   "${pkg} library directory" FORCE)
+        SET("${lib_var}"     ${${lib_var}}     CACHE STRING "${pkg} library" FORCE)
+    ENDIF()
 
-  IF(NOT "${libs}" STREQUAL "NO_LIBS")
-    MESSAGE(STATUS "  ${pkg} found")
-  ELSE()
-    MESSAGE(STATUS "  ${pkg} found - headers only - no libs")
-  ENDIF()
+    MARK_AS_ADVANCED("${tp_found}"
+                     "${base_dir}"
+                     "${inc_dir_var}"
+                     "${lib_dir_var}"
+                     "${lib_var}")
+
+    IF(NOT "${libs}" STREQUAL "NO_LIBS")
+      MESSAGE(STATUS "  ${pkg} found")
+    ELSE()
+      MESSAGE(STATUS "  ${pkg} found - headers only - no libs")
+    ENDIF()
 
 ENDFUNCTION(SET_UP_THIRD_PARTY)
 

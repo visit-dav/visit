@@ -25,7 +25,7 @@ function bv_mxml_info
     export MXML_COMPATIBILITY_VERSION=${MXML_COMPATIBILITY_VERSION:-"2.6"}
     export MXML_BUILD_DIR=${MXML_BUILD_DIR:-"mxml-2.6"}
     export MXML_MD5_CHECKSUM="68977789ae64985dddbd1a1a1652642e"
-    export MXML_SHA256_CHECKSUM=""
+    export MXML_SHA256_CHECKSUM="b0d347da1a0d5a8c9e82f66087d55cfe499728dacae563740d7e733648c69795"
 }
 
 function bv_mxml_print

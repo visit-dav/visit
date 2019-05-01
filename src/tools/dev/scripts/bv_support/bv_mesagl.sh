@@ -23,10 +23,10 @@ function bv_mesagl_info
 {
     export MESAGL_VERSION=${MESAGL_VERSION:-"17.2.8"}
     export MESAGL_FILE=${MESAGL_FILE:-"mesa-$MESAGL_VERSION.tar.gz"}
-    export MESAGL_BUILD_DIR=${MESAGL_BUILD_DIR:-"mesa-$MESAGL_VERSION"}
     export MESAGL_URL=${MESAGL_URL:-"https://mesa.freedesktop.org/archive/"}
-    export MESAGL_MD5_CHECKSUM=""
-    export MESAGL_SHA256_CHECKSUM=""
+    export MESAGL_BUILD_DIR=${MESAGL_BUILD_DIR:-"mesa-$MESAGL_VERSION"}
+    export MESAGL_MD5_CHECKSUM="19832be1bc5784fc7bbad4d138537619"
+    export MESAGL_SHA256_CHECKSUM="c715c3a3d6fe26a69c096f573ec416e038a548f0405e3befedd5136517527a84"
 }
 
 function bv_mesagl_print

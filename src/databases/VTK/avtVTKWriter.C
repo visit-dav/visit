@@ -45,6 +45,7 @@
 #include <vector>
 
 #include <vtkDataSet.h>
+#include <vtkDataSetTriangleFilter.h>
 #include <vtkDataSetWriter.h>
 #include <vtkFieldData.h>
 #include <vtkStringArray.h>
@@ -55,6 +56,7 @@
 #include <vtkXMLStructuredGridWriter.h>
 #include <vtkXMLUnstructuredGridWriter.h>
 
+#include <DebugStream.h>
 #include <avtDatabaseMetaData.h>
 #include <avtParallelContext.h>
 #include <FileFunctions.h>
@@ -96,6 +98,8 @@ double avtVTKWriter::INVALID_TIME = -DBL_MAX;
 //    Kathleen Biagas, Fri Feb 17 15:41:33 PST 2017
 //    Handle new Write options.
 //
+//    Mark C. Miller, Tue Apr  9 18:46:02 PDT 2019
+//    Add tetrahedralize option.
 // ****************************************************************************
 
 avtVTKWriter::avtVTKWriter(DBOptionsAttributes *atts) :stem(), meshName(), fileNames()
@@ -111,6 +115,7 @@ avtVTKWriter::avtVTKWriter(DBOptionsAttributes *atts) :stem(), meshName(), fileN
         case 2: doBinary = false; doXML = true;  break;
         case 3: doBinary = true;  doXML = true;  break;
     }
+    tetrahedralize = atts->GetBool("Tetrahedralize");
 }
 
 
@@ -230,6 +235,8 @@ avtVTKWriter::WriteHeaders(const avtDatabaseMetaData *md,
 //    When writing ascii xml files, set DataMode to Ascii to prevent data
 //    being appended, which is always binary.
 //
+//    Mark C. Miller, Tue Apr  9 18:45:38 PDT 2019
+//    Add tetrahedralize option (works in 2D and 3D).
 // ****************************************************************************
 
 void
@@ -269,6 +276,28 @@ avtVTKWriter::WriteChunk(vtkDataSet *ds, int chunk)
         mn->SetName("TIME");
         ds->GetFieldData()->AddArray(mn);
         mn->Delete();
+    }
+
+    if (tetrahedralize)
+    {
+        if (ds->GetDataObjectType() == VTK_UNSTRUCTURED_GRID)
+        {
+            debug1 << "Converting mesh to tets/tris..." << endl;
+            debug1 << "    " << ds->GetNumberOfPoints() << " points, " << ds->GetNumberOfCells() << " cells ==> ";
+            vtkDataSetTriangleFilter *tf = vtkDataSetTriangleFilter::New();
+            tf->SetInputData(ds);
+            tf->Update();
+            vtkDataSet *_ds = (vtkDataSet*) tf->GetOutput();
+            _ds->Register(NULL);
+            ds->Delete();
+            tf->Delete();
+            ds = _ds;
+            debug1 << ds->GetNumberOfPoints() << " points, " << ds->GetNumberOfCells() << " cells." << endl;;
+        }
+        else
+        {
+            debug1 << "Request to tetrahedralize structured grid not supported...ignored." << endl;
+        }
     }
 
     if (!doXML)

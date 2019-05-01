@@ -55,7 +55,7 @@ function bv_netcdf_info
     export NETCDF_COMPATIBILITY_VERSION=${NETCDF_COMPATIBILITY_VERSION-"4.1"}
     export NETCDF_BUILD_DIR=${NETCDF_BUILD_DIR-"netcdf-4.1.1"}
     export NETCDF_MD5_CHECKSUM="79c5ff14c80d5e18dd8f1fceeae1c8e1"
-    export NETCDF_SHA256_CHECKSUM=""
+    export NETCDF_SHA256_CHECKSUM="7933d69d378c57f038375bae4dd78c52442a06e2647fce4b75c13a225e342fb0"
 }
 
 function bv_netcdf_print

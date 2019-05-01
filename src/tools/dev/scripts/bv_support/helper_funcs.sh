@@ -276,11 +276,21 @@ function uncompress_untar
 # *************************************************************************** #
 # Function: verify_checksum                                                   #
 #                                                                             #
-# Purpose: Verify the checksum of given file                                  #
+# Purpose: Verify the checksum of the given file                              #
 #                                                                             #
-# verify_md5_checksum: checks md5                                             #
-# verify_sha_checksum: checks sha (256,512)                                   #
+#          verify_md5_checksum: checks md5                                    #
+#          verify_sha_checksum: checks sha (256,512)                          #
+#          verfiy_checksum_by_lookup: pick which checksum method to use       #
+#                                     based on if they are defined giving     #
+#                                     preference to the strongest checksums.  #
+#                                                                             #
 # Programmer: Hari Krishnan                                                   #
+#                                                                             #
+# Modifications:                                                              #
+#   Eric Brugger, Thu Apr 11 15:51:25 PDT 2019                                #
+#   Modified verify_checksum_by_lookup to also check that the checksum is     #
+#   not blank in addition to being defined before using it.                   #
+#                                                                             #
 # *************************************************************************** #
 
 function verify_md5_checksum
@@ -298,7 +308,6 @@ function verify_md5_checksum
         fi
         md5cmd=md5
     fi
-    $md5cmd $dfile | tr ' ' '\n' | grep '^[0-9a-f]\{32\}'
     tmp=`$md5cmd $dfile | tr ' ' '\n' | grep '^[0-9a-f]\{32\}'`
     if [[ $tmp == ${checksum} ]]; then
         info "verified"
@@ -321,16 +330,19 @@ function verify_sha_checksum
         return 0
     fi
 
-    tmp=`shasum -a $checksum_algo $dfile`
-    if [[ $? == 0 ]]; then
-        tmp=`echo $tmp| awk '{print $1}'`
-        if [[ $tmp == $checksum ]]; then
-            info "verified"
-            return 0
-        else
-            info "shasum -a $checksum_algo failed: looking for $checksum got $tmp"
-            return 1
-        fi
+    set -x
+
+    if [[ $checksum_algo == 512 ]]; then
+        tmp=`shasum -a $checksum_algo $dfile | tr ' ' '\n' | grep '^[0-9a-f]\{128\}'`
+    else
+        tmp=`shasum -a $checksum_algo $dfile | tr ' ' '\n' | grep '^[0-9a-f]\{64\}'`
+    fi
+    if [[ "$tmp" == "$checksum" ]]; then
+        info "verified"
+        return 0
+    else
+        info "shasum -a $checksum_algo failed: looking for $checksum got $tmp"
+        return 1
     fi
 
     info "shasum does not support $checksum_algo, check disabled"
@@ -343,7 +355,7 @@ function verify_checksum
     checksum=$2
     dfile=$3
 
-    info "verifying type $checksum_type, checksum $checksum for $dfile . . ."
+    info "verifying $checksum_type checksum $checksum for $dfile . . ."
 
     if [[ "$checksum_type" == "MD5" ]]; then
         verify_md5_checksum $checksum $dfile
@@ -379,20 +391,20 @@ function verify_checksum_by_lookup
             md5sum_varname=${varbase}_MD5_CHECKSUM
             sha256_varname=${varbase}_SHA256_CHECKSUM
             sha512_varname=${varbase}_SHA512_CHECKSUM
-            if [ ! -z ${!sha512_varname+x} ]; then
+            if [ ! -z ${!sha512_varname} ]; then
                 verify_checksum SHA512 ${!sha512_varname} $dlfile
                 return $?
-            elif [ ! -z ${!sha256_varname+x} ]; then
+            elif [ ! -z ${!sha256_varname} ]; then
                 verify_checksum SHA256 ${!sha256_varname} $dlfile
                 return $?
-            elif [ ! -z ${!md5sum_varname+x} ]; then
+            elif [ ! -z ${!md5sum_varname} ]; then
                 verify_checksum MD5 ${!md5sum_varname} $dlfile
                 return $?
             fi
         fi
     done
 
-    #since this is an optional check, all cases should pass if it gets here..
+    # since this is an optional check, all cases should pass if it gets here.
     info "unable to find a MD5, SHA256, or SHA512, checksum associated with $dlfile; check disabled"
     return 0
 }

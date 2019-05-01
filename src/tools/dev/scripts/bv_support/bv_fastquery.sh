@@ -41,8 +41,8 @@ function bv_fastquery_info
     # Note: last 3-digit field in URL changes with version.
     export FASTQUERY_URL=${FASTQUERY_URL:-"https://code.lbl.gov/frs/download.php/file/428"}
     export FASTQUERY_BUILD_DIR=${FASTQUERY_BUILD_DIR:-"fastquery-${FASTQUERY_VERSION}"}
-    export FASTQUERY_MD5_CHECKSUM="380de470b856ecaf19d296aab6406811"
-    export FASTQUERY_SHA256_CHECKSUM=""
+    export FASTQUERY_MD5_CHECKSUM="de6b6ed6a17e861e23b0349254a13ea9"
+    export FASTQUERY_SHA256_CHECKSUM="452c778eedd9956410393acbc44aae49505b48b821cc575b168bd05501578f16"
 }
 
 function bv_fastquery_print

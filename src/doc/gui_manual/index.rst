@@ -29,7 +29,8 @@ Contents:
    Help/index
    StartupOptions/index
    Building/index
-   Acknowledgements/index
+   BuildingOnWindows/index
+   Acknowledgments/index
    glossary
    Contributing/index
 

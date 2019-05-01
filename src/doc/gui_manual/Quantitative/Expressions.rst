@@ -1449,7 +1449,7 @@ Position-Based CMFE Function: ``pos_cmfe()`` : ``pos_cmfe(<Donor Variable>,<Targ
     # Case A: Donor variable, "pressure" in same database as mesh, "ucdmesh"
     # Note that due to a limitation in Expression parsing, the '[0]id:' is
     # currently required in the donor variable name as a substitute for 
-    # specifying a filesystem path to a database file. The syntax '[0]id:'
+    # specifying a file system path to a database file. The syntax '[0]id:'
     # means a state index delta of zero within the active database.
     pos_cmfe(<[0]id:pressure>,<ucdmesh>,1e+15)
 
@@ -1864,7 +1864,7 @@ First Time When Condition Is True Function: ``first_time_when_condition_is_true(
 
 Last Time When Condition Is True Function: ``last_time_when_condition_is_true()`` : ``last_time_when_condition_is_true(<Cond>,<Fill>,<Start>,<Stop>,<Stride>)``
     Return a new *scalar* variable in which each zonal or nodal value is the
-    *liast* time (not cycle and not time-index, but floating point time) at which
+    *last* time (not cycle and not time-index, but floating point time) at which
     the true/false condition, ``<Cond>`` is true. The ``<Fill>`` value is used
     if there is no *last* time the condition is true.
 
@@ -2055,7 +2055,7 @@ force VisIt_ to re-draw plots in which the expressions changed.
 
 If what is really intended was a scalar mesh variable, then users must use
 one of the expression functions that converts a vector to a scalar such as
-the magnitude() built-in expression or the array dereference operator.
+the magnitude() built-in expression or the array de-reference operator.
 
 Centering Compatibility
 """""""""""""""""""""""
@@ -2103,19 +2103,3 @@ onto the other variable's mesh using one of the CMFE expression functions.
 
 Automatic expressions
 ~~~~~~~~~~~~~~~~~~~~~
-
-.. spelling::
-    NMats
-    Nodeid
-    Oddy
-    Specmf
-    Warpage
-    Zoneid
-    args
-    agrad
-    coord
-    foo
-    isnan
-    resrad
-    swapxy
-

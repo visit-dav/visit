@@ -459,7 +459,7 @@ vtkLabelMapper::DrawDynamicallySelectedLabels2D(vtkDataSet *input,
     //
     const double base = 2.;
     double bin_x_size, bin_y_size;
-    double textScale = atts.GetTextFont1().GetScale() / 0.04;
+    double textScale = atts.GetTextFont1().GetScale() * 0.25;
     if (win_aspect >= 1.0)
     {
         // The X axis is the long axis of the view window.

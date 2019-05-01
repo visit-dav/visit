@@ -781,13 +781,17 @@ SET(VISIT_INSTALL_PROFILES_TO_HOSTS "" CACHE STRING "Install specified host prof
 SET(VISIT_DEFAULT_SILO_DRIVER "PDB" CACHE STRING "Default driver for generating silo data. Valid values are PDB, HDF5 or empty. An empty value means driver can be specified via make on the command line." )
 
 MACRO(VISIT_3RDPARTY_VAR libvar comment)
+    set(cache_type ${ARGN})
+    if(NOT cache_type)
+        set(cache_type "PATH")
+    endif()
     IF(NOT DEFINED VISIT_${libvar})
         # Create an empty entry for this path variable
-        SET(VISIT_${libvar} "" CACHE PATH "${comment}")
+        SET(VISIT_${libvar} "" CACHE ${cache_type} "${comment}")
     ELSE(NOT DEFINED VISIT_${libvar})
         IF(DEFINED ${libvar})
             # Ensure VISIT_FOO_DIR=FOO_DIR (override from CL)
-            SET(VISIT_${libvar} ${${libvar}} CACHE PATH "${comment}" FORCE)
+            SET(VISIT_${libvar} ${${libvar}} CACHE ${cache_type} "${comment}" FORCE)
         ELSE(DEFINED ${libvar})
             # Set FOO_DIR=VISIT_FOO_DIR (default from config-site file)
             SET(${libvar} ${VISIT_${libvar}})
@@ -796,18 +800,7 @@ MACRO(VISIT_3RDPARTY_VAR libvar comment)
 ENDMACRO(VISIT_3RDPARTY_VAR libvar comment)
 
 MACRO(VISIT_3RDPARTY_DEP libvar comment)
-    IF(NOT DEFINED VISIT_${libvar})
-        # Create an entry for this string variable
-        SET(VISIT_${libvar} "" CACHE STRING "${comment}")
-    ELSE(NOT DEFINED VISIT_${libvar})
-        IF(DEFINED ${libvar})
-            # Ensure VISIT_FOO_LIBDEP=FOO_LIBDEP (override from CL)
-            SET(VISIT_${libvar} ${${libvar}} CACHE STRING "${comment}" FORCE)
-        ELSE(DEFINED ${libvar})
-            # Set FOO_LIBDEP=VISIT_FOO_LIBDEP (default from config-site file)
-            SET(${libvar} ${VISIT_${libvar}})
-        ENDIF(DEFINED ${libvar})
-    ENDIF(NOT DEFINED VISIT_${libvar})
+    VISIT_3RDPARTY_VAR(${libvar} ${comment} "STRING")
 ENDMACRO(VISIT_3RDPARTY_DEP libvar comment)
 
 # Define options that let us pick our standard libraries: VTK,Mesa,Qt,Python
@@ -852,7 +845,7 @@ VISIT_3RDPARTY_VAR(CFITSIO_DIR   "Path containing the CFITSIO library's include 
 VISIT_3RDPARTY_VAR(CGNS_DIR      "Path containing the CGNS library's include and lib")
 VISIT_3RDPARTY_DEP(CGNS_LIBDEP   "CGNS library dependencies")
 VISIT_3RDPARTY_VAR(CONDUIT_DIR   "Path containing the Conduit library's include and lib")
-VISIT_3RDPARTY_VAR(CONDUIT_LIBDEP "Conduit library dependencies")
+VISIT_3RDPARTY_DEP(CONDUIT_LIBDEP "Conduit library dependencies")
 VISIT_3RDPARTY_VAR(DAMARIS_DIR   "Path containing the Damaris library's include and lib")
 VISIT_3RDPARTY_VAR(FASTBIT_DIR   "Path containing the FastBit library's include and lib")
 VISIT_3RDPARTY_VAR(FASTQUERY_DIR   "Path containing the FastQuery library's include and lib")
@@ -868,7 +861,7 @@ VISIT_3RDPARTY_VAR(H5PART_DIR    "Path containing the H5Part library's include a
 VISIT_3RDPARTY_DEP(H5PART_LIBDEP "H5Part library dependencies")
 VISIT_3RDPARTY_VAR(LLVM_DIR      "Path containing the LLVM library's include and lib")
 VISIT_3RDPARTY_VAR(MFEM_DIR      "Path containing the mfem library's include and lib")
-VISIT_3RDPARTY_VAR(MFEM_LIBDEP   "MFEM library dependencies")
+VISIT_3RDPARTY_DEP(MFEM_INCDEP   "MFEM include dependencies")
 VISIT_3RDPARTY_VAR(MILI_DIR      "Path containing the Mili library's include and lib")
 VISIT_3RDPARTY_VAR(NEKTAR++_DIR  "Path containing the Nektar++ library's include and lib")
 VISIT_3RDPARTY_DEP(NEKTAR++_LIBDEP "Nektar++ library dependencies")
@@ -879,12 +872,10 @@ VISIT_3RDPARTY_VAR(OPENEXR_DIR   "Path containing the OpenEXR library's include 
 VISIT_3RDPARTY_VAR(NETCDF_DIR    "Path containing the NETCDF library's include and lib")
 VISIT_3RDPARTY_DEP(NETCDF_LIBDEP "NETCDF library dependencies")
 VISIT_3RDPARTY_VAR(PYSIDE_DIR    "Path containing the PySide installation")
-VISIT_3RDPARTY_VAR(R_DIR         "Path containing the R library's include and lib")
 VISIT_3RDPARTY_VAR(SILO_DIR      "Path containing the Silo library's include and lib")
 VISIT_3RDPARTY_DEP(SILO_LIBDEP   "Silo library dependencies")
 VISIT_3RDPARTY_VAR(UINTAH_DIR    "Path containing the Uintah library's include and lib")
 VISIT_3RDPARTY_VAR(PIDX_DIR      "Path containing the PIDX library's include and lib")
-VISIT_3RDPARTY_VAR(VISUS_DIR     "Path containing the Visus library's include and lib")
 VISIT_3RDPARTY_VAR(VTKM_DIR      "Path containing the VTKm library's include and lib")
 VISIT_3RDPARTY_VAR(XDMF_DIR      "Path containing the Xdmf library's include and lib")
 VISIT_3RDPARTY_DEP(XDMF_LIBDEP   "Xdmf library dependencies")
@@ -1367,9 +1358,6 @@ IF(NOT VISIT_BUILD_MINIMAL_PLUGINS OR VISIT_SELECTED_DATABASE_PLUGINS)
 
     # Configure PIDX support.
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindPIDX.cmake)
-
-    # Configure Visus support.
-    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindVisus.cmake)
 
     # Configure VTKh support.
     if(VISIT_VTKH_DIR)

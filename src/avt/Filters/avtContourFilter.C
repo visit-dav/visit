@@ -60,6 +60,8 @@
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
 #include <vtkRectilinearGrid.h>
+#include <vtkStructuredGrid.h>
+#include <vtkUnstructuredGrid.h>
 #include <vtkVisItContourFilter.h>
 #include <vtkVisItScalarTree.h>
 
@@ -524,6 +526,10 @@ avtContourFilter::PreExecute(void)
 //    Kathleen Biagas, Wed Jan 30 10:41:17 PST 2019
 //    Removed EAVL support.
 //
+//    Eric Brugger, Wed Apr 17 10:58:23 PDT 2019
+//    I added checks to ensure that the data set could be handled by the
+//    VTKm contour filter and use the VTK one if not.
+//
 // ****************************************************************************
 
 avtDataTree_p
@@ -534,9 +540,70 @@ avtContourFilter::ExecuteDataTree(avtDataRepresentation *in_dr)
         return NULL;
     }
 
-    avtDataTree_p outDT;
+    //
+    // Determine if we should use VTKm. It only supports contouring point
+    // data and the mesh type must be either 3D rectilinear, 3D structured
+    // or 3D unstructured with only hexahedra.
+    //
+    bool useVTKm = false;
     if (in_dr->GetDataRepType() == DATA_REP_TYPE_VTKM ||
         avtCallback::GetBackendType() == GlobalAttributes::VTKM)
+    {
+        useVTKm = true;
+
+        vtkDataSet *in_ds = in_dr->GetDataVTK();
+        char *var = (activeVariable != NULL ? activeVariable
+                                            : pipelineVariable);
+        vtkDataArray *pointData = in_ds->GetPointData()->GetArray(var);
+        if (pointData == NULL)
+        {
+            useVTKm = false;
+        }
+        if (in_ds->GetDataObjectType() == VTK_RECTILINEAR_GRID)
+        {
+            vtkRectilinearGrid *rgrid = (vtkRectilinearGrid *) in_ds;
+
+            int dims[3];
+            rgrid->GetDimensions(dims);
+
+            if (dims[2] == 1)
+            {
+                useVTKm = false;
+            }
+        }
+        else if (in_ds->GetDataObjectType() == VTK_STRUCTURED_GRID)
+        {
+            vtkStructuredGrid *sgrid = (vtkStructuredGrid *) in_ds;
+
+            int dims[3];
+            sgrid->GetDimensions(dims);
+
+            if (dims[2] == 1)
+            {
+                useVTKm = false;
+            }
+        }
+        else if (in_ds->GetDataObjectType() == VTK_UNSTRUCTURED_GRID)
+        {
+            vtkUnstructuredGrid *ugrid = (vtkUnstructuredGrid *) in_ds;
+            vtkIdType nCells = ugrid->GetCells()->GetNumberOfCells();
+            vtkUnsignedCharArray *cellTypes = ugrid->GetCellTypesArray();
+            unsigned char *ct = cellTypes->GetPointer(0);
+            vtkIdType iCell = 0;
+            for (; iCell < nCells; ++iCell)
+            {
+                if (*ct++ != VTK_HEXAHEDRON)
+                    break;
+            }
+            if (iCell != nCells)
+            {
+                useVTKm = false;
+            }
+        }
+    }
+
+    avtDataTree_p outDT;
+    if (useVTKm)
     {
         outDT = this->ExecuteDataTree_VTKM(in_dr);
     }

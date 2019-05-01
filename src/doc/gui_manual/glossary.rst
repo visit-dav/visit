@@ -32,7 +32,7 @@ Glossary
 
    SIL
    Subset Inclusion Lattice
-       A **Suset Inclusion Lattice** or **SIL** is a term used to describe
+       A **Subset Inclusion Lattice** or **SIL** is a term used to describe
        the often complex, graph like relationships among a variety of subsets
        defined for a mesh. A **SIL** describes which subsets and categories
        of subsets are contained within other subsets and subset categories.

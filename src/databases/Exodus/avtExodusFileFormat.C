@@ -54,10 +54,12 @@
 #include <vtkDataArray.h>
 #include <vtkFloatArray.h>
 #include <vtkIntArray.h>
+#include <vtkLongArray.h>
 #include <vtkLongLongArray.h>
 #include <vtkShortArray.h>
 #include <vtkUnsignedCharArray.h>
 #include <vtkUnsignedIntArray.h>
+#include <vtkUnsignedLongArray.h>
 #include <vtkUnsignedLongLongArray.h>
 #include <vtkUnsignedShortArray.h>
 #include <vtkInformation.h>
@@ -3152,6 +3154,60 @@ avtExodusFileFormat::GetVectorVar(int ts, const char *var)
     return arr;
 }
 
+template <typename vT, typename cT>
+vtkDataArray *
+ConvertGlobalElementIdsToInt(vtkDataArray *da)
+{
+    int nids = da->GetNumberOfTuples();
+    vtkIntArray *iarr = vtkIntArray::New();
+    iarr->SetNumberOfComponents(1);
+    iarr->SetNumberOfTuples(nids);
+
+    vT *varr = vT::SafeDownCast(da);
+    int *piarr = iarr->GetPointer(0);
+    cT *pvarr = varr->GetPointer(0);
+    for (int q = 0; q < nids; q++)
+    {
+        piarr[q] = (int) pvarr[q];
+        if ((cT) piarr[q] != pvarr[q])
+        {
+            debug1 << "...value " << pvarr[q] << " out of range for int"
+                "...aborting; no ghost elements possible." << endl;
+            iarr->Delete();
+            iarr = NULL;
+            break;
+        }
+    }
+    da->Delete();
+    return iarr;
+}
+
+// Temporary hack to work-around vtkIntArray assumptions upstream
+static vtkDataArray *
+EnsureGlobalElementIdsAreInt(vtkDataArray *da)
+{
+    if (!da) return 0;
+
+    if (da->IsA("vtkIntArray")) return da;
+
+    debug1 << "Converting to integer global element ids." << endl;
+
+    if      (da->IsA("vtkLongLongArray"))
+        return ConvertGlobalElementIdsToInt<vtkLongLongArray, long long>(da);
+    else if (da->IsA("vtkUnsignedLongLongArray"))
+        return ConvertGlobalElementIdsToInt<vtkUnsignedLongLongArray, unsigned long long>(da);
+    else if (da->IsA("vtkLongArray"))
+        return ConvertGlobalElementIdsToInt<vtkLongArray, long>(da);
+    else if (da->IsA("vtkUnsignedLongArray"))
+        return ConvertGlobalElementIdsToInt<vtkUnsignedLongArray, unsigned long>(da);
+    else if (da->IsA("vtkUnsignedIntArray"))
+        return ConvertGlobalElementIdsToInt<vtkUnsignedIntArray, unsigned int>(da);
+    
+    // safer to return zero here to avert possible segvs downstream in
+    // ghost-zone comm where vtkIntArray is assumed
+    return 0;
+}
+
 // ****************************************************************************
 //  Method: avtExodusFileFormat::GetAuxiliaryData
 //
@@ -3263,6 +3319,7 @@ avtExodusFileFormat::GetAuxiliaryData(const char *var, int ts,
         TRY
         {
             gnodeIds = GetVar(ts, "node_num_map");
+            gnodeIds = EnsureGlobalElementIdsAreInt(gnodeIds);
         }
         CATCH(InvalidVariableException)
         {
@@ -3280,6 +3337,7 @@ avtExodusFileFormat::GetAuxiliaryData(const char *var, int ts,
         TRY
         {
             gzoneIds = GetVar(ts, "elem_num_map");
+            gzoneIds = EnsureGlobalElementIdsAreInt(gzoneIds);
         }
         CATCH(InvalidVariableException)
         {

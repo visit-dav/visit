@@ -1381,6 +1381,9 @@ avtPseudocolorPlot::SetLegendRanges()
 //   Brad Whitlock, Thu Aug 25 10:15:01 PDT 2005
 //   Added sphere points.
 //
+//   Kathleen Biagas, Wed Apr 10 09:06:49 PDT 2019
+//   Send pointSizePixels to the normal mapper.
+//
 // ****************************************************************************
 
 void
@@ -1389,6 +1392,7 @@ avtPseudocolorPlot::SetPointGlyphSize()
     // Size used for points when using a point glyph.
     if(atts.GetPointType() == Point)
         glyphMapper->SetPointSize(atts.GetPointSizePixels());
+    mapper->SetPointSize(atts.GetPointSizePixels());
 }
 
 // ****************************************************************************
