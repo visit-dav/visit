@@ -829,8 +829,9 @@ def functions_to_sphinx(funclist):
                     arg_start_index = element.find('(')
                     arg_end_index = element.find(')')
                     arg_list = element[arg_start_index+1:arg_end_index].split(',')
-                    for arg in arg_list:
-                        arg_dict.update({arg.strip():"STARTING_VALUE"})
+                    if arg_list[0] != '':
+                        for arg in arg_list:
+                            arg_dict.update({arg.strip():"STARTING_VALUE"})
                     # print arg_dict
                 block_dict[cur_block].extend_current_synopsis(element)
 
