@@ -809,7 +809,8 @@ def functions_to_sphinx(funclist):
             elif cur_block == 'Synopsis:':
                 if not block_dict[cur_block]:
                     block_dict[cur_block] = SynopsisContainer()
-                # find output type:
+                # Grab the output type from the synopsis. Look for
+                # func_name(args) -> output_type
                 if element.find(str(func_name + '(')) > -1:
                     print element
                     arrow_index = element.find('->')
@@ -821,18 +822,8 @@ def functions_to_sphinx(funclist):
                         return_type = return_type_helper
                     elif return_type != return_type_helper:
                         return_type = "AMBIGUOUS"
-                    print "return_type: " + return_type
-                      
-                # Here I could parse element looking for func_name. Isolate the
-                # line that contains it, and extract the string following the
-                # arrow ->. This is the ouput type for the function.
-                # Extracting for func_name will sometimes return a list of
-                # locations (because there are multiple) and each of these
-                # should be checked to be the same. If they are not the same,
-                # then return type should say something like "see_below".
-                # Catches: some functions don't return anything
-                # Catches: if there is only one finding of func_name, then
-                # we can just grab the type after -> and trust it.
+                    if return_type != "integer" and return_type.find('object') < 0 and return_type != 'string' and return_type != 'dictionary' and return_type.find('tuple') < 0 and return_type != 'NONE':
+                        print "return_type: " + return_type
                 block_dict[cur_block].extend_current_synopsis(element)
 
             elif cur_block == 'Description:':
@@ -849,7 +840,7 @@ def functions_to_sphinx(funclist):
                 if not block_dict[cur_block]:
                     block_dict[cur_block] = ReturnsContainer(return_type)
                 block_dict[cur_block].extend_current_returns(element)
-        if return_type == "":
+        if return_type == "STARTING_VALUE":
             return_type = "COULDN'T FIND"
             print return_type
             print block_dict['Synopsis:']

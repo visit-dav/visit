@@ -3197,13 +3197,13 @@ GetDefaultFileOpenOptions
 
 ::
 
-  GetDefaultFileOpenOptions(pluginName) -> Dictionary
+  GetDefaultFileOpenOptions(pluginName) -> dictionary
 
 
 pluginName : type
     The name of a plugin.
 
-return type : Dictionary
+return type : dictionary
     Returns a dictionary containing the options.
 
 
@@ -3316,9 +3316,9 @@ GetEngineProperties
 
 ::
 
-  GetEngineProperties()            -> EngineProperties
-  GetEngineProperties(engine)      -> EngineProperties
-  GetEngineProperties(engine, sim) -> EngineProperties
+  GetEngineProperties()            -> EngineProperties object
+  GetEngineProperties(engine)      -> EngineProperties object
+  GetEngineProperties(engine, sim) -> EngineProperties object
 
 
 engine (optional) : type
@@ -3327,7 +3327,7 @@ engine (optional) : type
 sim (optional) : type
     When both engine and sim arguments are passed, then the EngineProperties object for the simulation is returned.
 
-return type : EngineProperties
+return type : EngineProperties object
     The EngineProperties object for the specified compute engine/sim.
 
 
@@ -3642,13 +3642,13 @@ GetMachineProfile
 
 ::
 
-  GetMachineProfile(hostname) -> MachineProfile
+  GetMachineProfile(hostname) -> MachineProfile object
 
 
 hostname : type
     
 
-return type : MachineProfile
+return type : MachineProfile object
     MachineProfile for hostname
 
 
@@ -4407,9 +4407,9 @@ GetQueryParameters
 
 ::
 
-  GetQueryParameters(name) -> python dictionary
+  GetQueryParameters(name) -> dictionary
 
-return type : python dictionary
+return type : dictionary
     A python dictionary.
 
 
@@ -11120,13 +11120,13 @@ SuppressMessages
 
 ::
 
-  SuppressMessages(int level) ->integer
+  SuppressMessages(int level) -> integer
 
 
 int level : type
     An integer value of 1,2,3 or 4
 
-return type : nteger
+return type : integer
     The SuppressMessages function returns the previous suppression level on success and 0 on failure.
 
 
@@ -11159,10 +11159,10 @@ SuppressQueryOutputOff
 
 ::
 
-  SuppressQueryOutputOn() ->integer
-  SuppressQueryOutputOff() ->integer
+  SuppressQueryOutputOn() -> integer
+  SuppressQueryOutputOff() -> integer
 
-return type : nteger
+return type : integer
     The SuppressQueryOutput function returns 1 on success and 0 on failure.
 
 
@@ -11197,10 +11197,10 @@ SuppressQueryOutputOn
 
 ::
 
-  SuppressQueryOutputOn() ->integer
-  SuppressQueryOutputOff() ->integer
+  SuppressQueryOutputOn() -> integer
+  SuppressQueryOutputOff() -> integer
 
-return type : nteger
+return type : integer
     The SuppressQueryOutput function returns 1 on success and 0 on failure.
 
 
