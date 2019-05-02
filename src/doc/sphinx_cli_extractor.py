@@ -762,8 +762,9 @@ def functions_to_sphinx(funclist):
         block_list = block_dict.keys()
 
         func_name  = str(func)
+        print "FUNCTION: " + func_name
         return_type = "STARTING_VALUE"
-        print "\nFUNCTION: " + func_name
+        arg_set = set()
         full_doc   = full_doc[1:]
         if len(full_doc) == 0:
             continue
@@ -809,10 +810,9 @@ def functions_to_sphinx(funclist):
             elif cur_block == 'Synopsis:':
                 if not block_dict[cur_block]:
                     block_dict[cur_block] = SynopsisContainer()
-                # Grab the output type from the synopsis. Look for
-                # func_name(args) -> output_type
                 if element.find(str(func_name + '(')) > -1:
-                    print element
+                    # Grab the output type from the synopsis. Look for
+                    # func_name(args) -> output_type
                     arrow_index = element.find('->')
                     if arrow_index < 0:
                         return_type_helper = "NONE"
@@ -822,8 +822,12 @@ def functions_to_sphinx(funclist):
                         return_type = return_type_helper
                     elif return_type != return_type_helper:
                         return_type = "AMBIGUOUS"
-                    if return_type != "integer" and return_type.find('object') < 0 and return_type != 'string' and return_type != 'dictionary' and return_type.find('tuple') < 0 and return_type != 'NONE':
-                        print "return_type: " + return_type
+                    
+                    # Populate a list of strings for the input names
+                    arg_start_index = element.find('(')
+                    arg_end_index = element.find(')')
+                    arg_set.update(element[arg_start_index+1:arg_end_index].split(','))
+                    print arg_set
                 block_dict[cur_block].extend_current_synopsis(element)
 
             elif cur_block == 'Description:':
@@ -832,26 +836,16 @@ def functions_to_sphinx(funclist):
                 block_dict[cur_block].extend_current_description(element)
 
             elif cur_block == 'Arguments:':
-               if not block_dict[cur_block]:
-                   block_dict[cur_block] = ArgumentsContainer()
-               block_dict[cur_block].add_element(element)
+                if not block_dict[cur_block]:
+                    block_dict[cur_block] = ArgumentsContainer()                    
+                block_dict[cur_block].add_element(element)
 
             elif cur_block == 'Returns:':
                 if not block_dict[cur_block]:
                     block_dict[cur_block] = ReturnsContainer(return_type)
                 block_dict[cur_block].extend_current_returns(element)
-        if return_type == "STARTING_VALUE":
-            return_type = "COULDN'T FIND"
-            print return_type
-            print block_dict['Synopsis:']
-        # Cannot get the return type for aliased functions unless I dig
-        # into the alias, which I think I might be able to do....
-        # SetDefaultMeshManagementAttributes -> SetMeshManagementAttributes
-        # SetMeshManagementAttributes *-> GetMeshManagementAttributes
-        # TimeSliderSetState -> SetTimeSliderState
-        # ToggleLockTools -> ToggleMode (this will still fail...)
-               
-
+        print block_dict['Synopsis:']
+                
         #
         # Build our sphinx output.
         #
