@@ -764,7 +764,7 @@ def functions_to_sphinx(funclist):
         func_name  = str(func)
         print "FUNCTION: " + func_name
         return_type = "STARTING_VALUE"
-        arg_set = set()
+        arg_dict = {}
         full_doc   = full_doc[1:]
         if len(full_doc) == 0:
             continue
@@ -826,8 +826,10 @@ def functions_to_sphinx(funclist):
                     # Populate a list of strings for the input names
                     arg_start_index = element.find('(')
                     arg_end_index = element.find(')')
-                    arg_set.update(element[arg_start_index+1:arg_end_index].split(','))
-                    print arg_set
+                    arg_list = element[arg_start_index+1:arg_end_index].split(',')
+                    for arg in arg_list:
+                        arg_dict.update({arg:'STARTING_VALUE'})
+                    print arg_dict
                 block_dict[cur_block].extend_current_synopsis(element)
 
             elif cur_block == 'Description:':
@@ -837,7 +839,15 @@ def functions_to_sphinx(funclist):
 
             elif cur_block == 'Arguments:':
                 if not block_dict[cur_block]:
-                    block_dict[cur_block] = ArgumentsContainer()                    
+                    block_dict[cur_block] = ArgumentsContainer()
+                # The description for one argument might have the name of another argument, so
+                # in order to avoid confusion, active_arg can only be set when
+                # len(element.split()) == 1.
+                # If that is the case, then set active_arg to element
+                # If that is not the case, look for keywords within element. Keywords are like
+                # integer, string, tuple, etc. If it's the first keyword, put it as the value
+                # if the keyword already exists, check for match. If mismatch, then the
+                # value is AMBIGUOUS
                 block_dict[cur_block].add_element(element)
 
             elif cur_block == 'Returns:':
