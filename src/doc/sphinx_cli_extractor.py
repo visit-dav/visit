@@ -740,6 +740,7 @@ def functions_to_sphinx(funclist):
 
     undocumented  = []
     functions_doc = ""
+    type_keywords = ['integer','string']
 
     for func in funclist:
         #
@@ -765,6 +766,7 @@ def functions_to_sphinx(funclist):
         print "FUNCTION: " + func_name
         return_type = "STARTING_VALUE"
         arg_dict = {}
+        active_arg = "STARTING_VALUE"
         full_doc   = full_doc[1:]
         if len(full_doc) == 0:
             continue
@@ -828,8 +830,8 @@ def functions_to_sphinx(funclist):
                     arg_end_index = element.find(')')
                     arg_list = element[arg_start_index+1:arg_end_index].split(',')
                     for arg in arg_list:
-                        arg_dict.update({arg:'STARTING_VALUE'})
-                    print arg_dict
+                        arg_dict.update({arg.strip():"STARTING_VALUE"})
+                    # print arg_dict
                 block_dict[cur_block].extend_current_synopsis(element)
 
             elif cur_block == 'Description:':
@@ -840,6 +842,7 @@ def functions_to_sphinx(funclist):
             elif cur_block == 'Arguments:':
                 if not block_dict[cur_block]:
                     block_dict[cur_block] = ArgumentsContainer()
+                    
                 # The description for one argument might have the name of another argument, so
                 # in order to avoid confusion, active_arg can only be set when
                 # len(element.split()) == 1.
@@ -848,6 +851,18 @@ def functions_to_sphinx(funclist):
                 # integer, string, tuple, etc. If it's the first keyword, put it as the value
                 # if the keyword already exists, check for match. If mismatch, then the
                 # value is AMBIGUOUS
+                if element in arg_dict.keys():
+                    active_arg = element
+                else:
+                    if arg_dict.get(active_arg) is not None:
+                        for word in element.split():
+                            if word in type_keywords:
+                                if arg_dict[active_arg] == "STARTING_VALUE":
+                                    arg_dict[active_arg] = word
+                                elif word != arg_dict[active_arg]:
+                                    arg_dict[active_arg] = "AMBIGUOUS"
+                    else:
+                        print "HUGE ERROR"
                 block_dict[cur_block].add_element(element)
 
             elif cur_block == 'Returns:':
@@ -855,6 +870,9 @@ def functions_to_sphinx(funclist):
                     block_dict[cur_block] = ReturnsContainer(return_type)
                 block_dict[cur_block].extend_current_returns(element)
         print block_dict['Synopsis:']
+        print block_dict['Arguments:']
+        print "arg_dict: " 
+        print arg_dict
                 
         #
         # Build our sphinx output.
