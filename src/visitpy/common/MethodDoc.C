@@ -2344,7 +2344,7 @@ const char *visit_ExportDatabase_doc =
 "e\n"
 "An object of type ExportDBAttributes.  This object specifies the options\n"
 "for exporting the database.\n"
-"o (optional)\n"
+"o\n"
 "A dictionary containing a key/value mapping to set options needed by the\n"
 "database exporter.  The default values can be obtained in the appropriate\n"
 "format using GetExportOptions('plugin').\n"
