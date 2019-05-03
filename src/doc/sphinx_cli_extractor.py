@@ -740,7 +740,8 @@ def functions_to_sphinx(funclist):
 
     undocumented  = []
     functions_doc = ""
-    type_keywords = ['integer','string']
+    type_keywords = {'integer': 'integer', 'string': 'string', 'name': 'string',
+        'double':'double','tuple':'tuple','list':'list','dictionary':'dictionary'}
 
     for func in funclist:
         #
@@ -864,9 +865,9 @@ def functions_to_sphinx(funclist):
                     arg_dict.update({active_arg : "STARTING_VALUE"})
                 elif arg_dict.get(active_arg) is not None:
                     for word in element.split():
-                        if word in type_keywords:
+                        if word in type_keywords.keys():
                             if arg_dict[active_arg] == "STARTING_VALUE":
-                                arg_dict[active_arg] = word
+                                arg_dict[active_arg] = type_keywords[word]
                             elif word != arg_dict[active_arg]:
                                 arg_dict[active_arg] = "AMBIGUOUS"
                 else:
