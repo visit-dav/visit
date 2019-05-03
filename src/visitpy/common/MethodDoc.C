@@ -5412,7 +5412,7 @@ const char *visit_PromoteOperator_doc =
 "\n"
 "opIndex\n"
 "A zero-based integer corresponding to the operator that should be promoted.\n"
-"applyAll\n"
+"applyToAllPlots\n"
 "An integer flag that causes all plots in the plot list to be affected when\n"
 "it is non-zero.\n"
 "\n"
