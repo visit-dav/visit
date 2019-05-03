@@ -1758,6 +1758,12 @@ ProgrammableCompositer<T>::ApplyBackgroundImage(const unsigned char *argba)
 //  Creation:   Thu Aug 20 13:12:38 PDT 2015
 //
 //  Modifications:
+//    Eric Brugger, Fri May  3 12:28:10 PDT 2019
+//    I corrected a bug where VisIt would crash rendering transparent
+//    geometry when rank 0 didn't have any geometry. A buffer would be
+//    freed when it shouldn't have been causing a NULL pointer dereference.
+//    The logic to send the final composited image, which would end up on
+//    a rank other than rank 0, to rank 0 was also flawed.
 //
 // ****************************************************************************
 
@@ -1977,16 +1983,23 @@ ProgrammableCompositer<T>::Execute()
                     bg[k] = tim;
 #endif
                 }
+                else
+                {
+                    bg[k] = fim;
+                }
             }
 #ifdef THREADED_COMPOSITER
-            tmgr->WaitFinished();
-            for (size_t k = 0; k < nt; ++k)
+            if (!zi)
             {
-                delete fg[k];
-                fg[k] = NULL;
-                delete bg[k];
-                bg[k] = tmp[k];
-                tmp[k] = NULL;
+                tmgr->WaitFinished();
+                for (size_t k = 0; k < nt; ++k)
+                {
+                    delete fg[k];
+                    fg[k] = NULL;
+                    delete bg[k];
+                    bg[k] = tmp[k];
+                    tmp[k] = NULL;
+                }
             }
 #endif
         }
