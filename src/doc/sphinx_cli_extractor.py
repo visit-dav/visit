@@ -259,6 +259,14 @@ class ArgumentsContainer(object):
         self.descriptions    = []
         self.cur_idx         = -1
         self.arg_add_ons     = ['(optional)', 'int', 'float', 'bool']
+        self.arg_dict        = {}
+        self.type_keywords   = {'integer': 'integer',
+                                'string': 'string',
+                                'name': 'string',
+                                'double':'double',
+                                'tuple':'tuple',
+                                'list':'list',
+                                'dictionary':'dictionary'}
 
     def find_add_on(self, txt):
         """
@@ -389,6 +397,15 @@ class ArgumentsContainer(object):
         self.names.append(name)
         self.descriptions.append(description)
         self.cur_idx += 1
+        
+    def add_argument_types(self, arg_dict):
+        """
+            Add a dictionary that maps the argument name to its type.
+            
+            args:
+                arg_dict: the dictionary
+        """
+        self.arg_dict = arg_dict
 
     def __str__(self):
         """
@@ -402,7 +419,15 @@ class ArgumentsContainer(object):
         lines = ""
         for i in range(len(self.names)):
             name    = "%s" % (self.names[i].strip())
-            lines += "\n%s : type\n    %s\n"%(name, self.descriptions[i])
+            type_name = "STARTING_VALUE"
+            for word in self.descriptions[i]:
+                if word in self.type_keywords.keys():
+                    if type_name == "STARTING_VALUE":
+                        type_name = type_keywords[word]
+                    elif word != type_name:
+                        type_name = "AMBIGUOUS"
+            lines += "\n%s : %s\n    %s\n"%(name, type_name,
+                self.descriptions[i])
 
         output = self.title
         output += lines
@@ -825,21 +850,6 @@ def functions_to_sphinx(funclist):
                         return_type = return_type_helper
                     elif return_type != return_type_helper:
                         return_type = "AMBIGUOUS"
-                    
-                    # Populate a list of strings for the input names
-                    #arg_start_index = element.find('(')
-                    #arg_end_index = element.find(')')
-                    #arg_list = element[arg_start_index+1:arg_end_index].split(',')
-                    #if arg_list[0] != '':
-                    #    for arg in arg_list:
-                    #        # modifiy the argument to remove extra characters
-                    #        # and anything to the right of a possible '=' char
-                    #        arg_mod = arg.replace(' ', '').replace('[','').replace(']','').replace('"','').replace("'",'')
-                    #        equals_index = arg_mod.find('=')
-                    #        if equals_index > -1:
-                    #            arg_mod = arg_mod[0:equals_index]
-                    #        arg_dict.update({arg_mod:"STARTING_VALUE"})
-                    #        print arg_mod
                 block_dict[cur_block].extend_current_synopsis(element)
 
             elif cur_block == 'Description:':
@@ -851,14 +861,8 @@ def functions_to_sphinx(funclist):
                 if not block_dict[cur_block]:
                     block_dict[cur_block] = ArgumentsContainer()
                     
-                # The description for one argument might have the name of another argument, so
-                # in order to avoid confusion, active_arg can only be set when
-                # len(element.split()) == 1.
-                # If that is the case, then set active_arg to element
-                # If that is not the case, look for keywords within element. Keywords are like
-                # integer, string, tuple, etc. If it's the first keyword, put it as the value
-                # if the keyword already exists, check for match. If mismatch, then the
-                # value is AMBIGUOUS
+                # Try to determine the type of the argument based on its
+                # description.
                 if len(element.split()) == 1 and element[-1] != '.':
                 #if len(element.split()) == 1 and element != "none":
                     active_arg = element
@@ -884,7 +888,8 @@ def functions_to_sphinx(funclist):
         print block_dict['Arguments:']
         print "arg_dict: " 
         print arg_dict
-                
+        block_dict['Arguments:'].add_argument_types(arg_dict)
+        
         #
         # Build our sphinx output.
         #
