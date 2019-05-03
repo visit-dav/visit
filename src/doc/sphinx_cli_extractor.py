@@ -259,10 +259,10 @@ class ArgumentsContainer(object):
         self.descriptions    = []
         self.cur_idx         = -1
         self.arg_add_ons     = ['(optional)', 'int', 'float', 'bool']
-        self.arg_dict        = {}
         self.type_keywords   = {'integer': 'integer',
                                 'string': 'string',
                                 'name': 'string',
+                                'string.': 'string',
                                 'double':'double',
                                 'tuple':'tuple',
                                 'list':'list',
@@ -397,15 +397,6 @@ class ArgumentsContainer(object):
         self.names.append(name)
         self.descriptions.append(description)
         self.cur_idx += 1
-        
-    def add_argument_types(self, arg_dict):
-        """
-            Add a dictionary that maps the argument name to its type.
-            
-            args:
-                arg_dict: the dictionary
-        """
-        self.arg_dict = arg_dict
 
     def __str__(self):
         """
@@ -419,11 +410,13 @@ class ArgumentsContainer(object):
         lines = ""
         for i in range(len(self.names)):
             name    = "%s" % (self.names[i].strip())
+            if name == 'none':
+                continue
             type_name = "STARTING_VALUE"
-            for word in self.descriptions[i]:
+            for word in ''.join(self.descriptions[i]).split():
                 if word in self.type_keywords.keys():
                     if type_name == "STARTING_VALUE":
-                        type_name = type_keywords[word]
+                        type_name = self.type_keywords[word]
                     elif word != type_name:
                         type_name = "AMBIGUOUS"
             lines += "\n%s : %s\n    %s\n"%(name, type_name,
@@ -765,8 +758,6 @@ def functions_to_sphinx(funclist):
 
     undocumented  = []
     functions_doc = ""
-    type_keywords = {'integer': 'integer', 'string': 'string', 'name': 'string',
-        'double':'double','tuple':'tuple','list':'list','dictionary':'dictionary'}
 
     for func in funclist:
         #
@@ -789,10 +780,7 @@ def functions_to_sphinx(funclist):
         block_list = block_dict.keys()
 
         func_name  = str(func)
-        print "\n\n\nFUNCTION: " + func_name
         return_type = "STARTING_VALUE"
-        arg_dict = {}
-        active_arg = "STARTING_VALUE"
         full_doc   = full_doc[1:]
         if len(full_doc) == 0:
             continue
@@ -860,35 +848,12 @@ def functions_to_sphinx(funclist):
             elif cur_block == 'Arguments:':
                 if not block_dict[cur_block]:
                     block_dict[cur_block] = ArgumentsContainer()
-                    
-                # Try to determine the type of the argument based on its
-                # description.
-                if len(element.split()) == 1 and element[-1] != '.':
-                #if len(element.split()) == 1 and element != "none":
-                    active_arg = element
-                    arg_dict.update({active_arg : "STARTING_VALUE"})
-                elif arg_dict.get(active_arg) is not None:
-                    for word in element.split():
-                        if word in type_keywords.keys():
-                            if arg_dict[active_arg] == "STARTING_VALUE":
-                                arg_dict[active_arg] = type_keywords[word]
-                            elif word != arg_dict[active_arg]:
-                                arg_dict[active_arg] = "AMBIGUOUS"
-                else:
-                    print "POTENTIAL ERROR with"
-                    print "element: " + element
                 block_dict[cur_block].add_element(element)
 
             elif cur_block == 'Returns:':
                 if not block_dict[cur_block]:
                     block_dict[cur_block] = ReturnsContainer(return_type)
                 block_dict[cur_block].extend_current_returns(element)
-        arg_dict.pop("none","") # in case "none" got added in the algorithm
-        print block_dict['Synopsis:']
-        print block_dict['Arguments:']
-        print "arg_dict: " 
-        print arg_dict
-        block_dict['Arguments:'].add_argument_types(arg_dict)
         
         #
         # Build our sphinx output.
