@@ -106,7 +106,6 @@ SET(VTK_EXTRA_LIBS
 vtktiff
 vtkjpeg
 vtkpng
-${VTKZLIB_LIB}
 ${VTK_FREETYPE_LIBRARIES}
 )
 
@@ -159,6 +158,7 @@ vtkqt
 avtdbatts
 ${VIEWER_QT_LIBS}
 ${VTK_EXTRA_LIBS}
+${ZLIB_LIBRARY}
 )
 
 # If we're building statically then the viewer can't be linked until the plugin

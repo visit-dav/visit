@@ -58,40 +58,35 @@
 
 # Use the ZLIB_DIR hint from the config-site .cmake file 
 
-INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
+include(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
 
-IF (WIN32)
-    IF(ZLIB_LIB_NAME)
+if (WIN32)
+    if(ZLIB_LIB_NAME)
         SET_UP_THIRD_PARTY(ZLIB lib include ${ZLIB_LIB_NAME})
-    ELSE()
+    else()
         SET_UP_THIRD_PARTY(ZLIB lib include zlib1)
-    ENDIF()
-    IF (ZLIB_FOUND)
+    endif()
+    if (ZLIB_FOUND)
         # use full path here, instead of just lib file.
-        SET(ZLIB_LIBRARY "${ZLIB_LIB}" CACHE STRING "zlib library" FORCE)
-        SET(ZLIB_LIB "${ZLIB_LIBRARY_DIR}/${ZLIB_LIB}" CACHE STRING "full path to zlib library" FORCE)
-        SET(HAVE_ZLIB_H true CACHE BOOL "have zlib header" FORCE)
-    ENDIF (ZLIB_FOUND)
-    IF(TARGET vtkzlib)
-        SET(VTKZLIB_LIB vtkzlib)
-    ENDIF(TARGET vtkzlib)
-ELSE(WIN32)
-    IF(VISIT_ZLIB_DIR)
-        # We've told VisIt where to look for zlib. Let's also assume that by doing 
-        # this, we also told VTK where to find system zlib so we will not be using
-        # VTK's zlib
+        #set(ZLIB_LIBRARY "${ZLIB_LIB}" CACHE STRING "zlib library" FORCE)
+        set(ZLIB_LIBRARY "${ZLIB_LIBRARY_DIR}/${ZLIB_LIB}" CACHE STRING "full path to zlib library" FORCE)
+        set(HAVE_ZLIB_H true CACHE BOOL "have zlib header" FORCE)
+    endif ()
+else(WIN32)
+    if(VISIT_ZLIB_DIR)
+        # We've told VisIt where to look for zlib.
         SET_UP_THIRD_PARTY(ZLIB lib include z)
-        IF (ZLIB_FOUND)
+        if(ZLIB_FOUND)
             # use full path here, instead of just lib file.
-            SET(ZLIB_LIB "${ZLIB_LIBRARY_DIR}/${ZLIB_LIB}" CACHE STRING "zlib library" FORCE)
-            SET(HAVE_ZLIB_H true CACHE BOOL "have zlib header" FORCE)
-        ENDIF (ZLIB_FOUND)
-    ELSE(VISIT_ZLIB_DIR)
-        SET(ZLIB_LIB z)
-        SET(ZLIB_FOUND 1)
-        SET(VTKZLIB_LIB vtkzlib)
-    ENDIF(VISIT_ZLIB_DIR)
-ENDIF (WIN32)
+            set(ZLIB_LIBRARY "${ZLIB_LIBRARY_DIR}/${ZLIB_LIB}" CACHE STRING "zlib library" FORCE)
+            set(HAVE_ZLIB_H true CACHE BOOL "have zlib header" FORCE)
+        endif()
+    else()
+        set(ZLIB_LIBRARY z)
+        set(ZLIB_FOUND 1)
+        CHECK_INCLUDE_FILES(zlib.h HAVE_ZLIB_H)
+    endif()
+endif (WIN32)
 
 if(ZLIB_FOUND)
     set(HAVE_LIBZ true CACHE BOOL "Have lib z")

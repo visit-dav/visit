@@ -272,7 +272,7 @@ TARGET_LINK_LIBRARIES(avtpipeline_ser
                       visitcommon ${AVTMATH} avtdbatts
                       visit_vtk lightweight_visit_vtk vtkCommonCore
                       vtkCommonDataModel vtkFiltersGeometry
-                      ${ZLIB_LIB})
+                      ${ZLIB_LIBRARY})
 if(VTKH_FOUND)
     target_link_libraries(avtpipeline_ser vtkh)
 endif()
@@ -287,7 +287,7 @@ IF(VISIT_PARALLEL)
                           visitcommon ${AVTMATH} avtdbatts
                           visit_vtk lightweight_visit_vtk vtkCommonCore
                           vtkCommonDataModel vtkFiltersGeometry
-                          ${ZLIB_LIB})
+                          ${ZLIB_LIBRARY})
     if(VTKH_FOUND)
         target_link_libraries(avtpipeline_par vtkh)
     endif()

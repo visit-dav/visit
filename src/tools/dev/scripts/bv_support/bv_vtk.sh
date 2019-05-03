@@ -54,6 +54,10 @@ function bv_vtk_depends_on
         depends_on="${depends_on} ospray"
     fi
 
+    if [[ "$DO_ZLIB" == "yes" ]]; then
+        depends_on="${depends_on} zlib"
+    fi
+
     # Only depend on Qt if we're not doing server-only builds.
     if [[ "$DO_DBIO_ONLY" != "yes" ]]; then
         if [[ "$DO_ENGINE_ONLY" != "yes" ]]; then
@@ -113,6 +117,11 @@ function bv_vtk_host_profile
         echo "VISIT_OPTION_DEFAULT(VISIT_VTK_DIR $SYSTEM_VTK_DIR)" >> $HOSTCONF
     else
         echo "VISIT_OPTION_DEFAULT(VISIT_VTK_DIR \${VISITHOME}/${VTK_INSTALL_DIR}/\${VTK_VERSION}/\${VISITARCH})" >> $HOSTCONF
+        # vtk's target system should take care of this, so does VisIt need to know?
+        if [[ "$DO_ZLIB" == "yes" ]]; then
+            echo "VISIT_OPTION_DEFAULT(VISIT_VTK_INCDEP ZLIB_INCLUDE_DIR)" >> $HOSTCONF
+            echo "VISIT_OPTION_DEFAULT(VISIT_VTK_LIBDEP ZLIB_LIBRARY)" >> $HOSTCONF
+        fi
     fi
 }
 
@@ -833,11 +842,9 @@ function build_vtk
         fi
     fi
 
+
     # allow VisIt to override any of vtk's classes
     vopts="${vopts} -DVTK_ALL_NEW_OBJECT_FACTORY:BOOL=true"
-
-    # OpenGL2 backend VTK-8.1, OpenGL2 is the default.
-    #vopts="${vopts} -DVTK_RENDERING_BACKEND:STRING=OpenGL2"
 
 
     # Turn off module groups
@@ -921,6 +928,18 @@ function build_vtk
         vopts="${vopts} -DOSPRAY_INSTALL_DIR=${OSPRAY_INSTALL_DIR}"
         vopts="${vopts} -Dembree_DIR=${EMBREE_INSTALL_DIR}"
     fi
+
+    # zlib support, use system or the one we build
+    vopts="${vopts} -DVTK_USE_SYSTEM_ZLIB:BOOL=ON"
+    if [[ "$DO_ZLIB" == "yes" ]] ; then
+        vopts="${vopts} -DZLIB_INCLUDE_DIR:PATH=${ZLIB_INCLUDE_DIR}"
+        if [[ "$VISIT_BUILD_MODE" == "Release" ]] ; then
+            vopts="${vopts} -DZLIB_LIBRARY_RELEASE:FILEPATH=${ZLIB_LIBRARY}"
+        else
+            vopts="${vopts} -DZLIB_LIBRARY_DEBUG:FILEPATH=${ZLIB_LIBRARY}"
+        fi
+    fi
+    
 
     CMAKE_BIN="${CMAKE_INSTALL}/cmake"
     cd ${VTK_BUILD_DIR}

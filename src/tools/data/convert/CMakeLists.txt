@@ -103,7 +103,6 @@ ${ICET_LIBRARY_DIR}
 SET(VTK_EXTRA_LIBS
 vtkjpeg
 vtkpng
-${VTKZLIB_LIB}
 ${VTK_FREETYPE_LIBRARIES}
 )
 
@@ -131,7 +130,7 @@ IF(VISIT_DBIO_ONLY)
         ${ALL_THIRDPARTY_IO_LIB}
         ${VTK_EXTRA_LIBS}
         ${CMAKE_THREAD_LIBS}
-        ${ZLIB_LIB}
+        ${ZLIB_LIBRARY}
     )
 ELSE()
     TARGET_LINK_LIBRARIES(visitconvert_ser
@@ -156,7 +155,7 @@ ELSE()
         ${VTK_EXTRA_LIBS}
         ${OPENGL_LIBRARIES}
         ${CMAKE_THREAD_LIBS}
-        ${ZLIB_LIB}
+        ${ZLIB_LIBRARY}
     )
     if(HAVE_OSMESA)
         target_link_libraries(visitconvert_ser ${OSMESA_LIBRARIES})
@@ -195,7 +194,7 @@ IF(VISIT_PARALLEL)
             ${ALL_THIRDPARTY_IO_LIB}
             ${VTK_EXTRA_LIBS}
             ${CMAKE_THREAD_LIBS}
-            ${ZLIB_LIB}
+            ${ZLIB_LIBRARY}
         )
     ELSE()
         PARALLEL_EXECUTABLE_LINK_LIBRARIES(visitconvert_par
@@ -219,7 +218,7 @@ IF(VISIT_PARALLEL)
             ${VTK_EXTRA_LIBS}
             ${OPENGL_LIBRARIES}
             ${CMAKE_THREAD_LIBS}
-            ${ZLIB_LIB}
+            ${ZLIB_LIBRARY}
         )
         if(HAVE_OSMESA)
             target_link_libraries(visitconvert_par ${OSMESA_LIBRARIES})
