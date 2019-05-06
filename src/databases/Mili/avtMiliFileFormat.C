@@ -69,6 +69,7 @@
 
 #include <TimingsManager.h>
 
+//TODO: continue using namespace??
 using namespace rapidjson;
 
 
@@ -2702,6 +2703,7 @@ avtMiliFileFormat::GetAuxiliaryData(const char *varName,
 //      Extract a mili variable from our .mili json file. 
 //
 //  Arguments: 
+//      jDoc         The json document (needed for element sets). 
 //      val          A json Value type to extract from.
 //      shortName    The variable's short name.        
 //      cShortName   The variable's class' short name. 
@@ -2719,7 +2721,8 @@ avtMiliFileFormat::GetAuxiliaryData(const char *varName,
 // ****************************************************************************
 
 MiliVariableMetaData * 
-avtMiliFileFormat::ExtractJsonVariable(const Value &val,
+avtMiliFileFormat::ExtractJsonVariable(const Document &jDoc,
+                                       const Value &val,
                                        std::string shortName,
                                        std::string cShortName,
                                        std::string cLongName,
@@ -2737,7 +2740,11 @@ avtMiliFileFormat::ExtractJsonVariable(const Value &val,
         int vecSize            = 0;
         int compDims           = 1;
         int numType            = M_FLOAT;
+        bool isES              = false;
+        bool isMulti           = (nMeshes > 1);
+
         stringVector comps;
+
 
         if (val.HasMember("LongName"))
         {
@@ -2791,7 +2798,46 @@ avtMiliFileFormat::ExtractJsonVariable(const Value &val,
             }
         }
 
-        bool isMulti = (nMeshes > 1);
+        if (val.HasMember("real_names"))
+        {
+            isES = true;
+            const Value &rN    = val["real_names"];
+            const Value &jVars = jDoc["Variables"];
+
+            std::vector<std::string> groupNames;
+            std::vector<int>         groupAvtTypes;
+            std::vector<int>         groupAggTypes;
+            std::vector<int>         groupVectorSizes;
+ 
+            if (rN.IsArray())
+            {
+                for (SizeType i = 0; i < rN.Size(); ++i)
+                {
+                    std::string groupName = rN[i].GetString();
+                    groupNames.push_back(groupName);  
+
+                    if (jVars.HasMember(groupName.c_str()))
+                    {
+                        const Value &var = jVars[groupName.c_str()];
+
+                        if (var.HasMember("VTK_TYPE"))
+                        {
+                            groupAvtTypes.push_back(var["VTK_TYPE"].GetInt());
+                        }
+
+                        if (var.HasMember("agg_type"))
+                        {
+                            groupAggTypes.push_back(var["agg_type"].GetInt());
+                        }
+
+                        if (var.HasMember("vector_size"))
+                        {
+                            groupVectorSizes.push_back(var["vector_size"].GetInt());
+                        }
+                    }
+                }
+            }
+        }
 
         return new MiliVariableMetaData(shortName, 
                                         longName,
@@ -2801,6 +2847,7 @@ avtMiliFileFormat::ExtractJsonVariable(const Value &val,
                                         isMatVar,
                                         isGlobal,
                                         isShared,
+                                        isES,
                                         centering,
                                         nDomains,
                                         meshId,
@@ -2879,20 +2926,45 @@ avtMiliFileFormat::CountJsonClassVariables(const Document &jDoc,
                                         comps.push_back(vC[i].GetString());
                                     }
                                 }
-
-                                bool isEs;
-                                varName = 
-                                    MiliVariableMetaData::DetermineTrueName(
-                                    varName, comps, isEs);
                             }
-                            
-                            if (sharedMap.find(varName) == sharedMap.end())
+                           
+                            //
+                            // Element sets are often comprised of multiple
+                            // variables. We need to check for this. 
+                            // real_names is only included for element sets. 
+                            //
+                            if (var.HasMember("real_names"))
                             {
-                                sharedMap[varName] = 1; 
-                            } 
+                                const Value &rN = var["real_names"];
+ 
+                                if (rN.IsArray())
+                                {
+                                    for (SizeType i = 0; i < rN.Size(); ++i)
+                                    {
+                                        std::string name = rN[i].GetString(); 
+
+                                        if (sharedMap.find(name) ==
+                                            sharedMap.end())
+                                        {
+                                            sharedMap[name] = 1;
+                                        }
+                                        else
+                                        {
+                                            sharedMap[name]++;
+                                        }
+                                    }
+                                }
+                            }
                             else
                             {
-                                sharedMap[varName]++; 
+                                if (sharedMap.find(varName) == sharedMap.end())
+                                {
+                                    sharedMap[varName] = 1;
+                                }
+                                else
+                                {
+                                    sharedMap[varName]++;
+                                }
                             }
                         }
                     }
@@ -3022,8 +3094,8 @@ avtMiliFileFormat::ExtractJsonClasses(Document &jDoc,
                             isShared = true; 
                         }
  
-                        MiliVariableMetaData *varMD = ExtractJsonVariable(var,
-                            varName, sName, lName, meshId, isMatVar, 
+                        MiliVariableMetaData *varMD = ExtractJsonVariable(jDoc,
+                            var, varName, sName, lName, meshId, isMatVar, 
                             isGlobal, isShared);
 
                         if (varMD != NULL)

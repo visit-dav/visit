@@ -119,6 +119,7 @@ class MiliVariableMetaData
                                                     bool,
                                                     bool,
                                                     bool,
+                                                    bool,
                                                     avtCentering,
                                                     int,
                                                     int,
@@ -185,7 +186,8 @@ class MiliVariableMetaData
     void                       AddSubrecId(int, int);
     intVector                 &GetSubrecIds(int);
     
-    virtual const std::string &GetPath(void);
+    //virtual const std::string &GetPath(void);
+    const std::string         &GetPath(void);
 
     void                       AddVectorComponent(std::string compName)
                                  { vectorComponents.push_back(compName); };
@@ -193,9 +195,12 @@ class MiliVariableMetaData
     stringVector              &GetVectorComponents(void)
                                  { return vectorComponents; };
 
+    //FIXME: no longer needed?
     static std::string         DetermineTrueName(const std::string,
                                               const std::vector<std::string>,
                                               bool &);
+
+    static bool                IsElementSet(std::string);
 
     void                       PrintSelf(void);
 
@@ -207,7 +212,7 @@ class MiliVariableMetaData
     std::string               classSName;
     std::string               longName;
     std::string               shortName;
-    std::string               esMappedName;
+    std::string               esMappedName;//FIXME: remove this after integration
     std::string               path;
     
     int                       varTypeAvt;
@@ -272,34 +277,29 @@ class MiliElementSetMetaData : public MiliVariableMetaData
                                              int,
                                              int,
                                              stringVector,
-                                             int,
-                                             int, 
-                                             int,
-                                             std::vector< std::vector<int> >);
+                                             intVector,
+                                             intVector,
+                                             intVector);
 
                      ~MiliElementSetMetaData(void);
 
-    virtual const std::string      &GetPath(void);
+    //const std::string              &GetPath(void);
 
-    int                             GetGroupVecSize(void)
-                                      { return groupVecSize; };
+    const intVector                &GetGroupVecSizes(void)
+                                      { return groupVecSizes; };
 
-    int                             GetGroupAvtType(void)
-                                      { return groupAvtType; };
+    const intVector                &GetGroupAvtTypes(void)
+                                      { return groupAvtTypes; };
 
-    int                             GetGroupMiliType(void)
-                                     { return groupMiliType; };
-
-    std::vector< std::vector<int> > &GetGroupIdxs(void)
-                                 { return groupIdxs; };
+    const intVector                &GetGroupMiliTypes(void)
+                                      { return groupMiliTypes; };
 
   private:
 
-    std::vector< std::vector<int> > groupIdxs;
-    
-    int                             groupVecSize;
-    int                             groupAvtType;
-    int                             groupMiliType; 
+    int                             numGroups;
+    intVector                       groupVecSizes;
+    intVector                       groupAvtTypes;
+    intVector                       groupMiliTypes;
 };
 
 

@@ -25,8 +25,7 @@ def TestComponentVis():
     SetView3D(v)
     SetTimeSliderState(90)
     
-    
-    AddPlot("Pseudocolor", "Primal/brick/edrate")
+    AddPlot("Pseudocolor", "Primal/Shared/edrate")
     DrawPlots()
     Test("mili_brick_comp")
     

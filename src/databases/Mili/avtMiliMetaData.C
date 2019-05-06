@@ -88,6 +88,7 @@ MiliVariableMetaData::MiliVariableMetaData(std::string sName,
                                            bool isMat,
                                            bool isGlob,
                                            bool shared,
+                                           bool isES,
                                            avtCentering cent,
                                            int nDomains,
                                            int meshAssoc,  
@@ -106,6 +107,7 @@ MiliVariableMetaData::MiliVariableMetaData(std::string sName,
     isMatVar          = isMat;
     isGlobal          = isGlob;
     isShared          = shared;
+    isElementSet      = isES;
     meshAssociation   = meshAssoc;
     centering         = cent;
     varTypeAvt        = avtType;
@@ -122,7 +124,6 @@ MiliVariableMetaData::MiliVariableMetaData(std::string sName,
         vectorComponents[i] = vComps[i];
     }
 
-    isElementSet = false;
     esMappedName = "";
     path         = "";
 
@@ -318,6 +319,7 @@ MiliVariableMetaData::GetPath()
 }
 
 
+//TODO: We shouldn't need this anymore. 
 // ***************************************************************************
 //  Method: MiliVariableMetaData::DetermineTrueName
 //
@@ -410,6 +412,36 @@ MiliVariableMetaData::DetermineTrueName(const std::string name,
 }
 
 
+// ***************************************************************************
+//  Method: MiliVariableMetaData::IsElementStatus
+//
+//  Purpose:
+//      Given a variable name, determine if it's an element set. 
+//
+//  Arguments:
+//      name    The variable name to be assessed.
+//
+//  Programmer: Alister Maguire
+//  Creation:   May 6, 2019
+//
+//  Modifications:
+//
+// ****************************************************************************
+//FIXME: needed?
+bool
+MiliVariableMetaData::IsElementSet(const std::string name)
+{
+    std::string esId    = "es_";
+    std::string nameSub = name.substr(0, 3);
+    if (esId == nameSub)
+    {
+        return true;
+    }
+    return false;
+}
+
+
+//FIXME: remove after updated. 
 // ***************************************************************************
 //  Method: MiliVariableMetaData::DetermineESStatus
 //
@@ -535,10 +567,9 @@ MiliElementSetMetaData::MiliElementSetMetaData(std::string sName,
                                                int vecSize,
                                                int cDims,
                                                stringVector vComps,
-                                               int gVecSize,
-                                               int gAvtType,
-                                               int gMiliType,
-                                         std::vector< std::vector<int> > gIdxs)
+                                               intVector gVSizes,
+                                               intVector gAvtTypes,
+                                               intVector gMiliTypes)
 : MiliVariableMetaData(sName,
                        lName,
                        cSName,
@@ -547,6 +578,7 @@ MiliElementSetMetaData::MiliElementSetMetaData(std::string sName,
                        isMat,
                        isGlob,
                        shared,
+                       true,
                        cent,
                        nDomains,
                        meshAssoc,  
@@ -557,10 +589,9 @@ MiliElementSetMetaData::MiliElementSetMetaData(std::string sName,
                        cDims,
                        vComps)
 {
-    groupVecSize  = gVecSize;
-    groupAvtType  = gAvtType;
-    groupMiliType = gMiliType;
-    groupIdxs     = gIdxs;
+    groupVecSizes  = gVSizes;
+    groupAvtTypes  = gAvtTypes;
+    groupMiliTypes = gMiliTypes;
 }
 
 
@@ -586,7 +617,6 @@ MiliElementSetMetaData::~MiliElementSetMetaData(void)
 //  Method: MiliElementSetMetaData::GetPath
 //
 //  Purpose:
-//      Get the visit path for an element set variable. 
 //
 //  Arguments: 
 //
@@ -600,39 +630,39 @@ MiliElementSetMetaData::~MiliElementSetMetaData(void)
 //
 // ****************************************************************************
 
-const std::string&
-MiliVariableMetaData::GetPath()
-{
-    //TODO: what we want is "classLName (classSName)/shortName"
-    //      but visit seems to garble this...
-    if (path.empty())
-    {
-        if (multiMesh)
-        {
-            char mmStart[1024];
-            sprintf(mmStart, "Primal (mesh%d)/", meshAssociation);
-            path = mmStart;
-        }
-        else
-        {
-            path = "Primal";
-        }
-
-        //TODO: include element sets in shared once
-        //      issues are worked out. 
-        if (isShared && !isElementSet)
-        {
-            path += "/Shared";
-        }
-        else if (!classSName.empty())
-        {
-            path += "/" + classSName;
-        }
-
-        path += "/" + esMappedName;
-    }
-    return path;
-}
+//const std::string&
+//MiliElementSetMetaData::GetPath()
+//{
+//    //TODO: what we want is "classLName (classSName)/shortName"
+//    //      but visit seems to garble this...
+//    if (path.empty())
+//    {
+//        if (multiMesh)
+//        {
+//            char mmStart[1024];
+//            sprintf(mmStart, "Primal (mesh%d)/", meshAssociation);
+//            path = mmStart;
+//        }
+//        else
+//        {
+//            path = "Primal";
+//        }
+//
+//        //TODO: include element sets in shared once
+//        //      issues are worked out. 
+//        if (isShared && !isElementSet)
+//        {
+//            path += "/Shared";
+//        }
+//        else if (!classSName.empty())
+//        {
+//            path += "/" + classSName;
+//        }
+//
+//        path += "/" + esMappedName;
+//    }
+//    return path;
+//}
 
 
 // ***************************************************************************

@@ -165,7 +165,8 @@ class avtMiliFileFormat : public avtMTMDFileFormat
     int                   CountJsonClassVariables(const rapidjson::Document &,
                                        std::unordered_map<std::string, int> &);
 
-    MiliVariableMetaData *ExtractJsonVariable(const rapidjson::Value &,
+    MiliVariableMetaData *ExtractJsonVariable(const rapidjson::Document &,
+                                              const rapidjson::Value &,
                                               std::string,
                                               std::string,
                                               std::string,
