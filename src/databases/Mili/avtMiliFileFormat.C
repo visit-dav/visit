@@ -414,6 +414,9 @@ ReadMiliResults(Famid  &dbid,
        }
        case M_FLOAT4:
        {
+            //
+            // No copy needed. 
+            //
          break;
        }
        case M_FLOAT8:
@@ -1548,7 +1551,8 @@ avtMiliFileFormat::GetVar(int timestep,
         // each of the classes that share this variable. 
         //
         SharedVariableInfo *sharedInfo = 
-            miliMetaData[meshId]->GetSharedVariableInfo(varMD->GetShortName().c_str());
+            miliMetaData[meshId]->GetSharedVariableInfo(
+            varMD->GetShortName().c_str());
 
         if (sharedInfo != NULL)
         {
@@ -1818,19 +1822,38 @@ avtMiliFileFormat::GetVectorVar(int timestep,
         fArrPtr[i] = std::numeric_limits<float>::quiet_NaN();
     }
 
-    //TODO: Include element sets in shared once issues are worked out. 
-    if (varMD->IsShared() && !varMD->IsElementSet())    
+    //TODO: TEST ELEMENT SET INTEGRATION
+    if (varMD->IsShared())// && !varMD->IsElementSet())    //FIXME: testing
     {
+        std::string shortName = "";
+    
+        //
+        // If this is an element set, we need to retrieve the short name
+        // from the path. 
+        //
+        if (varMD->IsElementSet())     
+        {
+            int gIdx = 
+                ((MiliElementSetMetaData *)varMD)->GetGroupIdxByPath(varPath);
+            shortName = 
+                ((MiliElementSetMetaData *)varMD)->GetGroupShortName(gIdx);
+        }
+        else
+        {
+            shortName = varMD->GetShortName();
+        }
+
         //
         // If this is a shared variable, we need to retrieve data from 
         // each of the classes that share this variable. 
         //
         SharedVariableInfo *sharedInfo = 
-            miliMetaData[meshId]->GetSharedVariableInfo(varMD->GetShortName().c_str());
+            miliMetaData[meshId]->GetSharedVariableInfo(shortName.c_str());
 
         if (sharedInfo != NULL)
         {
             std::vector<int> *varIdxs = &(sharedInfo->variableIndicies);
+
             for (std::vector<int>::iterator itr = varIdxs->begin();
                  itr != varIdxs->end(); ++itr)
             {
@@ -1839,10 +1862,15 @@ avtMiliFileFormat::GetVectorVar(int timestep,
                     miliMetaData[meshId]->GetVarMDByIdx(curIdx);
 
                 //TODO: Include element sets in shared once issues are worked out. 
-                if (!sharedVarMD->IsElementSet())
-                {
-                    GetVectorVar(timestep, dom, meshId, sharedVarMD, fltArray);
-                }
+                //if (!sharedVarMD->IsElementSet())
+                //{
+                    GetVectorVar(timestep, 
+                                 dom, 
+                                 meshId, 
+                                 shortName,
+                                 sharedVarMD, 
+                                 fltArray);
+                //}
             }
         }
         else
@@ -1850,12 +1878,14 @@ avtMiliFileFormat::GetVectorVar(int timestep,
             debug1 << "MILI: Missing shared variable info?!?"; 
             debug1 << "MILI: skipping shared...";
 
-            GetVectorVar(timestep, dom, meshId, varMD, fltArray);
+            GetVectorVar(timestep, dom, meshId, varMD->GetShortName(),
+                varMD, fltArray);
         }
     }
     else
     {
-        GetVectorVar(timestep, dom, meshId, varMD, fltArray);
+        GetVectorVar(timestep, dom, meshId, varMD->GetShortName(),
+            varMD, fltArray);
     }
     
     //
@@ -1900,6 +1930,16 @@ avtMiliFileFormat::GetVectorVar(int timestep,
 //  Purpose:
 //      Retrieve the variable data from the given variable. 
 //
+//      Note: Element Sets (ESs) are special cases that need particular 
+//            attention. One detail of importance is that an element set can 
+//            contain multiple "groups" within it's data. For instance, if we
+//            encounter an ES with a vector length of 6, the first 5 of these 
+//            components might belong to group A, while the last belongs to 
+//            group B. In reality, this is only one vector for a single 
+//            variable, but, in practice, we visualize and treat each of these
+//            groups as an entirely separate variable (in this case, a vector
+//            of length 5 and a scalar). 
+//
 //      Note: code for transferring symmetric tensors to normal
 //            tensors has been kept as originally written by
 //            Hank Childs in 2004. 
@@ -1908,6 +1948,7 @@ avtMiliFileFormat::GetVectorVar(int timestep,
 //    timestep   The time step of interest. 
 //    dom        The domain of interest. 
 //    meshId     The mesh id associated with this variable. 
+//    shortName  The variable's short name. 
 //    varMD      The variable meta data. 
 //    fltArray   The vtk array to read into. 
 //
@@ -1922,12 +1963,12 @@ void
 avtMiliFileFormat::GetVectorVar(int timestep, 
                                 int dom, 
                                 int meshId, 
+                                std::string shortName,
                                 MiliVariableMetaData *varMD,
                                 vtkFloatArray *fltArray)
 {
     SubrecInfo SRInfo      = miliMetaData[meshId]->GetSubrecInfo(dom);
     intVector SRIds        = varMD->GetSubrecIds(dom);
-    std::string vShortName = varMD->GetShortName();
 
     //
     // Component dimensions will only be > 1 if we have
@@ -1945,7 +1986,7 @@ avtMiliFileFormat::GetVectorVar(int timestep,
     // Create a copy of our name to pass into mili. 
     //
     char charName[1024];
-    sprintf(charName, vShortName.c_str());
+    sprintf(charName, shortName.c_str());
     char *namePtr = (char *) charName;
 
     if (varMD->GetCentering() == AVT_NODECENT)
@@ -2008,6 +2049,16 @@ avtMiliFileFormat::GetVectorVar(int timestep,
         //
         if (isES)
         {
+            //TODO: only take desired components. 
+            //intVector groupIdxs = 
+            //    ((MiliElementSetMetaData *) varMD)->GetComponentIdxs(shortName);
+
+            //fprintf(stderr, "\nindices for %s:\n", shortName);//FIXME: 
+            //for (int i = 0; i < groupIdxs; ++i)
+            //{
+            //    fprintf(stderr, "%i ", groupIdxs[i]);//FIXME
+            //}
+
             //
             // Let's take the mid integration point for now.
             //
@@ -2317,13 +2368,43 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
             stringVector meshPaths;
             if (addToDefault)
             {  
-                meshPaths.push_back(varMD->GetPath());
+                if (varMD->IsElementSet())
+                {
+                    stringVector groupPaths = 
+                        ((MiliElementSetMetaData *)varMD)->GetGroupPaths();
+
+                    for (stringVector::iterator gItr = groupPaths.begin();
+                         gItr != groupPaths.end(); ++gItr)
+                    {
+                        meshPaths.push_back(*gItr);
+                    }
+                }
+                else
+                {
+                    meshPaths.push_back(varMD->GetPath());
+                }
             }
             if (doSand)
             {
-                std::string sandDir  = miliMetaData[meshId]->GetSandDir();
-                std::string sandPath = sandDir + "/" + varMD->GetPath();
-                meshPaths.push_back(sandPath);
+                std::string sandDir = miliMetaData[meshId]->GetSandDir();
+
+                if (varMD->IsElementSet())
+                {
+                    stringVector groupPaths = 
+                        ((MiliElementSetMetaData *)varMD)->GetGroupPaths();
+
+                    for (stringVector::iterator gItr = groupPaths.begin();
+                         gItr != groupPaths.end(); ++gItr)
+                    {
+                        std::string sandPath = sandDir + "/" + (*gItr);
+                        meshPaths.push_back(sandPath);
+                    }
+                }   
+                else
+                {
+                    std::string sandPath = sandDir + "/" + varMD->GetPath();
+                    meshPaths.push_back(sandPath);
+                }
             }
 
             char meshName[32];
@@ -2711,7 +2792,7 @@ avtMiliFileFormat::GetAuxiliaryData(const char *varName,
 //      meshId       The associated mesh ID. 
 //      isMatVar     Is this a material variable?
 //      isGlobal     Is this a global variable?
-//      isShared     Is this a shared variable?
+//      sharedMap    Map variable names to shared status. 
 //           
 //  Author: Alister Maguire
 //  Date:   January 29, 2019
@@ -2729,7 +2810,7 @@ avtMiliFileFormat::ExtractJsonVariable(const Document &jDoc,
                                        int meshId,
                                        bool isMatVar,
                                        bool isGlobal,
-                                       bool isShared)
+                                std::unordered_map<std::string, int> &sharedMap)
 {
     if (val.IsObject())
     {
@@ -2740,7 +2821,7 @@ avtMiliFileFormat::ExtractJsonVariable(const Document &jDoc,
         int vecSize            = 0;
         int compDims           = 1;
         int numType            = M_FLOAT;
-        bool isES              = false;
+        bool isShared          = false;
         bool isMulti           = (nMeshes > 1);
 
         stringVector comps;
@@ -2800,14 +2881,14 @@ avtMiliFileFormat::ExtractJsonVariable(const Document &jDoc,
 
         if (val.HasMember("real_names"))
         {
-            isES = true;
             const Value &rN    = val["real_names"];
             const Value &jVars = jDoc["Variables"];
 
-            std::vector<std::string> groupNames;
-            std::vector<int>         groupAvtTypes;
-            std::vector<int>         groupAggTypes;
-            std::vector<int>         groupVectorSizes;
+            stringVector groupNames;
+            intVector    groupAvtTypes;
+            intVector    groupAggTypes;
+            intVector    groupVectorSizes;
+            boolVector   groupIsShared;
  
             if (rN.IsArray())
             {
@@ -2815,6 +2896,19 @@ avtMiliFileFormat::ExtractJsonVariable(const Document &jDoc,
                 {
                     std::string groupName = rN[i].GetString();
                     groupNames.push_back(groupName);  
+
+                    //
+                    // Determine if this group is shared or not.  
+                    //
+                    if (sharedMap[groupName] > 1)
+                    {
+                        groupIsShared.push_back(true);
+                        isShared = true;
+                    }
+                    else
+                    {
+                        groupIsShared.push_back(false);
+                    }
 
                     if (jVars.HasMember(groupName.c_str()))
                     {
@@ -2837,6 +2931,36 @@ avtMiliFileFormat::ExtractJsonVariable(const Document &jDoc,
                     }
                 }
             }
+            return new MiliElementSetMetaData(shortName, 
+                                              longName,
+                                              cShortName,
+                                              cLongName,
+                                              isMulti,
+                                              isMatVar,
+                                              isGlobal,
+                                              isShared,
+                                              centering,
+                                              nDomains,
+                                              meshId,
+                                              avtType,
+                                              aggType,
+                                              numType,
+                                              vecSize,
+                                              compDims,
+                                              comps,
+                                              groupNames,
+                                              groupVectorSizes,
+                                              groupAvtTypes,
+                                              groupAggTypes,
+                                              groupIsShared);
+        }
+
+        //
+        // Determine if this variable is shared or not.  
+        //
+        if (sharedMap[shortName] > 1)
+        {
+            isShared = true; 
         }
 
         return new MiliVariableMetaData(shortName, 
@@ -2847,7 +2971,7 @@ avtMiliFileFormat::ExtractJsonVariable(const Document &jDoc,
                                         isMatVar,
                                         isGlobal,
                                         isShared,
-                                        isES,
+                                        false,    //ES status
                                         centering,
                                         nDomains,
                                         meshId,
@@ -3087,16 +3211,9 @@ avtMiliFileFormat::ExtractJsonClasses(Document &jDoc,
                         std::string varName = cVars[i].GetString();
                         const Value &var    = jVars[cVars[i]];
                         
-                        bool isShared = false;
-
-                        if (sharedMap[varName] > 1)
-                        {
-                            isShared = true; 
-                        }
- 
                         MiliVariableMetaData *varMD = ExtractJsonVariable(jDoc,
                             var, varName, sName, lName, meshId, isMatVar, 
-                            isGlobal, isShared);
+                            isGlobal, sharedMap);
 
                         if (varMD != NULL)
                         {

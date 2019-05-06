@@ -128,6 +128,7 @@ class avtMiliFileFormat : public avtMTMDFileFormat
     void                  GetVectorVar(int, 
                                        int, 
                                        int,
+                                       std::string, 
                                        MiliVariableMetaData *varMD,
                                        vtkFloatArray *);
 
@@ -173,7 +174,7 @@ class avtMiliFileFormat : public avtMTMDFileFormat
                                               int,
                                               bool,
                                               bool,
-                                              bool);
+                                std::unordered_map<std::string, int> &sharedMap);
 
     void                  ExtractJsonVectorComponents(const rapidjson::Value &,
                                                       const rapidjson::Value &,

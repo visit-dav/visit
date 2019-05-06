@@ -186,8 +186,7 @@ class MiliVariableMetaData
     void                       AddSubrecId(int, int);
     intVector                 &GetSubrecIds(int);
     
-    //virtual const std::string &GetPath(void);
-    const std::string         &GetPath(void);
+    virtual const std::string &GetPath(void);
 
     void                       AddVectorComponent(std::string compName)
                                  { vectorComponents.push_back(compName); };
@@ -204,7 +203,7 @@ class MiliVariableMetaData
 
     void                       PrintSelf(void);
 
-  private:
+  protected:
 
     void                      DetermineESStatus(void);
     
@@ -277,13 +276,26 @@ class MiliElementSetMetaData : public MiliVariableMetaData
                                              int,
                                              int,
                                              stringVector,
+                                             stringVector,
                                              intVector,
                                              intVector,
-                                             intVector);
+                                             intVector,
+                                             boolVector);
 
                      ~MiliElementSetMetaData(void);
 
-    //const std::string              &GetPath(void);
+    virtual const std::string      &GetPath(void);
+    std::string                     GetGroupPath(int);
+    std::string                     GetGroupPath(std::string);
+    const stringVector             &GetGroupPaths(void)
+                                      { return groupPaths; };
+
+    int                             GetGroupIdxByPath(const char *);
+
+    std::string                     GetGroupShortName(int);
+
+    const stringVector             &GetGroupShortNames(void)
+                                      { return groupShortNames; };
 
     const intVector                &GetGroupVecSizes(void)
                                       { return groupVecSizes; };
@@ -294,12 +306,23 @@ class MiliElementSetMetaData : public MiliVariableMetaData
     const intVector                &GetGroupMiliTypes(void)
                                       { return groupMiliTypes; };
 
+    const boolVector               &GetGroupIsShared(void)
+                                      { return groupIsShared; };
+
+    intVector                       GetComponentIdxs(std::string);
+
+    intVector                       GetComponentIdxs(int);
+
   private:
 
     int                             numGroups;
+    stringVector                    groupShortNames;
     intVector                       groupVecSizes;
     intVector                       groupAvtTypes;
     intVector                       groupMiliTypes;
+    std::vector<bool>               groupIsShared;
+    stringVector                    groupPaths;
+    std::vector< std::vector<int> > groupIdxs;
 };
 
 
