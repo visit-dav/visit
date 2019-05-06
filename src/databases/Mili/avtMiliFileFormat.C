@@ -2328,7 +2328,7 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
             char meshName[32];
             sprintf(meshName, "mesh%d", varMD->GetMeshAssociation() + 1);
 
-            int cellType           = varMD->GetAvtCellType();
+            int varType            = varMD->GetAvtVarType();
             avtCentering centering = varMD->GetCentering();
             int vecSize            = varMD->GetVectorSize();
 
@@ -2343,20 +2343,20 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
             // If we have a higher dim vector, determine how we should
             // treat it.
             //
-            int cellTypeCast       = cellType;
-            bool mayHaveHigherDims = (cellType == AVT_VECTOR_VAR ||
-                                      cellType == AVT_MATERIAL);
+            int varTypeCast        = varType;
+            bool mayHaveHigherDims = (varType == AVT_VECTOR_VAR ||
+                                      varType == AVT_MATERIAL);
             if (mayHaveHigherDims && vecSize != dims)
             {
                 if (dims == 3)
                 {
                     if (vecSize == 6)
                     {
-                        cellTypeCast = AVT_SYMMETRIC_TENSOR_VAR;
+                        varTypeCast = AVT_SYMMETRIC_TENSOR_VAR;
                     }
                     else if (vecSize == 9)
                     {
-                        cellTypeCast = AVT_TENSOR_VAR;
+                        varTypeCast = AVT_TENSOR_VAR;
                     }
                     else
                     {
@@ -2364,7 +2364,7 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
                         // Default to treating it as an array and 
                         // just display the components. 
                         //
-                        cellTypeCast = AVT_ARRAY_VAR;
+                        varTypeCast = AVT_ARRAY_VAR;
                     }
 
                 }
@@ -2372,11 +2372,11 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
                 {
                     if (vecSize == 3)
                     {
-                        cellTypeCast = AVT_SYMMETRIC_TENSOR_VAR;
+                        varTypeCast = AVT_SYMMETRIC_TENSOR_VAR;
                     }
                     else if (vecSize == 4)
                     {
-                        cellTypeCast = AVT_TENSOR_VAR;
+                        varTypeCast = AVT_TENSOR_VAR;
                     }
                     else
                     {
@@ -2384,7 +2384,7 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
                         // Default to treating it as an array and 
                         // just display the components. 
                         //
-                        cellTypeCast = AVT_ARRAY_VAR;
+                        varTypeCast = AVT_ARRAY_VAR;
                     }
                 }
                 else
@@ -2393,7 +2393,7 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
                 }
             }
            
-            switch (cellTypeCast)
+            switch (varTypeCast)
             {
                 case AVT_SCALAR_VAR:
                 {

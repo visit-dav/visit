@@ -66,8 +66,8 @@
 //      shared       Is a shared variable. 
 //      cent         centering (node/cell). 
 //      meshAssoc    ID of associated mesh (used for multi-mesh).  
-//      avtType      Avt cell type. 
-//      aggType      Mili cell type.
+//      avtType      Avt variable type. 
+//      aggType      Mili variable type.
 //      nType        The type of scalar (float/int/etc.)
 //      vecSize      Size of vector (if it is a vector).  
 //      cDims        Component dimensions. 
@@ -108,8 +108,8 @@ MiliVariableMetaData::MiliVariableMetaData(std::string sName,
     isShared          = shared;
     meshAssociation   = meshAssoc;
     centering         = cent;
-    cellTypeAvt       = avtType;
-    cellTypeMili      = aggType;
+    varTypeAvt        = avtType;
+    varTypeMili       = aggType;
     componentDims     = cDims;
     numType           = nType;
     vectorSize        = vecSize;
@@ -465,8 +465,8 @@ MiliVariableMetaData::PrintSelf(void)
     std::cerr << "class long Name: " << classLName << std::endl;
     std::cerr << "class short Name: " << classSName << std::endl;
     std::cerr << "path: " << path << std::endl;
-    std::cerr << "cell type avt: " << cellTypeAvt << std::endl;
-    std::cerr << "cell type mili: " << cellTypeMili << std::endl;
+    std::cerr << "var type avt: " << varTypeAvt << std::endl;
+    std::cerr << "var type mili: " << varTypeMili << std::endl;
     std::cerr << "centering: " << centering << std::endl;
     std::cerr << "mesh assoc: " << meshAssociation << std::endl;
     std::cerr << "num type: " << numType << std::endl;
@@ -480,6 +480,158 @@ MiliVariableMetaData::PrintSelf(void)
     {
         std::cerr << vectorComponents[i] << std::endl;
     }
+}
+
+
+// ***************************************************************************
+//  constructor: MiliElementSetMetaData::MiliElementSetMetaData
+//
+//  Purpose:
+//      Initialized the MiliElementSetMetaData. 
+//
+//  Arguments:
+//      sName        The short name. 
+//      lName        The long name.
+//      cSName       The class short name. 
+//      cLName       The class long name.
+//      isMultiM     Is multi mesh or not. 
+//      isMat        Is a material var. 
+//      isGlob       Is global. 
+//      shared       Is a shared variable. 
+//      cent         centering (node/cell). 
+//      meshAssoc    ID of associated mesh (used for multi-mesh).  
+//      avtType      Avt variable type. 
+//      aggType      Mili variable type.
+//      nType        The type of scalar (float/int/etc.)
+//      vecSize      Size of vector (if it is a vector).  
+//      cDims        Component dimensions. 
+//      vComps       Vector components (as shortnames). 
+//      gVecSize     The vector size of this "group" in the ES.
+//      gAvtType     The avt type of this "group" in the ES.
+//      gMiliType    The mili type of this "group" in the ES.
+//      gIdxs        The component indexes that make up this group.
+//
+//  Programmer: Alister Maguire
+//  Creation:   April 26, 2019
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+MiliElementSetMetaData::MiliElementSetMetaData(std::string sName,
+                                               std::string lName,
+                                               std::string cSName,
+                                               std::string cLName,
+                                               bool isMultiM,
+                                               bool isMat,
+                                               bool isGlob,
+                                               bool shared,
+                                               avtCentering cent,
+                                               int nDomains,
+                                               int meshAssoc,  
+                                               int avtType,
+                                               int aggType,
+                                               int nType,
+                                               int vecSize,
+                                               int cDims,
+                                               stringVector vComps,
+                                               int gVecSize,
+                                               int gAvtType,
+                                               int gMiliType,
+                                         std::vector< std::vector<int> > gIdxs)
+: MiliVariableMetaData(sName,
+                       lName,
+                       cSName,
+                       cLName,
+                       isMultiM,
+                       isMat,
+                       isGlob,
+                       shared,
+                       cent,
+                       nDomains,
+                       meshAssoc,  
+                       avtType,
+                       aggType,
+                       nType,
+                       vecSize,
+                       cDims,
+                       vComps)
+{
+    groupVecSize  = gVecSize;
+    groupAvtType  = gAvtType;
+    groupMiliType = gMiliType;
+    groupIdxs     = gIdxs;
+}
+
+
+// ***************************************************************************
+//  destructor: MiliElementSetMetaData::~MiliElementSetMetaData
+//
+//  Purpose:
+//      Destroy the object. 
+//
+//  Programmer: Alister Maguire
+//  Creation:   April 26, 2019
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+MiliElementSetMetaData::~MiliElementSetMetaData(void)
+{
+}
+
+
+// ***************************************************************************
+//  Method: MiliElementSetMetaData::GetPath
+//
+//  Purpose:
+//      Get the visit path for an element set variable. 
+//
+//  Arguments: 
+//
+//  Returns:
+//      A reference to our path string. 
+//           
+//  Programmer: Alister Maguire
+//  Creation:   Jan 15, 2019
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+const std::string&
+MiliVariableMetaData::GetPath()
+{
+    //TODO: what we want is "classLName (classSName)/shortName"
+    //      but visit seems to garble this...
+    if (path.empty())
+    {
+        if (multiMesh)
+        {
+            char mmStart[1024];
+            sprintf(mmStart, "Primal (mesh%d)/", meshAssociation);
+            path = mmStart;
+        }
+        else
+        {
+            path = "Primal";
+        }
+
+        //TODO: include element sets in shared once
+        //      issues are worked out. 
+        if (isShared && !isElementSet)
+        {
+            path += "/Shared";
+        }
+        else if (!classSName.empty())
+        {
+            path += "/" + classSName;
+        }
+
+        path += "/" + esMappedName;
+    }
+    return path;
 }
 
 

@@ -186,25 +186,25 @@ class avtMiliFileFormat : public avtMTMDFileFormat
     //
     // Label info retrieval.
     //
-    void RetrieveNodeLabelInfo(const int, 
-                               char *, 
-                               const int);
+    void                   RetrieveNodeLabelInfo(const int, 
+                                                 char *, 
+                                                 const int);
 
-    void RetrieveCellLabelInfo(const int, 
-                               char *, 
-                               const int, 
-                               const int);
+    void                   RetrieveCellLabelInfo(const int, 
+                                                 char *, 
+                                                 const int, 
+                                                 const int);
 
     //
     // Expression helpers. 
     //
-    Expression            CreateGenericExpression(const char *, 
-                                                  const char *,
-                                                  Expression::ExprType);
+    Expression             CreateGenericExpression(const char *, 
+                                                   const char *,
+                                                   Expression::ExprType);
 
-    Expression            ScalarExpressionFromVec(const char *,
-                                                  const char *, 
-                                                  int);
+    Expression             ScalarExpressionFromVec(const char *,
+                                                   const char *, 
+                                                   int);
 
     //
     // Protected data. 
