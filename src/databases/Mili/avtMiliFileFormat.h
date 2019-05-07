@@ -131,6 +131,22 @@ class avtMiliFileFormat : public avtMTMDFileFormat
                                        std::string, 
                                        MiliVariableMetaData *varMD,
                                        vtkFloatArray *);
+    void                  GetElementSetVar(int, //FIXME use this?
+                                           int,
+                                           int,
+                                           std::string, 
+                                           MiliVariableMetaData *varMD,
+                                           vtkFloatArray *);
+
+    void                  AddMiliVariableToMetaData(avtDatabaseMetaData *,
+                                                    int,
+                                                    int,
+                                                    bool,
+                                                    bool,
+                                                    std::string,
+                                                    avtCentering,
+                                                    const intVector &,
+                                                    const stringVector &);
 
     virtual void          PopulateDatabaseMetaData(avtDatabaseMetaData *, int);
 

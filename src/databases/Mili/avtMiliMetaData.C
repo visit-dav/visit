@@ -595,7 +595,7 @@ MiliElementSetMetaData::MiliElementSetMetaData(std::string sName,
     groupIsShared   = gIsShared;
     numGroups       = groupShortNames.size();
 
-    groupIdxs.reserve(numGroups);
+    groupComponentIdxs.reserve(numGroups);
 
     int componentIdx = 0;
     int gIdx = 0;
@@ -616,7 +616,7 @@ MiliElementSetMetaData::MiliElementSetMetaData(std::string sName,
             j++;
         }
 
-        groupIdxs.push_back(idxs);
+        groupComponentIdxs.push_back(idxs);
 
         //
         // Since we're here, figure out the paths as well. 
@@ -850,7 +850,78 @@ MiliElementSetMetaData::GetGroupShortName(int gIdx)
 
 
 // ***************************************************************************
-//  Method: MiliElementSetMetaData::GetComponentIdxs
+//  Method: MiliElementSetMetaData::GetGroupVecSize
+//
+//  Purpose:
+//      Get the vector size for a group. 
+//
+//  Arguments:
+//      gIdx    The group index. 
+//
+//  Returns:
+//      If gIdx is valid, the group vec size is returned. Otherwise, -1.
+//           
+//  Programmer: Alister Maguire
+//  Creation:   May 6, 2019
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+int
+MiliElementSetMetaData::GetGroupVecSize(int gIdx)
+{
+    if (gIdx >= 0 && gIdx < groupVecSizes.size())
+    {
+        return groupVecSizes[gIdx];
+    }
+    return -1;
+}
+
+
+// ***************************************************************************
+//  Method: MiliElementSetMetaData::GetGroupVecComponents
+//
+//  Purpose:
+//      Get the vector components for the given group. 
+//
+//  Arguments:
+//      gIdx    The group index. 
+//
+//  Returns:
+//      If gIdx is valid, the group vec components are returned. Otherwise, an
+//      empty vector. 
+//           
+//  Programmer: Alister Maguire
+//  Creation:   May 6, 2019
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+stringVector
+MiliElementSetMetaData::GetGroupVecComponents(int gIdx)
+{
+    stringVector vComps;
+    intVector cIdxs;
+
+    if (gIdx >= 0 && gIdx < groupComponentIdxs.size())
+    {
+        cIdxs = groupComponentIdxs[gIdx]; 
+    }
+
+    for (intVector::iterator it = cIdxs.begin();
+         it != cIdxs.end(); ++it)
+    {
+        vComps.push_back(vectorComponents[(*it)]);
+    }
+
+    return vComps;
+}
+
+
+// ***************************************************************************
+//  Method: MiliElementSetMetaData::GetGroupComponentIdxs
 //
 //  Purpose:
 //      Get the component indicies for a given group. 
@@ -859,8 +930,8 @@ MiliElementSetMetaData::GetGroupShortName(int gIdx)
 //      groupName    The name of the group of interest. 
 //
 //  Returns:
-//      If the name is valid, a vector containing the component indicies 
-//      for this group. Otherwise, an empty vector. 
+//      If the name is valid, a const reference to the vector containing the 
+//      component indicies for this group. Otherwise, an empty vector. 
 //           
 //  Programmer: Alister Maguire
 //  Creation:   Jan 15, 2019
@@ -869,14 +940,14 @@ MiliElementSetMetaData::GetGroupShortName(int gIdx)
 //
 // ****************************************************************************
 
-intVector
-MiliElementSetMetaData::GetComponentIdxs(std::string groupName)
+intVector 
+MiliElementSetMetaData::GetGroupComponentIdxs(std::string groupName)
 {
     for (int i = 0; i < groupShortNames.size(); ++i)
     {
         if (groupShortNames[i] == groupName)
         {
-            return GetComponentIdxs(i);
+            return GetGroupComponentIdxs(i);
         }
     }
     intVector empty;
@@ -885,7 +956,7 @@ MiliElementSetMetaData::GetComponentIdxs(std::string groupName)
 
 
 // ***************************************************************************
-//  Method: MiliElementSetMetaData::GetComponentIdxs
+//  Method: MiliElementSetMetaData::GetGroupComponentIdxs
 //
 //  Purpose:
 //      Get the component indicies for a given group. 
@@ -894,8 +965,8 @@ MiliElementSetMetaData::GetComponentIdxs(std::string groupName)
 //      groupIdx    The index of the group of interest. 
 //
 //  Returns:
-//      If the index is valid, a vector containing the component indicies 
-//      for this group. Otherwise, an empty vector. 
+//      If the index is valid, a const reference to the vector containing 
+//      the component indicies for this group. Otherwise, an empty vector. 
 //           
 //  Programmer: Alister Maguire
 //  Creation:   Jan 15, 2019
@@ -904,12 +975,12 @@ MiliElementSetMetaData::GetComponentIdxs(std::string groupName)
 //
 // ****************************************************************************
 
-intVector
-MiliElementSetMetaData::GetComponentIdxs(int groupIdx)
+intVector 
+MiliElementSetMetaData::GetGroupComponentIdxs(int groupIdx)
 {
-    if (groupIdx < groupIdxs.size())
+    if (groupIdx < groupComponentIdxs.size())
     {
-        return groupIdxs[groupIdx];
+        return groupComponentIdxs[groupIdx];
     }
     intVector empty;
     return empty;
@@ -2342,13 +2413,20 @@ avtMiliMetaData::GetVarMDIdxByShortName(const char *vName,
     {
         if (miliVariables[i] != NULL) 
         {
-            //
-            // If this is an element set, we need to check against
-            // all of its group names. 
-            //
-            if (miliVariables[i]->IsElementSet() && 
+            if (miliVariables[i]->GetShortName() == vName &&
+                     miliVariables[i]->GetClassShortName() == cName)
+            {
+                return i;
+            }
+            else if (miliVariables[i]->IsElementSet() && 
                 miliVariables[i]->GetClassShortName() == cName)
             {
+                //
+                // If this is an element set, we need to check against
+                // all of its group names. IMPORTANT: we must check the
+                // group names after we've checked the short name (above)
+                // so that users can still request the element set itself.  
+                //
                 stringVector groupNames = 
                     ((MiliElementSetMetaData *)miliVariables[i])->
                     GetGroupShortNames();
@@ -2361,11 +2439,6 @@ avtMiliMetaData::GetVarMDIdxByShortName(const char *vName,
                         return i;
                     }
                 }
-            }
-            else if (miliVariables[i]->GetShortName() == vName &&
-                     miliVariables[i]->GetClassShortName() == cName)
-            {
-                return i;
             }
         }
     }
@@ -2423,10 +2496,13 @@ avtMiliMetaData::GetVarMDIdxByPath(const char *vPath)
                 for (stringVector::iterator gItr = groupPaths.begin();
                      gItr != groupPaths.end(); ++gItr, ++gIdx)
                 {
-                    return i;
+                    if ((*gItr) == strVPath)
+                    {
+                        return i;
+                    }
                 }
             }
-            else if (miliVariables[i]->GetPath() == strVPath.c_str())//FIXME: why use c_str?
+            else if (miliVariables[i]->GetPath() == strVPath)
             {
                 return i;
             }

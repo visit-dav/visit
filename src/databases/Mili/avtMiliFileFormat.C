@@ -1542,17 +1542,34 @@ avtMiliFileFormat::GetVar(int timestep,
         fltArray->SetTuple1(i, std::numeric_limits<float>::quiet_NaN());
     }
 
+    //TODO: clean this up
+    std::string shortName = "";
 
-    //TODO: Include element sets in shared once issues are worked out. 
-    if (varMD->IsShared() && !varMD->IsElementSet())    
+    //
+    // If this is an element set, we need to retrieve the short name
+    // from the path. 
+    //
+    if (varMD->IsElementSet())     
+    {
+        int gIdx = 
+            ((MiliElementSetMetaData *)varMD)->GetGroupIdxByPath(varPath);
+        shortName = 
+            ((MiliElementSetMetaData *)varMD)->GetGroupShortName(gIdx);
+    }
+    else
+    {
+        shortName = varMD->GetShortName();
+    }
+
+
+    if (varMD->IsShared())
     {
         //
         // If this is a shared variable, we need to retrieve data from 
         // each of the classes that share this variable. 
         //
         SharedVariableInfo *sharedInfo = 
-            miliMetaData[meshId]->GetSharedVariableInfo(
-            varMD->GetShortName().c_str());
+            miliMetaData[meshId]->GetSharedVariableInfo(shortName.c_str());
 
         if (sharedInfo != NULL)
         {
@@ -1564,11 +1581,24 @@ avtMiliFileFormat::GetVar(int timestep,
                 MiliVariableMetaData *sharedVarMD = 
                     miliMetaData[meshId]->GetVarMDByIdx(curIdx);
 
-                //TODO: Include element sets in shared once issues are worked out. 
-                if (!sharedVarMD->IsElementSet())
+                if (sharedVarMD->IsElementSet())
                 {
-                    GetVar(timestep, dom, meshId, sharedVarMD, fltArray);
+                    GetVectorVar(timestep, 
+                                 dom, 
+                                 meshId, 
+                                 shortName,
+                                 sharedVarMD, 
+                                 fltArray);
                 }
+                else
+                {
+                    GetVar(timestep, 
+                           dom, 
+                           meshId, 
+                           sharedVarMD, 
+                           fltArray);
+                }
+              
             }
 
             return fltArray;
@@ -1576,6 +1606,19 @@ avtMiliFileFormat::GetVar(int timestep,
 
         debug1 << "MILI: Missing shared variable info?!?"; 
         debug1 << "MILI: skipping shared...";
+    }
+    else if (varMD->IsElementSet())
+    {
+        //
+        // We can arrive here when an element set has one shared portion
+        // and another portion which is to be treated as just a scalar. 
+        //
+        GetVectorVar(timestep, 
+                     dom, 
+                     meshId, 
+                     shortName,
+                     varMD, 
+                     fltArray);
     }
 
     GetVar(timestep, dom, meshId, varMD, fltArray);
@@ -1791,12 +1834,25 @@ avtMiliFileFormat::GetVectorVar(int timestep,
         EXCEPTION1(InvalidVariableException, varPath);
     }
 
-    int vecSize   = varMD->GetVectorSize();
+    int vecSize           = 0;
+    std::string shortName = "";
+
+    if (varMD->IsElementSet())
+    {
+        int gIdx = 
+            ((MiliElementSetMetaData *)varMD)->GetGroupIdxByPath(varPath);
+        shortName = 
+            ((MiliElementSetMetaData *)varMD)->GetGroupShortName(gIdx);
+        vecSize =
+            ((MiliElementSetMetaData *)varMD)->GetGroupVecSize(gIdx);
+    }
+    else
+    {
+        vecSize   = varMD->GetVectorSize();
+        shortName = varMD->GetShortName();
+    }    
+
     int numTuples = 0;
-
-    vtkFloatArray *fltArray = vtkFloatArray::New();
-    fltArray->SetNumberOfComponents(vecSize);
-
     if (varMD->GetCentering() == AVT_NODECENT)
     {
         numTuples = miliMetaData[meshId]->GetNumNodes(dom);
@@ -1806,6 +1862,8 @@ avtMiliFileFormat::GetVectorVar(int timestep,
         numTuples = miliMetaData[meshId]->GetNumCells(dom);
     }
 
+    vtkFloatArray *fltArray = vtkFloatArray::New();
+    fltArray->SetNumberOfComponents(vecSize);
     fltArray->SetNumberOfTuples(numTuples);
 
     float *fArrPtr = (float *) fltArray->GetVoidPointer(0);
@@ -1822,27 +1880,8 @@ avtMiliFileFormat::GetVectorVar(int timestep,
         fArrPtr[i] = std::numeric_limits<float>::quiet_NaN();
     }
 
-    //TODO: TEST ELEMENT SET INTEGRATION
-    if (varMD->IsShared())// && !varMD->IsElementSet())    //FIXME: testing
+    if (varMD->IsShared())
     {
-        std::string shortName = "";
-    
-        //
-        // If this is an element set, we need to retrieve the short name
-        // from the path. 
-        //
-        if (varMD->IsElementSet())     
-        {
-            int gIdx = 
-                ((MiliElementSetMetaData *)varMD)->GetGroupIdxByPath(varPath);
-            shortName = 
-                ((MiliElementSetMetaData *)varMD)->GetGroupShortName(gIdx);
-        }
-        else
-        {
-            shortName = varMD->GetShortName();
-        }
-
         //
         // If this is a shared variable, we need to retrieve data from 
         // each of the classes that share this variable. 
@@ -1861,16 +1900,12 @@ avtMiliFileFormat::GetVectorVar(int timestep,
                 MiliVariableMetaData *sharedVarMD = 
                     miliMetaData[meshId]->GetVarMDByIdx(curIdx);
 
-                //TODO: Include element sets in shared once issues are worked out. 
-                //if (!sharedVarMD->IsElementSet())
-                //{
-                    GetVectorVar(timestep, 
-                                 dom, 
-                                 meshId, 
-                                 shortName,
-                                 sharedVarMD, 
-                                 fltArray);
-                //}
+                GetVectorVar(timestep, 
+                             dom, 
+                             meshId, 
+                             shortName,
+                             sharedVarMD, 
+                             fltArray);
             }
         }
         else
@@ -1948,7 +1983,7 @@ avtMiliFileFormat::GetVectorVar(int timestep,
 //    timestep   The time step of interest. 
 //    dom        The domain of interest. 
 //    meshId     The mesh id associated with this variable. 
-//    shortName  The variable's short name. 
+//    shortName  The variable's short name. //FIXME update or use separate method
 //    varMD      The variable meta data. 
 //    fltArray   The vtk array to read into. 
 //
@@ -1963,12 +1998,12 @@ void
 avtMiliFileFormat::GetVectorVar(int timestep, 
                                 int dom, 
                                 int meshId, 
-                                std::string shortName,
+                                std::string compShortName,
                                 MiliVariableMetaData *varMD,
                                 vtkFloatArray *fltArray)
 {
-    SubrecInfo SRInfo      = miliMetaData[meshId]->GetSubrecInfo(dom);
-    intVector SRIds        = varMD->GetSubrecIds(dom);
+    SubrecInfo SRInfo = miliMetaData[meshId]->GetSubrecInfo(dom);
+    intVector SRIds   = varMD->GetSubrecIds(dom);
 
     //
     // Component dimensions will only be > 1 if we have
@@ -1986,7 +2021,7 @@ avtMiliFileFormat::GetVectorVar(int timestep,
     // Create a copy of our name to pass into mili. 
     //
     char charName[1024];
-    sprintf(charName, shortName.c_str());
+    sprintf(charName, varMD->GetShortName().c_str());
     char *namePtr = (char *) charName;
 
     if (varMD->GetCentering() == AVT_NODECENT)
@@ -2049,15 +2084,15 @@ avtMiliFileFormat::GetVectorVar(int timestep,
         //
         if (isES)
         {
-            //TODO: only take desired components. 
-            //intVector groupIdxs = 
-            //    ((MiliElementSetMetaData *) varMD)->GetComponentIdxs(shortName);
+            //
+            // We need to determine which of the components have been asked for, 
+            // as element sets contain groups that are visualized separately. 
+            //
+            intVector compIdxs = 
+                ((MiliElementSetMetaData *) varMD)->GetGroupComponentIdxs(
+                compShortName);
 
-            //fprintf(stderr, "\nindices for %s:\n", shortName);//FIXME: 
-            //for (int i = 0; i < groupIdxs; ++i)
-            //{
-            //    fprintf(stderr, "%i ", groupIdxs[i]);//FIXME
-            //}
+            int retVecSize = compIdxs.size();
 
             //
             // Let's take the mid integration point for now.
@@ -2066,7 +2101,7 @@ avtMiliFileFormat::GetVectorVar(int timestep,
 
             for (int i = 0 ; i < nCells; i++)
             {
-                float vecPts[vecSize];
+                float vecPts[retVecSize];//FIXME: this won't be right for shared. 
                 bool nanFound = false;
 
                 //TODO: we should somehow store all values and let
@@ -2076,9 +2111,11 @@ avtMiliFileFormat::GetVectorVar(int timestep,
                 // element in the vector is a list of integration points. 
                 // For now, we choose the middle integration point. 
                 //
-                for (int j = 0; j < vecSize; ++j)
+                for (int j = 0; j < compIdxs.size(); ++j)
                 {
-                    int idx   = (i * dataSize) + (j * compDims) + targetIP;
+                    //int idx   = (i * dataSize) + (j * compDims) + targetIP;
+                    int idx = (i * dataSize) + (compIdxs[j] * compDims);
+                    idx += targetIP;
                     if (isnan(dataBuffer[idx]))
                     { 
                         nanFound = true; 
@@ -2124,6 +2161,142 @@ avtMiliFileFormat::GetVectorVar(int timestep,
 
         delete [] dataBuffer;
     }
+}
+
+
+//FIXME: use this?
+// ****************************************************************************
+//  Method:  avtMiliFileFormat::GetElementSetVar
+//
+//  Purpose:
+//      Retrieve the variable data from the given variable. 
+//
+//      Note: Element Sets (ESs) are special cases that need particular 
+//            attention. One detail of importance is that an element set can 
+//            contain multiple "groups" within it's data. For instance, if we
+//            encounter an ES with a vector length of 6, the first 5 of these 
+//            components might belong to group A, while the last belongs to 
+//            group B. In reality, this is only one vector for a single 
+//            variable, but, in practice, we visualize and treat each of these
+//            groups as an entirely separate variable (in this case, a vector
+//            of length 5 and a scalar). 
+//
+//      Note: code for transferring symmetric tensors to normal
+//            tensors has been kept as originally written by
+//            Hank Childs in 2004. 
+//
+//  Arguments:
+//    timestep   The time step of interest. 
+//    dom        The domain of interest. 
+//    meshId     The mesh id associated with this variable. 
+//    shortName  The variable's short name. 
+//    varMD      The variable meta data. 
+//    fltArray   The vtk array to read into. 
+//
+//  Programmer:  Alister Maguire
+//  Creation:    
+//
+//  Modifications
+//
+// ****************************************************************************
+
+void
+avtMiliFileFormat::GetElementSetVar(int timestep, 
+                                    int dom, 
+                                    int meshId, 
+                                    std::string shortName,
+                                    MiliVariableMetaData *varMD,
+                                    vtkFloatArray *fltArray)
+{
+    SubrecInfo SRInfo = miliMetaData[meshId]->GetSubrecInfo(dom);
+    intVector SRIds   = varMD->GetSubrecIds(dom);
+
+    //
+    // Component dimensions will only be > 1 if we have
+    // an element set. 
+    //
+    int vecSize   = varMD->GetVectorSize();
+    int compDims  = varMD->GetComponentDims();
+    int dataSize  = vecSize * compDims;
+    int vType     = varMD->GetNumType();
+
+    bool isES     = varMD->IsElementSet();//TODO: make sure that this is really an element set. 
+
+    //
+    // Create a copy of our name to pass into mili. 
+    //
+    char charName[1024];
+    sprintf(charName, shortName.c_str());
+    char *namePtr = (char *) charName;
+    
+    int nCells        = miliMetaData[meshId]->GetNumCells(dom);
+    int dBuffSize     = 0;;
+
+    float *dataBuffer = NULL;
+    dBuffSize         = nCells * dataSize;
+    dataBuffer        = new float[dBuffSize];
+
+    for (int i = 0 ; i < dBuffSize; i++)
+    {
+        dataBuffer[i] = std::numeric_limits<float>::quiet_NaN();
+    }
+
+    //
+    // Read the data into our buffer. 
+    //
+    std::string className = varMD->GetClassShortName(); 
+    int start = miliMetaData[meshId]->
+        GetClassMDByShortName(className.c_str())->
+        GetConnectivityOffset(dom);                                   
+
+    ReadMiliVarToBuffer(namePtr, SRIds, SRInfo, start,
+        vType, dataSize, timestep + 1, dom, dataBuffer);
+
+    //TODO: only take desired components. 
+    intVector compIdxs = 
+        ((MiliElementSetMetaData *) varMD)->GetGroupComponentIdxs(shortName);
+
+    int retVecSize = compIdxs.size();
+
+    //
+    // Let's take the mid integration point for now.
+    //
+    int targetIP = (int)(compDims / 2);
+
+    for (int i = 0 ; i < nCells; i++)
+    {
+        float vecPts[retVecSize];
+        bool nanFound = false;
+
+        //TODO: we should somehow store all values and let
+        //      the user choose which one they want to display. 
+        //
+        // Element sets are specialized vectors such that each
+        // element in the vector is a list of integration points. 
+        // For now, we choose the middle integration point. 
+        //
+        //for (int j = 0; j < vecSize; ++j)
+        int j = 0;
+        for (intVector::iterator itr = compIdxs.begin();
+             itr != compIdxs.end(); ++itr, ++j) 
+        {
+            //int idx   = (i * dataSize) + (j * compDims) + targetIP;
+            int idx   = (i * dataSize) + ((*itr) * compDims) + targetIP;
+            if (isnan(dataBuffer[idx]))
+            { 
+                nanFound = true; 
+                break;
+            }
+            vecPts[j] = dataBuffer[idx];
+        }
+
+        if (!nanFound)
+        {
+            fltArray->SetTuple(i, vecPts);
+        }
+    }
+
+    delete [] dataBuffer;
 }
 
 
@@ -2208,10 +2381,318 @@ avtMiliFileFormat::CanCacheVariable(const char *varname)
 
 
 // ****************************************************************************
+//  Method:  avtMiliFileFormat::AddMiliVariableToMetaData
+//
+//  Purpose:
+//      Add a mili variable to visit's meta-data structures.  
+//
+//  Arguments:
+//    avtMD          The meta-data structure to populate
+//    meshId         The associated mesh.
+//    avtType        The variable avt type (material, vector, etc).
+//    addToDefault   Whether or not to add to the default mesh.
+//    doSand         Whether or not to build the sand mesh. 
+//    varPath        The variable's visit path. 
+//    centering      The variable centering (node/zone). 
+//    compIdxs       The vector component indicies (for element sets,
+//                   we may only use some of the total available). 
+//    vComps         The vector component names.
+//
+//  Programmer:  Alister Maguire
+//  Creation:    Jan 16, 2019
+//
+//  Modifications
+//
+// ****************************************************************************
+
+void 
+avtMiliFileFormat::AddMiliVariableToMetaData(avtDatabaseMetaData *avtMD,
+                                             int                  meshId,
+                                             int                  avtType,
+                                             bool                 addToDefault,
+                                             bool                 doSand,  
+                                             std::string          varPath,
+                                             avtCentering         centering,
+                                             const intVector     &compIdxs,
+                                             const stringVector  &vComps)
+{
+    //FIXME: eps case doesn't work. This is when we need to construct a scalar
+    //       from the ES vector. 
+    //
+    // Create a container for all mesh paths that the current
+    // variable must be added to. 
+    //
+    stringVector meshPaths;
+    if (addToDefault)
+    {  
+        meshPaths.push_back(varPath);
+    }
+    if (doSand)
+    {
+        std::string sandDir = miliMetaData[meshId]->GetSandDir();
+        std::string sandPath = sandDir + "/" + varPath;
+        meshPaths.push_back(sandPath);
+    }
+
+    char meshName[32];
+    sprintf(meshName, "mesh%d", meshId + 1);
+
+    int vecSize = compIdxs.size();
+
+    //
+    // If we have a higher dim vector, determine how we should
+    // treat it.
+    //
+    int varTypeCast        = avtType;
+    bool mayHaveHigherDims = (avtType == AVT_VECTOR_VAR ||
+                              avtType == AVT_MATERIAL);
+    if (mayHaveHigherDims && vecSize != dims)
+    {
+        if (dims == 3)
+        {
+            if (vecSize == 6)
+            {
+                varTypeCast = AVT_SYMMETRIC_TENSOR_VAR;
+            }
+            else if (vecSize == 9)
+            {
+                varTypeCast = AVT_TENSOR_VAR;
+            }
+            //else if (vecSize > 1)//FIXME: testing
+            else
+            {
+                //
+                // Default to treating it as an array and 
+                // just display the components. 
+                //
+                varTypeCast = AVT_ARRAY_VAR;
+            }
+            //else 
+            //{
+            //    varTypeCast = AVT_SCALAR_VAR;
+            //}
+
+        }
+        else if (dims == 2)      
+        {
+            if (vecSize == 3)
+            {
+                varTypeCast = AVT_SYMMETRIC_TENSOR_VAR;
+            }
+            else if (vecSize == 4)
+            {
+                varTypeCast = AVT_TENSOR_VAR;
+            }
+            else
+            {
+                //
+                // Default to treating it as an array and 
+                // just display the components. 
+                //
+                varTypeCast = AVT_ARRAY_VAR;
+            }
+        }
+        else
+        {
+            //TODO: Can we ever end up here?
+            return;
+        }
+    }
+    
+    switch (varTypeCast)
+    {
+        case AVT_SCALAR_VAR:
+        {
+            for (stringVector::const_iterator pathIt = meshPaths.begin();
+                 pathIt != meshPaths.end(); ++pathIt)
+            {
+                AddScalarVarToMetaData(avtMD, (*pathIt), 
+                    meshName, centering);
+            }
+            break;
+        }
+        case AVT_VECTOR_VAR:
+        {
+            for (stringVector::const_iterator pathIt = meshPaths.begin();
+                 pathIt != meshPaths.end(); ++pathIt)
+            {
+                AddVectorVarToMetaData(avtMD, (*pathIt), meshName, 
+                    centering, vecSize);
+
+                //
+                // Add expressions for displaying each component. 
+                //
+                for (intVector::const_iterator idxItr = compIdxs.begin();
+                     idxItr != compIdxs.end(); ++idxItr)
+                {
+                    //
+                    // Add the x, y, z expressions. 
+                    //
+                    char name[1024];
+                    sprintf(name, "%s/%s", (*pathIt).c_str(), 
+                        vComps[(*idxItr)].c_str());
+                    Expression expr = ScalarExpressionFromVec((*pathIt).c_str(),
+                                                              name, 
+                                                              (*idxItr));
+                    avtMD->AddExpression(&expr);
+                }
+            }
+            break;
+        }
+        case AVT_SYMMETRIC_TENSOR_VAR:
+        {
+            for (stringVector::const_iterator pathIt = meshPaths.begin();
+                 pathIt != meshPaths.end(); ++pathIt)
+            {
+                //
+                // When we come across a vector of length 6, we change it 
+                // to a normal vector of length 9 and render it as a 
+                // symmetric tensor. 
+                //
+                AddSymmetricTensorVarToMetaData(avtMD, (*pathIt), 
+                    meshName, centering, 9);
+
+                //
+                // Now we add the individual components. 
+                //
+                int multDimIdxs[] = {1, 2, 0};
+
+                for (int j = 0; j < 3; ++j)
+                {
+                    int cIdx = compIdxs[j];
+
+                    // 
+                    // First, get the "single-dim" values: xx, yy, zz. 
+                    // 
+                    Expression singleDim;
+                    singleDim.SetType(Expression::ScalarMeshVar);
+          
+                    char singleDef[256];
+                    sprintf(singleDef, "<%s>[%d][%d]", 
+                        (*pathIt).c_str(), cIdx, cIdx);
+                    singleDim.SetDefinition(singleDef);
+
+                    std::string singleName = (*pathIt) + "/" + vComps[cIdx];
+                    singleDim.SetName(singleName);
+
+                    avtMD->AddExpression(&singleDim);
+
+                    //
+                    // Next, get the "multi-dim" values: xy, yz, zx
+                    //
+                    int mltDIdx = cIdx + 3;
+                    Expression multDim;
+                    multDim.SetType(Expression::ScalarMeshVar);
+
+                    char multDef[256];
+                    sprintf(multDef, "<%s>[%d][%d]", (*pathIt).c_str(), 
+                        cIdx, multDimIdxs[cIdx]);
+                    multDim.SetDefinition(multDef);
+
+                    std::string multName = (*pathIt) + "/" + vComps[mltDIdx];
+                    multDim.SetName(multName);
+
+                    avtMD->AddExpression(&multDim);
+                }
+            }
+            break;
+        }
+        case AVT_TENSOR_VAR:
+        {
+            for (stringVector::const_iterator pathIt = meshPaths.begin();
+                 pathIt != meshPaths.end(); ++pathIt)
+            {
+                AddTensorVarToMetaData(avtMD, (*pathIt), 
+                    meshName, centering, vecSize);
+
+                //
+                // Now we add the individual components. 
+                //
+                int multDimIdxs[] = {1, 2, 0};
+
+                for (int j = 0; j < 3; ++j)
+                {
+                    int cIdx = compIdxs[j];
+ 
+                    // 
+                    // First, get the "single-dim" values: xx, yy, zz. 
+                    // 
+                    Expression singleDim;
+                    singleDim.SetType(Expression::ScalarMeshVar);
+
+                    char singleDef[256];
+                    sprintf(singleDef, "<%s>[%d][%d]", 
+                        (*pathIt).c_str(), cIdx, cIdx);
+                    singleDim.SetDefinition(singleDef);
+
+                    std::string singleName = (*pathIt) + "/" + vComps[cIdx];
+                    singleDim.SetName(singleName);
+
+                    avtMD->AddExpression(&singleDim);
+
+                    //
+                    // Next, get the "multi-dim" values: xy, yz, zx
+                    //
+                    int mltDIdx = cIdx + 3;
+                    Expression multDim;
+                    char multDef[256];
+                    sprintf(multDef, "<%s>[%d][%d]", (*pathIt).c_str(), 
+                        cIdx, multDimIdxs[cIdx]);
+                    std::string multName = (*pathIt) + "/" + vComps[mltDIdx];
+                    multDim.SetName(multName);
+                    multDim.SetDefinition(multDef);
+                    multDim.SetType(Expression::ScalarMeshVar);
+                    avtMD->AddExpression(&multDim);
+                }
+            }
+            break;
+        }
+        case AVT_ARRAY_VAR:
+        {
+            //FIXME: eps cases not handled correctly
+            cerr << "IN ARRAY" << endl;//FIXME
+            for (stringVector::const_iterator pathIt = meshPaths.begin();
+                 pathIt != meshPaths.end(); ++pathIt)
+            {
+                //
+                // For array vars, we just want to display the 
+                // individual components. 
+                //
+                stringVector compNames;
+
+                for (int j = 0; j < vecSize; ++j)
+                {
+                    int cIdx = compIdxs[j];
+                    compNames.push_back(vComps[cIdx]);
+                    char name[1024];
+                    sprintf(name, "%s/%s", (*pathIt).c_str(), 
+                        vComps[cIdx].c_str());
+                    cerr << "NAME: " << name << endl;//FIXME
+                    Expression expr = ScalarExpressionFromVec(
+                                          (*pathIt).c_str(),
+                                          name, 
+                                          cIdx);
+                    avtMD->AddExpression(&expr);
+                }
+
+                AddArrayVarToMetaData(avtMD, (*pathIt), compNames, meshName, 
+                    centering); 
+            }
+            break;
+        }
+        default:
+        {
+            break;
+        }
+    }
+}
+
+
+// ****************************************************************************
 //  Method:  avtMiliFileFormat::PopulateDatabaseMetaData
 //
 //  Purpose:
-//    Returns meta-data about the database.
+//      Retrieves metadata about the database. 
 //
 //  Arguments:
 //    md         The meta-data structure to populate
@@ -2361,301 +2842,78 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
                 continue;
             }
 
-            //
-            // Create a container for all mesh paths that the current
-            // variable must be added to. 
-            //
-            stringVector meshPaths;
-            if (addToDefault)
-            {  
-                if (varMD->IsElementSet())
-                {
-                    stringVector groupPaths = 
-                        ((MiliElementSetMetaData *)varMD)->GetGroupPaths();
-
-                    for (stringVector::iterator gItr = groupPaths.begin();
-                         gItr != groupPaths.end(); ++gItr)
-                    {
-                        meshPaths.push_back(*gItr);
-                    }
-                }
-                else
-                {
-                    meshPaths.push_back(varMD->GetPath());
-                }
-            }
-            if (doSand)
-            {
-                std::string sandDir = miliMetaData[meshId]->GetSandDir();
-
-                if (varMD->IsElementSet())
-                {
-                    stringVector groupPaths = 
-                        ((MiliElementSetMetaData *)varMD)->GetGroupPaths();
-
-                    for (stringVector::iterator gItr = groupPaths.begin();
-                         gItr != groupPaths.end(); ++gItr)
-                    {
-                        std::string sandPath = sandDir + "/" + (*gItr);
-                        meshPaths.push_back(sandPath);
-                    }
-                }   
-                else
-                {
-                    std::string sandPath = sandDir + "/" + varMD->GetPath();
-                    meshPaths.push_back(sandPath);
-                }
-            }
-
-            char meshName[32];
-            sprintf(meshName, "mesh%d", varMD->GetMeshAssociation() + 1);
-
-            int varType            = varMD->GetAvtVarType();
+            int avtType            = varMD->GetAvtVarType();
             avtCentering centering = varMD->GetCentering();
-            int vecSize            = varMD->GetVectorSize();
+            stringVector vComps    = varMD->GetVectorComponents();
 
-            //
-            // If the variable is a scalar, the vector size is designated 1, 
-            // but there will be no vector components. 
-            //
-            stringVector vComps  = varMD->GetVectorComponents();
-            int nComps           = vComps.size();
-
-            //
-            // If we have a higher dim vector, determine how we should
-            // treat it.
-            //
-            int varTypeCast        = varType;
-            bool mayHaveHigherDims = (varType == AVT_VECTOR_VAR ||
-                                      varType == AVT_MATERIAL);
-            if (mayHaveHigherDims && vecSize != dims)
+            if (varMD->IsElementSet())
             {
-                if (dims == 3)
+                const boolVector groupShared = 
+                    ((MiliElementSetMetaData *)varMD)->GetGroupIsShared();
+                
+                //
+                // Element sets can contain groups of vector components
+                // that are treated as distinct variables. We need to 
+                // check for this and add them individually. 
+                //
+                for (int j = 0; j < groupShared.size(); ++j)
                 {
-                    if (vecSize == 6)
+                    //
+                    // Since sharing element sets gets complicated, let's take
+                    // the lazy approach and wait for it's non-ES partner to
+                    // add the info. 
+                    // TODO: this only works if the we have at least one non-ES partner!
+                    //       Is this guaranteed??
+                    //
+                    if (!groupShared[j]) 
                     {
-                        varTypeCast = AVT_SYMMETRIC_TENSOR_VAR;
-                    }
-                    else if (vecSize == 9)
-                    {
-                        varTypeCast = AVT_TENSOR_VAR;
-                    }
-                    else
-                    {
-                        //
-                        // Default to treating it as an array and 
-                        // just display the components. 
-                        //
-                        varTypeCast = AVT_ARRAY_VAR;
-                    }
+                        std::string varPath = 
+                            ((MiliElementSetMetaData *)varMD)->GetGroupPath(j);
+                        intVector compIdxs = 
+                            ((MiliElementSetMetaData *)varMD)->
+                            GetGroupComponentIdxs(j);
 
-                }
-                else if (dims == 2)      
-                {
-                    if (vecSize == 3)
-                    {
-                        varTypeCast = AVT_SYMMETRIC_TENSOR_VAR;
+                        //FIXME: how do we handle this?
+                        //if (compIdxs.size() == 1)
+                        //{
+                        //    avtType = AVT_SCALAR_VAR;//FIXME: is this right?
+                        //}
+                        cerr << "\n\nES PATH: " << varPath << endl;//FIXME
+
+                        AddMiliVariableToMetaData(md,
+                                                  meshId,
+                                                  avtType,
+                                                  addToDefault,
+                                                  doSand,  
+                                                  varPath,
+                                                  centering,
+                                                  compIdxs,
+                                                  vComps);
                     }
-                    else if (vecSize == 4)
-                    {
-                        varTypeCast = AVT_TENSOR_VAR;
-                    }
-                    else
-                    {
-                        //
-                        // Default to treating it as an array and 
-                        // just display the components. 
-                        //
-                        varTypeCast = AVT_ARRAY_VAR;
-                    }
-                }
-                else
-                {
-                    continue;
                 }
             }
-           
-            switch (varTypeCast)
+            else
             {
-                case AVT_SCALAR_VAR:
+                std::string varPath = varMD->GetPath();
+                intVector compIdxs; 
+                compIdxs.reserve(vComps.size());
+
+                const int vSize = vComps.size();
+                for (int i = 0; i < vSize; ++i)
                 {
-                    for (stringVector::iterator pathIt = meshPaths.begin();
-                         pathIt != meshPaths.end(); ++pathIt)
-                    {
-                        AddScalarVarToMetaData(md, (*pathIt), 
-                            meshName, centering);
-                    }
-                    break;
+                    compIdxs.push_back(i);
                 }
-                case AVT_VECTOR_VAR:
-                {
-                    for (stringVector::iterator pathIt = meshPaths.begin();
-                         pathIt != meshPaths.end(); ++pathIt)
-                    {
-                        AddVectorVarToMetaData(md, (*pathIt), meshName, 
-                            centering, nComps);
+                cerr << "NON ES" << endl;//FIXME
 
-                        //
-                        // Add expressions for displaying each component. 
-                        //
-                        for (int j = 0; j < nComps; ++j)
-                        {
-                            //
-                            // Add the x, y, z expressions. 
-                            //
-                            char name[1024];
-                            sprintf(name, "%s/%s", (*pathIt).c_str(), 
-                                vComps[j].c_str());
-                            Expression expr = ScalarExpressionFromVec(
-                                                  (*pathIt).c_str(),
-                                                  name, 
-                                                  j);
-                            md->AddExpression(&expr);
-                        }
-                    }
-                    break;
-                }
-                case AVT_SYMMETRIC_TENSOR_VAR:
-                {
-                    for (stringVector::iterator pathIt = meshPaths.begin();
-                         pathIt != meshPaths.end(); ++pathIt)
-                    {
-                        //
-                        // When we come across a vector of length 6, we change it 
-		        // to a normal vector of length 9 and render it as a 
-		        // symmetric tensor. 
-                        //
-                        AddSymmetricTensorVarToMetaData(md, (*pathIt), 
-                            meshName, centering, 9);
-
-                        //
-                        // Now we add the individual components. 
-                        //
-                        int multDimIdxs[] = {1, 2, 0};
-
-                        for (int j = 0; j < 3; ++j)
-                        {
-                            // 
-                            // First, get the "single-dim" values: xx, yy, zz. 
-                            // 
-                            Expression singleDim;
-                            singleDim.SetType(Expression::ScalarMeshVar);
-                  
-                            char singleDef[256];
-                            sprintf(singleDef, "<%s>[%d][%d]", 
-                                (*pathIt).c_str(), j, j);
-                            singleDim.SetDefinition(singleDef);
-
-                            std::string singleName = (*pathIt) + "/" + 
-                                varMD->GetVectorComponent(j);
-                            singleDim.SetName(singleName);
-
-                            md->AddExpression(&singleDim);
-
-                            //
-                            // Next, get the "multi-dim" values: xy, yz, zx
-                            //
-                            int compIdx = j + 3;
-                            Expression multDim;
-                            multDim.SetType(Expression::ScalarMeshVar);
-
-                            char multDef[256];
-                            sprintf(multDef, "<%s>[%d][%d]", (*pathIt).c_str(), 
-                                j, multDimIdxs[j]);
-                            multDim.SetDefinition(multDef);
-
-                            std::string multName = (*pathIt) + "/" + 
-                                varMD->GetVectorComponent(compIdx);
-                            multDim.SetName(multName);
-
-                            md->AddExpression(&multDim);
-                        }
-                    }
-                    break;
-                }
-                case AVT_TENSOR_VAR:
-                {
-                    for (stringVector::iterator pathIt = meshPaths.begin();
-                         pathIt != meshPaths.end(); ++pathIt)
-                    {
-                        AddTensorVarToMetaData(md, (*pathIt), 
-                            meshName, centering, nComps);
-
-                        //
-                        // Now we add the individual components. 
-                        //
-                        int multDimIdxs[] = {1, 2, 0};
-
-                        for (int j = 0; j < 3; ++j)
-                        {
-                            // 
-                            // First, get the "single-dim" values: xx, yy, zz. 
-                            // 
-                            Expression singleDim;
-                            singleDim.SetType(Expression::ScalarMeshVar);
-
-                            char singleDef[256];
-                            sprintf(singleDef, "<%s>[%d][%d]", 
-                                (*pathIt).c_str(), j, j);
-                            singleDim.SetDefinition(singleDef);
-
-                            std::string singleName = (*pathIt) + "/" + 
-                                varMD->GetVectorComponent(j);
-                            singleDim.SetName(singleName);
-
-                            md->AddExpression(&singleDim);
-
-                            //
-                            // Next, get the "multi-dim" values: xy, yz, zx
-                            //
-                            int compIdx = j + 3;
-                            Expression multDim;
-                            char multDef[256];
-                            sprintf(multDef, "<%s>[%d][%d]", (*pathIt).c_str(), 
-                                j, multDimIdxs[j]);
-                            std::string multName = (*pathIt) + "/" + 
-                                varMD->GetVectorComponent(compIdx);
-                            multDim.SetName(multName);
-                            multDim.SetDefinition(multDef);
-                            multDim.SetType(Expression::ScalarMeshVar);
-                            md->AddExpression(&multDim);
-                        }
-                    }
-                    break;
-                }
-                case AVT_ARRAY_VAR:
-                {
-                    for (stringVector::iterator pathIt = meshPaths.begin();
-                         pathIt != meshPaths.end(); ++pathIt)
-                    {
-                        //
-                        // For array vars, we just want to display the 
-                        // individual components. 
-                        //
-                        stringVector compNames;
-
-                        for (int j = 0; j < nComps; ++j)
-                        {
-                            compNames.push_back(varMD->GetVectorComponent(j));
-                            char name[1024];
-                            sprintf(name, "%s/%s", (*pathIt).c_str(), 
-                                varMD->GetVectorComponent(j).c_str());
-                            Expression expr = ScalarExpressionFromVec(
-                                                  (*pathIt).c_str(),
-                                                  name, 
-                                                  j);
-                            md->AddExpression(&expr);
-                        }
-
-                        AddArrayVarToMetaData(md, (*pathIt), compNames, meshName, 
-                            centering); 
-                    }
-                    break;
-                }
-                default:
-                {
-                    break;
-                }
+                AddMiliVariableToMetaData(md,
+                                          meshId,
+                                          avtType,
+                                          addToDefault,
+                                          doSand,  
+                                          varPath,
+                                          centering,
+                                          compIdxs,
+                                          vComps);
             }
         }
         //TODO: add derived types when given the OK. 
