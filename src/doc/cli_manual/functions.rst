@@ -15,8 +15,8 @@ ActivateDatabase
   ActivateDatabase(argument) -> integer
 
 
-argument : type
-    A string object containing the name of the database to be activated.
+argument : string
+    The name of the database to be activated.
 
 return type : integer
     ActivateDatabase returns 1 on success and 0 on failure.
@@ -64,7 +64,7 @@ AddArgument
   AddArgument(argument)
 
 
-argument : type
+argument : string
     A string object that is added to the viewer's command line argument list.
 
 
@@ -96,7 +96,7 @@ AddMachineProfile
   AddMachineProfile(MachineProfile) -> integer
 
 
-MachineProfile : type
+MachineProfile : STARTING_VALUE
     
 
 **Description:**
@@ -116,10 +116,10 @@ AddOperator
   AddOperator(operator, all) -> integer
 
 
-operator : type
-    This is a string containing the name of the operator to be applied.
+operator : string
+    The name of the operator to be applied.
 
-all : type
+all : integer
     This is an optional integer argument that applies the operator to all plots if the value of the argument is not zero.
 
 return type : integer
@@ -167,17 +167,17 @@ AddPlot
   AddPlot(plotType, variableName, inheritSIL, applyOperators) -> integer
 
 
-plotType : type
-    This is a string containing the name of a valid plot plugin type.
+plotType : string
+    The name of a valid plot plugin type.
 
-variableName : type
-    This is a string containing a valid variable name for the open database.
+variableName : string
+    A valid variable name for the open database.
 
-inheritSIL : type
-    This is an integer flag indicating whether the plot should inherit theactive plot's SIL restriction.
+inheritSIL : integer
+    An integer flag indicating whether the plot should inherit theactive plot's SIL restriction.
 
-applyOperators : type
-    This is an integer flag indicating whether the operators from the active plot should be applied to the new plot.
+applyOperators : integer
+    An integer flag indicating whether the operators from the active plot should be applied to the new plot.
 
 return type : integer
     The AddPlot function returns an integer value of 1 for success and 0 for
@@ -242,13 +242,13 @@ AlterDatabaseCorrelation
   AlterDatabaseCorrelation(name, databases, method) -> integer
 
 
-name : type
-    The name argument must be a string object containing the name of the database correlation to be altered.
+name : string
+    The name of the database correlation to be altered.
 
-databases : type
+databases : AMBIGUOUS
     The databases argument must be a tuple or list of strings containing the fully qualified database names to be used in the database correlation.
 
-method : type
+method : integer
     The method argument must be an integer in the range [0,3].
 
 return type : integer
@@ -305,7 +305,7 @@ ApplyNamedSelection
   ApplyNamedSelection(name) -> integer
 
 
-name : type
+name : string
     The name of a named selection.  (This should have been previously createdwith a CreateNamedSelection call.)
 
 return type : integer
@@ -351,7 +351,7 @@ ChangeActivePlotsVar
   ChangeActivePlotsVar(variableName) -> integer
 
 
-variableName : type
+variableName : string
     The name of the new plot variable.
 
 return type : integer
@@ -390,8 +390,8 @@ CheckForNewStates
   CheckForNewStates(name) -> integer
 
 
-name : type
-    The name argument must be a string that contains the name of a database that has been opened previously.
+name : string
+    The name of a database that has been opened previously.
 
 return type : integer
     The CheckForNewStates function returns 1 for success and 0 for failure.
@@ -433,11 +433,11 @@ ChooseCenterOfRotation
   ChooseCenterOfRotation(screenX, screenY) -> integer
 
 
-screenX : type
-    The X coordinate of the pick point in normalized [0,1] screen space.
+screenX : double
+    A double that is the X coordinate of the pick point in normalized [0,1] screen space.
 
-screenY : type
-    The Y cooridinate of the pick point in normalized [0,1] screen space.
+screenY : double
+    A double that is the Y cooridinate of the pick point in normalized [0,1] screen space.
 
 return type : integer
     The ChooseCenterOfRotation function returns 1 if successful and 0 if it
@@ -530,10 +530,10 @@ ClearCache
   ClearCacheForAllEngines() -> integer
 
 
-host : type
+host : string
     The name of the computer where the compute engine is running.
 
-simulation : type
+simulation : string
     The name of the simulation being processed by the compute engine.
 
 return type : integer
@@ -585,10 +585,10 @@ ClearCacheForAllEngines
   ClearCacheForAllEngines() -> integer
 
 
-host : type
+host : string
     The name of the computer where the compute engine is running.
 
-simulation : type
+simulation : string
     The name of the simulation being processed by the compute engine.
 
 return type : integer
@@ -637,9 +637,6 @@ ClearMacros
 
   ClearMacros()
 
-
-none : type
-    
 
 
 **Description:**
@@ -855,9 +852,6 @@ Close
   Close()
 
 
-none : type
-    
-
 
 **Description:**
 
@@ -887,10 +881,10 @@ CloseComputeEngine
   CloseComputeEngine(hostName, simulation) -> integer
 
 
-hostName : type
+hostName : string
     Optional name of the computer on which the compute engine is running.
 
-simulation : type
+simulation : string
     Optional name of a simulation.
 
 return type : integer
@@ -934,8 +928,8 @@ CloseDatabase
   CloseDatabase(name) -> integer
 
 
-name : type
-    A string object containing the name of the database to close.
+name : string
+    The name of the database to close.
 
 return type : integer
     The CloseDatabase function returns 1 on success and 0 on failure.
@@ -1009,10 +1003,10 @@ ConstructDataBinning
 
 ::
 
-  ConstructDataBinning(i) -> integer
+  ConstructDataBinning(options) -> integer
 
 
-i : type
+options : STARTING_VALUE
     An object of type ConstructDataBinningAttributes. This object specifies the options for constructing a data binning.
 
 return type : integer
@@ -1063,10 +1057,10 @@ CopyAnnotationsToWindow
   CopyPlotsToWindow(source, dest) -> integer
 
 
-source : type
+source : integer
     The index (an integer from 1 to 16) of the source window.
 
-dest : type
+dest : integer
     The index (an integer from 1 to 16) of the destination window.
 
 return type : integer
@@ -1119,10 +1113,10 @@ CopyLightingToWindow
   CopyPlotsToWindow(source, dest) -> integer
 
 
-source : type
+source : integer
     The index (an integer from 1 to 16) of the source window.
 
-dest : type
+dest : integer
     The index (an integer from 1 to 16) of the destination window.
 
 return type : integer
@@ -1175,10 +1169,10 @@ CopyPlotsToWindow
   CopyPlotsToWindow(source, dest) -> integer
 
 
-source : type
+source : integer
     The index (an integer from 1 to 16) of the source window.
 
-dest : type
+dest : integer
     The index (an integer from 1 to 16) of the destination window.
 
 return type : integer
@@ -1231,10 +1225,10 @@ CopyViewToWindow
   CopyPlotsToWindow(source, dest) -> integer
 
 
-source : type
+source : integer
     The index (an integer from 1 to 16) of the source window.
 
-dest : type
+dest : integer
     The index (an integer from 1 to 16) of the destination window.
 
 return type : integer
@@ -1284,13 +1278,13 @@ CreateAnnotationObject
   CreateAnnotationObject(annotType[,annotName,visibleFlag]) -> annotation object
 
 
-annotType : type
-    A string containing the name of the type of annotation object to create.
+annotType : string
+    The name of the type of annotation object to create.
 
-annotName : type
-    An optional string for a user-defined name of the annotation object to create.By default, VisIt creates names like 'newObject0', 'newObject1',....
+annotName : string
+    A user-defined name of the annotation object to create.By default, VisIt creates names like 'newObject0', 'newObject1',....
 
-visibleFlag : type
+visibleFlag : integer
     An optional integer to indicate if the annotation object should be createdwith initial visibility on or off. Pass 0 for off and non-zero for on.By default, VisIt creates annotation objects with visibility on. If youwish only to pass the visibleFlag argument, there is no need to also passthe annotName argument.
 
 return type : annotation object
@@ -1349,13 +1343,13 @@ CreateDatabaseCorrelation
   CreateDatabaseCorrelation(name, databases, method) -> integer
 
 
-name : type
-    String object containing the name of the database correlation to be created.
+name : string
+    The name of the database correlation to be created.
 
-databases : type
+databases : AMBIGUOUS
     Tuple or list of string objects containing the names of the databases to involve in the database correlation.
 
-method : type
+method : integer
     An integer in the range [0,3] that determines the correlation method.
 
 return type : integer
@@ -1433,10 +1427,10 @@ CreateNamedSelection
   CreateNamedSelection(name, properties) -> integer
 
 
-name : type
+name : string
     The name of a named selection.
 
-properties : type
+properties : STARTING_VALUE
     This optional argument lets you pass a SelectionProperties object containingthe properties that will be used to create the named selection. When this argument is omitted, the named selection will always be associated withthe active plot. You can use this argument to set up more complex named selections that may be associated with plots or databases.
 
 return type : integer
@@ -1483,7 +1477,7 @@ DatabasePlugins
   DatabasePlugins(host) -> dictionary
 
 
-host : type
+host : string
     The name of the host for which we want database plugins.
 
 return type : dictionary
@@ -1551,11 +1545,11 @@ DefineArrayExpression
   DefineCurveExpression(variableName, expression) -> integer
 
 
-variableName : type
+variableName : string
     The name of the variable to be created.
 
-expression : type
-    The expression definition.
+expression : string
+    The expression definition as a string.
 
 return type : integer
     The DefineExpression functions return 1 on success and 0 on failure.
@@ -1614,11 +1608,11 @@ DefineCurveExpression
   DefineCurveExpression(variableName, expression) -> integer
 
 
-variableName : type
+variableName : string
     The name of the variable to be created.
 
-expression : type
-    The expression definition.
+expression : string
+    The expression definition as a string.
 
 return type : integer
     The DefineExpression functions return 1 on success and 0 on failure.
@@ -1677,11 +1671,11 @@ DefineMaterialExpression
   DefineCurveExpression(variableName, expression) -> integer
 
 
-variableName : type
+variableName : string
     The name of the variable to be created.
 
-expression : type
-    The expression definition.
+expression : string
+    The expression definition as a string.
 
 return type : integer
     The DefineExpression functions return 1 on success and 0 on failure.
@@ -1740,11 +1734,11 @@ DefineMeshExpression
   DefineCurveExpression(variableName, expression) -> integer
 
 
-variableName : type
+variableName : string
     The name of the variable to be created.
 
-expression : type
-    The expression definition.
+expression : string
+    The expression definition as a string.
 
 return type : integer
     The DefineExpression functions return 1 on success and 0 on failure.
@@ -1793,24 +1787,24 @@ DefinePythonExpression
 
 ::
 
-  DefinePythonExpression("myvar",[args],source='python filter source ...')
-  DefinePythonExpression("myvar",[args],source='python filter source ...',type='scalar')
-  DefinePythonExpression("myvar",[args],file='path/to/python_filter_script.py')
+  DefinePythonExpression(myvar,args,source)
+  DefinePythonExpression(myvar,args,source,type)
+  DefinePythonExpression(myvar,args,file)
 
 
-name : type
+myvar : string
     The name of the variable to be created.
 
-args : type
+args : tuple
     A tuple (or list) of strings providing the variable names of thearguments to the Python Expression.
 
-source : type
+source : string
     A string containing the source code for a Python Expression Filter .
 
-file : type
+file : string
     A string containing the path to a Python Expression Filter script file.
 
-type : type
+type : string
     An optional string defining the output type of the expression.Default type: 'scalar'Avalaible types: 'scalar','vector','tensor','array','curve'Note: Use only one of the 'source' or 'file' arguments.If both are used the 'source' argument overrides 'file'.
 
 
@@ -1836,11 +1830,11 @@ DefineScalarExpression
   DefineCurveExpression(variableName, expression) -> integer
 
 
-variableName : type
+variableName : string
     The name of the variable to be created.
 
-expression : type
-    The expression definition.
+expression : string
+    The expression definition as a string.
 
 return type : integer
     The DefineExpression functions return 1 on success and 0 on failure.
@@ -1899,11 +1893,11 @@ DefineSpeciesExpression
   DefineCurveExpression(variableName, expression) -> integer
 
 
-variableName : type
+variableName : string
     The name of the variable to be created.
 
-expression : type
-    The expression definition.
+expression : string
+    The expression definition as a string.
 
 return type : integer
     The DefineExpression functions return 1 on success and 0 on failure.
@@ -1962,11 +1956,11 @@ DefineTensorExpression
   DefineCurveExpression(variableName, expression) -> integer
 
 
-variableName : type
+variableName : string
     The name of the variable to be created.
 
-expression : type
-    The expression definition.
+expression : string
+    The expression definition as a string.
 
 return type : integer
     The DefineExpression functions return 1 on success and 0 on failure.
@@ -2025,11 +2019,11 @@ DefineVectorExpression
   DefineCurveExpression(variableName, expression) -> integer
 
 
-variableName : type
+variableName : string
     The name of the variable to be created.
 
-expression : type
-    The expression definition.
+expression : string
+    The expression definition as a string.
 
 return type : integer
     The DefineExpression functions return 1 on success and 0 on failure.
@@ -2159,8 +2153,8 @@ DeleteDatabaseCorrelation
   DeleteDatabaseCorrelation(name) -> integer
 
 
-name : type
-    A string object containing the name of the database correlation to delete.
+name : string
+    The name of the database correlation to delete.
 
 return type : integer
     The DeleteDatabaseCorrelation function returns 1 on success and 0 on
@@ -2208,7 +2202,7 @@ DeleteExpression
   DeleteExpression(variableName) -> integer
 
 
-variableName : type
+variableName : string
     The name of the expression variable to be deleted.
 
 return type : integer
@@ -2245,7 +2239,7 @@ DeleteNamedSelection
   DeleteNamedSelection(name) -> integer
 
 
-name : type
+name : string
     The name of a named selection.
 
 return type : integer
@@ -2292,10 +2286,10 @@ DeletePlotDatabaseKeyframe
   DeletePlotDatabaseKeyframe(plotIndex, frame)
 
 
-plotIndex : type
+plotIndex : integer
     A zero-based integer value corresponding to a plot's index in the plot list.
 
-frame : type
+frame : integer
     A zero-based integer value corresponding to a database keyframe at a particular animation frame.
 
 
@@ -2342,10 +2336,10 @@ DeletePlotKeyframe
   DeletePlotKeyframe(plotIndex, frame)
 
 
-plotIndex : type
+plotIndex : integer
     A zero-based integer value corresponding to a plot's index in the plot list.
 
-frame : type
+frame : integer
     A zero-based integer value corresponding to a plot keyframe at a particular animation frame.
 
 
@@ -2402,7 +2396,7 @@ DeleteViewKeyframe
   DeleteViewKeyframe(frame)
 
 
-frame : type
+frame : integer
     A zero-based integer value corresponding to a view keyframe at a particular animation frame.
 
 
@@ -2489,10 +2483,10 @@ DemoteOperator
   DemoteOperator(opIndex, applyToAllPlots) -> integer
 
 
-opIndex : type
+opIndex : integer
     A zero-based integer corresponding to the operator that should be demoted.
 
-applyAll : type
+applyToAllPlots : AMBIGUOUS
     An integer flag that causes all plots in the plot list to be affected when it is non-zero.
 
 return type : integer
@@ -2612,11 +2606,11 @@ EnableTool
   EnableTool(toolIndex, activeFlag)
 
 
-toolIndex : type
+toolIndex : integer
     This is an integer that corresponds to an interactive tool.(Plane tool = 0, Line tool = 1, Plane tool = 2, Box tool = 3,Sphere tool = 4, Axis Restriction tool = 5)
 
-activeFlag : type
-    A value of 1 enables the tool while a value of 0 disables the tool.
+activeFlag : integer
+    An integer value of 1 enables the tool while a value of 0 disables the tool.
 
 
 **Description:**
@@ -2652,7 +2646,7 @@ ExecuteMacro
   ExecuteMacro(name) -> value
 
 
-name : type
+name : string
     The name of the macro to execute.
 
 return type : value
@@ -2692,10 +2686,10 @@ ExportDatabase
   ExportDatabase(e, o) -> integer
 
 
-e : type
+e : STARTING_VALUE
     An object of type ExportDBAttributes.  This object specifies the options for exporting the database.
 
-o (optional) : type
+o : dictionary
     A dictionary containing a key/value mapping to set options needed by thedatabase exporter.  The default values can be obtained in the appropriateformat using GetExportOptions('plugin').
 
 return type : integer
@@ -2905,9 +2899,6 @@ GetAnimationAttributes
   GetAnimationAttributes() -> AnimationAttributes object
 
 
-none : type
-    
-
 return type : AnimationAttributes object
     The GetAnimationAttributes function returns an AnimationAttributes object.
 
@@ -3004,7 +2995,7 @@ GetAnnotationObject
   GetAnnotationObject(string) -> Annotation object
 
 
-string : type
+string : string
     The name of the annotation object as returned by GetAnnotationObjectNames.
 
 return type : Annotation object
@@ -3074,7 +3065,7 @@ GetCallbackArgumentCount
   GetCallbackArgumentCount(callbackName) -> integer
 
 
-callbackName : type
+callbackName : AMBIGUOUS
     The name of a callback function. This name is a member of the tuple returnedby GetCallbackNames().
 
 return type : integer
@@ -3164,7 +3155,7 @@ GetDebugLevel
   SetDebugLevel(level)
 
 
-level : type
+level : string
     A string '1', '2', '3', '4', '5' with an optional 'b' suffix to indicatewhether the output should be buffered. A value of '1' is a low debug level , which should be used to produce little output while a value of 5 should produce a lot of debug output.
 
 return type : integer
@@ -3200,7 +3191,7 @@ GetDefaultFileOpenOptions
   GetDefaultFileOpenOptions(pluginName) -> dictionary
 
 
-pluginName : type
+pluginName : string
     The name of a plugin.
 
 return type : dictionary
@@ -3272,7 +3263,7 @@ GetEngineList
   GetEngineList(flag) -> tuple of tuples of strings
 
 
-flag (optional) : type
+flag : AMBIGUOUS
     If flag is a non-zero integer then the function returns a tuple of tuples with information about simulations.
 
 return : 
@@ -3321,10 +3312,10 @@ GetEngineProperties
   GetEngineProperties(engine, sim) -> EngineProperties object
 
 
-engine (optional) : type
+engine : STARTING_VALUE
     When engine is passed and it matches one of the computer names returnedfrom GetEngineList() then the EngineProperties object for that engine is returned.
 
-sim (optional) : type
+sim : STARTING_VALUE
     When both engine and sim arguments are passed, then the EngineProperties object for the simulation is returned.
 
 return type : EngineProperties object
@@ -3534,7 +3525,7 @@ GetLight
   GetLight(index) -> LightAttributes object
 
 
-index : type
+index : integer
     A zero-based integer index into the light list. Index can be in the range [0,7].
 
 return type : LightAttributes object
@@ -3645,11 +3636,11 @@ GetMachineProfile
   GetMachineProfile(hostname) -> MachineProfile object
 
 
-hostname : type
+hostname : STARTING_VALUE
     
 
 return type : MachineProfile object
-    MachineProfile for hostname
+    MachineProfile for hostname.
 
 
 **Description:**
@@ -3667,7 +3658,7 @@ GetMachineProfileNames
   GetMachineProfileNames() -> [hostname1, hostname2, ...]
 
 return type : [hostname1, hostname2, ...]
-    List of MachineProfile hostnames
+    A list of MachineProfile hostnames
 
 
 **Description:**
@@ -3804,10 +3795,10 @@ GetMetaData
   GetMetaData(db, ts) -> avtDatabaseMetaData object
 
 
-db : type
+db : string
     The name of the database for which to return metadata.
 
-ts : type
+ts : integer
     An optional integer indicating the time state at which to open the database.
 
 return type : avtDatabaseMetaData object
@@ -3873,8 +3864,8 @@ GetOperatorOptions
   GetOperatorOptions(index) -> operator attributes object
 
 
-index : type
-    The index of the operator within the plot's list of operators.
+index : AMBIGUOUS
+    The integer index of the operator within the plot's list of operators.
 
 return type : operator attributes object
     The GetOperatorOptions function returns an operator attributes object.
@@ -4094,9 +4085,6 @@ GetPlotList
   GetPlotList() -> PlotList object
 
 
-none : type
-    
-
 return type : PlotList object
     The GetPlotList function returns a PlotList object.
 
@@ -4132,9 +4120,6 @@ GetPlotOptions
 
   GetPlotOptions() -> plot attributes object
 
-
-none : type
-    
 
 return type : plot attributes object
     The GetPlotOptions function returns a plot attributes object whose type varies
@@ -4528,7 +4513,7 @@ GetSelection
   GetSelection(name) -> SelectionProperties object
 
 
-name : type
+name : string
     The name of the selection whose properties we want to retrieve.
 
 return type : SelectionProperties object
@@ -4566,9 +4551,6 @@ GetSelectionList
   GetSelectionList() -> SelectionList object
 
 
-none : type
-    
-
 return type : SelectionList object
     The GetSelectionList function returns a SelectionList object.
 
@@ -4597,7 +4579,7 @@ GetSelectionSummary
   GetSelectionSummary(name) -> SelectionSummary object
 
 
-name : type
+name : string
     The name of the selection whose summary we want to retrieve.
 
 return type : SelectionSummary object
@@ -4665,9 +4647,6 @@ GetUltraScript
 
   GetUltraScript() -> string
 
-
-none : type
-    
 
 return type : string
     The GetUltraScript function returns a filename.
@@ -4965,7 +4944,7 @@ HideToolbars
   HideToolbars(allWindows) -> integer
 
 
-allWindows : type
+allWindows : integer
     An optional integer value that tells VisIt to hide the toolbars for all windows when it is non-zero.
 
 return type : integer
@@ -5027,7 +5006,7 @@ InitializeNamedSelectionVariables
   InitializeNamedSelectionVariables(name) -> integer
 
 
-name : type
+name : string
     The name of the named selection to initialize.
 
 return type : integer
@@ -5094,8 +5073,8 @@ Launch
   LaunchNowin(program) -> integer
 
 
-program : type
-    The complete path to the top level 'visit' script.
+program : string
+    The complete path as a string to the top level 'visit' script.
 
 return type : integer
     The Launch functions return 1 for success and 0 for failure
@@ -5134,8 +5113,8 @@ LaunchNowin
   LaunchNowin(program) -> integer
 
 
-program : type
-    The complete path to the top level 'visit' script.
+program : string
+    The complete path as a string to the top level 'visit' script.
 
 return type : integer
     The Launch functions return 1 for success and 0 for failure
@@ -5315,10 +5294,10 @@ LoadAttribute
   SaveAttribute(filename, object)
 
 
-filename : type
+filename : string
     The name of the XML file to load the attribute from or save the attribute to.
 
-object : type
+object : STARTING_VALUE
     The object to load or save.
 
 
@@ -5354,13 +5333,13 @@ LoadNamedSelection
   LoadNamedSelection(name, engineName, simName) -> integer
 
 
-name : type
+name : string
     The name of a named selection.
 
-engineName : type
+engineName : string
     (optional) The name of the engine where the selection was saved.
 
-simName : type
+simName : string
     (optional) The name of the simulation that saved the selection.
 
 return type : integer
@@ -5401,9 +5380,6 @@ LoadUltra
   LoadUltra()
 
 
-none : type
-    
-
 
 **Description:**
 
@@ -5438,9 +5414,6 @@ LocalNameSpace
   LocalNameSpace()
 
 
-none : type
-    
-
 
 **Description:**
 
@@ -5469,7 +5442,7 @@ LongFileName
   LongFileName(filename) -> string
 
 
-filename : type
+filename : string
     A string object containing the short filename to expand.
 
 return type : string
@@ -5501,20 +5474,20 @@ MoveAndResizeWindow
   MoveAndResizeWindow(win, x, y, w, h) -> integer
 
 
-win : type
-    The id of the window to be moved [1..16].
+win : integer
+    The integer id of the window to be moved [1..16].
 
-x : type
-    The new x location for the window being moved.
+x : integer
+    The new integer x location for the window being moved.
 
-y : type
-    The new y location for the window being moved.
+y : integer
+    The new integer y location for the window being moved.
 
-w : type
-    The new width for the window being moved.
+w : integer
+    The new integer width for the window being moved.
 
-h : type
-    The new height for the window being moved.
+h : integer
+    The new integer height for the window being moved.
 
 return type : integer
     MoveAndResizeWindow returns 1 on success and 0 on failure.
@@ -5543,14 +5516,14 @@ MovePlotDatabaseKeyframe
   MovePlotDatabaseKeyframe(index, oldFrame, newFrame)
 
 
-index : type
-    An integer representing the index of the plof in the plot list.
+index : integer
+    An integer representing the index of the plot in the plot list.
 
-oldFrame : type
-    The old animation frame where the keyframe is located.
+oldFrame : integer
+    An integer that is thhe old animation frame where the keyframe is located.
 
-newFrame : type
-    The new animation frame where the keyframe will be moved.
+newFrame : integer
+    An integer that is the new animation frame where the keyframe will be moved.
 
 
 **Description:**
@@ -5592,14 +5565,14 @@ MovePlotKeyframe
   MovePlotKeyframe(index, oldFrame, newFrame)
 
 
-index : type
+index : integer
     An integer representing the index of the plof in the plot list.
 
-oldFrame : type
-    The old animation frame where the keyframe is located.
+oldFrame : integer
+    An integer that is the old animation frame where the keyframe is located.
 
-newFrame : type
-    The new animation frame where the keyframe will be moved.
+newFrame : integer
+    An integer that is the new animation frame where the keyframe will be moved.
 
 
 **Description:**
@@ -5653,8 +5626,8 @@ MovePlotOrderTowardFirst
   MovePlotOrderTowardFirst(index) -> integer
 
 
-index : type
-    The index of the plot that will be moved within the plot list.
+index : integer
+    The integer index of the plot that will be moved within the plot list.
 
 return type : integer
     The MovePlotOrderTowardFirst function returns 1 on success and 0 on failure.
@@ -5682,8 +5655,8 @@ MovePlotOrderTowardLast
   MovePlotOrderTowardLast(index) -> integer
 
 
-index : type
-    The index of the plot that will be moved within the plot list.
+index : integer
+    The integer index of the plot that will be moved within the plot list.
 
 return type : integer
     The MovePlotOrderTowardLast function returns 1 on success and 0 on failure.
@@ -5711,11 +5684,11 @@ MoveViewKeyframe
   MoveViewKeyframe(oldFrame, newFrame) -> integer
 
 
-oldFrame : type
-    The old animation frame where the keyframe is located.
+oldFrame : integer
+    An integer that is the old animation frame where the keyframe is located.
 
-newFrame : type
-    The new animation frame where the keyframe will be moved.
+newFrame : integer
+    An integer that is the new animation frame where the keyframe will be moved.
 
 return type : integer
     MoveViewKeyframe returns 1 on success and 0 on failure.
@@ -5761,14 +5734,14 @@ MoveWindow
   MoveWindow(win, x, y) -> integer
 
 
-win : type
-    The id of the window to be moved [1..16].
+win : integer
+    The integer id of the window to be moved [1..16].
 
-x : type
-    The new x location for the window being moved.
+x : integer
+    The new integer x location for the window being moved.
 
-y : type
-    The new y location for the window being moved.
+y : integer
+    The new integer y location for the window being moved.
 
 return type : integer
     MoveWindow returns 1 on success and 0 on failure.
@@ -5797,34 +5770,34 @@ NodePick
   NodePick(namedarg1=arg1, namedarg2=arg2, ...) -> dictionary
 
 
-coord : type
+coord : tuple
     A tuple of doubles containing the spatial coordinate (x, y, z).
 
-x : type
+x : integer
     An integer containing the screen X location (in pixels) offset from the left side of the visualization window.
 
-y : type
+y : integer
     An integer containing the screen Y location (in pixels) offset from the bottom of the visualization window.
 
-vars (optional) : type
+vars (optional) : tuple
     A tuple of strings with the variable names for which to return results. (default: currently plotted variable)
 
-do_time (optional) : type
+do_time (optional) : integer
     An integer indicating whether to do a time pick. 1 -> do a time pick, 0 (default) -> do not do a time pick.
 
-start_time (optional) : type
+start_time (optional) : integer
     An integer with the starting frame index (default: 0).
 
-end_time (optional) : type
+end_time (optional) : integer
     An integer with the ending frame index (default: num_timestates - 1).
 
-stride (optional) : type
+stride (optional) : integer
     An integer with the stride for advancing in time (default: 1).
 
-preserve_coord (optional) : type
+preserve_coord (optional) : integer
     An integer indicating whether to pick an element or a coordinate. 0 -> used picked element (default), 1-> used picked coordinate.
 
-curve_plot_type (optional) : type
+curve_plot_type (optional) : integer
     An integer indicating whether the output should be on a single axis orwith multiple axes. 0 -> single Y axis (default), 1 -> multiple Y Axes.
 
 return type : dictionary
@@ -5962,10 +5935,10 @@ OpenComputeEngine
   OpenComputeEngine(MachineProfile) -> integer
 
 
-hostName : type
+hostName : string
     The name of the computer on which to start the engine.
 
-args : type
+args : tuple
     Optional tuple of command line arguments for the engine.Alternative arguments:MachineProfile object to load with OpenComputeEngine call
 
 return type : integer
@@ -6011,13 +5984,13 @@ OpenDatabase
   OpenDatabase(databaseName, timeIndex, dbPluginName) -> integer
 
 
-databaseName : type
-    A string containing the name of the database to open.
+databaseName : string
+    The name of the database to open.
 
-timeIndex : type
+timeIndex : integer
     This is an optional integer argument indicating the time index at which toopen the database. If it is not specified, a time index of zero is assumed.
 
-dbPluginIndex : type
+dbPluginIndex : AMBIGUOUS
     An optional string containing the name of the plugin to use. Note that this string must also include the plugin's version number (with few exceptions,almost all plugins' version numbers are 1.0). Note also that you must capitalize the spelling identically to what the plugin'sGeneralPluginInfo::GetName() method returns. For example, "XYZ_1.0"is the string you would use for the XYZ plugin.
 
 return type : integer
@@ -6060,11 +6033,14 @@ OpenMDServer
   OpenMDServer(MachineProfile) -> integer
 
 
-host : type
+host : STARTING_VALUE
     The optional host argument determines the host on which the metadataserver is to be launched. If this argument is not provided, "localhost" is assumed.
 
-args : type
-    A tuple of strings containing command line flags for the metadata server.Alternative arguments:MachineProfile object to load with OpenMDServer call
+args : tuple
+    A tuple of strings containing command line flags for the metadata server.
+
+MachineProfile : STARTING_VALUE
+    MachineProfile object to load with OpenMDServer call
 
 return type : integer
     The OpenMDServer function returns 1 on success and 0 on failure.
@@ -6158,10 +6134,10 @@ OverlayDatabase
   OverlayDatabase(databaseName, state) -> integer
 
 
-databaseName : type
-    A string containing the name of the new plot database.
+databaseName : string
+    The name of the new plot database.
 
-state : type
+state : STARTING_VALUE
     The time state at which to open the database.
 
 return type : integer
@@ -6202,34 +6178,34 @@ Pick
   ZonePick(namedarg1=arg1, namedarg2=arg2, ...) -> dictionary
 
 
-coord : type
+coord : tuple
     A tuple of doubles containing the spatial coordinate (x, y, z).
 
-x : type
+x : integer
     An integer containing the screen X location (in pixels) offset from the left side of the visualization window.
 
-y : type
+y : integer
     An integer containing the screen Y location (in pixels) offset from the bottom of the visualization window.
 
-vars (optional) : type
+vars (optional) : tuple
     A tuple of strings with the variable names for which to return results. (default: currently plotted variable)
 
-do_time (optional) : type
+do_time (optional) : integer
     An integer indicating whether to do a time pick. 1 -> do a time pick, 0 (default) -> do not do a time pick.
 
-start_time (optional) : type
+start_time (optional) : integer
     An integer with the starting frame index (default: 0).
 
-end_time (optional) : type
+end_time (optional) : integer
     An integer with the ending frame index (default: num_timestates - 1).
 
-stride (optional) : type
+stride (optional) : integer
     An integer with the stride for advancing in time (default: 1).
 
-preserve_coord (optional) : type
+preserve_coord (optional) : integer
     An integer indicating whether to pick an element or a coordinate. 0 -> used picked element (default), 1-> used picked coordinate.
 
-curve_plot_type (optional) : type
+curve_plot_type (optional) : integer
     An integer indicating whether the output should be on a single axis orwith multiple axes. 0 -> single Y axis (default), 1 -> multiple Y Axes.
 
 return type : dictionary
@@ -6275,28 +6251,28 @@ PickByGlobalNode
   PickByGlobalNode(namedarg1=arg1, namedarg2=arg2, ...) -> dictionary
 
 
-element : type
+element : integer
     An integer with the global node id.
 
-vars (optional) : type
+vars (optional) : tuple
     A tuple of strings with the variable names for which to return results. (default: currently plotted variable)
 
-do_time (optional) : type
+do_time (optional) : integer
     An integer indicating whether to do a time pick. 1 -> do a time pick, 0 (default) -> do not do a time pick.
 
-start_time (optional) : type
+start_time (optional) : integer
     An integer with the starting frame index (default: 0).
 
-end_time (optional) : type
+end_time (optional) : integer
     An integer with the ending frame index (default: num_timestates - 1).
 
-stride (optional) : type
+stride (optional) : integer
     An integer with the stride for advancing in time (default: 1).
 
-preserve_coord (optional) : type
+preserve_coord (optional) : integer
     An integer indicating whether to pick an element or a coordinate. 0 -> used picked element (default), 1-> used picked coordinate.
 
-curve_plot_type (optional) : type
+curve_plot_type (optional) : integer
     An integer indicating whether the output should be on a single axis orwith multiple axes. 0 -> single Y axis (default), 1 -> multiple Y Axes.
 
 return type : dictionary
@@ -6342,28 +6318,28 @@ PickByGlobalZone
   PickByGlobalZone(namedarg1=arg1, namedarg2=arg2, ...) -> dictionary
 
 
-element : type
+element : integer
     An integer with the global zone id.
 
-vars (optional) : type
+vars (optional) : tuple
     A tuple of strings with the variable names for which to return results. (default: currently plotted variable)
 
-do_time (optional) : type
+do_time (optional) : integer
     An integer indicating whether to do a time pick. 1 -> do a time pick, 0 (default) -> do not do a time pick.
 
-start_time (optional) : type
+start_time (optional) : integer
     An integer with the starting frame index (default: 0).
 
-end_time (optional) : type
+end_time (optional) : integer
     An integer with the ending frame index (default: num_timestates - 1).
 
-stride (optional) : type
+stride (optional) : integer
     An integer with the stride for advancing in time (default: 1).
 
-preserve_coord (optional) : type
+preserve_coord (optional) : integer
     An integer indicating whether to pick an element or a coordinate. 0 -> used picked element (default), 1-> used picked coordinate.
 
-curve_plot_type (optional) : type
+curve_plot_type (optional) : integer
     An integer indicating whether the output should be on a single axis orwith multiple axes. 0 -> single Y axis (default), 1 -> multiple Y Axes.
 
 return type : dictionary
@@ -6408,34 +6384,34 @@ PickByNode
   PickByNode(namedarg1=arg1, namedarg2=arg2, ...) -> dictionary
 
 
-domain : type
+domain : integer
     An integer with the domain id.
 
-element : type
+element : integer
     An integer with the node id.
 
-vars (optional) : type
+vars (optional) : tuple
     A tuple of strings with the variable names for which to return results. (default: currently plotted variable)
 
-do_time (optional) : type
+do_time (optional) : integer
     An integer indicating whether to do a time pick. 1 -> do a time pick, 0 (default) -> do not do a time pick.
 
-start_time (optional) : type
+start_time (optional) : integer
     An integer with the starting frame index (default: 0).
 
-end_time (optional) : type
+end_time (optional) : integer
     An integer with the ending frame index (default: num_timestates - 1).
 
-stride (optional) : type
+stride (optional) : integer
     An integer with the stride for advancing in time (default: 1).
 
-preserve_coord (optional) : type
+preserve_coord (optional) : integer
     An integer indicating whether to pick an element or a coordinate. 0 -> used picked element (default), 1-> used picked coordinate.
 
-curve_plot_type (optional) : type
+curve_plot_type (optional) : integer
     An integer indicating whether the output should be on a single axis orwith multiple axes. 0 -> single Y axis (default), 1 -> multiple Y Axes.
 
-return_curves (optional) : type
+return_curves (optional) : integer
     An integer indicating whether or not to return the curve points. 1 ->return points, 0 (default) -> do not return points. Currently, this is only available when performing a pick range
 
 return type : dictionary
@@ -6487,28 +6463,28 @@ PickByNodeLabel
   PickByNodeLabel(namedarg1=arg1, namedarg2=arg2, ...) -> dictionary
 
 
-element_label : type
+element_label : string
     An string with the label of the node to pick.
 
-vars (optional) : type
+vars (optional) : tuple
     A tuple of strings with the variable names for which to return results. (default: currently plotted variable)
 
-do_time (optional) : type
+do_time (optional) : integer
     An integer indicating whether to do a time pick. 1 -> do a time pick, 0 (default) -> do not do a time pick.
 
-start_time (optional) : type
+start_time (optional) : integer
     An integer with the starting frame index (default: 0).
 
-end_time (optional) : type
+end_time (optional) : integer
     An integer with the ending frame index (default: num_timestates - 1).
 
-stride (optional) : type
+stride (optional) : integer
     An integer with the stride for advancing in time (default: 1).
 
-preserve_coord (optional) : type
+preserve_coord (optional) : integer
     An integer indicating whether to pick an element or a coordinate. 0 -> used picked element (default), 1-> used picked coordinate.
 
-curve_plot_type (optional) : type
+curve_plot_type (optional) : integer
     An integer indicating whether the output should be on a single axis orwith multiple axes. 0 -> single Y axis (default), 1 -> multiple Y Axes.
 
 return type : dictionary
@@ -6564,34 +6540,34 @@ PickByZone
   PickByZone(namedarg1=arg1, namedarg2=arg2, ...) -> dictionary
 
 
-domain : type
+domain : integer
     An integer with the domain id.
 
-element : type
+element : integer
     An integer with the zone id.
 
-vars (optional) : type
+vars (optional) : tuple
     A tuple of strings with the variable names for which to return results. (default: currently plotted variable)
 
-do_time (optional) : type
+do_time (optional) : integer
     An integer indicating whether to do a time pick. 1 -> do a time pick, 0 (default) -> do not do a time pick.
 
-start_time (optional) : type
+start_time (optional) : integer
     An integer with the starting frame index (default: 0).
 
-end_time (optional) : type
+end_time (optional) : integer
     An integer with the ending frame index (default: num_timestates - 1).
 
-stride (optional) : type
+stride (optional) : integer
     An integer with the stride for advancing in time (default: 1).
 
-preserve_coord (optional) : type
+preserve_coord (optional) : integer
     An integer indicating whether to pick an element or a coordinate. 0 -> used picked element (default), 1-> used picked coordinate.
 
-curve_plot_type (optional) : type
+curve_plot_type (optional) : integer
     An integer indicating whether the output should be on a single axis orwith multiple axes. 0 -> single Y axis (default), 1 -> multiple Y Axes.
 
-return_curves (optional) : type
+return_curves (optional) : integer
     An integer indicating whether or not to return the curve points. 1 ->return points, 0 (default) -> do not return points. Currently, this is only available when performing a pick range
 
 return type : dictionary
@@ -6643,28 +6619,28 @@ PickByZoneLabel
   PickByZoneLabel(namedarg1=arg1, namedarg2=arg2, ...) -> dictionary
 
 
-element_label : type
+element_label : string
     An string with the label of the zone to pick.
 
-vars (optional) : type
+vars (optional) : tuple
     A tuple of strings with the variable names for which to return results. (default: currently plotted variable)
 
-do_time (optional) : type
+do_time (optional) : integer
     An integer indicating whether to do a time pick. 1 -> do a time pick, 0 (default) -> do not do a time pick.
 
-start_time (optional) : type
+start_time (optional) : integer
     An integer with the starting frame index (default: 0).
 
-end_time (optional) : type
+end_time (optional) : integer
     An integer with the ending frame index (default: num_timestates - 1).
 
-stride (optional) : type
+stride (optional) : integer
     An integer with the stride for advancing in time (default: 1).
 
-preserve_coord (optional) : type
+preserve_coord (optional) : integer
     An integer indicating whether to pick an element or a coordinate. 0 -> used picked element (default), 1-> used picked coordinate.
 
-curve_plot_type (optional) : type
+curve_plot_type (optional) : integer
     An integer indicating whether the output should be on a single axis orwith multiple axes. 0 -> single Y axis (default), 1 -> multiple Y Axes.
 
 return type : dictionary
@@ -6749,34 +6725,34 @@ PointPick
   NodePick(namedarg1=arg1, namedarg2=arg2, ...) -> dictionary
 
 
-coord : type
+coord : tuple
     A tuple of doubles containing the spatial coordinate (x, y, z).
 
-x : type
+x : integer
     An integer containing the screen X location (in pixels) offset from the left side of the visualization window.
 
-y : type
+y : integer
     An integer containing the screen Y location (in pixels) offset from the bottom of the visualization window.
 
-vars (optional) : type
+vars (optional) : tuple
     A tuple of strings with the variable names for which to return results. (default: currently plotted variable)
 
-do_time (optional) : type
+do_time (optional) : integer
     An integer indicating whether to do a time pick. 1 -> do a time pick, 0 (default) -> do not do a time pick.
 
-start_time (optional) : type
+start_time (optional) : integer
     An integer with the starting frame index (default: 0).
 
-end_time (optional) : type
+end_time (optional) : integer
     An integer with the ending frame index (default: num_timestates - 1).
 
-stride (optional) : type
+stride (optional) : integer
     An integer with the stride for advancing in time (default: 1).
 
-preserve_coord (optional) : type
+preserve_coord (optional) : integer
     An integer indicating whether to pick an element or a coordinate. 0 -> used picked element (default), 1-> used picked coordinate.
 
-curve_plot_type (optional) : type
+curve_plot_type (optional) : integer
     An integer indicating whether the output should be on a single axis orwith multiple axes. 0 -> single Y axis (default), 1 -> multiple Y Axes.
 
 return type : STARTING_VALUE
@@ -6852,10 +6828,10 @@ PromoteOperator
   PromoteOperator(opIndex, applyToAllPlots) -> integer
 
 
-opIndex : type
+opIndex : integer
     A zero-based integer corresponding to the operator that should be promoted.
 
-applyAll : type
+applyToAllPlots : AMBIGUOUS
     An integer flag that causes all plots in the plot list to be affected when it is non-zero.
 
 return type : integer
@@ -6906,10 +6882,10 @@ PythonQuery
   PythonQuery(file='path/to/python_filter_script.py') -> integer
 
 
-source : type
+source : string
     A string containing the source code for a Python Query Filter .
 
-file : type
+file : string
     A string containing the path to a Python Query Filter script file.Note: Use only one of the 'source' or 'file' arguments.If both are used the 'source' argument overrides 'file'.
 
 return type : integer
@@ -7002,10 +6978,10 @@ Query
   Query(name, namedarg1=arg1,namedarg2=arg2, ...) -> dictionary
 
 
-name : type
-    A string containing the name of the query to execute.
+name : string
+    The name of the query to execute.
 
-dict : type
+dict : AMBIGUOUS
     An optional dictionary containing additional query arguments. namedarg1, namedarg2,...An optional list of named arguments supplying additional query parameters.
 
 return : 
@@ -7060,10 +7036,10 @@ QueryOverTime
   QueryOverTime(name, namedarg1=val1,namedarg2=val2, ...) -> integer
 
 
-name : type
-    A string containing the name of the query to execute.
+name : string
+    The name of the query to execute.
 
-dict : type
+dict : AMBIGUOUS
     An optional dictionary containing additional query arguments. namedarg1, namedarg2,...An optional list of named arguments supplying additional query parameters.
 
 return type : integer
@@ -7110,8 +7086,8 @@ ReOpenDatabase
   ReOpenDatabase(databaseName) -> integer
 
 
-databaseName : type
-    A string containing the name of the database to open.
+databaseName : string
+    The name of the database to open.
 
 return type : integer
     The ReOpenDatabase function returns an integer value of 1 for success and
@@ -7164,11 +7140,11 @@ ReadHostProfilesFromDirectory
   ReadHostProfilesFromDirectory(directory, clear) -> integer
 
 
-directory : type
+directory : string
     The name of the directory that contains the host profile XML files.
 
-clear : type
-    A flag indicating whether the host profile list should cleared first.
+clear : AMBIGUOUS
+    An integer flag indicating whether the host profile list should cleared first.
 
 return type : integer
     The ReadHostProfilesFromDirectory function returns an integer value of 1 for success and
@@ -7307,10 +7283,10 @@ RegisterCallback
   RegisterCallback(callbackname, callback) --> integer
 
 
-callbackname : type
+callbackname : string
     A string object designating the callback that we're installing. Allowable values are returned by the GetCallbackNames() function.
 
-callback : type
+callback : STARTING_VALUE
     A Python function, typically with one argument by which VisIt passes the object that caused the callback to be called.
 
 return type : integer
@@ -7344,10 +7320,10 @@ RegisterMacro
   RegisterMacro(name, callable)
 
 
-name : type
-    A string containing the name of the macro.
+name : string
+    The name of the macro.
 
-callable : type
+callable : STARTING_VALUE
     A Python function that will be associated with the macro name.
 
 
@@ -7388,10 +7364,10 @@ RemoveAllOperators
   RemoveOperator(index, all) -> integer
 
 
-all : type
+all : AMBIGUOUS
     An optional integer argument that tells the function to ignore the active plots and use all plots in the plot list if the value of the argument is non-zero.
 
-index : type
+index : AMBIGUOUS
     The zero-based integer index into a plot's operator list that specifies which operator is to be deleted.
 
 return type : integer
@@ -7440,10 +7416,10 @@ RemoveLastOperator
   RemoveOperator(index, all) -> integer
 
 
-all : type
+all : AMBIGUOUS
     An optional integer argument that tells the function to ignore the active plots and use all plots in the plot list if the value of the argument is non-zero.
 
-index : type
+index : AMBIGUOUS
     The zero-based integer index into a plot's operator list that specifies which operator is to be deleted.
 
 return type : integer
@@ -7487,7 +7463,7 @@ RemoveMachineProfile
   RemoveMachineProfile(hostname) -> integer
 
 
-hostname : type
+hostname : STARTING_VALUE
     
 
 **Description:**
@@ -7510,10 +7486,10 @@ RemoveOperator
   RemoveOperator(index, all) -> integer
 
 
-all : type
+all : AMBIGUOUS
     An optional integer argument that tells the function to ignore the active plots and use all plots in the plot list if the value of the argument is non-zero.
 
-index : type
+index : AMBIGUOUS
     The zero-based integer index into a plot's operator list that specifies which operator is to be deleted.
 
 return type : integer
@@ -7586,11 +7562,11 @@ RenamePickLabel
   RenamePickLabel(oldLabel, newLabel) -> integer
 
 
-oldLabel : type
-    The old pick label to replace. (e.g. 'A', 'B').
+oldLabel : string
+    A string that is the old pick label to replace. (e.g. 'A', 'B').
 
-newLabel : type
-    A new label to display in place of the old label.
+newLabel : string
+    A string that is the new label to display in place of the old label.
 
 return type : integer
     The RenamePickLabel function returns 1 on success and 0 on failure.
@@ -7620,10 +7596,10 @@ ReplaceDatabase
   ReplaceDatabase(databaseName, timeState) -> integer
 
 
-databaseName : type
-    A string containing the name of the new database.
+databaseName : string
+    The name of the new database.
 
-timeState : type
+timeState : integer
     A zero-based integer containing the time state that should be made active once the database has been replaced.
 
 return type : integer
@@ -7692,10 +7668,10 @@ ResetOperatorOptions
   ResetOperatorOptions(operatorType, all) -> integer
 
 
-operatorType : type
-    A string containing the name of a valid operator type.
+operatorType : string
+    The name of a valid operator type.
 
-all : type
+all : integer
     An optional integer argument that tells the function to reset the operator options for all plots regardless of whether or not they are active.
 
 return type : integer
@@ -7760,8 +7736,8 @@ ResetPlotOptions
   ResetPlotOptions(plotType) -> integer
 
 
-plotType : type
-    A string containing the name of the plot type.
+plotType : string
+    The name of the plot type.
 
 return type : integer
     The ResetPlotOptions function returns an integer value of 1 for success
@@ -7842,14 +7818,14 @@ ResizeWindow
   ResizeWindow(win, w, h) -> integer
 
 
-win : type
-    The id of the window to be moved [1..16].
+win : integer
+    The integer id of the window to be moved [1..16].
 
-w : type
-    The new width for the window.
+w : integer
+    The new integer width for the window.
 
-h : type
-    The new height for the window.
+h : integer
+    The new integer height for the window.
 
 return type : integer
     ResizeWindow returns 1 on success and 0 on failure.
@@ -7876,14 +7852,17 @@ RestoreSession
 ::
 
   RestoreSession(filename, visitDir) -> integer
-  RestoreSessionWithDifferentSources(filename, visitDir, tuple of strings) -> integer
+  RestoreSessionWithDifferentSources(filename, visitDir, mapping) -> integer
 
 
-filename : type
+filename : string
     The name of the session file to restore.
 
-visitDir : type
-    An integer flag that indicates whether the filename to be restored islocated in the user's VisIt directory. If the flag is set to 1 then thesession file is assumed to be located in the user's VisIt directory otherwise the filename must contain an absolute path. tuple of stringsA tuple of strings representing the maping from sources as specifiedin the original session file to new sources. Sources in the originalsession file are numbered starting from 0. So, this tuple of strings simply contains the new names for each of the sources, in order.
+visitDir : integer
+    An integer flag that indicates whether the filename to be restored islocated in the user's VisIt directory. If the flag is set to 1 then thesession file is assumed to be located in the user's VisIt directory otherwise the filename must contain an absolute path.
+
+mapping : tuple
+    A tuple of strings representing the maping from sources as specifiedin the original session file to new sources. Sources in the originalsession file are numbered starting from 0. So, this tuple of strings simply contains the new names for each of the sources, in order.
 
 return type : integer
     RestoreSession returns 1 on success and 0 on failure.
@@ -7923,14 +7902,17 @@ RestoreSessionWithDifferentSources
 ::
 
   RestoreSession(filename, visitDir) -> integer
-  RestoreSessionWithDifferentSources(filename, visitDir, tuple of strings) -> integer
+  RestoreSessionWithDifferentSources(filename, visitDir, mapping) -> integer
 
 
-filename : type
+filename : string
     The name of the session file to restore.
 
-visitDir : type
-    An integer flag that indicates whether the filename to be restored islocated in the user's VisIt directory. If the flag is set to 1 then thesession file is assumed to be located in the user's VisIt directory otherwise the filename must contain an absolute path. tuple of stringsA tuple of strings representing the maping from sources as specifiedin the original session file to new sources. Sources in the originalsession file are numbered starting from 0. So, this tuple of strings simply contains the new names for each of the sources, in order.
+visitDir : integer
+    An integer flag that indicates whether the filename to be restored islocated in the user's VisIt directory. If the flag is set to 1 then thesession file is assumed to be located in the user's VisIt directory otherwise the filename must contain an absolute path.
+
+mapping : tuple
+    A tuple of strings representing the maping from sources as specifiedin the original session file to new sources. Sources in the originalsession file are numbered starting from 0. So, this tuple of strings simply contains the new names for each of the sources, in order.
 
 return type : integer
     RestoreSession returns 1 on success and 0 on failure.
@@ -7973,10 +7955,10 @@ SaveAttribute
   SaveAttribute(filename, object)
 
 
-filename : type
+filename : string
     The name of the XML file to load the attribute from or save the attribute to.
 
-object : type
+object : STARTING_VALUE
     The object to load or save.
 
 
@@ -8010,7 +7992,7 @@ SaveNamedSelection
   SaveNamedSelection(name) -> integer
 
 
-name : type
+name : string
     The name of a named selection.
 
 return type : integer
@@ -8056,7 +8038,7 @@ SaveSession
   SaveSession(filename) -> integer
 
 
-filename : type
+filename : STARTING_VALUE
     The filename argument is the filename that is used to save the sessionfile. The filename is relative to the current working directory.
 
 return type : integer
@@ -8151,16 +8133,16 @@ SendSimulationCommand
   SendSimulationCommand(host, simulation, command, argument)
 
 
-host : type
+host : string
     The name of the computer where the simulation is running.
 
-simulation : type
+simulation : string
     The name of the simulation being processed at the specified host.
 
-command : type
-    The command to send to the simulation.
+command : string
+    A string that is the command to send to the simulation.
 
-argument : type
+argument : STARTING_VALUE
     An argument to the command.
 
 
@@ -8184,7 +8166,7 @@ SetActiveContinuousColorTable
   SetActiveDiscreteColorTable(name) -> integer
 
 
-name : type
+name : AMBIGUOUS
     The name of the color table to use for the active color table. The namemust be present in the tuple returned by the ColorTableNames function.
 
 return type : integer
@@ -8230,7 +8212,7 @@ SetActiveDiscreteColorTable
   SetActiveDiscreteColorTable(name) -> integer
 
 
-name : type
+name : AMBIGUOUS
     The name of the color table to use for the active color table. The namemust be present in the tuple returned by the ColorTableNames function.
 
 return type : integer
@@ -8275,7 +8257,7 @@ SetActivePlots
   SetActivePlots(plots) -> integer
 
 
-plots : type
+plots : AMBIGUOUS
     A tuple of integer plot indices starting at zero. A single integer is also accepted
 
 return type : integer
@@ -8316,8 +8298,8 @@ SetActiveTimeSlider
   SetActiveTimeSlider(tsName) -> integer
 
 
-tsName : type
-    A string containing the name of the time slider that should be made active.
+tsName : string
+    The name of the time slider that should be made active.
 
 return type : integer
     SetActiveTimeSlider returns 1 on success and 0 on failure.
@@ -8359,10 +8341,10 @@ SetActiveWindow
   SetActiveWindow(windowIndex, raiseWindow) -> integer
 
 
-windowIndex : type
+windowIndex : integer
     An integer window index starting at 1.
 
-raiseWindow : type
+raiseWindow : integer
     This is an optional integer argument that raises and activates the window ifset to 1. If omitted, the default behavior is to raise and activate the window.
 
 return type : integer
@@ -8438,7 +8420,7 @@ SetAnnotationAttributes
   SetDefaultAnnotationAttributes(atts) -> integer
 
 
-atts : type
+atts : STARTING_VALUE
     An AnnotationAttributes object containing the annotation settings.
 
 return type : integer
@@ -8485,7 +8467,7 @@ SetBackendType
   SetBackendType(name) -> integer
 
 
-name : type
+name : STARTING_VALUE
     VTK, VTKM.
 
 return type : integer
@@ -8522,14 +8504,14 @@ SetCenterOfRotation
   SetCenterOfRotation(x,y,z) -> integer
 
 
-x : type
-    The x component of the center of rotation.
+x : double
+    A double that is the x component of the center of rotation.
 
-y : type
-    The y component of the center of rotation.
+y : double
+    A double that is the y component of the center of rotation.
 
-z : type
-    The z component of the center of rotation.
+z : double
+    A double that is the z component of the center of rotation.
 
 return type : integer
     The SetCenterOfRotation function returns 1 on success and 0 on failure.
@@ -8572,7 +8554,7 @@ SetColorTexturingEnabled
   SetColorTexturingEnabled(enabled) -> integer
 
 
-enabled : type
+enabled : integer
     A integer value. Non-zero values enable color texturing and zero disables it.
 
 return type : integer
@@ -8607,7 +8589,7 @@ SetCreateMeshQualityExpressions
   SetCreateMeshQualityExpressions(val) -> integer
 
 
-val : type
+val : integer
     Either a zero (false) or non-zero (true) integer value to indicate ifMesh Quality expressions should be automatically created when a database is opened.
 
 return type : integer
@@ -8644,7 +8626,7 @@ SetCreateTimeDerivativeExpressions
   SetCreateTimeDerivativeExpressions(val) -> integer
 
 
-val : type
+val : integer
     Either a zero (false) or non-zero (true) integer value to indicate ifTime Derivative expressions should be automatically created when a database is opened.
 
 return type : integer
@@ -8681,7 +8663,7 @@ SetCreateVectorMagnitudeExpressions
   SetCreateVectorMagnitudeExpressions(val) -> integer
 
 
-val : type
+val : integer
     Either a zero (false) or non-zero (true) integer value to indicate ifVector magnitude expressions should be automatically created when a database is opened.
 
 return type : integer
@@ -8718,10 +8700,10 @@ SetDatabaseCorrelationOptions
   SetDatabaseCorrelationOptions(method, whenToCreate) -> integer
 
 
-method : type
+method : integer
     An integer that tells VisIt what default method to use when automaticallycreating a database correlation. The value must be in the range [0,3].
 
-whenToCreate : type
+whenToCreate : integer
     An integer that tells VisIt when to automatically create database correlations.
 
 return type : integer
@@ -8794,7 +8776,7 @@ SetDebugLevel
   SetDebugLevel(level)
 
 
-level : type
+level : string
     A string '1', '2', '3', '4', '5' with an optional 'b' suffix to indicatewhether the output should be buffered. A value of '1' is a low debug level , which should be used to produce little output while a value of 5 should produce a lot of debug output.
 
 
@@ -8828,7 +8810,7 @@ SetDefaultAnnotationAttributes
   SetDefaultAnnotationAttributes(atts) -> integer
 
 
-atts : type
+atts : STARTING_VALUE
     An AnnotationAttributes object containing the annotation settings.
 
 return type : integer
@@ -8875,10 +8857,10 @@ SetDefaultFileOpenOptions
   SetDefaultFileOpenOptions(pluginName, options) -> integer
 
 
-pluginName : type
+pluginName : string
     The name of a plugin.
 
-options : type
+options : dictionary
     A dictionary containing the new default options for that plugin.
 
 return type : integer
@@ -8915,7 +8897,7 @@ SetDefaultInteractorAttributes
   SetDefaultInteractorAttributes(atts) -> integer
 
 
-atts : type
+atts : STARTING_VALUE
     An InteractorAttributes object that contains the new interactor attributes that you want to use.
 
 return type : integer
@@ -8960,7 +8942,7 @@ SetDefaultMaterialAttributes
   SetDefaultMaterialAttributes(atts) -> integer
 
 
-atts : type
+atts : STARTING_VALUE
     A MaterialAttributes object containing the new settings.
 
 return type : integer
@@ -9050,13 +9032,13 @@ SetDefaultOperatorOptions
   SetDefaultOperatorOptions(atts) -> integer
 
 
-atts : type
+atts : STARTING_VALUE
     Any type of operator attributes object.
 
-operatorIndex : type
+operatorIndex : integer
     An optional zero-based integer that serves as an index into the activeplot's operator list. Use this argument if you want to set the operator attributes for a plot that has multiple instances of the same type ofoperator. For example, if the active plot had a Transform operatorfollowed by a Slice operator followed by another Transform operator andyou wanted to adjust the attributes of the second Transform operator,you would pass an operatorIndex value of 2.
 
-all : type
+all : integer
     An optional integer argument that tells the function to apply the operator attributes to all plots containing the specified operator if the value of the argument is non-zero.
 
 return type : integer
@@ -9113,7 +9095,7 @@ SetDefaultPickAttributes
   ResetPickAttributes() -> integer
 
 
-atts : type
+atts : STARTING_VALUE
     A PickAttributes object containing the new pick settings.
 
 return type : integer
@@ -9155,7 +9137,7 @@ SetDefaultPlotOptions
   SetDefaultPlotOptions(atts) -> integer
 
 
-atts : type
+atts : STARTING_VALUE
     Any type of plot attributes object.
 
 return type : integer
@@ -9204,7 +9186,7 @@ SetGlobalLineoutAttributes
   SetGlobalLineoutAttributes(atts) -> integer
 
 
-atts : type
+atts : STARTING_VALUE
     A GlobalLineoutAttributes object that contains the new settings.
 
 return type : integer
@@ -9249,7 +9231,7 @@ SetInteractorAttributes
   SetDefaultInteractorAttributes(atts) -> integer
 
 
-atts : type
+atts : STARTING_VALUE
     An InteractorAttributes object that contains the new interactor attributes that you want to use.
 
 return type : integer
@@ -9293,7 +9275,7 @@ SetKeyframeAttributes
   SetKeyframeAttributes(kfAtts) -> integer
 
 
-kfAtts : type
+kfAtts : STARTING_VALUE
     A KeyframeAttributes object that contains the new keyframing attributes to use.
 
 return type : integer
@@ -9332,10 +9314,10 @@ SetLight
   SetLight(index, light) -> integer
 
 
-index : type
+index : integer
     A zero-based integer index into the light list. Index can be in the range [0,7].
 
-light : type
+light : STARTING_VALUE
     A LightAttributes object containing the properties to use for the specified light.
 
 return type : integer
@@ -9379,7 +9361,7 @@ SetMachineProfile
   SetMachineProfile(MachineProfile) -> integer
 
 
-MachineProfile : type
+MachineProfile : STARTING_VALUE
     
 
 **Description:**
@@ -9399,7 +9381,7 @@ SetMaterialAttributes
   SetDefaultMaterialAttributes(atts) -> integer
 
 
-atts : type
+atts : STARTING_VALUE
     A MaterialAttributes object containing the new settings.
 
 return type : integer
@@ -9486,8 +9468,8 @@ SetNamedSelectionAutoApply
   SetNamedSelectionAutoApply(flag) -> integer
 
 
-flag : type
-    Non-zero values turn on selection auto apply mode.
+flag : integer
+    An integer flag. Non-zero values turn on selection auto apply mode.
 
 return type : integer
     The SetNamedSelectionAutoApply function returns 1 on success and 0 on failure.
@@ -9522,13 +9504,13 @@ SetOperatorOptions
   SetDefaultOperatorOptions(atts) -> integer
 
 
-atts : type
+atts : STARTING_VALUE
     Any type of operator attributes object.
 
-operatorIndex : type
+operatorIndex : integer
     An optional zero-based integer that serves as an index into the activeplot's operator list. Use this argument if you want to set the operator attributes for a plot that has multiple instances of the same type ofoperator. For example, if the active plot had a Transform operatorfollowed by a Slice operator followed by another Transform operator andyou wanted to adjust the attributes of the second Transform operator,you would pass an operatorIndex value of 2.
 
-all : type
+all : integer
     An optional integer argument that tells the function to apply the operator attributes to all plots containing the specified operator if the value of the argument is non-zero.
 
 return type : integer
@@ -9585,7 +9567,7 @@ SetPickAttributes
   ResetPickAttributes() -> integer
 
 
-atts : type
+atts : STARTING_VALUE
     A PickAttributes object containing the new pick settings.
 
 return type : integer
@@ -9665,13 +9647,13 @@ SetPlotDatabaseState
   SetPlotDatabaseState(index, frame, state)
 
 
-index : type
+index : integer
     A zero-based integer index that is the plot's location in the plot list.
 
-frame : type
+frame : integer
     A zero-baed integer index representing the animation frame for which we're going to add a database keyframe.
 
-state : type
+state : integer
     A zero-based integer index representating the database time state that we're going to use at the specified animation frame.
 
 
@@ -9717,11 +9699,11 @@ SetPlotDescription
   SetPlotDescription(index, description) -> integer
 
 
-index : type
-    The index of the plot within the plot list.
+index : integer
+    The integer index of the plot within the plot list.
 
-description : type
-    A new description that will be shown in the plot list so the plot can be identified readily.
+description : list
+    A new description srting that will be shown in the plot list so the plot can be identified readily.
 
 return type : integer
     The SetPlotDescription function returns 1 on success and 0 on failure.
@@ -9751,8 +9733,8 @@ SetPlotFollowsTime
   SetPlotFollowsTime(val) -> integer
 
 
-val : type
-    An optional flag indicating whether the plot should follow the time slider.The default behavior is for the plot to follow the time slider.
+val : integer
+    An optional integer flag indicating whether the plot should follow thetime slider. The default behavior is for the plot to follow the time slider.
 
 return type : integer
     The function returns 1 on success and 0 on failure.
@@ -9780,13 +9762,13 @@ SetPlotFrameRange
   SetPlotFrameRange(index, start, end)
 
 
-index : type
+index : integer
     A zero-based integer representing an index into the plot list.
 
-start : type
+start : integer
     A zero-based integer representing the animation frame where the plot first appears in the visualization.
 
-end : type
+end : integer
     A zero-based integer representing the animation frame where the plot disappears from the visualization.
 
 
@@ -9834,7 +9816,7 @@ SetPlotOptions
   SetDefaultPlotOptions(atts) -> integer
 
 
-atts : type
+atts : STARTING_VALUE
     Any type of plot attributes object.
 
 return type : integer
@@ -9883,8 +9865,8 @@ SetPlotOrderToFirst
   SetPlotOrderToFirst(index) -> integer
 
 
-index : type
-    The index of the plot within the plot list.
+index : integer
+    The integer index of the plot within the plot list.
 
 return type : integer
     The SetPlotOrderToFirst function returns 1 on success and 0 on failure.
@@ -9915,8 +9897,8 @@ SetPlotOrderToLast
   SetPlotOrderToLast(index) -> integer
 
 
-index : type
-    The index of the plot within the plot list.
+index : integer
+    The integer index of the plot within the plot list.
 
 return type : integer
     The SetPlotOrderToLast function returns 1 on success and 0 on failure.
@@ -9948,10 +9930,10 @@ SetPlotSILRestriction
   SetPlotSILRestriction(silr, all) -> integer
 
 
-silr : type
+silr : STARTING_VALUE
     A SIL restriction object.
 
-all : type
+all : STARTING_VALUE
     An optional argument that tells the function if the SIL restriction should be applied to all plots in the plot list.
 
 return type : integer
@@ -9998,22 +9980,19 @@ SetPrecisionType
   SetPrecisionType(typeAsString)
 
 
-typeAsInt : type
+typeAsInt : double
     Precision type specified as an integer. 0 = float 1 = native 2 = double
 
-typeAsString : type
+typeAsString : STARTING_VALUE
+    Precision type specified as a string:
+
+"float" : STARTING_VALUE
     
 
-Options: : type
+"native" : STARTING_VALUE
     
 
-"float" : type
-    
-
-"native" : type
-    
-
-"double" : type
+"double" : STARTING_VALUE
     
 
 
@@ -10038,7 +10017,7 @@ SetPreferredFileFormats
   SetPreferredFileFormats(pluginIDs) -> integer
 
 
-pluginIDs : type
+pluginIDs : tuple
     A tuple of plugin IDs to be attempted first when opening files.
 
 return type : integer
@@ -10070,7 +10049,7 @@ SetPrinterAttributes
   SetPrinterAttributes(atts)
 
 
-atts : type
+atts : STARTING_VALUE
     A PrinterAttributes object.
 
 
@@ -10110,7 +10089,7 @@ SetQueryFloatFormat
   SetQueryFloatFormat(format_string)
 
 
-format_string : type
+format_string : string
     A string object that provides a printf style floating point format.
 
 
@@ -10252,7 +10231,7 @@ SetQueryOverTimeAttributes
   ResetQueryOverTimeAttributes() -> integer
 
 
-atts : type
+atts : STARTING_VALUE
     A QueryOverTimeAttributes object containing the new settings to use for queries over time.
 
 return type : integer
@@ -10300,7 +10279,7 @@ SetRemoveDuplicateNodes
   SetRemoveDuplicateNodes(val) -> integer
 
 
-val : type
+val : integer
     Either a zero (false) or non-zero (true) integer value to indicate if duplicate nodes in fully disconnected unstructured grids should be automatically removed by visit.
 
 return type : integer
@@ -10337,7 +10316,7 @@ SetRenderingAttributes
   SetRenderingAttributes(atts) -> integer
 
 
-atts : type
+atts : STARTING_VALUE
     A RenderingAttributes object that contains the rendering attributes thatwe want to make VisIt use.
 
 return type : integer
@@ -10385,7 +10364,7 @@ SetSaveWindowAttributes
   SetSaveWindowAttributes(atts)
 
 
-atts : type
+atts : STARTING_VALUE
     A SaveWindowAttributes object.
 
 
@@ -10430,7 +10409,7 @@ SetTimeSliderState
   SetTimeSliderState(state) -> integer
 
 
-state : type
+state : integer
     A zero-based integer containing the time state that we want to make active.
 
 return type : integer
@@ -10473,7 +10452,7 @@ SetTreatAllDBsAsTimeVarying
   SetTreatAllDBsAsTimeVarying(val) -> integer
 
 
-val : type
+val : integer
     Either a zero (false) or non-zero (true) integer value to indicate if all databases should be treated as time varying (true) or not (false).
 
 return type : integer
@@ -10512,7 +10491,7 @@ SetTryHarderCyclesTimes
   SetTryHarderCyclesTimes(val) -> integer
 
 
-val : type
+val : integer
     Either a zero (false) or non-zero (true) integer value to indicate ifVisIt read cycle/time information for all timestates when opening a database.
 
 return type : integer
@@ -10550,7 +10529,7 @@ SetUltraScript
   SetUltraScript(filename) -> integer
 
 
-filename : type
+filename : string
     The name of the file to be used as the ultra script when LoadUltra is called.
 
 return type : integer
@@ -10576,7 +10555,7 @@ SetView2D
   SetViewAxisArray(ViewAxisArrayAttributes) -> integer
 
 
-view : type
+view : STARTING_VALUE
     A ViewAttributes object containing the view.
 
 return type : integer
@@ -10632,7 +10611,7 @@ SetView3D
   SetViewAxisArray(ViewAxisArrayAttributes) -> integer
 
 
-view : type
+view : STARTING_VALUE
     A ViewAttributes object containing the view.
 
 return type : integer
@@ -10688,7 +10667,7 @@ SetViewAxisArray
   SetViewAxisArray(ViewAxisArrayAttributes) -> integer
 
 
-view : type
+view : STARTING_VALUE
     A ViewAttributes object containing the view.
 
 return type : integer
@@ -10744,7 +10723,7 @@ SetViewCurve
   SetViewAxisArray(ViewAxisArrayAttributes) -> integer
 
 
-view : type
+view : STARTING_VALUE
     A ViewAttributes object containing the view.
 
 return type : integer
@@ -10797,7 +10776,7 @@ SetViewExtentsType
   SetViewExtentsType(type) -> integer
 
 
-type : type
+type : integer
     An integer 0, 1 or one of the strings: "original", "actual".
 
 return type : integer
@@ -10903,17 +10882,17 @@ SetWindowArea
   SetWindowArea(x, y, width, height) -> integer
 
 
-x : type
-    Left X coordinate in screen pixels.
+x : integer
+    An integer that is the left X coordinate in screen pixels.
 
-y : type
-    Top Y coordinate in screen pixels.
+y : integer
+    An integer that is the top Y coordinate in screen pixels.
 
-width : type
-    Width of the window area in pixels.
+width : integer
+    An integer that is the width of the window area in pixels.
 
-height : type
-    Height of the window area in pixels.
+height : integer
+    An integer that is the height of the window area in pixels.
 
 return type : integer
     The SetWindowArea function returns 1 on success and 0 on failure.
@@ -10946,7 +10925,7 @@ SetWindowLayout
   SetWindowLayout(layout) -> integer
 
 
-layout : type
+layout : integer
     An integer that specifies the window layout. (1,2,4,8,9,16 are valid)
 
 return type : integer
@@ -10983,7 +10962,7 @@ SetWindowMode
   SetWindowMode(mode) -> integer
 
 
-mode : type
+mode : string
     A string containing the new mode: 'navigate', 'zoom', 'lineout', 'pick', 'zone pick', 'node pick', 'spreadsheet pick'.
 
 return type : integer
@@ -11057,7 +11036,7 @@ ShowToolbars
   ShowToolbars(allWindows) -> integer
 
 
-allWindows : type
+allWindows : integer
     An integer value that tells VisIt to show the toolbars for all windows when it is non-zero.
 
 return type : integer
@@ -11120,10 +11099,10 @@ SuppressMessages
 
 ::
 
-  SuppressMessages(int level) -> integer
+  SuppressMessages(level) -> integer
 
 
-int level : type
+level : integer
     An integer value of 1,2,3 or 4
 
 return type : integer
@@ -11343,7 +11322,7 @@ TimeSliderSetState
   SetTimeSliderState(state) -> integer
 
 
-state : type
+state : integer
     A zero-based integer containing the time state that we want to make active.
 
 return type : STARTING_VALUE
@@ -12234,10 +12213,10 @@ UpdateNamedSelection
   UpdateNamedSelection(name, properties) -> integer
 
 
-name : type
+name : string
     The name of the selection to update.
 
-properties : type
+properties : STARTING_VALUE
     An optional SelectionProperties object that contains the selection properties to use when reevaluating the selection.
 
 return type : integer
@@ -12351,34 +12330,34 @@ ZonePick
   ZonePick(namedarg1=arg1, namedarg2=arg2, ...) -> dictionary
 
 
-coord : type
+coord : tuple
     A tuple of doubles containing the spatial coordinate (x, y, z).
 
-x : type
+x : integer
     An integer containing the screen X location (in pixels) offset from the left side of the visualization window.
 
-y : type
+y : integer
     An integer containing the screen Y location (in pixels) offset from the bottom of the visualization window.
 
-vars (optional) : type
+vars (optional) : tuple
     A tuple of strings with the variable names for which to return results. (default: currently plotted variable)
 
-do_time (optional) : type
+do_time (optional) : integer
     An integer indicating whether to do a time pick. 1 -> do a time pick, 0 (default) -> do not do a time pick.
 
-start_time (optional) : type
+start_time (optional) : integer
     An integer with the starting frame index (default: 0).
 
-end_time (optional) : type
+end_time (optional) : integer
     An integer with the ending frame index (default: num_timestates - 1).
 
-stride (optional) : type
+stride (optional) : integer
     An integer with the stride for advancing in time (default: 1).
 
-preserve_coord (optional) : type
+preserve_coord (optional) : integer
     An integer indicating whether to pick an element or a coordinate. 0 -> used picked element (default), 1-> used picked coordinate.
 
-curve_plot_type (optional) : type
+curve_plot_type (optional) : integer
     An integer indicating whether the output should be on a single axis orwith multiple axes. 0 -> single Y axis (default), 1 -> multiple Y Axes.
 
 return type : dictionary
