@@ -3266,7 +3266,7 @@ GetEngineList
 flag : AMBIGUOUS
     If flag is a non-zero integer then the function returns a tuple of tuples with information about simulations.
 
-return : 
+return type : AMBIGUOUS
     GetEngineList returns a tuple of strings that contain the names of the
     computers on which compute engines are running. If flag is a non-zero
     integer argument then the function returns a tuple of tuples where each
@@ -6984,7 +6984,7 @@ name : string
 dict : AMBIGUOUS
     An optional dictionary containing additional query arguments. namedarg1, namedarg2,...An optional list of named arguments supplying additional query parameters.
 
-return : 
+return type : AMBIGUOUS
     The Query function returns either a String (default), Value(s), or Object.
     The return type can be customized via calls to SetQueryOutputToXXX(), where
     'XXX' is 'String', 'Value', or 'Object'. For more information on these

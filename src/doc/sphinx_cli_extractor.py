@@ -412,6 +412,11 @@ class ArgumentsContainer(object):
             name    = "%s" % (self.names[i].strip())
             if name == 'none':
                 continue
+                
+            #
+            # Attempt to determine the type of argument from the argument's
+            # description.
+            #
             type_name = "STARTING_VALUE"
             for word in ''.join(self.descriptions[i]).split():
                 if word in self.type_keywords.keys():
@@ -419,6 +424,7 @@ class ArgumentsContainer(object):
                         type_name = self.type_keywords[word]
                     elif word != type_name:
                         type_name = "AMBIGUOUS"
+            
             lines += "\n%s : %s\n    %s\n"%(name, type_name,
                 self.descriptions[i])
 
@@ -490,12 +496,8 @@ class ReturnsContainer(object):
                 A restructuredText formatted string. 
         """
         if self.return_type != "NONE":
-            if self.return_type == "AMBIGUOUS":
-                output = "return : \n%s\n" %(self.returns)
-                return output
-            else:
-                output  = "return type : %s\n%s\n" %(self.return_type, self.returns)
-                return output
+            output  = "return type : %s\n%s\n" %(self.return_type, self.returns)
+            return output
         else:
             return ""
 
@@ -623,18 +625,19 @@ class AttributesTable(Table):
         r_one = group_one.split('=')
         
         #
-        # Prep the default option. White space needs to be stripped. Also, some defaults
-        # will come in with their "full name", such as "colorControlPoints.Linear" instead
-        # of just "Linear". So we split it on the period too and use the last string in the
-        # split list if it exists.
+        # Prep the default option. White space needs to be stripped. Also, some
+        # defaults will come in with their "full name", such as
+        # "colorControlPoints.Linear" instead of just "Linear". So we split it
+        # on the period too and use the last string in the split list if it
+        # exists.
         #
         default_stripped = r_one[1].strip()
         period_split = default_stripped.split('.')
         default_option = period_split[-1]
         
         #
-        # Find the default option within the string of options, add asterisks around it
-        # for bold, and move it to the beginning of the list.
+        # Find the default option within the string of options, add asterisks
+        # around it for bold, and move it to the beginning of the list.
         #
         word_start = group_two.find(default_option)
         if word_start != -1:
@@ -645,6 +648,7 @@ class AttributesTable(Table):
             else: # it is first in the list of options
                 group_two_mod = '**' + group_two[word_start:word_end] + '**,' + \
                                 group_two[word_end+1:]
+        
         self.insert_two_columns(r_one[0], group_two_mod)
     
     def row_from_basic_match(self, group_one, group_two):
@@ -826,6 +830,10 @@ def functions_to_sphinx(funclist):
             elif cur_block == 'Synopsis:':
                 if not block_dict[cur_block]:
                     block_dict[cur_block] = SynopsisContainer()
+                    
+                #
+                # Attempt to extract the return type from the synopsis
+                #
                 if element.find(str(func_name + '(')) > -1:
                     # Grab the output type from the synopsis. Look for
                     # func_name(args) -> output_type
@@ -838,6 +846,7 @@ def functions_to_sphinx(funclist):
                         return_type = return_type_helper
                     elif return_type != return_type_helper:
                         return_type = "AMBIGUOUS"
+                        
                 block_dict[cur_block].extend_current_synopsis(element)
 
             elif cur_block == 'Description:':
