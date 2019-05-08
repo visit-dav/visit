@@ -124,8 +124,7 @@ MiliVariableMetaData::MiliVariableMetaData(std::string sName,
         vectorComponents[i] = vComps[i];
     }
 
-    esMappedName = "";
-    path         = "";
+    path = "";
 
     //
     // Sand and cause are two special cases dealing with 
@@ -144,8 +143,6 @@ MiliVariableMetaData::MiliVariableMetaData(std::string sName,
     {
         isCause = true;
     }
-
-    DetermineESStatus();
 }
 
 
@@ -290,9 +287,7 @@ MiliVariableMetaData::GetPath()
             path = "Primal";
         }
 
-        //TODO: include element sets in shared once
-        //      issues are worked out. 
-        if (isShared && !isElementSet)
+        if (isShared)
         {
             path += "/Shared";
         }
@@ -301,175 +296,9 @@ MiliVariableMetaData::GetPath()
             path += "/" + classSName;
         }
 
-        //
-        // If we have an element set, we need to use the mapped name.
-        //
-        if (isElementSet) 
-        {
-            path += "/" + esMappedName;
-        }
-        else
-        {
-            path += "/" + shortName;
-        }
+        path += "/" + shortName;
     }
     return path;
-}
-
-
-//TODO: We shouldn't need this anymore. 
-// ***************************************************************************
-//  Method: MiliVariableMetaData::DetermineTrueName
-//
-//  Purpose:
-//      Determine a variable's true name. If it's an element set, its
-//      name is hidden, and we have to infer what it really is. This 
-//      method is static for use outside of the class as well. 
-//
-//  Arguments:
-//      name    The variable name to be assessed for truth. 
-//      comps   The variables component names (if any).
-//      isEs    If the variable is an element set, this will be set to true. 
-//
-//  Programmer: Alister Maguire
-//  Creation:   Jan 15, 2019
-//
-//  Modifications:
-//
-// ****************************************************************************
-
-std::string
-MiliVariableMetaData::DetermineTrueName(const std::string name,
-                                        const std::vector<std::string> comps,
-                                        bool &isEs)
-{
-    std::string esId    = "es_";
-    std::string nameSub = name.substr(0, 3);
-    if (esId != nameSub)
-    {
-        isEs = false;
-        return name; 
-    }
-
-    if (comps.size() <= 0)
-    {
-        debug1 << "ERROR: we've found an element set that"
-            << " is not a vector!";
-        EXCEPTION1(InvalidVariableException, name.c_str());
-    }
-
-    //
-    // We're dealing with an element set. 
-    //
-    isEs = true;
-
-    //
-    // The vector should contain dimensional based variables
-    // with a leading charact signifiyting it's mapped name. 
-    // Since the vectors can also contain other elements, let's
-    // first find a dimensional variable. 
-    //
-    int targetIdx;
-    for (targetIdx = 0; targetIdx < comps.size(); ++targetIdx)
-    {
-        if (comps[targetIdx].size() > 1)
-        {
-            if (comps[targetIdx][1] == 'x')
-            {
-                break;
-            }
-        }
-    }
-    char leadingChar = comps[targetIdx][0];
-
-    switch (leadingChar)
-    {
-        //
-        // These are the known variables that can be element sets. 
-        // This may need to be updated in the future. 
-        //
-        case 'e':
-        {
-            std::string trueName = "strain";
-            return trueName;
-        }
-        case 's':
-        {
-            std::string trueName = "stress";
-            return trueName;
-        }
-        default:
-        {
-            char msg[1024]; 
-            sprintf(msg, "An element set of unknown type has been "
-                "encountered! If valid, code needs to be updated");
-            EXCEPTION2(UnexpectedValueException, name, msg);
-            break;
-        }
-    }
-}
-
-
-// ***************************************************************************
-//  Method: MiliVariableMetaData::IsElementStatus
-//
-//  Purpose:
-//      Given a variable name, determine if it's an element set. 
-//
-//  Arguments:
-//      name    The variable name to be assessed.
-//
-//  Programmer: Alister Maguire
-//  Creation:   May 6, 2019
-//
-//  Modifications:
-//
-// ****************************************************************************
-//FIXME: needed?
-bool
-MiliVariableMetaData::IsElementSet(const std::string name)
-{
-    std::string esId    = "es_";
-    std::string nameSub = name.substr(0, 3);
-    if (esId == nameSub)
-    {
-        return true;
-    }
-    return false;
-}
-
-
-//FIXME: remove after updated. 
-// ***************************************************************************
-//  Method: MiliVariableMetaData::DetermineESStatus
-//
-//  Purpose:
-//      Determine if this variable is an element set. If it is
-//      perform the neccessary extra steps required for 
-//      functionality. 
-//
-//  Programmer: Alister Maguire
-//  Creation:   Jan 15, 2019
-//
-//  Modifications:
-//
-// ****************************************************************************
-
-void
-MiliVariableMetaData::DetermineESStatus(void)
-{
-    //
-    // If this is an element set, we need to determine and
-    // assign it another name to be used in the visit path
-    // besides its element set name. 
-    //
-    std::string tName = DetermineTrueName(shortName, 
-        vectorComponents, isElementSet);
-
-    if (isElementSet)
-    {
-        esMappedName = tName;
-    }
 }
 
 
@@ -491,7 +320,6 @@ MiliVariableMetaData::PrintSelf(void)
 {
     std::cerr << "long name: " << longName << std::endl;
     std::cerr << "short name: " << shortName << std::endl;
-    std::cerr << "es mapped name: " << esMappedName << std::endl;
     std::cerr << "class long Name: " << classLName << std::endl;
     std::cerr << "class short Name: " << classSName << std::endl;
     std::cerr << "path: " << path << std::endl;
@@ -688,32 +516,6 @@ MiliElementSetMetaData::~MiliElementSetMetaData(void)
 const std::string&
 MiliElementSetMetaData::GetPath()
 {
-    //if (path.empty())
-    //{
-    //    if (multiMesh)
-    //    {
-    //        char mmStart[1024];
-    //        sprintf(mmStart, "Primal (mesh%d)/", meshAssociation);
-    //        path = mmStart;
-    //    }
-    //    else
-    //    {
-    //        path = "Primal";
-    //    }
-
-    //    //TODO: include element sets in shared once
-    //    //      issues are worked out. 
-    //    if (isShared && !isElementSet)
-    //    {
-    //        path += "/Shared";
-    //    }
-    //    else if (!classSName.empty())
-    //    {
-    //        path += "/" + classSName;
-    //    }
-
-    //    path += "/" + esMappedName;
-    //}
     return path;
 }
 
@@ -876,6 +678,36 @@ MiliElementSetMetaData::GetGroupVecSize(int gIdx)
         return groupVecSizes[gIdx];
     }
     return -1;
+}
+
+
+// ***************************************************************************
+//  Method: MiliElementSetMetaData::GroupIsShared
+//
+//  Purpose:
+//      Determine if a particular group is shared or not. 
+//
+//  Arguments:
+//      gIdx    The group index. 
+//
+//  Returns:
+//      true if the group is shared. False otherwise. 
+//           
+//  Programmer: Alister Maguire
+//  Creation:   May 6, 2019
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+bool
+MiliElementSetMetaData::GroupIsShared(int gIdx)
+{
+    if (gIdx >= 0 && gIdx < groupIsShared.size())
+    {
+        return groupIsShared[gIdx];
+    }
+    return false;
 }
 
 

@@ -194,24 +194,14 @@ class MiliVariableMetaData
     stringVector              &GetVectorComponents(void)
                                  { return vectorComponents; };
 
-    //FIXME: no longer needed?
-    static std::string         DetermineTrueName(const std::string,
-                                              const std::vector<std::string>,
-                                              bool &);
-
-    static bool                IsElementSet(std::string);
-
     void                       PrintSelf(void);
 
   protected:
 
-    void                      DetermineESStatus(void);
-    
     std::string               classLName;
     std::string               classSName;
     std::string               longName;
     std::string               shortName;
-    std::string               esMappedName;//FIXME: remove this after integration
     std::string               path;
     
     int                       varTypeAvt;
@@ -228,7 +218,7 @@ class MiliVariableMetaData
     //
     std::vector< intVector >  SRIds;
 
-    bool                      isElementSet;//TODO: do we still need this?
+    bool                      isElementSet;
     bool                      isMatVar;
     bool                      isGlobal;
     bool                      isSand;
@@ -237,7 +227,6 @@ class MiliVariableMetaData
     bool                      multiMesh;
 
     stringVector              vectorComponents;
-
 };
 
 
@@ -247,8 +236,15 @@ class MiliVariableMetaData
 //  Purpose:
 //      A container for mili element set variables.  
 //
+//      The primary purpose of this is to extend the MiliVariableMetaData
+//      class to handle "groups" within element sets. In a nut-shell, 
+//      element sets are considered a single vector variable, but their 
+//      vector components are often grouped into separate variables for 
+//      visualization purposes. This adds a layer of complications that 
+//      this class seeks to help ease.  
+//
 //  Programmer:  Alister Maguire
-//  Creation:    Jan 16, 2019
+//  Creation:    May 6, 2019
 //
 //  Modifications:
 //
@@ -308,7 +304,8 @@ class MiliElementSetMetaData : public MiliVariableMetaData
     const intVector                &GetGroupMiliTypes(void)
                                       { return groupMiliTypes; };
 
-    const boolVector               &GetGroupIsShared(void) //TODO: better name?
+    bool                            GroupIsShared(int);
+    const boolVector               &GetGroupIsShared(void)
                                       { return groupIsShared; };
 
     intVector                       GetGroupComponentIdxs(std::string);
@@ -540,7 +537,6 @@ class avtMiliMetaData
 
     SubrecInfo                      &GetSubrecInfo(int);
 
-    //TODO: complete
     SharedVariableInfo              *GetSharedVariableInfo(const char *);
 
   private:

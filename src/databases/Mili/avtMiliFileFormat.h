@@ -128,10 +128,9 @@ class avtMiliFileFormat : public avtMTMDFileFormat
     void                  GetVectorVar(int, 
                                        int, 
                                        int,
-                                       std::string, 
                                        MiliVariableMetaData *varMD,
                                        vtkFloatArray *);
-    void                  GetElementSetVar(int, //FIXME use this?
+    void                  GetElementSetVar(int, 
                                            int,
                                            int,
                                            std::string, 
