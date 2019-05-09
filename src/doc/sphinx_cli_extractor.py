@@ -603,7 +603,7 @@ class AttributesTable(Table):
         An attributes table. 
     """ 
 
-    def __init__(self, attribute, title=Row(["Attribute", "**Default/Allowed Values**"])):
+    def __init__(self, attribute, title=Row(["Attribute", "**Default**/Allowed Values"])):
         super(AttributesTable, self).__init__()
         self.title       = title
         self.attribute   = attribute

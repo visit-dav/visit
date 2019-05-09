@@ -23,7 +23,7 @@ these attributes is printed in italic.
 |
 
     +-----------------------+------------------------------+
-    | **Attribute**         | **Default/Allowed Values**   |
+    | **Attribute**         | **Default**/Allowed Values   |
     +-----------------------+------------------------------+
     | CreateCellsOfType     |  **DualGridAndStitchCells**, |
     |                       |  DualGrid, StitchCells       |
@@ -38,7 +38,7 @@ these attributes is printed in italic.
 |
 
     +-------------------------+----------------------------+
-    | **Attribute**           | **Default/Allowed Values** |
+    | **Attribute**           | **Default**/Allowed Values |
     +-------------------------+----------------------------+
     | animationMode           |  **StopMode**,             |
     |                         |  ReversePlayMode,          |
@@ -63,7 +63,7 @@ these attributes is printed in italic.
 |
 
     +--------------------------------------------------+----------------------------+
-    | **Attribute**                                    | **Default/Allowed Values** |
+    | **Attribute**                                    | **Default**/Allowed Values |
     +--------------------------------------------------+----------------------------+
     | axes2D.visible                                   | 1                          |
     +--------------------------------------------------+----------------------------+
@@ -513,7 +513,7 @@ these attributes is printed in italic.
 |
 
     +-----------------------------------+----------------------------+
-    | **Attribute**                     | **Default/Allowed Values** |
+    | **Attribute**                     | **Default**/Allowed Values |
     +-----------------------------------+----------------------------+
     | title.visible                     | 1                          |
     +-----------------------------------+----------------------------+
@@ -577,7 +577,7 @@ these attributes is printed in italic.
 |
 
     +---------------+----------------------------+
-    | **Attribute** | **Default/Allowed Values** |
+    | **Attribute** | **Default**/Allowed Values |
     +---------------+----------------------------+
     | I             | ()                         |
     +---------------+----------------------------+
@@ -597,7 +597,7 @@ these attributes is printed in italic.
 |
 
     +----------------------+-----------------------------+
-    | **Attribute**        | **Default/Allowed Values**  |
+    | **Attribute**        | **Default**/Allowed Values  |
     +----------------------+-----------------------------+
     | colorType            |  **ColorByMultipleColors**, |
     |                      |  ColorBySingleColor,        |
@@ -631,7 +631,7 @@ these attributes is printed in italic.
 |
 
     +--------------------+----------------------------+
-    | **Attribute**      | **Default/Allowed Values** |
+    | **Attribute**      | **Default**/Allowed Values |
     +--------------------+----------------------------+
     | smoothingLevel     | 0                          |
     +--------------------+----------------------------+
@@ -645,7 +645,7 @@ these attributes is printed in italic.
 |
 
     +---------------+----------------------------+
-    | **Attribute** | **Default/Allowed Values** |
+    | **Attribute** | **Default**/Allowed Values |
     +---------------+----------------------------+
     | amount        | **Some**, All              |
     +---------------+----------------------------+
@@ -673,7 +673,7 @@ these attributes is printed in italic.
 |
 
     +---------------------+----------------------------+
-    | **Attribute**       | **Default/Allowed Values** |
+    | **Attribute**       | **Default**/Allowed Values |
     +---------------------+----------------------------+
     | projectionID        |  **aitoff**, eck4,         |
     |                     |  eqdc, hammer, laea,       |
@@ -692,7 +692,7 @@ these attributes is printed in italic.
 |
 
     +----------------------------------+----------------------------+
-    | **Attribute**                    | **Default/Allowed Values** |
+    | **Attribute**                    | **Default**/Allowed Values |
     +----------------------------------+----------------------------+
     | quality                          | **Fast**, Accurate         |
     +----------------------------------+----------------------------+
@@ -737,7 +737,7 @@ these attributes is printed in italic.
 |
 
     +--------------------+----------------------------+
-    | **Attribute**      | **Default/Allowed Values** |
+    | **Attribute**      | **Default**/Allowed Values |
     +--------------------+----------------------------+
     | angle              | 45                         |
     +--------------------+----------------------------+
@@ -764,7 +764,7 @@ these attributes is printed in italic.
 |
 
     +--------------------------------------+----------------------------+
-    | **Attribute**                        | **Default/Allowed Values** |
+    | **Attribute**                        | **Default**/Allowed Values |
     +--------------------------------------+----------------------------+
     | EnableGhostNeighborsOptimization     | 1                          |
     +--------------------------------------+----------------------------+
@@ -778,7 +778,7 @@ these attributes is printed in italic.
 |
 
     +-----------------------------+----------------------------+
-    | **Attribute**               | **Default/Allowed Values** |
+    | **Attribute**               | **Default**/Allowed Values |
     +-----------------------------+----------------------------+
     | name                        | ""                         |
     +-----------------------------+----------------------------+
@@ -822,7 +822,7 @@ these attributes is printed in italic.
 |
 
     +--------------------------------------------------+-----------------------------+
-    | **Attribute**                                    | **Default/Allowed Values**  |
+    | **Attribute**                                    | **Default**/Allowed Values  |
     +--------------------------------------------------+-----------------------------+
     | defaultPalette.GetControlPoints(0).colors        | (255, 0, 0, 255)            |
     +--------------------------------------------------+-----------------------------+
@@ -1030,7 +1030,7 @@ these attributes is printed in italic.
 |
 
     +---------------+----------------------------+
-    | **Attribute** | **Default/Allowed Values** |
+    | **Attribute** | **Default**/Allowed Values |
     +---------------+----------------------------+
     | newCoord1     |  **Coord1**, Coord2,       |
     |               |  Coord3                    |
@@ -1051,7 +1051,7 @@ these attributes is printed in italic.
 |
 
     +------------------------+----------------------------+
-    | **Attribute**          | **Default/Allowed Values** |
+    | **Attribute**          | **Default**/Allowed Values |
     +------------------------+----------------------------+
     | elementVariable        | "element"                  |
     +------------------------+----------------------------+
@@ -1091,7 +1091,7 @@ these attributes is printed in italic.
 |
 
     +--------------------------+----------------------------+
-    | **Attribute**            | **Default/Allowed Values** |
+    | **Attribute**            | **Default**/Allowed Values |
     +--------------------------+----------------------------+
     | showLines                | 1                          |
     +--------------------------+----------------------------+
@@ -1162,7 +1162,7 @@ these attributes is printed in italic.
 |
 
     +---------------+----------------------------+
-    | **Attribute** | **Default/Allowed Values** |
+    | **Attribute** | **Default**/Allowed Values |
     +---------------+----------------------------+
     | point1        | (0, 0, 0)                  |
     +---------------+----------------------------+
@@ -1182,7 +1182,7 @@ these attributes is printed in italic.
 |
 
     +-----------------------------+----------------------------+
-    | **Attribute**               | **Default/Allowed Values** |
+    | **Attribute**               | **Default**/Allowed Values |
     +-----------------------------+----------------------------+
     | numDimensions               | **One**, Two, Three        |
     +-----------------------------+----------------------------+
@@ -1249,7 +1249,7 @@ these attributes is printed in italic.
 |
 
     +---------------+----------------------------+
-    | **Attribute** | **Default/Allowed Values** |
+    | **Attribute** | **Default**/Allowed Values |
     +---------------+----------------------------+
     | exprs         | ()                         |
     +---------------+----------------------------+
@@ -1263,7 +1263,7 @@ these attributes is printed in italic.
 |
 
     +---------------+----------------------------+
-    | **Attribute** | **Default/Allowed Values** |
+    | **Attribute** | **Default**/Allowed Values |
     +---------------+----------------------------+
     | factor        | 1                          |
     +---------------+----------------------------+
@@ -1279,7 +1279,7 @@ these attributes is printed in italic.
 |
 
     +---------------+----------------------------+
-    | **Attribute** | **Default/Allowed Values** |
+    | **Attribute** | **Default**/Allowed Values |
     +---------------+----------------------------+
     | mode          |  **Auto**,                 |
     |               |  NodesToZones,             |
@@ -1295,7 +1295,7 @@ these attributes is printed in italic.
 |
 
     +---------------+----------------------------+
-    | **Attribute** | **Default/Allowed Values** |
+    | **Attribute** | **Default**/Allowed Values |
     +---------------+----------------------------+
     | dummy         | 1                          |
     +---------------+----------------------------+
@@ -1309,7 +1309,7 @@ these attributes is printed in italic.
 |
 
     +-----------------+----------------------------+
-    | **Attribute**   | **Default/Allowed Values** |
+    | **Attribute**   | **Default**/Allowed Values |
     +-----------------+----------------------------+
     | useXYLimits     |  **Auto**, Never,          |
     |                 |  Always                    |
@@ -1343,7 +1343,7 @@ these attributes is printed in italic.
 |
 
     +-------------------+----------------------------+
-    | **Attribute**     | **Default/Allowed Values** |
+    | **Attribute**     | **Default**/Allowed Values |
     +-------------------+----------------------------+
     | origin            | (0, 0, 0)                  |
     +-------------------+----------------------------+
@@ -1361,7 +1361,7 @@ these attributes is printed in italic.
 |
 
     +-----------------------------+----------------------------+
-    | **Attribute**               | **Default/Allowed Values** |
+    | **Attribute**               | **Default**/Allowed Values |
     +-----------------------------+----------------------------+
     | explosionType               |  **Point**, Plane,         |
     |                             |  Cylinder                  |
@@ -1407,7 +1407,7 @@ these attributes is printed in italic.
 |
 
     +----------------------+----------------------------+
-    | **Attribute**        | **Default/Allowed Values** |
+    | **Attribute**        | **Default**/Allowed Values |
     +----------------------+----------------------------+
     | allTimes             | 0                          |
     +----------------------+----------------------------+
@@ -1441,7 +1441,7 @@ these attributes is printed in italic.
 |
 
     +------------------+----------------------------+
-    | **Attribute**    | **Default/Allowed Values** |
+    | **Attribute**    | **Default**/Allowed Values |
     +------------------+----------------------------+
     | removeGhosts     | 0                          |
     +------------------+----------------------------+
@@ -1457,7 +1457,7 @@ these attributes is printed in italic.
 |
 
     +---------------------------------+----------------------------+
-    | **Attribute**                   | **Default/Allowed Values** |
+    | **Attribute**                   | **Default**/Allowed Values |
     +---------------------------------+----------------------------+
     | axis                            | (0, 0, 1)                  |
     +---------------------------------+----------------------------+
@@ -1481,7 +1481,7 @@ these attributes is printed in italic.
 |
 
     +---------------+----------------------------+
-    | **Attribute** | **Default/Allowed Values** |
+    | **Attribute** | **Default**/Allowed Values |
     +---------------+----------------------------+
     | dummy         | 0                          |
     +---------------+----------------------------+
@@ -1495,7 +1495,7 @@ these attributes is printed in italic.
 |
 
     +-------------------------+-----------------------------+
-    | **Attribute**           | **Default/Allowed Values**  |
+    | **Attribute**           | **Default**/Allowed Values  |
     +-------------------------+-----------------------------+
     | colorType               |  **ColorByMultipleColors**, |
     |                         |  ColorBySingleColor,        |
@@ -1550,7 +1550,7 @@ these attributes is printed in italic.
 |
 
     +-----------------+----------------------------+
-    | **Attribute**   | **Default/Allowed Values** |
+    | **Attribute**   | **Default**/Allowed Values |
     +-----------------+----------------------------+
     | flowField       | "default"                  |
     +-----------------+----------------------------+
@@ -1568,7 +1568,7 @@ these attributes is printed in italic.
 |
 
     +------------------------+----------------------------+
-    | **Attribute**          | **Default/Allowed Values** |
+    | **Attribute**          | **Default**/Allowed Values |
     +------------------------+----------------------------+
     | font                   |  **Arial**, Courier,       |
     |                        |  Times                     |
@@ -1593,7 +1593,7 @@ these attributes is printed in italic.
 |
 
     +--------------------------------------+----------------------------+
-    | **Attribute**                        | **Default/Allowed Values** |
+    | **Attribute**                        | **Default**/Allowed Values |
     +--------------------------------------+----------------------------+
     | sources                              | ()                         |
     +--------------------------------------+----------------------------+
@@ -1662,7 +1662,7 @@ these attributes is printed in italic.
 |
 
     +------------------------+-----------------------------+
-    | **Attribute**          | **Default/Allowed Values**  |
+    | **Attribute**          | **Default**/Allowed Values  |
     +------------------------+-----------------------------+
     | basedOn                |  **ManyZonesForSingleVar**, |
     |                        |  ManyVarsForSingleZone      |
@@ -1717,7 +1717,7 @@ these attributes is printed in italic.
 |
 
     +------------------------+----------------------------+
-    | **Attribute**          | **Default/Allowed Values** |
+    | **Attribute**          | **Default**/Allowed Values |
     +------------------------+----------------------------+
     | maxDim                 | **ThreeD**, OneD, TwoD     |
     +------------------------+----------------------------+
@@ -1769,7 +1769,7 @@ these attributes is printed in italic.
 |
 
     +----------------------------------------+-----------------------------+
-    | **Attribute**                          | **Default/Allowed Values**  |
+    | **Attribute**                          | **Default**/Allowed Values  |
     +----------------------------------------+-----------------------------+
     | sourceType                             |  **SpecifiedPoint**,        |
     |                                        |  PointList,                 |
@@ -1959,7 +1959,7 @@ these attributes is printed in italic.
 |
 
     +------------------------------+----------------------------+
-    | **Attribute**                | **Default/Allowed Values** |
+    | **Attribute**                | **Default**/Allowed Values |
     +------------------------------+----------------------------+
     | requestGhostZones            | 1                          |
     +------------------------------+----------------------------+
@@ -1985,7 +1985,7 @@ these attributes is printed in italic.
 |
 
     +--------------------+----------------------------+
-    | **Attribute**      | **Default/Allowed Values** |
+    | **Attribute**      | **Default**/Allowed Values |
     +--------------------+----------------------------+
     | contourNLevels     | 10                         |
     +--------------------+----------------------------+
@@ -2018,7 +2018,7 @@ these attributes is printed in italic.
 |
 
     +---------------+----------------------------+
-    | **Attribute** | **Default/Allowed Values** |
+    | **Attribute** | **Default**/Allowed Values |
     +---------------+----------------------------+
     | lbound        | -1e+37                     |
     +---------------+----------------------------+
@@ -2036,7 +2036,7 @@ these attributes is printed in italic.
 |
 
     +-----------------------+----------------------------+
-    | **Attribute**         | **Default/Allowed Values** |
+    | **Attribute**         | **Default**/Allowed Values |
     +-----------------------+----------------------------+
     | enabled               | 0                          |
     +-----------------------+----------------------------+
@@ -2054,7 +2054,7 @@ these attributes is printed in italic.
 |
 
     +---------------------------------------+----------------------------+
-    | **Attribute**                         | **Default/Allowed Values** |
+    | **Attribute**                         | **Default**/Allowed Values |
     +---------------------------------------+----------------------------+
     | sourceType                            |  **NativeMesh**,           |
     |                                       |  RegularGrid               |
@@ -2204,7 +2204,7 @@ these attributes is printed in italic.
 |
 
     +----------------------------------+----------------------------+
-    | **Attribute**                    | **Default/Allowed Values** |
+    | **Attribute**                    | **Default**/Allowed Values |
     +----------------------------------+----------------------------+
     | legendFlag                       | 1                          |
     +----------------------------------+----------------------------+
@@ -2270,7 +2270,7 @@ these attributes is printed in italic.
 |
 
     +-----------------+----------------------------+
-    | **Attribute**   | **Default/Allowed Values** |
+    | **Attribute**   | **Default**/Allowed Values |
     +-----------------+----------------------------+
     | seedPoint       | (0, 0, 0)                  |
     +-----------------+----------------------------+
@@ -2296,7 +2296,7 @@ these attributes is printed in italic.
 |
 
     +-----------------+----------------------------+
-    | **Attribute**   | **Default/Allowed Values** |
+    | **Attribute**   | **Default**/Allowed Values |
     +-----------------+----------------------------+
     | enabledFlag     | 1                          |
     +-----------------+----------------------------+
@@ -2319,7 +2319,7 @@ these attributes is printed in italic.
 |
 
     +----------------------------------------+----------------------------+
-    | **Attribute**                          | **Default/Allowed Values** |
+    | **Attribute**                          | **Default**/Allowed Values |
     +----------------------------------------+----------------------------+
     | sourceType                             |  **SpecifiedLine**,        |
     |                                        |  SpecifiedPlane            |
@@ -2476,7 +2476,7 @@ these attributes is printed in italic.
 |
 
     +--------------------------+----------------------------+
-    | **Attribute**            | **Default/Allowed Values** |
+    | **Attribute**            | **Default**/Allowed Values |
     +--------------------------+----------------------------+
     | point1                   | (0, 0, 0)                  |
     +--------------------------+----------------------------+
@@ -2502,7 +2502,7 @@ these attributes is printed in italic.
 |
 
     +-------------------------------+----------------------------+
-    | **Attribute**                 | **Default/Allowed Values** |
+    | **Attribute**                 | **Default**/Allowed Values |
     +-------------------------------+----------------------------+
     | smoothing                     | 0                          |
     +-------------------------------+----------------------------+
@@ -2540,7 +2540,7 @@ these attributes is printed in italic.
 |
 
     +-------------------------+----------------------------+
-    | **Attribute**           | **Default/Allowed Values** |
+    | **Attribute**           | **Default**/Allowed Values |
     +-------------------------+----------------------------+
     | legendFlag              | 1                          |
     +-------------------------+----------------------------+
@@ -2589,7 +2589,7 @@ these attributes is printed in italic.
 |
 
     +------------------------------+----------------------------+
-    | **Attribute**                | **Default/Allowed Values** |
+    | **Attribute**                | **Default**/Allowed Values |
     +------------------------------+----------------------------+
     | discretizationTolerance      | (0.02, 0.025, 0.05)        |
     +------------------------------+----------------------------+
@@ -2616,7 +2616,7 @@ these attributes is printed in italic.
 |
 
     +-------------------------------+----------------------------+
-    | **Attribute**                 | **Default/Allowed Values** |
+    | **Attribute**                 | **Default**/Allowed Values |
     +-------------------------------+----------------------------+
     | drawAtomsAs                   |  **SphereAtoms**,          |
     |                               |  NoAtoms,                  |
@@ -2677,7 +2677,7 @@ these attributes is printed in italic.
 |
 
     +--------------------------------------------------+-----------------------------+
-    | **Attribute**                                    | **Default/Allowed Values**  |
+    | **Attribute**                                    | **Default**/Allowed Values  |
     +--------------------------------------------------+-----------------------------+
     | defaultPalette.GetControlPoints(0).colors        | (255, 0, 0, 255)            |
     +--------------------------------------------------+-----------------------------+
@@ -2895,7 +2895,7 @@ these attributes is printed in italic.
 |
 
     +-------------------+----------------------------+
-    | **Attribute**     | **Default/Allowed Values** |
+    | **Attribute**     | **Default**/Allowed Values |
     +-------------------+----------------------------+
     | resolution        | 0                          |
     +-------------------+----------------------------+
@@ -2913,7 +2913,7 @@ these attributes is printed in italic.
 |
 
     +-----------------------+----------------------------+
-    | **Attribute**         | **Default/Allowed Values** |
+    | **Attribute**         | **Default**/Allowed Values |
     +-----------------------+----------------------------+
     | adjacencyType         | **Node**, Face             |
     +-----------------------+----------------------------+
@@ -2944,7 +2944,7 @@ these attributes is printed in italic.
 |
 
     +------------------------------+----------------------------+
-    | **Attribute**                | **Default/Allowed Values** |
+    | **Attribute**                | **Default**/Allowed Values |
     +------------------------------+----------------------------+
     | scalarAxisNames              | ()                         |
     +------------------------------+----------------------------+
@@ -2988,7 +2988,7 @@ these attributes is printed in italic.
 |
 
     +----------------------+----------------------------+
-    | **Attribute**        | **Default/Allowed Values** |
+    | **Attribute**        | **Default**/Allowed Values |
     +----------------------+----------------------------+
     | startIndex           | 0                          |
     +----------------------+----------------------------+
@@ -3024,7 +3024,7 @@ these attributes is printed in italic.
 |
 
     +---------------------------------------+-----------------------------+
-    | **Attribute**                         | **Default/Allowed Values**  |
+    | **Attribute**                         | **Default**/Allowed Values  |
     +---------------------------------------+-----------------------------+
     | opacityType                           |  **Explicit**,              |
     |                                       |  ColorTable                 |
@@ -3223,7 +3223,7 @@ these attributes is printed in italic.
 |
 
     +----------------------+----------------------------+
-    | **Attribute**        | **Default/Allowed Values** |
+    | **Attribute**        | **Default**/Allowed Values |
     +----------------------+----------------------------+
     | printerName          | ""                         |
     +----------------------+----------------------------+
@@ -3255,7 +3255,7 @@ these attributes is printed in italic.
 |
 
     +----------------+----------------------------+
-    | **Attribute**  | **Default/Allowed Values** |
+    | **Attribute**  | **Default**/Allowed Values |
     +----------------+----------------------------+
     | pids           | ()                         |
     +----------------+----------------------------+
@@ -3279,7 +3279,7 @@ these attributes is printed in italic.
 |
 
     +---------------------------+----------------------------+
-    | **Attribute**             | **Default/Allowed Values** |
+    | **Attribute**             | **Default**/Allowed Values |
     +---------------------------+----------------------------+
     | projectionType            |  **XYCartesian**,          |
     |                           |  ZYCartesian,              |
@@ -3302,7 +3302,7 @@ these attributes is printed in italic.
 |
 
     +------------------------------+----------------------------+
-    | **Attribute**                | **Default/Allowed Values** |
+    | **Attribute**                | **Default**/Allowed Values |
     +------------------------------+----------------------------+
     | scaling                      | **Linear**, Log, Skew      |
     +------------------------------+----------------------------+
@@ -3433,7 +3433,7 @@ these attributes is printed in italic.
 |
 
     +------------------+----------------------------+
-    | **Attribute**    | **Default/Allowed Values** |
+    | **Attribute**    | **Default**/Allowed Values |
     +------------------+----------------------------+
     | isFast           | 0                          |
     +------------------+----------------------------+
@@ -3467,7 +3467,7 @@ these attributes is printed in italic.
 |
 
     +------------------+----------------------------+
-    | **Attribute**    | **Default/Allowed Values** |
+    | **Attribute**    | **Default**/Allowed Values |
     +------------------+----------------------------+
     | octant           |  **PXPYPZ**, NXPYPZ,       |
     |                  |  PXNYPZ, NXNYPZ,           |
@@ -3504,7 +3504,7 @@ these attributes is printed in italic.
 |
 
     +------------------+----------------------------+
-    | **Attribute**    | **Default/Allowed Values** |
+    | **Attribute**    | **Default**/Allowed Values |
     +------------------+----------------------------+
     | useExtents       | 1                          |
     +------------------+----------------------------+
@@ -3541,7 +3541,7 @@ these attributes is printed in italic.
 |
 
     +----------------------------------+----------------------------+
-    | **Attribute**                    | **Default/Allowed Values** |
+    | **Attribute**                    | **Default**/Allowed Values |
     +----------------------------------+----------------------------+
     | antialiasing                     | 0                          |
     +----------------------------------+----------------------------+
@@ -3629,7 +3629,7 @@ these attributes is printed in italic.
 |
 
     +-----------------------------+----------------------------+
-    | **Attribute**               | **Default/Allowed Values** |
+    | **Attribute**               | **Default**/Allowed Values |
     +-----------------------------+----------------------------+
     | useUnitCellVectors          | 0                          |
     +-----------------------------+----------------------------+
@@ -3663,7 +3663,7 @@ these attributes is printed in italic.
 |
 
     +-------------------------+----------------------------+
-    | **Attribute**           | **Default/Allowed Values** |
+    | **Attribute**           | **Default**/Allowed Values |
     +-------------------------+----------------------------+
     | useExtents              | 1                          |
     +-------------------------+----------------------------+
@@ -3708,7 +3708,7 @@ these attributes is printed in italic.
 |
 
     +----------------+----------------------------+
-    | **Attribute**  | **Default/Allowed Values** |
+    | **Attribute**  | **Default**/Allowed Values |
     +----------------+----------------------------+
     | meshType       | **Auto**, XY, RZ, ZR       |
     +----------------+----------------------------+
@@ -3732,7 +3732,7 @@ these attributes is printed in italic.
 |
 
     +---------------------------+----------------------------+
-    | **Attribute**             | **Default/Allowed Values** |
+    | **Attribute**             | **Default**/Allowed Values |
     +---------------------------+----------------------------+
     | minX                      | 0                          |
     +---------------------------+----------------------------+
@@ -3768,7 +3768,7 @@ these attributes is printed in italic.
 |
 
     +--------------------------------------+----------------------------+
-    | **Attribute**                        | **Default/Allowed Values** |
+    | **Attribute**                        | **Default**/Allowed Values |
     +--------------------------------------+----------------------------+
     | outputToCurrentDirectory             | 1                          |
     +--------------------------------------+----------------------------+
@@ -3987,7 +3987,7 @@ these attributes is printed in italic.
 |
 
     +----------------------+------------------------------+
-    | **Attribute**        | **Default/Allowed Values**   |
+    | **Attribute**        | **Default**/Allowed Values   |
     +----------------------+------------------------------+
     | var1                 | "default"                    |
     +----------------------+------------------------------+
@@ -4100,7 +4100,7 @@ these attributes is printed in italic.
 |
 
     +----------------------+----------------------------+
-    | **Attribute**        | **Default/Allowed Values** |
+    | **Attribute**        | **Default**/Allowed Values |
     +----------------------+----------------------------+
     | originType           |  **Intercept**, Point,     |
     |                      |  Percent, Zone, Node       |
@@ -4149,7 +4149,7 @@ these attributes is printed in italic.
 |
 
     +----------------------+----------------------------+
-    | **Attribute**        | **Default/Allowed Values** |
+    | **Attribute**        | **Default**/Allowed Values |
     +----------------------+----------------------------+
     | numIterations        | 20                         |
     +----------------------+----------------------------+
@@ -4175,7 +4175,7 @@ these attributes is printed in italic.
 |
 
     +---------------+----------------------------+
-    | **Attribute** | **Default/Allowed Values** |
+    | **Attribute** | **Default**/Allowed Values |
     +---------------+----------------------------+
     | origin        | (0, 0, 0)                  |
     +---------------+----------------------------+
@@ -4191,7 +4191,7 @@ these attributes is printed in italic.
 |
 
     +----------------------------+--------------------------------+
-    | **Attribute**              | **Default/Allowed Values**     |
+    | **Attribute**              | **Default**/Allowed Values     |
     +----------------------------+--------------------------------+
     | subsetName                 | "Whole"                        |
     +----------------------------+--------------------------------+
@@ -4231,7 +4231,7 @@ these attributes is printed in italic.
 |
 
     +---------------+----------------------------+
-    | **Attribute** | **Default/Allowed Values** |
+    | **Attribute** | **Default**/Allowed Values |
     +---------------+----------------------------+
     | offsetX       | 0                          |
     +---------------+----------------------------+
@@ -4249,7 +4249,7 @@ these attributes is printed in italic.
 |
 
     +--------------------+----------------------------+
-    | **Attribute**      | **Default/Allowed Values** |
+    | **Attribute**      | **Default**/Allowed Values |
     +--------------------+----------------------------+
     | startIndex         | 0                          |
     +--------------------+----------------------------+
@@ -4283,7 +4283,7 @@ these attributes is printed in italic.
 |
 
     +------------------+----------------------------+
-    | **Attribute**    | **Default/Allowed Values** |
+    | **Attribute**    | **Default**/Allowed Values |
     +------------------+----------------------------+
     | threshold        | 0.500002                   |
     +------------------+----------------------------+
@@ -4305,7 +4305,7 @@ these attributes is printed in italic.
 |
 
     +-------------------------+-----------------------------+
-    | **Attribute**           | **Default/Allowed Values**  |
+    | **Attribute**           | **Default**/Allowed Values  |
     +-------------------------+-----------------------------+
     | colorType               |  **ColorByMultipleColors**, |
     |                         |  ColorBySingleColor,        |
@@ -4356,7 +4356,7 @@ these attributes is printed in italic.
 |
 
     +---------------+----------------------------+
-    | **Attribute** | **Default/Allowed Values** |
+    | **Attribute** | **Default**/Allowed Values |
     +---------------+----------------------------+
     | centering     | **Point**, Cell            |
     +---------------+----------------------------+
@@ -4370,7 +4370,7 @@ these attributes is printed in italic.
 |
 
     +------------------------+----------------------------+
-    | **Attribute**          | **Default/Allowed Values** |
+    | **Attribute**          | **Default**/Allowed Values |
     +------------------------+----------------------------+
     | useStride              | 0                          |
     +------------------------+----------------------------+
@@ -4404,7 +4404,7 @@ these attributes is printed in italic.
 |
 
     +-----------------+----------------------------+
-    | **Attribute**   | **Default/Allowed Values** |
+    | **Attribute**   | **Default**/Allowed Values |
     +-----------------+----------------------------+
     | x               | 0                          |
     +-----------------+----------------------------+
@@ -4424,7 +4424,7 @@ these attributes is printed in italic.
 |
 
     +------------------------+----------------------------+
-    | **Attribute**          | **Default/Allowed Values** |
+    | **Attribute**          | **Default**/Allowed Values |
     +------------------------+----------------------------+
     | outputMeshType         | 0                          |
     +------------------------+----------------------------+
@@ -4454,7 +4454,7 @@ these attributes is printed in italic.
 |
 
     +---------------------------+----------------------------+
-    | **Attribute**             | **Default/Allowed Values** |
+    | **Attribute**             | **Default**/Allowed Values |
     +---------------------------+----------------------------+
     | doRotate                  | 0                          |
     +---------------------------+----------------------------+
@@ -4547,7 +4547,7 @@ these attributes is printed in italic.
 |
 
     +---------------------+----------------------------+
-    | **Attribute**       | **Default/Allowed Values** |
+    | **Attribute**       | **Default**/Allowed Values |
     +---------------------+----------------------------+
     | useXGridSpacing     | 0                          |
     +---------------------+----------------------------+
@@ -4567,7 +4567,7 @@ these attributes is printed in italic.
 |
 
     +------------------+----------------------------+
-    | **Attribute**    | **Default/Allowed Values** |
+    | **Attribute**    | **Default**/Allowed Values |
     +------------------+----------------------------+
     | opacity          | 1                          |
     +------------------+----------------------------+
@@ -4583,7 +4583,7 @@ these attributes is printed in italic.
 |
 
     +------------------------+----------------------------+
-    | **Attribute**          | **Default/Allowed Values** |
+    | **Attribute**          | **Default**/Allowed Values |
     +------------------------+----------------------------+
     | scaleByVarFlag         | 0                          |
     +------------------------+----------------------------+
@@ -4610,7 +4610,7 @@ these attributes is printed in italic.
 |
 
     +----------------------+------------------------------+
-    | **Attribute**        | **Default/Allowed Values**   |
+    | **Attribute**        | **Default**/Allowed Values   |
     +----------------------+------------------------------+
     | glyphLocation        |  **AdaptsToMeshResolution**, |
     |                      |  UniformInSpace              |
@@ -4678,7 +4678,7 @@ these attributes is printed in italic.
 |
 
     +--------------------+----------------------------+
-    | **Attribute**      | **Default/Allowed Values** |
+    | **Attribute**      | **Default**/Allowed Values |
     +--------------------+----------------------------+
     | viewNormal         | (0, 0, 1)                  |
     +--------------------+----------------------------+
@@ -4718,7 +4718,7 @@ these attributes is printed in italic.
 |
 
     +-----------------------------+----------------------------+
-    | **Attribute**               | **Default/Allowed Values** |
+    | **Attribute**               | **Default**/Allowed Values |
     +-----------------------------+----------------------------+
     | windowCoords                | (0, 1, 0, 1)               |
     +-----------------------------+----------------------------+
@@ -4744,7 +4744,7 @@ these attributes is printed in italic.
 |
 
     +-------------------------+----------------------------+
-    | **Attribute**           | **Default/Allowed Values** |
+    | **Attribute**           | **Default**/Allowed Values |
     +-------------------------+----------------------------+
     | viewNormal              | (0, 0, 1)                  |
     +-------------------------+----------------------------+
@@ -4790,7 +4790,7 @@ these attributes is printed in italic.
 |
 
     +--------------------+----------------------------+
-    | **Attribute**      | **Default/Allowed Values** |
+    | **Attribute**      | **Default**/Allowed Values |
     +--------------------+----------------------------+
     | domainCoords       | (0, 1)                     |
     +--------------------+----------------------------+
@@ -4808,7 +4808,7 @@ these attributes is printed in italic.
 |
 
     +--------------------+----------------------------+
-    | **Attribute**      | **Default/Allowed Values** |
+    | **Attribute**      | **Default**/Allowed Values |
     +--------------------+----------------------------+
     | domainCoords       | (0, 1)                     |
     +--------------------+----------------------------+
@@ -4830,7 +4830,7 @@ these attributes is printed in italic.
 |
 
     +-----------------------------------------------------+------------------------------+
-    | **Attribute**                                       | **Default/Allowed Values**   |
+    | **Attribute**                                       | **Default**/Allowed Values   |
     +-----------------------------------------------------+------------------------------+
     | osprayShadowsEnabledFlag                            | 0                            |
     +-----------------------------------------------------+------------------------------+
