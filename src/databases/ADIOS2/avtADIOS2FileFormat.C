@@ -48,6 +48,7 @@
 #include <avtADIOS2BaseFileFormat.h>
 #include <avtGTCFileFormat.h>
 #include <avtLAMMPSFileFormat.h>
+#include <avtSpecFEMFileFormat.h>
 #include <avtMEUMMAPSFileFormat.h>
 #include <string>
 
@@ -85,8 +86,9 @@
 avtFileFormatInterface *
 ADIOS2_CreateFileFormatInterface(const char * const *list, int nList, int nBlock)
 {
+    cout<<__FILE__<<" "<<__LINE__<<endl;
     avtFileFormatInterface *ffi = NULL;
-    enum Flavor {GTC, BASIC, SST, MEUMMAPS, LAMMPS, FAIL};
+    enum Flavor {GTC, BASIC, SST, MEUMMAPS, LAMMPS, SPECFEM, FAIL};
     bool isSST = (std::string(list[0]).find(".sst") != std::string::npos);
 
     Flavor flavor = FAIL;
@@ -96,16 +98,22 @@ ADIOS2_CreateFileFormatInterface(const char * const *list, int nList, int nBlock
         TRY
         {
             flavor = BASIC;
+    cout<<__FILE__<<" "<<__LINE__<<endl;
             if (isSST)
                 flavor = BASIC;
+            /*
             else if (avtGTCFileFormat::Identify(list[0]))
                 flavor = GTC;
             else if (avtLAMMPSFileFormat::Identify(list[0]))
                 flavor = LAMMPS;
             else if (avtMEUMMAPSFileFormat::Identify(list[0]))
                 flavor = MEUMMAPS;
+            */
+            else if (avtSpecFEMFileFormat::Identify(list[0]))
+                flavor = SPECFEM;
             else if (avtADIOS2BaseFileFormat::Identify(list[0]))
                 flavor = BASIC;
+    cout<<__FILE__<<" "<<__LINE__<<endl;
         }
         CATCH(VisItException)
         {
@@ -113,6 +121,7 @@ ADIOS2_CreateFileFormatInterface(const char * const *list, int nList, int nBlock
         }
         ENDTRY
 
+    cout<<__FILE__<<" "<<__LINE__<<endl;
         switch(flavor)
         {
           case GTC:
@@ -120,6 +129,9 @@ ADIOS2_CreateFileFormatInterface(const char * const *list, int nList, int nBlock
             break;
           case LAMMPS:
             ffi = avtLAMMPSFileFormat::CreateInterface(list, nList, nBlock);
+            break;
+          case SPECFEM:
+            ffi = avtSpecFEMFileFormat::CreateInterface(list, nList, nBlock);
             break;
           case MEUMMAPS:
             ffi = avtMEUMMAPSFileFormat::CreateInterface(list, nList, nBlock);
@@ -133,6 +145,7 @@ ADIOS2_CreateFileFormatInterface(const char * const *list, int nList, int nBlock
           default:
             return NULL;
         }
+    cout<<__FILE__<<" "<<__LINE__<<endl;
     }
 
     return ffi;
