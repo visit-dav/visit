@@ -97,7 +97,7 @@ class Table(object):
                 is_ext        = False
                 col_one       = col_one.strip()
                 count         = len(words[0])
-                col_two       = " | %s%s" % (italic_insert, words[0])
+                col_two       = " %s%s" % (italic_insert, words[0])
 
                 for i in range(1, len(words)):
 
@@ -112,7 +112,7 @@ class Table(object):
                         nxt_row.is_extension = is_ext
                         self.table_rows.append(nxt_row)
                         col_one = ""
-                        col_two = " | %s%s" % (italic_insert, words[i]) 
+                        col_two = " %s%s" % (italic_insert, words[i])
                         count   = len(words[i])
                         if not is_ext:
                             is_ext = True
@@ -259,6 +259,14 @@ class ArgumentsContainer(object):
         self.descriptions    = []
         self.cur_idx         = -1
         self.arg_add_ons     = ['(optional)', 'int', 'float', 'bool']
+        self.type_keywords   = {'integer': 'integer',
+                                'string': 'string',
+                                'name': 'string',
+                                'string.': 'string',
+                                'double':'double',
+                                'tuple':'tuple',
+                                'list':'list',
+                                'dictionary':'dictionary'}
 
     def find_add_on(self, txt):
         """
@@ -402,7 +410,23 @@ class ArgumentsContainer(object):
         lines = ""
         for i in range(len(self.names)):
             name    = "%s" % (self.names[i].strip())
-            lines += "\n%s : type\n    %s\n"%(name, self.descriptions[i])
+            if name == 'none':
+                continue
+                
+            #
+            # Attempt to determine the type of argument from the argument's
+            # description.
+            #
+            type_name = "STARTING_VALUE"
+            for word in ''.join(self.descriptions[i]).split():
+                if word in self.type_keywords.keys():
+                    if type_name == "STARTING_VALUE":
+                        type_name = self.type_keywords[word]
+                    elif word != type_name:
+                        type_name = "AMBIGUOUS"
+            
+            lines += "\n%s : %s\n    %s\n"%(name, type_name,
+                self.descriptions[i])
 
         output = self.title
         output += lines
@@ -448,9 +472,10 @@ class ReturnsContainer(object):
         information of a function. 
     """
 
-    def __init__(self, title = ""):
+    def __init__(self, _return_type, title = ""):
         self.title   = ""
         self.returns = ""
+        self.return_type = _return_type
 
     def extend_current_returns(self, extension):
 	"""
@@ -470,8 +495,11 @@ class ReturnsContainer(object):
             returns:
                 A restructuredText formatted string. 
         """
-        output  = "return value : integer\n%s\n" %(self.returns)
-        return output
+        if self.return_type != "NONE":
+            output  = "return type : %s\n%s\n" %(self.return_type, self.returns)
+            return output
+        else:
+            return ""
 
 
 class DescriptionContainer(object):
@@ -575,7 +603,7 @@ class AttributesTable(Table):
         An attributes table. 
     """ 
 
-    def __init__(self, attribute, title=Row(["Attribute", "**Default/Allowed Values**"])):
+    def __init__(self, attribute, title=Row(["Attribute", "**Default**/Allowed Values"])):
         super(AttributesTable, self).__init__()
         self.title       = title
         self.attribute   = attribute
@@ -595,13 +623,33 @@ class AttributesTable(Table):
               
         """
         r_one = group_one.split('=')
-        self.insert_two_columns(r_one[0], r_one[1])
-
-        g_two = group_two.split(',')
-        g_two = [el.strip() for el in g_two]
-    
-        for el in g_two:
-            self.insert_two_columns("", "%s" % (el), True)
+        
+        #
+        # Prep the default option. White space needs to be stripped. Also, some
+        # defaults will come in with their "full name", such as
+        # "colorControlPoints.Linear" instead of just "Linear". So we split it
+        # on the period too and use the last string in the split list if it
+        # exists.
+        #
+        default_stripped = r_one[1].strip()
+        period_split = default_stripped.split('.')
+        default_option = period_split[-1]
+        
+        #
+        # Find the default option within the string of options, add asterisks
+        # around it for bold, and move it to the beginning of the list.
+        #
+        word_start = group_two.find(default_option)
+        if word_start != -1:
+            word_end = word_start + len(default_option)
+            if word_start != 1: # it is not first in the list of options
+                group_two_mod = '**' + group_two[word_start:word_end] + '**,' + \
+                                group_two[:word_start-2] + group_two[word_end:]
+            else: # it is first in the list of options
+                group_two_mod = '**' + group_two[word_start:word_end] + '**,' + \
+                                group_two[word_end+1:]
+        
+        self.insert_two_columns(r_one[0], group_two_mod)
     
     def row_from_basic_match(self, group_one, group_two):
         """
@@ -736,6 +784,7 @@ def functions_to_sphinx(funclist):
         block_list = block_dict.keys()
 
         func_name  = str(func)
+        return_type = "STARTING_VALUE"
         full_doc   = full_doc[1:]
         if len(full_doc) == 0:
             continue
@@ -781,6 +830,23 @@ def functions_to_sphinx(funclist):
             elif cur_block == 'Synopsis:':
                 if not block_dict[cur_block]:
                     block_dict[cur_block] = SynopsisContainer()
+                    
+                #
+                # Attempt to extract the return type from the synopsis
+                #
+                if element.find(str(func_name + '(')) > -1:
+                    # Grab the output type from the synopsis. Look for
+                    # func_name(args) -> output_type
+                    arrow_index = element.find('->')
+                    if arrow_index < 0:
+                        return_type_helper = "NONE"
+                    else:
+                        return_type_helper = element[arrow_index+3:]
+                    if return_type == "STARTING_VALUE":
+                        return_type = return_type_helper
+                    elif return_type != return_type_helper:
+                        return_type = "AMBIGUOUS"
+                        
                 block_dict[cur_block].extend_current_synopsis(element)
 
             elif cur_block == 'Description:':
@@ -789,16 +855,15 @@ def functions_to_sphinx(funclist):
                 block_dict[cur_block].extend_current_description(element)
 
             elif cur_block == 'Arguments:':
-               if not block_dict[cur_block]:
-                   block_dict[cur_block] = ArgumentsContainer()
-               block_dict[cur_block].add_element(element)
+                if not block_dict[cur_block]:
+                    block_dict[cur_block] = ArgumentsContainer()
+                block_dict[cur_block].add_element(element)
 
             elif cur_block == 'Returns:':
                 if not block_dict[cur_block]:
-                    block_dict[cur_block] = ReturnsContainer()
+                    block_dict[cur_block] = ReturnsContainer(return_type)
                 block_dict[cur_block].extend_current_returns(element)
-               
-
+        
         #
         # Build our sphinx output.
         #
@@ -849,7 +914,7 @@ def attributes_to_sphinx(atts):
     # will return them.
     #
     attr_names = {}
-    for func in attrlist:
+    for func in atts:
         aname = attr_matcher.match(func)
         attr_names[aname.group(2)] = func
     
