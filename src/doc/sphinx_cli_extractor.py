@@ -496,6 +496,9 @@ class ReturnsContainer(object):
                 A restructuredText formatted string. 
         """
         if self.return_type != "NONE":
+            if self.return_type == "integer":
+                if self.returns.find("1 for success and 0 for failure"):
+                    self. return_type = "CLI_return_t"
             output  = "return type : %s\n%s\n" %(self.return_type, self.returns)
             return output
         else:

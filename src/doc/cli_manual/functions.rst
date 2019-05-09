@@ -18,7 +18,7 @@ ActivateDatabase
 argument : string
     The name of the database to be activated.
 
-return type : integer
+return type : CLI_return_t
     ActivateDatabase returns 1 on success and 0 on failure.
 
 
@@ -122,7 +122,7 @@ operator : string
 all : integer
     This is an optional integer argument that applies the operator to all plots if the value of the argument is not zero.
 
-return type : integer
+return type : CLI_return_t
     The AddOperator function returns an integer value of 1 for success and 0
     for failure.
 
@@ -179,7 +179,7 @@ inheritSIL : integer
 applyOperators : integer
     An integer flag indicating whether the operators from the active plot should be applied to the new plot.
 
-return type : integer
+return type : CLI_return_t
     The AddPlot function returns an integer value of 1 for success and 0 for
     failure.
 
@@ -251,7 +251,7 @@ databases : AMBIGUOUS
 method : integer
     The method argument must be an integer in the range [0,3].
 
-return type : integer
+return type : CLI_return_t
     The AlterDatabaseCorrelation function returns 1 on success and 0 on
     failure.
 
@@ -308,7 +308,7 @@ ApplyNamedSelection
 name : string
     The name of a named selection.  (This should have been previously createdwith a CreateNamedSelection call.)
 
-return type : integer
+return type : CLI_return_t
     The ApplyNamedSelection function returns 1 for success and 0 for failure.
 
 
@@ -354,7 +354,7 @@ ChangeActivePlotsVar
 variableName : string
     The name of the new plot variable.
 
-return type : integer
+return type : CLI_return_t
     The ChangeActivePlotsVar function returns an integer value of 1 for
     success and 0 for failure.
 
@@ -393,7 +393,7 @@ CheckForNewStates
 name : string
     The name of a database that has been opened previously.
 
-return type : integer
+return type : CLI_return_t
     The CheckForNewStates function returns 1 for success and 0 for failure.
 
 
@@ -439,7 +439,7 @@ screenX : double
 screenY : double
     A double that is the Y cooridinate of the pick point in normalized [0,1] screen space.
 
-return type : integer
+return type : CLI_return_t
     The ChooseCenterOfRotation function returns 1 if successful and 0 if it
     fails.
 
@@ -486,7 +486,7 @@ ClearAllWindows
   ClearAllWindows() -> integer
   ClearWindow() -> integer
 
-return type : integer
+return type : CLI_return_t
     1 on success, 0 on failure.
 
 
@@ -536,7 +536,7 @@ host : string
 simulation : string
     The name of the simulation being processed by the compute engine.
 
-return type : integer
+return type : CLI_return_t
     The ClearCache and ClearCacheForAllEngines functions return 1 on success
     and 0 on failure.
 
@@ -591,7 +591,7 @@ host : string
 simulation : string
     The name of the simulation being processed by the compute engine.
 
-return type : integer
+return type : CLI_return_t
     The ClearCache and ClearCacheForAllEngines functions return 1 on success
     and 0 on failure.
 
@@ -718,7 +718,7 @@ ClearViewKeyframes
 
   ClearViewKeyframes() -> integer
 
-return type : integer
+return type : CLI_return_t
     The ClearViewKeyframes function returns 1 on success and 0 on failure.
 
 
@@ -763,7 +763,7 @@ ClearWindow
   ClearAllWindows() -> integer
   ClearWindow() -> integer
 
-return type : integer
+return type : CLI_return_t
     1 on success, 0 on failure.
 
 
@@ -804,7 +804,7 @@ CloneWindow
 
   CloneWindow() -> integer
 
-return type : integer
+return type : CLI_return_t
     The CloneWindow function returns an integer value of 1 for success and 0
     for failure.
 
@@ -887,7 +887,7 @@ hostName : string
 simulation : string
     Optional name of a simulation.
 
-return type : integer
+return type : CLI_return_t
     The CloseComputeEngine function returns an integer value of 1 for success
     and 0 for failure.
 
@@ -931,7 +931,7 @@ CloseDatabase
 name : string
     The name of the database to close.
 
-return type : integer
+return type : CLI_return_t
     The CloseDatabase function returns 1 on success and 0 on failure.
 
 
@@ -1009,7 +1009,7 @@ ConstructDataBinning
 options : STARTING_VALUE
     An object of type ConstructDataBinningAttributes. This object specifies the options for constructing a data binning.
 
-return type : integer
+return type : CLI_return_t
     Returns 1 on success, 0 on failure.
 
 
@@ -1063,7 +1063,7 @@ source : integer
 dest : integer
     The index (an integer from 1 to 16) of the destination window.
 
-return type : integer
+return type : CLI_return_t
     The Copy functions return an integer value of 1 for success and 0 for
     failure.
 
@@ -1119,7 +1119,7 @@ source : integer
 dest : integer
     The index (an integer from 1 to 16) of the destination window.
 
-return type : integer
+return type : CLI_return_t
     The Copy functions return an integer value of 1 for success and 0 for
     failure.
 
@@ -1175,7 +1175,7 @@ source : integer
 dest : integer
     The index (an integer from 1 to 16) of the destination window.
 
-return type : integer
+return type : CLI_return_t
     The Copy functions return an integer value of 1 for success and 0 for
     failure.
 
@@ -1231,7 +1231,7 @@ source : integer
 dest : integer
     The index (an integer from 1 to 16) of the destination window.
 
-return type : integer
+return type : CLI_return_t
     The Copy functions return an integer value of 1 for success and 0 for
     failure.
 
@@ -1352,7 +1352,7 @@ databases : AMBIGUOUS
 method : integer
     An integer in the range [0,3] that determines the correlation method.
 
-return type : integer
+return type : CLI_return_t
     The CreateDatabaseCorrelation function returns 1 on success and 0 on
     failure.
 
@@ -1433,7 +1433,7 @@ name : string
 properties : STARTING_VALUE
     This optional argument lets you pass a SelectionProperties object containingthe properties that will be used to create the named selection. When this argument is omitted, the named selection will always be associated withthe active plot. You can use this argument to set up more complex named selections that may be associated with plots or databases.
 
-return type : integer
+return type : CLI_return_t
     The CreateNamedSelection function returns 1 for success and 0 for failure.
 
 
@@ -1551,7 +1551,7 @@ variableName : string
 expression : string
     The expression definition as a string.
 
-return type : integer
+return type : CLI_return_t
     The DefineExpression functions return 1 on success and 0 on failure.
 
 
@@ -1614,7 +1614,7 @@ variableName : string
 expression : string
     The expression definition as a string.
 
-return type : integer
+return type : CLI_return_t
     The DefineExpression functions return 1 on success and 0 on failure.
 
 
@@ -1677,7 +1677,7 @@ variableName : string
 expression : string
     The expression definition as a string.
 
-return type : integer
+return type : CLI_return_t
     The DefineExpression functions return 1 on success and 0 on failure.
 
 
@@ -1740,7 +1740,7 @@ variableName : string
 expression : string
     The expression definition as a string.
 
-return type : integer
+return type : CLI_return_t
     The DefineExpression functions return 1 on success and 0 on failure.
 
 
@@ -1836,7 +1836,7 @@ variableName : string
 expression : string
     The expression definition as a string.
 
-return type : integer
+return type : CLI_return_t
     The DefineExpression functions return 1 on success and 0 on failure.
 
 
@@ -1899,7 +1899,7 @@ variableName : string
 expression : string
     The expression definition as a string.
 
-return type : integer
+return type : CLI_return_t
     The DefineExpression functions return 1 on success and 0 on failure.
 
 
@@ -1962,7 +1962,7 @@ variableName : string
 expression : string
     The expression definition as a string.
 
-return type : integer
+return type : CLI_return_t
     The DefineExpression functions return 1 on success and 0 on failure.
 
 
@@ -2025,7 +2025,7 @@ variableName : string
 expression : string
     The expression definition as a string.
 
-return type : integer
+return type : CLI_return_t
     The DefineExpression functions return 1 on success and 0 on failure.
 
 
@@ -2075,7 +2075,7 @@ DeleteActivePlots
   DeleteActivePlots() -> integer
   DeleteAllPlots() -> integer
 
-return type : integer
+return type : CLI_return_t
     The Delete functions return an integer value of 1 for success and 0 for
     failure.
 
@@ -2114,7 +2114,7 @@ DeleteAllPlots
   DeleteActivePlots() -> integer
   DeleteAllPlots() -> integer
 
-return type : integer
+return type : CLI_return_t
     The Delete functions return an integer value of 1 for success and 0 for
     failure.
 
@@ -2156,7 +2156,7 @@ DeleteDatabaseCorrelation
 name : string
     The name of the database correlation to delete.
 
-return type : integer
+return type : CLI_return_t
     The DeleteDatabaseCorrelation function returns 1 on success and 0 on
     failure.
 
@@ -2205,7 +2205,7 @@ DeleteExpression
 variableName : string
     The name of the expression variable to be deleted.
 
-return type : integer
+return type : CLI_return_t
     The DeleteExpression function returns 1 on success and 0 on failure.
 
 
@@ -2242,7 +2242,7 @@ DeleteNamedSelection
 name : string
     The name of a named selection.
 
-return type : integer
+return type : CLI_return_t
     The DeleteNamedSelection function returns 1 for success and 0 for failure.
 
 
@@ -2449,7 +2449,7 @@ DeleteWindow
 
   DeleteWindow() -> integer
 
-return type : integer
+return type : CLI_return_t
     The DeleteWindow function returns an integer value of 1 for success and 0
     for failure.
 
@@ -2489,7 +2489,7 @@ opIndex : integer
 applyToAllPlots : AMBIGUOUS
     An integer flag that causes all plots in the plot list to be affected when it is non-zero.
 
-return type : integer
+return type : CLI_return_t
     DemoteOperator returns 1 on success and 0 on failure.
 
 
@@ -2572,7 +2572,7 @@ DrawPlots
 
   DrawPlots() -> integer
 
-return type : integer
+return type : CLI_return_t
     The DrawPlots function returns an integer value of 1 for success and 0 for
     failure.
 
@@ -2692,7 +2692,7 @@ e : STARTING_VALUE
 o : dictionary
     A dictionary containing a key/value mapping to set options needed by thedatabase exporter.  The default values can be obtained in the appropriateformat using GetExportOptions('plugin').
 
-return type : integer
+return type : CLI_return_t
     Returns 1 on success, 0 on failure.
 
 
@@ -2926,7 +2926,7 @@ GetAnimationTimeout
 
   GetAnimationTimeout() -> integer
 
-return type : integer
+return type : CLI_return_t
     The GetAnimationTimeout function returns an integer that contains the time
     interval, measured in milliseconds, between the rendering of animation
     frames.
@@ -3068,7 +3068,7 @@ GetCallbackArgumentCount
 callbackName : AMBIGUOUS
     The name of a callback function. This name is a member of the tuple returnedby GetCallbackNames().
 
-return type : integer
+return type : CLI_return_t
     The GetCallbackArgumentCount function returns the number of arguments
     associated with a particular callback function.
 
@@ -3121,7 +3121,7 @@ GetDatabaseNStates
 
   GetDatabaseNStates() -> integer
 
-return type : integer
+return type : CLI_return_t
     Returns the number of time states in the active database or 0 if there is
     no active database.
 
@@ -3158,7 +3158,7 @@ GetDebugLevel
 level : string
     A string '1', '2', '3', '4', '5' with an optional 'b' suffix to indicatewhether the output should be buffered. A value of '1' is a low debug level , which should be used to produce little output while a value of 5 should produce a lot of debug output.
 
-return type : integer
+return type : CLI_return_t
     The GetDebugLevel function returns the debug level of the VisIt module.
 
 
@@ -3831,7 +3831,7 @@ GetNumPlots
 
   GetNumPlots() -> integer
 
-return type : integer
+return type : CLI_return_t
     Returns the number of plots in the active window.
 
 
@@ -4018,7 +4018,7 @@ GetPipelineCachingMode
 
   GetPipelineCachingMode() -> integer
 
-return type : integer
+return type : CLI_return_t
     The GetPipelineCachingMode function returns 1 if pipelines are being
     cached and 0 otherwise.
 
@@ -4907,7 +4907,7 @@ HideActivePlots
 
   HideActivePlots() -> integer
 
-return type : integer
+return type : CLI_return_t
     The HideActivePlots function returns an integer value of 1 for success and
     0 for failure.
 
@@ -4947,7 +4947,7 @@ HideToolbars
 allWindows : integer
     An optional integer value that tells VisIt to hide the toolbars for all windows when it is non-zero.
 
-return type : integer
+return type : CLI_return_t
     The HideToolbars function returns 1 on success and 0 on failure.
 
 
@@ -5009,7 +5009,7 @@ InitializeNamedSelectionVariables
 name : string
     The name of the named selection to initialize.
 
-return type : integer
+return type : CLI_return_t
     The InitializeNamedSelectionVariables function returns 1 on success and 0 on failure.
 
 
@@ -5076,7 +5076,7 @@ Launch
 program : string
     The complete path as a string to the top level 'visit' script.
 
-return type : integer
+return type : CLI_return_t
     The Launch functions return 1 for success and 0 for failure
 
 
@@ -5116,7 +5116,7 @@ LaunchNowin
 program : string
     The complete path as a string to the top level 'visit' script.
 
-return type : integer
+return type : CLI_return_t
     The Launch functions return 1 for success and 0 for failure
 
 
@@ -5154,7 +5154,7 @@ Lineout
   Lineout(keywordarg1=arg1, keywrdarg2=arg2,...,keywordargn=argn ) -> integer
 
 
-return type : integer
+return type : CLI_return_t
     The Lineout function returns 1 on success and 0 on failure.
 
 
@@ -5342,7 +5342,7 @@ engineName : string
 simName : string
     (optional) The name of the simulation that saved the selection.
 
-return type : integer
+return type : CLI_return_t
     The LoadNamedSelection function returns 1 for success and 0 for failure.
 
 
@@ -5489,7 +5489,7 @@ w : integer
 h : integer
     The new integer height for the window being moved.
 
-return type : integer
+return type : CLI_return_t
     MoveAndResizeWindow returns 1 on success and 0 on failure.
 
 
@@ -5629,7 +5629,7 @@ MovePlotOrderTowardFirst
 index : integer
     The integer index of the plot that will be moved within the plot list.
 
-return type : integer
+return type : CLI_return_t
     The MovePlotOrderTowardFirst function returns 1 on success and 0 on failure.
 
 
@@ -5658,7 +5658,7 @@ MovePlotOrderTowardLast
 index : integer
     The integer index of the plot that will be moved within the plot list.
 
-return type : integer
+return type : CLI_return_t
     The MovePlotOrderTowardLast function returns 1 on success and 0 on failure.
 
 
@@ -5690,7 +5690,7 @@ oldFrame : integer
 newFrame : integer
     An integer that is the new animation frame where the keyframe will be moved.
 
-return type : integer
+return type : CLI_return_t
     MoveViewKeyframe returns 1 on success and 0 on failure.
 
 
@@ -5743,7 +5743,7 @@ x : integer
 y : integer
     The new integer y location for the window being moved.
 
-return type : integer
+return type : CLI_return_t
     MoveWindow returns 1 on success and 0 on failure.
 
 
@@ -5839,7 +5839,7 @@ NumColorTableNames
 
   NumColorTableNames() -> integer
 
-return type : integer
+return type : CLI_return_t
     The NumColorTableNames function return an integer.
 
 
@@ -5875,7 +5875,7 @@ NumOperatorPlugins
 
   NumOperatorPlugins() -> integer
 
-return type : integer
+return type : CLI_return_t
     The NumOperatorPlugins function returns an integer.
 
 
@@ -5903,7 +5903,7 @@ NumPlotPlugins
 
   NumPlotPlugins() -> integer
 
-return type : integer
+return type : CLI_return_t
     The NumPlotPlugins function returns an integer.
 
 
@@ -5941,7 +5941,7 @@ hostName : string
 args : tuple
     Optional tuple of command line arguments for the engine.Alternative arguments:MachineProfile object to load with OpenComputeEngine call
 
-return type : integer
+return type : CLI_return_t
     The OpenComputeEngine function returns an integer value of 1 for success
     and 0 for failure.
 
@@ -5993,7 +5993,7 @@ timeIndex : integer
 dbPluginIndex : AMBIGUOUS
     An optional string containing the name of the plugin to use. Note that this string must also include the plugin's version number (with few exceptions,almost all plugins' version numbers are 1.0). Note also that you must capitalize the spelling identically to what the plugin'sGeneralPluginInfo::GetName() method returns. For example, "XYZ_1.0"is the string you would use for the XYZ plugin.
 
-return type : integer
+return type : CLI_return_t
     The OpenDatabase function returns an integer value of 1 for success and 0
     for failure.
 
@@ -6042,7 +6042,7 @@ args : tuple
 MachineProfile : STARTING_VALUE
     MachineProfile object to load with OpenMDServer call
 
-return type : integer
+return type : CLI_return_t
     The OpenMDServer function returns 1 on success and 0 on failure.
 
 
@@ -6140,7 +6140,7 @@ databaseName : string
 state : STARTING_VALUE
     The time state at which to open the database.
 
-return type : integer
+return type : CLI_return_t
     The OverlayDatabase function returns an integer value of 1 for success and
     0 for failure.
 
@@ -6794,7 +6794,7 @@ PrintWindow
 
   PrintWindow() -> integer
 
-return type : integer
+return type : CLI_return_t
     The PrintWindow function returns an integer value of 1 for success and 0
     for failure.
 
@@ -6834,7 +6834,7 @@ opIndex : integer
 applyToAllPlots : AMBIGUOUS
     An integer flag that causes all plots in the plot list to be affected when it is non-zero.
 
-return type : integer
+return type : CLI_return_t
     PromoteOperator returns 1 on success and 0 on failure.
 
 
@@ -6888,7 +6888,7 @@ source : string
 file : string
     A string containing the path to a Python Query Filter script file.Note: Use only one of the 'source' or 'file' arguments.If both are used the 'source' argument overrides 'file'.
 
-return type : integer
+return type : CLI_return_t
     The PythonQuery function returns 1 on success and 0 on failure.
 
 
@@ -7042,7 +7042,7 @@ name : string
 dict : AMBIGUOUS
     An optional dictionary containing additional query arguments. namedarg1, namedarg2,...An optional list of named arguments supplying additional query parameters.
 
-return type : integer
+return type : CLI_return_t
     The QueryOverTime function returns 1 on success and 0 on failure.
 
 
@@ -7089,7 +7089,7 @@ ReOpenDatabase
 databaseName : string
     The name of the database to open.
 
-return type : integer
+return type : CLI_return_t
     The ReOpenDatabase function returns an integer value of 1 for success and
     0 for failure.
 
@@ -7146,7 +7146,7 @@ directory : string
 clear : AMBIGUOUS
     An integer flag indicating whether the host profile list should cleared first.
 
-return type : integer
+return type : CLI_return_t
     The ReadHostProfilesFromDirectory function returns an integer value of 1 for success and
     0 for failure.
 
@@ -7175,7 +7175,7 @@ RecenterView
 
   RecenterView() -> integer
 
-return type : integer
+return type : CLI_return_t
     The RecenterView function returns 1 on success and 0 on failure.
 
 
@@ -7209,7 +7209,7 @@ RedoView
 
   RedoView() -> integer
 
-return type : integer
+return type : CLI_return_t
     The RedoView function returns 1 on success and 0 on failure.
 
 
@@ -7245,7 +7245,7 @@ RedrawWindow
 
   RedrawWindow() -> integer
 
-return type : integer
+return type : CLI_return_t
     The RedrawWindow function returns 1 on success and 0 on failure.
 
 
@@ -7289,7 +7289,7 @@ callbackname : string
 callback : STARTING_VALUE
     A Python function, typically with one argument by which VisIt passes the object that caused the callback to be called.
 
-return type : integer
+return type : CLI_return_t
     RegisterCallback returns 1 on success.
 
 
@@ -7370,7 +7370,7 @@ all : AMBIGUOUS
 index : AMBIGUOUS
     The zero-based integer index into a plot's operator list that specifies which operator is to be deleted.
 
-return type : integer
+return type : CLI_return_t
     All functions return an integer value of 1 for success and 0 for failure.
 
 
@@ -7422,7 +7422,7 @@ all : AMBIGUOUS
 index : AMBIGUOUS
     The zero-based integer index into a plot's operator list that specifies which operator is to be deleted.
 
-return type : integer
+return type : CLI_return_t
     All functions return an integer value of 1 for success and 0 for failure.
 
 
@@ -7492,7 +7492,7 @@ all : AMBIGUOUS
 index : AMBIGUOUS
     The zero-based integer index into a plot's operator list that specifies which operator is to be deleted.
 
-return type : integer
+return type : CLI_return_t
     All functions return an integer value of 1 for success and 0 for failure.
 
 
@@ -7568,7 +7568,7 @@ oldLabel : string
 newLabel : string
     A string that is the new label to display in place of the old label.
 
-return type : integer
+return type : CLI_return_t
     The RenamePickLabel function returns 1 on success and 0 on failure.
 
 
@@ -7602,7 +7602,7 @@ databaseName : string
 timeState : integer
     A zero-based integer containing the time state that should be made active once the database has been replaced.
 
-return type : integer
+return type : CLI_return_t
     The ReplaceDatabase function returns an integer value of 1 for success and
     0 for failure.
 
@@ -7642,7 +7642,7 @@ ResetLineoutColor
 
   ResetLineoutColor() -> integer
 
-return type : integer
+return type : CLI_return_t
     ResetLineoutColor returns 1 on success and 0 on failure.
 
 
@@ -7674,7 +7674,7 @@ operatorType : string
 all : integer
     An optional integer argument that tells the function to reset the operator options for all plots regardless of whether or not they are active.
 
-return type : integer
+return type : CLI_return_t
     The ResetOperatorOptions function returns an integer value of 1 for
     success and 0 for failure.
 
@@ -7716,7 +7716,7 @@ ResetPickLetter
 
   ResetPickLetter() -> integer
 
-return type : integer
+return type : CLI_return_t
     ResetPickLetter returns 1 on success and 0 on failure.
 
 
@@ -7739,7 +7739,7 @@ ResetPlotOptions
 plotType : string
     The name of the plot type.
 
-return type : integer
+return type : CLI_return_t
     The ResetPlotOptions function returns an integer value of 1 for success
     and 0 for failure.
 
@@ -7777,7 +7777,7 @@ ResetView
 
   ResetView() -> integer
 
-return type : integer
+return type : CLI_return_t
     The ResetView function returns 1 on success and 0 on failure.
 
 
@@ -7827,7 +7827,7 @@ w : integer
 h : integer
     The new integer height for the window.
 
-return type : integer
+return type : CLI_return_t
     ResizeWindow returns 1 on success and 0 on failure.
 
 
@@ -7864,7 +7864,7 @@ visitDir : integer
 mapping : tuple
     A tuple of strings representing the maping from sources as specifiedin the original session file to new sources. Sources in the originalsession file are numbered starting from 0. So, this tuple of strings simply contains the new names for each of the sources, in order.
 
-return type : integer
+return type : CLI_return_t
     RestoreSession returns 1 on success and 0 on failure.
 
 
@@ -7914,7 +7914,7 @@ visitDir : integer
 mapping : tuple
     A tuple of strings representing the maping from sources as specifiedin the original session file to new sources. Sources in the originalsession file are numbered starting from 0. So, this tuple of strings simply contains the new names for each of the sources, in order.
 
-return type : integer
+return type : CLI_return_t
     RestoreSession returns 1 on success and 0 on failure.
 
 
@@ -7995,7 +7995,7 @@ SaveNamedSelection
 name : string
     The name of a named selection.
 
-return type : integer
+return type : CLI_return_t
     The SaveNamedSelection function returns 1 for success and 0 for failure.
 
 
@@ -8041,7 +8041,7 @@ SaveSession
 filename : STARTING_VALUE
     The filename argument is the filename that is used to save the sessionfile. The filename is relative to the current working directory.
 
-return type : integer
+return type : CLI_return_t
     The SaveSession function returns 1 on success and 0 on failure.
 
 
@@ -8169,7 +8169,7 @@ SetActiveContinuousColorTable
 name : AMBIGUOUS
     The name of the color table to use for the active color table. The namemust be present in the tuple returned by the ColorTableNames function.
 
-return type : integer
+return type : CLI_return_t
     Both functions return 1 on success and 0 on failure.
 
 
@@ -8215,7 +8215,7 @@ SetActiveDiscreteColorTable
 name : AMBIGUOUS
     The name of the color table to use for the active color table. The namemust be present in the tuple returned by the ColorTableNames function.
 
-return type : integer
+return type : CLI_return_t
     Both functions return 1 on success and 0 on failure.
 
 
@@ -8260,7 +8260,7 @@ SetActivePlots
 plots : AMBIGUOUS
     A tuple of integer plot indices starting at zero. A single integer is also accepted
 
-return type : integer
+return type : CLI_return_t
     The SetActivePlots function returns an integer value of 1 for success and
     0 for failure.
 
@@ -8301,7 +8301,7 @@ SetActiveTimeSlider
 tsName : string
     The name of the time slider that should be made active.
 
-return type : integer
+return type : CLI_return_t
     SetActiveTimeSlider returns 1 on success and 0 on failure.
 
 
@@ -8347,7 +8347,7 @@ windowIndex : integer
 raiseWindow : integer
     This is an optional integer argument that raises and activates the window ifset to 1. If omitted, the default behavior is to raise and activate the window.
 
-return type : integer
+return type : CLI_return_t
     The SetActiveWindow function returns an integer value of 1 for success and
     0 for failure.
 
@@ -8384,7 +8384,7 @@ SetAnimationTimeout
 
   SetAnimationTimeout(milliseconds) -> integer
 
-return type : integer
+return type : CLI_return_t
     The SetAnimationTimeout function returns 1 for success and 0 for failure.
 
 
@@ -8423,7 +8423,7 @@ SetAnnotationAttributes
 atts : STARTING_VALUE
     An AnnotationAttributes object containing the annotation settings.
 
-return type : integer
+return type : CLI_return_t
     Both functions return 1 on success and 0 on failure.
 
 
@@ -8470,7 +8470,7 @@ SetBackendType
 name : STARTING_VALUE
     VTK, VTKM.
 
-return type : integer
+return type : CLI_return_t
     Both functions return 1 on success and 0 on failure.
 
 
@@ -8513,7 +8513,7 @@ y : double
 z : double
     A double that is the z component of the center of rotation.
 
-return type : integer
+return type : CLI_return_t
     The SetCenterOfRotation function returns 1 on success and 0 on failure.
 
 
@@ -8557,7 +8557,7 @@ SetColorTexturingEnabled
 enabled : integer
     A integer value. Non-zero values enable color texturing and zero disables it.
 
-return type : integer
+return type : CLI_return_t
     The SetColorTexturingEnabled function returns 1 on success and 0 on failure.
 
 
@@ -8592,7 +8592,7 @@ SetCreateMeshQualityExpressions
 val : integer
     Either a zero (false) or non-zero (true) integer value to indicate ifMesh Quality expressions should be automatically created when a database is opened.
 
-return type : integer
+return type : CLI_return_t
     The SetCreateMeshQualityExpressions function returns 1 on success and 0 on failure.
 
 
@@ -8629,7 +8629,7 @@ SetCreateTimeDerivativeExpressions
 val : integer
     Either a zero (false) or non-zero (true) integer value to indicate ifTime Derivative expressions should be automatically created when a database is opened.
 
-return type : integer
+return type : CLI_return_t
     The SetCreateTimeDerivativeExpressions function returns 1 on success and 0 on failure.
 
 
@@ -8666,7 +8666,7 @@ SetCreateVectorMagnitudeExpressions
 val : integer
     Either a zero (false) or non-zero (true) integer value to indicate ifVector magnitude expressions should be automatically created when a database is opened.
 
-return type : integer
+return type : CLI_return_t
     The SetCreateVectorMagnitudeExpressions function returns 1 on success and 0 on failure.
 
 
@@ -8706,7 +8706,7 @@ method : integer
 whenToCreate : integer
     An integer that tells VisIt when to automatically create database correlations.
 
-return type : integer
+return type : CLI_return_t
     SetDatabaseCorrelationOptions returns 1 on success and 0 on failure.
 
 
@@ -8813,7 +8813,7 @@ SetDefaultAnnotationAttributes
 atts : STARTING_VALUE
     An AnnotationAttributes object containing the annotation settings.
 
-return type : integer
+return type : CLI_return_t
     Both functions return 1 on success and 0 on failure.
 
 
@@ -8863,7 +8863,7 @@ pluginName : string
 options : dictionary
     A dictionary containing the new default options for that plugin.
 
-return type : integer
+return type : CLI_return_t
     The SetDefaultFileOpenOptions function returns 1 on success and 0 on
     failure.
 
@@ -8900,7 +8900,7 @@ SetDefaultInteractorAttributes
 atts : STARTING_VALUE
     An InteractorAttributes object that contains the new interactor attributes that you want to use.
 
-return type : integer
+return type : CLI_return_t
     SetInteractorAttributes returns 1 on success and 0 on failure.
 
 
@@ -8945,7 +8945,7 @@ SetDefaultMaterialAttributes
 atts : STARTING_VALUE
     A MaterialAttributes object containing the new settings.
 
-return type : integer
+return type : CLI_return_t
     Both functions return 1 on success and 0 on failure.
 
 
@@ -9041,7 +9041,7 @@ operatorIndex : integer
 all : integer
     An optional integer argument that tells the function to apply the operator attributes to all plots containing the specified operator if the value of the argument is non-zero.
 
-return type : integer
+return type : CLI_return_t
     All functions return an integer value of 1 for success and 0 for failure.
 
 
@@ -9098,7 +9098,7 @@ SetDefaultPickAttributes
 atts : STARTING_VALUE
     A PickAttributes object containing the new pick settings.
 
-return type : integer
+return type : CLI_return_t
     All functions return 1 on success and 0 on failure.
 
 
@@ -9140,7 +9140,7 @@ SetDefaultPlotOptions
 atts : STARTING_VALUE
     Any type of plot attributes object.
 
-return type : integer
+return type : CLI_return_t
     All functions return an integer value of 1 for success and 0 for failure.
 
 
@@ -9189,7 +9189,7 @@ SetGlobalLineoutAttributes
 atts : STARTING_VALUE
     A GlobalLineoutAttributes object that contains the new settings.
 
-return type : integer
+return type : CLI_return_t
     The SetGlobalLineoutAttributes function returns 1 on success and 0 on
     failure.
 
@@ -9234,7 +9234,7 @@ SetInteractorAttributes
 atts : STARTING_VALUE
     An InteractorAttributes object that contains the new interactor attributes that you want to use.
 
-return type : integer
+return type : CLI_return_t
     SetInteractorAttributes returns 1 on success and 0 on failure.
 
 
@@ -9278,7 +9278,7 @@ SetKeyframeAttributes
 kfAtts : STARTING_VALUE
     A KeyframeAttributes object that contains the new keyframing attributes to use.
 
-return type : integer
+return type : CLI_return_t
     SetKeyframeAttributes returns 1 on success and 0 on failure.
 
 
@@ -9320,7 +9320,7 @@ index : integer
 light : STARTING_VALUE
     A LightAttributes object containing the properties to use for the specified light.
 
-return type : integer
+return type : CLI_return_t
     SetLight returns 1 on success and 0 on failure.
 
 
@@ -9384,7 +9384,7 @@ SetMaterialAttributes
 atts : STARTING_VALUE
     A MaterialAttributes object containing the new settings.
 
-return type : integer
+return type : CLI_return_t
     Both functions return 1 on success and 0 on failure.
 
 
@@ -9471,7 +9471,7 @@ SetNamedSelectionAutoApply
 flag : integer
     An integer flag. Non-zero values turn on selection auto apply mode.
 
-return type : integer
+return type : CLI_return_t
     The SetNamedSelectionAutoApply function returns 1 on success and 0 on failure.
 
 
@@ -9513,7 +9513,7 @@ operatorIndex : integer
 all : integer
     An optional integer argument that tells the function to apply the operator attributes to all plots containing the specified operator if the value of the argument is non-zero.
 
-return type : integer
+return type : CLI_return_t
     All functions return an integer value of 1 for success and 0 for failure.
 
 
@@ -9570,7 +9570,7 @@ SetPickAttributes
 atts : STARTING_VALUE
     A PickAttributes object containing the new pick settings.
 
-return type : integer
+return type : CLI_return_t
     All functions return 1 on success and 0 on failure.
 
 
@@ -9607,7 +9607,7 @@ SetPipelineCachingMode
 
   SetPipelineCachingMode(mode) -> integer
 
-return type : integer
+return type : CLI_return_t
     The SetPipelineCachingMode function returns 1 for success and 0 for
     failure.
 
@@ -9705,7 +9705,7 @@ index : integer
 description : list
     A new description srting that will be shown in the plot list so the plot can be identified readily.
 
-return type : integer
+return type : CLI_return_t
     The SetPlotDescription function returns 1 on success and 0 on failure.
 
 
@@ -9736,7 +9736,7 @@ SetPlotFollowsTime
 val : integer
     An optional integer flag indicating whether the plot should follow thetime slider. The default behavior is for the plot to follow the time slider.
 
-return type : integer
+return type : CLI_return_t
     The function returns 1 on success and 0 on failure.
 
 
@@ -9819,7 +9819,7 @@ SetPlotOptions
 atts : STARTING_VALUE
     Any type of plot attributes object.
 
-return type : integer
+return type : CLI_return_t
     All functions return an integer value of 1 for success and 0 for failure.
 
 
@@ -9868,7 +9868,7 @@ SetPlotOrderToFirst
 index : integer
     The integer index of the plot within the plot list.
 
-return type : integer
+return type : CLI_return_t
     The SetPlotOrderToFirst function returns 1 on success and 0 on failure.
 
 
@@ -9900,7 +9900,7 @@ SetPlotOrderToLast
 index : integer
     The integer index of the plot within the plot list.
 
-return type : integer
+return type : CLI_return_t
     The SetPlotOrderToLast function returns 1 on success and 0 on failure.
 
 
@@ -9936,7 +9936,7 @@ silr : STARTING_VALUE
 all : STARTING_VALUE
     An optional argument that tells the function if the SIL restriction should be applied to all plots in the plot list.
 
-return type : integer
+return type : CLI_return_t
     The SetPlotSILRestriction function returns an integer value of 1 for
     success and 0 for failure.
 
@@ -10020,7 +10020,7 @@ SetPreferredFileFormats
 pluginIDs : tuple
     A tuple of plugin IDs to be attempted first when opening files.
 
-return type : integer
+return type : CLI_return_t
     The SetPreferredFileFormats method does not return a value.
 
 
@@ -10234,7 +10234,7 @@ SetQueryOverTimeAttributes
 atts : STARTING_VALUE
     A QueryOverTimeAttributes object containing the new settings to use for queries over time.
 
-return type : integer
+return type : CLI_return_t
     All functions return 1 on success and 0 on failure.
 
 
@@ -10282,7 +10282,7 @@ SetRemoveDuplicateNodes
 val : integer
     Either a zero (false) or non-zero (true) integer value to indicate if duplicate nodes in fully disconnected unstructured grids should be automatically removed by visit.
 
-return type : integer
+return type : CLI_return_t
     The SetRemoveDuplicateNodes function returns 1 on success and 0 on failure.
 
 
@@ -10319,7 +10319,7 @@ SetRenderingAttributes
 atts : STARTING_VALUE
     A RenderingAttributes object that contains the rendering attributes thatwe want to make VisIt use.
 
-return type : integer
+return type : CLI_return_t
     The SetRenderingAttributes function returns 1 on success and 0 on failure.
 
 
@@ -10412,7 +10412,7 @@ SetTimeSliderState
 state : integer
     A zero-based integer containing the time state that we want to make active.
 
-return type : integer
+return type : CLI_return_t
     The SetTimeSliderState function returns 1 on success and 0 on failure.
 
 
@@ -10455,7 +10455,7 @@ SetTreatAllDBsAsTimeVarying
 val : integer
     Either a zero (false) or non-zero (true) integer value to indicate if all databases should be treated as time varying (true) or not (false).
 
-return type : integer
+return type : CLI_return_t
     The SetTreatAllDBsAsTimeVarying function returns 1 on success and 0 on failure.
 
 
@@ -10494,7 +10494,7 @@ SetTryHarderCyclesTimes
 val : integer
     Either a zero (false) or non-zero (true) integer value to indicate ifVisIt read cycle/time information for all timestates when opening a database.
 
-return type : integer
+return type : CLI_return_t
     The SetTryHarderCyclesTimes function returns 1 on success and 0 on failure.
 
 
@@ -10532,7 +10532,7 @@ SetUltraScript
 filename : string
     The name of the file to be used as the ultra script when LoadUltra is called.
 
-return type : integer
+return type : CLI_return_t
     The SetUltraScript function returns 1.
 
 
@@ -10558,7 +10558,7 @@ SetView2D
 view : STARTING_VALUE
     A ViewAttributes object containing the view.
 
-return type : integer
+return type : CLI_return_t
     All functions returns 1 on success and 0 on failure.
 
 
@@ -10614,7 +10614,7 @@ SetView3D
 view : STARTING_VALUE
     A ViewAttributes object containing the view.
 
-return type : integer
+return type : CLI_return_t
     All functions returns 1 on success and 0 on failure.
 
 
@@ -10670,7 +10670,7 @@ SetViewAxisArray
 view : STARTING_VALUE
     A ViewAttributes object containing the view.
 
-return type : integer
+return type : CLI_return_t
     All functions returns 1 on success and 0 on failure.
 
 
@@ -10726,7 +10726,7 @@ SetViewCurve
 view : STARTING_VALUE
     A ViewAttributes object containing the view.
 
-return type : integer
+return type : CLI_return_t
     All functions returns 1 on success and 0 on failure.
 
 
@@ -10779,7 +10779,7 @@ SetViewExtentsType
 type : integer
     An integer 0, 1 or one of the strings: "original", "actual".
 
-return type : integer
+return type : CLI_return_t
     SetViewExtentsType returns 1 on success and 0 on failure.
 
 
@@ -10827,7 +10827,7 @@ SetViewKeyframe
 
   SetViewKeyframe() -> integer
 
-return type : integer
+return type : CLI_return_t
     The SetViewKeyframe function returns 1 on success and 0 on failure.
 
 
@@ -10894,7 +10894,7 @@ width : integer
 height : integer
     An integer that is the height of the window area in pixels.
 
-return type : integer
+return type : CLI_return_t
     The SetWindowArea function returns 1 on success and 0 on failure.
 
 
@@ -10928,7 +10928,7 @@ SetWindowLayout
 layout : integer
     An integer that specifies the window layout. (1,2,4,8,9,16 are valid)
 
-return type : integer
+return type : CLI_return_t
     The SetWindowLayout function returns an integer value of 1 for success and
     0 for failure.
 
@@ -10965,7 +10965,7 @@ SetWindowMode
 mode : string
     A string containing the new mode: 'navigate', 'zoom', 'lineout', 'pick', 'zone pick', 'node pick', 'spreadsheet pick'.
 
-return type : integer
+return type : CLI_return_t
     The SetWindowMode function returns 1 on success and 0 on failure.
 
 
@@ -11001,7 +11001,7 @@ ShowAllWindows
 
   ShowAllWindows() -> integer
 
-return type : integer
+return type : CLI_return_t
     The ShowAllWindows function returns 1 on success and 0 on failure.
 
 
@@ -11039,7 +11039,7 @@ ShowToolbars
 allWindows : integer
     An integer value that tells VisIt to show the toolbars for all windows when it is non-zero.
 
-return type : integer
+return type : CLI_return_t
     The ShowToolbars function returns 1 on success and 0 on failure.
 
 
@@ -11105,7 +11105,7 @@ SuppressMessages
 level : integer
     An integer value of 1,2,3 or 4
 
-return type : integer
+return type : CLI_return_t
     The SuppressMessages function returns the previous suppression level on success and 0 on failure.
 
 
@@ -11141,7 +11141,7 @@ SuppressQueryOutputOff
   SuppressQueryOutputOn() -> integer
   SuppressQueryOutputOff() -> integer
 
-return type : integer
+return type : CLI_return_t
     The SuppressQueryOutput function returns 1 on success and 0 on failure.
 
 
@@ -11179,7 +11179,7 @@ SuppressQueryOutputOn
   SuppressQueryOutputOn() -> integer
   SuppressQueryOutputOff() -> integer
 
-return type : integer
+return type : CLI_return_t
     The SuppressQueryOutput function returns 1 on success and 0 on failure.
 
 
@@ -11216,7 +11216,7 @@ TimeSliderGetNStates
 
   TimeSliderGetNStates() -> integer
 
-return type : integer
+return type : CLI_return_t
     Returns an integer containing the number of time states for the current
     time slider.
 
@@ -11252,7 +11252,7 @@ TimeSliderNextState
 
   TimeSliderNextState() -> integer
 
-return type : integer
+return type : CLI_return_t
     The TimeSliderNextState function returns 1 on success and 0 on failure.
 
 
@@ -11287,7 +11287,7 @@ TimeSliderPreviousState
 
   TimeSliderPreviousState() -> integer
 
-return type : integer
+return type : CLI_return_t
     The TimeSliderPreviousState function returns 1 on success and 0 on failure.
 
 
@@ -11371,7 +11371,7 @@ ToggleBoundingBoxMode
   ToggleMaintainViewMode() -> integer
   ToggleSpinMode() -> integer
 
-return type : integer
+return type : CLI_return_t
     All functions return 1 on success and 0 on failure.
 
 
@@ -11443,7 +11443,7 @@ ToggleCameraViewMode
   ToggleMaintainViewMode() -> integer
   ToggleSpinMode() -> integer
 
-return type : integer
+return type : CLI_return_t
     All functions return 1 on success and 0 on failure.
 
 
@@ -11515,7 +11515,7 @@ ToggleFullFrameMode
   ToggleMaintainViewMode() -> integer
   ToggleSpinMode() -> integer
 
-return type : integer
+return type : CLI_return_t
     All functions return 1 on success and 0 on failure.
 
 
@@ -11587,7 +11587,7 @@ ToggleLockTime
   ToggleMaintainViewMode() -> integer
   ToggleSpinMode() -> integer
 
-return type : integer
+return type : CLI_return_t
     All functions return 1 on success and 0 on failure.
 
 
@@ -11731,7 +11731,7 @@ ToggleLockViewMode
   ToggleMaintainViewMode() -> integer
   ToggleSpinMode() -> integer
 
-return type : integer
+return type : CLI_return_t
     All functions return 1 on success and 0 on failure.
 
 
@@ -11803,7 +11803,7 @@ ToggleMaintainViewMode
   ToggleMaintainViewMode() -> integer
   ToggleSpinMode() -> integer
 
-return type : integer
+return type : CLI_return_t
     All functions return 1 on success and 0 on failure.
 
 
@@ -11875,7 +11875,7 @@ ToggleSpinMode
   ToggleMaintainViewMode() -> integer
   ToggleSpinMode() -> integer
 
-return type : integer
+return type : CLI_return_t
     All functions return 1 on success and 0 on failure.
 
 
@@ -11951,7 +11951,7 @@ TurnDomainsOff
   TurnDomainsOff(string) -> integer
   TurnDomainsOff(tuple of strings) -> integer
 
-return type : integer
+return type : CLI_return_t
     The Turn functions return an integer with a value of 1 for success or 0
     for failure.
 
@@ -12011,7 +12011,7 @@ TurnDomainsOn
   TurnDomainsOff(string) -> integer
   TurnDomainsOff(tuple of strings) -> integer
 
-return type : integer
+return type : CLI_return_t
     The Turn functions return an integer with a value of 1 for success or 0
     for failure.
 
@@ -12071,7 +12071,7 @@ TurnMaterialsOff
   TurnDomainsOff(string) -> integer
   TurnDomainsOff(tuple of strings) -> integer
 
-return type : integer
+return type : CLI_return_t
     The Turn functions return an integer with a value of 1 for success or 0
     for failure.
 
@@ -12131,7 +12131,7 @@ TurnMaterialsOn
   TurnDomainsOff(string) -> integer
   TurnDomainsOff(tuple of strings) -> integer
 
-return type : integer
+return type : CLI_return_t
     The Turn functions return an integer with a value of 1 for success or 0
     for failure.
 
@@ -12219,7 +12219,7 @@ name : string
 properties : STARTING_VALUE
     An optional SelectionProperties object that contains the selection properties to use when reevaluating the selection.
 
-return type : integer
+return type : CLI_return_t
     The UpdateNamedSelection function returns 1 on success and 0 on failure.
 
 
