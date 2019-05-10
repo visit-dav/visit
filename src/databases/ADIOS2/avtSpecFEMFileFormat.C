@@ -97,10 +97,6 @@ avtSpecFEMFileFormat::Identify(const char *fname)
     string meshNm, dataNm;
     bool valid = false;
 
-    return true;
-
-
-
     if (avtSpecFEMFileFormat::GenerateFileNames(fname, meshNm, dataNm))
     {
         ifstream mFile(meshNm.c_str()), dFile(dataNm.c_str());

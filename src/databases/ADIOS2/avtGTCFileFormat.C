@@ -42,6 +42,7 @@
 
 #include <avtMTSDFileFormatInterface.h>
 #include <avtGTCFileFormat.h>
+#include <ADIOS2HelperFuncs.h> 
 
 #include <string>
 #include <map>
@@ -62,21 +63,50 @@ using namespace std;
 bool
 avtGTCFileFormat::Identify(const char *fname)
 {
+    bool retval = false;
+    string engineName = ADIOS2Helper_GetEngineName(fname);
+    string fileName   = ADIOS2Helper_GetFileName(fname);
+    bool stagingMode  = ADIOS2Helper_IsStagingEngine(engineName);
+
     adios2::ADIOS adios;
     adios2::IO io(adios.DeclareIO("ReadBP"));
-    adios2::Engine reader = io.Open(fname, adios2::Mode::Read);
+    io.SetEngine(engineName);
+    adios2::Engine reader = io.Open(fileName, adios2::Mode::Read);
+    adios2::StepStatus status = 
+        reader.BeginStep(adios2::StepMode::NextAvailable, -1.0f);
+    if (status == adios2::StepStatus::OK)
+    {
+        std::cout<<" Identifier for GTC received streaming step = "<<reader.CurrentStep()<<endl;
+        std::map<std::string, adios2::Params> variables, attributes;
+        variables = io.AvailableVariables();
+        attributes = io.AvailableAttributes();
 
-    std::map<std::string, adios2::Params> variables, attributes;
-    variables = io.AvailableVariables();
-    attributes = io.AvailableAttributes();
+        int vfind = 0;
+        vector<string> reqVars = {"coordinates", "potential", 
+                                  "igrid", "index-shift"};
+        for (auto vi = variables.begin(); vi != variables.end(); vi++)
+            if (std::find(reqVars.begin(), reqVars.end(), vi->first) != reqVars.end())
+                vfind++;
 
+        retval = (vfind == reqVars.size());
+        reader.EndStep();
+    }
+    reader.Close();
+    return retval;
+}
+
+bool avtGTCFileFormat::IdentifyADIOS2(
+                    std::map<std::string, adios2::Params> &variables, 
+                    std::map<std::string, adios2::Params> &attributes)
+{
     int vfind = 0;
-    vector<string> reqVars = {"coordinates", "potential", "igrid", "index-shift"};
+    vector<string> reqVars = {"coordinates", "potential", 
+                              "igrid", "index-shift"};
     for (auto vi = variables.begin(); vi != variables.end(); vi++)
         if (std::find(reqVars.begin(), reqVars.end(), vi->first) != reqVars.end())
             vfind++;
 
-    return vfind==reqVars.size();
+    return (vfind == reqVars.size());
 }
 
 avtFileFormatInterface *
@@ -91,6 +121,36 @@ avtGTCFileFormat::CreateInterface(const char *const *list,
         ffl[i] =  new avtMTSDFileFormat*[nBlock];
         for (int j = 0; j < nBlock; j++)
             ffl[i][j] =  new avtGTCFileFormat(list[i*nBlock +j]);
+    }
+    return new avtMTSDFileFormatInterface(ffl, nTimestepGroups, nBlock);
+}
+
+avtFileFormatInterface *
+avtGTCFileFormat::CreateInterfaceADIOS2(
+        const char *const *list,
+        int nList,
+        int nBlock,
+        std::shared_ptr<adios2::ADIOS> adios,
+        adios2::Engine &reader, 
+        adios2::IO &io,
+        std::map<std::string, adios2::Params> &variables,
+        std::map<std::string, adios2::Params> &attributes
+        )
+{
+    int nTimestepGroups = nList / nBlock;
+    avtMTSDFileFormat ***ffl = new avtMTSDFileFormat**[nTimestepGroups];
+    for (int i = 0; i < nTimestepGroups; i++)
+    {
+        ffl[i] =  new avtMTSDFileFormat*[nBlock];
+        for (int j = 0; j < nBlock; j++)
+            if (!i && !j) 
+            {
+                ffl[i][j] =  new avtGTCFileFormat(adios, reader, io, variables, attributes, list[i*nBlock +j]);
+            }
+            else
+            {
+                ffl[i][j] =  new avtGTCFileFormat(list[i*nBlock +j]);
+            }
     }
     return new avtMTSDFileFormatInterface(ffl, nTimestepGroups, nBlock);
 }
@@ -133,6 +193,28 @@ avtGTCFileFormat::avtGTCFileFormat(const char *filename)
     */
 }
 
+
+avtGTCFileFormat::avtGTCFileFormat(std::shared_ptr<adios2::ADIOS> adios,
+        adios2::Engine &reader,
+        adios2::IO &io, 
+        std::map<std::string, adios2::Params> &variables,
+        std::map<std::string, adios2::Params> &attributes,
+        const char *filename)
+    : adios(adios),
+      reader(reader),
+      io(io),
+      numTimeSteps(1),
+      avtMTSDFileFormat(&filename, 1),
+      variables(variables),
+      attributes(attributes),
+      grid(NULL),
+      cylGrid(NULL),
+      ptGrid(NULL)
+{
+    //Determine how many steps we have.
+    if (variables.find("potential") != variables.end())
+        numTimeSteps = std::stoi(variables["potential"]["AvailableStepsCount"]);
+}
 
 // ****************************************************************************
 //  Method: avtGTCFileFormat destructor
