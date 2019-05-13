@@ -46,6 +46,8 @@
 #include <avtTypes.h>
 #include <vectortypes.h>
 
+#include <map>
+
 extern "C" {
 #include <mili.h>
 }
@@ -54,22 +56,6 @@ extern "C" {
 #include "rapidjson/istreamwrapper.h"
 
 
-//
-// We don't need the entire subrecord, so let's just keep 
-// a small verison instead. 
-//
-typedef struct SubrecInfo
-{
-    SubrecInfo(void)
-    {
-        nSR = 0;          
-    };
-
-    int                      nSR;        
-    intVector                nElements;
-    intVector                nDataBlocks;
-    std::vector< intVector > dataBlockRanges;   
-} SubrecInfo;
 
 //
 // Info needed by the vtkLabel class. 
@@ -91,6 +77,55 @@ typedef struct SharedVariableInfo
     std::string  shortName;
     intVector    variableIndicies;
 } SharedVariableInfo;
+
+
+// ****************************************************************************
+//  Class: SubrecInfo
+//
+//  Purpose:
+//      A container to store info about the subrecords. 
+//
+//      Subrecords contain information about the data that resides within 
+//      a mili database. This container holds a minimal amount of that 
+//      information that we need on the visit end.
+//
+//  Programmer:  Alister Maguire
+//  Creation:    May 13, 2019
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+class SubrecInfo
+{
+
+   public:
+                 SubrecInfo(void);
+                ~SubrecInfo(void);
+
+    void         AddSubrec(const int,
+                           const int,
+                           const int,
+                           const int *);
+
+    void         GetSubrec(const int,
+                           int &, 
+                           int &,
+                           intVector &);
+
+  private:
+
+    int                      nSR;        
+    intVector                numElements;
+    intVector                numDataBlocks;
+    std::vector< intVector > dataBlockRanges;   
+
+    //
+    // Because the subrecords can be segmented across domains, 
+    // we need to map the subrecord Ids to their vector indicies. 
+    //
+    std::map<int, int>       indexMap;
+}; 
 
 
 // ****************************************************************************
@@ -535,16 +570,11 @@ class avtMiliMetaData
     int                              GetMaxZoneLabelLength(int);
     int                              GetMaxNodeLabelLength(int);
 
-    SubrecInfo                      &GetSubrecInfo(int);
+    SubrecInfo                      *GetSubrecInfo(int);
 
     SharedVariableInfo              *GetSharedVariableInfo(const char *);
 
   private:
-
-    void                             AddSubrecInfo(int, 
-                                                   int,
-                                                   int, 
-                                                   int *);
 
     void                             AddSharedVariableInfo(std::string,
                                                            int);

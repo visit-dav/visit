@@ -101,7 +101,7 @@ class avtMiliFileFormat : public avtMTMDFileFormat
 
     void                  ReadMiliVarToBuffer(char *,
                                               const intVector &,
-                                              const SubrecInfo &,
+                                              SubrecInfo *,
                                               int,
                                               int,
                                               int,

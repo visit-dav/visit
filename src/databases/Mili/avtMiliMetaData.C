@@ -50,6 +50,131 @@
 
 
 // ***************************************************************************
+//  Constructor: SubrecInfo::SubrecInfo
+//
+//  Programmer: Alister Maguire
+//  Creation:   May 13, 2019
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+SubrecInfo::SubrecInfo(void)
+{
+    nSR = 0;
+}
+
+
+// ***************************************************************************
+//  Destructor: SubrecInfo::~SubrecInfo
+//
+//  Programmer: Alister Maguire
+//  Creation:   May 13, 2019
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+SubrecInfo::~SubrecInfo(void)
+{
+}
+
+
+// ***************************************************************************
+//  SubrecInfo::AddSubrec
+//
+//  Purpose:
+//      Add information about a subrecord. 
+//
+//  Notes:
+//      The subrecords are associated with blocks of data on the mesh
+//      that may be segmented by cell type or domain. 
+//
+//  Arguments:
+//      SRId        The subrecord id. 
+//      numEl       The number of elements associated with this subrecord. 
+//      numDB       The number of "data blocks" associated with this subrecord. 
+//      dBRanges    The data block ranges. 
+//
+//  Programmer: Alister Maguire
+//  Creation:   May 13, 2019
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+SubrecInfo::AddSubrec(const int SRId,
+                      const int numEl,
+                      const int numDB,
+                      const int *dBRanges)
+{
+    if (indexMap.count(SRId) == 0)
+    {
+        indexMap[SRId] = nSR++;
+
+        numElements.push_back(numEl);
+        numDataBlocks.push_back(numDB);
+
+        //
+        // Deep copy the ranges so that we don't have to keep 
+        // the subrecords in memory. 
+        //
+        int limit = numDB * 2;
+        intVector nxtRange(limit);
+
+        for (int i = 0; i < limit; ++i)
+        {
+            nxtRange[i] = dBRanges[i]; 
+        }
+
+        dataBlockRanges.push_back(nxtRange);
+    }
+}
+
+
+// ***************************************************************************
+//  SubrecInfo::GetSubrec
+//
+//  Purpose:
+//      Retrieve information about a subrecord. 
+//
+//  Arguments:
+//      SRId        The subrecord id. 
+//      numEl       The number of elements associated with this subrecord. 
+//      numDB       The number of "data blocks" associated with this subrecord. 
+//      dBRanges    The data block ranges. 
+//
+//  Programmer: Alister Maguire
+//  Creation:   May 13, 2019
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+SubrecInfo::GetSubrec(const int SRId,
+                      int &numEl,
+                      int &numDB,
+                      intVector &dBRanges)
+{
+    std::map<int, int>::iterator mapItr = indexMap.find(SRId);
+
+    if (mapItr != indexMap.end())
+    {
+        numEl      = numElements[mapItr->second];
+        numDB      = numDataBlocks[mapItr->second];
+        dBRanges   = dataBlockRanges[mapItr->second];
+    }
+    else
+    {
+        numEl = -1;
+        numDB = -1;
+    }
+}
+
+
+// ***************************************************************************
 //  constructor: MiliVariableMetaData::MiliVariableMetaData
 //
 //  Purpose:
@@ -2358,7 +2483,7 @@ avtMiliMetaData::GetVarMDIdxByPath(const char *vPath)
 //  Arguments: 
 //      varIdx    The index of the associated variable. 
 //      dom       The domain of interest. 
-//      srId      The subrecord Id. 
+//      SRId      The subrecord Id. 
 //      SR        A pointer to the subrecord. 
 //           
 //  Programmer: Alister Maguire
@@ -2371,7 +2496,7 @@ avtMiliMetaData::GetVarMDIdxByPath(const char *vPath)
 void
 avtMiliMetaData::AddVarSubrecInfo(int varIdx,
                                   int dom,
-                                  int srId,
+                                  int SRId,
                                   Subrecord *SR)
  
 {
@@ -2380,19 +2505,12 @@ avtMiliMetaData::AddVarSubrecInfo(int varIdx,
     {
         if (miliVariables[varIdx] != NULL)
         {
-            //
-            // Check if we've added the info for this subrecord
-            // yet. SR IDs map to their index.  
-            //
-            if (srId >= subrecInfo[dom].nSR)
-            {
-                AddSubrecInfo(dom, 
-                              SR->qty_objects,
-                              SR->qty_blocks,
-                              SR->mo_blocks);
-            }
+            subrecInfo[dom].AddSubrec(SRId,
+                                      SR->qty_objects,
+                                      SR->qty_blocks,
+                                      SR->mo_blocks);
 
-            miliVariables[varIdx]->AddSubrecId(dom, srId);
+            miliVariables[varIdx]->AddSubrecId(dom, SRId);
         }
         else
         {
@@ -2407,52 +2525,6 @@ avtMiliMetaData::AddVarSubrecInfo(int varIdx,
         sprintf(msg, "Invalid index assignment requested!");
         EXCEPTION1(ImproperUseException, msg);
     }
-}
-
-
-// ***************************************************************************
-//  Method: avtMiliMetaData::AddSubrecInfo
-//
-//  Purpose:
-//      Create a SubrecInfo object, and store it in our list
-//      of subrecord information for later retrieval.  
-//
-//  Arguments: 
-//      dom         The domain of this subrecord. 
-//      nElems      The number of elements (zones/nodes) associated with 
-//                  this subrecrod. 
-//      nDB         The number of "data blocks" associated with this subrecord.
-//      DBRanges    The ranges associated with the data blocks. 
-//           
-//  Programmer: Alister Maguire
-//  Creation:   Jan 15, 2019
-//
-//  Modifications:
-//
-// ****************************************************************************
-
-void
-avtMiliMetaData::AddSubrecInfo(int   dom, 
-                               int   nElems,
-                               int   nDB,
-                               int  *DBRanges)
-{
-    subrecInfo[dom].nSR++;
-    subrecInfo[dom].nElements.push_back(nElems);
-    subrecInfo[dom].nDataBlocks.push_back(nDB);
-
-    //
-    // Deep copy the ranges so that we don't have to keep 
-    // the subrecords in memory. 
-    //
-    int limit = nDB * 2;
-    intVector nxtRange(limit);
-    for (int i = 0; i < limit; ++i)
-    {
-        nxtRange[i] = DBRanges[i]; 
-    }
-
-    subrecInfo[dom].dataBlockRanges.push_back(nxtRange);
 }
 
 
@@ -2742,6 +2814,10 @@ avtMiliMetaData::GetMaxNodeLabelLength(int domain)
 //
 //  Arguments: 
 //      dom    The domain of interest.  
+//
+//  Returns:
+//      If available, the requested subrecord info is returned. Otherwise, 
+//      NULL. 
 //           
 //  Programmer: Alister Maguire
 //  Creation:   Jan 15, 2019
@@ -2750,10 +2826,15 @@ avtMiliMetaData::GetMaxNodeLabelLength(int domain)
 //
 // ****************************************************************************
 
-SubrecInfo&
+SubrecInfo *
 avtMiliMetaData::GetSubrecInfo(int dom)
 {
-    return subrecInfo[dom];
+    if (dom >= 0 && dom < numDomains)
+    {
+        return &subrecInfo[dom];
+    }
+
+    return NULL;
 }
 
 

@@ -202,14 +202,6 @@ avtMiliFileFormat::~avtMiliFileFormat()
     delete [] materials;
 
     //
-    // Reset flags to indicate the meshes needs to be read in again.
-    //
-    for (int i = 0; i < nDomains; ++i)
-    {
-        meshRead[i] = false;
-    }
-
-    //
     // Delete the mili meta data. 
     //
     for (int i = 0; i < nMeshes; ++i)
@@ -494,7 +486,7 @@ ReadMiliResults(Famid  &dbid,
 void
 avtMiliFileFormat::ReadMiliVarToBuffer(char *varName,
                                        const intVector &SRIds,
-                                       const SubrecInfo &SRInfo, 
+                                       SubrecInfo *SRInfo, 
                                        int start,
                                        int vType,
                                        int varSize,
@@ -502,42 +494,51 @@ avtMiliFileFormat::ReadMiliVarToBuffer(char *varName,
                                        int dom,
                                        float *dataBuffer)
 {
+    if (SRInfo == NULL)
+    {
+        return;
+    }
+
     //
     // Loop over the subrecords, and retreive the variable
     // data from mili. 
     //
     for (int i = 0 ; i < SRIds.size(); i++)
     {
-        int nTargetCells = 0;
-        int SRId         = SRIds[i];
-        nTargetCells     = SRInfo.nElements[SRId];
-        
+        int nTargetEl = 0;
+        int nBlocks   = 0;
+        int SRId      = SRIds[i];
+        intVector blockRanges;
+
+        SRInfo->GetSubrec(SRId,
+                          nTargetEl,
+                          nBlocks,
+                          blockRanges);
+                          
         //
         // We only have one block to read. 
         //
-        if (SRInfo.nDataBlocks[SRId] == 1)
+        if (nBlocks == 1)
         {
             //
             // Adjust the start.
             //
-            start         += (SRInfo.dataBlockRanges[SRId][0] - 1);
-            int resultSize = nTargetCells * varSize;
+            start         += blockRanges[0] - 1;
+            int resultSize = nTargetEl * varSize;
             float *dbPtr   = dataBuffer;
 
             ReadMiliResults(dbid[dom], ts, SRId,
                 1, &varName, vType, resultSize, 
                 dbPtr + (start * varSize));
         }
-        else if (SRInfo.nDataBlocks[SRId] > 1)
+        else if (nBlocks > 1)
         {
-            int nBlocks             = SRInfo.nDataBlocks[SRId];
-            const intVector *blocks = &SRInfo.dataBlockRanges[SRId];
 
             int totalBlocksSize = 0;
             for (int b = 0; b < nBlocks; ++b)
             {
-                int start = (*blocks)[b * 2];
-                int stop  = (*blocks)[b * 2 + 1]; 
+                int start = blockRanges[b * 2];
+                int stop  = blockRanges[b * 2 + 1]; 
                 totalBlocksSize += stop - start + 1;
             }
 
@@ -552,11 +553,10 @@ avtMiliFileFormat::ReadMiliVarToBuffer(char *varName,
             //
             // Fill up the blocks into the array.
             //
-            
             for (int b = 0; b < nBlocks; ++b)
             {
-                for (int c = (*blocks)[b * 2] - 1; 
-                     c <= (*blocks)[b * 2 + 1] - 1; ++c)
+                for (int c = blockRanges[b * 2] - 1; 
+                     c <= blockRanges[b * 2 + 1] - 1; ++c)
                 {
                     for (int k = 0; k < varSize; ++k)
                     {
@@ -753,10 +753,10 @@ avtMiliFileFormat::GetMesh(int timestep, int dom, const char *mesh)
     //
     if (!isSandMesh && miliMetaData[meshId]->ContainsSand())
     {
-        SubrecInfo SRInfo = miliMetaData[meshId]->GetSubrecInfo(dom);
-        int numVars       = miliMetaData[meshId]->GetNumVariables();
-        int nCells        = miliMetaData[meshId]->GetNumCells(dom);
-        int nNodes        = miliMetaData[meshId]->GetNumNodes(dom);
+        SubrecInfo *SRInfo = miliMetaData[meshId]->GetSubrecInfo(dom);
+        int numVars        = miliMetaData[meshId]->GetNumVariables();
+        int nCells         = miliMetaData[meshId]->GetNumCells(dom);
+        int nNodes         = miliMetaData[meshId]->GetNumNodes(dom);
         
         float sandBuffer[nCells];
 
@@ -942,7 +942,7 @@ avtMiliFileFormat::ReadMesh(int dom)
         // that this does NOT create the labels, as that tends 
         // to be very expensive. We save that for when requested. 
         //
-        RetrieveNodeLabelInfo(meshId, nodeSName, dom);
+        //RetrieveNodeLabelInfo(meshId, nodeSName, dom);//FIXME: uncomment after mem checks
 
 
         //
@@ -1184,8 +1184,8 @@ avtMiliFileFormat::ReadMesh(int dom)
                 //
                 // Retrieve label info for this class. 
                 //
-                RetrieveCellLabelInfo(meshId, shortName, dom, 
-                                      nCells);
+                //RetrieveCellLabelInfo(meshId, shortName, dom, 
+                //                      nCells);//FIXME: uncomment after mem checks
             }
         }
 
@@ -1674,7 +1674,7 @@ avtMiliFileFormat::GetVar(int timestep,
         EXCEPTION1(ImproperUseException, msg);
     }
 
-    SubrecInfo SRInfo      = miliMetaData[meshId]->GetSubrecInfo(dom);
+    SubrecInfo *SRInfo     = miliMetaData[meshId]->GetSubrecInfo(dom);
     intVector SRIds        = varMD->GetSubrecIds(dom);
     int nSRs               = SRIds.size();
     int vType              = varMD->GetNumType();
@@ -2003,8 +2003,8 @@ avtMiliFileFormat::GetVectorVar(int timestep,
                                 MiliVariableMetaData *varMD,
                                 vtkFloatArray *fltArray)
 {
-    SubrecInfo SRInfo = miliMetaData[meshId]->GetSubrecInfo(dom);
-    intVector SRIds   = varMD->GetSubrecIds(dom);
+    SubrecInfo *SRInfo = miliMetaData[meshId]->GetSubrecInfo(dom);
+    intVector SRIds    = varMD->GetSubrecIds(dom);
 
     if (varMD->GetComponentDims() > 1)
     {
@@ -2175,8 +2175,8 @@ avtMiliFileFormat::GetElementSetVar(int timestep,
         return; 
     }
 
-    SubrecInfo SRInfo = miliMetaData[meshId]->GetSubrecInfo(dom);
-    intVector SRIds   = varMD->GetSubrecIds(dom);
+    SubrecInfo *SRInfo = miliMetaData[meshId]->GetSubrecInfo(dom);
+    intVector SRIds    = varMD->GetSubrecIds(dom);
 
     //
     // Create a copy of our name to pass into mili. 
