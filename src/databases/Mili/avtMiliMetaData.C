@@ -50,6 +50,131 @@
 
 
 // ***************************************************************************
+//  Constructor: SubrecInfo::SubrecInfo
+//
+//  Programmer: Alister Maguire
+//  Creation:   May 13, 2019
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+SubrecInfo::SubrecInfo(void)
+{
+    nSR = 0;
+}
+
+
+// ***************************************************************************
+//  Destructor: SubrecInfo::~SubrecInfo
+//
+//  Programmer: Alister Maguire
+//  Creation:   May 13, 2019
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+SubrecInfo::~SubrecInfo(void)
+{
+}
+
+
+// ***************************************************************************
+//  SubrecInfo::AddSubrec
+//
+//  Purpose:
+//      Add information about a subrecord. 
+//
+//  Notes:
+//      The subrecords are associated with blocks of data on the mesh
+//      that may be segmented by cell type or domain. 
+//
+//  Arguments:
+//      SRId        The subrecord id. 
+//      numEl       The number of elements associated with this subrecord. 
+//      numDB       The number of "data blocks" associated with this subrecord. 
+//      dBRanges    The data block ranges. 
+//
+//  Programmer: Alister Maguire
+//  Creation:   May 13, 2019
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+SubrecInfo::AddSubrec(const int SRId,
+                      const int numEl,
+                      const int numDB,
+                      const int *dBRanges)
+{
+    if (indexMap.count(SRId) == 0)
+    {
+        indexMap[SRId] = nSR++;
+
+        numElements.push_back(numEl);
+        numDataBlocks.push_back(numDB);
+
+        //
+        // Deep copy the ranges so that we don't have to keep 
+        // the subrecords in memory. 
+        //
+        int limit = numDB * 2;
+        intVector nxtRange(limit);
+
+        for (int i = 0; i < limit; ++i)
+        {
+            nxtRange[i] = dBRanges[i]; 
+        }
+
+        dataBlockRanges.push_back(nxtRange);
+    }
+}
+
+
+// ***************************************************************************
+//  SubrecInfo::GetSubrec
+//
+//  Purpose:
+//      Retrieve information about a subrecord. 
+//
+//  Arguments:
+//      SRId        The subrecord id. 
+//      numEl       The number of elements associated with this subrecord. 
+//      numDB       The number of "data blocks" associated with this subrecord. 
+//      dBRanges    The data block ranges. 
+//
+//  Programmer: Alister Maguire
+//  Creation:   May 13, 2019
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+SubrecInfo::GetSubrec(const int SRId,
+                      int &numEl,
+                      int &numDB,
+                      intVector &dBRanges)
+{
+    std::map<int, int>::iterator mapItr = indexMap.find(SRId);
+
+    if (mapItr != indexMap.end())
+    {
+        numEl      = numElements[mapItr->second];
+        numDB      = numDataBlocks[mapItr->second];
+        dBRanges   = dataBlockRanges[mapItr->second];
+    }
+    else
+    {
+        numEl = -1;
+        numDB = -1;
+    }
+}
+
+
+// ***************************************************************************
 //  constructor: MiliVariableMetaData::MiliVariableMetaData
 //
 //  Purpose:
@@ -88,6 +213,7 @@ MiliVariableMetaData::MiliVariableMetaData(std::string sName,
                                            bool isMat,
                                            bool isGlob,
                                            bool shared,
+                                           bool isES,
                                            avtCentering cent,
                                            int nDomains,
                                            int meshAssoc,  
@@ -106,6 +232,7 @@ MiliVariableMetaData::MiliVariableMetaData(std::string sName,
     isMatVar          = isMat;
     isGlobal          = isGlob;
     isShared          = shared;
+    isElementSet      = isES;
     meshAssociation   = meshAssoc;
     centering         = cent;
     varTypeAvt        = avtType;
@@ -122,9 +249,7 @@ MiliVariableMetaData::MiliVariableMetaData(std::string sName,
         vectorComponents[i] = vComps[i];
     }
 
-    isElementSet = false;
-    esMappedName = "";
-    path         = "";
+    path = "";
 
     //
     // Sand and cause are two special cases dealing with 
@@ -143,8 +268,6 @@ MiliVariableMetaData::MiliVariableMetaData(std::string sName,
     {
         isCause = true;
     }
-
-    DetermineESStatus();
 }
 
 
@@ -261,8 +384,6 @@ MiliVariableMetaData::GetSubrecIds(int dom)
 //  Purpose:
 //      Get the visit path for a variable. 
 //
-//  Arguments: 
-//
 //  Returns:
 //      A reference to our path string. 
 //           
@@ -291,9 +412,7 @@ MiliVariableMetaData::GetPath()
             path = "Primal";
         }
 
-        //TODO: include element sets in shared once
-        //      issues are worked out. 
-        if (isShared && !isElementSet)
+        if (isShared)
         {
             path += "/Shared";
         }
@@ -302,144 +421,9 @@ MiliVariableMetaData::GetPath()
             path += "/" + classSName;
         }
 
-        //
-        // If we have an element set, we need to use the mapped name.
-        //
-        if (isElementSet) 
-        {
-            path += "/" + esMappedName;
-        }
-        else
-        {
-            path += "/" + shortName;
-        }
+        path += "/" + shortName;
     }
     return path;
-}
-
-
-// ***************************************************************************
-//  Method: MiliVariableMetaData::DetermineTrueName
-//
-//  Purpose:
-//      Determine a variable's true name. If it's an element set, its
-//      name is hidden, and we have to infer what it really is. This 
-//      method is static for use outside of the class as well. 
-//
-//  Arguments:
-//      name    The variable name to be assessed for truth. 
-//      comps   The variables component names (if any).
-//      isEs    If the variable is an element set, this will be set to true. 
-//
-//  Programmer: Alister Maguire
-//  Creation:   Jan 15, 2019
-//
-//  Modifications:
-//
-// ****************************************************************************
-
-std::string
-MiliVariableMetaData::DetermineTrueName(const std::string name,
-                                        const std::vector<std::string> comps,
-                                        bool &isEs)
-{
-    std::string esId    = "es_";
-    std::string nameSub = name.substr(0, 3);
-    if (esId != nameSub)
-    {
-        isEs = false;
-        return name; 
-    }
-
-    if (comps.size() <= 0)
-    {
-        debug1 << "ERROR: we've found an element set that"
-            << " is not a vector!";
-        EXCEPTION1(InvalidVariableException, name.c_str());
-    }
-
-    //
-    // We're dealing with an element set. 
-    //
-    isEs = true;
-
-    //
-    // The vector should contain dimensional based variables
-    // with a leading charact signifiyting it's mapped name. 
-    // Since the vectors can also contain other elements, let's
-    // first find a dimensional variable. 
-    //
-    int targetIdx;
-    for (targetIdx = 0; targetIdx < comps.size(); ++targetIdx)
-    {
-        if (comps[targetIdx].size() > 1)
-        {
-            if (comps[targetIdx][1] == 'x')
-            {
-                break;
-            }
-        }
-    }
-    char leadingChar = comps[targetIdx][0];
-
-    switch (leadingChar)
-    {
-        //
-        // These are the known variables that can be element sets. 
-        // This may need to be updated in the future. 
-        //
-        case 'e':
-        {
-            std::string trueName = "strain";
-            return trueName;
-        }
-        case 's':
-        {
-            std::string trueName = "stress";
-            return trueName;
-        }
-        default:
-        {
-            char msg[1024]; 
-            sprintf(msg, "An element set of unknown type has been "
-                "encountered! If valid, code needs to be updated");
-            EXCEPTION2(UnexpectedValueException, name, msg);
-            break;
-        }
-    }
-}
-
-
-// ***************************************************************************
-//  Method: MiliVariableMetaData::DetermineESStatus
-//
-//  Purpose:
-//      Determine if this variable is an element set. If it is
-//      perform the neccessary extra steps required for 
-//      functionality. 
-//
-//  Programmer: Alister Maguire
-//  Creation:   Jan 15, 2019
-//
-//  Modifications:
-//
-// ****************************************************************************
-
-void
-MiliVariableMetaData::DetermineESStatus(void)
-{
-    //
-    // If this is an element set, we need to determine and
-    // assign it another name to be used in the visit path
-    // besides its element set name. 
-    //
-    std::string tName = DetermineTrueName(shortName, 
-        vectorComponents, isElementSet);
-
-    if (isElementSet)
-    {
-        esMappedName = tName;
-    }
 }
 
 
@@ -461,7 +445,6 @@ MiliVariableMetaData::PrintSelf(void)
 {
     std::cerr << "long name: " << longName << std::endl;
     std::cerr << "short name: " << shortName << std::endl;
-    std::cerr << "es mapped name: " << esMappedName << std::endl;
     std::cerr << "class long Name: " << classLName << std::endl;
     std::cerr << "class short Name: " << classSName << std::endl;
     std::cerr << "path: " << path << std::endl;
@@ -506,10 +489,9 @@ MiliVariableMetaData::PrintSelf(void)
 //      vecSize      Size of vector (if it is a vector).  
 //      cDims        Component dimensions. 
 //      vComps       Vector components (as shortnames). 
-//      gVecSize     The vector size of this "group" in the ES.
-//      gAvtType     The avt type of this "group" in the ES.
-//      gMiliType    The mili type of this "group" in the ES.
-//      gIdxs        The component indexes that make up this group.
+//      gVecSizes    The vector sizes for each "group" in the ES.
+//      gAvtTypes    The avt types for each "group" in the ES.
+//      gMiliTypes   The mili types for each "group" in the ES.
 //
 //  Programmer: Alister Maguire
 //  Creation:   April 26, 2019
@@ -535,10 +517,11 @@ MiliElementSetMetaData::MiliElementSetMetaData(std::string sName,
                                                int vecSize,
                                                int cDims,
                                                stringVector vComps,
-                                               int gVecSize,
-                                               int gAvtType,
-                                               int gMiliType,
-                                         std::vector< std::vector<int> > gIdxs)
+                                               stringVector gNames,
+                                               intVector gVSizes,
+                                               intVector gAvtTypes,
+                                               intVector gMiliTypes,
+                                               boolVector gIsShared)
 : MiliVariableMetaData(sName,
                        lName,
                        cSName,
@@ -547,6 +530,7 @@ MiliElementSetMetaData::MiliElementSetMetaData(std::string sName,
                        isMat,
                        isGlob,
                        shared,
+                       true,
                        cent,
                        nDomains,
                        meshAssoc,  
@@ -557,10 +541,65 @@ MiliElementSetMetaData::MiliElementSetMetaData(std::string sName,
                        cDims,
                        vComps)
 {
-    groupVecSize  = gVecSize;
-    groupAvtType  = gAvtType;
-    groupMiliType = gMiliType;
-    groupIdxs     = gIdxs;
+    groupShortNames = gNames;
+    groupVecSizes   = gVSizes;
+    groupAvtTypes   = gAvtTypes;
+    groupMiliTypes  = gMiliTypes;
+    groupIsShared   = gIsShared;
+    numGroups       = groupShortNames.size();
+
+    groupComponentIdxs.reserve(numGroups);
+
+    int componentIdx = 0;
+    int gIdx = 0;
+    for (std::vector<int>::iterator it = groupVecSizes.begin();
+         it != groupVecSizes.end(); ++it, ++gIdx) 
+    {
+
+        //
+        // Figure out the group indices. 
+        //
+        std::vector<int> idxs;
+        idxs.reserve(*it);
+        int j = 0;
+
+        while (j < (*it))
+        {
+            idxs.push_back(componentIdx++);
+            j++;
+        }
+
+        groupComponentIdxs.push_back(idxs);
+
+        //
+        // Since we're here, figure out the paths as well. 
+        //
+        std::string groupPath;
+
+        if (multiMesh)
+        {
+            char mmStart[1024];
+            sprintf(mmStart, "Primal (mesh%d)/", meshAssociation);
+            groupPath = mmStart;
+        }
+        else
+        {
+            groupPath = "Primal";
+        }
+
+        if (groupIsShared[gIdx])
+        {
+            groupPath += "/Shared";
+        }
+        else if (!classSName.empty())
+        {
+            groupPath += "/" + classSName;
+        }
+
+        groupPath += "/" + groupShortNames[gIdx];
+
+        groupPaths.push_back(groupPath);
+    }
 }
 
 
@@ -586,12 +625,11 @@ MiliElementSetMetaData::~MiliElementSetMetaData(void)
 //  Method: MiliElementSetMetaData::GetPath
 //
 //  Purpose:
-//      Get the visit path for an element set variable. 
-//
-//  Arguments: 
+//      Since this is an element set that might contain multiple groups, 
+//      this method should not be used. The path should be empty. 
 //
 //  Returns:
-//      A reference to our path string. 
+//      A reference to our path string (empty). 
 //           
 //  Programmer: Alister Maguire
 //  Creation:   Jan 15, 2019
@@ -601,37 +639,308 @@ MiliElementSetMetaData::~MiliElementSetMetaData(void)
 // ****************************************************************************
 
 const std::string&
-MiliVariableMetaData::GetPath()
+MiliElementSetMetaData::GetPath()
 {
-    //TODO: what we want is "classLName (classSName)/shortName"
-    //      but visit seems to garble this...
-    if (path.empty())
-    {
-        if (multiMesh)
-        {
-            char mmStart[1024];
-            sprintf(mmStart, "Primal (mesh%d)/", meshAssociation);
-            path = mmStart;
-        }
-        else
-        {
-            path = "Primal";
-        }
-
-        //TODO: include element sets in shared once
-        //      issues are worked out. 
-        if (isShared && !isElementSet)
-        {
-            path += "/Shared";
-        }
-        else if (!classSName.empty())
-        {
-            path += "/" + classSName;
-        }
-
-        path += "/" + esMappedName;
-    }
     return path;
+}
+
+
+// ***************************************************************************
+//  Method: MiliElementSetMetaData::GetGroupPath
+//
+//  Purpose:
+//      Get the visit path for an element set group. 
+//
+//  Arguments:
+//      groupIdx    The group index of interest. 
+//
+//  Returns:
+//      If groupIdx is valid, the group's path. Otherwise, an empty string. 
+//           
+//  Programmer: Alister Maguire
+//  Creation:   Jan 15, 2019
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+std::string
+MiliElementSetMetaData::GetGroupPath(int groupIdx)
+{
+    if (groupIdx < groupPaths.size())
+    {
+        return groupPaths[groupIdx]; 
+    }
+    return "";
+}
+
+
+// ***************************************************************************
+//  Method: MiliElementSetMetaData::GetGroupPath
+//
+//  Purpose:
+//      Get the visit path for an element set group. 
+//
+//  Arguments:
+//      groupName    The group name of interest. 
+//
+//  Returns:
+//      If groupName is valid, the group's path. Otherwise, an empty string. 
+//           
+//  Programmer: Alister Maguire
+//  Creation:   Jan 15, 2019
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+std::string
+MiliElementSetMetaData::GetGroupPath(std::string groupName)
+{
+    for (int i = 0; i < groupShortNames.size(); ++i)
+    {
+        if (groupShortNames[i] == groupName)
+        {
+            return GetGroupPath(i);
+        }
+    }
+    return "";
+}
+
+
+// ***************************************************************************
+//  Method: MiliElementSetMetaData::GetGroupIdxByPath
+//
+//  Purpose:
+//      Retrieve a group index from a given path. 
+//
+//  Arguments:
+//      groupPath    The group path of interest. 
+//
+//  Returns:
+//      If groupPath is valid, the associated group index is returned. 
+//      Otherwise, -1. 
+//           
+//  Programmer: Alister Maguire
+//  Creation:   May 6, 2019
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+int
+MiliElementSetMetaData::GetGroupIdxByPath(const char *groupPath)
+{
+    int gIdx = 0;
+    for (stringVector::iterator gItr = groupPaths.begin();
+         gItr != groupPaths.end(); ++gItr, ++gIdx)
+    {
+        if ((*gItr) == groupPath)
+        {
+            return gIdx;
+        }
+    }
+    return -1;
+}
+
+
+// ***************************************************************************
+//  Method: MiliElementSetMetaData::GetGroupShortName
+//
+//  Purpose:
+//      Get a group short name by index. 
+//
+//  Arguments:
+//      gIdx    The group index. 
+//
+//  Returns:
+//      If gIdx is valid, the group short name is returned. Otherwise, 
+//      an empty string. 
+//           
+//  Programmer: Alister Maguire
+//  Creation:   May 6, 2019
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+std::string
+MiliElementSetMetaData::GetGroupShortName(int gIdx)
+{
+    if (gIdx >= 0 && gIdx < groupShortNames.size())
+    {
+        return groupShortNames[gIdx];
+    }
+    std::string empty;
+    return empty;
+}
+
+
+// ***************************************************************************
+//  Method: MiliElementSetMetaData::GetGroupVecSize
+//
+//  Purpose:
+//      Get the vector size for a group. 
+//
+//  Arguments:
+//      gIdx    The group index. 
+//
+//  Returns:
+//      If gIdx is valid, the group vec size is returned. Otherwise, -1.
+//           
+//  Programmer: Alister Maguire
+//  Creation:   May 6, 2019
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+int
+MiliElementSetMetaData::GetGroupVecSize(int gIdx)
+{
+    if (gIdx >= 0 && gIdx < groupVecSizes.size())
+    {
+        return groupVecSizes[gIdx];
+    }
+    return -1;
+}
+
+
+// ***************************************************************************
+//  Method: MiliElementSetMetaData::GroupIsShared
+//
+//  Purpose:
+//      Determine if a particular group is shared or not. 
+//
+//  Arguments:
+//      gIdx    The group index. 
+//
+//  Returns:
+//      true if the group is shared. False otherwise. 
+//           
+//  Programmer: Alister Maguire
+//  Creation:   May 6, 2019
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+bool
+MiliElementSetMetaData::GroupIsShared(int gIdx)
+{
+    if (gIdx >= 0 && gIdx < groupIsShared.size())
+    {
+        return groupIsShared[gIdx];
+    }
+    return false;
+}
+
+
+// ***************************************************************************
+//  Method: MiliElementSetMetaData::GetGroupVecComponents
+//
+//  Purpose:
+//      Get the vector components for the given group. 
+//
+//  Arguments:
+//      gIdx    The group index. 
+//
+//  Returns:
+//      If gIdx is valid, the group vec components are returned. Otherwise, an
+//      empty vector. 
+//           
+//  Programmer: Alister Maguire
+//  Creation:   May 6, 2019
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+stringVector
+MiliElementSetMetaData::GetGroupVecComponents(int gIdx)
+{
+    stringVector vComps;
+    intVector cIdxs;
+
+    if (gIdx >= 0 && gIdx < groupComponentIdxs.size())
+    {
+        cIdxs = groupComponentIdxs[gIdx]; 
+    }
+
+    for (intVector::iterator it = cIdxs.begin();
+         it != cIdxs.end(); ++it)
+    {
+        vComps.push_back(vectorComponents[(*it)]);
+    }
+
+    return vComps;
+}
+
+
+// ***************************************************************************
+//  Method: MiliElementSetMetaData::GetGroupComponentIdxs
+//
+//  Purpose:
+//      Get the component indicies for a given group. 
+//
+//  Arguments: 
+//      groupName    The name of the group of interest. 
+//
+//  Returns:
+//      If the name is valid, a const reference to the vector containing the 
+//      component indicies for this group. Otherwise, an empty vector. 
+//           
+//  Programmer: Alister Maguire
+//  Creation:   Jan 15, 2019
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+intVector 
+MiliElementSetMetaData::GetGroupComponentIdxs(std::string groupName)
+{
+    for (int i = 0; i < groupShortNames.size(); ++i)
+    {
+        if (groupShortNames[i] == groupName)
+        {
+            return GetGroupComponentIdxs(i);
+        }
+    }
+    intVector empty;
+    return empty;
+}
+
+
+// ***************************************************************************
+//  Method: MiliElementSetMetaData::GetGroupComponentIdxs
+//
+//  Purpose:
+//      Get the component indicies for a given group. 
+//
+//  Arguments: 
+//      groupIdx    The index of the group of interest. 
+//
+//  Returns:
+//      If the index is valid, a const reference to the vector containing 
+//      the component indicies for this group. Otherwise, an empty vector. 
+//           
+//  Programmer: Alister Maguire
+//  Creation:   Jan 15, 2019
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+intVector 
+MiliElementSetMetaData::GetGroupComponentIdxs(int groupIdx)
+{
+    if (groupIdx < groupComponentIdxs.size())
+    {
+        return groupComponentIdxs[groupIdx];
+    }
+    intVector empty;
+    return empty;
 }
 
 
@@ -1886,8 +2195,28 @@ avtMiliMetaData::AddVarMD(int varIdx,
     //
     if (mvmd->IsShared())
     {
-        AddSharedVariableInfo(mvmd->GetShortName(), 
-            varIdx);
+        if (mvmd->IsElementSet())
+        {
+            boolVector gIsShared = 
+                ((MiliElementSetMetaData *)mvmd)->GetGroupIsShared();
+            stringVector gNames = 
+                ((MiliElementSetMetaData *)mvmd)->GetGroupShortNames();
+
+            int gIdx = 0;
+            for (boolVector::iterator gItr = gIsShared.begin();
+                 gItr != gIsShared.end(); gItr++, gIdx++)
+            {
+                if (*gItr)
+                {
+                    AddSharedVariableInfo(gNames[gIdx], varIdx);
+                }
+            }
+        }
+        else
+        {
+            AddSharedVariableInfo(mvmd->GetShortName(), 
+                varIdx);
+        }
     }
 }
 
@@ -2042,9 +2371,31 @@ avtMiliMetaData::GetVarMDIdxByShortName(const char *vName,
         if (miliVariables[i] != NULL) 
         {
             if (miliVariables[i]->GetShortName() == vName &&
-                miliVariables[i]->GetClassShortName() == cName)
+                     miliVariables[i]->GetClassShortName() == cName)
             {
                 return i;
+            }
+            else if (miliVariables[i]->IsElementSet() && 
+                miliVariables[i]->GetClassShortName() == cName)
+            {
+                //
+                // If this is an element set, we need to check against
+                // all of its group names. IMPORTANT: we must check the
+                // group names after we've checked the short name (above)
+                // so that users can still request the element set itself.  
+                //
+                stringVector groupNames = 
+                    ((MiliElementSetMetaData *)miliVariables[i])->
+                    GetGroupShortNames();
+
+                for (stringVector::iterator gItr = groupNames.begin();
+                     gItr != groupNames.end(); ++gItr)
+                {
+                    if (vName == (*gItr))
+                    {
+                        return i;
+                    }
+                }
             }
         }
     }
@@ -2092,7 +2443,23 @@ avtMiliMetaData::GetVarMDIdxByPath(const char *vPath)
     {
         if (miliVariables[i] != NULL) 
         {
-            if (miliVariables[i]->GetPath() == strVPath.c_str())
+            if (miliVariables[i]->IsElementSet())
+            {
+                stringVector groupPaths = 
+                    ((MiliElementSetMetaData *)miliVariables[i])->
+                    GetGroupPaths();
+
+                int gIdx = 0;
+                for (stringVector::iterator gItr = groupPaths.begin();
+                     gItr != groupPaths.end(); ++gItr, ++gIdx)
+                {
+                    if ((*gItr) == strVPath)
+                    {
+                        return i;
+                    }
+                }
+            }
+            else if (miliVariables[i]->GetPath() == strVPath)
             {
                 return i;
             }
@@ -2116,7 +2483,7 @@ avtMiliMetaData::GetVarMDIdxByPath(const char *vPath)
 //  Arguments: 
 //      varIdx    The index of the associated variable. 
 //      dom       The domain of interest. 
-//      srId      The subrecord Id. 
+//      SRId      The subrecord Id. 
 //      SR        A pointer to the subrecord. 
 //           
 //  Programmer: Alister Maguire
@@ -2129,7 +2496,7 @@ avtMiliMetaData::GetVarMDIdxByPath(const char *vPath)
 void
 avtMiliMetaData::AddVarSubrecInfo(int varIdx,
                                   int dom,
-                                  int srId,
+                                  int SRId,
                                   Subrecord *SR)
  
 {
@@ -2138,19 +2505,12 @@ avtMiliMetaData::AddVarSubrecInfo(int varIdx,
     {
         if (miliVariables[varIdx] != NULL)
         {
-            //
-            // Check if we've added the info for this subrecord
-            // yet. SR IDs map to their index.  
-            //
-            if (srId >= subrecInfo[dom].nSR)
-            {
-                AddSubrecInfo(dom, 
-                              SR->qty_objects,
-                              SR->qty_blocks,
-                              SR->mo_blocks);
-            }
+            subrecInfo[dom].AddSubrec(SRId,
+                                      SR->qty_objects,
+                                      SR->qty_blocks,
+                                      SR->mo_blocks);
 
-            miliVariables[varIdx]->AddSubrecId(dom, srId);
+            miliVariables[varIdx]->AddSubrecId(dom, SRId);
         }
         else
         {
@@ -2165,52 +2525,6 @@ avtMiliMetaData::AddVarSubrecInfo(int varIdx,
         sprintf(msg, "Invalid index assignment requested!");
         EXCEPTION1(ImproperUseException, msg);
     }
-}
-
-
-// ***************************************************************************
-//  Method: avtMiliMetaData::AddSubrecInfo
-//
-//  Purpose:
-//      Create a SubrecInfo object, and store it in our list
-//      of subrecord information for later retrieval.  
-//
-//  Arguments: 
-//      dom         The domain of this subrecord. 
-//      nElems      The number of elements (zones/nodes) associated with 
-//                  this subrecrod. 
-//      nDB         The number of "data blocks" associated with this subrecord.
-//      DBRanges    The ranges associated with the data blocks. 
-//           
-//  Programmer: Alister Maguire
-//  Creation:   Jan 15, 2019
-//
-//  Modifications:
-//
-// ****************************************************************************
-
-void
-avtMiliMetaData::AddSubrecInfo(int   dom, 
-                               int   nElems,
-                               int   nDB,
-                               int  *DBRanges)
-{
-    subrecInfo[dom].nSR++;
-    subrecInfo[dom].nElements.push_back(nElems);
-    subrecInfo[dom].nDataBlocks.push_back(nDB);
-
-    //
-    // Deep copy the ranges so that we don't have to keep 
-    // the subrecords in memory. 
-    //
-    int limit = nDB * 2;
-    intVector nxtRange(limit);
-    for (int i = 0; i < limit; ++i)
-    {
-        nxtRange[i] = DBRanges[i]; 
-    }
-
-    subrecInfo[dom].dataBlockRanges.push_back(nxtRange);
 }
 
 
@@ -2500,6 +2814,10 @@ avtMiliMetaData::GetMaxNodeLabelLength(int domain)
 //
 //  Arguments: 
 //      dom    The domain of interest.  
+//
+//  Returns:
+//      If available, the requested subrecord info is returned. Otherwise, 
+//      NULL. 
 //           
 //  Programmer: Alister Maguire
 //  Creation:   Jan 15, 2019
@@ -2508,10 +2826,15 @@ avtMiliMetaData::GetMaxNodeLabelLength(int domain)
 //
 // ****************************************************************************
 
-SubrecInfo&
+SubrecInfo *
 avtMiliMetaData::GetSubrecInfo(int dom)
 {
-    return subrecInfo[dom];
+    if (dom >= 0 && dom < numDomains)
+    {
+        return &subrecInfo[dom];
+    }
+
+    return NULL;
 }
 
 

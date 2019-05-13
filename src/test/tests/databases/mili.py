@@ -25,8 +25,7 @@ def TestComponentVis():
     SetView3D(v)
     SetTimeSliderState(90)
     
-    
-    AddPlot("Pseudocolor", "Primal/brick/edrate")
+    AddPlot("Pseudocolor", "Primal/Shared/edrate")
     DrawPlots()
     Test("mili_brick_comp")
     
@@ -38,19 +37,38 @@ def TestComponentVis():
     DeleteAllPlots()
 
 
-def TestElementSetComponents():
+def TestSharedElementSets():
     OpenDatabase(single_domain_path + "/d3samp6.plt.mili")
     v = GetView3D()
     v.viewNormal = (0.9, 0.35, -0.88)
     SetView3D(v)
     SetTimeSliderState(90)
 
-    AddPlot("Pseudocolor", "Primal/shell/strain/exy")
+    AddPlot("Pseudocolor", "Primal/Shared/strain/exy")
     DrawPlots()
-    Test("mili_es_comp_01")
-    ChangeActivePlotsVar("Primal/beam/stress/sz")
-    Test("mili_es_comp_02")
+    Test("mili_shared_es_01")
+    ChangeActivePlotsVar("Primal/Shared/edrate")
+    Test("mili_shared_es_02")
+    ChangeActivePlotsVar("Primal/Shared/stress/sy")
+    Test("mili_shared_es_03")
 
+    DeleteAllPlots()
+
+
+def TestNonSharedElementSets():
+    OpenDatabase(single_domain_path + "/d3samp6.plt.mili")
+    v = GetView3D()
+    v.viewNormal = (0.9, 0.35, -0.88)
+    SetView3D(v)
+    SetTimeSliderState(90)
+
+    # 
+    #  eps is a section of an element set that is only 
+    #  defined on beams. 
+    # 
+    AddPlot("Pseudocolor", "Primal/beam/eps")
+    DrawPlots()
+    Test("mili_non_shared_es_01")
     DeleteAllPlots()
 
 
@@ -94,7 +112,7 @@ def TestTensors():
     DrawPlots()
     Test("mili_tensors_01")
 
-    ChangeActivePlotsVar("Primal/shell/stress")
+    ChangeActivePlotsVar("Primal/Shared/strain")
     Test("mili_tensors_02")
     DeleteAllPlots()
 
@@ -130,7 +148,7 @@ def TestSandMesh():
     # look well formed. 
     # 
     AddPlot("Mesh", "mesh1")
-    AddPlot("Pseudocolor", "Primal/shell/stress_in/sx")
+    AddPlot("Pseudocolor", "Primal/Shared/stress/sx")
     DrawPlots()
     Test("mili_sand_mesh_01")
     
@@ -172,14 +190,13 @@ def TestMultiDomain():
     SetView3D(v)
     SetTimeSliderState(90)
 
-    AddPlot("Pseudocolor", "Primal/shell/strain/exy")
+    AddPlot("Pseudocolor", "Primal/Shared/strain/exy")
     DrawPlots()
     Test("mili_multi_dom_01")
-    ChangeActivePlotsVar("Primal/beam/stress/sz")
+    ChangeActivePlotsVar("Primal/Shared/stress/sz")
     Test("mili_multi_dom_02")
 
     DeleteAllPlots()
-
 
 def TestParticles():
     OpenDatabase(single_domain_path + "/sslide14ball_l.plt.mili")
@@ -187,11 +204,10 @@ def TestParticles():
     v.viewNormal = (0.9, 0.35, -0.88)
     SetView3D(v)
 
-    AddPlot("Pseudocolor", "Primal/particle/stress/szx")
+    AddPlot("Pseudocolor", "Primal/Shared/stress/szx")
     DrawPlots()
     Test("mili_particle_01")
     DeleteAllPlots()
-
 
 def TestStaticNodes():
     OpenDatabase(single_domain_path + "/m1_plot.mili")
@@ -207,22 +223,10 @@ def TestStaticNodes():
     DeleteAllPlots()
 
 
-def TestSharedVariables():
-    OpenDatabase(single_domain_path + "/d3samp6.plt.mili")
-    v = GetView3D()
-    v.viewNormal = (0.9, 0.35, -0.88)
-    SetView3D(v)
-
-    AddPlot("Pseudocolor", "sand_mesh/Primal/Shared/sand")
-    SetTimeSliderState(100)
-    DrawPlots()
-    Test("mili_shared_01")
-    DeleteAllPlots()
-
-
 def Main():
     TestComponentVis()    
-    TestElementSetComponents()
+    TestNonSharedElementSets()
+    TestSharedElementSets()
     TestMaterialVar()
     TestTensors()
     TestVectors()
@@ -231,7 +235,6 @@ def Main():
     TestMultiDomain()
     TestParticles()
     TestStaticNodes()
-    TestSharedVariables()
 
 Main()
 Exit()

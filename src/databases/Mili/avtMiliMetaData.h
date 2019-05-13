@@ -46,6 +46,8 @@
 #include <avtTypes.h>
 #include <vectortypes.h>
 
+#include <map>
+
 extern "C" {
 #include <mili.h>
 }
@@ -54,22 +56,6 @@ extern "C" {
 #include "rapidjson/istreamwrapper.h"
 
 
-//
-// We don't need the entire subrecord, so let's just keep 
-// a small verison instead. 
-//
-typedef struct SubrecInfo
-{
-    SubrecInfo(void)
-    {
-        nSR = 0;          
-    };
-
-    int                      nSR;        
-    intVector                nElements;
-    intVector                nDataBlocks;
-    std::vector< intVector > dataBlockRanges;   
-} SubrecInfo;
 
 //
 // Info needed by the vtkLabel class. 
@@ -83,6 +69,7 @@ typedef struct LabelPositionInfo
     intVector    idsEnd;
 } LabelPositionInfo;
 
+
 //
 // Ease of use info for shared variables. 
 //
@@ -91,6 +78,55 @@ typedef struct SharedVariableInfo
     std::string  shortName;
     intVector    variableIndicies;
 } SharedVariableInfo;
+
+
+// ****************************************************************************
+//  Class: SubrecInfo
+//
+//  Purpose:
+//      A container to store info about the subrecords. 
+//
+//      Subrecords contain information about the data that resides within 
+//      a mili database. This container holds a minimal amount of that 
+//      information that we need on the visit end.
+//
+//  Programmer:  Alister Maguire
+//  Creation:    May 13, 2019
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+class SubrecInfo
+{
+
+   public:
+                 SubrecInfo(void);
+                ~SubrecInfo(void);
+
+    void         AddSubrec(const int,
+                           const int,
+                           const int,
+                           const int *);
+
+    void         GetSubrec(const int,
+                           int &, 
+                           int &,
+                           intVector &);
+
+  private:
+
+    int                      nSR;        
+    intVector                numElements;
+    intVector                numDataBlocks;
+    std::vector< intVector > dataBlockRanges;   
+
+    //
+    // Because the subrecords can be segmented across domains, 
+    // we need to map the subrecord Ids to their vector indicies. 
+    //
+    std::map<int, int>       indexMap;
+}; 
 
 
 // ****************************************************************************
@@ -115,6 +151,7 @@ class MiliVariableMetaData
                                                     std::string,
                                                     std::string,
                                                     std::string,
+                                                    bool,
                                                     bool,
                                                     bool,
                                                     bool,
@@ -193,21 +230,14 @@ class MiliVariableMetaData
     stringVector              &GetVectorComponents(void)
                                  { return vectorComponents; };
 
-    static std::string         DetermineTrueName(const std::string,
-                                              const std::vector<std::string>,
-                                              bool &);
-
     void                       PrintSelf(void);
 
-  private:
+  protected:
 
-    void                      DetermineESStatus(void);
-    
     std::string               classLName;
     std::string               classSName;
     std::string               longName;
     std::string               shortName;
-    std::string               esMappedName;
     std::string               path;
     
     int                       varTypeAvt;
@@ -224,7 +254,7 @@ class MiliVariableMetaData
     //
     std::vector< intVector >  SRIds;
 
-    bool                      isElementSet;//TODO: do we still need this?
+    bool                      isElementSet;
     bool                      isMatVar;
     bool                      isGlobal;
     bool                      isSand;
@@ -233,7 +263,6 @@ class MiliVariableMetaData
     bool                      multiMesh;
 
     stringVector              vectorComponents;
-
 };
 
 
@@ -243,8 +272,15 @@ class MiliVariableMetaData
 //  Purpose:
 //      A container for mili element set variables.  
 //
+//      The primary purpose of this is to extend the MiliVariableMetaData
+//      class to handle "groups" within element sets. In a nut-shell, 
+//      element sets are considered a single vector variable, but their 
+//      vector components are often grouped into separate variables for 
+//      visualization purposes. This adds a layer of complications that 
+//      this class seeks to help ease.  
+//
 //  Programmer:  Alister Maguire
-//  Creation:    Jan 16, 2019
+//  Creation:    May 6, 2019
 //
 //  Modifications:
 //
@@ -272,34 +308,55 @@ class MiliElementSetMetaData : public MiliVariableMetaData
                                              int,
                                              int,
                                              stringVector,
-                                             int,
-                                             int, 
-                                             int,
-                                             std::vector< std::vector<int> >);
+                                             stringVector,
+                                             intVector,
+                                             intVector,
+                                             intVector,
+                                             boolVector);
 
                      ~MiliElementSetMetaData(void);
 
     virtual const std::string      &GetPath(void);
+    std::string                     GetGroupPath(int);
+    std::string                     GetGroupPath(std::string);
+    const stringVector             &GetGroupPaths(void)
+                                      { return groupPaths; };
 
-    int                             GetGroupVecSize(void)
-                                      { return groupVecSize; };
+    int                             GetGroupIdxByPath(const char *);
 
-    int                             GetGroupAvtType(void)
-                                      { return groupAvtType; };
+    std::string                     GetGroupShortName(int);
+    const stringVector             &GetGroupShortNames(void)
+                                      { return groupShortNames; };
 
-    int                             GetGroupMiliType(void)
-                                     { return groupMiliType; };
+    int                             GetGroupVecSize(int);
+    const intVector                &GetGroupVecSizes(void)
+                                      { return groupVecSizes; };
 
-    std::vector< std::vector<int> > &GetGroupIdxs(void)
-                                 { return groupIdxs; };
+    stringVector                    GetGroupVecComponents(int);
+
+    const intVector                &GetGroupAvtTypes(void)
+                                      { return groupAvtTypes; };
+
+    const intVector                &GetGroupMiliTypes(void)
+                                      { return groupMiliTypes; };
+
+    bool                            GroupIsShared(int);
+    const boolVector               &GetGroupIsShared(void)
+                                      { return groupIsShared; };
+
+    intVector                       GetGroupComponentIdxs(std::string);
+    intVector                       GetGroupComponentIdxs(int);
 
   private:
 
-    std::vector< std::vector<int> > groupIdxs;
-    
-    int                             groupVecSize;
-    int                             groupAvtType;
-    int                             groupMiliType; 
+    int                             numGroups;
+    stringVector                    groupShortNames;
+    intVector                       groupVecSizes;
+    intVector                       groupAvtTypes;
+    intVector                       groupMiliTypes;
+    std::vector<bool>               groupIsShared;
+    stringVector                    groupPaths;
+    std::vector< std::vector<int> > groupComponentIdxs;
 };
 
 
@@ -514,17 +571,11 @@ class avtMiliMetaData
     int                              GetMaxZoneLabelLength(int);
     int                              GetMaxNodeLabelLength(int);
 
-    SubrecInfo                      &GetSubrecInfo(int);
+    SubrecInfo                      *GetSubrecInfo(int);
 
-    //TODO: complete
     SharedVariableInfo              *GetSharedVariableInfo(const char *);
 
   private:
-
-    void                             AddSubrecInfo(int, 
-                                                   int,
-                                                   int, 
-                                                   int *);
 
     void                             AddSharedVariableInfo(std::string,
                                                            int);
