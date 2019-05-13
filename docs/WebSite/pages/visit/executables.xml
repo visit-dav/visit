@@ -56,8 +56,8 @@
           <th width="138">Executable</th>
         </tr>
         <tr>
-          <td>Windows (Vista / 7 / 8) 64 bit<br />
-          Visual Studio 2012</td>
+          <td>Windows (10 / 8 / 7) 64 bit<br />
+          Visual Studio 2017</td>
           <td><a href="http://portal.nersc.gov/project/visit/releases/3.0.0/visit3.0.0_x64.exe">Download</a></td>
         </tr>
         <tr>
