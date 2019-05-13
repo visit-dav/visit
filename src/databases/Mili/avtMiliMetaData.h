@@ -69,6 +69,7 @@ typedef struct LabelPositionInfo
     intVector    idsEnd;
 } LabelPositionInfo;
 
+
 //
 // Ease of use info for shared variables. 
 //

@@ -56,7 +56,20 @@ def TestSharedElementSets():
 
 
 def TestNonSharedElementSets():
-    pass
+    OpenDatabase(single_domain_path + "/d3samp6.plt.mili")
+    v = GetView3D()
+    v.viewNormal = (0.9, 0.35, -0.88)
+    SetView3D(v)
+    SetTimeSliderState(90)
+
+    # 
+    #  eps is a section of an element set that is only 
+    #  defined on beams. 
+    # 
+    AddPlot("Pseudocolor", "Primal/beam/eps")
+    DrawPlots()
+    Test("mili_non_shared_es_01")
+    DeleteAllPlots()
 
 
 def TestMaterialVar():
@@ -185,7 +198,6 @@ def TestMultiDomain():
 
     DeleteAllPlots()
 
-
 def TestParticles():
     OpenDatabase(single_domain_path + "/sslide14ball_l.plt.mili")
     v = GetView3D()
@@ -196,7 +208,6 @@ def TestParticles():
     DrawPlots()
     Test("mili_particle_01")
     DeleteAllPlots()
-
 
 def TestStaticNodes():
     OpenDatabase(single_domain_path + "/m1_plot.mili")
@@ -214,6 +225,7 @@ def TestStaticNodes():
 
 def Main():
     TestComponentVis()    
+    TestNonSharedElementSets()
     TestSharedElementSets()
     TestMaterialVar()
     TestTensors()
