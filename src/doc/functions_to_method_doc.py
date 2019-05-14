@@ -1,5 +1,42 @@
+#!/usr/bin/env python
 
-
+copyright = '/*****************************************************************************\n'
+copyright += '*\n'
+copyright += '* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC\n'
+copyright += '* Produced at the Lawrence Livermore National Laboratory\n'
+copyright += '* LLNL-CODE-442911\n'
+copyright += '* All rights reserved.\n'
+copyright += '*\n'
+copyright += '* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The\n'
+copyright += '* full copyright notice is contained in the file COPYRIGHT located at the root\n'
+copyright += '* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.\n'
+copyright += '*\n'
+copyright += '* Redistribution  and  use  in  source  and  binary  forms,  with  or  without\n'
+copyright += '* modification, are permitted provided that the following conditions are met:\n'
+copyright += '*\n'
+copyright += '*  - Redistributions of  source code must  retain the above  copyright notice,\n'
+copyright += '*    this list of conditions and the disclaimer below.\n'
+copyright += '*  - Redistributions in binary form must reproduce the above copyright notice,\n'
+copyright += '*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the\n'
+copyright += '*    documentation and/or other materials provided with the distribution.\n'
+copyright += '*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may\n'
+copyright += '*    be used to endorse or promote products derived from this software without\n'
+copyright += '*    specific prior written permission.\n'
+copyright += '*\n'
+copyright += '* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"\n'
+copyright += '* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE\n'
+copyright += '* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE\n'
+copyright += '* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,\n'
+copyright += '* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY\n'
+copyright += '* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL\n'
+copyright += '* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR\n'
+copyright += '* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER\n'
+copyright += '* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT\n'
+copyright += '* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY\n'
+copyright += '* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH\n'
+copyright += '* DAMAGE.\n'
+copyright += '*\n'
+copyright += '*****************************************************************************/\n'
 
 class ExampleContainer(object):
     """
@@ -503,62 +540,25 @@ def functions_to_sphinx(funclist):
 
 if __name__ == '__main__':
 
-    func_pre_file = open("cli_manual/preambles/functions_preamble", "r")
-    func_file     = open("cli_manual/functions.rst", "w")
-    func_preamble = ''.join(func_pre_file.readlines())
+    func_file   = open('cli_manual/functions.rst', 'r')
+    h_output    = open('DELETE_ME.h','w')
+    C_output    = open('DELETE_ME.C','w')
     
-    funclist              = []
+    pre_func_text = 'extern const char *visit_'
+    pst_func_text = '_doc;'
     
-    system_funcs = dir()
-    system_funcs.extend(['system_funcs', 'func'])
+    h_output.write(copyright)
+    C_output.write(copyright)
     
-    #
-    # Everything that corresponds to the default Python stuff and this particular script
-    # is now in system_funcs - hence everything that is in dir() after importing
-    # from visit that is Not in system_funcs, must have come from visit.
-    #
-    # We need to take this tricky road to circumvent bug #457: import visit doesn't load
-    # the Eval* functions in the visit-namespace.
-    #
-    
-    visit.AddArgument("-nowin")
-    visit.AddArgument("-noconfig")
-    visit.Launch()
-    print >> sys.stderr, "**\n**  Running VisIt", visit.Version(), "\n**"
-    
-    for func in dir(visit):
-      # Deprecated
-      if (func == "ConstructDDFAttributes"):
-         continue
-      if (func == "ConstructDDF"):
-         continue
-      if (func == "string"):
-         continue
-      if (func == "sys"):
-         continue
-      if (func[:2] == "__"):  # __doc__, __file__, etc.
-         continue
-    
-      # all functions that have 'Attributes' in their name and don't start with
-      # 'Set' or 'Get' will be collected seperately:
-      if (func.find('Attributes') > -1):
-         if (func[:3] == 'Set'):
-           funclist.append(func)
-         elif (func[:3] == 'Get'):
-           funclist.append(func)
-      else:
-         funclist.append(func)
-    
-    # sort functions #
-    funclist.sort()
-    
-    template = "\n\n%s|\n|\n%s"
-
-    func_doc, _ = functions_to_sphinx(funclist)
-    func_doc    = template % (func_preamble, func_doc)
-    func_file.write(func_doc)
+    func_file_lines = func_file.readlines()
+    for i in range(0,len(func_file_lines)):
+        line = func_file_lines[i]
+        if line[0] == '-':
+            C_output.write(func_file_lines[i-1])
+            h_output.write(func_file_lines[i-1])
    
     func_file.close()
-    func_pre_file.close()
+    h_output.close()
+    C_output.close()
     
     
