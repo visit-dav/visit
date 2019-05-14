@@ -898,7 +898,8 @@ VISIT_3RDPARTY_VAR(TBB_ROOT      "Path containing the TBB library's include and 
 #-----------------------------------------------------------------------------
 FILE(STRINGS VERSION VERSION)
 IF(NOT VERSION)
-    SET(VERSION "3.0.0")
+    MESSAGE(FATAL_ERROR
+        "File \"VERSION\" with ascii string of VisIt version does not exist")
 ENDIF(NOT VERSION)
 SET(VISIT_VERSION ${VERSION})
 
@@ -914,6 +915,10 @@ list(GET v_list 0 VISIT_VERSION_MAJOR)
 list(GET v_list 1 VISIT_VERSION_MINOR)
 list(GET v_list 2 VISIT_VERSION_PATCH)
 unset(v_list)
+
+# Further decompose PATCH string into number and, when present, letter
+string(REGEX REPLACE "^([0-9]+)([a-z]*)$" \\1 VISIT_VERSION_PATCH_NUMBER ${VISIT_VERSION_PATCH})
+string(REGEX REPLACE "^([0-9]+)([a-z]*)$" \\2 VISIT_VERSION_PATCH_LETTER ${VISIT_VERSION_PATCH})
 
 #-----------------------------------------------------------------------------
 # Set up some installation related value and macros (needs version).
