@@ -410,8 +410,25 @@ class HFunction(Function):
         
     def __str__(self):
         return self.pre_text + self.name + self.post_text
-        
-        
+
+
+class CFunction(Function):
+    def __init__(self, _name):
+        if _name[-1] == '\n':
+            self.name = _name[0:-1]
+        else:
+            self.name = _name
+        self.pre_text = 'const char *visit_'
+        self.post_text = '_doc = \n'
+    
+    def __str__(self):
+        output = self.pre_text + self.name + self.post_text
+        output += '"' + self.name + r'\n' + '"\n'
+        output += '"' + r'\n' + '"\n'
+        output += '"' + r'\n' + '"\n'
+        output += ';\n'
+        return output
+
 
 def functions_to_sphinx(funclist):
     """
@@ -572,11 +589,15 @@ if __name__ == '__main__':
     func_file_lines = func_file.readlines()
     for i in range(0, len(func_file_lines)):
         line = func_file_lines[i]
-        if line[0] == '-':
-            func = HFunction(func_file_lines[i-1])
-            h_output.write('%s' % func)
+        
+        if line[0] == '-': # The previous line was a function name
+            h_func = HFunction(func_file_lines[i-1])
+            h_output.write(str(h_func))
             
-            C_output.write(func_file_lines[i-1])
+            c_func = CFunction(func_file_lines[i-1])
+            C_output.write(str(c_func))
+            
+        
    
     func_file.close()
     h_output.close()
