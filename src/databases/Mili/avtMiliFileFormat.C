@@ -942,7 +942,7 @@ avtMiliFileFormat::ReadMesh(int dom)
         // that this does NOT create the labels, as that tends 
         // to be very expensive. We save that for when requested. 
         //
-        //RetrieveNodeLabelInfo(meshId, nodeSName, dom);//FIXME: uncomment after mem checks
+        RetrieveNodeLabelInfo(meshId, nodeSName, dom);
 
 
         //
@@ -1184,8 +1184,8 @@ avtMiliFileFormat::ReadMesh(int dom)
                 //
                 // Retrieve label info for this class. 
                 //
-                //RetrieveCellLabelInfo(meshId, shortName, dom, 
-                //                      nCells);//FIXME: uncomment after mem checks
+                RetrieveCellLabelInfo(meshId, shortName, dom, 
+                                      nCells);
             }
         }
 
