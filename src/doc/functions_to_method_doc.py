@@ -37,6 +37,7 @@ copyright += '* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBI
 copyright += '* DAMAGE.\n'
 copyright += '*\n'
 copyright += '*****************************************************************************/\n'
+copyright += '\n'
 
 class ExampleContainer(object):
     """
@@ -391,6 +392,25 @@ class ReturnsContainer(object):
             return output
         else:
             return ""
+            
+            
+class Function(object):
+    def __init__(self, _name):
+        self.name = _name
+
+
+class HFunction(Function):
+    def __init__(self, _name):
+        if _name[-1] == '\n':
+            self.name = _name[0:-1]
+        else:
+            self.name = _name
+        self.pre_text = 'extern const char *visit_'
+        self.post_text = '_doc;\n'
+        
+    def __str__(self):
+        return self.pre_text + self.name + self.post_text
+        
         
 
 def functions_to_sphinx(funclist):
@@ -538,24 +558,25 @@ def functions_to_sphinx(funclist):
     return (functions_doc, undocumented)
     
 
+    
+
 if __name__ == '__main__':
 
     func_file   = open('cli_manual/functions.rst', 'r')
     h_output    = open('DELETE_ME.h','w')
     C_output    = open('DELETE_ME.C','w')
     
-    pre_func_text = 'extern const char *visit_'
-    pst_func_text = '_doc;'
-    
     h_output.write(copyright)
     C_output.write(copyright)
     
     func_file_lines = func_file.readlines()
-    for i in range(0,len(func_file_lines)):
+    for i in range(0, len(func_file_lines)):
         line = func_file_lines[i]
         if line[0] == '-':
+            func = HFunction(func_file_lines[i-1])
+            h_output.write('%s' % func)
+            
             C_output.write(func_file_lines[i-1])
-            h_output.write(func_file_lines[i-1])
    
     func_file.close()
     h_output.close()
