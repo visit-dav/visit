@@ -16,7 +16,11 @@ function bv_hdf4_disable
 
 function bv_hdf4_depends_on
 {
-    echo "szip zlib"
+    if [[ "$DO_ZLIB" == "yes" ]] ; then
+        echo "szip zlib"
+    else
+        echo "szip"
+    fi
 }
 
 function bv_hdf4_info
@@ -1335,6 +1339,21 @@ function build_hdf4
     cd $HDF4_BUILD_DIR || error "Can't cd to hdf4 build dir."
     info "Invoking command to configure HDF4"
     MAKEOPS=""
+    WZLIBINFO=""
+
+    if [[ "$DO_ZLIB" == "yes" ]] ; then
+        WZLIBINFO="--with-zlib=\"$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH\"" 
+    else
+        # use cmake to find the system zlib
+        zlibfnd=$(${CMAKE_INSTALL}/cmake --find-package -DCOMPILER_ID=GNU -DLANGUAGE=CXX -DMODE=EXIST -DNAME=ZLIB)
+        info "zlibfnd: ${zlibfnd}"
+        if [[ "$zlibfnd" == "ZLIB found." ]] ; then
+            zlibinc=$(${CMAKE_INSTALL}/cmake --find-package -DCOMPILER_ID=GNU -DLANGUAGE=CXX -DMODE=COMPILE -DNAME=ZLIB)
+            zliblib=$(${CMAKE_INSTALL}/cmake --find-package -DCOMPILER_ID=GNU -DLANGUAGE=CXX -DMODE=LINK -DNAME=ZLIB)
+            WZLIBINFO="--with-zlib=\"$zlibinc,$zliblib\""
+        fi
+    fi
+    info "WZLIIBINFO $WZLIBINFO"
     if [[ "$OPSYS" == "Darwin" || "$OPSYS" == "AIX" ]]; then
         export DYLD_LIBRARY_PATH="$VISITDIR/szip/$SZIP_VERSION/$VISITARCH/lib":$DYLD_LIBRARY_PATH
         # In order to ensure $FORTRANARGS is expanded to build the arguments to
@@ -1346,8 +1365,7 @@ function build_hdf4
         $FORTRANARGS \
         --prefix=\"$VISITDIR/hdf4/$HDF4_VERSION/$VISITARCH\" \
         --with-jpeg=\"$VISITDIR/${VTK_INSTALL_DIR}/${VTK_VERSION}/$VISITARCH/include/vtk-${VTK_SHORT_VERSION}/vtkjpeg\",\"$VISITDIR/${VTK_INSTALL_DIR}/${VTK_VERSION}/$VISITARCH/lib\" \
-        --with-szlib=\"$VISITDIR/szip/$SZIP_VERSION/$VISITARCH\" \
-        --with-zlib=\"$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH\" \
+        --with-szlib=\"$VISITDIR/szip/$SZIP_VERSION/$VISITARCH\" $WZLIBINFO \
         --disable-dependency-tracking --disable-netcdf"
         if [[ $? != 0 ]] ; then
             warn "HDF4 configure failed.  Giving up"\
@@ -1367,7 +1385,7 @@ function build_hdf4
         --prefix=\"$VISITDIR/hdf4/$HDF4_VERSION/$VISITARCH\" \
         --with-jpeg=\"$VISITDIR/${VTK_INSTALL_DIR}/${VTK_VERSION}/$VISITARCH/include/vtk-${VTK_SHORT_VERSION}/vtkjpeg\",\"$VISITDIR/${VTK_INSTALL_DIR}/${VTK_VERSION}/$VISITARCH/lib\" \
         --with-szlib=\"$VISITDIR/szip/$SZIP_VERSION/$VISITARCH\" \
-        --with-zlib=\"$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH\" --disable-netcdf"
+        $WZLIBINFO   --disable-netcdf"
         if [[ $? != 0 ]] ; then
             warn "HDF4 configure failed.  Giving up.\n"\
                  "You can see the details of the build failure at $HDF4_BUILD_DIR/config.log\n"
