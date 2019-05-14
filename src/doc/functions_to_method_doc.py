@@ -48,7 +48,7 @@ class ExampleContainer(object):
         self.title    = "**%s**\n" % (title)
         self.example  = ""
 
-    def extend_current_example(self, extension):
+    def extend(self, extension):
 	"""
             Extend our function example. 
 
@@ -78,39 +78,6 @@ class ExampleContainer(object):
         output += "\n::\n\n"
         output += self.example
         return output 
-        
-        
-class SynopsisContainer(object):
-    """
-        A container to hold and format a function synopsis. 
-    """
- 
-    def __init__(self, title = "Synopsis:"):
-        self.synopsis   = ""
-        self.title      = "**%s**\n" % (title)
-
-    def extend_current_synopsis(self, extension):
-        """
-            Extend the current synopsis. 
-
-            args:
-                extension: the extension to be added. 
-        """
-        self.synopsis += "  %s\n" % (extension)
-
-    def __str__(self):
-        """
-            Overridden str method. When str() is called on
-            our SynopsisContainer, it will be converted to 
-            a restructuredText formatted string. 
-
-            returns:
-                A restructuredText formatted string. 
-        """
-        output  = self.title
-        output += "\n::\n\n"
-        output += self.synopsis
-        return output
 
 
 class DescriptionContainer(object):
@@ -122,9 +89,8 @@ class DescriptionContainer(object):
     def __init__(self, title = "Description:"):
         self.title       = "**%s**\n" % (title)
         self.description = ""
-        self.table = Table()
 
-    def extend_current_description(self, extension):
+    def extend(self, extension):
         """
             Extend the current function description. 
             This could be a text description or a full
@@ -141,7 +107,6 @@ class DescriptionContainer(object):
             spaced = extension.replace('\t', '@$@!')
             split  = spaced.split('@$@!')
             row    = Row([el.strip() for el in split if el != ''])
-            self.table.table_rows.append(row)
  
         #
         # It's just a description.
@@ -161,9 +126,6 @@ class DescriptionContainer(object):
         output  = self.title
         output += "\n"
         output += self.description
-
-        if self.table.table_rows != []:
-            output += "\n\n%s\n" % (self.table.build_sphinx_table(title=True))
 
         return output
 
@@ -318,6 +280,9 @@ class ArgumentsContainer(object):
         self.names.append(name)
         self.descriptions.append(description)
         self.cur_idx += 1
+    
+    def extend(self, extension):
+        pass
 
     def __str__(self):
         """
@@ -361,12 +326,12 @@ class ReturnsContainer(object):
         information of a function. 
     """
 
-    def __init__(self, _return_type, title = ""):
+    def __init__(self, _return_type = "", title = ""):
         self.title   = ""
         self.returns = ""
         self.return_type = _return_type
 
-    def extend_current_returns(self, extension):
+    def extend(self, extension):
 	"""
             Extend our current return information. 
 
@@ -422,14 +387,50 @@ class CFunction(Function):
         self.post_text = '_doc = \n'
     
     def __str__(self):
-        output = self.pre_text + self.name + self.post_text
+        output  = self.pre_text + self.name + self.post_text
         output += '"' + self.name + r'\n' + '"\n'
         output += '"' + r'\n' + '"\n'
         output += '"' + r'\n' + '"\n'
-        output += ';\n'
         return output
 
 
+class SynopsisContainer(object):
+    """
+        A container to hold and format a function synopsis. 
+    """
+ 
+    def __init__(self):
+        self.title  = 'Synopsis:'
+        self.text   = []
+
+    def extend(self, extension):
+        """
+            Extend the current synopsis. 
+
+            args:
+                extension: the extension to be added. 
+        """
+        
+        self.text.append(extension)
+
+    def __str__(self):
+        """
+            Overridden str method. When str() is called on
+            our SynopsisContainer, it will be converted to 
+            a restructuredText formatted string. 
+
+            returns:
+                A restructuredText formatted string. 
+        """
+        output  = '"' + self.title + r'\n' + '"\n'
+        output += '"' + r'\n' + '"\n'
+        for line in self.text:
+            output += '"' + line + r'\n' + '"\n'
+        output += '"' + r'\n' + '"\n'
+        output += '"' + r'\n' + '"\n'
+        return output
+
+'''
 def functions_to_sphinx(funclist):
     """
         Create a sphinx document from a VisIt generated
@@ -573,34 +574,79 @@ def functions_to_sphinx(funclist):
         functions_doc += "\n%s" % str(output)
 
     return (functions_doc, undocumented)
-    
+'''
 
+
+def write_state(writer, state_dict):
+    if state_dict['synopsis']:
+        writer.write(str(state_dict['synopsis']))
+    if state_dict['arguments']:
+        writer.write(str(state_dict['arguments']))
+    if state_dict['returns']:
+        writer.write(str(state_dict['returns']))
+    if state_dict['description']:
+        writer.write(str(state_dict['description']))
+    if state_dict['example']:
+        writer.write(str(state_dict['example']))
+    
     
 
 if __name__ == '__main__':
 
     func_file   = open('cli_manual/functions.rst', 'r')
     h_output    = open('DELETE_ME.h','w')
-    C_output    = open('DELETE_ME.C','w')
+    c_output    = open('DELETE_ME.C','w')
     
     h_output.write(copyright)
-    C_output.write(copyright)
+    c_output.write(copyright)
+    
+    block_dict = {'synopsis': None, 'arguments': None, 'returns': None, 'description': None, 'example': None}
+    cur_block = None
     
     func_file_lines = func_file.readlines()
     for i in range(0, len(func_file_lines)):
         line = func_file_lines[i]
+        print line
         
+        if line[0] in ['\n', '|', ':', '='] or line == 'Functions\n':
+            continue
+            
         if line[0] == '-': # The previous line was a function name
-            h_func = HFunction(func_file_lines[i-1])
-            h_output.write(str(h_func))
+            # Output the last state of the block_dict
+            write_state(c_output, block_dict)
+            # c_output.write(gather_state(block_dict)) if gather_state returns a string
             
-            c_func = CFunction(func_file_lines[i-1])
-            C_output.write(str(c_func))
+            # Setup the next function
+            cur_block = 'Function:'
+            block_dict = {'synopsis': None, 'arguments': None, 'returns': None, 'description': None, 'example': None}
+            h_output.write(str(HFunction(func_file_lines[i-1])))
+            c_output.write(str(CFunction(func_file_lines[i-1])))
             
-        
+        elif line[0:13] == '**Synopsis:**':
+            cur_block = 'synopsis'
+            block_dict['synopsis'] = SynopsisContainer()
+            
+        elif line[0:8] == 'argument':
+            cur_block = 'arguments'
+            block_dict['arguments'] = ArgumentsContainer()
+            
+        elif line[0:6] == 'return':
+            cur_block = 'returns'
+            block_dict['returns'] = ReturnsContainer()
+            
+        elif line[0:16] == '**Description:**':
+            cur_block = 'description'
+            block_dict['description'] = DescriptionContainer()
+            
+        elif line[0:12] == '**Example:**':
+            cur_block = 'example'
+            block_dict['example'] = ExampleContainer()
+            
+        elif cur_block is not None:
+            block_dict[cur_block].extend(line)
    
     func_file.close()
     h_output.close()
-    C_output.close()
+    c_output.close()
     
     
