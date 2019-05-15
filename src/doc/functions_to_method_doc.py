@@ -152,6 +152,18 @@ class ExampleContainer(Container):
 # ----------------- #
 # --- Functions --- #
 # ----------------- #
+    
+def insert_into_string(text, position, char):
+    return text[:position] + char + text[position:]
+
+def insert_backslash(text):
+    # Generate a list of indices where " appears in the text
+    indices = [i for i, ltr in enumerate(text) if ltr == '"']
+    # Insert backslashes at the locations. Because this modifies the string, we
+    # need to do this in reverse order
+    for ndx in reversed(indices):
+        text = insert_into_string(text, ndx, '\\')
+    return text
 
 def split_colon(line):
     if line.find(':') > -1:
@@ -193,7 +205,7 @@ if __name__ == '__main__':
     
     func_file_lines = func_file.readlines()
     for i in range(0, len(func_file_lines)):
-        line = func_file_lines[i]
+        line = insert_backslash(func_file_lines[i])
         
         if line[0] in ['\n', '|', ':', '='] or line == 'Functions\n':
             continue
@@ -201,7 +213,6 @@ if __name__ == '__main__':
         if line[0] == '-': # The previous line was a function name
             # Output the last state of the block_dict
             write_state(c_output, block_dict)
-            # c_output.write(gather_state(block_dict)) if gather_state returns a string
             
             # Setup the next function
             cur_block = 'Function:'
@@ -235,5 +246,7 @@ if __name__ == '__main__':
     func_file.close()
     h_output.close()
     c_output.close()
+    
+    
     
     
