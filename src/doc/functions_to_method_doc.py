@@ -128,45 +128,6 @@ class DescriptionContainer(object):
         output += self.description
 
         return output
-        
-
-class ReturnsContainer(object):
-    """
-        A container to hold and format the return 
-        information of a function. 
-    """
-
-    def __init__(self, _return_type = "", title = ""):
-        self.title   = ""
-        self.returns = ""
-        self.return_type = _return_type
-
-    def extend(self, extension):
-	"""
-            Extend our current return information. 
-
-            args:
-                extension: the extension to add on. 
-        """
-        self.returns += "    %s\n" % (extension)
-
-    def __str__(self):
-        """
-            Overridden str method. When str() is called on
-            our ReturnsContainer, it will be converted to 
-            a restructuredText formatted string. 
-
-            returns:
-                A restructuredText formatted string. 
-        """
-        if self.return_type != "NONE":
-            if self.return_type == "integer":
-                if self.returns.find("1 for success and 0 for failure"):
-                    self. return_type = "CLI_return_t"
-            output  = "return type : %s\n%s\n" %(self.return_type, self.returns)
-            return output
-        else:
-            return ""
             
             
 class Function(object):
@@ -268,6 +229,43 @@ class ArgumentsContainer(object):
             # Strip off the argument type
             extension = extension.split()[0]
             
+        self.text.append(extension)
+
+    def __str__(self):
+        """
+            Overridden str method. When str() is called on
+            our SynopsisContainer, it will be converted to 
+            a restructuredText formatted string. 
+
+            returns:
+                A restructuredText formatted string. 
+        """
+        output  = '"' + self.title + r'\n' + '"\n'
+        output += '"' + r'\n' + '"\n'
+        for line in self.text:
+            output += '"' + line + r'\n' + '"\n'
+        output += '"' + r'\n' + '"\n'
+        output += '"' + r'\n' + '"\n'
+        return output
+
+
+class ReturnsContainer(object):
+    """
+        A container to hold and format a function synopsis. 
+    """
+ 
+    def __init__(self):
+        self.title  = 'Returns:'
+        self.text   = []
+
+    def extend(self, extension):
+        """
+            Extend the current synopsis. 
+
+            args:
+                extension: the extension to be added. 
+        """
+        
         self.text.append(extension)
 
     def __str__(self):
