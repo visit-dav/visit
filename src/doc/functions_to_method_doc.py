@@ -38,14 +38,14 @@ copyright += '* DAMAGE.\n'
 copyright += '*\n'
 copyright += '*****************************************************************************/\n'
 copyright += '\n'
-            
-            
-class Function(object):
-    def __init__(self, _name):
-        self.name = _name
 
 
-class HFunction(Function):
+
+# --------------- #
+# --- Classes --- #
+# --------------- #
+
+class HFunction(object):
     def __init__(self, _name):
         if _name[-1] == '\n':
             self.name = _name[0:-1]
@@ -58,7 +58,7 @@ class HFunction(Function):
         return self.pre_text + self.name + self.post_text
 
 
-class CFunction(Function):
+class CFunction(object):
     def __init__(self, _name):
         if _name[-1] == '\n':
             self.name = _name[0:-1]
@@ -75,33 +75,24 @@ class CFunction(Function):
         return output
 
 
-class SynopsisContainer(object):
+class Container(object):
     """
-        A container to hold and format a function synopsis. 
+        A container to hold and format documentation.
     """
- 
     def __init__(self):
-        self.title  = 'Synopsis:'
-        self.text   = []
-
+        self.text = []
+    
     def extend(self, extension):
-        """
-            Extend the current synopsis. 
-
-            args:
-                extension: the extension to be added. 
-        """
-        
         self.text.append(extension)
-
+    
     def __str__(self):
         """
             Overridden str method. When str() is called on
-            our SynopsisContainer, it will be converted to 
-            a restructuredText formatted string. 
+            the Container, it will be converted to a string
+            formatted for MethodDoc.C
 
             returns:
-                A restructuredText formatted string. 
+                A formatted string. 
         """
         output  = '"' + self.title + r'\n' + '"\n'
         output += '"' + r'\n' + '"\n'
@@ -112,309 +103,62 @@ class SynopsisContainer(object):
         return output
 
 
-class ArgumentsContainer(object):
+class SynopsisContainer(Container):
+    def __init__(self):
+        self.title = 'Synopsis:'
+        Container.__init__(self)
+
+
+class ArgumentsContainer(Container):
     """
         A container to hold and format a function synopsis. 
-    """
- 
-    def __init__(self):
-        self.title  = 'Arguments:'
-        self.text   = []
- 
+    """ 
     def __init__(self, arg_name):
-        self.title  = 'Arguments:'
-        self.text   = []
-        if arg_name.find(':') > -1:
-            arg_name = arg_name.split()[0]
-        self.text.append(arg_name)
+        self.title = 'Arguments:'
+        Container.__init__(self)
+        self.text.append(split_colon(arg_name))
 
     def extend(self, extension):
-        """
-            Extend the current synopsis. 
-
-            args:
-                extension: the extension to be added. 
-        """
-        if extension.find(':') > -1:
-            # Strip off the argument type
-            extension = extension.split()[0]
-            
-        self.text.append(extension)
-
-    def __str__(self):
-        """
-            Overridden str method. When str() is called on
-            our SynopsisContainer, it will be converted to 
-            a restructuredText formatted string. 
-
-            returns:
-                A restructuredText formatted string. 
-        """
-        output  = '"' + self.title + r'\n' + '"\n'
-        output += '"' + r'\n' + '"\n'
-        for line in self.text:
-            output += '"' + line + r'\n' + '"\n'
-        output += '"' + r'\n' + '"\n'
-        output += '"' + r'\n' + '"\n'
-        return output
+        self.text.append(split_colon(extension))
 
 
-class ReturnsContainer(object):
-    """
-        A container to hold and format a function synopsis. 
-    """
- 
+class ReturnsContainer(Container):
     def __init__(self):
-        self.title  = 'Returns:'
-        self.text   = []
-
-    def extend(self, extension):
-        """
-            Extend the current synopsis. 
-
-            args:
-                extension: the extension to be added. 
-        """
-        
-        self.text.append(extension)
-
-    def __str__(self):
-        """
-            Overridden str method. When str() is called on
-            our SynopsisContainer, it will be converted to 
-            a restructuredText formatted string. 
-
-            returns:
-                A restructuredText formatted string. 
-        """
-        output  = '"' + self.title + r'\n' + '"\n'
-        output += '"' + r'\n' + '"\n'
-        for line in self.text:
-            output += '"' + line + r'\n' + '"\n'
-        output += '"' + r'\n' + '"\n'
-        output += '"' + r'\n' + '"\n'
-        return output
+        self.title = 'Returns:'
+        Container.__init__(self)
 
 
-class DescriptionContainer(object):
-    """
-        A container to hold and format a function synopsis. 
-    """
- 
+class DescriptionContainer(Container):
     def __init__(self):
-        self.title  = 'Description:'
-        self.text   = []
-
-    def extend(self, extension):
-        """
-            Extend the current synopsis. 
-
-            args:
-                extension: the extension to be added. 
-        """
-        
-        self.text.append(extension)
-
-    def __str__(self):
-        """
-            Overridden str method. When str() is called on
-            our SynopsisContainer, it will be converted to 
-            a restructuredText formatted string. 
-
-            returns:
-                A restructuredText formatted string. 
-        """
-        output  = '"' + self.title + r'\n' + '"\n'
-        output += '"' + r'\n' + '"\n'
-        for line in self.text:
-            output += '"' + line + r'\n' + '"\n'
-        output += '"' + r'\n' + '"\n'
-        output += '"' + r'\n' + '"\n'
-        return output
+        self.title = 'Description:'
+        Container.__init__(self)
 
 
-class ExampleContainer(object):
-    """
-        A container to hold and format a function synopsis. 
-    """
- 
+class ExampleContainer(Container): 
     def __init__(self):
-        self.title  = 'Example:'
-        self.text   = []
-
-    def extend(self, extension):
-        """
-            Extend the current synopsis. 
-
-            args:
-                extension: the extension to be added. 
-        """
+        self.title = 'Example:'
+        Container.__init__(self)
         
-        self.text.append(extension)
-
     def __str__(self):
-        """
-            Overridden str method. When str() is called on
-            our SynopsisContainer, it will be converted to 
-            a restructuredText formatted string. 
-
-            returns:
-                A restructuredText formatted string. 
-        """
         output  = '"' + self.title + r'\n' + '"\n'
         output += '"' + r'\n' + '"\n'
-        for line in self.text:
+        for line in self.text[0:-1]:
             output += '"' + line + r'\n' + '"\n'
         output += ';\n'
         return output
 
 
 
-'''
-def functions_to_sphinx(funclist):
-    """
-        Create a sphinx document from a VisIt generated
-        list of functions and function documentation. 
+# ----------------- #
+# --- Functions --- #
+# ----------------- #
 
-        args:
-            funclist: a list of functions and documentation
-                generated by VisIt. 
-
-        returns: 
-            A tuple of the form (functions_doc, undocumented), 
-            where functions_doc is a restructuredText formatted
-            documentation of VisIt python functions, and undocumented
-            is a list of undocumented functions. 
-    """
-
-    undocumented  = []
-    functions_doc = ""
-
-    for func in funclist:
-        #
-        # Extract documentation for this function.
-        #
-        visitStr="visit."+func
-        fulldoc = eval(visitStr).__doc__
-
-        #
-        # Functions that are not documented, are appended to 'undocumented'. 
-        #
-        if not fulldoc:
-            undocumented.append(func)
-            continue
-
-        fulldoc    = fulldoc.splitlines()
-        full_doc   = [el for el in fulldoc if el != ''] 
-
-        block_dict = {'Synopsis:': None, 'Arguments:': None, 'Returns:': None, 'Description:': None, 'Example:':None}
-        block_list = block_dict.keys()
-
-        func_name  = str(func)
-        return_type = "STARTING_VALUE"
-        full_doc   = full_doc[1:]
-        if len(full_doc) == 0:
-            continue
-        start      = 0
-
-        #
-        # Ignore the brief explanation
-        #
-        while start < len(full_doc) and full_doc[start].strip() not in block_list:
-            start += 1
-        full_doc = full_doc[start:]
-    
-        #
-        # Iterate over and parse the blocks. Then format them to sphinx and write.  
-        #
-        cur_block = None
-        for element in full_doc:
-            element = element.strip()
-  
-            #
-            # First block 
-            #
-            if cur_block == None:
-                if element not in block_list:
-                    print >> stderr, "ERROR: incorrect start point!!"
-                    continue
-                else:
-                    cur_block = element
-                    continue
-
-            #
-            # Starting new block
-            # 
-            if element in block_list:
-                cur_block = element
-                continue
-
-            elif cur_block == 'Example:':
-                if not block_dict[cur_block]:
-                    block_dict[cur_block] = ExampleContainer()
-                block_dict[cur_block].extend_current_example(element)
-
-            elif cur_block == 'Synopsis:':
-                if not block_dict[cur_block]:
-                    block_dict[cur_block] = SynopsisContainer()
-                    
-                #
-                # Attempt to extract the return type from the synopsis
-                #
-                if element.find(str(func_name + '(')) > -1:
-                    # Grab the output type from the synopsis. Look for
-                    # func_name(args) -> output_type
-                    arrow_index = element.find('->')
-                    if arrow_index < 0:
-                        return_type_helper = "NONE"
-                    else:
-                        return_type_helper = element[arrow_index+3:]
-                    if return_type == "STARTING_VALUE":
-                        return_type = return_type_helper
-                    elif return_type != return_type_helper:
-                        return_type = "AMBIGUOUS"
-                        
-                block_dict[cur_block].extend_current_synopsis(element)
-
-            elif cur_block == 'Description:':
-                if not block_dict[cur_block]:
-                    block_dict[cur_block] = DescriptionContainer()
-                block_dict[cur_block].extend_current_description(element)
-
-            elif cur_block == 'Arguments:':
-                if not block_dict[cur_block]:
-                    block_dict[cur_block] = ArgumentsContainer()
-                block_dict[cur_block].add_element(element)
-
-            elif cur_block == 'Returns:':
-                if not block_dict[cur_block]:
-                    block_dict[cur_block] = ReturnsContainer(return_type)
-                block_dict[cur_block].extend_current_returns(element)
-        
-        #
-        # Build our sphinx output.
-        #
-        output = build_function_header(func_name)
-        if block_dict['Synopsis:']:
-            output += str(block_dict['Synopsis:'])
-            output += '\n'
-        if block_dict['Arguments:']:
-            output += str(block_dict['Arguments:'])
-            output += '\n'
-        if block_dict['Returns:']:
-            output += str(block_dict['Returns:'])
-            output += '\n'
-        if block_dict['Description:']:
-            output += str(block_dict['Description:'])
-            output += '\n'
-        if block_dict['Example:']:
-            output += str(block_dict['Example:'])
-            output += '\n'
-
-        functions_doc += "\n%s" % str(output)
-
-    return (functions_doc, undocumented)
-'''
+def split_colon(line):
+    if line.find(':') > -1:
+        output = line.split()[0]
+    else:
+        output = line
+    return output
 
 
 def write_state(writer, state_dict):
@@ -430,6 +174,10 @@ def write_state(writer, state_dict):
         writer.write(str(state_dict['example']))
     
     
+    
+# ------------ #
+# --- Main --- #
+# ------------ #
 
 if __name__ == '__main__':
 
