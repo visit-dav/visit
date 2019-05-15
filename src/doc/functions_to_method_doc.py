@@ -128,196 +128,6 @@ class DescriptionContainer(object):
         output += self.description
 
         return output
-
-
-class ArgumentsContainer(object):
-    """
-        A container to hold and format all of the 
-        arguments of a function. 
-    """
-
-    def __init__(self, title = ''):
-        self.title           = ""
-        self.names           = []
-        self.descriptions    = []
-        self.cur_idx         = -1
-        self.arg_add_ons     = ['(optional)', 'int', 'float', 'bool']
-        self.type_keywords   = {'integer': 'integer',
-                                'string': 'string',
-                                'name': 'string',
-                                'string.': 'string',
-                                'double':'double',
-                                'tuple':'tuple',
-                                'list':'list',
-                                'dictionary':'dictionary'}
-
-    def find_add_on(self, txt):
-        """
-            In most instances, an argument can be identified because
-            it is a single word. However, there are some cases where 
-            the argument has an additional word (an 'add-on') which 
-            needs to be identified. 
-
-            args:
-                txt: the text to be analyzed.  
-
-            returns: 
-                The index of the add-on in self.args_add_ons if 
-                an add-on is found. Otherwise, -1.  
-        """
-        for idx in range(len(self.arg_add_ons)):
-            if self.arg_add_ons[idx] in txt:
-                return idx
-        return -1
-
-    def is_arg_with_add_on(self, txt):
-        """
-            In most instances, an argument can be identified because
-            it is a single word. However, there are some cases where 
-            the argument has an additional word (an 'add-on') which 
-            needs to be identified. 
-
-            args:
-                txt: the text to be analyzed.  
-
-            returns: 
-                True if an add-on is found. False otherwise. 
-        """
-        add_on = self.find_add_on(txt)
-        if add_on > -1:
-            if ' ' not in txt.replace(self.arg_add_ons[add_on], '').strip():
-                return True
-        return False
-            
-    def add_element(self, element):
-        """
-            Add an element to our container. This could be 
-            an argument name (new argument) or a whole or 
-            piece of an argument description that will be 
-            appended on to the current (last added) argument
-            description. 
-            
-            args:
-                element: the element to add (arg name or 
-                    description. 
-        """
-        #
-        # Is element a description of an argument?
-        #
-        space = ' '
-        if space in element.strip():
-
-            #
-            # People are very inconsistent with designating variables. 
-            #
-            four_space  = element.strip().find(space*4)
-            three_space = element.strip().find(space*3)
-            two_space   = element.strip().find(space*2)
-
-            if ((four_space  > 0 and four_space < 10) or
-                (three_space > 0 and three_space < 10) or
-                (two_space   > 0 and two_space < 10)):
-
-                split      = element.split()
-                arg        = split[0].strip()
-                definition = ' '.join(split[1:])
-                self.add_argument(arg)
-                self.extend_current_arg_description(definition)
-
-            #
-            # Do we have an arg with an add-on?
-            #
-            elif self.is_arg_with_add_on(element):
-                self.add_argument(element)
-
-            #  
-            # We have a description.
-            # 
-            else:
-                self.extend_current_arg_description(element)
-
-        #
-        # This is likely the last word in a description. 
-        #
-        elif '.' in element:
-            el_cpy = element
-            if element[0] != ' ':
-                el_cpy = ' ' + element
-            self.extend_current_arg_description(el_cpy)
-
-        #
-        # This should be a new argument. 
-        #
-        else:
-            self.add_argument(element)
-
-    def extend_current_arg_description(self, add_on):
-        """
-            Add to the current argument description. 
-
-            args:
-                add_on: the extension to our current 
-                    description.
-        """
-        add_on_cpy = add_on
-
-        #
-        # People often don't add spaces after their new lines. 
-        #
-        if add_on.islower() and add_on[0] != ' ':
-            add_on_cpy = ' ' + add_on
-        if self.cur_idx > -1:
-            self.descriptions[self.cur_idx] += add_on_cpy
-
-    def add_argument(self, name, description=''):
-        """
-            Add a new argument to our container.  
-
-            args:
-                name: the name of the argument.         
-                description: the argument description. 
-        """
-        self.names.append(name)
-        self.descriptions.append(description)
-        self.cur_idx += 1
-    
-    def extend(self, extension):
-        pass
-
-    def __str__(self):
-        """
-            Overridden str method. When str() is called on
-            our ArgumentsContainer, it will be converted to 
-            a restructuredText formatted string. 
-
-            returns:
-                A restructuredText formatted string. 
-        """
-        lines = ""
-        for i in range(len(self.names)):
-            name    = "%s" % (self.names[i].strip())
-            if name == 'none':
-                continue
-                
-            #
-            # Attempt to determine the type of argument from the argument's
-            # description.
-            #
-            type_name = "STARTING_VALUE"
-            for word in ''.join(self.descriptions[i]).split():
-                if word in self.type_keywords.keys():
-                    if type_name == "STARTING_VALUE":
-                        type_name = self.type_keywords[word]
-                    elif word != type_name:
-                        type_name = "AMBIGUOUS"
-            
-            lines += "\n%s : %s\n    %s\n"%(name, type_name,
-                self.descriptions[i])
-
-        output = self.title
-        output += lines
-
-        return output
         
 
 class ReturnsContainer(object):
@@ -411,7 +221,7 @@ class SynopsisContainer(object):
                 extension: the extension to be added. 
         """
         
-        self.text.append(extension.strip())
+        self.text.append(extension)
 
     def __str__(self):
         """
@@ -429,6 +239,55 @@ class SynopsisContainer(object):
         output += '"' + r'\n' + '"\n'
         output += '"' + r'\n' + '"\n'
         return output
+
+
+class ArgumentsContainer(object):
+    """
+        A container to hold and format a function synopsis. 
+    """
+ 
+    def __init__(self):
+        self.title  = 'Arguments:'
+        self.text   = []
+ 
+    def __init__(self, arg_name):
+        self.title  = 'Arguments:'
+        self.text   = []
+        if arg_name.find(':') > -1:
+            arg_name = arg_name.split()[0]
+        self.text.append(arg_name)
+
+    def extend(self, extension):
+        """
+            Extend the current synopsis. 
+
+            args:
+                extension: the extension to be added. 
+        """
+        if extension.find(':') > -1:
+            # Strip off the argument type
+            extension = extension.split()[0]
+            
+        self.text.append(extension)
+
+    def __str__(self):
+        """
+            Overridden str method. When str() is called on
+            our SynopsisContainer, it will be converted to 
+            a restructuredText formatted string. 
+
+            returns:
+                A restructuredText formatted string. 
+        """
+        output  = '"' + self.title + r'\n' + '"\n'
+        output += '"' + r'\n' + '"\n'
+        for line in self.text:
+            output += '"' + line + r'\n' + '"\n'
+        output += '"' + r'\n' + '"\n'
+        output += '"' + r'\n' + '"\n'
+        return output
+
+
 
 '''
 def functions_to_sphinx(funclist):
@@ -625,9 +484,9 @@ if __name__ == '__main__':
             cur_block = 'synopsis'
             block_dict['synopsis'] = SynopsisContainer()
             
-        elif line[0:8] == 'argument':
+        elif cur_block != 'arguments' and line[0:6] != 'return' and line.find(' : ') > -1:
             cur_block = 'arguments'
-            block_dict['arguments'] = ArgumentsContainer()
+            block_dict['arguments'] = ArgumentsContainer(line.strip())
             
         elif line[0:6] == 'return':
             cur_block = 'returns'
@@ -642,7 +501,7 @@ if __name__ == '__main__':
             block_dict['example'] = ExampleContainer()
             
         elif cur_block is not None:
-            block_dict[cur_block].extend(line)
+            block_dict[cur_block].extend(line.strip())
    
     func_file.close()
     h_output.close()
