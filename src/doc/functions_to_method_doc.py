@@ -411,7 +411,7 @@ class SynopsisContainer(object):
                 extension: the extension to be added. 
         """
         
-        self.text.append(extension)
+        self.text.append(extension.strip())
 
     def __str__(self):
         """
@@ -606,7 +606,6 @@ if __name__ == '__main__':
     func_file_lines = func_file.readlines()
     for i in range(0, len(func_file_lines)):
         line = func_file_lines[i]
-        print line
         
         if line[0] in ['\n', '|', ':', '='] or line == 'Functions\n':
             continue
