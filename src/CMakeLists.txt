@@ -916,10 +916,6 @@ list(GET v_list 1 VISIT_VERSION_MINOR)
 list(GET v_list 2 VISIT_VERSION_PATCH)
 unset(v_list)
 
-# Further decompose PATCH string into number and, when present, letter
-string(REGEX REPLACE "^([0-9]+)([a-z]*)$" \\1 VISIT_VERSION_PATCH_NUMBER ${VISIT_VERSION_PATCH})
-string(REGEX REPLACE "^([0-9]+)([a-z]*)$" \\2 VISIT_VERSION_PATCH_LETTER ${VISIT_VERSION_PATCH})
-
 #-----------------------------------------------------------------------------
 # Set up some installation related value and macros (needs version).
 #-----------------------------------------------------------------------------
