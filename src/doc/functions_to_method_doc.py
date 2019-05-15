@@ -38,96 +38,6 @@ copyright += '* DAMAGE.\n'
 copyright += '*\n'
 copyright += '*****************************************************************************/\n'
 copyright += '\n'
-
-class ExampleContainer(object):
-    """
-        A container to hold and format a function example. 
-    """
-
-    def __init__(self, title = "Example:"):
-        self.title    = "**%s**\n" % (title)
-        self.example  = ""
-
-    def extend(self, extension):
-	"""
-            Extend our function example. 
-
-            args:
-                extension: the extension to be added. 
-        """
-        #
-        # If we have a 'visit -cli' line in our example, we 
-        # need to comment it out so that it's proper python
-        # format. 
-        #
-        if "visit -cli" in extension.strip() and self.example == "":
-            self.example += "  #%s\n" % (extension)
-        else: 
-            self.example += "  %s\n" % (extension)
-
-    def __str__(self):
-        """
-            Overridden str method. When str() is called on
-            our ExampleContainer, it will be converted to 
-            a restructuredText formatted string. 
-
-            returns:
-                A restructuredText formatted string. 
-        """
-        output  = "\n%s" % (self.title)
-        output += "\n::\n\n"
-        output += self.example
-        return output 
-
-
-class DescriptionContainer(object):
-    """
-        A container to hold and format the description of
-        a function. 
-    """
-
-    def __init__(self, title = "Description:"):
-        self.title       = "**%s**\n" % (title)
-        self.description = ""
-
-    def extend(self, extension):
-        """
-            Extend the current function description. 
-            This could be a text description or a full
-            or piece of a table. 
-
-            args:
-                extension: the extension to be added. 
-        """
-
-        #  
-        # Is the extension a table?
-        # 
-        if '\t' in extension:
-            spaced = extension.replace('\t', '@$@!')
-            split  = spaced.split('@$@!')
-            row    = Row([el.strip() for el in split if el != ''])
- 
-        #
-        # It's just a description.
-        #
-        else:
-            self.description += "    %s\n" % (extension)
-
-    def __str__(self):
-        """
-            Overridden str method. When str() is called on
-            our DescriptionContainer, it will be converted to 
-            a restructuredText formatted string. 
-
-            returns:
-                A restructuredText formatted string. 
-        """
-        output  = self.title
-        output += "\n"
-        output += self.description
-
-        return output
             
             
 class Function(object):
@@ -283,6 +193,79 @@ class ReturnsContainer(object):
             output += '"' + line + r'\n' + '"\n'
         output += '"' + r'\n' + '"\n'
         output += '"' + r'\n' + '"\n'
+        return output
+
+
+class DescriptionContainer(object):
+    """
+        A container to hold and format a function synopsis. 
+    """
+ 
+    def __init__(self):
+        self.title  = 'Description:'
+        self.text   = []
+
+    def extend(self, extension):
+        """
+            Extend the current synopsis. 
+
+            args:
+                extension: the extension to be added. 
+        """
+        
+        self.text.append(extension)
+
+    def __str__(self):
+        """
+            Overridden str method. When str() is called on
+            our SynopsisContainer, it will be converted to 
+            a restructuredText formatted string. 
+
+            returns:
+                A restructuredText formatted string. 
+        """
+        output  = '"' + self.title + r'\n' + '"\n'
+        output += '"' + r'\n' + '"\n'
+        for line in self.text:
+            output += '"' + line + r'\n' + '"\n'
+        output += '"' + r'\n' + '"\n'
+        output += '"' + r'\n' + '"\n'
+        return output
+
+
+class ExampleContainer(object):
+    """
+        A container to hold and format a function synopsis. 
+    """
+ 
+    def __init__(self):
+        self.title  = 'Example:'
+        self.text   = []
+
+    def extend(self, extension):
+        """
+            Extend the current synopsis. 
+
+            args:
+                extension: the extension to be added. 
+        """
+        
+        self.text.append(extension)
+
+    def __str__(self):
+        """
+            Overridden str method. When str() is called on
+            our SynopsisContainer, it will be converted to 
+            a restructuredText formatted string. 
+
+            returns:
+                A restructuredText formatted string. 
+        """
+        output  = '"' + self.title + r'\n' + '"\n'
+        output += '"' + r'\n' + '"\n'
+        for line in self.text:
+            output += '"' + line + r'\n' + '"\n'
+        output += ';\n'
         return output
 
 
