@@ -898,7 +898,8 @@ VISIT_3RDPARTY_VAR(TBB_ROOT      "Path containing the TBB library's include and 
 #-----------------------------------------------------------------------------
 FILE(STRINGS VERSION VERSION)
 IF(NOT VERSION)
-    SET(VERSION "3.0.0")
+    MESSAGE(FATAL_ERROR
+        "File \"VERSION\" with ascii string of VisIt version does not exist")
 ENDIF(NOT VERSION)
 SET(VISIT_VERSION ${VERSION})
 
