@@ -97,7 +97,7 @@ AddMachineProfile
 
 
 MachineProfile : STARTING_VALUE
-    
+
 
 **Description:**
 
@@ -120,7 +120,8 @@ operator : string
     The name of the operator to be applied.
 
 all : integer
-    This is an optional integer argument that applies the operator to all plots if the value of the argument is not zero.
+    This is an optional integer argument that applies the operator to all
+    plots if the value of the argument is not zero.
 
 return type : CLI_return_t
     The AddOperator function returns an integer value of 1 for success and 0
@@ -174,10 +175,12 @@ variableName : string
     A valid variable name for the open database.
 
 inheritSIL : integer
-    An integer flag indicating whether the plot should inherit theactive plot's SIL restriction.
+    An integer flag indicating whether the plot should inherit the
+    active plot's SIL restriction.
 
 applyOperators : integer
-    An integer flag indicating whether the operators from the active plot should be applied to the new plot.
+    An integer flag indicating whether the operators from the active
+    plot should be applied to the new plot.
 
 return type : CLI_return_t
     The AddPlot function returns an integer value of 1 for success and 0 for
@@ -246,10 +249,23 @@ name : string
     The name of the database correlation to be altered.
 
 databases : AMBIGUOUS
-    The databases argument must be a tuple or list of strings containing the fully qualified database names to be used in the database correlation.
+    The databases argument must be a tuple or list of strings containing the
+    fully qualified database names to be used in the database correlation.
 
 method : integer
     The method argument must be an integer in the range [0,3].
+
+    +-------------------------------+-------+
+    | **Correlation method**        | Value |
+    +-------------------------------+-------+
+    | IndexForIndexCorrelation      | 0     |
+    +-------------------------------+-------+
+    | StretchedIndexCorrelation     | 1     |
+    +-------------------------------+-------+
+    | TimeCorrelation               | 2     |
+    +-------------------------------+-------+
+    | CycleCorrelation              | 3     |
+    +-------------------------------+-------+
 
 return type : CLI_return_t
     The AlterDatabaseCorrelation function returns 1 on success and 0 on
@@ -271,28 +287,21 @@ return type : CLI_return_t
     (host:/path/filename) names of the databases to be involved in the database
     query. The method argument allows you to specify a database correlation
     method.
-    dbs = ("/usr/gapps/visit/data/wave.visit", \
-    "/usr/gapps/visit/data/wave*.silo database")
-    OpenDatabase(dbs[0])
-    AddPlot("Pseudocolor", "pressure")
-    OpenDatabase(dbs[1])
-    AddPlot("Pseudocolor", "d")
-    # VisIt created an index for index database correlation but we
-    # want a cycle correlation.
-    AlterDatabaseCorrelation("Correlation01", dbs, 3)
 
 
-    +-------------------------------+-------+
-    | **Correlation method**        | Value |
-    +-------------------------------+-------+
-    | IndexForIndexCorrelation      | 0     |
-    +-------------------------------+-------+
-    | StretchedIndexCorrelation     | 1     |
-    +-------------------------------+-------+
-    | TimeCorrelation               | 2     |
-    +-------------------------------+-------+
-    | CycleCorrelation              | 3     |
-    +-------------------------------+-------+
+**Example:**
+
+::
+
+  dbs = ("/usr/gapps/visit/data/wave.visit", \
+  "/usr/gapps/visit/data/wave*.silo database")
+  OpenDatabase(dbs[0])
+  AddPlot("Pseudocolor", "pressure")
+  OpenDatabase(dbs[1])
+  AddPlot("Pseudocolor", "d")
+  # VisIt created an index for index database correlation but we
+  # want a cycle correlation.
+  AlterDatabaseCorrelation("Correlation01", dbs, 3)
 
 
 ApplyNamedSelection
@@ -306,7 +315,8 @@ ApplyNamedSelection
 
 
 name : string
-    The name of a named selection.  (This should have been previously createdwith a CreateNamedSelection call.)
+    The name of a named selection.  (This should have been previously created
+    with a CreateNamedSelection call.)
 
 return type : CLI_return_t
     The ApplyNamedSelection function returns 1 for success and 0 for failure.
@@ -434,10 +444,12 @@ ChooseCenterOfRotation
 
 
 screenX : double
-    A double that is the X coordinate of the pick point in normalized [0,1] screen space.
+    A double that is the X coordinate of the pick point in normalized [0,1]
+    screen space.
 
 screenY : double
-    A double that is the Y cooridinate of the pick point in normalized [0,1] screen space.
+    A double that is the Y cooridinate of the pick point in normalized [0,1]
+    screen space.
 
 return type : CLI_return_t
     The ChooseCenterOfRotation function returns 1 if successful and 0 if it
@@ -1007,7 +1019,8 @@ ConstructDataBinning
 
 
 options : STARTING_VALUE
-    An object of type ConstructDataBinningAttributes. This object specifies the options for constructing a data binning.
+    An object of type ConstructDataBinningAttributes. This object specifies
+    the options for constructing a data binning.
 
 return type : CLI_return_t
     Returns 1 on success, 0 on failure.
@@ -1282,10 +1295,15 @@ annotType : string
     The name of the type of annotation object to create.
 
 annotName : string
-    A user-defined name of the annotation object to create.By default, VisIt creates names like 'newObject0', 'newObject1',....
+    A user-defined name of the annotation object to create.
+    By default, VisIt creates names like 'newObject0', 'newObject1', ....
 
 visibleFlag : integer
-    An optional integer to indicate if the annotation object should be createdwith initial visibility on or off. Pass 0 for off and non-zero for on.By default, VisIt creates annotation objects with visibility on. If youwish only to pass the visibleFlag argument, there is no need to also passthe annotName argument.
+    An optional integer to indicate if the annotation object should be created
+    with initial visibility on or off. Pass 0 for off and non-zero for on.
+    By default, VisIt creates annotation objects with visibility on. If you
+    wish only to pass the visibleFlag argument, there is no need to also pass
+    the annotName argument.
 
 return type : annotation object
     CreateAnnotationObject is a factory function that creates annotation
@@ -1347,7 +1365,8 @@ name : string
     The name of the database correlation to be created.
 
 databases : AMBIGUOUS
-    Tuple or list of string objects containing the names of the databases to involve in the database correlation.
+    Tuple or list of string objects containing the names of the databases to
+    involve in the database correlation.
 
 method : integer
     An integer in the range [0,3] that determines the correlation method.
@@ -1431,7 +1450,11 @@ name : string
     The name of a named selection.
 
 properties : STARTING_VALUE
-    This optional argument lets you pass a SelectionProperties object containingthe properties that will be used to create the named selection. When this argument is omitted, the named selection will always be associated withthe active plot. You can use this argument to set up more complex named selections that may be associated with plots or databases.
+    This optional argument lets you pass a SelectionProperties object containing
+    the properties that will be used to create the named selection. When this
+    argument is omitted, the named selection will always be associated with
+    the active plot. You can use this argument to set up more complex named
+    selections that may be associated with plots or databases.
 
 return type : CLI_return_t
     The CreateNamedSelection function returns 1 for success and 0 for failure.
@@ -1796,7 +1819,8 @@ myvar : string
     The name of the variable to be created.
 
 args : tuple
-    A tuple (or list) of strings providing the variable names of thearguments to the Python Expression.
+    A tuple (or list) of strings providing the variable names of the
+    arguments to the Python Expression.
 
 source : string
     A string containing the source code for a Python Expression Filter .
@@ -1805,7 +1829,11 @@ file : string
     A string containing the path to a Python Expression Filter script file.
 
 type : string
-    An optional string defining the output type of the expression.Default type: 'scalar'Avalaible types: 'scalar','vector','tensor','array','curve'Note: Use only one of the 'source' or 'file' arguments.If both are used the 'source' argument overrides 'file'.
+    An optional string defining the output type of the expression.
+    Default type -- 'scalar'
+    Avalaible types -- 'scalar','vector','tensor','array','curve'
+    Note -- Use only one of the 'source' or 'file' arguments.
+    If both are used the 'source' argument overrides 'file'.
 
 
 **Description:**
@@ -2287,10 +2315,12 @@ DeletePlotDatabaseKeyframe
 
 
 plotIndex : integer
-    A zero-based integer value corresponding to a plot's index in the plot list.
+    A zero-based integer value corresponding to a plot's index in the plot
+    list.
 
 frame : integer
-    A zero-based integer value corresponding to a database keyframe at a particular animation frame.
+    A zero-based integer value corresponding to a database keyframe at a
+    particular animation frame.
 
 
 **Description:**
@@ -2337,10 +2367,12 @@ DeletePlotKeyframe
 
 
 plotIndex : integer
-    A zero-based integer value corresponding to a plot's index in the plot list.
+    A zero-based integer value corresponding to a plot's index in the plot
+    list.
 
 frame : integer
-    A zero-based integer value corresponding to a plot keyframe at a particular animation frame.
+    A zero-based integer value corresponding to a plot keyframe at a
+    particular animation frame.
 
 
 **Description:**
@@ -2397,7 +2429,8 @@ DeleteViewKeyframe
 
 
 frame : integer
-    A zero-based integer value corresponding to a view keyframe at a particular animation frame.
+    A zero-based integer value corresponding to a view keyframe at a
+    particular animation frame.
 
 
 **Description:**
@@ -2487,7 +2520,8 @@ opIndex : integer
     A zero-based integer corresponding to the operator that should be demoted.
 
 applyToAllPlots : AMBIGUOUS
-    An integer flag that causes all plots in the plot list to be affected when it is non-zero.
+    An integer flag that causes all plots in the plot list to be affected when
+    it is non-zero.
 
 return type : CLI_return_t
     DemoteOperator returns 1 on success and 0 on failure.
@@ -2558,7 +2592,7 @@ DisableRedraw
   DisableRedraw()
   AddOperator("Slice")
   # Set the slice operator attributes
-  # Redraw now that th operator attributes are set. This will
+  # Redraw now that thw operator attributes are set. This will
   # prevent 1 redraw.
   RedrawWindow()
 
@@ -2607,10 +2641,15 @@ EnableTool
 
 
 toolIndex : integer
-    This is an integer that corresponds to an interactive tool.(Plane tool = 0, Line tool = 1, Plane tool = 2, Box tool = 3,Sphere tool = 4, Axis Restriction tool = 5)
+    This is an integer that corresponds to an interactive tool.
+    (Plane tool = 0, Line tool = 1, Plane tool = 2, Box tool = 3,
+    Sphere tool = 4, Axis Restriction tool = 5)
 
 activeFlag : integer
     An integer value of 1 enables the tool while a value of 0 disables the tool.
+
+return : CLI_return_t
+    The EnableToole function returns 1 on success and 0 on failure.
 
 
 **Description:**
@@ -2634,6 +2673,70 @@ activeFlag : integer
   EnableTool(1,1) # Turn on the plane tool.
   EnableTool(2,1) # Turn on the sphere tool.
   EnableTool(2,0) # Turn off the sphere tool.
+
+
+EvalCubic
+---------
+
+**Synopsis:**
+
+::
+
+  EvalCubic(t, c0, c1, c2, c3) -> f(t)
+
+
+t : double
+    A floating point number in the range [0., 1.] that represents the distance
+    from c0 to c3.
+    
+c0 : arithmetic expression object
+    The first control point. f(0) = c0. Any object that can be used in an
+    arithmetic expression can be passed for c0.
+    
+c1 : arithmetic expression object
+    The second control point. Any object that can be used in an arithmetic
+    expression can be passed for c1.
+    
+c2 : arithmetic expression object
+    The third control point. Any object that can be used in an arithmetic
+    expression can be passed for c2.
+    
+c3 : arithmetic expression object
+    The last control point. f(1) = c3. Any object that can be used in an
+    arithmetic expression can be passed for c3.
+
+return : double
+    The EvalCubic function returns the interpolated value for t taking into
+    account the control points that were passed in.
+
+
+**Description:**
+
+    The EvalCubic function takes in four objects and blends them using a cubic
+    polynomial and returns the blended value.
+
+
+**Example:**
+
+::
+
+  #% visit -cli
+  OpenDatabase("/usr/gapps/visit/data/globe.silo")
+  AddPlot("Pseudocolor", "u")
+  DrawPlots()
+  v0 = GetView3D()
+  # rotate the plots
+  v1 = GetView3D()
+  # rotate the plots again.
+  v2 = GetView3D()
+  # rotate the plots one last time.
+  v3 = GetView3D()
+  # Fly around the plots using the views that have been specified.
+  nSteps = 100
+  for i in range(nSteps):
+  t = float(i) / float(nSteps - 1)
+  newView = EvalCubic(t, v0, v1, v2, v3)
+  SetView3D(newView)
 
 
 ExecuteMacro
@@ -2687,10 +2790,13 @@ ExportDatabase
 
 
 e : STARTING_VALUE
-    An object of type ExportDBAttributes.  This object specifies the options for exporting the database.
+    An object of type ExportDBAttributes.  This object specifies the options
+    for exporting the database.
 
 o : dictionary
-    A dictionary containing a key/value mapping to set options needed by thedatabase exporter.  The default values can be obtained in the appropriateformat using GetExportOptions('plugin').
+    A dictionary containing a key/value mapping to set options needed by the
+    database exporter.  The default values can be obtained in the appropriate
+    format using GetExportOptions('plugin').
 
 return type : CLI_return_t
     Returns 1 on success, 0 on failure.
@@ -3066,7 +3172,8 @@ GetCallbackArgumentCount
 
 
 callbackName : AMBIGUOUS
-    The name of a callback function. This name is a member of the tuple returnedby GetCallbackNames().
+    The name of a callback function. This name is a member of the tuple
+    returned by GetCallbackNames().
 
 return type : CLI_return_t
     The GetCallbackArgumentCount function returns the number of arguments
@@ -3080,8 +3187,7 @@ return type : CLI_return_t
 
   cbName = 'OpenDatabaseRPC'
   count = GetCallbackArgumentCount(cbName)
-  print 'The number of arguments for %s is: %d
-  ' % (cbName, count)
+  print 'The number of arguments for %s is: %d' % (cbName, count)
 
 
 GetCallbackNames
@@ -3156,7 +3262,10 @@ GetDebugLevel
 
 
 level : string
-    A string '1', '2', '3', '4', '5' with an optional 'b' suffix to indicatewhether the output should be buffered. A value of '1' is a low debug level , which should be used to produce little output while a value of 5 should produce a lot of debug output.
+    A string '1', '2', '3', '4', '5' with an optional 'b' suffix to indicate
+    whether the output should be buffered. A value of '1' is a low debug
+    level, which should be used to produce little output while a value of 5
+    should produce a lot of debug output.
 
 return type : CLI_return_t
     The GetDebugLevel function returns the debug level of the VisIt module.
@@ -3264,7 +3373,8 @@ GetEngineList
 
 
 flag : AMBIGUOUS
-    If flag is a non-zero integer then the function returns a tuple of tuples with information about simulations.
+    If flag is a non-zero integer then the function returns a tuple of tuples
+    with information about simulations.
 
 return type : AMBIGUOUS
     GetEngineList returns a tuple of strings that contain the names of the
@@ -3313,10 +3423,13 @@ GetEngineProperties
 
 
 engine : STARTING_VALUE
-    When engine is passed and it matches one of the computer names returnedfrom GetEngineList() then the EngineProperties object for that engine is returned.
+    When engine is passed and it matches one of the computer names returned
+    from GetEngineList() then the EngineProperties object for that engine is
+    returned.
 
 sim : STARTING_VALUE
-    When both engine and sim arguments are passed, then the EngineProperties object for the simulation is returned.
+    When both engine and sim arguments are passed, then the EngineProperties
+    object for the simulation is returned.
 
 return type : EngineProperties object
     The EngineProperties object for the specified compute engine/sim.
@@ -3526,7 +3639,8 @@ GetLight
 
 
 index : integer
-    A zero-based integer index into the light list. Index can be in the range [0,7].
+    A zero-based integer index into the light list. Index can be in the range
+    [0,7].
 
 return type : LightAttributes object
     GetLight returns a LightAttributes object.
@@ -3637,7 +3751,7 @@ GetMachineProfile
 
 
 hostname : STARTING_VALUE
-    
+
 
 return type : MachineProfile object
     MachineProfile for hostname.
