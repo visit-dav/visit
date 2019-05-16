@@ -81,9 +81,13 @@ class Container(object):
     """
     def __init__(self):
         self.text = []
+        self.last = False
     
     def extend(self, extension):
         self.text.append(extension)
+    
+    def set_last(self, is_last):
+        self.last = is_last
     
     def __str__(self):
         """
@@ -94,12 +98,17 @@ class Container(object):
             returns:
                 A formatted string. 
         """
+        if self.last:
+            self.text = self.text[0:-1]
         output  = '"' + self.title + r'\n' + '"\n'
         output += '"' + r'\n' + '"\n'
         for line in self.text:
             output += '"' + line + r'\n' + '"\n'
-        output += '"' + r'\n' + '"\n'
-        output += '"' + r'\n' + '"\n'
+        if self.last:
+            output += ';\n'
+        else:
+            output += '"' + r'\n' + '"\n'
+            output += '"' + r'\n' + '"\n'
         return output
 
 
@@ -116,10 +125,10 @@ class ArgumentsContainer(Container):
     def __init__(self, arg_name):
         self.title = 'Arguments:'
         Container.__init__(self)
-        self.text.append(split_colon(arg_name))
+        self.text.append(split_colon_add_spaces(arg_name))
 
     def extend(self, extension):
-        self.text.append(split_colon(extension))
+        self.text.append(split_colon_add_spaces(extension))
 
 
 class ReturnsContainer(Container):
@@ -138,14 +147,6 @@ class ExampleContainer(Container):
     def __init__(self):
         self.title = 'Example:'
         Container.__init__(self)
-        
-    def __str__(self):
-        output  = '"' + self.title + r'\n' + '"\n'
-        output += '"' + r'\n' + '"\n'
-        for line in self.text[0:-1]:
-            output += '"' + line + r'\n' + '"\n'
-        output += ';\n'
-        return output
 
 
 
@@ -165,11 +166,11 @@ def insert_backslash(text):
         text = insert_into_string(text, ndx, '\\')
     return text
 
-def split_colon(line):
+def split_colon_add_spaces(line):
     if line.find(':') > -1:
         output = line.split()[0]
     else:
-        output = line
+        output = '    ' + line
     return output
 
 
@@ -194,26 +195,31 @@ def write_state(writer, state_dict):
 if __name__ == '__main__':
 
     func_file   = open('cli_manual/functions.rst', 'r')
-    h_output    = open('DELETE_ME.h','w')
-    c_output    = open('DELETE_ME.C','w')
+    h_output    = open('../visitpy/common/MethodDoc.h','w')
+    c_output    = open('../visitpy/common/MethodDoc.C','w')
     
     h_output.write(copyright)
     c_output.write(copyright)
     
     block_dict = {'synopsis': None, 'arguments': None, 'returns': None, 'description': None, 'example': None}
     cur_block = None
+    first_func = True
     
     func_file_lines = func_file.readlines()
     for i in range(0, len(func_file_lines)):
         line = insert_backslash(func_file_lines[i])
+        # print line[0:-1]
         
         if line[0] in ['\n', '|', ':', '='] or line == 'Functions\n':
             continue
             
         if line[0] == '-': # The previous line was a function name
             # Output the last state of the block_dict
-            write_state(c_output, block_dict)
-            
+            if not first_func:
+                block_dict[cur_block].set_last(True)
+                write_state(c_output, block_dict)
+        
+            first_func = False
             # Setup the next function
             cur_block = 'Function:'
             block_dict = {'synopsis': None, 'arguments': None, 'returns': None, 'description': None, 'example': None}
