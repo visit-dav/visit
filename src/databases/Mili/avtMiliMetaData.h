@@ -56,7 +56,6 @@ extern "C" {
 #include "rapidjson/istreamwrapper.h"
 
 
-
 //
 // Info needed by the vtkLabel class. 
 //
@@ -116,7 +115,7 @@ class SubrecInfo
 
   private:
 
-    int                      nSR;        
+    int                      numSubrecs;        
     intVector                numElements;
     intVector                numDataBlocks;
     std::vector< intVector > dataBlockRanges;   
@@ -134,6 +133,15 @@ class SubrecInfo
 //
 //  Purpose:
 //      A container for mili variable meta data. 
+//
+//      Special cases:
+//          material variables: defined on materials only. 
+//          global: a single value across the entire mesh.
+//          shared: a variable that is shared across cell types. 
+//          element sets: arrays of integration points. Before rendering, 
+//              a single integration point is chosen for display. 
+//          sand: elements that have been destroyed during a simulation. 
+//          cause: a value denoting the cause of destruction. 
 //
 //  Programmer:  Alister Maguire
 //  Creation:    Jan 16, 2019
@@ -220,7 +228,7 @@ class MiliVariableMetaData
                                  { return isShared; };
 
     void                       AddSubrecId(int, int);
-    intVector                 &GetSubrecIds(int);
+    intVector                  GetSubrecIds(int);
     
     virtual const std::string &GetPath(void);
 
@@ -366,6 +374,11 @@ class MiliElementSetMetaData : public MiliVariableMetaData
 //  Purpose:
 //      A container for mili class meta data. 
 //
+//      Mili variables are defined and retrieved by "Classes" they are 
+//      associated with. Some of the classes are cell types, others are
+//      material, node, etc. Variables can be defined across multiple 
+//      classes.  
+//
 //  Programmer:  Alister Maguire
 //  Creation:    Jan 16, 2019
 //
@@ -487,8 +500,9 @@ class MiliMaterialMetaData
 //  Class: avtMiliMetaData
 //
 //  Purpose:
-//      A container storing and accessing all mili meta data. This is the 
-//      main interface between avtMiliFileFormat and the meta data info. 
+//      A container for storing and accessing all mili meta data. This is the 
+//      main interface between avtMiliFileFormat and the meta data info that
+//      is retrieved from the .mili file and the subrecord database. 
 //
 //  Programmer:  Alister Maguire
 //  Creation:    Jan 16, 2019

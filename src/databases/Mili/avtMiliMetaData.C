@@ -61,7 +61,7 @@
 
 SubrecInfo::SubrecInfo(void)
 {
-    nSR = 0;
+    numSubrecs = 0;
 }
 
 
@@ -111,7 +111,7 @@ SubrecInfo::AddSubrec(const int SRId,
 {
     if (indexMap.count(SRId) == 0)
     {
-        indexMap[SRId] = nSR++;
+        indexMap[SRId] = numSubrecs++;
 
         numElements.push_back(numEl);
         numDataBlocks.push_back(numDB);
@@ -142,7 +142,7 @@ SubrecInfo::AddSubrec(const int SRId,
 //  Arguments:
 //      SRId        The subrecord id. 
 //      numEl       The number of elements associated with this subrecord. 
-//      numDB       The number of "data blocks" associated with this subrecord. 
+//      numDB       The number of "data blocks" associated with this subrecord.
 //      dBRanges    The data block ranges. 
 //
 //  Programmer: Alister Maguire
@@ -162,9 +162,9 @@ SubrecInfo::GetSubrec(const int SRId,
 
     if (mapItr != indexMap.end())
     {
-        numEl      = numElements[mapItr->second];
-        numDB      = numDataBlocks[mapItr->second];
-        dBRanges   = dataBlockRanges[mapItr->second];
+        numEl    = numElements[mapItr->second];
+        numDB    = numDataBlocks[mapItr->second];
+        dBRanges = dataBlockRanges[mapItr->second];
     }
     else
     {
@@ -354,7 +354,7 @@ MiliVariableMetaData::AddSubrecId(int dom, int SRId)
 //      dom    The domain of interest. 
 //
 //  Returns:
-//      A reference to the subrecord index vector 
+//      A copy of the subrecord index vector 
 //      for the given domain. These indicies correspond
 //      to the subrecordInfo stored by avtMiliMetaData.
 //           
@@ -365,16 +365,16 @@ MiliVariableMetaData::AddSubrecId(int dom, int SRId)
 //
 // ****************************************************************************
 
-intVector &
+intVector 
 MiliVariableMetaData::GetSubrecIds(int dom)
 {
-    if (dom > SRIds.size() || dom < 0)
+    if (dom >= 0 && dom < SRIds.size())
     {
-        char msg[1024];
-        sprintf(msg, "Invalid domain index for subrecord idxs!");
-        EXCEPTION1(ImproperUseException, msg);
+        return SRIds[dom];
     }
-    return SRIds[dom];
+
+    intVector empty;
+    return empty;
 }
 
 
@@ -969,9 +969,9 @@ MiliClassMetaData::MiliClassMetaData(std::string sName,
                                      int scID,
                                      int numDomains)
 {
-    shortName       = sName;
-    longName        = lName;
-    superClassId    = scID;
+    shortName    = sName;
+    longName     = lName;
+    superClassId = scID;
     DetermineType();
     numDomainElements.resize(numDomains, 0);
     connectivityOffset.resize(numDomains, 0);
@@ -1041,7 +1041,7 @@ MiliClassMetaData::SetConnectivityOffset(int domain, int offset)
 //      is not applied to all elements. 
 //
 //  Arguments: 
-//      domain    The domain. 
+//      domain    The domain of interest. 
 //
 //  Returns:
 //      The connectivity offset. 
@@ -2371,7 +2371,7 @@ avtMiliMetaData::GetVarMDIdxByShortName(const char *vName,
         if (miliVariables[i] != NULL) 
         {
             if (miliVariables[i]->GetShortName() == vName &&
-                     miliVariables[i]->GetClassShortName() == cName)
+                miliVariables[i]->GetClassShortName() == cName)
             {
                 return i;
             }
@@ -2382,7 +2382,8 @@ avtMiliMetaData::GetVarMDIdxByShortName(const char *vName,
                 // If this is an element set, we need to check against
                 // all of its group names. IMPORTANT: we must check the
                 // group names after we've checked the short name (above)
-                // so that users can still request the element set itself.  
+                // so that users can still request the element set itself
+                // (v.s. one of it's groups). Taking the lazy route...
                 //
                 stringVector groupNames = 
                     ((MiliElementSetMetaData *)miliVariables[i])->
@@ -2443,8 +2444,19 @@ avtMiliMetaData::GetVarMDIdxByPath(const char *vPath)
     {
         if (miliVariables[i] != NULL) 
         {
-            if (miliVariables[i]->IsElementSet())
+            if (miliVariables[i]->GetPath() == strVPath)
             {
+                return i;
+            }
+            else if (miliVariables[i]->IsElementSet())
+            {
+                //
+                // If this is an element set, we need to check against
+                // all of its group paths. IMPORTANT: we must check the
+                // group paths after we've checked the short name (above)
+                // so that users can still request the element set itself
+                // (v.s. one of it's groups). Taking the lazy route...
+                //
                 stringVector groupPaths = 
                     ((MiliElementSetMetaData *)miliVariables[i])->
                     GetGroupPaths();
@@ -2458,10 +2470,6 @@ avtMiliMetaData::GetVarMDIdxByPath(const char *vPath)
                         return i;
                     }
                 }
-            }
-            else if (miliVariables[i]->GetPath() == strVPath)
-            {
-                return i;
             }
         }
     }

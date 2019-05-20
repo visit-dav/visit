@@ -494,7 +494,7 @@ avtMiliFileFormat::ReadMiliVarToBuffer(char *varName,
                                        int dom,
                                        float *dataBuffer)
 {
-    if (SRInfo == NULL)
+    if (SRInfo == NULL || dataBuffer == NULL)
     {
         return;
     }
@@ -543,7 +543,7 @@ avtMiliFileFormat::ReadMiliVarToBuffer(char *varName,
             }
 
             float MBBuffer[totalBlocksSize * varSize];
-            int resultSize  = totalBlocksSize * varSize;
+            int resultSize = totalBlocksSize * varSize;
 
             ReadMiliResults(dbid[dom], ts, SRId,
                 1, &varName, vType, resultSize, MBBuffer);
@@ -699,7 +699,7 @@ avtMiliFileFormat::GetMesh(int timestep, int dom, const char *mesh)
     //
     // Do a checked conversion to integer.
     //
-    //TODO: this is used often enough to create a helper.
+    //TODO: we use this very often. Create helper?
     meshId = (int) strtol(mesh + offset, &check, 10);
     if (meshId == 0 || check == mesh + offset)
     {
@@ -748,8 +748,8 @@ avtMiliFileFormat::GetMesh(int timestep, int dom, const char *mesh)
     //
     // If our dataset contains sand, and the user has not requested
     // the sand mesh, we need to ghost out the sanded elements. 
-    // FYI: sand elements are those that have been 
-    // "destroyed" during the simulation. 
+    // FYI: sand elements are those that have been "destroyed" 
+    // during the simulation. 
     //
     if (!isSandMesh && miliMetaData[meshId]->ContainsSand())
     {
@@ -867,6 +867,13 @@ avtMiliFileFormat::GetMesh(int timestep, int dom, const char *mesh)
 //  Method: avtMiliFileFormat::ExtractMeshIdFromPath
 //
 //  Purpose:
+//      Extract the mesh id from a variable path. 
+//
+//  Arguments:
+//      varPath    The variable path. 
+//
+//  Returns:
+//      The mesh id found from the path. 
 //
 //  Programmer: Alister Maguire
 //  Creation:   Jan 15, 2019 
@@ -892,6 +899,9 @@ avtMiliFileFormat::ExtractMeshIdFromPath(const std::string &varPath)
 //
 //  Purpose:
 //      Read the given domain of the mesh. 
+//
+//  Arguments:
+//      dom    The domain of interest. 
 //
 //  Programmer: Alister Maguire
 //  Creation:   Jan 15, 2019
