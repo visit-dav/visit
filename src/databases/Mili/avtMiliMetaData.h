@@ -55,6 +55,7 @@ extern "C" {
 #include "rapidjson/document.h"
 #include "rapidjson/istreamwrapper.h"
 
+using std::string;
 
 //
 // Info needed by the vtkLabel class. 
@@ -74,8 +75,9 @@ typedef struct LabelPositionInfo
 //
 typedef struct SharedVariableInfo
 {
-    std::string  shortName;
+    string       shortName;
     intVector    variableIndicies;
+    bool         isAllES;
 } SharedVariableInfo;
 
 
@@ -155,10 +157,10 @@ class MiliVariableMetaData
 
   public:
 
-                               MiliVariableMetaData(std::string,
-                                                    std::string,
-                                                    std::string,
-                                                    std::string,
+                               MiliVariableMetaData(string,
+                                                    string,
+                                                    string,
+                                                    string,
                                                     bool,
                                                     bool,
                                                     bool,
@@ -176,16 +178,16 @@ class MiliVariableMetaData
 
     virtual                   ~MiliVariableMetaData(void);
 
-    std::string                GetLongName(void)
+    string                     GetLongName(void)
                                  { return longName; };
 
-    std::string                GetShortName(void)
+    string                     GetShortName(void)
                                  { return shortName; };
 
-    std::string                GetClassShortName(void)
+    string                     GetClassShortName(void)
                                  { return classSName; };
 
-    std::string                GetClassLongName(void)
+    string                     GetClassLongName(void)
                                  { return classLName; };
 
     int                        GetAvtVarType(void)
@@ -230,11 +232,11 @@ class MiliVariableMetaData
     void                       AddSubrecId(int, int);
     intVector                  GetSubrecIds(int);
     
-    virtual const std::string &GetPath(void);
+    virtual const string       &GetPath(void);
 
-    void                       AddVectorComponent(std::string compName)
+    void                       AddVectorComponent(string compName)
                                  { vectorComponents.push_back(compName); };
-    std::string                GetVectorComponent(int);
+    string                     GetVectorComponent(int);
     stringVector              &GetVectorComponents(void)
                                  { return vectorComponents; };
 
@@ -242,11 +244,11 @@ class MiliVariableMetaData
 
   protected:
 
-    std::string               classLName;
-    std::string               classSName;
-    std::string               longName;
-    std::string               shortName;
-    std::string               path;
+    string                    classLName;
+    string                    classSName;
+    string                    longName;
+    string                    shortName;
+    string                    path;
     
     int                       varTypeAvt;
     int                       varTypeMili;
@@ -299,10 +301,10 @@ class MiliElementSetMetaData : public MiliVariableMetaData
 
   public:
 
-                      MiliElementSetMetaData(std::string,
-                                             std::string,
-                                             std::string,
-                                             std::string,
+                      MiliElementSetMetaData(string,
+                                             string,
+                                             string,
+                                             string,
                                              bool,
                                              bool,
                                              bool,
@@ -324,15 +326,15 @@ class MiliElementSetMetaData : public MiliVariableMetaData
 
                      ~MiliElementSetMetaData(void);
 
-    virtual const std::string      &GetPath(void);
-    std::string                     GetGroupPath(int);
-    std::string                     GetGroupPath(std::string);
+    virtual const string           &GetPath(void);
+    string                          GetGroupPath(int);
+    string                          GetGroupPath(string);
     const stringVector             &GetGroupPaths(void)
                                       { return groupPaths; };
 
     int                             GetGroupIdxByPath(const char *);
 
-    std::string                     GetGroupShortName(int);
+    string                          GetGroupShortName(int);
     const stringVector             &GetGroupShortNames(void)
                                       { return groupShortNames; };
 
@@ -352,7 +354,7 @@ class MiliElementSetMetaData : public MiliVariableMetaData
     const boolVector               &GetGroupIsShared(void)
                                       { return groupIsShared; };
 
-    intVector                       GetGroupComponentIdxs(std::string);
+    intVector                       GetGroupComponentIdxs(string);
     intVector                       GetGroupComponentIdxs(int);
 
   private:
@@ -390,8 +392,8 @@ class MiliClassMetaData
 {
 
   public:
-                                      MiliClassMetaData(std::string,
-                                                        std::string,
+                                      MiliClassMetaData(string,
+                                                        string,
                                                         int,
                                                         int);
                                      ~MiliClassMetaData(void);
@@ -399,10 +401,10 @@ class MiliClassMetaData
     enum ClassType 
       { CELL, NODE, MATERIAL, GLOBAL, SURFACE, PARTICLE, UNKNOWN };
 
-    std::string                       GetLongName(void)
+    string                            GetLongName(void)
                                         { return longName; };
 
-    std::string                       GetShortName(void)
+    string                            GetShortName(void)
                                         { return shortName; };
 
     void                              SetNumElements(int, int);
@@ -413,7 +415,7 @@ class MiliClassMetaData
 
     stringVector                      GetMiliVariables(void)
                                         { return variables; };
-    void                              AddMiliVariable(std::string mv)
+    void                              AddMiliVariable(string mv)
                                         { variables.push_back(mv); };
 
     ClassType                         GetClassType(void)
@@ -444,8 +446,8 @@ class MiliClassMetaData
 
     void                              PopulateLabelPositions(int, int, int *);
 
-    std::string                       longName;
-    std::string                       shortName;
+    string                            longName;
+    string                            shortName;
     int                               superClassId;
 
     std::vector<LabelPositionInfo>    labelPositions;
@@ -479,20 +481,20 @@ class MiliClassMetaData
 class MiliMaterialMetaData
 {
   public:
-                                        MiliMaterialMetaData(std::string,
-                                                             std::string);
+                                        MiliMaterialMetaData(string,
+                                                             string);
                                        ~MiliMaterialMetaData(void);
 
-    std::string                         GetName(void)
+    string                              GetName(void)
                                           { return name; };
 
-    std::string                         GetColor(void)
-                                           { return hexColor; };
+    string                              GetColor(void)
+                                          { return hexColor; };
  
   private:
-    std::string name;
+    string      name;
     float       color[3];
-    std::string hexColor;
+    string      hexColor;
 };
 
 
@@ -567,7 +569,7 @@ class avtMiliMetaData
     bool                             ContainsSand(void)
                                        { return containsSand; };
 
-    std::string                      GetSandDir(void)
+    string                           GetSandDir(void)
                                        { return sandDir; };
 
     void                             SetNumCells(int, int);
@@ -591,8 +593,9 @@ class avtMiliMetaData
 
   private:
 
-    void                             AddSharedVariableInfo(std::string,
-                                                           int);
+    void                             AddSharedVariableInfo(string,
+                                                           int,
+                                                           bool);
 
     void                             GenerateZoneBasedLabels(int);
     void                             GenerateNodeBasedLabels(int);
@@ -607,7 +610,7 @@ class avtMiliMetaData
     int                              numVariables;
     int                              numMaterials;
     bool                             containsSand;
-    std::string                      sandDir;
+    string                           sandDir;
     intVector                        numCells;
     intVector                        numNodes;
 

@@ -2208,14 +2208,14 @@ avtMiliMetaData::AddVarMD(int varIdx,
             {
                 if (*gItr)
                 {
-                    AddSharedVariableInfo(gNames[gIdx], varIdx);
+                    AddSharedVariableInfo(gNames[gIdx], varIdx, true);
                 }
             }
         }
         else
         {
             AddSharedVariableInfo(mvmd->GetShortName(), 
-                varIdx);
+                varIdx, false);
         }
     }
 }
@@ -2563,7 +2563,8 @@ avtMiliMetaData::GenerateZoneBasedLabels(int domain)
                 miliClasses[classIdx]->GetElementLabelsPtr(domain);
             if (classLabels != NULL)
             {
-                int offset = miliClasses[classIdx]->GetConnectivityOffset(domain);
+                int offset = miliClasses[classIdx]->
+                    GetConnectivityOffset(domain);
                 MiliClassMetaData::ClassType classType = 
                     miliClasses[classIdx]->GetClassType();
 
@@ -2632,7 +2633,8 @@ avtMiliMetaData::GenerateNodeBasedLabels(int domain)
                 miliClasses[classIdx]->GetElementLabelsPtr(domain);
             if (classLabels != NULL)
             {
-                int offset = miliClasses[classIdx]->GetConnectivityOffset(domain);
+                int offset = miliClasses[classIdx]->
+                    GetConnectivityOffset(domain);
                 MiliClassMetaData::ClassType classType = 
                     miliClasses[classIdx]->GetClassType();
 
@@ -3021,6 +3023,7 @@ avtMiliMetaData::GetSharedVariableInfo(const char *shortName)
 //  Arguments: 
 //      shortName     The short name of our variable. 
 //      varIdx        The variable index in relation to the MD container. 
+//      isES          Is this variable an element set?
 //           
 //  Programmer: Alister Maguire
 //  Creation:   Jan 15, 2019
@@ -3031,7 +3034,8 @@ avtMiliMetaData::GetSharedVariableInfo(const char *shortName)
 
 void
 avtMiliMetaData::AddSharedVariableInfo(std::string shortName,
-                                       int varIdx)
+                                       int varIdx, 
+                                       bool isES)
 {
     bool newVar = true;
 
@@ -3047,6 +3051,14 @@ avtMiliMetaData::AddSharedVariableInfo(std::string shortName,
         {
             newVar = false;
             (*sItr)->variableIndicies.push_back(varIdx);
+
+            //
+            // Check if this variable changes the ES status. 
+            //
+            if ((*sItr)->isAllES && !isES)
+            {
+                (*sItr)->isAllES = false;
+            }
         }
     }
 
@@ -3057,6 +3069,7 @@ avtMiliMetaData::AddSharedVariableInfo(std::string shortName,
         //
         SharedVariableInfo *newShared = new SharedVariableInfo();
         newShared->shortName = shortName;
+        newShared->isAllES   = false;
         newShared->variableIndicies.push_back(varIdx);
         sharedVariables.push_back(newShared);
     }

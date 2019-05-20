@@ -63,6 +63,11 @@ class vtkDataArray;
 class vtkUnstructuredGrid;
 class vtkFloatArray;
 class vtkPoints;
+class vtkElementLabelArray;
+
+using std::string;
+
+typedef std::unordered_map<string, int> StrToIntMap;
 
 
 // ****************************************************************************
@@ -99,16 +104,6 @@ class avtMiliFileFormat : public avtMTMDFileFormat
 
     virtual int           GetNTimesteps(void);
 
-    void                  ReadMiliVarToBuffer(char *,
-                                              const intVector &,
-                                              SubrecInfo *,
-                                              int,
-                                              int,
-                                              int,
-                                              int,
-                                              int,
-                                              float *);
- 
     virtual vtkDataSet   *GetMesh(int, 
                                   int, 
                                   const char *); 
@@ -116,36 +111,10 @@ class avtMiliFileFormat : public avtMTMDFileFormat
     virtual vtkDataArray *GetVar(int, 
                                  int, 
                                  const char *);
-    void                  GetVar(int, 
-                                 int, 
-                                 int,
-                                 MiliVariableMetaData *varMD,
-                                 vtkFloatArray *);
 
     virtual vtkDataArray *GetVectorVar(int, 
                                        int, 
                                        const char *);
-    void                  GetVectorVar(int, 
-                                       int, 
-                                       int,
-                                       MiliVariableMetaData *varMD,
-                                       vtkFloatArray *);
-    void                  GetElementSetVar(int, 
-                                           int,
-                                           int,
-                                           std::string, 
-                                           MiliVariableMetaData *varMD,
-                                           vtkFloatArray *);
-
-    void                  AddMiliVariableToMetaData(avtDatabaseMetaData *,
-                                                    int,
-                                                    int,
-                                                    bool,
-                                                    bool,
-                                                    std::string,
-                                                    avtCentering,
-                                                    const intVector &,
-                                                    const stringVector &);
 
     virtual void          PopulateDatabaseMetaData(avtDatabaseMetaData *, int);
 
@@ -166,12 +135,51 @@ class avtMiliFileFormat : public avtMTMDFileFormat
 
     void                  ReadMesh(int);
 
+    int                   ExtractMeshIdFromPath(const string &);
+
     vtkPoints            *GetNodePositions(int, int, int);
+
+    void                  GetVar(int, 
+                                 int, 
+                                 int,
+                                 MiliVariableMetaData *varMD,
+                                 vtkFloatArray *);
+
+    void                  GetVectorVar(int, 
+                                       int, 
+                                       int,
+                                       MiliVariableMetaData *varMD,
+                                       vtkFloatArray *);
+
+    void                  GetElementSetVar(int, 
+                                           int,
+                                           int,
+                                           string, 
+                                           MiliVariableMetaData *varMD,
+                                           vtkFloatArray *);
+
+    void                  ReadMiliVarToBuffer(char *,
+                                              const intVector &,
+                                              SubrecInfo *,
+                                              int,
+                                              int,
+                                              int,
+                                              int,
+                                              int,
+                                              float *);
 
     void                  PopulateSubrecordInfo(int, 
                                                 int);
 
-    int                   ExtractMeshIdFromPath(const std::string &);
+    void                  AddMiliVariableToMetaData(avtDatabaseMetaData *,
+                                                    int,
+                                                    int,
+                                                    bool,
+                                                    bool,
+                                                    string,
+                                                    avtCentering,
+                                                    const intVector &,
+                                                    const stringVector &);
 
     //
     // Json extraction methods. 
@@ -179,38 +187,41 @@ class avtMiliFileFormat : public avtMTMDFileFormat
     void                  LoadMiliInfoJson(const char *);
 
     int                   CountJsonClassVariables(const rapidjson::Document &,
-                                       std::unordered_map<std::string, int> &);
+                                                  StrToIntMap &);
 
     MiliVariableMetaData *ExtractJsonVariable(const rapidjson::Document &,
                                               const rapidjson::Value &,
-                                              std::string,
-                                              std::string,
-                                              std::string,
+                                              string,
+                                              string,
+                                              string,
                                               int,
                                               bool,
                                               bool,
-                                std::unordered_map<std::string, int> &sharedMap);
+                                              StrToIntMap &);
 
     void                  ExtractJsonVectorComponents(const rapidjson::Value &,
                                                       const rapidjson::Value &,
-                                                      std::string,
+                                                      string,
                                                       int);
 
     void                  ExtractJsonClasses(rapidjson::Document &,
                                              int,
-                                       std::unordered_map<std::string, int> &);
+                                             StrToIntMap &);
 
     //
     // Label info retrieval.
     //
-    void                   RetrieveNodeLabelInfo(const int, 
-                                                 char *, 
-                                                 const int);
-
-    void                   RetrieveCellLabelInfo(const int, 
+    void                   RetrieveZoneLabelInfo(const int, 
                                                  char *, 
                                                  const int, 
                                                  const int);
+    void                   RetrieveNodeLabelInfo(const int, 
+                                                 char *, 
+                                                 const int);
+    vtkElementLabelArray  *GenerateLabelArray(int,
+                                              int,
+                                              const stringVector *,
+                                             std::vector<MiliClassMetaData *>);
 
     //
     // Expression helpers. 
