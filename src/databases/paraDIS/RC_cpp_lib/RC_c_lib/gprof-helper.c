@@ -30,7 +30,9 @@ It wouldn~t be too hard to put a call to setitimer in each function spawned by a
 Daniel Jönsson enhanced my code so that it could be used in a preload library without having to modify the program. It can also be very useful for libraries that spawn threads without warning, such as libSDL. The result code is shown below and can be downloaded (gprof-helper.c):
 */
 
-#define _GNU_SOURCE
+#ifndef _GNU_SOURCE
+  #define _GNU_SOURCE
+#endif
 #include <sys/time.h>
 #include <stdio.h>
 #include <stdlib.h>
