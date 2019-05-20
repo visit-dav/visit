@@ -59,10 +59,12 @@ function bv_zlib_host_profile
 
 function bv_zlib_initialize_vars
 {
-    export VISIT_ZLIB_DIR=${VISIT_ZLIB_DIR:-"$VISITDIR/zlib/${ZLIB_VERSION}/${VISITARCH}"}
-    export ZLIB_LIBRARY_DIR="${VISIT_ZLIB_DIR}/lib"
-    export ZLIB_INCLUDE_DIR="${VISIT_ZLIB_DIR}/include"
-    export ZLIB_LIBRARY="${ZLIB_LIBRARY_DIR}/libz.${SO_EXT}"
+    if [[ "$DO_ZLIB" == "yes" ]] ; then
+        export VISIT_ZLIB_DIR=${VISIT_ZLIB_DIR:-"$VISITDIR/zlib/${ZLIB_VERSION}/${VISITARCH}"}
+        export ZLIB_LIBRARY_DIR="${VISIT_ZLIB_DIR}/lib"
+        export ZLIB_INCLUDE_DIR="${VISIT_ZLIB_DIR}/include"
+        export ZLIB_LIBRARY="${ZLIB_LIBRARY_DIR}/libz.${SO_EXT}"
+    fi
 }
 
 function bv_zlib_ensure
