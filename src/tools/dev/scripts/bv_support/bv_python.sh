@@ -118,11 +118,8 @@ function bv_python_alt_python_dir
 
 function bv_python_depends_on
 {
-    local depends_on=""
-
-    if [[ "$DO_OPENSSL" == "yes" ]] ; then
-        depends_on="openssl"
-    fi
+    # we always need openssl b/c of requests.
+    local depends_on="openssl"
 
     if [[ "$DO_ZLIB" == "yes" ]] ; then
         depends_on="$depends_on zlib"
