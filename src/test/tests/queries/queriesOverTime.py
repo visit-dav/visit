@@ -511,7 +511,7 @@ def TestQueryAfterQueryOverTime():
 
 def TestMili():
     # bug '6430
-    OpenDatabase(data_path("mili_test_data/m_plot.mili"))
+    OpenDatabase(data_path("mili_test_data/single_proc/m_plot.mili"))
 
     AddPlot("Pseudocolor", "derived/velocity/z")
     DrawPlots()
@@ -590,7 +590,7 @@ def MultiVarTimePick():
     SetActiveWindow(1)
     DeleteAllPlots()
 
-    OpenDatabase(data_path("mili_test_data/m_plot.mili"))
+    OpenDatabase(data_path("mili_test_data/single_proc/m_plot.mili"))
 
     AddPlot("Pseudocolor", "inteng")
     DrawPlots()

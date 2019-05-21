@@ -2557,9 +2557,9 @@ def PickTensors():
 
 def PickMili():
     #'7144
-    OpenDatabase(data_path("mili_test_data/m_plot.mili"))
+    OpenDatabase(data_path("mili_test_data/single_proc/m_plot.mili"))
 
-    AddPlot("Pseudocolor", "derived/nodpos/x")
+    AddPlot("Pseudocolor", "Primal/Shared/edrate")
     AddOperator("Threshold")
     thresh = ThresholdAttributes()
     thresh.lowerBounds = (1.0)
@@ -2899,7 +2899,7 @@ def PickLines3D():
     ResetPickLetter()
 
 def PickZoneLabel():
-    OpenDatabase(data_path("mili_test_data2/sslide14ball_l.plt.mili"))
+    OpenDatabase(data_path("mili_test_data/single_proc/sslide14ball_l.plt.mili"))
     TurnOffAllAnnotations()
     AddPlot("Pseudocolor", "bend_magnitude")
     DrawPlots()
@@ -2914,7 +2914,7 @@ def PickZoneLabel():
     ResetPickLetter()
 
 def PickNodeLabel():
-    OpenDatabase(data_path("mili_test_data2/sslide14ball_l.plt.mili"))
+    OpenDatabase(data_path("mili_test_data/single_proc/sslide14ball_l.plt.mili"))
     TurnOffAllAnnotations()
     AddPlot("Pseudocolor", "bend_magnitude")
     DrawPlots()
@@ -2929,7 +2929,7 @@ def PickNodeLabel():
     ResetPickLetter()
 
 def PickRangeLabel():
-    OpenDatabase(data_path("mili_test_data2/sslide14ball_l.plt.mili"))
+    OpenDatabase(data_path("mili_test_data/single_proc/sslide14ball_l.plt.mili"))
     TurnOffAllAnnotations()
     AddPlot("Pseudocolor", "bend_magnitude")
     DrawPlots()
@@ -2983,7 +2983,7 @@ def TestRemovePicks():
     ResetPickLetter()
 
 def TestRemoveLabeledPicks():
-    OpenDatabase(data_path("mili_test_data2/sslide14ball_l.plt.mili"))
+    OpenDatabase(data_path("mili_test_data/single_proc/sslide14ball_l.plt.mili"))
     TurnOffAllAnnotations()
     AddPlot("Pseudocolor", "bend_magnitude")
     pickAtts = GetPickAttributes()

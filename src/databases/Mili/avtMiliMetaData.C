@@ -205,10 +205,10 @@ SubrecInfo::GetSubrec(const int SRId,
 //
 // ****************************************************************************
 
-MiliVariableMetaData::MiliVariableMetaData(std::string sName,
-                                           std::string lName,
-                                           std::string cSName,
-                                           std::string cLName,
+MiliVariableMetaData::MiliVariableMetaData(string sName,
+                                           string lName,
+                                           string cSName,
+                                           string cLName,
                                            bool isMultiM,
                                            bool isMat,
                                            bool isGlob,
@@ -255,10 +255,10 @@ MiliVariableMetaData::MiliVariableMetaData(std::string sName,
     // Sand and cause are two special cases dealing with 
     // destroyed elements. 
     //
-    isSand             = false;
-    isCause            = false;
-    std::string sanded = "sand";
-    std::string cause  = "cause";
+    isSand        = false;
+    isCause       = false;
+    string sanded = "sand";
+    string cause  = "cause";
 
     if (shortName == sanded)
     {
@@ -305,7 +305,7 @@ MiliVariableMetaData::~MiliVariableMetaData()
 //  Modifications:
 //
 // ****************************************************************************
-std::string
+string
 MiliVariableMetaData::GetVectorComponent(int idx)
 {
     if (idx >= 0 && idx < vectorComponents.size())
@@ -394,7 +394,7 @@ MiliVariableMetaData::GetSubrecIds(int dom)
 //
 // ****************************************************************************
 
-const std::string&
+const string&
 MiliVariableMetaData::GetPath()
 {
     //TODO: what we want is "classLName (classSName)/shortName"
@@ -500,10 +500,10 @@ MiliVariableMetaData::PrintSelf(void)
 //
 // ****************************************************************************
 
-MiliElementSetMetaData::MiliElementSetMetaData(std::string sName,
-                                               std::string lName,
-                                               std::string cSName,
-                                               std::string cLName,
+MiliElementSetMetaData::MiliElementSetMetaData(string sName,
+                                               string lName,
+                                               string cSName,
+                                               string cLName,
                                                bool isMultiM,
                                                bool isMat,
                                                bool isGlob,
@@ -574,7 +574,7 @@ MiliElementSetMetaData::MiliElementSetMetaData(std::string sName,
         //
         // Since we're here, figure out the paths as well. 
         //
-        std::string groupPath;
+        string groupPath;
 
         if (multiMesh)
         {
@@ -638,7 +638,7 @@ MiliElementSetMetaData::~MiliElementSetMetaData(void)
 //
 // ****************************************************************************
 
-const std::string&
+const string&
 MiliElementSetMetaData::GetPath()
 {
     return path;
@@ -664,7 +664,7 @@ MiliElementSetMetaData::GetPath()
 //
 // ****************************************************************************
 
-std::string
+string
 MiliElementSetMetaData::GetGroupPath(int groupIdx)
 {
     if (groupIdx < groupPaths.size())
@@ -694,8 +694,8 @@ MiliElementSetMetaData::GetGroupPath(int groupIdx)
 //
 // ****************************************************************************
 
-std::string
-MiliElementSetMetaData::GetGroupPath(std::string groupName)
+string
+MiliElementSetMetaData::GetGroupPath(string groupName)
 {
     for (int i = 0; i < groupShortNames.size(); ++i)
     {
@@ -731,11 +731,19 @@ MiliElementSetMetaData::GetGroupPath(std::string groupName)
 int
 MiliElementSetMetaData::GetGroupIdxByPath(const char *groupPath)
 {
+    string truePath = groupPath;
+    if (strstr(groupPath, avtMiliMetaData::GetSandDir()) == groupPath) 
+    {
+        string strVPath(groupPath);
+        size_t sDirPos = strVPath.find_first_of("/");
+        truePath       = strVPath.substr(sDirPos + 1);
+    }
+
     int gIdx = 0;
     for (stringVector::iterator gItr = groupPaths.begin();
          gItr != groupPaths.end(); ++gItr, ++gIdx)
     {
-        if ((*gItr) == groupPath)
+        if ((*gItr) == truePath)
         {
             return gIdx;
         }
@@ -764,14 +772,14 @@ MiliElementSetMetaData::GetGroupIdxByPath(const char *groupPath)
 //
 // ****************************************************************************
 
-std::string
+string
 MiliElementSetMetaData::GetGroupShortName(int gIdx)
 {
     if (gIdx >= 0 && gIdx < groupShortNames.size())
     {
         return groupShortNames[gIdx];
     }
-    std::string empty;
+    string empty;
     return empty;
 }
 
@@ -898,7 +906,7 @@ MiliElementSetMetaData::GetGroupVecComponents(int gIdx)
 // ****************************************************************************
 
 intVector 
-MiliElementSetMetaData::GetGroupComponentIdxs(std::string groupName)
+MiliElementSetMetaData::GetGroupComponentIdxs(string groupName)
 {
     for (int i = 0; i < groupShortNames.size(); ++i)
     {
@@ -964,8 +972,8 @@ MiliElementSetMetaData::GetGroupComponentIdxs(int groupIdx)
 //
 // ****************************************************************************
 
-MiliClassMetaData::MiliClassMetaData(std::string sName,
-                                     std::string lName,
+MiliClassMetaData::MiliClassMetaData(string sName,
+                                     string lName,
                                      int scID,
                                      int numDomains)
 {
@@ -1457,7 +1465,7 @@ MiliClassMetaData::GenerateElementLabels(int domain)
             {
                 char cLabel[256];
                 sprintf(cLabel, "%s %i", cSName, (*idItr));
-                std::string sLabel = std::string(cLabel);
+                string sLabel = string(cLabel);
                 elementLabels[domain][pos++] = sLabel;
 
                 maxLabelLengths[domain] = std::max(int(sLabel.size()), 
@@ -1483,8 +1491,8 @@ MiliClassMetaData::GenerateElementLabels(int domain)
 //
 // ****************************************************************************
 
-MiliMaterialMetaData::MiliMaterialMetaData(std::string matName,
-                                           std::string matColor)
+MiliMaterialMetaData::MiliMaterialMetaData(string matName,
+                                           string matColor)
 {
     name     = matName;
     hexColor =  matColor;
@@ -1530,10 +1538,9 @@ avtMiliMetaData::avtMiliMetaData(int nDomains)
     // "destroyed" during the simulation process. By default,
     // we ghost them out. However, we also allow access to 
     // a mesh that keeps these elements intact. These variables
-    // are all found under the sandDir. 
+    // are all found in the sand path (see GetSandDir()). 
     //
     containsSand  = false;
-    sandDir       = "sand_mesh";
 
     miliVariables = NULL;
     miliClasses   = NULL;
@@ -1812,7 +1819,7 @@ avtMiliMetaData::SetNumCells(int domain, int nCells)
     if (domain >= 0 and domain < numDomains)
     {
         numCells[domain] = nCells;
-        zoneBasedLabels[domain].resize(nCells, std::string(""));
+        zoneBasedLabels[domain].resize(nCells, string(""));
     }
 }
 
@@ -1840,7 +1847,7 @@ avtMiliMetaData::SetNumNodes(int domain, int nNodes)
     if (domain >= 0 && domain < numDomains)
     {
         numNodes[domain] = nNodes;
-        nodeBasedLabels[domain].resize(nNodes, std::string(""));
+        nodeBasedLabels[domain].resize(nNodes, string(""));
 
         //
         // See if we have a node class. If so, tell it 
@@ -2160,7 +2167,7 @@ void
 avtMiliMetaData::AddVarMD(int varIdx, 
                           MiliVariableMetaData *mvmd)
 {
-    std::string sName = mvmd->GetShortName();
+    string sName = mvmd->GetShortName();
 
     if (varIdx < 0 || varIdx > numVariables)
     {
@@ -2283,11 +2290,11 @@ MiliVariableMetaData *
 avtMiliMetaData::GetVarMDByPath(const char *vPath)
 {
     int idx = -1;
-    if (strstr(vPath, sandDir.c_str()) == vPath) 
+    if (strstr(vPath, GetSandDir()) == vPath) 
     {
-        std::string strVPath(vPath);
-        size_t sDirPos       = strVPath.find_first_of("/");
-        std::string truePath = strVPath.substr(sDirPos + 1);
+        string strVPath(vPath);
+        size_t sDirPos  = strVPath.find_first_of("/");
+        string truePath = strVPath.substr(sDirPos + 1);
         idx = GetVarMDIdxByPath(truePath.c_str());
     }
     else
@@ -2428,9 +2435,9 @@ avtMiliMetaData::GetVarMDIdxByShortName(const char *vName,
 int
 avtMiliMetaData::GetVarMDIdxByPath(const char *vPath)
 {
-    std::string strVPath(vPath);
+    string strVPath(vPath);
 
-    if (strstr(vPath, sandDir.c_str()) == vPath) 
+    if (strstr(vPath, GetSandDir()) == vPath) 
     {
         size_t sDirPos = strVPath.find_first_of("/");
         strVPath       = strVPath.substr(sDirPos + 1);
@@ -3033,7 +3040,7 @@ avtMiliMetaData::GetSharedVariableInfo(const char *shortName)
 // ****************************************************************************
 
 void
-avtMiliMetaData::AddSharedVariableInfo(std::string shortName,
+avtMiliMetaData::AddSharedVariableInfo(string shortName,
                                        int varIdx, 
                                        bool isES)
 {
@@ -3073,4 +3080,47 @@ avtMiliMetaData::AddSharedVariableInfo(std::string shortName,
         newShared->variableIndicies.push_back(varIdx);
         sharedVariables.push_back(newShared);
     }
+}
+
+
+// ***************************************************************************
+//  Method: avtMiliMetaData::ContainsESFlag
+//
+//  Purpose:
+//      Determine if a string contains an element set flag. This is used
+//      to determine if a variable is an element set from its short name. 
+//
+//  Arguments: 
+//      shortName     The short name to test. 
+//      sNSize        The length of shortName.  
+//           
+//  Programmer: Alister Maguire
+//  Creation:   May 21, 2019
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+bool
+avtMiliMetaData::ContainsESFlag(const char *shortName, int sNSize)
+{
+    const char *esFlag = "es_";
+    const int flagSize = 3;
+
+    if (sNSize < flagSize)
+    {
+        return false; 
+    }
+
+    int i = 0;
+    while (i < flagSize)
+    {
+        if (shortName[i] != esFlag[i])
+        {
+            return false;
+        }
+        ++i;
+    }
+
+    return true;
 }

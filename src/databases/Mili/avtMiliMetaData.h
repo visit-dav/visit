@@ -569,9 +569,6 @@ class avtMiliMetaData
     bool                             ContainsSand(void)
                                        { return containsSand; };
 
-    string                           GetSandDir(void)
-                                       { return sandDir; };
-
     void                             SetNumCells(int, int);
     int                              GetNumCells(int);
 
@@ -590,6 +587,11 @@ class avtMiliMetaData
     SubrecInfo                      *GetSubrecInfo(int);
 
     SharedVariableInfo              *GetSharedVariableInfo(const char *);
+
+    static const char               *GetSandDir(void)
+                                       { return "sand_mesh"; };
+
+    static bool                      ContainsESFlag(const char *, int);
 
   private:
 

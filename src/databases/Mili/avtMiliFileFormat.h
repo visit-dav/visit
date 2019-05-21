@@ -175,7 +175,6 @@ class avtMiliFileFormat : public avtMTMDFileFormat
                                                     int,
                                                     int,
                                                     bool,
-                                                    bool,
                                                     string,
                                                     avtCentering,
                                                     const intVector &,

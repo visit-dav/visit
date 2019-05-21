@@ -144,30 +144,36 @@ def TestSandMesh():
     SetTimeSliderState(101)
     
     # 
-    # First, let's test the mesh without sand. It should
-    # look well formed. 
+    # First, let's look at the sand variable on a non-sanded mesh. 
+    # It should be well structured. 
     # 
     AddPlot("Mesh", "mesh1")
-    AddPlot("Pseudocolor", "Primal/Shared/stress/sx")
+    AddPlot("Pseudocolor", "Primal/Shared/sand")
     DrawPlots()
     Test("mili_sand_mesh_01")
+    DeleteAllPlots()
     
     #
-    # Now let's add the sand mesh. It's a mess. 
+    # Now let's view the sand mesh. It's a mess. 
     #
     AddPlot("Mesh", "sand_mesh1")
+    AddPlot("Pseudocolor", "Primal/Shared/sand")
     DrawPlots()
     Test("mili_sand_mesh_02")
 
-    DeleteAllPlots()
-
     #
-    # Now let's look at the sanded elements. 
+    # Now let's look at sand in its sanded state. 
     #
-    AddPlot("Mesh", "mesh1")
-    AddPlot("Pseudocolor", "sand_mesh/Primal/Shared/sand")
+    ChangeActivePlotsVar("sand_mesh/Primal/Shared/sand")
     DrawPlots()
     Test("mili_sand_mesh_03")
+
+    #
+    # We need to make sure that other variables can also be 
+    # viewed in their sanded state. 
+    #
+    ChangeActivePlotsVar("sand_mesh/Primal/shell/stress_mid/sx")
+    Test("mili_sand_mesh_04")
     
     DeleteAllPlots()
 
@@ -204,7 +210,7 @@ def TestParticles():
     v.viewNormal = (0.9, 0.35, -0.88)
     SetView3D(v)
 
-    AddPlot("Pseudocolor", "Primal/Shared/stress/szx")
+    AddPlot("Pseudocolor", "Primal/particle/stress/sxy")
     DrawPlots()
     Test("mili_particle_01")
     DeleteAllPlots()

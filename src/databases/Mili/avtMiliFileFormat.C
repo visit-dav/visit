@@ -2257,7 +2257,6 @@ avtMiliFileFormat::ReadMiliVarToBuffer(char *varName,
 //    avtMD          The meta-data structure to populate
 //    meshId         The associated mesh.
 //    avtType        The variable avt type (material, vector, etc).
-//    addToDefault   Whether or not to add to the default mesh.
 //    doSand         Whether or not to build the sand mesh. 
 //    varPath        The variable's visit path. 
 //    centering      The variable centering (node/zone). 
@@ -2276,7 +2275,6 @@ void
 avtMiliFileFormat::AddMiliVariableToMetaData(avtDatabaseMetaData *avtMD,
                                              int                  meshId,
                                              int                  avtType,
-                                             bool                 addToDefault,
                                              bool                 doSand,  
                                              string               varPath,
                                              avtCentering         centering,
@@ -2288,19 +2286,30 @@ avtMiliFileFormat::AddMiliVariableToMetaData(avtDatabaseMetaData *avtMD,
     // variable must be added to. 
     //
     stringVector meshPaths;
-    if (addToDefault)
-    {  
-        meshPaths.push_back(varPath);
-    }
+    stringVector meshNames;
+    int numMeshes = 0;
+
+    //
+    // We always add the variable to the default non-sanded mesh.
+    //
+    meshPaths.push_back(varPath);
+
+    char meshName[32];
+    sprintf(meshName, "mesh%d", meshId + 1);
+    meshNames.push_back(meshName);
+    numMeshes++;
+
     if (doSand)
     {
         string sandDir  = miliMetaData[meshId]->GetSandDir();
         string sandPath = sandDir + "/" + varPath;
         meshPaths.push_back(sandPath);
-    }
 
-    char meshName[32];
-    sprintf(meshName, "mesh%d", meshId + 1);
+        char meshName[32];
+        sprintf(meshName, "sand_mesh%d", meshId + 1);
+        meshNames.push_back(meshName);
+        numMeshes++;
+    }
 
     int vecSize = compIdxs.size();
 
@@ -2370,20 +2379,19 @@ avtMiliFileFormat::AddMiliVariableToMetaData(avtDatabaseMetaData *avtMD,
     {
         case AVT_SCALAR_VAR:
         {
-            for (stringVector::const_iterator pathIt = meshPaths.begin();
-                 pathIt != meshPaths.end(); ++pathIt)
+            for (int i = 0; i < numMeshes; ++i)
             {
-                AddScalarVarToMetaData(avtMD, (*pathIt), 
-                    meshName, centering);
+                AddScalarVarToMetaData(avtMD, meshPaths[i], 
+                    meshNames[i], centering);
             }
             break;
         }
         case AVT_VECTOR_VAR:
         {
-            for (stringVector::const_iterator pathIt = meshPaths.begin();
-                 pathIt != meshPaths.end(); ++pathIt)
+            for (int i = 0; i < numMeshes; ++i)
             {
-                AddVectorVarToMetaData(avtMD, (*pathIt), meshName, 
+                string mPath = meshPaths[i];
+                AddVectorVarToMetaData(avtMD, mPath, meshNames[i], 
                     centering, vecSize);
 
                 //
@@ -2396,9 +2404,9 @@ avtMiliFileFormat::AddMiliVariableToMetaData(avtDatabaseMetaData *avtMD,
                     // Add the x, y, z expressions. 
                     //
                     char name[1024];
-                    sprintf(name, "%s/%s", (*pathIt).c_str(), 
+                    sprintf(name, "%s/%s", mPath.c_str(), 
                         vComps[(*idxItr)].c_str());
-                    Expression expr = ScalarExpressionFromVec((*pathIt).c_str(),
+                    Expression expr = ScalarExpressionFromVec(mPath.c_str(),
                                                               name, 
                                                               (*idxItr));
                     avtMD->AddExpression(&expr);
@@ -2408,16 +2416,17 @@ avtMiliFileFormat::AddMiliVariableToMetaData(avtDatabaseMetaData *avtMD,
         }
         case AVT_SYMMETRIC_TENSOR_VAR:
         {
-            for (stringVector::const_iterator pathIt = meshPaths.begin();
-                 pathIt != meshPaths.end(); ++pathIt)
+            for (int i = 0; i < numMeshes; ++i)
             {
+                string mPath = meshPaths[i];
+
                 //
                 // When we come across a vector of length 6, we change it 
                 // to a normal vector of length 9 and render it as a 
                 // symmetric tensor. 
                 //
-                AddSymmetricTensorVarToMetaData(avtMD, (*pathIt), 
-                    meshName, centering, 9);
+                AddSymmetricTensorVarToMetaData(avtMD, mPath,
+                    meshNames[i], centering, 9);
 
                 //
                 // Now we add the individual components. 
@@ -2436,10 +2445,10 @@ avtMiliFileFormat::AddMiliVariableToMetaData(avtDatabaseMetaData *avtMD,
           
                     char singleDef[256];
                     sprintf(singleDef, "<%s>[%d][%d]", 
-                        (*pathIt).c_str(), cIdx, cIdx);
+                        mPath.c_str(), cIdx, cIdx);
                     singleDim.SetDefinition(singleDef);
 
-                    string singleName = (*pathIt) + "/" + vComps[cIdx];
+                    string singleName = mPath + "/" + vComps[cIdx];
                     singleDim.SetName(singleName);
 
                     avtMD->AddExpression(&singleDim);
@@ -2452,11 +2461,11 @@ avtMiliFileFormat::AddMiliVariableToMetaData(avtDatabaseMetaData *avtMD,
                     multDim.SetType(Expression::ScalarMeshVar);
 
                     char multDef[256];
-                    sprintf(multDef, "<%s>[%d][%d]", (*pathIt).c_str(), 
+                    sprintf(multDef, "<%s>[%d][%d]", mPath.c_str(), 
                         cIdx, multDimIdxs[cIdx]);
                     multDim.SetDefinition(multDef);
 
-                    string multName = (*pathIt) + "/" + vComps[mltDIdx];
+                    string multName = mPath + "/" + vComps[mltDIdx];
                     multDim.SetName(multName);
 
                     avtMD->AddExpression(&multDim);
@@ -2466,11 +2475,12 @@ avtMiliFileFormat::AddMiliVariableToMetaData(avtDatabaseMetaData *avtMD,
         }
         case AVT_TENSOR_VAR:
         {
-            for (stringVector::const_iterator pathIt = meshPaths.begin();
-                 pathIt != meshPaths.end(); ++pathIt)
+            for (int i = 0; i < numMeshes; ++i)
             {
-                AddTensorVarToMetaData(avtMD, (*pathIt), 
-                    meshName, centering, vecSize);
+                string mPath = meshPaths[i];
+
+                AddTensorVarToMetaData(avtMD, mPath, 
+                    meshNames[i], centering, vecSize);
 
                 //
                 // Now we add the individual components. 
@@ -2489,10 +2499,10 @@ avtMiliFileFormat::AddMiliVariableToMetaData(avtDatabaseMetaData *avtMD,
 
                     char singleDef[256];
                     sprintf(singleDef, "<%s>[%d][%d]", 
-                        (*pathIt).c_str(), cIdx, cIdx);
+                        mPath.c_str(), cIdx, cIdx);
                     singleDim.SetDefinition(singleDef);
 
-                    string singleName = (*pathIt) + "/" + vComps[cIdx];
+                    string singleName = mPath + "/" + vComps[cIdx];
                     singleDim.SetName(singleName);
 
                     avtMD->AddExpression(&singleDim);
@@ -2503,9 +2513,9 @@ avtMiliFileFormat::AddMiliVariableToMetaData(avtDatabaseMetaData *avtMD,
                     int mltDIdx = cIdx + 3;
                     Expression multDim;
                     char multDef[256];
-                    sprintf(multDef, "<%s>[%d][%d]", (*pathIt).c_str(), 
+                    sprintf(multDef, "<%s>[%d][%d]", mPath.c_str(), 
                         cIdx, multDimIdxs[cIdx]);
-                    string multName = (*pathIt) + "/" + vComps[mltDIdx];
+                    string multName = mPath + "/" + vComps[mltDIdx];
                     multDim.SetName(multName);
                     multDim.SetDefinition(multDef);
                     multDim.SetType(Expression::ScalarMeshVar);
@@ -2516,9 +2526,10 @@ avtMiliFileFormat::AddMiliVariableToMetaData(avtDatabaseMetaData *avtMD,
         }
         case AVT_ARRAY_VAR:
         {
-            for (stringVector::const_iterator pathIt = meshPaths.begin();
-                 pathIt != meshPaths.end(); ++pathIt)
+            for (int i = 0; i < numMeshes; ++i)
             {
+                string mPath = meshPaths[i];
+
                 //
                 // For array vars, we just want to display the 
                 // individual components. 
@@ -2530,16 +2541,16 @@ avtMiliFileFormat::AddMiliVariableToMetaData(avtDatabaseMetaData *avtMD,
                     int cIdx = compIdxs[j];
                     compNames.push_back(vComps[cIdx]);
                     char name[1024];
-                    sprintf(name, "%s/%s", (*pathIt).c_str(), 
+                    sprintf(name, "%s/%s", mPath.c_str(), 
                         vComps[cIdx].c_str());
                     Expression expr = ScalarExpressionFromVec(
-                                          (*pathIt).c_str(),
+                                          mPath.c_str(),
                                           name, 
                                           cIdx);
                     avtMD->AddExpression(&expr);
                 }
 
-                AddArrayVarToMetaData(avtMD, (*pathIt), compNames, meshName, 
+                AddArrayVarToMetaData(avtMD, mPath, compNames, meshNames[i],
                     centering); 
             }
             break;
@@ -2696,16 +2707,6 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
                 continue;
             }
 
-            //
-            // If this variable is sand or cause, we only add it to 
-            // the sand mesh.
-            //
-            bool addToDefault = !(varMD->IsSand() || varMD->IsCause());
-            if (!addToDefault && !doSand)
-            {
-                continue;
-            }
-
             int avtType            = varMD->GetAvtVarType();
             avtCentering centering = varMD->GetCentering();
             stringVector vComps    = varMD->GetVectorComponents();
@@ -2754,7 +2755,6 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
                         AddMiliVariableToMetaData(md,
                                                   meshId,
                                                   avtType,
-                                                  addToDefault,
                                                   doSand,  
                                                   varPath,
                                                   centering,
@@ -2778,7 +2778,6 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
                 AddMiliVariableToMetaData(md,
                                           meshId,
                                           avtType,
-                                          addToDefault,
                                           doSand,  
                                           varPath,
                                           centering,
@@ -3007,7 +3006,16 @@ avtMiliFileFormat::ExtractJsonVariable(const rapidjson::Document &jDoc,
             }
         }
 
-        if (val.HasMember("real_names"))
+        //
+        // "real_names" should only really appear with element sets,
+        // but older datasets treated element sets as separate variables
+        // (name_in, name_mid, name_out). In those older cases, we need
+        // to treat them like normal variables, but they still have 
+        // "real_names" defined. 
+        //
+        if (val.HasMember("real_names") && 
+            avtMiliMetaData::ContainsESFlag(shortName.c_str(), 
+                                            shortName.size()))
         {
             const rapidjson::Value &rN    = val["real_names"];
             const rapidjson::Value &jVars = jDoc["Variables"];
@@ -3186,9 +3194,13 @@ avtMiliFileFormat::CountJsonClassVariables(const rapidjson::Document &jDoc,
                             //
                             // Element sets are often comprised of multiple
                             // variables. We need to check for this. 
-                            // real_names is only included for element sets. 
                             //
-                            if (var.HasMember("real_names"))
+                            const char *cName = varName.c_str();
+                            int nameSize      = varName.size(); 
+
+                            if (var.HasMember("real_names") &&
+                                avtMiliMetaData::ContainsESFlag(cName,
+                                                                nameSize))
                             {
                                 const rapidjson::Value &rN = var["real_names"];
  
