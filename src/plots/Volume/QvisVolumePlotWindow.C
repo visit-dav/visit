@@ -1397,7 +1397,7 @@ void QvisVolumePlotWindow::CreateOSPRayGroups(QWidget *parent, QLayout *pLayout)
     // value: min contribution
     osprayMinContributionWidget        = new QWidget(osprayGroup);
     QHBoxLayout *mincontributionLayout = new QHBoxLayout(osprayMinContributionWidget);
-    osprayMinContributionLabel         = new QLabel(tr("Minimum Contrinution"),
+    osprayMinContributionLabel         = new QLabel(tr("Minimum Contribution"),
                                                     osprayMinContributionWidget);
     osprayMinContribution              = new QDoubleSpinBox(osprayMinContributionWidget);
     osprayMinContribution->setKeyboardTracking(false);
