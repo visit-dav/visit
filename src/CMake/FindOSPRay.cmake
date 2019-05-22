@@ -85,13 +85,13 @@ IF(VISIT_OSPRAY)
     # so developer builds can load them
 
     IF( NOT WIN32 )
-    FOREACH(ospray_lib ${OSPRAY_LIBRARIES})
-        IF( "${ospray_lib}" MATCHES "ispc")
-            execute_process(COMMAND ${CMAKE_COMMAND} -E copy
-                                    ${ospray_lib}
-                                    ${VISIT_BINARY_DIR}/lib/)
-        ENDIF()
-    ENDFOREACH()
+        FOREACH(ospray_lib ${OSPRAY_LIBRARIES})
+            IF( "${ospray_lib}" MATCHES "ispc")
+                execute_process(COMMAND ${CMAKE_COMMAND} -E copy
+                                        ${ospray_lib}
+                                        ${VISIT_BINARY_DIR}/lib/)
+            ENDIF()
+        ENDFOREACH()
     ENDIF()
 
 
