@@ -3,7 +3,7 @@ function bv_adios2_initialize
     export FORCE_ADIOS2="no"
     export DO_ADIOS2="no"
     export USE_SYSTEM_ADIOS2="no"
-    add_extra_commandline_args "adios" "alt-adios-dir" 1 "Use alternative directory for adios"
+    add_extra_commandline_args "adios2" "alt-adios2-dir" 1 "Use alternative directory for adios"
 
 }
 
@@ -21,7 +21,7 @@ function bv_adios2_disable
     DO_ADIOS2="no"
 }
 
-function bv_adios2_alt_adios_dir
+function bv_adios2_alt_adios2_dir
 {
     echo "Using alternate Adios2 directory"
 
@@ -54,12 +54,6 @@ function bv_adios2_depends_on
 
 function bv_adios2_initialize_vars
 {
-    if [[ "$FORCE_ADIOS2" == "no" && "$parallel" == "no" ]]; then
-        bv_adios2_disable
-        warn "Adios2 requested by default but the parallel flag has not been set. Adios2 will not be built."
-        return
-    fi
-
     if [[ "$USE_SYSTEM_ADIOS2" == "no" ]]; then
         ADIOS2_INSTALL_DIR="${VISITDIR}/adios2/$ADIOS2_VERSION/$VISITARCH"
     fi
