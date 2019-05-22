@@ -45,7 +45,9 @@
 #define INTERACTIVEREAD 0
 // Validate the following if gzip is installed on your system.
 // VisIt usually assumes it is installed.
-#define GZSTUFF 1
+#ifdef HAVE_ZLIB_H
+  #define GZSTUFF 1
+#endif
 // ************************************************************************* //
 
 #include <avtunvFileFormat.h>
@@ -1802,7 +1804,9 @@ avtunvFileFormat::avtunvFileFormat(const char *fname) : avtSTSDFileFormat(fname)
     filename = fname ; // strdup(fn);
     // File handles
     handle = NULL;
+#if GZSTUFF
     gzhandle = Z_NULL;
+#endif
     // Data contents
     nbnodes = 0;
     maxnodl = 0;
@@ -3926,7 +3930,11 @@ avtunvFileFormat::ReadFile()
         fprintf(stdout,"Unable to read unv()\n");
     }
     ENDTRY
+#if GZSTUFF
     if (handle == NULL && gzhandle == Z_NULL)
+#else
+    if (handle == NULL)
+#endif
     {
         EXCEPTION1(InvalidFilesException, filename.c_str());
     }
