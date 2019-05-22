@@ -79,6 +79,22 @@ IF(VISIT_OSPRAY)
             ${LIBRARY_PATH_PREFIX}ospray_module_visit_common.0${LIBRARY_SUFFIX})
     ENDIF()
 
+    # ospray tries to dlopen the ispc libs at runtime
+    # so we need ot make sure those libs exist in
+    # ${VISIT_BINARY_DIR}/lib/
+    # so developer builds can load them
+
+    IF( NOT WIN32 )
+    FOREACH(ospray_lib ${OSPRAY_LIBRARIES})
+        IF( "${ospray_lib}" MATCHES "ispc")
+            execute_process(COMMAND ${CMAKE_COMMAND} -E copy
+                                    ${ospray_lib}
+                                    ${VISIT_BINARY_DIR}/lib/)
+        ENDIF()
+    ENDFOREACH()
+    ENDIF()
+
+
     # install ospray libs follow visit's standard
     #
     # -- OSPRAY_LIBRARIES contains also libtbb and libembree, so we dont
