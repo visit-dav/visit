@@ -67,6 +67,9 @@
 #    Added tests for performing pick ranges over time with and 
 #    without plotting and returning the curves. 
 #
+#    Alister Maguire, Wed May 22 08:49:30 PDT 2019
+#    Updated mili tests to reflect new plugin changes. 
+#
 # ----------------------------------------------------------------------------
 RequiredDatabasePlugin(("PDB", "Mili", "SAMRAI"))
 
@@ -513,7 +516,7 @@ def TestMili():
     # bug '6430
     OpenDatabase(data_path("mili_test_data/single_proc/m_plot.mili"))
 
-    AddPlot("Pseudocolor", "derived/velocity/z")
+    AddPlot("Pseudocolor", "Primal/node/nodvel/vz")
     DrawPlots()
 
     ResetQueryOverTimeAttributes()
@@ -547,7 +550,7 @@ def TestMili():
     DeleteAllPlots()
 
     SetActiveWindow(1)
-    qvars = ("edv1", "edv2")
+    qvars = ("Primal/shell/edv1", "Primal/shell/edv2")
     QueryOverTime("TrajectoryByZone", element=242, vars=qvars)
     SetActiveWindow(2) 
     ResetView()
@@ -592,14 +595,14 @@ def MultiVarTimePick():
 
     OpenDatabase(data_path("mili_test_data/single_proc/m_plot.mili"))
 
-    AddPlot("Pseudocolor", "inteng")
+    AddPlot("Pseudocolor", "Primal/shell/inteng")
     DrawPlots()
 
     pa.timePreserveCoord = 0
     pa.timeCurveType = pa.Single_Y_Axis
     SetPickAttributes(pa)
 
-    vars = ("default", "normal_magnitude")
+    vars = ("default", "Primal/shell/normal_magnitude")
     PickByZone(233, vars)
 
     SetActiveWindow(2);
