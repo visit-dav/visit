@@ -42,7 +42,11 @@
 
 #include <avtBOVFileFormat.h>
 
-#include <zlib.h>
+#if 0 // def HAVE_ZLIB_H
+  #include <zlib.h>
+  // Cast handle to gzFile.
+  #define GZFILE(handle) ((gzFile)handle)
+#endif
 
 #include <visitstream.h>
 #include <visit-config.h>
@@ -94,8 +98,6 @@
 #define FSEEK fseek
 #endif
 
-// Cast handle to gzFile.
-#define GZFILE(handle) ((gzFile)handle)
 
 static int FormatLine(char *line);
 
@@ -806,6 +808,7 @@ avtBOVFileFormat::ReadWholeAndExtractBrick(void *dest, bool gzipped,
         EXCEPTION0(ImproperUseException);
     }
 
+#if 0 //def HAVE_ZLIB_H
     if(gzipped)
     {
         // Read past the specified offset.
@@ -816,6 +819,7 @@ avtBOVFileFormat::ReadWholeAndExtractBrick(void *dest, bool gzipped,
         gzread(GZFILE(gz_handle), whole_buff, whole_nelem * unit_size);
     }
     else
+#endif
     {
         FILE *fp = (FILE*)file_handle;
 
@@ -975,8 +979,12 @@ avtBOVFileFormat::GetVar(int dom, const char *var)
     bool gzipped = false;
     if (strstr(qual_filename, ".gz") != NULL)
     {
+#if 0 //def HAVE_ZLIB_H
         gz_handle = gzopen(qual_filename, "r");
         gzipped = true;
+#else
+        return NULL;
+#endif
     }
     else
     {
@@ -1167,6 +1175,7 @@ avtBOVFileFormat::GetVar(int dom, const char *var)
         //
         // Read in based on whether or not we have a gzipped file.
         //
+#if 0 //def HAVE_ZLIB_H
         if (gzipped)
         {
             // Read past the specified offset.
@@ -1177,6 +1186,7 @@ avtBOVFileFormat::GetVar(int dom, const char *var)
                    nvals * dataNumComponents * unit_size);
         }
         else
+#endif
         {
             // Read past the specified offset.
             if(byteOffset > 0)
@@ -1316,9 +1326,11 @@ avtBOVFileFormat::GetVar(int dom, const char *var)
     //
     // Close the file descriptors.
     //
+#if 0 //def HAVE_ZLIB_H
     if (gzipped)
         gzclose(GZFILE(gz_handle));
     else
+#endif
         fclose(file_handle);
 
     return rv;
