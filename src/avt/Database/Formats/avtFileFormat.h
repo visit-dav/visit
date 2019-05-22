@@ -140,6 +140,10 @@ class     avtVariableCache;
 //    Matt Larsen, Sat Jul 1 11:32:01 PDT 2017
 //    Adding helper function to add element label meta data 
 //
+//    Alister Maguire, Wed Jan 30 09:37:30 PST 2019
+//    Added another version of AddMaterialToMetaData that
+//    allows users to specify material colors.  
+//
 // ****************************************************************************
 
 class DATABASE_API avtFileFormat
@@ -300,6 +304,10 @@ class DATABASE_API avtFileFormat
     void       AddMaterialToMetaData(avtDatabaseMetaData *, std::string,
                    std::string,int,
                    std::vector<std::string> = std::vector<std::string>());
+    void       AddMaterialToMetaData(avtDatabaseMetaData *, std::string,
+                   std::string,int,
+                   std::vector<std::string>,
+                   std::vector<std::string>);
     void       AddSpeciesToMetaData(avtDatabaseMetaData *, std::string,
                                     std::string, std::string, int,
                                     std::vector<int>,

@@ -3,193 +3,245 @@
 #
 #  Test Case:  mili.py
 #
-#  Tests:      mesh      - 3D unstructured,multi-domain, 
-#              plots     - Pseudocolor, mesh
+#  Tests:      mesh      - 3D unstructured, multi-domain
+#              plots     - Pseudocolor, material, vector, tensor
 #
 #  Defect ID:  none
 #
-#  Programmer: Hank Childs
-#  Date:       March 31, 2005
+#  Programmer: Alister Maguire
+#  Date:       
 #
 #  Modifications:
 #
-#    Hank Childs, Fri Oct  7 16:58:05 PDT 2005
-#    Test ratio of volumes with material selection (only works on time
-#    varying Lagrangian calculations, like those in Mili files).
-#
-#    Kathleen Bonnell, Wed May  6 17:33:02 PDT 2009
-#    Substituted non-existent var "derived/stress/eff_stress" with
-#    "derived/eff_stress"
-#
-#
-#    Cyrus Harrison, Thu Mar 25 09:57:34 PDT 2010
-#    Added call(s) to DrawPlots() b/c of changes to the default plot state
-#    behavior when an operator is added.
-#
-#    Cyrus Harrison, Thu Aug 26 14:47:36 PDT 2010
-#    Change set ids due to SIL generation change.
-#
 # ----------------------------------------------------------------------------
 RequiredDatabasePlugin("Mili")
+single_domain_path = data_path("mili_test_data/single_proc/")
+multi_domain_path  = data_path("mili_test_data/multi_proc/")
 
-OpenDatabase(data_path("mili_test_data/m_plot.mili"))
-
-AddPlot("FilledBoundary", "materials1_no_free_nodes(mesh1_no_free_nodes)")
-DrawPlots()
-
-v = GetView3D()
-v.viewNormal = (-0.31, 0.35, 0.88)
-SetView3D(v)
-
-Test("mili_01")
-
-SetTimeSliderState(101)
-v = GetView3D()
-v.viewNormal = (0.38, 0.34, 0.85)
-v.focus = (14.1, 0, 0)
-v.viewUp = (0, 1, 0)
-SetView3D(v)
-Test("mili_02")
-
-thres = ThresholdAttributes()
-thres.lowerBounds = (0.5)
-thres.listedVarNames = ("sand")
-SetDefaultOperatorOptions(thres)
-
-AddOperator("Threshold")
-DrawPlots()
-Test("mili_03")
-
-DeleteAllPlots()
-# We have to test a *lot* of scalar quantities, because they correspond to
-# a lot of different expressions.  On the plus side, we are getting a lot
-# of code coverage out of this.
-AddPlot("Pseudocolor", "derived/acceleration/mag")
-AddOperator("Threshold")
-DrawPlots()
-Test("mili_04")
-
-ChangeActivePlotsVar("derived/pressure")
-Test("mili_05")
-ChangeActivePlotsVar("derived/stress/x")
-Test("mili_06")
-ChangeActivePlotsVar("derived/stress/z")
-Test("mili_07")
-ChangeActivePlotsVar("derived/stress/xy")
-Test("mili_08")
-ChangeActivePlotsVar("derived/stress/yz")
-Test("mili_09")
-ChangeActivePlotsVar("derived/stress/xz")
-Test("mili_10")
-ChangeActivePlotsVar("derived/eff_stress")
-Test("mili_11")
-ChangeActivePlotsVar("derived/prin_dev_stress/1")
-Test("mili_12")
-ChangeActivePlotsVar("derived/prin_dev_stress/2")
-Test("mili_13")
-ChangeActivePlotsVar("derived/prin_dev_stress/3")
-Test("mili_14")
-ChangeActivePlotsVar("derived/max_shear_stress")
-Test("mili_15")
-ChangeActivePlotsVar("derived/prin_stress/1")
-Test("mili_16")
-ChangeActivePlotsVar("derived/prin_stress/2")
-Test("mili_17")
-ChangeActivePlotsVar("derived/prin_stress/3")
-Test("mili_18")
-
-DeleteAllPlots()
-
-AddPlot("Mesh", "mesh1")
-AddOperator("Threshold")
-DrawPlots()
-Test("mili_19")
-
-SetTimeSliderState(60)
-Test("mili_20")
-
-AddPlot("Vector", "bend")
-DrawPlots()
-Test("mili_21")
-
-v = VectorAttributes()
-v.autoScale = 0
-SetPlotOptions(v)
-Test("mili_22")
-
-DeleteAllPlots()
+def TestComponentVis():
+    OpenDatabase(single_domain_path + "/d3samp6.plt.mili")
+    v = GetView3D()
+    v.viewNormal = (0.9, 0.35, -0.88)
+    SetView3D(v)
+    SetTimeSliderState(90)
+    
+    AddPlot("Pseudocolor", "Primal/Shared/edrate")
+    DrawPlots()
+    Test("mili_brick_comp")
+    
+    ChangeActivePlotsVar("Primal/beam/svec/svec_x")
+    Test("mili_beam_comp")
+    ChangeActivePlotsVar("Primal/node/nodacc/ax")
+    Test("mili_nodacc_comp")
+    
+    DeleteAllPlots()
 
 
-AddPlot("Tensor", "stress")
-AddOperator("Threshold")
-DrawPlots()
-Test("mili_23")
+def TestSharedElementSets():
+    OpenDatabase(single_domain_path + "/d3samp6.plt.mili")
+    v = GetView3D()
+    v.viewNormal = (0.9, 0.35, -0.88)
+    SetView3D(v)
+    SetTimeSliderState(90)
 
-t = TensorAttributes()
-t.useStride = 1
-t.colorTableName = "calewhite"
-SetPlotOptions(t)
-Test("mili_24")
+    AddPlot("Pseudocolor", "Primal/Shared/strain/exy")
+    DrawPlots()
+    Test("mili_shared_es_01")
+    ChangeActivePlotsVar("Primal/Shared/edrate")
+    Test("mili_shared_es_02")
+    ChangeActivePlotsVar("Primal/Shared/stress/sy")
+    Test("mili_shared_es_03")
 
-s = SILRestriction()
-s.TurnOffSet(3)
-s.TurnOffSet(5)
-s.TurnOffSet(6)
-SetPlotSILRestriction(s)
-Test("mili_25")
+    DeleteAllPlots()
 
-DeleteAllPlots()
 
-AddPlot("Mesh", "mesh1")
-AddOperator("Threshold")
-AddPlot("Mesh", "mesh1_free_nodes")
-matts = MeshAttributes()
-matts.pointType = matts.Icosahedron
-matts.pointSize = 0.5
-SetPlotOptions(matts)
-DrawPlots()
-Test("mili_26")
+def TestNonSharedElementSets():
+    OpenDatabase(single_domain_path + "/d3samp6.plt.mili")
+    v = GetView3D()
+    v.viewNormal = (0.9, 0.35, -0.88)
+    SetView3D(v)
+    SetTimeSliderState(90)
 
-AddPlot("Vector","free_nodes/nodvel")
-DrawPlots()
-Test("mili_27")
+    # 
+    #  eps is a section of an element set that is only 
+    #  defined on beams. 
+    # 
+    AddPlot("Pseudocolor", "Primal/beam/eps")
+    DrawPlots()
+    Test("mili_non_shared_es_01")
+    DeleteAllPlots()
 
-SetTimeSliderState(90)
-Test("mili_28")
 
-DeleteAllPlots()
-DefineScalarExpression("ratio", "volume(mesh1_no_free_nodes) / conn_cmfe(volume(<[0]i:mesh1_no_free_nodes>), mesh1_no_free_nodes)")
-AddPlot("Pseudocolor", "ratio")
-DrawPlots()
-Test("mili_29")
-sil = SILRestriction()
-sil.TurnOffAll()
-sil.TurnOnSet(12)
-SetPlotSILRestriction(sil)
-Test("mili_30")
+def TestMaterialVar():
+    OpenDatabase(single_domain_path + "/d3samp6.plt.mili")
+    v = GetView3D()
+    v.viewNormal = (0.9, 0.35, -0.88)
+    SetView3D(v)
+    SetTimeSliderState(90)
 
-DeleteAllPlots()
-CloseDatabase(data_path("mili_test_data/m_plot.mili"))
+    AddPlot("Pseudocolor", "Primal/mat/matcgy")
+    DrawPlots()
+    Test("mili_mat_var_01")
+    ChangeActivePlotsVar("Primal/mat/matke")
+    Test("mili_mat_var_02")
+    DeleteAllPlots()
 
-#
-# Test a mili database with time-invariant nodal positions
-#
-OpenDatabase(data_path("mili_test_data/m1_plot.mili"))
 
-SetTimeSliderState(5)
-AddPlot("Pseudocolor","temp")
-ResetView()
-DrawPlots()
-Test("mili_31")
-SetTimeSliderState(10)
-Test("mili_32")
-DeleteAllPlots()
-AddPlot("Mesh","mesh1")
-DrawPlots()
-Test("mili_33")
-SetTimeSliderState(6)
-Test("mili_34")
+def TestMaterials():
+    OpenDatabase(single_domain_path + "/d3samp6.plt.mili")
+    v = GetView3D()
+    v.viewNormal = (0.9, 0.35, -0.88)
+    SetView3D(v)
+    SetTimeSliderState(90)
 
+    AddPlot("FilledBoundary", "materials1")
+    DrawPlots()
+    Test("mili_materials_01")
+
+    DeleteAllPlots()
+
+
+def TestTensors():
+    OpenDatabase(single_domain_path + "/d3samp6.plt.mili")
+    v = GetView3D()
+    v.viewNormal = (0.9, 0.35, -0.88)
+    SetView3D(v)
+    SetTimeSliderState(90)
+
+    AddPlot("Tensor", "Primal/Shared/stress")
+    DrawPlots()
+    Test("mili_tensors_01")
+
+    ChangeActivePlotsVar("Primal/Shared/strain")
+    Test("mili_tensors_02")
+    DeleteAllPlots()
+
+
+def TestVectors():
+    OpenDatabase(single_domain_path + "/d3samp6.plt.mili")
+    v = GetView3D()
+    v.viewNormal = (0.9, 0.35, -0.88)
+    SetView3D(v)
+    SetTimeSliderState(90)
+
+    AddPlot("Vector", "Primal/node/nodpos")
+    DrawPlots()
+    Test("mili_vectors_01")
+    
+    ChangeActivePlotsVar("Primal/shell/bend")
+    Test("mili_vectors_02")
+    
+    ChangeActivePlotsVar("Primal/beam/svec")
+    Test("mili_vectors_03")
+    DeleteAllPlots()
+
+
+def TestSandMesh():
+    OpenDatabase(single_domain_path + "/m_plot.mili")
+    v = GetView3D()
+    v.viewNormal = (0.9, 0.35, -0.88)
+    SetView3D(v)
+    SetTimeSliderState(101)
+    
+    # 
+    # First, let's look at the sand variable on a non-sanded mesh. 
+    # It should be well structured. 
+    # 
+    AddPlot("Mesh", "mesh1")
+    AddPlot("Pseudocolor", "Primal/Shared/sand")
+    DrawPlots()
+    Test("mili_sand_mesh_01")
+    DeleteAllPlots()
+    
+    #
+    # Now let's view the sand mesh. It's a mess. 
+    #
+    AddPlot("Mesh", "sand_mesh1")
+    AddPlot("Pseudocolor", "Primal/Shared/sand")
+    DrawPlots()
+    Test("mili_sand_mesh_02")
+
+    #
+    # Now let's look at sand in its sanded state. 
+    #
+    ChangeActivePlotsVar("sand_mesh/Primal/Shared/sand")
+    DrawPlots()
+    Test("mili_sand_mesh_03")
+
+    #
+    # We need to make sure that other variables can also be 
+    # viewed in their sanded state. 
+    #
+    ChangeActivePlotsVar("sand_mesh/Primal/shell/stress_mid/sx")
+    Test("mili_sand_mesh_04")
+    
+    DeleteAllPlots()
+
+def TestMaterials():
+    OpenDatabase(single_domain_path + "/d3samp6.plt.mili")
+    v = GetView3D()
+    v.viewNormal = (0.9, 0.35, -0.88)
+    SetView3D(v)
+    SetTimeSliderState(70)
+    
+    AddPlot("FilledBoundary", "materials1(mesh1)")
+    DrawPlots()
+    Test("mili_materials_00")
+    DeleteAllPlots()
+
+def TestMultiDomain():
+    OpenDatabase(multi_domain_path + "/d3samp6.plt.mili")
+    v = GetView3D()
+    v.viewNormal = (0.9, 0.35, -0.88)
+    SetView3D(v)
+    SetTimeSliderState(90)
+
+    AddPlot("Pseudocolor", "Primal/Shared/strain/exy")
+    DrawPlots()
+    Test("mili_multi_dom_01")
+    ChangeActivePlotsVar("Primal/Shared/stress/sz")
+    Test("mili_multi_dom_02")
+
+    DeleteAllPlots()
+
+def TestParticles():
+    OpenDatabase(single_domain_path + "/sslide14ball_l.plt.mili")
+    v = GetView3D()
+    v.viewNormal = (0.9, 0.35, -0.88)
+    SetView3D(v)
+
+    AddPlot("Pseudocolor", "Primal/particle/stress/sxy")
+    DrawPlots()
+    Test("mili_particle_01")
+    DeleteAllPlots()
+
+def TestStaticNodes():
+    OpenDatabase(single_domain_path + "/m1_plot.mili")
+    v = GetView3D()
+    v.viewNormal = (0.9, 0.35, -0.88)
+    SetView3D(v)
+
+    AddPlot("Mesh", "mesh1")
+    AddPlot("Pseudocolor", "Primal/node/temp")
+    SetTimeSliderState(10)
+    DrawPlots()
+    Test("mili_static_nodes_01")
+    DeleteAllPlots()
+
+
+def Main():
+    TestComponentVis()    
+    TestNonSharedElementSets()
+    TestSharedElementSets()
+    TestMaterialVar()
+    TestTensors()
+    TestVectors()
+    TestSandMesh()
+    TestMaterials()
+    TestMultiDomain()
+    TestParticles()
+    TestStaticNodes()
+
+Main()
 Exit()
-
 

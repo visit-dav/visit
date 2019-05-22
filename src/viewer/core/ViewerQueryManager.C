@@ -3928,7 +3928,7 @@ ViewerQueryManager::PointQuery(const MapNode &queryParams)
                     pointQueryParams["element_label"] = label;
                     pointQueryParams["do_time"] = 0;
                     pointQueryParams["preserve_coord"] = false;
-
+   
                     pickAtts->SetDoTimeCurve(false);
                     PointQuery(pointQueryParams);
                     pickAtts->SetDoTimeCurve(true);
