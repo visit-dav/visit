@@ -378,6 +378,8 @@ QvisCinemaWizard::CreateMainPage()
     QRadioButton *rb1 = new QRadioButton(tr("C"), gbDB);
     page0_specification->addButton(rb1, 1);
     dbLayout->addWidget(rb1, 1, 2);
+    // disable rb1 until C-spec is fixed.
+    rb1->setEnabled(false);
     QRadioButton *rb2 = new QRadioButton(tr("D"), gbDB);
     page0_specification->addButton(rb2, 2);
     dbLayout->addWidget(rb2, 1, 3);
