@@ -42,7 +42,7 @@
 
 #include <avtBOVFileFormat.h>
 
-#if 0 // def HAVE_ZLIB_H
+#ifdef HAVE_ZLIB_H
   #include <zlib.h>
   // Cast handle to gzFile.
   #define GZFILE(handle) ((gzFile)handle)
@@ -808,7 +808,7 @@ avtBOVFileFormat::ReadWholeAndExtractBrick(void *dest, bool gzipped,
         EXCEPTION0(ImproperUseException);
     }
 
-#if 0 //def HAVE_ZLIB_H
+#ifdef HAVE_ZLIB_H
     if(gzipped)
     {
         // Read past the specified offset.
@@ -979,7 +979,7 @@ avtBOVFileFormat::GetVar(int dom, const char *var)
     bool gzipped = false;
     if (strstr(qual_filename, ".gz") != NULL)
     {
-#if 0 //def HAVE_ZLIB_H
+#ifdef HAVE_ZLIB_H
         gz_handle = gzopen(qual_filename, "r");
         gzipped = true;
 #else
@@ -1175,7 +1175,7 @@ avtBOVFileFormat::GetVar(int dom, const char *var)
         //
         // Read in based on whether or not we have a gzipped file.
         //
-#if 0 //def HAVE_ZLIB_H
+#ifdef HAVE_ZLIB_H
         if (gzipped)
         {
             // Read past the specified offset.
@@ -1326,7 +1326,7 @@ avtBOVFileFormat::GetVar(int dom, const char *var)
     //
     // Close the file descriptors.
     //
-#if 0 //def HAVE_ZLIB_H
+#ifdef HAVE_ZLIB_H
     if (gzipped)
         gzclose(GZFILE(gz_handle));
     else
