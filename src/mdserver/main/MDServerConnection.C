@@ -42,7 +42,9 @@
 #include <string.h>
 #else
 #include <pwd.h>
-#define _GNU_SOURCE
+#ifndef _GNU_SOURCE
+  #define _GNU_SOURCE
+#endif
 #include <dirent.h>
 #include <unistd.h>
 #include <sys/stat.h>
