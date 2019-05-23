@@ -1,6 +1,6 @@
 function bv_zlib_initialize
 {
-    export DO_ZLIB="no"
+    export DO_ZLIB="yes"
 }
 
 function bv_zlib_enable
