@@ -659,12 +659,11 @@ avtBlueprintTreeCache::IO::LoadSidreGroup(Node &sidre_meta,
         string g_name = g_itr.name();
         BP_PLUGIN_INFO("loading " << group_path << g_name << " as group");
         std::string cld_path = group_path + g_name;
-        // LoadSidreGroup(g,h5_file_id,tree_root,cld_path,out[g_name]);
         LoadSidreGroup(g,
                        tree_cache,
                        tree_id,
                        tree_root,
-                       cld_path,
+                       cld_path + "/",
                        out[g_name]);
     }    
     
@@ -675,7 +674,6 @@ avtBlueprintTreeCache::IO::LoadSidreGroup(Node &sidre_meta,
         string v_name = v_itr.name();
         BP_PLUGIN_INFO("loading " << group_path << v_name << " as view");
         std::string cld_path = group_path + v_name;
-        // LoadSidreView(v,h5_file_id,tree_root,cld_path,out[v_name]);
          LoadSidreView(v,
                        tree_cache,
                        tree_id,
@@ -684,7 +682,6 @@ avtBlueprintTreeCache::IO::LoadSidreGroup(Node &sidre_meta,
                        out[v_name]);
         
     }
-
 }
 
 
@@ -731,7 +728,7 @@ avtBlueprintTreeCache::IO::LoadSidreTree(Node &sidre_meta,
     }
     else if( sidre_meta["view"].has_path(tree_curr) )
     {
-        BP_PLUGIN_INFO(curr_path << tree_curr << " is a group");
+        BP_PLUGIN_INFO(curr_path << tree_curr << " is a view");
         if(tree_next.size() != 0)
         {
             BP_PLUGIN_EXCEPTION1( InvalidVariableException,
