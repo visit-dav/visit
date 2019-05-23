@@ -47,6 +47,7 @@
 
 #include <vector>
 #include <adios2.h>
+#include <memory>
 
 // ****************************************************************************
 //  Class: avtADIOS2FileFormat
@@ -68,7 +69,29 @@ class avtADIOS2BaseFileFormat : public avtMTSDFileFormat
                                                    int nBlock);
 
                        avtADIOS2BaseFileFormat(const char *);
-    virtual           ~avtADIOS2BaseFileFormat() {;};
+
+    // interface creator with first file already opened
+    static avtFileFormatInterface *CreateInterfaceADIOS2(
+            const char *const *list,
+            int nList,
+            int nBlock,
+            std::shared_ptr<adios2::ADIOS> adios,
+            adios2::Engine &reader,
+            adios2::IO &io,
+            std::map<std::string, adios2::Params> &variables,
+            std::map<std::string, adios2::Params> &attributes
+            );
+
+    // constructor with already-opened stream
+    avtADIOS2BaseFileFormat(std::shared_ptr<adios2::ADIOS> adios,
+            adios2::Engine &reader,
+            adios2::IO &io,
+            std::map<std::string, adios2::Params> &variables,
+            std::map<std::string, adios2::Params> &attributes,
+            const char *);
+
+    //virtual           ~avtADIOS2BaseFileFormat() {;};
+    virtual           ~avtADIOS2BaseFileFormat();
 
     //
     // This is used to return unconvention data -- ranging from material
@@ -108,7 +131,8 @@ class avtADIOS2BaseFileFormat : public avtMTSDFileFormat
 
 
     int numTimeSteps;
-    std::string engineType;
+    std::string engineName;
+    bool stagingMode; // engine is staging or file-based?
 
     virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *, int);
 };

@@ -154,8 +154,9 @@ ADIOS2GeneralPluginInfo::GetDefaultFilePatterns() const
 {
     std::vector<std::string> defaultPatterns;
     defaultPatterns.push_back("*.bp");
-    defaultPatterns.push_back("*.sst");
-
+    defaultPatterns.push_back("*.bp.sst");
+    defaultPatterns.push_back("*.bp.ssc");
+    defaultPatterns.push_back("*.bp.staging");
     return defaultPatterns;
 }
 

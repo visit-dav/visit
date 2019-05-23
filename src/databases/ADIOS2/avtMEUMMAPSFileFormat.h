@@ -70,6 +70,27 @@ class avtMEUMMAPSFileFormat : public avtMTMDFileFormat
                                                    int nBlock);
 
                        avtMEUMMAPSFileFormat(const char *);
+
+    // interface creator with first file already opened
+    static avtFileFormatInterface *CreateInterfaceADIOS2(
+            const char *const *list,
+            int nList,
+            int nBlock,
+            std::shared_ptr<adios2::ADIOS> adios,
+            adios2::Engine &reader, 
+            adios2::IO &io,
+            std::map<std::string, adios2::Params> &variables,
+            std::map<std::string, adios2::Params> &attributes
+            );
+
+    // constructor with already-opened stream
+    avtMEUMMAPSFileFormat(std::shared_ptr<adios2::ADIOS> adios,
+            adios2::Engine &reader,
+            adios2::IO &io,
+            std::map<std::string, adios2::Params> &variables,
+            std::map<std::string, adios2::Params> &attributes,
+            const char *);
+
     virtual           ~avtMEUMMAPSFileFormat() {}
 
     //
@@ -94,6 +115,10 @@ class avtMEUMMAPSFileFormat : public avtMTMDFileFormat
     virtual vtkDataSet    *GetMesh(int, int, const char *);
     virtual vtkDataArray  *GetVar(int, int, const char *);
     virtual vtkDataArray  *GetVectorVar(int, int, const char *);
+
+    static bool IdentifyADIOS2(
+                   std::map<std::string, adios2::Params> &variables, 
+                   std::map<std::string, adios2::Params> &attributes);
 
   protected:
     virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *, int);

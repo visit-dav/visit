@@ -66,7 +66,7 @@ bool
 avtLAMMPSFileFormat::Identify(const char *fname)
 {
     shared_ptr<adios2::ADIOS> adios = std::make_shared<adios2::ADIOS>(adios2::DebugON);
-    adios2::IO io = adios2::IO(adios->DeclareIO("ReadBP"));
+    adios2::IO io = adios2::IO(adios->DeclareIO("ReadBPLAMMPS"));
     io.SetEngine("BP");
     adios2::Engine reader = io.Open(fname, adios2::Mode::Read);
     auto attributes = io.AvailableAttributes();
@@ -82,7 +82,29 @@ avtLAMMPSFileFormat::Identify(const char *fname)
     {
         isLAMMPS = false;
     }
+    reader.Close();
     return isLAMMPS;
+}
+
+bool avtLAMMPSFileFormat::IdentifyADIOS2(
+                    std::map<std::string, adios2::Params> &variables,
+                    std::map<std::string, adios2::Params> &attributes)
+{
+    int vfind = 0;
+    vector<string> reqVars = {"atoms", "natoms", "ntimestep"};
+
+    for (auto vi = variables.begin(); vi != variables.end(); vi++)
+        if (std::find(reqVars.begin(), reqVars.end(), vi->first) != reqVars.end())
+            vfind++;
+
+    int afind = 0;
+    vector<string> reqAttrs = {"LAMMPS/dump_style", "LAMMPS/num_ver", "LAMMPS/version"};
+
+    for (auto ai = attributes.begin(); ai != attributes.end(); ai++)
+        if (std::find(reqAttrs.begin(), reqAttrs.end(), ai->first) != reqAttrs.end())
+            afind++;
+
+    return (vfind == reqVars.size() && afind == reqAttrs.size());
 }
 
 avtFileFormatInterface *
@@ -97,6 +119,36 @@ avtLAMMPSFileFormat::CreateInterface(const char *const *list,
         ffl[i] =  new avtMTSDFileFormat*[nBlock];
         for (int j = 0; j < nBlock; j++)
             ffl[i][j] =  new avtLAMMPSFileFormat(list[i*nBlock +j]);
+    }
+    return new avtMTSDFileFormatInterface(ffl, nTimestepGroups, nBlock);
+}
+
+avtFileFormatInterface *
+avtLAMMPSFileFormat::CreateInterfaceADIOS2(
+        const char *const *list,
+        int nList,
+        int nBlock,
+        std::shared_ptr<adios2::ADIOS> adios,
+        adios2::Engine &reader,
+        adios2::IO &io,
+        std::map<std::string, adios2::Params> &variables,
+        std::map<std::string, adios2::Params> &attributes
+        )
+{
+    int nTimestepGroups = nList / nBlock;
+    avtMTSDFileFormat ***ffl = new avtMTSDFileFormat**[nTimestepGroups];
+    for (int i = 0; i < nTimestepGroups; i++)
+    {
+        ffl[i] =  new avtMTSDFileFormat*[nBlock];
+        for (int j = 0; j < nBlock; j++)
+            if (!i && !j)
+            {
+                ffl[i][j] =  new avtLAMMPSFileFormat(adios, reader, io, variables, attributes, list[i*nBlock +j]);
+            }
+            else
+            {
+                ffl[i][j] =  new avtLAMMPSFileFormat(list[i*nBlock +j]);
+            }
     }
     return new avtMTSDFileFormatInterface(ffl, nTimestepGroups, nBlock);
 }
@@ -146,6 +198,39 @@ avtLAMMPSFileFormat::avtLAMMPSFileFormat(const char *filename)
         times[i] = (double)tbuff[i];
 }
 
+
+
+avtLAMMPSFileFormat::avtLAMMPSFileFormat(std::shared_ptr<adios2::ADIOS> adios,
+        adios2::Engine &reader,
+        adios2::IO &io,
+        std::map<std::string, adios2::Params> &variables,
+        std::map<std::string, adios2::Params> &attributes,
+        const char *filename)
+    : adios(adios),
+      reader(reader),
+      io(io),
+      numTimeSteps(1),
+      currentTimestep(-1),
+      numAtoms(-1),
+      numColumns(-1),
+      avtMTSDFileFormat(&filename, 1),
+      variables(variables),
+      attributes(attributes)
+{
+    string columnsStr = attributes["columns"]["Value"];
+    numColumns = std::stoi(attributes["columns"]["Elements"]);
+    GenerateTableOffsets(columnsStr);
+
+    numTimeSteps = std::stoi(variables["atoms"]["AvailableStepsCount"]);
+
+    times.resize(numTimeSteps);
+    vector<uint64_t> tbuff(numTimeSteps);
+    adios2::Variable<uint64_t> t = io.InquireVariable<uint64_t>("ntimestep");
+    t.SetStepSelection({0, numTimeSteps});
+    reader.Get(t, tbuff.data(), adios2::Mode::Sync);
+    for (int i = 0; i < numTimeSteps; i++)
+        times[i] = (double)tbuff[i];
+}
 // ****************************************************************************
 //  Method: avtADIOS2FileFormat::FreeUpResources
 //

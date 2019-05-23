@@ -19,8 +19,10 @@ avtADIOS2FileFormat.C
 avtMEUMMAPSFileFormat.C
 avtGTCFileFormat.C
 avtLAMMPSFileFormat.C
+avtSpecFEMFileFormat.C
 avtADIOS2BaseFileFormat.C
 avtADIOS2SSTFileFormat.C
+ADIOS2HelperFuncs.C
 )
 
 SET(LIBE_SOURCES
@@ -30,8 +32,10 @@ avtADIOS2FileFormat.C
 avtMEUMMAPSFileFormat.C
 avtGTCFileFormat.C
 avtLAMMPSFileFormat.C
+avtSpecFEMFileFormat.C
 avtADIOS2BaseFileFormat.C
 avtADIOS2SSTFileFormat.C
+ADIOS2HelperFuncs.C
 )
 
 INCLUDE_DIRECTORIES(

@@ -47,6 +47,7 @@
 
 #include <vector>
 #include <memory>
+#include <map>
 #include <adios2.h>
 
 
@@ -73,6 +74,27 @@ class avtGTCFileFormat : public avtMTSDFileFormat
                                                    int nBlock);
 
                        avtGTCFileFormat(const char *);
+
+    // interface creator with first file already opened
+    static avtFileFormatInterface *CreateInterfaceADIOS2(
+            const char *const *list,
+            int nList,
+            int nBlock,
+            std::shared_ptr<adios2::ADIOS> adios,
+            adios2::Engine &reader, 
+            adios2::IO &io,
+            std::map<std::string, adios2::Params> &variables,
+            std::map<std::string, adios2::Params> &attributes
+            );
+
+    // constructor with already-opened stream
+    avtGTCFileFormat(std::shared_ptr<adios2::ADIOS> adios,
+            adios2::Engine &reader,
+            adios2::IO &io,
+            std::map<std::string, adios2::Params> &variables,
+            std::map<std::string, adios2::Params> &attributes,
+            const char *);
+
     virtual           ~avtGTCFileFormat();
 
     //
@@ -100,6 +122,10 @@ class avtGTCFileFormat : public avtMTSDFileFormat
     virtual vtkDataSet    *GetPtMesh(int, const char *);
     virtual vtkDataArray  *GetVar(int, const char *);
     virtual vtkDataArray  *GetVectorVar(int, const char *);
+
+    static bool IdentifyADIOS2(
+                   std::map<std::string, adios2::Params> &variables, 
+                   std::map<std::string, adios2::Params> &attributes);
 
   protected:
     // DATA MEMBERS

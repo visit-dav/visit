@@ -68,6 +68,27 @@ class avtLAMMPSFileFormat : public avtMTSDFileFormat
                                                    int nBlock);
 
                        avtLAMMPSFileFormat(const char *);
+
+    // interface creator with first file already opened
+    static avtFileFormatInterface *CreateInterfaceADIOS2(
+            const char *const *list,
+            int nList,
+            int nBlock,
+            std::shared_ptr<adios2::ADIOS> adios,
+            adios2::Engine &reader,
+            adios2::IO &io,
+            std::map<std::string, adios2::Params> &variables,
+            std::map<std::string, adios2::Params> &attributes
+    );
+
+    // constructor with already-opened stream
+    avtLAMMPSFileFormat(std::shared_ptr<adios2::ADIOS> adios,
+            adios2::Engine &reader,
+            adios2::IO &io,
+            std::map<std::string, adios2::Params> &variables,
+            std::map<std::string, adios2::Params> &attributes,
+            const char *);
+
     virtual           ~avtLAMMPSFileFormat() {;};
 
     //
@@ -96,6 +117,11 @@ class avtLAMMPSFileFormat : public avtMTSDFileFormat
     virtual vtkDataSet    *GetMesh(int, const char *);
     virtual vtkDataArray  *GetVar(int, const char *);
     virtual vtkDataArray  *GetVectorVar(int, const char *);
+
+    static bool IdentifyADIOS2(
+                   std::map<std::string, adios2::Params> &variables,
+                   std::map<std::string, adios2::Params> &attributes);
+
 
   protected:
     // DATA MEMBERS
