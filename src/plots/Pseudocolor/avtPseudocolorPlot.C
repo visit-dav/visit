@@ -1371,7 +1371,7 @@ avtPseudocolorPlot::SetLegendRanges()
         atts.GetBelowMinColor().GetRgba(c);
         varLegend->SetBelowRangeColor(c[0], c[1], c[2], c[3]);
     }
-    if (atts.GetMaxFlag() && atts.GetUseBelowMaxColor())
+    if (atts.GetMaxFlag() && atts.GetUseAboveMaxColor())
     {
         atts.GetAboveMaxColor().GetRgba(c);
         varLegend->SetAboveRangeColor(c[0], c[1], c[2], c[3]);
