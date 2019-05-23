@@ -1310,6 +1310,10 @@ avtPseudocolorPlot::SetOpacityFromAtts()
 //    Kathleen Biagas, Wed Dec 26 13:11:27 PST 2018
 //    Set colors for belowRange and aboveRange, as well as toggles for them.
 //
+//    Kathleen Biagas, Wed May 22 10:54:54 PDT 2019
+//    Make setting of BelowMin/AboveMax colors conditional upon Min/MaxFlag
+//    and UseBelowMin/UseAboveMaxColor.
+//
 // ****************************************************************************
 
 void
@@ -1362,10 +1366,16 @@ avtPseudocolorPlot::SetLegendRanges()
     varLegend->UseAboveRangeColor(atts.GetUseAboveMaxColor());
 
     double c[4];
-    atts.GetBelowMinColor().GetRgba(c);
-    varLegend->SetBelowRangeColor(c[0], c[1], c[2], c[3]);
-    atts.GetAboveMaxColor().GetRgba(c);
-    varLegend->SetAboveRangeColor(c[0], c[1], c[2], c[3]);
+    if (atts.GetMinFlag() && atts.GetUseBelowMinColor())
+    {
+        atts.GetBelowMinColor().GetRgba(c);
+        varLegend->SetBelowRangeColor(c[0], c[1], c[2], c[3]);
+    }
+    if (atts.GetMaxFlag() && atts.GetUseAboveMaxColor())
+    {
+        atts.GetAboveMaxColor().GetRgba(c);
+        varLegend->SetAboveRangeColor(c[0], c[1], c[2], c[3]);
+    }
 }
 
 // ****************************************************************************
