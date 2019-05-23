@@ -18,11 +18,7 @@ function bv_xdmf_disable
 
 function bv_xdmf_depends_on
 {
-    depends_on="cmake vtk hdf5"
-    if [[ "$DO_ZLIB" == "yes" ]] ; then
-        depends_on="${depends_on} zlib"
-    fi
-    echo ${depends_on}
+    echo "cmake vtk hdf5 zlib"
 }
 
 function bv_xdmf_info
@@ -230,12 +226,6 @@ function build_xdmf
         LIBEXT="${SO_EXT}"
     fi
 
-    if [[ "$DO_ZLIB" == "yes" ]]; then
-        ZLIB_FLAGS="-DZLIB_INCLUDE_DIR:PATH=${ZLIB_INCLUDE_DIR} -DZLIB_LIBRARY:FILEPATH=${ZLIB_LIBRARY}"
-    else
-        ZLIB_FLAGS=""
-    fi
-
     ${CMAKE_BIN} -DCMAKE_INSTALL_PREFIX:PATH="$VISITDIR/Xdmf/${XDMF_VERSION}/${VISITARCH}"\
                  -DCMAKE_BUILD_TYPE:STRING="${VISIT_BUILD_MODE}" \
                  -DCMAKE_BUILD_WITH_INSTALL_RPATH:BOOL=ON \
@@ -251,7 +241,9 @@ function build_xdmf
                  -DXDMF_SYSTEM_HDF5:BOOL=ON \
                  -DHDF5_INCLUDE_PATH:PATH="$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/include" \
                  -DHDF5_LIBRARY:FILEPATH="$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/lib/libhdf5.${SO_EXT}" \
-                 -DXDMF_SYSTEM_ZLIB:BOOL=ON ${ZLIB_FLAGS} \
+                 -DXDMF_SYSTEM_ZLIB:BOOL=ON \
+                 -DZLIB_INCLUDE_DIR:PATH=${ZLIB_INCLUDE_DIR} \
+                 -DZLIB_LIBRARY:FILEPATH=${ZLIB_LIBRARY} \
                  -DXDMF_SYSTEM_LIBXML2:BOOL=ON \
                  -DLIBXML2_INCLUDE_PATH:PATH="$VISITDIR/${VTK_INSTALL_DIR}/$VTK_VERSION/$VISITARCH/include/vtk-${VTK_SHORT_VERSION}/vtklibxml2" \
                  -DLIBXML2_LIBRARY:FILEPATH="$VISITDIR/${VTK_INSTALL_DIR}/$VTK_VERSION/$VISITARCH/lib/libvtklibxml2-${VTK_SHORT_VERSION}.${SO_EXT}" \

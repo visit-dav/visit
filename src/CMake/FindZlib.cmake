@@ -81,11 +81,6 @@ else(WIN32)
             set(ZLIB_LIBRARY "${ZLIB_LIBRARY_DIR}/${ZLIB_LIB}" CACHE STRING "zlib library" FORCE)
             set(HAVE_ZLIB_H true CACHE BOOL "have zlib header" FORCE)
         endif()
-    else()
-        # ZLIB_LIBRARY is what we use with target_link_libraries
-        set(ZLIB_LIBRARY z)
-        set(ZLIB_FOUND 1)
-        CHECK_INCLUDE_FILES(zlib.h HAVE_ZLIB_H)
     endif()
 endif (WIN32)
 

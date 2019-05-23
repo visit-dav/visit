@@ -40,7 +40,7 @@ function bv_vtk_alt_vtk_dir
 
 function bv_vtk_depends_on
 {
-    depends_on="cmake"
+    depends_on="cmake zlib"
 
     if [[ "$DO_PYTHON" == "yes" ]]; then
         depends_on="${depends_on} python"
@@ -52,10 +52,6 @@ function bv_vtk_depends_on
 
     if [[ "$DO_OSPRAY" == "yes" ]]; then
         depends_on="${depends_on} ospray"
-    fi
-
-    if [[ "$DO_ZLIB" == "yes" ]]; then
-        depends_on="${depends_on} zlib"
     fi
 
     # Only depend on Qt if we're not doing server-only builds.
@@ -118,10 +114,8 @@ function bv_vtk_host_profile
     else
         echo "VISIT_OPTION_DEFAULT(VISIT_VTK_DIR \${VISITHOME}/${VTK_INSTALL_DIR}/\${VTK_VERSION}/\${VISITARCH})" >> $HOSTCONF
         # vtk's target system should take care of this, so does VisIt need to know?
-        if [[ "$DO_ZLIB" == "yes" ]]; then
-            echo "VISIT_OPTION_DEFAULT(VISIT_VTK_INCDEP ZLIB_INCLUDE_DIR)" >> $HOSTCONF
-            echo "VISIT_OPTION_DEFAULT(VISIT_VTK_LIBDEP ZLIB_LIBRARY)" >> $HOSTCONF
-        fi
+        echo "VISIT_OPTION_DEFAULT(VISIT_VTK_INCDEP ZLIB_INCLUDE_DIR)" >> $HOSTCONF
+        echo "VISIT_OPTION_DEFAULT(VISIT_VTK_LIBDEP ZLIB_LIBRARY)" >> $HOSTCONF
     fi
 }
 
@@ -927,15 +921,13 @@ function build_vtk
         vopts="${vopts} -Dembree_DIR=${EMBREE_INSTALL_DIR}"
     fi
 
-    # zlib support, use system or the one we build
+    # zlib support, use the one we build
     vopts="${vopts} -DVTK_USE_SYSTEM_ZLIB:BOOL=ON"
-    if [[ "$DO_ZLIB" == "yes" ]] ; then
-        vopts="${vopts} -DZLIB_INCLUDE_DIR:PATH=${ZLIB_INCLUDE_DIR}"
-        if [[ "$VISIT_BUILD_MODE" == "Release" ]] ; then
-            vopts="${vopts} -DZLIB_LIBRARY_RELEASE:FILEPATH=${ZLIB_LIBRARY}"
-        else
-            vopts="${vopts} -DZLIB_LIBRARY_DEBUG:FILEPATH=${ZLIB_LIBRARY}"
-        fi
+    vopts="${vopts} -DZLIB_INCLUDE_DIR:PATH=${ZLIB_INCLUDE_DIR}"
+    if [[ "$VISIT_BUILD_MODE" == "Release" ]] ; then
+        vopts="${vopts} -DZLIB_LIBRARY_RELEASE:FILEPATH=${ZLIB_LIBRARY}"
+    else
+        vopts="${vopts} -DZLIB_LIBRARY_DEBUG:FILEPATH=${ZLIB_LIBRARY}"
     fi
 
     CMAKE_BIN="${CMAKE_INSTALL}/cmake"

@@ -7,6 +7,7 @@
             <lib name="vtk"/> <!-- <lib name="vtk" reqdeps="cmake vtk" optdeps="qt mesagl"/> -->
             <lib name="qt"/>
             <lib name="qwt"/>
+            <lib name="zlib"/>
         </required>
 
         <!-- optional libraries -->
@@ -55,7 +56,6 @@
             <lib name="vtkm"/>
             <lib name="vtkh"/>
             <lib name="xdmf"/>
-            <lib name="zlib"/>
         </optional>
 
         <!-- thirdparty flag -->
@@ -65,6 +65,7 @@
             <lib name="vtk"/> <!-- <lib name="vtk" reqdeps="cmake vtk" optdeps="qt mesagl"/> -->
             <lib name="qt"/>
             <lib name="qwt"/>
+            <lib name="zlib"/>
         </group>
 
         <group name="optional" comment="All optional libraries" enabled="no">
@@ -101,7 +102,6 @@
             <lib name="vtkm"/>
             <lib name="vtkh"/>
             <lib name="xdmf"/>
-            <lib name="zlib"/>
         </group>
 
         <group name="no-thirdparty" comment="Do not build required 3rd party libraries" enabled="no">
@@ -111,6 +111,7 @@
             <lib name="no-qt" />
             <lib name="no-qwt" />
             <lib name="no-vtk"/>
+            <lib name="no-zlib"/>
         </group>
 
         <!-- all io libraries -->
@@ -139,7 +140,7 @@
             <lib name="szip"/>
             <lib name="uintah"/>
             <lib name="xdmf"/>
-            <lib name="zlib"/> <!-- required by nektarpp -->
+            <lib name="zlib"/>
         </group>
 
         <!-- dbio-only-->
@@ -167,7 +168,7 @@
             <lib name="szip"/>
             <lib name="uintah"/>
             <lib name="xdmf"/>
-            <lib name="zlib"/> <!-- required by nektarpp -->
+            <lib name="zlib"/>
             <lib name="no-qt"/>
             <lib name="no-qwt"/>
             <lib name="no-python"/>
@@ -207,6 +208,7 @@
             <lib name="vtk"/>
             <lib name="qt"/>
             <lib name="qwt"/>
+            <lib name="zlib"/>
         </required>
 
         <!-- optional libraries -->
@@ -235,6 +237,7 @@
             <lib name="vtk"/>
             <lib name="qt"/>
             <lib name="qwt"/>
+            <lib name="zlib"/>
         </group>
 
         <group name="optional" comment="All optional libraries" enabled="no">
@@ -257,6 +260,7 @@
             <lib name="no-qt" />
             <lib name="no-qwt" />
             <lib name="no-vtk"/>
+            <lib name="no-zlib"/>
         </group>
 
         <!-- nodbio flag -->
@@ -264,6 +268,7 @@
             <lib name="hdf5"/>
             <lib name="netcdf"/>
             <lib name="szip"/>
+            <lib name="zlib"/>
             <lib name="uintah"/>
             <lib name="no-python"/>
             <lib name="no-qt"/>
@@ -275,6 +280,7 @@
             <lib name="hdf5"/>
             <lib name="netcdf"/>
             <lib name="szip"/>
+            <lib name="zlib"/>
             <lib name="uintah"/>
         </group>
         <!-- #all the optional non io libraries -->
