@@ -1342,7 +1342,7 @@ function build_hdf4
     WZLIBINFO=""
 
     if [[ "$DO_ZLIB" == "yes" ]] ; then
-        WZLIBINFO="--with-zlib=\"$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH\"" 
+        WZLIBINFO="--with-zlib=\"$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH\""
     else
         # use cmake to find the system zlib
         zlibfnd=$(${CMAKE_INSTALL}/cmake --find-package -DCOMPILER_ID=GNU -DLANGUAGE=CXX -DMODE=EXIST -DNAME=ZLIB)

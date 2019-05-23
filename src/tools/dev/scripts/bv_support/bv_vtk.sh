@@ -842,10 +842,8 @@ function build_vtk
         fi
     fi
 
-
     # allow VisIt to override any of vtk's classes
     vopts="${vopts} -DVTK_ALL_NEW_OBJECT_FACTORY:BOOL=true"
-
 
     # Turn off module groups
     vopts="${vopts} -DVTK_Group_Imaging:BOOL=false"
@@ -939,7 +937,6 @@ function build_vtk
             vopts="${vopts} -DZLIB_LIBRARY_DEBUG:FILEPATH=${ZLIB_LIBRARY}"
         fi
     fi
-    
 
     CMAKE_BIN="${CMAKE_INSTALL}/cmake"
     cd ${VTK_BUILD_DIR}

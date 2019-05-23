@@ -91,5 +91,7 @@ endif (WIN32)
 
 if(ZLIB_FOUND)
     set(HAVE_LIBZ true CACHE BOOL "Have lib z")
+else()
+    message(FATAL_ERROR "VisIt requires lib z and it could not be found.")
 endif()
 

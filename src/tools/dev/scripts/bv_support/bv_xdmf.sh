@@ -18,7 +18,7 @@ function bv_xdmf_disable
 
 function bv_xdmf_depends_on
 {
-    depends_on = "cmake vtk hdf5"
+    depends_on="cmake vtk hdf5"
     if [[ "$DO_ZLIB" == "yes" ]] ; then
         depends_on="${depends_on} zlib"
     fi
@@ -235,7 +235,7 @@ function build_xdmf
     else
         ZLIB_FLAGS=""
     fi
- 
+
     ${CMAKE_BIN} -DCMAKE_INSTALL_PREFIX:PATH="$VISITDIR/Xdmf/${XDMF_VERSION}/${VISITARCH}"\
                  -DCMAKE_BUILD_TYPE:STRING="${VISIT_BUILD_MODE}" \
                  -DCMAKE_BUILD_WITH_INSTALL_RPATH:BOOL=ON \

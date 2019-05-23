@@ -49,9 +49,7 @@
 #include <string>
 #include <vector>
 #include <set>
-#ifdef HAVE_ZLIB_H
-  #include <zlib.h>
-#endif
+#include <zlib.h>
 
 // Define my classes for the mesh
 class UnvRange { // Element class
@@ -174,9 +172,7 @@ class avtunvFileFormat : public avtSTSDFileFormat
     virtual int getNbfreeSets(); // Gets the number of boundaries, i.e. free connected faces
 
     FILE* handle; // File handle for unv file
-#ifdef HAVE_ZLIB_H
     gzFile gzhandle ; // File handle for unv.gz file
-#endif
     int nbnodes ; // Total number of nodes in the mesh
     int maxnodl ; // Maximum node label in the mesh
     int nb3dmats ; // Highest material numbre for 3D elements
