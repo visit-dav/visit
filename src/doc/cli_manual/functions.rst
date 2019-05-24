@@ -5059,7 +5059,8 @@ HideToolbars
 
 
 allWindows : integer
-    An optional integer value that tells VisIt to hide the toolbars for all windows when it is non-zero.
+    An optional integer value that tells VisIt to hide the toolbars for
+    all windows when it is non-zero.
 
 return type : CLI_return_t
     The HideToolbars function returns 1 on success and 0 on failure.
@@ -5129,9 +5130,11 @@ return type : CLI_return_t
 
 **Description:**
 
-    Complex thresholds are often defined using the Parallel Coordinates plot or the Threshold operator. This function can copy variable ranges from compatible plots
-    and operators into the specified named selection's properties. This can be useful
-    when setting up Cumulative Query selections.
+    Complex thresholds are often defined using the Parallel Coordinates plot
+    or the Threshold operator. This function can copy variable ranges from
+    compatible plots and operators into the specified named selection's
+    properties. This can be useful when setting up Cumulative
+    Query selections.
 
 
 **Example:**
@@ -6053,7 +6056,9 @@ hostName : string
     The name of the computer on which to start the engine.
 
 args : tuple
-    Optional tuple of command line arguments for the engine.Alternative arguments:MachineProfile object to load with OpenComputeEngine call
+    Optional tuple of command line arguments for the engine.
+    Alternative arguments - MachineProfile object to load with
+    OpenComputeEngine call
 
 return type : CLI_return_t
     The OpenComputeEngine function returns an integer value of 1 for success
@@ -6102,10 +6107,17 @@ databaseName : string
     The name of the database to open.
 
 timeIndex : integer
-    This is an optional integer argument indicating the time index at which toopen the database. If it is not specified, a time index of zero is assumed.
+    This is an optional integer argument indicating the time index at which
+    to open the database. If it is not specified, a time index of zero is
+    assumed.
 
 dbPluginIndex : AMBIGUOUS
-    An optional string containing the name of the plugin to use. Note that this string must also include the plugin's version number (with few exceptions,almost all plugins' version numbers are 1.0). Note also that you must capitalize the spelling identically to what the plugin'sGeneralPluginInfo::GetName() method returns. For example, "XYZ_1.0"is the string you would use for the XYZ plugin.
+    An optional string containing the name of the plugin to use. Note that
+    this string must also include the plugin's version number (with few
+    exceptions, almost all plugins' version numbers are 1.0). Note also
+    that you must capitalize the spelling identically to what the plugin's
+    GetName() method returns. For example, "XYZ_1.0" is the string you would
+    use for the XYZ plugin.
 
 return type : CLI_return_t
     The OpenDatabase function returns an integer value of 1 for success and 0
@@ -6148,7 +6160,9 @@ OpenMDServer
 
 
 host : STARTING_VALUE
-    The optional host argument determines the host on which the metadataserver is to be launched. If this argument is not provided, "localhost" is assumed.
+    The optional host argument determines the host on which the metadata
+    server is to be launched. If this argument is not provided, "localhost"
+    is assumed.
 
 args : tuple
     A tuple of strings containing command line flags for the metadata server.
@@ -6946,7 +6960,8 @@ opIndex : integer
     A zero-based integer corresponding to the operator that should be promoted.
 
 applyToAllPlots : AMBIGUOUS
-    An integer flag that causes all plots in the plot list to be affected when it is non-zero.
+    An integer flag that causes all plots in the plot list to be affected when
+    it is non-zero.
 
 return type : CLI_return_t
     PromoteOperator returns 1 on success and 0 on failure.
@@ -7000,7 +7015,9 @@ source : string
     A string containing the source code for a Python Query Filter .
 
 file : string
-    A string containing the path to a Python Query Filter script file.Note: Use only one of the 'source' or 'file' arguments.If both are used the 'source' argument overrides 'file'.
+    A string containing the path to a Python Query Filter script file.
+    Note - Use only one of the 'source' or 'file' arguments. If both are
+    used the 'source' argument overrides 'file'.
 
 return type : CLI_return_t
     The PythonQuery function returns 1 on success and 0 on failure.
@@ -7083,20 +7100,22 @@ Query
 
   Query(name) -> string
   Query(name, dict) -> string
-  Query(name, namedarg1=arg1,namedarg2=arg2, ...) -> string
+  Query(name, namedarg1=arg1, namedarg2=arg2, ...) -> string
   Query(name) -> double, tuple of double
   Query(name, dict) -> double, tuple of double
-  Query(name, namedarg1=arg1,namedarg2=arg2, ...) -> double, tuple of double
+  Query(name, namedarg1=arg1, namedarg2=arg2, ...) -> double, tuple of double
   Query(name) -> dictionary
   Query(name, dict) -> dictionary
-  Query(name, namedarg1=arg1,namedarg2=arg2, ...) -> dictionary
+  Query(name, namedarg1=arg1, namedarg2=arg2, ...) -> dictionary
 
 
 name : string
     The name of the query to execute.
 
 dict : AMBIGUOUS
-    An optional dictionary containing additional query arguments. namedarg1, namedarg2,...An optional list of named arguments supplying additional query parameters.
+    An optional dictionary containing additional query arguments.
+    namedarg1, namedarg2,...
+    An optional list of named arguments supplying additional query parameters.
 
 return type : AMBIGUOUS
     The Query function returns either a String (default), Value(s), or Object.
@@ -7147,14 +7166,16 @@ QueryOverTime
 
   QueryOverTime(name) -> integer
   QueryOverTime(name, dict) -> integer
-  QueryOverTime(name, namedarg1=val1,namedarg2=val2, ...) -> integer
+  QueryOverTime(name, namedarg1=val1, namedarg2=val2, ...) -> integer
 
 
 name : string
     The name of the query to execute.
 
 dict : AMBIGUOUS
-    An optional dictionary containing additional query arguments. namedarg1, namedarg2,...An optional list of named arguments supplying additional query parameters.
+    An optional dictionary containing additional query arguments.
+    namedarg1, namedarg2, ...
+    An optional list of named arguments supplying additional query parameters.
 
 return type : CLI_return_t
     The QueryOverTime function returns 1 on success and 0 on failure.
@@ -7398,10 +7419,12 @@ RegisterCallback
 
 
 callbackname : string
-    A string object designating the callback that we're installing. Allowable values are returned by the GetCallbackNames() function.
+    A string object designating the callback that we're installing. Allowable
+    values are returned by the GetCallbackNames() function.
 
 callback : STARTING_VALUE
-    A Python function, typically with one argument by which VisIt passes the object that caused the callback to be called.
+    A Python function, typically with one argument by which VisIt passes the
+    object that caused the callback to be called.
 
 return type : CLI_return_t
     RegisterCallback returns 1 on success.
@@ -7479,10 +7502,13 @@ RemoveAllOperators
 
 
 all : AMBIGUOUS
-    An optional integer argument that tells the function to ignore the active plots and use all plots in the plot list if the value of the argument is non-zero.
+    An optional integer argument that tells the function to ignore the
+    active plots and use all plots in the plot list if the value of
+    the argument is non-zero.
 
 index : AMBIGUOUS
-    The zero-based integer index into a plot's operator list that specifies which operator is to be deleted.
+    The zero-based integer index into a plot's operator list that specifies
+    which operator is to be deleted.
 
 return type : CLI_return_t
     All functions return an integer value of 1 for success and 0 for failure.
@@ -7601,10 +7627,13 @@ RemoveOperator
 
 
 all : AMBIGUOUS
-    An optional integer argument that tells the function to ignore the active plots and use all plots in the plot list if the value of the argument is non-zero.
+    An optional integer argument that tells the function to ignore the
+    active plots and use all plots in the plot list if the value of the
+    argument is non-zero.
 
 index : AMBIGUOUS
-    The zero-based integer index into a plot's operator list that specifies which operator is to be deleted.
+    The zero-based integer index into a plot's operator list that specifies
+    which operator is to be deleted.
 
 return type : CLI_return_t
     All functions return an integer value of 1 for success and 0 for failure.
@@ -7714,7 +7743,8 @@ databaseName : string
     The name of the new database.
 
 timeState : integer
-    A zero-based integer containing the time state that should be made active once the database has been replaced.
+    A zero-based integer containing the time state that should be made active
+    once the database has been replaced.
 
 return type : CLI_return_t
     The ReplaceDatabase function returns an integer value of 1 for success and
@@ -7786,7 +7816,8 @@ operatorType : string
     The name of a valid operator type.
 
 all : integer
-    An optional integer argument that tells the function to reset the operator options for all plots regardless of whether or not they are active.
+    An optional integer argument that tells the function to reset the operator
+    options for all plots regardless of whether or not they are active.
 
 return type : CLI_return_t
     The ResetOperatorOptions function returns an integer value of 1 for
@@ -7973,10 +8004,16 @@ filename : string
     The name of the session file to restore.
 
 visitDir : integer
-    An integer flag that indicates whether the filename to be restored islocated in the user's VisIt directory. If the flag is set to 1 then thesession file is assumed to be located in the user's VisIt directory otherwise the filename must contain an absolute path.
+    An integer flag that indicates whether the filename to be restored is
+    located in the user's VisIt directory. If the flag is set to 1 then the
+    session file is assumed to be located in the user's VisIt directory
+    otherwise the filename must contain an absolute path.
 
 mapping : tuple
-    A tuple of strings representing the maping from sources as specifiedin the original session file to new sources. Sources in the originalsession file are numbered starting from 0. So, this tuple of strings simply contains the new names for each of the sources, in order.
+    A tuple of strings representing the maping from sources as specified
+    in the original session file to new sources. Sources in the original
+    session file are numbered starting from 0. So, this tuple of strings
+    simply contains the new names for each of the sources, in order.
 
 return type : CLI_return_t
     RestoreSession returns 1 on success and 0 on failure.
@@ -8023,10 +8060,16 @@ filename : string
     The name of the session file to restore.
 
 visitDir : integer
-    An integer flag that indicates whether the filename to be restored islocated in the user's VisIt directory. If the flag is set to 1 then thesession file is assumed to be located in the user's VisIt directory otherwise the filename must contain an absolute path.
+    An integer flag that indicates whether the filename to be restored is
+    located in the user's VisIt directory. If the flag is set to 1 then the
+    session file is assumed to be located in the user's VisIt directory
+    otherwise the filename must contain an absolute path.
 
 mapping : tuple
-    A tuple of strings representing the maping from sources as specifiedin the original session file to new sources. Sources in the originalsession file are numbered starting from 0. So, this tuple of strings simply contains the new names for each of the sources, in order.
+    A tuple of strings representing the maping from sources as specified
+    in the original session file to new sources. Sources in the original
+    session file are numbered starting from 0. So, this tuple of strings
+    simply contains the new names for each of the sources, in order.
 
 return type : CLI_return_t
     RestoreSession returns 1 on success and 0 on failure.
@@ -8153,7 +8196,8 @@ SaveSession
 
 
 filename : STARTING_VALUE
-    The filename argument is the filename that is used to save the sessionfile. The filename is relative to the current working directory.
+    The filename argument is the filename that is used to save the session
+    file. The filename is relative to the current working directory.
 
 return type : CLI_return_t
     The SaveSession function returns 1 on success and 0 on failure.
@@ -8281,7 +8325,8 @@ SetActiveContinuousColorTable
 
 
 name : AMBIGUOUS
-    The name of the color table to use for the active color table. The namemust be present in the tuple returned by the ColorTableNames function.
+    The name of the color table to use for the active color table. The name
+    must be present in the tuple returned by the ColorTableNames function.
 
 return type : CLI_return_t
     Both functions return 1 on success and 0 on failure.
@@ -8327,7 +8372,8 @@ SetActiveDiscreteColorTable
 
 
 name : AMBIGUOUS
-    The name of the color table to use for the active color table. The namemust be present in the tuple returned by the ColorTableNames function.
+    The name of the color table to use for the active color table. The name
+    must be present in the tuple returned by the ColorTableNames function.
 
 return type : CLI_return_t
     Both functions return 1 on success and 0 on failure.
@@ -8372,7 +8418,8 @@ SetActivePlots
 
 
 plots : AMBIGUOUS
-    A tuple of integer plot indices starting at zero. A single integer is also accepted
+    A tuple of integer plot indices starting at zero. A single integer is
+    also accepted
 
 return type : CLI_return_t
     The SetActivePlots function returns an integer value of 1 for success and
@@ -8459,7 +8506,8 @@ windowIndex : integer
     An integer window index starting at 1.
 
 raiseWindow : integer
-    This is an optional integer argument that raises and activates the window ifset to 1. If omitted, the default behavior is to raise and activate the window.
+    This is an optional integer argument that raises and activates the window if
+    set to 1. If omitted, the default behavior is to raise and activate the window.
 
 return type : CLI_return_t
     The SetActiveWindow function returns an integer value of 1 for success and
@@ -8741,10 +8789,13 @@ SetCreateTimeDerivativeExpressions
 
 
 val : integer
-    Either a zero (false) or non-zero (true) integer value to indicate ifTime Derivative expressions should be automatically created when a database is opened.
+    Either a zero (false) or non-zero (true) integer value to indicate if
+    Time Derivative expressions should be automatically created when a
+    database is opened.
 
 return type : CLI_return_t
-    The SetCreateTimeDerivativeExpressions function returns 1 on success and 0 on failure.
+    The SetCreateTimeDerivativeExpressions function returns 1 on success
+    and 0 on failure.
 
 
 **Description:**
@@ -8778,10 +8829,12 @@ SetCreateVectorMagnitudeExpressions
 
 
 val : integer
-    Either a zero (false) or non-zero (true) integer value to indicate ifVector magnitude expressions should be automatically created when a database is opened.
+    Either a zero (false) or non-zero (true) integer value to indicate if
+    Vector magnitude expressions should be automatically created when a database is opened.
 
 return type : CLI_return_t
-    The SetCreateVectorMagnitudeExpressions function returns 1 on success and 0 on failure.
+    The SetCreateVectorMagnitudeExpressions function returns 1 on success
+    and 0 on failure.
 
 
 **Description:**
@@ -8790,9 +8843,9 @@ return type : CLI_return_t
     global attributes indicating whether or not vector magnitude expressions
     should be automatically created. The default behavior is for the
     expressions to be created, which may slow down VisIt's performance
-    if there is an extraordinary large number of vector variables.  Turning this
-    feature off tells VisIt to skip automatic creation of the vector magnitude expressions.
-    expressions.
+    if there is an extraordinary large number of vector variables. Turning this
+    feature off tells VisIt to skip automatic creation of the vector
+    magnitude expressions.
 
 
 **Example:**
@@ -8815,7 +8868,8 @@ SetDatabaseCorrelationOptions
 
 
 method : integer
-    An integer that tells VisIt what default method to use when automaticallycreating a database correlation. The value must be in the range [0,3].
+    An integer that tells VisIt what default method to use when automatically
+    creating a database correlation. The value must be in the range [0,3].
 
 whenToCreate : integer
     An integer that tells VisIt when to automatically create database correlations.
@@ -8891,7 +8945,10 @@ SetDebugLevel
 
 
 level : string
-    A string '1', '2', '3', '4', '5' with an optional 'b' suffix to indicatewhether the output should be buffered. A value of '1' is a low debug level , which should be used to produce little output while a value of 5 should produce a lot of debug output.
+    A string '1', '2', '3', '4', '5' with an optional 'b' suffix to indicate
+    whether the output should be buffered. A value of '1' is a low debug
+    level, which should be used to produce little output while a value of 5
+    should produce a lot of debug output.
 
 
 **Description:**
@@ -9012,7 +9069,8 @@ SetDefaultInteractorAttributes
 
 
 atts : STARTING_VALUE
-    An InteractorAttributes object that contains the new interactor attributes that you want to use.
+    An InteractorAttributes object that contains the new interactor attributes
+    that you want to use.
 
 return type : CLI_return_t
     SetInteractorAttributes returns 1 on success and 0 on failure.
@@ -9150,10 +9208,18 @@ atts : STARTING_VALUE
     Any type of operator attributes object.
 
 operatorIndex : integer
-    An optional zero-based integer that serves as an index into the activeplot's operator list. Use this argument if you want to set the operator attributes for a plot that has multiple instances of the same type ofoperator. For example, if the active plot had a Transform operatorfollowed by a Slice operator followed by another Transform operator andyou wanted to adjust the attributes of the second Transform operator,you would pass an operatorIndex value of 2.
+    An optional zero-based integer that serves as an index into the active
+    plot's operator list. Use this argument if you want to set the operator
+    attributes for a plot that has multiple instances of the same type of
+    operator. For example, if the active plot had a Transform operator
+    followed by a Slice operator followed by another Transform operator and
+    you wanted to adjust the attributes of the second Transform operator,
+    you would pass an operatorIndex value of 2.
 
 all : integer
-    An optional integer argument that tells the function to apply the operator attributes to all plots containing the specified operator if the value of the argument is non-zero.
+    An optional integer argument that tells the function to apply the operator
+    attributes to all plots containing the specified operator if the value of
+    the argument is non-zero.
 
 return type : CLI_return_t
     All functions return an integer value of 1 for success and 0 for failure.
@@ -9346,7 +9412,8 @@ SetInteractorAttributes
 
 
 atts : STARTING_VALUE
-    An InteractorAttributes object that contains the new interactor attributes that you want to use.
+    An InteractorAttributes object that contains the new interactor attributes
+    that you want to use.
 
 return type : CLI_return_t
     SetInteractorAttributes returns 1 on success and 0 on failure.
@@ -9390,7 +9457,8 @@ SetKeyframeAttributes
 
 
 kfAtts : STARTING_VALUE
-    A KeyframeAttributes object that contains the new keyframing attributes to use.
+    A KeyframeAttributes object that contains the new keyframing attributes
+    to use.
 
 return type : CLI_return_t
     SetKeyframeAttributes returns 1 on success and 0 on failure.
@@ -9622,10 +9690,18 @@ atts : STARTING_VALUE
     Any type of operator attributes object.
 
 operatorIndex : integer
-    An optional zero-based integer that serves as an index into the activeplot's operator list. Use this argument if you want to set the operator attributes for a plot that has multiple instances of the same type ofoperator. For example, if the active plot had a Transform operatorfollowed by a Slice operator followed by another Transform operator andyou wanted to adjust the attributes of the second Transform operator,you would pass an operatorIndex value of 2.
+    An optional zero-based integer that serves as an index into the active
+    plot's operator list. Use this argument if you want to set the operator
+    attributes for a plot that has multiple instances of the same type of
+    operator. For example, if the active plot had a Transform operator
+    followed by a Slice operator followed by another Transform operator and
+    you wanted to adjust the attributes of the second Transform operator,
+    you would pass an operatorIndex value of 2.
 
 all : integer
-    An optional integer argument that tells the function to apply the operator attributes to all plots containing the specified operator if the value of the argument is non-zero.
+    An optional integer argument that tells the function to apply theoperator
+    attributes to all plots containing the specified operator if the value of
+    the argument is non-zero.
 
 return type : CLI_return_t
     All functions return an integer value of 1 for success and 0 for failure.
@@ -9765,10 +9841,12 @@ index : integer
     A zero-based integer index that is the plot's location in the plot list.
 
 frame : integer
-    A zero-baed integer index representing the animation frame for which we're going to add a database keyframe.
+    A zero-based integer index representing the animation frame for which we're
+    going to add a database keyframe.
 
 state : integer
-    A zero-based integer index representating the database time state that we're going to use at the specified animation frame.
+    A zero-based integer index representing the database time state that we're
+    going to use at the specified animation frame.
 
 
 **Description:**
@@ -9817,7 +9895,8 @@ index : integer
     The integer index of the plot within the plot list.
 
 description : list
-    A new description srting that will be shown in the plot list so the plot can be identified readily.
+    A new description srting that will be shown in the plot list so the plot
+    can be identified readily.
 
 return type : CLI_return_t
     The SetPlotDescription function returns 1 on success and 0 on failure.
@@ -9848,7 +9927,8 @@ SetPlotFollowsTime
 
 
 val : integer
-    An optional integer flag indicating whether the plot should follow thetime slider. The default behavior is for the plot to follow the time slider.
+    An optional integer flag indicating whether the plot should follow the
+    time slider. The default behavior is for the plot to follow the time slider.
 
 return type : CLI_return_t
     The function returns 1 on success and 0 on failure.
@@ -9880,10 +9960,12 @@ index : integer
     A zero-based integer representing an index into the plot list.
 
 start : integer
-    A zero-based integer representing the animation frame where the plot first appears in the visualization.
+    A zero-based integer representing the animation frame where the plot
+    first appears in the visualization.
 
 end : integer
-    A zero-based integer representing the animation frame where the plot disappears from the visualization.
+    A zero-based integer representing the animation frame where the plot
+    disappears from the visualization.
 
 
 **Description:**
@@ -10048,7 +10130,8 @@ silr : STARTING_VALUE
     A SIL restriction object.
 
 all : STARTING_VALUE
-    An optional argument that tells the function if the SIL restriction should be applied to all plots in the plot list.
+    An optional argument that tells the function if the SIL restriction
+    should be applied to all plots in the plot list.
 
 return type : CLI_return_t
     The SetPlotSILRestriction function returns an integer value of 1 for
@@ -10209,7 +10292,8 @@ format_string : string
 
 **Description:**
 
-    The SetQueryFloatFormat method sets a printf style format string that isused by VisIt's querys to produce textual output.
+    The SetQueryFloatFormat method sets a printf style format string that
+    isused by VisIt's querys to produce textual output.
 
 
 **Example:**
@@ -10259,7 +10343,6 @@ SetQueryOutputToObject
   SetQueryOutputToObject()
   query_output = Query("MinMax")
   print query_output
-  {'min': 0.02357020415365696, 'max': 0.9489759802818298, 'max_element_num': 1170, 'min_coord': (0.4833333343267441, 0.4833333343267441), 'max_coord': (0.01666666753590107, 1.3166666626930237), 'max_domain': 0, 'min_element_num': 434, 'min_domain': 0}
 
 
 SetQueryOutputToString
@@ -10346,7 +10429,8 @@ SetQueryOverTimeAttributes
 
 
 atts : STARTING_VALUE
-    A QueryOverTimeAttributes object containing the new settings to use for queries over time.
+    A QueryOverTimeAttributes object containing the new settings to use for
+    queries over time.
 
 return type : CLI_return_t
     All functions return 1 on success and 0 on failure.
@@ -10394,7 +10478,9 @@ SetRemoveDuplicateNodes
 
 
 val : integer
-    Either a zero (false) or non-zero (true) integer value to indicate if duplicate nodes in fully disconnected unstructured grids should be automatically removed by visit.
+    Either a zero (false) or non-zero (true) integer value to indicate if
+    duplicate nodes in fully disconnected unstructured grids should be
+    automatically removed by visit.
 
 return type : CLI_return_t
     The SetRemoveDuplicateNodes function returns 1 on success and 0 on failure.
@@ -10431,7 +10517,8 @@ SetRenderingAttributes
 
 
 atts : STARTING_VALUE
-    A RenderingAttributes object that contains the rendering attributes thatwe want to make VisIt use.
+    A RenderingAttributes object that contains the rendering attributes that
+    we want to make VisIt use.
 
 return type : CLI_return_t
     The SetRenderingAttributes function returns 1 on success and 0 on failure.
@@ -10567,7 +10654,8 @@ SetTreatAllDBsAsTimeVarying
 
 
 val : integer
-    Either a zero (false) or non-zero (true) integer value to indicate if all databases should be treated as time varying (true) or not (false).
+    Either a zero (false) or non-zero (true) integer value to indicate if
+    all databases should be treated as time varying (true) or not (false).
 
 return type : CLI_return_t
     The SetTreatAllDBsAsTimeVarying function returns 1 on success and 0 on failure.
@@ -10606,7 +10694,9 @@ SetTryHarderCyclesTimes
 
 
 val : integer
-    Either a zero (false) or non-zero (true) integer value to indicate ifVisIt read cycle/time information for all timestates when opening a database.
+    Either a zero (false) or non-zero (true) integer value to indicate if
+    VisIt read cycle/time information for all timestates when opening a
+    database.
 
 return type : CLI_return_t
     The SetTryHarderCyclesTimes function returns 1 on success and 0 on failure.
@@ -11077,7 +11167,8 @@ SetWindowMode
 
 
 mode : string
-    A string containing the new mode: 'navigate', 'zoom', 'lineout', 'pick', 'zone pick', 'node pick', 'spreadsheet pick'.
+    A string containing the new mode: 'navigate', 'zoom', 'lineout', 'pick',
+    'zone pick', 'node pick', 'spreadsheet pick'.
 
 return type : CLI_return_t
     The SetWindowMode function returns 1 on success and 0 on failure.
@@ -11151,7 +11242,8 @@ ShowToolbars
 
 
 allWindows : integer
-    An integer value that tells VisIt to show the toolbars for all windows when it is non-zero.
+    An integer value that tells VisIt to show the toolbars for all windows
+    when it is non-zero.
 
 return type : CLI_return_t
     The ShowToolbars function returns 1 on success and 0 on failure.
@@ -11220,7 +11312,8 @@ level : integer
     An integer value of 1,2,3 or 4
 
 return type : CLI_return_t
-    The SuppressMessages function returns the previous suppression level on success and 0 on failure.
+    The SuppressMessages function returns the previous suppression level on
+    success and 0 on failure.
 
 
 **Description:**
@@ -12331,7 +12424,8 @@ name : string
     The name of the selection to update.
 
 properties : STARTING_VALUE
-    An optional SelectionProperties object that contains the selection properties to use when reevaluating the selection.
+    An optional SelectionProperties object that contains the selection
+    properties to use when reevaluating the selection.
 
 return type : CLI_return_t
     The UpdateNamedSelection function returns 1 on success and 0 on failure.
@@ -12448,16 +12542,20 @@ coord : tuple
     A tuple of doubles containing the spatial coordinate (x, y, z).
 
 x : integer
-    An integer containing the screen X location (in pixels) offset from the left side of the visualization window.
+    An integer containing the screen X location (in pixels) offset from
+    the left side of the visualization window.
 
 y : integer
-    An integer containing the screen Y location (in pixels) offset from the bottom of the visualization window.
+    An integer containing the screen Y location (in pixels) offset from
+    the bottom of the visualization window.
 
 vars (optional) : tuple
-    A tuple of strings with the variable names for which to return results. (default: currently plotted variable)
+    A tuple of strings with the variable names for which to return results.
+    (default: currently plotted variable)
 
 do_time (optional) : integer
-    An integer indicating whether to do a time pick. 1 -> do a time pick, 0 (default) -> do not do a time pick.
+    An integer indicating whether to do a time pick. 1 -> do a time pick,
+    0 (default) -> do not do a time pick.
 
 start_time (optional) : integer
     An integer with the starting frame index (default: 0).
@@ -12469,10 +12567,12 @@ stride (optional) : integer
     An integer with the stride for advancing in time (default: 1).
 
 preserve_coord (optional) : integer
-    An integer indicating whether to pick an element or a coordinate. 0 -> used picked element (default), 1-> used picked coordinate.
+    An integer indicating whether to pick an element or a coordinate.
+    0 -> used picked element (default), 1-> used picked coordinate.
 
 curve_plot_type (optional) : integer
-    An integer indicating whether the output should be on a single axis orwith multiple axes. 0 -> single Y axis (default), 1 -> multiple Y Axes.
+    An integer indicating whether the output should be on a single axis or
+    with multiple axes. 0 -> single Y axis (default), 1 -> multiple Y Axes.
 
 return type : dictionary
     ZonePick returns a python dictionary of the pick results, unless do_time is specified,
