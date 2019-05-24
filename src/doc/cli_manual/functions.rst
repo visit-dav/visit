@@ -5271,6 +5271,24 @@ Lineout
   Lineout(keywordarg1=arg1, keywrdarg2=arg2,...,keywordargn=argn ) -> integer
 
 
+start : tuple of doubles
+    A 2 or 3 item tuple containing the coordinates of the starting point.
+    keyword arg - start_point
+
+end : tuple of doubles
+    A 2 or 3 item tuple containing the coordinates of the end point.
+    keyword arg - end_point
+
+variables : tuple of strings
+    A tuple of strings containing the names of the variables for which
+    lineouts should be created.
+    keyword arg - vars
+
+samples : integer
+    An integer value containing the number of sample points along the lineout.
+    keyword arg - num_samples
+    keyword arg - use_sampling
+
 return type : CLI_return_t
     The Lineout function returns 1 on success and 0 on failure.
 
