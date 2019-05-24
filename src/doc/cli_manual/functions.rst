@@ -40,8 +40,7 @@ return type : CLI_return_t
 ::
 
   #% visit -cli
-  dbs = ("/usr/gapps/visit/data/wave.visit", \
-  "/usr/gapps/visit/data/curv3d.silo")
+  dbs = ("/usr/gapps/visit/data/wave.visit", "/usr/gapps/visit/data/curv3d.silo")
   OpenDatabase(dbs[0], 17)
   AddPlot("Pseudocolor", "u")
   DrawPlots()
@@ -293,8 +292,7 @@ return type : CLI_return_t
 
 ::
 
-  dbs = ("/usr/gapps/visit/data/wave.visit", \
-  "/usr/gapps/visit/data/wave*.silo database")
+  dbs = ("/usr/gapps/visit/data/wave.visit", "/usr/gapps/visit/data/wave*.silo database")
   OpenDatabase(dbs[0])
   AddPlot("Pseudocolor", "pressure")
   OpenDatabase(dbs[1])
@@ -2906,10 +2904,8 @@ return type : string
 ::
 
   #% visit -cli
-  print "Default continuous color table: %s" % \
-  GetActiveContinuousColorTable()
-  print "Default discrete color table: %s" % \
-  GetActiveDiscreteColorTable()
+  print "Default continuous color table: %s" % GetActiveContinuousColorTable()
+  print "Default discrete color table: %s" % GetActiveDiscreteColorTable()
 
 
 GetActiveDiscreteColorTable
@@ -6229,8 +6225,7 @@ return type : CLI_return_t
 
   -assume_format PDB
   % visit -cli
-  args = ("-dir", "/my/private/visit/version/", "-assume_format", \
-  "PDB", "-debug", "4")
+  args = ("-dir", "/my/private/visit/version/", "-assume_format", "PDB", "-debug", "4")
   # Open a metadata server before the call to OpenDatabase so we
   # can launch it how we want.
   OpenMDServer("thunder", args)

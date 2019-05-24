@@ -92,6 +92,7 @@ extern const char *visit_DemoteOperator_doc;
 extern const char *visit_DisableRedraw_doc;
 extern const char *visit_DrawPlots_doc;
 extern const char *visit_EnableTool_doc;
+extern const char *visit_EvalCubic_doc;
 extern const char *visit_ExecuteMacro_doc;
 extern const char *visit_ExportDatabase_doc;
 extern const char *visit_Expressions_doc;
