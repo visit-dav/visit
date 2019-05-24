@@ -135,6 +135,9 @@ class ReturnsContainer(Container):
     def __init__(self):
         self.title = 'Returns:'
         Container.__init__(self)
+    
+    def extend(self, extension):
+        self.text.append(split_colon_add_spaces(extension))
 
 
 class DescriptionContainer(Container):
