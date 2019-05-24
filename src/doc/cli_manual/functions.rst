@@ -494,7 +494,6 @@ ClearAllWindows
 ::
 
   ClearAllWindows() -> integer
-  ClearWindow() -> integer
 
 return type : CLI_return_t
     1 on success, 0 on failure.
@@ -537,7 +536,6 @@ ClearCache
 
   ClearCache(host) -> integer
   ClearCache(host, simulation) -> integer
-  ClearCacheForAllEngines() -> integer
 
 
 host : string
@@ -547,8 +545,7 @@ simulation : string
     The name of the simulation being processed by the compute engine.
 
 return type : CLI_return_t
-    The ClearCache and ClearCacheForAllEngines functions return 1 on success
-    and 0 on failure.
+    1 on success and 0 on failure.
 
 
 **Description:**
@@ -590,20 +587,11 @@ ClearCacheForAllEngines
 
 ::
 
-  ClearCache(host) -> integer
-  ClearCache(host, simulation) -> integer
   ClearCacheForAllEngines() -> integer
 
 
-host : string
-    The name of the computer where the compute engine is running.
-
-simulation : string
-    The name of the simulation being processed by the compute engine.
-
 return type : CLI_return_t
-    The ClearCache and ClearCacheForAllEngines functions return 1 on success
-    and 0 on failure.
+    1 on success and 0 on failure.
 
 
 **Description:**
@@ -770,7 +758,6 @@ ClearWindow
 
 ::
 
-  ClearAllWindows() -> integer
   ClearWindow() -> integer
 
 return type : CLI_return_t
@@ -1063,9 +1050,6 @@ CopyAnnotationsToWindow
 ::
 
   CopyAnnotationsToWindow(source, dest) -> integer
-  CopyLightingToWindow(source, dest) -> integer
-  CopyViewToWindow(source, dest) -> integer
-  CopyPlotsToWindow(source, dest) -> integer
 
 
 source : integer
@@ -1075,8 +1059,7 @@ dest : integer
     The index (an integer from 1 to 16) of the destination window.
 
 return type : CLI_return_t
-    The Copy functions return an integer value of 1 for success and 0 for
-    failure.
+    1 for success and 0 for failure.
 
 
 **Description:**
@@ -1084,12 +1067,7 @@ return type : CLI_return_t
     The Copy functions copy attributes from one visualization window to
     another visualization window. The CopyAnnotationsToWindow function copies
     the annotations from a source visualization window to a destination
-    visualization window while the CopyLightingAttributes function copies
-    lighting and the CopyViewToWindow function copies the view. The
-    CopyPlotsToWindow function copies the plots from one visualization window
-    to another visualization window but does not also force plots to generate
-    so after copying plots with the CopyPlotsToWindow function, you should also
-    call the DrawPlots function.
+    visualization window.
 
 
 **Example:**
@@ -1118,10 +1096,7 @@ CopyLightingToWindow
 
 ::
 
-  CopyAnnotationsToWindow(source, dest) -> integer
   CopyLightingToWindow(source, dest) -> integer
-  CopyViewToWindow(source, dest) -> integer
-  CopyPlotsToWindow(source, dest) -> integer
 
 
 source : integer
@@ -1131,21 +1106,14 @@ dest : integer
     The index (an integer from 1 to 16) of the destination window.
 
 return type : CLI_return_t
-    The Copy functions return an integer value of 1 for success and 0 for
-    failure.
+    1 for success and 0 for failure.
 
 
 **Description:**
 
     The Copy functions copy attributes from one visualization window to
-    another visualization window. The CopyAnnotationsToWindow function copies
-    the annotations from a source visualization window to a destination
-    visualization window while the CopyLightingAttributes function copies
-    lighting and the CopyViewToWindow function copies the view. The
-    CopyPlotsToWindow function copies the plots from one visualization window
-    to another visualization window but does not also force plots to generate
-    so after copying plots with the CopyPlotsToWindow function, you should also
-    call the DrawPlots function.
+    another visualization window. The CopyLightingAttributes function copies
+    lighting.
 
 
 **Example:**
@@ -1174,9 +1142,6 @@ CopyPlotsToWindow
 
 ::
 
-  CopyAnnotationsToWindow(source, dest) -> integer
-  CopyLightingToWindow(source, dest) -> integer
-  CopyViewToWindow(source, dest) -> integer
   CopyPlotsToWindow(source, dest) -> integer
 
 
@@ -1187,21 +1152,17 @@ dest : integer
     The index (an integer from 1 to 16) of the destination window.
 
 return type : CLI_return_t
-    The Copy functions return an integer value of 1 for success and 0 for
-    failure.
+    1 for success and 0 for failure.
 
 
 **Description:**
 
     The Copy functions copy attributes from one visualization window to
-    another visualization window. The CopyAnnotationsToWindow function copies
-    the annotations from a source visualization window to a destination
-    visualization window while the CopyLightingAttributes function copies
-    lighting and the CopyViewToWindow function copies the view. The
-    CopyPlotsToWindow function copies the plots from one visualization window
-    to another visualization window but does not also force plots to generate
-    so after copying plots with the CopyPlotsToWindow function, you should also
-    call the DrawPlots function.
+    another visualization window. The CopyPlotsToWindow function copies
+    the plots from one visualization window to another visualization
+    window but does not also force plots to generate so after copying
+    plots with the CopyPlotsToWindow function, you should also call the
+    DrawPlots function.
 
 
 **Example:**
@@ -1230,10 +1191,7 @@ CopyViewToWindow
 
 ::
 
-  CopyAnnotationsToWindow(source, dest) -> integer
-  CopyLightingToWindow(source, dest) -> integer
   CopyViewToWindow(source, dest) -> integer
-  CopyPlotsToWindow(source, dest) -> integer
 
 
 source : integer
@@ -1250,14 +1208,8 @@ return type : CLI_return_t
 **Description:**
 
     The Copy functions copy attributes from one visualization window to
-    another visualization window. The CopyAnnotationsToWindow function copies
-    the annotations from a source visualization window to a destination
-    visualization window while the CopyLightingAttributes function copies
-    lighting and the CopyViewToWindow function copies the view. The
-    CopyPlotsToWindow function copies the plots from one visualization window
-    to another visualization window but does not also force plots to generate
-    so after copying plots with the CopyPlotsToWindow function, you should also
-    call the DrawPlots function.
+    another visualization window. The CopyViewToWindow function copies
+    the view.
 
 
 **Example:**
@@ -1554,14 +1506,7 @@ DefineArrayExpression
 
 ::
 
-  DefineMaterialExpression(variableName, expression) -> integer
-  DefineMeshExpression(variableName, expression) -> integer
-  DefineScalarExpression(variableName, expression) -> integer
-  DefineSpeciesExpression(variableName, expression) -> integer
-  DefineTensorExpression(variableName, expression) -> integer
-  DefineVectorExpression(variableName, expression) -> integer
   DefineArrayExpression(variableName, expression) -> integer
-  DefineCurveExpression(variableName, expression) -> integer
 
 
 variableName : string
@@ -1576,12 +1521,6 @@ return type : CLI_return_t
 
 **Description:**
 
-    The DefineScalarExpression function creates a new scalar variable based on
-    other variables from the open database. Likewise, the
-    DefineMaterialExpression function creates new material variables,
-    DefineMeshExpression creates new mesh variables, DefineSpeciesExpression
-    creates new species variables, DefineVectorExpression creates new
-    vector variables, DefineTensorExpression creates new tensor variables, and
     DefineArrayExpression creates new array variables.
     Expression variables can be plotted like any other variable.
     The variableName argument is a string that contains the name of the new
@@ -1617,13 +1556,6 @@ DefineCurveExpression
 
 ::
 
-  DefineMaterialExpression(variableName, expression) -> integer
-  DefineMeshExpression(variableName, expression) -> integer
-  DefineScalarExpression(variableName, expression) -> integer
-  DefineSpeciesExpression(variableName, expression) -> integer
-  DefineTensorExpression(variableName, expression) -> integer
-  DefineVectorExpression(variableName, expression) -> integer
-  DefineArrayExpression(variableName, expression) -> integer
   DefineCurveExpression(variableName, expression) -> integer
 
 
@@ -1639,13 +1571,7 @@ return type : CLI_return_t
 
 **Description:**
 
-    The DefineScalarExpression function creates a new scalar variable based on
-    other variables from the open database. Likewise, the
-    DefineMaterialExpression function creates new material variables,
-    DefineMeshExpression creates new mesh variables, DefineSpeciesExpression
-    creates new species variables, DefineVectorExpression creates new
-    vector variables, DefineTensorExpression creates new tensor variables, and
-    DefineArrayExpression creates new array variables.
+    DefineCurveExpression creates new curve variables.
     Expression variables can be plotted like any other variable.
     The variableName argument is a string that contains the name of the new
     variable. You can pass the name of an existing expression if you want
@@ -1681,13 +1607,6 @@ DefineMaterialExpression
 ::
 
   DefineMaterialExpression(variableName, expression) -> integer
-  DefineMeshExpression(variableName, expression) -> integer
-  DefineScalarExpression(variableName, expression) -> integer
-  DefineSpeciesExpression(variableName, expression) -> integer
-  DefineTensorExpression(variableName, expression) -> integer
-  DefineVectorExpression(variableName, expression) -> integer
-  DefineArrayExpression(variableName, expression) -> integer
-  DefineCurveExpression(variableName, expression) -> integer
 
 
 variableName : string
@@ -1702,13 +1621,7 @@ return type : CLI_return_t
 
 **Description:**
 
-    The DefineScalarExpression function creates a new scalar variable based on
-    other variables from the open database. Likewise, the
-    DefineMaterialExpression function creates new material variables,
-    DefineMeshExpression creates new mesh variables, DefineSpeciesExpression
-    creates new species variables, DefineVectorExpression creates new
-    vector variables, DefineTensorExpression creates new tensor variables, and
-    DefineArrayExpression creates new array variables.
+    The DefineMaterialExpression function creates new material variables.
     Expression variables can be plotted like any other variable.
     The variableName argument is a string that contains the name of the new
     variable. You can pass the name of an existing expression if you want
@@ -1743,14 +1656,7 @@ DefineMeshExpression
 
 ::
 
-  DefineMaterialExpression(variableName, expression) -> integer
   DefineMeshExpression(variableName, expression) -> integer
-  DefineScalarExpression(variableName, expression) -> integer
-  DefineSpeciesExpression(variableName, expression) -> integer
-  DefineTensorExpression(variableName, expression) -> integer
-  DefineVectorExpression(variableName, expression) -> integer
-  DefineArrayExpression(variableName, expression) -> integer
-  DefineCurveExpression(variableName, expression) -> integer
 
 
 variableName : string
@@ -1765,13 +1671,7 @@ return type : CLI_return_t
 
 **Description:**
 
-    The DefineScalarExpression function creates a new scalar variable based on
-    other variables from the open database. Likewise, the
-    DefineMaterialExpression function creates new material variables,
-    DefineMeshExpression creates new mesh variables, DefineSpeciesExpression
-    creates new species variables, DefineVectorExpression creates new
-    vector variables, DefineTensorExpression creates new tensor variables, and
-    DefineArrayExpression creates new array variables.
+    The DefineMeshExpression creates new mesh variables.
     Expression variables can be plotted like any other variable.
     The variableName argument is a string that contains the name of the new
     variable. You can pass the name of an existing expression if you want
@@ -1826,9 +1726,9 @@ file : string
 
 type : string
     An optional string defining the output type of the expression.
-    Default type -- 'scalar'
-    Avalaible types -- 'scalar','vector','tensor','array','curve'
-    Note -- Use only one of the 'source' or 'file' arguments.
+    Default type - 'scalar'
+    Avalaible types - 'scalar','vector','tensor','array','curve'
+    Note - Use only one of the 'source' or 'file' arguments.
     If both are used the 'source' argument overrides 'file'.
 
 
@@ -1844,14 +1744,7 @@ DefineScalarExpression
 
 ::
 
-  DefineMaterialExpression(variableName, expression) -> integer
-  DefineMeshExpression(variableName, expression) -> integer
   DefineScalarExpression(variableName, expression) -> integer
-  DefineSpeciesExpression(variableName, expression) -> integer
-  DefineTensorExpression(variableName, expression) -> integer
-  DefineVectorExpression(variableName, expression) -> integer
-  DefineArrayExpression(variableName, expression) -> integer
-  DefineCurveExpression(variableName, expression) -> integer
 
 
 variableName : string
@@ -1867,12 +1760,7 @@ return type : CLI_return_t
 **Description:**
 
     The DefineScalarExpression function creates a new scalar variable based on
-    other variables from the open database. Likewise, the
-    DefineMaterialExpression function creates new material variables,
-    DefineMeshExpression creates new mesh variables, DefineSpeciesExpression
-    creates new species variables, DefineVectorExpression creates new
-    vector variables, DefineTensorExpression creates new tensor variables, and
-    DefineArrayExpression creates new array variables.
+    other variables from the open database.
     Expression variables can be plotted like any other variable.
     The variableName argument is a string that contains the name of the new
     variable. You can pass the name of an existing expression if you want
@@ -1907,14 +1795,7 @@ DefineSpeciesExpression
 
 ::
 
-  DefineMaterialExpression(variableName, expression) -> integer
-  DefineMeshExpression(variableName, expression) -> integer
-  DefineScalarExpression(variableName, expression) -> integer
   DefineSpeciesExpression(variableName, expression) -> integer
-  DefineTensorExpression(variableName, expression) -> integer
-  DefineVectorExpression(variableName, expression) -> integer
-  DefineArrayExpression(variableName, expression) -> integer
-  DefineCurveExpression(variableName, expression) -> integer
 
 
 variableName : string
@@ -1929,13 +1810,7 @@ return type : CLI_return_t
 
 **Description:**
 
-    The DefineScalarExpression function creates a new scalar variable based on
-    other variables from the open database. Likewise, the
-    DefineMaterialExpression function creates new material variables,
-    DefineMeshExpression creates new mesh variables, DefineSpeciesExpression
-    creates new species variables, DefineVectorExpression creates new
-    vector variables, DefineTensorExpression creates new tensor variables, and
-    DefineArrayExpression creates new array variables.
+    The DefineSpeciesExpression creates new species variables.
     Expression variables can be plotted like any other variable.
     The variableName argument is a string that contains the name of the new
     variable. You can pass the name of an existing expression if you want
@@ -1970,14 +1845,7 @@ DefineTensorExpression
 
 ::
 
-  DefineMaterialExpression(variableName, expression) -> integer
-  DefineMeshExpression(variableName, expression) -> integer
-  DefineScalarExpression(variableName, expression) -> integer
-  DefineSpeciesExpression(variableName, expression) -> integer
   DefineTensorExpression(variableName, expression) -> integer
-  DefineVectorExpression(variableName, expression) -> integer
-  DefineArrayExpression(variableName, expression) -> integer
-  DefineCurveExpression(variableName, expression) -> integer
 
 
 variableName : string
@@ -1992,13 +1860,7 @@ return type : CLI_return_t
 
 **Description:**
 
-    The DefineScalarExpression function creates a new scalar variable based on
-    other variables from the open database. Likewise, the
-    DefineMaterialExpression function creates new material variables,
-    DefineMeshExpression creates new mesh variables, DefineSpeciesExpression
-    creates new species variables, DefineVectorExpression creates new
-    vector variables, DefineTensorExpression creates new tensor variables, and
-    DefineArrayExpression creates new array variables.
+    The DefineTensorExpression creates new tensor variables.
     Expression variables can be plotted like any other variable.
     The variableName argument is a string that contains the name of the new
     variable. You can pass the name of an existing expression if you want
@@ -2033,14 +1895,7 @@ DefineVectorExpression
 
 ::
 
-  DefineMaterialExpression(variableName, expression) -> integer
-  DefineMeshExpression(variableName, expression) -> integer
-  DefineScalarExpression(variableName, expression) -> integer
-  DefineSpeciesExpression(variableName, expression) -> integer
-  DefineTensorExpression(variableName, expression) -> integer
   DefineVectorExpression(variableName, expression) -> integer
-  DefineArrayExpression(variableName, expression) -> integer
-  DefineCurveExpression(variableName, expression) -> integer
 
 
 variableName : string
@@ -2055,13 +1910,7 @@ return type : CLI_return_t
 
 **Description:**
 
-    The DefineScalarExpression function creates a new scalar variable based on
-    other variables from the open database. Likewise, the
-    DefineMaterialExpression function creates new material variables,
-    DefineMeshExpression creates new mesh variables, DefineSpeciesExpression
-    creates new species variables, DefineVectorExpression creates new
-    vector variables, DefineTensorExpression creates new tensor variables, and
-    DefineArrayExpression creates new array variables.
+    The DefineVectorExpression creates new vector variables
     Expression variables can be plotted like any other variable.
     The variableName argument is a string that contains the name of the new
     variable. You can pass the name of an existing expression if you want
@@ -2097,7 +1946,6 @@ DeleteActivePlots
 ::
 
   DeleteActivePlots() -> integer
-  DeleteAllPlots() -> integer
 
 return type : CLI_return_t
     The Delete functions return an integer value of 1 for success and 0 for
@@ -2135,7 +1983,6 @@ DeleteAllPlots
 
 ::
 
-  DeleteActivePlots() -> integer
   DeleteAllPlots() -> integer
 
 return type : CLI_return_t
@@ -2834,6 +2681,7 @@ Expressions
 
   Expressions() -> tuple of expression tuples
 
+
 return type : tuple of expression tuples
     The Expressions function returns a tuple of tuples that contain two
     strings that give the expression name and definition.
@@ -2873,7 +2721,7 @@ GetActiveContinuousColorTable
 ::
 
   GetActiveContinuousColorTable() -> string
-  GetActiveDiscreteColorTable() -> string
+
 
 return type : string
     Both functions return a string object containing the name of a color table.
@@ -2913,8 +2761,8 @@ GetActiveDiscreteColorTable
 
 ::
 
-  GetActiveContinuousColorTable() -> string
   GetActiveDiscreteColorTable() -> string
+
 
 return type : string
     Both functions return a string object containing the name of a color table.
@@ -3252,14 +3100,6 @@ GetDebugLevel
 ::
 
   GetDebugLevel() -> integer
-  SetDebugLevel(level)
-
-
-level : string
-    A string '1', '2', '3', '4', '5' with an optional 'b' suffix to indicate
-    whether the output should be buffered. A value of '1' is a low debug
-    level, which should be used to produce little output while a value of 5
-    should produce a lot of debug output.
 
 return type : CLI_return_t
     The GetDebugLevel function returns the debug level of the VisIt module.
@@ -3268,12 +3108,9 @@ return type : CLI_return_t
 **Description:**
 
     The GetDebugLevel and SetDebugLevel functions are used when debugging
-    VisIt Python scripts. The SetDebugLevel function sets the debug level for
-    VisIt's viewer thus it must be called before a Launch method. The debug
-    level determines how much detail is written to VisIt's execution logs when
-    it executes. The GetDebugLevel function can be used in Python scripts to
-    alter the behavior of the script. For instance, the debug level can be used
-    to selectively print values to the console.
+    VisIt Python scripts. The GetDebugLevel function can be used in Python
+    scripts to alter the behavior of the script. For instance, the debug
+    level can be used to selectively print values to the console.
 
 
 **Example:**
@@ -3327,6 +3164,7 @@ GetDomains
 ::
 
   GetDomains() -> tuple of strings
+
 
 return type : tuple of strings
     GetDomains returns a tuple of strings.
@@ -3678,7 +3516,7 @@ GetLocalHostName
 ::
 
   GetLocalHostName() -> string
-  GetLocalUserName() -> string
+
 
 return type : string
     Both functions return a string.
@@ -3686,11 +3524,8 @@ return type : string
 
 **Description:**
 
-    These functions are useful for determining the name of the local computer
-    or the account name of the user running VisIt. The GetLocalHostName
-    function returns a string that contains the name of the local computer. The
-    GetLocalUserName function returns a string containing the name of the user
-    running VisIt.
+    The GetLocalHostName function returns a string that contains the name of
+    the local computer.
 
 
 **Example:**
@@ -3709,8 +3544,8 @@ GetLocalUserName
 
 ::
 
-  GetLocalHostName() -> string
   GetLocalUserName() -> string
+
 
 return type : string
     Both functions return a string.
@@ -3718,11 +3553,8 @@ return type : string
 
 **Description:**
 
-    These functions are useful for determining the name of the local computer
-    or the account name of the user running VisIt. The GetLocalHostName
-    function returns a string that contains the name of the local computer. The
-    GetLocalUserName function returns a string containing the name of the user
-    running VisIt.
+    The GetLocalUserName function returns a string containing the name of
+    the user running VisIt.
 
 
 **Example:**
@@ -3783,6 +3615,7 @@ GetMaterialAttributes
 
   GetMaterialAttributes() -> MaterialAttributes object
 
+
 return type : MaterialAttributes object
     Returns a MaterialAttributes object.
 
@@ -3825,6 +3658,7 @@ GetMaterials
 ::
 
   GetMaterials() -> tuple of strings
+
 
 return type : tuple of strings
     The GetMaterials function returns a tuple of strings.
@@ -4049,19 +3883,15 @@ GetPickOutput
 ::
 
   GetPickOutput() -> string
-  GetPickOutputObject() -> dictionary
 
 return type : string
     GetPickOutput returns a string containing the output from the last pick.
-    GetPickOutputObject returns a dictionary produced by the last pick.
 
 
 **Description:**
 
     The GetPickOutput returns a string object that contains the output from
     the last pick.
-    GetPickOutputObject returns a dictionary object containing output from the
-    last pick
 
 
 **Example:**
@@ -4075,8 +3905,6 @@ return type : string
   ZonePick(coord=(0.4, 0.6, 0), vars=("default", "u", "v"))
   s = GetPickOutput()
   print s
-  o = GetPickOutputObject()
-  print o
 
 
 GetPickOutputObject
@@ -4086,20 +3914,16 @@ GetPickOutputObject
 
 ::
 
-  GetPickOutput() -> string
   GetPickOutputObject() -> dictionary
 
 return type : dictionary
-    GetPickOutput returns a string containing the output from the last pick.
     GetPickOutputObject returns a dictionary produced by the last pick.
 
 
 **Description:**
 
-    The GetPickOutput returns a string object that contains the output from
-    the last pick.
     GetPickOutputObject returns a dictionary object containing output from the
-    last pick
+    last pick.
 
 
 **Example:**
@@ -4111,8 +3935,6 @@ return type : dictionary
   AddPlot("Pseudocolor", "d")
   DrawPlots()
   ZonePick(coord=(0.4, 0.6, 0), vars=("default", "u", "v"))
-  s = GetPickOutput()
-  print s
   o = GetPickOutputObject()
   print o
 
@@ -4257,7 +4079,6 @@ GetPreferredFileFormats
 ::
 
   GetPreferredFileFormats() -> tuple of strings
-  Arguments: none
 
 return type : tuple of strings
     The GetPreferredFileFormats returns the current list of preferred plugins.
@@ -4285,16 +4106,9 @@ GetQueryOutputObject
 
 ::
 
-  GetQueryOutputString() -> string
-  GetQueryOutputValue() -> double, tuple of doubles
-  GetQueryOutputXML() -> string
   GetQueryOutputObject() -> dictionary or value
 
 return type : dictionary or value
-    GetQueryOutputString returns a string.
-    GetQueryOutputValue returns a single double precision number or a tuple of
-    double precision numbers.
-    GetQueryOutputXML returns an xml string produced by the last query.
     GetQueryOutputObject returns an xml string produced by the last query.
 
 
@@ -4329,16 +4143,9 @@ GetQueryOutputString
 ::
 
   GetQueryOutputString() -> string
-  GetQueryOutputValue() -> double, tuple of doubles
-  GetQueryOutputXML() -> string
-  GetQueryOutputObject() -> dictionary or value
 
 return type : string
     GetQueryOutputString returns a string.
-    GetQueryOutputValue returns a single double precision number or a tuple of
-    double precision numbers.
-    GetQueryOutputXML returns an xml string produced by the last query.
-    GetQueryOutputObject returns an xml string produced by the last query.
 
 
 **Description:**
@@ -4371,17 +4178,11 @@ GetQueryOutputValue
 
 ::
 
-  GetQueryOutputString() -> string
   GetQueryOutputValue() -> double, tuple of doubles
-  GetQueryOutputXML() -> string
-  GetQueryOutputObject() -> dictionary or value
 
 return type : double, tuple of doubles
-    GetQueryOutputString returns a string.
     GetQueryOutputValue returns a single double precision number or a tuple of
     double precision numbers.
-    GetQueryOutputXML returns an xml string produced by the last query.
-    GetQueryOutputObject returns an xml string produced by the last query.
 
 
 **Description:**
@@ -4414,17 +4215,10 @@ GetQueryOutputXML
 
 ::
 
-  GetQueryOutputString() -> string
-  GetQueryOutputValue() -> double, tuple of doubles
   GetQueryOutputXML() -> string
-  GetQueryOutputObject() -> dictionary or value
 
 return type : string
-    GetQueryOutputString returns a string.
-    GetQueryOutputValue returns a single double precision number or a tuple of
-    double precision numbers.
     GetQueryOutputXML returns an xml string produced by the last query.
-    GetQueryOutputObject returns an xml string produced by the last query.
 
 
 **Description:**
@@ -4773,26 +4567,17 @@ GetView2D
 
 ::
 
-  GetViewCurve() -> ViewCurveAttributes object
   GetView2D() -> View2DAttributes object
-  GetView3D() -> View3DAttributes object
-  GetViewAxisArray() -> ViewAxisArrayAttributes object
 
 return type : View2DAttributes object
-    Both functions return objects that represent the curve, 2D, or 3D view
-    information.
+    Object that represents the 2D view information.
 
 
 **Description:**
 
     The GetView functions return ViewAttributes objects which describe the
     current camera location. The GetView2D function should be called if the
-    active visualization window contains 2D plots. The GetView3D function
-    should be called to get the view if the active visualization window
-    contains 3D plots. The GetViewCurve function should be called if the active
-    visualization window contains 1D curve plots.  The GetViewAxisArray
-    function should be called if the active visualization window contains
-    axis-array plots.
+    active visualization window contains 2D plots.
 
 
 **Example:**
@@ -4821,26 +4606,17 @@ GetView3D
 
 ::
 
-  GetViewCurve() -> ViewCurveAttributes object
-  GetView2D() -> View2DAttributes object
   GetView3D() -> View3DAttributes object
-  GetViewAxisArray() -> ViewAxisArrayAttributes object
 
 return type : View3DAttributes object
-    Both functions return objects that represent the curve, 2D, or 3D view
-    information.
+    Object that represents the 3D view information.
 
 
 **Description:**
 
     The GetView functions return ViewAttributes objects which describe the
-    current camera location. The GetView2D function should be called if the
-    active visualization window contains 2D plots. The GetView3D function
-    should be called to get the view if the active visualization window
-    contains 3D plots. The GetViewCurve function should be called if the active
-    visualization window contains 1D curve plots.  The GetViewAxisArray
-    function should be called if the active visualization window contains
-    axis-array plots.
+    current camera location. The GetView3D function should be called to get
+    the view if the active visualization window contains 3D plots.
 
 
 **Example:**
@@ -4869,26 +4645,17 @@ GetViewAxisArray
 
 ::
 
-  GetViewCurve() -> ViewCurveAttributes object
-  GetView2D() -> View2DAttributes object
-  GetView3D() -> View3DAttributes object
   GetViewAxisArray() -> ViewAxisArrayAttributes object
 
 return type : ViewAxisArrayAttributes object
-    Both functions return objects that represent the curve, 2D, or 3D view
-    information.
+    Object that represents the AxisArray view information.
 
 
 **Description:**
 
     The GetView functions return ViewAttributes objects which describe the
-    current camera location. The GetView2D function should be called if the
-    active visualization window contains 2D plots. The GetView3D function
-    should be called to get the view if the active visualization window
-    contains 3D plots. The GetViewCurve function should be called if the active
-    visualization window contains 1D curve plots.  The GetViewAxisArray
-    function should be called if the active visualization window contains
-    axis-array plots.
+    current camera location. The GetViewAxisArray function should be called
+    if the active visualization window contains axis-array plots.
 
 
 **Example:**
@@ -4918,25 +4685,16 @@ GetViewCurve
 ::
 
   GetViewCurve() -> ViewCurveAttributes object
-  GetView2D() -> View2DAttributes object
-  GetView3D() -> View3DAttributes object
-  GetViewAxisArray() -> ViewAxisArrayAttributes object
 
 return type : ViewCurveAttributes object
-    Both functions return objects that represent the curve, 2D, or 3D view
-    information.
+    Object that represents the curve view information.
 
 
 **Description:**
 
     The GetView functions return ViewAttributes objects which describe the
-    current camera location. The GetView2D function should be called if the
-    active visualization window contains 2D plots. The GetView3D function
-    should be called to get the view if the active visualization window
-    contains 3D plots. The GetViewCurve function should be called if the active
-    visualization window contains 1D curve plots.  The GetViewAxisArray
-    function should be called if the active visualization window contains
-    axis-array plots.
+    current camera location. The GetViewCurve function should be called if
+    the active visualization window contains 1D curve plots.
 
 
 **Example:**
@@ -5180,8 +4938,6 @@ Launch
 
   Launch() -> integer
   Launch(program) -> integer
-  LaunchNowin() -> integer
-  LaunchNowin(program) -> integer
 
 
 program : string
@@ -5200,12 +4956,13 @@ return type : CLI_return_t
     onscreen visualization windows. The LaunchNowin function is primarily used
     in Python scripts that want to generate visualizations using VisIt without
     the use of a display such as when generating movies.
-    Example 1:
+
+
+**Example:**
+
+::
+
     import visit
-    visit.AddArgument("-geometry")
-    visit.AddArgument("1024x1024")
-    visit.LaunchNowin()
-    Example 2:
     import visit
     visit.AddArgument("-nowin")
     visit.Launch()
@@ -5218,8 +4975,6 @@ LaunchNowin
 
 ::
 
-  Launch() -> integer
-  Launch(program) -> integer
   LaunchNowin() -> integer
   LaunchNowin(program) -> integer
 
@@ -5228,7 +4983,7 @@ program : string
     The complete path as a string to the top level 'visit' script.
 
 return type : CLI_return_t
-    The Launch functions return 1 for success and 0 for failure
+    The LaunchNowin functions return 1 for success and 0 for failure
 
 
 **Description:**
@@ -5240,15 +4995,16 @@ return type : CLI_return_t
     onscreen visualization windows. The LaunchNowin function is primarily used
     in Python scripts that want to generate visualizations using VisIt without
     the use of a display such as when generating movies.
-    Example 1:
+
+
+**Example:**
+
+::
+
     import visit
     visit.AddArgument("-geometry")
     visit.AddArgument("1024x1024")
     visit.LaunchNowin()
-    Example 2:
-    import visit
-    visit.AddArgument("-nowin")
-    visit.Launch()
 
 
 Lineout
@@ -5324,15 +5080,13 @@ ListDomains
 ::
 
   ListDomains()
-  ListMaterials()
 
 
 **Description:**
 
-    The List functions: ListDomains, and List Materials prints a list of the
-    domains and the materials for the active plots, which indicates which
-    domains or materials are on and off. The list functions are used mostly to
-    print the results of restricting the SIL.
+    ListDomains  prints a list of the domains for the active plots, which
+    indicates which domains are on and off. The list functions are used
+    mostly to print the results of restricting the SIL.
 
 
 **Example:**
@@ -5354,16 +5108,14 @@ ListMaterials
 
 ::
 
-  ListDomains()
   ListMaterials()
 
 
 **Description:**
 
-    The List functions: ListDomains, and List Materials prints a list of the
-    domains and the materials for the active plots, which indicates which
-    domains or materials are on and off. The list functions are used mostly to
-    print the results of restricting the SIL.
+    ListMaterials prints a list of the materials for the active plots, which
+    indicates which materials are on and off. The list functions are used
+    mostly to print the results of restricting the SIL.
 
 
 **Example:**
@@ -5420,7 +5172,6 @@ LoadAttribute
 ::
 
   LoadAttribute(filename, object)
-  SaveAttribute(filename, object)
 
 
 filename : string
@@ -5507,7 +5258,6 @@ LoadUltra
 ::
 
   LoadUltra()
-
 
 
 **Description:**
@@ -7505,10 +7255,6 @@ RemoveAllOperators
 
   RemoveAllOperators() -> integer
   RemoveAllOperators(all) -> integer
-  RemoveLastOperator() -> integer
-  RemoveLastOperator(all) -> integer
-  RemoveOperator(index) -> integer
-  RemoveOperator(index, all) -> integer
 
 
 all : AMBIGUOUS
@@ -7516,21 +7262,15 @@ all : AMBIGUOUS
     active plots and use all plots in the plot list if the value of
     the argument is non-zero.
 
-index : AMBIGUOUS
-    The zero-based integer index into a plot's operator list that specifies
-    which operator is to be deleted.
-
 return type : CLI_return_t
     All functions return an integer value of 1 for success and 0 for failure.
 
 
 **Description:**
 
-    The RemoveOperator functions allow operators to be removed from plots. The
-    RemoveLastOperator function removes the operator that was last applied to
-    the active plots. The RemoveAllOperators function removes all operators
-    from the active plots in the active visualization window. If the all
-    argument is provided and contains a non-zero value, all plots in the active
+    The RemoveAllOperators function removes all operators from the active
+    plots in the active visualization window. If the all argument is
+    provided and contains a non-zero value, all plots in the active
     visualization window are affected. If the value is zero or if the argument
     is not provided, only the active plots are affected.
 
@@ -7558,19 +7298,12 @@ RemoveLastOperator
 
 ::
 
-  RemoveAllOperators() -> integer
-  RemoveAllOperators(all) -> integer
   RemoveLastOperator() -> integer
   RemoveLastOperator(all) -> integer
-  RemoveOperator(index) -> integer
-  RemoveOperator(index, all) -> integer
 
 
 all : AMBIGUOUS
     An optional integer argument that tells the function to ignore the active plots and use all plots in the plot list if the value of the argument is non-zero.
-
-index : AMBIGUOUS
-    The zero-based integer index into a plot's operator list that specifies which operator is to be deleted.
 
 return type : CLI_return_t
     All functions return an integer value of 1 for success and 0 for failure.
@@ -7578,13 +7311,11 @@ return type : CLI_return_t
 
 **Description:**
 
-    The RemoveOperator functions allow operators to be removed from plots. The
-    RemoveLastOperator function removes the operator that was last applied to
-    the active plots. The RemoveAllOperators function removes all operators
-    from the active plots in the active visualization window. If the all
-    argument is provided and contains a non-zero value, all plots in the active
-    visualization window are affected. If the value is zero or if the argument
-    is not provided, only the active plots are affected.
+    The RemoveLastOperator function removes the operator that was last applied
+    to the active plots. If the all argument is provided and contains a
+    non-zero value, all plots in the active visualization window are affected.
+    If the value is zero or if the argument is not provided, only the active
+    plots are affected.
 
 
 **Example:**
@@ -7628,10 +7359,6 @@ RemoveOperator
 
 ::
 
-  RemoveAllOperators() -> integer
-  RemoveAllOperators(all) -> integer
-  RemoveLastOperator() -> integer
-  RemoveLastOperator(all) -> integer
   RemoveOperator(index) -> integer
   RemoveOperator(index, all) -> integer
 
@@ -7651,13 +7378,11 @@ return type : CLI_return_t
 
 **Description:**
 
-    The RemoveOperator functions allow operators to be removed from plots. The
-    RemoveLastOperator function removes the operator that was last applied to
-    the active plots. The RemoveAllOperators function removes all operators
-    from the active plots in the active visualization window. If the all
-    argument is provided and contains a non-zero value, all plots in the active
-    visualization window are affected. If the value is zero or if the argument
-    is not provided, only the active plots are affected.
+    The RemoveOperator functions allow operators to be removed from plots.
+    If the all argument is provided and contains a non-zero value, all
+    plots in the active visualization window are affected. If the value
+    is zero or if the argument is not provided, only the active plots
+    are affected.
 
 
 **Example:**
@@ -8007,7 +7732,6 @@ RestoreSession
 ::
 
   RestoreSession(filename, visitDir) -> integer
-  RestoreSessionWithDifferentSources(filename, visitDir, mapping) -> integer
 
 
 filename : string
@@ -8018,12 +7742,6 @@ visitDir : integer
     located in the user's VisIt directory. If the flag is set to 1 then the
     session file is assumed to be located in the user's VisIt directory
     otherwise the filename must contain an absolute path.
-
-mapping : tuple
-    A tuple of strings representing the maping from sources as specified
-    in the original session file to new sources. Sources in the original
-    session file are numbered starting from 0. So, this tuple of strings
-    simply contains the new names for each of the sources, in order.
 
 return type : CLI_return_t
     RestoreSession returns 1 on success and 0 on failure.
@@ -8062,7 +7780,6 @@ RestoreSessionWithDifferentSources
 
 ::
 
-  RestoreSession(filename, visitDir) -> integer
   RestoreSessionWithDifferentSources(filename, visitDir, mapping) -> integer
 
 
@@ -8118,7 +7835,6 @@ SaveAttribute
 
 ::
 
-  LoadAttribute(filename, object)
   SaveAttribute(filename, object)
 
 
@@ -8331,7 +8047,6 @@ SetActiveContinuousColorTable
 ::
 
   SetActiveContinuousColorTable(name) -> integer
-  SetActiveDiscreteColorTable(name) -> integer
 
 
 name : AMBIGUOUS
@@ -8377,7 +8092,6 @@ SetActiveDiscreteColorTable
 
 ::
 
-  SetActiveContinuousColorTable(name) -> integer
   SetActiveDiscreteColorTable(name) -> integer
 
 
@@ -8589,7 +8303,6 @@ SetAnnotationAttributes
 ::
 
   SetAnnotationAttributes(atts) -> integer
-  SetDefaultAnnotationAttributes(atts) -> integer
 
 
 atts : STARTING_VALUE
@@ -8952,7 +8665,6 @@ SetDebugLevel
 
 ::
 
-  GetDebugLevel() -> integer
   SetDebugLevel(level)
 
 
@@ -8969,9 +8681,7 @@ level : string
     VisIt Python scripts. The SetDebugLevel function sets the debug level for
     VisIt's viewer thus it must be called before a Launch method. The debug
     level determines how much detail is written to VisIt's execution logs when
-    it executes. The GetDebugLevel function can be used in Python scripts to
-    alter the behavior of the script. For instance, the debug level can be used
-    to selectively print values to the console.
+    it executes.
 
 
 **Example:**
@@ -8989,7 +8699,6 @@ SetDefaultAnnotationAttributes
 
 ::
 
-  SetAnnotationAttributes(atts) -> integer
   SetDefaultAnnotationAttributes(atts) -> integer
 
 
@@ -9076,7 +8785,6 @@ SetDefaultInteractorAttributes
 
 ::
 
-  SetInteractorAttributes(atts) -> integer
   SetDefaultInteractorAttributes(atts) -> integer
 
 
@@ -9122,7 +8830,6 @@ SetDefaultMaterialAttributes
 
 ::
 
-  SetMaterialAttributes(atts) -> integer
   SetDefaultMaterialAttributes(atts) -> integer
 
 
@@ -9210,28 +8917,11 @@ SetDefaultOperatorOptions
 
 ::
 
-  SetOperatorOptions(atts) -> integer
-  SetOperatorOptions(atts, operatorIndex) -> integer
-  SetOperatorOptions(atts, operatorIndex, all) -> integer
   SetDefaultOperatorOptions(atts) -> integer
 
 
 atts : STARTING_VALUE
     Any type of operator attributes object.
-
-operatorIndex : integer
-    An optional zero-based integer that serves as an index into the active
-    plot's operator list. Use this argument if you want to set the operator
-    attributes for a plot that has multiple instances of the same type of
-    operator. For example, if the active plot had a Transform operator
-    followed by a Slice operator followed by another Transform operator and
-    you wanted to adjust the attributes of the second Transform operator,
-    you would pass an operatorIndex value of 2.
-
-all : integer
-    An optional integer argument that tells the function to apply the operator
-    attributes to all plots containing the specified operator if the value of
-    the argument is non-zero.
 
 return type : CLI_return_t
     All functions return an integer value of 1 for success and 0 for failure.
@@ -9282,9 +8972,7 @@ SetDefaultPickAttributes
 
 ::
 
-  SetPickAttributes(atts) -> integer
   SetDefaultPickAttributes(atts) -> integer
-  ResetPickAttributes() -> integer
 
 
 atts : STARTING_VALUE
@@ -9325,7 +9013,6 @@ SetDefaultPlotOptions
 
 ::
 
-  SetPlotOptions(atts) -> integer
   SetDefaultPlotOptions(atts) -> integer
 
 
@@ -9420,7 +9107,6 @@ SetInteractorAttributes
 ::
 
   SetInteractorAttributes(atts) -> integer
-  SetDefaultInteractorAttributes(atts) -> integer
 
 
 atts : STARTING_VALUE
@@ -9572,7 +9258,6 @@ SetMaterialAttributes
 ::
 
   SetMaterialAttributes(atts) -> integer
-  SetDefaultMaterialAttributes(atts) -> integer
 
 
 atts : STARTING_VALUE
@@ -9695,7 +9380,6 @@ SetOperatorOptions
   SetOperatorOptions(atts) -> integer
   SetOperatorOptions(atts, operatorIndex) -> integer
   SetOperatorOptions(atts, operatorIndex, all) -> integer
-  SetDefaultOperatorOptions(atts) -> integer
 
 
 atts : STARTING_VALUE
@@ -9765,8 +9449,6 @@ SetPickAttributes
 ::
 
   SetPickAttributes(atts) -> integer
-  SetDefaultPickAttributes(atts) -> integer
-  ResetPickAttributes() -> integer
 
 
 atts : STARTING_VALUE
@@ -10021,7 +9703,6 @@ SetPlotOptions
 ::
 
   SetPlotOptions(atts) -> integer
-  SetDefaultPlotOptions(atts) -> integer
 
 
 atts : STARTING_VALUE
@@ -10211,7 +9892,12 @@ typeAsString : STARTING_VALUE
     used by VisIt's pipeline.  The function accepts a single argument
     either an integer or string representing the precision desired.
     0 = "float", 1 = "native", 2 = "double"
-    Examples:
+
+
+**Example:**
+
+::
+
     SetPrecisionType("double")
     SetPrecisionType(2)
 
@@ -10436,8 +10122,6 @@ SetQueryOverTimeAttributes
 ::
 
   SetQueryOverTimeAttributes(atts) -> integer
-  SetDefaultQueryOverTimeAttributes(atts) -> integer
-  ResetQueryOverTimeAttributes() -> integer
 
 
 atts : STARTING_VALUE
@@ -10765,10 +10449,7 @@ SetView2D
 
 ::
 
-  SetViewCurve(ViewCurveAttributes) -> integer
   SetView2D(View2DAttributes) -> integer
-  SetView3D(View3DAttributes) -> integer
-  SetViewAxisArray(ViewAxisArrayAttributes) -> integer
 
 
 view : STARTING_VALUE
@@ -10784,19 +10465,19 @@ return type : CLI_return_t
     which parts of the database are examined. The VisIt Python Interface
     provides four functions for setting the view: SetView2D, SetView3D,
     SetViewCurve, and SetViewAxisArray. If the visualization window
-    contains 2D plots, use the SetView2D function. Use the SetView3D
-    function when the visualization window contains 3D plots.  Similarly
-    for windows containing curve or axis-array based plots.  To set the
-    view, first create the appropriate ViewAttributes object and set the
-    object's fields to set a new view. After setting the fields, pass the
-    object to the matching SetView function. A common use of the SetView
+    contains 2D plots, use the SetView2D function. To set the view, first
+    create the appropriate ViewAttributes object and set the object's
+    fields to set a new view. After setting the fields, pass the object
+    to the matching SetView function. A common use of the SetView
     functions is to animate the view to produce simple animations where
     the camera appears to fly around the plots in the visualization
     window.
-    A View3D object also supports the RotateAxis(int axis, double deg)
-    method which mimics the 'rotx', 'roty' and 'rotz' view commands in
-    the GUI.
-    Examples:
+
+
+**Example:**
+
+::
+
     % visit -cli
     OpenDatabase("/usr/gapps/visit/data/globe.silo")
     AddPlot("Pseudocolor", "v")
@@ -10821,10 +10502,7 @@ SetView3D
 
 ::
 
-  SetViewCurve(ViewCurveAttributes) -> integer
-  SetView2D(View2DAttributes) -> integer
   SetView3D(View3DAttributes) -> integer
-  SetViewAxisArray(ViewAxisArrayAttributes) -> integer
 
 
 view : STARTING_VALUE
@@ -10839,20 +10517,22 @@ return type : CLI_return_t
     The view is a crucial part of a visualization since it determines
     which parts of the database are examined. The VisIt Python Interface
     provides four functions for setting the view: SetView2D, SetView3D,
-    SetViewCurve, and SetViewAxisArray. If the visualization window
-    contains 2D plots, use the SetView2D function. Use the SetView3D
-    function when the visualization window contains 3D plots.  Similarly
-    for windows containing curve or axis-array based plots.  To set the
-    view, first create the appropriate ViewAttributes object and set the
-    object's fields to set a new view. After setting the fields, pass the
-    object to the matching SetView function. A common use of the SetView
+    SetViewCurve, and SetViewAxisArray. Use the SetView3D function when
+    the visualization window contains 3D plots. To set the view, first
+    create the appropriate ViewAttributes object and set the object's
+    fields to set a new view. After setting the fields, pass the object
+    to the matching SetView function. A common use of the SetView
     functions is to animate the view to produce simple animations where
     the camera appears to fly around the plots in the visualization
-    window.
-    A View3D object also supports the RotateAxis(int axis, double deg)
+    window. A View3D object also supports the RotateAxis(int axis, double deg)
     method which mimics the 'rotx', 'roty' and 'rotz' view commands in
     the GUI.
-    Examples:
+
+
+**Example:**
+
+::
+
     % visit -cli
     OpenDatabase("/usr/gapps/visit/data/globe.silo")
     AddPlot("Pseudocolor", "v")
@@ -10877,9 +10557,6 @@ SetViewAxisArray
 
 ::
 
-  SetViewCurve(ViewCurveAttributes) -> integer
-  SetView2D(View2DAttributes) -> integer
-  SetView3D(View3DAttributes) -> integer
   SetViewAxisArray(ViewAxisArrayAttributes) -> integer
 
 
@@ -10895,20 +10572,18 @@ return type : CLI_return_t
     The view is a crucial part of a visualization since it determines
     which parts of the database are examined. The VisIt Python Interface
     provides four functions for setting the view: SetView2D, SetView3D,
-    SetViewCurve, and SetViewAxisArray. If the visualization window
-    contains 2D plots, use the SetView2D function. Use the SetView3D
-    function when the visualization window contains 3D plots.  Similarly
-    for windows containing curve or axis-array based plots.  To set the
-    view, first create the appropriate ViewAttributes object and set the
-    object's fields to set a new view. After setting the fields, pass the
-    object to the matching SetView function. A common use of the SetView
-    functions is to animate the view to produce simple animations where
-    the camera appears to fly around the plots in the visualization
-    window.
-    A View3D object also supports the RotateAxis(int axis, double deg)
-    method which mimics the 'rotx', 'roty' and 'rotz' view commands in
-    the GUI.
-    Examples:
+    SetViewCurve, and SetViewAxisArray. To set the view, first create
+    the appropriate ViewAttributes object and set the object's fields
+    to set a new view. After setting the fields, pass the object to the
+    matching SetView function. A common use of the SetView functions is
+    to animate the view to produce simple animations where the camera
+    appears to fly around the plots in the visualization window.
+
+
+**Example:**
+
+::
+
     % visit -cli
     OpenDatabase("/usr/gapps/visit/data/globe.silo")
     AddPlot("Pseudocolor", "v")
@@ -10934,9 +10609,6 @@ SetViewCurve
 ::
 
   SetViewCurve(ViewCurveAttributes) -> integer
-  SetView2D(View2DAttributes) -> integer
-  SetView3D(View3DAttributes) -> integer
-  SetViewAxisArray(ViewAxisArrayAttributes) -> integer
 
 
 view : STARTING_VALUE
@@ -10951,20 +10623,18 @@ return type : CLI_return_t
     The view is a crucial part of a visualization since it determines
     which parts of the database are examined. The VisIt Python Interface
     provides four functions for setting the view: SetView2D, SetView3D,
-    SetViewCurve, and SetViewAxisArray. If the visualization window
-    contains 2D plots, use the SetView2D function. Use the SetView3D
-    function when the visualization window contains 3D plots.  Similarly
-    for windows containing curve or axis-array based plots.  To set the
-    view, first create the appropriate ViewAttributes object and set the
-    object's fields to set a new view. After setting the fields, pass the
-    object to the matching SetView function. A common use of the SetView
-    functions is to animate the view to produce simple animations where
-    the camera appears to fly around the plots in the visualization
-    window.
-    A View3D object also supports the RotateAxis(int axis, double deg)
-    method which mimics the 'rotx', 'roty' and 'rotz' view commands in
-    the GUI.
-    Examples:
+    SetViewCurve, and SetViewAxisArray. To set the view, first create
+    the appropriate ViewAttributes object and set the object's fields
+    to set a new view. After setting the fields, pass the object to the
+    matching SetView function. A common use of the SetView functions is
+    to animate the view to produce simple animations where the camera
+    appears to fly around the plots in the visualization window.
+
+
+**Example:**
+
+::
+
     % visit -cli
     OpenDatabase("/usr/gapps/visit/data/globe.silo")
     AddPlot("Pseudocolor", "v")
@@ -11357,7 +11027,6 @@ SuppressQueryOutputOff
 
 ::
 
-  SuppressQueryOutputOn() -> integer
   SuppressQueryOutputOff() -> integer
 
 return type : CLI_return_t
@@ -11396,7 +11065,6 @@ SuppressQueryOutputOn
 ::
 
   SuppressQueryOutputOn() -> integer
-  SuppressQueryOutputOff() -> integer
 
 return type : CLI_return_t
     The SuppressQueryOutput function returns 1 on success and 0 on failure.
@@ -11582,13 +11250,6 @@ ToggleBoundingBoxMode
 ::
 
   ToggleBoundingBoxMode() -> integer
-  ToggleCameraViewMode() -> integer
-  ToggleFullFrameMode() -> integer
-  ToggleLockTime() -> integer
-  ToggleLockViewMode() -> integer
-  ToggleMaintainDataMode() -> integer
-  ToggleMaintainViewMode() -> integer
-  ToggleSpinMode() -> integer
 
 return type : CLI_return_t
     All functions return 1 on success and 0 on failure.
@@ -11603,31 +11264,6 @@ return type : CLI_return_t
     When the visualization window is in bounding box mode, any plots it
     contains are hidden while the view is being changed so the window redraws
     faster.
-    The ToggleCameraViewMode function toggles camera view mode on and off.
-    When the visualization window is in camera view mode, the view is updated
-    using any view keyframes that have been defined when VisIt is in keyframing
-    mode.
-    The ToggleFullFrameMode function toggles fullframe mode on and off. When
-    the visualization window is in fullframe mode, the viewport is stretched
-    non-uniformly so that it covers most of the visualization window. While not
-    maintaining a 1:1 aspect ratio, it does make better use of the
-    visualization window.
-    The ToggleLockTime function turns time locking on and off in a
-    visualization window. When time locking is on in a visualization window,
-    VisIt creates a database correlation that works for the databases in all
-    visualization windows that are time-locked. When you change the time state
-    using the time slider for the the afore-mentioned database correlation, it
-    has the effect of updating time in all time-locked visualization windows.
-    The ToggleLockViewMode function turns lock view mode on and off. When
-    windows are in lock view mode, each view change is broadcast to other
-    windows that are also in lock view mode. This allows windows containing
-    similar plots to be compared easily.
-    The ToggleMaintainDataMode and ToggleMaintainViewMode functions force the
-    data range and the view, respectively, that was in effect when the mode was
-    toggled to be used for all subsequent time states.
-    The ToggleSpinMode function turns spin mode on and off. When the
-    visualization window is in spin mode, it continues to spin along the axis
-    of rotation when the view is changed interactively.
 
 
 **Example:**
@@ -11653,14 +11289,7 @@ ToggleCameraViewMode
 
 ::
 
-  ToggleBoundingBoxMode() -> integer
   ToggleCameraViewMode() -> integer
-  ToggleFullFrameMode() -> integer
-  ToggleLockTime() -> integer
-  ToggleLockViewMode() -> integer
-  ToggleMaintainDataMode() -> integer
-  ToggleMaintainViewMode() -> integer
-  ToggleSpinMode() -> integer
 
 return type : CLI_return_t
     All functions return 1 on success and 0 on failure.
@@ -11671,35 +11300,10 @@ return type : CLI_return_t
     The visualization window has various modes that affect its behavior and
     the VisIt Python Interface provides a few functions to toggle some of those
     modes.
-    The ToggleBoundingBoxMode function toggles bounding box mode on and off.
-    When the visualization window is in bounding box mode, any plots it
-    contains are hidden while the view is being changed so the window redraws
-    faster.
     The ToggleCameraViewMode function toggles camera view mode on and off.
     When the visualization window is in camera view mode, the view is updated
     using any view keyframes that have been defined when VisIt is in keyframing
     mode.
-    The ToggleFullFrameMode function toggles fullframe mode on and off. When
-    the visualization window is in fullframe mode, the viewport is stretched
-    non-uniformly so that it covers most of the visualization window. While not
-    maintaining a 1:1 aspect ratio, it does make better use of the
-    visualization window.
-    The ToggleLockTime function turns time locking on and off in a
-    visualization window. When time locking is on in a visualization window,
-    VisIt creates a database correlation that works for the databases in all
-    visualization windows that are time-locked. When you change the time state
-    using the time slider for the the afore-mentioned database correlation, it
-    has the effect of updating time in all time-locked visualization windows.
-    The ToggleLockViewMode function turns lock view mode on and off. When
-    windows are in lock view mode, each view change is broadcast to other
-    windows that are also in lock view mode. This allows windows containing
-    similar plots to be compared easily.
-    The ToggleMaintainDataMode and ToggleMaintainViewMode functions force the
-    data range and the view, respectively, that was in effect when the mode was
-    toggled to be used for all subsequent time states.
-    The ToggleSpinMode function turns spin mode on and off. When the
-    visualization window is in spin mode, it continues to spin along the axis
-    of rotation when the view is changed interactively.
 
 
 **Example:**
@@ -11725,14 +11329,7 @@ ToggleFullFrameMode
 
 ::
 
-  ToggleBoundingBoxMode() -> integer
-  ToggleCameraViewMode() -> integer
   ToggleFullFrameMode() -> integer
-  ToggleLockTime() -> integer
-  ToggleLockViewMode() -> integer
-  ToggleMaintainDataMode() -> integer
-  ToggleMaintainViewMode() -> integer
-  ToggleSpinMode() -> integer
 
 return type : CLI_return_t
     All functions return 1 on success and 0 on failure.
@@ -11743,35 +11340,11 @@ return type : CLI_return_t
     The visualization window has various modes that affect its behavior and
     the VisIt Python Interface provides a few functions to toggle some of those
     modes.
-    The ToggleBoundingBoxMode function toggles bounding box mode on and off.
-    When the visualization window is in bounding box mode, any plots it
-    contains are hidden while the view is being changed so the window redraws
-    faster.
-    The ToggleCameraViewMode function toggles camera view mode on and off.
-    When the visualization window is in camera view mode, the view is updated
-    using any view keyframes that have been defined when VisIt is in keyframing
-    mode.
     The ToggleFullFrameMode function toggles fullframe mode on and off. When
     the visualization window is in fullframe mode, the viewport is stretched
     non-uniformly so that it covers most of the visualization window. While not
     maintaining a 1:1 aspect ratio, it does make better use of the
     visualization window.
-    The ToggleLockTime function turns time locking on and off in a
-    visualization window. When time locking is on in a visualization window,
-    VisIt creates a database correlation that works for the databases in all
-    visualization windows that are time-locked. When you change the time state
-    using the time slider for the the afore-mentioned database correlation, it
-    has the effect of updating time in all time-locked visualization windows.
-    The ToggleLockViewMode function turns lock view mode on and off. When
-    windows are in lock view mode, each view change is broadcast to other
-    windows that are also in lock view mode. This allows windows containing
-    similar plots to be compared easily.
-    The ToggleMaintainDataMode and ToggleMaintainViewMode functions force the
-    data range and the view, respectively, that was in effect when the mode was
-    toggled to be used for all subsequent time states.
-    The ToggleSpinMode function turns spin mode on and off. When the
-    visualization window is in spin mode, it continues to spin along the axis
-    of rotation when the view is changed interactively.
 
 
 **Example:**
@@ -11797,14 +11370,7 @@ ToggleLockTime
 
 ::
 
-  ToggleBoundingBoxMode() -> integer
-  ToggleCameraViewMode() -> integer
-  ToggleFullFrameMode() -> integer
   ToggleLockTime() -> integer
-  ToggleLockViewMode() -> integer
-  ToggleMaintainDataMode() -> integer
-  ToggleMaintainViewMode() -> integer
-  ToggleSpinMode() -> integer
 
 return type : CLI_return_t
     All functions return 1 on success and 0 on failure.
@@ -11815,35 +11381,12 @@ return type : CLI_return_t
     The visualization window has various modes that affect its behavior and
     the VisIt Python Interface provides a few functions to toggle some of those
     modes.
-    The ToggleBoundingBoxMode function toggles bounding box mode on and off.
-    When the visualization window is in bounding box mode, any plots it
-    contains are hidden while the view is being changed so the window redraws
-    faster.
-    The ToggleCameraViewMode function toggles camera view mode on and off.
-    When the visualization window is in camera view mode, the view is updated
-    using any view keyframes that have been defined when VisIt is in keyframing
-    mode.
-    The ToggleFullFrameMode function toggles fullframe mode on and off. When
-    the visualization window is in fullframe mode, the viewport is stretched
-    non-uniformly so that it covers most of the visualization window. While not
-    maintaining a 1:1 aspect ratio, it does make better use of the
-    visualization window.
     The ToggleLockTime function turns time locking on and off in a
     visualization window. When time locking is on in a visualization window,
     VisIt creates a database correlation that works for the databases in all
     visualization windows that are time-locked. When you change the time state
     using the time slider for the the afore-mentioned database correlation, it
     has the effect of updating time in all time-locked visualization windows.
-    The ToggleLockViewMode function turns lock view mode on and off. When
-    windows are in lock view mode, each view change is broadcast to other
-    windows that are also in lock view mode. This allows windows containing
-    similar plots to be compared easily.
-    The ToggleMaintainDataMode and ToggleMaintainViewMode functions force the
-    data range and the view, respectively, that was in effect when the mode was
-    toggled to be used for all subsequent time states.
-    The ToggleSpinMode function turns spin mode on and off. When the
-    visualization window is in spin mode, it continues to spin along the axis
-    of rotation when the view is changed interactively.
 
 
 **Example:**
@@ -11941,14 +11484,7 @@ ToggleLockViewMode
 
 ::
 
-  ToggleBoundingBoxMode() -> integer
-  ToggleCameraViewMode() -> integer
-  ToggleFullFrameMode() -> integer
-  ToggleLockTime() -> integer
   ToggleLockViewMode() -> integer
-  ToggleMaintainDataMode() -> integer
-  ToggleMaintainViewMode() -> integer
-  ToggleSpinMode() -> integer
 
 return type : CLI_return_t
     All functions return 1 on success and 0 on failure.
@@ -11959,35 +11495,10 @@ return type : CLI_return_t
     The visualization window has various modes that affect its behavior and
     the VisIt Python Interface provides a few functions to toggle some of those
     modes.
-    The ToggleBoundingBoxMode function toggles bounding box mode on and off.
-    When the visualization window is in bounding box mode, any plots it
-    contains are hidden while the view is being changed so the window redraws
-    faster.
-    The ToggleCameraViewMode function toggles camera view mode on and off.
-    When the visualization window is in camera view mode, the view is updated
-    using any view keyframes that have been defined when VisIt is in keyframing
-    mode.
-    The ToggleFullFrameMode function toggles fullframe mode on and off. When
-    the visualization window is in fullframe mode, the viewport is stretched
-    non-uniformly so that it covers most of the visualization window. While not
-    maintaining a 1:1 aspect ratio, it does make better use of the
-    visualization window.
-    The ToggleLockTime function turns time locking on and off in a
-    visualization window. When time locking is on in a visualization window,
-    VisIt creates a database correlation that works for the databases in all
-    visualization windows that are time-locked. When you change the time state
-    using the time slider for the the afore-mentioned database correlation, it
-    has the effect of updating time in all time-locked visualization windows.
     The ToggleLockViewMode function turns lock view mode on and off. When
     windows are in lock view mode, each view change is broadcast to other
     windows that are also in lock view mode. This allows windows containing
     similar plots to be compared easily.
-    The ToggleMaintainDataMode and ToggleMaintainViewMode functions force the
-    data range and the view, respectively, that was in effect when the mode was
-    toggled to be used for all subsequent time states.
-    The ToggleSpinMode function turns spin mode on and off. When the
-    visualization window is in spin mode, it continues to spin along the axis
-    of rotation when the view is changed interactively.
 
 
 **Example:**
@@ -12006,21 +11517,14 @@ return type : CLI_return_t
   ToggleSpinMode()
 
 
-ToggleMaintainViewMode
+ToggleMaintainDataMode
 ----------------------
 
 **Synopsis:**
 
 ::
 
-  ToggleBoundingBoxMode() -> integer
-  ToggleCameraViewMode() -> integer
-  ToggleFullFrameMode() -> integer
-  ToggleLockTime() -> integer
-  ToggleLockViewMode() -> integer
   ToggleMaintainDataMode() -> integer
-  ToggleMaintainViewMode() -> integer
-  ToggleSpinMode() -> integer
 
 return type : CLI_return_t
     All functions return 1 on success and 0 on failure.
@@ -12031,35 +11535,32 @@ return type : CLI_return_t
     The visualization window has various modes that affect its behavior and
     the VisIt Python Interface provides a few functions to toggle some of those
     modes.
-    The ToggleBoundingBoxMode function toggles bounding box mode on and off.
-    When the visualization window is in bounding box mode, any plots it
-    contains are hidden while the view is being changed so the window redraws
-    faster.
-    The ToggleCameraViewMode function toggles camera view mode on and off.
-    When the visualization window is in camera view mode, the view is updated
-    using any view keyframes that have been defined when VisIt is in keyframing
-    mode.
-    The ToggleFullFrameMode function toggles fullframe mode on and off. When
-    the visualization window is in fullframe mode, the viewport is stretched
-    non-uniformly so that it covers most of the visualization window. While not
-    maintaining a 1:1 aspect ratio, it does make better use of the
-    visualization window.
-    The ToggleLockTime function turns time locking on and off in a
-    visualization window. When time locking is on in a visualization window,
-    VisIt creates a database correlation that works for the databases in all
-    visualization windows that are time-locked. When you change the time state
-    using the time slider for the the afore-mentioned database correlation, it
-    has the effect of updating time in all time-locked visualization windows.
-    The ToggleLockViewMode function turns lock view mode on and off. When
-    windows are in lock view mode, each view change is broadcast to other
-    windows that are also in lock view mode. This allows windows containing
-    similar plots to be compared easily.
     The ToggleMaintainDataMode and ToggleMaintainViewMode functions force the
     data range and the view, respectively, that was in effect when the mode was
     toggled to be used for all subsequent time states.
-    The ToggleSpinMode function turns spin mode on and off. When the
-    visualization window is in spin mode, it continues to spin along the axis
-    of rotation when the view is changed interactively.
+
+
+ToggleMaintainViewMode
+----------------------
+
+**Synopsis:**
+
+::
+
+  ToggleMaintainViewMode() -> integer
+
+return type : CLI_return_t
+    All functions return 1 on success and 0 on failure.
+
+
+**Description:**
+
+    The visualization window has various modes that affect its behavior and
+    the VisIt Python Interface provides a few functions to toggle some of those
+    modes.
+    The ToggleMaintainDataMode and ToggleMaintainViewMode functions force the
+    data range and the view, respectively, that was in effect when the mode was
+    toggled to be used for all subsequent time states.
 
 
 **Example:**
@@ -12085,13 +11586,6 @@ ToggleSpinMode
 
 ::
 
-  ToggleBoundingBoxMode() -> integer
-  ToggleCameraViewMode() -> integer
-  ToggleFullFrameMode() -> integer
-  ToggleLockTime() -> integer
-  ToggleLockViewMode() -> integer
-  ToggleMaintainDataMode() -> integer
-  ToggleMaintainViewMode() -> integer
   ToggleSpinMode() -> integer
 
 return type : CLI_return_t
@@ -12103,32 +11597,6 @@ return type : CLI_return_t
     The visualization window has various modes that affect its behavior and
     the VisIt Python Interface provides a few functions to toggle some of those
     modes.
-    The ToggleBoundingBoxMode function toggles bounding box mode on and off.
-    When the visualization window is in bounding box mode, any plots it
-    contains are hidden while the view is being changed so the window redraws
-    faster.
-    The ToggleCameraViewMode function toggles camera view mode on and off.
-    When the visualization window is in camera view mode, the view is updated
-    using any view keyframes that have been defined when VisIt is in keyframing
-    mode.
-    The ToggleFullFrameMode function toggles fullframe mode on and off. When
-    the visualization window is in fullframe mode, the viewport is stretched
-    non-uniformly so that it covers most of the visualization window. While not
-    maintaining a 1:1 aspect ratio, it does make better use of the
-    visualization window.
-    The ToggleLockTime function turns time locking on and off in a
-    visualization window. When time locking is on in a visualization window,
-    VisIt creates a database correlation that works for the databases in all
-    visualization windows that are time-locked. When you change the time state
-    using the time slider for the the afore-mentioned database correlation, it
-    has the effect of updating time in all time-locked visualization windows.
-    The ToggleLockViewMode function turns lock view mode on and off. When
-    windows are in lock view mode, each view change is broadcast to other
-    windows that are also in lock view mode. This allows windows containing
-    similar plots to be compared easily.
-    The ToggleMaintainDataMode and ToggleMaintainViewMode functions force the
-    data range and the view, respectively, that was in effect when the mode was
-    toggled to be used for all subsequent time states.
     The ToggleSpinMode function turns spin mode on and off. When the
     visualization window is in spin mode, it continues to spin along the axis
     of rotation when the view is changed interactively.
@@ -12157,18 +11625,16 @@ TurnDomainsOff
 
 ::
 
-  TurnMaterialsOn() -> integer
-  TurnMaterialsOn(string) -> integer
-  TurnMaterialsOn(tuple of strings) -> integer
-  TurnMaterialsOff() -> integer
-  TurnMaterialsOff(string) -> integer
-  TurnMaterialsOff(tuple of strings) -> integer
-  TurnDomainsOn() -> integer
-  TurnDomainsOn(string) -> integer
-  TurnDomainsOn(tuple of strings) -> integer
   TurnDomainsOff() -> integer
-  TurnDomainsOff(string) -> integer
-  TurnDomainsOff(tuple of strings) -> integer
+  TurnDomainsOff(set_name) -> integer
+  TurnDomainsOff(tuple_set_name) -> integer
+
+
+set_name : string
+    The name of the set to modify.
+
+tuple_set_name: tuple of strings
+    A tuple of strings for the sets to modify.
 
 return type : CLI_return_t
     The Turn functions return an integer with a value of 1 for success or 0
@@ -12180,14 +11646,11 @@ return type : CLI_return_t
     The Turn functions are provided to simplify the removal of material or
     domain subsets. Instead of creating a SILRestriction object, you can use
     the Turn functions to turn materials or domains on or off. The
-    TurnMaterialsOn function turns materials on and the TurnMaterialsOff
-    function turns them off. The TurnDomainsOn function turns domains on and
-    the TurnDomainsOff function turns them off. All of the Turn functions have
+    TurnDomainsOff function turns domains off. All of the Turn functions have
     three possible argument lists. When you do not provide any arguments, the
     function applies to all subsets in the SIL so if you called the
-    TurnMaterialsOff function with no arguments, all materials would be turned
-    off. Calling TurnMaterialsOn with no arguments would turn all materials on.
-    All functions can also take a string argument, which is the name of the set
+    TurnDomainsOff function with no arguments, all domains would be turned
+    off. All functions can also take a string argument, which is the name of the set
     to modify. For example, you could turn off domain 0 by calling the
     TurnDomainsOff with a single argument of "domain0" (or the appropriate
     set name). All of the Turn functions can also be used to modify more than
@@ -12217,18 +11680,16 @@ TurnDomainsOn
 
 ::
 
-  TurnMaterialsOn() -> integer
-  TurnMaterialsOn(string) -> integer
-  TurnMaterialsOn(tuple of strings) -> integer
-  TurnMaterialsOff() -> integer
-  TurnMaterialsOff(string) -> integer
-  TurnMaterialsOff(tuple of strings) -> integer
   TurnDomainsOn() -> integer
-  TurnDomainsOn(string) -> integer
-  TurnDomainsOn(tuple of strings) -> integer
-  TurnDomainsOff() -> integer
-  TurnDomainsOff(string) -> integer
-  TurnDomainsOff(tuple of strings) -> integer
+  TurnDomainsOn(set_name) -> integer
+  TurnDomainsOn(tuple_set_name) -> integer
+
+
+set_name : string
+    The name of the set to modify.
+
+tuple_set_name: tuple of strings
+    A tuple of strings for the sets to modify.
 
 return type : CLI_return_t
     The Turn functions return an integer with a value of 1 for success or 0
@@ -12240,16 +11701,13 @@ return type : CLI_return_t
     The Turn functions are provided to simplify the removal of material or
     domain subsets. Instead of creating a SILRestriction object, you can use
     the Turn functions to turn materials or domains on or off. The
-    TurnMaterialsOn function turns materials on and the TurnMaterialsOff
-    function turns them off. The TurnDomainsOn function turns domains on and
-    the TurnDomainsOff function turns them off. All of the Turn functions have
+    TurnDomainsOn function turns domains on. All of the Turn functions have
     three possible argument lists. When you do not provide any arguments, the
     function applies to all subsets in the SIL so if you called the
-    TurnMaterialsOff function with no arguments, all materials would be turned
-    off. Calling TurnMaterialsOn with no arguments would turn all materials on.
-    All functions can also take a string argument, which is the name of the set
-    to modify. For example, you could turn off domain 0 by calling the
-    TurnDomainsOff with a single argument of "domain0" (or the appropriate
+    TurnDomainsOn function with no arguments, all domains would be turned
+    on. All functions can also take a string argument, which is the name of
+    the set to modify. For example, you could turn on domain 0 by calling the
+    TurnDomainsOn with a single argument of "domain0" (or the appropriate
     set name). All of the Turn functions can also be used to modify more than
     one set if you provide a tuple of set names. After you use the Turn
     functions to change the SIL restriction, you might want to call the
@@ -12277,18 +11735,16 @@ TurnMaterialsOff
 
 ::
 
-  TurnMaterialsOn() -> integer
-  TurnMaterialsOn(string) -> integer
-  TurnMaterialsOn(tuple of strings) -> integer
   TurnMaterialsOff() -> integer
-  TurnMaterialsOff(string) -> integer
-  TurnMaterialsOff(tuple of strings) -> integer
-  TurnDomainsOn() -> integer
-  TurnDomainsOn(string) -> integer
-  TurnDomainsOn(tuple of strings) -> integer
-  TurnDomainsOff() -> integer
-  TurnDomainsOff(string) -> integer
-  TurnDomainsOff(tuple of strings) -> integer
+  TurnMaterialsOff(set_name) -> integer
+  TurnMaterialsOff(tuple_set_name) -> integer
+
+
+set_name : string
+    The name of the set to modify.
+
+tuple_set_name: tuple of strings
+    A tuple of strings for the sets to modify.
 
 return type : CLI_return_t
     The Turn functions return an integer with a value of 1 for success or 0
@@ -12300,16 +11756,13 @@ return type : CLI_return_t
     The Turn functions are provided to simplify the removal of material or
     domain subsets. Instead of creating a SILRestriction object, you can use
     the Turn functions to turn materials or domains on or off. The
-    TurnMaterialsOn function turns materials on and the TurnMaterialsOff
-    function turns them off. The TurnDomainsOn function turns domains on and
-    the TurnDomainsOff function turns them off. All of the Turn functions have
+    TurnMaterialsOff function turns materials off. All of the Turn functions have
     three possible argument lists. When you do not provide any arguments, the
     function applies to all subsets in the SIL so if you called the
     TurnMaterialsOff function with no arguments, all materials would be turned
-    off. Calling TurnMaterialsOn with no arguments would turn all materials on.
-    All functions can also take a string argument, which is the name of the set
-    to modify. For example, you could turn off domain 0 by calling the
-    TurnDomainsOff with a single argument of "domain0" (or the appropriate
+    off. All functions can also take a string argument, which is the name of
+    the set to modify. For example, you could turn off material 0 by calling
+    TurnMaterialsOff with a single argument of "material0" (or the appropriate
     set name). All of the Turn functions can also be used to modify more than
     one set if you provide a tuple of set names. After you use the Turn
     functions to change the SIL restriction, you might want to call the
@@ -12340,15 +11793,13 @@ TurnMaterialsOn
   TurnMaterialsOn() -> integer
   TurnMaterialsOn(string) -> integer
   TurnMaterialsOn(tuple of strings) -> integer
-  TurnMaterialsOff() -> integer
-  TurnMaterialsOff(string) -> integer
-  TurnMaterialsOff(tuple of strings) -> integer
-  TurnDomainsOn() -> integer
-  TurnDomainsOn(string) -> integer
-  TurnDomainsOn(tuple of strings) -> integer
-  TurnDomainsOff() -> integer
-  TurnDomainsOff(string) -> integer
-  TurnDomainsOff(tuple of strings) -> integer
+
+
+set_name : string
+    The name of the set to modify.
+
+tuple_set_name: tuple of strings
+    A tuple of strings for the sets to modify.
 
 return type : CLI_return_t
     The Turn functions return an integer with a value of 1 for success or 0
@@ -12360,16 +11811,13 @@ return type : CLI_return_t
     The Turn functions are provided to simplify the removal of material or
     domain subsets. Instead of creating a SILRestriction object, you can use
     the Turn functions to turn materials or domains on or off. The
-    TurnMaterialsOn function turns materials on and the TurnMaterialsOff
-    function turns them off. The TurnDomainsOn function turns domains on and
-    the TurnDomainsOff function turns them off. All of the Turn functions have
+    TurnMaterialsOn function turns materials on. All of the Turn functions have
     three possible argument lists. When you do not provide any arguments, the
     function applies to all subsets in the SIL so if you called the
-    TurnMaterialsOff function with no arguments, all materials would be turned
-    off. Calling TurnMaterialsOn with no arguments would turn all materials on.
-    All functions can also take a string argument, which is the name of the set
-    to modify. For example, you could turn off domain 0 by calling the
-    TurnDomainsOff with a single argument of "domain0" (or the appropriate
+    TurnMaterialsOn function with no arguments, all materials would be turned
+    off. All functions can also take a string argument, which is the name of
+    the set to modify. For example, you could turn on material 0 by calling the
+    TurnMaterialsOn with a single argument of "material0" (or the appropriate
     set name). All of the Turn functions can also be used to modify more than
     one set if you provide a tuple of set names. After you use the Turn
     functions to change the SIL restriction, you might want to call the

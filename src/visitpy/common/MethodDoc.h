@@ -311,6 +311,7 @@ extern const char *visit_ToggleFullFrameMode_doc;
 extern const char *visit_ToggleLockTime_doc;
 extern const char *visit_ToggleLockTools_doc;
 extern const char *visit_ToggleLockViewMode_doc;
+extern const char *visit_ToggleMaintainDataMode_doc;
 extern const char *visit_ToggleMaintainViewMode_doc;
 extern const char *visit_ToggleSpinMode_doc;
 extern const char *visit_TurnDomainsOff_doc;
