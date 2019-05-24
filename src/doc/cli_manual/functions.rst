@@ -6067,13 +6067,15 @@ host : STARTING_VALUE
 args : tuple
     A tuple of strings containing command line flags for the metadata server.
 
-    +-------------------+----------------------------------------------------------------+
-    | **Argument**      | Description                                                    |
-    +-------------------+----------------------------------------------------------------+
-    | -debug #          | The -debug argument allows you to specify a debug level in the |
-    +-------------------+----------------------------------------------------------------+
-    | -dir visitdir     | The -dir argument allows you to specify where VisIt is         |
-    +-------------------+----------------------------------------------------------------+
+    +-------------------+--------------------------------+
+    | **Argument**      | Description                    |
+    +-------------------+--------------------------------+
+    | -debug #          | The -debug argument allows you |
+    |                   | to specify a debug level.      |
+    +-------------------+--------------------------------+
+    | -dir visitdir     | The -dir argument allows you   |
+    |                   | to specify where VisIt is.     |
+    +-------------------+--------------------------------+
 
 MachineProfile : STARTING_VALUE
     MachineProfile object to load with OpenMDServer call
