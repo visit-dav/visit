@@ -2531,19 +2531,19 @@ EvalCubic
 t : double
     A floating point number in the range [0., 1.] that represents the distance
     from c0 to c3.
-    
+
 c0 : arithmetic expression object
     The first control point. f(0) = c0. Any object that can be used in an
     arithmetic expression can be passed for c0.
-    
+
 c1 : arithmetic expression object
     The second control point. Any object that can be used in an arithmetic
     expression can be passed for c1.
-    
+
 c2 : arithmetic expression object
     The third control point. Any object that can be used in an arithmetic
     expression can be passed for c2.
-    
+
 c3 : arithmetic expression object
     The last control point. f(1) = c3. Any object that can be used in an
     arithmetic expression can be passed for c3.
@@ -2580,6 +2580,144 @@ return : double
   t = float(i) / float(nSteps - 1)
   newView = EvalCubic(t, v0, v1, v2, v3)
   SetView3D(newView)
+
+
+EvalCubicSpline
+---------------
+
+**Synopsis:**
+
+::
+
+  EvalCubicSpline(t, weights, values) -> f(t)
+
+
+t : double
+    A floating point number in the range [0., 1.] that represents the distance
+    from the first control point to the last control point.
+
+weights : tuple of doubles
+    A tuple of N floating point values in the range [0., 1.] that represent
+    how far along in parameterized space, the values will be located.
+
+values : tuple of arithmetic expression object
+    A tuple of N objects to be blended. Any objects that can be used in
+    arithmetic expressions can be passed in.
+
+return : double
+    The EvalCubicSpline function returns the interpolated value for t
+    considering the objects that were passed in.
+
+
+**Description:**
+    The EvalCubicSpline function takes in N objects to be blended and blends
+    them using piece-wise cubic polynomials and returns the blended value.
+
+
+EvalLinear
+----------
+
+**Synopsis:**
+
+::
+
+  EvalLinear(t, value1, value2) -> f(t)
+
+
+t : double
+    A floating point value in the range [0., 1.] that represents the distance
+    between the first and last control point in parameterized space.
+
+value1 : arithmetic expression object
+    Any object that can be used in an arithmetic expression. f(0) = value1.
+
+value2 : arithmetic expression object
+    Any object that can be used in an arithmetic expression. f(1) = value2.
+
+return : double
+    The EvalLinear function returns an interpolated value for t based on the
+    objects that were passed in.
+
+
+**Description:**
+    The EvalLinear function linearly interpolates between two values and
+    returns the result.
+
+
+**Example:**
+
+::
+
+    #% visit -cli
+    OpenDatabase("/usr/gapps/visit/data/globe.silo")
+    AddPlot("Pseudocolor", "u")
+    DrawPlots()
+    c0 = GetView3D()
+    c1 = GetView3D()
+    c1.viewNormal = (-0.499159, 0.475135, 0.724629)
+    c1.viewUp = (0.196284, 0.876524, -0.439521)
+    nSteps = 100
+    for i in range(nSteps):
+    t = float(i) / float(nSteps - 1)
+    v = EvalLinear(t, c0, c1)
+    SetView3D(v)
+
+
+EvalQuadratic
+-------------
+
+**Synopsis:**
+
+::
+
+  EvalQuadratic(t, c0, c1, c2) -> f(t)
+
+
+t : double
+    A floating point number in the range [0., 1.] that represents the distance
+    from c0 to c3.
+
+c0 : arithmetic expression object
+    The first control point. f(0) = c0. Any object that can be used in an
+    arithmetic expression can be passed for c0.
+
+c1 : arithmetic expression object
+    The second control point. Any object that can be used in an arithmetic
+    expression can be passed for c1.
+
+c2 : arithmetic expression object
+    The last control point. f(1) = c2. Any object that can be used in an
+    arithmetic expression can be passed for c2.
+
+return : double
+    The EvalQuadratic function returns the interpolated value for t taking
+    into account the control points that were passed in.
+
+
+**Description:**
+    The EvalQuadratic function takes in four objects and blends them using a
+    cubic polynomial and returns the blended value.
+
+
+**Example:**
+
+::
+
+    % visit -cli
+    OpenDatabase("/usr/gapps/visit/data/globe.silo")
+    AddPlot("Pseudocolor", "u")
+    DrawPlots()
+    v0 = GetView3D()
+    # rotate the plots 
+    v1 = GetView3D()
+    # rotate the plots one last time.
+    v2 = GetView3D()
+    # Fly around the plots using the views that have been specified.
+    nSteps = 100
+    for i in range(nSteps):
+    t = float(i) / float(nSteps - 1)
+    newView = EvalQuadratic(t, v0, v1, v2)
+    SetView3D(newView)
 
 
 ExecuteMacro
