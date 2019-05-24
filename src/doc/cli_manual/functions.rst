@@ -5463,10 +5463,8 @@ filename : string
     A string object containing the short filename to expand.
 
 return type : string
-    The LongFileName function returns a string.
-    Notes:
-    This function returns the input argument unless you are on the Windows
-    platform.
+    The LongFileName function returns a string. This function returns the
+    input argument unless you are on the Windows platform.
 
 
 **Description:**
@@ -5791,35 +5789,43 @@ coord : tuple
     A tuple of doubles containing the spatial coordinate (x, y, z).
 
 x : integer
-    An integer containing the screen X location (in pixels) offset from the left side of the visualization window.
+    An integer containing the screen X location (in pixels) offset
+    from the left side of the visualization window.
 
 y : integer
-    An integer containing the screen Y location (in pixels) offset from the bottom of the visualization window.
+    An integer containing the screen Y location (in pixels) offset
+    from the bottom of the visualization window.
 
 vars (optional) : tuple
-    A tuple of strings with the variable names for which to return results. (default: currently plotted variable)
+    A tuple of strings with the variable names for which to return
+    results. Default is the currently plotted variable.
 
 do_time (optional) : integer
-    An integer indicating whether to do a time pick. 1 -> do a time pick, 0 (default) -> do not do a time pick.
+    An integer indicating whether to do a time pick. 1 -> do a time pick,
+    0 (default) -> do not do a time pick.
 
 start_time (optional) : integer
-    An integer with the starting frame index (default: 0).
+    An integer with the starting frame index. Default is 0.
 
 end_time (optional) : integer
-    An integer with the ending frame index (default: num_timestates - 1).
+    An integer with the ending frame index. Default is num_timestates-1.
 
 stride (optional) : integer
-    An integer with the stride for advancing in time (default: 1).
+    An integer with the stride for advancing in time. Default is 1.
 
 preserve_coord (optional) : integer
-    An integer indicating whether to pick an element or a coordinate. 0 -> used picked element (default), 1-> used picked coordinate.
+    An integer indicating whether to pick an element or a coordinate.
+    0 -> used picked element (default), 1-> used picked coordinate.
 
 curve_plot_type (optional) : integer
-    An integer indicating whether the output should be on a single axis orwith multiple axes. 0 -> single Y axis (default), 1 -> multiple Y Axes.
+    An integer indicating whether the output should be on a single
+    axis or with multiple axes. 0 -> single Y axis (default),
+    1 -> multiple Y Axes.
 
 return type : dictionary
-    NodePick returns a python dictionary of the pick results, unless do_time is specified,
-    then a time curve is created in a new window.
+    NodePick returns a python dictionary of the pick results,
+    unless do_time is specified, then a time curve is created
+    in a new window.
 
 
 **Description:**
@@ -6203,49 +6209,56 @@ Pick
 
 ::
 
-  ZonePick(namedarg1=arg1, namedarg2=arg2, ...) -> dictionary
+  Pick(namedarg1=arg1, namedarg2=arg2, ...) -> dictionary
 
 
 coord : tuple
     A tuple of doubles containing the spatial coordinate (x, y, z).
 
 x : integer
-    An integer containing the screen X location (in pixels) offset from the left side of the visualization window.
+    An integer containing the screen X location (in pixels) offset
+    from the left side of the visualization window.
 
 y : integer
-    An integer containing the screen Y location (in pixels) offset from the bottom of the visualization window.
+    An integer containing the screen Y location (in pixels) offset
+    from the bottom of the visualization window.
 
 vars (optional) : tuple
-    A tuple of strings with the variable names for which to return results. (default: currently plotted variable)
+    A tuple of strings with the variable names for which to return
+    results. Default is the currently plotted variable.
 
 do_time (optional) : integer
-    An integer indicating whether to do a time pick. 1 -> do a time pick, 0 (default) -> do not do a time pick.
+    An integer indicating whether to do a time pick. 1 -> do a time pick,
+    0 (default) -> do not do a time pick.
 
 start_time (optional) : integer
-    An integer with the starting frame index (default: 0).
+    An integer with the starting frame index. Default is 0.
 
 end_time (optional) : integer
-    An integer with the ending frame index (default: num_timestates - 1).
+    An integer with the ending frame index. Default is num_timestates.
 
 stride (optional) : integer
-    An integer with the stride for advancing in time (default: 1).
+    An integer with the stride for advancing in time. Default is 1.
 
 preserve_coord (optional) : integer
-    An integer indicating whether to pick an element or a coordinate. 0 -> used picked element (default), 1-> used picked coordinate.
+    An integer indicating whether to pick an element or a coordinate.
+    0 -> used picked element (default), 1-> used picked coordinate.
 
 curve_plot_type (optional) : integer
-    An integer indicating whether the output should be on a single axis orwith multiple axes. 0 -> single Y axis (default), 1 -> multiple Y Axes.
+    An integer indicating whether the output should be on a single
+    axis or with multiple axes. 0 -> single Y axis (default),
+    1 -> multiple Y Axes.
 
 return type : dictionary
-    ZonePick returns a python dictionary of the pick results, unless do_time is specified,
-    then a time curve is created in a new window.
-    If the picked variable is node centered, the variable values are grouped according to
-    incident node ids.
+    ZonePick returns a python dictionary of the pick results, unless
+    do_time is specified, then a time curve is created in a new window.
+    If the picked variable is node centered, the variable values are
+    grouped according to incident node ids.
 
 
 **Description:**
 
-    The ZonePick function prints pick information for the cell (a.k.a zone) that
+    The Pick function prints pick information for the cell (a.k.a zone) that
     contains the specified point. The point can be specified as a 2D or 3D
     point in world space or it can be specified as a pixel location in screen
     space. If the point is specified as a pixel location then VisIt finds the
@@ -6283,25 +6296,30 @@ element : integer
     An integer with the global node id.
 
 vars (optional) : tuple
-    A tuple of strings with the variable names for which to return results. (default: currently plotted variable)
+    A tuple of strings with the variable names for which to return
+    results. Default is the currently plotted variable.
 
 do_time (optional) : integer
-    An integer indicating whether to do a time pick. 1 -> do a time pick, 0 (default) -> do not do a time pick.
+    An integer indicating whether to do a time pick. 1 -> do a time pick,
+    0 (default) -> do not do a time pick.
 
 start_time (optional) : integer
-    An integer with the starting frame index (default: 0).
+    An integer with the starting frame index. Default is 0.
 
 end_time (optional) : integer
-    An integer with the ending frame index (default: num_timestates - 1).
+    An integer with the ending frame index. Default is num_timestates-1.
 
 stride (optional) : integer
-    An integer with the stride for advancing in time (default: 1).
+    An integer with the stride for advancing in time. Default is 1.
 
 preserve_coord (optional) : integer
-    An integer indicating whether to pick an element or a coordinate. 0 -> used picked element (default), 1-> used picked coordinate.
+    An integer indicating whether to pick an element or a coordinate.
+    0 -> used picked element (default), 1-> used picked coordinate.
 
 curve_plot_type (optional) : integer
-    An integer indicating whether the output should be on a single axis orwith multiple axes. 0 -> single Y axis (default), 1 -> multiple Y Axes.
+    An integer indicating whether the output should be on a single
+    axis or with multiple axes. 0 -> single Y axis (default),
+    1 -> multiple Y Axes.
 
 return type : dictionary
     PickByGlobalNode returns a python dictionary of pick results.
@@ -6350,25 +6368,30 @@ element : integer
     An integer with the global zone id.
 
 vars (optional) : tuple
-    A tuple of strings with the variable names for which to return results. (default: currently plotted variable)
+    A tuple of strings with the variable names for which to return
+    results. Default is the currently plotted variable.
 
 do_time (optional) : integer
-    An integer indicating whether to do a time pick. 1 -> do a time pick, 0 (default) -> do not do a time pick.
+    An integer indicating whether to do a time pick. 1 -> do a time pick,
+    0 (default) -> do not do a time pick.
 
 start_time (optional) : integer
-    An integer with the starting frame index (default: 0).
+    An integer with the starting frame index. Default is 0.
 
 end_time (optional) : integer
-    An integer with the ending frame index (default: num_timestates - 1).
+    An integer with the ending frame index. Default is num_timestates-1.
 
 stride (optional) : integer
-    An integer with the stride for advancing in time (default: 1).
+    An integer with the stride for advancing in time. Default is 1.
 
 preserve_coord (optional) : integer
-    An integer indicating whether to pick an element or a coordinate. 0 -> used picked element (default), 1-> used picked coordinate.
+    An integer indicating whether to pick an element or a coordinate.
+    0 -> used picked element (default), 1-> used picked coordinate.
 
 curve_plot_type (optional) : integer
-    An integer indicating whether the output should be on a single axis orwith multiple axes. 0 -> single Y axis (default), 1 -> multiple Y Axes.
+    An integer indicating whether the output should be on a single
+    axis or with multiple axes. 0 -> single Y axis (default),
+    1 -> multiple Y Axes.
 
 return type : dictionary
     PickByGlobalZone returns a python dictionary of pick results.
@@ -6419,34 +6442,37 @@ element : integer
     An integer with the node id.
 
 vars (optional) : tuple
-    A tuple of strings with the variable names for which to return results. (default: currently plotted variable)
+    A tuple of strings with the variable names for which to return
+    results. Default is the currently plotted variable.
 
 do_time (optional) : integer
-    An integer indicating whether to do a time pick. 1 -> do a time pick, 0 (default) -> do not do a time pick.
+    An integer indicating whether to do a time pick. 1 -> do a time pick,
+    0 (default) -> do not do a time pick.
 
 start_time (optional) : integer
-    An integer with the starting frame index (default: 0).
+    An integer with the starting frame index. Default is 0.
 
 end_time (optional) : integer
-    An integer with the ending frame index (default: num_timestates - 1).
+    An integer with the ending frame index. Default is num_timestates-1.
 
 stride (optional) : integer
-    An integer with the stride for advancing in time (default: 1).
+    An integer with the stride for advancing in time. Default is 1.
 
 preserve_coord (optional) : integer
-    An integer indicating whether to pick an element or a coordinate. 0 -> used picked element (default), 1-> used picked coordinate.
+    An integer indicating whether to pick an element or a coordinate.
+    0 -> used picked element (default), 1-> used picked coordinate.
 
 curve_plot_type (optional) : integer
-    An integer indicating whether the output should be on a single axis orwith multiple axes. 0 -> single Y axis (default), 1 -> multiple Y Axes.
-
-return_curves (optional) : integer
-    An integer indicating whether or not to return the curve points. 1 ->return points, 0 (default) -> do not return points. Currently, this is only available when performing a pick range
+    An integer indicating whether the output should be on a single
+    axis or with multiple axes. 0 -> single Y axis (default),
+    1 -> multiple Y Axes. Currently, this is only available when performing
+    a pick range.
 
 return type : dictionary
-    PickByNode returns a python dictionary of the pick results, unless do_time is specified,
-    then a time curve is created in a new window.
-    If the picked variable is zone centered, the variable values are grouped according to
-    incident zone ids.
+    PickByNode returns a python dictionary of the pick results,
+    unless do_time is specified, then a time curve is created in a
+    new window. If the picked variable is zone centered, the variable
+    values are grouped according to incident zone ids.
 
 
 **Description:**
@@ -6495,31 +6521,36 @@ element_label : string
     An string with the label of the node to pick.
 
 vars (optional) : tuple
-    A tuple of strings with the variable names for which to return results. (default: currently plotted variable)
+    A tuple of strings with the variable names for which to return
+    results. Default is the currently plotted variable.
 
 do_time (optional) : integer
-    An integer indicating whether to do a time pick. 1 -> do a time pick, 0 (default) -> do not do a time pick.
+    An integer indicating whether to do a time pick. 1 -> do a time pick,
+    0 (default) -> do not do a time pick.
 
 start_time (optional) : integer
-    An integer with the starting frame index (default: 0).
+    An integer with the starting frame index. Default is 0.
 
 end_time (optional) : integer
-    An integer with the ending frame index (default: num_timestates - 1).
+    An integer with the ending frame index. Default is num_timestates-1.
 
 stride (optional) : integer
-    An integer with the stride for advancing in time (default: 1).
+    An integer with the stride for advancing in time. Default is 1.
 
 preserve_coord (optional) : integer
-    An integer indicating whether to pick an element or a coordinate. 0 -> used picked element (default), 1-> used picked coordinate.
+    An integer indicating whether to pick an element or a coordinate.
+    0 -> used picked element (default), 1-> used picked coordinate.
 
 curve_plot_type (optional) : integer
-    An integer indicating whether the output should be on a single axis orwith multiple axes. 0 -> single Y axis (default), 1 -> multiple Y Axes.
+    An integer indicating whether the output should be on a single
+    axis or with multiple axes. 0 -> single Y axis (default),
+    1 -> multiple Y Axes.
 
 return type : dictionary
-    PickByNodeLabel returns a python dictionary of the pick results, unless do_time is specified,
-    then a time curve is created in a new window.
-    If the picked variable is node centered, the variable values are grouped according to
-    incident node ids.
+    PickByNodeLabel returns a python dictionary of the pick results,
+    unless do_time is specified, then a time curve is created in a
+    new window. If the picked variable is node centered, the variable
+    values are grouped according to incident node ids.
 
 
 **Description:**
@@ -6575,34 +6606,37 @@ element : integer
     An integer with the zone id.
 
 vars (optional) : tuple
-    A tuple of strings with the variable names for which to return results. (default: currently plotted variable)
+    A tuple of strings with the variable names for which to return
+    results. Default is the currently plotted variable.
 
 do_time (optional) : integer
-    An integer indicating whether to do a time pick. 1 -> do a time pick, 0 (default) -> do not do a time pick.
+    An integer indicating whether to do a time pick. 1 -> do a time pick,
+    0 (default) -> do not do a time pick.
 
 start_time (optional) : integer
-    An integer with the starting frame index (default: 0).
+    An integer with the starting frame index. Default is 0.
 
 end_time (optional) : integer
-    An integer with the ending frame index (default: num_timestates - 1).
+    An integer with the ending frame index. Default is num_timestates-1.
 
 stride (optional) : integer
-    An integer with the stride for advancing in time (default: 1).
+    An integer with the stride for advancing in time. Default is 1.
 
 preserve_coord (optional) : integer
-    An integer indicating whether to pick an element or a coordinate. 0 -> used picked element (default), 1-> used picked coordinate.
+    An integer indicating whether to pick an element or a coordinate.
+    0 -> used picked element (default), 1-> used picked coordinate.
 
 curve_plot_type (optional) : integer
-    An integer indicating whether the output should be on a single axis orwith multiple axes. 0 -> single Y axis (default), 1 -> multiple Y Axes.
-
-return_curves (optional) : integer
-    An integer indicating whether or not to return the curve points. 1 ->return points, 0 (default) -> do not return points. Currently, this is only available when performing a pick range
+    An integer indicating whether the output should be on a single
+    axis or with multiple axes. 0 -> single Y axis (default),
+    1 -> multiple Y Axes. Currently, this is only available when performing
+    a pick range.
 
 return type : dictionary
-    PickByZone returns a python dictionary of the pick results, unless do_time is specified,
-    then a time curve is created in a new window.
-    If the picked variable is node centered, the variable values are grouped according to
-    incident node ids.
+    PickByZone returns a python dictionary of the pick results,
+    unless do_time is specified, then a time curve is created in a
+    new window. If the picked variable is node centered, the variable
+    values are grouped according to incident node ids.
 
 
 **Description:**
@@ -6651,31 +6685,36 @@ element_label : string
     An string with the label of the zone to pick.
 
 vars (optional) : tuple
-    A tuple of strings with the variable names for which to return results. (default: currently plotted variable)
+    A tuple of strings with the variable names for which to return
+    results. Default is the currently plotted variable.
 
 do_time (optional) : integer
-    An integer indicating whether to do a time pick. 1 -> do a time pick, 0 (default) -> do not do a time pick.
+    An integer indicating whether to do a time pick. 1 -> do a time pick,
+    0 (default) -> do not do a time pick.
 
 start_time (optional) : integer
-    An integer with the starting frame index (default: 0).
+    An integer with the starting frame index. Default is 0.
 
 end_time (optional) : integer
-    An integer with the ending frame index (default: num_timestates - 1).
+    An integer with the ending frame index. Default is num_timestates-1.
 
 stride (optional) : integer
-    An integer with the stride for advancing in time (default: 1).
+    An integer with the stride for advancing in time. Default is 1.
 
 preserve_coord (optional) : integer
-    An integer indicating whether to pick an element or a coordinate. 0 -> used picked element (default), 1-> used picked coordinate.
+    An integer indicating whether to pick an element or a coordinate.
+    0 -> used picked element (default), 1-> used picked coordinate.
 
 curve_plot_type (optional) : integer
-    An integer indicating whether the output should be on a single axis orwith multiple axes. 0 -> single Y axis (default), 1 -> multiple Y Axes.
+    An integer indicating whether the output should be on a single
+    axis or with multiple axes. 0 -> single Y axis (default),
+    1 -> multiple Y Axes.
 
 return type : dictionary
-    PickByZoneLabel returns a python dictionary of the pick results, unless do_time is specified,
-    then a time curve is created in a new window.
-    If the picked variable is node centered, the variable values are grouped according to
-    incident node ids.
+    PickByZoneLabel returns a python dictionary of the pick results,
+    unless do_time is specified, then a time curve is created in a
+    new window. If the picked variable is node centered, the variable
+    values are grouped according to incident node ids.
 
 
 **Description:**
@@ -6763,34 +6802,39 @@ y : integer
     An integer containing the screen Y location (in pixels) offset from the bottom of the visualization window.
 
 vars (optional) : tuple
-    A tuple of strings with the variable names for which to return results. (default: currently plotted variable)
+    A tuple of strings with the variable names for which to return
+    results. Default is the currently plotted variable.
 
 do_time (optional) : integer
-    An integer indicating whether to do a time pick. 1 -> do a time pick, 0 (default) -> do not do a time pick.
+    An integer indicating whether to do a time pick. 1 -> do a time pick,
+    0 (default) -> do not do a time pick.
 
 start_time (optional) : integer
-    An integer with the starting frame index (default: 0).
+    An integer with the starting frame index. Default is 0.
 
 end_time (optional) : integer
-    An integer with the ending frame index (default: num_timestates - 1).
+    An integer with the ending frame index. Default is num_timestates-1.
 
 stride (optional) : integer
-    An integer with the stride for advancing in time (default: 1).
+    An integer with the stride for advancing in time. Default is 1.
 
 preserve_coord (optional) : integer
-    An integer indicating whether to pick an element or a coordinate. 0 -> used picked element (default), 1-> used picked coordinate.
+    An integer indicating whether to pick an element or a coordinate.
+    0 -> used picked element (default), 1-> used picked coordinate.
 
 curve_plot_type (optional) : integer
-    An integer indicating whether the output should be on a single axis orwith multiple axes. 0 -> single Y axis (default), 1 -> multiple Y Axes.
+    An integer indicating whether the output should be on a single
+    axis or with multiple axes. 0 -> single Y axis (default),
+    1 -> multiple Y Axes.
 
 return type : STARTING_VALUE
-    NodePick returns a python dictionary of the pick results, unless do_time is specified,
-    then a time curve is created in a new window.
+    PointPick returns a python dictionary of the pick results,
+    unless do_time is specified, then a time curve is created in a new window.
 
 
 **Description:**
 
-    The NodePick function prints pick information for the node closest to the
+    The PointPick function prints pick information for the node closest to the
     specified point. The point can be specified as a 2D or 3D point in world
     space or it can be specified as a pixel location in screen space. If the
     point is specified as a pixel location then VisIt finds the node closest to
@@ -10014,16 +10058,8 @@ typeAsInt : double
     Precision type specified as an integer. 0 = float 1 = native 2 = double
 
 typeAsString : STARTING_VALUE
-    Precision type specified as a string:
-
-"float" : STARTING_VALUE
-    
-
-"native" : STARTING_VALUE
-    
-
-"double" : STARTING_VALUE
-    
+    Precision type specified as a string. Options are 'float', 'native',
+    and 'double'.
 
 
 **Description:**
@@ -10803,7 +10839,7 @@ SetViewExtentsType
 
 
 type : integer
-    An integer 0, 1 or one of the strings: "original", "actual".
+    An integer or a string. Options are 0, 1 and 'original', 'actual', respectively.
 
 return type : CLI_return_t
     SetViewExtentsType returns 1 on success and 0 on failure.
@@ -10989,8 +11025,8 @@ SetWindowMode
 
 
 mode : string
-    A string containing the new mode: 'navigate', 'zoom', 'lineout', 'pick',
-    'zone pick', 'node pick', 'spreadsheet pick'.
+    A string containing the new mode. Options are 'navigate', 'zoom',
+    'lineout', 'pick', 'zone pick', 'node pick', 'spreadsheet pick'.
 
 return type : CLI_return_t
     The SetWindowMode function returns 1 on success and 0 on failure.
@@ -11773,7 +11809,7 @@ TurnDomainsOff
 set_name : string
     The name of the set to modify.
 
-tuple_set_name: tuple of strings
+tuple_set_name : tuple of strings
     A tuple of strings for the sets to modify.
 
 return type : CLI_return_t
@@ -11828,7 +11864,7 @@ TurnDomainsOn
 set_name : string
     The name of the set to modify.
 
-tuple_set_name: tuple of strings
+tuple_set_name : tuple of strings
     A tuple of strings for the sets to modify.
 
 return type : CLI_return_t
@@ -11883,7 +11919,7 @@ TurnMaterialsOff
 set_name : string
     The name of the set to modify.
 
-tuple_set_name: tuple of strings
+tuple_set_name : tuple of strings
     A tuple of strings for the sets to modify.
 
 return type : CLI_return_t
@@ -11938,7 +11974,7 @@ TurnMaterialsOn
 set_name : string
     The name of the set to modify.
 
-tuple_set_name: tuple of strings
+tuple_set_name : tuple of strings
     A tuple of strings for the sets to modify.
 
 return type : CLI_return_t
@@ -12142,43 +12178,44 @@ coord : tuple
     A tuple of doubles containing the spatial coordinate (x, y, z).
 
 x : integer
-    An integer containing the screen X location (in pixels) offset from
-    the left side of the visualization window.
+    An integer containing the screen X location (in pixels) offset
+    from the left side of the visualization window.
 
 y : integer
-    An integer containing the screen Y location (in pixels) offset from
-    the bottom of the visualization window.
+    An integer containing the screen Y location (in pixels) offset
+    from the bottom of the visualization window.
 
 vars (optional) : tuple
-    A tuple of strings with the variable names for which to return results.
-    (default: currently plotted variable)
+    A tuple of strings with the variable names for which to return
+    results. Default is the currently plotted variable.
 
 do_time (optional) : integer
     An integer indicating whether to do a time pick. 1 -> do a time pick,
     0 (default) -> do not do a time pick.
 
 start_time (optional) : integer
-    An integer with the starting frame index (default: 0).
+    An integer with the starting frame index. Default is 0.
 
 end_time (optional) : integer
-    An integer with the ending frame index (default: num_timestates - 1).
+    An integer with the ending frame index. Default is num_timestates-1.
 
 stride (optional) : integer
-    An integer with the stride for advancing in time (default: 1).
+    An integer with the stride for advancing in time. Default is 1.
 
 preserve_coord (optional) : integer
     An integer indicating whether to pick an element or a coordinate.
     0 -> used picked element (default), 1-> used picked coordinate.
 
 curve_plot_type (optional) : integer
-    An integer indicating whether the output should be on a single axis or
-    with multiple axes. 0 -> single Y axis (default), 1 -> multiple Y Axes.
+    An integer indicating whether the output should be on a single
+    axis or with multiple axes. 0 -> single Y axis (default),
+    1 -> multiple Y Axes.
 
 return type : dictionary
-    ZonePick returns a python dictionary of the pick results, unless do_time is specified,
-    then a time curve is created in a new window.
-    If the picked variable is node centered, the variable values are grouped according to
-    incident node ids.
+    ZonePick returns a python dictionary of the pick results, unless
+    do_time is specified, then a time curve is created in a new window.
+    If the picked variable is node centered, the variable values are
+    grouped according to incident node ids.
 
 
 **Description:**

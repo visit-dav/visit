@@ -170,8 +170,9 @@ def insert_backslash(text):
     return text
 
 def split_colon_add_spaces(line):
-    if line.find(':') > -1:
-        output = line.split()[0]
+    colon_index = line.find(':')
+    if colon_index > -1:
+        output = line[:colon_index-1]
     else:
         output = '    ' + line
     return output
