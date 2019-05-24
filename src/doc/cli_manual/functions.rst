@@ -1292,6 +1292,20 @@ CreateAnnotationObject
 annotType : string
     The name of the type of annotation object to create.
 
+    +----------------------------+--------------+
+    | **Annotation type**        | String       |
+    +----------------------------+--------------+
+    | 2D text annotation         | "Text2D"     |
+    +----------------------------+--------------+
+    | 3D text annotation         | "Text3D"     |
+    +----------------------------+--------------+
+    | Time slider annotation     | "TimeSlider" |
+    +----------------------------+--------------+
+    | Image annotation           | "Image"      |
+    +----------------------------+--------------+
+    | Line/arrow annotation      | "Line2D"     |
+    +----------------------------+--------------+
+
 annotName : string
     A user-defined name of the annotation object to create.
     By default, VisIt creates names like 'newObject0', 'newObject1', ....
@@ -1318,21 +1332,6 @@ return type : annotation object
     object has different properties that can be set. Setting the different
     properties of an Annotation objects directly modifes annotations in the vis
     window. Currently there are 5 types of annotation objects:
-
-
-    +----------------------------+--------------+
-    | **Annotation type**        | String       |
-    +----------------------------+--------------+
-    | 2D text annotation         | "Text2D"     |
-    +----------------------------+--------------+
-    | 3D text annotation         | "Text3D"     |
-    +----------------------------+--------------+
-    | Time slider annotation     | "TimeSlider" |
-    +----------------------------+--------------+
-    | Image annotation           | "Image"      |
-    +----------------------------+--------------+
-    | Line/arrow annotation      | "Line2D"     |
-    +----------------------------+--------------+
 
 
 **Example:**
@@ -1369,6 +1368,18 @@ databases : AMBIGUOUS
 method : integer
     An integer in the range [0,3] that determines the correlation method.
 
+    +-------------------------------+-------+
+    | **Correlation method**        | Value |
+    +-------------------------------+-------+
+    | IndexForIndexCorrelation      | 0     |
+    +-------------------------------+-------+
+    | StretchedIndexCorrelation     | 1     |
+    +-------------------------------+-------+
+    | TimeCorrelation               | 2     |
+    +-------------------------------+-------+
+    | CycleCorrelation              | 3     |
+    +-------------------------------+-------+
+
 return type : CLI_return_t
     The CreateDatabaseCorrelation function returns 1 on success and 0 on
     failure.
@@ -1395,19 +1406,6 @@ return type : CLI_return_t
     CreateDatabaseCorrelation function, VisIt creates a new time slider with
     the same name as the database correlation and makes it be the active time
     slider.
-
-
-    +-------------------------------+-------+
-    | **Correlation method**        | Value |
-    +-------------------------------+-------+
-    | IndexForIndexCorrelation      | 0     |
-    +-------------------------------+-------+
-    | StretchedIndexCorrelation     | 1     |
-    +-------------------------------+-------+
-    | TimeCorrelation               | 2     |
-    +-------------------------------+-------+
-    | CycleCorrelation              | 3     |
-    +-------------------------------+-------+
 
 
 **Example:**
@@ -6181,6 +6179,14 @@ host : STARTING_VALUE
 args : tuple
     A tuple of strings containing command line flags for the metadata server.
 
+    +-------------------+----------------------------------------------------------------+
+    | **Argument**      | Description                                                    |
+    +-------------------+----------------------------------------------------------------+
+    | -debug #          | The -debug argument allows you to specify a debug level in the |
+    +-------------------+----------------------------------------------------------------+
+    | -dir visitdir     | The -dir argument allows you to specify where VisIt is         |
+    +-------------------+----------------------------------------------------------------+
+
 MachineProfile : STARTING_VALUE
     MachineProfile object to load with OpenMDServer call
 
@@ -6208,15 +6214,6 @@ return type : CLI_return_t
     to open files. This is useful when the files that you
     want to open have a file extension which may match
     multiple file format readers.
-
-
-    +-------------------+----------------------------------------------------------------+
-    | **Argument**      | Description                                                    |
-    +-------------------+----------------------------------------------------------------+
-    | -debug #          | The -debug argument allows you to specify a debug level in the |
-    +-------------------+----------------------------------------------------------------+
-    | -dir visitdir     | The -dir argument allows you to specify where VisIt is         |
-    +-------------------+----------------------------------------------------------------+
 
 
 **Example:**
@@ -8884,8 +8881,31 @@ method : integer
     An integer that tells VisIt what default method to use when automatically
     creating a database correlation. The value must be in the range [0,3].
 
+    +--------------+---------------------------+
+    | **method**   | Description               |
+    +--------------+---------------------------+
+    | 0            | IndexForIndexCorrelation  |
+    +--------------+---------------------------+
+    | 1            | StretchedIndexCorrelation |
+    +--------------+---------------------------+
+    | 2            | TimeCorrelation           |
+    +--------------+---------------------------+
+    | 3            | CycleCorrelation          |
+    +--------------+---------------------------+
+
 whenToCreate : integer
     An integer that tells VisIt when to automatically create database correlations.
+    
+    +------------------+--------------------------------------+
+    | **whenToCreate** | Description                          |
+    +------------------+--------------------------------------+
+    | 0                | Always create database correlation   |
+    +------------------+--------------------------------------+
+    | 1                | Never create database correlation    |
+    +------------------+--------------------------------------+
+    | 2                | Create database correlation only     |
+    |                  | if the new time-varying database has |
+    +------------------+--------------------------------------+
 
 return type : CLI_return_t
     SetDatabaseCorrelationOptions returns 1 on success and 0 on failure.
@@ -8902,27 +8922,6 @@ return type : CLI_return_t
     can be automatically created.
     the same length as another time-varying database already being used in a
     plot.
-
-
-    +------------------+-----------------------------------------------------------------------+
-    | **method**       | Description                                                           |
-    +------------------+-----------------------------------------------------------------------+
-    | 0                | IndexForIndexCorrelation                                              |
-    +------------------+-----------------------------------------------------------------------+
-    | 1                | StretchedIndexCorrelation                                             |
-    +------------------+-----------------------------------------------------------------------+
-    | 2                | TimeCorrelation                                                       |
-    +------------------+-----------------------------------------------------------------------+
-    | 3                | CycleCorrelation                                                      |
-    +------------------+-----------------------------------------------------------------------+
-    | whenToCreate     | Description                                                           |
-    +------------------+-----------------------------------------------------------------------+
-    | 0                | Always create database correlation                                    |
-    +------------------+-----------------------------------------------------------------------+
-    | 1                | Never create database correlation                                     |
-    +------------------+-----------------------------------------------------------------------+
-    | 2                | Create database correlation only if the new time-varying database has |
-    +------------------+-----------------------------------------------------------------------+
 
 
 **Example:**
