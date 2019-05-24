@@ -229,6 +229,9 @@ if __name__ == '__main__':
             block_dict = {'synopsis': None, 'arguments': None, 'returns': None, 'description': None, 'example': None}
             h_output.write(str(HFunction(func_file_lines[i-1])))
             c_output.write(str(CFunction(func_file_lines[i-1])))
+        
+        elif line == '.. end of the file':
+            break;
             
         elif line[0:13] == '**Synopsis:**':
             cur_block = 'synopsis'
@@ -252,6 +255,10 @@ if __name__ == '__main__':
             
         elif cur_block is not None:
             block_dict[cur_block].extend(line.strip())
+    
+    # Write the last function
+    block_dict[cur_block].set_last(True)
+    write_state(c_output, block_dict)
    
     func_file.close()
     h_output.close()
