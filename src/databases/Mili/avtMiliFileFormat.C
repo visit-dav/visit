@@ -1156,7 +1156,7 @@ avtMiliFileFormat::ReadMesh(int dom)
                 //
                 // Retrieve label info for this class. 
                 //
-                RetrieveZoneLabelInfo(meshId, shortName, dom, 
+                RetrieveZoneLabelInfo(meshId, shortName, dom,
                                       nCells);
                 delete [] conn;
                 delete [] mats;
