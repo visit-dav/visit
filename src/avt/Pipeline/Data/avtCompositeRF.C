@@ -207,6 +207,7 @@ avtCompositeRF::GetRayValue(const avtRay *ray,
     float distanceToReachFullOpacity = 1./250.;
     float distanceCoveredPerSample = 1./maxSample;
     float oneSamplesContribution = distanceCoveredPerSample/distanceToReachFullOpacity;
+    //FIXME: => 250/maxSample
 
     if(trilinearSampling)
     {
@@ -306,7 +307,7 @@ avtCompositeRF::GetRayValue(const avtRay *ray,
         }
         else
         {
-            float prevOpac = 0.0;
+            //float prevOpac = 0.0;//FIXME
             // No opacity weighting.
             for (z = 0 ; z < maxSample ; z++)
             {
