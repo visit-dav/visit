@@ -27,13 +27,7 @@ function bv_nektarpp_depends_on
     if [[ "$USE_SYSTEM_NEKTAR_PLUS_PLUS" == "yes" ]]; then
         echo ""
     else
-	depends_on="cmake boost"
-
-        if [[ "$DO_ZLIB" == "yes" ]] ; then
-            depends_on="$depends_on zlib"
-        fi
-
-        echo $depends_on
+        echo "cmake boost zlib"
     fi
 }
 
@@ -88,15 +82,7 @@ function bv_nektarpp_host_profile
                 "VISIT_OPTION_DEFAULT(VISIT_NEKTAR++_DIR \${VISITHOME}/nektar++/\${NEKTAR++_VERSION}/\${VISITARCH})" \
                 >> $HOSTCONF 
 
-            if [[ "$DO_ZLIB" == "yes" ]] ; then
-                ZLIB_LIBDEP="\${VISITHOME}/zlib/$ZLIB_VERSION/\${VISITARCH}/lib z"
-            else
-                ZLIB_LIBDEP="/usr/lib z"
-                #moving global patch to have limited effect
-                if [[ -d /usr/lib/x86_64-linux-gnu ]]; then
-                    ZLIB_LIBDEP="/usr/lib/x86_64-linux-gnu z"
-                fi
-            fi
+            ZLIB_LIBDEP="\${VISITHOME}/zlib/$ZLIB_VERSION/\${VISITARCH}/lib z"
 
             echo \
                 "VISIT_OPTION_DEFAULT(VISIT_NEKTAR++_LIBDEP $ZLIB_LIBDEP TYPE STRING)" \
@@ -459,15 +445,13 @@ function build_nektarpp
         fi
     fi
 
-    if [[ "$DO_ZLIB" == "yes" ]] ; then
-        info "zlib requested.  Configuring NEKTAR++ with zlib support."
-        ntopts="${ntopts} -DZLIB_ROOT:PATH=${VISITDIR}/zlib/${ZLIB_VERSION}/${VISITARCH}"
+    info "Configuring NEKTAR++ with zlib support."
+    ntopts="${ntopts} -DZLIB_ROOT:PATH=${VISITDIR}/zlib/${ZLIB_VERSION}/${VISITARCH}"
 
-        if [[ "$OPSYS" == "Darwin" ]]; then
-            export DYLD_LIBRARY_PATH="$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH/lib":$DYLD_LIBRARY_PATH
-        else
-            export LD_LIBRARY_PATH="$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH/lib":$LD_LIBRARY_PATH
-        fi
+    if [[ "$OPSYS" == "Darwin" ]]; then
+        export DYLD_LIBRARY_PATH="$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH/lib":$DYLD_LIBRARY_PATH
+    else
+        export LD_LIBRARY_PATH="$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH/lib":$LD_LIBRARY_PATH
     fi
 
 #    if test "${DO_MPICH}" = "yes"; then
