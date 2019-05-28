@@ -52,6 +52,7 @@
 #include <avtMEUMMAPSFileFormat.h>
 #include <memory>
 #include <string>
+#include <avtParallel.h>
 
 // ****************************************************************************
 // Method: ADIOS2_CreateFileFormatInterface
@@ -88,11 +89,98 @@ avtFileFormatInterface *
 ADIOS2_CreateFileFormatInterface(const char * const *list, int nList, int nBlock)
 {
     avtFileFormatInterface *ffi = NULL;
+
+    if (list == NULL && nList == 0)
+        return NULL;
+
     enum Flavor {GTC, BASIC, MEUMMAPS, LAMMPS, SPECFEM, FAIL};
+    Flavor flavor = FAIL;
+
+#ifdef PARALLEL
+    std::shared_ptr<adios2::ADIOS> adios(std::make_shared<adios2::ADIOS>(VISIT_MPI_COMM, adios2::DebugON));
+#else
+    std::shared_ptr<adios2::ADIOS> adios(std::make_shared<adios2::ADIOS>(adios2::DebugON));
+#endif
+
+    adios2::IO io(adios->DeclareIO("ReadBP"));
+    adios2::Engine reader;
+    std::map<std::string, adios2::Params> variables, attributes;
+
+    std::string engineName = ADIOS2Helper_GetEngineName(list[0]);
+    std::string fileName = ADIOS2Helper_GetFileName(list[0]);
+    bool stagingMode = ADIOS2Helper_IsStagingEngine(engineName);
+
+    io.SetEngine(engineName);
+    std::cout<<__FILE__<<" "<<__LINE__<<" Connect to stream "<<fileName<<" ..."<<std::endl;
+    reader = io.Open(fileName, adios2::Mode::Read);
+
+    if (stagingMode)
+    {
+        cout<<__FILE__<<" "<<__LINE__<<" Get first step "<<endl;
+        adios2::StepStatus status = reader.BeginStep(adios2::StepMode::NextAvailable, -1.0f);
+        if (status == adios2::StepStatus::OK)
+        {
+            std::cout<<" Identifier received streaming step = "<<reader.CurrentStep()<<std::endl;
+            variables = io.AvailableVariables();
+            attributes = io.AvailableAttributes();
+        }
+    }
+    else
+    {
+        variables = io.AvailableVariables();
+        attributes = io.AvailableAttributes();
+    }
+
+    TRY
+    {
+    //See what flavor we have:
+    if (avtGTCFileFormat::Identify(fileName, variables, attributes))
+        flavor = GTC;
+    else if (avtLAMMPSFileFormat::Identify(fileName, variables,attributes))
+        flavor = LAMMPS;
+    else if (avtMEUMMAPSFileFormat::Identify(fileName, variables, attributes))
+        flavor = MEUMMAPS;
+    else if (avtSpecFEMFileFormat::Identify(fileName, variables, attributes))
+        flavor = SPECFEM;
+    else
+        flavor = BASIC;
+    }
+    CATCH(VisItException)
+    {
+        RETHROW;
+    }
+    ENDTRY
+
+    cout<<"FLAVOR= "<<flavor<<endl;
+    switch(flavor)
+    {
+    case GTC:
+        ffi = avtGTCFileFormat::CreateInterface(list, nList, nBlock, adios, reader, io, variables, attributes);
+        break;
+    case LAMMPS:
+        ffi = avtLAMMPSFileFormat::CreateInterface(list, nList, nBlock, adios, reader, io, variables, attributes);
+        break;
+    case MEUMMAPS:
+        ffi = avtMEUMMAPSFileFormat::CreateInterface(list, nList, nBlock, adios, reader, io, variables, attributes);
+        break;
+    case SPECFEM:
+        ffi = avtSpecFEMFileFormat::CreateInterface(list, nList, nBlock, adios, reader, io, variables, attributes);
+        break;
+    case BASIC:
+        ffi = avtADIOS2BaseFileFormat::CreateInterface(list, nList, nBlock, adios, reader, io, variables, attributes);
+        break;
+    default:
+        return NULL;
+    }
+
+    return ffi;
+
+
+#if 0
     bool isSST = (std::string(list[0]).find(".sst") != std::string::npos);
     bool isHDF5 = (std::string(list[0]).find(".h5") != std::string::npos);
-    bool isWDM = (std::string(list[0]).find(".ssc") != std::string::npos);
-    bool stagingMode = isSST || isWDM;
+    bool isSSC = (std::string(list[0]).find(".ssc") != std::string::npos);
+    bool stagingMode = isSST || isSSC;
 
     cout<<__FILE__<<" "<<__LINE__<<" isSST "<<isSST<<endl;
     cout<<__FILE__<<" "<<__LINE__<<" isWDM "<<isWDM<<endl;
@@ -100,7 +188,12 @@ ADIOS2_CreateFileFormatInterface(const char * const *list, int nList, int nBlock
     Flavor flavor = FAIL;
     if (list != NULL || nList > 0)
     {
+#ifdef PARALLEL
+        std::shared_ptr<adios2::ADIOS> adios(std::make_shared<adios2::ADIOS>(VISIT_MPI_COMM, adios2::DebugON));
+#else
         std::shared_ptr<adios2::ADIOS> adios(std::make_shared<adios2::ADIOS>(adios2::DebugON));
+#endif
+
         adios2::IO io(adios->DeclareIO("ReadBP"));
         adios2::Engine reader;
         std::map<std::string, adios2::Params> variables, attributes;
@@ -108,7 +201,7 @@ ADIOS2_CreateFileFormatInterface(const char * const *list, int nList, int nBlock
         TRY
         {
             flavor = BASIC;
-            
+
             std::string engineName = ADIOS2Helper_GetEngineName(list[0]);
             std::string fileName   = ADIOS2Helper_GetFileName(list[0]);
             bool stagingMode  = ADIOS2Helper_IsStagingEngine(engineName);
@@ -119,7 +212,7 @@ ADIOS2_CreateFileFormatInterface(const char * const *list, int nList, int nBlock
             if (isSST || isWDM)
             {
                 cout<<__FILE__<<" "<<__LINE__<<" Get first step "<<endl;
-                adios2::StepStatus status = 
+                adios2::StepStatus status =
                     reader.BeginStep(adios2::StepMode::NextAvailable, -1.0f);
                 if (status == adios2::StepStatus::OK)
                 {
@@ -138,7 +231,7 @@ ADIOS2_CreateFileFormatInterface(const char * const *list, int nList, int nBlock
                     else if (avtMEUMMAPSFileFormat::IdentifyADIOS2(variables,attributes))
                         flavor = MEUMMAPS;
 
-                    // generic with staging engines 
+                    // generic with staging engines
                     else
                         flavor = BASIC;
 
@@ -157,7 +250,7 @@ ADIOS2_CreateFileFormatInterface(const char * const *list, int nList, int nBlock
                 // add formats here that support reading from HDF5
                 if (avtGTCFileFormat::Identify(list[0]))
                     flavor = GTC;
-                else if (avtLAMMPSFileFormat::Identify(list[0]))
+                else if (avtLAMMPSFileFormat::IdentifyADIOS2(variables,attributes))
                     flavor = LAMMPS;
                 else if (avtMEUMMAPSFileFormat::Identify(list[0]))
                     flavor = MEUMMAPS;
@@ -202,7 +295,6 @@ ADIOS2_CreateFileFormatInterface(const char * const *list, int nList, int nBlock
                     list, nList, nBlock);
             break;
           case BASIC:
-              cout<<"OPEN A BASIC READER"<<endl;
             ffi = avtADIOS2BaseFileFormat::CreateInterfaceADIOS2(
                     list, nList, nBlock, adios, reader, io, variables, attributes);
             break;
@@ -213,4 +305,5 @@ ADIOS2_CreateFileFormatInterface(const char * const *list, int nList, int nBlock
 
     cout<<"RETURN ADIOS READER"<<endl;
     return ffi;
+#endif
 }

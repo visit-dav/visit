@@ -91,9 +91,10 @@ convertToLatLon(double x, double y, double z, double &nx, double &ny, double &nz
 // ****************************************************************************
 
 bool
-avtSpecFEMFileFormat::Identify(const char *fname)
+avtSpecFEMFileFormat::Identify(const std::string &fname,
+                               const std::map<std::string, adios2::Params> &vars,
+                               const std::map<std::string, adios2::Params> &attrs)
 {
-    cout<<__FILE__<<" "<<__LINE__<<endl;
     string meshNm, dataNm;
     bool valid = false;
 
@@ -102,22 +103,24 @@ avtSpecFEMFileFormat::Identify(const char *fname)
         ifstream mFile(meshNm.c_str()), dFile(dataNm.c_str());
         if (!mFile.fail() && !dFile.fail())
             valid = true;
-    cout<<__FILE__<<" "<<__LINE__<<endl;
+
+        if (valid)
+        {
+            vector<string> reqVars = {"NSPEC", "reg1/dvsv/array", "reg1/dvsv/global_dim"};
+            int vfind = 0;
+            for (auto vi = vars.begin(); vi != vars.end(); vi++)
+                if (std::find(reqVars.begin(), reqVars.end(), vi->first) != reqVars.end())
+                    vfind++;
+            valid = (vfind == reqVars.size());
+        }
 
         if (valid)
             if (! avtSpecFEMFileFormat::IsMeshFile(meshNm))
                 valid = false;
-    cout<<__FILE__<<" "<<__LINE__<<endl;
-        if (valid)
-            if (! avtSpecFEMFileFormat::IsDataFile(dataNm))
-                valid = false;
-    cout<<__FILE__<<" "<<__LINE__<<endl;
     }
 
-    cout<<"Spec check: "<<fname<<" valid= "<<valid<<endl;
     return valid;
 }
-
 
 // ****************************************************************************
 //  Method: avtSpecFEMFileFormat::CreateInterface
@@ -133,15 +136,23 @@ avtSpecFEMFileFormat::Identify(const char *fname)
 avtFileFormatInterface *
 avtSpecFEMFileFormat::CreateInterface(const char *const *list,
                                       int nList,
-                                      int nBlock)
+                                      int nBlock,
+                                      std::shared_ptr<adios2::ADIOS> adios,
+                                      adios2::Engine &reader,
+                                      adios2::IO &io,
+                                      const std::map<std::string, adios2::Params> &vars,
+                                      const std::map<std::string, adios2::Params> &attrs)
 {
+    std::cout<<"FIX THIS"<<std::endl;
+
     int nTimestepGroups = nList / nBlock;
     avtMTMDFileFormat **ffl = new avtMTMDFileFormat*[nTimestepGroups];
     for (int i = 0 ; i < nTimestepGroups ; i++)
-        ffl[i] = new avtSpecFEMFileFormat(list[i*nBlock]);
+        ffl[i] = new avtSpecFEMFileFormat(adios, reader, io, vars, attrs, list[i*nBlock]);
 
     return new avtMTMDFileFormatInterface(ffl, nTimestepGroups);
 }
+
 
 // ****************************************************************************
 //  Method: avtSpecFEMFileFormat constructor
@@ -150,7 +161,7 @@ avtSpecFEMFileFormat::CreateInterface(const char *const *list,
 //  Creation:   Wed Mar 17 15:29:24 EDT 2010
 //
 // ****************************************************************************
-
+#if 0
 avtSpecFEMFileFormat::avtSpecFEMFileFormat(const char *nm)
     : avtMTMDFileFormat(nm),
 #ifdef PARALLEL
@@ -169,6 +180,38 @@ avtSpecFEMFileFormat::avtSpecFEMFileFormat(const char *nm)
 
     dataIO = adios2::IO(adiosData->DeclareIO("ReadBP"));
     dataReader = dataIO.Open(dataNm, adios2::Mode::Read);
+
+    initialized = false;
+    //This needs to be put into the file.
+    ngllx = nglly = ngllz = 5;
+    //ngllx = nglly = ngllz = 1;
+    kernelFile = false;
+}
+#endif
+
+avtSpecFEMFileFormat::avtSpecFEMFileFormat(std::shared_ptr<adios2::ADIOS> adios,
+                                           adios2::Engine &reader,
+                                           adios2::IO &io,
+                                           const std::map<std::string, adios2::Params> &vars,
+                                           const std::map<std::string, adios2::Params> &attrs,
+                                           const char *fname)
+    : avtMTMDFileFormat(fname),
+      adiosData(adios),
+#ifdef PARALLEL
+      adiosMesh(std::make_shared<adios2::ADIOS>((MPI_Comm)VISIT_MPI_COMM, adios2::DebugON))
+#else
+      adiosMesh(std::make_shared<adios2::ADIOS>(adios2::DebugON))
+#endif
+{
+    dataReader = reader;
+    dataIO = io;
+
+    //create the mesh reader.
+    string filename(fname), meshNm, dataNm;
+    GenerateFileNames(filename, meshNm, dataNm);
+
+    meshIO = adios2::IO(adiosMesh->DeclareIO("ReadBP"));
+    meshReader = meshIO.Open(meshNm, adios2::Mode::Read);
 
     initialized = false;
     //This needs to be put into the file.

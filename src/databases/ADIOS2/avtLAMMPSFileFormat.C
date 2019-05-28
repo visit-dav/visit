@@ -63,44 +63,21 @@
 using namespace std;
 
 bool
-avtLAMMPSFileFormat::Identify(const char *fname)
-{
-    shared_ptr<adios2::ADIOS> adios = std::make_shared<adios2::ADIOS>(adios2::DebugON);
-    adios2::IO io = adios2::IO(adios->DeclareIO("ReadBPLAMMPS"));
-    io.SetEngine("BP");
-    adios2::Engine reader = io.Open(fname, adios2::Mode::Read);
-    auto attributes = io.AvailableAttributes();
-    auto variables = io.AvailableVariables();
-
-    bool isLAMMPS = true;
-    if (variables.find("atoms") == variables.end() ||
-        variables.find("natoms") == variables.end() ||
-        variables.find("ntimestep") == variables.end() ||
-        attributes.find("LAMMPS/dump_style") == attributes.end() ||
-        attributes.find("LAMMPS/num_ver") == attributes.end() ||
-        attributes.find("LAMMPS/version") == attributes.end())
-    {
-        isLAMMPS = false;
-    }
-    reader.Close();
-    return isLAMMPS;
-}
-
-bool avtLAMMPSFileFormat::IdentifyADIOS2(
-                    std::map<std::string, adios2::Params> &variables,
-                    std::map<std::string, adios2::Params> &attributes)
+avtLAMMPSFileFormat::Identify(const std::string &fname,
+                              const std::map<std::string, adios2::Params> &vars,
+                              const std::map<std::string, adios2::Params> &attrs)
 {
     int vfind = 0;
     vector<string> reqVars = {"atoms", "natoms", "ntimestep"};
 
-    for (auto vi = variables.begin(); vi != variables.end(); vi++)
+    for (auto vi = vars.begin(); vi != vars.end(); vi++)
         if (std::find(reqVars.begin(), reqVars.end(), vi->first) != reqVars.end())
             vfind++;
 
     int afind = 0;
     vector<string> reqAttrs = {"LAMMPS/dump_style", "LAMMPS/num_ver", "LAMMPS/version"};
 
-    for (auto ai = attributes.begin(); ai != attributes.end(); ai++)
+    for (auto ai = attrs.begin(); ai != attrs.end(); ai++)
         if (std::find(reqAttrs.begin(), reqAttrs.end(), ai->first) != reqAttrs.end())
             afind++;
 
@@ -109,8 +86,13 @@ bool avtLAMMPSFileFormat::IdentifyADIOS2(
 
 avtFileFormatInterface *
 avtLAMMPSFileFormat::CreateInterface(const char *const *list,
-                                         int nList,
-                                         int nBlock)
+                                     int nList,
+                                     int nBlock,
+                                     std::shared_ptr<adios2::ADIOS> adios,
+                                     adios2::Engine &reader,
+                                     adios2::IO &io,
+                                     std::map<std::string, adios2::Params> &variables,
+                                     std::map<std::string, adios2::Params> &attributes)
 {
     int nTimestepGroups = nList / nBlock;
     avtMTSDFileFormat ***ffl = new avtMTSDFileFormat**[nTimestepGroups];
@@ -118,29 +100,7 @@ avtLAMMPSFileFormat::CreateInterface(const char *const *list,
     {
         ffl[i] =  new avtMTSDFileFormat*[nBlock];
         for (int j = 0; j < nBlock; j++)
-            ffl[i][j] =  new avtLAMMPSFileFormat(list[i*nBlock +j]);
-    }
-    return new avtMTSDFileFormatInterface(ffl, nTimestepGroups, nBlock);
-}
-
-avtFileFormatInterface *
-avtLAMMPSFileFormat::CreateInterfaceADIOS2(
-        const char *const *list,
-        int nList,
-        int nBlock,
-        std::shared_ptr<adios2::ADIOS> adios,
-        adios2::Engine &reader,
-        adios2::IO &io,
-        std::map<std::string, adios2::Params> &variables,
-        std::map<std::string, adios2::Params> &attributes
-        )
-{
-    int nTimestepGroups = nList / nBlock;
-    avtMTSDFileFormat ***ffl = new avtMTSDFileFormat**[nTimestepGroups];
-    for (int i = 0; i < nTimestepGroups; i++)
-    {
-        ffl[i] =  new avtMTSDFileFormat*[nBlock];
-        for (int j = 0; j < nBlock; j++)
+        {
             if (!i && !j)
             {
                 ffl[i][j] =  new avtLAMMPSFileFormat(adios, reader, io, variables, attributes, list[i*nBlock +j]);
@@ -149,6 +109,7 @@ avtLAMMPSFileFormat::CreateInterfaceADIOS2(
             {
                 ffl[i][j] =  new avtLAMMPSFileFormat(list[i*nBlock +j]);
             }
+        }
     }
     return new avtMTSDFileFormatInterface(ffl, nTimestepGroups, nBlock);
 }

@@ -42,7 +42,7 @@
 
 #include <avtMTMDFileFormatInterface.h>
 #include <avtMEUMMAPSFileFormat.h>
-#include <ADIOS2HelperFuncs.h> 
+#include <ADIOS2HelperFuncs.h>
 
 #include <string>
 #include <map>
@@ -62,61 +62,24 @@
 using namespace std;
 
 bool
-avtMEUMMAPSFileFormat::Identify(const char *fname)
-{
-    bool retval = false;
-    string engineName = ADIOS2Helper_GetEngineName(fname);
-    string fileName   = ADIOS2Helper_GetFileName(fname);
-    bool stagingMode  = ADIOS2Helper_IsStagingEngine(engineName);
-
-    adios2::ADIOS adios;
-    adios2::IO io(adios.DeclareIO("ReadBP"));
-    io.SetEngine(engineName);
-    adios2::Engine reader = io.Open(fileName, adios2::Mode::Read);
-    adios2::StepStatus status = 
-        reader.BeginStep(adios2::StepMode::NextAvailable, -1.0f);
-    if (status == adios2::StepStatus::OK)
-    {
-        std::cout<<" Identifier for MEUMAPPS received streaming step = "<<reader.CurrentStep()<<endl;
-
-        std::map<std::string, adios2::Params> variables, attributes;
-        variables = io.AvailableVariables();
-        attributes = io.AvailableAttributes();
-
-        int afind = 0;
-        for (auto it = attributes.begin(); it != attributes.end(); it++)
-        {
-            if (it->first == "app" && it->second["Value"] == "\"meumapps\"")
-                afind++;
-        }
-
-        int vfind = 0;
-        vector<string> reqVars = {"Nx", "Ny", "dx", "dy", "dz"};
-        for (auto vi = variables.begin(); vi != variables.end(); vi++)
-            if (std::find(reqVars.begin(), reqVars.end(), vi->first) != reqVars.end())
-                vfind++;
-
-        retval = (afind == 1 && vfind==reqVars.size());
-        reader.EndStep();
-    }
-    reader.Close();
-    return retval;
-}
-
-bool avtMEUMMAPSFileFormat::IdentifyADIOS2(
-                    std::map<std::string, adios2::Params> &variables, 
-                    std::map<std::string, adios2::Params> &attributes)
+avtMEUMMAPSFileFormat::Identify(const std::string &fname,
+                                const std::map<std::string, adios2::Params> &vars,
+                                const std::map<std::string, adios2::Params> &attrs)
 {
     int afind = 0;
-    for (auto it = attributes.begin(); it != attributes.end(); it++)
+    for (auto it = attrs.begin(); it != attrs.end(); it++)
     {
-        if (it->first == "app" && it->second["Value"] == "\"meumapps\"")
-            afind++;
+        if (it->first == "app")
+        {
+            auto v = it->second.find("Value");
+            if (v != it->second.end() && v->second == "\"meumapps\"")
+                afind++;
+        }
     }
 
     int vfind = 0;
     vector<string> reqVars = {"Nx", "Ny", "dx", "dy", "dz"};
-    for (auto vi = variables.begin(); vi != variables.end(); vi++)
+    for (auto vi = vars.begin(); vi != vars.end(); vi++)
         if (std::find(reqVars.begin(), reqVars.end(), vi->first) != reqVars.end())
             vfind++;
 
@@ -125,34 +88,19 @@ bool avtMEUMMAPSFileFormat::IdentifyADIOS2(
 
 avtFileFormatInterface *
 avtMEUMMAPSFileFormat::CreateInterface(const char *const *list,
-                                         int nList,
-                                         int nBlock)
-{
-    int nTimestepGroups = nList / nBlock;
-    avtMTMDFileFormat **ffl = new avtMTMDFileFormat*[nTimestepGroups];
-    for (int i = 0 ; i < nTimestepGroups ; i++)
-        ffl[i] = new avtMEUMMAPSFileFormat(list[i*nBlock]);
-
-    return new avtMTMDFileFormatInterface(ffl, nTimestepGroups);
-}
-
-avtFileFormatInterface *
-avtMEUMMAPSFileFormat::CreateInterfaceADIOS2(
-        const char *const *list,
-        int nList,
-        int nBlock,
-        std::shared_ptr<adios2::ADIOS> adios,
-        adios2::Engine &reader, 
-        adios2::IO &io,
-        std::map<std::string, adios2::Params> &variables,
-        std::map<std::string, adios2::Params> &attributes
-        )
+                                       int nList,
+                                       int nBlock,
+                                       std::shared_ptr<adios2::ADIOS> adios,
+                                       adios2::Engine &reader,
+                                       adios2::IO &io,
+                                       std::map<std::string, adios2::Params> &variables,
+                                       std::map<std::string, adios2::Params> &attributes)
 {
     int nTimestepGroups = nList / nBlock;
     avtMTMDFileFormat **ffl = new avtMTMDFileFormat*[nTimestepGroups];
     for (int i = 0; i < nTimestepGroups; i++)
     {
-        if (!i) 
+        if (!i)
         {
             ffl[i] =  new avtMEUMMAPSFileFormat(adios, reader, io, variables, attributes, list[i*nBlock]);
         }
@@ -209,7 +157,7 @@ avtMEUMMAPSFileFormat::avtMEUMMAPSFileFormat(const char *filename)
 
 avtMEUMMAPSFileFormat::avtMEUMMAPSFileFormat(std::shared_ptr<adios2::ADIOS> adios,
         adios2::Engine &reader,
-        adios2::IO &io, 
+        adios2::IO &io,
         std::map<std::string, adios2::Params> &variables,
         std::map<std::string, adios2::Params> &attributes,
         const char *filename)

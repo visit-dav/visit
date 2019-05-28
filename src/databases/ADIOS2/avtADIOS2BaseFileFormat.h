@@ -66,31 +66,21 @@ class avtADIOS2BaseFileFormat : public avtMTSDFileFormat
     static bool        Identify(const char *fname);
     static avtFileFormatInterface *CreateInterface(const char *const *list,
                                                    int nList,
-                                                   int nBlock);
+                                                   int nBlock,
+                                                   std::shared_ptr<adios2::ADIOS> adios,
+                                                   adios2::Engine &reader,
+                                                   adios2::IO &io,
+                                                   std::map<std::string, adios2::Params> &variables,
+                                                   std::map<std::string, adios2::Params> &attributes);
 
-                       avtADIOS2BaseFileFormat(const char *);
-
-    // interface creator with first file already opened
-    static avtFileFormatInterface *CreateInterfaceADIOS2(
-            const char *const *list,
-            int nList,
-            int nBlock,
-            std::shared_ptr<adios2::ADIOS> adios,
-            adios2::Engine &reader,
-            adios2::IO &io,
-            std::map<std::string, adios2::Params> &variables,
-            std::map<std::string, adios2::Params> &attributes
-            );
-
-    // constructor with already-opened stream
+    avtADIOS2BaseFileFormat(const char *);
     avtADIOS2BaseFileFormat(std::shared_ptr<adios2::ADIOS> adios,
-            adios2::Engine &reader,
-            adios2::IO &io,
-            std::map<std::string, adios2::Params> &variables,
-            std::map<std::string, adios2::Params> &attributes,
-            const char *);
+                            adios2::Engine &reader,
+                            adios2::IO &io,
+                            std::map<std::string, adios2::Params> &variables,
+                            std::map<std::string, adios2::Params> &attributes,
+                            const char *fname);
 
-    //virtual           ~avtADIOS2BaseFileFormat() {;};
     virtual           ~avtADIOS2BaseFileFormat();
 
     //

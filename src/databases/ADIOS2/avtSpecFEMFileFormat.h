@@ -47,11 +47,11 @@
 #include <vector>
 #include <string>
 #include <map>
+#include <memory>
 #include <adios2.h>
 
 class avtFileFormatInterface;
 class vtkRectilinearGrid;
-
 
 // ****************************************************************************
 //  Class: avtSpecFEMFileFormat
@@ -69,16 +69,33 @@ class vtkRectilinearGrid;
 class avtSpecFEMFileFormat : public avtMTMDFileFormat
 {
   public:
-    static bool        Identify(const char *fname);
+    static bool Identify(const std::string &fname,
+                         const std::map<std::string, adios2::Params> &vars,
+                         const std::map<std::string, adios2::Params> &attrs);
+
+    // interface creator with first file already opened
     static avtFileFormatInterface *CreateInterface(const char *const *list,
                                                    int nList,
-                                                   int nBlock);
+                                                   int nBlock,
+                                                   std::shared_ptr<adios2::ADIOS> adios,
+                                                   adios2::Engine &reader,
+                                                   adios2::IO &io,
+                                                   const std::map<std::string, adios2::Params> &vars,
+                                                   const std::map<std::string, adios2::Params> &attrs);
+
     static bool        GenerateFileNames(const std::string &nm,
                                          std::string &meshNm, std::string &dataNm);
     static bool        IsMeshFile(const std::string &fname);
     static bool        IsDataFile(const std::string &fname);
 
-    avtSpecFEMFileFormat(const char *);
+    avtSpecFEMFileFormat(const char *fname);
+    avtSpecFEMFileFormat(std::shared_ptr<adios2::ADIOS> adios,
+                         adios2::Engine &reader,
+                         adios2::IO &io,
+                         const std::map<std::string, adios2::Params> &vars,
+                         const std::map<std::string, adios2::Params> &attrs,
+                         const char *fname);
+
     virtual  ~avtSpecFEMFileFormat();
 
     virtual void        GetCycles(std::vector<int> &);
