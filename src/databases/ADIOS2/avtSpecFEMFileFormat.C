@@ -143,8 +143,6 @@ avtSpecFEMFileFormat::CreateInterface(const char *const *list,
                                       const std::map<std::string, adios2::Params> &vars,
                                       const std::map<std::string, adios2::Params> &attrs)
 {
-    std::cout<<"FIX THIS"<<std::endl;
-
     int nTimestepGroups = nList / nBlock;
     avtMTMDFileFormat **ffl = new avtMTMDFileFormat*[nTimestepGroups];
     for (int i = 0 ; i < nTimestepGroups ; i++)
@@ -334,8 +332,6 @@ avtSpecFEMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int time
     Initialize();
     md->SetFormatCanDoDomainDecomposition(false);
 
-    cout<<"INIT: nBlocks= "<<numBlocks<<endl;
-
     //Add the entire mesh.
 #ifdef USE_IBOOL
     AddMeshToMetaData(md, "mesh", AVT_UNSTRUCTURED_MESH, NULL, numBlocks, 0, 3, 3);
@@ -387,7 +383,6 @@ avtSpecFEMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int time
         if (vname.find("/array") == string::npos)
             continue;
         vname = GetVariable(vname);
-        cout<<"VARNAME= "<<vname<<endl;
 
         if (kernelFile)
         {
@@ -1234,8 +1229,6 @@ void
 avtSpecFEMFileFormat::AddRegionMesh(int ts, int dom, int region, vtkDataSet *ds,
                                     bool xyzMesh, int ptOffset)
 {
-    cout<<"AddRegionMesh: "<<dom<<endl;
-
     vtkUnstructuredGrid *mesh = (vtkUnstructuredGrid*)ds;
     vtkPoints *pts = mesh->GetPoints();
 
@@ -1247,9 +1240,6 @@ avtSpecFEMFileFormat::AddRegionMesh(int ts, int dom, int region, vtkDataSet *ds,
     sprintf(nE, "reg%d/nspec", region);
     sprintf(nP, "reg%d/nglob", region);
 
-    cout<<nE<<endl;
-    cout<<meshIO.AvailableVariables()[nE]<<endl;
-
     int nElem = std::stoi(meshIO.AvailableVariables()[nE]["Value"]);
     int nPts = std::stoi(meshIO.AvailableVariables()[nP]["Value"]);
 //    meshFile->GetScalar(nE, nElem);
@@ -1260,15 +1250,12 @@ avtSpecFEMFileFormat::AddRegionMesh(int ts, int dom, int region, vtkDataSet *ds,
     //int N = ib->GetNumberOfTuples();
     adios2::Variable<int> ibV = meshIO.InquireVariable<int>(iNm);
     auto ibBlkInfo = (meshReader.BlocksInfo(ibV, 0))[dom];
-    cout<<"ib blocks: "<<meshReader.BlocksInfo(ibV, 0).size()<<endl;
     int N = ibBlkInfo.Count[0];
     vtkIntArray *ib = vtkIntArray::New();
     ib->SetNumberOfTuples(N);
 
-    cout<<"Read IB"<<endl;
     ibV.SetBlockSelection(0);
     meshReader.Get(ibV, (int*)ib->GetVoidPointer(0), adios2::Mode::Sync);
-    cout<<"Read IB done"<<endl;
 
     int *ibl = (int*)ib->GetVoidPointer(0);
     vector<bool> ptMask(N, false);
@@ -1730,7 +1717,6 @@ avtSpecFEMFileFormat::Initialize()
 
     //See if it's a kernel file.
     auto variables = dataIO.AvailableVariables();
-    cout<<"dataVars: "<<variables<<endl;
     if (variables.find("betav_kl_crust_mantle") != variables.end())
         kernelFile = true;
 
@@ -1742,7 +1728,6 @@ avtSpecFEMFileFormat::Initialize()
         if (var.first.find("reg") == string::npos || var.first.find("array") == string::npos)
             continue;
 
-        cout<<"VAR= "<<var<<endl;
         regions[GetRegion(var.first)-1] = true;
         if (numBlocks == -1)
         {
@@ -1819,51 +1804,16 @@ avtSpecFEMFileFormat::GenerateFileNames(const std::string &nm,
 bool
 avtSpecFEMFileFormat::IsMeshFile(const string &fname)
 {
-    cout<<__FILE__<<" "<<__LINE__<<endl;
-    {
-        #ifdef PARALLEL
-        cout<<__FILE__<<" "<<__LINE__<<endl;
-        adios2::ADIOS adios((MPI_Comm)VISIT_MPI_COMM, adios2::DebugON);
-        cout<<__FILE__<<" "<<__LINE__<<endl;
-        adios2::IO io = adios2::IO(adios.DeclareIO("ReadBP"));
-        cout<<__FILE__<<" "<<__LINE__<<endl;
-        io.SetEngine("BP");
-        cout<<__FILE__<<" "<<__LINE__<<endl;
-        adios2::Engine reader = io.Open(fname, adios2::Mode::Read);
-        cout<<__FILE__<<" "<<__LINE__<<endl;
-        auto attributes = io.AvailableAttributes();
-        cout<<__FILE__<<" "<<__LINE__<<endl;
-        auto variables = io.AvailableVariables();
-        cout<<__FILE__<<" "<<__LINE__<<endl;
-        #endif
-        return true;
-    }
+#ifdef PARALLEL
+    adios2::ADIOS adios((MPI_Comm)VISIT_MPI_COMM, adios2::DebugON);
+#else
+    adios2::ADIOS adios(adios2::DebugON);
+#endif
 
-    cout<<__FILE__<<" "<<__LINE__<<endl;
-    shared_ptr<adios2::ADIOS> adios = std::make_shared<adios2::ADIOS>(adios2::DebugON);
-    cout<<__FILE__<<" "<<__LINE__<<endl;
-    adios2::IO io = adios2::IO(adios->DeclareIO("ReadBP"));
-    cout<<__FILE__<<" "<<__LINE__<<endl;
-    io.SetEngine("BP");
-    cout<<__FILE__<<" "<<__LINE__<<endl;
+    adios2::IO io(adios.DeclareIO("ReadBP"));
     adios2::Engine reader = io.Open(fname, adios2::Mode::Read);
-    cout<<__FILE__<<" "<<__LINE__<<endl;
     auto attributes = io.AvailableAttributes();
-    cout<<__FILE__<<" "<<__LINE__<<endl;
     auto variables = io.AvailableVariables();
-    cout<<__FILE__<<" "<<__LINE__<<endl;
-
-    /*
-    cout<<"MESH: "<<endl;
-    cout<<"  ATTR:"<<endl;
-    for (auto &a : attributes)
-    {
-        cout<<"       "<<a.first<<" "<<a.second<<endl;
-    }
-    cout<<"  VARS:"<<endl;
-    for (auto &v : variables)
-        cout<<"       "<<v.first<<" "<<v.second<<endl;
-    */
 
     if (variables.find("reg1/nspec") == variables.end() ||
         variables.find("reg1/nglob") == variables.end() ||
