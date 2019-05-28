@@ -54,6 +54,9 @@
 #   Kathleen Biagas, Fri Mar 17 10:29:19 PDT 2017
 #   Set HAVE_LIBZ when ZLIB_FOUND.
 #
+#   Kathleen Biagas, Tue May 28 09:08:56 PDT 2019
+#   Since we require zlib from build_visit, no longer need HAVE_ZLIB_H
+#
 #****************************************************************************/
 
 # Use the ZLIB_DIR hint from the config-site .cmake file 
@@ -70,7 +73,6 @@ if (WIN32)
         # use full path here, instead of just lib file.
         #set(ZLIB_LIBRARY "${ZLIB_LIB}" CACHE STRING "zlib library" FORCE)
         set(ZLIB_LIBRARY "${ZLIB_LIBRARY_DIR}/${ZLIB_LIB}" CACHE STRING "full path to zlib library" FORCE)
-        set(HAVE_ZLIB_H true CACHE BOOL "have zlib header" FORCE)
     endif ()
 else(WIN32)
     if(VISIT_ZLIB_DIR)
@@ -79,7 +81,6 @@ else(WIN32)
         if(ZLIB_FOUND)
             # use full path here, instead of just lib file.
             set(ZLIB_LIBRARY "${ZLIB_LIBRARY_DIR}/${ZLIB_LIB}" CACHE STRING "zlib library" FORCE)
-            set(HAVE_ZLIB_H true CACHE BOOL "have zlib header" FORCE)
         endif()
     endif()
 endif (WIN32)

@@ -24,7 +24,7 @@ function bv_silo_silex
 
 function bv_silo_depends_on
 {
-    local depends_on=""
+    local depends_on="zlib"
 
     if [[ "$DO_HDF5" == "yes" ]] ; then
         depends_on="hdf5"
@@ -34,9 +34,6 @@ function bv_silo_depends_on
         depends_on="$depends_on szip"
     fi
 
-    if [[ "$DO_ZLIB" == "yes" ]] ; then
-        depends_on="$depends_on zlib"
-    fi
 
     echo $depends_on
 }
@@ -81,13 +78,7 @@ function bv_silo_host_profile
         if [[ "$DO_HDF5" == "yes" ]] ; then
             libdep="HDF5_LIBRARY_DIR hdf5 \${VISIT_HDF5_LIBDEP}"
         fi
-        if [[ "$DO_ZLIB" == "yes" ]] ; then
-            libdep="$libdep ZLIB_LIBRARY_DIR z"
-        elif [[ -d /usr/lib/x86_64-linux-gnu ]]; then
-            libdep="$libdep /usr/lib/x86_64-linux-gnu z"
-        else
-            libdep="$libdep /usr/lib z"
-        fi
+        libdep="$libdep ZLIB_LIBRARY_DIR z"
         if [[ -n "$libdep" ]]; then
             echo \
                 "VISIT_OPTION_DEFAULT(VISIT_SILO_LIBDEP $libdep TYPE STRING)" \
@@ -185,9 +176,7 @@ function build_silo
     #    fi
     #fi
 
-    if [[ "$DO_ZLIB" == "yes" ]] ; then
-        ZLIBARGS="--with-zlib=${VISITDIR}/zlib/${ZLIB_VERSION}/${VISITARCH}/include,${VISITDIR}/zlib/${ZLIB_VERSION}/${VISITARCH}/lib"
-    fi
+    ZLIBARGS="--with-zlib=${VISITDIR}/zlib/${ZLIB_VERSION}/${VISITARCH}/include,${VISITDIR}/zlib/${ZLIB_VERSION}/${VISITARCH}/lib"
 
     if [[ "$FC_COMPILER" == "no" ]] ; then
         FORTRANARGS="--disable-fortran"

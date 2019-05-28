@@ -27,15 +27,12 @@ function bv_netcdf_depends_on
     if [[ "$USE_SYSTEM_NETCDF" == "yes" ]]; then
         echo ""
     else
-        local depends_on=""
+        local depends_on="zlib"
         if [[ "$DO_HDF5" == "yes" ]] ; then
             depends_on="hdf5"        
             if [[ "$DO_SZIP" == "yes" ]] ; then
                 depends_on="${depends_on} szip"        
             fi
-        fi
-        if [[ "$DO_ZLIB" == "yes" ]] ; then
-            depends_on="zlib"        
         fi
         echo ${depends_on}
     fi
@@ -370,10 +367,7 @@ function build_netcdf
             H5ARGS="$H5ARGS --with-szlib=$VISITDIR/szip/$SZIP_VERSION/$VISITARCH"
         fi
     fi
-    ZLIBARGS=""
-    if [[ "$DO_ZLIB" == "yes" ]] ; then
-        ZLIBARGS="--with-zlib=$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH"
-    fi
+    ZLIBARGS="--with-zlib=$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH"
 
     info "./configure CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
         CFLAGS=\"$C_OPT_FLAGS\" CXXFLAGS=\"$CXX_OPT_FLAGS\" \
