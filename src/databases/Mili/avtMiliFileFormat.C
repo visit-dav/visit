@@ -60,6 +60,7 @@
 #include <avtUnstructuredPointBoundaries.h>
 #include <avtGhostData.h>
 #include <avtMaterial.h>
+#include <avtCommonDataFunctions.h>
 
 #include <DebugStream.h>
 #include <ImproperUseException.h>
@@ -579,7 +580,7 @@ avtMiliFileFormat::GetNodePositions(int timestep,
         int nPts     = dims * numNodes;
         int vType    = nodpos->GetNumType();
         int subrec   = nodpos->GetSubrecIds(dom)[0];
-        float fPts[nPts];
+        float *fPts = new float[nPts];
 
         ReadMiliResults(dbid[dom], timestep+1, subrec, 1, 
             &npCharPtr, vType, nPts, fPts);
@@ -603,6 +604,8 @@ avtMiliFileFormat::GetNodePositions(int timestep,
                 *(vtkNPPtr++) = 0.;
             }
         }
+
+        delete [] fPts;
     }
 
     return vtkNodePos;
@@ -715,7 +718,7 @@ avtMiliFileFormat::GetMesh(int timestep, int dom, const char *mesh)
         int nCells         = miliMetaData[meshId]->GetNumCells(dom);
         int nNodes         = miliMetaData[meshId]->GetNumNodes(dom);
         
-        float sandBuffer[nCells];
+        float *sandBuffer = new float[nCells];
 
         //
         // Begin by assuming the status of every cell is good. 
@@ -808,6 +811,8 @@ avtMiliFileFormat::GetMesh(int timestep, int dom, const char *mesh)
             }
         }
     
+        delete [] sandBuffer; 
+
         rv->GetPointData()->AddArray(ghostNodes);
         ghostNodes->Delete();
     }
@@ -983,7 +988,7 @@ avtMiliFileFormat::ReadMesh(int dom)
         //
         int cellIdx = 0;
         int cpcIdx  = 0;
-        int matList[nDomCells];
+        int *matList = new int[nDomCells];
 
         for (int i = 0; i < numCellTypes; ++i)
         {
@@ -1003,10 +1008,10 @@ avtMiliFileFormat::ReadMesh(int dom)
                 // mat:  materials that each element belongs to. 
                 // part: Not used...
                 //
-                int conn[nCells * connCount];
-                int mats[nCells];
-                int part[nCells];
-                char shortName[classNames[cpcIdx].size() + 1];
+                int *conn       = new int[nCells * connCount];
+                int *mats       = new int[nCells];
+                int *part       = new int[nCells];
+                char *shortName = new char[classNames[cpcIdx].size() + 1];
                 strcpy(shortName, classNames[cpcIdx].c_str());
                 cpcIdx++;
 
@@ -1153,6 +1158,10 @@ avtMiliFileFormat::ReadMesh(int dom)
                 //
                 RetrieveZoneLabelInfo(meshId, shortName, dom, 
                                       nCells);
+                delete [] conn;
+                delete [] mats;
+                delete [] part;
+                delete [] shortName;
             }
         }
 
@@ -1168,6 +1177,7 @@ avtMiliFileFormat::ReadMesh(int dom)
                                               NULL, NULL);
 
         materials[dom][meshId] = avtMat;
+        delete [] matList;
 
         //
         // Read initial nodal position information, if available. 
@@ -1638,7 +1648,7 @@ avtMiliFileFormat::GetVar(int timestep,
 
             for (int i = 0; i < nCells; ++i)
             { 
-                if (!isnan(dataBuffer[matList[i]]))
+                if (!visitIsNan(dataBuffer[matList[i]]))
                 {
                     fltArray->SetTuple1(i, dataBuffer[matList[i]]);
                 }
@@ -1661,7 +1671,7 @@ avtMiliFileFormat::GetVar(int timestep,
             //
             for (int i = 0; i < nCells; ++i)
             { 
-                if (!isnan(dataBuffer[i]))
+                if (!visitIsNan(dataBuffer[i]))
                 {
                     fltArray->SetTuple1(i, dataBuffer[i]);
                 }
@@ -1749,7 +1759,6 @@ avtMiliFileFormat::GetVectorVar(int timestep,
     //
     for (int i = 0; i < arrSize; ++i)
     {
-        float vecPts[vecSize];
         fArrPtr[i] = std::numeric_limits<float>::quiet_NaN();
     }
 
@@ -1971,7 +1980,7 @@ avtMiliFileFormat::GetVectorVar(int timestep,
             float *fltArrayPtr = (float *) fltArray->GetVoidPointer(0);
             for (int i = 0 ; i < dBuffSize; i++)
             {
-                if (!isnan(dataBuffer[i]))
+                if (!visitIsNan(dataBuffer[i]))
                 {
                     fltArrayPtr[i] = dataBuffer[i];
                 }
@@ -2099,7 +2108,7 @@ avtMiliFileFormat::GetElementSetVar(int timestep,
 
     for (int i = 0 ; i < nCells; i++)
     {
-        float vecPts[retVecSize];
+        float *vecPts = new float[retVecSize];
         bool nanFound = false;
 
         //
@@ -2110,7 +2119,7 @@ avtMiliFileFormat::GetElementSetVar(int timestep,
         {
             int idx = (i * dataSize) + (compIdxs[j] * compDims);
             idx += targetIP;
-            if (isnan(dataBuffer[idx]))
+            if (visitIsNan(dataBuffer[idx]))
             { 
                 nanFound = true; 
                 break;
@@ -2122,6 +2131,8 @@ avtMiliFileFormat::GetElementSetVar(int timestep,
         {
             fltArray->SetTuple(i, vecPts);
         }
+
+        delete [] vecPts;
     }
 
     delete [] dataBuffer;
@@ -2215,7 +2226,7 @@ avtMiliFileFormat::ReadMiliVarToBuffer(char *varName,
                 totalBlocksSize += stop - start + 1;
             }
 
-            float MBBuffer[totalBlocksSize * varSize];
+            float *MBBuffer = new float[totalBlocksSize * varSize];
             int resultSize = totalBlocksSize * varSize;
 
             ReadMiliResults(dbid[dom], ts, SRId,
@@ -2238,6 +2249,8 @@ avtMiliFileFormat::ReadMiliVarToBuffer(char *varName,
                     }
                 }
             }
+
+            delete [] MBBuffer;
         }
         else
         {
@@ -3640,8 +3653,8 @@ avtMiliFileFormat::RetrieveZoneLabelInfo(const int meshId,
 {
     int numBlocks    = 0; 
     int *blockRanges = NULL;
-    int elemList[nElemsInClass];
-    int labelIds[nElemsInClass];
+    int *elemList    = new int[nElemsInClass];
+    int *labelIds    = new int[nElemsInClass];
 
     for (int i = 0; i < nElemsInClass; ++i)
     {
@@ -3674,6 +3687,9 @@ avtMiliFileFormat::RetrieveZoneLabelInfo(const int meshId,
                                 labelIds,
                                 numBlocks,
                                 blockRanges);
+
+    delete [] elemList;
+    delete [] labelIds;
 }
 
 
@@ -3711,8 +3727,8 @@ avtMiliFileFormat::RetrieveNodeLabelInfo(const int meshId,
     int nNodes        = miliMetaData[meshId]->GetNumNodes(dom);
     int numBlocks     = 0; 
     int *blockRanges  = NULL;
-    int elemList[nNodes];
-    int labelIds[nNodes];
+    int *elemList     = new int[nNodes];
+    int *labelIds     = new int[nNodes];
 
     for (int i = 0; i < nNodes; ++i)
     {
@@ -3736,6 +3752,9 @@ avtMiliFileFormat::RetrieveNodeLabelInfo(const int meshId,
                                 labelIds,
                                 numBlocks,
                                 blockRanges);
+
+    delete [] elemList;
+    delete [] labelIds;
 }
 
 
