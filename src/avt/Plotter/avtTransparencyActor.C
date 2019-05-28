@@ -1461,6 +1461,11 @@ void avtTransparencyActor::SyncProps()
 //    MPI_MAX is not defined for MPI_UNSIGNED_LONG_LONG in the MSMPI we use on
 //    Windows, and the actual type returned by GetMTime is 'unsigned long'.
 //
+//    Eric Brugger, Thu Apr  4 08:26:51 PDT 2019
+//    I corrected a memory overwrite where an MPI broadcast was being done
+//    with 22 doubles but the buffer was only 20 doubles long. I changed
+//    the broadcast to only send 20 doubles.
+//
 // ****************************************************************************
 
 int avtTransparencyActor::SyncProps(vtkProperty *dest, vtkProperty *source)
@@ -1553,7 +1558,7 @@ int avtTransparencyActor::SyncProps(vtkProperty *dest, vtkProperty *source)
 #ifdef PARALLEL
     // if any processes don't have valid props send
     if (n_have != size)
-        MPI_Bcast(buf, 22, MPI_DOUBLE, root, VISIT_MPI_COMM);
+        MPI_Bcast(buf, 20, MPI_DOUBLE, root, VISIT_MPI_COMM);
 #endif
 
     // deserialize
@@ -2188,7 +2193,7 @@ avtTransparencyActor::TransparenciesExist()
     {
         DetermineTransparencies();
 
-        // since we are already doing ommunication here, and this only
+        // since we are already doing communication here, and this only
         // occurs once per frame, this is as good a place as any to ensure
         // that the props are in sync TODO -- this is needed when some ranks
         // don't have data, there should be a way to pass down the props

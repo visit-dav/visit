@@ -131,11 +131,15 @@ def steps_checkout(opts,ctx):
     ctx.actions["src_checkout"] = git(git_url=visit_git_path(git_opts=opts["git"]),
                                       git_cmd="clone --depth=1",
                                       description="checkout visit src",
-                                      working_dir=opts["build_dir"])
-    ctx.actions["switch_branch"] = shell(cmd="git checkout %s" % opts["branch"],
-                                         description="switch to branch",
-                                         working_dir=git_working)
-    ctx.triggers["build"].extend(["src_checkout", "switch_branch"])
+                                      working_dir=opts["build_dir"],
+                                      halt_on_error=False)
+    ctx.triggers["build"].append("src_checkout");
+    if opts["branch"] != "develop":
+        ctx.actions["switch_branch"] = shell(cmd="git checkout %s" % opts["branch"],
+                                             description="switch to branch",
+                                             working_dir=git_working,
+                                             halt_on_error=False)
+        ctx.triggers["build"].append("switch_branch");
 
 
 def steps_untar(opts,ctx):

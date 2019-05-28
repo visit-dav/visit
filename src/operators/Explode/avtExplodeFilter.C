@@ -2236,7 +2236,7 @@ PlaneExplosion::CalcDisplacement(double *dataCenter, double expFactor,
         // on the plane. If it does, use a new data point that
         // isn't the cell center but still should be in the cell. 
         //
-        double planeDist;
+        double planeDist = 0.0;
         for (int i = 0; i < 3; ++i)
         {
             planeDist += (dataPt[i] - planePoint[i]) * planeNorm[i];

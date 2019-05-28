@@ -519,6 +519,10 @@ read_results(Famid &dbid, int ts, int sr, int rank,
 //    Mark C. Miller, Tue Nov 21 10:16:42 PST 2006
 //    Fixed leak of sand_arr. Made it request sand_arr only if the
 //    no_free_nodes mesh was requested
+//
+//    Cyrus Harrison, Wed Apr 17 13:23:02 PDT 2019
+//    Fixed const string literal warnings (writable-strings)
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -566,7 +570,7 @@ avtMiliFileFormat::GetMesh(int ts, int dom, const char *mesh)
     //
     // The node positions are stored in 'nodpos'.
     //
-    char *nodpos_str = "nodpos";
+    const char *nodpos_str = "nodpos";
     int nodpos = -2;
 
     // Since this whole plugin assumes GetVariableIndex
@@ -622,7 +626,7 @@ avtMiliFileFormat::GetMesh(int ts, int dom, const char *mesh)
         else
         {
             fpts = new float[amt];
-            read_results(dbid[dom], ts+1, subrec, 1, &nodpos_str, vsize, amt, fpts);
+            read_results(dbid[dom], ts+1, subrec, 1, const_cast<char**>(&nodpos_str), vsize, amt, fpts);
 
             vtkPoints *pts = vtkPoints::New();
             pts->SetNumberOfPoints(nnodes[dom][mesh_id]);
@@ -1005,6 +1009,9 @@ avtMiliFileFormat::DecodeMultiLevelVarname(const string &inname, string &decoded
 //    The reader now returns the cycles and times in the meta data and 
 //    marks them as accurate so that they are used where needed.
 //
+//    Cyrus Harrison, Wed Apr 17 13:23:02 PDT 2019
+//    Fixed const string literal warnings (writable-strings)
+//
 // ****************************************************************************
 
 void
@@ -1023,7 +1030,7 @@ avtMiliFileFormat::OpenDB(int dom)
         if (ndomains == 1)
         {
             debug3 << "Attempting mc_open on root=\"" << famroot << "\", path=\"" << fampath << "\"." << endl;
-            rval = mc_open( famroot, fampath, "r", &(dbid[dom]) );
+            rval = mc_open( famroot, fampath, const_cast<char*>("r"), &(dbid[dom]) );
 
             if ( rval != OK )
             {
@@ -1035,7 +1042,7 @@ avtMiliFileFormat::OpenDB(int dom)
                 {
                     sprintf(rootname, root_fmtstrs[i], famroot, dom);
                     debug3 << "Attempting mc_open on root=\"" << rootname << "\", path=\"" << fampath << "\"." << endl;
-                    rval = mc_open(rootname, fampath, "r", &(dbid[dom]) );
+                    rval = mc_open(rootname, fampath, const_cast<char*>("r"), &(dbid[dom]) );
                 }
             }
             if ( rval != OK )
@@ -1048,7 +1055,7 @@ avtMiliFileFormat::OpenDB(int dom)
             {
                 sprintf(famname, root_fmtstrs[i], famroot, dom);
                 debug3 << "Attempting mc_open on root=\"" << famname << "\", path=\"" << fampath << "\"." << endl;
-                rval = mc_open( famname, fampath, "r", &(dbid[dom]) );
+                rval = mc_open( famname, fampath, const_cast<char*>("r"), &(dbid[dom]) );
                 if (rval == OK) break;
             }
             if ( rval != OK )

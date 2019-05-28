@@ -91,7 +91,6 @@ class QvisRemapWindow : public QvisOperatorWindow
     void startZProcessText();
     void endZProcessText();
     void cellsZProcessText();
-    void defaultValueProcessText();
     void variableTypeChanged(int val);
   private:
     QCheckBox *useExtents;
@@ -105,7 +104,6 @@ class QvisRemapWindow : public QvisOperatorWindow
     QLineEdit *startZ;
     QLineEdit *endZ;
     QLineEdit *cellsZ;
-    QLineEdit *defaultValue;
     QWidget      *variableType;
     QButtonGroup *variableTypeButtonGroup;
     QLabel *startXLabel;
@@ -117,7 +115,6 @@ class QvisRemapWindow : public QvisOperatorWindow
     QLabel *startZLabel;
     QLabel *endZLabel;
     QLabel *cellsZLabel;
-    QLabel *defaultValueLabel;
     QLabel *variableTypeLabel;
 
     RemapAttributes *atts;

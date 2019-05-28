@@ -426,16 +426,12 @@ QvisLabelPlotWindow::UpdateWindow(bool doAll)
             break;
         case LabelAttributes::ID_textFont1:
              {
-             FontAttributes f = labelAtts->GetTextFont1();
-             f.SetScale(f.GetScale() *100.);
-             textFont1->setFontAttributes(f);
+             textFont1->setFontAttributes(labelAtts->GetTextFont1());
              }
             break;
         case LabelAttributes::ID_textFont2:
              {
-             FontAttributes f = labelAtts->GetTextFont2();
-             f.SetScale(f.GetScale() *100.);
-             textFont2->setFontAttributes(f);
+             textFont2->setFontAttributes(labelAtts->GetTextFont2());
              }
             break;
         case LabelAttributes::ID_horizontalJustification:
@@ -525,17 +521,13 @@ QvisLabelPlotWindow::GetCurrentValues(int which_widget)
     // Do textFont1
     if(which_widget == LabelAttributes::ID_textFont1  || doAll)
     {
-        FontAttributes f = textFont1->getFontAttributes();
-        f.SetScale(f.GetScale() *0.01);
-        labelAtts->SetTextFont1(f);
+        labelAtts->SetTextFont1(textFont1->getFontAttributes());
     }
 
     // Do textFont2
     if(which_widget == LabelAttributes::ID_textFont2  || doAll)
     {
-        FontAttributes f = textFont2->getFontAttributes();
-        f.SetScale(f.GetScale() *0.01);
-        labelAtts->SetTextFont2(f);
+        labelAtts->SetTextFont2(textFont2->getFontAttributes());
     }
 
     // Do formatTemplate
@@ -737,9 +729,7 @@ QvisLabelPlotWindow::labelDisplayFormatChanged(int val)
 void
 QvisLabelPlotWindow::textFont1Changed(const FontAttributes &f)
 {
-    FontAttributes f2 = const_cast<FontAttributes &>(f);
-    f2.SetScale(f2.GetScale() *0.01);
-    labelAtts->SetTextFont1(f2);
+    labelAtts->SetTextFont1(f);
     SetUpdate(false);
     Apply();
 }
@@ -747,9 +737,7 @@ QvisLabelPlotWindow::textFont1Changed(const FontAttributes &f)
 void
 QvisLabelPlotWindow::textFont2Changed(const FontAttributes &f)
 {
-    FontAttributes f2 = const_cast<FontAttributes &>(f);
-    f2.SetScale(f2.GetScale() *0.01);
-    labelAtts->SetTextFont2(f2);
+    labelAtts->SetTextFont2(f);
     SetUpdate(false);
     Apply();
 }

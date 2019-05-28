@@ -76,7 +76,7 @@
 //-----------------------------------------------------------------------------
 #include "conduit.hpp"
 #include "conduit_relay.hpp"
-#include "conduit_relay_hdf5.hpp"
+#include "conduit_relay_io_hdf5.hpp"
 #include "conduit_blueprint.hpp"
 
 #include "avtBlueprintDataAdaptor.h"
@@ -283,12 +283,12 @@ avtBlueprintWriter::WriteChunk(vtkDataSet *ds, int chunk)
     if(!blueprint::mesh::verify(mesh,verify_info))
     {
          BP_PLUGIN_EXCEPTION1(InvalidVariableException,
-                              "VTK to Blueprint convertion failed " << verify_info.to_json());
+                              "VTK to Blueprint conversion failed " << verify_info.to_json());
         return;
     }
 
     char fmt_buff[64];
-    snprintf(fmt_buff, sizeof(fmt_buff), "%06llu",chunk);
+    snprintf(fmt_buff, sizeof(fmt_buff), "%06d",chunk);
     std::stringstream oss;
     oss << "domain_" << fmt_buff << "." << "hdf5";
     string output_file  = conduit::utils::join_file_path(m_output_dir,oss.str());
@@ -327,7 +327,7 @@ avtBlueprintWriter::GenRootNode(conduit::Node &mesh,
     }
 
     char fmt_buff[64];
-    snprintf(fmt_buff, sizeof(fmt_buff), "%06llu",c);
+    snprintf(fmt_buff, sizeof(fmt_buff), "%06d",c);
 
     std::stringstream oss;
     std::string root_dir = FileFunctions::Dirname(output_dir);

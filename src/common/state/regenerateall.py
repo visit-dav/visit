@@ -1,5 +1,5 @@
 #!/usr/local/apps/bin/python
-import os, string
+import os, string, sys
 
 #
 # Get the output of a command as a tuple of strings.
@@ -43,16 +43,19 @@ def systemCommand(command):
 #   Brad Whitlock, Fri Dec 14 15:56:16 PST 2007
 #   Removed cleartool commands.
 #
+#   Kathleen Biagas, Tue Apr 23 11:54:25 PDT 2019
+#   Made main accept a path to xml2atts.
+#
 ###############################################################################
 
-def main():
+def main(exeDir):
     # Get the names of the XML files in this directory.
     files = GetFilenames("ls *.xml")
 
     # Check out each XML file and regenerate the C and h files.
     for f in files:
         bname = f[:-5]
-        command = "../../bin/xml2atts -clobber %s" % f
+        command = "%s/xml2atts -clobber %s" % (exeDir, f)
         systemCommand(command)
 
     # Warn about files that have special CreateNode functions.
@@ -70,5 +73,8 @@ def main():
 #
 # Call the main function
 #
-main()
+if len(sys.argv) > 1:
+    main(sys.argv[1])
+else:
+    print "usage: regenerateall.py /path/to/xml2atts"
 

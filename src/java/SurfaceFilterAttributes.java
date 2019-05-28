@@ -66,6 +66,10 @@ public class SurfaceFilterAttributes extends AttributeSubject
     public final static int LIMITSMODE_ORIGINALDATA = 0;
     public final static int LIMITSMODE_CURRENTPLOT = 1;
 
+    public final static int SCALINGMODE_NEVER = 0;
+    public final static int SCALINGMODE_AUTO = 1;
+    public final static int SCALINGMODE_ALWAYS = 2;
+
 
     public SurfaceFilterAttributes()
     {
@@ -80,7 +84,7 @@ public class SurfaceFilterAttributes extends AttributeSubject
         max = 1;
         zeroFlag = false;
         variable = new String("default");
-        useXYLimits = true;
+        useXYLimits = SCALINGMODE_AUTO;
         generateNodalOutput = true;
     }
 
@@ -97,7 +101,7 @@ public class SurfaceFilterAttributes extends AttributeSubject
         max = 1;
         zeroFlag = false;
         variable = new String("default");
-        useXYLimits = true;
+        useXYLimits = SCALINGMODE_AUTO;
         generateNodalOutput = true;
     }
 
@@ -201,7 +205,7 @@ public class SurfaceFilterAttributes extends AttributeSubject
         Select(8);
     }
 
-    public void SetUseXYLimits(boolean useXYLimits_)
+    public void SetUseXYLimits(int useXYLimits_)
     {
         useXYLimits = useXYLimits_;
         Select(9);
@@ -223,7 +227,7 @@ public class SurfaceFilterAttributes extends AttributeSubject
     public double  GetMax() { return max; }
     public boolean GetZeroFlag() { return zeroFlag; }
     public String  GetVariable() { return variable; }
-    public boolean GetUseXYLimits() { return useXYLimits; }
+    public int     GetUseXYLimits() { return useXYLimits; }
     public boolean GetGenerateNodalOutput() { return generateNodalOutput; }
 
     // Write and read methods.
@@ -248,7 +252,7 @@ public class SurfaceFilterAttributes extends AttributeSubject
         if(WriteSelect(8, buf))
             buf.WriteString(variable);
         if(WriteSelect(9, buf))
-            buf.WriteBool(useXYLimits);
+            buf.WriteInt(useXYLimits);
         if(WriteSelect(10, buf))
             buf.WriteBool(generateNodalOutput);
     }
@@ -285,7 +289,7 @@ public class SurfaceFilterAttributes extends AttributeSubject
             SetVariable(buf.ReadString());
             break;
         case 9:
-            SetUseXYLimits(buf.ReadBool());
+            SetUseXYLimits(buf.ReadInt());
             break;
         case 10:
             SetGenerateNodalOutput(buf.ReadBool());
@@ -317,7 +321,14 @@ public class SurfaceFilterAttributes extends AttributeSubject
         str = str + doubleToString("max", max, indent) + "\n";
         str = str + boolToString("zeroFlag", zeroFlag, indent) + "\n";
         str = str + stringToString("variable", variable, indent) + "\n";
-        str = str + boolToString("useXYLimits", useXYLimits, indent) + "\n";
+        str = str + indent + "useXYLimits = ";
+        if(useXYLimits == SCALINGMODE_NEVER)
+            str = str + "SCALINGMODE_NEVER";
+        if(useXYLimits == SCALINGMODE_AUTO)
+            str = str + "SCALINGMODE_AUTO";
+        if(useXYLimits == SCALINGMODE_ALWAYS)
+            str = str + "SCALINGMODE_ALWAYS";
+        str = str + "\n";
         str = str + boolToString("generateNodalOutput", generateNodalOutput, indent) + "\n";
         return str;
     }
@@ -333,7 +344,7 @@ public class SurfaceFilterAttributes extends AttributeSubject
     private double  max;
     private boolean zeroFlag;
     private String  variable;
-    private boolean useXYLimits;
+    private int     useXYLimits;
     private boolean generateNodalOutput;
 }
 

@@ -62,9 +62,9 @@
 #define ZMAX 5
 #define MAX_DOMAINS 4
 
-// supress the following since silo uses char * in its API
+// suppress the following since silo uses char * in its API
 #if defined(__clang__)
-# pragma GCC diagnostic ignored "-Wdeprecated-writable-strings"
+# pragma clang diagnostic ignored "-Wwritable-strings"
 #elif defined(__GNUC__)
 # pragma GCC diagnostic ignored "-Wwrite-strings"
 #endif

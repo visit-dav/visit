@@ -2947,6 +2947,9 @@ ParallelMergeClonedWriterOutputs(avtDataObject_p dob,
 //    triggered, some thinking it had -- which lead to a cascade mistmatched
 //    MPI calls. 
 //
+//    Eric Brugger, Mon May  6 12:17:21 PDT 2019
+//    I converted several integers to long longs to avoid arithmetic overflow
+//    in determining if we should use scalable rendering.
 //
 // ****************************************************************************
 
@@ -2995,7 +2998,7 @@ Engine::GatherData(avtDataObjectWriter_p &writer,
     //
     bool sendDataAnyway = respondWithNull || scalableThreshold==-1;
     bool thresholdExceeded = false;
-    int  currentCellCount = 0;
+    long long currentCellCount = 0;
 
     if (PAR_UIProcess())
     {
@@ -3011,7 +3014,7 @@ Engine::GatherData(avtDataObjectWriter_p &writer,
         if (cellCountMultiplier > INT_MAX/2.)
             currentCellCount = INT_MAX;
         else
-            currentCellCount = (int) 
+            currentCellCount =
               (ui_dob->GetNumberOfCells(polysOnly) * cellCountMultiplier);
 
         // test if we've exceeded the scalable threshold already with proc 0's
@@ -3039,7 +3042,7 @@ Engine::GatherData(avtDataObjectWriter_p &writer,
             long long cellCountTotal;
             netmgr->CalculateCellCountTotal(cellCounts, cellCountMultipliers,
                 globalCellCounts, cellCountTotal);
-            int reducedCurrentCellCount = (int) cellCountTotal;
+            long long reducedCurrentCellCount = cellCountTotal;
 
             if (currentTotalGlobalCellCount == INT_MAX ||
                 currentCellCount == INT_MAX ||
@@ -3144,7 +3147,7 @@ Engine::GatherData(avtDataObjectWriter_p &writer,
             if (cellCountMultiplier > INT_MAX/2.)
                 currentCellCount = INT_MAX;
             else
-                currentCellCount = (int) 
+                currentCellCount =
                   (dob->GetNumberOfCells(polysOnly) * cellCountMultiplier);
 
             // Determine the cell counts.
@@ -3158,7 +3161,7 @@ Engine::GatherData(avtDataObjectWriter_p &writer,
             long long cellCountTotal;
             netmgr->CalculateCellCountTotal(cellCounts, cellCountMultipliers,
                 globalCellCounts, cellCountTotal);
-            int reducedCurrentCellCount = (int) cellCountTotal;
+            long long reducedCurrentCellCount = cellCountTotal;
 
             if (currentTotalGlobalCellCount == INT_MAX ||
                 currentCellCount == INT_MAX ||

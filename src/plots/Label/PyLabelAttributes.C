@@ -821,7 +821,7 @@ PyLabelAttributes_setattr(PyObject *self, char *name, PyObject *args)
             }
             // Increase the value, new labels are smaller, we want
             // a better approximation of the original size
-            font1.SetScale(val+0.02);
+            font1.SetScale((val+0.02)*100);
             Py_INCREF(Py_None);
             obj = Py_None;
         }
@@ -835,7 +835,7 @@ PyLabelAttributes_setattr(PyObject *self, char *name, PyObject *args)
             }
             // Increase the value, new labels are smaller, we want
             // a better approximation of the original size
-            font2.SetScale(val+0.02);
+            font2.SetScale((val+0.02)*100);
             Py_INCREF(Py_None);
             obj = Py_None;
         }

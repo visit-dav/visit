@@ -66,6 +66,26 @@ data files, make a selection from the **Export to** menu shown in
    
    Export file types
 
+Export Options
+~~~~~~~~~~~~~~
 
-.. spelling::
-    Xmdv
+Some export formats support various options. Those options will be presented
+in a dialog box when the **Export** button is pressed in the
+**Export Database Window**. For example, shown below are some options for
+exporting to the Silo database.
+
+.. _export_options_example:
+
+.. figure:: images/export_options_example.png 
+   
+   Export options example (for Silo)
+
+If VisIt has been compiled with HDF5 support, Silo's export options will include
+the ability to select either the ``PDB`` or ``HDF5`` driver. The ``Checksums``
+check-box indicates where the Silo library should compute checksums on the exported
+data. In addition, the **DBSetCompression()** option text box is for specifying a
+compression string to be used in Silo's ``DBSetCompression()`` method before
+exporting data.
+
+When the meaning of an export option is not clear, try also pressing the **Help**
+button in **Export options for XXX writer** window to get more information.
