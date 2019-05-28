@@ -15,13 +15,6 @@
 import sys
 import os
 
-#
-# Some pre-liminary work to detect if we're running a spell check
-BuilderIsSpelling = False
-if '-b' in sys.argv and 'spelling' in sys.argv:
-    if sys.argv.index('-b') == sys.argv.index('spelling')-1:
-        BuilderIsSpelling = True
-
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
@@ -36,8 +29,6 @@ if '-b' in sys.argv and 'spelling' in sys.argv:
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = ['sphinx.ext.mathjax']
-if BuilderIsSpelling:
-    extensions += ['sphinxcontrib.spelling']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -55,7 +46,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'VisIt User Manual'
-copyright = u'2008-2017, LLNL, UCRL-SM-220449'
+copyright = u'2008-2019, LLNL, UCRL-SM-220449'
 author = u'LLNL'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -63,7 +54,7 @@ author = u'LLNL'
 # built documents.
 #
 # The short X.Y version.
-version = u'2.11'
+#version = u'2.11'
 # The full version, including alpha/beta/rc tags.
 release = u'2.11'
 
@@ -134,9 +125,17 @@ rst_epilog = """
 # Add any paths that contain custom themes here, relative to this directory.
 #html_theme_path = ["_themes"]
 
+if not os.environ.get('READTHEDOCS'):
+    try: html_theme
+    except: html_theme = 'sphinx_rtd_theme'
+    try: html_theme_path
+    except: html_theme_path = ["_themes"]
+    try: version
+    except: version = "local build"
+
 # The name for this set of Sphinx documents.
 # "<project> v<release> documentation" by default.
-#html_title = u'VisIt User Manual v2.11'
+#html_title = u'VisIt User Manual'
 
 # A shorter title for the navigation bar.  Default is the same as html_title.
 #html_short_title = None
@@ -300,23 +299,3 @@ texinfo_documents = [
 
 # If true, do not generate a @detailmenu in the "Top" node's menu.
 #texinfo_no_detailmenu = False
-
-#
-# NO-OP the .. spelling:: directive for normal use.
-# Do NOT add the NO-OP directive if this is a spell check build
-#
-def setup(app):
-    if not BuilderIsSpelling:
-        app.add_directive('spelling', SpellingDirective)
-
-#
-# A custom directive to NO-OP .. spelling::
-#
-from docutils.parsers.rst import Directive
-
-class SpellingDirective(Directive):
-
-    has_content = True
-
-    def run(self):
-        return []

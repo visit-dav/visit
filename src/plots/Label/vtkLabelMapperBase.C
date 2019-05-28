@@ -373,7 +373,7 @@ vtkLabelMapperBase::SetTextAtts(vtkViewport *vp)
             this->NodeLabelProperty->SetColor(rgb);
         }
 
-        this->NodeLabelProperty->SetFontSize(nodeFA.GetScale()*sz[1]);
+        this->NodeLabelProperty->SetFontSize(nodeFA.GetScale()*0.01*sz[1]);
         this->NodeLabelProperty->SetFontFamily((int)nodeFA.GetFont());
         this->NodeLabelProperty->SetBold(nodeFA.GetBold());
         this->NodeLabelProperty->SetItalic(nodeFA.GetItalic());
@@ -389,7 +389,7 @@ vtkLabelMapperBase::SetTextAtts(vtkViewport *vp)
             cellFA.GetColor().GetRgb(rgb);
             this->CellLabelProperty->SetColor(rgb);
         }
-        this->CellLabelProperty->SetFontSize(cellFA.GetScale()*sz[1]);
+        this->CellLabelProperty->SetFontSize(cellFA.GetScale()*0.01*sz[1]);
         this->CellLabelProperty->SetFontFamily((int)cellFA.GetFont());
         this->CellLabelProperty->SetBold(cellFA.GetBold());
         this->CellLabelProperty->SetItalic(cellFA.GetItalic());
@@ -410,11 +410,11 @@ vtkLabelMapperBase::SetTextAtts(vtkViewport *vp)
             this->NodeLabelProperty->SetColor(rgb);
             this->CellLabelProperty->SetColor(rgb);
         }
-        this->NodeLabelProperty->SetFontSize(labelFA.GetScale()*sz[1]);
+        this->NodeLabelProperty->SetFontSize(labelFA.GetScale()*0.01*sz[1]);
         this->NodeLabelProperty->SetFontFamily((int)labelFA.GetFont());
         this->NodeLabelProperty->SetBold(labelFA.GetBold());
         this->NodeLabelProperty->SetItalic(labelFA.GetItalic());
-        this->CellLabelProperty->SetFontSize(labelFA.GetScale()*sz[1]);
+        this->CellLabelProperty->SetFontSize(labelFA.GetScale()*0.01*sz[1]);
         this->CellLabelProperty->SetFontFamily((int)labelFA.GetFont());
         this->CellLabelProperty->SetBold(labelFA.GetBold());
         this->CellLabelProperty->SetItalic(labelFA.GetItalic());

@@ -1,5 +1,3 @@
-#svn import -m "added Uintah to the fold" Uintah-2.6.0_beta.tar.gz svn+ssh://allens@edison.nersc.gov/project/projectdirs/visit/svn/visit/trunk/third_party/Uintah-2.6.0_beta.tar.gz
-
 function bv_uintah_initialize
 {
     export FORCE_UINTAH="no"
@@ -65,13 +63,12 @@ function bv_uintah_initialize_vars
 function bv_uintah_info
 {
     export UINTAH_VERSION=${UINTAH_VERSION:-"2.6.0"}
-    export UINTAH_FILE=${UINTAH_FILE:-"Uintah-${UINTAH_VERSION}_beta.tar.gz"}
+    export UINTAH_FILE=${UINTAH_FILE:-"Uintah-${UINTAH_VERSION}.tar.gz"}
     export UINTAH_COMPATIBILITY_VERSION=${UINTAH_COMPATIBILITY_VERSION:-"2.6"}
-    export UINTAH_BUILD_DIR=${UINTAH_BUILD_DIR:-"Uintah-${UINTAH_VERSION}/optimized"}
     export UINTAH_URL=${UINTAH_URL:-"http://www.sci.utah.edu/releases/uintah_v${UINTAH_VERSION}"}
-    
-    export UINTAH_MD5_CHECKSUM=""
-    export UINTAH_SHA256_CHECKSUM=""
+    export UINTAH_BUILD_DIR=${UINTAH_BUILD_DIR:-"Uintah-${UINTAH_VERSION}/optimized"}
+    export UINTAH_MD5_CHECKSUM="0261898f72e51c7edabd9cc8c9884b4c"
+    export UINTAH_SHA256_CHECKSUM="082d6f3bb00f6905d1c799d3c4265c3746c785942057bdcbc351befbc3c7a210"
 }
 
 function bv_uintah_print

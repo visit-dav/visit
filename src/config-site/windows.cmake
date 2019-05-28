@@ -8,7 +8,11 @@ set(VISIT_MSVC_VERSION "MSVC2017")
 message(STATUS "Prebuilt library directory name: ${VISIT_MSVC_VERSION}")
 
 if(NOT DEFINED VISIT_WINDOWS_DIR)
-    if(EXISTS ${VISIT_SOURCE_DIR}/../windowsbuild)
+    # this works for development builds
+    if(EXISTS ${VISIT_SOURCE_DIR}/../../visit-deps/windowsbuild)
+        set(VISIT_WINDOWS_DIR ${VISIT_SOURCE_DIR}/../../visit-deps/windowsbuild)
+    # this works for our released source distros
+    elseif(EXISTS ${VISIT_SOURCE_DIR}/../windowsbuild)
         set(VISIT_WINDOWS_DIR ${VISIT_SOURCE_DIR}/../windowsbuild)
     else()
         message(FATAL_ERROR "Please set VISIT_WINDOWS_DIR to location of 'windowsbuild' files")
@@ -149,7 +153,7 @@ VISIT_OPTION_DEFAULT(VISIT_HDF5_LIBDEP
 ##
 ## CONDUIT
 ##
-VISIT_OPTION_DEFAULT(VISIT_CONDUIT_DIR ${VISITHOME}/conduit/0.3.1)
+VISIT_OPTION_DEFAULT(VISIT_CONDUIT_DIR ${VISITHOME}/conduit/0.4.0)
 VISIT_OPTION_DEFAULT(VISIT_CONDUIT_LIBDEP
     HDF5_LIBRARY_DIR HDF5_LIB ${VISIT_HDF5_LIBDEP} TYPE STRING)
 
@@ -201,7 +205,8 @@ VISIT_OPTION_DEFAULT(VISIT_H5PART_LIBDEP
 ##
 ## MFEM
 ##
-VISIT_OPTION_DEFAULT(VISIT_MFEM_DIR     ${VISITHOME}/mfem/3.3)
+VISIT_OPTION_DEFAULT(VISIT_MFEM_DIR     ${VISITHOME}/mfem/3.4)
+VISIT_OPTION_DEFAULT(VISIT_MFEM_INCDEP CONDUIT_INCLUDE_DIR TYPE STRING)
 
 ##
 ## MILI

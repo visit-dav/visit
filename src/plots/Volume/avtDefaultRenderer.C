@@ -160,6 +160,9 @@ avtDefaultRenderer::~avtDefaultRenderer()
 //    changed smart pointers to standard pointers and added memory
 //    management. 
 //
+//    Alister Maguire, Mon Mar 25 09:20:43 PDT 2019
+//    Updated to use different scalars for opacity and color. 
+//
 // ****************************************************************************
 
 void
@@ -191,8 +194,13 @@ avtDefaultRenderer::Render(
         int dims[3], extent[6];
         ((vtkRectilinearGrid *)volume.grid)->GetDimensions(dims);
         ((vtkRectilinearGrid *)volume.grid)->GetExtent(extent);
-        vtkDataArray *dataArr = 
-            ((vtkRectilinearGrid *)volume.grid)->GetPointData()->GetScalars();
+
+        //
+        // We might be using a different scalar for opacity than 
+        // for color. We need to get both arrays. 
+        //
+        vtkDataArray *dataArr = volume.data.data;
+        vtkDataArray *opacArr = volume.opacity.data;
 
         vtkRectilinearGrid *rgrid = (vtkRectilinearGrid *)volume.grid;
         double spacingX = rgrid->GetXCoordinates()->GetTuple1(1)-
@@ -206,7 +214,7 @@ avtDefaultRenderer::Render(
         imageToRender->SetDimensions(dims);
         imageToRender->SetExtent(extent);
         imageToRender->SetSpacing(spacingX, spacingY, spacingZ);
-        imageToRender->AllocateScalars(VTK_FLOAT, 1);
+        imageToRender->AllocateScalars(VTK_FLOAT, 2);
 
         //
         // Set the origin to match the lower bounds of the grid
@@ -215,9 +223,9 @@ avtDefaultRenderer::Render(
         ((vtkRectilinearGrid *)volume.grid)->GetBounds(bounds);
         imageToRender->SetOrigin(bounds[0], bounds[2], bounds[4]);
 
-        float magnitude = volume.data.max - volume.data.min;
-        int nScalars    = dims[0] * dims[1] * dims[2];
-        float *scalarP  = (float *)imageToRender->GetScalarPointer();
+        float dataMag   = volume.data.max - volume.data.min;
+        float opacMag   = volume.opacity.max - volume.opacity.min;
+        int nScalars    = dataArr->GetNumberOfTuples();
 
         //
         // We need to transfer the rgrid data over to the image data
@@ -226,21 +234,56 @@ avtDefaultRenderer::Render(
         // We need to map this to a value that our mapper accepts, 
         // and then clamp it out of vision.  
         //
-        for (int i = 0 ; i < nScalars; i++)
+        int ptId = 0;
+        for (int z = 0; z < dims[2]; ++z)
         {
-            float tuple1 = dataArr->GetTuple1(i);
-            if (tuple1 <= NO_DATA_VALUE)
+            for (int y = 0; y < dims[1]; ++y)
             {
-                //
-                // Our color map is 0 -> 255. For no data values, 
-                // assign a new value just out side of the map. 
-                //
-                scalarP[i]       = -1.0;
-                useInterpolation = false;
-            }
-            else
-            {
-                scalarP[i] = ((255.0 * (tuple1 - volume.data.min)) / magnitude);
+                for (int x = 0; x < dims[0]; ++x)
+                {
+                    //
+                    // Our opacity and color data may differ. We
+                    // need to add both as two separate components. 
+                    //
+                    float dataTuple = dataArr->GetTuple1(ptId);
+                    if (dataTuple <= NO_DATA_VALUE)
+                    {
+                        //
+                        // Our color map is 0 -> 255. For no data values, 
+                        // assign a new value just out side of the map. 
+                        //
+                        imageToRender->SetScalarComponentFromFloat(
+                            x, y, z, 0, -1.0);
+                        useInterpolation = false;
+                    }
+                    else
+                    {
+                        float numerator = 255.0 * (dataTuple - volume.data.min);
+                        imageToRender->SetScalarComponentFromFloat(
+                            x, y, z, 0, (numerator / dataMag));
+                    }
+
+                    float opacTuple = opacArr->GetTuple1(ptId);
+                    if (opacTuple <= NO_DATA_VALUE)
+                    {
+                        //
+                        // Our color map is 0 -> 255. For no data values, 
+                        // assign a new value just out side of the map. 
+                        //
+                        imageToRender->SetScalarComponentFromFloat(
+                            x, y, z, 1, -1.0);
+                        useInterpolation = false;
+                    }
+                    else
+                    {
+                        float numerator = 255.0 * 
+                            (opacTuple - volume.opacity.min);
+                        imageToRender->SetScalarComponentFromFloat(
+                            x, y, z, 1, (numerator / opacMag));
+                    }
+
+                    ptId++;
+                }
             }
         }
 
@@ -314,6 +357,7 @@ avtDefaultRenderer::Render(
 
         volumeProp->SetScalarOpacity(opacity);
         volumeProp->SetColor(transFunc);
+        volumeProp->IndependentComponentsOff();
 
         //
         // If our dataset contains NO_DATA_VALUEs, interpolation will

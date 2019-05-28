@@ -781,13 +781,17 @@ SET(VISIT_INSTALL_PROFILES_TO_HOSTS "" CACHE STRING "Install specified host prof
 SET(VISIT_DEFAULT_SILO_DRIVER "PDB" CACHE STRING "Default driver for generating silo data. Valid values are PDB, HDF5 or empty. An empty value means driver can be specified via make on the command line." )
 
 MACRO(VISIT_3RDPARTY_VAR libvar comment)
+    set(cache_type ${ARGN})
+    if(NOT cache_type)
+        set(cache_type "PATH")
+    endif()
     IF(NOT DEFINED VISIT_${libvar})
         # Create an empty entry for this path variable
-        SET(VISIT_${libvar} "" CACHE PATH "${comment}")
+        SET(VISIT_${libvar} "" CACHE ${cache_type} "${comment}")
     ELSE(NOT DEFINED VISIT_${libvar})
         IF(DEFINED ${libvar})
             # Ensure VISIT_FOO_DIR=FOO_DIR (override from CL)
-            SET(VISIT_${libvar} ${${libvar}} CACHE PATH "${comment}" FORCE)
+            SET(VISIT_${libvar} ${${libvar}} CACHE ${cache_type} "${comment}" FORCE)
         ELSE(DEFINED ${libvar})
             # Set FOO_DIR=VISIT_FOO_DIR (default from config-site file)
             SET(${libvar} ${VISIT_${libvar}})
@@ -796,18 +800,7 @@ MACRO(VISIT_3RDPARTY_VAR libvar comment)
 ENDMACRO(VISIT_3RDPARTY_VAR libvar comment)
 
 MACRO(VISIT_3RDPARTY_DEP libvar comment)
-    IF(NOT DEFINED VISIT_${libvar})
-        # Create an entry for this string variable
-        SET(VISIT_${libvar} "" CACHE STRING "${comment}")
-    ELSE(NOT DEFINED VISIT_${libvar})
-        IF(DEFINED ${libvar})
-            # Ensure VISIT_FOO_LIBDEP=FOO_LIBDEP (override from CL)
-            SET(VISIT_${libvar} ${${libvar}} CACHE STRING "${comment}" FORCE)
-        ELSE(DEFINED ${libvar})
-            # Set FOO_LIBDEP=VISIT_FOO_LIBDEP (default from config-site file)
-            SET(${libvar} ${VISIT_${libvar}})
-        ENDIF(DEFINED ${libvar})
-    ENDIF(NOT DEFINED VISIT_${libvar})
+    VISIT_3RDPARTY_VAR(${libvar} ${comment} "STRING")
 ENDMACRO(VISIT_3RDPARTY_DEP libvar comment)
 
 # Define options that let us pick our standard libraries: VTK,Mesa,Qt,Python
@@ -852,7 +845,7 @@ VISIT_3RDPARTY_VAR(CFITSIO_DIR   "Path containing the CFITSIO library's include 
 VISIT_3RDPARTY_VAR(CGNS_DIR      "Path containing the CGNS library's include and lib")
 VISIT_3RDPARTY_DEP(CGNS_LIBDEP   "CGNS library dependencies")
 VISIT_3RDPARTY_VAR(CONDUIT_DIR   "Path containing the Conduit library's include and lib")
-VISIT_3RDPARTY_VAR(CONDUIT_LIBDEP "Conduit library dependencies")
+VISIT_3RDPARTY_DEP(CONDUIT_LIBDEP "Conduit library dependencies")
 VISIT_3RDPARTY_VAR(DAMARIS_DIR   "Path containing the Damaris library's include and lib")
 VISIT_3RDPARTY_VAR(FASTBIT_DIR   "Path containing the FastBit library's include and lib")
 VISIT_3RDPARTY_VAR(FASTQUERY_DIR   "Path containing the FastQuery library's include and lib")
@@ -868,7 +861,7 @@ VISIT_3RDPARTY_VAR(H5PART_DIR    "Path containing the H5Part library's include a
 VISIT_3RDPARTY_DEP(H5PART_LIBDEP "H5Part library dependencies")
 VISIT_3RDPARTY_VAR(LLVM_DIR      "Path containing the LLVM library's include and lib")
 VISIT_3RDPARTY_VAR(MFEM_DIR      "Path containing the mfem library's include and lib")
-VISIT_3RDPARTY_VAR(MFEM_LIBDEP   "MFEM library dependencies")
+VISIT_3RDPARTY_DEP(MFEM_INCDEP   "MFEM include dependencies")
 VISIT_3RDPARTY_VAR(MILI_DIR      "Path containing the Mili library's include and lib")
 VISIT_3RDPARTY_VAR(NEKTAR++_DIR  "Path containing the Nektar++ library's include and lib")
 VISIT_3RDPARTY_DEP(NEKTAR++_LIBDEP "Nektar++ library dependencies")
@@ -879,12 +872,10 @@ VISIT_3RDPARTY_VAR(OPENEXR_DIR   "Path containing the OpenEXR library's include 
 VISIT_3RDPARTY_VAR(NETCDF_DIR    "Path containing the NETCDF library's include and lib")
 VISIT_3RDPARTY_DEP(NETCDF_LIBDEP "NETCDF library dependencies")
 VISIT_3RDPARTY_VAR(PYSIDE_DIR    "Path containing the PySide installation")
-VISIT_3RDPARTY_VAR(R_DIR         "Path containing the R library's include and lib")
 VISIT_3RDPARTY_VAR(SILO_DIR      "Path containing the Silo library's include and lib")
 VISIT_3RDPARTY_DEP(SILO_LIBDEP   "Silo library dependencies")
 VISIT_3RDPARTY_VAR(UINTAH_DIR    "Path containing the Uintah library's include and lib")
 VISIT_3RDPARTY_VAR(PIDX_DIR      "Path containing the PIDX library's include and lib")
-VISIT_3RDPARTY_VAR(VISUS_DIR     "Path containing the Visus library's include and lib")
 VISIT_3RDPARTY_VAR(VTKM_DIR      "Path containing the VTKm library's include and lib")
 VISIT_3RDPARTY_VAR(XDMF_DIR      "Path containing the Xdmf library's include and lib")
 VISIT_3RDPARTY_DEP(XDMF_LIBDEP   "Xdmf library dependencies")
@@ -907,9 +898,23 @@ VISIT_3RDPARTY_VAR(TBB_ROOT      "Path containing the TBB library's include and 
 #-----------------------------------------------------------------------------
 FILE(STRINGS VERSION VERSION)
 IF(NOT VERSION)
-    SET(VERSION "3.0.0")
+    MESSAGE(FATAL_ERROR
+        "File \"VERSION\" with ascii string of VisIt version does not exist")
 ENDIF(NOT VERSION)
 SET(VISIT_VERSION ${VERSION})
+
+# Want to split VISIT_VERSION into major,minor and patch vars.
+# Could use SETUP_APP_VERSION, but it sets the vars as CACHE (needed for TP).
+# This conflicts with the non-cache var VISIT_VERSION automagically set by
+# the call to PROJECT(VISIT).  (Non-cache vars overshadow cache vars).
+# There is a 'VERSION' argument to PROJECT, but it only accepts integers, thus
+# it bails on things like '3.0.0b'.  So we will parse the visit version here
+# instead.
+string(REPLACE "." ";" v_list ${VERSION})
+list(GET v_list 0 VISIT_VERSION_MAJOR)
+list(GET v_list 1 VISIT_VERSION_MINOR)
+list(GET v_list 2 VISIT_VERSION_PATCH)
+unset(v_list)
 
 #-----------------------------------------------------------------------------
 # Set up some installation related value and macros (needs version).
@@ -1354,9 +1359,6 @@ IF(NOT VISIT_BUILD_MINIMAL_PLUGINS OR VISIT_SELECTED_DATABASE_PLUGINS)
 
     # Configure PIDX support.
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindPIDX.cmake)
-
-    # Configure Visus support.
-    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindVisus.cmake)
 
     # Configure VTKh support.
     if(VISIT_VTKH_DIR)
@@ -2190,11 +2192,11 @@ IF (NOT WIN32)
         SET(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/resources/help/en_US/copyright.html")
 
         # We should probably parse ${VISIT_VERSION} into its component parts instead.
-        SET(CPACK_PACKAGE_VERSION_MAJOR "2")
-        SET(CPACK_PACKAGE_VERSION_MINOR "0")
-        SET(CPACK_PACKAGE_VERSION_PATCH "0")
+        SET(CPACK_PACKAGE_VERSION_MAJOR ${VISIT_VERSION_MAJOR})
+        SET(CPACK_PACKAGE_VERSION_MINOR ${VISIT_VERSION_MINOR})
+        SET(CPACK_PACKAGE_VERSION_PATCH ${VISIT_VERSION_PATCH})
 
-        STRING(REPLACE "." "_" UL_VERSION ${VISIT_VERSION})
+        SET(UL_VERSION "${VISIT_VERSION_MAJOR}_${VISIT_VERSION_MINOR}_${VISIT_VERSION_PATCH}")
         SET(CPACK_PACKAGE_FILE_NAME "visit${UL_VERSION}.${VISIT_INSTALL_PLATFORM}")
 
         IF(NOT APPLE)
@@ -2262,6 +2264,18 @@ ELSE (NOT WIN32)
       ENDIF(${MAKENSIS_FOUND})
     ENDIF(VISIT_MAKE_NSIS_INSTALLER)
 ENDIF (NOT WIN32)
+
+#CMake add subdirectory forces this action to go last
+#todo: find way for this function to execute as last
+#step of make install process
+#ADD_CUSTOM_TARGET(osxfixup ALL
+#     COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_SOURCE_DIR}/osxfixup/osxfixup.py \$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/${VISIT_INSTALLED_VERSION} @executable_path/.. 3)
+#ADD_DEPENDENCIES(osxfixup install)
+
+# todo: replace below with lines above
+IF(APPLE)
+    ADD_SUBDIRECTORY(osxfixup)
+ENDIF(APPLE)
 
 IF (NOT WIN32)
     MESSAGE(STATUS "\n\nUse recmake_visit.sh or search for `CMAKE_INVOKE' in CMakeCache.txt to re-run CMake with the same arguments\n\n")

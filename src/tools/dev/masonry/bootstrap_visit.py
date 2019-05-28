@@ -4,8 +4,6 @@ import os
 
 from os.path import join as pjoin
 
-sys.path.append(pjoin(os.path.split(os.path.abspath(__file__))[0],"build/lib"))
-
 from masonry import *
 
 
@@ -31,7 +29,10 @@ def load_opts(opts_json):
     if not opts.has_key("force_clean"):
         opts["force_clean"] = False
     if opts.has_key("skip_checkout"):
-        opts["skip_checkout"] = True
+        if opts["skip_checkout"].upper() == "NO":
+            opts["skip_checkout"] = False
+        else:
+            opts["skip_checkout"] = True
     else:
         opts["skip_checkout"] = False
     # Setup bb env vars
@@ -42,7 +43,7 @@ def load_opts(opts_json):
         env["PAR_INCLUDE"] = opts["par_include"]
     if opts.has_key("par_libs"):
         env["PAR_LIBS"] = opts["par_libs"]
-    if opts["svn"].has_key("nersc_uname"):
+    if opts.has_key("svn") and opts["svn"].has_key("nersc_uname"):
         env["SVN_NERSC_NAME"] = opts["svn"]["nersc_uname"]
     if opts.has_key("fc_compiler"):
         env["FC_COMPILER"] = opts["fc_compiler"]
@@ -78,10 +79,7 @@ def visit_git_path(git_opts):
     if git_opts["mode"] == "ssh":
         res = "ssh://git@github.com/visit-dav/visit.git"
     else:
-        git_uname = git_opts["git_uname"]
-        res = "https://%s@github.com/visit-dav/visit.git"
-        res = res % git_uname
-
+        res = "https://github.com/visit-dav/visit.git"
     return res
 
 def cmake_bin(opts):
@@ -131,13 +129,17 @@ def steps_bv(opts,ctx):
 def steps_checkout(opts,ctx):
     git_working = pjoin(opts["build_dir"], "visit")
     ctx.actions["src_checkout"] = git(git_url=visit_git_path(git_opts=opts["git"]),
-                                      git_cmd="clone",
+                                      git_cmd="clone --depth=1",
                                       description="checkout visit src",
-                                      working_dir=opts["build_dir"])
-    ctx.actions["switch_branch"] = shell(cmd="git checkout %s" % opts["branch"],
-                                         description="switch to branch",
-                                         working_dir=git_working)
-    ctx.triggers["build"].extend(["src_checkout", "switch_branch"])
+                                      working_dir=opts["build_dir"],
+                                      halt_on_error=False)
+    ctx.triggers["build"].append("src_checkout");
+    if opts["branch"] != "develop":
+        ctx.actions["switch_branch"] = shell(cmd="git checkout %s" % opts["branch"],
+                                             description="switch to branch",
+                                             working_dir=git_working,
+                                             halt_on_error=False)
+        ctx.triggers["build"].append("switch_branch");
 
 
 def steps_untar(opts,ctx):
@@ -225,7 +227,8 @@ def steps_package(opts,build_type,ctx):
     ctx.triggers["build"].append(a_make_pkg)
     if opts["platform"] == "osx":
         cmake_opts = " -DVISIT_CREATE_APPBUNDLE_PACKAGE:BOOL=ON"
-        cmake_opts += ' -DCPACK_BUNDLE_APPLE_CERT_APP="%s"' % opts["cert"]
+        if opts.has_key("cert"):
+            cmake_opts += ' -DCPACK_BUNDLE_APPLE_CERT_APP="%s"' % opts["cert"]
         a_cmake_bundle = "cmake_cfg_bundle_" + build_type
         a_make_bundle  = "package_osx_bundle." + build_type
         ctx.actions[a_cmake_bundle] = cmake(src_dir=pjoin(opts["build_dir"],"visit/src"),

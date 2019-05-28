@@ -492,7 +492,7 @@ def default_suite_options():
                       "data_host":"localhost",
                       "interactive":False,
                       "pixdiff":0.0,
-                      "avgdiff":0,
+                      "avgdiff":0.0,
                       "numdiff":0.0,
                       "vargs": "",
                       "host_profile_dir": "",
@@ -694,7 +694,7 @@ def parse_args():
                       default=defs["pixdiff"],
                       help="allowed % of pixels different [default = 0.0%]")
     parser.add_option("--avgdiff",
-                      type="int",
+                      type="float",
                       default=defs["avgdiff"],
                       help="if pixdiff exceeded, allowed mean grayscale diff "
                            "[default = 0]")

@@ -71,6 +71,12 @@ public:
         OriginalData,
         CurrentPlot
     };
+    enum ScalingMode
+    {
+        Never,
+        Auto,
+        Always
+    };
 
     // These constructors are for objects of this class
     SurfaceFilterAttributes();
@@ -109,7 +115,7 @@ public:
     void SetMax(double max_);
     void SetZeroFlag(bool zeroFlag_);
     void SetVariable(const std::string &variable_);
-    void SetUseXYLimits(bool useXYLimits_);
+    void SetUseXYLimits(ScalingMode useXYLimits_);
     void SetGenerateNodalOutput(bool generateNodalOutput_);
 
     // Property getting methods
@@ -123,7 +129,7 @@ public:
     bool              GetZeroFlag() const;
     const std::string &GetVariable() const;
           std::string &GetVariable();
-    bool              GetUseXYLimits() const;
+    ScalingMode       GetUseXYLimits() const;
     bool              GetGenerateNodalOutput() const;
 
     // Persistence methods
@@ -140,6 +146,11 @@ public:
     static bool LimitsMode_FromString(const std::string &, LimitsMode &);
 protected:
     static std::string LimitsMode_ToString(int);
+public:
+    static std::string ScalingMode_ToString(ScalingMode);
+    static bool ScalingMode_FromString(const std::string &, ScalingMode &);
+protected:
+    static std::string ScalingMode_ToString(int);
 public:
 
     // Keyframing methods
@@ -175,13 +186,13 @@ private:
     double      max;
     bool        zeroFlag;
     std::string variable;
-    bool        useXYLimits;
+    int         useXYLimits;
     bool        generateNodalOutput;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define SURFACEFILTERATTRIBUTES_TMFS "ibbidddbsbb"
+#define SURFACEFILTERATTRIBUTES_TMFS "ibbidddbsib"
 
 #endif

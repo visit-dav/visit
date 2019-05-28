@@ -83,8 +83,8 @@ function bv_vtk_info
     export VTK_URL=${VTK_URL:-"http://www.vtk.org/files/release/${VTK_SHORT_VERSION}"}
     export VTK_BUILD_DIR=${VTK_BUILD_DIR:-"VTK-8.1.0"}
     export VTK_INSTALL_DIR=${VTK_INSTALL_DIR:-"vtk"}
-    export VTK_MD5_CHECKSUM=""
-    export VTK_SHA256_CHECKSUM=""
+    export VTK_MD5_CHECKSUM="4fa5eadbc8723ba0b8d203f05376d932"
+    export VTK_SHA256_CHECKSUM="6e269f07b64fb13774f5925161fb4e1f379f4e6a0131c8408c555f6b58ef3cb7"
 }
 
 function bv_vtk_print
@@ -658,6 +658,39 @@ EOF
     return 0;
 }
 
+
+function apply_vtkospray_linking_patch
+{
+    # fix from kevin griffin
+    # patch to vtk linking issue noticed on macOS
+    patch -p0 << \EOF
+    diff -c Rendering/OSPRay/CMakeLists.txt.orig  Rendering/OSPRay/CMakeLists.txt
+    *** Rendering/OSPRay/CMakeLists.txt.orig	2019-05-21 15:15:50.000000000 -0700
+    --- Rendering/OSPRay/CMakeLists.txt	2019-05-21 15:16:07.000000000 -0700
+    ***************
+    *** 37,42 ****
+    --- 37,45 ----
+      vtk_module_library(vtkRenderingOSPRay ${Module_SRCS})
+  
+      target_link_libraries(${vtk-module} LINK_PUBLIC ${OSPRAY_LIBRARIES})
+    + # patch to solve linking issue noticed on macOS
+    + target_link_libraries(${vtk-module} LINK_PUBLIC vtkFiltersGeometry)
+    + 
+  
+      # OSPRay_Core uses MMTime which is in it's own special library.
+      if(WIN32)
+EOF
+
+    if [[ $? != 0 ]] ; then
+      warn "vtk patch for ospray linking failed."
+      return 1
+    fi
+
+    return 0;
+}
+
+
+
 function apply_vtk_patch
 {
     apply_vtkdatawriter_patch
@@ -675,16 +708,22 @@ function apply_vtk_patch
         return 1
     fi
 
+    # Note: don't guard ospray patches by if ospray is selected 
+    # b/c subsequent calls to build_visit won't get a chance to patch
+    # given the if test logic used above
     apply_vtkospraypolydatamappernode_patch
     if [[ $? != 0 ]] ; then
         return 1
     fi
 
-    if [[ "$DO_OSPRAY" == "yes" ]] ; then
-        apply_vtkospray_patches
-        if [[ $? != 0 ]] ; then
-            return 1
-        fi
+    apply_vtkospray_patches
+    if [[ $? != 0 ]] ; then
+        return 1
+    fi
+
+    apply_vtkospray_linking_patch
+    if [[ $? != 0 ]] ; then
+        return 1
     fi
 
     return 0

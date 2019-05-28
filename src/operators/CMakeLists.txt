@@ -128,7 +128,7 @@ OnionPeel
 PDF
 PersistentParticles
 Project
-# Remap
+Remap
 Reflect
 Replicate
 Resample
@@ -203,18 +203,6 @@ ELSE()
         SET(BUILD_PLUGINS ${REQUIRED_OPERATOR_PLUGINS})
     ENDIF(VISIT_BUILD_MINIMAL_PLUGINS)
 ENDIF()
-
-#IF(HAVE_LIB_R)
-#  IF(NOT DEFINED VISIT_SELECTED_OPERATOR_PLUGINS)
-#      LIST(APPEND BUILD_PLUGINS ExtremeValueAnalysis)
-#      LIST(APPEND BUILD_PLUGINS PeaksOverThreshold)
-#      LIST(APPEND BUILD_PLUGINS ModelBasedClustering)
-#  ENDIF()
-#ELSE(HAVE_LIB_R)
-#  VISIT_SELECTED_PLUGIN_ERROR(OPERATOR 
-#      "ExtremeValueAnalysis;PeaksOverThreshold;ModelBasedClustering"
-#      "R library not found")
-#ENDIF(HAVE_LIB_R)
 
 # Add the plugin directories
 FOREACH(operator ${BUILD_PLUGINS})

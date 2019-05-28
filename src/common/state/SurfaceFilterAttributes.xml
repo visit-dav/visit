@@ -9,6 +9,11 @@
       OriginalData
       CurrentPlot
     </Enum>
+    <Enum name="ScalingMode">
+      Never
+      Auto
+      Always
+    </Enum>
     <Field name="limitsMode" label="LimitsMode" type="enum" subtype="LimitsMode">
       OriginalData
     </Field>
@@ -36,8 +41,8 @@
     <Field name="variable" label="Elevate by Variable" type="variablename" enabler="zeroFlag:false" vartypes="01000000000">
       default
     </Field>
-    <Field name="useXYLimits" label="Use XY Limits" type="bool">
-      true
+    <Field name="useXYLimits" label="Use XY Limits" type="enum" subtype="ScalingMode">
+      Auto
     </Field>
     <Field name="generateNodalOutput" label="Generate Nodal Output" type="bool">
       true

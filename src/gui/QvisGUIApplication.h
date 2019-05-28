@@ -352,6 +352,10 @@ class SplashScreen;
 //    Brad Whitlock, Thu Sep 14 13:18:12 PDT 2017
 //    Cinema support.
 //
+//    Kathleen Biagas, Fri Apr 12 14:39:58 PDT 2019
+//    Made MoveAndResizeMainWindow a slot function without arguments so it
+//    can be called from QTimer::singleShot. Added orientation ivar.
+//
 // ****************************************************************************
 
 class GUI_API QvisGUIApplication : public QObject, public ConfigManager, public GUIBase
@@ -390,7 +394,6 @@ protected:
     void LoadFile(QualifiedFilename &f, bool addDefaultPlots);
     void LoadSessionFile();
     void LoadSessionRemoteFile(const std::string& filename, const std::string& host, std::istringstream& sessionGUI);
-    void MoveAndResizeMainWindow(int orientation);
     void ProcessArguments(int &argc, char **argv);
     virtual DataNode *ReadConfigFile(const char *filename);
     virtual DataNode *ReadConfigFile(std::istream& in);
@@ -490,6 +493,7 @@ protected slots:
     void sessionFileHelper_LoadSessionWithDifferentSources(const QString &,
              const stringVector &);
     void UpdateSavedConfigFile();
+    void MoveAndResizeMainWindow();
 
     // Plot, operator related slots.
     void AddPlot(int, const QString &);
@@ -668,6 +672,7 @@ protected:
     
     // VisIt Process ID
     std::string                 visitPIDStr;
+    int                         orientation;
 };
 
 #endif

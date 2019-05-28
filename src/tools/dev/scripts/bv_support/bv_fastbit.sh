@@ -25,8 +25,8 @@ function bv_fastbit_info
     # Note: last 3-digit field in URL changes with version.
     export FASTBIT_URL=${FASTBIT_URL:-"https://code.lbl.gov/frs/download.php/file/426"}
     export FASTBIT_BUILD_DIR=${FASTBIT_BUILD_DIR:-"fastbit-${FASTBIT_VERSION}"}
-    export FASTBIT_MD5_CHECKSUM="380de470b856ecaf19d296aab6406811"
-    export FASTBIT_SHA256_CHECKSUM=""
+    export FASTBIT_MD5_CHECKSUM="54825b1d19f6c6a3844b368facc26a9e"
+    export FASTBIT_SHA256_CHECKSUM="1ddb16d33d869894f8d8cd745cd3198974aabebca68fa2b83eb44d22339466ec"
 }
 
 function bv_fastbit_print

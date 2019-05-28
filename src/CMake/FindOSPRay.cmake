@@ -35,6 +35,8 @@
 # DAMAGE.
 #
 # Modifications:
+#   Kevin Griffin, Fri May 3 18:44:57 PDT 2019
+#   Add logic to install libraries on OSX correctly.
 #
 #*****************************************************************************
 
@@ -60,10 +62,38 @@ IF(VISIT_OSPRAY)
                  NO_DEFAULT_PATH)
     ADD_DEFINITIONS(-DVISIT_OSPRAY)
     # append additional module libraries
-    list(APPEND OSPRAY_LIBRARIES 
-      ${LIBRARY_PATH_PREFIX}ospray_module_ispc${LIBRARY_SUFFIX}
-      ${LIBRARY_PATH_PREFIX}ospray_module_visit${LIBRARY_SUFFIX}
-      ${LIBRARY_PATH_PREFIX}ospray_module_visit_common${LIBRARY_SUFFIX})
+    IF(NOT APPLE)
+        list(APPEND OSPRAY_LIBRARIES 
+            ${LIBRARY_PATH_PREFIX}ospray_module_ispc${LIBRARY_SUFFIX}
+            ${LIBRARY_PATH_PREFIX}ospray_module_visit${LIBRARY_SUFFIX}
+            ${LIBRARY_PATH_PREFIX}ospray_module_visit_common${LIBRARY_SUFFIX})
+    ELSE()
+        list(APPEND OSPRAY_LIBRARIES
+            ${LIBRARY_PATH_PREFIX}ospray.0${LIBRARY_SUFFIX}
+            ${LIBRARY_PATH_PREFIX}ospray_common.0${LIBRARY_SUFFIX}
+            ${LIBRARY_PATH_PREFIX}ospray_module_ispc${LIBRARY_SUFFIX}
+            ${LIBRARY_PATH_PREFIX}ospray_module_ispc.0${LIBRARY_SUFFIX}
+            ${LIBRARY_PATH_PREFIX}ospray_module_visit${LIBRARY_SUFFIX}
+            ${LIBRARY_PATH_PREFIX}ospray_module_visit.0${LIBRARY_SUFFIX}
+            ${LIBRARY_PATH_PREFIX}ospray_module_visit_common${LIBRARY_SUFFIX}
+            ${LIBRARY_PATH_PREFIX}ospray_module_visit_common.0${LIBRARY_SUFFIX})
+    ENDIF()
+
+    # ospray tries to dlopen the ispc libs at runtime
+    # so we need ot make sure those libs exist in
+    # ${VISIT_BINARY_DIR}/lib/
+    # so developer builds can load them
+
+    IF( NOT WIN32 )
+        FOREACH(ospray_lib ${OSPRAY_LIBRARIES})
+            IF( "${ospray_lib}" MATCHES "ispc")
+                execute_process(COMMAND ${CMAKE_COMMAND} -E copy
+                                        ${ospray_lib}
+                                        ${VISIT_BINARY_DIR}/lib/)
+            ENDIF()
+        ENDFOREACH()
+    ENDIF()
+
 
     # install ospray libs follow visit's standard
     #
@@ -107,7 +137,7 @@ IF(VISIT_OSPRAY)
         IF( (NOT "${l}" STREQUAL "optimized") AND
             (NOT "${l}" STREQUAL "debug"))
           GET_FILENAME_COMPONENT(_name_ ${l} NAME_WE)
-          IF( (NOT WIN32) AND
+          IF( (NOT WIN32) AND (NOT APPLE) AND
               (NOT "${_name_}" STREQUAL "libtbb_debug") AND
               (NOT "${_name_}" STREQUAL "libtbbmalloc_debug") AND
               (NOT "${_name_}" STREQUAL "libtbb") AND

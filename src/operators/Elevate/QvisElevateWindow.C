@@ -44,6 +44,7 @@
 #include <QLabel>
 #include <QLayout>
 #include <QLineEdit>
+#include <QSpinBox>
 #include <QButtonGroup>
 #include <QRadioButton>
 #include <QvisVariableButton.h>
@@ -120,10 +121,25 @@ QvisElevateWindow::CreateWindowContents()
     QGridLayout *mainLayout = new QGridLayout(0);
     topLayout->addLayout(mainLayout);
 
-    useXYLimits = new QCheckBox(tr("Elevation height relative to XY limits?"), central);
-    connect(useXYLimits, SIGNAL(toggled(bool)),
-            this, SLOT(useXYLimitsChanged(bool)));
-    mainLayout->addWidget(useXYLimits, 0,0,1,2);
+    useXYLimitsLabel = new QLabel(tr("Scale Elevation Height"), central);
+    mainLayout->addWidget(useXYLimitsLabel,0,0);
+    useXYLimitsWidget = new QWidget(central);
+    useXYLimits= new QButtonGroup(useXYLimits);
+    QHBoxLayout *useXYLimitsLayout = new QHBoxLayout(useXYLimitsWidget);
+    useXYLimitsLayout->setMargin(0);
+    useXYLimitsLayout->setSpacing(10);
+    QRadioButton *useXYLimitsScalingModeNever = new QRadioButton(tr("Never"), useXYLimitsWidget);
+    useXYLimits->addButton(useXYLimitsScalingModeNever,0);
+    useXYLimitsLayout->addWidget(useXYLimitsScalingModeNever);
+    QRadioButton *useXYLimitsScalingModeAuto = new QRadioButton(tr("Auto"), useXYLimitsWidget);
+    useXYLimits->addButton(useXYLimitsScalingModeAuto,1);
+    useXYLimitsLayout->addWidget(useXYLimitsScalingModeAuto);
+    QRadioButton *useXYLimitsScalingModeAlways = new QRadioButton(tr("Always"), useXYLimitsWidget);
+    useXYLimits->addButton(useXYLimitsScalingModeAlways,2);
+    useXYLimitsLayout->addWidget(useXYLimitsScalingModeAlways);
+    connect(useXYLimits, SIGNAL(buttonClicked(int)),
+            this, SLOT(useXYLimitsChanged(int)));
+    mainLayout->addWidget(useXYLimitsWidget, 0, 1);
 
     limitsModeLabel = new QLabel(tr("Limits Mode"), central);
     mainLayout->addWidget(limitsModeLabel,1,0);
@@ -244,48 +260,34 @@ QvisElevateWindow::UpdateWindow(bool doAll)
         switch(i)
         {
           case ElevateAttributes::ID_useXYLimits:
-            if (atts->GetUseXYLimits() == true)
+            if (atts->GetUseXYLimits() == ElevateAttributes::ScalingMode::Always)
             {
                 limitsModeWidget->setEnabled(true);
                 if(limitsModeLabel)
                     limitsModeLabel->setEnabled(true);
+                scalingWidget->setEnabled(true);
+                if(scalingLabel)
+                    scalingLabel->setEnabled(true);
+                minFlag->setEnabled(true);
+                maxFlag->setEnabled(true);
             }
             else
             {
                 limitsModeWidget->setEnabled(false);
                 if(limitsModeLabel)
                     limitsModeLabel->setEnabled(false);
-            }
-            if (atts->GetUseXYLimits() == true)
-            {
-                scalingWidget->setEnabled(true);
-                if(scalingLabel)
-                    scalingLabel->setEnabled(true);
-            }
-            else
-            {
                 scalingWidget->setEnabled(false);
                 if(scalingLabel)
                     scalingLabel->setEnabled(false);
-            }
-            if (atts->GetUseXYLimits() == true)
-            {
-                minFlag->setEnabled(true);
-            }
-            else
-            {
                 minFlag->setEnabled(false);
-            }
-            if (atts->GetUseXYLimits() == true)
-            {
-                maxFlag->setEnabled(true);
-            }
-            else
-            {
                 maxFlag->setEnabled(false);
             }
+
             useXYLimits->blockSignals(true);
-            useXYLimits->setChecked(atts->GetUseXYLimits());
+
+            if(useXYLimits->button((int)atts->GetUseXYLimits()) != 0)
+                useXYLimits->button((int)atts->GetUseXYLimits())->setChecked(true);
+
             useXYLimits->blockSignals(false);
             break;
           case ElevateAttributes::ID_limitsMode:
@@ -453,10 +455,13 @@ QvisElevateWindow::GetCurrentValues(int which_widget)
 
 
 void
-QvisElevateWindow::useXYLimitsChanged(bool val)
+QvisElevateWindow::useXYLimitsChanged(int val)
 {
-    atts->SetUseXYLimits(val);
-    Apply();
+    if(val != atts->GetUseXYLimits())
+    {
+        atts->SetUseXYLimits(ElevateAttributes::ScalingMode(val));
+        Apply();
+    }
 }
 
 

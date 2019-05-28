@@ -108,11 +108,10 @@ function bv_qt_info
 
     export QT_VERSION=${QT_VERSION:-"5.10.1"}
     export QT_FILE=${QT_FILE:-"qt-everywhere-src-${QT_VERSION}.tar.xz"}
-    export QT_MD5_CHECKSUM=${QT_MD5_CHECKSUM:-"7e167b9617e7bd64012daaacb85477af"}
-    export QT_SHA256_CHECKSUM=${QT_SHA256_CHECKSUM:-"05ffba7b811b854ed558abf2be2ddbd3bb6ddd0b60ea4b5da75d277ac15e740a"}
-
     export QT_BUILD_DIR=${QT_BUILD_DIR:-"${QT_FILE%.tar*}"}
     export QT_BIN_DIR=${QT_BIN_DIR:-"${QT_BUILD_DIR}/bin"}
+    export QT_MD5_CHECKSUM="7e167b9617e7bd64012daaacb85477af"
+    export QT_SHA256_CHECKSUM="05ffba7b811b854ed558abf2be2ddbd3bb6ddd0b60ea4b5da75d277ac15e740a"
 }
 
 function bv_qt_print

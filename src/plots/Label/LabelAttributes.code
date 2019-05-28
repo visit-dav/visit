@@ -62,7 +62,7 @@ Postfix:
             }
             // Increase the value, new labels are smaller, we want
             // a better approximation of the original size
-            font1.SetScale(val+0.02);
+            font1.SetScale((val+0.02)*100);
             Py_INCREF(Py_None);
             obj = Py_None;
         }
@@ -76,7 +76,7 @@ Postfix:
             }
             // Increase the value, new labels are smaller, we want
             // a better approximation of the original size
-            font2.SetScale(val+0.02);
+            font2.SetScale((val+0.02)*100);
             Py_INCREF(Py_None);
             obj = Py_None;
         }
@@ -138,12 +138,12 @@ Postfix:
 Target: xml2atts
 Initialization: textFont1
     textFont1.GetColor().SetRgb(255, 0, 0);
-    textFont1.SetScale(0.04);
+    textFont1.SetScale(4);
 
 
 Initialization: textFont2
     textFont2.GetColor().SetRgb(0, 0, 255);
-    textFont2.SetScale(0.04);
+    textFont2.SetScale(4);
 
 
 Function: ChangesRequireRecalculation
@@ -211,13 +211,13 @@ LabelAttributes::ProcessOldVersions(DataNode *parentNode,
         {
             float height = k->AsFloat();
             searchNode->RemoveNode(k, true);
-            textFont1.SetScale((double) height);
+            textFont1.SetScale((double) (height+0.02)*100);
         }
         if ((k = searchNode->GetNode("textHeight2")) != 0)
         {
             float height = k->AsFloat();
             searchNode->RemoveNode(k, true);
-            textFont2.SetScale((double) height);
+            textFont2.SetScale((double) (height+0.02)*100);
         }
         if ((k = searchNode->GetNode("textColor1")) != 0)
         {

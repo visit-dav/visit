@@ -45,6 +45,8 @@
 #    correctly on Windows.  Modified AssertTrue calls to have text stating
 #    what is being tested.
 #
+#    Mark C. Miller, Wed Apr 10 10:24:32 PDT 2019
+#    Add tetrahedralize test
 # ----------------------------------------------------------------------------
 import string
 import time
@@ -506,6 +508,35 @@ def test_bov():
     DeleteAllPlots()
 
 
+def test_vtk_tetrahedralize():
+    dbs_noext = ["ucd3d", "specmix_ucd"]
+    for db_noext in dbs_noext:
+        db = "%s.silo"%db_noext
+        OpenDatabase(silo_data_path(db))
+        AddPlot("Pseudocolor","d") # both dbs have variable 'd'
+        DrawPlots()
+        Query("NumZones")
+        nzOrig = int(GetQueryOutputValue())
+
+        # Test VTK binary
+        e = ExportDBAttributes()
+        e.db_type = "VTK"
+        e.filename = "%s_ascii_VTK_tets"%db_noext
+        opts = GetExportOptions("VTK")
+        opts['FileFormat'] = "Legacy Ascii"
+        opts['Tetrahedralize'] = True
+        ExportDatabase(e, opts)
+        time.sleep(1)
+        DeleteAllPlots()
+#        CloseDatabase(silo_data_path(db))
+        OpenDatabase("%s_ascii_VTK_tets.vtk"%db_noext)
+        AddPlot("Pseudocolor","d")
+        DrawPlots()
+        Query("NumZones")
+        nzNew = int(GetQueryOutputValue())
+        TestText("export_db_vtk_tets_%s"%db_noext, "Ratio of exported zone count to original is %d"%(nzNew/nzOrig))
+        DeleteAllPlots()
+
 def main():
     test0()
     test1()
@@ -518,6 +549,7 @@ def main():
     test3()
     test4()
     test_bov()
+    test_vtk_tetrahedralize()
 
 main()
 Exit()
