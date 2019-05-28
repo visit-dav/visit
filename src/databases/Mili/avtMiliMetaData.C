@@ -48,6 +48,8 @@
 #include <UnexpectedValueException.h>
 #include <DebugStream.h>
 
+#include <algorithm>
+
 
 // ***************************************************************************
 //  Constructor: SubrecInfo::SubrecInfo
@@ -1816,7 +1818,7 @@ avtMiliMetaData::AddClassMD(int classIdx,
 void
 avtMiliMetaData::SetNumCells(int domain, int nCells)
 {
-    if (domain >= 0 and domain < numDomains)
+    if (domain >= 0 && domain < numDomains)
     {
         numCells[domain] = nCells;
         zoneBasedLabels[domain].resize(nCells, string(""));
