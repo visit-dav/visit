@@ -55,9 +55,9 @@
 #   didn't specify a library like TCMALLOC that we have an error situation
 #   when it does not exist.
 #
-#   Allen Sanderson, Kathleen Biagas, Thu Jan 22 08:55:21 MST 2015 
+#   Allen Sanderson, Kathleen Biagas, Thu Jan 22 08:55:21 MST 2015
 #   Added logic for headers-only installs (like boost).  Pass 'NO_LIBS'
-#   for 'libs' argument to specify a headers-only build. 
+#   for 'libs' argument to specify a headers-only build.
 #
 #   Kathleen Biagas, Fri Mar 17 09:15:37 PDT 2017
 #   Set HAVE_LIBXXX when LIBXXX_FOUND.
@@ -77,11 +77,11 @@ INCLUDE(${VISIT_SOURCE_DIR}/CMake/ThirdPartyInstallLibrary.cmake)
 #  assumes libs are in ${x_DIR}/${libextensiondir}
 #
 #
-#  pkg is the name used to specify the x_DIR (generally upper case name 
+#  pkg is the name used to specify the x_DIR (generally upper case name
 #  of pkg)
 #  libdirextensions are the paths beyond x_DIR where the libs may be found.
 #  incdirextension is the path beyond x_DIR where the includes may be found.
-#  libs is the list of library names for this package 
+#  libs is the list of library names for this package
 #
 #  uses path specified by pkg_DIR as base path for the files
 #
@@ -116,13 +116,12 @@ FUNCTION(SET_UP_THIRD_PARTY pkg libdirextensions incdirextension libs)
     SET(lib_skip_install "VISIT_${pkg}_SKIP_INSTALL")
 
     #
-    # Zero out lib names b/c they may be hanging around from a previous 
+    # Zero out lib names b/c they may be hanging around from a previous
     # configure.
     #
     UNSET("${tp_found}")
     UNSET("${have_tp}")
     SET("${lib_var}" "")
-
     SET("${inc_dir_var}" "${base_dir_val}/${incdirextension}")
 
     IF(NOT EXISTS ${${inc_dir_var}})
@@ -223,7 +222,7 @@ FUNCTION(SET_UP_THIRD_PARTY pkg libdirextensions incdirextension libs)
         IF(NOT "${${lib_dep}}" STREQUAL "")
             MESSAGE(STATUS "  Looking for dependent libraries for ${pkg}")
         ENDIF(NOT "${${lib_dep}}" STREQUAL "")
-  
+
         #
         # This alternates between a reading path & a lib from ${pkg}_LIBDEP
         #
@@ -250,7 +249,7 @@ FUNCTION(SET_UP_THIRD_PARTY pkg libdirextensions incdirextension libs)
                              NO_CMAKE_SYSTEM_PATH)
                 IF(full_lib_path)
                     IF(${${lib_skip_install}})
-                        MESSAGE(STATUS "Skipping installation of ${full_lib_path}") 
+                        MESSAGE(STATUS "Skipping installation of ${full_lib_path}")
                     ELSE(${${lib_skip_install}})
                         IF(NOT "${current_lib_dir}" STREQUAL "/usr/lib")
                             THIRD_PARTY_INSTALL_LIBRARY(${full_lib_path})
@@ -278,7 +277,7 @@ FUNCTION(SET_UP_THIRD_PARTY pkg libdirextensions incdirextension libs)
         IF(NOT "${${inc_dep}}" STREQUAL "")
             MESSAGE(STATUS "  Looking for dependent includes for ${pkg}")
         ENDIF()
-  
+
         FOREACH(X ${${inc_dep}})
             MESSAGE("looking for include dependency: ${X}")
             if(EXISTS ${${X}})
@@ -311,4 +310,3 @@ FUNCTION(SET_UP_THIRD_PARTY pkg libdirextensions incdirextension libs)
     ENDIF()
 
 ENDFUNCTION(SET_UP_THIRD_PARTY)
-

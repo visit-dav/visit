@@ -42,6 +42,7 @@
 
 #include <avtMTSDFileFormatInterface.h>
 #include <avtGTCFileFormat.h>
+#include <ADIOS2HelperFuncs.h>
 
 #include <string>
 #include <map>
@@ -59,30 +60,28 @@
 
 using namespace std;
 
-bool
-avtGTCFileFormat::Identify(const char *fname)
+bool avtGTCFileFormat::Identify(const std::string &fname,
+                                const std::map<std::string, adios2::Params> &vars,
+                                const std::map<std::string, adios2::Params> &attrs)
 {
-    adios2::ADIOS adios;
-    adios2::IO io(adios.DeclareIO("ReadBP"));
-    adios2::Engine reader = io.Open(fname, adios2::Mode::Read);
-
-    std::map<std::string, adios2::Params> variables, attributes;
-    variables = io.AvailableVariables();
-    attributes = io.AvailableAttributes();
-
     int vfind = 0;
     vector<string> reqVars = {"coordinates", "potential", "igrid", "index-shift"};
-    for (auto vi = variables.begin(); vi != variables.end(); vi++)
+    for (auto vi = vars.begin(); vi != vars.end(); vi++)
         if (std::find(reqVars.begin(), reqVars.end(), vi->first) != reqVars.end())
             vfind++;
 
-    return vfind==reqVars.size();
+    return (vfind == reqVars.size());
 }
 
 avtFileFormatInterface *
 avtGTCFileFormat::CreateInterface(const char *const *list,
                                   int nList,
-                                  int nBlock)
+                                  int nBlock,
+                                  std::shared_ptr<adios2::ADIOS> adios,
+                                  adios2::Engine &reader,
+                                  adios2::IO &io,
+                                  std::map<std::string, adios2::Params> &variables,
+                                  std::map<std::string, adios2::Params> &attributes)
 {
     int nTimestepGroups = nList / nBlock;
     avtMTSDFileFormat ***ffl = new avtMTSDFileFormat**[nTimestepGroups];
@@ -90,7 +89,12 @@ avtGTCFileFormat::CreateInterface(const char *const *list,
     {
         ffl[i] =  new avtMTSDFileFormat*[nBlock];
         for (int j = 0; j < nBlock; j++)
-            ffl[i][j] =  new avtGTCFileFormat(list[i*nBlock +j]);
+        {
+            if (!i && !j)
+                ffl[i][j] =  new avtGTCFileFormat(adios, reader, io, variables, attributes, list[i*nBlock +j]);
+            else
+                ffl[i][j] =  new avtGTCFileFormat(list[i*nBlock +j]);
+        }
     }
     return new avtMTSDFileFormatInterface(ffl, nTimestepGroups, nBlock);
 }
@@ -103,36 +107,27 @@ avtGTCFileFormat::CreateInterface(const char *const *list,
 //
 // ****************************************************************************
 
-avtGTCFileFormat::avtGTCFileFormat(const char *filename)
-    : adios(std::make_shared<adios2::ADIOS>(adios2::DebugON)),
-      io(adios->DeclareIO("ReadBP")),
+avtGTCFileFormat::avtGTCFileFormat(std::shared_ptr<adios2::ADIOS> adios,
+                                   adios2::Engine &reader,
+                                   adios2::IO &io,
+                                   std::map<std::string, adios2::Params> &variables,
+                                   std::map<std::string, adios2::Params> &attributes,
+                                   const char *filename)
+    : adios(adios),
+      reader(reader),
+      io(io),
       numTimeSteps(1),
       avtMTSDFileFormat(&filename, 1),
+      variables(variables),
+      attributes(attributes),
       grid(NULL),
       cylGrid(NULL),
       ptGrid(NULL)
 {
-    reader = io.Open(filename, adios2::Mode::Read);
-    if (!reader)
-        EXCEPTION1(ImproperUseException, "Invalid file");
-
-    variables = io.AvailableVariables();
-    attributes = io.AvailableAttributes();
-
     //Determine how many steps we have.
     if (variables.find("potential") != variables.end())
         numTimeSteps = std::stoi(variables["potential"]["AvailableStepsCount"]);
-
-    /*
-    cout<<"Attrs: "<<endl;
-    for (auto ai = attributes.begin(); ai != attributes.end(); ai++)
-        cout<<ai->first<<" "<<ai->second<<endl;
-    cout<<"Vars:"<<endl;
-    for (auto vi = variables.begin(); vi != variables.end(); vi++)
-        cout<<vi->first<<" "<<vi->second<<endl;
-    */
 }
-
 
 // ****************************************************************************
 //  Method: avtGTCFileFormat destructor

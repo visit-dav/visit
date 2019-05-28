@@ -63,32 +63,36 @@
 using namespace std;
 
 bool
-avtLAMMPSFileFormat::Identify(const char *fname)
+avtLAMMPSFileFormat::Identify(const std::string &fname,
+                              const std::map<std::string, adios2::Params> &vars,
+                              const std::map<std::string, adios2::Params> &attrs)
 {
-    shared_ptr<adios2::ADIOS> adios = std::make_shared<adios2::ADIOS>(adios2::DebugON);
-    adios2::IO io = adios2::IO(adios->DeclareIO("ReadBP"));
-    io.SetEngine("BP");
-    adios2::Engine reader = io.Open(fname, adios2::Mode::Read);
-    auto attributes = io.AvailableAttributes();
-    auto variables = io.AvailableVariables();
+    int vfind = 0;
+    vector<string> reqVars = {"atoms", "natoms", "ntimestep"};
 
-    bool isLAMMPS = true;
-    if (variables.find("atoms") == variables.end() ||
-        variables.find("natoms") == variables.end() ||
-        variables.find("ntimestep") == variables.end() ||
-        attributes.find("LAMMPS/dump_style") == attributes.end() ||
-        attributes.find("LAMMPS/num_ver") == attributes.end() ||
-        attributes.find("LAMMPS/version") == attributes.end())
-    {
-        isLAMMPS = false;
-    }
-    return isLAMMPS;
+    for (auto vi = vars.begin(); vi != vars.end(); vi++)
+        if (std::find(reqVars.begin(), reqVars.end(), vi->first) != reqVars.end())
+            vfind++;
+
+    int afind = 0;
+    vector<string> reqAttrs = {"LAMMPS/dump_style", "LAMMPS/num_ver", "LAMMPS/version"};
+
+    for (auto ai = attrs.begin(); ai != attrs.end(); ai++)
+        if (std::find(reqAttrs.begin(), reqAttrs.end(), ai->first) != reqAttrs.end())
+            afind++;
+
+    return (vfind == reqVars.size() && afind == reqAttrs.size());
 }
 
 avtFileFormatInterface *
 avtLAMMPSFileFormat::CreateInterface(const char *const *list,
-                                         int nList,
-                                         int nBlock)
+                                     int nList,
+                                     int nBlock,
+                                     std::shared_ptr<adios2::ADIOS> adios,
+                                     adios2::Engine &reader,
+                                     adios2::IO &io,
+                                     std::map<std::string, adios2::Params> &variables,
+                                     std::map<std::string, adios2::Params> &attributes)
 {
     int nTimestepGroups = nList / nBlock;
     avtMTSDFileFormat ***ffl = new avtMTSDFileFormat**[nTimestepGroups];
@@ -96,7 +100,16 @@ avtLAMMPSFileFormat::CreateInterface(const char *const *list,
     {
         ffl[i] =  new avtMTSDFileFormat*[nBlock];
         for (int j = 0; j < nBlock; j++)
-            ffl[i][j] =  new avtLAMMPSFileFormat(list[i*nBlock +j]);
+        {
+            if (!i && !j)
+            {
+                ffl[i][j] =  new avtLAMMPSFileFormat(adios, reader, io, variables, attributes, list[i*nBlock +j]);
+            }
+            else
+            {
+                ffl[i][j] =  new avtLAMMPSFileFormat(list[i*nBlock +j]);
+            }
+        }
     }
     return new avtMTSDFileFormatInterface(ffl, nTimestepGroups, nBlock);
 }
@@ -146,6 +159,39 @@ avtLAMMPSFileFormat::avtLAMMPSFileFormat(const char *filename)
         times[i] = (double)tbuff[i];
 }
 
+
+
+avtLAMMPSFileFormat::avtLAMMPSFileFormat(std::shared_ptr<adios2::ADIOS> adios,
+        adios2::Engine &reader,
+        adios2::IO &io,
+        std::map<std::string, adios2::Params> &variables,
+        std::map<std::string, adios2::Params> &attributes,
+        const char *filename)
+    : adios(adios),
+      reader(reader),
+      io(io),
+      numTimeSteps(1),
+      currentTimestep(-1),
+      numAtoms(-1),
+      numColumns(-1),
+      avtMTSDFileFormat(&filename, 1),
+      variables(variables),
+      attributes(attributes)
+{
+    string columnsStr = attributes["columns"]["Value"];
+    numColumns = std::stoi(attributes["columns"]["Elements"]);
+    GenerateTableOffsets(columnsStr);
+
+    numTimeSteps = std::stoi(variables["atoms"]["AvailableStepsCount"]);
+
+    times.resize(numTimeSteps);
+    vector<uint64_t> tbuff(numTimeSteps);
+    adios2::Variable<uint64_t> t = io.InquireVariable<uint64_t>("ntimestep");
+    t.SetStepSelection({0, numTimeSteps});
+    reader.Get(t, tbuff.data(), adios2::Mode::Sync);
+    for (int i = 0; i < numTimeSteps; i++)
+        times[i] = (double)tbuff[i];
+}
 // ****************************************************************************
 //  Method: avtADIOS2FileFormat::FreeUpResources
 //
