@@ -216,16 +216,8 @@ avtADIOS2BaseFileFormat::avtADIOS2BaseFileFormat(std::shared_ptr<adios2::ADIOS> 
 
 avtADIOS2BaseFileFormat::~avtADIOS2BaseFileFormat()
 {
-#if MDSERVER
-    cout << "-----------\nADIOS destructor called in MDSERVER \n-----------------\n" << endl;
-#else
-    cout << "-----------\nADIOS destructor called in ENGINE \n-----------------\n" << endl;
-#endif
     if (!isClosed)
-    {
-        cout << "-----------\nADIOS reader closes down stream \n-----------------\n" << endl;
         reader.Close();
-    }
     isClosed = true;
 }
 
@@ -300,8 +292,6 @@ avtADIOS2BaseFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int t
     meshInfo.clear();
     variables = io.AvailableVariables();
 
-    cout<<" Server populates metadata with "<<variables.size() <<" variables."<<endl;
-
 #if MDSERVER
     if (stagingMode)
     {
@@ -348,10 +338,7 @@ avtADIOS2BaseFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int t
 
 #if MDSERVER
     if (!isClosed)
-    {
-        cout << "-----------\nADIOS reader closes down stream in MDSERVER \n-----------------\n" << endl;
         reader.Close();
-    }
     isClosed = true;
 #endif
 }
@@ -396,7 +383,6 @@ avtADIOS2BaseFileFormat::GetMesh(int timestate, const char *meshname)
     if (shape.size() == 2)
         shape.push_back(1);
 
-    //cout<<"********** SWAP DIMS"<<endl;
     std::swap(shape[0], shape[1]);
 
     int dims[3] = {shape[0], shape[1], shape[2]};
@@ -445,7 +431,6 @@ vtkDataArray *
 avtADIOS2BaseFileFormat::GetVar(int timestate, const char *varname)
 {
     static int prev_timestate = 0;
-    cout<<"GetVar: "<<varname<<" ts= "<<timestate<<endl;
 
     if (variables.find(varname) == variables.end())
         return NULL;
@@ -457,7 +442,6 @@ avtADIOS2BaseFileFormat::GetVar(int timestate, const char *varname)
     {
         if (timestate != prev_timestate)
         {
-            cout<<" release step = "<<reader.CurrentStep()<<endl;
             reader.EndStep(); // release previous step
             prev_timestate = timestate;
             adios2::StepStatus status = adios2::StepStatus::NotReady;
@@ -473,17 +457,18 @@ avtADIOS2BaseFileFormat::GetVar(int timestate, const char *varname)
                 }
                 else if (status == adios2::StepStatus::NotReady)
                 {
+                    /*
                     cout<<" still waiting for next step = "
                         <<reader.CurrentStep()<<endl;
+                    */
                 }
             }
-            cout<<" received streaming step = "<<reader.CurrentStep()<<endl;
+            //cout<<" received streaming step = "<<reader.CurrentStep()<<endl;
         }
     }
 
 
     adios2::Variable<double> v = io.InquireVariable<double>(varname);
-    //cout<<"DIMS= "<<v.Shape()<<endl;
     if (!stagingMode)
         v.SetStepSelection({timestate, 1});
 
