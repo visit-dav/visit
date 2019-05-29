@@ -180,10 +180,17 @@ avtWholeImageCompositerWithZ::InitializeMPIStuff(void)
 #undef FLT
 
    // create the MPI data type for ZFPixel
+#if MPI_VERSION >= 2
+   MPI_Get_address(&onePixel.z, &displacements[0]);
+   MPI_Get_address(&onePixel.r, &displacements[1]);
+   MPI_Get_address(&onePixel.g, &displacements[2]);
+   MPI_Get_address(&onePixel.b, &displacements[3]);
+#else
    MPI_Address(&onePixel.z, &displacements[0]);
    MPI_Address(&onePixel.r, &displacements[1]);
    MPI_Address(&onePixel.g, &displacements[2]);
    MPI_Address(&onePixel.b, &displacements[3]);
+#endif
 
    for (int i = 3; i >= 0; --i)
       displacements[i] -= displacements[0];
@@ -193,7 +200,12 @@ avtWholeImageCompositerWithZ::InitializeMPIStuff(void)
 
    // check that the datatype has the correct extent
    MPI_Aint ext;
+#if MPI_VERSION >= 2
+   MPI_Aint lb;
+   MPI_Type_get_extent(avtWholeImageCompositerWithZ::mpiTypeZFPixel, &lb, &ext);
+#else
    MPI_Type_extent(avtWholeImageCompositerWithZ::mpiTypeZFPixel, &ext);
+#endif
    if (ext != sizeof(onePixel))
    {
        MPI_Datatype tmp = avtWholeImageCompositerWithZ::mpiTypeZFPixel;
