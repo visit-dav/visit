@@ -11593,7 +11593,6 @@ ToggleLockTools
   ToggleFullFrameMode() -> integer
   ToggleLockTime() -> integer
   ToggleLockViewMode() -> integer
-  ToggleMaintainDataMode() -> integer
   ToggleMaintainViewMode() -> integer
   ToggleSpinMode() -> integer
 
@@ -11629,9 +11628,8 @@ return type : STARTING_VALUE
     windows are in lock view mode, each view change is broadcast to other
     windows that are also in lock view mode. This allows windows containing
     similar plots to be compared easily.
-    The ToggleMaintainDataMode and ToggleMaintainViewMode functions force the
-    data range and the view, respectively, that was in effect when the mode was
-    toggled to be used for all subsequent time states.
+    The ToggleMaintainViewMode function forces the view, that was in effect
+    when the mode was toggled to be used for all subsequent time states.
     The ToggleSpinMode function turns spin mode on and off. When the
     visualization window is in spin mode, it continues to spin along the axis
     of rotation when the view is changed interactively.
@@ -11693,29 +11691,6 @@ return type : CLI_return_t
   ToggleSpinMode()
 
 
-ToggleMaintainDataMode
-----------------------
-
-**Synopsis:**
-
-::
-
-  ToggleMaintainDataMode() -> integer
-
-return type : CLI_return_t
-    All functions return 1 on success and 0 on failure.
-
-
-**Description:**
-
-    The visualization window has various modes that affect its behavior and
-    the VisIt Python Interface provides a few functions to toggle some of those
-    modes.
-    The ToggleMaintainDataMode and ToggleMaintainViewMode functions force the
-    data range and the view, respectively, that was in effect when the mode was
-    toggled to be used for all subsequent time states.
-
-
 ToggleMaintainViewMode
 ----------------------
 
@@ -11734,9 +11709,8 @@ return type : CLI_return_t
     The visualization window has various modes that affect its behavior and
     the VisIt Python Interface provides a few functions to toggle some of those
     modes.
-    The ToggleMaintainDataMode and ToggleMaintainViewMode functions force the
-    data range and the view, respectively, that was in effect when the mode was
-    toggled to be used for all subsequent time states.
+    The ToggleMaintainViewMode functions forces the view that was in effect
+    when the mode was toggled to be used for all subsequent time states.
 
 
 **Example:**
