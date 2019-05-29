@@ -1,6 +1,6 @@
 function bv_zlib_initialize
 {
-    export DO_ZLIB="no"
+    export DO_ZLIB="yes"
 }
 
 function bv_zlib_enable
@@ -46,34 +46,35 @@ function bv_zlib_print_usage
 
 function bv_zlib_host_profile
 {
-    if [[ "$DO_ZLIB" == "yes" ]] ; then
-        echo >> $HOSTCONF
-        echo "##" >> $HOSTCONF
-        echo "## ZLIB" >> $HOSTCONF
-        echo "##" >> $HOSTCONF
-        echo \
-            "VISIT_OPTION_DEFAULT(VISIT_ZLIB_DIR \${VISITHOME}/zlib/$ZLIB_VERSION/\${VISITARCH})" \
-            >> $HOSTCONF
-    fi
+    echo >> $HOSTCONF
+    echo "##" >> $HOSTCONF
+    echo "## ZLIB" >> $HOSTCONF
+    echo "##" >> $HOSTCONF
+    echo \
+        "VISIT_OPTION_DEFAULT(VISIT_ZLIB_DIR \${VISITHOME}/zlib/$ZLIB_VERSION/\${VISITARCH})" \
+        >> $HOSTCONF
+}
+
+function bv_zlib_initialize_vars
+{
+    export VISIT_ZLIB_DIR=${VISIT_ZLIB_DIR:-"$VISITDIR/zlib/${ZLIB_VERSION}/${VISITARCH}"}
+    export ZLIB_LIBRARY_DIR="${VISIT_ZLIB_DIR}/lib"
+    export ZLIB_INCLUDE_DIR="${VISIT_ZLIB_DIR}/include"
+    export ZLIB_LIBRARY="${ZLIB_LIBRARY_DIR}/libz.${SO_EXT}"
 }
 
 function bv_zlib_ensure
 {
-    if [[ "$DO_ZLIB" == "yes" ]] ; then
-        ensure_built_or_ready "zlib" $ZLIB_VERSION $ZLIB_BUILD_DIR $ZLIB_FILE $ZLIB_URL
-        if [[ $? != 0 ]] ; then
-            ANY_ERRORS="yes"
-            DO_ZLIB="no"
-            error "Unable to build ZLIB.  ${ZLIB_FILE} not found."
-        fi
+    ensure_built_or_ready "zlib" $ZLIB_VERSION $ZLIB_BUILD_DIR $ZLIB_FILE $ZLIB_URL
+    if [[ $? != 0 ]] ; then
+        ANY_ERRORS="yes"
+        error "Unable to build ZLIB.  ${ZLIB_FILE} not found."
     fi
 }
 
 function bv_zlib_dry_run
 {
-    if [[ "$DO_ZLIB" == "yes" ]] ; then
-        echo "Dry run option not set for zlib."
-    fi
+    echo "Dry run option not set for zlib."
 }
 
 # *************************************************************************** #
@@ -167,17 +168,15 @@ function bv_zlib_is_installed
 function bv_zlib_build
 {
     cd "$START_DIR"
-    if [[ "$DO_ZLIB" == "yes" ]] ; then
-        check_if_installed "zlib" $ZLIB_VERSION
-        if [[ $? == 0 ]] ; then
-            info "Skipping ZLIB build.  ZLIB is already installed."
-        else
-            info "Building ZLIB (~1 minute)"
-            build_zlib
-            if [[ $? != 0 ]] ; then
-                error "Unable to build or install ZLIB.  Bailing out."
-            fi
-            info "Done building ZLIB"
+    check_if_installed "zlib" $ZLIB_VERSION
+    if [[ $? == 0 ]] ; then
+        info "Skipping ZLIB build.  ZLIB is already installed."
+    else
+        info "Building ZLIB (~1 minute)"
+        build_zlib
+        if [[ $? != 0 ]] ; then
+            error "Unable to build or install ZLIB.  Bailing out."
         fi
+        info "Done building ZLIB"
     fi
 }

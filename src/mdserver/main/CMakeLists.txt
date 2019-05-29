@@ -126,24 +126,23 @@ ${ALL_THIRDPARTY_IO_LIBRARY_DIR}
 )
 
 ADD_EXECUTABLE(mdserver ${VISIT_APPLICATION_STYLE} ${MDSERVER_SOURCES} ${MDSERVER_STATIC_SOURCES} ${VISIT_MDSERVER_RESOURCE_FILE})
-TARGET_LINK_LIBRARIES(mdserver 
+TARGET_LINK_LIBRARIES(mdserver
     ${VISIT_EXE_LINKER_FLAGS}
     ${mdserver_MDatabase}
     ${mdserver_IDatabase}
-    mdserverrpc 
-    visitcommon 
-    avtdbatts 
-    avtdatabase_ser 
-    lightweight_visit_vtk 
-    visit_verdict 
+    mdserverrpc
+    visitcommon
+    avtdbatts
+    avtdatabase_ser
+    lightweight_visit_vtk
+    visit_verdict
     vtkCommonCore
-    vtkIOCore 
+    vtkIOCore
     vtktiff
-    ${VTKZLIB_LIB}
     vtkpng
     vtkjpeg
-    ${ZLIB_LIB} 
-    ${CMAKE_THREAD_LIBS} 
+    ${ZLIB_LIBRARY}
+    ${CMAKE_THREAD_LIBS}
     ${DL_LIB}
 )
 

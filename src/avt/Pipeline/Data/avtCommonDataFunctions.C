@@ -77,10 +77,8 @@
 #include <NoInputException.h>
 #include <DebugStream.h>
 
-#ifdef HAVE_ZLIB_H
 #include <zlib.h>
 #include <TimingsManager.h>
-#endif
 
 using std::vector;
 using std::string;
@@ -3346,7 +3344,6 @@ bool CCompressDataString(const unsigned char *dstr, int len,
                          unsigned char **newdstr, int *newlen,
                          float *timec, float *ratioc)
 {
-#ifdef HAVE_ZLIB_H 
     unsigned int lenZIP = *newlen == 0 ? len / 2 : *newlen;
     unsigned char *dstrZIP = new unsigned char [lenZIP+24];
     int startCompress = visitTimer->StartTimer(true);
@@ -3380,9 +3377,6 @@ bool CCompressDataString(const unsigned char *dstr, int len,
         if (ratioc) *ratioc = (float) len / (float) lenZIP;
         return true;
     }
-#else
-    return false;
-#endif
 }
 
 // ****************************************************************************
@@ -3410,7 +3404,6 @@ bool CDecompressDataString(const unsigned char *dstr, int len,
                            unsigned char **newdstr, int *newlen,
                            float *timec, float *timedc, float *ratioc)
 {
-#ifdef HAVE_ZLIB_H
     if (CMaybeCompressedDataString(dstr))
     {
         unsigned int strLengthOrig;
@@ -3449,9 +3442,6 @@ bool CDecompressDataString(const unsigned char *dstr, int len,
     {
         return false;
     }
-#else
-    return false;
-#endif
 }
 
 // ****************************************************************************

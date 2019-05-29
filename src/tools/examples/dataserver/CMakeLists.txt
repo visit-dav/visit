@@ -71,7 +71,6 @@ SET(VTK_EXTRA_LIBS
 vtktiff
 vtkjpeg
 vtkpng
-${VTKZLIB_LIB}
 ${VTK_FREETYPE_LIBRARIES}
 )
 
@@ -94,6 +93,7 @@ visitcommon
 ${PYTHON_LIBRARY}
 ${VTK_EXTRA_LIBS}
 ${CMAKE_THREAD_LIBS}
+${ZLIB_LIBRARY}
 )
 IF(NOT WIN32)
     TARGET_LINK_LIBRARIES(usedataserver dl)

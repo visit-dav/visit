@@ -15,14 +15,10 @@ function bv_moab_disable
 
 function bv_moab_depends_on
 {
-    local depends_on="hdf5"
+    local depends_on="hdf5 zlib"
 
     if [[ "$DO_SZIP" == "yes" ]] ; then
         depends_on="$depends_on szip"
-    fi
-
-    if [[ "$DO_ZLIB" == "yes" ]] ; then
-        depends_on="$depends_on zlib"
     fi
 
     echo $depends_on
@@ -156,10 +152,8 @@ function build_moab
             cf_szip_arg="--with-szip=$VISITDIR/szip/$SZIP_VERSION/$VISITARCH"
             cf_hdf5_ldflags_arg="-lsz"
         fi
-        if [[ "$DO_ZLIB" == "yes" ]] ; then
-            cf_zlib_arg="--with-zlib=$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH"
-            cf_hdf5_ldflags_arg="$cf_hdf5_ldflags_arg -lz"
-        fi
+        cf_zlib_arg="--with-zlib=$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH"
+        cf_hdf5_ldflags_arg="$cf_hdf5_ldflags_arg -lz"
         if [[ -n "$cf_hdf5_ldflags_arg" ]]; then
             cf_hdf5_ldflags_arg="--with-hdf5-ldflags=\"$cf_hdf5_ldflags_arg\""
         fi
