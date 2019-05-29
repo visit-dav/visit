@@ -11,13 +11,6 @@ expressions because they effectively take a field defined on one mesh and
 is a very helpful alternative to entering CMFE expressions directly into the
 expression system manually.
 
-**Note:** if you wish to create a CMFE that works properly across a time series,
-the data-level comparisons wizard does not directly support that. However, you
-can use wizard to construct an *initial* CMFE expression and then edit it manually
-in the :ref:`Expression Window <expressionwindow>` to adjust it for a time series 
-following the documentation on
-:ref:`donor variable syntax <Pos_Cmfe_Donor_Variable_Synax>`.
-
 These expressions involve the concepts of a *donor variable*
 and a *target mesh*. The donor variable is the variable to be mapped onto a new
 mesh. The target mesh is the mesh onto which the donor variable is to be mapped.
@@ -45,6 +38,14 @@ mesh.
     #. Donor variable and target mesh are from different time states of the
        *same* database.
     #. Donor variable and target mesh are in wholly different databases.
+
+**Note:** if you wish to create a CMFE that works properly across a time series
+with wholly different databases (3rd case above),
+the data-level comparisons wizard does not directly support that. However, you
+can use wizard to construct an *initial* CMFE expression and then edit it manually
+in the :ref:`Expression Window <expressionwindow>` to adjust it for a time series 
+following the documentation on
+:ref:`donor variable syntax <Pos_Cmfe_Donor_Variable_Synax>`.
 
 .. _dlc_2:
 
