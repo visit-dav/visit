@@ -89,7 +89,7 @@ PyMeshAttributes_ToString(const MeshAttributes *atts, const char *prefix)
     const unsigned char *meshColor = atts->GetMeshColor().GetColor();
     SNPRINTF(tmpStr, 1000, "%smeshColor = (%d, %d, %d, %d)\n", prefix, int(meshColor[0]), int(meshColor[1]), int(meshColor[2]), int(meshColor[3]));
     str += tmpStr;
-    const char *meshColorSource_names = "Foreground, MeshCustom";
+    const char *meshColorSource_names = "Foreground, MeshCustom, MeshRandom";
     switch (atts->GetMeshColorSource())
     {
       case MeshAttributes::Foreground:
@@ -100,11 +100,15 @@ PyMeshAttributes_ToString(const MeshAttributes *atts, const char *prefix)
           SNPRINTF(tmpStr, 1000, "%smeshColorSource = %sMeshCustom  # %s\n", prefix, prefix, meshColorSource_names);
           str += tmpStr;
           break;
+      case MeshAttributes::MeshRandom:
+          SNPRINTF(tmpStr, 1000, "%smeshColorSource = %sMeshRandom # %s\n", prefix, prefix, meshColorSource_names);
+          str += tmpStr;
+          break;
       default:
           break;
     }
 
-    const char *opaqueColorSource_names = "Background, OpaqueCustom";
+    const char *opaqueColorSource_names = "Background, OpaqueCustom, OpaqueRandom";
     switch (atts->GetOpaqueColorSource())
     {
       case MeshAttributes::Background:
@@ -113,6 +117,10 @@ PyMeshAttributes_ToString(const MeshAttributes *atts, const char *prefix)
           break;
       case MeshAttributes::OpaqueCustom:
           SNPRINTF(tmpStr, 1000, "%sopaqueColorSource = %sOpaqueCustom  # %s\n", prefix, prefix, opaqueColorSource_names);
+          str += tmpStr;
+          break;
+      case MeshAttributes::OpaqueRandom:
+          SNPRINTF(tmpStr, 1000, "%sopaqueColorSource = %sOpaqueRandom # %s\n", prefix, prefix, opaqueColorSource_names);
           str += tmpStr;
           break;
       default:
@@ -372,7 +380,7 @@ MeshAttributes_SetMeshColorSource(PyObject *self, PyObject *args)
         fprintf(stderr, "An invalid meshColorSource value was given. "
                         "Valid values are in the range of [0,1]. "
                         "You can also use the following names: "
-                        "Foreground, MeshCustom.");
+                        "Foreground, MeshCustom, MeshRandom.");
         return NULL;
     }
 
@@ -405,7 +413,7 @@ MeshAttributes_SetOpaqueColorSource(PyObject *self, PyObject *args)
         fprintf(stderr, "An invalid opaqueColorSource value was given. "
                         "Valid values are in the range of [0,1]. "
                         "You can also use the following names: "
-                        "Background, OpaqueCustom.");
+                        "Background, OpaqueCustom, OpaqueRandom.");
         return NULL;
     }
 
@@ -817,6 +825,8 @@ PyMeshAttributes_getattr(PyObject *self, char *name)
         return PyInt_FromLong(long(MeshAttributes::Foreground));
     if(strcmp(name, "MeshCustom") == 0)
         return PyInt_FromLong(long(MeshAttributes::MeshCustom));
+    if(strcmp(name, "MeshRandom") == 0)
+        return PyInt_FromLong(long(MeshAttributes::MeshRandom));
 
     if(strcmp(name, "opaqueColorSource") == 0)
         return MeshAttributes_GetOpaqueColorSource(self, NULL);
@@ -824,6 +834,8 @@ PyMeshAttributes_getattr(PyObject *self, char *name)
         return PyInt_FromLong(long(MeshAttributes::Background));
     if(strcmp(name, "OpaqueCustom") == 0)
         return PyInt_FromLong(long(MeshAttributes::OpaqueCustom));
+    if(strcmp(name, "OpaqueRandom") == 0)
+        return PyInt_FromLong(long(MeshAttributes::OpaqueRandom));
 
     if(strcmp(name, "opaqueMode") == 0)
         return MeshAttributes_GetOpaqueMode(self, NULL);

@@ -71,12 +71,14 @@ public:
     enum MeshColor
     {
         Foreground,
-        MeshCustom
+        MeshCustom,
+        MeshRandom
     };
     enum OpaqueColor
     {
         Background,
-        OpaqueCustom
+        OpaqueCustom,
+        OpaqueRandom
     };
     enum OpaqueMode
     {

@@ -17,10 +17,12 @@
       <Enum name="MeshColor">
         Foreground
         MeshCustom
+        MeshRandom
       </Enum>
       <Enum name="OpaqueColor">
         Background
         OpaqueCustom
+        OpaqueRandom
       </Enum>
       <Enum name="OpaqueMode">
         Auto
@@ -84,6 +86,8 @@
       <Function name="ChangesRequireRecalculation" user="true" member="true">
       </Function>
       <Function name="ProcessOldVersions" user="true" member="true">
+      </Function>
+      <Function name="MeshViewerEnginePluginInfo::SetColor" user="true" member="true" access="private">
       </Function>
     </Attribute>
   </Plugin>
