@@ -247,7 +247,7 @@ const AttributeGroup::private_tmfs_t SurfaceAttributes::TmfsStruct = {SURFACEATT
 SurfaceAttributes::SurfaceAttributes() : 
     AttributeSubject(SurfaceAttributes::TypeMapFormatString),
     surfaceColor(0, 0, 0), wireframeColor(0, 0, 0), 
-    colorTableName("hot")
+    colorTableName("Default")
 {
     SurfaceAttributes::Init();
 }
@@ -270,7 +270,7 @@ SurfaceAttributes::SurfaceAttributes() :
 SurfaceAttributes::SurfaceAttributes(private_tmfs_t tmfs) : 
     AttributeSubject(tmfs.tmfs),
     surfaceColor(0, 0, 0), wireframeColor(0, 0, 0), 
-    colorTableName("hot")
+    colorTableName("Default")
 {
     SurfaceAttributes::Init();
 }
