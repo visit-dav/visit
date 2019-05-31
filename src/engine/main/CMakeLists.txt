@@ -200,12 +200,11 @@ target_link_libraries(engine_ser_exe
     visit_verdict
     vtkjpeg
     vtkpng
-    ${VTKZLIB_LIB}
     ${VTK_FREETYPE_LIBRARIES}
     ${ALL_THIRDPARTY_IO_LIB}
     ${TCMALLOC_LIB}
     ${CMAKE_THREAD_LIBS}
-    ${ZLIB_LIB}
+    ${ZLIB_LIBRARY}
 )
 
 # If we're building statically then the engine can't be linked until the plugin
@@ -305,13 +304,12 @@ if(VISIT_PARALLEL)
         visit_verdict
         vtkjpeg
         vtkpng
-        ${VTKZLIB_LIB}
         ${VTK_FREETYPE_LIBRARIES}
         ${ALL_THIRDPARTY_IO_LIB}
         ${ICET_STATIC_LIB}
         ${TCMALLOC_LIB}
         ${CMAKE_THREAD_LIBS}
-        ${ZLIB_LIB}
+        ${ZLIB_LIBRARY}
     )
 
     # If we're building statically then the engine can't be linked until the plugin

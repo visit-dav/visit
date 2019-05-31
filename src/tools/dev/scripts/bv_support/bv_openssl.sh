@@ -15,13 +15,8 @@ function bv_openssl_disable
 
 function bv_openssl_depends_on
 {
-    local depends_on=""
+    echo "zlib"
 
-    if [[ "$DO_ZLIB" == "yes" ]] ; then
-        depends_on="$depends_on zlib"
-    fi
-
-    echo $depends_on
 }
 
 function bv_openssl_info
@@ -100,13 +95,8 @@ function build_openssl
     #
     info "Configuring openssl . . ."
 
-    WITH_ZLIB_LIB=""
-    WITH_ZLIB_INCLUDE=""
-
-    if [[ "$DO_ZLIB" == "yes" ]]; then
-        WITH_ZLIB_LIB="--with-zlib-lib=$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH/lib"
-        WITH_ZLIB_INCLUDE="--with-zlib-include=$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH/include"
-    fi
+    WITH_ZLIB_LIB="--with-zlib-lib=$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH/lib"
+    WITH_ZLIB_INCLUDE="--with-zlib-include=$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH/include"
 
     info env CC="$C_COMPILER $CFLAGS $C_OPT_FLAGS" KERNEL_BITS=64 ./config \
             $WITH_ZLIB_LIB $WITH_ZLIB_INCLUDE \

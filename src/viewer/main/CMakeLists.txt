@@ -296,7 +296,6 @@ TARGET_LINK_LIBRARIES(viewer_exe
     viewer
     vtkpng
     vtkjpeg
-    ${VTKZLIB_LIB}
     ${VTK_FREETYPE_LIBRARIES}
 )
 

@@ -42,6 +42,9 @@
 #  Cyrus Harrison, Mon Jan 26 21:26:34 PST 2015
 #  Removed bilib
 #
+#  Kathleen Biagas, Thu May  2 13:05:57 PDT 2019
+#  Removed zlib.
+#
 #****************************************************************************/
 
 PROJECT(thirdparty_builtins)
@@ -52,7 +55,4 @@ IF(VISIT_PARALLEL)
     ADD_SUBDIRECTORY(cognomen)
 ENDIF(VISIT_PARALLEL)
 ADD_SUBDIRECTORY(bow)
-IF(VISIT_ZLIB)
-    ADD_SUBDIRECTORY(zlib)
-ENDIF(VISIT_ZLIB)
 ADD_SUBDIRECTORY(nek5000/jl)
