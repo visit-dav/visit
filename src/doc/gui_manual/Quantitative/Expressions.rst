@@ -1386,13 +1386,18 @@ Position-Based CMFE Function: ``pos_cmfe()`` : ``pos_cmfe(<Donor Variable>,<Targ
    the other database is encoded with a special syntax prepending the
    ``Donor Variable`` argument.
 
-   The ``Donor Variable`` argument is a string argument consisting
-   of the donor variable's name and up to three pre-pending sub-strings which
-   may be optionally needed to specify...
+.. _Pos_Cmfe_Donor_Variable_Synax:
 
-       #. ...the *Database* in which the donor variable resides,
-       #. ...the *State Id* from which to take the donor variable,
-       #. ...the *Modality* by which states are identified in the *State Id*
+   The ``Donor Variable`` argument is a string argument of the form::
+
+    <PATH-TO-DATABASE-FROM-CWD[SSS]MM:VARNAME>
+
+   consisting of the donor variable's name and up to three pre-pending
+   sub-strings which may be optionally needed to specify...
+
+       #. ...the *Database* (``PATH-TO-DATABASE-FROM-CWD``) in which the donor variable resides,
+       #. ...the *State Id* (``[SSS]``) from which to take the donor variable,
+       #. ...the *Modality* (``MM``) by which states are identified in the *State Id*
           sub-string.
 
    Depending on circumstances, specifying the ``Donor-Variable`` argument to
@@ -1426,10 +1431,14 @@ Position-Based CMFE Function: ``pos_cmfe()`` : ``pos_cmfe(<Donor Variable>,<Targ
    *delta*) to the current state. For example, the substring ``[200]c`` means to
    treat the ``200`` as a *cycle* number in the donor database whereas the
    the substring ``[-10]id`` means to treat the ``-10`` as an (``i``) index
-   (``d``) delta. Note that in cases where the donor database does not have
-   an exact match for the specified cycle or time, VisIt_ will chose the state
-   with the cycle or time which is closest in absolute distance. For the *index*
-   modality, if there is no exact match for the specified index, an error
+   (``d``) delta. So, ``[200]c`` would map the *donor* at cycle 200
+   to the *current* cycle of the *target* and ``[-10]id`` would map the
+   *donor* at the current *index minus 10* to the *current* index of the *target*.
+   In particular, the string ``[0]id`` is needed to create a CMFE that keeps
+   *donor* and *target* in lock step. Note that in cases where the donor database
+   does not have an exact match for the specified cycle or time, VisIt_ will chose
+   the state with the cycle or time which is closest in absolute distance. For the
+   *index* modality, if there is no exact match for the specified index, an error
    results. See cases D-I in the examples below.
 
    Note that the *relative* form of specifying the *State Id* is needed even
