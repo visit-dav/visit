@@ -13,6 +13,10 @@ options.
 The listing is ordered in alphabetical ordering of the name of the
 attribute set. For each set the function that will provide you with
 these attributes is printed in italic.
+
+Many functions return an integer where 1 means success and 0 means failure.
+This behavior is represented by the type CLI_return_t in an attempt to
+distinguish it from functions that may utilize the full range of integers.
 |
 |
 
