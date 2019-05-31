@@ -12,3 +12,27 @@ if [[ $branch == *RC ]]; then
   exit 1
 fi
 
+TOP_LEVEL=`git rev-parse --show-toplevel`
+
+METHOD_DOC_H_CHANGE=`git diff HEAD@{1} --stat -- $TOP_LEVEL/src/visitpy/common/MethodDoc.h | wc -l`
+METHOD_DOC_C_CHANGE=`git diff HEAD@{1} --stat -- $TOP_LEVEL/src/visitpy/common/MethodDoc.C | wc -l`
+#METHOD_DOC_CHANGE=$METHOD_DOC_C_CHANGE+$METHOD_DOC_H_CHANGE
+
+if [ $METHOD_DOC_H_CHANGE -gt 0 ] || [ $METHOD_DOC_C_CHANGE -gt 0 ]; then
+    echo "Changes to MethodDoc will be overwritten by /src/doc/functions_to_method_doc.py!"
+    exit 1
+fi
+
+# if functions.rst is staged, then just run script.
+# then, if method_doc.c/h is different from staged, then refuse commit
+# if functions.rst is not staged AND method_doc.c/h is staged, then refuse commit.
+
+CHANGED=`git diff HEAD@{1} --stat -- ../../src/doc/cli_manual/functions.rst | wc -l`
+if [ $CHANGED -gt 0 ];
+then
+    echo $METHOD_DOC_H_CHANGE
+    echo $METHOD_DOC_C_CHANGE
+    echo "Functions has changed!"
+    exit 1
+fi
+
