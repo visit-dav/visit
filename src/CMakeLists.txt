@@ -446,6 +446,9 @@
 #    Eric Brugger, Mon Jan 28 15:14:54 PST 2019
 #    Changed SVN_REVISION to GIT_VERSION.
 #
+#    Kathleen Biagas, Tue May 28 09:44:02 PDT 2019
+#    ZLIB is no longer optional.
+#
 #****************************************************************************/
 
 CMAKE_MINIMUM_REQUIRED(VERSION 3.8 FATAL_ERROR)
@@ -1170,7 +1173,6 @@ CHECK_INCLUDE_FILES (sys/time.h  HAVE_SYS_TIME_H)
 CHECK_INCLUDE_FILES (sys/types.h HAVE_SYS_TYPES_H)
 CHECK_INCLUDE_FILES (sys/stat.h  HAVE_SYS_STAT_H)
 CHECK_INCLUDE_FILES (unistd.h    HAVE_UNISTD_H)
-CHECK_INCLUDE_FILES (zlib.h      HAVE_ZLIB_H)
 CHECK_INCLUDE_FILES (stdbool.h   HAVE_STDBOOL_H)
 
 # Configure VTK support.
@@ -1684,11 +1686,9 @@ SET(VISIT_COMMON_INCLUDES
     ${VISIT_SOURCE_DIR}/common/proxybase
     ${VISIT_SOURCE_DIR}/common/state
     ${VISIT_SOURCE_DIR}/common/utility
+    ${ZLIB_INCLUDE_DIR}
     )
 
-if(HAVE_ZLIB_H)
-    list(APPEND VISIT_COMMON_INCLUDES ${ZLIB_INCLUDE_DIR})
-endif()
 
 # macros/defines needed by CMake/VisItMacros.cmake
 if (NOT DEFINED VISIT_REPLACE_DEBUG_FLAGS)

@@ -18,7 +18,7 @@ function bv_xdmf_disable
 
 function bv_xdmf_depends_on
 {
-    echo "cmake vtk hdf5"
+    echo "cmake vtk hdf5 zlib"
 }
 
 function bv_xdmf_info
@@ -242,8 +242,8 @@ function build_xdmf
                  -DHDF5_INCLUDE_PATH:PATH="$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/include" \
                  -DHDF5_LIBRARY:FILEPATH="$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/lib/libhdf5.${SO_EXT}" \
                  -DXDMF_SYSTEM_ZLIB:BOOL=ON \
-                 -DZLIB_INCLUDE_DIR:PATH="$VISITDIR/${VTK_INSTALL_DIR}/$VTK_VERSION/$VISITARCH/include/vtk-${VTK_SHORT_VERSION}/vtklibz" \
-                 -DZLIB_LIBRARY:FILEPATH="$VISITDIR/${VTK_INSTALL_DIR}/$VTK_VERSION/$VISITARCH/lib/libvtkzlib-${VTK_SHORT_VERSION}.${SO_EXT}" \
+                 -DZLIB_INCLUDE_DIR:PATH=${ZLIB_INCLUDE_DIR} \
+                 -DZLIB_LIBRARY:FILEPATH=${ZLIB_LIBRARY} \
                  -DXDMF_SYSTEM_LIBXML2:BOOL=ON \
                  -DLIBXML2_INCLUDE_PATH:PATH="$VISITDIR/${VTK_INSTALL_DIR}/$VTK_VERSION/$VISITARCH/include/vtk-${VTK_SHORT_VERSION}/vtklibxml2" \
                  -DLIBXML2_LIBRARY:FILEPATH="$VISITDIR/${VTK_INSTALL_DIR}/$VTK_VERSION/$VISITARCH/lib/libvtklibxml2-${VTK_SHORT_VERSION}.${SO_EXT}" \
