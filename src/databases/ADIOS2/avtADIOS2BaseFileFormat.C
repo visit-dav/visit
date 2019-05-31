@@ -40,7 +40,7 @@
 //                            avtADIOS2BaseFileFormat.C                           //
 // ************************************************************************* //
 
-#include <avtMTSDFileFormatInterface.h>
+#include <avtMTMDFileFormatInterface.h>
 #include <avtADIOS2BaseFileFormat.h>
 #include <ADIOS2HelperFuncs.h>
 
@@ -59,9 +59,6 @@
 #include <Expression.h>
 
 #include <InvalidVariableException.h>
-#include <VisItStreamUtil.h>
-
-using namespace std;
 
 static std::vector<int> CSVToVectorInt(const std::string csv) noexcept
 {
@@ -71,7 +68,7 @@ static std::vector<int> CSVToVectorInt(const std::string csv) noexcept
         return numbers;
     }
 
-    string tmp;
+    std::string tmp;
     for (int i = 0; i < csv.size(); i++)
         if (csv[i] != ' ') tmp.push_back(csv[i]);
 
@@ -110,28 +107,16 @@ avtADIOS2BaseFileFormat::CreateInterface(const char *const *list,
                                          std::map<std::string, adios2::Params> &attributes)
 {
     int nTimestepGroups = nList / nBlock;
-    avtMTSDFileFormat ***ffl = new avtMTSDFileFormat**[nTimestepGroups];
+
+    avtMTMDFileFormat **ffl = new avtMTMDFileFormat*[nTimestepGroups];
     for (int i = 0; i < nTimestepGroups; i++)
     {
-        ffl[i] =  new avtMTSDFileFormat*[nBlock];
-        for (int j = 0; j < nBlock; j++)
-        {
-        cout << "----------- ADIOS Base create interface for  "
-             << list[i*nBlock +j]
-             << " -----------------" << endl;
-
-            if (!i && !j)
-            {
-                ffl[i][j] =  new avtADIOS2BaseFileFormat(adios, reader, io, variables, attributes, list[i*nBlock +j]);
-            }
-            else
-            {
-                ffl[i][j] =  new avtADIOS2BaseFileFormat(list[i*nBlock +j]);
-            }
-        }
+        if (i == 0)
+            ffl[i]=  new avtADIOS2BaseFileFormat(adios, reader, io, variables, attributes, list[i*nBlock]);
+        else
+            ffl[i] =  new avtADIOS2BaseFileFormat(list[i*nBlock]);
     }
-    cout << "----------- ADIOS Base return MTSD interface " << endl;
-    return new avtMTSDFileFormatInterface(ffl, nTimestepGroups, nBlock);
+    return new avtMTMDFileFormatInterface(ffl, nTimestepGroups);
 }
 
 
@@ -148,25 +133,26 @@ avtADIOS2BaseFileFormat::avtADIOS2BaseFileFormat(const char *filename)
     : adios(std::make_shared<adios2::ADIOS>(adios2::DebugON)),
       numTimeSteps(1),
       isClosed(false),
-      avtMTSDFileFormat(&filename, 1)
+      supportMultiDom(false),
+      avtMTMDFileFormat(filename)
 {
     engineName = ADIOS2Helper_GetEngineName(filename);
     stagingMode = ADIOS2Helper_IsStagingEngine(engineName);
-    string adiosFileName = ADIOS2Helper_GetFileName(filename);
+    std::string adiosFileName = ADIOS2Helper_GetFileName(filename);
     io = adios2::IO(adios->DeclareIO(engineName));
     io.SetEngine(engineName);
     reader = io.Open(adiosFileName, adios2::Mode::Read);
 
     if (stagingMode)
     {
-        numTimeSteps = 100000;
+        numTimeSteps = 1000000;
     }
     else
     {
-        map<string, adios2::Params> vars = io.AvailableVariables();
+        std::map<std::string, adios2::Params> vars = io.AvailableVariables();
         for (auto &v : vars)
         {
-            string nsteps = v.second["AvailableStepsCount"];
+            std::string nsteps = v.second["AvailableStepsCount"];
             if (!nsteps.empty())
             {
                 numTimeSteps = std::stoi(nsteps);
@@ -188,20 +174,21 @@ avtADIOS2BaseFileFormat::avtADIOS2BaseFileFormat(std::shared_ptr<adios2::ADIOS> 
       reader(reader),
       io(io),
       variables(variables),
-      avtMTSDFileFormat(&filename, 1)
+      supportMultiDom(false),
+      avtMTMDFileFormat(filename)
 {
     engineName = ADIOS2Helper_GetEngineName(filename);
     stagingMode = ADIOS2Helper_IsStagingEngine(engineName);
 
     if (stagingMode)
     {
-        numTimeSteps = 100000;
+        numTimeSteps = 10000000;
     }
     else
     {
         for (auto &v : variables)
         {
-            string nsteps = v.second["AvailableStepsCount"];
+            std::string nsteps = v.second["AvailableStepsCount"];
             if (!nsteps.empty())
             {
                 numTimeSteps = std::stoi(nsteps);
@@ -209,9 +196,6 @@ avtADIOS2BaseFileFormat::avtADIOS2BaseFileFormat(std::shared_ptr<adios2::ADIOS> 
             }
         }
     }
-    cout << "----------- ADIOS Base reader for "
-         << filename << " with " << numTimeSteps
-         << "steps -----------------" << endl;
 }
 
 avtADIOS2BaseFileFormat::~avtADIOS2BaseFileFormat()
@@ -289,7 +273,7 @@ avtADIOS2BaseFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int t
         */
     }
 
-    meshInfo.clear();
+    meshes.clear();
     variables = io.AvailableVariables();
 
 #if MDSERVER
@@ -299,42 +283,50 @@ avtADIOS2BaseFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int t
     }
 #endif
 
-    vector<pair<string,string>> vars;
-
+    std::vector<std::pair<std::string,std::string>> vars;
     for (const auto &varInfo : variables)
     {
-        auto params = varInfo.second;
+        auto varParams = varInfo.second;
+        std::string shape = varParams["Shape"];
+        if (shape.size() <= 1)
+            continue;
 
-        string shape = params["Shape"];
-        auto vecShape = CSVToVectorInt(shape);
-        if (meshInfo.find(shape) == meshInfo.end())
+        auto varDims = CSVToVectorInt(shape);
+        std::string meshNm = MeshNameFromDim(varDims);
+
+        timeState = reader.CurrentStep();
+        if (meshes.find(meshNm) == meshes.end())
         {
-            string meshNm;
-            int dim = 0;
-            if (vecShape.size() == 2)
-            {
-                meshNm = "mesh" + std::to_string(vecShape[0])+"x"+std::to_string(vecShape[1]);
-                dim = 2;
-            }
-            else if (vecShape.size() == 3)
-            {
-                meshNm = "mesh" + std::to_string(vecShape[0])+"x"+std::to_string(vecShape[1])+"x"+std::to_string(vecShape[2]);
-                dim = 3;
-            }
-            meshInfo[shape] = std::make_pair(dim, meshNm);
+            meshInfo mi;
+            mi.dims = varDims;
+            std::string varType = varParams["Type"];
+            if (varType == "float")
+                SetBlockInfo<float>(mi, meshNm, varInfo.first, timeState);
+            else if (varType == "double")
+                SetBlockInfo<double>(mi, meshNm, varInfo.first, timeState);
+            else
+                EXCEPTION1(ImproperUseException, "Invalid variable type: "+varType);
+
+            meshes[meshNm] = mi;
         }
-        vars.push_back(std::make_pair(varInfo.first, meshInfo[shape].second));
+        auto it = meshes.find(meshNm);
+        it->second.meshVars.push_back(varInfo.first);
+        varToMesh[varInfo.first] = meshNm;
     }
+    //std::cout<<"meshes: "<<meshes<<std::endl;
+    //std::cout<<"varToMesh: "<<varToMesh<<std::endl;
 
-    for (auto &m : meshInfo)
+    //Add meshes and variables.
+    for (auto &m : meshes)
     {
-        string nm = m.second.second;
-        int dim = m.second.first;
-        AddMeshToMetaData(md, nm, AVT_RECTILINEAR_MESH, NULL, 1, 0, dim, dim);
-    }
+        std::string meshNm = m.first;
+        int dim = m.second.dims.size();
+        int numBlocks = (supportMultiDom ? m.second.blockInfo.size() : 1);
+        AddMeshToMetaData(md, meshNm, AVT_RECTILINEAR_MESH, NULL, numBlocks, 0, dim, dim);
 
-    for (auto &v : vars)
-        AddScalarVarToMetaData(md, v.first, v.second, AVT_NODECENT);
+        for (auto &varNm : m.second.meshVars)
+            AddScalarVarToMetaData(md, varNm, meshNm, (supportMultiDom ? AVT_ZONECENT : AVT_NODECENT));
+    }
 
 #if MDSERVER
     if (!isClosed)
@@ -364,8 +356,100 @@ avtADIOS2BaseFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int t
 // ****************************************************************************
 
 vtkDataSet *
-avtADIOS2BaseFileFormat::GetMesh(int timestate, const char *meshname)
+avtADIOS2BaseFileFormat::GetMesh(int timestate, int domain, const char *meshname)
 {
+    auto mit = meshes.find(meshname);
+    if (mit == meshes.end())
+        return NULL;
+
+    int dims[3];
+    vtkFloatArray *coords[3] = {vtkFloatArray::New(),vtkFloatArray::New(),vtkFloatArray::New()};
+
+    if (supportMultiDom)
+    {
+        adios2::Dims start = (*mit).second.blockInfo[domain].first;
+        adios2::Dims count = (*mit).second.blockInfo[domain].second;
+
+        //zone centered vars, so count++;
+        int dims[3], s[3], c[3];
+        if ((*mit).second.dims.size() == 2)
+        {
+            count[0]++;
+            count[1]++;
+            dims[0] = count[1];
+            dims[1] = count[0];
+            dims[2] = 1;
+
+            s[0] = start[1];
+            s[1] = start[0];
+            s[2] = 0;
+            c[0] = count[1];
+            c[1] = count[0];
+            c[2] = 0;
+        }
+        else
+        {
+            count[0]++;
+            count[1]++;
+            count[2]++;
+
+            //swap dims
+            dims[0] = count[2];
+            dims[1] = count[1];
+            dims[2] = count[0];
+            s[0] = start[2];
+            s[1] = start[1];
+            s[2] = start[0];
+            c[0] = count[2];
+            c[1] = count[1];
+            c[2] = count[0];
+        }
+
+        for (int d = 0; d < 3; d++)
+        {
+            coords[d]->SetNumberOfTuples(dims[d]);
+            float x0 = s[d];
+            if (s[d] > 0)
+                x0 = s[d]-1;
+            for (int i = 0; i < dims[d]; i++)
+                coords[d]->SetTuple1(i, s[d]+i);
+        }
+    }
+    else
+    {
+        if ((*mit).second.dims.size() == 2)
+        {
+            dims[0] = (*mit).second.dims[1];
+            dims[1] = (*mit).second.dims[0];
+            dims[2] = 1;
+        }
+        else
+        {
+            dims[0] = (*mit).second.dims[2];
+            dims[1] = (*mit).second.dims[1];
+            dims[2] = (*mit).second.dims[0];
+        }
+        for (int c = 0; c < 3; c++)
+        {
+            coords[c]->SetNumberOfTuples(dims[c]);
+            for (int i = 0; i < dims[c]; i++)
+                coords[c]->SetTuple1(i, i);
+        }
+    }
+
+    vtkRectilinearGrid *grid = vtkRectilinearGrid::New();
+    grid->SetDimensions(dims);
+    grid->SetXCoordinates(coords[0]);
+    grid->SetYCoordinates(coords[1]);
+    grid->SetZCoordinates(coords[2]);
+    coords[0]->Delete();
+    coords[1]->Delete();
+    coords[2]->Delete();
+
+    return grid;
+
+
+#if 0
     //Find the mesh info we need.
     string shapeStr;
     for (auto &m : meshInfo)
@@ -406,6 +490,7 @@ avtADIOS2BaseFileFormat::GetMesh(int timestate, const char *meshname)
     coords[2]->Delete();
 
     return grid;
+#endif
 }
 
 
@@ -427,16 +512,33 @@ avtADIOS2BaseFileFormat::GetMesh(int timestate, const char *meshname)
 //
 // ****************************************************************************
 
+#define READ_TYPED_VAR(TYPE, ARR) \
+{  \
+    adios2::Variable<TYPE> var = io.InquireVariable<TYPE>(varname);     \
+    if (!stagingMode) var.SetStepSelection({timestate, 1});             \
+    if (supportMultiDom) var.SetBlockSelection(domain);                 \
+    std::vector<TYPE> buff;                                             \
+    reader.Get(var, buff, adios2::Mode::Sync);                          \
+    int n = buff.size();                                                \
+    ARR->SetNumberOfComponents(1);                                      \
+    ARR->SetNumberOfTuples(n);                                          \
+    for (int i = 0; i < n; i++) ARR->SetTuple1(i, buff[i]);             \
+} \
+
 vtkDataArray *
-avtADIOS2BaseFileFormat::GetVar(int timestate, const char *varname)
+avtADIOS2BaseFileFormat::GetVar(int timestate, int domain, const char *varname)
 {
     static int prev_timestate = 0;
 
-    if (variables.find(varname) == variables.end())
+    //Not supported.
+    if (supportMultiDom)
         return NULL;
 
-    auto var = variables[varname];
-    string varType = var["Type"];
+    auto varInfo = variables.find(varname);
+    if (varInfo == variables.end())
+        return NULL;
+
+    std::string varType = (*varInfo).second["Type"];
 
     if (stagingMode)
     {
@@ -452,7 +554,6 @@ avtADIOS2BaseFileFormat::GetVar(int timestate, const char *varname)
                     status == adios2::StepStatus::OtherError)
                 {
                     reader.Close();
-                    //variables.clear();
                     return NULL;
                 }
                 else if (status == adios2::StepStatus::NotReady)
@@ -467,24 +568,15 @@ avtADIOS2BaseFileFormat::GetVar(int timestate, const char *varname)
         }
     }
 
-
-    adios2::Variable<double> v = io.InquireVariable<double>(varname);
-    if (!stagingMode)
-        v.SetStepSelection({timestate, 1});
-
-    size_t numVals = 1;
-    for (int i = 0; i < v.Shape().size(); i++)
-        numVals *= v.Shape()[i];
-
-    vector<double> buff(numVals);
-    reader.Get(v, buff.data(), adios2::Mode::Sync);
-
-
-    vtkDoubleArray *arr = vtkDoubleArray::New();
-    arr->SetNumberOfComponents(1);
-    arr->SetNumberOfTuples(numVals);
-    for (int i = 0; i < numVals; i++)
-        arr->SetTuple1(i, buff[i]);
+    vtkFloatArray *arr = vtkFloatArray::New();
+    if (varType == "double")
+    {
+        READ_TYPED_VAR(double, arr);
+    }
+    else if (varType == "float")
+    {
+        READ_TYPED_VAR(float, arr);
+    }
 
     return arr;
 }
@@ -509,7 +601,7 @@ avtADIOS2BaseFileFormat::GetVar(int timestate, const char *varname)
 // ****************************************************************************
 
 vtkDataArray *
-avtADIOS2BaseFileFormat::GetVectorVar(int timestate, const char *varname)
+avtADIOS2BaseFileFormat::GetVectorVar(int timestate, int domain, const char *varname)
 {
     return NULL;
 }

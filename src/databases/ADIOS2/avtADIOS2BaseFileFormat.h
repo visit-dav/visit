@@ -43,8 +43,8 @@
 #ifndef AVT_ADIOS2_BASE_FILE_FORMAT_H
 #define AVT_ADIOS2_BASE_FILE_FORMAT_H
 
-#include <avtMTSDFileFormat.h>
-
+#include <avtMTMDFileFormat.h>
+#include <VisItStreamUtil.h>
 #include <vector>
 #include <adios2.h>
 #include <memory>
@@ -60,7 +60,7 @@
 //
 // ****************************************************************************
 
-class avtADIOS2BaseFileFormat : public avtMTSDFileFormat
+class avtADIOS2BaseFileFormat : public avtMTMDFileFormat
 {
   public:
     static bool        Identify(const char *fname);
@@ -105,9 +105,9 @@ class avtADIOS2BaseFileFormat : public avtMTSDFileFormat
     virtual const char    *GetType(void)   { return "ADIOS2Base"; };
     virtual void           FreeUpResources(void);
 
-    virtual vtkDataSet    *GetMesh(int, const char *);
-    virtual vtkDataArray  *GetVar(int, const char *);
-    virtual vtkDataArray  *GetVectorVar(int, const char *);
+    virtual vtkDataSet    *GetMesh(int, int, const char *);
+    virtual vtkDataArray  *GetVar(int, int, const char *);
+    virtual vtkDataArray  *GetVectorVar(int, int, const char *);
 
   protected:
     // DATA MEMBERS
@@ -115,17 +115,55 @@ class avtADIOS2BaseFileFormat : public avtMTSDFileFormat
     adios2::IO io;
     adios2::Engine reader;
     std::map<std::string, adios2::Params> variables;
-    std::map<std::string, std::pair<int,std::string>> meshInfo;
+
+    struct meshInfo
+    {
+        std::vector<int> dims;
+        std::vector<std::string> meshVars;
+        std::vector<std::pair<adios2::Dims, adios2::Dims>> blockInfo;
+    };
+    std::map<std::string, meshInfo> meshes;
+    std::map<std::string, std::string> varToMesh;
 
     bool isClosed;
-
-
     int numTimeSteps;
     std::string engineName;
     bool stagingMode; // engine is staging or file-based?
+    bool supportMultiDom;
 
     virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *, int);
+
+    std::string MeshNameFromDim(const std::vector<int> &dims)
+    {
+        std::string nm;
+        if (dims.size() == 2)
+            nm = "mesh" + std::to_string(dims[0])+"x"+std::to_string(dims[1]);
+        else if (dims.size() == 3)
+            nm = "mesh" + std::to_string(dims[0])+"x"+std::to_string(dims[1])+"x"+std::to_string(dims[2]);
+        else
+            EXCEPTION1(ImproperUseException, "Unsupported dimensions");
+        return nm;
+    }
+
+    template <typename T>
+    void SetBlockInfo(meshInfo &mi, const std::string &meshName, const std::string &varName, int ts)
+    {
+        auto var = io.InquireVariable<T>(varName);
+        auto blockInfo = reader.BlocksInfo(var, ts);
+        int numBlocks = blockInfo.size();
+        mi.blockInfo.resize(numBlocks);
+        for (int i = 0; i < numBlocks; i++)
+            mi.blockInfo[i] = std::make_pair(blockInfo[i].Start, blockInfo[i].Count);
+    }
+
+    friend std::ostream& operator<<(std::ostream& out, const meshInfo &mi);
 };
 
+inline std::ostream& operator<<(std::ostream& out,
+                                const avtADIOS2BaseFileFormat::meshInfo &mi)
+{
+    out<<"{ dims="<<mi.dims<<" blockInfo: "<<mi.blockInfo<<" vars= "<<mi.meshVars<<"}"<<std::endl;
+    return out;
+}
 
 #endif

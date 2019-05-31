@@ -60,22 +60,20 @@
 
 #include <VisItStreamUtil.h>
 
-using namespace std;
-
 bool
 avtLAMMPSFileFormat::Identify(const std::string &fname,
                               const std::map<std::string, adios2::Params> &vars,
                               const std::map<std::string, adios2::Params> &attrs)
 {
     int vfind = 0;
-    vector<string> reqVars = {"atoms", "natoms", "ntimestep"};
+    std::vector<std::string> reqVars = {"atoms", "natoms", "ntimestep"};
 
     for (auto vi = vars.begin(); vi != vars.end(); vi++)
         if (std::find(reqVars.begin(), reqVars.end(), vi->first) != reqVars.end())
             vfind++;
 
     int afind = 0;
-    vector<string> reqAttrs = {"LAMMPS/dump_style", "LAMMPS/num_ver", "LAMMPS/version"};
+    std::vector<std::string> reqAttrs = {"LAMMPS/dump_style", "LAMMPS/num_ver", "LAMMPS/version"};
 
     for (auto ai = attrs.begin(); ai != attrs.end(); ai++)
         if (std::find(reqAttrs.begin(), reqAttrs.end(), ai->first) != reqAttrs.end())
@@ -144,14 +142,14 @@ avtLAMMPSFileFormat::avtLAMMPSFileFormat(const char *filename)
         EXCEPTION1(InvalidFilesException, filename);
     }
 
-    string columnsStr = attributes["columns"]["Value"];
+    std::string columnsStr = attributes["columns"]["Value"];
     numColumns = std::stoi(attributes["columns"]["Elements"]);
     GenerateTableOffsets(columnsStr);
 
     numTimeSteps = std::stoi(variables["atoms"]["AvailableStepsCount"]);
 
     times.resize(numTimeSteps);
-    vector<uint64_t> tbuff(numTimeSteps);
+    std::vector<uint64_t> tbuff(numTimeSteps);
     adios2::Variable<uint64_t> t = io.InquireVariable<uint64_t>("ntimestep");
     t.SetStepSelection({0, numTimeSteps});
     reader.Get(t, tbuff.data(), adios2::Mode::Sync);
@@ -178,14 +176,14 @@ avtLAMMPSFileFormat::avtLAMMPSFileFormat(std::shared_ptr<adios2::ADIOS> adios,
       variables(variables),
       attributes(attributes)
 {
-    string columnsStr = attributes["columns"]["Value"];
+    std::string columnsStr = attributes["columns"]["Value"];
     numColumns = std::stoi(attributes["columns"]["Elements"]);
     GenerateTableOffsets(columnsStr);
 
     numTimeSteps = std::stoi(variables["atoms"]["AvailableStepsCount"]);
 
     times.resize(numTimeSteps);
-    vector<uint64_t> tbuff(numTimeSteps);
+    std::vector<uint64_t> tbuff(numTimeSteps);
     adios2::Variable<uint64_t> t = io.InquireVariable<uint64_t>("ntimestep");
     t.SetStepSelection({0, numTimeSteps});
     reader.Get(t, tbuff.data(), adios2::Mode::Sync);
@@ -370,7 +368,7 @@ avtLAMMPSFileFormat::ReadTimestep(int timestate)
     atomsV.SetStepSelection({timestate, 1});
     natomsV.SetStepSelection({timestate, 1});
 
-    vector<unsigned long int> buff(1);
+    std::vector<unsigned long int> buff(1);
     reader.Get(natomsV, buff.data(), adios2::Mode::Sync);
     numAtoms = buff[0];
 
@@ -383,16 +381,16 @@ void
 avtLAMMPSFileFormat::GenerateTableOffsets(std::string &columnsStr)
 {
     //Remove the braces..
-    string str = columnsStr.substr(1, columnsStr.size()-2);
+    std::string str = columnsStr.substr(1, columnsStr.size()-2);
 
     //Clean it up a bit. remove spaces and quotes.
     str.erase(std::remove(str.begin(), str.end(), '"'), str.end());
     str.erase(std::remove(str.begin(), str.end(), ' '), str.end());
 
     //parse out the tokens which are delimted by the common comma.
-    stringstream ss(str);
-    vector<string> tokens;
-    string item;
+    std::stringstream ss(str);
+    std::vector<std::string> tokens;
+    std::string item;
     while (getline(ss, item, ','))
         tokens.push_back(item);
 
