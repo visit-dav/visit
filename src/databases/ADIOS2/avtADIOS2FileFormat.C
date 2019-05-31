@@ -41,15 +41,18 @@
 // ************************************************************************* //
 
 #include <avtFileFormatInterface.h>
+#include <ADIOS2HelperFuncs.h>
 #include <DebugStream.h>
 #include <VisItException.h>
 
-#include <avtADIOS2SSTFileFormat.h>
 #include <avtADIOS2BaseFileFormat.h>
 #include <avtGTCFileFormat.h>
 #include <avtLAMMPSFileFormat.h>
+#include <avtSpecFEMFileFormat.h>
 #include <avtMEUMMAPSFileFormat.h>
+#include <memory>
 #include <string>
+#include <avtParallel.h>
 
 // ****************************************************************************
 // Method: ADIOS2_CreateFileFormatInterface
@@ -86,53 +89,84 @@ avtFileFormatInterface *
 ADIOS2_CreateFileFormatInterface(const char * const *list, int nList, int nBlock)
 {
     avtFileFormatInterface *ffi = NULL;
-    enum Flavor {GTC, BASIC, SST, MEUMMAPS, LAMMPS, FAIL};
-    bool isSST = (std::string(list[0]).find(".sst") != std::string::npos);
 
+    if (list == NULL && nList == 0)
+        return NULL;
+
+    enum Flavor {GTC, BASIC, MEUMMAPS, LAMMPS, SPECFEM, FAIL};
     Flavor flavor = FAIL;
-    if (list != NULL || nList > 0)
-    {
-        // Determine the type of reader that we want to use.
-        TRY
-        {
-            flavor = BASIC;
-            if (isSST)
-                flavor = BASIC;
-            else if (avtGTCFileFormat::Identify(list[0]))
-                flavor = GTC;
-            else if (avtLAMMPSFileFormat::Identify(list[0]))
-                flavor = LAMMPS;
-            else if (avtMEUMMAPSFileFormat::Identify(list[0]))
-                flavor = MEUMMAPS;
-            else if (avtADIOS2BaseFileFormat::Identify(list[0]))
-                flavor = BASIC;
-        }
-        CATCH(VisItException)
-        {
-            RETHROW;
-        }
-        ENDTRY
 
-        switch(flavor)
+#ifdef PARALLEL
+    std::shared_ptr<adios2::ADIOS> adios(std::make_shared<adios2::ADIOS>(VISIT_MPI_COMM, adios2::DebugON));
+#else
+    std::shared_ptr<adios2::ADIOS> adios(std::make_shared<adios2::ADIOS>(adios2::DebugON));
+#endif
+
+    adios2::IO io(adios->DeclareIO("ReadBP"));
+    adios2::Engine reader;
+    std::map<std::string, adios2::Params> variables, attributes;
+
+    std::string engineName = ADIOS2Helper_GetEngineName(list[0]);
+    std::string fileName = ADIOS2Helper_GetFileName(list[0]);
+    bool stagingMode = ADIOS2Helper_IsStagingEngine(engineName);
+
+    io.SetEngine(engineName);
+    reader = io.Open(fileName, adios2::Mode::Read);
+
+    if (stagingMode)
+    {
+        adios2::StepStatus status = reader.BeginStep(adios2::StepMode::NextAvailable, -1.0f);
+        if (status == adios2::StepStatus::OK)
         {
-          case GTC:
-            ffi = avtGTCFileFormat::CreateInterface(list, nList, nBlock);
-            break;
-          case LAMMPS:
-            ffi = avtLAMMPSFileFormat::CreateInterface(list, nList, nBlock);
-            break;
-          case MEUMMAPS:
-            ffi = avtMEUMMAPSFileFormat::CreateInterface(list, nList, nBlock);
-            break;
-          case BASIC:
-            ffi = avtADIOS2BaseFileFormat::CreateInterface(list, nList, nBlock);
-            break;
-          case SST:
-            ffi = avtADIOS2SSTFileFormat::CreateInterface(list, nList, nBlock);
-            break;
-          default:
-            return NULL;
+            variables = io.AvailableVariables();
+            attributes = io.AvailableAttributes();
         }
+    }
+    else
+    {
+        variables = io.AvailableVariables();
+        attributes = io.AvailableAttributes();
+    }
+
+    TRY
+    {
+    //See what flavor we have:
+    if (avtGTCFileFormat::Identify(fileName, variables, attributes))
+        flavor = GTC;
+    else if (avtLAMMPSFileFormat::Identify(fileName, variables,attributes))
+        flavor = LAMMPS;
+    else if (avtMEUMMAPSFileFormat::Identify(fileName, variables, attributes))
+        flavor = MEUMMAPS;
+    else if (avtSpecFEMFileFormat::Identify(fileName, variables, attributes))
+        flavor = SPECFEM;
+    else
+        flavor = BASIC;
+    }
+    CATCH(VisItException)
+    {
+        RETHROW;
+    }
+    ENDTRY
+
+    switch(flavor)
+    {
+    case GTC:
+        ffi = avtGTCFileFormat::CreateInterface(list, nList, nBlock, adios, reader, io, variables, attributes);
+        break;
+    case LAMMPS:
+        ffi = avtLAMMPSFileFormat::CreateInterface(list, nList, nBlock, adios, reader, io, variables, attributes);
+        break;
+    case MEUMMAPS:
+        ffi = avtMEUMMAPSFileFormat::CreateInterface(list, nList, nBlock, adios, reader, io, variables, attributes);
+        break;
+    case SPECFEM:
+        ffi = avtSpecFEMFileFormat::CreateInterface(list, nList, nBlock, adios, reader, io, variables, attributes);
+        break;
+    case BASIC:
+        ffi = avtADIOS2BaseFileFormat::CreateInterface(list, nList, nBlock, adios, reader, io, variables, attributes);
+        break;
+    default:
+        return NULL;
     }
 
     return ffi;
