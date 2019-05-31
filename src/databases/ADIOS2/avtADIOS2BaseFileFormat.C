@@ -581,7 +581,6 @@ avtADIOS2BaseFileFormat::GetVar(int timestate, int domain, const char *varname)
     return arr;
 }
 
-
 // ****************************************************************************
 //  Method: avtADIOS2BaseFileFormat::GetVectorVar
 //
