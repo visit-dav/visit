@@ -78,9 +78,7 @@
 
 #include <JSONRoot.h>
 
-#ifdef HAVE_ZLIB_H
 #include <zlib.h>
-#endif
 
 #ifdef _WIN32
 #define strncasecmp _strnicmp
@@ -254,7 +252,6 @@ avtMFEMFileFormat::FetchDataFromCatFile(string const &cat_path, string const &ob
         return;
     }
 
-#ifdef HAVE_ZLIB_H
     z_stream zstrm;
 
     zstrm.zalloc = Z_NULL;
@@ -296,10 +293,6 @@ avtMFEMFileFormat::FetchDataFromCatFile(string const &cat_path, string const &ob
 
     debug5 << "Decompressed " << size << " bytes into " << sum << " bytes." << endl;
     istr.str(newdata);
-#else
-    debug5 << "Needed to decompress but no zlib support in this build" << endl;
-    return istr.setstate(std::ios::failbit);
-#endif
 }
 
 // ****************************************************************************

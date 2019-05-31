@@ -73,7 +73,7 @@ typedef struct gzlib_structdef gzlib_struct,*gzlib;
 
 /* note: requires compile flag -I<zlib dir with zlib.h in it> */
 
-#include "vtk_zlib.h"
+#include "zlib.h"
 
 
 

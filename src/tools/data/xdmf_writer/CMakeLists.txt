@@ -65,7 +65,7 @@ ADD_EXECUTABLE(xdmf_multi_curv3d xdmf_multi_curv3d.c)
 TARGET_LINK_LIBRARIES(xdmf_multi_curv3d xdmf_writer_ser m) 
 
 ADD_LIBRARY(xdmf_writer_ser xdmf_writer.c)
-TARGET_LINK_LIBRARIES(xdmf_writer_ser ${HDF5_LIB} ${ZLIB_LIB} m)
+TARGET_LINK_LIBRARIES(xdmf_writer_ser ${HDF5_LIB} ${ZLIB_LIBRARY} m)
 
 #********************************* PARALLEL **********************************
 IF(VISIT_PARALLEL)
@@ -79,5 +79,5 @@ IF(VISIT_PARALLEL)
     TARGET_LINK_LIBRARIES(xdmf_mpi_example3 xdmf_writer_par m)
 
     ADD_PARALLEL_LIBRARY(xdmf_writer_par xdmf_writer.c)
-    TARGET_LINK_LIBRARIES(xdmf_writer_par ${HDF5_LIB} ${ZLIB_LIB} m)
+    TARGET_LINK_LIBRARIES(xdmf_writer_par ${HDF5_LIB} ${ZLIB_LIBRARY} m)
 ENDIF(VISIT_PARALLEL)

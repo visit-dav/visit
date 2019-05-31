@@ -81,7 +81,7 @@
         Natural
       </Field>
       <Field name="colorTableName" label="Color table" type="colortable">
-        hot
+        Default
       </Field>
       <Field name="invertColorTable" label="Invert Color table" type="bool">
         false

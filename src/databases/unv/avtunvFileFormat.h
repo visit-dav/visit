@@ -49,7 +49,7 @@
 #include <string>
 #include <vector>
 #include <set>
-#include <vtk_zlib.h>
+#include <zlib.h>
 
 // Define my classes for the mesh
 class UnvRange { // Element class
