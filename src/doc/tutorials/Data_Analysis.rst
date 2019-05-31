@@ -1,4 +1,4 @@
-.. _Data_Analysis
+.. _Data_Analysis:
 
 Data Analysis
 =============
@@ -22,7 +22,9 @@ Experiment with queries
 1. Go to *Controls->Query*.
 2. This brings up the Query window.
 
-[[Image:Query_window.png]]
+.. figure:: images/DataAnalysis-QueryMinMax.png
+
+   The MinMax query
 
 Variable-related
 """"""""""""""""
@@ -94,16 +96,16 @@ Mesh-related
 ConnectedComponents related
 """""""""""""""""""""""""""
 
-1. # If you haven't already removed the slice operator, do that now, so you have just a Pseudocolor plot of "temp".
-2. # Apply the Isovolume operator.  Change the *Lower bound* of the Isovolume operator attributes to be "4".
-3. # You will now see a bunch of blobs in space.
-4. # Change the *Display* in the Query window to be *ConnectedComponents-related*.
-5. # Perform the *Number of Connected Components* query.
+1. If you haven't already removed the slice operator, do that now, so you have just a Pseudocolor plot of "temp".
+2. Apply the Isovolume operator.  Change the *Lower bound* of the Isovolume operator attributes to be "4".
+3. You will now see a bunch of blobs in space.
+4. Change the *Display* in the Query window to be *ConnectedComponents-related*.
+5. Perform the *Number of Connected Components* query.
 
   * It should tell you that there are 15 components.
 
-6. # Apply the Clip operator with the default settings.
-7. # Perform the *Number of Connected Components* query again.
+6. Apply the Clip operator with the default settings.
+7. Perform the *Number of Connected Components* query again.
 
   * It should now say there are 14 components.
   * Operators affect queries.
@@ -125,7 +127,9 @@ Weighted Variable Sum
 1. Go to *Controls->Query*.
 2. This brings up the Query window.
 
-[[Image:WVS-Query2.png]]
+.. figure:: images/DataAnalysis-QueryWeightedVariableSum.png
+
+   The Weighted Variable Sum query
 
 3. Go back to the GUI, delete any existing plots, open up "wave.visit", and make a Pseudocolor plot of "pressure" and click *Draw*.
 4. Find and Highlight *Weighted Variable Sum* and click *Do Time Query*.
@@ -137,7 +141,9 @@ Weighted Variable Sum
 
   * The result will be displayed in a new Window. By default the x-axis will be cycle and the y-axis will be the weighted summation of the "pressure".
 
-[[Image:WVS-TimeCurveWindow.png]]
+.. figure:: images/DataAnalysis-QueryWeightedVariableSumOutput.png
+
+   The output of the Weighted Variable Sum query over time
 
 Pick
 """"
@@ -146,7 +152,9 @@ Pick
 2. Make *Window 2* active, delete the plot, and make *Window 1* active again.
 3. Find and Highlight *Pick* in the Query window and click *Do Time Query* to enable time-curve options.
 
-[[Image:TimePickOptions.png]]
+.. figure:: images/DataAnalysis-QueryPick.png
+
+   The Pick query
 
 4. Change the *Variables* option to add "v" using the *Variables->Scalars* dropdown menu.
 5. Select *Pick using domain and element Id*. Leave the defaults for *Node Id* and *Domain Id* as "0".
@@ -161,8 +169,9 @@ Pick
 
   * The result will be a Multi-curve plot (multiple axes) in *Window 2*.
 
+.. figure:: images/DataAnalysis-QueryPickOutput.png
 
-[[Image:MultiCurve TimePick.png]]
+   The Pick query output
 
 11. **NOTE:**  Time Pick can also be performed via the mouse by first setting things up on the *Time Pick* tab in the Pick window (*Controls->Pick*).
 
@@ -172,7 +181,9 @@ Changing global options
 1. Go to *Controls->Query over time options*.
 2. This brings up the QueryOverTime window.
 
-[[Image:Global-QueryOverTime-Options.png]]
+.. figure:: images/DataAnalysis-QueryOverTime.png
+
+   The QueryOverTime window
 
 3. Here you can change the values displayed in the x-axis for all subsequent queries over time.
 4. You can also change the window used to display time-curves. By default, the first un-used window becomes the time-curve window, and all subsequent time-curves are generated in the same window.
@@ -190,9 +201,13 @@ Expressions in VisIt_ create new mesh variables from existing ones. These are al
 A simple algebraic expression, "2*radial"
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-[[Image:Expr_insert_variable_pulldown2.png|300px|thumb|Using Expression Window Insert Variable...]]
+.. figure:: images/DataAnalysis-ExpressionsRadial2.png
 
-[[Image:New_variable_in_menu2.png|thumb|Expression variable appears in plot menus]]
+   Using the Expressions window Insert variable
+
+.. figure:: images/DataAnalysis-VariablesMenu.png
+
+   Expression variable appears in the plot menus
 
 1. Open up "noise2d.silo".
 2. Put up a Pseudocolor plot of the variable *radial* and hit *Draw*
@@ -284,7 +299,9 @@ You should get the picture below. In this picture, we are displaying a
 Pseudocolor plot of *shepardglobal*, but Isovolumed by our *Dist* expression
 in the range "[5...7]".
 
-[[Image:Hardy_global_iso_by_dist.png|thumb|300px|Expression example]]
+.. figure:: images/DataAnalysis-ExpressionRadial2Output.png
+
+   Example of using the radial expression
 
 This example also demonstrates the use of an expression *function*, *coord()*
 to operate on a mesh and return its coordinates as a vector variable on the
@@ -319,8 +336,6 @@ suppose we want to compose a *Vector* valued expression that has
 7. Add the Vector plot of *randvec*.
 8. Press *Draw*.
 
-[[Image:Vector_tensor.png|300px|thumb|Example of Vector and Tensor Expressions Plotted]]
-
 In the example above, we used the *vector compose* operator, "{}" to
 create a vector variable from multiple scalar variables. We can do the
 same to create a tensor variable. Recall from calculus that a rank 0 tensor
@@ -342,6 +357,10 @@ together with the *shepardglobal* and *hardyglobal*.
 
 5. Press *Apply*.
 6. Add a Tensor plot of *tensor* variable and press *Draw*.
+
+.. figure:: images/DataAnalysis-ExpressionVectorTensorOutput.png
+
+   Example of using vector and tensor expressions
 
 Variable compatibility gotchas (tensor rank, centering, mesh)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -486,7 +505,9 @@ Mapping *shepardglobal* onto *PointMesh*
 
 7. Now with "shepardglobal_mapped" defined, you can define the desired expression, "PointVar + shepardglobal_mapped" and this will achieve the desired result and is shown below.
 
-[[Image:Shepardglobal_mapped_plus_PointVar.png|300px|thumb]]
+.. figure:: images/DataAnalysis-ExpressionCMFEOutput.png
+
+   The variable Shepardglobal mapped onto a point mesh
 
 Mapping *PointVar* onto *Mesh*
 """"""""""""""""""""""""""""""
@@ -522,7 +543,9 @@ in the database to serve as our *density* and *velocity* variables in
 this example. Namely, we define the expression *density* as an alias for
 *shephardglobal* and *velocity* as an alias for *grad*.
 
-[[Image:Mass_definition.png|300px|thumb|Mass Expression Definition]]
+.. figure:: images/DataAnalysis-ExpressionsMass.png
+
+   Mass Expression Definition
 
 Here are the steps involved...
 
@@ -538,24 +561,35 @@ Here are the steps involved...
 10. Go to *Plot->Pseudocolor->mass*.
 11. Press *Draw*.
 
-[[Image:Mass_plot.png|300px|thumb|Mass plot]]
+.. figure:: images/DataAnalysis-ExpressionMassOutput.png
+
+   Mass plot
 
 12. Add *Operator->Threshold*.
 13. Open the Threshold operator attributes window.
+
+.. figure:: images/DataAnalysis-ThresholdAttributes.png
+
+   Threshold attributes
+
 14. Select the *default* variable and then press *Delete selected variable*.
 15. Go to *Add Variable* and select *velmag* from the list of *Scalars*.
 16. Set *Lower Bound* to "5".
 17. Press *Apply*.
 
-[[Image:Velmag_threshold.png|300px|left|thumb|Threshold attributes]]
-
   * Now the displayed plot changes to show only those parts of the mesh that are moving with velocity greater than 5.
+
+.. figure:: images/DataAnalysis-ThresholdOutput.png
+
+   Mass plot after threshold
 
 18. Go to *Controls->Query*.
 19. Find the *Variable sum query* from the list of queries.
 20. Press the *Query* button. The computed result will be a sum of all the individual zones' masses in the mesh for those zones that are moving with velocity greater than 5.
 
-[[Image:Mass_query.png|300px|right|thumb|Mass plot after threshold and query result]]
+.. figure:: images/DataAnalysis-QueryVariableSumOutput.png
+
+   The variable sum query result
 
 Automatic, saved and database Expressions
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -579,4 +613,3 @@ workflows. Ordinarily, you never see VisIt_'s automatic expressions or a
 database's expressions in the Expression window because they are not
 editable. However, you can check the *display expressions from database*
 check box in the Expressions window and VisIt_ will also show these expressions.
-
