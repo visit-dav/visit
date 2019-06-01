@@ -10,6 +10,7 @@ Contents:
     :numbered:
 
     VisIt_Basics
+    Data_Analysis
 
 .. Indices and tables
 .. ==================
