@@ -11,6 +11,7 @@ Contents:
 
     VisIt_Basics
     Data_Analysis
+    Scripting
 
 .. Indices and tables
 .. ==================
