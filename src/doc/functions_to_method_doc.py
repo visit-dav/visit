@@ -213,8 +213,6 @@ def write_state(writer, state_dict):
 
 if __name__ == '__main__':
 
-    print "Running functions_to_method_doc.py"
-
     top_level = ''
     if len(sys.argv) == 2:
         top_level = sys.argv[1]
