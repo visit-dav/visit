@@ -12,27 +12,58 @@ if [[ $branch == *RC ]]; then
   exit 1
 fi
 
-TOP_LEVEL=`git rev-parse --show-toplevel`
+top_level=`git rev-parse --show-toplevel`
+str_functions_rst="src/doc/cli_manual/functions.rst"
+str_method_doc_C="src/visitpy/common/MethodDoc.C"
+str_method_doc_h="src/visitpy/common/MethodDoc.h"
 
-METHOD_DOC_H_CHANGE=`git diff HEAD@{1} --stat -- $TOP_LEVEL/src/visitpy/common/MethodDoc.h | wc -l`
-METHOD_DOC_C_CHANGE=`git diff HEAD@{1} --stat -- $TOP_LEVEL/src/visitpy/common/MethodDoc.C | wc -l`
-#METHOD_DOC_CHANGE=$METHOD_DOC_C_CHANGE+$METHOD_DOC_H_CHANGE
+for staged in $(git diff --cached --name-only)
+do
+  if [ $staged == $str_functions_rst ]; then
+    $top_level/src/doc/functions_to_method_doc.py $top_level
+      
+    mdc_staged=false
+    mdh_staged=false
+    for unstaged in $(git diff --name-only)
+    do
+      # functions.rst should not have staged and unstaged changes because the
+      # MethodDoc.h/C will not correlate with the commiting functions.rst
+      if [ $unstaged == $str_functions_rst ]; then
+        echo "ERROR: Cannot have both staged and unstaged changes to functions.rst."
+        echo "Please stage all changes to functions.rst or stash unstaged changes."
+        exit 1
+      fi
+      if [ $unstaged == $str_method_doc_C ]; then
+        echo ".C staged"
+        mdc_staged=true
+      fi
+      if [ $unstaged == $str_method_doc_h ]; then
+        echo ".h staged"
+        mdh_staged=true
+      fi
+    done
+      
+    if [ $mdc_staged == true ] && [ $mdh_staged == true ]; then
+      echo "ERROR: Your changes to functions.rst will modify MethodDoc.h and MethodDoc.C, but you are not staging those."
+      echo "Please also stage MethodDoc.h and MethodDoc.C and try again."
+      exit 1
+    elif [ $mdc_staged == true ]; then
+      echo "ERROR: Your changes to functions.rst will modify MethodDoc.C, but you are not staging it."
+      echo "Please also stage MethodDoc.C and try again."
+      exit 1
+          
+    elif [ $mdh_staged == true ]; then
+      echo "ERROR: Your changes to functions.rst will modify MethodDoc.h, but you are not staging it."
+      echo "Please also stage MethodDoc.h and try again."
+      exit 1
+    fi
+    break
+  fi
+done
 
-if [ $METHOD_DOC_H_CHANGE -gt 0 ] || [ $METHOD_DOC_C_CHANGE -gt 0 ]; then
-    echo "Changes to MethodDoc will be overwritten by /src/doc/functions_to_method_doc.py!"
-    exit 1
-fi
 
 # if functions.rst is staged, then just run script.
 # then, if method_doc.c/h is different from staged, then refuse commit
 # if functions.rst is not staged AND method_doc.c/h is staged, then refuse commit.
 
-CHANGED=`git diff HEAD@{1} --stat -- ../../src/doc/cli_manual/functions.rst | wc -l`
-if [ $CHANGED -gt 0 ];
-then
-    echo $METHOD_DOC_H_CHANGE
-    echo $METHOD_DOC_C_CHANGE
-    echo "Functions has changed!"
-    exit 1
-fi
 
