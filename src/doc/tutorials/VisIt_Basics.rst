@@ -22,18 +22,22 @@ What you see
 
 .. figure:: images/Basics-GUIOverview.png
 
-* The tall grey window on the left is called the **GUI**.  It is the primary mechanism for driving VisIt_.
-* The window on the right is called the **visualization window**.  It displays results.
+   The VisIt graphical user interface and visualization window
+
+* The tall grey window on the left is called the **Graphical User Interface**, which will be refered to from here on as the *GUI*. It is the primary mechanism for driving VisIt_.
+* The window on the right is called the **visualization window**. It displays results.
 
 Opening files
 -------------
 
 The first thing to do is to open files.
 
-1. Go to the **GUI** and click on the *Open* icon.
+1. Go to the *GUI* and click on the *Open* icon.
 2. This brings up the File open window.
 
 .. figure:: images/Basics-FileOpen.png
+
+   The File open window
 
 3. Change the *Path* field to the "VisIt_Tutorial_Data" folder.
 4. Highlight the file "example.silo" and then click *OK*.
@@ -45,8 +49,8 @@ Advanced file opening features
 
 1. In the File open window:
 
-  * There is a field for *Host*.  That is how you run client/server
-  * There is a *Filter*.  That is provided to subset the file list to only the files VisIt_ may want.
+  * There is a field for *Host*. That is how you open a file on another system and run in client/server mode.
+  * There is a *Filter*. That is provided to subset the file list to only the files VisIt_ may want.
 
     * Example filter: "\*.silo \*.vtk"
 
@@ -61,11 +65,13 @@ Making a plot
 
 1. Click on the *Add* icon to access various plots. This is located about half way down the Main window.
 2. Select *Pseudocolor->temp* to add a Pseudocolor plot.
-3. After adding a plot, you will see a green entry added to the "Plot list", which is located half way down the gui.
+3. After adding a plot, you will see a green entry added to the "Plot list", which is located half way down the *GUI*.
 
   * This means VisIt_ will draw this plot after you click *Draw*.
 
 .. figure:: images/Basics-PlotList.png
+
+   The plot list with a Pseudocolor plot in it
 
 4. Click *Draw*.
 5. You should see a plot appear in the visualization window.
@@ -74,6 +80,8 @@ Making a plot
 8. You should now see both a Pseudocolor and Mesh plot.
 
 .. figure:: images/Basics-PcMesh.png
+
+   A Pseudocolor and mesh plot displayed in a visualization window
 
 9. Highlight the Pseudocolor plot in the Plot list.
 10. Click the *Hide/Show* button.
@@ -89,13 +97,15 @@ Making a plot
 
   * The Pseudocolor plot should reappear.
 
-Modifying the Plot attributes
+Modifying the plot attributes
 -----------------------------
 
 1. Go to *PlotAtts->Pseudocolor*. This is located in the menu bar at the top of the Main menu.
 2. This brings up the Pseudocolor plot attributes window.
 
 .. figure:: images/Basics-PseudocolorAttributes.png
+
+   The Pseudocolor plot attributes window
 
 3. Change the *Scale* from *Linear* to *Log*.
 4. Click *Apply*.
@@ -138,6 +148,8 @@ Applying an operator
 
 .. figure:: images/Basics-SliceAttributes.png
 
+   The Slice operator attributes window
+
 6. There are many controls for setting the slice plane ... play with them.
 7. Operators can be removed by clicking on an expansion arrow in the Plot list, then clicking on the red X icon next to an operator.
 
@@ -155,12 +167,18 @@ There are six basic interaction modes:
 
 .. figure:: images/Basics-InteractionModes.png
 
-The interaction mode is controlled by the toolbar, which is located at the top of the visualization window. The six interaction modes are all located together on the toolbar, towards the bottom.
+   The visualization tool bar with the icons for setting the interaction mode
+
+The interaction mode is controlled by the toolbar, which is located at the
+top of the visualization window. The six interaction modes are all located
+together on the toolbar, towards the bottom.
 
 Using navigate mode
 ~~~~~~~~~~~~~~~~~~~
 
-You always start in Navigate mode. Navigate mode is indicated by the Navigate icon, represented by a compass, being indented. It allows you to pan and rotate the data set.
+You always start in Navigate mode. Navigate mode is indicated by the Navigate
+icon, represented by a compass, being indented. It allows you to pan and
+rotate the data set.
 
 1. Put the cursor in the visualization window.
 2. Left click (or single click if you do not have a 3 button mouse) and move the mouse.
@@ -171,7 +189,9 @@ You always start in Navigate mode. Navigate mode is indicated by the Navigate ic
 Using zoom mode
 ~~~~~~~~~~~~~~~
 
-Zoom mode is indicated by the Zoom icon, represented by a magnifying glass, being indented. It allows you to zoom the image by selecting a rectangular region.
+Zoom mode is indicated by the Zoom icon, represented by a magnifying glass,
+being indented. It allows you to zoom the image by selecting a rectangular
+region.
 
 1. Click on the Zoom icon.
 2. Go to the visualization window and left click (single click) and HOLD IT DOWN.
@@ -186,7 +206,9 @@ Zoom mode is indicated by the Zoom icon, represented by a magnifying glass, bein
 Using lineout mode
 ~~~~~~~~~~~~~~~~~~
 
-Lineout mode is indicated by the Lineout icon, represented by a curve plot of red and blue curves, being indented. It allows the user to create a plot of a scalar variable as a function of distance along a line.
+Lineout mode is indicated by the Lineout icon, represented by a curve plot
+of red and blue curves, being indented. It allows the user to create a plot
+of a scalar variable as a function of distance along a line.
 
 1. First we will reset the view. Click on the Reset view icon, represented by a camera that has a green "X" around it (The camera is mostly obscured by the X).
 
@@ -208,7 +230,9 @@ Lineout mode is indicated by the Lineout icon, represented by a curve plot of re
 Using pick mode
 ~~~~~~~~~~~~~~~
 
-Pick mode is indicated by the Zone pick or Node pick icon, represented by a "+" with a small Z or a "+" with a small N, being indented. It allows the user to query a variable associated with a zone or node.
+Pick mode is indicated by the Zone pick or Node pick icon, represented by
+a "+" with a small Z or a "+" with a small N, being indented. It allows the
+user to query a variable associated with a zone or node.
 
 1. Click on the Zone pick icon.
 2. Put the cursor over the data set and left click (single click).
@@ -218,7 +242,10 @@ Pick mode is indicated by the Zone pick or Node pick icon, represented by a "+" 
 
 .. figure:: images/Basics-PickOutput.png
 
-Pick can return a lot more information than what it just did if you use the Pick window.
+   The Pick output window
+
+Pick can return a lot more information than what it just did if you use
+the Pick window.
 
 4. Go to the *Variables* drop down menu and select "Scalars/pressure".
 5. Turn on *Physical Coords* under *For Nodes*.
@@ -226,7 +253,7 @@ Pick can return a lot more information than what it just did if you use the Pick
 7. Click *Apply*.
 8. Make another pick.
 
-  * You get info about pressure, the coordinates of each node, and the logical coordinates for the zone.
+  * You get information about pressure, the coordinates of each node, and the logical coordinates for the zone.
 
 Other plots
 -----------
@@ -252,13 +279,15 @@ Saving a database
 
 VisIt_ can be part of a larger tool chain.
 
-1. If you do not already have one, make a Pseudocolor plot of temp from the example.silo database.
+1. If you do not already have one, make a Pseudocolor plot of temp from the "example.silo" database.
 2. Apply the Threshold operator and change the range to be 3->max.
 3. Click *Draw*.
 4. Go to *File->Export database*.
 5. This brings up the Export Database window.
 
 .. figure:: images/Basics-ExportDatabase.png
+
+   The Export Database window
 
 6. Change *Export to* to *VTK*.
 7. Be sure to set the output directory or the exported file will be written to the working directory *(on Windows that would be the directory where VisIt_ is installed)*.
@@ -279,6 +308,8 @@ Subsetting
 5. This brings up the Subset window.
 
 .. figure:: images/Basics-Subset.png
+
+   The Subset window
 
 6. Turn off some domains and click *Apply*.
 

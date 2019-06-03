@@ -30,7 +30,7 @@ Variable-related
 """"""""""""""""
 
 1. Change the *Display* in the Query window to be *Variable-related*.
-2. Go back to the GUI, delete any plots, open up "example.silo", create a Pseudocolor plot of "temp" and click *Draw*.
+2. Go back to the *GUI*, delete any plots, open up "example.silo", create a Pseudocolor plot of *temp* and click *Draw*.
 3. Highlight *MinMax* and click *Query*.
 
   * The result will be displayed in the *Query results*. It will tell you the minimum, maximum and their locations.
@@ -45,7 +45,7 @@ Variable-related
 
   * This time the answer will be the minimum and maximum constrained to the slice.
 
-1. # Now highlight *Variable Sum* and click *Query*.
+1. Now highlight *Variable Sum* and click *Query*.
 
   * This will sum up all of the values in the data set.
 
@@ -81,7 +81,7 @@ Pick-related
   4. *Pick using global element Id*
   5.  Note that these last two have support for both node and zone Ids.
 
-* Note that the locations are \*after\* the slice.  
+* Note that the locations are *after* the slice.  
 * If this is confusing, then remove the Slice operator.
 
 Mesh-related
@@ -96,7 +96,7 @@ Mesh-related
 ConnectedComponents related
 """""""""""""""""""""""""""
 
-1. If you haven't already removed the slice operator, do that now, so you have just a Pseudocolor plot of "temp".
+1. If you haven't already removed the slice operator, do that now, so you have just a Pseudocolor plot of *temp*.
 2. Apply the Isovolume operator.  Change the *Lower bound* of the Isovolume operator attributes to be "4".
 3. You will now see a bunch of blobs in space.
 4. Change the *Display* in the Query window to be *ConnectedComponents-related*.
@@ -113,7 +113,7 @@ ConnectedComponents related
 Queries over Time
 -----------------
 
-What are queries over Time
+What are queries over time
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Queries over time perform analysis through time and generate a time-curve.
@@ -131,7 +131,7 @@ Weighted Variable Sum
 
    The Weighted Variable Sum query
 
-3. Go back to the GUI, delete any existing plots, open up "wave.visit", and make a Pseudocolor plot of "pressure" and click *Draw*.
+3. Go back to the *GUI*, delete any existing plots, open up "wave.visit", and make a Pseudocolor plot of *pressure* and click *Draw*.
 4. Find and Highlight *Weighted Variable Sum* and click *Do Time Query*.
 5. Options for changing the *Starting timestep*, *Ending timestep* and *Stride* will be available.
 
@@ -139,7 +139,7 @@ Weighted Variable Sum
 
 6. Click *Query*.
 
-  * The result will be displayed in a new Window. By default the x-axis will be cycle and the y-axis will be the weighted summation of the "pressure".
+  * The result will be displayed in a new Window. By default the x-axis will be cycle and the y-axis will be the weighted summation of the *pressure*.
 
 .. figure:: images/DataAnalysis-QueryWeightedVariableSumOutput.png
 
@@ -156,7 +156,7 @@ Pick
 
    The Pick query
 
-4. Change the *Variables* option to add "v" using the *Variables->Scalars* dropdown menu.
+4. Change the *Variables* option to add *v* using the *Variables->Scalars* dropdown menu.
 5. Select *Pick using domain and element Id*. Leave the defaults for *Node Id* and *Domain Id* as "0".
 6. Select *Preserve Picked Element Id*.
 7. Click *Query*.
@@ -188,15 +188,28 @@ Changing global options
 3. Here you can change the values displayed in the x-axis for all subsequent queries over time.
 4. You can also change the window used to display time-curves. By default, the first un-used window becomes the time-curve window, and all subsequent time-curves are generated in the same window.
 
-Built-in Queries
+Built-in queries
 ----------------
 
-[[Built-in-Queries | Built-in queries descriptions]]
+:ref:`built-in_queries`
 
 Expressions
 -----------
 
-Expressions in VisIt_ create new mesh variables from existing ones. These are also known as *derived quantities*. VisIt_'s expression system supports only derived quantities that create a new mesh variable defined over the *entire* mesh. Given a mesh on which a variable named *pressure* is defined, an example of a very simple expression is "2\*pressure". On the other hand, suppose one wanted to sum (or integrate) "pressure" over the entire mesh (maybe the mesh represents some surface area over which a force calculation is desired). Such an operation is not an expression in VisIt_ because it does not result in a new variable defined over the entire mesh. In this example, summing pressure over the entire mesh results in a single, scalar, number, like "25.6". Such an operation is supported instead by VisIt_'s Variable Sum Query. This tends to be true in general; Expressions define whole mesh variables while Queries define single numerical values (there are, however, some Queries for which this is not strictly true).
+Expressions in VisIt_ create new mesh variables from existing ones. These
+are also known as *derived quantities*. VisIt_'s expression system supports
+only derived quantities that create a new mesh variable defined over the
+*entire* mesh. Given a mesh on which a variable named *pressure* is defined,
+an example of a very simple expression is "2\*pressure". On the other hand,
+suppose one wanted to sum (or integrate) "pressure" over the entire mesh
+(maybe the mesh represents some surface area over which a force calculation
+is desired). Such an operation is not an expression in VisIt_ because it
+does not result in a new variable defined over the entire mesh. In this
+example, summing pressure over the entire mesh results in a single, scalar,
+number, like "25.6". Such an operation is supported instead by VisIt_'s
+Variable Sum Query. This tends to be true in general; Expressions define
+whole mesh variables while Queries define single numerical values (there
+are, however, some Queries for which this is not strictly true).
 
 A simple algebraic expression, "2*radial"
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -210,7 +223,7 @@ A simple algebraic expression, "2*radial"
    Expression variable appears in the plot menus
 
 1. Open up "noise2d.silo".
-2. Put up a Pseudocolor plot of the variable *radial* and hit *Draw*
+2. Put up a Pseudocolor plot of the variable *radial* and click *Draw*
 
   * Take note of the legend range, "0...28.28"
 
@@ -221,30 +234,33 @@ A simple algebraic expression, "2*radial"
 
 5. Rename this expression by typing "radial2" into the *Name* field
 
-  * Take note of  the *Type* of the variable. By default, VisIt_ assumes the type of the new variable you are creating is a s scalar mesh variable (e.g. a single numerical value for each node or zone/cell in the mesh). Here, we are indeed creating a scalar variable and so there is no need to adjust the *Type*. However, in some of the examples that follow, we'll be creating vector mesh variables and if we don't specify the correct type, we'll get an error message.
+  * Take note of the *Type* of the variable. By default, VisIt_ assumes the type of the new variable you are creating is a s scalar mesh variable (e.g. a single numerical value for each node or zone/cell in the mesh). Here, we are indeed creating a scalar variable and so there is no need to adjust the *Type*. However, in some of the examples that follow, we'll be creating vector mesh variables and if we don't specify the correct type, we'll get an error message.
 
 6. Place the cursor in the *Definition* pane of the *Expressions* dialog.
 7. Type the number "2" followed by the C/C++ language symbol for multiplication, "*".
 8. Now, you can either type the name "radial" or you can go to the *Insert Variable...* pulldown menu and find and select the *radial* variable there (see picture at right).
-9. Hit the *Apply* button.
-10. Now, go to the main VisIt_ GUI Panel to the *Variables* pulldown.
+9. Click *Apply*.
+10. Now, go to the main VisIt_ *GUI* Panel to the *Variables* pulldown.
 
   * Note that *radial2* now appears in the list of variables there.
 
-11. Select *radial2* from the pull down and hit *Draw*.
+11. Select *radial2* from the pull down and click *Draw*.
 
   * Visually, the image will not look any different. But, if you take a close look at the legend you will see it is now showing "0...56.57".
 
 
-Visit supports several unary and binary algebraic expressions including ``+, -, /, \*, bitwise-^, bitwise-&, sqrt(), abs(), ciel(), floor(), ln(), log10(), exp()`` and more.
+Visit supports several unary and binary algebraic expressions including
+``+, -, /, \*, bitwise-^, bitwise-&, sqrt(), abs(), ciel(), floor(), ln(), log10(), exp()``
+and more.
 
-Accessing coordinates (of a mesh) in Expressions
+Accessing coordinates (of a mesh) in expressions
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Here, we'll use the category of *Mesh* expressions to access the coordinates of a mesh, again, working with "noise2d.silo".
+Here, we'll use the category of *Mesh* expressions to access the coordinates
+of a mesh, again, working with "noise2d.silo".
 
 1. Go to *Controls->Expressions*.
-2. Press the *New* button and name this expression "Coords".
+2. Click the *New* button and name this expression "Coords".
 3. Set the *Type* to *Vector mesh variable* (because coordinates, at least in this 2D example, are a vector quantity).
 4. Put the cursor in the *Definition* pane.
 5. Go to *Insert Function...* and find the *Mesh* category of expressions and then, within it, find the *coord* function expression.
@@ -256,10 +272,10 @@ Here, we'll use the category of *Mesh* expressions to access the coordinates of 
 
   * This should result in *Mesh* being inserted between the parentheses in the definition.
 
-7. Press *Apply*.
+7. Click *Apply*.
 8. Now, we'll define two scalar expressions for the "X" and "Y" coordinates of the mesh. While still in the Expressions window,
 
-  1. Press *New*.
+  1. Click *New*.
   2. Name the new expression "X".
 
    * Note that VisIt_'s expression system is case sensitive so "x" and "X" can be different variable names.
@@ -270,21 +286,21 @@ Here, we'll use the category of *Mesh* expressions to access the coordinates of 
     * This expression uses the array bracket dereference operator "[]" to specify a particular component of an array. In this case, the *array* being derefrenced is the vector variable defined by "Coords".
     * Note that VisIt_'s expression system always numbers its array indices starting from zero.
 
-  5. Press *Apply*.
+  5. Click *Apply*.
   6. Now, repeat these steps to define a "Y" expression for the "Y" coordinates.
 
 9. Finally, we'll define the "distance" expression
 
-  1. Press the *New* button.
+  1. Click the *New* button.
   2. Give the new variable the name "Dist" (Type should be *Scalar mesh variable*).
   3. Type in the definition "sqrt(X*X+Y*Y)".
-  4. Press *Apply*.
+  4. Click *Apply*.
 
 Now, we'll use the new "Dist" variable we've just defined to display some data.
 
 1. Delete any existing plots from the plot list.
 2. Add a Pseudocolor plot of *shepardglobal*.
-3. Press *Draw*.
+3. Click *Draw*.
 4. Add an Isovolume operator.
 
   * Although this example is a 2D example and so *volume* doesn't seem to apply, VisIt_'s Isovolume operator performs the equivalent operation for 2D data.
@@ -292,8 +308,8 @@ Now, we'll use the new "Dist" variable we've just defined to display some data.
 5. Bring up the Isovolume operator attributes (either expand the plot by clicking on the triangle to the left of its name in the plot list and double clicking on the Isovolume operator there or go to the *OpAtts* menu and bring up Isovolume operator attributes that way).
 6. Set the variable to *Dist*.
 7. Set the *Lower bound* to "5" and the *Upper bound* to "7".
-8. Press *Apply*.
-9. Press *Draw*.
+8. Click *Apply*.
+9. Click *Draw*.
 
 You should get the picture below. In this picture, we are displaying a
 Pseudocolor plot of *shepardglobal*, but Isovolumed by our *Dist* expression
@@ -313,7 +329,7 @@ VisIt_ has a variety of expression functions that operate on a Mesh including
 VisIt_ includes the entire suite of *Mesh quality* expressions from the
 [https://cubit.sandia.gov/public/verdict.html Verdict Library]
 
-Creating Vector and Tensor Valued Variables from Scalars
+Creating vector and tensor valued variables from scalars
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 If the database contains scalar variables representing the individual
@@ -325,16 +341,16 @@ suppose we want to compose a *Vector* valued expression that has
 "shepardglobal" and "hardyglobal" as components. Here are the steps...
 
 1. Go to *Controls->Expressions*.
-2. Press the *New* button and set *Name* to "randvec".
+2. Click the *New* button and set *Name* to "randvec".
 3. Be sure to also set the *Type* to *Vector mesh variable*.
 4. Place the cursor in *Definition* pane and type "{shepardglobal, hardyglobal}".
-5. Press *Apply*.
+5. Click *Apply*.
 6. Go to *Plots->Vector*.
 
   * You should now see *randvec* appear there as a variable name to plot.
 
 7. Add the Vector plot of *randvec*.
-8. Press *Draw*.
+8. Click *Draw*.
 
 In the example above, we used the *vector compose* operator, "{}" to
 create a vector variable from multiple scalar variables. We can do the
@@ -347,7 +363,7 @@ we'll use the "X" and "Y" coordinate component scalars we defined earlier
 together with the *shepardglobal* and *hardyglobal*.
 
 1. Go to *Controls->Expressions*.
-2. Press *New* and set the *Name* to "tensor".
+2. Click *New* and set the *Name* to "tensor".
 3. Be sure to also set the *Type* to *Tensor mesh variable*.
 4. Place the cursor in *Definition* pane and type "{ {shepardglobal, hardyglobal}, {X,Y} }".
 
@@ -355,8 +371,8 @@ together with the *shepardglobal* and *hardyglobal*.
   * Note that you could also have defined the same tensor expression using two vector expressions like so, "{randvec, Coords}".
   * Note that for a symmetric tensor definition, each succeeding row in the matrix would have one less term. In 3D, the first row would have 3 terms, the 2nd 2 terms and the 3rd 1 term. In 2D, the first row would have 2 terms and the 2nd 1 term.
 
-5. Press *Apply*.
-6. Add a Tensor plot of *tensor* variable and press *Draw*.
+5. Click *Apply*.
+6. Add a Tensor plot of *tensor* variable and click *Draw*.
 
 .. figure:: images/DataAnalysis-ExpressionVectorTensorOutput.png
 
@@ -404,7 +420,7 @@ in your expression to a scalar mesh variable. So, "grad[i]+shephardglobal"
 where "i" is "0" or "1" would work to define a scalar mesh variable.
 Or, "magnitude(grad)+shepardglobal" would also have worked.
 
-Centering Compatibility
+Centering compatibility
 """""""""""""""""""""""
 
 In "noise2d.silo", some variables are zone centered and some are node
@@ -426,7 +442,7 @@ again using "noise2d.silo".
 
   * The *recenter()* expression function is a *toggle* in that it will take whatever the variable's centering is and swap it (node->zone and zone->node).
   * The *recenter()* expression function also takes a second argument, a string of one of the values *toggle*, *zonal*, *nodal* to force a particular behavior.
-  * Note that when you press *Apply*, the current plot of "bar" does not change. You need to manually delete and re-create the plot (or clear and re-draw the plots).
+  * Note that when you click *Apply*, the current plot of "bar" does not change. You need to manually delete and re-create the plot (or clear and re-draw the plots).
 
 Finally, note that these two expressions...
 
@@ -443,7 +459,7 @@ results in a numerically lower quality result. The moral is that in a
 complex series of expressions be sure to take care where you want
 recentering to occur.
 
-Mesh Compatibility
+Mesh compatibility
 """"""""""""""""""
 
 In many cases, especially in Silo databases, all the available variables
@@ -550,32 +566,42 @@ this example. Namely, we define the expression *density* as an alias for
 Here are the steps involved...
 
 1. Go to *Controls->Expressions*.
-2. Press *New*.
-3. Set the *Name* to "mass".
+2. Click *New*.
+3. Set the *Name* to "density".
 4. Make sure the *Type* is set to *Scalar mesh variable*.
-5. Set the *Definition* to "revolved_volume(Mesh) * density".
-6. Press *Apply*.
-7. Press the *New* button again (for a new expression).
-8. Set the *Name* to "velmag" (for velocity magnitude).
-9. Set the *Definition* to "magnitude(velocity)".
-10. Go to *Plot->Pseudocolor->mass*.
-11. Press *Draw*.
+5. Set the *Definition* to "shepardglobal".
+6. Click *Apply*.
+7. Click *New*.
+8. Set the *Name* to "velocity".
+9. Make sure the *Type* is set to *Vector mesh variable*.
+10. Set the *Definition* to "grad".
+11. Click *Apply*.
+12. Click *New*.
+13. Set the *Name* to "mass".
+14. Make sure the *Type* is set to *Scalar mesh variable*.
+15. Set the *Definition* to "revolved_volume(Mesh) * density".
+16. Click *Apply*.
+17. Click the *New* button again (for a new expression).
+18. Set the *Name* to "velmag" (for velocity magnitude).
+19. Set the *Definition* to "magnitude(velocity)".
+20. Go to *Plot->Pseudocolor->mass*.
+21. Click *Draw*.
 
 .. figure:: images/DataAnalysis-ExpressionMassOutput.png
 
    Mass plot
 
-12. Add *Operator->Threshold*.
-13. Open the Threshold operator attributes window.
+22. Add *Operator->Threshold*.
+23. Open the Threshold operator attributes window.
 
 .. figure:: images/DataAnalysis-ThresholdAttributes.png
 
    Threshold attributes
 
-14. Select the *default* variable and then press *Delete selected variable*.
-15. Go to *Add Variable* and select *velmag* from the list of *Scalars*.
-16. Set *Lower Bound* to "5".
-17. Press *Apply*.
+24. Select the *default* variable and then click *Delete selected variable*.
+25. Go to *Add Variable* and select *velmag* from the list of *Scalars*.
+26. Set *Lower Bound* to "5".
+27. Click *Apply*.
 
   * Now the displayed plot changes to show only those parts of the mesh that are moving with velocity greater than 5.
 
@@ -583,15 +609,15 @@ Here are the steps involved...
 
    Mass plot after threshold
 
-18. Go to *Controls->Query*.
-19. Find the *Variable sum query* from the list of queries.
-20. Press the *Query* button. The computed result will be a sum of all the individual zones' masses in the mesh for those zones that are moving with velocity greater than 5.
+28. Go to *Controls->Query*.
+29. Find the *Variable sum query* from the list of queries.
+30. Click the *Query* button. The computed result will be a sum of all the individual zones' masses in the mesh for those zones that are moving with velocity greater than 5.
 
 .. figure:: images/DataAnalysis-QueryVariableSumOutput.png
 
    The variable sum query result
 
-Automatic, saved and database Expressions
+Automatic, saved and database expressions
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 VisIt_ defines several types of expressions automatically. For all vector
