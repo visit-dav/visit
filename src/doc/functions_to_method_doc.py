@@ -1,5 +1,13 @@
 #!/usr/bin/env python
 
+import sys
+import argparse
+
+parser=argparse.ArgumentParser(
+    description='''Auto-generate MethodDoc.C and MethodDoc.h.''')
+parser.add_argument('top_level_dir', nargs='?', help='(Optional) Top level directory of the git repo. Needed if running this script from a different directory.')
+args=parser.parse_args()
+
 copyright = '/*****************************************************************************\n'
 copyright += '*\n'
 copyright += '* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC\n'
@@ -205,9 +213,24 @@ def write_state(writer, state_dict):
 
 if __name__ == '__main__':
 
-    func_file   = open('cli_manual/functions.rst', 'r')
-    h_output    = open('../visitpy/common/MethodDoc.h','w')
-    c_output    = open('../visitpy/common/MethodDoc.C','w')
+    print "Running functions_to_method_doc.py"
+
+    top_level = ''
+    if len(sys.argv) == 2:
+        top_level = sys.argv[1]
+    
+    if top_level == '':
+        func_file_name = 'cli_manual/functions.rst'
+        h_output_name  = '../visitpy/common/MethodDoc.h'
+        c_output_name  = '../visitpy/common/MethodDoc.C'
+    else:
+        func_file_name = top_level + '/src/doc/cli_manual/functions.rst'
+        h_output_name  = top_level + '/src/visitpy/common/MethodDoc.h'
+        c_output_name  = top_level + '/src/visitpy/common/MethodDoc.C'
+
+    func_file   = open(func_file_name, 'r')
+    h_output    = open(h_output_name,'w')
+    c_output    = open(c_output_name,'w')
     
     h_output.write(copyright)
     h_output.write(note)
