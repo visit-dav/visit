@@ -381,6 +381,7 @@ Recording GUI actions to Python scripts
 VisIt_'s Commands window provides a mechanism to translate GUI actions into their equivalent Python commands.
 
 1) Open the Commands Window by selecting ''Controls Menu->Command''
+
 .. figure:: images/Scripting-Commands.png
 
    The Commands window
