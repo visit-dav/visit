@@ -782,6 +782,9 @@ avtVolumeFilter::RenderImageRayCasting(avtImage_p opaque_image,
 //    Brad Whitlock, Tue Aug 22 16:07:45 PDT 2017
 //    Set the transfer function into the ray tracer.
 //
+//    Alister Maguire, Mon Jun  3 15:40:31 PDT 2019
+//    Setting the view distance in the compositeRF for opacity correction. 
+//
 // ****************************************************************************
 
 avtImage_p
@@ -1075,6 +1078,10 @@ avtVolumeFilter::RenderImage(avtImage_p opaque_image,
     {
         integrateRF->SetDistance(view.GetFarPlane()-view.GetNearPlane());
         integrateRF->SetWindowSize(size[0], size[1]);
+    }
+    else
+    {
+        compositeRF->SetDistance(view.GetFarPlane()-view.GetNearPlane());
     }
 
     double view_dir[3];
