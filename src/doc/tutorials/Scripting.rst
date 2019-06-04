@@ -33,7 +33,7 @@ To launch the *CLI* from the graphical user interface:
 
 1) Go to *Controls->Command*.
 
-This will launch the Commands window. The Command window provides a text
+This will bring up the Commands window. The Command window provides a text
 editor with Python syntax highlighting and an *Execute* button that tells
 VisIt_ to execute the script. Finally, the Command window lets you record
 your *GUI* actions into Python code that you can use in your scripts.
@@ -42,7 +42,7 @@ A first action in the *CLI*
 ---------------------------
 
 1) Open "example.silo" in the *GUI* if it not already open.
-2) Cut-and-paste the following Python commands into the first tab of the Commands window.
+2) Cut-and-paste the following Python commands into the first tab of the Commands window. ::
 
       AddPlot("Pseudocolor", "temp")
       # You will see the active plots list in the GUI update, since the CLI and GUI communicate.
