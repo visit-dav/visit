@@ -13,23 +13,23 @@ Command line interface overview
 
 VisIt_ includes a rich a command line interface that is based on Python 2.7.
 
-There are several ways to use the CLI:
+There are several ways to use the *CLI*:
 
 1) Launch VisIt_ in a batch mode and run scripts.
 
   * Linux: ``/path/to/visit/bin/visit -nowin -cli -s <script.py>``
   * OSX: ``/path/to/VisIt.app/Contents/Resources/bin/visit -nowin -cli -s <script.py>``
 
-2) Launch VisIt_ so that a visualization window is visible and interactively issue CLI commands.
-3) Use both the standard Graphical User Interface (GUI) and CLI simultaneously.
+2) Launch VisIt_ so that a visualization window is visible and interactively issue *CLI* commands.
+3) Use both the standard *GUI* and *CLI* simultaneously.
 
-Launching the CLI
------------------
+Launching the *CLI*
+-------------------
 
 We will focus on the use case where we have the graphical user interface and
-CLI running simultaneously. 
+*CLI* running simultaneously. 
 
-To launch the CLI from the graphical user interface:
+To launch the *CLI* from the graphical user interface:
 
 1) Go to *Controls->Launch CLI*.
 2) This will launch a separate terminal that has the Python interpreter.
@@ -37,15 +37,15 @@ To launch the CLI from the graphical user interface:
 **Note that you can also use VisIt_'s Command window to submit Python code to
 the CLI.** The Command window provides a text editor with Python syntax
 highlighting and an *Execute* button that tells VisIt_ to execute the script.
-Finally, the Command window lets you record your GUI actions into Python
+Finally, the Command window lets you record your *GUI* actions into Python
 code that you can use in your scripts.
 
-A first action in the CLI
--------------------------
+A first action in the *CLI*
+---------------------------
 
-1) Open "example.silo" in the GUI if it not already open.
+1) Open "example.silo" in the *GUI* if it not already open.
 
-  * You can do also do this in the CLI, using *OpenDatabase()* with the path to the "example.silo" dataset. ::
+  * You can do also do this in the *CLI*, using *OpenDatabase()* with the path to the "example.silo" dataset. ::
 
       AddPlot("Pseudocolor", "temp")
       # You will see the active plots list in the GUI update, since the CLI and GUI communicate.
@@ -72,7 +72,7 @@ Tips about Python
     ...
     sys.exit()
 
-Example Scripts
+Example scripts
 ---------------
 
 We will be using Python scripts in each of the following sections:
@@ -83,12 +83,12 @@ You can get them by:
 
 For all of these scripts, make sure "example.silo" is currently open.
 
-Setting Attributes
+Setting attributes
 ~~~~~~~~~~~~~~~~~~
 
 Each of VisIt_'s Plots and Operators expose a set of *attributes* that control
-their behavior. In VisIt_'s GUI, these attributes are modified via options
-windows. VisIt_'s CLI provides a set of simple Python objects that control
+their behavior. In VisIt_'s *GUI*, these attributes are modified via options
+windows. VisIt_'s *CLI* provides a set of simple Python objects that control
 these attributes. Here is an example setting the minimum and maximum for the
 Pseudocolor plot ::
 
@@ -121,7 +121,7 @@ display of a range of isovalues from "example.silo". ::
        # For moviemaking, you'll need to save off the image
        # SaveWindow()
 
-Using all of VisIt_'s Building Blocks
+Using all of VisIt_'s building blocks
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 This example uses a Pseudocolor plot with a ThreeSlice operator applied to
@@ -177,7 +177,7 @@ gradient of *temp*.
 
     DrawPlots()
 
-Creating a Movie of Animated Streamline Paths
+Creating a movie of animated streamline paths
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 This example extends the "Using all of VisIt_'s Building Blocks" example by 
@@ -275,7 +275,7 @@ This example extends the "Using all of VisIt_'s Building Blocks" example by
     output_movie = "streamline_crop_example.wmv"
     encoding.encode(input_pattern,output_movie,fdup=4)
 
-Rendering each time step of a Dataset to a Movie
+Rendering each time step of a dataset to a movie
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 This example assumes the aneurysm.visit database is already opened.
@@ -375,10 +375,10 @@ See example `Python aggregate curves <http://visitusers.org/index.php?title=Visi
 
 .. _Recording_GUI_actions_to_Python_scripts:
 
-Recording GUI actions to Python scripts
----------------------------------------
+Recording *GUI* actions to Python scripts
+-----------------------------------------
 
-VisIt_'s Commands window provides a mechanism to translate GUI actions into their equivalent Python commands.
+VisIt_'s Commands window provides a mechanism to translate *GUI* actions into their equivalent Python commands.
 
 1) Open the Commands Window by selecting ''Controls Menu->Command''
 
@@ -386,29 +386,29 @@ VisIt_'s Commands window provides a mechanism to translate GUI actions into thei
 
    The Commands window
 
-2) Press the *Record* button
-3) Perform GUI actions
-4) Return to the Commands Window 
-5) Select a tab to hold the python script of your recorded actions
-6) Press the *Stop* button. 
+2) Click the *Record* button.
+3) Perform *GUI* actions.
+4) Return to the Commands Window.
+5) Select a tab to hold the python script of your recorded actions.
+6) Click the *Stop* button.
 7) The equivalent Python script will be placed in the tab in the Commands window.
 
 * Note that the scripts are very verbose and contain some unnecessary commands, which can be edited out.
 
-Learning the CLI
-----------------
+Learning the *CLI*
+------------------
 
-Here are some tips to help you quickly learn how to use VisIt_'s CLI:
+Here are some tips to help you quickly learn how to use VisIt_'s *CLI*:
 
 .. highlight:: bash
 
-1) From within VisIt_'s python CLI, you can type "dir()" to see the list of all commands.
+1) From within VisIt_'s python *CLI*, you can type "dir()" to see the list of all commands.
 
-  * Sometimes, the output from "dir()" within VisIt_'s python CLI is a little hard to look through. So, a useful thing on Linux to get a nicer list of methods is the following shell command (typed from *outside* VisIt_'s python CLI)... ::
+  * Sometimes, the output from "dir()" within VisIt_'s python *CLI* is a little hard to look through. So, a useful thing on Linux to get a nicer list of methods is the following shell command (typed from *outside* VisIt_'s python *CLI*)... ::
 
       echo "dir()" | visit -cli -nowin -forceinteractivecli | tr ',' '\n' | tr -d " '" | sort
 
-  * Or, if you are looking for CLI functions having to do with a specific thing... ::
+  * Or, if you are looking for *CLI* functions having to do with a specific thing... ::
 
       echo "dir()" | visit -cli -nowin -forceinteractivecli | tr ',' '\n' | tr -d " '" | grep -i material
 
@@ -416,7 +416,7 @@ Here are some tips to help you quickly learn how to use VisIt_'s CLI:
 
   * Type "help(AddPlot)"
 
-3) Use the GUI to Python recording featured outlined in :ref:`Recording_GUI_actions_to_Python_scripts`. 
+3) Use the *GUI* to Python recording featured outlined in :ref:`Recording_GUI_actions_to_Python_scripts`. 
 
 4) Use ''WriteScript()'' function, which will create a python script that describes all of your current plots.
 
@@ -450,7 +450,7 @@ Here are some tips to help you quickly learn how to use VisIt_'s CLI:
 Tips for searching for help
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-VisIt_'s CLI provides a large set of functions. To can limit the scope of your
+VisIt_'s *CLI* provides a large set of functions. To can limit the scope of your
 search using a helper functions. One such helper is the *lsearch()* function
 in the visit_utils module: ::
 
@@ -468,6 +468,6 @@ on a separate line. ::
 Advanced features
 -----------------
 
-1) You can set up your own buttons in the VisIt_ gui using the CLI. See `visitrc file <http://visitusers.org/index.php?title=Visitrc_file>`_.
-2) You can set up callbacks in the CLI that get called whenever events happen in VisIt_. See `Python callbacks <http://visitusers.org/index.php?title=Python_callbacks>`_.
-3) You can create your own custom Qt GUI that uses VisIt_ for plotting. See `PySide recipes <http://visitusers.org/index.php?title=PySide_Recipes>`_.
+1) You can set up your own buttons in the VisIt_ gui using the *CLI*. See `visitrc file <http://visitusers.org/index.php?title=Visitrc_file>`_.
+2) You can set up callbacks in the *CLI* that get called whenever events happen in VisIt_. See `Python callbacks <http://visitusers.org/index.php?title=Python_callbacks>`_.
+3) You can create your own custom Qt *GUI* that uses VisIt_ for plotting. See `PySide recipes <http://visitusers.org/index.php?title=PySide_Recipes>`_.
