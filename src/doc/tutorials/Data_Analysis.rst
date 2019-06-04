@@ -29,6 +29,8 @@ Experiment with queries
 Variable-related
 """"""""""""""""
 
+Variable related queries provide information about variables.
+
 1. Change the *Display* in the Query window to be *Variable-related*.
 2. Go back to the *GUI*, delete any plots, open up "example.silo", create a Pseudocolor plot of *temp* and click *Draw*.
 3. Highlight *MinMax* and click *Query*.
@@ -38,12 +40,12 @@ Variable-related
 4. Apply the Slice operator to your plot.
 5. Do another *MinMax* query.
 
-  * It gives you the same results. This is because the Query parameter *Original data* is selected.  This means the answer is for what is in the file, not what is on the screen.
+  * It gives you the different results. This is because the Query parameter *Actual Data* is selected. This means the answer will be the minimum and maximum constrained to the slice.
 
-6. Change the Query parameter to be *Actual data*.
+6. Change the Query parameter to be *Original Data*.
 7. Do another *MinMax* query.
 
-  * This time the answer will be the minimum and maximum constrained to the slice.
+  * This time the answer will match the result of the first query. It will display the minimum and maximum for what is in the file, not what is on the screen.
 
 1. Now highlight *Variable Sum* and click *Query*.
 
@@ -68,21 +70,22 @@ Variable-related
 4. This is a way to get exact lineouts.
 5. You can also take 3D lineouts this way.
 
-Pick-related
-""""""""""""
+1. Now highlight *Pick*.
+2. Click *Query*.
 
-* Pick: you give a 3D location and VisIt_ will tell you about the zone that contains that location.  
-* Under the *Variable-related* display, there is a *Pick* entry.  Highlight that.
-* Experiment with the four primary modes:
+  * This will provide information about the zone containing the coordinate "0 0 0".
 
-  1. *Pick using coordinate to determine zone*
-  2. *Pick using coordinate to determine node*
-  3. *Pick using domain and element Id*
-  4. *Pick using global element Id*
-  5.  Note that these last two have support for both node and zone Ids.
+3. Change the mode to *Pick using coordinate to determine node*.
+4. Click *Query*.
 
-* Note that the locations are *after* the slice.  
-* If this is confusing, then remove the Slice operator.
+  * This will provide information about the node nearest the coordinate "0 0 0".
+
+5. Change the mode to *Pick using domain and element Id*.
+6. Click *Query*.
+
+  * This will provide information about the node or zone in the specied domain.
+
+You can also perform a query using the global element id by selecting *Pick using global elememnt Id*. This only works if the file contains global element id information, which this file does not.
 
 Mesh-related
 """"""""""""
@@ -131,7 +134,7 @@ Weighted Variable Sum
 
    The Weighted Variable Sum query
 
-3. Go back to the *GUI*, delete any existing plots, open up "wave.visit", and make a Pseudocolor plot of *pressure* and click *Draw*.
+3. Go back to the *GUI*, delete any existing plots, open up "wave.visit", and make a Pseudocolor plot of *pressure*.
 4. Find and Highlight *Weighted Variable Sum* and click *Do Time Query*.
 5. Options for changing the *Starting timestep*, *Ending timestep* and *Stride* will be available.
 
@@ -214,16 +217,8 @@ are, however, some Queries for which this is not strictly true).
 A simple algebraic expression, "2*radial"
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. figure:: images/DataAnalysis-ExpressionsRadial2.png
-
-   Using the Expressions window Insert variable
-
-.. figure:: images/DataAnalysis-VariablesMenu.png
-
-   Expression variable appears in the plot menus
-
 1. Open up "noise2d.silo".
-2. Put up a Pseudocolor plot of the variable *radial* and click *Draw*
+2. Create a Pseudocolor plot of the variable *radial*.
 
   * Take note of the legend range, "0...28.28"
 
@@ -239,15 +234,23 @@ A simple algebraic expression, "2*radial"
 6. Place the cursor in the *Definition* pane of the *Expressions* dialog.
 7. Type the number "2" followed by the C/C++ language symbol for multiplication, "*".
 8. Now, you can either type the name "radial" or you can go to the *Insert Variable...* pulldown menu and find and select the *radial* variable there (see picture at right).
+
+.. figure:: images/DataAnalysis-ExpressionsRadial2.png
+
+   Using the Expressions window Insert variable
+
 9. Click *Apply*.
 10. Now, go to the main VisIt_ *GUI* Panel to the *Variables* pulldown.
 
   * Note that *radial2* now appears in the list of variables there.
 
+.. figure:: images/DataAnalysis-VariablesMenu.png
+
+   Expression variable appears in the plot menus
+
 11. Select *radial2* from the pull down and click *Draw*.
 
   * Visually, the image will not look any different. But, if you take a close look at the legend you will see it is now showing "0...56.57".
-
 
 Visit supports several unary and binary algebraic expressions including
 ``+, -, /, \*, bitwise-^, bitwise-&, sqrt(), abs(), ciel(), floor(), ln(), log10(), exp()``
@@ -300,16 +303,15 @@ Now, we'll use the new "Dist" variable we've just defined to display some data.
 
 1. Delete any existing plots from the plot list.
 2. Add a Pseudocolor plot of *shepardglobal*.
-3. Click *Draw*.
-4. Add an Isovolume operator.
+3. Add an Isovolume operator.
 
   * Although this example is a 2D example and so *volume* doesn't seem to apply, VisIt_'s Isovolume operator performs the equivalent operation for 2D data.
 
-5. Bring up the Isovolume operator attributes (either expand the plot by clicking on the triangle to the left of its name in the plot list and double clicking on the Isovolume operator there or go to the *OpAtts* menu and bring up Isovolume operator attributes that way).
-6. Set the variable to *Dist*.
-7. Set the *Lower bound* to "5" and the *Upper bound* to "7".
-8. Click *Apply*.
-9. Click *Draw*.
+4. Bring up the Isovolume operator attributes (either expand the plot by clicking on the triangle to the left of its name in the plot list and double clicking on the Isovolume operator there or go to the *OpAtts* menu and bring up Isovolume operator attributes that way).
+5. Set the variable to *Dist*.
+6. Set the *Lower bound* to "5" and the *Upper bound* to "7".
+7. Click *Apply*.
+8. Click *Draw*.
 
 You should get the picture below. In this picture, we are displaying a
 Pseudocolor plot of *shepardglobal*, but Isovolumed by our *Dist* expression
@@ -327,7 +329,7 @@ VisIt_ has a variety of expression functions that operate on a Mesh including
 *area* (for 2D meshes), *volume* (for 3D meshes, *revolved_volume* (for
 2D cylindrically symmetric meshes), *zonetype*, and more. In addition,
 VisIt_ includes the entire suite of *Mesh quality* expressions from the
-[https://cubit.sandia.gov/public/verdict.html Verdict Library]
+`Verdict Library <http://cubit.sandia.gov/public/verdict.html>`_.
 
 Creating vector and tensor valued variables from scalars
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -338,7 +340,7 @@ to construct the associated vector (or tensor). You create vectors in
 VisIt_'s Expression system using the curly bracket *vector compose*
 "{}" operator. For example, using "noise2d.silo" again as an example,
 suppose we want to compose a *Vector* valued expression that has
-"shepardglobal" and "hardyglobal" as components. Here are the steps...
+"shepardglobal" and "hardyglobal" as components. Here are the steps.
 
 1. Go to *Controls->Expressions*.
 2. Click the *New* button and set *Name* to "randvec".
@@ -350,7 +352,6 @@ suppose we want to compose a *Vector* valued expression that has
   * You should now see *randvec* appear there as a variable name to plot.
 
 7. Add the Vector plot of *randvec*.
-8. Click *Draw*.
 
 In the example above, we used the *vector compose* operator, "{}" to
 create a vector variable from multiple scalar variables. We can do the
@@ -369,10 +370,9 @@ together with the *shepardglobal* and *hardyglobal*.
 
   * Note the two levels of curly braces. The outer level is the whole rank 2 tensor matrix and the inner curly braces are each row of the matrix.
   * Note that you could also have defined the same tensor expression using two vector expressions like so, "{randvec, Coords}".
-  * Note that for a symmetric tensor definition, each succeeding row in the matrix would have one less term. In 3D, the first row would have 3 terms, the 2nd 2 terms and the 3rd 1 term. In 2D, the first row would have 2 terms and the 2nd 1 term.
 
 5. Click *Apply*.
-6. Add a Tensor plot of *tensor* variable and click *Draw*.
+6. Add a Tensor plot of *tensor* variable.
 
 .. figure:: images/DataAnalysis-ExpressionVectorTensorOutput.png
 
@@ -398,7 +398,7 @@ Again, using "noise2d.silo".
   * Note that *grad* is a *Vector mesh variable* and *shepardglobal* is a *Scalar mesh variable*.
 
 2. Now, attempt to do a Vector plot of *foo*. This works because VisIt_ will add the scalar to each component of the vector resulting a new vector mesh variable
-3. But, suppose you instead defined *foo*> to be of *Type* *Scalar mesh variable*.
+3. But, suppose you instead defined *foo* to be of *Type* *Scalar mesh variable*.
 
   * VisIt_ will allow you to define this expression. But, when you go to plot it, the plot will fail.
 

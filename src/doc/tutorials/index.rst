@@ -8,6 +8,12 @@ Here are links to the datasets used in the VisIt Basics, Data Analysis and Scrip
  * Tarfile: `visit_tutorial_data.tar.gz <http://portal.nersc.gov/project/visit/cyrush/tutorial_data/visit_tutorial_data.tar.gz>`_ (59.8 MB)
  * Zip: `visit_tutorial_data.zip <http://portal.nersc.gov/project/visit/cyrush/tutorial_data/visit_tutorial_data.zip>`_ (59.8 MB)
 
+Here are links to the Aneurysm (Blood Flow) simulation, which is used by one
+of the examples in the Scripting tutorial.
+
+ * Tarfile: `aneurysm_tutorial_data.tar.gz <http://portal.nersc.gov/project/visit/cyrush/tutorial_data/aneurysm_tutorial_data.tar.gz>`_ (361 MB)
+ * Zip: `aneurysm_tutorial_data.zip <http://portal.nersc.gov/project/visit/cyrush/tutorial_data/aneurysm_tutorial_data.zip>`_ (361 MB)
+
 Contents:
 
 .. toctree::

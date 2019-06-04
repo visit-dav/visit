@@ -31,26 +31,25 @@ We will focus on the use case where we have the graphical user interface and
 
 To launch the *CLI* from the graphical user interface:
 
-1) Go to *Controls->Launch CLI*.
-2) This will launch a separate terminal that has the Python interpreter.
+1) Go to *Controls->Command*.
 
-**Note that you can also use VisIt_'s Command window to submit Python code to
-the CLI.** The Command window provides a text editor with Python syntax
-highlighting and an *Execute* button that tells VisIt_ to execute the script.
-Finally, the Command window lets you record your *GUI* actions into Python
-code that you can use in your scripts.
+This will bring up the Commands window. The Command window provides a text
+editor with Python syntax highlighting and an *Execute* button that tells
+VisIt_ to execute the script. Finally, the Command window lets you record
+your *GUI* actions into Python code that you can use in your scripts.
 
 A first action in the *CLI*
 ---------------------------
 
 1) Open "example.silo" in the *GUI* if it not already open.
-
-  * You can do also do this in the *CLI*, using *OpenDatabase()* with the path to the "example.silo" dataset. ::
+2) Cut-and-paste the following Python commands into the first tab of the Commands window. ::
 
       AddPlot("Pseudocolor", "temp")
       # You will see the active plots list in the GUI update, since the CLI and GUI communicate.
       DrawPlots()
       #You should see your plot.
+
+3) Click *Execute*.
 
 Tips about Python
 -----------------
@@ -76,12 +75,12 @@ Example scripts
 ---------------
 
 We will be using Python scripts in each of the following sections:
-You can get them by:
+You can get execute them by:
 
-1) Cut-n-paste-ing it into your Python interpreter.
-2) Or copying it to a separate file and issuing: *Source("/path/to/script/location/script.py")*
+1) Cut-n-paste-ing them into a tab in the Commands window and executing it.
 
-For all of these scripts, make sure "example.silo" is currently open.
+For all of these scripts, make sure "example.silo" is currently open unless
+otherwise noted.
 
 Setting attributes
 ~~~~~~~~~~~~~~~~~~
@@ -127,6 +126,9 @@ Using all of VisIt_'s building blocks
 This example uses a Pseudocolor plot with a ThreeSlice operator applied to
 display *temp* on the exterior of the grid along with streamlines of the
 gradient of *temp*.
+
+Note that the script below may not work the first time you execute it. In
+that case delete all the plots and execute the script again.
 
 .. figure:: images/Scripting-StreamlineOutput.png
 
@@ -278,7 +280,7 @@ This example extends the "Using all of VisIt_'s Building Blocks" example by
 Rendering each time step of a dataset to a movie
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-This example assumes the aneurysm.visit database is already opened.
+This example assumes the "aneurysm.visit" is already opened.
 
 * Create a plot, render all timesteps and encode a movie.
 
@@ -414,7 +416,7 @@ Here are some tips to help you quickly learn how to use VisIt_'s *CLI*:
 
 2) You can learn the syntax of a given method by typing "help(MethodName)"
 
-  * Type "help(AddPlot)"
+  * Type "help(AddPlot)" in the Python interpreter.
 
 3) Use the *GUI* to Python recording featured outlined in :ref:`Recording_GUI_actions_to_Python_scripts`. 
 
