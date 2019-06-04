@@ -228,6 +228,26 @@ def TestStaticNodes():
     DeleteAllPlots()
 
 
+def TestLabels():
+    OpenDatabase(single_domain_path + "/d3samp6.plt.mili")
+    v = GetView3D()
+    v.viewNormal = (0.9, 0.35, -0.88)
+    SetView3D(v)
+    SetTimeSliderState(90)
+    
+    AddPlot("Pseudocolor", "Primal/Shared/edrate")
+    AddPlot("Label", "OriginalZoneLabels")
+    DrawPlots()
+    Test("mili_zone_labels_01")
+
+    DeleteAllPlots()
+
+    AddPlot("Pseudocolor", "Primal/Shared/edrate")
+    AddPlot("Label", "OriginalNodeLabels")
+    DrawPlots()
+    Test("mili_node_labels_01")
+
+
 def Main():
     TestComponentVis()    
     TestNonSharedElementSets()
@@ -240,6 +260,7 @@ def Main():
     TestMultiDomain()
     TestParticles()
     TestStaticNodes()
+    TestLabels()
 
 Main()
 Exit()
