@@ -39,7 +39,7 @@ The first thing to do is to open files.
 
    The File open window
 
-3. Change the *Path* field to the "VisIt_Tutorial_Data" folder.
+3. Change the *Path* field to the "tutorial_data" folder.
 4. Highlight the file "example.silo" and then click *OK*.
 
 You've opened a file!
@@ -247,7 +247,7 @@ user to query a variable associated with a zone or node.
 Pick can return a lot more information than what it just did if you use
 the Pick window.
 
-4. Go to the *Variables* drop down menu and select "Scalars/pressure".
+4. Go to the *Variables* drop down menu and select *Scalars/pressure*.
 5. Turn on *Physical Coords* under *For Nodes*.
 6. Turn on *Domain-Logical Coords* under *For Zones*.
 7. Click *Apply*.
@@ -293,13 +293,17 @@ VisIt_ can be part of a larger tool chain.
 7. Be sure to set the output directory or the exported file will be written to the working directory *(on Windows that would be the directory where VisIt_ is installed)*.
 8. Click *Export*.
 
-  * A file named ``visit_ex_db.vtk`` has been saved to the file system.
+  * The Export options for VTK writer window will pop up at this point. It allows you to specify the options for the VTK writer. We will use the default options.
+
+9. Click *Ok*.
+
+  * A file named "visit_ex_db.vtk" has been saved to the file system.
 
 Subsetting
 ----------
 
 1. Delete any plots in your visualization window.
-2. Open up "multi_ucd3d.silo".
+2. Open the file "multi_ucd3d.silo".
 3. Make a Subset plot of "domains(mesh1)".
 
   * The plot is colored by "domains", which normally correspond to a simulation's processors.
@@ -311,13 +315,21 @@ Subsetting
 
    The Subset window
 
-6. Turn off some domains and click *Apply*.
+6. Click on *domains* in the left most panel.
+
+  * This will expand the list of domains in the center panel.
+
+7. Turn off some domains and click *Apply*.
 
   * You will see some of the domains disappear.
   * Subsetting works with any plot type.
 
-7. Turn all the domains back on.
-8. Turn off materials 1 and 3.
+8. Turn all the domains back on.
+9. Click on *mat1* in the left most panel.
+
+  * This will expand the list of materials in the center panel.
+
+10. Turn off materials 1 and 3.
 
   * You will see material 2 only, colored by domain.
 
