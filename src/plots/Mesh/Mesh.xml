@@ -87,6 +87,8 @@
       </Function>
       <Function name="ProcessOldVersions" user="true" member="true">
       </Function>
+      <Function name="MeshViewerEnginePluginInfo::InitializePlotAtts" user="false" member="true">
+      </Function>
       <Function name="MeshViewerEnginePluginInfo::SetColor" user="true" member="true" access="private">
       </Function>
     </Attribute>
