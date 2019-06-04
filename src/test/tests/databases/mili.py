@@ -4,7 +4,7 @@
 #  Test Case:  mili.py
 #
 #  Tests:      mesh      - 3D unstructured, multi-domain
-#              plots     - Pseudocolor, material, vector, tensor
+#              plots     - Pseudocolor, material, vector, tensor, label
 #
 #
 #  Programmer: Alister Maguire
