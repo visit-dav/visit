@@ -261,7 +261,6 @@ avtMiliFileFormat::avtMiliFileFormat(const char *fpath)
 
     string fnamePth(fpath);
 
-    //TODO: make sure this works for windows paths as well. 
     size_t fNPos  = fnamePth.find_last_of("\\/");
     string pthTmp = fnamePth.substr(0, fNPos + 1);
     string root   = fnamePth.substr(fNPos + 1);
@@ -482,7 +481,9 @@ avtMiliFileFormat::OpenDB(int dom)
 {
     int openDBTimer = visitTimer->StartTimer();
 
-    //TODO: do the filenames still have this much variety?
+    //
+    // Multi-proc databases have larger numbers attached to their names. 
+    //
     char const * const root_fmtstrs[] = {
         "%s%.3d",
         "%s%.4d",
@@ -619,7 +620,7 @@ avtMiliFileFormat::GetNodePositions(int timestep,
 //      Retrieve the mesh for the given timestep.
 //
 //  Arguments:
-//    teimestep  The timestep of interest.
+//    timestep   The timestep of interest.
 //    dom        The domain of interested.
 //    mesh       the name of the mesh to read
 //
@@ -971,9 +972,26 @@ avtMiliFileFormat::ReadMesh(int dom)
             }
         }
 
-        // TODO: should we set the num elements for classes not set
-        // above? (mat variables, glob variables, etc...)
         miliMetaData[meshId]->SetNumCells(dom, nDomCells);
+
+        //
+        // Global variables are applied to the entire mesh. 
+        //
+        MiliClassMetaData *globalClass = miliMetaData[meshId]->GetClassMDByShortName("glob");
+        if (globalClass != NULL)
+        {
+            globalClass->SetNumElements(dom, nDomCells);
+        }
+
+        //
+        // Material variables are applied to all materials (technically, each element should
+        // belong to a material, right?). 
+        //
+        MiliClassMetaData *matClass = miliMetaData[meshId]->GetClassMDByShortName("mat");
+        if (matClass != NULL)
+        {
+            matClass->SetNumElements(dom, nDomCells);
+        }
        
         //
         // Allocate an appropriately sized dataset using that connectivity
@@ -3667,8 +3685,6 @@ avtMiliFileFormat::RetrieveZoneLabelInfo(const int meshId,
     //
     // Check for labels
     //
-    //TODO: there are konwn mem errors with some of the label calls. 
-    //      it's unclear how to resolve them at the moment...
     int nExpectedLabels = nElemsInClass;
     int rval = mc_load_conn_labels(dbid[dom], meshId, shortName, 
                                    nExpectedLabels, &numBlocks, 
@@ -3688,6 +3704,13 @@ avtMiliFileFormat::RetrieveZoneLabelInfo(const int meshId,
                                 numBlocks,
                                 blockRanges);
 
+    //
+    // Mili mallocs blockRanges using C style. 
+    //
+    if (blockRanges != NULL)
+    {
+        free(blockRanges);
+    }
     delete [] elemList;
     delete [] labelIds;
 }
@@ -3753,6 +3776,13 @@ avtMiliFileFormat::RetrieveNodeLabelInfo(const int meshId,
                                 numBlocks,
                                 blockRanges);
 
+    //
+    // Mili mallocs blockRanges using C style. 
+    //
+    if (blockRanges != NULL)
+    {
+        free(blockRanges);
+    }
     delete [] elemList;
     delete [] labelIds;
 }

@@ -200,6 +200,12 @@ SubrecInfo::GetSubrec(const int SRId,
 //      cDims        Component dimensions. 
 //      vComps       Vector components (as shortnames). 
 //
+//  Notes: Global variables and material variables currently DO NOT 
+//         have their number of elements ever set. This is because
+//         global variables are applied to the entire mesh, and 
+//         material variables are associated with materials that
+//         are defined on the mesh. 
+//
 //  Programmer: Alister Maguire
 //  Creation:   Jan 15, 2019
 //
@@ -1310,6 +1316,12 @@ MiliClassMetaData::GetMaxLabelLength(int domain)
 //  Arguments: 
 //      domain    The domain of interest. 
 //      nEl       The number of elements on this domain. 
+//
+//  Notes: Global variables and material variables currently DO NOT 
+//         have their number of elements ever set. This is because
+//         global variables are applied to the entire mesh, and 
+//         material variables are associated with materials that
+//         are defined on the mesh. 
 //           
 //  Programmer: Alister Maguire
 //  Creation:   Jan 15, 2019
@@ -1343,6 +1355,12 @@ MiliClassMetaData::SetNumElements(int domain, int nEl)
 //  Returns:
 //      The number of elements belonging to this class on the
 //      given domain. 
+//
+//  Notes: Global variables and material variables currently DO NOT 
+//         have their number of elements ever set. This is because
+//         global variables are applied to the entire mesh, and 
+//         material variables are associated with materials that
+//         are defined on the mesh. 
 //           
 //  Programmer: Alister Maguire
 //  Creation:   Jan 15, 2019
