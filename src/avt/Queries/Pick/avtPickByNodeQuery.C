@@ -140,6 +140,10 @@ avtPickByNodeQuery::~avtPickByNodeQuery()
 //    Matt Larsen, Mon Jul 3 07:15:55 PDT 2017
 //    Adding support for picking a node by label. 
 //
+//    Alister Maguire, Wed Apr 10 11:31:03 PDT 2019
+//    Don't replace nodeid with GetCurrentNodeForOriginal if we are
+//    picking by label. 
+//
 // ****************************************************************************
 
 void
@@ -257,7 +261,7 @@ avtPickByNodeQuery::Execute(vtkDataSet *ds, const int dom)
     if (!pickAtts.GetFulfilled())
         return;
 
-    if (pickAtts.GetElementIsGlobal() && DBsuppliedNodeId)
+    if (pickAtts.GetElementIsGlobal() && DBsuppliedNodeId && !pickByLabel)
     {
         nodeid = GetCurrentNodeForOriginal(ds, pickAtts.GetElementNumber());
         usernodeid = nodeid;

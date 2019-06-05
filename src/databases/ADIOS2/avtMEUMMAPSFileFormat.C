@@ -42,6 +42,7 @@
 
 #include <avtMTMDFileFormatInterface.h>
 #include <avtMEUMMAPSFileFormat.h>
+#include <ADIOS2HelperFuncs.h>
 
 #include <string>
 #include <map>
@@ -61,42 +62,53 @@
 using namespace std;
 
 bool
-avtMEUMMAPSFileFormat::Identify(const char *fname)
+avtMEUMMAPSFileFormat::Identify(const std::string &fname,
+                                const std::map<std::string, adios2::Params> &vars,
+                                const std::map<std::string, adios2::Params> &attrs)
 {
-    adios2::ADIOS adios;
-    adios2::IO io(adios.DeclareIO("ReadBP"));
-    adios2::Engine reader = io.Open(fname, adios2::Mode::Read);
-
-    std::map<std::string, adios2::Params> variables, attributes;
-    variables = io.AvailableVariables();
-    attributes = io.AvailableAttributes();
-
     int afind = 0;
-    for (auto it = attributes.begin(); it != attributes.end(); it++)
+    for (auto it = attrs.begin(); it != attrs.end(); it++)
     {
-        if (it->first == "app" && it->second["Value"] == "\"meumapps\"")
-            afind++;
+        if (it->first == "app")
+        {
+            auto v = it->second.find("Value");
+            if (v != it->second.end() && v->second == "\"meumapps\"")
+                afind++;
+        }
     }
 
     int vfind = 0;
     vector<string> reqVars = {"Nx", "Ny", "dx", "dy", "dz"};
-    for (auto vi = variables.begin(); vi != variables.end(); vi++)
+    for (auto vi = vars.begin(); vi != vars.end(); vi++)
         if (std::find(reqVars.begin(), reqVars.end(), vi->first) != reqVars.end())
             vfind++;
 
-    return afind == 1 && vfind==reqVars.size();
+    return (afind == 1 && vfind==reqVars.size());
 }
 
 avtFileFormatInterface *
 avtMEUMMAPSFileFormat::CreateInterface(const char *const *list,
-                                         int nList,
-                                         int nBlock)
+                                       int nList,
+                                       int nBlock,
+                                       std::shared_ptr<adios2::ADIOS> adios,
+                                       adios2::Engine &reader,
+                                       adios2::IO &io,
+                                       std::map<std::string, adios2::Params> &variables,
+                                       std::map<std::string, adios2::Params> &attributes)
 {
     int nTimestepGroups = nList / nBlock;
     avtMTMDFileFormat **ffl = new avtMTMDFileFormat*[nTimestepGroups];
-    for (int i = 0 ; i < nTimestepGroups ; i++)
-        ffl[i] = new avtMEUMMAPSFileFormat(list[i*nBlock]);
-
+    for (int i = 0; i < nTimestepGroups; i++)
+    {
+        if (!i)
+        {
+            ffl[i] =  new avtMEUMMAPSFileFormat(adios, reader, io, variables, attributes, list[i*nBlock]);
+        }
+        else
+        {
+            ffl[i] =  new avtMEUMMAPSFileFormat(list[i*nBlock]);
+        }
+    }
     return new avtMTMDFileFormatInterface(ffl, nTimestepGroups);
 }
 
@@ -143,6 +155,40 @@ avtMEUMMAPSFileFormat::avtMEUMMAPSFileFormat(const char *filename)
     cout<<"NT= "<<numTimeSteps<<endl;
 }
 
+avtMEUMMAPSFileFormat::avtMEUMMAPSFileFormat(std::shared_ptr<adios2::ADIOS> adios,
+        adios2::Engine &reader,
+        adios2::IO &io,
+        std::map<std::string, adios2::Params> &variables,
+        std::map<std::string, adios2::Params> &attributes,
+        const char *filename)
+    : adios(adios),
+      reader(reader),
+      io(io),
+      numTimeSteps(1),
+      avtMTMDFileFormat(filename),
+      variables(variables)
+{
+    if (variables.size() > 0)
+    {
+        auto var0 = variables.begin()->second;
+        string nsteps = var0["AvailableStepsCount"];
+        numTimeSteps = std::stoi(nsteps);
+    }
+
+    for (auto &v : variables)
+        cout<<"Var: "<<v.first<<endl;
+
+    origin = {0,0,0};
+    spacing.push_back(std::stof(variables["dx"]["Value"]));
+    spacing.push_back(std::stof(variables["dy"]["Value"]));
+    spacing.push_back(std::stof(variables["dz"]["Value"]));
+    meshSz.push_back(std::stoi(variables["Nx"]["Value"]) + 1);
+    meshSz.push_back(std::stoi(variables["Ny"]["Value"]) + 1);
+    meshSz.push_back(std::stoi(variables["Nz"]["Value"]) + 1);
+
+    dT = std::stof(variables["dt"]["Value"]);
+    cout<<"NT= "<<numTimeSteps<<endl;
+}
 
 // ****************************************************************************
 //  Method: avtMEUMMAPSFileFormat::FreeUpResources
