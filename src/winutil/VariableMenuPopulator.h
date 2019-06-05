@@ -44,8 +44,10 @@
 #include <ExpressionList.h>
 #include <OperatorPluginInfo.h>
 #include <OperatorPluginManager.h>
-#include <string>
+
+#include <algorithm>
 #include <map>
+#include <string>
 #include <vectortypes.h>
 
 class avtDatabaseMetaData;
