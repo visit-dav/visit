@@ -16,17 +16,20 @@ SET(LIBM_SOURCES
 MiliMDServerPluginInfo.C
 ${COMMON_SOURCES}
 avtMiliFileFormat.C
+avtMiliMetaData.C
 )
 
 SET(LIBE_SOURCES
 MiliEnginePluginInfo.C
 ${COMMON_SOURCES}
 avtMiliFileFormat.C
+avtMiliMetaData.C
 )
 
 INCLUDE_DIRECTORIES(
 ${CMAKE_CURRENT_SOURCE_DIR}
 ${MILI_INCLUDE_DIR}
+${VISIT_INCLUDE_DIR}/third_party_builtin
 ${VISIT_COMMON_INCLUDES}
 ${VISIT_INCLUDE_DIR}/avt/DBAtts/MetaData
 ${VISIT_INCLUDE_DIR}/avt/DBAtts/SIL

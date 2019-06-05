@@ -1,22 +1,22 @@
 
 A:  m_plot.mili  timestep 77
 mesh1 
-Point: <9.47375, -2.84806, -8.88856>
-Zone:  166
-Incident Nodes:  751  761  762  752  
-derived/nodpos/x:  <nodal> 
-    (751) = 9
-    (761) = 9
-    (762) = 9.86048
-    (752) = 9.67844
+Point: <7.16649, 1.51223, -9.94804>
+Zone:  510
+Incident Nodes:  371  471  481  381  372  472  482  382  
+Primal/brick/stress/sx:  <zonal> = 3567.2
 
 
 B:  m_plot.mili  timestep 77
 mesh1 
-Point: <9.67844, -3.47421, -8.18943>
-Node:  753
-Incident Zones:  165  166  174  175  667  669  685  687  
-derived/nodpos/x:  <nodal> = 9.67844
+Point: <7, 1.11111, -10>
+Node:  372
+Incident Zones:  5  6  508  510  
+Primal/brick/stress/sx:  <zonal> 
+    (5) = nan
+    (6) = nan
+    (508) = -438.892
+    (510) = -8122.87
 
 
 C:  m_plot.mili  timestep 77
@@ -24,15 +24,7 @@ mesh1
 Point: <8, 8.55808, -7.11117>
 Zone:  535
 Incident Nodes:  502  602  612  512  503  603  613  513  
-derived/nodpos/x:  <nodal> 
-    (502) = 7.62432
-    (602) = 8.10904
-    (612) = 8
-    (512) = 7.5033
-    (503) = 7.91711
-    (603) = 8.38229
-    (613) = 8
-    (513) = 7.50315
+Primal/brick/stress/sx:  <zonal> = 282.835
 
 
 D:  m_plot.mili  timestep 77
@@ -40,5 +32,17 @@ mesh1
 Point: <8.10904, 7.75375, -7.75409>
 Node:  603
 Incident Zones:  89  90  98  99  515  517  533  535  676  678  694  696  
-derived/nodpos/x:  <nodal> = 8.10904
+Primal/brick/stress/sx:  <zonal> 
+    (89) = nan
+    (90) = nan
+    (98) = nan
+    (99) = nan
+    (515) = -4513.87
+    (517) = 7736.8
+    (533) = 7796.89
+    (535) = 8756.84
+    (676) = -6836.91
+    (678) = -7794.78
+    (694) = 8848.35
+    (696) = -1158.37
 

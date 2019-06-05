@@ -115,6 +115,9 @@ class  vtkLookupTable;
 //    Kathleen Biagas, Wed Dec 26 13:15:24 PST 2018
 //    Add functions for below and above range colors.
 //
+//    Alister Maguire, Wed Jan 23 11:04:08 PST 2019
+//    Added nanColor and setter. 
+//
 // ****************************************************************************
 
 class PLOTTER_API avtVariableLegend : public avtLegend
@@ -162,6 +165,8 @@ class PLOTTER_API avtVariableLegend : public avtLegend
     void                       UseBelowRangeColor(bool);
     void                       UseAboveRangeColor(bool);
 
+    void                       SetNanColor(double, double, double, double);
+
   protected:
     double                     min, max;
 
@@ -169,6 +174,7 @@ class PLOTTER_API avtVariableLegend : public avtLegend
     vtkLookupTable            *lut;
 
     double                     scale[2];
+    double                     nanColor[4];
     bool                       barVisibility;
     bool                       rangeVisibility;
     bool                       titleVisibility;
