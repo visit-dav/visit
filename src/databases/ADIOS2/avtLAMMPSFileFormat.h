@@ -62,13 +62,29 @@
 class avtLAMMPSFileFormat : public avtMTSDFileFormat
 {
   public:
-    static bool        Identify(const char *fname);
+    static bool Identify(const std::string &filename,
+                         const std::map<std::string, adios2::Params> &vars,
+                         const std::map<std::string, adios2::Params> &attrs);
+
+    // interface creator with first file already opened
     static avtFileFormatInterface *CreateInterface(const char *const *list,
                                                    int nList,
-                                                   int nBlock);
+                                                   int nBlock,
+                                                   std::shared_ptr<adios2::ADIOS> adios,
+                                                   adios2::Engine &reader,
+                                                   adios2::IO &io,
+                                                   std::map<std::string, adios2::Params> &variables,
+                                                   std::map<std::string, adios2::Params> &attributes);
 
-                       avtLAMMPSFileFormat(const char *);
-    virtual           ~avtLAMMPSFileFormat() {;};
+    avtLAMMPSFileFormat(const char *);
+    avtLAMMPSFileFormat(std::shared_ptr<adios2::ADIOS> adios,
+                        adios2::Engine &reader,
+                        adios2::IO &io,
+                        std::map<std::string, adios2::Params> &variables,
+                        std::map<std::string, adios2::Params> &attributes,
+                        const char *);
+
+    virtual           ~avtLAMMPSFileFormat() {}
 
     //
     // This is used to return unconvention data -- ranging from material

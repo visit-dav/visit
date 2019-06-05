@@ -94,14 +94,14 @@ avtdatabase_ser
 avtdbatts
 avtfilters_ser
 avtpipeline_ser
-lightweight_visit_vtk 
+lightweight_visit_vtk
 visitcommon
 visit_vtk
-${ALL_THIRDPARTY_IO_LIB} 
+${ALL_THIRDPARTY_IO_LIB}
 ${VTK_EXTRA_LIBS}
 ${OPENGL_LIBRARIES}
-${CMAKE_THREAD_LIBS} 
-${ZLIB_LIB}
+${CMAKE_THREAD_LIBS}
+${ZLIB_LIBRARY}
 )
 
 if(HAVE_OSMESA)
@@ -125,14 +125,14 @@ avtplotter_ser
 avtview
 avtviswindow_ser
 avtwriter_ser
-lightweight_visit_vtk 
+lightweight_visit_vtk
 visitcommon
 visit_vtk
-${ALL_THIRDPARTY_IO_LIB} 
+${ALL_THIRDPARTY_IO_LIB}
 ${VTK_EXTRA_LIBS}
 ${OPENGL_LIBRARIES}
-${CMAKE_THREAD_LIBS} 
-${ZLIB_LIB}
+${CMAKE_THREAD_LIBS}
+${ZLIB_LIBRARY}
 )
 
 if(HAVE_OSMESA)
@@ -153,14 +153,14 @@ avtdatabase_ser
 avtdbatts
 avtfilters_ser
 avtpipeline_ser
-lightweight_visit_vtk 
+lightweight_visit_vtk
 visitcommon
 visit_vtk
-${ALL_THIRDPARTY_IO_LIB} 
+${ALL_THIRDPARTY_IO_LIB}
 ${VTK_EXTRA_LIBS}
 ${OPENGL_LIBRARIES}
-${CMAKE_THREAD_LIBS} 
-${ZLIB_LIB}
+${CMAKE_THREAD_LIBS}
+${ZLIB_LIBRARY}
 )
 
 if(HAVE_OSMESA)
@@ -184,14 +184,14 @@ avtplotter_ser
 avtview
 avtviswindow_ser
 avtwriter_ser
-lightweight_visit_vtk 
+lightweight_visit_vtk
 visitcommon
 visit_vtk
-${ALL_THIRDPARTY_IO_LIB} 
+${ALL_THIRDPARTY_IO_LIB}
 ${VTK_EXTRA_LIBS}
 ${OPENGL_LIBRARIES}
-${CMAKE_THREAD_LIBS} 
-${ZLIB_LIB}
+${CMAKE_THREAD_LIBS}
+${ZLIB_LIBRARY}
 )
 
 if(HAVE_OSMESA)
@@ -216,12 +216,12 @@ avtview
 avtviswindow_ser
 avtwriter_ser
 engine_ser
-lightweight_visit_vtk 
+lightweight_visit_vtk
 visitcommon
 visit_vtk
-${ALL_THIRDPARTY_IO_LIB} 
+${ALL_THIRDPARTY_IO_LIB}
 ${VTK_EXTRA_LIBS}
 ${OPENGL_LIBRARIES}
-${CMAKE_THREAD_LIBS} 
-${ZLIB_LIB}
+${CMAKE_THREAD_LIBS}
+${ZLIB_LIBRARY}
 )

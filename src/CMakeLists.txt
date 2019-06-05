@@ -446,6 +446,9 @@
 #    Eric Brugger, Mon Jan 28 15:14:54 PST 2019
 #    Changed SVN_REVISION to GIT_VERSION.
 #
+#    Kathleen Biagas, Tue May 28 09:44:02 PDT 2019
+#    ZLIB is no longer optional.
+#
 #****************************************************************************/
 
 CMAKE_MINIMUM_REQUIRED(VERSION 3.8 FATAL_ERROR)
@@ -837,6 +840,7 @@ ENDIF(WIN32)
 #
 VISIT_3RDPARTY_VAR(ADIOS_DIR     "Path containing the ADIOS library's include and lib")
 VISIT_3RDPARTY_VAR(ADIOS2_DIR     "Path containing the ADIOS library's include and lib")
+VISIT_3RDPARTY_VAR(ADIOS2_PAR_DIR "Path containing the ADIOS MPI library's include and lib")
 VISIT_3RDPARTY_VAR(ADVIO_DIR     "Path containing the AdvIO library's include and lib")
 VISIT_3RDPARTY_VAR(BOOST_DIR     "Path containing the BOOST library's include and lib")
 VISIT_3RDPARTY_VAR(BOXLIB_DIR    "Path containing the Boxlib library's include and lib")
@@ -898,7 +902,8 @@ VISIT_3RDPARTY_VAR(TBB_ROOT      "Path containing the TBB library's include and 
 #-----------------------------------------------------------------------------
 FILE(STRINGS VERSION VERSION)
 IF(NOT VERSION)
-    SET(VERSION "3.0.0")
+    MESSAGE(FATAL_ERROR
+        "File \"VERSION\" with ascii string of VisIt version does not exist")
 ENDIF(NOT VERSION)
 SET(VISIT_VERSION ${VERSION})
 
@@ -1169,7 +1174,6 @@ CHECK_INCLUDE_FILES (sys/time.h  HAVE_SYS_TIME_H)
 CHECK_INCLUDE_FILES (sys/types.h HAVE_SYS_TYPES_H)
 CHECK_INCLUDE_FILES (sys/stat.h  HAVE_SYS_STAT_H)
 CHECK_INCLUDE_FILES (unistd.h    HAVE_UNISTD_H)
-CHECK_INCLUDE_FILES (zlib.h      HAVE_ZLIB_H)
 CHECK_INCLUDE_FILES (stdbool.h   HAVE_STDBOOL_H)
 
 # Configure VTK support.
@@ -1683,11 +1687,9 @@ SET(VISIT_COMMON_INCLUDES
     ${VISIT_SOURCE_DIR}/common/proxybase
     ${VISIT_SOURCE_DIR}/common/state
     ${VISIT_SOURCE_DIR}/common/utility
+    ${ZLIB_INCLUDE_DIR}
     )
 
-if(HAVE_ZLIB_H)
-    list(APPEND VISIT_COMMON_INCLUDES ${ZLIB_INCLUDE_DIR})
-endif()
 
 # macros/defines needed by CMake/VisItMacros.cmake
 if (NOT DEFINED VISIT_REPLACE_DEBUG_FLAGS)
@@ -2151,7 +2153,7 @@ endif()
 
 
 #-----------------------------------------------------------------------------
-# Add the "test" directory 
+# Add the "test" directory
 #-----------------------------------------------------------------------------
 # I'm trying to make the new tetsing work hramoniously with the old testing
 # while it's evaluated. if the new testing were ever made permanent then
@@ -2285,4 +2287,3 @@ ENDIF (NOT WIN32)
 if(VISIT_INSTALL_THIRD_PARTY)
     include(${VISIT_SOURCE_DIR}/CMake/PluginVsInstallHelpers.cmake)
 endif()
-

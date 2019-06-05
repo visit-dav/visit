@@ -15,11 +15,7 @@ function bv_mfem_disable
 
 function bv_mfem_depends_on
 {
-    local depends_on=""
-
-    if [[ "$DO_ZLIB" == "yes" ]] ; then
-        depends_on="$depends_on zlib"
-    fi
+    local depends_on="zlib"
 
     if [[ "$DO_CONDUIT" == "yes" ]] ; then
         depends_on="$depends_on conduit"
@@ -61,16 +57,7 @@ function bv_mfem_host_profile
             "VISIT_OPTION_DEFAULT(VISIT_MFEM_DIR \${VISITHOME}/mfem/$MFEM_VERSION/\${VISITARCH})" \
             >> $HOSTCONF
 
-        ZLIB_LIBDEP=""
-        if [[ "$DO_ZLIB" == "yes" ]] ; then
-            ZLIB_LIBDEP="\${VISITHOME}/zlib/$ZLIB_VERSION/\${VISITARCH}/lib z"
-        else
-            ZLIB_LIBDEP="/usr/lib z"
-            #moving global patch to have limited effect
-            if [[ -d /usr/lib/x86_64-linux-gnu ]]; then
-                ZLIB_LIBDEP="/usr/lib/x86_64-linux-gnu z"
-            fi
-        fi
+        ZLIB_LIBDEP="\${VISITHOME}/zlib/$ZLIB_VERSION/\${VISITARCH}/lib z"
 
         CONDUIT_LIBDEP=""
         if [[ "$DO_CONDUIT" == "yes" ]] ; then
@@ -123,9 +110,7 @@ function build_mfem
 
     cd $MFEM_BUILD_DIR || error "Can't cd to mfem build dir."
 
-    if [[ "$DO_ZLIB" == "yes" ]] ; then
-        ZLIBARG=-L${VISITDIR}/zlib/${ZLIB_VERSION}/${VISITARCH}/lib
-    fi
+    ZLIBARG=-L${VISITDIR}/zlib/${ZLIB_VERSION}/${VISITARCH}/lib
 
     MFEM_USE_CONDUIT=NO
 

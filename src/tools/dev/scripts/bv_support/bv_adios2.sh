@@ -67,12 +67,12 @@ function bv_adios2_initialize_vars
 
 function bv_adios2_info
 {
-    export ADIOS2_VERSION=${ADIOS2_VERSION:-"2.3.1"}
+    export ADIOS2_VERSION=${ADIOS2_VERSION:-"2.4.0"}
     export ADIOS2_FILE=${ADIOS2_FILE:-"adios2-${ADIOS2_VERSION}.tar.gz"}
     export ADIOS2_COMPATIBILITY_VERSION=${ADIOS2_COMPATIBILITY_VERSION:-"${ADIOS2_VERSION}"}
-    export ADIOS2_URL=${ADIOS2_URL:-"https://github.com/ornladios/ADIOS2/releases/download/v2.3.1"}
-    export ADIOS2_BUILD_DIR=${ADIOS2_BUILD_DIR:-"adios2-"${ADIOS2_VERSION}}
-    export ADIOS2_MD5_CHECKSUM="bed21d58048dc9c77d7919cde9142d54"
+    export ADIOS2_URL=${ADIOS2_URL:-"https://github.com/ornladios/ADIOS2/releases/download/v2.4.0-rc"}
+    export ADIOS2_BUILD_DIR=${ADIOS2_BUILD_DIR:-"ADIOS2-"${ADIOS2_VERSION}}
+    export ADIOS2_MD5_CHECKSUM="be3f5c7d7ab4f7df65599bebc91e0ce4"
     export ADIOS2_SHA256_CHECKSUM=""
 }
 
@@ -209,7 +209,7 @@ function build_adios2
         cfg_opts="${cfg_opts} -DCMAKE_INSTALL_PREFIX:PATH=${adios2_install_path}"
         cfg_opts="${cfg_opts} -DCMAKE_C_FLAGS:STRING=\"${C_OPT_FLAGS}\""
         cfg_opts="${cfg_opts} -DCMAKE_CXX_FLAGS:STRING=\"${CXX_OPT_FLAGS}\""
-        cfg_opts="${cfg_opts} -DADIOS2_USE_SST:BOOL=OFF"
+        cfg_opts="${cfg_opts} -DADIOS2_USE_SST:BOOL=ON"
 
         if [[ "$bt" == "ser" ]]; then
             cfg_opts="${cfg_opts} -DADIOS2_USE_MPI:BOOL=OFF"

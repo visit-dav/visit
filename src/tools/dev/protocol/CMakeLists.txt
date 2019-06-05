@@ -76,7 +76,6 @@ SET(VTK_EXTRA_LIBS
 vtktiff
 vtkjpeg
 vtkpng
-${VTKZLIB_LIB}
 ${VTK_FREETYPE_LIBRARIES}
 )
 
