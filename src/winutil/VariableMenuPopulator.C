@@ -1580,7 +1580,7 @@ void
 VariableMenuPopulator::VariableList::AddVariable(const std::string &var, bool validVar)
 {
     if(sorted)
-        sortedVariables[var] = validVar;
+        sortedVariables.insert(std::pair<std::string,bool>(var,validVar));
     else
     {
         unsortedVariableNames.push_back(var);
@@ -1949,7 +1949,7 @@ VariableMenuPopulator::VariableList::IsGroupingRequired(
         {
             if (pathvar.size() == 1)
                 j = 0;
-            originalNameToGroupedName[path + pathvar[j]] = newpath + pathvar[j];
+            originalNameToGroupedName.insert(std::pair<std::string,std::string>(path + pathvar[j],newpath + pathvar[j]));
         }
     }
     visitTimer->StopTimer(stage3, "Stage 3");
