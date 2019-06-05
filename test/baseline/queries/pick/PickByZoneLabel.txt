@@ -1,8 +1,8 @@
 
-brick 19:  sslide14ball_l.plt.mili  timestep 0
+shell 9:  sslide14ball_l.plt.mili  timestep 0
 mesh1 
-Point: <2.24167, 0.75, 0.245>
-Zone:  106
-Incident Nodes:  71  77  95  92  72  78  96  93  
-OriginalZoneLabels:  <zonal> = brick 19
+Point: <1.24833, 1, 0.755>
+Zone:  15
+Incident Nodes:  47  48  51  50  
+OriginalZoneLabels:  <zonal> = shell 9
 
