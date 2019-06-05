@@ -46,5 +46,5 @@ INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
 
 SET_UP_THIRD_PARTY(ADIOS2 lib include adios2)
 IF(VISIT_PARALLEL)
-    SET_UP_THIRD_PARTY(ADIOS2_MPI lib include adios2)
+    SET_UP_THIRD_PARTY(ADIOS2_PAR lib include adios2)
 ENDIF(VISIT_PARALLEL)

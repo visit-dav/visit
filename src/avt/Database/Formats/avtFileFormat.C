@@ -623,6 +623,51 @@ avtFileFormat::AddMaterialToMetaData(avtDatabaseMetaData *md, string name,
 
 
 // ****************************************************************************
+//  Method: avtFileFormat::AddMaterialToMetaData
+//
+//  Purpose:
+//      A convenience routine to add a material to the meta-data.
+//
+//  Arguments:
+//      md         The meta-data object to add the material to.
+//      name       The name of the material.
+//      mesh       The mesh the material is defined on.
+//      nmats      The number of materials.
+//      matnames   The names of each material.
+//      matcolors  The colors of each material in hex format. 
+//
+//  Programmer:    Alister Maguire
+//  Creation:      January 30, 2019
+//
+// ****************************************************************************
+
+void
+avtFileFormat::AddMaterialToMetaData(avtDatabaseMetaData *md, string name,
+                                     string mesh, int nmats,
+                                     vector<string> matnames,
+                                     vector<string> matcolors)
+{
+    avtMaterialMetaData *mat = new avtMaterialMetaData();
+    mat->name = name;
+    mat->meshName = mesh;
+    mat->numMaterials = nmats;
+    if (matnames.size() == 0)
+    {
+        for (int i = 0; i < nmats; i++)
+        {
+            char num[8];
+            SNPRINTF(num, sizeof(num), "%d", i);
+            matnames.push_back(num);
+        }
+    }
+    mat->materialNames = matnames;
+    mat->colorNames = matcolors;
+
+    md->Add(mat);
+}
+
+
+// ****************************************************************************
 //  Method: avtFileFormat::AddSpeciesToMetaData
 //
 //  Purpose:
