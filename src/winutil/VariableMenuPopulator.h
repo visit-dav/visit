@@ -126,6 +126,9 @@ class QObject;
 //   Make GetOperatorCreatedExpressions be a static method, so the viewer can
 //   make use of it any time, even if there is no VariableMenuPopulator.
 //
+//   Mark C. Miller, Wed Jun  5 13:48:56 PDT 2019
+//   Change use of maps for variable lists to multimaps using case-insensitive
+//   comparator function.
 // ****************************************************************************
 
 class WINUTIL_API VariableMenuPopulator

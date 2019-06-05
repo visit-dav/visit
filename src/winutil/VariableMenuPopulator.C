@@ -1573,7 +1573,10 @@ VariableMenuPopulator::VariableList::operator != (const VariableMenuPopulator::V
 // Creation:   Thu Aug 5 14:47:34 PST 2004
 //
 // Modifications:
-//   
+//
+//   Mark C. Miller, Wed Jun  5 13:48:56 PDT 2019
+//   Change use of maps for variable lists to multimaps using case-insensitive
+//   comparator function.
 // ****************************************************************************
 
 void
@@ -1759,6 +1762,9 @@ VariableMenuPopulator::VariableList::Size() const
 //    is only added if one of the variable's paths was grouped. That is, not
 //    all variables will have an entry in the map.
 //
+//    Mark C. Miller, Wed Jun  5 13:48:56 PDT 2019
+//    Change use of maps for variable lists to multimaps using case-insensitive
+//    comparator function.
 // ****************************************************************************
 
 bool
