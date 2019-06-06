@@ -39,6 +39,14 @@ mesh.
        *same* database.
     #. Donor variable and target mesh are in wholly different databases.
 
+**Note:** if you wish to create a CMFE that works properly across a time series
+with wholly different databases (3rd case above),
+the data-level comparisons wizard does not directly support that. However, you
+can use wizard to construct an *initial* CMFE expression and then edit it manually
+in the :ref:`Expression Window <expressionwindow>` to adjust it for a time series 
+following the documentation on
+:ref:`donor variable syntax <Pos_Cmfe_Donor_Variable_Synax>`.
+
 .. _dlc_2:
 
 .. figure:: images/DataLevelComparisons1.png
@@ -162,3 +170,5 @@ In addition, this new expression can be used in other expressions. Finally,
 if for some reason the resulting expression is problematic, it can be deleted
 from the Expression system and the Data-Level Comparisons wizard can be run
 again to re-create it as desired.
+
+.. _dlc_for_time_series:

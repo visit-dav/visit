@@ -1573,14 +1573,17 @@ VariableMenuPopulator::VariableList::operator != (const VariableMenuPopulator::V
 // Creation:   Thu Aug 5 14:47:34 PST 2004
 //
 // Modifications:
-//   
+//
+//   Mark C. Miller, Wed Jun  5 13:48:56 PDT 2019
+//   Change use of maps for variable lists to multimaps using case-insensitive
+//   comparator function.
 // ****************************************************************************
 
 void
 VariableMenuPopulator::VariableList::AddVariable(const std::string &var, bool validVar)
 {
     if(sorted)
-        sortedVariables[var] = validVar;
+        sortedVariables.insert(std::pair<std::string,bool>(var,validVar));
     else
     {
         unsortedVariableNames.push_back(var);
@@ -1759,6 +1762,9 @@ VariableMenuPopulator::VariableList::Size() const
 //    is only added if one of the variable's paths was grouped. That is, not
 //    all variables will have an entry in the map.
 //
+//    Mark C. Miller, Wed Jun  5 13:48:56 PDT 2019
+//    Change use of maps for variable lists to multimaps using case-insensitive
+//    comparator function.
 // ****************************************************************************
 
 bool
@@ -1949,7 +1955,7 @@ VariableMenuPopulator::VariableList::IsGroupingRequired(
         {
             if (pathvar.size() == 1)
                 j = 0;
-            originalNameToGroupedName[path + pathvar[j]] = newpath + pathvar[j];
+            originalNameToGroupedName.insert(std::pair<std::string,std::string>(path + pathvar[j],newpath + pathvar[j]));
         }
     }
     visitTimer->StopTimer(stage3, "Stage 3");
