@@ -1,6 +1,5 @@
 #*****************************************************************************
-#  Copyright (c) VisIt
-#  All rights reserved.
+#  Copyright (c) VisIt.  All rights reserved.
 #  See the top-level COPYRIGHT file for details.
 #
 # Modifications:
