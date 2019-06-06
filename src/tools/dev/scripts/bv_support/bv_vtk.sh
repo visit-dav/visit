@@ -231,8 +231,8 @@ function apply_vtkopenglspheremapper_patch
   # evidenced when points are double precision
 
    patch -p0 << \EOF
-*** Rendering/OpenGL2/vtkOpenGLSphereMapper.cxx.orig  2019-06-05 11:50:10.132656000 -0700
---- Rendering/OpenGL2/vtkOpenGLSphereMapper.cxx  2019-06-05 10:27:56.078965000 -0700
+*** Rendering/OpenGL2/vtkOpenGLSphereMapper.cxx.orig 2017-12-22 08:33:25.000000000 -0800
+--- Rendering/OpenGL2/vtkOpenGLSphereMapper.cxx 2019-06-06 12:21:13.735291000 -0700
 ***************
 *** 15,20 ****
 --- 15,21 ----
@@ -260,14 +260,14 @@ function apply_vtkopenglspheremapper_patch
 !   verts->SetNumberOfTuples(numPts*3);
 !   float *vPtr = static_cast<float *>(verts->GetVoidPointer(0));
   
--   vtkFloatArray *offsets = vtkFloatArray::New();
--   offsets->SetNumberOfComponents(2);
--   offsets->SetNumberOfTuples(numPts*3);
--   float *oPtr = static_cast<float *>(offsets->GetVoidPointer(0));
-  
-!   vtkUnsignedCharArray *ucolors = vtkUnsignedCharArray::New();
-!   ucolors->SetNumberOfComponents(4);
-!   ucolors->SetNumberOfTuples(numPts*3);
+!   vtkFloatArray *offsets = vtkFloatArray::New();
+!   offsets->SetNumberOfComponents(2);
+!   offsets->SetNumberOfTuples(numPts*3);
+    float *oPtr = static_cast<float *>(offsets->GetVoidPointer(0));
+- 
+-   vtkUnsignedCharArray *ucolors = vtkUnsignedCharArray::New();
+-   ucolors->SetNumberOfComponents(4);
+-   ucolors->SetNumberOfTuples(numPts*3);
     unsigned char *cPtr = static_cast<unsigned char *>(ucolors->GetVoidPointer(0));
   
 !   float *pointPtr;
@@ -288,37 +288,21 @@ function apply_vtkopenglspheremapper_patch
       *(cPtr++) = colorPtr[0];
       *(cPtr++) = colorPtr[1];
       *(cPtr++) = colorPtr[2];
---- 212,266 ----
+--- 212,250 ----
     os << indent << "Radius: " << this->Radius << "\n";
   }
   
-! 
-! //-------------------------------------------------------------------------
-! bool vtkOpenGLSphereMapper::GetNeedToRebuildBufferObjects(
-!   vtkRenderer *vtkNotUsed(ren),
-!   vtkActor *act)
-  {
-!   // picking state does not require a rebuild, unlike our parent
-!   if (this->VBOBuildTime < this->GetMTime() ||
-!       this->VBOBuildTime < act->GetMTime() ||
-!       this->VBOBuildTime < this->CurrentInput->GetMTime())
-!   {
-!     return true;
-!   }
-!   return false;
-! }
-  
-  
+! // internal function called by BuildBufferObjects
 ! template <typename PtsArray, typename SizesArray>
 ! void vtkOpenGLSphereMapper_PrepareVBO(
 !   PtsArray *points, unsigned char *colors, int colorComponents,
 !   vtkIdType nc, SizesArray *sizesA, vtkIdType ns,
 !   vtkFloatArray *verts, vtkFloatArray *offsets, vtkUnsignedCharArray *ucolors)
-! {
+  {
 !   vtkIdType numPts = points->GetNumberOfTuples();
-! 
+  
 !   float *vPtr = static_cast<float *>(verts->GetVoidPointer(0));
-!   float *oPtr = static_cast<float *>(offsets->GetVoidPointer(0));
+    float *oPtr = static_cast<float *>(offsets->GetVoidPointer(0));
     unsigned char *cPtr = static_cast<unsigned char *>(ucolors->GetVoidPointer(0));
   
 !   vtkDataArrayAccessor<PtsArray> pointPtr(points);
@@ -355,7 +339,7 @@ function apply_vtkopenglspheremapper_patch
       *(cPtr++) = colorPtr[0];
       *(cPtr++) = colorPtr[1];
       *(cPtr++) = colorPtr[2];
---- 268,276 ----
+--- 252,260 ----
       *(oPtr++) = -2.0f*radius*cos30;
       *(oPtr++) = -radius;
   
@@ -376,7 +360,7 @@ function apply_vtkopenglspheremapper_patch
       *(cPtr++) = colorPtr[0];
       *(cPtr++) = colorPtr[1];
       *(cPtr++) = colorPtr[2];
---- 278,286 ----
+--- 262,270 ----
       *(oPtr++) = 2.0f*radius*cos30;
       *(oPtr++) = -radius;
   
@@ -387,7 +371,7 @@ function apply_vtkopenglspheremapper_patch
       *(cPtr++) = colorPtr[1];
       *(cPtr++) = colorPtr[2];
 ***************
-*** 275,303 ****
+*** 275,288 ****
       *(oPtr++) = 0.0f;
       *(oPtr++) = 2.0f*radius;
     }
@@ -399,25 +383,10 @@ function apply_vtkopenglspheremapper_patch
 -   this->VBOs->CacheDataArray("scalarColor", ucolors, ren, VTK_UNSIGNED_CHAR);
 -   ucolors->Delete();
 -   VBOs->BuildAllVBOs(ren);
-- }
-- 
-- //-------------------------------------------------------------------------
-- bool vtkOpenGLSphereMapper::GetNeedToRebuildBufferObjects(
--   vtkRenderer *vtkNotUsed(ren),
--   vtkActor *act)
-- {
--   // picking state does not require a rebuild, unlike our parent
--   if (this->VBOBuildTime < this->GetMTime() ||
--       this->VBOBuildTime < act->GetMTime() ||
--       this->VBOBuildTime < this->CurrentInput->GetMTime())
--   {
--     return true;
--   }
--   return false;
   }
   
   //-------------------------------------------------------------------------
---- 288,293 ----
+--- 272,277 ----
 ***************
 *** 320,326 ****
     // then the scalars do not have to be regenerted.
@@ -427,7 +396,7 @@ function apply_vtkopenglspheremapper_patch
     unsigned char *c;
     int cc;
     vtkIdType nc;
---- 310,318 ----
+--- 309,317 ----
     // then the scalars do not have to be regenerted.
     this->MapScalars(1.0);
   
@@ -438,8 +407,16 @@ function apply_vtkopenglspheremapper_patch
     int cc;
     vtkIdType nc;
 ***************
-*** 341,373 ****
-      cc = 3;
+*** 333,373 ****
+    else
+    {
+      double *ac = act->GetProperty()->GetColor();
+!     c = new unsigned char[3];
+      c[0] = (unsigned char) (ac[0] *255.0);
+      c[1] = (unsigned char) (ac[1] *255.0);
+      c[2] = (unsigned char) (ac[2] *255.0);
+      nc = 1;
+!     cc = 3;
     }
   
 !   float *scales;
@@ -472,8 +449,18 @@ function apply_vtkopenglspheremapper_patch
   
     // create the IBO
     this->Primitives[PrimitivePoints].IBO->IndexCount = 0;
---- 333,385 ----
-      cc = 3;
+--- 324,386 ----
+    else
+    {
+      double *ac = act->GetProperty()->GetColor();
+!     double opac = act->GetProperty()->GetOpacity();
+!     c = new unsigned char[4];
+      c[0] = (unsigned char) (ac[0] *255.0);
+      c[1] = (unsigned char) (ac[1] *255.0);
+      c[2] = (unsigned char) (ac[2] *255.0);
++     c[3] = (unsigned char) (opac  *255.0);
+      nc = 1;
+!     cc = 4;
     }
   
 !   vtkDataArray *scales = NULL;
