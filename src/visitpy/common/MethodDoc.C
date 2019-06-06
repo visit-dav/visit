@@ -472,7 +472,7 @@ const char *visit_ChooseCenterOfRotation_doc =
 "    A double that is the X coordinate of the pick point in normalized [0,1]\n"
 "    screen space.\n"
 "screenY\n"
-"    A double that is the Y cooridinate of the pick point in normalized [0,1]\n"
+"    A double that is the Y coordinate of the pick point in normalized [0,1]\n"
 "    screen space.\n"
 "\n"
 "\n"

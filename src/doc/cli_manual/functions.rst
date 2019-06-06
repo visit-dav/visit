@@ -447,7 +447,7 @@ screenX : double
     screen space.
 
 screenY : double
-    A double that is the Y cooridinate of the pick point in normalized [0,1]
+    A double that is the Y coordinate of the pick point in normalized [0,1]
     screen space.
 
 return type : CLI_return_t
