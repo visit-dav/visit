@@ -29,4 +29,3 @@ bool ADIOS2Helper_IsStagingEngine(const std::string &engineName)
     else
         return false;
 }
-
