@@ -43,23 +43,32 @@
 #ifndef AVT_MILI_FILE_FORMAT_H
 #define AVT_MILI_FILE_FORMAT_H
 
-#include <list>
-#include <map>
-#include <vector>
-#include <string>
-#include <visitstream.h>
+#include <unordered_map>
+#include <vectortypes.h>
+
+#include <Expression.h>
 
 extern "C" {
 #include <mili.h>
 }
 
 #include <avtMTMDFileFormat.h>
-#include <avtTypes.h>
+#include <avtMiliMetaData.h>
+
+#include "rapidjson/document.h"
+#include "rapidjson/istreamwrapper.h"
 
 class avtMaterial;
 class vtkDataArray;
 class vtkUnstructuredGrid;
 class vtkFloatArray;
+class vtkPoints;
+class vtkElementLabelArray;
+
+using std::string;
+
+typedef std::unordered_map<string, int> StrToIntMap;
+
 
 // ****************************************************************************
 //  Class: avtMiliFileFormat
@@ -67,49 +76,16 @@ class vtkFloatArray;
 //  Purpose:
 //      A file format reader for Mili.
 //
-//  Notes:       Much of the code was taken from Doug Speck's GRIZ reader.
-//      
-//  Programmer:  Hank Childs
-//  Creation:    April  11, 2003
+//  Notes:  This filter was largely re-written in Jan 2019 in order to better 
+//          handle scalability, extensibility, and the in-coming requests from
+//          mili users. Methods that retain significant portions of the original
+//          code contain notes about such in their docstrings. The original 
+//          filter was first created by Hank Childs on April 11, 2003. 
+//
+//  Programmer:  Alister Maguire
+//  Creation:    Jan 16, 2019
 //
 //  Modifications:
-//    Akira Haddox, Fri May 23 08:30:01 PDT 2003
-//    Added in support for multiple meshes within a Mili database.
-//    Changed into a MTMD file format.
-//
-//    Akira Haddox, Tue Jul 22 09:21:39 PDT 2003
-//    Added meshId argument to ConstructMaterials.
-//    Added reading in of times. Added FreeUpResources.
-//    Changed sub_records to hold mili type 'Subrecord'.
-//
-//    Akira Haddox, Fri Jul 25 11:09:13 PDT 2003
-//    Added var_dimension.
-//
-//    Akira Haddox, Mon Aug 18 14:31:55 PDT 2003
-//    Added dyna partition support for ghostzones.
-//
-//    Hank Childs, Mon Oct 20 10:07:00 PDT 2003
-//    Added GetTimes and times data member.
-//
-//    Hank Childs, Tue Jul 20 14:47:31 PDT 2004
-//    Added an array for the variable type.
-//
-//    Mark C. Miller, Tue May 17 18:48:38 PDT 2005
-//    Added timeState arg to PopulateDatabaseMetaData to satisfy new interface
-//
-//    Mark C. Miller, Mon Jul 18 13:41:13 PDT 2005
-//    Added CanCacheVariable since we handle caching of "param arrays" here
-//    in the plugin and added data members to handle free nodes mesh
-//
-//    Mark C. Miller, Wed Jan  4 16:51:34 PST 2006
-//    Added IssueWarning private method and warn_map data member
-//
-//    Eric Brugger, Mon Sep 21 10:54:40 PDT 2015
-//    The reader now returns the cycles and times in the meta data and 
-//    marks them as accurate so that they are used where needed.
-//
-//    Matt Larsen, Wed May 31  08:15:42 PDT 2017
-//    Adding functions and data structures for node and zone labels
 //
 // ****************************************************************************
 
@@ -117,245 +93,166 @@ class avtMiliFileFormat : public avtMTMDFileFormat
 {
   public:
                           avtMiliFileFormat(const char *);
+
     virtual              ~avtMiliFileFormat();
     
     virtual const char   *GetType(void) { return "Mili File Format"; };
     
-    virtual void          GetCycles(std::vector<int> &);
-    virtual void          GetTimes(std::vector<double> &);
+    virtual void          GetCycles(intVector &);
+
+    virtual void          GetTimes(doubleVector &);
+
     virtual int           GetNTimesteps(void);
- 
-    virtual vtkDataSet   *GetMesh(int, int, const char *);
-    virtual vtkDataArray *GetVar(int, int, const char *);
-    virtual vtkDataArray *GetVectorVar(int, int, const char *);
+
+    virtual vtkDataSet   *GetMesh(int, 
+                                  int, 
+                                  const char *); 
+
+    virtual vtkDataArray *GetVar(int, 
+                                 int, 
+                                 const char *);
+
+    virtual vtkDataArray *GetVectorVar(int, 
+                                       int, 
+                                       const char *);
 
     virtual void          PopulateDatabaseMetaData(avtDatabaseMetaData *, int);
 
-    virtual void         *GetAuxiliaryData(const char *var, int, int,
-                                           const char *type, void *args,
-                                           DestructorFunction &);
+    virtual void         *GetAuxiliaryData(const char *, 
+                                           int, 
+                                           int,
+                                           const char *, 
+                                           void *,
+                                           DestructorFunction &); 
 
-    virtual void          FreeUpResources(void);
+    virtual void          FreeUpResources(void) {};
 
-    virtual bool          CanCacheVariable(const char *varname);
+    virtual bool          CanCacheVariable(const char *);
 
   protected:
-    char *famroot;
-    char *fampath;
-    char filepath[512];
 
-    std::vector<Famid>    dbid;
-    int                   ntimesteps;
-    int                   ndomains;
-    int                   nmeshes;
-    bool                  setTimesteps;
-    std::vector<int>      cycles;
-    std::vector<double>   times;
+    inline void           OpenDB(int);
 
-    std::map<int, int>    warn_map;
-    std::vector<bool>     validateVars;
-    std::vector<bool>     readMesh;
-    int                   dims;
+    void                  ReadMesh(int);
 
-    // Free node variables
-    int                                   *free_nodes;
-    int                                    free_nodes_ts;
-    int                                    num_free_nodes;
+    int                   ExtractMeshIdFromPath(const string &);
 
-    // Particle node variables
-    int                                   *part_nodes;
-    int                                    part_nodes_ts;
-    int                                    num_part_nodes;
+    vtkPoints            *GetNodePositions(int, int, int);
 
-    std::vector<std::vector<int> >          nnodes;
-    std::vector<std::vector<int> >          ncells;
-    int                                    qty_nodes, qty_cells;
+    void                  GetVar(int, 
+                                 int, 
+                                 int,
+                                 MiliVariableMetaData *varMD,
+                                 vtkFloatArray *);
 
-    std::vector<std::vector<vtkUnstructuredGrid *> > connectivity;
+    void                  GetVectorVar(int, 
+                                       int, 
+                                       int,
+                                       MiliVariableMetaData *varMD,
+                                       vtkFloatArray *);
 
-    std::vector<std::vector<Subrecord> >    sub_records;
-    std::vector<std::vector<int> >          sub_record_ids;
-    std::map<std::string, State_variable>  svars;
-    std::map<std::string, State_variable>::iterator svars_iter;
+    void                  GetElementSetVar(int, 
+                                           int,
+                                           int,
+                                           string, 
+                                           MiliVariableMetaData *varMD,
+                                           vtkFloatArray *);
 
-    std::vector<std::vector<std::string> >  element_group_name;
-    std::vector<std::vector<int> >          connectivity_offset;
-    std::vector<std::vector<int> >          group_mesh_associations;
+    void                  ReadMiliVarToBuffer(char *,
+                                              const intVector &,
+                                              SubrecInfo *,
+                                              int,
+                                              int,
+                                              int,
+                                              int,
+                                              int,
+                                              float *);
 
-    std::vector<std::string>               known_param_arrays;
-    std::vector<std::string>               vars;
-    std::vector<std::string>               vars_dir;
-    std::vector<std::string>               descr;       
-    std::vector<avtCentering>              centering;
-    std::vector<std::vector<std::vector<bool> > > vars_valid;
-    std::vector<std::vector<std::vector<int> > > var_size;
-    std::vector<avtVarType>                vartype;
-    std::vector<int>                       var_dimension;
-    std::vector<int>                       var_mesh_associations;
+    void                  PopulateSubrecordInfo(int, 
+                                                int);
 
-    std::vector<int>                       nmaterials;
-    std::vector<std::vector<avtMaterial *> > materials;
+    void                  AddMiliVariableToMetaData(avtDatabaseMetaData *,
+                                                    int,
+                                                    int,
+                                                    bool,
+                                                    string,
+                                                    avtCentering,
+                                                    const intVector &,
+                                                    const stringVector &);
 
-    //************************************************
-    // Added May 17, 2010: I. R. Corey
-    //       New data structures to support GrizIt.
-    //************************************************
+    //
+    // Json extraction methods. 
+    //
+    void                  LoadMiliInfoJson(const char *);
 
-    typedef struct __mili_zones_type {
-            int qty, index;
-            int *labels;
-            int conn_count;
-            int *conns;
-            int *mats;
-            int *parts;
-            int block_qty, *block_list;
-            int *ids;
-    } mili_zones_type;
+    int                   CountJsonClassVariables(const rapidjson::Document &,
+                                                  StrToIntMap &);
 
-    typedef struct __mili_elem_class_type {
-            std::string short_name, long_name;
-            int sclass;
-            int qty;
-            mili_zones_type *zone_data;
-            int *ids;
-            bool mlClass;
-            bool addedToMetadata;
-    } mili_elem_class_type;
+    MiliVariableMetaData *ExtractJsonVariable(const rapidjson::Document &,
+                                              const rapidjson::Value &,
+                                              string,
+                                              string,
+                                              string,
+                                              int,
+                                              bool,
+                                              bool,
+                                              StrToIntMap &);
 
-    typedef struct __mili_nodes_type {
-            int qty;
-            int *labels;
-    } mili_nodes_type;
+    void                  ExtractJsonVectorComponents(const rapidjson::Value &,
+                                                      const rapidjson::Value &,
+                                                      string,
+                                                      int);
 
-    typedef struct __mili_node_class_type {
-            std::string short_name, long_name;
-            int qty;
-            mili_nodes_type *node_data;            
-    } mili_node_class_type;
+    void                  ExtractJsonClasses(rapidjson::Document &,
+                                             int,
+                                             StrToIntMap &);
 
-    typedef struct __mili_primal_type {
-            std::vector<std::string> class_names;
-            int dataType, vecLen;
-            bool node_centered;
-            std::vector<std::string> comp_names;
-    } mili_primal_type; 
+    //
+    // Label info retrieval.
+    //
+    void                   RetrieveZoneLabelInfo(const int, 
+                                                 char *, 
+                                                 const int, 
+                                                 const int);
+    void                   RetrieveNodeLabelInfo(const int, 
+                                                 char *, 
+                                                 const int);
+    vtkElementLabelArray  *GenerateLabelArray(int,
+                                              int,
+                                              const stringVector *,
+                                             std::vector<MiliClassMetaData *>);
 
-    typedef struct __mili_ti_type {
-            std::string fieldName;
-            int dataType;
-            int dataLen;
-    } mili_ti_type;
+    //
+    // Expression helpers. 
+    //
+    Expression             CreateGenericExpression(const char *, 
+                                                   const char *,
+                                                   Expression::ExprType);
 
-    bool ti_data_found;
-    bool labelsFound;
-    int  numML;
-    bool labelsAddedToMetadata;
-    
-    std::vector<std::string>                mili_classes;
-    std::vector<std::string>                mili_mlclasses;
+    Expression             ScalarExpressionFromVec(const char *,
+                                                   const char *, 
+                                                   int);
 
-    std::map<std::string, mili_primal_type >  mili_primal_fields;  
-    std::map<std::string, mili_primal_type >::iterator mili_primal_fields_iter; 
- 
-    std::map<std::string, std::list<std::string> > mili_primal_components;
-    std::map<std::string, std::list<std::string> > mili_primal_classes;
+    //
+    // Protected data. 
+    //
+    vtkUnstructuredGrid ***datasets;
+    avtMaterial         ***materials;
 
-    std::map<std::string, std::list<std::string> >::iterator mili_primal_components_iter;
-    std::map<std::string, std::list<std::string> >::iterator mili_primal_classes_iter;
+    avtMiliMetaData      **miliMetaData;
 
-    std::map<std::string, mili_elem_class_type>  mili_elem_class;
-    std::map<std::string, mili_node_class_type>  mili_node_class;
-    std::map<std::string, int>  mili_elem_class_globalElemId;
- 
-    std::map<std::string, mili_elem_class_type> ::iterator mili_elem_class_iter; 
-    std::map<std::string, mili_node_class_type> ::iterator mili_node_class_iter; 
+    char                  *famroot;
+    char                  *fampath;
 
-    std::map<std::string, mili_ti_type> mili_ti_fields;
+    int                    nTimesteps;
+    int                    nDomains;
+    int                    nMeshes;
+    int                    dims;
 
-    //************************************************
-    // Added May 17, 2010: I. R. Corey
-    //       New data structures to support GrizIt.
-    //************************************************
-
-    //************************************************
-
-    void                  IssueWarning(const char *msg, int key);
-    void                  ReadMesh(int dom);
-    void                  ValidateVariables(int dom);
-    avtMaterial *         ConstructMaterials(std::vector<std::vector<int*> >&,
-                                             std::vector<std::vector<int> >&,
-                                             int);
-    int                   GetVariableIndex(const char *);
-    int                   GetVariableIndex(const char *, int mesh_id);
-    void                  GetSizeInfoForGroup(const char *, int &, int &, int);
-
-    vtkFloatArray        *RestrictVarToFreeNodes(vtkFloatArray *, int ts) const;
-
-    void                  DecodeMultiMeshVarname(const std::string &, 
-                                                 std::string &, int &);
-
-    void                  DecodeMultiLevelVarname(const std::string &, std::string &);
-    bool                  isVecVar(const std::string &, std::string &);
-    inline void           OpenDB(int dom);
-
-    void                  ParseDynaPart();
-    void                  LoadMiliInfo(const char *fname);
-    void                  LoadMiliInfoTest(const char *fname);
-    char                 *ReadMiliFileLine(ifstream &in,
-                              const char *commentSymbol, const char *kw,
-                              int lineN, bool *lineReturned, bool *eof);
-
-    bool                  readPartInfo;
-    std::string           dynaPartFilename;
-
-    // The following functions are new to support GrizIt
-    inline void           PopulateMiliClassData(int, int);
-    inline void           PopulateMiliVarData(int, int);
-    inline void           PopulatePrimalMetaData(int dom, avtDatabaseMetaData *md);
-    inline void           PopulateClassMetaData( int dom, avtDatabaseMetaData *md);
-
-    vtkFloatArray        *GetClassDomains(const char *elemClass);
-    vtkFloatArray        *GetNodeLabels();
-    vtkFloatArray        *GetNodeIds();
-    vtkFloatArray        *GetClassLabels(const char *elemClass);
-    vtkFloatArray        *GetClassElemIds(const char *elemClass);
-    vtkFloatArray        *GetClassMats(const char *elemClass);
-    vtkFloatArray        *GetClassTypes(const char *elemClass);
-
-    vtkFloatArray        *GetMiliResult(int ts, const char *var_name);
-    vtkFloatArray        *GetMiliVar(int ts, const char *var_name);
-    void                  CreateCompIndex(const char *comp_name, int comp_len,
-                                          int comp_index,
-                                          char *comp_index_string);
-
-    std::list<std::string> GetClassesForVar(char *varName);
-    void                  AddClassSubsets(char *meshname, avtDatabaseMetaData *md);
-    vtkFloatArray        *GetClassSubsets();
-
-    struct Label_mapping
-    {
-        std::vector<int> label_ranges_begin;
-        std::vector<int> label_ranges_end;
-        std::vector<int> el_ids_begin;
-        std::vector<int> el_ids_end;
-    };
-
-    std::vector<int>                       max_zone_label_lengths;
-    std::vector<int>                       max_node_label_lengths;
-    std::vector<std::vector<std::string> > zoneLabels;
-    std::vector<std::vector<std::string> > nodeLabels;
-    std::vector<std::map<std::string,Label_mapping> > zone_label_mappings;
-    std::vector<std::map<std::string,Label_mapping> > node_label_mappings;
-
-    void PopulateNodeLabels(const int fam_id, const int mesh_id, 
-                            char *short_name, const int dom, int &num_nodes);
-
-    void PopulateZoneLabels(const int fam_id, const int mesh_id, 
-                            char *short_name, const int dom, int &num_zones,
-                            const int elems_in_group);
+    intVector              cycles;
+    doubleVector           times;
+    boolVector             meshRead;
+    std::vector<Famid>     dbid;
 };
 
-
 #endif
-
-

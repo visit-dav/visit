@@ -3,16 +3,24 @@
     <CXXFLAGS>
       $(ADIOS2_INCLUDE_DIR)
     </CXXFLAGS>
+    <MPI_CXXFLAGS>
+      $(ADIOS2_INCLUDE_PAR_DIR)
+    </MPI_CXXFLAGS>
     <FilePatterns>
       *.bp
-      *.sst
+      *.bp.sst
+      *.bp.ssc
+      *.bp.staging
     </FilePatterns>
     <Files components="M">
       avtADIOS2FileFormat.C
       avtMEUMMAPSFileFormat.C
       avtGTCFileFormat.C
+      avtLAMMPSFileFormat.C
       avtADIOS2BaseFileFormat.C
       avtADIOS2SSTFileFormat.C
+      avtLAMMPSFileFormat.C
+      avtSpecFEMFileFormat.C
     </Files>
     <LIBS components="M">
       $(ADIOS2_LIBRARY_DIR)/${ADIOS2_LIB}
@@ -21,14 +29,17 @@
       avtADIOS2FileFormat.C
       avtMEUMMAPSFileFormat.C
       avtGTCFileFormat.C
+      avtLAMMPSFileFormat.C
       avtADIOS2BaseFileFormat.C
       avtADIOS2SSTFileFormat.C
+      avtLAMMPSFileFormat.C
+      avtSpecFEMFileFormat.C
     </Files>
     <LIBS components="ESer">
       $(ADIOS2_LIBRARY_DIR)/${ADIOS2_LIB}
     </LIBS>
     <LIBS components="EPar">
-      $(ADIOS2_MPI_LIBRARY_DIR)/${ADIOS2_MPI_LIB}
+      $(ADIOS2_PAR_LIBRARY_DIR)/${ADIOS2_PAR_LIB}
     </LIBS>
     <Attribute name="" purpose="" persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="ADIOS2.code">
     </Attribute>

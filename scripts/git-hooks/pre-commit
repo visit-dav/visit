@@ -12,3 +12,6 @@ if [[ $branch == *RC ]]; then
   exit 1
 fi
 
+top_level=`git rev-parse --show-toplevel`
+$top_level/scripts/git-hooks/check_cli_doc.sh
+

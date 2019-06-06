@@ -118,17 +118,8 @@ function bv_python_alt_python_dir
 
 function bv_python_depends_on
 {
-    local depends_on=""
-
-    if [[ "$DO_OPENSSL" == "yes" ]] ; then
-        depends_on="openssl"
-    fi
-
-    if [[ "$DO_ZLIB" == "yes" ]] ; then
-        depends_on="$depends_on zlib"
-    fi
-
-    echo $depends_on
+    # we always need openssl b/c of requests.
+    echo "openssl zlib"
 }
 
 function bv_python_info
@@ -383,12 +374,10 @@ function build_python
         PYTHON_CPPFLAGS="${PTYHON_CPPFLAGS} -I${OPENSSL_INCLUDE}"
     fi
 
-    if [[ "$DO_ZLIB" == "yes" ]]; then
-        PY_ZLIB_INCLUDE="$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH/include"
-        PY_ZLIB_LIB="$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH/lib"
-        PYTHON_LDFLAGS="${PYTHON_LDFLAGS} -L${PY_ZLIB_LIB}"
-        PYTHON_CPPFLAGS="${PYTHON_CPPFLAGS} -I${PY_ZLIB_INCLUDE}"
-    fi
+    PY_ZLIB_INCLUDE="$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH/include"
+    PY_ZLIB_LIB="$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH/lib"
+    PYTHON_LDFLAGS="${PYTHON_LDFLAGS} -L${PY_ZLIB_LIB}"
+    PYTHON_CPPFLAGS="${PYTHON_CPPFLAGS} -I${PY_ZLIB_INCLUDE}"
 
     if [[ "$OPSYS" == "AIX" ]]; then
         info "Configuring Python (AIX): ./configure OPT=\"$PYTHON_OPT\" CXX=\"$cxxCompiler\" CC=\"$cCompiler\"" \

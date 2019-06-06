@@ -40,8 +40,9 @@
 //                            avtADIOS2BaseFileFormat.C                           //
 // ************************************************************************* //
 
-#include <avtMTSDFileFormatInterface.h>
+#include <avtMTMDFileFormatInterface.h>
 #include <avtADIOS2BaseFileFormat.h>
+#include <ADIOS2HelperFuncs.h>
 
 #include <string>
 #include <map>
@@ -58,9 +59,6 @@
 #include <Expression.h>
 
 #include <InvalidVariableException.h>
-#include <VisItStreamUtil.h>
-
-using namespace std;
 
 static std::vector<int> CSVToVectorInt(const std::string csv) noexcept
 {
@@ -70,7 +68,7 @@ static std::vector<int> CSVToVectorInt(const std::string csv) noexcept
         return numbers;
     }
 
-    string tmp;
+    std::string tmp;
     for (int i = 0; i < csv.size(); i++)
         if (csv[i] != ' ') tmp.push_back(csv[i]);
 
@@ -101,18 +99,26 @@ avtADIOS2BaseFileFormat::Identify(const char *fname)
 avtFileFormatInterface *
 avtADIOS2BaseFileFormat::CreateInterface(const char *const *list,
                                          int nList,
-                                         int nBlock)
+                                         int nBlock,
+                                         std::shared_ptr<adios2::ADIOS> adios,
+                                         adios2::Engine &reader,
+                                         adios2::IO &io,
+                                         std::map<std::string, adios2::Params> &variables,
+                                         std::map<std::string, adios2::Params> &attributes)
 {
     int nTimestepGroups = nList / nBlock;
-    avtMTSDFileFormat ***ffl = new avtMTSDFileFormat**[nTimestepGroups];
+
+    avtMTMDFileFormat **ffl = new avtMTMDFileFormat*[nTimestepGroups];
     for (int i = 0; i < nTimestepGroups; i++)
     {
-        ffl[i] =  new avtMTSDFileFormat*[nBlock];
-        for (int j = 0; j < nBlock; j++)
-            ffl[i][j] =  new avtADIOS2BaseFileFormat(list[i*nBlock +j]);
+        if (i == 0)
+            ffl[i]=  new avtADIOS2BaseFileFormat(adios, reader, io, variables, attributes, list[i*nBlock]);
+        else
+            ffl[i] =  new avtADIOS2BaseFileFormat(list[i*nBlock]);
     }
-    return new avtMTSDFileFormatInterface(ffl, nTimestepGroups, nBlock);
+    return new avtMTMDFileFormatInterface(ffl, nTimestepGroups);
 }
+
 
 // ****************************************************************************
 //  Method: avtADIOS2BaseFileFormat constructor
@@ -122,48 +128,31 @@ avtADIOS2BaseFileFormat::CreateInterface(const char *const *list,
 //
 // ****************************************************************************
 
-const char * sstFileName = "stream_T1.bp.sst";
-const char * sstFileName2 = "stream_T1.bp";
-
-static const string getEngineType(const string &fname)
-{
-    if (fname.find(".bp.sst") != string::npos)
-        return "SST";
-    else
-        return "BP";
-}
-
-static const string getFile(const string &fname)
-{
-    if (fname.find(".bp.sst") != string::npos)
-        return fname.substr(0, fname.size()-4);
-
-    return fname;
-}
 
 avtADIOS2BaseFileFormat::avtADIOS2BaseFileFormat(const char *filename)
     : adios(std::make_shared<adios2::ADIOS>(adios2::DebugON)),
       numTimeSteps(1),
       isClosed(false),
-      avtMTSDFileFormat(&filename, 1)
+      supportMultiDom(false),
+      avtMTMDFileFormat(filename)
 {
-    engineType = getEngineType(filename);
-    io = adios2::IO(adios->DeclareIO(engineType));
-    io.SetEngine(engineType);
-    reader = io.Open(getFile(filename), adios2::Mode::Read);
+    engineName = ADIOS2Helper_GetEngineName(filename);
+    stagingMode = ADIOS2Helper_IsStagingEngine(engineName);
+    std::string adiosFileName = ADIOS2Helper_GetFileName(filename);
+    io = adios2::IO(adios->DeclareIO(engineName));
+    io.SetEngine(engineName);
+    reader = io.Open(adiosFileName, adios2::Mode::Read);
 
-    if (engineType == "SST")
+    if (stagingMode)
     {
-        numTimeSteps = 100000;
-//        reader.BeginStep(adios2::StepMode::NextAvailable, 0.0f);
-//        reader.EndStep();
+        numTimeSteps = 1000000;
     }
-    else if (engineType == "BP")
+    else
     {
-        map<string, adios2::Params> vars = io.AvailableVariables();
+        std::map<std::string, adios2::Params> vars = io.AvailableVariables();
         for (auto &v : vars)
         {
-            string nsteps = v.second["AvailableStepsCount"];
+            std::string nsteps = v.second["AvailableStepsCount"];
             if (!nsteps.empty())
             {
                 numTimeSteps = std::stoi(nsteps);
@@ -171,34 +160,50 @@ avtADIOS2BaseFileFormat::avtADIOS2BaseFileFormat(const char *filename)
             }
         }
     }
-
-#if 0
-    cout<<__FILE__<<" "<<__LINE__<<" "<<filename<<" "<<getFile(filename)<<endl;
-    cout<<"engineType= "<<engineType<<endl;
-    //reader = io.Open(filename, adios2::Mode::Read);
-
-    cout<<"io.Open("<<filename<<")"<<endl;
-
-    reader.BeginStep(adios2::StepMode::NextAvailable, 0.0f);
-    variables = io.AvailableVariables();
-
-    if (variables.size() > 0)
-    {
-        auto var0 = variables.begin()->second;
-        string nsteps = var0["AvailableStepsCount"];
-        numTimeSteps = std::stoi(nsteps);
-    }
-    numTimeSteps = 1000;
-
-    cout<<"variables: "<<variables<<endl;
-    cout<<"Num Timesteps= "<<numTimeSteps<<endl;
-
-    for (auto &v : variables)
-        cout<<"Var: "<<v.first<<" :: "<<v.second<<endl;
-    reader.EndStep();
-#endif
 }
 
+avtADIOS2BaseFileFormat::avtADIOS2BaseFileFormat(std::shared_ptr<adios2::ADIOS> adios,
+                                                 adios2::Engine &reader,
+                                                 adios2::IO &io,
+                                                 std::map<std::string, adios2::Params> &variables,
+                                                 std::map<std::string, adios2::Params> &attributes,
+                                                 const char *filename)
+    : adios(adios),
+      numTimeSteps(1),
+      isClosed(false),
+      reader(reader),
+      io(io),
+      variables(variables),
+      supportMultiDom(false),
+      avtMTMDFileFormat(filename)
+{
+    engineName = ADIOS2Helper_GetEngineName(filename);
+    stagingMode = ADIOS2Helper_IsStagingEngine(engineName);
+
+    if (stagingMode)
+    {
+        numTimeSteps = 10000000;
+    }
+    else
+    {
+        for (auto &v : variables)
+        {
+            std::string nsteps = v.second["AvailableStepsCount"];
+            if (!nsteps.empty())
+            {
+                numTimeSteps = std::stoi(nsteps);
+                break;
+            }
+        }
+    }
+}
+
+avtADIOS2BaseFileFormat::~avtADIOS2BaseFileFormat()
+{
+    if (!isClosed)
+        reader.Close();
+    isClosed = true;
+}
 
 // ****************************************************************************
 //  Method: avtADIOS2BaseFileFormat::GetNTimesteps
@@ -254,55 +259,78 @@ avtADIOS2BaseFileFormat::FreeUpResources(void)
 void
 avtADIOS2BaseFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timeState)
 {
-    if (engineType == "SST")
+    if (stagingMode)
     {
-        reader.BeginStep(adios2::StepMode::NextAvailable, 0.0f);
-        reader.EndStep();
+        /*
+        adios2::StepStatus status = reader.BeginStep(adios2::StepMode::NextAvailable, -1.0f);
+        if (status != adios2::StepStatus::OK)
+            return;
+#if MDSERVER
+        cout<<" MDSERVER received streaming step = "<<reader.CurrentStep()<<endl;
+#else
+        cout<<" Server populates metadata from streaming step = "<<reader.CurrentStep()<<endl;
+#endif
+        */
     }
 
-    meshInfo.clear();
+    meshes.clear();
     variables = io.AvailableVariables();
 
-    vector<pair<string,string>> vars;
+#if MDSERVER
+    if (stagingMode)
+    {
+        reader.EndStep();
+    }
+#endif
 
+    std::vector<std::pair<std::string,std::string>> vars;
     for (const auto &varInfo : variables)
     {
-        auto params = varInfo.second;
+        auto varParams = varInfo.second;
+        std::string shape = varParams["Shape"];
+        if (shape.size() <= 1)
+            continue;
 
-        string shape = params["Shape"];
-        auto vecShape = CSVToVectorInt(shape);
-        if (meshInfo.find(shape) == meshInfo.end())
+        auto varDims = CSVToVectorInt(shape);
+        std::string meshNm = MeshNameFromDim(varDims);
+
+        timeState = reader.CurrentStep();
+        if (meshes.find(meshNm) == meshes.end())
         {
-            string meshNm;
-            int dim = 0;
-            if (vecShape.size() == 2)
-            {
-                meshNm = "mesh" + std::to_string(vecShape[0])+"x"+std::to_string(vecShape[1]);
-                dim = 2;
-            }
-            else if (vecShape.size() == 3)
-            {
-                meshNm = "mesh" + std::to_string(vecShape[0])+"x"+std::to_string(vecShape[1])+"x"+std::to_string(vecShape[2]);
-                dim = 3;
-            }
-            meshInfo[shape] = std::make_pair(dim, meshNm);
+            meshInfo mi;
+            mi.dims = varDims;
+            std::string varType = varParams["Type"];
+            if (varType == "float")
+                SetBlockInfo<float>(mi, meshNm, varInfo.first, timeState);
+            else if (varType == "double")
+                SetBlockInfo<double>(mi, meshNm, varInfo.first, timeState);
+            else
+                EXCEPTION1(ImproperUseException, "Invalid variable type: "+varType);
+
+            meshes[meshNm] = mi;
         }
-        vars.push_back(std::make_pair(varInfo.first, meshInfo[shape].second));
+        auto it = meshes.find(meshNm);
+        it->second.meshVars.push_back(varInfo.first);
+        varToMesh[varInfo.first] = meshNm;
     }
+    //std::cout<<"meshes: "<<meshes<<std::endl;
+    //std::cout<<"varToMesh: "<<varToMesh<<std::endl;
 
-    for (auto &m : meshInfo)
+    //Add meshes and variables.
+    for (auto &m : meshes)
     {
-        string nm = m.second.second;
-        int dim = m.second.first;
-        AddMeshToMetaData(md, nm, AVT_RECTILINEAR_MESH, NULL, 1, 0, dim, dim);
-    }
+        std::string meshNm = m.first;
+        int dim = m.second.dims.size();
+        int numBlocks = (supportMultiDom ? m.second.blockInfo.size() : 1);
+        AddMeshToMetaData(md, meshNm, AVT_RECTILINEAR_MESH, NULL, numBlocks, 0, dim, dim);
 
-    for (auto &v : vars)
-        AddScalarVarToMetaData(md, v.first, v.second, AVT_NODECENT);
+        for (auto &varNm : m.second.meshVars)
+            AddScalarVarToMetaData(md, varNm, meshNm, (supportMultiDom ? AVT_ZONECENT : AVT_NODECENT));
+    }
 
 #if MDSERVER
-//    if (!isClosed)
-//        reader.Close();
+    if (!isClosed)
+        reader.Close();
     isClosed = true;
 #endif
 }
@@ -328,8 +356,100 @@ avtADIOS2BaseFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int t
 // ****************************************************************************
 
 vtkDataSet *
-avtADIOS2BaseFileFormat::GetMesh(int timestate, const char *meshname)
+avtADIOS2BaseFileFormat::GetMesh(int timestate, int domain, const char *meshname)
 {
+    auto mit = meshes.find(meshname);
+    if (mit == meshes.end())
+        return NULL;
+
+    int dims[3];
+    vtkFloatArray *coords[3] = {vtkFloatArray::New(),vtkFloatArray::New(),vtkFloatArray::New()};
+
+    if (supportMultiDom)
+    {
+        adios2::Dims start = (*mit).second.blockInfo[domain].first;
+        adios2::Dims count = (*mit).second.blockInfo[domain].second;
+
+        //zone centered vars, so count++;
+        int dims[3], s[3], c[3];
+        if ((*mit).second.dims.size() == 2)
+        {
+            count[0]++;
+            count[1]++;
+            dims[0] = count[1];
+            dims[1] = count[0];
+            dims[2] = 1;
+
+            s[0] = start[1];
+            s[1] = start[0];
+            s[2] = 0;
+            c[0] = count[1];
+            c[1] = count[0];
+            c[2] = 0;
+        }
+        else
+        {
+            count[0]++;
+            count[1]++;
+            count[2]++;
+
+            //swap dims
+            dims[0] = count[2];
+            dims[1] = count[1];
+            dims[2] = count[0];
+            s[0] = start[2];
+            s[1] = start[1];
+            s[2] = start[0];
+            c[0] = count[2];
+            c[1] = count[1];
+            c[2] = count[0];
+        }
+
+        for (int d = 0; d < 3; d++)
+        {
+            coords[d]->SetNumberOfTuples(dims[d]);
+            float x0 = s[d];
+            if (s[d] > 0)
+                x0 = s[d]-1;
+            for (int i = 0; i < dims[d]; i++)
+                coords[d]->SetTuple1(i, s[d]+i);
+        }
+    }
+    else
+    {
+        if ((*mit).second.dims.size() == 2)
+        {
+            dims[0] = (*mit).second.dims[1];
+            dims[1] = (*mit).second.dims[0];
+            dims[2] = 1;
+        }
+        else
+        {
+            dims[0] = (*mit).second.dims[2];
+            dims[1] = (*mit).second.dims[1];
+            dims[2] = (*mit).second.dims[0];
+        }
+        for (int c = 0; c < 3; c++)
+        {
+            coords[c]->SetNumberOfTuples(dims[c]);
+            for (int i = 0; i < dims[c]; i++)
+                coords[c]->SetTuple1(i, i);
+        }
+    }
+
+    vtkRectilinearGrid *grid = vtkRectilinearGrid::New();
+    grid->SetDimensions(dims);
+    grid->SetXCoordinates(coords[0]);
+    grid->SetYCoordinates(coords[1]);
+    grid->SetZCoordinates(coords[2]);
+    coords[0]->Delete();
+    coords[1]->Delete();
+    coords[2]->Delete();
+
+    return grid;
+
+
+#if 0
     //Find the mesh info we need.
     string shapeStr;
     for (auto &m : meshInfo)
@@ -347,7 +467,6 @@ avtADIOS2BaseFileFormat::GetMesh(int timestate, const char *meshname)
     if (shape.size() == 2)
         shape.push_back(1);
 
-    //cout<<"********** SWAP DIMS"<<endl;
     std::swap(shape[0], shape[1]);
 
     int dims[3] = {shape[0], shape[1], shape[2]};
@@ -371,6 +490,7 @@ avtADIOS2BaseFileFormat::GetMesh(int timestate, const char *meshname)
     coords[2]->Delete();
 
     return grid;
+#endif
 }
 
 
@@ -392,51 +512,74 @@ avtADIOS2BaseFileFormat::GetMesh(int timestate, const char *meshname)
 //
 // ****************************************************************************
 
-vtkDataArray *
-avtADIOS2BaseFileFormat::GetVar(int timestate, const char *varname)
-{
-    cout<<"GetVar: "<<varname<<" ts= "<<timestate<<endl;
+#define READ_TYPED_VAR(TYPE, ARR) \
+{  \
+    adios2::Variable<TYPE> var = io.InquireVariable<TYPE>(varname);     \
+    if (!stagingMode) var.SetStepSelection({timestate, 1});             \
+    if (supportMultiDom) var.SetBlockSelection(domain);                 \
+    std::vector<TYPE> buff;                                             \
+    reader.Get(var, buff, adios2::Mode::Sync);                          \
+    int n = buff.size();                                                \
+    ARR->SetNumberOfComponents(1);                                      \
+    ARR->SetNumberOfTuples(n);                                          \
+    for (int i = 0; i < n; i++) ARR->SetTuple1(i, buff[i]);             \
+} \
 
-    if (variables.find(varname) == variables.end())
+vtkDataArray *
+avtADIOS2BaseFileFormat::GetVar(int timestate, int domain, const char *varname)
+{
+    static int prev_timestate = 0;
+
+    //Not supported.
+    if (supportMultiDom)
         return NULL;
 
-    auto var = variables[varname];
-    string varType = var["Type"];
+    auto varInfo = variables.find(varname);
+    if (varInfo == variables.end())
+        return NULL;
 
-    if (engineType == "BP")
+    std::string varType = (*varInfo).second["Type"];
+
+    if (stagingMode)
     {
+        if (timestate != prev_timestate)
+        {
+            reader.EndStep(); // release previous step
+            prev_timestate = timestate;
+            adios2::StepStatus status = adios2::StepStatus::NotReady;
+            while (status == adios2::StepStatus::NotReady)
+            {
+                status = reader.BeginStep(adios2::StepMode::NextAvailable, 10.0f);
+                if (status == adios2::StepStatus::EndOfStream ||
+                    status == adios2::StepStatus::OtherError)
+                {
+                    reader.Close();
+                    return NULL;
+                }
+                else if (status == adios2::StepStatus::NotReady)
+                {
+                    /*
+                    cout<<" still waiting for next step = "
+                        <<reader.CurrentStep()<<endl;
+                    */
+                }
+            }
+            //cout<<" received streaming step = "<<reader.CurrentStep()<<endl;
+        }
     }
-    else if (engineType == "SST")
+
+    vtkFloatArray *arr = vtkFloatArray::New();
+    if (varType == "double")
     {
-        adios2::StepStatus status = reader.BeginStep(adios2::StepMode::NextAvailable, 0.0f);
-        if (status != adios2::StepStatus::OK)
-            return NULL;
+        READ_TYPED_VAR(double, arr);
     }
-
-    adios2::Variable<double> v = io.InquireVariable<double>(varname);
-    //cout<<"DIMS= "<<v.Shape()<<endl;
-    if (engineType == "BP")
-        v.SetStepSelection({timestate, 1});
-
-    size_t numVals = 1;
-    for (int i = 0; i < v.Shape().size(); i++)
-        numVals *= v.Shape()[i];
-
-    vector<double> buff(numVals);
-    reader.Get(v, buff.data(), adios2::Mode::Sync);
-
-    vtkDoubleArray *arr = vtkDoubleArray::New();
-    arr->SetNumberOfComponents(1);
-    arr->SetNumberOfTuples(numVals);
-    for (int i = 0; i < numVals; i++)
-        arr->SetTuple1(i, buff[i]);
-
-    if (engineType == "SST")
-        reader.EndStep();
+    else if (varType == "float")
+    {
+        READ_TYPED_VAR(float, arr);
+    }
 
     return arr;
 }
-
 
 // ****************************************************************************
 //  Method: avtADIOS2BaseFileFormat::GetVectorVar
@@ -457,7 +600,7 @@ avtADIOS2BaseFileFormat::GetVar(int timestate, const char *varname)
 // ****************************************************************************
 
 vtkDataArray *
-avtADIOS2BaseFileFormat::GetVectorVar(int timestate, const char *varname)
+avtADIOS2BaseFileFormat::GetVectorVar(int timestate, int domain, const char *varname)
 {
     return NULL;
 }

@@ -40,7 +40,7 @@ function bv_vtk_alt_vtk_dir
 
 function bv_vtk_depends_on
 {
-    depends_on="cmake"
+    depends_on="cmake zlib"
 
     if [[ "$DO_PYTHON" == "yes" ]]; then
         depends_on="${depends_on} python"
@@ -113,6 +113,9 @@ function bv_vtk_host_profile
         echo "VISIT_OPTION_DEFAULT(VISIT_VTK_DIR $SYSTEM_VTK_DIR)" >> $HOSTCONF
     else
         echo "VISIT_OPTION_DEFAULT(VISIT_VTK_DIR \${VISITHOME}/${VTK_INSTALL_DIR}/\${VTK_VERSION}/\${VISITARCH})" >> $HOSTCONF
+        # vtk's target system should take care of this, so does VisIt need to know?
+        echo "VISIT_OPTION_DEFAULT(VISIT_VTK_INCDEP ZLIB_INCLUDE_DIR)" >> $HOSTCONF
+        echo "VISIT_OPTION_DEFAULT(VISIT_VTK_LIBDEP ZLIB_LIBRARY)" >> $HOSTCONF
     fi
 }
 
@@ -658,6 +661,39 @@ EOF
     return 0;
 }
 
+
+function apply_vtkospray_linking_patch
+{
+    # fix from kevin griffin
+    # patch to vtk linking issue noticed on macOS
+    patch -p0 << \EOF
+    diff -c Rendering/OSPRay/CMakeLists.txt.orig  Rendering/OSPRay/CMakeLists.txt
+    *** Rendering/OSPRay/CMakeLists.txt.orig	2019-05-21 15:15:50.000000000 -0700
+    --- Rendering/OSPRay/CMakeLists.txt	2019-05-21 15:16:07.000000000 -0700
+    ***************
+    *** 37,42 ****
+    --- 37,45 ----
+      vtk_module_library(vtkRenderingOSPRay ${Module_SRCS})
+  
+      target_link_libraries(${vtk-module} LINK_PUBLIC ${OSPRAY_LIBRARIES})
+    + # patch to solve linking issue noticed on macOS
+    + target_link_libraries(${vtk-module} LINK_PUBLIC vtkFiltersGeometry)
+    + 
+  
+      # OSPRay_Core uses MMTime which is in it's own special library.
+      if(WIN32)
+EOF
+
+    if [[ $? != 0 ]] ; then
+      warn "vtk patch for ospray linking failed."
+      return 1
+    fi
+
+    return 0;
+}
+
+
+
 function apply_vtk_patch
 {
     apply_vtkdatawriter_patch
@@ -675,16 +711,22 @@ function apply_vtk_patch
         return 1
     fi
 
+    # Note: don't guard ospray patches by if ospray is selected 
+    # b/c subsequent calls to build_visit won't get a chance to patch
+    # given the if test logic used above
     apply_vtkospraypolydatamappernode_patch
     if [[ $? != 0 ]] ; then
         return 1
     fi
 
-    if [[ "$DO_OSPRAY" == "yes" ]] ; then
-        apply_vtkospray_patches
-        if [[ $? != 0 ]] ; then
-            return 1
-        fi
+    apply_vtkospray_patches
+    if [[ $? != 0 ]] ; then
+        return 1
+    fi
+
+    apply_vtkospray_linking_patch
+    if [[ $? != 0 ]] ; then
+        return 1
     fi
 
     return 0
@@ -836,10 +878,6 @@ function build_vtk
     # allow VisIt to override any of vtk's classes
     vopts="${vopts} -DVTK_ALL_NEW_OBJECT_FACTORY:BOOL=true"
 
-    # OpenGL2 backend VTK-8.1, OpenGL2 is the default.
-    #vopts="${vopts} -DVTK_RENDERING_BACKEND:STRING=OpenGL2"
-
-
     # Turn off module groups
     vopts="${vopts} -DVTK_Group_Imaging:BOOL=false"
     vopts="${vopts} -DVTK_Group_MPI:BOOL=false"
@@ -920,6 +958,15 @@ function build_vtk
         vopts="${vopts} -DModule_vtkRenderingOSPRay:BOOL=ON"
         vopts="${vopts} -DOSPRAY_INSTALL_DIR=${OSPRAY_INSTALL_DIR}"
         vopts="${vopts} -Dembree_DIR=${EMBREE_INSTALL_DIR}"
+    fi
+
+    # zlib support, use the one we build
+    vopts="${vopts} -DVTK_USE_SYSTEM_ZLIB:BOOL=ON"
+    vopts="${vopts} -DZLIB_INCLUDE_DIR:PATH=${ZLIB_INCLUDE_DIR}"
+    if [[ "$VISIT_BUILD_MODE" == "Release" ]] ; then
+        vopts="${vopts} -DZLIB_LIBRARY_RELEASE:FILEPATH=${ZLIB_LIBRARY}"
+    else
+        vopts="${vopts} -DZLIB_LIBRARY_DEBUG:FILEPATH=${ZLIB_LIBRARY}"
     fi
 
     CMAKE_BIN="${CMAKE_INSTALL}/cmake"
