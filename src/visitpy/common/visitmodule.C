@@ -17821,7 +17821,7 @@ AddProxyMethods()
     AddMethod("OpenCLI", visit_OpenCLI);
     AddMethod("OverlayDatabase", visit_OverlayDatabase,
                                                     visit_OverlayDatabase_doc);
-    // AddMethod("Pick", visit_ZonePick, visit_ZonePick_doc);
+    AddMethod("Pick", visit_ZonePick, visit_ZonePick_doc);
     AddMethod("PickByNode", visit_PickByNode, visit_PickByNode_doc);
     AddMethod("PickByZone", visit_PickByZone, visit_PickByZone_doc);
     AddMethod("PickByZoneLabel", visit_PickByZoneLabel, visit_PickByZoneLabel_doc);
@@ -18013,7 +18013,7 @@ AddProxyMethods()
     AddMethod("RedoView",  visit_RedoView, visit_RedoView_doc);
     AddMethod("WriteConfigFile",  visit_WriteConfigFile,
                                                     visit_WriteConfigFile_doc);
-    // AddMethod("ZonePick", visit_ZonePick, visit_ZonePick_doc);
+    AddMethod("ZonePick", visit_ZonePick, visit_ZonePick_doc);
 
     //
     // Extra methods that are not part of the ViewerProxy but allow the
