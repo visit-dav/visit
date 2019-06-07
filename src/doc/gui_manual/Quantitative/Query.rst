@@ -75,6 +75,8 @@ and end positions of the line as well as the number of sample points to
 consider along the length of the line. Nearly all query types allow you to
 provide additional variables to query in a **Variables** text field.
 
+.. _built-in_queries:
+
 Built-in queries
 ~~~~~~~~~~~~~~~~
 

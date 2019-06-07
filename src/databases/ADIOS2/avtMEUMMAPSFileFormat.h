@@ -64,12 +64,26 @@
 class avtMEUMMAPSFileFormat : public avtMTMDFileFormat
 {
   public:
-    static bool        Identify(const char *fname);
+    static bool Identify(const std::string &fname,
+                         const std::map<std::string, adios2::Params> &vars,
+                         const std::map<std::string, adios2::Params> &attrs);
     static avtFileFormatInterface *CreateInterface(const char *const *list,
                                                    int nList,
-                                                   int nBlock);
+                                                   int nBlock,
+                                                   std::shared_ptr<adios2::ADIOS> adios,
+                                                   adios2::Engine &reader,
+                                                   adios2::IO &io,
+                                                   std::map<std::string, adios2::Params> &variables,
+                                                   std::map<std::string, adios2::Params> &attributes);
 
-                       avtMEUMMAPSFileFormat(const char *);
+    avtMEUMMAPSFileFormat(const char *);
+    avtMEUMMAPSFileFormat(std::shared_ptr<adios2::ADIOS> adios,
+                          adios2::Engine &reader,
+                          adios2::IO &io,
+                          std::map<std::string, adios2::Params> &variables,
+                          std::map<std::string, adios2::Params> &attributes,
+                          const char *);
+
     virtual           ~avtMEUMMAPSFileFormat() {}
 
     //

@@ -1,8 +1,8 @@
 
 node 93:  sslide14ball_l.plt.mili  timestep 0
 mesh1 
-Point: <0, 1.35, 0>
-Node:  1
+Point: <1.99, 1, -0.01>
+Node:  93
 Incident Zones:  76  106  
 OriginalNodeLabels:  <nodal> = node 93
 

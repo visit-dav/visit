@@ -465,7 +465,7 @@ const AttributeGroup::private_tmfs_t PseudocolorAttributes::TmfsStruct = {PSEUDO
 PseudocolorAttributes::PseudocolorAttributes() : 
     AttributeSubject(PseudocolorAttributes::TypeMapFormatString),
     belowMinColor(), aboveMaxColor(), 
-    colorTableName("hot"), pointSizeVar("default"), 
+    colorTableName("Default"), pointSizeVar("default"), 
     wireframeColor(0, 0, 0, 0), pointColor(0, 0, 0, 0)
 {
     PseudocolorAttributes::Init();
@@ -489,7 +489,7 @@ PseudocolorAttributes::PseudocolorAttributes() :
 PseudocolorAttributes::PseudocolorAttributes(private_tmfs_t tmfs) : 
     AttributeSubject(tmfs.tmfs),
     belowMinColor(), aboveMaxColor(), 
-    colorTableName("hot"), pointSizeVar("default"), 
+    colorTableName("Default"), pointSizeVar("default"), 
     wireframeColor(0, 0, 0, 0), pointColor(0, 0, 0, 0)
 {
     PseudocolorAttributes::Init();

@@ -97,6 +97,9 @@
 //    Kathleen Bonnell, Thu Oct  1 14:24:19 PDT 2009
 //    Initialize numTicks.  Set LegendType for sBar.
 //
+//    Alister Maguire, Wed Jan 23 11:04:08 PST 2019
+//    Initialized nanColor. 
+//
 // ****************************************************************************
 
 avtVariableLegend::avtVariableLegend()
@@ -122,6 +125,13 @@ avtVariableLegend::avtVariableLegend()
     labelVisibility = 1;
     minmaxVisibility = true;
     numTicks = 5;
+
+    //
+    // Set the nan color to grey by default.
+    //
+    nanColor[3] = 1.0;
+    for (int i = 0; i < 3; ++i)
+        nanColor[i] = .41;
 
     //
     // Set the legend to also point to sBar, so the base methods will work
@@ -655,6 +665,9 @@ avtVariableLegend::SetColorBarVisibility(const bool val)
 //    Kathleen Bonnell, Thu Oct  1 14:27:34 PDT 2009
 //    Use numTicks to set NumberOfLabels instead of setting to default.
 //
+//    Alister Maguire, Wed Jan 16 13:54:14 PST 2019
+//    Tell the lookup table to grey out nan values. 
+//
 // ****************************************************************************
 
 void
@@ -684,7 +697,10 @@ avtVariableLegend::SetRange(double nmin, double nmax)
     {
         sBar->SetNumberOfLabels(numTicks);
         if (lut != NULL)
+        {
             lut->SetTableRange(min, max);
+            lut->SetNanColor(nanColor);
+        }
         sBar->SetRange(min, max);
     }
 }
@@ -1100,4 +1116,25 @@ void
 avtVariableLegend::UseAboveRangeColor(bool v)
 {
     lut->SetUseAboveRangeColor(v);
+}
+
+
+// ****************************************************************************
+// Method: avtVariableLegend::SetNanColor
+//
+// Programmer: Alister Maguire
+// Creation:   January 23, 2019
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtVariableLegend::SetNanColor(double r, double g, double b, double a)
+{
+    nanColor[0] = r;
+    nanColor[1] = g;
+    nanColor[2] = b;
+    nanColor[3] = a;
+    lut->SetNanColor(nanColor);
 }

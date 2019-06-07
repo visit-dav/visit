@@ -26,18 +26,22 @@ enhancements and bug-fixes that were added to this release.</p>
 <ul>
   <li>Corrected a bug where VisIt would crash rendering transparent geometry when processor 0 didn't have any geometry.</li>
   <li>Corrected a bug where VisIt would not switch into scalable rendering mode when it should have when the total number of primitives to render was greater than 2 billion. This typically resulted in VisIt crashing because it ran out of memory.</li>
+  <li>Corrected color table named in Pseudocolor and Surface plots from hot to Default making those plots use whatever the default color map is set to.</li>
+  <li>Corrected the batch launching on Sierra type systems at Lawrence Livermore National Laboratory.</li>
+  <li>Fixed glyphed points color being wrong when transparency turned on.</li>
 </ul>
 
 <a name="Enhancements"></a>
 <p><b><font size="4">Enhancements in version 3.0.1</font></b></p>
 <ul>
-  <li></li>
+  <li>The Mili plugin has been re-written. Among other things, the plugin now supports a Griz-like menu, material variables, global variables, shared variables, and integration points. At the moment, only the mid integration point is available for visualization and is selected by default. Future updates will allow the user to change which integration point is used. Also, the old .mili file format is no longer valid. You can create new .mili files by using the updated makemili driver, located in visit/src/bin/.</li>
+  <li>Switch to case-insensitive variable sorting in the GUI</li>
 </ul>
 
 <a name="Dev_changes"></a>
 <p><b><font size="4">Changes for VisIt developers in version 3.0.1</font></b></p>
 <ul>
-  <li></li>
+  <li>CLI documentation generation has been reversed so that developers now modify the rst file and automatically generate MethodDoc.C and MethodDoc.h.</li>
 </ul>
 
 <p>Click the following link to view the release notes for the previous version
