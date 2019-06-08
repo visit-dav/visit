@@ -2738,6 +2738,8 @@ class MainLauncher(object):
                         np = 1
             if np > 1:
                 self.generalArgs.exe_name = "engine_par"
+            elif np == 1 and self.parallelArgs.parallel:
+                self.generalArgs.exe_name = "engine_par"
             else:
                 self.generalArgs.exe_name = "engine_ser"
         elif self.generalArgs.exe_name in ("makemili", "visitconvert"):
