@@ -41,6 +41,9 @@
 #    Alister Maguire, Mon Mar 25 11:19:54 PDT 2019
 #    Added an opacity test that changes the opacity variable. 
 #
+#    Alister Maguire, Wed Jun  5 11:01:31 PDT 2019
+#    Added opacity attenuation test. 
+#
 # ----------------------------------------------------------------------------
 
 def InitAnnotations():
@@ -175,6 +178,63 @@ def TestVolumeOpacity():
     Test("volumeOpacity_05")
 
     DeleteAllPlots()
+
+
+def TestOpacityAttenuation():
+
+    OpenDatabase(silo_data_path("noise.silo"))
+    ResetPlotOptions("Volume")
+    ResetView()
+
+    #
+    # First, test default renderer without reduced attenuation. 
+    #
+    AddPlot("Volume", "hardyglobal")
+    volAtts = VolumeAttributes()
+    volAtts.opacityAttenuation = 1
+    volAtts.lightingFlag = 0
+    volAtts.rendererType = volAtts.Default
+    SetPlotOptions(volAtts)
+    DrawPlots()
+    Test("opacityAttenuation_01")
+
+    #
+    # Now reduce attenutation. 
+    #
+    volAtts = VolumeAttributes()
+    volAtts.lightingFlag = 0
+    volAtts.rendererType = volAtts.Default
+    volAtts.opacityAttenuation = .12
+    SetPlotOptions(volAtts)
+    DrawPlots()
+    Test("opacityAttenuation_02")
+
+    #
+    # Now let's test the ray caster. 
+    #
+    AddPlot("Volume", "hardyglobal")
+    volAtts = VolumeAttributes()
+    volAtts.lightingFlag = 0
+    volAtts.opacityAttenuation = 1
+    volAtts.rendererType = volAtts.RayCasting
+    SetPlotOptions(volAtts)
+    DrawPlots()
+    Test("opacityAttenuation_03")
+
+    #
+    # Now reduce attenutation. 
+    #
+    volAtts = VolumeAttributes()
+    volAtts.lightingFlag = 0
+    volAtts.rendererType = volAtts.RayCasting
+    volAtts.opacityAttenuation = .12
+    SetPlotOptions(volAtts)
+    DrawPlots()
+    Test("opacityAttenuation_04")
+
+    ResetPlotOptions("Volume")
+    DeleteAllPlots()
+
 
 def TestVolumeAspect():
     OpenDatabase(silo_data_path("noise.silo"))
@@ -328,6 +388,7 @@ def TestVolumeSampling():
 InitAnnotationsLegendOn()
 TestVolumeColorControlPoints()
 TestVolumeGaussianControlPoints()
+TestOpacityAttenuation()
 TestVolumeAspect()
 TestVolumeOpacity()
 InitAnnotations()
