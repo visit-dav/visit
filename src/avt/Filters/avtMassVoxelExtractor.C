@@ -664,9 +664,12 @@ sv_SamplePointOpacityVariable_ERT(
 
         if (alpha > 0)
         {
-            float samplesOpacity = (1.0 - std::pow((1.0 - alpha), sampleDist));
-            samplesOpacity = (samplesOpacity > 1. ? 1. : samplesOpacity);
-            float ff = (1-opacity)*samplesOpacity;
+            float samplesOpacity = 1.0;//FIXME
+            if (alpha < 1.0)
+            { 
+                samplesOpacity = (1.0 - std::pow((1.0 - alpha), sampleDist));
+            }
+            float ff = (1.f-opacity)*samplesOpacity;
             opacity = opacity + ff;
         }
         bool early_term = (opacity > threshold);
@@ -748,8 +751,12 @@ sv_SampleCellOpacityVariable_ERT(
 
         if (alpha > 0)
         {
-            float samplesOpacity = (1.0 - std::pow((1.0 - alpha), sampleDist));
-            samplesOpacity = (samplesOpacity > 1. ? 1. : samplesOpacity);
+            float samplesOpacity = 1.f;
+            if (alpha < 1.0)
+            { 
+                samplesOpacity = (1.0 - std::pow((1.0 - alpha), sampleDist));
+            }
+
             float ff = (1-opacity)*samplesOpacity;
             opacity = opacity + ff;
         }

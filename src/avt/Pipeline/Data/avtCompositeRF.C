@@ -210,7 +210,7 @@ avtCompositeRF::GetRayValue(const avtRay *ray,
     float opacity = 0.;
     float trgb[3] = {0.f, 0.f, 0.f};
     int z = 0;
-    float sampleDist = viewDistance/float(ray->numSamples);
+    double sampleDist = viewDistance/double(ray->numSamples);
 
     if(trilinearSampling)
     {
@@ -289,10 +289,11 @@ avtCompositeRF::GetRayValue(const avtRay *ray,
                             tableOpac *= weight[z]*min_weight_denom;
                         float samplesOpacity = static_cast<float>(tableOpac);
 
-                        samplesOpacity = (1. - std::pow(
-                            (1. - samplesOpacity), sampleDist));
-                        samplesOpacity = (samplesOpacity > 1.f ? 
-                            1.f : samplesOpacity);
+                        if (samplesOpacity < 1.f)
+                        {
+                            samplesOpacity = (1. - std::pow(
+                                (1. - samplesOpacity), sampleDist));
+                        }
 
                         unsigned char rgb[3] = { color.R, color.G, color.B };
                         lighting->AddLighting(z, ray, rgb);
@@ -330,10 +331,13 @@ avtCompositeRF::GetRayValue(const avtRay *ray,
                         unsigned char sampleRGB[3] = { color.R, color.G, color.B };
                         lighting->AddLighting(z, ray, sampleRGB);
                         
-                        float samplesOpacity = (1.f - std::pow(
-                            (1.f - opacityValue), sampleDist));
-                        samplesOpacity = (samplesOpacity > 1.f ? 
-                            1.f : samplesOpacity);
+                        float samplesOpacity = 1.f;
+                        //FIXME
+                        if (opacityValue < 1.f)
+                        {
+                            samplesOpacity = (1.f - std::pow((1.f - opacityValue), 
+                                sampleDist));
+                        }
 
                         float ff = (1.f-opacity)*samplesOpacity;
                         trgb[0] = trgb[0] + ff*sampleRGB[0];
