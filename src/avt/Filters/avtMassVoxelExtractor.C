@@ -664,7 +664,7 @@ sv_SamplePointOpacityVariable_ERT(
 
         if (alpha > 0)
         {
-            float samplesOpacity = 1.0;//FIXME
+            float samplesOpacity = 1.0;
             if (alpha < 1.0)
             { 
                 samplesOpacity = (1.0 - std::pow((1.0 - alpha), sampleDist));
