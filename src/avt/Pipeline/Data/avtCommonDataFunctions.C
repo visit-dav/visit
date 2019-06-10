@@ -1380,6 +1380,9 @@ GetDataRange(vtkDataSet *ds, double *de, const char *vname,
 //    Brad Whitlock, Tue Jul 21 10:37:29 PDT 2015
 //    Add support for non-standard memory layout.
 //
+//    Alister Maguire, Tue May 28 09:49:58 PDT 2019
+//    Updated to check for nans. checkFinite is now checkFiniteAndNan.
+//
 // ****************************************************************************
 
 template <typename T>
@@ -1411,7 +1414,7 @@ public:
 template <typename Array, typename Scalar>
 static bool
 GetScalarRangeTemplate(Array buf, Scalar &min, Scalar &max,
-    int n, unsigned char *ghosts, bool checkFinite)
+    int n, unsigned char *ghosts, bool checkFiniteAndNan)
 {
     // Keep the minmax calculation in the Scalar precision.
     bool setOne = false;
@@ -1420,8 +1423,8 @@ GetScalarRangeTemplate(Array buf, Scalar &min, Scalar &max,
         if ((ghosts != NULL) && (ghosts[i] != '\0'))
             continue;
 
-        if (checkFinite)
-            if (! visitIsFinite(buf[i]))
+        if (checkFiniteAndNan)
+            if (! visitIsFinite(buf[i]) || visitIsNan(buf[i]))
                 continue;
 
         if (!setOne)
@@ -1445,8 +1448,11 @@ GetScalarRangeTemplate(Array buf, Scalar &min, Scalar &max,
 
     if (setOne)
     {
-        if (! visitIsFinite(min) || ! visitIsFinite(max))
+        if (! visitIsFinite(min) || ! visitIsFinite(max) ||
+            visitIsNan(min) || visitIsNan(max))
+        {
             return GetScalarRangeTemplate(buf, min, max, n, ghosts, true);
+        }
     }
 
     return setOne;
@@ -1454,10 +1460,11 @@ GetScalarRangeTemplate(Array buf, Scalar &min, Scalar &max,
 
 template <typename Scalar>
 inline bool GetScalarRange(Scalar* buf, double *exts, 
-    int n, unsigned char *ghosts, bool checkFinite)
+    int n, unsigned char *ghosts, bool checkFiniteAndNan)
 {
     Scalar min, max;
-    bool retval = GetScalarRangeTemplate(buf, min, max, n, ghosts, checkFinite);
+    bool retval = GetScalarRangeTemplate(buf, min, max, n, ghosts, 
+        checkFiniteAndNan);
     if(retval)
     {
         exts[0] = static_cast<double>(min);
@@ -1475,7 +1482,7 @@ inline bool GetScalarRange(Scalar* buf, double *exts,
 template <typename Array, typename Scalar>
 static bool
 GetNodalScalarRangeViaCellsTemplate(Array buf, Scalar &min, Scalar &max,
-    int n, bool checkFinite, vtkDataSet *ds)
+    int n, bool checkFiniteAndNan, vtkDataSet *ds)
 {
     bool setOne = false;
     vtkIdType nCells = ds->GetNumberOfCells();
@@ -1487,8 +1494,8 @@ GetNodalScalarRangeViaCellsTemplate(Array buf, Scalar &min, Scalar &max,
         {
             vtkIdType id = ptIds->GetId(i);
 
-            if (checkFinite)
-                if (! visitIsFinite(buf[id]))
+            if (checkFiniteAndNan)
+                if (! visitIsFinite(buf[id]) || visitIsNan(buf[id]))
                     continue;
 
             if (!setOne)
@@ -1512,8 +1519,11 @@ GetNodalScalarRangeViaCellsTemplate(Array buf, Scalar &min, Scalar &max,
     }
     if (setOne)
     {
-        if (! visitIsFinite(min) || ! visitIsFinite(max))
+        if (! visitIsFinite(min) || ! visitIsFinite(max) ||
+            visitIsNan(min) || visitIsNan(max))
+        {
             return GetNodalScalarRangeViaCellsTemplate(buf, min, max, n, true, ds);
+        }
     }
     ptIds->Delete();
     return setOne;
@@ -1522,10 +1532,11 @@ GetNodalScalarRangeViaCellsTemplate(Array buf, Scalar &min, Scalar &max,
 template <typename Scalar>
 inline bool
 GetNodalScalarRangeViaCells(Scalar *buf, double *exts,
-    int n, bool checkFinite, vtkDataSet *ds)
+    int n, bool checkFiniteAndNan, vtkDataSet *ds)
 {
     Scalar min,max;
-    bool retval = GetNodalScalarRangeViaCellsTemplate(buf, min, max, n, checkFinite, ds);
+    bool retval = GetNodalScalarRangeViaCellsTemplate(buf, min, max, n, 
+        checkFiniteAndNan, ds);
     if(retval)
     {
         exts[0] = static_cast<double>(min);
@@ -1807,6 +1818,9 @@ GetDataAllComponentsRange(vtkDataSet *ds, double *exts, const char *vname,
 //    Brad Whitlock, Tue Jul 21 13:39:32 PDT 2015
 //    Added support for non-standard memory layouts.
 //
+//    Alister Maguire, Wed Jan 23 10:26:44 PST 2019
+//    Added support for Nan values. 
+//
 // ****************************************************************************
 
 template <typename ScalarPtr>
@@ -1857,7 +1871,7 @@ private:
 template <typename MagFunctor>
 static void
 GetMagnitudeRange(MagFunctor func, int n, int ncomps, double *exts, 
-                  unsigned char *ghosts, bool checkFinite)
+                  unsigned char *ghosts, bool checkFiniteAndNan)
 {
     for (int i = 0; i < n; i++)
     {
@@ -1866,8 +1880,8 @@ GetMagnitudeRange(MagFunctor func, int n, int ncomps, double *exts,
 
         double mag = func(i);
 
-        if (checkFinite)
-            if (! visitIsFinite(mag))
+        if (checkFiniteAndNan)
+            if (! visitIsFinite(mag) || visitIsNan(mag))
                 continue;
 
         if (mag < exts[0])
@@ -1881,7 +1895,8 @@ GetMagnitudeRange(MagFunctor func, int n, int ncomps, double *exts,
         }
     }
 
-    if (! visitIsFinite(exts[0]) || ! visitIsFinite(exts[1]))
+    if (! visitIsFinite(exts[0]) || ! visitIsFinite(exts[1]) ||
+        visitIsNan(exts[0]) || visitIsNan(exts[1]))
     {
         exts[0] = +DBL_MAX;
         exts[1] = 0;
@@ -1895,7 +1910,7 @@ GetMagnitudeRange(MagFunctor func, int n, int ncomps, double *exts,
 template <typename MagFunctor>
 static void
 GetNodalMagnitudeRangeViaCells(MagFunctor func, int n, int ncomps, double *exts,
-                  bool checkFinite, vtkDataSet *ds)
+                  bool checkFiniteAndNan, vtkDataSet *ds)
 {
     vtkIdType nCells = ds->GetNumberOfCells();
     vtkIdList *ptIds = vtkIdList::New();
@@ -1907,9 +1922,9 @@ GetNodalMagnitudeRangeViaCells(MagFunctor func, int n, int ncomps, double *exts,
             vtkIdType id = ptIds->GetId(i);
 
             double mag = func(id);
-
-            if (checkFinite)
-                if (! visitIsFinite(mag))
+      
+            if (checkFiniteAndNan)
+                if (! visitIsFinite(mag) || visitIsNan(mag))
                     continue;
 
             if (mag < exts[0])
@@ -1923,7 +1938,8 @@ GetNodalMagnitudeRangeViaCells(MagFunctor func, int n, int ncomps, double *exts,
         }
     }
 
-    if (! visitIsFinite(exts[0]) || ! visitIsFinite(exts[1]))
+    if (! visitIsFinite(exts[0]) || ! visitIsFinite(exts[1]) ||
+        visitIsNan(exts[0]) || visitIsNan(exts[1]))
     {
         exts[0] = +DBL_MAX;
         exts[1] = 0;
@@ -2054,6 +2070,9 @@ GetDataMagnitudeRange(vtkDataSet *ds, double *exts, const char *vname,
 //    Burlen Loring, Fri Oct  2 17:02:27 PDT 2015
 //    clean up a warning
 //
+//    Alister Maguire, Wed Jan 23 10:26:44 PST 2019
+//    Added support for Nan values. 
+//
 // ****************************************************************************
 
 template <class T> static double
@@ -2096,6 +2115,19 @@ GetMajorEigenvalueRange(T *ptr, int n, int ncomps, double *exts,
         if ((ghosts != NULL) && (ghosts[i] != '\0'))
             continue;
 
+        bool containsNan = false;
+        for (int j = 0; j < ncomps && !containsNan; ++j)
+        {
+            double val = (double) ptr[j];
+            if (visitIsNan(val))
+                containsNan = true;
+        }
+        if (containsNan)
+        {
+            ptr+=ncomps;
+            continue;
+        }
+
         double val = MajorEigenvalueT(ptr);
 
         if (!visitIsFinite(val))
@@ -2121,7 +2153,19 @@ GetNodalMajorEigenvalueRangeViaCells(T *ptr, int n, int ncomps, double *exts,
         {
             vtkIdType id = ptIds->GetId(i);
 
-            double val = MajorEigenvalueT(&ptr[id*ncomps]);
+            int startIdx     = id*ncomps;
+            bool containsNan = false;
+
+            for (int j = 0; j < ncomps && !containsNan; ++j)
+            {
+                double val = (double) ptr[startIdx + j];
+                if (visitIsNan(val))
+                    containsNan = true;
+            }
+            if (containsNan)
+                continue;
+
+            double val = MajorEigenvalueT(&ptr[startIdx]);
 
             if (!visitIsFinite(val))
                 continue;

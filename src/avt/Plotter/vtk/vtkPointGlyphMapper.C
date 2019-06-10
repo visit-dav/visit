@@ -476,16 +476,29 @@ void vtkPointGlyphMapper::ReleaseGraphicsResources(vtkWindow *w)
 
 
 //----------------------------------------------------------------------------
+// Modifications:
+//  
+//    Kathleen Biagas, Fri Jun  7 11:06:14 PDT 2019
+//    Tell superclass the scalar range, too. Needed by transparency actor.
+//----------------------------------------------------------------------------
+
 void vtkPointGlyphMapper::SetScalarRange(double min, double max)
 {
+  this->Superclass::SetScalarRange(min, max);
   this->GlyphMapper->SetScalarRange(min, max);
   this->PointMapper->SetScalarRange(min, max);
 }
 
 
 //----------------------------------------------------------------------------
+// Modifications:
+//  
+//    Kathleen Biagas, Fri Jun  7 11:06:14 PDT 2019
+//    Tell superclass the lut, too. Needed by transparency actor.
+//----------------------------------------------------------------------------
 void vtkPointGlyphMapper::SetLookupTable(vtkLookupTable *lut)
 {
+  this->Superclass::SetLookupTable(lut);
   this->GlyphMapper->SetLookupTable(lut);
   this->PointMapper->SetLookupTable(lut);
 }
@@ -582,8 +595,14 @@ void vtkPointGlyphMapper::DataScalingOn(const string &sname, int varDim)
 }
 
 //----------------------------------------------------------------------------
+// Modifications:
+//  
+//    Kathleen Biagas, Fri Jun  7 11:06:14 PDT 2019
+//    Tell superclass too. Needed by transparency actor.
+//----------------------------------------------------------------------------
 void vtkPointGlyphMapper::ColorByScalarOn(const string &sn)
 {
+  this->Superclass::ScalarVisibilityOn();
   this->GlyphFilter->SetColorModeToColorByScalar();
   this->GlyphFilter->SelectScalarsForColoring(sn.c_str());
   this->GlyphMapper->ScalarVisibilityOn();
@@ -591,8 +610,14 @@ void vtkPointGlyphMapper::ColorByScalarOn(const string &sn)
 }
 
 //----------------------------------------------------------------------------
+// Modifications:
+//  
+//    Kathleen Biagas, Fri Jun  7 11:06:14 PDT 2019
+//    Tell superclass too. Needed by transparency actor.
+//----------------------------------------------------------------------------
 void vtkPointGlyphMapper::ColorByScalarOff()
 {
+  this->Superclass::ScalarVisibilityOff();
   this->GlyphFilter->SetColorMode(0);
   this->GlyphMapper->ScalarVisibilityOff();
   this->PointMapper->ScalarVisibilityOff();
