@@ -332,7 +332,6 @@ avtCompositeRF::GetRayValue(const avtRay *ray,
                         lighting->AddLighting(z, ray, sampleRGB);
                         
                         float samplesOpacity = 1.f;
-                        //FIXME
                         if (opacityValue < 1.f)
                         {
                             samplesOpacity = (1.f - std::pow((1.f - opacityValue), 
