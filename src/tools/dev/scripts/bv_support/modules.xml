@@ -70,6 +70,7 @@
 
         <group name="optional" comment="All optional libraries" enabled="no">
             <lib name="adios"/>
+            <lib name="adios2"/>
             <lib name="advio"/>
             <lib name="boost"/>
             <lib name="boxlib"/>
