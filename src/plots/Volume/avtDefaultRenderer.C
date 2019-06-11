@@ -163,6 +163,9 @@ avtDefaultRenderer::~avtDefaultRenderer()
 //    Alister Maguire, Mon Mar 25 09:20:43 PDT 2019
 //    Updated to use different scalars for opacity and color. 
 //
+//    Alister Maguire, Tue Jun 11 11:08:52 PDT 2019
+//    Update to use ambient, diffuse, specular, and specular power. 
+//
 // ****************************************************************************
 
 void
@@ -342,6 +345,19 @@ avtDefaultRenderer::Render(
             rgba[lastIdx + 2] / 255.f);
         opacity->AddPoint(-1, rgba[3] * atten);
         opacity->AddPoint(256, rgba[lastIdx + 3] * atten);
+
+        //
+        // Set ambient, diffuse, specular, and specular power (shininess).
+        //
+        const double *matProp = props.atts.GetMaterialProperties();
+   
+        if (matProp != NULL)
+        {
+            volumeProp->SetAmbient(matProp[0]); 
+            volumeProp->SetDiffuse(matProp[1]); 
+            volumeProp->SetSpecular(matProp[2]); 
+            volumeProp->SetSpecularPower(matProp[3]); 
+        }
 
         //
         // Set the volume properties.
