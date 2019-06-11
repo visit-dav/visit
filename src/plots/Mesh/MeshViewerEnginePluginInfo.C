@@ -180,13 +180,7 @@ MeshViewerEnginePluginInfo::AllocAvtPlot()
 //  Creation:   Mark C. Miller, Thu May 30 22:41:29 PDT 2019
 // ****************************************************************************
 static int colorIndex = 0;
-// Grabbed 29May19 from https://sashat.me/2017/01/11/list-of-20-simple-distinct-colors/
-static unsigned char SashaTrubetskoy22SimpleDistinctColors[][4] = {
-    {230,  25,  75, 255}, { 60, 180,  75, 255}, {255, 225,  25, 255}, {  0, 130, 200, 255}, {245, 130,  48, 255},
-    {145,  30, 180, 255}, { 70, 240, 240, 255}, {240,  50, 230, 255}, {210, 245,  60, 255}, {250, 190, 190, 255},
-    {  0, 128, 128, 255}, {230, 190, 255, 255}, {170, 110,  40, 255}, {255, 250, 200, 255}, {128,   0,   0, 255},
-    {170, 255, 195, 255}, {128, 128,   0, 255}, {255, 215, 180, 255}, {  0,   0, 128, 255}, {128, 128, 128, 255},
-    {255, 255, 255, 255}, {  0,   0,   0, 255}};
+
 void
 MeshViewerEnginePluginInfo::InitializePlotAtts(AttributeSubject *atts,
     const avtPlotMetaData &)
@@ -226,6 +220,8 @@ MeshViewerEnginePluginInfo::GetMenuName() const
 //
 //  Programmer: Mark C. Miller, Thu May 30 22:41:51 PDT 2019
 // ****************************************************************************
+#include <avtColorTables.h>
+
 void
 MeshViewerEnginePluginInfo::SetMeshColor(AttributeSubject *atts)
 {
@@ -233,9 +229,27 @@ MeshViewerEnginePluginInfo::SetMeshColor(AttributeSubject *atts)
 
     if (meshAtts->GetMeshColorSource() == MeshAttributes::MeshRandom)
     {
-        ColorAttribute c;
 
-        c.SetColor(SashaTrubetskoy22SimpleDistinctColors[colorIndex]);
+        ColorAttribute c;
+        unsigned char rgb[3] = {0,0,0};
+        
+        // 
+        // Try and get the color for the colorIndex'th color in the distinct
+        // discrete color table or, failing that, default discrete color table.
+        //
+        avtColorTables *ct = avtColorTables::Instance();
+        if (ct->GetControlPointColor("distinct", colorIndex, rgb))
+        {   
+            c.SetRed(int(rgb[0]));
+            c.SetGreen(int(rgb[1]));
+            c.SetBlue(int(rgb[2]));
+        }
+        else if (ct->GetControlPointColor(ct->GetDefaultDiscreteColorTable(), colorIndex, rgb))
+        {
+            c.SetRed(int(rgb[0]));
+            c.SetGreen(int(rgb[1]));
+            c.SetBlue(int(rgb[2]));
+        }
 
         meshAtts->SetMeshColor(c);
 
@@ -255,6 +269,8 @@ MeshViewerEnginePluginInfo::SetMeshColor(AttributeSubject *atts)
 //
 //  Programmer: Mark C. Miller, Thu May 30 22:41:51 PDT 2019
 // ****************************************************************************
+#include <avtColorTables.h>
+
 void
 MeshViewerEnginePluginInfo::SetOpaqueColor(AttributeSubject *atts)
 {
@@ -263,8 +279,25 @@ MeshViewerEnginePluginInfo::SetOpaqueColor(AttributeSubject *atts)
     if (meshAtts->GetOpaqueColorSource() == MeshAttributes::OpaqueRandom)
     {
         ColorAttribute c;
-
-        c.SetColor(SashaTrubetskoy22SimpleDistinctColors[colorIndex]);
+        unsigned char rgb[3] = {0,0,0};
+        
+        // 
+        // Try and get the color for the colorIndex'th color in the distinct
+        // discrete color table or, failing that, default discrete color table.
+        //
+        avtColorTables *ct = avtColorTables::Instance();
+        if (ct->GetControlPointColor("distinct", colorIndex, rgb))
+        {   
+            c.SetRed(int(rgb[0]));
+            c.SetGreen(int(rgb[1]));
+            c.SetBlue(int(rgb[2]));
+        }
+        else if (ct->GetControlPointColor(ct->GetDefaultDiscreteColorTable(), colorIndex, rgb))
+        {   
+            c.SetRed(int(rgb[0]));
+            c.SetGreen(int(rgb[1]));
+            c.SetBlue(int(rgb[2]));
+        }
 
         meshAtts->SetOpaqueColor(c);
 

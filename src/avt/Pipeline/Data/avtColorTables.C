@@ -53,12 +53,20 @@
 static const char *predef_ct_names[]  = { "bluehot", "caleblack", "calewhite",
     "contoured", "difference", "gray", "hot", "hot_and_cold", 
     "hot_desaturated", "levels", "orangehot", "rainbow", "xray",
-    "cpk_jmol", "cpk_rasmol", "amino_rasmol", "amino_shapely"
+    "cpk_jmol", "cpk_rasmol", "amino_rasmol", "amino_shapely",
+    "distinct"
 };
-static const int predef_ct_ncolors[]  = {4, 7, 7, 4, 3, 2, 5, 5, 8, 30, 4, 6, 2, 110, 110, 23, 23};
-static const int predef_ct_smooth[]   = {1, 1, 1, 0, 1, 1, 1, 1, 1,  0, 1, 1, 1,   0,   0,  0,  0};
-static const int predef_ct_equal[]    = {0, 0, 0, 1, 0, 0, 0, 0, 0,  1, 0, 0, 0,   1,   1,  1,  1};
-static const int predef_ct_discrete[] = {0, 0, 0, 0, 0, 0, 0, 0, 0,  1, 0, 0, 0,   1,   1,  1,  1};
+static const int predef_ct_ncolors[]  = {4, 7, 7, 4, 3, 2, 5, 5, 8, 30, 4, 6, 2, 110, 110, 23, 23, 22};
+static const int predef_ct_smooth[]   = {1, 1, 1, 0, 1, 1, 1, 1, 1,  0, 1, 1, 1,   0,   0,  0,  0,  0};
+static const int predef_ct_equal[]    = {0, 0, 0, 1, 0, 0, 0, 0, 0,  1, 0, 0, 0,   1,   1,  1,  1,  1};
+static const int predef_ct_discrete[] = {0, 0, 0, 0, 0, 0, 0, 0, 0,  1, 0, 0, 0,   1,   1,  1,  1,  1};
+
+//
+// The 4-tuples in the tables below are defining
+//     position, r, g, b
+// where position is a value in [0,1] and should be monotone
+// increasing from first color @ 0 to last color @ 1.
+//
 
 /* Hot */
 static const float ct_hot[] = {
@@ -472,6 +480,33 @@ static const float ct_shapely_colors[] = {
  0.204f, 1.000f, 0.000f, 1.000f,
 };
 
+/* 22 maximally perceptually distinct colors */
+// Grabbed 29May19 from https://sashat.me/2017/01/11/list-of-20-simple-distinct-colors/
+static const float ct_distinct[] = {
+0.000f, 0.902f, 0.098f, 0.294f,
+0.048f, 0.235f, 0.706f, 0.294f,
+0.095f, 1.000f, 0.882f, 0.098f,
+0.143f, 0.000f, 0.510f, 1.000f, // modified B->70% to 100%
+0.190f, 0.961f, 0.510f, 0.188f,
+0.238f, 0.569f, 0.118f, 0.706f,
+0.286f, 0.275f, 0.941f, 0.941f,
+0.333f, 0.941f, 0.196f, 0.902f,
+0.381f, 0.824f, 0.961f, 0.235f,
+0.429f, 0.980f, 0.745f, 0.745f,
+0.476f, 0.000f, 0.502f, 0.502f,
+0.524f, 0.902f, 0.745f, 1.000f,
+0.571f, 0.667f, 0.431f, 0.157f,
+0.619f, 1.000f, 0.980f, 0.784f,
+0.667f, 0.502f, 0.000f, 0.000f,
+0.714f, 0.667f, 1.000f, 0.765f,
+0.762f, 0.502f, 0.502f, 0.000f,
+0.810f, 1.000f, 0.843f, 0.706f,
+0.857f, 0.000f, 0.000f, 0.502f,
+0.905f, 0.502f, 0.502f, 0.502f,
+0.952f, 1.000f, 1.000f, 1.000f,
+1.000f, 0.000f, 0.000f, 0.000f,
+};
+
 // Static pointer to single instance.
 avtColorTables *avtColorTables::instance = NULL;
 
@@ -535,34 +570,39 @@ reverse_alphas(unsigned char *a, int na)
 //   Kathleen Biagas, Fri Aug 8 08:27:44 PDT 2014
 //   Add CategoryName.
 //
+//   Mark C. Miller, Mon Jun 10 17:37:19 PDT 2019
+//   Make the code a little more automated as color tables are added.
 // ****************************************************************************
 
 avtColorTables::avtColorTables()
 {
     ctAtts = new ColorTableAttributes();
 
-    // Set up some pointers.
-    const float *predef_ct_colors[17];
-    predef_ct_colors[0]  = ct_bluehot;
-    predef_ct_colors[1]  = ct_caleblack;
-    predef_ct_colors[2]  = ct_calewhite;
-    predef_ct_colors[3]  = ct_contoured;
-    predef_ct_colors[4]  = ct_difference;
-    predef_ct_colors[5]  = ct_gray;
-    predef_ct_colors[6]  = ct_hot;
-    predef_ct_colors[7]  = ct_hot_and_cold;
-    predef_ct_colors[8]  = ct_hot_desaturated;
-    predef_ct_colors[9]  = ct_levels;
-    predef_ct_colors[10] = ct_orangehot;
-    predef_ct_colors[11] = ct_rainbow;
-    predef_ct_colors[12] = ct_xray;
-    predef_ct_colors[13] = ct_jmol_colors;
-    predef_ct_colors[14] = ct_rasmol_colors;
-    predef_ct_colors[15] = ct_amino_colors;
-    predef_ct_colors[16] = ct_shapely_colors;
+    // Just add new, pre-defined color tables to this list
+    float const *predef_ct_colors[] = {
+        ct_bluehot,
+        ct_caleblack,
+        ct_calewhite,
+        ct_contoured,
+        ct_difference,
+        ct_gray,
+        ct_hot,
+        ct_hot_and_cold,
+        ct_hot_desaturated,
+        ct_levels,
+        ct_orangehot,
+        ct_rainbow,
+        ct_xray,
+        ct_jmol_colors,
+        ct_rasmol_colors,
+        ct_amino_colors,
+        ct_shapely_colors,
+        ct_distinct
+    };
+    int const ntables = sizeof(predef_ct_colors)/sizeof(predef_ct_colors[0]);
 
     // Add each colortable.
-    for(int i = 0; i < 17; ++i)
+    for(int i = 0; i < ntables; ++i)
     {
         ColorControlPointList ccpl;
 
