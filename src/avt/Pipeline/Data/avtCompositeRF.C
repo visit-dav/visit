@@ -71,6 +71,9 @@
 //    Hank Childs, Sat Jan  7 17:50:22 PST 2006
 //    Add support for kernel based sampling.
 //
+//    Alister Maguire, Tue Jun 11 11:08:52 PDT 2019
+//    Added initialization of viewDistance. 
+//
 // ****************************************************************************
 
 avtCompositeRF::avtCompositeRF(avtLightingModel *l, avtOpacityMap *m,
@@ -101,6 +104,8 @@ avtCompositeRF::avtCompositeRF(avtLightingModel *l, avtOpacityMap *m,
     matProperties[1] = 0.75;    // diffuse
     matProperties[2] = 0.0;     // specular
     matProperties[3] = 15;      // shininess
+
+    viewDistance = 0.0;
 }
 
 
@@ -330,7 +335,7 @@ avtCompositeRF::GetRayValue(const avtRay *ray,
                         const RGBA &color = table[map->Quantize(sample[z])];
                         unsigned char sampleRGB[3] = { color.R, color.G, color.B };
                         lighting->AddLighting(z, ray, sampleRGB);
-                        
+                      
                         float samplesOpacity = 1.f;
                         if (opacityValue < 1.f)
                         {
