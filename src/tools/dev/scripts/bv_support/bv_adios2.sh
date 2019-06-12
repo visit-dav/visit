@@ -3,7 +3,7 @@ function bv_adios2_initialize
     export FORCE_ADIOS2="no"
     export DO_ADIOS2="no"
     export USE_SYSTEM_ADIOS2="no"
-    add_extra_commandline_args "adios" "alt-adios-dir" 1 "Use alternative directory for adios"
+    add_extra_commandline_args "adios2" "alt-adios2-dir" 1 "Use alternative directory for adios"
 
 }
 
@@ -21,7 +21,7 @@ function bv_adios2_disable
     DO_ADIOS2="no"
 }
 
-function bv_adios2_alt_adios_dir
+function bv_adios2_alt_adios2_dir
 {
     echo "Using alternate Adios2 directory"
 
@@ -54,12 +54,6 @@ function bv_adios2_depends_on
 
 function bv_adios2_initialize_vars
 {
-    if [[ "$FORCE_ADIOS2" == "no" && "$parallel" == "no" ]]; then
-        bv_adios2_disable
-        warn "Adios2 requested by default but the parallel flag has not been set. Adios2 will not be built."
-        return
-    fi
-
     if [[ "$USE_SYSTEM_ADIOS2" == "no" ]]; then
         ADIOS2_INSTALL_DIR="${VISITDIR}/adios2/$ADIOS2_VERSION/$VISITARCH"
     fi
@@ -67,12 +61,12 @@ function bv_adios2_initialize_vars
 
 function bv_adios2_info
 {
-    export ADIOS2_VERSION=${ADIOS2_VERSION:-"2.3.1"}
+    export ADIOS2_VERSION=${ADIOS2_VERSION:-"2.4.0"}
     export ADIOS2_FILE=${ADIOS2_FILE:-"adios2-${ADIOS2_VERSION}.tar.gz"}
     export ADIOS2_COMPATIBILITY_VERSION=${ADIOS2_COMPATIBILITY_VERSION:-"${ADIOS2_VERSION}"}
-    export ADIOS2_URL=${ADIOS2_URL:-"https://github.com/ornladios/ADIOS2/releases/download/v2.3.1"}
-    export ADIOS2_BUILD_DIR=${ADIOS2_BUILD_DIR:-"adios2-"${ADIOS2_VERSION}}
-    export ADIOS2_MD5_CHECKSUM="bed21d58048dc9c77d7919cde9142d54"
+    export ADIOS2_URL=${ADIOS2_URL:-"https://github.com/ornladios/ADIOS2/releases/download/v2.4.0-rc"}
+    export ADIOS2_BUILD_DIR=${ADIOS2_BUILD_DIR:-"ADIOS2-"${ADIOS2_VERSION}}
+    export ADIOS2_MD5_CHECKSUM="be3f5c7d7ab4f7df65599bebc91e0ce4"
     export ADIOS2_SHA256_CHECKSUM=""
 }
 
@@ -199,6 +193,7 @@ function build_adios2
         cfg_opts="${cfg_opts} -DADIOS2_BUILD_EXAMPLES:BOOL=OFF"
         cfg_opts="${cfg_opts} -DADIOS2_BUILD_TESTING:BOOL=OFF"
         cfg_opts="${cfg_opts} -DADIOS2_USE_ZeroMQ:BOOL=OFF"
+        cfg_opts="${cfg_opts} -DADIOS2_USE_Fortan:BOOL=OFF"
 
         if test "x${DO_STATIC_BUILD}" = "xyes" ; then
             cfg_opts="${cfg_opts} -DBUILD_SHARED_LIBS:BOOL=OFF"
@@ -209,7 +204,7 @@ function build_adios2
         cfg_opts="${cfg_opts} -DCMAKE_INSTALL_PREFIX:PATH=${adios2_install_path}"
         cfg_opts="${cfg_opts} -DCMAKE_C_FLAGS:STRING=\"${C_OPT_FLAGS}\""
         cfg_opts="${cfg_opts} -DCMAKE_CXX_FLAGS:STRING=\"${CXX_OPT_FLAGS}\""
-        cfg_opts="${cfg_opts} -DADIOS2_USE_SST:BOOL=OFF"
+        cfg_opts="${cfg_opts} -DADIOS2_USE_SST:BOOL=ON"
 
         if [[ "$bt" == "ser" ]]; then
             cfg_opts="${cfg_opts} -DADIOS2_USE_MPI:BOOL=OFF"

@@ -44,8 +44,10 @@
 #include <ExpressionList.h>
 #include <OperatorPluginInfo.h>
 #include <OperatorPluginManager.h>
-#include <string>
+
+#include <algorithm>
 #include <map>
+#include <string>
 #include <vectortypes.h>
 
 class avtDatabaseMetaData;
@@ -124,6 +126,9 @@ class QObject;
 //   Make GetOperatorCreatedExpressions be a static method, so the viewer can
 //   make use of it any time, even if there is no VariableMenuPopulator.
 //
+//   Mark C. Miller, Wed Jun  5 13:48:56 PDT 2019
+//   Change use of maps for variable lists to multimaps using case-insensitive
+//   comparator function.
 // ****************************************************************************
 
 class WINUTIL_API VariableMenuPopulator
@@ -160,8 +165,17 @@ public:
         bool mustRePopMD, bool isSim);
 
 private:
-    typedef std::map<std::string, bool> StringBoolMap;
-    typedef std::map<std::string, std::string> StringStringMap;
+    struct Comparator {
+        bool operator() (const std::string& s1, const std::string& s2) const {
+            std::string str1(s1.length(),' ');
+            std::string str2(s2.length(),' ');
+            std::transform(s1.begin(), s1.end(), str1.begin(), tolower);
+            std::transform(s2.begin(), s2.end(), str2.begin(), tolower);
+            return  str1 < str2;
+        }
+    };
+    typedef std::multimap<std::string, bool, Comparator> StringBoolMap;
+    typedef std::multimap<std::string, std::string, Comparator> StringStringMap;
 
     class VariableList
     {

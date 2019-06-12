@@ -307,6 +307,33 @@ inline bool visitIsFinite(T t)
 }
 
 
+// ****************************************************************************
+//  Function: visitIsNan
+//
+//  Purpose:
+//      Determines if a given value is nan.
+//
+//  Programmer: Alister Maguire
+//  Creation:   May 28, 2019
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+template <class T>
+inline bool visitIsNan(T t)
+{
+#ifndef _WIN32
+#ifdef HAVE_ISFINITE
+    return std::isnan(t);
+#endif
+#else
+    return _isnan(t);
+#endif
+    return true;
+}
+
+
 #endif
 
 

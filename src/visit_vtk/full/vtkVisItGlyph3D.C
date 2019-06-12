@@ -140,6 +140,9 @@ vtkVisItGlyph3D::~vtkVisItGlyph3D()
 //    Jeremy Meredith, Fri Aug 23 12:01:38 EDT 2013
 //    Added back the original full frame correction for non-vector glyphs.
 //
+//    Kathleen Biagas, Thu May 30 12:15:07 PDT 2019
+//    Allow cell-centered data for coloring/scaling.
+//
 // ****************************************************************************
 
 int
@@ -163,6 +166,7 @@ vtkVisItGlyph3D::RequestData(
     outInfo->Get(vtkDataObject::DATA_OBJECT()));
 
   vtkPointData *pd;
+  vtkCellData  *cd;
   vtkDataArray *inScalars = NULL;
   vtkDataArray *inScalars_forColoring = NULL;
   vtkDataArray *inScalars_forScaling = NULL;
@@ -217,15 +221,26 @@ vtkVisItGlyph3D::RequestData(
     }
 
   pd = input->GetPointData();
+  cd = input->GetCellData();
   inScalars = pd->GetScalars(this->InputScalarsSelection);
   inVectors = pd->GetVectors(this->InputVectorsSelection);
   inNormals = pd->GetNormals(this->InputNormalsSelection);
 
   inScalars_forColoring = pd->GetArray(this->ScalarsForColoring);
+  if (inScalars_forColoring == NULL)
+      inScalars_forColoring = cd->GetArray(this->ScalarsForColoring);
   inScalars_forScaling  = pd->GetArray(this->ScalarsForScaling);
+  if (inScalars_forScaling == NULL)
+      inScalars_forScaling = cd->GetArray(this->ScalarsForScaling);
   inVectors_forColoring = pd->GetArray(this->VectorsForColoring);
+  if (inVectors_forColoring == NULL)
+      inVectors_forColoring = cd->GetArray(this->VectorsForColoring);
   inVectors_forScaling  = pd->GetArray(this->VectorsForScaling);
+  if (inVectors_forScaling == NULL)
+      inVectors_forScaling = cd->GetArray(this->VectorsForScaling);
   inTensors_forScaling  = pd->GetArray(this->TensorsForScaling);
+  if (inTensors_forScaling == NULL)
+      inTensors_forScaling = cd->GetArray(this->TensorsForScaling);
 
   inOrigNodes = pd->GetArray("avtOriginalNodeNumbers");
   inOrigCells = pd->GetArray("avtOriginalCellNumbers");

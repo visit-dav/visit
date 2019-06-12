@@ -11,15 +11,17 @@
 #  Date:       Thu Feb 15 16:37:20 PST 2018
 #
 #  Modifications:
+#    Kathleen Biagas, Tue Jun 11 11:44:14 PDT 2019
+#    Pass '-noconfig' to generated command line in GenerateCinema.
 #
 # ----------------------------------------------------------------------------
 import math, os, string, subprocess, zlib
 
 def GenerateCinema(cinemaArgs):
     if TestEnv.params["parallel"]:
-        args = [TestEnv.params["visit_bin"], "-cinema", "-np", "2", "-l", TestEnv.params["parallel_launch"]] + cinemaArgs
+        args = [TestEnv.params["visit_bin"], "-noconfig", "-cinema", "-np", "2", "-l", TestEnv.params["parallel_launch"]] + cinemaArgs
     else:
-        args = [TestEnv.params["visit_bin"], "-cinema"] + cinemaArgs
+        args = [TestEnv.params["visit_bin"], "-noconfig", "-cinema"] + cinemaArgs
     p = subprocess.check_output(args)
     return p
 
