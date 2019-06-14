@@ -238,13 +238,13 @@ MeshViewerEnginePluginInfo::SetMeshColor(AttributeSubject *atts)
         // discrete color table or, failing that, default discrete color table.
         //
         avtColorTables *ct = avtColorTables::Instance();
-        if (ct->GetControlPointColor("distinct", colorIndex, rgb))
+        if (ct->GetControlPointColor(ct->GetDefaultDiscreteColorTable(), colorIndex, rgb))
         {   
             c.SetRed(int(rgb[0]));
             c.SetGreen(int(rgb[1]));
             c.SetBlue(int(rgb[2]));
         }
-        else if (ct->GetControlPointColor(ct->GetDefaultDiscreteColorTable(), colorIndex, rgb))
+        else if (ct->GetControlPointColor("distinct", colorIndex, rgb))
         {
             c.SetRed(int(rgb[0]));
             c.SetGreen(int(rgb[1]));
@@ -254,7 +254,7 @@ MeshViewerEnginePluginInfo::SetMeshColor(AttributeSubject *atts)
         meshAtts->SetMeshColor(c);
 
         // Increment the color index.
-        colorIndex = (colorIndex + 1) % 22;
+        colorIndex = (colorIndex + 1) % ct->GetNumColors();
     }
 }
 
@@ -286,13 +286,13 @@ MeshViewerEnginePluginInfo::SetOpaqueColor(AttributeSubject *atts)
         // discrete color table or, failing that, default discrete color table.
         //
         avtColorTables *ct = avtColorTables::Instance();
-        if (ct->GetControlPointColor("distinct", colorIndex, rgb))
+        if (ct->GetControlPointColor(ct->GetDefaultDiscreteColorTable(), colorIndex, rgb))
         {   
             c.SetRed(int(rgb[0]));
             c.SetGreen(int(rgb[1]));
             c.SetBlue(int(rgb[2]));
         }
-        else if (ct->GetControlPointColor(ct->GetDefaultDiscreteColorTable(), colorIndex, rgb))
+        else if (ct->GetControlPointColor("distinct", colorIndex, rgb))
         {   
             c.SetRed(int(rgb[0]));
             c.SetGreen(int(rgb[1]));
@@ -302,7 +302,7 @@ MeshViewerEnginePluginInfo::SetOpaqueColor(AttributeSubject *atts)
         meshAtts->SetOpaqueColor(c);
 
         // Increment the color index.
-        colorIndex = (colorIndex + 1) % 22;
+        colorIndex = (colorIndex + 1) % ct->GetNumColors();
     }
 }
 

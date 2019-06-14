@@ -44,8 +44,10 @@
 
 #include <vtkLookupTable.h>
 
+#include <ColorAttribute.h>
 #include <MeshAttributes.h>
 
+#include <avtColorTables.h>
 #include <avtMeshFilter.h>
 #include <avtSmoothPolyDataFilter.h>
 #include <avtMeshPlotMapper.h>
@@ -347,21 +349,52 @@ avtMeshPlot::SetAtts(const AttributeGroup *a)
     atts = *(const MeshAttributes*)a;
 
     SetLineWidth(Int2LineWidth(atts.GetLineWidth()));
-    if (atts.GetMeshColorSource()==0)
+    if (atts.GetMeshColorSource() == MeshAttributes::Foreground)
     {
         SetMeshColor(fgColor);
     }
-    else
+    else if (atts.GetMeshColorSource() == MeshAttributes::MeshRandom)
+    {
+        static int colorIndex = 0;
+        ColorAttribute c;
+        unsigned char rgb[3] = {0,0,0};
+
+        //
+        // Try and get the color for the colorIndex'th color in the distinct
+        // discrete color table or, failing that, default discrete color table.
+        //
+        avtColorTables *ct = avtColorTables::Instance();
+        if (ct->GetControlPointColor(ct->GetDefaultDiscreteColorTable(), colorIndex, rgb))
+        {
+            c.SetRed(int(rgb[0]));
+            c.SetGreen(int(rgb[1]));
+            c.SetBlue(int(rgb[2]));
+        }
+        else if (ct->GetControlPointColor("distinct", colorIndex, rgb))
+        {
+            c.SetRed(int(rgb[0]));
+            c.SetGreen(int(rgb[1]));
+            c.SetBlue(int(rgb[2]));
+        }
+
+        atts.SetMeshColor(c); // update the atts
+        SetMeshColor(rgb);
+        colorIndex = (colorIndex + 1) % ct->GetNumColors();
+    }
+    else // MeshAttributes::MeshCustom
     {
         SetMeshColor(atts.GetMeshColor().GetColor());
     }
 
     SetRenderOpaque();
-    if (atts.GetOpaqueColorSource()==0)
+    if (atts.GetOpaqueColorSource() == MeshAttributes::Background)
     {
         SetOpaqueColor(bgColor);
     }
-    else
+    else if (atts.GetOpaqueColorSource() == MeshAttributes::OpaqueRandom)
+    {
+    }
+    else // MeshAttributes::OpaqueCustom
     {
         SetOpaqueColor(atts.GetOpaqueColor().GetColor());
     }
@@ -949,7 +982,7 @@ avtMeshPlot::SetBackgroundColor(const double *bg)
 {
     bool retVal = false;
 
-    if (atts.GetOpaqueColorSource()==0 && ShouldRenderOpaque())
+    if (atts.GetOpaqueColorSource() == MeshAttributes::Background && ShouldRenderOpaque())
     {
        if (bgColor[0] != bg[0] || bgColor[1] != bg[1] || bgColor[2] != bg[2])
        {
@@ -987,7 +1020,7 @@ avtMeshPlot::SetForegroundColor(const double *fg)
 {
     bool retVal = false;
 
-    if (atts.GetMeshColorSource()==0)
+    if (atts.GetMeshColorSource() == MeshAttributes::Foreground)
     {
        if (fgColor[0] != fg[0] || fgColor[1] != fg[1] || fgColor[2] != fg[2])
        {
