@@ -200,6 +200,11 @@ avtVisItXdmfFileFormat::OpenFile(int f)
 //  Programmer: Eric Brugger
 //  Creation:   Wed Mar 19 12:38:46 PDT 2008
 //
+//  Modifications:
+//    Eric Brugger, Fri Jun 14 10:12:17 PDT 2019
+//    I increased the maximum number of characters allowed in file and
+//    dataset names from 1023 to 2047.
+//
 // ****************************************************************************
 
 hid_t
@@ -209,7 +214,7 @@ avtVisItXdmfFileFormat::OpenFile(const char *n)
     // The directory of this file is all relative to the directory of
     // the xmf file.  Reflect that here.
     //
-    char name[1024];
+    char name[2048];
     if (n[0] == '/')
     {
         strcpy(name, n);
@@ -293,7 +298,7 @@ avtVisItXdmfFileFormat::CloseFile(int f)
 //
 //  Purpose:
 //      Split a filename:dataset location into the file name and dataset name.
-//      The filename and datasetname buffers must be 1024 characters long
+//      The filename and datasetname buffers must be 2048 characters long
 //      including the terminating NULL.
 //
 //  Programmer: Eric Brugger
@@ -302,6 +307,10 @@ avtVisItXdmfFileFormat::CloseFile(int f)
 //  Modifications:
 //    Kathleen Bonnell, Tue Jan  8 17:51:30 PST 2008
 //    Use 'const' with return of ststr to suppress error on Windows with MSVC8.
+//
+//    Eric Brugger, Fri Jun 14 10:12:17 PDT 2019
+//    I increased the maximum number of characters allowed in file and
+//    dataset names from 1023 to 2047.
 //
 // ****************************************************************************
 
@@ -341,9 +350,9 @@ avtVisItXdmfFileFormat::DetermineFileAndDataset(const char *input,
         avtCallback::IssueWarning("Dataset specifier missing a filename.");
         return 2;
     }
-    if (ptr2 - ptr > 1023)
+    if (ptr2 - ptr > 2047)
     {
-        avtCallback::IssueWarning("Dataset specifier filename over 1023 characters.");
+        avtCallback::IssueWarning("Dataset specifier filename over 2047 characters.");
         return 3;
     }
     char *ptr4 = filename;
@@ -357,9 +366,9 @@ avtVisItXdmfFileFormat::DetermineFileAndDataset(const char *input,
         avtCallback::IssueWarning("Dataset specifier missing a dataset name.");
         return 4;
     }
-    if (ptr3 - ptr2 > 1023)
+    if (ptr3 - ptr2 > 2047)
     {
-        avtCallback::IssueWarning("Dataset specifier dataset name over 1023 characters.");
+        avtCallback::IssueWarning("Dataset specifier dataset name over 2047 characters.");
         return 5;
     }
     ptr4 = datasetname;
@@ -963,6 +972,10 @@ avtVisItXdmfFileFormat::AddVarInfo(bool topGrid, int iBlock, VarInfo *varInfo)
 //    I enhanced the routine to be insensitive to the case for element names,
 //    attribute names, and attribute values that were not names.
 //
+//    Eric Brugger, Fri Jun 14 10:12:17 PDT 2019
+//    I increased the maximum number of characters allowed in file and
+//    dataset names from 1023 to 2047.
+//
 // ****************************************************************************
 
 DataItem *
@@ -1014,7 +1027,7 @@ avtVisItXdmfFileFormat::ParseDataItem()
         {
             cdataOffset = xdmfParser.GetCDataOffset();
             cdataLength = xdmfParser.GetCDataLength();
-            if (cdataLength <= 1023)
+            if (cdataLength <= 2047)
             {
                 cdata = new char[cdataLength+1];
                 memcpy(cdata, xdmfParser.GetCDataValue(), cdataLength+1);
