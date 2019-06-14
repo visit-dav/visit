@@ -231,6 +231,10 @@ class DomainInfo
 //    Modified ParseGridInformation to handle grid information with a
 //    baseIndex.
 //
+//    Eric Brugger, Fri Jun 14 10:03:59 PDT 2019
+//    I increased the maximum number of characters allowed in file and
+//    dataset names from 1023 to 2047.
+//
 // ****************************************************************************
 
 class avtVisItXdmfFileFormat : public avtSTMDFileFormat
@@ -277,7 +281,7 @@ class avtVisItXdmfFileFormat : public avtSTMDFileFormat
 
     std::vector<DomainInfo*>    fileDomainList;
 
-    char                   filename[1024], datasetname[1024];
+    char                   filename[2048], datasetname[2048];
 
     hid_t                 *hdfFiles;
 
