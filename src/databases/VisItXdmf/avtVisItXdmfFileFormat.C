@@ -202,8 +202,8 @@ avtVisItXdmfFileFormat::OpenFile(int f)
 //
 //  Modifications:
 //    Eric Brugger, Fri Jun 14 10:12:17 PDT 2019
-//    I increased the maximum number of characters allowed in filenames
-//    and dataset names from 1023 to 2047.
+//    I increased the maximum number of characters allowed in file and
+//    dataset names from 1023 to 2047.
 //
 // ****************************************************************************
 
@@ -309,8 +309,8 @@ avtVisItXdmfFileFormat::CloseFile(int f)
 //    Use 'const' with return of ststr to suppress error on Windows with MSVC8.
 //
 //    Eric Brugger, Fri Jun 14 10:12:17 PDT 2019
-//    I increased the maximum number of characters allowed in filenames
-//    and dataset names from 1023 to 2047.
+//    I increased the maximum number of characters allowed in file and
+//    dataset names from 1023 to 2047.
 //
 // ****************************************************************************
 
@@ -973,8 +973,8 @@ avtVisItXdmfFileFormat::AddVarInfo(bool topGrid, int iBlock, VarInfo *varInfo)
 //    attribute names, and attribute values that were not names.
 //
 //    Eric Brugger, Fri Jun 14 10:12:17 PDT 2019
-//    I increased the maximum number of characters allowed in filenames
-//    and dataset names from 1023 to 2047.
+//    I increased the maximum number of characters allowed in file and
+//    dataset names from 1023 to 2047.
 //
 // ****************************************************************************
 

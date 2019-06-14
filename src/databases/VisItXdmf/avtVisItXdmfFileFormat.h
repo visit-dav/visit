@@ -232,8 +232,8 @@ class DomainInfo
 //    baseIndex.
 //
 //    Eric Brugger, Fri Jun 14 10:03:59 PDT 2019
-//    I increased the maximum number of characters allowed in filenames
-//    and dataset names from 1023 to 2047.
+//    I increased the maximum number of characters allowed in file and
+//    dataset names from 1023 to 2047.
 //
 // ****************************************************************************
 
