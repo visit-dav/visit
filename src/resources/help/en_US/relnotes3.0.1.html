@@ -28,6 +28,11 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Corrected a bug where VisIt would not switch into scalable rendering mode when it should have when the total number of primitives to render was greater than 2 billion. This typically resulted in VisIt crashing because it ran out of memory.</li>
   <li>Corrected color table named in Pseudocolor and Surface plots from hot to Default making those plots use whatever the default color map is set to.</li>
   <li>Corrected the batch launching on Sierra type systems at Lawrence Livermore National Laboratory.</li>
+  <li>Fixed glyphed points color being wrong when transparency turned on.</li>
+  <li>Fixed type widget in the Expressions window losing the type name when 'Apply' clicked.</li>
+  <li>Updated the language translations in the graphical user interface.</li>
+  <li>Increased the maximum number of characters allowed in file and dataset names from 1023 to 2047 in the XDMF reader.</li>
+
 </ul>
 
 <a name="Enhancements"></a>
@@ -35,6 +40,8 @@ enhancements and bug-fixes that were added to this release.</p>
 <ul>
   <li>The Mili plugin has been re-written. Among other things, the plugin now supports a Griz-like menu, material variables, global variables, shared variables, and integration points. At the moment, only the mid integration point is available for visualization and is selected by default. Future updates will allow the user to change which integration point is used. Also, the old .mili file format is no longer valid. You can create new .mili files by using the updated makemili driver, located in visit/src/bin/.</li>
   <li>Switch to case-insensitive variable sorting in the GUI</li>
+  <li>The default volume renderer now allows adjusting ambient, diffuse, specular, and shininess.</li>
+  <li>Host profiles were added for the Lawrence Livermore National Laboriatories' Cmax systems.</li>
 </ul>
 
 <a name="Dev_changes"></a>

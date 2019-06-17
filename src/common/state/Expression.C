@@ -1046,6 +1046,10 @@ Expression::GetNumTypes()
 //    Kathlen Bonnell, Tue Aug  1 08:26:14 PDT 2006 
 //    Added CurveMeshVar. 
 // 
+//    Kathleen Biagas, Thu Jun  6 16:14:45 PDT 2019
+//    Change returned strings to match case-changes in QvisExpressionWindow,
+//    the only other place this method is used.
+//
 // ****************************************************************************
 
 const char *
@@ -1054,17 +1058,17 @@ Expression::GetTypeString(const Expression::ExprType t)
     switch(t)
     {
     case ScalarMeshVar:
-        return "Scalar Mesh Variable";
+        return "Scalar mesh variable";
     case VectorMeshVar:
-        return "Vector Mesh Variable";
+        return "Vector mesh variable";
     case TensorMeshVar:
-        return "Tensor Mesh Variable";
+        return "Tensor mesh variable";
     case SymmetricTensorMeshVar:
-        return "Symmetric Tensor Mesh Variable";
+        return "Symmetric tensor mesh variable";
     case ArrayMeshVar:
-        return "Array Mesh Variable";
+        return "Array mesh variable";
     case CurveMeshVar:
-        return "Curve Mesh Variable";
+        return "Curve mesh variable";
     case Mesh:
         return "Mesh";
     case Material:
