@@ -534,13 +534,11 @@ avtRayCompositer::Execute(void)
     // the image probably has different dimensions if we are running in
     // parallel.  This is captured by the notion of a restricted volume.
     //
-    //FIXME: THIS IS SOURCE OF MEM ERRORS!!!
     if (*opaqueImage != NULL)
     {
         int minW = volume->GetRestrictedMinWidth();
         int minH = volume->GetRestrictedMinHeight();
         vtkImageData  *opaqueImageVTK = opaqueImage->GetImage().GetImageVTK();
-        //FIXME: mem errors arrise from this zbuffer. 
         float         *opaqueImageZB  = opaqueImage->GetImage().GetZBuffer();
         unsigned char *opaqueImageData =
                     (unsigned char *)opaqueImageVTK->GetScalarPointer(0, 0, 0);
