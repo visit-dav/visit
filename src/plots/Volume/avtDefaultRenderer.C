@@ -52,6 +52,7 @@
 #include <VolumeAttributes.h>
 #include <avtCallback.h>
 #include <DebugStream.h>
+#include <ImproperUseException.h>
 
 
 #ifndef NO_DATA_VALUE
@@ -163,6 +164,9 @@ avtDefaultRenderer::~avtDefaultRenderer()
 //    Alister Maguire, Mon Mar 25 09:20:43 PDT 2019
 //    Updated to use different scalars for opacity and color. 
 //
+//    Alister Maguire, Tue Jun 18 11:36:44 PDT 2019
+//    If VTKRen is NULL, we can't render. 
+//
 // ****************************************************************************
 
 void
@@ -172,20 +176,26 @@ avtDefaultRenderer::Render(
 { 
     const char *mName = "avtDefaultRenderer::Render: ";
 
+    if (VTKRen == NULL)
+    {
+        debug1 << mName << "Default Renderer: VTKRen is NULL!";
+        EXCEPTION0(ImproperUseException);
+    }
+
     // 
     // 2D data has no volume, so we don't try to render this. 
     // 
     if (props.dataIs2D)
     {
         debug5 << mName << "Cannot perform volume rendering on " 
-            << "2D data... returning" << endl;
+            << "2D data... returning";
         return;
     }
 
     if (imageToRender == NULL)
     {
         debug5 << mName << "Converting from rectilinear grid " 
-            << "to image data" << endl;
+            << "to image data";
 
         //
         // Our mapper requires a vtkImageData as input. We must 
