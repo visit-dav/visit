@@ -183,17 +183,16 @@ def TestVolumeOpacity():
 def TestOpacityAttenuation():
 
     OpenDatabase(silo_data_path("noise.silo"))
-    ResetPlotOptions("Volume")
     ResetView()
 
     #
-    # First, test default renderer without reduced attenuation. 
+    # First, test the ray caster without reduced attenuation. 
     #
     AddPlot("Volume", "hardyglobal")
     volAtts = VolumeAttributes()
-    volAtts.opacityAttenuation = 1
     volAtts.lightingFlag = 0
-    volAtts.rendererType = volAtts.Default
+    volAtts.opacityAttenuation = 1
+    volAtts.rendererType = volAtts.RayCasting
     SetPlotOptions(volAtts)
     DrawPlots()
     Test("opacityAttenuation_01")
@@ -203,36 +202,12 @@ def TestOpacityAttenuation():
     #
     volAtts = VolumeAttributes()
     volAtts.lightingFlag = 0
-    volAtts.rendererType = volAtts.Default
+    volAtts.rendererType = volAtts.RayCasting
     volAtts.opacityAttenuation = .12
     SetPlotOptions(volAtts)
     DrawPlots()
     Test("opacityAttenuation_02")
 
-    #
-    # Now let's test the ray caster. 
-    #
-    AddPlot("Volume", "hardyglobal")
-    volAtts = VolumeAttributes()
-    volAtts.lightingFlag = 0
-    volAtts.opacityAttenuation = 1
-    volAtts.rendererType = volAtts.RayCasting
-    SetPlotOptions(volAtts)
-    DrawPlots()
-    Test("opacityAttenuation_03")
-
-    #
-    # Now reduce attenutation. 
-    #
-    volAtts = VolumeAttributes()
-    volAtts.lightingFlag = 0
-    volAtts.rendererType = volAtts.RayCasting
-    volAtts.opacityAttenuation = .12
-    SetPlotOptions(volAtts)
-    DrawPlots()
-    Test("opacityAttenuation_04")
-
-    ResetPlotOptions("Volume")
     DeleteAllPlots()
 
 
@@ -343,6 +318,7 @@ def TestVolumeGaussianControlPoints():
 def TestVolumeSampling():
     OpenDatabase(silo_data_path("noise.silo"))
     AddPlot("Volume", "hardyglobal")
+
     v = VolumeAttributes()
     v.lightingFlag = 0
     v.rendererType = v.RayCasting
@@ -385,14 +361,20 @@ def TestVolumeSampling():
 
     DeleteAllPlots()
 
+#FIXME: For some reason, if you render using the ray caster, 
+#       attempting to render using the default renderer afterwards
+#       will result in a blank test result. I have not been able
+#       to reproduce this outside of the test suite. I created 
+#       issue #3608 to track this. 
+
 InitAnnotationsLegendOn()
 TestVolumeColorControlPoints()
 TestVolumeGaussianControlPoints()
-TestOpacityAttenuation()
 TestVolumeAspect()
 TestVolumeOpacity()
 InitAnnotations()
 TestVolumeScaling()
 TestVolumeSampling()
+TestOpacityAttenuation()
 
 Exit()
