@@ -51,7 +51,6 @@
 
 #include <cmath>
 
-
 // ****************************************************************************
 //  Method: avtCompositeRF constructor
 //
@@ -178,7 +177,8 @@ avtCompositeRF::~avtCompositeRF()
 //
 //    Alister Maguire, Mon Jun  3 15:40:31 PDT 2019
 //    Replaced oneSamplesContribution with standard opacity correction
-//    method. This was to resolve bug #3082. 
+//    method. This was to resolve bug #3082. Also renamed local rgb 
+//    variables to sampleRGB to avoid confusion with the input rgb variable. 
 //
 // ****************************************************************************
 
@@ -250,18 +250,19 @@ avtCompositeRF::GetRayValue(const avtRay *ray,
                             tableOpac *= weight[z]*min_weight_denom;
                     }
                     float samplesOpacity = static_cast<float>(tableOpac);
-                    unsigned char rgb[3] = { color.R, color.G, color.B };
+                    unsigned char sampleRGB[3] = { color.R, color.G, color.B };
                     unsigned char rgbLow[3] = { colorLow.R, colorLow.G, colorLow.B };
                     unsigned char rgbHigh[3] = { colorHigh.R, colorHigh.G, colorHigh.B };
-                    rgb[0] = (1.f-diffRGB)*rgbLow[0] + diffRGB*rgbHigh[0];
-                    rgb[1] = (1.f-diffRGB)*rgbLow[1] + diffRGB*rgbHigh[1];
-                    rgb[2] = (1.f-diffRGB)*rgbLow[2] + diffRGB*rgbHigh[2];
-                    lighting->AddLightingHeadlight(z, ray, rgb, 1.0, matProperties);
+                    sampleRGB[0] = (1.f-diffRGB)*rgbLow[0] + diffRGB*rgbHigh[0];
+                    sampleRGB[1] = (1.f-diffRGB)*rgbLow[1] + diffRGB*rgbHigh[1];
+                    sampleRGB[2] = (1.f-diffRGB)*rgbLow[2] + diffRGB*rgbHigh[2];
+                    lighting->AddLightingHeadlight(z, ray, sampleRGB, 1.0, 
+                        matProperties);
 
                     float ff = (1.f-opacity)*samplesOpacity;
-                    trgb[0] = trgb[0] + ff*rgb[0];
-                    trgb[1] = trgb[1] + ff*rgb[1];
-                    trgb[2] = trgb[2] + ff*rgb[2];
+                    trgb[0] = trgb[0] + ff*sampleRGB[0];
+                    trgb[1] = trgb[1] + ff*sampleRGB[1];
+                    trgb[2] = trgb[2] + ff*sampleRGB[2];
 
                     opacity = opacity + ff;
                 }
@@ -296,17 +297,17 @@ avtCompositeRF::GetRayValue(const avtRay *ray,
 
                         if (samplesOpacity < 1.f)
                         {
-                            samplesOpacity = (1. - std::pow(
-                                (1. - samplesOpacity), sampleDist));
+                            samplesOpacity = (1.f - std::pow(
+                                (1.f - samplesOpacity), sampleDist));
                         }
 
-                        unsigned char rgb[3] = { color.R, color.G, color.B };
-                        lighting->AddLighting(z, ray, rgb);
+                        unsigned char sampleRGB[3] = { color.R, color.G, color.B };
+                        lighting->AddLighting(z, ray, sampleRGB);
 
                         float ff = (1.f-opacity)*samplesOpacity;
-                        trgb[0] = trgb[0] + ff*rgb[0];
-                        trgb[1] = trgb[1] + ff*rgb[1];
-                        trgb[2] = trgb[2] + ff*rgb[2];
+                        trgb[0] = trgb[0] + ff*sampleRGB[0];
+                        trgb[1] = trgb[1] + ff*sampleRGB[1];
+                        trgb[2] = trgb[2] + ff*sampleRGB[2];
 
                         opacity = opacity + ff;
 
