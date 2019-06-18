@@ -318,7 +318,6 @@ def TestVolumeGaussianControlPoints():
 def TestVolumeSampling():
     OpenDatabase(silo_data_path("noise.silo"))
     AddPlot("Volume", "hardyglobal")
-
     v = VolumeAttributes()
     v.lightingFlag = 0
     v.rendererType = v.RayCasting
