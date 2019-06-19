@@ -701,7 +701,7 @@ sv_SamplePointOpacityVariable_ERT(
 //   data     : The data for the point variable.
 //   N        : The number of samples to process.
 //   transferFn1D : The opacity map we'll use to map scalar to opacity.
-//   sampleDist : How much a sample counts for when integrating.
+//   sampleDist : The distance between each sample on a ray. 
 //   tmpSampleList : The samples to store (output)
 //   ii_           : The sample index (from 0) where we terminated.
 //   opacity       : The accumulated opacity.
