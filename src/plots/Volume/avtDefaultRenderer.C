@@ -238,7 +238,6 @@ avtDefaultRenderer::Render(
 
         float dataMag   = volume.data.max - volume.data.min;
         float opacMag   = volume.opacity.max - volume.opacity.min;
-        int nScalars    = dataArr->GetNumberOfTuples();
 
         //
         // We need to transfer the rgrid data over to the image data
