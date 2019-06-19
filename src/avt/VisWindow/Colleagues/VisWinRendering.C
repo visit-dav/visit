@@ -1573,6 +1573,10 @@ VisWinRendering::ScreenRender(avtImageType imgT,
 //    Brad Whitlock, Thu Sep 21 16:01:03 PDT 2017
 //    Fix problem with zbuffer read. It wasn't setting the number of tuples.
 //
+//    Alister Maguire, Tue Jun 18 09:43:21 PDT 2019
+//    Handling opengl error within vtk that occurs while retrieving the 
+//    zbuffer.  
+//
 // ****************************************************************************
 
 avtImage_p
@@ -1585,18 +1589,34 @@ VisWinRendering::ScreenReadback(
 
     vtkRenderWindow *renWin = GetRenderWindow();
     vtkFloatArray *zbuffer = NULL;
-    if (readZ)
-    {
-        // get zbuffer data for the canvas
-        zbuffer = vtkFloatArray::New();
-        renWin->GetZbufferData(c0,r0,c0+w-1,r0+h-1, zbuffer);
-    }
 
     // Read the pixels from the window and copy them over.
     unsigned char *pixels =
         renWin->GetRGBACharPixelData(c0,r0,c0+w-1,r0+h-1,/*front=*/1);
-
     const int numPix = w*h;
+
+    if (readZ)
+    {
+        // get zbuffer data for the canvas
+        zbuffer = vtkFloatArray::New();
+        zbuffer->SetNumberOfComponents(1);
+        zbuffer->SetNumberOfValues(numPix);
+
+        int zStatus = renWin->GetZbufferData(c0,r0,c0+w-1,r0+h-1, zbuffer);
+
+        //
+        // For some reason, an opengl error frequently occurs when 
+        // retrieving the zbuffer. If this happens, let's just populate
+        // the buffer with default values. 
+        //
+        if (zStatus == VTK_ERROR)
+        {
+            for (int i = 0; i < numPix; ++i)
+            {
+                zbuffer->SetTuple1(i, 1.0);
+            }
+        }
+    }
 
     vtkImageData *image = NULL;
     if (readAlpha)
