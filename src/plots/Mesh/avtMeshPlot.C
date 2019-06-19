@@ -355,31 +355,28 @@ avtMeshPlot::SetAtts(const AttributeGroup *a)
     }
     else if (atts.GetMeshColorSource() == MeshAttributes::MeshRandom)
     {
-        static int colorIndex = 0;
-        ColorAttribute c;
         unsigned char rgb[3] = {0,0,0};
+        unsigned char fg[3] = {static_cast<unsigned char>(fgColor[0]*255),
+                               static_cast<unsigned char>(fgColor[1]*255),
+                               static_cast<unsigned char>(fgColor[2]*255)};
 
         //
         // Try and get the color for the colorIndex'th color in the distinct
         // discrete color table or, failing that, default discrete color table.
+        // NOTE: The index is mod'd by the number of control points.
         //
         avtColorTables *ct = avtColorTables::Instance();
-        if (ct->GetControlPointColor(ct->GetDefaultDiscreteColorTable(), colorIndex, rgb))
+        int colorIndex = this->instanceIndex;
+        do
         {
-            c.SetRed(int(rgb[0]));
-            c.SetGreen(int(rgb[1]));
-            c.SetBlue(int(rgb[2]));
+            if (! ct->GetControlPointColor(ct->GetDefaultDiscreteColorTable(), colorIndex, rgb))
+                if (! ct->GetControlPointColor("distinct", colorIndex, rgb))
+                    break;
+            colorIndex++;
         }
-        else if (ct->GetControlPointColor("distinct", colorIndex, rgb))
-        {
-            c.SetRed(int(rgb[0]));
-            c.SetGreen(int(rgb[1]));
-            c.SetBlue(int(rgb[2]));
-        }
-
-        atts.SetMeshColor(c); // update the atts
+        while ((colorIndex - this->instanceIndex) < 50 &&
+               (ct->PerceptualColorDistance(rgb, fg) <= ct->JustNoticeableColorDistance()));
         SetMeshColor(rgb);
-        colorIndex = (colorIndex + 1) % ct->GetNumColors();
     }
     else // MeshAttributes::MeshCustom
     {
@@ -393,6 +390,28 @@ avtMeshPlot::SetAtts(const AttributeGroup *a)
     }
     else if (atts.GetOpaqueColorSource() == MeshAttributes::OpaqueRandom)
     {
+        unsigned char rgb[3] = {0,0,0};
+        unsigned char bg[3] = {static_cast<unsigned char>(bgColor[0]*255),
+                               static_cast<unsigned char>(bgColor[1]*255),
+                               static_cast<unsigned char>(bgColor[2]*255)};
+
+        //
+        // Try and get the color for the colorIndex'th color in the distinct
+        // discrete color table or, failing that, default discrete color table.
+        // NOTE: The index is mod'd by the number of control points.
+        //
+        avtColorTables *ct = avtColorTables::Instance();
+        int colorIndex = this->instanceIndex + 1;
+        do
+        {
+            if (! ct->GetControlPointColor(ct->GetDefaultDiscreteColorTable(), colorIndex, rgb))
+                if (! ct->GetControlPointColor("distinct", colorIndex, rgb))
+                    break;
+            colorIndex++;
+        }
+        while ((colorIndex - this->instanceIndex) < 50 &&
+               (ct->PerceptualColorDistance(rgb, bg) <= ct->JustNoticeableColorDistance()));
+        SetOpaqueColor(rgb);
     }
     else // MeshAttributes::OpaqueCustom
     {

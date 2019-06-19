@@ -78,12 +78,19 @@ class ColorTableAttributes;
 //    Kathleen Bonnell, Mon Jan 17 11:18:35 MST 2011
 //    Added invert arg to color retrieval methods.
 //
+//    Mark C. Miller, Tue Jun 18 14:28:09 PDT 2019
+//    Added color distance methods. The just noticeable threshold was
+//    determined emperically by observing printed distance values for colors
+//    in the "levels" and "distinct" tables.
 // ****************************************************************************
 
 class PIPELINE_API avtColorTables
 {
 public:
     static avtColorTables *Instance();
+    static double          PerceptualColorDistance(unsigned char const *rgbA,
+                                                   unsigned char const *rgbB);
+    static double          JustNoticeableColorDistance() { return 200.0; };
 
     const std::string   &GetDefaultContinuousColorTable() const;
     void                 SetDefaultContinuousColorTable(const std::string &);

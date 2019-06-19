@@ -284,6 +284,8 @@ class     MapNode;
 class PLOTTER_API avtPlot
 {
   public:
+    static int                 instanceCount;
+
                                avtPlot();
     virtual                   ~avtPlot();
 
@@ -360,6 +362,7 @@ class PLOTTER_API avtPlot
   protected:
     bool                       needsRecalculation;
     int                        index;
+    int                        instanceIndex;
     int                        spatialDim;
     int                        topologicalDim;
     avtActor_p                 actor;

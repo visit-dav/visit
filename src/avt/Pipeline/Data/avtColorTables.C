@@ -35,6 +35,7 @@
 * DAMAGE.
 *
 *****************************************************************************/
+#include <cmath> // for sqrt used in color distance method
 
 #include <avtColorTables.h>
 #include <ColorTableAttributes.h>
@@ -1139,3 +1140,24 @@ avtColorTables::ImportColorTables()
 #endif
 }
 
+
+// ****************************************************************************
+// Method: avtColorTables::ImportColorTables
+//
+// Purpose: Compute perceptual distance between two rgb colors using
+// https://www.compuphase.com/cmetric.htm by Thiadmer Riemersma under
+// Creative Commons License
+//
+// Mark C. Miller, Tue Jun 18 13:48:25 PDT 2019
+//
+// ****************************************************************************
+
+double
+avtColorTables::PerceptualColorDistance(unsigned char const *rgbA, unsigned char const *rgbB)
+{
+    long rmean = ((long)rgbA[0] + (long)rgbB[0]) / 2;
+    long r = (long)rgbA[0] - (long)rgbB[0];
+    long g = (long)rgbA[1] - (long)rgbB[1];
+    long b = (long)rgbA[2] - (long)rgbB[2];
+    return sqrt((((512+rmean)*r*r)>>8) + 4*g*g + (((767-rmean)*b*b)>>8));
+}

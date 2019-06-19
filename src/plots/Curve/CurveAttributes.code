@@ -326,16 +326,16 @@ CurveViewerEnginePluginInfo::SetColor(AttributeSubject *atts)
 
     if (curveAtts->GetCurveColorSource() == CurveAttributes::Cycle)
     {
-        ColorAttribute c;
+        ColorAttribute c(0,0,0);
         unsigned char rgb[3] = {0,0,0};
 
         //
         // Try and get the color for the colorIndex'th color in the default
-        // discrete color table.
+        // discrete color table. NOTE: the colorIndex argument is always
+        // mod'ed by number of control points so it never falls outside range.
         //
         avtColorTables *ct = avtColorTables::Instance();
-        if(ct->GetControlPointColor(ct->GetDefaultDiscreteColorTable(),
-           colorIndex, rgb))
+        if (ct->GetControlPointColor(ct->GetDefaultDiscreteColorTable(), colorIndex, rgb))
         {
             c.SetRed(int(rgb[0]));
             c.SetGreen(int(rgb[1]));
@@ -357,7 +357,7 @@ CurveViewerEnginePluginInfo::SetColor(AttributeSubject *atts)
         curveAtts->SetFillColor2(c);
 
         // Increment the color index.
-        colorIndex = (colorIndex + 1) % ct->GetNumColors();
+        colorIndex++;
     }
 }
 
