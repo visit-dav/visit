@@ -1577,6 +1577,10 @@ VisWinRendering::ScreenRender(avtImageType imgT,
 //    Handling opengl error within vtk that occurs while retrieving the 
 //    zbuffer.  
 //
+//    Alister Maguire, Thu Jun 20 09:12:24 PDT 2019
+//    Disabling zbuffer error catch until we figure out how to better handle
+//    it. 
+//
 // ****************************************************************************
 
 avtImage_p
@@ -1604,18 +1608,17 @@ VisWinRendering::ScreenReadback(
 
         int zStatus = renWin->GetZbufferData(c0,r0,c0+w-1,r0+h-1, zbuffer);
 
-        //
+        // FIXME: 
         // For some reason, an opengl error frequently occurs when 
-        // retrieving the zbuffer. If this happens, let's just populate
-        // the buffer with default values. 
+        // retrieving the zbuffer. If this happens, it's unclear what 
+        // to do. We need to retain the true zbuffer values, but 
+        // copying them over create memory errors every time they 
+        // are touched. 
         //
-        if (zStatus == VTK_ERROR)
-        {
-            for (int i = 0; i < numPix; ++i)
-            {
-                zbuffer->SetTuple1(i, 1.0);
-            }
-        }
+        //if (zStatus == VTK_ERROR)
+        //{
+        //    HOW SHOULD WE HANDLE THIS??
+        //}
     }
 
     vtkImageData *image = NULL;
