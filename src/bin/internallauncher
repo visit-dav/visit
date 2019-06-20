@@ -2899,6 +2899,9 @@ class MainLauncher(object):
         # the GUI and Viewer.
         SETENV("MESA_GLX_FX", "disable")
 
+        # Re-enable the native renderer.
+        SETENV("QT_XCB_NATIVE_PAINTING", "1")
+
         # The -viewerdisplay argument allows the user to specify an argument
         # that the viewer should use, no matter what the GUI was using.  This
         # can be useful for wall-type displays with a separate console, e.g.
