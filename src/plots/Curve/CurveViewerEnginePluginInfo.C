@@ -64,11 +64,9 @@ CurveAttributes *CurveViewerEnginePluginInfo::defaultAtts = NULL;
 //    Initialize colorIndex. 
 //
 // ****************************************************************************
-static int colorIndex;
 void
 CurveViewerEnginePluginInfo::InitializeGlobalObjects()
 {
-    colorIndex = 0;
     CurveViewerEnginePluginInfo::clientAtts  = new CurveAttributes;
     CurveViewerEnginePluginInfo::defaultAtts = new CurveAttributes;
 }
@@ -361,41 +359,5 @@ void
 CurveViewerEnginePluginInfo::SetColor(AttributeSubject *atts)
 {
     CurveAttributes *curveAtts = (CurveAttributes *)atts;
-
-    if (curveAtts->GetCurveColorSource() == CurveAttributes::Cycle)
-    {
-        ColorAttribute c(0,0,0);
-        unsigned char rgb[3] = {0,0,0};
-
-        //
-        // Try and get the color for the colorIndex'th color in the default
-        // discrete color table. NOTE: the colorIndex argument is always
-        // mod'ed by number of control points so it never falls outside range.
-        //
-        avtColorTables *ct = avtColorTables::Instance();
-        if (ct->GetControlPointColor(ct->GetDefaultDiscreteColorTable(), colorIndex, rgb))
-        {
-            c.SetRed(int(rgb[0]));
-            c.SetGreen(int(rgb[1]));
-            c.SetBlue(int(rgb[2]));
-        }
-        curveAtts->SetCurveColor(c);
-        curveAtts->SetFillColor1(c);
-
-        // Make a whiter version of the color for fill color 2.
-        int R = int(rgb[0]) + 100;
-        int G = int(rgb[1]) + 100;
-        int B = int(rgb[2]) + 100;
-        R = (R > 255) ? 255 : R;
-        G = (G > 255) ? 255 : G;
-        B = (B > 255) ? 255 : B;
-        c.SetRed(R);
-        c.SetGreen(G);
-        c.SetBlue(B);
-        curveAtts->SetFillColor2(c);
-
-        // Increment the color index.
-        colorIndex++;
-    }
 }
 
