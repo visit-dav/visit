@@ -90,7 +90,7 @@ public:
     static avtColorTables *Instance();
     static double          PerceptualColorDistance(unsigned char const *rgbA,
                                                    unsigned char const *rgbB);
-    static double          JustNoticeableColorDistance() { return 200.0; };
+    static int const       JNDColorDistance = 150;
 
     const std::string   &GetDefaultContinuousColorTable() const;
     void                 SetDefaultContinuousColorTable(const std::string &);
@@ -108,6 +108,10 @@ public:
                                           bool invert = false) const;
     bool                 GetControlPointColor(const std::string &ctName,
                                               int i, unsigned char *rgb,
+                                              bool invert = false) const;
+    bool                 GetJNDControlPointColor(const std::string &ctName,
+                                              int i, unsigned char const *avoidrgb,
+                                              unsigned char *jndrgb,
                                               bool invert = false) const;
     int                  GetNumColors() const { return 256; };
     bool                 IsDiscrete(const std::string &ctName) const;

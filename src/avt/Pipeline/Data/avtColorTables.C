@@ -1039,6 +1039,56 @@ avtColorTables::GetControlPointColor(const std::string &ctName, int i,
     return retval;
 }
 
+
+
+
+
+
+
+
+// ****************************************************************************
+// Method: avtColorTables::GetJNDControlPointColor
+//
+// Purpose: Finds a color, starting from the i'th color control point for the
+// specified, that is above the just-noticeably-different (JND) color distance
+// from a given (avoidrgb) color
+//
+// Arguments:
+//   ctName   : The name of the discrete color table.
+//   i        : The index at which to start the search. The value is mod'ed so
+//              that it always falls within the number of control points for
+//              the specified color table.
+//   avoidrgb : The color we wish to avoid matching too closely.
+//
+// Returns:    A boolean value indicating whether or not a color was returned.
+//
+// Mark C. Miller, Wed Jun 19 17:56:46 PDT 2019
+// ****************************************************************************
+
+bool
+avtColorTables::GetJNDControlPointColor(const std::string &ctName, int i,
+    unsigned char const *avoidrgb, unsigned char *jndrgb, bool invert) const
+{
+    int index = ctAtts->GetColorTableIndex(ctName);
+    if (index < 0) return false;
+    const ColorControlPointList &ct = ctAtts->operator[](index);
+
+    for (int n = 0; n < ct.GetNumControlPoints(); n++)
+    {
+        unsigned char rgb[3];
+        int j = (i+n) % ct.GetNumControlPoints();
+        if (invert) j = ct.GetNumControlPoints()-1-j;
+        std::copy(ct[j].GetColors(),ct[j].GetColors()+3,rgb);
+        if (PerceptualColorDistance(rgb, avoidrgb) > JNDColorDistance)
+        {
+            std::copy(rgb,rgb+3,jndrgb);
+            return true;
+        }
+    }
+
+    return false;
+}
+
 // ****************************************************************************
 // Method: avtColorTables::SetColorTables
 //
@@ -1142,7 +1192,7 @@ avtColorTables::ImportColorTables()
 
 
 // ****************************************************************************
-// Method: avtColorTables::ImportColorTables
+// Method: avtColorTables::PerceptualColorDistance
 //
 // Purpose: Compute perceptual distance between two rgb colors using
 // https://www.compuphase.com/cmetric.htm by Thiadmer Riemersma under
