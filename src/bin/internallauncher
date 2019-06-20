@@ -22,6 +22,9 @@ import time
 #   I added a function to return the correct argument for the process per node
 #   flag for Open MPI and MPICH.
 #
+#   Kevin Griffin, Wed Jun 19 19:48:07 PDT 2019
+#   Added the QT_XCB_NATIVE_PAINTING environment variable.
+#
 ###############################################################################
 
 class JobSubmitter(object):
@@ -2898,6 +2901,11 @@ class MainLauncher(object):
         # to a remote display.  The message messes up the communication between
         # the GUI and Viewer.
         SETENV("MESA_GLX_FX", "disable")
+
+        # Enabled the native renderer.
+        # This resolves the toolbar rendering issue when doing an initial zoom
+        # while doing X forwarding.
+        SETENV("QT_XCB_NATIVE_PAINTING", "1")
 
         # The -viewerdisplay argument allows the user to specify an argument
         # that the viewer should use, no matter what the GUI was using.  This
