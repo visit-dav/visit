@@ -2903,6 +2903,8 @@ class MainLauncher(object):
         SETENV("MESA_GLX_FX", "disable")
 
         # Enabled the native renderer.
+        # This resolves the toolbar rendering issue when doing an initial zoom
+        # while doing X forwarding.
         SETENV("QT_XCB_NATIVE_PAINTING", "1")
 
         # The -viewerdisplay argument allows the user to specify an argument
