@@ -342,6 +342,8 @@ avtMeshPlot::SetCellCountMultiplierForSRThreshold(const avtDataObject_p dob)
 void
 avtMeshPlot::SetAtts(const AttributeGroup *a)
 {
+    int const maxColorsToTry = 50;
+
     needsRecalculation =
         atts.ChangesRequireRecalculation(*(const MeshAttributes*)a,
         behavior->GetInfo().GetAttributes().GetSpatialDimension());
@@ -356,26 +358,12 @@ avtMeshPlot::SetAtts(const AttributeGroup *a)
     else if (atts.GetMeshColorSource() == MeshAttributes::MeshRandom)
     {
         unsigned char rgb[3] = {0,0,0};
-        unsigned char fg[3] = {static_cast<unsigned char>(fgColor[0]*255),
-                               static_cast<unsigned char>(fgColor[1]*255),
-                               static_cast<unsigned char>(fgColor[2]*255)};
-
-        //
-        // Try and get the color for the colorIndex'th color in the distinct
-        // discrete color table or, failing that, default discrete color table.
-        // NOTE: The index is mod'd by the number of control points.
-        //
+        unsigned char bg[3] = {static_cast<unsigned char>(bgColor[0]*255),
+                               static_cast<unsigned char>(bgColor[1]*255),
+                               static_cast<unsigned char>(bgColor[2]*255)};
         avtColorTables *ct = avtColorTables::Instance();
-        int colorIndex = this->instanceIndex;
-        do
-        {
-            if (! ct->GetControlPointColor(ct->GetDefaultDiscreteColorTable(), colorIndex, rgb))
-                if (! ct->GetControlPointColor("distinct", colorIndex, rgb))
-                    break;
-            colorIndex++;
-        }
-        while ((colorIndex - this->instanceIndex) < 50 &&
-               (ct->PerceptualColorDistance(rgb, fg) <= ct->JustNoticeableColorDistance()));
+        if (! ct->GetJNDControlPointColor(ct->GetDefaultDiscreteColorTable(), this->instanceIndex, bg, rgb))
+            ct->GetJNDControlPointColor("distinct", this->instanceIndex, bg, rgb);
         SetMeshColor(rgb);
     }
     else // MeshAttributes::MeshCustom
@@ -391,26 +379,9 @@ avtMeshPlot::SetAtts(const AttributeGroup *a)
     else if (atts.GetOpaqueColorSource() == MeshAttributes::OpaqueRandom)
     {
         unsigned char rgb[3] = {0,0,0};
-        unsigned char bg[3] = {static_cast<unsigned char>(bgColor[0]*255),
-                               static_cast<unsigned char>(bgColor[1]*255),
-                               static_cast<unsigned char>(bgColor[2]*255)};
-
-        //
-        // Try and get the color for the colorIndex'th color in the distinct
-        // discrete color table or, failing that, default discrete color table.
-        // NOTE: The index is mod'd by the number of control points.
-        //
         avtColorTables *ct = avtColorTables::Instance();
-        int colorIndex = this->instanceIndex + 1;
-        do
-        {
-            if (! ct->GetControlPointColor(ct->GetDefaultDiscreteColorTable(), colorIndex, rgb))
-                if (! ct->GetControlPointColor("distinct", colorIndex, rgb))
-                    break;
-            colorIndex++;
-        }
-        while ((colorIndex - this->instanceIndex) < 50 &&
-               (ct->PerceptualColorDistance(rgb, bg) <= ct->JustNoticeableColorDistance()));
+        if (! ct->GetControlPointColor(ct->GetDefaultDiscreteColorTable(), this->instanceIndex+1, rgb))
+            ct->GetControlPointColor("distinct", this->instanceIndex+1, rgb);
         SetOpaqueColor(rgb);
     }
     else // MeshAttributes::OpaqueCustom
@@ -470,24 +441,16 @@ avtMeshPlot::SetAtts(const AttributeGroup *a)
 //    Kathleen Bonnell, Mon Mar 24 17:48:27 PST 2003
 //    Added call to SetOpaqueColor.
 //
+//    Mark C. Miller, Wed Jun 19 22:26:53 PDT 2019
+//    Simplify. Delegate to the double method.
 // ****************************************************************************
 
 void
 avtMeshPlot::SetMeshColor(const unsigned char *col)
 {
-    double rgb[3];
-    rgb[0] = (double) col[0] / 255.0;
-    rgb[1] = (double) col[1] / 255.0;
-    rgb[2] = (double) col[2] / 255.0;
-    mapper->SetMeshColor(rgb);
-    glyphMapper->ColorBySingleColor(rgb);
-
-    if (wireframeRenderingIsInappropriate)
-    {
-        SetOpaqueColor(col, true);
-    }
+    double rgb[3] = {col[0]/255.0,col[1]/255.0,col[2]/255.0};
+    SetMeshColor(rgb);
 }
-
 
 // ****************************************************************************
 //  Method: avtMeshPlot::SetMeshColor
@@ -509,9 +472,7 @@ void
 avtMeshPlot::SetMeshColor(const double *col)
 {
     double rgb[3];
-    rgb[0] = col[0];
-    rgb[1] = col[1];
-    rgb[2] = col[2];
+    std::copy(col,col+3,rgb);
     mapper->SetMeshColor(rgb);
     glyphMapper->ColorBySingleColor(rgb);
 
@@ -520,7 +481,6 @@ avtMeshPlot::SetMeshColor(const double *col)
         SetOpaqueColor(col, true);
     }
 }
-
 
 // ****************************************************************************
 //  Method: avtMeshPlot::SetOpaqueColor
@@ -539,21 +499,16 @@ avtMeshPlot::SetMeshColor(const double *col)
 //    The opaque color should match the mesh color if wireframe rendering
 //    is inappropriate.  Don't allow the color to be set incorrectly.
 //
+//    Mark C. Miller, Wed Jun 19 22:34:38 PDT 2019
+//    Simplify. Delegate to double method.
 // ****************************************************************************
 
 void
 avtMeshPlot::SetOpaqueColor(const unsigned char *col, bool force)
 {
-    if (!wireframeRenderingIsInappropriate || force)
-    {
-        double rgb[3];
-        rgb[0] = (double) col[0] / 255.0;
-        rgb[1] = (double) col[1] / 255.0;
-        rgb[2] = (double) col[2] / 255.0;
-        mapper->SetSurfaceColor(rgb);
-    }
+    double rgb[3] = {col[0]/255.0,col[1]/255.0,col[2]/255.0};
+    SetOpaqueColor(rgb, force);
 }
-
 
 // ****************************************************************************
 //  Method: avtMeshPlot::SetOpaqueColor
@@ -575,13 +530,10 @@ avtMeshPlot::SetOpaqueColor(const double *col, bool force)
     if (!wireframeRenderingIsInappropriate || force)
     {
         double rgb[3];
-        rgb[0] = col[0];
-        rgb[1] = col[1];
-        rgb[2] = col[2];
+        std::copy(col,col+3,rgb);
         mapper->SetSurfaceColor(rgb);
     }
 }
-
 
 // ****************************************************************************
 //  Method: avtMeshPlot::SetLegend
