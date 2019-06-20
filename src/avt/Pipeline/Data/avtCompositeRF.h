@@ -82,6 +82,9 @@ struct    RGBA;
 //    Hank Childs, Sun Aug 31 08:04:42 PDT 2008
 //    Add a lighting model.
 //
+//    Aliter Maguire, Mon Jun  3 15:40:31 PDT 2019
+//    Added viewDistance with setter. 
+//
 // ****************************************************************************
 
 class PIPELINE_API avtCompositeRF : public avtRayFunction
@@ -106,6 +109,8 @@ class PIPELINE_API avtCompositeRF : public avtRayFunction
                                                { return weightVariableIndex; }
     virtual bool       CanContributeToPicture(int,
                                           const double (*)[AVT_VARIABLE_LIMIT]);
+    void               SetDistance(double dist)
+                                               { viewDistance = dist; }; 
 
     void               SetTrilinearSampling(bool r) { trilinearSampling = r; };
     void               SetMaterial(double mat[4]){for (int i=0; i<4; i++) matProperties[i]=mat[i];}
@@ -118,6 +123,7 @@ class PIPELINE_API avtCompositeRF : public avtRayFunction
     int                colorVariableIndex;
     int                opacityVariableIndex;
     int                weightVariableIndex;
+    double             viewDistance;
 
     avtRangeMaxTable   rangeMaxTable;
     bool               trilinearSampling;
