@@ -109,10 +109,6 @@ class MeshViewerEnginePluginInfo : public virtual ViewerEnginePlotPluginInfo, pu
   private:
     static MeshAttributes *defaultAtts;
     static MeshAttributes *clientAtts;
-    // User-defined functions
-  private:
-    void SetMeshColor(AttributeSubject *);
-    void SetOpaqueColor(AttributeSubject *);
 };
 
 class MeshViewerPluginInfo : public virtual ViewerPlotPluginInfo, public virtual MeshViewerEnginePluginInfo

@@ -89,9 +89,5 @@
       </Function>
       <Function name="MeshViewerEnginePluginInfo::InitializePlotAtts" user="false" member="true">
       </Function>
-      <Function name="MeshViewerEnginePluginInfo::SetMeshColor" user="true" member="true" access="private">
-      </Function>
-      <Function name="MeshViewerEnginePluginInfo::SetOpaqueColor" user="true" member="true" access="private">
-      </Function>
     </Attribute>
   </Plugin>
