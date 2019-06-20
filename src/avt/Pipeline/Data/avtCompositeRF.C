@@ -49,6 +49,7 @@
 #include <avtPointExtractor.h>
 #include <avtRay.h>
 
+#include <cmath>
 
 // ****************************************************************************
 //  Method: avtCompositeRF constructor
@@ -68,6 +69,9 @@
 //
 //    Hank Childs, Sat Jan  7 17:50:22 PST 2006
 //    Add support for kernel based sampling.
+//
+//    Alister Maguire, Tue Jun 11 11:08:52 PDT 2019
+//    Added initialization of viewDistance. 
 //
 // ****************************************************************************
 
@@ -99,6 +103,8 @@ avtCompositeRF::avtCompositeRF(avtLightingModel *l, avtOpacityMap *m,
     matProperties[1] = 0.75;    // diffuse
     matProperties[2] = 0.0;     // specular
     matProperties[3] = 15;      // shininess
+
+    viewDistance = 0.0;
 }
 
 
@@ -169,6 +175,11 @@ avtCompositeRF::~avtCompositeRF()
 //    Hank Childs, Mon Dec 29 09:22:47 PST 2008
 //    Fix composite to be a true integration.
 //
+//    Alister Maguire, Mon Jun  3 15:40:31 PDT 2019
+//    Replaced oneSamplesContribution with standard opacity correction
+//    method. This was to resolve bug #3082. Also renamed local rgb 
+//    variables to sampleRGB to avoid confusion with the input rgb variable. 
+//
 // ****************************************************************************
 
 void
@@ -204,9 +215,7 @@ avtCompositeRF::GetRayValue(const avtRay *ray,
     float opacity = 0.;
     float trgb[3] = {0.f, 0.f, 0.f};
     int z = 0;
-    float distanceToReachFullOpacity = 1./250.;
-    float distanceCoveredPerSample = 1./maxSample;
-    float oneSamplesContribution = distanceCoveredPerSample/distanceToReachFullOpacity;
+    double sampleDist = viewDistance/double(ray->numSamples);
 
     if(trilinearSampling)
     {
@@ -241,18 +250,19 @@ avtCompositeRF::GetRayValue(const avtRay *ray,
                             tableOpac *= weight[z]*min_weight_denom;
                     }
                     float samplesOpacity = static_cast<float>(tableOpac);
-                    unsigned char rgb[3] = { color.R, color.G, color.B };
+                    unsigned char sampleRGB[3] = { color.R, color.G, color.B };
                     unsigned char rgbLow[3] = { colorLow.R, colorLow.G, colorLow.B };
                     unsigned char rgbHigh[3] = { colorHigh.R, colorHigh.G, colorHigh.B };
-                    rgb[0] = (1.f-diffRGB)*rgbLow[0] + diffRGB*rgbHigh[0];
-                    rgb[1] = (1.f-diffRGB)*rgbLow[1] + diffRGB*rgbHigh[1];
-                    rgb[2] = (1.f-diffRGB)*rgbLow[2] + diffRGB*rgbHigh[2];
-                    lighting->AddLightingHeadlight(z, ray, rgb, 1.0, matProperties);
+                    sampleRGB[0] = (1.f-diffRGB)*rgbLow[0] + diffRGB*rgbHigh[0];
+                    sampleRGB[1] = (1.f-diffRGB)*rgbLow[1] + diffRGB*rgbHigh[1];
+                    sampleRGB[2] = (1.f-diffRGB)*rgbLow[2] + diffRGB*rgbHigh[2];
+                    lighting->AddLightingHeadlight(z, ray, sampleRGB, 1.0, 
+                        matProperties);
 
                     float ff = (1.f-opacity)*samplesOpacity;
-                    trgb[0] = trgb[0] + ff*rgb[0];
-                    trgb[1] = trgb[1] + ff*rgb[1];
-                    trgb[2] = trgb[2] + ff*rgb[2];
+                    trgb[0] = trgb[0] + ff*sampleRGB[0];
+                    trgb[1] = trgb[1] + ff*sampleRGB[1];
+                    trgb[2] = trgb[2] + ff*sampleRGB[2];
 
                     opacity = opacity + ff;
                 }
@@ -283,16 +293,21 @@ avtCompositeRF::GetRayValue(const avtRay *ray,
                         double tableOpac = static_cast<double>(opacityValue);
                         if (weight[z] < min_weight)
                             tableOpac *= weight[z]*min_weight_denom;
-                        float samplesOpacity = static_cast<float>(tableOpac * oneSamplesContribution);
-                        samplesOpacity = (samplesOpacity > 1.f ? 1.f : samplesOpacity);
+                        float samplesOpacity = static_cast<float>(tableOpac);
 
-                        unsigned char rgb[3] = { color.R, color.G, color.B };
-                        lighting->AddLighting(z, ray, rgb);
+                        if (samplesOpacity < 1.f)
+                        {
+                            samplesOpacity = (1.f - std::pow(
+                                (1.f - samplesOpacity), sampleDist));
+                        }
+
+                        unsigned char sampleRGB[3] = { color.R, color.G, color.B };
+                        lighting->AddLighting(z, ray, sampleRGB);
 
                         float ff = (1.f-opacity)*samplesOpacity;
-                        trgb[0] = trgb[0] + ff*rgb[0];
-                        trgb[1] = trgb[1] + ff*rgb[1];
-                        trgb[2] = trgb[2] + ff*rgb[2];
+                        trgb[0] = trgb[0] + ff*sampleRGB[0];
+                        trgb[1] = trgb[1] + ff*sampleRGB[1];
+                        trgb[2] = trgb[2] + ff*sampleRGB[2];
 
                         opacity = opacity + ff;
 
@@ -318,18 +333,21 @@ avtCompositeRF::GetRayValue(const avtRay *ray,
                     //
                     if (opacityValue > 0)
                     {
-                        float samplesOpacity = opacityValue * oneSamplesContribution;
-                        samplesOpacity = (samplesOpacity > 1.f ? 1.f : samplesOpacity);
-
                         const RGBA &color = table[map->Quantize(sample[z])];
-                        unsigned char rgb[3] = { color.R, color.G, color.B };
-                        lighting->AddLighting(z, ray, rgb);
+                        unsigned char sampleRGB[3] = { color.R, color.G, color.B };
+                        lighting->AddLighting(z, ray, sampleRGB);
+                      
+                        float samplesOpacity = 1.f;
+                        if (opacityValue < 1.f)
+                        {
+                            samplesOpacity = (1.f - std::pow((1.f - opacityValue), 
+                                sampleDist));
+                        }
 
                         float ff = (1.f-opacity)*samplesOpacity;
-                        trgb[0] = trgb[0] + ff*rgb[0];
-                        trgb[1] = trgb[1] + ff*rgb[1];
-                        trgb[2] = trgb[2] + ff*rgb[2];
-
+                        trgb[0] = trgb[0] + ff*sampleRGB[0];
+                        trgb[1] = trgb[1] + ff*sampleRGB[1];
+                        trgb[2] = trgb[2] + ff*sampleRGB[2];
                         opacity = opacity + ff;
 
                         if (opacity > threshold)

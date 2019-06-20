@@ -185,6 +185,9 @@ class JobSubmitter_bsub_LLNL(JobSubmitter):
 #   I removed rzansel from the list of toss3 machines. I modified the
 #   launcher to use a custom launcher on rzansel.
 #
+#   Eric Brugger, Fri Jun 14 10:39:30 PDT 2019
+#   I added cmax to the list of toss3 machines.
+#
 ###############################################################################
 
 class LLNLLauncher(MainLauncher):
@@ -245,11 +248,13 @@ class LLNLLauncher(MainLauncher):
 
         #
         # Set the LD_LIBRARY_PATH to include the path to MPI on borax,
-        # catalyst, jade, mica, pascal, quartz, rzgenie, rzhasgpu, rztopaz,
-        # rztrona, surface, syrah and agate.
+        # catalyst, cmax, czvnc, jade, max, mica, pascal, pinot, quartz,
+        # rzalastor, rzgenie, rzhasgpu, rzslic, rztopaz, rztrona, rzvnc,
+        # surface, syrah, zin and agate.
         #
         if self.sectorname() == "borax" or \
             self.sectorname() == "catalyst" or \
+            self.sectorname() == "cmax" or \
             self.sectorname() == "czvnc" or \
             self.sectorname() == "jade" or \
             self.sectorname() == "max" or \

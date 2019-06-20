@@ -193,6 +193,7 @@ function build_adios2
         cfg_opts="${cfg_opts} -DADIOS2_BUILD_EXAMPLES:BOOL=OFF"
         cfg_opts="${cfg_opts} -DADIOS2_BUILD_TESTING:BOOL=OFF"
         cfg_opts="${cfg_opts} -DADIOS2_USE_ZeroMQ:BOOL=OFF"
+        cfg_opts="${cfg_opts} -DADIOS2_USE_Fortan:BOOL=OFF"
 
         if test "x${DO_STATIC_BUILD}" = "xyes" ; then
             cfg_opts="${cfg_opts} -DBUILD_SHARED_LIBS:BOOL=OFF"
