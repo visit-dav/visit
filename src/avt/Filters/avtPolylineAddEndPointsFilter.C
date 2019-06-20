@@ -120,6 +120,9 @@ avtPolylineAddEndPointsFilter::~avtPolylineAddEndPointsFilter()
 //    I modified the class to support independently setting the point
 //    style for two end points.
 //
+//    Kathleen Biagas, Thu Jun 20 11:15:16 PDT 2019
+//    Support cell-centered data.
+//
 // ****************************************************************************
 
 avtDataRepresentation *
@@ -145,6 +148,8 @@ avtPolylineAddEndPointsFilter::ExecuteData(avtDataRepresentation *inDR)
     vtkAppendPolyData *append = vtkAppendPolyData::New();
 
     vtkDataArray *activeScalars = inDS->GetPointData()->GetScalars();
+    if (!activeScalars)
+        activeScalars = inDS->GetCellData()->GetScalars();
     vtkDataArray *activeRadius = activeScalars;
 
     double range[2] = {0,1}, scale = 1;
@@ -152,7 +157,11 @@ avtPolylineAddEndPointsFilter::ExecuteData(avtDataRepresentation *inDR)
     if (varyRadius && radiusVar != "" && radiusVar != "\0")
     {
         if (radiusVar != "default" && radiusVar != activeScalars->GetName())
+        {
             activeRadius = inDS->GetPointData()->GetArray(radiusVar.c_str());
+            if (!activeRadius)
+                activeRadius = inDS->GetCellData()->GetArray(radiusVar.c_str());
+        }
 
         activeRadius->GetRange(range, 0);
 
@@ -165,12 +174,14 @@ avtPolylineAddEndPointsFilter::ExecuteData(avtDataRepresentation *inDR)
     vtkPolyData *data   = vtkPolyData::SafeDownCast(inDS);
     vtkCellArray *lines = data->GetLines();
     vtkPoints *points   = data->GetPoints();
-   
+
     vtkIdType numPts;
     vtkIdType *ptIndexs;
 
     append->AddInputData(data);
 
+    vtkIdType lineIndex = 0;
+    lines->InitTraversal();
     while (lines->GetNextCell(numPts, ptIndexs))
     {
         vtkPolyData *outPD = NULL;
@@ -248,7 +259,8 @@ avtPolylineAddEndPointsFilter::ExecuteData(avtDataRepresentation *inDR)
                     outPD = cone->GetOutput();
                 }
 
-                int npts = outPD->GetPoints()->GetNumberOfPoints();
+                int npts   = outPD->GetNumberOfPoints();
+                int ncells = outPD->GetNumberOfCells();
 
                 // Copy over all of the point data from the lines to the
                 // cones so the append filter will append correctly.
@@ -257,18 +269,15 @@ avtPolylineAddEndPointsFilter::ExecuteData(avtDataRepresentation *inDR)
                 for (int j = 0; j < nArrays; ++j)
                 {
                     vtkDataArray *array = inDS->GetPointData()->GetArray(j);
-
-                    vtkDoubleArray *scalars = vtkDoubleArray::New();
+                    vtkDataArray *scalars = array->NewInstance();
                     scalars->Allocate(npts);
                     scalars->SetName(array->GetName());
 
+                    outPD->GetPointData()->AddArray(scalars);
                     if (array->GetName() == activeScalars->GetName())
                     {
-                        outPD->GetPointData()->SetScalars(scalars);
                         outPD->GetPointData()->SetActiveScalars(scalars->GetName());
                     }
-                    else
-                        outPD->GetPointData()->AddArray(scalars);
 
                     double scalar = array->GetComponent(ptIndexs[tip], 0);
 
@@ -278,26 +287,40 @@ avtPolylineAddEndPointsFilter::ExecuteData(avtDataRepresentation *inDR)
                     scalars->Delete();
                 }
 
+                nArrays = inDS->GetCellData()->GetNumberOfArrays();
+                for (int j = 0; j < nArrays; ++j)
+                {
+                    vtkDataArray *array = inDS->GetCellData()->GetArray(j);
+                    vtkDataArray *scalars = array->NewInstance();
+                    scalars->Allocate(ncells);
+                    scalars->SetName(array->GetName());
+                    outPD->GetCellData()->AddArray(scalars);
+
+                    if (array->GetName() == activeScalars->GetName())
+                    {
+                        outPD->GetCellData()->SetActiveScalars(scalars->GetName());
+                    }
+
+                    for (int k = 0; k < ncells; ++k)
+                        scalars->InsertTuple(k, array->GetTuple(lineIndex));
+
+                    scalars->Delete();
+                }
                 append->AddInputData(outPD);
 
                 outPD->Delete();
             }
         }
-    }      
-    
+        ++lineIndex;
+    }
+
     // Update.
     append->Update();
     vtkPolyData *outPD = append->GetOutput();
     outPD->Register(NULL);
     append->Delete();
-   
-    // Restore the active scalars.
-    if (activeScalars)
-    {
-        data->GetPointData()->SetActiveScalars(activeScalars->GetName());
-        outPD->GetPointData()->SetActiveScalars(activeScalars->GetName());
-    }
-    
+
+
     // Create the output data rep.
     avtDataRepresentation *outDR =
         new avtDataRepresentation(outPD, inDR->GetDomain(), inDR->GetLabel());

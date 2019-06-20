@@ -42,10 +42,7 @@
 
 #include <avtPolylineCleanupFilter.h>
 
-#include <vtkTubeFilter.h>
-#include <vtkAppendPolyData.h>
 #include <vtkCleanPolyData.h>
-#include <vtkDataSet.h>
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
 
@@ -95,10 +92,13 @@ avtPolylineCleanupFilter::~avtPolylineCleanupFilter()
 //
 //  Note: The cell data copying is untested.
 //
-//  Programmer:  Cyrus Harrison 
+//  Programmer:  Cyrus Harrison
 //  Creation:    Mon Nov  7 11:21:19 PST 2016
 //
 //  Modifications:
+//    Kathleen Biagas, Thu Jun 20 11:17:52 PDT 2019
+//    Remove unnecessary handling of active scalars, vtkCleanPolyData
+//    doesn't modify them.
 //
 // ****************************************************************************
 
@@ -115,26 +115,15 @@ avtPolylineCleanupFilter::ExecuteData(avtDataRepresentation *inDR)
         return inDR;
     }
 
-    vtkDataArray *activeScalars = inDS->GetPointData()->GetScalars();
-
-    vtkPolyData *data = vtkPolyData::SafeDownCast(inDS);
-
     // Clean duplicate points from the polydata.
     vtkCleanPolyData *cleanFilter = vtkCleanPolyData::New();
 
-    cleanFilter->SetInputData(data);
+    cleanFilter->SetInputData(vtkPolyData::SafeDownCast(inDS));
     cleanFilter->Update();
 
     // Get the output.
     vtkPolyData *outPD = cleanFilter->GetOutput();
     outPD->Register(NULL);
-
-    // Restore the active scalars.
-    if (activeScalars)
-    {
-        data->GetPointData()->SetActiveScalars(activeScalars->GetName());
-        outPD->GetPointData()->SetActiveScalars(activeScalars->GetName());
-    }
 
     // Create the output data rep.
     avtDataRepresentation *outDR =
@@ -150,7 +139,7 @@ avtPolylineCleanupFilter::ExecuteData(avtDataRepresentation *inDR)
 //  Purpose:
 //      Indicate that this invalidates the zone numberings.
 //
-//  Programmer:  Cyrus Harrison 
+//  Programmer:  Cyrus Harrison
 //  Creation:    Mon Nov  7 11:21:19 PST 2016
 //
 // ****************************************************************************

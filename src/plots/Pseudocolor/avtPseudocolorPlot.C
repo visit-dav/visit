@@ -500,6 +500,13 @@ avtPseudocolorPlot::ApplyRenderingTransformation(avtDataObject_p input)
       polylineToTubeFilter = NULL;
     }
 
+    // PolylineToRibbon Filter
+    if (polylineToRibbonFilter != NULL)
+    {
+      delete polylineToRibbonFilter;
+      polylineToRibbonFilter = NULL;
+    }
+
     if( atts.GetLineType() == PseudocolorAttributes::Tube )
     {
       double bbox[6] = {0.,1.,0.,1.,0.,1.};
@@ -522,15 +529,7 @@ avtPseudocolorPlot::ApplyRenderingTransformation(avtDataObject_p input)
 
       dob = polylineToTubeFilter->GetOutput();
     }
-
-    // PolylineToRibbon Filter
-    if (polylineToRibbonFilter != NULL)
-    {
-      delete polylineToRibbonFilter;
-      polylineToRibbonFilter = NULL;
-    }
-
-    if( atts.GetLineType() == PseudocolorAttributes::Ribbon )
+    else if( atts.GetLineType() == PseudocolorAttributes::Ribbon )
     {
       double bbox[6] = {0.,1.,0.,1.,0.,1.};
       dob->GetInfo().GetAttributes().GetOriginalSpatialExtents()->CopyTo(bbox);
