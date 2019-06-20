@@ -201,7 +201,6 @@ CurveViewerEnginePluginInfo::InitializePlotAtts(AttributeSubject *atts,
     const avtPlotMetaData &)
 {
     *(CurveAttributes*)atts = *defaultAtts;
-    SetColor(atts);
 }
 
 // ****************************************************************************
@@ -330,34 +329,5 @@ const char *
 CurveViewerEnginePluginInfo::GetMenuName() const
 {
     return "Curve";
-}
-
-// ****************************************************************************
-//  Method: CurveViewerEnginePluginInfo::SetColor
-//
-//  Purpose:
-//    Sets the color if the CycleColors att is set to true. 
-//
-//  Arguments:
-//    atts      The attribute subject. 
-//
-//  Programmer: Kathleen Bonnell 
-//  Creation:   October 31, 2005 
-//
-//  Modifications:
-//
-//    Hank Childs, Sat Mar 13 10:35:34 PST 2010
-//    Change Boolean test to comparison with enumeration.
-//
-//    Brad Whitlock, Fri Jul  5 16:55:22 PDT 2013
-//    Set the fill color too.
-//
-// ****************************************************************************
-#include <avtColorTables.h>
-
-void
-CurveViewerEnginePluginInfo::SetColor(AttributeSubject *atts)
-{
-    CurveAttributes *curveAtts = (CurveAttributes *)atts;
 }
 

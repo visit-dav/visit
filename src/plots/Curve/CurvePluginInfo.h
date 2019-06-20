@@ -113,9 +113,6 @@ class CurveViewerEnginePluginInfo : public virtual ViewerEnginePlotPluginInfo, p
   private:
     static CurveAttributes *defaultAtts;
     static CurveAttributes *clientAtts;
-    // User-defined functions
-  private:
-    void SetColor(AttributeSubject *);
 };
 
 class CurveViewerPluginInfo : public virtual ViewerPlotPluginInfo, public virtual CurveViewerEnginePluginInfo
