@@ -44,7 +44,7 @@
 #define AVT_LINEOUT_FILTER_H
 #include <filters_exports.h>
 
-#include <avtPluginDataTreeIterator.h>
+#include <avtDataTreeIterator.h>
 
 class vtkDataSet;
 class vtkIdList;
