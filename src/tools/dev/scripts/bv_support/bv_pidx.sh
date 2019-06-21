@@ -211,7 +211,7 @@ function build_pidx
 #        ntopts="${ntopts} -DCMAKE_INSTALL_NAME_DIR:PATH=${pidx_inst_path}/lib"
 #    fi
 
-    if test "x${DO_MPICH}" = "xyes"; then
+    if [[ "${DO_MPICH}" == "yes" ]]; then
         info "mpich requested.  Configuring PIDX with mpich support."
         ntopts="${ntopts} -DMPI_C_COMPILER:PATH=${VISITDIR}/mpich/${MPICH_VERSION}/${VISITARCH}/bin/mpicc"
         ntopts="${ntopts} -DMPI_CXX_COMPILER:PATH=${VISITDIR}/mpich/${MPICH_VERSION}/${VISITARCH}/bin/mpicxx"
@@ -221,6 +221,23 @@ function build_pidx
 #        else
 #            export LD_LIBRARY_PATH="$VISITDIR/mpich/$MPICH_VERSION/$VISITARCH/lib":$LD_LIBRARY_PATH
 #        fi
+    elif [[ "$parallel" == "yes" ]]; then
+        if [[ "$PAR_COMPILER" != "" ]]; then
+            ntopts="${ntopts} -DMPI_C_COMPILER:STRING=${PAR_COMPILER}"
+        fi
+        if [[ "$PAR_COMPILER_CXX" != "" ]]; then
+            ntopts="${ntopts} -DMPI_CXX_COMPILER:STRING=${PAR_COMPILER_CXX}"
+        fi
+        if [[ "$PAR_INCLUDE" != "" ]] ; then
+            ntopts="${ntopts} -DMPI_C_INCLUDE_PATH:STRING=${PAR_INCLUDE_PATH}"
+            ntopts="${ntopts} -DMPI_CXX_INCLUDE_PATH:STRING=${PAR_INCLUDE_PATH}"
+        fi
+        if [[ "$PAR_LIBS" != "" ]] ; then
+            ntopts="${ntopts} -DMPI_C_LINK_FLAGS:STRING=${PAR_LINKER_FLAGS}"
+            ntopts="${ntopts} -DMPI_C_LIBRARIES:STRING=${PAR_LIBRARY_LINKER_FLAGS}"
+            ntopts="${ntopts} -DMPI_CXX_LINK_FLAGS:STRING=${PAR_LINKER_FLAGS}"
+            ntopts="${ntopts} -DMPI_CXX_LIBRARIES:STRING=${PAR_LIBRARY_LINKER_FLAGS}"
+        fi
     fi
 
     cd "$START_DIR"
