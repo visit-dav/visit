@@ -41,6 +41,9 @@
 #    Alister Maguire, Mon Mar 25 11:19:54 PDT 2019
 #    Added an opacity test that changes the opacity variable. 
 #
+#    Alister Maguire, Wed Jun  5 11:01:31 PDT 2019
+#    Added opacity attenuation test. 
+#
 # ----------------------------------------------------------------------------
 
 def InitAnnotations():
@@ -175,6 +178,38 @@ def TestVolumeOpacity():
     Test("volumeOpacity_05")
 
     DeleteAllPlots()
+
+
+def TestOpacityAttenuation():
+
+    OpenDatabase(silo_data_path("noise.silo"))
+    ResetView()
+
+    #
+    # First, test the ray caster without reduced attenuation. 
+    #
+    AddPlot("Volume", "hardyglobal")
+    volAtts = VolumeAttributes()
+    volAtts.lightingFlag = 0
+    volAtts.opacityAttenuation = 1
+    volAtts.rendererType = volAtts.RayCasting
+    SetPlotOptions(volAtts)
+    DrawPlots()
+    Test("opacityAttenuation_01")
+
+    #
+    # Now reduce attenutation. 
+    #
+    volAtts = VolumeAttributes()
+    volAtts.lightingFlag = 0
+    volAtts.rendererType = volAtts.RayCasting
+    volAtts.opacityAttenuation = .12
+    SetPlotOptions(volAtts)
+    DrawPlots()
+    Test("opacityAttenuation_02")
+
+    DeleteAllPlots()
+
 
 def TestVolumeAspect():
     OpenDatabase(silo_data_path("noise.silo"))
@@ -325,6 +360,12 @@ def TestVolumeSampling():
 
     DeleteAllPlots()
 
+#FIXME: For some reason, if you render using the ray caster, 
+#       attempting to render using the default renderer afterwards
+#       will result in a blank test result. I have not been able
+#       to reproduce this outside of the test suite. I created 
+#       issue #3608 to track this. 
+
 InitAnnotationsLegendOn()
 TestVolumeColorControlPoints()
 TestVolumeGaussianControlPoints()
@@ -333,5 +374,6 @@ TestVolumeOpacity()
 InitAnnotations()
 TestVolumeScaling()
 TestVolumeSampling()
+TestOpacityAttenuation()
 
 Exit()
