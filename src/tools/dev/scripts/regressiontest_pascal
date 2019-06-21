@@ -331,9 +331,13 @@ cat ../make.err >> ../../buildlog
 
 echo "Source build completed at: \`date\`"
 
+# Update the test baselines
+cd ../test
+git lfs pull >> ../../../buildlog 2>&1
+
 # Build the test data
 cd ../data
-git lfs pull
+git lfs pull >> ../../../buildlog 2>&1
 cd ../build
 cd testdata
 make -j 8 data >> ../../../buildlog 2>&1
