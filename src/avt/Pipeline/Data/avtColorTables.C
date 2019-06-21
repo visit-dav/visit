@@ -1039,13 +1039,6 @@ avtColorTables::GetControlPointColor(const std::string &ctName, int i,
     return retval;
 }
 
-
-
-
-
-
-
-
 // ****************************************************************************
 // Method: avtColorTables::GetJNDControlPointColor
 //
