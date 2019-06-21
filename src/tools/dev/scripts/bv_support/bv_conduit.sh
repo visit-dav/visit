@@ -201,9 +201,9 @@ function build_conduit
     
     if [[ "$PAR_LIBS" != "" ]] ; then
         cfg_opts="${cfg_opts} -DMPI_C_LINK_FLAGS:STRING=${PAR_LINKER_FLAGS}"
-        cfg_opts="${cfg_opts} -DMPI_C_LIBRARIES:STRING=${PAR_LIBRARIES}"
+        cfg_opts="${cfg_opts} -DMPI_C_LIBRARIES:STRING=${PAR_LIBRARY_LINKER_FLAGS}"
         cfg_opts="${cfg_opts} -DMPI_CXX_LINK_FLAGS:STRING=${PAR_LINKER_FLAGS}"
-        cfg_opts="${cfg_opts} -DMPI_CXX_LIBRARIES:STRING=${PAR_LIBRARIES}"
+        cfg_opts="${cfg_opts} -DMPI_CXX_LIBRARIES:STRING=${PAR_LIBRARY_LINKER_FLAGS}"
     fi
     
     CMAKE_BIN="${CMAKE_INSTALL}/cmake"

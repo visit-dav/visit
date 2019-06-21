@@ -234,9 +234,9 @@ function build_pidx
         fi
         if [[ "$PAR_LIBS" != "" ]] ; then
             ntopts="${ntopts} -DMPI_C_LINK_FLAGS:STRING=${PAR_LINKER_FLAGS}"
-            ntopts="${ntopts} -DMPI_C_LIBRARIES:STRING=${PAR_LIBRARIES}"
+            ntopts="${ntopts} -DMPI_C_LIBRARIES:STRING=${PAR_LIBRARY_LINKER_FLAGS}"
             ntopts="${ntopts} -DMPI_CXX_LINK_FLAGS:STRING=${PAR_LINKER_FLAGS}"
-            ntopts="${ntopts} -DMPI_CXX_LIBRARIES:STRING=${PAR_LIBRARIES}"
+            ntopts="${ntopts} -DMPI_CXX_LIBRARIES:STRING=${PAR_LIBRARY_LINKER_FLAGS}"
         fi
     fi
 

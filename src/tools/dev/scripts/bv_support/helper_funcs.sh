@@ -859,23 +859,23 @@ function check_files
 #                          process_parallel_ldflags                           #
 # --------------------------------------------------------------------------- #
 # This routine processes the PAR_LIBS variable into three other variables.    #
-#   PAR_LINKER_FLAGS : Any linker flags that aren't libraries (don't start    #
-#                      with "-l".                                             #
-#   PAR_LIBRARY_NAMES: The library names with the "-l" stripped out.          #
-#   PAR_LIBRARIES    : The library names with the "-l".                       #
+#   PAR_LINKER_FLAGS :        Any linker flags that aren't libraries (don't   #
+#                             start with "-l".                                #
+#   PAR_LIBRARY_NAMES:        The library names with the "-l" stripped out.   #
+#   PAR_LIBRARY_LINKER_FLAGS: The library names with the "-l".                #
 # *************************************************************************** #
 function process_parallel_ldflags
 {
     export PAR_LINKER_FLAGS=""
     export PAR_LIBRARY_NAMES=""
-    export PAR_LIBRARIES=""
+    export PAR_LIBRARY_LINKER_FLAGS=""
 
     for arg in $1; do
         pos=`echo "$arg" | awk '{ printf "%d", index($1,"-l"); }'`
         if [[ "$pos" != "0" ]] ; then
             # We have a library.
             # Add it to the running list of library names with the "-l".
-            export PAR_LIBRARIES="$PAR_LIBRARIES$arg "
+            export PAR_LIBRARY_LINKER_FLAGS="$PAR_LIBRARY_LINKER_FLAGS$arg "
             # Remove the "-l" prefix & add it to the running list of library
             # names without the "-l".
             LIB_NAME=${arg#-l}
@@ -902,7 +902,7 @@ function check_parallel
     fi
 
     # If we are using PAR_LIBS, call helper to split this into:
-    # PAR_LINKER_FLAGS, PAR_LIBRARY_NAMES & PAR_LIBRARIES
+    # PAR_LINKER_FLAGS, PAR_LIBRARY_NAMES & PAR_LIBRARY_LINKER_FLAGS
     process_parallel_ldflags "$PAR_LIBS"
 
     # If we are using PAR_INCLUDE, store the directory name without the
