@@ -83,6 +83,7 @@ def TestCurve():
     HideActivePlots()
     Test("mesh_curve_03")
     DeleteAllPlots()
+    CloseDatabase(silo_data_path("curv3d.silo"))
 
 def TestPointMesh():
     TestSection("Mesh plot of a point mesh")
@@ -121,6 +122,7 @@ def TestPointMesh():
     Test("mesh_point_04")
 
     DeleteAllPlots()
+    CloseDatabase(silo_data_path("noise.silo"))
 
     OpenDatabase(silo_data_path("noise2d.silo"))
 
@@ -140,6 +142,7 @@ def TestPointMesh():
     SetPlotOptions(m)
     Test("mesh_point_06")
     DeleteAllPlots()
+    CloseDatabase(silo_data_path("noise2d.silo"))
 
 def TestGlobe():
     TestSection("Mesh plot of a 3D unstructured mesh")
@@ -195,6 +198,7 @@ def TestGlobe():
     Test("mesh_globe_04")
 
     DeleteAllPlots()
+    CloseDatabase(silo_data_path("globe.silo"))
 
 def TestRect3d():
     TestSection("Mesh plot of a 3D rectilinear mesh")
@@ -233,6 +237,7 @@ def TestRect3d():
     Test("mesh_rect3d_01")
 
     DeleteAllPlots()
+    CloseDatabase(silo_data_path("multi_rect3d.silo"))
 
 def TestAutoOpaqueFlag():
     TestSection("Testing Mesh plot's opaque flag")
@@ -280,6 +285,16 @@ def TestAutoOpaqueFlag():
     SetTimeSliderState(9)
     Test("mesh_opaque_08")
     DeleteAllPlots()
+    CloseDatabase(silo_data_path("globe.silo"))
+
+def TestRandomColor():
+    TestSection("Testing Mesh plot's random color mode")
+    # Set up a mesh plot with the auto opaque flag.
+
+    OpenDatabase(silo_data_path("arbpoly-zoohybrid.silo"))
+
+
+
 
 def Main():
     TurnOffAllAnnotations()
@@ -288,6 +303,7 @@ def Main():
     TestGlobe()
     TestRect3d()
     TestAutoOpaqueFlag()
+    TestRandomColoring()
 
 # Added to allow this test to be run with compression too.
 # Another .py file sources this file with 'useCompression'
