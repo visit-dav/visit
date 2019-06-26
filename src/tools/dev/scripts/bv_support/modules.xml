@@ -16,7 +16,6 @@
             <lib name="advio"/>
             <lib name="boost"/>
             <lib name="boxlib"/>
-            <lib name="ccmio"/>
             <lib name="cfitsio"/>
             <lib name="cgns"/>
             <lib name="conduit"/>
@@ -73,7 +72,6 @@
             <lib name="advio"/>
             <lib name="boost"/>
             <lib name="boxlib"/>
-            <lib name="ccmio"/>
             <lib name="cfitsio"/>
             <lib name="cgns"/>
             <lib name="conduit"/>
@@ -121,7 +119,6 @@
 <!--        <lib name="advio"/>    Removed by Allen Sanderson-->
             <lib name="boost"/> <!-- required by nektarpp -->
             <lib name="boxlib"/>
-            <lib name="ccmio"/>
             <lib name="cfitsio"/>
             <lib name="conduit"/>
             <lib name="mfem"/>
@@ -150,7 +147,6 @@
             <lib name="advio"/>
             <lib name="boost"/> <!-- required by nektarpp -->
             <lib name="boxlib"/>
-            <lib name="ccmio"/>
             <lib name="cfitsio"/>
             <lib name="conduit"/>
             <lib name="mfem"/>

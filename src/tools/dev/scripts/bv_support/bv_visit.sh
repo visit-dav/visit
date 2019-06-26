@@ -132,12 +132,6 @@ function bv_visit_modify_makefiles
                 sed '/LDFLAGS/s/$/ -Wl,-dylib_file,\/System\/Library\/Frameworks\/OpenGL.framework\/Versions\/A\/Libraries\/libGLU.dylib:\/System\/Library\/Frameworks\/OpenGL.framework\/Versions\/A\/Libraries\/libGLU.dylib/' > Make.tmp
             mv -f databases/Shapefile/Makefile databases/Shapefile/Makefile.orig
             mv -f Make.tmp databases/Shapefile/Makefile
-            if [[ "$DO_CCMIO" == "yes" ]] ; then
-                cat databases/CCM/Makefile | \
-                    sed '/LDFLAGS/s/$/ -Wl,-dylib_file,\/System\/Library\/Frameworks\/OpenGL.framework\/Versions\/A\/Libraries\/libGLU.dylib:\/System\/Library\/Frameworks\/OpenGL.framework\/Versions\/A\/Libraries\/libGLU.dylib/' > Make.tmp
-                mv -f databases/CCM/Makefile databases/CCM/Makefile.orig
-                mv -f Make.tmp databases/CCM/Makefile
-            fi
         fi 
         if (( ${VER%%.*} < 8 )) ; then
             info "Patching VisIt . . ."

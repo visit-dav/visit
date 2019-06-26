@@ -107,6 +107,9 @@
 #   MFEM has an include dependency on conduit, move it below conduit in the
 #   list and add conduit include to it's include.
 #
+#   Eric Brugger, Wed Jun 26 10:01:32 PDT 2019
+#   Removed the CCM reader.
+#
 #****************************************************************************/
 
 ##
@@ -257,10 +260,6 @@ set(BOXLIB_INCLUDE_DIR ${VISIT_INCLUDE_DIR}/boxlib/include)
 set(BOXLIB_LIBRARY_DIR ${VISIT_LIBRARY_DIR} ${VISIT_ARCHIVE_DIR})
 set(BOXLIB_2D_LIB @BOXLIB_2D_LIB@)
 set(BOXLIB_3D_LIB @BOXLIB_3D_LIB@)
-
-set(CCMIO_INCLUDE_DIR ${VISIT_INCLUDE_DIR}/ccmio/include)
-set(CCMIO_LIBRARY_DIR ${VISIT_LIBRARY_DIR} ${VISIT_ARCHIVE_DIR})
-set(CCMIO_LIB @CCMIO_LIB@)
 
 set(CFITSIO_INCLUDE_DIR ${VISIT_INCLUDE_DIR}/cfitsio/include)
 set(CFITSIO_LIBRARY_DIR ${VISIT_LIBRARY_DIR} ${VISIT_ARCHIVE_DIR})
