@@ -13,7 +13,6 @@
     'Blueprint': 'success',
     'Boxlib2D': 'success',
     'Boxlib3D': 'success',
-    'CCM': 'skipped',
     'CEAucd': 'success',
     'CGNS': 'success',
     'CMAT': 'success',
