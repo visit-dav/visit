@@ -197,6 +197,10 @@
 #
 #    Mark C. Miller, Fri Apr 12 10:03:55 PDT 2019
 #    Remove Vista plugin
+#
+#    Eric Brugger, Wed Jun 26 08:57:57 PDT 2019
+#    Remove CCM plugin.
+#
 #****************************************************************************/
 
 IF(NOT WIN32)
@@ -356,7 +360,6 @@ CHECK_THIRDPARTY_SATISFIED(Adventure ADVIO)
 CHECK_THIRDPARTY_SATISFIED(Boxlib2D BOXLIB)
 CHECK_THIRDPARTY_SATISFIED(Boxlib3D BOXLIB)
 
-CHECK_THIRDPARTY_SATISFIED(CCM CCMIO)
 CHECK_THIRDPARTY_SATISFIED(FITS CFITSIO)
 CHECK_THIRDPARTY_SATISFIED(GDAL GDAL)
 
