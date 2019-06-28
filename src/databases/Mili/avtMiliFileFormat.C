@@ -2609,6 +2609,10 @@ avtMiliFileFormat::AddMiliVariableToMetaData(avtDatabaseMetaData *avtMD,
 //
 //  Modifications
 //
+//      Alister Maguire, Fri Jun 28 15:01:24 PDT 2019
+//      Added checks to determine if shared variables have been added
+//      or not.  
+//
 // ****************************************************************************
 
 void
@@ -2755,13 +2759,14 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
                 for (int j = 0; j < groupShared.size(); ++j)
                 {
                     bool addVarNow = true;
+                    SharedVariableInfo *sharedInfo = NULL;
 
                     if (groupShared[j])
                     {
                         string sName = 
                             ((MiliElementSetMetaData *)varMD)->GetGroupShortName(j);
 
-                        SharedVariableInfo *sharedInfo = 
+                        sharedInfo = 
                             miliMetaData[meshId]->GetSharedVariableInfo(
                             sName.c_str());
 
@@ -2791,6 +2796,15 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
                                                   centering,
                                                   compIdxs,
                                                   vComps);
+
+                        //
+                        // If this is a shared variable, let's signify that we
+                        // no longer need to add it. 
+                        //
+                        if (sharedInfo != NULL)
+                        {
+                            sharedInfo->isLive = true;
+                        }
                     }
                 }
             }
@@ -2806,14 +2820,40 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
                     compIdxs.push_back(i);
                 }
 
-                AddMiliVariableToMetaData(md,
-                                          meshId,
-                                          avtType,
-                                          doSand,  
-                                          varPath,
-                                          centering,
-                                          compIdxs,
-                                          vComps);
+                if (varMD->IsShared())
+                {
+                    SharedVariableInfo *sharedInfo = 
+                        miliMetaData[meshId]->GetSharedVariableInfo(
+                        varMD->GetShortName().c_str());
+
+                    //
+                    // Check to see if one of the shared vars has already been
+                    // added. It only needs to occur once. 
+                    //
+                    if (!sharedInfo->isLive)
+                    {
+                        sharedInfo->isLive = true;
+                        AddMiliVariableToMetaData(md,
+                                                  meshId,
+                                                  avtType,
+                                                  doSand,  
+                                                  varPath,
+                                                  centering,
+                                                  compIdxs,
+                                                  vComps);
+                    }
+                }
+                else
+                {
+                    AddMiliVariableToMetaData(md,
+                                              meshId,
+                                              avtType,
+                                              doSand,  
+                                              varPath,
+                                              centering,
+                                              compIdxs,
+                                              vComps);
+                }
             }
         }
         //TODO: add derived types when given the OK. 
