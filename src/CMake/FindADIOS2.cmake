@@ -42,6 +42,9 @@
 #   Modified to handle the fact that ADIOS2 usually installs the libraries
 #   in the directory lib64 instead of lib.
 #
+#   Eric Brugger, Fri Jun 28 14:39:59 PDT 2019
+#   Added additional libraries to the installation.
+#
 #****************************************************************************/
 
 # Use the ADIOS_DIR hint from the config-site .cmake file
@@ -55,6 +58,12 @@ ELSE()
 ENDIF()
 
 SET_UP_THIRD_PARTY(ADIOS2 ${LIB} include adios2)
+THIRD_PARTY_INSTALL_LIBRARY(${VISIT_ADIOS2_DIR}/${LIB}/libadios2_atl.so)
+THIRD_PARTY_INSTALL_LIBRARY(${VISIT_ADIOS2_DIR}/${LIB}/libadios2_dill.so)
+THIRD_PARTY_INSTALL_LIBRARY(${VISIT_ADIOS2_DIR}/${LIB}/libadios2_evpath.so)
+THIRD_PARTY_INSTALL_LIBRARY(${VISIT_ADIOS2_DIR}/${LIB}/libadios2_ffs.so)
+THIRD_PARTY_INSTALL_LIBRARY(${VISIT_ADIOS2_DIR}/${LIB}/libadios2_sst.so)
+THIRD_PARTY_INSTALL_LIBRARY(${VISIT_ADIOS2_DIR}/${LIB}/libtaustubs.so)
 IF(VISIT_PARALLEL)
     SET_UP_THIRD_PARTY(ADIOS2_PAR ${LIB} include adios2)
 ENDIF(VISIT_PARALLEL)
