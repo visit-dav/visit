@@ -45,6 +45,9 @@
 #   Eric Brugger, Fri Jun 28 14:39:59 PDT 2019
 #   Added additional libraries to the installation.
 #
+#   Eric Brugger, Mon Jul  1 13:20:00 PDT 2019
+#   Renamed the parallel library to adios2_mpi.
+#
 #****************************************************************************/
 
 # Use the ADIOS_DIR hint from the config-site .cmake file
@@ -65,5 +68,5 @@ THIRD_PARTY_INSTALL_LIBRARY(${VISIT_ADIOS2_DIR}/${LIB}/libadios2_ffs.so)
 THIRD_PARTY_INSTALL_LIBRARY(${VISIT_ADIOS2_DIR}/${LIB}/libadios2_sst.so)
 THIRD_PARTY_INSTALL_LIBRARY(${VISIT_ADIOS2_DIR}/${LIB}/libtaustubs.so)
 IF(VISIT_PARALLEL)
-    SET_UP_THIRD_PARTY(ADIOS2_PAR ${LIB} include adios2)
+    SET_UP_THIRD_PARTY(ADIOS2_PAR ${LIB} include adios2_mpi)
 ENDIF(VISIT_PARALLEL)
