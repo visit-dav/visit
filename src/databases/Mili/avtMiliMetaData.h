@@ -78,6 +78,7 @@ typedef struct SharedVariableInfo
     string       shortName;
     intVector    variableIndicies;
     bool         isAllES;
+    bool         isLive;
 } SharedVariableInfo;
 
 
