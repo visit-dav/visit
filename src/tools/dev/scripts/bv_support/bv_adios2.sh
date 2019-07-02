@@ -169,6 +169,21 @@ function build_adios2
         cd $ADIOS2_SRC_DIR || error "Can't cd to $ADIOS2_SRC_DIR"
         info "Configuring ADIOS2-$bt (~1 minute)"
 
+        if [[ "$bt" == "par" ]]; then
+            # Change all references from adios2 to adios2_mpi.
+            find . -name "CMakeLists.txt" -exec sed -i "s/adios2/adios2_mpi/g" {} \;
+            # This changes too many things, now we need to change specific
+            # things back.
+            sed -i "s/adios2_mpi/adios2/g" source/CMakeLists.txt
+            find . -name "CMakeLists.txt" -exec sed -i "s/adios2_mpi.h/adios2.h/g" {} \;
+            find . -name "CMakeLists.txt" -exec sed -i "s/adios2_mpi\//adios2\//g" {} \;
+            find . -name "CMakeLists.txt" -exec sed -i "s/adios2_mpi_/adios2_/g" {} \;
+            find . -name "CMakeLists.txt" -exec sed -i "s/adios2_mpi-/adios2-/g" {} \;
+            find . -name "CMakeLists.txt" -exec sed -i "s/adios2_mpi::/adios2::/g" {} \;
+            find . -name "CMakeLists.txt" -exec sed -i "s/adios2_mpisys/adios2sys/g" {} \;
+            find . -name "CMakeLists.txt" -exec sed -i "s/\/adios2_mpi/\/adios2/g" {} \;
+        fi
+
         # Make a build directory for an out-of-source build.. Change the
         # VISIT_BUILD_DIR variable to represent the out-of-source build directory.
         ADIOS2_BUILD_DIR="${ADIOS2_SRC_DIR}-$bt-build"
