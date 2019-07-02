@@ -4,8 +4,14 @@
       $(ADIOS2_INCLUDE_DIR)
     </CXXFLAGS>
     <MPI_CXXFLAGS>
-      $(ADIOS2_INCLUDE_PAR_DIR)
+      $(ADIOS2_PAR_INCLUDE_DIR)
     </MPI_CXXFLAGS>
+    <LDFLAGS>
+      $(ADIOS2_LIBRARY_DIR)
+    </LDFLAGS>
+    <MPI_LDFLAGS>
+      $(ADIOS2_PAR_LIBRARY_DIR)
+    </MPI_LDFLAGS>
     <FilePatterns>
       *.bp
       *.bp.sst
