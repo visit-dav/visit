@@ -418,6 +418,9 @@
 #    Kathleen Biagas, Tue May 28 09:44:02 PDT 2019
 #    ZLIB is no longer optional.
 #
+#    Eric Brugger, Wed Jun 26 10:06:57 PDT 2019
+#    Removed the CMM reader.
+#
 #****************************************************************************/
 
 CMAKE_MINIMUM_REQUIRED(VERSION 3.8 FATAL_ERROR)
@@ -813,7 +816,6 @@ VISIT_3RDPARTY_VAR(ADIOS2_PAR_DIR "Path containing the ADIOS MPI library's inclu
 VISIT_3RDPARTY_VAR(ADVIO_DIR     "Path containing the AdvIO library's include and lib")
 VISIT_3RDPARTY_VAR(BOOST_DIR     "Path containing the BOOST library's include and lib")
 VISIT_3RDPARTY_VAR(BOXLIB_DIR    "Path containing the Boxlib library's include and lib")
-VISIT_3RDPARTY_VAR(CCMIO_DIR     "Path containing the CCMIO library's include and lib")
 VISIT_3RDPARTY_VAR(CFITSIO_DIR   "Path containing the CFITSIO library's include and lib")
 VISIT_3RDPARTY_VAR(CGNS_DIR      "Path containing the CGNS library's include and lib")
 VISIT_3RDPARTY_DEP(CGNS_LIBDEP   "CGNS library dependencies")
@@ -1268,9 +1270,6 @@ IF(NOT VISIT_BUILD_MINIMAL_PLUGINS OR VISIT_SELECTED_DATABASE_PLUGINS)
 
     # Configure Boxlib support.
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindBoxlib.cmake)
-
-    # Configure ccmio support.
-    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindCCMIO.cmake)
 
     # Configure cfitsio support.
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindCFITSIO.cmake)

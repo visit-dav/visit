@@ -86,6 +86,10 @@ class JobSubmitter_salloc_NERSC(JobSubmitter_sbatch_NERSC):
 #   Added salloc job submitter for interactive. I also added GetIPAddress()
 #   trick so the engine can talk to the login node without the socket relay.
 #
+#   Eric Brugger, Thu Jun 20 12:40:48 PDT 2019
+#   Removed support for Edison system. Updated the LD_LIBRARY_PATH for Cori
+#   since we are using a newer compiler.
+#
 ###############################################################################
 
 class NERSCLauncher(MainLauncher):
@@ -112,7 +116,7 @@ class NERSCLauncher(MainLauncher):
             # ----
             # Add GCC libraries to LD_LIBRARY_PATH
             ld_library_path = self.splitpaths(GETENV("LD_LIBRARY_PATH"))
-            added_ld_library_paths = ["/opt/gcc/4.9.3/snos/lib64"]
+            added_ld_library_paths = ["/opt/gcc/7.3.0/snos/lib64"]
             SETENV("LD_LIBRARY_PATH", self.joinpaths(added_ld_library_paths + ld_library_path))
 
             #
@@ -131,30 +135,6 @@ class NERSCLauncher(MainLauncher):
             if not self.generalArgs.env and self.generalArgs.exe_name == "gui":
                 msg = """
 Do not run the VisIt GUI on Cori. Run it on your local workstation (preferred/best performance)!
-
-For more information about running VisIt at NERSC: http://www.nersc.gov/nusers/resources/software/apps/visualization/visit/
-"""
-                exit(msg, 0)
-            if self.generalArgs.exe_name == "engine" and not self.parallelArgs.parallel:
-                exit("The VisIt install on Edison does not support running a serial engine on the login nodes!", 1)
-       elif self.nersc_host == "edison":
-            # ----
-            # Edison @ NERSC
-            # ----
-            # Add GCC libraries to LD_LIBRARY_PATH
-            ld_library_path = self.splitpaths(GETENV("LD_LIBRARY_PATH"))
-            added_ld_library_paths = ["/opt/gcc/4.9.0/snos/lib64"]
-            SETENV("LD_LIBRARY_PATH", self.joinpaths(added_ld_library_paths + ld_library_path))
-
-            # Set Python path
-            python_path = self.splitpaths(GETENV("PYTHONPATH"))
-            added_python_paths = [self.visitlibdir + "/python/lib/python2.6/lib-dynload"]
-            SETENV("PYTHONPATH", self.joinpaths(added_python_paths + python_path))
-
-            # Running the gui on Edison or a serial engine on a login node are "verboten"
-            if not self.generalArgs.env and self.generalArgs.exe_name == "gui":
-                msg = """
-Do not run the VisIt GUI on Edison. Run it on your local workstation (preferred/best performance)!
 
 For more information about running VisIt at NERSC: http://www.nersc.gov/nusers/resources/software/apps/visualization/visit/
 """

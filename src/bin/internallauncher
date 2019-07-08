@@ -22,6 +22,9 @@ import time
 #   I added a function to return the correct argument for the process per node
 #   flag for Open MPI and MPICH.
 #
+#   Kevin Griffin, Wed Jun 19 19:48:07 PDT 2019
+#   Added the QT_XCB_NATIVE_PAINTING environment variable.
+#
 ###############################################################################
 
 class JobSubmitter(object):
@@ -2725,6 +2728,8 @@ class MainLauncher(object):
     #   Eric Brugger, Mon Nov 19 13:24:37 PST 2012
     #   Correct a bug with running makemili and visitconvert in serial.
     #
+    #   Mark C. Miller, Thu Jun 20 16:38:38 PDT 2019
+    #   Support single processor parallel
     ############################################################################
 
     def UpdateExecutableNames(self):
@@ -2736,7 +2741,9 @@ class MainLauncher(object):
                         np = int(self.parallelArgs.np)
                     except ValueError:
                         np = 1
-            if np > 1:
+            if np == 1 and self.parallelArgs.parallel:
+                 self.generalArgs.exe_name = "engine_par"
+            elif np > 1:
                 self.generalArgs.exe_name = "engine_par"
             else:
                 self.generalArgs.exe_name = "engine_ser"
@@ -2898,6 +2905,11 @@ class MainLauncher(object):
         # to a remote display.  The message messes up the communication between
         # the GUI and Viewer.
         SETENV("MESA_GLX_FX", "disable")
+
+        # Enabled the native renderer.
+        # This resolves the toolbar rendering issue when doing an initial zoom
+        # while doing X forwarding.
+        SETENV("QT_XCB_NATIVE_PAINTING", "1")
 
         # The -viewerdisplay argument allows the user to specify an argument
         # that the viewer should use, no matter what the GUI was using.  This

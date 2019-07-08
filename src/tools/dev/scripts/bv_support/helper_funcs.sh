@@ -856,24 +856,28 @@ function check_files
 
 
 # *************************************************************************** #
-#                          extract_parallel_ldflags                           #
+#                          process_parallel_ldflags                           #
 # --------------------------------------------------------------------------- #
-# VisIt's cmake config wants lib names stripped of "-l"                       #
-# If PAR_LIBS is used to pass parallel LDFLAGS we need to separate the libs   #
-# from the linker flags and strip the "-l" prefixes.                          #
-# This function accomplishes this and creates two new  variables:             #
-#   PAR_LINKER_FLAGS & PAR_LIBRARY_NAMES                                      #
+# This routine processes the PAR_LIBS variable into three other variables.    #
+#   PAR_LINKER_FLAGS :        Any linker flags that aren't libraries (don't   #
+#                             start with "-l".                                #
+#   PAR_LIBRARY_NAMES:        The library names with the "-l" stripped out.   #
+#   PAR_LIBRARY_LINKER_FLAGS: The library names with the "-l".                #
 # *************************************************************************** #
 function process_parallel_ldflags
 {
     export PAR_LINKER_FLAGS=""
     export PAR_LIBRARY_NAMES=""
+    export PAR_LIBRARY_LINKER_FLAGS=""
 
     for arg in $1; do
         pos=`echo "$arg" | awk '{ printf "%d", index($1,"-l"); }'`
         if [[ "$pos" != "0" ]] ; then
-            # we have a lib, remove the "-l" prefix & add it to the running
-            # list
+            # We have a library.
+            # Add it to the running list of library names with the "-l".
+            export PAR_LIBRARY_LINKER_FLAGS="$PAR_LIBRARY_LINKER_FLAGS$arg "
+            # Remove the "-l" prefix & add it to the running list of library
+            # names without the "-l".
             LIB_NAME=${arg#-l}
             export PAR_LIBRARY_NAMES="$PAR_LIBRARY_NAMES$LIB_NAME "
         else
@@ -897,9 +901,13 @@ function check_parallel
         parallel="yes"
     fi
 
-    # if we are using PAR_LIBS, call helper to split this into:
-    # PAR_LIBRARY_NAMES & PAR_LINKER_FLAGS
+    # If we are using PAR_LIBS, call helper to split this into:
+    # PAR_LINKER_FLAGS, PAR_LIBRARY_NAMES & PAR_LIBRARY_LINKER_FLAGS
     process_parallel_ldflags "$PAR_LIBS"
+
+    # If we are using PAR_INCLUDE, store the directory name without the
+    # "-I"
+    export PAR_INCLUDE_PATH=`echo "$PAR_INCLUDE" | sed "s/-I//"`
 
     #
     # Parallelization

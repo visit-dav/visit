@@ -52,6 +52,7 @@
 #include <VolumeAttributes.h>
 #include <avtCallback.h>
 #include <DebugStream.h>
+#include <ImproperUseException.h>
 
 
 #ifndef NO_DATA_VALUE
@@ -163,6 +164,12 @@ avtDefaultRenderer::~avtDefaultRenderer()
 //    Alister Maguire, Mon Mar 25 09:20:43 PDT 2019
 //    Updated to use different scalars for opacity and color. 
 //
+//    Alister Maguire, Tue Jun 11 11:08:52 PDT 2019
+//    Update to use ambient, diffuse, specular, and specular power. 
+//
+//    Alister Maguire, Tue Jun 18 11:36:44 PDT 2019
+//    If VTKRen is NULL, we can't render. 
+//
 // ****************************************************************************
 
 void
@@ -172,20 +179,26 @@ avtDefaultRenderer::Render(
 { 
     const char *mName = "avtDefaultRenderer::Render: ";
 
+    if (VTKRen == NULL)
+    {
+        debug1 << mName << "Default Renderer: VTKRen is NULL!";
+        EXCEPTION0(ImproperUseException);
+    }
+
     // 
     // 2D data has no volume, so we don't try to render this. 
     // 
     if (props.dataIs2D)
     {
         debug5 << mName << "Cannot perform volume rendering on " 
-            << "2D data... returning" << endl;
+            << "2D data... returning";
         return;
     }
 
     if (imageToRender == NULL)
     {
         debug5 << mName << "Converting from rectilinear grid " 
-            << "to image data" << endl;
+            << "to image data";
 
         //
         // Our mapper requires a vtkImageData as input. We must 
@@ -225,7 +238,6 @@ avtDefaultRenderer::Render(
 
         float dataMag   = volume.data.max - volume.data.min;
         float opacMag   = volume.opacity.max - volume.opacity.min;
-        int nScalars    = dataArr->GetNumberOfTuples();
 
         //
         // We need to transfer the rgrid data over to the image data
@@ -342,6 +354,19 @@ avtDefaultRenderer::Render(
             rgba[lastIdx + 2] / 255.f);
         opacity->AddPoint(-1, rgba[3] * atten);
         opacity->AddPoint(256, rgba[lastIdx + 3] * atten);
+
+        //
+        // Set ambient, diffuse, specular, and specular power (shininess).
+        //
+        const double *matProp = props.atts.GetMaterialProperties();
+   
+        if (matProp != NULL)
+        {
+            volumeProp->SetAmbient(matProp[0]); 
+            volumeProp->SetDiffuse(matProp[1]); 
+            volumeProp->SetSpecular(matProp[2]); 
+            volumeProp->SetSpecularPower(matProp[3]); 
+        }
 
         //
         // Set the volume properties.

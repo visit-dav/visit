@@ -3,7 +3,7 @@ function bv_adios2_initialize
     export FORCE_ADIOS2="no"
     export DO_ADIOS2="no"
     export USE_SYSTEM_ADIOS2="no"
-    add_extra_commandline_args "adios" "alt-adios-dir" 1 "Use alternative directory for adios"
+    add_extra_commandline_args "adios2" "alt-adios2-dir" 1 "Use alternative directory for adios"
 
 }
 
@@ -21,7 +21,7 @@ function bv_adios2_disable
     DO_ADIOS2="no"
 }
 
-function bv_adios2_alt_adios_dir
+function bv_adios2_alt_adios2_dir
 {
     echo "Using alternate Adios2 directory"
 
@@ -54,12 +54,6 @@ function bv_adios2_depends_on
 
 function bv_adios2_initialize_vars
 {
-    if [[ "$FORCE_ADIOS2" == "no" && "$parallel" == "no" ]]; then
-        bv_adios2_disable
-        warn "Adios2 requested by default but the parallel flag has not been set. Adios2 will not be built."
-        return
-    fi
-
     if [[ "$USE_SYSTEM_ADIOS2" == "no" ]]; then
         ADIOS2_INSTALL_DIR="${VISITDIR}/adios2/$ADIOS2_VERSION/$VISITARCH"
     fi
@@ -175,6 +169,21 @@ function build_adios2
         cd $ADIOS2_SRC_DIR || error "Can't cd to $ADIOS2_SRC_DIR"
         info "Configuring ADIOS2-$bt (~1 minute)"
 
+        if [[ "$bt" == "par" ]]; then
+            # Change all references from adios2 to adios2_mpi.
+            find . -name "CMakeLists.txt" -exec sed -i "s/adios2/adios2_mpi/g" {} \;
+            # This changes too many things, now we need to change specific
+            # things back.
+            sed -i "s/adios2_mpi/adios2/g" source/CMakeLists.txt
+            find . -name "CMakeLists.txt" -exec sed -i "s/adios2_mpi.h/adios2.h/g" {} \;
+            find . -name "CMakeLists.txt" -exec sed -i "s/adios2_mpi\//adios2\//g" {} \;
+            find . -name "CMakeLists.txt" -exec sed -i "s/adios2_mpi_/adios2_/g" {} \;
+            find . -name "CMakeLists.txt" -exec sed -i "s/adios2_mpi-/adios2-/g" {} \;
+            find . -name "CMakeLists.txt" -exec sed -i "s/adios2_mpi::/adios2::/g" {} \;
+            find . -name "CMakeLists.txt" -exec sed -i "s/adios2_mpisys/adios2sys/g" {} \;
+            find . -name "CMakeLists.txt" -exec sed -i "s/\/adios2_mpi/\/adios2/g" {} \;
+        fi
+
         # Make a build directory for an out-of-source build.. Change the
         # VISIT_BUILD_DIR variable to represent the out-of-source build directory.
         ADIOS2_BUILD_DIR="${ADIOS2_SRC_DIR}-$bt-build"
@@ -199,6 +208,7 @@ function build_adios2
         cfg_opts="${cfg_opts} -DADIOS2_BUILD_EXAMPLES:BOOL=OFF"
         cfg_opts="${cfg_opts} -DADIOS2_BUILD_TESTING:BOOL=OFF"
         cfg_opts="${cfg_opts} -DADIOS2_USE_ZeroMQ:BOOL=OFF"
+        cfg_opts="${cfg_opts} -DADIOS2_USE_Fortan:BOOL=OFF"
 
         if test "x${DO_STATIC_BUILD}" = "xyes" ; then
             cfg_opts="${cfg_opts} -DBUILD_SHARED_LIBS:BOOL=OFF"
