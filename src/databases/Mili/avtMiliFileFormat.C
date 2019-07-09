@@ -3464,15 +3464,34 @@ avtMiliFileFormat::ExtractJsonClasses(rapidjson::Document &jDoc,
 //
 //  Modifications:
 //
+//      Alister Maguire, Tue Jul  9 13:31:59 PDT 2019
+//      Check that we have the correct file format. JSON tends to hang when
+//      it tries to open non-json files. 
+//
 // ****************************************************************************
 void
 avtMiliFileFormat::LoadMiliInfoJson(const char *fpath)
 {
     int jsonTimer1 = visitTimer->StartTimer(); 
 
-    std::ifstream jfile;
+    //
+    // First, we need to open the file and make sure that it's the 
+    // newer JSON format.
+    //
+    std::ifstream jfile(fpath);
 
-    jfile.open(fpath);
+    char first;
+    jfile.get(first);
+    if (first != '{')
+    {
+        char msg[1024];
+        sprintf(msg, "Invalid Mili file. You are likely using an outdated "
+            "format. To update your format, use the makemili_driver located "
+            "in the visit/src/bin directory. ");
+        EXCEPTION1(InvalidFilesException, fpath);
+    }
+    jfile.clear();
+    jfile.seekg(0, ios::beg);
 
     rapidjson::IStreamWrapper isw(jfile);
     rapidjson::Document jDoc;
