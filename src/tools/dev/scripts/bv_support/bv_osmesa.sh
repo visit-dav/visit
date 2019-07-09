@@ -40,7 +40,7 @@ function bv_osmesa_print
 
 function bv_osmesa_print_usage
 {
-    printf "%-15s %s [%s]\n" "--osmesa" "Build OSMesa" "$DO_OSMESA"
+    printf "%-20s %s [%s]\n" "--osmesa" "Build OSMesa" "$DO_OSMESA"
 }
 
 function bv_osmesa_host_profile

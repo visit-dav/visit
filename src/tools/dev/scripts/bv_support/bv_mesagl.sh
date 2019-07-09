@@ -39,7 +39,7 @@ function bv_mesagl_print
 
 function bv_mesagl_print_usage
 {
-    printf "%-15s %s [%s]\n" "--mesagl" "Build MesaGL" "$DO_MESAGL"
+    printf "%-20s %s [%s]\n" "--mesagl" "Build MesaGL" "$DO_MESAGL"
 }
 
 function bv_mesagl_host_profile
