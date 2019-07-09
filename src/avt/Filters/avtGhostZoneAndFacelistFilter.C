@@ -332,6 +332,12 @@ avtGhostZoneAndFacelistFilter::Execute(void)
     correctVar->GetSIL().dataChunk = -1;
 
     avtContract_p goodSpec = new avtContract(contractForDB, correctVar);
+
+    //FIXME: testing
+    //std::vector<int> activeDomains;
+    //wrongVar->GetSIL().GetDomainList(activeDomains);
+    //for (int i = 0; i < activeDomains.size(); ++i)
+    //    cerr << activeDomains[i] << endl;//FIXME
     
     if (useFaceFilter && !useGhostFilter)
     {
@@ -355,7 +361,7 @@ avtGhostZoneAndFacelistFilter::Execute(void)
     else
     {
         // if we are using all the data, apply the facelist filter first.
-        bool faceFirst = v.GetUsingAllDomains() ||
+        bool faceFirst = v.GetUsingAllDomains() || correctVar->MustRemoveFacesBeforeGhosts() ||//FIXME
                          (a.GetContainsGhostZones() == AVT_CREATED_GHOSTS);
 
         if (faceFirst)

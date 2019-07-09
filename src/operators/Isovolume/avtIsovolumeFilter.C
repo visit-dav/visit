@@ -547,7 +547,8 @@ avtIsovolumeFilter::ModifyContract(avtContract_p in_spec)
         std::vector<int> dl;
         it->GetElementsListFromRange(&min, &max, dl);
         //FIXME: restricting domains causes issues with transparency and proc boundaries. 
-        //spec->GetDataRequest()->GetRestriction()->RestrictDomains(dl);
+        spec->GetDataRequest()->GetRestriction()->RestrictDomains(dl);
+        spec->GetDataRequest()->ForceRemoveFacesBeforeGhostsOn();//FIXME
     }
 
     return spec;

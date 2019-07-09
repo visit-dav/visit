@@ -1493,7 +1493,9 @@ avtThresholdFilter::ModifyContract(avtContract_p in_spec)
             }
         }
 
-        //outSpec->GetDataRequest()->GetRestriction()->RestrictDomains(outDomains);
+        outSpec->GetDataRequest()->GetRestriction()->RestrictDomains(outDomains);
+
+        outSpec->GetDataRequest()->ForceRemoveFacesBeforeGhostsOn();//FIXME
     }
 
     if (outSpec->GetDataRequest()->MayRequireZones() ||

@@ -210,6 +210,7 @@ avtDataRequest::avtDataRequest(const char *var, int ts,
     velocityMustBeContinuous = false;
     mustDoMIR = false;
     forceConstructMaterialLabels = false;
+    mustRemoveFacesBeforeGhosts = false;
     getBoundarySurfaceRep = false;
     getSimplifiedNestingRep = false;
     needValidFaceConnectivity = false;
@@ -385,6 +386,7 @@ avtDataRequest::avtDataRequest(const char *var, int ts, int ch)
     needGlobalNodes = false;
     mustDoMIR = false;
     forceConstructMaterialLabels = false;
+    mustRemoveFacesBeforeGhosts = false;
     velocityMustBeContinuous = false;
     needInternalSurfaces = false;
     getBoundarySurfaceRep = false;
@@ -726,6 +728,7 @@ avtDataRequest::operator=(const avtDataRequest &spec)
     mayRequireNodes                 = spec.mayRequireNodes;
     mustDoMIR                       = spec.mustDoMIR;
     forceConstructMaterialLabels    = spec.forceConstructMaterialLabels;
+    mustRemoveFacesBeforeGhosts     = spec.mustRemoveFacesBeforeGhosts;
     needZones                       = spec.needZones;
     needNodes                       = spec.needNodes;
     needGlobalZones                 = spec.needGlobalZones;
@@ -940,6 +943,11 @@ avtDataRequest::operator==(const avtDataRequest &ds)
     }
 
     if (forceConstructMaterialLabels != ds.forceConstructMaterialLabels)
+    {
+        return false;
+    }
+
+    if (mustRemoveFacesBeforeGhosts != ds.mustRemoveFacesBeforeGhosts)
     {
         return false;
     }
@@ -2035,6 +2043,7 @@ avtDataRequest::DebugDump(avtWebpage *webpage)
     webpage->AddTableEntry2("mayRequireZones", YesOrNo(mayRequireZones));
     webpage->AddTableEntry2("mustDoMIR", YesOrNo(mustDoMIR));
     webpage->AddTableEntry2("forceConstructMaterialLabels", YesOrNo(forceConstructMaterialLabels));
+    webpage->AddTableEntry2("mustRemoveFacesBeforeGhosts", YesOrNo(mustRemoveFacesBeforeGhosts));
     webpage->AddTableEntry2("needInternalSurfaces", YesOrNo(needInternalSurfaces));
     webpage->AddTableEntry2("velocityMustBeContinuous", YesOrNo(velocityMustBeContinuous));
     webpage->AddTableEntry2("Get data set as only material boundaries", YesOrNo(getBoundarySurfaceRep));

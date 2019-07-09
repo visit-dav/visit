@@ -971,7 +971,9 @@ avtBoxFilter::ModifyContract(avtContract_p spec)
     {
         std::vector<int> dl;
         it->GetElementsListFromRange(mins, maxs, dl);
+        //FIXME: restricting domains causes issues with transparency
         rv->GetDataRequest()->GetRestriction()->RestrictDomains(dl);
+        rv->GetDataRequest()->ForceRemoveFacesBeforeGhostsOn();//FIXME
     }
 
     return rv;
