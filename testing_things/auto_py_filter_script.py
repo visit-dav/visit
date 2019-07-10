@@ -3,6 +3,10 @@
 import os
 import errno
 
+# ----------------------- #
+# --- User Input Area --- # 
+# ----------------------- #
+
 input_variables = [
     'den',
     'tke',
@@ -18,6 +22,57 @@ expressions = [
 
 output_file_name = 'Boussinesq_expr.py'
 sub_dir_name = ''
+
+# ----------------------- #
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# --------------------------- #
+# --- Script details here --- #
+# --------------------------- #
+
+preamble = """
+import numpy as np
+import vtk.util.numpy_support as vnp
+
+class AutoPythonExpression(SimplePythonExpression):
+    def __init__(self):
+        SimplePythonExpression.__init__(self)
+        self.name = "AutoPythonExpression"
+        self.description = "Auto-generated python expression from auto_py_filter_script.py"
+        self.output_is_point_var = False
+        self.dimension = 1
+    def define_variable(self, ds_in, domain_id):
+        # Globalize the names
+        for var_name in self.input_var_names:
+            globals()[var_name] = vnp.vtk_to_numpy(ds_in.GetCellData().GetArray(var_name))
+        
+        # Perform calculation
+        out = user_expression()
+
+        # Convert result to vtk
+        res = vnp.numpy_to_vtk(out, deep=1)
+        return res
+
+def user_expression():
+
+    # Expression created by user and written here
+"""
+
+postamble = 'py_filter = AutoPythonExpression'
+
 
 if __name__ == "__main__":
     print "Starting script"
@@ -57,16 +112,6 @@ if __name__ == "__main__":
 
     print 'output_file_name is : ' + output_file_name
     print 'sub_dir_name is : ' + sub_dir_name
-
-
-    # ------------------------- #
-    # --- Read pre and post --- #
-    # ------------------------- #
-    pre_reader = open('sub_file_preamble.txt','r')
-    preamble = pre_reader.read()
-    pre_reader.close()
-
-    postamble = 'py_filter = AutoPythonExpression'
 
     
     # ------------------------------------ #
