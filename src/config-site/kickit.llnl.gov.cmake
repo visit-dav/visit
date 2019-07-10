@@ -1,14 +1,14 @@
-#/usr/gapps/visit/thirdparty_shared/3.0.0/cmake/3.9.3/linux-x86_64_gcc-4.8/bin/cmake
+#/usr/gapps/visit/thirdparty_shared/3.0.1/cmake/3.9.3/linux-x86_64_gcc-4.8/bin/cmake
 ##
-## ./build_visit3_0_0 generated host.cmake
-## created: Fri Apr 26 10:45:33 PDT 2019
-## system: Linux kickit 5.0.3-1.el7.elrepo.x86_64 #1 SMP Tue Mar 19 09:51:25 EDT 2019 x86_64 x86_64 x86_64 GNU/Linux
+## ./build_visit3_0_1 generated host.cmake
+## created: Tue Jul  9 16:18:54 PDT 2019
+## system: Linux kickit 5.0.8-1.el7.elrepo.x86_64 #1 SMP Wed Apr 17 10:11:44 EDT 2019 x86_64 x86_64 x86_64 GNU/Linux
 ## by: brugger1
 
 ##
 ## Setup VISITHOME & VISITARCH variables.
 ##
-SET(VISITHOME /usr/gapps/visit/thirdparty_shared/3.0.0)
+SET(VISITHOME /usr/gapps/visit/thirdparty_shared/3.0.1)
 SET(VISITARCH linux-x86_64_gcc-4.8)
 VISIT_OPTION_DEFAULT(VISIT_SLIVR TRUE TYPE BOOL)
 
@@ -25,7 +25,7 @@ VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS " -m64 -fPIC -fvisibility=hidden" TYPE STRI
 ##
 VISIT_OPTION_DEFAULT(VISIT_PARALLEL ON TYPE BOOL)
 ## (configured w/ mpi compiler wrapper)
-VISIT_OPTION_DEFAULT(VISIT_MPI_COMPILER /usr/gapps/visit/thirdparty_shared/3.0.0/mpich/3.0.4/linux-x86_64_gcc-4.8/bin/mpicc TYPE FILEPATH)
+VISIT_OPTION_DEFAULT(VISIT_MPI_COMPILER /usr/gapps/visit/thirdparty_shared/3.0.1/mpich/3.0.4/linux-x86_64_gcc-4.8/bin/mpicc TYPE FILEPATH)
 
 ##
 ## VisIt Thread Option
