@@ -17,7 +17,7 @@ input_variables = [
 expressions = [
     'tauxx = 0.6667*den',
     'tauyy = 0.813*tke+zdvxdx',
-    'tauxy = den*tke - zdvydy'
+    'tauxy = den*tke - zdvydy',
 ]
 
 output_file_name = 'Boussinesq_expr.py'
@@ -133,6 +133,7 @@ if __name__ == "__main__":
 
 
     # Write the input variables
+    controller_file.write('import visit\n\n')
     controller_file.write('input_variables = [\n')
     for input_var in input_variables:
         controller_file.write("\t'" + input_var + "',\n")
@@ -156,7 +157,7 @@ if __name__ == "__main__":
         sub_file.write(postamble)
 
         # Populate the controller file
-        def_python_str = 'DefinePythonExpression("' + out_var + '", input_variables, file = ' + sub_file_str + ')\n'
+        def_python_str = 'visit.DefinePythonExpression("' + out_var + '", input_variables, file = ' + sub_file_str + ')\n'
         controller_file.write(def_python_str)
 
         # Close subfile
