@@ -45,7 +45,7 @@ if __name__ == "__main__":
     # for the subdirectory and the filename are the same.
     if sub_dir_name == '':
         # name the sub directory the same as the file minus the extension
-        sub_dir_name = output_file_name[2:-3] + '_dir'
+        sub_dir_name = output_file_name[2:-3] + '_sub'
     elif sub_dir_name[0] in ['.', '/', '~']:
         if os.path.dirname(sub_dir_name) != os.path.dirname(output_file_name):
             print "ERROR: sub_dir_name and output_file_name must be in the same directory."
@@ -58,8 +58,20 @@ if __name__ == "__main__":
     print 'output_file_name is : ' + output_file_name
     print 'sub_dir_name is : ' + sub_dir_name
 
+
+    # ------------------------- #
+    # --- Read pre and post --- #
+    # ------------------------- #
+    pre_reader = open('sub_file_preamble.txt','r')
+    preamble = pre_reader.read()
+    pre_reader.close()
+
+    postamble = 'py_filter = AutoPythonExpression'
+
     
-    # generate the controller file
+    # ------------------------------------ #
+    # --- Generate the controller file --- #
+    # ------------------------------------ #
 
     print 'directory name is: ' + os.path.dirname(output_file_name)
 
@@ -82,14 +94,27 @@ if __name__ == "__main__":
     controller_file.write(']\n\n')
 
 
-    # define python expressions in subfiles
+    # ---------------------------------------------- #
+    # --- Generate sub files and controller file --- #
+    # ---------------------------------------------- #
     for expr in expressions:
+        # Get the output variable
         out_var = expr.split('=')[0].strip()
+
+        # Populate the subfile
         sub_file_str = sub_dir_name + '/' + out_var + '.py'
         sub_file = open(sub_file_str, 'w+')
+        sub_file.write(preamble)
+        sub_file.write('\t' + expr + '\n\n')
+        sub_file.write('\t#Return the expression\n')
+        sub_file.write('\treturn ' + out_var + '\n\n')
+        sub_file.write(postamble)
 
+        # Populate the controller file
         def_python_str = 'DefinePythonExpression("' + out_var + '", input_variables, file = ' + sub_file_str + ')\n'
         controller_file.write(def_python_str)
+
+        # Close subfile
         sub_file.close()
 
 
