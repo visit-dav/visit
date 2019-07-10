@@ -20,7 +20,7 @@ expressions = [
     'tauxy = den*tke - zdvydy',
 ]
 
-output_file_name = 'Boussinesq_expr.py'
+output_file_name = 'example.py'
 
 # ----------------------- #
 
