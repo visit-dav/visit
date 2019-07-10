@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <page>
   <title><![CDATA[What's New in VisIt]]></title>
-  <IM>LLNL-WEB-772983</IM>
+  <IM>LLNL-WEB-780056</IM>
   <owner><![CDATA[Page Owner Name]]></owner>
-  <lastchanged><![CDATA[July 1, 2019]]></lastchanged>
+  <lastchanged><![CDATA[July 8, 2019]]></lastchanged>
   <template><![CDATA[l2]]></template> 
   <content>
     <![CDATA[
@@ -23,7 +23,7 @@
 </ul>
 
 <h2>July, 2019 - VisIt 3.0.1 released</h2>
-<p>VisIt is a distributed, parallel visualization and graphical analysis tool for data defined on two- and three-dimensional (2D and 3D) meshes. Version 3.0.1 contains over a dozen bug-fixes and new features. For a complete list of changes see the <a href="simulation/computer-codes/visit/releases/release-notes-3.0.1">VisIt 3.0.1 Release Notes</a>.</p>
+<p>VisIt is a distributed, parallel visualization and graphical analysis tool for data defined on two- and three-dimensional (2D and 3D) meshes. Version 3.0.1 contains about twenty bug-fixes and new features. For a complete list of changes see the <a href="simulation/computer-codes/visit/releases/release-notes-3.0.1">VisIt 3.0.1 Release Notes</a>.</p>
 <h2>April, 2019 - VisIt 3.0 released</h2>
 <p>VisIt 3.0 contains many bug-fixes and new features. For a complete list of changes see the <a href="simulation/computer-codes/visit/releases/release-notes-3.0.0">VisIt 3.0 Release Notes</a>.</p>
 <h4>1.  VisIt now supports outputting Cinema databases.</h4>
