@@ -228,20 +228,6 @@ set(QT_MOC_EXECUTABLE        ${VISIT_BINARY_DIR}/moc)
 set(PYTHON_INCLUDE_PATH    ${VISIT_INCLUDE_DIR}@python_include_relative_path@)
 set(PYTHON_LIBRARY         ${VISIT_LIBRARY_DIR}/@PYLIB@)
 
-# Set up SLIVR
-if(VISIT_SLIVR)
-    set(SLIVR_INCLUDE_DIR
-        ${VISIT_INCLUDE_DIR}/visit/third_party_builtin/slivr
-        ${VISIT_INCLUDE_DIR}/visit/third_party_builtin/slivr/slivr
-        ${VISIT_INCLUDE_DIR}/visit/third_party_builtin/slivr/teem-1.9.0-src/src
-        ${VISIT_INCLUDE_DIR}/visit/third_party_builtin/slivr/teem-1.9.0-src/src/teem
-    )
-    set(SLIVR_GUI_IMPL    QvisCMap2Display.C QvisCMap2Widget.C)
-    set(SLIVR_GUI_HDR     QvisCMap2Display.h QvisCMap2Widget.h)
-    set(SLIVR_LIB         slivrG slivrV)
-    add_definitions(-DHAVE_LIBSLIVR)
-endif()
-
 if(VISIT_OSPRAY)
     set(OSPRAY_INCLUDE_DIR    ${VISIT_INCLUDE_DIR})
     set(OSPRAY_LIBRARIES      @OSPRAY_LIBRARIES@)
