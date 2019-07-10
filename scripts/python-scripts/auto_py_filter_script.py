@@ -53,7 +53,7 @@ class AutoPythonExpression(SimplePythonExpression):
         self.description = "Auto-generated python expression from auto_py_filter_script.py"
         self.output_is_point_var = False
         self.output_dimension = 1
-    def define_variable(self, ds_in, domain_id):
+    def derive_variable(self, ds_in, domain_id):
         # Globalize the names
         for var_name in self.input_var_names:
             globals()[var_name] = vnp.vtk_to_numpy(ds_in.GetCellData().GetArray(var_name))
