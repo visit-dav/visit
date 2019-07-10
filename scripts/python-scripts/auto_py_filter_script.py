@@ -52,7 +52,7 @@ class AutoPythonExpression(SimplePythonExpression):
         self.name = "AutoPythonExpression"
         self.description = "Auto-generated python expression from auto_py_filter_script.py"
         self.output_is_point_var = False
-        self.dimension = 1
+        self.output_dimension = 1
     def define_variable(self, ds_in, domain_id):
         # Globalize the names
         for var_name in self.input_var_names:
