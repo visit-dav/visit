@@ -128,8 +128,6 @@ def translate_section(f, section):
         f.write("SET(PYTHON_DIR %s)\n" % translate_vars(section["PYDIR"]))
     elif "DEFAULT_CFITSIO_LIB" in keys:
         f.write("SET(CFITSIO_DIR %s)\n" % translate_vars(section["DEFAULT_CFITSIO_LIB"]))
-    elif "DEFAULT_CCMIO_LIB" in keys:
-        f.write("SET(CCMIO_DIR %s)\n" % translate_vars(section["DEFAULT_CCMIO_LIB"]))
     elif "DEFAULT_CGNS_LIB" in keys:
         f.write("SET(CGNS_DIR %s)\n" % translate_vars(section["DEFAULT_CGNS_LIB"]))
     elif "DEFAULT_EXODUS_LIBRARY" in keys:

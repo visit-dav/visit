@@ -3057,6 +3057,9 @@ avtMiliMetaData::GetSharedVariableInfo(const char *shortName)
 //
 //  Modifications:
 //
+//      Alister Maguire, Fri Jun 28 15:01:24 PDT 2019
+//      Set isLive to false.
+//
 // ****************************************************************************
 
 void
@@ -3097,6 +3100,7 @@ avtMiliMetaData::AddSharedVariableInfo(string shortName,
         SharedVariableInfo *newShared = new SharedVariableInfo();
         newShared->shortName = shortName;
         newShared->isAllES   = false;
+        newShared->isLive    = false;
         newShared->variableIndicies.push_back(varIdx);
         sharedVariables.push_back(newShared);
     }

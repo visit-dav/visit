@@ -1,15 +1,15 @@
-#/usr/workspace/visit/visit/thirdparty_shared/3.0.0/toss3/cmake/3.9.3/linux-x86_64_gcc-4.9/bin/cmake
+#/project/projectdirs/visit/thirdparty_shared/3.0.0/cmake/3.9.3/linux-x86_64_gcc-7.3/bin/cmake
 ##
-## ./build_visit3_0_0 generated host.cmake
-## created: Fri Apr 19 17:09:16 PDT 2019
-## system: Linux rztopaz194 3.10.0-957.5.1.3chaos.ch6.x86_64 #1 SMP Tue Feb 26 14:19:40 PST 2019 x86_64 x86_64 x86_64 GNU/Linux
+## ./build_visit3_0_1 generated host.cmake
+## created: Thu Jun 20 10:29:00 PDT 2019
+## system: Linux cori08 4.4.178-94.91-default #1 SMP Thu May 2 20:14:31 UTC 2019 (d683ca1) x86_64 x86_64 x86_64 GNU/Linux
 ## by: brugger
 
 ##
 ## Setup VISITHOME & VISITARCH variables.
 ##
-SET(VISITHOME /usr/workspace/visit/visit/thirdparty_shared/3.0.0/toss3)
-SET(VISITARCH linux-x86_64_gcc-4.9)
+SET(VISITHOME /project/projectdirs/visit/thirdparty_shared/3.0.0)
+SET(VISITARCH linux-x86_64_gcc-7.3)
 VISIT_OPTION_DEFAULT(VISIT_SLIVR TRUE TYPE BOOL)
 
 ## Compiler flags.
@@ -17,29 +17,23 @@ VISIT_OPTION_DEFAULT(VISIT_SLIVR TRUE TYPE BOOL)
 VISIT_OPTION_DEFAULT(VISIT_C_COMPILER gcc TYPE FILEPATH)
 VISIT_OPTION_DEFAULT(VISIT_CXX_COMPILER g++ TYPE FILEPATH)
 VISIT_OPTION_DEFAULT(VISIT_FORTRAN_COMPILER no TYPE FILEPATH)
-VISIT_OPTION_DEFAULT(VISIT_C_FLAGS " -m64 -fPIC -fvisibility=hidden" TYPE STRING)
-VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS " -m64 -fPIC -fvisibility=hidden" TYPE STRING)
-SET(CMAKE_INSTALL_RPATH "/usr/tce/packages/gcc/gcc-4.9.3/lib64")
+VISIT_OPTION_DEFAULT(VISIT_C_FLAGS " -m64 -fPIC -fvisibility=hidden -B/project/projectdirs/visit/thirdparty_shared/3.0.0/binutils/bin" TYPE STRING)
+VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS " -m64 -fPIC -fvisibility=hidden -B/project/projectdirs/visit/thirdparty_shared/3.0.0/binutils/bin" TYPE STRING)
 
 ##
 ## Parallel Build Setup.
 ##
 VISIT_OPTION_DEFAULT(VISIT_PARALLEL ON TYPE BOOL)
-VISIT_OPTION_DEFAULT(VISIT_MPI_CXX_FLAGS -I/usr/tce/packages/mvapich2/mvapich2-2.3-gcc-4.9.3/include TYPE STRING)
-VISIT_OPTION_DEFAULT(VISIT_MPI_C_FLAGS   -I/usr/tce/packages/mvapich2/mvapich2-2.3-gcc-4.9.3/include TYPE STRING)
-VISIT_OPTION_DEFAULT(VISIT_MPI_LD_FLAGS  "-L/usr/tce/packages/mvapich2/mvapich2-2.3-gcc-4.9.3/lib -Wl,-rpath=/usr/tce/packages/mvapich2/mvapich2-2.3-gcc-4.9.3/lib" TYPE STRING)
-VISIT_OPTION_DEFAULT(VISIT_MPI_LIBS     mpich mpl)
-VISIT_OPTION_DEFAULT(VISIT_PARALLEL_RPATH  "/usr/tce/packages/mvapich2/mvapich2-2.3-gcc-4.9.3/lib")
+VISIT_OPTION_DEFAULT(VISIT_MPI_CXX_FLAGS -I/opt/cray/pe/mpt/7.7.3/gni/mpich-gnu/7.1/include TYPE STRING)
+VISIT_OPTION_DEFAULT(VISIT_MPI_C_FLAGS   -I/opt/cray/pe/mpt/7.7.3/gni/mpich-gnu/7.1/include TYPE STRING)
+VISIT_OPTION_DEFAULT(VISIT_MPI_LD_FLAGS  "-L/opt/cray/pe/mpt/7.7.3/gni/mpich-gnu/7.1/lib -Wl,-rpath=/opt/cray/pe/mpt/7.7.3/gni/mpich-gnu/7.1/lib" TYPE STRING)
+VISIT_OPTION_DEFAULT(VISIT_MPI_LIBS     mpich)
+VISIT_OPTION_DEFAULT(VISIT_PARALLEL_RPATH  "/opt/cray/pe/mpt/7.7.3/gni/mpich-gnu/7.1/lib")
 
 ##
 ## VisIt Thread Option
 ##
 VISIT_OPTION_DEFAULT(VISIT_THREAD OFF TYPE BOOL)
-
-##
-## Turn on DDT support.
-##
-VISIT_OPTION_DEFAULT(VISIT_DDT ON TYPE BOOL)
 
 ##############################################################
 ##

@@ -63,6 +63,9 @@
 #   Kathleen Biagas, Thu Nov  8 10:11:29 PST 2018
 #   Added '*.hxx' pattern for includes.
 #
+#   Eric Brugger, Wed Jun 26 10:04:14 PDT 2019
+#   Removed the CCM reader.
+#
 #****************************************************************************/
 
 #
@@ -281,7 +284,6 @@ FUNCTION(THIRD_PARTY_INSTALL_INCLUDE pkg incdir)
                 PATTERN "*.hxx"
                 PATTERN "*.HPP"
                 PATTERN "*.inc"
-                PATTERN "libccmio" EXCLUDE
                 PATTERN ".svn" EXCLUDE
             )
         ENDIF(VISIT_INSTALL_THIRD_PARTY AND NOT VISIT_HEADERS_SKIP_INSTALL)
