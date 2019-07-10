@@ -21,7 +21,6 @@ expressions = [
 ]
 
 output_file_name = 'Boussinesq_expr.py'
-sub_dir_name = ''
 
 # ----------------------- #
 
@@ -75,7 +74,7 @@ postamble = 'py_filter = AutoPythonExpression'
 
 
 if __name__ == "__main__":
-    print "Starting script"
+    print "Executing auto_py_filter_script.py..."
 
     # -------------------------- #
     # --- Parse the "inputs" --- #
@@ -96,29 +95,14 @@ if __name__ == "__main__":
     if output_file_name[0] not in ['.', '/', '~']:
         output_file_name = './' + output_file_name
     
-    # If the subdirectory starts with a directory character, then we must ensure that the directories
-    # for the subdirectory and the filename are the same.
-    if sub_dir_name == '':
-        # name the sub directory the same as the file minus the extension
-        sub_dir_name = output_file_name[2:-3] + '_sub'
-    elif sub_dir_name[0] in ['.', '/', '~']:
-        if os.path.dirname(sub_dir_name) != os.path.dirname(output_file_name):
-            print "ERROR: sub_dir_name and output_file_name must be in the same directory."
-            print "sub_dir_dirname: " + os.path.dirname(sub_dir_name)
-            print "output_file_dirname: " + os.path.dirname(output_file_name)
-            raise SystemExit
 
-
-
-    print 'output_file_name is : ' + output_file_name
-    print 'sub_dir_name is : ' + sub_dir_name
+    # name the sub directory the same as the file minus the extension
+    sub_dir_name = output_file_name[2:-3] + '_sub'
 
     
     # ------------------------------------ #
     # --- Generate the controller file --- #
     # ------------------------------------ #
-
-    print 'directory name is: ' + os.path.dirname(output_file_name)
 
     if not os.path.exists(os.path.dirname(output_file_name)):
         try:
@@ -167,6 +151,7 @@ if __name__ == "__main__":
     # Cleanup
     controller_file.close()
 
+    print "Done!"
 
 
 
