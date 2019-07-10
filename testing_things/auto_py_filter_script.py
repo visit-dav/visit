@@ -7,7 +7,7 @@ input_variables = [
     'den',
     'tke',
     'zdvxdx',
-    'zdvydy'
+    'zdvydy',
 ]
 
 expressions = [
@@ -49,6 +49,8 @@ if __name__ == "__main__":
     elif sub_dir_name[0] in ['.', '/', '~']:
         if os.path.dirname(sub_dir_name) != os.path.dirname(output_file_name):
             print "ERROR: sub_dir_name and output_file_name must be in the same directory."
+            print "sub_dir_dirname: " + os.path.dirname(sub_dir_name)
+            print "output_file_dirname: " + os.path.dirname(output_file_name)
             raise SystemExit
 
 
@@ -68,22 +70,31 @@ if __name__ == "__main__":
             if exc.errno != errno.EEXIST:
                 raise
         
-    class_file = open(output_file_name, 'w+') # Create the controller file
+    controller_file = open(output_file_name, 'w+') # Create the controller file
     if not os.path.exists(sub_dir_name):
         os.makedirs(sub_dir_name) # Create the subdirectory to store the additional files
 
 
+    # Write the input variables
+    controller_file.write('input_variables = [\n')
+    for input_var in input_variables:
+        controller_file.write("\t'" + input_var + "',\n")
+    controller_file.write(']\n\n')
+
+
     # define python expressions in subfiles
     for expr in expressions:
-        out_var = expr.split()[0]
-        print out_var + '|'
+        out_var = expr.split('=')[0].strip()
+        sub_file_str = sub_dir_name + '/' + out_var + '.py'
+        sub_file = open(sub_file_str, 'w+')
 
-
-
+        def_python_str = 'DefinePythonExpression("' + out_var + '", input_variables, file = ' + sub_file_str + ')\n'
+        controller_file.write(def_python_str)
+        sub_file.close()
 
 
     # Cleanup
-    class_file.close()
+    controller_file.close()
 
 
 
