@@ -64,10 +64,8 @@ class AutoPythonExpression(SimplePythonExpression):
         # Convert result to vtk
         res = vnp.numpy_to_vtk(out, deep=1)
         return res
-
-def user_expression():
-
-    # Expression created by user and written here
+    def user_expression(self):
+        # Expression created by user and written here
 """
 
 postamble = 'py_filter = AutoPythonExpression'
@@ -135,9 +133,9 @@ if __name__ == "__main__":
         sub_file_str = sub_dir_name + '/' + out_var + '.py'
         sub_file = open(sub_file_str, 'w+')
         sub_file.write(preamble)
-        sub_file.write('\t' + expr + '\n\n')
-        sub_file.write('\t#Return the expression\n')
-        sub_file.write('\treturn ' + out_var + '\n\n')
+        sub_file.write('\t\t' + expr + '\n\n')
+        sub_file.write('\t\t#Return the expression\n')
+        sub_file.write('\t\treturn ' + out_var + '\n\n')
         sub_file.write(postamble)
 
         # Populate the controller file
