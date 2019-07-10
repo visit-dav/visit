@@ -3487,7 +3487,9 @@ avtMiliFileFormat::LoadMiliInfoJson(const char *fpath)
         char msg[1024];
         sprintf(msg, "Invalid Mili file. You are likely using an outdated "
             "format. To update your format, use the makemili_driver located "
-            "in the exe directory. ");
+            "in the exe and bin directories. ");
+
+        debug1 << "MILI: " <<  msg;
         EXCEPTION1(InvalidFilesException, fpath);
     }
     jfile.clear();
