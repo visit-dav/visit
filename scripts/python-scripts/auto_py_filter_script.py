@@ -8,16 +8,13 @@ import errno
 # ----------------------- #
 
 input_variables = [
-    'den',
-    'tke',
-    'zdvxdx',
-    'zdvydy',
+    'd',
+    'p',
 ]
 
 expressions = [
-    'tauxx = 0.6667*den',
-    'tauyy = 0.813*tke+zdvxdx',
-    'tauxy = den*tke - zdvydy',
+    '_TEST1 = d*p',
+    '_TEST2 = d-p',
 ]
 
 output_file_name = 'example.py'
