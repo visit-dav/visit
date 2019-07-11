@@ -118,7 +118,7 @@ if __name__ == "__main__":
     controller_file.write('import visit\n\n')
     controller_file.write('input_variables = [\n')
     for input_var in input_variables:
-        controller_file.write("\t'" + input_var + "',\n")
+        controller_file.write("    '" + input_var + "',\n")
     controller_file.write(']\n\n')
 
 
@@ -133,9 +133,9 @@ if __name__ == "__main__":
         sub_file_str = sub_dir_name + '/' + out_var + '.py'
         sub_file = open(sub_file_str, 'w+')
         sub_file.write(preamble)
-        sub_file.write('\t\t' + expr + '\n\n')
-        sub_file.write('\t\t#Return the expression\n')
-        sub_file.write('\t\treturn ' + out_var + '\n\n')
+        sub_file.write('        ' + expr + '\n\n')
+        sub_file.write('        #Return the expression\n')
+        sub_file.write('        return ' + out_var + '\n\n')
         sub_file.write(postamble)
 
         # Populate the controller file
