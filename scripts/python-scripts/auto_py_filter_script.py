@@ -42,11 +42,12 @@ output_file_name = 'example.py'
 # --- Script details here --- #
 # --------------------------- #
 
-preamble = """
+imports_str = """
 import numpy as np
 import vtk.util.numpy_support as vnp
+"""
 
-class AutoPythonExpression(SimplePythonExpression):
+class_body_str = """
     def __init__(self):
         SimplePythonExpression.__init__(self)
         self.name = "AutoPythonExpression"
@@ -132,11 +133,13 @@ if __name__ == "__main__":
         # Populate the subfile
         sub_file_str = sub_dir_name + '/' + out_var + '.py'
         sub_file = open(sub_file_str, 'w+')
-        sub_file.write(preamble)
+        sub_file.write(imports_str)
+        sub_file.write('class ' + out_var + 'PythonExpression(SimplePythonExpression):\n')
+        sub_file.write(class_body_str)
         sub_file.write('        ' + expr + '\n\n')
         sub_file.write('        #Return the expression\n')
         sub_file.write('        return ' + out_var + '\n\n')
-        sub_file.write(postamble)
+        sub_file.write('py_filter = ' + out_var + 'PythonExpression')
 
         # Populate the controller file
         def_python_str = 'visit.DefinePythonExpression("' + out_var + '", input_variables, file = "' + sub_file_str + '")\n'
