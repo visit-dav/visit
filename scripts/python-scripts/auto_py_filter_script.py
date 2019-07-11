@@ -59,7 +59,7 @@ class AutoPythonExpression(SimplePythonExpression):
             globals()[var_name] = vnp.vtk_to_numpy(ds_in.GetCellData().GetArray(var_name))
         
         # Perform calculation
-        out = user_expression()
+        out = self.user_expression()
 
         # Convert result to vtk
         res = vnp.numpy_to_vtk(out, deep=1)
