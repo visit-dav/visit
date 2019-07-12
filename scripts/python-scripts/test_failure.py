@@ -22,19 +22,9 @@ class _TEST1PythonExpression(SimplePythonExpression):
 
         d = smart_get_data(ds_in, self.input_var_names[0])
         p = smart_get_data(ds_in, self.input_var_names[1])
-        n = smart_get_data(ds_in, self.input_var_names[2])
+        # n = smart_get_data(ds_in, self.input_var_names[2])
 
-        # p = vnp.vtk_to_numpy(ds_in.GetCellData().GetArray(self.input_var_names[1]))
-        # p_vtk = vnp.numpy_to_vtk(p)
-        # n = vnp.vtk_to_numpy(ds_in.GetCellData().GetArray(self.input_var_names[2]))
-        # n_vtk = vnp.numpy_to_vtk(n)
-        
-        # d = ds_in.GetCellData().GetArray(self.input_var_names[0])
-        # p = ds_in.GetCellData().GetArray(self.input_var_names[1])
-        # n = ds_in.GetCellData().GetArray(self.input_var_names[2])
-        # n2 = ds_in.GetCellData().GetArray(self.input_var_names[3])
-
-        # Convert result to vtk
+        # Output an empty array
         res = vtk.vtkFloatArray()
         res.SetNumberOfComponents(1)
         res.SetNumberOfTuples(ds_in.GetNumberOfCells())
