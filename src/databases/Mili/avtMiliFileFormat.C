@@ -67,6 +67,7 @@
 #include <InvalidFilesException.h>
 #include <InvalidVariableException.h>
 #include <UnexpectedValueException.h>
+#include <NonCompliantFileException.h>
 
 #include <TimingsManager.h>
 
@@ -3447,10 +3448,10 @@ avtMiliFileFormat::LoadMiliInfoJson(const char *fpath)
         char msg[1024];
         sprintf(msg, "Invalid Mili file. You are likely using an outdated "
             "format. To update your format, use the makemili_driver located "
-            "in the exe and bin directories. ");
+            "in the bin directory. ");
 
         debug1 << "MILI: " <<  msg;
-        EXCEPTION1(InvalidFilesException, fpath);
+        EXCEPTION2(NonCompliantFileException, "Mili", msg);
     }
     jfile.clear();
     jfile.seekg(0, ios::beg);
