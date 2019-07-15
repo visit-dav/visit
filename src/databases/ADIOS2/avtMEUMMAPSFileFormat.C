@@ -122,7 +122,7 @@ avtMEUMMAPSFileFormat::CreateInterface(const char *const *list,
 // ****************************************************************************
 
 avtMEUMMAPSFileFormat::avtMEUMMAPSFileFormat(const char *filename)
-    :  adios(std::make_shared<adios2::ADIOS>(adios2::DebugON)),
+    :  adios(std::make_shared<adios2::ADIOS>()),
        io(adios->DeclareIO("ReadBP")),
        numTimeSteps(1),
        avtMTMDFileFormat(filename)
