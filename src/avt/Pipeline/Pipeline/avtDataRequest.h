@@ -274,13 +274,6 @@ class PIPELINE_API avtDataRequest
     void                         ForceMaterialLabelsConstructionOff(void)
                                      { forceConstructMaterialLabels = false; };
 
-    bool                         MustRemoveFacesBeforeGhosts(void)
-                                     { return mustRemoveFacesBeforeGhosts; };
-    void                         ForceRemoveFacesBeforeGhostsOn(void)
-                                     { mustRemoveFacesBeforeGhosts = true; };
-    void                         ForceRemoveFacesBeforeGhostsOff(void)
-                                     { mustRemoveFacesBeforeGhosts = false; };
-
     bool                         NeedInternalSurfaces(void)
                                      { return needInternalSurfaces; };
     void                         TurnInternalSurfacesOn(void)

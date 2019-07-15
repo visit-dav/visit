@@ -2918,6 +2918,25 @@ PseudocolorAttributes::ChangesRequireRecalculation(const PseudocolorAttributes &
                             endPointResolution       != obj.endPointResolution ||
                             0 );
 
+    //
+    // If we've switched to an opacity mode that contains transparency, we 
+    // need to re-compute the face and ghost removal. 
+    //
+    bool alteringOpacChange = false;
+    OpacityType newOpacType = obj.GetOpacityType();
+
+    if (OpacityType(opacityType) != Constant &&
+        OpacityType(opacityType) != Ramp)
+    {
+        if (newOpacType == Constant || newOpacType == Ramp)
+        {
+            alteringOpacChange = true;
+        }
+    }
+    else if (newOpacType != Constant && newOpacType != Ramp)
+    {
+        alteringOpacChange = true; 
+    }
 
     return (centering != obj.centering ||
             needSecondaryVar ||
@@ -2928,6 +2947,7 @@ PseudocolorAttributes::ChangesRequireRecalculation(const PseudocolorAttributes &
             renderPoints != obj.renderPoints ||
             wireframeColor != obj.wireframeColor ||
             pointColor != obj.pointColor ||
+            alteringOpacChange ||
             0);
 
 }

@@ -272,6 +272,7 @@ avtDataAttributes::avtDataAttributes() : plotInfoAtts()
     multiresCellSize = DBL_MAX;
 
     constructMultipleCurves = false;
+    forceRemoveFacesBeforeGhosts = false;
 }
 
 
@@ -1176,6 +1177,7 @@ avtDataAttributes::Copy(const avtDataAttributes &di)
     *(multiresExtents) = *(di.multiresExtents);
     multiresCellSize = di.multiresCellSize;
     constructMultipleCurves = di.constructMultipleCurves;
+    forceRemoveFacesBeforeGhosts = di.forceRemoveFacesBeforeGhosts;
 }
 
 
@@ -1593,6 +1595,7 @@ avtDataAttributes::Merge(const avtDataAttributes &da,
     multiresExtents->Merge(*(da.multiresExtents));
     plotInfoAtts.Merge(da.plotInfoAtts);
     constructMultipleCurves &= da.constructMultipleCurves;
+    forceRemoveFacesBeforeGhosts &= da.forceRemoveFacesBeforeGhosts;
 
     // there's no good answer for unitCellVectors or rectilinearGridTransform
 }
@@ -2905,6 +2908,7 @@ avtDataAttributes::Write(avtDataObjectString &str,
     vals[i++] = (nodesAreCritical ? 1 : 0);
     vals[i++] = (rectilinearGridHasTransform ? 1 : 0);
     vals[i++] = (constructMultipleCurves ? 1 : 0);
+    vals[i++] = (forceRemoveFacesBeforeGhosts ? 1 : 0);
     vals[i++] = activeVariable;
     vals[i++] = static_cast<int>(variables.size());
     int basei = i;
@@ -3315,6 +3319,10 @@ avtDataAttributes::Read(char *input)
     memcpy(&tmp, input, sizeof(int));
     input += sizeof(int); size += sizeof(int);
     constructMultipleCurves = (tmp != 0 ? true : false);
+
+    memcpy(&tmp, input, sizeof(int));
+    input += sizeof(int); size += sizeof(int);
+    forceRemoveFacesBeforeGhosts = (tmp != 0 ? true : false);
 
     memcpy(&tmp, input, sizeof(int));
     input += sizeof(int); size += sizeof(int);

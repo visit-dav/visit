@@ -630,6 +630,9 @@ avtPseudocolorPlot::CustomizeBehavior()
         behavior->SetShiftFactor(0.1);
     else
         behavior->SetShiftFactor(0.0);
+
+    //TODO: check if we're in a "transparency mode". If so, 
+    //behavior->GetAttributes()->ForceRemoveFacesBeforeGhosts(true);
 }
 
 

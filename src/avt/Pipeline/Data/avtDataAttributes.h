@@ -593,6 +593,11 @@ class PIPELINE_API avtDataAttributes
     bool                     GetConstructMultipleCurves() const
                                { return constructMultipleCurves; }
 
+    void                     ForceRemoveFacesBeforeGhosts(bool doForce)
+                               { forceRemoveFacesBeforeGhosts = doForce; }; 
+    bool                     MustRemoveFacesBeforeGhosts(void)
+                               { return forceRemoveFacesBeforeGhosts; };
+
     void                     ResetAllExtents();
 
   protected:
@@ -637,6 +642,7 @@ class PIPELINE_API avtDataAttributes
     avtExtents              *multiresExtents;
     double                   multiresCellSize;
     bool                     constructMultipleCurves;
+    bool                     forceRemoveFacesBeforeGhosts;
 
     avtExtents              *originalSpatial;
     avtExtents              *thisProcsOriginalSpatial;
