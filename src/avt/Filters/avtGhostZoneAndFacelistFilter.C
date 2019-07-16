@@ -303,6 +303,9 @@ avtGhostZoneAndFacelistFilter::SetMustCreatePolyData(bool val)
 //    Rename a couple of variables and fix up some whitespace that came about
 //    from earlier mass renamings of avtContract.
 //
+//    Alister Maguire, Tue Jul 16 14:12:20 PDT 2019
+//    Added a check for the forceRemoveFacesBeforeGhosts flag. 
+//
 // ****************************************************************************
 
 void
@@ -333,8 +336,6 @@ avtGhostZoneAndFacelistFilter::Execute(void)
 
     avtContract_p goodSpec = new avtContract(contractForDB, correctVar);
 
-    cerr << "IN REMOVE GHOSTS AND FACES" << endl;//FIXME 
-    
     if (useFaceFilter && !useGhostFilter)
     {
         debug5 << "Using facelist filter only." << endl;
@@ -358,7 +359,8 @@ avtGhostZoneAndFacelistFilter::Execute(void)
     {
         // if we are using all the data, apply the facelist filter first.
         bool faceFirst = v.GetUsingAllDomains() ||
-                         (a.GetContainsGhostZones() == AVT_CREATED_GHOSTS);
+                         (a.GetContainsGhostZones() == AVT_CREATED_GHOSTS) ||
+                         a.GetForceRemoveFacesBeforeGhosts();
 
         if (faceFirst)
         {

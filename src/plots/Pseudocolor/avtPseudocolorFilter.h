@@ -69,6 +69,9 @@
 //    Eric Brugger, Tue Aug 19 11:10:33 PDT 2014
 //    Modified the class to work with avtDataRepresentation.
 //
+//    Alister Maguire, Tue Jul 16 14:12:20 PDT 2019
+//    Added mustRemoveFacesBeforeGhosts. 
+//
 // ****************************************************************************
 
 class avtPseudocolorFilter : public avtDataTreeIterator
@@ -84,6 +87,7 @@ class avtPseudocolorFilter : public avtDataTreeIterator
 
   protected:
     bool                      keepNodeZone;
+    bool                      mustRemoveFacesBeforeGhosts;
 
     virtual avtDataRepresentation *ExecuteData(avtDataRepresentation *);
     virtual void              UpdateDataObjectInfo(void);

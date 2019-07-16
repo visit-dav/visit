@@ -187,6 +187,9 @@ using     std::sort;
 //    Added logic to support presentGhostZoneTypes, which allows us to
 //    differentiate between ghost zones for boundaries & nesting.
 //
+//    Alister Maguire, Tue Jul 16 14:34:29 PDT 2019
+//    Added instantiation of forceRemoveFacesBeforeGhosts.
+//
 // ****************************************************************************
 
 avtDataAttributes::avtDataAttributes() : plotInfoAtts()
@@ -1068,6 +1071,9 @@ avtDataAttributes::Print(ostream &out)
 //    Added logic to support presentGhostZoneTypes, which allows us to
 //    differentiate between ghost zones for boundaries & nesting.
 //
+//    Alister Maguire, Tue Jul 16 14:34:29 PDT 2019
+//    Added forceRemoveFacesBeforeGhosts.
+//
 // ****************************************************************************
 
 void
@@ -1326,6 +1332,9 @@ avtDataAttributes::Copy(const avtDataAttributes &di)
 //    Cyrus Harrison,Thu Feb  9 10:26:48 PST 2012
 //    Added logic to support presentGhostZoneTypes, which allows us to
 //    differentiate between ghost zones for boundaries & nesting.
+//
+//    Alister Maguire, Tue Jul 16 14:34:29 PDT 2019
+//    Added forceRemoveFacesBeforeGhosts.
 //
 // ****************************************************************************
 
@@ -2863,6 +2872,9 @@ avtDataAttributes::SetDynamicDomainDecomposition(bool ddd)
 //    Add GetMultiresExtents and GetMultiresCellSize to support adding
 //    a multi resolution display capability for AMR data.
 //
+//    Alister Maguire, Tue Jul 16 14:34:29 PDT 2019
+//    Added forceRemoveFacesBeforeGhosts.
+//
 // ****************************************************************************
 
 void
@@ -2872,7 +2884,7 @@ avtDataAttributes::Write(avtDataObjectString &str,
     size_t   i, j;
 
     int varSize = 7;
-    int numVals = 35 + static_cast<int>(varSize*variables.size());
+    int numVals = 36 + static_cast<int>(varSize*variables.size());
     int *vals = new int[numVals];
     i = 0;
     vals[i++] = topologicalDimension;
@@ -3177,6 +3189,9 @@ avtDataAttributes::Write(avtDataObjectString &str,
 //    Eric Brugger, Thu Oct 27 10:29:42 PDT 2011
 //    Add GetMultiresExtents and GetMultiresCellSize to support adding
 //    a multi resolution display capability for AMR data.
+//
+//    Alister Maguire, Tue Jul 16 14:34:29 PDT 2019
+//    Added forceRemoveFacesBeforeGhosts.
 //
 // ****************************************************************************
 

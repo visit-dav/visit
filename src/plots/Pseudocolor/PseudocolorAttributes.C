@@ -2863,6 +2863,9 @@ PseudocolorAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
 //   I modified the plot to support independently setting the point style
 //   for the two end points of lines.
 //
+//   Alister Maguire, Tue Jul 16 11:00:45 PDT 2019
+//   I added a check to see if transparency is allowed.
+//
 // ****************************************************************************
 bool
 PseudocolorAttributes::ChangesRequireRecalculation(const PseudocolorAttributes &obj) const
@@ -2922,21 +2925,11 @@ PseudocolorAttributes::ChangesRequireRecalculation(const PseudocolorAttributes &
     // If we've switched to an opacity mode that contains transparency, we 
     // need to re-compute the face and ghost removal. 
     //
-    bool alteringOpacChange = false;
     OpacityType newOpacType = obj.GetOpacityType();
-
-    if (OpacityType(opacityType) != Constant &&
-        OpacityType(opacityType) != Ramp)
-    {
-        if (newOpacType == Constant || newOpacType == Ramp)
-        {
-            alteringOpacChange = true;
-        }
-    }
-    else if (newOpacType != Constant && newOpacType != Ramp)
-    {
-        alteringOpacChange = true; 
-    }
+    bool alteringOpacChange = ((newOpacType != FullyOpaque &&
+                                OpacityType(opacityType) == FullyOpaque) ||
+                               (newOpacType == FullyOpaque &&
+                                OpacityType(opacityType) != FullyOpaque));
 
     return (centering != obj.centering ||
             needSecondaryVar ||
