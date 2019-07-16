@@ -1271,7 +1271,11 @@ ENDIF(VISIT_PARALLEL)
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindTCMALLOC.cmake)
 
 # zlib
-INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindZlib.cmake)
+find_package(ZLIB REQUIRED)
+if (ZLIB_FOUND)
+    include_directories( ${ZLIB_INCLUDE_DIRS} )
+    set(HAVE_LIBZ true CACHE BOOL "Have lib z")
+endif( ZLIB_FOUND )
 
 # szip and jpeg
 IF(WIN32)
