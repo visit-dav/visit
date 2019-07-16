@@ -546,7 +546,6 @@ avtIsovolumeFilter::ModifyContract(avtContract_p in_spec)
         double max = atts.GetUbound();
         std::vector<int> dl;
         it->GetElementsListFromRange(&min, &max, dl);
-        //FIXME: restricting domains causes issues with transparency and proc boundaries. 
         spec->GetDataRequest()->GetRestriction()->RestrictDomains(dl);
     }
 

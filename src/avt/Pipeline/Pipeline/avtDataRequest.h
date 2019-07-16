@@ -527,7 +527,6 @@ class PIPELINE_API avtDataRequest
     bool                         mayRequireNodes;
     bool                         mustDoMIR;
     bool                         forceConstructMaterialLabels;
-    bool                         mustRemoveFacesBeforeGhosts;
     bool                         needInternalSurfaces;
     bool                         getBoundarySurfaceRep;
     bool                         getSimplifiedNestingRep;

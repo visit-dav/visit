@@ -1482,7 +1482,6 @@ avtThresholdFilter::ModifyContract(avtContract_p in_spec)
         }
     }
 
-    //FIXME: restricting domains results in problems with ghost zone faces. 
     if (atLeastOneTree)
     {
         for (curDomNum = 0; curDomNum < curDomains.size(); curDomNum++)
