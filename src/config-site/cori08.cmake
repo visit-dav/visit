@@ -1,14 +1,14 @@
-#/project/projectdirs/visit/thirdparty_shared/3.0.0/cmake/3.9.3/linux-x86_64_gcc-7.3/bin/cmake
+#/project/projectdirs/visit/thirdparty_shared/3.0.1/cmake/3.9.3/linux-x86_64_gcc-7.3/bin/cmake
 ##
 ## ./build_visit3_0_1 generated host.cmake
-## created: Thu Jun 20 10:29:00 PDT 2019
-## system: Linux cori08 4.4.178-94.91-default #1 SMP Thu May 2 20:14:31 UTC 2019 (d683ca1) x86_64 x86_64 x86_64 GNU/Linux
+## created: Thu Jul 11 11:03:01 PDT 2019
+## system: Linux cori11 4.4.178-94.91-default #1 SMP Thu May 2 20:14:31 UTC 2019 (d683ca1) x86_64 x86_64 x86_64 GNU/Linux
 ## by: brugger
 
 ##
 ## Setup VISITHOME & VISITARCH variables.
 ##
-SET(VISITHOME /project/projectdirs/visit/thirdparty_shared/3.0.0)
+SET(VISITHOME /project/projectdirs/visit/thirdparty_shared/3.0.1)
 SET(VISITARCH linux-x86_64_gcc-7.3)
 VISIT_OPTION_DEFAULT(VISIT_SLIVR TRUE TYPE BOOL)
 
@@ -17,8 +17,8 @@ VISIT_OPTION_DEFAULT(VISIT_SLIVR TRUE TYPE BOOL)
 VISIT_OPTION_DEFAULT(VISIT_C_COMPILER gcc TYPE FILEPATH)
 VISIT_OPTION_DEFAULT(VISIT_CXX_COMPILER g++ TYPE FILEPATH)
 VISIT_OPTION_DEFAULT(VISIT_FORTRAN_COMPILER no TYPE FILEPATH)
-VISIT_OPTION_DEFAULT(VISIT_C_FLAGS " -m64 -fPIC -fvisibility=hidden -B/project/projectdirs/visit/thirdparty_shared/3.0.0/binutils/bin" TYPE STRING)
-VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS " -m64 -fPIC -fvisibility=hidden -B/project/projectdirs/visit/thirdparty_shared/3.0.0/binutils/bin" TYPE STRING)
+VISIT_OPTION_DEFAULT(VISIT_C_FLAGS " -m64 -fPIC -fvisibility=hidden -B/project/projectdirs/visit/thirdparty_shared/3.0.1/binutils/bin" TYPE STRING)
+VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS " -m64 -fPIC -fvisibility=hidden -B/project/projectdirs/visit/thirdparty_shared/3.0.1/binutils/bin" TYPE STRING)
 
 ##
 ## Parallel Build Setup.

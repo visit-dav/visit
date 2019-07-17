@@ -1,14 +1,14 @@
-#/usr/workspace/visit/visit/thirdparty_shared/3.0.0/toss3/cmake/3.9.3/linux-x86_64_gcc-4.9/bin/cmake
+#/usr/workspace/visit/visit/thirdparty_shared/3.0.1/toss3/cmake/3.9.3/linux-x86_64_gcc-4.9/bin/cmake
 ##
-## ./build_visit3_0_0 generated host.cmake
-## created: Tue Apr 30 10:26:33 PDT 2019
-## system: Linux jade770 3.10.0-957.5.1.3chaos.ch6.x86_64 #1 SMP Tue Feb 26 14:19:40 PST 2019 x86_64 x86_64 x86_64 GNU/Linux
+## ./build_visit3_0_1 generated host.cmake
+## created: Wed Jul 11 15:47:02 PDT 2019
+## system: Linux jade764 3.10.0-957.12.2.1chaos.ch6.x86_64 #1 SMP Tue May 14 18:38:00 PDT 2019 x86_64 x86_64 x86_64 GNU/Linux
 ## by: brugger
 
 ##
 ## Setup VISITHOME & VISITARCH variables.
 ##
-SET(VISITHOME /usr/workspace/visit/visit/thirdparty_shared/3.0.0/toss3)
+SET(VISITHOME /usr/workspace/visit/visit/thirdparty_shared/3.0.1/toss3)
 SET(VISITARCH linux-x86_64_gcc-4.9)
 VISIT_OPTION_DEFAULT(VISIT_SLIVR TRUE TYPE BOOL)
 
