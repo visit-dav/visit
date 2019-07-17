@@ -142,7 +142,7 @@ LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY} ${OPENEXR_LIBRARY_DIR})
 
 ADD_LIBRARY(visit_vtk ${VISIT_VTK_SOURCES})
 
-TARGET_LINK_LIBRARIES(visit_vtk lightweight_visit_vtk vtkFiltersExtraction vtkFiltersFlowPaths vtkFiltersSources vtkImagingHybrid vtkIOImage vtktiff ${OPENEXR_LIB})
+TARGET_LINK_LIBRARIES(visit_vtk lightweight_visit_vtk vtkCommonExecutionModel vtkCommonMisc vtkFiltersExtraction vtkFiltersFlowPaths vtkFiltersSources vtkImagingHybrid vtkIOImage vtktiff ${OPENEXR_LIB})
 
 
 VISIT_INSTALL_TARGETS(visit_vtk)
