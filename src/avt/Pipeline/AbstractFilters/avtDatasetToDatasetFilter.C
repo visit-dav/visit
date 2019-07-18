@@ -250,6 +250,7 @@ avtDatasetToDatasetFilter::PostExecute(void)
 void
 avtDatasetToDatasetFilter::ExamineContract(avtContract_p s)
 {
+    debug5 << "avtDatasetToDatasetFilter::ExamineContract" << std::endl;
     avtDataRequest_p ds = s->GetDataRequest();
 
     // 
@@ -262,6 +263,10 @@ avtDatasetToDatasetFilter::ExamineContract(avtContract_p s)
     const char *var = ds->GetVariable();
     pipelineVariable = new char[strlen(var) + 1];
     strcpy(pipelineVariable, var);
+
+    debug1 << "pipelineVariable: " << pipelineVariable << std::endl;
+    debug1 << "activeVariable: " << activeVariable << std::endl;
+    debug1 << "switchVariables: " << switchVariables << std::endl;
 
     if (switchVariables)
     {
@@ -283,6 +288,8 @@ avtDatasetToDatasetFilter::ExamineContract(avtContract_p s)
                 haveVariable = true;
             }
         }
+
+        debug1 << "haveVariable: " << haveVariable << std::endl;
 
         // 
         // Tell the pipeline about our active variable (if necessary) and

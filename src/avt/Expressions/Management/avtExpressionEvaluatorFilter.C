@@ -450,11 +450,25 @@ avtExpressionEvaluatorFilter::ModifyContract(avtContract_p spec)
 
     // Insert all of the variables onto the candidates list.
     candidates.insert(ds->GetVariable());
+
+    // MY debug
+    debug5 << "Inserting variables from ds into candidates" << std::endl;
+    for (std::set<std::string>::const_iterator iter = candidates.begin(); iter != candidates.end(); ++iter) {
+        debug5 << *iter << std::endl;
+    }
+
     const vector<CharStrRef> &sv = ds->GetSecondaryVariables();
     for (size_t i = 0; i != sv.size(); i++)
     {
         const char *str = *(sv[i]);
         candidates.insert(str);
+    }
+
+    // MY debug
+    debug5 << "Inserting secondary variables from set into candidates" << std::endl;
+    for (std::vector<CharStrRef>::const_iterator iter = sv.begin(); iter != sv.end(); iter++) {
+        const char* str = *(*iter);
+        debug5 << str << std::endl;
     }
 
     // Walk through the candidates, processing the results into the real
@@ -499,6 +513,7 @@ avtExpressionEvaluatorFilter::ModifyContract(avtContract_p spec)
 
         // Check if this is an expression, a real variable, or a data binning.
         Expression const *exp = ParsingExprList::GetExpression(var);
+
         avtDataBinning *db = NULL;
         if (getDataBinningCallback != NULL)
             db = getDataBinningCallback(getDataBinningCallbackArgs, var.c_str());
@@ -526,6 +541,7 @@ avtExpressionEvaluatorFilter::ModifyContract(avtContract_p spec)
         }
         else  // (expr != NULL)
         {
+            debug5 << "Expression's name: " << exp->GetName() << std::endl;
             debug4 << "EEF::ModifyContract:     expression.  Roots:" 
                    << endl;
             // Expression.  Put the name on the expr list.  Find the base
@@ -547,6 +563,8 @@ avtExpressionEvaluatorFilter::ModifyContract(avtContract_p spec)
         }
     }
 
+    // At this point, all the expressions that were candidates have either been
+    // added to the expr_list or to the real_list.
     // See what expressions have to be generated.  If it is not the same list as
     // the last time we executed, then set the "modified" bit to true, forcing this
     // filter to re-execute.  If we don't set this to true, we are depending on the
@@ -563,12 +581,15 @@ avtExpressionEvaluatorFilter::ModifyContract(avtContract_p spec)
     expr_list_fromLastTime = expr_list;
 
     // Take the list of expressions and make the filters for them.
+    debug5 << "Making filters for the list of expresssions" << std::endl;
     int numFiltersLastTime = 0;
     while (createFilters && !expr_list.empty())
     {
         std::vector<string>::iterator back = expr_list.end() - 1;
         string var = *back;
         expr_list.erase(back);
+
+        debug5 << "Variable is: " << var << std::endl;
        
         // Get the expression tree again.  (We could save trees between the
         // first and second sections of the code.  It wouldn't save much
@@ -605,6 +626,9 @@ avtExpressionEvaluatorFilter::ModifyContract(avtContract_p spec)
         f->SetOutputVariableName(var.c_str());
         numFiltersLastTime = (int)filters.size();
     }
+
+    // Filters have been created for each expression and presumably attached
+    // to pipelineState.
 
     // Make sure we have real variables to pass to the database.
     if (real_list.empty())

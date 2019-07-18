@@ -88,6 +88,13 @@ PythonInterpreter::~PythonInterpreter()
 bool
 PythonInterpreter::Initialize(int argc, char **argv)
 {
+    debug5 << "PythonInterpreter::Initialize(int, char**)" << std::endl;
+    debug5 << "Number of args: " << argc << std::endl;
+    debug5 << "Arguments:" << std::endl;
+    for (int i = 0; i < argc; ++i) {
+        debug5 << argv[i] << std::endl;
+    }
+    
     // if already running, ignore
     if(running)
         return true;
