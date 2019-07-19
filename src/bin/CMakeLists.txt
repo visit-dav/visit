@@ -86,7 +86,7 @@ SET(VISIT_BIN_FILES
         curv3dprep
         frontendlauncher
         frontendlauncher.py
-        makemili
+        makemili_driver
         mkgrdbl
         mpeg2encode
         regen-ajp
