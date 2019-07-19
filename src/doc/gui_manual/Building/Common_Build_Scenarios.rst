@@ -22,12 +22,15 @@ Kickit, a RedHat Enterprise Linux 7 system
 
 ``build_visit`` was run to generate the third party libraries. In this
 case all the required and optional libraries build without problem, so
-``--required --optional`` could be used.
+``--required --optional`` could be used. Also, in this case there wasn't
+a system MPI installed so ``--mpich`` was specified to use MPICH. The
+``--osmesa`` flag was also included so that VisIt could do off screen
+rendering.
 
 .. code:: bash
 
-   ./build_visit3_0_0b --required --optional --no-visit \
-   --thirdparty-path /usr/gapps/visit/thirdparty_shared/3.0.0b --makeflags -j4
+   ./build_visit3_0_1 --required --optional --mpich --osmesa --no-visit \
+   --thirdparty-path /usr/gapps/visit/thirdparty_shared/3.0.1 --makeflags -j4
 
 This built the third party libraries and generated a ``kickit.cmake``
 config site file. The ``Setup VISITHOME & VISITARCH variables.`` section
@@ -38,7 +41,7 @@ was changed to
    ##
    ## Setup VISITHOME & VISITARCH variables.
    ##
-   SET(VISITHOME /usr/gapps/visit/thirdparty_shared/3.0.0b)
+   SET(VISITHOME /usr/gapps/visit/thirdparty_shared/3.0.1)
    SET(VISITARCH linux-x86_64_gcc-4.8)
    VISIT_OPTION_DEFAULT(VISIT_SLIVR TRUE TYPE BOOL)
 
@@ -46,12 +49,12 @@ VisIt_ was then manually built with the following steps.
 
 .. code:: bash
 
-   tar zxf visit3.0.0b.tar.gz
-   cp kickit.cmake visit3.0.0b/src/config-site
-   cd visit3.0.0b
+   tar zxf visit3.0.1.tar.gz
+   cp kickit.cmake visit3.0.1/src/config-site
+   cd visit3.0.1
    mkdir build
    cd build
-   /usr/gapps/visit/thirdparty_shared/3.0.0b/cmake/3.9.3/linux-x86_64_gcc-4.8/bin/cmake \
+   /usr/gapps/visit/thirdparty_shared/3.0.1/cmake/3.9.3/linux-x86_64_gcc-4.8/bin/cmake \
    ../src -DCMAKE_BUILD_TYPE:STRING=Release \
    -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON \
    -DVISIT_ENABLE_XDB:BOOL=ON -DVISIT_PARADIS:BOOL=ON
@@ -72,12 +75,12 @@ Uintah reader.
 
 .. code:: bash
 
-   env PAR_COMPILER=/usr/tce/packages/mvapich2/mvapich2-2.2-gcc-4.9.3/bin/mpicc \
-       PAR_COMPILER_CXX=/usr/tce/packages/mvapich2/mvapich2-2.2-gcc-4.9.3/bin/mpicxx \
-       PAR_INCLUDE=-I/usr/tce/packages/mvapich2/mvapich2-2.2-gcc-4.9.3/include \
+   env PAR_COMPILER=/usr/tce/packages/mvapich2/mvapich2-2.3-gcc-4.9.3/bin/mpicc \
+       PAR_COMPILER_CXX=/usr/tce/packages/mvapich2/mvapich2-2.3-gcc-4.9.3/bin/mpicxx \
+       PAR_INCLUDE=-I/usr/tce/packages/mvapich2/mvapich2-2.3-gcc-4.9.3/include \
        PAR_LIBS=-lmpl \
-   ./build_visit3_0_0b --required --optional --mesagl --uintah --parallel \
-   --no-visit --thirdparty-path /usr/workspace/wsa/visit/visit/thirdparty_shared/3.0.0b/toss3 \
+   ./build_visit3_0_1 --required --optional --mesagl --uintah --parallel \
+   --no-visit --thirdparty-path /usr/workspace/wsa/visit/visit/thirdparty_shared/3.0.1/toss3 \
    --makeflags -j16
 
 This built the third party libraries and generated a ``quartz386.cmake``
@@ -89,7 +92,7 @@ was changed to
    ##
    ## Setup VISITHOME & VISITARCH variables.
    ##
-   SET(VISITHOME /usr/gapps/visit/thirdparty_shared/3.0.0b)
+   SET(VISITHOME /usr/gapps/visit/thirdparty_shared/3.0.1)
    SET(VISITARCH linux-x86_64_gcc-4.8)
    VISIT_OPTION_DEFAULT(VISIT_SLIVR TRUE TYPE BOOL)
 
@@ -101,22 +104,22 @@ The ``Parallel build Setup.`` section was changed to
    ## Parallel Build Setup.
    ##
    VISIT_OPTION_DEFAULT(VISIT_PARALLEL ON TYPE BOOL)
-   VISIT_OPTION_DEFAULT(VISIT_MPI_CXX_FLAGS -I/usr/tce/packages/mvapich2/mvapich2-2.2-gcc-4.9.3/include TYPE STRING)
-   VISIT_OPTION_DEFAULT(VISIT_MPI_C_FLAGS   -I/usr/tce/packages/mvapich2/mvapich2-2.2-gcc-4.9.3/include TYPE STRING)
-   VISIT_OPTION_DEFAULT(VISIT_MPI_LD_FLAGS  "-L/usr/tce/packages/mvapich2/mvapich2-2.2-gcc-4.9.3/lib -Wl,-rpath=/usr/tce/packages/mvapich2/mvapich2-2.2-gcc-4.9.3/lib" TYPE STRING)
+   VISIT_OPTION_DEFAULT(VISIT_MPI_CXX_FLAGS -I/usr/tce/packages/mvapich2/mvapich2-2.3-gcc-4.9.3/include TYPE STRING)
+   VISIT_OPTION_DEFAULT(VISIT_MPI_C_FLAGS   -I/usr/tce/packages/mvapich2/mvapich2-2.3-gcc-4.9.3/include TYPE STRING)
+   VISIT_OPTION_DEFAULT(VISIT_MPI_LD_FLAGS  "-L/usr/tce/packages/mvapich2/mvapich2-2.3-gcc-4.9.3/lib -Wl,-rpath=/usr/tce/packages/mvapich2/mvapich2-2.3-gcc-4.9.3/lib" TYPE STRING)
    VISIT_OPTION_DEFAULT(VISIT_MPI_LIBS     mpich mpl)
-   VISIT_OPTION_DEFAULT(VISIT_PARALLEL_RPATH  "/usr/tce/packages/mvapich2/mvapich2-2.2-gcc-4.9.3/lib")
+   VISIT_OPTION_DEFAULT(VISIT_PARALLEL_RPATH  "/usr/tce/packages/mvapich2/mvapich2-2.3-gcc-4.9.3/lib")
 
 VisIt_ was then manually built with the following steps.
 
 .. code:: bash
 
-   tar zxf visit3.0.0b.tar.gz
-   cp kickit.cmake visit3.0.0b/src/config-site
-   cd visit3.0.0b
+   tar zxf visit3.0.1.tar.gz
+   cp kickit.cmake visit3.0.1/src/config-site
+   cd visit3.0.1
    mkdir build
    cd build
-   /usr/workspace/wsa/visit/visit/thirdparty_shared/3.0.0b/toss3/cmake/3.9.3/linux-x86_64_gcc-4.9/bin/cmake \
+   /usr/workspace/wsa/visit/visit/thirdparty_shared/3.0.1/toss3/cmake/3.9.3/linux-x86_64_gcc-4.9/bin/cmake \
    ../src -DCMAKE_BUILD_TYPE:STRING=Release \
    -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON -DVISIT_PARADIS:BOOL=ON
    make -j 16 package
@@ -139,7 +142,7 @@ to enable building the Uintah reader.
    env PAR_COMPILER=/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-gcc-4.9.3/bin/mpicc \
     PAR_COMPILER_CXX=/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-gcc-4.9.3/bin/mpicxx \
     PAR_INCLUDE=-I/usr/tce/packages/spectrum-mpi/ibm/spectrum-mpi-rolling-release/include \
-    ./build_visit3_0_0b \
+    ./build_visit3_0_1 \
     --no-thirdparty --no-visit \
     --cmake --python --vtk --qt --qwt \
     --adios --adios2 --advio --boost --cfitsio --cgns --conduit \
@@ -147,7 +150,7 @@ to enable building the Uintah reader.
     --mili --moab --mxml --netcdf --openssl --p7zip --pidx \
     --silo --szip --vtkm --vtkh --xdmf --zlib \
     --mesagl --uintah --parallel \
-    --thirdparty-path /usr/workspace/wsa/visit/visit/thirdparty_shared/3.0.0b/blueos \
+    --thirdparty-path /usr/workspace/wsa/visit/visit/thirdparty_shared/3.0.1/blueos \
     --makeflags -j16
 
 This built the third party libraries and generated a ``lassen708.cmake``
@@ -159,7 +162,7 @@ was changed to
    ##
    ## Setup VISITHOME & VISITARCH variables.
    ##
-   SET(VISITHOME /usr/workspace/wsa/visit/visit/thirdparty_shared/3.0.0b/blueos)
+   SET(VISITHOME /usr/workspace/wsa/visit/visit/thirdparty_shared/3.0.1/blueos)
    SET(VISITARCH linux-ppc64le_gcc-4.9)
    VISIT_OPTION_DEFAULT(VISIT_SLIVR TRUE TYPE BOOL)
 
@@ -182,12 +185,12 @@ VisIt_ was then manually built with the following steps.
 
 .. code:: bash
 
-   tar zxf visit3.0.0b.tar.gz
-   cp kickit.cmake visit3.0.0b/src/config-site
-   cd visit3.0.0b
+   tar zxf visit3.0.1.tar.gz
+   cp kickit.cmake visit3.0.1/src/config-site
+   cd visit3.0.1
    mkdir build
    cd build
-   /usr/workspace/wsa/visit/visit/thirdparty_shared/3.0.0b/blueos/cmake/3.9.3/linux-ppc64le_gcc-4.9/bin/cmake \
+   /usr/workspace/wsa/visit/visit/thirdparty_shared/3.0.1/blueos/cmake/3.9.3/linux-ppc64le_gcc-4.9/bin/cmake \
    ../src -DCMAKE_BUILD_TYPE:STRING=Release \
    -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON
    make -j 16 package
