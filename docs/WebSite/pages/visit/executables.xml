@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <page>
   <title><![CDATA[VisIt Executables]]></title>
-  <IM>LLNL-WEB-772983</IM>
+  <IM>LLNL-WEB-780056</IM>
   <owner><![CDATA[Page Owner Name]]></owner>
-  <lastchanged><![CDATA[April 29, 2019]]></lastchanged>
+  <lastchanged><![CDATA[July 8, 2019]]></lastchanged>
   <template><![CDATA[l2]]></template> 
   <content>
     <![CDATA[
@@ -36,6 +36,50 @@
 
 <p>VisIt is supported by the Department of Energy with funding from the Advanced Simulation and Computing Program and the Scientific Discovery through Advanced Computing Program.</p>
 
+<h2>VisIt 3.0.1</h2>
+
+<ul>
+  <li><a href="simulation/computer-codes/visit/releases/release-notes-3.0.1">VisIt release notes</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/3.0.1/visit-install3_0_1">VisIt install script</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/3.0.1/INSTALL_NOTES">VisIt install notes</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/3.0.1/visit_md5_checksums">VisIt md5 checksums</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/3.0.1/visit_sha1_checksums">VisIt sha1 checksums</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/3.0.1/visit_sha256_checksums">VisIt sha256 checksums</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/3.0.1/visit_filesizes">VisIt file sizes</a><br><br> </li>
+</ul>
+
+<br /><br />
+
+<table class="table table-striped" border="0" cellpadding="3" cellspacing="1">
+        <tr> 
+          <th width="615">Platform</th>
+          <th width="138">Executable</th>
+        </tr>
+        <tr>
+          <td>Windows (10 / 8 / 7) 64 bit<br />
+          Visual Studio 2017</td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/3.0.1/visit3.0.1_x64.exe">Download</a></td>
+        </tr>
+        <tr>
+          <td>Mac OS X 10.13 - Intel 64 bit<br />
+          Darwin 10.13, Darwin Kernel Version 17.7.0, clang-900.39.2, MPICH<br />
+          <i>(Includes parallel VisIt with self-contained MPICH MPI, Uintah. Works on Mac OS X 10.13 and later.)</i></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/3.0.1/VisIt-3.0.1-10.13.dmg">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64 bit<br />
+          Redhat Enterprise Linux 7.5, 4.18.9-1.el7.elrepo.x86_64 #1 SMP, gcc 4.8.5<br />
+          <i>(Includes parallel VisIt with self-contained MPICH MPI)</i></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/3.0.1/visit3_0_1.linux-x86_64-rhel7.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64 bit<br />
+          Redhat Enterprise Linux 7.5, 4.18.9-1.el7.elrepo.x86_64 #1 SMP, gcc 4.8.5<br />
+          <i>(Includes parallel VisIt with self-contained MPICH MPI and Mesa support for rendering without a display. Only use on servers without a display.)</i></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/3.0.1/visit3_0_1.linux-x86_64-rhel7-wmesa.tar.gz">Download</a></td>
+        </tr>
+      </table>  
+  
 <h2>VisIt 3.0</h2>
 
 <ul>
