@@ -36,6 +36,12 @@
 #
 # Modifications:
 #
+#   Kathleen Biagas, Fri Jul 19 12:13:02 PDT 2019
+#   Added vtkIOCore in support of building plugins vs install on Windows.
+#   It is a direct depencency for this library, and CMake automagically pulls
+#   it in when compiling VisIt, even if not listed, but not when building
+#   the plugins.
+#
 #****************************************************************************/
 
 SET(LIGHTWEIGHT_VISIT_VTK_SOURCES

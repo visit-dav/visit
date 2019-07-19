@@ -38,6 +38,9 @@
 #   Kathleen Biagas, Thu Nov  8 10:08:38 PST 2018
 #   Added string replacments related to VISIT_MESAGL_DIR.
 #
+#   Kathleen Biagas, Fri Jul 19 12:12:16 PDT 2019
+#   Filter out path from OSPRAY libraries.
+#
 #******************************************************************************
 
 

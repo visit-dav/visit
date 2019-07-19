@@ -44,7 +44,8 @@
 #
 #    Kathleen Biagas, Thu Jul 18 10:39:23 PDT 2019
 #    Add special handling for tbb, ospray, embree. Move some code to
-#    non-windows.
+#    non-windows. Remove slivr libraries from the suppression list as they
+#    are no longer part of VisIt.
 #
 #****************************************************************************/
 cmake_policy(SET CMP0011 NEW)

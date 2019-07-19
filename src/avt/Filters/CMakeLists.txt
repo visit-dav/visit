@@ -73,6 +73,12 @@
 #   Eric Brugger, Tue Aug 28 14:35:30 PDT 2018
 #   I replaced support for vtkm with vtkh.
 #
+#   Kathleen Biagas, Fri Jul 19 12:13:02 PDT 2019
+#   Added vtkCommonMath, vtkCommonTransforms, vtkFiltersGeneral in support
+#   of building plugins vs install on Windows. They are direct depencencies
+#   for this library, and CMake automagically pulls them in when compiling
+#   VisIt even if not listed, but not when building the plugins.
+#
 #****************************************************************************/
 
 SET(AVTFILTERS_SOURCES
