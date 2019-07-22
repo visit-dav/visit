@@ -186,36 +186,36 @@ avtDatasetToDatasetFilter::PostExecute(void)
         debug5 << GetType() << ": Setting output variable to be " 
                << pipelineVariable << " after execution." << endl;
         OutputSetActiveVariable(pipelineVariable);
-        if (removeActiveVariableWhenDone)
-        {
-            debug5 << GetType() << ": Removing variable " << activeVariable
-                   << " after execution." << endl;
-            avtDataTree_p tree = GetDataTree();
-            bool    success;
-            tree->Traverse(CRemoveVariable, (void *)activeVariable, success);
-            GetOutput()->GetInfo().GetAttributes(). 
-                                                RemoveVariable(activeVariable);
-        }
+        // if (removeActiveVariableWhenDone)
+        // {
+        //     debug5 << GetType() << ": Removing variable " << activeVariable
+        //            << " after execution." << endl;
+        //     avtDataTree_p tree = GetDataTree();
+        //     bool    success;
+        //     tree->Traverse(CRemoveVariable, (void *)activeVariable, success);
+        //     GetOutput()->GetInfo().GetAttributes(). 
+        //                                         RemoveVariable(activeVariable);
+        // }
     }
 
     // Iterate through the secondary variables, removing them when needed.
     for (size_t i = 0; i < removeSecondaryVariable.size(); i++)
     {
-        if (removeSecondaryVariable[i] == true)
-        {
-            debug5 << GetType() << ": Removing secondary variable "
-                   << secondaryVarList[i] << " after execution." << endl;
-            avtDataTree_p tree = GetDataTree();
-            bool    success;
-            tree->Traverse(CRemoveVariable, (void *)secondaryVarList[i],
-                           success);
-            GetOutput()->GetInfo().GetAttributes(). 
-                                           RemoveVariable(secondaryVarList[i]);
-        } else
-        {
-            debug5 << GetType() << ": Leaving secondary variable "
-                   << secondaryVarList[i] << " after execution." << endl;
-        }
+        // if (removeSecondaryVariable[i] == true)
+        // {
+        //     debug5 << GetType() << ": Removing secondary variable "
+        //            << secondaryVarList[i] << " after execution." << endl;
+        //     avtDataTree_p tree = GetDataTree();
+        //     bool    success;
+        //     tree->Traverse(CRemoveVariable, (void *)secondaryVarList[i],
+        //                    success);
+        //     GetOutput()->GetInfo().GetAttributes(). 
+        //                                    RemoveVariable(secondaryVarList[i]);
+        // } else
+        // {
+        //     debug5 << GetType() << ": Leaving secondary variable "
+        //            << secondaryVarList[i] << " after execution." << endl;
+        // }
     }
 
     avtDatasetToDataObjectFilter::PostExecute();
@@ -265,8 +265,12 @@ avtDatasetToDatasetFilter::ExamineContract(avtContract_p s)
     strcpy(pipelineVariable, var);
 
     debug1 << "pipelineVariable: " << pipelineVariable << std::endl;
-    debug1 << "activeVariable: " << activeVariable << std::endl;
-    debug1 << "switchVariables: " << switchVariables << std::endl;
+    try {
+        debug1 << "activeVariable: " << activeVariable << std::endl;
+    } catch (const char* msg) {
+        debug1 << "Attempted to print activeVariable, but got this error:" << std::endl;
+        debug1 << msg << std::endl;
+    }
 
     if (switchVariables)
     {
