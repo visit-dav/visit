@@ -1,4 +1,7 @@
-#ifndef AVT_HISTOGRAM_SPECIFICATION_H
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
+
 #define AVT_HISTOGRAM_SPECIFICATION_H
 
 #include <pipeline_exports.h>
