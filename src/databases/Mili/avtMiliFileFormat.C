@@ -2245,6 +2245,58 @@ avtMiliFileFormat::ReadMiliVarToBuffer(char *varName,
 }
 
 
+//FIXME: testing
+// ****************************************************************************
+//  Method:  avtMiliFileFormat::GetTimeAndElementSpanVars
+//
+//  Purpose:
+//
+//  Arguments:
+//
+//  Programmer:  Alister Maguire
+//  Creation:    
+//
+//  Modifications
+//
+// ****************************************************************************
+
+vtkDataArray **
+avtMiliFileFormat::GetTimeAndElementSpanVars(intVector elementIds,
+                                             stringVector vars,
+                                             int *cycleRange)
+{
+    int numElems   = elementIds.size();
+    int numVars    = vars.size();
+    int spanSize   = cycleRange[1] - cycleRange[0];
+    int numArrays  = numElems * numVars;
+
+    vtkFloatArray **spanArrays = new vtkFloatArray *[numArrays];
+    
+    int spanIdx = 0;
+
+    for (int elIdx = 0; elIdx < numElems; ++elIdx)
+    {
+        for (int varIdx = 0; varIdx < numVars; ++varIdx)
+        {
+            vtkFloatArray *singleSpan = vtkFloatArray::New();
+            singleSpan->SetNumberOfComponents(1);
+            singleSpan->SetNumberOfTuples(spanSize);
+
+            float *spanPtr = (float *) singleSpan->GetVoidPointer(0);
+
+            for (int i = 0; i < spanSize; ++i)
+            {
+                spanPtr[i] = i;
+            }
+
+            spanArrays[spanIdx++] = singleSpan;
+        }
+    }
+
+    return (vtkDataArray **) spanArrays;
+}
+
+
 // ****************************************************************************
 //  Method:  avtMiliFileFormat::AddMiliVariableToMetaData
 //

@@ -52,6 +52,7 @@
 #include <avtDomainBoundaries.h>
 #include <avtDomainNesting.h>
 #include <avtFileFormatInterface.h>
+#include <avtMTMDFileFormatInterface.h>
 #include <avtMemory.h>
 #include <avtMixedVariable.h>
 #include <avtParallel.h>
@@ -3404,6 +3405,38 @@ avtGenericDatabase::GetAuxiliaryData(avtDataRequest_p spec,
         }
     }
 }
+
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::GetTimeAndElementSpanVars
+//
+//  Purpose:
+//
+//  Programmer: Alister Maguire
+//  Creation:   July 23, 2019
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+vtkDataArray **
+avtGenericDatabase::GetTimeAndElementSpanVars(intVector elements,
+                                              stringVector vars,
+                                              int *tsRange)
+{
+    avtMTMDFileFormatInterface *MTMDInterface = 
+        dynamic_cast<avtMTMDFileFormatInterface *> (Interface);
+
+    if (MTMDInterface != NULL)
+    {
+        vtkDataArray **spanArray = MTMDInterface->
+            GetTimeAndElementSpanVars(elements, vars, tsRange);
+        return spanArray;
+    }
+
+    return NULL;
+}
+
 
 // ****************************************************************************
 //  Method: avtGenericDatabase::PopulateSIL

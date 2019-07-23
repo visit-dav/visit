@@ -149,7 +149,10 @@ class DATABASE_API avtSourceFromDatabase : public avtOriginatingDatasetSource
     virtual void        GetDomainName(const std::string &, const int, 
                             const int, std::string &);
 
-    virtual int         GetFoo(void) { return 23; }//FIXME
+    virtual vtkDataArray **
+                        FetchTimeAndElementSpanVars(intVector,
+                                                    stringVector,
+                                                    int *);
 
     virtual void        ReleaseData(void);
 

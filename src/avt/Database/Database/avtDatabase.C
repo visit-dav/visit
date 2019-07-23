@@ -581,6 +581,32 @@ avtDatabase::GetOutput(const char *var, int ts)
 
 
 // ****************************************************************************
+//  Method: avtDatabase::GetTimeAndElementSpanVar
+//
+//  Purpose:
+//
+//  Arguments:
+//
+//  Returns:    
+//
+//  Programmer: Alister Maguire
+//  Creation:   July 23, 2019
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+vtkDataArray **
+avtDatabase::GetTimeAndElementSpanVars(intVector elements, 
+                                       stringVector vars,
+                                       int *tsRange)
+{
+    //TODO: add debugging info here. 
+    return NULL;
+}
+
+
+// ****************************************************************************
 //  Method: avtDatabase::PopulateDataObjectInformation
 //
 //  Purpose:

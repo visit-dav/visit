@@ -138,6 +138,46 @@ avtMTMDFileFormatInterface::GetVar(int ts, int dom, const char *var)
 
 
 // ****************************************************************************
+//  Method: avtMTMDFileFormatInterface::GetTimeAndElementSpanVars
+//
+//  Purpose:
+//
+//  Arguments:
+//
+//  Returns:    
+//
+//  Progrmamer: Alister Maguire
+//  Creation:   July 23, 2019
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+vtkDataArray **
+avtMTMDFileFormatInterface::GetTimeAndElementSpanVars(intVector elements,
+                                                      stringVector vars,
+                                                      int *tsRange)
+{
+    int tsGroups[2];
+    int localRange[2];
+  
+    //FIXME: what are these ts groups? Can our range span several
+    //       groups?? It sounds like MTMD files are allowed to have
+    //       chunks of timesteps... We may need to merge here if 
+    //       we encounter chunks.
+    tsGroups[0] = GetTimestepGroupForTimestep(tsRange[0]);
+    localRange[0] = GetTimestepWithinGroup(tsRange[0]);
+
+    //tsGroups[1] = GetTimestepGroupForTimestep(tsRange[1]);
+    localRange[1] = GetTimestepWithinGroup(tsRange[1]);
+
+    return chunks[tsGroups[0]]->GetTimeAndElementSpanVars(elements, 
+                                                          vars,
+                                                          localRange);
+}
+
+
+// ****************************************************************************
 //  Method: avtMTMDFileFormatInterface::GetVectorVar
 //
 //  Purpose:

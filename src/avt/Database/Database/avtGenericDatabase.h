@@ -338,6 +338,9 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
                                                 const char *type, void *args);
     virtual avtDataTree_p      GetOutput(avtDataRequest_p,
                                          avtSourceFromDatabase *);
+    virtual vtkDataArray     **GetTimeAndElementSpanVars(intVector,
+                                                         stringVector,
+                                                         int *);
 
     virtual void               FreeUpResources(void);
     virtual int                NumStagesForFetch(avtDataRequest_p);

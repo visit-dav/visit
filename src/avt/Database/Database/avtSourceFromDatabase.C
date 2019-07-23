@@ -631,6 +631,30 @@ avtSourceFromDatabase::GetDomainName(const std::string &var, const int ts,
 }
 
 
+//FIXME: testing
+// ****************************************************************************
+//  Method: avtSourceFromDatabase::FetchTimeAndElementSpanVars
+//
+//  Purpose:
+//
+//  Arguments:
+//
+//  Programmer: Alister Maguire
+//  Creation:   Tue Jul 23 10:14:41 PDT 2019
+//
+// ****************************************************************************
+
+vtkDataArray **
+avtSourceFromDatabase::FetchTimeAndElementSpanVars(intVector elements,
+                                                   stringVector vars,
+                                                   int *tsRange)
+{
+    return database->GetTimeAndElementSpanVars(elements,
+                                               vars,
+                                               tsRange);
+}
+
+
 // ****************************************************************************
 //  Method: avtSourceFromDatabase::QueryCoords
 //

@@ -7,8 +7,9 @@
 // ************************************************************************* //
 
 #include <avtOriginatingSource.h>
-
 #include <avtMetaData.h>
+
+#include <vtkDataArray.h>
 
 #include <DebugStream.h>
 #include <TimingsManager.h>
@@ -797,6 +798,30 @@ avtOriginatingSource::FetchArbitraryVTKObject(const char *name, int domain,
                                               int ts, const char *type)
 {
     debug1 << "Asked to fetch object, but don't know how to do that." << endl;
+    debug1 << "This means caching will not work; this case is not expected"
+           << endl;
+    return NULL;
+}
+
+
+//FIXME: testing
+// ****************************************************************************
+//  Method: avtOriginatingSource::FetchTimeAndElementSpanVars
+//
+//  Purpose:
+//
+//  Programmer: Alister Maguire
+//  Creation:   Tue Jul 23 10:14:41 PDT 2019
+//
+// ****************************************************************************
+
+vtkDataArray **
+avtOriginatingSource::FetchTimeAndElementSpanVars(intVector elementIds,
+                                                  stringVector vars,
+                                                  int *cycleRange)
+{
+    debug1 << "Asked to fetch time and element spanning variables, " << endl;
+    debug1 << "but don't know how to do that." << endl;
     debug1 << "This means caching will not work; this case is not expected"
            << endl;
     return NULL;

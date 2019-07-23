@@ -300,6 +300,12 @@ class DATABASE_API avtDatabase
                                                 VoidRefList &,
                                                 const char *type,void *args)=0;
 
+    //TODO: should we add a new query that this relies on? See Query methods
+    //      below.
+    virtual vtkDataArray      **GetTimeAndElementSpanVars(intVector,
+                                                          stringVector,
+                                                          int *);
+
     avtDatabaseMetaData        *GetMetaData(int stateIndex,
                                     bool forceReadAllCyclesTimes = false,
                                     bool forceReadThisStateCycleTime = false,
