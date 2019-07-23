@@ -145,6 +145,34 @@ avtMTMDFileFormat::GetVectorVar(int, int, const char *)
 }
 
 
+//FIXME: testing
+// ****************************************************************************
+//  Method: avtMTMDFileFormat::GetTimeAndElementSpanVars
+//
+//  Purpose:
+//
+//  Arguments:
+//      <unnamed>    A vector of elements to retrieve. 
+//      <unnamed>    A vector of variables to retrieve for each element.  
+//      <unnamed>    The time range to retreive. 
+//
+//  Returns:     Normally a series of elements and variables that span 
+//               a defined time range. This one throws an exception. 
+//
+//  Programmer:  Alister Maguire
+//  Creation:    July 23, 2019
+//
+// ****************************************************************************
+
+vtkDataArray **
+avtMTMDFileFormat::GetTimeAndElementSpanVars(intVector, 
+                                             stringVector,
+                                             int *)
+{
+    EXCEPTION0(ImproperUseException);
+}
+
+
 // ****************************************************************************
 //  Method: avtMTMDFileFormat::PopulateDatabaseMetaData
 //

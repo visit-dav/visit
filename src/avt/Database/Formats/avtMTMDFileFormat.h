@@ -15,6 +15,8 @@
 
 #include <vector>
 
+#include <vectortypes.h>
+
 #include <void_ref_ptr.h>
 
 
@@ -82,6 +84,10 @@ class DATABASE_API avtMTMDFileFormat : public avtFileFormat
     virtual vtkDataSet    *GetMesh(int, int, const char *) = 0;
     virtual vtkDataArray  *GetVar(int, int, const char *) = 0;
     virtual vtkDataArray  *GetVectorVar(int, int, const char *);
+
+    virtual vtkDataArray **GetTimeAndElementSpanVars(intVector,
+                                                     stringVector,
+                                                     int *);
 
     virtual void           ActivateTimestep(int ts)
                                { avtFileFormat::ActivateTimestep(); };

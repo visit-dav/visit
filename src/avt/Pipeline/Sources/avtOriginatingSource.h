@@ -127,6 +127,8 @@ class PIPELINE_API avtOriginatingSource : virtual public avtQueryableSource
                                        void *args, avtContract_p,
                                        VoidRefList &);
 
+    virtual int                    GetFoo(void) { return 0; }; //FIXME
+
     virtual vtkObject             *FetchArbitraryVTKObject(const char *name,
                                                            int dom, int ts,
                                                            const char *type);
