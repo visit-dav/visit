@@ -264,12 +264,22 @@ avtDatasetToDatasetFilter::ExamineContract(avtContract_p s)
     pipelineVariable = new char[strlen(var) + 1];
     strcpy(pipelineVariable, var);
 
-    debug1 << "pipelineVariable: " << pipelineVariable << std::endl;
-    try {
+    if (pipelineVariable != NULL) {
+        debug1 << "pipelineVariable: " << pipelineVariable << std::endl;
+    } else {
+        debug1 << "pipelineVariable is NULL" << std::endl;
+    }
+
+    if (activeVariable != NULL) {
         debug1 << "activeVariable: " << activeVariable << std::endl;
-    } catch (const char* msg) {
-        debug1 << "Attempted to print activeVariable, but got this error:" << std::endl;
-        debug1 << msg << std::endl;
+    } else {
+        debug1 << "activeVariable is NULL" << std::endl;
+    }
+
+    if (switchVariables != NULL) {
+        debug1 << "switchVariables: " << switchVariables << std::endl;
+    } else {
+        debug1 << "switchVariables is NULL" << std::endl;
     }
 
     if (switchVariables)
@@ -287,6 +297,7 @@ avtDatasetToDatasetFilter::ExamineContract(avtContract_p s)
         for (size_t i = 0; i < var2nd.size(); i++)
         {
             const char *v2 = *(var2nd[i]);
+            debug5 << "Secondary variable: " << v2 << std::endl;
             if (strcmp(v2, activeVariable) == 0)
             {
                 haveVariable = true;
