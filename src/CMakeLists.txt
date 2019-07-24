@@ -1,8 +1,8 @@
-#*****************************************************************************
 # Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
 # Project developers.  See the top-level LICENSE file for dates and other
 # details.  No copyright assignment is required to contribute to VisIt.
-#
+
+#*****************************************************************************
 # Modifications:
 #
 #   Mark C. Miller, Wed Jan 13 18:30:38 PST 2010
@@ -421,7 +421,7 @@
 #    Eric Brugger, Wed Jun 26 10:06:57 PDT 2019
 #    Removed the CMM reader.
 #
-#****************************************************************************/
+#****************************************************************************
 
 CMAKE_MINIMUM_REQUIRED(VERSION 3.8 FATAL_ERROR)
 
