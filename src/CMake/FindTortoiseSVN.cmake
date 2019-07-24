@@ -1,3 +1,7 @@
+# Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+# Project developers.  See the top-level LICENSE file for dates and other
+# details.  No copyright assignment is required to contribute to VisIt.
+
 # - Extract information from a subversion working copy using TortoiseSVN
 # The module defines the following variables:
 #  TortoiseSVN_EXECUTABLE - path to svn command line client
