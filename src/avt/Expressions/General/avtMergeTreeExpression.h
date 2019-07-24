@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
-//                      avtLocalThresholdExpression.C                        //
+//                      avtMergeTreeExpression.h                             //
 // ************************************************************************* //
 #ifndef AVT_MERGETREE_EXPRESSION_H
 #define AVT_MERGETREE_EXPRESSION_H

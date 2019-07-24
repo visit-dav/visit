@@ -2,11 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-/*****************************************************************************
-* Originating Author:  Richard Cook 925-423-9605 c.2011-01-03
-* This file encapsulates the old "dumpfile-based" code, which is capable of 
-* very detailed analysis, but cannot work in parallel.
-*****************************************************************************/
+// Originating Author:  Richard Cook 925-423-9605 c.2011-01-03
+// This file encapsulates the old "dumpfile-based" code, which is capable of 
+// very detailed analysis, but cannot work in parallel.
 
 #include <avtSTSDFileFormat.h>
 #include "avtparaDISOptions.h"

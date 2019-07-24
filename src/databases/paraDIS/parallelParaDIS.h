@@ -2,12 +2,11 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-/*****************************************************************************
-* Originating Author:  Richard Cook 925-423-9605 c.2010-12-29
-*  This file is to provide support for the new parallel file format created 
-*  by the ParaDIS team in consultation with Rich Cook, in order to 
-*  speed up visualization and enable larger data to be visualized. 
-*****************************************************************************/
+// Originating Author:  Richard Cook 925-423-9605 c.2010-12-29
+//  This file is to provide support for the new parallel file format created 
+//  by the ParaDIS team in consultation with Rich Cook, in order to 
+//  speed up visualization and enable larger data to be visualized. 
+
 #include <vector>
 #include <string>
 #include <DebugStream.h>
