@@ -33,7 +33,9 @@
       VTMParser.C
     </Files>
     <LIBS>
+      vtkFiltersGeneral
       vtkIOXML
+      vtkIOXMLParser
     </LIBS>
     <Attribute name="" purpose="" persistent="true">
     </Attribute>

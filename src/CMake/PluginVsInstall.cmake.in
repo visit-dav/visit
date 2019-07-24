@@ -110,6 +110,9 @@
 #   Eric Brugger, Wed Jun 26 10:01:32 PDT 2019
 #   Removed the CCM reader.
 #
+#   Kathleen Biagas, Fri Jul 19 12:11:05 PDT 2019
+#   Added ZLIB. Removed SLIVR. Added zlib to MFEM include.
+#
 #****************************************************************************/
 
 ##
@@ -186,6 +189,12 @@ set(VISIT_COMMON_INCLUDES
     ${VISIT_INCLUDE_DIR}/visit/common/utility
 )
 
+set(HAVE_LIBZ @HAVE_LIBZ@)
+if(HAVE_LIBZ)
+    set(ZLIB_INCLUDE_DIR ${VISIT_INCLUDE_DIR}/zlib/include)
+    list(APPEND VISIT_COMMON_INCLUDES ${ZLIB_INCLUDE_DIR})
+endif()
+
 # VisIt options
 set(VISIT_PYTHON_SCRIPTING       @VISIT_PYTHON_SCRIPTING@)
 set(VISIT_SERVER_COMPONENTS_ONLY @VISIT_SERVER_COMPONENTS_ONLY@)
@@ -227,20 +236,6 @@ set(QT_MOC_EXECUTABLE        ${VISIT_BINARY_DIR}/moc)
 # Set up Python
 set(PYTHON_INCLUDE_PATH    ${VISIT_INCLUDE_DIR}@python_include_relative_path@)
 set(PYTHON_LIBRARY         ${VISIT_LIBRARY_DIR}/@PYLIB@)
-
-# Set up SLIVR
-if(VISIT_SLIVR)
-    set(SLIVR_INCLUDE_DIR
-        ${VISIT_INCLUDE_DIR}/visit/third_party_builtin/slivr
-        ${VISIT_INCLUDE_DIR}/visit/third_party_builtin/slivr/slivr
-        ${VISIT_INCLUDE_DIR}/visit/third_party_builtin/slivr/teem-1.9.0-src/src
-        ${VISIT_INCLUDE_DIR}/visit/third_party_builtin/slivr/teem-1.9.0-src/src/teem
-    )
-    set(SLIVR_GUI_IMPL    QvisCMap2Display.C QvisCMap2Widget.C)
-    set(SLIVR_GUI_HDR     QvisCMap2Display.h QvisCMap2Widget.h)
-    set(SLIVR_LIB         slivrG slivrV)
-    add_definitions(-DHAVE_LIBSLIVR)
-endif()
 
 if(VISIT_OSPRAY)
     set(OSPRAY_INCLUDE_DIR    ${VISIT_INCLUDE_DIR})
@@ -338,7 +333,8 @@ if(VISIT_PARALLEL)
     set(CONDUIT_MPI_LIB @CONDUIT_MPI_LIB@)
 endif()
 
-set(MFEM_INCLUDE_DIR  ${VISIT_INCLUDE_DIR}/mfem/include;${CONDUIT_INCLUDE_DIR})
+# mfem include, fudge because we know that the includes should be
+set(MFEM_INCLUDE_DIR  ${VISIT_INCLUDE_DIR}/mfem/include;${CONDUIT_INCLUDE_DIR};${ZLIB_INCLUDE_DIR})
 set(MFEM_LIBRARY_DIR  ${VISIT_LIBRARY_DIR} ${VISIT_ARCHIVE_DIR})
 set(MFEM_LIB @MFEM_LIB@)
 
