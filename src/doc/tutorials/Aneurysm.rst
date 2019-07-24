@@ -37,7 +37,7 @@ Modify the view by rotating and zooming in the viewer window.
 Modify the Mesh plot settings
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-1. Double click on the Mesh plot to open the Mesh Plot Attributes Window.
+1. Double click on the Mesh plot to open the Mesh plot attributes window.
 
 .. figure:: images/Aneurysm-MeshAttributes.png
 
@@ -47,7 +47,7 @@ Modify the Mesh plot settings
 
   * *Mesh color*
   * *Opaque color*
-  * *Opaque mode* - When the Mesh plot's opaque mode is set to automatic, the Mesh plot will be drawn in opaque mode unless it is forced to share the visualization window with other plots, at which point the Mesh plot is drawn in wireframe mode. When the Mesh plot is drawn in wireframe mode, only the edges of each externally visible cell face are drawn, which prevents the Mesh plot from interfering with the appearance of other plots. In addition to having an automatic opaque mode, the Mesh plot can be forced to be drawn in opaque mode or wireframe mode by clicking the On or Off. Best demonstrated with the pressure pseudocolor plot present.  
+  * *Opaque mode* - When the Mesh plot's opaque mode is set to automatic, the Mesh plot will be drawn in opaque mode unless it is forced to share the visualization window with other plots, at which point the Mesh plot is drawn in wireframe mode. When the Mesh plot is drawn in wireframe mode, only the edges of each externally visible cell face are drawn, which prevents the Mesh plot from interfering with the appearance of other plots. In addition to having an automatic opaque mode, the Mesh plot can be forced to be drawn in opaque mode or wireframe mode by selecting the *On* or *Off*. This is best demonstrated with the Pseudocolor plot of pressure present.  
   * *Show internal zones*
 
 You will need to click *Apply* to commit the settings to your plot.
@@ -72,9 +72,9 @@ about the simulation mesh.
 
    * This returns the number of vertices in the mesh
 
-Note: The terms **zones**, **elements**, and **cells** are overloaded in
-scientific visualization, as are the terms **nodes**, **points**, and
-**vertices**.
+Note: The terms "zones", "elements", and "cells" are overloaded in
+scientific visualization, as are the terms "nodes", "points", and
+"vertices".
 
 Additional exercises
 ~~~~~~~~~~~~~~~~~~~~
@@ -133,13 +133,13 @@ to extract this data.
 First, we need to set our query options to use timestep as the independent
 variable for our query.
 
-1. Got to *Controls->Query over time options*.
+1. Go to *Controls->Query over time options*.
 2. Select *Timestep*.
 3. Click *Apply* and *Dismiss*.
  
 .. figure:: images/Aneurysm-QueryOverTimeAttributes.png
 
-   The query over time attributes window.
+   The QueryOverTime attributes window.
 
 Now we can execute the *Max* query on all of our time steps and collect the
 results into a curve.
@@ -335,7 +335,7 @@ Plotting streamlines of velocity
 2. Open the IntegralCurve operator attributes window.
 3. Go to the *Source* section on the *Integration* tab.
 4. Set the *Source type* to *Circle*.
-5. Set the *Origin* to the value returned from the max query: "3.45115 3.0 5.54927", excluding any commas in the input text box.
+5. Set the *Origin* to the value returned from the max query: "3.45115 3 5.54927", excluding any commas in the input text box.
 6. Set the  *Normal* to the y-axis: "0 1 0".
 7. Set the  *Up axis* to the z-axis: "0 0 1".
 8. Set the *Radius* to "0.12".
@@ -397,7 +397,7 @@ We will modify our previous IntergralCurve options to create pathlines.
 
 6. Click *Apply* and *Dismiss*.
 
-This will process all 200 files in the dataset and construct the Pathlines
+This will process all 200 files in the dataset and construct the pathlines
 that originate at our seed points.  
 
 .. figure:: images/Aneurysm-Pathlines.png
@@ -530,10 +530,8 @@ Calculating the flux of a velocity field through a surface
 ----------------------------------------------------------
 
 To calculate a flux, we will need the original velocity vector, the normal
-vector of the surface, and VisIt's Flux Operator. We will calculate the flux
-through a cross-slice located at Y=3, at the beginning of the artery. We
-are assuming that you have open the datafile series, and that you start
-with a blank page.
+vector of the surface, and VisIt_'s Flux Operator. We will calculate the flux
+through a cross-slice located at Y=3, at the beginning of the artery.
 
 Creating the slice and showing velocity glyphs
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -541,51 +539,53 @@ Creating the slice and showing velocity glyphs
 First we will directly plot the velocity vectors that exist on the slice
 through the 3D mesh. 
 
-1. Go to *Add->Vector->velocity*.
-2. Open the Vector plot attributes window.
-3. Go to the *Vectors* tab and set the *Fixed number* to "40".
-4. Go to the *Glyphs* tab. 
-5. Set *Arrow body* to *Cylinder*.
-6. Set *Geometry Quality* to *High*.
+1. Delete any existing plots.
+2. Go to *Add->Vector->velocity*.
+3. Open the Vector plot attributes window.
+4. Go to the *Vectors* tab and set the *Fixed number* to "40".
+5. Go to the *Glyphs* tab. 
+6. Set *Arrow body* to *Cylinder*.
+7. Set *Geometry Quality* to *High*.
 
 .. figure:: images/Aneurysm-VectorAttributes.png
 
    The Vector plot attributes.
 
-7. Click *Apply* and *Dismiss*.
-8. Go to *Operators->Slicing->Slice*.
-9. Open the Slice operator attributes window.
-10. Set *Normal* to *Arbitrary* and to "0 1 0".
-11. Set *Origin* to *Intercept* and to "3".
-12. Unselect *Project to 2D*.
-13. Click *Make default*, *Apply* and *Dismiss*.
-14. Click *Draw*.
+8. Click *Apply* and *Dismiss*.
+9. Go to *Operators->Slicing->Slice*.
+10. Open the Slice operator attributes window.
+11. Set *Normal* to *Arbitrary* and to "0 1 0".
+12. Set *Origin* to *Intercept* and to "3".
+13. Uncheck *Project to 2D*.
+14. Click *Make default*, *Apply* and *Dismiss*.
+15. Click *Draw*.
 
 .. figure:: images/Aneurysm-SliceAttributes.png
 
    The Slice operator attributes.
 
-In order to give some context to the vector plot of velocity on the slice
-let's add a slice of velocity_magnitude and a mesh plot.
+In order to give some context to the Vector plot of velocity on the slice
+let's add a Pseudocolor plot of velocity_magnitude on the same slice and
+a Mesh plot.
 
-15. Go to *Add->Pseudocolor->velocity_magnitude*.
-16. Open the Pseudocolor plot attributes window.
-17. Set *Limits* to *Use Current Plot*.
-18. Click *Apply* and *Dismiss*.
-19. Go to *Operators->Slicing->Slice*.
-20. Click *Draw*.
-21. Go to *Add->Mesh->Mesh*.
-22. Open the Mesh plot attributes window.
-23. Set *Mesh color* to *Custom* and select a medium grey color.
-24. Click *Apply* and *Dismiss*.
-25. Click *Draw*.
-26. Zoom in to explore the plot results.
+16. Go to *Add->Pseudocolor->velocity_magnitude*.
+17. Open the Pseudocolor plot attributes window.
+18. Set *Limits* to *Use Current Plot*.
+19. Click *Apply* and *Dismiss*.
+20. Go to *Operators->Slicing->Slice*.
+21. Click *Draw*.
+22. Go to *Add->Mesh->Mesh*.
+23. Open the Mesh plot attributes window.
+24. Set *Mesh color* to *Custom* and select a medium grey color.
+25. Click *Apply* and *Dismiss*.
+26. Click *Draw*.
+27. Zoom in to explore the plot results.
 
 .. figure:: images/Aneurysm-VectorSlice.png
 
    The velocity on the slice.
 
-The vector plot uses glyphs to draw portions of the instantaneous vector
+The Vector plot uses glyphs to draw portions of the instantaneous vector
 field. The arrows are colored according to the speed at each point (the
 magnitude of the velocity vector). Next we create an expression to evaluate
 the vectors normal to the Slice. These normals should all point in the Y
@@ -610,7 +610,7 @@ cell-by-cell basis.
 6. Click *Apply* and *Dismiss*.
 7. Return to the Vector plot and change its variable to "normals".
 
-You will then get the error message saying: *The 'normals' expression failed because The Surface normal expression can only be calculated on surfaces. Use the ExternalSurface operator to generate the external surface of this object. You must also use the DeferExpression operator to defer the evaluation of this expression until after the external surface operator*. In fact, VisIt cannot use the name *Mesh* which refers to the original 3D mesh. It needs to defer the evaluation until after the Slice operator is applied. Thus, we need to add the Defer Expression operator.
+You will then get the error message saying: *The 'normals' expression failed because The Surface normal expression can only be calculated on surfaces. Use the ExternalSurface operator to generate the external surface of this object. You must also use the DeferExpression operator to defer the evaluation of this expression until after the external surface operator*. In fact, VisIt_ cannot use the name *Mesh* which refers to the original 3D mesh. It needs to defer the evaluation until after the Slice operator is applied. Thus, we need to add the Defer Expression operator.
 
 8. Go to *Operators->Analysis->DeferExpression*.
 9. Open the DeferExpression operator attributes window.
