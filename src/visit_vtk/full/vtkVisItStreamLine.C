@@ -1,27 +1,16 @@
-/*=========================================================================
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
-  Program:   Visualization Toolkit
-  Module:    $RCSfile: vtkVisItStreamLine.cxx,v $
+// Brad Whitlock, Wed Nov 6 13:19:58 PST 2002
+// The reason this code is kulled out from vtkStreamLine is that I believe
+// vtkStreamline's epsilon value that it uses to stop streamline generation
+// is too small and causes the code to go into an infinite loop with some
+// of our datasets.
 
-  Copyright (c) Ken Martin, Will Schroeder, Bill Lorensen 
-  All rights reserved.
-  See Copyright.txt or http://www.kitware.com/Copyright.htm     for details.
+// Brad Whitlock, Mon Feb 10 12:34:43 PDT 2003
+// I update the code so it works again on Windows with the new VTK.
 
-     This software is distributed WITHOUT ANY WARRANTY; without even 
-     the implied warranty of MERCHANTABILITY or FITNESS     for A PARTICULAR 
-     PURPOSE.  See the above copyright notice     for more in  formation.
-
-
-  Brad Whitlock, Wed Nov 6 13:19:58 PST 2002
-  The reason this code is kulled out from vtkStreamLine is that I believe
-  vtkStreamline's epsilon value that it uses to stop streamline generation
-  is too small and causes the code to go into an infinite loop with some
-  of our datasets.
-
-  Brad Whitlock, Mon Feb 10 12:34:43 PDT 2003
-  I update the code so it works again on Windows with the new VTK.
-
-=========================================================================*/
 #include "vtkVisItStreamLine.h"
 
 #include <vtkCellArray.h>
