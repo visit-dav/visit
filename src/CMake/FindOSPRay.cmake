@@ -7,6 +7,9 @@
 #   Kevin Griffin, Fri May 3 18:44:57 PDT 2019
 #   Add logic to install libraries on OSX correctly.
 #
+#   Kathleen Biagas, Thu Jul 18 10:41:50 PDT 2019
+#   Add special handling of tbb and embree installs for linux.
+#
 #*****************************************************************************
 
 IF(VISIT_OSPRAY)
@@ -106,7 +109,7 @@ IF(VISIT_OSPRAY)
         IF( (NOT "${l}" STREQUAL "optimized") AND
             (NOT "${l}" STREQUAL "debug"))
           GET_FILENAME_COMPONENT(_name_ ${l} NAME_WE)
-          IF( (NOT WIN32) AND (NOT APPLE) AND
+          IF(LINUX AND
               (NOT "${_name_}" STREQUAL "libtbb_debug") AND
               (NOT "${_name_}" STREQUAL "libtbbmalloc_debug") AND
               (NOT "${_name_}" STREQUAL "libtbb") AND
@@ -114,7 +117,28 @@ IF(VISIT_OSPRAY)
               (NOT "${_name_}" STREQUAL "libembree3") )
             THIRD_PARTY_INSTALL_LIBRARY(${l}.0)
           ENDIF()
-          THIRD_PARTY_INSTALL_LIBRARY(${l})
+
+          if(LINUX AND ("${_name_}" MATCHES "embree" OR
+                        "${_name_}" MATCHES "tbb"))
+              # embree and tbb are listed with their full extensions of
+              # .so.[version]. The simple .so is also needed in order for
+              # plugins to link correctly against an install.  If the .so
+              # is a symlink to the full version (as with embree) the install
+              # library logic will correctly install both the full verison and
+              # the .so symlink, so only the .so is needed to be sent to the
+              # function.
+              get_filename_component(_tmp_name ${l} NAME)
+              get_filename_component(_tmp_path ${l} PATH)
+              GET_FILENAME_SHORTEXT(_tmp_ext ${_tmp_name})
+              string(REPLACE "${_tmp_ext}" "" _tmp_name ${_tmp_name})
+              THIRD_PARTY_INSTALL_LIBRARY(${_tmp_path}/${_tmp_name})
+              # tbb's .so isn't a symlink, so install full version too
+              if("${_name_}" MATCHES "tbb")
+                  THIRD_PARTY_INSTALL_LIBRARY(${l})
+              endif()
+          else()
+              THIRD_PARTY_INSTALL_LIBRARY(${l})
+          endif()
         ENDIF()
       ENDFOREACH()
     ENDIF()

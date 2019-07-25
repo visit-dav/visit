@@ -5,7 +5,13 @@
 #****************************************************************************
 # Modifications:
 #
-#****************************************************************************
+#   Kathleen Biagas, Fri Jul 19 12:13:02 PDT 2019
+#   Added vtkIOCore in support of building plugins vs install on Windows.
+#   It is a direct depencency for this library, and CMake automagically pulls
+#   it in when compiling VisIt, even if not listed, but not when building
+#   the plugins.
+#
+#****************************************************************************/
 
 SET(LIGHTWEIGHT_VISIT_VTK_SOURCES
 ClipCasesHex.C  
@@ -55,6 +61,6 @@ ADD_LIBRARY(lightweight_visit_vtk
     ${LIGHTWEIGHT_VISIT_VTK_SOURCES}
 )
 
-TARGET_LINK_LIBRARIES(lightweight_visit_vtk visitcommon vtkCommonCore vtkFiltersCore vtkIOLegacy)
+TARGET_LINK_LIBRARIES(lightweight_visit_vtk visitcommon vtkCommonCore vtkFiltersCore vtkIOCore vtkIOLegacy)
 
 VISIT_INSTALL_TARGETS(lightweight_visit_vtk)

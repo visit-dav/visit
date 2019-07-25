@@ -22,7 +22,7 @@ MPICH.
 
 .. code:: bash
 
-  ./build_visit3_0_0b --mpich
+  ./build_visit3_0_1 --mpich
 
 If your system already has MPI installed on it, which is typically the case
 with a large system at a computer center, you can set several environment
@@ -35,7 +35,7 @@ The following example uses a system installed MPI library.
        PAR_COMPILER_CXX=/usr/packages/mvapich2/bin/mpicxx \
        PAR_INCLUDE=-I/usr/packages/mvapich2/include \
        PAR_LIBS=-lmpl \
-  ./build_visit3_0_0b --parallel
+  ./build_visit3_0_1 --parallel
 
 When running in parallel, the user will typically use scalable rendering for
 rendering images in parallel. VisIt does this through the use of the Mesa 3D
@@ -45,7 +45,7 @@ building with the Mesa 3D library.
 
 .. code:: bash
 
-  ./build_visit3_0_0b --mpich --osmesa
+  ./build_visit3_0_1 --mpich --osmesa
 
 Building with Mesa as the OpenGL implementation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -60,7 +60,7 @@ instead of the system OpenGL.
 
 .. code:: bash
 
-  ./build_visit3_0_0b --mesagl
+  ./build_visit3_0_1 --mesagl
 
 The difference between ``--mesagl`` and ``--osmesa``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -82,7 +82,7 @@ libraries, mpich and osmesa.
 
 .. code:: bash
 
-  ./build_visit3_0_0b --optional --mpich --osmesa --download-only
+  ./build_visit3_0_1 --optional --mpich --osmesa --download-only
 
 Unfortunately, due to the way the code that builds Python is implemented,
 some Python libraries will not be downloaded. Here is the list of commands
@@ -90,13 +90,13 @@ to download those additional libraries.
 
 .. code:: bash
 
-  wget http://portal.nersc.gov/project/visit/releases/3.0.0b/third_party/Imaging-1.1.7.tar.gz
-  wget http://portal.nersc.gov/project/visit/releases/3.0.0b/third_party/setuptools-28.0.0.tar.gz
-  wget http://portal.nersc.gov/project/visit/releases/3.0.0b/third_party/Cython-0.25.2.tar.gz
-  wget http://portal.nersc.gov/project/visit/releases/3.0.0b/third_party/numpy-1.14.1.zip
-  wget http://portal.nersc.gov/project/visit/releases/3.0.0b/third_party/pyparsing-1.5.2.tar.gz
-  wget http://portal.nersc.gov/project/visit/releases/3.0.0b/third_party/requests-2.5.1.tar.gz
-  wget http://portal.nersc.gov/project/visit/releases/3.0.0b/third_party/seedme-python-client-v1.2.4.zip
+  wget http://portal.nersc.gov/project/visit/releases/3.0.1/third_party/Imaging-1.1.7.tar.gz
+  wget http://portal.nersc.gov/project/visit/releases/3.0.1/third_party/setuptools-28.0.0.tar.gz
+  wget http://portal.nersc.gov/project/visit/releases/3.0.1/third_party/Cython-0.25.2.tar.gz
+  wget http://portal.nersc.gov/project/visit/releases/3.0.1/third_party/numpy-1.14.1.zip
+  wget http://portal.nersc.gov/project/visit/releases/3.0.1/third_party/pyparsing-1.5.2.tar.gz
+  wget http://portal.nersc.gov/project/visit/releases/3.0.1/third_party/requests-2.5.1.tar.gz
+  wget http://portal.nersc.gov/project/visit/releases/3.0.1/third_party/seedme-python-client-v1.2.4.zip
 
 It's possible that the list could change and the above list becomes outdated.
 In this case you can run ``build_visit`` to just build Python and that will
@@ -105,13 +105,13 @@ Python.
 
 .. code:: bash
 
-  ./build_visit3_0_0b --no-thirdparty --no-visit --python
+  ./build_visit3_0_1 --no-thirdparty --no-visit --python
 
 Different versions of ``build_visit``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 When you use a version of ``build_visit`` that has a version number in it,
-for example ``build_visit3_0_0b`` then it builds that tagged version of
+for example ``build_visit3_0_1`` then it builds that tagged version of
 VisIt_. If the version of ``build_visit`` was from the develop branch of
 VisIt_, then it will grab the latest version of VisIt_ from the devlop
 branch. If the version of ``build_visit`` came from a release candidate
@@ -122,8 +122,8 @@ Troubleshooting ``build_visit`` failures
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 When ``build_visit`` runs, it generates a log file with ``_log`` added to
-the name of the script. For example, if you are running ``build_visit3_0_0b``
-then the log file will be named ``build_visit3_0_0b_log``. The error that
+the name of the script. For example, if you are running ``build_visit3_0_1``
+then the log file will be named ``build_visit3_0_1_log``. The error that
 caused the failure should be near the end of the log file. When ``build_visit``
 finishes running, it will leave the directories that it used to build
 the packages intact. You can go into the directory of the package that
