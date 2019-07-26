@@ -100,7 +100,7 @@ You may also explicitly indicate the *time* associated with a file (or group of 
 using the ``!TIME`` directive like so...
 
 .. code-block:: none
-   :emphasize-lines: 1
+   :emphasize-lines: 1,2,7
 
    !NBLOCKS 4
    !TIME 1.01
@@ -138,8 +138,12 @@ Some examples are below. The Point3D file...
     1 1 1 7
 
 Defines a collection of 8 points in 3 dimensions have a scalar variable named *value*.
+Below, the ``#coordflag`` directive is used to define the same collection of 8 points in
+3 dimensions as the previous example except where the columns holding the z-coordinate
+and the scalar variable are interleaved.
 
 .. code-block:: none
+   :emphasize-lines: 2
 
     x y value z
     #coordflag xyvz
@@ -152,10 +156,11 @@ Defines a collection of 8 points in 3 dimensions have a scalar variable named *v
     1 1 6 0
     1 1 7 1
 
-Defines the same collection of 8 points in 3 dimensions as the previous example except
-where the columns holding the z-coordinate and the scalar variable are interleaved.
+In the example below, the ``#coordflag`` directive is used to a collection of 3 points in
+*2 dimensions* where each point has a velocity magnitude value associated with it.
 
 .. code-block:: none
+   :emphasize-lines: 2
 
     x y velocity
     #coordflag xyv
@@ -163,5 +168,3 @@ where the columns holding the z-coordinate and the scalar variable are interleav
     0 1 1.01
     1 0 2.02
 
-Defines a collection of 3 points in 2 dimensions where each point has a velocity magnitude
-value associated with it.
