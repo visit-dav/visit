@@ -16,7 +16,7 @@ you the highest probability of success.
 
 .. code:: bash
 
-  ./build_visit3_0_0b
+  ./build_visit3_0_1
 
 Building with multiple cores
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -31,7 +31,7 @@ using 4 cores.
 
 .. code:: bash
 
-  ./build_visit3_0_0b --makeflags -j4
+  ./build_visit3_0_1 --makeflags -j4
 
 Specifying the third party library install location
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -45,7 +45,7 @@ installing the third party libraries in a another location.
 
 .. code:: bash
 
-  ./build_visit3_0_0b --thirdparty-path /usr/gapps/visit/third_party
+  ./build_visit3_0_1 --thirdparty-path /usr/gapps/visit/third_party
 
 Building with the HDF5 and Silo libraries
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -56,7 +56,7 @@ building HDF5 and Silo.
 
 .. code:: bash
 
-  ./build_visit3_0_0b --hdf5 --silo
+  ./build_visit3_0_1 --hdf5 --silo
 
 Building the stable optional libraries
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -67,7 +67,7 @@ specifies building the more reliable of the optional I/O libraries.
 
 .. code:: bash
 
-  ./build_visit3_0_0b --optional
+  ./build_visit3_0_1 --optional
 
 Using a VisIt_ source code tar file
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -75,11 +75,11 @@ Using a VisIt_ source code tar file
 You can also have visit use the prepackaged source code for a specific version
 of VisIt_ instead of doing a git download of the source code. The tar file
 should be considerably smaller than a git clone. The following example uses
-the VisIt_ source code corresponding to the official 3.0.0b release of VisIt_.
+the VisIt_ source code corresponding to the official 3.0.1 release of VisIt_.
 
 .. code:: bash
 
-  ./build_visit3_0_0b --optional --tarball visit3.0.0b.tar.gz
+  ./build_visit3_0_1 --optional --tarball visit3.0.1.tar.gz
 
 If ``build_visit`` is interrupted
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -107,7 +107,7 @@ if you built using a git clone.
 
 .. code:: bash
 
-  visit3.0.0b/build/bin/visit
+  visit3.0.1/build/bin/visit
 
 if you built using a tar file.
 
@@ -124,7 +124,7 @@ if you built using a git clone.
 
 .. code:: bash
 
-  cd visit3.0.0b/build
+  cd visit3.0.1/build
   make package
 
 if you built using a tar file.

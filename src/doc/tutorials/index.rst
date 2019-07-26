@@ -23,6 +23,7 @@ Contents:
     VisIt_Basics
     Data_Analysis
     Scripting
+    Aneurysm
 
 .. Indices and tables
 .. ==================

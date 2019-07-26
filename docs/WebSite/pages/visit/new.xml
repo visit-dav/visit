@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <page>
   <title><![CDATA[What's New in VisIt]]></title>
-  <IM>LLNL-WEB-772983</IM>
+  <IM>LLNL-WEB-780056</IM>
   <owner><![CDATA[Page Owner Name]]></owner>
-  <lastchanged><![CDATA[April 29, 2019]]></lastchanged>
+  <lastchanged><![CDATA[July 8, 2019]]></lastchanged>
   <template><![CDATA[l2]]></template> 
   <content>
     <![CDATA[
@@ -22,34 +22,16 @@
 	<li><a href="simulation/computer-codes/visit/faqs">FAQs</a></li>
 </ul>
 
+<h2>July, 2019 - VisIt 3.0.1 released</h2>
+<p>VisIt is a distributed, parallel visualization and graphical analysis tool for data defined on two- and three-dimensional (2D and 3D) meshes. Version 3.0.1 contains about twenty bug-fixes and new features. For a complete list of changes see the <a href="simulation/computer-codes/visit/releases/release-notes-3.0.1">VisIt 3.0.1 Release Notes</a>.</p>
 <h2>April, 2019 - VisIt 3.0 released</h2>
-<p>VisIt is a distributed, parallel visualization and graphical analysis tool for data defined on two- and three-dimensional (2D and 3D) meshes. Version 3.0 contains many bug-fixes and new features. For a complete list of changes see the <a href="simulation/computer-codes/visit/releases/release-notes-3.0.0">VisIt 3.0 Release Notes</a>.</p>
+<p>VisIt 3.0 contains many bug-fixes and new features. For a complete list of changes see the <a href="simulation/computer-codes/visit/releases/release-notes-3.0.0">VisIt 3.0 Release Notes</a>.</p>
 <h4>1.  VisIt now supports outputting Cinema databases.</h4>
 <p>Cinema is an image-based database that offers low-cost interaction with simulation data. When viewing a Cinema database through a Cinema viewer, the viewer merely changes the image from the database in response to changes in camera angle and other visualization parameters rather than performing potentially expensive I/O, computational and rendering operations.</p>
 <h4>2.  VisIt now supports rendering 3D images using the OSPRay.</h4>
 <p>OSPRay features interactive CPU rendering capabilities geared towards scientific visualization applications. Advanced shading effects such as ambient occlusion, shadows, and transparency can be rendered interactively, enabling new insights into data exploration.</p>
 <h4>3.  VisIt now supports plot animations.</h4>
 <p>VisIt has been enhanced so plots can provide custom animation behaviors. These behaviors are plot-specific and are independent of the time slider animation controls. For example, the <i>Vector</i> plot can alter the length of its glyphs periodically lengthening and shortening them. Plot animation is enabled for the <i>Curve</i> and <i>Vector</i> plugins.</p>
-<h2>February, 2019 - VisIt 3.0 Beta released</h2>
-<p>VisIt 3.0 Beta contains many bug-fixes and new features. For a complete list of changes see the <a href="simulation/computer-codes/visit/releases/release-notes-3.0.0">VisIt 3.0 Beta Release Notes</a>.</p>
-<h2>October, 2018 - VisIt 2.13.3 released</h2>
-<p>VisIt 2.13.3 contains two dozen bug-fixes and new features. For a complete list of changes see the <a href="simulation/computer-codes/visit/releases/release-notes-2.13.3">VisIt 2.13.3 Release Notes</a>.</p>
-<h2>May, 2018 - VisIt 2.13.2 released</h2>
-<p>VisIt 2.13.2 contains several critical bug-fixes. For a complete list of changes see the <a href="simulation/computer-codes/visit/releases/release-notes-2.13.2">VisIt 2.13.2 Release Notes</a>.</p>
-<h2>March, 2018 - VisIt 2.13.1 released</h2>
-<p>VisIt 2.13.1 contains over three dozen bug-fixes. For a complete list of changes see the <a href="simulation/computer-codes/visit/releases/release-notes-2.13.1">VisIt 2.13.1 Release Notes</a>.</p>
-<h2>October, 2017 - VisIt 2.13 released</h2>
-<p>VisIt 2.13 contains many bug-fixes and new features. For a complete list of changes see the <a href="simulation/computer-codes/visit/releases/release-notes-2.13.0">VisIt 2.13 Release Notes</a>.</p>
-<h4>1.  VisIt now supports OpenSWR for rendering.</h4>
-<p>You can now use build_visit to build a version of VisIt that supports using OpenSWR for software rendering. OpenSWR is an Intel software renderer that is now part of Mesa.</p>
-<h4>2.  Added an SPCTH reader.</h4>
-<p>VisIt now supports reading files in the SPCTH file format. SPCTH is the file format used by CTH, a popular simulation code developed by the Sandia National Laboratory.</p>
-<h4>3.  Many enhancements and bug fixes have been made to the pick and query features.</h4>
-<ul>
-<li>Improved the accuracy and performance of picking on lines/line meshes in 3D.</li>
-<li>Corrected many pick bugs.</li>
-<li>Changed the default for Queries that operate on either <i>Original</i> or <i>Actual</i> data from <i>Original</i> to <i>Actual</i>. This makes them consistent with all the other queries that only operate on <i>Actual</i> data.</li>
-</ul>
 
 [Go to <a href="simulation/computer-codes/visit/releases">Archive of Releases</a>]
 
