@@ -168,3 +168,6 @@ In the example below, the ``#coordflag`` directive is used to a collection of 3 
     0 1 1.01
     1 0 2.02
 
+There are some
+`additional examples <https://www.visitusers.org/index.php?title=Reading_point_data#Using_Point3D_files>`_
+of Point3D files on the VisIt_ wiki pages.
