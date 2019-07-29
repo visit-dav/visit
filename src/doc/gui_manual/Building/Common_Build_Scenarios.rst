@@ -312,3 +312,190 @@ VisIt_ was then manually built with the following steps.
    -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON -DVISIT_PARADIS:BOOL=ON
    make -j 8 package
 
+Summit, a Linux Power9 BlueOS cluster
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+``build_visit`` was run to generate the third party libraries. In this
+case the system MPI was used, so information about the system MPI had to
+be provided with environment variables and the ``--parallel`` flag had
+to be specified. In this case, a few of the optional third party libraries
+do not build on the system so all the desired optional third party libraries
+had to be explicitly listed. Also, the system OpenGL implementation was
+outdated and ``--mesagl`` had to be included to provide an OpenGL
+implementation suitable for VisIt_. Lastly, the Uintah library was built
+to enable building the Uintah reader.
+
+.. code:: bash
+
+env PAR_COMPILER=/autofs/nccs-svm1_sw/summit/.swci/1-compute/opt/spack/20180914/linux-rhel7-ppc64le/gcc-5.4.0/spectrum-mpi-10.3.0.1-20190611-nkt2caaysuzqimvyhxzkceqfapciwyo7/bin/mpicc \
+    PAR_COMPILER_CXX=/autofs/nccs-svm1_sw/summit/.swci/1-compute/opt/spack/20180914/linux-rhel7-ppc64le/gcc-5.4.0/spectrum-mpi-10.3.0.1-20190611-nkt2caaysuzqimvyhxzkceqfapciwyo7/bin/mpicc \
+    PAR_INCLUDE=-I/autofs/nccs-svm1_sw/summit/.swci/1-compute/opt/spack/20180914/linux-rhel7-ppc64le/gcc-5.4.0/spectrum-mpi-10.3.0.1-20190611-nkt2caaysuzqimvyhxzkceqfapciwyo7/include \
+    ./build_visit3_0_1 \
+    --no-thirdparty --no-visit \
+    --cmake --python --vtk --qt --qwt \
+    --adios --adios2 --advio --boost --cfitsio --cgns --conduit \
+    --gdal --glu --h5part --hdf5 --icet --llvm --mfem \
+    --mili --moab --mxml --netcdf --openssl --p7zip --pidx \
+    --silo --szip --vtkm --vtkh --xdmf --zlib \
+    --mesagl --uintah --parallel \
+    --thirdparty-path /autofs/nccs-svm1_home1/brugger1/visit/thirdparty_shared/3.0.1 \
+    --makeflags -j8
+
+This built the third party libraries and generated a ``lassen708.cmake``
+config site file. The ``Setup VISITHOME & VISITARCH variables.`` section
+was changed to
+
+.. code:: bash
+
+   ##
+   ## Setup VISITHOME & VISITARCH variables.
+   ##
+   SET(VISITHOME /usr/workspace/wsa/visit/visit/thirdparty_shared/3.0.1/blueos)
+   SET(VISITARCH linux-ppc64le_gcc-4.9)
+   VISIT_OPTION_DEFAULT(VISIT_SLIVR TRUE TYPE BOOL)
+
+
+The ``Parallel build Setup.`` section was changed to
+
+.. code:: bash
+
+   ##
+   ## Parallel Build Setup.
+   ##
+   VISIT_OPTION_DEFAULT(VISIT_PARALLEL ON TYPE BOOL)
+   VISIT_OPTION_DEFAULT(VISIT_MPI_CXX_FLAGS -I/usr/tce/packages/spectrum-mpi/ibm/spectrum-mpi-rolling-release/include TYPE STRING)
+   VISIT_OPTION_DEFAULT(VISIT_MPI_C_FLAGS   -I/usr/tce/packages/spectrum-mpi/ibm/spectrum-mpi-rolling-release/include TYPE STRING)
+   VISIT_OPTION_DEFAULT(VISIT_MPI_LD_FLAGS  "-L/usr/tce/packages/spectrum-mpi/ibm/spectrum-mpi-rolling-release/lib -Wl,-rpath=/usr/tce/packages/spectrum-mpi/ibm/spectrum-mpi-rolling-release/lib" TYPE STRING)
+   VISIT_OPTION_DEFAULT(VISIT_MPI_LIBS     mpi_ibm)
+   VISIT_OPTION_DEFAULT(VISIT_PARALLEL_RPATH  "/usr/tce/packages/spectrum-mpi/ibm/spectrum-mpi-rolling-release/lib")
+
+VisIt_ was then manually built with the following steps.
+
+.. code:: bash
+
+   tar zxf visit3.0.1.tar.gz
+   cp kickit.cmake visit3.0.1/src/config-site
+   cd visit3.0.1
+   mkdir build
+   cd build
+   /usr/workspace/wsa/visit/visit/thirdparty_shared/3.0.1/blueos/cmake/3.9.3/linux-ppc64le_gcc-4.9/bin/cmake \
+   ../src -DCMAKE_BUILD_TYPE:STRING=Release \
+   -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON
+   make -j 16 package
+
+Trinity, a Cray KNL cluster
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The system is set up to support the Intel compiler by default so we need
+to swap out the Intel environment for the GNU environment.
+
+.. code:: bash
+
+   module swap PrgEnv-intel/6.0.4 PrgEnv-gnu/6.0.4
+
+The Cray compiler wrappers are set up to do static linking, which causes
+a problem with building parallel hdf5. The linking can be changed to
+link dynamically by setting a couple of environment variables.
+
+.. code:: bash
+
+   export XTPE_LINK_TYPE=dynamic
+   export CRAYPE_LINK_TYPE=dynamic
+
+The linker has a bug that prevents VTK from building, which is fixed with
+the linker in binutils 2.32. Binutils was then manually built with the
+following steps.
+
+.. code:: bash
+
+   wget https://mirrors.ocf.berkeley.edu/gnu/binutils/binutils-2.32.tar.gz
+   mkdir /project/projectdirs/visit/thirdparty_shared/3.0.1/binutils
+   tar zxf binutils-2.32.tar.gz
+   cd binutils-2.32
+   ./configure --prefix=/usr/projects/views/visit/thirdparty_shared/3.0.1/binutils
+   make
+   make install
+
+The following lines in ``build_visit``
+
+.. code:: bash
+
+   vopts="${vopts} -DCMAKE_C_FLAGS:STRING=\"${C_OPT_FLAGS}\""
+   vopts="${vopts} -DCMAKE_CXX_FLAGS:STRING=\"${CXX_OPT_FLAGS}\""
+
+were changed to
+
+.. code:: bash
+
+   vopts="${vopts} -DCMAKE_C_FLAGS:STRING=\"${C_OPT_FLAGS} -B/usr/projects/views/visit/thirdparty_shared/3.0.1/binutils/bin\""
+   vopts="${vopts} -DCMAKE_CXX_FLAGS:STRING=\"${CXX_OPT_FLAGS} -B/usr/projects/views/visit/thirdparty_shared/3.0.1/binutils/bin\""
+
+to build VTK with the linker from binutils 2.32.
+
+``build_visit`` was run to generate the third party libraries. In this
+case the system MPI was used, so information about the system MPI had to
+be provided with environment variables and the ``--parallel`` flag had
+to be specified. In this case, all the required and optional third party
+libraries built without problem, so ``--required --optional`` could be
+used. Also, the system OpenGL implementation was outdated and ``--mesagl``
+had to be included to provide an OpenGL implementation suitable for
+VisIt_.
+
+.. code:: bash
+
+   env PAR_COMPILER=/opt/cray/pe/craype/2.5.16/bin/cc \
+       PAR_COMPILER_CXX=/opt/cray/pe/craype/2.5.16/bin/CC \
+       PAR_INCLUDE=-I/opt/cray/pe/mpt/7.7.4/gni/mpich-gnu/7.1/include \
+       PAR_LIBS="-L/opt/cray/pe/mpt/7.7.4/gni/mpich-gnu/7.1/lib -Wl,-rpath=/opt/cray/pe/mpt/7.7.4/gni/mpich-gnu/7.1/lib -lmpich" \
+    ./build_visit3_0_1 --required --optional --mesagl --parallel \
+    --no-visit --thirdparty-path /usr/projects/views/visit/thirdparty_shared/3.0.1 \
+    --makeflags -j6
+
+This built the third party libraries and generated a ``tr-fe2.cmake``
+config site file. The ``Setup VISITHOME & VISITARCH variables.`` section
+was changed to
+
+.. code:: bash
+
+   ##
+   ## Setup VISITHOME & VISITARCH variables.
+   ##
+   SET(VISITHOME /usr/projects/views/visit/thirdparty_shared/3.0.1)
+   SET(VISITARCH linux-x86_64_gcc-8.2)
+   VISIT_OPTION_DEFAULT(VISIT_SLIVR TRUE TYPE BOOL)
+
+The ``VISIT_C_FLAGS`` and ``VISIT_CXX_FLAGS`` were changed to
+
+.. code:: bash
+
+   VISIT_OPTION_DEFAULT(VISIT_C_FLAGS " -m64 -fPIC -fvisibility=hidden -B/usr/projects/views/visit/thirdparty_shared/3.0.1/binutils/bin" TYPE STRING)
+   VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS " -m64 -fPIC -fvisibility=hidden -B/usr/projects/views/visit/thirdparty_shared/3.0.1/binutils/bin" TYPE STRING)
+
+The ``Parallel build Setup.`` section was changed to
+
+.. code:: bash
+
+   ##
+   ## Parallel Build Setup.
+   ##
+   VISIT_OPTION_DEFAULT(VISIT_PARALLEL ON TYPE BOOL)
+   VISIT_OPTION_DEFAULT(VISIT_MPI_CXX_FLAGS -I/opt/cray/pe/mpt/7.7.4/gni/mpich-gnu/7.1/include TYPE STRING)
+   VISIT_OPTION_DEFAULT(VISIT_MPI_C_FLAGS   -I/opt/cray/pe/mpt/7.7.4/gni/mpich-gnu/7.1/include TYPE STRING)
+   VISIT_OPTION_DEFAULT(VISIT_MPI_LD_FLAGS  "-L/opt/cray/pe/mpt/7.7.4/gni/mpich-gnu/7.1/lib -Wl,-rpath=/opt/cray/pe/mpt/7.7.4/gni/mpich-gnu/7.1/lib" TYPE STRING)
+   VISIT_OPTION_DEFAULT(VISIT_MPI_LIBS     mpich)
+   VISIT_OPTION_DEFAULT(VISIT_PARALLEL_RPATH  "/opt/cray/pe/mpt/7.7.4/gni/mpich-gnu/7.1/lib")
+
+VisIt_ was then manually built with the following steps.
+
+.. code:: bash
+
+   tar zxf visit3.0.1.tar.gz
+   cp tr-fe2.cmake visit3.0.1/src/config-site
+   cd visit3.0.1
+   mkdir build
+   cd build
+   /usr/projects/views/visit/thirdparty_shared/3.0.1/cmake/3.9.3/linux-x86_64_gcc-8.2/bin/cmake \
+   ../src -DCMAKE_BUILD_TYPE:STRING=Release \
+   -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON -DVISIT_PARADIS:BOOL=ON
+   make -j 8 package
+
