@@ -196,7 +196,7 @@ done
 
 if test "$branch" = "trunk" ; then
     workingDir="test_trunk"
-    cmakeCmd="/usr/workspace/wsa/visit/visit/thirdparty_shared/3.0.0b/toss3/cmake/3.9.3/linux-x86_64_gcc-4.9/bin/cmake"
+    cmakeCmd="/usr/workspace/wsa/visit/visit/thirdparty_shared/3.0.1/toss3/cmake/3.9.3/linux-x86_64_gcc-4.9/bin/cmake"
 else
     workingDir="test_branch"
     cmakeCmd="/usr/gapps/visit/thirdparty_shared/2.12.0/cmake/3.0.2/linux-x86_64_gcc-4.4/bin/cmake"
