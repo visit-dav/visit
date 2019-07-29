@@ -1,14 +1,6 @@
-// ****************************************************************************
-//  Method: avtLocalThresholdExpression constructor destructor
-//
-//  Purpose:
-//      Defines the destructor.  Note: this should not be inlined in the header
-//      because it causes problems for certain compilers.
-//
-//  Programmer: Peer-Timo Bremer
-//  Creation:   August 8, 2016
-//
-// ****************************************************************************
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
 //                           avtMergeTreeExpression.C                        //

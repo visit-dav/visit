@@ -1,39 +1,8 @@
+# Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+# Project developers.  See the top-level LICENSE file for dates and other
+# details.  No copyright assignment is required to contribute to VisIt.
+
 #*****************************************************************************
-#
-# Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-# Produced at the Lawrence Livermore National Laboratory
-# LLNL-CODE-442911
-# All rights reserved.
-#
-# This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-# full copyright notice is contained in the file COPYRIGHT located at the root
-# of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-#
-# Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-# modification, are permitted provided that the following conditions are met:
-#
-#  - Redistributions of  source code must  retain the above  copyright notice,
-#    this list of conditions and the disclaimer below.
-#  - Redistributions in binary form must reproduce the above copyright notice,
-#    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-#    documentation and/or other materials provided with the distribution.
-#  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-#    be used to endorse or promote products derived from this software without
-#    specific prior written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-# AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-# IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-# ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-# LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-# DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-# DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-# SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-# CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-# LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-# OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-# DAMAGE.
-#
 # Modifications:
 #   David M. Camp, Th Jan 14 11:50:00 PST 2010
 #   Added new function ADD_TARGET_DEFINITIONS to add defines to targets.
@@ -109,6 +78,9 @@
 #
 #   Eric Brugger, Wed Jun 26 10:01:32 PDT 2019
 #   Removed the CCM reader.
+#
+#   Kathleen Biagas, Fri Jul 19 12:11:05 PDT 2019
+#   Added ZLIB. Removed SLIVR. Added zlib to MFEM include.
 #
 #****************************************************************************/
 
@@ -186,6 +158,12 @@ set(VISIT_COMMON_INCLUDES
     ${VISIT_INCLUDE_DIR}/visit/common/utility
 )
 
+set(HAVE_LIBZ @HAVE_LIBZ@)
+if(HAVE_LIBZ)
+    set(ZLIB_INCLUDE_DIR ${VISIT_INCLUDE_DIR}/zlib/include)
+    list(APPEND VISIT_COMMON_INCLUDES ${ZLIB_INCLUDE_DIR})
+endif()
+
 # VisIt options
 set(VISIT_PYTHON_SCRIPTING       @VISIT_PYTHON_SCRIPTING@)
 set(VISIT_SERVER_COMPONENTS_ONLY @VISIT_SERVER_COMPONENTS_ONLY@)
@@ -227,20 +205,6 @@ set(QT_MOC_EXECUTABLE        ${VISIT_BINARY_DIR}/moc)
 # Set up Python
 set(PYTHON_INCLUDE_PATH    ${VISIT_INCLUDE_DIR}@python_include_relative_path@)
 set(PYTHON_LIBRARY         ${VISIT_LIBRARY_DIR}/@PYLIB@)
-
-# Set up SLIVR
-if(VISIT_SLIVR)
-    set(SLIVR_INCLUDE_DIR
-        ${VISIT_INCLUDE_DIR}/visit/third_party_builtin/slivr
-        ${VISIT_INCLUDE_DIR}/visit/third_party_builtin/slivr/slivr
-        ${VISIT_INCLUDE_DIR}/visit/third_party_builtin/slivr/teem-1.9.0-src/src
-        ${VISIT_INCLUDE_DIR}/visit/third_party_builtin/slivr/teem-1.9.0-src/src/teem
-    )
-    set(SLIVR_GUI_IMPL    QvisCMap2Display.C QvisCMap2Widget.C)
-    set(SLIVR_GUI_HDR     QvisCMap2Display.h QvisCMap2Widget.h)
-    set(SLIVR_LIB         slivrG slivrV)
-    add_definitions(-DHAVE_LIBSLIVR)
-endif()
 
 if(VISIT_OSPRAY)
     set(OSPRAY_INCLUDE_DIR    ${VISIT_INCLUDE_DIR})
@@ -338,7 +302,8 @@ if(VISIT_PARALLEL)
     set(CONDUIT_MPI_LIB @CONDUIT_MPI_LIB@)
 endif()
 
-set(MFEM_INCLUDE_DIR  ${VISIT_INCLUDE_DIR}/mfem/include;${CONDUIT_INCLUDE_DIR})
+# mfem include, fudge because we know that the includes should be
+set(MFEM_INCLUDE_DIR  ${VISIT_INCLUDE_DIR}/mfem/include;${CONDUIT_INCLUDE_DIR};${ZLIB_INCLUDE_DIR})
 set(MFEM_LIBRARY_DIR  ${VISIT_LIBRARY_DIR} ${VISIT_ARCHIVE_DIR})
 set(MFEM_LIB @MFEM_LIB@)
 
