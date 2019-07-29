@@ -726,7 +726,6 @@ avtThresholdFilter::ThresholdOnRanges(vtkDataSet *in_ds,
 vtkDataSet *
 avtThresholdFilter::ThresholdToPointMesh(vtkDataSet *in_ds)
 {
-
     const stringVector curVariables = atts.GetListedVarNames();
     int curVarCount = (int)curVariables.size();
     int curVarNum;

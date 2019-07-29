@@ -565,9 +565,9 @@ class PIPELINE_API avtDataAttributes
                                { return constructMultipleCurves; }
 
     void                     SetForceRemoveFacesBeforeGhosts(bool doForce)
-                               { forceRemoveFacesBeforeGhosts = doForce; }; 
+                               { forceRemoveFacesBeforeGhosts = doForce; }
     bool                     GetForceRemoveFacesBeforeGhosts(void)
-                               { return forceRemoveFacesBeforeGhosts; };
+                               { return forceRemoveFacesBeforeGhosts; }
 
     void                     ResetAllExtents();
 
