@@ -76,10 +76,14 @@ class EXPRESSION_API avtPythonExpression : public avtExpressionFilter
     virtual int               GetVariableDimension(void);
     virtual bool              IsPointVariable(void);
 
-    virtual void              ProcessArguments(ArgsExpr*, ExprPipelineState *);
+    virtual void              ProcessArguments(ArgsExpr *, ExprPipelineState *);
+    virtual void              AddInputVariableName(const char *);
 
 
   protected:
+    // Keep track of this filter's input variables
+    std::vector<char *>       varnames;
+
     virtual void              Execute(void);
     virtual avtContract_p     ModifyContract(avtContract_p);
 
