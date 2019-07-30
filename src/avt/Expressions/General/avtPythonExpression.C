@@ -421,6 +421,35 @@ avtPythonExpression::ProcessArguments(ArgsExpr *args,
 }
 
 
+// ****************************************************************************
+//  Method: avtPythonExpression::AddInputVariableName
+//
+//  Purpose:
+//      Sets the variables that will be needed for this filter. Determines if
+//      input variable should be active or secondary.
+//
+//  Programmer: Eddie Rusu
+//  Creation:   Tue Jul 30 11:22:01 PDT 2019
+//
+// ****************************************************************************
+void
+avtPythonExpression::AddInputVariableName(const char* var)
+{
+    debug5 << "Entering avtPythonExpression::AddInputVariableName(const char*)"
+           << std::endl;
+    if (varnames.size() == 0)
+    {
+        SetActiveVariable(var);
+    }
+    else
+    {
+        AddSecondaryVariable(var);
+    }
+
+    varnames.push_back(strdup(var));
+    debug5 << "Exiting  avtPythonExpression::AddInputVariableName(const char*)"
+           << std::endl;
+}
 
 
 // ****************************************************************************
