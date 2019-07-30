@@ -186,7 +186,7 @@ VisIt_ was then manually built with the following steps.
 .. code:: bash
 
    tar zxf visit3.0.1.tar.gz
-   cp kickit.cmake visit3.0.1/src/config-site
+   cp lassen708.cmake visit3.0.1/src/config-site
    cd visit3.0.1
    mkdir build
    cd build
@@ -315,6 +315,20 @@ VisIt_ was then manually built with the following steps.
 Summit, a Linux Power9 BlueOS cluster
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+The system is set up to support the IBM XL compiler by default so we need
+to swap out the XL compiler for the GNU compiler.
+
+.. code:: bash
+
+   module swap xl/16.1.1-3 gcc/6.4.0
+
+There was an error building CMake, so we used the system CMake after
+module loading CMake 3.9.2.
+
+.. code:: bash
+
+   module load cmake/3.9.2
+
 ``build_visit`` was run to generate the third party libraries. In this
 case the system MPI was used, so information about the system MPI had to
 be provided with environment variables and the ``--parallel`` flag had
@@ -327,21 +341,21 @@ to enable building the Uintah reader.
 
 .. code:: bash
 
-env PAR_COMPILER=/autofs/nccs-svm1_sw/summit/.swci/1-compute/opt/spack/20180914/linux-rhel7-ppc64le/gcc-5.4.0/spectrum-mpi-10.3.0.1-20190611-nkt2caaysuzqimvyhxzkceqfapciwyo7/bin/mpicc \
-    PAR_COMPILER_CXX=/autofs/nccs-svm1_sw/summit/.swci/1-compute/opt/spack/20180914/linux-rhel7-ppc64le/gcc-5.4.0/spectrum-mpi-10.3.0.1-20190611-nkt2caaysuzqimvyhxzkceqfapciwyo7/bin/mpicc \
-    PAR_INCLUDE=-I/autofs/nccs-svm1_sw/summit/.swci/1-compute/opt/spack/20180914/linux-rhel7-ppc64le/gcc-5.4.0/spectrum-mpi-10.3.0.1-20190611-nkt2caaysuzqimvyhxzkceqfapciwyo7/include \
-    ./build_visit3_0_1 \
-    --no-thirdparty --no-visit \
-    --cmake --python --vtk --qt --qwt \
-    --adios --adios2 --advio --boost --cfitsio --cgns --conduit \
-    --gdal --glu --h5part --hdf5 --icet --llvm --mfem \
-    --mili --moab --mxml --netcdf --openssl --p7zip --pidx \
-    --silo --szip --vtkm --vtkh --xdmf --zlib \
-    --mesagl --uintah --parallel \
-    --thirdparty-path /autofs/nccs-svm1_home1/brugger1/visit/thirdparty_shared/3.0.1 \
-    --makeflags -j8
+   env PAR_COMPILER=/autofs/nccs-svm1_sw/summit/.swci/1-compute/opt/spack/20180914/linux-rhel7-ppc64le/gcc-6.4.0/spectrum-mpi-10.3.0.1-20190611-cyaenjgora6now2nusxzkfli4mzjnudx/bin/mpicc \
+       PAR_COMPILER_CXX=/autofs/nccs-svm1_sw/summit/.swci/1-compute/opt/spack/20180914/linux-rhel7-ppc64le/gcc-6.4.0/spectrum-mpi-10.3.0.1-20190611-cyaenjgora6now2nusxzkfli4mzjnudx/bin/mpicxx \
+       PAR_INCLUDE=-I/autofs/nccs-svm1_sw/summit/.swci/1-compute/opt/spack/20180914/linux-rhel7-ppc64le/gcc-6.4.0/spectrum-mpi-10.3.0.1-20190611-cyaenjgora6now2nusxzkfli4mzjnudx/include \
+       ./build_visit3_0_1 \
+       --no-thirdparty --no-visit \
+       --system-cmake --python --vtk --qt --qwt \
+       --adios --adios2 --advio --boost --cfitsio --cgns --conduit \
+       --gdal --glu --h5part --hdf5 --icet --llvm --mfem \
+       --mili --moab --mxml --netcdf --openssl --p7zip --pidx \
+       --silo --szip --vtkm --vtkh --xdmf --zlib \
+       --mesagl --uintah --parallel \
+       --thirdparty-path /autofs/nccs-svm1_home1/brugger1/visit/thirdparty_shared/3.0.1 \
+       --makeflags -j8
 
-This built the third party libraries and generated a ``lassen708.cmake``
+This built the third party libraries and generated a ``login1.cmake``
 config site file. The ``Setup VISITHOME & VISITARCH variables.`` section
 was changed to
 
@@ -350,8 +364,8 @@ was changed to
    ##
    ## Setup VISITHOME & VISITARCH variables.
    ##
-   SET(VISITHOME /usr/workspace/wsa/visit/visit/thirdparty_shared/3.0.1/blueos)
-   SET(VISITARCH linux-ppc64le_gcc-4.9)
+   SET(VISITHOME /autofs/nccs-svm1_home1/brugger1/visit/thirdparty_shared/3.0.1)
+   SET(VISITARCH linux-ppc64le_gcc-6.4)
    VISIT_OPTION_DEFAULT(VISIT_SLIVR TRUE TYPE BOOL)
 
 
@@ -363,25 +377,41 @@ The ``Parallel build Setup.`` section was changed to
    ## Parallel Build Setup.
    ##
    VISIT_OPTION_DEFAULT(VISIT_PARALLEL ON TYPE BOOL)
-   VISIT_OPTION_DEFAULT(VISIT_MPI_CXX_FLAGS -I/usr/tce/packages/spectrum-mpi/ibm/spectrum-mpi-rolling-release/include TYPE STRING)
-   VISIT_OPTION_DEFAULT(VISIT_MPI_C_FLAGS   -I/usr/tce/packages/spectrum-mpi/ibm/spectrum-mpi-rolling-release/include TYPE STRING)
-   VISIT_OPTION_DEFAULT(VISIT_MPI_LD_FLAGS  "-L/usr/tce/packages/spectrum-mpi/ibm/spectrum-mpi-rolling-release/lib -Wl,-rpath=/usr/tce/packages/spectrum-mpi/ibm/spectrum-mpi-rolling-release/lib" TYPE STRING)
+   VISIT_OPTION_DEFAULT(VISIT_MPI_CXX_FLAGS -I/autofs/nccs-svm1_sw/summit/.swci/1-compute/opt/spack/20180914/linux-rhel7-ppc64le/gcc-6.4.0/spectrum-mpi-10.3.0.1-20190611-cyaenjgora6now2nusxzkfli4mzjnudx/include TYPE STRING)
+   VISIT_OPTION_DEFAULT(VISIT_MPI_C_FLAGS   -I/autofs/nccs-svm1_sw/summit/.swci/1-compute/opt/spack/20180914/linux-rhel7-ppc64le/gcc-6.4.0/spectrum-mpi-10.3.0.1-20190611-cyaenjgora6now2nusxzkfli4mzjnudx/include TYPE STRING)
+   VISIT_OPTION_DEFAULT(VISIT_MPI_LD_FLAGS  "-L/autofs/nccs-svm1_sw/summit/.swci/1-compute/opt/spack/20180914/linux-rhel7-ppc64le/gcc-6.4.0/spectrum-mpi-10.3.0.1-20190611-cyaenjgora6now2nusxzkfli4mzjnudx/lib -Wl,-rpath=/autofs/nccs-svm1_sw/summit/.swci/1-compute/opt/spack/20180914/linux-rhel7-ppc64le/gcc-6.4.0/spectrum-mpi-10.3.0.1-20190611-cyaenjgora6now2nusxzkfli4mzjnudx/lib" TYPE STRING)
    VISIT_OPTION_DEFAULT(VISIT_MPI_LIBS     mpi_ibm)
-   VISIT_OPTION_DEFAULT(VISIT_PARALLEL_RPATH  "/usr/tce/packages/spectrum-mpi/ibm/spectrum-mpi-rolling-release/lib")
+   VISIT_OPTION_DEFAULT(VISIT_PARALLEL_RPATH  "/autofs/nccs-svm1_sw/summit/.swci/1-compute/opt/spack/20180914/linux-rhel7-ppc64le/gcc-6.4.0/spectrum-mpi-10.3.0.1-20190611-cyaenjgora6now2nusxzkfli4mzjnudx/lib")
+
+The compiler didn't like one of the boost header files, so it was manually
+patched.
+
+.. code:: bash
+
+   vi /autofs/nccs-svm1_home1/brugger1/visit/thirdparty_shared/3.0.1/boost/1_67_0/linux-ppc64le_gcc-6.4/include/boost/numeric/interval/detail/ppc_rounding_control.hpp
+
+   line 99:
+    namespace detail {
+
+    typedef union {
+   -   ::boost::long_long_type imode;
+   +   ::boost::ulong_long_type imode;
+      double dmode;
+    } rounding_mode_struct;
 
 VisIt_ was then manually built with the following steps.
 
 .. code:: bash
 
    tar zxf visit3.0.1.tar.gz
-   cp kickit.cmake visit3.0.1/src/config-site
+   cp login1.cmake visit3.0.1/src/config-site
    cd visit3.0.1
    mkdir build
    cd build
-   /usr/workspace/wsa/visit/visit/thirdparty_shared/3.0.1/blueos/cmake/3.9.3/linux-ppc64le_gcc-4.9/bin/cmake \
+   /autofs/nccs-svm1_sw/summit/.swci/0-core/opt/spack/20171006/linux-rhel7-ppc64le/gcc-4.8.5/cmake-3.9.2-lnpnk356fyio3b6rq5bdhr2djjirtsxk/bin/cmake \
    ../src -DCMAKE_BUILD_TYPE:STRING=Release \
    -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON
-   make -j 16 package
+   make -j 8 package
 
 Trinity, a Cray KNL cluster
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
