@@ -19,6 +19,7 @@ class Test1PythonExpression(SimplePythonExpression):
         self.description = "Auto-generated python expression from auto_py_filter_script.py"
         self.output_is_point_var = False
         self.output_dimension = 1
+        self.input_num_vars   = 2
     def derive_variable(self, ds_in, domain_id):
         # Globalize the names
         for var_name in self.input_var_names:
