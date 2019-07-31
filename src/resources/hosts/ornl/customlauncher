@@ -294,7 +294,7 @@ class ORNLLauncher(MainLauncher):
             return JobSubmitter_aprun_ORNL(self)
         elif launch[:4] == "qsub" or launch[:4] == "msub":
             return JobSubmitter_qsub_ORNL(self)
-        if launch[:4] == "bsub":
+        elif launch[:4] == "bsub":
             return JobSubmitter_bsub_ORNL(self)
         return super(ORNLLauncher, self).JobSubmitterFactory(launch)
 
