@@ -1,3 +1,5 @@
+.. image:: visit_404.png
+
 We're sorry but the page you requested is not available.
 
 This can sometimes be caused by something as simple as your browser's page
