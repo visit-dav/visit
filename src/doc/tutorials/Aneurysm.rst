@@ -419,10 +419,10 @@ Sharing automation script
 In this section we will render and save pathline trace in 20 steps. Then
 upload and share the rendered 20 images as a sequence and instuct SeedMe to
 encode a video from these set of images at 2 frames per second. A sample
-video can be seen `here <https://www.seedme.org/node/49054#videos>`_.
+video can be seen `here <https://www.seedme.org/node/49054#videos>`__.
 
 A detailed example with a brief explanation in the comments can be seen
-`here <https://bitbucket.org/seedme/seedme-python-client/src/master/demo.py?at=master&fileviewer=file-view-default>`_.
+`here <https://bitbucket.org/seedme/seedme-python-client/src/master/demo.py?at=master&fileviewer=file-view-default>`__.
 
 1. Go to *Controls->Command*.
 2. Find an empty tab.
