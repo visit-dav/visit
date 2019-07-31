@@ -4,7 +4,7 @@
     <Field name="host" type="string">summit.olcf.ornl.gov</Field>
     <Field name="userName" type="string">notset</Field>
     <Field name="hostAliases" type="string">login#</Field>
-    <Field name="directory" type="string">/autofs/nccs-svm1_home1/brugger1/visit</Field>
+    <Field name="directory" type="string">/sw/summit/visit</Field>
     <Field name="shareOneBatchJob" type="bool">false</Field>
     <Field name="sshPortSpecified" type="bool">false</Field>
     <Field name="sshPort" type="int">22</Field>
