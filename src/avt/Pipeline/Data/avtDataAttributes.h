@@ -243,6 +243,11 @@ class     avtWebpage;
 //    Kathleen Biagas, Thu Jun  1 08:47:13 PDT 2017
 //    Added ResetAllExtents.
 //
+//    Alister Maguire, Tue Jul 16 14:12:20 PDT 2019
+//    Added forceRemoveFacesBeforeGhosts along with a setter and getter. 
+//    This is to support unique conditions where we must remove faces
+//    first, regardless of other considerations. 
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataAttributes
@@ -559,6 +564,11 @@ class PIPELINE_API avtDataAttributes
     bool                     GetConstructMultipleCurves() const
                                { return constructMultipleCurves; }
 
+    void                     SetForceRemoveFacesBeforeGhosts(bool doForce)
+                               { forceRemoveFacesBeforeGhosts = doForce; }
+    bool                     GetForceRemoveFacesBeforeGhosts(void)
+                               { return forceRemoveFacesBeforeGhosts; }
+
     void                     ResetAllExtents();
 
   protected:
@@ -603,6 +613,7 @@ class PIPELINE_API avtDataAttributes
     avtExtents              *multiresExtents;
     double                   multiresCellSize;
     bool                     constructMultipleCurves;
+    bool                     forceRemoveFacesBeforeGhosts;
 
     avtExtents              *originalSpatial;
     avtExtents              *thisProcsOriginalSpatial;
