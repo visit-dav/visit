@@ -1,34 +1,35 @@
-#/usr/projects/views/visit/thirdparty_shared/3.0.1/cmake/3.9.3/linux-x86_64_gcc-8.2/bin/cmake
+#/autofs/nccs-svm1_sw/summit/.swci/0-core/opt/spack/20171006/linux-rhel7-ppc64le/gcc-4.8.5/cmake-3.9.2-lnpnk356fyio3b6rq5bdhr2djjirtsxk/bin/cmake
 ##
 ## ./build_visit3_0_1 generated host.cmake
-## created: Fri Jul 26 13:30:25 MDT 2019
-## system: Linux tr-fe2 4.4.180-94.97-default #1 SMP Tue Jun 11 08:19:03 UTC 2019 (c0632f4) x86_64 x86_64 x86_64 GNU/Linux
-## by: brugger
+## created: Mon Jul 29 17:51:41 EDT 2019
+## system: Linux login1 4.14.0-115.8.1.el7a.ppc64le #1 SMP Thu May 9 14:45:13 UTC 2019 ppc64le ppc64le ppc64le GNU/Linux
+## by: brugger1
 
 ##
 ## Setup VISITHOME & VISITARCH variables.
 ##
-SET(VISITHOME /usr/projects/views/visit/thirdparty_shared/3.0.1)
-SET(VISITARCH linux-x86_64_gcc-8.2)
+SET(VISITHOME /autofs/nccs-svm1_home1/brugger1/visit/thirdparty_shared/3.0.1)
+SET(VISITARCH linux-ppc64le_gcc-6.4)
 VISIT_OPTION_DEFAULT(VISIT_SLIVR TRUE TYPE BOOL)
+
 
 ## Compiler flags.
 ##
 VISIT_OPTION_DEFAULT(VISIT_C_COMPILER gcc TYPE FILEPATH)
 VISIT_OPTION_DEFAULT(VISIT_CXX_COMPILER g++ TYPE FILEPATH)
 VISIT_OPTION_DEFAULT(VISIT_FORTRAN_COMPILER no TYPE FILEPATH)
-VISIT_OPTION_DEFAULT(VISIT_C_FLAGS " -m64 -fPIC -fvisibility=hidden -B/usr/projects/views/visit/thirdparty_shared/3.0.1/binutils/bin" TYPE STRING)
-VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS " -m64 -fPIC -fvisibility=hidden -B/usr/projects/views/visit/thirdparty_shared/3.0.1/binutils/bin" TYPE STRING)
+VISIT_OPTION_DEFAULT(VISIT_C_FLAGS " -fPIC -fvisibility=hidden" TYPE STRING)
+VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS " -fPIC -fvisibility=hidden" TYPE STRING)
 
 ##
 ## Parallel Build Setup.
 ##
 VISIT_OPTION_DEFAULT(VISIT_PARALLEL ON TYPE BOOL)
-VISIT_OPTION_DEFAULT(VISIT_MPI_CXX_FLAGS -I/opt/cray/pe/mpt/7.7.4/gni/mpich-gnu/7.1/include TYPE STRING)
-VISIT_OPTION_DEFAULT(VISIT_MPI_C_FLAGS   -I/opt/cray/pe/mpt/7.7.4/gni/mpich-gnu/7.1/include TYPE STRING)
-VISIT_OPTION_DEFAULT(VISIT_MPI_LD_FLAGS  "-L/opt/cray/pe/mpt/7.7.4/gni/mpich-gnu/7.1/lib -Wl,-rpath=/opt/cray/pe/mpt/7.7.4/gni/mpich-gnu/7.1/lib" TYPE STRING)
-VISIT_OPTION_DEFAULT(VISIT_MPI_LIBS     mpich)
-VISIT_OPTION_DEFAULT(VISIT_PARALLEL_RPATH  "/opt/cray/pe/mpt/7.7.4/gni/mpich-gnu/7.1/lib")
+VISIT_OPTION_DEFAULT(VISIT_MPI_CXX_FLAGS -I/autofs/nccs-svm1_sw/summit/.swci/1-compute/opt/spack/20180914/linux-rhel7-ppc64le/gcc-6.4.0/spectrum-mpi-10.3.0.1-20190611-cyaenjgora6now2nusxzkfli4mzjnudx/include TYPE STRING)
+VISIT_OPTION_DEFAULT(VISIT_MPI_C_FLAGS   -I/autofs/nccs-svm1_sw/summit/.swci/1-compute/opt/spack/20180914/linux-rhel7-ppc64le/gcc-6.4.0/spectrum-mpi-10.3.0.1-20190611-cyaenjgora6now2nusxzkfli4mzjnudx/include TYPE STRING)
+VISIT_OPTION_DEFAULT(VISIT_MPI_LD_FLAGS  "-L/autofs/nccs-svm1_sw/summit/.swci/1-compute/opt/spack/20180914/linux-rhel7-ppc64le/gcc-6.4.0/spectrum-mpi-10.3.0.1-20190611-cyaenjgora6now2nusxzkfli4mzjnudx/lib -Wl,-rpath=/autofs/nccs-svm1_sw/summit/.swci/1-compute/opt/spack/20180914/linux-rhel7-ppc64le/gcc-6.4.0/spectrum-mpi-10.3.0.1-20190611-cyaenjgora6now2nusxzkfli4mzjnudx/lib" TYPE STRING)
+VISIT_OPTION_DEFAULT(VISIT_MPI_LIBS     mpi_ibm)
+VISIT_OPTION_DEFAULT(VISIT_PARALLEL_RPATH  "/autofs/nccs-svm1_sw/summit/.swci/1-compute/opt/spack/20180914/linux-rhel7-ppc64le/gcc-6.4.0/spectrum-mpi-10.3.0.1-20190611-cyaenjgora6now2nusxzkfli4mzjnudx/lib")
 
 ##
 ## VisIt Thread Option
@@ -86,29 +87,6 @@ SETUP_APP_VERSION(QWT 6.1.2)
 VISIT_OPTION_DEFAULT(VISIT_QWT_DIR ${VISITHOME}/qwt/${QWT_VERSION}/${VISITARCH})
 
 ##
-## ISPC
-##
-VISIT_OPTION_DEFAULT(VISIT_ISPC_DIR ${VISITHOME}/ispc/1.9.2/${VISITARCH})
-
-##
-## TBB
-##
-VISIT_OPTION_DEFAULT(TBB_ROOT ${VISITHOME}/tbb/tbb2018_20171205oss/${VISITARCH})
-VISIT_OPTION_DEFAULT(VISIT_TBB_DIR ${VISITHOME}/tbb/tbb2018_20171205oss/${VISITARCH})
-
-##
-## EMBREE
-##
-VISIT_OPTION_DEFAULT(VISIT_EMBREE_DIR ${VISITHOME}/embree/3.2.0/${VISITARCH})
-
-##
-## OSPRay
-##
-VISIT_OPTION_DEFAULT(VISIT_OSPRAY ON TYPE BOOL)
-SETUP_APP_VERSION(OSPRAY 1.6.1)
-VISIT_OPTION_DEFAULT(VISIT_OSPRAY_DIR ${VISITHOME}/ospray/1.6.1/${VISITARCH})
-
-##
 ## VTK
 ##
 SETUP_APP_VERSION(VTK 8.1.0)
@@ -154,11 +132,6 @@ SETUP_APP_VERSION(BOOST 1_67_0)
 VISIT_OPTION_DEFAULT(VISIT_BOOST_DIR ${VISITHOME}/boost/${BOOST_VERSION}/${VISITARCH})
 
 ##
-## Boxlib
-##
-VISIT_OPTION_DEFAULT(VISIT_BOXLIB_DIR ${VISITHOME}/boxlib/1.3.5/${VISITARCH})
-
-##
 ## CFITSIO
 ##
 VISIT_OPTION_DEFAULT(VISIT_CFITSIO_DIR ${VISITHOME}/cfitsio/3006/${VISITARCH})
@@ -186,12 +159,6 @@ VISIT_OPTION_DEFAULT(VISIT_GDAL_DIR ${VISITHOME}/gdal/2.2.4/${VISITARCH})
 SETUP_APP_VERSION(H5PART 1.6.6)
 VISIT_OPTION_DEFAULT(VISIT_H5PART_DIR ${VISITHOME}/h5part/${H5PART_VERSION}/${VISITARCH})
 VISIT_OPTION_DEFAULT(VISIT_H5PART_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP} TYPE STRING)
-
-##
-## HDF4
-##
-VISIT_OPTION_DEFAULT(VISIT_HDF4_DIR ${VISITHOME}/hdf4/4.2.5/${VISITARCH})
-VISIT_OPTION_DEFAULT(VISIT_HDF4_LIBDEP ${VISITHOME}/szip/2.1/${VISITARCH}/lib sz ${VISITHOME}/vtk/${VTK_VERSION}/${VISITARCH}/lib vtkjpeg-${VTK_MAJOR_VERSION}.${VTK_MINOR_VERSION} TYPE STRING)
 
 ##
 ## Ice-T
@@ -226,20 +193,9 @@ VISIT_OPTION_DEFAULT(VISIT_NETCDF_DIR ${VISITHOME}/netcdf/4.1.1/${VISITARCH})
 VISIT_OPTION_DEFAULT(VISIT_NETCDF_LIBDEP HDF5_LIBRARY_DIR hdf5_hl HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP} TYPE STRING)
 
 ##
-## OpenEXR
-##
-VISIT_OPTION_DEFAULT(VISIT_OPENEXR_DIR ${VISITHOME}/openexr/2.2.0/${VISITARCH})
-
-##
 ## P7ZIP
 ##
 VISIT_OPTION_DEFAULT(VISIT_SEVEN_ZIP_DIR ${VISITHOME}/p7zip/16.02/${VISITARCH})
-
-##
-## PIDX
-##
-SETUP_APP_VERSION(PIDX 0.9.3)
-VISIT_OPTION_DEFAULT(VISIT_PIDX_DIR ${VISITHOME}/pidx/${PIDX_VERSION}/${VISITARCH})
 
 ##
 ## Silo
@@ -248,14 +204,10 @@ VISIT_OPTION_DEFAULT(VISIT_SILO_DIR ${VISITHOME}/silo/4.10.2/${VISITARCH})
 VISIT_OPTION_DEFAULT(VISIT_SILO_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP} ZLIB_LIBRARY_DIR z TYPE STRING)
 
 ##
-## VTKM
+## Uintah
 ##
-VISIT_OPTION_DEFAULT(VISIT_VTKM_DIR ${VISITHOME}/vtkm/0d141c/${VISITARCH})
-
-##
-## VTKH
-##
-VISIT_OPTION_DEFAULT(VISIT_VTKH_DIR ${VISITHOME}/vtkh/2ce3fa/${VISITARCH})
+SETUP_APP_VERSION(UINTAH 2.6.0)
+VISIT_OPTION_DEFAULT(VISIT_UINTAH_DIR ${VISITHOME}/uintah/${UINTAH_VERSION}/${VISITARCH})
 
 ##
 ## Xdmf

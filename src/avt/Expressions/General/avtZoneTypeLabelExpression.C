@@ -105,6 +105,11 @@ avtZoneTypeLabelExpression::~avtZoneTypeLabelExpression()
 //    Mark C. Miller, Thu Oct 23 15:59:17 PDT 2014
 //    Made the output 3 chars long instead of one. Added cases for more
 //    element types.
+//
+//    Eric Brugger, Mon Jul 29 17:37:36 PDT 2019
+//    Made val 8 characters long to avoid a compiler error on Power 9 systems
+//    with gcc.
+//
 // ****************************************************************************
 
 #define SET_VAL(STR) strncpy(val, #STR, sizeof(val))
@@ -119,7 +124,13 @@ avtZoneTypeLabelExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomains
     rv->SetNumberOfTuples(ncells);
     for (vtkIdType i = 0 ; i < ncells ; i++)
     {
-        char val[3];
+        //
+        // This array is 8 characters long instead of 3 to avoid a compile
+        // error on Power 9 systems with the gcc 5.4 and 6.4 compilers. It
+        // avoids an alignment error when calling SetTuple4 later in the
+        // loop body.
+        //
+        char val[8];
         SET_VAL(" ? ");
         switch (in_ds->GetCellType(i))
         {
