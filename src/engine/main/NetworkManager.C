@@ -5199,6 +5199,7 @@ void
 NetworkManager::AddQueryOverTimeFilter(QueryOverTimeAttributes *qA,
                                        const int clonedFromId)
 {
+    cerr << "ADDING QUERY OVER TIME FILTER" << endl;//FIXME
     if (workingNet == NULL)
     {
         std::string error =  "Adding a filter to a non-existent network." ;
