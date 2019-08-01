@@ -147,7 +147,7 @@ to enable building the Uintah reader.
     --cmake --python --vtk --qt --qwt \
     --adios --adios2 --advio --boost --cfitsio --cgns --conduit \
     --gdal --glu --h5part --hdf5 --icet --llvm --mfem \
-    --mili --moab --mxml --netcdf --openssl --p7zip --pidx \
+    --mili --moab --mxml --netcdf --openssl --p7zip \
     --silo --szip --vtkm --vtkh --xdmf --zlib \
     --mesagl --uintah --parallel \
     --thirdparty-path /usr/workspace/wsa/visit/visit/thirdparty_shared/3.0.1/blueos \
@@ -349,8 +349,8 @@ to enable building the Uintah reader.
        --system-cmake --python --vtk --qt --qwt \
        --adios --adios2 --advio --boost --cfitsio --cgns --conduit \
        --gdal --glu --h5part --hdf5 --icet --llvm --mfem \
-       --mili --moab --mxml --netcdf --openssl --p7zip --pidx \
-       --silo --szip --vtkm --vtkh --xdmf --zlib \
+       --mili --moab --mxml --netcdf --openssl --p7zip \
+       --silo --szip --xdmf --zlib \
        --mesagl --uintah --parallel \
        --thirdparty-path /autofs/nccs-svm1_home1/brugger1/visit/thirdparty_shared/3.0.1 \
        --makeflags -j8
@@ -367,7 +367,6 @@ was changed to
    SET(VISITHOME /autofs/nccs-svm1_home1/brugger1/visit/thirdparty_shared/3.0.1)
    SET(VISITARCH linux-ppc64le_gcc-6.4)
    VISIT_OPTION_DEFAULT(VISIT_SLIVR TRUE TYPE BOOL)
-
 
 The ``Parallel build Setup.`` section was changed to
 
@@ -439,7 +438,7 @@ following steps.
 .. code:: bash
 
    wget https://mirrors.ocf.berkeley.edu/gnu/binutils/binutils-2.32.tar.gz
-   mkdir /project/projectdirs/visit/thirdparty_shared/3.0.1/binutils
+   mkdir /usr/projects/views/visit/thirdparty_shared/3.0.1/binutils
    tar zxf binutils-2.32.tar.gz
    cd binutils-2.32
    ./configure --prefix=/usr/projects/views/visit/thirdparty_shared/3.0.1/binutils
