@@ -153,6 +153,9 @@ using     std::sort;
 //    Added logic to support presentGhostZoneTypes, which allows us to
 //    differentiate between ghost zones for boundaries & nesting.
 //
+//    Alister Maguire, Tue Jul 16 14:34:29 PDT 2019
+//    Added instantiation of forceRemoveFacesBeforeGhosts.
+//
 // ****************************************************************************
 
 avtDataAttributes::avtDataAttributes() : plotInfoAtts()
@@ -238,6 +241,7 @@ avtDataAttributes::avtDataAttributes() : plotInfoAtts()
     multiresCellSize = DBL_MAX;
 
     constructMultipleCurves = false;
+    forceRemoveFacesBeforeGhosts = false;
 }
 
 
@@ -1033,6 +1037,9 @@ avtDataAttributes::Print(ostream &out)
 //    Added logic to support presentGhostZoneTypes, which allows us to
 //    differentiate between ghost zones for boundaries & nesting.
 //
+//    Alister Maguire, Tue Jul 16 14:34:29 PDT 2019
+//    Added forceRemoveFacesBeforeGhosts.
+//
 // ****************************************************************************
 
 void
@@ -1142,6 +1149,7 @@ avtDataAttributes::Copy(const avtDataAttributes &di)
     *(multiresExtents) = *(di.multiresExtents);
     multiresCellSize = di.multiresCellSize;
     constructMultipleCurves = di.constructMultipleCurves;
+    forceRemoveFacesBeforeGhosts = di.forceRemoveFacesBeforeGhosts;
 }
 
 
@@ -1290,6 +1298,9 @@ avtDataAttributes::Copy(const avtDataAttributes &di)
 //    Cyrus Harrison,Thu Feb  9 10:26:48 PST 2012
 //    Added logic to support presentGhostZoneTypes, which allows us to
 //    differentiate between ghost zones for boundaries & nesting.
+//
+//    Alister Maguire, Tue Jul 16 14:34:29 PDT 2019
+//    Added forceRemoveFacesBeforeGhosts.
 //
 // ****************************************************************************
 
@@ -1559,6 +1570,7 @@ avtDataAttributes::Merge(const avtDataAttributes &da,
     multiresExtents->Merge(*(da.multiresExtents));
     plotInfoAtts.Merge(da.plotInfoAtts);
     constructMultipleCurves &= da.constructMultipleCurves;
+    forceRemoveFacesBeforeGhosts &= da.forceRemoveFacesBeforeGhosts;
 
     // there's no good answer for unitCellVectors or rectilinearGridTransform
 }
@@ -2826,6 +2838,9 @@ avtDataAttributes::SetDynamicDomainDecomposition(bool ddd)
 //    Add GetMultiresExtents and GetMultiresCellSize to support adding
 //    a multi resolution display capability for AMR data.
 //
+//    Alister Maguire, Tue Jul 16 14:34:29 PDT 2019
+//    Added forceRemoveFacesBeforeGhosts.
+//
 // ****************************************************************************
 
 void
@@ -2835,7 +2850,7 @@ avtDataAttributes::Write(avtDataObjectString &str,
     size_t   i, j;
 
     int varSize = 7;
-    int numVals = 35 + static_cast<int>(varSize*variables.size());
+    int numVals = 36 + static_cast<int>(varSize*variables.size());
     int *vals = new int[numVals];
     i = 0;
     vals[i++] = topologicalDimension;
@@ -2871,6 +2886,7 @@ avtDataAttributes::Write(avtDataObjectString &str,
     vals[i++] = (nodesAreCritical ? 1 : 0);
     vals[i++] = (rectilinearGridHasTransform ? 1 : 0);
     vals[i++] = (constructMultipleCurves ? 1 : 0);
+    vals[i++] = (forceRemoveFacesBeforeGhosts ? 1 : 0);
     vals[i++] = activeVariable;
     vals[i++] = static_cast<int>(variables.size());
     int basei = i;
@@ -3140,6 +3156,9 @@ avtDataAttributes::Write(avtDataObjectString &str,
 //    Add GetMultiresExtents and GetMultiresCellSize to support adding
 //    a multi resolution display capability for AMR data.
 //
+//    Alister Maguire, Tue Jul 16 14:34:29 PDT 2019
+//    Added forceRemoveFacesBeforeGhosts.
+//
 // ****************************************************************************
 
 int
@@ -3281,6 +3300,10 @@ avtDataAttributes::Read(char *input)
     memcpy(&tmp, input, sizeof(int));
     input += sizeof(int); size += sizeof(int);
     constructMultipleCurves = (tmp != 0 ? true : false);
+
+    memcpy(&tmp, input, sizeof(int));
+    input += sizeof(int); size += sizeof(int);
+    forceRemoveFacesBeforeGhosts = (tmp != 0 ? true : false);
 
     memcpy(&tmp, input, sizeof(int));
     input += sizeof(int); size += sizeof(int);

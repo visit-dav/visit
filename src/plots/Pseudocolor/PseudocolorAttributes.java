@@ -74,7 +74,7 @@ public class PseudocolorAttributes extends AttributeSubject implements Plugin
         useAboveMaxColor = false;
         aboveMaxColor = new ColorAttribute();
         centering = CENTERING_NATURAL;
-        colorTableName = new String("hot");
+        colorTableName = new String("Default");
         invertColorTable = false;
         opacityType = OPACITYTYPE_FULLYOPAQUE;
         opacityVariable = new String("");
@@ -133,7 +133,7 @@ public class PseudocolorAttributes extends AttributeSubject implements Plugin
         useAboveMaxColor = false;
         aboveMaxColor = new ColorAttribute();
         centering = CENTERING_NATURAL;
-        colorTableName = new String("hot");
+        colorTableName = new String("Default");
         invertColorTable = false;
         opacityType = OPACITYTYPE_FULLYOPAQUE;
         opacityVariable = new String("");
