@@ -105,7 +105,7 @@ avtVertexNormalsFilter::~avtVertexNormalsFilter()
 //
 //  Returns:       The output data representation.
 //
-//  Programmer: Hank Childs 
+//  Programmer: Hank Childs
 //  Creation:   December 31, 2001
 //
 //  Modifications:
@@ -149,9 +149,9 @@ avtVertexNormalsFilter::~avtVertexNormalsFilter()
 //    Break all memory references.  I didn't think this was necessary, but
 //    the data wouldn't delete until I did this.
 //
-//    Kathleen Bonnell, Tue May 16 09:41:46 PDT 2006 
+//    Kathleen Bonnell, Tue May 16 09:41:46 PDT 2006
 //    Removed call to SetSource(NULL), with new vtk pipeline, it also removes
-//    necessary information from the dataset. 
+//    necessary information from the dataset.
 //
 //    Hank Childs, Thu Dec 28 15:25:50 PST 2006
 //    Add support for direct normals calculation of structured grids.
@@ -166,7 +166,12 @@ avtVertexNormalsFilter::~avtVertexNormalsFilter()
 //
 //    Alister Maguire, Wed Jun 20 10:33:31 PDT 2018
 //    Re-integrated structured-grid specific normals calculation after
-//    fixing bug regarding VTK-8. 
+//    fixing bug regarding VTK-8.
+//
+//    Kathleen Biagas, Wed Jul 31 11:21:38 PDT 2019
+//    Since vtkVisItPolyDataNormals filter doesn't handle triangle strips,
+//    and in fact removes them from the output, don't process the input if
+//    they are present.
 //
 // ****************************************************************************
 
@@ -198,7 +203,11 @@ avtVertexNormalsFilter::ExecuteData(avtDataRepresentation *in_dr)
     if (in_ds->GetDataObjectType() == VTK_POLY_DATA)
     {
         vtkPolyData *pd = (vtkPolyData *)in_ds;
-    
+        // The polydata normals filter doesn't handle triangle strips, in fact
+        // it removes them, so don't process a dataset that contains them.
+        if (pd->GetNumberOfStrips() > 0)
+            return in_dr;
+
         bool pointNormals = true;
         if (atts.ValidActiveVariable())
         {
@@ -215,14 +224,14 @@ avtVertexNormalsFilter::ExecuteData(avtDataRepresentation *in_dr)
             normals->SetNormalTypeToCell();
         normals->SetSplitting(true);
         normals->Update();
-    
+
         vtkPolyData *out_ds = normals->GetOutput();
 
         avtDataRepresentation *out_dr = new avtDataRepresentation(out_ds,
             in_dr->GetDomain(), in_dr->GetLabel());
 
         normals->Delete();
-    
+
         return out_dr;
     }
     else if (in_ds->GetDataObjectType() == VTK_STRUCTURED_GRID)
