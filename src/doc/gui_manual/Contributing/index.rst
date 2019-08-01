@@ -268,11 +268,16 @@ caption.
 
 Tables
 ------
-Sphinx supports a variety of mechanisms for defining tables. The conversion
+Sphinx supports a variety of mechanisms for defining
+`tables <http://docutils.sourceforge.net/docs/ref/rst/restructuredtext.html#tables>`__.
+The conversion
 tool used to convert this documentation from its original OpenOffice format
 converted all tables to the *grid* style of table which is kinda sorta like
 ascii art. Large tables can result in individual lines that span many widths of
 the editor window. It is cumbersome to deal with but rich in capabilities.
+Often, the best answer is to *NOT* use tables and instead use
+`definition lists <http://docutils.sourceforge.net/docs/ref/rst/restructuredtext.html#definition-lists>`__
+as is used in the documentation on :ref:`expressions <Sum_Expression_Operator>`.
 
 .. _contributing_math:
 
