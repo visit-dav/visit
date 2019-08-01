@@ -356,7 +356,7 @@ avtThresholdFilter::ProcessOneChunk(avtDataRepresentation *in_dr, bool fromChunk
                     << "in Threshold operator attributes." << endl;
                     threshold->AllScalarsOff();
                 }
-                
+
                 threshold->ThresholdBetween(curLowerBounds[curVarNum], curUpperBounds[curVarNum]);
                 
                 if (curOutDataSet->GetPointData()->GetArray(curVarName) != NULL)
@@ -726,7 +726,6 @@ avtThresholdFilter::ThresholdOnRanges(vtkDataSet *in_ds,
 vtkDataSet *
 avtThresholdFilter::ThresholdToPointMesh(vtkDataSet *in_ds)
 {
-    
     const stringVector curVariables = atts.GetListedVarNames();
     int curVarCount = (int)curVariables.size();
     int curVarNum;
