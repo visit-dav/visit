@@ -1599,6 +1599,7 @@ EngineRPCExecutor<CloneNetworkRPC>::Execute(CloneNetworkRPC *rpc)
     debug2 << "Executing CloneNetworkRPC: " << rpc->GetID() << endl;
     TRY
     {
+        cerr << "ADDING QOT FROM RPC" << endl;//FIXME
         netmgr->CloneNetwork(rpc->GetID());
         if (rpc->GetQueryOverTimeAtts() != NULL)
             netmgr->AddQueryOverTimeFilter(rpc->GetQueryOverTimeAtts(),

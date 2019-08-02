@@ -5249,6 +5249,7 @@ ViewerQueryManager::DoTimeQuery(ViewerWindow *origWin,
         resultsPlot->SetSILRestriction(origPlot->GetSILRestriction());
         TRY
         {
+            cerr << "CLONING NETWORK" << endl;//FIXME
             GetViewerEngineManager()->CloneNetwork(engineKey,
                 origPlot->GetNetworkID(), timeQueryAtts);
             plotList->RealizePlots();

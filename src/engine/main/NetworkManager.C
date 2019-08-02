@@ -3903,6 +3903,7 @@ NetworkManager::StopQueryMode(void)
 void
 NetworkManager::Pick(const int id, const int winId, PickAttributes *pa)
 {
+    cerr << "NM PERFORMING PICK" << endl;//FIXME
     if (!ValidNetworkId(id))
     {
         EXCEPTION0(ImproperUseException);
@@ -4266,6 +4267,7 @@ NetworkManager::Pick(const int id, const int winId, PickAttributes *pa)
 void
 NetworkManager::Query(const std::vector<int> &ids, QueryAttributes *qa)
 {
+    cerr << "NM: PERFORMING QUERY" << endl;//FIXME
     std::vector<avtDataObject_p> queryInputs;
     for (size_t i = 0 ; i < ids.size() ; i++)
     {
@@ -4308,10 +4310,12 @@ NetworkManager::Query(const std::vector<int> &ids, QueryAttributes *qa)
     TRY
     {
 
+        cerr << "QA NAME: " << qa->GetName() << endl;//FIXME
         query = avtQueryFactory::Instance()->CreateQuery(qa);
 
         if (query == NULL)
         {
+            cerr << "QUERY IS NULL" << endl;//FIXME
             //
             // For now, multiple input queries need to be instantiated here.
             //
@@ -4334,6 +4338,7 @@ NetworkManager::Query(const std::vector<int> &ids, QueryAttributes *qa)
 
         if (query != NULL)
         {
+            cerr << "QUERY IS NOT NULL" << endl;//FIXME
             avtSILRestriction_p silr =
                networkCache[ids[0]]->GetDataSpec()->GetRestriction();
             if (*silr != NULL)
@@ -5199,7 +5204,6 @@ void
 NetworkManager::AddQueryOverTimeFilter(QueryOverTimeAttributes *qA,
                                        const int clonedFromId)
 {
-    cerr << "ADDING QUERY OVER TIME FILTER" << endl;//FIXME
     if (workingNet == NULL)
     {
         std::string error =  "Adding a filter to a non-existent network." ;
