@@ -43,6 +43,7 @@
 #include <visit-config.h>
 #include <windows.h>
 #include <Winbase.h>
+#include <errno.h>
 #include <process.h>
 #include <sys/stat.h>
 #include <shlobj.h>
@@ -134,7 +135,7 @@ static const char usage[] =
 /*
  * Prototypes
  */
-string GetVisItEnvironment(stringVector &, bool, bool, bool &);
+string GetVisItEnvironment(stringVector &, bool, bool &);
 
 void   SetVisItEnvironment(const stringVector &);
 string AddPath(char *, const char *, const char*);
@@ -312,6 +313,11 @@ static bool EndsWith(const char *s, const char *suffix)
  *   Kathleen Biagas, Thu Sep 27 11:43:37 PDT 2018
  *   Change private plugin directory to userHome.
  *
+ *   Kathleen Biagas, Thu Aug 1 13:41:12 MST 2019
+ *   Removed usage of shortname (8dot3name). This utility may be disabled on
+ *   Windows systems, so it shouldn't be relied upon any more.  Added spawnv
+ *   error message if debuglaunch specified.
+ *
  *****************************************************************************/
 
 int
@@ -320,7 +326,6 @@ VisItLauncherMain(int argc, char *argv[])
     bool addMovieArguments = false; 
     bool addCinemaArguments = false; 
     bool addVISITARGS = true; 
-    bool useShortFileName = false;
     bool addPluginVars = false;
     bool newConsole = false;
     bool noloopback = false;
@@ -397,13 +402,11 @@ VisItLauncherMain(int argc, char *argv[])
         {
             component = "cli";
             addMovieArguments = true;
-            useShortFileName = true;
         }
         else if(ARG("-cinema"))
         {
             component = "cli";
             addCinemaArguments = true;
-            useShortFileName = true;
         }
         else if(ARG("-mpeg2encode"))
         {
@@ -664,18 +667,20 @@ VisItLauncherMain(int argc, char *argv[])
     //
     stringVector visitEnv;
     bool usingDev;
-    string visitpath = GetVisItEnvironment(visitEnv, useShortFileName, addPluginVars, usingDev);
+    string visitpath = GetVisItEnvironment(visitEnv, addPluginVars, usingDev);
     if (usingDev)
         componentArgs.push_back("-dv");
     SetVisItEnvironment(visitEnv);
 #ifdef VISIT_WINDOWS_APPLICATION
-    // Show the path and the environment we've created.
-    string envStr;
-    for(size_t i = 0; i < visitEnv.size(); ++i)
-        envStr = envStr + visitEnv[i] + "\n";
-    string msgStr((visitpath + "\n\n") + envStr);
     if(debugLaunch)
+    {
+        // Show the path and the environment we've created.
+        string envStr;
+        for(size_t i = 0; i < visitEnv.size(); ++i)
+            envStr = envStr + visitEnv[i] + "\n";
+        string msgStr((visitpath + "\n\n") + envStr);
         MessageBox(NULL, msgStr.c_str(), component.c_str(), MB_OK);
+    }
 #endif
 
     if (envOnly)
@@ -702,12 +707,8 @@ VisItLauncherMain(int argc, char *argv[])
     {
         // we've already determined the path to mpiexec, if it wasn't
         // found, we've switched to a serial engine.
-        char *shortmpipath = (char*)malloc(512);
-        GetShortPathName(mpipath.c_str(), shortmpipath, 512);
-
-        // mpi exec, with shortpath
-        command.push_back(shortmpipath);
-        free(shortmpipath);
+        // mpi exec
+        command.push_back(mpipath);
         // mpi exec args, 
         command.push_back("-n");
         command.push_back(nps);
@@ -718,15 +719,6 @@ VisItLauncherMain(int argc, char *argv[])
     else
     {
         string program(visitpath + string("\\") + component + string(".exe"));
-
-        if(program.find(" ") != std::string::npos)
-        {
-            char *shortname = (char*)malloc(512);
-            GetShortPathName(program.c_str(), shortname, 512);
-            program = shortname;
-            free(shortname);
-        }
-
         command.push_back(program);
     }
 
@@ -794,7 +786,9 @@ VisItLauncherMain(int argc, char *argv[])
     // 
     // Print the run information.
     // 
-    string cmdLine(command[0]);
+    // cmdLine is used with console-app version as argument to system command.
+    // so the first 'arg' must be quoted.
+    string cmdLine(quote + command[0] + quote);
     for(size_t i = 1; i < command.size(); ++i)
         cmdLine.append(string(" ") + command[i]);
     cerr << "Running: " << cmdLine << endl;
@@ -805,16 +799,50 @@ VisItLauncherMain(int argc, char *argv[])
         MessageBox(NULL, cmdLine.c_str(), component.c_str(), MB_OK);
 
     // We can't use system() since that opens a cmd shell.
+    // the exeName is the second arg to _spawnv, and doesn't need quotes,
+    // but when used as the first arg in the exeArgs list, it does. 
     const char *exeName = command[0].c_str();
     const char **exeArgs = new const char *[command.size()+1];
-    for(size_t i = 0; i < command.size(); ++i)
+    string quotedCommand(quote + command[0] + quote);
+    exeArgs[0] = quotedCommand.c_str();
+    for(size_t i = 1; i < command.size(); ++i)
         exeArgs[i] = command[i].c_str();
     exeArgs[command.size()] = NULL;
     retVal =_spawnv( _P_WAIT, exeName, exeArgs);
+    if (debugLaunch && retVal == -1)
+    {
+        errno_t err;
+        _get_errno(&err);
+        char errmsg[30];
+        switch(err)
+        {
+            case E2BIG:
+                _snprintf(errmsg, 30, "_spawn error: %d: E2BIG\n", err);
+                break;
+            case EINVAL:
+                _snprintf(errmsg, 30, "_spawn error: %d: EINVAL\n", err);
+                break;
+            case ENOENT:
+                _snprintf(errmsg, 30, "_spawn error: %d: ENOENT\n", err);
+                break;
+            case ENOEXEC:
+                _snprintf(errmsg, 30, "_spawn error: %d: ENOEXEC\n", err);
+                break;
+            case ENOMEM:
+                _snprintf(errmsg, 30,  "_spawn error: %d: ENOMEM\n", err);
+                break;
+            default: 
+                _snprintf(errmsg, 30, "_spawn error: %d: UNKNOWN\n", err);
+                break;
+        }
+        MessageBox(NULL, errmsg, component.c_str(), MB_OK);
+    }
     delete [] exeArgs;
 #else
-    char *cl = const_cast<char*>(cmdLine.c_str());
-    retVal = system(cl);
+    // without shortname, need to quote the entire string so the quotes around
+    // the first arg (the executable) aren't lost.
+    cmdLine = quote + cmdLine + quote;
+    retVal = system(const_cast<char*>(cmdLine.c_str()));
 #endif
 
     componentArgs.clear();
@@ -1028,10 +1056,13 @@ ReadKey(const char *key, char **keyval)
  *   Display message box if VISITSSH set, but does not point
  *   to valid executable.
  *
+ *    Kathleen Biagas, Thu Aug 1 13:41:32 MST 2019
+ *    Removed useShorFileName argument.
+ *
  *****************************************************************************/
 
 std::string 
-GetVisItEnvironment(stringVector &env, bool useShortFileName, bool addPluginVars, bool &usingdev)
+GetVisItEnvironment(stringVector &env, bool addPluginVars, bool &usingdev)
 {
     char *tmp, *visitpath = NULL;
     char *visitdevdir = NULL;
@@ -1196,18 +1227,6 @@ GetVisItEnvironment(stringVector &env, bool useShortFileName, bool addPluginVars
         }
     }
 
-    /* 
-     * Turn the long VisIt path into the shortened system path.
-     */
-    if(useShortFileName)
-    {
-        char *vp2 = (char *)malloc(512);
-        GetShortPathName(visitpath, vp2, 512);
-        if (freeVisItPath)
-            free(visitpath);
-        visitpath = vp2;
-        freeVisItPath = true;
-    }
     string vp(visitpath);
 
     /*
