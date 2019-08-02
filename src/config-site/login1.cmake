@@ -1,16 +1,17 @@
-#/usr/workspace/visit/visit/thirdparty_shared/3.0.1/blueos/cmake/3.9.3/linux-ppc64le_gcc-4.9/bin/cmake
+#/autofs/nccs-svm1_sw/summit/.swci/0-core/opt/spack/20171006/linux-rhel7-ppc64le/gcc-4.8.5/cmake-3.9.2-lnpnk356fyio3b6rq5bdhr2djjirtsxk/bin/cmake
 ##
 ## ./build_visit3_0_1 generated host.cmake
-## created: Fri Jul 12 09:50:03 PDT 2019
-## system: Linux sierra4361 4.14.0-49.18.1.bl6.ppc64le #1 SMP Tue Dec 11 16:29:11 PST 2018 ppc64le ppc64le ppc64le GNU/Linux
-## by: brugger
+## created: Mon Jul 29 17:51:41 EDT 2019
+## system: Linux login1 4.14.0-115.8.1.el7a.ppc64le #1 SMP Thu May 9 14:45:13 UTC 2019 ppc64le ppc64le ppc64le GNU/Linux
+## by: brugger1
 
 ##
 ## Setup VISITHOME & VISITARCH variables.
 ##
-SET(VISITHOME /usr/workspace/visit/visit/thirdparty_shared/3.0.1/blueos)
-SET(VISITARCH linux-ppc64le_gcc-4.9)
+SET(VISITHOME /autofs/nccs-svm1_home1/brugger1/visit/thirdparty_shared/3.0.1)
+SET(VISITARCH linux-ppc64le_gcc-6.4)
 VISIT_OPTION_DEFAULT(VISIT_SLIVR TRUE TYPE BOOL)
+
 
 ## Compiler flags.
 ##
@@ -19,27 +20,21 @@ VISIT_OPTION_DEFAULT(VISIT_CXX_COMPILER g++ TYPE FILEPATH)
 VISIT_OPTION_DEFAULT(VISIT_FORTRAN_COMPILER no TYPE FILEPATH)
 VISIT_OPTION_DEFAULT(VISIT_C_FLAGS " -fPIC -fvisibility=hidden" TYPE STRING)
 VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS " -fPIC -fvisibility=hidden" TYPE STRING)
-SET(CMAKE_INSTALL_RPATH "/usr/tce/packages/gcc/gcc-4.9.3/lib64")
 
 ##
 ## Parallel Build Setup.
 ##
 VISIT_OPTION_DEFAULT(VISIT_PARALLEL ON TYPE BOOL)
-VISIT_OPTION_DEFAULT(VISIT_MPI_CXX_FLAGS -I/usr/tce/packages/spectrum-mpi/ibm/spectrum-mpi-rolling-release/include TYPE STRING)
-VISIT_OPTION_DEFAULT(VISIT_MPI_C_FLAGS   -I/usr/tce/packages/spectrum-mpi/ibm/spectrum-mpi-rolling-release/include TYPE STRING)
-VISIT_OPTION_DEFAULT(VISIT_MPI_LD_FLAGS  "-L/usr/tce/packages/spectrum-mpi/ibm/spectrum-mpi-rolling-release/lib -Wl,-rpath=/usr/tce/packages/spectrum-mpi/ibm/spectrum-mpi-rolling-release/lib" TYPE STRING)
+VISIT_OPTION_DEFAULT(VISIT_MPI_CXX_FLAGS -I/autofs/nccs-svm1_sw/summit/.swci/1-compute/opt/spack/20180914/linux-rhel7-ppc64le/gcc-6.4.0/spectrum-mpi-10.3.0.1-20190611-cyaenjgora6now2nusxzkfli4mzjnudx/include TYPE STRING)
+VISIT_OPTION_DEFAULT(VISIT_MPI_C_FLAGS   -I/autofs/nccs-svm1_sw/summit/.swci/1-compute/opt/spack/20180914/linux-rhel7-ppc64le/gcc-6.4.0/spectrum-mpi-10.3.0.1-20190611-cyaenjgora6now2nusxzkfli4mzjnudx/include TYPE STRING)
+VISIT_OPTION_DEFAULT(VISIT_MPI_LD_FLAGS  "-L/autofs/nccs-svm1_sw/summit/.swci/1-compute/opt/spack/20180914/linux-rhel7-ppc64le/gcc-6.4.0/spectrum-mpi-10.3.0.1-20190611-cyaenjgora6now2nusxzkfli4mzjnudx/lib -Wl,-rpath=/autofs/nccs-svm1_sw/summit/.swci/1-compute/opt/spack/20180914/linux-rhel7-ppc64le/gcc-6.4.0/spectrum-mpi-10.3.0.1-20190611-cyaenjgora6now2nusxzkfli4mzjnudx/lib" TYPE STRING)
 VISIT_OPTION_DEFAULT(VISIT_MPI_LIBS     mpi_ibm)
-VISIT_OPTION_DEFAULT(VISIT_PARALLEL_RPATH  "/usr/tce/packages/spectrum-mpi/ibm/spectrum-mpi-rolling-release/lib")
+VISIT_OPTION_DEFAULT(VISIT_PARALLEL_RPATH  "/autofs/nccs-svm1_sw/summit/.swci/1-compute/opt/spack/20180914/linux-rhel7-ppc64le/gcc-6.4.0/spectrum-mpi-10.3.0.1-20190611-cyaenjgora6now2nusxzkfli4mzjnudx/lib")
 
 ##
 ## VisIt Thread Option
 ##
 VISIT_OPTION_DEFAULT(VISIT_THREAD OFF TYPE BOOL)
-
-##
-## Turn on DDT support.
-##
-VISIT_OPTION_DEFAULT(VISIT_DDT ON TYPE BOOL)
 
 ##############################################################
 ##
@@ -213,16 +208,6 @@ VISIT_OPTION_DEFAULT(VISIT_SILO_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP
 ##
 SETUP_APP_VERSION(UINTAH 2.6.0)
 VISIT_OPTION_DEFAULT(VISIT_UINTAH_DIR ${VISITHOME}/uintah/${UINTAH_VERSION}/${VISITARCH})
-
-##
-## VTKM
-##
-VISIT_OPTION_DEFAULT(VISIT_VTKM_DIR ${VISITHOME}/vtkm/0d141c/${VISITARCH})
-
-##
-## VTKH
-##
-VISIT_OPTION_DEFAULT(VISIT_VTKH_DIR ${VISITHOME}/vtkh/2ce3fa/${VISITARCH})
 
 ##
 ## Xdmf

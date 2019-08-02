@@ -227,6 +227,10 @@ avtOSPRayRayTracer::~avtOSPRayRayTracer()
 //    Qi WU, Wed Jun 20 2018
 //    Added support for raycasting ospray
 //
+//    Alister Maguire, Tue Jul 23 15:15:22 PDT 2019
+//    Added a patch from Johannes Guenther that enables lighting, 
+//    shadows, transparency, and spp. 
+//
 // ****************************************************************************
 
 void
@@ -451,7 +455,7 @@ avtOSPRayRayTracer::Execute()
         }
     }    
     ren.FinalizeLights();
-    ren.Set(0, 1, false, false, false);
+    ren.Set(aoSamples, spp, oneSidedLighting, shadowsEnabled, aoTransparencyEnabled);
     ospray::CheckMemoryHere("[avtOSPRayRayTracer] Execute after ospray",
                             "ospout");    
 
