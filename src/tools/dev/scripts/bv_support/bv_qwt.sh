@@ -72,7 +72,7 @@ function bv_qwt_print
 function bv_qwt_print_usage
 {
     printf "%-20s %s\n" "--qwt" "Build with Qwt"
-    printf "%-20s %s [%s]\n" "--alt-qwt-dir" "Use Qwt from an alternative directory"
+    printf "%-20s %s []\n" "--alt-qwt-dir <path>" "Use Qwt from an alternative directory"
 }
 
 function bv_qwt_host_profile
