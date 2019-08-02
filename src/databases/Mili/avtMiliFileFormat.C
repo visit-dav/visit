@@ -3318,7 +3318,12 @@ avtMiliFileFormat::ExtractJsonClasses(rapidjson::Document &jDoc,
     int cCount = 0;
     if (jClasses.HasMember("count"))
     {
-        cCount = jClasses["count"].GetInt();
+        //
+        // Counts may be in scientific notation. We need to retrieve 
+        // as a double and cast to int. 
+        //
+        double dbl = jClasses["count"].GetDouble();
+        cCount = (int) dbl;
     }
 
     //
@@ -3468,7 +3473,12 @@ avtMiliFileFormat::LoadMiliInfoJson(const char *fpath)
 
     if (jDoc.HasMember("Domains"))
     {
-        nDomains = jDoc["Domains"].GetInt(); 
+        //
+        // Counts may be in scientific notation. We need to retrieve 
+        // as a double and cast to int. 
+        //
+        double dbl = jDoc["Domains"].GetDouble(); 
+        nDomains   = (int) dbl;
     }
     else
     {
@@ -3530,7 +3540,12 @@ avtMiliFileFormat::LoadMiliInfoJson(const char *fpath)
 
             if (jMats.HasMember("count"))
             {
-                nMats = jMats["count"].GetInt();
+                //
+                // Counts may be in scientific notation. We need to retrieve 
+                // as a double and cast to int. 
+                //
+                double dbl = jMats["count"].GetDouble();
+                nMats      = (int) dbl;
             }
 
             miliMetaData[meshId]->SetNumMaterials(nMats);
@@ -3622,7 +3637,12 @@ avtMiliFileFormat::LoadMiliInfoJson(const char *fpath)
             const rapidjson::Value &jStates = jDoc["States"];
             if (jStates.HasMember("count"))
             {
-                nTimesteps = jStates["count"].GetInt();
+                //
+                // Counts may be in scientific notation. We need to retrieve 
+                // as a double and cast to int. 
+                //
+                double dbl = jStates["count"].GetDouble();
+                nTimesteps = (int) dbl;
             }
 
             if (jStates.HasMember("times"))
