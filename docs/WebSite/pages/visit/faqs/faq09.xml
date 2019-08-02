@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <page>
   <title><![CDATA[VisIt FAQs]]></title>
+  <IM>LLNL-WEB-XXXXXX</IM>
   <owner><![CDATA[Page Owner Name]]></owner>
-  <lastchanged><![CDATA[March 21, 2013]]></lastchanged>
+  <lastchanged><![CDATA[August 8, 2019]]></lastchanged>
   <template><![CDATA[l2]]></template> 
   <content>
     <![CDATA[
@@ -21,8 +22,12 @@
 	<li class="active"><a href="simulation/computer-codes/visit/faqs">FAQs</a></li>
 </ul>
 
-<h2>9. How do I access data on a remote machine?</h2>
-<p> First, VisIt must be installed on the remote machine. Then, in order to access data on remote machines, simply type in the name of the remote machine in the <strong>Host</strong> field in the <strong>File Selection</strong>  window in the VisIt graphical user interface and include <strong>visit</strong> in your search path on the remote machine. For more information, read the Distributed Mode portion of the Remote Visualization section in the <a href="content/assets/docs/simulation/computer-codes/visit/VisItUsersManual1.5.pdf"> <em>VisIt Users Manual</em></a>.</p>
+<h2>9. How do I acknowledge VisIt when I use it to generate images and/or movies?</h2>
+<p>If you use VisIt to generate images and/or movies please cite VisIt in your paper and the credits of your movie. Doing so helps us sustain funding for future improvements and on going maintenance. Please use the following acknowledgement and send us references to any publications, presentations, or successful funding applications that make use of DOE software.</p>
+<ul>
+<li>VisIt Citation [<a href="content/assets/docs/simulation/computer-codes/visit/visit_citation.bib">bibtex citation</a>]</li>
+</ul>
+<p>VisIt is supported by the Department of Energy with funding from the Advanced Simulation and Computing Program and the Scientific Discovery through Advanced Computing Program.</>
 
 </div>
 </div>	

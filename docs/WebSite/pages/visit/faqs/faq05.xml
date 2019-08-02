@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <page>
   <title><![CDATA[VisIt FAQs]]></title>
+  <IM>LLNL-WEB-XXXXXX</IM>
   <owner><![CDATA[Page Owner Name]]></owner>
-  <lastchanged><![CDATA[March 20, 2013]]></lastchanged>
+  <lastchanged><![CDATA[March 21, 2013]]></lastchanged>
   <template><![CDATA[l2]]></template> 
   <content>
     <![CDATA[
@@ -21,8 +22,9 @@
 	<li class="active"><a href="simulation/computer-codes/visit/faqs">FAQs</a></li>
 </ul>
 
-<h2>5. Does VisIt support stereo rendering?</h2>
-<p> Yes, VisIt supports stereo rendering on Linux and Windows systems. You will need a video card that supports stereographic display and a pair of stereographic glasses. When you want to use stereo rendering on a Windows system you should use the VisIt 2.X.X in stereo shortcut. When you want to use stereo rendering on a Linux system you should provide the <em>-stereo</em> command line option when you start VisIt at the command prompt.</p>
+<h2>5. How do I get my data into VisIt?</h2>
+<p> VisIt can read in a variety of data file formats due to its database reader plug-ins. If you want VisIt to read your data there are three approaches that you can take. These approaches are all described in the <a href="content/assets/docs/simulation/computer-codes/visit/GettingDataIntoVisIt2.0.0.pdf" title="GDIV">Getting Data Into VisIt</a> manual. First, you could convert your data files into a format that VisIt understands. If you do not want to double your stored data or if you have not yet created your data, you could change your application to write out  data in a format that VisIt understands. Finally, you could write your own database reader plug-in for VisIt so that VisIt can read data from your file format. The approach that you take depends on your situation, the type of data, and what language was used to write your application. If you want to use a versatile file format that VisIt already understands and you are programming in C, C++, or Fortran, then we recommend using <a href="simulation/computer-codes/silo"  target="_blank">Silo</a>. You could also use <a href="http://www.grc.nasa.gov/WWW/cgns/user/userguide.pdf">CGNS</a> or <a href="http://www.unidata.ucar.edu/software/netcdf/guide.txn_toc.html">NetCDF</a>, depending on how your data is represented. If your application is not written in any of those languages, we recommend writing out <a href="http://www.kitware.com/vtk/index.html">VTK</a> files since they are simple enough to write without lots of complicated programming. If you don't want to convert data files or alter your code to write out a format that VisIt already reads, then you might consider writing your own database reader plug-in for VisIt. For more information on how to write your own database reader plug-in, read the <a href="content/assets/docs/simulation/computer-codes/visit/GettingDataIntoVisIt2.0.0.pdf" title="GDIV">Getting Data Into VisIt</a> manual.</p>
+
 </div>
 </div>	
 	  

@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <page>
   <title><![CDATA[VisIt FAQs]]></title>
+  <IM>LLNL-WEB-XXXXXX</IM>
   <owner><![CDATA[Page Owner Name]]></owner>
-  <lastchanged><![CDATA[March 21, 2013]]></lastchanged>
+  <lastchanged><![CDATA[August 8, 2019]]></lastchanged>
   <template><![CDATA[l2]]></template> 
   <content>
     <![CDATA[
@@ -21,8 +22,8 @@
 	<li class="active"><a href="simulation/computer-codes/visit/faqs">FAQs</a></li>
 </ul>
 
-<h2>8. I run VisIt and everything looks okay except no output is ever displayed in the visualization window. What is wrong?</h2>
-<p> This problem has arisen on Sun Blade and Linux systems and usually means that the X Server on your desktop machine does not have OpenGL support. To determine if this is the problem, type <strong>xdpyinfo</strong> on a window local to your desktop. Near the top of the resulting output is a section describing the server extensions on your system. On a Sun Blade system, you should see one named GLX. On Linux systems you should see extensions named <strong>GLX</strong>, <strong>NV-GLX</strong>, and <strong>NVIDIA-GLX</strong>. If these extensions are missing, your system administrator will have to install them for you.</p>
+<h2>8. How do I get my NETCDF data into VisIt?</h2>
+<p> Like HDF5, NETCDF is just an array storage file format so the same problems tend to occur when you want to get NETCDF data into VisIt. However, VisIt's NETCDF reader will attempt to open NETCDF data with a variety of different readers that look for various simulation code conventions (CF support not implemented) and in the event that the file was not written using any discernable convention then a back up basic reader is used. The basic NETCDF reader exposes all of the arrays in the NETCDF file as data that can be plotted on rectilinear meshes corresponding to the size of each array. The common complaint is that the data looks okay but the mesh is not scaled accordingly. If this happens to you then VisIt is using its basic NETCDF reader, which does not support any conventions. Note that it is possible to write a new database reader plugin to understand your data following the procedures provided in the <a href="simulation/computer-codes/visit/manuals" title="Getting Data Into VisIt">Getting Data Into VisIt</a> manual. </p>
 
 </div>
 </div>	

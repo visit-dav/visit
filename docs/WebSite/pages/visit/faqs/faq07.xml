@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <page>
   <title><![CDATA[VisIt FAQs]]></title>
+  <IM>LLNL-WEB-XXXXXX</IM>
   <owner><![CDATA[Page Owner Name]]></owner>
-  <lastchanged><![CDATA[March 21, 2013]]></lastchanged>
+  <lastchanged><![CDATA[August 8, 2019]]></lastchanged>
   <template><![CDATA[l2]]></template> 
   <content>
     <![CDATA[
@@ -21,8 +22,8 @@
 	<li class="active"><a href="simulation/computer-codes/visit/faqs">FAQs</a></li>
 </ul>
 
-<h2>7. Why is VisIt running slowly on my Linux system?</h2>
-<p> The standard Linux distributions do not come with vender-supplied graphics drivers, which are required to achieve full hardware acceleration. You should download and install the latest driver for your graphics card from your graphics card vendor's website. In the case of an NVidia graphics card, you can get the latest driver by going to <a href="http://www.nvidia.com">NVidia's website</a>, selecting the Download Drivers link, and then selecting the Linux Display Drivers link.</p>
+<h2>7. How do I get my HDF5 data into VisIt?</h2>
+<p> HDF5 is an array storage file format that supports a wide variety of data types and VisIt reads a lot of file formats from codes that use HDF5 as a storage layer. Unfortunately, VisIt cannot provide a plugin that can read all HDF5-based files because of the various conventions that codes invent when they store their files. VisIt's HDF5-enabled plugins are programmed to know about the conventions used to map array data from the file into meaningful constructs such as meshes with data. If you need to import HDF5 data into VisIt then you might be achieve satisfactory results if you choose <em>File-&gt;Open As...</em> and then open the file using the Pixie reader, which is VisIt's most generic HDF5 reader. Note that it is possible to write a new database reader plugin to understand your data following the procedures provided in the <a href="simulation/computer-codes/visit/manuals" title="Getting Data Into VisIt">Getting Data Into VisIt</a> manual. </p>
 
 </div>
 </div>	
