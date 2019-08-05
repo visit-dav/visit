@@ -734,7 +734,7 @@ avtMiliFileFormat::GetMesh(int timestep, int dom, const char *mesh)
                 // Create a copy of our name to pass into mili. 
                 //
                 char charName[1024];
-                sprintf(charName, varName.c_str());
+                sprintf(charName, "%s", varName.c_str());
                 char *namePtr = (char *) charName;
 
                 ReadMiliVarToBuffer(namePtr, SRIds, SRInfo, start,
@@ -1251,7 +1251,7 @@ avtMiliFileFormat::PopulateSubrecordInfo(int dom, int meshId)
         debug1 << "MILI: Encountered multiple state record formats! Is this in "
                << "use now???";
         char msg[1024];
-        sprintf(msg, "The Mili plugin is not set-up to handle multiple ",
+        sprintf(msg, "The Mili plugin is not set-up to handle multiple "
             "state record formats. Bailing.");
         EXCEPTION1(ImproperUseException, msg);
     }
@@ -1554,7 +1554,7 @@ avtMiliFileFormat::GetVar(int timestep,
     // Create a copy of our name to pass into mili. 
     //
     char charName[1024];
-    sprintf(charName, vShortName.c_str());
+    sprintf(charName, "%s", vShortName.c_str());
     char *namePtr = (char *) charName;
 
     if (varMD->GetCentering() == AVT_NODECENT)
@@ -1877,7 +1877,7 @@ avtMiliFileFormat::GetVectorVar(int timestep,
     // Create a copy of our name to pass into mili. 
     //
     char charName[1024];
-    sprintf(charName, varMD->GetShortName().c_str());
+    sprintf(charName, "%s", varMD->GetShortName().c_str());
     char *namePtr = (char *) charName;
 
     int vecSize   = varMD->GetVectorSize();
@@ -2045,7 +2045,7 @@ avtMiliFileFormat::GetElementSetVar(int timestep,
     // Create a copy of our name to pass into mili. 
     //
     char charName[1024];
-    sprintf(charName, varMD->GetShortName().c_str());
+    sprintf(charName, "%s", varMD->GetShortName().c_str());
     char *namePtr = (char *) charName;
 
     int compDims      = varMD->GetComponentDims();
