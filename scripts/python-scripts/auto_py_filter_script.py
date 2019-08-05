@@ -1,44 +1,11 @@
 
 import os
 import errno
+from my_args import *
 
-# ----------------------- #
-# --- User Input Area --- # 
-# ----------------------- #
-
-input_map = {
-    'my_python_1' : ['d','p'],
-    'my_python_2' : ['my_expr'],
-    'my_python_3' : ['my_python_2'],
-}
-
-expressions = [
-    'my_python_1 = d*p',
-    'my_python_2 = np.square(my_expr) - my_expr',
-    'my_python_3 = np.square(my_python_2)',
-]
-
-output_file_name = 'example.py'
-
-# ----------------------- #
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# --------------------------- #
-# --- Script details here --- #
-# --------------------------- #
+# --------------- #
+# --- Globals --- #
+# --------------- #
 
 imports_str = """
 import numpy as np
@@ -82,6 +49,9 @@ class_body_str_2 = """
         # Expression created by user and written here
 """
 
+# ---------------------- #
+# --- Main Execution --- #
+# ---------------------- #
 
 if __name__ == "__main__":
     print "Executing auto_py_filter_script.py..."
