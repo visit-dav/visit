@@ -733,13 +733,8 @@ avtMiliFileFormat::GetMesh(int timestep, int dom, const char *mesh)
                 //
                 // Create a copy of our name to pass into mili. 
                 //
-<<<<<<< HEAD
                 char charName[128];
                 snprintf(charName, 128, "%s", varName.c_str());
-=======
-                char charName[1024];
-                sprintf(charName, "%s", varName.c_str());
->>>>>>> 19f579e2cd... stepping stones
                 char *namePtr = (char *) charName;
 
                 ReadMiliVarToBuffer(namePtr, SRIds, SRInfo, start,
@@ -1559,13 +1554,8 @@ avtMiliFileFormat::GetVar(int timestep,
     //
     // Create a copy of our name to pass into mili. 
     //
-<<<<<<< HEAD
     char charName[128];
     snprintf(charName, 128, "%s", vShortName.c_str());
-=======
-    char charName[1024];
-    sprintf(charName, "%s", vShortName.c_str());
->>>>>>> 19f579e2cd... stepping stones
     char *namePtr = (char *) charName;
 
     if (varMD->GetCentering() == AVT_NODECENT)
@@ -1887,13 +1877,8 @@ avtMiliFileFormat::GetVectorVar(int timestep,
     //
     // Create a copy of our name to pass into mili. 
     //
-<<<<<<< HEAD
     char charName[128];
     snprintf(charName, 128, "%s", varMD->GetShortName().c_str());
-=======
-    char charName[1024];
-    sprintf(charName, "%s", varMD->GetShortName().c_str());
->>>>>>> 19f579e2cd... stepping stones
     char *namePtr = (char *) charName;
 
     int vecSize   = varMD->GetVectorSize();
@@ -2060,13 +2045,8 @@ avtMiliFileFormat::GetElementSetVar(int timestep,
     //
     // Create a copy of our name to pass into mili. 
     //
-<<<<<<< HEAD
     char charName[128];
     snprintf(charName, 128, "%s", varMD->GetShortName().c_str());
-=======
-    char charName[1024];
-    sprintf(charName, "%s", varMD->GetShortName().c_str());
->>>>>>> 19f579e2cd... stepping stones
     char *namePtr = (char *) charName;
 
     int compDims      = varMD->GetComponentDims();
