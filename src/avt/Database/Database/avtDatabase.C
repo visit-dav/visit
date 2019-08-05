@@ -597,7 +597,8 @@ avtDatabase::GetOutput(const char *var, int ts)
 // ****************************************************************************
 
 vtkDataArray **
-avtDatabase::GetTimeAndElementSpanVars(intVector elements, 
+avtDatabase::GetTimeAndElementSpanVars(int domain,
+                                       intVector elements, 
                                        stringVector vars,
                                        int *tsRange)
 {

@@ -85,7 +85,8 @@ class DATABASE_API avtMTMDFileFormat : public avtFileFormat
     virtual vtkDataArray  *GetVar(int, int, const char *) = 0;
     virtual vtkDataArray  *GetVectorVar(int, int, const char *);
 
-    virtual vtkDataArray **GetTimeAndElementSpanVars(intVector,
+    virtual vtkDataArray **GetTimeAndElementSpanVars(int,
+                                                     intVector,
                                                      stringVector,
                                                      int *);
 

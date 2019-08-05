@@ -154,7 +154,8 @@ avtMTMDFileFormatInterface::GetVar(int ts, int dom, const char *var)
 // ****************************************************************************
 
 vtkDataArray **
-avtMTMDFileFormatInterface::GetTimeAndElementSpanVars(intVector elements,
+avtMTMDFileFormatInterface::GetTimeAndElementSpanVars(int domain,
+                                                      intVector elements,
                                                       stringVector vars,
                                                       int *tsRange)
 {
@@ -171,7 +172,8 @@ avtMTMDFileFormatInterface::GetTimeAndElementSpanVars(intVector elements,
     //tsGroups[1] = GetTimestepGroupForTimestep(tsRange[1]);
     localRange[1] = GetTimestepWithinGroup(tsRange[1]);
 
-    return chunks[tsGroups[0]]->GetTimeAndElementSpanVars(elements, 
+    return chunks[tsGroups[0]]->GetTimeAndElementSpanVars(domain,
+                                                          elements, 
                                                           vars,
                                                           localRange);
 }

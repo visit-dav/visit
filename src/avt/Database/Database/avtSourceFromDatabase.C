@@ -645,11 +645,13 @@ avtSourceFromDatabase::GetDomainName(const std::string &var, const int ts,
 // ****************************************************************************
 
 vtkDataArray **
-avtSourceFromDatabase::FetchTimeAndElementSpanVars(intVector elements,
+avtSourceFromDatabase::FetchTimeAndElementSpanVars(int domain, 
+                                                   intVector elements,
                                                    stringVector vars,
                                                    int *tsRange)
 {
-    return database->GetTimeAndElementSpanVars(elements,
+    return database->GetTimeAndElementSpanVars(domain, 
+                                               elements,
                                                vars,
                                                tsRange);
 }

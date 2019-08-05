@@ -733,8 +733,13 @@ avtMiliFileFormat::GetMesh(int timestep, int dom, const char *mesh)
                 //
                 // Create a copy of our name to pass into mili. 
                 //
+<<<<<<< HEAD
                 char charName[128];
                 snprintf(charName, 128, "%s", varName.c_str());
+=======
+                char charName[1024];
+                sprintf(charName, "%s", varName.c_str());
+>>>>>>> 19f579e2cd... stepping stones
                 char *namePtr = (char *) charName;
 
                 ReadMiliVarToBuffer(namePtr, SRIds, SRInfo, start,
@@ -1345,6 +1350,7 @@ avtMiliFileFormat::GetVar(int timestep,
                           int dom, 
                           const char *varPath)
 {
+    cerr << "TIMESTEP: " << timestep << endl;//FIXME
     int gvTimer = visitTimer->StartTimer();
     int meshId  = ExtractMeshIdFromPath(varPath);
 
@@ -1553,8 +1559,13 @@ avtMiliFileFormat::GetVar(int timestep,
     //
     // Create a copy of our name to pass into mili. 
     //
+<<<<<<< HEAD
     char charName[128];
     snprintf(charName, 128, "%s", vShortName.c_str());
+=======
+    char charName[1024];
+    sprintf(charName, "%s", vShortName.c_str());
+>>>>>>> 19f579e2cd... stepping stones
     char *namePtr = (char *) charName;
 
     if (varMD->GetCentering() == AVT_NODECENT)
@@ -1876,8 +1887,13 @@ avtMiliFileFormat::GetVectorVar(int timestep,
     //
     // Create a copy of our name to pass into mili. 
     //
+<<<<<<< HEAD
     char charName[128];
     snprintf(charName, 128, "%s", varMD->GetShortName().c_str());
+=======
+    char charName[1024];
+    sprintf(charName, "%s", varMD->GetShortName().c_str());
+>>>>>>> 19f579e2cd... stepping stones
     char *namePtr = (char *) charName;
 
     int vecSize   = varMD->GetVectorSize();
@@ -2044,8 +2060,13 @@ avtMiliFileFormat::GetElementSetVar(int timestep,
     //
     // Create a copy of our name to pass into mili. 
     //
+<<<<<<< HEAD
     char charName[128];
     snprintf(charName, 128, "%s", varMD->GetShortName().c_str());
+=======
+    char charName[1024];
+    sprintf(charName, "%s", varMD->GetShortName().c_str());
+>>>>>>> 19f579e2cd... stepping stones
     char *namePtr = (char *) charName;
 
     int compDims      = varMD->GetComponentDims();
@@ -2261,7 +2282,8 @@ avtMiliFileFormat::ReadMiliVarToBuffer(char *varName,
 // ****************************************************************************
 
 vtkDataArray **
-avtMiliFileFormat::GetTimeAndElementSpanVars(intVector elementIds,
+avtMiliFileFormat::GetTimeAndElementSpanVars(int domain, 
+                                             intVector elementIds,
                                              stringVector vars,
                                              int *cycleRange)
 {
@@ -2273,23 +2295,24 @@ avtMiliFileFormat::GetTimeAndElementSpanVars(intVector elementIds,
     vtkFloatArray **spanArrays = new vtkFloatArray *[numArrays];
     
     int spanIdx = 0;
+    const int startC = cycleRange[0];
+    const int stopC  = cycleRange[1] + 1;
 
     for (int elIdx = 0; elIdx < numElems; ++elIdx)
     {
         for (int varIdx = 0; varIdx < numVars; ++varIdx)
         {
             vtkFloatArray *singleSpan = vtkFloatArray::New();
-            singleSpan->SetNumberOfComponents(1);
-            singleSpan->SetNumberOfTuples(spanSize);
-
+            singleSpan->SetNumberOfComponents(1); 
+            singleSpan->SetNumberOfTuples(spanSize); 
             float *spanPtr = (float *) singleSpan->GetVoidPointer(0);
 
-            for (int i = 0; i < spanSize; ++i)
+            for (int curC = startC; curC < stopC; ++curC)
             {
-                spanPtr[i] = i;
+                //vtkFloatArray *meshVar = 
+                //    (vtkFloatArray *) GetVar(curC, domain, vars[varIdx].c_str());
+                spanPtr[curC] = 10.0;
             }
-
-            spanArrays[spanIdx++] = singleSpan;
         }
     }
 

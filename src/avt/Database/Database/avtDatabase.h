@@ -302,7 +302,8 @@ class DATABASE_API avtDatabase
 
     //TODO: should we add a new query that this relies on? See Query methods
     //      below.
-    virtual vtkDataArray      **GetTimeAndElementSpanVars(intVector,
+    virtual vtkDataArray      **GetTimeAndElementSpanVars(int,
+                                                          intVector,
                                                           stringVector,
                                                           int *);
 

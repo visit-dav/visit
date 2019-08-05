@@ -150,7 +150,8 @@ class DATABASE_API avtSourceFromDatabase : public avtOriginatingDatasetSource
                             const int, std::string &);
 
     virtual vtkDataArray **
-                        FetchTimeAndElementSpanVars(intVector,
+                        FetchTimeAndElementSpanVars(int,
+                                                    intVector,
                                                     stringVector,
                                                     int *);
 
