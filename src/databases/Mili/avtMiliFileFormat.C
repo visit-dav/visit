@@ -480,7 +480,7 @@ avtMiliFileFormat::OpenDB(int dom)
             char famname[128];
             for (int i = 0; i < 4; i++)
             {
-                sprintf(famname, root_fmtstrs[i], famroot, dom);
+                snprintf(famname, 128, root_fmtstrs[i], famroot, dom);
                 debug3 << "MILI: Attempting mc_open on root=\"" << famname 
                     << "\", path=\"" << fampath << "\"." << endl;
 
@@ -528,7 +528,7 @@ avtMiliFileFormat::GetNodePositions(int timestep,
     // The node positions are stored in 'nodpos'.
     //
     char npChar[128];
-    sprintf(npChar, "nodpos");
+    snprintf(npChar, 128, "nodpos");
     char *npCharPtr = (char *)npChar;
 
     MiliVariableMetaData *nodpos = miliMetaData[meshId]->
@@ -647,8 +647,8 @@ avtMiliFileFormat::GetMesh(int timestep, int dom, const char *mesh)
     {
         debug1 << "MILI: The user has requested a sand mesh that doesn't exist!"
                << "This shouldn't be possible...";
-        char msg[1024];
-        sprintf(msg, "Cannot view a non-existent sand mesh!");
+        char msg[128];
+        snprintf(msg, 128, "Cannot view a non-existent sand mesh!");
         EXCEPTION1(ImproperUseException, msg);
     }
 
@@ -667,8 +667,8 @@ avtMiliFileFormat::GetMesh(int timestep, int dom, const char *mesh)
         if (datasets[dom][meshId]->GetPoints() == NULL)
         {
             debug1 << "MILI: Unable to find nodes! This shouldn't happen..";
-            char msg[1024];
-            sprintf(msg, "Unable to load nodes from Mili!");
+            char msg[128];
+            snprintf(msg, 128, "Unable to load nodes from Mili!");
             EXCEPTION1(ImproperUseException, msg);
         }
     }
@@ -733,8 +733,8 @@ avtMiliFileFormat::GetMesh(int timestep, int dom, const char *mesh)
                 //
                 // Create a copy of our name to pass into mili. 
                 //
-                char charName[1024];
-                sprintf(charName, "%s", varName.c_str());
+                char charName[128];
+                snprintf(charName, 128, "%s", varName.c_str());
                 char *namePtr = (char *) charName;
 
                 ReadMiliVarToBuffer(namePtr, SRIds, SRInfo, start,
@@ -870,8 +870,8 @@ avtMiliFileFormat::ReadMesh(int dom)
 
         if (rval != OK)
         {
-            char msg[1024];
-            sprintf(msg, "Unable to retrieve %s from mili", shortName);
+            char msg[512];
+            snprintf(msg, 512, "Unable to retrieve %s from mili", shortName);
             EXCEPTION1(ImproperUseException, msg);
         }
 
@@ -1250,8 +1250,8 @@ avtMiliFileFormat::PopulateSubrecordInfo(int dom, int meshId)
         //
         debug1 << "MILI: Encountered multiple state record formats! Is this in "
                << "use now???";
-        char msg[1024];
-        sprintf(msg, "The Mili plugin is not set-up to handle multiple "
+        char msg[512];
+        snprintf(msg, 512, "The Mili plugin is not set-up to handle multiple "
             "state record formats. Bailing.");
         EXCEPTION1(ImproperUseException, msg);
     }
@@ -1539,8 +1539,8 @@ avtMiliFileFormat::GetVar(int timestep,
     {
         debug1 << "MILI: GetVar recieved a null array?! "
                << "This shouldn't happen...";
-        char msg[1024];
-        sprintf(msg, "Data array must be initialized!");
+        char msg[128];
+        snprintf(msg, 128, "Data array must be initialized!");
         EXCEPTION1(ImproperUseException, msg);
     }
 
@@ -1553,8 +1553,8 @@ avtMiliFileFormat::GetVar(int timestep,
     //
     // Create a copy of our name to pass into mili. 
     //
-    char charName[1024];
-    sprintf(charName, "%s", vShortName.c_str());
+    char charName[128];
+    snprintf(charName, 128, "%s", vShortName.c_str());
     char *namePtr = (char *) charName;
 
     if (varMD->GetCentering() == AVT_NODECENT)
@@ -1876,8 +1876,8 @@ avtMiliFileFormat::GetVectorVar(int timestep,
     //
     // Create a copy of our name to pass into mili. 
     //
-    char charName[1024];
-    sprintf(charName, "%s", varMD->GetShortName().c_str());
+    char charName[128];
+    snprintf(charName, 128, "%s", varMD->GetShortName().c_str());
     char *namePtr = (char *) charName;
 
     int vecSize   = varMD->GetVectorSize();
@@ -2044,8 +2044,8 @@ avtMiliFileFormat::GetElementSetVar(int timestep,
     //
     // Create a copy of our name to pass into mili. 
     //
-    char charName[1024];
-    sprintf(charName, "%s", varMD->GetShortName().c_str());
+    char charName[128];
+    snprintf(charName, 128, "%s", varMD->GetShortName().c_str());
     char *namePtr = (char *) charName;
 
     int compDims      = varMD->GetComponentDims();
@@ -2293,7 +2293,7 @@ avtMiliFileFormat::AddMiliVariableToMetaData(avtDatabaseMetaData *avtMD,
     meshPaths.push_back(varPath);
 
     char meshName[32];
-    sprintf(meshName, "mesh%d", meshId + 1);
+    snprintf(meshName, 32, "mesh%d", meshId + 1);
     meshNames.push_back(meshName);
     numMeshes++;
 
@@ -2304,7 +2304,7 @@ avtMiliFileFormat::AddMiliVariableToMetaData(avtDatabaseMetaData *avtMD,
         meshPaths.push_back(sandPath);
 
         char meshName[32];
-        sprintf(meshName, "sand_mesh%d", meshId + 1);
+        snprintf(meshName, 32, "sand_mesh%d", meshId + 1);
         meshNames.push_back(meshName);
         numMeshes++;
     }
@@ -2402,7 +2402,7 @@ avtMiliFileFormat::AddMiliVariableToMetaData(avtDatabaseMetaData *avtMD,
                     // Add the x, y, z expressions. 
                     //
                     char name[1024];
-                    sprintf(name, "%s/%s", mPath.c_str(), 
+                    snprintf(name, 1024, "%s/%s", mPath.c_str(), 
                         vComps[(*idxItr)].c_str());
                     Expression expr = ScalarExpressionFromVec(mPath.c_str(),
                                                               name, 
@@ -2442,7 +2442,7 @@ avtMiliFileFormat::AddMiliVariableToMetaData(avtDatabaseMetaData *avtMD,
                     singleDim.SetType(Expression::ScalarMeshVar);
           
                     char singleDef[256];
-                    sprintf(singleDef, "<%s>[%d][%d]", 
+                    snprintf(singleDef, 256, "<%s>[%d][%d]", 
                         mPath.c_str(), cIdx, cIdx);
                     singleDim.SetDefinition(singleDef);
 
@@ -2459,7 +2459,7 @@ avtMiliFileFormat::AddMiliVariableToMetaData(avtDatabaseMetaData *avtMD,
                     multDim.SetType(Expression::ScalarMeshVar);
 
                     char multDef[256];
-                    sprintf(multDef, "<%s>[%d][%d]", mPath.c_str(), 
+                    snprintf(multDef, 256, "<%s>[%d][%d]", mPath.c_str(), 
                         cIdx, multDimIdxs[cIdx]);
                     multDim.SetDefinition(multDef);
 
@@ -2496,7 +2496,7 @@ avtMiliFileFormat::AddMiliVariableToMetaData(avtDatabaseMetaData *avtMD,
                     singleDim.SetType(Expression::ScalarMeshVar);
 
                     char singleDef[256];
-                    sprintf(singleDef, "<%s>[%d][%d]", 
+                    snprintf(singleDef, 256, "<%s>[%d][%d]", 
                         mPath.c_str(), cIdx, cIdx);
                     singleDim.SetDefinition(singleDef);
 
@@ -2511,7 +2511,7 @@ avtMiliFileFormat::AddMiliVariableToMetaData(avtDatabaseMetaData *avtMD,
                     int mltDIdx = cIdx + 3;
                     Expression multDim;
                     char multDef[256];
-                    sprintf(multDef, "<%s>[%d][%d]", mPath.c_str(), 
+                    snprintf(multDef, 256, "<%s>[%d][%d]", mPath.c_str(), 
                         cIdx, multDimIdxs[cIdx]);
                     string multName = mPath + "/" + vComps[mltDIdx];
                     multDim.SetName(multName);
@@ -2539,7 +2539,7 @@ avtMiliFileFormat::AddMiliVariableToMetaData(avtDatabaseMetaData *avtMD,
                     int cIdx = compIdxs[j];
                     compNames.push_back(vComps[cIdx]);
                     char name[1024];
-                    sprintf(name, "%s/%s", mPath.c_str(), 
+                    snprintf(name, 1024, "%s/%s", mPath.c_str(), 
                         vComps[cIdx].c_str());
                     Expression expr = ScalarExpressionFromVec(
                                           mPath.c_str(),
@@ -2594,9 +2594,9 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
         char sandMeshName[64];
         char matName[32];
 
-        sprintf(meshName, "mesh%d", meshId + 1);
-        sprintf(sandMeshName, "sand_mesh%d", meshId + 1);
-        sprintf(matName, "materials%d", meshId + 1);
+        snprintf(meshName, 32, "mesh%d", meshId + 1);
+        snprintf(sandMeshName, 64, "sand_mesh%d", meshId + 1);
+        snprintf(matName, 32, "materials%d", meshId + 1);
 
         avtMeshMetaData *mesh      = new avtMeshMetaData;
         mesh->name                 = meshName;
@@ -3456,8 +3456,8 @@ avtMiliFileFormat::LoadMiliInfoJson(const char *fpath)
     jfile.get(first);
     if (first != '{')
     {
-        char msg[1024];
-        sprintf(msg, "Invalid Mili file. You are likely using an outdated "
+        char msg[512];
+        snprintf(msg, 512, "Invalid Mili file. You are likely using an outdated "
             "format. To update your format, use the makemili_driver located "
             "in the bin directory. ");
 
@@ -3483,8 +3483,8 @@ avtMiliFileFormat::LoadMiliInfoJson(const char *fpath)
     else
     {
         debug1 << "MILI: Mili file missing domains?!?!?!\n";
-        char msg[1024];
-        sprintf(msg, "Mili file is missing domains!!");
+        char msg[128];
+        snprintf(msg, 128, "Mili file is missing domains!!");
         EXCEPTION1(ImproperUseException, msg);
     }
 
@@ -3507,8 +3507,8 @@ avtMiliFileFormat::LoadMiliInfoJson(const char *fpath)
     else
     {
         debug1 << "MILI: Mili file missing dims?!?!?!\n";
-        char msg[1024];
-        sprintf(msg, "Mili file is missing dims!!");
+        char msg[128];
+        snprintf(msg, 128, "Mili file is missing dims!!");
         EXCEPTION1(ImproperUseException, msg);
     }
     
@@ -3573,7 +3573,7 @@ avtMiliFileFormat::LoadMiliInfoJson(const char *fpath)
                     else
                     {
                         char buff[128];
-                        sprintf(buff, "%d", matCount);
+                        snprintf(buff, 128, "%d", matCount);
                         matName = string(buff);
                     }
 
@@ -3961,7 +3961,7 @@ avtMiliFileFormat::ScalarExpressionFromVec(const char *vecPath,
                                            int dim)
 {
     char def[256];
-    sprintf(def, "<%s>[%d]", vecPath, dim);
+    snprintf(def, 256, "<%s>[%d]", vecPath, dim);
     Expression::ExprType eType = Expression::ScalarMeshVar;
     return CreateGenericExpression(scalarPath, def, eType);
 }
