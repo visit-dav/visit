@@ -1,60 +1,42 @@
-#!/usr/tce/bin/python
 
 import os
 import errno
+from my_args import *
 
-# ----------------------- #
-# --- User Input Area --- # 
-# ----------------------- #
-
-input_variables = [
-    'd',
-    'p',
-]
-
-expressions = [
-    '_TEST1 = d*p',
-    '_TEST2 = d-p',
-]
-
-output_file_name = 'example.py'
-
-# ----------------------- #
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# --------------------------- #
-# --- Script details here --- #
-# --------------------------- #
+# --------------- #
+# --- Globals --- #
+# --------------- #
 
 imports_str = """
 import numpy as np
 import vtk.util.numpy_support as vnp
 """
 
-class_body_str = """
+get_data_str = """
+def smart_get_data(ds_in, var_name):
+    out = ds_in.GetCellData().GetArray(var_name)
+    if out is None:
+        out = ds_in.GetPointData().GetArray(var_name)
+    if out is None:
+        raise Exception('Could not fetch %s' % var_name)
+    res = vnp.vtk_to_numpy(out)
+    return res
+"""
+
+class_body_str_1 = """
     def __init__(self):
         SimplePythonExpression.__init__(self)
         self.name = "AutoPythonExpression"
         self.description = "Auto-generated python expression from auto_py_filter_script.py"
         self.output_is_point_var = False
         self.output_dimension = 1
+        self.input_num_vars = """
+        
+class_body_str_2 = """
     def derive_variable(self, ds_in, domain_id):
         # Globalize the names
         for var_name in self.input_var_names:
-            globals()[var_name] = vnp.vtk_to_numpy(ds_in.GetCellData().GetArray(var_name))
+            globals()[var_name] = smart_get_data(ds_in, var_name)
         
         # Perform calculation
         out = self.user_expression()
@@ -62,12 +44,14 @@ class_body_str = """
         # Convert result to vtk
         res = vnp.numpy_to_vtk(out, deep=1)
         return res
+
     def user_expression(self):
         # Expression created by user and written here
 """
 
-postamble = 'py_filter = AutoPythonExpression'
-
+# ---------------------- #
+# --- Main Execution --- #
+# ---------------------- #
 
 if __name__ == "__main__":
     print "Executing auto_py_filter_script.py..."
@@ -112,12 +96,18 @@ if __name__ == "__main__":
         os.makedirs(sub_dir_name) # Create the subdirectory to store the additional files
 
 
-    # Write the input variables
+    # Write the input variables map
     controller_file.write('import visit\n\n')
-    controller_file.write('input_variables = [\n')
-    for input_var in input_variables:
-        controller_file.write("    '" + input_var + "',\n")
-    controller_file.write(']\n\n')
+    input_map_str = 'input_map = {\n'
+    for expr, input_list in input_map.items():
+        input_list_str = ""
+        input_map_str += "    '" + expr + "' : [" # + input_list + ",\n")
+        for input_var in input_list:
+            input_list_str += "'" + input_var + "', "
+        input_list_str = input_list_str[:-2]
+        input_map_str += input_list_str + "],\n"
+    input_map_str += '}\n\n'
+    controller_file.write(input_map_str)
 
 
     # ---------------------------------------------- #
@@ -131,15 +121,17 @@ if __name__ == "__main__":
         sub_file_str = sub_dir_name + '/' + out_var + '.py'
         sub_file = open(sub_file_str, 'w+')
         sub_file.write(imports_str)
-        sub_file.write('class ' + out_var + 'PythonExpression(SimplePythonExpression):\n')
-        sub_file.write(class_body_str)
+        sub_file.write(get_data_str + '\n')
+        sub_file.write('class ' + out_var + '_PythonExpression(SimplePythonExpression):')
+        sub_file.write(class_body_str_1 + str(len(input_map[out_var])) + '\n')
+        sub_file.write(class_body_str_2)
         sub_file.write('        ' + expr + '\n\n')
         sub_file.write('        #Return the expression\n')
         sub_file.write('        return ' + out_var + '\n\n')
-        sub_file.write('py_filter = ' + out_var + 'PythonExpression')
+        sub_file.write('py_filter = ' + out_var + '_PythonExpression')
 
         # Populate the controller file
-        def_python_str = 'visit.DefinePythonExpression("' + out_var + '", input_variables, file = "' + sub_file_str + '")\n'
+        def_python_str = 'visit.DefinePythonExpression("' + out_var + '", input_map["' + out_var + '"], file = "' + sub_file_str + '")\n'
         controller_file.write(def_python_str)
 
         # Close subfile
