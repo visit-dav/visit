@@ -816,14 +816,13 @@ avtOriginatingSource::FetchArbitraryVTKObject(const char *name, int domain,
 // ****************************************************************************
 
 vtkDataArray **
-avtOriginatingSource::FetchTimeAndElementSpanVars(intVector elementIds,
+avtOriginatingSource::FetchTimeAndElementSpanVars(int domain, 
+                                                  intVector elementIds,
                                                   stringVector vars,
                                                   int *cycleRange)
 {
     debug1 << "Asked to fetch time and element spanning variables, " << endl;
     debug1 << "but don't know how to do that." << endl;
-    debug1 << "This means caching will not work; this case is not expected"
-           << endl;
     return NULL;
 }
 

@@ -127,11 +127,11 @@ avtZonePickQuery::Execute(vtkDataSet *ds, const int dom)
     stringVector vars;
     int tsRange[] = {0, 10};
 
-    elements.push_back(114); 
+    elements.push_back(116); 
     vars.push_back("Primal/Shared/edrate");
 
     vtkFloatArray **spanArray = (vtkFloatArray **) (GetInput()->GetSource()->
-        GetOriginatingSource()->FetchTimeAndElementSpanVars(elements, vars, tsRange));
+        GetOriginatingSource()->FetchTimeAndElementSpanVars(0, elements, vars, tsRange));
 
     if (spanArray != NULL)
     {
