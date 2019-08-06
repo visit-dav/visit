@@ -5,7 +5,6 @@
 #include <PyMeshManagementAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyMeshManagementAttributes
@@ -43,82 +42,82 @@ PyMeshManagementAttributes_ToString(const MeshManagementAttributes *atts, const 
     char tmpStr[1000];
 
     {   const doubleVector &discretizationTolerance = atts->GetDiscretizationTolerance();
-        SNPRINTF(tmpStr, 1000, "%sdiscretizationTolerance = (", prefix);
+        snprintf(tmpStr, 1000, "%sdiscretizationTolerance = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < discretizationTolerance.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", discretizationTolerance[i]);
+            snprintf(tmpStr, 1000, "%g", discretizationTolerance[i]);
             str += tmpStr;
             if(i < discretizationTolerance.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const doubleVector &discretizationToleranceX = atts->GetDiscretizationToleranceX();
-        SNPRINTF(tmpStr, 1000, "%sdiscretizationToleranceX = (", prefix);
+        snprintf(tmpStr, 1000, "%sdiscretizationToleranceX = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < discretizationToleranceX.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", discretizationToleranceX[i]);
+            snprintf(tmpStr, 1000, "%g", discretizationToleranceX[i]);
             str += tmpStr;
             if(i < discretizationToleranceX.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const doubleVector &discretizationToleranceY = atts->GetDiscretizationToleranceY();
-        SNPRINTF(tmpStr, 1000, "%sdiscretizationToleranceY = (", prefix);
+        snprintf(tmpStr, 1000, "%sdiscretizationToleranceY = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < discretizationToleranceY.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", discretizationToleranceY[i]);
+            snprintf(tmpStr, 1000, "%g", discretizationToleranceY[i]);
             str += tmpStr;
             if(i < discretizationToleranceY.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const doubleVector &discretizationToleranceZ = atts->GetDiscretizationToleranceZ();
-        SNPRINTF(tmpStr, 1000, "%sdiscretizationToleranceZ = (", prefix);
+        snprintf(tmpStr, 1000, "%sdiscretizationToleranceZ = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < discretizationToleranceZ.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", discretizationToleranceZ[i]);
+            snprintf(tmpStr, 1000, "%g", discretizationToleranceZ[i]);
             str += tmpStr;
             if(i < discretizationToleranceZ.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     const char *discretizationMode_names = "Uniform, Adaptive, MultiPass";
     switch (atts->GetDiscretizationMode())
     {
       case MeshManagementAttributes::Uniform:
-          SNPRINTF(tmpStr, 1000, "%sdiscretizationMode = %sUniform  # %s\n", prefix, prefix, discretizationMode_names);
+          snprintf(tmpStr, 1000, "%sdiscretizationMode = %sUniform  # %s\n", prefix, prefix, discretizationMode_names);
           str += tmpStr;
           break;
       case MeshManagementAttributes::Adaptive:
-          SNPRINTF(tmpStr, 1000, "%sdiscretizationMode = %sAdaptive  # %s\n", prefix, prefix, discretizationMode_names);
+          snprintf(tmpStr, 1000, "%sdiscretizationMode = %sAdaptive  # %s\n", prefix, prefix, discretizationMode_names);
           str += tmpStr;
           break;
       case MeshManagementAttributes::MultiPass:
-          SNPRINTF(tmpStr, 1000, "%sdiscretizationMode = %sMultiPass  # %s\n", prefix, prefix, discretizationMode_names);
+          snprintf(tmpStr, 1000, "%sdiscretizationMode = %sMultiPass  # %s\n", prefix, prefix, discretizationMode_names);
           str += tmpStr;
           break;
       default:
@@ -126,14 +125,14 @@ PyMeshManagementAttributes_ToString(const MeshManagementAttributes *atts, const 
     }
 
     if(atts->GetDiscretizeBoundaryOnly())
-        SNPRINTF(tmpStr, 1000, "%sdiscretizeBoundaryOnly = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sdiscretizeBoundaryOnly = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sdiscretizeBoundaryOnly = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sdiscretizeBoundaryOnly = 0\n", prefix);
     str += tmpStr;
     if(atts->GetPassNativeCSG())
-        SNPRINTF(tmpStr, 1000, "%spassNativeCSG = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%spassNativeCSG = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%spassNativeCSG = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%spassNativeCSG = 0\n", prefix);
     str += tmpStr;
     return str;
 }

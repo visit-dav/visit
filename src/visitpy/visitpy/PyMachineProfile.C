@@ -5,7 +5,6 @@
 #include <PyMachineProfile.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 #include <PyLaunchProfile.h>
 
 // ****************************************************************************
@@ -43,97 +42,97 @@ PyMachineProfile_ToString(const MachineProfile *atts, const char *prefix)
     std::string str;
     char tmpStr[1000];
 
-    SNPRINTF(tmpStr, 1000, "%shost = \"%s\"\n", prefix, atts->GetHost().c_str());
+    snprintf(tmpStr, 1000, "%shost = \"%s\"\n", prefix, atts->GetHost().c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%suserName = \"%s\"\n", prefix, atts->GetUserName().c_str());
+    snprintf(tmpStr, 1000, "%suserName = \"%s\"\n", prefix, atts->GetUserName().c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%spassword = \"%s\"\n", prefix, atts->GetPassword().c_str());
+    snprintf(tmpStr, 1000, "%spassword = \"%s\"\n", prefix, atts->GetPassword().c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%shostAliases = \"%s\"\n", prefix, atts->GetHostAliases().c_str());
+    snprintf(tmpStr, 1000, "%shostAliases = \"%s\"\n", prefix, atts->GetHostAliases().c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%shostNickname = \"%s\"\n", prefix, atts->GetHostNickname().c_str());
+    snprintf(tmpStr, 1000, "%shostNickname = \"%s\"\n", prefix, atts->GetHostNickname().c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sdirectory = \"%s\"\n", prefix, atts->GetDirectory().c_str());
+    snprintf(tmpStr, 1000, "%sdirectory = \"%s\"\n", prefix, atts->GetDirectory().c_str());
     str += tmpStr;
     if(atts->GetShareOneBatchJob())
-        SNPRINTF(tmpStr, 1000, "%sshareOneBatchJob = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sshareOneBatchJob = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sshareOneBatchJob = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sshareOneBatchJob = 0\n", prefix);
     str += tmpStr;
     if(atts->GetSshPortSpecified())
-        SNPRINTF(tmpStr, 1000, "%ssshPortSpecified = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%ssshPortSpecified = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%ssshPortSpecified = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%ssshPortSpecified = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%ssshPort = %d\n", prefix, atts->GetSshPort());
+    snprintf(tmpStr, 1000, "%ssshPort = %d\n", prefix, atts->GetSshPort());
     str += tmpStr;
     if(atts->GetSshCommandSpecified())
-        SNPRINTF(tmpStr, 1000, "%ssshCommandSpecified = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%ssshCommandSpecified = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%ssshCommandSpecified = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%ssshCommandSpecified = 0\n", prefix);
     str += tmpStr;
     {   const stringVector &sshCommand = atts->GetSshCommand();
-        SNPRINTF(tmpStr, 1000, "%ssshCommand = (", prefix);
+        snprintf(tmpStr, 1000, "%ssshCommand = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < sshCommand.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "\"%s\"", sshCommand[i].c_str());
+            snprintf(tmpStr, 1000, "\"%s\"", sshCommand[i].c_str());
             str += tmpStr;
             if(i < sshCommand.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     if(atts->GetUseGateway())
-        SNPRINTF(tmpStr, 1000, "%suseGateway = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%suseGateway = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%suseGateway = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%suseGateway = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sgatewayHost = \"%s\"\n", prefix, atts->GetGatewayHost().c_str());
+    snprintf(tmpStr, 1000, "%sgatewayHost = \"%s\"\n", prefix, atts->GetGatewayHost().c_str());
     str += tmpStr;
     const char *clientHostDetermination_names = "MachineName, ManuallySpecified, ParsedFromSSHCLIENT";
     switch (atts->GetClientHostDetermination())
     {
       case MachineProfile::MachineName:
-          SNPRINTF(tmpStr, 1000, "%sclientHostDetermination = %sMachineName  # %s\n", prefix, prefix, clientHostDetermination_names);
+          snprintf(tmpStr, 1000, "%sclientHostDetermination = %sMachineName  # %s\n", prefix, prefix, clientHostDetermination_names);
           str += tmpStr;
           break;
       case MachineProfile::ManuallySpecified:
-          SNPRINTF(tmpStr, 1000, "%sclientHostDetermination = %sManuallySpecified  # %s\n", prefix, prefix, clientHostDetermination_names);
+          snprintf(tmpStr, 1000, "%sclientHostDetermination = %sManuallySpecified  # %s\n", prefix, prefix, clientHostDetermination_names);
           str += tmpStr;
           break;
       case MachineProfile::ParsedFromSSHCLIENT:
-          SNPRINTF(tmpStr, 1000, "%sclientHostDetermination = %sParsedFromSSHCLIENT  # %s\n", prefix, prefix, clientHostDetermination_names);
+          snprintf(tmpStr, 1000, "%sclientHostDetermination = %sParsedFromSSHCLIENT  # %s\n", prefix, prefix, clientHostDetermination_names);
           str += tmpStr;
           break;
       default:
           break;
     }
 
-    SNPRINTF(tmpStr, 1000, "%smanualClientHostName = \"%s\"\n", prefix, atts->GetManualClientHostName().c_str());
+    snprintf(tmpStr, 1000, "%smanualClientHostName = \"%s\"\n", prefix, atts->GetManualClientHostName().c_str());
     str += tmpStr;
     if(atts->GetTunnelSSH())
-        SNPRINTF(tmpStr, 1000, "%stunnelSSH = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%stunnelSSH = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%stunnelSSH = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%stunnelSSH = 0\n", prefix);
     str += tmpStr;
     if(atts->GetMaximumNodesValid())
-        SNPRINTF(tmpStr, 1000, "%smaximumNodesValid = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%smaximumNodesValid = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%smaximumNodesValid = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%smaximumNodesValid = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%smaximumNodes = %d\n", prefix, atts->GetMaximumNodes());
+    snprintf(tmpStr, 1000, "%smaximumNodes = %d\n", prefix, atts->GetMaximumNodes());
     str += tmpStr;
     if(atts->GetMaximumProcessorsValid())
-        SNPRINTF(tmpStr, 1000, "%smaximumProcessorsValid = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%smaximumProcessorsValid = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%smaximumProcessorsValid = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%smaximumProcessorsValid = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%smaximumProcessors = %d\n", prefix, atts->GetMaximumProcessors());
+    snprintf(tmpStr, 1000, "%smaximumProcessors = %d\n", prefix, atts->GetMaximumProcessors());
     str += tmpStr;
     { // new scope
         int index = 0;
@@ -141,14 +140,14 @@ PyMachineProfile_ToString(const MachineProfile *atts, const char *prefix)
         for(AttributeGroupVector::const_iterator pos = atts->GetLaunchProfiles().begin(); pos != atts->GetLaunchProfiles().end(); ++pos, ++index)
         {
             const LaunchProfile *current = (const LaunchProfile *)(*pos);
-            SNPRINTF(tmpStr, 1000, "GetLaunchProfiles(%d).", index);
+            snprintf(tmpStr, 1000, "GetLaunchProfiles(%d).", index);
             std::string objPrefix(prefix + std::string(tmpStr));
             str += PyLaunchProfile_ToString(current, objPrefix.c_str());
         }
         if(index == 0)
             str += "#launchProfiles does not contain any LaunchProfile objects.\n";
     }
-    SNPRINTF(tmpStr, 1000, "%sactiveProfile = %d\n", prefix, atts->GetActiveProfile());
+    snprintf(tmpStr, 1000, "%sactiveProfile = %d\n", prefix, atts->GetActiveProfile());
     str += tmpStr;
     return str;
 }
@@ -687,9 +686,9 @@ MachineProfile_GetLaunchProfiles(PyObject *self, PyObject *args)
     {
         char msg[400] = {'\0'};
         if(obj->data->GetLaunchProfiles().size() == 0)
-            SNPRINTF(msg, 400, "In MachineProfile::GetLaunchProfiles : The index %d is invalid because launchProfiles is empty.", index);
+            snprintf(msg, 400, "In MachineProfile::GetLaunchProfiles : The index %d is invalid because launchProfiles is empty.", index);
         else
-            SNPRINTF(msg, 400, "In MachineProfile::GetLaunchProfiles : The index %d is invalid. Use index values in: [0, %ld).",  index, obj->data->GetLaunchProfiles().size());
+            snprintf(msg, 400, "In MachineProfile::GetLaunchProfiles : The index %d is invalid. Use index values in: [0, %ld).",  index, obj->data->GetLaunchProfiles().size());
         PyErr_SetString(PyExc_IndexError, msg);
         return NULL;
     }
@@ -723,7 +722,7 @@ MachineProfile_AddLaunchProfiles(PyObject *self, PyObject *args)
     if(!PyLaunchProfile_Check(element))
     {
         char msg[400] = {'\0'};
-        SNPRINTF(msg, 400, "The MachineProfile::AddLaunchProfiles method only accepts LaunchProfile objects.");
+        snprintf(msg, 400, "The MachineProfile::AddLaunchProfiles method only accepts LaunchProfile objects.");
         PyErr_SetString(PyExc_TypeError, msg);
         return NULL;
     }
@@ -771,7 +770,7 @@ MachineProfile_RemoveLaunchProfiles(PyObject *self, PyObject *args)
     if(index < 0 || index >= obj->data->GetNumLaunchProfiles())
     {
         char msg[400] = {'\0'};
-        SNPRINTF(msg, 400, "In MachineProfile::RemoveLaunchProfiles : Index %d is out of range", index);
+        snprintf(msg, 400, "In MachineProfile::RemoveLaunchProfiles : Index %d is out of range", index);
         PyErr_SetString(PyExc_IndexError, msg);
         return NULL;
     }

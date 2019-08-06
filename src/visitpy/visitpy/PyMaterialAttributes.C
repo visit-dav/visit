@@ -5,7 +5,6 @@
 #include <PyMaterialAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyMaterialAttributes
@@ -43,46 +42,46 @@ PyMaterialAttributes_ToString(const MaterialAttributes *atts, const char *prefix
     char tmpStr[1000];
 
     if(atts->GetSmoothing())
-        SNPRINTF(tmpStr, 1000, "%ssmoothing = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%ssmoothing = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%ssmoothing = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%ssmoothing = 0\n", prefix);
     str += tmpStr;
     if(atts->GetForceMIR())
-        SNPRINTF(tmpStr, 1000, "%sforceMIR = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sforceMIR = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sforceMIR = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sforceMIR = 0\n", prefix);
     str += tmpStr;
     if(atts->GetCleanZonesOnly())
-        SNPRINTF(tmpStr, 1000, "%scleanZonesOnly = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%scleanZonesOnly = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%scleanZonesOnly = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%scleanZonesOnly = 0\n", prefix);
     str += tmpStr;
     if(atts->GetNeedValidConnectivity())
-        SNPRINTF(tmpStr, 1000, "%sneedValidConnectivity = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sneedValidConnectivity = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sneedValidConnectivity = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sneedValidConnectivity = 0\n", prefix);
     str += tmpStr;
     const char *algorithm_names = "EquiT, EquiZ, Isovolume, PLIC, Discrete";
     switch (atts->GetAlgorithm())
     {
       case MaterialAttributes::EquiT:
-          SNPRINTF(tmpStr, 1000, "%salgorithm = %sEquiT  # %s\n", prefix, prefix, algorithm_names);
+          snprintf(tmpStr, 1000, "%salgorithm = %sEquiT  # %s\n", prefix, prefix, algorithm_names);
           str += tmpStr;
           break;
       case MaterialAttributes::EquiZ:
-          SNPRINTF(tmpStr, 1000, "%salgorithm = %sEquiZ  # %s\n", prefix, prefix, algorithm_names);
+          snprintf(tmpStr, 1000, "%salgorithm = %sEquiZ  # %s\n", prefix, prefix, algorithm_names);
           str += tmpStr;
           break;
       case MaterialAttributes::Isovolume:
-          SNPRINTF(tmpStr, 1000, "%salgorithm = %sIsovolume  # %s\n", prefix, prefix, algorithm_names);
+          snprintf(tmpStr, 1000, "%salgorithm = %sIsovolume  # %s\n", prefix, prefix, algorithm_names);
           str += tmpStr;
           break;
       case MaterialAttributes::PLIC:
-          SNPRINTF(tmpStr, 1000, "%salgorithm = %sPLIC  # %s\n", prefix, prefix, algorithm_names);
+          snprintf(tmpStr, 1000, "%salgorithm = %sPLIC  # %s\n", prefix, prefix, algorithm_names);
           str += tmpStr;
           break;
       case MaterialAttributes::Discrete:
-          SNPRINTF(tmpStr, 1000, "%salgorithm = %sDiscrete  # %s\n", prefix, prefix, algorithm_names);
+          snprintf(tmpStr, 1000, "%salgorithm = %sDiscrete  # %s\n", prefix, prefix, algorithm_names);
           str += tmpStr;
           break;
       default:
@@ -90,24 +89,24 @@ PyMaterialAttributes_ToString(const MaterialAttributes *atts, const char *prefix
     }
 
     if(atts->GetIterationEnabled())
-        SNPRINTF(tmpStr, 1000, "%siterationEnabled = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%siterationEnabled = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%siterationEnabled = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%siterationEnabled = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%snumIterations = %d\n", prefix, atts->GetNumIterations());
+    snprintf(tmpStr, 1000, "%snumIterations = %d\n", prefix, atts->GetNumIterations());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%siterationDamping = %g\n", prefix, atts->GetIterationDamping());
+    snprintf(tmpStr, 1000, "%siterationDamping = %g\n", prefix, atts->GetIterationDamping());
     str += tmpStr;
     if(atts->GetSimplifyHeavilyMixedZones())
-        SNPRINTF(tmpStr, 1000, "%ssimplifyHeavilyMixedZones = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%ssimplifyHeavilyMixedZones = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%ssimplifyHeavilyMixedZones = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%ssimplifyHeavilyMixedZones = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%smaxMaterialsPerZone = %d\n", prefix, atts->GetMaxMaterialsPerZone());
+    snprintf(tmpStr, 1000, "%smaxMaterialsPerZone = %d\n", prefix, atts->GetMaxMaterialsPerZone());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sisoVolumeFraction = %g\n", prefix, atts->GetIsoVolumeFraction());
+    snprintf(tmpStr, 1000, "%sisoVolumeFraction = %g\n", prefix, atts->GetIsoVolumeFraction());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sannealingTime = %d\n", prefix, atts->GetAnnealingTime());
+    snprintf(tmpStr, 1000, "%sannealingTime = %d\n", prefix, atts->GetAnnealingTime());
     str += tmpStr;
     return str;
 }

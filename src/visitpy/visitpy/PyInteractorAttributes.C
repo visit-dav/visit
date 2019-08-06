@@ -5,7 +5,6 @@
 #include <PyInteractorAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyInteractorAttributes
@@ -43,33 +42,33 @@ PyInteractorAttributes_ToString(const InteractorAttributes *atts, const char *pr
     char tmpStr[1000];
 
     if(atts->GetShowGuidelines())
-        SNPRINTF(tmpStr, 1000, "%sshowGuidelines = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sshowGuidelines = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sshowGuidelines = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sshowGuidelines = 0\n", prefix);
     str += tmpStr;
     if(atts->GetClampSquare())
-        SNPRINTF(tmpStr, 1000, "%sclampSquare = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sclampSquare = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sclampSquare = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sclampSquare = 0\n", prefix);
     str += tmpStr;
     if(atts->GetFillViewportOnZoom())
-        SNPRINTF(tmpStr, 1000, "%sfillViewportOnZoom = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sfillViewportOnZoom = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sfillViewportOnZoom = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sfillViewportOnZoom = 0\n", prefix);
     str += tmpStr;
     const char *navigationMode_names = "Trackball, Dolly, Flythrough";
     switch (atts->GetNavigationMode())
     {
       case InteractorAttributes::Trackball:
-          SNPRINTF(tmpStr, 1000, "%snavigationMode = %sTrackball  # %s\n", prefix, prefix, navigationMode_names);
+          snprintf(tmpStr, 1000, "%snavigationMode = %sTrackball  # %s\n", prefix, prefix, navigationMode_names);
           str += tmpStr;
           break;
       case InteractorAttributes::Dolly:
-          SNPRINTF(tmpStr, 1000, "%snavigationMode = %sDolly  # %s\n", prefix, prefix, navigationMode_names);
+          snprintf(tmpStr, 1000, "%snavigationMode = %sDolly  # %s\n", prefix, prefix, navigationMode_names);
           str += tmpStr;
           break;
       case InteractorAttributes::Flythrough:
-          SNPRINTF(tmpStr, 1000, "%snavigationMode = %sFlythrough  # %s\n", prefix, prefix, navigationMode_names);
+          snprintf(tmpStr, 1000, "%snavigationMode = %sFlythrough  # %s\n", prefix, prefix, navigationMode_names);
           str += tmpStr;
           break;
       default:
@@ -77,23 +76,23 @@ PyInteractorAttributes_ToString(const InteractorAttributes *atts, const char *pr
     }
 
     if(atts->GetAxisArraySnap())
-        SNPRINTF(tmpStr, 1000, "%saxisArraySnap = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%saxisArraySnap = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%saxisArraySnap = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%saxisArraySnap = 0\n", prefix);
     str += tmpStr;
     const char *boundingBoxMode_names = "Always, Never, Auto";
     switch (atts->GetBoundingBoxMode())
     {
       case InteractorAttributes::Always:
-          SNPRINTF(tmpStr, 1000, "%sboundingBoxMode = %sAlways  # %s\n", prefix, prefix, boundingBoxMode_names);
+          snprintf(tmpStr, 1000, "%sboundingBoxMode = %sAlways  # %s\n", prefix, prefix, boundingBoxMode_names);
           str += tmpStr;
           break;
       case InteractorAttributes::Never:
-          SNPRINTF(tmpStr, 1000, "%sboundingBoxMode = %sNever  # %s\n", prefix, prefix, boundingBoxMode_names);
+          snprintf(tmpStr, 1000, "%sboundingBoxMode = %sNever  # %s\n", prefix, prefix, boundingBoxMode_names);
           str += tmpStr;
           break;
       case InteractorAttributes::Auto:
-          SNPRINTF(tmpStr, 1000, "%sboundingBoxMode = %sAuto  # %s\n", prefix, prefix, boundingBoxMode_names);
+          snprintf(tmpStr, 1000, "%sboundingBoxMode = %sAuto  # %s\n", prefix, prefix, boundingBoxMode_names);
           str += tmpStr;
           break;
       default:

@@ -5,7 +5,6 @@
 #include <PyPickVarInfo.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyPickVarInfo
@@ -42,149 +41,149 @@ PyPickVarInfo_ToString(const PickVarInfo *atts, const char *prefix)
     std::string str;
     char tmpStr[1000];
 
-    SNPRINTF(tmpStr, 1000, "%svariableName = \"%s\"\n", prefix, atts->GetVariableName().c_str());
+    snprintf(tmpStr, 1000, "%svariableName = \"%s\"\n", prefix, atts->GetVariableName().c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%svariableType = \"%s\"\n", prefix, atts->GetVariableType().c_str());
+    snprintf(tmpStr, 1000, "%svariableType = \"%s\"\n", prefix, atts->GetVariableType().c_str());
     str += tmpStr;
     {   const stringVector &names = atts->GetNames();
-        SNPRINTF(tmpStr, 1000, "%snames = (", prefix);
+        snprintf(tmpStr, 1000, "%snames = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < names.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "\"%s\"", names[i].c_str());
+            snprintf(tmpStr, 1000, "\"%s\"", names[i].c_str());
             str += tmpStr;
             if(i < names.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const doubleVector &values = atts->GetValues();
-        SNPRINTF(tmpStr, 1000, "%svalues = (", prefix);
+        snprintf(tmpStr, 1000, "%svalues = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < values.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", values[i]);
+            snprintf(tmpStr, 1000, "%g", values[i]);
             str += tmpStr;
             if(i < values.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const stringVector &mixNames = atts->GetMixNames();
-        SNPRINTF(tmpStr, 1000, "%smixNames = (", prefix);
+        snprintf(tmpStr, 1000, "%smixNames = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < mixNames.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "\"%s\"", mixNames[i].c_str());
+            snprintf(tmpStr, 1000, "\"%s\"", mixNames[i].c_str());
             str += tmpStr;
             if(i < mixNames.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const doubleVector &mixValues = atts->GetMixValues();
-        SNPRINTF(tmpStr, 1000, "%smixValues = (", prefix);
+        snprintf(tmpStr, 1000, "%smixValues = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < mixValues.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", mixValues[i]);
+            snprintf(tmpStr, 1000, "%g", mixValues[i]);
             str += tmpStr;
             if(i < mixValues.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     if(atts->GetMixVar())
-        SNPRINTF(tmpStr, 1000, "%smixVar = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%smixVar = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%smixVar = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%smixVar = 0\n", prefix);
     str += tmpStr;
     const char *centering_names = "Nodal, Zonal, None";
     switch (atts->GetCentering())
     {
       case PickVarInfo::Nodal:
-          SNPRINTF(tmpStr, 1000, "%scentering = %sNodal  # %s\n", prefix, prefix, centering_names);
+          snprintf(tmpStr, 1000, "%scentering = %sNodal  # %s\n", prefix, prefix, centering_names);
           str += tmpStr;
           break;
       case PickVarInfo::Zonal:
-          SNPRINTF(tmpStr, 1000, "%scentering = %sZonal  # %s\n", prefix, prefix, centering_names);
+          snprintf(tmpStr, 1000, "%scentering = %sZonal  # %s\n", prefix, prefix, centering_names);
           str += tmpStr;
           break;
       case PickVarInfo::None:
-          SNPRINTF(tmpStr, 1000, "%scentering = %sNone  # %s\n", prefix, prefix, centering_names);
+          snprintf(tmpStr, 1000, "%scentering = %sNone  # %s\n", prefix, prefix, centering_names);
           str += tmpStr;
           break;
       default:
           break;
     }
 
-    SNPRINTF(tmpStr, 1000, "%smiscMessage = \"%s\"\n", prefix, atts->GetMiscMessage().c_str());
+    snprintf(tmpStr, 1000, "%smiscMessage = \"%s\"\n", prefix, atts->GetMiscMessage().c_str());
     str += tmpStr;
     {   const intVector &numMatsPerZone = atts->GetNumMatsPerZone();
-        SNPRINTF(tmpStr, 1000, "%snumMatsPerZone = (", prefix);
+        snprintf(tmpStr, 1000, "%snumMatsPerZone = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < numMatsPerZone.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%d", numMatsPerZone[i]);
+            snprintf(tmpStr, 1000, "%d", numMatsPerZone[i]);
             str += tmpStr;
             if(i < numMatsPerZone.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const stringVector &matNames = atts->GetMatNames();
-        SNPRINTF(tmpStr, 1000, "%smatNames = (", prefix);
+        snprintf(tmpStr, 1000, "%smatNames = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < matNames.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "\"%s\"", matNames[i].c_str());
+            snprintf(tmpStr, 1000, "\"%s\"", matNames[i].c_str());
             str += tmpStr;
             if(i < matNames.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const intVector &numSpecsPerMat = atts->GetNumSpecsPerMat();
-        SNPRINTF(tmpStr, 1000, "%snumSpecsPerMat = (", prefix);
+        snprintf(tmpStr, 1000, "%snumSpecsPerMat = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < numSpecsPerMat.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%d", numSpecsPerMat[i]);
+            snprintf(tmpStr, 1000, "%d", numSpecsPerMat[i]);
             str += tmpStr;
             if(i < numSpecsPerMat.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
-    SNPRINTF(tmpStr, 1000, "%sfloatFormat = \"%s\"\n", prefix, atts->GetFloatFormat().c_str());
+    snprintf(tmpStr, 1000, "%sfloatFormat = \"%s\"\n", prefix, atts->GetFloatFormat().c_str());
     str += tmpStr;
     return str;
 }

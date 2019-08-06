@@ -5,7 +5,6 @@
 #include <PyNameschemeAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyNameschemeAttributes
@@ -42,102 +41,102 @@ PyNameschemeAttributes_ToString(const NameschemeAttributes *atts, const char *pr
     std::string str;
     char tmpStr[1000];
 
-    SNPRINTF(tmpStr, 1000, "%snamescheme = \"%s\"\n", prefix, atts->GetNamescheme().c_str());
+    snprintf(tmpStr, 1000, "%snamescheme = \"%s\"\n", prefix, atts->GetNamescheme().c_str());
     str += tmpStr;
     {   const stringVector &externalArrayNames = atts->GetExternalArrayNames();
-        SNPRINTF(tmpStr, 1000, "%sexternalArrayNames = (", prefix);
+        snprintf(tmpStr, 1000, "%sexternalArrayNames = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < externalArrayNames.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "\"%s\"", externalArrayNames[i].c_str());
+            snprintf(tmpStr, 1000, "\"%s\"", externalArrayNames[i].c_str());
             str += tmpStr;
             if(i < externalArrayNames.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const intVector &externalArrayOffsets = atts->GetExternalArrayOffsets();
-        SNPRINTF(tmpStr, 1000, "%sexternalArrayOffsets = (", prefix);
+        snprintf(tmpStr, 1000, "%sexternalArrayOffsets = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < externalArrayOffsets.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%d", externalArrayOffsets[i]);
+            snprintf(tmpStr, 1000, "%d", externalArrayOffsets[i]);
             str += tmpStr;
             if(i < externalArrayOffsets.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const intVector &externalArrayData = atts->GetExternalArrayData();
-        SNPRINTF(tmpStr, 1000, "%sexternalArrayData = (", prefix);
+        snprintf(tmpStr, 1000, "%sexternalArrayData = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < externalArrayData.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%d", externalArrayData[i]);
+            snprintf(tmpStr, 1000, "%d", externalArrayData[i]);
             str += tmpStr;
             if(i < externalArrayData.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const stringVector &allExplicitNames = atts->GetAllExplicitNames();
-        SNPRINTF(tmpStr, 1000, "%sallExplicitNames = (", prefix);
+        snprintf(tmpStr, 1000, "%sallExplicitNames = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < allExplicitNames.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "\"%s\"", allExplicitNames[i].c_str());
+            snprintf(tmpStr, 1000, "\"%s\"", allExplicitNames[i].c_str());
             str += tmpStr;
             if(i < allExplicitNames.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const intVector &explicitIds = atts->GetExplicitIds();
-        SNPRINTF(tmpStr, 1000, "%sexplicitIds = (", prefix);
+        snprintf(tmpStr, 1000, "%sexplicitIds = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < explicitIds.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%d", explicitIds[i]);
+            snprintf(tmpStr, 1000, "%d", explicitIds[i]);
             str += tmpStr;
             if(i < explicitIds.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const stringVector &explicitNames = atts->GetExplicitNames();
-        SNPRINTF(tmpStr, 1000, "%sexplicitNames = (", prefix);
+        snprintf(tmpStr, 1000, "%sexplicitNames = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < explicitNames.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "\"%s\"", explicitNames[i].c_str());
+            snprintf(tmpStr, 1000, "\"%s\"", explicitNames[i].c_str());
             str += tmpStr;
             if(i < explicitNames.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     return str;

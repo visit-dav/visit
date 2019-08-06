@@ -5,7 +5,6 @@
 #include <PyViewAxisArrayAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyViewAxisArrayAttributes
@@ -43,51 +42,51 @@ PyViewAxisArrayAttributes_ToString(const ViewAxisArrayAttributes *atts, const ch
     char tmpStr[1000];
 
     {   const double *domainCoords = atts->GetDomainCoords();
-        SNPRINTF(tmpStr, 1000, "%sdomainCoords = (", prefix);
+        snprintf(tmpStr, 1000, "%sdomainCoords = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 2; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", domainCoords[i]);
+            snprintf(tmpStr, 1000, "%g", domainCoords[i]);
             str += tmpStr;
             if(i < 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const double *rangeCoords = atts->GetRangeCoords();
-        SNPRINTF(tmpStr, 1000, "%srangeCoords = (", prefix);
+        snprintf(tmpStr, 1000, "%srangeCoords = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 2; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", rangeCoords[i]);
+            snprintf(tmpStr, 1000, "%g", rangeCoords[i]);
             str += tmpStr;
             if(i < 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const double *viewportCoords = atts->GetViewportCoords();
-        SNPRINTF(tmpStr, 1000, "%sviewportCoords = (", prefix);
+        snprintf(tmpStr, 1000, "%sviewportCoords = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 4; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", viewportCoords[i]);
+            snprintf(tmpStr, 1000, "%g", viewportCoords[i]);
             str += tmpStr;
             if(i < 3)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     return str;

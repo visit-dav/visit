@@ -5,7 +5,6 @@
 #include <PyavtBaseVarMetaData.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyavtBaseVarMetaData
@@ -42,21 +41,21 @@ PyavtBaseVarMetaData_ToString(const avtBaseVarMetaData *atts, const char *prefix
     std::string str;
     char tmpStr[1000];
 
-    SNPRINTF(tmpStr, 1000, "%sname = \"%s\"\n", prefix, atts->name.c_str());
+    snprintf(tmpStr, 1000, "%sname = \"%s\"\n", prefix, atts->name.c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%soriginalName = \"%s\"\n", prefix, atts->originalName.c_str());
+    snprintf(tmpStr, 1000, "%soriginalName = \"%s\"\n", prefix, atts->originalName.c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%smeshName = \"%s\"\n", prefix, atts->meshName.c_str());
+    snprintf(tmpStr, 1000, "%smeshName = \"%s\"\n", prefix, atts->meshName.c_str());
     str += tmpStr;
     if(atts->validVariable)
-        SNPRINTF(tmpStr, 1000, "%svalidVariable = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%svalidVariable = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%svalidVariable = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%svalidVariable = 0\n", prefix);
     str += tmpStr;
     if(atts->hideFromGUI)
-        SNPRINTF(tmpStr, 1000, "%shideFromGUI = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%shideFromGUI = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%shideFromGUI = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%shideFromGUI = 0\n", prefix);
     str += tmpStr;
     return str;
 }

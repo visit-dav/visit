@@ -4,7 +4,6 @@
 
 #include <PyDatabaseCorrelation.h>
 #include <ObserverToCallback.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyDatabaseCorrelation
@@ -44,34 +43,34 @@ PyDatabaseCorrelation_ToString(const DatabaseCorrelation *atts, const char *pref
     // Make a reference.
     const DatabaseCorrelation &correlation = *atts;
 
-    SNPRINTF(tmpStr, 1000, "name = \"%s\"\n", atts->GetName().c_str());
+    snprintf(tmpStr, 1000, "name = \"%s\"\n", atts->GetName().c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "numStates = %d\n", atts->GetNumStates());
+    snprintf(tmpStr, 1000, "numStates = %d\n", atts->GetNumStates());
     str += tmpStr;
     const char *method_names = "IndexForIndexCorrelation, StretchedIndexCorrelation, TimeCorrelation, CycleCorrelation, UserDefinedCorrelation";
     if(atts->GetMethod() == DatabaseCorrelation::IndexForIndexCorrelation)
         {
-             SNPRINTF(tmpStr, 1000, "method = IndexForIndexCorrelation  # %s\n", method_names);
+             snprintf(tmpStr, 1000, "method = IndexForIndexCorrelation  # %s\n", method_names);
              str += tmpStr;
         }
     else if(atts->GetMethod() == DatabaseCorrelation::StretchedIndexCorrelation)
         {
-             SNPRINTF(tmpStr, 1000, "method = StretchedIndexCorrelation  # %s\n", method_names);
+             snprintf(tmpStr, 1000, "method = StretchedIndexCorrelation  # %s\n", method_names);
              str += tmpStr;
         }
     else if(atts->GetMethod() == DatabaseCorrelation::TimeCorrelation)
         {
-             SNPRINTF(tmpStr, 1000, "method = TimeCorrelation  # %s\n", method_names);
+             snprintf(tmpStr, 1000, "method = TimeCorrelation  # %s\n", method_names);
              str += tmpStr;
         }
     else if(atts->GetMethod() == DatabaseCorrelation::CycleCorrelation)
         {
-             SNPRINTF(tmpStr, 1000, "method = CycleCorrelation  # %s\n", method_names);
+             snprintf(tmpStr, 1000, "method = CycleCorrelation  # %s\n", method_names);
              str += tmpStr;
         }
     else
         {
-             SNPRINTF(tmpStr, 1000, "method = UserDefinedCorrelation  # %s\n", method_names);
+             snprintf(tmpStr, 1000, "method = UserDefinedCorrelation  # %s\n", method_names);
              str += tmpStr;
         }
 
@@ -79,21 +78,21 @@ PyDatabaseCorrelation_ToString(const DatabaseCorrelation *atts, const char *pref
     const stringVector &databaseNames = correlation.GetDatabaseNames();
     for(i = 0; i < databaseNames.size(); ++i)
     {
-        SNPRINTF(tmpStr, 1000, "database[%ld]=%s\n", i, databaseNames[i].c_str());
+        snprintf(tmpStr, 1000, "database[%ld]=%s\n", i, databaseNames[i].c_str());
         str += tmpStr;
-        SNPRINTF(tmpStr, 1000, "    numStates=%d\n", correlation.GetDatabaseNStates()[i]);
+        snprintf(tmpStr, 1000, "    numStates=%d\n", correlation.GetDatabaseNStates()[i]);
         str += tmpStr;
         str += "    times={";
         for(j = 0; j < (size_t)correlation.GetDatabaseNStates()[i]; ++j)
         {
-            SNPRINTF(tmpStr, 1000, "%g, ", correlation.GetDatabaseTimes()[index+j]);
+            snprintf(tmpStr, 1000, "%g, ", correlation.GetDatabaseTimes()[index+j]);
             str += tmpStr;
         }
         str += "}\n";
         str += "    cycles={";
         for(j = 0; j < (size_t)correlation.GetDatabaseNStates()[i]; ++j)
         {
-            SNPRINTF(tmpStr, 1000, "%d, ", correlation.GetDatabaseCycles()[index+j]);
+            snprintf(tmpStr, 1000, "%d, ", correlation.GetDatabaseCycles()[index+j]);
             str += tmpStr;
         }
         str += "}\n";
@@ -103,42 +102,42 @@ PyDatabaseCorrelation_ToString(const DatabaseCorrelation *atts, const char *pref
         str += "    indices={";
         for(j = 0; j < (size_t)correlation.GetNumStates(); ++j)
         {
-            SNPRINTF(tmpStr, 1000, "%d, ", correlation.GetIndices()[i*correlation.GetNumStates() + j]);
+            snprintf(tmpStr, 1000, "%d, ", correlation.GetIndices()[i*correlation.GetNumStates() + j]);
             str += tmpStr;
         }
         str += "}\n";
     }
 
     {   const doubleVector &condensedTimes = atts->GetCondensedTimes();
-        SNPRINTF(tmpStr, 1000, "condensedTimes = (");
+        snprintf(tmpStr, 1000, "condensedTimes = (");
         str += tmpStr;
         for(i = 0; i < condensedTimes.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", condensedTimes[i]);
+            snprintf(tmpStr, 1000, "%g", condensedTimes[i]);
             str += tmpStr;
             if(i < condensedTimes.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const intVector &condensedCycles = atts->GetCondensedCycles();
-        SNPRINTF(tmpStr, 1000, "condensedCycles = (");
+        snprintf(tmpStr, 1000, "condensedCycles = (");
         str += tmpStr;
         for(i = 0; i < condensedCycles.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%d", condensedCycles[i]);
+            snprintf(tmpStr, 1000, "%d", condensedCycles[i]);
             str += tmpStr;
             if(i < condensedCycles.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     return str;

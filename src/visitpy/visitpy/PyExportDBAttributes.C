@@ -5,7 +5,6 @@
 #include <PyExportDBAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 #include <PyDBOptionsAttributes.h>
 
 // ****************************************************************************
@@ -44,42 +43,42 @@ PyExportDBAttributes_ToString(const ExportDBAttributes *atts, const char *prefix
     char tmpStr[1000];
 
     if(atts->GetAllTimes())
-        SNPRINTF(tmpStr, 1000, "%sallTimes = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sallTimes = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sallTimes = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sallTimes = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sdirname = \"%s\"\n", prefix, atts->GetDirname().c_str());
+    snprintf(tmpStr, 1000, "%sdirname = \"%s\"\n", prefix, atts->GetDirname().c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sfilename = \"%s\"\n", prefix, atts->GetFilename().c_str());
+    snprintf(tmpStr, 1000, "%sfilename = \"%s\"\n", prefix, atts->GetFilename().c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%stimeStateFormat = \"%s\"\n", prefix, atts->GetTimeStateFormat().c_str());
+    snprintf(tmpStr, 1000, "%stimeStateFormat = \"%s\"\n", prefix, atts->GetTimeStateFormat().c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sdb_type = \"%s\"\n", prefix, atts->GetDb_type().c_str());
+    snprintf(tmpStr, 1000, "%sdb_type = \"%s\"\n", prefix, atts->GetDb_type().c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sdb_type_fullname = \"%s\"\n", prefix, atts->GetDb_type_fullname().c_str());
+    snprintf(tmpStr, 1000, "%sdb_type_fullname = \"%s\"\n", prefix, atts->GetDb_type_fullname().c_str());
     str += tmpStr;
     {   const stringVector &variables = atts->GetVariables();
-        SNPRINTF(tmpStr, 1000, "%svariables = (", prefix);
+        snprintf(tmpStr, 1000, "%svariables = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < variables.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "\"%s\"", variables[i].c_str());
+            snprintf(tmpStr, 1000, "\"%s\"", variables[i].c_str());
             str += tmpStr;
             if(i < variables.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     if(atts->GetWriteUsingGroups())
-        SNPRINTF(tmpStr, 1000, "%swriteUsingGroups = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%swriteUsingGroups = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%swriteUsingGroups = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%swriteUsingGroups = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sgroupSize = %d\n", prefix, atts->GetGroupSize());
+    snprintf(tmpStr, 1000, "%sgroupSize = %d\n", prefix, atts->GetGroupSize());
     str += tmpStr;
     { // new scope
         std::string objPrefix(prefix);

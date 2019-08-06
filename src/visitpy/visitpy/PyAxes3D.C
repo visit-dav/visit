@@ -5,7 +5,6 @@
 #include <PyAxes3D.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 #include <PyAxisAttributes.h>
 #include <PyAxisAttributes.h>
 #include <PyAxisAttributes.h>
@@ -46,35 +45,35 @@ PyAxes3D_ToString(const Axes3D *atts, const char *prefix)
     char tmpStr[1000];
 
     if(atts->GetVisible())
-        SNPRINTF(tmpStr, 1000, "%svisible = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%svisible = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%svisible = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%svisible = 0\n", prefix);
     str += tmpStr;
     if(atts->GetAutoSetTicks())
-        SNPRINTF(tmpStr, 1000, "%sautoSetTicks = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sautoSetTicks = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sautoSetTicks = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sautoSetTicks = 0\n", prefix);
     str += tmpStr;
     if(atts->GetAutoSetScaling())
-        SNPRINTF(tmpStr, 1000, "%sautoSetScaling = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sautoSetScaling = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sautoSetScaling = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sautoSetScaling = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%slineWidth = %d\n", prefix, atts->GetLineWidth());
+    snprintf(tmpStr, 1000, "%slineWidth = %d\n", prefix, atts->GetLineWidth());
     str += tmpStr;
     const char *tickLocation_names = "Inside, Outside, Both";
     switch (atts->GetTickLocation())
     {
       case Axes3D::Inside:
-          SNPRINTF(tmpStr, 1000, "%stickLocation = %sInside  # %s\n", prefix, prefix, tickLocation_names);
+          snprintf(tmpStr, 1000, "%stickLocation = %sInside  # %s\n", prefix, prefix, tickLocation_names);
           str += tmpStr;
           break;
       case Axes3D::Outside:
-          SNPRINTF(tmpStr, 1000, "%stickLocation = %sOutside  # %s\n", prefix, prefix, tickLocation_names);
+          snprintf(tmpStr, 1000, "%stickLocation = %sOutside  # %s\n", prefix, prefix, tickLocation_names);
           str += tmpStr;
           break;
       case Axes3D::Both:
-          SNPRINTF(tmpStr, 1000, "%stickLocation = %sBoth  # %s\n", prefix, prefix, tickLocation_names);
+          snprintf(tmpStr, 1000, "%stickLocation = %sBoth  # %s\n", prefix, prefix, tickLocation_names);
           str += tmpStr;
           break;
       default:
@@ -85,23 +84,23 @@ PyAxes3D_ToString(const Axes3D *atts, const char *prefix)
     switch (atts->GetAxesType())
     {
       case Axes3D::ClosestTriad:
-          SNPRINTF(tmpStr, 1000, "%saxesType = %sClosestTriad  # %s\n", prefix, prefix, axesType_names);
+          snprintf(tmpStr, 1000, "%saxesType = %sClosestTriad  # %s\n", prefix, prefix, axesType_names);
           str += tmpStr;
           break;
       case Axes3D::FurthestTriad:
-          SNPRINTF(tmpStr, 1000, "%saxesType = %sFurthestTriad  # %s\n", prefix, prefix, axesType_names);
+          snprintf(tmpStr, 1000, "%saxesType = %sFurthestTriad  # %s\n", prefix, prefix, axesType_names);
           str += tmpStr;
           break;
       case Axes3D::OutsideEdges:
-          SNPRINTF(tmpStr, 1000, "%saxesType = %sOutsideEdges  # %s\n", prefix, prefix, axesType_names);
+          snprintf(tmpStr, 1000, "%saxesType = %sOutsideEdges  # %s\n", prefix, prefix, axesType_names);
           str += tmpStr;
           break;
       case Axes3D::StaticTriad:
-          SNPRINTF(tmpStr, 1000, "%saxesType = %sStaticTriad  # %s\n", prefix, prefix, axesType_names);
+          snprintf(tmpStr, 1000, "%saxesType = %sStaticTriad  # %s\n", prefix, prefix, axesType_names);
           str += tmpStr;
           break;
       case Axes3D::StaticEdges:
-          SNPRINTF(tmpStr, 1000, "%saxesType = %sStaticEdges  # %s\n", prefix, prefix, axesType_names);
+          snprintf(tmpStr, 1000, "%saxesType = %sStaticEdges  # %s\n", prefix, prefix, axesType_names);
           str += tmpStr;
           break;
       default:
@@ -109,14 +108,14 @@ PyAxes3D_ToString(const Axes3D *atts, const char *prefix)
     }
 
     if(atts->GetTriadFlag())
-        SNPRINTF(tmpStr, 1000, "%striadFlag = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%striadFlag = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%striadFlag = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%striadFlag = 0\n", prefix);
     str += tmpStr;
     if(atts->GetBboxFlag())
-        SNPRINTF(tmpStr, 1000, "%sbboxFlag = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sbboxFlag = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sbboxFlag = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sbboxFlag = 0\n", prefix);
     str += tmpStr;
     { // new scope
         std::string objPrefix(prefix);
@@ -134,60 +133,60 @@ PyAxes3D_ToString(const Axes3D *atts, const char *prefix)
         str += PyAxisAttributes_ToString(&atts->GetZAxis(), objPrefix.c_str());
     }
     if(atts->GetSetBBoxLocation())
-        SNPRINTF(tmpStr, 1000, "%ssetBBoxLocation = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%ssetBBoxLocation = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%ssetBBoxLocation = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%ssetBBoxLocation = 0\n", prefix);
     str += tmpStr;
     {   const double *bboxLocation = atts->GetBboxLocation();
-        SNPRINTF(tmpStr, 1000, "%sbboxLocation = (", prefix);
+        snprintf(tmpStr, 1000, "%sbboxLocation = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 6; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", bboxLocation[i]);
+            snprintf(tmpStr, 1000, "%g", bboxLocation[i]);
             str += tmpStr;
             if(i < 5)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const int *triadColor = atts->GetTriadColor();
-        SNPRINTF(tmpStr, 1000, "%striadColor = (", prefix);
+        snprintf(tmpStr, 1000, "%striadColor = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 3; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%d", triadColor[i]);
+            snprintf(tmpStr, 1000, "%d", triadColor[i]);
             str += tmpStr;
             if(i < 2)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
-    SNPRINTF(tmpStr, 1000, "%striadLineWidth = %g\n", prefix, atts->GetTriadLineWidth());
+    snprintf(tmpStr, 1000, "%striadLineWidth = %g\n", prefix, atts->GetTriadLineWidth());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%striadFont = %d\n", prefix, atts->GetTriadFont());
+    snprintf(tmpStr, 1000, "%striadFont = %d\n", prefix, atts->GetTriadFont());
     str += tmpStr;
     if(atts->GetTriadBold())
-        SNPRINTF(tmpStr, 1000, "%striadBold = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%striadBold = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%striadBold = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%striadBold = 0\n", prefix);
     str += tmpStr;
     if(atts->GetTriadItalic())
-        SNPRINTF(tmpStr, 1000, "%striadItalic = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%striadItalic = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%striadItalic = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%striadItalic = 0\n", prefix);
     str += tmpStr;
     if(atts->GetTriadSetManually())
-        SNPRINTF(tmpStr, 1000, "%striadSetManually = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%striadSetManually = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%striadSetManually = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%striadSetManually = 0\n", prefix);
     str += tmpStr;
     return str;
 }

@@ -5,7 +5,6 @@
 #include <PySimulationUIValues.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PySimulationUIValues
@@ -42,20 +41,20 @@ PySimulationUIValues_ToString(const SimulationUIValues *atts, const char *prefix
     std::string str;
     char tmpStr[1000];
 
-    SNPRINTF(tmpStr, 1000, "%shost = \"%s\"\n", prefix, atts->GetHost().c_str());
+    snprintf(tmpStr, 1000, "%shost = \"%s\"\n", prefix, atts->GetHost().c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%ssim = \"%s\"\n", prefix, atts->GetSim().c_str());
+    snprintf(tmpStr, 1000, "%ssim = \"%s\"\n", prefix, atts->GetSim().c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sname = \"%s\"\n", prefix, atts->GetName().c_str());
+    snprintf(tmpStr, 1000, "%sname = \"%s\"\n", prefix, atts->GetName().c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sivalue = %d\n", prefix, atts->GetIvalue());
+    snprintf(tmpStr, 1000, "%sivalue = %d\n", prefix, atts->GetIvalue());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%ssvalue = \"%s\"\n", prefix, atts->GetSvalue().c_str());
+    snprintf(tmpStr, 1000, "%ssvalue = \"%s\"\n", prefix, atts->GetSvalue().c_str());
     str += tmpStr;
     if(atts->GetEnabled())
-        SNPRINTF(tmpStr, 1000, "%senabled = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%senabled = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%senabled = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%senabled = 0\n", prefix);
     str += tmpStr;
     return str;
 }

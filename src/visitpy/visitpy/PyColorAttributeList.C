@@ -5,7 +5,6 @@
 #include <PyColorAttributeList.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 #include <PyColorAttribute.h>
 
 // ****************************************************************************
@@ -49,7 +48,7 @@ PyColorAttributeList_ToString(const ColorAttributeList *atts, const char *prefix
         for(AttributeGroupVector::const_iterator pos = atts->GetColors().begin(); pos != atts->GetColors().end(); ++pos, ++index)
         {
             const ColorAttribute *current = (const ColorAttribute *)(*pos);
-            SNPRINTF(tmpStr, 1000, "GetColors(%d).", index);
+            snprintf(tmpStr, 1000, "GetColors(%d).", index);
             std::string objPrefix(prefix + std::string(tmpStr));
             str += PyColorAttribute_ToString(current, objPrefix.c_str());
         }
@@ -79,9 +78,9 @@ ColorAttributeList_GetColors(PyObject *self, PyObject *args)
     {
         char msg[400] = {'\0'};
         if(obj->data->GetColors().size() == 0)
-            SNPRINTF(msg, 400, "In ColorAttributeList::GetColors : The index %d is invalid because colors is empty.", index);
+            snprintf(msg, 400, "In ColorAttributeList::GetColors : The index %d is invalid because colors is empty.", index);
         else
-            SNPRINTF(msg, 400, "In ColorAttributeList::GetColors : The index %d is invalid. Use index values in: [0, %ld).",  index, obj->data->GetColors().size());
+            snprintf(msg, 400, "In ColorAttributeList::GetColors : The index %d is invalid. Use index values in: [0, %ld).",  index, obj->data->GetColors().size());
         PyErr_SetString(PyExc_IndexError, msg);
         return NULL;
     }
@@ -115,7 +114,7 @@ ColorAttributeList_AddColors(PyObject *self, PyObject *args)
     if(!PyColorAttribute_Check(element))
     {
         char msg[400] = {'\0'};
-        SNPRINTF(msg, 400, "The ColorAttributeList::AddColors method only accepts ColorAttribute objects.");
+        snprintf(msg, 400, "The ColorAttributeList::AddColors method only accepts ColorAttribute objects.");
         PyErr_SetString(PyExc_TypeError, msg);
         return NULL;
     }
@@ -163,7 +162,7 @@ ColorAttributeList_RemoveColors(PyObject *self, PyObject *args)
     if(index < 0 || index >= obj->data->GetNumColors())
     {
         char msg[400] = {'\0'};
-        SNPRINTF(msg, 400, "In ColorAttributeList::RemoveColors : Index %d is out of range", index);
+        snprintf(msg, 400, "In ColorAttributeList::RemoveColors : Index %d is out of range", index);
         PyErr_SetString(PyExc_IndexError, msg);
         return NULL;
     }

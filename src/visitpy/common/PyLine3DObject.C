@@ -5,7 +5,6 @@
 #include <PyLine3DObject.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 #include <ColorAttribute.h>
 #include <MapNode.h>
 
@@ -881,7 +880,6 @@ Line3DObject_print(PyObject *v, FILE *fp, int flags)
     return 0;
 }
 
-#include <snprintf.h>
 PyObject *
 PyLine3DObject_StringRepresentation(const AnnotationObject *atts)
 {
@@ -890,61 +888,61 @@ PyLine3DObject_StringRepresentation(const AnnotationObject *atts)
     const MapNode &opts = atts->GetOptions();
 
     if(atts->GetVisible())
-        SNPRINTF(tmpStr, 1000, "visible = 1\n");
+        snprintf(tmpStr, 1000, "visible = 1\n");
     else
-        SNPRINTF(tmpStr, 1000, "visible = 0\n");
+        snprintf(tmpStr, 1000, "visible = 0\n");
     str += tmpStr;
     if(atts->GetActive())
-        SNPRINTF(tmpStr, 1000, "active = 1\n");
+        snprintf(tmpStr, 1000, "active = 1\n");
     else
-        SNPRINTF(tmpStr, 1000, "active = 0\n");
+        snprintf(tmpStr, 1000, "active = 0\n");
     str += tmpStr;
     const double *pos= atts->GetPosition();
-    SNPRINTF(tmpStr, 1000, "point1 = (%g, %g, %g)\n", pos[0], pos[1], pos[2]);
+    snprintf(tmpStr, 1000, "point1 = (%g, %g, %g)\n", pos[0], pos[1], pos[2]);
     str += tmpStr;
     const double *pos2 = atts->GetPosition2();
-    SNPRINTF(tmpStr, 1000, "point2 = (%g, %g, %g)\n", pos2[0], pos2[1], pos2[2]);
+    snprintf(tmpStr, 1000, "point2 = (%g, %g, %g)\n", pos2[0], pos2[1], pos2[2]);
     str += tmpStr;
 
     const char *type_values[] = {"LINE", "TUBE"};
-    SNPRINTF(tmpStr, 1000, "lineType = %s  # LINE, TUBE\n", type_values[opts.GetEntry("lineType")->AsInt()]);
+    snprintf(tmpStr, 1000, "lineType = %s  # LINE, TUBE\n", type_values[opts.GetEntry("lineType")->AsInt()]);
     str += tmpStr;
 
-    SNPRINTF(tmpStr, 1000, "width = %d\n", opts.GetEntry("width")->AsInt());
+    snprintf(tmpStr, 1000, "width = %d\n", opts.GetEntry("width")->AsInt());
     str += tmpStr;
 
     const char *qual_values[] = {"LOW", "MEDIUM", "HIGH"};
-    SNPRINTF(tmpStr, 1000, "tubeQuality = %s  # LOW, MEDIUM, HIGH\n", qual_values[opts.GetEntry("tubeQuality")->AsInt()]);
+    snprintf(tmpStr, 1000, "tubeQuality = %s  # LOW, MEDIUM, HIGH\n", qual_values[opts.GetEntry("tubeQuality")->AsInt()]);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "tubeRadius = %lg\n", opts.GetEntry("tubeRadius")->AsDouble());
+    snprintf(tmpStr, 1000, "tubeRadius = %lg\n", opts.GetEntry("tubeRadius")->AsDouble());
     str += tmpStr;
 
     if(atts->GetUseForegroundForTextColor())
-        SNPRINTF(tmpStr, 1000, "useForegroundForLineColor = 1\n");
+        snprintf(tmpStr, 1000, "useForegroundForLineColor = 1\n");
     else
-        SNPRINTF(tmpStr, 1000, "useForegroundForLineColor = 0\n");
+        snprintf(tmpStr, 1000, "useForegroundForLineColor = 0\n");
     str += tmpStr;
  
     const unsigned char *color = atts->GetColor1().GetColor();
-    SNPRINTF(tmpStr, 1000, "color = (%d, %d, %d, %d)\n", int(color[0]), int(color[1]), int(color[2]), int(color[3]));
+    snprintf(tmpStr, 1000, "color = (%d, %d, %d, %d)\n", int(color[0]), int(color[1]), int(color[2]), int(color[3]));
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "opacity = %d\n", atts->GetColor1().Alpha());
+    snprintf(tmpStr, 1000, "opacity = %d\n", atts->GetColor1().Alpha());
     str += tmpStr;
 
     
-    SNPRINTF(tmpStr, 1000, "arrow1 = %d\n", opts.GetEntry("arrow1")->AsInt());
+    snprintf(tmpStr, 1000, "arrow1 = %d\n", opts.GetEntry("arrow1")->AsInt());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "arrow1Resolution = %d\n", opts.GetEntry("arrow1Resolution")->AsInt());
+    snprintf(tmpStr, 1000, "arrow1Resolution = %d\n", opts.GetEntry("arrow1Resolution")->AsInt());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "arrow1Radius = %lg\n", opts.GetEntry("arrow1Radius")->AsDouble());
-    SNPRINTF(tmpStr, 1000, "arrow1Height = %lg\n", opts.GetEntry("arrow1Height")->AsDouble());
+    snprintf(tmpStr, 1000, "arrow1Radius = %lg\n", opts.GetEntry("arrow1Radius")->AsDouble());
+    snprintf(tmpStr, 1000, "arrow1Height = %lg\n", opts.GetEntry("arrow1Height")->AsDouble());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "arrow2 = %d\n", opts.GetEntry("arrow1")->AsInt());
+    snprintf(tmpStr, 1000, "arrow2 = %d\n", opts.GetEntry("arrow1")->AsInt());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "arrow2Resolution = %d\n", opts.GetEntry("arrow2Resolution")->AsInt());
+    snprintf(tmpStr, 1000, "arrow2Resolution = %d\n", opts.GetEntry("arrow2Resolution")->AsInt());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "arrow2Radius = %lg\n", opts.GetEntry("arrow2Radius")->AsDouble());
-    SNPRINTF(tmpStr, 1000, "arrow2Height = %lg\n", opts.GetEntry("arrow2Height")->AsDouble());
+    snprintf(tmpStr, 1000, "arrow2Radius = %lg\n", opts.GetEntry("arrow2Radius")->AsDouble());
+    snprintf(tmpStr, 1000, "arrow2Height = %lg\n", opts.GetEntry("arrow2Height")->AsDouble());
     str += tmpStr;
  
     return PyString_FromString(str.c_str());

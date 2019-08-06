@@ -5,7 +5,6 @@
 #include <PyavtSimulationCommandSpecification.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyavtSimulationCommandSpecification
@@ -42,52 +41,52 @@ PyavtSimulationCommandSpecification_ToString(const avtSimulationCommandSpecifica
     std::string str;
     char tmpStr[1000];
 
-    SNPRINTF(tmpStr, 1000, "%sname = \"%s\"\n", prefix, atts->GetName().c_str());
+    snprintf(tmpStr, 1000, "%sname = \"%s\"\n", prefix, atts->GetName().c_str());
     str += tmpStr;
     const char *argumentType_names = "CmdArgNone, CmdArgInt, CmdArgFloat, CmdArgString";
     switch (atts->GetArgumentType())
     {
       case avtSimulationCommandSpecification::CmdArgNone:
-          SNPRINTF(tmpStr, 1000, "%sargumentType = %sCmdArgNone  # %s\n", prefix, prefix, argumentType_names);
+          snprintf(tmpStr, 1000, "%sargumentType = %sCmdArgNone  # %s\n", prefix, prefix, argumentType_names);
           str += tmpStr;
           break;
       case avtSimulationCommandSpecification::CmdArgInt:
-          SNPRINTF(tmpStr, 1000, "%sargumentType = %sCmdArgInt  # %s\n", prefix, prefix, argumentType_names);
+          snprintf(tmpStr, 1000, "%sargumentType = %sCmdArgInt  # %s\n", prefix, prefix, argumentType_names);
           str += tmpStr;
           break;
       case avtSimulationCommandSpecification::CmdArgFloat:
-          SNPRINTF(tmpStr, 1000, "%sargumentType = %sCmdArgFloat  # %s\n", prefix, prefix, argumentType_names);
+          snprintf(tmpStr, 1000, "%sargumentType = %sCmdArgFloat  # %s\n", prefix, prefix, argumentType_names);
           str += tmpStr;
           break;
       case avtSimulationCommandSpecification::CmdArgString:
-          SNPRINTF(tmpStr, 1000, "%sargumentType = %sCmdArgString  # %s\n", prefix, prefix, argumentType_names);
+          snprintf(tmpStr, 1000, "%sargumentType = %sCmdArgString  # %s\n", prefix, prefix, argumentType_names);
           str += tmpStr;
           break;
       default:
           break;
     }
 
-    SNPRINTF(tmpStr, 1000, "%sclassName = \"%s\"\n", prefix, atts->GetClassName().c_str());
+    snprintf(tmpStr, 1000, "%sclassName = \"%s\"\n", prefix, atts->GetClassName().c_str());
     str += tmpStr;
     if(atts->GetEnabled())
-        SNPRINTF(tmpStr, 1000, "%senabled = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%senabled = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%senabled = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%senabled = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sparent = \"%s\"\n", prefix, atts->GetParent().c_str());
+    snprintf(tmpStr, 1000, "%sparent = \"%s\"\n", prefix, atts->GetParent().c_str());
     str += tmpStr;
     if(atts->GetIsOn())
-        SNPRINTF(tmpStr, 1000, "%sisOn = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sisOn = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sisOn = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sisOn = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%ssignal = \"%s\"\n", prefix, atts->GetSignal().c_str());
+    snprintf(tmpStr, 1000, "%ssignal = \"%s\"\n", prefix, atts->GetSignal().c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%stext = \"%s\"\n", prefix, atts->GetText().c_str());
+    snprintf(tmpStr, 1000, "%stext = \"%s\"\n", prefix, atts->GetText().c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%suiType = \"%s\"\n", prefix, atts->GetUiType().c_str());
+    snprintf(tmpStr, 1000, "%suiType = \"%s\"\n", prefix, atts->GetUiType().c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%svalue = \"%s\"\n", prefix, atts->GetValue().c_str());
+    snprintf(tmpStr, 1000, "%svalue = \"%s\"\n", prefix, atts->GetValue().c_str());
     str += tmpStr;
     return str;
 }

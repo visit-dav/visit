@@ -10,7 +10,6 @@
 #else
 #include <process.h> // for _getpid
 #endif
-#include <snprintf.h>
 #include <map>
 #include <string>
 #include <vector>
@@ -1505,9 +1504,9 @@ visit_SetDebugLevel(PyObject *self, PyObject *args)
         viewerArguments.push_back("-debug");
         char tmp[10];
         if (moduleBufferDebug)
-            SNPRINTF(tmp, 10, "%db", moduleDebugLevel);
+            snprintf(tmp, 10, "%db", moduleDebugLevel);
         else
-            SNPRINTF(tmp, 10, "%d", moduleDebugLevel);
+            snprintf(tmp, 10, "%d", moduleDebugLevel);
         //GetViewerProxy()->AddArgument(tmp);
         viewerArguments.push_back(tmp);
     }
@@ -3270,19 +3269,19 @@ visit_DeleteExpression(PyObject *self, PyObject *args)
                 // make sure expr is not from db, or an auto expression
                 if(expr.GetAutoExpression())
                 {
-                    SNPRINTF(buff,512,
+                    snprintf(buff,512,
                              "Cannot delete auto generated expression \"%s\".",
                              exprName);
                 }
                 else if(expr.GetFromDB())
                 {
-                    SNPRINTF(buff,512,
+                    snprintf(buff,512,
                              "Cannot delete database expression \"%s\".",
                              exprName);
                 }
                 else if(expr.GetFromOperator())
                 {
-                    SNPRINTF(buff,512,
+                    snprintf(buff,512,
                              "Cannot delete operator expression \"%s\".",
                              exprName);
                 }
@@ -3305,7 +3304,7 @@ visit_DeleteExpression(PyObject *self, PyObject *args)
     MUTEX_UNLOCK();
     
     if(!found)
-        SNPRINTF(buff,512,"Cannot delete unknown expression \"%s\".",exprName);
+        snprintf(buff,512,"Cannot delete unknown expression \"%s\".",exprName);
          
     if(!success)
     {
@@ -7672,7 +7671,7 @@ visit_ListPlots(PyObject *self, PyObject *args)
              size_t  strLen = 0;
 
              size_t j;
-             SNPRINTF(tmpStr, sizeof(tmpStr),
+             snprintf(tmpStr, sizeof(tmpStr),
                  "Plot[%d]|id=%d;type=\"%s\";database=\"%s\";var=%s;active=%d;"
                  "hidden=%d;framerange=(%d, %d);keyframes={", i,
                     plot.GetId(),
@@ -7689,13 +7688,13 @@ visit_ListPlots(PyObject *self, PyObject *args)
              const std::vector<int> &keyframes = plot.GetKeyframes();
              for(j = 0; j < keyframes.size(); ++j)
              {
-                 SNPRINTF(&tmpStr[strLen], sizeof(tmpStr)-strLen, "%d", keyframes[j]);
+                 snprintf(&tmpStr[strLen], sizeof(tmpStr)-strLen, "%d", keyframes[j]);
                  strLen = strlen(tmpStr);
                  if(j < keyframes.size() - 1)
-                     SNPRINTF(&tmpStr[strLen], sizeof(tmpStr)-strLen, ", ");
+                     snprintf(&tmpStr[strLen], sizeof(tmpStr)-strLen, ", ");
                  strLen = strlen(tmpStr);
              }
-             SNPRINTF(&tmpStr[strLen], sizeof(tmpStr)-strLen, "};database keyframes={");
+             snprintf(&tmpStr[strLen], sizeof(tmpStr)-strLen, "};database keyframes={");
              strLen = strlen(tmpStr);
 
              // Print out the database keyframes.
@@ -7703,27 +7702,27 @@ visit_ListPlots(PyObject *self, PyObject *args)
                  plot.GetDatabaseKeyframes();
              for(j = 0; j < databaseKeyframes.size(); ++j)
              {
-                 SNPRINTF(&tmpStr[strLen], sizeof(tmpStr)-strLen, "%d", databaseKeyframes[j]);
+                 snprintf(&tmpStr[strLen], sizeof(tmpStr)-strLen, "%d", databaseKeyframes[j]);
                  strLen = strlen(tmpStr);
                  if(j < databaseKeyframes.size() - 1)
-                     SNPRINTF(&tmpStr[strLen], sizeof(tmpStr)-strLen, ", ");
+                     snprintf(&tmpStr[strLen], sizeof(tmpStr)-strLen, ", ");
                  strLen = strlen(tmpStr);
              }
-             SNPRINTF(&tmpStr[strLen], sizeof(tmpStr)-strLen, "};operators={");
+             snprintf(&tmpStr[strLen], sizeof(tmpStr)-strLen, "};operators={");
              strLen = strlen(tmpStr);
 
              // Print out the plot operators.
              for(j = 0; j < (size_t)plot.GetNumOperators(); ++j)
              {
                  int op = plot.GetOperator(j);
-                 SNPRINTF(&tmpStr[strLen], sizeof(tmpStr)-strLen, "\"%s\"",
+                 snprintf(&tmpStr[strLen], sizeof(tmpStr)-strLen, "\"%s\"",
                      GetViewerProxy()->GetOperatorPluginManager()->GetEnabledID(op).c_str());
                  strLen = strlen(tmpStr);
                  if(j < (size_t)plot.GetNumOperators() - 1)
-                     SNPRINTF(&tmpStr[strLen], sizeof(tmpStr)-strLen, ", ");
+                     snprintf(&tmpStr[strLen], sizeof(tmpStr)-strLen, ", ");
                  strLen = strlen(tmpStr);
              }
-             SNPRINTF(&tmpStr[strLen], sizeof(tmpStr)-strLen,
+             snprintf(&tmpStr[strLen], sizeof(tmpStr)-strLen,
                  "};activeOperator=%d", plot.GetActiveOperator());
              strLen = strlen(tmpStr);
 
@@ -11036,11 +11035,11 @@ visit_Source(PyObject *self, PyObject *args)
         //
         // Add a ".py" extension and try to open the file.
         //
-        SNPRINTF(buf, 1024, "%s.py", fileName);
+        snprintf(buf, 1024, "%s.py", fileName);
         fp = fopen(buf, "rb");
         if(fp == NULL)
         {
-            SNPRINTF(buf, 1024, "Could not find file %s for sourcing.", fileName);
+            snprintf(buf, 1024, "Could not find file %s for sourcing.", fileName);
             VisItErrorFunc(buf);
             return NULL;
         }
@@ -11049,7 +11048,7 @@ visit_Source(PyObject *self, PyObject *args)
     //
     // Turn logging off.
     //
-    SNPRINTF(buf, 1024, "Source(\"%s\")\n", fileName);
+    snprintf(buf, 1024, "Source(\"%s\")\n", fileName);
     LogFile_Write(buf);
     LogFile_IncreaseLevel();
 
@@ -15044,7 +15043,7 @@ visit_CreateAnnotationObject(PyObject *self, PyObject *args)
     else
     {
         char message[400];
-        SNPRINTF(message, 400, "%s is not a recognized annotation type.",
+        snprintf(message, 400, "%s is not a recognized annotation type.",
            annotType);
         VisItErrorFunc(message);
         return NULL;
@@ -15097,7 +15096,7 @@ visit_CreateAnnotationObject(PyObject *self, PyObject *args)
     else if(errorFlag > 0)
     {
         char message[400];
-        SNPRINTF(message, 400, "VisIt could not create an annotation object "
+        snprintf(message, 400, "VisIt could not create an annotation object "
             "of type: %s.", annotType);
         VisItErrorFunc(message);
         return NULL;
@@ -15198,7 +15197,7 @@ visit_GetAnnotationObject(PyObject *self, PyObject *args)
         else
         {
             char msg[400];
-            SNPRINTF(msg, 400, "An unrecognized object name \"%s\" was requested.", annotName);
+            snprintf(msg, 400, "An unrecognized object name \"%s\" was requested.", annotName);
             VisItErrorFunc(msg);
         }
     }
@@ -16864,7 +16863,7 @@ visit_exec_client_method(void *data)
                     {
                         int len = code[i].size() + 6 + 1;
                         buf = new char[len];
-                        SNPRINTF(buf, len, "visit.%s", code[i].c_str());
+                        snprintf(buf, len, "visit.%s", code[i].c_str());
                     }
                 }
                 if(buf == NULL)
@@ -18774,9 +18773,9 @@ InitializeViewerProxy(ViewerProxy* proxy)
         GetViewerProxy()->AddArgument("-debug");
         char tmp[10];
         if (moduleBufferDebug)
-            SNPRINTF(tmp, 10, "%db", moduleDebugLevel);
+            snprintf(tmp, 10, "%db", moduleDebugLevel);
         else
-            SNPRINTF(tmp, 10, "%d", moduleDebugLevel);
+            snprintf(tmp, 10, "%d", moduleDebugLevel);
         GetViewerProxy()->AddArgument(tmp);
     }
 

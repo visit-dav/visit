@@ -4,7 +4,6 @@
 
 #include "Appearance.h"
 #include <string>
-#include <snprintf.h>
 
 #include <QApplication>
 #include <QFont>
@@ -61,10 +60,10 @@ GetAppearance(QApplication *a, AppearanceAttributes *aa)
     QColor fg = a->palette().windowText().color();
         
     char tmp[20];
-    SNPRINTF(tmp, 20, "#%02x%02x%02x", bg.red(), bg.green(), bg.blue());
+    snprintf(tmp, 20, "#%02x%02x%02x", bg.red(), bg.green(), bg.blue());
     debug1 << mName << "Default background color is:" << tmp << endl;
     aa->SetDefaultBackground(tmp);
-    SNPRINTF(tmp, 20, "#%02x%02x%02x", fg.red(), fg.green(), fg.blue());
+    snprintf(tmp, 20, "#%02x%02x%02x", fg.red(), fg.green(), fg.blue());
     debug1 << mName << "Default foreground color is:" << tmp << endl;
     aa->SetDefaultForeground(tmp);
     

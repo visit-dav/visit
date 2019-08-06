@@ -5,7 +5,6 @@
 #include <PyExpression.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyExpression
@@ -42,14 +41,14 @@ PyExpression_ToString(const Expression *atts, const char *prefix)
     std::string str;
     char tmpStr[1000];
 
-    SNPRINTF(tmpStr, 1000, "%sname = \"%s\"\n", prefix, atts->GetName().c_str());
+    snprintf(tmpStr, 1000, "%sname = \"%s\"\n", prefix, atts->GetName().c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sdefinition = \"%s\"\n", prefix, atts->GetDefinition().c_str());
+    snprintf(tmpStr, 1000, "%sdefinition = \"%s\"\n", prefix, atts->GetDefinition().c_str());
     str += tmpStr;
     if(atts->GetHidden())
-        SNPRINTF(tmpStr, 1000, "%shidden = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%shidden = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%shidden = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%shidden = 0\n", prefix);
     str += tmpStr;
     const char *type_names = "Unknown, ScalarMeshVar, VectorMeshVar, TensorMeshVar, SymmetricTensorMeshVar, "
         "ArrayMeshVar, CurveMeshVar, Mesh, Material, "
@@ -57,43 +56,43 @@ PyExpression_ToString(const Expression *atts, const char *prefix)
     switch (atts->GetType())
     {
       case Expression::Unknown:
-          SNPRINTF(tmpStr, 1000, "%stype = %sUnknown  # %s\n", prefix, prefix, type_names);
+          snprintf(tmpStr, 1000, "%stype = %sUnknown  # %s\n", prefix, prefix, type_names);
           str += tmpStr;
           break;
       case Expression::ScalarMeshVar:
-          SNPRINTF(tmpStr, 1000, "%stype = %sScalarMeshVar  # %s\n", prefix, prefix, type_names);
+          snprintf(tmpStr, 1000, "%stype = %sScalarMeshVar  # %s\n", prefix, prefix, type_names);
           str += tmpStr;
           break;
       case Expression::VectorMeshVar:
-          SNPRINTF(tmpStr, 1000, "%stype = %sVectorMeshVar  # %s\n", prefix, prefix, type_names);
+          snprintf(tmpStr, 1000, "%stype = %sVectorMeshVar  # %s\n", prefix, prefix, type_names);
           str += tmpStr;
           break;
       case Expression::TensorMeshVar:
-          SNPRINTF(tmpStr, 1000, "%stype = %sTensorMeshVar  # %s\n", prefix, prefix, type_names);
+          snprintf(tmpStr, 1000, "%stype = %sTensorMeshVar  # %s\n", prefix, prefix, type_names);
           str += tmpStr;
           break;
       case Expression::SymmetricTensorMeshVar:
-          SNPRINTF(tmpStr, 1000, "%stype = %sSymmetricTensorMeshVar  # %s\n", prefix, prefix, type_names);
+          snprintf(tmpStr, 1000, "%stype = %sSymmetricTensorMeshVar  # %s\n", prefix, prefix, type_names);
           str += tmpStr;
           break;
       case Expression::ArrayMeshVar:
-          SNPRINTF(tmpStr, 1000, "%stype = %sArrayMeshVar  # %s\n", prefix, prefix, type_names);
+          snprintf(tmpStr, 1000, "%stype = %sArrayMeshVar  # %s\n", prefix, prefix, type_names);
           str += tmpStr;
           break;
       case Expression::CurveMeshVar:
-          SNPRINTF(tmpStr, 1000, "%stype = %sCurveMeshVar  # %s\n", prefix, prefix, type_names);
+          snprintf(tmpStr, 1000, "%stype = %sCurveMeshVar  # %s\n", prefix, prefix, type_names);
           str += tmpStr;
           break;
       case Expression::Mesh:
-          SNPRINTF(tmpStr, 1000, "%stype = %sMesh  # %s\n", prefix, prefix, type_names);
+          snprintf(tmpStr, 1000, "%stype = %sMesh  # %s\n", prefix, prefix, type_names);
           str += tmpStr;
           break;
       case Expression::Material:
-          SNPRINTF(tmpStr, 1000, "%stype = %sMaterial  # %s\n", prefix, prefix, type_names);
+          snprintf(tmpStr, 1000, "%stype = %sMaterial  # %s\n", prefix, prefix, type_names);
           str += tmpStr;
           break;
       case Expression::Species:
-          SNPRINTF(tmpStr, 1000, "%stype = %sSpecies  # %s\n", prefix, prefix, type_names);
+          snprintf(tmpStr, 1000, "%stype = %sSpecies  # %s\n", prefix, prefix, type_names);
           str += tmpStr;
           break;
       default:
@@ -101,25 +100,25 @@ PyExpression_ToString(const Expression *atts, const char *prefix)
     }
 
     if(atts->GetFromDB())
-        SNPRINTF(tmpStr, 1000, "%sfromDB = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sfromDB = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sfromDB = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sfromDB = 0\n", prefix);
     str += tmpStr;
     if(atts->GetFromOperator())
-        SNPRINTF(tmpStr, 1000, "%sfromOperator = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sfromOperator = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sfromOperator = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sfromOperator = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%soperatorName = \"%s\"\n", prefix, atts->GetOperatorName().c_str());
+    snprintf(tmpStr, 1000, "%soperatorName = \"%s\"\n", prefix, atts->GetOperatorName().c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%smeshName = \"%s\"\n", prefix, atts->GetMeshName().c_str());
+    snprintf(tmpStr, 1000, "%smeshName = \"%s\"\n", prefix, atts->GetMeshName().c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sdbName = \"%s\"\n", prefix, atts->GetDbName().c_str());
+    snprintf(tmpStr, 1000, "%sdbName = \"%s\"\n", prefix, atts->GetDbName().c_str());
     str += tmpStr;
     if(atts->GetAutoExpression())
-        SNPRINTF(tmpStr, 1000, "%sautoExpression = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sautoExpression = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sautoExpression = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sautoExpression = 0\n", prefix);
     str += tmpStr;
     return str;
 }

@@ -5,7 +5,6 @@
 #include <PyPrinterAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyPrinterAttributes
@@ -42,34 +41,34 @@ PyPrinterAttributes_ToString(const PrinterAttributes *atts, const char *prefix)
     std::string str;
     char tmpStr[1000];
 
-    SNPRINTF(tmpStr, 1000, "%sprinterName = \"%s\"\n", prefix, atts->GetPrinterName().c_str());
+    snprintf(tmpStr, 1000, "%sprinterName = \"%s\"\n", prefix, atts->GetPrinterName().c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sprintProgram = \"%s\"\n", prefix, atts->GetPrintProgram().c_str());
+    snprintf(tmpStr, 1000, "%sprintProgram = \"%s\"\n", prefix, atts->GetPrintProgram().c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sdocumentName = \"%s\"\n", prefix, atts->GetDocumentName().c_str());
+    snprintf(tmpStr, 1000, "%sdocumentName = \"%s\"\n", prefix, atts->GetDocumentName().c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%screator = \"%s\"\n", prefix, atts->GetCreator().c_str());
+    snprintf(tmpStr, 1000, "%screator = \"%s\"\n", prefix, atts->GetCreator().c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%snumCopies = %d\n", prefix, atts->GetNumCopies());
+    snprintf(tmpStr, 1000, "%snumCopies = %d\n", prefix, atts->GetNumCopies());
     str += tmpStr;
     if(atts->GetPortrait())
-        SNPRINTF(tmpStr, 1000, "%sportrait = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sportrait = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sportrait = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sportrait = 0\n", prefix);
     str += tmpStr;
     if(atts->GetPrintColor())
-        SNPRINTF(tmpStr, 1000, "%sprintColor = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sprintColor = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sprintColor = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sprintColor = 0\n", prefix);
     str += tmpStr;
     if(atts->GetOutputToFile())
-        SNPRINTF(tmpStr, 1000, "%soutputToFile = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%soutputToFile = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%soutputToFile = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%soutputToFile = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%soutputToFileName = \"%s\"\n", prefix, atts->GetOutputToFileName().c_str());
+    snprintf(tmpStr, 1000, "%soutputToFileName = \"%s\"\n", prefix, atts->GetOutputToFileName().c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%spageSize = %d\n", prefix, atts->GetPageSize());
+    snprintf(tmpStr, 1000, "%spageSize = %d\n", prefix, atts->GetPageSize());
     str += tmpStr;
     return str;
 }

@@ -5,7 +5,6 @@
 #include <PyDBOptionsAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyDBOptionsAttributes
@@ -43,22 +42,22 @@ PyDBOptionsAttributes_ToString(const DBOptionsAttributes *atts, const char *pref
     char tmpStr[1000];
 
     {   const intVector &types = atts->GetTypes();
-        SNPRINTF(tmpStr, 1000, "%stypes = (", prefix);
+        snprintf(tmpStr, 1000, "%stypes = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < types.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%d", types[i]);
+            snprintf(tmpStr, 1000, "%d", types[i]);
             str += tmpStr;
             if(i < types.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
-    SNPRINTF(tmpStr, 1000, "%shelp = \"%s\"\n", prefix, atts->GetHelp().c_str());
+    snprintf(tmpStr, 1000, "%shelp = \"%s\"\n", prefix, atts->GetHelp().c_str());
     str += tmpStr;
     return str;
 }

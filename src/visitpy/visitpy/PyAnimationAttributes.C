@@ -5,7 +5,6 @@
 #include <PyAnimationAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyAnimationAttributes
@@ -46,15 +45,15 @@ PyAnimationAttributes_ToString(const AnimationAttributes *atts, const char *pref
     switch (atts->GetAnimationMode())
     {
       case AnimationAttributes::ReversePlayMode:
-          SNPRINTF(tmpStr, 1000, "%sanimationMode = %sReversePlayMode  # %s\n", prefix, prefix, animationMode_names);
+          snprintf(tmpStr, 1000, "%sanimationMode = %sReversePlayMode  # %s\n", prefix, prefix, animationMode_names);
           str += tmpStr;
           break;
       case AnimationAttributes::StopMode:
-          SNPRINTF(tmpStr, 1000, "%sanimationMode = %sStopMode  # %s\n", prefix, prefix, animationMode_names);
+          snprintf(tmpStr, 1000, "%sanimationMode = %sStopMode  # %s\n", prefix, prefix, animationMode_names);
           str += tmpStr;
           break;
       case AnimationAttributes::PlayMode:
-          SNPRINTF(tmpStr, 1000, "%sanimationMode = %sPlayMode  # %s\n", prefix, prefix, animationMode_names);
+          snprintf(tmpStr, 1000, "%sanimationMode = %sPlayMode  # %s\n", prefix, prefix, animationMode_names);
           str += tmpStr;
           break;
       default:
@@ -62,27 +61,27 @@ PyAnimationAttributes_ToString(const AnimationAttributes *atts, const char *pref
     }
 
     if(atts->GetPipelineCachingMode())
-        SNPRINTF(tmpStr, 1000, "%spipelineCachingMode = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%spipelineCachingMode = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%spipelineCachingMode = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%spipelineCachingMode = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sframeIncrement = %d\n", prefix, atts->GetFrameIncrement());
+    snprintf(tmpStr, 1000, "%sframeIncrement = %d\n", prefix, atts->GetFrameIncrement());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%stimeout = %d\n", prefix, atts->GetTimeout());
+    snprintf(tmpStr, 1000, "%stimeout = %d\n", prefix, atts->GetTimeout());
     str += tmpStr;
     const char *playbackMode_names = "Looping, PlayOnce, Swing";
     switch (atts->GetPlaybackMode())
     {
       case AnimationAttributes::Looping:
-          SNPRINTF(tmpStr, 1000, "%splaybackMode = %sLooping  # %s\n", prefix, prefix, playbackMode_names);
+          snprintf(tmpStr, 1000, "%splaybackMode = %sLooping  # %s\n", prefix, prefix, playbackMode_names);
           str += tmpStr;
           break;
       case AnimationAttributes::PlayOnce:
-          SNPRINTF(tmpStr, 1000, "%splaybackMode = %sPlayOnce  # %s\n", prefix, prefix, playbackMode_names);
+          snprintf(tmpStr, 1000, "%splaybackMode = %sPlayOnce  # %s\n", prefix, prefix, playbackMode_names);
           str += tmpStr;
           break;
       case AnimationAttributes::Swing:
-          SNPRINTF(tmpStr, 1000, "%splaybackMode = %sSwing  # %s\n", prefix, prefix, playbackMode_names);
+          snprintf(tmpStr, 1000, "%splaybackMode = %sSwing  # %s\n", prefix, prefix, playbackMode_names);
           str += tmpStr;
           break;
       default:

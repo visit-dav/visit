@@ -5,7 +5,6 @@
 #include <PyViewerClientInformationElement.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyViewerClientInformationElement
@@ -42,32 +41,32 @@ PyViewerClientInformationElement_ToString(const ViewerClientInformationElement *
     std::string str;
     char tmpStr[1000];
 
-    SNPRINTF(tmpStr, 1000, "%sdata = \"%s\"\n", prefix, atts->GetData().c_str());
+    snprintf(tmpStr, 1000, "%sdata = \"%s\"\n", prefix, atts->GetData().c_str());
     str += tmpStr;
     {   const unsignedCharVector &rawData = atts->GetRawData();
-        SNPRINTF(tmpStr, 1000, "%srawData = (", prefix);
+        snprintf(tmpStr, 1000, "%srawData = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < rawData.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%d", int(rawData[i]));
+            snprintf(tmpStr, 1000, "%d", int(rawData[i]));
             str += tmpStr;
             if(i < rawData.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
-    SNPRINTF(tmpStr, 1000, "%sformat = %d\n", prefix, atts->GetFormat());
+    snprintf(tmpStr, 1000, "%sformat = %d\n", prefix, atts->GetFormat());
     str += tmpStr;
     if(atts->GetIsRaw())
-        SNPRINTF(tmpStr, 1000, "%sisRaw = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sisRaw = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sisRaw = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sisRaw = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%swindowId = %d\n", prefix, atts->GetWindowId());
+    snprintf(tmpStr, 1000, "%swindowId = %d\n", prefix, atts->GetWindowId());
     str += tmpStr;
     return str;
 }

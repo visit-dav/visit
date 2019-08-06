@@ -5,7 +5,6 @@
 #include <PyQueryAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyQueryAttributes
@@ -42,33 +41,33 @@ PyQueryAttributes_ToString(const QueryAttributes *atts, const char *prefix)
     std::string str;
     char tmpStr[1000];
 
-    SNPRINTF(tmpStr, 1000, "%sresultsMessage = \"%s\"\n", prefix, atts->GetResultsMessage().c_str());
+    snprintf(tmpStr, 1000, "%sresultsMessage = \"%s\"\n", prefix, atts->GetResultsMessage().c_str());
     str += tmpStr;
     {   const doubleVector &resultsValue = atts->GetResultsValue();
-        SNPRINTF(tmpStr, 1000, "%sresultsValue = (", prefix);
+        snprintf(tmpStr, 1000, "%sresultsValue = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < resultsValue.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", resultsValue[i]);
+            snprintf(tmpStr, 1000, "%g", resultsValue[i]);
             str += tmpStr;
             if(i < resultsValue.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
-    SNPRINTF(tmpStr, 1000, "%stimeStep = %d\n", prefix, atts->GetTimeStep());
+    snprintf(tmpStr, 1000, "%stimeStep = %d\n", prefix, atts->GetTimeStep());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sxUnits = \"%s\"\n", prefix, atts->GetXUnits().c_str());
+    snprintf(tmpStr, 1000, "%sxUnits = \"%s\"\n", prefix, atts->GetXUnits().c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%syUnits = \"%s\"\n", prefix, atts->GetYUnits().c_str());
+    snprintf(tmpStr, 1000, "%syUnits = \"%s\"\n", prefix, atts->GetYUnits().c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sfloatFormat = \"%s\"\n", prefix, atts->GetFloatFormat().c_str());
+    snprintf(tmpStr, 1000, "%sfloatFormat = \"%s\"\n", prefix, atts->GetFloatFormat().c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sxmlResult = \"%s\"\n", prefix, atts->GetXmlResult().c_str());
+    snprintf(tmpStr, 1000, "%sxmlResult = \"%s\"\n", prefix, atts->GetXmlResult().c_str());
     str += tmpStr;
     //queryInputParams
     return str;

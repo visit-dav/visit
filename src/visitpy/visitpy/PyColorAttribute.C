@@ -5,7 +5,6 @@
 #include <PyColorAttribute.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyColorAttribute
@@ -43,19 +42,19 @@ PyColorAttribute_ToString(const ColorAttribute *atts, const char *prefix)
     char tmpStr[1000];
 
     {   const unsigned char *color = atts->GetColor();
-        SNPRINTF(tmpStr, 1000, "%scolor = (", prefix);
+        snprintf(tmpStr, 1000, "%scolor = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 4; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%d", int(color[i]));
+            snprintf(tmpStr, 1000, "%d", int(color[i]));
             str += tmpStr;
             if(i < 3)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     return str;

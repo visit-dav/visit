@@ -5,7 +5,6 @@
 #include <PyEngineProperties.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyEngineProperties
@@ -42,18 +41,18 @@ PyEngineProperties_ToString(const EngineProperties *atts, const char *prefix)
     std::string str;
     char tmpStr[1000];
 
-    SNPRINTF(tmpStr, 1000, "%snumNodes = %d\n", prefix, atts->GetNumNodes());
+    snprintf(tmpStr, 1000, "%snumNodes = %d\n", prefix, atts->GetNumNodes());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%snumProcessors = %d\n", prefix, atts->GetNumProcessors());
+    snprintf(tmpStr, 1000, "%snumProcessors = %d\n", prefix, atts->GetNumProcessors());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%snumProcessorsUsingGPUs = %d\n", prefix, atts->GetNumProcessorsUsingGPUs());
+    snprintf(tmpStr, 1000, "%snumProcessorsUsingGPUs = %d\n", prefix, atts->GetNumProcessorsUsingGPUs());
     str += tmpStr;
     if(atts->GetDynamicLoadBalancing())
-        SNPRINTF(tmpStr, 1000, "%sdynamicLoadBalancing = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sdynamicLoadBalancing = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sdynamicLoadBalancing = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sdynamicLoadBalancing = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sloadBalancingScheme = \"%s\"\n", prefix, atts->GetLoadBalancingScheme().c_str());
+    snprintf(tmpStr, 1000, "%sloadBalancingScheme = \"%s\"\n", prefix, atts->GetLoadBalancingScheme().c_str());
     str += tmpStr;
     return str;
 }

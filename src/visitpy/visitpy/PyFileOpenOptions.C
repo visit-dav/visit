@@ -5,7 +5,6 @@
 #include <PyFileOpenOptions.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 #include <PyDBOptionsAttributes.h>
 
 // ****************************************************************************
@@ -44,35 +43,35 @@ PyFileOpenOptions_ToString(const FileOpenOptions *atts, const char *prefix)
     char tmpStr[1000];
 
     {   const stringVector &typeNames = atts->GetTypeNames();
-        SNPRINTF(tmpStr, 1000, "%stypeNames = (", prefix);
+        snprintf(tmpStr, 1000, "%stypeNames = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < typeNames.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "\"%s\"", typeNames[i].c_str());
+            snprintf(tmpStr, 1000, "\"%s\"", typeNames[i].c_str());
             str += tmpStr;
             if(i < typeNames.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const stringVector &typeIDs = atts->GetTypeIDs();
-        SNPRINTF(tmpStr, 1000, "%stypeIDs = (", prefix);
+        snprintf(tmpStr, 1000, "%stypeIDs = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < typeIDs.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "\"%s\"", typeIDs[i].c_str());
+            snprintf(tmpStr, 1000, "\"%s\"", typeIDs[i].c_str());
             str += tmpStr;
             if(i < typeIDs.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     { // new scope
@@ -81,7 +80,7 @@ PyFileOpenOptions_ToString(const FileOpenOptions *atts, const char *prefix)
         for(AttributeGroupVector::const_iterator pos = atts->GetOpenOptions().begin(); pos != atts->GetOpenOptions().end(); ++pos, ++index)
         {
             const DBOptionsAttributes *current = (const DBOptionsAttributes *)(*pos);
-            SNPRINTF(tmpStr, 1000, "GetOpenOptions(%d).", index);
+            snprintf(tmpStr, 1000, "GetOpenOptions(%d).", index);
             std::string objPrefix(prefix + std::string(tmpStr));
             str += PyDBOptionsAttributes_ToString(current, objPrefix.c_str());
         }
@@ -89,35 +88,35 @@ PyFileOpenOptions_ToString(const FileOpenOptions *atts, const char *prefix)
             str += "#openOptions does not contain any DBOptionsAttributes objects.\n";
     }
     {   const intVector &Enabled = atts->GetEnabled();
-        SNPRINTF(tmpStr, 1000, "%sEnabled = (", prefix);
+        snprintf(tmpStr, 1000, "%sEnabled = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < Enabled.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%d", Enabled[i]);
+            snprintf(tmpStr, 1000, "%d", Enabled[i]);
             str += tmpStr;
             if(i < Enabled.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const stringVector &preferredIDs = atts->GetPreferredIDs();
-        SNPRINTF(tmpStr, 1000, "%spreferredIDs = (", prefix);
+        snprintf(tmpStr, 1000, "%spreferredIDs = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < preferredIDs.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "\"%s\"", preferredIDs[i].c_str());
+            snprintf(tmpStr, 1000, "\"%s\"", preferredIDs[i].c_str());
             str += tmpStr;
             if(i < preferredIDs.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     return str;
@@ -241,9 +240,9 @@ FileOpenOptions_GetOpenOptions(PyObject *self, PyObject *args)
     {
         char msg[400] = {'\0'};
         if(obj->data->GetOpenOptions().size() == 0)
-            SNPRINTF(msg, 400, "In FileOpenOptions::GetOpenOptions : The index %d is invalid because openOptions is empty.", index);
+            snprintf(msg, 400, "In FileOpenOptions::GetOpenOptions : The index %d is invalid because openOptions is empty.", index);
         else
-            SNPRINTF(msg, 400, "In FileOpenOptions::GetOpenOptions : The index %d is invalid. Use index values in: [0, %ld).",  index, obj->data->GetOpenOptions().size());
+            snprintf(msg, 400, "In FileOpenOptions::GetOpenOptions : The index %d is invalid. Use index values in: [0, %ld).",  index, obj->data->GetOpenOptions().size());
         PyErr_SetString(PyExc_IndexError, msg);
         return NULL;
     }
@@ -277,7 +276,7 @@ FileOpenOptions_AddOpenOptions(PyObject *self, PyObject *args)
     if(!PyDBOptionsAttributes_Check(element))
     {
         char msg[400] = {'\0'};
-        SNPRINTF(msg, 400, "The FileOpenOptions::AddOpenOptions method only accepts DBOptionsAttributes objects.");
+        snprintf(msg, 400, "The FileOpenOptions::AddOpenOptions method only accepts DBOptionsAttributes objects.");
         PyErr_SetString(PyExc_TypeError, msg);
         return NULL;
     }
@@ -325,7 +324,7 @@ FileOpenOptions_RemoveOpenOptions(PyObject *self, PyObject *args)
     if(index < 0 || index >= obj->data->GetNumOpenOptions())
     {
         char msg[400] = {'\0'};
-        SNPRINTF(msg, 400, "In FileOpenOptions::RemoveOpenOptions : Index %d is out of range", index);
+        snprintf(msg, 400, "In FileOpenOptions::RemoveOpenOptions : Index %d is out of range", index);
         PyErr_SetString(PyExc_IndexError, msg);
         return NULL;
     }

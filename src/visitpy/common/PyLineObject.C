@@ -577,7 +577,6 @@ LineObject_print(PyObject *v, FILE *fp, int flags)
     return 0;
 }
 
-#include <snprintf.h>
 PyObject *
 PyLineObject_StringRepresentation(const AnnotationObject *atts)
 {
@@ -585,37 +584,37 @@ PyLineObject_StringRepresentation(const AnnotationObject *atts)
     char tmpStr[1000]; 
 
     if(atts->GetVisible())
-        SNPRINTF(tmpStr, 1000, "visible = 1\n");
+        snprintf(tmpStr, 1000, "visible = 1\n");
     else
-        SNPRINTF(tmpStr, 1000, "visible = 0\n");
+        snprintf(tmpStr, 1000, "visible = 0\n");
     str += tmpStr;
     if(atts->GetActive())
-        SNPRINTF(tmpStr, 1000, "active = 1\n");
+        snprintf(tmpStr, 1000, "active = 1\n");
     else
-        SNPRINTF(tmpStr, 1000, "active = 0\n");
+        snprintf(tmpStr, 1000, "active = 0\n");
     str += tmpStr;
     const double *position = atts->GetPosition();
-    SNPRINTF(tmpStr, 1000, "position = (%g, %g)\n", position[0], position[1]);
+    snprintf(tmpStr, 1000, "position = (%g, %g)\n", position[0], position[1]);
     str += tmpStr;
     const double *position2 = atts->GetPosition2();
-    SNPRINTF(tmpStr, 1000, "position2 = (%g, %g)\n", position2[0], position2[1]);
+    snprintf(tmpStr, 1000, "position2 = (%g, %g)\n", position2[0], position2[1]);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "width = %d\n", atts->GetIntAttribute1());
+    snprintf(tmpStr, 1000, "width = %d\n", atts->GetIntAttribute1());
     str += tmpStr;
     if(atts->GetUseForegroundForTextColor())
-        SNPRINTF(tmpStr, 1000, "useForegroundForLineColor = 1\n");
+        snprintf(tmpStr, 1000, "useForegroundForLineColor = 1\n");
     else
-        SNPRINTF(tmpStr, 1000, "useForegroundForLineColor = 0\n");
+        snprintf(tmpStr, 1000, "useForegroundForLineColor = 0\n");
     str += tmpStr;
  
     const unsigned char *color = atts->GetColor1().GetColor();
-    SNPRINTF(tmpStr, 1000, "color = (%d, %d, %d, %d)\n", int(color[0]), int(color[1]), int(color[2]), int(color[3]));
+    snprintf(tmpStr, 1000, "color = (%d, %d, %d, %d)\n", int(color[0]), int(color[1]), int(color[2]), int(color[3]));
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "opacity = %d\n", atts->GetColor1().Alpha());
+    snprintf(tmpStr, 1000, "opacity = %d\n", atts->GetColor1().Alpha());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "beginArrow = %d\n", atts->GetOptions().GetEntry("beginArrow")->AsInt());
+    snprintf(tmpStr, 1000, "beginArrow = %d\n", atts->GetOptions().GetEntry("beginArrow")->AsInt());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "endArrow = %d\n", atts->GetOptions().GetEntry("endArrow")->AsInt());
+    snprintf(tmpStr, 1000, "endArrow = %d\n", atts->GetOptions().GetEntry("endArrow")->AsInt());
     str += tmpStr;
     return PyString_FromString(str.c_str());
 }

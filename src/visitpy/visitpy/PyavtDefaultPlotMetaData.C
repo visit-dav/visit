@@ -5,7 +5,6 @@
 #include <PyavtDefaultPlotMetaData.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyavtDefaultPlotMetaData
@@ -42,24 +41,24 @@ PyavtDefaultPlotMetaData_ToString(const avtDefaultPlotMetaData *atts, const char
     std::string str;
     char tmpStr[1000];
 
-    SNPRINTF(tmpStr, 1000, "%spluginID = \"%s\"\n", prefix, atts->pluginID.c_str());
+    snprintf(tmpStr, 1000, "%spluginID = \"%s\"\n", prefix, atts->pluginID.c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%splotVar = \"%s\"\n", prefix, atts->plotVar.c_str());
+    snprintf(tmpStr, 1000, "%splotVar = \"%s\"\n", prefix, atts->plotVar.c_str());
     str += tmpStr;
     {   const stringVector &plotAttributes = atts->plotAttributes;
-        SNPRINTF(tmpStr, 1000, "%splotAttributes = (", prefix);
+        snprintf(tmpStr, 1000, "%splotAttributes = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < plotAttributes.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "\"%s\"", plotAttributes[i].c_str());
+            snprintf(tmpStr, 1000, "\"%s\"", plotAttributes[i].c_str());
             str += tmpStr;
             if(i < plotAttributes.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     return str;

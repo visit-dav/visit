@@ -4,7 +4,6 @@
 
 #include <PyText3DObject.h>
 #include <ObserverToCallback.h>
-#include <snprintf.h>
 #include <ColorAttribute.h>
 
 // Macros that let us access the AnnotationObject and store the fields
@@ -66,91 +65,91 @@ PyText3DObject_ToString(const AnnotationObject *atts, const char *prefix)
     char tmpStr[1000]; 
 
     if(atts->GetVisible())
-        SNPRINTF(tmpStr, 1000, "%svisible = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%svisible = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%svisible = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%svisible = 0\n", prefix);
     str += tmpStr;
     if(atts->GetActive())
-        SNPRINTF(tmpStr, 1000, "%sactive = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sactive = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sactive = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sactive = 0\n", prefix);
     str += tmpStr;
     {   const double *position = atts->GetPosition();
-        SNPRINTF(tmpStr, 1000, "%sposition = (", prefix);
+        snprintf(tmpStr, 1000, "%sposition = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 3; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", position[i]);
+            snprintf(tmpStr, 1000, "%g", position[i]);
             str += tmpStr;
             if(i < 2)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const stringVector &text = atts->GetText();
-        SNPRINTF(tmpStr, 1000, "%stext = (", prefix);
+        snprintf(tmpStr, 1000, "%stext = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < text.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "\"%s\"", text[i].c_str());
+            snprintf(tmpStr, 1000, "\"%s\"", text[i].c_str());
             str += tmpStr;
             if(i < text.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     const unsigned char *textColor = atts->GetTextColor().GetColor();
-    SNPRINTF(tmpStr, 1000, "%stextColor = (%d, %d, %d, %d)\n", prefix, int(textColor[0]), int(textColor[1]), int(textColor[2]), int(textColor[3]));
+    snprintf(tmpStr, 1000, "%stextColor = (%d, %d, %d, %d)\n", prefix, int(textColor[0]), int(textColor[1]), int(textColor[2]), int(textColor[3]));
     str += tmpStr;
     if(atts->GetUseForegroundForTextColor())
-        SNPRINTF(tmpStr, 1000, "%suseForegroundForTextColor = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%suseForegroundForTextColor = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%suseForegroundForTextColor = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%suseForegroundForTextColor = 0\n", prefix);
     str += tmpStr;
     if(atts->GetPreserveOrientation())
-        SNPRINTF(tmpStr, 1000, "%spreserveOrientation = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%spreserveOrientation = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%spreserveOrientation = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%spreserveOrientation = 0\n", prefix);
     str += tmpStr;
     {   const double *rotations = atts->GetRotations();
-        SNPRINTF(tmpStr, 1000, "%srotations = (", prefix);
+        snprintf(tmpStr, 1000, "%srotations = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 3; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", rotations[i]);
+            snprintf(tmpStr, 1000, "%g", rotations[i]);
             str += tmpStr;
             if(i < 2)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     const char *heightMode_names = "Fixed, Relative";
     if(atts->GetHeightMode()) //Text3DObject::Relative)
     {
-        SNPRINTF(tmpStr, 1000, "%sheightMode = %sRelative  # %s\n", prefix, prefix, heightMode_names);
+        snprintf(tmpStr, 1000, "%sheightMode = %sRelative  # %s\n", prefix, prefix, heightMode_names);
         str += tmpStr;
     }
     else
     {
-        SNPRINTF(tmpStr, 1000, "%sheightMode = %sFixed  # %s\n", prefix, prefix, heightMode_names);
+        snprintf(tmpStr, 1000, "%sheightMode = %sFixed  # %s\n", prefix, prefix, heightMode_names);
         str += tmpStr;
     }
 
-    SNPRINTF(tmpStr, 1000, "%srelativeHeight = %g\n", prefix, double(atts->GetRelativeHeight())/100.);
+    snprintf(tmpStr, 1000, "%srelativeHeight = %g\n", prefix, double(atts->GetRelativeHeight())/100.);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sfixedHeight = %g\n", prefix, atts->GetFixedHeight());
+    snprintf(tmpStr, 1000, "%sfixedHeight = %g\n", prefix, atts->GetFixedHeight());
     str += tmpStr;
     return str;
 }

@@ -5,7 +5,6 @@
 #include <PyPickAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 #include <PyPickVarInfo.h>
 
 // ****************************************************************************
@@ -44,130 +43,130 @@ PyPickAttributes_ToString(const PickAttributes *atts, const char *prefix)
     char tmpStr[1000];
 
     {   const stringVector &variables = atts->GetVariables();
-        SNPRINTF(tmpStr, 1000, "%svariables = (", prefix);
+        snprintf(tmpStr, 1000, "%svariables = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < variables.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "\"%s\"", variables[i].c_str());
+            snprintf(tmpStr, 1000, "\"%s\"", variables[i].c_str());
             str += tmpStr;
             if(i < variables.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     if(atts->GetShowIncidentElements())
-        SNPRINTF(tmpStr, 1000, "%sshowIncidentElements = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sshowIncidentElements = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sshowIncidentElements = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sshowIncidentElements = 0\n", prefix);
     str += tmpStr;
     if(atts->GetShowNodeId())
-        SNPRINTF(tmpStr, 1000, "%sshowNodeId = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sshowNodeId = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sshowNodeId = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sshowNodeId = 0\n", prefix);
     str += tmpStr;
     if(atts->GetShowNodeDomainLogicalCoords())
-        SNPRINTF(tmpStr, 1000, "%sshowNodeDomainLogicalCoords = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sshowNodeDomainLogicalCoords = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sshowNodeDomainLogicalCoords = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sshowNodeDomainLogicalCoords = 0\n", prefix);
     str += tmpStr;
     if(atts->GetShowNodeBlockLogicalCoords())
-        SNPRINTF(tmpStr, 1000, "%sshowNodeBlockLogicalCoords = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sshowNodeBlockLogicalCoords = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sshowNodeBlockLogicalCoords = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sshowNodeBlockLogicalCoords = 0\n", prefix);
     str += tmpStr;
     if(atts->GetShowNodePhysicalCoords())
-        SNPRINTF(tmpStr, 1000, "%sshowNodePhysicalCoords = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sshowNodePhysicalCoords = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sshowNodePhysicalCoords = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sshowNodePhysicalCoords = 0\n", prefix);
     str += tmpStr;
     if(atts->GetShowZoneId())
-        SNPRINTF(tmpStr, 1000, "%sshowZoneId = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sshowZoneId = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sshowZoneId = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sshowZoneId = 0\n", prefix);
     str += tmpStr;
     if(atts->GetShowZoneDomainLogicalCoords())
-        SNPRINTF(tmpStr, 1000, "%sshowZoneDomainLogicalCoords = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sshowZoneDomainLogicalCoords = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sshowZoneDomainLogicalCoords = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sshowZoneDomainLogicalCoords = 0\n", prefix);
     str += tmpStr;
     if(atts->GetShowZoneBlockLogicalCoords())
-        SNPRINTF(tmpStr, 1000, "%sshowZoneBlockLogicalCoords = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sshowZoneBlockLogicalCoords = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sshowZoneBlockLogicalCoords = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sshowZoneBlockLogicalCoords = 0\n", prefix);
     str += tmpStr;
     if(atts->GetDoTimeCurve())
-        SNPRINTF(tmpStr, 1000, "%sdoTimeCurve = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sdoTimeCurve = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sdoTimeCurve = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sdoTimeCurve = 0\n", prefix);
     str += tmpStr;
     if(atts->GetConciseOutput())
-        SNPRINTF(tmpStr, 1000, "%sconciseOutput = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sconciseOutput = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sconciseOutput = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sconciseOutput = 0\n", prefix);
     str += tmpStr;
     if(atts->GetShowTimeStep())
-        SNPRINTF(tmpStr, 1000, "%sshowTimeStep = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sshowTimeStep = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sshowTimeStep = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sshowTimeStep = 0\n", prefix);
     str += tmpStr;
     if(atts->GetShowMeshName())
-        SNPRINTF(tmpStr, 1000, "%sshowMeshName = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sshowMeshName = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sshowMeshName = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sshowMeshName = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sblockPieceName = \"%s\"\n", prefix, atts->GetBlockPieceName().c_str());
+    snprintf(tmpStr, 1000, "%sblockPieceName = \"%s\"\n", prefix, atts->GetBlockPieceName().c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sgroupPieceName = \"%s\"\n", prefix, atts->GetGroupPieceName().c_str());
+    snprintf(tmpStr, 1000, "%sgroupPieceName = \"%s\"\n", prefix, atts->GetGroupPieceName().c_str());
     str += tmpStr;
     if(atts->GetUseLabelAsPickLetter())
-        SNPRINTF(tmpStr, 1000, "%suseLabelAsPickLetter = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%suseLabelAsPickLetter = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%suseLabelAsPickLetter = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%suseLabelAsPickLetter = 0\n", prefix);
     str += tmpStr;
     if(atts->GetShowGlobalIds())
-        SNPRINTF(tmpStr, 1000, "%sshowGlobalIds = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sshowGlobalIds = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sshowGlobalIds = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sshowGlobalIds = 0\n", prefix);
     str += tmpStr;
     if(atts->GetShowPickLetter())
-        SNPRINTF(tmpStr, 1000, "%sshowPickLetter = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sshowPickLetter = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sshowPickLetter = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sshowPickLetter = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%selementLabel = \"%s\"\n", prefix, atts->GetElementLabel().c_str());
+    snprintf(tmpStr, 1000, "%selementLabel = \"%s\"\n", prefix, atts->GetElementLabel().c_str());
     str += tmpStr;
     if(atts->GetReusePickLetter())
-        SNPRINTF(tmpStr, 1000, "%sreusePickLetter = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sreusePickLetter = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sreusePickLetter = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sreusePickLetter = 0\n", prefix);
     str += tmpStr;
     if(atts->GetShowPickHighlight())
-        SNPRINTF(tmpStr, 1000, "%sshowPickHighlight = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sshowPickHighlight = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sshowPickHighlight = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sshowPickHighlight = 0\n", prefix);
     str += tmpStr;
     if(atts->GetNotifyEnabled())
-        SNPRINTF(tmpStr, 1000, "%snotifyEnabled = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%snotifyEnabled = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%snotifyEnabled = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%snotifyEnabled = 0\n", prefix);
     str += tmpStr;
     const char *meshCoordType_names = "XY, RZ, ZR";
     switch (atts->GetMeshCoordType())
     {
       case PickAttributes::XY:
-          SNPRINTF(tmpStr, 1000, "%smeshCoordType = %sXY  # %s\n", prefix, prefix, meshCoordType_names);
+          snprintf(tmpStr, 1000, "%smeshCoordType = %sXY  # %s\n", prefix, prefix, meshCoordType_names);
           str += tmpStr;
           break;
       case PickAttributes::RZ:
-          SNPRINTF(tmpStr, 1000, "%smeshCoordType = %sRZ  # %s\n", prefix, prefix, meshCoordType_names);
+          snprintf(tmpStr, 1000, "%smeshCoordType = %sRZ  # %s\n", prefix, prefix, meshCoordType_names);
           str += tmpStr;
           break;
       case PickAttributes::ZR:
-          SNPRINTF(tmpStr, 1000, "%smeshCoordType = %sZR  # %s\n", prefix, prefix, meshCoordType_names);
+          snprintf(tmpStr, 1000, "%smeshCoordType = %sZR  # %s\n", prefix, prefix, meshCoordType_names);
           str += tmpStr;
           break;
       default:
@@ -175,26 +174,26 @@ PyPickAttributes_ToString(const PickAttributes *atts, const char *prefix)
     }
 
     if(atts->GetCreateSpreadsheet())
-        SNPRINTF(tmpStr, 1000, "%screateSpreadsheet = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%screateSpreadsheet = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%screateSpreadsheet = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%screateSpreadsheet = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sfloatFormat = \"%s\"\n", prefix, atts->GetFloatFormat().c_str());
+    snprintf(tmpStr, 1000, "%sfloatFormat = \"%s\"\n", prefix, atts->GetFloatFormat().c_str());
     str += tmpStr;
     if(atts->GetTimePreserveCoord())
-        SNPRINTF(tmpStr, 1000, "%stimePreserveCoord = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%stimePreserveCoord = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%stimePreserveCoord = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%stimePreserveCoord = 0\n", prefix);
     str += tmpStr;
     const char *timeCurveType_names = "Single_Y_Axis, Multiple_Y_Axes";
     switch (atts->GetTimeCurveType())
     {
       case PickAttributes::Single_Y_Axis:
-          SNPRINTF(tmpStr, 1000, "%stimeCurveType = %sSingle_Y_Axis  # %s\n", prefix, prefix, timeCurveType_names);
+          snprintf(tmpStr, 1000, "%stimeCurveType = %sSingle_Y_Axis  # %s\n", prefix, prefix, timeCurveType_names);
           str += tmpStr;
           break;
       case PickAttributes::Multiple_Y_Axes:
-          SNPRINTF(tmpStr, 1000, "%stimeCurveType = %sMultiple_Y_Axes  # %s\n", prefix, prefix, timeCurveType_names);
+          snprintf(tmpStr, 1000, "%stimeCurveType = %sMultiple_Y_Axes  # %s\n", prefix, prefix, timeCurveType_names);
           str += tmpStr;
           break;
       default:
@@ -202,39 +201,39 @@ PyPickAttributes_ToString(const PickAttributes *atts, const char *prefix)
     }
 
     {   const int *pickHighlightColor = atts->GetPickHighlightColor();
-        SNPRINTF(tmpStr, 1000, "%spickHighlightColor = (", prefix);
+        snprintf(tmpStr, 1000, "%spickHighlightColor = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 3; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%d", pickHighlightColor[i]);
+            snprintf(tmpStr, 1000, "%d", pickHighlightColor[i]);
             str += tmpStr;
             if(i < 2)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
-    SNPRINTF(tmpStr, 1000, "%sremovedPicks = \"%s\"\n", prefix, atts->GetRemovedPicks().c_str());
+    snprintf(tmpStr, 1000, "%sremovedPicks = \"%s\"\n", prefix, atts->GetRemovedPicks().c_str());
     str += tmpStr;
     if(atts->GetSwivelFocusToPick())
-        SNPRINTF(tmpStr, 1000, "%sswivelFocusToPick = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sswivelFocusToPick = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sswivelFocusToPick = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sswivelFocusToPick = 0\n", prefix);
     str += tmpStr;
     if(atts->GetOverridePickLabel())
-        SNPRINTF(tmpStr, 1000, "%soverridePickLabel = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%soverridePickLabel = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%soverridePickLabel = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%soverridePickLabel = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sforcedPickLabel = \"%s\"\n", prefix, atts->GetForcedPickLabel().c_str());
+    snprintf(tmpStr, 1000, "%sforcedPickLabel = \"%s\"\n", prefix, atts->GetForcedPickLabel().c_str());
     str += tmpStr;
     if(atts->GetRemoveLabelTwins())
-        SNPRINTF(tmpStr, 1000, "%sremoveLabelTwins = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sremoveLabelTwins = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sremoveLabelTwins = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sremoveLabelTwins = 0\n", prefix);
     str += tmpStr;
     return str;
 }

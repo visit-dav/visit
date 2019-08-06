@@ -5,7 +5,6 @@
 #include <PyAnnotationAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 #include <PyAxes2D.h>
 #include <PyAxes3D.h>
 #include <PyFontAttributes.h>
@@ -62,9 +61,9 @@ PyAnnotationAttributes_ToString(const AnnotationAttributes *atts, const char *pr
         str += PyAxes3D_ToString(&atts->GetAxes3D(), objPrefix.c_str());
     }
     if(atts->GetUserInfoFlag())
-        SNPRINTF(tmpStr, 1000, "%suserInfoFlag = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%suserInfoFlag = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%suserInfoFlag = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%suserInfoFlag = 0\n", prefix);
     str += tmpStr;
     { // new scope
         std::string objPrefix(prefix);
@@ -72,14 +71,14 @@ PyAnnotationAttributes_ToString(const AnnotationAttributes *atts, const char *pr
         str += PyFontAttributes_ToString(&atts->GetUserInfoFont(), objPrefix.c_str());
     }
     if(atts->GetDatabaseInfoFlag())
-        SNPRINTF(tmpStr, 1000, "%sdatabaseInfoFlag = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sdatabaseInfoFlag = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sdatabaseInfoFlag = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sdatabaseInfoFlag = 0\n", prefix);
     str += tmpStr;
     if(atts->GetTimeInfoFlag())
-        SNPRINTF(tmpStr, 1000, "%stimeInfoFlag = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%stimeInfoFlag = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%stimeInfoFlag = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%stimeInfoFlag = 0\n", prefix);
     str += tmpStr;
     { // new scope
         std::string objPrefix(prefix);
@@ -90,65 +89,65 @@ PyAnnotationAttributes_ToString(const AnnotationAttributes *atts, const char *pr
     switch (atts->GetDatabaseInfoExpansionMode())
     {
       case AnnotationAttributes::File:
-          SNPRINTF(tmpStr, 1000, "%sdatabaseInfoExpansionMode = %sFile  # %s\n", prefix, prefix, databaseInfoExpansionMode_names);
+          snprintf(tmpStr, 1000, "%sdatabaseInfoExpansionMode = %sFile  # %s\n", prefix, prefix, databaseInfoExpansionMode_names);
           str += tmpStr;
           break;
       case AnnotationAttributes::Directory:
-          SNPRINTF(tmpStr, 1000, "%sdatabaseInfoExpansionMode = %sDirectory  # %s\n", prefix, prefix, databaseInfoExpansionMode_names);
+          snprintf(tmpStr, 1000, "%sdatabaseInfoExpansionMode = %sDirectory  # %s\n", prefix, prefix, databaseInfoExpansionMode_names);
           str += tmpStr;
           break;
       case AnnotationAttributes::Full:
-          SNPRINTF(tmpStr, 1000, "%sdatabaseInfoExpansionMode = %sFull  # %s\n", prefix, prefix, databaseInfoExpansionMode_names);
+          snprintf(tmpStr, 1000, "%sdatabaseInfoExpansionMode = %sFull  # %s\n", prefix, prefix, databaseInfoExpansionMode_names);
           str += tmpStr;
           break;
       case AnnotationAttributes::Smart:
-          SNPRINTF(tmpStr, 1000, "%sdatabaseInfoExpansionMode = %sSmart  # %s\n", prefix, prefix, databaseInfoExpansionMode_names);
+          snprintf(tmpStr, 1000, "%sdatabaseInfoExpansionMode = %sSmart  # %s\n", prefix, prefix, databaseInfoExpansionMode_names);
           str += tmpStr;
           break;
       case AnnotationAttributes::SmartDirectory:
-          SNPRINTF(tmpStr, 1000, "%sdatabaseInfoExpansionMode = %sSmartDirectory  # %s\n", prefix, prefix, databaseInfoExpansionMode_names);
+          snprintf(tmpStr, 1000, "%sdatabaseInfoExpansionMode = %sSmartDirectory  # %s\n", prefix, prefix, databaseInfoExpansionMode_names);
           str += tmpStr;
           break;
       default:
           break;
     }
 
-    SNPRINTF(tmpStr, 1000, "%sdatabaseInfoTimeScale = %g\n", prefix, atts->GetDatabaseInfoTimeScale());
+    snprintf(tmpStr, 1000, "%sdatabaseInfoTimeScale = %g\n", prefix, atts->GetDatabaseInfoTimeScale());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sdatabaseInfoTimeOffset = %g\n", prefix, atts->GetDatabaseInfoTimeOffset());
+    snprintf(tmpStr, 1000, "%sdatabaseInfoTimeOffset = %g\n", prefix, atts->GetDatabaseInfoTimeOffset());
     str += tmpStr;
     if(atts->GetLegendInfoFlag())
-        SNPRINTF(tmpStr, 1000, "%slegendInfoFlag = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%slegendInfoFlag = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%slegendInfoFlag = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%slegendInfoFlag = 0\n", prefix);
     str += tmpStr;
     const unsigned char *backgroundColor = atts->GetBackgroundColor().GetColor();
-    SNPRINTF(tmpStr, 1000, "%sbackgroundColor = (%d, %d, %d, %d)\n", prefix, int(backgroundColor[0]), int(backgroundColor[1]), int(backgroundColor[2]), int(backgroundColor[3]));
+    snprintf(tmpStr, 1000, "%sbackgroundColor = (%d, %d, %d, %d)\n", prefix, int(backgroundColor[0]), int(backgroundColor[1]), int(backgroundColor[2]), int(backgroundColor[3]));
     str += tmpStr;
     const unsigned char *foregroundColor = atts->GetForegroundColor().GetColor();
-    SNPRINTF(tmpStr, 1000, "%sforegroundColor = (%d, %d, %d, %d)\n", prefix, int(foregroundColor[0]), int(foregroundColor[1]), int(foregroundColor[2]), int(foregroundColor[3]));
+    snprintf(tmpStr, 1000, "%sforegroundColor = (%d, %d, %d, %d)\n", prefix, int(foregroundColor[0]), int(foregroundColor[1]), int(foregroundColor[2]), int(foregroundColor[3]));
     str += tmpStr;
     const char *gradientBackgroundStyle_names = "TopToBottom, BottomToTop, LeftToRight, RightToLeft, Radial";
     switch (atts->GetGradientBackgroundStyle())
     {
       case AnnotationAttributes::TopToBottom:
-          SNPRINTF(tmpStr, 1000, "%sgradientBackgroundStyle = %sTopToBottom  # %s\n", prefix, prefix, gradientBackgroundStyle_names);
+          snprintf(tmpStr, 1000, "%sgradientBackgroundStyle = %sTopToBottom  # %s\n", prefix, prefix, gradientBackgroundStyle_names);
           str += tmpStr;
           break;
       case AnnotationAttributes::BottomToTop:
-          SNPRINTF(tmpStr, 1000, "%sgradientBackgroundStyle = %sBottomToTop  # %s\n", prefix, prefix, gradientBackgroundStyle_names);
+          snprintf(tmpStr, 1000, "%sgradientBackgroundStyle = %sBottomToTop  # %s\n", prefix, prefix, gradientBackgroundStyle_names);
           str += tmpStr;
           break;
       case AnnotationAttributes::LeftToRight:
-          SNPRINTF(tmpStr, 1000, "%sgradientBackgroundStyle = %sLeftToRight  # %s\n", prefix, prefix, gradientBackgroundStyle_names);
+          snprintf(tmpStr, 1000, "%sgradientBackgroundStyle = %sLeftToRight  # %s\n", prefix, prefix, gradientBackgroundStyle_names);
           str += tmpStr;
           break;
       case AnnotationAttributes::RightToLeft:
-          SNPRINTF(tmpStr, 1000, "%sgradientBackgroundStyle = %sRightToLeft  # %s\n", prefix, prefix, gradientBackgroundStyle_names);
+          snprintf(tmpStr, 1000, "%sgradientBackgroundStyle = %sRightToLeft  # %s\n", prefix, prefix, gradientBackgroundStyle_names);
           str += tmpStr;
           break;
       case AnnotationAttributes::Radial:
-          SNPRINTF(tmpStr, 1000, "%sgradientBackgroundStyle = %sRadial  # %s\n", prefix, prefix, gradientBackgroundStyle_names);
+          snprintf(tmpStr, 1000, "%sgradientBackgroundStyle = %sRadial  # %s\n", prefix, prefix, gradientBackgroundStyle_names);
           str += tmpStr;
           break;
       default:
@@ -156,39 +155,39 @@ PyAnnotationAttributes_ToString(const AnnotationAttributes *atts, const char *pr
     }
 
     const unsigned char *gradientColor1 = atts->GetGradientColor1().GetColor();
-    SNPRINTF(tmpStr, 1000, "%sgradientColor1 = (%d, %d, %d, %d)\n", prefix, int(gradientColor1[0]), int(gradientColor1[1]), int(gradientColor1[2]), int(gradientColor1[3]));
+    snprintf(tmpStr, 1000, "%sgradientColor1 = (%d, %d, %d, %d)\n", prefix, int(gradientColor1[0]), int(gradientColor1[1]), int(gradientColor1[2]), int(gradientColor1[3]));
     str += tmpStr;
     const unsigned char *gradientColor2 = atts->GetGradientColor2().GetColor();
-    SNPRINTF(tmpStr, 1000, "%sgradientColor2 = (%d, %d, %d, %d)\n", prefix, int(gradientColor2[0]), int(gradientColor2[1]), int(gradientColor2[2]), int(gradientColor2[3]));
+    snprintf(tmpStr, 1000, "%sgradientColor2 = (%d, %d, %d, %d)\n", prefix, int(gradientColor2[0]), int(gradientColor2[1]), int(gradientColor2[2]), int(gradientColor2[3]));
     str += tmpStr;
     const char *backgroundMode_names = "Solid, Gradient, Image, ImageSphere";
     switch (atts->GetBackgroundMode())
     {
       case AnnotationAttributes::Solid:
-          SNPRINTF(tmpStr, 1000, "%sbackgroundMode = %sSolid  # %s\n", prefix, prefix, backgroundMode_names);
+          snprintf(tmpStr, 1000, "%sbackgroundMode = %sSolid  # %s\n", prefix, prefix, backgroundMode_names);
           str += tmpStr;
           break;
       case AnnotationAttributes::Gradient:
-          SNPRINTF(tmpStr, 1000, "%sbackgroundMode = %sGradient  # %s\n", prefix, prefix, backgroundMode_names);
+          snprintf(tmpStr, 1000, "%sbackgroundMode = %sGradient  # %s\n", prefix, prefix, backgroundMode_names);
           str += tmpStr;
           break;
       case AnnotationAttributes::Image:
-          SNPRINTF(tmpStr, 1000, "%sbackgroundMode = %sImage  # %s\n", prefix, prefix, backgroundMode_names);
+          snprintf(tmpStr, 1000, "%sbackgroundMode = %sImage  # %s\n", prefix, prefix, backgroundMode_names);
           str += tmpStr;
           break;
       case AnnotationAttributes::ImageSphere:
-          SNPRINTF(tmpStr, 1000, "%sbackgroundMode = %sImageSphere  # %s\n", prefix, prefix, backgroundMode_names);
+          snprintf(tmpStr, 1000, "%sbackgroundMode = %sImageSphere  # %s\n", prefix, prefix, backgroundMode_names);
           str += tmpStr;
           break;
       default:
           break;
     }
 
-    SNPRINTF(tmpStr, 1000, "%sbackgroundImage = \"%s\"\n", prefix, atts->GetBackgroundImage().c_str());
+    snprintf(tmpStr, 1000, "%sbackgroundImage = \"%s\"\n", prefix, atts->GetBackgroundImage().c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%simageRepeatX = %d\n", prefix, atts->GetImageRepeatX());
+    snprintf(tmpStr, 1000, "%simageRepeatX = %d\n", prefix, atts->GetImageRepeatX());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%simageRepeatY = %d\n", prefix, atts->GetImageRepeatY());
+    snprintf(tmpStr, 1000, "%simageRepeatY = %d\n", prefix, atts->GetImageRepeatY());
     str += tmpStr;
     { // new scope
         std::string objPrefix(prefix);

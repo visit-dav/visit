@@ -5,7 +5,6 @@
 #include <PyThresholdOpAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyThresholdOpAttributes
@@ -42,95 +41,95 @@ PyThresholdOpAttributes_ToString(const ThresholdOpAttributes *atts, const char *
     std::string str;
     char tmpStr[1000];
 
-    SNPRINTF(tmpStr, 1000, "%soutputMeshType = %d\n", prefix, atts->GetOutputMeshType());
+    snprintf(tmpStr, 1000, "%soutputMeshType = %d\n", prefix, atts->GetOutputMeshType());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sboundsInputType = %d\n", prefix, atts->GetBoundsInputType());
+    snprintf(tmpStr, 1000, "%sboundsInputType = %d\n", prefix, atts->GetBoundsInputType());
     str += tmpStr;
     {   const stringVector &listedVarNames = atts->GetListedVarNames();
-        SNPRINTF(tmpStr, 1000, "%slistedVarNames = (", prefix);
+        snprintf(tmpStr, 1000, "%slistedVarNames = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < listedVarNames.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "\"%s\"", listedVarNames[i].c_str());
+            snprintf(tmpStr, 1000, "\"%s\"", listedVarNames[i].c_str());
             str += tmpStr;
             if(i < listedVarNames.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const intVector &zonePortions = atts->GetZonePortions();
-        SNPRINTF(tmpStr, 1000, "%szonePortions = (", prefix);
+        snprintf(tmpStr, 1000, "%szonePortions = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < zonePortions.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%d", zonePortions[i]);
+            snprintf(tmpStr, 1000, "%d", zonePortions[i]);
             str += tmpStr;
             if(i < zonePortions.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const doubleVector &lowerBounds = atts->GetLowerBounds();
-        SNPRINTF(tmpStr, 1000, "%slowerBounds = (", prefix);
+        snprintf(tmpStr, 1000, "%slowerBounds = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < lowerBounds.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", lowerBounds[i]);
+            snprintf(tmpStr, 1000, "%g", lowerBounds[i]);
             str += tmpStr;
             if(i < lowerBounds.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const doubleVector &upperBounds = atts->GetUpperBounds();
-        SNPRINTF(tmpStr, 1000, "%supperBounds = (", prefix);
+        snprintf(tmpStr, 1000, "%supperBounds = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < upperBounds.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", upperBounds[i]);
+            snprintf(tmpStr, 1000, "%g", upperBounds[i]);
             str += tmpStr;
             if(i < upperBounds.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
-    SNPRINTF(tmpStr, 1000, "%sdefaultVarName = \"%s\"\n", prefix, atts->GetDefaultVarName().c_str());
+    snprintf(tmpStr, 1000, "%sdefaultVarName = \"%s\"\n", prefix, atts->GetDefaultVarName().c_str());
     str += tmpStr;
     if(atts->GetDefaultVarIsScalar())
-        SNPRINTF(tmpStr, 1000, "%sdefaultVarIsScalar = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sdefaultVarIsScalar = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sdefaultVarIsScalar = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sdefaultVarIsScalar = 0\n", prefix);
     str += tmpStr;
     {   const stringVector &boundsRange = atts->GetBoundsRange();
-        SNPRINTF(tmpStr, 1000, "%sboundsRange = (", prefix);
+        snprintf(tmpStr, 1000, "%sboundsRange = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < boundsRange.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "\"%s\"", boundsRange[i].c_str());
+            snprintf(tmpStr, 1000, "\"%s\"", boundsRange[i].c_str());
             str += tmpStr;
             if(i < boundsRange.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     return str;

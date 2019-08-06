@@ -5,7 +5,6 @@
 #include <PyavtVectorMetaData.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyavtVectorMetaData
@@ -44,7 +43,7 @@ PyavtVectorMetaData_ToString(const avtVectorMetaData *atts, const char *prefix)
 
     str = PyavtVarMetaData_ToString(atts, prefix);
 
-    SNPRINTF(tmpStr, 1000, "%svarDim = %d\n", prefix, atts->varDim);
+    snprintf(tmpStr, 1000, "%svarDim = %d\n", prefix, atts->varDim);
     str += tmpStr;
     return str;
 }

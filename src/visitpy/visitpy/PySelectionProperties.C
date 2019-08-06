@@ -5,7 +5,6 @@
 #include <PySelectionProperties.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PySelectionProperties
@@ -42,21 +41,21 @@ PySelectionProperties_ToString(const SelectionProperties *atts, const char *pref
     std::string str;
     char tmpStr[1000];
 
-    SNPRINTF(tmpStr, 1000, "%sname = \"%s\"\n", prefix, atts->GetName().c_str());
+    snprintf(tmpStr, 1000, "%sname = \"%s\"\n", prefix, atts->GetName().c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%ssource = \"%s\"\n", prefix, atts->GetSource().c_str());
+    snprintf(tmpStr, 1000, "%ssource = \"%s\"\n", prefix, atts->GetSource().c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%shost = \"%s\"\n", prefix, atts->GetHost().c_str());
+    snprintf(tmpStr, 1000, "%shost = \"%s\"\n", prefix, atts->GetHost().c_str());
     str += tmpStr;
     const char *selectionType_names = "BasicSelection, CumulativeQuerySelection";
     switch (atts->GetSelectionType())
     {
       case SelectionProperties::BasicSelection:
-          SNPRINTF(tmpStr, 1000, "%sselectionType = %sBasicSelection  # %s\n", prefix, prefix, selectionType_names);
+          snprintf(tmpStr, 1000, "%sselectionType = %sBasicSelection  # %s\n", prefix, prefix, selectionType_names);
           str += tmpStr;
           break;
       case SelectionProperties::CumulativeQuerySelection:
-          SNPRINTF(tmpStr, 1000, "%sselectionType = %sCumulativeQuerySelection  # %s\n", prefix, prefix, selectionType_names);
+          snprintf(tmpStr, 1000, "%sselectionType = %sCumulativeQuerySelection  # %s\n", prefix, prefix, selectionType_names);
           str += tmpStr;
           break;
       default:
@@ -67,90 +66,90 @@ PySelectionProperties_ToString(const SelectionProperties *atts, const char *pref
     switch (atts->GetIdVariableType())
     {
       case SelectionProperties::UseZoneIDForID:
-          SNPRINTF(tmpStr, 1000, "%sidVariableType = %sUseZoneIDForID  # %s\n", prefix, prefix, idVariableType_names);
+          snprintf(tmpStr, 1000, "%sidVariableType = %sUseZoneIDForID  # %s\n", prefix, prefix, idVariableType_names);
           str += tmpStr;
           break;
       case SelectionProperties::UseGlobalZoneIDForID:
-          SNPRINTF(tmpStr, 1000, "%sidVariableType = %sUseGlobalZoneIDForID  # %s\n", prefix, prefix, idVariableType_names);
+          snprintf(tmpStr, 1000, "%sidVariableType = %sUseGlobalZoneIDForID  # %s\n", prefix, prefix, idVariableType_names);
           str += tmpStr;
           break;
       case SelectionProperties::UseLocationsForID:
-          SNPRINTF(tmpStr, 1000, "%sidVariableType = %sUseLocationsForID  # %s\n", prefix, prefix, idVariableType_names);
+          snprintf(tmpStr, 1000, "%sidVariableType = %sUseLocationsForID  # %s\n", prefix, prefix, idVariableType_names);
           str += tmpStr;
           break;
       case SelectionProperties::UseVariableForID:
-          SNPRINTF(tmpStr, 1000, "%sidVariableType = %sUseVariableForID  # %s\n", prefix, prefix, idVariableType_names);
+          snprintf(tmpStr, 1000, "%sidVariableType = %sUseVariableForID  # %s\n", prefix, prefix, idVariableType_names);
           str += tmpStr;
           break;
       default:
           break;
     }
 
-    SNPRINTF(tmpStr, 1000, "%sidVariable = \"%s\"\n", prefix, atts->GetIdVariable().c_str());
+    snprintf(tmpStr, 1000, "%sidVariable = \"%s\"\n", prefix, atts->GetIdVariable().c_str());
     str += tmpStr;
     {   const stringVector &variables = atts->GetVariables();
-        SNPRINTF(tmpStr, 1000, "%svariables = (", prefix);
+        snprintf(tmpStr, 1000, "%svariables = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < variables.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "\"%s\"", variables[i].c_str());
+            snprintf(tmpStr, 1000, "\"%s\"", variables[i].c_str());
             str += tmpStr;
             if(i < variables.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const doubleVector &variableMins = atts->GetVariableMins();
-        SNPRINTF(tmpStr, 1000, "%svariableMins = (", prefix);
+        snprintf(tmpStr, 1000, "%svariableMins = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < variableMins.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", variableMins[i]);
+            snprintf(tmpStr, 1000, "%g", variableMins[i]);
             str += tmpStr;
             if(i < variableMins.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const doubleVector &variableMaxs = atts->GetVariableMaxs();
-        SNPRINTF(tmpStr, 1000, "%svariableMaxs = (", prefix);
+        snprintf(tmpStr, 1000, "%svariableMaxs = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < variableMaxs.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", variableMaxs[i]);
+            snprintf(tmpStr, 1000, "%g", variableMaxs[i]);
             str += tmpStr;
             if(i < variableMaxs.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
-    SNPRINTF(tmpStr, 1000, "%sminTimeState = %d\n", prefix, atts->GetMinTimeState());
+    snprintf(tmpStr, 1000, "%sminTimeState = %d\n", prefix, atts->GetMinTimeState());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%smaxTimeState = %d\n", prefix, atts->GetMaxTimeState());
+    snprintf(tmpStr, 1000, "%smaxTimeState = %d\n", prefix, atts->GetMaxTimeState());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%stimeStateStride = %d\n", prefix, atts->GetTimeStateStride());
+    snprintf(tmpStr, 1000, "%stimeStateStride = %d\n", prefix, atts->GetTimeStateStride());
     str += tmpStr;
     const char *combineRule_names = "CombineAnd, CombineOr";
     switch (atts->GetCombineRule())
     {
       case SelectionProperties::CombineAnd:
-          SNPRINTF(tmpStr, 1000, "%scombineRule = %sCombineAnd  # %s\n", prefix, prefix, combineRule_names);
+          snprintf(tmpStr, 1000, "%scombineRule = %sCombineAnd  # %s\n", prefix, prefix, combineRule_names);
           str += tmpStr;
           break;
       case SelectionProperties::CombineOr:
-          SNPRINTF(tmpStr, 1000, "%scombineRule = %sCombineOr  # %s\n", prefix, prefix, combineRule_names);
+          snprintf(tmpStr, 1000, "%scombineRule = %sCombineOr  # %s\n", prefix, prefix, combineRule_names);
           str += tmpStr;
           break;
       default:
@@ -161,37 +160,37 @@ PySelectionProperties_ToString(const SelectionProperties *atts, const char *pref
     switch (atts->GetHistogramType())
     {
       case SelectionProperties::HistogramTime:
-          SNPRINTF(tmpStr, 1000, "%shistogramType = %sHistogramTime  # %s\n", prefix, prefix, histogramType_names);
+          snprintf(tmpStr, 1000, "%shistogramType = %sHistogramTime  # %s\n", prefix, prefix, histogramType_names);
           str += tmpStr;
           break;
       case SelectionProperties::HistogramMatches:
-          SNPRINTF(tmpStr, 1000, "%shistogramType = %sHistogramMatches  # %s\n", prefix, prefix, histogramType_names);
+          snprintf(tmpStr, 1000, "%shistogramType = %sHistogramMatches  # %s\n", prefix, prefix, histogramType_names);
           str += tmpStr;
           break;
       case SelectionProperties::HistogramID:
-          SNPRINTF(tmpStr, 1000, "%shistogramType = %sHistogramID  # %s\n", prefix, prefix, histogramType_names);
+          snprintf(tmpStr, 1000, "%shistogramType = %sHistogramID  # %s\n", prefix, prefix, histogramType_names);
           str += tmpStr;
           break;
       case SelectionProperties::HistogramVariable:
-          SNPRINTF(tmpStr, 1000, "%shistogramType = %sHistogramVariable  # %s\n", prefix, prefix, histogramType_names);
+          snprintf(tmpStr, 1000, "%shistogramType = %sHistogramVariable  # %s\n", prefix, prefix, histogramType_names);
           str += tmpStr;
           break;
       default:
           break;
     }
 
-    SNPRINTF(tmpStr, 1000, "%shistogramNumBins = %d\n", prefix, atts->GetHistogramNumBins());
+    snprintf(tmpStr, 1000, "%shistogramNumBins = %d\n", prefix, atts->GetHistogramNumBins());
     str += tmpStr;
     if(atts->GetHistogramAutoScaleNumBins())
-        SNPRINTF(tmpStr, 1000, "%shistogramAutoScaleNumBins = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%shistogramAutoScaleNumBins = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%shistogramAutoScaleNumBins = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%shistogramAutoScaleNumBins = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%shistogramStartBin = %d\n", prefix, atts->GetHistogramStartBin());
+    snprintf(tmpStr, 1000, "%shistogramStartBin = %d\n", prefix, atts->GetHistogramStartBin());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%shistogramEndBin = %d\n", prefix, atts->GetHistogramEndBin());
+    snprintf(tmpStr, 1000, "%shistogramEndBin = %d\n", prefix, atts->GetHistogramEndBin());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%shistogramVariable = \"%s\"\n", prefix, atts->GetHistogramVariable().c_str());
+    snprintf(tmpStr, 1000, "%shistogramVariable = \"%s\"\n", prefix, atts->GetHistogramVariable().c_str());
     str += tmpStr;
     return str;
 }
