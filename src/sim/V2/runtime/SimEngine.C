@@ -815,7 +815,7 @@ SimEngine::SaveWindow(const std::string &filename, int w, int h, int format)
             // Send a message to the viewer indicating we want it to save an image.
             std::string f(SaveWindowAttributes::FileFormat_ToString(fmt));
             char cmd[2048];
-            SNPRINTF(cmd, 2048, "SaveWindow:%s:%s:%d:%d:%s",
+            snprintf(cmd, 2048, "SaveWindow:%s:%s:%d:%d:%s",
                 dName.c_str(), fName.c_str(), w, h, f.c_str());
 
             debug5 << "SaveWindow" << endl;
@@ -907,7 +907,7 @@ SimEngine::AddPlot(const std::string &plotType, const std::string &var)
 #endif
             // Send the viewer a message to add  plot.
             char cmd[200];
-            SNPRINTF(cmd, 200, "AddPlot:%s:%s", plotType.c_str(), var.c_str());
+            snprintf(cmd, 200, "AddPlot:%s:%s", plotType.c_str(), var.c_str());
             SimulationInitiateCommand(cmd);
             retval = true;
 #ifdef SIMV2_VIEWER_INTEGRATION
@@ -983,7 +983,7 @@ SimEngine::AddOperator(const std::string &operatorType, bool applyToAll)
 #endif
             // Send the viewer a message to add an operator.
             char cmd[200];
-            SNPRINTF(cmd, 200, "AddOperator:%s:%d", operatorType.c_str(), applyToAll?1:0);
+            snprintf(cmd, 200, "AddOperator:%s:%d", operatorType.c_str(), applyToAll?1:0);
             SimulationInitiateCommand(cmd);
             retval = true;
 #ifdef SIMV2_VIEWER_INTEGRATION
@@ -1164,7 +1164,7 @@ SimEngine::SetActivePlots(const int *ids, int nids)
             char tmp[10];
             for(int i = 0; i < nids; ++i)
             {
-                SNPRINTF(tmp, 10, ":%d", ids[i]);
+                snprintf(tmp, 10, ":%d", ids[i]);
                 cmd.append(tmp);
             }
             SimulationInitiateCommand(cmd);
@@ -1233,7 +1233,7 @@ SimEngine::ChangePlotVar(const char *var, int all)
         {
 #endif
             char cmd[1000];
-            SNPRINTF(cmd, 1000, "ChangePlotVar:%s:%d", var, all);
+            snprintf(cmd, 1000, "ChangePlotVar:%s:%d", var, all);
             SimulationInitiateCommand(cmd);
             retval = true;
 #ifdef SIMV2_VIEWER_INTEGRATION

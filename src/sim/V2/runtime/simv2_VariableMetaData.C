@@ -5,7 +5,6 @@
 #include <iostream>
 #include <cstring>
 #include <float.h>
-#include <snprintf.h>
 #include <vectortypes.h>
 #include "VisItDataInterfaceRuntime.h"
 #include "VisItDataInterfaceRuntimeP.h"
@@ -66,7 +65,7 @@ GetObject(visit_handle h, const char *fname)
     {
         if(obj->objectType() != VISIT_VARIABLEMETADATA)
         {
-            SNPRINTF(tmp, 150, "%s: The provided handle does not point to "
+            snprintf(tmp, 150, "%s: The provided handle does not point to "
                 "a VariableMetaData object. (type=%d)", fname, obj->type);
             VisItError(tmp);
             obj = NULL;
@@ -74,7 +73,7 @@ GetObject(visit_handle h, const char *fname)
     }
     else
     {
-        SNPRINTF(tmp, 150, "%s: An invalid handle was provided.", fname);
+        snprintf(tmp, 150, "%s: An invalid handle was provided.", fname);
         VisItError(tmp);
     }
 

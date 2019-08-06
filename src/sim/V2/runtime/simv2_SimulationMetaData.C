@@ -3,7 +3,6 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 #include <vectortypes.h>
-#include <snprintf.h>
 #include <algorithm>
 
 #include "VisItDataInterfaceRuntime.h"
@@ -84,14 +83,14 @@ GetObject(visit_handle h, const char *fname)
     {
         if(obj->objectType() != VISIT_SIMULATION_METADATA)
         {
-            SNPRINTF(tmp, 100, "%s: The provided handle does not point to a SimulationMetaData object.", fname);
+            snprintf(tmp, 100, "%s: The provided handle does not point to a SimulationMetaData object.", fname);
             VisItError(tmp);
             obj = NULL;
         }
     }
     else
     {
-        SNPRINTF(tmp, 100, "%s: An invalid handle was provided.", fname);
+        snprintf(tmp, 100, "%s: An invalid handle was provided.", fname);
         VisItError(tmp);
     }
 
@@ -293,7 +292,7 @@ simv2_SimulationMetaData_check(visit_handle h)
                         simv2_VariableMetaData_getName(obj->variables[i],
                                                        &varName);
                       
-                        SNPRINTF(tmp, 128,
+                        snprintf(tmp, 128,
                                  "VariableMetaData for variable: %s: "
                                  " has an unknown mesh: %s",
                                  varName, name);
@@ -334,7 +333,7 @@ simv2_SimulationMetaData_check(visit_handle h)
                         simv2_MaterialMetaData_getName(obj->variables[i],
                                                        &varName);
                       
-                        SNPRINTF(tmp, 128,
+                        snprintf(tmp, 128,
                                  "MaterialMetaData for material: %s: "
                                  " has an unknown mesh: %s",
                                  varName, name);
@@ -384,7 +383,7 @@ simv2_SimulationMetaData_check(visit_handle h)
                         simv2_SpeciesMetaData_getName(obj->species[i],
                                                       &varName);
                       
-                        SNPRINTF(tmp, 128,
+                        snprintf(tmp, 128,
                                  "SpeciesMetaData for species: %s: "
                                  " has an unknown mesh: %s",
                                  varName, name);
@@ -407,7 +406,7 @@ simv2_SimulationMetaData_check(visit_handle h)
                         simv2_SpeciesMetaData_getName(obj->species[i],
                                                       &varName);
                       
-                        SNPRINTF(tmp, 128,
+                        snprintf(tmp, 128,
                                  "SpeciesMetaData for species: %s: "
                                  " has an unknown material: %s",
                                  varName, name);
