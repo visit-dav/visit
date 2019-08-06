@@ -18,8 +18,6 @@
 #include <FileFunctions.h>
 #include <StringHelpers.h>
 
-#include <snprintf.h>
-
 #include <Expression.h>
 #include <DebugStream.h>
 #include <TimingsManager.h>
@@ -61,7 +59,7 @@ public:
     int GetVertexId(const double *vert)
     {
         char keystr[200];
-        SNPRINTF(keystr, 200, "%2.6f,%2.6f,%2.6f",
+        snprintf(keystr, 200, "%2.6f,%2.6f,%2.6f",
                 (float)vert[0], (float)vert[1], (float)vert[2]);
         std::string key(keystr);
         int ret;

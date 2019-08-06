@@ -10,7 +10,6 @@
 
 #include <string>
 #include <visitstream.h>
-#include <snprintf.h>
 
 #include <vtkCell.h>
 #include <vtkCellTypes.h>
@@ -165,7 +164,7 @@ avtExtrudedVolFileFormat::GetMesh(int domain, const char *meshname)
     int   i, j;
 
     char filename[1024];
-    SNPRINTF(filename, 1024, "%s.%d.exvol_conn", stem.c_str(), domain);
+    snprintf(filename, 1024, "%s.%d.exvol_conn", stem.c_str(), domain);
     vtkDataSetReader *rdr = vtkDataSetReader::New();
     rdr->SetFileName(filename);
     rdr->Update();
@@ -183,7 +182,7 @@ avtExtrudedVolFileFormat::GetMesh(int domain, const char *meshname)
 
     for (i = 0 ; i < nTimesteps ; i++)
     {
-        SNPRINTF(filename, 1024, "%s.%d.%d.exvol_var", stem.c_str(), i,domain);
+        snprintf(filename, 1024, "%s.%d.%d.exvol_var", stem.c_str(), i,domain);
         ifstream ifile(filename);
         if (ifile.fail())
         {
@@ -273,7 +272,7 @@ avtExtrudedVolFileFormat::GetVar(int domain, const char *varname)
     char filename[1024];
     for (i = 0 ; i < nTimesteps ; i++)
     {
-        SNPRINTF(filename, 1024, "%s.%d.%d.exvol_var", stem.c_str(), i,domain);
+        snprintf(filename, 1024, "%s.%d.%d.exvol_var", stem.c_str(), i,domain);
         ifstream ifile(filename);
         if (ifile.fail())
         {

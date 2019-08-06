@@ -8,7 +8,6 @@
 
 #include <avtSiloOptions.h>
 
-#include <snprintf.h>
 #include <DBOptionsAttributes.h>
 
 #include <string>
@@ -115,7 +114,7 @@ GetSiloWriteOptions(void)
     rv->SetString(SILO_WROPT_COMPRESSION, "");
 
     char helpStr[512];
-    SNPRINTF(helpStr, sizeof(helpStr),
+    snprintf(helpStr, sizeof(helpStr),
         "<p><b>%s</b>:"
         "<ul>"
         "<li>PDB: Silo library will create a PDB file.</li>"

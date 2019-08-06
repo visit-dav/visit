@@ -35,7 +35,6 @@
 #include <avtPointSelection.h>
 #include <avtSpatialBoxSelection.h>
 #include <avtVariableCache.h>
-#include <snprintf.h>
 
 #include <Expression.h>
 
@@ -459,7 +458,7 @@ avtNek5000FileFormat::ParseMetaDataFile(const char *filename)
         }
         else
         {
-            SNPRINTF(buf, 2048, "Error parsing file.  Unknown tag %s", tag.c_str());
+            snprintf(buf, 2048, "Error parsing file.  Unknown tag %s", tag.c_str());
             EXCEPTION2(NonCompliantFileException, "Nek", buf);
         }
     }
@@ -577,7 +576,7 @@ avtNek5000FileFormat::ParseNekFileHeader()
     if (!f.is_open())
     {
         char msg[1024];
-        SNPRINTF(msg, 1024, "Could not open file %s, which should exist according to header file %s.", blockfilename, filename);
+        snprintf(msg, 1024, "Could not open file %s, which should exist according to header file %s.", blockfilename, filename);
         EXCEPTION2(NonCompliantFileException, "Nek", msg);
     }
 
@@ -945,7 +944,7 @@ avtNek5000FileFormat::ReadBlockLocations()
     {
         GetFileName(0, badFile, blockfilename, (int)fileTemplate.size() + 64);
         char msg[1024];
-        SNPRINTF(msg, 1024, "Could not open file \"%s\" to read block "
+        snprintf(msg, 1024, "Could not open file \"%s\" to read block "
                             "locations.", blockfilename);
         EXCEPTION2(NonCompliantFileException, "Nek", msg);
     }
@@ -1201,7 +1200,7 @@ avtNek5000FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int /*ti
     for (ii = 0; ii < iNumSFields; ii++)
     {
         char scalarVarName[32];
-        SNPRINTF(scalarVarName, 32, "s%d", ii+1);
+        snprintf(scalarVarName, 32, "s%d", ii+1);
         AddScalarVarToMetaData(md, scalarVarName, meshname, AVT_NODECENT);
     }
     if (!avtDatabase::OnlyServeUpMetaData())
@@ -2229,11 +2228,11 @@ avtNek5000FileFormat::GetFileName(int rawTimestep, int pardir, char *outFileName
     }
     int len;
     if (!bParFormat)
-        len = SNPRINTF(outFileName, bufSize, fileTemplate.c_str(), timestep);
+        len = snprintf(outFileName, bufSize, fileTemplate.c_str(), timestep);
     else if (nPrintfTokens == 2)
-        len = SNPRINTF(outFileName, bufSize, fileTemplate.c_str(), pardir, timestep);
+        len = snprintf(outFileName, bufSize, fileTemplate.c_str(), pardir, timestep);
     else
-        len = SNPRINTF(outFileName, bufSize, fileTemplate.c_str(), pardir, pardir, timestep);
+        len = snprintf(outFileName, bufSize, fileTemplate.c_str(), pardir, pardir, timestep);
 
     if (len >= bufSize)
         EXCEPTION1(ImproperUseException, 

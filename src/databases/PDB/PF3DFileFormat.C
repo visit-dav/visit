@@ -23,7 +23,6 @@
 #include <vtkUnsignedCharArray.h>
 
 #include <visit-config.h>
-#include <snprintf.h>
 #include <math.h>
 #include <float.h>
 #include <bow.h>
@@ -421,7 +420,7 @@ PF3DFileFormat::ReadVariableInformation()
         const char *name = glob_nams[i].c_str();
         if(name[0] == 'd' && name[1] == 'e' && name[2] == 'n')
             name += 3;
-        SNPRINTF(buf, 100, "%s_is_log", name);
+        snprintf(buf, 100, "%s_is_log", name);
 
         int is_log = 0;
         pdb->GetInteger(buf, &is_log);
@@ -1035,7 +1034,7 @@ PF3DFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     for(int i = 0; i < GetNDomains(); ++i)
     {
         char tmpName[30];
-        SNPRINTF(tmpName, 30, "processor%d", i);
+        snprintf(tmpName, 30, "processor%d", i);
         mmd->blockNames.push_back(tmpName);
     }
     md->Add(mmd);
@@ -1749,7 +1748,7 @@ PF3DFileFormat::GetBOFKey(int realDomain, const char *varName) const
 {
     // Create a key for the brick of floats.
     char key[200];
-    SNPRINTF(key, 200, "BOF_%04d_%s", realDomain, varName);
+    snprintf(key, 200, "BOF_%04d_%s", realDomain, varName);
     return std::string(key);
 }
 

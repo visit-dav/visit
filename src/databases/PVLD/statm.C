@@ -30,7 +30,6 @@
 #include<stdio.h>
 
 #include <statm.h>
-#include <snprintf.h>
 #ifdef _WIN32
 #include <process.h>
 #endif
@@ -48,9 +47,9 @@ void getstatm_(unsigned int *totsize, unsigned int *rss, unsigned int* share,
   *data  = 0;
   *dt    = 0;
 #ifdef _WIN32
-  SNPRINTF(buf,40, "/proc/%u/statm", (unsigned)_getpid());
+  snprintf(buf,40, "/proc/%u/statm", (unsigned)_getpid());
 #else
-  SNPRINTF(buf,40, "/proc/%u/statm", (unsigned)getpid());
+  snprintf(buf,40, "/proc/%u/statm", (unsigned)getpid());
 #endif
   FILE *fp = fopen(buf,"r");
   if(fp){

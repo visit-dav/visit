@@ -21,7 +21,6 @@
 #include <mpi.h>
 #endif
 
-#include <snprintf.h>
 #include <DatabasePluginInfo.h>
 #include <DatabasePluginManager.h>
 #include <DBOptionsAttributes.h>
@@ -364,7 +363,7 @@ avtZipWrapperFileFormatInterface::Initialize(int procNum, int procCount,
            << " at any one time." << endl;
 
     char procNumStr[32];
-    SNPRINTF(procNumStr, sizeof(procNumStr), "_%04d", procNum);
+    snprintf(procNumStr, sizeof(procNumStr), "_%04d", procNum);
     tmpDir = tmpDir + "/visitzw_" + userName + "_" +
              string(VisItInit::GetComponentName()) +
              (procCount > 1 ? string(procNumStr) : "");
@@ -376,7 +375,7 @@ avtZipWrapperFileFormatInterface::Initialize(int procNum, int procCount,
     if (mkdir(tmpDir.c_str(), 0777) != 0 && errno != EEXIST)
     {
         static char errMsg[1024];
-        SNPRINTF(errMsg, sizeof(errMsg), "mkdir failed with errno=%d (\"%s\")",
+        snprintf(errMsg, sizeof(errMsg), "mkdir failed with errno=%d (\"%s\")",
             errno, strerror(errno));
         EXCEPTION1(InvalidFilesException, errMsg);
     }
@@ -505,7 +504,7 @@ avtZipWrapperFileFormatInterface::avtZipWrapperFileFormatInterface(
     if (info == 0)
     {
         char errMsg[1024];
-        SNPRINTF(errMsg, sizeof(errMsg),
+        snprintf(errMsg, sizeof(errMsg),
             "Unable to load info about plugin \"%s\" for file \"%s\"",
             pluginId.c_str(), inputFileList[0][0].c_str());
         EXCEPTION1(InvalidFilesException, errMsg);
@@ -750,7 +749,7 @@ avtZipWrapperFileFormatInterface::GetRealInterface(int ts, int dom, bool dontCac
     }
 
     char tmpcmd[1024];
-    SNPRINTF(tmpcmd, sizeof(tmpcmd), "cd %s ; cp %s . ; touch %s.lck ; %s %s ; rm -f %s.lck",
+    snprintf(tmpcmd, sizeof(tmpcmd), "cd %s ; cp %s . ; touch %s.lck ; %s %s ; rm -f %s.lck",
         tmpDir.c_str(), compressedName.c_str(), dcname.c_str(), dcmd.c_str(), bname, dcname.c_str());
     debug5 << "Using decompression command: \"" << tmpcmd << "\"" << endl;
     int ret = system(tmpcmd);
@@ -759,7 +758,7 @@ avtZipWrapperFileFormatInterface::GetRealInterface(int ts, int dom, bool dontCac
         if (WEXITSTATUS(ret) != 0)
         {
             char errMsg[1024];
-            SNPRINTF(errMsg, sizeof(errMsg), "Decompression command apparently "
+            snprintf(errMsg, sizeof(errMsg), "Decompression command apparently "
                 "exited normally but returned non-zero exit status %d", WEXITSTATUS(ret));
             EXCEPTION1(InvalidFilesException, errMsg);
         }

@@ -682,7 +682,7 @@ avtMFIXCDFFileFormat::inferVectorVariableNames(avtDatabaseMetaData *md,
             if (index==0 || index==LONG_MIN || index==LONG_MAX)
                 EXCEPTION1(InvalidFilesException,filePath->c_str());
             char buf[100];
-            SNPRINTF(buf,sizeof(buf),"Vel_s_%03ld",index);
+            snprintf(buf,sizeof(buf),"Vel_s_%03ld",index);
             AddVectorVarToMetaData(md, buf, "Mesh", AVT_ZONECENT,3);
         }
     }
@@ -1478,15 +1478,15 @@ avtMFIXCDFFileFormat::GetVectorVar(int domain, const char *varname)
             {
                 // one of the solid velocities
                 char buf[100];
-                SNPRINTF(buf,sizeof(buf),"U_s_%03ld",index);
+                snprintf(buf,sizeof(buf),"U_s_%03ld",index);
                 getBlockOfFloats3D(dataFile, buf, xdata, offsets[0], widths[0]+2,
                                    offsets[1], widths[1]+2, offsets[2], widths[2]+2);
 
-                SNPRINTF(buf,sizeof(buf),"V_s_%03ld",index);
+                snprintf(buf,sizeof(buf),"V_s_%03ld",index);
                 getBlockOfFloats3D(dataFile, buf, ydata, offsets[0], widths[0]+2,
                                    offsets[1], widths[1]+2, offsets[2], widths[2]+2);
 
-                SNPRINTF(buf,sizeof(buf),"W_s_%03ld",index);
+                snprintf(buf,sizeof(buf),"W_s_%03ld",index);
                 getBlockOfFloats3D(dataFile, buf, zdata, offsets[0], widths[0]+2,
                                    offsets[1], widths[1]+2, offsets[2], widths[2]+2);
             }

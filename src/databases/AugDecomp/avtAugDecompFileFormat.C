@@ -9,7 +9,6 @@
 #include <avtAugDecompFileFormat.h>
 
 #include <string>
-#include <snprintf.h>
 #include <visitstream.h>
 #include <visit-config.h>
 
@@ -81,7 +80,7 @@ avtAugDecompFileFormat::avtAugDecompFileFormat(const char *augd_filename,
             str[last-augd_filename+1] = '\0';
 
             char str2[1024];
-            SNPRINTF(str2, 1024, "%s%s", str, filename.c_str());
+            snprintf(str2, 1024, "%s%s", str, filename.c_str());
             filename = str2;
         }
     }

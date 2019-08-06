@@ -232,7 +232,7 @@ avtVsFileFormat::CreateCacheNameIncludingSelections(std::string s)
         if ((*selsApplied)[i])
         {
             std::string s = selList[i]->DescriptionString();
-            SNPRINTF(str+amt, 1024-amt, "_%s", s.c_str());
+            snprintf(str+amt, 1024-amt, "_%s", s.c_str());
             amt += strlen(str);
         }
     }

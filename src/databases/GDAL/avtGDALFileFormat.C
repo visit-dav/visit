@@ -22,7 +22,6 @@
 #include <InvalidVariableException.h>
 #include <InvalidFilesException.h>
 #include <DebugStream.h>
-#include <snprintf.h>
 #include <math.h>
 
 const int avtGDALFileFormat::n_zones_per_dom = 5000000;
@@ -188,7 +187,7 @@ avtGDALFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     title += "\n";
 
     char tmp[100];
-    SNPRINTF(tmp, 100, "Size is %dx%dx%d\n", 
+    snprintf(tmp, 100, "Size is %dx%dx%d\n", 
         poDataset->GetRasterXSize(), poDataset->GetRasterYSize(),
         poDataset->GetRasterCount());
     title += tmp;
@@ -227,11 +226,11 @@ avtGDALFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     double adfGeoTransform[6];
     if(poDataset->GetGeoTransform(adfGeoTransform) == CE_None)
     {
-        SNPRINTF(tmp, 100, "Origin = (%.6f,%.6f)\n",
+        snprintf(tmp, 100, "Origin = (%.6f,%.6f)\n",
                adfGeoTransform[0], adfGeoTransform[3]);
         title += tmp;
 
-        SNPRINTF(tmp, 100, "Pixel Size = (%.6f,%.6f)\n",
+        snprintf(tmp, 100, "Pixel Size = (%.6f,%.6f)\n",
                 adfGeoTransform[1], adfGeoTransform[5]);
         title += tmp;
     }
@@ -267,7 +266,7 @@ avtGDALFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     int ndigX = int(lxd) + 1;
     int ndigY = int(lyd) + 1;
     int ndigits = (ndigX > ndigY) ? ndigX : ndigY;
-    SNPRINTF(whFormat, 20, "%%s%%0%ddx%%0%dd", ndigits, ndigits);
+    snprintf(whFormat, 20, "%%s%%0%ddx%%0%dd", ndigits, ndigits);
 
     //
     // Determine how many resolutions we should make
@@ -297,23 +296,23 @@ avtGDALFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 
         if(resolution == 0)
         {
-            SNPRINTF(meshName, 200, "mesh");
+            snprintf(meshName, 200, "mesh");
             meshInfo[meshName] = newMesh;
 
             if(addZComponent)
             {
-                SNPRINTF(elevatedMeshName, 200, "elevated/mesh");
+                snprintf(elevatedMeshName, 200, "elevated/mesh");
                 meshInfo[elevatedMeshName] = elevatedMesh;
             }
         }
         else
         {
-            SNPRINTF(meshName, 200, whFormat, "lower_res/resolution_", xsize,ysize);
+            snprintf(meshName, 200, whFormat, "lower_res/resolution_", xsize,ysize);
             meshInfo[meshName] = newMesh;
 
             if(addZComponent)
             {
-                SNPRINTF(elevatedMeshName, 200, whFormat,
+                snprintf(elevatedMeshName, 200, whFormat,
                          "elevated/lower_res/resolution_", xsize, ysize);
                 meshInfo[elevatedMeshName] = elevatedMesh;
             }
@@ -420,9 +419,9 @@ avtGDALFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                 std::string cn(GetComponentName(GDALGetColorInterpretationName(
                      poBand->GetColorInterpretation())));
                 if(topLevelMesh)
-                    SNPRINTF(vn, 200, "%s", cn.c_str());
+                    snprintf(vn, 200, "%s", cn.c_str());
                 else
-                    SNPRINTF(vn, 200, "%s/%s", pos->first.c_str(), cn.c_str());
+                    snprintf(vn, 200, "%s/%s", pos->first.c_str(), cn.c_str());
 
                 avtScalarMetaData *smd = new avtScalarMetaData(vn,
                             pos->first, centering);
@@ -446,14 +445,14 @@ avtGDALFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             if(haveRed && haveGreen && haveBlue)
             {
                 if(topLevelMesh)
-                    SNPRINTF(vn, 200, "%s", "intensity");
+                    snprintf(vn, 200, "%s", "intensity");
                 else
-                    SNPRINTF(vn, 200, "%s/intensity", pos->first.c_str());
+                    snprintf(vn, 200, "%s/intensity", pos->first.c_str());
                 AddScalarVarToMetaData(md, vn, pos->first, centering, NULL);
                 if(topLevelMesh)
-                    SNPRINTF(vn, 200, "%s", "color");
+                    snprintf(vn, 200, "%s", "color");
                 else
-                    SNPRINTF(vn, 200, "%s/color", pos->first.c_str());
+                    snprintf(vn, 200, "%s/color", pos->first.c_str());
                 AddVectorVarToMetaData(md, vn, pos->first, centering, 4);
             }
         }

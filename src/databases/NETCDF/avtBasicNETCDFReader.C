@@ -3,7 +3,6 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 #include <vector>
-#include <snprintf.h>
 #include <netcdf.h>
 
 #include <avtBasicNETCDFReader.h>
@@ -406,9 +405,9 @@ avtBasicNETCDFReader::PopulateDatabaseMetaData(int timeState, avtDatabaseMetaDat
                         if(meshDimSizes[j] != TIME_DIMENSION)
                         {
                             if(j != 0)
-                                SNPRINTF(tmp, 100, "x%d", meshDimSizes[j]);
+                                snprintf(tmp, 100, "x%d", meshDimSizes[j]);
                             else
-                                SNPRINTF(tmp, 100, "%d", meshDimSizes[j]);
+                                snprintf(tmp, 100, "%d", meshDimSizes[j]);
                             ++nSpatialDims;
                             meshName += tmp;
                         }

@@ -27,7 +27,6 @@ using namespace NASTRANDBOptions;
 #include <DebugStream.h>
 #include <FileFunctions.h>
 #include <TimingsManager.h>
-#include <snprintf.h>
 
 //
 // NASTRAN models have a node id associated with each vertex and that nodeid
@@ -232,7 +231,7 @@ static float Getf(const char *s)
     if (errno != 0)
     {
         char msg[512];
-        SNPRINTF(msg, sizeof(msg),
+        snprintf(msg, sizeof(msg),
             "Error \"%s\" at word \"%32s\"\n", strerror(errno), s);
         if (!avtCallback::IssueWarning(msg))
             cerr << msg << endl;
@@ -264,7 +263,7 @@ static int Geti(const char *s)
     if (errno != 0)
     {
         char msg[512];
-        SNPRINTF(msg, sizeof(msg),
+        snprintf(msg, sizeof(msg),
             "Error \"%s\" at word \"%32s\"\n", strerror(errno), s);
         if (!avtCallback::IssueWarning(msg))
             cerr << msg << endl;
@@ -1222,7 +1221,7 @@ avtNASTRANFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
              mit != uniqMatIds.end(); mit++)
         {
             char tmpn[32];
-            SNPRINTF(tmpn,sizeof(tmpn),"mat_%d",mit->first);
+            snprintf(tmpn,sizeof(tmpn),"mat_%d",mit->first);
             names.push_back(tmpn);
         }
 
@@ -1318,7 +1317,7 @@ avtNASTRANFileFormat::GetMaterial(const char *mat)
     if ((size_t)matCountOpt != uniqMatIds.size())
     {
         char msg[256];
-        SNPRINTF(msg, sizeof(msg), "Material count specified in read options, %d, "
+        snprintf(msg, sizeof(msg), "Material count specified in read options, %d, "
             "does not match what is actually found in the file, %d",
             matCountOpt, (int)uniqMatIds.size());
         EXCEPTION1(ImproperUseException, msg);
@@ -1331,7 +1330,7 @@ avtNASTRANFileFormat::GetMaterial(const char *mat)
          mit != uniqMatIds.end(); mno++, mit++)
     {
         char tmpn[32];
-        SNPRINTF(tmpn,sizeof(tmpn),"mat_%d",mit->first);
+        snprintf(tmpn,sizeof(tmpn),"mat_%d",mit->first);
         names[mno] = strdup(tmpn);
         matnos[mno] = mit->first;
     }

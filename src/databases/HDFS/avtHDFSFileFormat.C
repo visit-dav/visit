@@ -30,7 +30,6 @@
 #include <InvalidVariableException.h>
 #include <InvalidDBTypeException.h>
 #include <InvalidTimeStepException.h>
-#include <snprintf.h>
 
 #include "visit_gzstream.h"
 
@@ -91,38 +90,38 @@ avtHDFSFileFormat::avtHDFSFileFormat(const char *fn)
     }
 
     // confirm ../users.txt.gz is one dir above dBDirName
-    SNPRINTF(tmp, sizeof(tmp), "%s/../../users.txt.gz", dBDirName.c_str());
+    snprintf(tmp, sizeof(tmp), "%s/../../users.txt.gz", dBDirName.c_str());
     sval = FileFunctions::VisItStat(tmp, &sbuf);
     if (sval != 0 || !(sbuf.st_mode&S_IFREG))
     {
-        SNPRINTF(tmp, sizeof(tmp), "Unable to stat %s/../users.txt.gz", dBDirName.c_str());
+        snprintf(tmp, sizeof(tmp), "Unable to stat %s/../users.txt.gz", dBDirName.c_str());
         EXCEPTION1(InvalidDBTypeException, tmp);
     }
 
     // confirm ./dbs.txt.gz is in same dir as dBDirName 
-    SNPRINTF(tmp, sizeof(tmp), "%s/../dbs.txt.gz", dBDirName.c_str());
+    snprintf(tmp, sizeof(tmp), "%s/../dbs.txt.gz", dBDirName.c_str());
     sval = FileFunctions::VisItStat(tmp, &sbuf);
     if (sval != 0 || !(sbuf.st_mode&S_IFREG))
     {
-        SNPRINTF(tmp, sizeof(tmp), "Unable to stat %s/./dbs.txt.gz", dBDirName.c_str());
+        snprintf(tmp, sizeof(tmp), "Unable to stat %s/./dbs.txt.gz", dBDirName.c_str());
         EXCEPTION1(InvalidDBTypeException, tmp);
     }
 
     // confirm states.txt.gz is one dir below dBDirName
-    SNPRINTF(tmp, sizeof(tmp), "%s/states.txt.gz", dBDirName.c_str());
+    snprintf(tmp, sizeof(tmp), "%s/states.txt.gz", dBDirName.c_str());
     sval = FileFunctions::VisItStat(tmp, &sbuf);
     if (sval != 0 || !(sbuf.st_mode&S_IFREG))
     {
-        SNPRINTF(tmp, sizeof(tmp), "unable to stat %s/states.txt.gz", dBDirName.c_str());
+        snprintf(tmp, sizeof(tmp), "unable to stat %s/states.txt.gz", dBDirName.c_str());
         EXCEPTION1(InvalidDBTypeException, tmp);
     }
 
     // confirm meshes.txt.gz is two dirs below dBDirName
-    SNPRINTF(tmp, sizeof(tmp), "%s/000000/meshes.txt.gz", dBDirName.c_str());
+    snprintf(tmp, sizeof(tmp), "%s/000000/meshes.txt.gz", dBDirName.c_str());
     sval = FileFunctions::VisItStat(tmp, &sbuf);
     if (sval != 0 || !(sbuf.st_mode&S_IFREG))
     {
-        SNPRINTF(tmp, sizeof(tmp), "unable to stat %s/000000/meshes.txt.gz", dBDirName.c_str());
+        snprintf(tmp, sizeof(tmp), "unable to stat %s/000000/meshes.txt.gz", dBDirName.c_str());
         EXCEPTION1(InvalidDBTypeException, tmp);
     }
     
@@ -144,7 +143,7 @@ static int CountLinesInFile(char const *dirname, char const *fname)
     char tmp[256];
     int n = 0;
 
-    SNPRINTF(tmp, sizeof(tmp), "%s/%s", dirname, fname);
+    snprintf(tmp, sizeof(tmp), "%s/%s", dirname, fname);
     visit_ifstream ifile(tmp);
     while (!ifile().eof())
     {
@@ -167,7 +166,7 @@ avtHDFSFileFormat::GetCycles(vector<int> &cycles)
     char tmp[256], key[32];
     int cycle, index;
     float time;
-    SNPRINTF(tmp, sizeof(tmp), "%s/states.txt.gz", filename);
+    snprintf(tmp, sizeof(tmp), "%s/states.txt.gz", filename);
     visit_ifstream ifile(tmp);
     while (!ifile().eof())
     {
@@ -184,7 +183,7 @@ avtHDFSFileFormat::GetTimes(vector<double> &times)
     char tmp[256], key[32];
     int cycle, index;
     float time;
-    SNPRINTF(tmp, sizeof(tmp), "%s/states.txt.gz", filename);
+    snprintf(tmp, sizeof(tmp), "%s/states.txt.gz", filename);
     visit_ifstream ifile(tmp);
     while (!ifile().eof())
     {
@@ -243,11 +242,11 @@ avtHDFSFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timeSta
     int sval;
     char tmp[512];
     FileFunctions::VisItStat_t sbuf;
-    SNPRINTF(tmp, sizeof(tmp), "%s/%06d/meshes.txt.gz", filename, timeState);
+    snprintf(tmp, sizeof(tmp), "%s/%06d/meshes.txt.gz", filename, timeState);
     sval = FileFunctions::VisItStat(tmp, &sbuf);
     if (sval != 0 || !(sbuf.st_mode&S_IFREG))
     {
-        SNPRINTF(tmp, sizeof(tmp), "Unable to stat %s/%06d/meshes.txt.gz", filename, timeState);
+        snprintf(tmp, sizeof(tmp), "Unable to stat %s/%06d/meshes.txt.gz", filename, timeState);
         EXCEPTION1(InvalidDBTypeException, tmp);
     }
 
@@ -276,7 +275,7 @@ avtHDFSFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timeSta
         }
 
         // Use block 0 to determine variables
-        SNPRINTF(tmp, sizeof(tmp), "%s/%06d/%s/000000/variables.txt.gz", filename, timeState, mname);
+        snprintf(tmp, sizeof(tmp), "%s/%06d/%s/000000/variables.txt.gz", filename, timeState, mname);
         visit_ifstream vfile(tmp);
         while (!vfile().eof())
         {
@@ -315,7 +314,7 @@ avtHDFSFileFormat::GetMaterial(int tim, int dom, char const *mname)
 {
     // read topology data first (to get # of zones and keys for zones)
     char tmp[512], line[512], zkey[32];
-    SNPRINTF(tmp, sizeof(tmp), "%s/%06d/%s/%06d/topology.txt.gz",
+    snprintf(tmp, sizeof(tmp), "%s/%06d/%s/%06d/topology.txt.gz",
         filename, tim, mname, dom);
     map<string, int> zoneKeyMap;
     int nzones = 0;
@@ -332,7 +331,7 @@ avtHDFSFileFormat::GetMaterial(int tim, int dom, char const *mname)
     // Read first line of materials to get material count
     int i, nmats = 0;
     char *p = &line[0];
-    SNPRINTF(tmp, sizeof(tmp), "%s/%06d/%s/%06d/materials.txt.gz",
+    snprintf(tmp, sizeof(tmp), "%s/%06d/%s/%06d/materials.txt.gz",
         filename, tim, mname, dom);
     visit_ifstream matfile(tmp);
     matfile().getline(line, sizeof(line));
@@ -350,7 +349,7 @@ avtHDFSFileFormat::GetMaterial(int tim, int dom, char const *mname)
     {
         vfracs[i] = new float[nzones];
         matnos[i] = i;
-        SNPRINTF(tmp, sizeof(tmp), "%d", i);
+        snprintf(tmp, sizeof(tmp), "%d", i);
         matnames[i] = strdup(tmp);
     }
 
@@ -376,7 +375,7 @@ avtHDFSFileFormat::GetMaterial(int tim, int dom, char const *mname)
 
     // construct the material object
     char domName[256];
-    SNPRINTF(domName, sizeof(domName), "%d", dom);
+    snprintf(domName, sizeof(domName), "%d", dom);
     avtMaterial *mat = new avtMaterial(nmats, matnos, matnames, 1, &nzones, 0, vfracs, domName);
 
     for (i = 0; i < nmats; i++)
@@ -442,7 +441,7 @@ avtHDFSFileFormat::GetMesh(int timestate, int domain, const char *meshname)
     vtkPoints *points = vtkPoints::New();
     vtkUnsignedCharArray *ghostNodes = vtkUnsignedCharArray::New();
     char tmp[512];
-    SNPRINTF(tmp, sizeof(tmp), "%s/%06d/%s/%06d/coords.txt.gz",
+    snprintf(tmp, sizeof(tmp), "%s/%06d/%s/%06d/coords.txt.gz",
         filename, timestate, meshname, domain);
     visit_ifstream cfile(tmp);
     int i = 0;
@@ -471,7 +470,7 @@ avtHDFSFileFormat::GetMesh(int timestate, int domain, const char *meshname)
 
     bool hasGhostZones = false;
     vtkUnsignedCharArray *ghostZones = vtkUnsignedCharArray::New();
-    SNPRINTF(tmp, sizeof(tmp), "%s/%06d/%s/%06d/topology.txt.gz",
+    snprintf(tmp, sizeof(tmp), "%s/%06d/%s/%06d/topology.txt.gz",
         filename, timestate, meshname, domain);
     visit_ifstream tfile(tmp);
     char *p;
@@ -553,7 +552,7 @@ avtHDFSFileFormat::GetVar(int timestate, int domain, const char *varname)
     avtCentering avcent = (avtCentering) cent;
 
     char tmp[512];
-    SNPRINTF(tmp, sizeof(tmp), "%s/%06d/%s/%06d/%s.txt.gz",
+    snprintf(tmp, sizeof(tmp), "%s/%06d/%s/%06d/%s.txt.gz",
         filename, timestate, metadata->MeshForVar(varname).c_str(), domain,
         avcent == AVT_NODECENT ? "coords" : "topology");
 
@@ -587,7 +586,7 @@ avtHDFSFileFormat::GetVar(int timestate, int domain, const char *varname)
         return darr;
     }
 
-    SNPRINTF(tmp, sizeof(tmp), "%s/%06d/%s/%06d/%s.txt.gz",
+    snprintf(tmp, sizeof(tmp), "%s/%06d/%s/%06d/%s.txt.gz",
         filename, timestate, metadata->MeshForVar(varname).c_str(), domain, varname);
     visit_ifstream vfile(tmp);
     while (!vfile().eof())

@@ -9,7 +9,6 @@
 #include <avtPFLOTRANFileFormat.h>
 
 #include <DebugStream.h>
-#include <snprintf.h>
 
 #include <vtkCellData.h>
 #include <vtkCellType.h>
@@ -234,7 +233,7 @@ avtPFLOTRANFileFormat::LoadFile(void)
     {
         debug4 << "avtPFLOTRANFileFormat::LoadFile: " << "Could not open <" << filename << ">" << endl;
         char error[1024];
-        SNPRINTF(error, 1024, "Cannot be a PFLOTRAN file (%s) since it is not even an HDF5 file:",filename);
+        snprintf(error, 1024, "Cannot be a PFLOTRAN file (%s) since it is not even an HDF5 file:",filename);
         EXCEPTION1(InvalidDBTypeException, error);
     }
 

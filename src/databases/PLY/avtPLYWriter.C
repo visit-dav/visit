@@ -122,7 +122,7 @@ avtPLYWriter::WriteChunk(vtkDataSet *ds, int chunk)
     if(writeContext.GroupSize() > 1)
     {
         char ext[20];
-        SNPRINTF(ext, 20, ".%d.ply", writeContext.GroupRank());
+        snprintf(ext, 20, ".%d.ply", writeContext.GroupRank());
         filename = stem + ext;
     }
     else

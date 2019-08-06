@@ -78,7 +78,6 @@
 
 #include <cerrno>
 #include <sstream>
-#include <snprintf.h>
 #include <stdlib.h> // for qsort
 
 #ifdef PARALLEL
@@ -575,7 +574,7 @@ avtSiloFileFormat::OpenFile(int f, bool skipGlobalInfo)
         if (nSiloObjects <= 0)
         {
             char str[1024];
-            SNPRINTF(str, sizeof(str), "Although the Silo library succesfully opened \"%s,\"\n" 
+            snprintf(str, sizeof(str), "Although the Silo library succesfully opened \"%s,\"\n" 
                      "the file contains no silo objects. It may be a PDB file.",
                      filenames[f]);
             EXCEPTION1(InvalidFilesException, str);
@@ -1979,7 +1978,7 @@ avtSiloFileFormat::ReadMultimeshes(DBfile *dbfile,
                                 layer_to_nlayer_map.end())
                             {
                                 char layer_name[64];
-                                SNPRINTF(layer_name, sizeof(layer_name), "layer_%d", layer_id);
+                                snprintf(layer_name, sizeof(layer_name), "layer_%d", layer_id);
                                 layer_names.push_back(layer_name);
                                 layer_to_nlayer_map[layer_id] = nlayer_id;
                                 nlayer_id++;
@@ -2077,7 +2076,7 @@ avtSiloFileFormat::ReadMultimeshes(DBfile *dbfile,
             DBGetDir(dbfile, cwd);
             if (!strcmp(cwd, "/"))
             {
-                SNPRINTF(cwd, sizeof(cwd), "%s_block_nums", name_w_dir);
+                snprintf(cwd, sizeof(cwd), "%s_block_nums", name_w_dir);
                 md->Add(new avtScalarMetaData(cwd, name_w_dir, AVT_ZONECENT));
                 haveAddedBlockDecompositionAsVar = true;
             }
@@ -2211,7 +2210,7 @@ avtSiloFileFormat::ReadQuadmeshes(DBfile *dbfile,
             DBGetDir(dbfile, cwd);
             if (!strcmp(cwd, "/"))
             {
-                SNPRINTF(cwd, sizeof(cwd), "%s_block_nums", name_w_dir);
+                snprintf(cwd, sizeof(cwd), "%s_block_nums", name_w_dir);
                 md->Add(new avtScalarMetaData(cwd, name_w_dir, AVT_ZONECENT));
                 haveAddedBlockDecompositionAsVar = true;
             }
@@ -4293,7 +4292,7 @@ avtSiloFileFormat::ReadDefvars(DBfile *dbfile,
             if (defv == NULL)
             {
                 char msg[256];
-                SNPRINTF(msg,sizeof(msg),"Unable to read defvars object \"%s\"",
+                snprintf(msg,sizeof(msg),"Unable to read defvars object \"%s\"",
                     defvars_names[i]);
                 EXCEPTION1(SiloException,msg);
             }
@@ -6226,7 +6225,7 @@ avtSiloFileFormat::GetNodelistsVar(int domain)
     if (ds == 0)
     {
         char msg[256];
-        SNPRINTF(msg, sizeof(msg), "Cannot find cached mesh \"%s\" for domain %d to "
+        snprintf(msg, sizeof(msg), "Cannot find cached mesh \"%s\" for domain %d to "
             "paint Nodelists variable", meshName.c_str(), domain);
         EXCEPTION1(ImproperUseException, msg);
     }
@@ -6246,7 +6245,7 @@ avtSiloFileFormat::GetNodelistsVar(int domain)
     else
     {
         char msg[256];
-        SNPRINTF(msg, sizeof(msg), "Do not recognize dataset type for mesh \"%s\" "
+        snprintf(msg, sizeof(msg), "Do not recognize dataset type for mesh \"%s\" "
             "for domain %d to paint Nodelists variable", meshName.c_str(), domain);
         EXCEPTION1(ImproperUseException, msg);
     }
@@ -6255,7 +6254,7 @@ avtSiloFileFormat::GetNodelistsVar(int domain)
     if (arr == 0)
     {
         char msg[256];
-        SNPRINTF(msg, sizeof(msg), "Cannot find field data array \"base_index\""
+        snprintf(msg, sizeof(msg), "Cannot find field data array \"base_index\""
             "on mesh \"%s\" for domain %d to paint Nodelists variable", meshName.c_str(), domain);
         EXCEPTION1(ImproperUseException, msg);
     }
@@ -6278,7 +6277,7 @@ avtSiloFileFormat::GetNodelistsVar(int domain)
     if (blockNum == -1)
     {
         char msg[256];
-        SNPRINTF(msg, sizeof(msg), "Cannot find obtain block number " 
+        snprintf(msg, sizeof(msg), "Cannot find obtain block number " 
             "on mesh \"%s\" for domain %d to paint Nodelists variable", meshName.c_str(), domain);
         EXCEPTION1(ImproperUseException, msg);
     }
@@ -6849,7 +6848,7 @@ avtSiloFileFormat::GetAnnotIntNodelistsVar(int domain, string listsname)
     if (ds == 0)
     {
         char msg[256];
-        SNPRINTF(msg, sizeof(msg), "Cannot find cached mesh \"%s\" for domain %d to "
+        snprintf(msg, sizeof(msg), "Cannot find cached mesh \"%s\" for domain %d to "
             "paint \"%s\" variable", meshName.c_str(), domain, listsname.c_str());
         EXCEPTION1(InvalidVariableException, msg);
     }
@@ -6966,7 +6965,7 @@ avtSiloFileFormat::GetAnnotIntNodelistsVar(int domain, string listsname)
             if (!ignoreMissingBlocks)
             {
                 char msg[256];
-                SNPRINTF(msg, sizeof(msg), "DBGetUcdmesh() failed for \"%s\" for domain %d to "
+                snprintf(msg, sizeof(msg), "DBGetUcdmesh() failed for \"%s\" for domain %d to "
                     "paint \"%s\" variable", meshName.c_str(), domain, listsname.c_str());
                 EXCEPTION1(InvalidVariableException, msg);
             }
@@ -7030,7 +7029,7 @@ avtSiloFileFormat::GetMrgTreeNodelistsVar(int domain, string listsname)
     if (ds == 0)
     {
         char msg[256];
-        SNPRINTF(msg, sizeof(msg), "Cannot find cached mesh \"%s\" for domain %d to "
+        snprintf(msg, sizeof(msg), "Cannot find cached mesh \"%s\" for domain %d to "
             "paint \"%s\" variable", meshName.c_str(), domain, listsname.c_str());
         EXCEPTION1(InvalidVariableException, msg);
     }
@@ -7138,7 +7137,7 @@ avtSiloFileFormat::GetBlockDecompositionAsVar(int domain, string meshName)
     if (ds == 0)
     {
         char msg[256];
-        SNPRINTF(msg, sizeof(msg), "Cannot find cached mesh \"%s\" for domain %d to "
+        snprintf(msg, sizeof(msg), "Cannot find cached mesh \"%s\" for domain %d to "
             "paint \"block_nums\" variable", meshName.c_str(), domain);
         EXCEPTION1(InvalidVariableException, msg);
     }
@@ -8792,7 +8791,7 @@ avtSiloFileFormat::ExpandUcdvar(DBucdvar *uv,
     if (!mat)
     {
         char msg[256];
-        SNPRINTF(msg, sizeof(msg), "Unable to obtain material object \"%s\" required to"
+        snprintf(msg, sizeof(msg), "Unable to obtain material object \"%s\" required to"
             "compute subsets upon which the variable \"%s\" is defined.",
             matObjectName.c_str(), vname);
         EXCEPTION1(InvalidVariableException, msg);
@@ -8812,7 +8811,7 @@ avtSiloFileFormat::ExpandUcdvar(DBucdvar *uv,
         if (ds == 0)
         {
             char msg[256];
-            SNPRINTF(msg, sizeof(msg), "Cannot find cached mesh \"%s\" for domain %d to "
+            snprintf(msg, sizeof(msg), "Cannot find cached mesh \"%s\" for domain %d to "
                 "traverse subsetted node-centered variable, \"%s\"", meshName.c_str(),
                  domain, vname);
             EXCEPTION1(ImproperUseException, msg);
@@ -8826,7 +8825,7 @@ avtSiloFileFormat::ExpandUcdvar(DBucdvar *uv,
         uv->region_pnames, &restrictToMats))
     {
         char msg[256];
-        SNPRINTF(msg, sizeof(msg), "Unable to determine material indices "
+        snprintf(msg, sizeof(msg), "Unable to determine material indices "
             "variable \"%s\" is restricted to", vname); 
         EXCEPTION1(InvalidVariableException, msg);
     }
@@ -10366,7 +10365,7 @@ avtSiloFileFormat::ReadInConnectivity(vtkUnstructuredGrid *ugrid,
                         {
                             haveIssuedWarning = true;
                             char msg[1024];
-                            SNPRINTF(msg, sizeof(msg), "An examination of the first tet "
+                            snprintf(msg, sizeof(msg), "An examination of the first tet "
                                 "element in this mesh indicates that the node order is "
                                 "inverted from Silo's standard conventions. All tets are "
                                 "being automatically re-ordered.\n"
@@ -13646,7 +13645,7 @@ avtSiloFileFormat::DetermineMultiMeshForSubVariable(DBfile *dbfile,
             else if (meshnum > 20)
             {
                 char str[1024];
-                SNPRINTF(str, sizeof(str), "Giving up after 20 attempts to find first non-empty submesh "
+                snprintf(str, sizeof(str), "Giving up after 20 attempts to find first non-empty submesh "
                     "of a namescheme'd multivar \"%s\". This typically leads to the variable being invalidated "
                     "(grayed out) in the GUI.", name);
                 EXCEPTION1(SiloException, str);
@@ -13745,7 +13744,7 @@ avtSiloFileFormat::DetermineMultiMeshForSubVariable(DBfile *dbfile,
     // levels above us determine what the right thing to do is.
     //
     char str[1024];
-    SNPRINTF(str, sizeof(str), "Was not able to match multivar \"%s\" and its first \n" 
+    snprintf(str, sizeof(str), "Was not able to match multivar \"%s\" and its first \n" 
                  "non-empty submesh \"%s\" in file %s to a multi-mesh.\n"
                  "This typically leads to the variable being invalidated\n"
                  "(grayed out) in the GUI",

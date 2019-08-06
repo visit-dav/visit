@@ -26,8 +26,6 @@
 
 #include <netcdf.h>
 
-#include <snprintf.h>
-
 #include <avtDatabaseMetaData.h>
 
 #include <DebugStream.h>
@@ -242,9 +240,9 @@ avtCCSMReader::PopulateDatabaseMetaData(int timeState, avtDatabaseMetaData *md)
                     if(meshDims[j] != TIME_DIMENSION)
                     {
                         if(nSpatialDims != 0)
-                            SNPRINTF(tmp, 100, "x%d", meshDims[j]);
+                            snprintf(tmp, 100, "x%d", meshDims[j]);
                         else
-                            SNPRINTF(tmp, 100, "%d", meshDims[j]);
+                            snprintf(tmp, 100, "%d", meshDims[j]);
                         bool skipIt = false;
                         if (nSpatialDims == 2 && meshDims[j] == 1)
                             skipIt = true;

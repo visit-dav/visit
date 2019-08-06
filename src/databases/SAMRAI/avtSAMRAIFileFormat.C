@@ -60,8 +60,6 @@
 #include <Utility.h>
 #include <DataNode.h>
 
-#include <snprintf.h>
-
 // Define this symbol BEFORE including hdf5.h to indicate the HDF5 code
 // in this file uses version 1.6 of the HDF5 API. This is harmless for
 // versions of HDF5 before 1.8 and ensures correct compilation with
@@ -499,7 +497,7 @@ avtSAMRAIFileFormat::CloseFile(int f)
         {
             char msg[512];
             static bool haveIssuedWarning = false;
-            SNPRINTF(msg, sizeof(msg), "Error closing HDF5 SAMRAI file \"%s\". "
+            snprintf(msg, sizeof(msg), "Error closing HDF5 SAMRAI file \"%s\". "
                 "The file may have been left open holding HDF5 resources. "
                 "This may indicate a problem with the SAMRAI plugin or some other HDF5 based "
                 "plugin that has attempted to open this file. Please contact VisIt developers "
@@ -1369,7 +1367,7 @@ avtSAMRAIFileFormat::ReadSparseMaterialData(int patch, const int *matnos,
     avtMaterial *mat = 0;
 
     char domName[256];
-    SNPRINTF(domName, sizeof(domName), "patch_%d", patch);
+    snprintf(domName, sizeof(domName), "patch_%d", patch);
 
     // compute logical size in each dimension of this patch
     int dim = num_dim_problem < 3 ? num_dim_problem: 3;
@@ -1697,7 +1695,7 @@ avtSAMRAIFileFormat::GetMaterial(int patch, const char *matObjName)
        // Construct the object we came here for
        //
        char domName[256];
-       SNPRINTF(domName, sizeof(domName),"%d", patch);
+       snprintf(domName, sizeof(domName),"%d", patch);
        mat = new avtMaterial(num_mats, matnos, matnames, dim, dims, 0,
                              vfracs, domName);
 
@@ -2671,7 +2669,7 @@ avtSAMRAIFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         {
             char msg[512];
             static bool haveIssuedWarning = false;
-            SNPRINTF(msg, sizeof(msg), "Ordinarily, VisIt displays a wireframe, subset "
+            snprintf(msg, sizeof(msg), "Ordinarily, VisIt displays a wireframe, subset "
                 "plot of 'levels' automatically upon opening a SAMRAI file. However, such "
                 "a plot is not applicable in the case that there is only one patch. So, "
                 "the normal subset plot is not being displayed.");

@@ -142,9 +142,9 @@ public:
                                 if(arr[idx] != Z)\
                                 {\
                                     if(arr[idx] == ONE)\
-                                        SNPRINTF(tmp,100,"%s",uname);\
+                                        snprintf(tmp,100,"%s",uname);\
                                     else\
-                                        SNPRINTF(tmp, 100, FORMATSTR, uname,\
+                                        snprintf(tmp, 100, FORMATSTR, uname,\
                                                  ABS_FUNC(arr[idx], Z));\
                                     char *c = strchr(tmp, '^');\
                                     if(c != 0 && strcmp(c, "^1") == 0)\

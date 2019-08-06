@@ -9,7 +9,6 @@
 #include <avtZeusMPFileFormat.h>
 
 #include <string>
-#include <snprintf.h>
 
 #include <vtkFloatArray.h>
 #include <vtkRectilinearGrid.h>
@@ -443,13 +442,13 @@ avtZeusMPFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             Expression *e = new Expression;
             if(ndims == 2)
             {
-                SNPRINTF(def, 1024, "{<%s>, <%s>}", 
+                snprintf(def, 1024, "{<%s>, <%s>}", 
                     vpos->second[0].c_str(),
                     vpos->second[1].c_str());
             }
             else if(ndims == 3)
             {
-                SNPRINTF(def, 1024, "{<%s>, <%s>, <%s>}", 
+                snprintf(def, 1024, "{<%s>, <%s>, <%s>}", 
                     vpos->second[0].c_str(),
                     vpos->second[1].c_str(),
                     vpos->second[2].c_str());

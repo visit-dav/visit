@@ -27,7 +27,6 @@
 #include <DebugStream.h>
 
 #include <fcntl.h>
-#include <snprintf.h>
 
 using namespace std;
 #ifdef WIN32
@@ -133,7 +132,7 @@ avtWPPImageFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         debug5 << "no of pts = " << m_ni[b] << " " << m_nj[b] << " " 
                << m_nk[b] << endl;
         char buf[50];
-        SNPRINTF(buf,50,"h=%f",m_gridsize[b]);
+        snprintf(buf,50,"h=%f",m_gridsize[b]);
         string bname= buf;
         mmd->blockNames[b] = bname;
     }
@@ -248,14 +247,14 @@ avtWPPImageFileFormat::GetVar(int domain, const char *varname)
     char errmsg[500];
     if( fd == -1 )
     {
-        SNPRINTF(errmsg,500,"Error opening file %s",m_filename.c_str());
+        snprintf(errmsg,500,"Error opening file %s",m_filename.c_str());
         EXCEPTION1( InvalidDBTypeException, errmsg );
     }
     off_t nr = LSEEK(fd,m_offset[domain],SEEK_CUR);
     if( nr != m_offset[domain] )
     {
         CLOSE(fd);
-        SNPRINTF(errmsg,500,"Error accessing array in %s",m_filename.c_str());
+        snprintf(errmsg,500,"Error accessing array in %s",m_filename.c_str());
         EXCEPTION1( InvalidDBTypeException, errmsg );
     }
     size_t npts = ((size_t) m_ni[domain])*m_nj[domain]*m_nk[domain];
@@ -273,7 +272,7 @@ avtWPPImageFileFormat::GetVar(int domain, const char *varname)
         if( (size_t)nr != sizeof(float)*npts )
         {
             CLOSE(fd);
-            SNPRINTF(errmsg,500,"Error reading array in %s", 
+            snprintf(errmsg,500,"Error reading array in %s", 
                      m_filename.c_str());
             EXCEPTION1( InvalidDBTypeException, errmsg );
         }
@@ -291,7 +290,7 @@ avtWPPImageFileFormat::GetVar(int domain, const char *varname)
         if( (size_t)nr != sizeof(double)*npts )
         {
             CLOSE(fd); 
-            SNPRINTF(errmsg,500,"Error reading array in %s", 
+            snprintf(errmsg,500,"Error reading array in %s", 
                      m_filename.c_str());
             EXCEPTION1( InvalidDBTypeException, errmsg );
         }
@@ -359,7 +358,7 @@ void avtWPPImageFileFormat::Initialize()
           m_mode == "velmag" || m_mode == "qs" || m_mode == "qp" || 
           m_mode == "hvel" ) ) 
     {
-        SNPRINTF(errmsg,500,"Error: Unknown volimage mode %s" , 
+        snprintf(errmsg,500,"Error: Unknown volimage mode %s" , 
                  m_mode.c_str() );
         EXCEPTION1( InvalidDBTypeException, errmsg );
     }
@@ -369,7 +368,7 @@ void avtWPPImageFileFormat::Initialize()
     if (find3D != string::npos && find3D == k-2)
     {
         // We have a '3D.mode' type file -- this is for volimage
-        SNPRINTF(errmsg,500,"Error: WPPImage reader does not read 3D volimage"
+        snprintf(errmsg,500,"Error: WPPImage reader does not read 3D volimage"
                 " files -- use the volimage reader instead. mode -- %s", m_mode.c_str());
         debug1 << errmsg << endl; 
         EXCEPTION1( InvalidDBTypeException, errmsg );
@@ -382,7 +381,7 @@ void avtWPPImageFileFormat::Initialize()
     int fd = OPEN( m_filename.c_str(), O_RDONLY|O_BINARY );
     if( fd == -1 )
     {
-        SNPRINTF(errmsg,500,"Error in WPPImage opening file %s",
+        snprintf(errmsg,500,"Error in WPPImage opening file %s",
                  m_filename.c_str());
         EXCEPTION1( InvalidDBTypeException, errmsg );
     }
@@ -391,14 +390,14 @@ void avtWPPImageFileFormat::Initialize()
     if( nr != sizeof(int) )
     {
         CLOSE(fd); // closing the solution file
-        SNPRINTF(errmsg,500,"Error reading precision in %s",
+        snprintf(errmsg,500,"Error reading precision in %s",
                  m_filename.c_str());
         EXCEPTION1( InvalidDBTypeException, errmsg );
     }
     if( (m_prec != 4) && (m_prec != 8 ) )
     {
         CLOSE(fd); // closing the solution file
-        SNPRINTF(errmsg,500,"Error, precision is %i, should be 4 or 8\n",
+        snprintf(errmsg,500,"Error, precision is %i, should be 4 or 8\n",
                  m_prec);
         EXCEPTION1( InvalidDBTypeException, errmsg );
     }
@@ -406,7 +405,7 @@ void avtWPPImageFileFormat::Initialize()
     if( nr != sizeof(int) )
     {
         CLOSE(fd); // closing the solution file
-        SNPRINTF(errmsg,500,"Error reading nblocks in %s",m_filename.c_str());
+        snprintf(errmsg,500,"Error reading nblocks in %s",m_filename.c_str());
         EXCEPTION1( InvalidDBTypeException, errmsg );
     }
     debug5 << "prec = " << m_prec << " " << " nblocks = " << m_nblocks << endl;
@@ -447,7 +446,7 @@ void avtWPPImageFileFormat::Initialize()
         if( nr != sizeof(double) )
         {
             CLOSE(fd); // closing the solution file
-            SNPRINTF(errmsg,500,"Error reading gridsizes in %s",
+            snprintf(errmsg,500,"Error reading gridsizes in %s",
                      m_filename.c_str());
             EXCEPTION1( InvalidDBTypeException, errmsg );
         }
@@ -455,7 +454,7 @@ void avtWPPImageFileFormat::Initialize()
         if( nr != sizeof(int)*4 )
         {
             CLOSE(fd); // closing the solution file
-            SNPRINTF(errmsg,500,"Error reading dimensions in %s",
+            snprintf(errmsg,500,"Error reading dimensions in %s",
                      m_filename.c_str());
             EXCEPTION1( InvalidDBTypeException, errmsg );
         }

@@ -16,7 +16,6 @@
 
 #include <InvalidFilesException.h>
 #include <FileFunctions.h>
-#include <snprintf.h>
 
 #include "vtkCellArray.h"
 #include "vtkCellData.h"
@@ -133,7 +132,7 @@ ParseMTLFile(char const *objFileName, char const *mtlFileName,
   else
     {
     char tmpFileName[2048];
-    SNPRINTF(tmpFileName, sizeof(tmpFileName), "%s/%s",
+    snprintf(tmpFileName, sizeof(tmpFileName), "%s/%s",
       FileFunctions::Dirname(objFileName), mtlFileName);
     in = fopen(FileFunctions::Normalize(tmpFileName),"r");
     }

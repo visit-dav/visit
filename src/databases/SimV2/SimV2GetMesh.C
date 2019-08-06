@@ -4,7 +4,6 @@
 
 #include <set>
 #include <sstream>
-#include <snprintf.h>
 using std::ostringstream;
 
 #include <vtkCellArray.h>
@@ -1924,7 +1923,7 @@ SimV2_GetMesh_Unstructured(int domain, visit_handle h, avtPolyhedralSplit **phSp
         delete polyhedralSplit;
         ugrid->Delete();
         char tmp[100];
-        SNPRINTF(tmp, 100, "Cell %d's connectivity contained invalid points or "
+        snprintf(tmp, 100, "Cell %d's connectivity contained invalid points or "
             "an invalid cell type.", numCells-1);
         EXCEPTION1(ImproperUseException, tmp);
     }

@@ -35,7 +35,6 @@
 #include <InvalidDBTypeException.h>
 #include <InvalidFilesException.h>
 #include <InvalidTimeStepException.h>
-#include <snprintf.h>
 
 // Define this symbol BEFORE including hdf5.h to indicate the HDF5 code
 // in this file uses version 1.6 of the HDF5 API. This is harmless for
@@ -450,7 +449,7 @@ avtPixieFileFormat::Initialize()
         if((fileId = H5Fopen(filenames[0], H5F_ACC_RDONLY, fileAccessPropListID)) < 0)
         {
             char error[1024];
-            SNPRINTF(error, 1024, "Cannot be a pixie file (%s)",filenames[0]);
+            snprintf(error, 1024, "Cannot be a pixie file (%s)",filenames[0]);
 
             EXCEPTION1(InvalidDBTypeException, error);
         }
@@ -504,7 +503,7 @@ avtPixieFileFormat::Initialize()
         {
             const char *mNames[] = {"mesh", "curvemesh"};
             char tmp[100];
-            SNPRINTF(tmp, 100, "%s_%dx%dx%d", mNames[it->second.hasCoords?1:0],
+            snprintf(tmp, 100, "%s_%dx%dx%d", mNames[it->second.hasCoords?1:0],
                      int(it->second.dims[2]),
                      int(it->second.dims[1]),
                      int(it->second.dims[0]));
@@ -1056,7 +1055,7 @@ avtPixieFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
         // Determine the mesh name based on the variable mesh size.
         const char *mNames[] = {"mesh", "curvemesh"};
         char tmp[100];
-        SNPRINTF(tmp, 100, "%s_%dx%dx%d", mNames[it->second.hasCoords?1:0],
+        snprintf(tmp, 100, "%s_%dx%dx%d", mNames[it->second.hasCoords?1:0],
                  int(it->second.dims[2]),
                  int(it->second.dims[1]),
                  int(it->second.dims[0]));
@@ -1674,7 +1673,7 @@ avtPixieFileFormat::ReadVariableFromFile(int timestate, const std::string &varna
     if(nTimeStates > 0 && it.timeVarying)
     {
         char tsPrefix[40];
-        SNPRINTF(tsPrefix, 40, "%s%d/", timeStatePrefix.c_str(), cycles[timestate]);
+        snprintf(tsPrefix, 40, "%s%d/", timeStatePrefix.c_str(), cycles[timestate]);
         fileVar = std::string(tsPrefix) + fileVar;
     }
 

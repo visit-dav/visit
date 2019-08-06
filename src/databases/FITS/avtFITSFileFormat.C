@@ -20,8 +20,6 @@
 #include <avtCallback.h>
 #include <avtDatabaseMetaData.h>
 
-#include <snprintf.h>
-
 #include <InvalidVariableException.h>
 #include <InvalidFilesException.h>
 #include <DebugStream.h>
@@ -227,7 +225,7 @@ avtFITSFileFormat::Initialize(avtDatabaseMetaData *md)
                 }
 #endif
                 // Use the keywords to create a comment.
-                SNPRINTF(tmp, 100, "Header listing for HDU #%d:\n", hdu);
+                snprintf(tmp, 100, "Header listing for HDU #%d:\n", hdu);
                 fileComment += tmp;
                 for(int jj = 1; jj <= nkeys; jj++)
                 {
@@ -267,9 +265,9 @@ avtFITSFileFormat::Initialize(avtDatabaseMetaData *md)
                 {
                     char num[20];
                     if(i > 0)
-                        SNPRINTF(num, 20, "x%d", (int)dims[i]);
+                        snprintf(num, 20, "x%d", (int)dims[i]);
                     else
-                        SNPRINTF(num, 20, "%d", (int)dims[i]);
+                        snprintf(num, 20, "%d", (int)dims[i]);
                     meshName += num;
                     mdims.push_back((int)dims[i]);
                     dimensionsNonZero |= (dims[i] != 0);
@@ -346,7 +344,7 @@ avtFITSFileFormat::Initialize(avtDatabaseMetaData *md)
                 if(ndims > 1)
                 {
                     char varname[100];
-                    SNPRINTF(varname, 100, "hdu%d", hdu);
+                    snprintf(varname, 100, "hdu%d", hdu);
                     std::string vName(varname);
                     if(objname != "")
                         vName = objname;
@@ -407,7 +405,7 @@ avtFITSFileFormat::Initialize(avtDatabaseMetaData *md)
                        << " contains a binary table" << endl;
 
                 // Use the keywords to create a comment.
-                SNPRINTF(tmp, 100, "Header listing for HDU #%d:\n", hdu);
+                snprintf(tmp, 100, "Header listing for HDU #%d:\n", hdu);
                 debug4 << tmp;
                 for(int jj = 1; jj <= nkeys; jj++)
                 {

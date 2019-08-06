@@ -27,7 +27,6 @@
 
 #include <Expression.h>
 #include <DebugStream.h>
-#include <snprintf.h>
 
 #include <ImproperUseException.h>
 #include <InvalidFilesException.h>
@@ -828,7 +827,7 @@ avtCGNSFileFormat::AddVectorExpression(avtDatabaseMetaData *md, bool *haveCompon
         if(nBases > 1)
         {
             e->SetName(baseName + "/" + vecName);
-            SNPRINTF(def, 300, "{<%s/%sX>,<%s/%sY>,<%s/%sZ>}",
+            snprintf(def, 300, "{<%s/%sX>,<%s/%sY>,<%s/%sZ>}",
                 baseName.c_str(), vecName.c_str(),
                 baseName.c_str(), vecName.c_str(),
                 baseName.c_str(), vecName.c_str());
@@ -837,7 +836,7 @@ avtCGNSFileFormat::AddVectorExpression(avtDatabaseMetaData *md, bool *haveCompon
         else
         {
             e->SetName(vecName);
-            SNPRINTF(def, 300, "{%sX,%sY,%sZ}",
+            snprintf(def, 300, "{%sX,%sY,%sZ}",
                 vecName.c_str(), vecName.c_str(), vecName.c_str());
             e->SetName(vecName);
             e->SetDefinition(def);
@@ -851,7 +850,7 @@ avtCGNSFileFormat::AddVectorExpression(avtDatabaseMetaData *md, bool *haveCompon
         if(nBases > 1)
         {
             e->SetName(baseName + "/" + vecName);
-            SNPRINTF(def, 300, "{<%s/%sX>,<%s/%sY>}",
+            snprintf(def, 300, "{<%s/%sX>,<%s/%sY>}",
                 baseName.c_str(), vecName.c_str(),
                 baseName.c_str(), vecName.c_str());
             e->SetDefinition(def);
@@ -859,7 +858,7 @@ avtCGNSFileFormat::AddVectorExpression(avtDatabaseMetaData *md, bool *haveCompon
         else
         {
             e->SetName(vecName);
-            SNPRINTF(def, 300, "{%sX,%sY}",
+            snprintf(def, 300, "{%sX,%sY}",
                 vecName.c_str(), vecName.c_str());
             e->SetName(vecName);
             e->SetDefinition(def);
@@ -974,7 +973,7 @@ avtCGNSFileFormat::AddReferenceStateExpressions(avtDatabaseMetaData *md,
                             e->SetName(baseName + "/mach");
                         else
                             e->SetName("mach");
-                        SNPRINTF(edef, 100, "point_constant(%s, %g)", meshName.c_str(), dval);
+                        snprintf(edef, 100, "point_constant(%s, %g)", meshName.c_str(), dval);
                         e->SetDefinition(edef);
                         e->SetType(Expression::ScalarMeshVar);
                         md->AddExpression(e);
@@ -986,7 +985,7 @@ avtCGNSFileFormat::AddReferenceStateExpressions(avtDatabaseMetaData *md,
                             e->SetName(baseName + "/gamma");
                         else
                             e->SetName("gamma");
-                        SNPRINTF(edef, 100, "point_constant(%s, %g)", meshName.c_str(), dval);
+                        snprintf(edef, 100, "point_constant(%s, %g)", meshName.c_str(), dval);
                         e->SetDefinition(edef);
                         e->SetType(Expression::ScalarMeshVar);
                         md->AddExpression(e);
@@ -1132,7 +1131,7 @@ avtCGNSFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
             {
                 ++meshCount;
                 char tmp[100];
-                SNPRINTF(tmp, 100, "subgrid/%s%03d", 
+                snprintf(tmp, 100, "subgrid/%s%03d", 
                          baseName.c_str(), meshCount);
                 meshDef[it->second.zoneList] = std::string(tmp);
                 debug4 << mName << "Step 2: Need mesh " << tmp << endl;

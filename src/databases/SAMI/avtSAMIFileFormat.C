@@ -7,8 +7,6 @@
 // ************************************************************************* //
 #include <silo.h>
 
-#include <snprintf.h>
-
 #include <avtSAMIFileFormat.h>
 
 #include <string>
@@ -163,7 +161,7 @@ avtSAMIFileFormat::InitFile()
     if (meshData == 0)
     {
         char tmpMsg[512];
-        SNPRINTF(tmpMsg, sizeof(tmpMsg), "Unable to read \"mesh_data\" from %s", filename);
+        snprintf(tmpMsg, sizeof(tmpMsg), "Unable to read \"mesh_data\" from %s", filename);
         EXCEPTION1(InvalidFilesException, tmpMsg);
     }
 
@@ -276,7 +274,7 @@ avtSAMIFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         for (i = 0; i < toc->nvar; i++)
         {
             char tmpName[256];
-            SNPRINTF(tmpName, sizeof(tmpName), "nodesets/%s", toc->var_names[i]);
+            snprintf(tmpName, sizeof(tmpName), "nodesets/%s", toc->var_names[i]);
             avtMeshMetaData *nsmmd = new avtMeshMetaData(tmpName, 1, 0, 0,
                                            0, ndims, ndims, AVT_POINT_MESH);
             md->Add(nsmmd);
@@ -295,11 +293,11 @@ avtSAMIFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             if (strncmp(toc->dir_names[i], "slide_", 6) == 0)
             {
                 char tmpName[256];
-                SNPRINTF(tmpName, sizeof(tmpName), "%s/master", toc->dir_names[i]);
+                snprintf(tmpName, sizeof(tmpName), "%s/master", toc->dir_names[i]);
                 avtMeshMetaData *smmmd = new avtMeshMetaData(tmpName, 1, 0, 0,
                                                0, ndims, ndims-1, AVT_UNSTRUCTURED_MESH);
                 md->Add(smmmd);
-                SNPRINTF(tmpName, sizeof(tmpName), "%s/slave", toc->dir_names[i]);
+                snprintf(tmpName, sizeof(tmpName), "%s/slave", toc->dir_names[i]);
                 avtMeshMetaData *ssmmd = new avtMeshMetaData(tmpName, 1, 0, 0,
                                                0, ndims, ndims-1, AVT_UNSTRUCTURED_MESH);
                 md->Add(ssmmd);
@@ -316,7 +314,7 @@ avtSAMIFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         for (int i = 0; i < nmats; i++)
         {
             char tmp[16];
-            SNPRINTF(tmp, sizeof(tmp), "%03d", i+1);
+            snprintf(tmp, sizeof(tmp), "%03d", i+1);
             matnames.push_back(tmp);
         }
         avtMaterialMetaData *matmd = new avtMaterialMetaData("mat", "mesh",
@@ -376,7 +374,7 @@ avtSAMIFileFormat::GetMesh(const char *meshname)
         if (DBReadVar(dbFile, "x", xVals) != 0)
         {
             char tmpMsg[512];
-            SNPRINTF(tmpMsg, sizeof(tmpMsg), "Unable to read \"x\" from %s", filename);
+            snprintf(tmpMsg, sizeof(tmpMsg), "Unable to read \"x\" from %s", filename);
             EXCEPTION1(InvalidFilesException, tmpMsg);
         }
     }
@@ -386,7 +384,7 @@ avtSAMIFileFormat::GetMesh(const char *meshname)
         if (DBReadVar(dbFile, "y", yVals) != 0)
         {
             char tmpMsg[512];
-            SNPRINTF(tmpMsg, sizeof(tmpMsg), "Unable to read \"y\" from %s", filename);
+            snprintf(tmpMsg, sizeof(tmpMsg), "Unable to read \"y\" from %s", filename);
             EXCEPTION1(InvalidFilesException, tmpMsg);
         }
     }
@@ -396,7 +394,7 @@ avtSAMIFileFormat::GetMesh(const char *meshname)
         if (DBReadVar(dbFile, "z", zVals) != 0)
         {
             char tmpMsg[512];
-            SNPRINTF(tmpMsg, sizeof(tmpMsg), "Unable to read \"z\" from %s", filename);
+            snprintf(tmpMsg, sizeof(tmpMsg), "Unable to read \"z\" from %s", filename);
             EXCEPTION1(InvalidFilesException, tmpMsg);
         }
     }
@@ -432,7 +430,7 @@ avtSAMIFileFormat::GetMesh(const char *meshname)
         if (nssize == 0)
         {
             char tmpMsg[512];
-            SNPRINTF(tmpMsg, sizeof(tmpMsg), "nodeset \"%s\" is size zero", meshname);
+            snprintf(tmpMsg, sizeof(tmpMsg), "nodeset \"%s\" is size zero", meshname);
             EXCEPTION1(InvalidFilesException, tmpMsg);
         }
 
@@ -440,7 +438,7 @@ avtSAMIFileFormat::GetMesh(const char *meshname)
         if (nodelist == 0)
         {
             char tmpMsg[512];
-            SNPRINTF(tmpMsg, sizeof(tmpMsg), "unable to read \"%s\"", meshname);
+            snprintf(tmpMsg, sizeof(tmpMsg), "unable to read \"%s\"", meshname);
             EXCEPTION1(InvalidFilesException, tmpMsg);
         }
         
@@ -460,19 +458,19 @@ avtSAMIFileFormat::GetMesh(const char *meshname)
         for (j = 0; j < (1<<(ndims-1)); j++)
         {
             char tmpName[256];
-            SNPRINTF(tmpName, sizeof(tmpName), "%s/face_node%d", meshname, j);
+            snprintf(tmpName, sizeof(tmpName), "%s/face_node%d", meshname, j);
             nlsize = DBGetVarLength(dbFile, tmpName);
             if (nlsize == 0)
             {
                 char tmpMsg[512];
-                SNPRINTF(tmpMsg, sizeof(tmpMsg), "slide \"%s\" is size zero", meshname);
+                snprintf(tmpMsg, sizeof(tmpMsg), "slide \"%s\" is size zero", meshname);
                 EXCEPTION1(InvalidFilesException, tmpMsg);
             }
             nd[j] = (int *) DBGetVar(dbFile, tmpName);
             if (nd[j] == 0)
             {
                 char tmpMsg[512];
-                SNPRINTF(tmpMsg, sizeof(tmpMsg), "unable to read \"%s\"", meshname);
+                snprintf(tmpMsg, sizeof(tmpMsg), "unable to read \"%s\"", meshname);
                 EXCEPTION1(InvalidFilesException, tmpMsg);
             }
         }
@@ -501,12 +499,12 @@ avtSAMIFileFormat::GetMesh(const char *meshname)
     for (j = 0; j < (1<<ndims); j++)
     {
         char tmpName[32];
-        SNPRINTF(tmpName, sizeof(tmpName), "brick_nd%d", j);
+        snprintf(tmpName, sizeof(tmpName), "brick_nd%d", j);
         nd[j] = (int *) DBGetVar(dbFile, tmpName);
         if (nd[j] == 0)
         {
             char tmpMsg[512];
-            SNPRINTF(tmpMsg, sizeof(tmpMsg), "unable to read \"%s\"", tmpName);
+            snprintf(tmpMsg, sizeof(tmpMsg), "unable to read \"%s\"", tmpName);
             EXCEPTION1(InvalidFilesException, tmpMsg);
         }
     }
@@ -596,7 +594,7 @@ avtSAMIFileFormat::GetMaterial(const char *varname)
     {
         char tmp[16];
         matnos[i] = i+1;
-        SNPRINTF(tmp, sizeof(tmp), "%03d", i+1);
+        snprintf(tmp, sizeof(tmp), "%03d", i+1);
         matnames[i] = strdup(tmp);
     }
 

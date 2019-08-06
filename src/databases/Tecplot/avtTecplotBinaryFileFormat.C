@@ -31,7 +31,6 @@
 
 #include <avtCallback.h>
 #include <DebugStream.h>
-#include <snprintf.h>
 #include <string.h>
 #include <map>
 
@@ -278,7 +277,7 @@ avtTecplotBinaryFileFormat::Initialize(TecplotFile *f, avtDatabaseMetaData *md,
         if(zoneGroups.size() > 1)
         {
             char tmp[100];
-            SNPRINTF(tmp, 100, "zone%d", meshIndex+1);
+            snprintf(tmp, 100, "zone%d", meshIndex+1);
             meshName = tmp;
         }
         else
@@ -431,7 +430,7 @@ avtTecplotBinaryFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 
     // Set the database comment.
     char tecver[100];
-    SNPRINTF(tecver, 100, "[Tecplot binary file v%d] ", f->version);
+    snprintf(tecver, 100, "[Tecplot binary file v%d] ", f->version);
     md->SetDatabaseComment(std::string(tecver) + f->titleAndVars.title);
 
     // Initialize the metadata. The maps have already been initialized so we

@@ -28,7 +28,6 @@
 #include <InvalidVariableException.h>
 #include <DebugStream.h>
 #include <visit-config.h>
-#include <snprintf.h>
 
 #include <NETCDFFileObject.h>
 #include <avtFVCOMReader.h>
@@ -346,7 +345,7 @@ avtFVCOM_MTMDFileFormat::Init()
         domainFiles.clear();
 
         char msg[2000];
-        SNPRINTF(msg, 2000,
+        snprintf(msg, 2000,
                  "%s. One or more domain files in the master file cannot be accessed",
                  fileObject->GetName().c_str());
         EXCEPTION1(InvalidFilesException, msg);

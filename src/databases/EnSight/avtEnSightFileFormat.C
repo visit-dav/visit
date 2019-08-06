@@ -239,9 +239,9 @@ avtEnSightFileFormat::InstantiateReader(const char *fname_c)
         if (numStars > 0)
         {
             char format[12];
-            SNPRINTF(format, 12, "%s%d%s", "%0", numStars, "d");
+            snprintf(format, 12, "%s%d%s", "%0", numStars, "d");
             char model_mid[12];
-            SNPRINTF(model_mid, 12, format, geomFileNameStart);
+            snprintf(model_mid, 12, format, geomFileNameStart);
             model_name = model_begin + std::string(model_mid) + model_end;
         }
     }
@@ -1290,7 +1290,7 @@ avtEnSightFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
     if (matnames.size() > 0)
     {
         char str[128];
-        SNPRINTF(str, 128, "volume_fraction%ld", matnames.size()+1);
+        snprintf(str, 128, "volume_fraction%ld", matnames.size()+1);
         matnames.push_back(str);
         avtMaterialMetaData *mmd;
         mmd = new avtMaterialMetaData("materials", "mesh",

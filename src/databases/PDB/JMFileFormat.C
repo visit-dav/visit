@@ -10,8 +10,6 @@
 
 #include <string>
 
-#include <snprintf.h>
-
 #include <vtkDoubleArray.h>
 #include <vtkFloatArray.h>
 #include <vtkPointData.h>
@@ -653,7 +651,7 @@ JMFileFormat::GetMaterialNames(stringVector &materialNames)
                 materialNames.push_back("mixed");
             else
             {
-                SNPRINTF(tmp, 10, "%d", *it);
+                snprintf(tmp, 10, "%d", *it);
                 materialNames.push_back(tmp);
             }
         }

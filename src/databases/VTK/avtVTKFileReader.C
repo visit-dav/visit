@@ -36,7 +36,6 @@
 #include <PVTKParser.h>
 #include <VTMParser.h>
 
-#include <snprintf.h>
 #include <DebugStream.h>
 #include <Expression.h>
 #include <InvalidVariableException.h>
@@ -878,7 +877,7 @@ avtVTKFileReader::GetAuxiliaryData(const char *var, int domain,
             for (it = valMap.begin(); it != valMap.end(); it++)
             {
                 char tmpname[32];
-                SNPRINTF(tmpname, sizeof(tmpname), "%d", it->first);
+                snprintf(tmpname, sizeof(tmpname), "%d", it->first);
                 matnames.push_back(tmpname);
                 matnos.push_back(it->first);
             }
@@ -1503,8 +1502,8 @@ avtVTKFileReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                 char *exp_def = new char[compnamelen];
                 for(int c = 0; c < ncomp; ++c)
                 {
-                    SNPRINTF(exp_name, compnamelen, "%s/comp_%d", name, c);
-                    SNPRINTF(exp_def,  compnamelen, "array_decompose(<%s>, %d)",  name, c);
+                    snprintf(exp_name, compnamelen, "%s/comp_%d", name, c);
+                    snprintf(exp_def,  compnamelen, "array_decompose(<%s>, %d)",  name, c);
                     Expression *e = new Expression;
                     e->SetType(Expression::ScalarMeshVar);
                     e->SetName(exp_name);
@@ -1557,7 +1556,7 @@ avtVTKFileReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             for (it = valMap.begin(); it != valMap.end(); it++)
             {
                 char tmpname[32];
-                SNPRINTF(tmpname, sizeof(tmpname), "%d", it->first);
+                snprintf(tmpname, sizeof(tmpname), "%d", it->first);
                 matnames.push_back(tmpname);
                 matnos.push_back(it->first);
             }
@@ -1600,8 +1599,8 @@ avtVTKFileReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                 char *exp_def = new char[compnamelen];
                 for(int c = 0; c < ncomp; ++c)
                 {
-                    SNPRINTF(exp_name, compnamelen, "%s/comp_%d", name, c);
-                    SNPRINTF(exp_def,  compnamelen, "array_decompose(<%s>, %d)",  name, c);
+                    snprintf(exp_name, compnamelen, "%s/comp_%d", name, c);
+                    snprintf(exp_def,  compnamelen, "array_decompose(<%s>, %d)",  name, c);
                     Expression *e = new Expression;
                     e->SetType(Expression::ScalarMeshVar);
                     e->SetName(exp_name);
@@ -2077,7 +2076,7 @@ avtVTKFileReader::AddArrayVarToMetaData(avtDatabaseMetaData *md, string name,
     for (int i = 0 ; i < ncomps ; i++)
     {
         char name[16];
-        SNPRINTF(name, 16, "comp%02d", i);
+        snprintf(name, 16, "comp%02d", i);
         st->compNames[i] = name;
     }
     st->meshName = mesh;

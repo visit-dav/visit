@@ -334,7 +334,7 @@ avtImageFileFormat::ReadImageVolumeHeader(void)
         if ((size_t)size > subImages.size() && !haveIssuedProcWarning)
         {
             char msg[1024];
-            SNPRINTF(msg, sizeof(msg),
+            snprintf(msg, sizeof(msg),
                 "Because your imgvol dataset named \"%s\",\n"
                 "has %d slices, it can be decomposed for parallel across at most %d processors.\n"
                 "You are using %d processors and so %d of these are not adding any additional\n"
@@ -401,7 +401,7 @@ avtImageFileFormat::CreateCacheNameIncludingSelections(std::string s)
         if ((*selsApplied)[i])
         {
             std::string s = selList[i]->DescriptionString();
-            SNPRINTF(str+amt, 1024-amt, "_%s", s.c_str());
+            snprintf(str+amt, 1024-amt, "_%s", s.c_str());
             amt += strlen(str);
         }
     }

@@ -7,7 +7,6 @@
 
 #include <set>
 #include <math.h>
-#include <snprintf.h>
 
 #include <vtkStructuredGrid.h>
 #include <vtkCellData.h>
@@ -498,7 +497,7 @@ Streaker::FindMaterial(PDBFileObject *pdb, int *zDimensions, int zDims)
                     for(size_t i = 0; i < matnos.size(); ++i)
                     {
                         char tmp[10];
-                        SNPRINTF(tmp, 10, "%d", matnos[i]);
+                        snprintf(tmp, 10, "%d", matnos[i]);
                         this->matNames.push_back(tmp);
                     }
                 }
