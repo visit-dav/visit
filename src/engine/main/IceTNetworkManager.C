@@ -17,7 +17,6 @@
 #include <DebugStream.h>
 #include <DataNetwork.h>
 #include <Engine.h>
-#include <snprintf.h>
 #include <StackTimer.h>
 #include <UnexpectedValueException.h>
 #include <VisWindow.h>
@@ -999,7 +998,7 @@ IceTNetworkManager::StopTimer()
     viswin->GetCaptureRegion(width_start, height_start, rows,cols,
                              renderState.viewportedMode);
 
-    SNPRINTF(msg, 1023, "IceTNM::Render %lld cells %d pixels",
+    snprintf(msg, 1023, "IceTNM::Render %lld cells %d pixels",
              renderState.cellCountTotal, rows*cols);
     visitTimer->StopTimer(renderState.timer, msg);
     renderState.timer = -1;
@@ -1019,6 +1018,6 @@ IceTNetworkManager::StopTimer()
 void IceTNetworkManager::FormatDebugImage(char* out, size_t len,
                                           const char* prefix) const
 {
-  SNPRINTF(out, len, "%s-%03d-%03u", prefix, PAR_Rank(), this->renderings);
+  snprintf(out, len, "%s-%03d-%03u", prefix, PAR_Rank(), this->renderings);
 }
 

@@ -25,7 +25,6 @@
 #include <vtkDebugStream.h>
 #include <visitstream.h>
 #include <visit-config.h>
-#include <snprintf.h>
 
 #include <BufferConnection.h>
 #include <CouldNotConnectException.h>
@@ -607,7 +606,7 @@ Engine::Initialize(int *argc, char **argv[], bool sigs)
 #ifdef PARALLEL
     {
         char msg[1024];
-        SNPRINTF(msg, 1024, "Initializing a %d processor engine "
+        snprintf(msg, 1024, "Initializing a %d processor engine "
                  "(including MPI_Init())", PAR_Size());
         visitTimer->StopTimer(initTimer, msg);
     }
@@ -2512,7 +2511,7 @@ Engine::WriteByteStreamToSocket(avtDataObjectString &do_str)
     }
 
     char info[124];
-    SNPRINTF(info, 124, "Writing %d bytes to socket", totalSize);     
+    snprintf(info, 124, "Writing %d bytes to socket", totalSize);     
     visitTimer->StopTimer(writeData, info);
 }
 

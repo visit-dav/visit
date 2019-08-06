@@ -21,7 +21,6 @@
 
 #include <DebugStream.h>
 #include <InitVTKRendering.h>
-#include <snprintf.h>
 #include <StringHelpers.h>
 #include <visit-config.h>
 
@@ -186,7 +185,7 @@ XDisplay::Connect()
     static char env_display[128];
 
     debug3 << "Connecting to display " << this->display << std::endl;
-    SNPRINTF(env_display, 128, "DISPLAY=%s", this->display.c_str());
+    snprintf(env_display, 128, "DISPLAY=%s", this->display.c_str());
 
     if(putenv(env_display) != 0)
     {
