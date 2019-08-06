@@ -1118,7 +1118,7 @@ VisWinAxesArray::SetNumberOfAxes(int n)
             //}
 
             AxisInfo a(ax, 0, 3, 0, 0);
-            SNPRINTF(a.title, 8,  "Axis%02ld", i);
+            SNPRINTF(a.title, 8,  "Axis%02zu", i);
             axes.push_back(a);
 
             // Update the properties of this new axis

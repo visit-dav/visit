@@ -12,7 +12,6 @@
 #include <sys/types.h>
 #include <time.h>
 
-#include <snprintf.h>
 #if defined(_WIN32)
 #include <windows.h>
 #endif
@@ -211,14 +210,14 @@ public:
          static char user_buffer[100];
          const char *user = getenv("USER");
          if(user != 0)
-             SNPRINTF(user_buffer, 100, "%s -- ", user);
+             snprintf(user_buffer, 100, "%s -- ", user);
          else
          {
 #if defined(_WIN32)
              char tmp[100];
              DWORD maxLen = 100;
              GetUserName((LPTSTR)tmp, (LPDWORD)&maxLen);
-             SNPRINTF(user_buffer, 100, "%s -- ", tmp);
+             snprintf(user_buffer, 100, "%s -- ", tmp);
 #else
              user_buffer[0] = '\0';
 #endif

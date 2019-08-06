@@ -6,7 +6,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include <snprintf.h>
 #include <ImageObject.h>
 
 #include <set>
@@ -168,7 +167,7 @@ Transition_Fade(const TransitionOptions &options, ImageObject *image1, ImageObje
         }
 
         // Write the output image.
-        SNPRINTF(outputName, 500, options.output, frame);
+        snprintf(outputName, 500, options.output, frame);
         if(!output.Write(outputName))
         {
             fprintf(stderr, "Could not write file %s\n", outputName);
@@ -239,7 +238,7 @@ Transition_LR_Wipe(const TransitionOptions &options, ImageObject *image1, ImageO
         }
 
         // Write the output image.
-        SNPRINTF(outputName, 500, options.output, frame);
+        snprintf(outputName, 500, options.output, frame);
         if(!output.Write(outputName))
         {
             fprintf(stderr, "Could not write file %s\n", outputName);
@@ -310,7 +309,7 @@ Transition_RL_Wipe(const TransitionOptions &options, ImageObject *image1, ImageO
         }
 
         // Write the output image.
-        SNPRINTF(outputName, 500, options.output, frame);
+        snprintf(outputName, 500, options.output, frame);
         if(!output.Write(outputName))
         {
             fprintf(stderr, "Could not write file %s\n", outputName);
@@ -381,7 +380,7 @@ Transition_BT_Wipe(const TransitionOptions &options, ImageObject *image1, ImageO
         }
 
         // Write the output image.
-        SNPRINTF(outputName, 500, options.output, frame);
+        snprintf(outputName, 500, options.output, frame);
         if(!output.Write(outputName))
         {
             fprintf(stderr, "Could not write file %s\n", outputName);
@@ -452,7 +451,7 @@ Transition_TB_Wipe(const TransitionOptions &options, ImageObject *image1, ImageO
         }
 
         // Write the output image.
-        SNPRINTF(outputName, 500, options.output, frame);
+        snprintf(outputName, 500, options.output, frame);
         if(!output.Write(outputName))
         {
             fprintf(stderr, "Could not write file %s\n", outputName);
@@ -504,7 +503,7 @@ Transition_LR_Slide(const TransitionOptions &options, ImageObject *image1, Image
         output.CopyBlock(*image2, 0, 0, image1->Width(), image1->Height(), startX + currentX, 0);
 
         // Write the output image.
-        SNPRINTF(outputName, 500, options.output, frame);
+        snprintf(outputName, 500, options.output, frame);
         if(!output.Write(outputName))
         {
             fprintf(stderr, "Could not write file %s\n", outputName);
@@ -556,7 +555,7 @@ Transition_RL_Slide(const TransitionOptions &options, ImageObject *image1, Image
         output.CopyBlock(*image2, 0, 0, image1->Width(), image1->Height(), startX - currentX,0);
 
         // Write the output image.
-        SNPRINTF(outputName, 500, options.output, frame);
+        snprintf(outputName, 500, options.output, frame);
         if(!output.Write(outputName))
         {
             fprintf(stderr, "Could not write file %s\n", outputName);
@@ -608,7 +607,7 @@ Transition_BT_Slide(const TransitionOptions &options, ImageObject *image1, Image
         output.CopyBlock(*image2, 0, 0, image1->Width(), image1->Height(), 0, startY - currentY);
 
         // Write the output image.
-        SNPRINTF(outputName, 500, options.output, frame);
+        snprintf(outputName, 500, options.output, frame);
         if(!output.Write(outputName))
         {
             fprintf(stderr, "Could not write file %s\n", outputName);
@@ -660,7 +659,7 @@ Transition_TB_Slide(const TransitionOptions &options, ImageObject *image1, Image
         output.CopyBlock(*image2, 0, 0, image1->Width(), image1->Height(), 0, startY + currentY);
 
         // Write the output image.
-        SNPRINTF(outputName, 500, options.output, frame);
+        snprintf(outputName, 500, options.output, frame);
         if(!output.Write(outputName))
         {
             fprintf(stderr, "Could not write file %s\n", outputName);
@@ -741,7 +740,7 @@ Transition_Circle(const TransitionOptions &options, ImageObject *image1, ImageOb
         }
 
         // Write the output image.
-        SNPRINTF(outputName, 500, options.output, frame);
+        snprintf(outputName, 500, options.output, frame);
         if(!output.Write(outputName))
         {
             fprintf(stderr, "Could not write file %s\n", outputName);
@@ -859,7 +858,7 @@ Transition_Ripple(const TransitionOptions &options, ImageObject *image1, ImageOb
         }
 
         // Write the output image.
-        SNPRINTF(outputName, 500, options.output, frame);
+        snprintf(outputName, 500, options.output, frame);
         if(!output.Write(outputName))
         {
             fprintf(stderr, "Could not write file %s\n", outputName);
@@ -960,7 +959,7 @@ Transition_Block(const TransitionOptions &options, ImageObject *image1, ImageObj
         }
 
         // Write the output image.
-        SNPRINTF(outputName, 500, options.output, frame);
+        snprintf(outputName, 500, options.output, frame);
         if(!output.Write(outputName))
         {
             fprintf(stderr, "Could not write file %s\n", outputName);

@@ -629,7 +629,7 @@ MapNode::SetJValue(const JSONNode& data, const JSONNode& metadata, bool decodeSt
         char buffer[1024];
 
         for(size_t i = 0; i < array.size(); ++i) {
-            sprintf(buffer, "%ld", i);
+            sprintf(buffer, "%zu", i);
             entries[buffer] = MapNode();
             entries[buffer].SetJValue(array[i], marray[i], decodeString);
         }
