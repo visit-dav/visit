@@ -205,7 +205,7 @@ avtDatabaseFactory::SetBackendType(const int bType)
 //    Added support to treat all databases as time varying
 //
 //    Mark C. Miller, Mon Aug  6 13:36:16 PDT 2007
-//    Replaced sprintfs with SNPRINTFs. Adjusted to accomodate possible
+//    Replaced sprintfs with snprintfs. Adjusted to accomodate possible
 //    null return from GetCommonPluginInfo. Moved bulk of code to match
 //    on file extensions and filenames to DatabasePluginManager
 //

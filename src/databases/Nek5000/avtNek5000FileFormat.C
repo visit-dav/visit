@@ -316,7 +316,7 @@ avtNek5000FileFormat::avtNek5000FileFormat(const char *filename,
 //
 //  Modifications:
 //    Dave Bremer, Thu Mar 20 11:28:05 PDT 2008
-//    Changed sprintf to SNPRINTF.
+//    Changed sprintf to snprintf.
 //
 //    Dave Bremer, Fri Jun  6 15:38:45 PDT 2008
 //    Added the bParFormat flag allowing the parallel format to be used
@@ -835,7 +835,7 @@ void avtNek5000FileFormat::ParseFieldTags(ifstream &f)
 //
 //  Modifications:
 //    Dave Bremer, Thu Mar 20 11:28:05 PDT 2008
-//    Use the GetFileName method.  Changed sprintf to SNPRINTF.
+//    Use the GetFileName method.  Changed sprintf to snprintf.
 //
 //    Dave Bremer, Tue May 13 19:51:04 CDT 2008
 //    Use a simpler block numbering scheme, to provide faster I/O because of
@@ -1143,7 +1143,7 @@ avtNek5000FileFormat::FreeUpResources(void)
 //    Added domain boundary metadata.
 //
 //    Dave Bremer, Thu Mar 20 11:28:05 PDT 2008
-//    Changed sprintf to SNPRINTF.
+//    Changed sprintf to snprintf.
 //
 //    Hank Childs, Thu Dec 18 10:15:50 CST 2008
 //    Indicate that the format now does its own domain decomposition.
