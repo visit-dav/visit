@@ -189,7 +189,7 @@ avtIsosurfaceFilter::UpdateDataObjectInfoCB(avtDataObject_p &input,
     std::string params;
     if(iso.GetContourMethod() == IsosurfaceAttributes::Level)
     {
-        SNPRINTF(tmp, 200, "contourNLevels=%d", iso.GetContourNLevels());
+        snprintf(tmp, 200, "contourNLevels=%d", iso.GetContourNLevels());
         params = tmp;
     }
     else if(iso.GetContourMethod() == IsosurfaceAttributes::Value)
@@ -197,7 +197,7 @@ avtIsosurfaceFilter::UpdateDataObjectInfoCB(avtDataObject_p &input,
         params = "contourValue=";
         for(size_t i = 0; i < iso.GetContourValue().size(); ++i)
         {
-            SNPRINTF(tmp, 200, "%lg", iso.GetContourValue()[i]);
+            snprintf(tmp, 200, "%lg", iso.GetContourValue()[i]);
             params += tmp;
             if(i < iso.GetContourValue().size()-1)
                 params += ", ";
@@ -208,7 +208,7 @@ avtIsosurfaceFilter::UpdateDataObjectInfoCB(avtDataObject_p &input,
         params = "contourPercent=";
         for(size_t i = 0; i < iso.GetContourPercent().size(); ++i)
         {
-            SNPRINTF(tmp, 200, "%lg", iso.GetContourPercent()[i]);
+            snprintf(tmp, 200, "%lg", iso.GetContourPercent()[i]);
             params += tmp;
             if(i < iso.GetContourValue().size()-1)
                 params += ", ";

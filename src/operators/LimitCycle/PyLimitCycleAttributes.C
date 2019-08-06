@@ -5,7 +5,6 @@
 #include <PyLimitCycleAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyLimitCycleAttributes
@@ -46,11 +45,11 @@ PyLimitCycleAttributes_ToString(const LimitCycleAttributes *atts, const char *pr
     switch (atts->GetSourceType())
     {
       case LimitCycleAttributes::SpecifiedLine:
-          SNPRINTF(tmpStr, 1000, "%ssourceType = %sSpecifiedLine  # %s\n", prefix, prefix, sourceType_names);
+          snprintf(tmpStr, 1000, "%ssourceType = %sSpecifiedLine  # %s\n", prefix, prefix, sourceType_names);
           str += tmpStr;
           break;
       case LimitCycleAttributes::SpecifiedPlane:
-          SNPRINTF(tmpStr, 1000, "%ssourceType = %sSpecifiedPlane  # %s\n", prefix, prefix, sourceType_names);
+          snprintf(tmpStr, 1000, "%ssourceType = %sSpecifiedPlane  # %s\n", prefix, prefix, sourceType_names);
           str += tmpStr;
           break;
       default:
@@ -58,88 +57,88 @@ PyLimitCycleAttributes_ToString(const LimitCycleAttributes *atts, const char *pr
     }
 
     {   const double *lineStart = atts->GetLineStart();
-        SNPRINTF(tmpStr, 1000, "%slineStart = (", prefix);
+        snprintf(tmpStr, 1000, "%slineStart = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 3; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", lineStart[i]);
+            snprintf(tmpStr, 1000, "%g", lineStart[i]);
             str += tmpStr;
             if(i < 2)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const double *lineEnd = atts->GetLineEnd();
-        SNPRINTF(tmpStr, 1000, "%slineEnd = (", prefix);
+        snprintf(tmpStr, 1000, "%slineEnd = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 3; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", lineEnd[i]);
+            snprintf(tmpStr, 1000, "%g", lineEnd[i]);
             str += tmpStr;
             if(i < 2)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const double *planeOrigin = atts->GetPlaneOrigin();
-        SNPRINTF(tmpStr, 1000, "%splaneOrigin = (", prefix);
+        snprintf(tmpStr, 1000, "%splaneOrigin = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 3; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", planeOrigin[i]);
+            snprintf(tmpStr, 1000, "%g", planeOrigin[i]);
             str += tmpStr;
             if(i < 2)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const double *planeNormal = atts->GetPlaneNormal();
-        SNPRINTF(tmpStr, 1000, "%splaneNormal = (", prefix);
+        snprintf(tmpStr, 1000, "%splaneNormal = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 3; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", planeNormal[i]);
+            snprintf(tmpStr, 1000, "%g", planeNormal[i]);
             str += tmpStr;
             if(i < 2)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const double *planeUpAxis = atts->GetPlaneUpAxis();
-        SNPRINTF(tmpStr, 1000, "%splaneUpAxis = (", prefix);
+        snprintf(tmpStr, 1000, "%splaneUpAxis = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 3; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", planeUpAxis[i]);
+            snprintf(tmpStr, 1000, "%g", planeUpAxis[i]);
             str += tmpStr;
             if(i < 2)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
-    SNPRINTF(tmpStr, 1000, "%ssampleDensity0 = %d\n", prefix, atts->GetSampleDensity0());
+    snprintf(tmpStr, 1000, "%ssampleDensity0 = %d\n", prefix, atts->GetSampleDensity0());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%ssampleDensity1 = %d\n", prefix, atts->GetSampleDensity1());
+    snprintf(tmpStr, 1000, "%ssampleDensity1 = %d\n", prefix, atts->GetSampleDensity1());
     str += tmpStr;
     const char *dataValue_names = "Solid, SeedPointID, Speed, Vorticity, ArcLength, "
         "TimeAbsolute, TimeRelative, AverageDistanceFromSeed, CorrelationDistance, "
@@ -147,185 +146,185 @@ PyLimitCycleAttributes_ToString(const LimitCycleAttributes *atts, const char *pr
     switch (atts->GetDataValue())
     {
       case LimitCycleAttributes::Solid:
-          SNPRINTF(tmpStr, 1000, "%sdataValue = %sSolid  # %s\n", prefix, prefix, dataValue_names);
+          snprintf(tmpStr, 1000, "%sdataValue = %sSolid  # %s\n", prefix, prefix, dataValue_names);
           str += tmpStr;
           break;
       case LimitCycleAttributes::SeedPointID:
-          SNPRINTF(tmpStr, 1000, "%sdataValue = %sSeedPointID  # %s\n", prefix, prefix, dataValue_names);
+          snprintf(tmpStr, 1000, "%sdataValue = %sSeedPointID  # %s\n", prefix, prefix, dataValue_names);
           str += tmpStr;
           break;
       case LimitCycleAttributes::Speed:
-          SNPRINTF(tmpStr, 1000, "%sdataValue = %sSpeed  # %s\n", prefix, prefix, dataValue_names);
+          snprintf(tmpStr, 1000, "%sdataValue = %sSpeed  # %s\n", prefix, prefix, dataValue_names);
           str += tmpStr;
           break;
       case LimitCycleAttributes::Vorticity:
-          SNPRINTF(tmpStr, 1000, "%sdataValue = %sVorticity  # %s\n", prefix, prefix, dataValue_names);
+          snprintf(tmpStr, 1000, "%sdataValue = %sVorticity  # %s\n", prefix, prefix, dataValue_names);
           str += tmpStr;
           break;
       case LimitCycleAttributes::ArcLength:
-          SNPRINTF(tmpStr, 1000, "%sdataValue = %sArcLength  # %s\n", prefix, prefix, dataValue_names);
+          snprintf(tmpStr, 1000, "%sdataValue = %sArcLength  # %s\n", prefix, prefix, dataValue_names);
           str += tmpStr;
           break;
       case LimitCycleAttributes::TimeAbsolute:
-          SNPRINTF(tmpStr, 1000, "%sdataValue = %sTimeAbsolute  # %s\n", prefix, prefix, dataValue_names);
+          snprintf(tmpStr, 1000, "%sdataValue = %sTimeAbsolute  # %s\n", prefix, prefix, dataValue_names);
           str += tmpStr;
           break;
       case LimitCycleAttributes::TimeRelative:
-          SNPRINTF(tmpStr, 1000, "%sdataValue = %sTimeRelative  # %s\n", prefix, prefix, dataValue_names);
+          snprintf(tmpStr, 1000, "%sdataValue = %sTimeRelative  # %s\n", prefix, prefix, dataValue_names);
           str += tmpStr;
           break;
       case LimitCycleAttributes::AverageDistanceFromSeed:
-          SNPRINTF(tmpStr, 1000, "%sdataValue = %sAverageDistanceFromSeed  # %s\n", prefix, prefix, dataValue_names);
+          snprintf(tmpStr, 1000, "%sdataValue = %sAverageDistanceFromSeed  # %s\n", prefix, prefix, dataValue_names);
           str += tmpStr;
           break;
       case LimitCycleAttributes::CorrelationDistance:
-          SNPRINTF(tmpStr, 1000, "%sdataValue = %sCorrelationDistance  # %s\n", prefix, prefix, dataValue_names);
+          snprintf(tmpStr, 1000, "%sdataValue = %sCorrelationDistance  # %s\n", prefix, prefix, dataValue_names);
           str += tmpStr;
           break;
       case LimitCycleAttributes::Difference:
-          SNPRINTF(tmpStr, 1000, "%sdataValue = %sDifference  # %s\n", prefix, prefix, dataValue_names);
+          snprintf(tmpStr, 1000, "%sdataValue = %sDifference  # %s\n", prefix, prefix, dataValue_names);
           str += tmpStr;
           break;
       case LimitCycleAttributes::Variable:
-          SNPRINTF(tmpStr, 1000, "%sdataValue = %sVariable  # %s\n", prefix, prefix, dataValue_names);
+          snprintf(tmpStr, 1000, "%sdataValue = %sVariable  # %s\n", prefix, prefix, dataValue_names);
           str += tmpStr;
           break;
       default:
           break;
     }
 
-    SNPRINTF(tmpStr, 1000, "%sdataVariable = \"%s\"\n", prefix, atts->GetDataVariable().c_str());
+    snprintf(tmpStr, 1000, "%sdataVariable = \"%s\"\n", prefix, atts->GetDataVariable().c_str());
     str += tmpStr;
     const char *integrationDirection_names = "Forward, Backward, Both, ForwardDirectionless, BackwardDirectionless, "
         "BothDirectionless";
     switch (atts->GetIntegrationDirection())
     {
       case LimitCycleAttributes::Forward:
-          SNPRINTF(tmpStr, 1000, "%sintegrationDirection = %sForward  # %s\n", prefix, prefix, integrationDirection_names);
+          snprintf(tmpStr, 1000, "%sintegrationDirection = %sForward  # %s\n", prefix, prefix, integrationDirection_names);
           str += tmpStr;
           break;
       case LimitCycleAttributes::Backward:
-          SNPRINTF(tmpStr, 1000, "%sintegrationDirection = %sBackward  # %s\n", prefix, prefix, integrationDirection_names);
+          snprintf(tmpStr, 1000, "%sintegrationDirection = %sBackward  # %s\n", prefix, prefix, integrationDirection_names);
           str += tmpStr;
           break;
       case LimitCycleAttributes::Both:
-          SNPRINTF(tmpStr, 1000, "%sintegrationDirection = %sBoth  # %s\n", prefix, prefix, integrationDirection_names);
+          snprintf(tmpStr, 1000, "%sintegrationDirection = %sBoth  # %s\n", prefix, prefix, integrationDirection_names);
           str += tmpStr;
           break;
       case LimitCycleAttributes::ForwardDirectionless:
-          SNPRINTF(tmpStr, 1000, "%sintegrationDirection = %sForwardDirectionless  # %s\n", prefix, prefix, integrationDirection_names);
+          snprintf(tmpStr, 1000, "%sintegrationDirection = %sForwardDirectionless  # %s\n", prefix, prefix, integrationDirection_names);
           str += tmpStr;
           break;
       case LimitCycleAttributes::BackwardDirectionless:
-          SNPRINTF(tmpStr, 1000, "%sintegrationDirection = %sBackwardDirectionless  # %s\n", prefix, prefix, integrationDirection_names);
+          snprintf(tmpStr, 1000, "%sintegrationDirection = %sBackwardDirectionless  # %s\n", prefix, prefix, integrationDirection_names);
           str += tmpStr;
           break;
       case LimitCycleAttributes::BothDirectionless:
-          SNPRINTF(tmpStr, 1000, "%sintegrationDirection = %sBothDirectionless  # %s\n", prefix, prefix, integrationDirection_names);
+          snprintf(tmpStr, 1000, "%sintegrationDirection = %sBothDirectionless  # %s\n", prefix, prefix, integrationDirection_names);
           str += tmpStr;
           break;
       default:
           break;
     }
 
-    SNPRINTF(tmpStr, 1000, "%smaxSteps = %d\n", prefix, atts->GetMaxSteps());
+    snprintf(tmpStr, 1000, "%smaxSteps = %d\n", prefix, atts->GetMaxSteps());
     str += tmpStr;
     if(atts->GetTerminateByDistance())
-        SNPRINTF(tmpStr, 1000, "%sterminateByDistance = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sterminateByDistance = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sterminateByDistance = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sterminateByDistance = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%stermDistance = %g\n", prefix, atts->GetTermDistance());
+    snprintf(tmpStr, 1000, "%stermDistance = %g\n", prefix, atts->GetTermDistance());
     str += tmpStr;
     if(atts->GetTerminateByTime())
-        SNPRINTF(tmpStr, 1000, "%sterminateByTime = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sterminateByTime = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sterminateByTime = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sterminateByTime = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%stermTime = %g\n", prefix, atts->GetTermTime());
+    snprintf(tmpStr, 1000, "%stermTime = %g\n", prefix, atts->GetTermTime());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%smaxStepLength = %g\n", prefix, atts->GetMaxStepLength());
+    snprintf(tmpStr, 1000, "%smaxStepLength = %g\n", prefix, atts->GetMaxStepLength());
     str += tmpStr;
     if(atts->GetLimitMaximumTimestep())
-        SNPRINTF(tmpStr, 1000, "%slimitMaximumTimestep = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%slimitMaximumTimestep = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%slimitMaximumTimestep = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%slimitMaximumTimestep = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%smaxTimeStep = %g\n", prefix, atts->GetMaxTimeStep());
+    snprintf(tmpStr, 1000, "%smaxTimeStep = %g\n", prefix, atts->GetMaxTimeStep());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%srelTol = %g\n", prefix, atts->GetRelTol());
+    snprintf(tmpStr, 1000, "%srelTol = %g\n", prefix, atts->GetRelTol());
     str += tmpStr;
     const char *absTolSizeType_names = "Absolute, FractionOfBBox";
     switch (atts->GetAbsTolSizeType())
     {
       case LimitCycleAttributes::Absolute:
-          SNPRINTF(tmpStr, 1000, "%sabsTolSizeType = %sAbsolute  # %s\n", prefix, prefix, absTolSizeType_names);
+          snprintf(tmpStr, 1000, "%sabsTolSizeType = %sAbsolute  # %s\n", prefix, prefix, absTolSizeType_names);
           str += tmpStr;
           break;
       case LimitCycleAttributes::FractionOfBBox:
-          SNPRINTF(tmpStr, 1000, "%sabsTolSizeType = %sFractionOfBBox  # %s\n", prefix, prefix, absTolSizeType_names);
+          snprintf(tmpStr, 1000, "%sabsTolSizeType = %sFractionOfBBox  # %s\n", prefix, prefix, absTolSizeType_names);
           str += tmpStr;
           break;
       default:
           break;
     }
 
-    SNPRINTF(tmpStr, 1000, "%sabsTolAbsolute = %g\n", prefix, atts->GetAbsTolAbsolute());
+    snprintf(tmpStr, 1000, "%sabsTolAbsolute = %g\n", prefix, atts->GetAbsTolAbsolute());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sabsTolBBox = %g\n", prefix, atts->GetAbsTolBBox());
+    snprintf(tmpStr, 1000, "%sabsTolBBox = %g\n", prefix, atts->GetAbsTolBBox());
     str += tmpStr;
     const char *fieldType_names = "Default, FlashField, M3DC12DField, M3DC13DField, Nek5000Field, "
         "NektarPPField, NIMRODField";
     switch (atts->GetFieldType())
     {
       case LimitCycleAttributes::Default:
-          SNPRINTF(tmpStr, 1000, "%sfieldType = %sDefault  # %s\n", prefix, prefix, fieldType_names);
+          snprintf(tmpStr, 1000, "%sfieldType = %sDefault  # %s\n", prefix, prefix, fieldType_names);
           str += tmpStr;
           break;
       case LimitCycleAttributes::FlashField:
-          SNPRINTF(tmpStr, 1000, "%sfieldType = %sFlashField  # %s\n", prefix, prefix, fieldType_names);
+          snprintf(tmpStr, 1000, "%sfieldType = %sFlashField  # %s\n", prefix, prefix, fieldType_names);
           str += tmpStr;
           break;
       case LimitCycleAttributes::M3DC12DField:
-          SNPRINTF(tmpStr, 1000, "%sfieldType = %sM3DC12DField  # %s\n", prefix, prefix, fieldType_names);
+          snprintf(tmpStr, 1000, "%sfieldType = %sM3DC12DField  # %s\n", prefix, prefix, fieldType_names);
           str += tmpStr;
           break;
       case LimitCycleAttributes::M3DC13DField:
-          SNPRINTF(tmpStr, 1000, "%sfieldType = %sM3DC13DField  # %s\n", prefix, prefix, fieldType_names);
+          snprintf(tmpStr, 1000, "%sfieldType = %sM3DC13DField  # %s\n", prefix, prefix, fieldType_names);
           str += tmpStr;
           break;
       case LimitCycleAttributes::Nek5000Field:
-          SNPRINTF(tmpStr, 1000, "%sfieldType = %sNek5000Field  # %s\n", prefix, prefix, fieldType_names);
+          snprintf(tmpStr, 1000, "%sfieldType = %sNek5000Field  # %s\n", prefix, prefix, fieldType_names);
           str += tmpStr;
           break;
       case LimitCycleAttributes::NektarPPField:
-          SNPRINTF(tmpStr, 1000, "%sfieldType = %sNektarPPField  # %s\n", prefix, prefix, fieldType_names);
+          snprintf(tmpStr, 1000, "%sfieldType = %sNektarPPField  # %s\n", prefix, prefix, fieldType_names);
           str += tmpStr;
           break;
       case LimitCycleAttributes::NIMRODField:
-          SNPRINTF(tmpStr, 1000, "%sfieldType = %sNIMRODField  # %s\n", prefix, prefix, fieldType_names);
+          snprintf(tmpStr, 1000, "%sfieldType = %sNIMRODField  # %s\n", prefix, prefix, fieldType_names);
           str += tmpStr;
           break;
       default:
           break;
     }
 
-    SNPRINTF(tmpStr, 1000, "%sfieldConstant = %g\n", prefix, atts->GetFieldConstant());
+    snprintf(tmpStr, 1000, "%sfieldConstant = %g\n", prefix, atts->GetFieldConstant());
     str += tmpStr;
     {   const double *velocitySource = atts->GetVelocitySource();
-        SNPRINTF(tmpStr, 1000, "%svelocitySource = (", prefix);
+        snprintf(tmpStr, 1000, "%svelocitySource = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 3; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", velocitySource[i]);
+            snprintf(tmpStr, 1000, "%g", velocitySource[i]);
             str += tmpStr;
             if(i < 2)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     const char *integrationType_names = "Euler, Leapfrog, DormandPrince, AdamsBashforth, RK4, "
@@ -333,27 +332,27 @@ PyLimitCycleAttributes_ToString(const LimitCycleAttributes *atts, const char *pr
     switch (atts->GetIntegrationType())
     {
       case LimitCycleAttributes::Euler:
-          SNPRINTF(tmpStr, 1000, "%sintegrationType = %sEuler  # %s\n", prefix, prefix, integrationType_names);
+          snprintf(tmpStr, 1000, "%sintegrationType = %sEuler  # %s\n", prefix, prefix, integrationType_names);
           str += tmpStr;
           break;
       case LimitCycleAttributes::Leapfrog:
-          SNPRINTF(tmpStr, 1000, "%sintegrationType = %sLeapfrog  # %s\n", prefix, prefix, integrationType_names);
+          snprintf(tmpStr, 1000, "%sintegrationType = %sLeapfrog  # %s\n", prefix, prefix, integrationType_names);
           str += tmpStr;
           break;
       case LimitCycleAttributes::DormandPrince:
-          SNPRINTF(tmpStr, 1000, "%sintegrationType = %sDormandPrince  # %s\n", prefix, prefix, integrationType_names);
+          snprintf(tmpStr, 1000, "%sintegrationType = %sDormandPrince  # %s\n", prefix, prefix, integrationType_names);
           str += tmpStr;
           break;
       case LimitCycleAttributes::AdamsBashforth:
-          SNPRINTF(tmpStr, 1000, "%sintegrationType = %sAdamsBashforth  # %s\n", prefix, prefix, integrationType_names);
+          snprintf(tmpStr, 1000, "%sintegrationType = %sAdamsBashforth  # %s\n", prefix, prefix, integrationType_names);
           str += tmpStr;
           break;
       case LimitCycleAttributes::RK4:
-          SNPRINTF(tmpStr, 1000, "%sintegrationType = %sRK4  # %s\n", prefix, prefix, integrationType_names);
+          snprintf(tmpStr, 1000, "%sintegrationType = %sRK4  # %s\n", prefix, prefix, integrationType_names);
           str += tmpStr;
           break;
       case LimitCycleAttributes::M3DC12DIntegrator:
-          SNPRINTF(tmpStr, 1000, "%sintegrationType = %sM3DC12DIntegrator  # %s\n", prefix, prefix, integrationType_names);
+          snprintf(tmpStr, 1000, "%sintegrationType = %sM3DC12DIntegrator  # %s\n", prefix, prefix, integrationType_names);
           str += tmpStr;
           break;
       default:
@@ -364,146 +363,146 @@ PyLimitCycleAttributes_ToString(const LimitCycleAttributes *atts, const char *pr
     switch (atts->GetParallelizationAlgorithmType())
     {
       case LimitCycleAttributes::LoadOnDemand:
-          SNPRINTF(tmpStr, 1000, "%sparallelizationAlgorithmType = %sLoadOnDemand  # %s\n", prefix, prefix, parallelizationAlgorithmType_names);
+          snprintf(tmpStr, 1000, "%sparallelizationAlgorithmType = %sLoadOnDemand  # %s\n", prefix, prefix, parallelizationAlgorithmType_names);
           str += tmpStr;
           break;
       case LimitCycleAttributes::ParallelStaticDomains:
-          SNPRINTF(tmpStr, 1000, "%sparallelizationAlgorithmType = %sParallelStaticDomains  # %s\n", prefix, prefix, parallelizationAlgorithmType_names);
+          snprintf(tmpStr, 1000, "%sparallelizationAlgorithmType = %sParallelStaticDomains  # %s\n", prefix, prefix, parallelizationAlgorithmType_names);
           str += tmpStr;
           break;
       case LimitCycleAttributes::MasterSlave:
-          SNPRINTF(tmpStr, 1000, "%sparallelizationAlgorithmType = %sMasterSlave  # %s\n", prefix, prefix, parallelizationAlgorithmType_names);
+          snprintf(tmpStr, 1000, "%sparallelizationAlgorithmType = %sMasterSlave  # %s\n", prefix, prefix, parallelizationAlgorithmType_names);
           str += tmpStr;
           break;
       case LimitCycleAttributes::VisItSelects:
-          SNPRINTF(tmpStr, 1000, "%sparallelizationAlgorithmType = %sVisItSelects  # %s\n", prefix, prefix, parallelizationAlgorithmType_names);
+          snprintf(tmpStr, 1000, "%sparallelizationAlgorithmType = %sVisItSelects  # %s\n", prefix, prefix, parallelizationAlgorithmType_names);
           str += tmpStr;
           break;
       default:
           break;
     }
 
-    SNPRINTF(tmpStr, 1000, "%smaxProcessCount = %d\n", prefix, atts->GetMaxProcessCount());
+    snprintf(tmpStr, 1000, "%smaxProcessCount = %d\n", prefix, atts->GetMaxProcessCount());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%smaxDomainCacheSize = %d\n", prefix, atts->GetMaxDomainCacheSize());
+    snprintf(tmpStr, 1000, "%smaxDomainCacheSize = %d\n", prefix, atts->GetMaxDomainCacheSize());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sworkGroupSize = %d\n", prefix, atts->GetWorkGroupSize());
+    snprintf(tmpStr, 1000, "%sworkGroupSize = %d\n", prefix, atts->GetWorkGroupSize());
     str += tmpStr;
     if(atts->GetPathlines())
-        SNPRINTF(tmpStr, 1000, "%spathlines = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%spathlines = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%spathlines = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%spathlines = 0\n", prefix);
     str += tmpStr;
     if(atts->GetPathlinesOverrideStartingTimeFlag())
-        SNPRINTF(tmpStr, 1000, "%spathlinesOverrideStartingTimeFlag = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%spathlinesOverrideStartingTimeFlag = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%spathlinesOverrideStartingTimeFlag = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%spathlinesOverrideStartingTimeFlag = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%spathlinesOverrideStartingTime = %g\n", prefix, atts->GetPathlinesOverrideStartingTime());
+    snprintf(tmpStr, 1000, "%spathlinesOverrideStartingTime = %g\n", prefix, atts->GetPathlinesOverrideStartingTime());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%spathlinesPeriod = %g\n", prefix, atts->GetPathlinesPeriod());
+    snprintf(tmpStr, 1000, "%spathlinesPeriod = %g\n", prefix, atts->GetPathlinesPeriod());
     str += tmpStr;
     const char *pathlinesCMFE_names = "CONN_CMFE, POS_CMFE";
     switch (atts->GetPathlinesCMFE())
     {
       case LimitCycleAttributes::CONN_CMFE:
-          SNPRINTF(tmpStr, 1000, "%spathlinesCMFE = %sCONN_CMFE  # %s\n", prefix, prefix, pathlinesCMFE_names);
+          snprintf(tmpStr, 1000, "%spathlinesCMFE = %sCONN_CMFE  # %s\n", prefix, prefix, pathlinesCMFE_names);
           str += tmpStr;
           break;
       case LimitCycleAttributes::POS_CMFE:
-          SNPRINTF(tmpStr, 1000, "%spathlinesCMFE = %sPOS_CMFE  # %s\n", prefix, prefix, pathlinesCMFE_names);
+          snprintf(tmpStr, 1000, "%spathlinesCMFE = %sPOS_CMFE  # %s\n", prefix, prefix, pathlinesCMFE_names);
           str += tmpStr;
           break;
       default:
           break;
     }
 
-    SNPRINTF(tmpStr, 1000, "%ssampleDistance0 = %g\n", prefix, atts->GetSampleDistance0());
+    snprintf(tmpStr, 1000, "%ssampleDistance0 = %g\n", prefix, atts->GetSampleDistance0());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%ssampleDistance1 = %g\n", prefix, atts->GetSampleDistance1());
+    snprintf(tmpStr, 1000, "%ssampleDistance1 = %g\n", prefix, atts->GetSampleDistance1());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%ssampleDistance2 = %g\n", prefix, atts->GetSampleDistance2());
+    snprintf(tmpStr, 1000, "%ssampleDistance2 = %g\n", prefix, atts->GetSampleDistance2());
     str += tmpStr;
     if(atts->GetFillInterior())
-        SNPRINTF(tmpStr, 1000, "%sfillInterior = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sfillInterior = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sfillInterior = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sfillInterior = 0\n", prefix);
     str += tmpStr;
     if(atts->GetRandomSamples())
-        SNPRINTF(tmpStr, 1000, "%srandomSamples = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%srandomSamples = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%srandomSamples = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%srandomSamples = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%srandomSeed = %d\n", prefix, atts->GetRandomSeed());
+    snprintf(tmpStr, 1000, "%srandomSeed = %d\n", prefix, atts->GetRandomSeed());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%snumberOfRandomSamples = %d\n", prefix, atts->GetNumberOfRandomSamples());
+    snprintf(tmpStr, 1000, "%snumberOfRandomSamples = %d\n", prefix, atts->GetNumberOfRandomSamples());
     str += tmpStr;
     if(atts->GetForceNodeCenteredData())
-        SNPRINTF(tmpStr, 1000, "%sforceNodeCenteredData = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sforceNodeCenteredData = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sforceNodeCenteredData = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sforceNodeCenteredData = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%scycleTolerance = %g\n", prefix, atts->GetCycleTolerance());
+    snprintf(tmpStr, 1000, "%scycleTolerance = %g\n", prefix, atts->GetCycleTolerance());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%smaxIterations = %d\n", prefix, atts->GetMaxIterations());
+    snprintf(tmpStr, 1000, "%smaxIterations = %d\n", prefix, atts->GetMaxIterations());
     str += tmpStr;
     if(atts->GetShowPartialResults())
-        SNPRINTF(tmpStr, 1000, "%sshowPartialResults = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sshowPartialResults = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sshowPartialResults = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sshowPartialResults = 0\n", prefix);
     str += tmpStr;
     if(atts->GetShowReturnDistances())
-        SNPRINTF(tmpStr, 1000, "%sshowReturnDistances = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sshowReturnDistances = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sshowReturnDistances = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sshowReturnDistances = 0\n", prefix);
     str += tmpStr;
     if(atts->GetIssueAdvectionWarnings())
-        SNPRINTF(tmpStr, 1000, "%sissueAdvectionWarnings = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sissueAdvectionWarnings = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sissueAdvectionWarnings = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sissueAdvectionWarnings = 0\n", prefix);
     str += tmpStr;
     if(atts->GetIssueBoundaryWarnings())
-        SNPRINTF(tmpStr, 1000, "%sissueBoundaryWarnings = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sissueBoundaryWarnings = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sissueBoundaryWarnings = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sissueBoundaryWarnings = 0\n", prefix);
     str += tmpStr;
     if(atts->GetIssueTerminationWarnings())
-        SNPRINTF(tmpStr, 1000, "%sissueTerminationWarnings = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sissueTerminationWarnings = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sissueTerminationWarnings = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sissueTerminationWarnings = 0\n", prefix);
     str += tmpStr;
     if(atts->GetIssueStepsizeWarnings())
-        SNPRINTF(tmpStr, 1000, "%sissueStepsizeWarnings = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sissueStepsizeWarnings = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sissueStepsizeWarnings = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sissueStepsizeWarnings = 0\n", prefix);
     str += tmpStr;
     if(atts->GetIssueStiffnessWarnings())
-        SNPRINTF(tmpStr, 1000, "%sissueStiffnessWarnings = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sissueStiffnessWarnings = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sissueStiffnessWarnings = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sissueStiffnessWarnings = 0\n", prefix);
     str += tmpStr;
     if(atts->GetIssueCriticalPointsWarnings())
-        SNPRINTF(tmpStr, 1000, "%sissueCriticalPointsWarnings = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sissueCriticalPointsWarnings = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sissueCriticalPointsWarnings = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sissueCriticalPointsWarnings = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%scriticalPointThreshold = %g\n", prefix, atts->GetCriticalPointThreshold());
+    snprintf(tmpStr, 1000, "%scriticalPointThreshold = %g\n", prefix, atts->GetCriticalPointThreshold());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%scorrelationDistanceAngTol = %g\n", prefix, atts->GetCorrelationDistanceAngTol());
+    snprintf(tmpStr, 1000, "%scorrelationDistanceAngTol = %g\n", prefix, atts->GetCorrelationDistanceAngTol());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%scorrelationDistanceMinDistAbsolute = %g\n", prefix, atts->GetCorrelationDistanceMinDistAbsolute());
+    snprintf(tmpStr, 1000, "%scorrelationDistanceMinDistAbsolute = %g\n", prefix, atts->GetCorrelationDistanceMinDistAbsolute());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%scorrelationDistanceMinDistBBox = %g\n", prefix, atts->GetCorrelationDistanceMinDistBBox());
+    snprintf(tmpStr, 1000, "%scorrelationDistanceMinDistBBox = %g\n", prefix, atts->GetCorrelationDistanceMinDistBBox());
     str += tmpStr;
     const char *correlationDistanceMinDistType_names = "Absolute, FractionOfBBox";
     switch (atts->GetCorrelationDistanceMinDistType())
     {
       case LimitCycleAttributes::Absolute:
-          SNPRINTF(tmpStr, 1000, "%scorrelationDistanceMinDistType = %sAbsolute  # %s\n", prefix, prefix, correlationDistanceMinDistType_names);
+          snprintf(tmpStr, 1000, "%scorrelationDistanceMinDistType = %sAbsolute  # %s\n", prefix, prefix, correlationDistanceMinDistType_names);
           str += tmpStr;
           break;
       case LimitCycleAttributes::FractionOfBBox:
-          SNPRINTF(tmpStr, 1000, "%scorrelationDistanceMinDistType = %sFractionOfBBox  # %s\n", prefix, prefix, correlationDistanceMinDistType_names);
+          snprintf(tmpStr, 1000, "%scorrelationDistanceMinDistType = %sFractionOfBBox  # %s\n", prefix, prefix, correlationDistanceMinDistType_names);
           str += tmpStr;
           break;
       default:

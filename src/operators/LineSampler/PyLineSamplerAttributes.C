@@ -5,7 +5,6 @@
 #include <PyLineSamplerAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyLineSamplerAttributes
@@ -46,15 +45,15 @@ PyLineSamplerAttributes_ToString(const LineSamplerAttributes *atts, const char *
     switch (atts->GetMeshGeometry())
     {
       case LineSamplerAttributes::Cartesian:
-          SNPRINTF(tmpStr, 1000, "%smeshGeometry = %sCartesian  # %s\n", prefix, prefix, meshGeometry_names);
+          snprintf(tmpStr, 1000, "%smeshGeometry = %sCartesian  # %s\n", prefix, prefix, meshGeometry_names);
           str += tmpStr;
           break;
       case LineSamplerAttributes::Cylindrical:
-          SNPRINTF(tmpStr, 1000, "%smeshGeometry = %sCylindrical  # %s\n", prefix, prefix, meshGeometry_names);
+          snprintf(tmpStr, 1000, "%smeshGeometry = %sCylindrical  # %s\n", prefix, prefix, meshGeometry_names);
           str += tmpStr;
           break;
       case LineSamplerAttributes::Toroidal:
-          SNPRINTF(tmpStr, 1000, "%smeshGeometry = %sToroidal  # %s\n", prefix, prefix, meshGeometry_names);
+          snprintf(tmpStr, 1000, "%smeshGeometry = %sToroidal  # %s\n", prefix, prefix, meshGeometry_names);
           str += tmpStr;
           break;
       default:
@@ -65,11 +64,11 @@ PyLineSamplerAttributes_ToString(const LineSamplerAttributes *atts, const char *
     switch (atts->GetArrayConfiguration())
     {
       case LineSamplerAttributes::Geometry:
-          SNPRINTF(tmpStr, 1000, "%sarrayConfiguration = %sGeometry  # %s\n", prefix, prefix, arrayConfiguration_names);
+          snprintf(tmpStr, 1000, "%sarrayConfiguration = %sGeometry  # %s\n", prefix, prefix, arrayConfiguration_names);
           str += tmpStr;
           break;
       case LineSamplerAttributes::Manual:
-          SNPRINTF(tmpStr, 1000, "%sarrayConfiguration = %sManual  # %s\n", prefix, prefix, arrayConfiguration_names);
+          snprintf(tmpStr, 1000, "%sarrayConfiguration = %sManual  # %s\n", prefix, prefix, arrayConfiguration_names);
           str += tmpStr;
           break;
       default:
@@ -80,38 +79,38 @@ PyLineSamplerAttributes_ToString(const LineSamplerAttributes *atts, const char *
     switch (atts->GetBoundary())
     {
       case LineSamplerAttributes::Data:
-          SNPRINTF(tmpStr, 1000, "%sboundary = %sData  # %s\n", prefix, prefix, boundary_names);
+          snprintf(tmpStr, 1000, "%sboundary = %sData  # %s\n", prefix, prefix, boundary_names);
           str += tmpStr;
           break;
       case LineSamplerAttributes::Wall:
-          SNPRINTF(tmpStr, 1000, "%sboundary = %sWall  # %s\n", prefix, prefix, boundary_names);
+          snprintf(tmpStr, 1000, "%sboundary = %sWall  # %s\n", prefix, prefix, boundary_names);
           str += tmpStr;
           break;
       default:
           break;
     }
 
-    SNPRINTF(tmpStr, 1000, "%sinstanceId = %d\n", prefix, atts->GetInstanceId());
+    snprintf(tmpStr, 1000, "%sinstanceId = %d\n", prefix, atts->GetInstanceId());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%snArrays = %d\n", prefix, atts->GetNArrays());
+    snprintf(tmpStr, 1000, "%snArrays = %d\n", prefix, atts->GetNArrays());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%storoidalArrayAngle = %g\n", prefix, atts->GetToroidalArrayAngle());
+    snprintf(tmpStr, 1000, "%storoidalArrayAngle = %g\n", prefix, atts->GetToroidalArrayAngle());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%snChannels = %d\n", prefix, atts->GetNChannels());
+    snprintf(tmpStr, 1000, "%snChannels = %d\n", prefix, atts->GetNChannels());
     str += tmpStr;
     const char *channelProjection_names = "Divergent, Parallel, Grid";
     switch (atts->GetChannelProjection())
     {
       case LineSamplerAttributes::Divergent:
-          SNPRINTF(tmpStr, 1000, "%schannelProjection = %sDivergent  # %s\n", prefix, prefix, channelProjection_names);
+          snprintf(tmpStr, 1000, "%schannelProjection = %sDivergent  # %s\n", prefix, prefix, channelProjection_names);
           str += tmpStr;
           break;
       case LineSamplerAttributes::Parallel:
-          SNPRINTF(tmpStr, 1000, "%schannelProjection = %sParallel  # %s\n", prefix, prefix, channelProjection_names);
+          snprintf(tmpStr, 1000, "%schannelProjection = %sParallel  # %s\n", prefix, prefix, channelProjection_names);
           str += tmpStr;
           break;
       case LineSamplerAttributes::Grid:
-          SNPRINTF(tmpStr, 1000, "%schannelProjection = %sGrid  # %s\n", prefix, prefix, channelProjection_names);
+          snprintf(tmpStr, 1000, "%schannelProjection = %sGrid  # %s\n", prefix, prefix, channelProjection_names);
           str += tmpStr;
           break;
       default:
@@ -122,86 +121,86 @@ PyLineSamplerAttributes_ToString(const LineSamplerAttributes *atts, const char *
     switch (atts->GetChannelLayoutType())
     {
       case LineSamplerAttributes::ChannelAbsolute:
-          SNPRINTF(tmpStr, 1000, "%schannelLayoutType = %sChannelAbsolute  # %s\n", prefix, prefix, channelLayoutType_names);
+          snprintf(tmpStr, 1000, "%schannelLayoutType = %sChannelAbsolute  # %s\n", prefix, prefix, channelLayoutType_names);
           str += tmpStr;
           break;
       case LineSamplerAttributes::ChannelRelative:
-          SNPRINTF(tmpStr, 1000, "%schannelLayoutType = %sChannelRelative  # %s\n", prefix, prefix, channelLayoutType_names);
+          snprintf(tmpStr, 1000, "%schannelLayoutType = %sChannelRelative  # %s\n", prefix, prefix, channelLayoutType_names);
           str += tmpStr;
           break;
       default:
           break;
     }
 
-    SNPRINTF(tmpStr, 1000, "%schannelOffset = %g\n", prefix, atts->GetChannelOffset());
+    snprintf(tmpStr, 1000, "%schannelOffset = %g\n", prefix, atts->GetChannelOffset());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%schannelAngle = %g\n", prefix, atts->GetChannelAngle());
+    snprintf(tmpStr, 1000, "%schannelAngle = %g\n", prefix, atts->GetChannelAngle());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%snRows = %d\n", prefix, atts->GetNRows());
+    snprintf(tmpStr, 1000, "%snRows = %d\n", prefix, atts->GetNRows());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%srowOffset = %g\n", prefix, atts->GetRowOffset());
+    snprintf(tmpStr, 1000, "%srowOffset = %g\n", prefix, atts->GetRowOffset());
     str += tmpStr;
     {   const double *arrayOrigin = atts->GetArrayOrigin();
-        SNPRINTF(tmpStr, 1000, "%sarrayOrigin = (", prefix);
+        snprintf(tmpStr, 1000, "%sarrayOrigin = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 3; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", arrayOrigin[i]);
+            snprintf(tmpStr, 1000, "%g", arrayOrigin[i]);
             str += tmpStr;
             if(i < 2)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     const char *arrayAxis_names = "R, Z";
     switch (atts->GetArrayAxis())
     {
       case LineSamplerAttributes::R:
-          SNPRINTF(tmpStr, 1000, "%sarrayAxis = %sR  # %s\n", prefix, prefix, arrayAxis_names);
+          snprintf(tmpStr, 1000, "%sarrayAxis = %sR  # %s\n", prefix, prefix, arrayAxis_names);
           str += tmpStr;
           break;
       case LineSamplerAttributes::Z:
-          SNPRINTF(tmpStr, 1000, "%sarrayAxis = %sZ  # %s\n", prefix, prefix, arrayAxis_names);
+          snprintf(tmpStr, 1000, "%sarrayAxis = %sZ  # %s\n", prefix, prefix, arrayAxis_names);
           str += tmpStr;
           break;
       default:
           break;
     }
 
-    SNPRINTF(tmpStr, 1000, "%spoloidalAngleStart = %g\n", prefix, atts->GetPoloidalAngleStart());
+    snprintf(tmpStr, 1000, "%spoloidalAngleStart = %g\n", prefix, atts->GetPoloidalAngleStart());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%spoloidalAngleStop = %g\n", prefix, atts->GetPoloidalAngleStop());
+    snprintf(tmpStr, 1000, "%spoloidalAngleStop = %g\n", prefix, atts->GetPoloidalAngleStop());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%spoloialAngle = %g\n", prefix, atts->GetPoloialAngle());
+    snprintf(tmpStr, 1000, "%spoloialAngle = %g\n", prefix, atts->GetPoloialAngle());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%spoloialRTilt = %g\n", prefix, atts->GetPoloialRTilt());
+    snprintf(tmpStr, 1000, "%spoloialRTilt = %g\n", prefix, atts->GetPoloialRTilt());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%spoloialZTilt = %g\n", prefix, atts->GetPoloialZTilt());
+    snprintf(tmpStr, 1000, "%spoloialZTilt = %g\n", prefix, atts->GetPoloialZTilt());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%storoidalAngle = %g\n", prefix, atts->GetToroidalAngle());
+    snprintf(tmpStr, 1000, "%storoidalAngle = %g\n", prefix, atts->GetToroidalAngle());
     str += tmpStr;
     if(atts->GetFlipToroidalAngle())
-        SNPRINTF(tmpStr, 1000, "%sflipToroidalAngle = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sflipToroidalAngle = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sflipToroidalAngle = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sflipToroidalAngle = 0\n", prefix);
     str += tmpStr;
     const char *viewGeometry_names = "Points, Lines, Surfaces";
     switch (atts->GetViewGeometry())
     {
       case LineSamplerAttributes::Points:
-          SNPRINTF(tmpStr, 1000, "%sviewGeometry = %sPoints  # %s\n", prefix, prefix, viewGeometry_names);
+          snprintf(tmpStr, 1000, "%sviewGeometry = %sPoints  # %s\n", prefix, prefix, viewGeometry_names);
           str += tmpStr;
           break;
       case LineSamplerAttributes::Lines:
-          SNPRINTF(tmpStr, 1000, "%sviewGeometry = %sLines  # %s\n", prefix, prefix, viewGeometry_names);
+          snprintf(tmpStr, 1000, "%sviewGeometry = %sLines  # %s\n", prefix, prefix, viewGeometry_names);
           str += tmpStr;
           break;
       case LineSamplerAttributes::Surfaces:
-          SNPRINTF(tmpStr, 1000, "%sviewGeometry = %sSurfaces  # %s\n", prefix, prefix, viewGeometry_names);
+          snprintf(tmpStr, 1000, "%sviewGeometry = %sSurfaces  # %s\n", prefix, prefix, viewGeometry_names);
           str += tmpStr;
           break;
       default:
@@ -212,15 +211,15 @@ PyLineSamplerAttributes_ToString(const LineSamplerAttributes *atts, const char *
     switch (atts->GetViewDimension())
     {
       case LineSamplerAttributes::One:
-          SNPRINTF(tmpStr, 1000, "%sviewDimension = %sOne  # %s\n", prefix, prefix, viewDimension_names);
+          snprintf(tmpStr, 1000, "%sviewDimension = %sOne  # %s\n", prefix, prefix, viewDimension_names);
           str += tmpStr;
           break;
       case LineSamplerAttributes::Two:
-          SNPRINTF(tmpStr, 1000, "%sviewDimension = %sTwo  # %s\n", prefix, prefix, viewDimension_names);
+          snprintf(tmpStr, 1000, "%sviewDimension = %sTwo  # %s\n", prefix, prefix, viewDimension_names);
           str += tmpStr;
           break;
       case LineSamplerAttributes::Three:
-          SNPRINTF(tmpStr, 1000, "%sviewDimension = %sThree  # %s\n", prefix, prefix, viewDimension_names);
+          snprintf(tmpStr, 1000, "%sviewDimension = %sThree  # %s\n", prefix, prefix, viewDimension_names);
           str += tmpStr;
           break;
       default:
@@ -228,29 +227,29 @@ PyLineSamplerAttributes_ToString(const LineSamplerAttributes *atts, const char *
     }
 
     if(atts->GetDonotApplyToAll())
-        SNPRINTF(tmpStr, 1000, "%sdonotApplyToAll = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sdonotApplyToAll = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sdonotApplyToAll = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sdonotApplyToAll = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sheightPlotScale = %g\n", prefix, atts->GetHeightPlotScale());
+    snprintf(tmpStr, 1000, "%sheightPlotScale = %g\n", prefix, atts->GetHeightPlotScale());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%schannelPlotOffset = %g\n", prefix, atts->GetChannelPlotOffset());
+    snprintf(tmpStr, 1000, "%schannelPlotOffset = %g\n", prefix, atts->GetChannelPlotOffset());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sarrayPlotOffset = %g\n", prefix, atts->GetArrayPlotOffset());
+    snprintf(tmpStr, 1000, "%sarrayPlotOffset = %g\n", prefix, atts->GetArrayPlotOffset());
     str += tmpStr;
     const char *displayTime_names = "Step, Time, Cycle";
     switch (atts->GetDisplayTime())
     {
       case LineSamplerAttributes::Step:
-          SNPRINTF(tmpStr, 1000, "%sdisplayTime = %sStep  # %s\n", prefix, prefix, displayTime_names);
+          snprintf(tmpStr, 1000, "%sdisplayTime = %sStep  # %s\n", prefix, prefix, displayTime_names);
           str += tmpStr;
           break;
       case LineSamplerAttributes::Time:
-          SNPRINTF(tmpStr, 1000, "%sdisplayTime = %sTime  # %s\n", prefix, prefix, displayTime_names);
+          snprintf(tmpStr, 1000, "%sdisplayTime = %sTime  # %s\n", prefix, prefix, displayTime_names);
           str += tmpStr;
           break;
       case LineSamplerAttributes::Cycle:
-          SNPRINTF(tmpStr, 1000, "%sdisplayTime = %sCycle  # %s\n", prefix, prefix, displayTime_names);
+          snprintf(tmpStr, 1000, "%sdisplayTime = %sCycle  # %s\n", prefix, prefix, displayTime_names);
           str += tmpStr;
           break;
       default:
@@ -261,61 +260,61 @@ PyLineSamplerAttributes_ToString(const LineSamplerAttributes *atts, const char *
     switch (atts->GetChannelGeometry())
     {
       case LineSamplerAttributes::Point:
-          SNPRINTF(tmpStr, 1000, "%schannelGeometry = %sPoint  # %s\n", prefix, prefix, channelGeometry_names);
+          snprintf(tmpStr, 1000, "%schannelGeometry = %sPoint  # %s\n", prefix, prefix, channelGeometry_names);
           str += tmpStr;
           break;
       case LineSamplerAttributes::Line:
-          SNPRINTF(tmpStr, 1000, "%schannelGeometry = %sLine  # %s\n", prefix, prefix, channelGeometry_names);
+          snprintf(tmpStr, 1000, "%schannelGeometry = %sLine  # %s\n", prefix, prefix, channelGeometry_names);
           str += tmpStr;
           break;
       case LineSamplerAttributes::Cylinder:
-          SNPRINTF(tmpStr, 1000, "%schannelGeometry = %sCylinder  # %s\n", prefix, prefix, channelGeometry_names);
+          snprintf(tmpStr, 1000, "%schannelGeometry = %sCylinder  # %s\n", prefix, prefix, channelGeometry_names);
           str += tmpStr;
           break;
       case LineSamplerAttributes::Cone:
-          SNPRINTF(tmpStr, 1000, "%schannelGeometry = %sCone  # %s\n", prefix, prefix, channelGeometry_names);
+          snprintf(tmpStr, 1000, "%schannelGeometry = %sCone  # %s\n", prefix, prefix, channelGeometry_names);
           str += tmpStr;
           break;
       default:
           break;
     }
 
-    SNPRINTF(tmpStr, 1000, "%sradius = %g\n", prefix, atts->GetRadius());
+    snprintf(tmpStr, 1000, "%sradius = %g\n", prefix, atts->GetRadius());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sdivergence = %g\n", prefix, atts->GetDivergence());
+    snprintf(tmpStr, 1000, "%sdivergence = %g\n", prefix, atts->GetDivergence());
     str += tmpStr;
     const char *channelProfile_names = "TopHat, Gaussian";
     switch (atts->GetChannelProfile())
     {
       case LineSamplerAttributes::TopHat:
-          SNPRINTF(tmpStr, 1000, "%schannelProfile = %sTopHat  # %s\n", prefix, prefix, channelProfile_names);
+          snprintf(tmpStr, 1000, "%schannelProfile = %sTopHat  # %s\n", prefix, prefix, channelProfile_names);
           str += tmpStr;
           break;
       case LineSamplerAttributes::Gaussian:
-          SNPRINTF(tmpStr, 1000, "%schannelProfile = %sGaussian  # %s\n", prefix, prefix, channelProfile_names);
+          snprintf(tmpStr, 1000, "%schannelProfile = %sGaussian  # %s\n", prefix, prefix, channelProfile_names);
           str += tmpStr;
           break;
       default:
           break;
     }
 
-    SNPRINTF(tmpStr, 1000, "%sstandardDeviation = %g\n", prefix, atts->GetStandardDeviation());
+    snprintf(tmpStr, 1000, "%sstandardDeviation = %g\n", prefix, atts->GetStandardDeviation());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%ssampleDistance = %g\n", prefix, atts->GetSampleDistance());
+    snprintf(tmpStr, 1000, "%ssampleDistance = %g\n", prefix, atts->GetSampleDistance());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%ssampleVolume = %g\n", prefix, atts->GetSampleVolume());
+    snprintf(tmpStr, 1000, "%ssampleVolume = %g\n", prefix, atts->GetSampleVolume());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%ssampleArc = %g\n", prefix, atts->GetSampleArc());
+    snprintf(tmpStr, 1000, "%ssampleArc = %g\n", prefix, atts->GetSampleArc());
     str += tmpStr;
     const char *channelIntegration_names = "NoChannelIntegration, IntegrateAlongChannel";
     switch (atts->GetChannelIntegration())
     {
       case LineSamplerAttributes::NoChannelIntegration:
-          SNPRINTF(tmpStr, 1000, "%schannelIntegration = %sNoChannelIntegration  # %s\n", prefix, prefix, channelIntegration_names);
+          snprintf(tmpStr, 1000, "%schannelIntegration = %sNoChannelIntegration  # %s\n", prefix, prefix, channelIntegration_names);
           str += tmpStr;
           break;
       case LineSamplerAttributes::IntegrateAlongChannel:
-          SNPRINTF(tmpStr, 1000, "%schannelIntegration = %sIntegrateAlongChannel  # %s\n", prefix, prefix, channelIntegration_names);
+          snprintf(tmpStr, 1000, "%schannelIntegration = %sIntegrateAlongChannel  # %s\n", prefix, prefix, channelIntegration_names);
           str += tmpStr;
           break;
       default:
@@ -326,15 +325,15 @@ PyLineSamplerAttributes_ToString(const LineSamplerAttributes *atts, const char *
     switch (atts->GetToroidalIntegration())
     {
       case LineSamplerAttributes::NoToroidalIntegration:
-          SNPRINTF(tmpStr, 1000, "%storoidalIntegration = %sNoToroidalIntegration  # %s\n", prefix, prefix, toroidalIntegration_names);
+          snprintf(tmpStr, 1000, "%storoidalIntegration = %sNoToroidalIntegration  # %s\n", prefix, prefix, toroidalIntegration_names);
           str += tmpStr;
           break;
       case LineSamplerAttributes::ToroidalTimeSample:
-          SNPRINTF(tmpStr, 1000, "%storoidalIntegration = %sToroidalTimeSample  # %s\n", prefix, prefix, toroidalIntegration_names);
+          snprintf(tmpStr, 1000, "%storoidalIntegration = %sToroidalTimeSample  # %s\n", prefix, prefix, toroidalIntegration_names);
           str += tmpStr;
           break;
       case LineSamplerAttributes::IntegrateToroidally:
-          SNPRINTF(tmpStr, 1000, "%storoidalIntegration = %sIntegrateToroidally  # %s\n", prefix, prefix, toroidalIntegration_names);
+          snprintf(tmpStr, 1000, "%storoidalIntegration = %sIntegrateToroidally  # %s\n", prefix, prefix, toroidalIntegration_names);
           str += tmpStr;
           break;
       default:
@@ -345,81 +344,81 @@ PyLineSamplerAttributes_ToString(const LineSamplerAttributes *atts, const char *
     switch (atts->GetToroidalAngleSampling())
     {
       case LineSamplerAttributes::ToroidalAngleAbsoluteSampling:
-          SNPRINTF(tmpStr, 1000, "%storoidalAngleSampling = %sToroidalAngleAbsoluteSampling  # %s\n", prefix, prefix, toroidalAngleSampling_names);
+          snprintf(tmpStr, 1000, "%storoidalAngleSampling = %sToroidalAngleAbsoluteSampling  # %s\n", prefix, prefix, toroidalAngleSampling_names);
           str += tmpStr;
           break;
       case LineSamplerAttributes::ToroidalAngleRelativeSampling:
-          SNPRINTF(tmpStr, 1000, "%storoidalAngleSampling = %sToroidalAngleRelativeSampling  # %s\n", prefix, prefix, toroidalAngleSampling_names);
+          snprintf(tmpStr, 1000, "%storoidalAngleSampling = %sToroidalAngleRelativeSampling  # %s\n", prefix, prefix, toroidalAngleSampling_names);
           str += tmpStr;
           break;
       default:
           break;
     }
 
-    SNPRINTF(tmpStr, 1000, "%storoidalAngleStart = %g\n", prefix, atts->GetToroidalAngleStart());
+    snprintf(tmpStr, 1000, "%storoidalAngleStart = %g\n", prefix, atts->GetToroidalAngleStart());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%storoidalAngleStop = %g\n", prefix, atts->GetToroidalAngleStop());
+    snprintf(tmpStr, 1000, "%storoidalAngleStop = %g\n", prefix, atts->GetToroidalAngleStop());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%storoidalAngleStride = %g\n", prefix, atts->GetToroidalAngleStride());
+    snprintf(tmpStr, 1000, "%storoidalAngleStride = %g\n", prefix, atts->GetToroidalAngleStride());
     str += tmpStr;
     const char *timeSampling_names = "CurrentTimeStep, MultipleTimeSteps";
     switch (atts->GetTimeSampling())
     {
       case LineSamplerAttributes::CurrentTimeStep:
-          SNPRINTF(tmpStr, 1000, "%stimeSampling = %sCurrentTimeStep  # %s\n", prefix, prefix, timeSampling_names);
+          snprintf(tmpStr, 1000, "%stimeSampling = %sCurrentTimeStep  # %s\n", prefix, prefix, timeSampling_names);
           str += tmpStr;
           break;
       case LineSamplerAttributes::MultipleTimeSteps:
-          SNPRINTF(tmpStr, 1000, "%stimeSampling = %sMultipleTimeSteps  # %s\n", prefix, prefix, timeSampling_names);
+          snprintf(tmpStr, 1000, "%stimeSampling = %sMultipleTimeSteps  # %s\n", prefix, prefix, timeSampling_names);
           str += tmpStr;
           break;
       default:
           break;
     }
 
-    SNPRINTF(tmpStr, 1000, "%stimeStepStart = %d\n", prefix, atts->GetTimeStepStart());
+    snprintf(tmpStr, 1000, "%stimeStepStart = %d\n", prefix, atts->GetTimeStepStart());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%stimeStepStop = %d\n", prefix, atts->GetTimeStepStop());
+    snprintf(tmpStr, 1000, "%stimeStepStop = %d\n", prefix, atts->GetTimeStepStop());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%stimeStepStride = %d\n", prefix, atts->GetTimeStepStride());
+    snprintf(tmpStr, 1000, "%stimeStepStride = %d\n", prefix, atts->GetTimeStepStride());
     str += tmpStr;
     {   const doubleVector &channelList = atts->GetChannelList();
-        SNPRINTF(tmpStr, 1000, "%schannelList = (", prefix);
+        snprintf(tmpStr, 1000, "%schannelList = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < channelList.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", channelList[i]);
+            snprintf(tmpStr, 1000, "%g", channelList[i]);
             str += tmpStr;
             if(i < channelList.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const doubleVector &wallList = atts->GetWallList();
-        SNPRINTF(tmpStr, 1000, "%swallList = (", prefix);
+        snprintf(tmpStr, 1000, "%swallList = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < wallList.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", wallList[i]);
+            snprintf(tmpStr, 1000, "%g", wallList[i]);
             str += tmpStr;
             if(i < wallList.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
-    SNPRINTF(tmpStr, 1000, "%snChannelListArrays = %d\n", prefix, atts->GetNChannelListArrays());
+    snprintf(tmpStr, 1000, "%snChannelListArrays = %d\n", prefix, atts->GetNChannelListArrays());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%schannelListToroidalArrayAngle = %g\n", prefix, atts->GetChannelListToroidalArrayAngle());
+    snprintf(tmpStr, 1000, "%schannelListToroidalArrayAngle = %g\n", prefix, atts->GetChannelListToroidalArrayAngle());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%schannelListToroidalAngle = %g\n", prefix, atts->GetChannelListToroidalAngle());
+    snprintf(tmpStr, 1000, "%schannelListToroidalAngle = %g\n", prefix, atts->GetChannelListToroidalAngle());
     str += tmpStr;
     return str;
 }

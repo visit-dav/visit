@@ -157,10 +157,10 @@ avtSurfaceNormalFilter::GetCustomExpressions(std::vector<Expression> &elist)
 {
     Expression exp;
     char fullname[1024];
-    SNPRINTF(fullname, 1024, "operators/SurfaceNormal/%s", varname.c_str());
+    snprintf(fullname, 1024, "operators/SurfaceNormal/%s", varname.c_str());
     exp.SetName(fullname);
     char defn[1024];
-    SNPRINTF(defn, 1024, "%s_surface_normal(%s)", 
+    snprintf(defn, 1024, "%s_surface_normal(%s)", 
                  (atts.GetCentering() == SurfaceNormalAttributes::Point ? "point" : "cell"),
                  varname.c_str());
     exp.SetDefinition(defn);
@@ -185,7 +185,7 @@ void
 avtSurfaceNormalFilter::GetVariablesToEvaluate(std::vector<std::string> &list)
 {
     char fullname[1024];
-    SNPRINTF(fullname, 1024, "operators/SurfaceNormal/%s", varname.c_str());
+    snprintf(fullname, 1024, "operators/SurfaceNormal/%s", varname.c_str());
     list.push_back(fullname);
 }
 

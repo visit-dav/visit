@@ -219,7 +219,7 @@ avtResamplePluginFilter::UpdateDataObjectInfoCB(avtDataObject_p &input,
     const ResampleAttributes &rs = ((const avtResamplePluginFilter *)This)->atts;
 
     char params[200];
-    SNPRINTF(params, 200, "nx=%d ny=%d nz=%d", 
+    snprintf(params, 200, "nx=%d ny=%d nz=%d", 
              rs.GetSamplesX(), rs.GetSamplesY(), rs.GetSamplesZ());
     outAtts.AddFilterMetaData("Resample", params);
 }

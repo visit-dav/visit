@@ -5,7 +5,6 @@
 #include <PyInverseGhostZoneAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyInverseGhostZoneAttributes
@@ -43,39 +42,39 @@ PyInverseGhostZoneAttributes_ToString(const InverseGhostZoneAttributes *atts, co
     char tmpStr[1000];
 
     if(atts->GetRequestGhostZones())
-        SNPRINTF(tmpStr, 1000, "%srequestGhostZones = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%srequestGhostZones = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%srequestGhostZones = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%srequestGhostZones = 0\n", prefix);
     str += tmpStr;
     if(atts->GetShowDuplicated())
-        SNPRINTF(tmpStr, 1000, "%sshowDuplicated = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sshowDuplicated = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sshowDuplicated = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sshowDuplicated = 0\n", prefix);
     str += tmpStr;
     if(atts->GetShowEnhancedConnectivity())
-        SNPRINTF(tmpStr, 1000, "%sshowEnhancedConnectivity = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sshowEnhancedConnectivity = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sshowEnhancedConnectivity = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sshowEnhancedConnectivity = 0\n", prefix);
     str += tmpStr;
     if(atts->GetShowReducedConnectivity())
-        SNPRINTF(tmpStr, 1000, "%sshowReducedConnectivity = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sshowReducedConnectivity = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sshowReducedConnectivity = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sshowReducedConnectivity = 0\n", prefix);
     str += tmpStr;
     if(atts->GetShowAMRRefined())
-        SNPRINTF(tmpStr, 1000, "%sshowAMRRefined = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sshowAMRRefined = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sshowAMRRefined = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sshowAMRRefined = 0\n", prefix);
     str += tmpStr;
     if(atts->GetShowExterior())
-        SNPRINTF(tmpStr, 1000, "%sshowExterior = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sshowExterior = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sshowExterior = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sshowExterior = 0\n", prefix);
     str += tmpStr;
     if(atts->GetShowNotApplicable())
-        SNPRINTF(tmpStr, 1000, "%sshowNotApplicable = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sshowNotApplicable = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sshowNotApplicable = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sshowNotApplicable = 0\n", prefix);
     str += tmpStr;
     return str;
 }

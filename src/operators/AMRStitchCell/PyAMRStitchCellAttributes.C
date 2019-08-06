@@ -5,7 +5,6 @@
 #include <PyAMRStitchCellAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyAMRStitchCellAttributes
@@ -46,15 +45,15 @@ PyAMRStitchCellAttributes_ToString(const AMRStitchCellAttributes *atts, const ch
     switch (atts->GetCreateCellsOfType())
     {
       case AMRStitchCellAttributes::DualGridAndStitchCells:
-          SNPRINTF(tmpStr, 1000, "%sCreateCellsOfType = %sDualGridAndStitchCells  # %s\n", prefix, prefix, CreateCellsOfType_names);
+          snprintf(tmpStr, 1000, "%sCreateCellsOfType = %sDualGridAndStitchCells  # %s\n", prefix, prefix, CreateCellsOfType_names);
           str += tmpStr;
           break;
       case AMRStitchCellAttributes::DualGrid:
-          SNPRINTF(tmpStr, 1000, "%sCreateCellsOfType = %sDualGrid  # %s\n", prefix, prefix, CreateCellsOfType_names);
+          snprintf(tmpStr, 1000, "%sCreateCellsOfType = %sDualGrid  # %s\n", prefix, prefix, CreateCellsOfType_names);
           str += tmpStr;
           break;
       case AMRStitchCellAttributes::StitchCells:
-          SNPRINTF(tmpStr, 1000, "%sCreateCellsOfType = %sStitchCells  # %s\n", prefix, prefix, CreateCellsOfType_names);
+          snprintf(tmpStr, 1000, "%sCreateCellsOfType = %sStitchCells  # %s\n", prefix, prefix, CreateCellsOfType_names);
           str += tmpStr;
           break;
       default:

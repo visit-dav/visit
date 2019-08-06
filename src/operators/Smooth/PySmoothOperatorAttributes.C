@@ -5,7 +5,6 @@
 #include <PySmoothOperatorAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PySmoothOperatorAttributes
@@ -42,25 +41,25 @@ PySmoothOperatorAttributes_ToString(const SmoothOperatorAttributes *atts, const 
     std::string str;
     char tmpStr[1000];
 
-    SNPRINTF(tmpStr, 1000, "%snumIterations = %d\n", prefix, atts->GetNumIterations());
+    snprintf(tmpStr, 1000, "%snumIterations = %d\n", prefix, atts->GetNumIterations());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%srelaxationFactor = %g\n", prefix, atts->GetRelaxationFactor());
+    snprintf(tmpStr, 1000, "%srelaxationFactor = %g\n", prefix, atts->GetRelaxationFactor());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sconvergence = %g\n", prefix, atts->GetConvergence());
+    snprintf(tmpStr, 1000, "%sconvergence = %g\n", prefix, atts->GetConvergence());
     str += tmpStr;
     if(atts->GetMaintainFeatures())
-        SNPRINTF(tmpStr, 1000, "%smaintainFeatures = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%smaintainFeatures = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%smaintainFeatures = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%smaintainFeatures = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sfeatureAngle = %g\n", prefix, atts->GetFeatureAngle());
+    snprintf(tmpStr, 1000, "%sfeatureAngle = %g\n", prefix, atts->GetFeatureAngle());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sedgeAngle = %g\n", prefix, atts->GetEdgeAngle());
+    snprintf(tmpStr, 1000, "%sedgeAngle = %g\n", prefix, atts->GetEdgeAngle());
     str += tmpStr;
     if(atts->GetSmoothBoundaries())
-        SNPRINTF(tmpStr, 1000, "%ssmoothBoundaries = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%ssmoothBoundaries = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%ssmoothBoundaries = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%ssmoothBoundaries = 0\n", prefix);
     str += tmpStr;
     return str;
 }

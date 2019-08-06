@@ -175,7 +175,7 @@ avtThresholdPluginFilter::UpdateDataObjectInfoCB(avtDataObject_p &input,
     {
         if(i < t.GetLowerBounds().size())
         {
-            SNPRINTF(tmp, 200, "%lg < ", t.GetLowerBounds()[i]);
+            snprintf(tmp, 200, "%lg < ", t.GetLowerBounds()[i]);
             params += tmp;
         }
 
@@ -189,7 +189,7 @@ avtThresholdPluginFilter::UpdateDataObjectInfoCB(avtDataObject_p &input,
 
         if(i < t.GetUpperBounds().size())
         {
-            SNPRINTF(tmp, 200, " < %lg", t.GetUpperBounds()[i]);
+            snprintf(tmp, 200, " < %lg", t.GetUpperBounds()[i]);
             params += tmp;
         }
 

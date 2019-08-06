@@ -5,7 +5,6 @@
 #include <PyDisplaceAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyDisplaceAttributes
@@ -42,9 +41,9 @@ PyDisplaceAttributes_ToString(const DisplaceAttributes *atts, const char *prefix
     std::string str;
     char tmpStr[1000];
 
-    SNPRINTF(tmpStr, 1000, "%sfactor = %g\n", prefix, atts->GetFactor());
+    snprintf(tmpStr, 1000, "%sfactor = %g\n", prefix, atts->GetFactor());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%svariable = \"%s\"\n", prefix, atts->GetVariable().c_str());
+    snprintf(tmpStr, 1000, "%svariable = \"%s\"\n", prefix, atts->GetVariable().c_str());
     str += tmpStr;
     return str;
 }

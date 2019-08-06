@@ -5,7 +5,6 @@
 #include <PyDataBinningAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyDataBinningAttributes
@@ -46,15 +45,15 @@ PyDataBinningAttributes_ToString(const DataBinningAttributes *atts, const char *
     switch (atts->GetNumDimensions())
     {
       case DataBinningAttributes::One:
-          SNPRINTF(tmpStr, 1000, "%snumDimensions = %sOne  # %s\n", prefix, prefix, numDimensions_names);
+          snprintf(tmpStr, 1000, "%snumDimensions = %sOne  # %s\n", prefix, prefix, numDimensions_names);
           str += tmpStr;
           break;
       case DataBinningAttributes::Two:
-          SNPRINTF(tmpStr, 1000, "%snumDimensions = %sTwo  # %s\n", prefix, prefix, numDimensions_names);
+          snprintf(tmpStr, 1000, "%snumDimensions = %sTwo  # %s\n", prefix, prefix, numDimensions_names);
           str += tmpStr;
           break;
       case DataBinningAttributes::Three:
-          SNPRINTF(tmpStr, 1000, "%snumDimensions = %sThree  # %s\n", prefix, prefix, numDimensions_names);
+          snprintf(tmpStr, 1000, "%snumDimensions = %sThree  # %s\n", prefix, prefix, numDimensions_names);
           str += tmpStr;
           break;
       default:
@@ -65,119 +64,119 @@ PyDataBinningAttributes_ToString(const DataBinningAttributes *atts, const char *
     switch (atts->GetDim1BinBasedOn())
     {
       case DataBinningAttributes::X:
-          SNPRINTF(tmpStr, 1000, "%sdim1BinBasedOn = %sX  # %s\n", prefix, prefix, dim1BinBasedOn_names);
+          snprintf(tmpStr, 1000, "%sdim1BinBasedOn = %sX  # %s\n", prefix, prefix, dim1BinBasedOn_names);
           str += tmpStr;
           break;
       case DataBinningAttributes::Y:
-          SNPRINTF(tmpStr, 1000, "%sdim1BinBasedOn = %sY  # %s\n", prefix, prefix, dim1BinBasedOn_names);
+          snprintf(tmpStr, 1000, "%sdim1BinBasedOn = %sY  # %s\n", prefix, prefix, dim1BinBasedOn_names);
           str += tmpStr;
           break;
       case DataBinningAttributes::Z:
-          SNPRINTF(tmpStr, 1000, "%sdim1BinBasedOn = %sZ  # %s\n", prefix, prefix, dim1BinBasedOn_names);
+          snprintf(tmpStr, 1000, "%sdim1BinBasedOn = %sZ  # %s\n", prefix, prefix, dim1BinBasedOn_names);
           str += tmpStr;
           break;
       case DataBinningAttributes::Variable:
-          SNPRINTF(tmpStr, 1000, "%sdim1BinBasedOn = %sVariable  # %s\n", prefix, prefix, dim1BinBasedOn_names);
+          snprintf(tmpStr, 1000, "%sdim1BinBasedOn = %sVariable  # %s\n", prefix, prefix, dim1BinBasedOn_names);
           str += tmpStr;
           break;
       default:
           break;
     }
 
-    SNPRINTF(tmpStr, 1000, "%sdim1Var = \"%s\"\n", prefix, atts->GetDim1Var().c_str());
+    snprintf(tmpStr, 1000, "%sdim1Var = \"%s\"\n", prefix, atts->GetDim1Var().c_str());
     str += tmpStr;
     if(atts->GetDim1SpecifyRange())
-        SNPRINTF(tmpStr, 1000, "%sdim1SpecifyRange = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sdim1SpecifyRange = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sdim1SpecifyRange = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sdim1SpecifyRange = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sdim1MinRange = %g\n", prefix, atts->GetDim1MinRange());
+    snprintf(tmpStr, 1000, "%sdim1MinRange = %g\n", prefix, atts->GetDim1MinRange());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sdim1MaxRange = %g\n", prefix, atts->GetDim1MaxRange());
+    snprintf(tmpStr, 1000, "%sdim1MaxRange = %g\n", prefix, atts->GetDim1MaxRange());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sdim1NumBins = %d\n", prefix, atts->GetDim1NumBins());
+    snprintf(tmpStr, 1000, "%sdim1NumBins = %d\n", prefix, atts->GetDim1NumBins());
     str += tmpStr;
     const char *dim2BinBasedOn_names = "X, Y, Z, Variable";
     switch (atts->GetDim2BinBasedOn())
     {
       case DataBinningAttributes::X:
-          SNPRINTF(tmpStr, 1000, "%sdim2BinBasedOn = %sX  # %s\n", prefix, prefix, dim2BinBasedOn_names);
+          snprintf(tmpStr, 1000, "%sdim2BinBasedOn = %sX  # %s\n", prefix, prefix, dim2BinBasedOn_names);
           str += tmpStr;
           break;
       case DataBinningAttributes::Y:
-          SNPRINTF(tmpStr, 1000, "%sdim2BinBasedOn = %sY  # %s\n", prefix, prefix, dim2BinBasedOn_names);
+          snprintf(tmpStr, 1000, "%sdim2BinBasedOn = %sY  # %s\n", prefix, prefix, dim2BinBasedOn_names);
           str += tmpStr;
           break;
       case DataBinningAttributes::Z:
-          SNPRINTF(tmpStr, 1000, "%sdim2BinBasedOn = %sZ  # %s\n", prefix, prefix, dim2BinBasedOn_names);
+          snprintf(tmpStr, 1000, "%sdim2BinBasedOn = %sZ  # %s\n", prefix, prefix, dim2BinBasedOn_names);
           str += tmpStr;
           break;
       case DataBinningAttributes::Variable:
-          SNPRINTF(tmpStr, 1000, "%sdim2BinBasedOn = %sVariable  # %s\n", prefix, prefix, dim2BinBasedOn_names);
+          snprintf(tmpStr, 1000, "%sdim2BinBasedOn = %sVariable  # %s\n", prefix, prefix, dim2BinBasedOn_names);
           str += tmpStr;
           break;
       default:
           break;
     }
 
-    SNPRINTF(tmpStr, 1000, "%sdim2Var = \"%s\"\n", prefix, atts->GetDim2Var().c_str());
+    snprintf(tmpStr, 1000, "%sdim2Var = \"%s\"\n", prefix, atts->GetDim2Var().c_str());
     str += tmpStr;
     if(atts->GetDim2SpecifyRange())
-        SNPRINTF(tmpStr, 1000, "%sdim2SpecifyRange = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sdim2SpecifyRange = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sdim2SpecifyRange = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sdim2SpecifyRange = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sdim2MinRange = %g\n", prefix, atts->GetDim2MinRange());
+    snprintf(tmpStr, 1000, "%sdim2MinRange = %g\n", prefix, atts->GetDim2MinRange());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sdim2MaxRange = %g\n", prefix, atts->GetDim2MaxRange());
+    snprintf(tmpStr, 1000, "%sdim2MaxRange = %g\n", prefix, atts->GetDim2MaxRange());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sdim2NumBins = %d\n", prefix, atts->GetDim2NumBins());
+    snprintf(tmpStr, 1000, "%sdim2NumBins = %d\n", prefix, atts->GetDim2NumBins());
     str += tmpStr;
     const char *dim3BinBasedOn_names = "X, Y, Z, Variable";
     switch (atts->GetDim3BinBasedOn())
     {
       case DataBinningAttributes::X:
-          SNPRINTF(tmpStr, 1000, "%sdim3BinBasedOn = %sX  # %s\n", prefix, prefix, dim3BinBasedOn_names);
+          snprintf(tmpStr, 1000, "%sdim3BinBasedOn = %sX  # %s\n", prefix, prefix, dim3BinBasedOn_names);
           str += tmpStr;
           break;
       case DataBinningAttributes::Y:
-          SNPRINTF(tmpStr, 1000, "%sdim3BinBasedOn = %sY  # %s\n", prefix, prefix, dim3BinBasedOn_names);
+          snprintf(tmpStr, 1000, "%sdim3BinBasedOn = %sY  # %s\n", prefix, prefix, dim3BinBasedOn_names);
           str += tmpStr;
           break;
       case DataBinningAttributes::Z:
-          SNPRINTF(tmpStr, 1000, "%sdim3BinBasedOn = %sZ  # %s\n", prefix, prefix, dim3BinBasedOn_names);
+          snprintf(tmpStr, 1000, "%sdim3BinBasedOn = %sZ  # %s\n", prefix, prefix, dim3BinBasedOn_names);
           str += tmpStr;
           break;
       case DataBinningAttributes::Variable:
-          SNPRINTF(tmpStr, 1000, "%sdim3BinBasedOn = %sVariable  # %s\n", prefix, prefix, dim3BinBasedOn_names);
+          snprintf(tmpStr, 1000, "%sdim3BinBasedOn = %sVariable  # %s\n", prefix, prefix, dim3BinBasedOn_names);
           str += tmpStr;
           break;
       default:
           break;
     }
 
-    SNPRINTF(tmpStr, 1000, "%sdim3Var = \"%s\"\n", prefix, atts->GetDim3Var().c_str());
+    snprintf(tmpStr, 1000, "%sdim3Var = \"%s\"\n", prefix, atts->GetDim3Var().c_str());
     str += tmpStr;
     if(atts->GetDim3SpecifyRange())
-        SNPRINTF(tmpStr, 1000, "%sdim3SpecifyRange = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sdim3SpecifyRange = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sdim3SpecifyRange = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sdim3SpecifyRange = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sdim3MinRange = %g\n", prefix, atts->GetDim3MinRange());
+    snprintf(tmpStr, 1000, "%sdim3MinRange = %g\n", prefix, atts->GetDim3MinRange());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sdim3MaxRange = %g\n", prefix, atts->GetDim3MaxRange());
+    snprintf(tmpStr, 1000, "%sdim3MaxRange = %g\n", prefix, atts->GetDim3MaxRange());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sdim3NumBins = %d\n", prefix, atts->GetDim3NumBins());
+    snprintf(tmpStr, 1000, "%sdim3NumBins = %d\n", prefix, atts->GetDim3NumBins());
     str += tmpStr;
     const char *outOfBoundsBehavior_names = "Clamp, Discard";
     switch (atts->GetOutOfBoundsBehavior())
     {
       case DataBinningAttributes::Clamp:
-          SNPRINTF(tmpStr, 1000, "%soutOfBoundsBehavior = %sClamp  # %s\n", prefix, prefix, outOfBoundsBehavior_names);
+          snprintf(tmpStr, 1000, "%soutOfBoundsBehavior = %sClamp  # %s\n", prefix, prefix, outOfBoundsBehavior_names);
           str += tmpStr;
           break;
       case DataBinningAttributes::Discard:
-          SNPRINTF(tmpStr, 1000, "%soutOfBoundsBehavior = %sDiscard  # %s\n", prefix, prefix, outOfBoundsBehavior_names);
+          snprintf(tmpStr, 1000, "%soutOfBoundsBehavior = %sDiscard  # %s\n", prefix, prefix, outOfBoundsBehavior_names);
           str += tmpStr;
           break;
       default:
@@ -189,58 +188,58 @@ PyDataBinningAttributes_ToString(const DataBinningAttributes *atts, const char *
     switch (atts->GetReductionOperator())
     {
       case DataBinningAttributes::Average:
-          SNPRINTF(tmpStr, 1000, "%sreductionOperator = %sAverage  # %s\n", prefix, prefix, reductionOperator_names);
+          snprintf(tmpStr, 1000, "%sreductionOperator = %sAverage  # %s\n", prefix, prefix, reductionOperator_names);
           str += tmpStr;
           break;
       case DataBinningAttributes::Minimum:
-          SNPRINTF(tmpStr, 1000, "%sreductionOperator = %sMinimum  # %s\n", prefix, prefix, reductionOperator_names);
+          snprintf(tmpStr, 1000, "%sreductionOperator = %sMinimum  # %s\n", prefix, prefix, reductionOperator_names);
           str += tmpStr;
           break;
       case DataBinningAttributes::Maximum:
-          SNPRINTF(tmpStr, 1000, "%sreductionOperator = %sMaximum  # %s\n", prefix, prefix, reductionOperator_names);
+          snprintf(tmpStr, 1000, "%sreductionOperator = %sMaximum  # %s\n", prefix, prefix, reductionOperator_names);
           str += tmpStr;
           break;
       case DataBinningAttributes::StandardDeviation:
-          SNPRINTF(tmpStr, 1000, "%sreductionOperator = %sStandardDeviation  # %s\n", prefix, prefix, reductionOperator_names);
+          snprintf(tmpStr, 1000, "%sreductionOperator = %sStandardDeviation  # %s\n", prefix, prefix, reductionOperator_names);
           str += tmpStr;
           break;
       case DataBinningAttributes::Variance:
-          SNPRINTF(tmpStr, 1000, "%sreductionOperator = %sVariance  # %s\n", prefix, prefix, reductionOperator_names);
+          snprintf(tmpStr, 1000, "%sreductionOperator = %sVariance  # %s\n", prefix, prefix, reductionOperator_names);
           str += tmpStr;
           break;
       case DataBinningAttributes::Sum:
-          SNPRINTF(tmpStr, 1000, "%sreductionOperator = %sSum  # %s\n", prefix, prefix, reductionOperator_names);
+          snprintf(tmpStr, 1000, "%sreductionOperator = %sSum  # %s\n", prefix, prefix, reductionOperator_names);
           str += tmpStr;
           break;
       case DataBinningAttributes::Count:
-          SNPRINTF(tmpStr, 1000, "%sreductionOperator = %sCount  # %s\n", prefix, prefix, reductionOperator_names);
+          snprintf(tmpStr, 1000, "%sreductionOperator = %sCount  # %s\n", prefix, prefix, reductionOperator_names);
           str += tmpStr;
           break;
       case DataBinningAttributes::RMS:
-          SNPRINTF(tmpStr, 1000, "%sreductionOperator = %sRMS  # %s\n", prefix, prefix, reductionOperator_names);
+          snprintf(tmpStr, 1000, "%sreductionOperator = %sRMS  # %s\n", prefix, prefix, reductionOperator_names);
           str += tmpStr;
           break;
       case DataBinningAttributes::PDF:
-          SNPRINTF(tmpStr, 1000, "%sreductionOperator = %sPDF  # %s\n", prefix, prefix, reductionOperator_names);
+          snprintf(tmpStr, 1000, "%sreductionOperator = %sPDF  # %s\n", prefix, prefix, reductionOperator_names);
           str += tmpStr;
           break;
       default:
           break;
     }
 
-    SNPRINTF(tmpStr, 1000, "%svarForReduction = \"%s\"\n", prefix, atts->GetVarForReduction().c_str());
+    snprintf(tmpStr, 1000, "%svarForReduction = \"%s\"\n", prefix, atts->GetVarForReduction().c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%semptyVal = %g\n", prefix, atts->GetEmptyVal());
+    snprintf(tmpStr, 1000, "%semptyVal = %g\n", prefix, atts->GetEmptyVal());
     str += tmpStr;
     const char *outputType_names = "OutputOnBins, OutputOnInputMesh";
     switch (atts->GetOutputType())
     {
       case DataBinningAttributes::OutputOnBins:
-          SNPRINTF(tmpStr, 1000, "%soutputType = %sOutputOnBins  # %s\n", prefix, prefix, outputType_names);
+          snprintf(tmpStr, 1000, "%soutputType = %sOutputOnBins  # %s\n", prefix, prefix, outputType_names);
           str += tmpStr;
           break;
       case DataBinningAttributes::OutputOnInputMesh:
-          SNPRINTF(tmpStr, 1000, "%soutputType = %sOutputOnInputMesh  # %s\n", prefix, prefix, outputType_names);
+          snprintf(tmpStr, 1000, "%soutputType = %sOutputOnInputMesh  # %s\n", prefix, prefix, outputType_names);
           str += tmpStr;
           break;
       default:
@@ -248,9 +247,9 @@ PyDataBinningAttributes_ToString(const DataBinningAttributes *atts, const char *
     }
 
     if(atts->GetRemoveEmptyValFromCurve())
-        SNPRINTF(tmpStr, 1000, "%sremoveEmptyValFromCurve = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sremoveEmptyValFromCurve = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sremoveEmptyValFromCurve = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sremoveEmptyValFromCurve = 0\n", prefix);
     str += tmpStr;
     return str;
 }

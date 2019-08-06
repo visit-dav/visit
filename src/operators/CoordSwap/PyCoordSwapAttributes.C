@@ -5,7 +5,6 @@
 #include <PyCoordSwapAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyCoordSwapAttributes
@@ -46,15 +45,15 @@ PyCoordSwapAttributes_ToString(const CoordSwapAttributes *atts, const char *pref
     switch (atts->GetNewCoord1())
     {
       case CoordSwapAttributes::Coord1:
-          SNPRINTF(tmpStr, 1000, "%snewCoord1 = %sCoord1  # %s\n", prefix, prefix, newCoord1_names);
+          snprintf(tmpStr, 1000, "%snewCoord1 = %sCoord1  # %s\n", prefix, prefix, newCoord1_names);
           str += tmpStr;
           break;
       case CoordSwapAttributes::Coord2:
-          SNPRINTF(tmpStr, 1000, "%snewCoord1 = %sCoord2  # %s\n", prefix, prefix, newCoord1_names);
+          snprintf(tmpStr, 1000, "%snewCoord1 = %sCoord2  # %s\n", prefix, prefix, newCoord1_names);
           str += tmpStr;
           break;
       case CoordSwapAttributes::Coord3:
-          SNPRINTF(tmpStr, 1000, "%snewCoord1 = %sCoord3  # %s\n", prefix, prefix, newCoord1_names);
+          snprintf(tmpStr, 1000, "%snewCoord1 = %sCoord3  # %s\n", prefix, prefix, newCoord1_names);
           str += tmpStr;
           break;
       default:
@@ -65,15 +64,15 @@ PyCoordSwapAttributes_ToString(const CoordSwapAttributes *atts, const char *pref
     switch (atts->GetNewCoord2())
     {
       case CoordSwapAttributes::Coord1:
-          SNPRINTF(tmpStr, 1000, "%snewCoord2 = %sCoord1  # %s\n", prefix, prefix, newCoord2_names);
+          snprintf(tmpStr, 1000, "%snewCoord2 = %sCoord1  # %s\n", prefix, prefix, newCoord2_names);
           str += tmpStr;
           break;
       case CoordSwapAttributes::Coord2:
-          SNPRINTF(tmpStr, 1000, "%snewCoord2 = %sCoord2  # %s\n", prefix, prefix, newCoord2_names);
+          snprintf(tmpStr, 1000, "%snewCoord2 = %sCoord2  # %s\n", prefix, prefix, newCoord2_names);
           str += tmpStr;
           break;
       case CoordSwapAttributes::Coord3:
-          SNPRINTF(tmpStr, 1000, "%snewCoord2 = %sCoord3  # %s\n", prefix, prefix, newCoord2_names);
+          snprintf(tmpStr, 1000, "%snewCoord2 = %sCoord3  # %s\n", prefix, prefix, newCoord2_names);
           str += tmpStr;
           break;
       default:
@@ -84,15 +83,15 @@ PyCoordSwapAttributes_ToString(const CoordSwapAttributes *atts, const char *pref
     switch (atts->GetNewCoord3())
     {
       case CoordSwapAttributes::Coord1:
-          SNPRINTF(tmpStr, 1000, "%snewCoord3 = %sCoord1  # %s\n", prefix, prefix, newCoord3_names);
+          snprintf(tmpStr, 1000, "%snewCoord3 = %sCoord1  # %s\n", prefix, prefix, newCoord3_names);
           str += tmpStr;
           break;
       case CoordSwapAttributes::Coord2:
-          SNPRINTF(tmpStr, 1000, "%snewCoord3 = %sCoord2  # %s\n", prefix, prefix, newCoord3_names);
+          snprintf(tmpStr, 1000, "%snewCoord3 = %sCoord2  # %s\n", prefix, prefix, newCoord3_names);
           str += tmpStr;
           break;
       case CoordSwapAttributes::Coord3:
-          SNPRINTF(tmpStr, 1000, "%snewCoord3 = %sCoord3  # %s\n", prefix, prefix, newCoord3_names);
+          snprintf(tmpStr, 1000, "%snewCoord3 = %sCoord3  # %s\n", prefix, prefix, newCoord3_names);
           str += tmpStr;
           break;
       default:

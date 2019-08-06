@@ -5,7 +5,6 @@
 #include <PySPHResampleAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PySPHResampleAttributes
@@ -42,32 +41,32 @@ PySPHResampleAttributes_ToString(const SPHResampleAttributes *atts, const char *
     std::string str;
     char tmpStr[1000];
 
-    SNPRINTF(tmpStr, 1000, "%sminX = %g\n", prefix, atts->GetMinX());
+    snprintf(tmpStr, 1000, "%sminX = %g\n", prefix, atts->GetMinX());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%smaxX = %g\n", prefix, atts->GetMaxX());
+    snprintf(tmpStr, 1000, "%smaxX = %g\n", prefix, atts->GetMaxX());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sxnum = %d\n", prefix, atts->GetXnum());
+    snprintf(tmpStr, 1000, "%sxnum = %d\n", prefix, atts->GetXnum());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sminY = %g\n", prefix, atts->GetMinY());
+    snprintf(tmpStr, 1000, "%sminY = %g\n", prefix, atts->GetMinY());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%smaxY = %g\n", prefix, atts->GetMaxY());
+    snprintf(tmpStr, 1000, "%smaxY = %g\n", prefix, atts->GetMaxY());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%synum = %d\n", prefix, atts->GetYnum());
+    snprintf(tmpStr, 1000, "%synum = %d\n", prefix, atts->GetYnum());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sminZ = %g\n", prefix, atts->GetMinZ());
+    snprintf(tmpStr, 1000, "%sminZ = %g\n", prefix, atts->GetMinZ());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%smaxZ = %g\n", prefix, atts->GetMaxZ());
+    snprintf(tmpStr, 1000, "%smaxZ = %g\n", prefix, atts->GetMaxZ());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sznum = %d\n", prefix, atts->GetZnum());
+    snprintf(tmpStr, 1000, "%sznum = %d\n", prefix, atts->GetZnum());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%stensorSupportVariable = \"%s\"\n", prefix, atts->GetTensorSupportVariable().c_str());
+    snprintf(tmpStr, 1000, "%stensorSupportVariable = \"%s\"\n", prefix, atts->GetTensorSupportVariable().c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sweightVariable = \"%s\"\n", prefix, atts->GetWeightVariable().c_str());
+    snprintf(tmpStr, 1000, "%sweightVariable = \"%s\"\n", prefix, atts->GetWeightVariable().c_str());
     str += tmpStr;
     if(atts->GetRK())
-        SNPRINTF(tmpStr, 1000, "%sRK = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sRK = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sRK = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sRK = 0\n", prefix);
     str += tmpStr;
     return str;
 }

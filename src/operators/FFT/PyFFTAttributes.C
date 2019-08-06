@@ -5,7 +5,6 @@
 #include <PyFFTAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyFFTAttributes
@@ -42,7 +41,7 @@ PyFFTAttributes_ToString(const FFTAttributes *atts, const char *prefix)
     std::string str;
     char tmpStr[1000];
 
-    SNPRINTF(tmpStr, 1000, "%sdummy = %d\n", prefix, atts->GetDummy());
+    snprintf(tmpStr, 1000, "%sdummy = %d\n", prefix, atts->GetDummy());
     str += tmpStr;
     return str;
 }

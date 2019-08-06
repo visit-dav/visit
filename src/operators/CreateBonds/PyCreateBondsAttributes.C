@@ -5,7 +5,6 @@
 #include <PyCreateBondsAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyCreateBondsAttributes
@@ -42,145 +41,145 @@ PyCreateBondsAttributes_ToString(const CreateBondsAttributes *atts, const char *
     std::string str;
     char tmpStr[1000];
 
-    SNPRINTF(tmpStr, 1000, "%selementVariable = \"%s\"\n", prefix, atts->GetElementVariable().c_str());
+    snprintf(tmpStr, 1000, "%selementVariable = \"%s\"\n", prefix, atts->GetElementVariable().c_str());
     str += tmpStr;
     {   const intVector &atomicNumber1 = atts->GetAtomicNumber1();
-        SNPRINTF(tmpStr, 1000, "%satomicNumber1 = (", prefix);
+        snprintf(tmpStr, 1000, "%satomicNumber1 = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < atomicNumber1.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%d", atomicNumber1[i]);
+            snprintf(tmpStr, 1000, "%d", atomicNumber1[i]);
             str += tmpStr;
             if(i < atomicNumber1.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const intVector &atomicNumber2 = atts->GetAtomicNumber2();
-        SNPRINTF(tmpStr, 1000, "%satomicNumber2 = (", prefix);
+        snprintf(tmpStr, 1000, "%satomicNumber2 = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < atomicNumber2.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%d", atomicNumber2[i]);
+            snprintf(tmpStr, 1000, "%d", atomicNumber2[i]);
             str += tmpStr;
             if(i < atomicNumber2.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const doubleVector &minDist = atts->GetMinDist();
-        SNPRINTF(tmpStr, 1000, "%sminDist = (", prefix);
+        snprintf(tmpStr, 1000, "%sminDist = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < minDist.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", minDist[i]);
+            snprintf(tmpStr, 1000, "%g", minDist[i]);
             str += tmpStr;
             if(i < minDist.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const doubleVector &maxDist = atts->GetMaxDist();
-        SNPRINTF(tmpStr, 1000, "%smaxDist = (", prefix);
+        snprintf(tmpStr, 1000, "%smaxDist = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < maxDist.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", maxDist[i]);
+            snprintf(tmpStr, 1000, "%g", maxDist[i]);
             str += tmpStr;
             if(i < maxDist.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
-    SNPRINTF(tmpStr, 1000, "%smaxBondsClamp = %d\n", prefix, atts->GetMaxBondsClamp());
+    snprintf(tmpStr, 1000, "%smaxBondsClamp = %d\n", prefix, atts->GetMaxBondsClamp());
     str += tmpStr;
     if(atts->GetAddPeriodicBonds())
-        SNPRINTF(tmpStr, 1000, "%saddPeriodicBonds = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%saddPeriodicBonds = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%saddPeriodicBonds = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%saddPeriodicBonds = 0\n", prefix);
     str += tmpStr;
     if(atts->GetUseUnitCellVectors())
-        SNPRINTF(tmpStr, 1000, "%suseUnitCellVectors = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%suseUnitCellVectors = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%suseUnitCellVectors = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%suseUnitCellVectors = 0\n", prefix);
     str += tmpStr;
     if(atts->GetPeriodicInX())
-        SNPRINTF(tmpStr, 1000, "%speriodicInX = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%speriodicInX = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%speriodicInX = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%speriodicInX = 0\n", prefix);
     str += tmpStr;
     if(atts->GetPeriodicInY())
-        SNPRINTF(tmpStr, 1000, "%speriodicInY = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%speriodicInY = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%speriodicInY = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%speriodicInY = 0\n", prefix);
     str += tmpStr;
     if(atts->GetPeriodicInZ())
-        SNPRINTF(tmpStr, 1000, "%speriodicInZ = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%speriodicInZ = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%speriodicInZ = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%speriodicInZ = 0\n", prefix);
     str += tmpStr;
     {   const double *xVector = atts->GetXVector();
-        SNPRINTF(tmpStr, 1000, "%sxVector = (", prefix);
+        snprintf(tmpStr, 1000, "%sxVector = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 3; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", xVector[i]);
+            snprintf(tmpStr, 1000, "%g", xVector[i]);
             str += tmpStr;
             if(i < 2)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const double *yVector = atts->GetYVector();
-        SNPRINTF(tmpStr, 1000, "%syVector = (", prefix);
+        snprintf(tmpStr, 1000, "%syVector = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 3; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", yVector[i]);
+            snprintf(tmpStr, 1000, "%g", yVector[i]);
             str += tmpStr;
             if(i < 2)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const double *zVector = atts->GetZVector();
-        SNPRINTF(tmpStr, 1000, "%szVector = (", prefix);
+        snprintf(tmpStr, 1000, "%szVector = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 3; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", zVector[i]);
+            snprintf(tmpStr, 1000, "%g", zVector[i]);
             str += tmpStr;
             if(i < 2)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     return str;

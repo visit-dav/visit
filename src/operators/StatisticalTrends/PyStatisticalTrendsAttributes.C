@@ -5,7 +5,6 @@
 #include <PyStatisticalTrendsAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyStatisticalTrendsAttributes
@@ -42,21 +41,21 @@ PyStatisticalTrendsAttributes_ToString(const StatisticalTrendsAttributes *atts, 
     std::string str;
     char tmpStr[1000];
 
-    SNPRINTF(tmpStr, 1000, "%sstartIndex = %d\n", prefix, atts->GetStartIndex());
+    snprintf(tmpStr, 1000, "%sstartIndex = %d\n", prefix, atts->GetStartIndex());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sstopIndex = %d\n", prefix, atts->GetStopIndex());
+    snprintf(tmpStr, 1000, "%sstopIndex = %d\n", prefix, atts->GetStopIndex());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sstride = %d\n", prefix, atts->GetStride());
+    snprintf(tmpStr, 1000, "%sstride = %d\n", prefix, atts->GetStride());
     str += tmpStr;
     const char *startTrendType_names = "Absolute, Relative";
     switch (atts->GetStartTrendType())
     {
       case StatisticalTrendsAttributes::Absolute:
-          SNPRINTF(tmpStr, 1000, "%sstartTrendType = %sAbsolute  # %s\n", prefix, prefix, startTrendType_names);
+          snprintf(tmpStr, 1000, "%sstartTrendType = %sAbsolute  # %s\n", prefix, prefix, startTrendType_names);
           str += tmpStr;
           break;
       case StatisticalTrendsAttributes::Relative:
-          SNPRINTF(tmpStr, 1000, "%sstartTrendType = %sRelative  # %s\n", prefix, prefix, startTrendType_names);
+          snprintf(tmpStr, 1000, "%sstartTrendType = %sRelative  # %s\n", prefix, prefix, startTrendType_names);
           str += tmpStr;
           break;
       default:
@@ -67,11 +66,11 @@ PyStatisticalTrendsAttributes_ToString(const StatisticalTrendsAttributes *atts, 
     switch (atts->GetStopTrendType())
     {
       case StatisticalTrendsAttributes::Absolute:
-          SNPRINTF(tmpStr, 1000, "%sstopTrendType = %sAbsolute  # %s\n", prefix, prefix, stopTrendType_names);
+          snprintf(tmpStr, 1000, "%sstopTrendType = %sAbsolute  # %s\n", prefix, prefix, stopTrendType_names);
           str += tmpStr;
           break;
       case StatisticalTrendsAttributes::Relative:
-          SNPRINTF(tmpStr, 1000, "%sstopTrendType = %sRelative  # %s\n", prefix, prefix, stopTrendType_names);
+          snprintf(tmpStr, 1000, "%sstopTrendType = %sRelative  # %s\n", prefix, prefix, stopTrendType_names);
           str += tmpStr;
           break;
       default:
@@ -83,27 +82,27 @@ PyStatisticalTrendsAttributes_ToString(const StatisticalTrendsAttributes *atts, 
     switch (atts->GetStatisticType())
     {
       case StatisticalTrendsAttributes::Sum:
-          SNPRINTF(tmpStr, 1000, "%sstatisticType = %sSum  # %s\n", prefix, prefix, statisticType_names);
+          snprintf(tmpStr, 1000, "%sstatisticType = %sSum  # %s\n", prefix, prefix, statisticType_names);
           str += tmpStr;
           break;
       case StatisticalTrendsAttributes::Mean:
-          SNPRINTF(tmpStr, 1000, "%sstatisticType = %sMean  # %s\n", prefix, prefix, statisticType_names);
+          snprintf(tmpStr, 1000, "%sstatisticType = %sMean  # %s\n", prefix, prefix, statisticType_names);
           str += tmpStr;
           break;
       case StatisticalTrendsAttributes::Variance:
-          SNPRINTF(tmpStr, 1000, "%sstatisticType = %sVariance  # %s\n", prefix, prefix, statisticType_names);
+          snprintf(tmpStr, 1000, "%sstatisticType = %sVariance  # %s\n", prefix, prefix, statisticType_names);
           str += tmpStr;
           break;
       case StatisticalTrendsAttributes::StandardDeviation:
-          SNPRINTF(tmpStr, 1000, "%sstatisticType = %sStandardDeviation  # %s\n", prefix, prefix, statisticType_names);
+          snprintf(tmpStr, 1000, "%sstatisticType = %sStandardDeviation  # %s\n", prefix, prefix, statisticType_names);
           str += tmpStr;
           break;
       case StatisticalTrendsAttributes::Slope:
-          SNPRINTF(tmpStr, 1000, "%sstatisticType = %sSlope  # %s\n", prefix, prefix, statisticType_names);
+          snprintf(tmpStr, 1000, "%sstatisticType = %sSlope  # %s\n", prefix, prefix, statisticType_names);
           str += tmpStr;
           break;
       case StatisticalTrendsAttributes::Residuals:
-          SNPRINTF(tmpStr, 1000, "%sstatisticType = %sResiduals  # %s\n", prefix, prefix, statisticType_names);
+          snprintf(tmpStr, 1000, "%sstatisticType = %sResiduals  # %s\n", prefix, prefix, statisticType_names);
           str += tmpStr;
           break;
       default:
@@ -114,15 +113,15 @@ PyStatisticalTrendsAttributes_ToString(const StatisticalTrendsAttributes *atts, 
     switch (atts->GetTrendAxis())
     {
       case StatisticalTrendsAttributes::Step:
-          SNPRINTF(tmpStr, 1000, "%strendAxis = %sStep  # %s\n", prefix, prefix, trendAxis_names);
+          snprintf(tmpStr, 1000, "%strendAxis = %sStep  # %s\n", prefix, prefix, trendAxis_names);
           str += tmpStr;
           break;
       case StatisticalTrendsAttributes::Time:
-          SNPRINTF(tmpStr, 1000, "%strendAxis = %sTime  # %s\n", prefix, prefix, trendAxis_names);
+          snprintf(tmpStr, 1000, "%strendAxis = %sTime  # %s\n", prefix, prefix, trendAxis_names);
           str += tmpStr;
           break;
       case StatisticalTrendsAttributes::Cycle:
-          SNPRINTF(tmpStr, 1000, "%strendAxis = %sCycle  # %s\n", prefix, prefix, trendAxis_names);
+          snprintf(tmpStr, 1000, "%strendAxis = %sCycle  # %s\n", prefix, prefix, trendAxis_names);
           str += tmpStr;
           break;
       default:
@@ -133,11 +132,11 @@ PyStatisticalTrendsAttributes_ToString(const StatisticalTrendsAttributes *atts, 
     switch (atts->GetVariableSource())
     {
       case StatisticalTrendsAttributes::Default:
-          SNPRINTF(tmpStr, 1000, "%svariableSource = %sDefault  # %s\n", prefix, prefix, variableSource_names);
+          snprintf(tmpStr, 1000, "%svariableSource = %sDefault  # %s\n", prefix, prefix, variableSource_names);
           str += tmpStr;
           break;
       case StatisticalTrendsAttributes::OperatorExpression:
-          SNPRINTF(tmpStr, 1000, "%svariableSource = %sOperatorExpression  # %s\n", prefix, prefix, variableSource_names);
+          snprintf(tmpStr, 1000, "%svariableSource = %sOperatorExpression  # %s\n", prefix, prefix, variableSource_names);
           str += tmpStr;
           break;
       default:

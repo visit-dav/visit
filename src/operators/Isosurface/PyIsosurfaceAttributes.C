@@ -5,7 +5,6 @@
 #include <PyIsosurfaceAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyIsosurfaceAttributes
@@ -42,53 +41,53 @@ PyIsosurfaceAttributes_ToString(const IsosurfaceAttributes *atts, const char *pr
     std::string str;
     char tmpStr[1000];
 
-    SNPRINTF(tmpStr, 1000, "%scontourNLevels = %d\n", prefix, atts->GetContourNLevels());
+    snprintf(tmpStr, 1000, "%scontourNLevels = %d\n", prefix, atts->GetContourNLevels());
     str += tmpStr;
     {   const doubleVector &contourValue = atts->GetContourValue();
-        SNPRINTF(tmpStr, 1000, "%scontourValue = (", prefix);
+        snprintf(tmpStr, 1000, "%scontourValue = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < contourValue.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", contourValue[i]);
+            snprintf(tmpStr, 1000, "%g", contourValue[i]);
             str += tmpStr;
             if(i < contourValue.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const doubleVector &contourPercent = atts->GetContourPercent();
-        SNPRINTF(tmpStr, 1000, "%scontourPercent = (", prefix);
+        snprintf(tmpStr, 1000, "%scontourPercent = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < contourPercent.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", contourPercent[i]);
+            snprintf(tmpStr, 1000, "%g", contourPercent[i]);
             str += tmpStr;
             if(i < contourPercent.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     const char *contourMethod_names = "Level, Value, Percent";
     switch (atts->GetContourMethod())
     {
       case IsosurfaceAttributes::Level:
-          SNPRINTF(tmpStr, 1000, "%scontourMethod = %sLevel  # %s\n", prefix, prefix, contourMethod_names);
+          snprintf(tmpStr, 1000, "%scontourMethod = %sLevel  # %s\n", prefix, prefix, contourMethod_names);
           str += tmpStr;
           break;
       case IsosurfaceAttributes::Value:
-          SNPRINTF(tmpStr, 1000, "%scontourMethod = %sValue  # %s\n", prefix, prefix, contourMethod_names);
+          snprintf(tmpStr, 1000, "%scontourMethod = %sValue  # %s\n", prefix, prefix, contourMethod_names);
           str += tmpStr;
           break;
       case IsosurfaceAttributes::Percent:
-          SNPRINTF(tmpStr, 1000, "%scontourMethod = %sPercent  # %s\n", prefix, prefix, contourMethod_names);
+          snprintf(tmpStr, 1000, "%scontourMethod = %sPercent  # %s\n", prefix, prefix, contourMethod_names);
           str += tmpStr;
           break;
       default:
@@ -96,35 +95,35 @@ PyIsosurfaceAttributes_ToString(const IsosurfaceAttributes *atts, const char *pr
     }
 
     if(atts->GetMinFlag())
-        SNPRINTF(tmpStr, 1000, "%sminFlag = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sminFlag = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sminFlag = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sminFlag = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%smin = %g\n", prefix, atts->GetMin());
+    snprintf(tmpStr, 1000, "%smin = %g\n", prefix, atts->GetMin());
     str += tmpStr;
     if(atts->GetMaxFlag())
-        SNPRINTF(tmpStr, 1000, "%smaxFlag = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%smaxFlag = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%smaxFlag = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%smaxFlag = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%smax = %g\n", prefix, atts->GetMax());
+    snprintf(tmpStr, 1000, "%smax = %g\n", prefix, atts->GetMax());
     str += tmpStr;
     const char *scaling_names = "Linear, Log";
     switch (atts->GetScaling())
     {
       case IsosurfaceAttributes::Linear:
-          SNPRINTF(tmpStr, 1000, "%sscaling = %sLinear  # %s\n", prefix, prefix, scaling_names);
+          snprintf(tmpStr, 1000, "%sscaling = %sLinear  # %s\n", prefix, prefix, scaling_names);
           str += tmpStr;
           break;
       case IsosurfaceAttributes::Log:
-          SNPRINTF(tmpStr, 1000, "%sscaling = %sLog  # %s\n", prefix, prefix, scaling_names);
+          snprintf(tmpStr, 1000, "%sscaling = %sLog  # %s\n", prefix, prefix, scaling_names);
           str += tmpStr;
           break;
       default:
           break;
     }
 
-    SNPRINTF(tmpStr, 1000, "%svariable = \"%s\"\n", prefix, atts->GetVariable().c_str());
+    snprintf(tmpStr, 1000, "%svariable = \"%s\"\n", prefix, atts->GetVariable().c_str());
     str += tmpStr;
     return str;
 }

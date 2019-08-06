@@ -5,7 +5,6 @@
 #include <PySurfaceNormalAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PySurfaceNormalAttributes
@@ -46,11 +45,11 @@ PySurfaceNormalAttributes_ToString(const SurfaceNormalAttributes *atts, const ch
     switch (atts->GetCentering())
     {
       case SurfaceNormalAttributes::Point:
-          SNPRINTF(tmpStr, 1000, "%scentering = %sPoint  # %s\n", prefix, prefix, centering_names);
+          snprintf(tmpStr, 1000, "%scentering = %sPoint  # %s\n", prefix, prefix, centering_names);
           str += tmpStr;
           break;
       case SurfaceNormalAttributes::Cell:
-          SNPRINTF(tmpStr, 1000, "%scentering = %sCell  # %s\n", prefix, prefix, centering_names);
+          snprintf(tmpStr, 1000, "%scentering = %sCell  # %s\n", prefix, prefix, centering_names);
           str += tmpStr;
           break;
       default:

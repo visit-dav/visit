@@ -5,7 +5,6 @@
 #include <PyConnCompReduceAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyConnCompReduceAttributes
@@ -42,7 +41,7 @@ PyConnCompReduceAttributes_ToString(const ConnCompReduceAttributes *atts, const 
     std::string str;
     char tmpStr[1000];
 
-    SNPRINTF(tmpStr, 1000, "%starget = %g\n", prefix, atts->GetTarget());
+    snprintf(tmpStr, 1000, "%starget = %g\n", prefix, atts->GetTarget());
     str += tmpStr;
     return str;
 }

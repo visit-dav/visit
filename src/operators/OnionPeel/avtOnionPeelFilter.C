@@ -36,7 +36,6 @@
 #include <avtCallback.h>
 #include <avtParallel.h>
 #include <avtExtents.h>
-#include <snprintf.h>
 
 using std::string;
 using std::vector;
@@ -298,7 +297,7 @@ avtOnionPeelFilter::ExecuteData(avtDataRepresentation *in_dr)
             (in_ds->GetDataObjectType() != VTK_RECTILINEAR_GRID))
         {
             char msg[64];
-            SNPRINTF(msg, 64, "A Logical Index can only be used with structured data.");
+            snprintf(msg, 64, "A Logical Index can only be used with structured data.");
             EXCEPTION1(LogicalIndexException, msg);
         }
         if (groupCategory)
@@ -957,7 +956,7 @@ avtOnionPeelFilter::PostExecute()
         {
             encounteredGhostSeed = false;
             char msg [64];
-            SNPRINTF(msg, 64, "Please choose a different seed cell.");
+            snprintf(msg, 64, "Please choose a different seed cell.");
             if (atts.GetLogical())
             {
                 EXCEPTION2(GhostCellException, atts.GetIndex(), msg);

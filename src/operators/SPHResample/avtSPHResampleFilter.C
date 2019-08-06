@@ -2727,6 +2727,6 @@ avtSPHResampleFilter::UpdateDataObjectInfo(void)
     outAtts.RemoveVariable(weightVarName);
     
     char params[200];
-    SNPRINTF(params, 200, "nx=%d ny=%d nz=%d", atts.GetXnum(), atts.GetYnum(), (spatialDim == 3 ? atts.GetZnum() : 0));
+    snprintf(params, 200, "nx=%d ny=%d nz=%d", atts.GetXnum(), atts.GetYnum(), (spatialDim == 3 ? atts.GetZnum() : 0));
     outAtts.AddFilterMetaData("SPH Resample", params);
 }

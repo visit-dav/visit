@@ -5,7 +5,6 @@
 #include <PyRemoveCellsAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyRemoveCellsAttributes
@@ -43,35 +42,35 @@ PyRemoveCellsAttributes_ToString(const RemoveCellsAttributes *atts, const char *
     char tmpStr[1000];
 
     {   const intVector &cellList = atts->GetCellList();
-        SNPRINTF(tmpStr, 1000, "%scellList = (", prefix);
+        snprintf(tmpStr, 1000, "%scellList = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < cellList.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%d", cellList[i]);
+            snprintf(tmpStr, 1000, "%d", cellList[i]);
             str += tmpStr;
             if(i < cellList.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const intVector &domainList = atts->GetDomainList();
-        SNPRINTF(tmpStr, 1000, "%sdomainList = (", prefix);
+        snprintf(tmpStr, 1000, "%sdomainList = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < domainList.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%d", domainList[i]);
+            snprintf(tmpStr, 1000, "%d", domainList[i]);
             str += tmpStr;
             if(i < domainList.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     return str;

@@ -5,7 +5,6 @@
 #include <PyConeAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyConeAttributes
@@ -42,53 +41,53 @@ PyConeAttributes_ToString(const ConeAttributes *atts, const char *prefix)
     std::string str;
     char tmpStr[1000];
 
-    SNPRINTF(tmpStr, 1000, "%sangle = %g\n", prefix, atts->GetAngle());
+    snprintf(tmpStr, 1000, "%sangle = %g\n", prefix, atts->GetAngle());
     str += tmpStr;
     {   const double *origin = atts->GetOrigin();
-        SNPRINTF(tmpStr, 1000, "%sorigin = (", prefix);
+        snprintf(tmpStr, 1000, "%sorigin = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 3; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", origin[i]);
+            snprintf(tmpStr, 1000, "%g", origin[i]);
             str += tmpStr;
             if(i < 2)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const double *normal = atts->GetNormal();
-        SNPRINTF(tmpStr, 1000, "%snormal = (", prefix);
+        snprintf(tmpStr, 1000, "%snormal = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 3; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", normal[i]);
+            snprintf(tmpStr, 1000, "%g", normal[i]);
             str += tmpStr;
             if(i < 2)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     const char *representation_names = "ThreeD, Flattened, R_Theta";
     switch (atts->GetRepresentation())
     {
       case ConeAttributes::ThreeD:
-          SNPRINTF(tmpStr, 1000, "%srepresentation = %sThreeD  # %s\n", prefix, prefix, representation_names);
+          snprintf(tmpStr, 1000, "%srepresentation = %sThreeD  # %s\n", prefix, prefix, representation_names);
           str += tmpStr;
           break;
       case ConeAttributes::Flattened:
-          SNPRINTF(tmpStr, 1000, "%srepresentation = %sFlattened  # %s\n", prefix, prefix, representation_names);
+          snprintf(tmpStr, 1000, "%srepresentation = %sFlattened  # %s\n", prefix, prefix, representation_names);
           str += tmpStr;
           break;
       case ConeAttributes::R_Theta:
-          SNPRINTF(tmpStr, 1000, "%srepresentation = %sR_Theta  # %s\n", prefix, prefix, representation_names);
+          snprintf(tmpStr, 1000, "%srepresentation = %sR_Theta  # %s\n", prefix, prefix, representation_names);
           str += tmpStr;
           break;
       default:
@@ -96,27 +95,27 @@ PyConeAttributes_ToString(const ConeAttributes *atts, const char *prefix)
     }
 
     {   const double *upAxis = atts->GetUpAxis();
-        SNPRINTF(tmpStr, 1000, "%supAxis = (", prefix);
+        snprintf(tmpStr, 1000, "%supAxis = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 3; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", upAxis[i]);
+            snprintf(tmpStr, 1000, "%g", upAxis[i]);
             str += tmpStr;
             if(i < 2)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     if(atts->GetCutByLength())
-        SNPRINTF(tmpStr, 1000, "%scutByLength = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%scutByLength = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%scutByLength = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%scutByLength = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%slength = %g\n", prefix, atts->GetLength());
+    snprintf(tmpStr, 1000, "%slength = %g\n", prefix, atts->GetLength());
     str += tmpStr;
     return str;
 }

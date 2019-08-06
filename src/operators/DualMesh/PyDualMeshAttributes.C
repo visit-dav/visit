@@ -5,7 +5,6 @@
 #include <PyDualMeshAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyDualMeshAttributes
@@ -46,15 +45,15 @@ PyDualMeshAttributes_ToString(const DualMeshAttributes *atts, const char *prefix
     switch (atts->GetMode())
     {
       case DualMeshAttributes::Auto:
-          SNPRINTF(tmpStr, 1000, "%smode = %sAuto  # %s\n", prefix, prefix, mode_names);
+          snprintf(tmpStr, 1000, "%smode = %sAuto  # %s\n", prefix, prefix, mode_names);
           str += tmpStr;
           break;
       case DualMeshAttributes::NodesToZones:
-          SNPRINTF(tmpStr, 1000, "%smode = %sNodesToZones  # %s\n", prefix, prefix, mode_names);
+          snprintf(tmpStr, 1000, "%smode = %sNodesToZones  # %s\n", prefix, prefix, mode_names);
           str += tmpStr;
           break;
       case DualMeshAttributes::ZonesToNodes:
-          SNPRINTF(tmpStr, 1000, "%smode = %sZonesToNodes  # %s\n", prefix, prefix, mode_names);
+          snprintf(tmpStr, 1000, "%smode = %sZonesToNodes  # %s\n", prefix, prefix, mode_names);
           str += tmpStr;
           break;
       default:

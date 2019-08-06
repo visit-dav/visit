@@ -945,7 +945,7 @@ avtLCSFilter::CreateNativeMeshIterativeCalcOutput(std::vector<avtIntegralCurve*>
       
       char str[1028];
       
-      SNPRINTF(str, 1028, "\n%d%% of the nodes (%d of %d nodes) "
+      snprintf(str, 1028, "\n%d%% of the nodes (%d of %d nodes) "
                "exaimed produced a valid exponent (%f to %f). "
                "This may be due to too large of a size limit (%f), "
                "too small of an integration step (%f), or "
@@ -1220,7 +1220,7 @@ avtLCSFilter::CreateRectilinearGridIterativeCalcOutput(std::vector<avtIntegralCu
 
         char str[1028];
 
-        SNPRINTF(str, 1028, "\n%d%% of the nodes (%d of %d nodes) "
+        snprintf(str, 1028, "\n%d%% of the nodes (%d of %d nodes) "
                  "exaimed produced a valid exponent (%f to %f). "
                  "This may be due to too large of a size limit (%f), "
                  "too small of an integration step (%f), or "

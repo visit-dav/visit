@@ -5,7 +5,6 @@
 #include "QvisThresholdWindow.h"
 
 #include <ThresholdAttributes.h>
-#include <snprintf.h>
 
 #include <QTableWidget>
 #include <QTableWidgetItem>

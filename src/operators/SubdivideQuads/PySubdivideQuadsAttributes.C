@@ -5,7 +5,6 @@
 #include <PySubdivideQuadsAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PySubdivideQuadsAttributes
@@ -42,21 +41,21 @@ PySubdivideQuadsAttributes_ToString(const SubdivideQuadsAttributes *atts, const 
     std::string str;
     char tmpStr[1000];
 
-    SNPRINTF(tmpStr, 1000, "%sthreshold = %g\n", prefix, atts->GetThreshold());
+    snprintf(tmpStr, 1000, "%sthreshold = %g\n", prefix, atts->GetThreshold());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%smaxSubdivs = %d\n", prefix, atts->GetMaxSubdivs());
+    snprintf(tmpStr, 1000, "%smaxSubdivs = %d\n", prefix, atts->GetMaxSubdivs());
     str += tmpStr;
     if(atts->GetFanOutPoints())
-        SNPRINTF(tmpStr, 1000, "%sfanOutPoints = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sfanOutPoints = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sfanOutPoints = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sfanOutPoints = 0\n", prefix);
     str += tmpStr;
     if(atts->GetDoTriangles())
-        SNPRINTF(tmpStr, 1000, "%sdoTriangles = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sdoTriangles = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sdoTriangles = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sdoTriangles = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%svariable = \"%s\"\n", prefix, atts->GetVariable().c_str());
+    snprintf(tmpStr, 1000, "%svariable = \"%s\"\n", prefix, atts->GetVariable().c_str());
     str += tmpStr;
     return str;
 }

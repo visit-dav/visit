@@ -5,7 +5,6 @@
 #include <PyIndexSelectAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyIndexSelectAttributes
@@ -46,15 +45,15 @@ PyIndexSelectAttributes_ToString(const IndexSelectAttributes *atts, const char *
     switch (atts->GetMaxDim())
     {
       case IndexSelectAttributes::OneD:
-          SNPRINTF(tmpStr, 1000, "%smaxDim = %sOneD  # %s\n", prefix, prefix, maxDim_names);
+          snprintf(tmpStr, 1000, "%smaxDim = %sOneD  # %s\n", prefix, prefix, maxDim_names);
           str += tmpStr;
           break;
       case IndexSelectAttributes::TwoD:
-          SNPRINTF(tmpStr, 1000, "%smaxDim = %sTwoD  # %s\n", prefix, prefix, maxDim_names);
+          snprintf(tmpStr, 1000, "%smaxDim = %sTwoD  # %s\n", prefix, prefix, maxDim_names);
           str += tmpStr;
           break;
       case IndexSelectAttributes::ThreeD:
-          SNPRINTF(tmpStr, 1000, "%smaxDim = %sThreeD  # %s\n", prefix, prefix, maxDim_names);
+          snprintf(tmpStr, 1000, "%smaxDim = %sThreeD  # %s\n", prefix, prefix, maxDim_names);
           str += tmpStr;
           break;
       default:
@@ -65,68 +64,68 @@ PyIndexSelectAttributes_ToString(const IndexSelectAttributes *atts, const char *
     switch (atts->GetDim())
     {
       case IndexSelectAttributes::OneD:
-          SNPRINTF(tmpStr, 1000, "%sdim = %sOneD  # %s\n", prefix, prefix, dim_names);
+          snprintf(tmpStr, 1000, "%sdim = %sOneD  # %s\n", prefix, prefix, dim_names);
           str += tmpStr;
           break;
       case IndexSelectAttributes::TwoD:
-          SNPRINTF(tmpStr, 1000, "%sdim = %sTwoD  # %s\n", prefix, prefix, dim_names);
+          snprintf(tmpStr, 1000, "%sdim = %sTwoD  # %s\n", prefix, prefix, dim_names);
           str += tmpStr;
           break;
       case IndexSelectAttributes::ThreeD:
-          SNPRINTF(tmpStr, 1000, "%sdim = %sThreeD  # %s\n", prefix, prefix, dim_names);
+          snprintf(tmpStr, 1000, "%sdim = %sThreeD  # %s\n", prefix, prefix, dim_names);
           str += tmpStr;
           break;
       default:
           break;
     }
 
-    SNPRINTF(tmpStr, 1000, "%sxAbsMax = %d\n", prefix, atts->GetXAbsMax());
+    snprintf(tmpStr, 1000, "%sxAbsMax = %d\n", prefix, atts->GetXAbsMax());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sxMin = %d\n", prefix, atts->GetXMin());
+    snprintf(tmpStr, 1000, "%sxMin = %d\n", prefix, atts->GetXMin());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sxMax = %d\n", prefix, atts->GetXMax());
+    snprintf(tmpStr, 1000, "%sxMax = %d\n", prefix, atts->GetXMax());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sxIncr = %d\n", prefix, atts->GetXIncr());
+    snprintf(tmpStr, 1000, "%sxIncr = %d\n", prefix, atts->GetXIncr());
     str += tmpStr;
     if(atts->GetXWrap())
-        SNPRINTF(tmpStr, 1000, "%sxWrap = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sxWrap = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sxWrap = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sxWrap = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%syAbsMax = %d\n", prefix, atts->GetYAbsMax());
+    snprintf(tmpStr, 1000, "%syAbsMax = %d\n", prefix, atts->GetYAbsMax());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%syMin = %d\n", prefix, atts->GetYMin());
+    snprintf(tmpStr, 1000, "%syMin = %d\n", prefix, atts->GetYMin());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%syMax = %d\n", prefix, atts->GetYMax());
+    snprintf(tmpStr, 1000, "%syMax = %d\n", prefix, atts->GetYMax());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%syIncr = %d\n", prefix, atts->GetYIncr());
+    snprintf(tmpStr, 1000, "%syIncr = %d\n", prefix, atts->GetYIncr());
     str += tmpStr;
     if(atts->GetYWrap())
-        SNPRINTF(tmpStr, 1000, "%syWrap = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%syWrap = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%syWrap = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%syWrap = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%szAbsMax = %d\n", prefix, atts->GetZAbsMax());
+    snprintf(tmpStr, 1000, "%szAbsMax = %d\n", prefix, atts->GetZAbsMax());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%szMin = %d\n", prefix, atts->GetZMin());
+    snprintf(tmpStr, 1000, "%szMin = %d\n", prefix, atts->GetZMin());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%szMax = %d\n", prefix, atts->GetZMax());
+    snprintf(tmpStr, 1000, "%szMax = %d\n", prefix, atts->GetZMax());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%szIncr = %d\n", prefix, atts->GetZIncr());
+    snprintf(tmpStr, 1000, "%szIncr = %d\n", prefix, atts->GetZIncr());
     str += tmpStr;
     if(atts->GetZWrap())
-        SNPRINTF(tmpStr, 1000, "%szWrap = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%szWrap = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%szWrap = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%szWrap = 0\n", prefix);
     str += tmpStr;
     if(atts->GetUseWholeCollection())
-        SNPRINTF(tmpStr, 1000, "%suseWholeCollection = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%suseWholeCollection = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%suseWholeCollection = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%suseWholeCollection = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%scategoryName = \"%s\"\n", prefix, atts->GetCategoryName().c_str());
+    snprintf(tmpStr, 1000, "%scategoryName = \"%s\"\n", prefix, atts->GetCategoryName().c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%ssubsetName = \"%s\"\n", prefix, atts->GetSubsetName().c_str());
+    snprintf(tmpStr, 1000, "%ssubsetName = \"%s\"\n", prefix, atts->GetSubsetName().c_str());
     str += tmpStr;
     return str;
 }

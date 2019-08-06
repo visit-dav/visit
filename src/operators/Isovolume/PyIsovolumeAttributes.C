@@ -5,7 +5,6 @@
 #include <PyIsovolumeAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyIsovolumeAttributes
@@ -42,11 +41,11 @@ PyIsovolumeAttributes_ToString(const IsovolumeAttributes *atts, const char *pref
     std::string str;
     char tmpStr[1000];
 
-    SNPRINTF(tmpStr, 1000, "%slbound = %g\n", prefix, atts->GetLbound());
+    snprintf(tmpStr, 1000, "%slbound = %g\n", prefix, atts->GetLbound());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%subound = %g\n", prefix, atts->GetUbound());
+    snprintf(tmpStr, 1000, "%subound = %g\n", prefix, atts->GetUbound());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%svariable = \"%s\"\n", prefix, atts->GetVariable().c_str());
+    snprintf(tmpStr, 1000, "%svariable = \"%s\"\n", prefix, atts->GetVariable().c_str());
     str += tmpStr;
     return str;
 }

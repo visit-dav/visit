@@ -45,8 +45,6 @@
 #include <DebugStream.h>
 #include <TimingsManager.h>
 
-#include <snprintf.h>
-
 #include <string>
 #include <vector>
 
@@ -2163,7 +2161,7 @@ avtSliceFilter::UpdateDataObjectInfo(void)
                 un[2] = up[2] / up_mag;
             }
             char ylabel[2048];
-            SNPRINTF(ylabel, 2048, "(%.2f,%.2f,%.2f)-Axis", un[0],un[1],un[2]);
+            snprintf(ylabel, 2048, "(%.2f,%.2f,%.2f)-Axis", un[0],un[1],un[2]);
             outAtts.SetYLabel(ylabel);
 
             double cross[3] = {0., 0., 0.};
@@ -2179,7 +2177,7 @@ avtSliceFilter::UpdateDataObjectInfo(void)
                 cross[2] /= cross_mag;
             }
             char xlabel[2048];
-            SNPRINTF(xlabel, 2048, "(%.2f,%.2f,%.2f)-Axis", cross[0], cross[1], 
+            snprintf(xlabel, 2048, "(%.2f,%.2f,%.2f)-Axis", cross[0], cross[1], 
                                                             cross[2]);
             outAtts.SetXLabel(xlabel);
         }
@@ -2189,30 +2187,30 @@ avtSliceFilter::UpdateDataObjectInfo(void)
     char tmpstr[200];
     double ox = 0., oy = 0., oz = 0.;
     GetOrigin(ox, oy, oz);
-    SNPRINTF(tmpstr, 200, ", origin=%lg,%lg,%lg", ox, oy, oz);
+    snprintf(tmpstr, 200, ", origin=%lg,%lg,%lg", ox, oy, oz);
     std::string originStr(tmpstr);
     if(atts.GetAxisType() == SliceAttributes::XAxis)
     {
         if(atts.GetOriginType() == SliceAttributes::Point)
         {
-            SNPRINTF(tmpstr, 200, "X=%lg", atts.GetOriginPoint()[0]);
+            snprintf(tmpstr, 200, "X=%lg", atts.GetOriginPoint()[0]);
         }
         else if(atts.GetOriginType() == SliceAttributes::Intercept)
         {
-            SNPRINTF(tmpstr, 200, "X=%lg", atts.GetOriginIntercept());
+            snprintf(tmpstr, 200, "X=%lg", atts.GetOriginIntercept());
         }
         else if(atts.GetOriginType() == SliceAttributes::Percent)
         {
-            SNPRINTF(tmpstr, 200, "X percent=%lg", atts.GetOriginPercent());
+            snprintf(tmpstr, 200, "X percent=%lg", atts.GetOriginPercent());
         }
         else if(atts.GetOriginType() == SliceAttributes::Zone)
         {
-            SNPRINTF(tmpstr, 200, "X domain=%d, zone=%d",
+            snprintf(tmpstr, 200, "X domain=%d, zone=%d",
                      atts.GetOriginZoneDomain(), atts.GetOriginZone());
         }
         else if(atts.GetOriginType() == SliceAttributes::Node)
         {
-            SNPRINTF(tmpstr, 200, "X domain=%d, node=%d",
+            snprintf(tmpstr, 200, "X domain=%d, node=%d",
                      atts.GetOriginNodeDomain(), atts.GetOriginNodeDomain());
         }
         outAtts.AddFilterMetaData("Slice", std::string(tmpstr) + originStr);
@@ -2221,24 +2219,24 @@ avtSliceFilter::UpdateDataObjectInfo(void)
     {
         if(atts.GetOriginType() == SliceAttributes::Point)
         {
-            SNPRINTF(tmpstr, 200, "Y=%lg", atts.GetOriginPoint()[1]);
+            snprintf(tmpstr, 200, "Y=%lg", atts.GetOriginPoint()[1]);
         }
         else if(atts.GetOriginType() == SliceAttributes::Intercept)
         {
-            SNPRINTF(tmpstr, 200, "Y=%lg", atts.GetOriginIntercept());
+            snprintf(tmpstr, 200, "Y=%lg", atts.GetOriginIntercept());
         }
         else if(atts.GetOriginType() == SliceAttributes::Percent)
         {
-            SNPRINTF(tmpstr, 200, "Y percent=%lg", atts.GetOriginPercent());
+            snprintf(tmpstr, 200, "Y percent=%lg", atts.GetOriginPercent());
         }
         else if(atts.GetOriginType() == SliceAttributes::Zone)
         {
-            SNPRINTF(tmpstr, 200, "Y domain=%d, zone=%d",
+            snprintf(tmpstr, 200, "Y domain=%d, zone=%d",
                      atts.GetOriginZoneDomain(), atts.GetOriginZone());
         }
         else if(atts.GetOriginType() == SliceAttributes::Node)
         {
-            SNPRINTF(tmpstr, 200, "Y domain=%d, node=%d",
+            snprintf(tmpstr, 200, "Y domain=%d, node=%d",
                      atts.GetOriginNodeDomain(), atts.GetOriginNodeDomain());
         }
         outAtts.AddFilterMetaData("Slice", std::string(tmpstr) + originStr);
@@ -2247,24 +2245,24 @@ avtSliceFilter::UpdateDataObjectInfo(void)
     {
         if(atts.GetOriginType() == SliceAttributes::Point)
         {
-            SNPRINTF(tmpstr, 200, "Z=%lg", atts.GetOriginPoint()[2]);
+            snprintf(tmpstr, 200, "Z=%lg", atts.GetOriginPoint()[2]);
         }
         else if(atts.GetOriginType() == SliceAttributes::Intercept)
         {
-            SNPRINTF(tmpstr, 200, "Z=%lg", atts.GetOriginIntercept());
+            snprintf(tmpstr, 200, "Z=%lg", atts.GetOriginIntercept());
         }
         else if(atts.GetOriginType() == SliceAttributes::Percent)
         {
-            SNPRINTF(tmpstr, 200, "Z percent=%lg", atts.GetOriginPercent());
+            snprintf(tmpstr, 200, "Z percent=%lg", atts.GetOriginPercent());
         }
         else if(atts.GetOriginType() == SliceAttributes::Zone)
         {
-            SNPRINTF(tmpstr, 200, "Z domain=%d, zone=%d",
+            snprintf(tmpstr, 200, "Z domain=%d, zone=%d",
                      atts.GetOriginZoneDomain(), atts.GetOriginZone());
         }
         else if(atts.GetOriginType() == SliceAttributes::Node)
         {
-            SNPRINTF(tmpstr, 200, "Z domain=%d, node=%d",
+            snprintf(tmpstr, 200, "Z domain=%d, node=%d",
                      atts.GetOriginNodeDomain(), atts.GetOriginNodeDomain());
         }
         outAtts.AddFilterMetaData("Slice", std::string(tmpstr) + originStr);
@@ -2273,32 +2271,32 @@ avtSliceFilter::UpdateDataObjectInfo(void)
     {
         if(atts.GetOriginType() == SliceAttributes::Point)
         {
-            SNPRINTF(tmpstr, 200, "origin=%lg,%lg,%lg",
+            snprintf(tmpstr, 200, "origin=%lg,%lg,%lg",
                      atts.GetOriginPoint()[0], atts.GetOriginPoint()[1], atts.GetOriginPoint()[2]);
         }
         else if(atts.GetOriginType() == SliceAttributes::Intercept)
         {
-            SNPRINTF(tmpstr, 200, "intercept=%lg", atts.GetOriginIntercept());
+            snprintf(tmpstr, 200, "intercept=%lg", atts.GetOriginIntercept());
         }
         else if(atts.GetOriginType() == SliceAttributes::Percent)
         {
-            SNPRINTF(tmpstr, 200, "percent=%lg", atts.GetOriginPercent());
+            snprintf(tmpstr, 200, "percent=%lg", atts.GetOriginPercent());
         }
         else if(atts.GetOriginType() == SliceAttributes::Zone)
         {
-            SNPRINTF(tmpstr, 200, "domain=%d, zone=%d",
+            snprintf(tmpstr, 200, "domain=%d, zone=%d",
                      atts.GetOriginZoneDomain(), atts.GetOriginZone());
         }
         else if(atts.GetOriginType() == SliceAttributes::Node)
         {
-            SNPRINTF(tmpstr, 200, "domain=%d, node=%d",
+            snprintf(tmpstr, 200, "domain=%d, node=%d",
                      atts.GetOriginNodeDomain(), atts.GetOriginNodeDomain());
         }
 
         std::string s(tmpstr);
         if(atts.GetOriginType() != SliceAttributes::Point)
             s = s + originStr;
-        SNPRINTF(tmpstr, 200, ", normal=%lg,%lg,%lg",
+        snprintf(tmpstr, 200, ", normal=%lg,%lg,%lg",
                      atts.GetNormal()[0], atts.GetNormal()[1], atts.GetNormal()[2]);
         outAtts.AddFilterMetaData("Slice", s + std::string(tmpstr));
     }

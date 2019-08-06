@@ -213,7 +213,7 @@ avtSphereSliceFilter::UpdateDataObjectInfo(void)
     outValidity.ZonesSplit();
 
     char params[200];
-    SNPRINTF(params, 200, "origin=%lg,%lg,%lg radius=%lg",
+    snprintf(params, 200, "origin=%lg,%lg,%lg radius=%lg",
         atts.GetOrigin()[0], atts.GetOrigin()[1], atts.GetOrigin()[2],
         atts.GetRadius());
     GetOutput()->GetInfo().GetAttributes().AddFilterMetaData("SphereSlice", params);

@@ -353,19 +353,19 @@ avtTransformFilter::UpdateDataObjectInfoCB(avtDataObject_p &input,
     std::string scale, translate, rotate;
     if(tf.GetDoScale())
     {
-        SNPRINTF(tmp, 200, "scale=%lg,%lg,%lg ", 
+        snprintf(tmp, 200, "scale=%lg,%lg,%lg ", 
                  tf.GetScaleX(), tf.GetScaleY(), tf.GetScaleZ());
         scale = tmp;
     }
     if(tf.GetDoTranslate())
     {
-        SNPRINTF(tmp, 200, "translate=%lg,%lg,%lg ", 
+        snprintf(tmp, 200, "translate=%lg,%lg,%lg ", 
                  tf.GetTranslateX(), tf.GetTranslateY(), tf.GetTranslateZ());
         translate = tmp;
     }
     if(tf.GetDoRotate())
     {
-        SNPRINTF(tmp, 200, "rotateOrigin=%lg,%lg,%lg rotateAxis=%lg,%lg,%lg rotateAmount=%lg", 
+        snprintf(tmp, 200, "rotateOrigin=%lg,%lg,%lg rotateAxis=%lg,%lg,%lg rotateAmount=%lg", 
                  tf.GetRotateOrigin()[0], tf.GetRotateOrigin()[1], tf.GetRotateOrigin()[2],
                  tf.GetRotateAxis()[0], tf.GetRotateAxis()[1], tf.GetRotateAxis()[2],
                  tf.GetRotateAmount());

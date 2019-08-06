@@ -5,7 +5,6 @@
 #include <PyRevolveAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyRevolveAttributes
@@ -46,19 +45,19 @@ PyRevolveAttributes_ToString(const RevolveAttributes *atts, const char *prefix)
     switch (atts->GetMeshType())
     {
       case RevolveAttributes::Auto:
-          SNPRINTF(tmpStr, 1000, "%smeshType = %sAuto  # %s\n", prefix, prefix, meshType_names);
+          snprintf(tmpStr, 1000, "%smeshType = %sAuto  # %s\n", prefix, prefix, meshType_names);
           str += tmpStr;
           break;
       case RevolveAttributes::XY:
-          SNPRINTF(tmpStr, 1000, "%smeshType = %sXY  # %s\n", prefix, prefix, meshType_names);
+          snprintf(tmpStr, 1000, "%smeshType = %sXY  # %s\n", prefix, prefix, meshType_names);
           str += tmpStr;
           break;
       case RevolveAttributes::RZ:
-          SNPRINTF(tmpStr, 1000, "%smeshType = %sRZ  # %s\n", prefix, prefix, meshType_names);
+          snprintf(tmpStr, 1000, "%smeshType = %sRZ  # %s\n", prefix, prefix, meshType_names);
           str += tmpStr;
           break;
       case RevolveAttributes::ZR:
-          SNPRINTF(tmpStr, 1000, "%smeshType = %sZR  # %s\n", prefix, prefix, meshType_names);
+          snprintf(tmpStr, 1000, "%smeshType = %sZR  # %s\n", prefix, prefix, meshType_names);
           str += tmpStr;
           break;
       default:
@@ -66,31 +65,31 @@ PyRevolveAttributes_ToString(const RevolveAttributes *atts, const char *prefix)
     }
 
     if(atts->GetAutoAxis())
-        SNPRINTF(tmpStr, 1000, "%sautoAxis = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sautoAxis = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sautoAxis = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sautoAxis = 0\n", prefix);
     str += tmpStr;
     {   const double *axis = atts->GetAxis();
-        SNPRINTF(tmpStr, 1000, "%saxis = (", prefix);
+        snprintf(tmpStr, 1000, "%saxis = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 3; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", axis[i]);
+            snprintf(tmpStr, 1000, "%g", axis[i]);
             str += tmpStr;
             if(i < 2)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
-    SNPRINTF(tmpStr, 1000, "%sstartAngle = %g\n", prefix, atts->GetStartAngle());
+    snprintf(tmpStr, 1000, "%sstartAngle = %g\n", prefix, atts->GetStartAngle());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sstopAngle = %g\n", prefix, atts->GetStopAngle());
+    snprintf(tmpStr, 1000, "%sstopAngle = %g\n", prefix, atts->GetStopAngle());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%ssteps = %d\n", prefix, atts->GetSteps());
+    snprintf(tmpStr, 1000, "%ssteps = %d\n", prefix, atts->GetSteps());
     str += tmpStr;
     return str;
 }

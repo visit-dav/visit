@@ -5,7 +5,6 @@
 #include <PyDeferExpressionAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyDeferExpressionAttributes
@@ -43,19 +42,19 @@ PyDeferExpressionAttributes_ToString(const DeferExpressionAttributes *atts, cons
     char tmpStr[1000];
 
     {   const stringVector &exprs = atts->GetExprs();
-        SNPRINTF(tmpStr, 1000, "%sexprs = (", prefix);
+        snprintf(tmpStr, 1000, "%sexprs = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < exprs.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "\"%s\"", exprs[i].c_str());
+            snprintf(tmpStr, 1000, "\"%s\"", exprs[i].c_str());
             str += tmpStr;
             if(i < exprs.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     return str;

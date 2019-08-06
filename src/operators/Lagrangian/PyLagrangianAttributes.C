@@ -5,7 +5,6 @@
 #include <PyLagrangianAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyLagrangianAttributes
@@ -43,49 +42,49 @@ PyLagrangianAttributes_ToString(const LagrangianAttributes *atts, const char *pr
     char tmpStr[1000];
 
     {   const double *seedPoint = atts->GetSeedPoint();
-        SNPRINTF(tmpStr, 1000, "%sseedPoint = (", prefix);
+        snprintf(tmpStr, 1000, "%sseedPoint = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 3; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", seedPoint[i]);
+            snprintf(tmpStr, 1000, "%g", seedPoint[i]);
             str += tmpStr;
             if(i < 2)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
-    SNPRINTF(tmpStr, 1000, "%snumSteps = %d\n", prefix, atts->GetNumSteps());
+    snprintf(tmpStr, 1000, "%snumSteps = %d\n", prefix, atts->GetNumSteps());
     str += tmpStr;
     const char *XAxisSample_names = "Step, Time, ArcLength, Speed, Vorticity, "
         "Variable";
     switch (atts->GetXAxisSample())
     {
       case LagrangianAttributes::Step:
-          SNPRINTF(tmpStr, 1000, "%sXAxisSample = %sStep  # %s\n", prefix, prefix, XAxisSample_names);
+          snprintf(tmpStr, 1000, "%sXAxisSample = %sStep  # %s\n", prefix, prefix, XAxisSample_names);
           str += tmpStr;
           break;
       case LagrangianAttributes::Time:
-          SNPRINTF(tmpStr, 1000, "%sXAxisSample = %sTime  # %s\n", prefix, prefix, XAxisSample_names);
+          snprintf(tmpStr, 1000, "%sXAxisSample = %sTime  # %s\n", prefix, prefix, XAxisSample_names);
           str += tmpStr;
           break;
       case LagrangianAttributes::ArcLength:
-          SNPRINTF(tmpStr, 1000, "%sXAxisSample = %sArcLength  # %s\n", prefix, prefix, XAxisSample_names);
+          snprintf(tmpStr, 1000, "%sXAxisSample = %sArcLength  # %s\n", prefix, prefix, XAxisSample_names);
           str += tmpStr;
           break;
       case LagrangianAttributes::Speed:
-          SNPRINTF(tmpStr, 1000, "%sXAxisSample = %sSpeed  # %s\n", prefix, prefix, XAxisSample_names);
+          snprintf(tmpStr, 1000, "%sXAxisSample = %sSpeed  # %s\n", prefix, prefix, XAxisSample_names);
           str += tmpStr;
           break;
       case LagrangianAttributes::Vorticity:
-          SNPRINTF(tmpStr, 1000, "%sXAxisSample = %sVorticity  # %s\n", prefix, prefix, XAxisSample_names);
+          snprintf(tmpStr, 1000, "%sXAxisSample = %sVorticity  # %s\n", prefix, prefix, XAxisSample_names);
           str += tmpStr;
           break;
       case LagrangianAttributes::Variable:
-          SNPRINTF(tmpStr, 1000, "%sXAxisSample = %sVariable  # %s\n", prefix, prefix, XAxisSample_names);
+          snprintf(tmpStr, 1000, "%sXAxisSample = %sVariable  # %s\n", prefix, prefix, XAxisSample_names);
           str += tmpStr;
           break;
       default:
@@ -97,34 +96,34 @@ PyLagrangianAttributes_ToString(const LagrangianAttributes *atts, const char *pr
     switch (atts->GetYAxisSample())
     {
       case LagrangianAttributes::Step:
-          SNPRINTF(tmpStr, 1000, "%sYAxisSample = %sStep  # %s\n", prefix, prefix, YAxisSample_names);
+          snprintf(tmpStr, 1000, "%sYAxisSample = %sStep  # %s\n", prefix, prefix, YAxisSample_names);
           str += tmpStr;
           break;
       case LagrangianAttributes::Time:
-          SNPRINTF(tmpStr, 1000, "%sYAxisSample = %sTime  # %s\n", prefix, prefix, YAxisSample_names);
+          snprintf(tmpStr, 1000, "%sYAxisSample = %sTime  # %s\n", prefix, prefix, YAxisSample_names);
           str += tmpStr;
           break;
       case LagrangianAttributes::ArcLength:
-          SNPRINTF(tmpStr, 1000, "%sYAxisSample = %sArcLength  # %s\n", prefix, prefix, YAxisSample_names);
+          snprintf(tmpStr, 1000, "%sYAxisSample = %sArcLength  # %s\n", prefix, prefix, YAxisSample_names);
           str += tmpStr;
           break;
       case LagrangianAttributes::Speed:
-          SNPRINTF(tmpStr, 1000, "%sYAxisSample = %sSpeed  # %s\n", prefix, prefix, YAxisSample_names);
+          snprintf(tmpStr, 1000, "%sYAxisSample = %sSpeed  # %s\n", prefix, prefix, YAxisSample_names);
           str += tmpStr;
           break;
       case LagrangianAttributes::Vorticity:
-          SNPRINTF(tmpStr, 1000, "%sYAxisSample = %sVorticity  # %s\n", prefix, prefix, YAxisSample_names);
+          snprintf(tmpStr, 1000, "%sYAxisSample = %sVorticity  # %s\n", prefix, prefix, YAxisSample_names);
           str += tmpStr;
           break;
       case LagrangianAttributes::Variable:
-          SNPRINTF(tmpStr, 1000, "%sYAxisSample = %sVariable  # %s\n", prefix, prefix, YAxisSample_names);
+          snprintf(tmpStr, 1000, "%sYAxisSample = %sVariable  # %s\n", prefix, prefix, YAxisSample_names);
           str += tmpStr;
           break;
       default:
           break;
     }
 
-    SNPRINTF(tmpStr, 1000, "%svariable = \"%s\"\n", prefix, atts->GetVariable().c_str());
+    snprintf(tmpStr, 1000, "%svariable = \"%s\"\n", prefix, atts->GetVariable().c_str());
     str += tmpStr;
     return str;
 }

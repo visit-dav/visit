@@ -5,7 +5,6 @@
 #include <PyTransformAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyTransformAttributes
@@ -43,53 +42,53 @@ PyTransformAttributes_ToString(const TransformAttributes *atts, const char *pref
     char tmpStr[1000];
 
     if(atts->GetDoRotate())
-        SNPRINTF(tmpStr, 1000, "%sdoRotate = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sdoRotate = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sdoRotate = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sdoRotate = 0\n", prefix);
     str += tmpStr;
     {   const double *rotateOrigin = atts->GetRotateOrigin();
-        SNPRINTF(tmpStr, 1000, "%srotateOrigin = (", prefix);
+        snprintf(tmpStr, 1000, "%srotateOrigin = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 3; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", rotateOrigin[i]);
+            snprintf(tmpStr, 1000, "%g", rotateOrigin[i]);
             str += tmpStr;
             if(i < 2)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const double *rotateAxis = atts->GetRotateAxis();
-        SNPRINTF(tmpStr, 1000, "%srotateAxis = (", prefix);
+        snprintf(tmpStr, 1000, "%srotateAxis = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 3; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", rotateAxis[i]);
+            snprintf(tmpStr, 1000, "%g", rotateAxis[i]);
             str += tmpStr;
             if(i < 2)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
-    SNPRINTF(tmpStr, 1000, "%srotateAmount = %g\n", prefix, atts->GetRotateAmount());
+    snprintf(tmpStr, 1000, "%srotateAmount = %g\n", prefix, atts->GetRotateAmount());
     str += tmpStr;
     const char *rotateType_names = "Deg, Rad";
     switch (atts->GetRotateType())
     {
       case TransformAttributes::Deg:
-          SNPRINTF(tmpStr, 1000, "%srotateType = %sDeg  # %s\n", prefix, prefix, rotateType_names);
+          snprintf(tmpStr, 1000, "%srotateType = %sDeg  # %s\n", prefix, prefix, rotateType_names);
           str += tmpStr;
           break;
       case TransformAttributes::Rad:
-          SNPRINTF(tmpStr, 1000, "%srotateType = %sRad  # %s\n", prefix, prefix, rotateType_names);
+          snprintf(tmpStr, 1000, "%srotateType = %sRad  # %s\n", prefix, prefix, rotateType_names);
           str += tmpStr;
           break;
       default:
@@ -97,56 +96,56 @@ PyTransformAttributes_ToString(const TransformAttributes *atts, const char *pref
     }
 
     if(atts->GetDoScale())
-        SNPRINTF(tmpStr, 1000, "%sdoScale = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sdoScale = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sdoScale = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sdoScale = 0\n", prefix);
     str += tmpStr;
     {   const double *scaleOrigin = atts->GetScaleOrigin();
-        SNPRINTF(tmpStr, 1000, "%sscaleOrigin = (", prefix);
+        snprintf(tmpStr, 1000, "%sscaleOrigin = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 3; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", scaleOrigin[i]);
+            snprintf(tmpStr, 1000, "%g", scaleOrigin[i]);
             str += tmpStr;
             if(i < 2)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
-    SNPRINTF(tmpStr, 1000, "%sscaleX = %g\n", prefix, atts->GetScaleX());
+    snprintf(tmpStr, 1000, "%sscaleX = %g\n", prefix, atts->GetScaleX());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sscaleY = %g\n", prefix, atts->GetScaleY());
+    snprintf(tmpStr, 1000, "%sscaleY = %g\n", prefix, atts->GetScaleY());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sscaleZ = %g\n", prefix, atts->GetScaleZ());
+    snprintf(tmpStr, 1000, "%sscaleZ = %g\n", prefix, atts->GetScaleZ());
     str += tmpStr;
     if(atts->GetDoTranslate())
-        SNPRINTF(tmpStr, 1000, "%sdoTranslate = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sdoTranslate = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sdoTranslate = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sdoTranslate = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%stranslateX = %g\n", prefix, atts->GetTranslateX());
+    snprintf(tmpStr, 1000, "%stranslateX = %g\n", prefix, atts->GetTranslateX());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%stranslateY = %g\n", prefix, atts->GetTranslateY());
+    snprintf(tmpStr, 1000, "%stranslateY = %g\n", prefix, atts->GetTranslateY());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%stranslateZ = %g\n", prefix, atts->GetTranslateZ());
+    snprintf(tmpStr, 1000, "%stranslateZ = %g\n", prefix, atts->GetTranslateZ());
     str += tmpStr;
     const char *transformType_names = "Similarity, Coordinate, Linear";
     switch (atts->GetTransformType())
     {
       case TransformAttributes::Similarity:
-          SNPRINTF(tmpStr, 1000, "%stransformType = %sSimilarity  # %s\n", prefix, prefix, transformType_names);
+          snprintf(tmpStr, 1000, "%stransformType = %sSimilarity  # %s\n", prefix, prefix, transformType_names);
           str += tmpStr;
           break;
       case TransformAttributes::Coordinate:
-          SNPRINTF(tmpStr, 1000, "%stransformType = %sCoordinate  # %s\n", prefix, prefix, transformType_names);
+          snprintf(tmpStr, 1000, "%stransformType = %sCoordinate  # %s\n", prefix, prefix, transformType_names);
           str += tmpStr;
           break;
       case TransformAttributes::Linear:
-          SNPRINTF(tmpStr, 1000, "%stransformType = %sLinear  # %s\n", prefix, prefix, transformType_names);
+          snprintf(tmpStr, 1000, "%stransformType = %sLinear  # %s\n", prefix, prefix, transformType_names);
           str += tmpStr;
           break;
       default:
@@ -157,15 +156,15 @@ PyTransformAttributes_ToString(const TransformAttributes *atts, const char *pref
     switch (atts->GetInputCoordSys())
     {
       case TransformAttributes::Cartesian:
-          SNPRINTF(tmpStr, 1000, "%sinputCoordSys = %sCartesian  # %s\n", prefix, prefix, inputCoordSys_names);
+          snprintf(tmpStr, 1000, "%sinputCoordSys = %sCartesian  # %s\n", prefix, prefix, inputCoordSys_names);
           str += tmpStr;
           break;
       case TransformAttributes::Cylindrical:
-          SNPRINTF(tmpStr, 1000, "%sinputCoordSys = %sCylindrical  # %s\n", prefix, prefix, inputCoordSys_names);
+          snprintf(tmpStr, 1000, "%sinputCoordSys = %sCylindrical  # %s\n", prefix, prefix, inputCoordSys_names);
           str += tmpStr;
           break;
       case TransformAttributes::Spherical:
-          SNPRINTF(tmpStr, 1000, "%sinputCoordSys = %sSpherical  # %s\n", prefix, prefix, inputCoordSys_names);
+          snprintf(tmpStr, 1000, "%sinputCoordSys = %sSpherical  # %s\n", prefix, prefix, inputCoordSys_names);
           str += tmpStr;
           break;
       default:
@@ -176,15 +175,15 @@ PyTransformAttributes_ToString(const TransformAttributes *atts, const char *pref
     switch (atts->GetOutputCoordSys())
     {
       case TransformAttributes::Cartesian:
-          SNPRINTF(tmpStr, 1000, "%soutputCoordSys = %sCartesian  # %s\n", prefix, prefix, outputCoordSys_names);
+          snprintf(tmpStr, 1000, "%soutputCoordSys = %sCartesian  # %s\n", prefix, prefix, outputCoordSys_names);
           str += tmpStr;
           break;
       case TransformAttributes::Cylindrical:
-          SNPRINTF(tmpStr, 1000, "%soutputCoordSys = %sCylindrical  # %s\n", prefix, prefix, outputCoordSys_names);
+          snprintf(tmpStr, 1000, "%soutputCoordSys = %sCylindrical  # %s\n", prefix, prefix, outputCoordSys_names);
           str += tmpStr;
           break;
       case TransformAttributes::Spherical:
-          SNPRINTF(tmpStr, 1000, "%soutputCoordSys = %sSpherical  # %s\n", prefix, prefix, outputCoordSys_names);
+          snprintf(tmpStr, 1000, "%soutputCoordSys = %sSpherical  # %s\n", prefix, prefix, outputCoordSys_names);
           str += tmpStr;
           break;
       default:
@@ -192,64 +191,64 @@ PyTransformAttributes_ToString(const TransformAttributes *atts, const char *pref
     }
 
     if(atts->GetContinuousPhi())
-        SNPRINTF(tmpStr, 1000, "%scontinuousPhi = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%scontinuousPhi = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%scontinuousPhi = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%scontinuousPhi = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sm00 = %g\n", prefix, atts->GetM00());
+    snprintf(tmpStr, 1000, "%sm00 = %g\n", prefix, atts->GetM00());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sm01 = %g\n", prefix, atts->GetM01());
+    snprintf(tmpStr, 1000, "%sm01 = %g\n", prefix, atts->GetM01());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sm02 = %g\n", prefix, atts->GetM02());
+    snprintf(tmpStr, 1000, "%sm02 = %g\n", prefix, atts->GetM02());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sm03 = %g\n", prefix, atts->GetM03());
+    snprintf(tmpStr, 1000, "%sm03 = %g\n", prefix, atts->GetM03());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sm10 = %g\n", prefix, atts->GetM10());
+    snprintf(tmpStr, 1000, "%sm10 = %g\n", prefix, atts->GetM10());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sm11 = %g\n", prefix, atts->GetM11());
+    snprintf(tmpStr, 1000, "%sm11 = %g\n", prefix, atts->GetM11());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sm12 = %g\n", prefix, atts->GetM12());
+    snprintf(tmpStr, 1000, "%sm12 = %g\n", prefix, atts->GetM12());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sm13 = %g\n", prefix, atts->GetM13());
+    snprintf(tmpStr, 1000, "%sm13 = %g\n", prefix, atts->GetM13());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sm20 = %g\n", prefix, atts->GetM20());
+    snprintf(tmpStr, 1000, "%sm20 = %g\n", prefix, atts->GetM20());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sm21 = %g\n", prefix, atts->GetM21());
+    snprintf(tmpStr, 1000, "%sm21 = %g\n", prefix, atts->GetM21());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sm22 = %g\n", prefix, atts->GetM22());
+    snprintf(tmpStr, 1000, "%sm22 = %g\n", prefix, atts->GetM22());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sm23 = %g\n", prefix, atts->GetM23());
+    snprintf(tmpStr, 1000, "%sm23 = %g\n", prefix, atts->GetM23());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sm30 = %g\n", prefix, atts->GetM30());
+    snprintf(tmpStr, 1000, "%sm30 = %g\n", prefix, atts->GetM30());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sm31 = %g\n", prefix, atts->GetM31());
+    snprintf(tmpStr, 1000, "%sm31 = %g\n", prefix, atts->GetM31());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sm32 = %g\n", prefix, atts->GetM32());
+    snprintf(tmpStr, 1000, "%sm32 = %g\n", prefix, atts->GetM32());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sm33 = %g\n", prefix, atts->GetM33());
+    snprintf(tmpStr, 1000, "%sm33 = %g\n", prefix, atts->GetM33());
     str += tmpStr;
     if(atts->GetInvertLinearTransform())
-        SNPRINTF(tmpStr, 1000, "%sinvertLinearTransform = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sinvertLinearTransform = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sinvertLinearTransform = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sinvertLinearTransform = 0\n", prefix);
     str += tmpStr;
     const char *vectorTransformMethod_names = "None, AsPoint, AsDisplacement, AsDirection";
     switch (atts->GetVectorTransformMethod())
     {
       case TransformAttributes::None:
-          SNPRINTF(tmpStr, 1000, "%svectorTransformMethod = %sNone  # %s\n", prefix, prefix, vectorTransformMethod_names);
+          snprintf(tmpStr, 1000, "%svectorTransformMethod = %sNone  # %s\n", prefix, prefix, vectorTransformMethod_names);
           str += tmpStr;
           break;
       case TransformAttributes::AsPoint:
-          SNPRINTF(tmpStr, 1000, "%svectorTransformMethod = %sAsPoint  # %s\n", prefix, prefix, vectorTransformMethod_names);
+          snprintf(tmpStr, 1000, "%svectorTransformMethod = %sAsPoint  # %s\n", prefix, prefix, vectorTransformMethod_names);
           str += tmpStr;
           break;
       case TransformAttributes::AsDisplacement:
-          SNPRINTF(tmpStr, 1000, "%svectorTransformMethod = %sAsDisplacement  # %s\n", prefix, prefix, vectorTransformMethod_names);
+          snprintf(tmpStr, 1000, "%svectorTransformMethod = %sAsDisplacement  # %s\n", prefix, prefix, vectorTransformMethod_names);
           str += tmpStr;
           break;
       case TransformAttributes::AsDirection:
-          SNPRINTF(tmpStr, 1000, "%svectorTransformMethod = %sAsDirection  # %s\n", prefix, prefix, vectorTransformMethod_names);
+          snprintf(tmpStr, 1000, "%svectorTransformMethod = %sAsDirection  # %s\n", prefix, prefix, vectorTransformMethod_names);
           str += tmpStr;
           break;
       default:
@@ -257,9 +256,9 @@ PyTransformAttributes_ToString(const TransformAttributes *atts, const char *pref
     }
 
     if(atts->GetTransformVectors())
-        SNPRINTF(tmpStr, 1000, "%stransformVectors = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%stransformVectors = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%stransformVectors = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%stransformVectors = 0\n", prefix);
     str += tmpStr;
     return str;
 }

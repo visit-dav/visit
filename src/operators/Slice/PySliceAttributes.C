@@ -5,7 +5,6 @@
 #include <PySliceAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PySliceAttributes
@@ -46,23 +45,23 @@ PySliceAttributes_ToString(const SliceAttributes *atts, const char *prefix)
     switch (atts->GetOriginType())
     {
       case SliceAttributes::Point:
-          SNPRINTF(tmpStr, 1000, "%soriginType = %sPoint  # %s\n", prefix, prefix, originType_names);
+          snprintf(tmpStr, 1000, "%soriginType = %sPoint  # %s\n", prefix, prefix, originType_names);
           str += tmpStr;
           break;
       case SliceAttributes::Intercept:
-          SNPRINTF(tmpStr, 1000, "%soriginType = %sIntercept  # %s\n", prefix, prefix, originType_names);
+          snprintf(tmpStr, 1000, "%soriginType = %sIntercept  # %s\n", prefix, prefix, originType_names);
           str += tmpStr;
           break;
       case SliceAttributes::Percent:
-          SNPRINTF(tmpStr, 1000, "%soriginType = %sPercent  # %s\n", prefix, prefix, originType_names);
+          snprintf(tmpStr, 1000, "%soriginType = %sPercent  # %s\n", prefix, prefix, originType_names);
           str += tmpStr;
           break;
       case SliceAttributes::Zone:
-          SNPRINTF(tmpStr, 1000, "%soriginType = %sZone  # %s\n", prefix, prefix, originType_names);
+          snprintf(tmpStr, 1000, "%soriginType = %sZone  # %s\n", prefix, prefix, originType_names);
           str += tmpStr;
           break;
       case SliceAttributes::Node:
-          SNPRINTF(tmpStr, 1000, "%soriginType = %sNode  # %s\n", prefix, prefix, originType_names);
+          snprintf(tmpStr, 1000, "%soriginType = %sNode  # %s\n", prefix, prefix, originType_names);
           str += tmpStr;
           break;
       default:
@@ -70,66 +69,66 @@ PySliceAttributes_ToString(const SliceAttributes *atts, const char *prefix)
     }
 
     {   const double *originPoint = atts->GetOriginPoint();
-        SNPRINTF(tmpStr, 1000, "%soriginPoint = (", prefix);
+        snprintf(tmpStr, 1000, "%soriginPoint = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 3; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", originPoint[i]);
+            snprintf(tmpStr, 1000, "%g", originPoint[i]);
             str += tmpStr;
             if(i < 2)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
-    SNPRINTF(tmpStr, 1000, "%soriginIntercept = %g\n", prefix, atts->GetOriginIntercept());
+    snprintf(tmpStr, 1000, "%soriginIntercept = %g\n", prefix, atts->GetOriginIntercept());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%soriginPercent = %g\n", prefix, atts->GetOriginPercent());
+    snprintf(tmpStr, 1000, "%soriginPercent = %g\n", prefix, atts->GetOriginPercent());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%soriginZone = %d\n", prefix, atts->GetOriginZone());
+    snprintf(tmpStr, 1000, "%soriginZone = %d\n", prefix, atts->GetOriginZone());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%soriginNode = %d\n", prefix, atts->GetOriginNode());
+    snprintf(tmpStr, 1000, "%soriginNode = %d\n", prefix, atts->GetOriginNode());
     str += tmpStr;
     {   const double *normal = atts->GetNormal();
-        SNPRINTF(tmpStr, 1000, "%snormal = (", prefix);
+        snprintf(tmpStr, 1000, "%snormal = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 3; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", normal[i]);
+            snprintf(tmpStr, 1000, "%g", normal[i]);
             str += tmpStr;
             if(i < 2)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     const char *axisType_names = "XAxis, YAxis, ZAxis, Arbitrary, ThetaPhi";
     switch (atts->GetAxisType())
     {
       case SliceAttributes::XAxis:
-          SNPRINTF(tmpStr, 1000, "%saxisType = %sXAxis  # %s\n", prefix, prefix, axisType_names);
+          snprintf(tmpStr, 1000, "%saxisType = %sXAxis  # %s\n", prefix, prefix, axisType_names);
           str += tmpStr;
           break;
       case SliceAttributes::YAxis:
-          SNPRINTF(tmpStr, 1000, "%saxisType = %sYAxis  # %s\n", prefix, prefix, axisType_names);
+          snprintf(tmpStr, 1000, "%saxisType = %sYAxis  # %s\n", prefix, prefix, axisType_names);
           str += tmpStr;
           break;
       case SliceAttributes::ZAxis:
-          SNPRINTF(tmpStr, 1000, "%saxisType = %sZAxis  # %s\n", prefix, prefix, axisType_names);
+          snprintf(tmpStr, 1000, "%saxisType = %sZAxis  # %s\n", prefix, prefix, axisType_names);
           str += tmpStr;
           break;
       case SliceAttributes::Arbitrary:
-          SNPRINTF(tmpStr, 1000, "%saxisType = %sArbitrary  # %s\n", prefix, prefix, axisType_names);
+          snprintf(tmpStr, 1000, "%saxisType = %sArbitrary  # %s\n", prefix, prefix, axisType_names);
           str += tmpStr;
           break;
       case SliceAttributes::ThetaPhi:
-          SNPRINTF(tmpStr, 1000, "%saxisType = %sThetaPhi  # %s\n", prefix, prefix, axisType_names);
+          snprintf(tmpStr, 1000, "%saxisType = %sThetaPhi  # %s\n", prefix, prefix, axisType_names);
           str += tmpStr;
           break;
       default:
@@ -137,45 +136,45 @@ PySliceAttributes_ToString(const SliceAttributes *atts, const char *prefix)
     }
 
     {   const double *upAxis = atts->GetUpAxis();
-        SNPRINTF(tmpStr, 1000, "%supAxis = (", prefix);
+        snprintf(tmpStr, 1000, "%supAxis = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 3; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", upAxis[i]);
+            snprintf(tmpStr, 1000, "%g", upAxis[i]);
             str += tmpStr;
             if(i < 2)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     if(atts->GetProject2d())
-        SNPRINTF(tmpStr, 1000, "%sproject2d = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sproject2d = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sproject2d = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sproject2d = 0\n", prefix);
     str += tmpStr;
     if(atts->GetInteractive())
-        SNPRINTF(tmpStr, 1000, "%sinteractive = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sinteractive = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sinteractive = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sinteractive = 0\n", prefix);
     str += tmpStr;
     if(atts->GetFlip())
-        SNPRINTF(tmpStr, 1000, "%sflip = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sflip = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sflip = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sflip = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%soriginZoneDomain = %d\n", prefix, atts->GetOriginZoneDomain());
+    snprintf(tmpStr, 1000, "%soriginZoneDomain = %d\n", prefix, atts->GetOriginZoneDomain());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%soriginNodeDomain = %d\n", prefix, atts->GetOriginNodeDomain());
+    snprintf(tmpStr, 1000, "%soriginNodeDomain = %d\n", prefix, atts->GetOriginNodeDomain());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%smeshName = \"%s\"\n", prefix, atts->GetMeshName().c_str());
+    snprintf(tmpStr, 1000, "%smeshName = \"%s\"\n", prefix, atts->GetMeshName().c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%stheta = %g\n", prefix, atts->GetTheta());
+    snprintf(tmpStr, 1000, "%stheta = %g\n", prefix, atts->GetTheta());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sphi = %g\n", prefix, atts->GetPhi());
+    snprintf(tmpStr, 1000, "%sphi = %g\n", prefix, atts->GetPhi());
     str += tmpStr;
     return str;
 }

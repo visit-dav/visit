@@ -1745,7 +1745,7 @@ avtLimitCycleFilter::ReportWarnings(std::vector<avtIntegralCurve *> &ics)
 
         if (numAdvection)
         {
-          SNPRINTF(str, 4096,
+          snprintf(str, 4096,
                    "%s\n%d of your integral curves terminated before they reached "
                    "the maximum advection criteria.  This may be indicative of your "
                    "time or distance criteria being too large or the curve leaving the domain."
@@ -1760,7 +1760,7 @@ avtLimitCycleFilter::ReportWarnings(std::vector<avtIntegralCurve *> &ics)
         SumIntAcrossAllProcessors(numBoundary);
         if (numBoundary > 0)
         {
-            SNPRINTF(str, 4096, 
+            snprintf(str, 4096, 
                      "%s\n%d of your integral curves exited the spatial domain.\n", str, numBoundary);
         }
     }
@@ -1770,7 +1770,7 @@ avtLimitCycleFilter::ReportWarnings(std::vector<avtIntegralCurve *> &ics)
         SumIntAcrossAllProcessors(numEarlyTerminators);
         if (numEarlyTerminators > 0)
         {
-          SNPRINTF(str, 4096,
+          snprintf(str, 4096,
                    "%s\n%d of your integral curves terminated because they "
                    "reached the maximum number of steps.  This may be indicative of your "
                    "time or distance criteria being too large or of other attributes being "
@@ -1788,7 +1788,7 @@ avtLimitCycleFilter::ReportWarnings(std::vector<avtIntegralCurve *> &ics)
         SumIntAcrossAllProcessors(numCritPts);
         if (numCritPts > 0)
         {
-            SNPRINTF(str, 4096, 
+            snprintf(str, 4096, 
                      "%s\n%d of your integral curves circled round and round a critical point (a zero"
                      " velocity location).  Normally, VisIt is able to advect the particle "
                      "to the critical point location and terminate.  However, VisIt was not able "
@@ -1803,7 +1803,7 @@ avtLimitCycleFilter::ReportWarnings(std::vector<avtIntegralCurve *> &ics)
         SumIntAcrossAllProcessors(numStepSize);
         if (numStepSize > 0)
         {
-            SNPRINTF(str, 4096, 
+            snprintf(str, 4096, 
                      "%s\n%d of your integral curves were unable to advect because of the \"stepsize\".  "
                      "Often the step size becomes too small when appraoching a spatial "
                      "or temporal boundary. This especially happens when the step size matches "
@@ -1817,7 +1817,7 @@ avtLimitCycleFilter::ReportWarnings(std::vector<avtIntegralCurve *> &ics)
         SumIntAcrossAllProcessors(numStiff);
         if (numStiff > 0)
         {
-            SNPRINTF(str, 4096, 
+            snprintf(str, 4096, 
                      "%s\n%d of your integral curves were unable to advect because of \"stiffness\".  "
                      "When one component of a velocity field varies quickly and another stays "
                      "relatively constant, then it is not possible to choose step sizes that "
@@ -1828,7 +1828,7 @@ avtLimitCycleFilter::ReportWarnings(std::vector<avtIntegralCurve *> &ics)
 
     if( strlen( str ) )
     {
-        SNPRINTF(str, 4096, 
+        snprintf(str, 4096, 
                  "\n%s\nIf you want to disable any of these messages, "
                      "you can do so under the Advanced tab.\n", str);
 

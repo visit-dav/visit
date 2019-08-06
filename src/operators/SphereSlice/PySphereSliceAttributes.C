@@ -5,7 +5,6 @@
 #include <PySphereSliceAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PySphereSliceAttributes
@@ -43,22 +42,22 @@ PySphereSliceAttributes_ToString(const SphereSliceAttributes *atts, const char *
     char tmpStr[1000];
 
     {   const double *origin = atts->GetOrigin();
-        SNPRINTF(tmpStr, 1000, "%sorigin = (", prefix);
+        snprintf(tmpStr, 1000, "%sorigin = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 3; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", origin[i]);
+            snprintf(tmpStr, 1000, "%g", origin[i]);
             str += tmpStr;
             if(i < 2)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
-    SNPRINTF(tmpStr, 1000, "%sradius = %g\n", prefix, atts->GetRadius());
+    snprintf(tmpStr, 1000, "%sradius = %g\n", prefix, atts->GetRadius());
     str += tmpStr;
     return str;
 }

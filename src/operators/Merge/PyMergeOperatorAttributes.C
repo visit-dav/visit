@@ -5,7 +5,6 @@
 #include <PyMergeOperatorAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyMergeOperatorAttributes
@@ -43,11 +42,11 @@ PyMergeOperatorAttributes_ToString(const MergeOperatorAttributes *atts, const ch
     char tmpStr[1000];
 
     if(atts->GetParallelMerge())
-        SNPRINTF(tmpStr, 1000, "%sparallelMerge = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sparallelMerge = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sparallelMerge = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sparallelMerge = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%stolerance = %g\n", prefix, atts->GetTolerance());
+    snprintf(tmpStr, 1000, "%stolerance = %g\n", prefix, atts->GetTolerance());
     str += tmpStr;
     return str;
 }

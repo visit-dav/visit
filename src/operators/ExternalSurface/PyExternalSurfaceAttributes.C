@@ -5,7 +5,6 @@
 #include <PyExternalSurfaceAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyExternalSurfaceAttributes
@@ -43,14 +42,14 @@ PyExternalSurfaceAttributes_ToString(const ExternalSurfaceAttributes *atts, cons
     char tmpStr[1000];
 
     if(atts->GetRemoveGhosts())
-        SNPRINTF(tmpStr, 1000, "%sremoveGhosts = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sremoveGhosts = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sremoveGhosts = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sremoveGhosts = 0\n", prefix);
     str += tmpStr;
     if(atts->GetEdgesIn2D())
-        SNPRINTF(tmpStr, 1000, "%sedgesIn2D = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sedgesIn2D = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sedgesIn2D = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sedgesIn2D = 0\n", prefix);
     str += tmpStr;
     return str;
 }

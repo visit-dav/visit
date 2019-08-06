@@ -5,7 +5,6 @@
 #include <PyExplodeAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 #include <PyExplodeAttributes.h>
 
 // ****************************************************************************
@@ -47,15 +46,15 @@ PyExplodeAttributes_ToString(const ExplodeAttributes *atts, const char *prefix)
     switch (atts->GetExplosionType())
     {
       case ExplodeAttributes::Point:
-          SNPRINTF(tmpStr, 1000, "%sexplosionType = %sPoint  # %s\n", prefix, prefix, explosionType_names);
+          snprintf(tmpStr, 1000, "%sexplosionType = %sPoint  # %s\n", prefix, prefix, explosionType_names);
           str += tmpStr;
           break;
       case ExplodeAttributes::Plane:
-          SNPRINTF(tmpStr, 1000, "%sexplosionType = %sPlane  # %s\n", prefix, prefix, explosionType_names);
+          snprintf(tmpStr, 1000, "%sexplosionType = %sPlane  # %s\n", prefix, prefix, explosionType_names);
           str += tmpStr;
           break;
       case ExplodeAttributes::Cylinder:
-          SNPRINTF(tmpStr, 1000, "%sexplosionType = %sCylinder  # %s\n", prefix, prefix, explosionType_names);
+          snprintf(tmpStr, 1000, "%sexplosionType = %sCylinder  # %s\n", prefix, prefix, explosionType_names);
           str += tmpStr;
           break;
       default:
@@ -63,107 +62,107 @@ PyExplodeAttributes_ToString(const ExplodeAttributes *atts, const char *prefix)
     }
 
     {   const double *explosionPoint = atts->GetExplosionPoint();
-        SNPRINTF(tmpStr, 1000, "%sexplosionPoint = (", prefix);
+        snprintf(tmpStr, 1000, "%sexplosionPoint = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 3; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", explosionPoint[i]);
+            snprintf(tmpStr, 1000, "%g", explosionPoint[i]);
             str += tmpStr;
             if(i < 2)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const double *planePoint = atts->GetPlanePoint();
-        SNPRINTF(tmpStr, 1000, "%splanePoint = (", prefix);
+        snprintf(tmpStr, 1000, "%splanePoint = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 3; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", planePoint[i]);
+            snprintf(tmpStr, 1000, "%g", planePoint[i]);
             str += tmpStr;
             if(i < 2)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const double *planeNorm = atts->GetPlaneNorm();
-        SNPRINTF(tmpStr, 1000, "%splaneNorm = (", prefix);
+        snprintf(tmpStr, 1000, "%splaneNorm = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 3; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", planeNorm[i]);
+            snprintf(tmpStr, 1000, "%g", planeNorm[i]);
             str += tmpStr;
             if(i < 2)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const double *cylinderPoint1 = atts->GetCylinderPoint1();
-        SNPRINTF(tmpStr, 1000, "%scylinderPoint1 = (", prefix);
+        snprintf(tmpStr, 1000, "%scylinderPoint1 = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 3; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", cylinderPoint1[i]);
+            snprintf(tmpStr, 1000, "%g", cylinderPoint1[i]);
             str += tmpStr;
             if(i < 2)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const double *cylinderPoint2 = atts->GetCylinderPoint2();
-        SNPRINTF(tmpStr, 1000, "%scylinderPoint2 = (", prefix);
+        snprintf(tmpStr, 1000, "%scylinderPoint2 = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 3; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", cylinderPoint2[i]);
+            snprintf(tmpStr, 1000, "%g", cylinderPoint2[i]);
             str += tmpStr;
             if(i < 2)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
-    SNPRINTF(tmpStr, 1000, "%smaterialExplosionFactor = %g\n", prefix, atts->GetMaterialExplosionFactor());
+    snprintf(tmpStr, 1000, "%smaterialExplosionFactor = %g\n", prefix, atts->GetMaterialExplosionFactor());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%smaterial = \"%s\"\n", prefix, atts->GetMaterial().c_str());
+    snprintf(tmpStr, 1000, "%smaterial = \"%s\"\n", prefix, atts->GetMaterial().c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%scylinderRadius = %g\n", prefix, atts->GetCylinderRadius());
+    snprintf(tmpStr, 1000, "%scylinderRadius = %g\n", prefix, atts->GetCylinderRadius());
     str += tmpStr;
     if(atts->GetExplodeMaterialCells())
-        SNPRINTF(tmpStr, 1000, "%sexplodeMaterialCells = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sexplodeMaterialCells = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sexplodeMaterialCells = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sexplodeMaterialCells = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%scellExplosionFactor = %g\n", prefix, atts->GetCellExplosionFactor());
+    snprintf(tmpStr, 1000, "%scellExplosionFactor = %g\n", prefix, atts->GetCellExplosionFactor());
     str += tmpStr;
     const char *explosionPattern_names = "Impact, Scatter";
     switch (atts->GetExplosionPattern())
     {
       case ExplodeAttributes::Impact:
-          SNPRINTF(tmpStr, 1000, "%sexplosionPattern = %sImpact  # %s\n", prefix, prefix, explosionPattern_names);
+          snprintf(tmpStr, 1000, "%sexplosionPattern = %sImpact  # %s\n", prefix, prefix, explosionPattern_names);
           str += tmpStr;
           break;
       case ExplodeAttributes::Scatter:
-          SNPRINTF(tmpStr, 1000, "%sexplosionPattern = %sScatter  # %s\n", prefix, prefix, explosionPattern_names);
+          snprintf(tmpStr, 1000, "%sexplosionPattern = %sScatter  # %s\n", prefix, prefix, explosionPattern_names);
           str += tmpStr;
           break;
       default:
@@ -171,24 +170,24 @@ PyExplodeAttributes_ToString(const ExplodeAttributes *atts, const char *prefix)
     }
 
     if(atts->GetExplodeAllCells())
-        SNPRINTF(tmpStr, 1000, "%sexplodeAllCells = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sexplodeAllCells = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sexplodeAllCells = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sexplodeAllCells = 0\n", prefix);
     str += tmpStr;
     {   const stringVector &boundaryNames = atts->GetBoundaryNames();
-        SNPRINTF(tmpStr, 1000, "%sboundaryNames = (", prefix);
+        snprintf(tmpStr, 1000, "%sboundaryNames = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < boundaryNames.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "\"%s\"", boundaryNames[i].c_str());
+            snprintf(tmpStr, 1000, "\"%s\"", boundaryNames[i].c_str());
             str += tmpStr;
             if(i < boundaryNames.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     { // new scope
@@ -197,7 +196,7 @@ PyExplodeAttributes_ToString(const ExplodeAttributes *atts, const char *prefix)
         for(AttributeGroupVector::const_iterator pos = atts->GetExplosions().begin(); pos != atts->GetExplosions().end(); ++pos, ++index)
         {
             const ExplodeAttributes *current = (const ExplodeAttributes *)(*pos);
-            SNPRINTF(tmpStr, 1000, "GetExplosions(%d).", index);
+            snprintf(tmpStr, 1000, "GetExplosions(%d).", index);
             std::string objPrefix(prefix + std::string(tmpStr));
             str += PyExplodeAttributes_ToString(current, objPrefix.c_str());
         }
@@ -756,9 +755,9 @@ ExplodeAttributes_GetExplosions(PyObject *self, PyObject *args)
     {
         char msg[400] = {'\0'};
         if(obj->data->GetExplosions().size() == 0)
-            SNPRINTF(msg, 400, "In ExplodeAttributes::GetExplosions : The index %d is invalid because explosions is empty.", index);
+            snprintf(msg, 400, "In ExplodeAttributes::GetExplosions : The index %d is invalid because explosions is empty.", index);
         else
-            SNPRINTF(msg, 400, "In ExplodeAttributes::GetExplosions : The index %d is invalid. Use index values in: [0, %ld).",  index, obj->data->GetExplosions().size());
+            snprintf(msg, 400, "In ExplodeAttributes::GetExplosions : The index %d is invalid. Use index values in: [0, %ld).",  index, obj->data->GetExplosions().size());
         PyErr_SetString(PyExc_IndexError, msg);
         return NULL;
     }
@@ -792,7 +791,7 @@ ExplodeAttributes_AddExplosions(PyObject *self, PyObject *args)
     if(!PyExplodeAttributes_Check(element))
     {
         char msg[400] = {'\0'};
-        SNPRINTF(msg, 400, "The ExplodeAttributes::AddExplosions method only accepts ExplodeAttributes objects.");
+        snprintf(msg, 400, "The ExplodeAttributes::AddExplosions method only accepts ExplodeAttributes objects.");
         PyErr_SetString(PyExc_TypeError, msg);
         return NULL;
     }
@@ -840,7 +839,7 @@ ExplodeAttributes_RemoveExplosions(PyObject *self, PyObject *args)
     if(index < 0 || index >= obj->data->GetNumExplosions())
     {
         char msg[400] = {'\0'};
-        SNPRINTF(msg, 400, "In ExplodeAttributes::RemoveExplosions : Index %d is out of range", index);
+        snprintf(msg, 400, "In ExplodeAttributes::RemoveExplosions : Index %d is out of range", index);
         PyErr_SetString(PyExc_IndexError, msg);
         return NULL;
     }

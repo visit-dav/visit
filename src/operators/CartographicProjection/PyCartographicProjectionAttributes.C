@@ -5,7 +5,6 @@
 #include <PyCartographicProjectionAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyCartographicProjectionAttributes
@@ -48,54 +47,54 @@ PyCartographicProjectionAttributes_ToString(const CartographicProjectionAttribut
     switch (atts->GetProjectionID())
     {
       case CartographicProjectionAttributes::aitoff:
-          SNPRINTF(tmpStr, 1000, "%sprojectionID = %saitoff  # %s\n", prefix, prefix, projectionID_names);
+          snprintf(tmpStr, 1000, "%sprojectionID = %saitoff  # %s\n", prefix, prefix, projectionID_names);
           str += tmpStr;
           break;
       case CartographicProjectionAttributes::eck4:
-          SNPRINTF(tmpStr, 1000, "%sprojectionID = %seck4  # %s\n", prefix, prefix, projectionID_names);
+          snprintf(tmpStr, 1000, "%sprojectionID = %seck4  # %s\n", prefix, prefix, projectionID_names);
           str += tmpStr;
           break;
       case CartographicProjectionAttributes::eqdc:
-          SNPRINTF(tmpStr, 1000, "%sprojectionID = %seqdc  # %s\n", prefix, prefix, projectionID_names);
+          snprintf(tmpStr, 1000, "%sprojectionID = %seqdc  # %s\n", prefix, prefix, projectionID_names);
           str += tmpStr;
           break;
       case CartographicProjectionAttributes::hammer:
-          SNPRINTF(tmpStr, 1000, "%sprojectionID = %shammer  # %s\n", prefix, prefix, projectionID_names);
+          snprintf(tmpStr, 1000, "%sprojectionID = %shammer  # %s\n", prefix, prefix, projectionID_names);
           str += tmpStr;
           break;
       case CartographicProjectionAttributes::laea:
-          SNPRINTF(tmpStr, 1000, "%sprojectionID = %slaea  # %s\n", prefix, prefix, projectionID_names);
+          snprintf(tmpStr, 1000, "%sprojectionID = %slaea  # %s\n", prefix, prefix, projectionID_names);
           str += tmpStr;
           break;
       case CartographicProjectionAttributes::lcc:
-          SNPRINTF(tmpStr, 1000, "%sprojectionID = %slcc  # %s\n", prefix, prefix, projectionID_names);
+          snprintf(tmpStr, 1000, "%sprojectionID = %slcc  # %s\n", prefix, prefix, projectionID_names);
           str += tmpStr;
           break;
       case CartographicProjectionAttributes::merc:
-          SNPRINTF(tmpStr, 1000, "%sprojectionID = %smerc  # %s\n", prefix, prefix, projectionID_names);
+          snprintf(tmpStr, 1000, "%sprojectionID = %smerc  # %s\n", prefix, prefix, projectionID_names);
           str += tmpStr;
           break;
       case CartographicProjectionAttributes::mill:
-          SNPRINTF(tmpStr, 1000, "%sprojectionID = %smill  # %s\n", prefix, prefix, projectionID_names);
+          snprintf(tmpStr, 1000, "%sprojectionID = %smill  # %s\n", prefix, prefix, projectionID_names);
           str += tmpStr;
           break;
       case CartographicProjectionAttributes::moll:
-          SNPRINTF(tmpStr, 1000, "%sprojectionID = %smoll  # %s\n", prefix, prefix, projectionID_names);
+          snprintf(tmpStr, 1000, "%sprojectionID = %smoll  # %s\n", prefix, prefix, projectionID_names);
           str += tmpStr;
           break;
       case CartographicProjectionAttributes::ortho:
-          SNPRINTF(tmpStr, 1000, "%sprojectionID = %sortho  # %s\n", prefix, prefix, projectionID_names);
+          snprintf(tmpStr, 1000, "%sprojectionID = %sortho  # %s\n", prefix, prefix, projectionID_names);
           str += tmpStr;
           break;
       case CartographicProjectionAttributes::wink2:
-          SNPRINTF(tmpStr, 1000, "%sprojectionID = %swink2  # %s\n", prefix, prefix, projectionID_names);
+          snprintf(tmpStr, 1000, "%sprojectionID = %swink2  # %s\n", prefix, prefix, projectionID_names);
           str += tmpStr;
           break;
       default:
           break;
     }
 
-    SNPRINTF(tmpStr, 1000, "%scentralMeridian = %g\n", prefix, atts->GetCentralMeridian());
+    snprintf(tmpStr, 1000, "%scentralMeridian = %g\n", prefix, atts->GetCentralMeridian());
     str += tmpStr;
     return str;
 }

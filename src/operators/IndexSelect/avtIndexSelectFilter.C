@@ -41,7 +41,6 @@
 #include <InvalidSetException.h>
 #include <InvalidCategoryException.h>
 #include <InvalidVariableException.h>
-#include <snprintf.h>
 
 #ifdef PARALLEL
 #include <mpi.h>

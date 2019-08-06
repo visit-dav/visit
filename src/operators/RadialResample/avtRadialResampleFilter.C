@@ -934,6 +934,6 @@ avtRadialResampleFilter::UpdateDataObjectInfo(void)
     }
     
     char params[200];
-    SNPRINTF(params, 200, "Min Elevation=%f Max Elevation=%f Delta=%f Radius=%f", atts.GetMinTheta(), atts.GetMaxTheta(), atts.GetDeltaTheta(), atts.GetRadius());
+    snprintf(params, 200, "Min Elevation=%f Max Elevation=%f Delta=%f Radius=%f", atts.GetMinTheta(), atts.GetMaxTheta(), atts.GetDeltaTheta(), atts.GetRadius());
     outAtts.AddFilterMetaData("Radial Resample", params);
 }

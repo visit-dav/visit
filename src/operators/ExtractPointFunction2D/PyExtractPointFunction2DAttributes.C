@@ -5,7 +5,6 @@
 #include <PyExtractPointFunction2DAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyExtractPointFunction2DAttributes
@@ -43,35 +42,35 @@ PyExtractPointFunction2DAttributes_ToString(const ExtractPointFunction2DAttribut
     char tmpStr[1000];
 
     {   const intVector &I = atts->GetI();
-        SNPRINTF(tmpStr, 1000, "%sI = (", prefix);
+        snprintf(tmpStr, 1000, "%sI = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < I.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%d", I[i]);
+            snprintf(tmpStr, 1000, "%d", I[i]);
             str += tmpStr;
             if(i < I.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const intVector &J = atts->GetJ();
-        SNPRINTF(tmpStr, 1000, "%sJ = (", prefix);
+        snprintf(tmpStr, 1000, "%sJ = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < J.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%d", J[i]);
+            snprintf(tmpStr, 1000, "%d", J[i]);
             str += tmpStr;
             if(i < J.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     return str;

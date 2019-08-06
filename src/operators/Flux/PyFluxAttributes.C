@@ -5,7 +5,6 @@
 #include <PyFluxAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyFluxAttributes
@@ -42,14 +41,14 @@ PyFluxAttributes_ToString(const FluxAttributes *atts, const char *prefix)
     std::string str;
     char tmpStr[1000];
 
-    SNPRINTF(tmpStr, 1000, "%sflowField = \"%s\"\n", prefix, atts->GetFlowField().c_str());
+    snprintf(tmpStr, 1000, "%sflowField = \"%s\"\n", prefix, atts->GetFlowField().c_str());
     str += tmpStr;
     if(atts->GetWeight())
-        SNPRINTF(tmpStr, 1000, "%sweight = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sweight = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sweight = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sweight = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sweightField = \"%s\"\n", prefix, atts->GetWeightField().c_str());
+    snprintf(tmpStr, 1000, "%sweightField = \"%s\"\n", prefix, atts->GetWeightField().c_str());
     str += tmpStr;
     return str;
 }

@@ -181,7 +181,7 @@ avtLineoutPluginFilter::UpdateDataObjectInfoCB(avtDataObject_p &input,
     const LineoutAttributes &lo = ((const avtLineoutPluginFilter *)This)->atts;
 
     char params[400];
-    SNPRINTF(params, 400, "point1=%lg,%lg,%lg point2=%lg,%lg,%lg", 
+    snprintf(params, 400, "point1=%lg,%lg,%lg point2=%lg,%lg,%lg", 
              lo.GetPoint1()[0],lo.GetPoint1()[1],lo.GetPoint1()[2],
              lo.GetPoint2()[0],lo.GetPoint2()[1],lo.GetPoint2()[2]);
     outAtts.AddFilterMetaData("Lineout", params);

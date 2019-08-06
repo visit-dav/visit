@@ -5,7 +5,6 @@
 #include <PyTubeAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyTubeAttributes
@@ -43,37 +42,37 @@ PyTubeAttributes_ToString(const TubeAttributes *atts, const char *prefix)
     char tmpStr[1000];
 
     if(atts->GetScaleByVarFlag())
-        SNPRINTF(tmpStr, 1000, "%sscaleByVarFlag = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sscaleByVarFlag = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sscaleByVarFlag = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sscaleByVarFlag = 0\n", prefix);
     str += tmpStr;
     const char *tubeRadiusType_names = "FractionOfBBox, Absolute";
     switch (atts->GetTubeRadiusType())
     {
       case TubeAttributes::FractionOfBBox:
-          SNPRINTF(tmpStr, 1000, "%stubeRadiusType = %sFractionOfBBox  # %s\n", prefix, prefix, tubeRadiusType_names);
+          snprintf(tmpStr, 1000, "%stubeRadiusType = %sFractionOfBBox  # %s\n", prefix, prefix, tubeRadiusType_names);
           str += tmpStr;
           break;
       case TubeAttributes::Absolute:
-          SNPRINTF(tmpStr, 1000, "%stubeRadiusType = %sAbsolute  # %s\n", prefix, prefix, tubeRadiusType_names);
+          snprintf(tmpStr, 1000, "%stubeRadiusType = %sAbsolute  # %s\n", prefix, prefix, tubeRadiusType_names);
           str += tmpStr;
           break;
       default:
           break;
     }
 
-    SNPRINTF(tmpStr, 1000, "%sradiusFractionBBox = %g\n", prefix, atts->GetRadiusFractionBBox());
+    snprintf(tmpStr, 1000, "%sradiusFractionBBox = %g\n", prefix, atts->GetRadiusFractionBBox());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sradiusAbsolute = %g\n", prefix, atts->GetRadiusAbsolute());
+    snprintf(tmpStr, 1000, "%sradiusAbsolute = %g\n", prefix, atts->GetRadiusAbsolute());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sscaleVariable = \"%s\"\n", prefix, atts->GetScaleVariable().c_str());
+    snprintf(tmpStr, 1000, "%sscaleVariable = \"%s\"\n", prefix, atts->GetScaleVariable().c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sfineness = %d\n", prefix, atts->GetFineness());
+    snprintf(tmpStr, 1000, "%sfineness = %d\n", prefix, atts->GetFineness());
     str += tmpStr;
     if(atts->GetCapping())
-        SNPRINTF(tmpStr, 1000, "%scapping = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%scapping = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%scapping = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%scapping = 0\n", prefix);
     str += tmpStr;
     return str;
 }

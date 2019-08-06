@@ -9,8 +9,6 @@
 #include <avtZoneDumpFilter.h>
 #include <avtParallel.h>
 
-#include <snprintf.h>
-
 #include <vtkCellData.h>
 #include <vtkDataArray.h>
 #include <vtkDataSet.h>
