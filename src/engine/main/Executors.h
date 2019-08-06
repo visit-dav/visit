@@ -1625,11 +1625,12 @@ EngineRPCExecutor<CloneNetworkRPC>::Execute(CloneNetworkRPC *rpc)
     {
         cerr << "ADDING QOT FROM RPC" << endl;//FIXME
         netmgr->CloneNetwork(rpc->GetID());
+        //FIXME: testing DirectDBQOT
         if (rpc->GetQueryOverTimeAtts() != NULL)
-            //netmgr->AddDirectDBQueryOverTimeFilter(rpc->GetQueryOverTimeAtts(),
-            //                                       rpc->GetID());
-            netmgr->AddQueryOverTimeFilter(rpc->GetQueryOverTimeAtts(),
-                                           rpc->GetID());
+            netmgr->AddDirectDBQueryOverTimeFilter(rpc->GetQueryOverTimeAtts(),
+                                                   rpc->GetID());
+            //netmgr->AddQueryOverTimeFilter(rpc->GetQueryOverTimeAtts(),
+            //                               rpc->GetID());
         rpc->SendReply();
     }
     CATCH2(VisItException, e)

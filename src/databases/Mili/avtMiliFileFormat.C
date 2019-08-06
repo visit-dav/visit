@@ -2281,6 +2281,55 @@ avtMiliFileFormat::GetTimeAndElementSpanVars(int domain,
     {
         for (int varIdx = 0; varIdx < numVars; ++varIdx)
         {
+            string varPath = vars[varIdx];
+            int meshId     = ExtractMeshIdFromPath(varPath);
+
+            //
+            // Is this a vector or standard variable?
+            //
+            bool isVector   = false;
+            int compIdx     = -1;
+            string truePath = varPath;
+
+            MiliVariableMetaData *varMD = 
+                miliMetaData[meshId]->GetVarMDByPath(truePath.c_str());
+
+            if (varMD == NULL)
+            {
+                string compName = "";
+                size_t varPos   = varPath.find_last_of("/");
+                compName        = varPath.substr(varPos + 1);
+                truePath        = varPath.substr(0, varPos);
+
+                varMD = miliMetaData[meshId]->GetVarMDByPath(truePath.c_str());
+
+                if (varMD == NULL)
+                {
+                    cerr << "\nTRUE EXCEPTION" << endl;
+                    EXCEPTION1(InvalidVariableException, varPath);
+                }
+
+                isVector = true;
+
+                stringVector vComps = varMD->GetVectorComponents();
+                const int numComps  = vComps.size(); 
+
+                for (int v = 0; v < numComps; ++v)
+                {
+                    if (vComps[v] == compName)
+                    {
+                        compIdx = v;
+                    }
+                }
+
+                if (compIdx == -1)
+                {
+                    cerr << "\nTRUE EXCEPTION 2" << endl;
+                    EXCEPTION1(InvalidVariableException, varPath);
+                }
+            }
+
+
             vtkFloatArray *singleSpan = vtkFloatArray::New();
             singleSpan->SetNumberOfComponents(1); 
             singleSpan->SetNumberOfTuples(spanSize); 
@@ -2288,14 +2337,33 @@ avtMiliFileFormat::GetTimeAndElementSpanVars(int domain,
 
             for (int curC = startC; curC < stopC; ++curC)
             {
-                //TODO: need to make sure that this isn't a vector var
-                vtkFloatArray *meshVar = 
-                    (vtkFloatArray *) GetVar(curC, domain, vars[varIdx].c_str());
+                if (!isVector)
+                {
+                    vtkFloatArray *meshVar = 
+                        (vtkFloatArray *) GetVar(curC, domain, truePath.c_str());
 
-                if (meshVar == NULL)
-                    cerr << "MESH VAR IS NULL!" << endl;//FIXME
+                    if (meshVar == NULL)
+                        cerr << "MESH VAR IS NULL!" << endl;//FIXME
 
-                spanPtr[curC] = meshVar->GetTuple1(elementIds[elIdx]);
+                    spanPtr[curC] = meshVar->GetTuple1(elementIds[elIdx]);
+                }
+                else
+                {
+                    vtkFloatArray *meshVar = 
+                        (vtkFloatArray *) GetVectorVar(curC, domain, truePath.c_str());
+
+                    int numTuples     = meshVar->GetNumberOfTuples();
+                    int numComps      = meshVar->GetNumberOfComponents();
+                    float *meshVarPtr = meshVar->GetPointer(0);
+
+                    if (meshVar == NULL)
+                        cerr << "MESH VAR IS NULL!" << endl;//FIXME
+
+                    int idx = (elementIds[elIdx] * numComps) + compIdx;
+                    spanPtr[curC] = meshVarPtr[idx];
+
+                }
+                
             }
 
             spanArrays[spanIdx++] = singleSpan;
