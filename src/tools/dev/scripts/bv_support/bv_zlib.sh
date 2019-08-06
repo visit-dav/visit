@@ -22,13 +22,12 @@ function bv_zlib_depends_on
 
 function bv_zlib_info
 {
-    export ZLIB_VERSION=${ZLIB_VERSION:-"1.2.8"}
-    export ZLIB_FILE=${ZLIB_FILE:-"zlib-${ZLIB_VERSION}.tar.gz"}
+    export ZLIB_VERSION=${ZLIB_VERSION:-"1.2.11"}
+    export ZLIB_FILE=${ZLIB_FILE:-"zlib-${ZLIB_VERSION}.tar.xz"}
     export ZLIB_COMPATIBILITY_VERSION=${ZLIB_COMPATIBILITY_VERSION:-"1.2"}
-    export ZLIB_URL=${ZLIB_URL:-https://wci.llnl.gov/codes/zlib/zlib-${ZLIB_VERSION}}
+    export ZLIB_URL=${ZLIB_URL:-https://www.zlib.net}
     export ZLIB_BUILD_DIR=${ZLIB_BUILD_DIR:-"zlib-${ZLIB_VERSION}"}
-    export ZLIB_MD5_CHECKSUM="44d667c142d7cda120332623eab69f40"
-    export ZLIB_SHA256_CHECKSUM="36658cb768a54c1d4dec43c3116c27ed893e88b02ecfcb44f2166f9c0b7f2a0d"
+    export ZLIB_SHA256_CHECKSUM="4ff941449631ace0d4d203e3483be9dbc9da454084111f97ea0a2114e19bf066"
 }
 
 function bv_zlib_print
