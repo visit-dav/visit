@@ -19,7 +19,6 @@
 #include <DataNode.h>
 
 #include <stdio.h>
-#include <snprintf.h>
 #include <visit-config.h>
 #include <DebugStream.h>
 #include <Utility.h>

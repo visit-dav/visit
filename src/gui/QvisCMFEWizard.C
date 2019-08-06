@@ -32,8 +32,6 @@
 
 #include <ViewerProxy.h>
 
-#include <snprintf.h>
-
 #define DONOR_SINGLE_DATABASE    0
 #define DONOR_TIME_SLICES        1
 #define DONOR_MULTIPLE_DATABASES 2
@@ -111,7 +109,7 @@ QvisCMFEWizard::QvisCMFEWizard(AttributeSubject *atts, QWidget *parent) :
     selectedDonorDatabase  = "";
 
     char str[1024];
-    SNPRINTF(str, 1024, "cmfe%d", timesCompleted);
+    snprintf(str, 1024, "cmfe%d", timesCompleted);
     decision_exprname = str;
     timesCompleted++;
 
@@ -451,17 +449,17 @@ QvisCMFEWizard::initializePage(int pageId)
                                 : (decision_timeType == TIME_TYPE_SIMCYCLE ? 1 : 2)))->setChecked(true);
         timeTypeSelect->blockSignals(false);
         timeTxt->blockSignals(true);
-        SNPRINTF(buff, 1024, "%f", decision_time);
+        snprintf(buff, 1024, "%f", decision_time);
         timeTxt->setText(tr(buff));
         timeTxt->setEnabled(decision_timeType == TIME_TYPE_SIMTIME);
         timeTxt->blockSignals(false);
         cycleTxt->blockSignals(true);
-        SNPRINTF(buff, 1024, "%d", decision_cycle);
+        snprintf(buff, 1024, "%d", decision_cycle);
         cycleTxt->setText(tr(buff));
         cycleTxt->setEnabled(decision_timeType == TIME_TYPE_SIMCYCLE);
         cycleTxt->blockSignals(false);
         cycleTxt->blockSignals(true);
-        SNPRINTF(buff, 1024, "%d", decision_index);
+        snprintf(buff, 1024, "%d", decision_index);
         indexTxt->setText(tr(buff));
         indexTxt->setEnabled(decision_timeType == TIME_TYPE_INDEX);
         indexTxt->blockSignals(false);
@@ -1499,18 +1497,18 @@ QvisCMFEWizard::AddCMFEExpression(void)
 
       // Get the first donor from the list.
       if( item )
-        SNPRINTF(file_var_part, 1024, "%s", item->text().toLatin1().data() );
+        snprintf(file_var_part, 1024, "%s", item->text().toLatin1().data() );
     }
     else if (decision_donorType == DONOR_TIME_SLICES)
     {
         if (decision_timeType == TIME_TYPE_SIMTIME)
-            SNPRINTF(file_var_part, 1024, "[%f]t%s:%s", decision_time, 
+            snprintf(file_var_part, 1024, "[%f]t%s:%s", decision_time, 
                      (decision_absolute ? "" : "d"), decision_variable.c_str());
         else if (decision_timeType == TIME_TYPE_SIMCYCLE)
-            SNPRINTF(file_var_part, 1024, "[%d]c%s:%s", decision_cycle, 
+            snprintf(file_var_part, 1024, "[%d]c%s:%s", decision_cycle, 
                      (decision_absolute ? "" : "d"), decision_variable.c_str());
         else if (decision_timeType == TIME_TYPE_INDEX)
-            SNPRINTF(file_var_part, 1024, "[%d]i%s:%s", decision_index, 
+            snprintf(file_var_part, 1024, "[%d]i%s:%s", decision_index, 
                      (decision_absolute ? "" : "d"), decision_variable.c_str());
     }
 
@@ -1519,7 +1517,7 @@ QvisCMFEWizard::AddCMFEExpression(void)
 
     if (decision_interp == INTERP_CONN_CMFE)
     {
-      SNPRINTF(cmfe_part, 1024, "conn_cmfe(<%s>, <%s>)", 
+      snprintf(cmfe_part, 1024, "conn_cmfe(<%s>, <%s>)", 
                file_var_part, decision_mesh.c_str());
     }
     else
@@ -1527,11 +1525,11 @@ QvisCMFEWizard::AddCMFEExpression(void)
       char fillstr[1024];
 
       if (decision_fill == FILL_CONSTANT)
-        SNPRINTF(fillstr, 1024, "%f", decision_fillval);
+        snprintf(fillstr, 1024, "%f", decision_fillval);
       else
-        SNPRINTF(fillstr, 1024, "<%s>", decision_fillvar.c_str());
+        snprintf(fillstr, 1024, "<%s>", decision_fillvar.c_str());
       
-      SNPRINTF(cmfe_part, 1024, "pos_cmfe(<%s>, <%s>, %s)", 
+      snprintf(cmfe_part, 1024, "pos_cmfe(<%s>, <%s>, %s)", 
                file_var_part, decision_mesh.c_str(), fillstr);
     }
 
@@ -1558,26 +1556,26 @@ QvisCMFEWizard::AddCMFEExpression(void)
       if (decision_exprtype == EXPRESSION_SIMPLE)
         strcpy(defn, cmfe_part);
       else if (decision_exprtype == EXPRESSION_MINIMUM)
-        SNPRINTF(defn, 1024, "min(%s, %s)", cmfe_part, filteredVar.c_str());
+        snprintf(defn, 1024, "min(%s, %s)", cmfe_part, filteredVar.c_str());
       else if (decision_exprtype == EXPRESSION_MAXIMUM)
-        SNPRINTF(defn, 1024, "max(%s, %s)", cmfe_part, filteredVar.c_str());
+        snprintf(defn, 1024, "max(%s, %s)", cmfe_part, filteredVar.c_str());
       else if (decision_exprtype == EXPRESSION_SUM)
-        SNPRINTF(defn, 1024, "(%s+%s)", cmfe_part, filteredVar.c_str());
+        snprintf(defn, 1024, "(%s+%s)", cmfe_part, filteredVar.c_str());
       else if (decision_exprtype == EXPRESSION_AVERAGE)
-        SNPRINTF(defn, 1024, "(%s+%s)/2.0", cmfe_part, filteredVar.c_str());
+        snprintf(defn, 1024, "(%s+%s)/2.0", cmfe_part, filteredVar.c_str());
       else  if (decision_exprtype == EXPRESSION_VARIANCE)
-        SNPRINTF(defn, 1024, "(%s - (%s+%s)/2.0) * (%s - (%s+%s)/2.0) + (%s - (%s+%s)/2.0) * (%s - (%s+%s)/2.0)",
+        snprintf(defn, 1024, "(%s - (%s+%s)/2.0) * (%s - (%s+%s)/2.0) + (%s - (%s+%s)/2.0) * (%s - (%s+%s)/2.0)",
                  cmfe_part, cmfe_part, filteredVar.c_str(),
                  cmfe_part, cmfe_part, filteredVar.c_str(),
                  filteredVar.c_str(), cmfe_part, cmfe_part, 
                  filteredVar.c_str(), cmfe_part, cmfe_part);
 
       else if (decision_exprtype == EXPRESSION_ABS_DIFF)
-        SNPRINTF(defn, 1024, "abs(%s-%s)", cmfe_part, filteredVar.c_str());
+        snprintf(defn, 1024, "abs(%s-%s)", cmfe_part, filteredVar.c_str());
       else if (decision_exprtype == EXPRESSION_DIFF_FIRST)
-        SNPRINTF(defn, 1024, "(%s-%s)", cmfe_part, filteredVar.c_str());
+        snprintf(defn, 1024, "(%s-%s)", cmfe_part, filteredVar.c_str());
       else if (decision_exprtype == EXPRESSION_DIFF_SECOND)
-        SNPRINTF(defn, 1024, "(%s-%s)", filteredVar.c_str(), cmfe_part);
+        snprintf(defn, 1024, "(%s-%s)", filteredVar.c_str(), cmfe_part);
     }
 
     // Multiple donor variables
@@ -1600,13 +1598,13 @@ QvisCMFEWizard::AddCMFEExpression(void)
 
           if (decision_interp == INTERP_CONN_CMFE)
           {
-            SNPRINTF(cmfe_part, 1024, "%s conn_cmfe(<%s>, <%s>)", 
+            snprintf(cmfe_part, 1024, "%s conn_cmfe(<%s>, <%s>)", 
                      cmfe_part_tmp, file_var_part.c_str(),
                      decision_mesh.c_str());
 
 
             if(decision_exprtype == EXPRESSION_VARIANCE)
-              SNPRINTF(cmfe_part_var, 1024,
+              snprintf(cmfe_part_var, 1024,
                        "%s "
                        "((conn_cmfe(<%s>, <%s>) - %s_average) *"
                        " (conn_cmfe(<%s>, <%s>) - %s_average))", 
@@ -1621,16 +1619,16 @@ QvisCMFEWizard::AddCMFEExpression(void)
             char fillstr[1024];
             
             if (decision_fill == FILL_CONSTANT)
-              SNPRINTF(fillstr, 1024, "%f", decision_fillval);
+              snprintf(fillstr, 1024, "%f", decision_fillval);
             else
-              SNPRINTF(fillstr, 1024, "<%s>", decision_fillvar.c_str());
+              snprintf(fillstr, 1024, "<%s>", decision_fillvar.c_str());
             
-            SNPRINTF(cmfe_part, 1024, "%s pos_cmfe(<%s>, <%s>, %s)", 
+            snprintf(cmfe_part, 1024, "%s pos_cmfe(<%s>, <%s>, %s)", 
                      cmfe_part_tmp, file_var_part.c_str(),
                      decision_mesh.c_str(), fillstr);
 
             if(decision_exprtype == EXPRESSION_VARIANCE)
-              SNPRINTF(cmfe_part_var, 1024,
+              snprintf(cmfe_part_var, 1024,
                        "%s "
                        "((pos_cmfe(<%s>, <%s>, %s) - %s_average) *"
                        " (pos_cmfe(<%s>, <%s>, %s) - %s_average))", 
@@ -1647,18 +1645,18 @@ QvisCMFEWizard::AddCMFEExpression(void)
         {
           if (decision_exprtype == EXPRESSION_MINIMUM ||
               decision_exprtype == EXPRESSION_MAXIMUM)
-            SNPRINTF(cmfe_part_tmp, 1024, "%s, ", cmfe_part);
+            snprintf(cmfe_part_tmp, 1024, "%s, ", cmfe_part);
           
           else if (decision_exprtype == EXPRESSION_SUM ||
                    decision_exprtype == EXPRESSION_AVERAGE ||
                    decision_exprtype == EXPRESSION_VARIANCE)
-            SNPRINTF(cmfe_part_tmp, 1024, "%s + ", cmfe_part);
+            snprintf(cmfe_part_tmp, 1024, "%s + ", cmfe_part);
 
           else if (decision_exprtype == EXPRESSION_ABS_DIFF)
-            SNPRINTF(cmfe_part_tmp, 1024, "%s - ", cmfe_part);
+            snprintf(cmfe_part_tmp, 1024, "%s - ", cmfe_part);
 
           if(decision_exprtype == EXPRESSION_VARIANCE)
-            SNPRINTF(cmfe_part_tmp_var, 1024, "%s + ", cmfe_part_var);
+            snprintf(cmfe_part_tmp_var, 1024, "%s + ", cmfe_part_var);
 
           cmfe_part[0] = '\0';
           cmfe_part_var[0] = '\0';
@@ -1666,19 +1664,19 @@ QvisCMFEWizard::AddCMFEExpression(void)
       }
 
       if (decision_exprtype == EXPRESSION_MINIMUM)
-        SNPRINTF(defn, 1024, "min(%s)", cmfe_part);
+        snprintf(defn, 1024, "min(%s)", cmfe_part);
       else if (decision_exprtype == EXPRESSION_MAXIMUM)
-        SNPRINTF(defn, 1024, "max(%s)", cmfe_part);
+        snprintf(defn, 1024, "max(%s)", cmfe_part);
       else if (decision_exprtype == EXPRESSION_SUM)
-        SNPRINTF(defn, 1024, "(%s)", cmfe_part);
+        snprintf(defn, 1024, "(%s)", cmfe_part);
       else if (decision_exprtype == EXPRESSION_ABS_DIFF)
-        SNPRINTF(defn, 1024, "abs(%s)", cmfe_part);
+        snprintf(defn, 1024, "abs(%s)", cmfe_part);
       else if (decision_exprtype == EXPRESSION_AVERAGE ||
                decision_exprtype == EXPRESSION_VARIANCE)
-        SNPRINTF(defn, 1024, "(%s) / %d", cmfe_part, donorList->count() );
+        snprintf(defn, 1024, "(%s) / %d", cmfe_part, donorList->count() );
 
       if (decision_exprtype == EXPRESSION_VARIANCE)
-        SNPRINTF(defn_var, 1024, "(%s) / %d", cmfe_part_var, donorList->count()-1 );
+        snprintf(defn_var, 1024, "(%s) / %d", cmfe_part_var, donorList->count()-1 );
     }
 
     int varType = 0; // Unknown type
@@ -1733,7 +1731,7 @@ QvisCMFEWizard::AddCMFEExpression(void)
         GetViewerMethods()->ActivateDatabase(decision_targetDatabase);
 
     char str[1024];
-    SNPRINTF(str, 1024, "cmfe%d", timesCompleted);
+    snprintf(str, 1024, "cmfe%d", timesCompleted);
     decision_exprname = str;
     exprNameTxt->setText(tr(decision_exprname.c_str()));
     timesCompleted++;

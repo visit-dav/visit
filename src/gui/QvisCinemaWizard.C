@@ -27,7 +27,6 @@
 #include <DebugStream.h>
 
 #include <StringHelpers.h>
-#include <snprintf.h>
 
 #define cinemaAtts ((CinemaAttributes *)localCopy)
 
