@@ -7,7 +7,7 @@
 
 #include "Pos.h"
 #include <VisItException.h>
-#include <snprintf.h>
+
 class Rule;
 
 // ****************************************************************************
@@ -56,11 +56,11 @@ class SyntacticException : public ParseException
   public:
     SyntacticException(Pos p) : ParseException(p)
     {
-        SNPRINTF(msg, 1024, "The expression parser encountered an unexpected token:");
+        snprintf(msg, 1024, "The expression parser encountered an unexpected token:");
     }
     SyntacticException(Pos p, const std::string &s) : ParseException(p)
     {
-        SNPRINTF(msg, 1024, "The expression parser encountered an unexpected token (%s):", s.c_str());
+        snprintf(msg, 1024, "The expression parser encountered an unexpected token (%s):", s.c_str());
     }
     virtual const char *Message() { return msg; }
   private:

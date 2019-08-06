@@ -11,7 +11,7 @@
 #include <map>
 #include <Namescheme.h>
 #include <vector>
-#include <snprintf.h>
+
 
 // ****************************************************************************
 // Class: NameschemeAttributes

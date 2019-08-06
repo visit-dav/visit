@@ -12,7 +12,7 @@
 #include <fcntl.h>
 #endif
 #include <CouldNotConnectException.h>
-#include <snprintf.h>
+
 
 #include <DebugStream.h>
 
@@ -40,7 +40,7 @@ PipeConnection::PipeConnection(bool wm) : SocketConnection(-1)
    writeMode = wm;
 
    char pname[100];
-   SNPRINTF(pname, 100, "/tmp/fifo%08d.%d", getpid(), connectionCount++);
+   snprintf(pname, 100, "/tmp/fifo%08d.%d", getpid(), connectionCount++);
    pipeName = pname;
    ownsPipe = true;
    if(mknod(pname, S_IFIFO | 0600, 0) == -1)

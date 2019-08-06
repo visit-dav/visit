@@ -6,7 +6,7 @@
 //                        PointerNotInCacheException.C                       //
 // ************************************************************************* //
 
-#include <snprintf.h>
+
 #include <PointerNotInCacheException.h>
 
 
@@ -25,6 +25,6 @@
 PointerNotInCacheException::PointerNotInCacheException(const void *p)
 {
     char str[1024];
-    SNPRINTF(str, sizeof(str), "Unable to find object with pointer %p in cache", p);
+    snprintf(str, sizeof(str), "Unable to find object with pointer %p in cache", p);
     msg = str;
 }

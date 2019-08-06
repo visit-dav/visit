@@ -7,7 +7,7 @@
 // ************************************************************************* //
 
 #include <BadNodeException.h>
-#include <snprintf.h>
+
 
 using std::vector;
 using std::string;
@@ -27,7 +27,7 @@ using std::string;
 BadNodeException::BadNodeException(int index, int numNodes)
 {
     char str[1024];
-    SNPRINTF(str, 1024, "Node %d is invalid (%d maximum).", index, numNodes-1);
+    snprintf(str, 1024, "Node %d is invalid (%d maximum).", index, numNodes-1);
     msg = str;
 }
 
@@ -48,12 +48,12 @@ BadNodeException::BadNodeException(vector<int> &index)
     char str[1024];
     if (index.size() == 3)
     {
-        SNPRINTF(str, 1024, "Node index (%d %d %d) is invalid.",  
+        snprintf(str, 1024, "Node index (%d %d %d) is invalid.",  
                  index[0], index[1], index[2]);
     }
     else 
     {
-        SNPRINTF(str, 1024, "Node index (%d %d) is invalid.", 
+        snprintf(str, 1024, "Node index (%d %d) is invalid.", 
                  index[0], index[1]);
     }
     msg = str;
@@ -75,7 +75,7 @@ BadNodeException::BadNodeException(vector<int> &index)
 BadNodeException::BadNodeException(int index, string &reason)
 {
     char str[1024];
-    SNPRINTF(str, 1024, "Node %d is invalid. %s", index, reason.c_str());
+    snprintf(str, 1024, "Node %d is invalid. %s", index, reason.c_str());
     msg = str;
 }
 
