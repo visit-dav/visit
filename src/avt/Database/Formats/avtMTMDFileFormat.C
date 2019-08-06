@@ -7,8 +7,6 @@
 // ************************************************************************* //
 #include <limits.h>
 
-#include <snprintf.h>
-
 #include <avtDatabaseMetaData.h>
 #include <avtMTMDFileFormat.h>
 
@@ -207,7 +205,7 @@ avtMTMDFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int ts)
     {
         md->SetNumStates(0);
         char msg[512];
-        SNPRINTF(msg, sizeof(msg), "It looks like the \"%s\" database plugin "
+        snprintf(msg, sizeof(msg), "It looks like the \"%s\" database plugin "
             "did not implement either of the PopulateDatabaseMetaData methods. "
             "Please contact the plugin developer. This error cannot be corrected "
             "without changes to code", GetType());

@@ -22,7 +22,6 @@
 #include <vectortypes.h>
 
 #include <visitstream.h>
-#include <snprintf.h>
 
 #include <DebugStream.h>
 #include <TimingsManager.h>
@@ -943,7 +942,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
                 //
                 // Create the file base name and increment the family number.
                 //
-                SNPRINTF(baseName, 512, "output%04d.", iFileFamily);
+                snprintf(baseName, 512, "output%04d.", iFileFamily);
                 if (iFileFamily < 9999) iFileFamily++;
 
                 //
@@ -952,7 +951,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
                 // the next file base name in the sequence.
                 //
                 char fileName[512];
-                SNPRINTF(fileName, 512, "%s00.%s", baseName, exts[outputType]);
+                snprintf(fileName, 512, "%s00.%s", baseName, exts[outputType]);
 
                 ifstream ifile(fileName);
                 if (!ifile.fail() && iFileFamily < 9999)
@@ -962,7 +961,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             }
             else
             {
-                SNPRINTF(baseName, 512, "output");
+                snprintf(baseName, 512, "output");
             }
         }
 
@@ -1068,21 +1067,21 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
     
             if (numBins == 1 && outputType < 4)
             {
-                SNPRINTF(buf, 512, "The x ray image query results were "
+                snprintf(buf, 512, "The x ray image query results were "
                          "written to the file %s00.%s\n", baseName,
                          exts[outputType]);
             }
             else
                 if (outputType < 4)
                 {
-                    SNPRINTF(buf, 512, "The x ray image query results were "
+                    snprintf(buf, 512, "The x ray image query results were "
                         "written to the files %s00.%s - %s%02d.%s\n",
                         baseName, exts[outputType], baseName, numBins - 1,
                         exts[outputType]);
                 }
                 else
                 {
-                    SNPRINTF(buf, 512, "The x ray image query results were "
+                    snprintf(buf, 512, "The x ray image query results were "
                         "written to the files %s00.%s - %s%02d.%s\n",
                         baseName, exts[outputType], baseName, 2*numBins - 1,
                         exts[outputType]);
@@ -1141,7 +1140,7 @@ avtXRayImageQuery::CheckData(vtkDataSet **dataSets,  const int nsets)
         {
             if (dataSets[i]->GetPointData()->GetArray(absVarName.c_str()) != NULL)
             {
-                SNPRINTF(msg,256, "Variable %s is node-centered, but "
+                snprintf(msg,256, "Variable %s is node-centered, but "
                          "it must be zone-centered for this query.",
                          absVarName.c_str());
                 
@@ -1162,7 +1161,7 @@ avtXRayImageQuery::CheckData(vtkDataSet **dataSets,  const int nsets)
             if (dataSets[i]->GetPointData()->GetArray(emisVarName.c_str())
                 != NULL)
             {
-                SNPRINTF(msg,256, "Variable %s is node-centered, but "
+                snprintf(msg,256, "Variable %s is node-centered, but "
                          "it must be zone-centered for this query.",
                          emisVarName.c_str());
                 
@@ -1204,7 +1203,7 @@ avtXRayImageQuery::CheckData(vtkDataSet **dataSets,  const int nsets)
     int maxNsets = UnifyMaximumValue(nsets);
     if(maxNsets <= 0)
     {
-        SNPRINTF(msg, 256, "Variables %s and %s resulted in no data being selected.", absVarName.c_str(), emisVarName.c_str());
+        snprintf(msg, 256, "Variables %s and %s resulted in no data being selected.", absVarName.c_str(), emisVarName.c_str());
         EXCEPTION1(VisItException, msg);
     }
 }

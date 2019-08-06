@@ -20,7 +20,6 @@
 
 #include <DebugStream.h>
 
-#include <snprintf.h>
 #include <float.h>
 #include <math.h>
 
@@ -245,7 +244,7 @@ avtSampleStatisticsQuery::PostExecute(void)
               "Skewness  = "   + floatFormat + "\n"
               "Kurtosis  = "   + floatFormat + "\n";
 
-    SNPRINTF(msg, 4096,format.c_str(),
+    snprintf(msg, 4096,format.c_str(),
              mean, stddev, variance, skewness, kurtosis);
 
     values.push_back(mean);

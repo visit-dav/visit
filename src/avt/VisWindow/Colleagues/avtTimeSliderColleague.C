@@ -14,8 +14,6 @@
 
 #include <vtkVisItTextActor.h>
 
-#include <snprintf.h>
-
 #define DEFAULT_X       0.01
 #define DEFAULT_Y       0.01
 #define DEFAULT_WIDTH   0.4
@@ -749,10 +747,10 @@ avtTimeSliderColleague::SetText(const char *formatString, const char *timeFormat
         std::string right(fmtStr.substr(pos + tlen, fmtStr.size() - pos - tlen));
         char tmp[100];
         double t = currentTime * timeScale + timeOffset;
-        SNPRINTF(tmp, 100, timeFormat, t);
+        snprintf(tmp, 100, timeFormat, t);
         len = left.size() + strlen(tmp) + right.size() + 1;
         textString = new char[len];
-        SNPRINTF(textString, len, "%s%s%s", left.c_str(), tmp, right.c_str());
+        snprintf(textString, len, "%s%s%s", left.c_str(), tmp, right.c_str());
     }
     else if((pos=fmtStr.find(CYCLE_IDENTIFIER)) != std::string::npos)
     {
@@ -760,10 +758,10 @@ avtTimeSliderColleague::SetText(const char *formatString, const char *timeFormat
         std::string left(fmtStr.substr(0, pos));
         std::string right(fmtStr.substr(pos + tlen, fmtStr.size() - pos - tlen));
         char tmp[100];
-        SNPRINTF(tmp, 100, "%d", currentCycle);
+        snprintf(tmp, 100, "%d", currentCycle);
         len = left.size() + strlen(tmp) + right.size() + 1;
         textString = new char[len];
-        SNPRINTF(textString, len, "%s%s%s", left.c_str(), tmp, right.c_str());
+        snprintf(textString, len, "%s%s%s", left.c_str(), tmp, right.c_str());
     }
     else
     {

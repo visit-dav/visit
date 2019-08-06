@@ -9,8 +9,6 @@
 #include <avtMaterial.h>
 #include <map>
 
-#include <snprintf.h>
-
 #include <avtCallback.h>
 #include <avtMixedVariable.h>
 
@@ -122,7 +120,7 @@ RenumberMaterialsZeroToNminusOne(int nMats, const int *const mats,
                 if (!haveIssuedWarning)
                 {
                     char msg[1024];
-                    SNPRINTF(msg, sizeof(msg),"Zone %d of %s has a bad entry in its "
+                    snprintf(msg, sizeof(msg),"Zone %d of %s has a bad entry in its "
                                  "mixed material structure", i, dom);
                     avtCallback::IssueWarning(msg);
                     haveIssuedWarning = true;
@@ -137,7 +135,7 @@ RenumberMaterialsZeroToNminusOne(int nMats, const int *const mats,
                     if (!haveIssuedWarning)
                     {
                         char msg[1024];
-                        SNPRINTF(msg, sizeof(msg),"Zone %d of %s has an invalid material"
+                        snprintf(msg, sizeof(msg),"Zone %d of %s has an invalid material"
                                  " number -- %d", i, dom, ml[i]);
                         avtCallback::IssueWarning(msg);
                         haveIssuedWarning = true;
@@ -158,7 +156,7 @@ RenumberMaterialsZeroToNminusOne(int nMats, const int *const mats,
                 if (!haveIssuedWarning)
                 {
                     char msg[1024];
-                    SNPRINTF(msg, sizeof(msg),"Mixed mat entry %d of %s has an "
+                    snprintf(msg, sizeof(msg),"Mixed mat entry %d of %s has an "
                                  "invalid material number -- %d", i, 
                                  dom, mixm[i]);
                     avtCallback::IssueWarning(msg);
@@ -203,7 +201,7 @@ RenumberMaterialsZeroToNminusOne(int nMats, const int *const mats,
                 if (!haveIssuedWarning)
                 {
                     char msg[1024];
-                    SNPRINTF(msg, sizeof(msg),"Zone %d of %s has a bad entry in its "
+                    snprintf(msg, sizeof(msg),"Zone %d of %s has a bad entry in its "
                                  "material structure", i, dom);
                     avtCallback::IssueWarning(msg);
                     haveIssuedWarning = true;
@@ -230,7 +228,7 @@ RenumberMaterialsZeroToNminusOne(int nMats, const int *const mats,
                 if (!haveIssuedWarning)
                 {
                     char msg[1024];
-                    SNPRINTF(msg, sizeof(msg),"Mixed mat entry %d of %s has an "
+                    snprintf(msg, sizeof(msg),"Mixed mat entry %d of %s has an "
                                  "invalid material number -- %d", i, 
                                  dom, mixm[i]);
                     avtCallback::IssueWarning(msg);
@@ -328,9 +326,9 @@ avtMaterial::avtMaterial(int nMats, const int *mats, char **names,
     {
         char name[256];
         if (names == NULL)
-            SNPRINTF(name, sizeof(name), "%d", mats[i]);
+            snprintf(name, sizeof(name), "%d", mats[i]);
         else
-            SNPRINTF(name, sizeof(name), "%s", names[i]);
+            snprintf(name, sizeof(name), "%s", names[i]);
         matnames.push_back(name);
     }
     matnames.push_back("bad material");
@@ -490,9 +488,9 @@ avtMaterial::avtMaterial(int nTotMats, const int *mats, const char **names,
     {
         char name[256];
         if (names == NULL)
-            SNPRINTF(name, sizeof(name), "%d", mats[i]);
+            snprintf(name, sizeof(name), "%d", mats[i]);
         else
-            SNPRINTF(name, sizeof(name), "%s", names[i]);
+            snprintf(name, sizeof(name), "%s", names[i]);
         matnames.push_back(name);
     }
     matnames.push_back("bad material");
@@ -574,7 +572,7 @@ avtMaterial::avtMaterial(int nTotMats, const int *mats, const char **names,
             if (!haveIssuedWarning && ((zoneNum < 0) || (zoneNum >= numZones)))
             {
                 char msg[1024];
-                SNPRINTF(msg, sizeof(msg),
+                snprintf(msg, sizeof(msg),
                     "Clean zone index %d of %s is out of range [0,%d] "
                     "in material %s", zoneNum, domain, numZones,
                     matnames[matno].c_str());
@@ -584,7 +582,7 @@ avtMaterial::avtMaterial(int nTotMats, const int *mats, const char **names,
             else if (!haveIssuedWarning && (ml[zoneNum] != notSet))
             {
                 char msg[1024];
-                SNPRINTF(msg, sizeof(msg),
+                snprintf(msg, sizeof(msg),
                     "Zone %d of %s is indicated clean in multiple "
                     "material maps, %s and %s", zoneNum, domain,
                     matnames[matno].c_str(), matnames[ml[zoneNum]].c_str());
@@ -612,7 +610,7 @@ avtMaterial::avtMaterial(int nTotMats, const int *mats, const char **names,
             if (!haveIssuedWarning && ((zoneNum < 0) || (zoneNum >= numZones)))
             {
                 char msg[1024];
-                SNPRINTF(msg, sizeof(msg),
+                snprintf(msg, sizeof(msg),
                     "Clean zone index %d of %s is out of range [0,%d] "
                     "in material %s", zoneNum, domain, numZones,
                     matnames[matno].c_str());
@@ -623,7 +621,7 @@ avtMaterial::avtMaterial(int nTotMats, const int *mats, const char **names,
                      (ml[zoneNum] != notSet) && (ml[zoneNum] >= 0))
             {
                 char msg[1024];
-                SNPRINTF(msg, sizeof(msg),
+                snprintf(msg, sizeof(msg),
                     "Zone %d of %s is indicated clean in material %s "
                     "and mixed in material %s", zoneNum, domain,
                     matnames[ml[zoneNum]].c_str(), matnames[matno].c_str());
@@ -818,9 +816,9 @@ avtMaterial::avtMaterial(int nTotMats, const int *mats, char **names,
     {
         char name[256];
         if (names == NULL)
-            SNPRINTF(name, sizeof(name), "%d", mats[i]);
+            snprintf(name, sizeof(name), "%d", mats[i]);
         else
-            SNPRINTF(name, sizeof(name), "%s", names[i]);
+            snprintf(name, sizeof(name), "%s", names[i]);
         matnames.push_back(name);
     }
 

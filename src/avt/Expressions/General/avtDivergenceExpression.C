@@ -8,7 +8,6 @@
 
 #include <avtDivergenceExpression.h>
 
-#include <snprintf.h>
 #include <ExpressionException.h>
 
 // ****************************************************************************
@@ -78,14 +77,14 @@ avtDivergenceExpression::GetMacro(std::vector<std::string> &args,
     {
         if(nargs == 1)
         {
-            SNPRINTF(new_expr, 2048,
+            snprintf(new_expr, 2048,
                     "gradient(%s[0])[0]+gradient(%s[1])[1]+"
                     "gradient(%s[2])[2]",
                     args[0].c_str(), args[0].c_str(), args[0].c_str());
         }
         else if(nargs > 1)
         {
-            SNPRINTF(new_expr, 2048,
+            snprintf(new_expr, 2048,
                     "gradient(%s[0],%s)[0]+gradient(%s[1],%s)[1]+"
                     "gradient(%s[2],%s)[2]",
                     args[0].c_str(), args[1].c_str(),
@@ -105,13 +104,13 @@ avtDivergenceExpression::GetMacro(std::vector<std::string> &args,
     {
         if(nargs == 1)
         {
-            SNPRINTF(new_expr, 2048,
+            snprintf(new_expr, 2048,
                     "gradient(%s[0])[0]+gradient(%s[1])[1]",
                     args[0].c_str(), args[0].c_str());
         }
         else if(nargs > 1)
         {
-            SNPRINTF(new_expr, 2048,
+            snprintf(new_expr, 2048,
                     "gradient(%s[0],%s)[0]+gradient(%s[1],%s)[1]",
                     args[0].c_str(), args[1].c_str(), 
                     args[0].c_str(), args[1].c_str()); 

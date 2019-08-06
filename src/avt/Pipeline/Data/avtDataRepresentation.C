@@ -43,7 +43,6 @@
 #include <StubReferencedException.h>
 #include <TimingsManager.h>
 #include <visitstream.h>
-#include <snprintf.h>
 #include <vtkVisItUtility.h>
 
 using std::string;
@@ -2620,7 +2619,7 @@ avtDataRepresentation::DebugDump(avtWebpage *webpage, const char *prefix)
         }
     }
 
-    SNPRINTF(str,strsize,"%s",oss.str().c_str());
+    snprintf(str,strsize,"%s",oss.str().c_str());
     return str;
 }
 

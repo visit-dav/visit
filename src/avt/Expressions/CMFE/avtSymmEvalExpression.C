@@ -8,8 +8,6 @@
 
 #include <avtSymmEvalExpression.h>
 
-#include <snprintf.h>
-
 #include <avtExprNode.h>
 #include <ExprToken.h>
 #include <ParsingExprList.h>
@@ -126,7 +124,7 @@ avtSymmEvalExpression::ProcessArguments(ArgsExpr *args,
     if (static_cast<int>(elems->size()) != GetNumberOfInputParameters())
     {
         char msg[1024];
-        SNPRINTF(msg, 1024, "%s.  You're list had %ld numbers, where %d were "
+        snprintf(msg, 1024, "%s.  You're list had %ld numbers, where %d were "
                   "expected.", badSyntaxMsg, elems->size(), 
                  GetNumberOfInputParameters());
         EXCEPTION2(ExpressionException, outputVariableName, msg);
@@ -147,7 +145,7 @@ avtSymmEvalExpression::ProcessArguments(ArgsExpr *args,
         if (type != "IntegerConst" && type != "FloatConst")
         {
             char msg[1024];
-            SNPRINTF(msg, 1024, "%s.  Element #%d in your list was "
+            snprintf(msg, 1024, "%s.  Element #%d in your list was "
                       "not a number.",  badSyntaxMsg, static_cast<int>(i));
             EXCEPTION2(ExpressionException, outputVariableName, msg);
         }

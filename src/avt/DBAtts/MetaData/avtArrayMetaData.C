@@ -4,7 +4,6 @@
 
 #include <avtArrayMetaData.h>
 #include <DataNode.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Method: avtArrayMetaData::avtArrayMetaData
@@ -515,7 +514,7 @@ avtArrayMetaData::avtArrayMetaData(std::string n, std::string mn,
     for (int i = 0 ; i < nVars ; i++)
     {
         char name[1024];
-        SNPRINTF(name, 1024, "comp%d", i);
+        snprintf(name, 1024, "comp%d", i);
     }
 }
 

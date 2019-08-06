@@ -14,7 +14,6 @@
 #include <avtOriginatingSource.h>
 #include <avtZonePickQuery.h>
 #include <float.h>
-#include <snprintf.h>
 #include <DebugStream.h>
 #include <PickVarInfo.h>
 #include <QueryArgumentException.h>
@@ -211,7 +210,7 @@ avtLocateAndPickZoneQuery::PerformQuery(QueryAttributes *qa)
         else
         {
             char msg[120]; 
-            SNPRINTF(msg, 120, "Could not retrieve information from domain "
+            snprintf(msg, 120, "Could not retrieve information from domain "
                      " %d zone %d.", domain, zone);
             qa->SetResultsMessage(msg);
             qa->SetResultsValue(vals);

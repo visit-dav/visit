@@ -8,8 +8,6 @@
 
 #include <avtIntegrateQuery.h>
 
-#include <snprintf.h>
-
 #include <string>
 
 // ****************************************************************************
@@ -115,7 +113,7 @@ avtIntegrateQuery::CreateMessage(double integral)
     char msg[1024];
     std::string format =  "The area under the curve is " 
                          + queryAtts.GetFloatFormat() + ".";
-    SNPRINTF(msg,1024, format.c_str(),integral);
+    snprintf(msg,1024, format.c_str(),integral);
     std::string m = msg;
     return m;
 }

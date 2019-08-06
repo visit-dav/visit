@@ -8,8 +8,6 @@
 
 #include <avtEulerianQuery.h>
 
-#include <snprintf.h>
-
 #include <set>
 #include <vector>
 
@@ -361,13 +359,13 @@ avtEulerianQuery::PostExecute(void)
             (*iter).first, domainName);
         if (domainName.size() > 0)
         {
-            SNPRINTF(msgBuff, 500, "Eulerian for %s is %d\n", 
+            snprintf(msgBuff, 500, "Eulerian for %s is %d\n", 
                      domainName.c_str(), (*iter).second);
             dns << domainName;
         }
         else
         {
-            SNPRINTF(msgBuff, 500, "Eulerian for domain %d is %d\n", 
+            snprintf(msgBuff, 500, "Eulerian for domain %d is %d\n", 
                      (*iter).first + blockOrigin, (*iter).second);
             dns << "domain " << (*iter).first+blockOrigin;
         }

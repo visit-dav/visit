@@ -25,7 +25,6 @@
 #include <InvalidMergeException.h>
 
 #include <cstring>
-#include <snprintf.h>
 #include <float.h>
 
 using     std::string;
@@ -5153,7 +5152,7 @@ static void ExtentsToString(avtExtents *exts, char *str, int maxlen)
         char tmp[1000];
         for (int i=0; i<dim; i++)
         {
-            SNPRINTF(tmp, 1000, "%e -> %e", e[i*2+0], e[i*2+1]);
+            snprintf(tmp, 1000, "%e -> %e", e[i*2+0], e[i*2+1]);
             if (strlen(tmp)+strlen(str)+6 > (size_t)maxlen)
             {
                 strcat(str, "...");
@@ -5178,13 +5177,13 @@ avtDataAttributes::DebugDump(avtWebpage *webpage)
     webpage->AddSubheading("Basic data attributes");
     webpage->StartTable();
     webpage->AddTableHeader2("Field", "Value");
-    SNPRINTF(str, 4096, "%d", spatialDimension);
+    snprintf(str, 4096, "%d", spatialDimension);
     webpage->AddTableEntry2("Spatial Dimension", str);
-    SNPRINTF(str, 4096, "%d", topologicalDimension);
+    snprintf(str, 4096, "%d", topologicalDimension);
     webpage->AddTableEntry2("Topological Dimension", str);
-    SNPRINTF(str, 4096, "%d", cellOrigin);
+    snprintf(str, 4096, "%d", cellOrigin);
     webpage->AddTableEntry2("Cell Origin", str);
-    SNPRINTF(str, 4096, "%d", nodeOrigin);
+    snprintf(str, 4096, "%d", nodeOrigin);
     webpage->AddTableEntry2("Node Origin", str);
     switch (containsGhostZones)
     {
@@ -5227,9 +5226,9 @@ avtDataAttributes::DebugDump(avtWebpage *webpage)
                             YesOrNo(containsGlobalZoneIds));
     webpage->AddTableEntry2("Contains global node ids?", 
                             YesOrNo(containsGlobalNodeIds));
-    SNPRINTF(str, 4096, "%d", blockOrigin);
+    snprintf(str, 4096, "%d", blockOrigin);
     webpage->AddTableEntry2("Block Origin", str);
-    SNPRINTF(str, 4096, "%d", groupOrigin);
+    snprintf(str, 4096, "%d", groupOrigin);
     webpage->AddTableEntry2("Group Origin", str);
     webpage->AddTableEntry2("Contains original cells?", 
                             YesOrNo(containsOriginalCells));
@@ -5245,11 +5244,11 @@ avtDataAttributes::DebugDump(avtWebpage *webpage)
                             YesOrNo(origElementsRequiredForPick));
     webpage->AddTableEntry2("Is the file format reader doing domain decomposition?",
                             YesOrNo(dynamicDomainDecomposition));
-    SNPRINTF(str, 4096, "%zu", levelsOfDetail);
+    snprintf(str, 4096, "%zu", levelsOfDetail);
     webpage->AddTableEntry2("Levels of detail", str);
     ExtentsToString(multiresExtents, str, 4096);
     webpage->AddTableEntry2("Multires extents", str);
-    SNPRINTF(str, 4096, "%g", multiresCellSize);
+    snprintf(str, 4096, "%g", multiresCellSize);
     webpage->AddTableEntry2("Multires cell size", str);
     switch (meshCoordType)
     {
@@ -5318,21 +5317,21 @@ avtDataAttributes::DebugDump(avtWebpage *webpage)
     webpage->AddTableEntry2("Database name", fullDBName.c_str());
     webpage->AddTableEntry2("File name", filename.c_str());
     webpage->AddTableEntry2("Mesh name", meshname.c_str());
-    SNPRINTF(str, 4096, "%d", numStates);
+    snprintf(str, 4096, "%d", numStates);
     webpage->AddTableEntry2("Number of time slices?", str);
     webpage->AddTableEntry2("Data is replicated on all processors?",
                             YesOrNo(dataIsReplicatedOnAllProcessors));
     if (timeIsAccurate)
-        SNPRINTF(str, 4096, "%f", dtime);
+        snprintf(str, 4096, "%f", dtime);
     else
-        SNPRINTF(str, 4096, "%f (guess)", dtime);
+        snprintf(str, 4096, "%f (guess)", dtime);
     webpage->AddTableEntry2("Time", str);
     if (cycleIsAccurate)
-        SNPRINTF(str, 4096, "%d", cycle);
+        snprintf(str, 4096, "%d", cycle);
     else
-        SNPRINTF(str, 4096, "%d (guess)", cycle);
+        snprintf(str, 4096, "%d (guess)", cycle);
     webpage->AddTableEntry2("Cycle", str);
-    SNPRINTF(str, 4096, "%d", timeIndex);
+    snprintf(str, 4096, "%d", timeIndex);
     webpage->AddTableEntry2("Time index", str);
     webpage->EndTable();
 
@@ -5365,7 +5364,7 @@ avtDataAttributes::DebugDump(avtWebpage *webpage)
             webpage->AddTableEntry3(NULL, "Type", 
                                    avtVarTypeToString(variables[i]->vartype).c_str());
             webpage->AddTableEntry3(NULL, "Units", variables[i]->varunits.c_str());
-            SNPRINTF(str, 4096, "%d", variables[i]->dimension);
+            snprintf(str, 4096, "%d", variables[i]->dimension);
             webpage->AddTableEntry3(NULL, "Dimension", str);
             switch (variables[i]->centering)
             {
@@ -5382,7 +5381,7 @@ avtDataAttributes::DebugDump(avtWebpage *webpage)
             webpage->AddTableEntry3(NULL, "Centering", str);
             webpage->AddTableEntry3(NULL, "Treat variable as ASCII characters?",
                                     YesOrNo(variables[i]->treatAsASCII));
-            SNPRINTF(str, 4096, "%d", variables[i]->useForAxis);
+            snprintf(str, 4096, "%d", variables[i]->useForAxis);
             webpage->AddTableEntry3(NULL, "Use for axis", str);
             ExtentsToString(variables[i]->originalData, str, 4096);
             webpage->AddTableEntry3(NULL, "Original data extents", str);
@@ -5400,7 +5399,7 @@ avtDataAttributes::DebugDump(avtWebpage *webpage)
             {
                 for (size_t j = 0 ; j < variables[i]->subnames.size() ; j++)
                 {
-                    SNPRINTF(str, 4096, "Variable subname[%zu]", j);
+                    snprintf(str, 4096, "Variable subname[%zu]", j);
                     webpage->AddTableEntry3(NULL, str,
                                             variables[i]->subnames[j].c_str());
                 }

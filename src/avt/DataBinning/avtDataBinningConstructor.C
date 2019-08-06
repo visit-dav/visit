@@ -31,8 +31,6 @@
 #include <avtR2Frms.h>
 #include <avtUniformBinningScheme.h>
 
-#include <snprintf.h>
-
 #include <BadIndexException.h>
 #include <DebugStream.h>
 #include <ExpressionException.h>
@@ -350,7 +348,7 @@ avtDataBinningConstructor::ConstructDataBinning(
             if (GetInput()->GetInfo().GetValidity().HasErrorOccurred())
             {
                 char msg[1024];
-                SNPRINTF(msg, 1024, "The data binning could not be calculated because "
+                snprintf(msg, 1024, "The data binning could not be calculated because "
                                     "an error occurred when generating "
                                     "the data to construct it from.  The error"
                                     " was \"%s\".",

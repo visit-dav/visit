@@ -9,7 +9,6 @@
 #include <avtMemoryUsageQuery.h>
 
 #include <avtParallel.h>
-#include <snprintf.h>
 #include <QueryAttributes.h>
 
 #include <avtMemory.h>
@@ -145,20 +144,20 @@ avtMemoryUsageQuery::GetResultMessage()
     {
         std::string format = "Engine Memory Usage = " 
                          + float_format + " megabytes.\n";
-        SNPRINTF(msg_buff,1024,format.c_str(), total_mem_size);
+        snprintf(msg_buff,1024,format.c_str(), total_mem_size);
         msg += msg_buff;
     }
     else
     {
         std::string format = "Total Engine Memory Usage = " 
                          + float_format + " megabytes.\n";
-        SNPRINTF(msg_buff,1024,format.c_str(), total_mem_size);
+        snprintf(msg_buff,1024,format.c_str(), total_mem_size);
         msg += msg_buff;
         for ( int i=0; i<nproc; i++)
         {
             format = " Usage for Process %d = " + float_format
                      + " megabytes.\n";
-            SNPRINTF(msg_buff,1024,format.c_str(), i, memSizeVals[i]);
+            snprintf(msg_buff,1024,format.c_str(), i, memSizeVals[i]);
             msg +=msg_buff;
         }    
     }

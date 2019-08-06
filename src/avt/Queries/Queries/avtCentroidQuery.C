@@ -30,7 +30,6 @@
 #include <DebugStream.h>
 #include <ImproperUseException.h>
 
-#include <snprintf.h>
 #include <float.h>
 #include <math.h>
 
@@ -156,7 +155,7 @@ avtCentroidQuery::PostExecute(void)
     string format = "Centroid = (" + floatFormat + ", "
                                    + floatFormat + ", "
                                    + floatFormat + ")";
-    SNPRINTF(msg, 4096, format.c_str(),C_tmp[0],C_tmp[1],C_tmp[2]);
+    snprintf(msg, 4096, format.c_str(),C_tmp[0],C_tmp[1],C_tmp[2]);
     SetResultMessage(msg);
     doubleVector C_vec(3);
     for (int i = 0 ; i < 3 ; i++)

@@ -8,8 +8,6 @@
 
 #include <avtSamplePoints.h>
 
-#include <snprintf.h>
-
 #include <avtCellList.h>
 #include <avtSamplePointsSource.h>
 #include <avtVolume.h>
@@ -283,7 +281,7 @@ avtSamplePoints::DebugDump(avtWebpage *webpage, const char *prefix)
     char str[1024];
     for (size_t i = 0 ; i < varnames.size() ; i++)
     {
-        SNPRINTF(str, 1024, "%d", varsize[i]);
+        snprintf(str, 1024, "%d", varsize[i]);
         webpage->AddTableEntry2(varnames[i].c_str(), str);
     }
     webpage->EndTable();

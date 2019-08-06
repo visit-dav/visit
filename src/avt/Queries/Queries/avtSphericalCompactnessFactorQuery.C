@@ -28,7 +28,6 @@
 #include <DebugStream.h>
 #include <ImproperUseException.h>
 
-#include <snprintf.h>
 #include <float.h>
 #include <math.h>
 
@@ -234,7 +233,7 @@ avtSphericalCompactnessFactorQuery::PostExecute(void)
                               + floatFormat + ", "
                               + floatFormat + ")"
                       "  Radius was " + floatFormat;
-    SNPRINTF(msg, 4096,format.c_str(),
+    snprintf(msg, 4096,format.c_str(),
                        volume_inside / total_volume, 
                        sphere_center[0], sphere_center[1], sphere_center[2],
                        radius);

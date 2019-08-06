@@ -20,7 +20,6 @@
 #include <vector>
 #include <map>
 
-#include <snprintf.h>
 #include <visit-config.h>
 
 using     std::vector;
@@ -2036,7 +2035,7 @@ avtDataRequest::DebugDump(avtWebpage *webpage)
         const char *type = vtkImageScalarTypeNameMacro(it->first);
         bool val = it->second;
         char entry[1024];
-        SNPRINTF(entry, 1024, "%s = %s", type, (val ? "true" : "false"));
+        snprintf(entry, 1024, "%s = %s", type, (val ? "true" : "false"));
         webpage->AddTableEntry2("", entry);
     }
 

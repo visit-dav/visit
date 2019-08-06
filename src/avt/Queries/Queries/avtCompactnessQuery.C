@@ -31,7 +31,6 @@
 #include <InvalidDimensionsException.h>
 #include <NonQueryableInputException.h>
 
-#include <snprintf.h>
 #include <float.h>
 #include <math.h>
 
@@ -354,7 +353,7 @@ avtCompactnessQuery::PostExecute(void)
     if(numDomains > 1)
         format = "Warning: multiple domains -- accuracy will suffer.\n" + format;
 
-    SNPRINTF(msg, 4096,format.c_str(),
+    snprintf(msg, 4096,format.c_str(),
              totalXSectArea,
              totalRotVolume,
              distBound_da_xsa,
@@ -383,7 +382,7 @@ avtCompactnessQuery::PostExecute(void)
     if (!densityValid)
     {
         char msg2[8192];
-        SNPRINTF(msg2, 8192,
+        snprintf(msg2, 8192,
                  "%s\n"
                  "NOTE -- additional calculations are available if\n"
                  "        a density plot is selected for this query.\n",
@@ -405,7 +404,7 @@ avtCompactnessQuery::PostExecute(void)
                  "Density-weighted distance to cent mass WRT dV / MASS = "
                  + floatFormat + "\n";
                  
-        SNPRINTF(msg2, 8192,format.c_str(),
+        snprintf(msg2, 8192,format.c_str(),
                  msg,
                  totalRotMass,
                  centMassX, centMassY,

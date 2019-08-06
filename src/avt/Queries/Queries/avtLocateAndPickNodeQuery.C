@@ -14,7 +14,6 @@
 #include <avtOriginatingSource.h>
 #include <avtNodePickQuery.h>
 #include <float.h>
-#include <snprintf.h>
 #include <DebugStream.h>
 #include <PickVarInfo.h>
 #include <QueryArgumentException.h>
@@ -226,7 +225,7 @@ avtLocateAndPickNodeQuery::PerformQuery(QueryAttributes *qa)
         else
         {
             char msg[120]; 
-            SNPRINTF(msg, 120, "Could not retrieve information from domain "
+            snprintf(msg, 120, "Could not retrieve information from domain "
                      " %d node %d.", domain, node);
             qa->SetResultsMessage(msg);
             qa->SetResultsValue(vals);

@@ -10,7 +10,6 @@
 #include <avtParallel.h>
 #include <avtOriginatingSource.h>
 #include <float.h>
-#include <snprintf.h>
 #include <PickVarInfo.h>
 
 
@@ -122,7 +121,7 @@ avtTrajectoryByNode::PostExecute(void)
         else
         {
             char msg[120]; 
-            SNPRINTF(msg, 120, "Could not retrieve information from domain "
+            snprintf(msg, 120, "Could not retrieve information from domain "
                      " %d element %d.", domain, node);
             SetResultMessage(msg);
         }

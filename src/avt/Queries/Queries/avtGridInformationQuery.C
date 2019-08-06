@@ -328,7 +328,7 @@ avtGridInformationQuery::PostExecute(void)
                 domain_result["ghosttypes"] = rec[6];
             }
             char key[20];
-            SNPRINTF(key, 20, "%d", rec[0]);
+            snprintf(key, 20, "%d", rec[0]);
             resultNode[key] = domain_result;
 
             // Build up the result values.
@@ -408,7 +408,7 @@ avtGridInformationQuery::PostExecute(void)
                     ++count;
                 }
 
-                SNPRINTF(gt, 300, ", ghosttypes=%d={%s}", rec[6], g.c_str());
+                snprintf(gt, 300, ", ghosttypes=%d={%s}", rec[6], g.c_str());
             }
             else
             {
@@ -422,7 +422,7 @@ avtGridInformationQuery::PostExecute(void)
                 for(int j = 0; j < 6; ++j)
                     resultValues.push_back(ext[j+1]);
 
-                SNPRINTF(msg, 1024, "Grid %d: type=%s, dims={%d,%d,%d}%s, extents={%lg,%lg,%lg,%lg,%lg,%lg}%s\n", 
+                snprintf(msg, 1024, "Grid %d: type=%s, dims={%d,%d,%d}%s, extents={%lg,%lg,%lg,%lg,%lg,%lg}%s\n", 
                          rec[0], mt, rec[2], rec[3], rec[4], handed,
                          ext[1], ext[2], ext[3], ext[4], ext[5], ext[6], gt);
                 resultMsg.append(msg);
@@ -431,7 +431,7 @@ avtGridInformationQuery::PostExecute(void)
             }
             else
             {
-                SNPRINTF(msg, 1024, "Grid %d: type=%s, dims={%d,%d,%d}%s%s\n", 
+                snprintf(msg, 1024, "Grid %d: type=%s, dims={%d,%d,%d}%s%s\n", 
                          rec[0], mt, rec[2], rec[3], rec[4], handed, gt);
                 resultMsg.append(msg);
             }

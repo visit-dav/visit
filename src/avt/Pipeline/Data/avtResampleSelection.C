@@ -8,8 +8,6 @@
 
 #include <limits.h>
 
-#include <snprintf.h>
-
 #include <avtResampleSelection.h>
 
 // ****************************************************************************
@@ -179,7 +177,7 @@ std::string
 avtResampleSelection::DescriptionString(void)
 {
     char str[1024];
-    SNPRINTF(str, sizeof(str), "avtResampleSelection:%d_%f_%f_%f_%f_%f_%f_%d_%d_%d",
+    snprintf(str, sizeof(str), "avtResampleSelection:%d_%f_%f_%f_%f_%f_%f_%d_%d_%d",
              ndims, starts[0], starts[1], starts[2], stops[0], stops[1],
              stops[2], counts[0], counts[1], counts[2]);
     std::string s2 = str;

@@ -373,7 +373,7 @@ avtFileWriter::CreateFilename(const char *base, bool family, bool fileChecks)
                 else
                 {
                     char statmsg[512];
-                    SNPRINTF(statmsg, sizeof(statmsg), 
+                    snprintf(statmsg, sizeof(statmsg), 
                         "VisIt encountered error \"%s\\n"
                         "attempting to stat file \"%s\"\n"
                         "prior to writing", strerror(errnum), rv);
@@ -391,7 +391,7 @@ avtFileWriter::CreateFilename(const char *base, bool family, bool fileChecks)
             else
             {
                 char wrtmsg[512];
-                SNPRINTF(wrtmsg, sizeof(wrtmsg), 
+                snprintf(wrtmsg, sizeof(wrtmsg), 
                         "The file \"%s\" is not writeable\n", rv);
                 msg = wrtmsg;
             }

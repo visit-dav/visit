@@ -7,7 +7,6 @@
 #include <AnnotationObject.h>
 #include <AnnotationObjectList.h>
 #include <DebugStream.h>
-#include <snprintf.h>
 
 #include <avtAnnotationColleague.h>
 #include <avtImageColleague.h>
@@ -434,7 +433,7 @@ VisWinAnnotations::AddAnnotationObject(int annotType, const std::string &annotNa
             int num = 1;
             do
             {
-                SNPRINTF(tmp, 200, "%s%d", annot->TypeName().c_str(), num++);
+                snprintf(tmp, 200, "%s%d", annot->TypeName().c_str(), num++);
                 newName = tmp;
 
                 found = false;

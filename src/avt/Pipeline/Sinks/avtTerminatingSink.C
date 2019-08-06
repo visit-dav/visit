@@ -8,8 +8,6 @@
 
 #include <avtTerminatingSink.h>
 
-#include <snprintf.h>
-
 #include <avtContract.h>
 #include <avtDebugDumpOptions.h>
 #include <avtParallel.h>
@@ -201,7 +199,7 @@ avtTerminatingSink::Execute(avtContract_p contract)
                 int t = visitTimer->StartTimer();
                 input->Update(contract);
                 char msg[1024];
-                SNPRINTF(msg, 1024, "Iteration %d of streaming update.",iter);
+                snprintf(msg, 1024, "Iteration %d of streaming update.",iter);
                 visitTimer->StopTimer(t, msg);
                 dob->Merge(*input);
                 iter++;

@@ -20,7 +20,6 @@
 
 #include <DebugStream.h>
 #include <InvalidMergeException.h>
-#include <snprintf.h>
 
 
 // ****************************************************************************
@@ -261,7 +260,7 @@ avtConnCMFEExpression::ExecuteTree(avtDataTree_p in1, avtDataTree_p in2,
             avtSILRestrictionTraverser trav(firstDBSIL);
             if (trav.UsesAllMaterials())
             {
-                SNPRINTF(msg, 1024,
+                snprintf(msg, 1024,
                              "The databases cannot be compared because they "
                              "have a different number of cells for domain %d."
                              " The cell counts are %d and %d.",
@@ -271,7 +270,7 @@ avtConnCMFEExpression::ExecuteTree(avtDataTree_p in1, avtDataTree_p in2,
             }
             else
             {
-                SNPRINTF(msg, 1024,
+                snprintf(msg, 1024,
                              "The databases cannot be compared because they"
                              " have a different number of cells for domain %d."
                              " The cell counts are %d and %d.  It appears that"
@@ -290,7 +289,7 @@ avtConnCMFEExpression::ExecuteTree(avtDataTree_p in1, avtDataTree_p in2,
             avtSILRestrictionTraverser trav(firstDBSIL);
             if (trav.UsesAllMaterials())
             {
-                SNPRINTF(msg, 1024,
+                snprintf(msg, 1024,
                              "The databases cannot be compared because they "
                              "have a different number of points for domain %d."
                              "  The point counts are %d and %d.", 
@@ -300,7 +299,7 @@ avtConnCMFEExpression::ExecuteTree(avtDataTree_p in1, avtDataTree_p in2,
             }
             else
             {
-                SNPRINTF(msg, 1024,
+                snprintf(msg, 1024,
                              "The databases cannot be compared because they "
                              "have a different number of points for domain %d."
                              "  The point counts are %d and %d.  It appears "

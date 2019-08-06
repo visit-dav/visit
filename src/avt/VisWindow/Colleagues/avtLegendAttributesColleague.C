@@ -10,8 +10,6 @@
 #include <VisWindowColleagueProxy.h>
 
 #include <AnnotationObject.h>
-#include <snprintf.h>
-
 #include <DebugStream.h>
 #include <vtkSystemIncludes.h>
 

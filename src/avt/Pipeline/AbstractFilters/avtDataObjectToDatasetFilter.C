@@ -6,8 +6,6 @@
 //                       avtDataObjectToDatasetFilter.C                      //
 // ************************************************************************* //
 
-#include <snprintf.h>
-
 #include <avtDataObjectToDatasetFilter.h>
 
 #include <avtCommonDataFunctions.h>
@@ -143,7 +141,7 @@ avtDataObjectToDatasetFilter::PostExecute(void)
         debug3 << "avtDataObjectToDatastFilter converting ugrids to polydata "
                << "in postex." << endl;
         int t0 = visitTimer->StartTimer();
-        SNPRINTF(dimDataStr, sizeof(dimDataStr),
+        snprintf(dimDataStr, sizeof(dimDataStr),
             "avtTopoDim=%d", atts.GetTopologicalDimension());
         tree->Traverse(CConvertUnstructuredGridToPolyData, dimDataStr, dummy);
         visitTimer->StopTimer(t0, "converting ugrids to polydata in postex");

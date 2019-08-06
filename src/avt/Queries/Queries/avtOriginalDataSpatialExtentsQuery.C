@@ -12,7 +12,6 @@
 #include <avtParallel.h>
 #include <avtOriginatingSource.h>
 #include <ParsingExprList.h>
-#include <snprintf.h>
 
 #include <string>
 
@@ -126,7 +125,7 @@ avtOriginalDataSpatialExtentsQuery::PerformQuery(QueryAttributes *qA)
     {
         format = "The original extents are (" + floatFormat + ", " 
                                               + floatFormat + ")";
-        SNPRINTF(msg, 1024,format.c_str(), 
+        snprintf(msg, 1024,format.c_str(), 
                 extents[0], extents[1]);
     }
     else if (dim == 2)
@@ -135,7 +134,7 @@ avtOriginalDataSpatialExtentsQuery::PerformQuery(QueryAttributes *qA)
                                               + floatFormat + ", " 
                                               + floatFormat + ", " 
                                               + floatFormat + ")";
-        SNPRINTF(msg, 1024, format.c_str(), 
+        snprintf(msg, 1024, format.c_str(), 
             extents[0], extents[1], extents[2], extents[3]);
     }
     else if (dim == 3)
@@ -146,7 +145,7 @@ avtOriginalDataSpatialExtentsQuery::PerformQuery(QueryAttributes *qA)
                                               + floatFormat + ", " 
                                               + floatFormat + ", " 
                                               + floatFormat + ")";
-       SNPRINTF(msg, 1024, format.c_str(),
+       snprintf(msg, 1024, format.c_str(),
         extents[0], extents[1], extents[2], extents[3], extents[4], extents[5]);
     }
     doubleVector d;

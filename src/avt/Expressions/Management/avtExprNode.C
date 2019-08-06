@@ -11,7 +11,6 @@
 #include <ExprPipelineState.h>
 #include <avtExprNode.h>
 #include <DebugStream.h>
-#include <snprintf.h>
 
 #include <avtApplyDataBinningExpression.h>
 #include <avtApplyEnumerationExpression.h>
@@ -102,7 +101,7 @@ avtIntegerConstExpr::CreateFilters(ExprPipelineState *state)
     avtConstantCreatorExpression *f = new avtConstantCreatorExpression();
     f->SetValue(value);
     char strrep[30];
-    SNPRINTF(strrep, 30, "'%d'", value);
+    snprintf(strrep, 30, "'%d'", value);
     state->PushName(string(strrep));
     f->SetOutputVariableName(strrep);
 
@@ -133,7 +132,7 @@ avtFloatConstExpr::CreateFilters(ExprPipelineState *state)
     avtConstantCreatorExpression *f = new avtConstantCreatorExpression();
     f->SetValue(value);
     char strrep[30];
-    SNPRINTF(strrep, 30, "'%e'", value);
+    snprintf(strrep, 30, "'%e'", value);
     state->PushName(string(strrep));
     f->SetOutputVariableName(strrep);
 
@@ -272,7 +271,7 @@ avtIndexExpr::CreateFilters(ExprPipelineState *state)
 
     // Set the variable the function should output.
     char value_name[200];
-    SNPRINTF(value_name, 200, "%d", ind);
+    snprintf(value_name, 200, "%d", ind);
     string outputName = inputName + "[" + value_name + "]";
     state->PushName(outputName);
     f->SetOutputVariableName(outputName.c_str());

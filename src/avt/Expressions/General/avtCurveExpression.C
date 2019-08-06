@@ -9,7 +9,6 @@
 
 #include <avtCurveExpression.h>
 
-#include <snprintf.h>
 #include <DebugStream.h>
 #include <ExpressionException.h>
 #include <avtExprNode.h>
@@ -98,11 +97,11 @@ avtCurveExpression::GetMacro(std::vector<std::string> &args, std::string &ne,
     char new_expr[2048];
     if (-1 == xvar)
     {
-        SNPRINTF(new_expr,2048, "%s(%s)", function.c_str(), args[0].c_str());
+        snprintf(new_expr,2048, "%s(%s)", function.c_str(), args[0].c_str());
     }
     else
     {
-        SNPRINTF(new_expr, 2048, "curve_domain(%s, %s(coord(%s)[0]))",
+        snprintf(new_expr, 2048, "curve_domain(%s, %s(coord(%s)[0]))",
                  args[0].c_str(), yFuncs[xvar], args[0].c_str());
     }
     type = Expression::CurveMeshVar;

@@ -10,7 +10,6 @@
 #include <tesselator.h>
 #include <vtkPoints.h>
 #include <vtkPolyData.h>
-#include <snprintf.h>
 #include <vector>
 #include <map>
 
@@ -91,7 +90,7 @@ public:
     int GetVertexId(const double *vert)
     {
         char keystr[200];
-        SNPRINTF(keystr, 200, "%12.12e,%12.12e,%12.12e", vert[0], vert[1], vert[2]);
+        snprintf(keystr, 200, "%12.12e,%12.12e,%12.12e", vert[0], vert[1], vert[2]);
         std::string key(keystr);
         int ret;
         std::map<std::string, int>::const_iterator pos =

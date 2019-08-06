@@ -41,7 +41,6 @@
 #include <vtkUnstructuredGridFacelistFilter.h>
 #include <vtkVisItUtility.h>
 
-#include <snprintf.h>
 #include <visitstream.h>
 
 #include <avtCallback.h>
@@ -3821,7 +3820,7 @@ avtGenericDatabase::MaterialSelect(vtkDataSet *ds, avtMaterial *mat,
     if (ds == NULL)
     {
         char msg[128];
-        SNPRINTF(msg, sizeof(msg),
+        snprintf(msg, sizeof(msg),
                 "In domain number %d, the dataset object is NULL", dom);
         EXCEPTION1(InvalidDBTypeException, msg);
     }
@@ -3835,7 +3834,7 @@ avtGenericDatabase::MaterialSelect(vtkDataSet *ds, avtMaterial *mat,
     if (mat == NULL)
     {
         char msg[128];
-        SNPRINTF(msg,sizeof(msg),
+        snprintf(msg,sizeof(msg),
             "In domain number %d, the material object is NULL", dom);
         EXCEPTION1(InvalidDBTypeException, msg);
     }
@@ -3843,7 +3842,7 @@ avtGenericDatabase::MaterialSelect(vtkDataSet *ds, avtMaterial *mat,
     if (mat->GetNZones() !=ds->GetNumberOfCells())
     {
         char msg[128];
-        SNPRINTF(msg,sizeof(msg),"In domain number %d, the material object "
+        snprintf(msg,sizeof(msg),"In domain number %d, the material object "
               "with nzones=%d and dataset object with ncells=%d do not agree.",
                dom, mat->GetNZones(), (int) ds->GetNumberOfCells());
         EXCEPTION1(InvalidDBTypeException, msg);

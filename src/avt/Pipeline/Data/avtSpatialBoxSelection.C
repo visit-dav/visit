@@ -8,8 +8,6 @@
 
 #include <float.h>
 
-#include <snprintf.h>
-
 #include <avtSpatialBoxSelection.h>
 
 // ****************************************************************************
@@ -204,7 +202,7 @@ std::string
 avtSpatialBoxSelection::DescriptionString(void)
 {
     char str[1024];
-    SNPRINTF(str, sizeof(str), "avtSpatialBoxSelection:%d_%f_%f_%f_%f_%f_%f",
+    snprintf(str, sizeof(str), "avtSpatialBoxSelection:%d_%f_%f_%f_%f_%f_%f",
                                 inclusionMode, mins[0], mins[1], mins[2],
                                 maxs[0], maxs[1], maxs[2]);
     std::string s2 = str;

@@ -73,7 +73,6 @@ Consider the leaveDomains ICs and the balancing at the same time.
 #include <ExpressionList.h>
 #include <ParsingExprList.h>
 #include <VisItStreamUtil.h>
-#include <snprintf.h>
 
 #ifdef PARALLEL
 #include <time.h> // needed for nanosleep
@@ -454,7 +453,7 @@ avtPICSFilter::GetDomain(const BlockIDType &domain, const avtVector &pt)
 void
 avtPICSFilter::RestoreICsFilename( int timeStep, char *filename, size_t filenameSize )
 {
-    SNPRINTF( filename, filenameSize, "%s_%d_%03d", restartFilename, PAR_Rank(), timeStep );
+    snprintf( filename, filenameSize, "%s_%d_%03d", restartFilename, PAR_Rank(), timeStep );
 }
 
 // ****************************************************************************
@@ -1181,7 +1180,7 @@ avtPICSFilter::SetICAlgorithm()
     if ((selectedAlgo != PICS_VISIT_SELECTS) && (selectedAlgo != actualAlgo))
     {
         char str[1024];
-        SNPRINTF(str, 1024,
+        snprintf(str, 1024,
                  "\nWarning: the selected algorithm \"%s\" could not be used, "
                  "instead the following algorithm was used \"%s\".\n",
                  AlgorithmToString(selectedAlgo), AlgorithmToString(actualAlgo));
@@ -3344,13 +3343,13 @@ avtPICSFilter::ModifyContract(avtContract_p in_contract)
         char defn[1024];
         if( pathlineCMFE == PICS_CONN_CMFE )
         {
-            SNPRINTF(defn, 1024, "conn_cmfe(<[%d]id:%s>, <%s>)",
+            snprintf(defn, 1024, "conn_cmfe(<[%d]id:%s>, <%s>)",
                      timeOffset, pathlineName.c_str(), meshName.c_str());
         }
         // Different mesh between the two time steps
         else //if( pathlineCMFE == PICS_POS_CMFE )
         {
-            SNPRINTF(defn, 1024, "pos_cmfe(<[%d]id:%s>, <%s>, <%s>)",
+            snprintf(defn, 1024, "pos_cmfe(<[%d]id:%s>, <%s>, <%s>)",
                      timeOffset, pathlineName.c_str(), meshName.c_str(),
                      pathlineName.c_str());
         }

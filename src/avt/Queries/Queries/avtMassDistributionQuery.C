@@ -8,8 +8,6 @@
 
 #include <avtMassDistributionQuery.h>
 
-#include <snprintf.h>
-
 #include <vtkCellData.h>
 #include <vtkExecutive.h>
 #include <vtkIdList.h>
@@ -187,7 +185,7 @@ avtMassDistributionQuery::PostExecute(void)
     std::string format = "The %s distribution has been outputted as an "             
              "Ultra file (%s), which can then be imported into VisIt.  The"
              " total %s considered was " + queryAtts.GetFloatFormat() +"\n";
-    SNPRINTF(msg,1024,format.c_str(),
+    snprintf(msg,1024,format.c_str(),
                  mass_string, name, mass_string, totalMass);
     SetResultMessage(msg);
     SetResultValue(0.);

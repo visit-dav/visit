@@ -13,7 +13,6 @@
 #include <ExpressionException.h>
 #include <avtExprNode.h>
 #include <ExprPipelineState.h>
-#include <snprintf.h>
 
 #include <string>
 
@@ -153,7 +152,7 @@ avtConstantFunctionExpression::ProcessArguments(ArgsExpr *args,
         value = dynamic_cast<avtFloatConstExpr*>(expr1)->GetValue();
 
     char strrep[30];
-    SNPRINTF(strrep, 30, "'%e'", value);
+    snprintf(strrep, 30, "'%e'", value);
     state->PushName(std::string(strrep));    
 }
 

@@ -10,7 +10,6 @@
 #include <VisWindowColleagueProxy.h>
 
 #include <AnnotationObject.h>
-#include <snprintf.h>
 
 #include <vtkRenderer.h>
 #include <vtkFollower.h>
@@ -690,10 +689,10 @@ avtText3DColleague::SetText(const char *formatString)
         std::string left(fmtStr.substr(0, pos));
         std::string right(fmtStr.substr(pos + tlen, fmtStr.size() - pos - tlen));
         char tmp[100];
-        SNPRINTF(tmp, 100, "%g", info->currentTime);
+        snprintf(tmp, 100, "%g", info->currentTime);
         len = left.size() + strlen(tmp) + right.size() + 1;
         info->textString = new char[len + 1];
-        SNPRINTF(info->textString, len, "%s%s%s", left.c_str(), tmp, right.c_str());
+        snprintf(info->textString, len, "%s%s%s", left.c_str(), tmp, right.c_str());
     }
     else if((pos=fmtStr.find(CYCLE_IDENTIFIER)) != std::string::npos)
     {
@@ -701,10 +700,10 @@ avtText3DColleague::SetText(const char *formatString)
         std::string left(fmtStr.substr(0, pos));
         std::string right(fmtStr.substr(pos + tlen, fmtStr.size() - pos - tlen));
         char tmp[100];
-        SNPRINTF(tmp, 100, "%d", info->currentCycle);
+        snprintf(tmp, 100, "%d", info->currentCycle);
         len = left.size() + strlen(tmp) + right.size() + 1;
         info->textString = new char[len + 1];
-        SNPRINTF(info->textString, len, "%s%s%s", left.c_str(), tmp, right.c_str());
+        snprintf(info->textString, len, "%s%s%s", left.c_str(), tmp, right.c_str());
     }
     else
     {

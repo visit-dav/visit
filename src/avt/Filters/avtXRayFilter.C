@@ -2445,12 +2445,12 @@ avtXRayFilter::CheckDataSets(int nDataSets, vtkDataSet **dataSets)
             if (dataSets[i]->GetPointData()->GetArray(absVarName.c_str())
                 != NULL)
             {
-                SNPRINTF(msg,256, "Failure: variable %s is node-centered, but "
+                snprintf(msg,256, "Failure: variable %s is node-centered, but "
                                   "it must be zone-centered for this query.",
                                   absVarName.c_str());
             }
             else
-                SNPRINTF(msg,256, "Variable %s not found.", absVarName.c_str());
+                snprintf(msg,256, "Variable %s not found.", absVarName.c_str());
             
             EXCEPTION1(VisItException, msg);
         }
@@ -2460,12 +2460,12 @@ avtXRayFilter::CheckDataSets(int nDataSets, vtkDataSet **dataSets)
             if (dataSets[i]->GetPointData()->GetArray(emisVarName.c_str())
                 != NULL)
             {
-                SNPRINTF(msg,256, "Failure: variable %s is node-centered, but "
+                snprintf(msg,256, "Failure: variable %s is node-centered, but "
                                   "it must be zone-centered for this query.",
                                   emisVarName.c_str());
             }
             else
-                SNPRINTF(msg,256, "Variable %s not found.",
+                snprintf(msg,256, "Variable %s not found.",
                                   emisVarName.c_str());
             EXCEPTION1(VisItException, msg);
         }
@@ -2777,7 +2777,7 @@ avtXRayFilter::IntegrateLines(int pixelOffset, int nPts, int *lineId,
                 if (lineOffset + lineId[iPt] == debugRay)
                 {
                     char filename[80];
-                    SNPRINTF(filename, 80, "ray%d.csv", debugRay);
+                    snprintf(filename, 80, "ray%d.csv", debugRay);
                     f = fopen(filename, "w");
                     fprintf(f, " dist1, dist2, tmp, segLength, a, e, intensityBinZero\n");
                     intensityBinZero = background[0];
@@ -3304,7 +3304,7 @@ avtXRayFilter::DumpRayHexIntersections(int iProc, int iDataset,
     // Write the vtk file.
     //
     char filename[80];
-    SNPRINTF(filename, 80, "ray%d_proc%02d_ds%02d.vtk",
+    snprintf(filename, 80, "ray%d_proc%02d_ds%02d.vtk",
              debugRay, iProc, iDataset);
     FILE *f = fopen(filename, "w");
     fprintf(f, "# vtk DataFile Version 3.0\n");

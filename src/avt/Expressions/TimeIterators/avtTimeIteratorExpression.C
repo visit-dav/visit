@@ -21,8 +21,6 @@
 #include <ExpressionException.h>
 #include <InvalidFilesException.h>
 
-#include <snprintf.h>
-
 #include <string>
 #include <vector>
 
@@ -130,7 +128,7 @@ avtTimeIteratorExpression::ProcessArguments(ArgsExpr *args,
             else if (s != "conn_cmfe")
             {
                 char msg[1024];
-                SNPRINTF(msg, 1024, "Could not understand meaning of \"%s\"",
+                snprintf(msg, 1024, "Could not understand meaning of \"%s\"",
                                     s.c_str());
                 EXCEPTION2(ExpressionException, outputVariableName,msg);
             }
@@ -330,13 +328,13 @@ avtTimeIteratorExpression::UpdateExpressions(int ts)
         char expr_defn[1024];
         if (cmfeType == CONN_CMFE)
         {
-            SNPRINTF(expr_defn, 1024, "conn_cmfe(<[%d]i:%s>, <%s>)", ts,
+            snprintf(expr_defn, 1024, "conn_cmfe(<[%d]i:%s>, <%s>)", ts,
                                         varnames[i].c_str(), meshname.c_str());
         }
         else
         {
             int defVarIndex = (int)varnames.size()-1;
-            SNPRINTF(expr_defn, 1024, "pos_cmfe(<[%d]i:%s>, <%s>, %s)", ts,
+            snprintf(expr_defn, 1024, "pos_cmfe(<[%d]i:%s>, <%s>, %s)", ts,
                                         varnames[i].c_str(), meshname.c_str(),
                                         varnames[defVarIndex].c_str());
         }
@@ -391,7 +389,7 @@ avtTimeIteratorExpression::GetInternalVarname(int v)
         return varnames[v];
 
     char name[1024];
-    SNPRINTF(name, 1024, "_avt_ti_%d", v);
+    snprintf(name, 1024, "_avt_ti_%d", v);
     return std::string(name);
 }
 

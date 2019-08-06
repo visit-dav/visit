@@ -8,8 +8,6 @@
 
 #include <avtPointSelection.h>
 
-#include <snprintf.h>
-
 
 // ****************************************************************************
 //  Method: avtPointSelection constructor
@@ -90,7 +88,7 @@ std::string
 avtPointSelection::DescriptionString(void)
 {
     char str[1024];
-    SNPRINTF(str, sizeof(str), "avtPointSelection:%f_%f_%f",
+    snprintf(str, sizeof(str), "avtPointSelection:%f_%f_%f",
                                 pt[0], pt[1], pt[2]);
     std::string s2 = str;
     return s2;

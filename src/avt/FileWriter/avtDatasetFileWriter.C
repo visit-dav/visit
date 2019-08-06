@@ -8,7 +8,6 @@
 
 #include <avtDatasetFileWriter.h>
 
-#include <snprintf.h>
 #include <visitstream.h>
 #include <visit_gzstream.h>
 
@@ -242,7 +241,7 @@ avtDatasetFileWriter::Write(DatasetFileFormat format, const char *filename,
 //    Do not put 'FORMAT' in the .visit file, since it has been antiquated.
 //
 //    Hank Childs, Fri Feb 15 16:25:30 PST 2008
-//    Use SNPRINTF.  Also fix memory leak.
+//    Use snprintf.  Also fix memory leak.
 //
 // ****************************************************************************
 
@@ -274,13 +273,13 @@ avtDatasetFileWriter::WriteOBJFamily(const char *filename)
         // Now make a .visit file to bind them together.
         //
         char rootfile[1024];
-        SNPRINTF(rootfile, 1024, "%s.visit", basename);
+        snprintf(rootfile, 1024, "%s.visit", basename);
         ofstream ofile(rootfile);
         ofile << "!NBLOCKS " << nFilesWritten << endl;
         for (int i = 0 ; i < nFilesWritten ; i++)
         {
             char objname[1024];
-            SNPRINTF(objname, 1024, "%s.%04d%s", basename, i, extensions[(int)OBJ]);
+            snprintf(objname, 1024, "%s.%04d%s", basename, i, extensions[(int)OBJ]);
             ofile << objname << endl;
         }
 
@@ -308,7 +307,7 @@ avtDatasetFileWriter::WriteOBJFamily(const char *filename)
 //  Modifications:
 //
 //    Hank Childs, Fri Feb 15 16:25:45 PST 2008
-//    Use SNPRINTF.
+//    Use snprintf.
 //
 // ****************************************************************************
 
@@ -327,7 +326,7 @@ avtDatasetFileWriter::WriteOBJTree(avtDataTree_p dt, int idx,
         avtDataRepresentation &rep = dt->GetDataRepresentation();
         vtkDataSet *ds = rep.GetDataVTK();
         char fname[1024];
-        SNPRINTF(fname, 1024, "%s.%04d%s", basename, idx, extensions[(int)OBJ]);
+        snprintf(fname, 1024, "%s.%04d%s", basename, idx, extensions[(int)OBJ]);
         WriteOBJFile(ds, fname, rep.GetLabel().c_str());
         totalWritten = 1;
     }
@@ -476,7 +475,7 @@ avtDatasetFileWriter::WriteOBJFile(vtkDataSet *ds, const char *fname,
 //    Do not put 'FORMAT' in the .visit file, since it has been antiquated.
 //
 //    Hank Childs, Fri Feb 15 16:26:09 PST 2008
-//    Use SNPRINTF.  Also fix memory leak.
+//    Use snprintf.  Also fix memory leak.
 //
 // ****************************************************************************
 
@@ -508,13 +507,13 @@ avtDatasetFileWriter::WriteVTKFamily(const char *filename, bool binary)
         // Now make a .visit file to bind them together.
         //
         char rootfile[1024];
-        SNPRINTF(rootfile, 1024, "%s.visit", basename);
+        snprintf(rootfile, 1024, "%s.visit", basename);
         ofstream ofile(rootfile);
         ofile << "!NBLOCKS " << nFilesWritten << endl;
         for (int i = 0 ; i < nFilesWritten ; i++)
         {
             char vtkname[1024];
-            SNPRINTF(vtkname, 1024, "%s.%04d%s", basename, i, extensions[(int)VTK]);
+            snprintf(vtkname, 1024, "%s.%04d%s", basename, i, extensions[(int)VTK]);
             ofile << vtkname << endl;
         }
 
@@ -578,7 +577,7 @@ avtDatasetFileWriter::WriteVTKFile(vtkDataSet *ds, const char *fname, bool bin)
 //  Modifications:
 //
 //    Hank Childs, Fri Feb 15 16:26:25 PST 2008
-//    Use SNPRINTF.
+//    Use snprintf.
 //
 // ****************************************************************************
 
@@ -597,7 +596,7 @@ avtDatasetFileWriter::WriteVTKTree(avtDataTree_p dt, int idx,
         avtDataRepresentation &rep = dt->GetDataRepresentation();
         vtkDataSet *ds = rep.GetDataVTK();
         char fname[1024];
-        SNPRINTF(fname, 1024, "%s.%04d%s", basename, idx, extensions[(int)VTK]);
+        snprintf(fname, 1024, "%s.%04d%s", basename, idx, extensions[(int)VTK]);
         WriteVTKFile(ds, fname, bin);
         totalWritten = 1;
     }
@@ -836,7 +835,7 @@ avtDatasetFileWriter::WriteCurveFile(const char *filename, int quality, int comp
 //   Added code to reset nFilesWritten if the file base changes.
 //
 //   Hank Childs, Fri Feb 15 16:23:31 PST 2008
-//   Use SNPRINTF.
+//   Use snprintf.
 //
 // ****************************************************************************
 
@@ -875,10 +874,10 @@ avtDatasetFileWriter::CreateFilename(const char *base, bool family,
     str = new char[total_len];
 
     if (family)
-        SNPRINTF(str, total_len-1, "%s%04d%s", base, nFilesWritten, 
+        snprintf(str, total_len-1, "%s%04d%s", base, nFilesWritten, 
                                                extensions[(int)format]);
     else
-        SNPRINTF(str, total_len-1, "%s%s", base, extensions[(int)format]);
+        snprintf(str, total_len-1, "%s%s", base, extensions[(int)format]);
 
     //
     // Increment the number of files written.
@@ -1011,7 +1010,7 @@ avtDatasetFileWriter::GetSingleDataset(void)
 //  Modifications:
 //
 //    Hank Childs, Fri Feb 15 16:26:25 PST 2008
-//    Use SNPRINTF.
+//    Use snprintf.
 //
 // ****************************************************************************
 
@@ -1034,7 +1033,7 @@ avtDatasetFileWriter::GenerateName(const char *label, const char *desc,
         }
         else
         {
-            SNPRINTF(tmp, 1024, "%s%d", attempt, idx);
+            snprintf(tmp, 1024, "%s%d", attempt, idx);
             idx++;
         }
         for (size_t i = 0 ; i < namesUsed.size() ; i++)

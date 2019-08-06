@@ -43,7 +43,6 @@
 #if !defined(_WIN32)
 #include <unistd.h>
 #endif
-#include <snprintf.h>
 
 #ifdef PARALLEL
 #include <mpi.h>
@@ -446,7 +445,7 @@ avtDatabaseFactory::FileList(DatabasePluginManager *dbmgr,
         if (formatindex < 0)
         {
             char msg[1000];
-            SNPRINTF(msg, sizeof(msg),
+            snprintf(msg, sizeof(msg),
                     "The DB factory was told to open a file of type %s, "
                     "but the engine had no plugin of that type.",
                     format);
@@ -457,7 +456,7 @@ avtDatabaseFactory::FileList(DatabasePluginManager *dbmgr,
         if (!dbmgr->PluginAvailable(formatid))
         {
             char msg[1000];
-            SNPRINTF(msg, sizeof(msg),
+            snprintf(msg, sizeof(msg),
                     "The DB factory was told to open a file of type %s, "
                     "but that format's plugin could not be loaded.",
                     format);
@@ -492,7 +491,7 @@ avtDatabaseFactory::FileList(DatabasePluginManager *dbmgr,
         if (rv == NULL)
         {
             char msg[1000];
-            SNPRINTF(msg, sizeof(msg),
+            snprintf(msg, sizeof(msg),
                     "The DB factory was told to open a file of type %s, but "
                     "that format is not a match for file %s",
                     format, filelist[0]);
@@ -934,7 +933,7 @@ avtDatabaseFactory::SetupDatabase(CommonDatabasePluginInfo *info,
     if (info == 0)
     {
         char msg[1024];
-        SNPRINTF(msg, 1024, "Attempted to setup a database with null info object");
+        snprintf(msg, 1024, "Attempted to setup a database with null info object");
         EXCEPTION1(ImproperUseException, msg);
     }
 
@@ -1104,7 +1103,7 @@ avtDatabaseFactory::VisitFile(DatabasePluginManager *dbmgr,
             // Create a new filename that has the path prepended to it.
             size_t len = fileName.size() + s + 2;
             char *name = new char[len];
-            SNPRINTF(name, len, "%s%s", visitPath.c_str(), fileName.c_str());
+            snprintf(name, len, "%s%s", visitPath.c_str(), fileName.c_str());
             delete [] reallist[j];
             reallist[j] = name;
         }

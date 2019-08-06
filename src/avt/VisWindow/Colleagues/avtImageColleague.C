@@ -8,8 +8,6 @@
 
 #include <avtImageColleague.h>
 
-#include <snprintf.h>
-
 #include <vtkActor2D.h>
 #include <vtkCoordinate.h>
 #include <vtkImageData.h>
@@ -370,7 +368,7 @@ avtImageColleague::SetOptions(const AnnotationObject &annot)
         if(!haveImage)
         {
             char msg[1024];
-            SNPRINTF(msg, 1024, "Could not read image file: %s.", text[0].c_str());
+            snprintf(msg, 1024, "Could not read image file: %s.", text[0].c_str());
             avtCallback::IssueWarning(msg);
         }
     }

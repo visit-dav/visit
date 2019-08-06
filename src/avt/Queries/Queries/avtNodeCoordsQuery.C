@@ -10,7 +10,6 @@
 #include <avtOriginatingSource.h>
 #include <avtSILRestrictionTraverser.h>
 #include <vector>
-#include <snprintf.h>
 #include <avtParallel.h>
 #include <QueryArgumentException.h>
 
@@ -234,7 +233,7 @@ avtNodeCoordsQuery::PerformQuery(QueryAttributes *qA)
             {
                 format = "The coords of %s node %d are (" + floatFormat + ", "
                                                           + floatFormat + ").";
-                SNPRINTF(msg, 120, format.c_str(),
+                snprintf(msg, 120, format.c_str(),
                          global.c_str(), element, coord[0], coord[1]);
             }
             else
@@ -242,7 +241,7 @@ avtNodeCoordsQuery::PerformQuery(QueryAttributes *qA)
                 format = "The coords of %s node %d are (" + floatFormat + ", "
                                                           + floatFormat + ", "
                                                           + floatFormat + ").";
-                SNPRINTF(msg, 120, format.c_str(),
+                snprintf(msg, 120, format.c_str(),
                          global.c_str(), element,
                          coord[0], coord[1], coord[2]);
             }
@@ -262,7 +261,7 @@ avtNodeCoordsQuery::PerformQuery(QueryAttributes *qA)
             {
                 format = "The coords of node %d (%s) are (" + floatFormat +", "
                                                             + floatFormat +").";
-                SNPRINTF(msg, 120, format.c_str(),
+                snprintf(msg, 120, format.c_str(),
                          element, domainName.c_str(),
                          coord[0], coord[1]);
             }
@@ -272,7 +271,7 @@ avtNodeCoordsQuery::PerformQuery(QueryAttributes *qA)
                                                             + floatFormat +", "
                                                             + floatFormat +").";
 
-                SNPRINTF(msg, 120, format.c_str(),
+                snprintf(msg, 120, format.c_str(),
                          element, domainName.c_str(),
                          coord[0], coord[1], coord[2]);
             }
@@ -283,7 +282,7 @@ avtNodeCoordsQuery::PerformQuery(QueryAttributes *qA)
     {
         if (singleDomain)
         {
-            SNPRINTF(msg, 120, "The coords of node %d could not be determined.",
+            snprintf(msg, 120, "The coords of node %d could not be determined.",
                      element);
         }
         else
@@ -295,7 +294,7 @@ avtNodeCoordsQuery::PerformQuery(QueryAttributes *qA)
             string var      = qA->GetVariables()[0];
             string domainName;
             src->GetDomainName(var, ts, dom, domainName);
-            SNPRINTF(msg, 120, "The coords of node %d (%s) could not be determined.",
+            snprintf(msg, 120, "The coords of node %d (%s) could not be determined.",
                      element, domainName.c_str());
         }
     }

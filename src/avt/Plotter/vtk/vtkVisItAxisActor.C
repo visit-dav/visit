@@ -25,7 +25,6 @@ All rights reserved.
 #include <vtkCollection.h>
 #include <vtkProperty.h>
 #include <vtkViewport.h>
-#include <snprintf.h>
 #include <algorithm>
 
 using std::string;
@@ -99,7 +98,7 @@ vtkVisItAxisActor::vtkVisItAxisActor()
   this->Bounds[1] = this->Bounds[3] = this->Bounds[5] = 1;
 
   this->LabelFormat = new char[8]; 
-  SNPRINTF(this->LabelFormat,8, "%s","%-#6.3g");
+  snprintf(this->LabelFormat,8, "%s","%-#6.3g");
 
   this->TitleVector = vtkMultiFontVectorText::New();
   this->TitleMapper = vtkPolyDataMapper::New();

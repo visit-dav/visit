@@ -8,9 +8,7 @@
 
 #include <avtSkewnessQuery.h>
 
-#include <snprintf.h>
 #include <math.h>
-
 #include <string>
 
 
@@ -176,7 +174,7 @@ avtSkewnessQuery::CreateMessage(double skewness)
     std::string format = "The skewness of the distribution is "
                     + queryAtts.GetFloatFormat() + ".";
                     
-    SNPRINTF(msg,1024,format.c_str(), skewness);
+    snprintf(msg,1024,format.c_str(), skewness);
     std::string m = msg;
     return m;
 }

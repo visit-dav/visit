@@ -28,7 +28,6 @@
 #include <DebugStream.h>
 #include <ImproperUseException.h>
 
-#include <snprintf.h>
 #include <float.h>
 #include <math.h>
 
@@ -312,7 +311,7 @@ avtEllipticalCompactnessFactorQuery::PostExecute(void)
                       "  Best fitting axes were "  + floatFormat + ","
                                                    + floatFormat + ","
                                                    + floatFormat + ".";
-    SNPRINTF(msg, 4096,format.c_str(),
+    snprintf(msg, 4096,format.c_str(),
                        biggestVal / total_volume, 
                        ellipse_center[0], ellipse_center[1], ellipse_center[2],
                        x_radius[biggest], y_radius[biggest], z_radius[biggest]);
