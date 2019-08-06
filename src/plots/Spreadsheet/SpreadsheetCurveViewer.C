@@ -14,8 +14,6 @@
 #include <QTextEdit>
 #include <QTextStream>
 
-#include <snprintf.h>
-
 #include <ViewerPlot.h>
 
 #define PLOT_ENABLED
@@ -159,7 +157,7 @@ SpreadsheetCurveViewer::setData(const double *vals, int nvals)
     curveText->clear();
     for(int i = 0; i < nvals; ++i)
     {
-        SNPRINTF(tmp, 200, "%1.16e %1.16e", vals[i*2], vals[i*2+1]);
+        snprintf(tmp, 200, "%1.16e %1.16e", vals[i*2], vals[i*2+1]);
         curveText->append(tmp);
     }
 }

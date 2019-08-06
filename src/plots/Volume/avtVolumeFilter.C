@@ -31,7 +31,6 @@
 #include <DebugStream.h>
 #include <InvalidDimensionsException.h>
 #include <InvalidVariableException.h>
-#include <snprintf.h>
 #include <TimingsManager.h>
 
 #include <avtCallback.h>
@@ -458,7 +457,7 @@ avtVolumeFilter::RenderImageRayCasting(avtImage_p opaque_image,
         gradvar = primaryVariable;
     // This name is explicitly sent to the avtGradientExpression in
     // avtVolumePlot.
-    SNPRINTF(gradName, 128, "_%s_gradient", gradvar);
+    snprintf(gradName, 128, "_%s_gradient", gradvar);
 
     for (int i = 0 ; i < vl.nvars ; i++)
     {
@@ -797,7 +796,7 @@ avtVolumeFilter::RenderImage(avtImage_p opaque_image,
         gradvar = primaryVariable;
     // This name is explicitly sent to the avtGradientExpression in
     // the avtVolumePlot.
-    SNPRINTF(gradName, 128, "_%s_gradient", gradvar);
+    snprintf(gradName, 128, "_%s_gradient", gradvar);
 
     for (int i = 0 ; i < vl.nvars ; i++)
     {
@@ -1307,12 +1306,12 @@ avtVolumeFilter::ModifyContract(avtContract_p contract)
         if (atts.GetUseColorVarMin())
         {
             char m[16];
-            SNPRINTF(m, 16, "%f", atts.GetColorVarMin());
-            SNPRINTF(exprDef, 128, "log10withmin(<%s>, %s)", var, m);
+            snprintf(m, 16, "%f", atts.GetColorVarMin());
+            snprintf(exprDef, 128, "log10withmin(<%s>, %s)", var, m);
         }
         else
         {
-            SNPRINTF(exprDef, 128, "log10(<%s>)", var);
+            snprintf(exprDef, 128, "log10(<%s>)", var);
         }
         avtDataRequest_p nds = new avtDataRequest(exprName.c_str(),
                                ds->GetTimestep(), ds->GetRestriction());
@@ -1330,7 +1329,7 @@ avtVolumeFilter::ModifyContract(avtContract_p contract)
     else // VolumeAttributes::Skew)
     {
         setupExpr = true;
-        SNPRINTF(exprDef, 128, "var_skew(<%s>, %f)", var,
+        snprintf(exprDef, 128, "var_skew(<%s>, %f)", var,
                  atts.GetSkewFactor());
         avtDataRequest_p nds =
             new avtDataRequest(exprName.c_str(),

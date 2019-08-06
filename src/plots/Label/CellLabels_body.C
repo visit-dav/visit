@@ -20,11 +20,11 @@
 // ****************************************************************************
 
 //
-// Make sure that CREATE_LABEL defaults to SNPRINTF if we have not
+// Make sure that CREATE_LABEL defaults to snprintf if we have not
 // defined it.
 //
 #ifndef CREATE_LABEL
-#define CREATE_LABEL SNPRINTF
+#define CREATE_LABEL snprintf
 #endif
 
     vtkIdType     nCells = input->GetNumberOfCells();

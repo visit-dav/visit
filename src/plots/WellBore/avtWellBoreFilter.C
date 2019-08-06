@@ -19,8 +19,6 @@
 #include <vtkRectilinearGrid.h>
 #include <vtkStructuredGrid.h>
 
-#include <snprintf.h>
-
 #include <DebugStream.h>
 
 #include <string>
@@ -197,7 +195,7 @@ avtWellBoreFilter::ExecuteDataTree(avtDataRepresentation *inDR)
         // Create the label.
         //
         char label[80];
-        SNPRINTF(label, 80, "%d", i);
+        snprintf(label, 80, "%d", i);
         labels.push_back(label);
     }
 

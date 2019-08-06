@@ -5,7 +5,6 @@
 #include <PyMultiCurveAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 #include <PyColorControlPointList.h>
 #include <ColorAttribute.h>
 #include <PyColorAttributeList.h>
@@ -51,30 +50,30 @@ PyMultiCurveAttributes_ToString(const MultiCurveAttributes *atts, const char *pr
         str += PyColorControlPointList_ToString(&atts->GetDefaultPalette(), objPrefix.c_str());
     }
     {   const unsignedCharVector &changedColors = atts->GetChangedColors();
-        SNPRINTF(tmpStr, 1000, "%schangedColors = (", prefix);
+        snprintf(tmpStr, 1000, "%schangedColors = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < changedColors.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%d", int(changedColors[i]));
+            snprintf(tmpStr, 1000, "%d", int(changedColors[i]));
             str += tmpStr;
             if(i < changedColors.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     const char *colorType_names = "ColorBySingleColor, ColorByMultipleColors";
     switch (atts->GetColorType())
     {
       case MultiCurveAttributes::ColorBySingleColor:
-          SNPRINTF(tmpStr, 1000, "%scolorType = %sColorBySingleColor  # %s\n", prefix, prefix, colorType_names);
+          snprintf(tmpStr, 1000, "%scolorType = %sColorBySingleColor  # %s\n", prefix, prefix, colorType_names);
           str += tmpStr;
           break;
       case MultiCurveAttributes::ColorByMultipleColors:
-          SNPRINTF(tmpStr, 1000, "%scolorType = %sColorByMultipleColors  # %s\n", prefix, prefix, colorType_names);
+          snprintf(tmpStr, 1000, "%scolorType = %sColorByMultipleColors  # %s\n", prefix, prefix, colorType_names);
           str += tmpStr;
           break;
       default:
@@ -82,51 +81,51 @@ PyMultiCurveAttributes_ToString(const MultiCurveAttributes *atts, const char *pr
     }
 
     const unsigned char *singleColor = atts->GetSingleColor().GetColor();
-    SNPRINTF(tmpStr, 1000, "%ssingleColor = (%d, %d, %d, %d)\n", prefix, int(singleColor[0]), int(singleColor[1]), int(singleColor[2]), int(singleColor[3]));
+    snprintf(tmpStr, 1000, "%ssingleColor = (%d, %d, %d, %d)\n", prefix, int(singleColor[0]), int(singleColor[1]), int(singleColor[2]), int(singleColor[3]));
     str += tmpStr;
     { const ColorAttributeList &cL = atts->GetMultiColor();
         const char *comment = (prefix==0 || strcmp(prefix,"")==0) ? "# " : "";
         for(int i = 0; i < cL.GetNumColors(); ++i)
         {
             const unsigned char *c = cL[i].GetColor();
-            SNPRINTF(tmpStr, 1000, "%s%sSetMultiColor(%d, (%d, %d, %d, %d))\n",
+            snprintf(tmpStr, 1000, "%s%sSetMultiColor(%d, (%d, %d, %d, %d))\n",
                      comment, prefix, i, int(c[0]), int(c[1]), int(c[2]), int(c[3]));
             str += tmpStr;
         }
     }
-    SNPRINTF(tmpStr, 1000, "%slineWidth = %d\n", prefix, atts->GetLineWidth());
+    snprintf(tmpStr, 1000, "%slineWidth = %d\n", prefix, atts->GetLineWidth());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%syAxisTitleFormat = \"%s\"\n", prefix, atts->GetYAxisTitleFormat().c_str());
+    snprintf(tmpStr, 1000, "%syAxisTitleFormat = \"%s\"\n", prefix, atts->GetYAxisTitleFormat().c_str());
     str += tmpStr;
     if(atts->GetUseYAxisTickSpacing())
-        SNPRINTF(tmpStr, 1000, "%suseYAxisTickSpacing = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%suseYAxisTickSpacing = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%suseYAxisTickSpacing = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%suseYAxisTickSpacing = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%syAxisTickSpacing = %g\n", prefix, atts->GetYAxisTickSpacing());
+    snprintf(tmpStr, 1000, "%syAxisTickSpacing = %g\n", prefix, atts->GetYAxisTickSpacing());
     str += tmpStr;
     if(atts->GetDisplayMarkers())
-        SNPRINTF(tmpStr, 1000, "%sdisplayMarkers = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sdisplayMarkers = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sdisplayMarkers = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sdisplayMarkers = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%smarkerScale = %g\n", prefix, atts->GetMarkerScale());
+    snprintf(tmpStr, 1000, "%smarkerScale = %g\n", prefix, atts->GetMarkerScale());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%smarkerLineWidth = %d\n", prefix, atts->GetMarkerLineWidth());
+    snprintf(tmpStr, 1000, "%smarkerLineWidth = %d\n", prefix, atts->GetMarkerLineWidth());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%smarkerVariable = \"%s\"\n", prefix, atts->GetMarkerVariable().c_str());
+    snprintf(tmpStr, 1000, "%smarkerVariable = \"%s\"\n", prefix, atts->GetMarkerVariable().c_str());
     str += tmpStr;
     if(atts->GetDisplayIds())
-        SNPRINTF(tmpStr, 1000, "%sdisplayIds = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sdisplayIds = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sdisplayIds = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sdisplayIds = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sidVariable = \"%s\"\n", prefix, atts->GetIdVariable().c_str());
+    snprintf(tmpStr, 1000, "%sidVariable = \"%s\"\n", prefix, atts->GetIdVariable().c_str());
     str += tmpStr;
     if(atts->GetLegendFlag())
-        SNPRINTF(tmpStr, 1000, "%slegendFlag = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%slegendFlag = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%slegendFlag = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%slegendFlag = 0\n", prefix);
     str += tmpStr;
     return str;
 }

@@ -5,7 +5,6 @@
 #include <PyScatterAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 #include <GlyphTypes.h>
 #include <ColorAttribute.h>
 
@@ -44,29 +43,29 @@ PyScatterAttributes_ToString(const ScatterAttributes *atts, const char *prefix)
     std::string str;
     char tmpStr[1000];
 
-    SNPRINTF(tmpStr, 1000, "%svar1 = \"%s\"\n", prefix, atts->GetVar1().c_str());
+    snprintf(tmpStr, 1000, "%svar1 = \"%s\"\n", prefix, atts->GetVar1().c_str());
     str += tmpStr;
     const char *var1Role_names = "Coordinate0, Coordinate1, Coordinate2, Color, None";
     switch (atts->GetVar1Role())
     {
       case ScatterAttributes::Coordinate0:
-          SNPRINTF(tmpStr, 1000, "%svar1Role = %sCoordinate0  # %s\n", prefix, prefix, var1Role_names);
+          snprintf(tmpStr, 1000, "%svar1Role = %sCoordinate0  # %s\n", prefix, prefix, var1Role_names);
           str += tmpStr;
           break;
       case ScatterAttributes::Coordinate1:
-          SNPRINTF(tmpStr, 1000, "%svar1Role = %sCoordinate1  # %s\n", prefix, prefix, var1Role_names);
+          snprintf(tmpStr, 1000, "%svar1Role = %sCoordinate1  # %s\n", prefix, prefix, var1Role_names);
           str += tmpStr;
           break;
       case ScatterAttributes::Coordinate2:
-          SNPRINTF(tmpStr, 1000, "%svar1Role = %sCoordinate2  # %s\n", prefix, prefix, var1Role_names);
+          snprintf(tmpStr, 1000, "%svar1Role = %sCoordinate2  # %s\n", prefix, prefix, var1Role_names);
           str += tmpStr;
           break;
       case ScatterAttributes::Color:
-          SNPRINTF(tmpStr, 1000, "%svar1Role = %sColor  # %s\n", prefix, prefix, var1Role_names);
+          snprintf(tmpStr, 1000, "%svar1Role = %sColor  # %s\n", prefix, prefix, var1Role_names);
           str += tmpStr;
           break;
       case ScatterAttributes::None:
-          SNPRINTF(tmpStr, 1000, "%svar1Role = %sNone  # %s\n", prefix, prefix, var1Role_names);
+          snprintf(tmpStr, 1000, "%svar1Role = %sNone  # %s\n", prefix, prefix, var1Role_names);
           str += tmpStr;
           break;
       default:
@@ -74,270 +73,270 @@ PyScatterAttributes_ToString(const ScatterAttributes *atts, const char *prefix)
     }
 
     if(atts->GetVar1MinFlag())
-        SNPRINTF(tmpStr, 1000, "%svar1MinFlag = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%svar1MinFlag = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%svar1MinFlag = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%svar1MinFlag = 0\n", prefix);
     str += tmpStr;
     if(atts->GetVar1MaxFlag())
-        SNPRINTF(tmpStr, 1000, "%svar1MaxFlag = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%svar1MaxFlag = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%svar1MaxFlag = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%svar1MaxFlag = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%svar1Min = %g\n", prefix, atts->GetVar1Min());
+    snprintf(tmpStr, 1000, "%svar1Min = %g\n", prefix, atts->GetVar1Min());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%svar1Max = %g\n", prefix, atts->GetVar1Max());
+    snprintf(tmpStr, 1000, "%svar1Max = %g\n", prefix, atts->GetVar1Max());
     str += tmpStr;
     const char *var1Scaling_names = "Linear, Log, Skew";
     switch (atts->GetVar1Scaling())
     {
       case ScatterAttributes::Linear:
-          SNPRINTF(tmpStr, 1000, "%svar1Scaling = %sLinear  # %s\n", prefix, prefix, var1Scaling_names);
+          snprintf(tmpStr, 1000, "%svar1Scaling = %sLinear  # %s\n", prefix, prefix, var1Scaling_names);
           str += tmpStr;
           break;
       case ScatterAttributes::Log:
-          SNPRINTF(tmpStr, 1000, "%svar1Scaling = %sLog  # %s\n", prefix, prefix, var1Scaling_names);
+          snprintf(tmpStr, 1000, "%svar1Scaling = %sLog  # %s\n", prefix, prefix, var1Scaling_names);
           str += tmpStr;
           break;
       case ScatterAttributes::Skew:
-          SNPRINTF(tmpStr, 1000, "%svar1Scaling = %sSkew  # %s\n", prefix, prefix, var1Scaling_names);
+          snprintf(tmpStr, 1000, "%svar1Scaling = %sSkew  # %s\n", prefix, prefix, var1Scaling_names);
           str += tmpStr;
           break;
       default:
           break;
     }
 
-    SNPRINTF(tmpStr, 1000, "%svar1SkewFactor = %g\n", prefix, atts->GetVar1SkewFactor());
+    snprintf(tmpStr, 1000, "%svar1SkewFactor = %g\n", prefix, atts->GetVar1SkewFactor());
     str += tmpStr;
     const char *var2Role_names = "Coordinate0, Coordinate1, Coordinate2, Color, None";
     switch (atts->GetVar2Role())
     {
       case ScatterAttributes::Coordinate0:
-          SNPRINTF(tmpStr, 1000, "%svar2Role = %sCoordinate0  # %s\n", prefix, prefix, var2Role_names);
+          snprintf(tmpStr, 1000, "%svar2Role = %sCoordinate0  # %s\n", prefix, prefix, var2Role_names);
           str += tmpStr;
           break;
       case ScatterAttributes::Coordinate1:
-          SNPRINTF(tmpStr, 1000, "%svar2Role = %sCoordinate1  # %s\n", prefix, prefix, var2Role_names);
+          snprintf(tmpStr, 1000, "%svar2Role = %sCoordinate1  # %s\n", prefix, prefix, var2Role_names);
           str += tmpStr;
           break;
       case ScatterAttributes::Coordinate2:
-          SNPRINTF(tmpStr, 1000, "%svar2Role = %sCoordinate2  # %s\n", prefix, prefix, var2Role_names);
+          snprintf(tmpStr, 1000, "%svar2Role = %sCoordinate2  # %s\n", prefix, prefix, var2Role_names);
           str += tmpStr;
           break;
       case ScatterAttributes::Color:
-          SNPRINTF(tmpStr, 1000, "%svar2Role = %sColor  # %s\n", prefix, prefix, var2Role_names);
+          snprintf(tmpStr, 1000, "%svar2Role = %sColor  # %s\n", prefix, prefix, var2Role_names);
           str += tmpStr;
           break;
       case ScatterAttributes::None:
-          SNPRINTF(tmpStr, 1000, "%svar2Role = %sNone  # %s\n", prefix, prefix, var2Role_names);
+          snprintf(tmpStr, 1000, "%svar2Role = %sNone  # %s\n", prefix, prefix, var2Role_names);
           str += tmpStr;
           break;
       default:
           break;
     }
 
-    SNPRINTF(tmpStr, 1000, "%svar2 = \"%s\"\n", prefix, atts->GetVar2().c_str());
+    snprintf(tmpStr, 1000, "%svar2 = \"%s\"\n", prefix, atts->GetVar2().c_str());
     str += tmpStr;
     if(atts->GetVar2MinFlag())
-        SNPRINTF(tmpStr, 1000, "%svar2MinFlag = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%svar2MinFlag = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%svar2MinFlag = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%svar2MinFlag = 0\n", prefix);
     str += tmpStr;
     if(atts->GetVar2MaxFlag())
-        SNPRINTF(tmpStr, 1000, "%svar2MaxFlag = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%svar2MaxFlag = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%svar2MaxFlag = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%svar2MaxFlag = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%svar2Min = %g\n", prefix, atts->GetVar2Min());
+    snprintf(tmpStr, 1000, "%svar2Min = %g\n", prefix, atts->GetVar2Min());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%svar2Max = %g\n", prefix, atts->GetVar2Max());
+    snprintf(tmpStr, 1000, "%svar2Max = %g\n", prefix, atts->GetVar2Max());
     str += tmpStr;
     const char *var2Scaling_names = "Linear, Log, Skew";
     switch (atts->GetVar2Scaling())
     {
       case ScatterAttributes::Linear:
-          SNPRINTF(tmpStr, 1000, "%svar2Scaling = %sLinear  # %s\n", prefix, prefix, var2Scaling_names);
+          snprintf(tmpStr, 1000, "%svar2Scaling = %sLinear  # %s\n", prefix, prefix, var2Scaling_names);
           str += tmpStr;
           break;
       case ScatterAttributes::Log:
-          SNPRINTF(tmpStr, 1000, "%svar2Scaling = %sLog  # %s\n", prefix, prefix, var2Scaling_names);
+          snprintf(tmpStr, 1000, "%svar2Scaling = %sLog  # %s\n", prefix, prefix, var2Scaling_names);
           str += tmpStr;
           break;
       case ScatterAttributes::Skew:
-          SNPRINTF(tmpStr, 1000, "%svar2Scaling = %sSkew  # %s\n", prefix, prefix, var2Scaling_names);
+          snprintf(tmpStr, 1000, "%svar2Scaling = %sSkew  # %s\n", prefix, prefix, var2Scaling_names);
           str += tmpStr;
           break;
       default:
           break;
     }
 
-    SNPRINTF(tmpStr, 1000, "%svar2SkewFactor = %g\n", prefix, atts->GetVar2SkewFactor());
+    snprintf(tmpStr, 1000, "%svar2SkewFactor = %g\n", prefix, atts->GetVar2SkewFactor());
     str += tmpStr;
     const char *var3Role_names = "Coordinate0, Coordinate1, Coordinate2, Color, None";
     switch (atts->GetVar3Role())
     {
       case ScatterAttributes::Coordinate0:
-          SNPRINTF(tmpStr, 1000, "%svar3Role = %sCoordinate0  # %s\n", prefix, prefix, var3Role_names);
+          snprintf(tmpStr, 1000, "%svar3Role = %sCoordinate0  # %s\n", prefix, prefix, var3Role_names);
           str += tmpStr;
           break;
       case ScatterAttributes::Coordinate1:
-          SNPRINTF(tmpStr, 1000, "%svar3Role = %sCoordinate1  # %s\n", prefix, prefix, var3Role_names);
+          snprintf(tmpStr, 1000, "%svar3Role = %sCoordinate1  # %s\n", prefix, prefix, var3Role_names);
           str += tmpStr;
           break;
       case ScatterAttributes::Coordinate2:
-          SNPRINTF(tmpStr, 1000, "%svar3Role = %sCoordinate2  # %s\n", prefix, prefix, var3Role_names);
+          snprintf(tmpStr, 1000, "%svar3Role = %sCoordinate2  # %s\n", prefix, prefix, var3Role_names);
           str += tmpStr;
           break;
       case ScatterAttributes::Color:
-          SNPRINTF(tmpStr, 1000, "%svar3Role = %sColor  # %s\n", prefix, prefix, var3Role_names);
+          snprintf(tmpStr, 1000, "%svar3Role = %sColor  # %s\n", prefix, prefix, var3Role_names);
           str += tmpStr;
           break;
       case ScatterAttributes::None:
-          SNPRINTF(tmpStr, 1000, "%svar3Role = %sNone  # %s\n", prefix, prefix, var3Role_names);
+          snprintf(tmpStr, 1000, "%svar3Role = %sNone  # %s\n", prefix, prefix, var3Role_names);
           str += tmpStr;
           break;
       default:
           break;
     }
 
-    SNPRINTF(tmpStr, 1000, "%svar3 = \"%s\"\n", prefix, atts->GetVar3().c_str());
+    snprintf(tmpStr, 1000, "%svar3 = \"%s\"\n", prefix, atts->GetVar3().c_str());
     str += tmpStr;
     if(atts->GetVar3MinFlag())
-        SNPRINTF(tmpStr, 1000, "%svar3MinFlag = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%svar3MinFlag = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%svar3MinFlag = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%svar3MinFlag = 0\n", prefix);
     str += tmpStr;
     if(atts->GetVar3MaxFlag())
-        SNPRINTF(tmpStr, 1000, "%svar3MaxFlag = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%svar3MaxFlag = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%svar3MaxFlag = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%svar3MaxFlag = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%svar3Min = %g\n", prefix, atts->GetVar3Min());
+    snprintf(tmpStr, 1000, "%svar3Min = %g\n", prefix, atts->GetVar3Min());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%svar3Max = %g\n", prefix, atts->GetVar3Max());
+    snprintf(tmpStr, 1000, "%svar3Max = %g\n", prefix, atts->GetVar3Max());
     str += tmpStr;
     const char *var3Scaling_names = "Linear, Log, Skew";
     switch (atts->GetVar3Scaling())
     {
       case ScatterAttributes::Linear:
-          SNPRINTF(tmpStr, 1000, "%svar3Scaling = %sLinear  # %s\n", prefix, prefix, var3Scaling_names);
+          snprintf(tmpStr, 1000, "%svar3Scaling = %sLinear  # %s\n", prefix, prefix, var3Scaling_names);
           str += tmpStr;
           break;
       case ScatterAttributes::Log:
-          SNPRINTF(tmpStr, 1000, "%svar3Scaling = %sLog  # %s\n", prefix, prefix, var3Scaling_names);
+          snprintf(tmpStr, 1000, "%svar3Scaling = %sLog  # %s\n", prefix, prefix, var3Scaling_names);
           str += tmpStr;
           break;
       case ScatterAttributes::Skew:
-          SNPRINTF(tmpStr, 1000, "%svar3Scaling = %sSkew  # %s\n", prefix, prefix, var3Scaling_names);
+          snprintf(tmpStr, 1000, "%svar3Scaling = %sSkew  # %s\n", prefix, prefix, var3Scaling_names);
           str += tmpStr;
           break;
       default:
           break;
     }
 
-    SNPRINTF(tmpStr, 1000, "%svar3SkewFactor = %g\n", prefix, atts->GetVar3SkewFactor());
+    snprintf(tmpStr, 1000, "%svar3SkewFactor = %g\n", prefix, atts->GetVar3SkewFactor());
     str += tmpStr;
     const char *var4Role_names = "Coordinate0, Coordinate1, Coordinate2, Color, None";
     switch (atts->GetVar4Role())
     {
       case ScatterAttributes::Coordinate0:
-          SNPRINTF(tmpStr, 1000, "%svar4Role = %sCoordinate0  # %s\n", prefix, prefix, var4Role_names);
+          snprintf(tmpStr, 1000, "%svar4Role = %sCoordinate0  # %s\n", prefix, prefix, var4Role_names);
           str += tmpStr;
           break;
       case ScatterAttributes::Coordinate1:
-          SNPRINTF(tmpStr, 1000, "%svar4Role = %sCoordinate1  # %s\n", prefix, prefix, var4Role_names);
+          snprintf(tmpStr, 1000, "%svar4Role = %sCoordinate1  # %s\n", prefix, prefix, var4Role_names);
           str += tmpStr;
           break;
       case ScatterAttributes::Coordinate2:
-          SNPRINTF(tmpStr, 1000, "%svar4Role = %sCoordinate2  # %s\n", prefix, prefix, var4Role_names);
+          snprintf(tmpStr, 1000, "%svar4Role = %sCoordinate2  # %s\n", prefix, prefix, var4Role_names);
           str += tmpStr;
           break;
       case ScatterAttributes::Color:
-          SNPRINTF(tmpStr, 1000, "%svar4Role = %sColor  # %s\n", prefix, prefix, var4Role_names);
+          snprintf(tmpStr, 1000, "%svar4Role = %sColor  # %s\n", prefix, prefix, var4Role_names);
           str += tmpStr;
           break;
       case ScatterAttributes::None:
-          SNPRINTF(tmpStr, 1000, "%svar4Role = %sNone  # %s\n", prefix, prefix, var4Role_names);
+          snprintf(tmpStr, 1000, "%svar4Role = %sNone  # %s\n", prefix, prefix, var4Role_names);
           str += tmpStr;
           break;
       default:
           break;
     }
 
-    SNPRINTF(tmpStr, 1000, "%svar4 = \"%s\"\n", prefix, atts->GetVar4().c_str());
+    snprintf(tmpStr, 1000, "%svar4 = \"%s\"\n", prefix, atts->GetVar4().c_str());
     str += tmpStr;
     if(atts->GetVar4MinFlag())
-        SNPRINTF(tmpStr, 1000, "%svar4MinFlag = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%svar4MinFlag = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%svar4MinFlag = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%svar4MinFlag = 0\n", prefix);
     str += tmpStr;
     if(atts->GetVar4MaxFlag())
-        SNPRINTF(tmpStr, 1000, "%svar4MaxFlag = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%svar4MaxFlag = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%svar4MaxFlag = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%svar4MaxFlag = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%svar4Min = %g\n", prefix, atts->GetVar4Min());
+    snprintf(tmpStr, 1000, "%svar4Min = %g\n", prefix, atts->GetVar4Min());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%svar4Max = %g\n", prefix, atts->GetVar4Max());
+    snprintf(tmpStr, 1000, "%svar4Max = %g\n", prefix, atts->GetVar4Max());
     str += tmpStr;
     const char *var4Scaling_names = "Linear, Log, Skew";
     switch (atts->GetVar4Scaling())
     {
       case ScatterAttributes::Linear:
-          SNPRINTF(tmpStr, 1000, "%svar4Scaling = %sLinear  # %s\n", prefix, prefix, var4Scaling_names);
+          snprintf(tmpStr, 1000, "%svar4Scaling = %sLinear  # %s\n", prefix, prefix, var4Scaling_names);
           str += tmpStr;
           break;
       case ScatterAttributes::Log:
-          SNPRINTF(tmpStr, 1000, "%svar4Scaling = %sLog  # %s\n", prefix, prefix, var4Scaling_names);
+          snprintf(tmpStr, 1000, "%svar4Scaling = %sLog  # %s\n", prefix, prefix, var4Scaling_names);
           str += tmpStr;
           break;
       case ScatterAttributes::Skew:
-          SNPRINTF(tmpStr, 1000, "%svar4Scaling = %sSkew  # %s\n", prefix, prefix, var4Scaling_names);
+          snprintf(tmpStr, 1000, "%svar4Scaling = %sSkew  # %s\n", prefix, prefix, var4Scaling_names);
           str += tmpStr;
           break;
       default:
           break;
     }
 
-    SNPRINTF(tmpStr, 1000, "%svar4SkewFactor = %g\n", prefix, atts->GetVar4SkewFactor());
+    snprintf(tmpStr, 1000, "%svar4SkewFactor = %g\n", prefix, atts->GetVar4SkewFactor());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%spointSize = %g\n", prefix, atts->GetPointSize());
+    snprintf(tmpStr, 1000, "%spointSize = %g\n", prefix, atts->GetPointSize());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%spointSizePixels = %d\n", prefix, atts->GetPointSizePixels());
+    snprintf(tmpStr, 1000, "%spointSizePixels = %d\n", prefix, atts->GetPointSizePixels());
     str += tmpStr;
     const char *pointType_names = "Box, Axis, Icosahedron, Octahedron, Tetrahedron, "
         "SphereGeometry, Point, Sphere";
     switch (atts->GetPointType())
     {
       case Box:
-          SNPRINTF(tmpStr, 1000, "%spointType = %sBox  # %s\n", prefix, prefix, pointType_names);
+          snprintf(tmpStr, 1000, "%spointType = %sBox  # %s\n", prefix, prefix, pointType_names);
           str += tmpStr;
           break;
       case Axis:
-          SNPRINTF(tmpStr, 1000, "%spointType = %sAxis  # %s\n", prefix, prefix, pointType_names);
+          snprintf(tmpStr, 1000, "%spointType = %sAxis  # %s\n", prefix, prefix, pointType_names);
           str += tmpStr;
           break;
       case Icosahedron:
-          SNPRINTF(tmpStr, 1000, "%spointType = %sIcosahedron  # %s\n", prefix, prefix, pointType_names);
+          snprintf(tmpStr, 1000, "%spointType = %sIcosahedron  # %s\n", prefix, prefix, pointType_names);
           str += tmpStr;
           break;
       case Octahedron:
-          SNPRINTF(tmpStr, 1000, "%spointType = %sOctahedron  # %s\n", prefix, prefix, pointType_names);
+          snprintf(tmpStr, 1000, "%spointType = %sOctahedron  # %s\n", prefix, prefix, pointType_names);
           str += tmpStr;
           break;
       case Tetrahedron:
-          SNPRINTF(tmpStr, 1000, "%spointType = %sTetrahedron  # %s\n", prefix, prefix, pointType_names);
+          snprintf(tmpStr, 1000, "%spointType = %sTetrahedron  # %s\n", prefix, prefix, pointType_names);
           str += tmpStr;
           break;
       case SphereGeometry:
-          SNPRINTF(tmpStr, 1000, "%spointType = %sSphereGeometry  # %s\n", prefix, prefix, pointType_names);
+          snprintf(tmpStr, 1000, "%spointType = %sSphereGeometry  # %s\n", prefix, prefix, pointType_names);
           str += tmpStr;
           break;
       case Point:
-          SNPRINTF(tmpStr, 1000, "%spointType = %sPoint  # %s\n", prefix, prefix, pointType_names);
+          snprintf(tmpStr, 1000, "%spointType = %sPoint  # %s\n", prefix, prefix, pointType_names);
           str += tmpStr;
           break;
       case Sphere:
-          SNPRINTF(tmpStr, 1000, "%spointType = %sSphere  # %s\n", prefix, prefix, pointType_names);
+          snprintf(tmpStr, 1000, "%spointType = %sSphere  # %s\n", prefix, prefix, pointType_names);
           str += tmpStr;
           break;
       default:
@@ -345,23 +344,23 @@ PyScatterAttributes_ToString(const ScatterAttributes *atts, const char *prefix)
     }
 
     if(atts->GetScaleCube())
-        SNPRINTF(tmpStr, 1000, "%sscaleCube = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sscaleCube = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sscaleCube = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sscaleCube = 0\n", prefix);
     str += tmpStr;
     const char *colorType_names = "ColorByForegroundColor, ColorBySingleColor, ColorByColorTable";
     switch (atts->GetColorType())
     {
       case ScatterAttributes::ColorByForegroundColor:
-          SNPRINTF(tmpStr, 1000, "%scolorType = %sColorByForegroundColor  # %s\n", prefix, prefix, colorType_names);
+          snprintf(tmpStr, 1000, "%scolorType = %sColorByForegroundColor  # %s\n", prefix, prefix, colorType_names);
           str += tmpStr;
           break;
       case ScatterAttributes::ColorBySingleColor:
-          SNPRINTF(tmpStr, 1000, "%scolorType = %sColorBySingleColor  # %s\n", prefix, prefix, colorType_names);
+          snprintf(tmpStr, 1000, "%scolorType = %sColorBySingleColor  # %s\n", prefix, prefix, colorType_names);
           str += tmpStr;
           break;
       case ScatterAttributes::ColorByColorTable:
-          SNPRINTF(tmpStr, 1000, "%scolorType = %sColorByColorTable  # %s\n", prefix, prefix, colorType_names);
+          snprintf(tmpStr, 1000, "%scolorType = %sColorByColorTable  # %s\n", prefix, prefix, colorType_names);
           str += tmpStr;
           break;
       default:
@@ -369,19 +368,19 @@ PyScatterAttributes_ToString(const ScatterAttributes *atts, const char *prefix)
     }
 
     const unsigned char *singleColor = atts->GetSingleColor().GetColor();
-    SNPRINTF(tmpStr, 1000, "%ssingleColor = (%d, %d, %d, %d)\n", prefix, int(singleColor[0]), int(singleColor[1]), int(singleColor[2]), int(singleColor[3]));
+    snprintf(tmpStr, 1000, "%ssingleColor = (%d, %d, %d, %d)\n", prefix, int(singleColor[0]), int(singleColor[1]), int(singleColor[2]), int(singleColor[3]));
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%scolorTableName = \"%s\"\n", prefix, atts->GetColorTableName().c_str());
+    snprintf(tmpStr, 1000, "%scolorTableName = \"%s\"\n", prefix, atts->GetColorTableName().c_str());
     str += tmpStr;
     if(atts->GetInvertColorTable())
-        SNPRINTF(tmpStr, 1000, "%sinvertColorTable = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sinvertColorTable = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sinvertColorTable = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sinvertColorTable = 0\n", prefix);
     str += tmpStr;
     if(atts->GetLegendFlag())
-        SNPRINTF(tmpStr, 1000, "%slegendFlag = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%slegendFlag = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%slegendFlag = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%slegendFlag = 0\n", prefix);
     str += tmpStr;
     return str;
 }

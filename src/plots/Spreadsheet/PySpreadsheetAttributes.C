@@ -5,7 +5,6 @@
 #include <PySpreadsheetAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 #include <ColorAttribute.h>
 
 // ****************************************************************************
@@ -43,76 +42,76 @@ PySpreadsheetAttributes_ToString(const SpreadsheetAttributes *atts, const char *
     std::string str;
     char tmpStr[1000];
 
-    SNPRINTF(tmpStr, 1000, "%ssubsetName = \"%s\"\n", prefix, atts->GetSubsetName().c_str());
+    snprintf(tmpStr, 1000, "%ssubsetName = \"%s\"\n", prefix, atts->GetSubsetName().c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sformatString = \"%s\"\n", prefix, atts->GetFormatString().c_str());
+    snprintf(tmpStr, 1000, "%sformatString = \"%s\"\n", prefix, atts->GetFormatString().c_str());
     str += tmpStr;
     if(atts->GetUseColorTable())
-        SNPRINTF(tmpStr, 1000, "%suseColorTable = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%suseColorTable = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%suseColorTable = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%suseColorTable = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%scolorTableName = \"%s\"\n", prefix, atts->GetColorTableName().c_str());
+    snprintf(tmpStr, 1000, "%scolorTableName = \"%s\"\n", prefix, atts->GetColorTableName().c_str());
     str += tmpStr;
     if(atts->GetShowTracerPlane())
-        SNPRINTF(tmpStr, 1000, "%sshowTracerPlane = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sshowTracerPlane = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sshowTracerPlane = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sshowTracerPlane = 0\n", prefix);
     str += tmpStr;
     const unsigned char *tracerColor = atts->GetTracerColor().GetColor();
-    SNPRINTF(tmpStr, 1000, "%stracerColor = (%d, %d, %d, %d)\n", prefix, int(tracerColor[0]), int(tracerColor[1]), int(tracerColor[2]), int(tracerColor[3]));
+    snprintf(tmpStr, 1000, "%stracerColor = (%d, %d, %d, %d)\n", prefix, int(tracerColor[0]), int(tracerColor[1]), int(tracerColor[2]), int(tracerColor[3]));
     str += tmpStr;
     const char *normal_names = "X, Y, Z";
     switch (atts->GetNormal())
     {
       case SpreadsheetAttributes::X:
-          SNPRINTF(tmpStr, 1000, "%snormal = %sX  # %s\n", prefix, prefix, normal_names);
+          snprintf(tmpStr, 1000, "%snormal = %sX  # %s\n", prefix, prefix, normal_names);
           str += tmpStr;
           break;
       case SpreadsheetAttributes::Y:
-          SNPRINTF(tmpStr, 1000, "%snormal = %sY  # %s\n", prefix, prefix, normal_names);
+          snprintf(tmpStr, 1000, "%snormal = %sY  # %s\n", prefix, prefix, normal_names);
           str += tmpStr;
           break;
       case SpreadsheetAttributes::Z:
-          SNPRINTF(tmpStr, 1000, "%snormal = %sZ  # %s\n", prefix, prefix, normal_names);
+          snprintf(tmpStr, 1000, "%snormal = %sZ  # %s\n", prefix, prefix, normal_names);
           str += tmpStr;
           break;
       default:
           break;
     }
 
-    SNPRINTF(tmpStr, 1000, "%ssliceIndex = %d\n", prefix, atts->GetSliceIndex());
+    snprintf(tmpStr, 1000, "%ssliceIndex = %d\n", prefix, atts->GetSliceIndex());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sspreadsheetFont = \"%s\"\n", prefix, atts->GetSpreadsheetFont().c_str());
+    snprintf(tmpStr, 1000, "%sspreadsheetFont = \"%s\"\n", prefix, atts->GetSpreadsheetFont().c_str());
     str += tmpStr;
     if(atts->GetShowPatchOutline())
-        SNPRINTF(tmpStr, 1000, "%sshowPatchOutline = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sshowPatchOutline = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sshowPatchOutline = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sshowPatchOutline = 0\n", prefix);
     str += tmpStr;
     if(atts->GetShowCurrentCellOutline())
-        SNPRINTF(tmpStr, 1000, "%sshowCurrentCellOutline = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sshowCurrentCellOutline = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sshowCurrentCellOutline = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sshowCurrentCellOutline = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%scurrentPickType = %d\n", prefix, atts->GetCurrentPickType());
+    snprintf(tmpStr, 1000, "%scurrentPickType = %d\n", prefix, atts->GetCurrentPickType());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%scurrentPickLetter = \"%s\"\n", prefix, atts->GetCurrentPickLetter().c_str());
+    snprintf(tmpStr, 1000, "%scurrentPickLetter = \"%s\"\n", prefix, atts->GetCurrentPickLetter().c_str());
     str += tmpStr;
     {   const stringVector &pastPickLetters = atts->GetPastPickLetters();
-        SNPRINTF(tmpStr, 1000, "%spastPickLetters = (", prefix);
+        snprintf(tmpStr, 1000, "%spastPickLetters = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < pastPickLetters.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "\"%s\"", pastPickLetters[i].c_str());
+            snprintf(tmpStr, 1000, "\"%s\"", pastPickLetters[i].c_str());
             str += tmpStr;
             if(i < pastPickLetters.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     return str;

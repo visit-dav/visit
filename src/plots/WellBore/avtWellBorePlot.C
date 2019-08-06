@@ -17,8 +17,6 @@
 
 #include <InvalidColortableException.h>
 
-#include <snprintf.h>
-
 #include <string>
 
 // ****************************************************************************

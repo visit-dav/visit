@@ -834,7 +834,7 @@ avtSubsetPlot::SetColors()
     else if(labels.size() > AVT_SUBSET_LEGEND_MAX_LABELS)
     {
         char msg[100];
-        SNPRINTF(msg, 100, "%d subsets", static_cast<int>(labels.size()));
+        snprintf(msg, 100, "%d subsets", static_cast<int>(labels.size()));
         levelsLegend->SetColorBarVisibility(0);
         levelsLegend->SetMessage(msg);
         colorBarVisible = false;

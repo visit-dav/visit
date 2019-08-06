@@ -20,7 +20,6 @@
 #include <QRadioButton>
 #include <QSpinBox>
 #include <QvisFontAttributesWidget.h>
-#include <snprintf.h>
 
 
 // ****************************************************************************
@@ -515,7 +514,7 @@ QvisLabelPlotWindow::GetCurrentValues(int which_widget)
         if (okay)
         {
             char test[36];
-            int len = SNPRINTF(test, 36, temp.c_str(), 0.0f);
+            int len = snprintf(test, 36, temp.c_str(), 0.0f);
             if (len >= 35)
             {
                 Message(tr("The template produces values that are too long.  36 character limit."));
@@ -758,7 +757,7 @@ QvisLabelPlotWindow::formatTemplateChanged()
     if (okay)
     {
         char test[36];
-        int len = SNPRINTF(test, 36, newval.c_str(), 0.0f);
+        int len = snprintf(test, 36, newval.c_str(), 0.0f);
         if (len >= 35)
         {
             Message(tr("The template produces values that are too long.  36 character limit."));

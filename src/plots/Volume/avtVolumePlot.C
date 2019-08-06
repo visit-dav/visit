@@ -702,14 +702,14 @@ avtVolumePlot::ApplyRenderingTransformation(avtDataObject_p input)
                 if (atts.GetScaling() == VolumeAttributes::Log ||
                     atts.GetScaling() == VolumeAttributes::Skew)
                 {
-                    SNPRINTF(gradName2, 128, "_expr_%s", varname);
+                    snprintf(gradName2, 128, "_expr_%s", varname);
                     gradvar = gradName2;
                 }
                 else
                     gradvar = varname;
             }
             // The avtVolumeFilter uses this exact name downstream.
-            SNPRINTF(gradName, 128, "_%s_gradient", gradvar);
+            snprintf(gradName, 128, "_%s_gradient", gradvar);
 
             gradientFilter = new avtGradientExpression();
             gradientFilter->SetInput(input);

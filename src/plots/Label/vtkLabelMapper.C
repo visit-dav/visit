@@ -21,8 +21,6 @@
 #include <vtkTextProperty.h>
 #include <vtkUnsignedIntArray.h>
 
-#include <snprintf.h>
-
 #include <DebugStream.h>
 #include <TimingsManager.h>
 #include <vtkVisItUtility.h>

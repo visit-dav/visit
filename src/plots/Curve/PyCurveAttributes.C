@@ -5,7 +5,6 @@
 #include <PyCurveAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 #include <ColorAttribute.h>
 #include <ColorAttribute.h>
 #include <ColorAttribute.h>
@@ -48,83 +47,83 @@ PyCurveAttributes_ToString(const CurveAttributes *atts, const char *prefix)
     char tmpStr[1000];
 
     if(atts->GetShowLines())
-        SNPRINTF(tmpStr, 1000, "%sshowLines = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sshowLines = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sshowLines = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sshowLines = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%slineWidth = %d\n", prefix, atts->GetLineWidth());
+    snprintf(tmpStr, 1000, "%slineWidth = %d\n", prefix, atts->GetLineWidth());
     str += tmpStr;
     if(atts->GetShowPoints())
-        SNPRINTF(tmpStr, 1000, "%sshowPoints = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sshowPoints = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sshowPoints = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sshowPoints = 0\n", prefix);
     str += tmpStr;
     const char *symbol_names = "Point, TriangleUp, TriangleDown, Square, Circle, "
         "Plus, X";
     switch (atts->GetSymbol())
     {
       case CurveAttributes::Point:
-          SNPRINTF(tmpStr, 1000, "%ssymbol = %sPoint  # %s\n", prefix, prefix, symbol_names);
+          snprintf(tmpStr, 1000, "%ssymbol = %sPoint  # %s\n", prefix, prefix, symbol_names);
           str += tmpStr;
           break;
       case CurveAttributes::TriangleUp:
-          SNPRINTF(tmpStr, 1000, "%ssymbol = %sTriangleUp  # %s\n", prefix, prefix, symbol_names);
+          snprintf(tmpStr, 1000, "%ssymbol = %sTriangleUp  # %s\n", prefix, prefix, symbol_names);
           str += tmpStr;
           break;
       case CurveAttributes::TriangleDown:
-          SNPRINTF(tmpStr, 1000, "%ssymbol = %sTriangleDown  # %s\n", prefix, prefix, symbol_names);
+          snprintf(tmpStr, 1000, "%ssymbol = %sTriangleDown  # %s\n", prefix, prefix, symbol_names);
           str += tmpStr;
           break;
       case CurveAttributes::Square:
-          SNPRINTF(tmpStr, 1000, "%ssymbol = %sSquare  # %s\n", prefix, prefix, symbol_names);
+          snprintf(tmpStr, 1000, "%ssymbol = %sSquare  # %s\n", prefix, prefix, symbol_names);
           str += tmpStr;
           break;
       case CurveAttributes::Circle:
-          SNPRINTF(tmpStr, 1000, "%ssymbol = %sCircle  # %s\n", prefix, prefix, symbol_names);
+          snprintf(tmpStr, 1000, "%ssymbol = %sCircle  # %s\n", prefix, prefix, symbol_names);
           str += tmpStr;
           break;
       case CurveAttributes::Plus:
-          SNPRINTF(tmpStr, 1000, "%ssymbol = %sPlus  # %s\n", prefix, prefix, symbol_names);
+          snprintf(tmpStr, 1000, "%ssymbol = %sPlus  # %s\n", prefix, prefix, symbol_names);
           str += tmpStr;
           break;
       case CurveAttributes::X:
-          SNPRINTF(tmpStr, 1000, "%ssymbol = %sX  # %s\n", prefix, prefix, symbol_names);
+          snprintf(tmpStr, 1000, "%ssymbol = %sX  # %s\n", prefix, prefix, symbol_names);
           str += tmpStr;
           break;
       default:
           break;
     }
 
-    SNPRINTF(tmpStr, 1000, "%spointSize = %g\n", prefix, atts->GetPointSize());
+    snprintf(tmpStr, 1000, "%spointSize = %g\n", prefix, atts->GetPointSize());
     str += tmpStr;
     const char *pointFillMode_names = "Static, Dynamic";
     switch (atts->GetPointFillMode())
     {
       case CurveAttributes::Static:
-          SNPRINTF(tmpStr, 1000, "%spointFillMode = %sStatic  # %s\n", prefix, prefix, pointFillMode_names);
+          snprintf(tmpStr, 1000, "%spointFillMode = %sStatic  # %s\n", prefix, prefix, pointFillMode_names);
           str += tmpStr;
           break;
       case CurveAttributes::Dynamic:
-          SNPRINTF(tmpStr, 1000, "%spointFillMode = %sDynamic  # %s\n", prefix, prefix, pointFillMode_names);
+          snprintf(tmpStr, 1000, "%spointFillMode = %sDynamic  # %s\n", prefix, prefix, pointFillMode_names);
           str += tmpStr;
           break;
       default:
           break;
     }
 
-    SNPRINTF(tmpStr, 1000, "%spointStride = %d\n", prefix, atts->GetPointStride());
+    snprintf(tmpStr, 1000, "%spointStride = %d\n", prefix, atts->GetPointStride());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%ssymbolDensity = %d\n", prefix, atts->GetSymbolDensity());
+    snprintf(tmpStr, 1000, "%ssymbolDensity = %d\n", prefix, atts->GetSymbolDensity());
     str += tmpStr;
     const char *curveColorSource_names = "Cycle, Custom";
     switch (atts->GetCurveColorSource())
     {
       case CurveAttributes::Cycle:
-          SNPRINTF(tmpStr, 1000, "%scurveColorSource = %sCycle  # %s\n", prefix, prefix, curveColorSource_names);
+          snprintf(tmpStr, 1000, "%scurveColorSource = %sCycle  # %s\n", prefix, prefix, curveColorSource_names);
           str += tmpStr;
           break;
       case CurveAttributes::Custom:
-          SNPRINTF(tmpStr, 1000, "%scurveColorSource = %sCustom  # %s\n", prefix, prefix, curveColorSource_names);
+          snprintf(tmpStr, 1000, "%scurveColorSource = %sCustom  # %s\n", prefix, prefix, curveColorSource_names);
           str += tmpStr;
           break;
       default:
@@ -132,64 +131,64 @@ PyCurveAttributes_ToString(const CurveAttributes *atts, const char *prefix)
     }
 
     const unsigned char *curveColor = atts->GetCurveColor().GetColor();
-    SNPRINTF(tmpStr, 1000, "%scurveColor = (%d, %d, %d, %d)\n", prefix, int(curveColor[0]), int(curveColor[1]), int(curveColor[2]), int(curveColor[3]));
+    snprintf(tmpStr, 1000, "%scurveColor = (%d, %d, %d, %d)\n", prefix, int(curveColor[0]), int(curveColor[1]), int(curveColor[2]), int(curveColor[3]));
     str += tmpStr;
     if(atts->GetShowLegend())
-        SNPRINTF(tmpStr, 1000, "%sshowLegend = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sshowLegend = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sshowLegend = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sshowLegend = 0\n", prefix);
     str += tmpStr;
     if(atts->GetShowLabels())
-        SNPRINTF(tmpStr, 1000, "%sshowLabels = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sshowLabels = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sshowLabels = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sshowLabels = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sdesignator = \"%s\"\n", prefix, atts->GetDesignator().c_str());
+    snprintf(tmpStr, 1000, "%sdesignator = \"%s\"\n", prefix, atts->GetDesignator().c_str());
     str += tmpStr;
     if(atts->GetDoBallTimeCue())
-        SNPRINTF(tmpStr, 1000, "%sdoBallTimeCue = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sdoBallTimeCue = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sdoBallTimeCue = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sdoBallTimeCue = 0\n", prefix);
     str += tmpStr;
     const unsigned char *ballTimeCueColor = atts->GetBallTimeCueColor().GetColor();
-    SNPRINTF(tmpStr, 1000, "%sballTimeCueColor = (%d, %d, %d, %d)\n", prefix, int(ballTimeCueColor[0]), int(ballTimeCueColor[1]), int(ballTimeCueColor[2]), int(ballTimeCueColor[3]));
+    snprintf(tmpStr, 1000, "%sballTimeCueColor = (%d, %d, %d, %d)\n", prefix, int(ballTimeCueColor[0]), int(ballTimeCueColor[1]), int(ballTimeCueColor[2]), int(ballTimeCueColor[3]));
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%stimeCueBallSize = %g\n", prefix, atts->GetTimeCueBallSize());
+    snprintf(tmpStr, 1000, "%stimeCueBallSize = %g\n", prefix, atts->GetTimeCueBallSize());
     str += tmpStr;
     if(atts->GetDoLineTimeCue())
-        SNPRINTF(tmpStr, 1000, "%sdoLineTimeCue = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sdoLineTimeCue = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sdoLineTimeCue = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sdoLineTimeCue = 0\n", prefix);
     str += tmpStr;
     const unsigned char *lineTimeCueColor = atts->GetLineTimeCueColor().GetColor();
-    SNPRINTF(tmpStr, 1000, "%slineTimeCueColor = (%d, %d, %d, %d)\n", prefix, int(lineTimeCueColor[0]), int(lineTimeCueColor[1]), int(lineTimeCueColor[2]), int(lineTimeCueColor[3]));
+    snprintf(tmpStr, 1000, "%slineTimeCueColor = (%d, %d, %d, %d)\n", prefix, int(lineTimeCueColor[0]), int(lineTimeCueColor[1]), int(lineTimeCueColor[2]), int(lineTimeCueColor[3]));
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%slineTimeCueWidth = %d\n", prefix, atts->GetLineTimeCueWidth());
+    snprintf(tmpStr, 1000, "%slineTimeCueWidth = %d\n", prefix, atts->GetLineTimeCueWidth());
     str += tmpStr;
     if(atts->GetDoCropTimeCue())
-        SNPRINTF(tmpStr, 1000, "%sdoCropTimeCue = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sdoCropTimeCue = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sdoCropTimeCue = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sdoCropTimeCue = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%stimeForTimeCue = %g\n", prefix, atts->GetTimeForTimeCue());
+    snprintf(tmpStr, 1000, "%stimeForTimeCue = %g\n", prefix, atts->GetTimeForTimeCue());
     str += tmpStr;
     const char *fillMode_names = "NoFill, Solid, HorizontalGradient, VerticalGradient";
     switch (atts->GetFillMode())
     {
       case CurveAttributes::NoFill:
-          SNPRINTF(tmpStr, 1000, "%sfillMode = %sNoFill  # %s\n", prefix, prefix, fillMode_names);
+          snprintf(tmpStr, 1000, "%sfillMode = %sNoFill  # %s\n", prefix, prefix, fillMode_names);
           str += tmpStr;
           break;
       case CurveAttributes::Solid:
-          SNPRINTF(tmpStr, 1000, "%sfillMode = %sSolid  # %s\n", prefix, prefix, fillMode_names);
+          snprintf(tmpStr, 1000, "%sfillMode = %sSolid  # %s\n", prefix, prefix, fillMode_names);
           str += tmpStr;
           break;
       case CurveAttributes::HorizontalGradient:
-          SNPRINTF(tmpStr, 1000, "%sfillMode = %sHorizontalGradient  # %s\n", prefix, prefix, fillMode_names);
+          snprintf(tmpStr, 1000, "%sfillMode = %sHorizontalGradient  # %s\n", prefix, prefix, fillMode_names);
           str += tmpStr;
           break;
       case CurveAttributes::VerticalGradient:
-          SNPRINTF(tmpStr, 1000, "%sfillMode = %sVerticalGradient  # %s\n", prefix, prefix, fillMode_names);
+          snprintf(tmpStr, 1000, "%sfillMode = %sVerticalGradient  # %s\n", prefix, prefix, fillMode_names);
           str += tmpStr;
           break;
       default:
@@ -197,25 +196,25 @@ PyCurveAttributes_ToString(const CurveAttributes *atts, const char *prefix)
     }
 
     const unsigned char *fillColor1 = atts->GetFillColor1().GetColor();
-    SNPRINTF(tmpStr, 1000, "%sfillColor1 = (%d, %d, %d, %d)\n", prefix, int(fillColor1[0]), int(fillColor1[1]), int(fillColor1[2]), int(fillColor1[3]));
+    snprintf(tmpStr, 1000, "%sfillColor1 = (%d, %d, %d, %d)\n", prefix, int(fillColor1[0]), int(fillColor1[1]), int(fillColor1[2]), int(fillColor1[3]));
     str += tmpStr;
     const unsigned char *fillColor2 = atts->GetFillColor2().GetColor();
-    SNPRINTF(tmpStr, 1000, "%sfillColor2 = (%d, %d, %d, %d)\n", prefix, int(fillColor2[0]), int(fillColor2[1]), int(fillColor2[2]), int(fillColor2[3]));
+    snprintf(tmpStr, 1000, "%sfillColor2 = (%d, %d, %d, %d)\n", prefix, int(fillColor2[0]), int(fillColor2[1]), int(fillColor2[2]), int(fillColor2[3]));
     str += tmpStr;
     if(atts->GetPolarToCartesian())
-        SNPRINTF(tmpStr, 1000, "%spolarToCartesian = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%spolarToCartesian = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%spolarToCartesian = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%spolarToCartesian = 0\n", prefix);
     str += tmpStr;
     const char *polarCoordinateOrder_names = "R_Theta, Theta_R";
     switch (atts->GetPolarCoordinateOrder())
     {
       case CurveAttributes::R_Theta:
-          SNPRINTF(tmpStr, 1000, "%spolarCoordinateOrder = %sR_Theta  # %s\n", prefix, prefix, polarCoordinateOrder_names);
+          snprintf(tmpStr, 1000, "%spolarCoordinateOrder = %sR_Theta  # %s\n", prefix, prefix, polarCoordinateOrder_names);
           str += tmpStr;
           break;
       case CurveAttributes::Theta_R:
-          SNPRINTF(tmpStr, 1000, "%spolarCoordinateOrder = %sTheta_R  # %s\n", prefix, prefix, polarCoordinateOrder_names);
+          snprintf(tmpStr, 1000, "%spolarCoordinateOrder = %sTheta_R  # %s\n", prefix, prefix, polarCoordinateOrder_names);
           str += tmpStr;
           break;
       default:
@@ -226,11 +225,11 @@ PyCurveAttributes_ToString(const CurveAttributes *atts, const char *prefix)
     switch (atts->GetAngleUnits())
     {
       case CurveAttributes::Radians:
-          SNPRINTF(tmpStr, 1000, "%sangleUnits = %sRadians  # %s\n", prefix, prefix, angleUnits_names);
+          snprintf(tmpStr, 1000, "%sangleUnits = %sRadians  # %s\n", prefix, prefix, angleUnits_names);
           str += tmpStr;
           break;
       case CurveAttributes::Degrees:
-          SNPRINTF(tmpStr, 1000, "%sangleUnits = %sDegrees  # %s\n", prefix, prefix, angleUnits_names);
+          snprintf(tmpStr, 1000, "%sangleUnits = %sDegrees  # %s\n", prefix, prefix, angleUnits_names);
           str += tmpStr;
           break;
       default:

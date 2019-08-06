@@ -5,7 +5,6 @@
 #include <PyParallelCoordinatesAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 #include <ColorAttribute.h>
 #include <ColorAttribute.h>
 
@@ -45,116 +44,116 @@ PyParallelCoordinatesAttributes_ToString(const ParallelCoordinatesAttributes *at
     char tmpStr[1000];
 
     {   const stringVector &scalarAxisNames = atts->GetScalarAxisNames();
-        SNPRINTF(tmpStr, 1000, "%sscalarAxisNames = (", prefix);
+        snprintf(tmpStr, 1000, "%sscalarAxisNames = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < scalarAxisNames.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "\"%s\"", scalarAxisNames[i].c_str());
+            snprintf(tmpStr, 1000, "\"%s\"", scalarAxisNames[i].c_str());
             str += tmpStr;
             if(i < scalarAxisNames.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const stringVector &visualAxisNames = atts->GetVisualAxisNames();
-        SNPRINTF(tmpStr, 1000, "%svisualAxisNames = (", prefix);
+        snprintf(tmpStr, 1000, "%svisualAxisNames = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < visualAxisNames.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "\"%s\"", visualAxisNames[i].c_str());
+            snprintf(tmpStr, 1000, "\"%s\"", visualAxisNames[i].c_str());
             str += tmpStr;
             if(i < visualAxisNames.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const doubleVector &extentMinima = atts->GetExtentMinima();
-        SNPRINTF(tmpStr, 1000, "%sextentMinima = (", prefix);
+        snprintf(tmpStr, 1000, "%sextentMinima = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < extentMinima.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", extentMinima[i]);
+            snprintf(tmpStr, 1000, "%g", extentMinima[i]);
             str += tmpStr;
             if(i < extentMinima.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const doubleVector &extentMaxima = atts->GetExtentMaxima();
-        SNPRINTF(tmpStr, 1000, "%sextentMaxima = (", prefix);
+        snprintf(tmpStr, 1000, "%sextentMaxima = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < extentMaxima.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", extentMaxima[i]);
+            snprintf(tmpStr, 1000, "%g", extentMaxima[i]);
             str += tmpStr;
             if(i < extentMaxima.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     if(atts->GetDrawLines())
-        SNPRINTF(tmpStr, 1000, "%sdrawLines = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sdrawLines = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sdrawLines = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sdrawLines = 0\n", prefix);
     str += tmpStr;
     const unsigned char *linesColor = atts->GetLinesColor().GetColor();
-    SNPRINTF(tmpStr, 1000, "%slinesColor = (%d, %d, %d, %d)\n", prefix, int(linesColor[0]), int(linesColor[1]), int(linesColor[2]), int(linesColor[3]));
+    snprintf(tmpStr, 1000, "%slinesColor = (%d, %d, %d, %d)\n", prefix, int(linesColor[0]), int(linesColor[1]), int(linesColor[2]), int(linesColor[3]));
     str += tmpStr;
     if(atts->GetDrawContext())
-        SNPRINTF(tmpStr, 1000, "%sdrawContext = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sdrawContext = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sdrawContext = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sdrawContext = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%scontextGamma = %g\n", prefix, atts->GetContextGamma());
+    snprintf(tmpStr, 1000, "%scontextGamma = %g\n", prefix, atts->GetContextGamma());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%scontextNumPartitions = %d\n", prefix, atts->GetContextNumPartitions());
+    snprintf(tmpStr, 1000, "%scontextNumPartitions = %d\n", prefix, atts->GetContextNumPartitions());
     str += tmpStr;
     const unsigned char *contextColor = atts->GetContextColor().GetColor();
-    SNPRINTF(tmpStr, 1000, "%scontextColor = (%d, %d, %d, %d)\n", prefix, int(contextColor[0]), int(contextColor[1]), int(contextColor[2]), int(contextColor[3]));
+    snprintf(tmpStr, 1000, "%scontextColor = (%d, %d, %d, %d)\n", prefix, int(contextColor[0]), int(contextColor[1]), int(contextColor[2]), int(contextColor[3]));
     str += tmpStr;
     if(atts->GetDrawLinesOnlyIfExtentsOn())
-        SNPRINTF(tmpStr, 1000, "%sdrawLinesOnlyIfExtentsOn = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sdrawLinesOnlyIfExtentsOn = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sdrawLinesOnlyIfExtentsOn = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sdrawLinesOnlyIfExtentsOn = 0\n", prefix);
     str += tmpStr;
     if(atts->GetUnifyAxisExtents())
-        SNPRINTF(tmpStr, 1000, "%sunifyAxisExtents = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sunifyAxisExtents = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sunifyAxisExtents = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sunifyAxisExtents = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%slinesNumPartitions = %d\n", prefix, atts->GetLinesNumPartitions());
+    snprintf(tmpStr, 1000, "%slinesNumPartitions = %d\n", prefix, atts->GetLinesNumPartitions());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sfocusGamma = %g\n", prefix, atts->GetFocusGamma());
+    snprintf(tmpStr, 1000, "%sfocusGamma = %g\n", prefix, atts->GetFocusGamma());
     str += tmpStr;
     const char *drawFocusAs_names = "IndividualLines, BinsOfConstantColor, BinsColoredByPopulation";
     switch (atts->GetDrawFocusAs())
     {
       case ParallelCoordinatesAttributes::IndividualLines:
-          SNPRINTF(tmpStr, 1000, "%sdrawFocusAs = %sIndividualLines  # %s\n", prefix, prefix, drawFocusAs_names);
+          snprintf(tmpStr, 1000, "%sdrawFocusAs = %sIndividualLines  # %s\n", prefix, prefix, drawFocusAs_names);
           str += tmpStr;
           break;
       case ParallelCoordinatesAttributes::BinsOfConstantColor:
-          SNPRINTF(tmpStr, 1000, "%sdrawFocusAs = %sBinsOfConstantColor  # %s\n", prefix, prefix, drawFocusAs_names);
+          snprintf(tmpStr, 1000, "%sdrawFocusAs = %sBinsOfConstantColor  # %s\n", prefix, prefix, drawFocusAs_names);
           str += tmpStr;
           break;
       case ParallelCoordinatesAttributes::BinsColoredByPopulation:
-          SNPRINTF(tmpStr, 1000, "%sdrawFocusAs = %sBinsColoredByPopulation  # %s\n", prefix, prefix, drawFocusAs_names);
+          snprintf(tmpStr, 1000, "%sdrawFocusAs = %sBinsColoredByPopulation  # %s\n", prefix, prefix, drawFocusAs_names);
           str += tmpStr;
           break;
       default:

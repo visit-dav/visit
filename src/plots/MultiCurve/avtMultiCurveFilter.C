@@ -23,8 +23,6 @@
 
 #include <ImproperUseException.h>
 
-#include <snprintf.h>
-
 #include <string>
 #include <vector>
 
@@ -489,7 +487,7 @@ avtMultiCurveFilter::Execute(void)
         {
             char label[80];
         
-            SNPRINTF(label, 80, atts.GetYAxisTitleFormat().c_str(), 
+            snprintf(label, 80, atts.GetYAxisTitleFormat().c_str(), 
                      ypts->GetTuple1(i));
             labels.push_back(label);
         }
