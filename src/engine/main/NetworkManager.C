@@ -76,6 +76,7 @@
 #include <avtWholeImageCompositerNoZ.h>
 #include <avtPlot.h>
 #include <avtQueryOverTimeFilter.h>
+#include <avtDirectDBQueryOverTimeFilter.h>
 #include <avtQueryFactory.h>
 #include <avtMultiresFilter.h>
 #include <avtValueImageCompositer.h>
@@ -3903,7 +3904,6 @@ NetworkManager::StopQueryMode(void)
 void
 NetworkManager::Pick(const int id, const int winId, PickAttributes *pa)
 {
-    cerr << "NM PERFORMING PICK" << endl;//FIXME
     if (!ValidNetworkId(id))
     {
         EXCEPTION0(ImproperUseException);
@@ -4267,7 +4267,6 @@ NetworkManager::Pick(const int id, const int winId, PickAttributes *pa)
 void
 NetworkManager::Query(const std::vector<int> &ids, QueryAttributes *qa)
 {
-    cerr << "NM: PERFORMING QUERY" << endl;//FIXME
     std::vector<avtDataObject_p> queryInputs;
     for (size_t i = 0 ; i < ids.size() ; i++)
     {
@@ -5277,6 +5276,88 @@ NetworkManager::AddQueryOverTimeFilter(QueryOverTimeAttributes *qA,
 
     workingNetnodeList.push_back(qfilt);
     workingNet->AddNode(qfilt);
+}
+
+
+//FIXME: testing
+void
+NetworkManager::AddDirectDBQueryOverTimeFilter(QueryOverTimeAttributes *qA,
+                                               int id)
+{
+    if (workingNet == NULL)
+    {
+        std::string error =  "Adding a filter to a non-existent network." ;
+        EXCEPTION1(ImproperUseException, error);
+    }
+
+    bool useActualData = true;
+    if (qA->GetQueryAtts().GetQueryInputParams().HasNumericEntry("use_actual_data"))
+    {
+        useActualData = qA->GetQueryAtts().GetQueryInputParams().GetEntry("use_actual_data")->ToBool();
+    }
+
+    //
+    // Determine which input the filter should use.
+    //
+    //FIXME: do we still need this? Likely not...
+    avtDataObject_p input;
+    if (useActualData ||
+        qA->GetQueryAtts().GetName() == "Locate and Pick Zone" ||
+        qA->GetQueryAtts().GetName() == "Locate and Pick Node")
+    {
+        input = networkCache[id]->GetPlot()->
+                GetIntermediateDataObject();
+    }
+    else
+    {
+        input = workingNet->GetExpressionNode()->GetOutput();
+    }
+
+    qA->GetQueryAtts().SetPipeIndex(networkCache[id]->
+        GetContract()->GetPipelineIndex());
+
+    if (strcmp(workingNet->GetDataSpec()->GetVariable(),
+               qA->GetQueryAtts().GetVariables()[0].c_str()) != 0)
+    {
+        avtDataRequest_p dr = new avtDataRequest(workingNet->GetDataSpec(),
+            qA->GetQueryAtts().GetVariables()[0].c_str());
+
+        workingNet->SetDataSpec(dr);
+    }
+
+    //
+    // Pass down the current SILRestriction (via UseSet) in case the query
+    // needs to make use of this information.
+    //
+    avtSILRestriction_p silr = workingNet->GetDataSpec()->GetRestriction();
+
+    //
+    //  Create a transition node so that the new filter will receive
+    //  the correct input.
+    //
+    NetnodeTransition *trans = new NetnodeTransition(input);
+    Netnode *n = workingNetnodeList.back();
+    workingNetnodeList.pop_back();
+    trans->GetInputNodes().push_back(n);
+
+    workingNet->AddNode(trans);
+
+    //
+    // Put a QueryOverTimeFilter right after the transition to handle
+    // the query.
+    //
+    avtDirectDBQueryOverTimeFilter *qotFilter = new avtDirectDBQueryOverTimeFilter(qA);
+    if (*silr != NULL)
+    {
+        const SILRestrictionAttributes *silAtts = silr->MakeAttributes();
+        qotFilter->SetSILAtts(silAtts);
+        delete silAtts;
+    }
+    NetnodeFilter *nodeFilter = new NetnodeFilter(qotFilter, "DirectDBQueryOverTime");
+    nodeFilter->GetInputNodes().push_back(trans);
+
+    workingNetnodeList.push_back(nodeFilter);
+    workingNet->AddNode(nodeFilter);
 }
 
 // ****************************************************************************

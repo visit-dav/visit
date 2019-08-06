@@ -22,6 +22,7 @@ class NamedSelectionRPC;
 class OpenDatabaseRPC;
 class PickRPC;
 class QueryRPC;
+class DBQueryOverTimeRPC;
 class QueryParametersRPC;
 class QuitRPC;
 class ReadRPC;

@@ -155,6 +155,11 @@ public:
                        const QueryAttributes *atts,
                        QueryAttributes &retAtts);
 
+    //FIXME: testing
+    virtual bool DBQueryOverTime(const EngineKey &ek,
+                                 int id, 
+                                 const QueryOverTimeAttributes *qatts); 
+
     virtual bool GetQueryParameters(const EngineKey &ek,
                                     const std::string &qname,
                                     std::string *params);

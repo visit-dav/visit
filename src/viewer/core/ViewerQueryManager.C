@@ -5249,9 +5249,11 @@ ViewerQueryManager::DoTimeQuery(ViewerWindow *origWin,
         resultsPlot->SetSILRestriction(origPlot->GetSILRestriction());
         TRY
         {
-            cerr << "CLONING NETWORK" << endl;//FIXME
+            cerr << "CALLING NETWORK" << endl;//FIXME
             GetViewerEngineManager()->CloneNetwork(engineKey,
                 origPlot->GetNetworkID(), timeQueryAtts);
+            //GetViewerEngineManager()->DBQueryOverTime(engineKey,
+            //    origPlot->GetNetworkID(), timeQueryAtts);
             plotList->RealizePlots();
             //
             // If there was an error, the bad curve plot should not be left

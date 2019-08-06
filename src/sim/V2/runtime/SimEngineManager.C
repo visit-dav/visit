@@ -1075,6 +1075,16 @@ SimEngineManager::Query(const EngineKey &/*ek*/,
     return true;
 }
 
+//FIXME: testing
+bool
+SimEngineManager::DBQueryOverTime(const EngineKey &/*ek*/, int networkId, 
+                                  const QueryOverTimeAttributes *qatts)
+{
+    StackTimer t0("SimEngineManager::DBQueryOverTime");
+    //engine->GetNetMgr()->DBQueryOverTimeFilter(qatts, networkId);
+    return true;
+}
+
 // ****************************************************************************
 // Method: SimEngineManager::GetQueryParameters
 //

@@ -411,6 +411,8 @@ public:
     bool ClearCache(const EngineKey &ek, const std::string &dbName = std::string(""));
     bool Query(const EngineKey &ek, const std::vector<int> &networkIds, 
                const QueryAttributes *atts, QueryAttributes &retAtts);
+    bool DBQueryOverTime(const EngineKey &ek, int,
+                               const QueryOverTimeAttributes *qatts);
     bool GetQueryParameters(const EngineKey &ek, const std::string &qname,
                             std::string *params);
     bool GetProcInfo(const EngineKey &ek, ProcessAttributes &retAtts);

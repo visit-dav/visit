@@ -12,6 +12,7 @@
 #include <ApplyOperatorRPC.h>
 #include <ClearCacheRPC.h>
 #include <CloneNetworkRPC.h>
+#include <DBQueryOverTimeRPC.h>
 #include <ConstructDataBinningRPC.h>
 #include <DefineVirtualDatabaseRPC.h>
 #include <EnginePropertiesRPC.h>
@@ -63,6 +64,7 @@ public:
     StartQueryRPC&              GetStartQueryRPC() { return startQueryRPC; }
     ClearCacheRPC&              GetClearCacheRPC() { return clearCacheRPC; }
     QueryRPC&                   GetQueryRPC() { return queryRPC; }
+    DBQueryOverTimeRPC&         GetDBQueryOverTimeRPC() { return DBQueryOverTimeRPC; }
     QueryParametersRPC&         GetQueryParametersRPC() { return queryParametersRPC; }
     ReleaseDataRPC&             GetReleaseDataRPC() { return releaseDataRPC; }
     OpenDatabaseRPC&            GetOpenDatabaseRPC() { return openDatabaseRPC; }
@@ -94,6 +96,7 @@ private:
     StartQueryRPC            startQueryRPC;
     ClearCacheRPC            clearCacheRPC;
     QueryRPC                 queryRPC;
+    DBQueryOverTimeRPC       DBQueryOverTimeRPC;
     QueryParametersRPC       queryParametersRPC;
     ReleaseDataRPC           releaseDataRPC;
     OpenDatabaseRPC          openDatabaseRPC;

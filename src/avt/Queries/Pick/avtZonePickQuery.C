@@ -20,6 +20,7 @@
 #include <avtVector.h>
 
 #include <DebugStream.h>
+#include <chrono>//FIXME: testing
 
 
 // ****************************************************************************
@@ -122,38 +123,6 @@ avtZonePickQuery::SetInvTransform(const avtMatrix *m)
 void
 avtZonePickQuery::Execute(vtkDataSet *ds, const int dom)
 {
-    //FIXME: testing
-    intVector elements;
-    stringVector vars;
-    int tsRange[] = {0, 10};
-
-    elements.push_back(116); 
-    vars.push_back("Primal/Shared/edrate");
-
-    vtkFloatArray **spanArray = (vtkFloatArray **) (GetInput()->GetSource()->
-        GetOriginatingSource()->FetchTimeAndElementSpanVars(0, elements, vars, tsRange));
-
-    if (spanArray != NULL)
-    {
-        int numSpans = elements.size() * vars.size();
-
-        cerr << "VALUES: " << endl;
-        int numTuples = tsRange[1] - tsRange[0];
-
-        for (int i = 0; i < numSpans; ++i)
-        {
-            for (int j = 0; j < numTuples; ++j)        
-            {
-                float val = spanArray[i]->GetTuple1(j);
-                cerr << val << endl;
-            }
-        }
-    }
-    else
-        cerr << "NULL!!" << endl;
-
-    //FIXME: testing end
-
     if (ds == NULL || pickAtts.GetFulfilled())
     {
             return;
