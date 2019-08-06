@@ -29,7 +29,6 @@
 #include <VisItException.h>
 #include <Xfer.h>
 #include <JSONNode.h>
-#include <snprintf.h>
 
 #include <cstring>
 #include <cstdlib>

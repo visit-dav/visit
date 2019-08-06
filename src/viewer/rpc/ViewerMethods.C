@@ -8,7 +8,6 @@
 #include <ColorTableAttributes.h>
 #include <SelectionList.h>
 
-#include <snprintf.h>
 
 // ****************************************************************************
 // Method: ViewerMethods::ViewerMethods
@@ -4917,7 +4916,7 @@ ViewerMethods::SetWindowArea(int x, int y, int w, int h)
     //
     state->GetViewerRPC()->SetRPCType(ViewerRPC::SetWindowAreaRPC);
     char str[50];
-    SNPRINTF(str, 50, "%dx%d+%d+%d", w, h, x, y);
+    snprintf(str, 50, "%dx%d+%d+%d", w, h, x, y);
     state->GetViewerRPC()->SetWindowArea(str);
 
     //

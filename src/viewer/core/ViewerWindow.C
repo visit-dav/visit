@@ -7,7 +7,6 @@
 // ************************************************************************* //
 
 #include <ViewerWindow.h> 
-#include <snprintf.h>
 #include <avtColorTables.h>
 #include <avtDataObjectReader.h>
 #include <avtWholeImageCompositerWithZ.h>

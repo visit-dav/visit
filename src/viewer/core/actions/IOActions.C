@@ -172,10 +172,10 @@ ExportDBAction::Execute()
             {
                 // Make a new filename for the exported file.
                 // if(nStates >= 10000)
-                //     SNPRINTF(digits, 10, "%08d", i);
+                //     snprintf(digits, 10, "%08d", i);
                 // else
-                //     SNPRINTF(digits, 10, "%04d", i);
-                SNPRINTF(digits, 10, exportAtts.GetTimeStateFormat().c_str(), i);
+                //     snprintf(digits, 10, "%04d", i);
+                snprintf(digits, 10, exportAtts.GetTimeStateFormat().c_str(), i);
               
                 std::string timeSuffix(digits);
 

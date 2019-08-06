@@ -60,7 +60,6 @@
 #include <algorithm>
 #include <utility>
 #include <stdio.h>
-#include <snprintf.h>
 #include <sstream>
 
 using std::vector;

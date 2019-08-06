@@ -86,7 +86,6 @@
 
 #include <stdio.h> // for sscanf
 #include <string.h>
-#include <snprintf.h>
 #if !defined(_WIN32)
 #include <signal.h> // for signal
 #endif
@@ -5875,7 +5874,7 @@ ViewerWindowManager::SynchronizeTimeLockedWindows(int windowIndex, int state)
         char tmp[50];
         for (size_t j = 0; j < badWindowIds.size(); ++j)
         {
-            SNPRINTF(tmp, 50, "%d", badWindowIds[j] + 1);
+            snprintf(tmp, 50, "%d", badWindowIds[j] + 1);
             badList += tmp;
             if(j < badWindowIds.size() - 1)
                 badList += ", ";
@@ -6361,7 +6360,7 @@ ViewerWindowManager::SetActiveTimeSlider(const std::string &ts, int windowIndex)
                 char tmp[50];
                 for (size_t j = 0; j < badWindowIds.size(); ++j)
                 {
-                    SNPRINTF(tmp, 50, "%d", badWindowIds[j] + 1);
+                    snprintf(tmp, 50, "%d", badWindowIds[j] + 1);
                     badList += tmp;
                     if(j < badWindowIds.size() - 1)
                         badList += ", ";

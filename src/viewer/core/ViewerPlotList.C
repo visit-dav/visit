@@ -12,7 +12,6 @@
 #include <stdio.h>
 #include <math.h>
 #include <float.h>
-#include <snprintf.h>
 
 #include <AbortException.h>
 #include <AnnotationObject.h>
@@ -5652,7 +5651,7 @@ ViewerPlotList::SILRestrictionKey(const std::string &host, const std::string &db
     int topSet)
 {
     char key[1024];
-    SNPRINTF(key, 1024, "%s:%s:%d", host.c_str(), db.c_str(), topSet);
+    snprintf(key, 1024, "%s:%s:%d", host.c_str(), db.c_str(), topSet);
     return std::string(key);
 }
 
@@ -8889,7 +8888,7 @@ ViewerPlotList::CreateNode(DataNode *parentNode,
     for(int i = 0; i < nPlots; ++i)
     {
         char tmp[20];
-        SNPRINTF(tmp, 20, "plot%02d", numRealPlots);
+        snprintf(tmp, 20, "plot%02d", numRealPlots);
         DataNode *plotNode = new DataNode(tmp);
         plotlistNode->AddNode(plotNode);
 
@@ -9223,7 +9222,7 @@ ViewerPlotList::SetFromNode(DataNode *parentNode,
     for(int i = 0; i < expectedPlots; ++i)
     {
         char key[20];
-        SNPRINTF(key, 20, "plot%02d", i);
+        snprintf(key, 20, "plot%02d", i);
         DataNode *plotNode = plotlistNode->GetNode(key);
         if(plotNode == 0)
             continue;
@@ -9486,7 +9485,7 @@ ViewerPlotList::SessionContainsErrors(DataNode *parentNode)
     for(int i = 0; i < expectedPlots && !fatalError; ++i)
     {
         char key[20];
-        SNPRINTF(key, 20, "plot%02d", i);
+        snprintf(key, 20, "plot%02d", i);
         DataNode *plotNode = plotlistNode->GetNode(key);
         if(plotNode == 0)
             continue;

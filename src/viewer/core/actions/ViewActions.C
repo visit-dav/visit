@@ -10,7 +10,6 @@
 #include <ViewerText.h>
 #include <ViewerWindow.h>
 #include <ViewerWindowManager.h>
-#include <snprintf.h>
 
 #include <avtViewCurve.h>
 #include <avtView2D.h>

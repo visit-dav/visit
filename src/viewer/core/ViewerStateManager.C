@@ -65,7 +65,6 @@
 #include <unistd.h>
 #endif
 
-#include <snprintf.h>
 #include <sstream>
 
 static void ReadHostProfileCallback(void *, const std::string&,bool,bool,long);
@@ -701,7 +700,7 @@ ViewerStateManager::CreateNode(DataNode *parentNode, bool detailed)
     DataNode *sourceMapNode = new DataNode("SourceMap");
     for(int i = 0; i < (int)databases.size(); ++i)
     {
-        SNPRINTF(keyName, 100, "SOURCE%02d", i);
+        snprintf(keyName, 100, "SOURCE%02d", i);
         std::string key(keyName);
         dbToSource[databases[i]] = key;
         sourceMapNode->AddNode(new DataNode(key, databases[i]));
@@ -967,7 +966,7 @@ ViewerStateManager::BuildSourceMap(DataNode *viewerNode, const stringVector &sou
         for(int i = 0; i < nSourceIds; ++i)
         {
             char tmp[100];
-            SNPRINTF(tmp, 100, "SOURCE%02d", i);
+            snprintf(tmp, 100, "SOURCE%02d", i);
             if(i < (int)sources.size())
             {
                 source = sources[i];

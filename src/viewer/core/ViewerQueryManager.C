@@ -7,7 +7,6 @@
 // ************************************************************************* //
 
 #include <ViewerQueryManager.h>
-#include <snprintf.h>
 #include <avtColorTables.h>
 #include <avtDatabaseMetaData.h>
 #include <avtToolInterface.h>
@@ -207,7 +206,7 @@ ViewerQueryManager::ViewerQueryManager() : ViewerBase()
     baseDesignator = 'A';
     cycleDesignator = false;
     designator = new char[4];
-    SNPRINTF(designator, 4, "%c", baseDesignator);
+    snprintf(designator, 4, "%c", baseDesignator);
 
     initialPick = false;
     preparingPick = false;
@@ -3064,7 +3063,7 @@ ViewerQueryManager::ResetDesignator()
 {
     baseDesignator = 'A';
     cycleDesignator = false;
-    SNPRINTF(designator, 4, "%c", baseDesignator);
+    snprintf(designator, 4, "%c", baseDesignator);
 }
 
 
@@ -3100,11 +3099,11 @@ ViewerQueryManager::UpdateDesignator()
 
     if (cycleDesignator)
     {
-        SNPRINTF(designator, 4, "%c%c", baseDesignator, baseDesignator);
+        snprintf(designator, 4, "%c%c", baseDesignator, baseDesignator);
     }
     else
     {
-        SNPRINTF(designator, 4, "%c", baseDesignator);
+        snprintf(designator, 4, "%c", baseDesignator);
     }
 }
 
@@ -4748,7 +4747,7 @@ CreateExtentsString(const double * extents,
         format = "The %s extents are (" + float_format + ", "
                                         + float_format  +")";
 
-        SNPRINTF(msg, 1024, format.c_str(), type,
+        snprintf(msg, 1024, format.c_str(), type,
                 extents[0], extents[1]);
     }
     else if (dim == 2)
@@ -4757,7 +4756,7 @@ CreateExtentsString(const double * extents,
                                         + float_format + ", "
                                         + float_format + ", "
                                         + float_format  +")";
-        SNPRINTF(msg, 1024, format.c_str(), type,
+        snprintf(msg, 1024, format.c_str(), type,
             extents[0], extents[1], extents[2], extents[3]);
     }
     else if (dim == 3)
@@ -4767,7 +4766,7 @@ CreateExtentsString(const double * extents,
                                         + float_format + ", "
                                         + float_format + ", "
                                         + float_format + ", "                                                                          + float_format  +")";
-        SNPRINTF(msg, 1024, format.c_str(), type,
+        snprintf(msg, 1024, format.c_str(), type,
             extents[0], extents[1], extents[2], extents[3], extents[4], extents[5]);
     }
     string msg2 = msg;
@@ -5284,7 +5283,7 @@ ViewerQueryManager::DoTimeQuery(ViewerWindow *origWin,
                 //  Create message for the gui that includes the query name
                 //  and message.
                 //
-                SNPRINTF(message, sizeof(message), "%s:  %s", qName.c_str(),
+                snprintf(message, sizeof(message), "%s:  %s", qName.c_str(),
                          e.Message().c_str());
             }
             else if (e.GetExceptionType() == "NonQueryableInputException")
@@ -5292,7 +5291,7 @@ ViewerQueryManager::DoTimeQuery(ViewerWindow *origWin,
                 //
                 //  Create message.
                 //
-                SNPRINTF(message, sizeof(message), "%s%s",
+                snprintf(message, sizeof(message), "%s%s",
                          "The currently active plot is non-queryable.\n",
                          "Please select a different plot and try again.");
             }
@@ -5303,7 +5302,7 @@ ViewerQueryManager::DoTimeQuery(ViewerWindow *origWin,
                 // including query name, exception type and exception
                 // message.
                 //
-                SNPRINTF(message, sizeof(message), "%s:  (%s)\n%s", qName.c_str(),
+                snprintf(message, sizeof(message), "%s:  (%s)\n%s", qName.c_str(),
                          e.GetExceptionType().c_str(),
                          e.Message().c_str());
 

@@ -25,7 +25,6 @@
 #include <SelectionProperties.h>
 #include <SelectionSummary.h>
 
-#include <snprintf.h>
 
 //
 // These methods were adapted from ViewerSubject handlers.

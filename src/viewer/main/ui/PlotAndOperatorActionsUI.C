@@ -23,8 +23,6 @@
 #include <PlotPluginInfo.h>
 #include <GlobalAttributes.h>
 
-#include <snprintf.h>
-
 #include <QApplication>
 #include <QAction>
 #include <QIcon>
