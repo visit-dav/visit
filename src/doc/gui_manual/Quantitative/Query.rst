@@ -173,12 +173,12 @@ Kurtosis
     function. The normalized distribution function must be represented as a
     Curve plot in VisIt. Kurtosis measures the variability of a distribution by
     comparing the ratios of the fourth and second central moments. The results
-    are print to the **Query results**.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+    are print to the **Query results**.
 
 L2Norm
     The L2Norm query calculates the L2Norm, or square of the integrated area,
     of a Curve plot. The Curve plot must be highlighted in the **Plot list**.
-    The results are printed to the **Query results**.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+    The results are printed to the **Query results**.
 
 L2Norm Between Curves
     The L2Norm query takes two Curve plots as input and calculates the L2Norm
@@ -313,14 +313,14 @@ NodePick
     which, if used in 3D, need not be on the surface of a 3D dataset.The plot
     to be picked must be highlighted in the **Plot list**. Information about
     the picked node, if there is one, is printed to the **Query results** and
-    the **Pick Window**.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+    the **Pick Window**.
 
 Pick
     The Pick query performs zone picking at the specified world coordinate 
-which, if used in 3D, need not be on the surface of a 3D dataset.The plot to be
-picked must be highlighted in the **Plot list**. Information about the picked
-node, if there is one, is printed to the **Query results** and the
-**Pick Window**.
+    which, if used in 3D, need not be on the surface of a 3D dataset.The plot 
+    to be picked must be highlighted in the **Plot list**. Information about 
+    the picked node, if there is one, is printed to the **Query results** and 
+    the **Pick Window**.
 
 PickByNode
     The PickByNode query performs node pick using the highlighted plot in the
