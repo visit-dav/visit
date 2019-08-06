@@ -12,6 +12,10 @@
 #
 #  Modifications:
 #
+#    Alister Maguire, Mon Aug  5 13:02:05 MST 2019
+#    Added a test that handles .mili files containing integers in 
+#    scientific notation. 
+#
 # ----------------------------------------------------------------------------
 RequiredDatabasePlugin("Mili")
 single_domain_path = data_path("mili_test_data/single_proc/")
@@ -236,6 +240,23 @@ def TestLabels():
     AddPlot("Label", "OriginalNodeLabels")
     DrawPlots()
     Test("mili_node_labels_01")
+    DeleteAllPlots()
+
+
+def TestSciNotation():
+    #
+    # Some .mili files contain integers in scientific notation. 
+    # These need to be handled appropriately. 
+    #
+    OpenDatabase(single_domain_path + "/HexModel1.plt.mili")
+    v = GetView3D()
+    v.viewNormal = (0.9, 0.35, -0.88)
+    SetView3D(v)
+    
+    AddPlot("Pseudocolor", "Primal/brick/stress/sx")
+    DrawPlots()
+    Test("mili_from_sci_not")
+    DeleteAllPlots()
 
 
 def Main():
@@ -251,6 +272,7 @@ def Main():
     TestParticles()
     TestStaticNodes()
     TestLabels()
+    TestSciNotation()
 
 Main()
 Exit()
