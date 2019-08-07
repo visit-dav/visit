@@ -178,9 +178,6 @@ IF (NOT WIN32)
     # because the visitpy library that exports the symbols already gets
     # visitpy_EXPORTS defined for it.
     ADD_DEFINITIONS(-DVISITPY_EXPORTS)
-else()
-    # This prevents python from #defining snprintf as _snprintf
-    ADD_DEFINITIONS(-DHAVE_SNPRINTF)
 ENDIF (NOT WIN32)
 
 LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY})
@@ -191,6 +188,9 @@ ${PY_SOURCES}
 ${METADATA_SOURCES}
 ${GENERATED_PY_SOURCES}
 )
+if(WIN32)
+    set_target_properties(visitpy PROPERTIES COMPILE_DEFINITIONS HAVE_SNPRINTF)
+endif()
 TARGET_LINK_LIBRARIES(visitpy
 avtdbatts
 viewerrpc
