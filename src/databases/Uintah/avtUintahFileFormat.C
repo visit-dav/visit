@@ -2399,10 +2399,10 @@ avtUintahFileFormat::addParticleMesh( avtDatabaseMetaData *md,
     for (int i=0; i<3; ++i)
       logical[i] = high[i]-low[i];
           
-    mesh->hasLogicalBounds = true;
-    mesh->logicalBounds[0] = logical[0];
-    mesh->logicalBounds[1] = logical[1];
-    mesh->logicalBounds[2] = logical[2];
+    // mesh->hasLogicalBounds = true;
+    // mesh->logicalBounds[0] = logical[0];
+    // mesh->logicalBounds[1] = logical[1];
+    // mesh->logicalBounds[2] = logical[2];
 
     md->Add(mesh); 
     meshes_added.insert(meshName);
