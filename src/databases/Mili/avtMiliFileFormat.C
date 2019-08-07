@@ -2268,7 +2268,7 @@ avtMiliFileFormat::GetTimeAndElementSpanVars(int domain,
 {
     int numElems   = elementIds.size();
     int numVars    = vars.size();
-    int spanSize   = cycleRange[1] - cycleRange[0];
+    int spanSize   = cycleRange[1] - cycleRange[0] + 1;
     int numArrays  = numElems * numVars;
 
     vtkFloatArray **spanArrays = new vtkFloatArray *[numArrays];
@@ -2345,7 +2345,11 @@ avtMiliFileFormat::GetTimeAndElementSpanVars(int domain,
                     if (meshVar == NULL)
                         cerr << "MESH VAR IS NULL!" << endl;//FIXME
 
-                    spanPtr[curC] = meshVar->GetTuple1(elementIds[elIdx]);
+                    //
+                    // VisIt's id's are 1 based, so we need to subtract 1. 
+                    //
+                    long int visitId = elementIds[elIdx] - 1;
+                    spanPtr[curC] = meshVar->GetTuple1(visitId);
                 }
                 else
                 {

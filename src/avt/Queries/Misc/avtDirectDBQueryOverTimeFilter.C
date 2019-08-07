@@ -87,8 +87,8 @@
 
 avtDirectDBQueryOverTimeFilter::avtDirectDBQueryOverTimeFilter(const AttributeGroup *a)
 {
-    cerr << "INITIALIZING DB QOT" << endl;//FIXME
     atts = *(QueryOverTimeAttributes*)a;
+
     finalOutputCreated = false;
     useTimeForXAxis = true;
     useVarForYAxis = false;
@@ -271,9 +271,31 @@ avtDirectDBQueryOverTimeFilter::Execute(void)
 
     stringVector vars = atts.GetQueryAtts().GetVariables(); 
 
-    int stride = atts.GetStride();//TODO: integrate stride into query.
     int startT = atts.GetStartTime();
-    int stopT = atts.GetEndTime();
+    int stopT  = atts.GetEndTime();
+    int stride = atts.GetStride();//TODO: integrate stride into query.
+
+    //cerr << "\n" << endl;
+    //if (timeOpts.HasNumericEntry("start_time"))
+    //{
+    //    cerr << "TIME OPTS HAS START" << endl;
+    //    startT = timeOpts.GetEntry("start_time")->ToInt();
+    //}
+    //if (timeOpts.HasNumericEntry("stop_time"))
+    //{
+    //    cerr << "TIME OPTS HAS STOP" << endl;
+    //    stopT = timeOpts.GetEntry("stop_time")->ToInt();
+    //}
+    //if (timeOpts.HasNumericEntry("stride"))
+    //{
+    //    cerr << "TIME OPTS HAS STRIDE" << endl;
+    //    stride = timeOpts.GetEntry("stride")->ToInt();
+    //}
+
+    cerr << "\nSTART: " << startT << endl;
+    cerr << "STOP: " << stopT << endl;
+    cerr << "STRIDE: " << stride << endl;
+
     int tsRange[] = {startT, stopT};
 
 
@@ -290,7 +312,7 @@ avtDirectDBQueryOverTimeFilter::Execute(void)
     if (spanArray != NULL)
     {
         int numSpans  = elements.size() * vars.size();
-        int numTuples = tsRange[1] - tsRange[0];
+        int numTuples = spanArray[0]->GetNumberOfTuples();
         
         int curT = startT;
         for (int i = 0; i < numTuples; i++)
