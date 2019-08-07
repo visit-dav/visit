@@ -25,7 +25,7 @@ function bv_uintah_alt_uintah_dir
     echo "Using alternate Uintah directory"
 
     # Check to make sure the directory or a particular include file exists.
-    [ ! -e "$1/../src/VisIt/uda2vis/udaData.h" ] && error "Uintah not found in $1"
+    [ ! -e "$1/../src/VisIt/interfaces/datatypes.h" ] && error "Uintah not found in $1"
 
     bv_uintah_enable
     USE_SYSTEM_UINTAH="yes"
@@ -37,13 +37,7 @@ function bv_uintah_depends_on
     if [[ "$USE_SYSTEM_UINTAH" == "yes" ]]; then
         echo ""
     else
-        echo ""
-    fi
-    
-    if [[ "$DO_ZLIB" == "yes" ]] ; then
         echo "zlib"
-    else
-        echo ""
     fi
 }
 
@@ -62,13 +56,13 @@ function bv_uintah_initialize_vars
 
 function bv_uintah_info
 {
-    export UINTAH_VERSION=${UINTAH_VERSION:-"2.6.0"}
+    export UINTAH_VERSION=${UINTAH_VERSION:-"2.6.1"}
     export UINTAH_FILE=${UINTAH_FILE:-"Uintah-${UINTAH_VERSION}.tar.gz"}
     export UINTAH_COMPATIBILITY_VERSION=${UINTAH_COMPATIBILITY_VERSION:-"2.6"}
-    export UINTAH_URL=${UINTAH_URL:-"http://www.sci.utah.edu/releases/uintah_v${UINTAH_VERSION}"}
+    export UINTAH_URL=${UINTAH_URL:-"https://gforge.sci.utah.edu/svn/uintah/releases/uintah_v${UINTAH_VERSION}"}
     export UINTAH_BUILD_DIR=${UINTAH_BUILD_DIR:-"Uintah-${UINTAH_VERSION}/optimized"}
-    export UINTAH_MD5_CHECKSUM="0261898f72e51c7edabd9cc8c9884b4c"
-    export UINTAH_SHA256_CHECKSUM="082d6f3bb00f6905d1c799d3c4265c3746c785942057bdcbc351befbc3c7a210"
+    export UINTAH_MD5_CHECKSUM="09cad7b2fcc7b1f41dabcf7ecae21f54"
+    export UINTAH_SHA256_CHECKSUM="33f9c74dcc505cde90515418c9c3b64b78686d228cb5af4cf04b56b0d2f434bc"
 }
 
 function bv_uintah_print
@@ -94,8 +88,8 @@ function bv_uintah_host_profile
         echo "##" >> $HOSTCONF
 
         if [[ "$USE_SYSTEM_UINTAH" == "yes" ]]; then
-            warn "Assuming version 2.6.1 for Uintah"
-            echo "SETUP_APP_VERSION(UINTAH 2.6.1)" >> $HOSTCONF
+            warn "Assuming version 2.7.0 for Uintah"
+            echo "SETUP_APP_VERSION(UINTAH 2.7.0)" >> $HOSTCONF
             echo "VISIT_OPTION_DEFAULT(VISIT_UINTAH_DIR $UINTAH_INSTALL_DIR)" >> $HOSTCONF 
             echo "SET(VISIT_USE_SYSTEM_UINTAH TRUE)" >> $HOSTCONF
         else
@@ -254,19 +248,13 @@ function build_uintah
         cf_build_type="--disable-static"
     fi
 
-    ZLIB_ARGS=""
-    
-    if [[ "$DO_ZLIB" == "yes" ]]; then
-        ZLIB_ARGS="--with-zlib=$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH"
-    fi
-
     if [[ "$OPSYS" == "Darwin" ]]; then
 
         info "Invoking command to configure UINTAH"
         info "../src/configure CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
         CFLAGS=\"$CFLAGS $C_OPT_FLAGS -headerpad_max_install_names\" CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS\" \
         MPI_EXTRA_LIB_FLAG=\"$PAR_LIBRARY_NAMES\" \
-        $ZLIB_ARGS \
+        --with-zlib=\"$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH\" \
         --prefix=\"$VISITDIR/uintah/$UINTAH_VERSION/$VISITARCH\" \
         ${cf_darwin} \
         ${cf_build_type} \
@@ -281,7 +269,7 @@ function build_uintah
         sh -c "../src/configure CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
         CFLAGS=\"$CFLAGS $C_OPT_FLAGS -headerpad_max_install_names\" CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS\" \
         MPI_EXTRA_LIB_FLAG=\"$PAR_LIBRARY_NAMES\" \
-        $ZLIB_ARGS \
+        --with-zlib=\"$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH\" \
         --prefix=\"$VISITDIR/uintah/$UINTAH_VERSION/$VISITARCH\" \
         ${cf_darwin} \
         ${cf_build_type} \
@@ -299,7 +287,7 @@ function build_uintah
         info "../src/configure CXX=\"$PAR_COMPILER_CXX\" CC=\"$PAR_COMPILER\" \
         CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS\" \
         MPI_EXTRA_LIB_FLAG=\"$PAR_LIBRARY_NAMES\" \
-        $ZLIB_ARGS \
+        --with-zlib=\"$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH\" \
         --prefix=\"$VISITDIR/uintah/$UINTAH_VERSION/$VISITARCH\" \
         ${cf_build_type} \
         --enable-minimal --enable-optimize \
@@ -310,7 +298,7 @@ function build_uintah
         sh -c "../src/configure CXX=\"$PAR_COMPILER_CXX\" CC=\"$PAR_COMPILER\" \
         CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS\" \
         MPI_EXTRA_LIB_FLAG=\"$PAR_LIBRARY_NAMES\" \
-        $ZLIB_ARGS \
+        --with-zlib=\"$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH\" \
         --prefix=\"$VISITDIR/uintah/$UINTAH_VERSION/$VISITARCH\" \
         ${cf_build_type} \
         --enable-minimal --enable-optimize \
