@@ -26,8 +26,6 @@
 
 #include <vtkDataSet.h>
 
-#include <snprintf.h>
-
 // ****************************************************************************
 // Class: avtDataset2VTK
 //

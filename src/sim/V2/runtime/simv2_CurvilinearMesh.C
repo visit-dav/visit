@@ -8,6 +8,8 @@
 #include "simv2_CurvilinearMesh.h"
 #include "simv2_VariableData.h"
 
+#include <stdio.h>
+
 struct VisIt_CurvilinearMesh : public VisIt_ObjectBase
 {
     VisIt_CurvilinearMesh();

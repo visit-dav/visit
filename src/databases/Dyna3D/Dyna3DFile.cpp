@@ -23,7 +23,6 @@
 
 #ifdef VISIT_DYNA
 // We're building this code inside of VisIt.
-#include <snprintf.h>
 #include <DebugStream.h>
 #define DEBUG_READER(A) A
 #else
