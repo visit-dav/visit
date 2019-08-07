@@ -40,21 +40,19 @@ def TestScale():
     DrawPlots()
     
     Test("pseudocolor_01")
-    
-    #
-    # Test transparency with domain boundaries. 
-    #
+
     DeleteAllPlots()
-    OpenDatabase(silo_data_path("multi_ucd3d.silo"))
-    
-    AddPlot("Pseudocolor", "d")
-    DrawPlots()
 
 def TestDomainBoundaries():
     #
     # First, let's remove some domains and make sure that the 
     # faces are rendered. 
     #
+    OpenDatabase(silo_data_path("multi_ucd3d.silo"))
+    
+    AddPlot("Pseudocolor", "d")
+    DrawPlots()
+
     silr = SILRestriction()
     silr.SuspendCorrectnessChecking()
     silr.TurnOnAll()
