@@ -810,7 +810,7 @@ avtStructuredMeshChunker::SplitIntoSubgrids(const int *dims, vtkDataSet *in_ds,
     int t0 = visitTimer->StartTimer();
     p.ConstructPartition(cell_dims, d_plus, boxes);
     char str[1024];
-    sprintf(str, "Constructing %zu grid.", boxes.size());
+    sprintf(str, "Constructing %ld grid.", boxes.size());
     visitTimer->StopTimer(t0, str);
 
     //

@@ -5244,7 +5244,7 @@ avtDataAttributes::DebugDump(avtWebpage *webpage)
                             YesOrNo(origElementsRequiredForPick));
     webpage->AddTableEntry2("Is the file format reader doing domain decomposition?",
                             YesOrNo(dynamicDomainDecomposition));
-    snprintf(str, 4096, "%zu", levelsOfDetail);
+    snprintf(str, 4096, "%ld", levelsOfDetail);
     webpage->AddTableEntry2("Levels of detail", str);
     ExtentsToString(multiresExtents, str, 4096);
     webpage->AddTableEntry2("Multires extents", str);
@@ -5399,7 +5399,7 @@ avtDataAttributes::DebugDump(avtWebpage *webpage)
             {
                 for (size_t j = 0 ; j < variables[i]->subnames.size() ; j++)
                 {
-                    snprintf(str, 4096, "Variable subname[%zu]", j);
+                    snprintf(str, 4096, "Variable subname[%ld]", j);
                     webpage->AddTableEntry3(NULL, str,
                                             variables[i]->subnames[j].c_str());
                 }
