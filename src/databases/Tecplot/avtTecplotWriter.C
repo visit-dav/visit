@@ -82,7 +82,7 @@ avtTecplotWriter::OpenFile(const string &stemname, int)
     if(writeContext.GroupSize() > 1)
     {
         char ext[20];
-        SNPRINTF(ext, 20, ".%d.tec", writeContext.GroupRank());
+        snprintf(ext, 20, ".%d.tec", writeContext.GroupRank());
         filename = stemname + ext;
     }
     else

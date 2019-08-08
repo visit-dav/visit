@@ -5,7 +5,6 @@
 #include <PyMultiresControlAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyMultiresControlAttributes
@@ -42,11 +41,11 @@ PyMultiresControlAttributes_ToString(const MultiresControlAttributes *atts, cons
     std::string str;
     char tmpStr[1000];
 
-    SNPRINTF(tmpStr, 1000, "%sresolution = %d\n", prefix, atts->GetResolution());
+    snprintf(tmpStr, 1000, "%sresolution = %d\n", prefix, atts->GetResolution());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%smaxResolution = %d\n", prefix, atts->GetMaxResolution());
+    snprintf(tmpStr, 1000, "%smaxResolution = %d\n", prefix, atts->GetMaxResolution());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sinfo = \"%s\"\n", prefix, atts->GetInfo().c_str());
+    snprintf(tmpStr, 1000, "%sinfo = \"%s\"\n", prefix, atts->GetInfo().c_str());
     str += tmpStr;
     return str;
 }

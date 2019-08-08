@@ -5,7 +5,6 @@
 #include <PyThreeSliceAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyThreeSliceAttributes
@@ -42,16 +41,16 @@ PyThreeSliceAttributes_ToString(const ThreeSliceAttributes *atts, const char *pr
     std::string str;
     char tmpStr[1000];
 
-    SNPRINTF(tmpStr, 1000, "%sx = %g\n", prefix, atts->GetX());
+    snprintf(tmpStr, 1000, "%sx = %g\n", prefix, atts->GetX());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sy = %g\n", prefix, atts->GetY());
+    snprintf(tmpStr, 1000, "%sy = %g\n", prefix, atts->GetY());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sz = %g\n", prefix, atts->GetZ());
+    snprintf(tmpStr, 1000, "%sz = %g\n", prefix, atts->GetZ());
     str += tmpStr;
     if(atts->GetInteractive())
-        SNPRINTF(tmpStr, 1000, "%sinteractive = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sinteractive = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sinteractive = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sinteractive = 0\n", prefix);
     str += tmpStr;
     return str;
 }

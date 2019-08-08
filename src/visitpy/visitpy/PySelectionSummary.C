@@ -5,7 +5,6 @@
 #include <PySelectionSummary.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 #include <PySelectionVariableSummary.h>
 
 // ****************************************************************************
@@ -43,7 +42,7 @@ PySelectionSummary_ToString(const SelectionSummary *atts, const char *prefix)
     std::string str;
     char tmpStr[1000];
 
-    SNPRINTF(tmpStr, 1000, "%sname = \"%s\"\n", prefix, atts->GetName().c_str());
+    snprintf(tmpStr, 1000, "%sname = \"%s\"\n", prefix, atts->GetName().c_str());
     str += tmpStr;
     { // new scope
         int index = 0;
@@ -51,36 +50,36 @@ PySelectionSummary_ToString(const SelectionSummary *atts, const char *prefix)
         for(AttributeGroupVector::const_iterator pos = atts->GetVariables().begin(); pos != atts->GetVariables().end(); ++pos, ++index)
         {
             const SelectionVariableSummary *current = (const SelectionVariableSummary *)(*pos);
-            SNPRINTF(tmpStr, 1000, "GetVariables(%d).", index);
+            snprintf(tmpStr, 1000, "GetVariables(%d).", index);
             std::string objPrefix(prefix + std::string(tmpStr));
             str += PySelectionVariableSummary_ToString(current, objPrefix.c_str());
         }
         if(index == 0)
             str += "#variables does not contain any SelectionVariableSummary objects.\n";
     }
-    SNPRINTF(tmpStr, 1000, "%scellCount = %d\n", prefix, atts->GetCellCount());
+    snprintf(tmpStr, 1000, "%scellCount = %d\n", prefix, atts->GetCellCount());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%stotalCellCount = %d\n", prefix, atts->GetTotalCellCount());
+    snprintf(tmpStr, 1000, "%stotalCellCount = %d\n", prefix, atts->GetTotalCellCount());
     str += tmpStr;
     {   const doubleVector &histogramValues = atts->GetHistogramValues();
-        SNPRINTF(tmpStr, 1000, "%shistogramValues = (", prefix);
+        snprintf(tmpStr, 1000, "%shistogramValues = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < histogramValues.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", histogramValues[i]);
+            snprintf(tmpStr, 1000, "%g", histogramValues[i]);
             str += tmpStr;
             if(i < histogramValues.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
-    SNPRINTF(tmpStr, 1000, "%shistogramMinBin = %g\n", prefix, atts->GetHistogramMinBin());
+    snprintf(tmpStr, 1000, "%shistogramMinBin = %g\n", prefix, atts->GetHistogramMinBin());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%shistogramMaxBin = %g\n", prefix, atts->GetHistogramMaxBin());
+    snprintf(tmpStr, 1000, "%shistogramMaxBin = %g\n", prefix, atts->GetHistogramMaxBin());
     str += tmpStr;
     return str;
 }
@@ -129,9 +128,9 @@ SelectionSummary_GetVariables(PyObject *self, PyObject *args)
     {
         char msg[400] = {'\0'};
         if(obj->data->GetVariables().size() == 0)
-            SNPRINTF(msg, 400, "In SelectionSummary::GetVariables : The index %d is invalid because variables is empty.", index);
+            snprintf(msg, 400, "In SelectionSummary::GetVariables : The index %d is invalid because variables is empty.", index);
         else
-            SNPRINTF(msg, 400, "In SelectionSummary::GetVariables : The index %d is invalid. Use index values in: [0, %ld).",  index, obj->data->GetVariables().size());
+            snprintf(msg, 400, "In SelectionSummary::GetVariables : The index %d is invalid. Use index values in: [0, %ld).",  index, obj->data->GetVariables().size());
         PyErr_SetString(PyExc_IndexError, msg);
         return NULL;
     }
@@ -165,7 +164,7 @@ SelectionSummary_AddVariables(PyObject *self, PyObject *args)
     if(!PySelectionVariableSummary_Check(element))
     {
         char msg[400] = {'\0'};
-        SNPRINTF(msg, 400, "The SelectionSummary::AddVariables method only accepts SelectionVariableSummary objects.");
+        snprintf(msg, 400, "The SelectionSummary::AddVariables method only accepts SelectionVariableSummary objects.");
         PyErr_SetString(PyExc_TypeError, msg);
         return NULL;
     }
@@ -213,7 +212,7 @@ SelectionSummary_RemoveVariables(PyObject *self, PyObject *args)
     if(index < 0 || index >= obj->data->GetNumVariables())
     {
         char msg[400] = {'\0'};
-        SNPRINTF(msg, 400, "In SelectionSummary::RemoveVariables : Index %d is out of range", index);
+        snprintf(msg, 400, "In SelectionSummary::RemoveVariables : Index %d is out of range", index);
         PyErr_SetString(PyExc_IndexError, msg);
         return NULL;
     }

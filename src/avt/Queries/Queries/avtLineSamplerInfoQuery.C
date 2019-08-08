@@ -9,7 +9,6 @@
 #include <avtLineSamplerInfoQuery.h>
 #include <avtDatasetExaminer.h>
 #include <avtParallel.h>
-#include <snprintf.h>
 #include <vtkPolyData.h>
 #include <vtkPoints.h>
 #include <vtkPointData.h>

@@ -5,7 +5,6 @@
 #include <PyBoundaryOpAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyBoundaryOpAttributes
@@ -42,7 +41,7 @@ PyBoundaryOpAttributes_ToString(const BoundaryOpAttributes *atts, const char *pr
     std::string str;
     char tmpStr[1000];
 
-    SNPRINTF(tmpStr, 1000, "%ssmoothingLevel = %d\n", prefix, atts->GetSmoothingLevel());
+    snprintf(tmpStr, 1000, "%ssmoothingLevel = %d\n", prefix, atts->GetSmoothingLevel());
     str += tmpStr;
     return str;
 }

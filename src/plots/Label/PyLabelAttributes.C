@@ -5,7 +5,6 @@
 #include <PyLabelAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 #include <PyColorAttribute.h>
 #include <PyFontAttributes.h>
 #include <PyFontAttributes.h>
@@ -46,38 +45,38 @@ PyLabelAttributes_ToString(const LabelAttributes *atts, const char *prefix)
     char tmpStr[1000];
 
     if(atts->GetLegendFlag())
-        SNPRINTF(tmpStr, 1000, "%slegendFlag = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%slegendFlag = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%slegendFlag = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%slegendFlag = 0\n", prefix);
     str += tmpStr;
     if(atts->GetShowNodes())
-        SNPRINTF(tmpStr, 1000, "%sshowNodes = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sshowNodes = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sshowNodes = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sshowNodes = 0\n", prefix);
     str += tmpStr;
     if(atts->GetShowCells())
-        SNPRINTF(tmpStr, 1000, "%sshowCells = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sshowCells = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sshowCells = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sshowCells = 0\n", prefix);
     str += tmpStr;
     if(atts->GetRestrictNumberOfLabels())
-        SNPRINTF(tmpStr, 1000, "%srestrictNumberOfLabels = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%srestrictNumberOfLabels = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%srestrictNumberOfLabels = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%srestrictNumberOfLabels = 0\n", prefix);
     str += tmpStr;
     const char *drawLabelsFacing_names = "Front, Back, FrontAndBack";
     switch (atts->GetDrawLabelsFacing())
     {
       case LabelAttributes::Front:
-          SNPRINTF(tmpStr, 1000, "%sdrawLabelsFacing = %sFront  # %s\n", prefix, prefix, drawLabelsFacing_names);
+          snprintf(tmpStr, 1000, "%sdrawLabelsFacing = %sFront  # %s\n", prefix, prefix, drawLabelsFacing_names);
           str += tmpStr;
           break;
       case LabelAttributes::Back:
-          SNPRINTF(tmpStr, 1000, "%sdrawLabelsFacing = %sBack  # %s\n", prefix, prefix, drawLabelsFacing_names);
+          snprintf(tmpStr, 1000, "%sdrawLabelsFacing = %sBack  # %s\n", prefix, prefix, drawLabelsFacing_names);
           str += tmpStr;
           break;
       case LabelAttributes::FrontAndBack:
-          SNPRINTF(tmpStr, 1000, "%sdrawLabelsFacing = %sFrontAndBack  # %s\n", prefix, prefix, drawLabelsFacing_names);
+          snprintf(tmpStr, 1000, "%sdrawLabelsFacing = %sFrontAndBack  # %s\n", prefix, prefix, drawLabelsFacing_names);
           str += tmpStr;
           break;
       default:
@@ -88,22 +87,22 @@ PyLabelAttributes_ToString(const LabelAttributes *atts, const char *prefix)
     switch (atts->GetLabelDisplayFormat())
     {
       case LabelAttributes::Natural:
-          SNPRINTF(tmpStr, 1000, "%slabelDisplayFormat = %sNatural  # %s\n", prefix, prefix, labelDisplayFormat_names);
+          snprintf(tmpStr, 1000, "%slabelDisplayFormat = %sNatural  # %s\n", prefix, prefix, labelDisplayFormat_names);
           str += tmpStr;
           break;
       case LabelAttributes::LogicalIndex:
-          SNPRINTF(tmpStr, 1000, "%slabelDisplayFormat = %sLogicalIndex  # %s\n", prefix, prefix, labelDisplayFormat_names);
+          snprintf(tmpStr, 1000, "%slabelDisplayFormat = %sLogicalIndex  # %s\n", prefix, prefix, labelDisplayFormat_names);
           str += tmpStr;
           break;
       case LabelAttributes::Index:
-          SNPRINTF(tmpStr, 1000, "%slabelDisplayFormat = %sIndex  # %s\n", prefix, prefix, labelDisplayFormat_names);
+          snprintf(tmpStr, 1000, "%slabelDisplayFormat = %sIndex  # %s\n", prefix, prefix, labelDisplayFormat_names);
           str += tmpStr;
           break;
       default:
           break;
     }
 
-    SNPRINTF(tmpStr, 1000, "%snumberOfLabels = %d\n", prefix, atts->GetNumberOfLabels());
+    snprintf(tmpStr, 1000, "%snumberOfLabels = %d\n", prefix, atts->GetNumberOfLabels());
     str += tmpStr;
     { // new scope
         std::string objPrefix(prefix);
@@ -119,15 +118,15 @@ PyLabelAttributes_ToString(const LabelAttributes *atts, const char *prefix)
     switch (atts->GetHorizontalJustification())
     {
       case LabelAttributes::HCenter:
-          SNPRINTF(tmpStr, 1000, "%shorizontalJustification = %sHCenter  # %s\n", prefix, prefix, horizontalJustification_names);
+          snprintf(tmpStr, 1000, "%shorizontalJustification = %sHCenter  # %s\n", prefix, prefix, horizontalJustification_names);
           str += tmpStr;
           break;
       case LabelAttributes::Left:
-          SNPRINTF(tmpStr, 1000, "%shorizontalJustification = %sLeft  # %s\n", prefix, prefix, horizontalJustification_names);
+          snprintf(tmpStr, 1000, "%shorizontalJustification = %sLeft  # %s\n", prefix, prefix, horizontalJustification_names);
           str += tmpStr;
           break;
       case LabelAttributes::Right:
-          SNPRINTF(tmpStr, 1000, "%shorizontalJustification = %sRight  # %s\n", prefix, prefix, horizontalJustification_names);
+          snprintf(tmpStr, 1000, "%shorizontalJustification = %sRight  # %s\n", prefix, prefix, horizontalJustification_names);
           str += tmpStr;
           break;
       default:
@@ -138,15 +137,15 @@ PyLabelAttributes_ToString(const LabelAttributes *atts, const char *prefix)
     switch (atts->GetVerticalJustification())
     {
       case LabelAttributes::VCenter:
-          SNPRINTF(tmpStr, 1000, "%sverticalJustification = %sVCenter  # %s\n", prefix, prefix, verticalJustification_names);
+          snprintf(tmpStr, 1000, "%sverticalJustification = %sVCenter  # %s\n", prefix, prefix, verticalJustification_names);
           str += tmpStr;
           break;
       case LabelAttributes::Top:
-          SNPRINTF(tmpStr, 1000, "%sverticalJustification = %sTop  # %s\n", prefix, prefix, verticalJustification_names);
+          snprintf(tmpStr, 1000, "%sverticalJustification = %sTop  # %s\n", prefix, prefix, verticalJustification_names);
           str += tmpStr;
           break;
       case LabelAttributes::Bottom:
-          SNPRINTF(tmpStr, 1000, "%sverticalJustification = %sBottom  # %s\n", prefix, prefix, verticalJustification_names);
+          snprintf(tmpStr, 1000, "%sverticalJustification = %sBottom  # %s\n", prefix, prefix, verticalJustification_names);
           str += tmpStr;
           break;
       default:
@@ -157,22 +156,22 @@ PyLabelAttributes_ToString(const LabelAttributes *atts, const char *prefix)
     switch (atts->GetDepthTestMode())
     {
       case LabelAttributes::LABEL_DT_AUTO:
-          SNPRINTF(tmpStr, 1000, "%sdepthTestMode = %sLABEL_DT_AUTO  # %s\n", prefix, prefix, depthTestMode_names);
+          snprintf(tmpStr, 1000, "%sdepthTestMode = %sLABEL_DT_AUTO  # %s\n", prefix, prefix, depthTestMode_names);
           str += tmpStr;
           break;
       case LabelAttributes::LABEL_DT_ALWAYS:
-          SNPRINTF(tmpStr, 1000, "%sdepthTestMode = %sLABEL_DT_ALWAYS  # %s\n", prefix, prefix, depthTestMode_names);
+          snprintf(tmpStr, 1000, "%sdepthTestMode = %sLABEL_DT_ALWAYS  # %s\n", prefix, prefix, depthTestMode_names);
           str += tmpStr;
           break;
       case LabelAttributes::LABEL_DT_NEVER:
-          SNPRINTF(tmpStr, 1000, "%sdepthTestMode = %sLABEL_DT_NEVER  # %s\n", prefix, prefix, depthTestMode_names);
+          snprintf(tmpStr, 1000, "%sdepthTestMode = %sLABEL_DT_NEVER  # %s\n", prefix, prefix, depthTestMode_names);
           str += tmpStr;
           break;
       default:
           break;
     }
 
-    SNPRINTF(tmpStr, 1000, "%sformatTemplate = \"%s\"\n", prefix, atts->GetFormatTemplate().c_str());
+    snprintf(tmpStr, 1000, "%sformatTemplate = \"%s\"\n", prefix, atts->GetFormatTemplate().c_str());
     str += tmpStr;
     return str;
 }

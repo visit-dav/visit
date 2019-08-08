@@ -5,22 +5,6 @@
 #include <PySaveSubWindowsAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
-#include <PySaveSubWindowAttributes.h>
-#include <PySaveSubWindowAttributes.h>
-#include <PySaveSubWindowAttributes.h>
-#include <PySaveSubWindowAttributes.h>
-#include <PySaveSubWindowAttributes.h>
-#include <PySaveSubWindowAttributes.h>
-#include <PySaveSubWindowAttributes.h>
-#include <PySaveSubWindowAttributes.h>
-#include <PySaveSubWindowAttributes.h>
-#include <PySaveSubWindowAttributes.h>
-#include <PySaveSubWindowAttributes.h>
-#include <PySaveSubWindowAttributes.h>
-#include <PySaveSubWindowAttributes.h>
-#include <PySaveSubWindowAttributes.h>
-#include <PySaveSubWindowAttributes.h>
 #include <PySaveSubWindowAttributes.h>
 
 // ****************************************************************************

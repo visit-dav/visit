@@ -9,7 +9,6 @@
 #include <avtVTKOptions.h>
 
 #include <DBOptionsAttributes.h>
-#include <snprintf.h>
 
 #include <string>
 #include <vector>
@@ -78,7 +77,7 @@ GetVTKWriteOptions(void)
     rv->SetObsolete("XML format");
 
     char helpStr[256];
-    SNPRINTF(helpStr, sizeof(helpStr),
+    snprintf(helpStr, sizeof(helpStr),
         "<p><b>Tetrahedralize</b>:"
         "<ul>"
         "<li>Works only for UNstructured grids.</li>"

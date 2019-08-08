@@ -8,8 +8,6 @@
 
 #include <avtL2NormQuery.h>
 
-#include <snprintf.h>
-
 #include <string>
 
 // ****************************************************************************
@@ -129,7 +127,7 @@ avtL2NormQuery::CreateMessage(double l2norm)
 
     char msg[1024];
     std::string format = "The L2Norm is " + queryAtts.GetFloatFormat() + ".";
-    SNPRINTF(msg,1024,format.c_str(), l2norm);
+    snprintf(msg,1024,format.c_str(), l2norm);
     std::string m = msg;
     return m;
 }

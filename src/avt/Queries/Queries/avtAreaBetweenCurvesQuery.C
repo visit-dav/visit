@@ -8,7 +8,6 @@
 
 #include <avtAreaBetweenCurvesQuery.h>
 
-#include <snprintf.h>
 #include <Utility.h>
 
 #include <string>
@@ -111,7 +110,7 @@ avtAreaBetweenCurvesQuery::CreateMessage(double area)
     char msg[1024];
     std::string format = "The area between the curves is " 
                      + queryAtts.GetFloatFormat() +".";
-    SNPRINTF(msg,1024,format.c_str(), area);
+    snprintf(msg,1024,format.c_str(), area);
     std::string m = msg;
     return m;
 }

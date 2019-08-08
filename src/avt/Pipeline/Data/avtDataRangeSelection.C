@@ -8,8 +8,6 @@
 
 #include <limits.h>
 
-#include <snprintf.h>
-
 #include <avtDataRangeSelection.h>
 
 // ****************************************************************************
@@ -87,7 +85,7 @@ std::string
 avtDataRangeSelection::DescriptionString(void)
 {
     char str[1024];
-    SNPRINTF(str, sizeof(str), "avtDataRangeSelection:%s_%f_%f",
+    snprintf(str, sizeof(str), "avtDataRangeSelection:%s_%f_%f",
                                 var.c_str(), min, max);
     std::string s2 = str;
     return s2;

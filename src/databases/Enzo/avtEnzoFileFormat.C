@@ -684,7 +684,7 @@ avtEnzoFileFormat::DetermineVariablesFromGridFile()
         H5Fclose(fileId);
 #else
         char msg[1024];
-        SNPRINTF(msg, sizeof(msg), "The HDF4 library failed to open \"%s\" "
+        snprintf(msg, sizeof(msg), "The HDF4 library failed to open \"%s\" "
             "and this installation of the Enzo plugin is NOT compiled with "
             "HDF5 support. So, the file may be an HDF5 file but if so, it "
             "cannot be opened with this installation.", gridFileName.c_str());

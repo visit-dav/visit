@@ -587,7 +587,6 @@ ImageObject_print(PyObject *v, FILE *fp, int flags)
     return 0;
 }
 
-#include <snprintf.h>
 PyObject *
 PyImageObject_StringRepresentation(const AnnotationObject *atts)
 {
@@ -595,52 +594,52 @@ PyImageObject_StringRepresentation(const AnnotationObject *atts)
     char tmpStr[1000]; 
 
     if(atts->GetVisible())
-        SNPRINTF(tmpStr, 1000, "visible = 1\n");
+        snprintf(tmpStr, 1000, "visible = 1\n");
     else
-        SNPRINTF(tmpStr, 1000, "visible = 0\n");
+        snprintf(tmpStr, 1000, "visible = 0\n");
     str += tmpStr;
     if(atts->GetActive())
-        SNPRINTF(tmpStr, 1000, "active = 1\n");
+        snprintf(tmpStr, 1000, "active = 1\n");
     else
-        SNPRINTF(tmpStr, 1000, "active = 0\n");
+        snprintf(tmpStr, 1000, "active = 0\n");
     str += tmpStr;
     {   const double *position = atts->GetPosition();
-        SNPRINTF(tmpStr, 1000, "position = (%g, %g)\n", position[0], position[1]);
+        snprintf(tmpStr, 1000, "position = (%g, %g)\n", position[0], position[1]);
         str += tmpStr;
     }
 
 /* CUSTOM - Made various changes to where things are. */
     const unsigned char *transparencyColor = atts->GetColor1().GetColor();
-    SNPRINTF(tmpStr, 1000, "transparencyColor = (%d, %d, %d, %d)\n", int(transparencyColor[0]), int(transparencyColor[1]), int(transparencyColor[2]), int(transparencyColor[3]));
+    snprintf(tmpStr, 1000, "transparencyColor = (%d, %d, %d, %d)\n", int(transparencyColor[0]), int(transparencyColor[1]), int(transparencyColor[2]), int(transparencyColor[3]));
     str += tmpStr;
     if(atts->GetIntAttribute1())
-        SNPRINTF(tmpStr, 1000, "useTransparencyColor = 1\n");
+        snprintf(tmpStr, 1000, "useTransparencyColor = 1\n");
     else
-        SNPRINTF(tmpStr, 1000, "useTransparencyColor = 0\n");
+        snprintf(tmpStr, 1000, "useTransparencyColor = 0\n");
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "width = %lf\n", atts->GetPosition2()[0]);
+    snprintf(tmpStr, 1000, "width = %lf\n", atts->GetPosition2()[0]);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "height = %lf\n", atts->GetPosition2()[1]);
+    snprintf(tmpStr, 1000, "height = %lf\n", atts->GetPosition2()[1]);
     str += tmpStr;
     if(atts->GetFontShadow())
-        SNPRINTF(tmpStr, 1000, "maintainAspectRatio = 1\n");
+        snprintf(tmpStr, 1000, "maintainAspectRatio = 1\n");
     else
-        SNPRINTF(tmpStr, 1000, "maintainAspectRatio = 0\n");
+        snprintf(tmpStr, 1000, "maintainAspectRatio = 0\n");
     str += tmpStr;
     {   const stringVector &image = atts->GetText();
-        SNPRINTF(tmpStr, 1000, "image = (");
+        snprintf(tmpStr, 1000, "image = (");
         str += tmpStr;
         for(size_t i = 0; i < image.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "\"%s\"", image[i].c_str());
+            snprintf(tmpStr, 1000, "\"%s\"", image[i].c_str());
             str += tmpStr;
             if(i < image.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     return PyString_FromString(str.c_str());

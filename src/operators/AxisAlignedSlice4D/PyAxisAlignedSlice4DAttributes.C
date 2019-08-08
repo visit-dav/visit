@@ -5,7 +5,6 @@
 #include <PyAxisAlignedSlice4DAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyAxisAlignedSlice4DAttributes
@@ -43,67 +42,67 @@ PyAxisAlignedSlice4DAttributes_ToString(const AxisAlignedSlice4DAttributes *atts
     char tmpStr[1000];
 
     {   const intVector &I = atts->GetI();
-        SNPRINTF(tmpStr, 1000, "%sI = (", prefix);
+        snprintf(tmpStr, 1000, "%sI = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < I.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%d", I[i]);
+            snprintf(tmpStr, 1000, "%d", I[i]);
             str += tmpStr;
             if(i < I.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const intVector &J = atts->GetJ();
-        SNPRINTF(tmpStr, 1000, "%sJ = (", prefix);
+        snprintf(tmpStr, 1000, "%sJ = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < J.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%d", J[i]);
+            snprintf(tmpStr, 1000, "%d", J[i]);
             str += tmpStr;
             if(i < J.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const intVector &K = atts->GetK();
-        SNPRINTF(tmpStr, 1000, "%sK = (", prefix);
+        snprintf(tmpStr, 1000, "%sK = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < K.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%d", K[i]);
+            snprintf(tmpStr, 1000, "%d", K[i]);
             str += tmpStr;
             if(i < K.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const intVector &L = atts->GetL();
-        SNPRINTF(tmpStr, 1000, "%sL = (", prefix);
+        snprintf(tmpStr, 1000, "%sL = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < L.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%d", L[i]);
+            snprintf(tmpStr, 1000, "%d", L[i]);
             str += tmpStr;
             if(i < L.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     return str;

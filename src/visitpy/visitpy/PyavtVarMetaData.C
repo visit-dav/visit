@@ -5,7 +5,6 @@
 #include <PyavtVarMetaData.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 #include <avtTypes.h>
 
 // ****************************************************************************
@@ -48,55 +47,55 @@ PyavtVarMetaData_ToString(const avtVarMetaData *atts, const char *prefix)
     const char *centering_names = "AVT_NODECENT, AVT_ZONECENT, AVT_NO_VARIABLE, AVT_UNKNOWN_CENT";
     if(atts->centering == AVT_NODECENT)
     {
-        SNPRINTF(tmpStr, 1000, "%scentering = %sAVT_NODECENT  # %s\n", prefix, prefix, centering_names);
+        snprintf(tmpStr, 1000, "%scentering = %sAVT_NODECENT  # %s\n", prefix, prefix, centering_names);
         str += tmpStr;
     }
     else if(atts->centering == AVT_ZONECENT)
     {
-        SNPRINTF(tmpStr, 1000, "%scentering = %sAVT_ZONECENT  # %s\n", prefix, prefix, centering_names);
+        snprintf(tmpStr, 1000, "%scentering = %sAVT_ZONECENT  # %s\n", prefix, prefix, centering_names);
         str += tmpStr;
     }
     else if(atts->centering == AVT_NO_VARIABLE)
     {
-        SNPRINTF(tmpStr, 1000, "%scentering = %sAVT_NO_VARIABLE  # %s\n", prefix, prefix, centering_names);
+        snprintf(tmpStr, 1000, "%scentering = %sAVT_NO_VARIABLE  # %s\n", prefix, prefix, centering_names);
         str += tmpStr;
     }
     else
     {
-        SNPRINTF(tmpStr, 1000, "%scentering = %sAVT_UNKNOWN_CENT  # %s\n", prefix, prefix, centering_names);
+        snprintf(tmpStr, 1000, "%scentering = %sAVT_UNKNOWN_CENT  # %s\n", prefix, prefix, centering_names);
         str += tmpStr;
     }
 
     if(atts->hasUnits)
-        SNPRINTF(tmpStr, 1000, "%shasUnits = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%shasUnits = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%shasUnits = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%shasUnits = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sunits = \"%s\"\n", prefix, atts->units.c_str());
+    snprintf(tmpStr, 1000, "%sunits = \"%s\"\n", prefix, atts->units.c_str());
     str += tmpStr;
     if(atts->hasDataExtents)
-        SNPRINTF(tmpStr, 1000, "%shasDataExtents = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%shasDataExtents = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%shasDataExtents = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%shasDataExtents = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sminDataExtents = %g\n", prefix, atts->minDataExtents);
+    snprintf(tmpStr, 1000, "%sminDataExtents = %g\n", prefix, atts->minDataExtents);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%smaxDataExtents = %g\n", prefix, atts->maxDataExtents);
+    snprintf(tmpStr, 1000, "%smaxDataExtents = %g\n", prefix, atts->maxDataExtents);
     str += tmpStr;
     {   const intVector &matRestricted = atts->matRestricted;
-        SNPRINTF(tmpStr, 1000, "%smatRestricted = (", prefix);
+        snprintf(tmpStr, 1000, "%smatRestricted = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < matRestricted.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%d", matRestricted[i]);
+            snprintf(tmpStr, 1000, "%d", matRestricted[i]);
             str += tmpStr;
             if(i < matRestricted.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     return str;

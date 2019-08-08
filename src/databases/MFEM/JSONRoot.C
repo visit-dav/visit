@@ -78,7 +78,7 @@ JSONRootPath::Expand(int domain) const
     if(path_pattern != std::string::npos)
     {
         char buff[64];
-        SNPRINTF(buff,64,"%05d",domain);    
+        snprintf(buff,64,"%05d",domain);    
         return StringHelpers::Replace(path,
                                       "%05d",
                                       std::string(buff));
@@ -89,7 +89,7 @@ JSONRootPath::Expand(int domain) const
     if(path_pattern != std::string::npos)
     {
         char buff[64];
-        SNPRINTF(buff,64,"%06d",domain);    
+        snprintf(buff,64,"%06d",domain);    
         return StringHelpers::Replace(path,
                                       "%06d",
                                       std::string(buff));

@@ -9,7 +9,6 @@
 #include <ctype.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <snprintf.h>
 #include <ViewerSubject.h>
 
 #include <QDesktopWidget>
@@ -1999,7 +1998,7 @@ ViewerSubject::InitializeWorkArea()
         //
         if(GetViewerProperties()->GetWindowBorders().size() == 0)
         {
-            SNPRINTF(tmp, 50, "%d,%d,%d,%d",
+            snprintf(tmp, 50, "%d,%d,%d,%d",
                      wmBorder[0], wmBorder[1], wmBorder[2], wmBorder[3]);
             GetViewerProperties()->SetWindowBorders(tmp);
         }
@@ -2009,7 +2008,7 @@ ViewerSubject::InitializeWorkArea()
         //
         if(GetViewerProperties()->GetWindowShift().size() == 0)
         {
-            SNPRINTF(tmp, 50, "%d,%d", wmShift[0], wmShift[1]);
+            snprintf(tmp, 50, "%d,%d", wmShift[0], wmShift[1]);
             GetViewerProperties()->SetWindowShift(tmp);
         }
 
@@ -2018,7 +2017,7 @@ ViewerSubject::InitializeWorkArea()
         //
         if(GetViewerProperties()->GetWindowPreShift().size() == 0)
         {
-            SNPRINTF(tmp, 50, "%d,%d", wmShift[0], wmShift[1]);
+            snprintf(tmp, 50, "%d,%d", wmShift[0], wmShift[1]);
             GetViewerProperties()->SetWindowPreShift(tmp);
         }
 
@@ -2038,7 +2037,7 @@ ViewerSubject::InitializeWorkArea()
                 w /= 2; h /= 2; x += w;
             }
 
-            SNPRINTF(tmp, 50, "%dx%d+%d+%d", w, h, x, y);
+            snprintf(tmp, 50, "%dx%d+%d+%d", w, h, x, y);
             GetViewerProperties()->SetWindowGeometry(tmp);
         }
         else if(GetViewerProperties()->GetWindowSmall())
@@ -2048,7 +2047,7 @@ ViewerSubject::InitializeWorkArea()
             {
                 w /= 2;
                 h /= 2;
-                SNPRINTF(tmp, 50, "%dx%d+%d+%d", w, h, x, y);
+                snprintf(tmp, 50, "%dx%d+%d+%d", w, h, x, y);
                 GetViewerProperties()->SetWindowGeometry(tmp);
             }
         }

@@ -5,7 +5,6 @@
 #include <PyCracksClipperAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyCracksClipperAttributes
@@ -42,30 +41,30 @@ PyCracksClipperAttributes_ToString(const CracksClipperAttributes *atts, const ch
     std::string str;
     char tmpStr[1000];
 
-    SNPRINTF(tmpStr, 1000, "%scrack1Var = \"%s\"\n", prefix, atts->GetCrack1Var().c_str());
+    snprintf(tmpStr, 1000, "%scrack1Var = \"%s\"\n", prefix, atts->GetCrack1Var().c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%scrack2Var = \"%s\"\n", prefix, atts->GetCrack2Var().c_str());
+    snprintf(tmpStr, 1000, "%scrack2Var = \"%s\"\n", prefix, atts->GetCrack2Var().c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%scrack3Var = \"%s\"\n", prefix, atts->GetCrack3Var().c_str());
+    snprintf(tmpStr, 1000, "%scrack3Var = \"%s\"\n", prefix, atts->GetCrack3Var().c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sstrainVar = \"%s\"\n", prefix, atts->GetStrainVar().c_str());
+    snprintf(tmpStr, 1000, "%sstrainVar = \"%s\"\n", prefix, atts->GetStrainVar().c_str());
     str += tmpStr;
     if(atts->GetShowCrack1())
-        SNPRINTF(tmpStr, 1000, "%sshowCrack1 = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sshowCrack1 = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sshowCrack1 = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sshowCrack1 = 0\n", prefix);
     str += tmpStr;
     if(atts->GetShowCrack2())
-        SNPRINTF(tmpStr, 1000, "%sshowCrack2 = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sshowCrack2 = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sshowCrack2 = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sshowCrack2 = 0\n", prefix);
     str += tmpStr;
     if(atts->GetShowCrack3())
-        SNPRINTF(tmpStr, 1000, "%sshowCrack3 = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sshowCrack3 = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sshowCrack3 = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sshowCrack3 = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sinMassVar = \"%s\"\n", prefix, atts->GetInMassVar().c_str());
+    snprintf(tmpStr, 1000, "%sinMassVar = \"%s\"\n", prefix, atts->GetInMassVar().c_str());
     str += tmpStr;
     return str;
 }

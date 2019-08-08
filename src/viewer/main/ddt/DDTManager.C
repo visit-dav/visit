@@ -286,7 +286,6 @@ DDTManager::updateWindowInfo()
 #include <ViewerMessaging.h>
 #include <ViewerQueryManager.h>
 #include <ViewerText.h>
-#include <snprintf.h>
 
 static void
 DDTPickCallback(PickAttributes *pickAtts, void *)
@@ -308,7 +307,7 @@ DDTPickCallback(PickAttributes *pickAtts, void *)
         {
             if (info.GetVariableType() == "scalar" && values.size()==1)
             {
-                SNPRINTF(buff, 256, info.GetFloatFormat().c_str(), values[0]);
+                snprintf(buff, 256, info.GetFloatFormat().c_str(), values[0]);
             }
         }
     }

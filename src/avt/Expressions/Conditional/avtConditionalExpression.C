@@ -8,8 +8,6 @@
 
 #include <avtConditionalExpression.h>
 
-#include <snprintf.h>
-
 #include <math.h>
 
 #include <vtkCellData.h>
@@ -126,7 +124,7 @@ avtConditionalExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomainsIn
     if (data2 == NULL)
     {
         char msg[1024];
-        SNPRINTF(msg, 1024, 
+        snprintf(msg, 1024, 
                    "the first two arguments to \"if\" (%s and %s) have "
                    " different centerings.", varnames[0], varnames[1]);
         EXCEPTION2(ExpressionException, outputVariableName, msg);
@@ -141,7 +139,7 @@ avtConditionalExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomainsIn
     if (data3 == NULL)
     {
         char msg[1024];
-        SNPRINTF(msg, 1024, 
+        snprintf(msg, 1024, 
                    "the first and third arguments to \"if\" (%s and %s) have "
                    " different centerings.", varnames[0], varnames[2]);
         EXCEPTION2(ExpressionException, outputVariableName, msg);

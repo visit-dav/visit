@@ -5,7 +5,6 @@
 #include <PyAxisLabels.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 #include <PyFontAttributes.h>
 
 // ****************************************************************************
@@ -44,16 +43,16 @@ PyAxisLabels_ToString(const AxisLabels *atts, const char *prefix)
     char tmpStr[1000];
 
     if(atts->GetVisible())
-        SNPRINTF(tmpStr, 1000, "%svisible = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%svisible = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%svisible = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%svisible = 0\n", prefix);
     str += tmpStr;
     { // new scope
         std::string objPrefix(prefix);
         objPrefix += "font.";
         str += PyFontAttributes_ToString(&atts->GetFont(), objPrefix.c_str());
     }
-    SNPRINTF(tmpStr, 1000, "%sscaling = %d\n", prefix, atts->GetScaling());
+    snprintf(tmpStr, 1000, "%sscaling = %d\n", prefix, atts->GetScaling());
     str += tmpStr;
     return str;
 }

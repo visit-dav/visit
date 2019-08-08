@@ -5,7 +5,6 @@
 #include <PyAxisTickMarks.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyAxisTickMarks
@@ -43,17 +42,17 @@ PyAxisTickMarks_ToString(const AxisTickMarks *atts, const char *prefix)
     char tmpStr[1000];
 
     if(atts->GetVisible())
-        SNPRINTF(tmpStr, 1000, "%svisible = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%svisible = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%svisible = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%svisible = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%smajorMinimum = %g\n", prefix, atts->GetMajorMinimum());
+    snprintf(tmpStr, 1000, "%smajorMinimum = %g\n", prefix, atts->GetMajorMinimum());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%smajorMaximum = %g\n", prefix, atts->GetMajorMaximum());
+    snprintf(tmpStr, 1000, "%smajorMaximum = %g\n", prefix, atts->GetMajorMaximum());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sminorSpacing = %g\n", prefix, atts->GetMinorSpacing());
+    snprintf(tmpStr, 1000, "%sminorSpacing = %g\n", prefix, atts->GetMinorSpacing());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%smajorSpacing = %g\n", prefix, atts->GetMajorSpacing());
+    snprintf(tmpStr, 1000, "%smajorSpacing = %g\n", prefix, atts->GetMajorSpacing());
     str += tmpStr;
     return str;
 }

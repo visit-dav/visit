@@ -5,7 +5,6 @@
 #include <PyView3DAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyView3DAttributes
@@ -43,148 +42,148 @@ PyView3DAttributes_ToString(const View3DAttributes *atts, const char *prefix)
     char tmpStr[1000];
 
     {   const double *viewNormal = atts->GetViewNormal();
-        SNPRINTF(tmpStr, 1000, "%sviewNormal = (", prefix);
+        snprintf(tmpStr, 1000, "%sviewNormal = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 3; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", viewNormal[i]);
+            snprintf(tmpStr, 1000, "%g", viewNormal[i]);
             str += tmpStr;
             if(i < 2)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const double *focus = atts->GetFocus();
-        SNPRINTF(tmpStr, 1000, "%sfocus = (", prefix);
+        snprintf(tmpStr, 1000, "%sfocus = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 3; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", focus[i]);
+            snprintf(tmpStr, 1000, "%g", focus[i]);
             str += tmpStr;
             if(i < 2)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const double *viewUp = atts->GetViewUp();
-        SNPRINTF(tmpStr, 1000, "%sviewUp = (", prefix);
+        snprintf(tmpStr, 1000, "%sviewUp = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 3; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", viewUp[i]);
+            snprintf(tmpStr, 1000, "%g", viewUp[i]);
             str += tmpStr;
             if(i < 2)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
-    SNPRINTF(tmpStr, 1000, "%sviewAngle = %g\n", prefix, atts->GetViewAngle());
+    snprintf(tmpStr, 1000, "%sviewAngle = %g\n", prefix, atts->GetViewAngle());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sparallelScale = %g\n", prefix, atts->GetParallelScale());
+    snprintf(tmpStr, 1000, "%sparallelScale = %g\n", prefix, atts->GetParallelScale());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%snearPlane = %g\n", prefix, atts->GetNearPlane());
+    snprintf(tmpStr, 1000, "%snearPlane = %g\n", prefix, atts->GetNearPlane());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sfarPlane = %g\n", prefix, atts->GetFarPlane());
+    snprintf(tmpStr, 1000, "%sfarPlane = %g\n", prefix, atts->GetFarPlane());
     str += tmpStr;
     {   const double *imagePan = atts->GetImagePan();
-        SNPRINTF(tmpStr, 1000, "%simagePan = (", prefix);
+        snprintf(tmpStr, 1000, "%simagePan = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 2; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", imagePan[i]);
+            snprintf(tmpStr, 1000, "%g", imagePan[i]);
             str += tmpStr;
             if(i < 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
-    SNPRINTF(tmpStr, 1000, "%simageZoom = %g\n", prefix, atts->GetImageZoom());
+    snprintf(tmpStr, 1000, "%simageZoom = %g\n", prefix, atts->GetImageZoom());
     str += tmpStr;
     if(atts->GetPerspective())
-        SNPRINTF(tmpStr, 1000, "%sperspective = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sperspective = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sperspective = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sperspective = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%seyeAngle = %g\n", prefix, atts->GetEyeAngle());
+    snprintf(tmpStr, 1000, "%seyeAngle = %g\n", prefix, atts->GetEyeAngle());
     str += tmpStr;
     if(atts->GetCenterOfRotationSet())
-        SNPRINTF(tmpStr, 1000, "%scenterOfRotationSet = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%scenterOfRotationSet = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%scenterOfRotationSet = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%scenterOfRotationSet = 0\n", prefix);
     str += tmpStr;
     {   const double *centerOfRotation = atts->GetCenterOfRotation();
-        SNPRINTF(tmpStr, 1000, "%scenterOfRotation = (", prefix);
+        snprintf(tmpStr, 1000, "%scenterOfRotation = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 3; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", centerOfRotation[i]);
+            snprintf(tmpStr, 1000, "%g", centerOfRotation[i]);
             str += tmpStr;
             if(i < 2)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     if(atts->GetAxis3DScaleFlag())
-        SNPRINTF(tmpStr, 1000, "%saxis3DScaleFlag = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%saxis3DScaleFlag = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%saxis3DScaleFlag = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%saxis3DScaleFlag = 0\n", prefix);
     str += tmpStr;
     {   const double *axis3DScales = atts->GetAxis3DScales();
-        SNPRINTF(tmpStr, 1000, "%saxis3DScales = (", prefix);
+        snprintf(tmpStr, 1000, "%saxis3DScales = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 3; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", axis3DScales[i]);
+            snprintf(tmpStr, 1000, "%g", axis3DScales[i]);
             str += tmpStr;
             if(i < 2)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const double *shear = atts->GetShear();
-        SNPRINTF(tmpStr, 1000, "%sshear = (", prefix);
+        snprintf(tmpStr, 1000, "%sshear = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 3; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", shear[i]);
+            snprintf(tmpStr, 1000, "%g", shear[i]);
             str += tmpStr;
             if(i < 2)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     if(atts->GetWindowValid())
-        SNPRINTF(tmpStr, 1000, "%swindowValid = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%swindowValid = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%swindowValid = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%swindowValid = 0\n", prefix);
     str += tmpStr;
     return str;
 }

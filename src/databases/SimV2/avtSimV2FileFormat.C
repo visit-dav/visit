@@ -12,7 +12,6 @@
 #include <string>
 #include <sstream>
 #include <vector>
-#include <snprintf.h>
 
 #include <avtDatabaseMetaData.h>
 #include <avtGhostData.h>

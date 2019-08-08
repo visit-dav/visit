@@ -5,7 +5,6 @@
 #include <PyRadialResampleAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyRadialResampleAttributes
@@ -43,46 +42,46 @@ PyRadialResampleAttributes_ToString(const RadialResampleAttributes *atts, const 
     char tmpStr[1000];
 
     if(atts->GetIsFast())
-        SNPRINTF(tmpStr, 1000, "%sisFast = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sisFast = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sisFast = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sisFast = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sminTheta = %g\n", prefix, atts->GetMinTheta());
+    snprintf(tmpStr, 1000, "%sminTheta = %g\n", prefix, atts->GetMinTheta());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%smaxTheta = %g\n", prefix, atts->GetMaxTheta());
+    snprintf(tmpStr, 1000, "%smaxTheta = %g\n", prefix, atts->GetMaxTheta());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sdeltaTheta = %g\n", prefix, atts->GetDeltaTheta());
+    snprintf(tmpStr, 1000, "%sdeltaTheta = %g\n", prefix, atts->GetDeltaTheta());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sradius = %g\n", prefix, atts->GetRadius());
+    snprintf(tmpStr, 1000, "%sradius = %g\n", prefix, atts->GetRadius());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sdeltaRadius = %g\n", prefix, atts->GetDeltaRadius());
+    snprintf(tmpStr, 1000, "%sdeltaRadius = %g\n", prefix, atts->GetDeltaRadius());
     str += tmpStr;
     {   const float *center = atts->GetCenter();
-        SNPRINTF(tmpStr, 1000, "%scenter = (", prefix);
+        snprintf(tmpStr, 1000, "%scenter = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 3; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", center[i]);
+            snprintf(tmpStr, 1000, "%g", center[i]);
             str += tmpStr;
             if(i < 2)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     if(atts->GetIs3D())
-        SNPRINTF(tmpStr, 1000, "%sis3D = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sis3D = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sis3D = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sis3D = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sminAzimuth = %g\n", prefix, atts->GetMinAzimuth());
+    snprintf(tmpStr, 1000, "%sminAzimuth = %g\n", prefix, atts->GetMinAzimuth());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%smaxAzimuth = %g\n", prefix, atts->GetMaxAzimuth());
+    snprintf(tmpStr, 1000, "%smaxAzimuth = %g\n", prefix, atts->GetMaxAzimuth());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sdeltaAzimuth = %g\n", prefix, atts->GetDeltaAzimuth());
+    snprintf(tmpStr, 1000, "%sdeltaAzimuth = %g\n", prefix, atts->GetDeltaAzimuth());
     str += tmpStr;
     return str;
 }

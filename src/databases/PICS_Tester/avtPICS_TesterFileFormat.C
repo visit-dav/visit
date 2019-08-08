@@ -49,7 +49,7 @@ std::string Vec2String(std::string name, T *vec, int numelems) {
   
   while (elem < numelems ) {
     float value = vec[elem];
-    SNPRINTF(buf,31,"%f",value); 
+    snprintf(buf,31,"%f",value); 
     s += buf ;
     if (elem == numelems - 1) {
       s+= "]"; 

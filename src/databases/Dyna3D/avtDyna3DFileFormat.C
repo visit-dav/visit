@@ -10,7 +10,6 @@
 
 #include <set>
 #include <map>
-#include <snprintf.h>
 
 #include <vtkCellType.h>
 #include <vtkFloatArray.h>

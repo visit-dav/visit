@@ -5,7 +5,6 @@
 #include <PyBoxAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyBoxAttributes
@@ -46,33 +45,33 @@ PyBoxAttributes_ToString(const BoxAttributes *atts, const char *prefix)
     switch (atts->GetAmount())
     {
       case BoxAttributes::Some:
-          SNPRINTF(tmpStr, 1000, "%samount = %sSome  # %s\n", prefix, prefix, amount_names);
+          snprintf(tmpStr, 1000, "%samount = %sSome  # %s\n", prefix, prefix, amount_names);
           str += tmpStr;
           break;
       case BoxAttributes::All:
-          SNPRINTF(tmpStr, 1000, "%samount = %sAll  # %s\n", prefix, prefix, amount_names);
+          snprintf(tmpStr, 1000, "%samount = %sAll  # %s\n", prefix, prefix, amount_names);
           str += tmpStr;
           break;
       default:
           break;
     }
 
-    SNPRINTF(tmpStr, 1000, "%sminx = %g\n", prefix, atts->GetMinx());
+    snprintf(tmpStr, 1000, "%sminx = %g\n", prefix, atts->GetMinx());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%smaxx = %g\n", prefix, atts->GetMaxx());
+    snprintf(tmpStr, 1000, "%smaxx = %g\n", prefix, atts->GetMaxx());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sminy = %g\n", prefix, atts->GetMiny());
+    snprintf(tmpStr, 1000, "%sminy = %g\n", prefix, atts->GetMiny());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%smaxy = %g\n", prefix, atts->GetMaxy());
+    snprintf(tmpStr, 1000, "%smaxy = %g\n", prefix, atts->GetMaxy());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sminz = %g\n", prefix, atts->GetMinz());
+    snprintf(tmpStr, 1000, "%sminz = %g\n", prefix, atts->GetMinz());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%smaxz = %g\n", prefix, atts->GetMaxz());
+    snprintf(tmpStr, 1000, "%smaxz = %g\n", prefix, atts->GetMaxz());
     str += tmpStr;
     if(atts->GetInverse())
-        SNPRINTF(tmpStr, 1000, "%sinverse = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sinverse = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sinverse = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sinverse = 0\n", prefix);
     str += tmpStr;
     return str;
 }

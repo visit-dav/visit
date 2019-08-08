@@ -1253,7 +1253,6 @@ LegendAttributesObject_print(PyObject *v, FILE *fp, int flags)
     return 0;
 }
 
-#include <snprintf.h>
 static PyObject *
 PyLegendAttributesObject_StringRepresentation(const AnnotationObject *atts)
 {
@@ -1261,162 +1260,162 @@ PyLegendAttributesObject_StringRepresentation(const AnnotationObject *atts)
     char tmpStr[1000]; 
 
     if(atts->GetActive())
-        SNPRINTF(tmpStr, 1000, "active = 1\n");
+        snprintf(tmpStr, 1000, "active = 1\n");
     else
-        SNPRINTF(tmpStr, 1000, "active = 0\n");
+        snprintf(tmpStr, 1000, "active = 0\n");
     str += tmpStr;
 
-    SNPRINTF(tmpStr, 1000, "managePosition = %d\n", 
+    snprintf(tmpStr, 1000, "managePosition = %d\n", 
         GetBool(atts, LEGEND_MANAGE_POSITION)?1:0);
     str += tmpStr;
 
 /*CUSTOM*/
     {   const double *position = atts->GetPosition();
-        SNPRINTF(tmpStr, 1000, "position = (%g, %g)\n", position[0], position[1]);
+        snprintf(tmpStr, 1000, "position = (%g, %g)\n", position[0], position[1]);
         str += tmpStr;
     }
     const double *position2 = atts->GetPosition2();
-    SNPRINTF(tmpStr, 1000, "xScale = %g\n", position2[0]);
+    snprintf(tmpStr, 1000, "xScale = %g\n", position2[0]);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "yScale = %g\n", position2[1]);
+    snprintf(tmpStr, 1000, "yScale = %g\n", position2[1]);
     str += tmpStr;
     const unsigned char *textColor = atts->GetTextColor().GetColor();
-    SNPRINTF(tmpStr, 1000, "textColor = (%d, %d, %d, %d)\n", int(textColor[0]), int(textColor[1]), int(textColor[2]), int(textColor[3]));
+    snprintf(tmpStr, 1000, "textColor = (%d, %d, %d, %d)\n", int(textColor[0]), int(textColor[1]), int(textColor[2]), int(textColor[3]));
     str += tmpStr;
     if(atts->GetUseForegroundForTextColor())
-        SNPRINTF(tmpStr, 1000, "useForegroundForTextColor = 1\n");
+        snprintf(tmpStr, 1000, "useForegroundForTextColor = 1\n");
     else
-        SNPRINTF(tmpStr, 1000, "useForegroundForTextColor = 0\n");
+        snprintf(tmpStr, 1000, "useForegroundForTextColor = 0\n");
     str += tmpStr;
 
-    SNPRINTF(tmpStr, 1000, "drawBoundingBox = %d\n", 
+    snprintf(tmpStr, 1000, "drawBoundingBox = %d\n", 
         GetBool(atts, LEGEND_DRAW_BOX)?1:0);
     str += tmpStr;
     const unsigned char *bboxColor = atts->GetColor1().GetColor();
-    SNPRINTF(tmpStr, 1000, "boundingBoxColor = (%d, %d, %d, %d)\n", int(bboxColor[0]), int(bboxColor[1]), int(bboxColor[2]), int(bboxColor[3]));
+    snprintf(tmpStr, 1000, "boundingBoxColor = (%d, %d, %d, %d)\n", int(bboxColor[0]), int(bboxColor[1]), int(bboxColor[2]), int(bboxColor[3]));
     str += tmpStr;
 
     const stringVector &s = atts->GetText();
-    SNPRINTF(tmpStr, 1000, "numberFormat = \"%s\"\n", s.size() > 0 ? s[0].c_str() : "");
+    snprintf(tmpStr, 1000, "numberFormat = \"%s\"\n", s.size() > 0 ? s[0].c_str() : "");
     str += tmpStr;
     const char *fontFamily_names = "Arial, Courier, Times";
     if(atts->GetFontFamily() == AnnotationObject::Arial)
-        SNPRINTF(tmpStr, 1000, "fontFamily = Arial  # %s\n", fontFamily_names);
+        snprintf(tmpStr, 1000, "fontFamily = Arial  # %s\n", fontFamily_names);
     else if(atts->GetFontFamily() == AnnotationObject::Courier)
-        SNPRINTF(tmpStr, 1000, "fontFamily = Courier  # %s\n", fontFamily_names);
+        snprintf(tmpStr, 1000, "fontFamily = Courier  # %s\n", fontFamily_names);
     else
-        SNPRINTF(tmpStr, 1000, "fontFamily = Times  # %s\n", fontFamily_names);
+        snprintf(tmpStr, 1000, "fontFamily = Times  # %s\n", fontFamily_names);
     str += tmpStr;
 
     if(atts->GetFontBold())
-        SNPRINTF(tmpStr, 1000, "fontBold = 1\n");
+        snprintf(tmpStr, 1000, "fontBold = 1\n");
     else
-        SNPRINTF(tmpStr, 1000, "fontBold = 0\n");
+        snprintf(tmpStr, 1000, "fontBold = 0\n");
     str += tmpStr;
     if(atts->GetFontItalic())
-        SNPRINTF(tmpStr, 1000, "fontItalic = 1\n");
+        snprintf(tmpStr, 1000, "fontItalic = 1\n");
     else
-        SNPRINTF(tmpStr, 1000, "fontItalic = 0\n");
+        snprintf(tmpStr, 1000, "fontItalic = 0\n");
     str += tmpStr;
     if(atts->GetFontShadow())
-        SNPRINTF(tmpStr, 1000, "fontShadow = 1\n");
+        snprintf(tmpStr, 1000, "fontShadow = 1\n");
     else
-        SNPRINTF(tmpStr, 1000, "fontShadow = 0\n");
+        snprintf(tmpStr, 1000, "fontShadow = 0\n");
     str += tmpStr;
 
-    SNPRINTF(tmpStr, 1000, "fontHeight = %g\n", 
+    snprintf(tmpStr, 1000, "fontHeight = %g\n", 
             atts->GetOptions().GetEntry("fontHeight")->AsDouble());
     str += tmpStr;
 
     const char *drawLabelNames = "None, Values, Labels, Both";
     if (!GetBool(atts, LEGEND_DRAW_VALUES))
       if (!GetBool(atts, LEGEND_DRAW_LABELS))
-          SNPRINTF(tmpStr, 1000, "drawLabels = None # %s\n", drawLabelNames);
+          snprintf(tmpStr, 1000, "drawLabels = None # %s\n", drawLabelNames);
       else 
-          SNPRINTF(tmpStr, 1000, "drawLabels = Labels # %s\n", drawLabelNames);
+          snprintf(tmpStr, 1000, "drawLabels = Labels # %s\n", drawLabelNames);
     else 
       if (!GetBool(atts, LEGEND_DRAW_LABELS))
-          SNPRINTF(tmpStr, 1000, "drawLabels = Values # %s\n", drawLabelNames);
+          snprintf(tmpStr, 1000, "drawLabels = Values # %s\n", drawLabelNames);
       else 
-          SNPRINTF(tmpStr, 1000, "drawLabels = Both # %s\n", drawLabelNames);
+          snprintf(tmpStr, 1000, "drawLabels = Both # %s\n", drawLabelNames);
     str += tmpStr;
 
-    SNPRINTF(tmpStr, 1000, "drawTitle = %d\n", 
+    snprintf(tmpStr, 1000, "drawTitle = %d\n", 
         GetBool(atts, LEGEND_DRAW_TITLE)?1:0);
     str += tmpStr;
 
-    SNPRINTF(tmpStr, 1000, "drawMinMax = %d\n", 
+    snprintf(tmpStr, 1000, "drawMinMax = %d\n", 
         GetBool(atts, LEGEND_DRAW_MINMAX)?1:0);
     str += tmpStr;
 
     const char *orientationNames = "VerticalRight, VerticalLeft, HorizontalTop, HorizontalBottom";
     if (!GetBool(atts, LEGEND_ORIENTATION0))
         if (!GetBool(atts, LEGEND_ORIENTATION1))
-            SNPRINTF(tmpStr, 1000, "orientation = VerticalRight  # %s\n", orientationNames); 
+            snprintf(tmpStr, 1000, "orientation = VerticalRight  # %s\n", orientationNames); 
         else
-            SNPRINTF(tmpStr, 1000, "orientation = VerticalLeft  # %s\n", orientationNames); 
+            snprintf(tmpStr, 1000, "orientation = VerticalLeft  # %s\n", orientationNames); 
     else
         if (!GetBool(atts, LEGEND_ORIENTATION1))
-            SNPRINTF(tmpStr, 1000, "orientation = HorizontalTop  # %s\n", orientationNames); 
+            snprintf(tmpStr, 1000, "orientation = HorizontalTop  # %s\n", orientationNames); 
         else
-            SNPRINTF(tmpStr, 1000, "orientation = HorizontalBottom  # %s\n", orientationNames); 
+            snprintf(tmpStr, 1000, "orientation = HorizontalBottom  # %s\n", orientationNames); 
     str += tmpStr;
 
-    SNPRINTF(tmpStr, 1000, "controlTicks = %d\n", 
+    snprintf(tmpStr, 1000, "controlTicks = %d\n", 
             GetBool(atts, LEGEND_CONTROL_TICKS)?1:0);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "numTicks = %d\n", 
+    snprintf(tmpStr, 1000, "numTicks = %d\n", 
             atts->GetOptions().GetEntry("numTicks")->AsInt());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "minMaxInclusive = %d\n", 
+    snprintf(tmpStr, 1000, "minMaxInclusive = %d\n", 
             GetBool(atts, LEGEND_MINMAX_INCLUSIVE)?1:0);
     str += tmpStr;
 
     if (atts->GetOptions().GetEntry("legendType")->AsInt() == LEGEND_TYPE_VARIABLE)
     {
         const doubleVector & sv = atts->GetOptions().GetEntry("suppliedValues")->AsDoubleVector();
-        SNPRINTF(tmpStr, 1000, "suppliedValues = (");
+        snprintf(tmpStr, 1000, "suppliedValues = (");
         str += tmpStr;
         for (size_t i = 0; i < sv.size(); ++i)
         {
             if (i < sv.size() -1)
-                SNPRINTF(tmpStr, 1000, "%g, ", sv[i]);
+                snprintf(tmpStr, 1000, "%g, ", sv[i]);
             else
-                SNPRINTF(tmpStr, 1000, "%g", sv[i]);
+                snprintf(tmpStr, 1000, "%g", sv[i]);
             str += tmpStr;
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     else
     {
         const stringVector & sl = atts->GetOptions().GetEntry("suppliedValuesStrings")->AsStringVector();
-        SNPRINTF(tmpStr, 1000, "suppliedValues = (");
+        snprintf(tmpStr, 1000, "suppliedValues = (");
         str += tmpStr;
         for (size_t i = 0; i < sl.size(); ++i)
         {
             if (i < sl.size() -1)
-                SNPRINTF(tmpStr, 1000, "\"%s\", ", sl[i].c_str());
+                snprintf(tmpStr, 1000, "\"%s\", ", sl[i].c_str());
             else
-                SNPRINTF(tmpStr, 1000, "\"%s\"", sl[i].c_str());
+                snprintf(tmpStr, 1000, "\"%s\"", sl[i].c_str());
             str += tmpStr;
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
 
     const stringVector &sl = atts->GetOptions().GetEntry("suppliedLabels")->AsStringVector();
-    SNPRINTF(tmpStr, 1000, "suppliedLabels = (");
+    snprintf(tmpStr, 1000, "suppliedLabels = (");
     str += tmpStr;
     for (size_t i = 0; i < sl.size(); ++i)
     {
         if (i < sl.size() -1)
-            SNPRINTF(tmpStr, 1000, "\"%s\", ", sl[i].c_str());
+            snprintf(tmpStr, 1000, "\"%s\", ", sl[i].c_str());
         else
-            SNPRINTF(tmpStr, 1000, "\"%s\"", sl[i].c_str());
+            snprintf(tmpStr, 1000, "\"%s\"", sl[i].c_str());
         str += tmpStr;
     }
-    SNPRINTF(tmpStr, 1000, ")\n");
+    snprintf(tmpStr, 1000, ")\n");
     str += tmpStr;
 
     return PyString_FromString(str.c_str());;

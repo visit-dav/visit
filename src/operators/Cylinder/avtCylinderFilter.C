@@ -269,7 +269,7 @@ avtCylinderFilter::UpdateDataObjectInfo(void)
     outValidity.ZonesSplit();
 
     char params[400];
-    SNPRINTF(params, 400, "point1=%lg,%lg,%lg point2=%lg,%lg,%lg radius=%lg",
+    snprintf(params, 400, "point1=%lg,%lg,%lg point2=%lg,%lg,%lg radius=%lg",
         atts.GetPoint1()[0], atts.GetPoint1()[1], atts.GetPoint1()[2],
         atts.GetPoint2()[0], atts.GetPoint2()[1], atts.GetPoint2()[2],
         atts.GetRadius());

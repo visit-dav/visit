@@ -40,7 +40,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <snprintf.h>
 
 #include <icons/db_replace.xpm>
 #include <icons/db_overlay.xpm>

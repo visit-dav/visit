@@ -5,7 +5,6 @@
 #include <PyColorControlPointList.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 #include <PyColorControlPoint.h>
 
 // ****************************************************************************
@@ -49,7 +48,7 @@ PyColorControlPointList_ToString(const ColorControlPointList *atts, const char *
         for(AttributeGroupVector::const_iterator pos = atts->GetControlPoints().begin(); pos != atts->GetControlPoints().end(); ++pos, ++index)
         {
             const ColorControlPoint *current = (const ColorControlPoint *)(*pos);
-            SNPRINTF(tmpStr, 1000, "GetControlPoints(%d).", index);
+            snprintf(tmpStr, 1000, "GetControlPoints(%d).", index);
             std::string objPrefix(prefix + std::string(tmpStr));
             str += PyColorControlPoint_ToString(current, objPrefix.c_str());
         }
@@ -60,15 +59,15 @@ PyColorControlPointList_ToString(const ColorControlPointList *atts, const char *
     switch (atts->GetSmoothing())
     {
       case ColorControlPointList::None:
-          SNPRINTF(tmpStr, 1000, "%ssmoothing = %sNone  # %s\n", prefix, prefix, smoothing_names);
+          snprintf(tmpStr, 1000, "%ssmoothing = %sNone  # %s\n", prefix, prefix, smoothing_names);
           str += tmpStr;
           break;
       case ColorControlPointList::Linear:
-          SNPRINTF(tmpStr, 1000, "%ssmoothing = %sLinear  # %s\n", prefix, prefix, smoothing_names);
+          snprintf(tmpStr, 1000, "%ssmoothing = %sLinear  # %s\n", prefix, prefix, smoothing_names);
           str += tmpStr;
           break;
       case ColorControlPointList::CubicSpline:
-          SNPRINTF(tmpStr, 1000, "%ssmoothing = %sCubicSpline  # %s\n", prefix, prefix, smoothing_names);
+          snprintf(tmpStr, 1000, "%ssmoothing = %sCubicSpline  # %s\n", prefix, prefix, smoothing_names);
           str += tmpStr;
           break;
       default:
@@ -76,16 +75,16 @@ PyColorControlPointList_ToString(const ColorControlPointList *atts, const char *
     }
 
     if(atts->GetEqualSpacingFlag())
-        SNPRINTF(tmpStr, 1000, "%sequalSpacingFlag = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sequalSpacingFlag = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sequalSpacingFlag = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sequalSpacingFlag = 0\n", prefix);
     str += tmpStr;
     if(atts->GetDiscreteFlag())
-        SNPRINTF(tmpStr, 1000, "%sdiscreteFlag = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sdiscreteFlag = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sdiscreteFlag = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sdiscreteFlag = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%scategoryName = \"%s\"\n", prefix, atts->GetCategoryName().c_str());
+    snprintf(tmpStr, 1000, "%scategoryName = \"%s\"\n", prefix, atts->GetCategoryName().c_str());
     str += tmpStr;
     return str;
 }
@@ -110,9 +109,9 @@ ColorControlPointList_GetControlPoints(PyObject *self, PyObject *args)
     {
         char msg[400] = {'\0'};
         if(obj->data->GetControlPoints().size() == 0)
-            SNPRINTF(msg, 400, "In ColorControlPointList::GetControlPoints : The index %d is invalid because controlPoints is empty.", index);
+            snprintf(msg, 400, "In ColorControlPointList::GetControlPoints : The index %d is invalid because controlPoints is empty.", index);
         else
-            SNPRINTF(msg, 400, "In ColorControlPointList::GetControlPoints : The index %d is invalid. Use index values in: [0, %ld).",  index, obj->data->GetControlPoints().size());
+            snprintf(msg, 400, "In ColorControlPointList::GetControlPoints : The index %d is invalid. Use index values in: [0, %ld).",  index, obj->data->GetControlPoints().size());
         PyErr_SetString(PyExc_IndexError, msg);
         return NULL;
     }
@@ -146,7 +145,7 @@ ColorControlPointList_AddControlPoints(PyObject *self, PyObject *args)
     if(!PyColorControlPoint_Check(element))
     {
         char msg[400] = {'\0'};
-        SNPRINTF(msg, 400, "The ColorControlPointList::AddControlPoints method only accepts ColorControlPoint objects.");
+        snprintf(msg, 400, "The ColorControlPointList::AddControlPoints method only accepts ColorControlPoint objects.");
         PyErr_SetString(PyExc_TypeError, msg);
         return NULL;
     }
@@ -194,7 +193,7 @@ ColorControlPointList_RemoveControlPoints(PyObject *self, PyObject *args)
     if(index < 0 || index >= obj->data->GetNumControlPoints())
     {
         char msg[400] = {'\0'};
-        SNPRINTF(msg, 400, "In ColorControlPointList::RemoveControlPoints : Index %d is out of range", index);
+        snprintf(msg, 400, "In ColorControlPointList::RemoveControlPoints : Index %d is out of range", index);
         PyErr_SetString(PyExc_IndexError, msg);
         return NULL;
     }

@@ -51,7 +51,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <snprintf.h>
 
 #include <icons/removelastoperator.xpm>
 #include <icons/removealloperators.xpm>
@@ -1045,9 +1044,9 @@ QvisPlotManagerWidget::UpdatePlotList()
         if (globalAtts->GetSources().size() <= 1 && sourceVisible)
             prefix[0] = '\0';
         else if (index < 0 ||  sourceVisible)
-            SNPRINTF(prefix, 200, "%s:", qualifiedFile.filename.c_str());
+            snprintf(prefix, 200, "%s:", qualifiedFile.filename.c_str());
         else
-            SNPRINTF(prefix, 200, "%d:", index); 
+            snprintf(prefix, 200, "%d:", index); 
 
         prefixes.push_back(prefix);
     }
@@ -1647,7 +1646,7 @@ QvisPlotManagerWidget::PopulateVariableLists(VariableMenuPopulator &populator,
         OperatorPluginManager *oPM = GetViewerProxy()->GetOperatorPluginManager();
     
         char timeStateStr[32];
-        SNPRINTF(timeStateStr, sizeof(timeStateStr), "%08d", GetStateForSource(filename));
+        snprintf(timeStateStr, sizeof(timeStateStr), "%08d", GetStateForSource(filename));
         string dbKey = filename.FullName() + "@" + string(timeStateStr);
 
         if (fileServer->GetTreatAllDBsAsTimeVarying() ||

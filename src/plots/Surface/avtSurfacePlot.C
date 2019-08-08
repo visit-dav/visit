@@ -18,7 +18,6 @@
 #include <avtVariableLegend.h>
 #include <avtLookupTable.h>
 
-#include <snprintf.h>
 
 // ****************************************************************************
 //  Method: avtSurfacePlot constructor
@@ -711,7 +710,7 @@ avtSurfacePlot::SetLimitsMode(int mode)
     {
         varLegend->SetColorBarVisibility(0);
         char msg[250];
-        SNPRINTF(msg, 250, "Z-min:  %# -9.4g\nZ-max:  %# -9.4g", 
+        snprintf(msg, 250, "Z-min:  %# -9.4g\nZ-max:  %# -9.4g", 
                  origMin, origMax);
         varLegend->SetMessage(msg);
     }

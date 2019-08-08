@@ -5,7 +5,6 @@
 #include <PyCylinderAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyCylinderAttributes
@@ -43,43 +42,43 @@ PyCylinderAttributes_ToString(const CylinderAttributes *atts, const char *prefix
     char tmpStr[1000];
 
     {   const double *point1 = atts->GetPoint1();
-        SNPRINTF(tmpStr, 1000, "%spoint1 = (", prefix);
+        snprintf(tmpStr, 1000, "%spoint1 = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 3; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", point1[i]);
+            snprintf(tmpStr, 1000, "%g", point1[i]);
             str += tmpStr;
             if(i < 2)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const double *point2 = atts->GetPoint2();
-        SNPRINTF(tmpStr, 1000, "%spoint2 = (", prefix);
+        snprintf(tmpStr, 1000, "%spoint2 = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 3; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", point2[i]);
+            snprintf(tmpStr, 1000, "%g", point2[i]);
             str += tmpStr;
             if(i < 2)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
-    SNPRINTF(tmpStr, 1000, "%sradius = %g\n", prefix, atts->GetRadius());
+    snprintf(tmpStr, 1000, "%sradius = %g\n", prefix, atts->GetRadius());
     str += tmpStr;
     if(atts->GetInverse())
-        SNPRINTF(tmpStr, 1000, "%sinverse = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sinverse = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sinverse = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sinverse = 0\n", prefix);
     str += tmpStr;
     return str;
 }

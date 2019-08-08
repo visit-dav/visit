@@ -5,7 +5,6 @@
 #include <PyEdgeAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyEdgeAttributes
@@ -43,9 +42,9 @@ PyEdgeAttributes_ToString(const EdgeAttributes *atts, const char *prefix)
     char tmpStr[1000];
 
     if(atts->GetDummy())
-        SNPRINTF(tmpStr, 1000, "%sdummy = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sdummy = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sdummy = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sdummy = 0\n", prefix);
     str += tmpStr;
     return str;
 }

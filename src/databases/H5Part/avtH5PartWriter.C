@@ -70,7 +70,6 @@
 #ifndef WIN32
 #include <unistd.h>
 #endif
-#include <snprintf.h>
 
 int    avtH5PartWriter::INVALID_CYCLE = -INT_MAX;
 double avtH5PartWriter::INVALID_TIME = -DBL_MAX;

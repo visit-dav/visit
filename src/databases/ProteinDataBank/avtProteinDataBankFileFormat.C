@@ -24,7 +24,6 @@
 #include <InvalidFilesException.h>
 #include <AtomicProperties.h>
 #include <StringHelpers.h>
-#include <snprintf.h>
 
 #include <DebugStream.h>
 
@@ -1383,7 +1382,7 @@ Atom::Atom(const char *line, int cmpnd)
         if (atomicnumber < 0)
         {
             char msg[2000];
-            SNPRINTF(msg, 2000, "Unknown element name <%s> in line: %s",
+            snprintf(msg, 2000, "Unknown element name <%s> in line: %s",
                      element, line);
             EXCEPTION1(VisItException, msg);
         }

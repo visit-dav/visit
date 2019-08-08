@@ -8,7 +8,6 @@
 
 #include <avtCurlExpression.h>
 
-#include <snprintf.h>
 #include <ExpressionException.h>
 
 
@@ -87,7 +86,7 @@ avtCurlExpression::GetMacro(std::vector<std::string> &args, std::string &ne,
     {
         if(nargs == 1)
         {
-            SNPRINTF(new_expr,2048, 
+            snprintf(new_expr,2048, 
                     "{gradient(%s[2])[1]-gradient(%s[1])[2],"
                     "gradient(%s[0])[2]-gradient(%s[2])[0],"
                     "gradient(%s[1])[0]-gradient(%s[0])[1]}",
@@ -96,7 +95,7 @@ avtCurlExpression::GetMacro(std::vector<std::string> &args, std::string &ne,
         }
         else if(nargs > 1)
         {
-            SNPRINTF(new_expr,2048, 
+            snprintf(new_expr,2048, 
                     "{gradient(%s[2],%s)[1]-gradient(%s[1],%s)[2],"
                     "gradient(%s[0],%s)[2]-gradient(%s[2],%s)[0],"
                     "gradient(%s[1],%s)[0]-gradient(%s[0],%s)[1]}",
@@ -122,13 +121,13 @@ avtCurlExpression::GetMacro(std::vector<std::string> &args, std::string &ne,
     {
         if(nargs == 1)
         {
-            SNPRINTF(new_expr,2048,
+            snprintf(new_expr,2048,
                     "gradient(%s[1])[0]-gradient(%s[0])[1]",
                     args[0].c_str(), args[0].c_str());
         }
         else if(nargs > 1)
         {
-            SNPRINTF(new_expr,2048,
+            snprintf(new_expr,2048,
                     "gradient(%s[1],%s)[0]-gradient(%s[0],%s)[1]",
                     args[0].c_str(), args[1].c_str(), 
                     args[0].c_str(), args[1].c_str());

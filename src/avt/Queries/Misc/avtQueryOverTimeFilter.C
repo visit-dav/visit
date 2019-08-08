@@ -7,7 +7,6 @@
 // ************************************************************************* //
 
 #include <float.h>
-#include <snprintf.h>
 #include <sstream>
 #include <string>
 #include <vector>

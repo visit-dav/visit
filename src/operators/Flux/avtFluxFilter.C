@@ -167,14 +167,14 @@ avtFluxFilter::GetCustomExpressions(std::vector<Expression> &elist)
 {
     Expression exp;
     char fullname[1024];
-    SNPRINTF(fullname, 1024, "operators/Flux/%s", varname.c_str());
+    snprintf(fullname, 1024, "operators/Flux/%s", varname.c_str());
     exp.SetName(fullname);
     char defn[1024];
     if (atts.GetWeight())
-        SNPRINTF(defn, 1024, "dot(cell_surface_normal(%s), %s)*%s", 
+        snprintf(defn, 1024, "dot(cell_surface_normal(%s), %s)*%s", 
                  varname.c_str(), atts.GetFlowField().c_str(), atts.GetWeightField().c_str());
     else
-        SNPRINTF(defn, 1024, "dot(cell_surface_normal(%s), %s)", 
+        snprintf(defn, 1024, "dot(cell_surface_normal(%s), %s)", 
                  varname.c_str(), atts.GetFlowField().c_str());
     exp.SetDefinition(defn);
     exp.SetType(Expression::ScalarMeshVar);
@@ -198,7 +198,7 @@ void
 avtFluxFilter::GetVariablesToEvaluate(std::vector<std::string> &list)
 {
     char fullname[1024];
-    SNPRINTF(fullname, 1024, "operators/Flux/%s", varname.c_str());
+    snprintf(fullname, 1024, "operators/Flux/%s", varname.c_str());
     list.push_back(fullname);
 }
 

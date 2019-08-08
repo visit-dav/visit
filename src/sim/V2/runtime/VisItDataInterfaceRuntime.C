@@ -21,7 +21,6 @@
 
 #include <stdlib.h>
 #include <string>
-#include <snprintf.h>
 
 #include <ImproperUseException.h>
 

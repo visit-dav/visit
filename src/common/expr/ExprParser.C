@@ -614,7 +614,7 @@ ExprParser::Parse(const std::string &s)
     {
         char error[1024];
         size_t n = sizeof(error) - strlen(e.Message()) - 2;
-        SNPRINTF(error, sizeof(error), "%s\n%s",
+        snprintf(error, sizeof(error), "%s\n%s",
                  e.Message(), e.GetPos().GetErrorText(text,n).c_str());
 
         if (errorMessageTarget == EMT_COMPONENT)

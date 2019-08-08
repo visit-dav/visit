@@ -8,7 +8,7 @@
 #include "simv2_CurvilinearMesh.h"
 #include "simv2_VariableData.h"
 
-#include <snprintf.h>
+#include <stdio.h>
 
 struct VisIt_CurvilinearMesh : public VisIt_ObjectBase
 {
@@ -111,7 +111,7 @@ GetObject(visit_handle h, const char *fname)
     {
         if(obj->objectType() != VISIT_CURVILINEAR_MESH)
         {
-            SNPRINTF(tmp, 100, "%s: The provided handle does not point to "
+            snprintf(tmp, 100, "%s: The provided handle does not point to "
                 "a CurvilinearMesh object.", fname);
             VisItError(tmp);
             obj = NULL;
@@ -119,7 +119,7 @@ GetObject(visit_handle h, const char *fname)
     }
     else
     {
-        SNPRINTF(tmp, 100, "%s: An invalid handle was provided.", fname);
+        snprintf(tmp, 100, "%s: An invalid handle was provided.", fname);
         VisItError(tmp);
     }
 
@@ -206,7 +206,7 @@ simv2_CurvilinearMesh_setCoords_helper(visit_handle h, visit_handle *cHandles,
     {
         if(nTuples[i] != nnodes)
         {
-            SNPRINTF(tmp, 80, "The provided %s coordinates contain %d nodes "
+            snprintf(tmp, 80, "The provided %s coordinates contain %d nodes "
                      "instead of the required %d nodes.",
                      (i==0)?"X":((i==1)?"Y":"Z"), nTuples[i], nnodes);
             VisItError(tmp);
@@ -295,7 +295,7 @@ simv2_CurvilinearMesh_setAllCoords_helper(visit_handle h, int ndims, int dims[3]
         nnodes *= dims[i];
     if(nnodes != nTuples)
     {
-        SNPRINTF(tmp, 100, "The product of the dimensions does not equal %d, "
+        snprintf(tmp, 100, "The product of the dimensions does not equal %d, "
             "the number of tuples in the coordinate array", nTuples);
         VisItError(tmp);
         return VISIT_ERROR;

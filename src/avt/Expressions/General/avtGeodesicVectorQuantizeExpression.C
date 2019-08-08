@@ -18,7 +18,6 @@
 #include <ExprToken.h>
 #include <avtExprNode.h>
 
-#include <snprintf.h>
 #include <ExpressionException.h>
 
 #include <GeometricHelpers.h>
@@ -263,7 +262,7 @@ avtGeodesicVectorQuantizeExpression::UpdateDataObjectInfo(void)
     for (int i = 0 ; i < geodesic_sphere_npts ; i++)
     {
         char str[256];
-        SNPRINTF(str,256,"node%03d",i);
+        snprintf(str,256,"node%03d",i);
         subnames[i] = str;
     }
 

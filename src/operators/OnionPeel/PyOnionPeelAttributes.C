@@ -5,7 +5,6 @@
 #include <PyOnionPeelAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyOnionPeelAttributes
@@ -46,11 +45,11 @@ PyOnionPeelAttributes_ToString(const OnionPeelAttributes *atts, const char *pref
     switch (atts->GetAdjacencyType())
     {
       case OnionPeelAttributes::Node:
-          SNPRINTF(tmpStr, 1000, "%sadjacencyType = %sNode  # %s\n", prefix, prefix, adjacencyType_names);
+          snprintf(tmpStr, 1000, "%sadjacencyType = %sNode  # %s\n", prefix, prefix, adjacencyType_names);
           str += tmpStr;
           break;
       case OnionPeelAttributes::Face:
-          SNPRINTF(tmpStr, 1000, "%sadjacencyType = %sFace  # %s\n", prefix, prefix, adjacencyType_names);
+          snprintf(tmpStr, 1000, "%sadjacencyType = %sFace  # %s\n", prefix, prefix, adjacencyType_names);
           str += tmpStr;
           break;
       default:
@@ -58,46 +57,46 @@ PyOnionPeelAttributes_ToString(const OnionPeelAttributes *atts, const char *pref
     }
 
     if(atts->GetUseGlobalId())
-        SNPRINTF(tmpStr, 1000, "%suseGlobalId = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%suseGlobalId = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%suseGlobalId = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%suseGlobalId = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%scategoryName = \"%s\"\n", prefix, atts->GetCategoryName().c_str());
+    snprintf(tmpStr, 1000, "%scategoryName = \"%s\"\n", prefix, atts->GetCategoryName().c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%ssubsetName = \"%s\"\n", prefix, atts->GetSubsetName().c_str());
+    snprintf(tmpStr, 1000, "%ssubsetName = \"%s\"\n", prefix, atts->GetSubsetName().c_str());
     str += tmpStr;
     {   const intVector &index = atts->GetIndex();
-        SNPRINTF(tmpStr, 1000, "%sindex = (", prefix);
+        snprintf(tmpStr, 1000, "%sindex = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < index.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%d", index[i]);
+            snprintf(tmpStr, 1000, "%d", index[i]);
             str += tmpStr;
             if(i < index.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     if(atts->GetLogical())
-        SNPRINTF(tmpStr, 1000, "%slogical = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%slogical = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%slogical = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%slogical = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%srequestedLayer = %d\n", prefix, atts->GetRequestedLayer());
+    snprintf(tmpStr, 1000, "%srequestedLayer = %d\n", prefix, atts->GetRequestedLayer());
     str += tmpStr;
     const char *seedType_names = "SeedCell, SeedNode";
     switch (atts->GetSeedType())
     {
       case OnionPeelAttributes::SeedCell:
-          SNPRINTF(tmpStr, 1000, "%sseedType = %sSeedCell  # %s\n", prefix, prefix, seedType_names);
+          snprintf(tmpStr, 1000, "%sseedType = %sSeedCell  # %s\n", prefix, prefix, seedType_names);
           str += tmpStr;
           break;
       case OnionPeelAttributes::SeedNode:
-          SNPRINTF(tmpStr, 1000, "%sseedType = %sSeedNode  # %s\n", prefix, prefix, seedType_names);
+          snprintf(tmpStr, 1000, "%sseedType = %sSeedNode  # %s\n", prefix, prefix, seedType_names);
           str += tmpStr;
           break;
       default:
@@ -105,9 +104,9 @@ PyOnionPeelAttributes_ToString(const OnionPeelAttributes *atts, const char *pref
     }
 
     if(atts->GetHonorOriginalMesh())
-        SNPRINTF(tmpStr, 1000, "%shonorOriginalMesh = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%shonorOriginalMesh = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%shonorOriginalMesh = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%shonorOriginalMesh = 0\n", prefix);
     str += tmpStr;
     return str;
 }

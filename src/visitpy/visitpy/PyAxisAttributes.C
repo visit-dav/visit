@@ -5,7 +5,6 @@
 #include <PyAxisAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 #include <PyAxisTitles.h>
 #include <PyAxisLabels.h>
 #include <PyAxisTickMarks.h>
@@ -61,9 +60,9 @@ PyAxisAttributes_ToString(const AxisAttributes *atts, const char *prefix)
         str += PyAxisTickMarks_ToString(&atts->GetTickMarks(), objPrefix.c_str());
     }
     if(atts->GetGrid())
-        SNPRINTF(tmpStr, 1000, "%sgrid = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sgrid = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sgrid = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sgrid = 0\n", prefix);
     str += tmpStr;
     return str;
 }

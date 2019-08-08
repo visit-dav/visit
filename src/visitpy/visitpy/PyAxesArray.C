@@ -5,7 +5,6 @@
 #include <PyAxesArray.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 #include <PyAxisAttributes.h>
 
 // ****************************************************************************
@@ -44,26 +43,26 @@ PyAxesArray_ToString(const AxesArray *atts, const char *prefix)
     char tmpStr[1000];
 
     if(atts->GetVisible())
-        SNPRINTF(tmpStr, 1000, "%svisible = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%svisible = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%svisible = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%svisible = 0\n", prefix);
     str += tmpStr;
     if(atts->GetTicksVisible())
-        SNPRINTF(tmpStr, 1000, "%sticksVisible = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sticksVisible = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sticksVisible = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sticksVisible = 0\n", prefix);
     str += tmpStr;
     if(atts->GetAutoSetTicks())
-        SNPRINTF(tmpStr, 1000, "%sautoSetTicks = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sautoSetTicks = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sautoSetTicks = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sautoSetTicks = 0\n", prefix);
     str += tmpStr;
     if(atts->GetAutoSetScaling())
-        SNPRINTF(tmpStr, 1000, "%sautoSetScaling = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sautoSetScaling = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sautoSetScaling = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sautoSetScaling = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%slineWidth = %d\n", prefix, atts->GetLineWidth());
+    snprintf(tmpStr, 1000, "%slineWidth = %d\n", prefix, atts->GetLineWidth());
     str += tmpStr;
     { // new scope
         std::string objPrefix(prefix);

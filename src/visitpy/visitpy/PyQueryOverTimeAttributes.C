@@ -5,7 +5,6 @@
 #include <PyQueryOverTimeAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 #include <PyQueryAttributes.h>
 #include <PyPickAttributes.h>
 
@@ -48,15 +47,15 @@ PyQueryOverTimeAttributes_ToString(const QueryOverTimeAttributes *atts, const ch
     switch (atts->GetTimeType())
     {
       case QueryOverTimeAttributes::Cycle:
-          SNPRINTF(tmpStr, 1000, "%stimeType = %sCycle  # %s\n", prefix, prefix, timeType_names);
+          snprintf(tmpStr, 1000, "%stimeType = %sCycle  # %s\n", prefix, prefix, timeType_names);
           str += tmpStr;
           break;
       case QueryOverTimeAttributes::DTime:
-          SNPRINTF(tmpStr, 1000, "%stimeType = %sDTime  # %s\n", prefix, prefix, timeType_names);
+          snprintf(tmpStr, 1000, "%stimeType = %sDTime  # %s\n", prefix, prefix, timeType_names);
           str += tmpStr;
           break;
       case QueryOverTimeAttributes::Timestep:
-          SNPRINTF(tmpStr, 1000, "%stimeType = %sTimestep  # %s\n", prefix, prefix, timeType_names);
+          snprintf(tmpStr, 1000, "%stimeType = %sTimestep  # %s\n", prefix, prefix, timeType_names);
           str += tmpStr;
           break;
       default:
@@ -64,53 +63,53 @@ PyQueryOverTimeAttributes_ToString(const QueryOverTimeAttributes *atts, const ch
     }
 
     if(atts->GetStartTimeFlag())
-        SNPRINTF(tmpStr, 1000, "%sstartTimeFlag = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sstartTimeFlag = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sstartTimeFlag = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sstartTimeFlag = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sstartTime = %d\n", prefix, atts->GetStartTime());
+    snprintf(tmpStr, 1000, "%sstartTime = %d\n", prefix, atts->GetStartTime());
     str += tmpStr;
     if(atts->GetEndTimeFlag())
-        SNPRINTF(tmpStr, 1000, "%sendTimeFlag = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sendTimeFlag = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sendTimeFlag = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sendTimeFlag = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sendTime = %d\n", prefix, atts->GetEndTime());
+    snprintf(tmpStr, 1000, "%sendTime = %d\n", prefix, atts->GetEndTime());
     str += tmpStr;
     if(atts->GetStrideFlag())
-        SNPRINTF(tmpStr, 1000, "%sstrideFlag = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sstrideFlag = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sstrideFlag = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sstrideFlag = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sstride = %d\n", prefix, atts->GetStride());
+    snprintf(tmpStr, 1000, "%sstride = %d\n", prefix, atts->GetStride());
     str += tmpStr;
     if(atts->GetCreateWindow())
-        SNPRINTF(tmpStr, 1000, "%screateWindow = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%screateWindow = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%screateWindow = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%screateWindow = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%swindowId = %d\n", prefix, atts->GetWindowId());
+    snprintf(tmpStr, 1000, "%swindowId = %d\n", prefix, atts->GetWindowId());
     str += tmpStr;
     {   const doubleVector &cachedCurvePts = atts->GetCachedCurvePts();
-        SNPRINTF(tmpStr, 1000, "%scachedCurvePts = (", prefix);
+        snprintf(tmpStr, 1000, "%scachedCurvePts = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < cachedCurvePts.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", cachedCurvePts[i]);
+            snprintf(tmpStr, 1000, "%g", cachedCurvePts[i]);
             str += tmpStr;
             if(i < cachedCurvePts.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     if(atts->GetUseCachedPts())
-        SNPRINTF(tmpStr, 1000, "%suseCachedPts = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%suseCachedPts = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%suseCachedPts = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%suseCachedPts = 0\n", prefix);
     str += tmpStr;
     return str;
 }

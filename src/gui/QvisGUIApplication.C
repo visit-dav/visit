@@ -151,8 +151,6 @@
 #include <unistd.h>
 #endif
 
-#include <snprintf.h>
-
 // Some defines
 #define VISIT_GUI_CONFIG_FILE "guiconfig"
 #define VIEWER_READY_TAG          100
@@ -4704,7 +4702,7 @@ QvisGUIApplication::UpdateSavedConfigFile()
                 // Save the config file into a new file temporarily.
                 int len = strlen(configFile) + 4 + 1;
                 char *tmpname = new char[len];
-                SNPRINTF(tmpname, len, "%s.bak", configFile);
+                snprintf(tmpname, len, "%s.bak", configFile);
 
                 std::ofstream outf;
                 outf.open(tmpname, ios::out | ios::trunc);
@@ -8050,7 +8048,7 @@ GetMovieCommandLine(const MovieAttributes *movieAtts, stringVector &args)
     char tmp[100];
     for(size_t i = 0; i < w.size(); ++i)
     {
-        SNPRINTF(tmp, 100, "%dx%d", w[i], h[i]);
+        snprintf(tmp, 100, "%dx%d", w[i], h[i]);
         G += tmp;
         if(i < (w.size() - 1))
             G += ",";
@@ -8093,16 +8091,16 @@ GetMovieCommandLine(const MovieAttributes *movieAtts, stringVector &args)
     args.push_back(QuoteSpaces(dirFile));
 
     args.push_back("-fps");
-    SNPRINTF(tmp, 100, "%d", movieAtts->GetFps());
+    snprintf(tmp, 100, "%d", movieAtts->GetFps());
     args.push_back(tmp);
 
     args.push_back("-start");
-    SNPRINTF(tmp, 100, "%d", movieAtts->GetStartIndex());
+    snprintf(tmp, 100, "%d", movieAtts->GetStartIndex());
     args.push_back(tmp);
 
     if(movieAtts->GetStride() > 1)
     {
-        SNPRINTF(tmp, 100, "%d", movieAtts->GetStride());
+        snprintf(tmp, 100, "%d", movieAtts->GetStride());
         args.push_back("-framestep");
         args.push_back(tmp);
     }
@@ -8110,12 +8108,12 @@ GetMovieCommandLine(const MovieAttributes *movieAtts, stringVector &args)
     if (movieAtts->GetEndIndex() != 1000000000)
     {
         args.push_back("-end");
-        SNPRINTF(tmp, 100, "%d", movieAtts->GetEndIndex());
+        snprintf(tmp, 100, "%d", movieAtts->GetEndIndex());
         args.push_back(tmp);
     }
 
     args.push_back("-frame");
-    SNPRINTF(tmp, 100, "%d", movieAtts->GetInitialFrameValue());
+    snprintf(tmp, 100, "%d", movieAtts->GetInitialFrameValue());
     args.push_back(tmp);
 }
 

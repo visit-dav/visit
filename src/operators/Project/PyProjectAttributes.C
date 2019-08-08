@@ -5,7 +5,6 @@
 #include <PyProjectAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyProjectAttributes
@@ -47,27 +46,27 @@ PyProjectAttributes_ToString(const ProjectAttributes *atts, const char *prefix)
     switch (atts->GetProjectionType())
     {
       case ProjectAttributes::ZYCartesian:
-          SNPRINTF(tmpStr, 1000, "%sprojectionType = %sZYCartesian  # %s\n", prefix, prefix, projectionType_names);
+          snprintf(tmpStr, 1000, "%sprojectionType = %sZYCartesian  # %s\n", prefix, prefix, projectionType_names);
           str += tmpStr;
           break;
       case ProjectAttributes::XZCartesian:
-          SNPRINTF(tmpStr, 1000, "%sprojectionType = %sXZCartesian  # %s\n", prefix, prefix, projectionType_names);
+          snprintf(tmpStr, 1000, "%sprojectionType = %sXZCartesian  # %s\n", prefix, prefix, projectionType_names);
           str += tmpStr;
           break;
       case ProjectAttributes::XYCartesian:
-          SNPRINTF(tmpStr, 1000, "%sprojectionType = %sXYCartesian  # %s\n", prefix, prefix, projectionType_names);
+          snprintf(tmpStr, 1000, "%sprojectionType = %sXYCartesian  # %s\n", prefix, prefix, projectionType_names);
           str += tmpStr;
           break;
       case ProjectAttributes::XRCylindrical:
-          SNPRINTF(tmpStr, 1000, "%sprojectionType = %sXRCylindrical  # %s\n", prefix, prefix, projectionType_names);
+          snprintf(tmpStr, 1000, "%sprojectionType = %sXRCylindrical  # %s\n", prefix, prefix, projectionType_names);
           str += tmpStr;
           break;
       case ProjectAttributes::YRCylindrical:
-          SNPRINTF(tmpStr, 1000, "%sprojectionType = %sYRCylindrical  # %s\n", prefix, prefix, projectionType_names);
+          snprintf(tmpStr, 1000, "%sprojectionType = %sYRCylindrical  # %s\n", prefix, prefix, projectionType_names);
           str += tmpStr;
           break;
       case ProjectAttributes::ZRCylindrical:
-          SNPRINTF(tmpStr, 1000, "%sprojectionType = %sZRCylindrical  # %s\n", prefix, prefix, projectionType_names);
+          snprintf(tmpStr, 1000, "%sprojectionType = %sZRCylindrical  # %s\n", prefix, prefix, projectionType_names);
           str += tmpStr;
           break;
       default:
@@ -78,19 +77,19 @@ PyProjectAttributes_ToString(const ProjectAttributes *atts, const char *prefix)
     switch (atts->GetVectorTransformMethod())
     {
       case ProjectAttributes::None:
-          SNPRINTF(tmpStr, 1000, "%svectorTransformMethod = %sNone  # %s\n", prefix, prefix, vectorTransformMethod_names);
+          snprintf(tmpStr, 1000, "%svectorTransformMethod = %sNone  # %s\n", prefix, prefix, vectorTransformMethod_names);
           str += tmpStr;
           break;
       case ProjectAttributes::AsPoint:
-          SNPRINTF(tmpStr, 1000, "%svectorTransformMethod = %sAsPoint  # %s\n", prefix, prefix, vectorTransformMethod_names);
+          snprintf(tmpStr, 1000, "%svectorTransformMethod = %sAsPoint  # %s\n", prefix, prefix, vectorTransformMethod_names);
           str += tmpStr;
           break;
       case ProjectAttributes::AsDisplacement:
-          SNPRINTF(tmpStr, 1000, "%svectorTransformMethod = %sAsDisplacement  # %s\n", prefix, prefix, vectorTransformMethod_names);
+          snprintf(tmpStr, 1000, "%svectorTransformMethod = %sAsDisplacement  # %s\n", prefix, prefix, vectorTransformMethod_names);
           str += tmpStr;
           break;
       case ProjectAttributes::AsDirection:
-          SNPRINTF(tmpStr, 1000, "%svectorTransformMethod = %sAsDirection  # %s\n", prefix, prefix, vectorTransformMethod_names);
+          snprintf(tmpStr, 1000, "%svectorTransformMethod = %sAsDirection  # %s\n", prefix, prefix, vectorTransformMethod_names);
           str += tmpStr;
           break;
       default:

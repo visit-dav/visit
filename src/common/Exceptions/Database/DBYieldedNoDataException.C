@@ -6,7 +6,7 @@
 //                          DBYieldedNoDataException.C                       //
 // ************************************************************************* //
 
-#include <snprintf.h>
+
 #include <DBYieldedNoDataException.h>
 #include <string>
 
@@ -23,7 +23,7 @@ using std::string;
 DBYieldedNoDataException::DBYieldedNoDataException(const string &filename)
 {
     char str[1024];
-    SNPRINTF(str, sizeof(str),
+    snprintf(str, sizeof(str),
         "Although VisIt has opened the file, \"%s\",\n"
         "no data was found in the file for VisIt to work with.",
         filename.c_str());
@@ -42,7 +42,7 @@ DBYieldedNoDataException::DBYieldedNoDataException(const string &filename,
     const string &plugin)
 {
     char str[1024];
-    SNPRINTF(str, sizeof(str),
+    snprintf(str, sizeof(str),
         "Although VisIt has opened the file, \"%s\",\n"
         "with the %s plugin, no data was found in the file for VisIt to\n"
         "work with.",
@@ -62,7 +62,7 @@ DBYieldedNoDataException::DBYieldedNoDataException(const string &filename,
     const string &plugin, const string &msg2)
 {
     char str[2048];
-    SNPRINTF(str, sizeof(str),
+    snprintf(str, sizeof(str),
         "Although VisIt has opened the file, \"%s\",\n"
         "with the %s plugin, no data was found in the file for VisIt to\n"
         "work with. The plugin issued the following error message which may\n"

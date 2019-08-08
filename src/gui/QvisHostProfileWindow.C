@@ -35,9 +35,6 @@
 #include <QUrl>
 #include <QWidget>
 
-#include <snprintf.h>
-
-
 #include <XMLNode.h>
 #include <SingleAttributeConfigManager.h>
 #include <MachineProfile.h>

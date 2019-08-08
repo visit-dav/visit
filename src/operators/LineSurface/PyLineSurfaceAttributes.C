@@ -5,7 +5,6 @@
 #include <PyLineSurfaceAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyLineSurfaceAttributes
@@ -42,42 +41,42 @@ PyLineSurfaceAttributes_ToString(const LineSurfaceAttributes *atts, const char *
     std::string str;
     char tmpStr[1000];
 
-    SNPRINTF(tmpStr, 1000, "%sstartTime = %d\n", prefix, atts->GetStartTime());
+    snprintf(tmpStr, 1000, "%sstartTime = %d\n", prefix, atts->GetStartTime());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sendTime = %d\n", prefix, atts->GetEndTime());
+    snprintf(tmpStr, 1000, "%sendTime = %d\n", prefix, atts->GetEndTime());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sstride = %d\n", prefix, atts->GetStride());
+    snprintf(tmpStr, 1000, "%sstride = %d\n", prefix, atts->GetStride());
     str += tmpStr;
     {   const double *point1 = atts->GetPoint1();
-        SNPRINTF(tmpStr, 1000, "%spoint1 = (", prefix);
+        snprintf(tmpStr, 1000, "%spoint1 = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 3; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", point1[i]);
+            snprintf(tmpStr, 1000, "%g", point1[i]);
             str += tmpStr;
             if(i < 2)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const double *point2 = atts->GetPoint2();
-        SNPRINTF(tmpStr, 1000, "%spoint2 = (", prefix);
+        snprintf(tmpStr, 1000, "%spoint2 = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 3; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", point2[i]);
+            snprintf(tmpStr, 1000, "%g", point2[i]);
             str += tmpStr;
             if(i < 2)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     return str;

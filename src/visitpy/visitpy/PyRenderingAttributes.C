@@ -5,7 +5,6 @@
 #include <PyRenderingAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 #include <ColorAttribute.h>
 
 // ****************************************************************************
@@ -44,52 +43,52 @@ PyRenderingAttributes_ToString(const RenderingAttributes *atts, const char *pref
     char tmpStr[1000];
 
     if(atts->GetAntialiasing())
-        SNPRINTF(tmpStr, 1000, "%santialiasing = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%santialiasing = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%santialiasing = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%santialiasing = 0\n", prefix);
     str += tmpStr;
     if(atts->GetOrderComposite())
-        SNPRINTF(tmpStr, 1000, "%sorderComposite = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sorderComposite = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sorderComposite = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sorderComposite = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sdepthCompositeThreads = %d\n", prefix, atts->GetDepthCompositeThreads());
+    snprintf(tmpStr, 1000, "%sdepthCompositeThreads = %d\n", prefix, atts->GetDepthCompositeThreads());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sdepthCompositeBlocking = %d\n", prefix, atts->GetDepthCompositeBlocking());
+    snprintf(tmpStr, 1000, "%sdepthCompositeBlocking = %d\n", prefix, atts->GetDepthCompositeBlocking());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%salphaCompositeThreads = %d\n", prefix, atts->GetAlphaCompositeThreads());
+    snprintf(tmpStr, 1000, "%salphaCompositeThreads = %d\n", prefix, atts->GetAlphaCompositeThreads());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%salphaCompositeBlocking = %d\n", prefix, atts->GetAlphaCompositeBlocking());
+    snprintf(tmpStr, 1000, "%salphaCompositeBlocking = %d\n", prefix, atts->GetAlphaCompositeBlocking());
     str += tmpStr;
     if(atts->GetDepthPeeling())
-        SNPRINTF(tmpStr, 1000, "%sdepthPeeling = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sdepthPeeling = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sdepthPeeling = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sdepthPeeling = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%socclusionRatio = %g\n", prefix, atts->GetOcclusionRatio());
+    snprintf(tmpStr, 1000, "%socclusionRatio = %g\n", prefix, atts->GetOcclusionRatio());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%snumberOfPeels = %d\n", prefix, atts->GetNumberOfPeels());
+    snprintf(tmpStr, 1000, "%snumberOfPeels = %d\n", prefix, atts->GetNumberOfPeels());
     str += tmpStr;
     if(atts->GetMultiresolutionMode())
-        SNPRINTF(tmpStr, 1000, "%smultiresolutionMode = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%smultiresolutionMode = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%smultiresolutionMode = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%smultiresolutionMode = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%smultiresolutionCellSize = %g\n", prefix, atts->GetMultiresolutionCellSize());
+    snprintf(tmpStr, 1000, "%smultiresolutionCellSize = %g\n", prefix, atts->GetMultiresolutionCellSize());
     str += tmpStr;
     const char *geometryRepresentation_names = "Surfaces, Wireframe, Points";
     switch (atts->GetGeometryRepresentation())
     {
       case RenderingAttributes::Surfaces:
-          SNPRINTF(tmpStr, 1000, "%sgeometryRepresentation = %sSurfaces  # %s\n", prefix, prefix, geometryRepresentation_names);
+          snprintf(tmpStr, 1000, "%sgeometryRepresentation = %sSurfaces  # %s\n", prefix, prefix, geometryRepresentation_names);
           str += tmpStr;
           break;
       case RenderingAttributes::Wireframe:
-          SNPRINTF(tmpStr, 1000, "%sgeometryRepresentation = %sWireframe  # %s\n", prefix, prefix, geometryRepresentation_names);
+          snprintf(tmpStr, 1000, "%sgeometryRepresentation = %sWireframe  # %s\n", prefix, prefix, geometryRepresentation_names);
           str += tmpStr;
           break;
       case RenderingAttributes::Points:
-          SNPRINTF(tmpStr, 1000, "%sgeometryRepresentation = %sPoints  # %s\n", prefix, prefix, geometryRepresentation_names);
+          snprintf(tmpStr, 1000, "%sgeometryRepresentation = %sPoints  # %s\n", prefix, prefix, geometryRepresentation_names);
           str += tmpStr;
           break;
       default:
@@ -97,27 +96,27 @@ PyRenderingAttributes_ToString(const RenderingAttributes *atts, const char *pref
     }
 
     if(atts->GetStereoRendering())
-        SNPRINTF(tmpStr, 1000, "%sstereoRendering = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sstereoRendering = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sstereoRendering = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sstereoRendering = 0\n", prefix);
     str += tmpStr;
     const char *stereoType_names = "RedBlue, Interlaced, CrystalEyes, RedGreen";
     switch (atts->GetStereoType())
     {
       case RenderingAttributes::RedBlue:
-          SNPRINTF(tmpStr, 1000, "%sstereoType = %sRedBlue  # %s\n", prefix, prefix, stereoType_names);
+          snprintf(tmpStr, 1000, "%sstereoType = %sRedBlue  # %s\n", prefix, prefix, stereoType_names);
           str += tmpStr;
           break;
       case RenderingAttributes::Interlaced:
-          SNPRINTF(tmpStr, 1000, "%sstereoType = %sInterlaced  # %s\n", prefix, prefix, stereoType_names);
+          snprintf(tmpStr, 1000, "%sstereoType = %sInterlaced  # %s\n", prefix, prefix, stereoType_names);
           str += tmpStr;
           break;
       case RenderingAttributes::CrystalEyes:
-          SNPRINTF(tmpStr, 1000, "%sstereoType = %sCrystalEyes  # %s\n", prefix, prefix, stereoType_names);
+          snprintf(tmpStr, 1000, "%sstereoType = %sCrystalEyes  # %s\n", prefix, prefix, stereoType_names);
           str += tmpStr;
           break;
       case RenderingAttributes::RedGreen:
-          SNPRINTF(tmpStr, 1000, "%sstereoType = %sRedGreen  # %s\n", prefix, prefix, stereoType_names);
+          snprintf(tmpStr, 1000, "%sstereoType = %sRedGreen  # %s\n", prefix, prefix, stereoType_names);
           str += tmpStr;
           break;
       default:
@@ -125,105 +124,105 @@ PyRenderingAttributes_ToString(const RenderingAttributes *atts, const char *pref
     }
 
     if(atts->GetNotifyForEachRender())
-        SNPRINTF(tmpStr, 1000, "%snotifyForEachRender = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%snotifyForEachRender = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%snotifyForEachRender = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%snotifyForEachRender = 0\n", prefix);
     str += tmpStr;
     const char *scalableActivationMode_names = "Never, Always, Auto";
     switch (atts->GetScalableActivationMode())
     {
       case RenderingAttributes::Never:
-          SNPRINTF(tmpStr, 1000, "%sscalableActivationMode = %sNever  # %s\n", prefix, prefix, scalableActivationMode_names);
+          snprintf(tmpStr, 1000, "%sscalableActivationMode = %sNever  # %s\n", prefix, prefix, scalableActivationMode_names);
           str += tmpStr;
           break;
       case RenderingAttributes::Always:
-          SNPRINTF(tmpStr, 1000, "%sscalableActivationMode = %sAlways  # %s\n", prefix, prefix, scalableActivationMode_names);
+          snprintf(tmpStr, 1000, "%sscalableActivationMode = %sAlways  # %s\n", prefix, prefix, scalableActivationMode_names);
           str += tmpStr;
           break;
       case RenderingAttributes::Auto:
-          SNPRINTF(tmpStr, 1000, "%sscalableActivationMode = %sAuto  # %s\n", prefix, prefix, scalableActivationMode_names);
+          snprintf(tmpStr, 1000, "%sscalableActivationMode = %sAuto  # %s\n", prefix, prefix, scalableActivationMode_names);
           str += tmpStr;
           break;
       default:
           break;
     }
 
-    SNPRINTF(tmpStr, 1000, "%sscalableAutoThreshold = %d\n", prefix, atts->GetScalableAutoThreshold());
+    snprintf(tmpStr, 1000, "%sscalableAutoThreshold = %d\n", prefix, atts->GetScalableAutoThreshold());
     str += tmpStr;
     if(atts->GetSpecularFlag())
-        SNPRINTF(tmpStr, 1000, "%sspecularFlag = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sspecularFlag = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sspecularFlag = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sspecularFlag = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sspecularCoeff = %g\n", prefix, atts->GetSpecularCoeff());
+    snprintf(tmpStr, 1000, "%sspecularCoeff = %g\n", prefix, atts->GetSpecularCoeff());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sspecularPower = %g\n", prefix, atts->GetSpecularPower());
+    snprintf(tmpStr, 1000, "%sspecularPower = %g\n", prefix, atts->GetSpecularPower());
     str += tmpStr;
     const unsigned char *specularColor = atts->GetSpecularColor().GetColor();
-    SNPRINTF(tmpStr, 1000, "%sspecularColor = (%d, %d, %d, %d)\n", prefix, int(specularColor[0]), int(specularColor[1]), int(specularColor[2]), int(specularColor[3]));
+    snprintf(tmpStr, 1000, "%sspecularColor = (%d, %d, %d, %d)\n", prefix, int(specularColor[0]), int(specularColor[1]), int(specularColor[2]), int(specularColor[3]));
     str += tmpStr;
     if(atts->GetDoShadowing())
-        SNPRINTF(tmpStr, 1000, "%sdoShadowing = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sdoShadowing = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sdoShadowing = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sdoShadowing = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sshadowStrength = %g\n", prefix, atts->GetShadowStrength());
+    snprintf(tmpStr, 1000, "%sshadowStrength = %g\n", prefix, atts->GetShadowStrength());
     str += tmpStr;
     if(atts->GetDoDepthCueing())
-        SNPRINTF(tmpStr, 1000, "%sdoDepthCueing = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sdoDepthCueing = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sdoDepthCueing = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sdoDepthCueing = 0\n", prefix);
     str += tmpStr;
     if(atts->GetDepthCueingAutomatic())
-        SNPRINTF(tmpStr, 1000, "%sdepthCueingAutomatic = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sdepthCueingAutomatic = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sdepthCueingAutomatic = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sdepthCueingAutomatic = 0\n", prefix);
     str += tmpStr;
     {   const double *startCuePoint = atts->GetStartCuePoint();
-        SNPRINTF(tmpStr, 1000, "%sstartCuePoint = (", prefix);
+        snprintf(tmpStr, 1000, "%sstartCuePoint = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 3; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", startCuePoint[i]);
+            snprintf(tmpStr, 1000, "%g", startCuePoint[i]);
             str += tmpStr;
             if(i < 2)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const double *endCuePoint = atts->GetEndCuePoint();
-        SNPRINTF(tmpStr, 1000, "%sendCuePoint = (", prefix);
+        snprintf(tmpStr, 1000, "%sendCuePoint = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 3; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", endCuePoint[i]);
+            snprintf(tmpStr, 1000, "%g", endCuePoint[i]);
             str += tmpStr;
             if(i < 2)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     const char *compressionActivationMode_names = "Never, Always, Auto";
     switch (atts->GetCompressionActivationMode())
     {
       case RenderingAttributes::Never:
-          SNPRINTF(tmpStr, 1000, "%scompressionActivationMode = %sNever  # %s\n", prefix, prefix, compressionActivationMode_names);
+          snprintf(tmpStr, 1000, "%scompressionActivationMode = %sNever  # %s\n", prefix, prefix, compressionActivationMode_names);
           str += tmpStr;
           break;
       case RenderingAttributes::Always:
-          SNPRINTF(tmpStr, 1000, "%scompressionActivationMode = %sAlways  # %s\n", prefix, prefix, compressionActivationMode_names);
+          snprintf(tmpStr, 1000, "%scompressionActivationMode = %sAlways  # %s\n", prefix, prefix, compressionActivationMode_names);
           str += tmpStr;
           break;
       case RenderingAttributes::Auto:
-          SNPRINTF(tmpStr, 1000, "%scompressionActivationMode = %sAuto  # %s\n", prefix, prefix, compressionActivationMode_names);
+          snprintf(tmpStr, 1000, "%scompressionActivationMode = %sAuto  # %s\n", prefix, prefix, compressionActivationMode_names);
           str += tmpStr;
           break;
       default:
@@ -231,44 +230,44 @@ PyRenderingAttributes_ToString(const RenderingAttributes *atts, const char *pref
     }
 
     if(atts->GetColorTexturingFlag())
-        SNPRINTF(tmpStr, 1000, "%scolorTexturingFlag = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%scolorTexturingFlag = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%scolorTexturingFlag = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%scolorTexturingFlag = 0\n", prefix);
     str += tmpStr;
     const char *compactDomainsActivationMode_names = "Never, Always, Auto";
     switch (atts->GetCompactDomainsActivationMode())
     {
       case RenderingAttributes::Never:
-          SNPRINTF(tmpStr, 1000, "%scompactDomainsActivationMode = %sNever  # %s\n", prefix, prefix, compactDomainsActivationMode_names);
+          snprintf(tmpStr, 1000, "%scompactDomainsActivationMode = %sNever  # %s\n", prefix, prefix, compactDomainsActivationMode_names);
           str += tmpStr;
           break;
       case RenderingAttributes::Always:
-          SNPRINTF(tmpStr, 1000, "%scompactDomainsActivationMode = %sAlways  # %s\n", prefix, prefix, compactDomainsActivationMode_names);
+          snprintf(tmpStr, 1000, "%scompactDomainsActivationMode = %sAlways  # %s\n", prefix, prefix, compactDomainsActivationMode_names);
           str += tmpStr;
           break;
       case RenderingAttributes::Auto:
-          SNPRINTF(tmpStr, 1000, "%scompactDomainsActivationMode = %sAuto  # %s\n", prefix, prefix, compactDomainsActivationMode_names);
+          snprintf(tmpStr, 1000, "%scompactDomainsActivationMode = %sAuto  # %s\n", prefix, prefix, compactDomainsActivationMode_names);
           str += tmpStr;
           break;
       default:
           break;
     }
 
-    SNPRINTF(tmpStr, 1000, "%scompactDomainsAutoThreshold = %d\n", prefix, atts->GetCompactDomainsAutoThreshold());
+    snprintf(tmpStr, 1000, "%scompactDomainsAutoThreshold = %d\n", prefix, atts->GetCompactDomainsAutoThreshold());
     str += tmpStr;
     if(atts->GetOsprayRendering())
-        SNPRINTF(tmpStr, 1000, "%sosprayRendering = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sosprayRendering = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sosprayRendering = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sosprayRendering = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sospraySPP = %d\n", prefix, atts->GetOspraySPP());
+    snprintf(tmpStr, 1000, "%sospraySPP = %d\n", prefix, atts->GetOspraySPP());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sosprayAO = %d\n", prefix, atts->GetOsprayAO());
+    snprintf(tmpStr, 1000, "%sosprayAO = %d\n", prefix, atts->GetOsprayAO());
     str += tmpStr;
     if(atts->GetOsprayShadows())
-        SNPRINTF(tmpStr, 1000, "%sosprayShadows = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sosprayShadows = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sosprayShadows = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sosprayShadows = 0\n", prefix);
     str += tmpStr;
     return str;
 }

@@ -9,7 +9,6 @@
 #include <avtLevelsLegend.h>
 
 #include <math.h>
-#include <snprintf.h>
 
 #include <vtkLookupTable.h>
 #include <vtkVisItScalarBarActor.h>
@@ -838,7 +837,7 @@ avtLevelsLegend::SetNumberFormat(const char *fmt)
 
     // Use the format in the min/max range label.
     char rangeFormat[200];
-    SNPRINTF(rangeFormat, 200, "Max: %s\nMin: %s", fmt, fmt);
+    snprintf(rangeFormat, 200, "Max: %s\nMin: %s", fmt, fmt);
     sBar->SetRangeFormat(rangeFormat);
 }
 

@@ -37,7 +37,6 @@
 #include <InvalidFilesException.h>
 #include <InvalidVariableException.h>
 #include <InvalidDBTypeException.h>
-#include <snprintf.h>
 
 using std::string;
 using std::vector; 
@@ -79,7 +78,7 @@ string Vec2String(string name, T *vec, int numelems) {
   
   while (elem < numelems ) {
     float value = vec[elem];
-    SNPRINTF(buf,31,"%f",value); 
+    snprintf(buf,31,"%f",value); 
     s += buf ;
     if (elem == numelems - 1) {
       s+= "]"; 
@@ -1055,7 +1054,7 @@ avtMirandaFileFormat::GetCurvilinearMesh2(int domain) {
   TIMERSTART(); 
 
   char filename[512]; 
-  if (SNPRINTF(filename, 512, gridTemplate.c_str(), domain) < 0)
+  if (snprintf(filename, 512, gridTemplate.c_str(), domain) < 0)
     EXCEPTION1(InvalidFilesException, "");
   FILE *fd = fopen(filename, "rb");
   if (fd == NULL)
@@ -1161,7 +1160,7 @@ avtMirandaFileFormat::GetCurvilinearMesh(int domain)
         continue;
 
       char filename[512];
-      if (SNPRINTF(filename, 512, gridTemplate.c_str(), neighbors[ii]) < 0)
+      if (snprintf(filename, 512, gridTemplate.c_str(), neighbors[ii]) < 0)
         EXCEPTION1(InvalidFilesException, "");
 
       FILE *fd = fopen(filename, "rb");
@@ -1385,7 +1384,7 @@ avtMirandaFileFormat::GetVar(int timestate, int domain, const char *varname)
   vtkFloatArray *var = vtkFloatArray::New();
   if (sFileVersion == "2.0") {
     char filename[512];
-    if (SNPRINTF(filename, 512, fileTemplate.c_str(), aCycles[timestate], domain) < 0)
+    if (snprintf(filename, 512, fileTemplate.c_str(), aCycles[timestate], domain) < 0)
       EXCEPTION1(InvalidFilesException, "");
       
     FILE *fd = fopen(filename, "rb");
@@ -1420,7 +1419,7 @@ avtMirandaFileFormat::GetVar(int timestate, int domain, const char *varname)
           continue;
           
         char filename[512];
-        if (SNPRINTF(filename, 512, fileTemplate.c_str(), aCycles[timestate], neighbors[ii]) < 0)
+        if (snprintf(filename, 512, fileTemplate.c_str(), aCycles[timestate], neighbors[ii]) < 0)
           EXCEPTION1(InvalidFilesException, "");
         FILE *fd = fopen(filename, "rb");
         if (fd == NULL)
@@ -1532,7 +1531,7 @@ avtMirandaFileFormat::GetVectorVar(int timestate, int domain, const char *varnam
     var->SetNumberOfTuples( nTuples );
 
     char filename[512];
-    if (SNPRINTF(filename, 512, fileTemplate.c_str(), aCycles[timestate], domain) < 0)
+    if (snprintf(filename, 512, fileTemplate.c_str(), aCycles[timestate], domain) < 0)
       EXCEPTION1(InvalidFilesException, "");
       
     FILE *fd = fopen(filename, "rb");
@@ -1584,7 +1583,7 @@ avtMirandaFileFormat::GetVectorVar(int timestate, int domain, const char *varnam
           continue;
           
         char filename[512];
-        if (SNPRINTF(filename, 512, fileTemplate.c_str(), aCycles[timestate], neighbors[ii]) < 0)
+        if (snprintf(filename, 512, fileTemplate.c_str(), aCycles[timestate], neighbors[ii]) < 0)
           EXCEPTION1(InvalidFilesException, "");
           
         FILE *fd = fopen(filename, "rb");
@@ -1746,7 +1745,7 @@ avtMirandaFileFormat::GetAuxiliaryData(const char *var, int timestate,
       if (sFileVersion == "2.0") {
           
         char filename[512];
-        if (SNPRINTF(filename, 512, fileTemplate.c_str(), aCycles[timestate], domain) < 0)
+        if (snprintf(filename, 512, fileTemplate.c_str(), aCycles[timestate], domain) < 0)
           EXCEPTION1(InvalidFilesException, "");
           
         FILE *fd = fopen(filename, "rb");
@@ -1772,7 +1771,7 @@ avtMirandaFileFormat::GetAuxiliaryData(const char *var, int timestate,
               continue;
               
             char filename[512];
-            if (SNPRINTF(filename, 512, fileTemplate.c_str(), aCycles[timestate], neighbors[ii]) < 0)
+            if (snprintf(filename, 512, fileTemplate.c_str(), aCycles[timestate], neighbors[ii]) < 0)
               EXCEPTION1(InvalidFilesException, "");
               
             FILE *fd = fopen(filename, "rb");

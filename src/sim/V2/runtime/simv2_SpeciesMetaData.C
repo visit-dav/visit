@@ -3,7 +3,6 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 #include <cstring>
-#include <snprintf.h>
 #include <vectortypes.h>
 #include "VisItDataInterfaceRuntime.h"
 #include "VisItDataInterfaceRuntimeP.h"
@@ -41,7 +40,7 @@ GetObject(visit_handle h, const char *fname)
     {
         if(obj->objectType() != VISIT_SPECIESMETADATA)
         {
-            SNPRINTF(tmp, 100, "%s: The provided handle does not point to "
+            snprintf(tmp, 100, "%s: The provided handle does not point to "
                 "a SpeciesMetaData object.", fname);
             VisItError(tmp);
             obj = NULL;
@@ -49,7 +48,7 @@ GetObject(visit_handle h, const char *fname)
     }
     else
     {
-        SNPRINTF(tmp, 100, "%s: An invalid handle was provided.", fname);
+        snprintf(tmp, 100, "%s: An invalid handle was provided.", fname);
         VisItError(tmp);
     }
 

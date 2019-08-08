@@ -14,7 +14,6 @@
 #include <QTabWidget>
 #include <QWidget>
 
-#include <snprintf.h>
 #include <visit-config.h>
 
 #include <QvisMeshManagementWindow.h>
@@ -249,11 +248,11 @@ QvisMeshManagementWindow::UpdateWindow(bool doAll)
         case MeshManagementAttributes::ID_discretizationTolerance:
             {   const vector<double> tols = atts->GetDiscretizationTolerance();
                 char tmp[32];
-                SNPRINTF(tmp, sizeof(tmp), "%g ", tols[0]);
+                snprintf(tmp, sizeof(tmp), "%g ", tols[0]);
                 temp += tmp;
                 smallestZoneLineEdit->setText(temp);
                 temp = "";
-                SNPRINTF(tmp, sizeof(tmp), "%g ", tols[1]);
+                snprintf(tmp, sizeof(tmp), "%g ", tols[1]);
                 temp += tmp;
                 flatEnoughLineEdit->setText(temp);
             }

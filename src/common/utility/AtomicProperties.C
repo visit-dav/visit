@@ -21,7 +21,7 @@
 #include <visitstream.h>
 #include <map>
 #include <string>
-#include <snprintf.h>
+
 #include <cstring>
 
 std::map<std::string, int> elementname_to_atomicnumber;
@@ -1324,7 +1324,7 @@ int ResiduenameToNumber(const char *name)
     }
 
     // Nope -- cache the name for next time.
-    SNPRINTF(lastname,10,"%s",name);
+    snprintf(lastname,10,"%s",name);
 
     InitializeAtomicPropertyMaps();
 
@@ -1447,18 +1447,18 @@ static void PrintColorTablesFor_avtColorTables()
         float g = float(shapelycolors[i][1]) / 255.f;
         float b = float(shapelycolors[i][2]) / 255.f;
         char sv[100];
-        SNPRINTF(sv, 100, "%.3f", v);
+        snprintf(sv, 100, "%.3f", v);
         strcat(sv,"f,");
         char sr[100];
-        SNPRINTF(sr, 100, "%.3f", r);
+        snprintf(sr, 100, "%.3f", r);
         strcat(sr,"f,");
         char sg[100];
-        SNPRINTF(sg, 100, "%.3f", g);
+        snprintf(sg, 100, "%.3f", g);
         strcat(sg,"f,");
         char sb[100];
-        SNPRINTF(sb, 100, "%.3f", b);
+        snprintf(sb, 100, "%.3f", b);
         strcat(sb,"f,");
-        SNPRINTF(s, 1000, " %-8s%-8s%-8s%s",sv,sr,sg,sb);
+        snprintf(s, 1000, " %-8s%-8s%-8s%s",sv,sr,sg,sb);
         cout << s<< endl;        
     }
     cout << "};\n";
@@ -1472,18 +1472,18 @@ static void PrintColorTablesFor_avtColorTables()
         float g = float(aminocolors[i][1]) / 255.f;
         float b = float(aminocolors[i][2]) / 255.f;
         char sv[100];
-        SNPRINTF(sv, 100, "%.3f", v);
+        snprintf(sv, 100, "%.3f", v);
         strcat(sv,"f,");
         char sr[100];
-        SNPRINTF(sr, 100, "%.3f", r);
+        snprintf(sr, 100, "%.3f", r);
         strcat(sr,"f,");
         char sg[100];
-        SNPRINTF(sg, 100, "%.3f", g);
+        snprintf(sg, 100, "%.3f", g);
         strcat(sg,"f,");
         char sb[100];
-        SNPRINTF(sb, 100, "%.3f", b);
+        snprintf(sb, 100, "%.3f", b);
         strcat(sb,"f,");
-        SNPRINTF(s, 1000, " %-8s%-8s%-8s%s",sv,sr,sg,sb);
+        snprintf(s, 1000, " %-8s%-8s%-8s%s",sv,sr,sg,sb);
         cout << s<< endl;        
     }
     cout << "};\n";
@@ -1497,18 +1497,18 @@ static void PrintColorTablesFor_avtColorTables()
         float g = float(jmolcolors[i][1]) / 255.f;
         float b = float(jmolcolors[i][2]) / 255.f;
         char sv[100];
-        SNPRINTF(sv, 100, "%.3f", v);
+        snprintf(sv, 100, "%.3f", v);
         strcat(sv,"f,");
         char sr[100];
-        SNPRINTF(sr, 100, "%.3f", r);
+        snprintf(sr, 100, "%.3f", r);
         strcat(sr,"f,");
         char sg[100];
-        SNPRINTF(sg, 100, "%.3f", g);
+        snprintf(sg, 100, "%.3f", g);
         strcat(sg,"f,");
         char sb[100];
-        SNPRINTF(sb, 100, "%.3f", b);
+        snprintf(sb, 100, "%.3f", b);
         strcat(sb,"f,");
-        SNPRINTF(s, 1000, " %-8s%-8s%-8s%s",sv,sr,sg,sb);
+        snprintf(s, 1000, " %-8s%-8s%-8s%s",sv,sr,sg,sb);
         cout << s<< endl;        
     }
     cout << "};\n";
@@ -1522,18 +1522,18 @@ static void PrintColorTablesFor_avtColorTables()
         float g = float(rasmolcolors[i][1]) / 255.f;
         float b = float(rasmolcolors[i][2]) / 255.f;
         char sv[100];
-        SNPRINTF(sv, 100, "%.3f", v);
+        snprintf(sv, 100, "%.3f", v);
         strcat(sv,"f,");
         char sr[100];
-        SNPRINTF(sr, 100, "%.3f", r);
+        snprintf(sr, 100, "%.3f", r);
         strcat(sr,"f,");
         char sg[100];
-        SNPRINTF(sg, 100, "%.3f", g);
+        snprintf(sg, 100, "%.3f", g);
         strcat(sg,"f,");
         char sb[100];
-        SNPRINTF(sb, 100, "%.3f", b);
+        snprintf(sb, 100, "%.3f", b);
         strcat(sb,"f,");
-        SNPRINTF(s, 1000, " %-8s%-8s%-8s%s",sv,sr,sg,sb);
+        snprintf(s, 1000, " %-8s%-8s%-8s%s",sv,sr,sg,sb);
         cout << s<< endl;        
     }
     cout << "};\n";

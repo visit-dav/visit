@@ -12,7 +12,7 @@
 
 #include <stdio.h>
 #include <string.h>
-#include <snprintf.h>
+
 
 #if defined(_WIN32)
 #include <windows.h>

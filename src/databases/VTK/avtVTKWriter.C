@@ -434,9 +434,9 @@ avtVTKWriter::WriteRootFile()
         if(doXML)
         {
             if(writeContext.GroupSize() > 1)
-                SNPRINTF(filename, 1024, "%s.%d.vtm", stem.c_str(), writeContext.GroupRank());
+                snprintf(filename, 1024, "%s.%d.vtm", stem.c_str(), writeContext.GroupRank());
             else
-                SNPRINTF(filename, 1024, "%s.vtm", stem.c_str());
+                snprintf(filename, 1024, "%s.vtm", stem.c_str());
             ofstream ofile(filename);
             ofile << "<?xml version=\"1.0\"?>" << endl;
             ofile << "<VTKFile type=\"vtkMultiBlockDataSet\" version=\"1.0\">" << endl;

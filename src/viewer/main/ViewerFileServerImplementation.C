@@ -3,7 +3,6 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 #include <visit-config.h>
-#include <snprintf.h>
 #include <ViewerFileServerImplementation.h>
 
 #include <BadHostException.h>
@@ -643,7 +642,7 @@ ViewerFileServerImplementation::GetMetaDataHelper(const std::string &host,
                         timeState != ANY_STATE)
                     {
                         char timeStateString[20];
-                        SNPRINTF(timeStateString, 20, ":%d", timeState);
+                        snprintf(timeStateString, 20, ":%d", timeState);
                         key += timeStateString;
                     }
 
@@ -955,7 +954,7 @@ ViewerFileServerImplementation::GetSILHelper(const std::string &host, const std:
                     !MetaDataIsInvariant(host, db, timeState)))
                 {
                     char state_str[64];
-                    SNPRINTF(state_str, 64, ":%d", timeState);
+                    snprintf(state_str, 64, ":%d", timeState);
                     key += state_str;
                 }
 

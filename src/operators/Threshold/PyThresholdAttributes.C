@@ -5,7 +5,6 @@
 #include <PyThresholdAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyThresholdAttributes

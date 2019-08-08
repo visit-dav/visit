@@ -8,7 +8,6 @@
 
 #include <avtChomboFileFormat.h>
 
-#include <snprintf.h>
 #include <string>
 #include <vector>
 #include <cstring>
@@ -700,7 +699,7 @@ avtChomboFileFormat::InitializeReader(void)
     for (int i = 0 ; i < num_vars ; i++)
     {
         char name[1024];
-        SNPRINTF(name, 1024, "component_%d", i);
+        snprintf(name, 1024, "component_%d", i);
         hid_t vname = H5Aopen_name(slash, name);
         if (vname < 0)
         {
@@ -802,7 +801,7 @@ avtChomboFileFormat::InitializeReader(void)
     for (int i = 0 ; i < num_levels ; i++)
     {
         char name[1024];
-        SNPRINTF(name, 1024, "level_%d", i);
+        snprintf(name, 1024, "level_%d", i);
         hid_t level = H5Gopen(file_handle, name);
         if (level < 0)
         {
@@ -1000,7 +999,7 @@ avtChomboFileFormat::InitializeReader(void)
     for (int i = 0 ; i < num_levels ; i++)
     {
         char name[1024];
-        SNPRINTF(name, 1024, "level_%d", i);
+        snprintf(name, 1024, "level_%d", i);
 
         hid_t level = H5Gopen(file_handle, name);
         hid_t boxes = H5Dopen(level, "boxes");
@@ -1844,10 +1843,10 @@ avtChomboFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             char sum_expr_buffer[4096];
 
             Expression sum_expr;
-            SNPRINTF(sum_expr_buffer, buff_size, "%s_sum", varnames[i].c_str());
+            snprintf(sum_expr_buffer, buff_size, "%s_sum", varnames[i].c_str());
             sum_expr.SetName(sum_expr_buffer);
             addedExpressionNames.push_back(sum_expr_buffer);
-            SNPRINTF(sum_expr_buffer, buff_size, "array_sum(%s)", varnames[i].c_str());
+            snprintf(sum_expr_buffer, buff_size, "array_sum(%s)", varnames[i].c_str());
             sum_expr.SetDefinition(sum_expr_buffer);
             sum_expr.SetType(Expression::ScalarMeshVar);
             md->AddExpression(&sum_expr);
@@ -1899,7 +1898,7 @@ avtChomboFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             }
 
             char yName[1024];
-            SNPRINTF(yName, 1024, "%c%s", yChar, varnames[i].c_str()+1);
+            snprintf(yName, 1024, "%c%s", yChar, varnames[i].c_str()+1);
             int matchY = -1;
             for (int j = 0 ; j < nVars ; j++)
             {
@@ -1919,7 +1918,7 @@ avtChomboFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                     str++;
                 vec.SetName(str);
                 char defn[1024];
-                SNPRINTF(defn, 1024, "{<%s>, <%s>}", varnames[i].c_str(), yName);
+                snprintf(defn, 1024, "{<%s>, <%s>}", varnames[i].c_str(), yName);
                 vec.SetDefinition(defn);
                 vec.SetType(Expression::VectorMeshVar);
                 md->AddExpression(&vec);
@@ -1928,7 +1927,7 @@ avtChomboFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             else
             {
                 char zName[1024];
-                SNPRINTF(zName, 1024, "%c%s", zChar, varnames[i].c_str()+1);
+                snprintf(zName, 1024, "%c%s", zChar, varnames[i].c_str()+1);
                 int matchZ = -1;
                 for (int j = 0 ; j < nVars ; j++)
                 {
@@ -1946,7 +1945,7 @@ avtChomboFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                     str++;
                 vec.SetName(str);
                 char defn[1024];
-                SNPRINTF(defn, 1024, "{<%s>, <%s>, <%s>}", varnames[i].c_str(),
+                snprintf(defn, 1024, "{<%s>, <%s>, <%s>}", varnames[i].c_str(),
                                                      yName,zName);
                 vec.SetDefinition(defn);
                 vec.SetType(Expression::VectorMeshVar);
@@ -2024,7 +2023,7 @@ avtChomboFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                         expressionName.insert(0, std::string("particle_"));
                     vec.SetName(expressionName);
                     char defn[1024];
-                    SNPRINTF(defn, 1024, "{<%s>, <%s>}", particleVarnames[i].c_str(), yName.c_str());
+                    snprintf(defn, 1024, "{<%s>, <%s>}", particleVarnames[i].c_str(), yName.c_str());
                     vec.SetDefinition(defn);
                     vec.SetType(Expression::VectorMeshVar);
                     md->AddExpression(&vec);
@@ -2051,7 +2050,7 @@ avtChomboFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                         expressionName.insert(0, std::string("particle_"));
                     vec.SetName(expressionName);
                     char defn[1024];
-                    SNPRINTF(defn, 1024, "{<%s>, <%s>, <%s>}", particleVarnames[i].c_str(),
+                    snprintf(defn, 1024, "{<%s>, <%s>, <%s>}", particleVarnames[i].c_str(),
                             yName.c_str(), zName.c_str());
                     vec.SetDefinition(defn);
                     vec.SetType(Expression::VectorMeshVar);
@@ -2170,12 +2169,12 @@ avtChomboFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         Expression *dv_parExpression = new Expression;
         dv_parExpression->SetName("_dv_par");
         char buffer[256];
-        SNPRINTF(buffer, 256, "cell_constant(Mesh, %lf)", dx[0][2]);
+        snprintf(buffer, 256, "cell_constant(Mesh, %lf)", dx[0][2]);
         dv_parExpression->SetDefinition(buffer);
         md->AddExpression(dv_parExpression);
         Expression *dmuExpression = new Expression;
         dmuExpression->SetName("_dmu");
-        SNPRINTF(buffer, 256, "cell_constant(Mesh, %lf)", dx[0][3]);
+        snprintf(buffer, 256, "cell_constant(Mesh, %lf)", dx[0][3]);
         dmuExpression->SetDefinition(buffer);
         md->AddExpression(dmuExpression);
     }
@@ -3035,7 +3034,7 @@ avtChomboFileFormat::GetVar(int patch, const char *varname)
         // are probably right...
         //
         char name[1024];
-        SNPRINTF(name, 1024, "level_%d", level);
+        snprintf(name, 1024, "level_%d", level);
         if (file_handle < 0)
         {
             file_handle = H5Fopen(filenames[0], H5F_ACC_RDONLY, H5P_DEFAULT);
@@ -3384,7 +3383,7 @@ avtChomboFileFormat::GetVectorVar(int patch, const char *varname)
             // are probably right...
             //
             char name[1024];
-            SNPRINTF(name, 1024, "level_%d", level);
+            snprintf(name, 1024, "level_%d", level);
             if (file_handle < 0)
             {
                 file_handle = H5Fopen(filenames[0], H5F_ACC_RDONLY, H5P_DEFAULT);

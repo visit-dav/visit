@@ -653,7 +653,7 @@ avtPixieFileFormat::GetVarMesh(const std::string &vname, MeshInfo &mi)
     char tmp[256];
     if (HasCoordinates(vname, mi.coords))
     {
-        SNPRINTF(tmp, 256, "curvemesh_%dx%dx%d",
+        snprintf(tmp, 256, "curvemesh_%dx%dx%d",
                  int(v.global[0]),
                  int(v.global[1]),
                  int(v.global[2]));
@@ -663,7 +663,7 @@ avtPixieFileFormat::GetVarMesh(const std::string &vname, MeshInfo &mi)
     }
     else
     {
-        SNPRINTF(tmp, 256, "mesh_%dx%dx%d",
+        snprintf(tmp, 256, "mesh_%dx%dx%d",
                  int(v.global[0]),
                  int(v.global[1]),
                  int(v.global[2]));

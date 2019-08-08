@@ -6,7 +6,6 @@
 
 #include <cstring>
 #include <stdio.h>
-#include <snprintf.h>
 
 #define MAX_VIEWERTEXT_BUFFER 100
 
@@ -80,7 +79,7 @@ ViewerText::arg(int val)
 {
     char s[MAX_VIEWERTEXT_BUFFER];
     memset(s, 0, sizeof(char) * MAX_VIEWERTEXT_BUFFER);
-    SNPRINTF(s, MAX_VIEWERTEXT_BUFFER, "%d", val);
+    snprintf(s, MAX_VIEWERTEXT_BUFFER, "%d", val);
     args.push_back(s);
     return *this;
 }
@@ -90,7 +89,7 @@ ViewerText::arg(unsigned int val)
 {
     char s[MAX_VIEWERTEXT_BUFFER];
     memset(s, 0, sizeof(char) * MAX_VIEWERTEXT_BUFFER);
-    SNPRINTF(s, MAX_VIEWERTEXT_BUFFER, "%u", val);
+    snprintf(s, MAX_VIEWERTEXT_BUFFER, "%u", val);
     args.push_back(s);
     return *this;
 }
@@ -100,7 +99,7 @@ ViewerText::arg(long val)
 {
     char s[MAX_VIEWERTEXT_BUFFER];
     memset(s, 0, sizeof(char) * MAX_VIEWERTEXT_BUFFER);
-    SNPRINTF(s, MAX_VIEWERTEXT_BUFFER, "%ld", val);
+    snprintf(s, MAX_VIEWERTEXT_BUFFER, "%ld", val);
     args.push_back(s);
     return *this;
 }
@@ -118,7 +117,7 @@ ViewerText::arg(float val)
 {
     char s[MAX_VIEWERTEXT_BUFFER];
     memset(s, 0, sizeof(char) * MAX_VIEWERTEXT_BUFFER);
-    SNPRINTF(s, MAX_VIEWERTEXT_BUFFER, "%f", val);
+    snprintf(s, MAX_VIEWERTEXT_BUFFER, "%f", val);
     args.push_back(s);
     return *this;
 }
@@ -128,7 +127,7 @@ ViewerText::arg(double val)
 {
     char s[MAX_VIEWERTEXT_BUFFER];
     memset(s, 0, sizeof(char) * MAX_VIEWERTEXT_BUFFER);
-    SNPRINTF(s, MAX_VIEWERTEXT_BUFFER, "%g", val);
+    snprintf(s, MAX_VIEWERTEXT_BUFFER, "%g", val);
     args.push_back(s);
     return *this;
 }
@@ -158,7 +157,7 @@ ViewerText::toStdString() const
     std::string transformed(text);
     for(size_t i = 0; i < args.size(); ++i)
     {
-        SNPRINTF(key, MAX_VIEWERTEXT_BUFFER, "%%%d", int(i+1));
+        snprintf(key, MAX_VIEWERTEXT_BUFFER, "%%%d", int(i+1));
         std::string keyStr(key);
         ReplaceAll(transformed, keyStr, args[i]);
     }
@@ -212,8 +211,8 @@ ViewerText::append(const ViewerText &obj)
         size_t pos = 0;
         for(size_t i = 0; i < obj.args.size(); ++i)
         {
-            SNPRINTF(oldkey, MAX_VIEWERTEXT_BUFFER, "%%%d", int(i+1));
-            SNPRINTF(newkey, MAX_VIEWERTEXT_BUFFER, "%%%d", next++);
+            snprintf(oldkey, MAX_VIEWERTEXT_BUFFER, "%%%d", int(i+1));
+            snprintf(newkey, MAX_VIEWERTEXT_BUFFER, "%%%d", next++);
             pos = tmp.find(oldkey, pos);
             if (pos != std::string::npos)
             {
