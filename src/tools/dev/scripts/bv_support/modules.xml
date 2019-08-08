@@ -3,6 +3,7 @@
         <!-- required libraries -->
         <required>
             <lib name="cmake"/> <!-- cmake is here -->
+            <lib name="openssl"/>
             <lib name="python"/>
             <lib name="vtk"/> <!-- <lib name="vtk" reqdeps="cmake vtk" optdeps="qt mesagl"/> -->
             <lib name="qt"/>
@@ -60,6 +61,7 @@
         <!-- thirdparty flag -->
         <group name="required" comment="All required libraries" enabled="yes">
             <lib name="cmake"/> <!-- cmake is here -->
+            <lib name="openssl"/>
             <lib name="python"/>
             <lib name="vtk"/> <!-- <lib name="vtk" reqdeps="cmake vtk" optdeps="qt mesagl"/> -->
             <lib name="qt"/>
