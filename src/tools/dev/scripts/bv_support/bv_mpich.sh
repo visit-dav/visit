@@ -51,7 +51,6 @@ function bv_mpich_host_profile
         echo "##" >> $HOSTCONF
         echo "## MPICH" >> $HOSTCONF
         echo "##" >> $HOSTCONF
-        echo "# Give VisIt information so it can install MPI into the binary distribution." >> $HOSTCONF
         echo "SETUP_APP_VERSION(MPICH $MPICH_VERSION)" >> $HOSTCONF
         echo \
             "VISIT_OPTION_DEFAULT(VISIT_MPICH_DIR \${VISITHOME}/mpich/\${MPICH_VERSION}/\${VISITARCH})" \
