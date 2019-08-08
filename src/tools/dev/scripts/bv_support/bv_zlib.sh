@@ -49,8 +49,9 @@ function bv_zlib_host_profile
     echo "##" >> $HOSTCONF
     echo "## ZLIB" >> $HOSTCONF
     echo "##" >> $HOSTCONF
+    echo "SETUP_APP_VERSION(ZLIB $ZLIB_VERSION)" >> $HOSTCONF
     echo \
-        "VISIT_OPTION_DEFAULT(VISIT_ZLIB_DIR \${VISITHOME}/zlib/$ZLIB_VERSION/\${VISITARCH})" \
+        "VISIT_OPTION_DEFAULT(VISIT_ZLIB_DIR \${VISITHOME}/zlib/\${ZLIB_VERSION}/\${VISITARCH})" \
         >> $HOSTCONF
 }
 
