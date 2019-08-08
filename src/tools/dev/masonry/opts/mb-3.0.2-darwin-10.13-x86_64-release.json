@@ -9,7 +9,7 @@
  "boost_dir": "/Users/griffin28/Documents/WCI/ASQ/VisIt/third_party_pydv/boost/1_60_0/i386-apple-darwin15_clang",
  "git": {"mode":"ssh","git_uname":"griffin28"},
  "build_visit":  { "cmake_ver": "3.9.3",
-                   "args":"--no-thirdparty --openssl --vtkh --vtkm --ispc --embree --tbb --ospray",
+                   "args":"--no-thirdparty",
                    "libs":["cmake",
                        "openssl",
                        "vtkh",
