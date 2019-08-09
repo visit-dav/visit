@@ -18,7 +18,6 @@
 #include <avtStructuredDomainNesting.h>
 #include <avtVariableCache.h>
 
-#include <snprintf.h>
 #include <DebugStream.h>
 #include <Expression.h>
 #include <StringHelpers.h>
@@ -171,7 +170,7 @@ GetFilenames(string scanfStr, string regexStr, string rootDir,
         if (nexpectedMatches > 16)
         {
             char msg[256];
-            SNPRINTF(msg, sizeof(msg), "scanf pattern contains %d conversion "
+            snprintf(msg, sizeof(msg), "scanf pattern contains %d conversion "
                 "specifiers. Max is 16", nexpectedMatches);
             EXCEPTION1(ImproperUseException, msg);
         }
@@ -344,7 +343,7 @@ ReadTimeStepHeader(string rootDir, string fileName, TimeHeader_t *hdr)
     if (nread >= (int)sizeof(buf)-1)
     {
         char msg[256];
-        SNPRINTF(msg, sizeof(msg), "Buffer size of %ld insufficient "
+        snprintf(msg, sizeof(msg), "Buffer size of %ld insufficient "
             "to read time header", sizeof(buf));
         EXCEPTION1(ImproperUseException, msg);
     }
@@ -359,7 +358,7 @@ ReadTimeStepHeader(string rootDir, string fileName, TimeHeader_t *hdr)
     if (nscan != 5)
     {
         char msg[256];
-        SNPRINTF(msg, sizeof(msg), "scanf() matched only %d of 5 "
+        snprintf(msg, sizeof(msg), "scanf() matched only %d of 5 "
             "items in time header", nscan);
         EXCEPTION1(ImproperUseException, msg);
     }
@@ -474,7 +473,7 @@ ReadGridHeader(int fd, int offset, const TimeHeader_t* thdr, GridHeader_t *ghdr,
     else
     {
         char msg[256];
-        SNPRINTF(msg, sizeof(msg), "Unsupported value of %d for 'ndims' "
+        snprintf(msg, sizeof(msg), "Unsupported value of %d for 'ndims' "
             "in time header", thdr->ndims);
         EXCEPTION1(InvalidFilesException, msg);
     }
@@ -695,7 +694,7 @@ avtClawFileFormat::GetFilenames()
     if (gridFilenames.size() != timeFilenames.size())
     {
         char msg[256];
-        SNPRINTF(msg, sizeof(msg), "Number of time filenames, %ld, doesn't agree "
+        snprintf(msg, sizeof(msg), "Number of time filenames, %ld, doesn't agree "
             " with number of grid filenames, %ld",
             timeFilenames.size(), gridFilenames.size());
         EXCEPTION1(InvalidFilesException, msg);
@@ -806,7 +805,7 @@ avtClawFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timeSta
     if (timeHdr.ngrids != (int)gridHeaders[timeState].size())
     {
         char msg[256];
-        SNPRINTF(msg, sizeof(msg), "Time header's ngrid value, %d, doesn't agree "
+        snprintf(msg, sizeof(msg), "Time header's ngrid value, %d, doesn't agree "
             "with number of headers actuall read, %ld", timeHdr.ngrids, gridHdrs.size());
         EXCEPTION1(InvalidFilesException, msg);
     }
@@ -833,7 +832,7 @@ avtClawFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timeSta
     for (int i = 0; i < timeHdr.ngrids; i++)
     {
            char tmpName[64];
-           SNPRINTF(tmpName, sizeof(tmpName), "level%d,grid_num%d",
+           snprintf(tmpName, sizeof(tmpName), "level%d,grid_num%d",
                gridHdrs[i].AMR_level, gridHdrs[i].grid_number);
 
            // subtract off group origin here because internally
@@ -867,7 +866,7 @@ avtClawFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timeSta
     {
         char msg[512];
         static bool haveIssuedWarning = false;
-        SNPRINTF(msg, sizeof(msg), "Ordinarily, VisIt displays a wireframe, subset "
+        snprintf(msg, sizeof(msg), "Ordinarily, VisIt displays a wireframe, subset "
             "plot of 'levels' automatically upon opening a SAMRAI file. However, such "
             "a plot is not applicable in the case that there is only one level. So, "
             "the normal subset plot is not being displayed.");
@@ -884,7 +883,7 @@ avtClawFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timeSta
     for (int i = 0; i < timeHdr.meqn; i++)
     {
         char tmpName[64];
-        SNPRINTF(tmpName, sizeof(tmpName), "col_%02d", i);
+        snprintf(tmpName, sizeof(tmpName), "col_%02d", i);
         AddScalarVarToMetaData(md, tmpName, "claw_mesh", AVT_ZONECENT);
     }
 }
@@ -1206,7 +1205,7 @@ avtClawFileFormat::GetVar(int timeState, int domain, const char *varname)
     if (sscanf(varname, "col_%d", &colNeeded) != 1)
     {
         char msg[256];
-        SNPRINTF(msg, sizeof(msg), "Unable to obtain meqn column number "
+        snprintf(msg, sizeof(msg), "Unable to obtain meqn column number "
             "from \"%s\"", varname);
         EXCEPTION1(InvalidVariableException, msg);
     }
@@ -1307,7 +1306,7 @@ avtClawFileFormat::GetVar(int timeState, int domain, const char *varname)
                 if (((val == 0.0) && (bufp == bufptmp)) || (errno != 0))
                 {
                     char msg[256];
-                    SNPRINTF(msg, sizeof(msg), "Error converting ascii \"%s\" to float",
+                    snprintf(msg, sizeof(msg), "Error converting ascii \"%s\" to float",
                         bufp);
                     EXCEPTION1(InvalidVariableException, msg);
 

@@ -5,7 +5,6 @@
 #include <PyGlobalLineoutAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyGlobalLineoutAttributes
@@ -43,38 +42,38 @@ PyGlobalLineoutAttributes_ToString(const GlobalLineoutAttributes *atts, const ch
     char tmpStr[1000];
 
     if(atts->GetDynamic())
-        SNPRINTF(tmpStr, 1000, "%sDynamic = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sDynamic = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sDynamic = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sDynamic = 0\n", prefix);
     str += tmpStr;
     if(atts->GetCreateWindow())
-        SNPRINTF(tmpStr, 1000, "%screateWindow = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%screateWindow = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%screateWindow = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%screateWindow = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%swindowId = %d\n", prefix, atts->GetWindowId());
+    snprintf(tmpStr, 1000, "%swindowId = %d\n", prefix, atts->GetWindowId());
     str += tmpStr;
     if(atts->GetSamplingOn())
-        SNPRINTF(tmpStr, 1000, "%ssamplingOn = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%ssamplingOn = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%ssamplingOn = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%ssamplingOn = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%snumSamples = %d\n", prefix, atts->GetNumSamples());
+    snprintf(tmpStr, 1000, "%snumSamples = %d\n", prefix, atts->GetNumSamples());
     str += tmpStr;
     if(atts->GetCreateReflineLabels())
-        SNPRINTF(tmpStr, 1000, "%screateReflineLabels = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%screateReflineLabels = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%screateReflineLabels = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%screateReflineLabels = 0\n", prefix);
     str += tmpStr;
     const char *curveOption_names = "UpdateCurve, CreateCurve";
     switch (atts->GetCurveOption())
     {
       case GlobalLineoutAttributes::UpdateCurve:
-          SNPRINTF(tmpStr, 1000, "%scurveOption = %sUpdateCurve  # %s\n", prefix, prefix, curveOption_names);
+          snprintf(tmpStr, 1000, "%scurveOption = %sUpdateCurve  # %s\n", prefix, prefix, curveOption_names);
           str += tmpStr;
           break;
       case GlobalLineoutAttributes::CreateCurve:
-          SNPRINTF(tmpStr, 1000, "%scurveOption = %sCreateCurve  # %s\n", prefix, prefix, curveOption_names);
+          snprintf(tmpStr, 1000, "%scurveOption = %sCreateCurve  # %s\n", prefix, prefix, curveOption_names);
           str += tmpStr;
           break;
       default:
@@ -85,11 +84,11 @@ PyGlobalLineoutAttributes_ToString(const GlobalLineoutAttributes *atts, const ch
     switch (atts->GetColorOption())
     {
       case GlobalLineoutAttributes::RepeatColor:
-          SNPRINTF(tmpStr, 1000, "%scolorOption = %sRepeatColor  # %s\n", prefix, prefix, colorOption_names);
+          snprintf(tmpStr, 1000, "%scolorOption = %sRepeatColor  # %s\n", prefix, prefix, colorOption_names);
           str += tmpStr;
           break;
       case GlobalLineoutAttributes::CreateColor:
-          SNPRINTF(tmpStr, 1000, "%scolorOption = %sCreateColor  # %s\n", prefix, prefix, colorOption_names);
+          snprintf(tmpStr, 1000, "%scolorOption = %sCreateColor  # %s\n", prefix, prefix, colorOption_names);
           str += tmpStr;
           break;
       default:
@@ -97,9 +96,9 @@ PyGlobalLineoutAttributes_ToString(const GlobalLineoutAttributes *atts, const ch
     }
 
     if(atts->GetFreezeInTime())
-        SNPRINTF(tmpStr, 1000, "%sfreezeInTime = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sfreezeInTime = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sfreezeInTime = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sfreezeInTime = 0\n", prefix);
     str += tmpStr;
     return str;
 }

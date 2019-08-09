@@ -24,8 +24,6 @@ using std::endl;
 #include <errno.h>
 
 #define MAKE_BOV_SUBDIRECTORY
-#else
-#define snprintf _snprintf
 #endif
 
 #define SPHERICAL_COORDINATES

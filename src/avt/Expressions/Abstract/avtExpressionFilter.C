@@ -33,7 +33,6 @@
 
 #include <DebugStream.h>
 #include <ExpressionException.h>
-#include <snprintf.h>
 #include <TimingsManager.h>
 
 using namespace std;
@@ -543,7 +542,7 @@ avtExpressionFilter::SetExpressionAttributes(const avtDataAttributes &inputAtts,
         char str[256];
         for (int i=0; i<dim; i++)
         {
-            SNPRINTF(str, 256, "subvar%d", i);
+            snprintf(str, 256, "subvar%d", i);
             subnames.push_back(str);
         }
         outAtts.SetVariableSubnames(subnames, outputVariableName);

@@ -5,7 +5,6 @@
 #include <PyavtDatabaseMetaData.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 #include <PyExpressionList.h>
 #include <PyavtMeshMetaData.h>
 #include <PyavtSubsetsMetaData.h>
@@ -57,133 +56,133 @@ PyavtDatabaseMetaData_ToString(const avtDatabaseMetaData *atts, const char *pref
     char tmpStr[1000];
 
     if(atts->GetHasTemporalExtents())
-        SNPRINTF(tmpStr, 1000, "%shasTemporalExtents = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%shasTemporalExtents = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%shasTemporalExtents = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%shasTemporalExtents = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sminTemporalExtents = %g\n", prefix, atts->GetMinTemporalExtents());
+    snprintf(tmpStr, 1000, "%sminTemporalExtents = %g\n", prefix, atts->GetMinTemporalExtents());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%smaxTemporalExtents = %g\n", prefix, atts->GetMaxTemporalExtents());
+    snprintf(tmpStr, 1000, "%smaxTemporalExtents = %g\n", prefix, atts->GetMaxTemporalExtents());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%snumStates = %d\n", prefix, atts->GetNumStates());
+    snprintf(tmpStr, 1000, "%snumStates = %d\n", prefix, atts->GetNumStates());
     str += tmpStr;
     if(atts->GetIsVirtualDatabase())
-        SNPRINTF(tmpStr, 1000, "%sisVirtualDatabase = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sisVirtualDatabase = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sisVirtualDatabase = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sisVirtualDatabase = 0\n", prefix);
     str += tmpStr;
     if(atts->GetMustRepopulateOnStateChange())
-        SNPRINTF(tmpStr, 1000, "%smustRepopulateOnStateChange = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%smustRepopulateOnStateChange = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%smustRepopulateOnStateChange = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%smustRepopulateOnStateChange = 0\n", prefix);
     str += tmpStr;
     if(atts->GetMustAlphabetizeVariables())
-        SNPRINTF(tmpStr, 1000, "%smustAlphabetizeVariables = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%smustAlphabetizeVariables = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%smustAlphabetizeVariables = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%smustAlphabetizeVariables = 0\n", prefix);
     str += tmpStr;
     if(atts->GetFormatCanDoDomainDecomposition())
-        SNPRINTF(tmpStr, 1000, "%sformatCanDoDomainDecomposition = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sformatCanDoDomainDecomposition = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sformatCanDoDomainDecomposition = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sformatCanDoDomainDecomposition = 0\n", prefix);
     str += tmpStr;
     if(atts->GetFormatCanDoMultires())
-        SNPRINTF(tmpStr, 1000, "%sformatCanDoMultires = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sformatCanDoMultires = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sformatCanDoMultires = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sformatCanDoMultires = 0\n", prefix);
     str += tmpStr;
     if(atts->GetUseCatchAllMesh())
-        SNPRINTF(tmpStr, 1000, "%suseCatchAllMesh = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%suseCatchAllMesh = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%suseCatchAllMesh = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%suseCatchAllMesh = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%stimeStepPath = \"%s\"\n", prefix, atts->GetTimeStepPath().c_str());
+    snprintf(tmpStr, 1000, "%stimeStepPath = \"%s\"\n", prefix, atts->GetTimeStepPath().c_str());
     str += tmpStr;
     {   const stringVector &timeStepNames = atts->GetTimeStepNames();
-        SNPRINTF(tmpStr, 1000, "%stimeStepNames = (", prefix);
+        snprintf(tmpStr, 1000, "%stimeStepNames = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < timeStepNames.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "\"%s\"", timeStepNames[i].c_str());
+            snprintf(tmpStr, 1000, "\"%s\"", timeStepNames[i].c_str());
             str += tmpStr;
             if(i < timeStepNames.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const intVector &cycles = atts->GetCycles();
-        SNPRINTF(tmpStr, 1000, "%scycles = (", prefix);
+        snprintf(tmpStr, 1000, "%scycles = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < cycles.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%d", cycles[i]);
+            snprintf(tmpStr, 1000, "%d", cycles[i]);
             str += tmpStr;
             if(i < cycles.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const intVector &cyclesAreAccurate = atts->GetCyclesAreAccurate();
-        SNPRINTF(tmpStr, 1000, "%scyclesAreAccurate = (", prefix);
+        snprintf(tmpStr, 1000, "%scyclesAreAccurate = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < cyclesAreAccurate.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%d", cyclesAreAccurate[i]);
+            snprintf(tmpStr, 1000, "%d", cyclesAreAccurate[i]);
             str += tmpStr;
             if(i < cyclesAreAccurate.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const doubleVector &times = atts->GetTimes();
-        SNPRINTF(tmpStr, 1000, "%stimes = (", prefix);
+        snprintf(tmpStr, 1000, "%stimes = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < times.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", times[i]);
+            snprintf(tmpStr, 1000, "%g", times[i]);
             str += tmpStr;
             if(i < times.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const intVector &timesAreAccurate = atts->GetTimesAreAccurate();
-        SNPRINTF(tmpStr, 1000, "%stimesAreAccurate = (", prefix);
+        snprintf(tmpStr, 1000, "%stimesAreAccurate = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < timesAreAccurate.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%d", timesAreAccurate[i]);
+            snprintf(tmpStr, 1000, "%d", timesAreAccurate[i]);
             str += tmpStr;
             if(i < timesAreAccurate.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
-    SNPRINTF(tmpStr, 1000, "%sdatabaseName = \"%s\"\n", prefix, atts->GetDatabaseName().c_str());
+    snprintf(tmpStr, 1000, "%sdatabaseName = \"%s\"\n", prefix, atts->GetDatabaseName().c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sfileFormat = \"%s\"\n", prefix, atts->GetFileFormat().c_str());
+    snprintf(tmpStr, 1000, "%sfileFormat = \"%s\"\n", prefix, atts->GetFileFormat().c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sdatabaseComment = \"%s\"\n", prefix, atts->GetDatabaseComment().c_str());
+    snprintf(tmpStr, 1000, "%sdatabaseComment = \"%s\"\n", prefix, atts->GetDatabaseComment().c_str());
     str += tmpStr;
     { // new scope
         std::string objPrefix(prefix);
@@ -196,7 +195,7 @@ PyavtDatabaseMetaData_ToString(const avtDatabaseMetaData *atts, const char *pref
         for(AttributeGroupVector::const_iterator pos = atts->GetMeshes().begin(); pos != atts->GetMeshes().end(); ++pos, ++index)
         {
             const avtMeshMetaData *current = (const avtMeshMetaData *)(*pos);
-            SNPRINTF(tmpStr, 1000, "GetMeshes(%d).", index);
+            snprintf(tmpStr, 1000, "GetMeshes(%d).", index);
             std::string objPrefix(prefix + std::string(tmpStr));
             str += PyavtMeshMetaData_ToString(current, objPrefix.c_str());
         }
@@ -209,7 +208,7 @@ PyavtDatabaseMetaData_ToString(const avtDatabaseMetaData *atts, const char *pref
         for(AttributeGroupVector::const_iterator pos = atts->GetSubsets().begin(); pos != atts->GetSubsets().end(); ++pos, ++index)
         {
             const avtSubsetsMetaData *current = (const avtSubsetsMetaData *)(*pos);
-            SNPRINTF(tmpStr, 1000, "GetSubsets(%d).", index);
+            snprintf(tmpStr, 1000, "GetSubsets(%d).", index);
             std::string objPrefix(prefix + std::string(tmpStr));
             str += PyavtSubsetsMetaData_ToString(current, objPrefix.c_str());
         }
@@ -222,7 +221,7 @@ PyavtDatabaseMetaData_ToString(const avtDatabaseMetaData *atts, const char *pref
         for(AttributeGroupVector::const_iterator pos = atts->GetScalars().begin(); pos != atts->GetScalars().end(); ++pos, ++index)
         {
             const avtScalarMetaData *current = (const avtScalarMetaData *)(*pos);
-            SNPRINTF(tmpStr, 1000, "GetScalars(%d).", index);
+            snprintf(tmpStr, 1000, "GetScalars(%d).", index);
             std::string objPrefix(prefix + std::string(tmpStr));
             str += PyavtScalarMetaData_ToString(current, objPrefix.c_str());
         }
@@ -235,7 +234,7 @@ PyavtDatabaseMetaData_ToString(const avtDatabaseMetaData *atts, const char *pref
         for(AttributeGroupVector::const_iterator pos = atts->GetVectors().begin(); pos != atts->GetVectors().end(); ++pos, ++index)
         {
             const avtVectorMetaData *current = (const avtVectorMetaData *)(*pos);
-            SNPRINTF(tmpStr, 1000, "GetVectors(%d).", index);
+            snprintf(tmpStr, 1000, "GetVectors(%d).", index);
             std::string objPrefix(prefix + std::string(tmpStr));
             str += PyavtVectorMetaData_ToString(current, objPrefix.c_str());
         }
@@ -248,7 +247,7 @@ PyavtDatabaseMetaData_ToString(const avtDatabaseMetaData *atts, const char *pref
         for(AttributeGroupVector::const_iterator pos = atts->GetTensors().begin(); pos != atts->GetTensors().end(); ++pos, ++index)
         {
             const avtTensorMetaData *current = (const avtTensorMetaData *)(*pos);
-            SNPRINTF(tmpStr, 1000, "GetTensors(%d).", index);
+            snprintf(tmpStr, 1000, "GetTensors(%d).", index);
             std::string objPrefix(prefix + std::string(tmpStr));
             str += PyavtTensorMetaData_ToString(current, objPrefix.c_str());
         }
@@ -261,7 +260,7 @@ PyavtDatabaseMetaData_ToString(const avtDatabaseMetaData *atts, const char *pref
         for(AttributeGroupVector::const_iterator pos = atts->GetSymmTensors().begin(); pos != atts->GetSymmTensors().end(); ++pos, ++index)
         {
             const avtSymmetricTensorMetaData *current = (const avtSymmetricTensorMetaData *)(*pos);
-            SNPRINTF(tmpStr, 1000, "GetSymmTensors(%d).", index);
+            snprintf(tmpStr, 1000, "GetSymmTensors(%d).", index);
             std::string objPrefix(prefix + std::string(tmpStr));
             str += PyavtSymmetricTensorMetaData_ToString(current, objPrefix.c_str());
         }
@@ -274,7 +273,7 @@ PyavtDatabaseMetaData_ToString(const avtDatabaseMetaData *atts, const char *pref
         for(AttributeGroupVector::const_iterator pos = atts->GetArrays().begin(); pos != atts->GetArrays().end(); ++pos, ++index)
         {
             const avtArrayMetaData *current = (const avtArrayMetaData *)(*pos);
-            SNPRINTF(tmpStr, 1000, "GetArrays(%d).", index);
+            snprintf(tmpStr, 1000, "GetArrays(%d).", index);
             std::string objPrefix(prefix + std::string(tmpStr));
             str += PyavtArrayMetaData_ToString(current, objPrefix.c_str());
         }
@@ -287,7 +286,7 @@ PyavtDatabaseMetaData_ToString(const avtDatabaseMetaData *atts, const char *pref
         for(AttributeGroupVector::const_iterator pos = atts->GetMaterials().begin(); pos != atts->GetMaterials().end(); ++pos, ++index)
         {
             const avtMaterialMetaData *current = (const avtMaterialMetaData *)(*pos);
-            SNPRINTF(tmpStr, 1000, "GetMaterials(%d).", index);
+            snprintf(tmpStr, 1000, "GetMaterials(%d).", index);
             std::string objPrefix(prefix + std::string(tmpStr));
             str += PyavtMaterialMetaData_ToString(current, objPrefix.c_str());
         }
@@ -300,7 +299,7 @@ PyavtDatabaseMetaData_ToString(const avtDatabaseMetaData *atts, const char *pref
         for(AttributeGroupVector::const_iterator pos = atts->GetSpecies().begin(); pos != atts->GetSpecies().end(); ++pos, ++index)
         {
             const avtSpeciesMetaData *current = (const avtSpeciesMetaData *)(*pos);
-            SNPRINTF(tmpStr, 1000, "GetSpecies(%d).", index);
+            snprintf(tmpStr, 1000, "GetSpecies(%d).", index);
             std::string objPrefix(prefix + std::string(tmpStr));
             str += PyavtSpeciesMetaData_ToString(current, objPrefix.c_str());
         }
@@ -313,7 +312,7 @@ PyavtDatabaseMetaData_ToString(const avtDatabaseMetaData *atts, const char *pref
         for(AttributeGroupVector::const_iterator pos = atts->GetCurves().begin(); pos != atts->GetCurves().end(); ++pos, ++index)
         {
             const avtCurveMetaData *current = (const avtCurveMetaData *)(*pos);
-            SNPRINTF(tmpStr, 1000, "GetCurves(%d).", index);
+            snprintf(tmpStr, 1000, "GetCurves(%d).", index);
             std::string objPrefix(prefix + std::string(tmpStr));
             str += PyavtCurveMetaData_ToString(current, objPrefix.c_str());
         }
@@ -326,7 +325,7 @@ PyavtDatabaseMetaData_ToString(const avtDatabaseMetaData *atts, const char *pref
         for(AttributeGroupVector::const_iterator pos = atts->GetLabels().begin(); pos != atts->GetLabels().end(); ++pos, ++index)
         {
             const avtLabelMetaData *current = (const avtLabelMetaData *)(*pos);
-            SNPRINTF(tmpStr, 1000, "GetLabels(%d).", index);
+            snprintf(tmpStr, 1000, "GetLabels(%d).", index);
             std::string objPrefix(prefix + std::string(tmpStr));
             str += PyavtLabelMetaData_ToString(current, objPrefix.c_str());
         }
@@ -339,7 +338,7 @@ PyavtDatabaseMetaData_ToString(const avtDatabaseMetaData *atts, const char *pref
         for(AttributeGroupVector::const_iterator pos = atts->GetDefaultPlots().begin(); pos != atts->GetDefaultPlots().end(); ++pos, ++index)
         {
             const avtDefaultPlotMetaData *current = (const avtDefaultPlotMetaData *)(*pos);
-            SNPRINTF(tmpStr, 1000, "GetDefaultPlots(%d).", index);
+            snprintf(tmpStr, 1000, "GetDefaultPlots(%d).", index);
             std::string objPrefix(prefix + std::string(tmpStr));
             str += PyavtDefaultPlotMetaData_ToString(current, objPrefix.c_str());
         }
@@ -347,9 +346,9 @@ PyavtDatabaseMetaData_ToString(const avtDatabaseMetaData *atts, const char *pref
             str += "#defaultPlots does not contain any avtDefaultPlotMetaData objects.\n";
     }
     if(atts->GetIsSimulation())
-        SNPRINTF(tmpStr, 1000, "%sisSimulation = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sisSimulation = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sisSimulation = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sisSimulation = 0\n", prefix);
     str += tmpStr;
     { // new scope
         std::string objPrefix(prefix);
@@ -357,22 +356,22 @@ PyavtDatabaseMetaData_ToString(const avtDatabaseMetaData *atts, const char *pref
         str += PyavtSimulationInformation_ToString(&atts->GetSimInfo(), objPrefix.c_str());
     }
     {   const stringVector &suggestedDefaultSILRestriction = atts->GetSuggestedDefaultSILRestriction();
-        SNPRINTF(tmpStr, 1000, "%ssuggestedDefaultSILRestriction = (", prefix);
+        snprintf(tmpStr, 1000, "%ssuggestedDefaultSILRestriction = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < suggestedDefaultSILRestriction.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "\"%s\"", suggestedDefaultSILRestriction[i].c_str());
+            snprintf(tmpStr, 1000, "\"%s\"", suggestedDefaultSILRestriction[i].c_str());
             str += tmpStr;
             if(i < suggestedDefaultSILRestriction.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
-    SNPRINTF(tmpStr, 1000, "%sreplacementMask = %d\n", prefix, atts->GetReplacementMask());
+    snprintf(tmpStr, 1000, "%sreplacementMask = %d\n", prefix, atts->GetReplacementMask());
     str += tmpStr;
     return str;
 }
@@ -1070,9 +1069,9 @@ avtDatabaseMetaData_GetMeshes(PyObject *self, PyObject *args)
     {
         char msg[400] = {'\0'};
         if(obj->data->GetMeshes().size() == 0)
-            SNPRINTF(msg, 400, "In avtDatabaseMetaData::GetMeshes : The index %d is invalid because meshes is empty.", index);
+            snprintf(msg, 400, "In avtDatabaseMetaData::GetMeshes : The index %d is invalid because meshes is empty.", index);
         else
-            SNPRINTF(msg, 400, "In avtDatabaseMetaData::GetMeshes : The index %d is invalid. Use index values in: [0, %ld).",  index, obj->data->GetMeshes().size());
+            snprintf(msg, 400, "In avtDatabaseMetaData::GetMeshes : The index %d is invalid. Use index values in: [0, %ld).",  index, obj->data->GetMeshes().size());
         PyErr_SetString(PyExc_IndexError, msg);
         return NULL;
     }
@@ -1106,7 +1105,7 @@ avtDatabaseMetaData_AddMeshes(PyObject *self, PyObject *args)
     if(!PyavtMeshMetaData_Check(element))
     {
         char msg[400] = {'\0'};
-        SNPRINTF(msg, 400, "The avtDatabaseMetaData::AddMeshes method only accepts avtMeshMetaData objects.");
+        snprintf(msg, 400, "The avtDatabaseMetaData::AddMeshes method only accepts avtMeshMetaData objects.");
         PyErr_SetString(PyExc_TypeError, msg);
         return NULL;
     }
@@ -1154,7 +1153,7 @@ avtDatabaseMetaData_RemoveMeshes(PyObject *self, PyObject *args)
     if(index < 0 || index >= obj->data->GetNumMeshes())
     {
         char msg[400] = {'\0'};
-        SNPRINTF(msg, 400, "In avtDatabaseMetaData::RemoveMeshes : Index %d is out of range", index);
+        snprintf(msg, 400, "In avtDatabaseMetaData::RemoveMeshes : Index %d is out of range", index);
         PyErr_SetString(PyExc_IndexError, msg);
         return NULL;
     }
@@ -1187,9 +1186,9 @@ avtDatabaseMetaData_GetSubsets(PyObject *self, PyObject *args)
     {
         char msg[400] = {'\0'};
         if(obj->data->GetSubsets().size() == 0)
-            SNPRINTF(msg, 400, "In avtDatabaseMetaData::GetSubsets : The index %d is invalid because subsets is empty.", index);
+            snprintf(msg, 400, "In avtDatabaseMetaData::GetSubsets : The index %d is invalid because subsets is empty.", index);
         else
-            SNPRINTF(msg, 400, "In avtDatabaseMetaData::GetSubsets : The index %d is invalid. Use index values in: [0, %ld).",  index, obj->data->GetSubsets().size());
+            snprintf(msg, 400, "In avtDatabaseMetaData::GetSubsets : The index %d is invalid. Use index values in: [0, %ld).",  index, obj->data->GetSubsets().size());
         PyErr_SetString(PyExc_IndexError, msg);
         return NULL;
     }
@@ -1223,7 +1222,7 @@ avtDatabaseMetaData_AddSubsets(PyObject *self, PyObject *args)
     if(!PyavtSubsetsMetaData_Check(element))
     {
         char msg[400] = {'\0'};
-        SNPRINTF(msg, 400, "The avtDatabaseMetaData::AddSubsets method only accepts avtSubsetsMetaData objects.");
+        snprintf(msg, 400, "The avtDatabaseMetaData::AddSubsets method only accepts avtSubsetsMetaData objects.");
         PyErr_SetString(PyExc_TypeError, msg);
         return NULL;
     }
@@ -1271,7 +1270,7 @@ avtDatabaseMetaData_RemoveSubsets(PyObject *self, PyObject *args)
     if(index < 0 || index >= obj->data->GetNumSubsets())
     {
         char msg[400] = {'\0'};
-        SNPRINTF(msg, 400, "In avtDatabaseMetaData::RemoveSubsets : Index %d is out of range", index);
+        snprintf(msg, 400, "In avtDatabaseMetaData::RemoveSubsets : Index %d is out of range", index);
         PyErr_SetString(PyExc_IndexError, msg);
         return NULL;
     }
@@ -1304,9 +1303,9 @@ avtDatabaseMetaData_GetScalars(PyObject *self, PyObject *args)
     {
         char msg[400] = {'\0'};
         if(obj->data->GetScalars().size() == 0)
-            SNPRINTF(msg, 400, "In avtDatabaseMetaData::GetScalars : The index %d is invalid because scalars is empty.", index);
+            snprintf(msg, 400, "In avtDatabaseMetaData::GetScalars : The index %d is invalid because scalars is empty.", index);
         else
-            SNPRINTF(msg, 400, "In avtDatabaseMetaData::GetScalars : The index %d is invalid. Use index values in: [0, %ld).",  index, obj->data->GetScalars().size());
+            snprintf(msg, 400, "In avtDatabaseMetaData::GetScalars : The index %d is invalid. Use index values in: [0, %ld).",  index, obj->data->GetScalars().size());
         PyErr_SetString(PyExc_IndexError, msg);
         return NULL;
     }
@@ -1340,7 +1339,7 @@ avtDatabaseMetaData_AddScalars(PyObject *self, PyObject *args)
     if(!PyavtScalarMetaData_Check(element))
     {
         char msg[400] = {'\0'};
-        SNPRINTF(msg, 400, "The avtDatabaseMetaData::AddScalars method only accepts avtScalarMetaData objects.");
+        snprintf(msg, 400, "The avtDatabaseMetaData::AddScalars method only accepts avtScalarMetaData objects.");
         PyErr_SetString(PyExc_TypeError, msg);
         return NULL;
     }
@@ -1388,7 +1387,7 @@ avtDatabaseMetaData_RemoveScalars(PyObject *self, PyObject *args)
     if(index < 0 || index >= obj->data->GetNumScalars())
     {
         char msg[400] = {'\0'};
-        SNPRINTF(msg, 400, "In avtDatabaseMetaData::RemoveScalars : Index %d is out of range", index);
+        snprintf(msg, 400, "In avtDatabaseMetaData::RemoveScalars : Index %d is out of range", index);
         PyErr_SetString(PyExc_IndexError, msg);
         return NULL;
     }
@@ -1421,9 +1420,9 @@ avtDatabaseMetaData_GetVectors(PyObject *self, PyObject *args)
     {
         char msg[400] = {'\0'};
         if(obj->data->GetVectors().size() == 0)
-            SNPRINTF(msg, 400, "In avtDatabaseMetaData::GetVectors : The index %d is invalid because vectors is empty.", index);
+            snprintf(msg, 400, "In avtDatabaseMetaData::GetVectors : The index %d is invalid because vectors is empty.", index);
         else
-            SNPRINTF(msg, 400, "In avtDatabaseMetaData::GetVectors : The index %d is invalid. Use index values in: [0, %ld).",  index, obj->data->GetVectors().size());
+            snprintf(msg, 400, "In avtDatabaseMetaData::GetVectors : The index %d is invalid. Use index values in: [0, %ld).",  index, obj->data->GetVectors().size());
         PyErr_SetString(PyExc_IndexError, msg);
         return NULL;
     }
@@ -1457,7 +1456,7 @@ avtDatabaseMetaData_AddVectors(PyObject *self, PyObject *args)
     if(!PyavtVectorMetaData_Check(element))
     {
         char msg[400] = {'\0'};
-        SNPRINTF(msg, 400, "The avtDatabaseMetaData::AddVectors method only accepts avtVectorMetaData objects.");
+        snprintf(msg, 400, "The avtDatabaseMetaData::AddVectors method only accepts avtVectorMetaData objects.");
         PyErr_SetString(PyExc_TypeError, msg);
         return NULL;
     }
@@ -1505,7 +1504,7 @@ avtDatabaseMetaData_RemoveVectors(PyObject *self, PyObject *args)
     if(index < 0 || index >= obj->data->GetNumVectors())
     {
         char msg[400] = {'\0'};
-        SNPRINTF(msg, 400, "In avtDatabaseMetaData::RemoveVectors : Index %d is out of range", index);
+        snprintf(msg, 400, "In avtDatabaseMetaData::RemoveVectors : Index %d is out of range", index);
         PyErr_SetString(PyExc_IndexError, msg);
         return NULL;
     }
@@ -1538,9 +1537,9 @@ avtDatabaseMetaData_GetTensors(PyObject *self, PyObject *args)
     {
         char msg[400] = {'\0'};
         if(obj->data->GetTensors().size() == 0)
-            SNPRINTF(msg, 400, "In avtDatabaseMetaData::GetTensors : The index %d is invalid because tensors is empty.", index);
+            snprintf(msg, 400, "In avtDatabaseMetaData::GetTensors : The index %d is invalid because tensors is empty.", index);
         else
-            SNPRINTF(msg, 400, "In avtDatabaseMetaData::GetTensors : The index %d is invalid. Use index values in: [0, %ld).",  index, obj->data->GetTensors().size());
+            snprintf(msg, 400, "In avtDatabaseMetaData::GetTensors : The index %d is invalid. Use index values in: [0, %ld).",  index, obj->data->GetTensors().size());
         PyErr_SetString(PyExc_IndexError, msg);
         return NULL;
     }
@@ -1574,7 +1573,7 @@ avtDatabaseMetaData_AddTensors(PyObject *self, PyObject *args)
     if(!PyavtTensorMetaData_Check(element))
     {
         char msg[400] = {'\0'};
-        SNPRINTF(msg, 400, "The avtDatabaseMetaData::AddTensors method only accepts avtTensorMetaData objects.");
+        snprintf(msg, 400, "The avtDatabaseMetaData::AddTensors method only accepts avtTensorMetaData objects.");
         PyErr_SetString(PyExc_TypeError, msg);
         return NULL;
     }
@@ -1622,7 +1621,7 @@ avtDatabaseMetaData_RemoveTensors(PyObject *self, PyObject *args)
     if(index < 0 || index >= obj->data->GetNumTensors())
     {
         char msg[400] = {'\0'};
-        SNPRINTF(msg, 400, "In avtDatabaseMetaData::RemoveTensors : Index %d is out of range", index);
+        snprintf(msg, 400, "In avtDatabaseMetaData::RemoveTensors : Index %d is out of range", index);
         PyErr_SetString(PyExc_IndexError, msg);
         return NULL;
     }
@@ -1655,9 +1654,9 @@ avtDatabaseMetaData_GetSymmTensors(PyObject *self, PyObject *args)
     {
         char msg[400] = {'\0'};
         if(obj->data->GetSymmTensors().size() == 0)
-            SNPRINTF(msg, 400, "In avtDatabaseMetaData::GetSymmTensors : The index %d is invalid because symmTensors is empty.", index);
+            snprintf(msg, 400, "In avtDatabaseMetaData::GetSymmTensors : The index %d is invalid because symmTensors is empty.", index);
         else
-            SNPRINTF(msg, 400, "In avtDatabaseMetaData::GetSymmTensors : The index %d is invalid. Use index values in: [0, %ld).",  index, obj->data->GetSymmTensors().size());
+            snprintf(msg, 400, "In avtDatabaseMetaData::GetSymmTensors : The index %d is invalid. Use index values in: [0, %ld).",  index, obj->data->GetSymmTensors().size());
         PyErr_SetString(PyExc_IndexError, msg);
         return NULL;
     }
@@ -1691,7 +1690,7 @@ avtDatabaseMetaData_AddSymmTensors(PyObject *self, PyObject *args)
     if(!PyavtSymmetricTensorMetaData_Check(element))
     {
         char msg[400] = {'\0'};
-        SNPRINTF(msg, 400, "The avtDatabaseMetaData::AddSymmTensors method only accepts avtSymmetricTensorMetaData objects.");
+        snprintf(msg, 400, "The avtDatabaseMetaData::AddSymmTensors method only accepts avtSymmetricTensorMetaData objects.");
         PyErr_SetString(PyExc_TypeError, msg);
         return NULL;
     }
@@ -1739,7 +1738,7 @@ avtDatabaseMetaData_RemoveSymmTensors(PyObject *self, PyObject *args)
     if(index < 0 || index >= obj->data->GetNumSymmTensors())
     {
         char msg[400] = {'\0'};
-        SNPRINTF(msg, 400, "In avtDatabaseMetaData::RemoveSymmTensors : Index %d is out of range", index);
+        snprintf(msg, 400, "In avtDatabaseMetaData::RemoveSymmTensors : Index %d is out of range", index);
         PyErr_SetString(PyExc_IndexError, msg);
         return NULL;
     }
@@ -1772,9 +1771,9 @@ avtDatabaseMetaData_GetArrays(PyObject *self, PyObject *args)
     {
         char msg[400] = {'\0'};
         if(obj->data->GetArrays().size() == 0)
-            SNPRINTF(msg, 400, "In avtDatabaseMetaData::GetArrays : The index %d is invalid because arrays is empty.", index);
+            snprintf(msg, 400, "In avtDatabaseMetaData::GetArrays : The index %d is invalid because arrays is empty.", index);
         else
-            SNPRINTF(msg, 400, "In avtDatabaseMetaData::GetArrays : The index %d is invalid. Use index values in: [0, %ld).",  index, obj->data->GetArrays().size());
+            snprintf(msg, 400, "In avtDatabaseMetaData::GetArrays : The index %d is invalid. Use index values in: [0, %ld).",  index, obj->data->GetArrays().size());
         PyErr_SetString(PyExc_IndexError, msg);
         return NULL;
     }
@@ -1808,7 +1807,7 @@ avtDatabaseMetaData_AddArrays(PyObject *self, PyObject *args)
     if(!PyavtArrayMetaData_Check(element))
     {
         char msg[400] = {'\0'};
-        SNPRINTF(msg, 400, "The avtDatabaseMetaData::AddArrays method only accepts avtArrayMetaData objects.");
+        snprintf(msg, 400, "The avtDatabaseMetaData::AddArrays method only accepts avtArrayMetaData objects.");
         PyErr_SetString(PyExc_TypeError, msg);
         return NULL;
     }
@@ -1856,7 +1855,7 @@ avtDatabaseMetaData_RemoveArrays(PyObject *self, PyObject *args)
     if(index < 0 || index >= obj->data->GetNumArrays())
     {
         char msg[400] = {'\0'};
-        SNPRINTF(msg, 400, "In avtDatabaseMetaData::RemoveArrays : Index %d is out of range", index);
+        snprintf(msg, 400, "In avtDatabaseMetaData::RemoveArrays : Index %d is out of range", index);
         PyErr_SetString(PyExc_IndexError, msg);
         return NULL;
     }
@@ -1889,9 +1888,9 @@ avtDatabaseMetaData_GetMaterials(PyObject *self, PyObject *args)
     {
         char msg[400] = {'\0'};
         if(obj->data->GetMaterials().size() == 0)
-            SNPRINTF(msg, 400, "In avtDatabaseMetaData::GetMaterials : The index %d is invalid because materials is empty.", index);
+            snprintf(msg, 400, "In avtDatabaseMetaData::GetMaterials : The index %d is invalid because materials is empty.", index);
         else
-            SNPRINTF(msg, 400, "In avtDatabaseMetaData::GetMaterials : The index %d is invalid. Use index values in: [0, %ld).",  index, obj->data->GetMaterials().size());
+            snprintf(msg, 400, "In avtDatabaseMetaData::GetMaterials : The index %d is invalid. Use index values in: [0, %ld).",  index, obj->data->GetMaterials().size());
         PyErr_SetString(PyExc_IndexError, msg);
         return NULL;
     }
@@ -1925,7 +1924,7 @@ avtDatabaseMetaData_AddMaterials(PyObject *self, PyObject *args)
     if(!PyavtMaterialMetaData_Check(element))
     {
         char msg[400] = {'\0'};
-        SNPRINTF(msg, 400, "The avtDatabaseMetaData::AddMaterials method only accepts avtMaterialMetaData objects.");
+        snprintf(msg, 400, "The avtDatabaseMetaData::AddMaterials method only accepts avtMaterialMetaData objects.");
         PyErr_SetString(PyExc_TypeError, msg);
         return NULL;
     }
@@ -1973,7 +1972,7 @@ avtDatabaseMetaData_RemoveMaterials(PyObject *self, PyObject *args)
     if(index < 0 || index >= obj->data->GetNumMaterials())
     {
         char msg[400] = {'\0'};
-        SNPRINTF(msg, 400, "In avtDatabaseMetaData::RemoveMaterials : Index %d is out of range", index);
+        snprintf(msg, 400, "In avtDatabaseMetaData::RemoveMaterials : Index %d is out of range", index);
         PyErr_SetString(PyExc_IndexError, msg);
         return NULL;
     }
@@ -2006,9 +2005,9 @@ avtDatabaseMetaData_GetSpecies(PyObject *self, PyObject *args)
     {
         char msg[400] = {'\0'};
         if(obj->data->GetSpecies().size() == 0)
-            SNPRINTF(msg, 400, "In avtDatabaseMetaData::GetSpecies : The index %d is invalid because species is empty.", index);
+            snprintf(msg, 400, "In avtDatabaseMetaData::GetSpecies : The index %d is invalid because species is empty.", index);
         else
-            SNPRINTF(msg, 400, "In avtDatabaseMetaData::GetSpecies : The index %d is invalid. Use index values in: [0, %ld).",  index, obj->data->GetSpecies().size());
+            snprintf(msg, 400, "In avtDatabaseMetaData::GetSpecies : The index %d is invalid. Use index values in: [0, %ld).",  index, obj->data->GetSpecies().size());
         PyErr_SetString(PyExc_IndexError, msg);
         return NULL;
     }
@@ -2042,7 +2041,7 @@ avtDatabaseMetaData_AddSpecies(PyObject *self, PyObject *args)
     if(!PyavtSpeciesMetaData_Check(element))
     {
         char msg[400] = {'\0'};
-        SNPRINTF(msg, 400, "The avtDatabaseMetaData::AddSpecies method only accepts avtSpeciesMetaData objects.");
+        snprintf(msg, 400, "The avtDatabaseMetaData::AddSpecies method only accepts avtSpeciesMetaData objects.");
         PyErr_SetString(PyExc_TypeError, msg);
         return NULL;
     }
@@ -2090,7 +2089,7 @@ avtDatabaseMetaData_RemoveSpecies(PyObject *self, PyObject *args)
     if(index < 0 || index >= obj->data->GetNumSpecies())
     {
         char msg[400] = {'\0'};
-        SNPRINTF(msg, 400, "In avtDatabaseMetaData::RemoveSpecies : Index %d is out of range", index);
+        snprintf(msg, 400, "In avtDatabaseMetaData::RemoveSpecies : Index %d is out of range", index);
         PyErr_SetString(PyExc_IndexError, msg);
         return NULL;
     }
@@ -2123,9 +2122,9 @@ avtDatabaseMetaData_GetCurves(PyObject *self, PyObject *args)
     {
         char msg[400] = {'\0'};
         if(obj->data->GetCurves().size() == 0)
-            SNPRINTF(msg, 400, "In avtDatabaseMetaData::GetCurves : The index %d is invalid because curves is empty.", index);
+            snprintf(msg, 400, "In avtDatabaseMetaData::GetCurves : The index %d is invalid because curves is empty.", index);
         else
-            SNPRINTF(msg, 400, "In avtDatabaseMetaData::GetCurves : The index %d is invalid. Use index values in: [0, %ld).",  index, obj->data->GetCurves().size());
+            snprintf(msg, 400, "In avtDatabaseMetaData::GetCurves : The index %d is invalid. Use index values in: [0, %ld).",  index, obj->data->GetCurves().size());
         PyErr_SetString(PyExc_IndexError, msg);
         return NULL;
     }
@@ -2159,7 +2158,7 @@ avtDatabaseMetaData_AddCurves(PyObject *self, PyObject *args)
     if(!PyavtCurveMetaData_Check(element))
     {
         char msg[400] = {'\0'};
-        SNPRINTF(msg, 400, "The avtDatabaseMetaData::AddCurves method only accepts avtCurveMetaData objects.");
+        snprintf(msg, 400, "The avtDatabaseMetaData::AddCurves method only accepts avtCurveMetaData objects.");
         PyErr_SetString(PyExc_TypeError, msg);
         return NULL;
     }
@@ -2207,7 +2206,7 @@ avtDatabaseMetaData_RemoveCurves(PyObject *self, PyObject *args)
     if(index < 0 || index >= obj->data->GetNumCurves())
     {
         char msg[400] = {'\0'};
-        SNPRINTF(msg, 400, "In avtDatabaseMetaData::RemoveCurves : Index %d is out of range", index);
+        snprintf(msg, 400, "In avtDatabaseMetaData::RemoveCurves : Index %d is out of range", index);
         PyErr_SetString(PyExc_IndexError, msg);
         return NULL;
     }
@@ -2240,9 +2239,9 @@ avtDatabaseMetaData_GetLabels(PyObject *self, PyObject *args)
     {
         char msg[400] = {'\0'};
         if(obj->data->GetLabels().size() == 0)
-            SNPRINTF(msg, 400, "In avtDatabaseMetaData::GetLabels : The index %d is invalid because labels is empty.", index);
+            snprintf(msg, 400, "In avtDatabaseMetaData::GetLabels : The index %d is invalid because labels is empty.", index);
         else
-            SNPRINTF(msg, 400, "In avtDatabaseMetaData::GetLabels : The index %d is invalid. Use index values in: [0, %ld).",  index, obj->data->GetLabels().size());
+            snprintf(msg, 400, "In avtDatabaseMetaData::GetLabels : The index %d is invalid. Use index values in: [0, %ld).",  index, obj->data->GetLabels().size());
         PyErr_SetString(PyExc_IndexError, msg);
         return NULL;
     }
@@ -2276,7 +2275,7 @@ avtDatabaseMetaData_AddLabels(PyObject *self, PyObject *args)
     if(!PyavtLabelMetaData_Check(element))
     {
         char msg[400] = {'\0'};
-        SNPRINTF(msg, 400, "The avtDatabaseMetaData::AddLabels method only accepts avtLabelMetaData objects.");
+        snprintf(msg, 400, "The avtDatabaseMetaData::AddLabels method only accepts avtLabelMetaData objects.");
         PyErr_SetString(PyExc_TypeError, msg);
         return NULL;
     }
@@ -2324,7 +2323,7 @@ avtDatabaseMetaData_RemoveLabels(PyObject *self, PyObject *args)
     if(index < 0 || index >= obj->data->GetNumLabels())
     {
         char msg[400] = {'\0'};
-        SNPRINTF(msg, 400, "In avtDatabaseMetaData::RemoveLabels : Index %d is out of range", index);
+        snprintf(msg, 400, "In avtDatabaseMetaData::RemoveLabels : Index %d is out of range", index);
         PyErr_SetString(PyExc_IndexError, msg);
         return NULL;
     }
@@ -2357,9 +2356,9 @@ avtDatabaseMetaData_GetDefaultPlots(PyObject *self, PyObject *args)
     {
         char msg[400] = {'\0'};
         if(obj->data->GetDefaultPlots().size() == 0)
-            SNPRINTF(msg, 400, "In avtDatabaseMetaData::GetDefaultPlots : The index %d is invalid because defaultPlots is empty.", index);
+            snprintf(msg, 400, "In avtDatabaseMetaData::GetDefaultPlots : The index %d is invalid because defaultPlots is empty.", index);
         else
-            SNPRINTF(msg, 400, "In avtDatabaseMetaData::GetDefaultPlots : The index %d is invalid. Use index values in: [0, %ld).",  index, obj->data->GetDefaultPlots().size());
+            snprintf(msg, 400, "In avtDatabaseMetaData::GetDefaultPlots : The index %d is invalid. Use index values in: [0, %ld).",  index, obj->data->GetDefaultPlots().size());
         PyErr_SetString(PyExc_IndexError, msg);
         return NULL;
     }
@@ -2393,7 +2392,7 @@ avtDatabaseMetaData_AddDefaultPlots(PyObject *self, PyObject *args)
     if(!PyavtDefaultPlotMetaData_Check(element))
     {
         char msg[400] = {'\0'};
-        SNPRINTF(msg, 400, "The avtDatabaseMetaData::AddDefaultPlots method only accepts avtDefaultPlotMetaData objects.");
+        snprintf(msg, 400, "The avtDatabaseMetaData::AddDefaultPlots method only accepts avtDefaultPlotMetaData objects.");
         PyErr_SetString(PyExc_TypeError, msg);
         return NULL;
     }
@@ -2441,7 +2440,7 @@ avtDatabaseMetaData_RemoveDefaultPlots(PyObject *self, PyObject *args)
     if(index < 0 || index >= obj->data->GetNumDefaultPlots())
     {
         char msg[400] = {'\0'};
-        SNPRINTF(msg, 400, "In avtDatabaseMetaData::RemoveDefaultPlots : Index %d is out of range", index);
+        snprintf(msg, 400, "In avtDatabaseMetaData::RemoveDefaultPlots : Index %d is out of range", index);
         PyErr_SetString(PyExc_IndexError, msg);
         return NULL;
     }

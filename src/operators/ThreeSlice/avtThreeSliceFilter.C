@@ -414,7 +414,7 @@ avtThreeSliceFilter::UpdateDataObjectInfo(void)
     outValidity.ZonesSplit();
 
     char params[100];
-    SNPRINTF(params, 100, "x=%lg, y=%lg, z=%lg", atts.GetX(), atts.GetY(), atts.GetZ());
+    snprintf(params, 100, "x=%lg, y=%lg, z=%lg", atts.GetX(), atts.GetY(), atts.GetZ());
     outAtts.AddFilterMetaData("ThreeSlice", params);
 }
 

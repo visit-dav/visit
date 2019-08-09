@@ -19,7 +19,6 @@
 #include <avtParallel.h>
 
 #include <DebugStream.h>
-#include <snprintf.h>
 
 using     std::string;
 
@@ -151,7 +150,7 @@ avtBestFitLineQuery::PostExecute(void)
        
         format = "The best fit line is: X = " + floatFormat 
                   + " with a correlation coefficient of: "+ floatFormat;
-        SNPRINTF(buf, 1024, format.c_str(), x, r);
+        snprintf(buf, 1024, format.c_str(), x, r);
         s = std::string(buf);
         result_node["X"] = x;
         result_node["correlation_coefficient"] = r;
@@ -175,26 +174,26 @@ avtBestFitLineQuery::PostExecute(void)
 
         // Create a return message.
         format = "The best fit line is: Y = " + floatFormat  + "X ";
-        SNPRINTF(buf, 1024,format.c_str(), m);
+        snprintf(buf, 1024,format.c_str(), m);
         s = std::string(buf);
         if(b < 0.)
         {
             format = "-" + floatFormat + " "; 
-            SNPRINTF(buf, 1024, format.c_str(), b);
+            snprintf(buf, 1024, format.c_str(), b);
             buf[1] = ' ';
             s += buf;
         }
         else if(b > 0.)
         {
             format = "+ " + floatFormat + " "; 
-            SNPRINTF(buf, 1024, format.c_str(), b);
+            snprintf(buf, 1024, format.c_str(), b);
             s += buf;
         }
 
         if (rbottom > 0.)
         {
             format = "with a correlation coefficient of: " + floatFormat;
-            SNPRINTF(buf, 1024, format.c_str(), r);
+            snprintf(buf, 1024, format.c_str(), r);
             s += buf;
             result_node["correlation_coefficient"] = r;
         }

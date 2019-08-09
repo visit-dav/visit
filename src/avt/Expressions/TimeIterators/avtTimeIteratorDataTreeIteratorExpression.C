@@ -17,8 +17,6 @@
 #include <DebugStream.h>
 #include <ExpressionException.h>
 
-#include <snprintf.h>
-
 
 // ****************************************************************************
 //  Method: avtTimeIteratorDataTreeIteratorExpression constructor

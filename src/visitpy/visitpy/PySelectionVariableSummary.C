@@ -5,7 +5,6 @@
 #include <PySelectionVariableSummary.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PySelectionVariableSummary
@@ -42,26 +41,26 @@ PySelectionVariableSummary_ToString(const SelectionVariableSummary *atts, const 
     std::string str;
     char tmpStr[1000];
 
-    SNPRINTF(tmpStr, 1000, "%sname = \"%s\"\n", prefix, atts->GetName().c_str());
+    snprintf(tmpStr, 1000, "%sname = \"%s\"\n", prefix, atts->GetName().c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sminimum = %g\n", prefix, atts->GetMinimum());
+    snprintf(tmpStr, 1000, "%sminimum = %g\n", prefix, atts->GetMinimum());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%smaximum = %g\n", prefix, atts->GetMaximum());
+    snprintf(tmpStr, 1000, "%smaximum = %g\n", prefix, atts->GetMaximum());
     str += tmpStr;
     {   const double *histogram = atts->GetHistogram();
-        SNPRINTF(tmpStr, 1000, "%shistogram = (", prefix);
+        snprintf(tmpStr, 1000, "%shistogram = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 256; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", histogram[i]);
+            snprintf(tmpStr, 1000, "%g", histogram[i]);
             str += tmpStr;
             if(i < 255)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     return str;

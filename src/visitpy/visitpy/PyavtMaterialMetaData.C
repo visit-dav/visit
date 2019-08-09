@@ -5,7 +5,6 @@
 #include <PyavtMaterialMetaData.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyavtMaterialMetaData
@@ -44,38 +43,38 @@ PyavtMaterialMetaData_ToString(const avtMaterialMetaData *atts, const char *pref
 
     str = PyavtBaseVarMetaData_ToString(atts, prefix);
 
-    SNPRINTF(tmpStr, 1000, "%snumMaterials = %d\n", prefix, atts->numMaterials);
+    snprintf(tmpStr, 1000, "%snumMaterials = %d\n", prefix, atts->numMaterials);
     str += tmpStr;
     {   const stringVector &materialNames = atts->materialNames;
-        SNPRINTF(tmpStr, 1000, "%smaterialNames = (", prefix);
+        snprintf(tmpStr, 1000, "%smaterialNames = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < materialNames.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "\"%s\"", materialNames[i].c_str());
+            snprintf(tmpStr, 1000, "\"%s\"", materialNames[i].c_str());
             str += tmpStr;
             if(i < materialNames.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const stringVector &colorNames = atts->colorNames;
-        SNPRINTF(tmpStr, 1000, "%scolorNames = (", prefix);
+        snprintf(tmpStr, 1000, "%scolorNames = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < colorNames.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "\"%s\"", colorNames[i].c_str());
+            snprintf(tmpStr, 1000, "\"%s\"", colorNames[i].c_str());
             str += tmpStr;
             if(i < colorNames.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     return str;

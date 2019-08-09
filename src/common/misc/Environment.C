@@ -18,7 +18,7 @@
 #include <Environment.h>
 
 #include <DebugStream.h>
-#include <snprintf.h>
+
 
 namespace Environment {
 

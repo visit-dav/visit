@@ -11,7 +11,7 @@
 #include <ExprToken.h>
 #include <DebugStream.h>
 #include <ExpressionException.h>
-#include <snprintf.h>
+
 
 using     std::vector;
 
@@ -323,7 +323,7 @@ ListExpr::PrintNode(ostream &o)
     for (size_t i=0; i<elems->size(); i++)
     {
         char tmp[256];
-        SNPRINTF(tmp, 256, "Element % 2ld: ", i);
+        snprintf(tmp, 256, "Element % 2zu: ", i);
         (*elems)[i]->Print(o,tmp);
     }
 }
@@ -397,7 +397,7 @@ ArgsExpr::PrintNode(ostream &o)
     for (size_t i=0; i<args->size(); i++)
     {
         char tmp[256];
-        SNPRINTF(tmp, 256, "Arg % 2ld: ", i);
+        snprintf(tmp, 256, "Arg % 2zu: ", i);
         (*args)[i]->Print(o, tmp);
     }
 }

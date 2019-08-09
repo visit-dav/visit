@@ -38,7 +38,7 @@ static void VisIt_IssueH5Warning(int phase)
     if (phase == 0 && !haveIssuedOpenWarning)
     {
 #ifndef NDEBUG
-        SNPRINTF(msg, sizeof(msg), "Detected attempt to open an HDF5 file without H5F_CLOSE_SEMI.\n"
+        snprintf(msg, sizeof(msg), "Detected attempt to open an HDF5 file without H5F_CLOSE_SEMI.\n"
             "Please contact VisIt developers to have this issue fixed.");
         haveIssuedOpenWarning = true;
         if (!avtCallback::IssueWarning(msg))
@@ -47,7 +47,7 @@ static void VisIt_IssueH5Warning(int phase)
     }
     else if (phase == 1 && !haveIssuedCloseWarning)
     {
-        SNPRINTF(msg, sizeof(msg), "An attempt to close an HDF5 file failed, incidating a bug in the plugin.\n"
+        snprintf(msg, sizeof(msg), "An attempt to close an HDF5 file failed, incidating a bug in the plugin.\n"
             "Please contact VisIt developers to have this issue fixed.");
         haveIssuedCloseWarning = true;
         if (!avtCallback::IssueWarning(msg))
@@ -110,7 +110,7 @@ static herr_t VisIt_H5Fclose(hid_t fid)
         char msg[4096];
         char msg2[8192];
         hid_t *ooids = (hid_t *) malloc(noo * sizeof(hid_t));
-        SNPRINTF(msg, sizeof(msg), "Internal plugin error: %d objects left open in file: ", noo);
+        snprintf(msg, sizeof(msg), "Internal plugin error: %d objects left open in file: ", noo);
 #if HDF5_VERSION_GE(1,6,5)
         H5Fget_obj_ids(fid, obj_flags, noo, ooids);
 #else
@@ -121,14 +121,14 @@ static herr_t VisIt_H5Fclose(hid_t fid)
         {
             char name[256], tmp[256];
             H5Iget_name(ooids[i], name, sizeof(name));
-            SNPRINTF(tmp, sizeof(tmp), "\n    \"%.230s\" (id=%d)", name, (int) ooids[i]);
+            snprintf(tmp, sizeof(tmp), "\n    \"%.230s\" (id=%d)", name, (int) ooids[i]);
             if ((strlen(msg) + strlen(tmp) + 1) >= sizeof(msg))
                 break;
             strcat(msg, tmp);
             n += strlen(tmp);
         }
         free(ooids);
-        SNPRINTF(msg2, sizeof(msg2), "The HDF5 library indicates the plugin has left the following "
+        snprintf(msg2, sizeof(msg2), "The HDF5 library indicates the plugin has left the following "
             "objects in the file open...%s", msg);
         if (!avtCallback::IssueWarning(msg2))
            cerr << msg2 << endl;

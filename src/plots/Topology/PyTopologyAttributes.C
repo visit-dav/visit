@@ -5,7 +5,6 @@
 #include <PyTopologyAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 #include <PyColorAttributeList.h>
 
 // ****************************************************************************
@@ -43,29 +42,29 @@ PyTopologyAttributes_ToString(const TopologyAttributes *atts, const char *prefix
     std::string str;
     char tmpStr[1000];
 
-    SNPRINTF(tmpStr, 1000, "%slineWidth = %d\n", prefix, atts->GetLineWidth());
+    snprintf(tmpStr, 1000, "%slineWidth = %d\n", prefix, atts->GetLineWidth());
     str += tmpStr;
     { const ColorAttributeList &cL = atts->GetMultiColor();
         const char *comment = (prefix==0 || strcmp(prefix,"")==0) ? "# " : "";
         for(int i = 0; i < cL.GetNumColors(); ++i)
         {
             const unsigned char *c = cL[i].GetColor();
-            SNPRINTF(tmpStr, 1000, "%s%sSetMultiColor(%d, (%d, %d, %d, %d))\n",
+            snprintf(tmpStr, 1000, "%s%sSetMultiColor(%d, (%d, %d, %d, %d))\n",
                      comment, prefix, i, int(c[0]), int(c[1]), int(c[2]), int(c[3]));
             str += tmpStr;
         }
     }
-    SNPRINTF(tmpStr, 1000, "%sminOpacity = %g\n", prefix, atts->GetMinOpacity());
+    snprintf(tmpStr, 1000, "%sminOpacity = %g\n", prefix, atts->GetMinOpacity());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sminPlateauOpacity = %g\n", prefix, atts->GetMinPlateauOpacity());
+    snprintf(tmpStr, 1000, "%sminPlateauOpacity = %g\n", prefix, atts->GetMinPlateauOpacity());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%smaxPlateauOpacity = %g\n", prefix, atts->GetMaxPlateauOpacity());
+    snprintf(tmpStr, 1000, "%smaxPlateauOpacity = %g\n", prefix, atts->GetMaxPlateauOpacity());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%smaxOpacity = %g\n", prefix, atts->GetMaxOpacity());
+    snprintf(tmpStr, 1000, "%smaxOpacity = %g\n", prefix, atts->GetMaxOpacity());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%stolerance = %g\n", prefix, atts->GetTolerance());
+    snprintf(tmpStr, 1000, "%stolerance = %g\n", prefix, atts->GetTolerance());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%shitpercent = %g\n", prefix, atts->GetHitpercent());
+    snprintf(tmpStr, 1000, "%shitpercent = %g\n", prefix, atts->GetHitpercent());
     str += tmpStr;
     return str;
 }

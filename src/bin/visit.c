@@ -14,7 +14,6 @@
 #include <sys/stat.h>
 #include <shlobj.h>
 #include <shlwapi.h>
-#include <snprintf.h>
 
 #include <vector>
 #include <string>
@@ -783,22 +782,22 @@ VisItLauncherMain(int argc, char *argv[])
         switch(err)
         {
             case E2BIG:
-                _snprintf(errmsg, 30, "_spawn error: %d: E2BIG\n", err);
+                snprintf(errmsg, 30, "_spawn error: %d: E2BIG\n", err);
                 break;
             case EINVAL:
-                _snprintf(errmsg, 30, "_spawn error: %d: EINVAL\n", err);
+                snprintf(errmsg, 30, "_spawn error: %d: EINVAL\n", err);
                 break;
             case ENOENT:
-                _snprintf(errmsg, 30, "_spawn error: %d: ENOENT\n", err);
+                snprintf(errmsg, 30, "_spawn error: %d: ENOENT\n", err);
                 break;
             case ENOEXEC:
-                _snprintf(errmsg, 30, "_spawn error: %d: ENOEXEC\n", err);
+                snprintf(errmsg, 30, "_spawn error: %d: ENOEXEC\n", err);
                 break;
             case ENOMEM:
-                _snprintf(errmsg, 30,  "_spawn error: %d: ENOMEM\n", err);
+                snprintf(errmsg, 30,  "_spawn error: %d: ENOMEM\n", err);
                 break;
             default: 
-                _snprintf(errmsg, 30, "_spawn error: %d: UNKNOWN\n", err);
+                snprintf(errmsg, 30, "_spawn error: %d: UNKNOWN\n", err);
                 break;
         }
         MessageBox(NULL, errmsg, component.c_str(), MB_OK);
@@ -1121,7 +1120,7 @@ GetVisItEnvironment(stringVector &env, bool addPluginVars, bool &usingdev)
             if (_stat(personalUserHome.c_str(), &fs) == -1)
             {
                 char tmp[1024];
-                SNPRINTF(tmp, 1024, "VISITUSERHOME is set in your environment"
+                snprintf(tmp, 1024, "VISITUSERHOME is set in your environment"
                             " but the specified path does not exist.\n"
                             "(%s)\n"
                             "Please specify a valid path for VISITUSERHOME"
@@ -1137,7 +1136,7 @@ GetVisItEnvironment(stringVector &env, bool addPluginVars, bool &usingdev)
             if (! (fs.st_mode & _S_IFDIR))
             {
                 char tmp[1024];
-                SNPRINTF(tmp,1024, "VISITUSERHOME is set in your environment"
+                snprintf(tmp,1024, "VISITUSERHOME is set in your environment"
                             " but the specified value is not a folder:\n"
                             "(%s)\n"
                             "Please specify a valid folder path for "
@@ -1166,7 +1165,7 @@ GetVisItEnvironment(stringVector &env, bool addPluginVars, bool &usingdev)
             if(SUCCEEDED(SHGetFolderPath(NULL, CSIDL_PERSONAL, NULL, 
                                      SHGFP_TYPE_CURRENT, szPath))) 
             {
-                SNPRINTF(visituserpath, 512, "%s\\VisIt", szPath);
+                snprintf(visituserpath, 512, "%s\\VisIt", szPath);
                 haveVISITUSERHOME = true;
             }
 

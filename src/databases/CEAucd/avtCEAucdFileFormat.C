@@ -11,7 +11,6 @@
 #include <vtkCEAucdReader.h>
 
 #include <algorithm>
-#include <snprintf.h>
 #include <string>
 #include <vector>
 
@@ -452,9 +451,9 @@ avtCEAucdFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                     vec_expr.SetName(vec_name);
                     char defn[1024];
                     if (dimension == 2)
-                        SNPRINTF(defn, 1024, "{%s, %s}", iName, jName);
+                        snprintf(defn, 1024, "{%s, %s}", iName, jName);
                     else
-                        SNPRINTF(defn, 1024, "{%s, %s, %s}", 
+                        snprintf(defn, 1024, "{%s, %s, %s}", 
                                        iName, jName, kName);
                     vec_expr.SetDefinition(defn);
                     vec_expr.SetType(Expression::VectorMeshVar);
@@ -680,7 +679,7 @@ avtCEAucdFileFormat::GetAuxiliaryData(const char *var, int dom,
     for (i = 0 ; i < nMaterials ; i++)
     {
         char name[1024];
-        SNPRINTF(name, 1024, "frac_pres[%d]", i);
+        snprintf(name, 1024, "frac_pres[%d]", i);
         vtkFloatArray *arr = (vtkFloatArray *) 
                             reader->GetOutput()->GetCellData()->GetArray(name);
         if (arr == NULL)

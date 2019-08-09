@@ -2,8 +2,6 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-#include <snprintf.h>
-
 #include <InvalidVariableException.h>
 #include <InvalidFilesException.h>
 #include <UnexpectedValueException.h>
@@ -181,12 +179,12 @@ IssueUnknownLEOSVariableWarning(const char *matDirName, const char *matName,
 
     if (!longMsgIssued)
     {
-        SNPRINTF(msg, sizeof(msg), longMsgFmtStr, varName, matName, matDirName);
+        snprintf(msg, sizeof(msg), longMsgFmtStr, varName, matName, matDirName);
         longMsgIssued = true;
     }
     else
     {
-        SNPRINTF(msg, sizeof(msg), shortMsgFmtStr, varName, matName, matDirName);
+        snprintf(msg, sizeof(msg), shortMsgFmtStr, varName, matName, matDirName);
     }
 
     if (numTimes <= 5)
@@ -197,7 +195,7 @@ IssueUnknownLEOSVariableWarning(const char *matDirName, const char *matName,
 
     if (numTimes == 5)
     {
-        SNPRINTF(msg, sizeof(msg), "\n\nFurther Warnings will be suppressed\n");
+        snprintf(msg, sizeof(msg), "\n\nFurther Warnings will be suppressed\n");
         if (!avtCallback::IssueWarning(msg))
             cerr << msg << endl;
     }

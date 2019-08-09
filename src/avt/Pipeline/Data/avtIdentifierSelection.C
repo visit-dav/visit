@@ -8,8 +8,6 @@
 
 #include <avtIdentifierSelection.h>
 
-#include <snprintf.h>
-
 
 // ****************************************************************************
 //  Method: avtIdentifierSelection constructor

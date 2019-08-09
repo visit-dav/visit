@@ -5,7 +5,6 @@
 #include <PyDelaunayAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyDelaunayAttributes
@@ -46,15 +45,15 @@ PyDelaunayAttributes_ToString(const DelaunayAttributes *atts, const char *prefix
     switch (atts->GetDimension())
     {
       case DelaunayAttributes::Automatic:
-          SNPRINTF(tmpStr, 1000, "%sdimension = %sAutomatic  # %s\n", prefix, prefix, dimension_names);
+          snprintf(tmpStr, 1000, "%sdimension = %sAutomatic  # %s\n", prefix, prefix, dimension_names);
           str += tmpStr;
           break;
       case DelaunayAttributes::Triangulation:
-          SNPRINTF(tmpStr, 1000, "%sdimension = %sTriangulation  # %s\n", prefix, prefix, dimension_names);
+          snprintf(tmpStr, 1000, "%sdimension = %sTriangulation  # %s\n", prefix, prefix, dimension_names);
           str += tmpStr;
           break;
       case DelaunayAttributes::Tetrahedralization:
-          SNPRINTF(tmpStr, 1000, "%sdimension = %sTetrahedralization  # %s\n", prefix, prefix, dimension_names);
+          snprintf(tmpStr, 1000, "%sdimension = %sTetrahedralization  # %s\n", prefix, prefix, dimension_names);
           str += tmpStr;
           break;
       default:

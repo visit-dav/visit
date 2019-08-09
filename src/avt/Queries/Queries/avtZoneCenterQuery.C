@@ -13,7 +13,6 @@
 #include <avtSILRestrictionTraverser.h>
 #include <QueryArgumentException.h>
 #include <vector>
-#include <snprintf.h>
 
 
 using std::vector;
@@ -223,7 +222,7 @@ avtZoneCenterQuery::PerformQuery(QueryAttributes *qA)
             {
                 format = "The center of %s zone %d is (" + floatFormat + ", " 
                                                          + floatFormat + ").";
-                SNPRINTF(msg, 120, format.c_str(), 
+                snprintf(msg, 120, format.c_str(), 
                          global.c_str(), element, c[0], c[1]);
             }
             else 
@@ -231,7 +230,7 @@ avtZoneCenterQuery::PerformQuery(QueryAttributes *qA)
                 format = "The center of %s zone %d is (" + floatFormat + ", " 
                                                          + floatFormat + ", " 
                                                          + floatFormat + ").";
-                SNPRINTF(msg, 120, format.c_str(), 
+                snprintf(msg, 120, format.c_str(), 
                          global.c_str(), element,
                          c[0], c[1], c[2]);
             }
@@ -251,7 +250,7 @@ avtZoneCenterQuery::PerformQuery(QueryAttributes *qA)
             {
                 format = "The center of zone %d (%s) is (" + floatFormat + ", " 
                                                          + floatFormat + ").";
-                SNPRINTF(msg, 120, format.c_str(),
+                snprintf(msg, 120, format.c_str(),
                          element, domainName.c_str(),
                          c[0], c[1]);
             }
@@ -260,7 +259,7 @@ avtZoneCenterQuery::PerformQuery(QueryAttributes *qA)
                 format = "The center of zone %d (%s) is (" + floatFormat + ", " 
                                                            + floatFormat + ", " 
                                                            + floatFormat + ").";
-                SNPRINTF(msg, 120, format.c_str(), 
+                snprintf(msg, 120, format.c_str(), 
                          element, domainName.c_str(),
                          c[0], c[1], c[2]);
             }
@@ -271,7 +270,7 @@ avtZoneCenterQuery::PerformQuery(QueryAttributes *qA)
     {
         if (singleDomain)
         {
-            SNPRINTF(msg, 120, "The center of zone %d could not be determined.",
+            snprintf(msg, 120, "The center of zone %d could not be determined.",
                      element);
         }
         else
@@ -281,7 +280,7 @@ avtZoneCenterQuery::PerformQuery(QueryAttributes *qA)
             string var      = queryAtts.GetVariables()[0];
             string domainName;
             src->GetDomainName(var, ts, domain, domainName);
-            SNPRINTF(msg, 120, "The center of zone %d (%s) could not be determined.",
+            snprintf(msg, 120, "The center of zone %d (%s) could not be determined.",
                      element, domainName.c_str());
         }
     }

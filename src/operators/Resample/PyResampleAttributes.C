@@ -5,7 +5,6 @@
 #include <PyResampleAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyResampleAttributes
@@ -43,65 +42,65 @@ PyResampleAttributes_ToString(const ResampleAttributes *atts, const char *prefix
     char tmpStr[1000];
 
     if(atts->GetUseExtents())
-        SNPRINTF(tmpStr, 1000, "%suseExtents = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%suseExtents = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%suseExtents = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%suseExtents = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sstartX = %g\n", prefix, atts->GetStartX());
+    snprintf(tmpStr, 1000, "%sstartX = %g\n", prefix, atts->GetStartX());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sendX = %g\n", prefix, atts->GetEndX());
+    snprintf(tmpStr, 1000, "%sendX = %g\n", prefix, atts->GetEndX());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%ssamplesX = %d\n", prefix, atts->GetSamplesX());
+    snprintf(tmpStr, 1000, "%ssamplesX = %d\n", prefix, atts->GetSamplesX());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sstartY = %g\n", prefix, atts->GetStartY());
+    snprintf(tmpStr, 1000, "%sstartY = %g\n", prefix, atts->GetStartY());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sendY = %g\n", prefix, atts->GetEndY());
+    snprintf(tmpStr, 1000, "%sendY = %g\n", prefix, atts->GetEndY());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%ssamplesY = %d\n", prefix, atts->GetSamplesY());
+    snprintf(tmpStr, 1000, "%ssamplesY = %d\n", prefix, atts->GetSamplesY());
     str += tmpStr;
     if(atts->GetIs3D())
-        SNPRINTF(tmpStr, 1000, "%sis3D = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sis3D = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sis3D = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sis3D = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sstartZ = %g\n", prefix, atts->GetStartZ());
+    snprintf(tmpStr, 1000, "%sstartZ = %g\n", prefix, atts->GetStartZ());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sendZ = %g\n", prefix, atts->GetEndZ());
+    snprintf(tmpStr, 1000, "%sendZ = %g\n", prefix, atts->GetEndZ());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%ssamplesZ = %d\n", prefix, atts->GetSamplesZ());
+    snprintf(tmpStr, 1000, "%ssamplesZ = %d\n", prefix, atts->GetSamplesZ());
     str += tmpStr;
     const char *tieResolver_names = "random, largest, smallest";
     switch (atts->GetTieResolver())
     {
       case ResampleAttributes::random:
-          SNPRINTF(tmpStr, 1000, "%stieResolver = %srandom  # %s\n", prefix, prefix, tieResolver_names);
+          snprintf(tmpStr, 1000, "%stieResolver = %srandom  # %s\n", prefix, prefix, tieResolver_names);
           str += tmpStr;
           break;
       case ResampleAttributes::largest:
-          SNPRINTF(tmpStr, 1000, "%stieResolver = %slargest  # %s\n", prefix, prefix, tieResolver_names);
+          snprintf(tmpStr, 1000, "%stieResolver = %slargest  # %s\n", prefix, prefix, tieResolver_names);
           str += tmpStr;
           break;
       case ResampleAttributes::smallest:
-          SNPRINTF(tmpStr, 1000, "%stieResolver = %ssmallest  # %s\n", prefix, prefix, tieResolver_names);
+          snprintf(tmpStr, 1000, "%stieResolver = %ssmallest  # %s\n", prefix, prefix, tieResolver_names);
           str += tmpStr;
           break;
       default:
           break;
     }
 
-    SNPRINTF(tmpStr, 1000, "%stieResolverVariable = \"%s\"\n", prefix, atts->GetTieResolverVariable().c_str());
+    snprintf(tmpStr, 1000, "%stieResolverVariable = \"%s\"\n", prefix, atts->GetTieResolverVariable().c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sdefaultValue = %g\n", prefix, atts->GetDefaultValue());
+    snprintf(tmpStr, 1000, "%sdefaultValue = %g\n", prefix, atts->GetDefaultValue());
     str += tmpStr;
     if(atts->GetDistributedResample())
-        SNPRINTF(tmpStr, 1000, "%sdistributedResample = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sdistributedResample = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sdistributedResample = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sdistributedResample = 0\n", prefix);
     str += tmpStr;
     if(atts->GetCellCenteredOutput())
-        SNPRINTF(tmpStr, 1000, "%scellCenteredOutput = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%scellCenteredOutput = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%scellCenteredOutput = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%scellCenteredOutput = 0\n", prefix);
     str += tmpStr;
     return str;
 }

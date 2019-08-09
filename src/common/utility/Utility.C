@@ -11,7 +11,7 @@
 #include <visit-config.h>
 #include <stdio.h>
 #include <string.h>
-#include <snprintf.h>
+
 
 using std::vector;
 

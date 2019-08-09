@@ -9,8 +9,6 @@
 
 #include <math.h>
 
-#include <snprintf.h>
-
 #include <vtkActor2D.h>
 #include <vtkAppendPolyData.h>
 #include <vtkCellArray.h>

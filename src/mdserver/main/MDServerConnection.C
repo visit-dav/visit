@@ -21,7 +21,6 @@
 #include <vector>
 
 #include <visit-config.h> // To get the version number
-#include <snprintf.h>
 
 #include <MDServerApplication.h>
 #include <MDServerConnection.h>
@@ -1387,7 +1386,7 @@ MDServerConnection::ReadFileListAttributes(GetFileListRPC::FileList &fl,
 
     // Keep track of the time needed to stat the files in the directory.
     char s[1024];
-    SNPRINTF(s, 1024, "Stat %d files in %s", nStat,
+    snprintf(s, 1024, "Stat %d files in %s", nStat,
              currentWorkingDirectory.c_str());
     visitTimer->StopTimer(total, s);
 #endif
@@ -2247,7 +2246,7 @@ MDServerConnection::ConsolidateVirtualDatabases(
             char digitLenString[3];
             int digitLen = (it->second.digitLength < 255) ?
                 it->second.digitLength : 255;
-            SNPRINTF(digitLenString, 3, "%02x", digitLen);
+            snprintf(digitLenString, 3, "%02x", digitLen);
             key.replace(beforeStar, 1, digitLenString);
 
             // Add the virtual database under the altered key, containing the

@@ -5,7 +5,6 @@
 #include <PyavtSymmetricTensorMetaData.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyavtSymmetricTensorMetaData
@@ -44,7 +43,7 @@ PyavtSymmetricTensorMetaData_ToString(const avtSymmetricTensorMetaData *atts, co
 
     str = PyavtVarMetaData_ToString(atts, prefix);
 
-    SNPRINTF(tmpStr, 1000, "%sdim = %d\n", prefix, atts->dim);
+    snprintf(tmpStr, 1000, "%sdim = %d\n", prefix, atts->dim);
     str += tmpStr;
     return str;
 }

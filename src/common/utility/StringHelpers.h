@@ -17,7 +17,7 @@
 #include <cerrno>
 #include <cstdio>
 #include <cstdlib>
-#include <snprintf.h>
+
 
 #if __GNUC__ >= 3
 #   define MUST_CHECK __attribute__ ((warn_unused_result))

@@ -5,7 +5,6 @@
 #include <PyConstructDataBinningAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyConstructDataBinningAttributes
@@ -42,54 +41,54 @@ PyConstructDataBinningAttributes_ToString(const ConstructDataBinningAttributes *
     std::string str;
     char tmpStr[1000];
 
-    SNPRINTF(tmpStr, 1000, "%sname = \"%s\"\n", prefix, atts->GetName().c_str());
+    snprintf(tmpStr, 1000, "%sname = \"%s\"\n", prefix, atts->GetName().c_str());
     str += tmpStr;
     {   const stringVector &varnames = atts->GetVarnames();
-        SNPRINTF(tmpStr, 1000, "%svarnames = (", prefix);
+        snprintf(tmpStr, 1000, "%svarnames = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < varnames.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "\"%s\"", varnames[i].c_str());
+            snprintf(tmpStr, 1000, "\"%s\"", varnames[i].c_str());
             str += tmpStr;
             if(i < varnames.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const unsignedCharVector &binType = atts->GetBinType();
-        SNPRINTF(tmpStr, 1000, "%sbinType = (", prefix);
+        snprintf(tmpStr, 1000, "%sbinType = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < binType.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%d", int(binType[i]));
+            snprintf(tmpStr, 1000, "%d", int(binType[i]));
             str += tmpStr;
             if(i < binType.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const doubleVector &binBoundaries = atts->GetBinBoundaries();
-        SNPRINTF(tmpStr, 1000, "%sbinBoundaries = (", prefix);
+        snprintf(tmpStr, 1000, "%sbinBoundaries = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < binBoundaries.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", binBoundaries[i]);
+            snprintf(tmpStr, 1000, "%g", binBoundaries[i]);
             str += tmpStr;
             if(i < binBoundaries.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     const char *reductionOperator_names = "Average, Minimum, Maximum, StandardDeviation, Variance, "
@@ -97,58 +96,58 @@ PyConstructDataBinningAttributes_ToString(const ConstructDataBinningAttributes *
     switch (atts->GetReductionOperator())
     {
       case ConstructDataBinningAttributes::Average:
-          SNPRINTF(tmpStr, 1000, "%sreductionOperator = %sAverage  # %s\n", prefix, prefix, reductionOperator_names);
+          snprintf(tmpStr, 1000, "%sreductionOperator = %sAverage  # %s\n", prefix, prefix, reductionOperator_names);
           str += tmpStr;
           break;
       case ConstructDataBinningAttributes::Minimum:
-          SNPRINTF(tmpStr, 1000, "%sreductionOperator = %sMinimum  # %s\n", prefix, prefix, reductionOperator_names);
+          snprintf(tmpStr, 1000, "%sreductionOperator = %sMinimum  # %s\n", prefix, prefix, reductionOperator_names);
           str += tmpStr;
           break;
       case ConstructDataBinningAttributes::Maximum:
-          SNPRINTF(tmpStr, 1000, "%sreductionOperator = %sMaximum  # %s\n", prefix, prefix, reductionOperator_names);
+          snprintf(tmpStr, 1000, "%sreductionOperator = %sMaximum  # %s\n", prefix, prefix, reductionOperator_names);
           str += tmpStr;
           break;
       case ConstructDataBinningAttributes::StandardDeviation:
-          SNPRINTF(tmpStr, 1000, "%sreductionOperator = %sStandardDeviation  # %s\n", prefix, prefix, reductionOperator_names);
+          snprintf(tmpStr, 1000, "%sreductionOperator = %sStandardDeviation  # %s\n", prefix, prefix, reductionOperator_names);
           str += tmpStr;
           break;
       case ConstructDataBinningAttributes::Variance:
-          SNPRINTF(tmpStr, 1000, "%sreductionOperator = %sVariance  # %s\n", prefix, prefix, reductionOperator_names);
+          snprintf(tmpStr, 1000, "%sreductionOperator = %sVariance  # %s\n", prefix, prefix, reductionOperator_names);
           str += tmpStr;
           break;
       case ConstructDataBinningAttributes::Sum:
-          SNPRINTF(tmpStr, 1000, "%sreductionOperator = %sSum  # %s\n", prefix, prefix, reductionOperator_names);
+          snprintf(tmpStr, 1000, "%sreductionOperator = %sSum  # %s\n", prefix, prefix, reductionOperator_names);
           str += tmpStr;
           break;
       case ConstructDataBinningAttributes::Count:
-          SNPRINTF(tmpStr, 1000, "%sreductionOperator = %sCount  # %s\n", prefix, prefix, reductionOperator_names);
+          snprintf(tmpStr, 1000, "%sreductionOperator = %sCount  # %s\n", prefix, prefix, reductionOperator_names);
           str += tmpStr;
           break;
       case ConstructDataBinningAttributes::RMS:
-          SNPRINTF(tmpStr, 1000, "%sreductionOperator = %sRMS  # %s\n", prefix, prefix, reductionOperator_names);
+          snprintf(tmpStr, 1000, "%sreductionOperator = %sRMS  # %s\n", prefix, prefix, reductionOperator_names);
           str += tmpStr;
           break;
       case ConstructDataBinningAttributes::PDF:
-          SNPRINTF(tmpStr, 1000, "%sreductionOperator = %sPDF  # %s\n", prefix, prefix, reductionOperator_names);
+          snprintf(tmpStr, 1000, "%sreductionOperator = %sPDF  # %s\n", prefix, prefix, reductionOperator_names);
           str += tmpStr;
           break;
       default:
           break;
     }
 
-    SNPRINTF(tmpStr, 1000, "%svarForReductionOperator = \"%s\"\n", prefix, atts->GetVarForReductionOperator().c_str());
+    snprintf(tmpStr, 1000, "%svarForReductionOperator = \"%s\"\n", prefix, atts->GetVarForReductionOperator().c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sundefinedValue = %g\n", prefix, atts->GetUndefinedValue());
+    snprintf(tmpStr, 1000, "%sundefinedValue = %g\n", prefix, atts->GetUndefinedValue());
     str += tmpStr;
     const char *binningScheme_names = "Uniform, Unknown";
     switch (atts->GetBinningScheme())
     {
       case ConstructDataBinningAttributes::Uniform:
-          SNPRINTF(tmpStr, 1000, "%sbinningScheme = %sUniform  # %s\n", prefix, prefix, binningScheme_names);
+          snprintf(tmpStr, 1000, "%sbinningScheme = %sUniform  # %s\n", prefix, prefix, binningScheme_names);
           str += tmpStr;
           break;
       case ConstructDataBinningAttributes::Unknown:
-          SNPRINTF(tmpStr, 1000, "%sbinningScheme = %sUnknown  # %s\n", prefix, prefix, binningScheme_names);
+          snprintf(tmpStr, 1000, "%sbinningScheme = %sUnknown  # %s\n", prefix, prefix, binningScheme_names);
           str += tmpStr;
           break;
       default:
@@ -156,41 +155,41 @@ PyConstructDataBinningAttributes_ToString(const ConstructDataBinningAttributes *
     }
 
     {   const intVector &numBins = atts->GetNumBins();
-        SNPRINTF(tmpStr, 1000, "%snumBins = (", prefix);
+        snprintf(tmpStr, 1000, "%snumBins = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < numBins.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%d", numBins[i]);
+            snprintf(tmpStr, 1000, "%d", numBins[i]);
             str += tmpStr;
             if(i < numBins.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     if(atts->GetOverTime())
-        SNPRINTF(tmpStr, 1000, "%soverTime = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%soverTime = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%soverTime = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%soverTime = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%stimeStart = %d\n", prefix, atts->GetTimeStart());
+    snprintf(tmpStr, 1000, "%stimeStart = %d\n", prefix, atts->GetTimeStart());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%stimeEnd = %d\n", prefix, atts->GetTimeEnd());
+    snprintf(tmpStr, 1000, "%stimeEnd = %d\n", prefix, atts->GetTimeEnd());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%stimeStride = %d\n", prefix, atts->GetTimeStride());
+    snprintf(tmpStr, 1000, "%stimeStride = %d\n", prefix, atts->GetTimeStride());
     str += tmpStr;
     const char *outOfBoundsBehavior_names = "Clamp, Discard";
     switch (atts->GetOutOfBoundsBehavior())
     {
       case ConstructDataBinningAttributes::Clamp:
-          SNPRINTF(tmpStr, 1000, "%soutOfBoundsBehavior = %sClamp  # %s\n", prefix, prefix, outOfBoundsBehavior_names);
+          snprintf(tmpStr, 1000, "%soutOfBoundsBehavior = %sClamp  # %s\n", prefix, prefix, outOfBoundsBehavior_names);
           str += tmpStr;
           break;
       case ConstructDataBinningAttributes::Discard:
-          SNPRINTF(tmpStr, 1000, "%soutOfBoundsBehavior = %sDiscard  # %s\n", prefix, prefix, outOfBoundsBehavior_names);
+          snprintf(tmpStr, 1000, "%soutOfBoundsBehavior = %sDiscard  # %s\n", prefix, prefix, outOfBoundsBehavior_names);
           str += tmpStr;
           break;
       default:

@@ -30,8 +30,6 @@
 
 #include <DebugStream.h>
 
-#include <snprintf.h>
-
 // This array contains strings that correspond to the file types that are 
 // enumerated in the ImageFileFormat enum.
 const char *avtImageFileWriter::extensions[][4] = {
@@ -568,12 +566,12 @@ avtImageFileWriter::CreateFilename(const char *base, bool family,
     // files written as part of the filename.
     if(family)
     {
-        SNPRINTF(str, len, "%s%04d%s", base, nFilesWritten,
+        snprintf(str, len, "%s%04d%s", base, nFilesWritten,
                  extensions[iformat][0]);
     }
     else
     {
-        SNPRINTF(str, len, "%s", base);
+        snprintf(str, len, "%s", base);
 
         // We're passing a full filename. See if we need to append a 
         // file extension.
@@ -586,7 +584,7 @@ avtImageFileWriter::CreateFilename(const char *base, bool family,
 
         if(!hasExtension)
         {
-            SNPRINTF(str, len, "%s%s", base, extensions[iformat][0]);
+            snprintf(str, len, "%s%s", base, extensions[iformat][0]);
         }
     }
 

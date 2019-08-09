@@ -9,7 +9,6 @@
 #include <errno.h>
 #include <limits.h> // for INT_MAX
 #include <float.h> // for DBL_MAX
-#include <snprintf.h>
 
 #include <avtFileFormat.h>
 
@@ -536,7 +535,7 @@ avtFileFormat::AddArrayVarToMetaData(avtDatabaseMetaData *md, string name,
     for (int i = 0 ; i < ncomps ; i++)
     {
         char name[16];
-        SNPRINTF(name, 16, "comp%02d", i);
+        snprintf(name, 16, "comp%02d", i);
         st->compNames[i] = name;
     }
     st->meshName = mesh;
@@ -578,7 +577,7 @@ avtFileFormat::AddMaterialToMetaData(avtDatabaseMetaData *md, string name,
         for (int i = 0; i < nmats; i++)
         {
             char num[8];
-            SNPRINTF(num, sizeof(num), "%d", i);
+            snprintf(num, sizeof(num), "%d", i);
             matnames.push_back(num);
         }
     }
@@ -622,7 +621,7 @@ avtFileFormat::AddMaterialToMetaData(avtDatabaseMetaData *md, string name,
         for (int i = 0; i < nmats; i++)
         {
             char num[8];
-            SNPRINTF(num, sizeof(num), "%d", i);
+            snprintf(num, sizeof(num), "%d", i);
             matnames.push_back(num);
         }
     }

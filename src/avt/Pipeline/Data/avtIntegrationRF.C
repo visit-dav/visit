@@ -8,8 +8,6 @@
 
 #include <avtIntegrationRF.h>
 
-#include <snprintf.h>
-
 #include <avtCallback.h>
 #include <avtLightingModel.h>
 #include <avtParallel.h>
@@ -213,7 +211,7 @@ avtIntegrationRF::OutputRawValues(const char *filename)
     if (!issuedWarning)
     {
         char msg[1024];
-        SNPRINTF(msg, 1024, "The integration was outputted to the file \"%s\".  "
+        snprintf(msg, 1024, "The integration was outputted to the file \"%s\".  "
                  "If you are running client/server, the file is located where "
                  "the remote server is running.  This message will only be issued"
                  " once per VisIt session.  Further renderings will overwrite"

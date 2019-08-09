@@ -94,7 +94,7 @@ function bv_ospray_host_profile
         echo "VISIT_OPTION_DEFAULT(VISIT_OSPRAY ON TYPE BOOL)" >> $HOSTCONF
         if [[ "$USE_SYSTEM_OSPRAY" == "no" ]]; then
             echo "SETUP_APP_VERSION(OSPRAY ${OSPRAY_VERSION})" >> $HOSTCONF
-            echo "VISIT_OPTION_DEFAULT(VISIT_OSPRAY_DIR \${VISITHOME}/ospray/$OSPRAY_VERSION/\${VISITARCH})" >> $HOSTCONF
+            echo "VISIT_OPTION_DEFAULT(VISIT_OSPRAY_DIR \${VISITHOME}/ospray/\${OSPRAY_VERSION}/\${VISITARCH})" >> $HOSTCONF
         else
             local _tmp_=$(basename ${OSPRAY_CONFIG_DIR})
             echo "SETUP_APP_VERSION(OSPRAY ${_tmp_:7})" >> $HOSTCONF

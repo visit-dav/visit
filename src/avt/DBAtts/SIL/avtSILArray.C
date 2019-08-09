@@ -12,7 +12,6 @@
 #include <avtSILRangeNamespace.h>
 #include <avtSILEnumeratedNamespace.h>
 #include <NameschemeAttributes.h>
-#include <snprintf.h>
 
 #include <cstring>
 
@@ -211,12 +210,12 @@ avtSILArray::GetSILSet(int index) const
     }
     else if (strstr(prefix.c_str(), "%") != NULL)
     {
-        SNPRINTF(name, 1024, prefix.c_str(), index + iFirstSetName);
+        snprintf(name, 1024, prefix.c_str(), index + iFirstSetName);
         rv = new avtSILSet(name, id);
     }
     else
     {
-        SNPRINTF(name, 1024, "%s%d", prefix.c_str(), index + iFirstSetName);
+        snprintf(name, 1024, "%s%d", prefix.c_str(), index + iFirstSetName);
         rv = new avtSILSet(name, id);
     }
     rv->AddMapIn(iColIndex);
@@ -435,7 +434,7 @@ avtSILArray::GetSetIndex(const std::string &name) const
     else
     {
         char nameTemplate[1024];
-        SNPRINTF(nameTemplate, 1024, "%s%%d", prefix.c_str());
+        snprintf(nameTemplate, 1024, "%s%%d", prefix.c_str());
         nMatches = sscanf(name.c_str(), nameTemplate, &i);
     }
     if (nMatches != 1)

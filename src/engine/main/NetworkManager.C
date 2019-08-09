@@ -6,7 +6,6 @@
 //                              NetworkManager.C                             //
 // ************************************************************************* //
 
-#include <snprintf.h>
 #include <AttributeSubject.h>
 #include <NetworkManager.h>
 #include <DataNetwork.h>
@@ -4827,7 +4826,7 @@ NetworkManager::ExportDatabases(const intVector &ids, const ExportDBAttributes &
             // Rig up a temporary ExportDBAttributes where we change the filename a little.
             ExportDBAttributes eAtts(atts);
             char plotid[4];
-            SNPRINTF(plotid, 4, "_%02d", int(i));
+            snprintf(plotid, 4, "_%02d", int(i));
 
             if(atts.GetAllTimes())
                 eAtts.SetFilename(filename + plotid + std::string("_") + timeSuffix + ext);
@@ -4949,7 +4948,7 @@ NetworkManager::ExportSingleDatabase(int id, const ExportDBAttributes &atts)
     if (!GetDatabasePluginManager()->PluginAvailable(db_type))
     {
         char msg[1024];
-        SNPRINTF(msg, 1024, "Unable to load plugin \"%s\" for exporting.",
+        snprintf(msg, 1024, "Unable to load plugin \"%s\" for exporting.",
                  db_type.c_str());
         EXCEPTION1(ImproperUseException, msg);
     }
@@ -4958,7 +4957,7 @@ NetworkManager::ExportSingleDatabase(int id, const ExportDBAttributes &atts)
     if (info == NULL)
     {
         char msg[1024];
-        SNPRINTF(msg, 1024, "Unable to get plugin info for \"%s\".",
+        snprintf(msg, 1024, "Unable to get plugin info for \"%s\".",
                  db_type.c_str());
         EXCEPTION1(ImproperUseException, msg);
     }
@@ -4969,7 +4968,7 @@ NetworkManager::ExportSingleDatabase(int id, const ExportDBAttributes &atts)
     if (wrtr == NULL)
     {
         char msg[1024];
-        SNPRINTF(msg, 1024, "Unable to locate writer for \"%s\".",
+        snprintf(msg, 1024, "Unable to locate writer for \"%s\".",
                  db_type.c_str());
         EXCEPTION1(ImproperUseException, msg);
     }
@@ -5547,7 +5546,7 @@ NetworkManager::FormatDebugImage(char *out, size_t outlen, const char *prefix)
 const
 {
   static int numDumps = 0;
-  SNPRINTF(out, outlen, "%s_%03d_%03d", prefix, PAR_Rank(), numDumps);
+  snprintf(out, outlen, "%s_%03d_%03d", prefix, PAR_Rank(), numDumps);
   numDumps++;
 }
 
@@ -6615,7 +6614,7 @@ NetworkManager::RenderSetup(avtImageType imgT, int windowID, intVector& plotIds,
     if(!viswinMap.count(windowID))
     {
         char invalid[256];
-        SNPRINTF(invalid, sizeof(invalid),
+        snprintf(invalid, sizeof(invalid),
                  "Attempt to render on invalid window id=%d", windowID);
         EXCEPTION1(ImproperUseException, invalid);
     }
@@ -7474,7 +7473,7 @@ NetworkManager::StopTimer()
     int rows,cols;
     viswin->GetSize(rows, cols);
 
-    SNPRINTF(msg, 1023, "NM::Render %lld cells %d pixels",
+    snprintf(msg, 1023, "NM::Render %lld cells %d pixels",
              renderState.cellCountTotal, rows*cols);
     visitTimer->StopTimer(renderState.timer, msg);
     renderState.timer = -1;

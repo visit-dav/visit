@@ -274,7 +274,7 @@ avtMOABFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             {
                 char name[256];
 
-                SNPRINTF(name, sizeof(name), "PAR_PART_%d", i);
+                snprintf(name, sizeof(name), "PAR_PART_%d", i);
                 ppsmd->AddEnumNameValue(name, i+1);
             }
             ppsmd->AddEnumNameValue("NOT_SPECIFIED", num_parts+1);
@@ -291,7 +291,7 @@ avtMOABFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             {
                 int value= *mIt;
                 char name[256];
-                SNPRINTF(name, sizeof(name), "Material_%d", value);
+                snprintf(name, sizeof(name), "Material_%d", value);
                 msmd->AddEnumNameValue(name, value);
             }
             md->Add(msmd);
@@ -308,7 +308,7 @@ avtMOABFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             {
                 int value= *mIt;
                 char name[256];
-                SNPRINTF(name, sizeof(name), "NeumannSet_%d", value);
+                snprintf(name, sizeof(name), "NeumannSet_%d", value);
                 nsmd->AddEnumNameValue(name, i);
             }
 
@@ -329,7 +329,7 @@ avtMOABFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             {
                 int value= *mIt;
                 char name[256];
-                SNPRINTF(name, sizeof(name), "Dirichlet_%d", value);
+                snprintf(name, sizeof(name), "Dirichlet_%d", value);
                 dsmd->AddEnumNameValue(name, i);
             }
 
@@ -347,7 +347,7 @@ avtMOABFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 
             {
                 char name[256];
-                SNPRINTF(name, sizeof(name), "GeomSet_%d_dim_%d", file_descriptor->defTagsEntSets[4][i],
+                snprintf(name, sizeof(name), "GeomSet_%d_dim_%d", file_descriptor->defTagsEntSets[4][i],
                     file_descriptor->defTagsVals[4][i]);
                 dsmd->AddEnumNameValue(name, i);
             }

@@ -5,7 +5,6 @@
 #include <PyTriangulateRegularPointsAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyTriangulateRegularPointsAttributes
@@ -43,18 +42,18 @@ PyTriangulateRegularPointsAttributes_ToString(const TriangulateRegularPointsAttr
     char tmpStr[1000];
 
     if(atts->GetUseXGridSpacing())
-        SNPRINTF(tmpStr, 1000, "%suseXGridSpacing = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%suseXGridSpacing = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%suseXGridSpacing = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%suseXGridSpacing = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sxGridSpacing = %g\n", prefix, atts->GetXGridSpacing());
+    snprintf(tmpStr, 1000, "%sxGridSpacing = %g\n", prefix, atts->GetXGridSpacing());
     str += tmpStr;
     if(atts->GetUseYGridSpacing())
-        SNPRINTF(tmpStr, 1000, "%suseYGridSpacing = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%suseYGridSpacing = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%suseYGridSpacing = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%suseYGridSpacing = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%syGridSpacing = %g\n", prefix, atts->GetYGridSpacing());
+    snprintf(tmpStr, 1000, "%syGridSpacing = %g\n", prefix, atts->GetYGridSpacing());
     str += tmpStr;
     return str;
 }

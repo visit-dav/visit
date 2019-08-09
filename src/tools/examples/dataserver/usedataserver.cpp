@@ -221,7 +221,7 @@ main(int argc, char *argv[])
             for(int i = 0; i < n; ++i)
             {
                 char vtkfile[100];
-                SNPRINTF(vtkfile, 100, "%s%04d.vtk", filebases[j], i);
+                snprintf(vtkfile, 100, "%s%04d.vtk", filebases[j], i);
                 cout << "\tWriting " << vtkfile << endl;
                 vtkDataSetWriter *writer = vtkDataSetWriter::New();
                 writer->SetInputData(datasets[i]);

@@ -25,7 +25,6 @@
 
 #include <DebugStream.h>
 #include <InvalidVariableException.h>
-#include <snprintf.h>
 
 #include <string>
 
@@ -124,9 +123,9 @@ avtConnComponentsVariableQuery::PostExecute(void)
         char buff[2048];
 
         if(nComps == 1)
-        {SNPRINTF(buff,2048,"Found %d connected component\n",nComps);}
+        {snprintf(buff,2048,"Found %d connected component\n",nComps);}
         else
-        {SNPRINTF(buff,2048,"Found %d connected components\n",nComps);}
+        {snprintf(buff,2048,"Found %d connected components\n",nComps);}
 
         msg += buff;
 
@@ -135,7 +134,7 @@ avtConnComponentsVariableQuery::PostExecute(void)
 
         for(int i=0;i<nComps;i++)
         {
-            SNPRINTF(buff,1024,
+            snprintf(buff,1024,
                      format.c_str(),
                      i,
                     sumPerComp[i]);

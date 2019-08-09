@@ -11,7 +11,6 @@
 #include <MovieUtility.h>
 
 #include <visit-config.h>
-#include <snprintf.h>
 
 static const char *VIEWPORTS_MISSING_WRONG_TYPE = 
     "VIEWPORTS node not found or wrong type.";
@@ -132,7 +131,7 @@ MovieTemplateConfig::CreateSequenceObjects(DataNode *sNode,
     for(int i = 1; i <= 16; ++i)
     {
         char tmp[20];
-        SNPRINTF(tmp, 20, "Window %d", i);
+        snprintf(tmp, 20, "Window %d", i);
         std::string nodeName(tmp);
 
         if(sNode->GetNode(nodeName) != 0)
@@ -1945,7 +1944,7 @@ MovieTemplateConfig::SequenceAdd(int type, std::string &name)
         int index = 1;
         do
         {
-            SNPRINTF(tmp, 200, "%s%d", s->SequenceName().c_str(), index++);
+            snprintf(tmp, 200, "%s%d", s->SequenceName().c_str(), index++);
         }
         while(GetSequence(tmp) != 0);
 

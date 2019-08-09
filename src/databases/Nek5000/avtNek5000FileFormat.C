@@ -35,7 +35,6 @@
 #include <avtPointSelection.h>
 #include <avtSpatialBoxSelection.h>
 #include <avtVariableCache.h>
-#include <snprintf.h>
 
 #include <Expression.h>
 
@@ -317,7 +316,7 @@ avtNek5000FileFormat::avtNek5000FileFormat(const char *filename,
 //
 //  Modifications:
 //    Dave Bremer, Thu Mar 20 11:28:05 PDT 2008
-//    Changed sprintf to SNPRINTF.
+//    Changed sprintf to snprintf.
 //
 //    Dave Bremer, Fri Jun  6 15:38:45 PDT 2008
 //    Added the bParFormat flag allowing the parallel format to be used
@@ -459,7 +458,7 @@ avtNek5000FileFormat::ParseMetaDataFile(const char *filename)
         }
         else
         {
-            SNPRINTF(buf, 2048, "Error parsing file.  Unknown tag %s", tag.c_str());
+            snprintf(buf, 2048, "Error parsing file.  Unknown tag %s", tag.c_str());
             EXCEPTION2(NonCompliantFileException, "Nek", buf);
         }
     }
@@ -577,7 +576,7 @@ avtNek5000FileFormat::ParseNekFileHeader()
     if (!f.is_open())
     {
         char msg[1024];
-        SNPRINTF(msg, 1024, "Could not open file %s, which should exist according to header file %s.", blockfilename, filename);
+        snprintf(msg, 1024, "Could not open file %s, which should exist according to header file %s.", blockfilename, filename);
         EXCEPTION2(NonCompliantFileException, "Nek", msg);
     }
 
@@ -836,7 +835,7 @@ void avtNek5000FileFormat::ParseFieldTags(ifstream &f)
 //
 //  Modifications:
 //    Dave Bremer, Thu Mar 20 11:28:05 PDT 2008
-//    Use the GetFileName method.  Changed sprintf to SNPRINTF.
+//    Use the GetFileName method.  Changed sprintf to snprintf.
 //
 //    Dave Bremer, Tue May 13 19:51:04 CDT 2008
 //    Use a simpler block numbering scheme, to provide faster I/O because of
@@ -945,7 +944,7 @@ avtNek5000FileFormat::ReadBlockLocations()
     {
         GetFileName(0, badFile, blockfilename, (int)fileTemplate.size() + 64);
         char msg[1024];
-        SNPRINTF(msg, 1024, "Could not open file \"%s\" to read block "
+        snprintf(msg, 1024, "Could not open file \"%s\" to read block "
                             "locations.", blockfilename);
         EXCEPTION2(NonCompliantFileException, "Nek", msg);
     }
@@ -1144,7 +1143,7 @@ avtNek5000FileFormat::FreeUpResources(void)
 //    Added domain boundary metadata.
 //
 //    Dave Bremer, Thu Mar 20 11:28:05 PDT 2008
-//    Changed sprintf to SNPRINTF.
+//    Changed sprintf to snprintf.
 //
 //    Hank Childs, Thu Dec 18 10:15:50 CST 2008
 //    Indicate that the format now does its own domain decomposition.
@@ -1201,7 +1200,7 @@ avtNek5000FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int /*ti
     for (ii = 0; ii < iNumSFields; ii++)
     {
         char scalarVarName[32];
-        SNPRINTF(scalarVarName, 32, "s%d", ii+1);
+        snprintf(scalarVarName, 32, "s%d", ii+1);
         AddScalarVarToMetaData(md, scalarVarName, meshname, AVT_NODECENT);
     }
     if (!avtDatabase::OnlyServeUpMetaData())
@@ -2229,11 +2228,11 @@ avtNek5000FileFormat::GetFileName(int rawTimestep, int pardir, char *outFileName
     }
     int len;
     if (!bParFormat)
-        len = SNPRINTF(outFileName, bufSize, fileTemplate.c_str(), timestep);
+        len = snprintf(outFileName, bufSize, fileTemplate.c_str(), timestep);
     else if (nPrintfTokens == 2)
-        len = SNPRINTF(outFileName, bufSize, fileTemplate.c_str(), pardir, timestep);
+        len = snprintf(outFileName, bufSize, fileTemplate.c_str(), pardir, timestep);
     else
-        len = SNPRINTF(outFileName, bufSize, fileTemplate.c_str(), pardir, pardir, timestep);
+        len = snprintf(outFileName, bufSize, fileTemplate.c_str(), pardir, pardir, timestep);
 
     if (len >= bufSize)
         EXCEPTION1(ImproperUseException, 

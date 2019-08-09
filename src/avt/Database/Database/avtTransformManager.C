@@ -52,7 +52,6 @@
 
 #include <DebugStream.h>
 #include <Utility.h>
-#include <snprintf.h>
 
 #include <vectortypes.h>
 
@@ -407,7 +406,7 @@ ConvertDataArrayToDouble(vtkDataArray *oldArr)
             default:
                 {
                     char msg[256];
-                    SNPRINTF(msg, sizeof(msg),
+                    snprintf(msg, sizeof(msg),
                         "Cannot convert from type \"%s\" to double",
                         DataArrayTypeName(oldArr));
                     EXCEPTION1(ImproperUseException, msg); 
@@ -692,7 +691,7 @@ BuildMappedArray(vtkDataArray *da, const vector<int> &valsToMap)
             break;
         default:
             {   char msg[256];
-                SNPRINTF(msg, sizeof(msg), "Cannot transform array of type \"%s\"",
+                snprintf(msg, sizeof(msg), "Cannot transform array of type \"%s\"",
                     DataArrayTypeName(da));
                 EXCEPTION1(ImproperUseException, msg); 
             }

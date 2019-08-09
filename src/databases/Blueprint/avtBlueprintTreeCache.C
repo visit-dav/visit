@@ -966,7 +966,7 @@ avtBlueprintTreeCache::Expand(const std::string pattern,
     if(idx_pattern != std::string::npos)
     {
         char buff[16];
-        SNPRINTF(buff,16,"%05d",idx);
+        snprintf(buff,16,"%05d",idx);
         return StringHelpers::Replace(pattern,
                                       "%05d",
                                       std::string(buff));
@@ -977,7 +977,7 @@ avtBlueprintTreeCache::Expand(const std::string pattern,
     if(idx_pattern != std::string::npos)
     {
         char buff[16];
-        SNPRINTF(buff,16,"%06d",idx);    
+        snprintf(buff,16,"%06d",idx);    
         return StringHelpers::Replace(pattern,
                                       "%06d",
                                       std::string(buff));
@@ -988,7 +988,7 @@ avtBlueprintTreeCache::Expand(const std::string pattern,
     if(idx_pattern != std::string::npos)
     {
         char buff[16];
-        SNPRINTF(buff,16,"%07d",idx);    
+        snprintf(buff,16,"%07d",idx);    
         return StringHelpers::Replace(pattern,
                                       "%07d",
                                       std::string(buff));

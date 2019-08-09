@@ -5,7 +5,6 @@
 #include <PyContextAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyContextAttributes
@@ -42,19 +41,19 @@ PyContextAttributes_ToString(const ContextAttributes *atts, const char *prefix)
     std::string str;
     char tmpStr[1000];
 
-    SNPRINTF(tmpStr, 1000, "%soffset = %g\n", prefix, atts->GetOffset());
+    snprintf(tmpStr, 1000, "%soffset = %g\n", prefix, atts->GetOffset());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%slow = %g\n", prefix, atts->GetLow());
+    snprintf(tmpStr, 1000, "%slow = %g\n", prefix, atts->GetLow());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%shi = %g\n", prefix, atts->GetHi());
+    snprintf(tmpStr, 1000, "%shi = %g\n", prefix, atts->GetHi());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%scontext = \"%s\"\n", prefix, atts->GetContext().c_str());
+    snprintf(tmpStr, 1000, "%scontext = \"%s\"\n", prefix, atts->GetContext().c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%scutoff = %g\n", prefix, atts->GetCutoff());
+    snprintf(tmpStr, 1000, "%scutoff = %g\n", prefix, atts->GetCutoff());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sbelow = %g\n", prefix, atts->GetBelow());
+    snprintf(tmpStr, 1000, "%sbelow = %g\n", prefix, atts->GetBelow());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sabove = %g\n", prefix, atts->GetAbove());
+    snprintf(tmpStr, 1000, "%sabove = %g\n", prefix, atts->GetAbove());
     str += tmpStr;
     return str;
 }

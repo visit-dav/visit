@@ -5,7 +5,6 @@
 #include <PyConnectedComponentsAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyConnectedComponentsAttributes
@@ -43,9 +42,9 @@ PyConnectedComponentsAttributes_ToString(const ConnectedComponentsAttributes *at
     char tmpStr[1000];
 
     if(atts->GetEnableGhostNeighborsOptimization())
-        SNPRINTF(tmpStr, 1000, "%sEnableGhostNeighborsOptimization = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sEnableGhostNeighborsOptimization = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sEnableGhostNeighborsOptimization = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sEnableGhostNeighborsOptimization = 0\n", prefix);
     str += tmpStr;
     return str;
 }

@@ -20,7 +20,7 @@
 #include <unistd.h>
 #endif
 
-#include <snprintf.h>
+
 #include <DebugStream.h>
 #include <CouldNotConnectException.h>
 
@@ -138,7 +138,7 @@ SocketBridge::SetLogging(bool val)
         if(log == NULL)
         {
             char filename[100];
-            SNPRINTF(filename, 100, "SocketBridge_%d_%d.vlog", from_port, to_port);
+            snprintf(filename, 100, "SocketBridge_%d_%d.vlog", from_port, to_port);
             log = fopen(filename, "wt");
         }
         )

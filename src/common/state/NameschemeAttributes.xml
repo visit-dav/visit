@@ -39,7 +39,4 @@
     <Include file="header" quoted="false">
       vector
     </Include>
-    <Include file="header" quoted="false">
-      snprintf.h
-    </Include>
   </Attribute>

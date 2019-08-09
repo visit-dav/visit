@@ -164,13 +164,13 @@ avtConnectedComponentsFilter::GetCustomExpressions(std::vector<Expression> &elis
 {
     Expression exp;
     char fullname[1024];
-    SNPRINTF(fullname, 1024, "operators/ConnectedComponents/%s", varname.c_str());
+    snprintf(fullname, 1024, "operators/ConnectedComponents/%s", varname.c_str());
     exp.SetName(fullname);
     char defn[1024];
     std::string gzopt = "\"true\"";
     if (!atts.GetEnableGhostNeighborsOptimization())
         gzopt  = "\"false\"";
-    SNPRINTF(defn, 1024, "conn_components(%s,%s)", varname.c_str(),gzopt.c_str());
+    snprintf(defn, 1024, "conn_components(%s,%s)", varname.c_str(),gzopt.c_str());
     exp.SetDefinition(defn);
     exp.SetType(Expression::ScalarMeshVar);
     elist.push_back(exp);
@@ -193,7 +193,7 @@ void
 avtConnectedComponentsFilter::GetVariablesToEvaluate(std::vector<std::string> &list)
 {
     char fullname[1024];
-    SNPRINTF(fullname, 1024, "operators/ConnectedComponents/%s", varname.c_str());
+    snprintf(fullname, 1024, "operators/ConnectedComponents/%s", varname.c_str());
     list.push_back(fullname);
 }
 

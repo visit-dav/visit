@@ -52,7 +52,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <vtkTextProperty.h>
 #include <vtkProperty2D.h>
 #include <vtkViewport.h>
-#include <snprintf.h>
 #include <DebugStream.h>
 #include <vectortypes.h>
 
@@ -161,9 +160,9 @@ vtkVisItAxisActor2D::vtkVisItAxisActor2D()
   this->LabelTextProperty->ShadowOn();
 
   this->LabelFormat = new char[8]; 
-  SNPRINTF(this->LabelFormat,8, "%s","%-#6.3f");
+  snprintf(this->LabelFormat,8, "%s","%-#6.3f");
   this->LogLabelFormat = new char[8]; 
-  SNPRINTF(this->LogLabelFormat,8, "%s","%-#6.3f");
+  snprintf(this->LogLabelFormat,8, "%s","%-#6.3f");
 
   this->TitleActor = vtkTextActor::New();
   this->TitleJustification = -1;
@@ -766,7 +765,7 @@ void vtkVisItAxisActor2D::BuildAxis(vtkViewport *viewport)
       int iterations = 0;
       while (iterations < 2)
       {
-          SNPRINTF(string,64,format, val*this->MajorTickLabelScale);
+          snprintf(string,64,format, val*this->MajorTickLabelScale);
           double v = atof(string);
           if (this->MajorTickLabelScale != 0.0)
               v /= this->MajorTickLabelScale;

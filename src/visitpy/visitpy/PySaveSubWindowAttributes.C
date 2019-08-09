@@ -5,7 +5,6 @@
 #include <PySaveSubWindowAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PySaveSubWindowAttributes
@@ -43,45 +42,45 @@ PySaveSubWindowAttributes_ToString(const SaveSubWindowAttributes *atts, const ch
     char tmpStr[1000];
 
     {   const int *position = atts->GetPosition();
-        SNPRINTF(tmpStr, 1000, "%sposition = (", prefix);
+        snprintf(tmpStr, 1000, "%sposition = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 2; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%d", position[i]);
+            snprintf(tmpStr, 1000, "%d", position[i]);
             str += tmpStr;
             if(i < 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const int *size = atts->GetSize();
-        SNPRINTF(tmpStr, 1000, "%ssize = (", prefix);
+        snprintf(tmpStr, 1000, "%ssize = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 2; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%d", size[i]);
+            snprintf(tmpStr, 1000, "%d", size[i]);
             str += tmpStr;
             if(i < 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
-    SNPRINTF(tmpStr, 1000, "%slayer = %d\n", prefix, atts->GetLayer());
+    snprintf(tmpStr, 1000, "%slayer = %d\n", prefix, atts->GetLayer());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%stransparency = %g\n", prefix, atts->GetTransparency());
+    snprintf(tmpStr, 1000, "%stransparency = %g\n", prefix, atts->GetTransparency());
     str += tmpStr;
     if(atts->GetOmitWindow())
-        SNPRINTF(tmpStr, 1000, "%somitWindow = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%somitWindow = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%somitWindow = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%somitWindow = 0\n", prefix);
     str += tmpStr;
     return str;
 }

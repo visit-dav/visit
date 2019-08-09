@@ -1072,7 +1072,7 @@ QvisPickWindow::UpdatePage()
             {
                 if (info.GetVariableType() == "scalar" && values.size()==1)
                 {
-                    SNPRINTF(buff, 256, info.GetFloatFormat().c_str(), values[0]);
+                    snprintf(buff, 256, info.GetFloatFormat().c_str(), values[0]);
                 }
             }
         }

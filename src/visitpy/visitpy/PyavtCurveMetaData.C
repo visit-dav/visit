@@ -5,7 +5,6 @@
 #include <PyavtCurveMetaData.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyavtCurveMetaData
@@ -44,24 +43,24 @@ PyavtCurveMetaData_ToString(const avtCurveMetaData *atts, const char *prefix)
 
     str = PyavtVarMetaData_ToString(atts, prefix);
 
-    SNPRINTF(tmpStr, 1000, "%sxUnits = \"%s\"\n", prefix, atts->xUnits.c_str());
+    snprintf(tmpStr, 1000, "%sxUnits = \"%s\"\n", prefix, atts->xUnits.c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sxLabel = \"%s\"\n", prefix, atts->xLabel.c_str());
+    snprintf(tmpStr, 1000, "%sxLabel = \"%s\"\n", prefix, atts->xLabel.c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%syUnits = \"%s\"\n", prefix, atts->yUnits.c_str());
+    snprintf(tmpStr, 1000, "%syUnits = \"%s\"\n", prefix, atts->yUnits.c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%syLabel = \"%s\"\n", prefix, atts->yLabel.c_str());
+    snprintf(tmpStr, 1000, "%syLabel = \"%s\"\n", prefix, atts->yLabel.c_str());
     str += tmpStr;
     if(atts->hasSpatialExtents)
-        SNPRINTF(tmpStr, 1000, "%shasSpatialExtents = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%shasSpatialExtents = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%shasSpatialExtents = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%shasSpatialExtents = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sminSpatialExtents = %g\n", prefix, atts->minSpatialExtents);
+    snprintf(tmpStr, 1000, "%sminSpatialExtents = %g\n", prefix, atts->minSpatialExtents);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%smaxSpatialExtents = %g\n", prefix, atts->maxSpatialExtents);
+    snprintf(tmpStr, 1000, "%smaxSpatialExtents = %g\n", prefix, atts->maxSpatialExtents);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sfrom1DScalarName = \"%s\"\n", prefix, atts->from1DScalarName.c_str());
+    snprintf(tmpStr, 1000, "%sfrom1DScalarName = \"%s\"\n", prefix, atts->from1DScalarName.c_str());
     str += tmpStr;
     return str;
 }

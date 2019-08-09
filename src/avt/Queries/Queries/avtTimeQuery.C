@@ -8,8 +8,6 @@
 
 #include <avtTimeQuery.h>
 
-#include <snprintf.h>
-
 #include <QueryAttributes.h>
 
 
@@ -99,7 +97,7 @@ avtTimeQuery::GetResultMessage()
     char msg[1024];
     
     std::string format = "The time is " + queryAtts.GetFloatFormat() + ".";
-    SNPRINTF(msg,1024,format.c_str(), dtime);
+    snprintf(msg,1024,format.c_str(), dtime);
     std::string msg2 = msg;
     return msg2;
 }

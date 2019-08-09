@@ -5,7 +5,6 @@
 #include <PyWellBoreAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 #include <PyColorControlPointList.h>
 #include <ColorAttribute.h>
 #include <PyColorAttributeList.h>
@@ -51,56 +50,56 @@ PyWellBoreAttributes_ToString(const WellBoreAttributes *atts, const char *prefix
         str += PyColorControlPointList_ToString(&atts->GetDefaultPalette(), objPrefix.c_str());
     }
     {   const unsignedCharVector &changedColors = atts->GetChangedColors();
-        SNPRINTF(tmpStr, 1000, "%schangedColors = (", prefix);
+        snprintf(tmpStr, 1000, "%schangedColors = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < changedColors.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%d", int(changedColors[i]));
+            snprintf(tmpStr, 1000, "%d", int(changedColors[i]));
             str += tmpStr;
             if(i < changedColors.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     const char *colorType_names = "ColorBySingleColor, ColorByMultipleColors, ColorByColorTable";
     switch (atts->GetColorType())
     {
       case WellBoreAttributes::ColorBySingleColor:
-          SNPRINTF(tmpStr, 1000, "%scolorType = %sColorBySingleColor  # %s\n", prefix, prefix, colorType_names);
+          snprintf(tmpStr, 1000, "%scolorType = %sColorBySingleColor  # %s\n", prefix, prefix, colorType_names);
           str += tmpStr;
           break;
       case WellBoreAttributes::ColorByMultipleColors:
-          SNPRINTF(tmpStr, 1000, "%scolorType = %sColorByMultipleColors  # %s\n", prefix, prefix, colorType_names);
+          snprintf(tmpStr, 1000, "%scolorType = %sColorByMultipleColors  # %s\n", prefix, prefix, colorType_names);
           str += tmpStr;
           break;
       case WellBoreAttributes::ColorByColorTable:
-          SNPRINTF(tmpStr, 1000, "%scolorType = %sColorByColorTable  # %s\n", prefix, prefix, colorType_names);
+          snprintf(tmpStr, 1000, "%scolorType = %sColorByColorTable  # %s\n", prefix, prefix, colorType_names);
           str += tmpStr;
           break;
       default:
           break;
     }
 
-    SNPRINTF(tmpStr, 1000, "%scolorTableName = \"%s\"\n", prefix, atts->GetColorTableName().c_str());
+    snprintf(tmpStr, 1000, "%scolorTableName = \"%s\"\n", prefix, atts->GetColorTableName().c_str());
     str += tmpStr;
     if(atts->GetInvertColorTable())
-        SNPRINTF(tmpStr, 1000, "%sinvertColorTable = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sinvertColorTable = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sinvertColorTable = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sinvertColorTable = 0\n", prefix);
     str += tmpStr;
     const unsigned char *singleColor = atts->GetSingleColor().GetColor();
-    SNPRINTF(tmpStr, 1000, "%ssingleColor = (%d, %d, %d, %d)\n", prefix, int(singleColor[0]), int(singleColor[1]), int(singleColor[2]), int(singleColor[3]));
+    snprintf(tmpStr, 1000, "%ssingleColor = (%d, %d, %d, %d)\n", prefix, int(singleColor[0]), int(singleColor[1]), int(singleColor[2]), int(singleColor[3]));
     str += tmpStr;
     { const ColorAttributeList &cL = atts->GetMultiColor();
         const char *comment = (prefix==0 || strcmp(prefix,"")==0) ? "# " : "";
         for(int i = 0; i < cL.GetNumColors(); ++i)
         {
             const unsigned char *c = cL[i].GetColor();
-            SNPRINTF(tmpStr, 1000, "%s%sSetMultiColor(%d, (%d, %d, %d, %d))\n",
+            snprintf(tmpStr, 1000, "%s%sSetMultiColor(%d, (%d, %d, %d, %d))\n",
                      comment, prefix, i, int(c[0]), int(c[1]), int(c[2]), int(c[3]));
             str += tmpStr;
         }
@@ -109,11 +108,11 @@ PyWellBoreAttributes_ToString(const WellBoreAttributes *atts, const char *prefix
     switch (atts->GetDrawWellsAs())
     {
       case WellBoreAttributes::Lines:
-          SNPRINTF(tmpStr, 1000, "%sdrawWellsAs = %sLines  # %s\n", prefix, prefix, drawWellsAs_names);
+          snprintf(tmpStr, 1000, "%sdrawWellsAs = %sLines  # %s\n", prefix, prefix, drawWellsAs_names);
           str += tmpStr;
           break;
       case WellBoreAttributes::Cylinders:
-          SNPRINTF(tmpStr, 1000, "%sdrawWellsAs = %sCylinders  # %s\n", prefix, prefix, drawWellsAs_names);
+          snprintf(tmpStr, 1000, "%sdrawWellsAs = %sCylinders  # %s\n", prefix, prefix, drawWellsAs_names);
           str += tmpStr;
           break;
       default:
@@ -124,93 +123,93 @@ PyWellBoreAttributes_ToString(const WellBoreAttributes *atts, const char *prefix
     switch (atts->GetWellCylinderQuality())
     {
       case WellBoreAttributes::Low:
-          SNPRINTF(tmpStr, 1000, "%swellCylinderQuality = %sLow  # %s\n", prefix, prefix, wellCylinderQuality_names);
+          snprintf(tmpStr, 1000, "%swellCylinderQuality = %sLow  # %s\n", prefix, prefix, wellCylinderQuality_names);
           str += tmpStr;
           break;
       case WellBoreAttributes::Medium:
-          SNPRINTF(tmpStr, 1000, "%swellCylinderQuality = %sMedium  # %s\n", prefix, prefix, wellCylinderQuality_names);
+          snprintf(tmpStr, 1000, "%swellCylinderQuality = %sMedium  # %s\n", prefix, prefix, wellCylinderQuality_names);
           str += tmpStr;
           break;
       case WellBoreAttributes::High:
-          SNPRINTF(tmpStr, 1000, "%swellCylinderQuality = %sHigh  # %s\n", prefix, prefix, wellCylinderQuality_names);
+          snprintf(tmpStr, 1000, "%swellCylinderQuality = %sHigh  # %s\n", prefix, prefix, wellCylinderQuality_names);
           str += tmpStr;
           break;
       case WellBoreAttributes::Super:
-          SNPRINTF(tmpStr, 1000, "%swellCylinderQuality = %sSuper  # %s\n", prefix, prefix, wellCylinderQuality_names);
+          snprintf(tmpStr, 1000, "%swellCylinderQuality = %sSuper  # %s\n", prefix, prefix, wellCylinderQuality_names);
           str += tmpStr;
           break;
       default:
           break;
     }
 
-    SNPRINTF(tmpStr, 1000, "%swellRadius = %g\n", prefix, atts->GetWellRadius());
+    snprintf(tmpStr, 1000, "%swellRadius = %g\n", prefix, atts->GetWellRadius());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%swellLineWidth = %d\n", prefix, atts->GetWellLineWidth());
+    snprintf(tmpStr, 1000, "%swellLineWidth = %d\n", prefix, atts->GetWellLineWidth());
     str += tmpStr;
     const char *wellAnnotation_names = "None, StemOnly, NameOnly, StemAndName";
     switch (atts->GetWellAnnotation())
     {
       case WellBoreAttributes::None:
-          SNPRINTF(tmpStr, 1000, "%swellAnnotation = %sNone  # %s\n", prefix, prefix, wellAnnotation_names);
+          snprintf(tmpStr, 1000, "%swellAnnotation = %sNone  # %s\n", prefix, prefix, wellAnnotation_names);
           str += tmpStr;
           break;
       case WellBoreAttributes::StemOnly:
-          SNPRINTF(tmpStr, 1000, "%swellAnnotation = %sStemOnly  # %s\n", prefix, prefix, wellAnnotation_names);
+          snprintf(tmpStr, 1000, "%swellAnnotation = %sStemOnly  # %s\n", prefix, prefix, wellAnnotation_names);
           str += tmpStr;
           break;
       case WellBoreAttributes::NameOnly:
-          SNPRINTF(tmpStr, 1000, "%swellAnnotation = %sNameOnly  # %s\n", prefix, prefix, wellAnnotation_names);
+          snprintf(tmpStr, 1000, "%swellAnnotation = %sNameOnly  # %s\n", prefix, prefix, wellAnnotation_names);
           str += tmpStr;
           break;
       case WellBoreAttributes::StemAndName:
-          SNPRINTF(tmpStr, 1000, "%swellAnnotation = %sStemAndName  # %s\n", prefix, prefix, wellAnnotation_names);
+          snprintf(tmpStr, 1000, "%swellAnnotation = %sStemAndName  # %s\n", prefix, prefix, wellAnnotation_names);
           str += tmpStr;
           break;
       default:
           break;
     }
 
-    SNPRINTF(tmpStr, 1000, "%swellStemHeight = %g\n", prefix, atts->GetWellStemHeight());
+    snprintf(tmpStr, 1000, "%swellStemHeight = %g\n", prefix, atts->GetWellStemHeight());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%swellNameScale = %g\n", prefix, atts->GetWellNameScale());
+    snprintf(tmpStr, 1000, "%swellNameScale = %g\n", prefix, atts->GetWellNameScale());
     str += tmpStr;
     if(atts->GetLegendFlag())
-        SNPRINTF(tmpStr, 1000, "%slegendFlag = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%slegendFlag = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%slegendFlag = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%slegendFlag = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%snWellBores = %d\n", prefix, atts->GetNWellBores());
+    snprintf(tmpStr, 1000, "%snWellBores = %d\n", prefix, atts->GetNWellBores());
     str += tmpStr;
     {   const intVector &wellBores = atts->GetWellBores();
-        SNPRINTF(tmpStr, 1000, "%swellBores = (", prefix);
+        snprintf(tmpStr, 1000, "%swellBores = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < wellBores.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%d", wellBores[i]);
+            snprintf(tmpStr, 1000, "%d", wellBores[i]);
             str += tmpStr;
             if(i < wellBores.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const stringVector &wellNames = atts->GetWellNames();
-        SNPRINTF(tmpStr, 1000, "%swellNames = (", prefix);
+        snprintf(tmpStr, 1000, "%swellNames = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < wellNames.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "\"%s\"", wellNames[i].c_str());
+            snprintf(tmpStr, 1000, "\"%s\"", wellNames[i].c_str());
             str += tmpStr;
             if(i < wellNames.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     return str;

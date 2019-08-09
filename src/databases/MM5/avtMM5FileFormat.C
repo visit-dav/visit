@@ -16,7 +16,6 @@
 #include <vtkPolyData.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkVisItUtility.h>
-#include <snprintf.h>
 
 #include <avtDatabaseMetaData.h>
 
@@ -162,9 +161,9 @@ avtMM5FileFormat::Initialize()
                         meshDims.push_back(dims[d]);
 
                         if(d != 0)
-                            SNPRINTF(tmp, 100, "x%d", dims[d]);
+                            snprintf(tmp, 100, "x%d", dims[d]);
                         else
-                            SNPRINTF(tmp, 100, "%d", dims[d]);
+                            snprintf(tmp, 100, "%d", dims[d]);
                         meshName += tmp;
                     }
 
@@ -270,9 +269,9 @@ avtMM5FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timeStat
                     for(int d = 0; d < ndims; ++d)
                     {
                         if(d != 0)
-                            SNPRINTF(tmp, 100, "x%d", dims[d]);
+                            snprintf(tmp, 100, "x%d", dims[d]);
                         else
-                            SNPRINTF(tmp, 100, "%d", dims[d]);
+                            snprintf(tmp, 100, "%d", dims[d]);
                         meshName += tmp;
                     }
 

@@ -189,7 +189,7 @@ do {                                                                \
     if (_errno != 0 && invalidCoordCompWarning++ < 5)               \
     {                                                               \
         if (invalidCoordCompWarning < 5)                            \
-            SNPRINTF(msg, sizeof(msg),"Encountered invalid value "  \
+            snprintf(msg, sizeof(msg),"Encountered invalid value "  \
                 "\"%s\" (%s) at or near line %d", strerror(_errno), \
                 valstart, lineIndex);                               \
         debug1 << msg;                                              \
@@ -612,7 +612,7 @@ avtANSYSFileFormat::Interpret(const char *fmt, bool isstd, int &numFields,
     if (!goodFormat)
     {
         char msg[128];
-        SNPRINTF(msg, sizeof(msg), "Invalid field formatting string: "
+        snprintf(msg, sizeof(msg), "Invalid field formatting string: "
             "numFields=%d, fmt=\"%s\"", numFields, fmt);
         EXCEPTION1(InvalidFilesException, msg);
     }

@@ -5,7 +5,7 @@
 #include <RemoteProxyBase.h>
 #include <RemoteProcess.h>
 #include <ExistingRemoteProcess.h>
-#include <snprintf.h>
+
 #include <DebugStream.h>
 
 // ****************************************************************************
@@ -411,7 +411,7 @@ RemoteProxyBase::AddProfileArguments(const MachineProfile &machine,
 
         if (addParallelArgs)
         {
-            SNPRINTF(temp, 10, "%d", launch->GetNumProcessors());
+            snprintf(temp, 10, "%d", launch->GetNumProcessors());
             AddArgument("-np");
             AddArgument(temp);
         }
@@ -422,7 +422,7 @@ RemoteProxyBase::AddProfileArguments(const MachineProfile &machine,
         {
             if (addParallelArgs)
             {
-                SNPRINTF(temp, 10, "%d", launch->GetNumNodes());
+                snprintf(temp, 10, "%d", launch->GetNumNodes());
                 AddArgument("-nn");
                 AddArgument(temp);
             }
@@ -553,13 +553,13 @@ RemoteProxyBase::AddProfileArguments(const MachineProfile &machine,
 
     // Add the timeout argument
     char temp[10];
-    SNPRINTF(temp, 10, "%d", launch->GetTimeout());
+    snprintf(temp, 10, "%d", launch->GetTimeout());
     AddArgument("-idle-timeout");
     AddArgument(temp);
 
     if (launch->GetNumThreads())
     {
-        SNPRINTF(temp, 10, "%d", launch->GetNumThreads());
+        snprintf(temp, 10, "%d", launch->GetNumThreads());
         AddArgument("-threads");
         AddArgument(temp);
     }

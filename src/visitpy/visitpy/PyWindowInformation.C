@@ -5,7 +5,6 @@
 #include <PyWindowInformation.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyWindowInformation
@@ -42,169 +41,169 @@ PyWindowInformation_ToString(const WindowInformation *atts, const char *prefix)
     std::string str;
     char tmpStr[1000];
 
-    SNPRINTF(tmpStr, 1000, "%sactiveSource = \"%s\"\n", prefix, atts->GetActiveSource().c_str());
+    snprintf(tmpStr, 1000, "%sactiveSource = \"%s\"\n", prefix, atts->GetActiveSource().c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sactiveTimeSlider = %d\n", prefix, atts->GetActiveTimeSlider());
+    snprintf(tmpStr, 1000, "%sactiveTimeSlider = %d\n", prefix, atts->GetActiveTimeSlider());
     str += tmpStr;
     {   const stringVector &timeSliders = atts->GetTimeSliders();
-        SNPRINTF(tmpStr, 1000, "%stimeSliders = (", prefix);
+        snprintf(tmpStr, 1000, "%stimeSliders = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < timeSliders.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "\"%s\"", timeSliders[i].c_str());
+            snprintf(tmpStr, 1000, "\"%s\"", timeSliders[i].c_str());
             str += tmpStr;
             if(i < timeSliders.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const intVector &timeSliderCurrentStates = atts->GetTimeSliderCurrentStates();
-        SNPRINTF(tmpStr, 1000, "%stimeSliderCurrentStates = (", prefix);
+        snprintf(tmpStr, 1000, "%stimeSliderCurrentStates = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < timeSliderCurrentStates.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%d", timeSliderCurrentStates[i]);
+            snprintf(tmpStr, 1000, "%d", timeSliderCurrentStates[i]);
             str += tmpStr;
             if(i < timeSliderCurrentStates.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
-    SNPRINTF(tmpStr, 1000, "%sanimationMode = %d\n", prefix, atts->GetAnimationMode());
+    snprintf(tmpStr, 1000, "%sanimationMode = %d\n", prefix, atts->GetAnimationMode());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sinteractionMode = %d\n", prefix, atts->GetInteractionMode());
+    snprintf(tmpStr, 1000, "%sinteractionMode = %d\n", prefix, atts->GetInteractionMode());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%stoolUpdateMode = %d\n", prefix, atts->GetToolUpdateMode());
+    snprintf(tmpStr, 1000, "%stoolUpdateMode = %d\n", prefix, atts->GetToolUpdateMode());
     str += tmpStr;
     if(atts->GetBoundingBoxNavigate())
-        SNPRINTF(tmpStr, 1000, "%sboundingBoxNavigate = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sboundingBoxNavigate = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sboundingBoxNavigate = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sboundingBoxNavigate = 0\n", prefix);
     str += tmpStr;
     if(atts->GetSpin())
-        SNPRINTF(tmpStr, 1000, "%sspin = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sspin = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sspin = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sspin = 0\n", prefix);
     str += tmpStr;
     if(atts->GetFullFrame())
-        SNPRINTF(tmpStr, 1000, "%sfullFrame = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sfullFrame = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sfullFrame = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sfullFrame = 0\n", prefix);
     str += tmpStr;
     if(atts->GetPerspective())
-        SNPRINTF(tmpStr, 1000, "%sperspective = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sperspective = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sperspective = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sperspective = 0\n", prefix);
     str += tmpStr;
     if(atts->GetMaintainView())
-        SNPRINTF(tmpStr, 1000, "%smaintainView = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%smaintainView = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%smaintainView = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%smaintainView = 0\n", prefix);
     str += tmpStr;
     if(atts->GetLockView())
-        SNPRINTF(tmpStr, 1000, "%slockView = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%slockView = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%slockView = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%slockView = 0\n", prefix);
     str += tmpStr;
     if(atts->GetLockTools())
-        SNPRINTF(tmpStr, 1000, "%slockTools = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%slockTools = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%slockTools = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%slockTools = 0\n", prefix);
     str += tmpStr;
     if(atts->GetLockTime())
-        SNPRINTF(tmpStr, 1000, "%slockTime = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%slockTime = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%slockTime = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%slockTime = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sviewExtentsType = %d\n", prefix, atts->GetViewExtentsType());
+    snprintf(tmpStr, 1000, "%sviewExtentsType = %d\n", prefix, atts->GetViewExtentsType());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sviewDimension = %d\n", prefix, atts->GetViewDimension());
+    snprintf(tmpStr, 1000, "%sviewDimension = %d\n", prefix, atts->GetViewDimension());
     str += tmpStr;
     {   const intVector &viewKeyframes = atts->GetViewKeyframes();
-        SNPRINTF(tmpStr, 1000, "%sviewKeyframes = (", prefix);
+        snprintf(tmpStr, 1000, "%sviewKeyframes = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < viewKeyframes.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%d", viewKeyframes[i]);
+            snprintf(tmpStr, 1000, "%d", viewKeyframes[i]);
             str += tmpStr;
             if(i < viewKeyframes.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     if(atts->GetCameraViewMode())
-        SNPRINTF(tmpStr, 1000, "%scameraViewMode = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%scameraViewMode = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%scameraViewMode = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%scameraViewMode = 0\n", prefix);
     str += tmpStr;
     if(atts->GetUsingScalableRendering())
-        SNPRINTF(tmpStr, 1000, "%susingScalableRendering = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%susingScalableRendering = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%susingScalableRendering = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%susingScalableRendering = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%slastRenderMin = %g\n", prefix, atts->GetLastRenderMin());
+    snprintf(tmpStr, 1000, "%slastRenderMin = %g\n", prefix, atts->GetLastRenderMin());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%slastRenderAvg = %g\n", prefix, atts->GetLastRenderAvg());
+    snprintf(tmpStr, 1000, "%slastRenderAvg = %g\n", prefix, atts->GetLastRenderAvg());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%slastRenderMax = %g\n", prefix, atts->GetLastRenderMax());
+    snprintf(tmpStr, 1000, "%slastRenderMax = %g\n", prefix, atts->GetLastRenderMax());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%snumPrimitives = %d\n", prefix, atts->GetNumPrimitives());
+    snprintf(tmpStr, 1000, "%snumPrimitives = %d\n", prefix, atts->GetNumPrimitives());
     str += tmpStr;
     {   const double *extents = atts->GetExtents();
-        SNPRINTF(tmpStr, 1000, "%sextents = (", prefix);
+        snprintf(tmpStr, 1000, "%sextents = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 6; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", extents[i]);
+            snprintf(tmpStr, 1000, "%g", extents[i]);
             str += tmpStr;
             if(i < 5)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const int *windowSize = atts->GetWindowSize();
-        SNPRINTF(tmpStr, 1000, "%swindowSize = (", prefix);
+        snprintf(tmpStr, 1000, "%swindowSize = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 2; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%d", windowSize[i]);
+            snprintf(tmpStr, 1000, "%d", windowSize[i]);
             str += tmpStr;
             if(i < 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
-    SNPRINTF(tmpStr, 1000, "%swinMode = %d\n", prefix, atts->GetWinMode());
+    snprintf(tmpStr, 1000, "%swinMode = %d\n", prefix, atts->GetWinMode());
     str += tmpStr;
     if(atts->GetDDTSim())
-        SNPRINTF(tmpStr, 1000, "%sDDTSim = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sDDTSim = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sDDTSim = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sDDTSim = 0\n", prefix);
     str += tmpStr;
     if(atts->GetDDTConnected())
-        SNPRINTF(tmpStr, 1000, "%sDDTConnected = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sDDTConnected = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sDDTConnected = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sDDTConnected = 0\n", prefix);
     str += tmpStr;
     return str;
 }

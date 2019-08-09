@@ -5,7 +5,6 @@
 #include <AccessViewerSession.h>
 #include <DataNode.h>
 #include <DebugStream.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Method: AccessViewerSession::AccessViewerSession
@@ -275,7 +274,7 @@ AccessViewerSession::GetSourceMap(stringVector &keys, stringVector &values,
                             DataNode *plotNode = 0;
                             do
                             {
-                                SNPRINTF(tmp, 1000, "plot%02d", ploti++);
+                                snprintf(tmp, 1000, "plot%02d", ploti++);
                                 plotNode = vpl->GetNode(tmp);
                                 if(plotNode != 0)
                                 {
@@ -301,7 +300,7 @@ AccessViewerSession::GetSourceMap(stringVector &keys, stringVector &values,
                                         if(pos != std::string::npos)
                                             plotName = plotName.substr(0, pos);
 
-                                        SNPRINTF(tmp, 1000, "Window %d, %s plot of %s",
+                                        snprintf(tmp, 1000, "Window %d, %s plot of %s",
                                             i+1, plotName.c_str(), varName.c_str());
 
                                         if(uses.find(source) == uses.end())
