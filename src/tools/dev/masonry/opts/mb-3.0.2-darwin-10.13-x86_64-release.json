@@ -26,6 +26,7 @@
                        "mxml",
                        "mpich",
                        "adios",
+                       "adios2",
                        "advio",
                        "boxlib",
                        "cfitsio",
