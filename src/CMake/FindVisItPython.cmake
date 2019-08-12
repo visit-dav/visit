@@ -369,12 +369,13 @@ IF(NOT WIN32)
 
     add_custom_target(${target_name} ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/build)
     # also use distutils for the install ...
+    get_filename_component(PREFIX_DIR_ABSOLUTE ${CMAKE_INSTALL_PREFIX} ABSOLUTE BASE_DIR ${VISIT_BINARY_DIR})
     INSTALL(CODE
         "
         EXECUTE_PROCESS(WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
             COMMAND ${PYTHON_EXECUTABLE} ${setup_file} -v
                 build   --build-base=${CMAKE_CURRENT_BINARY_DIR}/build_install
-                install --install-purelib=\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/${VISIT_INSTALLED_VERSION_LIB}/${dest_dir}
+                install --install-purelib=${PREFIX_DIR_ABSOLUTE}/${VISIT_INSTALLED_VERSION_LIB}/${dest_dir}
             OUTPUT_VARIABLE PY_DIST_UTILS_INSTALL_OUT)
         MESSAGE(STATUS \"\${PY_DIST_UTILS_INSTALL_OUT}\")
         ")
