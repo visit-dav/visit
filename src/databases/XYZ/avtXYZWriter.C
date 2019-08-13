@@ -157,9 +157,11 @@ avtXYZWriter::WriteChunk(vtkDataSet *ds, int chunk)
     vtkDataArray *arrays[MAX_XYZ_VARS];
     vtkDataArray *element = NULL;
 
+    out << "Number of arrays: " << ds->GetPointData()->GetNumberOfArrays() << std::endl;
     for (int i=0; i<ds->GetPointData()->GetNumberOfArrays(); i++)
     {
         vtkDataArray *arr = ds->GetPointData()->GetArray(i);
+        out << "Array name: " << arr->GetName() << std::endl;
         if (strlen(arr->GetName()) >= 7 &&
             strncmp(arr->GetName(),"element",7) == 0)
         {
@@ -201,13 +203,15 @@ avtXYZWriter::WriteChunk(vtkDataSet *ds, int chunk)
         if (atomicNumber < 0 || atomicNumber > MAX_ELEMENT_NUMBER)
             atomicNumber = 0;
 
+        out << "Atomic number is: " << atomicNumber << std::endl;
+
         // write out the element, coordinates, and any variables
         out << element_names[atomicNumber] << "\t";
-        out << coord[0] << "\t";
-        out << coord[1] << "\t";
-        out << coord[2] << "\t";
+        out << "coord[0]: " << coord[0] << "\t";
+        out << "coord[1]: " << coord[1] << "\t";
+        out << "coord[2]: " << coord[2] << "\t";
         for (int j=0; j<nvars; j++)
-            out << arrays[j]->GetTuple1((vtkIdType)a) << "\t";
+            out << "arrays[j]: " << arrays[j]->GetTuple1((vtkIdType)a) << "\t";
         out << endl;
     }
 
