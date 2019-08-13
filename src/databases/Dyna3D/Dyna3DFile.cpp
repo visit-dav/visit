@@ -23,11 +23,9 @@
 
 #ifdef VISIT_DYNA
 // We're building this code inside of VisIt.
-#include <snprintf.h>
 #include <DebugStream.h>
 #define DEBUG_READER(A) A
 #else
-#define SNPRINTF snprintf
 #define DEBUG_READER(A)
 #endif
 
@@ -733,7 +731,7 @@ Dyna3DFile::ReadMaterialCards(ifstream &ifile)
             if(matName.empty())
             {
                 char matNameBuf[1025];
-                SNPRINTF(matNameBuf, 1024, "%d", int(1 + materialCards.size()));
+                snprintf(matNameBuf, 1024, "%d", int(1 + materialCards.size()));
                 matName = std::string(matNameBuf);
             }
             if(uniqueNames.find(matName) != uniqueNames.end())
@@ -744,7 +742,7 @@ Dyna3DFile::ReadMaterialCards(ifstream &ifile)
                 char *matNameBuf = new char[1025];
                 do
                 {
-                    SNPRINTF(matNameBuf, 1024, "%s %d", matName.c_str(), index++);
+                    snprintf(matNameBuf, 1024, "%s %d", matName.c_str(), index++);
                     tmpName = std::string(matNameBuf);
                 } while(uniqueNames.find(tmpName) != uniqueNames.end());
                 matName = tmpName;
@@ -768,7 +766,7 @@ Dyna3DFile::ReadMaterialCards(ifstream &ifile)
     while((int)materialCards.size() < cards.card2.nMaterials)
     {
         char badname[100];
-        SNPRINTF(badname, 100, "invalid %d", n++);
+        snprintf(badname, 100, "invalid %d", n++);
         MaterialProperties mat;
         mat.materialName = badname;
         mat.materialNumber = (int)(materialCards.size() + 1);

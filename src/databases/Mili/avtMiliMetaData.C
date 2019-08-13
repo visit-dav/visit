@@ -310,8 +310,8 @@ MiliVariableMetaData::AddSubrecId(int dom, int SRId)
 {
     if (dom > SRIds.size() || dom < 0)
     {
-        char msg[1024];
-        sprintf(msg, "Invalid domain index for subrecord idxs!");
+        char msg[128];
+        snprintf(msg, 128, "Invalid domain index for subrecord idxs!");
         EXCEPTION1(ImproperUseException, msg);
     }
     SRIds[dom].push_back(SRId);
@@ -377,8 +377,8 @@ MiliVariableMetaData::GetPath()
     {
         if (multiMesh)
         {
-            char mmStart[1024];
-            sprintf(mmStart, "Primal (mesh%d)/", meshAssociation);
+            char mmStart[128];
+            snprintf(mmStart, 128, "Primal (mesh%d)/", meshAssociation);
             path = mmStart;
         }
         else
@@ -552,8 +552,8 @@ MiliElementSetMetaData::MiliElementSetMetaData(string sName,
 
         if (multiMesh)
         {
-            char mmStart[1024];
-            sprintf(mmStart, "Primal (mesh%d)/", meshAssociation);
+            char mmStart[128];
+            snprintf(mmStart, 128, "Primal (mesh%d)/", meshAssociation);
             groupPath = mmStart;
         }
         else
@@ -1450,7 +1450,7 @@ MiliClassMetaData::GenerateElementLabels(int domain)
                  idItr != labelIds[domain].end(); idItr++)
             {
                 char cLabel[256];
-                sprintf(cLabel, "%s %i", cSName, (*idItr));
+                snprintf(cLabel, 256, "%s %i", cSName, (*idItr));
                 string sLabel = string(cLabel);
                 elementLabels[domain][pos++] = sLabel;
 
@@ -1759,17 +1759,17 @@ avtMiliMetaData::AddClassMD(int classIdx,
 {
     if (classIdx < 0 || classIdx >= numClasses)
     {
-        char expected[1024]; 
-        char recieved[1024];
-        sprintf(expected, "an index betwen 0 and %d", numClasses - 1);
-        sprintf(recieved, "%d", classIdx);
+        char expected[128]; 
+        char recieved[128];
+        snprintf(expected, 128, "an index betwen 0 and %d", numClasses - 1);
+        snprintf(recieved, 128, "%d", classIdx);
         EXCEPTION2(UnexpectedValueException, expected, recieved);
     }
 
     if (miliClasses == NULL)
     {
-        char msg[1024];
-        sprintf(msg, "Attempting to add MD to uninitialized container!");
+        char msg[128];
+        snprintf(msg, 128, "Attempting to add MD to uninitialized container!");
         EXCEPTION1(ImproperUseException, msg);
     }
 
@@ -2157,15 +2157,15 @@ avtMiliMetaData::AddVarMD(int varIdx,
 
     if (varIdx < 0 || varIdx > numVariables)
     {
-        char msg[1024];
-        sprintf(msg, "Invalid index for adding MiliVariableMetaData!");
+        char msg[128];
+        snprintf(msg, 128, "Invalid index for adding MiliVariableMetaData!");
         EXCEPTION1(ImproperUseException, msg);
     }
 
     if (miliVariables == NULL)
     {
-        char msg[1024];
-        sprintf(msg, "Attempting to add MiliVariableMetaData to "
+        char msg[128];
+        snprintf(msg, 128, "Attempting to add MiliVariableMetaData to "
             "an uninitialized container!");
         EXCEPTION1(ImproperUseException, msg);
     }
@@ -2515,15 +2515,16 @@ avtMiliMetaData::AddVarSubrecInfo(int varIdx,
         }
         else
         {
-            char msg[1024];
-            sprintf(msg, "Attempting to add MD to uninitialized container!");
+            char msg[128];
+            snprintf(msg, 128, 
+                "Attempting to add MD to uninitialized container!");
             EXCEPTION1(ImproperUseException, msg);
         }
     }
     else
     {
-        char msg[1024];
-        sprintf(msg, "Invalid index assignment requested!");
+        char msg[128];
+        snprintf(msg, 128, "Invalid index assignment requested!");
         EXCEPTION1(ImproperUseException, msg);
     }
 }
@@ -2565,8 +2566,8 @@ avtMiliMetaData::GenerateZoneBasedLabels(int domain)
                 {
                     if ((offset + (classLabels->size())) > numCells[domain])
                     {
-                        char msg[1024];
-                        sprintf(msg, "Number of cell labels " 
+                        char msg[128];
+                        snprintf(msg, 128, "Number of cell labels " 
                             "exceeds number of cells?!?");
                         EXCEPTION1(ImproperUseException, msg);
                     }
@@ -2635,8 +2636,8 @@ avtMiliMetaData::GenerateNodeBasedLabels(int domain)
                 {
                     if ((offset + (classLabels->size())) > numNodes[domain])
                     {
-                        char msg[1024];
-                        sprintf(msg, "Number of node labels "
+                        char msg[128];
+                        snprintf(msg, 128, "Number of node labels "
                             "exceeds number of nodes?!?");
                         EXCEPTION1(ImproperUseException, msg);
                     }
@@ -2693,8 +2694,8 @@ avtMiliMetaData::GetZoneBasedLabelsPtr(int domain)
 {
     if (domain < 0 || domain >= numDomains)
     {
-        char msg[1024];
-        sprintf(msg, "Invalid domain for labels pointer!");
+        char msg[128];
+        snprintf(msg, 128, "Invalid domain for labels pointer!");
         EXCEPTION1(ImproperUseException, msg);
     }
 
@@ -2730,8 +2731,8 @@ avtMiliMetaData::GetNodeBasedLabelsPtr(int domain)
 {
     if (domain < 0 || domain >= numDomains)
     {
-        char msg[1024];
-        sprintf(msg, "Invalid domain for labels pointer!");
+        char msg[128];
+        snprintf(msg, 128, "Invalid domain for labels pointer!");
         EXCEPTION1(ImproperUseException, msg);
     }
 
@@ -2867,15 +2868,15 @@ avtMiliMetaData::AddMaterialMD(int matIdx,
 {
     if (matIdx < 0 || matIdx > numMaterials)
     {
-        char msg[1024];
-        sprintf(msg, "Invalid index assignment requested!");
+        char msg[128];
+        snprintf(msg, 128, "Invalid index assignment requested!");
         EXCEPTION1(ImproperUseException, msg);
     }
 
     if (miliMaterials == NULL)
     {
-        char msg[1024];
-        sprintf(msg, "Attempting to add MD to uninitialized container!");
+        char msg[128];
+        snprintf(msg, 128, "Attempting to add MD to uninitialized container!");
         EXCEPTION1(ImproperUseException, msg);
     }
 

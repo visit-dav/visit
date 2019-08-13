@@ -5,7 +5,6 @@
 #include <PyTruecolorAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyTruecolorAttributes
@@ -42,12 +41,12 @@ PyTruecolorAttributes_ToString(const TruecolorAttributes *atts, const char *pref
     std::string str;
     char tmpStr[1000];
 
-    SNPRINTF(tmpStr, 1000, "%sopacity = %g\n", prefix, atts->GetOpacity());
+    snprintf(tmpStr, 1000, "%sopacity = %g\n", prefix, atts->GetOpacity());
     str += tmpStr;
     if(atts->GetLightingFlag())
-        SNPRINTF(tmpStr, 1000, "%slightingFlag = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%slightingFlag = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%slightingFlag = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%slightingFlag = 0\n", prefix);
     str += tmpStr;
     return str;
 }

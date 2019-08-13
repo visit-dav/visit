@@ -5,7 +5,6 @@
 #include <PyavtLabelMetaData.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyavtLabelMetaData

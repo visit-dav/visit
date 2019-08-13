@@ -26,8 +26,6 @@
 #include <InvalidDBTypeException.h>
 #include <InvalidVariableException.h>
 
-#include <snprintf.h>
-
 // Define this symbol BEFORE including hdf5.h to indicate the HDF5 code
 // in this file uses version 1.6 of the HDF5 API. This is harmless for
 // versions of HDF5 before 1.8 and ensures correct compilation with
@@ -359,7 +357,7 @@ avtUNICFileFormat::GetMesh(int domain, const char *meshname)
     char blockname[1024];
     if (file_handle < 0)
         file_handle = H5Fopen(filenames[0], H5F_ACC_RDONLY, H5P_DEFAULT);
-    SNPRINTF(blockname, 1024, "BLOCK%012d", domain+1);
+    snprintf(blockname, 1024, "BLOCK%012d", domain+1);
     hid_t block = H5Gopen(file_handle, blockname);
     if (block < 0)
     {
@@ -1443,7 +1441,7 @@ avtUNICFileFormat::GetVar(int domain, const char *varname)
     char blockname[1024];
     if (file_handle < 0)
         file_handle = H5Fopen(filenames[0], H5F_ACC_RDONLY, H5P_DEFAULT);
-    SNPRINTF(blockname, 1024, "BLOCK%012d", domain+1);
+    snprintf(blockname, 1024, "BLOCK%012d", domain+1);
     hid_t block = H5Gopen(file_handle, blockname);
     if (block < 0)
     {

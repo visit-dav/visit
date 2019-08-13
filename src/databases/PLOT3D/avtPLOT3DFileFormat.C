@@ -742,7 +742,7 @@ avtPLOT3DFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
             char fieldname[100];
             for (int i = 0; i <  nqc; ++i)
             {
-                SNPRINTF(fieldname, 100, "Species Density #%d", i+i);
+                snprintf(fieldname, 100, "Species Density #%d", i+i);
                 avtScalarMetaData *sd1 = new avtScalarMetaData;
                 sd1->name = fieldname;
                 sd1->meshName = "mesh";
@@ -750,7 +750,7 @@ avtPLOT3DFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
                 sd1->hasDataExtents = false;
                 md->Add(sd1);
 
-                SNPRINTF(fieldname, 100, "Spec Dens #%d / rho", i+i);
+                snprintf(fieldname, 100, "Spec Dens #%d / rho", i+i);
                 avtScalarMetaData *sd2 = new avtScalarMetaData;
                 sd2->name = fieldname;
                 sd2->meshName = "mesh";
@@ -760,7 +760,7 @@ avtPLOT3DFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
             }
             for (int i = 0; i < nq - 6 - nqc; ++i)
             {
-                SNPRINTF(fieldname, 100, "Turb Field Quant #%d", i+i);
+                snprintf(fieldname, 100, "Turb Field Quant #%d", i+i);
                 avtScalarMetaData *sd = new avtScalarMetaData;
                 sd->name = fieldname;
                 sd->meshName = "mesh";

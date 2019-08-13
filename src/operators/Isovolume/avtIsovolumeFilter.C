@@ -453,7 +453,7 @@ avtIsovolumeFilter::UpdateDataObjectInfo(void)
     GetOutput()->GetInfo().GetValidity().ZonesSplit();
 
     char params[100];
-    SNPRINTF(params, 100, "var=%s, min=%lg, max=%lg", atts.GetVariable().c_str(),
+    snprintf(params, 100, "var=%s, min=%lg, max=%lg", atts.GetVariable().c_str(),
         atts.GetLbound(), atts.GetUbound());
     GetOutput()->GetInfo().GetAttributes().AddFilterMetaData("Isovolume", params);
 }

@@ -209,11 +209,11 @@ avtGyRadiusQuery::PostExecute(void)
         char charBuf[256];
         if(isZonal)
         {
-            SNPRINTF(charBuf, 256, "R = %f\n", R);
+            snprintf(charBuf, 256, "R = %f\n", R);
         }
         else
         {
-            SNPRINTF(charBuf, 256, "**Warning** Results are node-based since %s wasn't defined for cells.\nR = %f\n", varName.c_str(), R);
+            snprintf(charBuf, 256, "**Warning** Results are node-based since %s wasn't defined for cells.\nR = %f\n", varName.c_str(), R);
         }
         
         string msg(charBuf);

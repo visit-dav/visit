@@ -5,7 +5,6 @@
 #include <PyAxes2D.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 #include <PyAxisAttributes.h>
 #include <PyAxisAttributes.h>
 
@@ -45,35 +44,35 @@ PyAxes2D_ToString(const Axes2D *atts, const char *prefix)
     char tmpStr[1000];
 
     if(atts->GetVisible())
-        SNPRINTF(tmpStr, 1000, "%svisible = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%svisible = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%svisible = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%svisible = 0\n", prefix);
     str += tmpStr;
     if(atts->GetAutoSetTicks())
-        SNPRINTF(tmpStr, 1000, "%sautoSetTicks = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sautoSetTicks = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sautoSetTicks = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sautoSetTicks = 0\n", prefix);
     str += tmpStr;
     if(atts->GetAutoSetScaling())
-        SNPRINTF(tmpStr, 1000, "%sautoSetScaling = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sautoSetScaling = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sautoSetScaling = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sautoSetScaling = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%slineWidth = %d\n", prefix, atts->GetLineWidth());
+    snprintf(tmpStr, 1000, "%slineWidth = %d\n", prefix, atts->GetLineWidth());
     str += tmpStr;
     const char *tickLocation_names = "Inside, Outside, Both";
     switch (atts->GetTickLocation())
     {
       case Axes2D::Inside:
-          SNPRINTF(tmpStr, 1000, "%stickLocation = %sInside  # %s\n", prefix, prefix, tickLocation_names);
+          snprintf(tmpStr, 1000, "%stickLocation = %sInside  # %s\n", prefix, prefix, tickLocation_names);
           str += tmpStr;
           break;
       case Axes2D::Outside:
-          SNPRINTF(tmpStr, 1000, "%stickLocation = %sOutside  # %s\n", prefix, prefix, tickLocation_names);
+          snprintf(tmpStr, 1000, "%stickLocation = %sOutside  # %s\n", prefix, prefix, tickLocation_names);
           str += tmpStr;
           break;
       case Axes2D::Both:
-          SNPRINTF(tmpStr, 1000, "%stickLocation = %sBoth  # %s\n", prefix, prefix, tickLocation_names);
+          snprintf(tmpStr, 1000, "%stickLocation = %sBoth  # %s\n", prefix, prefix, tickLocation_names);
           str += tmpStr;
           break;
       default:
@@ -84,23 +83,23 @@ PyAxes2D_ToString(const Axes2D *atts, const char *prefix)
     switch (atts->GetTickAxes())
     {
       case Axes2D::Off:
-          SNPRINTF(tmpStr, 1000, "%stickAxes = %sOff  # %s\n", prefix, prefix, tickAxes_names);
+          snprintf(tmpStr, 1000, "%stickAxes = %sOff  # %s\n", prefix, prefix, tickAxes_names);
           str += tmpStr;
           break;
       case Axes2D::Bottom:
-          SNPRINTF(tmpStr, 1000, "%stickAxes = %sBottom  # %s\n", prefix, prefix, tickAxes_names);
+          snprintf(tmpStr, 1000, "%stickAxes = %sBottom  # %s\n", prefix, prefix, tickAxes_names);
           str += tmpStr;
           break;
       case Axes2D::Left:
-          SNPRINTF(tmpStr, 1000, "%stickAxes = %sLeft  # %s\n", prefix, prefix, tickAxes_names);
+          snprintf(tmpStr, 1000, "%stickAxes = %sLeft  # %s\n", prefix, prefix, tickAxes_names);
           str += tmpStr;
           break;
       case Axes2D::BottomLeft:
-          SNPRINTF(tmpStr, 1000, "%stickAxes = %sBottomLeft  # %s\n", prefix, prefix, tickAxes_names);
+          snprintf(tmpStr, 1000, "%stickAxes = %sBottomLeft  # %s\n", prefix, prefix, tickAxes_names);
           str += tmpStr;
           break;
       case Axes2D::All:
-          SNPRINTF(tmpStr, 1000, "%stickAxes = %sAll  # %s\n", prefix, prefix, tickAxes_names);
+          snprintf(tmpStr, 1000, "%stickAxes = %sAll  # %s\n", prefix, prefix, tickAxes_names);
           str += tmpStr;
           break;
       default:

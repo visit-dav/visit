@@ -8,8 +8,6 @@
 
 #include <limits.h>
 
-#include <snprintf.h>
-
 #include <avtLogicalSelection.h>
 
 // ****************************************************************************
@@ -237,7 +235,7 @@ std::string
 avtLogicalSelection::DescriptionString(void)
 {
     char str[1024];
-    SNPRINTF(str, sizeof(str), "avtLogicalSelection:%d_%d_%d_%d_%d_%d_%d_%d_%d_%d", 
+    snprintf(str, sizeof(str), "avtLogicalSelection:%d_%d_%d_%d_%d_%d_%d_%d_%d_%d", 
              ndims, starts[0], starts[1], starts[2], stops[0], stops[1], 
              stops[2], strides[0], strides[1], strides[2]);
     std::string s2 = str;

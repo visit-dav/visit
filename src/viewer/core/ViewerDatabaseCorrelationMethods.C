@@ -15,7 +15,6 @@
 #include <DataNode.h>
 #include <DebugStream.h>
 
-#include <snprintf.h>
 
 // ****************************************************************************
 // Method: ViewerDatabaseCorrelationMethods::ViewerDatabaseCorrelationMethods
@@ -369,7 +368,7 @@ ViewerDatabaseCorrelationMethods::CreateNewCorrelationName() const
     do
     {
         index++;
-        SNPRINTF(newName, 100, "Correlation%02d", index);
+        snprintf(newName, 100, "Correlation%02d", index);
     } while(GetViewerState()->GetDatabaseCorrelationList()->FindCorrelation(newName) != 0);
 
     return std::string(newName);

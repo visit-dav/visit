@@ -4,7 +4,6 @@
 
 #include <ViewerRPC.h>
 #include <DataNode.h>
-#include <snprintf.h>
 
 //
 // Enum conversion methods for ViewerRPC::ViewerRPCType
@@ -1596,7 +1595,7 @@ void
 ViewerRPC::SetWindowArea(int x, int y, int w, int h)
 {
     char str[50];
-    SNPRINTF(str, 50, "%dx%d+%d+%d", w, h, x, y);
+    snprintf(str, 50, "%dx%d+%d+%d", w, h, x, y);
     SetWindowArea(str);
 }
 

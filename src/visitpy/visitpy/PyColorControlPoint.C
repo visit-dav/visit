@@ -5,7 +5,6 @@
 #include <PyColorControlPoint.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyColorControlPoint
@@ -43,22 +42,22 @@ PyColorControlPoint_ToString(const ColorControlPoint *atts, const char *prefix)
     char tmpStr[1000];
 
     {   const unsigned char *colors = atts->GetColors();
-        SNPRINTF(tmpStr, 1000, "%scolors = (", prefix);
+        snprintf(tmpStr, 1000, "%scolors = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 4; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%d", int(colors[i]));
+            snprintf(tmpStr, 1000, "%d", int(colors[i]));
             str += tmpStr;
             if(i < 3)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
-    SNPRINTF(tmpStr, 1000, "%sposition = %g\n", prefix, atts->GetPosition());
+    snprintf(tmpStr, 1000, "%sposition = %g\n", prefix, atts->GetPosition());
     str += tmpStr;
     return str;
 }

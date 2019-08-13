@@ -1486,7 +1486,7 @@ avtDDCMDFileFormat::ReadProcessorChunk(const DDCMDHeader *header,
     // correct spot.
     //
     char string[1024];
-    SNPRINTF(string, 1024, "%s/%s#%6.6u", fname.c_str(), subname.c_str(), fileNumber);
+    snprintf(string, 1024, "%s/%s#%6.6u", fname.c_str(), subname.c_str(), fileNumber);
     debug1 << "Opening " << string << endl;
     FILE *file = fopen(string, "rb");
     if (file == NULL)
@@ -1508,7 +1508,7 @@ avtDDCMDFileFormat::ReadProcessorChunk(const DDCMDHeader *header,
             fileNumber++;
             if (fileNumber < nFiles)
             {
-                SNPRINTF(string, 1024, "%s/%s#%6.6u", fname.c_str(), subname.c_str(),
+                snprintf(string, 1024, "%s/%s#%6.6u", fname.c_str(), subname.c_str(),
                         fileNumber);
                 debug1 << "Opening " << string << endl;
                 file = fopen(string, "rb");

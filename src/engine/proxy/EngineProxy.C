@@ -23,7 +23,6 @@
 #include <SocketConnection.h>
 #include <StatusAttributes.h>
 #include <TimingsManager.h>
-#include <snprintf.h>
 
 #include <stdio.h>
 

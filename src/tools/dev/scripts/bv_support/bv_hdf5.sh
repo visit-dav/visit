@@ -100,7 +100,7 @@ function bv_hdf5_host_profile
                     >> $HOSTCONF 
             fi
 
-            ZLIB_LIBDEP="\${VISITHOME}/zlib/$ZLIB_VERSION/\${VISITARCH}/lib z"
+            ZLIB_LIBDEP="\${VISITHOME}/zlib/\${ZLIB_VERSION}/\${VISITARCH}/lib z"
             SZIP_LIBDEP=""
             if [[ "$DO_SZIP" == "yes" ]] ; then
                 SZIP_LIBDEP="\${VISITHOME}/szip/$SZIP_VERSION/\${VISITARCH}/lib sz"

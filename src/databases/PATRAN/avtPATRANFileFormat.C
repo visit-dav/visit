@@ -27,7 +27,6 @@
 #include <TimingsManager.h>
 #include <DebugStream.h>
 #include <FileFunctions.h>
-#include <snprintf.h>
 
 #define PATRAN_PACKET_NODE_DATA        1
 #define PATRAN_PACKET_ELEMENT_DATA     2
@@ -521,7 +520,7 @@ avtPATRANFileFormat::ReadFile(const char *name, int nLines)
             properties[i]->Delete();
 
         char tmpname[100];
-        SNPRINTF(tmpname, 100, "property%d", i+1);
+        snprintf(tmpname, 100, "property%d", i+1);
         properties[i] = vtkFloatArray::New();
         properties[i]->SetName(tmpname);
 #ifndef MDSERVER

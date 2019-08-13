@@ -15,7 +15,6 @@
 #include <DebugStream.h>
 #include <avtVector.h>
 #include <algorithm>
-#include <snprintf.h>
 
 const double avtIntegralCurve::minHFactor = std::numeric_limits<double>::epsilon() * 100.0;
 

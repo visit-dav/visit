@@ -5,7 +5,7 @@
 #include <ColorTableAttributes.h>
 #include <DataNode.h>
 #include <ColorControlPoint.h>
-#include <snprintf.h>
+
 #include <map>
 #include <ColorControlPointList.h>
 
@@ -484,7 +484,7 @@ ColorTableAttributes::CreateNode(DataNode *parentNode, bool, bool)
         const ColorControlPointList &ccpl = GetColorTables(i);
         if(!ccpl.GetExternalFlag())
         {
-            SNPRINTF(tmp, 100, "table%02d", index++);
+            snprintf(tmp, 100, "table%02d", index++);
             DataNode *ctNode = new DataNode(tmp);
             // Add the color table attributes to the ctNode.
             ctNode->AddNode(new DataNode("ctName", names[i]));
@@ -564,7 +564,7 @@ ColorTableAttributes::SetFromNode(DataNode *parentNode)
         // Look for ntables color table nodes.
         for(int i = 0; i < ntables; ++i)
         {
-            SNPRINTF(tmp, 100, "table%02d", i);
+            snprintf(tmp, 100, "table%02d", i);
             if((node = searchNode->GetNode(tmp)) != 0)
             {
                 DataNode *nameNode = node->GetNode("ctName");

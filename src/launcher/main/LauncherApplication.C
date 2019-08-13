@@ -39,7 +39,6 @@
 #include <CouldNotConnectException.h>
 #include <LostConnectionException.h>
 #include <RPCExecutor.h>
-#include <snprintf.h>
 
 //
 // Static member variables.

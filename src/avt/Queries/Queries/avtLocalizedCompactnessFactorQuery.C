@@ -30,7 +30,6 @@
 #include <DebugStream.h>
 #include <ImproperUseException.h>
 
-#include <snprintf.h>
 #include <float.h>
 #include <math.h>
 
@@ -128,7 +127,7 @@ avtLocalizedCompactnessFactorQuery::PostExecute(void)
     char buff[1024];
     string format = "The localized compactness factor is "
                     + queryAtts.GetFloatFormat() + "\n";
-    SNPRINTF(buff, 1024,format.c_str() , factor);
+    snprintf(buff, 1024,format.c_str() , factor);
     SetResultMessage(buff);
     SetResultValue(factor);
 }

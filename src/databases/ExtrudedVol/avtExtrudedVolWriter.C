@@ -8,7 +8,6 @@
 
 #include <avtExtrudedVolWriter.h>
 
-#include <snprintf.h>
 #include <vector>
 
 #include <vtkCellData.h>
@@ -81,7 +80,7 @@ avtExtrudedVolWriter::WriteHeaders(const avtDatabaseMetaData *md,
     if (timestep == 0)
     {
         char filename[1024];
-        SNPRINTF(filename, 1024, "%s.exvol", stem.c_str());
+        snprintf(filename, 1024, "%s.exvol", stem.c_str());
 
         ofstream ofile(filename);
         if (ofile.fail())
@@ -130,7 +129,7 @@ avtExtrudedVolWriter::WriteChunk(vtkDataSet *ds, int chunk)
         vtkDataSetWriter *wrtr = vtkDataSetWriter::New();
         wrtr->SetInputData(ds);
         char filename[1024];
-        SNPRINTF(filename, 1024, "%s.%d.exvol_conn", stem.c_str(), chunk);
+        snprintf(filename, 1024, "%s.%d.exvol_conn", stem.c_str(), chunk);
         wrtr->SetFileName(filename);
         wrtr->Write();
         wrtr->Delete();
@@ -138,7 +137,7 @@ avtExtrudedVolWriter::WriteChunk(vtkDataSet *ds, int chunk)
     else
     {
         char filename[1024];
-        SNPRINTF(filename, 1024, "%s.%d.%d.exvol_var", stem.c_str(), 
+        snprintf(filename, 1024, "%s.%d.%d.exvol_var", stem.c_str(), 
                                                        timestep, chunk);
 
         ofstream ofile(filename);

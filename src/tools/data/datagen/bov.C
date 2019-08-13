@@ -15,8 +15,6 @@ using std::endl;
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <errno.h>
-#else
-#define snprintf _snprintf
 #endif
 
 // supress the following since silo uses char * in its API

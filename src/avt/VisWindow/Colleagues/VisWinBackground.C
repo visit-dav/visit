@@ -19,7 +19,6 @@
 
 #include <avtCallback.h>
 #include <DebugStream.h>
-#include <snprintf.h>
 
 // Static
 bool VisWinBackground::sphereModeError1 = false;
@@ -224,7 +223,7 @@ VisWinBackground::SetBackgroundImage(const std::string &imgFile, int nx, int ny)
         imgFile.size() > 0)
     {
         char msg[1024];
-        SNPRINTF(msg, 1024, "VisIt could not read the image file %s"
+        snprintf(msg, 1024, "VisIt could not read the image file %s"
             " for use as a background image. No image background will be displayed.",
             imgFile.c_str());
         avtCallback::IssueWarning(msg);

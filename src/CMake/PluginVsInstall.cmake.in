@@ -82,6 +82,9 @@
 #   Kathleen Biagas, Fri Jul 19 12:11:05 PDT 2019
 #   Added ZLIB. Removed SLIVR. Added zlib to MFEM include.
 #
+#   Kevin Griffin, Thu Aug 8 18:30:27 PDT 2019
+#   Added the correct paths for the QT_QT*_INCLUDE_DIR variables for OSX.
+#
 #****************************************************************************/
 
 ##
@@ -191,12 +194,21 @@ set(TESSELLATION_LIBRARY @TESSELLATION_LIBRARY@)
 set(BOOST_INCLUDE_DIR ${VISIT_INCLUDE_DIR}/boost/include/boost)
 
 # Set up Qt
-set(QT_INCLUDE_DIR           ${VISIT_INCLUDE_DIR}/qt/include)
-set(QT_QTCORE_INCLUDE_DIR    ${VISIT_INCLUDE_DIR}/qt/include/QtCore)
-set(QT_QTGUI_INCLUDE_DIR     ${VISIT_INCLUDE_DIR}/qt/include/QtGui)
-set(QT_QTOPENGL_INCLUDE_DIR  ${VISIT_INCLUDE_DIR}/qt/include/QtOpenGL)
-set(QT_QTWIDGETS_INCLUDE_DIR ${VISIT_INCLUDE_DIR}/qt/include/QtWidgets)
-set(QT_QTXML_INCLUDE_DIR     ${VISIT_INCLUDE_DIR}/qt/include/QtXml)
+if(APPLE)
+    set(QT_INCLUDE_DIR           ${VISIT_INCLUDE_DIR}/qt/include)
+    set(QT_QTCORE_INCLUDE_DIR    ${VISIT_LIBRARY_DIR}/QtCore.framework/Versions/Current/Headers)
+    set(QT_QTGUI_INCLUDE_DIR     ${VISIT_LIBRARY_DIR}/QtGui.framework/Versions/Current/Headers)
+    set(QT_QTOPENGL_INCLUDE_DIR  ${VISIT_LIBRARY_DIR}/QtOpenGL.framework/Versions/Current/Headers)
+    set(QT_QTWIDGETS_INCLUDE_DIR ${VISIT_LIBRARY_DIR}/QtWidgets.framework/Versions/Current/Headers)
+    set(QT_QTXML_INCLUDE_DIR     ${VISIT_LIBRARY_DIR}/QtXml.framework/Versions/Current/Headers)
+else()
+    set(QT_INCLUDE_DIR           ${VISIT_INCLUDE_DIR}/qt/include)
+    set(QT_QTCORE_INCLUDE_DIR    ${VISIT_INCLUDE_DIR}/qt/include/QtCore)
+    set(QT_QTGUI_INCLUDE_DIR     ${VISIT_INCLUDE_DIR}/qt/include/QtGui)
+    set(QT_QTOPENGL_INCLUDE_DIR  ${VISIT_INCLUDE_DIR}/qt/include/QtOpenGL)
+    set(QT_QTWIDGETS_INCLUDE_DIR ${VISIT_INCLUDE_DIR}/qt/include/QtWidgets)
+    set(QT_QTXML_INCLUDE_DIR     ${VISIT_INCLUDE_DIR}/qt/include/QtXml)
+endif()
 
 set(QT_LIBRARY_DIR           ${VISIT_LIBRARY_DIR} ${VISIT_ARCHIVE_DIR})
 set(QT_BIN                   ${VISIT_BINARY_DIR})

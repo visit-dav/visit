@@ -3,7 +3,6 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 #include <vector>
-#include <snprintf.h>
 #include <netcdf.h>
 
 #include <avtBasicNETCDFFileFormat.h>

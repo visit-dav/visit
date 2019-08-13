@@ -22,8 +22,6 @@
 #include <vtkTriangle.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkStructuredGrid.h>
-#include <snprintf.h>
-
 #include <vtkEarthSource.h>
 #include <vtkImplicitBoolean.h>
 #include <vtkPlane.h>

@@ -2,7 +2,7 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-#include <snprintf.h>
+#include <stdio.h>
 #include "VisItDataInterfaceRuntime.h"
 #include "VisItDataInterfaceRuntimeP.h"
 
@@ -153,7 +153,7 @@ GetObject(visit_handle h, const char *fname)
     {
         if(obj->objectType() != VISIT_UNSTRUCTURED_MESH)
         {
-            SNPRINTF(tmp, 100, "%s: The provided handle does not point to an "
+            snprintf(tmp, 100, "%s: The provided handle does not point to an "
                 "UnstructuredMesh object.", fname);
             VisItError(tmp);
             obj = NULL;
@@ -161,7 +161,7 @@ GetObject(visit_handle h, const char *fname)
     }
     else
     {
-        SNPRINTF(tmp, 100, "%s: An invalid handle was provided.", fname);
+        snprintf(tmp, 100, "%s: An invalid handle was provided.", fname);
         VisItError(tmp);
     }
 

@@ -5,7 +5,6 @@
 #include <PyPoincareAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 #include <ColorAttribute.h>
 
 // ****************************************************************************
@@ -47,62 +46,62 @@ PyPoincareAttributes_ToString(const PoincareAttributes *atts, const char *prefix
     switch (atts->GetOpacityType())
     {
       case PoincareAttributes::Explicit:
-          SNPRINTF(tmpStr, 1000, "%sopacityType = %sExplicit  # %s\n", prefix, prefix, opacityType_names);
+          snprintf(tmpStr, 1000, "%sopacityType = %sExplicit  # %s\n", prefix, prefix, opacityType_names);
           str += tmpStr;
           break;
       case PoincareAttributes::ColorTable:
-          SNPRINTF(tmpStr, 1000, "%sopacityType = %sColorTable  # %s\n", prefix, prefix, opacityType_names);
+          snprintf(tmpStr, 1000, "%sopacityType = %sColorTable  # %s\n", prefix, prefix, opacityType_names);
           str += tmpStr;
           break;
       default:
           break;
     }
 
-    SNPRINTF(tmpStr, 1000, "%sopacity = %g\n", prefix, atts->GetOpacity());
+    snprintf(tmpStr, 1000, "%sopacity = %g\n", prefix, atts->GetOpacity());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sminPunctures = %d\n", prefix, atts->GetMinPunctures());
+    snprintf(tmpStr, 1000, "%sminPunctures = %d\n", prefix, atts->GetMinPunctures());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%smaxPunctures = %d\n", prefix, atts->GetMaxPunctures());
+    snprintf(tmpStr, 1000, "%smaxPunctures = %d\n", prefix, atts->GetMaxPunctures());
     str += tmpStr;
     const char *puncturePlotType_names = "Single, Double";
     switch (atts->GetPuncturePlotType())
     {
       case PoincareAttributes::Single:
-          SNPRINTF(tmpStr, 1000, "%spuncturePlotType = %sSingle  # %s\n", prefix, prefix, puncturePlotType_names);
+          snprintf(tmpStr, 1000, "%spuncturePlotType = %sSingle  # %s\n", prefix, prefix, puncturePlotType_names);
           str += tmpStr;
           break;
       case PoincareAttributes::Double:
-          SNPRINTF(tmpStr, 1000, "%spuncturePlotType = %sDouble  # %s\n", prefix, prefix, puncturePlotType_names);
+          snprintf(tmpStr, 1000, "%spuncturePlotType = %sDouble  # %s\n", prefix, prefix, puncturePlotType_names);
           str += tmpStr;
           break;
       default:
           break;
     }
 
-    SNPRINTF(tmpStr, 1000, "%smaxSteps = %d\n", prefix, atts->GetMaxSteps());
+    snprintf(tmpStr, 1000, "%smaxSteps = %d\n", prefix, atts->GetMaxSteps());
     str += tmpStr;
     if(atts->GetTerminateByTime())
-        SNPRINTF(tmpStr, 1000, "%sterminateByTime = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sterminateByTime = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sterminateByTime = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sterminateByTime = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%stermTime = %g\n", prefix, atts->GetTermTime());
+    snprintf(tmpStr, 1000, "%stermTime = %g\n", prefix, atts->GetTermTime());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%spuncturePeriodTolerance = %g\n", prefix, atts->GetPuncturePeriodTolerance());
+    snprintf(tmpStr, 1000, "%spuncturePeriodTolerance = %g\n", prefix, atts->GetPuncturePeriodTolerance());
     str += tmpStr;
     const char *puncturePlane_names = "Poloidal, Toroidal, Arbitrary";
     switch (atts->GetPuncturePlane())
     {
       case PoincareAttributes::Poloidal:
-          SNPRINTF(tmpStr, 1000, "%spuncturePlane = %sPoloidal  # %s\n", prefix, prefix, puncturePlane_names);
+          snprintf(tmpStr, 1000, "%spuncturePlane = %sPoloidal  # %s\n", prefix, prefix, puncturePlane_names);
           str += tmpStr;
           break;
       case PoincareAttributes::Toroidal:
-          SNPRINTF(tmpStr, 1000, "%spuncturePlane = %sToroidal  # %s\n", prefix, prefix, puncturePlane_names);
+          snprintf(tmpStr, 1000, "%spuncturePlane = %sToroidal  # %s\n", prefix, prefix, puncturePlane_names);
           str += tmpStr;
           break;
       case PoincareAttributes::Arbitrary:
-          SNPRINTF(tmpStr, 1000, "%spuncturePlane = %sArbitrary  # %s\n", prefix, prefix, puncturePlane_names);
+          snprintf(tmpStr, 1000, "%spuncturePlane = %sArbitrary  # %s\n", prefix, prefix, puncturePlane_names);
           str += tmpStr;
           break;
       default:
@@ -113,15 +112,15 @@ PyPoincareAttributes_ToString(const PoincareAttributes *atts, const char *prefix
     switch (atts->GetSourceType())
     {
       case PoincareAttributes::SpecifiedPoint:
-          SNPRINTF(tmpStr, 1000, "%ssourceType = %sSpecifiedPoint  # %s\n", prefix, prefix, sourceType_names);
+          snprintf(tmpStr, 1000, "%ssourceType = %sSpecifiedPoint  # %s\n", prefix, prefix, sourceType_names);
           str += tmpStr;
           break;
       case PoincareAttributes::PointList:
-          SNPRINTF(tmpStr, 1000, "%ssourceType = %sPointList  # %s\n", prefix, prefix, sourceType_names);
+          snprintf(tmpStr, 1000, "%ssourceType = %sPointList  # %s\n", prefix, prefix, sourceType_names);
           str += tmpStr;
           break;
       case PoincareAttributes::SpecifiedLine:
-          SNPRINTF(tmpStr, 1000, "%ssourceType = %sSpecifiedLine  # %s\n", prefix, prefix, sourceType_names);
+          snprintf(tmpStr, 1000, "%ssourceType = %sSpecifiedLine  # %s\n", prefix, prefix, sourceType_names);
           str += tmpStr;
           break;
       default:
@@ -129,101 +128,101 @@ PyPoincareAttributes_ToString(const PoincareAttributes *atts, const char *prefix
     }
 
     {   const double *pointSource = atts->GetPointSource();
-        SNPRINTF(tmpStr, 1000, "%spointSource = (", prefix);
+        snprintf(tmpStr, 1000, "%spointSource = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 3; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", pointSource[i]);
+            snprintf(tmpStr, 1000, "%g", pointSource[i]);
             str += tmpStr;
             if(i < 2)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const doubleVector &pointList = atts->GetPointList();
-        SNPRINTF(tmpStr, 1000, "%spointList = (", prefix);
+        snprintf(tmpStr, 1000, "%spointList = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < pointList.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", pointList[i]);
+            snprintf(tmpStr, 1000, "%g", pointList[i]);
             str += tmpStr;
             if(i < pointList.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const double *lineStart = atts->GetLineStart();
-        SNPRINTF(tmpStr, 1000, "%slineStart = (", prefix);
+        snprintf(tmpStr, 1000, "%slineStart = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 3; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", lineStart[i]);
+            snprintf(tmpStr, 1000, "%g", lineStart[i]);
             str += tmpStr;
             if(i < 2)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const double *lineEnd = atts->GetLineEnd();
-        SNPRINTF(tmpStr, 1000, "%slineEnd = (", prefix);
+        snprintf(tmpStr, 1000, "%slineEnd = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 3; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", lineEnd[i]);
+            snprintf(tmpStr, 1000, "%g", lineEnd[i]);
             str += tmpStr;
             if(i < 2)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
-    SNPRINTF(tmpStr, 1000, "%spointDensity = %d\n", prefix, atts->GetPointDensity());
+    snprintf(tmpStr, 1000, "%spointDensity = %d\n", prefix, atts->GetPointDensity());
     str += tmpStr;
     const char *fieldType_names = "Default, FlashField, M3DC12DField, M3DC13DField, Nek5000Field, "
         "NektarPPField, NIMRODField";
     switch (atts->GetFieldType())
     {
       case PoincareAttributes::Default:
-          SNPRINTF(tmpStr, 1000, "%sfieldType = %sDefault  # %s\n", prefix, prefix, fieldType_names);
+          snprintf(tmpStr, 1000, "%sfieldType = %sDefault  # %s\n", prefix, prefix, fieldType_names);
           str += tmpStr;
           break;
       case PoincareAttributes::FlashField:
-          SNPRINTF(tmpStr, 1000, "%sfieldType = %sFlashField  # %s\n", prefix, prefix, fieldType_names);
+          snprintf(tmpStr, 1000, "%sfieldType = %sFlashField  # %s\n", prefix, prefix, fieldType_names);
           str += tmpStr;
           break;
       case PoincareAttributes::M3DC12DField:
-          SNPRINTF(tmpStr, 1000, "%sfieldType = %sM3DC12DField  # %s\n", prefix, prefix, fieldType_names);
+          snprintf(tmpStr, 1000, "%sfieldType = %sM3DC12DField  # %s\n", prefix, prefix, fieldType_names);
           str += tmpStr;
           break;
       case PoincareAttributes::M3DC13DField:
-          SNPRINTF(tmpStr, 1000, "%sfieldType = %sM3DC13DField  # %s\n", prefix, prefix, fieldType_names);
+          snprintf(tmpStr, 1000, "%sfieldType = %sM3DC13DField  # %s\n", prefix, prefix, fieldType_names);
           str += tmpStr;
           break;
       case PoincareAttributes::Nek5000Field:
-          SNPRINTF(tmpStr, 1000, "%sfieldType = %sNek5000Field  # %s\n", prefix, prefix, fieldType_names);
+          snprintf(tmpStr, 1000, "%sfieldType = %sNek5000Field  # %s\n", prefix, prefix, fieldType_names);
           str += tmpStr;
           break;
       case PoincareAttributes::NektarPPField:
-          SNPRINTF(tmpStr, 1000, "%sfieldType = %sNektarPPField  # %s\n", prefix, prefix, fieldType_names);
+          snprintf(tmpStr, 1000, "%sfieldType = %sNektarPPField  # %s\n", prefix, prefix, fieldType_names);
           str += tmpStr;
           break;
       case PoincareAttributes::NIMRODField:
-          SNPRINTF(tmpStr, 1000, "%sfieldType = %sNIMRODField  # %s\n", prefix, prefix, fieldType_names);
+          snprintf(tmpStr, 1000, "%sfieldType = %sNIMRODField  # %s\n", prefix, prefix, fieldType_names);
           str += tmpStr;
           break;
       default:
@@ -231,26 +230,26 @@ PyPoincareAttributes_ToString(const PoincareAttributes *atts, const char *prefix
     }
 
     if(atts->GetForceNodeCenteredData())
-        SNPRINTF(tmpStr, 1000, "%sforceNodeCenteredData = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sforceNodeCenteredData = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sforceNodeCenteredData = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sforceNodeCenteredData = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sfieldConstant = %g\n", prefix, atts->GetFieldConstant());
+    snprintf(tmpStr, 1000, "%sfieldConstant = %g\n", prefix, atts->GetFieldConstant());
     str += tmpStr;
     {   const double *velocitySource = atts->GetVelocitySource();
-        SNPRINTF(tmpStr, 1000, "%svelocitySource = (", prefix);
+        snprintf(tmpStr, 1000, "%svelocitySource = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 3; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", velocitySource[i]);
+            snprintf(tmpStr, 1000, "%g", velocitySource[i]);
             str += tmpStr;
             if(i < 2)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     const char *integrationType_names = "Euler, Leapfrog, DormandPrince, AdamsBashforth, RK4, "
@@ -258,27 +257,27 @@ PyPoincareAttributes_ToString(const PoincareAttributes *atts, const char *prefix
     switch (atts->GetIntegrationType())
     {
       case PoincareAttributes::Euler:
-          SNPRINTF(tmpStr, 1000, "%sintegrationType = %sEuler  # %s\n", prefix, prefix, integrationType_names);
+          snprintf(tmpStr, 1000, "%sintegrationType = %sEuler  # %s\n", prefix, prefix, integrationType_names);
           str += tmpStr;
           break;
       case PoincareAttributes::Leapfrog:
-          SNPRINTF(tmpStr, 1000, "%sintegrationType = %sLeapfrog  # %s\n", prefix, prefix, integrationType_names);
+          snprintf(tmpStr, 1000, "%sintegrationType = %sLeapfrog  # %s\n", prefix, prefix, integrationType_names);
           str += tmpStr;
           break;
       case PoincareAttributes::DormandPrince:
-          SNPRINTF(tmpStr, 1000, "%sintegrationType = %sDormandPrince  # %s\n", prefix, prefix, integrationType_names);
+          snprintf(tmpStr, 1000, "%sintegrationType = %sDormandPrince  # %s\n", prefix, prefix, integrationType_names);
           str += tmpStr;
           break;
       case PoincareAttributes::AdamsBashforth:
-          SNPRINTF(tmpStr, 1000, "%sintegrationType = %sAdamsBashforth  # %s\n", prefix, prefix, integrationType_names);
+          snprintf(tmpStr, 1000, "%sintegrationType = %sAdamsBashforth  # %s\n", prefix, prefix, integrationType_names);
           str += tmpStr;
           break;
       case PoincareAttributes::RK4:
-          SNPRINTF(tmpStr, 1000, "%sintegrationType = %sRK4  # %s\n", prefix, prefix, integrationType_names);
+          snprintf(tmpStr, 1000, "%sintegrationType = %sRK4  # %s\n", prefix, prefix, integrationType_names);
           str += tmpStr;
           break;
       case PoincareAttributes::M3DC12DIntegrator:
-          SNPRINTF(tmpStr, 1000, "%sintegrationType = %sM3DC12DIntegrator  # %s\n", prefix, prefix, integrationType_names);
+          snprintf(tmpStr, 1000, "%sintegrationType = %sM3DC12DIntegrator  # %s\n", prefix, prefix, integrationType_names);
           str += tmpStr;
           break;
       default:
@@ -289,89 +288,89 @@ PyPoincareAttributes_ToString(const PoincareAttributes *atts, const char *prefix
     switch (atts->GetCoordinateSystem())
     {
       case PoincareAttributes::Cartesian:
-          SNPRINTF(tmpStr, 1000, "%scoordinateSystem = %sCartesian  # %s\n", prefix, prefix, coordinateSystem_names);
+          snprintf(tmpStr, 1000, "%scoordinateSystem = %sCartesian  # %s\n", prefix, prefix, coordinateSystem_names);
           str += tmpStr;
           break;
       case PoincareAttributes::Cylindrical:
-          SNPRINTF(tmpStr, 1000, "%scoordinateSystem = %sCylindrical  # %s\n", prefix, prefix, coordinateSystem_names);
+          snprintf(tmpStr, 1000, "%scoordinateSystem = %sCylindrical  # %s\n", prefix, prefix, coordinateSystem_names);
           str += tmpStr;
           break;
       default:
           break;
     }
 
-    SNPRINTF(tmpStr, 1000, "%smaxStepLength = %g\n", prefix, atts->GetMaxStepLength());
+    snprintf(tmpStr, 1000, "%smaxStepLength = %g\n", prefix, atts->GetMaxStepLength());
     str += tmpStr;
     if(atts->GetLimitMaximumTimestep())
-        SNPRINTF(tmpStr, 1000, "%slimitMaximumTimestep = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%slimitMaximumTimestep = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%slimitMaximumTimestep = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%slimitMaximumTimestep = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%smaxTimeStep = %g\n", prefix, atts->GetMaxTimeStep());
+    snprintf(tmpStr, 1000, "%smaxTimeStep = %g\n", prefix, atts->GetMaxTimeStep());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%srelTol = %g\n", prefix, atts->GetRelTol());
+    snprintf(tmpStr, 1000, "%srelTol = %g\n", prefix, atts->GetRelTol());
     str += tmpStr;
     const char *absTolSizeType_names = "Absolute, FractionOfBBox";
     switch (atts->GetAbsTolSizeType())
     {
       case PoincareAttributes::Absolute:
-          SNPRINTF(tmpStr, 1000, "%sabsTolSizeType = %sAbsolute  # %s\n", prefix, prefix, absTolSizeType_names);
+          snprintf(tmpStr, 1000, "%sabsTolSizeType = %sAbsolute  # %s\n", prefix, prefix, absTolSizeType_names);
           str += tmpStr;
           break;
       case PoincareAttributes::FractionOfBBox:
-          SNPRINTF(tmpStr, 1000, "%sabsTolSizeType = %sFractionOfBBox  # %s\n", prefix, prefix, absTolSizeType_names);
+          snprintf(tmpStr, 1000, "%sabsTolSizeType = %sFractionOfBBox  # %s\n", prefix, prefix, absTolSizeType_names);
           str += tmpStr;
           break;
       default:
           break;
     }
 
-    SNPRINTF(tmpStr, 1000, "%sabsTolAbsolute = %g\n", prefix, atts->GetAbsTolAbsolute());
+    snprintf(tmpStr, 1000, "%sabsTolAbsolute = %g\n", prefix, atts->GetAbsTolAbsolute());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sabsTolBBox = %g\n", prefix, atts->GetAbsTolBBox());
+    snprintf(tmpStr, 1000, "%sabsTolBBox = %g\n", prefix, atts->GetAbsTolBBox());
     str += tmpStr;
     const char *analysis_names = "None, Normal";
     switch (atts->GetAnalysis())
     {
       case PoincareAttributes::None:
-          SNPRINTF(tmpStr, 1000, "%sanalysis = %sNone  # %s\n", prefix, prefix, analysis_names);
+          snprintf(tmpStr, 1000, "%sanalysis = %sNone  # %s\n", prefix, prefix, analysis_names);
           str += tmpStr;
           break;
       case PoincareAttributes::Normal:
-          SNPRINTF(tmpStr, 1000, "%sanalysis = %sNormal  # %s\n", prefix, prefix, analysis_names);
+          snprintf(tmpStr, 1000, "%sanalysis = %sNormal  # %s\n", prefix, prefix, analysis_names);
           str += tmpStr;
           break;
       default:
           break;
     }
 
-    SNPRINTF(tmpStr, 1000, "%smaximumToroidalWinding = %d\n", prefix, atts->GetMaximumToroidalWinding());
+    snprintf(tmpStr, 1000, "%smaximumToroidalWinding = %d\n", prefix, atts->GetMaximumToroidalWinding());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%soverrideToroidalWinding = %d\n", prefix, atts->GetOverrideToroidalWinding());
+    snprintf(tmpStr, 1000, "%soverrideToroidalWinding = %d\n", prefix, atts->GetOverrideToroidalWinding());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%soverridePoloidalWinding = %d\n", prefix, atts->GetOverridePoloidalWinding());
+    snprintf(tmpStr, 1000, "%soverridePoloidalWinding = %d\n", prefix, atts->GetOverridePoloidalWinding());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%swindingPairConfidence = %g\n", prefix, atts->GetWindingPairConfidence());
+    snprintf(tmpStr, 1000, "%swindingPairConfidence = %g\n", prefix, atts->GetWindingPairConfidence());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%srationalSurfaceFactor = %g\n", prefix, atts->GetRationalSurfaceFactor());
+    snprintf(tmpStr, 1000, "%srationalSurfaceFactor = %g\n", prefix, atts->GetRationalSurfaceFactor());
     str += tmpStr;
     const char *overlaps_names = "Raw, Remove, Merge, Smooth";
     switch (atts->GetOverlaps())
     {
       case PoincareAttributes::Raw:
-          SNPRINTF(tmpStr, 1000, "%soverlaps = %sRaw  # %s\n", prefix, prefix, overlaps_names);
+          snprintf(tmpStr, 1000, "%soverlaps = %sRaw  # %s\n", prefix, prefix, overlaps_names);
           str += tmpStr;
           break;
       case PoincareAttributes::Remove:
-          SNPRINTF(tmpStr, 1000, "%soverlaps = %sRemove  # %s\n", prefix, prefix, overlaps_names);
+          snprintf(tmpStr, 1000, "%soverlaps = %sRemove  # %s\n", prefix, prefix, overlaps_names);
           str += tmpStr;
           break;
       case PoincareAttributes::Merge:
-          SNPRINTF(tmpStr, 1000, "%soverlaps = %sMerge  # %s\n", prefix, prefix, overlaps_names);
+          snprintf(tmpStr, 1000, "%soverlaps = %sMerge  # %s\n", prefix, prefix, overlaps_names);
           str += tmpStr;
           break;
       case PoincareAttributes::Smooth:
-          SNPRINTF(tmpStr, 1000, "%soverlaps = %sSmooth  # %s\n", prefix, prefix, overlaps_names);
+          snprintf(tmpStr, 1000, "%soverlaps = %sSmooth  # %s\n", prefix, prefix, overlaps_names);
           str += tmpStr;
           break;
       default:
@@ -382,44 +381,44 @@ PyPoincareAttributes_ToString(const PoincareAttributes *atts, const char *prefix
     switch (atts->GetMeshType())
     {
       case PoincareAttributes::Curves:
-          SNPRINTF(tmpStr, 1000, "%smeshType = %sCurves  # %s\n", prefix, prefix, meshType_names);
+          snprintf(tmpStr, 1000, "%smeshType = %sCurves  # %s\n", prefix, prefix, meshType_names);
           str += tmpStr;
           break;
       case PoincareAttributes::Surfaces:
-          SNPRINTF(tmpStr, 1000, "%smeshType = %sSurfaces  # %s\n", prefix, prefix, meshType_names);
+          snprintf(tmpStr, 1000, "%smeshType = %sSurfaces  # %s\n", prefix, prefix, meshType_names);
           str += tmpStr;
           break;
       default:
           break;
     }
 
-    SNPRINTF(tmpStr, 1000, "%snumberPlanes = %d\n", prefix, atts->GetNumberPlanes());
+    snprintf(tmpStr, 1000, "%snumberPlanes = %d\n", prefix, atts->GetNumberPlanes());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%ssinglePlane = %g\n", prefix, atts->GetSinglePlane());
+    snprintf(tmpStr, 1000, "%ssinglePlane = %g\n", prefix, atts->GetSinglePlane());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%smin = %g\n", prefix, atts->GetMin());
+    snprintf(tmpStr, 1000, "%smin = %g\n", prefix, atts->GetMin());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%smax = %g\n", prefix, atts->GetMax());
+    snprintf(tmpStr, 1000, "%smax = %g\n", prefix, atts->GetMax());
     str += tmpStr;
     if(atts->GetMinFlag())
-        SNPRINTF(tmpStr, 1000, "%sminFlag = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sminFlag = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sminFlag = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sminFlag = 0\n", prefix);
     str += tmpStr;
     if(atts->GetMaxFlag())
-        SNPRINTF(tmpStr, 1000, "%smaxFlag = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%smaxFlag = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%smaxFlag = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%smaxFlag = 0\n", prefix);
     str += tmpStr;
     const char *colorType_names = "ColorBySingleColor, ColorByColorTable";
     switch (atts->GetColorType())
     {
       case PoincareAttributes::ColorBySingleColor:
-          SNPRINTF(tmpStr, 1000, "%scolorType = %sColorBySingleColor  # %s\n", prefix, prefix, colorType_names);
+          snprintf(tmpStr, 1000, "%scolorType = %sColorBySingleColor  # %s\n", prefix, prefix, colorType_names);
           str += tmpStr;
           break;
       case PoincareAttributes::ColorByColorTable:
-          SNPRINTF(tmpStr, 1000, "%scolorType = %sColorByColorTable  # %s\n", prefix, prefix, colorType_names);
+          snprintf(tmpStr, 1000, "%scolorType = %sColorByColorTable  # %s\n", prefix, prefix, colorType_names);
           str += tmpStr;
           break;
       default:
@@ -427,9 +426,9 @@ PyPoincareAttributes_ToString(const PoincareAttributes *atts, const char *prefix
     }
 
     const unsigned char *singleColor = atts->GetSingleColor().GetColor();
-    SNPRINTF(tmpStr, 1000, "%ssingleColor = (%d, %d, %d, %d)\n", prefix, int(singleColor[0]), int(singleColor[1]), int(singleColor[2]), int(singleColor[3]));
+    snprintf(tmpStr, 1000, "%ssingleColor = (%d, %d, %d, %d)\n", prefix, int(singleColor[0]), int(singleColor[1]), int(singleColor[2]), int(singleColor[3]));
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%scolorTableName = \"%s\"\n", prefix, atts->GetColorTableName().c_str());
+    snprintf(tmpStr, 1000, "%scolorTableName = \"%s\"\n", prefix, atts->GetColorTableName().c_str());
     str += tmpStr;
     const char *dataValue_names = "Solid, SafetyFactorQ, SafetyFactorP, SafetyFactorQ_NotP, SafetyFactorP_NotQ, "
         "ToroidalWindings, PoloidalWindingsQ, PoloidalWindingsP, FieldlineOrder, "
@@ -438,59 +437,59 @@ PyPoincareAttributes_ToString(const PoincareAttributes *atts, const char *prefix
     switch (atts->GetDataValue())
     {
       case PoincareAttributes::Solid:
-          SNPRINTF(tmpStr, 1000, "%sdataValue = %sSolid  # %s\n", prefix, prefix, dataValue_names);
+          snprintf(tmpStr, 1000, "%sdataValue = %sSolid  # %s\n", prefix, prefix, dataValue_names);
           str += tmpStr;
           break;
       case PoincareAttributes::SafetyFactorQ:
-          SNPRINTF(tmpStr, 1000, "%sdataValue = %sSafetyFactorQ  # %s\n", prefix, prefix, dataValue_names);
+          snprintf(tmpStr, 1000, "%sdataValue = %sSafetyFactorQ  # %s\n", prefix, prefix, dataValue_names);
           str += tmpStr;
           break;
       case PoincareAttributes::SafetyFactorP:
-          SNPRINTF(tmpStr, 1000, "%sdataValue = %sSafetyFactorP  # %s\n", prefix, prefix, dataValue_names);
+          snprintf(tmpStr, 1000, "%sdataValue = %sSafetyFactorP  # %s\n", prefix, prefix, dataValue_names);
           str += tmpStr;
           break;
       case PoincareAttributes::SafetyFactorQ_NotP:
-          SNPRINTF(tmpStr, 1000, "%sdataValue = %sSafetyFactorQ_NotP  # %s\n", prefix, prefix, dataValue_names);
+          snprintf(tmpStr, 1000, "%sdataValue = %sSafetyFactorQ_NotP  # %s\n", prefix, prefix, dataValue_names);
           str += tmpStr;
           break;
       case PoincareAttributes::SafetyFactorP_NotQ:
-          SNPRINTF(tmpStr, 1000, "%sdataValue = %sSafetyFactorP_NotQ  # %s\n", prefix, prefix, dataValue_names);
+          snprintf(tmpStr, 1000, "%sdataValue = %sSafetyFactorP_NotQ  # %s\n", prefix, prefix, dataValue_names);
           str += tmpStr;
           break;
       case PoincareAttributes::ToroidalWindings:
-          SNPRINTF(tmpStr, 1000, "%sdataValue = %sToroidalWindings  # %s\n", prefix, prefix, dataValue_names);
+          snprintf(tmpStr, 1000, "%sdataValue = %sToroidalWindings  # %s\n", prefix, prefix, dataValue_names);
           str += tmpStr;
           break;
       case PoincareAttributes::PoloidalWindingsQ:
-          SNPRINTF(tmpStr, 1000, "%sdataValue = %sPoloidalWindingsQ  # %s\n", prefix, prefix, dataValue_names);
+          snprintf(tmpStr, 1000, "%sdataValue = %sPoloidalWindingsQ  # %s\n", prefix, prefix, dataValue_names);
           str += tmpStr;
           break;
       case PoincareAttributes::PoloidalWindingsP:
-          SNPRINTF(tmpStr, 1000, "%sdataValue = %sPoloidalWindingsP  # %s\n", prefix, prefix, dataValue_names);
+          snprintf(tmpStr, 1000, "%sdataValue = %sPoloidalWindingsP  # %s\n", prefix, prefix, dataValue_names);
           str += tmpStr;
           break;
       case PoincareAttributes::FieldlineOrder:
-          SNPRINTF(tmpStr, 1000, "%sdataValue = %sFieldlineOrder  # %s\n", prefix, prefix, dataValue_names);
+          snprintf(tmpStr, 1000, "%sdataValue = %sFieldlineOrder  # %s\n", prefix, prefix, dataValue_names);
           str += tmpStr;
           break;
       case PoincareAttributes::PointOrder:
-          SNPRINTF(tmpStr, 1000, "%sdataValue = %sPointOrder  # %s\n", prefix, prefix, dataValue_names);
+          snprintf(tmpStr, 1000, "%sdataValue = %sPointOrder  # %s\n", prefix, prefix, dataValue_names);
           str += tmpStr;
           break;
       case PoincareAttributes::PlaneOrder:
-          SNPRINTF(tmpStr, 1000, "%sdataValue = %sPlaneOrder  # %s\n", prefix, prefix, dataValue_names);
+          snprintf(tmpStr, 1000, "%sdataValue = %sPlaneOrder  # %s\n", prefix, prefix, dataValue_names);
           str += tmpStr;
           break;
       case PoincareAttributes::WindingGroupOrder:
-          SNPRINTF(tmpStr, 1000, "%sdataValue = %sWindingGroupOrder  # %s\n", prefix, prefix, dataValue_names);
+          snprintf(tmpStr, 1000, "%sdataValue = %sWindingGroupOrder  # %s\n", prefix, prefix, dataValue_names);
           str += tmpStr;
           break;
       case PoincareAttributes::WindingPointOrder:
-          SNPRINTF(tmpStr, 1000, "%sdataValue = %sWindingPointOrder  # %s\n", prefix, prefix, dataValue_names);
+          snprintf(tmpStr, 1000, "%sdataValue = %sWindingPointOrder  # %s\n", prefix, prefix, dataValue_names);
           str += tmpStr;
           break;
       case PoincareAttributes::WindingPointOrderModulo:
-          SNPRINTF(tmpStr, 1000, "%sdataValue = %sWindingPointOrderModulo  # %s\n", prefix, prefix, dataValue_names);
+          snprintf(tmpStr, 1000, "%sdataValue = %sWindingPointOrderModulo  # %s\n", prefix, prefix, dataValue_names);
           str += tmpStr;
           break;
       default:
@@ -498,122 +497,122 @@ PyPoincareAttributes_ToString(const PoincareAttributes *atts, const char *prefix
     }
 
     if(atts->GetShowRationalSurfaces())
-        SNPRINTF(tmpStr, 1000, "%sshowRationalSurfaces = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sshowRationalSurfaces = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sshowRationalSurfaces = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sshowRationalSurfaces = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sRationalSurfaceMaxIterations = %d\n", prefix, atts->GetRationalSurfaceMaxIterations());
+    snprintf(tmpStr, 1000, "%sRationalSurfaceMaxIterations = %d\n", prefix, atts->GetRationalSurfaceMaxIterations());
     str += tmpStr;
     if(atts->GetShowOPoints())
-        SNPRINTF(tmpStr, 1000, "%sshowOPoints = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sshowOPoints = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sshowOPoints = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sshowOPoints = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sOPointMaxIterations = %d\n", prefix, atts->GetOPointMaxIterations());
+    snprintf(tmpStr, 1000, "%sOPointMaxIterations = %d\n", prefix, atts->GetOPointMaxIterations());
     str += tmpStr;
     if(atts->GetShowXPoints())
-        SNPRINTF(tmpStr, 1000, "%sshowXPoints = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sshowXPoints = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sshowXPoints = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sshowXPoints = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sXPointMaxIterations = %d\n", prefix, atts->GetXPointMaxIterations());
+    snprintf(tmpStr, 1000, "%sXPointMaxIterations = %d\n", prefix, atts->GetXPointMaxIterations());
     str += tmpStr;
     if(atts->GetPerformOLineAnalysis())
-        SNPRINTF(tmpStr, 1000, "%sperformOLineAnalysis = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sperformOLineAnalysis = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sperformOLineAnalysis = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sperformOLineAnalysis = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sOLineToroidalWinding = %d\n", prefix, atts->GetOLineToroidalWinding());
+    snprintf(tmpStr, 1000, "%sOLineToroidalWinding = %d\n", prefix, atts->GetOLineToroidalWinding());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sOLineAxisFileName = \"%s\"\n", prefix, atts->GetOLineAxisFileName().c_str());
+    snprintf(tmpStr, 1000, "%sOLineAxisFileName = \"%s\"\n", prefix, atts->GetOLineAxisFileName().c_str());
     str += tmpStr;
     if(atts->GetShowChaotic())
-        SNPRINTF(tmpStr, 1000, "%sshowChaotic = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sshowChaotic = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sshowChaotic = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sshowChaotic = 0\n", prefix);
     str += tmpStr;
     if(atts->GetShowIslands())
-        SNPRINTF(tmpStr, 1000, "%sshowIslands = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sshowIslands = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sshowIslands = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sshowIslands = 0\n", prefix);
     str += tmpStr;
     if(atts->GetSummaryFlag())
-        SNPRINTF(tmpStr, 1000, "%sSummaryFlag = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sSummaryFlag = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sSummaryFlag = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sSummaryFlag = 0\n", prefix);
     str += tmpStr;
     if(atts->GetVerboseFlag())
-        SNPRINTF(tmpStr, 1000, "%sverboseFlag = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sverboseFlag = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sverboseFlag = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sverboseFlag = 0\n", prefix);
     str += tmpStr;
     if(atts->GetShow1DPlots())
-        SNPRINTF(tmpStr, 1000, "%sshow1DPlots = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sshow1DPlots = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sshow1DPlots = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sshow1DPlots = 0\n", prefix);
     str += tmpStr;
     if(atts->GetShowLines())
-        SNPRINTF(tmpStr, 1000, "%sshowLines = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sshowLines = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sshowLines = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sshowLines = 0\n", prefix);
     str += tmpStr;
     if(atts->GetShowPoints())
-        SNPRINTF(tmpStr, 1000, "%sshowPoints = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sshowPoints = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sshowPoints = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sshowPoints = 0\n", prefix);
     str += tmpStr;
     const char *parallelizationAlgorithmType_names = "LoadOnDemand, ParallelStaticDomains, MasterSlave, VisItSelects";
     switch (atts->GetParallelizationAlgorithmType())
     {
       case PoincareAttributes::LoadOnDemand:
-          SNPRINTF(tmpStr, 1000, "%sparallelizationAlgorithmType = %sLoadOnDemand  # %s\n", prefix, prefix, parallelizationAlgorithmType_names);
+          snprintf(tmpStr, 1000, "%sparallelizationAlgorithmType = %sLoadOnDemand  # %s\n", prefix, prefix, parallelizationAlgorithmType_names);
           str += tmpStr;
           break;
       case PoincareAttributes::ParallelStaticDomains:
-          SNPRINTF(tmpStr, 1000, "%sparallelizationAlgorithmType = %sParallelStaticDomains  # %s\n", prefix, prefix, parallelizationAlgorithmType_names);
+          snprintf(tmpStr, 1000, "%sparallelizationAlgorithmType = %sParallelStaticDomains  # %s\n", prefix, prefix, parallelizationAlgorithmType_names);
           str += tmpStr;
           break;
       case PoincareAttributes::MasterSlave:
-          SNPRINTF(tmpStr, 1000, "%sparallelizationAlgorithmType = %sMasterSlave  # %s\n", prefix, prefix, parallelizationAlgorithmType_names);
+          snprintf(tmpStr, 1000, "%sparallelizationAlgorithmType = %sMasterSlave  # %s\n", prefix, prefix, parallelizationAlgorithmType_names);
           str += tmpStr;
           break;
       case PoincareAttributes::VisItSelects:
-          SNPRINTF(tmpStr, 1000, "%sparallelizationAlgorithmType = %sVisItSelects  # %s\n", prefix, prefix, parallelizationAlgorithmType_names);
+          snprintf(tmpStr, 1000, "%sparallelizationAlgorithmType = %sVisItSelects  # %s\n", prefix, prefix, parallelizationAlgorithmType_names);
           str += tmpStr;
           break;
       default:
           break;
     }
 
-    SNPRINTF(tmpStr, 1000, "%smaxProcessCount = %d\n", prefix, atts->GetMaxProcessCount());
+    snprintf(tmpStr, 1000, "%smaxProcessCount = %d\n", prefix, atts->GetMaxProcessCount());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%smaxDomainCacheSize = %d\n", prefix, atts->GetMaxDomainCacheSize());
+    snprintf(tmpStr, 1000, "%smaxDomainCacheSize = %d\n", prefix, atts->GetMaxDomainCacheSize());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sworkGroupSize = %d\n", prefix, atts->GetWorkGroupSize());
+    snprintf(tmpStr, 1000, "%sworkGroupSize = %d\n", prefix, atts->GetWorkGroupSize());
     str += tmpStr;
     if(atts->GetPathlines())
-        SNPRINTF(tmpStr, 1000, "%spathlines = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%spathlines = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%spathlines = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%spathlines = 0\n", prefix);
     str += tmpStr;
     if(atts->GetPathlinesOverrideStartingTimeFlag())
-        SNPRINTF(tmpStr, 1000, "%spathlinesOverrideStartingTimeFlag = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%spathlinesOverrideStartingTimeFlag = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%spathlinesOverrideStartingTimeFlag = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%spathlinesOverrideStartingTimeFlag = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%spathlinesOverrideStartingTime = %g\n", prefix, atts->GetPathlinesOverrideStartingTime());
+    snprintf(tmpStr, 1000, "%spathlinesOverrideStartingTime = %g\n", prefix, atts->GetPathlinesOverrideStartingTime());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%spathlinesPeriod = %g\n", prefix, atts->GetPathlinesPeriod());
+    snprintf(tmpStr, 1000, "%spathlinesPeriod = %g\n", prefix, atts->GetPathlinesPeriod());
     str += tmpStr;
     const char *pathlinesCMFE_names = "CONN_CMFE, POS_CMFE";
     switch (atts->GetPathlinesCMFE())
     {
       case PoincareAttributes::CONN_CMFE:
-          SNPRINTF(tmpStr, 1000, "%spathlinesCMFE = %sCONN_CMFE  # %s\n", prefix, prefix, pathlinesCMFE_names);
+          snprintf(tmpStr, 1000, "%spathlinesCMFE = %sCONN_CMFE  # %s\n", prefix, prefix, pathlinesCMFE_names);
           str += tmpStr;
           break;
       case PoincareAttributes::POS_CMFE:
-          SNPRINTF(tmpStr, 1000, "%spathlinesCMFE = %sPOS_CMFE  # %s\n", prefix, prefix, pathlinesCMFE_names);
+          snprintf(tmpStr, 1000, "%spathlinesCMFE = %sPOS_CMFE  # %s\n", prefix, prefix, pathlinesCMFE_names);
           str += tmpStr;
           break;
       default:
@@ -621,26 +620,26 @@ PyPoincareAttributes_ToString(const PoincareAttributes *atts, const char *prefix
     }
 
     if(atts->GetIssueTerminationWarnings())
-        SNPRINTF(tmpStr, 1000, "%sissueTerminationWarnings = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sissueTerminationWarnings = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sissueTerminationWarnings = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sissueTerminationWarnings = 0\n", prefix);
     str += tmpStr;
     if(atts->GetIssueStepsizeWarnings())
-        SNPRINTF(tmpStr, 1000, "%sissueStepsizeWarnings = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sissueStepsizeWarnings = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sissueStepsizeWarnings = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sissueStepsizeWarnings = 0\n", prefix);
     str += tmpStr;
     if(atts->GetIssueStiffnessWarnings())
-        SNPRINTF(tmpStr, 1000, "%sissueStiffnessWarnings = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sissueStiffnessWarnings = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sissueStiffnessWarnings = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sissueStiffnessWarnings = 0\n", prefix);
     str += tmpStr;
     if(atts->GetIssueCriticalPointsWarnings())
-        SNPRINTF(tmpStr, 1000, "%sissueCriticalPointsWarnings = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sissueCriticalPointsWarnings = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sissueCriticalPointsWarnings = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sissueCriticalPointsWarnings = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%scriticalPointThreshold = %g\n", prefix, atts->GetCriticalPointThreshold());
+    snprintf(tmpStr, 1000, "%scriticalPointThreshold = %g\n", prefix, atts->GetCriticalPointThreshold());
     str += tmpStr;
     return str;
 }

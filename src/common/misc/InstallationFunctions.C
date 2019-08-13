@@ -8,7 +8,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <snprintf.h>
+
 
 #if defined(_WIN32)
 #include <windows.h>
@@ -259,7 +259,7 @@ GetUserVisItDirectory()
         if(SUCCEEDED(SHGetFolderPath(NULL, CSIDL_PERSONAL, NULL, 
                                  SHGFP_TYPE_CURRENT, szPath))) 
         {
-            SNPRINTF(visituserpath, MAX_PATH, "%s\\VisIt", szPath);
+            snprintf(visituserpath, MAX_PATH, "%s\\VisIt", szPath);
             haveVISITUSERHOME = 1;
         }
 
@@ -1350,7 +1350,7 @@ GetVisItPIDString()
         pid = static_cast<int>(getpid());
 #endif
         char buffer[50];
-        SNPRINTF(buffer, 50, "%d", pid);
+        snprintf(buffer, 50, "%d", pid);
         
         pidStr = std::string(buffer);
     }

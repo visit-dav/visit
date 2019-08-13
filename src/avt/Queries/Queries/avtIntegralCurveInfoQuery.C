@@ -9,7 +9,6 @@
 #include <avtIntegralCurveInfoQuery.h>
 #include <avtDatasetExaminer.h>
 #include <avtParallel.h>
-#include <snprintf.h>
 #include <vtkDoubleArray.h>
 #include <vtkPolyData.h>
 #include <vtkPoints.h>

@@ -12,7 +12,6 @@
 
 #include <visitstream.h>
 #include <visit-config.h>
-#include <snprintf.h>
 
 #include <vtkUnsignedCharArray.h>
 #include <vtkFieldData.h>
@@ -1543,10 +1542,10 @@ avtBOVFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         char n[30], def[200];
         for(int i = 0; i < dataNumComponents; ++i)
         {
-            SNPRINTF(n, sizeof(n), "comp%02d", i);
+            snprintf(n, sizeof(n), "comp%02d", i);
             amd->compNames.push_back(n);
 
-            SNPRINTF(def, sizeof(def), "array_decompose(%s, %d)", varname.c_str(), i);
+            snprintf(def, sizeof(def), "array_decompose(%s, %d)", varname.c_str(), i);
             Expression e;
             e.SetName(n);
             e.SetDefinition(def);

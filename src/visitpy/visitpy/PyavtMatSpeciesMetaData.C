@@ -5,7 +5,6 @@
 #include <PyavtMatSpeciesMetaData.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyavtMatSpeciesMetaData
@@ -42,28 +41,28 @@ PyavtMatSpeciesMetaData_ToString(const avtMatSpeciesMetaData *atts, const char *
     std::string str;
     char tmpStr[1000];
 
-    SNPRINTF(tmpStr, 1000, "%snumSpecies = %d\n", prefix, atts->numSpecies);
+    snprintf(tmpStr, 1000, "%snumSpecies = %d\n", prefix, atts->numSpecies);
     str += tmpStr;
     {   const stringVector &speciesNames = atts->speciesNames;
-        SNPRINTF(tmpStr, 1000, "%sspeciesNames = (", prefix);
+        snprintf(tmpStr, 1000, "%sspeciesNames = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < speciesNames.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "\"%s\"", speciesNames[i].c_str());
+            snprintf(tmpStr, 1000, "\"%s\"", speciesNames[i].c_str());
             str += tmpStr;
             if(i < speciesNames.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     if(atts->validVariable)
-        SNPRINTF(tmpStr, 1000, "%svalidVariable = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%svalidVariable = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%svalidVariable = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%svalidVariable = 0\n", prefix);
     str += tmpStr;
     return str;
 }

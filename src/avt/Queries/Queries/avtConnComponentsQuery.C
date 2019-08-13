@@ -22,7 +22,6 @@
 #include <vtkPointData.h>
 
 #include <DebugStream.h>
-#include <snprintf.h>
 
 
 // ****************************************************************************
@@ -109,9 +108,9 @@ avtConnComponentsQuery::PostExecute(void)
         char buff[2048];
 
         if(nComps == 1)
-        {SNPRINTF(buff,2048,"Found %d connected component\n",nComps);}
+        {snprintf(buff,2048,"Found %d connected component\n",nComps);}
         else
-        {SNPRINTF(buff,2048,"Found %d connected components\n",nComps);}
+        {snprintf(buff,2048,"Found %d connected components\n",nComps);}
 
         msg += buff;
 

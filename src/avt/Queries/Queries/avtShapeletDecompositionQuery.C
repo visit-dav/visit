@@ -23,7 +23,6 @@
 #include <InvalidVariableException.h>
 #include <InvalidDimensionsException.h>
 #include <QueryArgumentException.h>
-#include <snprintf.h>
 
 #include <MapNode.h>
 
@@ -189,13 +188,13 @@ avtShapeletDecompositionQuery::PostExecute(void)
     if(decompResult)
     {
         msg = "Shapelet decomposition using beta(";
-        SNPRINTF(buff,256,float_format.c_str(),beta);
+        snprintf(buff,256,float_format.c_str(),beta);
         msg +=buff;
         msg +=") and nmax(";
-        SNPRINTF(buff,256,"%d",nmax);
+        snprintf(buff,256,"%d",nmax);
         msg +=buff;
         msg +=") yielded a reconstruction error of ";
-        SNPRINTF(buff,256,float_format.c_str(),recompError);
+        snprintf(buff,256,float_format.c_str(),recompError);
         msg +=buff;
         msg +=".\nYou can access the shapelet decomposition result in VisIt's "
               " cli via \"GetQueryOutputObject()\".\n";

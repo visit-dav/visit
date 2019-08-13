@@ -5,7 +5,6 @@
 #include <PyPersistentParticlesAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyPersistentParticlesAttributes
@@ -42,21 +41,21 @@ PyPersistentParticlesAttributes_ToString(const PersistentParticlesAttributes *at
     std::string str;
     char tmpStr[1000];
 
-    SNPRINTF(tmpStr, 1000, "%sstartIndex = %d\n", prefix, atts->GetStartIndex());
+    snprintf(tmpStr, 1000, "%sstartIndex = %d\n", prefix, atts->GetStartIndex());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sstopIndex = %d\n", prefix, atts->GetStopIndex());
+    snprintf(tmpStr, 1000, "%sstopIndex = %d\n", prefix, atts->GetStopIndex());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sstride = %d\n", prefix, atts->GetStride());
+    snprintf(tmpStr, 1000, "%sstride = %d\n", prefix, atts->GetStride());
     str += tmpStr;
     const char *startPathType_names = "Absolute, Relative";
     switch (atts->GetStartPathType())
     {
       case PersistentParticlesAttributes::Absolute:
-          SNPRINTF(tmpStr, 1000, "%sstartPathType = %sAbsolute  # %s\n", prefix, prefix, startPathType_names);
+          snprintf(tmpStr, 1000, "%sstartPathType = %sAbsolute  # %s\n", prefix, prefix, startPathType_names);
           str += tmpStr;
           break;
       case PersistentParticlesAttributes::Relative:
-          SNPRINTF(tmpStr, 1000, "%sstartPathType = %sRelative  # %s\n", prefix, prefix, startPathType_names);
+          snprintf(tmpStr, 1000, "%sstartPathType = %sRelative  # %s\n", prefix, prefix, startPathType_names);
           str += tmpStr;
           break;
       default:
@@ -67,34 +66,34 @@ PyPersistentParticlesAttributes_ToString(const PersistentParticlesAttributes *at
     switch (atts->GetStopPathType())
     {
       case PersistentParticlesAttributes::Absolute:
-          SNPRINTF(tmpStr, 1000, "%sstopPathType = %sAbsolute  # %s\n", prefix, prefix, stopPathType_names);
+          snprintf(tmpStr, 1000, "%sstopPathType = %sAbsolute  # %s\n", prefix, prefix, stopPathType_names);
           str += tmpStr;
           break;
       case PersistentParticlesAttributes::Relative:
-          SNPRINTF(tmpStr, 1000, "%sstopPathType = %sRelative  # %s\n", prefix, prefix, stopPathType_names);
+          snprintf(tmpStr, 1000, "%sstopPathType = %sRelative  # %s\n", prefix, prefix, stopPathType_names);
           str += tmpStr;
           break;
       default:
           break;
     }
 
-    SNPRINTF(tmpStr, 1000, "%straceVariableX = \"%s\"\n", prefix, atts->GetTraceVariableX().c_str());
+    snprintf(tmpStr, 1000, "%straceVariableX = \"%s\"\n", prefix, atts->GetTraceVariableX().c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%straceVariableY = \"%s\"\n", prefix, atts->GetTraceVariableY().c_str());
+    snprintf(tmpStr, 1000, "%straceVariableY = \"%s\"\n", prefix, atts->GetTraceVariableY().c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%straceVariableZ = \"%s\"\n", prefix, atts->GetTraceVariableZ().c_str());
+    snprintf(tmpStr, 1000, "%straceVariableZ = \"%s\"\n", prefix, atts->GetTraceVariableZ().c_str());
     str += tmpStr;
     if(atts->GetConnectParticles())
-        SNPRINTF(tmpStr, 1000, "%sconnectParticles = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sconnectParticles = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sconnectParticles = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sconnectParticles = 0\n", prefix);
     str += tmpStr;
     if(atts->GetShowPoints())
-        SNPRINTF(tmpStr, 1000, "%sshowPoints = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sshowPoints = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sshowPoints = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sshowPoints = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sindexVariable = \"%s\"\n", prefix, atts->GetIndexVariable().c_str());
+    snprintf(tmpStr, 1000, "%sindexVariable = \"%s\"\n", prefix, atts->GetIndexVariable().c_str());
     str += tmpStr;
     return str;
 }

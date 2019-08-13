@@ -20,7 +20,6 @@
 
 #include <DebugStream.h>
 #include <InvalidVariableException.h>
-#include <snprintf.h>
 
 #include <set>
 #include <string>
@@ -117,7 +116,7 @@ void
 avtSummationQuery::SetSumType(string &vn)
 {
     sumType = vn;
-    SNPRINTF(descriptionBuffer, 1024, "Summing up %s", sumType.c_str());
+    snprintf(descriptionBuffer, 1024, "Summing up %s", sumType.c_str());
 }
 
 
@@ -356,13 +355,13 @@ avtSummationQuery::PostExecute(void)
     {
         if(i>0)
             str+=", ";
-        SNPRINTF(buf, 1024,  floatFormat.c_str(), sums[i]);
+        snprintf(buf, 1024,  floatFormat.c_str(), sums[i]);
         str += buf;
     }
 
     if (!units.empty())
     {
-        SNPRINTF(buf, 1024, " %s%s", units.c_str(), unitsAppend.c_str());
+        snprintf(buf, 1024, " %s%s", units.c_str(), unitsAppend.c_str());
         str += buf;
         result_node["units"] = units+unitsAppend;
     }

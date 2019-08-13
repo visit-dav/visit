@@ -23,7 +23,6 @@
 
 #include <avtCallback.h>
 #include <avtDatabaseMetaData.h>
-#include <snprintf.h>
 #include <InvalidDBTypeException.h>
 #include <DebugStream.h>
 
@@ -85,9 +84,9 @@ avtRAWWriter::OpenFile(const std::string &stemname, int nb)
     {
         char filename[1024];
         if(writeContext.GroupSize() > 1)
-            SNPRINTF(filename, 1024, "%s.%d.raw", stemname.c_str(), writeContext.GroupRank());
+            snprintf(filename, 1024, "%s.%d.raw", stemname.c_str(), writeContext.GroupRank());
         else
-            SNPRINTF(filename, 1024, "%s.raw", stemname.c_str());
+            snprintf(filename, 1024, "%s.raw", stemname.c_str());
         file = fopen(filename, "wt");
         if(file == 0)
         {

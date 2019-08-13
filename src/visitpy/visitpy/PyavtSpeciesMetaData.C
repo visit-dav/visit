@@ -5,7 +5,6 @@
 #include <PyavtSpeciesMetaData.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 #include <PyavtMatSpeciesMetaData.h>
 
 // ****************************************************************************
@@ -43,20 +42,20 @@ PyavtSpeciesMetaData_ToString(const avtSpeciesMetaData *atts, const char *prefix
     std::string str;
     char tmpStr[1000];
 
-    SNPRINTF(tmpStr, 1000, "%sname = \"%s\"\n", prefix, atts->name.c_str());
+    snprintf(tmpStr, 1000, "%sname = \"%s\"\n", prefix, atts->name.c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%soriginalName = \"%s\"\n", prefix, atts->originalName.c_str());
+    snprintf(tmpStr, 1000, "%soriginalName = \"%s\"\n", prefix, atts->originalName.c_str());
     str += tmpStr;
     if(atts->validVariable)
-        SNPRINTF(tmpStr, 1000, "%svalidVariable = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%svalidVariable = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%svalidVariable = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%svalidVariable = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%smeshName = \"%s\"\n", prefix, atts->meshName.c_str());
+    snprintf(tmpStr, 1000, "%smeshName = \"%s\"\n", prefix, atts->meshName.c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%smaterialName = \"%s\"\n", prefix, atts->materialName.c_str());
+    snprintf(tmpStr, 1000, "%smaterialName = \"%s\"\n", prefix, atts->materialName.c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%snumMaterials = %d\n", prefix, atts->numMaterials);
+    snprintf(tmpStr, 1000, "%snumMaterials = %d\n", prefix, atts->numMaterials);
     str += tmpStr;
     { // new scope
         int index = 0;
@@ -64,7 +63,7 @@ PyavtSpeciesMetaData_ToString(const avtSpeciesMetaData *atts, const char *prefix
         for(AttributeGroupVector::const_iterator pos = atts->GetSpecies().begin(); pos != atts->GetSpecies().end(); ++pos, ++index)
         {
             const avtMatSpeciesMetaData *current = (const avtMatSpeciesMetaData *)(*pos);
-            SNPRINTF(tmpStr, 1000, "GetSpecies(%d).", index);
+            snprintf(tmpStr, 1000, "GetSpecies(%d).", index);
             std::string objPrefix(prefix + std::string(tmpStr));
             str += PyavtMatSpeciesMetaData_ToString(current, objPrefix.c_str());
         }
@@ -238,9 +237,9 @@ avtSpeciesMetaData_GetSpecies(PyObject *self, PyObject *args)
     {
         char msg[200];
         if(obj->data->GetSpecies().size() == 0)
-            SNPRINTF(msg, 200, "The index is invalid because species is empty.");
+            snprintf(msg, 200, "The index is invalid because species is empty.");
         else
-            SNPRINTF(msg, 200, "The index is invalid. Use index values in: [0, %ld).", obj->data->GetSpecies().size());
+            snprintf(msg, 200, "The index is invalid. Use index values in: [0, %ld).", obj->data->GetSpecies().size());
         PyErr_SetString(PyExc_IndexError, msg);
         return NULL;
     }
@@ -274,7 +273,7 @@ avtSpeciesMetaData_AddSpecies(PyObject *self, PyObject *args)
     if(!PyavtMatSpeciesMetaData_Check(element))
     {
         char msg[400];
-        SNPRINTF(msg, 400, "The AddSpecies method only accepts avtMatSpeciesMetaData objects.");
+        snprintf(msg, 400, "The AddSpecies method only accepts avtMatSpeciesMetaData objects.");
         PyErr_SetString(PyExc_TypeError, msg);
         return NULL;
     }

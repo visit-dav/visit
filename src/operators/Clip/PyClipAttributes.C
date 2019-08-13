@@ -5,7 +5,6 @@
 #include <PyClipAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyClipAttributes
@@ -46,11 +45,11 @@ PyClipAttributes_ToString(const ClipAttributes *atts, const char *prefix)
     switch (atts->GetQuality())
     {
       case ClipAttributes::Fast:
-          SNPRINTF(tmpStr, 1000, "%squality = %sFast  # %s\n", prefix, prefix, quality_names);
+          snprintf(tmpStr, 1000, "%squality = %sFast  # %s\n", prefix, prefix, quality_names);
           str += tmpStr;
           break;
       case ClipAttributes::Accurate:
-          SNPRINTF(tmpStr, 1000, "%squality = %sAccurate  # %s\n", prefix, prefix, quality_names);
+          snprintf(tmpStr, 1000, "%squality = %sAccurate  # %s\n", prefix, prefix, quality_names);
           str += tmpStr;
           break;
       default:
@@ -61,11 +60,11 @@ PyClipAttributes_ToString(const ClipAttributes *atts, const char *prefix)
     switch (atts->GetFuncType())
     {
       case ClipAttributes::Plane:
-          SNPRINTF(tmpStr, 1000, "%sfuncType = %sPlane  # %s\n", prefix, prefix, funcType_names);
+          snprintf(tmpStr, 1000, "%sfuncType = %sPlane  # %s\n", prefix, prefix, funcType_names);
           str += tmpStr;
           break;
       case ClipAttributes::Sphere:
-          SNPRINTF(tmpStr, 1000, "%sfuncType = %sSphere  # %s\n", prefix, prefix, funcType_names);
+          snprintf(tmpStr, 1000, "%sfuncType = %sSphere  # %s\n", prefix, prefix, funcType_names);
           str += tmpStr;
           break;
       default:
@@ -73,138 +72,138 @@ PyClipAttributes_ToString(const ClipAttributes *atts, const char *prefix)
     }
 
     if(atts->GetPlane1Status())
-        SNPRINTF(tmpStr, 1000, "%splane1Status = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%splane1Status = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%splane1Status = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%splane1Status = 0\n", prefix);
     str += tmpStr;
     if(atts->GetPlane2Status())
-        SNPRINTF(tmpStr, 1000, "%splane2Status = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%splane2Status = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%splane2Status = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%splane2Status = 0\n", prefix);
     str += tmpStr;
     if(atts->GetPlane3Status())
-        SNPRINTF(tmpStr, 1000, "%splane3Status = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%splane3Status = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%splane3Status = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%splane3Status = 0\n", prefix);
     str += tmpStr;
     {   const double *plane1Origin = atts->GetPlane1Origin();
-        SNPRINTF(tmpStr, 1000, "%splane1Origin = (", prefix);
+        snprintf(tmpStr, 1000, "%splane1Origin = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 3; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", plane1Origin[i]);
+            snprintf(tmpStr, 1000, "%g", plane1Origin[i]);
             str += tmpStr;
             if(i < 2)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const double *plane2Origin = atts->GetPlane2Origin();
-        SNPRINTF(tmpStr, 1000, "%splane2Origin = (", prefix);
+        snprintf(tmpStr, 1000, "%splane2Origin = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 3; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", plane2Origin[i]);
+            snprintf(tmpStr, 1000, "%g", plane2Origin[i]);
             str += tmpStr;
             if(i < 2)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const double *plane3Origin = atts->GetPlane3Origin();
-        SNPRINTF(tmpStr, 1000, "%splane3Origin = (", prefix);
+        snprintf(tmpStr, 1000, "%splane3Origin = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 3; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", plane3Origin[i]);
+            snprintf(tmpStr, 1000, "%g", plane3Origin[i]);
             str += tmpStr;
             if(i < 2)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const double *plane1Normal = atts->GetPlane1Normal();
-        SNPRINTF(tmpStr, 1000, "%splane1Normal = (", prefix);
+        snprintf(tmpStr, 1000, "%splane1Normal = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 3; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", plane1Normal[i]);
+            snprintf(tmpStr, 1000, "%g", plane1Normal[i]);
             str += tmpStr;
             if(i < 2)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const double *plane2Normal = atts->GetPlane2Normal();
-        SNPRINTF(tmpStr, 1000, "%splane2Normal = (", prefix);
+        snprintf(tmpStr, 1000, "%splane2Normal = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 3; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", plane2Normal[i]);
+            snprintf(tmpStr, 1000, "%g", plane2Normal[i]);
             str += tmpStr;
             if(i < 2)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const double *plane3Normal = atts->GetPlane3Normal();
-        SNPRINTF(tmpStr, 1000, "%splane3Normal = (", prefix);
+        snprintf(tmpStr, 1000, "%splane3Normal = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 3; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", plane3Normal[i]);
+            snprintf(tmpStr, 1000, "%g", plane3Normal[i]);
             str += tmpStr;
             if(i < 2)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     if(atts->GetPlaneInverse())
-        SNPRINTF(tmpStr, 1000, "%splaneInverse = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%splaneInverse = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%splaneInverse = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%splaneInverse = 0\n", prefix);
     str += tmpStr;
     const char *planeToolControlledClipPlane_names = "None, Plane1, Plane2, Plane3";
     switch (atts->GetPlaneToolControlledClipPlane())
     {
       case ClipAttributes::None:
-          SNPRINTF(tmpStr, 1000, "%splaneToolControlledClipPlane = %sNone  # %s\n", prefix, prefix, planeToolControlledClipPlane_names);
+          snprintf(tmpStr, 1000, "%splaneToolControlledClipPlane = %sNone  # %s\n", prefix, prefix, planeToolControlledClipPlane_names);
           str += tmpStr;
           break;
       case ClipAttributes::Plane1:
-          SNPRINTF(tmpStr, 1000, "%splaneToolControlledClipPlane = %sPlane1  # %s\n", prefix, prefix, planeToolControlledClipPlane_names);
+          snprintf(tmpStr, 1000, "%splaneToolControlledClipPlane = %sPlane1  # %s\n", prefix, prefix, planeToolControlledClipPlane_names);
           str += tmpStr;
           break;
       case ClipAttributes::Plane2:
-          SNPRINTF(tmpStr, 1000, "%splaneToolControlledClipPlane = %sPlane2  # %s\n", prefix, prefix, planeToolControlledClipPlane_names);
+          snprintf(tmpStr, 1000, "%splaneToolControlledClipPlane = %sPlane2  # %s\n", prefix, prefix, planeToolControlledClipPlane_names);
           str += tmpStr;
           break;
       case ClipAttributes::Plane3:
-          SNPRINTF(tmpStr, 1000, "%splaneToolControlledClipPlane = %sPlane3  # %s\n", prefix, prefix, planeToolControlledClipPlane_names);
+          snprintf(tmpStr, 1000, "%splaneToolControlledClipPlane = %sPlane3  # %s\n", prefix, prefix, planeToolControlledClipPlane_names);
           str += tmpStr;
           break;
       default:
@@ -212,27 +211,27 @@ PyClipAttributes_ToString(const ClipAttributes *atts, const char *prefix)
     }
 
     {   const double *center = atts->GetCenter();
-        SNPRINTF(tmpStr, 1000, "%scenter = (", prefix);
+        snprintf(tmpStr, 1000, "%scenter = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 3; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", center[i]);
+            snprintf(tmpStr, 1000, "%g", center[i]);
             str += tmpStr;
             if(i < 2)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
-    SNPRINTF(tmpStr, 1000, "%sradius = %g\n", prefix, atts->GetRadius());
+    snprintf(tmpStr, 1000, "%sradius = %g\n", prefix, atts->GetRadius());
     str += tmpStr;
     if(atts->GetSphereInverse())
-        SNPRINTF(tmpStr, 1000, "%ssphereInverse = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%ssphereInverse = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%ssphereInverse = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%ssphereInverse = 0\n", prefix);
     str += tmpStr;
     return str;
 }

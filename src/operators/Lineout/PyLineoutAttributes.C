@@ -5,7 +5,6 @@
 #include <PyLineoutAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyLineoutAttributes
@@ -43,58 +42,58 @@ PyLineoutAttributes_ToString(const LineoutAttributes *atts, const char *prefix)
     char tmpStr[1000];
 
     {   const double *point1 = atts->GetPoint1();
-        SNPRINTF(tmpStr, 1000, "%spoint1 = (", prefix);
+        snprintf(tmpStr, 1000, "%spoint1 = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 3; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", point1[i]);
+            snprintf(tmpStr, 1000, "%g", point1[i]);
             str += tmpStr;
             if(i < 2)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const double *point2 = atts->GetPoint2();
-        SNPRINTF(tmpStr, 1000, "%spoint2 = (", prefix);
+        snprintf(tmpStr, 1000, "%spoint2 = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 3; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", point2[i]);
+            snprintf(tmpStr, 1000, "%g", point2[i]);
             str += tmpStr;
             if(i < 2)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     if(atts->GetInteractive())
-        SNPRINTF(tmpStr, 1000, "%sinteractive = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sinteractive = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sinteractive = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sinteractive = 0\n", prefix);
     str += tmpStr;
     if(atts->GetIgnoreGlobal())
-        SNPRINTF(tmpStr, 1000, "%signoreGlobal = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%signoreGlobal = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%signoreGlobal = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%signoreGlobal = 0\n", prefix);
     str += tmpStr;
     if(atts->GetSamplingOn())
-        SNPRINTF(tmpStr, 1000, "%ssamplingOn = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%ssamplingOn = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%ssamplingOn = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%ssamplingOn = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%snumberOfSamplePoints = %d\n", prefix, atts->GetNumberOfSamplePoints());
+    snprintf(tmpStr, 1000, "%snumberOfSamplePoints = %d\n", prefix, atts->GetNumberOfSamplePoints());
     str += tmpStr;
     if(atts->GetReflineLabels())
-        SNPRINTF(tmpStr, 1000, "%sreflineLabels = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sreflineLabels = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sreflineLabels = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sreflineLabels = 0\n", prefix);
     str += tmpStr;
     return str;
 }

@@ -5,7 +5,6 @@
 #include <PyKeyframeAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyKeyframeAttributes
@@ -43,16 +42,16 @@ PyKeyframeAttributes_ToString(const KeyframeAttributes *atts, const char *prefix
     char tmpStr[1000];
 
     if(atts->GetEnabled())
-        SNPRINTF(tmpStr, 1000, "%senabled = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%senabled = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%senabled = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%senabled = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%snFrames = %d\n", prefix, atts->GetNFrames());
+    snprintf(tmpStr, 1000, "%snFrames = %d\n", prefix, atts->GetNFrames());
     str += tmpStr;
     if(atts->GetNFramesWasUserSet())
-        SNPRINTF(tmpStr, 1000, "%snFramesWasUserSet = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%snFramesWasUserSet = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%snFramesWasUserSet = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%snFramesWasUserSet = 0\n", prefix);
     str += tmpStr;
     return str;
 }

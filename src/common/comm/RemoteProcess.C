@@ -42,7 +42,7 @@
 
 #include <DebugStream.h>
 #include <Utility.h>
-#include <snprintf.h>
+
 
 #ifdef HAVE_THREADS
 #if !defined(_WIN32)
@@ -1922,7 +1922,7 @@ RemoteProcess::CreateSSHCommandLine(stringVector &args, const MachineProfile &pr
     if (profile.GetSshPortSpecified())
     {
         char portStr[256];
-        SNPRINTF(portStr, 256, "%d", profile.GetSshPort());
+        snprintf(portStr, 256, "%d", profile.GetSshPort());
         args.push_back("-p");
         args.push_back(portStr);
     }

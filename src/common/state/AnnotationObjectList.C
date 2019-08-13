@@ -4,7 +4,7 @@
 
 #include <AnnotationObjectList.h>
 #include <DataNode.h>
-#include <snprintf.h>
+
 #include <AnnotationObject.h>
 
 // ****************************************************************************
@@ -932,7 +932,7 @@ AnnotationObjectList::GetNewObjectName() const
     char tmp[200];
     do
     {
-        SNPRINTF(tmp, 200, "NewObject%d", index++);
+        snprintf(tmp, 200, "NewObject%d", index++);
         name = tmp;
         found = IndexForName(name) != -1;
     } while(found);

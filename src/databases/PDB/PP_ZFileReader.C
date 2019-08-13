@@ -38,7 +38,6 @@
 #include <DebugStream.h>
 #include <Expression.h>
 #include <StringHelpers.h>
-#include <snprintf.h>
 
 // This header file is last because it includes "scstd.h" (indirectly
 // through "pdb.h"), which defines min and max, which conflict with
@@ -600,7 +599,7 @@ PP_ZFileReader::ReadMaterialNamesHelper(PDBFileObject *p, const char *namregVar,
                     if(s > sptr)
                     {
                         char tmp[100]; 
-                        SNPRINTF(tmp, 100, "%d %s", nmatNames+1, sptr);
+                        snprintf(tmp, 100, "%d %s", nmatNames+1, sptr);
                         matNames.push_back(tmp);
                         ++nmatNames;
                     }
@@ -717,7 +716,7 @@ PP_ZFileReader::PopulateMaterialNames()
         for(int i = materialNames.size(); i < nMaterials; ++i)
         {
             char tmp[20];
-            SNPRINTF(tmp, 20, "%d", i + 1);
+            snprintf(tmp, 20, "%d", i + 1);
             materialNames.push_back(tmp);
         }
     }
@@ -746,7 +745,7 @@ PP_ZFileReader::PopulateMaterialNames()
         for(int j = materialNames.size(); j < nMaterials; ++j)
         {
             char tmp[20];
-            SNPRINTF(tmp, 20, "%d", j + 1);
+            snprintf(tmp, 20, "%d", j + 1);
             materialNames.push_back(tmp);
         }
 
@@ -1224,7 +1223,7 @@ PP_ZFileReader::PopulateDatabaseMetaData(int timestep, avtDatabaseMetaData *md)
                         for (fd = 0; fd < numFreeDims; fd++)
                         {
                             char thisComp[10];
-                            SNPRINTF(thisComp, sizeof(thisComp), "_%03d", dimIdx[fd]);
+                            snprintf(thisComp, sizeof(thisComp), "_%03d", dimIdx[fd]);
                             compVarName += thisComp;
                         }
                         compNames.push_back(compVarName);
@@ -1237,7 +1236,7 @@ PP_ZFileReader::PopulateDatabaseMetaData(int timestep, avtDatabaseMetaData *md)
                         //
 #ifdef USE_DECOMPOSE
                         char def[200];
-                        SNPRINTF(def, sizeof(def), "array_decomose(<%s>,%d)",
+                        snprintf(def, sizeof(def), "array_decomose(<%s>,%d)",
                             theVarName.c_str(), c);
                         Expression e;
                         e.SetName(compVarName);
@@ -1580,7 +1579,7 @@ PP_ZFileReader::AddRayMetaData(avtDatabaseMetaData *md)
             for (int lsr = 0; lsr < nLasers; ++lsr)
             {
                 char lasername[32];
-                SNPRINTF(lasername, 32, "laser%03d", lsr+1);
+                snprintf(lasername, 32, "laser%03d", lsr+1);
                 laserid->AddEnumNameValue(lasername, lsr+1);
             }
             md->Add(laserid);
@@ -1617,7 +1616,7 @@ PP_ZFileReader::AddRayMetaData(avtDatabaseMetaData *md)
             for (int lsr = 0; lsr < nLasers; ++lsr)
             {
                 char lasername[32];
-                SNPRINTF(lasername, 32, "laser%03d", lsr+1);
+                snprintf(lasername, 32, "laser%03d", lsr+1);
                 laserid->AddEnumNameValue(lasername, lsr+1);
             }
             md->Add(laserid);

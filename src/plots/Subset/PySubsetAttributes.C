@@ -5,7 +5,6 @@
 #include <PySubsetAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 #include <ColorAttribute.h>
 #include <PyColorAttributeList.h>
 #include <GlyphTypes.h>
@@ -49,114 +48,114 @@ PySubsetAttributes_ToString(const SubsetAttributes *atts, const char *prefix)
     switch (atts->GetColorType())
     {
       case SubsetAttributes::ColorBySingleColor:
-          SNPRINTF(tmpStr, 1000, "%scolorType = %sColorBySingleColor  # %s\n", prefix, prefix, colorType_names);
+          snprintf(tmpStr, 1000, "%scolorType = %sColorBySingleColor  # %s\n", prefix, prefix, colorType_names);
           str += tmpStr;
           break;
       case SubsetAttributes::ColorByMultipleColors:
-          SNPRINTF(tmpStr, 1000, "%scolorType = %sColorByMultipleColors  # %s\n", prefix, prefix, colorType_names);
+          snprintf(tmpStr, 1000, "%scolorType = %sColorByMultipleColors  # %s\n", prefix, prefix, colorType_names);
           str += tmpStr;
           break;
       case SubsetAttributes::ColorByColorTable:
-          SNPRINTF(tmpStr, 1000, "%scolorType = %sColorByColorTable  # %s\n", prefix, prefix, colorType_names);
+          snprintf(tmpStr, 1000, "%scolorType = %sColorByColorTable  # %s\n", prefix, prefix, colorType_names);
           str += tmpStr;
           break;
       default:
           break;
     }
 
-    SNPRINTF(tmpStr, 1000, "%scolorTableName = \"%s\"\n", prefix, atts->GetColorTableName().c_str());
+    snprintf(tmpStr, 1000, "%scolorTableName = \"%s\"\n", prefix, atts->GetColorTableName().c_str());
     str += tmpStr;
     if(atts->GetInvertColorTable())
-        SNPRINTF(tmpStr, 1000, "%sinvertColorTable = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sinvertColorTable = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sinvertColorTable = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sinvertColorTable = 0\n", prefix);
     str += tmpStr;
     if(atts->GetLegendFlag())
-        SNPRINTF(tmpStr, 1000, "%slegendFlag = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%slegendFlag = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%slegendFlag = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%slegendFlag = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%slineWidth = %d\n", prefix, atts->GetLineWidth());
+    snprintf(tmpStr, 1000, "%slineWidth = %d\n", prefix, atts->GetLineWidth());
     str += tmpStr;
     const unsigned char *singleColor = atts->GetSingleColor().GetColor();
-    SNPRINTF(tmpStr, 1000, "%ssingleColor = (%d, %d, %d, %d)\n", prefix, int(singleColor[0]), int(singleColor[1]), int(singleColor[2]), int(singleColor[3]));
+    snprintf(tmpStr, 1000, "%ssingleColor = (%d, %d, %d, %d)\n", prefix, int(singleColor[0]), int(singleColor[1]), int(singleColor[2]), int(singleColor[3]));
     str += tmpStr;
     { const ColorAttributeList &cL = atts->GetMultiColor();
         const char *comment = (prefix==0 || strcmp(prefix,"")==0) ? "# " : "";
         for(int i = 0; i < cL.GetNumColors(); ++i)
         {
             const unsigned char *c = cL[i].GetColor();
-            SNPRINTF(tmpStr, 1000, "%s%sSetMultiColor(%d, (%d, %d, %d, %d))\n",
+            snprintf(tmpStr, 1000, "%s%sSetMultiColor(%d, (%d, %d, %d, %d))\n",
                      comment, prefix, i, int(c[0]), int(c[1]), int(c[2]), int(c[3]));
             str += tmpStr;
         }
     }
     {   const stringVector &subsetNames = atts->GetSubsetNames();
-        SNPRINTF(tmpStr, 1000, "%ssubsetNames = (", prefix);
+        snprintf(tmpStr, 1000, "%ssubsetNames = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < subsetNames.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "\"%s\"", subsetNames[i].c_str());
+            snprintf(tmpStr, 1000, "\"%s\"", subsetNames[i].c_str());
             str += tmpStr;
             if(i < subsetNames.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
-    SNPRINTF(tmpStr, 1000, "%sopacity = %g\n", prefix, atts->GetOpacity());
+    snprintf(tmpStr, 1000, "%sopacity = %g\n", prefix, atts->GetOpacity());
     str += tmpStr;
     if(atts->GetWireframe())
-        SNPRINTF(tmpStr, 1000, "%swireframe = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%swireframe = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%swireframe = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%swireframe = 0\n", prefix);
     str += tmpStr;
     if(atts->GetDrawInternal())
-        SNPRINTF(tmpStr, 1000, "%sdrawInternal = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sdrawInternal = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sdrawInternal = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sdrawInternal = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%ssmoothingLevel = %d\n", prefix, atts->GetSmoothingLevel());
+    snprintf(tmpStr, 1000, "%ssmoothingLevel = %d\n", prefix, atts->GetSmoothingLevel());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%spointSize = %g\n", prefix, atts->GetPointSize());
+    snprintf(tmpStr, 1000, "%spointSize = %g\n", prefix, atts->GetPointSize());
     str += tmpStr;
     const char *pointType_names = "Box, Axis, Icosahedron, Octahedron, Tetrahedron, "
         "SphereGeometry, Point, Sphere";
     switch (atts->GetPointType())
     {
       case Box:
-          SNPRINTF(tmpStr, 1000, "%spointType = %sBox  # %s\n", prefix, prefix, pointType_names);
+          snprintf(tmpStr, 1000, "%spointType = %sBox  # %s\n", prefix, prefix, pointType_names);
           str += tmpStr;
           break;
       case Axis:
-          SNPRINTF(tmpStr, 1000, "%spointType = %sAxis  # %s\n", prefix, prefix, pointType_names);
+          snprintf(tmpStr, 1000, "%spointType = %sAxis  # %s\n", prefix, prefix, pointType_names);
           str += tmpStr;
           break;
       case Icosahedron:
-          SNPRINTF(tmpStr, 1000, "%spointType = %sIcosahedron  # %s\n", prefix, prefix, pointType_names);
+          snprintf(tmpStr, 1000, "%spointType = %sIcosahedron  # %s\n", prefix, prefix, pointType_names);
           str += tmpStr;
           break;
       case Octahedron:
-          SNPRINTF(tmpStr, 1000, "%spointType = %sOctahedron  # %s\n", prefix, prefix, pointType_names);
+          snprintf(tmpStr, 1000, "%spointType = %sOctahedron  # %s\n", prefix, prefix, pointType_names);
           str += tmpStr;
           break;
       case Tetrahedron:
-          SNPRINTF(tmpStr, 1000, "%spointType = %sTetrahedron  # %s\n", prefix, prefix, pointType_names);
+          snprintf(tmpStr, 1000, "%spointType = %sTetrahedron  # %s\n", prefix, prefix, pointType_names);
           str += tmpStr;
           break;
       case SphereGeometry:
-          SNPRINTF(tmpStr, 1000, "%spointType = %sSphereGeometry  # %s\n", prefix, prefix, pointType_names);
+          snprintf(tmpStr, 1000, "%spointType = %sSphereGeometry  # %s\n", prefix, prefix, pointType_names);
           str += tmpStr;
           break;
       case Point:
-          SNPRINTF(tmpStr, 1000, "%spointType = %sPoint  # %s\n", prefix, prefix, pointType_names);
+          snprintf(tmpStr, 1000, "%spointType = %sPoint  # %s\n", prefix, prefix, pointType_names);
           str += tmpStr;
           break;
       case Sphere:
-          SNPRINTF(tmpStr, 1000, "%spointType = %sSphere  # %s\n", prefix, prefix, pointType_names);
+          snprintf(tmpStr, 1000, "%spointType = %sSphere  # %s\n", prefix, prefix, pointType_names);
           str += tmpStr;
           break;
       default:
@@ -164,13 +163,13 @@ PySubsetAttributes_ToString(const SubsetAttributes *atts, const char *prefix)
     }
 
     if(atts->GetPointSizeVarEnabled())
-        SNPRINTF(tmpStr, 1000, "%spointSizeVarEnabled = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%spointSizeVarEnabled = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%spointSizeVarEnabled = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%spointSizeVarEnabled = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%spointSizeVar = \"%s\"\n", prefix, atts->GetPointSizeVar().c_str());
+    snprintf(tmpStr, 1000, "%spointSizeVar = \"%s\"\n", prefix, atts->GetPointSizeVar().c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%spointSizePixels = %d\n", prefix, atts->GetPointSizePixels());
+    snprintf(tmpStr, 1000, "%spointSizePixels = %d\n", prefix, atts->GetPointSizePixels());
     str += tmpStr;
     return str;
 }

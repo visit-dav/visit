@@ -8,7 +8,6 @@
 
 #include <avtKurtosisQuery.h>
 
-#include <snprintf.h>
 #include <math.h>
 
 #include <string>
@@ -172,7 +171,7 @@ avtKurtosisQuery::CreateMessage(double kurtosis)
     char msg[1024];
     std::string format = "The kurtosis of the distribution is " 
                       + queryAtts.GetFloatFormat() + ".";
-    SNPRINTF(msg,1024, format.c_str(), kurtosis);
+    snprintf(msg,1024, format.c_str(), kurtosis);
     std::string m = msg;
     return m;
 }

@@ -5,7 +5,6 @@
 #include <PyStaggerAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyStaggerAttributes
@@ -42,11 +41,11 @@ PyStaggerAttributes_ToString(const StaggerAttributes *atts, const char *prefix)
     std::string str;
     char tmpStr[1000];
 
-    SNPRINTF(tmpStr, 1000, "%soffsetX = %g\n", prefix, atts->GetOffsetX());
+    snprintf(tmpStr, 1000, "%soffsetX = %g\n", prefix, atts->GetOffsetX());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%soffsetY = %g\n", prefix, atts->GetOffsetY());
+    snprintf(tmpStr, 1000, "%soffsetY = %g\n", prefix, atts->GetOffsetY());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%soffsetZ = %g\n", prefix, atts->GetOffsetZ());
+    snprintf(tmpStr, 1000, "%soffsetZ = %g\n", prefix, atts->GetOffsetZ());
     str += tmpStr;
     return str;
 }

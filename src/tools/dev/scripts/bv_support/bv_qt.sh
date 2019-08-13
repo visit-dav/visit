@@ -391,6 +391,8 @@ function build_qt
     qt_flags="${qt_flags} -nomake examples"
     qt_flags="${qt_flags} -nomake tests"
     qt_flags="${qt_flags} -no-qml-debug"
+    qt_flags="${qt_flags} -qt-zlib"
+    qt_flags="${qt_flags} -qt-libpng"
 
     if [[ "$OPSYS" == "Linux" ]] ; then
         qt_flags="${qt_flags} -qt-xcb -qt-xkbcommon"

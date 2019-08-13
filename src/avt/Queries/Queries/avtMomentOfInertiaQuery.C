@@ -30,7 +30,6 @@
 #include <ImproperUseException.h>
 #include <NonQueryableInputException.h>
 
-#include <snprintf.h>
 #include <float.h>
 #include <math.h>
 
@@ -180,7 +179,7 @@ avtMomentOfInertiaQuery::PostExecute(void)
                       + floatFormat + ",\t" 
                       + floatFormat + ")\n";
                     
-    SNPRINTF(msg, 4096,format.c_str(),
+    snprintf(msg, 4096,format.c_str(),
              I_tmp[0], I_tmp[1], I_tmp[2], 
              I_tmp[3], I_tmp[4], I_tmp[5], 
              I_tmp[6], I_tmp[7], I_tmp[8]);

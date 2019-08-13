@@ -15,6 +15,5 @@
     <Function name="CreateNode"                   user="false"></Function>
     <Function name="SetFromNode"                  user="false"></Function>
     <Include file="source">ColorControlPoint.h</Include>
-    <Include file="source">snprintf.h</Include>
     <Include file="source">map</Include>
   </Attribute>

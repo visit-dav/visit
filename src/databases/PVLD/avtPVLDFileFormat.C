@@ -359,7 +359,7 @@ avtPVLDFileFormat::GetMesh(int domain, const char *meshname)
             CATCH(std::exception)
             {
                 char msg[512];
-                SNPRINTF(msg, 512, "SPH data may not be available at time step %d", timestep);
+                snprintf(msg, 512, "SPH data may not be available at time step %d", timestep);
                 EXCEPTION1(VisItException, msg);
             }
             ENDTRY
@@ -508,7 +508,7 @@ avtPVLDFileFormat::GetVar(int domain, const char *varname)
             CATCH(std::exception)
             {
                 char msg[512];
-                SNPRINTF(msg, 512, "SPH data may not be available at time step %d", timestep);
+                snprintf(msg, 512, "SPH data may not be available at time step %d", timestep);
                 EXCEPTION1(VisItException, msg);
             }
             ENDTRY
@@ -632,7 +632,7 @@ avtPVLDFileFormat::GetVectorVar(int domain, const char *varname)
             CATCH(std::exception)
             {
                 char msg[512];
-                SNPRINTF(msg, 512, "SPH data may not be available at time step %d", timestep);
+                snprintf(msg, 512, "SPH data may not be available at time step %d", timestep);
                 EXCEPTION1(VisItException, msg);
             }
             ENDTRY
@@ -723,7 +723,7 @@ GetAuxiliaryData( const char *varname, int domain,
                 CATCH(std::exception)
                 {
                     char msg[512];
-                    SNPRINTF(msg, 512, "SPH material data may not be available at time step %d", timestep);
+                    snprintf(msg, 512, "SPH material data may not be available at time step %d", timestep);
                     EXCEPTION1(VisItException, msg);
                 }
                 ENDTRY

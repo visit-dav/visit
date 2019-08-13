@@ -10,7 +10,6 @@
 
 #include <string>
 #include <vector>
-#include <snprintf.h>
 
 #include <vtkVisItAxisActor2D.h>
 #include <vtkProperty2D.h>
@@ -511,7 +510,7 @@ VisWinParallelAxes::UpdatePlotList(vector<avtActor_p> &list)
                 axes[i+1].xpos = i + 0.5;
                 axes[i+1].range[0] = extents[0];
                 axes[i+1].range[1] = extents[1];
-                SNPRINTF(axes[i+1].title, 256, "%s", labels[i].c_str());
+                snprintf(axes[i+1].title, 256, "%s", labels[i].c_str());
             }
         }
     }
@@ -623,19 +622,19 @@ VisWinParallelAxes::SetTitles(void)
         if (axisPow == 0)
         {
             if (axes[0].units[0] == '\0')
-                SNPRINTF(buffer, 1024, "%s",
+                snprintf(buffer, 1024, "%s",
                          axes[0].title);
             else
-                SNPRINTF(buffer, 1024, "%s (%s)",
+                snprintf(buffer, 1024, "%s (%s)",
                          axes[0].title, axes[0].units);
         }
         else
         {
             if (axes[0].units[0] == '\0')
-                SNPRINTF(buffer, 1024, "%s (x10^%d)",
+                snprintf(buffer, 1024, "%s (x10^%d)",
                          axes[0].title, axisPow);
             else
-                SNPRINTF(buffer, 1024, "%s (x10^%d %s)",
+                snprintf(buffer, 1024, "%s (x10^%d %s)",
                          axes[0].title, axisPow, axes[0].units);
         }
         axes[0].axis->SetTitle(buffer);
@@ -1317,7 +1316,7 @@ VisWinParallelAxes::AdjustRange(double minval, double maxval)
     }
     int axisDigits = Digits(minval, maxval);
     char  format[16];
-    SNPRINTF(format, 16, "%%.%df", axisDigits);
+    snprintf(format, 16, "%%.%df", axisDigits);
     axes[0].axis->SetLabelFormat(format);
 }
 

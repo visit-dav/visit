@@ -5,7 +5,6 @@
 #include <PyEllipsoidSliceAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyEllipsoidSliceAttributes
@@ -43,51 +42,51 @@ PyEllipsoidSliceAttributes_ToString(const EllipsoidSliceAttributes *atts, const 
     char tmpStr[1000];
 
     {   const double *origin = atts->GetOrigin();
-        SNPRINTF(tmpStr, 1000, "%sorigin = (", prefix);
+        snprintf(tmpStr, 1000, "%sorigin = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 3; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", origin[i]);
+            snprintf(tmpStr, 1000, "%g", origin[i]);
             str += tmpStr;
             if(i < 2)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const double *radii = atts->GetRadii();
-        SNPRINTF(tmpStr, 1000, "%sradii = (", prefix);
+        snprintf(tmpStr, 1000, "%sradii = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 3; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", radii[i]);
+            snprintf(tmpStr, 1000, "%g", radii[i]);
             str += tmpStr;
             if(i < 2)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const double *rotationAngle = atts->GetRotationAngle();
-        SNPRINTF(tmpStr, 1000, "%srotationAngle = (", prefix);
+        snprintf(tmpStr, 1000, "%srotationAngle = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 3; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", rotationAngle[i]);
+            snprintf(tmpStr, 1000, "%g", rotationAngle[i]);
             str += tmpStr;
             if(i < 2)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     return str;

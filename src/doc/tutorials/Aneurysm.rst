@@ -6,8 +6,8 @@ Aneurysm
 .. toctree::
     :maxdepth: 2
 
-This tutorial analyzes the results from a simulation of the blood flow
-through an aneurysm. 
+This tutorial provides a short introduction to VisIt's features while exploring a finite element blood flow simulation of an aneurysm. The simulation was run using the LifeV finite element solver and made available for this tutorial thanks to Gilles Fourestey and Jean Favre, `Swiss National Supercomputing Centre <http://www.cscs.ch/>`_.
+
 
 Open the dataset
 ----------------

@@ -5,7 +5,6 @@
 #include <PyElevateAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyElevateAttributes
@@ -46,15 +45,15 @@ PyElevateAttributes_ToString(const ElevateAttributes *atts, const char *prefix)
     switch (atts->GetUseXYLimits())
     {
       case ElevateAttributes::Never:
-          SNPRINTF(tmpStr, 1000, "%suseXYLimits = %sNever  # %s\n", prefix, prefix, useXYLimits_names);
+          snprintf(tmpStr, 1000, "%suseXYLimits = %sNever  # %s\n", prefix, prefix, useXYLimits_names);
           str += tmpStr;
           break;
       case ElevateAttributes::Auto:
-          SNPRINTF(tmpStr, 1000, "%suseXYLimits = %sAuto  # %s\n", prefix, prefix, useXYLimits_names);
+          snprintf(tmpStr, 1000, "%suseXYLimits = %sAuto  # %s\n", prefix, prefix, useXYLimits_names);
           str += tmpStr;
           break;
       case ElevateAttributes::Always:
-          SNPRINTF(tmpStr, 1000, "%suseXYLimits = %sAlways  # %s\n", prefix, prefix, useXYLimits_names);
+          snprintf(tmpStr, 1000, "%suseXYLimits = %sAlways  # %s\n", prefix, prefix, useXYLimits_names);
           str += tmpStr;
           break;
       default:
@@ -65,11 +64,11 @@ PyElevateAttributes_ToString(const ElevateAttributes *atts, const char *prefix)
     switch (atts->GetLimitsMode())
     {
       case ElevateAttributes::OriginalData:
-          SNPRINTF(tmpStr, 1000, "%slimitsMode = %sOriginalData  # %s\n", prefix, prefix, limitsMode_names);
+          snprintf(tmpStr, 1000, "%slimitsMode = %sOriginalData  # %s\n", prefix, prefix, limitsMode_names);
           str += tmpStr;
           break;
       case ElevateAttributes::CurrentPlot:
-          SNPRINTF(tmpStr, 1000, "%slimitsMode = %sCurrentPlot  # %s\n", prefix, prefix, limitsMode_names);
+          snprintf(tmpStr, 1000, "%slimitsMode = %sCurrentPlot  # %s\n", prefix, prefix, limitsMode_names);
           str += tmpStr;
           break;
       default:
@@ -80,43 +79,43 @@ PyElevateAttributes_ToString(const ElevateAttributes *atts, const char *prefix)
     switch (atts->GetScaling())
     {
       case ElevateAttributes::Linear:
-          SNPRINTF(tmpStr, 1000, "%sscaling = %sLinear  # %s\n", prefix, prefix, scaling_names);
+          snprintf(tmpStr, 1000, "%sscaling = %sLinear  # %s\n", prefix, prefix, scaling_names);
           str += tmpStr;
           break;
       case ElevateAttributes::Log:
-          SNPRINTF(tmpStr, 1000, "%sscaling = %sLog  # %s\n", prefix, prefix, scaling_names);
+          snprintf(tmpStr, 1000, "%sscaling = %sLog  # %s\n", prefix, prefix, scaling_names);
           str += tmpStr;
           break;
       case ElevateAttributes::Skew:
-          SNPRINTF(tmpStr, 1000, "%sscaling = %sSkew  # %s\n", prefix, prefix, scaling_names);
+          snprintf(tmpStr, 1000, "%sscaling = %sSkew  # %s\n", prefix, prefix, scaling_names);
           str += tmpStr;
           break;
       default:
           break;
     }
 
-    SNPRINTF(tmpStr, 1000, "%sskewFactor = %g\n", prefix, atts->GetSkewFactor());
+    snprintf(tmpStr, 1000, "%sskewFactor = %g\n", prefix, atts->GetSkewFactor());
     str += tmpStr;
     if(atts->GetMinFlag())
-        SNPRINTF(tmpStr, 1000, "%sminFlag = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sminFlag = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sminFlag = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sminFlag = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%smin = %g\n", prefix, atts->GetMin());
+    snprintf(tmpStr, 1000, "%smin = %g\n", prefix, atts->GetMin());
     str += tmpStr;
     if(atts->GetMaxFlag())
-        SNPRINTF(tmpStr, 1000, "%smaxFlag = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%smaxFlag = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%smaxFlag = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%smaxFlag = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%smax = %g\n", prefix, atts->GetMax());
+    snprintf(tmpStr, 1000, "%smax = %g\n", prefix, atts->GetMax());
     str += tmpStr;
     if(atts->GetZeroFlag())
-        SNPRINTF(tmpStr, 1000, "%szeroFlag = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%szeroFlag = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%szeroFlag = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%szeroFlag = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%svariable = \"%s\"\n", prefix, atts->GetVariable().c_str());
+    snprintf(tmpStr, 1000, "%svariable = \"%s\"\n", prefix, atts->GetVariable().c_str());
     str += tmpStr;
     return str;
 }

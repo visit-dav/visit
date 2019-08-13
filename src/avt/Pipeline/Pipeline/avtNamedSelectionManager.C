@@ -16,7 +16,6 @@
 #include <avtNamedSelection.h>
 
 #include <DebugStream.h>
-#include <snprintf.h>
 #include <InstallationFunctions.h>
 #include <StackTimer.h>
 #include <visitstream.h>

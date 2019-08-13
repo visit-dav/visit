@@ -666,6 +666,10 @@ class CMakeGeneratorPlugin : public Plugin
         out << "        )" << endl;
         WriteCMake_ConditionalSources(out, "S", "        ");
         out << "        ADD_LIBRARY(S"<<name<<"Plot ${LIBS_SOURCES})" << endl;
+        out << "        IF(WIN32)" << endl;
+        out << "            # This prevents python from #defining snprintf as _snprintf" << endl;
+        out << "            SET_TARGET_PROPERTIES(S"<<name<<"Plot PROPERTIES COMPILE_DEFINITIONS HAVE_SNPRINTF)" << endl;
+        out << "        ENDIF()" << endl;
         out << "        TARGET_LINK_LIBRARIES(S" << name
             << "Plot visitcommon visitpy ${PYTHON_LIBRARY})" << endl;
         WriteCMake_ConditionalTargetLinks(out, name, "S", "Plot", "        ");
@@ -898,6 +902,10 @@ class CMakeGeneratorPlugin : public Plugin
         out << "        )" << endl;
         WriteCMake_ConditionalSources(out, "S", "        ");
         out << "        ADD_LIBRARY(S"<<name<<"Operator ${LIBS_SOURCES})" << endl;
+        out << "        IF(WIN32)" << endl;
+        out << "            # This prevents python from #defining snprintf as _snprintf" << endl;
+        out << "            SET_TARGET_PROPERTIES(S"<<name<<"Operator PROPERTIES COMPILE_DEFINITIONS HAVE_SNPRINTF)" << endl;
+        out << "        ENDIF()" << endl;
         out << "        TARGET_LINK_LIBRARIES(S"<<name<<"Operator visitcommon visitpy ${PYTHON_LIBRARY})" << endl;
         WriteCMake_ConditionalTargetLinks(out, name, "S", "Operator", "        ");
         out << "        SET(INSTALLTARGETS ${INSTALLTARGETS} S"<<name<<"Operator)" << endl;

@@ -8,7 +8,6 @@
 #include <VisItDisplay.h>
 #include <DebugStream.h>
 #include <MesaDisplay.h>
-#include <snprintf.h>
 #include <StringHelpers.h>
 
 #include <visit-config.h>
@@ -49,11 +48,11 @@ display_format(std::string s, size_t node, size_t display)
 
         if(*type == 'l') {
             char str_display[8];
-            SNPRINTF(str_display, 8, "%zu", display);
+            snprintf(str_display, 8, "%zu", display);
             s.replace(start, end, str_display);
         } else if(*type == 'n') {
             char str_node[8];
-            SNPRINTF(str_node, 8, "%zu", node);
+            snprintf(str_node, 8, "%zu", node);
             s.replace(start, end, str_node);
         } else {
             debug5 << "unknown formatter '" << *type << "'" << std::endl;

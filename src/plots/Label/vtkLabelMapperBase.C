@@ -22,8 +22,6 @@
 #include <vtkTextProperty.h>
 #include <vtkUnsignedIntArray.h>
 
-#include <snprintf.h>
-
 #include <DebugStream.h>
 #include <vtkVisItUtility.h>
 
@@ -574,7 +572,7 @@ vtkLabelMapperBase::GetCellCenterArray(vtkDataSet *input)
 #undef CREATE_LABEL
 #endif
 #define BEGIN_LABEL  int L = 0;
-#define CREATE_LABEL L += SNPRINTF
+#define CREATE_LABEL L += snprintf
 #define END_LABEL   L = (L == -1) ? this->MaxLabelSize : L; \
               maxLabelLength = (L > maxLabelLength) ? L : maxLabelLength; \
               labelString += this->MaxLabelSize;
@@ -624,7 +622,7 @@ vtkLabelMapperBase::CreateCachedCellLabels(vtkDataSet *input)
 // ****************************************************************************
 
 #define BEGIN_LABEL  int L = 0;
-#define CREATE_LABEL L += SNPRINTF
+#define CREATE_LABEL L += snprintf
 #define END_LABEL    L = (L == -1) ? this->MaxLabelSize : L; \
                      maxLabelLength = (L > maxLabelLength) ? L : maxLabelLength; \
                      labelString += this->MaxLabelSize;

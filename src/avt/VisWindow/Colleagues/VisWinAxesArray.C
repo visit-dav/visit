@@ -10,7 +10,6 @@
 
 #include <string>
 #include <vector>
-#include <snprintf.h>
 
 #include <vtkVisItAxisActor2D.h>
 #include <vtkProperty2D.h>
@@ -462,9 +461,9 @@ VisWinAxesArray::UpdatePlotList(vector<avtActor_p> &list)
                 axes[k].xpos = k;
             axes[k].range[0] = extents[2*k+0];
             axes[k].range[1] = extents[2*k+1];
-            SNPRINTF(axes[k].title, 256, "%s",
+            snprintf(axes[k].title, 256, "%s",
                      atts.GetVariableSubnames(var)[k].c_str());
-            SNPRINTF(axes[k].units, 256, "%s",
+            snprintf(axes[k].units, 256, "%s",
                      atts.GetVariableUnits(var).c_str());
         }
         delete[] extents;
@@ -487,8 +486,8 @@ VisWinAxesArray::UpdatePlotList(vector<avtActor_p> &list)
 
                 atts.GetThisProcsOriginalDataExtents(var)->CopyTo(axes[axis].range);
                 axes[axis].xpos = axis;
-                SNPRINTF(axes[axis].title,256, "%s", var);
-                SNPRINTF(axes[axis].units,256, "%s", atts.GetVariableUnits(var).c_str());
+                snprintf(axes[axis].title,256, "%s", var);
+                snprintf(axes[axis].units,256, "%s", atts.GetVariableUnits(var).c_str());
             }
         }
     }
@@ -1118,7 +1117,7 @@ VisWinAxesArray::SetNumberOfAxes(int n)
             //}
 
             AxisInfo a(ax, 0, 3, 0, 0);
-            SNPRINTF(a.title, 8,  "Axis%02ld", i);
+            snprintf(a.title, 8,  "Axis%02zu", i);
             axes.push_back(a);
 
             // Update the properties of this new axis
@@ -1173,19 +1172,19 @@ VisWinAxesArray::SetTitles(void)
         if (axes[i].pow == 0)
         {
             if (axes[i].units[0] == '\0')
-                SNPRINTF(buffer, 1024, "%s",
+                snprintf(buffer, 1024, "%s",
                          axes[i].title);
             else
-                SNPRINTF(buffer, 1024, "%s (%s)",
+                snprintf(buffer, 1024, "%s (%s)",
                          axes[i].title, axes[i].units);
         }
         else
         {
             if (axes[i].units[0] == '\0')
-                SNPRINTF(buffer, 1024, "%s (x10^%d)",
+                snprintf(buffer, 1024, "%s (x10^%d)",
                          axes[i].title, axes[i].pow);
             else
-                SNPRINTF(buffer, 1024, "%s (x10^%d %s)",
+                snprintf(buffer, 1024, "%s (x10^%d %s)",
                          axes[i].title, axes[i].pow, axes[i].units);
         }
         axes[i].axis->SetTitle(buffer);
@@ -1405,6 +1404,6 @@ VisWinAxesArray::AdjustRange(int index, double minval, double maxval)
     }
     int axisDigits = Digits(minval, maxval);
     char  format[16];
-    SNPRINTF(format, 16, "%%.%df", axisDigits);
+    snprintf(format, 16, "%%.%df", axisDigits);
     axes[index].axis->SetLabelFormat(format);
 }

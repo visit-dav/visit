@@ -5,7 +5,6 @@
 #include <PyLightAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 #include <ColorAttribute.h>
 
 // ****************************************************************************
@@ -44,23 +43,23 @@ PyLightAttributes_ToString(const LightAttributes *atts, const char *prefix)
     char tmpStr[1000];
 
     if(atts->GetEnabledFlag())
-        SNPRINTF(tmpStr, 1000, "%senabledFlag = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%senabledFlag = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%senabledFlag = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%senabledFlag = 0\n", prefix);
     str += tmpStr;
     const char *type_names = "Ambient, Object, Camera";
     switch (atts->GetType())
     {
       case LightAttributes::Ambient:
-          SNPRINTF(tmpStr, 1000, "%stype = %sAmbient  # %s\n", prefix, prefix, type_names);
+          snprintf(tmpStr, 1000, "%stype = %sAmbient  # %s\n", prefix, prefix, type_names);
           str += tmpStr;
           break;
       case LightAttributes::Object:
-          SNPRINTF(tmpStr, 1000, "%stype = %sObject  # %s\n", prefix, prefix, type_names);
+          snprintf(tmpStr, 1000, "%stype = %sObject  # %s\n", prefix, prefix, type_names);
           str += tmpStr;
           break;
       case LightAttributes::Camera:
-          SNPRINTF(tmpStr, 1000, "%stype = %sCamera  # %s\n", prefix, prefix, type_names);
+          snprintf(tmpStr, 1000, "%stype = %sCamera  # %s\n", prefix, prefix, type_names);
           str += tmpStr;
           break;
       default:
@@ -68,25 +67,25 @@ PyLightAttributes_ToString(const LightAttributes *atts, const char *prefix)
     }
 
     {   const double *direction = atts->GetDirection();
-        SNPRINTF(tmpStr, 1000, "%sdirection = (", prefix);
+        snprintf(tmpStr, 1000, "%sdirection = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 3; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", direction[i]);
+            snprintf(tmpStr, 1000, "%g", direction[i]);
             str += tmpStr;
             if(i < 2)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     const unsigned char *color = atts->GetColor().GetColor();
-    SNPRINTF(tmpStr, 1000, "%scolor = (%d, %d, %d, %d)\n", prefix, int(color[0]), int(color[1]), int(color[2]), int(color[3]));
+    snprintf(tmpStr, 1000, "%scolor = (%d, %d, %d, %d)\n", prefix, int(color[0]), int(color[1]), int(color[2]), int(color[3]));
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sbrightness = %g\n", prefix, atts->GetBrightness());
+    snprintf(tmpStr, 1000, "%sbrightness = %g\n", prefix, atts->GetBrightness());
     str += tmpStr;
     return str;
 }

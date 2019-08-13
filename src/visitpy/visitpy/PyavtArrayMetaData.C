@@ -5,7 +5,6 @@
 #include <PyavtArrayMetaData.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyavtArrayMetaData
@@ -44,22 +43,22 @@ PyavtArrayMetaData_ToString(const avtArrayMetaData *atts, const char *prefix)
 
     str = PyavtVarMetaData_ToString(atts, prefix);
 
-    SNPRINTF(tmpStr, 1000, "%snVars = %d\n", prefix, atts->nVars);
+    snprintf(tmpStr, 1000, "%snVars = %d\n", prefix, atts->nVars);
     str += tmpStr;
     {   const stringVector &compNames = atts->compNames;
-        SNPRINTF(tmpStr, 1000, "%scompNames = (", prefix);
+        snprintf(tmpStr, 1000, "%scompNames = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < compNames.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "\"%s\"", compNames[i].c_str());
+            snprintf(tmpStr, 1000, "\"%s\"", compNames[i].c_str());
             str += tmpStr;
             if(i < compNames.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     return str;

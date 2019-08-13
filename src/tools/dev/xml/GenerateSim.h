@@ -1740,7 +1740,6 @@ class AttsGeneratorAttribute : public GeneratorBase
         h << copyright_str << endl;
 
         h << "#include <cstring>" << endl;
-        h << "#include <snprintf.h>" << endl;
         h << "#include <vectortypes.h>" << endl;
         h << "#include \"VisItDataInterfaceRuntime.h\"" << endl;
         h << "#include \"VisItDataInterfaceRuntimeP.h\"" << endl;
@@ -1788,7 +1787,7 @@ class AttsGeneratorAttribute : public GeneratorBase
         h << "    {" << endl;
         h << "        if(obj->objectType() != VISIT_"<<name.toUpper()<<")" << endl;
         h << "        {" << endl;
-        h << "            SNPRINTF(tmp, 150, \"%s: The provided handle does not point to \"" << endl;
+        h << "            snprintf(tmp, 150, \"%s: The provided handle does not point to \"" << endl;
         h << "                \"a "<<name<<" object. (type=%d)\", fname, obj->objectType());" << endl;
         h << "            VisItError(tmp);" << endl;
         h << "            obj = NULL;" << endl;
@@ -1796,7 +1795,7 @@ class AttsGeneratorAttribute : public GeneratorBase
         h << "    }" << endl;
         h << "    else" << endl;
         h << "    {" << endl;
-        h << "        SNPRINTF(tmp, 150, \"%s: An invalid handle was provided.\", fname);" << endl;
+        h << "        snprintf(tmp, 150, \"%s: An invalid handle was provided.\", fname);" << endl;
         h << "        VisItError(tmp);" << endl;
         h << "    }" << endl;
         h << endl;

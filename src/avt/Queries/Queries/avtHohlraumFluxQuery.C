@@ -16,7 +16,6 @@
 #include <vectortypes.h>
 
 #include <visitstream.h>
-#include <snprintf.h>
 
 #include <string>
 #include <vector>
@@ -318,7 +317,7 @@ avtHohlraumFluxQuery::SetDivideEmisByAbsorb(bool flag)
 //    will be used later to compute temperature from flux.
 //
 //    Cyrus Harrison, Tue Sep 18 16:17:57 PDT 2007
-//    Changed sprintf to SNPRINTF
+//    Changed sprintf to snprintf
 //
 //    Hank Childs, Fri May  2 09:02:39 PDT 2008
 //    Add a warning for no intersections.
@@ -373,12 +372,12 @@ avtHohlraumFluxQuery::ExecuteLineScan(vtkPolyData *pd)
         char msg[256];
         if (output->GetPointData()->GetArray(absVarName.c_str()) != NULL)
         {
-            SNPRINTF(msg,256, "Failure: variable %s is node-centered, "
+            snprintf(msg,256, "Failure: variable %s is node-centered, "
                               "but it must be zone-centered for this query.", 
                               absVarName.c_str());
         }
         else
-            SNPRINTF(msg,256, "Variable %s not found.", absVarName.c_str());
+            snprintf(msg,256, "Variable %s not found.", absVarName.c_str());
         EXCEPTION1(VisItException, msg);
     }
     if (emissivityBins == NULL)
@@ -386,12 +385,12 @@ avtHohlraumFluxQuery::ExecuteLineScan(vtkPolyData *pd)
         char msg[256];
         if (output->GetPointData()->GetArray(emisVarName.c_str()) != NULL)
         {
-            SNPRINTF(msg,256, "Failure: variable %s is node-centered, "
+            snprintf(msg,256, "Failure: variable %s is node-centered, "
                               "but it must be zone-centered for this query.", 
                               emisVarName.c_str());
         }
         else
-            SNPRINTF(msg,256, "Variable %s not found.", emisVarName.c_str());
+            snprintf(msg,256, "Variable %s not found.", emisVarName.c_str());
         EXCEPTION1(VisItException, msg);
     }
     if ( emissivityBins->GetNumberOfComponents() != 
@@ -723,7 +722,7 @@ avtHohlraumFluxQuery::PostExecute(void)
     if (PAR_Rank() == 0)
     {
         int times = 0;
-        SNPRINTF(name,256, "hf%d.ult", times++);
+        snprintf(name,256, "hf%d.ult", times++);
 
         for (times = 0 ; times < 10000 ; times++)
         {
@@ -753,7 +752,7 @@ avtHohlraumFluxQuery::PostExecute(void)
             else
             {
                 ifile.close();
-                SNPRINTF(name,256, "hf%d.ult", times);
+                snprintf(name,256, "hf%d.ult", times);
             }
         }
     }
@@ -765,11 +764,11 @@ avtHohlraumFluxQuery::PostExecute(void)
     char buf[512];
     MapNode result_node;
         
-    SNPRINTF(buf,512,"The hohlraum flux query over %d energy groups "
+    snprintf(buf,512,"The hohlraum flux query over %d energy groups "
                  "was written to %s.\n", numBins, name);
     msg += buf;
     format = "Sum is " + floatFormat + ".\n";
-    SNPRINTF(buf,512,format.c_str(), resultSum);
+    snprintf(buf,512,format.c_str(), resultSum);
     msg+=buf;
 
     result_node["Sum"] = resultSum;
@@ -777,7 +776,7 @@ avtHohlraumFluxQuery::PostExecute(void)
     if (binWidths.size() != 0)
     {
         format = "Temperature is " + floatFormat + ".\n";
-        SNPRINTF(buf,512,format.c_str(),temperature);
+        snprintf(buf,512,format.c_str(),temperature);
         msg+=buf;
 
         result_node["Temperature"] = temperature;
@@ -790,7 +789,7 @@ avtHohlraumFluxQuery::PostExecute(void)
     for (ii = 0 ; ii < numBins ; ii++)
     {
         format = " " + floatFormat;
-        SNPRINTF(buf,512, format.c_str(), result[ii]);
+        snprintf(buf,512, format.c_str(), result[ii]);
         msg+=buf;
 
         if (ii < numBins-1)

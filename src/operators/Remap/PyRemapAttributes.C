@@ -5,7 +5,6 @@
 #include <PyRemapAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyRemapAttributes
@@ -43,42 +42,42 @@ PyRemapAttributes_ToString(const RemapAttributes *atts, const char *prefix)
     char tmpStr[1000];
 
     if(atts->GetUseExtents())
-        SNPRINTF(tmpStr, 1000, "%suseExtents = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%suseExtents = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%suseExtents = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%suseExtents = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sstartX = %g\n", prefix, atts->GetStartX());
+    snprintf(tmpStr, 1000, "%sstartX = %g\n", prefix, atts->GetStartX());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sendX = %g\n", prefix, atts->GetEndX());
+    snprintf(tmpStr, 1000, "%sendX = %g\n", prefix, atts->GetEndX());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%scellsX = %d\n", prefix, atts->GetCellsX());
+    snprintf(tmpStr, 1000, "%scellsX = %d\n", prefix, atts->GetCellsX());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sstartY = %g\n", prefix, atts->GetStartY());
+    snprintf(tmpStr, 1000, "%sstartY = %g\n", prefix, atts->GetStartY());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sendY = %g\n", prefix, atts->GetEndY());
+    snprintf(tmpStr, 1000, "%sendY = %g\n", prefix, atts->GetEndY());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%scellsY = %d\n", prefix, atts->GetCellsY());
+    snprintf(tmpStr, 1000, "%scellsY = %d\n", prefix, atts->GetCellsY());
     str += tmpStr;
     if(atts->GetIs3D())
-        SNPRINTF(tmpStr, 1000, "%sis3D = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sis3D = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sis3D = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sis3D = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sstartZ = %g\n", prefix, atts->GetStartZ());
+    snprintf(tmpStr, 1000, "%sstartZ = %g\n", prefix, atts->GetStartZ());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sendZ = %g\n", prefix, atts->GetEndZ());
+    snprintf(tmpStr, 1000, "%sendZ = %g\n", prefix, atts->GetEndZ());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%scellsZ = %d\n", prefix, atts->GetCellsZ());
+    snprintf(tmpStr, 1000, "%scellsZ = %d\n", prefix, atts->GetCellsZ());
     str += tmpStr;
     const char *variableType_names = "intrinsic, extrinsic";
     switch (atts->GetVariableType())
     {
       case RemapAttributes::intrinsic:
-          SNPRINTF(tmpStr, 1000, "%svariableType = %sintrinsic  # %s\n", prefix, prefix, variableType_names);
+          snprintf(tmpStr, 1000, "%svariableType = %sintrinsic  # %s\n", prefix, prefix, variableType_names);
           str += tmpStr;
           break;
       case RemapAttributes::extrinsic:
-          SNPRINTF(tmpStr, 1000, "%svariableType = %sextrinsic  # %s\n", prefix, prefix, variableType_names);
+          snprintf(tmpStr, 1000, "%svariableType = %sextrinsic  # %s\n", prefix, prefix, variableType_names);
           str += tmpStr;
           break;
       default:
