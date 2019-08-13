@@ -985,7 +985,6 @@ int ElementNameToAtomicNumber(const char *element)
     std::string element_str = element;
     if (element_str.compare("UNKNOWN_ATOMIC_ELEMENT") == 0)
     {
-        std::cout << "Compared to 0" << std::endl;
         return 0;
     }
 
