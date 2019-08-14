@@ -1658,17 +1658,6 @@ SET(VISIT_COMMON_INCLUDES
     ${ZLIB_INCLUDE_DIR}
     )
 
-if(WIN32)
-  if(EXISTS ${VISIT_ZLIB_DIR}/bin/zlib1.dll)
-    INSTALL(FILES ${VISIT_ZLIB_DIR}/bin/zlib1.dll
-        DESTINATION ${VISIT_INSTALLED_VERSION_BIN}
-        PERMISSIONS OWNER_READ OWNER_WRITE
-                    GROUP_READ GROUP_WRITE
-                    WORLD_READ
-    )
-  endif()
-endif()
-
 # macros/defines needed by CMake/VisItMacros.cmake
 if (NOT DEFINED VISIT_REPLACE_DEBUG_FLAGS)
   set(VISIT_REPLACE_DEBUG_FLAGS TRUE)
