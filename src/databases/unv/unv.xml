@@ -7,6 +7,6 @@
     <Attribute name="" purpose="" persistent="true" keyframe="true" exportAPI="" exportInclude="">
     </Attribute>
     <LIBS>
-      ${vtkzlib_LIBRARIES}
+      vtkzlib
     </LIBS>
   </Plugin>
