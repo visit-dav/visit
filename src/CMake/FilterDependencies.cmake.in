@@ -17,7 +17,7 @@
 #    are no longer part of VisIt.
 #
 #    Kevin Griffin, Thu Aug 8 18:20:01 PDT 2019
-#    Fixed the Qt frameworks path for OSX and the syntax error produced from
+#    Fixed the Qt and qwt frameworks path for OSX and the syntax error produced from
 #    filtering the right parenthesis in certain cases.
 #
 #****************************************************************************/
@@ -89,9 +89,15 @@ function(FILTER_VISIT_LIB_DEPENDENCIES filename)
                                line "${line}")
             endif()
             if(VISIT_QWT_DIR AND "${line}" MATCHES "qwt")
-                string(REPLACE "${VISIT_QWT_DIR}/lib/"
-                               ""
-                               line "${line}")
+                if(APPLE)
+                    string(REPLACE "${VISIT_QWT_DIR}/lib/"
+                                   "\${VISIT_LIBRARY_DIR}/"
+                                   line "${line}")
+                else()
+                    string(REPLACE "${VISIT_QWT_DIR}/lib/"
+                                   ""
+                                   line "${line}")
+                endif()
             endif()
         endif()
         if(VISIT_OPENEXR_DIR)
