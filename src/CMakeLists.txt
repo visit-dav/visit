@@ -1658,7 +1658,6 @@ SET(VISIT_COMMON_INCLUDES
     ${ZLIB_INCLUDE_DIR}
     )
 
-
 # macros/defines needed by CMake/VisItMacros.cmake
 if (NOT DEFINED VISIT_REPLACE_DEBUG_FLAGS)
   set(VISIT_REPLACE_DEBUG_FLAGS TRUE)
@@ -2241,10 +2240,11 @@ ENDIF (NOT WIN32)
 #     COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_SOURCE_DIR}/osxfixup/osxfixup.py \$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/${VISIT_INSTALLED_VERSION} @executable_path/.. 3)
 #ADD_DEPENDENCIES(osxfixup install)
 
-# todo: replace below with lines above
-IF(APPLE)
+#todo: replace add_subdirectory with the lines above
+SET(FIXUP_OSX TRUE CACHE BOOL "Whether to fix up osx.")
+IF (APPLE AND FIXUP_OSX)
     ADD_SUBDIRECTORY(osxfixup)
-ENDIF(APPLE)
+ENDIF ()
 
 IF (NOT WIN32)
     MESSAGE(STATUS "\n\nUse recmake_visit.sh or search for `CMAKE_INVOKE' in CMakeCache.txt to re-run CMake with the same arguments\n\n")
