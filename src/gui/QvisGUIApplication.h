@@ -356,6 +356,9 @@ class SplashScreen;
 //    Made MoveAndResizeMainWindow a slot function without arguments so it
 //    can be called from QTimer::singleShot. Added orientation ivar.
 //
+//    Cyrus Harrison, Tue Aug 13 15:46:52 PDT 2019
+//    Removed updateVisIt related logic.
+//
 // ****************************************************************************
 
 class GUI_API QvisGUIApplication : public QObject, public ConfigManager, public GUIBase
@@ -535,8 +538,6 @@ protected slots:
     void setupHostProfilesAndConfig();
     void showSeedMeWindow();
 
-    void updateVisIt();
-    void updateVisItCompleted(const QString &);
 private:
     void DestructorHelper(bool fastExit = false);
     void GetCrashFilePIDs(const QFileInfoList &, intVector &);
