@@ -240,6 +240,9 @@ class WindowInformation;
 //   Jonathan Byrd (Allinea Software), Sun 18 Dec, 2011
 //   Added an Action and a Qt slot to attempt a connection to DDT
 //
+//   Cyrus Harrison, Tue Aug 13 15:46:52 PDT 2019
+//   Removed updateVisIt related logic.
+//
 // ****************************************************************************
 
 class GUI_API QvisMainWindow : public QvisWindowBase, public SimpleObserver
@@ -315,7 +318,6 @@ signals:
     void activateInteractorWindow();
     void activateMeshManagementWindow();
     void activateSelectionsWindow();
-    void updateVisIt();
     void activateSetupHostProfilesAndConfig();
     void activateSeedMeWindow();
 
@@ -339,7 +341,6 @@ public slots:
     virtual void show();
 
     void unreadOutput(bool);
-    void updateNotAllowed();
     void SetTimeStateFormat(const TimeFormat &fmt);
     void SetShowSelectedFiles(bool);
     void SetAllowFileSelectionChange(bool);
@@ -450,7 +451,6 @@ private:
     QAction                  *spinModeAct;
     QAction                  *fullFrameModeAct;
     QMenu                    *helpPopup;
-    QAction                  *updateVisItAct;
 
     QTimer                    *recoveryFileTimer;
     bool                       okayToSaveRecoveryFile;

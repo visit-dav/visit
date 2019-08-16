@@ -58,6 +58,12 @@
 #   Move vtkDepthSortPolyData2 to avt/Plotter/vtk since it depends on the
 #   vtk rendering libs.  Remove vtk rendering libs from linker.
 #
+#   Kathleen Biagas, Fri Jul 19 12:13:02 PDT 2019
+#   Added vtkCommonExecutionModel, vtkCommonMisc in support of building plugins
+#   vs install on Windows. They are direct depencencies for this library,
+#   and CMake automagically pulls them in when compiling VisIt, even if not
+#   listed, but not when building the plugins.
+#
 #****************************************************************************/
 
 IF(OPENEXR_FOUND)
@@ -142,7 +148,7 @@ LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY} ${OPENEXR_LIBRARY_DIR})
 
 ADD_LIBRARY(visit_vtk ${VISIT_VTK_SOURCES})
 
-TARGET_LINK_LIBRARIES(visit_vtk lightweight_visit_vtk vtkFiltersExtraction vtkFiltersFlowPaths vtkFiltersSources vtkImagingHybrid vtkIOImage vtktiff ${OPENEXR_LIB})
+TARGET_LINK_LIBRARIES(visit_vtk lightweight_visit_vtk vtkCommonExecutionModel vtkCommonMisc vtkFiltersExtraction vtkFiltersFlowPaths vtkFiltersSources vtkImagingHybrid vtkIOImage vtktiff ${OPENEXR_LIB})
 
 
 VISIT_INSTALL_TARGETS(visit_vtk)
