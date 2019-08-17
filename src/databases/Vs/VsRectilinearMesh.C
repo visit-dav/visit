@@ -23,22 +23,20 @@ VsRectilinearMesh::VsRectilinearMesh(VsGroup* group):VsMesh(group) {
     numTopologicalDims = -1;
 }
 
-
-VsRectilinearMesh::~VsRectilinearMesh() {
-}
+VsRectilinearMesh::~VsRectilinearMesh() {}
 
 
 VsRectilinearMesh* VsRectilinearMesh::buildRectilinearMesh(VsGroup* group) {
 
   VsRectilinearMesh* newMesh = new VsRectilinearMesh(group);
   bool success = newMesh->initialize();
-  
+
   if (success) {
     VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                       << "Returning success." << std::endl;
     return newMesh;
   }
-  
+
   delete (newMesh);
   newMesh = NULL;
 
@@ -46,7 +44,6 @@ VsRectilinearMesh* VsRectilinearMesh::buildRectilinearMesh(VsGroup* group) {
                     << "Returning NULL." << std::endl;
   return NULL;
 }
-
 
 bool VsRectilinearMesh::initialize() {
 
@@ -63,7 +60,7 @@ bool VsRectilinearMesh::initialize() {
         << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
         << "Can't determine spatial dimensionality - no axis "
         << 0 << " '" << getAxisDatasetName(0) << "' dataset?" << std::endl;
-      
+
       return false;
   }
 
@@ -73,61 +70,52 @@ bool VsRectilinearMesh::initialize() {
         << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
         << "Can't determine spatial dimensionality - no axis "
         << 1 << " '" << getAxisDatasetName(1) << "' dataset?" << std::endl;
-      
+
       return false;
   }
-  
+
   numTopologicalDims = 0;
 
   // Get each axis that contributes to the spatial and topological dim.
   for( int i=0; i<3; ++i ) {
 
     VsDataset* axis = getAxisDataset(i);
-  
+
     if (axis) {
       std::vector<int> axisDims = axis->getDims();
 
       if (axisDims.size() != 1) {
-        // 
-        if( axisDims.size() == 2 && axisDims[1] == 1 )
-        {
-          VsLog::debugLog()
+        if( axisDims.size() == 2 && axisDims[1] == 1 ) {
+          VsLog::errorLog()
             << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
             << "Expected 1-d dataset for Axis "
             << i << " '" << getAxisDatasetName(i) << "', "
-            << "actually have " << axisDims.size() << ".  "
-            << "Ignoring because the second dimension is 1." << std::endl;
-        }
-        else
-        {
+            << "actually have " << axisDims.size() << "  "
+            << "ignoring because the second dimension is 1." << std::endl;
+        } else {
           VsLog::errorLog()
             << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
             << "Expected 1-d dataset for Axis "
             << i << " '" << getAxisDatasetName(i) << "', "
             << "actually have " << axisDims.size() << "." << std::endl;
-          
           return false;
         }
       }
-      
       if (axisDims[0] == 0) {
-        VsLog::errorLog()
+        VsLog::debugLog()
           << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
           << "Expected data in dataset for Axis "
           << i << " '" << getAxisDatasetName(i) << "', "
           << "actually have none." << std::endl;
-
-        return false;
       }
-      
       numSpatialDims = i + 1;
 
-      // ARS - Becasue of the way the data structures are used to hold
+      // ARS - Because of the way the data structures are used to hold
       // structured data in VTK and VisIt the topological dimension has to
       // equal the spatial dimension unless the last dim(s) are 1.
 
       // i.e. 1, 1, 2 = topological dims == 3
-      // i.e. 2, 1, 1 = topological dims == 1 
+      // i.e. 2, 1, 1 = topological dims == 1
 
       // Check for the last axis for a dimension greater than 1
       if ( axisDims[0] > 1 ) {
@@ -144,7 +132,7 @@ bool VsRectilinearMesh::initialize() {
       break;
     }
   }
-  
+
   VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                     << "Rectilinear Mesh " << getShortName() << " "
                     << "has num spatial dims = "
@@ -163,7 +151,6 @@ hid_t VsRectilinearMesh::getDataType() const{
       << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
       << "Can't determine data type - no axis "
       << 0 << " '" << getAxisDatasetName(0) << "' dataset?" << std::endl;
-    
     return H5T_NATIVE_DOUBLE; //?
   }
 
@@ -174,7 +161,7 @@ hid_t VsRectilinearMesh::getDataType() const{
     if (axis && axis->getType() == H5T_NATIVE_DOUBLE)
       return H5T_NATIVE_DOUBLE;
   }
-  
+
   return H5T_NATIVE_FLOAT;
 }
 
@@ -183,7 +170,7 @@ std::string VsRectilinearMesh::getAxisDatasetName(int axisNumber) const {
   if ((axisNumber < 0) || (axisNumber > 2)) {
     return "";
   }
-  
+
   std::string axisKey;
   switch (axisNumber) {
     case 0: axisKey = VsSchema::Rectilinear::axis0Key;
@@ -196,9 +183,9 @@ std::string VsRectilinearMesh::getAxisDatasetName(int axisNumber) const {
        return "";
        break;
   }
-  
+
   std::string axisName;
-    
+
   //First see if the user has specified a name for the dataset
   VsAttribute* axisNameAtt = getAttribute(axisKey);
   if (axisNameAtt) {
@@ -207,7 +194,7 @@ std::string VsRectilinearMesh::getAxisDatasetName(int axisNumber) const {
       return makeCanonicalName(getFullName(), axisName);
     }
   }
-  
+
   //if we didn't find a user supplied name, try the default name
   switch (axisNumber) {
     case 0: axisName = VsSchema::Rectilinear::axis0DefaultName;
@@ -221,7 +208,7 @@ std::string VsRectilinearMesh::getAxisDatasetName(int axisNumber) const {
        break;
   }
 
-  //axisName 
+  //axisName
   return makeCanonicalName(getFullName(), axisName);
 }
 
@@ -247,10 +234,10 @@ void VsRectilinearMesh::getNodeDims(std::vector<int>& dims) const
 {
   VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                     << "Entering." <<  std::endl;
-  
+
   // The size of rectilinear mesh depends on the numSpatialDims
   dims.resize(numSpatialDims);
-  
+
   for( int i=0; i<numSpatialDims; ++i )
   {
     dims[i] = getAxisDataset(i)->getDims()[0];
@@ -262,7 +249,7 @@ void VsRectilinearMesh::getCellDims(std::vector<int>& dims) const
 {
   // Determine the number of cells which is the number of nodes less 1.
   getNodeDims( dims );
-  
+
   for( int i=0; i<dims.size(); ++i )
     dims[i] -= 1;
 }
