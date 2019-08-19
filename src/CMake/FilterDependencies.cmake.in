@@ -16,6 +16,10 @@
 #    non-windows. Remove slivr libraries from the suppression list as they
 #    are no longer part of VisIt.
 #
+#    Kevin Griffin, Thu Aug 8 18:20:01 PDT 2019
+#    Fixed the Qt and qwt frameworks path for OSX and the syntax error produced from
+#    filtering the right parenthesis in certain cases.
+#
 #****************************************************************************/
 cmake_policy(SET CMP0011 NEW)
 cmake_policy(SET CMP0057 NEW)
@@ -85,9 +89,15 @@ function(FILTER_VISIT_LIB_DEPENDENCIES filename)
                                line "${line}")
             endif()
             if(VISIT_QWT_DIR AND "${line}" MATCHES "qwt")
-                string(REPLACE "${VISIT_QWT_DIR}/lib/"
-                               ""
-                               line "${line}")
+                if(APPLE)
+                    string(REPLACE "${VISIT_QWT_DIR}/lib/"
+                                   "\${VISIT_LIBRARY_DIR}/"
+                                   line "${line}")
+                else()
+                    string(REPLACE "${VISIT_QWT_DIR}/lib/"
+                                   ""
+                                   line "${line}")
+                endif()
             endif()
         endif()
         if(VISIT_OPENEXR_DIR)
@@ -143,10 +153,24 @@ function(FILTER_VISIT_LIB_DEPENDENCIES filename)
                        rem_quote ${replace_quote})
                 string(REPLACE "@@@@@" "\"" newtoken ${rem_quote})
             elseif(token MATCHES "Qt5::")
-                # replace Qt5::libname with Qt5libname
-                string(REGEX REPLACE "Qt5::([a-zA-Z]+)"
-                       "Qt5\\1"
-                       newtoken ${token})
+                if(APPLE)
+                    if(token MATCHES "Qt5::Concurrent|Qt5::Core|Qt5::Gui|Qt5::Network|Qt5::OpenGL|Qt5::PrintSupport|Qt5::Qml|Qt5::Svg|Qt5::Widgets|Qt5::Xml")
+                        # replace Qt5::libname with Qtlibname.framework
+                        string(REGEX REPLACE "Qt5::([a-zA-Z]+)"
+                                             "\${VISIT_LIBRARY_DIR}/Qt\\1.framework"
+                                             newtoken ${token})
+                    else()
+                        # replace Qt5::libname with Qt5libname
+                        string(REGEX REPLACE "Qt5::([a-zA-Z]+)"
+                                             "Qt5\\1"
+                                             newtoken ${token})
+                    endif()
+                else()
+                    # replace Qt5::libname with Qt5libname
+                    string(REGEX REPLACE "Qt5::([a-zA-Z]+)"
+                                         "Qt5\\1"
+                                         newtoken ${token})
+                endif()
             elseif(${token} IN_LIST VTK_TARGETS)
                 # append VTK version to vtk lib names
                 if(token MATCHES "WrappingPythonCore")
@@ -201,6 +225,11 @@ function(FILTER_VISIT_LIB_DEPENDENCIES filename)
             endif()
             list(APPEND filteredline ${newtoken})
         endforeach()
+        # Sometimes the last tokens get filtered so the corresponding ';")' is missing
+        # causing syntax errors. Need to check if filteredline ends with '")' if not add it
+        if(NOT "${filteredline}" MATCHES "\\)")
+            list(APPEND filteredline "\")")
+        endif()
         file(APPEND ${filename} "${filteredline}\n")
         unset(filteredline)
     endforeach()

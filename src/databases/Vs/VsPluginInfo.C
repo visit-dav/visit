@@ -119,7 +119,8 @@ std::vector<std::string>
 VsGeneralPluginInfo::GetDefaultFilePatterns() const
 {
     std::vector<std::string> defaultPatterns;
-    defaultPatterns.push_back("*.vsh5");
+    // To include txvsh5 and possibly hvsh5 for tet and hex meshes
+    defaultPatterns.push_back("*vsh5");
     defaultPatterns.push_back("*.h5");
 
     return defaultPatterns;
