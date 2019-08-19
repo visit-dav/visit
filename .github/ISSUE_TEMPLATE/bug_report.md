@@ -2,7 +2,7 @@
 name: Bug report
 about: Create a report to help us improve
 title: ''
-labels: bug
+labels: bug, impact medium, likelihood medium
 assignees: ''
 
 ---
@@ -11,19 +11,9 @@ assignees: ''
 A clear and concise description of what the bug is.
 
 **Helpful additional information**
-(*Please click check boxes AFTER submitting ticket*)
-- [ ] Did VisIt crash?
-- [ ] Did you get wrong results?
-
-**Impact**
-- [ ] High - User productivity significantly degraded
-- [ ] Medium - User productivity partially degraded
-- [ ] Low - User productivity trivially degraded
-
-**Likelihood**
-- [ ] High - occurrence is not specific to platform, data, config, a combination of operators, queries, etc.
-- [ ] Medium - neither low nor high likelihood
-- [ ] Low - occurrence is specific to combination of multiple factors such as configuration, data, platform, etc.
+* By default impact and likelihood lables of *medium* are assigned. Please feel free to remove those and select different impact and likelihood labels as appropriate.
+* If VisIt crashed, please add the crash label
+* If VisIt produced wrong results, please add the wrong results label
 
 ### To Reproduce
 Steps to reproduce the behavior. For example:
@@ -51,4 +41,3 @@ A clear and concise description of what you expected to happen.
 
 ### Additional context
 Add any other context about the problem here. Attach any (zipped) relevant files, such as data, configurations, sessionfiles, etc.
-
