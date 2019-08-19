@@ -992,6 +992,8 @@ QvisMainWindow::SetDefaultSplitterSizes(int h)
 // Creation:   Wed Dec 31 11:28:51 EST 2008
 //
 // Modifications:
+//   Cyrus Harrison, Tue Aug 13 15:40:11 PDT 2019
+//   Remove update visit entry.
 //
 // ****************************************************************************
 
@@ -1015,9 +1017,6 @@ QvisMainWindow::AddHelpMenu(void)
                          this, SIGNAL(activateReleaseNotesWindow()));
 
     helpPopup->addSeparator();
-
-    updateVisItAct = helpPopup->addAction(tr("Check for new version . . ."),
-                                          this, SIGNAL(updateVisIt()));
 }
 
 // ****************************************************************************
@@ -2519,27 +2518,6 @@ QvisMainWindow::unreadOutput(bool val)
         outputButton->setIcon(*outputRed);
     else
         outputButton->setIcon(*outputBlue);
-}
-
-// ****************************************************************************
-// Method: QvisMainWindow::updateNotAllowed
-//
-// Purpose: 
-//   This is a Qt slot function that disables the "update visit" help option.
-//
-// Programmer: Brad Whitlock
-// Creation:   Tue Feb 15 14:16:28 PST 2005
-//
-// Modifications:
-//    Cyrus Harrison, Mon Jun 30 14:14:59 PDT 2008
-//    Initial Qt4 Port.
-//
-// ****************************************************************************
-
-void
-QvisMainWindow::updateNotAllowed()
-{
-    updateVisItAct->setEnabled(false);
 }
 
 // ****************************************************************************
