@@ -156,8 +156,9 @@ and the scalar variable are interleaved.
     1 1 6 0
     1 1 7 1
 
-In the example below, the ``#coordflag`` directive is used to a collection of 3 points in
-*2 dimensions* where each point has a velocity magnitude value associated with it.
+In the example below, the ``#coordflag`` directive is used to define a collection of
+points in *two dimensions* where each point has a velocity magnitude value associated
+with it.
 
 .. code-block:: none
    :emphasize-lines: 2
@@ -167,6 +168,17 @@ In the example below, the ``#coordflag`` directive is used to a collection of 3 
     0 0 1
     0 1 1.01
     1 0 2.02
+
+Likewise, for a collection of points in just *one dimension*, we would have
+
+.. code-block:: none
+   :emphasize-lines: 2
+
+    x y velocity
+    #coordflag xv
+    0 1
+    1 1.01
+    2 2.02
 
 There are some
 `additional examples <https://www.visitusers.org/index.php?title=Reading_point_data#Using_Point3D_files>`_
