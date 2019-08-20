@@ -238,7 +238,7 @@ avtPoint3DFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     mesh->hasSpatialExtents = false;
     md->Add(mesh);
 
-    for (int i = 0 ; i < 4 ; i++)
+    for (int i = 0 ; i < spatialDim+1 ; i++)
     {
         AddScalarVarToMetaData(md, varnames[i], MESHNAME, AVT_NODECENT, NULL);
     }
@@ -322,6 +322,7 @@ avtPoint3DFileFormat::ReadData(void)
         if (GetStrictMode() && !StringHelpers::IsPureASCII(buf, 1024))
             EXCEPTION2(InvalidFilesException, filename, "Not ASCII.");
         varnames.push_back(buf);
+        if (ifile.peek() == '\n') break;
     }
 
     char     line[1024];
@@ -385,7 +386,7 @@ avtPoint3DFileFormat::ReadData(void)
             if (GetStrictMode() && n != spatialDim+1)
             {
                 EXCEPTION2(InvalidFilesException, filename,
-                           "Bad line in file; less than %d values");
+                           "Bad line in file; less than 4 values");
             }
             var1.push_back(a);
             var2.push_back(b);
