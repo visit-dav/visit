@@ -8,7 +8,6 @@
 
 #include <avtLaplacianExpression.h>
 
-#include <snprintf.h>
 #include <ExpressionException.h>
 
 // ****************************************************************************
@@ -71,18 +70,18 @@ avtLaplacianExpression::GetMacro(std::vector<std::string> &args,
         avtMeshType mt = GetInput()->GetInfo().GetAttributes().GetMeshType();
         if (mt == AVT_RECTILINEAR_MESH || mt == AVT_AMR_MESH)
         {
-            SNPRINTF(new_expr, 2048, "rectilinear_laplacian(%s)", 
+            snprintf(new_expr, 2048, "rectilinear_laplacian(%s)", 
                                      args[0].c_str());
         }
         else
         {
-            SNPRINTF(new_expr, 2048, "divergence(gradient(%s))", 
+            snprintf(new_expr, 2048, "divergence(gradient(%s))", 
                                      args[0].c_str());
         }
     }
     else if (nargs == 2)
     {
-        SNPRINTF(new_expr, 2048,
+        snprintf(new_expr, 2048,
                 "divergence(gradient(%s,%s))", 
                 args[0].c_str(),args[1].c_str());
     }

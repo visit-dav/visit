@@ -25,7 +25,6 @@
 #include <InvalidVariableException.h>
 #include <InvalidFilesException.h>
 #include <visit-config.h>
-#include <snprintf.h>
 
 using std::string;
 using std::map;
@@ -303,7 +302,7 @@ avtOVERFLOWFileFormat::ReadSolHeader()
     for (i=0; i<nspec; i++)
     {
         char rgas[1024];
-        SNPRINTF(rgas, 1024, "RGAS%d", i+1);
+        snprintf(rgas, 1024, "RGAS%d", i+1);
         varmap[rgas] = parse_float(varbuffptr);
     }
     varmap["FSMACH"] = parse_float(varbuffptr);
@@ -535,7 +534,7 @@ avtOVERFLOWFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     for (int i=0; i<nq; i++)
     {
         char name[1024];
-        SNPRINTF(name, 1024, "Q%d", i+1);
+        snprintf(name, 1024, "Q%d", i+1);
         AddScalarVarToMetaData(md, name, "mesh", AVT_NODECENT);
     }
 

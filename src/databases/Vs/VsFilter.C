@@ -27,6 +27,9 @@
 #include "VsAttribute.h"
 #include "VsRegistry.h"
 
+// To make sure that other h5 plugins do not interfer
+#include <visit-hdf5.h>
+
 struct RECURSION_DATA {
   VsRegistry* registry;
   VsObject* parent;

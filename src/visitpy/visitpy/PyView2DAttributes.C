@@ -5,7 +5,6 @@
 #include <PyView2DAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyView2DAttributes
@@ -43,68 +42,68 @@ PyView2DAttributes_ToString(const View2DAttributes *atts, const char *prefix)
     char tmpStr[1000];
 
     {   const double *windowCoords = atts->GetWindowCoords();
-        SNPRINTF(tmpStr, 1000, "%swindowCoords = (", prefix);
+        snprintf(tmpStr, 1000, "%swindowCoords = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 4; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", windowCoords[i]);
+            snprintf(tmpStr, 1000, "%g", windowCoords[i]);
             str += tmpStr;
             if(i < 3)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const double *viewportCoords = atts->GetViewportCoords();
-        SNPRINTF(tmpStr, 1000, "%sviewportCoords = (", prefix);
+        snprintf(tmpStr, 1000, "%sviewportCoords = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 4; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", viewportCoords[i]);
+            snprintf(tmpStr, 1000, "%g", viewportCoords[i]);
             str += tmpStr;
             if(i < 3)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     const char *fullFrameActivationMode_names = "On, Off, Auto";
     switch (atts->GetFullFrameActivationMode())
     {
       case View2DAttributes::On:
-          SNPRINTF(tmpStr, 1000, "%sfullFrameActivationMode = %sOn  # %s\n", prefix, prefix, fullFrameActivationMode_names);
+          snprintf(tmpStr, 1000, "%sfullFrameActivationMode = %sOn  # %s\n", prefix, prefix, fullFrameActivationMode_names);
           str += tmpStr;
           break;
       case View2DAttributes::Off:
-          SNPRINTF(tmpStr, 1000, "%sfullFrameActivationMode = %sOff  # %s\n", prefix, prefix, fullFrameActivationMode_names);
+          snprintf(tmpStr, 1000, "%sfullFrameActivationMode = %sOff  # %s\n", prefix, prefix, fullFrameActivationMode_names);
           str += tmpStr;
           break;
       case View2DAttributes::Auto:
-          SNPRINTF(tmpStr, 1000, "%sfullFrameActivationMode = %sAuto  # %s\n", prefix, prefix, fullFrameActivationMode_names);
+          snprintf(tmpStr, 1000, "%sfullFrameActivationMode = %sAuto  # %s\n", prefix, prefix, fullFrameActivationMode_names);
           str += tmpStr;
           break;
       default:
           break;
     }
 
-    SNPRINTF(tmpStr, 1000, "%sfullFrameAutoThreshold = %g\n", prefix, atts->GetFullFrameAutoThreshold());
+    snprintf(tmpStr, 1000, "%sfullFrameAutoThreshold = %g\n", prefix, atts->GetFullFrameAutoThreshold());
     str += tmpStr;
     const char *xScale_values[] = {"LINEAR", "LOG"};
-    SNPRINTF(tmpStr, 1000, "%sxScale = %s%s  # LINEAR, LOG\n", prefix, prefix, xScale_values[atts->GetXScale()]);
+    snprintf(tmpStr, 1000, "%sxScale = %s%s  # LINEAR, LOG\n", prefix, prefix, xScale_values[atts->GetXScale()]);
     str += tmpStr;
     const char *yScale_values[] = {"LINEAR", "LOG"};
-    SNPRINTF(tmpStr, 1000, "%syScale = %s%s  # LINEAR, LOG\n", prefix, prefix, yScale_values[atts->GetYScale()]);
+    snprintf(tmpStr, 1000, "%syScale = %s%s  # LINEAR, LOG\n", prefix, prefix, yScale_values[atts->GetYScale()]);
     str += tmpStr;
     if(atts->GetWindowValid())
-        SNPRINTF(tmpStr, 1000, "%swindowValid = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%swindowValid = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%swindowValid = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%swindowValid = 0\n", prefix);
     str += tmpStr;
     return str;
 }

@@ -5,7 +5,6 @@
 #include <PyFiveFoldTetSubdivisionAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyFiveFoldTetSubdivisionAttributes
@@ -43,53 +42,53 @@ PyFiveFoldTetSubdivisionAttributes_ToString(const FiveFoldTetSubdivisionAttribut
     char tmpStr[1000];
 
     if(atts->GetOddParityHasSixNeighborhood())
-        SNPRINTF(tmpStr, 1000, "%soddParityHasSixNeighborhood = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%soddParityHasSixNeighborhood = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%soddParityHasSixNeighborhood = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%soddParityHasSixNeighborhood = 0\n", prefix);
     str += tmpStr;
     if(atts->GetAddComponentInformation())
-        SNPRINTF(tmpStr, 1000, "%saddComponentInformation = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%saddComponentInformation = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%saddComponentInformation = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%saddComponentInformation = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sidVar = \"%s\"\n", prefix, atts->GetIdVar().c_str());
+    snprintf(tmpStr, 1000, "%sidVar = \"%s\"\n", prefix, atts->GetIdVar().c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%svalueVar = \"%s\"\n", prefix, atts->GetValueVar().c_str());
+    snprintf(tmpStr, 1000, "%svalueVar = \"%s\"\n", prefix, atts->GetValueVar().c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%scontourTreeFilename = \"%s\"\n", prefix, atts->GetContourTreeFilename().c_str());
+    snprintf(tmpStr, 1000, "%scontourTreeFilename = \"%s\"\n", prefix, atts->GetContourTreeFilename().c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sisovalue = %g\n", prefix, atts->GetIsovalue());
+    snprintf(tmpStr, 1000, "%sisovalue = %g\n", prefix, atts->GetIsovalue());
     str += tmpStr;
     {   const intVector &selectedIds = atts->GetSelectedIds();
-        SNPRINTF(tmpStr, 1000, "%sselectedIds = (", prefix);
+        snprintf(tmpStr, 1000, "%sselectedIds = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < selectedIds.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%d", selectedIds[i]);
+            snprintf(tmpStr, 1000, "%d", selectedIds[i]);
             str += tmpStr;
             if(i < selectedIds.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const intVector &highlightedIds = atts->GetHighlightedIds();
-        SNPRINTF(tmpStr, 1000, "%shighlightedIds = (", prefix);
+        snprintf(tmpStr, 1000, "%shighlightedIds = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < highlightedIds.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%d", highlightedIds[i]);
+            snprintf(tmpStr, 1000, "%d", highlightedIds[i]);
             str += tmpStr;
             if(i < highlightedIds.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     return str;

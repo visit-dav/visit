@@ -5,7 +5,6 @@
 #include <PyVolumeAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 #include <PyColorControlPointList.h>
 #include <PyGaussianControlPointList.h>
 
@@ -45,73 +44,73 @@ PyVolumeAttributes_ToString(const VolumeAttributes *atts, const char *prefix)
     char tmpStr[1000];
 
     if(atts->GetOsprayShadowsEnabledFlag())
-        SNPRINTF(tmpStr, 1000, "%sosprayShadowsEnabledFlag = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sosprayShadowsEnabledFlag = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sosprayShadowsEnabledFlag = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sosprayShadowsEnabledFlag = 0\n", prefix);
     str += tmpStr;
     if(atts->GetOsprayUseGridAcceleratorFlag())
-        SNPRINTF(tmpStr, 1000, "%sosprayUseGridAcceleratorFlag = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sosprayUseGridAcceleratorFlag = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sosprayUseGridAcceleratorFlag = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sosprayUseGridAcceleratorFlag = 0\n", prefix);
     str += tmpStr;
     if(atts->GetOsprayPreIntegrationFlag())
-        SNPRINTF(tmpStr, 1000, "%sosprayPreIntegrationFlag = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sosprayPreIntegrationFlag = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sosprayPreIntegrationFlag = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sosprayPreIntegrationFlag = 0\n", prefix);
     str += tmpStr;
     if(atts->GetOspraySingleShadeFlag())
-        SNPRINTF(tmpStr, 1000, "%sospraySingleShadeFlag = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sospraySingleShadeFlag = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sospraySingleShadeFlag = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sospraySingleShadeFlag = 0\n", prefix);
     str += tmpStr;
     if(atts->GetOsprayOneSidedLightingFlag())
-        SNPRINTF(tmpStr, 1000, "%sosprayOneSidedLightingFlag = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sosprayOneSidedLightingFlag = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sosprayOneSidedLightingFlag = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sosprayOneSidedLightingFlag = 0\n", prefix);
     str += tmpStr;
     if(atts->GetOsprayAoTransparencyEnabledFlag())
-        SNPRINTF(tmpStr, 1000, "%sosprayAoTransparencyEnabledFlag = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sosprayAoTransparencyEnabledFlag = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sosprayAoTransparencyEnabledFlag = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sosprayAoTransparencyEnabledFlag = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sospraySpp = %d\n", prefix, atts->GetOspraySpp());
+    snprintf(tmpStr, 1000, "%sospraySpp = %d\n", prefix, atts->GetOspraySpp());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sosprayAoSamples = %d\n", prefix, atts->GetOsprayAoSamples());
+    snprintf(tmpStr, 1000, "%sosprayAoSamples = %d\n", prefix, atts->GetOsprayAoSamples());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sosprayAoDistance = %g\n", prefix, atts->GetOsprayAoDistance());
+    snprintf(tmpStr, 1000, "%sosprayAoDistance = %g\n", prefix, atts->GetOsprayAoDistance());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sosprayMinContribution = %g\n", prefix, atts->GetOsprayMinContribution());
+    snprintf(tmpStr, 1000, "%sosprayMinContribution = %g\n", prefix, atts->GetOsprayMinContribution());
     str += tmpStr;
     if(atts->GetLegendFlag())
-        SNPRINTF(tmpStr, 1000, "%slegendFlag = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%slegendFlag = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%slegendFlag = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%slegendFlag = 0\n", prefix);
     str += tmpStr;
     if(atts->GetLightingFlag())
-        SNPRINTF(tmpStr, 1000, "%slightingFlag = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%slightingFlag = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%slightingFlag = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%slightingFlag = 0\n", prefix);
     str += tmpStr;
     { // new scope
         std::string objPrefix(prefix);
         objPrefix += "colorControlPoints.";
         str += PyColorControlPointList_ToString(&atts->GetColorControlPoints(), objPrefix.c_str());
     }
-    SNPRINTF(tmpStr, 1000, "%sopacityAttenuation = %g\n", prefix, atts->GetOpacityAttenuation());
+    snprintf(tmpStr, 1000, "%sopacityAttenuation = %g\n", prefix, atts->GetOpacityAttenuation());
     str += tmpStr;
     const char *opacityMode_names = "FreeformMode, GaussianMode, ColorTableMode";
     switch (atts->GetOpacityMode())
     {
       case VolumeAttributes::FreeformMode:
-          SNPRINTF(tmpStr, 1000, "%sopacityMode = %sFreeformMode  # %s\n", prefix, prefix, opacityMode_names);
+          snprintf(tmpStr, 1000, "%sopacityMode = %sFreeformMode  # %s\n", prefix, prefix, opacityMode_names);
           str += tmpStr;
           break;
       case VolumeAttributes::GaussianMode:
-          SNPRINTF(tmpStr, 1000, "%sopacityMode = %sGaussianMode  # %s\n", prefix, prefix, opacityMode_names);
+          snprintf(tmpStr, 1000, "%sopacityMode = %sGaussianMode  # %s\n", prefix, prefix, opacityMode_names);
           str += tmpStr;
           break;
       case VolumeAttributes::ColorTableMode:
-          SNPRINTF(tmpStr, 1000, "%sopacityMode = %sColorTableMode  # %s\n", prefix, prefix, opacityMode_names);
+          snprintf(tmpStr, 1000, "%sopacityMode = %sColorTableMode  # %s\n", prefix, prefix, opacityMode_names);
           str += tmpStr;
           break;
       default:
@@ -124,88 +123,88 @@ PyVolumeAttributes_ToString(const VolumeAttributes *atts, const char *prefix)
         str += PyGaussianControlPointList_ToString(&atts->GetOpacityControlPoints(), objPrefix.c_str());
     }
     if(atts->GetResampleFlag())
-        SNPRINTF(tmpStr, 1000, "%sresampleFlag = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sresampleFlag = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sresampleFlag = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sresampleFlag = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sresampleTarget = %d\n", prefix, atts->GetResampleTarget());
+    snprintf(tmpStr, 1000, "%sresampleTarget = %d\n", prefix, atts->GetResampleTarget());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sopacityVariable = \"%s\"\n", prefix, atts->GetOpacityVariable().c_str());
+    snprintf(tmpStr, 1000, "%sopacityVariable = \"%s\"\n", prefix, atts->GetOpacityVariable().c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%scompactVariable = \"%s\"\n", prefix, atts->GetCompactVariable().c_str());
+    snprintf(tmpStr, 1000, "%scompactVariable = \"%s\"\n", prefix, atts->GetCompactVariable().c_str());
     str += tmpStr;
     {   const unsigned char *freeformOpacity = atts->GetFreeformOpacity();
-        SNPRINTF(tmpStr, 1000, "%sfreeformOpacity = (", prefix);
+        snprintf(tmpStr, 1000, "%sfreeformOpacity = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 256; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%d", int(freeformOpacity[i]));
+            snprintf(tmpStr, 1000, "%d", int(freeformOpacity[i]));
             str += tmpStr;
             if(i < 255)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     if(atts->GetUseColorVarMin())
-        SNPRINTF(tmpStr, 1000, "%suseColorVarMin = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%suseColorVarMin = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%suseColorVarMin = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%suseColorVarMin = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%scolorVarMin = %g\n", prefix, atts->GetColorVarMin());
+    snprintf(tmpStr, 1000, "%scolorVarMin = %g\n", prefix, atts->GetColorVarMin());
     str += tmpStr;
     if(atts->GetUseColorVarMax())
-        SNPRINTF(tmpStr, 1000, "%suseColorVarMax = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%suseColorVarMax = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%suseColorVarMax = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%suseColorVarMax = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%scolorVarMax = %g\n", prefix, atts->GetColorVarMax());
+    snprintf(tmpStr, 1000, "%scolorVarMax = %g\n", prefix, atts->GetColorVarMax());
     str += tmpStr;
     if(atts->GetUseOpacityVarMin())
-        SNPRINTF(tmpStr, 1000, "%suseOpacityVarMin = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%suseOpacityVarMin = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%suseOpacityVarMin = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%suseOpacityVarMin = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sopacityVarMin = %g\n", prefix, atts->GetOpacityVarMin());
+    snprintf(tmpStr, 1000, "%sopacityVarMin = %g\n", prefix, atts->GetOpacityVarMin());
     str += tmpStr;
     if(atts->GetUseOpacityVarMax())
-        SNPRINTF(tmpStr, 1000, "%suseOpacityVarMax = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%suseOpacityVarMax = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%suseOpacityVarMax = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%suseOpacityVarMax = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sopacityVarMax = %g\n", prefix, atts->GetOpacityVarMax());
+    snprintf(tmpStr, 1000, "%sopacityVarMax = %g\n", prefix, atts->GetOpacityVarMax());
     str += tmpStr;
     if(atts->GetSmoothData())
-        SNPRINTF(tmpStr, 1000, "%ssmoothData = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%ssmoothData = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%ssmoothData = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%ssmoothData = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%ssamplesPerRay = %d\n", prefix, atts->GetSamplesPerRay());
+    snprintf(tmpStr, 1000, "%ssamplesPerRay = %d\n", prefix, atts->GetSamplesPerRay());
     str += tmpStr;
     const char *rendererType_names = "Default, RayCasting, RayCastingIntegration, RayCastingSLIVR, RayCastingOSPRay";
     switch (atts->GetRendererType())
     {
       case VolumeAttributes::Default:
-          SNPRINTF(tmpStr, 1000, "%srendererType = %sDefault  # %s\n", prefix, prefix, rendererType_names);
+          snprintf(tmpStr, 1000, "%srendererType = %sDefault  # %s\n", prefix, prefix, rendererType_names);
           str += tmpStr;
           break;
       case VolumeAttributes::RayCasting:
-          SNPRINTF(tmpStr, 1000, "%srendererType = %sRayCasting  # %s\n", prefix, prefix, rendererType_names);
+          snprintf(tmpStr, 1000, "%srendererType = %sRayCasting  # %s\n", prefix, prefix, rendererType_names);
           str += tmpStr;
           break;
       case VolumeAttributes::RayCastingIntegration:
-          SNPRINTF(tmpStr, 1000, "%srendererType = %sRayCastingIntegration  # %s\n", prefix, prefix, rendererType_names);
+          snprintf(tmpStr, 1000, "%srendererType = %sRayCastingIntegration  # %s\n", prefix, prefix, rendererType_names);
           str += tmpStr;
           break;
       case VolumeAttributes::RayCastingSLIVR:
-          SNPRINTF(tmpStr, 1000, "%srendererType = %sRayCastingSLIVR  # %s\n", prefix, prefix, rendererType_names);
+          snprintf(tmpStr, 1000, "%srendererType = %sRayCastingSLIVR  # %s\n", prefix, prefix, rendererType_names);
           str += tmpStr;
           break;
       case VolumeAttributes::RayCastingOSPRay:
-          SNPRINTF(tmpStr, 1000, "%srendererType = %sRayCastingOSPRay  # %s\n", prefix, prefix, rendererType_names);
+          snprintf(tmpStr, 1000, "%srendererType = %sRayCastingOSPRay  # %s\n", prefix, prefix, rendererType_names);
           str += tmpStr;
           break;
       default:
@@ -216,11 +215,11 @@ PyVolumeAttributes_ToString(const VolumeAttributes *atts, const char *prefix)
     switch (atts->GetGradientType())
     {
       case VolumeAttributes::CenteredDifferences:
-          SNPRINTF(tmpStr, 1000, "%sgradientType = %sCenteredDifferences  # %s\n", prefix, prefix, gradientType_names);
+          snprintf(tmpStr, 1000, "%sgradientType = %sCenteredDifferences  # %s\n", prefix, prefix, gradientType_names);
           str += tmpStr;
           break;
       case VolumeAttributes::SobelOperator:
-          SNPRINTF(tmpStr, 1000, "%sgradientType = %sSobelOperator  # %s\n", prefix, prefix, gradientType_names);
+          snprintf(tmpStr, 1000, "%sgradientType = %sSobelOperator  # %s\n", prefix, prefix, gradientType_names);
           str += tmpStr;
           break;
       default:
@@ -231,32 +230,32 @@ PyVolumeAttributes_ToString(const VolumeAttributes *atts, const char *prefix)
     switch (atts->GetScaling())
     {
       case VolumeAttributes::Linear:
-          SNPRINTF(tmpStr, 1000, "%sscaling = %sLinear  # %s\n", prefix, prefix, scaling_names);
+          snprintf(tmpStr, 1000, "%sscaling = %sLinear  # %s\n", prefix, prefix, scaling_names);
           str += tmpStr;
           break;
       case VolumeAttributes::Log:
-          SNPRINTF(tmpStr, 1000, "%sscaling = %sLog  # %s\n", prefix, prefix, scaling_names);
+          snprintf(tmpStr, 1000, "%sscaling = %sLog  # %s\n", prefix, prefix, scaling_names);
           str += tmpStr;
           break;
       case VolumeAttributes::Skew:
-          SNPRINTF(tmpStr, 1000, "%sscaling = %sSkew  # %s\n", prefix, prefix, scaling_names);
+          snprintf(tmpStr, 1000, "%sscaling = %sSkew  # %s\n", prefix, prefix, scaling_names);
           str += tmpStr;
           break;
       default:
           break;
     }
 
-    SNPRINTF(tmpStr, 1000, "%sskewFactor = %g\n", prefix, atts->GetSkewFactor());
+    snprintf(tmpStr, 1000, "%sskewFactor = %g\n", prefix, atts->GetSkewFactor());
     str += tmpStr;
     const char *limitsMode_names = "OriginalData, CurrentPlot";
     switch (atts->GetLimitsMode())
     {
       case VolumeAttributes::OriginalData:
-          SNPRINTF(tmpStr, 1000, "%slimitsMode = %sOriginalData  # %s\n", prefix, prefix, limitsMode_names);
+          snprintf(tmpStr, 1000, "%slimitsMode = %sOriginalData  # %s\n", prefix, prefix, limitsMode_names);
           str += tmpStr;
           break;
       case VolumeAttributes::CurrentPlot:
-          SNPRINTF(tmpStr, 1000, "%slimitsMode = %sCurrentPlot  # %s\n", prefix, prefix, limitsMode_names);
+          snprintf(tmpStr, 1000, "%slimitsMode = %sCurrentPlot  # %s\n", prefix, prefix, limitsMode_names);
           str += tmpStr;
           break;
       default:
@@ -267,57 +266,57 @@ PyVolumeAttributes_ToString(const VolumeAttributes *atts, const char *prefix)
     switch (atts->GetSampling())
     {
       case VolumeAttributes::KernelBased:
-          SNPRINTF(tmpStr, 1000, "%ssampling = %sKernelBased  # %s\n", prefix, prefix, sampling_names);
+          snprintf(tmpStr, 1000, "%ssampling = %sKernelBased  # %s\n", prefix, prefix, sampling_names);
           str += tmpStr;
           break;
       case VolumeAttributes::Rasterization:
-          SNPRINTF(tmpStr, 1000, "%ssampling = %sRasterization  # %s\n", prefix, prefix, sampling_names);
+          snprintf(tmpStr, 1000, "%ssampling = %sRasterization  # %s\n", prefix, prefix, sampling_names);
           str += tmpStr;
           break;
       case VolumeAttributes::Trilinear:
-          SNPRINTF(tmpStr, 1000, "%ssampling = %sTrilinear  # %s\n", prefix, prefix, sampling_names);
+          snprintf(tmpStr, 1000, "%ssampling = %sTrilinear  # %s\n", prefix, prefix, sampling_names);
           str += tmpStr;
           break;
       default:
           break;
     }
 
-    SNPRINTF(tmpStr, 1000, "%srendererSamples = %g\n", prefix, atts->GetRendererSamples());
+    snprintf(tmpStr, 1000, "%srendererSamples = %g\n", prefix, atts->GetRendererSamples());
     str += tmpStr;
     const char *lowGradientLightingReduction_names = "Off, Lowest, Lower, Low, Medium, "
         "High, Higher, Highest";
     switch (atts->GetLowGradientLightingReduction())
     {
       case VolumeAttributes::Off:
-          SNPRINTF(tmpStr, 1000, "%slowGradientLightingReduction = %sOff  # %s\n", prefix, prefix, lowGradientLightingReduction_names);
+          snprintf(tmpStr, 1000, "%slowGradientLightingReduction = %sOff  # %s\n", prefix, prefix, lowGradientLightingReduction_names);
           str += tmpStr;
           break;
       case VolumeAttributes::Lowest:
-          SNPRINTF(tmpStr, 1000, "%slowGradientLightingReduction = %sLowest  # %s\n", prefix, prefix, lowGradientLightingReduction_names);
+          snprintf(tmpStr, 1000, "%slowGradientLightingReduction = %sLowest  # %s\n", prefix, prefix, lowGradientLightingReduction_names);
           str += tmpStr;
           break;
       case VolumeAttributes::Lower:
-          SNPRINTF(tmpStr, 1000, "%slowGradientLightingReduction = %sLower  # %s\n", prefix, prefix, lowGradientLightingReduction_names);
+          snprintf(tmpStr, 1000, "%slowGradientLightingReduction = %sLower  # %s\n", prefix, prefix, lowGradientLightingReduction_names);
           str += tmpStr;
           break;
       case VolumeAttributes::Low:
-          SNPRINTF(tmpStr, 1000, "%slowGradientLightingReduction = %sLow  # %s\n", prefix, prefix, lowGradientLightingReduction_names);
+          snprintf(tmpStr, 1000, "%slowGradientLightingReduction = %sLow  # %s\n", prefix, prefix, lowGradientLightingReduction_names);
           str += tmpStr;
           break;
       case VolumeAttributes::Medium:
-          SNPRINTF(tmpStr, 1000, "%slowGradientLightingReduction = %sMedium  # %s\n", prefix, prefix, lowGradientLightingReduction_names);
+          snprintf(tmpStr, 1000, "%slowGradientLightingReduction = %sMedium  # %s\n", prefix, prefix, lowGradientLightingReduction_names);
           str += tmpStr;
           break;
       case VolumeAttributes::High:
-          SNPRINTF(tmpStr, 1000, "%slowGradientLightingReduction = %sHigh  # %s\n", prefix, prefix, lowGradientLightingReduction_names);
+          snprintf(tmpStr, 1000, "%slowGradientLightingReduction = %sHigh  # %s\n", prefix, prefix, lowGradientLightingReduction_names);
           str += tmpStr;
           break;
       case VolumeAttributes::Higher:
-          SNPRINTF(tmpStr, 1000, "%slowGradientLightingReduction = %sHigher  # %s\n", prefix, prefix, lowGradientLightingReduction_names);
+          snprintf(tmpStr, 1000, "%slowGradientLightingReduction = %sHigher  # %s\n", prefix, prefix, lowGradientLightingReduction_names);
           str += tmpStr;
           break;
       case VolumeAttributes::Highest:
-          SNPRINTF(tmpStr, 1000, "%slowGradientLightingReduction = %sHighest  # %s\n", prefix, prefix, lowGradientLightingReduction_names);
+          snprintf(tmpStr, 1000, "%slowGradientLightingReduction = %sHighest  # %s\n", prefix, prefix, lowGradientLightingReduction_names);
           str += tmpStr;
           break;
       default:
@@ -325,26 +324,26 @@ PyVolumeAttributes_ToString(const VolumeAttributes *atts, const char *prefix)
     }
 
     if(atts->GetLowGradientLightingClampFlag())
-        SNPRINTF(tmpStr, 1000, "%slowGradientLightingClampFlag = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%slowGradientLightingClampFlag = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%slowGradientLightingClampFlag = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%slowGradientLightingClampFlag = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%slowGradientLightingClampValue = %g\n", prefix, atts->GetLowGradientLightingClampValue());
+    snprintf(tmpStr, 1000, "%slowGradientLightingClampValue = %g\n", prefix, atts->GetLowGradientLightingClampValue());
     str += tmpStr;
     {   const double *materialProperties = atts->GetMaterialProperties();
-        SNPRINTF(tmpStr, 1000, "%smaterialProperties = (", prefix);
+        snprintf(tmpStr, 1000, "%smaterialProperties = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 4; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", materialProperties[i]);
+            snprintf(tmpStr, 1000, "%g", materialProperties[i]);
             str += tmpStr;
             if(i < 3)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     return str;

@@ -5,7 +5,6 @@
 #include <PySeedMeAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PySeedMeAttributes
@@ -46,202 +45,202 @@ PySeedMeAttributes_ToString(const SeedMeAttributes *atts, const char *prefix)
     switch (atts->GetCollectionMode())
     {
       case SeedMeAttributes::COLLECTION_NEW:
-          SNPRINTF(tmpStr, 1000, "%scollectionMode = %sCOLLECTION_NEW  # %s\n", prefix, prefix, collectionMode_names);
+          snprintf(tmpStr, 1000, "%scollectionMode = %sCOLLECTION_NEW  # %s\n", prefix, prefix, collectionMode_names);
           str += tmpStr;
           break;
       case SeedMeAttributes::COLLECTION_UPDATE:
-          SNPRINTF(tmpStr, 1000, "%scollectionMode = %sCOLLECTION_UPDATE  # %s\n", prefix, prefix, collectionMode_names);
+          snprintf(tmpStr, 1000, "%scollectionMode = %sCOLLECTION_UPDATE  # %s\n", prefix, prefix, collectionMode_names);
           str += tmpStr;
           break;
       default:
           break;
     }
 
-    SNPRINTF(tmpStr, 1000, "%scollectionID = %d\n", prefix, atts->GetCollectionID());
+    snprintf(tmpStr, 1000, "%scollectionID = %d\n", prefix, atts->GetCollectionID());
     str += tmpStr;
     const char *sharing_names = "SHARING_PRIVATE, SHARING_GROUP, SHARING_PUBLIC";
     switch (atts->GetSharing())
     {
       case SeedMeAttributes::SHARING_PRIVATE:
-          SNPRINTF(tmpStr, 1000, "%ssharing = %sSHARING_PRIVATE  # %s\n", prefix, prefix, sharing_names);
+          snprintf(tmpStr, 1000, "%ssharing = %sSHARING_PRIVATE  # %s\n", prefix, prefix, sharing_names);
           str += tmpStr;
           break;
       case SeedMeAttributes::SHARING_GROUP:
-          SNPRINTF(tmpStr, 1000, "%ssharing = %sSHARING_GROUP  # %s\n", prefix, prefix, sharing_names);
+          snprintf(tmpStr, 1000, "%ssharing = %sSHARING_GROUP  # %s\n", prefix, prefix, sharing_names);
           str += tmpStr;
           break;
       case SeedMeAttributes::SHARING_PUBLIC:
-          SNPRINTF(tmpStr, 1000, "%ssharing = %sSHARING_PUBLIC  # %s\n", prefix, prefix, sharing_names);
+          snprintf(tmpStr, 1000, "%ssharing = %sSHARING_PUBLIC  # %s\n", prefix, prefix, sharing_names);
           str += tmpStr;
           break;
       default:
           break;
     }
 
-    SNPRINTF(tmpStr, 1000, "%scollectionTitle = \"%s\"\n", prefix, atts->GetCollectionTitle().c_str());
+    snprintf(tmpStr, 1000, "%scollectionTitle = \"%s\"\n", prefix, atts->GetCollectionTitle().c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%scollectionDescription = \"%s\"\n", prefix, atts->GetCollectionDescription().c_str());
+    snprintf(tmpStr, 1000, "%scollectionDescription = \"%s\"\n", prefix, atts->GetCollectionDescription().c_str());
     str += tmpStr;
     if(atts->GetOverwriteFiles())
-        SNPRINTF(tmpStr, 1000, "%soverwriteFiles = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%soverwriteFiles = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%soverwriteFiles = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%soverwriteFiles = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%skeyValue = \"%s\"\n", prefix, atts->GetKeyValue().c_str());
+    snprintf(tmpStr, 1000, "%skeyValue = \"%s\"\n", prefix, atts->GetKeyValue().c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%scollectionEmails = \"%s\"\n", prefix, atts->GetCollectionEmails().c_str());
+    snprintf(tmpStr, 1000, "%scollectionEmails = \"%s\"\n", prefix, atts->GetCollectionEmails().c_str());
     str += tmpStr;
     if(atts->GetUploadCurrentFile())
-        SNPRINTF(tmpStr, 1000, "%suploadCurrentFile = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%suploadCurrentFile = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%suploadCurrentFile = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%suploadCurrentFile = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%scurrentTitle = \"%s\"\n", prefix, atts->GetCurrentTitle().c_str());
+    snprintf(tmpStr, 1000, "%scurrentTitle = \"%s\"\n", prefix, atts->GetCurrentTitle().c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%scurrentDescription = \"%s\"\n", prefix, atts->GetCurrentDescription().c_str());
+    snprintf(tmpStr, 1000, "%scurrentDescription = \"%s\"\n", prefix, atts->GetCurrentDescription().c_str());
     str += tmpStr;
     if(atts->GetUploadSequenceFile())
-        SNPRINTF(tmpStr, 1000, "%suploadSequenceFile = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%suploadSequenceFile = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%suploadSequenceFile = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%suploadSequenceFile = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%ssequenceTitle = \"%s\"\n", prefix, atts->GetSequenceTitle().c_str());
+    snprintf(tmpStr, 1000, "%ssequenceTitle = \"%s\"\n", prefix, atts->GetSequenceTitle().c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%ssequenceDescription = \"%s\"\n", prefix, atts->GetSequenceDescription().c_str());
+    snprintf(tmpStr, 1000, "%ssequenceDescription = \"%s\"\n", prefix, atts->GetSequenceDescription().c_str());
     str += tmpStr;
     if(atts->GetCreateVideo())
-        SNPRINTF(tmpStr, 1000, "%screateVideo = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%screateVideo = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%screateVideo = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%screateVideo = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sframeRate = %d\n", prefix, atts->GetFrameRate());
+    snprintf(tmpStr, 1000, "%sframeRate = %d\n", prefix, atts->GetFrameRate());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%soperationResult = \"%s\"\n", prefix, atts->GetOperationResult().c_str());
+    snprintf(tmpStr, 1000, "%soperationResult = \"%s\"\n", prefix, atts->GetOperationResult().c_str());
     str += tmpStr;
     const char *queryAction_names = "LIST_COL, FIND_COL, QUERY_COL";
     switch (atts->GetQueryAction())
     {
       case SeedMeAttributes::LIST_COL:
-          SNPRINTF(tmpStr, 1000, "%squeryAction = %sLIST_COL  # %s\n", prefix, prefix, queryAction_names);
+          snprintf(tmpStr, 1000, "%squeryAction = %sLIST_COL  # %s\n", prefix, prefix, queryAction_names);
           str += tmpStr;
           break;
       case SeedMeAttributes::FIND_COL:
-          SNPRINTF(tmpStr, 1000, "%squeryAction = %sFIND_COL  # %s\n", prefix, prefix, queryAction_names);
+          snprintf(tmpStr, 1000, "%squeryAction = %sFIND_COL  # %s\n", prefix, prefix, queryAction_names);
           str += tmpStr;
           break;
       case SeedMeAttributes::QUERY_COL:
-          SNPRINTF(tmpStr, 1000, "%squeryAction = %sQUERY_COL  # %s\n", prefix, prefix, queryAction_names);
+          snprintf(tmpStr, 1000, "%squeryAction = %sQUERY_COL  # %s\n", prefix, prefix, queryAction_names);
           str += tmpStr;
           break;
       default:
           break;
     }
 
-    SNPRINTF(tmpStr, 1000, "%squeryColID = \"%s\"\n", prefix, atts->GetQueryColID().c_str());
+    snprintf(tmpStr, 1000, "%squeryColID = \"%s\"\n", prefix, atts->GetQueryColID().c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%squeryKeyValue = \"%s\"\n", prefix, atts->GetQueryKeyValue().c_str());
+    snprintf(tmpStr, 1000, "%squeryKeyValue = \"%s\"\n", prefix, atts->GetQueryKeyValue().c_str());
     str += tmpStr;
     const char *queryCollectionValues_names = "QUERY_ALL, QUERY_KEY_VALUE, QUERY_TICKER, QUERY_URL";
     switch (atts->GetQueryCollectionValues())
     {
       case SeedMeAttributes::QUERY_ALL:
-          SNPRINTF(tmpStr, 1000, "%squeryCollectionValues = %sQUERY_ALL  # %s\n", prefix, prefix, queryCollectionValues_names);
+          snprintf(tmpStr, 1000, "%squeryCollectionValues = %sQUERY_ALL  # %s\n", prefix, prefix, queryCollectionValues_names);
           str += tmpStr;
           break;
       case SeedMeAttributes::QUERY_KEY_VALUE:
-          SNPRINTF(tmpStr, 1000, "%squeryCollectionValues = %sQUERY_KEY_VALUE  # %s\n", prefix, prefix, queryCollectionValues_names);
+          snprintf(tmpStr, 1000, "%squeryCollectionValues = %sQUERY_KEY_VALUE  # %s\n", prefix, prefix, queryCollectionValues_names);
           str += tmpStr;
           break;
       case SeedMeAttributes::QUERY_TICKER:
-          SNPRINTF(tmpStr, 1000, "%squeryCollectionValues = %sQUERY_TICKER  # %s\n", prefix, prefix, queryCollectionValues_names);
+          snprintf(tmpStr, 1000, "%squeryCollectionValues = %sQUERY_TICKER  # %s\n", prefix, prefix, queryCollectionValues_names);
           str += tmpStr;
           break;
       case SeedMeAttributes::QUERY_URL:
-          SNPRINTF(tmpStr, 1000, "%squeryCollectionValues = %sQUERY_URL  # %s\n", prefix, prefix, queryCollectionValues_names);
+          snprintf(tmpStr, 1000, "%squeryCollectionValues = %sQUERY_URL  # %s\n", prefix, prefix, queryCollectionValues_names);
           str += tmpStr;
           break;
       default:
           break;
     }
 
-    SNPRINTF(tmpStr, 1000, "%sdownloadCollectionID = %d\n", prefix, atts->GetDownloadCollectionID());
+    snprintf(tmpStr, 1000, "%sdownloadCollectionID = %d\n", prefix, atts->GetDownloadCollectionID());
     str += tmpStr;
     const char *downloadType_names = "DOWNLOAD_ALL, DOWNLOAD_VIDEO, DOWNLOAD_NAME";
     switch (atts->GetDownloadType())
     {
       case SeedMeAttributes::DOWNLOAD_ALL:
-          SNPRINTF(tmpStr, 1000, "%sdownloadType = %sDOWNLOAD_ALL  # %s\n", prefix, prefix, downloadType_names);
+          snprintf(tmpStr, 1000, "%sdownloadType = %sDOWNLOAD_ALL  # %s\n", prefix, prefix, downloadType_names);
           str += tmpStr;
           break;
       case SeedMeAttributes::DOWNLOAD_VIDEO:
-          SNPRINTF(tmpStr, 1000, "%sdownloadType = %sDOWNLOAD_VIDEO  # %s\n", prefix, prefix, downloadType_names);
+          snprintf(tmpStr, 1000, "%sdownloadType = %sDOWNLOAD_VIDEO  # %s\n", prefix, prefix, downloadType_names);
           str += tmpStr;
           break;
       case SeedMeAttributes::DOWNLOAD_NAME:
-          SNPRINTF(tmpStr, 1000, "%sdownloadType = %sDOWNLOAD_NAME  # %s\n", prefix, prefix, downloadType_names);
+          snprintf(tmpStr, 1000, "%sdownloadType = %sDOWNLOAD_NAME  # %s\n", prefix, prefix, downloadType_names);
           str += tmpStr;
           break;
       default:
           break;
     }
 
-    SNPRINTF(tmpStr, 1000, "%sdownloadName = \"%s\"\n", prefix, atts->GetDownloadName().c_str());
+    snprintf(tmpStr, 1000, "%sdownloadName = \"%s\"\n", prefix, atts->GetDownloadName().c_str());
     str += tmpStr;
     const char *quickSharing_names = "SHARING_PRIVATE, SHARING_GROUP, SHARING_PUBLIC";
     switch (atts->GetQuickSharing())
     {
       case SeedMeAttributes::SHARING_PRIVATE:
-          SNPRINTF(tmpStr, 1000, "%squickSharing = %sSHARING_PRIVATE  # %s\n", prefix, prefix, quickSharing_names);
+          snprintf(tmpStr, 1000, "%squickSharing = %sSHARING_PRIVATE  # %s\n", prefix, prefix, quickSharing_names);
           str += tmpStr;
           break;
       case SeedMeAttributes::SHARING_GROUP:
-          SNPRINTF(tmpStr, 1000, "%squickSharing = %sSHARING_GROUP  # %s\n", prefix, prefix, quickSharing_names);
+          snprintf(tmpStr, 1000, "%squickSharing = %sSHARING_GROUP  # %s\n", prefix, prefix, quickSharing_names);
           str += tmpStr;
           break;
       case SeedMeAttributes::SHARING_PUBLIC:
-          SNPRINTF(tmpStr, 1000, "%squickSharing = %sSHARING_PUBLIC  # %s\n", prefix, prefix, quickSharing_names);
+          snprintf(tmpStr, 1000, "%squickSharing = %sSHARING_PUBLIC  # %s\n", prefix, prefix, quickSharing_names);
           str += tmpStr;
           break;
       default:
           break;
     }
 
-    SNPRINTF(tmpStr, 1000, "%squickCollectionTitle = \"%s\"\n", prefix, atts->GetQuickCollectionTitle().c_str());
+    snprintf(tmpStr, 1000, "%squickCollectionTitle = \"%s\"\n", prefix, atts->GetQuickCollectionTitle().c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%squickCollectionEmails = \"%s\"\n", prefix, atts->GetQuickCollectionEmails().c_str());
+    snprintf(tmpStr, 1000, "%squickCollectionEmails = \"%s\"\n", prefix, atts->GetQuickCollectionEmails().c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%squickFrameRate = %d\n", prefix, atts->GetQuickFrameRate());
+    snprintf(tmpStr, 1000, "%squickFrameRate = %d\n", prefix, atts->GetQuickFrameRate());
     str += tmpStr;
     const char *quickDownloadType_names = "DOWNLOAD_Q_ALL, DOWNLOAD_Q_BEST, DOWNLOAD_Q_HIGHEST, DOWNLOAD_Q_HIGH, DOWNLOAD_Q_MEDIUM, "
         "DOWNLOAD_Q_LOW, DOWNLOAD_Q_LOWEST";
     switch (atts->GetQuickDownloadType())
     {
       case SeedMeAttributes::DOWNLOAD_Q_ALL:
-          SNPRINTF(tmpStr, 1000, "%squickDownloadType = %sDOWNLOAD_Q_ALL  # %s\n", prefix, prefix, quickDownloadType_names);
+          snprintf(tmpStr, 1000, "%squickDownloadType = %sDOWNLOAD_Q_ALL  # %s\n", prefix, prefix, quickDownloadType_names);
           str += tmpStr;
           break;
       case SeedMeAttributes::DOWNLOAD_Q_BEST:
-          SNPRINTF(tmpStr, 1000, "%squickDownloadType = %sDOWNLOAD_Q_BEST  # %s\n", prefix, prefix, quickDownloadType_names);
+          snprintf(tmpStr, 1000, "%squickDownloadType = %sDOWNLOAD_Q_BEST  # %s\n", prefix, prefix, quickDownloadType_names);
           str += tmpStr;
           break;
       case SeedMeAttributes::DOWNLOAD_Q_HIGHEST:
-          SNPRINTF(tmpStr, 1000, "%squickDownloadType = %sDOWNLOAD_Q_HIGHEST  # %s\n", prefix, prefix, quickDownloadType_names);
+          snprintf(tmpStr, 1000, "%squickDownloadType = %sDOWNLOAD_Q_HIGHEST  # %s\n", prefix, prefix, quickDownloadType_names);
           str += tmpStr;
           break;
       case SeedMeAttributes::DOWNLOAD_Q_HIGH:
-          SNPRINTF(tmpStr, 1000, "%squickDownloadType = %sDOWNLOAD_Q_HIGH  # %s\n", prefix, prefix, quickDownloadType_names);
+          snprintf(tmpStr, 1000, "%squickDownloadType = %sDOWNLOAD_Q_HIGH  # %s\n", prefix, prefix, quickDownloadType_names);
           str += tmpStr;
           break;
       case SeedMeAttributes::DOWNLOAD_Q_MEDIUM:
-          SNPRINTF(tmpStr, 1000, "%squickDownloadType = %sDOWNLOAD_Q_MEDIUM  # %s\n", prefix, prefix, quickDownloadType_names);
+          snprintf(tmpStr, 1000, "%squickDownloadType = %sDOWNLOAD_Q_MEDIUM  # %s\n", prefix, prefix, quickDownloadType_names);
           str += tmpStr;
           break;
       case SeedMeAttributes::DOWNLOAD_Q_LOW:
-          SNPRINTF(tmpStr, 1000, "%squickDownloadType = %sDOWNLOAD_Q_LOW  # %s\n", prefix, prefix, quickDownloadType_names);
+          snprintf(tmpStr, 1000, "%squickDownloadType = %sDOWNLOAD_Q_LOW  # %s\n", prefix, prefix, quickDownloadType_names);
           str += tmpStr;
           break;
       case SeedMeAttributes::DOWNLOAD_Q_LOWEST:
-          SNPRINTF(tmpStr, 1000, "%squickDownloadType = %sDOWNLOAD_Q_LOWEST  # %s\n", prefix, prefix, quickDownloadType_names);
+          snprintf(tmpStr, 1000, "%squickDownloadType = %sDOWNLOAD_Q_LOWEST  # %s\n", prefix, prefix, quickDownloadType_names);
           str += tmpStr;
           break;
       default:
@@ -249,9 +248,9 @@ PySeedMeAttributes_ToString(const SeedMeAttributes *atts, const char *prefix)
     }
 
     if(atts->GetClearAllTabsOnClose())
-        SNPRINTF(tmpStr, 1000, "%sclearAllTabsOnClose = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sclearAllTabsOnClose = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sclearAllTabsOnClose = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sclearAllTabsOnClose = 0\n", prefix);
     str += tmpStr;
     return str;
 }

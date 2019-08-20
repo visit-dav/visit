@@ -5,7 +5,6 @@
 #include <PySurfaceAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 #include <ColorAttribute.h>
 #include <ColorAttribute.h>
 
@@ -45,34 +44,34 @@ PySurfaceAttributes_ToString(const SurfaceAttributes *atts, const char *prefix)
     char tmpStr[1000];
 
     if(atts->GetLegendFlag())
-        SNPRINTF(tmpStr, 1000, "%slegendFlag = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%slegendFlag = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%slegendFlag = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%slegendFlag = 0\n", prefix);
     str += tmpStr;
     if(atts->GetLightingFlag())
-        SNPRINTF(tmpStr, 1000, "%slightingFlag = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%slightingFlag = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%slightingFlag = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%slightingFlag = 0\n", prefix);
     str += tmpStr;
     if(atts->GetSurfaceFlag())
-        SNPRINTF(tmpStr, 1000, "%ssurfaceFlag = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%ssurfaceFlag = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%ssurfaceFlag = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%ssurfaceFlag = 0\n", prefix);
     str += tmpStr;
     if(atts->GetWireframeFlag())
-        SNPRINTF(tmpStr, 1000, "%swireframeFlag = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%swireframeFlag = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%swireframeFlag = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%swireframeFlag = 0\n", prefix);
     str += tmpStr;
     const char *limitsMode_names = "OriginalData, CurrentPlot";
     switch (atts->GetLimitsMode())
     {
       case SurfaceAttributes::OriginalData:
-          SNPRINTF(tmpStr, 1000, "%slimitsMode = %sOriginalData  # %s\n", prefix, prefix, limitsMode_names);
+          snprintf(tmpStr, 1000, "%slimitsMode = %sOriginalData  # %s\n", prefix, prefix, limitsMode_names);
           str += tmpStr;
           break;
       case SurfaceAttributes::CurrentPlot:
-          SNPRINTF(tmpStr, 1000, "%slimitsMode = %sCurrentPlot  # %s\n", prefix, prefix, limitsMode_names);
+          snprintf(tmpStr, 1000, "%slimitsMode = %sCurrentPlot  # %s\n", prefix, prefix, limitsMode_names);
           str += tmpStr;
           break;
       default:
@@ -80,59 +79,59 @@ PySurfaceAttributes_ToString(const SurfaceAttributes *atts, const char *prefix)
     }
 
     if(atts->GetMinFlag())
-        SNPRINTF(tmpStr, 1000, "%sminFlag = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sminFlag = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sminFlag = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sminFlag = 0\n", prefix);
     str += tmpStr;
     if(atts->GetMaxFlag())
-        SNPRINTF(tmpStr, 1000, "%smaxFlag = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%smaxFlag = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%smaxFlag = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%smaxFlag = 0\n", prefix);
     str += tmpStr;
     if(atts->GetColorByZFlag())
-        SNPRINTF(tmpStr, 1000, "%scolorByZFlag = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%scolorByZFlag = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%scolorByZFlag = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%scolorByZFlag = 0\n", prefix);
     str += tmpStr;
     const char *scaling_names = "Linear, Log, Skew";
     switch (atts->GetScaling())
     {
       case SurfaceAttributes::Linear:
-          SNPRINTF(tmpStr, 1000, "%sscaling = %sLinear  # %s\n", prefix, prefix, scaling_names);
+          snprintf(tmpStr, 1000, "%sscaling = %sLinear  # %s\n", prefix, prefix, scaling_names);
           str += tmpStr;
           break;
       case SurfaceAttributes::Log:
-          SNPRINTF(tmpStr, 1000, "%sscaling = %sLog  # %s\n", prefix, prefix, scaling_names);
+          snprintf(tmpStr, 1000, "%sscaling = %sLog  # %s\n", prefix, prefix, scaling_names);
           str += tmpStr;
           break;
       case SurfaceAttributes::Skew:
-          SNPRINTF(tmpStr, 1000, "%sscaling = %sSkew  # %s\n", prefix, prefix, scaling_names);
+          snprintf(tmpStr, 1000, "%sscaling = %sSkew  # %s\n", prefix, prefix, scaling_names);
           str += tmpStr;
           break;
       default:
           break;
     }
 
-    SNPRINTF(tmpStr, 1000, "%slineWidth = %d\n", prefix, atts->GetLineWidth());
+    snprintf(tmpStr, 1000, "%slineWidth = %d\n", prefix, atts->GetLineWidth());
     str += tmpStr;
     const unsigned char *surfaceColor = atts->GetSurfaceColor().GetColor();
-    SNPRINTF(tmpStr, 1000, "%ssurfaceColor = (%d, %d, %d, %d)\n", prefix, int(surfaceColor[0]), int(surfaceColor[1]), int(surfaceColor[2]), int(surfaceColor[3]));
+    snprintf(tmpStr, 1000, "%ssurfaceColor = (%d, %d, %d, %d)\n", prefix, int(surfaceColor[0]), int(surfaceColor[1]), int(surfaceColor[2]), int(surfaceColor[3]));
     str += tmpStr;
     const unsigned char *wireframeColor = atts->GetWireframeColor().GetColor();
-    SNPRINTF(tmpStr, 1000, "%swireframeColor = (%d, %d, %d, %d)\n", prefix, int(wireframeColor[0]), int(wireframeColor[1]), int(wireframeColor[2]), int(wireframeColor[3]));
+    snprintf(tmpStr, 1000, "%swireframeColor = (%d, %d, %d, %d)\n", prefix, int(wireframeColor[0]), int(wireframeColor[1]), int(wireframeColor[2]), int(wireframeColor[3]));
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sskewFactor = %g\n", prefix, atts->GetSkewFactor());
+    snprintf(tmpStr, 1000, "%sskewFactor = %g\n", prefix, atts->GetSkewFactor());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%smin = %g\n", prefix, atts->GetMin());
+    snprintf(tmpStr, 1000, "%smin = %g\n", prefix, atts->GetMin());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%smax = %g\n", prefix, atts->GetMax());
+    snprintf(tmpStr, 1000, "%smax = %g\n", prefix, atts->GetMax());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%scolorTableName = \"%s\"\n", prefix, atts->GetColorTableName().c_str());
+    snprintf(tmpStr, 1000, "%scolorTableName = \"%s\"\n", prefix, atts->GetColorTableName().c_str());
     str += tmpStr;
     if(atts->GetInvertColorTable())
-        SNPRINTF(tmpStr, 1000, "%sinvertColorTable = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sinvertColorTable = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sinvertColorTable = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sinvertColorTable = 0\n", prefix);
     str += tmpStr;
     return str;
 }

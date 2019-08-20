@@ -248,7 +248,7 @@ FUNCTION(SET_UP_THIRD_PARTY pkg libdirextensions incdirextension libs)
         ENDIF()
 
         FOREACH(X ${${inc_dep}})
-            MESSAGE("looking for include dependency: ${X}")
+            MESSAGE(STATUS "looking for include dependency: ${X}")
             if(EXISTS ${${X}})
                 list(APPEND ${inc_dir_var} "${${X}}")
             endif()

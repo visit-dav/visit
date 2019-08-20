@@ -26,8 +26,6 @@
 
 #include <vtkDataSet.h>
 
-#include <snprintf.h>
-
 // ****************************************************************************
 // Class: avtDataset2VTK
 //
@@ -411,7 +409,7 @@ std::string
 VisItDataServerPrivate::NewPlotName()
 {
     char name[20];
-    SNPRINTF(name, 20, "Plot%06d", plotCounter++);
+    snprintf(name, 20, "Plot%06d", plotCounter++);
     return std::string(name);
 }
 

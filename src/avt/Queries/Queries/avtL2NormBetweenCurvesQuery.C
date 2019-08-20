@@ -8,7 +8,6 @@
 
 #include <avtL2NormBetweenCurvesQuery.h>
 
-#include <snprintf.h>
 #include <Utility.h>
 
 #include <string>
@@ -149,7 +148,7 @@ avtL2NormBetweenCurvesQuery::CreateMessage(double l2norm)
     char msg[1024];
     std::string format = "The L2Norm between the two curves is " 
                     + queryAtts.GetFloatFormat() +".";
-    SNPRINTF(msg,1024,format.c_str(), l2norm);
+    snprintf(msg,1024,format.c_str(), l2norm);
     std::string m = msg;
     return m;
 }

@@ -30,6 +30,11 @@ import os
 # ones.
 extensions = ['sphinx.ext.mathjax']
 
+if os.environ.get('READTHEDOCS'):
+    from subprocess import call 
+    call(['pip', 'install', 'sphinx-notfound-page'])
+    extensions.append('notfound.extension')
+
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
 

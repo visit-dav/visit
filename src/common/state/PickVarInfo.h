@@ -8,7 +8,7 @@
 #include <string>
 #include <AttributeSubject.h>
 
-#include "snprintf.h"
+
 
 // ****************************************************************************
 // Class: PickVarInfo

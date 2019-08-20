@@ -281,7 +281,7 @@ avtAMRFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                 //
                 char tmpName[128];
                 groupIds[bid] = level;
-                SNPRINTF(tmpName, 128, "level%02d,patch%04d", level, localPatchNumber[level]++);
+                snprintf(tmpName, 128, "level%02d,patch%04d", level, localPatchNumber[level]++);
                 blockPieceNames[bid] = tmpName;
 #ifdef DEBUG_PRINT
                 debug1 << "Block " << bid << " level: " << groupIds[bid]

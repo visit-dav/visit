@@ -5,7 +5,6 @@
 #include <PyZoneDumpAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyZoneDumpAttributes
@@ -42,18 +41,18 @@ PyZoneDumpAttributes_ToString(const ZoneDumpAttributes *atts, const char *prefix
     std::string str;
     char tmpStr[1000];
 
-    SNPRINTF(tmpStr, 1000, "%svariable = \"%s\"\n", prefix, atts->GetVariable().c_str());
+    snprintf(tmpStr, 1000, "%svariable = \"%s\"\n", prefix, atts->GetVariable().c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%slowerBound = %g\n", prefix, atts->GetLowerBound());
+    snprintf(tmpStr, 1000, "%slowerBound = %g\n", prefix, atts->GetLowerBound());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%supperBound = %g\n", prefix, atts->GetUpperBound());
+    snprintf(tmpStr, 1000, "%supperBound = %g\n", prefix, atts->GetUpperBound());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%soutputFile = \"%s\"\n", prefix, atts->GetOutputFile().c_str());
+    snprintf(tmpStr, 1000, "%soutputFile = \"%s\"\n", prefix, atts->GetOutputFile().c_str());
     str += tmpStr;
     if(atts->GetEnabled())
-        SNPRINTF(tmpStr, 1000, "%senabled = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%senabled = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%senabled = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%senabled = 0\n", prefix);
     str += tmpStr;
     return str;
 }

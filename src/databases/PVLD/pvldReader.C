@@ -16,7 +16,6 @@
 #include <avtParallel.h>
 #endif
 #include <DebugStream.h>
-#include <snprintf.h>
 #include <pvldReader.h>
 
 using std::set;

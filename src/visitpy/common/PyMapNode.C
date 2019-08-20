@@ -4,7 +4,6 @@
 
 #include <PyMapNode.h>
 #include <PyVariant.h>
-#include <snprintf.h>
 #include <DebugStream.h>
 
 ///////////////////////////////////////////////////////////////////////////////

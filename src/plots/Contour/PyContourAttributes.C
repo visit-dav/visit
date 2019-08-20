@@ -5,7 +5,6 @@
 #include <PyContourAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 #include <PyColorControlPointList.h>
 #include <ColorAttribute.h>
 #include <PyColorAttributeList.h>
@@ -51,114 +50,114 @@ PyContourAttributes_ToString(const ContourAttributes *atts, const char *prefix)
         str += PyColorControlPointList_ToString(&atts->GetDefaultPalette(), objPrefix.c_str());
     }
     {   const unsignedCharVector &changedColors = atts->GetChangedColors();
-        SNPRINTF(tmpStr, 1000, "%schangedColors = (", prefix);
+        snprintf(tmpStr, 1000, "%schangedColors = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < changedColors.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%d", int(changedColors[i]));
+            snprintf(tmpStr, 1000, "%d", int(changedColors[i]));
             str += tmpStr;
             if(i < changedColors.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     const char *colorType_names = "ColorBySingleColor, ColorByMultipleColors, ColorByColorTable";
     switch (atts->GetColorType())
     {
       case ContourAttributes::ColorBySingleColor:
-          SNPRINTF(tmpStr, 1000, "%scolorType = %sColorBySingleColor  # %s\n", prefix, prefix, colorType_names);
+          snprintf(tmpStr, 1000, "%scolorType = %sColorBySingleColor  # %s\n", prefix, prefix, colorType_names);
           str += tmpStr;
           break;
       case ContourAttributes::ColorByMultipleColors:
-          SNPRINTF(tmpStr, 1000, "%scolorType = %sColorByMultipleColors  # %s\n", prefix, prefix, colorType_names);
+          snprintf(tmpStr, 1000, "%scolorType = %sColorByMultipleColors  # %s\n", prefix, prefix, colorType_names);
           str += tmpStr;
           break;
       case ContourAttributes::ColorByColorTable:
-          SNPRINTF(tmpStr, 1000, "%scolorType = %sColorByColorTable  # %s\n", prefix, prefix, colorType_names);
+          snprintf(tmpStr, 1000, "%scolorType = %sColorByColorTable  # %s\n", prefix, prefix, colorType_names);
           str += tmpStr;
           break;
       default:
           break;
     }
 
-    SNPRINTF(tmpStr, 1000, "%scolorTableName = \"%s\"\n", prefix, atts->GetColorTableName().c_str());
+    snprintf(tmpStr, 1000, "%scolorTableName = \"%s\"\n", prefix, atts->GetColorTableName().c_str());
     str += tmpStr;
     if(atts->GetInvertColorTable())
-        SNPRINTF(tmpStr, 1000, "%sinvertColorTable = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sinvertColorTable = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sinvertColorTable = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sinvertColorTable = 0\n", prefix);
     str += tmpStr;
     if(atts->GetLegendFlag())
-        SNPRINTF(tmpStr, 1000, "%slegendFlag = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%slegendFlag = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%slegendFlag = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%slegendFlag = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%slineWidth = %d\n", prefix, atts->GetLineWidth());
+    snprintf(tmpStr, 1000, "%slineWidth = %d\n", prefix, atts->GetLineWidth());
     str += tmpStr;
     const unsigned char *singleColor = atts->GetSingleColor().GetColor();
-    SNPRINTF(tmpStr, 1000, "%ssingleColor = (%d, %d, %d, %d)\n", prefix, int(singleColor[0]), int(singleColor[1]), int(singleColor[2]), int(singleColor[3]));
+    snprintf(tmpStr, 1000, "%ssingleColor = (%d, %d, %d, %d)\n", prefix, int(singleColor[0]), int(singleColor[1]), int(singleColor[2]), int(singleColor[3]));
     str += tmpStr;
     { const ColorAttributeList &cL = atts->GetMultiColor();
         const char *comment = (prefix==0 || strcmp(prefix,"")==0) ? "# " : "";
         for(int i = 0; i < cL.GetNumColors(); ++i)
         {
             const unsigned char *c = cL[i].GetColor();
-            SNPRINTF(tmpStr, 1000, "%s%sSetMultiColor(%d, (%d, %d, %d, %d))\n",
+            snprintf(tmpStr, 1000, "%s%sSetMultiColor(%d, (%d, %d, %d, %d))\n",
                      comment, prefix, i, int(c[0]), int(c[1]), int(c[2]), int(c[3]));
             str += tmpStr;
         }
     }
-    SNPRINTF(tmpStr, 1000, "%scontourNLevels = %d\n", prefix, atts->GetContourNLevels());
+    snprintf(tmpStr, 1000, "%scontourNLevels = %d\n", prefix, atts->GetContourNLevels());
     str += tmpStr;
     {   const doubleVector &contourValue = atts->GetContourValue();
-        SNPRINTF(tmpStr, 1000, "%scontourValue = (", prefix);
+        snprintf(tmpStr, 1000, "%scontourValue = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < contourValue.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", contourValue[i]);
+            snprintf(tmpStr, 1000, "%g", contourValue[i]);
             str += tmpStr;
             if(i < contourValue.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const doubleVector &contourPercent = atts->GetContourPercent();
-        SNPRINTF(tmpStr, 1000, "%scontourPercent = (", prefix);
+        snprintf(tmpStr, 1000, "%scontourPercent = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < contourPercent.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", contourPercent[i]);
+            snprintf(tmpStr, 1000, "%g", contourPercent[i]);
             str += tmpStr;
             if(i < contourPercent.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     const char *contourMethod_names = "Level, Value, Percent";
     switch (atts->GetContourMethod())
     {
       case ContourAttributes::Level:
-          SNPRINTF(tmpStr, 1000, "%scontourMethod = %sLevel  # %s\n", prefix, prefix, contourMethod_names);
+          snprintf(tmpStr, 1000, "%scontourMethod = %sLevel  # %s\n", prefix, prefix, contourMethod_names);
           str += tmpStr;
           break;
       case ContourAttributes::Value:
-          SNPRINTF(tmpStr, 1000, "%scontourMethod = %sValue  # %s\n", prefix, prefix, contourMethod_names);
+          snprintf(tmpStr, 1000, "%scontourMethod = %sValue  # %s\n", prefix, prefix, contourMethod_names);
           str += tmpStr;
           break;
       case ContourAttributes::Percent:
-          SNPRINTF(tmpStr, 1000, "%scontourMethod = %sPercent  # %s\n", prefix, prefix, contourMethod_names);
+          snprintf(tmpStr, 1000, "%scontourMethod = %sPercent  # %s\n", prefix, prefix, contourMethod_names);
           str += tmpStr;
           break;
       default:
@@ -166,28 +165,28 @@ PyContourAttributes_ToString(const ContourAttributes *atts, const char *prefix)
     }
 
     if(atts->GetMinFlag())
-        SNPRINTF(tmpStr, 1000, "%sminFlag = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sminFlag = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sminFlag = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sminFlag = 0\n", prefix);
     str += tmpStr;
     if(atts->GetMaxFlag())
-        SNPRINTF(tmpStr, 1000, "%smaxFlag = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%smaxFlag = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%smaxFlag = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%smaxFlag = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%smin = %g\n", prefix, atts->GetMin());
+    snprintf(tmpStr, 1000, "%smin = %g\n", prefix, atts->GetMin());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%smax = %g\n", prefix, atts->GetMax());
+    snprintf(tmpStr, 1000, "%smax = %g\n", prefix, atts->GetMax());
     str += tmpStr;
     const char *scaling_names = "Linear, Log";
     switch (atts->GetScaling())
     {
       case ContourAttributes::Linear:
-          SNPRINTF(tmpStr, 1000, "%sscaling = %sLinear  # %s\n", prefix, prefix, scaling_names);
+          snprintf(tmpStr, 1000, "%sscaling = %sLinear  # %s\n", prefix, prefix, scaling_names);
           str += tmpStr;
           break;
       case ContourAttributes::Log:
-          SNPRINTF(tmpStr, 1000, "%sscaling = %sLog  # %s\n", prefix, prefix, scaling_names);
+          snprintf(tmpStr, 1000, "%sscaling = %sLog  # %s\n", prefix, prefix, scaling_names);
           str += tmpStr;
           break;
       default:
@@ -195,9 +194,9 @@ PyContourAttributes_ToString(const ContourAttributes *atts, const char *prefix)
     }
 
     if(atts->GetWireframe())
-        SNPRINTF(tmpStr, 1000, "%swireframe = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%swireframe = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%swireframe = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%swireframe = 0\n", prefix);
     str += tmpStr;
     return str;
 }

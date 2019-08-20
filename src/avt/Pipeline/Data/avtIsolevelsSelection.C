@@ -9,8 +9,6 @@
 #include <limits.h>
 #include <string.h>
 
-#include <snprintf.h>
-
 #include <avtIsolevelsSelection.h>
 
 // ****************************************************************************
@@ -72,11 +70,11 @@ std::string
 avtIsolevelsSelection::DescriptionString(void)
 {
     char str[1024];
-    SNPRINTF(str, 1024, "avtIsolevelsSelection:%s", var.c_str());
+    snprintf(str, 1024, "avtIsolevelsSelection:%s", var.c_str());
     size_t amt = strlen(str);
     for (size_t i = 0 ; i < isolevels.size() ; i++)
     {
-        SNPRINTF(str+amt, 1024-amt, "_%f", isolevels[i]);
+        snprintf(str+amt, 1024-amt, "_%f", isolevels[i]);
         amt += strlen(str);
     }
     std::string s2 = str;

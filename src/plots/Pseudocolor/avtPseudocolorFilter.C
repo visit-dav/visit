@@ -18,11 +18,15 @@
 //
 //  Modifications:
 //
+//    Alister Maguire, Tue Jul 16 14:12:20 PDT 2019
+//    Added instantiation of mustRemoveFacesBeforeGhosts. 
+//
 // ****************************************************************************
 
 avtPseudocolorFilter::avtPseudocolorFilter()
 {
     keepNodeZone = false;
+    mustRemoveFacesBeforeGhosts = false;
 }
 
 
@@ -49,11 +53,40 @@ avtPseudocolorFilter::~avtPseudocolorFilter()
 //  Programmer: Kathleen Bonnell 
 //  Creation:   November 10, 2040 
 //
+//  Modifications:
+//
+//    Alister Maguire, Tue Jul 16 14:12:20 PDT 2019
+//    Check if we've entered or exited an opacity mode that allows
+//    for transparency. If so, we need to update the ghost/face removal
+//    flag. 
+//
 // ****************************************************************************
 
 void
 avtPseudocolorFilter::SetPlotAtts(const PseudocolorAttributes *atts)
 {
+    PseudocolorAttributes::OpacityType newOpacType = atts->GetOpacityType();
+    PseudocolorAttributes::OpacityType oldOpacType = plotAtts.GetOpacityType();
+
+    if (newOpacType != PseudocolorAttributes::FullyOpaque &&
+        oldOpacType == PseudocolorAttributes::FullyOpaque)
+    {
+        //
+        // The user has turned on transparency. We must remove faces
+        // before ghosts to avoid rendering processor boundaries. 
+        //
+        mustRemoveFacesBeforeGhosts = true;
+    }
+    else if (newOpacType == PseudocolorAttributes::FullyOpaque &&
+             oldOpacType != PseudocolorAttributes::FullyOpaque)
+    {
+        //
+        // Transparency is now off, so we can go back to the normal
+        // ghost/face removal process. 
+        //
+        mustRemoveFacesBeforeGhosts = false;
+    }
+
     plotAtts = *atts;
 }
 
@@ -97,6 +130,11 @@ avtPseudocolorFilter::ExecuteData(avtDataRepresentation *inDR)
 //    Kathleen Biagas, Fri Nov  2 10:23:11 PDT 2012
 //    Ensure primaryVariable is still the active var, use of expression for
 //    pointVar may have changed the active var.
+//
+//    Alister Maguire, Tue Jul 16 14:12:20 PDT 2019
+//    Added a call to SetRemoveFacesBeforeGhosts. When the user allows
+//    or disallows transparency, we need to toggle this flag so that 
+//    processor boundaries are not rendered.  
 //  
 // ****************************************************************************
 
@@ -120,6 +158,8 @@ avtPseudocolorFilter::UpdateDataObjectInfo(void)
             outAtts.SetActiveVariable(primaryVar.c_str());
       }
     }
+
+    outAtts.SetForceRemoveFacesBeforeGhosts(mustRemoveFacesBeforeGhosts);
 }
 
 

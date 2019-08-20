@@ -8,8 +8,6 @@
 
 #include <avtUnstructuredDomainBoundaries.h>
 
-#include <snprintf.h>
-
 #include <vtkCellData.h>
 #include <vtkCellLinks.h>
 #include <vtkFloatArray.h>
@@ -1970,7 +1968,7 @@ avtUnstructuredDomainBoundaries::CommunicateMixvarInformation(
                     if (nmats >= 1000)
                     {
                         char str[1024];
-                        SNPRINTF(str, 1024, 
+                        snprintf(str, 1024, 
                                 "The mixed material entry for cell %d "
                                 "of domain %d appears to be invalid.  Unable "
                                 "to proceed.", givenCells[index][i], sendDom);
@@ -2075,7 +2073,7 @@ avtUnstructuredDomainBoundaries::CommunicateMixvarInformation(
                     if (nmats >= 1000)
                     {
                         char str[1024];
-                        SNPRINTF(str, 1024, 
+                        snprintf(str, 1024, 
                                 "The mixed material entry for cell %d "
                                 "of domain %d appears to be invalid.  Unable "
                                 "to proceed.", givenCells[index][i], sendDom);
@@ -2252,7 +2250,7 @@ avtUnstructuredDomainBoundaries::CommunicateMaterialInformation(
                     if (nmats >= 1000)
                     {
                         char str[1024];
-                        SNPRINTF(str, 1024, 
+                        snprintf(str, 1024, 
                                 "The mixed material entry for cell %d "
                                 "of domain %d appears to be invalid.  Unable "
                                 "to proceed.", givenCells[index][i], sendDom);
@@ -2384,7 +2382,7 @@ avtUnstructuredDomainBoundaries::CommunicateMaterialInformation(
                     if (nmats >= 1000)
                     {
                         char str[1024];
-                        SNPRINTF(str, 1024, 
+                        snprintf(str, 1024, 
                                 "The mixed material entry for cell %d "
                                 "of domain %d appears to be invalid.  Unable "
                                 "to proceed.", givenCells[index][i], sendDom);

@@ -7,7 +7,6 @@
 // ************************************************************************* //
 
 #include <avtExodusOptions.h>
-#include <snprintf.h>
 #include <DBOptionsAttributes.h>
 
 #include <vector>
@@ -49,7 +48,7 @@ GetExodusReadOptions(void)
     rv->SetString(EXODUS_MATSPEC_NAMESCHEME, "");
 
     char helpStr[4096];
-    SNPRINTF(helpStr, sizeof(helpStr),
+    snprintf(helpStr, sizeof(helpStr),
         "<p><b>%s</b>: Checking this option will cause the plugin to try to guess that similarly "
         "named variables are the scalar components of an aggregate type such as a vector, "
         "tensor or array variable. The plugin will then automatically define expressions "

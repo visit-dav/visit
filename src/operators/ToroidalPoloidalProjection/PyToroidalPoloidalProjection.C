@@ -5,7 +5,6 @@
 #include <PyToroidalPoloidalProjection.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyToroidalPoloidalProjection
@@ -42,19 +41,19 @@ PyToroidalPoloidalProjection_ToString(const ToroidalPoloidalProjection *atts, co
     std::string str;
     char tmpStr[1000];
 
-    SNPRINTF(tmpStr, 1000, "%sR0 = %g\n", prefix, atts->GetR0());
+    snprintf(tmpStr, 1000, "%sR0 = %g\n", prefix, atts->GetR0());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sr = %g\n", prefix, atts->GetR());
+    snprintf(tmpStr, 1000, "%sr = %g\n", prefix, atts->GetR());
     str += tmpStr;
     const char *centroidSource_names = "Manual, Auto";
     switch (atts->GetCentroidSource())
     {
       case ToroidalPoloidalProjection::Manual:
-          SNPRINTF(tmpStr, 1000, "%scentroidSource = %sManual  # %s\n", prefix, prefix, centroidSource_names);
+          snprintf(tmpStr, 1000, "%scentroidSource = %sManual  # %s\n", prefix, prefix, centroidSource_names);
           str += tmpStr;
           break;
       case ToroidalPoloidalProjection::Auto:
-          SNPRINTF(tmpStr, 1000, "%scentroidSource = %sAuto  # %s\n", prefix, prefix, centroidSource_names);
+          snprintf(tmpStr, 1000, "%scentroidSource = %sAuto  # %s\n", prefix, prefix, centroidSource_names);
           str += tmpStr;
           break;
       default:
@@ -62,25 +61,25 @@ PyToroidalPoloidalProjection_ToString(const ToroidalPoloidalProjection *atts, co
     }
 
     {   const double *centroid = atts->GetCentroid();
-        SNPRINTF(tmpStr, 1000, "%scentroid = (", prefix);
+        snprintf(tmpStr, 1000, "%scentroid = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 3; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", centroid[i]);
+            snprintf(tmpStr, 1000, "%g", centroid[i]);
             str += tmpStr;
             if(i < 2)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     if(atts->GetProject2D())
-        SNPRINTF(tmpStr, 1000, "%sproject2D = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sproject2D = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sproject2D = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sproject2D = 0\n", prefix);
     str += tmpStr;
     return str;
 }

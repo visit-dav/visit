@@ -5,7 +5,6 @@
 #include <PyAxisTitles.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 #include <PyFontAttributes.h>
 
 // ****************************************************************************
@@ -44,9 +43,9 @@ PyAxisTitles_ToString(const AxisTitles *atts, const char *prefix)
     char tmpStr[1000];
 
     if(atts->GetVisible())
-        SNPRINTF(tmpStr, 1000, "%svisible = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%svisible = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%svisible = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%svisible = 0\n", prefix);
     str += tmpStr;
     { // new scope
         std::string objPrefix(prefix);
@@ -54,18 +53,18 @@ PyAxisTitles_ToString(const AxisTitles *atts, const char *prefix)
         str += PyFontAttributes_ToString(&atts->GetFont(), objPrefix.c_str());
     }
     if(atts->GetUserTitle())
-        SNPRINTF(tmpStr, 1000, "%suserTitle = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%suserTitle = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%suserTitle = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%suserTitle = 0\n", prefix);
     str += tmpStr;
     if(atts->GetUserUnits())
-        SNPRINTF(tmpStr, 1000, "%suserUnits = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%suserUnits = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%suserUnits = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%suserUnits = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%stitle = \"%s\"\n", prefix, atts->GetTitle().c_str());
+    snprintf(tmpStr, 1000, "%stitle = \"%s\"\n", prefix, atts->GetTitle().c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sunits = \"%s\"\n", prefix, atts->GetUnits().c_str());
+    snprintf(tmpStr, 1000, "%sunits = \"%s\"\n", prefix, atts->GetUnits().c_str());
     str += tmpStr;
     return str;
 }

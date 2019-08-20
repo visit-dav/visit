@@ -5,7 +5,6 @@
 #include <PyPDFAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyPDFAttributes
@@ -42,152 +41,152 @@ PyPDFAttributes_ToString(const PDFAttributes *atts, const char *prefix)
     std::string str;
     char tmpStr[1000];
 
-    SNPRINTF(tmpStr, 1000, "%svar1 = \"%s\"\n", prefix, atts->GetVar1().c_str());
+    snprintf(tmpStr, 1000, "%svar1 = \"%s\"\n", prefix, atts->GetVar1().c_str());
     str += tmpStr;
     if(atts->GetVar1MinFlag())
-        SNPRINTF(tmpStr, 1000, "%svar1MinFlag = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%svar1MinFlag = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%svar1MinFlag = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%svar1MinFlag = 0\n", prefix);
     str += tmpStr;
     if(atts->GetVar1MaxFlag())
-        SNPRINTF(tmpStr, 1000, "%svar1MaxFlag = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%svar1MaxFlag = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%svar1MaxFlag = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%svar1MaxFlag = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%svar1Min = %g\n", prefix, atts->GetVar1Min());
+    snprintf(tmpStr, 1000, "%svar1Min = %g\n", prefix, atts->GetVar1Min());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%svar1Max = %g\n", prefix, atts->GetVar1Max());
+    snprintf(tmpStr, 1000, "%svar1Max = %g\n", prefix, atts->GetVar1Max());
     str += tmpStr;
     const char *var1Scaling_names = "Linear, Log, Skew";
     switch (atts->GetVar1Scaling())
     {
       case PDFAttributes::Linear:
-          SNPRINTF(tmpStr, 1000, "%svar1Scaling = %sLinear  # %s\n", prefix, prefix, var1Scaling_names);
+          snprintf(tmpStr, 1000, "%svar1Scaling = %sLinear  # %s\n", prefix, prefix, var1Scaling_names);
           str += tmpStr;
           break;
       case PDFAttributes::Log:
-          SNPRINTF(tmpStr, 1000, "%svar1Scaling = %sLog  # %s\n", prefix, prefix, var1Scaling_names);
+          snprintf(tmpStr, 1000, "%svar1Scaling = %sLog  # %s\n", prefix, prefix, var1Scaling_names);
           str += tmpStr;
           break;
       case PDFAttributes::Skew:
-          SNPRINTF(tmpStr, 1000, "%svar1Scaling = %sSkew  # %s\n", prefix, prefix, var1Scaling_names);
+          snprintf(tmpStr, 1000, "%svar1Scaling = %sSkew  # %s\n", prefix, prefix, var1Scaling_names);
           str += tmpStr;
           break;
       default:
           break;
     }
 
-    SNPRINTF(tmpStr, 1000, "%svar1SkewFactor = %g\n", prefix, atts->GetVar1SkewFactor());
+    snprintf(tmpStr, 1000, "%svar1SkewFactor = %g\n", prefix, atts->GetVar1SkewFactor());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%svar1NumSamples = %d\n", prefix, atts->GetVar1NumSamples());
+    snprintf(tmpStr, 1000, "%svar1NumSamples = %d\n", prefix, atts->GetVar1NumSamples());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%svar2 = \"%s\"\n", prefix, atts->GetVar2().c_str());
+    snprintf(tmpStr, 1000, "%svar2 = \"%s\"\n", prefix, atts->GetVar2().c_str());
     str += tmpStr;
     if(atts->GetVar2MinFlag())
-        SNPRINTF(tmpStr, 1000, "%svar2MinFlag = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%svar2MinFlag = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%svar2MinFlag = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%svar2MinFlag = 0\n", prefix);
     str += tmpStr;
     if(atts->GetVar2MaxFlag())
-        SNPRINTF(tmpStr, 1000, "%svar2MaxFlag = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%svar2MaxFlag = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%svar2MaxFlag = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%svar2MaxFlag = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%svar2Min = %g\n", prefix, atts->GetVar2Min());
+    snprintf(tmpStr, 1000, "%svar2Min = %g\n", prefix, atts->GetVar2Min());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%svar2Max = %g\n", prefix, atts->GetVar2Max());
+    snprintf(tmpStr, 1000, "%svar2Max = %g\n", prefix, atts->GetVar2Max());
     str += tmpStr;
     const char *var2Scaling_names = "Linear, Log, Skew";
     switch (atts->GetVar2Scaling())
     {
       case PDFAttributes::Linear:
-          SNPRINTF(tmpStr, 1000, "%svar2Scaling = %sLinear  # %s\n", prefix, prefix, var2Scaling_names);
+          snprintf(tmpStr, 1000, "%svar2Scaling = %sLinear  # %s\n", prefix, prefix, var2Scaling_names);
           str += tmpStr;
           break;
       case PDFAttributes::Log:
-          SNPRINTF(tmpStr, 1000, "%svar2Scaling = %sLog  # %s\n", prefix, prefix, var2Scaling_names);
+          snprintf(tmpStr, 1000, "%svar2Scaling = %sLog  # %s\n", prefix, prefix, var2Scaling_names);
           str += tmpStr;
           break;
       case PDFAttributes::Skew:
-          SNPRINTF(tmpStr, 1000, "%svar2Scaling = %sSkew  # %s\n", prefix, prefix, var2Scaling_names);
+          snprintf(tmpStr, 1000, "%svar2Scaling = %sSkew  # %s\n", prefix, prefix, var2Scaling_names);
           str += tmpStr;
           break;
       default:
           break;
     }
 
-    SNPRINTF(tmpStr, 1000, "%svar2SkewFactor = %g\n", prefix, atts->GetVar2SkewFactor());
+    snprintf(tmpStr, 1000, "%svar2SkewFactor = %g\n", prefix, atts->GetVar2SkewFactor());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%svar2NumSamples = %d\n", prefix, atts->GetVar2NumSamples());
+    snprintf(tmpStr, 1000, "%svar2NumSamples = %d\n", prefix, atts->GetVar2NumSamples());
     str += tmpStr;
     const char *numAxes_names = "Two, Three";
     switch (atts->GetNumAxes())
     {
       case PDFAttributes::Two:
-          SNPRINTF(tmpStr, 1000, "%snumAxes = %sTwo  # %s\n", prefix, prefix, numAxes_names);
+          snprintf(tmpStr, 1000, "%snumAxes = %sTwo  # %s\n", prefix, prefix, numAxes_names);
           str += tmpStr;
           break;
       case PDFAttributes::Three:
-          SNPRINTF(tmpStr, 1000, "%snumAxes = %sThree  # %s\n", prefix, prefix, numAxes_names);
+          snprintf(tmpStr, 1000, "%snumAxes = %sThree  # %s\n", prefix, prefix, numAxes_names);
           str += tmpStr;
           break;
       default:
           break;
     }
 
-    SNPRINTF(tmpStr, 1000, "%svar3 = \"%s\"\n", prefix, atts->GetVar3().c_str());
+    snprintf(tmpStr, 1000, "%svar3 = \"%s\"\n", prefix, atts->GetVar3().c_str());
     str += tmpStr;
     if(atts->GetVar3MinFlag())
-        SNPRINTF(tmpStr, 1000, "%svar3MinFlag = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%svar3MinFlag = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%svar3MinFlag = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%svar3MinFlag = 0\n", prefix);
     str += tmpStr;
     if(atts->GetVar3MaxFlag())
-        SNPRINTF(tmpStr, 1000, "%svar3MaxFlag = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%svar3MaxFlag = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%svar3MaxFlag = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%svar3MaxFlag = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%svar3Min = %g\n", prefix, atts->GetVar3Min());
+    snprintf(tmpStr, 1000, "%svar3Min = %g\n", prefix, atts->GetVar3Min());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%svar3Max = %g\n", prefix, atts->GetVar3Max());
+    snprintf(tmpStr, 1000, "%svar3Max = %g\n", prefix, atts->GetVar3Max());
     str += tmpStr;
     const char *var3Scaling_names = "Linear, Log, Skew";
     switch (atts->GetVar3Scaling())
     {
       case PDFAttributes::Linear:
-          SNPRINTF(tmpStr, 1000, "%svar3Scaling = %sLinear  # %s\n", prefix, prefix, var3Scaling_names);
+          snprintf(tmpStr, 1000, "%svar3Scaling = %sLinear  # %s\n", prefix, prefix, var3Scaling_names);
           str += tmpStr;
           break;
       case PDFAttributes::Log:
-          SNPRINTF(tmpStr, 1000, "%svar3Scaling = %sLog  # %s\n", prefix, prefix, var3Scaling_names);
+          snprintf(tmpStr, 1000, "%svar3Scaling = %sLog  # %s\n", prefix, prefix, var3Scaling_names);
           str += tmpStr;
           break;
       case PDFAttributes::Skew:
-          SNPRINTF(tmpStr, 1000, "%svar3Scaling = %sSkew  # %s\n", prefix, prefix, var3Scaling_names);
+          snprintf(tmpStr, 1000, "%svar3Scaling = %sSkew  # %s\n", prefix, prefix, var3Scaling_names);
           str += tmpStr;
           break;
       default:
           break;
     }
 
-    SNPRINTF(tmpStr, 1000, "%svar3SkewFactor = %g\n", prefix, atts->GetVar3SkewFactor());
+    snprintf(tmpStr, 1000, "%svar3SkewFactor = %g\n", prefix, atts->GetVar3SkewFactor());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%svar3NumSamples = %d\n", prefix, atts->GetVar3NumSamples());
+    snprintf(tmpStr, 1000, "%svar3NumSamples = %d\n", prefix, atts->GetVar3NumSamples());
     str += tmpStr;
     if(atts->GetScaleCube())
-        SNPRINTF(tmpStr, 1000, "%sscaleCube = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sscaleCube = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sscaleCube = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sscaleCube = 0\n", prefix);
     str += tmpStr;
     const char *densityType_names = "Probability, ZoneCount";
     switch (atts->GetDensityType())
     {
       case PDFAttributes::Probability:
-          SNPRINTF(tmpStr, 1000, "%sdensityType = %sProbability  # %s\n", prefix, prefix, densityType_names);
+          snprintf(tmpStr, 1000, "%sdensityType = %sProbability  # %s\n", prefix, prefix, densityType_names);
           str += tmpStr;
           break;
       case PDFAttributes::ZoneCount:
-          SNPRINTF(tmpStr, 1000, "%sdensityType = %sZoneCount  # %s\n", prefix, prefix, densityType_names);
+          snprintf(tmpStr, 1000, "%sdensityType = %sZoneCount  # %s\n", prefix, prefix, densityType_names);
           str += tmpStr;
           break;
       default:

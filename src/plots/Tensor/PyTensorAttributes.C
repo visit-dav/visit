@@ -5,7 +5,6 @@
 #include <PyTensorAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 #include <ColorAttribute.h>
 
 // ****************************************************************************
@@ -44,45 +43,45 @@ PyTensorAttributes_ToString(const TensorAttributes *atts, const char *prefix)
     char tmpStr[1000];
 
     if(atts->GetUseStride())
-        SNPRINTF(tmpStr, 1000, "%suseStride = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%suseStride = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%suseStride = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%suseStride = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sstride = %d\n", prefix, atts->GetStride());
+    snprintf(tmpStr, 1000, "%sstride = %d\n", prefix, atts->GetStride());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%snTensors = %d\n", prefix, atts->GetNTensors());
+    snprintf(tmpStr, 1000, "%snTensors = %d\n", prefix, atts->GetNTensors());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sscale = %g\n", prefix, atts->GetScale());
+    snprintf(tmpStr, 1000, "%sscale = %g\n", prefix, atts->GetScale());
     str += tmpStr;
     if(atts->GetScaleByMagnitude())
-        SNPRINTF(tmpStr, 1000, "%sscaleByMagnitude = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sscaleByMagnitude = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sscaleByMagnitude = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sscaleByMagnitude = 0\n", prefix);
     str += tmpStr;
     if(atts->GetAutoScale())
-        SNPRINTF(tmpStr, 1000, "%sautoScale = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sautoScale = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sautoScale = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sautoScale = 0\n", prefix);
     str += tmpStr;
     if(atts->GetColorByEigenvalues())
-        SNPRINTF(tmpStr, 1000, "%scolorByEigenvalues = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%scolorByEigenvalues = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%scolorByEigenvalues = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%scolorByEigenvalues = 0\n", prefix);
     str += tmpStr;
     if(atts->GetUseLegend())
-        SNPRINTF(tmpStr, 1000, "%suseLegend = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%suseLegend = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%suseLegend = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%suseLegend = 0\n", prefix);
     str += tmpStr;
     const unsigned char *tensorColor = atts->GetTensorColor().GetColor();
-    SNPRINTF(tmpStr, 1000, "%stensorColor = (%d, %d, %d, %d)\n", prefix, int(tensorColor[0]), int(tensorColor[1]), int(tensorColor[2]), int(tensorColor[3]));
+    snprintf(tmpStr, 1000, "%stensorColor = (%d, %d, %d, %d)\n", prefix, int(tensorColor[0]), int(tensorColor[1]), int(tensorColor[2]), int(tensorColor[3]));
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%scolorTableName = \"%s\"\n", prefix, atts->GetColorTableName().c_str());
+    snprintf(tmpStr, 1000, "%scolorTableName = \"%s\"\n", prefix, atts->GetColorTableName().c_str());
     str += tmpStr;
     if(atts->GetInvertColorTable())
-        SNPRINTF(tmpStr, 1000, "%sinvertColorTable = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sinvertColorTable = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sinvertColorTable = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sinvertColorTable = 0\n", prefix);
     str += tmpStr;
     return str;
 }

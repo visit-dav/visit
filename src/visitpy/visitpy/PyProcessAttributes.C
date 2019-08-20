@@ -5,7 +5,6 @@
 #include <PyProcessAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyProcessAttributes
@@ -43,88 +42,88 @@ PyProcessAttributes_ToString(const ProcessAttributes *atts, const char *prefix)
     char tmpStr[1000];
 
     {   const intVector &pids = atts->GetPids();
-        SNPRINTF(tmpStr, 1000, "%spids = (", prefix);
+        snprintf(tmpStr, 1000, "%spids = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < pids.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%d", pids[i]);
+            snprintf(tmpStr, 1000, "%d", pids[i]);
             str += tmpStr;
             if(i < pids.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const intVector &ppids = atts->GetPpids();
-        SNPRINTF(tmpStr, 1000, "%sppids = (", prefix);
+        snprintf(tmpStr, 1000, "%sppids = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < ppids.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%d", ppids[i]);
+            snprintf(tmpStr, 1000, "%d", ppids[i]);
             str += tmpStr;
             if(i < ppids.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const stringVector &hosts = atts->GetHosts();
-        SNPRINTF(tmpStr, 1000, "%shosts = (", prefix);
+        snprintf(tmpStr, 1000, "%shosts = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < hosts.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "\"%s\"", hosts[i].c_str());
+            snprintf(tmpStr, 1000, "\"%s\"", hosts[i].c_str());
             str += tmpStr;
             if(i < hosts.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     if(atts->GetIsParallel())
-        SNPRINTF(tmpStr, 1000, "%sisParallel = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sisParallel = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sisParallel = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sisParallel = 0\n", prefix);
     str += tmpStr;
     {   const intVector &memory = atts->GetMemory();
-        SNPRINTF(tmpStr, 1000, "%smemory = (", prefix);
+        snprintf(tmpStr, 1000, "%smemory = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < memory.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%d", memory[i]);
+            snprintf(tmpStr, 1000, "%d", memory[i]);
             str += tmpStr;
             if(i < memory.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const doubleVector &times = atts->GetTimes();
-        SNPRINTF(tmpStr, 1000, "%stimes = (", prefix);
+        snprintf(tmpStr, 1000, "%stimes = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < times.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", times[i]);
+            snprintf(tmpStr, 1000, "%g", times[i]);
             str += tmpStr;
             if(i < times.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     return str;

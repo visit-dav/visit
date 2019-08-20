@@ -5,7 +5,6 @@
 #include <ViewerServerManager.h>
 
 #include <visit-config.h>
-#include <snprintf.h>
 
 #include <CancelledConnectException.h>
 #include <Connection.h>
@@ -244,7 +243,7 @@ ViewerServerManager::AddArguments(RemoteProxyBase *component,
         char const *bufferDebug = "b";
         char const *decorateDebug = "d";
         char temp[10];
-        SNPRINTF(temp, 10, "%d%s%s",
+        snprintf(temp, 10, "%d%s%s",
             GetViewerProperties()->GetDebugLevel(),
             GetViewerProperties()->GetBufferDebug()?bufferDebug:"",
             GetViewerProperties()->GetDecorateDebug()?decorateDebug:"");

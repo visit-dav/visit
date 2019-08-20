@@ -1162,7 +1162,7 @@ avtGMVFileFormat::GetMeshName(const std::string &initial) const
     char tmp[10];
     do
     {
-        SNPRINTF(tmp, 10, "%d", index++);
+        snprintf(tmp, 10, "%d", index++);
         mesh = initial + std::string(tmp);
     } while(meshes.find(mesh) != meshes.end());
 

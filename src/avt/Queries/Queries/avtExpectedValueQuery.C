@@ -8,8 +8,6 @@
 
 #include <avtExpectedValueQuery.h>
 
-#include <snprintf.h>
-
 
 // ****************************************************************************
 //  Method: avtExpectedValueQuery constructor
@@ -110,7 +108,7 @@ avtExpectedValueQuery::CreateMessage(double ev)
     char msg[1024];
     std::string format = "The expected value is " + queryAtts.GetFloatFormat()
                          + ".";
-    SNPRINTF(msg,1024, format.c_str(), ev);
+    snprintf(msg,1024, format.c_str(), ev);
     std::string m = msg;
     return m;
 }

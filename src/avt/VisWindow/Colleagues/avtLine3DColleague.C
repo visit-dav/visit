@@ -9,8 +9,6 @@
 
 #include <math.h>
 
-#include <snprintf.h>
-
 #include <vtkActor.h>
 #include <vtkConeSource.h>
 #include <vtkLineSource.h>

@@ -5,7 +5,6 @@
 #include <PyModelFitAtts.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyModelFitAtts
@@ -43,179 +42,179 @@ PyModelFitAtts_ToString(const ModelFitAtts *atts, const char *prefix)
     char tmpStr[1000];
 
     {   const stringVector &Vars = atts->GetVars();
-        SNPRINTF(tmpStr, 1000, "%sVars = (", prefix);
+        snprintf(tmpStr, 1000, "%sVars = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < Vars.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "\"%s\"", Vars[i].c_str());
+            snprintf(tmpStr, 1000, "\"%s\"", Vars[i].c_str());
             str += tmpStr;
             if(i < Vars.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const intVector &numVars = atts->GetNumVars();
-        SNPRINTF(tmpStr, 1000, "%snumVars = (", prefix);
+        snprintf(tmpStr, 1000, "%snumVars = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < numVars.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%d", numVars[i]);
+            snprintf(tmpStr, 1000, "%d", numVars[i]);
             str += tmpStr;
             if(i < numVars.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const doubleVector &Tuples = atts->GetTuples();
-        SNPRINTF(tmpStr, 1000, "%sTuples = (", prefix);
+        snprintf(tmpStr, 1000, "%sTuples = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < Tuples.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", Tuples[i]);
+            snprintf(tmpStr, 1000, "%g", Tuples[i]);
             str += tmpStr;
             if(i < Tuples.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const unsignedCharVector &StatTuples = atts->GetStatTuples();
-        SNPRINTF(tmpStr, 1000, "%sStatTuples = (", prefix);
+        snprintf(tmpStr, 1000, "%sStatTuples = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < StatTuples.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%d", int(StatTuples[i]));
+            snprintf(tmpStr, 1000, "%d", int(StatTuples[i]));
             str += tmpStr;
             if(i < StatTuples.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const intVector &numTups = atts->GetNumTups();
-        SNPRINTF(tmpStr, 1000, "%snumTups = (", prefix);
+        snprintf(tmpStr, 1000, "%snumTups = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < numTups.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%d", numTups[i]);
+            snprintf(tmpStr, 1000, "%d", numTups[i]);
             str += tmpStr;
             if(i < numTups.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const doubleVector &thold = atts->GetThold();
-        SNPRINTF(tmpStr, 1000, "%sthold = (", prefix);
+        snprintf(tmpStr, 1000, "%sthold = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < thold.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", thold[i]);
+            snprintf(tmpStr, 1000, "%g", thold[i]);
             str += tmpStr;
             if(i < thold.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const intVector &selectionType = atts->GetSelectionType();
-        SNPRINTF(tmpStr, 1000, "%sselectionType = (", prefix);
+        snprintf(tmpStr, 1000, "%sselectionType = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < selectionType.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%d", selectionType[i]);
+            snprintf(tmpStr, 1000, "%d", selectionType[i]);
             str += tmpStr;
             if(i < selectionType.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const intVector &distanceType = atts->GetDistanceType();
-        SNPRINTF(tmpStr, 1000, "%sdistanceType = (", prefix);
+        snprintf(tmpStr, 1000, "%sdistanceType = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < distanceType.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%d", distanceType[i]);
+            snprintf(tmpStr, 1000, "%d", distanceType[i]);
             str += tmpStr;
             if(i < distanceType.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const intVector &inputSpace = atts->GetInputSpace();
-        SNPRINTF(tmpStr, 1000, "%sinputSpace = (", prefix);
+        snprintf(tmpStr, 1000, "%sinputSpace = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < inputSpace.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%d", inputSpace[i]);
+            snprintf(tmpStr, 1000, "%d", inputSpace[i]);
             str += tmpStr;
             if(i < inputSpace.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const stringVector &modelNames = atts->GetModelNames();
-        SNPRINTF(tmpStr, 1000, "%smodelNames = (", prefix);
+        snprintf(tmpStr, 1000, "%smodelNames = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < modelNames.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "\"%s\"", modelNames[i].c_str());
+            snprintf(tmpStr, 1000, "\"%s\"", modelNames[i].c_str());
             str += tmpStr;
             if(i < modelNames.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const intVector &modelNums = atts->GetModelNums();
-        SNPRINTF(tmpStr, 1000, "%smodelNums = (", prefix);
+        snprintf(tmpStr, 1000, "%smodelNums = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < modelNums.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%d", modelNums[i]);
+            snprintf(tmpStr, 1000, "%d", modelNums[i]);
             str += tmpStr;
             if(i < modelNums.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     return str;

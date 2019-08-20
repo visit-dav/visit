@@ -5,7 +5,6 @@
 #include <PyColorTableAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 #include <PyColorControlPointList.h>
 
 // ****************************************************************************
@@ -44,19 +43,19 @@ PyColorTableAttributes_ToString(const ColorTableAttributes *atts, const char *pr
     char tmpStr[1000];
 
     {   const stringVector &names = atts->GetNames();
-        SNPRINTF(tmpStr, 1000, "%snames = (", prefix);
+        snprintf(tmpStr, 1000, "%snames = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < names.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "\"%s\"", names[i].c_str());
+            snprintf(tmpStr, 1000, "\"%s\"", names[i].c_str());
             str += tmpStr;
             if(i < names.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     { // new scope
@@ -65,21 +64,21 @@ PyColorTableAttributes_ToString(const ColorTableAttributes *atts, const char *pr
         for(AttributeGroupVector::const_iterator pos = atts->GetColorTables().begin(); pos != atts->GetColorTables().end(); ++pos, ++index)
         {
             const ColorControlPointList *current = (const ColorControlPointList *)(*pos);
-            SNPRINTF(tmpStr, 1000, "GetColorTables(%d).", index);
+            snprintf(tmpStr, 1000, "GetColorTables(%d).", index);
             std::string objPrefix(prefix + std::string(tmpStr));
             str += PyColorControlPointList_ToString(current, objPrefix.c_str());
         }
         if(index == 0)
             str += "#colorTables does not contain any ColorControlPointList objects.\n";
     }
-    SNPRINTF(tmpStr, 1000, "%sactiveContinuous = \"%s\"\n", prefix, atts->GetActiveContinuous().c_str());
+    snprintf(tmpStr, 1000, "%sactiveContinuous = \"%s\"\n", prefix, atts->GetActiveContinuous().c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sactiveDiscrete = \"%s\"\n", prefix, atts->GetActiveDiscrete().c_str());
+    snprintf(tmpStr, 1000, "%sactiveDiscrete = \"%s\"\n", prefix, atts->GetActiveDiscrete().c_str());
     str += tmpStr;
     if(atts->GetGroupingFlag())
-        SNPRINTF(tmpStr, 1000, "%sgroupingFlag = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sgroupingFlag = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sgroupingFlag = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sgroupingFlag = 0\n", prefix);
     str += tmpStr;
     return str;
 }
@@ -153,9 +152,9 @@ ColorTableAttributes_GetColorTables(PyObject *self, PyObject *args)
     {
         char msg[400] = {'\0'};
         if(obj->data->GetColorTables().size() == 0)
-            SNPRINTF(msg, 400, "In ColorTableAttributes::GetColorTables : The index %d is invalid because colorTables is empty.", index);
+            snprintf(msg, 400, "In ColorTableAttributes::GetColorTables : The index %d is invalid because colorTables is empty.", index);
         else
-            SNPRINTF(msg, 400, "In ColorTableAttributes::GetColorTables : The index %d is invalid. Use index values in: [0, %ld).",  index, obj->data->GetColorTables().size());
+            snprintf(msg, 400, "In ColorTableAttributes::GetColorTables : The index %d is invalid. Use index values in: [0, %ld).",  index, obj->data->GetColorTables().size());
         PyErr_SetString(PyExc_IndexError, msg);
         return NULL;
     }
@@ -189,7 +188,7 @@ ColorTableAttributes_AddColorTables(PyObject *self, PyObject *args)
     if(!PyColorControlPointList_Check(element))
     {
         char msg[400] = {'\0'};
-        SNPRINTF(msg, 400, "The ColorTableAttributes::AddColorTables method only accepts ColorControlPointList objects.");
+        snprintf(msg, 400, "The ColorTableAttributes::AddColorTables method only accepts ColorControlPointList objects.");
         PyErr_SetString(PyExc_TypeError, msg);
         return NULL;
     }
@@ -237,7 +236,7 @@ ColorTableAttributes_RemoveColorTables(PyObject *self, PyObject *args)
     if(index < 0 || index >= obj->data->GetNumColorTables())
     {
         char msg[400] = {'\0'};
-        SNPRINTF(msg, 400, "In ColorTableAttributes::RemoveColorTables : Index %d is out of range", index);
+        snprintf(msg, 400, "In ColorTableAttributes::RemoveColorTables : Index %d is out of range", index);
         PyErr_SetString(PyExc_IndexError, msg);
         return NULL;
     }

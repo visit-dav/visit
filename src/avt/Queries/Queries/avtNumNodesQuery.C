@@ -10,7 +10,6 @@
 
 #include <avtDatasetExaminer.h>
 #include <avtParallel.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 //  Method: avtNumNodesQuery constructor
@@ -71,7 +70,7 @@ avtNumNodesQuery::GetDefaultInputParams(MapNode &params)
 //
 //  Modifications:
 //    Brad Whitlock, Mon Feb 23 12:11:02 PDT 2004
-//    I made it use SNPRINTF to get it to build on Linux.
+//    I made it use snprintf to get it to build on Linux.
 //
 //    Kathleen Bonnell, Tue Jul 29 10:01:29 PDT 2008
 //    Ensure ghost nodes aren't counted in the 'real' count by calling the
@@ -135,9 +134,9 @@ avtNumNodesQuery::PerformQuery(QueryAttributes *qA)
     MapNode result_node;
     result_node["num_nodes"] = (int)tn[0];
     if (OriginalData())
-        SNPRINTF(msg, 200, "The original number of nodes is %lld.", tn[0]);
+        snprintf(msg, 200, "The original number of nodes is %lld.", tn[0]);
     else 
-        SNPRINTF(msg, 200, "The actual number of nodes is %lld.", tn[0]);
+        snprintf(msg, 200, "The actual number of nodes is %lld.", tn[0]);
 
 
     if (gzt != AVT_HAS_GHOSTS)
@@ -148,7 +147,7 @@ avtNumNodesQuery::PerformQuery(QueryAttributes *qA)
     else
     {
         char msg2[200];
-        SNPRINTF(msg2, 200, "%s\nThe number of ghost nodes is %lld.", msg, tn[1]);
+        snprintf(msg2, 200, "%s\nThe number of ghost nodes is %lld.", msg, tn[1]);
         double results[2] = {(double) tn[0], (double) tn[1]};
         qA->SetResultsValues(results, 2);
         qA->SetResultsMessage(msg2);

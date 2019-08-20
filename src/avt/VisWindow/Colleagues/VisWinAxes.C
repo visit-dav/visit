@@ -10,7 +10,6 @@
 
 #include <string>
 #include <vector>
-#include <snprintf.h>
 
 #include <vtkAxesActor2D.h>
 #include <vtkVisItAxisActor2D.h>
@@ -92,8 +91,8 @@ VisWinAxes::VisWinAxes(VisWindowColleagueProxy &p) : VisWinColleague(p)
 
     addedAxes = false;
 
-    SNPRINTF(xTitle, 8,  "X-Axis");
-    SNPRINTF(yTitle, 8, "Y-Axis");
+    snprintf(xTitle, 8,  "X-Axis");
+    snprintf(yTitle, 8, "Y-Axis");
     unitsX[0] = '\0';
     unitsY[0] = '\0';
     powX = 0;
@@ -602,20 +601,20 @@ VisWinAxes::UpdatePlotList(vector<avtActor_p> &list)
     }
 
     if(!userXUnits)
-        SNPRINTF(unitsX, 256, "%s", x.c_str());
+        snprintf(unitsX, 256, "%s", x.c_str());
     if(!userYUnits)
-        SNPRINTF(unitsY, 256, "%s", y.c_str());
+        snprintf(unitsY, 256, "%s", y.c_str());
     if(!userXTitle)
     {
         if (lx != "")
-            SNPRINTF(xTitle, 256, "%s", lx.c_str());
+            snprintf(xTitle, 256, "%s", lx.c_str());
         else
             strcpy(xTitle, "X-Axis");
     }
     if(!userYTitle)
     {
         if (ly != "")
-            SNPRINTF(yTitle, 256, "%s", ly.c_str());
+            snprintf(yTitle, 256, "%s", ly.c_str());
         else
             strcpy(yTitle, "Y-Axis");
     }
@@ -784,7 +783,7 @@ VisWinAxes::AdjustRange(double min_x, double max_x, double min_y, double max_y)
     if (xAxisDigits != lastXAxisDigits)
     {
         char  format[16];
-        SNPRINTF(format, 16, "%%.%df", xAxisDigits);
+        snprintf(format, 16, "%%.%df", xAxisDigits);
         axes->SetXLabelFormatString(format);
         lastXAxisDigits = xAxisDigits;
     }
@@ -798,7 +797,7 @@ VisWinAxes::AdjustRange(double min_x, double max_x, double min_y, double max_y)
     if (yAxisDigits != lastYAxisDigits)
     {
         char  format[16];
-        SNPRINTF(format, 16, "%%.%df", yAxisDigits);
+        snprintf(format, 16, "%%.%df", yAxisDigits);
         axes->SetYLabelFormatString(format);
         lastYAxisDigits = yAxisDigits;
     }
@@ -1454,32 +1453,32 @@ VisWinAxes::SetTitle(void)
     if (powX == 0)
     {
         if (unitsX[0] == '\0')
-            SNPRINTF(buffer, 1024, "%s", xTitle);
+            snprintf(buffer, 1024, "%s", xTitle);
         else
-            SNPRINTF(buffer, 1024, "%s (%s)", xTitle, unitsX);
+            snprintf(buffer, 1024, "%s (%s)", xTitle, unitsX);
     }
     else
     {
         if (unitsX[0] == '\0')
-            SNPRINTF(buffer, 1024, "%s (x10^%d)", xTitle, powX);
+            snprintf(buffer, 1024, "%s (x10^%d)", xTitle, powX);
         else
-            SNPRINTF(buffer, 1024, "%s (x10^%d %s)", xTitle, powX, unitsX);
+            snprintf(buffer, 1024, "%s (x10^%d %s)", xTitle, powX, unitsX);
     }
     axes->SetXTitle(buffer);
 
     if (powY == 0)
     {
         if (unitsY[0] == '\0')
-            SNPRINTF(buffer, 1024, "%s", yTitle);
+            snprintf(buffer, 1024, "%s", yTitle);
         else
-            SNPRINTF(buffer, 1024, "%s (%s)", yTitle, unitsY);
+            snprintf(buffer, 1024, "%s (%s)", yTitle, unitsY);
     }
     else
     {
         if (unitsY[0] == '\0')
-            SNPRINTF(buffer, 1024, "%s (x10^%d)", yTitle, powY);
+            snprintf(buffer, 1024, "%s (x10^%d)", yTitle, powY);
         else
-            SNPRINTF(buffer, 1024, " %s (x10^%d %s)", yTitle, powY, unitsY);
+            snprintf(buffer, 1024, " %s (x10^%d %s)", yTitle, powY, unitsY);
     }
     axes->SetYTitle(buffer);
 }
@@ -1527,7 +1526,7 @@ void
 VisWinAxes::SetXTitle(const string &title, bool userSet)
 {
     if(userSet)
-        SNPRINTF(xTitle, 256, "%s", title.c_str());
+        snprintf(xTitle, 256, "%s", title.c_str());
     userXTitle = userSet;
 }
 
@@ -1535,7 +1534,7 @@ void
 VisWinAxes::SetYTitle(const string &title, bool userSet)
 {
     if(userSet)
-        SNPRINTF(yTitle, 256, "%s", title.c_str());
+        snprintf(yTitle, 256, "%s", title.c_str());
     userYTitle = userSet;
 }
 
@@ -1560,7 +1559,7 @@ void
 VisWinAxes::SetXUnits(const string &units, bool userSet)
 {
     if(userSet)
-        SNPRINTF(unitsX, 256, "%s", units.c_str());
+        snprintf(unitsX, 256, "%s", units.c_str());
     userXUnits = userSet;
 }
 
@@ -1568,7 +1567,7 @@ void
 VisWinAxes::SetYUnits(const string &units, bool userSet)
 {
     if(userSet)
-        SNPRINTF(unitsY, 256, "%s", units.c_str());
+        snprintf(unitsY, 256, "%s", units.c_str());
     userYUnits = userSet;
 }
 
@@ -1632,9 +1631,9 @@ VisWinAxes::AdjustLabelFormatForLogScale(
         int ipow_max = ipow_minx > ipow_maxx ? ipow_minx : ipow_maxx;
 
         if (ipow_min < -4 || ipow_max > 4)
-            SNPRINTF(format, 16, "%%.%de", xAxisDigits);
+            snprintf(format, 16, "%%.%de", xAxisDigits);
         else
-            SNPRINTF(format, 16, "%%.%df", xAxisDigits);
+            snprintf(format, 16, "%%.%df", xAxisDigits);
         axes->SetXLogLabelFormatString(format);
     }
     if (sm[1])
@@ -1650,9 +1649,9 @@ VisWinAxes::AdjustLabelFormatForLogScale(
         int ipow_max = ipow_miny > ipow_maxy ? ipow_miny : ipow_maxy;
 
         if (ipow_min < -4 || ipow_max > 4)
-            SNPRINTF(format, 16, "%%.%de", yAxisDigits);
+            snprintf(format, 16, "%%.%de", yAxisDigits);
         else
-            SNPRINTF(format, 16, "%%.%df", yAxisDigits);
+            snprintf(format, 16, "%%.%df", yAxisDigits);
         axes->SetYLogLabelFormatString(format);
     }
 }

@@ -7,7 +7,7 @@
 // ************************************************************************* //
 
 #include <TimingsManager.h>
-#include <snprintf.h>
+
 #include <visit-config.h>
 
 #include <map>
@@ -95,7 +95,7 @@ TimingsManager::TimeSinceLine(const char *file, int line)
     GetCurrentTimeInfo(currentTime);
 
     char key[256];
-    SNPRINTF(key, sizeof(key), "%s#%d", file, line);
+    snprintf(key, sizeof(key), "%s#%d", file, line);
     if (keyMap.find(key) == keyMap.end())
     {
         keyMap[key] = currentTime;
@@ -559,7 +559,7 @@ TimingsManager::StartTimer(bool forced)
 //    will be valid indefinitely.
 //
 //    Hank Childs, Mon Dec  1 15:03:50 PST 2008
-//    Make sure we use a SNPRINTF instead of a sprintf, so we don't blow the
+//    Make sure we use a snprintf instead of a sprintf, so we don't blow the
 //    stack.
 //
 //    Hank Childs, Sat Apr 11 23:41:27 CDT 2009
@@ -583,7 +583,7 @@ TimingsManager::StopTimer(int index, const std::string &summary, bool forced)
         if (enabled && !neverOutput)
         {
             char indented[2048];
-            SNPRINTF(indented, 2048, "%*s%s", 3*numCurrentTimings, 
+            snprintf(indented, 2048, "%*s%s", 3*numCurrentTimings, 
                       " ", summary.c_str());
             summaries.push_back(indented);
         }

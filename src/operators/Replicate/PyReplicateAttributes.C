@@ -5,7 +5,6 @@
 #include <PyReplicateAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyReplicateAttributes
@@ -43,93 +42,93 @@ PyReplicateAttributes_ToString(const ReplicateAttributes *atts, const char *pref
     char tmpStr[1000];
 
     if(atts->GetUseUnitCellVectors())
-        SNPRINTF(tmpStr, 1000, "%suseUnitCellVectors = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%suseUnitCellVectors = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%suseUnitCellVectors = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%suseUnitCellVectors = 0\n", prefix);
     str += tmpStr;
     {   const double *xVector = atts->GetXVector();
-        SNPRINTF(tmpStr, 1000, "%sxVector = (", prefix);
+        snprintf(tmpStr, 1000, "%sxVector = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 3; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", xVector[i]);
+            snprintf(tmpStr, 1000, "%g", xVector[i]);
             str += tmpStr;
             if(i < 2)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const double *yVector = atts->GetYVector();
-        SNPRINTF(tmpStr, 1000, "%syVector = (", prefix);
+        snprintf(tmpStr, 1000, "%syVector = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 3; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", yVector[i]);
+            snprintf(tmpStr, 1000, "%g", yVector[i]);
             str += tmpStr;
             if(i < 2)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const double *zVector = atts->GetZVector();
-        SNPRINTF(tmpStr, 1000, "%szVector = (", prefix);
+        snprintf(tmpStr, 1000, "%szVector = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 3; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", zVector[i]);
+            snprintf(tmpStr, 1000, "%g", zVector[i]);
             str += tmpStr;
             if(i < 2)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
-    SNPRINTF(tmpStr, 1000, "%sxReplications = %d\n", prefix, atts->GetXReplications());
+    snprintf(tmpStr, 1000, "%sxReplications = %d\n", prefix, atts->GetXReplications());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%syReplications = %d\n", prefix, atts->GetYReplications());
+    snprintf(tmpStr, 1000, "%syReplications = %d\n", prefix, atts->GetYReplications());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%szReplications = %d\n", prefix, atts->GetZReplications());
+    snprintf(tmpStr, 1000, "%szReplications = %d\n", prefix, atts->GetZReplications());
     str += tmpStr;
     if(atts->GetMergeResults())
-        SNPRINTF(tmpStr, 1000, "%smergeResults = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%smergeResults = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%smergeResults = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%smergeResults = 0\n", prefix);
     str += tmpStr;
     if(atts->GetReplicateUnitCellAtoms())
-        SNPRINTF(tmpStr, 1000, "%sreplicateUnitCellAtoms = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sreplicateUnitCellAtoms = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sreplicateUnitCellAtoms = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sreplicateUnitCellAtoms = 0\n", prefix);
     str += tmpStr;
     if(atts->GetShiftPeriodicAtomOrigin())
-        SNPRINTF(tmpStr, 1000, "%sshiftPeriodicAtomOrigin = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sshiftPeriodicAtomOrigin = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sshiftPeriodicAtomOrigin = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sshiftPeriodicAtomOrigin = 0\n", prefix);
     str += tmpStr;
     {   const double *newPeriodicOrigin = atts->GetNewPeriodicOrigin();
-        SNPRINTF(tmpStr, 1000, "%snewPeriodicOrigin = (", prefix);
+        snprintf(tmpStr, 1000, "%snewPeriodicOrigin = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 3; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", newPeriodicOrigin[i]);
+            snprintf(tmpStr, 1000, "%g", newPeriodicOrigin[i]);
             str += tmpStr;
             if(i < 2)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     return str;

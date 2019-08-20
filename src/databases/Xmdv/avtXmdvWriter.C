@@ -8,8 +8,6 @@
 
 #include <avtXmdvWriter.h>
 
-#include <snprintf.h>
-
 #include <vtkCellData.h>
 #include <vtkDataArray.h>
 #include <vtkDataSet.h>
@@ -216,9 +214,9 @@ avtXmdvWriter::WriteChunk(vtkDataSet *ds, int chunk)
 
     char name[1024];
     if (onlyOneBlock)
-        SNPRINTF(name, 1024, "%s.okc", stem.c_str());
+        snprintf(name, 1024, "%s.okc", stem.c_str());
     else
-        SNPRINTF(name, 1024, "%s.%03d.okc", stem.c_str(), chunk);
+        snprintf(name, 1024, "%s.%03d.okc", stem.c_str(), chunk);
 
     ofstream ofile(name);
     if (ofile.fail())

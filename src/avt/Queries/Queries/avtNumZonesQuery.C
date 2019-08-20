@@ -9,7 +9,6 @@
 #include <avtNumZonesQuery.h>
 
 #include <avtDatasetExaminer.h>
-#include <snprintf.h>
 #include <avtParallel.h>
 
 
@@ -72,7 +71,7 @@ avtNumZonesQuery::GetDefaultInputParams(MapNode &params)
 //
 //  Modifications:
 //    Brad Whitlock, Mon Feb 23 12:11:02 PDT 2004
-//    I made it use SNPRINTF to get it to build on Linux.
+//    I made it use snprintf to get it to build on Linux.
 //    
 //    Kathleen Bonnell, Fri Mar  5 15:36:23 PST 2004 
 //    Rewrote code to work correctly in parallel when some processors have
@@ -142,9 +141,9 @@ avtNumZonesQuery::PerformQuery(QueryAttributes *qA)
     result_node["num_zones"] = (int)tz[0];
  
     if (OriginalData())
-        SNPRINTF(msg, 200, "The original number of zones is %lld.", tz[0]);
+        snprintf(msg, 200, "The original number of zones is %lld.", tz[0]);
     else 
-        SNPRINTF(msg, 200, "The actual number of zones is %lld.", tz[0]);
+        snprintf(msg, 200, "The actual number of zones is %lld.", tz[0]);
     
     if (gt != AVT_HAS_GHOSTS)
     {
@@ -154,7 +153,7 @@ avtNumZonesQuery::PerformQuery(QueryAttributes *qA)
     else
     {
         char msg2[200];
-        SNPRINTF(msg2, 200, "%s\nThe number of ghost zones is %lld.", msg, tz[1]);
+        snprintf(msg2, 200, "%s\nThe number of ghost zones is %lld.", msg, tz[1]);
         double results[2] = {(double) tz[0], (double) tz[1]};
         qA->SetResultsValues(results, 2);
         qA->SetResultsMessage(msg2);

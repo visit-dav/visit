@@ -5,7 +5,6 @@
 #include <PyReflectAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyReflectAttributes
@@ -47,35 +46,35 @@ PyReflectAttributes_ToString(const ReflectAttributes *atts, const char *prefix)
     switch (atts->GetOctant())
     {
       case ReflectAttributes::PXPYPZ:
-          SNPRINTF(tmpStr, 1000, "%soctant = %sPXPYPZ  # %s\n", prefix, prefix, octant_names);
+          snprintf(tmpStr, 1000, "%soctant = %sPXPYPZ  # %s\n", prefix, prefix, octant_names);
           str += tmpStr;
           break;
       case ReflectAttributes::NXPYPZ:
-          SNPRINTF(tmpStr, 1000, "%soctant = %sNXPYPZ  # %s\n", prefix, prefix, octant_names);
+          snprintf(tmpStr, 1000, "%soctant = %sNXPYPZ  # %s\n", prefix, prefix, octant_names);
           str += tmpStr;
           break;
       case ReflectAttributes::PXNYPZ:
-          SNPRINTF(tmpStr, 1000, "%soctant = %sPXNYPZ  # %s\n", prefix, prefix, octant_names);
+          snprintf(tmpStr, 1000, "%soctant = %sPXNYPZ  # %s\n", prefix, prefix, octant_names);
           str += tmpStr;
           break;
       case ReflectAttributes::NXNYPZ:
-          SNPRINTF(tmpStr, 1000, "%soctant = %sNXNYPZ  # %s\n", prefix, prefix, octant_names);
+          snprintf(tmpStr, 1000, "%soctant = %sNXNYPZ  # %s\n", prefix, prefix, octant_names);
           str += tmpStr;
           break;
       case ReflectAttributes::PXPYNZ:
-          SNPRINTF(tmpStr, 1000, "%soctant = %sPXPYNZ  # %s\n", prefix, prefix, octant_names);
+          snprintf(tmpStr, 1000, "%soctant = %sPXPYNZ  # %s\n", prefix, prefix, octant_names);
           str += tmpStr;
           break;
       case ReflectAttributes::NXPYNZ:
-          SNPRINTF(tmpStr, 1000, "%soctant = %sNXPYNZ  # %s\n", prefix, prefix, octant_names);
+          snprintf(tmpStr, 1000, "%soctant = %sNXPYNZ  # %s\n", prefix, prefix, octant_names);
           str += tmpStr;
           break;
       case ReflectAttributes::PXNYNZ:
-          SNPRINTF(tmpStr, 1000, "%soctant = %sPXNYNZ  # %s\n", prefix, prefix, octant_names);
+          snprintf(tmpStr, 1000, "%soctant = %sPXNYNZ  # %s\n", prefix, prefix, octant_names);
           str += tmpStr;
           break;
       case ReflectAttributes::NXNYNZ:
-          SNPRINTF(tmpStr, 1000, "%soctant = %sNXNYNZ  # %s\n", prefix, prefix, octant_names);
+          snprintf(tmpStr, 1000, "%soctant = %sNXNYNZ  # %s\n", prefix, prefix, octant_names);
           str += tmpStr;
           break;
       default:
@@ -83,83 +82,83 @@ PyReflectAttributes_ToString(const ReflectAttributes *atts, const char *prefix)
     }
 
     if(atts->GetUseXBoundary())
-        SNPRINTF(tmpStr, 1000, "%suseXBoundary = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%suseXBoundary = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%suseXBoundary = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%suseXBoundary = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sspecifiedX = %g\n", prefix, atts->GetSpecifiedX());
+    snprintf(tmpStr, 1000, "%sspecifiedX = %g\n", prefix, atts->GetSpecifiedX());
     str += tmpStr;
     if(atts->GetUseYBoundary())
-        SNPRINTF(tmpStr, 1000, "%suseYBoundary = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%suseYBoundary = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%suseYBoundary = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%suseYBoundary = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sspecifiedY = %g\n", prefix, atts->GetSpecifiedY());
+    snprintf(tmpStr, 1000, "%sspecifiedY = %g\n", prefix, atts->GetSpecifiedY());
     str += tmpStr;
     if(atts->GetUseZBoundary())
-        SNPRINTF(tmpStr, 1000, "%suseZBoundary = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%suseZBoundary = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%suseZBoundary = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%suseZBoundary = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sspecifiedZ = %g\n", prefix, atts->GetSpecifiedZ());
+    snprintf(tmpStr, 1000, "%sspecifiedZ = %g\n", prefix, atts->GetSpecifiedZ());
     str += tmpStr;
     {   const int *reflections = atts->GetReflections();
-        SNPRINTF(tmpStr, 1000, "%sreflections = (", prefix);
+        snprintf(tmpStr, 1000, "%sreflections = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 8; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%d", reflections[i]);
+            snprintf(tmpStr, 1000, "%d", reflections[i]);
             str += tmpStr;
             if(i < 7)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const double *planePoint = atts->GetPlanePoint();
-        SNPRINTF(tmpStr, 1000, "%splanePoint = (", prefix);
+        snprintf(tmpStr, 1000, "%splanePoint = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 3; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", planePoint[i]);
+            snprintf(tmpStr, 1000, "%g", planePoint[i]);
             str += tmpStr;
             if(i < 2)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const double *planeNormal = atts->GetPlaneNormal();
-        SNPRINTF(tmpStr, 1000, "%splaneNormal = (", prefix);
+        snprintf(tmpStr, 1000, "%splaneNormal = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 3; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", planeNormal[i]);
+            snprintf(tmpStr, 1000, "%g", planeNormal[i]);
             str += tmpStr;
             if(i < 2)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     const char *reflectType_names = "Plane, Axis";
     switch (atts->GetReflectType())
     {
       case ReflectAttributes::Plane:
-          SNPRINTF(tmpStr, 1000, "%sreflectType = %sPlane  # %s\n", prefix, prefix, reflectType_names);
+          snprintf(tmpStr, 1000, "%sreflectType = %sPlane  # %s\n", prefix, prefix, reflectType_names);
           str += tmpStr;
           break;
       case ReflectAttributes::Axis:
-          SNPRINTF(tmpStr, 1000, "%sreflectType = %sAxis  # %s\n", prefix, prefix, reflectType_names);
+          snprintf(tmpStr, 1000, "%sreflectType = %sAxis  # %s\n", prefix, prefix, reflectType_names);
           str += tmpStr;
           break;
       default:

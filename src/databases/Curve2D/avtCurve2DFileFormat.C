@@ -16,8 +16,6 @@
 #include <vtkRectilinearGrid.h>
 #include <vtkVisItUtility.h>
 
-#include <snprintf.h>
-
 #include <avtCallback.h>
 #include <avtDatabaseMetaData.h>
 
@@ -302,7 +300,7 @@ avtCurve2DFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         char msg[512] = "Further warnings will be supressed";           \
         if (invalidPointCount < 6)                                      \
         {                                                               \
-            SNPRINTF(msg, sizeof(msg),"Encountered invalid point "      \
+            snprintf(msg, sizeof(msg),"Encountered invalid point "      \
                 "at or near line %d beginning with \"%s\"",             \
                 lineCount, lineName.c_str());                           \
         }                                                               \

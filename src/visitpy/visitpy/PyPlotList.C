@@ -5,7 +5,6 @@
 #include <PyPlotList.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 #include <PyPlot.h>
 
 // ****************************************************************************
@@ -49,7 +48,7 @@ PyPlotList_ToString(const PlotList *atts, const char *prefix)
         for(AttributeGroupVector::const_iterator pos = atts->GetPlots().begin(); pos != atts->GetPlots().end(); ++pos, ++index)
         {
             const Plot *current = (const Plot *)(*pos);
-            SNPRINTF(tmpStr, 1000, "GetPlots(%d).", index);
+            snprintf(tmpStr, 1000, "GetPlots(%d).", index);
             std::string objPrefix(prefix + std::string(tmpStr));
             str += PyPlot_ToString(current, objPrefix.c_str());
         }
@@ -79,9 +78,9 @@ PlotList_GetPlots(PyObject *self, PyObject *args)
     {
         char msg[400] = {'\0'};
         if(obj->data->GetPlots().size() == 0)
-            SNPRINTF(msg, 400, "In PlotList::GetPlots : The index %d is invalid because plots is empty.", index);
+            snprintf(msg, 400, "In PlotList::GetPlots : The index %d is invalid because plots is empty.", index);
         else
-            SNPRINTF(msg, 400, "In PlotList::GetPlots : The index %d is invalid. Use index values in: [0, %ld).",  index, obj->data->GetPlots().size());
+            snprintf(msg, 400, "In PlotList::GetPlots : The index %d is invalid. Use index values in: [0, %ld).",  index, obj->data->GetPlots().size());
         PyErr_SetString(PyExc_IndexError, msg);
         return NULL;
     }
@@ -115,7 +114,7 @@ PlotList_AddPlots(PyObject *self, PyObject *args)
     if(!PyPlot_Check(element))
     {
         char msg[400] = {'\0'};
-        SNPRINTF(msg, 400, "The PlotList::AddPlots method only accepts Plot objects.");
+        snprintf(msg, 400, "The PlotList::AddPlots method only accepts Plot objects.");
         PyErr_SetString(PyExc_TypeError, msg);
         return NULL;
     }
@@ -163,7 +162,7 @@ PlotList_RemovePlots(PyObject *self, PyObject *args)
     if(index < 0 || index >= obj->data->GetNumPlots())
     {
         char msg[400] = {'\0'};
-        SNPRINTF(msg, 400, "In PlotList::RemovePlots : Index %d is out of range", index);
+        snprintf(msg, 400, "In PlotList::RemovePlots : Index %d is out of range", index);
         PyErr_SetString(PyExc_IndexError, msg);
         return NULL;
     }

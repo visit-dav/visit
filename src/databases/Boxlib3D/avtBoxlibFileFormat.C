@@ -45,7 +45,6 @@
 #include <string>
 #include <visitstream.h>
 #include <visit-config.h>
-#include <snprintf.h>
 
 #include <ctype.h>
 #include <stdlib.h>
@@ -833,7 +832,7 @@ AVTBOXLIBFILEFORMAT::ReadHeader(void)
     if (dimension != integer)
     {
         char msg[256];
-        SNPRINTF(msg, sizeof(msg),
+        snprintf(msg, sizeof(msg),
 #if BL_SPACEDIM==2
             "Got dimension=%d! This reader only handles 2D files.", integer);
 #elif BL_SPACEDIM==3

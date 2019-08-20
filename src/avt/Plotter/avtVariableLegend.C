@@ -13,7 +13,6 @@
 
 #include <DebugStream.h>
 #include <float.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 //  Method: avtVariableLegend constructor
@@ -436,7 +435,7 @@ avtVariableLegend::SetNumberFormat(const char *fmt)
 
     // Use the format in the min/max range label.
     char rangeFormat[200];
-    SNPRINTF(rangeFormat, 200, "Max: %s\nMin: %s", fmt, fmt);
+    snprintf(rangeFormat, 200, "Max: %s\nMin: %s", fmt, fmt);
     sBar->SetRangeFormat(rangeFormat);
 }
 

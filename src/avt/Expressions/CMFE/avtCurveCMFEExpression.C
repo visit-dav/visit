@@ -22,8 +22,6 @@
 #include <DebugStream.h>
 #include <InvalidMergeException.h>
 #include <Utility.h>
-#include <snprintf.h>
-
 
 // ****************************************************************************
 //  Method: avtCurveCMFEExpression constructor

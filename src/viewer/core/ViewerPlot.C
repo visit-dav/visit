@@ -8,8 +8,6 @@
 
 #include <ViewerPlot.h>
 
-#include <snprintf.h>
-
 #include <avtActor.h>
 #include <avtDataObjectReader.h>
 #include <avtDatabaseMetaData.h>
@@ -288,7 +286,7 @@ ViewerPlot::ViewerPlot(const int type_,ViewerPlotPluginInfo *viewerPluginInfo_,
     // to legends attributes, etc.
     //
     char tmp[100];
-    SNPRINTF(tmp, 100, "Plot%04d", numPlotsCreated++);
+    snprintf(tmp, 100, "Plot%04d", numPlotsCreated++);
     plotName = std::string(tmp);
 
     //
@@ -567,7 +565,7 @@ ViewerPlot::CopyHelper(const ViewerPlot &obj)
     // to legends attributes, etc.
     //
     char tmp[100];
-    SNPRINTF(tmp, 100, "Plot%04d", numPlotsCreated++);
+    snprintf(tmp, 100, "Plot%04d", numPlotsCreated++);
     plotName = std::string(tmp);
 }
 
@@ -5429,7 +5427,7 @@ ViewerPlot::CreateNode(DataNode *parentNode)
         for(int i = 0; i < nOperators; ++i)
         {
             char tmp[20];
-            SNPRINTF(tmp, 20, "operator%02d", i);
+            snprintf(tmp, 20, "operator%02d", i);
             DataNode *opNode = new DataNode(std::string(tmp));
             operatorNode->AddNode(opNode);
             opNode->AddNode(new DataNode("operatorType",
@@ -5613,7 +5611,7 @@ ViewerPlot::SetFromNode(DataNode *parentNode, const std::string &configVersion)
         for(int i = 0; addOperator; ++i)
         {
             char key[20];
-            SNPRINTF(key, 20, "operator%02d", i);
+            snprintf(key, 20, "operator%02d", i);
             DataNode *opNode = operatorNode->GetNode(key);
             if(opNode)
             {
@@ -5748,7 +5746,7 @@ ViewerPlot::SessionContainsErrors(DataNode *parentNode)
                 for(int i = 0; operatorsPresent && !fatalError; ++i)
                 {
                     char key[20];
-                    SNPRINTF(key, 20, "operator%02d", i);
+                    snprintf(key, 20, "operator%02d", i);
                     DataNode *opNode = operatorNode->GetNode(key);
                     if(opNode)
                     {

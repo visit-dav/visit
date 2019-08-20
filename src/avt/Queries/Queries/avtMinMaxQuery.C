@@ -9,7 +9,6 @@
 #include <avtMinMaxQuery.h>
 
 #include <iomanip>
-#include <snprintf.h>
 #include <string>
 #include <vector>
 #include <sstream>
@@ -903,11 +902,11 @@ avtMinMaxQuery::InfoToString(const MinMaxInfo &info)
     char buf[256];
     string floatFormat = queryAtts.GetFloatFormat();
 
-    SNPRINTF(buf,256,floatFormat.c_str(),info.GetValue());
+    snprintf(buf,256,floatFormat.c_str(),info.GetValue());
 
     res += buf;
     res += " (" + elementName;
-    SNPRINTF(buf,256," %d ",elNum);
+    snprintf(buf,256," %d ",elNum);
     res +=buf;
 
     if (info.GetMatName() != "NO_MAT")
@@ -925,7 +924,7 @@ avtMinMaxQuery::InfoToString(const MinMaxInfo &info)
         }
         else
         {
-            SNPRINTF(buf,256,"in domain %d ",info.GetDomain()+blockOrigin);
+            snprintf(buf,256,"in domain %d ",info.GetDomain()+blockOrigin);
             res += buf;
         }
     }
@@ -935,19 +934,19 @@ avtMinMaxQuery::InfoToString(const MinMaxInfo &info)
     const double *c = info.GetCoord();
     if (queryAtts.GetVarTypes()[0] == QueryAttributes::Curve || scalarCurve)
     {
-        SNPRINTF(buf,256,floatFormat.c_str(),c[0]);
+        snprintf(buf,256,floatFormat.c_str(),c[0]);
         res += buf;
     }
     else if (dimension == 2 && !invTransform)
     {
         format = floatFormat + ", " + floatFormat;
-        SNPRINTF(buf,256,format.c_str(),c[0],c[1]);
+        snprintf(buf,256,format.c_str(),c[0],c[1]);
         res += buf;
     }
     else
     {
         format = floatFormat + ", " + floatFormat + ", " + floatFormat;
-        SNPRINTF(buf,256,format.c_str(),c[0],c[1],c[2]);
+        snprintf(buf,256,format.c_str(),c[0],c[1],c[2]);
         res += buf;
     }
     res +=  ">)";

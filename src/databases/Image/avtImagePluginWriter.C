@@ -8,8 +8,6 @@
 
 #include <avtImagePluginWriter.h>
 
-#include <snprintf.h>
-
 #include <vtkBMPWriter.h>
 #include <vtkDataArray.h>
 #include <vtkCellData.h>
@@ -197,7 +195,7 @@ ConvertDataArrayToUnsignedChar(vtkDataArray *oldArr, bool normalize)
             break;
         default:
             {   char msg[256];
-                SNPRINTF(msg, sizeof(msg), "Cannot convert array to unsigned char");
+                snprintf(msg, sizeof(msg), "Cannot convert array to unsigned char");
                 EXCEPTION1(ImproperUseException, msg); 
             }
     }
@@ -326,20 +324,20 @@ WriteImage(int format, int compression, int quality,
         char prefix[256];
         if (arrName)
         {
-            SNPRINTF(prefix, sizeof(prefix), "%s_%s", fileName.c_str(), arrName);
+            snprintf(prefix, sizeof(prefix), "%s_%s", fileName.c_str(), arrName);
         }
         else
         {
             if (numArrs > 1)
-                SNPRINTF(prefix, sizeof(prefix), "%s_%02d",
+                snprintf(prefix, sizeof(prefix), "%s_%02d",
                     fileName.c_str(), arrNum);
             else
-                SNPRINTF(prefix, sizeof(prefix), "%s", fileName.c_str());
+                snprintf(prefix, sizeof(prefix), "%s", fileName.c_str());
         }
         writer->SetFilePrefix(prefix);
 
         char pattern[256];
-        SNPRINTF(pattern, sizeof(pattern), "%%s_%%03d%s", ext.c_str());
+        snprintf(pattern, sizeof(pattern), "%%s_%%03d%s", ext.c_str());
         writer->SetFilePattern(pattern);
     }
     else
@@ -347,16 +345,16 @@ WriteImage(int format, int compression, int quality,
         char filename[256];
         if (arrName)
         {
-            SNPRINTF(filename, sizeof(filename), "%s_%s%s",
+            snprintf(filename, sizeof(filename), "%s_%s%s",
                 fileName.c_str(), arrName, ext.c_str());
         }
         else
         {
             if (numArrs > 1)
-                SNPRINTF(filename, sizeof(filename), "%s_%02d%s",
+                snprintf(filename, sizeof(filename), "%s_%02d%s",
                     fileName.c_str(), arrNum, ext.c_str());
             else
-                SNPRINTF(filename, sizeof(filename), "%s%s",
+                snprintf(filename, sizeof(filename), "%s%s",
                     fileName.c_str(), ext.c_str());
         }
         writer->SetFileName(filename);
@@ -423,7 +421,7 @@ avtImagePluginWriter::WriteChunk(vtkDataSet *ds, int chunk)
         spacing[1] != spacing[2])
     {
         char msg[256];
-        SNPRINTF(msg, sizeof(msg),
+        snprintf(msg, sizeof(msg),
             "The dataset has non-uniform coordinate spacing.\n"
             "The ImagePlugin writer may convert it to uniform.\n");
         if (!avtCallback::IssueWarning(msg))
@@ -444,7 +442,7 @@ avtImagePluginWriter::WriteChunk(vtkDataSet *ds, int chunk)
         if (ncomps == 2 || ncomps > 4)
         {
             char msg[256];
-            SNPRINTF(msg, sizeof(msg),
+            snprintf(msg, sizeof(msg),
                 "An array on the dataset has an unusual number of\n"
                 "components, %d. It is being skipped.\n", ncomps);
             if (!avtCallback::IssueWarning(msg))
@@ -466,7 +464,7 @@ avtImagePluginWriter::WriteChunk(vtkDataSet *ds, int chunk)
         if (ncomps == 2 || ncomps > 4)
         {
             char msg[256];
-            SNPRINTF(msg, sizeof(msg),
+            snprintf(msg, sizeof(msg),
                 "An array on the dataset has an unusual number of\n"
                 "components, %d. It is being skipped.\n", ncomps);
             if (!avtCallback::IssueWarning(msg))

@@ -133,6 +133,31 @@ EOF
         warn "llvm patch for tools/llvm-shlib/CMakeLists.txt failed"
         return 1
     fi
+
+    # fixes a bug in LLVM 5.0.0
+    # a vector<char> is cast to a vector<unsigned char>. This patch comes
+    # from http://lists.busybox.net/pipermail/buildroot/2018-May/221648.html
+    # This is presumably fixed in LLVM 6.0.0.
+
+    patch -p0 << \EOF
+--- include/llvm/ExecutionEngine/Orc/OrcRemoteTargetClient.h.orig	2019-07-26 13:23:06.588925000 -0700
++++ include/llvm/ExecutionEngine/Orc/OrcRemoteTargetClient.h	2019-07-26 13:23:53.990216000 -0700
+@@ -713,8 +713,8 @@
+ 
+   uint32_t getTrampolineSize() const { return RemoteTrampolineSize; }
+ 
+-  Expected<std::vector<char>> readMem(char *Dst, JITTargetAddress Src,
+-                                      uint64_t Size) {
++  Expected<std::vector<uint8_t>> readMem(char *Dst, JITTargetAddress Src,
++                                         uint64_t Size) {
+     // Check for an 'out-of-band' error, e.g. from an MM destructor.
+     if (ExistingError)
+       return std::move(ExistingError);
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "llvm patch for include/llvm/ExecutionEngine/Orc/OrcRemoteTargetClient.h failed"
+        return 1
+    fi
 }
 
 function build_llvm

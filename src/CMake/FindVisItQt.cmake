@@ -37,7 +37,12 @@ IF(NOT DEFINED VISIT_QT_DIR)
     MESSAGE(FATAL_ERROR "Qt5 installation directory not specified")
 ENDIF()
 
-set(QT_MOC_EXECUTABLE ${VISIT_QT_DIR}/bin/moc)
+if(WIN32)
+    set(QT_MOC_EXECUTABLE ${VISIT_QT_DIR}/bin/moc.exe)
+else()
+    set(QT_MOC_EXECUTABLE ${VISIT_QT_DIR}/bin/moc)
+endif()
+
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 #set(QT5_INCLUDE_DIRS "")
 set(QT5_LIBRARIES "")

@@ -48,7 +48,6 @@
 #include <AccessViewerSession.h>
 
 #include <StringHelpers.h>
-#include <snprintf.h>
 
 #define movieAtts ((MovieAttributes *)localCopy)
 
@@ -2344,7 +2343,7 @@ QvisSaveMovieWizard::page2_PopulateTemplates()
                 while((it = templateTitleToInfo.find(title)) != templateTitleToInfo.end())
                 {
                     char buf[10];
-                    SNPRINTF(buf, 10, " (%d)", ver);
+                    snprintf(buf, 10, " (%d)", ver);
                     ++ver;
                     title = title2 + buf;
                 }
@@ -3185,12 +3184,12 @@ QvisSaveMovieWizard::page10_UpdateStartEndIndex()
 
         char tmp[100];
         page10_startIndexLineEdit->blockSignals(true);
-        SNPRINTF(tmp, 100, "%d", movieAtts->GetStartIndex());
+        snprintf(tmp, 100, "%d", movieAtts->GetStartIndex());
         page10_startIndexLineEdit->setText(tmp);
         page10_startIndexLineEdit->blockSignals(false);
 
         page10_endIndexLineEdit->blockSignals(true);
-        SNPRINTF(tmp, 100, "%d", movieAtts->GetEndIndex());
+        snprintf(tmp, 100, "%d", movieAtts->GetEndIndex());
         page10_endIndexLineEdit->setText(tmp);
         page10_endIndexLineEdit->blockSignals(false);
     }

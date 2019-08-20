@@ -7,7 +7,6 @@
 #include <cstring>
 #include <string>
 #include <visitstream.h>
-#include <snprintf.h>
 
 #include <silo.h>
 
@@ -159,7 +158,7 @@ std::string
 DomainFileName(int d)
 {
     char filename[100];
-    SNPRINTF(filename, 100, "TIME%04d.silo", d);
+    snprintf(filename, 100, "TIME%04d.silo", d);
     return filename;
 }
 
@@ -187,7 +186,7 @@ std::string
 DirectoryName(int d)
 {
     char dirname[100];
-    SNPRINTF(dirname, 100, "p%05d", d);
+    snprintf(dirname, 100, "p%05d", d);
     return dirname;
 }
 
@@ -323,7 +322,7 @@ WriteMasterFile(int cycle, const ProgramOptions &opt)
 #define MAX_STRING 500
 
     char root[MAX_STRING];
-    SNPRINTF(root, MAX_STRING, "multidir%04d.root", cycle);
+    snprintf(root, MAX_STRING, "multidir%04d.root", cycle);
     DBfile *db = DBCreate(root, DB_CLOBBER, DB_LOCAL, 
             "Master file of a dataset that tests multimeshes and "
             "multivars with various directory heirarchy levels", opt.driver);
@@ -345,28 +344,28 @@ WriteMasterFile(int cycle, const ProgramOptions &opt)
         std::string dirname = DirectoryName(dom);
 
         meshNames[dom] = new char[MAX_STRING];
-        SNPRINTF(meshNames[dom], MAX_STRING, "%s%s/%s:/Mesh", opt.useAbsoluteFilePaths?cwd.c_str():"",
+        snprintf(meshNames[dom], MAX_STRING, "%s%s/%s:/Mesh", opt.useAbsoluteFilePaths?cwd.c_str():"",
             dirname.c_str(), filename.c_str());
         meshTypes[dom] = DB_QUADMESH;
 
         radial[dom] = new char[MAX_STRING];
-        SNPRINTF(radial[dom], MAX_STRING, "%s%s/%s:/radial", opt.useAbsoluteFilePaths?cwd.c_str():"",
+        snprintf(radial[dom], MAX_STRING, "%s%s/%s:/radial", opt.useAbsoluteFilePaths?cwd.c_str():"",
             dirname.c_str(), filename.c_str());
 
         Array_000[dom] = new char[MAX_STRING];
-        SNPRINTF(Array_000[dom], MAX_STRING, "%s%s/%s:/Array_comps/Array_000", opt.useAbsoluteFilePaths?cwd.c_str():"",
+        snprintf(Array_000[dom], MAX_STRING, "%s%s/%s:/Array_comps/Array_000", opt.useAbsoluteFilePaths?cwd.c_str():"",
             dirname.c_str(), filename.c_str());
 
         Array_001[dom] = new char[MAX_STRING];
-        SNPRINTF(Array_001[dom], MAX_STRING, "%s%s/%s:/Array_comps/Array_001", opt.useAbsoluteFilePaths?cwd.c_str():"",
+        snprintf(Array_001[dom], MAX_STRING, "%s%s/%s:/Array_comps/Array_001", opt.useAbsoluteFilePaths?cwd.c_str():"",
             dirname.c_str(), filename.c_str());
 
         Array_002[dom] = new char[MAX_STRING];
-        SNPRINTF(Array_002[dom], MAX_STRING, "%s%s/%s:/Array_comps/Array_002", opt.useAbsoluteFilePaths?cwd.c_str():"",
+        snprintf(Array_002[dom], MAX_STRING, "%s%s/%s:/Array_comps/Array_002", opt.useAbsoluteFilePaths?cwd.c_str():"",
             dirname.c_str(), filename.c_str());
 
         Array_003[dom] = new char[MAX_STRING];
-        SNPRINTF(Array_003[dom], MAX_STRING, "%s%s/%s:/Array_comps/Array_003", opt.useAbsoluteFilePaths?cwd.c_str():"",
+        snprintf(Array_003[dom], MAX_STRING, "%s%s/%s:/Array_comps/Array_003", opt.useAbsoluteFilePaths?cwd.c_str():"",
             dirname.c_str(), filename.c_str());
 
         varTypes[dom] = DB_QUADVAR;

@@ -8,8 +8,6 @@
 
 #include <float.h>
 
-#include <snprintf.h>
-
 #include <avtPlaneSelection.h>
 
 
@@ -110,7 +108,7 @@ std::string
 avtPlaneSelection::DescriptionString(void)
 {
     char str[1024];
-    SNPRINTF(str, sizeof(str), "avtPlaneSelection:%f_%f_%f_%f_%f_%f",
+    snprintf(str, sizeof(str), "avtPlaneSelection:%f_%f_%f_%f_%f_%f",
                                 normal[0], normal[1], normal[2],
                                 origin[0], origin[1], origin[2]);
     std::string s2 = str;

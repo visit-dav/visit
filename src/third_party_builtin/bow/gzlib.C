@@ -14,7 +14,7 @@
 
 
 #include "gzlib.h"
-#include <snprintf.h>
+#include <stdio.h>
 
 static voidpf zlib_alloc_func(voidpf opaque, uInt items, uInt size);
 static void zlib_free_func(voidpf opaque, voidpf address);
@@ -56,7 +56,7 @@ int gzlib_deflate(gzlib gz,char *inbuf,int insize,
     outbuf=(char *)(*gz->alloc)(gz->opaque,outsize);
     if (!outbuf) {
         gz->error_count++;
-        SNPRINTF(gz->error_msg, 256, "out of memory");
+        snprintf(gz->error_msg, 256, "out of memory");
         return -1;
     }
 
@@ -72,21 +72,21 @@ int gzlib_deflate(gzlib gz,char *inbuf,int insize,
     if (err!=Z_OK) {
         (*gz->free)(gz->opaque,(void *)outbuf);
         gz->error_count++;
-        SNPRINTF(gz->error_msg, 256, "deflateInit failed");
+        snprintf(gz->error_msg, 256, "deflateInit failed");
         return -1;
     }
     err=deflate(&zs,Z_FINISH);
     if (err!=Z_STREAM_END) {
         (*gz->free)(gz->opaque,(void *)outbuf);
         gz->error_count++;
-        SNPRINTF(gz->error_msg, 256, "deflate failed");
+        snprintf(gz->error_msg, 256, "deflate failed");
         return -1;
     }
     err=deflateEnd(&zs);
     if (err!=Z_OK) {
         (*gz->free)(gz->opaque,(void *)outbuf);
         gz->error_count++;
-        SNPRINTF(gz->error_msg, 256, "deflateEnd failed");
+        snprintf(gz->error_msg, 256, "deflateEnd failed");
         return -1;
     }
     outsize=(int)zs.total_out;
@@ -111,7 +111,7 @@ int gzlib_inflate(gzlib gz,char *inbuf,int insize,
         outbuf=(char *)(*gz->alloc)(gz->opaque,outsize);
         if (!outbuf) {
             gz->error_count++;
-            SNPRINTF(gz->error_msg, 256, "out of memory");
+            snprintf(gz->error_msg, 256, "out of memory");
             return -1;
         }
     }
@@ -128,14 +128,14 @@ int gzlib_inflate(gzlib gz,char *inbuf,int insize,
     if (err!=Z_OK) {
         (*gz->free)(gz->opaque,(void *)outbuf);
         gz->error_count++;
-        SNPRINTF(gz->error_msg, 256, "inflateInit failed");
+        snprintf(gz->error_msg, 256, "inflateInit failed");
         return -1;
     }
     err=inflate(&zs,Z_FINISH);
     if (err!=Z_STREAM_END) {
         (*gz->free)(gz->opaque,(void *)outbuf);
         gz->error_count++;
-        SNPRINTF(gz->error_msg, 256, "inflate failed");
+        snprintf(gz->error_msg, 256, "inflate failed");
         return -1;
     }
     outsize=(int)zs.total_out;
@@ -143,7 +143,7 @@ int gzlib_inflate(gzlib gz,char *inbuf,int insize,
     if (err!=Z_OK) {
         (*gz->free)(gz->opaque,(void *)outbuf);
         gz->error_count++;
-        SNPRINTF(gz->error_msg, 256, "inflateEnd failed");
+        snprintf(gz->error_msg, 256, "inflateEnd failed");
         return -1;
     }
 

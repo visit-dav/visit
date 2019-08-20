@@ -5,7 +5,6 @@
 #include <PyExpressionList.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 #include <PyExpression.h>
 
 // ****************************************************************************
@@ -49,7 +48,7 @@ PyExpressionList_ToString(const ExpressionList *atts, const char *prefix)
         for(AttributeGroupVector::const_iterator pos = atts->GetExpressions().begin(); pos != atts->GetExpressions().end(); ++pos, ++index)
         {
             const Expression *current = (const Expression *)(*pos);
-            SNPRINTF(tmpStr, 1000, "GetExpressions(%d).", index);
+            snprintf(tmpStr, 1000, "GetExpressions(%d).", index);
             std::string objPrefix(prefix + std::string(tmpStr));
             str += PyExpression_ToString(current, objPrefix.c_str());
         }
@@ -79,9 +78,9 @@ ExpressionList_GetExpressions(PyObject *self, PyObject *args)
     {
         char msg[400] = {'\0'};
         if(obj->data->GetExpressions().size() == 0)
-            SNPRINTF(msg, 400, "In ExpressionList::GetExpressions : The index %d is invalid because expressions is empty.", index);
+            snprintf(msg, 400, "In ExpressionList::GetExpressions : The index %d is invalid because expressions is empty.", index);
         else
-            SNPRINTF(msg, 400, "In ExpressionList::GetExpressions : The index %d is invalid. Use index values in: [0, %ld).",  index, obj->data->GetExpressions().size());
+            snprintf(msg, 400, "In ExpressionList::GetExpressions : The index %d is invalid. Use index values in: [0, %ld).",  index, obj->data->GetExpressions().size());
         PyErr_SetString(PyExc_IndexError, msg);
         return NULL;
     }
@@ -115,7 +114,7 @@ ExpressionList_AddExpressions(PyObject *self, PyObject *args)
     if(!PyExpression_Check(element))
     {
         char msg[400] = {'\0'};
-        SNPRINTF(msg, 400, "The ExpressionList::AddExpressions method only accepts Expression objects.");
+        snprintf(msg, 400, "The ExpressionList::AddExpressions method only accepts Expression objects.");
         PyErr_SetString(PyExc_TypeError, msg);
         return NULL;
     }
@@ -163,7 +162,7 @@ ExpressionList_RemoveExpressions(PyObject *self, PyObject *args)
     if(index < 0 || index >= obj->data->GetNumExpressions())
     {
         char msg[400] = {'\0'};
-        SNPRINTF(msg, 400, "In ExpressionList::RemoveExpressions : Index %d is out of range", index);
+        snprintf(msg, 400, "In ExpressionList::RemoveExpressions : Index %d is out of range", index);
         PyErr_SetString(PyExc_IndexError, msg);
         return NULL;
     }

@@ -670,7 +670,7 @@ SetWindowAreaAction::Execute()
             char tmp[30];
             w /= 2;
             h /= 2;
-            SNPRINTF(tmp, 30, "%dx%d+%d+%d", w, h, x, y);
+            snprintf(tmp, 30, "%dx%d+%d+%d", w, h, x, y);
             windowMgr->SetGeometry(tmp);
         }
     }

@@ -5,7 +5,6 @@
 #include <PyavtScalarMetaData.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyavtScalarMetaData
@@ -45,31 +44,31 @@ PyavtScalarMetaData_ToString(const avtScalarMetaData *atts, const char *prefix)
     str = PyavtVarMetaData_ToString(atts, prefix);
 
     if(atts->treatAsASCII)
-        SNPRINTF(tmpStr, 1000, "%streatAsASCII = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%streatAsASCII = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%streatAsASCII = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%streatAsASCII = 0\n", prefix);
     str += tmpStr;
     const char *enumerationType_names = "None, ByValue, ByRange, ByBitMask, ByNChooseR";
     switch (atts->GetEnumerationType())
     {
       case avtScalarMetaData::None:
-          SNPRINTF(tmpStr, 1000, "%senumerationType = %sNone  # %s\n", prefix, prefix, enumerationType_names);
+          snprintf(tmpStr, 1000, "%senumerationType = %sNone  # %s\n", prefix, prefix, enumerationType_names);
           str += tmpStr;
           break;
       case avtScalarMetaData::ByValue:
-          SNPRINTF(tmpStr, 1000, "%senumerationType = %sByValue  # %s\n", prefix, prefix, enumerationType_names);
+          snprintf(tmpStr, 1000, "%senumerationType = %sByValue  # %s\n", prefix, prefix, enumerationType_names);
           str += tmpStr;
           break;
       case avtScalarMetaData::ByRange:
-          SNPRINTF(tmpStr, 1000, "%senumerationType = %sByRange  # %s\n", prefix, prefix, enumerationType_names);
+          snprintf(tmpStr, 1000, "%senumerationType = %sByRange  # %s\n", prefix, prefix, enumerationType_names);
           str += tmpStr;
           break;
       case avtScalarMetaData::ByBitMask:
-          SNPRINTF(tmpStr, 1000, "%senumerationType = %sByBitMask  # %s\n", prefix, prefix, enumerationType_names);
+          snprintf(tmpStr, 1000, "%senumerationType = %sByBitMask  # %s\n", prefix, prefix, enumerationType_names);
           str += tmpStr;
           break;
       case avtScalarMetaData::ByNChooseR:
-          SNPRINTF(tmpStr, 1000, "%senumerationType = %sByNChooseR  # %s\n", prefix, prefix, enumerationType_names);
+          snprintf(tmpStr, 1000, "%senumerationType = %sByNChooseR  # %s\n", prefix, prefix, enumerationType_names);
           str += tmpStr;
           break;
       default:
@@ -77,82 +76,82 @@ PyavtScalarMetaData_ToString(const avtScalarMetaData *atts, const char *prefix)
     }
 
     {   const stringVector &enumNames = atts->enumNames;
-        SNPRINTF(tmpStr, 1000, "%senumNames = (", prefix);
+        snprintf(tmpStr, 1000, "%senumNames = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < enumNames.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "\"%s\"", enumNames[i].c_str());
+            snprintf(tmpStr, 1000, "\"%s\"", enumNames[i].c_str());
             str += tmpStr;
             if(i < enumNames.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const doubleVector &enumRanges = atts->enumRanges;
-        SNPRINTF(tmpStr, 1000, "%senumRanges = (", prefix);
+        snprintf(tmpStr, 1000, "%senumRanges = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < enumRanges.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", enumRanges[i]);
+            snprintf(tmpStr, 1000, "%g", enumRanges[i]);
             str += tmpStr;
             if(i < enumRanges.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const double *enumAlwaysExclude = atts->enumAlwaysExclude;
-        SNPRINTF(tmpStr, 1000, "%senumAlwaysExclude = (", prefix);
+        snprintf(tmpStr, 1000, "%senumAlwaysExclude = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 2; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", enumAlwaysExclude[i]);
+            snprintf(tmpStr, 1000, "%g", enumAlwaysExclude[i]);
             str += tmpStr;
             if(i < 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const double *enumAlwaysInclude = atts->enumAlwaysInclude;
-        SNPRINTF(tmpStr, 1000, "%senumAlwaysInclude = (", prefix);
+        snprintf(tmpStr, 1000, "%senumAlwaysInclude = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 2; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", enumAlwaysInclude[i]);
+            snprintf(tmpStr, 1000, "%g", enumAlwaysInclude[i]);
             str += tmpStr;
             if(i < 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     const char *enumPartialCellMode_names = "Include, Exclude, Dissect";
     switch (atts->GetEnumPartialCellMode())
     {
       case avtScalarMetaData::Include:
-          SNPRINTF(tmpStr, 1000, "%senumPartialCellMode = %sInclude  # %s\n", prefix, prefix, enumPartialCellMode_names);
+          snprintf(tmpStr, 1000, "%senumPartialCellMode = %sInclude  # %s\n", prefix, prefix, enumPartialCellMode_names);
           str += tmpStr;
           break;
       case avtScalarMetaData::Exclude:
-          SNPRINTF(tmpStr, 1000, "%senumPartialCellMode = %sExclude  # %s\n", prefix, prefix, enumPartialCellMode_names);
+          snprintf(tmpStr, 1000, "%senumPartialCellMode = %sExclude  # %s\n", prefix, prefix, enumPartialCellMode_names);
           str += tmpStr;
           break;
       case avtScalarMetaData::Dissect:
-          SNPRINTF(tmpStr, 1000, "%senumPartialCellMode = %sDissect  # %s\n", prefix, prefix, enumPartialCellMode_names);
+          snprintf(tmpStr, 1000, "%senumPartialCellMode = %sDissect  # %s\n", prefix, prefix, enumPartialCellMode_names);
           str += tmpStr;
           break;
       default:
@@ -160,78 +159,78 @@ PyavtScalarMetaData_ToString(const avtScalarMetaData *atts, const char *prefix)
     }
 
     {   const intVector &enumGraphEdges = atts->enumGraphEdges;
-        SNPRINTF(tmpStr, 1000, "%senumGraphEdges = (", prefix);
+        snprintf(tmpStr, 1000, "%senumGraphEdges = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < enumGraphEdges.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%d", enumGraphEdges[i]);
+            snprintf(tmpStr, 1000, "%d", enumGraphEdges[i]);
             str += tmpStr;
             if(i < enumGraphEdges.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const stringVector &enumGraphEdgeNames = atts->enumGraphEdgeNames;
-        SNPRINTF(tmpStr, 1000, "%senumGraphEdgeNames = (", prefix);
+        snprintf(tmpStr, 1000, "%senumGraphEdgeNames = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < enumGraphEdgeNames.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "\"%s\"", enumGraphEdgeNames[i].c_str());
+            snprintf(tmpStr, 1000, "\"%s\"", enumGraphEdgeNames[i].c_str());
             str += tmpStr;
             if(i < enumGraphEdgeNames.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const intVector &enumGraphEdgeNameIndexs = atts->enumGraphEdgeNameIndexs;
-        SNPRINTF(tmpStr, 1000, "%senumGraphEdgeNameIndexs = (", prefix);
+        snprintf(tmpStr, 1000, "%senumGraphEdgeNameIndexs = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < enumGraphEdgeNameIndexs.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%d", enumGraphEdgeNameIndexs[i]);
+            snprintf(tmpStr, 1000, "%d", enumGraphEdgeNameIndexs[i]);
             str += tmpStr;
             if(i < enumGraphEdgeNameIndexs.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
-    SNPRINTF(tmpStr, 1000, "%senumNChooseRN = %d\n", prefix, atts->GetEnumNChooseRN());
+    snprintf(tmpStr, 1000, "%senumNChooseRN = %d\n", prefix, atts->GetEnumNChooseRN());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%senumNChooseRMaxR = %d\n", prefix, atts->GetEnumNChooseRMaxR());
+    snprintf(tmpStr, 1000, "%senumNChooseRMaxR = %d\n", prefix, atts->GetEnumNChooseRMaxR());
     str += tmpStr;
     const char *missingDataType_names = "MissingData_None, MissingData_Value, MissingData_Valid_Min, MissingData_Valid_Max, MissingData_Valid_Range";
     switch (atts->GetMissingDataType())
     {
       case avtScalarMetaData::MissingData_None:
-          SNPRINTF(tmpStr, 1000, "%smissingDataType = %sMissingData_None  # %s\n", prefix, prefix, missingDataType_names);
+          snprintf(tmpStr, 1000, "%smissingDataType = %sMissingData_None  # %s\n", prefix, prefix, missingDataType_names);
           str += tmpStr;
           break;
       case avtScalarMetaData::MissingData_Value:
-          SNPRINTF(tmpStr, 1000, "%smissingDataType = %sMissingData_Value  # %s\n", prefix, prefix, missingDataType_names);
+          snprintf(tmpStr, 1000, "%smissingDataType = %sMissingData_Value  # %s\n", prefix, prefix, missingDataType_names);
           str += tmpStr;
           break;
       case avtScalarMetaData::MissingData_Valid_Min:
-          SNPRINTF(tmpStr, 1000, "%smissingDataType = %sMissingData_Valid_Min  # %s\n", prefix, prefix, missingDataType_names);
+          snprintf(tmpStr, 1000, "%smissingDataType = %sMissingData_Valid_Min  # %s\n", prefix, prefix, missingDataType_names);
           str += tmpStr;
           break;
       case avtScalarMetaData::MissingData_Valid_Max:
-          SNPRINTF(tmpStr, 1000, "%smissingDataType = %sMissingData_Valid_Max  # %s\n", prefix, prefix, missingDataType_names);
+          snprintf(tmpStr, 1000, "%smissingDataType = %sMissingData_Valid_Max  # %s\n", prefix, prefix, missingDataType_names);
           str += tmpStr;
           break;
       case avtScalarMetaData::MissingData_Valid_Range:
-          SNPRINTF(tmpStr, 1000, "%smissingDataType = %sMissingData_Valid_Range  # %s\n", prefix, prefix, missingDataType_names);
+          snprintf(tmpStr, 1000, "%smissingDataType = %sMissingData_Valid_Range  # %s\n", prefix, prefix, missingDataType_names);
           str += tmpStr;
           break;
       default:
@@ -239,19 +238,19 @@ PyavtScalarMetaData_ToString(const avtScalarMetaData *atts, const char *prefix)
     }
 
     {   const double *missingData = atts->GetMissingData();
-        SNPRINTF(tmpStr, 1000, "%smissingData = (", prefix);
+        snprintf(tmpStr, 1000, "%smissingData = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 2; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", missingData[i]);
+            snprintf(tmpStr, 1000, "%g", missingData[i]);
             str += tmpStr;
             if(i < 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     return str;

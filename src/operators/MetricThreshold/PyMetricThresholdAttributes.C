@@ -5,7 +5,6 @@
 #include <PyMetricThresholdAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyMetricThresholdAttributes
@@ -50,87 +49,87 @@ PyMetricThresholdAttributes_ToString(const MetricThresholdAttributes *atts, cons
     switch (atts->GetPreset())
     {
       case MetricThresholdAttributes::None:
-          SNPRINTF(tmpStr, 1000, "%spreset = %sNone  # %s\n", prefix, prefix, preset_names);
+          snprintf(tmpStr, 1000, "%spreset = %sNone  # %s\n", prefix, prefix, preset_names);
           str += tmpStr;
           break;
       case MetricThresholdAttributes::Aspect_Ratio:
-          SNPRINTF(tmpStr, 1000, "%spreset = %sAspect_Ratio  # %s\n", prefix, prefix, preset_names);
+          snprintf(tmpStr, 1000, "%spreset = %sAspect_Ratio  # %s\n", prefix, prefix, preset_names);
           str += tmpStr;
           break;
       case MetricThresholdAttributes::Aspect_Gamma:
-          SNPRINTF(tmpStr, 1000, "%spreset = %sAspect_Gamma  # %s\n", prefix, prefix, preset_names);
+          snprintf(tmpStr, 1000, "%spreset = %sAspect_Gamma  # %s\n", prefix, prefix, preset_names);
           str += tmpStr;
           break;
       case MetricThresholdAttributes::Skew:
-          SNPRINTF(tmpStr, 1000, "%spreset = %sSkew  # %s\n", prefix, prefix, preset_names);
+          snprintf(tmpStr, 1000, "%spreset = %sSkew  # %s\n", prefix, prefix, preset_names);
           str += tmpStr;
           break;
       case MetricThresholdAttributes::Taper:
-          SNPRINTF(tmpStr, 1000, "%spreset = %sTaper  # %s\n", prefix, prefix, preset_names);
+          snprintf(tmpStr, 1000, "%spreset = %sTaper  # %s\n", prefix, prefix, preset_names);
           str += tmpStr;
           break;
       case MetricThresholdAttributes::Volume:
-          SNPRINTF(tmpStr, 1000, "%spreset = %sVolume  # %s\n", prefix, prefix, preset_names);
+          snprintf(tmpStr, 1000, "%spreset = %sVolume  # %s\n", prefix, prefix, preset_names);
           str += tmpStr;
           break;
       case MetricThresholdAttributes::Stretch:
-          SNPRINTF(tmpStr, 1000, "%spreset = %sStretch  # %s\n", prefix, prefix, preset_names);
+          snprintf(tmpStr, 1000, "%spreset = %sStretch  # %s\n", prefix, prefix, preset_names);
           str += tmpStr;
           break;
       case MetricThresholdAttributes::Diagonal:
-          SNPRINTF(tmpStr, 1000, "%spreset = %sDiagonal  # %s\n", prefix, prefix, preset_names);
+          snprintf(tmpStr, 1000, "%spreset = %sDiagonal  # %s\n", prefix, prefix, preset_names);
           str += tmpStr;
           break;
       case MetricThresholdAttributes::Dimension:
-          SNPRINTF(tmpStr, 1000, "%spreset = %sDimension  # %s\n", prefix, prefix, preset_names);
+          snprintf(tmpStr, 1000, "%spreset = %sDimension  # %s\n", prefix, prefix, preset_names);
           str += tmpStr;
           break;
       case MetricThresholdAttributes::Oddy:
-          SNPRINTF(tmpStr, 1000, "%spreset = %sOddy  # %s\n", prefix, prefix, preset_names);
+          snprintf(tmpStr, 1000, "%spreset = %sOddy  # %s\n", prefix, prefix, preset_names);
           str += tmpStr;
           break;
       case MetricThresholdAttributes::Condition:
-          SNPRINTF(tmpStr, 1000, "%spreset = %sCondition  # %s\n", prefix, prefix, preset_names);
+          snprintf(tmpStr, 1000, "%spreset = %sCondition  # %s\n", prefix, prefix, preset_names);
           str += tmpStr;
           break;
       case MetricThresholdAttributes::Jacobian:
-          SNPRINTF(tmpStr, 1000, "%spreset = %sJacobian  # %s\n", prefix, prefix, preset_names);
+          snprintf(tmpStr, 1000, "%spreset = %sJacobian  # %s\n", prefix, prefix, preset_names);
           str += tmpStr;
           break;
       case MetricThresholdAttributes::Scaled_Jacobian:
-          SNPRINTF(tmpStr, 1000, "%spreset = %sScaled_Jacobian  # %s\n", prefix, prefix, preset_names);
+          snprintf(tmpStr, 1000, "%spreset = %sScaled_Jacobian  # %s\n", prefix, prefix, preset_names);
           str += tmpStr;
           break;
       case MetricThresholdAttributes::Shear:
-          SNPRINTF(tmpStr, 1000, "%spreset = %sShear  # %s\n", prefix, prefix, preset_names);
+          snprintf(tmpStr, 1000, "%spreset = %sShear  # %s\n", prefix, prefix, preset_names);
           str += tmpStr;
           break;
       case MetricThresholdAttributes::Shape:
-          SNPRINTF(tmpStr, 1000, "%spreset = %sShape  # %s\n", prefix, prefix, preset_names);
+          snprintf(tmpStr, 1000, "%spreset = %sShape  # %s\n", prefix, prefix, preset_names);
           str += tmpStr;
           break;
       case MetricThresholdAttributes::Relative_Size:
-          SNPRINTF(tmpStr, 1000, "%spreset = %sRelative_Size  # %s\n", prefix, prefix, preset_names);
+          snprintf(tmpStr, 1000, "%spreset = %sRelative_Size  # %s\n", prefix, prefix, preset_names);
           str += tmpStr;
           break;
       case MetricThresholdAttributes::Shape_and_Size:
-          SNPRINTF(tmpStr, 1000, "%spreset = %sShape_and_Size  # %s\n", prefix, prefix, preset_names);
+          snprintf(tmpStr, 1000, "%spreset = %sShape_and_Size  # %s\n", prefix, prefix, preset_names);
           str += tmpStr;
           break;
       case MetricThresholdAttributes::Area:
-          SNPRINTF(tmpStr, 1000, "%spreset = %sArea  # %s\n", prefix, prefix, preset_names);
+          snprintf(tmpStr, 1000, "%spreset = %sArea  # %s\n", prefix, prefix, preset_names);
           str += tmpStr;
           break;
       case MetricThresholdAttributes::Warpage:
-          SNPRINTF(tmpStr, 1000, "%spreset = %sWarpage  # %s\n", prefix, prefix, preset_names);
+          snprintf(tmpStr, 1000, "%spreset = %sWarpage  # %s\n", prefix, prefix, preset_names);
           str += tmpStr;
           break;
       case MetricThresholdAttributes::Smallest_Angle:
-          SNPRINTF(tmpStr, 1000, "%spreset = %sSmallest_Angle  # %s\n", prefix, prefix, preset_names);
+          snprintf(tmpStr, 1000, "%spreset = %sSmallest_Angle  # %s\n", prefix, prefix, preset_names);
           str += tmpStr;
           break;
       case MetricThresholdAttributes::Largest_Angle:
-          SNPRINTF(tmpStr, 1000, "%spreset = %sLargest_Angle  # %s\n", prefix, prefix, preset_names);
+          snprintf(tmpStr, 1000, "%spreset = %sLargest_Angle  # %s\n", prefix, prefix, preset_names);
           str += tmpStr;
           break;
       default:
@@ -138,58 +137,58 @@ PyMetricThresholdAttributes_ToString(const MetricThresholdAttributes *atts, cons
     }
 
     if(atts->GetHexahedron())
-        SNPRINTF(tmpStr, 1000, "%sHexahedron = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sHexahedron = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sHexahedron = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sHexahedron = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%shex_lower = %g\n", prefix, atts->GetHex_lower());
+    snprintf(tmpStr, 1000, "%shex_lower = %g\n", prefix, atts->GetHex_lower());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%shex_upper = %g\n", prefix, atts->GetHex_upper());
+    snprintf(tmpStr, 1000, "%shex_upper = %g\n", prefix, atts->GetHex_upper());
     str += tmpStr;
     if(atts->GetTetrahedron())
-        SNPRINTF(tmpStr, 1000, "%sTetrahedron = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sTetrahedron = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sTetrahedron = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sTetrahedron = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%stet_lower = %g\n", prefix, atts->GetTet_lower());
+    snprintf(tmpStr, 1000, "%stet_lower = %g\n", prefix, atts->GetTet_lower());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%stet_upper = %g\n", prefix, atts->GetTet_upper());
+    snprintf(tmpStr, 1000, "%stet_upper = %g\n", prefix, atts->GetTet_upper());
     str += tmpStr;
     if(atts->GetWedge())
-        SNPRINTF(tmpStr, 1000, "%sWedge = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sWedge = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sWedge = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sWedge = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%swed_lower = %g\n", prefix, atts->GetWed_lower());
+    snprintf(tmpStr, 1000, "%swed_lower = %g\n", prefix, atts->GetWed_lower());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%swed_upper = %g\n", prefix, atts->GetWed_upper());
+    snprintf(tmpStr, 1000, "%swed_upper = %g\n", prefix, atts->GetWed_upper());
     str += tmpStr;
     if(atts->GetPyramid())
-        SNPRINTF(tmpStr, 1000, "%sPyramid = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sPyramid = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sPyramid = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sPyramid = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%spyr_lower = %g\n", prefix, atts->GetPyr_lower());
+    snprintf(tmpStr, 1000, "%spyr_lower = %g\n", prefix, atts->GetPyr_lower());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%spyr_upper = %g\n", prefix, atts->GetPyr_upper());
+    snprintf(tmpStr, 1000, "%spyr_upper = %g\n", prefix, atts->GetPyr_upper());
     str += tmpStr;
     if(atts->GetTriangle())
-        SNPRINTF(tmpStr, 1000, "%sTriangle = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sTriangle = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sTriangle = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sTriangle = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%stri_lower = %g\n", prefix, atts->GetTri_lower());
+    snprintf(tmpStr, 1000, "%stri_lower = %g\n", prefix, atts->GetTri_lower());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%stri_upper = %g\n", prefix, atts->GetTri_upper());
+    snprintf(tmpStr, 1000, "%stri_upper = %g\n", prefix, atts->GetTri_upper());
     str += tmpStr;
     if(atts->GetQuad())
-        SNPRINTF(tmpStr, 1000, "%sQuad = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sQuad = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sQuad = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sQuad = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%squad_lower = %g\n", prefix, atts->GetQuad_lower());
+    snprintf(tmpStr, 1000, "%squad_lower = %g\n", prefix, atts->GetQuad_lower());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%squad_upper = %g\n", prefix, atts->GetQuad_upper());
+    snprintf(tmpStr, 1000, "%squad_upper = %g\n", prefix, atts->GetQuad_upper());
     str += tmpStr;
     return str;
 }

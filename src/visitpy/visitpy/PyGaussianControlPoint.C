@@ -5,7 +5,6 @@
 #include <PyGaussianControlPoint.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyGaussianControlPoint
@@ -42,15 +41,15 @@ PyGaussianControlPoint_ToString(const GaussianControlPoint *atts, const char *pr
     std::string str;
     char tmpStr[1000];
 
-    SNPRINTF(tmpStr, 1000, "%sx = %g\n", prefix, atts->GetX());
+    snprintf(tmpStr, 1000, "%sx = %g\n", prefix, atts->GetX());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sheight = %g\n", prefix, atts->GetHeight());
+    snprintf(tmpStr, 1000, "%sheight = %g\n", prefix, atts->GetHeight());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%swidth = %g\n", prefix, atts->GetWidth());
+    snprintf(tmpStr, 1000, "%swidth = %g\n", prefix, atts->GetWidth());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sxBias = %g\n", prefix, atts->GetXBias());
+    snprintf(tmpStr, 1000, "%sxBias = %g\n", prefix, atts->GetXBias());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%syBias = %g\n", prefix, atts->GetYBias());
+    snprintf(tmpStr, 1000, "%syBias = %g\n", prefix, atts->GetYBias());
     str += tmpStr;
     return str;
 }

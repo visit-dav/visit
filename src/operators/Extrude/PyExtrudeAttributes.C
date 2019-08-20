@@ -5,7 +5,6 @@
 #include <PyExtrudeAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyExtrudeAttributes
@@ -43,36 +42,36 @@ PyExtrudeAttributes_ToString(const ExtrudeAttributes *atts, const char *prefix)
     char tmpStr[1000];
 
     {   const double *axis = atts->GetAxis();
-        SNPRINTF(tmpStr, 1000, "%saxis = (", prefix);
+        snprintf(tmpStr, 1000, "%saxis = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 3; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", axis[i]);
+            snprintf(tmpStr, 1000, "%g", axis[i]);
             str += tmpStr;
             if(i < 2)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     if(atts->GetByVariable())
-        SNPRINTF(tmpStr, 1000, "%sbyVariable = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sbyVariable = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sbyVariable = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sbyVariable = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%svariable = \"%s\"\n", prefix, atts->GetVariable().c_str());
+    snprintf(tmpStr, 1000, "%svariable = \"%s\"\n", prefix, atts->GetVariable().c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%slength = %g\n", prefix, atts->GetLength());
+    snprintf(tmpStr, 1000, "%slength = %g\n", prefix, atts->GetLength());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%ssteps = %d\n", prefix, atts->GetSteps());
+    snprintf(tmpStr, 1000, "%ssteps = %d\n", prefix, atts->GetSteps());
     str += tmpStr;
     if(atts->GetPreserveOriginalCellNumbers())
-        SNPRINTF(tmpStr, 1000, "%spreserveOriginalCellNumbers = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%spreserveOriginalCellNumbers = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%spreserveOriginalCellNumbers = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%spreserveOriginalCellNumbers = 0\n", prefix);
     str += tmpStr;
     return str;
 }
