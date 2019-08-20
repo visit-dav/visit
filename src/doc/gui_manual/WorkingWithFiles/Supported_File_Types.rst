@@ -6,7 +6,7 @@ Supported File Types
 VisIt_ can create visualizations from databases that are stored in many types 
 of underlying file formats. VisIt_ has a database reader for each supported 
 file format and the database reader is a plugin that reads the data from the 
-input file and imports it into VisIt._ If your data format is not listed in 
+input file and imports it into VisIt_. If your data format is not listed in 
 `File formats supported by VisIt 
 <http://visitusers.org/index.php?title=Detailed_list_of_file_formats_VisIt_supports>`_
 then you can first translate your data into a format that VisIt_ can read 
