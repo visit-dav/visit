@@ -288,14 +288,67 @@ def TestAutoOpaqueFlag():
     CloseDatabase(silo_data_path("globe.silo"))
 
 def TestRandomColor():
-    TestSection("Testing Mesh plot's random color mode")
-    # Set up a mesh plot with the auto opaque flag.
-
+    TestSection("Testing random color mode")
     OpenDatabase(silo_data_path("arbpoly-zoohybrid.silo"))
 
+    AddPlot("Mesh", "2D/mesh1_phzl")
+    m = MeshAttributes()
+    m.meshColorSource = m.MeshRandom
+    SetPlotOptions(m)
+    ResetView()
+    DrawPlots()
+    Test("mesh_random_color_01")
 
+    m.meshColorSource = m.Foreground
+    SetPlotOptions(m)
+    m.meshColorSource = m.MeshRandom
+    SetPlotOptions(m)
+    Test("mesh_random_color_02")
+    DeleteAllPlots()
 
+    # Add a series of mesh plots with random opaque color
+    meshnames = ["2D/mesh1_phzl", "2D/mesh1_phzl2", "2D/mesh1_zl1", "2D/mesh1_zl2"]
+    for i in range(len(meshnames)):
+        mname = meshnames[i]
+        AddPlot("Mesh", mname)
+        m = MeshAttributes()
+        m.opaqueColorSource = m.OpaqueRandom
+        SetPlotOptions(m)
+        AddOperator("Transform")
+        ta = TransformAttributes()
+        ta.doTranslate = 1
+        ta.translateY = 3*i
+        SetOperatorOptions(ta)
+        DrawPlots()
+    Test("mesh_random_color_03")
+    DeleteAllPlots()
+    CloseDatabase(silo_data_path("arbpoly-zoohybrid.silo"))
+    
+def TestCustomColor():
+    TestSection("Testing random color mode")
+    OpenDatabase(silo_data_path("arbpoly-zoohybrid.silo"))
 
+    meshnames = ["2D/mesh1_phzl", "2D/mesh1_phzl2", "2D/mesh1_zl1", "2D/mesh1_zl2"]
+    colors = [(255,0,0,255),(0,255,0,255),(0,0,255,255),(0,255,255,255)]
+    for i in range(len(meshnames)):
+        mname = meshnames[i]
+        AddPlot("Mesh", mname)
+        m = MeshAttributes()
+        m.opaqueColorSource = m.OpaqueCustom
+        m.opaqueColor = colors[i]
+        m.meshColorSource = m.MeshCustom
+        m.meshColor = (255,255,255,255)
+        SetPlotOptions(m)
+        AddOperator("Transform")
+        ta = TransformAttributes()
+        ta.doTranslate = 1
+        ta.translateY = 3*i
+        SetOperatorOptions(ta)
+        DrawPlots()
+    Test("mesh_custom_color_01")
+    DeleteAllPlots()
+    CloseDatabase(silo_data_path("arbpoly-zoohybrid.silo"))
+        
 def Main():
     TurnOffAllAnnotations()
     TestCurve()
@@ -303,7 +356,8 @@ def Main():
     TestGlobe()
     TestRect3d()
     TestAutoOpaqueFlag()
-    TestRandomColoring()
+    TestRandomColor()
+    TestCustomColor()
 
 # Added to allow this test to be run with compression too.
 # Another .py file sources this file with 'useCompression'

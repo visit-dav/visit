@@ -46,8 +46,6 @@ Postfix:
         return PyInt_FromLong(0L);
     }
 
-
-
 Code: PyMeshAttributes_setattr
 Prefix:
 Postfix:
@@ -215,3 +213,4 @@ MeshViewerEnginePluginInfo::InitializePlotAtts(AttributeSubject *atts,
 {
     *(MeshAttributes*)atts = *defaultAtts;
 }
+

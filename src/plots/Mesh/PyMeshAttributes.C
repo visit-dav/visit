@@ -66,7 +66,7 @@ PyMeshAttributes_ToString(const MeshAttributes *atts, const char *prefix)
           str += tmpStr;
           break;
       case MeshAttributes::MeshRandom:
-          snprintf(tmpStr, 1000, "%smeshColorSource = %sMeshRandom # %s\n", prefix, prefix, meshColorSource_names);
+          snprintf(tmpStr, 1000, "%smeshColorSource = %sMeshRandom  # %s\n", prefix, prefix, meshColorSource_names);
           str += tmpStr;
           break;
       default:
@@ -85,7 +85,7 @@ PyMeshAttributes_ToString(const MeshAttributes *atts, const char *prefix)
           str += tmpStr;
           break;
       case MeshAttributes::OpaqueRandom:
-          snprintf(tmpStr, 1000, "%sopaqueColorSource = %sOpaqueRandom # %s\n", prefix, prefix, opaqueColorSource_names);
+          snprintf(tmpStr, 1000, "%sopaqueColorSource = %sOpaqueRandom  # %s\n", prefix, prefix, opaqueColorSource_names);
           str += tmpStr;
           break;
       default:
@@ -338,12 +338,12 @@ MeshAttributes_SetMeshColorSource(PyObject *self, PyObject *args)
         return NULL;
 
     // Set the meshColorSource in the object.
-    if(ival >= 0 && ival < 2)
+    if(ival >= 0 && ival < 3)
         obj->data->SetMeshColorSource(MeshAttributes::MeshColor(ival));
     else
     {
         fprintf(stderr, "An invalid meshColorSource value was given. "
-                        "Valid values are in the range of [0,1]. "
+                        "Valid values are in the range of [0,2]. "
                         "You can also use the following names: "
                         "Foreground, MeshCustom, MeshRandom.");
         return NULL;
@@ -371,12 +371,12 @@ MeshAttributes_SetOpaqueColorSource(PyObject *self, PyObject *args)
         return NULL;
 
     // Set the opaqueColorSource in the object.
-    if(ival >= 0 && ival < 2)
+    if(ival >= 0 && ival < 3)
         obj->data->SetOpaqueColorSource(MeshAttributes::OpaqueColor(ival));
     else
     {
         fprintf(stderr, "An invalid opaqueColorSource value was given. "
-                        "Valid values are in the range of [0,1]. "
+                        "Valid values are in the range of [0,2]. "
                         "You can also use the following names: "
                         "Background, OpaqueCustom, OpaqueRandom.");
         return NULL;
