@@ -10,7 +10,7 @@ are directly tied to plots. Annotations are an essential component of a good
 visualization because they make it clear what is being visualized and make
 the visualization appear more polished.
 
-VisIt supports several different annotation types that can be used to enhance
+VisIt_ supports several different annotation types that can be used to enhance
 visualizations. The first category of annotations includes general annotations
 like the database name, the user name, and plot legends. These annotations
 convey a good deal of information about what is being visualized, what values
@@ -18,7 +18,7 @@ are in the plots, and who created the visualization. The second category of
 annotations include the plot axes and labels. This group of annotations comes
 in three groups: 2D, 3D and Array. The attributes for these groups can be
 set independently. Colors can greatly enhance the look of a visualization so
-VisIt provides controls to set the colors used for annotations and the
+VisIt_ provides controls to set the colors used for annotations and the
 visualization window that contains them. The third and final category includes
 annotation objects that can be added to the visualization window. You can add
 as many annotation objects as you want to a visualization window. The currently
@@ -50,7 +50,7 @@ General Annotations
 
    2D plot with annotations 
 
-VisIt has a few general annotations that describe the visualization and are
+VisIt_ has a few general annotations that describe the visualization and are
 independent of the type of database in the visualization. General annotations
 encompass the user name, the database name, and plot legends. The general
 annotation controls are located in the **General** tab. 
@@ -63,7 +63,7 @@ Turning plot legends off globally
 Plot legends are special annotations that are added by plots. An example of
 a plot legend is the color bar and title that the Pseudocolor plot adds to
 the visualization window. Normally, plot legends are turned on or off by a
-check box in a plot attribute window but VisIt also provides a check box in
+check box in a plot attribute window but VisIt_ also provides a check box in
 the **General** tab that can turn off the plot legends for all the plots
 in the visualization window. You can use the **Legend** check box at the
 top of the **General** tab to turn plot legends off if they are present.
@@ -100,7 +100,7 @@ when you are generating images for presentations.
 2D Annotations
 ~~~~~~~~~~~~~~
 
-VisIt has a number of controls in the **Annotation Window** to control 2D
+VisIt_ has a number of controls in the **Annotation Window** to control 2D
 annotations on the **2D** tab
 (:numref:`Figure %s <fig-MakingItPretty-Annotation2DGeneral>`). The 2D
 annotation settings are primarily concerned with the appearance of the
@@ -162,13 +162,13 @@ axes. The tab for setting the X-Axis properties is shown in
 The axis titles are the names that are drawn along each axis, indicating
 the meaning of the values shown along the axis. Normally, the names used
 for the axis titles come from the database being plotted so the axis titles
-are relevant for the displayed plots. Many of VisIt's database readers
+are relevant for the displayed plots. Many of VisIt_'s database readers
 plugins read file formats that have no support for storing axis titles
-so VisIt uses default values such as: "X-Axis", "Y-Axis". VisIt provides
+so VisIt_ uses default values such as: "X-Axis", "Y-Axis". VisIt_ provides
 options that allow you to override the defaults or the axis titles that
 come from the file. You can control the display of the axis titles by
 enabling and disabling the **Title** check box. If you want to override
-the axis titles that VisIt uses for 2D visualizations, turn on the
+the axis titles that VisIt_ uses for 2D visualizations, turn on the
 **Custom title** check box and type the new axis title into the adjacent
 text field.
 
@@ -198,7 +198,7 @@ marks.
 3D Annotations
 ~~~~~~~~~~~~~~
 
-VisIt has a number of controls, located on the **3D** tab in the
+VisIt_ has a number of controls, located on the **3D** tab in the
 **Annotation Window** for controlling annotations that are used when the
 visualization window contains 3D plots. Like the 2D controls, these
 controls focus mainly on the axes that are drawn around plots.
@@ -271,13 +271,13 @@ axes. The tab for setting the X-Axis properties is shown in
 The axis titles are the names that are drawn along each axis, indicating
 the meaning of the values shown along the axis. Normally, the names used
 for the axis titles come from the database being plotted so the axis titles
-are relevant for the displayed plots. Many of VisIt's database readers
+are relevant for the displayed plots. Many of VisIt_'s database readers
 plugins read file formats that have no support for storing axis titles
-so VisIt uses default values such as: "X-Axis", "Y-Axis" and "Z-Axis".
-VisIt provides options that allow you to override the defaults or the axis
+so VisIt_ uses default values such as: "X-Axis", "Y-Axis" and "Z-Axis".
+VisIt_ provides options that allow you to override the defaults or the axis
 titles that come from the file. You can control the display of the axis
 titles by enabling and disabling the **Title** check box. If you want to
-override the axis titles that VisIt uses for 3D visualizations, turn on
+override the axis titles that VisIt_ uses for 3D visualizations, turn on
 the **Custom title** check box and type the new axis title into the
 adjacent text field.
 
@@ -304,11 +304,13 @@ box. The grid lines are disabled by default but you can enable them by
 checking the **Show grid** check box. The grid lines correspond to the
 major tick marks.
 
+.. _Section-MakintItPretty-AnnotationColors:
+
 Annotation Colors
 ~~~~~~~~~~~~~~~~~
 
 Colors are very important in a visualization since they help to determine
-how easy it is to read annotations. VisIt provides a tab in the
+how easy it is to read annotations. VisIt_ provides a tab in the
 **Annotation Window**, shown in
 :numref:`Figure %s <fig-MakingItPretty-AnnotationColors>`, specifically
 devoted to choosing annotation colors. The **Colors** tab contains controls
@@ -350,7 +352,7 @@ is an **Image sphere**, where an image is projected onto a sphere. This can
 be used to paint the stars onto the background of an astrophysics simulation.
 To change the background style, click the **Background style** radio buttons. 
 
-VisIt provides controls for setting the colors and style used for gradient
+VisIt_ provides controls for setting the colors and style used for gradient
 backgrounds. There are two color buttons: **Gradient color 1** and
 **Gradient color 2** that are used to change colors. To change the
 gradient colors, click on the color buttons and select a color from the
@@ -381,9 +383,9 @@ Annotation Objects
 
 So far, the annotations that have been described can only have a single
 instance. To provide more flexibility in the types and numbers of annotations,
-VisIt allows you to create annotation objects, which are objects that
+VisIt_ allows you to create annotation objects, which are objects that
 are added to the visualization window to convey information about the
-visualization. Currently, VisIt supports six types of annotation objects:
+visualization. Currently, VisIt_ supports six types of annotation objects:
 2D text objects, 3D text objects, time slider objects, 2D line objects, 3D
 line objects and image objects. All of those types of annotation objects
 will be described herein. The **Objects** tab, in the **Annotation Window**
@@ -409,9 +411,9 @@ Creating a new annotation object
 """"""""""""""""""""""""""""""""
 
 The **Create new** area in the **Annotation Window's Objects** tab contains
-one button for each type of annotation object that VisIt can create. Each
-button has the name of the type of annotation object VisIt creates when
-you push it. After pushing one of the buttons, VisIt creates a new instance
+one button for each type of annotation object that VisIt_ can create. Each
+button has the name of the type of annotation object VisIt_ creates when
+you push it. After pushing one of the buttons, VisIt_ creates a new instance
 of the specified annotation object type, adds a new entry to the
 **Annotation objects** list, and displays the appropriate annotation object
 interface in the bottom half of the **Objects** tab to display the attributes
@@ -425,7 +427,7 @@ annotation object. To set attributes for a different annotation object, or
 to hide or delete a different annotation object, you must first select a
 different annotation object in the **Annotation objects** list. Click on a
 different entry in the **Annotation objects** list to highlight a different
-annotation object. Once you have highlighted a new annotation object, VisIt
+annotation object. Once you have highlighted a new annotation object, VisIt_
 displays the object's attributes in the lower half of the **Objects** tab.
 
 Hiding an annotation object
@@ -613,7 +615,7 @@ typing a new text string into the **Text label** text field. Text is
 displayed below the time slider annotation object and it can contain any
 message that you want. The text can even include wildcards such as *$time*,
 which evaluates to the current time for the active database. If you use
-*$time* to make VisIt incorporate the time for the active database, you
+*$time* to make VisIt_ incorporate the time for the active database, you
 can also specify the format string used to display the time. The format
 string is a standard C-language format string (e.g. "%4.6g") and it
 determines the precision used to write out the numbers used in the time
@@ -779,7 +781,7 @@ the image file if you click on the "..." button to the right of the
 **Image source** text field in the **Image annotation interface**, shown
 in :numref:`Figure %s <fig-MakingItPretty-AnnotationObjectImage>`. Note
 that since image annotations are incorporated into a visualization inside
-of VisIt's viewer component, the image file must be located on the same
+of VisIt_'s viewer component, the image file must be located on the same
 computer that runs the viewer.
 
 .. _fig-MakingItPretty-AnnotationObjectImage:
@@ -805,12 +807,12 @@ unchanged, turn off the **Lock aspect** check box.
 
 Finally, if you are overlaying an image annotation whose image contains a
 constant background color or other area that you want to remove, you can
-pick a color that VisIt will make transparent. For example,
+pick a color that VisIt_ will make transparent. For example,
 :numref:`Figure %s <fig-MakingItPretty-AnnotationObjectImageExample>`
 shows an image of some Curve plots overlaid on top of the plots in the
 visualization window and the original background color in the annotation
 object was removed to make it transparent. If you want to make a color in
-an image transparent before VisIt displays it as an image annotation
+an image transparent before VisIt_ displays it as an image annotation
 object, click on the **Transparent color** check box and then select a
 new color by clicking on the **Transparent color** button and picking a
 new color from the **Popup color menu**.
