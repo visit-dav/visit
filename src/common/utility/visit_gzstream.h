@@ -678,6 +678,12 @@ public:
         }
     };
     std::istream &operator()(void) const { return *strm; };
+    int peek(void)
+    {
+        if (igzstrm) return igzstrm->peek();
+        else if (ifstrm) return ifstrm->peek();
+        return 0;
+   };
     void close(void)
     {
         if (igzstrm) igzstrm->close();
