@@ -66,7 +66,7 @@ PyMeshAttributes_ToString(const MeshAttributes *atts, const char *prefix)
           str += tmpStr;
           break;
       case MeshAttributes::MeshRandom:
-          SNPRINTF(tmpStr, 1000, "%smeshColorSource = %sMeshRandom # %s\n", prefix, prefix, meshColorSource_names);
+          snprintf(tmpStr, 1000, "%smeshColorSource = %sMeshRandom # %s\n", prefix, prefix, meshColorSource_names);
           str += tmpStr;
           break;
       default:
@@ -85,7 +85,7 @@ PyMeshAttributes_ToString(const MeshAttributes *atts, const char *prefix)
           str += tmpStr;
           break;
       case MeshAttributes::OpaqueRandom:
-          SNPRINTF(tmpStr, 1000, "%sopaqueColorSource = %sOpaqueRandom # %s\n", prefix, prefix, opaqueColorSource_names);
+          snprintf(tmpStr, 1000, "%sopaqueColorSource = %sOpaqueRandom # %s\n", prefix, prefix, opaqueColorSource_names);
           str += tmpStr;
           break;
       default:
