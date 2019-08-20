@@ -56,7 +56,7 @@ there are three choices
 
 The default is to use *Foreground* color for the mesh and *Background* color
 for the opaque color. In this mode, when these colors are changed via the
-:ref:`Annotation <Section-MakintItPretty-AnnotationColors>` controls,
+:ref:`Annotation <Section-MakingItPretty-AnnotationColors>` controls,
 the **Mesh** plot obeys the newly selected colors.
 Otherwise, the **Mesh** plot maintains its chosen color (either *custom* or
 *random*).

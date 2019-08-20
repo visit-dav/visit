@@ -304,7 +304,7 @@ box. The grid lines are disabled by default but you can enable them by
 checking the **Show grid** check box. The grid lines correspond to the
 major tick marks.
 
-.. _Section-MakintItPretty-AnnotationColors:
+.. _Section-MakingItPretty-AnnotationColors:
 
 Annotation Colors
 ~~~~~~~~~~~~~~~~~
