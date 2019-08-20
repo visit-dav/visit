@@ -1,45 +1,10 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 #include <PyMeshAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 #include <ColorAttribute.h>
 #include <ColorAttribute.h>
 #include <GlyphTypes.h>
@@ -80,24 +45,24 @@ PyMeshAttributes_ToString(const MeshAttributes *atts, const char *prefix)
     char tmpStr[1000];
 
     if(atts->GetLegendFlag())
-        SNPRINTF(tmpStr, 1000, "%slegendFlag = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%slegendFlag = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%slegendFlag = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%slegendFlag = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%slineWidth = %d\n", prefix, atts->GetLineWidth());
+    snprintf(tmpStr, 1000, "%slineWidth = %d\n", prefix, atts->GetLineWidth());
     str += tmpStr;
     const unsigned char *meshColor = atts->GetMeshColor().GetColor();
-    SNPRINTF(tmpStr, 1000, "%smeshColor = (%d, %d, %d, %d)\n", prefix, int(meshColor[0]), int(meshColor[1]), int(meshColor[2]), int(meshColor[3]));
+    snprintf(tmpStr, 1000, "%smeshColor = (%d, %d, %d, %d)\n", prefix, int(meshColor[0]), int(meshColor[1]), int(meshColor[2]), int(meshColor[3]));
     str += tmpStr;
     const char *meshColorSource_names = "Foreground, MeshCustom, MeshRandom";
     switch (atts->GetMeshColorSource())
     {
       case MeshAttributes::Foreground:
-          SNPRINTF(tmpStr, 1000, "%smeshColorSource = %sForeground  # %s\n", prefix, prefix, meshColorSource_names);
+          snprintf(tmpStr, 1000, "%smeshColorSource = %sForeground  # %s\n", prefix, prefix, meshColorSource_names);
           str += tmpStr;
           break;
       case MeshAttributes::MeshCustom:
-          SNPRINTF(tmpStr, 1000, "%smeshColorSource = %sMeshCustom  # %s\n", prefix, prefix, meshColorSource_names);
+          snprintf(tmpStr, 1000, "%smeshColorSource = %sMeshCustom  # %s\n", prefix, prefix, meshColorSource_names);
           str += tmpStr;
           break;
       case MeshAttributes::MeshRandom:
@@ -112,11 +77,11 @@ PyMeshAttributes_ToString(const MeshAttributes *atts, const char *prefix)
     switch (atts->GetOpaqueColorSource())
     {
       case MeshAttributes::Background:
-          SNPRINTF(tmpStr, 1000, "%sopaqueColorSource = %sBackground  # %s\n", prefix, prefix, opaqueColorSource_names);
+          snprintf(tmpStr, 1000, "%sopaqueColorSource = %sBackground  # %s\n", prefix, prefix, opaqueColorSource_names);
           str += tmpStr;
           break;
       case MeshAttributes::OpaqueCustom:
-          SNPRINTF(tmpStr, 1000, "%sopaqueColorSource = %sOpaqueCustom  # %s\n", prefix, prefix, opaqueColorSource_names);
+          snprintf(tmpStr, 1000, "%sopaqueColorSource = %sOpaqueCustom  # %s\n", prefix, prefix, opaqueColorSource_names);
           str += tmpStr;
           break;
       case MeshAttributes::OpaqueRandom:
@@ -131,39 +96,39 @@ PyMeshAttributes_ToString(const MeshAttributes *atts, const char *prefix)
     switch (atts->GetOpaqueMode())
     {
       case MeshAttributes::Auto:
-          SNPRINTF(tmpStr, 1000, "%sopaqueMode = %sAuto  # %s\n", prefix, prefix, opaqueMode_names);
+          snprintf(tmpStr, 1000, "%sopaqueMode = %sAuto  # %s\n", prefix, prefix, opaqueMode_names);
           str += tmpStr;
           break;
       case MeshAttributes::On:
-          SNPRINTF(tmpStr, 1000, "%sopaqueMode = %sOn  # %s\n", prefix, prefix, opaqueMode_names);
+          snprintf(tmpStr, 1000, "%sopaqueMode = %sOn  # %s\n", prefix, prefix, opaqueMode_names);
           str += tmpStr;
           break;
       case MeshAttributes::Off:
-          SNPRINTF(tmpStr, 1000, "%sopaqueMode = %sOff  # %s\n", prefix, prefix, opaqueMode_names);
+          snprintf(tmpStr, 1000, "%sopaqueMode = %sOff  # %s\n", prefix, prefix, opaqueMode_names);
           str += tmpStr;
           break;
       default:
           break;
     }
 
-    SNPRINTF(tmpStr, 1000, "%spointSize = %g\n", prefix, atts->GetPointSize());
+    snprintf(tmpStr, 1000, "%spointSize = %g\n", prefix, atts->GetPointSize());
     str += tmpStr;
     const unsigned char *opaqueColor = atts->GetOpaqueColor().GetColor();
-    SNPRINTF(tmpStr, 1000, "%sopaqueColor = (%d, %d, %d, %d)\n", prefix, int(opaqueColor[0]), int(opaqueColor[1]), int(opaqueColor[2]), int(opaqueColor[3]));
+    snprintf(tmpStr, 1000, "%sopaqueColor = (%d, %d, %d, %d)\n", prefix, int(opaqueColor[0]), int(opaqueColor[1]), int(opaqueColor[2]), int(opaqueColor[3]));
     str += tmpStr;
     const char *smoothingLevel_names = "None, Fast, High";
     switch (atts->GetSmoothingLevel())
     {
       case MeshAttributes::None:
-          SNPRINTF(tmpStr, 1000, "%ssmoothingLevel = %sNone  # %s\n", prefix, prefix, smoothingLevel_names);
+          snprintf(tmpStr, 1000, "%ssmoothingLevel = %sNone  # %s\n", prefix, prefix, smoothingLevel_names);
           str += tmpStr;
           break;
       case MeshAttributes::Fast:
-          SNPRINTF(tmpStr, 1000, "%ssmoothingLevel = %sFast  # %s\n", prefix, prefix, smoothingLevel_names);
+          snprintf(tmpStr, 1000, "%ssmoothingLevel = %sFast  # %s\n", prefix, prefix, smoothingLevel_names);
           str += tmpStr;
           break;
       case MeshAttributes::High:
-          SNPRINTF(tmpStr, 1000, "%ssmoothingLevel = %sHigh  # %s\n", prefix, prefix, smoothingLevel_names);
+          snprintf(tmpStr, 1000, "%ssmoothingLevel = %sHigh  # %s\n", prefix, prefix, smoothingLevel_names);
           str += tmpStr;
           break;
       default:
@@ -171,46 +136,46 @@ PyMeshAttributes_ToString(const MeshAttributes *atts, const char *prefix)
     }
 
     if(atts->GetPointSizeVarEnabled())
-        SNPRINTF(tmpStr, 1000, "%spointSizeVarEnabled = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%spointSizeVarEnabled = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%spointSizeVarEnabled = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%spointSizeVarEnabled = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%spointSizeVar = \"%s\"\n", prefix, atts->GetPointSizeVar().c_str());
+    snprintf(tmpStr, 1000, "%spointSizeVar = \"%s\"\n", prefix, atts->GetPointSizeVar().c_str());
     str += tmpStr;
     const char *pointType_names = "Box, Axis, Icosahedron, Octahedron, Tetrahedron, "
         "SphereGeometry, Point, Sphere";
     switch (atts->GetPointType())
     {
       case Box:
-          SNPRINTF(tmpStr, 1000, "%spointType = %sBox  # %s\n", prefix, prefix, pointType_names);
+          snprintf(tmpStr, 1000, "%spointType = %sBox  # %s\n", prefix, prefix, pointType_names);
           str += tmpStr;
           break;
       case Axis:
-          SNPRINTF(tmpStr, 1000, "%spointType = %sAxis  # %s\n", prefix, prefix, pointType_names);
+          snprintf(tmpStr, 1000, "%spointType = %sAxis  # %s\n", prefix, prefix, pointType_names);
           str += tmpStr;
           break;
       case Icosahedron:
-          SNPRINTF(tmpStr, 1000, "%spointType = %sIcosahedron  # %s\n", prefix, prefix, pointType_names);
+          snprintf(tmpStr, 1000, "%spointType = %sIcosahedron  # %s\n", prefix, prefix, pointType_names);
           str += tmpStr;
           break;
       case Octahedron:
-          SNPRINTF(tmpStr, 1000, "%spointType = %sOctahedron  # %s\n", prefix, prefix, pointType_names);
+          snprintf(tmpStr, 1000, "%spointType = %sOctahedron  # %s\n", prefix, prefix, pointType_names);
           str += tmpStr;
           break;
       case Tetrahedron:
-          SNPRINTF(tmpStr, 1000, "%spointType = %sTetrahedron  # %s\n", prefix, prefix, pointType_names);
+          snprintf(tmpStr, 1000, "%spointType = %sTetrahedron  # %s\n", prefix, prefix, pointType_names);
           str += tmpStr;
           break;
       case SphereGeometry:
-          SNPRINTF(tmpStr, 1000, "%spointType = %sSphereGeometry  # %s\n", prefix, prefix, pointType_names);
+          snprintf(tmpStr, 1000, "%spointType = %sSphereGeometry  # %s\n", prefix, prefix, pointType_names);
           str += tmpStr;
           break;
       case Point:
-          SNPRINTF(tmpStr, 1000, "%spointType = %sPoint  # %s\n", prefix, prefix, pointType_names);
+          snprintf(tmpStr, 1000, "%spointType = %sPoint  # %s\n", prefix, prefix, pointType_names);
           str += tmpStr;
           break;
       case Sphere:
-          SNPRINTF(tmpStr, 1000, "%spointType = %sSphere  # %s\n", prefix, prefix, pointType_names);
+          snprintf(tmpStr, 1000, "%spointType = %sSphere  # %s\n", prefix, prefix, pointType_names);
           str += tmpStr;
           break;
       default:
@@ -218,13 +183,13 @@ PyMeshAttributes_ToString(const MeshAttributes *atts, const char *prefix)
     }
 
     if(atts->GetShowInternal())
-        SNPRINTF(tmpStr, 1000, "%sshowInternal = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sshowInternal = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sshowInternal = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sshowInternal = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%spointSizePixels = %d\n", prefix, atts->GetPointSizePixels());
+    snprintf(tmpStr, 1000, "%spointSizePixels = %d\n", prefix, atts->GetPointSizePixels());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sopacity = %g\n", prefix, atts->GetOpacity());
+    snprintf(tmpStr, 1000, "%sopacity = %g\n", prefix, atts->GetOpacity());
     str += tmpStr;
     return str;
 }

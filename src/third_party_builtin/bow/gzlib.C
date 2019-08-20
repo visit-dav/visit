@@ -1,40 +1,6 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 
 
@@ -48,7 +14,7 @@
 
 
 #include "gzlib.h"
-#include <snprintf.h>
+#include <stdio.h>
 
 static voidpf zlib_alloc_func(voidpf opaque, uInt items, uInt size);
 static void zlib_free_func(voidpf opaque, voidpf address);
@@ -90,7 +56,7 @@ int gzlib_deflate(gzlib gz,char *inbuf,int insize,
     outbuf=(char *)(*gz->alloc)(gz->opaque,outsize);
     if (!outbuf) {
         gz->error_count++;
-        SNPRINTF(gz->error_msg, 256, "out of memory");
+        snprintf(gz->error_msg, 256, "out of memory");
         return -1;
     }
 
@@ -106,21 +72,21 @@ int gzlib_deflate(gzlib gz,char *inbuf,int insize,
     if (err!=Z_OK) {
         (*gz->free)(gz->opaque,(void *)outbuf);
         gz->error_count++;
-        SNPRINTF(gz->error_msg, 256, "deflateInit failed");
+        snprintf(gz->error_msg, 256, "deflateInit failed");
         return -1;
     }
     err=deflate(&zs,Z_FINISH);
     if (err!=Z_STREAM_END) {
         (*gz->free)(gz->opaque,(void *)outbuf);
         gz->error_count++;
-        SNPRINTF(gz->error_msg, 256, "deflate failed");
+        snprintf(gz->error_msg, 256, "deflate failed");
         return -1;
     }
     err=deflateEnd(&zs);
     if (err!=Z_OK) {
         (*gz->free)(gz->opaque,(void *)outbuf);
         gz->error_count++;
-        SNPRINTF(gz->error_msg, 256, "deflateEnd failed");
+        snprintf(gz->error_msg, 256, "deflateEnd failed");
         return -1;
     }
     outsize=(int)zs.total_out;
@@ -145,7 +111,7 @@ int gzlib_inflate(gzlib gz,char *inbuf,int insize,
         outbuf=(char *)(*gz->alloc)(gz->opaque,outsize);
         if (!outbuf) {
             gz->error_count++;
-            SNPRINTF(gz->error_msg, 256, "out of memory");
+            snprintf(gz->error_msg, 256, "out of memory");
             return -1;
         }
     }
@@ -162,14 +128,14 @@ int gzlib_inflate(gzlib gz,char *inbuf,int insize,
     if (err!=Z_OK) {
         (*gz->free)(gz->opaque,(void *)outbuf);
         gz->error_count++;
-        SNPRINTF(gz->error_msg, 256, "inflateInit failed");
+        snprintf(gz->error_msg, 256, "inflateInit failed");
         return -1;
     }
     err=inflate(&zs,Z_FINISH);
     if (err!=Z_STREAM_END) {
         (*gz->free)(gz->opaque,(void *)outbuf);
         gz->error_count++;
-        SNPRINTF(gz->error_msg, 256, "inflate failed");
+        snprintf(gz->error_msg, 256, "inflate failed");
         return -1;
     }
     outsize=(int)zs.total_out;
@@ -177,7 +143,7 @@ int gzlib_inflate(gzlib gz,char *inbuf,int insize,
     if (err!=Z_OK) {
         (*gz->free)(gz->opaque,(void *)outbuf);
         gz->error_count++;
-        SNPRINTF(gz->error_msg, 256, "inflateEnd failed");
+        snprintf(gz->error_msg, 256, "inflateEnd failed");
         return -1;
     }
 

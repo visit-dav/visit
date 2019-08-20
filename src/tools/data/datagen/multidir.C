@@ -1,46 +1,12 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
+
 #include <assert.h>
 #include <cmath>
 #include <cstring>
 #include <string>
 #include <visitstream.h>
-#include <snprintf.h>
 
 #include <silo.h>
 
@@ -192,7 +158,7 @@ std::string
 DomainFileName(int d)
 {
     char filename[100];
-    SNPRINTF(filename, 100, "TIME%04d.silo", d);
+    snprintf(filename, 100, "TIME%04d.silo", d);
     return filename;
 }
 
@@ -220,7 +186,7 @@ std::string
 DirectoryName(int d)
 {
     char dirname[100];
-    SNPRINTF(dirname, 100, "p%05d", d);
+    snprintf(dirname, 100, "p%05d", d);
     return dirname;
 }
 
@@ -356,7 +322,7 @@ WriteMasterFile(int cycle, const ProgramOptions &opt)
 #define MAX_STRING 500
 
     char root[MAX_STRING];
-    SNPRINTF(root, MAX_STRING, "multidir%04d.root", cycle);
+    snprintf(root, MAX_STRING, "multidir%04d.root", cycle);
     DBfile *db = DBCreate(root, DB_CLOBBER, DB_LOCAL, 
             "Master file of a dataset that tests multimeshes and "
             "multivars with various directory heirarchy levels", opt.driver);
@@ -378,28 +344,28 @@ WriteMasterFile(int cycle, const ProgramOptions &opt)
         std::string dirname = DirectoryName(dom);
 
         meshNames[dom] = new char[MAX_STRING];
-        SNPRINTF(meshNames[dom], MAX_STRING, "%s%s/%s:/Mesh", opt.useAbsoluteFilePaths?cwd.c_str():"",
+        snprintf(meshNames[dom], MAX_STRING, "%s%s/%s:/Mesh", opt.useAbsoluteFilePaths?cwd.c_str():"",
             dirname.c_str(), filename.c_str());
         meshTypes[dom] = DB_QUADMESH;
 
         radial[dom] = new char[MAX_STRING];
-        SNPRINTF(radial[dom], MAX_STRING, "%s%s/%s:/radial", opt.useAbsoluteFilePaths?cwd.c_str():"",
+        snprintf(radial[dom], MAX_STRING, "%s%s/%s:/radial", opt.useAbsoluteFilePaths?cwd.c_str():"",
             dirname.c_str(), filename.c_str());
 
         Array_000[dom] = new char[MAX_STRING];
-        SNPRINTF(Array_000[dom], MAX_STRING, "%s%s/%s:/Array_comps/Array_000", opt.useAbsoluteFilePaths?cwd.c_str():"",
+        snprintf(Array_000[dom], MAX_STRING, "%s%s/%s:/Array_comps/Array_000", opt.useAbsoluteFilePaths?cwd.c_str():"",
             dirname.c_str(), filename.c_str());
 
         Array_001[dom] = new char[MAX_STRING];
-        SNPRINTF(Array_001[dom], MAX_STRING, "%s%s/%s:/Array_comps/Array_001", opt.useAbsoluteFilePaths?cwd.c_str():"",
+        snprintf(Array_001[dom], MAX_STRING, "%s%s/%s:/Array_comps/Array_001", opt.useAbsoluteFilePaths?cwd.c_str():"",
             dirname.c_str(), filename.c_str());
 
         Array_002[dom] = new char[MAX_STRING];
-        SNPRINTF(Array_002[dom], MAX_STRING, "%s%s/%s:/Array_comps/Array_002", opt.useAbsoluteFilePaths?cwd.c_str():"",
+        snprintf(Array_002[dom], MAX_STRING, "%s%s/%s:/Array_comps/Array_002", opt.useAbsoluteFilePaths?cwd.c_str():"",
             dirname.c_str(), filename.c_str());
 
         Array_003[dom] = new char[MAX_STRING];
-        SNPRINTF(Array_003[dom], MAX_STRING, "%s%s/%s:/Array_comps/Array_003", opt.useAbsoluteFilePaths?cwd.c_str():"",
+        snprintf(Array_003[dom], MAX_STRING, "%s%s/%s:/Array_comps/Array_003", opt.useAbsoluteFilePaths?cwd.c_str():"",
             dirname.c_str(), filename.c_str());
 
         varTypes[dom] = DB_QUADVAR;

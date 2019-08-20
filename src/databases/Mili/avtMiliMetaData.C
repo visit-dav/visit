@@ -1,40 +1,6 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
 //                             avtMiliMetaData.C                             //
@@ -344,8 +310,8 @@ MiliVariableMetaData::AddSubrecId(int dom, int SRId)
 {
     if (dom > SRIds.size() || dom < 0)
     {
-        char msg[1024];
-        sprintf(msg, "Invalid domain index for subrecord idxs!");
+        char msg[128];
+        snprintf(msg, 128, "Invalid domain index for subrecord idxs!");
         EXCEPTION1(ImproperUseException, msg);
     }
     SRIds[dom].push_back(SRId);
@@ -411,8 +377,8 @@ MiliVariableMetaData::GetPath()
     {
         if (multiMesh)
         {
-            char mmStart[1024];
-            sprintf(mmStart, "Primal (mesh%d)/", meshAssociation);
+            char mmStart[128];
+            snprintf(mmStart, 128, "Primal (mesh%d)/", meshAssociation);
             path = mmStart;
         }
         else
@@ -586,8 +552,8 @@ MiliElementSetMetaData::MiliElementSetMetaData(string sName,
 
         if (multiMesh)
         {
-            char mmStart[1024];
-            sprintf(mmStart, "Primal (mesh%d)/", meshAssociation);
+            char mmStart[128];
+            snprintf(mmStart, 128, "Primal (mesh%d)/", meshAssociation);
             groupPath = mmStart;
         }
         else
@@ -1484,7 +1450,7 @@ MiliClassMetaData::GenerateElementLabels(int domain)
                  idItr != labelIds[domain].end(); idItr++)
             {
                 char cLabel[256];
-                sprintf(cLabel, "%s %i", cSName, (*idItr));
+                snprintf(cLabel, 256, "%s %i", cSName, (*idItr));
                 string sLabel = string(cLabel);
                 elementLabels[domain][pos++] = sLabel;
 
@@ -1793,17 +1759,17 @@ avtMiliMetaData::AddClassMD(int classIdx,
 {
     if (classIdx < 0 || classIdx >= numClasses)
     {
-        char expected[1024]; 
-        char recieved[1024];
-        sprintf(expected, "an index betwen 0 and %d", numClasses - 1);
-        sprintf(recieved, "%d", classIdx);
+        char expected[128]; 
+        char recieved[128];
+        snprintf(expected, 128, "an index betwen 0 and %d", numClasses - 1);
+        snprintf(recieved, 128, "%d", classIdx);
         EXCEPTION2(UnexpectedValueException, expected, recieved);
     }
 
     if (miliClasses == NULL)
     {
-        char msg[1024];
-        sprintf(msg, "Attempting to add MD to uninitialized container!");
+        char msg[128];
+        snprintf(msg, 128, "Attempting to add MD to uninitialized container!");
         EXCEPTION1(ImproperUseException, msg);
     }
 
@@ -2191,15 +2157,15 @@ avtMiliMetaData::AddVarMD(int varIdx,
 
     if (varIdx < 0 || varIdx > numVariables)
     {
-        char msg[1024];
-        sprintf(msg, "Invalid index for adding MiliVariableMetaData!");
+        char msg[128];
+        snprintf(msg, 128, "Invalid index for adding MiliVariableMetaData!");
         EXCEPTION1(ImproperUseException, msg);
     }
 
     if (miliVariables == NULL)
     {
-        char msg[1024];
-        sprintf(msg, "Attempting to add MiliVariableMetaData to "
+        char msg[128];
+        snprintf(msg, 128, "Attempting to add MiliVariableMetaData to "
             "an uninitialized container!");
         EXCEPTION1(ImproperUseException, msg);
     }
@@ -2549,15 +2515,16 @@ avtMiliMetaData::AddVarSubrecInfo(int varIdx,
         }
         else
         {
-            char msg[1024];
-            sprintf(msg, "Attempting to add MD to uninitialized container!");
+            char msg[128];
+            snprintf(msg, 128, 
+                "Attempting to add MD to uninitialized container!");
             EXCEPTION1(ImproperUseException, msg);
         }
     }
     else
     {
-        char msg[1024];
-        sprintf(msg, "Invalid index assignment requested!");
+        char msg[128];
+        snprintf(msg, 128, "Invalid index assignment requested!");
         EXCEPTION1(ImproperUseException, msg);
     }
 }
@@ -2599,8 +2566,8 @@ avtMiliMetaData::GenerateZoneBasedLabels(int domain)
                 {
                     if ((offset + (classLabels->size())) > numCells[domain])
                     {
-                        char msg[1024];
-                        sprintf(msg, "Number of cell labels " 
+                        char msg[128];
+                        snprintf(msg, 128, "Number of cell labels " 
                             "exceeds number of cells?!?");
                         EXCEPTION1(ImproperUseException, msg);
                     }
@@ -2669,8 +2636,8 @@ avtMiliMetaData::GenerateNodeBasedLabels(int domain)
                 {
                     if ((offset + (classLabels->size())) > numNodes[domain])
                     {
-                        char msg[1024];
-                        sprintf(msg, "Number of node labels "
+                        char msg[128];
+                        snprintf(msg, 128, "Number of node labels "
                             "exceeds number of nodes?!?");
                         EXCEPTION1(ImproperUseException, msg);
                     }
@@ -2727,8 +2694,8 @@ avtMiliMetaData::GetZoneBasedLabelsPtr(int domain)
 {
     if (domain < 0 || domain >= numDomains)
     {
-        char msg[1024];
-        sprintf(msg, "Invalid domain for labels pointer!");
+        char msg[128];
+        snprintf(msg, 128, "Invalid domain for labels pointer!");
         EXCEPTION1(ImproperUseException, msg);
     }
 
@@ -2764,8 +2731,8 @@ avtMiliMetaData::GetNodeBasedLabelsPtr(int domain)
 {
     if (domain < 0 || domain >= numDomains)
     {
-        char msg[1024];
-        sprintf(msg, "Invalid domain for labels pointer!");
+        char msg[128];
+        snprintf(msg, 128, "Invalid domain for labels pointer!");
         EXCEPTION1(ImproperUseException, msg);
     }
 
@@ -2901,15 +2868,15 @@ avtMiliMetaData::AddMaterialMD(int matIdx,
 {
     if (matIdx < 0 || matIdx > numMaterials)
     {
-        char msg[1024];
-        sprintf(msg, "Invalid index assignment requested!");
+        char msg[128];
+        snprintf(msg, 128, "Invalid index assignment requested!");
         EXCEPTION1(ImproperUseException, msg);
     }
 
     if (miliMaterials == NULL)
     {
-        char msg[1024];
-        sprintf(msg, "Attempting to add MD to uninitialized container!");
+        char msg[128];
+        snprintf(msg, 128, "Attempting to add MD to uninitialized container!");
         EXCEPTION1(ImproperUseException, msg);
     }
 
@@ -3057,6 +3024,9 @@ avtMiliMetaData::GetSharedVariableInfo(const char *shortName)
 //
 //  Modifications:
 //
+//      Alister Maguire, Fri Jun 28 15:01:24 PDT 2019
+//      Set isLive to false.
+//
 // ****************************************************************************
 
 void
@@ -3097,6 +3067,7 @@ avtMiliMetaData::AddSharedVariableInfo(string shortName,
         SharedVariableInfo *newShared = new SharedVariableInfo();
         newShared->shortName = shortName;
         newShared->isAllES   = false;
+        newShared->isLive    = false;
         newShared->variableIndicies.push_back(varIdx);
         sharedVariables.push_back(newShared);
     }

@@ -8,11 +8,17 @@ Here are links to the datasets used in the VisIt Basics, Data Analysis and Scrip
  * Tarfile: `visit_tutorial_data.tar.gz <http://portal.nersc.gov/project/visit/cyrush/tutorial_data/visit_tutorial_data.tar.gz>`_ (59.8 MB)
  * Zip: `visit_tutorial_data.zip <http://portal.nersc.gov/project/visit/cyrush/tutorial_data/visit_tutorial_data.zip>`_ (59.8 MB)
 
-Here are links to the Aneurysm (Blood Flow) simulation, which is used by one
+Here are links to the data used for Aneurysm (Blood Flow) simulation tutorial, which is also used in one
 of the examples in the Scripting tutorial.
 
  * Tarfile: `aneurysm_tutorial_data.tar.gz <http://portal.nersc.gov/project/visit/cyrush/tutorial_data/aneurysm_tutorial_data.tar.gz>`_ (361 MB)
  * Zip: `aneurysm_tutorial_data.zip <http://portal.nersc.gov/project/visit/cyrush/tutorial_data/aneurysm_tutorial_data.zip>`_ (361 MB)
+
+Here are links to data used for the Potential Flow tutorial.
+
+ * Tarfile: `potential_flow_tutorial_data.tar.gz <http://portal.nersc.gov/project/visit/cyrush/tutorial_data/potential_flow_tutorial_data.tar.gz>`_ (161 MB)
+ * Zip: `potential_flow_tutorial_data.zip <http://portal.nersc.gov/project/visit/cyrush/tutorial_data/potential_flow_tutorial_data.zip>`_ (160 MB)
+
 
 Contents:
 
@@ -23,6 +29,9 @@ Contents:
     VisIt_Basics
     Data_Analysis
     Scripting
+    Aneurysm
+    PotentialFlow
+    
 
 .. Indices and tables
 .. ==================

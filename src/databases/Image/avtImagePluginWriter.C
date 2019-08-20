@@ -1,48 +1,12 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
 //                           avtImagePluginWriter.C                          //
 // ************************************************************************* //
 
 #include <avtImagePluginWriter.h>
-
-#include <snprintf.h>
 
 #include <vtkBMPWriter.h>
 #include <vtkDataArray.h>
@@ -231,7 +195,7 @@ ConvertDataArrayToUnsignedChar(vtkDataArray *oldArr, bool normalize)
             break;
         default:
             {   char msg[256];
-                SNPRINTF(msg, sizeof(msg), "Cannot convert array to unsigned char");
+                snprintf(msg, sizeof(msg), "Cannot convert array to unsigned char");
                 EXCEPTION1(ImproperUseException, msg); 
             }
     }
@@ -360,20 +324,20 @@ WriteImage(int format, int compression, int quality,
         char prefix[256];
         if (arrName)
         {
-            SNPRINTF(prefix, sizeof(prefix), "%s_%s", fileName.c_str(), arrName);
+            snprintf(prefix, sizeof(prefix), "%s_%s", fileName.c_str(), arrName);
         }
         else
         {
             if (numArrs > 1)
-                SNPRINTF(prefix, sizeof(prefix), "%s_%02d",
+                snprintf(prefix, sizeof(prefix), "%s_%02d",
                     fileName.c_str(), arrNum);
             else
-                SNPRINTF(prefix, sizeof(prefix), "%s", fileName.c_str());
+                snprintf(prefix, sizeof(prefix), "%s", fileName.c_str());
         }
         writer->SetFilePrefix(prefix);
 
         char pattern[256];
-        SNPRINTF(pattern, sizeof(pattern), "%%s_%%03d%s", ext.c_str());
+        snprintf(pattern, sizeof(pattern), "%%s_%%03d%s", ext.c_str());
         writer->SetFilePattern(pattern);
     }
     else
@@ -381,16 +345,16 @@ WriteImage(int format, int compression, int quality,
         char filename[256];
         if (arrName)
         {
-            SNPRINTF(filename, sizeof(filename), "%s_%s%s",
+            snprintf(filename, sizeof(filename), "%s_%s%s",
                 fileName.c_str(), arrName, ext.c_str());
         }
         else
         {
             if (numArrs > 1)
-                SNPRINTF(filename, sizeof(filename), "%s_%02d%s",
+                snprintf(filename, sizeof(filename), "%s_%02d%s",
                     fileName.c_str(), arrNum, ext.c_str());
             else
-                SNPRINTF(filename, sizeof(filename), "%s%s",
+                snprintf(filename, sizeof(filename), "%s%s",
                     fileName.c_str(), ext.c_str());
         }
         writer->SetFileName(filename);
@@ -457,7 +421,7 @@ avtImagePluginWriter::WriteChunk(vtkDataSet *ds, int chunk)
         spacing[1] != spacing[2])
     {
         char msg[256];
-        SNPRINTF(msg, sizeof(msg),
+        snprintf(msg, sizeof(msg),
             "The dataset has non-uniform coordinate spacing.\n"
             "The ImagePlugin writer may convert it to uniform.\n");
         if (!avtCallback::IssueWarning(msg))
@@ -478,7 +442,7 @@ avtImagePluginWriter::WriteChunk(vtkDataSet *ds, int chunk)
         if (ncomps == 2 || ncomps > 4)
         {
             char msg[256];
-            SNPRINTF(msg, sizeof(msg),
+            snprintf(msg, sizeof(msg),
                 "An array on the dataset has an unusual number of\n"
                 "components, %d. It is being skipped.\n", ncomps);
             if (!avtCallback::IssueWarning(msg))
@@ -500,7 +464,7 @@ avtImagePluginWriter::WriteChunk(vtkDataSet *ds, int chunk)
         if (ncomps == 2 || ncomps > 4)
         {
             char msg[256];
-            SNPRINTF(msg, sizeof(msg),
+            snprintf(msg, sizeof(msg),
                 "An array on the dataset has an unusual number of\n"
                 "components, %d. It is being skipped.\n", ncomps);
             if (!avtCallback::IssueWarning(msg))

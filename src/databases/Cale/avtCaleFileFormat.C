@@ -1,40 +1,6 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
 //                            avtCaleFileFormat.C                            //
@@ -68,7 +34,6 @@
 
 #include <Expression.h>
 #include <DebugStream.h>
-#include <snprintf.h>
 
 #include <InvalidVariableException.h>
 #include <InvalidDBTypeException.h>
@@ -608,7 +573,7 @@ avtCaleFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             cent = AVT_ZONECENT;
             for (int g = 0 ; g < npbin ; g++ )
             {
-                SNPRINTF(varname,128,"%s_%02d",palist[i].name,g);
+                snprintf(varname,128,"%s_%02d",palist[i].name,g);
                 debug4 << " adding scalar variable " << varname << " len "
                        << palist[i].len << endl;
                 // Add a scalar to the metadata.
@@ -624,7 +589,7 @@ avtCaleFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             cent = AVT_ZONECENT;
             for (int g = 0 ; g < ngrps ; g++ )
             {
-                SNPRINTF(varname,128,"%s_%02d",palist[i].name,g);
+                snprintf(varname,128,"%s_%02d",palist[i].name,g);
                 debug4 << " adding scalar variable " << varname << " len "
                        << palist[i].len << endl;
                 // Add a scalar to the metadata.
@@ -768,7 +733,7 @@ avtCaleFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         char sub_expr[33];
         for ( int g = 0 ; g < npbin ; g++ )
         {
-            SNPRINTF(sub_expr,33,"pbin_%02d",g);
+            snprintf(sub_expr,33,"pbin_%02d",g);
             if (g < npbin-1)
                 strcat(sub_expr,", ");
             expr += sub_expr;
@@ -785,7 +750,7 @@ avtCaleFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         expr = "array_compose(";
         for ( int g = 0 ; g < npbin ; g++ )
         {
-            SNPRINTF(sub_expr,33,"kbin_%02d",g);
+            snprintf(sub_expr,33,"kbin_%02d",g);
             if (g < npbin-1)
                 strcat(sub_expr,", ");
             expr += sub_expr;
@@ -805,7 +770,7 @@ avtCaleFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         char sub_expr[33] ;
         for ( int g = 0 ; g < ngrps ; g++ )
         {
-            SNPRINTF(sub_expr,33,"nflux_%02d",g);
+            snprintf(sub_expr,33,"nflux_%02d",g);
             if (g < ngrps-1)
                 strcat(sub_expr,", ");
             expr += sub_expr;
@@ -832,16 +797,16 @@ avtCaleFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     for ( int i = 1 ; i <= ntp ; i++ )
     {
         char vname[128], label[128];
-        SNPRINTF(vname, 128,"/ppa/tpdata_%d/ncurs",i);
+        snprintf(vname, 128,"/ppa/tpdata_%d/ncurs",i);
         pdberr = PD_read(GetPDBFile(),vname,&ncurves);
         debug4 << "section " << i << " has " << ncurves << " curves " << endl;
 
         for ( int icur = 1 ; icur < ncurves ; icur++ )
         {
-            SNPRINTF(vname, 128, "/ppa/tpdata_%d/tpcur_%d/tplab",i,icur);
+            snprintf(vname, 128, "/ppa/tpdata_%d/tpcur_%d/tplab",i,icur);
             pdberr = PD_read(GetPDBFile(),vname,label);
             debug4 << "label '" << label << "'" << endl;
-            SNPRINTF(vname, 128, "/ppa/tpdata_%d/tpcur_%d/tplen",i,icur);
+            snprintf(vname, 128, "/ppa/tpdata_%d/tpcur_%d/tplen",i,icur);
             pdberr = PD_read(GetPDBFile(),vname,&tplen);
             if (strlen(label) == 0)
                 break /*sprintf(label,"Curve %d",icur)*/;
@@ -860,18 +825,18 @@ avtCaleFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     for ( int i = 1 ; i <= ncp ; i++ )
     {
         char vname[128], label[128];
-        SNPRINTF(vname, 128, "/ppa/cpdata_%d/ncurs",i);
+        snprintf(vname, 128, "/ppa/cpdata_%d/ncurs",i);
         pdberr = PD_read(GetPDBFile(),vname,&ncurves);
-        SNPRINTF(vname, 128, "/ppa/cpdata_%d/ntimes",i);
+        snprintf(vname, 128, "/ppa/cpdata_%d/ntimes",i);
         pdberr = PD_read(GetPDBFile(),vname,&ntimes);
         debug4 << "section " << i << " has " << ncurves << " curves " << endl;
 
         for ( int icur = 1 ; icur < ncurves ; icur++ )
         {
-            SNPRINTF(vname, 128, "/ppa/cpdata_%d/cpcur_%d/tplab",i,icur);
+            snprintf(vname, 128, "/ppa/cpdata_%d/cpcur_%d/tplab",i,icur);
             pdberr = PD_read(GetPDBFile(),vname,label);
             debug4 << "label '" << label << "'" << endl;
-            SNPRINTF(vname, 128, "/ppa/cpdata_%d/cpcur_%d/tplen",i,icur);
+            snprintf(vname, 128, "/ppa/cpdata_%d/cpcur_%d/tplen",i,icur);
             pdberr = PD_read(GetPDBFile(),vname,&tplen);
             if (strlen(label) == 0)
                 break /*sprintf(label,"Curve %d",icur)*/;
@@ -1056,21 +1021,21 @@ avtCaleFileFormat::GetMesh(const char *meshname)
         for ( int i = 1 ; i <= ntp ; i++ )
         {
             char vname[128], label[128];
-            SNPRINTF(vname, 128, "/ppa/tpdata_%d/ncurs",i);
+            snprintf(vname, 128, "/ppa/tpdata_%d/ncurs",i);
             pdberr = PD_read(GetPDBFile(),vname,&ncurves);
-            SNPRINTF(vname, 128, "/ppa/tpdata_%d/ntimes",i);
+            snprintf(vname, 128, "/ppa/tpdata_%d/ntimes",i);
             pdberr = PD_read(GetPDBFile(),vname,&ntimes);
             debug4 << "section " << i << " has " << ncurves
                    << " curves " << endl;
 
             for ( int icur = 1 ; icur < ncurves ; icur++ )
             {
-                SNPRINTF(vname, 128, "/ppa/tpdata_%d/tpcur_%d/tplab",i,icur);
+                snprintf(vname, 128, "/ppa/tpdata_%d/tpcur_%d/tplab",i,icur);
                 pdberr = PD_read(GetPDBFile(),vname,label);
                 if (strcmp(meshname,label) == 0)
                 {
                     debug4 << "matched label '" << label << "'" << endl;
-                    SNPRINTF(vname, 128, "/ppa/tpdata_%d/tpcur_%d/tplen",i,icur);
+                    snprintf(vname, 128, "/ppa/tpdata_%d/tpcur_%d/tplen",i,icur);
                     pdberr = PD_read(GetPDBFile(),vname,&tplen);
                     if (strlen(label) == 0)
                         break /*sprintf(label,"Curve %d",icur)*/;
@@ -1086,9 +1051,9 @@ avtCaleFileFormat::GetMesh(const char *meshname)
                     {
                         ttime = new double[tplen];
                         data  = new double[tplen];
-                        SNPRINTF(vname, 128, "/ppa/tpdata_%d/tpcur_0/tpdat",i);
+                        snprintf(vname, 128, "/ppa/tpdata_%d/tpcur_0/tpdat",i);
                         pdberr = PD_read(GetPDBFile(),vname,ttime);
-                        SNPRINTF(vname, 128, "/ppa/tpdata_%d/tpcur_%d/tpdat",i,icur);
+                        snprintf(vname, 128, "/ppa/tpdata_%d/tpcur_%d/tpdat",i,icur);
                         pdberr = PD_read(GetPDBFile(),vname,data);
                     }
                     foundit = 1;
@@ -1104,21 +1069,21 @@ avtCaleFileFormat::GetMesh(const char *meshname)
             for ( int i = 1 ; i <= ncp ; i++ )
             {
                 char vname[128], label[128];
-                SNPRINTF(vname, 128, "/ppa/cpdata_%d/ncurs",i);
+                snprintf(vname, 128, "/ppa/cpdata_%d/ncurs",i);
                 pdberr = PD_read(GetPDBFile(),vname,&ncurves);
-                SNPRINTF(vname, 128, "/ppa/cpdata_%d/ntimes",i);
+                snprintf(vname, 128, "/ppa/cpdata_%d/ntimes",i);
                 pdberr = PD_read(GetPDBFile(),vname,&ntimes);
                 debug4 << "section " << i << " has " << ncurves
                        << " curves " << endl;
 
                 for ( int icur = 1 ; icur < ncurves ; icur++ )
                 {
-                    SNPRINTF(vname, 128, "/ppa/cpdata_%d/cpcur_%d/tplab",i,icur);
+                    snprintf(vname, 128, "/ppa/cpdata_%d/cpcur_%d/tplab",i,icur);
                     pdberr = PD_read(GetPDBFile(),vname,label);
                     if (strcmp(meshname,label) == 0)
                     {
                         debug4 << "matched label '" << label << "'" << endl;
-                        SNPRINTF(vname, 128, "/ppa/cpdata_%d/cpcur_%d/tplen",i,icur);
+                        snprintf(vname, 128, "/ppa/cpdata_%d/cpcur_%d/tplen",i,icur);
                         pdberr = PD_read(GetPDBFile(),vname,&tplen);
                         if (strlen(label) == 0)
                             break /*sprintf(label,"Curve %d",icur)*/;
@@ -1134,9 +1099,9 @@ avtCaleFileFormat::GetMesh(const char *meshname)
                         {
                             ttime = new double[tplen];
                             data  = new double[tplen];
-                            SNPRINTF(vname, 128, "/ppa/cpdata_%d/cpcur_0/tpdat",i);
+                            snprintf(vname, 128, "/ppa/cpdata_%d/cpcur_0/tpdat",i);
                             pdberr = PD_read(GetPDBFile(),vname,ttime);
-                            SNPRINTF(vname, 128, "/ppa/cpdata_%d/cpcur_%d/tpdat",i,icur);
+                            snprintf(vname, 128, "/ppa/cpdata_%d/cpcur_%d/tpdat",i,icur);
                             pdberr = PD_read(GetPDBFile(),vname,data);
                         }
                         foundit = 1;
@@ -1248,7 +1213,7 @@ avtCaleFileFormat::GetVar(const char *varname)
     }
     else
     {
-        SNPRINTF(vstring,33,"/arrays/%s",varname);
+        snprintf(vstring,33,"/arrays/%s",varname);
         grplen = 1;
         length = namix;
         group = 0;

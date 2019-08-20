@@ -1,40 +1,6 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 #include "VisItControlInterface_V2.h"
 #include "VisItInterfaceTypes_V2P.h"
@@ -83,12 +49,6 @@
 #include <stdarg.h>
 
 #include <visit-config.h> /* For HAVE_SOCKLEN_T */
-
-#ifdef _WIN32
-#define SNPRINTF _snprintf
-#else
-#define SNPRINTF snprintf
-#endif
 
 #define CMD_MAX_STR_LEN 256
 
@@ -408,7 +368,7 @@ GetVisItDirectory(char *visitdir, int maxlen)
 {
     if(visit_directory != NULL)
     {
-        SNPRINTF(visitdir, maxlen, "%s", visit_directory);
+        snprintf(visitdir, maxlen, "%s", visit_directory);
     }
     else
     {
@@ -425,9 +385,9 @@ GetVisItDirectory(char *visitdir, int maxlen)
                     {
                         char curversion[10], *path = NULL;
                         if(beta == 0)
-                            SNPRINTF(curversion, 10, "%d.%d.%d", major, minor, patch);
+                            snprintf(curversion, 10, "%d.%d.%d", major, minor, patch);
                         else
-                            SNPRINTF(curversion, 10, "%d.%d.%db", major, minor, patch);
+                            snprintf(curversion, 10, "%d.%d.%db", major, minor, patch);
                         if(ReadKey(curversion, "VISITHOME", &path))
                         {
                             strcpy(visitversion, curversion);
@@ -439,7 +399,7 @@ GetVisItDirectory(char *visitdir, int maxlen)
                     }
         if(haveVISITHOME)
         {
-            SNPRINTF(visitdir, maxlen, "%s", visitpath);
+            snprintf(visitdir, maxlen, "%s", visitpath);
             free(visitpath);
         }
         else
@@ -484,10 +444,10 @@ static int ReadEnvironmentFromCommand(const char *visitpath, visit_string *outpu
 #ifdef VISIT_COMPILER
 #define STR(s) STR2(s)
 #define STR2(s) #s
-   SNPRINTF(command, LIBSIM_MAX_STRING_SIZE, "%s -compiler %s %s -env -engine 2>/dev/null",
+   snprintf(command, LIBSIM_MAX_STRING_SIZE, "%s -compiler %s %s -env -engine 2>/dev/null",
            visitpath, STR(VISIT_COMPILER), visit_options ? visit_options : "");
 #else
-   SNPRINTF(command, LIBSIM_MAX_STRING_SIZE, "%s %s -env -engine 2>/dev/null",
+   snprintf(command, LIBSIM_MAX_STRING_SIZE, "%s %s -env -engine 2>/dev/null",
            visitpath, visit_options ? visit_options : "");
 #endif
 
@@ -1658,7 +1618,7 @@ static const char *GetHomeDirectory(void)
     if(SUCCEEDED(SHGetFolderPath(NULL, CSIDL_PERSONAL, NULL, 
                              SHGFP_TYPE_CURRENT, szPath))) 
     {
-        SNPRINTF(visituserpath, 512, "%s", szPath);
+        snprintf(visituserpath, 512, "%s", szPath);
         haveVISITUSERHOME = 1;
     }
 
@@ -1722,15 +1682,15 @@ static int EnsureSimulationDirectoryExists(void)
     if((home = GetHomeDirectory()) != NULL)
     {
 #ifdef _WIN32
-        SNPRINTF(str, 1024, "%s/Simulations", home);
+        snprintf(str, 1024, "%s/Simulations", home);
         VisItMkdir(str, 7*64 + 7*8 + 7);
         LIBSIM_MESSAGE1("mkdir %s", str);
 #else
-        SNPRINTF(str, 1024, "%s/.visit", home);
+        snprintf(str, 1024, "%s/.visit", home);
         VisItMkdir(str, 7*64 + 7*8 + 7);
         LIBSIM_MESSAGE1("mkdir %s", str);
 
-        SNPRINTF(str, 1024, "%s/.visit/simulations", home);
+        snprintf(str, 1024, "%s/.visit/simulations", home);
         VisItMkdir(str, 7*64 + 7*8 + 7);
         LIBSIM_MESSAGE1("mkdir %s", str);
 #endif
@@ -1833,11 +1793,11 @@ static int LoadVisItLibrary_Windows(void)
     /* load library */
     if (isParallel)
     {
-        SNPRINTF(lib, 256, "%s\\simV2runtime_par.dll", visitpath);
+        snprintf(lib, 256, "%s\\simV2runtime_par.dll", visitpath);
     }
     else
     {
-        SNPRINTF(lib, 256, "%s\\simV2runtime_ser.dll", visitpath);
+        snprintf(lib, 256, "%s\\simV2runtime_ser.dll", visitpath);
     }
 
     LIBSIM_MESSAGE1("Loading runtime: %s", lib);
@@ -1856,7 +1816,7 @@ static int LoadVisItLibrary_Windows(void)
                       msg, 1024, va);
         wprintf(L"Formatted message: %s\n", msg);
 
-        /*SNPRINTF(lastError, 1024, "Failed to open the VisIt library: %s\n", msg);*/
+        /*snprintf(lastError, 1024, "Failed to open the VisIt library: %s\n", msg);*/
     }
 #endif
 
@@ -2490,12 +2450,12 @@ int VisItSetupEnvironment2(char *env)
     SetDllDirectory(visitpath);
 
     /* Set the VisIt home dir. */
-    SNPRINTF(tmp, LIBSIM_MAX_STRING_SIZE, "VISITHOME=%s", visitpath);
+    snprintf(tmp, LIBSIM_MAX_STRING_SIZE, "VISITHOME=%s", visitpath);
     LIBSIM_MESSAGE(tmp);
     putenv(tmp);
 
     /* Set the plugin dir. */
-    SNPRINTF(tmp, LIBSIM_MAX_STRING_SIZE, "VISITPLUGINDIR=%s", visitpath);
+    snprintf(tmp, LIBSIM_MAX_STRING_SIZE, "VISITPLUGINDIR=%s", visitpath);
     LIBSIM_MESSAGE(tmp);
     putenv(tmp);
 
@@ -2618,7 +2578,7 @@ int VisItInitializeSocketAndDumpSimFile(const char *name,
     {
         if(EnsureSimulationDirectoryExists())
         {
-            SNPRINTF(simulationFileName, MAX_SIMULATION_FILENAME, 
+            snprintf(simulationFileName, MAX_SIMULATION_FILENAME, 
 #ifdef _WIN32
                 "%s/Simulations/%012d.%s.sim2",
 #else
@@ -2628,13 +2588,13 @@ int VisItInitializeSocketAndDumpSimFile(const char *name,
         }
         else
         {
-            SNPRINTF(simulationFileName, MAX_SIMULATION_FILENAME, 
+            snprintf(simulationFileName, MAX_SIMULATION_FILENAME, 
                 "%012d.%s.sim2", (int)time(NULL), name);
         }
     }
     else
     {
-        SNPRINTF(simulationFileName, MAX_SIMULATION_FILENAME, "%s", absoluteFilename);
+        snprintf(simulationFileName, MAX_SIMULATION_FILENAME, "%s", absoluteFilename);
     }
 
     if (!GetLocalhostName())

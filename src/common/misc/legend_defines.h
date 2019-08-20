@@ -1,3 +1,7 @@
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
+
 // The bits that we store in the IntAttribute1 field.
 #define LEGEND_MANAGE_POSITION  0
 #define LEGEND_DRAW_BOX         1

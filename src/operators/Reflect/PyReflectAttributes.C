@@ -1,45 +1,10 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 #include <PyReflectAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyReflectAttributes
@@ -81,35 +46,35 @@ PyReflectAttributes_ToString(const ReflectAttributes *atts, const char *prefix)
     switch (atts->GetOctant())
     {
       case ReflectAttributes::PXPYPZ:
-          SNPRINTF(tmpStr, 1000, "%soctant = %sPXPYPZ  # %s\n", prefix, prefix, octant_names);
+          snprintf(tmpStr, 1000, "%soctant = %sPXPYPZ  # %s\n", prefix, prefix, octant_names);
           str += tmpStr;
           break;
       case ReflectAttributes::NXPYPZ:
-          SNPRINTF(tmpStr, 1000, "%soctant = %sNXPYPZ  # %s\n", prefix, prefix, octant_names);
+          snprintf(tmpStr, 1000, "%soctant = %sNXPYPZ  # %s\n", prefix, prefix, octant_names);
           str += tmpStr;
           break;
       case ReflectAttributes::PXNYPZ:
-          SNPRINTF(tmpStr, 1000, "%soctant = %sPXNYPZ  # %s\n", prefix, prefix, octant_names);
+          snprintf(tmpStr, 1000, "%soctant = %sPXNYPZ  # %s\n", prefix, prefix, octant_names);
           str += tmpStr;
           break;
       case ReflectAttributes::NXNYPZ:
-          SNPRINTF(tmpStr, 1000, "%soctant = %sNXNYPZ  # %s\n", prefix, prefix, octant_names);
+          snprintf(tmpStr, 1000, "%soctant = %sNXNYPZ  # %s\n", prefix, prefix, octant_names);
           str += tmpStr;
           break;
       case ReflectAttributes::PXPYNZ:
-          SNPRINTF(tmpStr, 1000, "%soctant = %sPXPYNZ  # %s\n", prefix, prefix, octant_names);
+          snprintf(tmpStr, 1000, "%soctant = %sPXPYNZ  # %s\n", prefix, prefix, octant_names);
           str += tmpStr;
           break;
       case ReflectAttributes::NXPYNZ:
-          SNPRINTF(tmpStr, 1000, "%soctant = %sNXPYNZ  # %s\n", prefix, prefix, octant_names);
+          snprintf(tmpStr, 1000, "%soctant = %sNXPYNZ  # %s\n", prefix, prefix, octant_names);
           str += tmpStr;
           break;
       case ReflectAttributes::PXNYNZ:
-          SNPRINTF(tmpStr, 1000, "%soctant = %sPXNYNZ  # %s\n", prefix, prefix, octant_names);
+          snprintf(tmpStr, 1000, "%soctant = %sPXNYNZ  # %s\n", prefix, prefix, octant_names);
           str += tmpStr;
           break;
       case ReflectAttributes::NXNYNZ:
-          SNPRINTF(tmpStr, 1000, "%soctant = %sNXNYNZ  # %s\n", prefix, prefix, octant_names);
+          snprintf(tmpStr, 1000, "%soctant = %sNXNYNZ  # %s\n", prefix, prefix, octant_names);
           str += tmpStr;
           break;
       default:
@@ -117,83 +82,83 @@ PyReflectAttributes_ToString(const ReflectAttributes *atts, const char *prefix)
     }
 
     if(atts->GetUseXBoundary())
-        SNPRINTF(tmpStr, 1000, "%suseXBoundary = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%suseXBoundary = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%suseXBoundary = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%suseXBoundary = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sspecifiedX = %g\n", prefix, atts->GetSpecifiedX());
+    snprintf(tmpStr, 1000, "%sspecifiedX = %g\n", prefix, atts->GetSpecifiedX());
     str += tmpStr;
     if(atts->GetUseYBoundary())
-        SNPRINTF(tmpStr, 1000, "%suseYBoundary = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%suseYBoundary = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%suseYBoundary = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%suseYBoundary = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sspecifiedY = %g\n", prefix, atts->GetSpecifiedY());
+    snprintf(tmpStr, 1000, "%sspecifiedY = %g\n", prefix, atts->GetSpecifiedY());
     str += tmpStr;
     if(atts->GetUseZBoundary())
-        SNPRINTF(tmpStr, 1000, "%suseZBoundary = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%suseZBoundary = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%suseZBoundary = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%suseZBoundary = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sspecifiedZ = %g\n", prefix, atts->GetSpecifiedZ());
+    snprintf(tmpStr, 1000, "%sspecifiedZ = %g\n", prefix, atts->GetSpecifiedZ());
     str += tmpStr;
     {   const int *reflections = atts->GetReflections();
-        SNPRINTF(tmpStr, 1000, "%sreflections = (", prefix);
+        snprintf(tmpStr, 1000, "%sreflections = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 8; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%d", reflections[i]);
+            snprintf(tmpStr, 1000, "%d", reflections[i]);
             str += tmpStr;
             if(i < 7)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const double *planePoint = atts->GetPlanePoint();
-        SNPRINTF(tmpStr, 1000, "%splanePoint = (", prefix);
+        snprintf(tmpStr, 1000, "%splanePoint = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 3; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", planePoint[i]);
+            snprintf(tmpStr, 1000, "%g", planePoint[i]);
             str += tmpStr;
             if(i < 2)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const double *planeNormal = atts->GetPlaneNormal();
-        SNPRINTF(tmpStr, 1000, "%splaneNormal = (", prefix);
+        snprintf(tmpStr, 1000, "%splaneNormal = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 3; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", planeNormal[i]);
+            snprintf(tmpStr, 1000, "%g", planeNormal[i]);
             str += tmpStr;
             if(i < 2)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     const char *reflectType_names = "Plane, Axis";
     switch (atts->GetReflectType())
     {
       case ReflectAttributes::Plane:
-          SNPRINTF(tmpStr, 1000, "%sreflectType = %sPlane  # %s\n", prefix, prefix, reflectType_names);
+          snprintf(tmpStr, 1000, "%sreflectType = %sPlane  # %s\n", prefix, prefix, reflectType_names);
           str += tmpStr;
           break;
       case ReflectAttributes::Axis:
-          SNPRINTF(tmpStr, 1000, "%sreflectType = %sAxis  # %s\n", prefix, prefix, reflectType_names);
+          snprintf(tmpStr, 1000, "%sreflectType = %sAxis  # %s\n", prefix, prefix, reflectType_names);
           str += tmpStr;
           break;
       default:

@@ -1,45 +1,10 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 #include <PyViewAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyViewAttributes
@@ -77,122 +42,122 @@ PyViewAttributes_ToString(const ViewAttributes *atts, const char *prefix)
     char tmpStr[1000];
 
     {   const double *viewNormal = atts->GetViewNormal();
-        SNPRINTF(tmpStr, 1000, "%sviewNormal = (", prefix);
+        snprintf(tmpStr, 1000, "%sviewNormal = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 3; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", viewNormal[i]);
+            snprintf(tmpStr, 1000, "%g", viewNormal[i]);
             str += tmpStr;
             if(i < 2)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const double *focus = atts->GetFocus();
-        SNPRINTF(tmpStr, 1000, "%sfocus = (", prefix);
+        snprintf(tmpStr, 1000, "%sfocus = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 3; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", focus[i]);
+            snprintf(tmpStr, 1000, "%g", focus[i]);
             str += tmpStr;
             if(i < 2)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const double *viewUp = atts->GetViewUp();
-        SNPRINTF(tmpStr, 1000, "%sviewUp = (", prefix);
+        snprintf(tmpStr, 1000, "%sviewUp = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 3; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", viewUp[i]);
+            snprintf(tmpStr, 1000, "%g", viewUp[i]);
             str += tmpStr;
             if(i < 2)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
-    SNPRINTF(tmpStr, 1000, "%sviewAngle = %g\n", prefix, atts->GetViewAngle());
+    snprintf(tmpStr, 1000, "%sviewAngle = %g\n", prefix, atts->GetViewAngle());
     str += tmpStr;
     if(atts->GetSetScale())
-        SNPRINTF(tmpStr, 1000, "%ssetScale = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%ssetScale = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%ssetScale = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%ssetScale = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sparallelScale = %g\n", prefix, atts->GetParallelScale());
+    snprintf(tmpStr, 1000, "%sparallelScale = %g\n", prefix, atts->GetParallelScale());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%snearPlane = %g\n", prefix, atts->GetNearPlane());
+    snprintf(tmpStr, 1000, "%snearPlane = %g\n", prefix, atts->GetNearPlane());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sfarPlane = %g\n", prefix, atts->GetFarPlane());
+    snprintf(tmpStr, 1000, "%sfarPlane = %g\n", prefix, atts->GetFarPlane());
     str += tmpStr;
     {   const double *imagePan = atts->GetImagePan();
-        SNPRINTF(tmpStr, 1000, "%simagePan = (", prefix);
+        snprintf(tmpStr, 1000, "%simagePan = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 2; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", imagePan[i]);
+            snprintf(tmpStr, 1000, "%g", imagePan[i]);
             str += tmpStr;
             if(i < 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
-    SNPRINTF(tmpStr, 1000, "%simageZoom = %g\n", prefix, atts->GetImageZoom());
+    snprintf(tmpStr, 1000, "%simageZoom = %g\n", prefix, atts->GetImageZoom());
     str += tmpStr;
     if(atts->GetPerspective())
-        SNPRINTF(tmpStr, 1000, "%sperspective = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sperspective = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sperspective = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sperspective = 0\n", prefix);
     str += tmpStr;
     {   const double *windowCoords = atts->GetWindowCoords();
-        SNPRINTF(tmpStr, 1000, "%swindowCoords = (", prefix);
+        snprintf(tmpStr, 1000, "%swindowCoords = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 4; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", windowCoords[i]);
+            snprintf(tmpStr, 1000, "%g", windowCoords[i]);
             str += tmpStr;
             if(i < 3)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const double *viewportCoords = atts->GetViewportCoords();
-        SNPRINTF(tmpStr, 1000, "%sviewportCoords = (", prefix);
+        snprintf(tmpStr, 1000, "%sviewportCoords = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 4; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", viewportCoords[i]);
+            snprintf(tmpStr, 1000, "%g", viewportCoords[i]);
             str += tmpStr;
             if(i < 3)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
-    SNPRINTF(tmpStr, 1000, "%seyeAngle = %g\n", prefix, atts->GetEyeAngle());
+    snprintf(tmpStr, 1000, "%seyeAngle = %g\n", prefix, atts->GetEyeAngle());
     str += tmpStr;
     return str;
 }

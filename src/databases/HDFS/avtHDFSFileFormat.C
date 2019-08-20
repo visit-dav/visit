@@ -1,40 +1,6 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
 //                            avtHDFSFileFormat.C                           //
@@ -64,7 +30,6 @@
 #include <InvalidVariableException.h>
 #include <InvalidDBTypeException.h>
 #include <InvalidTimeStepException.h>
-#include <snprintf.h>
 
 #include "visit_gzstream.h"
 
@@ -125,38 +90,38 @@ avtHDFSFileFormat::avtHDFSFileFormat(const char *fn)
     }
 
     // confirm ../users.txt.gz is one dir above dBDirName
-    SNPRINTF(tmp, sizeof(tmp), "%s/../../users.txt.gz", dBDirName.c_str());
+    snprintf(tmp, sizeof(tmp), "%s/../../users.txt.gz", dBDirName.c_str());
     sval = FileFunctions::VisItStat(tmp, &sbuf);
     if (sval != 0 || !(sbuf.st_mode&S_IFREG))
     {
-        SNPRINTF(tmp, sizeof(tmp), "Unable to stat %s/../users.txt.gz", dBDirName.c_str());
+        snprintf(tmp, sizeof(tmp), "Unable to stat %s/../users.txt.gz", dBDirName.c_str());
         EXCEPTION1(InvalidDBTypeException, tmp);
     }
 
     // confirm ./dbs.txt.gz is in same dir as dBDirName 
-    SNPRINTF(tmp, sizeof(tmp), "%s/../dbs.txt.gz", dBDirName.c_str());
+    snprintf(tmp, sizeof(tmp), "%s/../dbs.txt.gz", dBDirName.c_str());
     sval = FileFunctions::VisItStat(tmp, &sbuf);
     if (sval != 0 || !(sbuf.st_mode&S_IFREG))
     {
-        SNPRINTF(tmp, sizeof(tmp), "Unable to stat %s/./dbs.txt.gz", dBDirName.c_str());
+        snprintf(tmp, sizeof(tmp), "Unable to stat %s/./dbs.txt.gz", dBDirName.c_str());
         EXCEPTION1(InvalidDBTypeException, tmp);
     }
 
     // confirm states.txt.gz is one dir below dBDirName
-    SNPRINTF(tmp, sizeof(tmp), "%s/states.txt.gz", dBDirName.c_str());
+    snprintf(tmp, sizeof(tmp), "%s/states.txt.gz", dBDirName.c_str());
     sval = FileFunctions::VisItStat(tmp, &sbuf);
     if (sval != 0 || !(sbuf.st_mode&S_IFREG))
     {
-        SNPRINTF(tmp, sizeof(tmp), "unable to stat %s/states.txt.gz", dBDirName.c_str());
+        snprintf(tmp, sizeof(tmp), "unable to stat %s/states.txt.gz", dBDirName.c_str());
         EXCEPTION1(InvalidDBTypeException, tmp);
     }
 
     // confirm meshes.txt.gz is two dirs below dBDirName
-    SNPRINTF(tmp, sizeof(tmp), "%s/000000/meshes.txt.gz", dBDirName.c_str());
+    snprintf(tmp, sizeof(tmp), "%s/000000/meshes.txt.gz", dBDirName.c_str());
     sval = FileFunctions::VisItStat(tmp, &sbuf);
     if (sval != 0 || !(sbuf.st_mode&S_IFREG))
     {
-        SNPRINTF(tmp, sizeof(tmp), "unable to stat %s/000000/meshes.txt.gz", dBDirName.c_str());
+        snprintf(tmp, sizeof(tmp), "unable to stat %s/000000/meshes.txt.gz", dBDirName.c_str());
         EXCEPTION1(InvalidDBTypeException, tmp);
     }
     
@@ -178,7 +143,7 @@ static int CountLinesInFile(char const *dirname, char const *fname)
     char tmp[256];
     int n = 0;
 
-    SNPRINTF(tmp, sizeof(tmp), "%s/%s", dirname, fname);
+    snprintf(tmp, sizeof(tmp), "%s/%s", dirname, fname);
     visit_ifstream ifile(tmp);
     while (!ifile().eof())
     {
@@ -201,7 +166,7 @@ avtHDFSFileFormat::GetCycles(vector<int> &cycles)
     char tmp[256], key[32];
     int cycle, index;
     float time;
-    SNPRINTF(tmp, sizeof(tmp), "%s/states.txt.gz", filename);
+    snprintf(tmp, sizeof(tmp), "%s/states.txt.gz", filename);
     visit_ifstream ifile(tmp);
     while (!ifile().eof())
     {
@@ -218,7 +183,7 @@ avtHDFSFileFormat::GetTimes(vector<double> &times)
     char tmp[256], key[32];
     int cycle, index;
     float time;
-    SNPRINTF(tmp, sizeof(tmp), "%s/states.txt.gz", filename);
+    snprintf(tmp, sizeof(tmp), "%s/states.txt.gz", filename);
     visit_ifstream ifile(tmp);
     while (!ifile().eof())
     {
@@ -277,11 +242,11 @@ avtHDFSFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timeSta
     int sval;
     char tmp[512];
     FileFunctions::VisItStat_t sbuf;
-    SNPRINTF(tmp, sizeof(tmp), "%s/%06d/meshes.txt.gz", filename, timeState);
+    snprintf(tmp, sizeof(tmp), "%s/%06d/meshes.txt.gz", filename, timeState);
     sval = FileFunctions::VisItStat(tmp, &sbuf);
     if (sval != 0 || !(sbuf.st_mode&S_IFREG))
     {
-        SNPRINTF(tmp, sizeof(tmp), "Unable to stat %s/%06d/meshes.txt.gz", filename, timeState);
+        snprintf(tmp, sizeof(tmp), "Unable to stat %s/%06d/meshes.txt.gz", filename, timeState);
         EXCEPTION1(InvalidDBTypeException, tmp);
     }
 
@@ -310,7 +275,7 @@ avtHDFSFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timeSta
         }
 
         // Use block 0 to determine variables
-        SNPRINTF(tmp, sizeof(tmp), "%s/%06d/%s/000000/variables.txt.gz", filename, timeState, mname);
+        snprintf(tmp, sizeof(tmp), "%s/%06d/%s/000000/variables.txt.gz", filename, timeState, mname);
         visit_ifstream vfile(tmp);
         while (!vfile().eof())
         {
@@ -349,7 +314,7 @@ avtHDFSFileFormat::GetMaterial(int tim, int dom, char const *mname)
 {
     // read topology data first (to get # of zones and keys for zones)
     char tmp[512], line[512], zkey[32];
-    SNPRINTF(tmp, sizeof(tmp), "%s/%06d/%s/%06d/topology.txt.gz",
+    snprintf(tmp, sizeof(tmp), "%s/%06d/%s/%06d/topology.txt.gz",
         filename, tim, mname, dom);
     map<string, int> zoneKeyMap;
     int nzones = 0;
@@ -366,7 +331,7 @@ avtHDFSFileFormat::GetMaterial(int tim, int dom, char const *mname)
     // Read first line of materials to get material count
     int i, nmats = 0;
     char *p = &line[0];
-    SNPRINTF(tmp, sizeof(tmp), "%s/%06d/%s/%06d/materials.txt.gz",
+    snprintf(tmp, sizeof(tmp), "%s/%06d/%s/%06d/materials.txt.gz",
         filename, tim, mname, dom);
     visit_ifstream matfile(tmp);
     matfile().getline(line, sizeof(line));
@@ -384,7 +349,7 @@ avtHDFSFileFormat::GetMaterial(int tim, int dom, char const *mname)
     {
         vfracs[i] = new float[nzones];
         matnos[i] = i;
-        SNPRINTF(tmp, sizeof(tmp), "%d", i);
+        snprintf(tmp, sizeof(tmp), "%d", i);
         matnames[i] = strdup(tmp);
     }
 
@@ -410,7 +375,7 @@ avtHDFSFileFormat::GetMaterial(int tim, int dom, char const *mname)
 
     // construct the material object
     char domName[256];
-    SNPRINTF(domName, sizeof(domName), "%d", dom);
+    snprintf(domName, sizeof(domName), "%d", dom);
     avtMaterial *mat = new avtMaterial(nmats, matnos, matnames, 1, &nzones, 0, vfracs, domName);
 
     for (i = 0; i < nmats; i++)
@@ -476,7 +441,7 @@ avtHDFSFileFormat::GetMesh(int timestate, int domain, const char *meshname)
     vtkPoints *points = vtkPoints::New();
     vtkUnsignedCharArray *ghostNodes = vtkUnsignedCharArray::New();
     char tmp[512];
-    SNPRINTF(tmp, sizeof(tmp), "%s/%06d/%s/%06d/coords.txt.gz",
+    snprintf(tmp, sizeof(tmp), "%s/%06d/%s/%06d/coords.txt.gz",
         filename, timestate, meshname, domain);
     visit_ifstream cfile(tmp);
     int i = 0;
@@ -505,7 +470,7 @@ avtHDFSFileFormat::GetMesh(int timestate, int domain, const char *meshname)
 
     bool hasGhostZones = false;
     vtkUnsignedCharArray *ghostZones = vtkUnsignedCharArray::New();
-    SNPRINTF(tmp, sizeof(tmp), "%s/%06d/%s/%06d/topology.txt.gz",
+    snprintf(tmp, sizeof(tmp), "%s/%06d/%s/%06d/topology.txt.gz",
         filename, timestate, meshname, domain);
     visit_ifstream tfile(tmp);
     char *p;
@@ -587,7 +552,7 @@ avtHDFSFileFormat::GetVar(int timestate, int domain, const char *varname)
     avtCentering avcent = (avtCentering) cent;
 
     char tmp[512];
-    SNPRINTF(tmp, sizeof(tmp), "%s/%06d/%s/%06d/%s.txt.gz",
+    snprintf(tmp, sizeof(tmp), "%s/%06d/%s/%06d/%s.txt.gz",
         filename, timestate, metadata->MeshForVar(varname).c_str(), domain,
         avcent == AVT_NODECENT ? "coords" : "topology");
 
@@ -621,7 +586,7 @@ avtHDFSFileFormat::GetVar(int timestate, int domain, const char *varname)
         return darr;
     }
 
-    SNPRINTF(tmp, sizeof(tmp), "%s/%06d/%s/%06d/%s.txt.gz",
+    snprintf(tmp, sizeof(tmp), "%s/%06d/%s/%06d/%s.txt.gz",
         filename, timestate, metadata->MeshForVar(varname).c_str(), domain, varname);
     visit_ifstream vfile(tmp);
     while (!vfile().eof())

@@ -1,40 +1,6 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
 //                          avtPolylineAddEndPointsFilter.C                  //
@@ -120,6 +86,9 @@ avtPolylineAddEndPointsFilter::~avtPolylineAddEndPointsFilter()
 //    I modified the class to support independently setting the point
 //    style for two end points.
 //
+//    Kathleen Biagas, Thu Jun 20 11:15:16 PDT 2019
+//    Support cell-centered data.
+//
 // ****************************************************************************
 
 avtDataRepresentation *
@@ -145,6 +114,8 @@ avtPolylineAddEndPointsFilter::ExecuteData(avtDataRepresentation *inDR)
     vtkAppendPolyData *append = vtkAppendPolyData::New();
 
     vtkDataArray *activeScalars = inDS->GetPointData()->GetScalars();
+    if (!activeScalars)
+        activeScalars = inDS->GetCellData()->GetScalars();
     vtkDataArray *activeRadius = activeScalars;
 
     double range[2] = {0,1}, scale = 1;
@@ -152,7 +123,11 @@ avtPolylineAddEndPointsFilter::ExecuteData(avtDataRepresentation *inDR)
     if (varyRadius && radiusVar != "" && radiusVar != "\0")
     {
         if (radiusVar != "default" && radiusVar != activeScalars->GetName())
+        {
             activeRadius = inDS->GetPointData()->GetArray(radiusVar.c_str());
+            if (!activeRadius)
+                activeRadius = inDS->GetCellData()->GetArray(radiusVar.c_str());
+        }
 
         activeRadius->GetRange(range, 0);
 
@@ -165,12 +140,14 @@ avtPolylineAddEndPointsFilter::ExecuteData(avtDataRepresentation *inDR)
     vtkPolyData *data   = vtkPolyData::SafeDownCast(inDS);
     vtkCellArray *lines = data->GetLines();
     vtkPoints *points   = data->GetPoints();
-   
+
     vtkIdType numPts;
     vtkIdType *ptIndexs;
 
     append->AddInputData(data);
 
+    vtkIdType lineIndex = 0;
+    lines->InitTraversal();
     while (lines->GetNextCell(numPts, ptIndexs))
     {
         vtkPolyData *outPD = NULL;
@@ -248,7 +225,8 @@ avtPolylineAddEndPointsFilter::ExecuteData(avtDataRepresentation *inDR)
                     outPD = cone->GetOutput();
                 }
 
-                int npts = outPD->GetPoints()->GetNumberOfPoints();
+                int npts   = outPD->GetNumberOfPoints();
+                int ncells = outPD->GetNumberOfCells();
 
                 // Copy over all of the point data from the lines to the
                 // cones so the append filter will append correctly.
@@ -257,18 +235,15 @@ avtPolylineAddEndPointsFilter::ExecuteData(avtDataRepresentation *inDR)
                 for (int j = 0; j < nArrays; ++j)
                 {
                     vtkDataArray *array = inDS->GetPointData()->GetArray(j);
-
-                    vtkDoubleArray *scalars = vtkDoubleArray::New();
+                    vtkDataArray *scalars = array->NewInstance();
                     scalars->Allocate(npts);
                     scalars->SetName(array->GetName());
 
+                    outPD->GetPointData()->AddArray(scalars);
                     if (array->GetName() == activeScalars->GetName())
                     {
-                        outPD->GetPointData()->SetScalars(scalars);
                         outPD->GetPointData()->SetActiveScalars(scalars->GetName());
                     }
-                    else
-                        outPD->GetPointData()->AddArray(scalars);
 
                     double scalar = array->GetComponent(ptIndexs[tip], 0);
 
@@ -278,26 +253,40 @@ avtPolylineAddEndPointsFilter::ExecuteData(avtDataRepresentation *inDR)
                     scalars->Delete();
                 }
 
+                nArrays = inDS->GetCellData()->GetNumberOfArrays();
+                for (int j = 0; j < nArrays; ++j)
+                {
+                    vtkDataArray *array = inDS->GetCellData()->GetArray(j);
+                    vtkDataArray *scalars = array->NewInstance();
+                    scalars->Allocate(ncells);
+                    scalars->SetName(array->GetName());
+                    outPD->GetCellData()->AddArray(scalars);
+
+                    if (array->GetName() == activeScalars->GetName())
+                    {
+                        outPD->GetCellData()->SetActiveScalars(scalars->GetName());
+                    }
+
+                    for (int k = 0; k < ncells; ++k)
+                        scalars->InsertTuple(k, array->GetTuple(lineIndex));
+
+                    scalars->Delete();
+                }
                 append->AddInputData(outPD);
 
                 outPD->Delete();
             }
         }
-    }      
-    
+        ++lineIndex;
+    }
+
     // Update.
     append->Update();
     vtkPolyData *outPD = append->GetOutput();
     outPD->Register(NULL);
     append->Delete();
-   
-    // Restore the active scalars.
-    if (activeScalars)
-    {
-        data->GetPointData()->SetActiveScalars(activeScalars->GetName());
-        outPD->GetPointData()->SetActiveScalars(activeScalars->GetName());
-    }
-    
+
+
     // Create the output data rep.
     avtDataRepresentation *outDR =
         new avtDataRepresentation(outPD, inDR->GetDomain(), inDR->GetLabel());

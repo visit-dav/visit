@@ -1,40 +1,6 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
 //                          avtVertexNormalsFilter.C                         //
@@ -105,7 +71,7 @@ avtVertexNormalsFilter::~avtVertexNormalsFilter()
 //
 //  Returns:       The output data representation.
 //
-//  Programmer: Hank Childs 
+//  Programmer: Hank Childs
 //  Creation:   December 31, 2001
 //
 //  Modifications:
@@ -149,9 +115,9 @@ avtVertexNormalsFilter::~avtVertexNormalsFilter()
 //    Break all memory references.  I didn't think this was necessary, but
 //    the data wouldn't delete until I did this.
 //
-//    Kathleen Bonnell, Tue May 16 09:41:46 PDT 2006 
+//    Kathleen Bonnell, Tue May 16 09:41:46 PDT 2006
 //    Removed call to SetSource(NULL), with new vtk pipeline, it also removes
-//    necessary information from the dataset. 
+//    necessary information from the dataset.
 //
 //    Hank Childs, Thu Dec 28 15:25:50 PST 2006
 //    Add support for direct normals calculation of structured grids.
@@ -166,7 +132,12 @@ avtVertexNormalsFilter::~avtVertexNormalsFilter()
 //
 //    Alister Maguire, Wed Jun 20 10:33:31 PDT 2018
 //    Re-integrated structured-grid specific normals calculation after
-//    fixing bug regarding VTK-8. 
+//    fixing bug regarding VTK-8.
+//
+//    Kathleen Biagas, Wed Jul 31 11:21:38 PDT 2019
+//    Since vtkVisItPolyDataNormals filter doesn't handle triangle strips,
+//    and in fact removes them from the output, don't process the input if
+//    they are present.
 //
 // ****************************************************************************
 
@@ -198,7 +169,11 @@ avtVertexNormalsFilter::ExecuteData(avtDataRepresentation *in_dr)
     if (in_ds->GetDataObjectType() == VTK_POLY_DATA)
     {
         vtkPolyData *pd = (vtkPolyData *)in_ds;
-    
+        // The polydata normals filter doesn't handle triangle strips, in fact
+        // it removes them, so don't process a dataset that contains them.
+        if (pd->GetNumberOfStrips() > 0)
+            return in_dr;
+
         bool pointNormals = true;
         if (atts.ValidActiveVariable())
         {
@@ -215,14 +190,14 @@ avtVertexNormalsFilter::ExecuteData(avtDataRepresentation *in_dr)
             normals->SetNormalTypeToCell();
         normals->SetSplitting(true);
         normals->Update();
-    
+
         vtkPolyData *out_ds = normals->GetOutput();
 
         avtDataRepresentation *out_dr = new avtDataRepresentation(out_ds,
             in_dr->GetDomain(), in_dr->GetLabel());
 
         normals->Delete();
-    
+
         return out_dr;
     }
     else if (in_ds->GetDataObjectType() == VTK_STRUCTURED_GRID)

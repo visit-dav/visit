@@ -172,7 +172,7 @@ const char *NameschemeAttributes::GetName(int n) const
     static char tmpname[128];
     if (namescheme == "")
     {
-        SNPRINTF(tmpname, sizeof(tmpname), "unknown_name_%d", n);
+        snprintf(tmpname, sizeof(tmpname), "unknown_name_%d", n);
         return tmpname;
     }
 
@@ -212,7 +212,7 @@ const char *NameschemeAttributes::GetName(int n) const
     if (retval && retval[0] != '\0') return retval;
 
     // Ok, we can't compute a name. Make one up.
-    SNPRINTF(tmpname, sizeof(tmpname), "unknown_name_%d", n);
+    snprintf(tmpname, sizeof(tmpname), "unknown_name_%d", n);
     return tmpname;
 }
 

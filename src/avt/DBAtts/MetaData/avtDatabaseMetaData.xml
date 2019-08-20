@@ -343,9 +343,6 @@
       ExprNode.h
     </Include>
     <Include file="source" quoted="false">
-      snprintf.h
-    </Include>
-    <Include file="source" quoted="false">
       plugin_vartypes.h
     </Include>
   </Attribute>

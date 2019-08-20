@@ -139,6 +139,56 @@ internallauncher to load the module you need."""
         return args
 
 ###############################################################################
+# Class: JobSubmitter_bsub_ORNL
+#
+# Purpose:    Custom "bsub" job submitter for ORNL.
+#
+# Programmer: Eric Brugger
+# Date:       Wed Jul 31 11:18:36 PDT 2019
+#
+# Modifications:
+#
+###############################################################################
+
+class JobSubmitter_bsub_ORNL(JobSubmitter):
+    def __init__(self, launcher):
+        super(JobSubmitter_bsub_ORNL, self).__init__(launcher)
+
+    def Executable(self):
+        return ["/sw/sources/lsf-tools/2.0/summit/bin/bsub"]
+
+    def CreateCommand(self, args, debugger):
+        bsub, sublauncher = self.LauncherAndSubLauncher()
+        parcmd = self.Executable()
+        parcmd = parcmd + ["-alloc_flags", "gpumps"]
+        if self.parallel.launchargs != None:
+            parcmd = parcmd + self.parallel.launchargs
+        if self.parallel.np != None:
+            parcmd = parcmd + ["-nnodes", self.parallel.nn]
+        if self.parallel.time != None:
+            parcmd = parcmd + ["-W", self.parallel.time]
+        if self.parallel.bank != None:
+            parcmd = parcmd + ["-P", self.parallel.bank]
+        nodes = self.parallel.nn
+        if nodes == None:
+            nodes = self.parallel.np
+        ppn = str(int(math.ceil(float(self.parallel.np) / float(nodes))))
+        parcmd = parcmd + ["/sw/summit/xalt/1.1.3/bin/jsrun"]
+        parcmd = parcmd + ["--nrs", "1"]
+        parcmd = parcmd + ["-a", ppn]
+        parcmd = parcmd + ["-c", ppn, "-g", "6"]
+        parcmd = parcmd + ["-b", "none", "-X", "1"]
+        if self.parallel.sublaunchargs != None:
+            parcmd = parcmd + self.parallel.sublaunchargs
+        parcmd = parcmd + self.VisItExecutable()
+        parcmd = parcmd + ["-plugindir", GETENV("VISITPLUGINDIR")]
+        parcmd = parcmd + ["-visithome", GETENV("VISITHOME")]
+        parcmd = parcmd + ["-visitarchhome", GETENV("VISITARCHHOME")]
+        parcmd = parcmd + args
+        parcmd = debugger.CreateCommand(parcmd)
+        return parcmd
+
+###############################################################################
 # Class: ORNLLauncher
 #
 # Purpose:    Custom launcher for ORNL
@@ -147,6 +197,8 @@ internallauncher to load the module you need."""
 # Date:       Thu May 17 14:22:04 PDT 2012
 #
 # Modifications:
+#   Eric Brugger, Wed Jul 31 11:18:36 PDT 2019
+#   Added support for summit.
 #
 ###############################################################################
 
@@ -156,6 +208,7 @@ class ORNLLauncher(MainLauncher):
         self.lens = -1
         self.jaguar = -1
         self.rhea = -1
+        self.summit = -1
 
     def IsRunningOnRhea(self):
         if self.rhea == -1:
@@ -186,6 +239,14 @@ class ORNLLauncher(MainLauncher):
                 self.jaguar = 1
         return self.jaguar
 
+    def IsRunningOnSummit(self):
+        if self.summit == -1:
+            self.summit = 0
+            if self.sectorname() == "login" and \
+               self.domainname() == "summit.olcf.ornl.gov":
+                self.summit = 1
+        return self.summit
+
     def PrivatePlugins(self):
         if self.IsRunningOnJaguar():
             values = (self.username(), self.visitpluginver, self.visitarch)
@@ -212,6 +273,17 @@ class ORNLLauncher(MainLauncher):
                 paths = self.splitpaths(GETENV("PATH"))
                 SETENV("PATH", self.joinpaths(paths + addedpaths))
 
+        # ----
+        # summit.olcf.ornl.gov
+        #
+        # ----
+        if self.IsRunningOnSummit():
+            addedpaths = ["/sw/summit/gcc/6.4.0/lib64"]
+            if GETENV("LD_LIBRARY_PATH") == "":
+                SETENV("LD_LIBRARY_PATH", self.joinpaths(addedpaths))
+            else:
+                paths = self.splitpaths(GETENV("LD_LIBRARY_PATH"))
+                SETENV("LD_LIBRARY_PATH", self.joinpaths(paths + addedpaths))
 
     #
     # Override the JobSubmitterFactory method so the custom job submitter can
@@ -222,6 +294,8 @@ class ORNLLauncher(MainLauncher):
             return JobSubmitter_aprun_ORNL(self)
         elif launch[:4] == "qsub" or launch[:4] == "msub":
             return JobSubmitter_qsub_ORNL(self)
+        elif launch[:4] == "bsub":
+            return JobSubmitter_bsub_ORNL(self)
         return super(ORNLLauncher, self).JobSubmitterFactory(launch)
 
 # Launcher creation function

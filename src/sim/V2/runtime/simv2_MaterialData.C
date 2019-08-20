@@ -1,7 +1,10 @@
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
+
 #include <vector>
 #include <string>
 #include <cstring>
-#include <snprintf.h>
 
 #include "VisItDataInterfaceRuntime.h"
 #include "VisItDataInterfaceRuntimeP.h"
@@ -226,7 +229,7 @@ simv2_MaterialData_addCleanCell(visit_handle h, int cell, int matno)
         if(cell >= obj->ncells)
         {
             char tmp[60];
-            SNPRINTF(tmp, 60, "Cell numbers must be < %d", obj->ncells);
+            snprintf(tmp, 60, "Cell numbers must be < %d", obj->ncells);
             VisItError(tmp);
             return VISIT_ERROR;
         }
@@ -259,7 +262,7 @@ simv2_MaterialData_addMixedCell(visit_handle h, int cell,
         if(cell >= obj->ncells)
         {
             char tmp[60];
-            SNPRINTF(tmp, 60, "Cell numbers must be < %d", obj->ncells);
+            snprintf(tmp, 60, "Cell numbers must be < %d", obj->ncells);
             VisItError(tmp);
             return VISIT_ERROR;
         }
@@ -355,7 +358,7 @@ simv2_MaterialData_setMixedMaterials(visit_handle h,
 
         if(nArr != 1)
         {
-            SNPRINTF(tmp, 100, "A %s array must have 1 component", names[i]);
+            snprintf(tmp, 100, "A %s array must have 1 component", names[i]);
             VisItError(tmp);
             return VISIT_ERROR;
         }
@@ -363,19 +366,19 @@ simv2_MaterialData_setMixedMaterials(visit_handle h,
         if(simv2_VariableData_getData(cHandles[i], owner[i], dataType[i],
             nComps[i], nTuples[i], data[i]) == VISIT_ERROR)
         {
-            SNPRINTF(tmp, 100, "An invalid %s was provided", names[i]);
+            snprintf(tmp, 100, "An invalid %s was provided", names[i]);
             VisItError(tmp);
             return VISIT_ERROR; 
         }
         if(nComps[i] != 1)
         {
-            SNPRINTF(tmp, 100, "A %s array must have 1 component", names[i]);
+            snprintf(tmp, 100, "A %s array must have 1 component", names[i]);
             VisItError(tmp);
             return VISIT_ERROR; 
         }
         if(i < 3 && dataType[i] != VISIT_DATATYPE_INT)
         {
-            SNPRINTF(tmp, 100, "A %s array must contain integers", names[i]);
+            snprintf(tmp, 100, "A %s array must contain integers", names[i]);
             VisItError(tmp);
             return VISIT_ERROR; 
         }
@@ -383,7 +386,7 @@ simv2_MaterialData_setMixedMaterials(visit_handle h,
            dataType[i] != VISIT_DATATYPE_DOUBLE && 
            dataType[i] != VISIT_DATATYPE_FLOAT)
         {
-            SNPRINTF(tmp, 100, "A %s array must contain doubles or floats", names[i]);
+            snprintf(tmp, 100, "A %s array must contain doubles or floats", names[i]);
             VisItError(tmp);
             return VISIT_ERROR; 
         }

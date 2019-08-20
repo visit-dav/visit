@@ -1,4 +1,7 @@
-#include <snprintf.h>
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
+
 #include <string.h>
 #include "VisItDataInterfaceRuntime.h"
 #include "VisItDataInterfaceRuntimeP.h"
@@ -212,7 +215,7 @@ GetVariableDataObject(visit_handle h, const char *fname)
     {
         if (obj->objectType() != VISIT_VARIABLE_DATA)
         {
-            SNPRINTF(tmp, 100, "%s: The provided handle does not point to a "
+            snprintf(tmp, 100, "%s: The provided handle does not point to a "
                 "VariableData object.", fname);
             VisItError(tmp);
             obj = NULL;
@@ -220,7 +223,7 @@ GetVariableDataObject(visit_handle h, const char *fname)
     }
     else
     {
-        SNPRINTF(tmp, 100, "%s: An invalid handle was provided for a "
+        snprintf(tmp, 100, "%s: An invalid handle was provided for a "
             "VariableData object.", fname);
         VisItError(tmp);
     }

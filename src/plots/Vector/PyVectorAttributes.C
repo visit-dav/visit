@@ -1,45 +1,10 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 #include <PyVectorAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 #include <ColorAttribute.h>
 
 // ****************************************************************************
@@ -81,11 +46,11 @@ PyVectorAttributes_ToString(const VectorAttributes *atts, const char *prefix)
     switch (atts->GetGlyphLocation())
     {
       case VectorAttributes::AdaptsToMeshResolution:
-          SNPRINTF(tmpStr, 1000, "%sglyphLocation = %sAdaptsToMeshResolution  # %s\n", prefix, prefix, glyphLocation_names);
+          snprintf(tmpStr, 1000, "%sglyphLocation = %sAdaptsToMeshResolution  # %s\n", prefix, prefix, glyphLocation_names);
           str += tmpStr;
           break;
       case VectorAttributes::UniformInSpace:
-          SNPRINTF(tmpStr, 1000, "%sglyphLocation = %sUniformInSpace  # %s\n", prefix, prefix, glyphLocation_names);
+          snprintf(tmpStr, 1000, "%sglyphLocation = %sUniformInSpace  # %s\n", prefix, prefix, glyphLocation_names);
           str += tmpStr;
           break;
       default:
@@ -93,68 +58,68 @@ PyVectorAttributes_ToString(const VectorAttributes *atts, const char *prefix)
     }
 
     if(atts->GetUseStride())
-        SNPRINTF(tmpStr, 1000, "%suseStride = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%suseStride = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%suseStride = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%suseStride = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sstride = %d\n", prefix, atts->GetStride());
+    snprintf(tmpStr, 1000, "%sstride = %d\n", prefix, atts->GetStride());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%snVectors = %d\n", prefix, atts->GetNVectors());
+    snprintf(tmpStr, 1000, "%snVectors = %d\n", prefix, atts->GetNVectors());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%slineWidth = %d\n", prefix, atts->GetLineWidth());
+    snprintf(tmpStr, 1000, "%slineWidth = %d\n", prefix, atts->GetLineWidth());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sscale = %g\n", prefix, atts->GetScale());
+    snprintf(tmpStr, 1000, "%sscale = %g\n", prefix, atts->GetScale());
     str += tmpStr;
     if(atts->GetScaleByMagnitude())
-        SNPRINTF(tmpStr, 1000, "%sscaleByMagnitude = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sscaleByMagnitude = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sscaleByMagnitude = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sscaleByMagnitude = 0\n", prefix);
     str += tmpStr;
     if(atts->GetAutoScale())
-        SNPRINTF(tmpStr, 1000, "%sautoScale = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sautoScale = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sautoScale = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sautoScale = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sheadSize = %g\n", prefix, atts->GetHeadSize());
+    snprintf(tmpStr, 1000, "%sheadSize = %g\n", prefix, atts->GetHeadSize());
     str += tmpStr;
     if(atts->GetHeadOn())
-        SNPRINTF(tmpStr, 1000, "%sheadOn = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sheadOn = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sheadOn = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sheadOn = 0\n", prefix);
     str += tmpStr;
     if(atts->GetColorByMag())
-        SNPRINTF(tmpStr, 1000, "%scolorByMag = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%scolorByMag = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%scolorByMag = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%scolorByMag = 0\n", prefix);
     str += tmpStr;
     if(atts->GetUseLegend())
-        SNPRINTF(tmpStr, 1000, "%suseLegend = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%suseLegend = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%suseLegend = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%suseLegend = 0\n", prefix);
     str += tmpStr;
     const unsigned char *vectorColor = atts->GetVectorColor().GetColor();
-    SNPRINTF(tmpStr, 1000, "%svectorColor = (%d, %d, %d, %d)\n", prefix, int(vectorColor[0]), int(vectorColor[1]), int(vectorColor[2]), int(vectorColor[3]));
+    snprintf(tmpStr, 1000, "%svectorColor = (%d, %d, %d, %d)\n", prefix, int(vectorColor[0]), int(vectorColor[1]), int(vectorColor[2]), int(vectorColor[3]));
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%scolorTableName = \"%s\"\n", prefix, atts->GetColorTableName().c_str());
+    snprintf(tmpStr, 1000, "%scolorTableName = \"%s\"\n", prefix, atts->GetColorTableName().c_str());
     str += tmpStr;
     if(atts->GetInvertColorTable())
-        SNPRINTF(tmpStr, 1000, "%sinvertColorTable = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sinvertColorTable = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sinvertColorTable = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sinvertColorTable = 0\n", prefix);
     str += tmpStr;
     const char *vectorOrigin_names = "Head, Middle, Tail";
     switch (atts->GetVectorOrigin())
     {
       case VectorAttributes::Head:
-          SNPRINTF(tmpStr, 1000, "%svectorOrigin = %sHead  # %s\n", prefix, prefix, vectorOrigin_names);
+          snprintf(tmpStr, 1000, "%svectorOrigin = %sHead  # %s\n", prefix, prefix, vectorOrigin_names);
           str += tmpStr;
           break;
       case VectorAttributes::Middle:
-          SNPRINTF(tmpStr, 1000, "%svectorOrigin = %sMiddle  # %s\n", prefix, prefix, vectorOrigin_names);
+          snprintf(tmpStr, 1000, "%svectorOrigin = %sMiddle  # %s\n", prefix, prefix, vectorOrigin_names);
           str += tmpStr;
           break;
       case VectorAttributes::Tail:
-          SNPRINTF(tmpStr, 1000, "%svectorOrigin = %sTail  # %s\n", prefix, prefix, vectorOrigin_names);
+          snprintf(tmpStr, 1000, "%svectorOrigin = %sTail  # %s\n", prefix, prefix, vectorOrigin_names);
           str += tmpStr;
           break;
       default:
@@ -162,43 +127,43 @@ PyVectorAttributes_ToString(const VectorAttributes *atts, const char *prefix)
     }
 
     if(atts->GetMinFlag())
-        SNPRINTF(tmpStr, 1000, "%sminFlag = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sminFlag = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sminFlag = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sminFlag = 0\n", prefix);
     str += tmpStr;
     if(atts->GetMaxFlag())
-        SNPRINTF(tmpStr, 1000, "%smaxFlag = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%smaxFlag = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%smaxFlag = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%smaxFlag = 0\n", prefix);
     str += tmpStr;
     const char *limitsMode_names = "OriginalData, CurrentPlot";
     switch (atts->GetLimitsMode())
     {
       case VectorAttributes::OriginalData:
-          SNPRINTF(tmpStr, 1000, "%slimitsMode = %sOriginalData  # %s\n", prefix, prefix, limitsMode_names);
+          snprintf(tmpStr, 1000, "%slimitsMode = %sOriginalData  # %s\n", prefix, prefix, limitsMode_names);
           str += tmpStr;
           break;
       case VectorAttributes::CurrentPlot:
-          SNPRINTF(tmpStr, 1000, "%slimitsMode = %sCurrentPlot  # %s\n", prefix, prefix, limitsMode_names);
+          snprintf(tmpStr, 1000, "%slimitsMode = %sCurrentPlot  # %s\n", prefix, prefix, limitsMode_names);
           str += tmpStr;
           break;
       default:
           break;
     }
 
-    SNPRINTF(tmpStr, 1000, "%smin = %g\n", prefix, atts->GetMin());
+    snprintf(tmpStr, 1000, "%smin = %g\n", prefix, atts->GetMin());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%smax = %g\n", prefix, atts->GetMax());
+    snprintf(tmpStr, 1000, "%smax = %g\n", prefix, atts->GetMax());
     str += tmpStr;
     const char *lineStem_names = "Cylinder, Line";
     switch (atts->GetLineStem())
     {
       case VectorAttributes::Cylinder:
-          SNPRINTF(tmpStr, 1000, "%slineStem = %sCylinder  # %s\n", prefix, prefix, lineStem_names);
+          snprintf(tmpStr, 1000, "%slineStem = %sCylinder  # %s\n", prefix, prefix, lineStem_names);
           str += tmpStr;
           break;
       case VectorAttributes::Line:
-          SNPRINTF(tmpStr, 1000, "%slineStem = %sLine  # %s\n", prefix, prefix, lineStem_names);
+          snprintf(tmpStr, 1000, "%slineStem = %sLine  # %s\n", prefix, prefix, lineStem_names);
           str += tmpStr;
           break;
       default:
@@ -209,40 +174,40 @@ PyVectorAttributes_ToString(const VectorAttributes *atts, const char *prefix)
     switch (atts->GetGeometryQuality())
     {
       case VectorAttributes::Fast:
-          SNPRINTF(tmpStr, 1000, "%sgeometryQuality = %sFast  # %s\n", prefix, prefix, geometryQuality_names);
+          snprintf(tmpStr, 1000, "%sgeometryQuality = %sFast  # %s\n", prefix, prefix, geometryQuality_names);
           str += tmpStr;
           break;
       case VectorAttributes::High:
-          SNPRINTF(tmpStr, 1000, "%sgeometryQuality = %sHigh  # %s\n", prefix, prefix, geometryQuality_names);
+          snprintf(tmpStr, 1000, "%sgeometryQuality = %sHigh  # %s\n", prefix, prefix, geometryQuality_names);
           str += tmpStr;
           break;
       default:
           break;
     }
 
-    SNPRINTF(tmpStr, 1000, "%sstemWidth = %g\n", prefix, atts->GetStemWidth());
+    snprintf(tmpStr, 1000, "%sstemWidth = %g\n", prefix, atts->GetStemWidth());
     str += tmpStr;
     if(atts->GetOrigOnly())
-        SNPRINTF(tmpStr, 1000, "%sorigOnly = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sorigOnly = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sorigOnly = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sorigOnly = 0\n", prefix);
     str += tmpStr;
     const char *glyphType_names = "Arrow, Ellipsoid";
     switch (atts->GetGlyphType())
     {
       case VectorAttributes::Arrow:
-          SNPRINTF(tmpStr, 1000, "%sglyphType = %sArrow  # %s\n", prefix, prefix, glyphType_names);
+          snprintf(tmpStr, 1000, "%sglyphType = %sArrow  # %s\n", prefix, prefix, glyphType_names);
           str += tmpStr;
           break;
       case VectorAttributes::Ellipsoid:
-          SNPRINTF(tmpStr, 1000, "%sglyphType = %sEllipsoid  # %s\n", prefix, prefix, glyphType_names);
+          snprintf(tmpStr, 1000, "%sglyphType = %sEllipsoid  # %s\n", prefix, prefix, glyphType_names);
           str += tmpStr;
           break;
       default:
           break;
     }
 
-    SNPRINTF(tmpStr, 1000, "%sanimationStep = %d\n", prefix, atts->GetAnimationStep());
+    snprintf(tmpStr, 1000, "%sanimationStep = %d\n", prefix, atts->GetAnimationStep());
     str += tmpStr;
     return str;
 }

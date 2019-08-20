@@ -1,40 +1,6 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
 //                                 avtMaterial.C                             //
@@ -42,8 +8,6 @@
 
 #include <avtMaterial.h>
 #include <map>
-
-#include <snprintf.h>
 
 #include <avtCallback.h>
 #include <avtMixedVariable.h>
@@ -156,7 +120,7 @@ RenumberMaterialsZeroToNminusOne(int nMats, const int *const mats,
                 if (!haveIssuedWarning)
                 {
                     char msg[1024];
-                    SNPRINTF(msg, sizeof(msg),"Zone %d of %s has a bad entry in its "
+                    snprintf(msg, sizeof(msg),"Zone %d of %s has a bad entry in its "
                                  "mixed material structure", i, dom);
                     avtCallback::IssueWarning(msg);
                     haveIssuedWarning = true;
@@ -171,7 +135,7 @@ RenumberMaterialsZeroToNminusOne(int nMats, const int *const mats,
                     if (!haveIssuedWarning)
                     {
                         char msg[1024];
-                        SNPRINTF(msg, sizeof(msg),"Zone %d of %s has an invalid material"
+                        snprintf(msg, sizeof(msg),"Zone %d of %s has an invalid material"
                                  " number -- %d", i, dom, ml[i]);
                         avtCallback::IssueWarning(msg);
                         haveIssuedWarning = true;
@@ -192,7 +156,7 @@ RenumberMaterialsZeroToNminusOne(int nMats, const int *const mats,
                 if (!haveIssuedWarning)
                 {
                     char msg[1024];
-                    SNPRINTF(msg, sizeof(msg),"Mixed mat entry %d of %s has an "
+                    snprintf(msg, sizeof(msg),"Mixed mat entry %d of %s has an "
                                  "invalid material number -- %d", i, 
                                  dom, mixm[i]);
                     avtCallback::IssueWarning(msg);
@@ -237,7 +201,7 @@ RenumberMaterialsZeroToNminusOne(int nMats, const int *const mats,
                 if (!haveIssuedWarning)
                 {
                     char msg[1024];
-                    SNPRINTF(msg, sizeof(msg),"Zone %d of %s has a bad entry in its "
+                    snprintf(msg, sizeof(msg),"Zone %d of %s has a bad entry in its "
                                  "material structure", i, dom);
                     avtCallback::IssueWarning(msg);
                     haveIssuedWarning = true;
@@ -264,7 +228,7 @@ RenumberMaterialsZeroToNminusOne(int nMats, const int *const mats,
                 if (!haveIssuedWarning)
                 {
                     char msg[1024];
-                    SNPRINTF(msg, sizeof(msg),"Mixed mat entry %d of %s has an "
+                    snprintf(msg, sizeof(msg),"Mixed mat entry %d of %s has an "
                                  "invalid material number -- %d", i, 
                                  dom, mixm[i]);
                     avtCallback::IssueWarning(msg);
@@ -362,9 +326,9 @@ avtMaterial::avtMaterial(int nMats, const int *mats, char **names,
     {
         char name[256];
         if (names == NULL)
-            SNPRINTF(name, sizeof(name), "%d", mats[i]);
+            snprintf(name, sizeof(name), "%d", mats[i]);
         else
-            SNPRINTF(name, sizeof(name), "%s", names[i]);
+            snprintf(name, sizeof(name), "%s", names[i]);
         matnames.push_back(name);
     }
     matnames.push_back("bad material");
@@ -524,9 +488,9 @@ avtMaterial::avtMaterial(int nTotMats, const int *mats, const char **names,
     {
         char name[256];
         if (names == NULL)
-            SNPRINTF(name, sizeof(name), "%d", mats[i]);
+            snprintf(name, sizeof(name), "%d", mats[i]);
         else
-            SNPRINTF(name, sizeof(name), "%s", names[i]);
+            snprintf(name, sizeof(name), "%s", names[i]);
         matnames.push_back(name);
     }
     matnames.push_back("bad material");
@@ -608,7 +572,7 @@ avtMaterial::avtMaterial(int nTotMats, const int *mats, const char **names,
             if (!haveIssuedWarning && ((zoneNum < 0) || (zoneNum >= numZones)))
             {
                 char msg[1024];
-                SNPRINTF(msg, sizeof(msg),
+                snprintf(msg, sizeof(msg),
                     "Clean zone index %d of %s is out of range [0,%d] "
                     "in material %s", zoneNum, domain, numZones,
                     matnames[matno].c_str());
@@ -618,7 +582,7 @@ avtMaterial::avtMaterial(int nTotMats, const int *mats, const char **names,
             else if (!haveIssuedWarning && (ml[zoneNum] != notSet))
             {
                 char msg[1024];
-                SNPRINTF(msg, sizeof(msg),
+                snprintf(msg, sizeof(msg),
                     "Zone %d of %s is indicated clean in multiple "
                     "material maps, %s and %s", zoneNum, domain,
                     matnames[matno].c_str(), matnames[ml[zoneNum]].c_str());
@@ -646,7 +610,7 @@ avtMaterial::avtMaterial(int nTotMats, const int *mats, const char **names,
             if (!haveIssuedWarning && ((zoneNum < 0) || (zoneNum >= numZones)))
             {
                 char msg[1024];
-                SNPRINTF(msg, sizeof(msg),
+                snprintf(msg, sizeof(msg),
                     "Clean zone index %d of %s is out of range [0,%d] "
                     "in material %s", zoneNum, domain, numZones,
                     matnames[matno].c_str());
@@ -657,7 +621,7 @@ avtMaterial::avtMaterial(int nTotMats, const int *mats, const char **names,
                      (ml[zoneNum] != notSet) && (ml[zoneNum] >= 0))
             {
                 char msg[1024];
-                SNPRINTF(msg, sizeof(msg),
+                snprintf(msg, sizeof(msg),
                     "Zone %d of %s is indicated clean in material %s "
                     "and mixed in material %s", zoneNum, domain,
                     matnames[ml[zoneNum]].c_str(), matnames[matno].c_str());
@@ -852,9 +816,9 @@ avtMaterial::avtMaterial(int nTotMats, const int *mats, char **names,
     {
         char name[256];
         if (names == NULL)
-            SNPRINTF(name, sizeof(name), "%d", mats[i]);
+            snprintf(name, sizeof(name), "%d", mats[i]);
         else
-            SNPRINTF(name, sizeof(name), "%s", names[i]);
+            snprintf(name, sizeof(name), "%s", names[i]);
         matnames.push_back(name);
     }
 

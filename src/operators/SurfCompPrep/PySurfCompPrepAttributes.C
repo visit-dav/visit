@@ -1,45 +1,10 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 #include <PySurfCompPrepAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PySurfCompPrepAttributes
@@ -80,15 +45,15 @@ PySurfCompPrepAttributes_ToString(const SurfCompPrepAttributes *atts, const char
     switch (atts->GetSurfaceType())
     {
       case SurfCompPrepAttributes::Closest:
-          SNPRINTF(tmpStr, 1000, "%ssurfaceType = %sClosest  # %s\n", prefix, prefix, surfaceType_names);
+          snprintf(tmpStr, 1000, "%ssurfaceType = %sClosest  # %s\n", prefix, prefix, surfaceType_names);
           str += tmpStr;
           break;
       case SurfCompPrepAttributes::Farthest:
-          SNPRINTF(tmpStr, 1000, "%ssurfaceType = %sFarthest  # %s\n", prefix, prefix, surfaceType_names);
+          snprintf(tmpStr, 1000, "%ssurfaceType = %sFarthest  # %s\n", prefix, prefix, surfaceType_names);
           str += tmpStr;
           break;
       case SurfCompPrepAttributes::Average:
-          SNPRINTF(tmpStr, 1000, "%ssurfaceType = %sAverage  # %s\n", prefix, prefix, surfaceType_names);
+          snprintf(tmpStr, 1000, "%ssurfaceType = %sAverage  # %s\n", prefix, prefix, surfaceType_names);
           str += tmpStr;
           break;
       default:
@@ -99,56 +64,56 @@ PySurfCompPrepAttributes_ToString(const SurfCompPrepAttributes *atts, const char
     switch (atts->GetCoordSystem())
     {
       case SurfCompPrepAttributes::Cartesian:
-          SNPRINTF(tmpStr, 1000, "%scoordSystem = %sCartesian  # %s\n", prefix, prefix, coordSystem_names);
+          snprintf(tmpStr, 1000, "%scoordSystem = %sCartesian  # %s\n", prefix, prefix, coordSystem_names);
           str += tmpStr;
           break;
       case SurfCompPrepAttributes::Cylindrical:
-          SNPRINTF(tmpStr, 1000, "%scoordSystem = %sCylindrical  # %s\n", prefix, prefix, coordSystem_names);
+          snprintf(tmpStr, 1000, "%scoordSystem = %sCylindrical  # %s\n", prefix, prefix, coordSystem_names);
           str += tmpStr;
           break;
       case SurfCompPrepAttributes::Spherical:
-          SNPRINTF(tmpStr, 1000, "%scoordSystem = %sSpherical  # %s\n", prefix, prefix, coordSystem_names);
+          snprintf(tmpStr, 1000, "%scoordSystem = %sSpherical  # %s\n", prefix, prefix, coordSystem_names);
           str += tmpStr;
           break;
       default:
           break;
     }
 
-    SNPRINTF(tmpStr, 1000, "%sthetaStart = %g\n", prefix, atts->GetThetaStart());
+    snprintf(tmpStr, 1000, "%sthetaStart = %g\n", prefix, atts->GetThetaStart());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sthetaStop = %g\n", prefix, atts->GetThetaStop());
+    snprintf(tmpStr, 1000, "%sthetaStop = %g\n", prefix, atts->GetThetaStop());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sthetaSteps = %d\n", prefix, atts->GetThetaSteps());
+    snprintf(tmpStr, 1000, "%sthetaSteps = %d\n", prefix, atts->GetThetaSteps());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sphiStart = %g\n", prefix, atts->GetPhiStart());
+    snprintf(tmpStr, 1000, "%sphiStart = %g\n", prefix, atts->GetPhiStart());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sphiStop = %g\n", prefix, atts->GetPhiStop());
+    snprintf(tmpStr, 1000, "%sphiStop = %g\n", prefix, atts->GetPhiStop());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sphiSteps = %d\n", prefix, atts->GetPhiSteps());
+    snprintf(tmpStr, 1000, "%sphiSteps = %d\n", prefix, atts->GetPhiSteps());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sstartRadius = %g\n", prefix, atts->GetStartRadius());
+    snprintf(tmpStr, 1000, "%sstartRadius = %g\n", prefix, atts->GetStartRadius());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sendRadius = %g\n", prefix, atts->GetEndRadius());
+    snprintf(tmpStr, 1000, "%sendRadius = %g\n", prefix, atts->GetEndRadius());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sradiusSteps = %d\n", prefix, atts->GetRadiusSteps());
+    snprintf(tmpStr, 1000, "%sradiusSteps = %d\n", prefix, atts->GetRadiusSteps());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sxStart = %g\n", prefix, atts->GetXStart());
+    snprintf(tmpStr, 1000, "%sxStart = %g\n", prefix, atts->GetXStart());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sxStop = %g\n", prefix, atts->GetXStop());
+    snprintf(tmpStr, 1000, "%sxStop = %g\n", prefix, atts->GetXStop());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sxSteps = %d\n", prefix, atts->GetXSteps());
+    snprintf(tmpStr, 1000, "%sxSteps = %d\n", prefix, atts->GetXSteps());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%syStart = %g\n", prefix, atts->GetYStart());
+    snprintf(tmpStr, 1000, "%syStart = %g\n", prefix, atts->GetYStart());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%syStop = %g\n", prefix, atts->GetYStop());
+    snprintf(tmpStr, 1000, "%syStop = %g\n", prefix, atts->GetYStop());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sySteps = %d\n", prefix, atts->GetYSteps());
+    snprintf(tmpStr, 1000, "%sySteps = %d\n", prefix, atts->GetYSteps());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%szStart = %g\n", prefix, atts->GetZStart());
+    snprintf(tmpStr, 1000, "%szStart = %g\n", prefix, atts->GetZStart());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%szStop = %g\n", prefix, atts->GetZStop());
+    snprintf(tmpStr, 1000, "%szStop = %g\n", prefix, atts->GetZStop());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%szSteps = %d\n", prefix, atts->GetZSteps());
+    snprintf(tmpStr, 1000, "%szSteps = %d\n", prefix, atts->GetZSteps());
     str += tmpStr;
     return str;
 }

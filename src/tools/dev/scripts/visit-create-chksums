@@ -110,15 +110,15 @@ do
    echo "The VisIt executable $property"                  >> $output
    echo ""                                                >> $output
    $cmd INSTALL_NOTES                                     >> $output
-   $cmd VisIt-$version.dmg                                >> $output
+#  $cmd VisIt-$version.dmg                                >> $output
    $cmd VisIt-$version-10.13.dmg                          >> $output
    $cmd jvisit$version.tar.gz                             >> $output
    $cmd visit-install$version2                            >> $output
    $cmd visit${version}_x64.exe                           >> $output
-   $cmd visit$version2.darwin-x86_64.tar.gz               >> $output
+#  $cmd visit$version2.darwin-x86_64.tar.gz               >> $output
    $cmd visit${version2}-10.13.darwin-x86_64.tar.gz       >> $output
-   $cmd visit$version2.linux-x86_64-ubuntu18.tar.gz       >> $output
-   $cmd visit$version2.linux-x86_64-ubuntu18-wmesa.tar.gz >> $output
+#  $cmd visit$version2.linux-x86_64-ubuntu18.tar.gz       >> $output
+#  $cmd visit$version2.linux-x86_64-ubuntu18-wmesa.tar.gz >> $output
    $cmd visit$version2.linux-x86_64-rhel7.tar.gz          >> $output
    $cmd visit$version2.linux-x86_64-rhel7-wmesa.tar.gz    >> $output
 
@@ -128,14 +128,12 @@ do
    $cmd build_visit$version2                              >> $output
    $cmd $dist.tar.gz                                      >> $output
    $cmd visitdev$version.exe                              >> $output
-   cd third_party
-   files=`ls`
+   files=`ls third_party`
    for file in $files
    do
-      $cmd $file >> ../$output
+      $cmd third_party/$file | sed "s/third_party\///" >> $output
       shift
    done
-   cd ..
 
    shift
 done

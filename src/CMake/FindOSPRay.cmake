@@ -1,42 +1,14 @@
-#*****************************************************************************
-#
-# Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-# Produced at the Lawrence Livermore National Laboratory
-# LLNL-CODE-442911
-# All rights reserved.
-#
-# This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-# full copyright notice is contained in the file COPYRIGHT located at the root
-# of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-#
-# Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-# modification, are permitted provided that the following conditions are met:
-#
-#  - Redistributions of  source code must  retain the above  copyright notice,
-#    this list of conditions and the disclaimer below.
-#  - Redistributions in binary form must reproduce the above copyright notice,
-#    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-#    documentation and/or other materials provided with the distribution.
-#  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-#    be used to endorse or promote products derived from this software without
-#    specific prior written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-# AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-# IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-# ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-# LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-# DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-# DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-# SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-# CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-# LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-# OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-# DAMAGE.
-#
+# Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+# Project developers.  See the top-level LICENSE file for dates and other
+# details.  No copyright assignment is required to contribute to VisIt.
+
+#****************************************************************************
 # Modifications:
 #   Kevin Griffin, Fri May 3 18:44:57 PDT 2019
 #   Add logic to install libraries on OSX correctly.
+#
+#   Kathleen Biagas, Thu Jul 18 10:41:50 PDT 2019
+#   Add special handling of tbb and embree installs for linux.
 #
 #*****************************************************************************
 
@@ -137,7 +109,7 @@ IF(VISIT_OSPRAY)
         IF( (NOT "${l}" STREQUAL "optimized") AND
             (NOT "${l}" STREQUAL "debug"))
           GET_FILENAME_COMPONENT(_name_ ${l} NAME_WE)
-          IF( (NOT WIN32) AND (NOT APPLE) AND
+          IF(LINUX AND
               (NOT "${_name_}" STREQUAL "libtbb_debug") AND
               (NOT "${_name_}" STREQUAL "libtbbmalloc_debug") AND
               (NOT "${_name_}" STREQUAL "libtbb") AND
@@ -145,7 +117,28 @@ IF(VISIT_OSPRAY)
               (NOT "${_name_}" STREQUAL "libembree3") )
             THIRD_PARTY_INSTALL_LIBRARY(${l}.0)
           ENDIF()
-          THIRD_PARTY_INSTALL_LIBRARY(${l})
+
+          if(LINUX AND ("${_name_}" MATCHES "embree" OR
+                        "${_name_}" MATCHES "tbb"))
+              # embree and tbb are listed with their full extensions of
+              # .so.[version]. The simple .so is also needed in order for
+              # plugins to link correctly against an install.  If the .so
+              # is a symlink to the full version (as with embree) the install
+              # library logic will correctly install both the full verison and
+              # the .so symlink, so only the .so is needed to be sent to the
+              # function.
+              get_filename_component(_tmp_name ${l} NAME)
+              get_filename_component(_tmp_path ${l} PATH)
+              GET_FILENAME_SHORTEXT(_tmp_ext ${_tmp_name})
+              string(REPLACE "${_tmp_ext}" "" _tmp_name ${_tmp_name})
+              THIRD_PARTY_INSTALL_LIBRARY(${_tmp_path}/${_tmp_name})
+              # tbb's .so isn't a symlink, so install full version too
+              if("${_name_}" MATCHES "tbb")
+                  THIRD_PARTY_INSTALL_LIBRARY(${l})
+              endif()
+          else()
+              THIRD_PARTY_INSTALL_LIBRARY(${l})
+          endif()
         ENDIF()
       ENDFOREACH()
     ENDIF()

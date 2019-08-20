@@ -1,47 +1,11 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
 //                            avtSAMIFileFormat.C                           //
 // ************************************************************************* //
 #include <silo.h>
-
-#include <snprintf.h>
 
 #include <avtSAMIFileFormat.h>
 
@@ -197,7 +161,7 @@ avtSAMIFileFormat::InitFile()
     if (meshData == 0)
     {
         char tmpMsg[512];
-        SNPRINTF(tmpMsg, sizeof(tmpMsg), "Unable to read \"mesh_data\" from %s", filename);
+        snprintf(tmpMsg, sizeof(tmpMsg), "Unable to read \"mesh_data\" from %s", filename);
         EXCEPTION1(InvalidFilesException, tmpMsg);
     }
 
@@ -310,7 +274,7 @@ avtSAMIFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         for (i = 0; i < toc->nvar; i++)
         {
             char tmpName[256];
-            SNPRINTF(tmpName, sizeof(tmpName), "nodesets/%s", toc->var_names[i]);
+            snprintf(tmpName, sizeof(tmpName), "nodesets/%s", toc->var_names[i]);
             avtMeshMetaData *nsmmd = new avtMeshMetaData(tmpName, 1, 0, 0,
                                            0, ndims, ndims, AVT_POINT_MESH);
             md->Add(nsmmd);
@@ -329,11 +293,11 @@ avtSAMIFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             if (strncmp(toc->dir_names[i], "slide_", 6) == 0)
             {
                 char tmpName[256];
-                SNPRINTF(tmpName, sizeof(tmpName), "%s/master", toc->dir_names[i]);
+                snprintf(tmpName, sizeof(tmpName), "%s/master", toc->dir_names[i]);
                 avtMeshMetaData *smmmd = new avtMeshMetaData(tmpName, 1, 0, 0,
                                                0, ndims, ndims-1, AVT_UNSTRUCTURED_MESH);
                 md->Add(smmmd);
-                SNPRINTF(tmpName, sizeof(tmpName), "%s/slave", toc->dir_names[i]);
+                snprintf(tmpName, sizeof(tmpName), "%s/slave", toc->dir_names[i]);
                 avtMeshMetaData *ssmmd = new avtMeshMetaData(tmpName, 1, 0, 0,
                                                0, ndims, ndims-1, AVT_UNSTRUCTURED_MESH);
                 md->Add(ssmmd);
@@ -350,7 +314,7 @@ avtSAMIFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         for (int i = 0; i < nmats; i++)
         {
             char tmp[16];
-            SNPRINTF(tmp, sizeof(tmp), "%03d", i+1);
+            snprintf(tmp, sizeof(tmp), "%03d", i+1);
             matnames.push_back(tmp);
         }
         avtMaterialMetaData *matmd = new avtMaterialMetaData("mat", "mesh",
@@ -410,7 +374,7 @@ avtSAMIFileFormat::GetMesh(const char *meshname)
         if (DBReadVar(dbFile, "x", xVals) != 0)
         {
             char tmpMsg[512];
-            SNPRINTF(tmpMsg, sizeof(tmpMsg), "Unable to read \"x\" from %s", filename);
+            snprintf(tmpMsg, sizeof(tmpMsg), "Unable to read \"x\" from %s", filename);
             EXCEPTION1(InvalidFilesException, tmpMsg);
         }
     }
@@ -420,7 +384,7 @@ avtSAMIFileFormat::GetMesh(const char *meshname)
         if (DBReadVar(dbFile, "y", yVals) != 0)
         {
             char tmpMsg[512];
-            SNPRINTF(tmpMsg, sizeof(tmpMsg), "Unable to read \"y\" from %s", filename);
+            snprintf(tmpMsg, sizeof(tmpMsg), "Unable to read \"y\" from %s", filename);
             EXCEPTION1(InvalidFilesException, tmpMsg);
         }
     }
@@ -430,7 +394,7 @@ avtSAMIFileFormat::GetMesh(const char *meshname)
         if (DBReadVar(dbFile, "z", zVals) != 0)
         {
             char tmpMsg[512];
-            SNPRINTF(tmpMsg, sizeof(tmpMsg), "Unable to read \"z\" from %s", filename);
+            snprintf(tmpMsg, sizeof(tmpMsg), "Unable to read \"z\" from %s", filename);
             EXCEPTION1(InvalidFilesException, tmpMsg);
         }
     }
@@ -466,7 +430,7 @@ avtSAMIFileFormat::GetMesh(const char *meshname)
         if (nssize == 0)
         {
             char tmpMsg[512];
-            SNPRINTF(tmpMsg, sizeof(tmpMsg), "nodeset \"%s\" is size zero", meshname);
+            snprintf(tmpMsg, sizeof(tmpMsg), "nodeset \"%s\" is size zero", meshname);
             EXCEPTION1(InvalidFilesException, tmpMsg);
         }
 
@@ -474,7 +438,7 @@ avtSAMIFileFormat::GetMesh(const char *meshname)
         if (nodelist == 0)
         {
             char tmpMsg[512];
-            SNPRINTF(tmpMsg, sizeof(tmpMsg), "unable to read \"%s\"", meshname);
+            snprintf(tmpMsg, sizeof(tmpMsg), "unable to read \"%s\"", meshname);
             EXCEPTION1(InvalidFilesException, tmpMsg);
         }
         
@@ -494,19 +458,19 @@ avtSAMIFileFormat::GetMesh(const char *meshname)
         for (j = 0; j < (1<<(ndims-1)); j++)
         {
             char tmpName[256];
-            SNPRINTF(tmpName, sizeof(tmpName), "%s/face_node%d", meshname, j);
+            snprintf(tmpName, sizeof(tmpName), "%s/face_node%d", meshname, j);
             nlsize = DBGetVarLength(dbFile, tmpName);
             if (nlsize == 0)
             {
                 char tmpMsg[512];
-                SNPRINTF(tmpMsg, sizeof(tmpMsg), "slide \"%s\" is size zero", meshname);
+                snprintf(tmpMsg, sizeof(tmpMsg), "slide \"%s\" is size zero", meshname);
                 EXCEPTION1(InvalidFilesException, tmpMsg);
             }
             nd[j] = (int *) DBGetVar(dbFile, tmpName);
             if (nd[j] == 0)
             {
                 char tmpMsg[512];
-                SNPRINTF(tmpMsg, sizeof(tmpMsg), "unable to read \"%s\"", meshname);
+                snprintf(tmpMsg, sizeof(tmpMsg), "unable to read \"%s\"", meshname);
                 EXCEPTION1(InvalidFilesException, tmpMsg);
             }
         }
@@ -535,12 +499,12 @@ avtSAMIFileFormat::GetMesh(const char *meshname)
     for (j = 0; j < (1<<ndims); j++)
     {
         char tmpName[32];
-        SNPRINTF(tmpName, sizeof(tmpName), "brick_nd%d", j);
+        snprintf(tmpName, sizeof(tmpName), "brick_nd%d", j);
         nd[j] = (int *) DBGetVar(dbFile, tmpName);
         if (nd[j] == 0)
         {
             char tmpMsg[512];
-            SNPRINTF(tmpMsg, sizeof(tmpMsg), "unable to read \"%s\"", tmpName);
+            snprintf(tmpMsg, sizeof(tmpMsg), "unable to read \"%s\"", tmpName);
             EXCEPTION1(InvalidFilesException, tmpMsg);
         }
     }
@@ -630,7 +594,7 @@ avtSAMIFileFormat::GetMaterial(const char *varname)
     {
         char tmp[16];
         matnos[i] = i+1;
-        SNPRINTF(tmp, sizeof(tmp), "%03d", i+1);
+        snprintf(tmp, sizeof(tmp), "%03d", i+1);
         matnames[i] = strdup(tmp);
     }
 
