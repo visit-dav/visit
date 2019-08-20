@@ -38,6 +38,9 @@
 #   Kathleen Biagas, Thu Nov  8 10:08:38 PST 2018
 #   Added string replacments related to VISIT_MESAGL_DIR.
 #
+#   Kathleen Biagas, Fri Jul 19 12:12:16 PDT 2019
+#   Filter out path from OSPRAY libraries.
+#
 #******************************************************************************
 
 
@@ -74,6 +77,14 @@ foreach(cl ${check_libs})
 
 endforeach()
 unset(check_libs)
+
+if(VISIT_OSPRAY)
+    foreach(ol ${OSPRAY_LIBRARIES})
+        get_filename_component(ol_name ${ol} NAME)
+        list(APPEND new_ol_libraries ${ol_name})
+    endforeach()
+    set(OSPRAY_LIBRARIES ${new_ol_libraries})
+endif()
 
 if(VISIT_MESAGL_DIR)
     string(REPLACE "${VISIT_MESAGL_DIR}/include"
