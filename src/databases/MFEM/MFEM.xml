@@ -1,6 +1,7 @@
 <?xml version="1.0"?>
   <Plugin name="MFEM" type="database" label="MFEM" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" dbtype="STMD" haswriter="false" hasoptions="false" filePatternsStrict="false" opensWholeDirectory="false">
     <CXXFLAGS>
+      ${CONDUIT_INCLUDE_DIR}
       ${MFEM_INCLUDE_DIR}
       ${VISIT_INCLUDE_DIR}/third_party_builtin
     </CXXFLAGS>
