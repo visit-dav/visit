@@ -87,7 +87,5 @@
       </Function>
       <Function name="ProcessOldVersions" user="true" member="true">
       </Function>
-      <Function name="MeshViewerEnginePluginInfo::InitializePlotAtts" user="false" member="true">
-      </Function>
     </Attribute>
   </Plugin>

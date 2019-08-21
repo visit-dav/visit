@@ -325,7 +325,7 @@ def TestRandomColor():
     CloseDatabase(silo_data_path("arbpoly-zoohybrid.silo"))
     
 def TestCustomColor():
-    TestSection("Testing random color mode")
+    TestSection("Testing custom color mode")
     OpenDatabase(silo_data_path("arbpoly-zoohybrid.silo"))
 
     meshnames = ["2D/mesh1_phzl", "2D/mesh1_phzl2", "2D/mesh1_zl1", "2D/mesh1_zl2"]
