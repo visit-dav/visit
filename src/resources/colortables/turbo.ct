@@ -1,7 +1,7 @@
 
 <?xml version="1.0"?>
 <Object name="ColorTable">
-    <Field name="Version" type="string">3.0.1</Field>
+    <Field name="Version" type="string">3.0.2</Field>
     <Object name="ColorControlPointList">
 
     <Object name="ColorControlPoint">
