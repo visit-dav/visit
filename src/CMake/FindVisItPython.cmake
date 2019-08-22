@@ -368,15 +368,25 @@ IF(NOT WIN32)
             WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 
     add_custom_target(${target_name} ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/build)
-    # also use distutils for the install ...
+    # Also use distutils for the install ...
+    #
+    # The following if uses the CMAKE_INSTALL_PREFIX directly if it
+    # is an absolute path, otherwise it prepends the VISIT_BINARY_DIR
+    # to it. Also note that adding STATUS to the message call causes
+    # the message to not get output.
     INSTALL(CODE
         "
-        EXECUTE_PROCESS(WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        if(\"\${CMAKE_INSTALL_PREFIX}\" MATCHES \"^/.*\")
+           set(PREFIX_DIR_ABSOLUTE \"\${CMAKE_INSTALL_PREFIX}\")
+        else()
+           get_filename_component(PREFIX_DIR_ABSOLUTE \"${CMAKE_INSTALL_PREFIX}\" ABSOLUTE BASE_DIR \"${VISIT_BINARY_DIR}\")
+        endif()
+        execute_process(WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
             COMMAND ${PYTHON_EXECUTABLE} ${setup_file} -v
                 build   --build-base=${CMAKE_CURRENT_BINARY_DIR}/build_install
-                install --install-purelib=\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/${VISIT_INSTALLED_VERSION_LIB}/${dest_dir}
+                install --install-purelib=\${PREFIX_DIR_ABSOLUTE}/${VISIT_INSTALLED_VERSION_LIB}/${dest_dir}
             OUTPUT_VARIABLE PY_DIST_UTILS_INSTALL_OUT)
-        MESSAGE(STATUS \"\${PY_DIST_UTILS_INSTALL_OUT}\")
+        message(\"\${PY_DIST_UTILS_INSTALL_OUT}\")
         ")
 ELSE(NOT WIN32)
 
