@@ -2,7 +2,7 @@
 name: Bug report
 about: Create a report to help us improve
 title: ''
-labels: bug
+labels: bug, impact medium, likelihood medium
 assignees: ''
 
 ---
@@ -51,4 +51,3 @@ A clear and concise description of what you expected to happen.
 
 ### Additional context
 Add any other context about the problem here. Attach any (zipped) relevant files, such as data, configurations, sessionfiles, etc.
-
