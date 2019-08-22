@@ -106,7 +106,7 @@ class NERSCLauncher(MainLauncher):
     def GetIPAddress(self):
         p = subprocess.Popen(["/usr/bin/ifconfig"], stdin=subprocess.PIPE, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
         output = p.communicate()
-        iplines = [x for x in string.split(output[0], "\n") if string.find(x, "inet addr") != -1]
+        iplines = [x for x in string.split(output[0], "\n") if string.find(x, "inet ") != -1]
         start = string.find(iplines[0], "inet ")
         end = string.find(iplines[0], "netmask")
         IP = string.replace(iplines[0][start + 4:end], " ", "")
@@ -134,16 +134,16 @@ class NERSCLauncher(MainLauncher):
                 self.generalArgs.sshtunneling = 0
                 self.generalArgs.noloopback = 1
 
-            # Running the gui on Cori or a serial engine on a login node are "verboten"
+            # Running the gui at NERSC or a serial engine on a login node are "verboten"
             if not self.generalArgs.env and self.generalArgs.exe_name == "gui":
                 msg = """
-Do not run the VisIt GUI on Cori. Run it on your local workstation (preferred/best performance)!
+Do not run the VisIt GUI at NERSC. Run it on your local workstation (preferred/best performance)!
 
 For more information about running VisIt at NERSC: http://www.nersc.gov/nusers/resources/software/apps/visualization/visit/
 """
                 exit(msg, 0)
             if self.generalArgs.exe_name == "engine" and not self.parallelArgs.parallel:
-                exit("The VisIt install on Cori does not support running a serial engine on the login nodes!", 1)
+                exit("The VisIt install at NERSC does not support running a serial engine on the login nodes!", 1)
 
     #
     # Override the JobSubmitterFactory method so the custom job submitter can
