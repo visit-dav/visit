@@ -10,6 +10,7 @@
 
 #include <vtkPolyData.h>
 #include <vtkPointData.h>
+#include <vtkCellData.h>
 #include <vtkCellArray.h>
 #include <AtomicProperties.h>
 #include <avtDatabaseMetaData.h>
@@ -115,6 +116,39 @@ avtXYZWriter::WriteChunk(vtkDataSet *ds, int chunk)
     std::ofstream  out;
     out.open(filename.c_str());
     out << std::scientific << std::setprecision(8);
+
+    // XYZ plugin is designed to work with point data. However, in the VTK
+    // universe, a VTK_VERTEX can be treated as a point. So, we use this logic:
+    // If the data exists over point arrays, then just use those.
+    // Otherwise, if the data exists over cell arrays and all the cells are
+    // VTK_VERTEX, then treat those as points
+    // Otherwise, produce a warning and proceed as with points.
+    vtkDataSetAttributes *dsa;
+    if (ds->GetPointData()->GetNumberOfArrays() == 0)
+    {
+        // There is no point data, so look for VTK_VERTEX only cells
+        vtkCellTypes *cellTypes;
+        ds->GetCellTypes(cellTypes);
+        if (cellTypes->GetNumberOfTypes() == 1 && cellTypes->IsType(VTK_VERTEX) == 1)
+        {
+            // There is only one type of cell and that is VTK_VERTEX, so
+            // treat it like points
+            dsa = ds->GetCellData();
+        }
+        else
+        {
+            // Data not over points and does not satisfy cell requirements.
+            // Produce a warning and proceed with points
+            
+            //Warning here!
+            dsa = ds->GetPointData();
+        }
+    }
+    else
+    {
+        // There is point data, so treat it like points
+        dsa = ds->GetPointData();
+    }
     
 
     // Collect up the data arrays, and find the atomic number one
@@ -123,9 +157,9 @@ avtXYZWriter::WriteChunk(vtkDataSet *ds, int chunk)
     vtkDataArray *arrays[MAX_XYZ_VARS];
     vtkDataArray *element = NULL;
 
-    for (int i=0; i<ds->GetPointData()->GetNumberOfArrays(); i++)
+    for (int i=0; i<dsa->GetNumberOfArrays(); i++)
     {
-        vtkDataArray *arr = ds->GetPointData()->GetArray(i);
+        vtkDataArray *arr = dsa->GetArray(i);
         if (strlen(arr->GetName()) >= 7 &&
             strncmp(arr->GetName(),"element",7) == 0)
         {
