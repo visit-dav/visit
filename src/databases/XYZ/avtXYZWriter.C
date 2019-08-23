@@ -15,6 +15,7 @@
 #include <AtomicProperties.h>
 #include <avtDatabaseMetaData.h>
 #include <avtCallback.h>
+#include <DebugStream.h>
 
 #include <fstream>
 #include <vector>
@@ -94,11 +95,17 @@ avtXYZWriter::WriteHeaders(const avtDatabaseMetaData *md,
 //
 //    Mark C. Miller, Wed Jan 24 12:26:30 PST 2018
 //    Added logic to output only points referenced by cells of non-zero size.    
+//
+//    Eddie Rusu, Fri Aug 23 11:21:05 PDT 2019
+//    Writer can now write cell-centered data if the cell data is exclusively
+//    composed of VTK_VERTEX cells. Warning issued if not.
 // ****************************************************************************
 
 void
 avtXYZWriter::WriteChunk(vtkDataSet *ds, int chunk)
 {
+    debug5 << "Entering avtXYZWriter::WriteChunk(vtkDataSet*, int)"
+           << std::endl;
     int natoms = ds->GetNumberOfPoints();
     int ncells = ds->GetNumberOfCells();
     if (natoms == 0 || ncells == 0)
@@ -214,6 +221,8 @@ avtXYZWriter::WriteChunk(vtkDataSet *ds, int chunk)
     }
 
     out.close();
+    debug5 << "Exiting  avtXYZWriter::WriteChunk(vtkDataSet*, int)"
+           << std::endl;
 }
 
 // ****************************************************************************
