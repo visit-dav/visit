@@ -44,12 +44,19 @@ class ColorTableAttributes;
 //    Kathleen Bonnell, Mon Jan 17 11:18:35 MST 2011
 //    Added invert arg to color retrieval methods.
 //
+//    Mark C. Miller, Tue Jun 18 14:28:09 PDT 2019
+//    Added color distance methods. The just noticeable threshold was
+//    determined emperically by observing printed distance values for colors
+//    in the "levels" and "distinct" tables.
 // ****************************************************************************
 
 class PIPELINE_API avtColorTables
 {
 public:
     static avtColorTables *Instance();
+    static double          PerceptualColorDistance(unsigned char const *rgbA,
+                                                   unsigned char const *rgbB);
+    static int const       JNDColorDistance = 150;
 
     const std::string   &GetDefaultContinuousColorTable() const;
     void                 SetDefaultContinuousColorTable(const std::string &);
@@ -67,6 +74,10 @@ public:
                                           bool invert = false) const;
     bool                 GetControlPointColor(const std::string &ctName,
                                               int i, unsigned char *rgb,
+                                              bool invert = false) const;
+    bool                 GetJNDControlPointColor(const std::string &ctName,
+                                              int i, unsigned char const *avoidrgb,
+                                              unsigned char *jndrgb,
                                               bool invert = false) const;
     int                  GetNumColors() const { return 256; };
     bool                 IsDiscrete(const std::string &ctName) const;

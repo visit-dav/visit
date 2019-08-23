@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
-//                              CurvePluginInfo.h                            //
+//                               CurvePluginInfo.h                            //
 // ************************************************************************* //
 
 #ifndef CURVE_PLUGIN_INFO_H
@@ -79,9 +79,6 @@ class CurveViewerEnginePluginInfo : public virtual ViewerEnginePlotPluginInfo, p
   private:
     static CurveAttributes *defaultAtts;
     static CurveAttributes *clientAtts;
-    // User-defined functions
-  private:
-    void SetColor(AttributeSubject *);
 };
 
 class CurveViewerPluginInfo : public virtual ViewerPlotPluginInfo, public virtual CurveViewerEnginePluginInfo
