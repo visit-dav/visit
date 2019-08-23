@@ -14,7 +14,8 @@ Source code repository for the VisIt Scientific Visualization and Data Analysis 
 
 ##  Developer Resources
 
-Github Development Info: https://visitusers.org/index.php?title=Github
+* [Github Development Info](https://visitusers.org/index.php?title=Github)
+* [Newly Submitted Issues](https://github.com/visit-dav/visit/issues?utf8=✓&q=is%3Aissue+is%3Aopen+-label%3Areviewed)
 
 
 ## License
