@@ -1647,6 +1647,8 @@ PickVarInfo::PrintArray(std::string &os,
 // Creation:   October 24, 2011
 //
 // Modifications:
+//    Alister Maguire, Fri Aug 23 13:53:07 PDT 2019
+//    Avoid adding null terminating characters to label strings. 
 //
 // ****************************************************************************
 
@@ -1832,7 +1834,15 @@ PickVarInfo::CreateOutputMapNode(const std::string &type, MapNode &m)
                     size_t labelSize = values.size() / names.size();
                     std::string l;
                     for (size_t j = labelSize*i; j < labelSize *(i+1); ++j)
+                    {
+                        //
+                        // We don't want to add the null terminators; doing
+                        // so causes strange behaviors. 
+                        //
+                        if ((char)values[j] == '\0')
+                            break;
                         l += (char)values[j]; 
+                    }
                     if (centeringsMatch)
                         m[variableName] = l;
                     else
