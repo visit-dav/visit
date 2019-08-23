@@ -1,0 +1,1288 @@
+
+<?xml version="1.0"?>
+<Object name="ColorTable">
+    <Field name="Version" type="string">3.0.2</Field>
+    <Object name="ColorControlPointList">
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">48 18 59 255</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">49 21 66 255</Field>
+        <Field name="position" type="float">0.00392156862745</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">50 24 74 255</Field>
+        <Field name="position" type="float">0.0078431372549</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">52 27 81 255</Field>
+        <Field name="position" type="float">0.0117647058824</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">53 30 88 255</Field>
+        <Field name="position" type="float">0.0156862745098</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">54 33 95 255</Field>
+        <Field name="position" type="float">0.0196078431373</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">55 35 101 255</Field>
+        <Field name="position" type="float">0.0235294117647</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">56 38 108 255</Field>
+        <Field name="position" type="float">0.0274509803922</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">57 41 114 255</Field>
+        <Field name="position" type="float">0.0313725490196</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">58 44 121 255</Field>
+        <Field name="position" type="float">0.0352941176471</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">59 47 127 255</Field>
+        <Field name="position" type="float">0.0392156862745</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">60 50 133 255</Field>
+        <Field name="position" type="float">0.043137254902</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">60 53 139 255</Field>
+        <Field name="position" type="float">0.0470588235294</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">61 55 145 255</Field>
+        <Field name="position" type="float">0.0509803921569</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">62 58 150 255</Field>
+        <Field name="position" type="float">0.0549019607843</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">63 61 156 255</Field>
+        <Field name="position" type="float">0.0588235294118</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">64 64 161 255</Field>
+        <Field name="position" type="float">0.0627450980392</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">64 67 166 255</Field>
+        <Field name="position" type="float">0.0666666666667</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">65 69 171 255</Field>
+        <Field name="position" type="float">0.0705882352941</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">65 72 176 255</Field>
+        <Field name="position" type="float">0.0745098039216</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">66 75 181 255</Field>
+        <Field name="position" type="float">0.078431372549</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">67 78 186 255</Field>
+        <Field name="position" type="float">0.0823529411765</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">67 80 190 255</Field>
+        <Field name="position" type="float">0.0862745098039</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">67 83 194 255</Field>
+        <Field name="position" type="float">0.0901960784314</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">68 86 199 255</Field>
+        <Field name="position" type="float">0.0941176470588</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">68 88 203 255</Field>
+        <Field name="position" type="float">0.0980392156863</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">69 91 206 255</Field>
+        <Field name="position" type="float">0.101960784314</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">69 94 210 255</Field>
+        <Field name="position" type="float">0.105882352941</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">69 96 214 255</Field>
+        <Field name="position" type="float">0.109803921569</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">69 99 217 255</Field>
+        <Field name="position" type="float">0.113725490196</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">70 102 221 255</Field>
+        <Field name="position" type="float">0.117647058824</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">70 104 224 255</Field>
+        <Field name="position" type="float">0.121568627451</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">70 107 227 255</Field>
+        <Field name="position" type="float">0.125490196078</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">70 109 230 255</Field>
+        <Field name="position" type="float">0.129411764706</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">70 112 232 255</Field>
+        <Field name="position" type="float">0.133333333333</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">70 115 235 255</Field>
+        <Field name="position" type="float">0.137254901961</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">70 117 237 255</Field>
+        <Field name="position" type="float">0.141176470588</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">70 120 240 255</Field>
+        <Field name="position" type="float">0.145098039216</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">70 122 242 255</Field>
+        <Field name="position" type="float">0.149019607843</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">70 125 244 255</Field>
+        <Field name="position" type="float">0.152941176471</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">70 127 246 255</Field>
+        <Field name="position" type="float">0.156862745098</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">70 130 248 255</Field>
+        <Field name="position" type="float">0.160784313725</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">69 132 249 255</Field>
+        <Field name="position" type="float">0.164705882353</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">69 135 251 255</Field>
+        <Field name="position" type="float">0.16862745098</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">69 137 252 255</Field>
+        <Field name="position" type="float">0.172549019608</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">68 140 253 255</Field>
+        <Field name="position" type="float">0.176470588235</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">67 142 253 255</Field>
+        <Field name="position" type="float">0.180392156863</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">66 145 254 255</Field>
+        <Field name="position" type="float">0.18431372549</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">65 147 254 255</Field>
+        <Field name="position" type="float">0.188235294118</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">64 150 254 255</Field>
+        <Field name="position" type="float">0.192156862745</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">63 152 254 255</Field>
+        <Field name="position" type="float">0.196078431373</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">62 155 254 255</Field>
+        <Field name="position" type="float">0.2</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">60 157 253 255</Field>
+        <Field name="position" type="float">0.203921568627</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">59 160 252 255</Field>
+        <Field name="position" type="float">0.207843137255</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">57 162 252 255</Field>
+        <Field name="position" type="float">0.211764705882</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">56 165 251 255</Field>
+        <Field name="position" type="float">0.21568627451</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">54 168 249 255</Field>
+        <Field name="position" type="float">0.219607843137</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">52 170 248 255</Field>
+        <Field name="position" type="float">0.223529411765</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">51 172 246 255</Field>
+        <Field name="position" type="float">0.227450980392</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">49 175 245 255</Field>
+        <Field name="position" type="float">0.23137254902</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">47 177 243 255</Field>
+        <Field name="position" type="float">0.235294117647</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">45 180 241 255</Field>
+        <Field name="position" type="float">0.239215686275</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">43 182 239 255</Field>
+        <Field name="position" type="float">0.243137254902</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">42 185 237 255</Field>
+        <Field name="position" type="float">0.247058823529</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">40 187 235 255</Field>
+        <Field name="position" type="float">0.250980392157</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">38 189 233 255</Field>
+        <Field name="position" type="float">0.254901960784</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">37 192 230 255</Field>
+        <Field name="position" type="float">0.258823529412</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">35 194 228 255</Field>
+        <Field name="position" type="float">0.262745098039</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">33 196 225 255</Field>
+        <Field name="position" type="float">0.266666666667</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">32 198 223 255</Field>
+        <Field name="position" type="float">0.270588235294</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">30 201 220 255</Field>
+        <Field name="position" type="float">0.274509803922</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">29 203 218 255</Field>
+        <Field name="position" type="float">0.278431372549</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">28 205 215 255</Field>
+        <Field name="position" type="float">0.282352941176</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">27 207 212 255</Field>
+        <Field name="position" type="float">0.286274509804</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">26 209 210 255</Field>
+        <Field name="position" type="float">0.290196078431</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">25 211 207 255</Field>
+        <Field name="position" type="float">0.294117647059</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">24 213 204 255</Field>
+        <Field name="position" type="float">0.298039215686</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">24 215 202 255</Field>
+        <Field name="position" type="float">0.301960784314</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">23 217 199 255</Field>
+        <Field name="position" type="float">0.305882352941</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">23 218 196 255</Field>
+        <Field name="position" type="float">0.309803921569</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">23 220 194 255</Field>
+        <Field name="position" type="float">0.313725490196</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">23 222 191 255</Field>
+        <Field name="position" type="float">0.317647058824</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">24 224 189 255</Field>
+        <Field name="position" type="float">0.321568627451</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">24 225 186 255</Field>
+        <Field name="position" type="float">0.325490196078</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">25 227 184 255</Field>
+        <Field name="position" type="float">0.329411764706</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">26 228 182 255</Field>
+        <Field name="position" type="float">0.333333333333</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">27 229 180 255</Field>
+        <Field name="position" type="float">0.337254901961</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">29 231 177 255</Field>
+        <Field name="position" type="float">0.341176470588</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">30 232 175 255</Field>
+        <Field name="position" type="float">0.345098039216</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">32 233 172 255</Field>
+        <Field name="position" type="float">0.349019607843</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">34 235 169 255</Field>
+        <Field name="position" type="float">0.352941176471</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">36 236 166 255</Field>
+        <Field name="position" type="float">0.356862745098</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">39 237 163 255</Field>
+        <Field name="position" type="float">0.360784313725</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">41 238 160 255</Field>
+        <Field name="position" type="float">0.364705882353</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">44 239 157 255</Field>
+        <Field name="position" type="float">0.36862745098</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">47 240 154 255</Field>
+        <Field name="position" type="float">0.372549019608</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">50 241 151 255</Field>
+        <Field name="position" type="float">0.376470588235</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">53 243 148 255</Field>
+        <Field name="position" type="float">0.380392156863</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">56 244 145 255</Field>
+        <Field name="position" type="float">0.38431372549</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">59 244 141 255</Field>
+        <Field name="position" type="float">0.388235294118</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">63 245 138 255</Field>
+        <Field name="position" type="float">0.392156862745</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">66 246 135 255</Field>
+        <Field name="position" type="float">0.396078431373</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">70 247 131 255</Field>
+        <Field name="position" type="float">0.4</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">74 248 128 255</Field>
+        <Field name="position" type="float">0.403921568627</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">77 249 124 255</Field>
+        <Field name="position" type="float">0.407843137255</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">81 249 121 255</Field>
+        <Field name="position" type="float">0.411764705882</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">85 250 118 255</Field>
+        <Field name="position" type="float">0.41568627451</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">89 251 114 255</Field>
+        <Field name="position" type="float">0.419607843137</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">93 251 111 255</Field>
+        <Field name="position" type="float">0.423529411765</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">97 252 108 255</Field>
+        <Field name="position" type="float">0.427450980392</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">101 252 104 255</Field>
+        <Field name="position" type="float">0.43137254902</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">105 253 101 255</Field>
+        <Field name="position" type="float">0.435294117647</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">109 253 98 255</Field>
+        <Field name="position" type="float">0.439215686275</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">113 253 95 255</Field>
+        <Field name="position" type="float">0.443137254902</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">116 254 92 255</Field>
+        <Field name="position" type="float">0.447058823529</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">120 254 89 255</Field>
+        <Field name="position" type="float">0.450980392157</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">124 254 86 255</Field>
+        <Field name="position" type="float">0.454901960784</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">128 254 83 255</Field>
+        <Field name="position" type="float">0.458823529412</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">132 254 80 255</Field>
+        <Field name="position" type="float">0.462745098039</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">135 254 77 255</Field>
+        <Field name="position" type="float">0.466666666667</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">139 254 75 255</Field>
+        <Field name="position" type="float">0.470588235294</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">142 254 72 255</Field>
+        <Field name="position" type="float">0.474509803922</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">146 254 70 255</Field>
+        <Field name="position" type="float">0.478431372549</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">149 254 68 255</Field>
+        <Field name="position" type="float">0.482352941176</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">152 254 66 255</Field>
+        <Field name="position" type="float">0.486274509804</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">155 253 64 255</Field>
+        <Field name="position" type="float">0.490196078431</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">158 253 62 255</Field>
+        <Field name="position" type="float">0.494117647059</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">161 252 61 255</Field>
+        <Field name="position" type="float">0.498039215686</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">164 252 59 255</Field>
+        <Field name="position" type="float">0.501960784314</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">166 251 58 255</Field>
+        <Field name="position" type="float">0.505882352941</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">169 251 57 255</Field>
+        <Field name="position" type="float">0.509803921569</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">172 250 55 255</Field>
+        <Field name="position" type="float">0.513725490196</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">174 249 55 255</Field>
+        <Field name="position" type="float">0.517647058824</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">177 248 54 255</Field>
+        <Field name="position" type="float">0.521568627451</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">179 248 53 255</Field>
+        <Field name="position" type="float">0.525490196078</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">182 247 53 255</Field>
+        <Field name="position" type="float">0.529411764706</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">185 245 52 255</Field>
+        <Field name="position" type="float">0.533333333333</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">187 244 52 255</Field>
+        <Field name="position" type="float">0.537254901961</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">190 243 52 255</Field>
+        <Field name="position" type="float">0.541176470588</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">192 242 51 255</Field>
+        <Field name="position" type="float">0.545098039216</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">195 241 51 255</Field>
+        <Field name="position" type="float">0.549019607843</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">197 239 51 255</Field>
+        <Field name="position" type="float">0.552941176471</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">200 238 51 255</Field>
+        <Field name="position" type="float">0.556862745098</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">202 237 51 255</Field>
+        <Field name="position" type="float">0.560784313725</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">205 235 52 255</Field>
+        <Field name="position" type="float">0.564705882353</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">207 234 52 255</Field>
+        <Field name="position" type="float">0.56862745098</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">209 232 52 255</Field>
+        <Field name="position" type="float">0.572549019608</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">212 231 53 255</Field>
+        <Field name="position" type="float">0.576470588235</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">214 229 53 255</Field>
+        <Field name="position" type="float">0.580392156863</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">216 227 53 255</Field>
+        <Field name="position" type="float">0.58431372549</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">218 226 54 255</Field>
+        <Field name="position" type="float">0.588235294118</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">221 224 54 255</Field>
+        <Field name="position" type="float">0.592156862745</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">223 222 54 255</Field>
+        <Field name="position" type="float">0.596078431373</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">225 220 55 255</Field>
+        <Field name="position" type="float">0.6</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">227 218 55 255</Field>
+        <Field name="position" type="float">0.603921568627</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">229 216 56 255</Field>
+        <Field name="position" type="float">0.607843137255</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">231 215 56 255</Field>
+        <Field name="position" type="float">0.611764705882</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">232 213 56 255</Field>
+        <Field name="position" type="float">0.61568627451</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">234 211 57 255</Field>
+        <Field name="position" type="float">0.619607843137</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">236 209 57 255</Field>
+        <Field name="position" type="float">0.623529411765</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">237 207 57 255</Field>
+        <Field name="position" type="float">0.627450980392</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">239 205 57 255</Field>
+        <Field name="position" type="float">0.63137254902</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">240 203 58 255</Field>
+        <Field name="position" type="float">0.635294117647</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">242 200 58 255</Field>
+        <Field name="position" type="float">0.639215686275</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">243 198 58 255</Field>
+        <Field name="position" type="float">0.643137254902</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">244 196 58 255</Field>
+        <Field name="position" type="float">0.647058823529</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">246 194 58 255</Field>
+        <Field name="position" type="float">0.650980392157</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">247 192 57 255</Field>
+        <Field name="position" type="float">0.654901960784</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">248 190 57 255</Field>
+        <Field name="position" type="float">0.658823529412</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">249 188 57 255</Field>
+        <Field name="position" type="float">0.662745098039</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">249 186 56 255</Field>
+        <Field name="position" type="float">0.666666666667</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">250 183 55 255</Field>
+        <Field name="position" type="float">0.670588235294</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">251 181 55 255</Field>
+        <Field name="position" type="float">0.674509803922</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">251 179 54 255</Field>
+        <Field name="position" type="float">0.678431372549</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">252 176 53 255</Field>
+        <Field name="position" type="float">0.682352941176</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">252 174 52 255</Field>
+        <Field name="position" type="float">0.686274509804</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">253 171 51 255</Field>
+        <Field name="position" type="float">0.690196078431</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">253 169 50 255</Field>
+        <Field name="position" type="float">0.694117647059</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">253 166 49 255</Field>
+        <Field name="position" type="float">0.698039215686</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">253 163 48 255</Field>
+        <Field name="position" type="float">0.701960784314</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">254 161 47 255</Field>
+        <Field name="position" type="float">0.705882352941</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">254 158 46 255</Field>
+        <Field name="position" type="float">0.709803921569</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">254 155 45 255</Field>
+        <Field name="position" type="float">0.713725490196</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">254 152 44 255</Field>
+        <Field name="position" type="float">0.717647058824</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">253 149 43 255</Field>
+        <Field name="position" type="float">0.721568627451</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">253 146 41 255</Field>
+        <Field name="position" type="float">0.725490196078</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">253 143 40 255</Field>
+        <Field name="position" type="float">0.729411764706</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">253 140 39 255</Field>
+        <Field name="position" type="float">0.733333333333</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">252 137 38 255</Field>
+        <Field name="position" type="float">0.737254901961</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">252 134 36 255</Field>
+        <Field name="position" type="float">0.741176470588</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">251 131 35 255</Field>
+        <Field name="position" type="float">0.745098039216</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">251 128 34 255</Field>
+        <Field name="position" type="float">0.749019607843</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">250 125 32 255</Field>
+        <Field name="position" type="float">0.752941176471</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">250 122 31 255</Field>
+        <Field name="position" type="float">0.756862745098</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">249 119 30 255</Field>
+        <Field name="position" type="float">0.760784313725</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">248 116 28 255</Field>
+        <Field name="position" type="float">0.764705882353</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">247 113 27 255</Field>
+        <Field name="position" type="float">0.76862745098</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">247 110 26 255</Field>
+        <Field name="position" type="float">0.772549019608</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">246 107 24 255</Field>
+        <Field name="position" type="float">0.776470588235</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">245 104 23 255</Field>
+        <Field name="position" type="float">0.780392156863</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">244 101 22 255</Field>
+        <Field name="position" type="float">0.78431372549</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">243 99 21 255</Field>
+        <Field name="position" type="float">0.788235294118</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">242 96 20 255</Field>
+        <Field name="position" type="float">0.792156862745</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">241 93 19 255</Field>
+        <Field name="position" type="float">0.796078431373</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">239 90 17 255</Field>
+        <Field name="position" type="float">0.8</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">238 88 16 255</Field>
+        <Field name="position" type="float">0.803921568627</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">237 85 15 255</Field>
+        <Field name="position" type="float">0.807843137255</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">236 82 14 255</Field>
+        <Field name="position" type="float">0.811764705882</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">234 80 13 255</Field>
+        <Field name="position" type="float">0.81568627451</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">233 77 13 255</Field>
+        <Field name="position" type="float">0.819607843137</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">232 75 12 255</Field>
+        <Field name="position" type="float">0.823529411765</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">230 73 11 255</Field>
+        <Field name="position" type="float">0.827450980392</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">229 70 10 255</Field>
+        <Field name="position" type="float">0.83137254902</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">227 68 10 255</Field>
+        <Field name="position" type="float">0.835294117647</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">226 66 9 255</Field>
+        <Field name="position" type="float">0.839215686275</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">224 64 8 255</Field>
+        <Field name="position" type="float">0.843137254902</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">222 62 8 255</Field>
+        <Field name="position" type="float">0.847058823529</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">221 60 7 255</Field>
+        <Field name="position" type="float">0.850980392157</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">219 58 7 255</Field>
+        <Field name="position" type="float">0.854901960784</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">217 56 6 255</Field>
+        <Field name="position" type="float">0.858823529412</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">215 54 6 255</Field>
+        <Field name="position" type="float">0.862745098039</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">214 52 5 255</Field>
+        <Field name="position" type="float">0.866666666667</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">212 50 5 255</Field>
+        <Field name="position" type="float">0.870588235294</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">210 48 5 255</Field>
+        <Field name="position" type="float">0.874509803922</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">208 47 4 255</Field>
+        <Field name="position" type="float">0.878431372549</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">206 45 4 255</Field>
+        <Field name="position" type="float">0.882352941176</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">203 43 3 255</Field>
+        <Field name="position" type="float">0.886274509804</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">201 41 3 255</Field>
+        <Field name="position" type="float">0.890196078431</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">199 40 3 255</Field>
+        <Field name="position" type="float">0.894117647059</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">197 38 2 255</Field>
+        <Field name="position" type="float">0.898039215686</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">195 36 2 255</Field>
+        <Field name="position" type="float">0.901960784314</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">192 35 2 255</Field>
+        <Field name="position" type="float">0.905882352941</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">190 33 2 255</Field>
+        <Field name="position" type="float">0.909803921569</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">187 31 1 255</Field>
+        <Field name="position" type="float">0.913725490196</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">185 30 1 255</Field>
+        <Field name="position" type="float">0.917647058824</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">182 28 1 255</Field>
+        <Field name="position" type="float">0.921568627451</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">180 27 1 255</Field>
+        <Field name="position" type="float">0.925490196078</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">177 25 1 255</Field>
+        <Field name="position" type="float">0.929411764706</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">174 24 1 255</Field>
+        <Field name="position" type="float">0.933333333333</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">172 22 1 255</Field>
+        <Field name="position" type="float">0.937254901961</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">169 21 1 255</Field>
+        <Field name="position" type="float">0.941176470588</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">166 20 1 255</Field>
+        <Field name="position" type="float">0.945098039216</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">163 18 1 255</Field>
+        <Field name="position" type="float">0.949019607843</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">160 17 1 255</Field>
+        <Field name="position" type="float">0.952941176471</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">157 16 1 255</Field>
+        <Field name="position" type="float">0.956862745098</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">154 14 1 255</Field>
+        <Field name="position" type="float">0.960784313725</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">151 13 1 255</Field>
+        <Field name="position" type="float">0.964705882353</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">148 12 1 255</Field>
+        <Field name="position" type="float">0.96862745098</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">145 11 1 255</Field>
+        <Field name="position" type="float">0.972549019608</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">142 10 1 255</Field>
+        <Field name="position" type="float">0.976470588235</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">139 9 1 255</Field>
+        <Field name="position" type="float">0.980392156863</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">135 8 1 255</Field>
+        <Field name="position" type="float">0.98431372549</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">132 7 1 255</Field>
+        <Field name="position" type="float">0.988235294118</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">129 6 2 255</Field>
+        <Field name="position" type="float">0.992156862745</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">125 5 2 255</Field>
+        <Field name="position" type="float">0.996078431373</Field>
+    </Object>
+
+    <Object name="ColorControlPoint">
+        <Field name="colors" type="unsignedCharArray" length="4">122 4 2 255</Field>
+        <Field name="position" type="float">1.0</Field>
+    </Object>
+
+        <Field name="category" type="string">UserDefined</Field>
+    </Object>
+</Object>
