@@ -161,7 +161,6 @@ points in *two dimensions* where each point has a velocity magnitude value assoc
 with it.
 
 .. code-block:: none
-   :emphasize-lines: 2
 
     x y velocity
     #coordflag xyv
@@ -172,7 +171,6 @@ with it.
 Likewise, for a collection of points in just *one dimension*, we would have
 
 .. code-block:: none
-   :emphasize-lines: 2
 
     x y velocity
     #coordflag xv
