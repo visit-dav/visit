@@ -48,6 +48,7 @@
 #include <vtkCellArray.h>
 #include <AtomicProperties.h>
 #include <avtDatabaseMetaData.h>
+#include <avtCallback.h>
 
 #include <fstream>
 #include <vector>
@@ -173,8 +174,9 @@ avtXYZWriter::WriteChunk(vtkDataSet *ds, int chunk)
         {
             // Data not over points and does not satisfy cell requirements.
             // Produce a warning and proceed with points
-            
-            //Warning here!
+            avtCallback::IssueWarning("XYZ Writer can only write "
+                "node-centered variables. Recenter the variable(s) you want "
+                "to include to the nodes.");
             dsa = ds->GetPointData();
         }
     }
