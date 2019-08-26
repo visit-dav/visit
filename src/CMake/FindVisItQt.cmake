@@ -29,6 +29,10 @@
 #   Kathleen Biagas, Thu Sep 27 11:33:43 PDT 2018
 #   Add UiTools to qt_libs_install.
 #
+#   Kevin Griffin, Mon Aug 26 12:15:21 PDT 2019
+#   Installed the plugins/platforms and plugins/styles directories in the 
+#   xmledit.app and mcurvit.app directories.
+#
 #*****************************************************************************
 
 
