@@ -12,12 +12,15 @@
 #include <database_exports.h>
 
 #include <vector>
+#include <vectortypes.h>
 
 #include <void_ref_ptr.h>
 #include <array_ref_ptr.h>
 #include <avtDataSelection.h>
 
 class    vtkDataSet;
+class    vtkDataArray;
+class    vtkFloatArray;
 class    vtkDataArray;
 
 class    avtDatabaseMetaData;
@@ -205,6 +208,13 @@ class DATABASE_API avtFileFormatInterface
     virtual void           *GetAuxiliaryData(const char *, int, int, 
                                              const char *, void *, 
                                              DestructorFunction &) = 0;
+
+    //FIXME: Testing
+    virtual vtkDataArray  **GetTimeAndElementSpanVars(int,
+                                                      intVector,
+                                                      stringVector,
+                                                      int *,
+                                                      int);
 
     virtual const char     *GetFilename(int) = 0;
     virtual void            SetDatabaseMetaData(avtDatabaseMetaData *md,

@@ -303,7 +303,7 @@ avtDirectDBQueryOverTimeFilter::Execute(void)
     auto start = std::chrono::high_resolution_clock::now();
 
     vtkFloatArray **spanArray = (vtkFloatArray **) (GetInput()->GetSource()->
-        GetOriginatingSource()->FetchTimeAndElementSpanVars(0, elements, vars, tsRange));
+        GetOriginatingSource()->FetchTimeAndElementSpanVars(0, elements, vars, tsRange, stride));
 
     auto stop = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> elapsed = stop - start;

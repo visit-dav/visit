@@ -2264,21 +2264,28 @@ vtkDataArray **
 avtMiliFileFormat::GetTimeAndElementSpanVars(int domain, 
                                              intVector elementIds,
                                              stringVector vars,
-                                             int *cycleRange)
+                                             int *cycleRange,
+                                             int stride)
 {
+    //TODO incorporate stride. 
     int numElems   = elementIds.size();
     int numVars    = vars.size();
-    int spanSize   = cycleRange[1] - cycleRange[0] + 1;
+    int spanSize   = (cycleRange[1] - cycleRange[0] + stride) / stride;
     int numArrays  = numElems * numVars;
 
     vtkFloatArray **spanArrays = new vtkFloatArray *[numArrays];
     
-    int spanIdx = 0;
+    int spanIdx      = 0;
     const int startC = cycleRange[0];
-    const int stopC  = cycleRange[1] + 1;
+    const int stopC  = cycleRange[1] + stride;
 
     for (int elIdx = 0; elIdx < numElems; ++elIdx)
     {
+        //
+        // VisIt's id's are 1 based, so we need to subtract 1. 
+        //
+        long int visitId = elementIds[elIdx] - 1;
+
         for (int varIdx = 0; varIdx < numVars; ++varIdx)
         {
             string varPath = vars[varIdx];
@@ -2287,9 +2294,9 @@ avtMiliFileFormat::GetTimeAndElementSpanVars(int domain,
             //
             // Is this a vector or standard variable?
             //
-            bool isVector   = false;
-            int compIdx     = -1;
-            string truePath = varPath;
+            bool hasComponents = false;
+            int compIdx        = -1;
+            string truePath    = varPath;
 
             MiliVariableMetaData *varMD = 
                 miliMetaData[meshId]->GetVarMDByPath(truePath.c_str());
@@ -2309,7 +2316,7 @@ avtMiliFileFormat::GetTimeAndElementSpanVars(int domain,
                     EXCEPTION1(InvalidVariableException, varPath);
                 }
 
-                isVector = true;
+                hasComponents = true;
 
                 stringVector vComps = varMD->GetVectorComponents();
                 const int numComps  = vComps.size(); 
@@ -2335,9 +2342,10 @@ avtMiliFileFormat::GetTimeAndElementSpanVars(int domain,
             singleSpan->SetNumberOfTuples(spanSize); 
             float *spanPtr = (float *) singleSpan->GetVoidPointer(0);
 
-            for (int curC = startC; curC < stopC; ++curC)
+            for (int curC = startC; curC < stopC; curC += stride)
             {
-                if (!isVector)
+                //TODO: Does this handle all cases?
+                if (!hasComponents)
                 {
                     vtkFloatArray *meshVar = 
                         (vtkFloatArray *) GetVar(curC, domain, truePath.c_str());
@@ -2345,10 +2353,6 @@ avtMiliFileFormat::GetTimeAndElementSpanVars(int domain,
                     if (meshVar == NULL)
                         cerr << "MESH VAR IS NULL!" << endl;//FIXME
 
-                    //
-                    // VisIt's id's are 1 based, so we need to subtract 1. 
-                    //
-                    long int visitId = elementIds[elIdx] - 1;
                     spanPtr[curC] = meshVar->GetTuple1(visitId);
                 }
                 else
@@ -2363,7 +2367,7 @@ avtMiliFileFormat::GetTimeAndElementSpanVars(int domain,
                     if (meshVar == NULL)
                         cerr << "MESH VAR IS NULL!" << endl;//FIXME
 
-                    int idx = (elementIds[elIdx] * numComps) + compIdx;
+                    long int idx = (visitId * numComps) + compIdx;
                     spanPtr[curC] = meshVarPtr[idx];
 
                 }

@@ -648,12 +648,14 @@ vtkDataArray **
 avtSourceFromDatabase::FetchTimeAndElementSpanVars(int domain, 
                                                    intVector elements,
                                                    stringVector vars,
-                                                   int *tsRange)
+                                                   int *tsRange,
+                                                   int stepSize)
 {
     return database->GetTimeAndElementSpanVars(domain, 
                                                elements,
                                                vars,
-                                               tsRange);
+                                               tsRange,
+                                               stepSize);
 }
 
 

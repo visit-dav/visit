@@ -69,7 +69,8 @@ class DATABASE_API avtMTMDFileFormatInterface : public avtFileFormatInterface
     virtual vtkDataArray  **GetTimeAndElementSpanVars(int,
                                                       intVector,
                                                       stringVector,
-                                                      int *);
+                                                      int *,
+                                                      int);
     virtual std::string     CreateCacheNameIncludingSelections(std::string,
                                                                int, int);
 

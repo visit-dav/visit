@@ -88,7 +88,8 @@ class avtMiliFileFormat : public avtMTMDFileFormat
                          GetTimeAndElementSpanVars(int,
                                                    intVector,
                                                    stringVector,
-                                                   int *);
+                                                   int *,
+                                                   int);
 
     virtual void          PopulateDatabaseMetaData(avtDatabaseMetaData *, int);
 

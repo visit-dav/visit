@@ -11,6 +11,8 @@
 #include <avtFileFormat.h>
 #include <DebugStream.h>
 
+#include <vtkFloatArray.h>
+
 
 using     std::vector;
 
@@ -413,4 +415,106 @@ avtFileFormatInterface::SetStrictMode(bool strictMode)
         avtFileFormat *ff = GetFormat(i);
         ff->SetStrictMode(strictMode);
     }
+}
+
+
+// ****************************************************************************
+//  Method: avtFileFormatInterface::GetTimeAndElementSpanVars
+//
+//  Purpose:
+//
+//  Programmer: 
+//  Creation:   
+//
+// ****************************************************************************
+
+vtkDataArray **
+avtFileFormatInterface::GetTimeAndElementSpanVars(int domain,
+                                                  intVector elements,
+                                                  stringVector vars,
+                                                  int *tsRange,
+                                                  int stride)
+{
+    cerr << "INSIDE DEFAULT SPAN GETTER" << endl;//FIXME
+
+    //TODO: incorporate stride. 
+    int startT     = tsRange[0];
+    int stopT      = tsRange[1] + stride;
+    int spanSize   = (startT - stopT) / stride;
+    int numElems   = elements.size();
+    int numVars    = vars.size();
+    int numArrays  = numElems * numVars;
+
+    std::vector< std::vector<float> > results;
+    //results.reserve(spanSize);
+
+    for (int ts = startT; ts < stopT; ts += stride)
+    {
+        cerr << "TS: " << ts << endl;
+        floatVector varElRange;
+        //varElRange.reserve(numArrays);
+        
+        for (stringVector::iterator varItr = vars.begin();
+             varItr < vars.end(); ++varItr)
+        {
+            std::string curVar = *varItr; 
+            cerr << "VAR: " << curVar << endl;//FIXME
+
+            vtkFloatArray *allValues = (vtkFloatArray *) GetVar(ts, domain, curVar.c_str());
+
+            for (intVector::iterator elItr = elements.begin();
+                 elItr < elements.end(); ++elItr)
+            {
+                long int visitId = (*elItr) - 1;
+                //cerr << "\nGETTING ELEMENT: " << visitId << endl;
+                float val = allValues->GetTuple1(visitId);
+                //cerr << "DONE GETTING ELEMENT: " << visitId << endl;
+                //cerr << "VAL IS: " << val << endl;
+                varElRange.push_back(val);
+                //cerr << "DONE ADDING TO VAR EL RANGE" << endl;//FIXME
+            }
+        }
+
+        //cerr << "ADDING ARRAY TO RESULTS" << endl;//FIXME
+        results.push_back(varElRange);
+        //cerr << "DONE ADDING ARRAY TO RESULTS" << endl;//FIXME
+    }
+
+    vtkFloatArray **spanArrays = new vtkFloatArray *[numArrays];
+
+    for (int i = 0; i < numArrays; ++i)
+    {
+        spanArrays[i] = NULL;
+    }
+
+    cerr << "MAX INDEX: " << numArrays << endl;//FIXME
+    int spanArrIdx = 0;
+    for (int v = 0; v < numVars; ++v) 
+    {
+        int varIdx = (v * numElems);
+      
+        for (int e = 0; e < numElems; ++e)
+        {
+            int valueIdx = (varIdx + e);
+
+            vtkFloatArray *singleSpan = vtkFloatArray::New();
+            singleSpan->SetNumberOfComponents(1);
+            singleSpan->SetNumberOfTuples(spanSize);
+
+            float *spanPtr = (float *) singleSpan->GetVoidPointer(0);
+ 
+            if (spanPtr == NULL)
+                cerr << "POINTER IS NULL" << endl;//FIXME
+
+            for (int tIdx = 0; tIdx < spanSize; ++tIdx)
+            {
+                spanPtr[tIdx] = results[tIdx][valueIdx];  
+                cerr << results[tIdx][valueIdx] << endl;//FIXME
+            }
+
+            spanArrays[spanArrIdx++] = singleSpan;
+        }
+    }
+
+    return (vtkDataArray **) spanArrays;
 }

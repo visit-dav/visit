@@ -341,7 +341,8 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
     virtual vtkDataArray     **GetTimeAndElementSpanVars(int, 
                                                          intVector,
                                                          stringVector,
-                                                         int *);
+                                                         int *,
+                                                         int);
 
     virtual void               FreeUpResources(void);
     virtual int                NumStagesForFetch(avtDataRequest_p);

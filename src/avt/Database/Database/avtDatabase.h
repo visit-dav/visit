@@ -305,7 +305,8 @@ class DATABASE_API avtDatabase
     virtual vtkDataArray      **GetTimeAndElementSpanVars(int,
                                                           intVector,
                                                           stringVector,
-                                                          int *);
+                                                          int *,
+                                                          int);
 
     avtDatabaseMetaData        *GetMetaData(int stateIndex,
                                     bool forceReadAllCyclesTimes = false,

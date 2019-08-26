@@ -88,7 +88,8 @@ class DATABASE_API avtMTMDFileFormat : public avtFileFormat
     virtual vtkDataArray **GetTimeAndElementSpanVars(int,
                                                      intVector,
                                                      stringVector,
-                                                     int *);
+                                                     int *,
+                                                     int);
 
     virtual void           ActivateTimestep(int ts)
                                { avtFileFormat::ActivateTimestep(); };

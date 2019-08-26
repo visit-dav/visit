@@ -3423,19 +3423,26 @@ vtkDataArray **
 avtGenericDatabase::GetTimeAndElementSpanVars(int domain,
                                               intVector elements,
                                               stringVector vars,
-                                              int *tsRange)
+                                              int *tsRange,
+                                              int stride)
 {
-    avtMTMDFileFormatInterface *MTMDInterface = 
-        dynamic_cast<avtMTMDFileFormatInterface *> (Interface);
+    vtkDataArray **spanArray = Interface->
+        GetTimeAndElementSpanVars(domain, elements, vars, tsRange, stride);
 
-    if (MTMDInterface != NULL)
-    {
-        vtkDataArray **spanArray = MTMDInterface->
-            GetTimeAndElementSpanVars(domain, elements, vars, tsRange);
-        return spanArray;
-    }
+    return spanArray;
 
-    return NULL;
+
+    //avtMTMDFileFormatInterface *MTMDInterface = 
+    //    dynamic_cast<avtMTMDFileFormatInterface *> (Interface);
+
+    //if (MTMDInterface != NULL)
+    //{
+    //    vtkDataArray **spanArray = MTMDInterface->
+    //        GetTimeAndElementSpanVars(domain, elements, vars, tsRange);
+    //    return spanArray;
+    //}
+
+    //return NULL;
 }
 
 

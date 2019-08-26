@@ -819,7 +819,8 @@ vtkDataArray **
 avtOriginatingSource::FetchTimeAndElementSpanVars(int domain, 
                                                   intVector elementIds,
                                                   stringVector vars,
-                                                  int *cycleRange)
+                                                  int *cycleRange,
+                                                  int stepSize)
 {
     debug1 << "Asked to fetch time and element spanning variables, " << endl;
     debug1 << "but don't know how to do that." << endl;

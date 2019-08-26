@@ -157,7 +157,8 @@ vtkDataArray **
 avtMTMDFileFormatInterface::GetTimeAndElementSpanVars(int domain,
                                                       intVector elements,
                                                       stringVector vars,
-                                                      int *tsRange)
+                                                      int *tsRange,
+                                                      int stride)
 {
     int tsGroups[2];
     int localRange[2];
@@ -175,7 +176,8 @@ avtMTMDFileFormatInterface::GetTimeAndElementSpanVars(int domain,
     return chunks[tsGroups[0]]->GetTimeAndElementSpanVars(domain,
                                                           elements, 
                                                           vars,
-                                                          localRange);
+                                                          localRange,
+                                                          stride);
 }
 
 

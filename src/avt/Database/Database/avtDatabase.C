@@ -600,7 +600,8 @@ vtkDataArray **
 avtDatabase::GetTimeAndElementSpanVars(int domain,
                                        intVector elements, 
                                        stringVector vars,
-                                       int *tsRange)
+                                       int *tsRange, 
+                                       int stepSize)
 {
     //TODO: add debugging info here. 
     return NULL;

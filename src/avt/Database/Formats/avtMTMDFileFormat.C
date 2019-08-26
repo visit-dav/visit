@@ -169,7 +169,8 @@ vtkDataArray **
 avtMTMDFileFormat::GetTimeAndElementSpanVars(int,
                                              intVector, 
                                              stringVector,
-                                             int *)
+                                             int *,
+                                             int)
 {
     EXCEPTION0(ImproperUseException);
 }

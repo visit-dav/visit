@@ -153,7 +153,8 @@ class DATABASE_API avtSourceFromDatabase : public avtOriginatingDatasetSource
                         FetchTimeAndElementSpanVars(int,
                                                     intVector,
                                                     stringVector,
-                                                    int *);
+                                                    int *,
+                                                    int);
 
     virtual void        ReleaseData(void);
 
