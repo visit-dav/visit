@@ -18,6 +18,30 @@
 # ----------------------------------------------------------------------------
 
 
+def test_xyz_ascii_output(data_base_name, var, test_output):
+    OpenDatabase(silo_data_path(data_base_name))
+    AddPlot("Pseudocolor", var, 1, 1)
+    DrawPlots()
+
+    # Export results to database
+    e = ExportDBAttributes()
+    e.db_type = "XYZ"
+    e.filename = "test_ex_db"
+    ExportDatabase(e)
+    time.sleep(1)
+
+    # Stream the ascii text in from the exported database
+    file_streamer = open(e.filename+'.xyz','r')
+    string_to_test = file_streamer.read()
+    file_streamer.close()
+
+    # Test the string
+    TestText(test_output, string_to_test)
+    DeleteAllPlots()
+    CloseDatabase(silo_data_path(data_base_name))
+
+OpenDatabase(silo_data_path('globe.silo'))
+
 OpenDatabase(data_path("xyz_test_data/nanowireTB23K298.xyz"),0, "XYZ_1.0")
 
 AddPlot("Molecule", "element")
@@ -42,28 +66,9 @@ Test("xyz_05")
 TimeSliderNextState()
 Test("xyz_06")
 
+CloseDatabase(data_path("xyz_test_data/nanowireTB23K298.xyz"))
 
 # Test cases where XYZ writer is cell-centered non-VTK_VERTEX data
-CloseDatabase(data_path("xyz_test_data/nanowireTB23K298.xyz"))
-OpenDatabase(silo_data_path('globe.silo'))
-AddPlot("Pseudocolor", "dx", 1, 1)
-DrawPlots()
-
-# Export results to database
-e = ExportDBAttributes()
-e.db_type = "XYZ"
-e.filename = "test_ex_db"
-ExportDatabase(e)
-time.sleep(1)
-
-# Stream the ascii text in from the exported database
-file_streamer = open(e.filename+'.xyz','r')
-string_to_test = file_streamer.read()
-file_streamer.close()
-
-# Test the string
-TestText("xyz_07", string_to_test)
-DeleteAllPlots()
-CloseDatabase(silo_data_path('globe.silo'))
+test_xyz_ascii_output('globe.silo', 'dx', 'xyz_07')
 
 Exit()
