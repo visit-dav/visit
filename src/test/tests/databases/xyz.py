@@ -40,8 +40,9 @@ def test_xyz_ascii_output(data_base_name, var, test_output):
     DeleteAllPlots()
     CloseDatabase(silo_data_path(data_base_name))
 
-OpenDatabase(silo_data_path('globe.silo'))
 
+
+# Starting point in this script
 OpenDatabase(data_path("xyz_test_data/nanowireTB23K298.xyz"),0, "XYZ_1.0")
 
 AddPlot("Molecule", "element")
@@ -70,5 +71,10 @@ CloseDatabase(data_path("xyz_test_data/nanowireTB23K298.xyz"))
 
 # Test cases where XYZ writer is cell-centered non-VTK_VERTEX data
 test_xyz_ascii_output('globe.silo', 'dx', 'xyz_07')
+
+# Test case where XYZ writer is cell-centered VTK_VERTEX data
+# In this case, the baseline text is generated from the point-centered data.
+DefineScalarExpression("vz2", 'recenter(vz, "zonal")')
+test_xyz_ascii_output('galaxy0000.silo', 'vz2', 'xyz_08')
 
 Exit()
