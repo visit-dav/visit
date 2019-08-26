@@ -21,7 +21,7 @@ allow individual cells to be clearly seen.
 Mesh plot opaque modes
 """"""""""""""""""""""
 
-By default, VisIt's **Mesh** plot draws in opaque mode so that hidden surface
+By default, VisIt_'s **Mesh** plot draws in opaque mode so that hidden surface
 removal is performed when the plot is drawn and each face of the externally
 visible cells are outlined with lines. When the **Mesh** plot's opaque mode is
 set to automatic, the **Mesh** plot will be drawn in opaque mode unless it is
@@ -42,22 +42,27 @@ Sometimes it is useful to create mesh plot that shows all internal zones for a
 the **Mesh** plot's default behavior, you can click the **Show internal zones**
 check box to force the **Mesh** plot to draw the edges of every internal zone.
 
-Changing the opaque color
-"""""""""""""""""""""""""
+Changing colors
+"""""""""""""""
 
-An opaque **Mesh** plot uses the background color of the visualization window
-for the **Mesh** plot faces. To set the opaque color to a color other than the
-visualization window's background color, uncheck the **Use background**
-check box and click on the **Opaque color** button and select a new color from
-the **Popup color menu**.
+There are two color controls for a **Mesh** plot. One, the *mesh* color,
+controls the color of mesh edge lines while the other, the *opaque* color,
+controls the color of mesh surface (areal) facets. For each color option,
+there are three choices
 
-Changing the mesh color
-"""""""""""""""""""""""
+  * A custom color chosen by the user.
+  * A random color chosen by VisIt_.
+  * The *Foreground* (for mesh lines) or *Background* (for opaque facets) color.
 
-The mesh color is the color used to draw the mesh lines. The mesh lines normally
-use the visualization window's foreground color. To use a different color,
-uncheck the **Use foreground** check box, click the **Mesh color** button, and
-select a new color from the **Popup color menu**.
+The default is to use *Foreground* color for the mesh and *Background* color
+for the opaque color. In this mode, when these colors are changed via the
+:ref:`Annotation <Section-MakingItPretty-AnnotationColors>` controls,
+the **Mesh** plot obeys the newly selected colors.
+Otherwise, the **Mesh** plot maintains its chosen color (either *custom* or
+*random*).
+
+The random color option is useful when displaying multiple meshes and the user
+simply needs to be able to easily distinguish among them.
 
 Changing mesh line attributes
 """""""""""""""""""""""""""""

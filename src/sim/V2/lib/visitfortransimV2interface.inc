@@ -1915,8 +1915,8 @@
 !cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
 ! visitview2dalloc(visit_handle obj)
-      external 
-      integer
+      external visitview2dalloc 
+      integer  visitview2dalloc
 
 ! visitview2dfree(visit_handle obj)
       external visitview2dfree

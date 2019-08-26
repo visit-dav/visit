@@ -41,6 +41,7 @@
 
 #define SIZECUTOFF 1000000
 
+int avtPlot::instanceCount = 0;
 
 // ****************************************************************************
 //  Method: avtPlot constructor
@@ -125,6 +126,7 @@ avtPlot::avtPlot()
     varunits               = NULL;
     silr                   = NULL;
     index                  = -1;
+    instanceIndex          = avtPlot::instanceCount++;
     intermediateDataObject = NULL;
     cellCountMultiplierForSRThreshold = 0.0; // an invalid value
     topologicalDim = -1;
