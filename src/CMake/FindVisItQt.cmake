@@ -29,6 +29,10 @@
 #   Kathleen Biagas, Thu Sep 27 11:33:43 PDT 2018
 #   Add UiTools to qt_libs_install.
 #
+#   Kevin Griffin, Mon Aug 26 12:15:21 PDT 2019
+#   Installed the plugins/platforms and plugins/styles directories in the 
+#   xmledit.app and mcurvit.app directories.
+#
 #*****************************************************************************
 
 
@@ -232,12 +236,24 @@ if(NOT VISIT_QT_SKIP_INSTALL)
 
       install(DIRECTORY ${VISIT_QT_DIR}/plugins/platforms
               DESTINATION ${VISIT_INSTALLED_VERSION_BIN}/viewer.app/Contents/MacOS)
+      
+      install(DIRECTORY ${VISIT_QT_DIR}/plugins/platforms
+              DESTINATION ${VISIT_INSTALLED_VERSION_BIN}/xmledit.app/Contents/MacOS)
+
+      install(DIRECTORY ${VISIT_QT_DIR}/plugins/platforms
+              DESTINATION ${VISIT_INSTALLED_VERSION_BIN}/mcurvit.app/Contents/MacOS)
 
       install(DIRECTORY ${VISIT_QT_DIR}/plugins/styles
               DESTINATION ${VISIT_INSTALLED_VERSION_BIN}/gui.app/Contents/MacOS)
 
       install(DIRECTORY ${VISIT_QT_DIR}/plugins/styles
               DESTINATION ${VISIT_INSTALLED_VERSION_BIN}/viewer.app/Contents/MacOS)
+
+      install(DIRECTORY ${VISIT_QT_DIR}/plugins/styles
+              DESTINATION ${VISIT_INSTALLED_VERSION_BIN}/xmledit.app/Contents/MacOS)
+
+      install(DIRECTORY ${VISIT_QT_DIR}/plugins/styles
+              DESTINATION ${VISIT_INSTALLED_VERSION_BIN}/mcurvit.app/Contents/MacOS)
   else()
       install(DIRECTORY ${VISIT_QT_DIR}/plugins/platforms
               DESTINATION ${VISIT_INSTALLED_VERSION_LIB}/qtplugins)
