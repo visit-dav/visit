@@ -169,7 +169,7 @@ avtXYZWriter::WriteChunk(vtkDataSet *ds, int chunk)
     if (ds->GetPointData()->GetNumberOfArrays() == 0)
     {
         // There is no point data, so look for VTK_VERTEX only cells
-        vtkCellTypes *cellTypes;
+        vtkCellTypes *cellTypes = vtkCellTypes::New();
         ds->GetCellTypes(cellTypes);
         if (cellTypes->GetNumberOfTypes() == 1 && cellTypes->IsType(VTK_VERTEX) == 1)
         {
@@ -186,6 +186,7 @@ avtXYZWriter::WriteChunk(vtkDataSet *ds, int chunk)
                 "to include to the nodes.");
             dsa = ds->GetPointData();
         }
+        cellTypes->Delete();
     }
     else
     {
