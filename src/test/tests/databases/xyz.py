@@ -11,6 +11,10 @@
 #  Programmer: Jeremy Meredith
 #  Date:       June 14, 2007
 #
+#  Modifications:
+#    Eddie Rusu, Mon Aug 26 08:46:44 PDT 2019
+#    Added test for cell-centered non VTK_VERTEX points.
+#
 # ----------------------------------------------------------------------------
 
 
@@ -37,5 +41,29 @@ TimeSliderNextState()
 Test("xyz_05")
 TimeSliderNextState()
 Test("xyz_06")
+
+
+# Test cases where XYZ writer is cell-centered non-VTK_VERTEX data
+CloseDatabase(data_path("xyz_test_data/nanowireTB23K298.xyz"))
+OpenDatabase(silo_data_path('globe.silo'))
+AddPlot("Pseudocolor", "dx", 1, 1)
+DrawPlots()
+
+# Export results to database
+e = ExportDBAttributes()
+e.db_type = "XYZ"
+e.filename = "test_ex_db"
+ExportDatabase(e)
+time.sleep(1)
+
+# Stream the ascii text in from the exported database
+file_streamer = open(e.filename+'.xyz','r')
+string_to_test = file_streamer.read()
+file_streamer.close()
+
+# Test the string
+TestText("xyz_07", string_to_test)
+DeleteAllPlots()
+CloseDatabase(silo_data_path('globe.silo'))
 
 Exit()
