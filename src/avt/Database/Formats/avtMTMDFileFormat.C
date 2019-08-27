@@ -14,6 +14,9 @@
 #include <ImproperUseException.h>
 #include <InvalidFilesException.h>
 
+#include <vtkDataArray.h>
+#include <vtkFloatArray.h>
+
 #include <cstring>
 
 using     std::vector;
@@ -140,37 +143,6 @@ avtMTMDFileFormat::GetAuxiliaryData(const char *, int, int, const char *,
 
 vtkDataArray *
 avtMTMDFileFormat::GetVectorVar(int, int, const char *)
-{
-    EXCEPTION0(ImproperUseException);
-}
-
-
-//FIXME: testing
-// ****************************************************************************
-//  Method: avtMTMDFileFormat::GetTimeAndElementSpanVars
-//
-//  Purpose:
-//
-//  Arguments:
-//      <unnamed>    A domain to retrieve data from. 
-//      <unnamed>    A vector of elements to retrieve. 
-//      <unnamed>    A vector of variables to retrieve for each element.  
-//      <unnamed>    The time range to retreive. 
-//
-//  Returns:     Normally a series of elements and variables that span 
-//               a defined time range. This one throws an exception. 
-//
-//  Programmer:  Alister Maguire
-//  Creation:    July 23, 2019
-//
-// ****************************************************************************
-
-vtkDataArray **
-avtMTMDFileFormat::GetTimeAndElementSpanVars(int,
-                                             intVector, 
-                                             stringVector,
-                                             int *,
-                                             int)
 {
     EXCEPTION0(ImproperUseException);
 }

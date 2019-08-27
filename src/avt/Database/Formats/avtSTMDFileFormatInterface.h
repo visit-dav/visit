@@ -17,6 +17,7 @@
 #include <void_ref_ptr.h>
 
 class avtIOInformation;
+class vtkDataArray;
 
 // ****************************************************************************
 //  Class: avtSTMDFileFormatInterface
@@ -84,6 +85,13 @@ class DATABASE_API avtSTMDFileFormatInterface : public avtFileFormatInterface
                                              DestructorFunction &);
     virtual std::string     CreateCacheNameIncludingSelections(std::string,
                                                                int, int);
+
+    //FIXME: Testing
+    virtual vtkDataArray  **GetTimeAndElementSpanVars(int,
+                                                      intVector,
+                                                      stringVector,
+                                                      int *,
+                                                      int);
 
     virtual const char     *GetFilename(int);
     virtual void            SetDatabaseMetaData(avtDatabaseMetaData *md,

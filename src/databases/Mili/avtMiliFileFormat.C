@@ -2267,17 +2267,28 @@ avtMiliFileFormat::GetTimeAndElementSpanVars(int domain,
                                              int *cycleRange,
                                              int stride)
 {
+    //TODO: throw errors if received odd values. 
+    int startC = 0;
+    int stopC  = nTimesteps;
+    if (cycleRange[0] > 0 && cycleRange[0] < nTimesteps)
+    {
+        startC = cycleRange[0];
+    }
+    if (cycleRange[1] > 0 && cycleRange[1] <= nTimesteps)
+    {
+        stopC = cycleRange[1] + 1;
+    }
+
     //TODO incorporate stride. 
-    int numElems   = elementIds.size();
-    int numVars    = vars.size();
-    int spanSize   = (cycleRange[1] - cycleRange[0] + stride) / stride;
+    int numElems     = elementIds.size();
+    int numVars      = vars.size();
+    int spanSize     = (stopC - startC) / stride;
+    cerr << "SPAN SIZE: " << spanSize << endl;
     int numArrays  = numElems * numVars;
 
     vtkFloatArray **spanArrays = new vtkFloatArray *[numArrays];
     
-    int spanIdx      = 0;
-    const int startC = cycleRange[0];
-    const int stopC  = cycleRange[1] + stride;
+    int spanArrayIdx = 0;
 
     for (int elIdx = 0; elIdx < numElems; ++elIdx)
     {
@@ -2342,8 +2353,17 @@ avtMiliFileFormat::GetTimeAndElementSpanVars(int domain,
             singleSpan->SetNumberOfTuples(spanSize); 
             float *spanPtr = (float *) singleSpan->GetVoidPointer(0);
 
+            if (spanPtr == NULL)
+                cerr << "\n\nPOINTER IS NULL!" << endl;//FIXME
+
+            int spanIdx = 0;
             for (int curC = startC; curC < stopC; curC += stride)
             {
+                if (curC >= stopC)
+                {
+                    break;
+                }
+
                 //TODO: Does this handle all cases?
                 if (!hasComponents)
                 {
@@ -2353,7 +2373,7 @@ avtMiliFileFormat::GetTimeAndElementSpanVars(int domain,
                     if (meshVar == NULL)
                         cerr << "MESH VAR IS NULL!" << endl;//FIXME
 
-                    spanPtr[curC] = meshVar->GetTuple1(visitId);
+                    spanPtr[spanIdx++] = meshVar->GetTuple1(visitId);
                 }
                 else
                 {
@@ -2368,13 +2388,13 @@ avtMiliFileFormat::GetTimeAndElementSpanVars(int domain,
                         cerr << "MESH VAR IS NULL!" << endl;//FIXME
 
                     long int idx = (visitId * numComps) + compIdx;
-                    spanPtr[curC] = meshVarPtr[idx];
+                    spanPtr[spanIdx++] = meshVarPtr[idx];
 
                 }
                 
             }
 
-            spanArrays[spanIdx++] = singleSpan;
+            spanArrays[spanArrayIdx++] = singleSpan;
         }
     }
 

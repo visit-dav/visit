@@ -17,6 +17,9 @@
 #include <BadIndexException.h>
 #include <DebugStream.h>
 
+#include <vtkDataArray.h>
+#include <vtkFloatArray.h>
+
 
 using std::vector;
 
@@ -642,4 +645,106 @@ avtSTMDFileFormatInterface::PopulateIOInformation(int ts, const std::string &mes
         EXCEPTION2(BadIndexException, ts, nTimesteps);
     }
     return timesteps[ts]->PopulateIOInformation(meshname, ioInfo);
+}
+
+
+// ****************************************************************************
+//  Method: avtFileFormatInterface::GetTimeAndElementSpanVars
+//
+//  Purpose:
+//
+//  Programmer: 
+//  Creation:   
+//
+// ****************************************************************************
+
+vtkDataArray **
+avtSTMDFileFormatInterface::GetTimeAndElementSpanVars(int domain,
+                                                      intVector elements,
+                                                      stringVector vars,
+                                                      int *tsRange,
+                                                      int stride)
+{
+    //FIXME: check this before doing any work?
+    //if (ts < 0 || ts >= nTimesteps)
+    //{
+    //    EXCEPTION2(BadIndexException, ts, nTimesteps);
+    //}
+
+    //TODO: incorporate stride. 
+    int startT     = tsRange[0];
+    int stopT      = tsRange[1] + 1;
+    int spanSize   = (stopT - startT) / stride;
+    int numElems   = elements.size();
+    int numVars    = vars.size();
+    int numArrays  = numElems * numVars;
+
+    std::vector< std::vector<float> > results;
+    results.reserve(spanSize);
+
+    
+    for (int ts = startT; ts < stopT; ts += stride)
+    {
+        if (ts >= stopT)
+        {
+            break;
+        }
+    
+        floatVector varElRange;
+        varElRange.reserve(numArrays);
+        
+        for (stringVector::iterator varItr = vars.begin();
+             varItr < vars.end(); ++varItr)
+        {
+            std::string curVar = *varItr; 
+
+            ActivateTimestep(ts);
+            vtkFloatArray *allValues = (vtkFloatArray *) timesteps[ts]->GetVar(domain, curVar.c_str());
+
+            for (intVector::iterator elItr = elements.begin();
+                 elItr < elements.end(); ++elItr)
+            {
+                long int visitId = (*elItr) - 1;
+                float val = allValues->GetTuple1(visitId);
+                varElRange.push_back(val);
+            }
+        }
+
+        results.push_back(varElRange);
+    }
+
+    vtkFloatArray **spanArrays = new vtkFloatArray *[numArrays];
+
+    for (int i = 0; i < numArrays; ++i)
+    {
+        spanArrays[i] = NULL;
+    }
+
+    int spanArrIdx = 0;
+    for (int v = 0; v < numVars; ++v) 
+    {
+        int varIdx = (v * numElems);
+      
+        for (int e = 0; e < numElems; ++e)
+        {
+            int valueIdx = (varIdx + e);
+
+            vtkFloatArray *singleSpan = vtkFloatArray::New();
+            singleSpan->SetNumberOfComponents(1);
+            singleSpan->SetNumberOfTuples(spanSize);
+            float *spanPtr = (float *) singleSpan->GetVoidPointer(0);
+
+            if (spanPtr == NULL)
+                cerr << "\n\nPOINTER IS NULL!" << endl;//FIXME
+
+            for (int tIdx = 0; tIdx < spanSize; ++tIdx)
+            {
+                spanPtr[tIdx] = results[tIdx][valueIdx];  
+            }
+
+            spanArrays[spanArrIdx++] = singleSpan;
+        }
+    }
+
+    return (vtkDataArray **) spanArrays;
 }

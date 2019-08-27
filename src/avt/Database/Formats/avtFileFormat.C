@@ -1011,4 +1011,3 @@ avtFileFormat::AddLabelVarToMetaData(avtDatabaseMetaData *md, string name,
     label->hideFromGUI = hideFromGUI;
     md->Add(label);
 }
-

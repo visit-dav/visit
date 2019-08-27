@@ -3426,6 +3426,11 @@ avtGenericDatabase::GetTimeAndElementSpanVars(int domain,
                                               int *tsRange,
                                               int stride)
 {
+    //TODO: does this really make sense to use the generic interface?
+    //      We can only retrieve multiple timesteps from MTMD and MTSD 
+    //      interfaces... On the other hand, people may want to retrieve
+    //      multiple variables from STXD. That seems like a less likely 
+    //      scenario, though. 
     vtkDataArray **spanArray = Interface->
         GetTimeAndElementSpanVars(domain, elements, vars, tsRange, stride);
 

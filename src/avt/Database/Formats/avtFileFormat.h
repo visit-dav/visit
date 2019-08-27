@@ -16,6 +16,7 @@
 
 #include <string>
 #include <vector>
+#include <vectortypes.h>
 
 #include <array_ref_ptr.h>
 
@@ -26,6 +27,7 @@
 class     avtDatabaseMetaData;
 class     avtIOInformation;
 class     avtVariableCache;
+class     vtkDataArray;
 
 
 // ****************************************************************************

@@ -439,7 +439,7 @@ avtFileFormatInterface::GetTimeAndElementSpanVars(int domain,
 
     //TODO: incorporate stride. 
     int startT     = tsRange[0];
-    int stopT      = tsRange[1] + stride;
+    int stopT      = tsRange[1] + 1;
     int spanSize   = (startT - stopT) / stride;
     int numElems   = elements.size();
     int numVars    = vars.size();
@@ -448,8 +448,14 @@ avtFileFormatInterface::GetTimeAndElementSpanVars(int domain,
     std::vector< std::vector<float> > results;
     //results.reserve(spanSize);
 
+    
     for (int ts = startT; ts < stopT; ts += stride)
     {
+        if (ts > stopT)
+        {
+            break;
+        }
+    
         cerr << "TS: " << ts << endl;
         floatVector varElRange;
         //varElRange.reserve(numArrays);
@@ -466,18 +472,12 @@ avtFileFormatInterface::GetTimeAndElementSpanVars(int domain,
                  elItr < elements.end(); ++elItr)
             {
                 long int visitId = (*elItr) - 1;
-                //cerr << "\nGETTING ELEMENT: " << visitId << endl;
                 float val = allValues->GetTuple1(visitId);
-                //cerr << "DONE GETTING ELEMENT: " << visitId << endl;
-                //cerr << "VAL IS: " << val << endl;
                 varElRange.push_back(val);
-                //cerr << "DONE ADDING TO VAR EL RANGE" << endl;//FIXME
             }
         }
 
-        //cerr << "ADDING ARRAY TO RESULTS" << endl;//FIXME
         results.push_back(varElRange);
-        //cerr << "DONE ADDING ARRAY TO RESULTS" << endl;//FIXME
     }
 
     vtkFloatArray **spanArrays = new vtkFloatArray *[numArrays];
@@ -509,7 +509,6 @@ avtFileFormatInterface::GetTimeAndElementSpanVars(int domain,
             for (int tIdx = 0; tIdx < spanSize; ++tIdx)
             {
                 spanPtr[tIdx] = results[tIdx][valueIdx];  
-                cerr << results[tIdx][valueIdx] << endl;//FIXME
             }
 
             spanArrays[spanArrIdx++] = singleSpan;
