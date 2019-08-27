@@ -48,8 +48,9 @@
 #include <vtkCellArray.h>
 #include <AtomicProperties.h>
 #include <avtDatabaseMetaData.h>
-#include <avtCallback.h>
 #include <DebugStream.h>
+
+#include <InvalidDBTypeException.h>
 
 #include <fstream>
 #include <vector>
@@ -180,11 +181,11 @@ avtXYZWriter::WriteChunk(vtkDataSet *ds, int chunk)
         else
         {
             // Data not over points and does not satisfy cell requirements.
-            // Produce a warning and proceed with points
-            avtCallback::IssueWarning("XYZ Writer can only write "
+            // Throw an exception and don't write because written output
+            // would be meaningless.
+            EXCEPTION1(InvalidDBTypeException, "XYZ Writer can only write "
                 "node-centered variables. Recenter the variable(s) you want "
-                "to include to the nodes.");
-            dsa = ds->GetPointData();
+                "to include to the nodes.")
         }
         cellTypes->Delete();
     }

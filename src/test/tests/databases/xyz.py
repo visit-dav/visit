@@ -31,7 +31,7 @@ def test_xyz_ascii_output(data_base_name, var, test_output):
     time.sleep(1)
 
     # Stream the ascii text in from the exported database
-    file_streamer = open(e.filename+'.xyz','r')
+    file_streamer = open(e.filename+'.xyz', 'r')
     string_to_test = file_streamer.read()
     file_streamer.close()
 
@@ -69,12 +69,9 @@ Test("xyz_06")
 
 CloseDatabase(data_path("xyz_test_data/nanowireTB23K298.xyz"))
 
-# Test cases where XYZ writer is cell-centered non-VTK_VERTEX data
-test_xyz_ascii_output('globe.silo', 'dx', 'xyz_07')
-
 # Test case where XYZ writer is cell-centered VTK_VERTEX data
 # In this case, the baseline text is generated from the point-centered data.
 DefineScalarExpression("vz2", 'recenter(vz, "zonal")')
-test_xyz_ascii_output('galaxy0000.silo', 'vz2', 'xyz_08')
+test_xyz_ascii_output('galaxy0000.silo', 'vz2', 'xyz_07')
 
 Exit()
