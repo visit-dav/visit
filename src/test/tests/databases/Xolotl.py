@@ -13,8 +13,8 @@ RequiredDatabasePlugin("Xolotl")
 
 from os.path import join as pjoin
 
-xolotl_0D = "Xolotl_network-PSI2-0D.xolotl"
-xolotl_1D = "Xolotl_network-PSI2-1D.xolotl"
+xolotl_0D = "xolotl_network-PSI2-0D.xolotl"
+xolotl_1D = "xolotl_network-PSI2-1D.xolotl"
 
 zeroDVars = ["Helium/Vacancies", "Helium/Deuterium", "Helium/Interstitial", "Helium/Tritium"]
 oneDVars = ["Helium Concentration", "Deuterium Concentration", "Interstitial Concentration", "Tritium Concentration"]
@@ -23,7 +23,7 @@ def test(var_name,tag_name):
     SetTimeSliderState(1)
     AddPlot("Pseudocolor", var_name)
     SetActivePlots(0)
-    seudocolorAtts = PseudocolorAttributes()
+    PseudocolorAtts = PseudocolorAttributes()
     PseudocolorAtts.scaling = PseudocolorAtts.Log  # Linear, Log, Skew
     PseudocolorAtts.colorTableName = "Oranges"
     SetPlotOptions(PseudocolorAtts)
@@ -33,16 +33,14 @@ def test(var_name,tag_name):
 
 
 TestSection("0D Example Xolot File")
-args = ("-default_format", "Xolotl")
-OpenMDServer("localhost", args)
 OpenDatabase(xolotl_0D)
-for var_name in zeroD_cars:
+for var_name in zeroDVars:
     test(var_name,"xolotl_0D")
 CloseDatabase(xolotl_0D)
 
 TestSection("1D Example Xolotl File")
 OpenDatabase(xolotl_1D)
-for var_name in oneD_vars:
+for var_name in oneDVars:
     test(var_name,"xolotl_1D")
 CloseDatabase(Xolotl_1D)
 
