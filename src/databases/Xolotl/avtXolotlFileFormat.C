@@ -68,7 +68,6 @@
 using namespace std;
 static const int debug = 0;
 
-
 //
 // struct for reading the HDF compound type 'concentration'
 //
@@ -481,7 +480,6 @@ avtXolotlFileFormat::PopulateHeaderGroupMetaData()
     varMaxes[2] = maximumTritiumDimension;
     varMaxes[3] = maximumVacancyDimension;
     varMaxes[4] = maximumInterstitialDimension;
-
 
     // close HDF resources
     H5Sclose(sid);

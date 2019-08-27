@@ -11,6 +11,6 @@
       ${ZLIB_LIB}
     </LIBS>
     <FilePatterns>
-      *.h5
+      *.xolotl
     </FilePatterns>
   </Plugin>

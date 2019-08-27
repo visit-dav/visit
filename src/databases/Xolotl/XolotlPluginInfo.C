@@ -166,7 +166,7 @@ std::vector<std::string>
 XolotlGeneralPluginInfo::GetDefaultFilePatterns() const
 {
     std::vector<std::string> defaultPatterns;
-    defaultPatterns.push_back("*.h5");
+    defaultPatterns.push_back("*.xolotl");
 
     return defaultPatterns;
 }

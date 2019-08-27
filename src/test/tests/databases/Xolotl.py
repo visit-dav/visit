@@ -13,8 +13,8 @@ RequiredDatabasePlugin("Xolotl")
 
 from os.path import join as pjoin
 
-xolotl_0D = "Xolotl_network-PSI2-0D.hdf5"
-xolotl_1D = "Xolotl_network-PSI2-1D.hdf5"
+xolotl_0D = "Xolotl_network-PSI2-0D.xolotl"
+xolotl_1D = "Xolotl_network-PSI2-1D.xolotl"
 
 zeroDVars = ["Helium/Vacancies", "Helium/Deuterium", "Helium/Interstitial", "Helium/Tritium"]
 oneDVars = ["Helium Concentration", "Deuterium Concentration", "Interstitial Concentration", "Tritium Concentration"]

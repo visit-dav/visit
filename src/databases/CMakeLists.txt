@@ -170,6 +170,9 @@
 #    Eric Brugger, Wed Jun 26 08:57:57 PDT 2019
 #    Remove CCM plugin.
 #
+#    James Kress, Tue Aug 27; 15:21:30 EDT 2019
+#    Add Xolotl plugin
+#
 #****************************************************************************
 
 IF(NOT WIN32)
