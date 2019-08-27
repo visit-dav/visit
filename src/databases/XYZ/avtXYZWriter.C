@@ -44,9 +44,13 @@
 
 #include <vtkPolyData.h>
 #include <vtkPointData.h>
+#include <vtkCellData.h>
 #include <vtkCellArray.h>
 #include <AtomicProperties.h>
 #include <avtDatabaseMetaData.h>
+#include <DebugStream.h>
+
+#include <InvalidDBTypeException.h>
 
 #include <fstream>
 #include <vector>
@@ -126,11 +130,17 @@ avtXYZWriter::WriteHeaders(const avtDatabaseMetaData *md,
 //
 //    Mark C. Miller, Wed Jan 24 12:26:30 PST 2018
 //    Added logic to output only points referenced by cells of non-zero size.    
+//
+//    Eddie Rusu, Fri Aug 23 11:21:05 PDT 2019
+//    Writer can now write cell-centered data if the cell data is exclusively
+//    composed of VTK_VERTEX cells. Warning issued if not.
 // ****************************************************************************
 
 void
 avtXYZWriter::WriteChunk(vtkDataSet *ds, int chunk)
 {
+    debug5 << "Entering avtXYZWriter::WriteChunk(vtkDataSet*, int)"
+           << std::endl;
     int natoms = ds->GetNumberOfPoints();
     int ncells = ds->GetNumberOfCells();
     if (natoms == 0 || ncells == 0)
@@ -149,6 +159,41 @@ avtXYZWriter::WriteChunk(vtkDataSet *ds, int chunk)
     std::ofstream  out;
     out.open(filename.c_str());
     out << std::scientific << std::setprecision(8);
+
+    // XYZ plugin is designed to work with point data. However, in the VTK
+    // universe, a VTK_VERTEX can be treated as a point. So, we use this logic:
+    // If the data exists over point arrays, then just use those.
+    // Otherwise, if the data exists over cell arrays and all the cells are
+    // VTK_VERTEX, then treat those as points
+    // Otherwise, produce a warning and proceed as with points.
+    vtkDataSetAttributes *dsa;
+    if (ds->GetPointData()->GetNumberOfArrays() == 0)
+    {
+        // There is no point data, so look for VTK_VERTEX only cells
+        vtkCellTypes *cellTypes = vtkCellTypes::New();
+        ds->GetCellTypes(cellTypes);
+        if (cellTypes->GetNumberOfTypes() == 1 && cellTypes->IsType(VTK_VERTEX) == 1)
+        {
+            // There is only one type of cell and that is VTK_VERTEX, so
+            // treat it like points
+            dsa = ds->GetCellData();
+        }
+        else
+        {
+            // Data not over points and does not satisfy cell requirements.
+            // Throw an exception and don't write because written output
+            // would be meaningless.
+            EXCEPTION1(InvalidDBTypeException, "XYZ Writer can only write "
+                "node-centered variables. Recenter the variable(s) you want "
+                "to include to the nodes.")
+        }
+        cellTypes->Delete();
+    }
+    else
+    {
+        // There is point data, so treat it like points
+        dsa = ds->GetPointData();
+    }
     
 
     // Collect up the data arrays, and find the atomic number one
@@ -157,9 +202,9 @@ avtXYZWriter::WriteChunk(vtkDataSet *ds, int chunk)
     vtkDataArray *arrays[MAX_XYZ_VARS];
     vtkDataArray *element = NULL;
 
-    for (int i=0; i<ds->GetPointData()->GetNumberOfArrays(); i++)
+    for (int i=0; i<dsa->GetNumberOfArrays(); i++)
     {
-        vtkDataArray *arr = ds->GetPointData()->GetArray(i);
+        vtkDataArray *arr = dsa->GetArray(i);
         if (strlen(arr->GetName()) >= 7 &&
             strncmp(arr->GetName(),"element",7) == 0)
         {
@@ -212,6 +257,8 @@ avtXYZWriter::WriteChunk(vtkDataSet *ds, int chunk)
     }
 
     out.close();
+    debug5 << "Exiting  avtXYZWriter::WriteChunk(vtkDataSet*, int)"
+           << std::endl;
 }
 
 // ****************************************************************************
