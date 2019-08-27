@@ -67,6 +67,12 @@
 #   Eric Brugger, Tue Aug 28 14:35:30 PDT 2018
 #   I replaced support for vtkm with vtkh.
 #
+#   Kathleen Biagas, Fri Jul 19 12:13:02 PDT 2019
+#   Added vtkCommonMath, vtkCommonTransforms in support of building plugins
+#   vs install on Windows. They are direct depencencies for this library,
+#   and CMake automagically pulls them in when compiling VisIt, even if not
+#   listed, but not when building the plugins.
+#
 #****************************************************************************/
 
 SET(DATA_SOURCES
@@ -271,7 +277,8 @@ ADD_LIBRARY(avtpipeline_ser ${ALL_SOURCES})
 TARGET_LINK_LIBRARIES(avtpipeline_ser
                       visitcommon ${AVTMATH} avtdbatts
                       visit_vtk lightweight_visit_vtk vtkCommonCore
-                      vtkCommonDataModel vtkFiltersGeometry
+                      vtkCommonDataModel vtkCommonMath vtkCommonTransforms
+                      vtkFiltersGeometry
                       ${ZLIB_LIB})
 if(VTKH_FOUND)
     target_link_libraries(avtpipeline_ser vtkh)
@@ -286,7 +293,8 @@ IF(VISIT_PARALLEL)
     TARGET_LINK_LIBRARIES(avtpipeline_par
                           visitcommon ${AVTMATH} avtdbatts
                           visit_vtk lightweight_visit_vtk vtkCommonCore
-                          vtkCommonDataModel vtkFiltersGeometry
+                          vtkCommonDataModel vtkCommonMath vtkCommonTransforms
+                          vtkFiltersGeometry
                           ${ZLIB_LIB})
     if(VTKH_FOUND)
         target_link_libraries(avtpipeline_par vtkh)

@@ -42,6 +42,15 @@
 #    Kathleen Biagas, Mon Feb 25 15:53:24 PST 2019
 #    Skip icet, rename OSMesa to GL.
 #
+#    Kathleen Biagas, Thu Jul 18 10:39:23 PDT 2019
+#    Add special handling for tbb, ospray, embree. Move some code to
+#    non-windows. Remove slivr libraries from the suppression list as they
+#    are no longer part of VisIt.
+#
+#    Kevin Griffin, Thu Aug 8 18:20:01 PDT 2019
+#    Fixed the Qt and qwt frameworks path for OSX and the syntax error produced from
+#    filtering the right parenthesis in certain cases.
+#
 #****************************************************************************/
 cmake_policy(SET CMP0011 NEW)
 cmake_policy(SET CMP0057 NEW)
@@ -85,7 +94,7 @@ function(FILTER_VISIT_LIB_DEPENDENCIES filename)
             continue()
         endif()
         # are there others that should be suppressed?
-        foreach(suppress visit_writer visitfrontend visitmodule proxyexample bow slivrG slivrV air alan bane biff coil dye echo ell gage hest hoover limn mite moss nrrd push ten unrrdu)
+        foreach(suppress visit_writer visitfrontend visitmodule proxyexample)
             if("${line}" MATCHES ".*${suppress}_LIB_DEPENDS.*")
                 set(outputLine FALSE)
             endif()
@@ -94,36 +103,45 @@ function(FILTER_VISIT_LIB_DEPENDENCIES filename)
             continue()
         endif()
 
-        if(VISIT_PYTHON_DIR)
-            string(REPLACE "${VISIT_PYTHON_DIR}/lib"
-                           "\${VISIT_LIBRARY_DIR}"
-                            line "${line}")
-        endif()
-        if(VISIT_ZLIB_DIR)
-            string(REPLACE "${VISIT_ZLIB_DIR}/lib"
-                           "\${VISIT_LIBRARY_DIR}"
-                            line "${line}")
-        endif()
-        if(VISIT_BOOST_DIR)
-            string(REPLACE "${VISIT_BOOST_DIR}/lib"
-                           "\${VISIT_LIBRARY_DIR}"
-                            line "${line}")
+        if(NOT WIN32)
+            if(VISIT_PYTHON_DIR AND "${line}" MATCHES "python")
+                string(REPLACE "${VISIT_PYTHON_DIR}/lib/"
+                               ""
+                               line "${line}")
+            endif()
+            if(VISIT_ZLIB_DIR AND "${line}" MATCHES "zlib")
+                string(REPLACE "${VISIT_ZLIB_DIR}/lib/"
+                               ""
+                               line "${line}")
+            endif()
+            if(VISIT_BOOST_DIR AND "${line}" MATCHES "boost")
+                string(REPLACE "${VISIT_BOOST_DIR}/lib"
+                               ""
+                               line "${line}")
+            endif()
+            if(VISIT_QWT_DIR AND "${line}" MATCHES "qwt")
+                if(APPLE)
+                    string(REPLACE "${VISIT_QWT_DIR}/lib/"
+                                   "\${VISIT_LIBRARY_DIR}/"
+                                   line "${line}")
+                    
+                else()
+                    string(REPLACE "${VISIT_QWT_DIR}/lib/"
+                                   ""
+                                   line "${line}")
+                endif()
+            endif()
         endif()
         if(VISIT_OPENEXR_DIR)
-            if(APPLE OR WIN32) # built as dynamic on apple and window 
+            if(APPLE) # built as dynamic on apple and window 
                 string(REPLACE "${VISIT_OPENEXR_DIR}/lib"
                                "\${VISIT_LIBRARY_DIR}"
                                 line "${line}")
-            else() # built as static on linux
+            elseif(UNIX) # built as static on linux
                 string(REPLACE "${VISIT_OPENEXR_DIR}/lib"
                                "\${VISIT_ARCHIVE_DIR}"
                                 line "${line}")
             endif()
-        endif()
-        if(VISIT_QWT_DIR)
-            string(REPLACE "${VISIT_QWT_DIR}/lib"
-                           "\${VISIT_LIBRARY_DIR}"
-                            line "${line}")
         endif()
         if(VISIT_MESAGL_DIR)
             string(REPLACE "${VISIT_MESAGL_DIR}/lib"
@@ -148,25 +166,43 @@ function(FILTER_VISIT_LIB_DEPENDENCIES filename)
                 continue()
             endif()
             if(${token} MATCHES "_LIB_DEPENDS")
+                set(newtoken ${token})
                 if(WIN32)
-                    # change viewer to viewerlib
-                    string(REPLACE "viewer_LIB_DEPENDS"
-                                   "viewerlib_LIB_DEPENDS" newtoken ${token})
-                    # change gui to guilib
-                    string(REPLACE "gui_LIB_DEPENDS" 
-                                   "guilib_LIB_DEPENDS" newtoken ${token})
+                    if(${token} MATCHES "viewer_LIB_DEPENDS")
+                        # change viewer to viewerlib
+                        string(REPLACE "viewer_LIB_DEPENDS"
+                                       "viewerlib_LIB_DEPENDS" newtoken ${token})
+                    elseif(${token} MATCHES "gui_LIB_DEPENDS")
+                        # change gui to guilib
+                        string(REPLACE "gui_LIB_DEPENDS" 
+                                       "guilib_LIB_DEPENDS" newtoken ${token}) 
+                    endif()
                 endif()
                 # remove surrounding quotes
-                string(REPLACE "\"" "@@@@@" replace_quote ${token})
+                string(REPLACE "\"" "@@@@@" replace_quote ${newtoken})
                 string(REGEX REPLACE "@@@@@([a-zA-Z_]+)_LIB_DEPENDS@@@@@"
                        "\\1_LIB_DEPENDS" 
                        rem_quote ${replace_quote})
                 string(REPLACE "@@@@@" "\"" newtoken ${rem_quote})
             elseif(token MATCHES "Qt5::")
-                # replace Qt5::libname with Qt5libname
-                string(REGEX REPLACE "Qt5::([a-zA-Z]+)"
-                       "Qt5\\1"
-                       newtoken ${token})
+                if(APPLE)
+                    if(token MATCHES "Qt5::Concurrent|Qt5::Core|Qt5::Gui|Qt5::Network|Qt5::OpenGL|Qt5::PrintSupport|Qt5::Qml|Qt5::Svg|Qt5::Widgets|Qt5::Xml")
+                        # replace Qt5::libname with Qtlibname.framework
+                        string(REGEX REPLACE "Qt5::([a-zA-Z]+)"
+                                             "\${VISIT_LIBRARY_DIR}/Qt\\1.framework"
+                                             newtoken ${token})
+                    else()
+                        # replace Qt5::libname with Qt5libname
+                        string(REGEX REPLACE "Qt5::([a-zA-Z]+)"
+                                             "Qt5\\1"
+                                             newtoken ${token})
+                    endif()
+                else()
+                    # replace Qt5::libname with Qt5libname
+                    string(REGEX REPLACE "Qt5::([a-zA-Z]+)"
+                                         "Qt5\\1"
+                                         newtoken ${token})
+                endif()
             elseif(${token} IN_LIST VTK_TARGETS)
                 # append VTK version to vtk lib names
                 if(token MATCHES "WrappingPythonCore")
@@ -192,15 +228,6 @@ function(FILTER_VISIT_LIB_DEPENDENCIES filename)
             elseif(${token} MATCHES "OSMesa")
                 string(REPLACE "mesagl" "osmesa" newtoken ${token})
                 string(REPLACE "OSMesa.so.8" "GL.so.1" newtoken ${newtoken})
-            elseif(${token} MATCHES "tbb")
-                get_filename_component(libname ${token} NAME)
-                set(newtoken "${libname}")
-            elseif(${token} MATCHES "embree")
-                get_filename_component(libname ${token} NAME)
-                set(newtoken "${libname}")
-            elseif(${token} MATCHES "ospray")
-                get_filename_component(libname ${token} NAME)
-                set(newtoken "${libname}")
             else()
                 if(WIN32)
                     if(token MATCHES "windowsbuild")
@@ -214,16 +241,27 @@ function(FILTER_VISIT_LIB_DEPENDENCIES filename)
                         set(newtoken ${token})
                     endif()
                 else()
-                    set(newtoken ${token})
-                endif()
-            endif()
-            if(NOT "${newtoken}" MATCHES "/")
-                if("${newtoken}" MATCHES "\\.a|\\.so|\\.dylib")
-                    set(newtoken "\${VISIT_LIBRARY_DIR}/${newtoken}")
+                    if(${token} MATCHES "tbb")
+                        get_filename_component(libname ${token} NAME)
+                        set(newtoken "${libname}")
+                    elseif(${token} MATCHES "embree")
+                        get_filename_component(libname ${token} NAME)
+                        set(newtoken "${libname}")
+                    elseif(${token} MATCHES "ospray")
+                        get_filename_component(libname ${token} NAME)
+                        set(newtoken "${libname}")
+                    else()
+                        set(newtoken ${token})
+                    endif()
                 endif()
             endif()
             list(APPEND filteredline ${newtoken})
         endforeach()
+        # Sometimes the last tokens get filtered so the corresponding ';")' is missing
+        # causing syntax errors. Need to check if filteredline ends with '")' if not add it
+        if(NOT "${filteredline}" MATCHES "\\)")
+            list(APPEND filteredline "\")")
+        endif()
         file(APPEND ${filename} "${filteredline}\n")
         unset(filteredline)
     endforeach()
