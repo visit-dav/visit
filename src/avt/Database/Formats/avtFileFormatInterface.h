@@ -216,6 +216,9 @@ class DATABASE_API avtFileFormatInterface
                                                       int *,
                                                       int);
 
+    virtual void            GetCycles(intVector &);
+    virtual void            GetTimes(doubleVector &);
+
     virtual const char     *GetFilename(int) = 0;
     virtual void            SetDatabaseMetaData(avtDatabaseMetaData *md,
                                 int timeState = 0,

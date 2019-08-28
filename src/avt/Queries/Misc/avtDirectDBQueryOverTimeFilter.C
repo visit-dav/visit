@@ -184,84 +184,6 @@ avtDirectDBQueryOverTimeFilter::Execute(void)
         success = false;
         return;
     }
-
-
-    //
-    // Set up the query.
-    //
-    //QueryAttributes qatts = atts.GetQueryAtts();
-    //avtDataObjectQuery *query = avtQueryFactory::Instance()->
-    //    CreateQuery(&qatts);
-    //query->SetInput(GetInput());
-    //if (ParallelizingOverTime())
-    //{
-    //    query->SetParallelizingOverTime(true);
-    //}
-
-    //if (strncmp(query->GetType(), "avtVariableByNodeQuery",22) == 0)
-    //{
-    //    PickAttributes patts = atts.GetPickAtts();
-    //    ((avtVariableByNodeQuery*)query)->SetPickAttsForTimeQuery(&patts);
-    //}
-    //else if (strncmp(query->GetType(), "avtVariableByZoneQuery",22) == 0)
-    //{
-    //    PickAttributes patts = atts.GetPickAtts();
-    //    ((avtVariableByZoneQuery*)query)->SetPickAttsForTimeQuery(&patts);
-    //}
-    //else if (strncmp(query->GetType(), "avtLocateAndPickZoneQuery",25) == 0)
-    //{
-    //    PickAttributes patts = atts.GetPickAtts();
-    //    ((avtLocateAndPickZoneQuery*)query)->SetPickAttsForTimeQuery(&patts);
-    //}
-    //else if (strncmp(query->GetType(), "avtLocateAndPickNodeQuery",25) == 0)
-    //{
-    //    PickAttributes patts = atts.GetPickAtts();
-    //    ((avtLocateAndPickNodeQuery*)query)->SetPickAttsForTimeQuery(&patts);
-    //}
-    //query->SetTimeVarying(true);
-    //query->SetSILRestriction(currentSILR);
-
-    ////  
-    //// HokeyHack ... we want only 1 curve, so limit the
-    //// query to 1 variable to avoid unnecessary processing.
-    //// 
-    //if (nResultsToStore==1)
-    //{
-    //    stringVector useThisVar;
-    //    useThisVar.push_back(qatts.GetVariables()[0]);
-    //    qatts.SetVariables(useThisVar);
-    //}
-    //// 
-    //// End HokeyHack.
-    ////
-
-    //TRY
-    //{
-    //    query->PerformQuery(&qatts);
-    //}
-    //CATCHALL
-    //{
-    //    SetOutputDataTree(dummy);
-    //    success = false;
-    //    delete query;
-    //    RETHROW;
-    //}
-    //ENDTRY
-
-    //SetOutputDataTree(dummy);
-    //delete query;
-
-    //doubleVector results = qatts.GetResultsValue();
-    //if (results.size() == 0)
-    //{
-    //    success = false;
-    //    return;
-    //}
-    //else
-    //{
-    //    success = true;
-    //}
-
     
     PickAttributes pAtts = atts.GetPickAtts();
     MapNode timeOpts     = pAtts.GetTimeOptions();
@@ -273,24 +195,7 @@ avtDirectDBQueryOverTimeFilter::Execute(void)
 
     int startT = atts.GetStartTime();
     int stopT  = atts.GetEndTime();
-    int stride = atts.GetStride();//TODO: integrate stride into query.
-
-    //cerr << "\n" << endl;
-    //if (timeOpts.HasNumericEntry("start_time"))
-    //{
-    //    cerr << "TIME OPTS HAS START" << endl;
-    //    startT = timeOpts.GetEntry("start_time")->ToInt();
-    //}
-    //if (timeOpts.HasNumericEntry("stop_time"))
-    //{
-    //    cerr << "TIME OPTS HAS STOP" << endl;
-    //    stopT = timeOpts.GetEntry("stop_time")->ToInt();
-    //}
-    //if (timeOpts.HasNumericEntry("stride"))
-    //{
-    //    cerr << "TIME OPTS HAS STRIDE" << endl;
-    //    stride = timeOpts.GetEntry("stride")->ToInt();
-    //}
+    int stride = atts.GetStride();
 
     cerr << "\nSTART: " << startT << endl;
     cerr << "STOP: " << stopT << endl;
@@ -298,12 +203,12 @@ avtDirectDBQueryOverTimeFilter::Execute(void)
 
     int tsRange[] = {startT, stopT};
 
-
     cerr << "\nSTARTING TIME SPAN FILTER TIMING: " << endl;
     auto start = std::chrono::high_resolution_clock::now();
 
-    vtkFloatArray **spanArray = (vtkFloatArray **) (GetInput()->GetSource()->
-        GetOriginatingSource()->FetchTimeAndElementSpanVars(0, elements, vars, tsRange, stride));
+    avtOriginatingSource *origSource = GetInput()->GetSource()->GetOriginatingSource();
+    vtkFloatArray **spanArray = (vtkFloatArray **) (origSource->
+        FetchTimeAndElementSpanVars(0, elements, vars, tsRange, stride));
 
     auto stop = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> elapsed = stop - start;
@@ -313,14 +218,74 @@ avtDirectDBQueryOverTimeFilter::Execute(void)
     {
         int numSpans  = elements.size() * vars.size();
         int numTuples = spanArray[0]->GetNumberOfTuples();
-        
-        int curT = startT;
-        for (int i = 0; i < numTuples; i++)
+
+        switch (atts.GetTimeType())
         {
-            qRes.push_back(spanArray[0]->GetTuple1(i));
-            times.push_back(curT);
-            curT += stride;
+            case QueryOverTimeAttributes::Cycle: 
+            {
+                intVector cycles;
+                origSource->FetchCycles(cycles);
+                int curStep = startT;
+
+                for (int i = 0; i < numTuples; i++)
+                {
+                    qRes.push_back(spanArray[0]->GetTuple1(i));
+                    times.push_back(cycles[curStep]);
+                    curStep += stride;
+                }
+                break;
+            } 
+            case QueryOverTimeAttributes::DTime: 
+            {
+                doubleVector simTimes;
+                origSource->FetchTimes(simTimes);
+                int curStep = startT;
+
+                for (int i = 0; i < numTuples; i++)
+                {
+                    qRes.push_back(spanArray[0]->GetTuple1(i));
+                    times.push_back(simTimes[curStep]);
+                    curStep += stride;
+                }
+                break;
+            } 
+            case QueryOverTimeAttributes::Timestep: 
+            {
+                int curStep = startT;
+
+                for (int i = 0; i < numTuples; i++)
+                {
+                    qRes.push_back(spanArray[0]->GetTuple1(i));
+                    times.push_back(curStep);
+                    curStep += stride;
+                }
+                break;
+            } 
         }
+
+    ////
+    //// Store the necessary time value
+    ////
+    //if (useTimeForXAxis)
+    //{
+    //    double tval;
+    //    switch(atts.GetTimeType())
+    //    {
+    //    case QueryOverTimeAttributes::Cycle:
+    //        tval = (double) GetInput()->GetInfo().GetAttributes().GetCycle();
+    //        break;
+    //    case QueryOverTimeAttributes::DTime:
+    //        tval = GetInput()->GetInfo().GetAttributes().GetTime();
+    //        break;
+    //    case QueryOverTimeAttributes::Timestep:
+    //    default: // timestep
+    //        tval = (double)currentTime;
+    //        break;
+    //    }
+    //    times.push_back(tval);
+    //}
+
+
     }
     else
     {
@@ -549,7 +514,11 @@ avtDirectDBQueryOverTimeFilter::CreateTree(const doubleVector &times,
     {
        // Single curve with time for x axis.  NORMAL case.
        // Most queries currently use this option.
+       //TODO: we should probably raise a warning or error if the sizes don't match up. 
        nPts = (int)(times.size() <= res.size() ? times.size() : res.size());
+       cerr << "\nTIMES SIZE: " << times.size() << endl;
+       cerr << "RES SIZE: " << res.size() << endl;//FIXME
+       cerr << "NUM POINTS: " << nPts << endl;//FIXME
     }
     else if (!useTimeForXAxis && nResultsToStore == 2)
     {
@@ -567,7 +536,6 @@ avtDirectDBQueryOverTimeFilter::CreateTree(const doubleVector &times,
 
     if (singleCurve)
     {
-        cerr << "SINGLE CURVE" << endl;//FIXME
         vtkRectilinearGrid *rgrid = vtkVisItUtility::Create1DRGrid(nPts);
 
         if (nPts == 0)

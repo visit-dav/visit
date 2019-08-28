@@ -156,6 +156,9 @@ class DATABASE_API avtSourceFromDatabase : public avtOriginatingDatasetSource
                                                     int *,
                                                     int);
 
+    void                FetchCycles(intVector &);
+    void                FetchTimes(doubleVector &);
+
     virtual void        ReleaseData(void);
 
   protected:

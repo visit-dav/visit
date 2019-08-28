@@ -748,3 +748,43 @@ avtSTMDFileFormatInterface::GetTimeAndElementSpanVars(int domain,
 
     return (vtkDataArray **) spanArrays;
 }
+
+
+// ****************************************************************************
+//  Method: avtSTMDFileFormatInterface::GetCycles
+//
+//  Purpose:
+//
+//  Programmer: 
+//  Creation:   
+//
+// ****************************************************************************
+
+void
+avtSTMDFileFormatInterface::GetCycles(intVector &cycles)
+{
+    for (int i = 0; i < nTimesteps; ++i)
+    {
+        cycles.push_back(timesteps[i]->FormatGetCycle());
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtSTMDFileFormatInterface::GetTimes
+//
+//  Purpose:
+//
+//  Programmer: 
+//  Creation:   
+//
+// ****************************************************************************
+
+void
+avtSTMDFileFormatInterface::GetTimes(doubleVector &times)
+{
+    for (int i = 0; i < nTimesteps; ++i)
+    {
+        times.push_back(timesteps[i]->FormatGetTime());
+    }
+}

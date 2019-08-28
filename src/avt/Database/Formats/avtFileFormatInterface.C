@@ -517,3 +517,33 @@ avtFileFormatInterface::GetTimeAndElementSpanVars(int domain,
 
     return (vtkDataArray **) spanArrays;
 }
+
+
+// ****************************************************************************
+//  Method: avtFileFormatInterface::GetCycles
+//
+//  Purpose:
+//
+//  Programmer: 
+//  Creation:   
+//
+// ****************************************************************************
+
+void
+avtFileFormatInterface::GetCycles(intVector &)
+{}
+
+
+// ****************************************************************************
+//  Method: avtFileFormatInterface::GetTimes
+//
+//  Purpose:
+//
+//  Programmer: 
+//  Creation:   
+//
+// ****************************************************************************
+
+void
+avtFileFormatInterface::GetTimes(doubleVector &)
+{}

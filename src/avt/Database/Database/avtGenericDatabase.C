@@ -3452,6 +3452,40 @@ avtGenericDatabase::GetTimeAndElementSpanVars(int domain,
 
 
 // ****************************************************************************
+//  Method: avtGenericDatabase::GetCycles
+//
+//  Purpose:
+//
+//  Programmer: Alister Maguire
+//  Creation:   
+//
+// ****************************************************************************
+
+void
+avtGenericDatabase::GetCycles(intVector &cycles)
+{
+    Interface->GetCycles(cycles);
+}
+
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::GetTimes
+//
+//  Purpose:
+//
+//  Programmer: Alister Maguire
+//  Creation:   
+//
+// ****************************************************************************
+
+void
+avtGenericDatabase::GetTimes(doubleVector &times)
+{
+    Interface->GetTimes(times);
+}
+
+
+// ****************************************************************************
 //  Method: avtGenericDatabase::PopulateSIL
 //
 //  Purpose:

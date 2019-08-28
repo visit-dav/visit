@@ -660,6 +660,40 @@ avtSourceFromDatabase::FetchTimeAndElementSpanVars(int domain,
 
 
 // ****************************************************************************
+//  Method: avtOriginatingSource::FetchCycles
+//
+//  Purpose:
+//
+//  Programmer: Alister Maguire
+//  Creation:   
+//
+// ****************************************************************************
+
+void
+avtSourceFromDatabase::FetchCycles(intVector &cycles)
+{
+    database->GetCycles(cycles);
+}
+
+
+// ****************************************************************************
+//  Method: avtOriginatingSource::FetchTimes
+//
+//  Purpose:
+//
+//  Programmer: Alister Maguire
+//  Creation:   
+//
+// ****************************************************************************
+
+void
+avtSourceFromDatabase::FetchTimes(doubleVector &times)
+{
+    database->GetTimes(times);
+}
+
+
+// ****************************************************************************
 //  Method: avtSourceFromDatabase::QueryCoords
 //
 //  Purpose:    A query to find the coordinates of a zone or node. 

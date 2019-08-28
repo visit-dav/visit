@@ -366,6 +366,46 @@ avtMTSDFileFormatInterface::CreateCacheNameIncludingSelections(std::string var,
 
 
 // ****************************************************************************
+//  Method: avtMTSDFileFormatInterface::GetCycles
+//
+//  Purpose:
+//
+//  Arguments:
+//
+//  Programmer: 
+//  Creation:   
+//
+// ****************************************************************************
+
+//void
+//avtMTSDFileFormatInterface::GetCycles(intVector &cycles)
+//{
+//    //FIXME: finish
+//    if (nTimestepGroups == 1)
+//    {
+//        chunks[0]->FormatGetCycles(cycles); 
+//    }
+//    else
+//    {
+//
+//        std::vector< std::vector<int> > groupVecs;
+//
+//        for (int i = 0; i < nTimestepGroups; ++i)
+//        {
+//            intVector singleGroup;
+//            chunks[i]->FormatGetCycles(singleGroup);
+//
+//            for (intVector::iterator gItr = singleGroup.begin();
+//                 gItr < singleGroup.end(); ++gItr)
+//            {
+//                cycles.push_back(*gItr);
+//            }
+//        }
+//    }
+//}
+
+
+// ****************************************************************************
 //  Method: avtMTSDFileFormatInterface::GetFilename
 //
 //  Purpose:

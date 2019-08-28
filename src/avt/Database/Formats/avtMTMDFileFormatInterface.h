@@ -74,6 +74,9 @@ class DATABASE_API avtMTMDFileFormatInterface : public avtFileFormatInterface
                                                       int *,
                                                       int);
 
+    virtual void            GetCycles(intVector &);
+    virtual void            GetTimes(doubleVector &);
+
     virtual std::string     CreateCacheNameIncludingSelections(std::string,
                                                                int, int);
 

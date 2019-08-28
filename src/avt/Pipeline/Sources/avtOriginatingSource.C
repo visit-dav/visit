@@ -829,6 +829,42 @@ avtOriginatingSource::FetchTimeAndElementSpanVars(int domain,
 
 
 // ****************************************************************************
+//  Method: avtOriginatingSource::FetchCycles
+//
+//  Purpose:
+//
+//  Programmer: Alister Maguire
+//  Creation:   Tue Jul 23 10:14:41 PDT 2019
+//
+// ****************************************************************************
+
+void
+avtOriginatingSource::FetchCycles(intVector &)
+{
+    debug1 << "Asked to fetch cycles, " << endl;
+    debug1 << "but don't know how to do that." << endl;
+}
+
+
+// ****************************************************************************
+//  Method: avtOriginatingSource::FetchTimes
+//
+//  Purpose:
+//
+//  Programmer: Alister Maguire
+//  Creation:   Tue Jul 23 10:14:41 PDT 2019
+//
+// ****************************************************************************
+
+void
+avtOriginatingSource::FetchTimes(doubleVector &)
+{
+    debug1 << "Asked to fetch times, " << endl;
+    debug1 << "but don't know how to do that." << endl;
+}
+
+
+// ****************************************************************************
 //  Method: avtOriginatingSource::StoreArbitraryRefPtr
 //
 //  Purpose:

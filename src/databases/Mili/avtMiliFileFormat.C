@@ -2347,7 +2347,6 @@ avtMiliFileFormat::GetTimeAndElementSpanVars(int domain,
                 }
             }
 
-
             vtkFloatArray *singleSpan = vtkFloatArray::New();
             singleSpan->SetNumberOfComponents(1); 
             singleSpan->SetNumberOfTuples(spanSize); 
