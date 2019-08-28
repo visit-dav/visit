@@ -81,14 +81,14 @@ AddPlot("Curve", "Scalar_Curves/pressure")
 c = CurveAttributes()
 c.showLabels = 0
 c.curveColorSource = c.Custom
-c.curveColor = (255, 68, 68 255)
+c.curveColor = (255, 0, 0, 255)
 SetPlotOptions(c)
 DrawPlots()
 ResetView()
 Test("rect_07")
 
 AddPlot("Curve", "Scalar_Curves/density")
-c.curveColor = (99, 255, 99 255)
+c.curveColor = (0, 255, 0, 255)
 SetPlotOptions(c)
 DrawPlots()
 TimeSliderNextState()

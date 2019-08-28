@@ -80,6 +80,12 @@ OpenDatabase(silo_data_path("wave.visit"))
 
 AddPlot("Pseudocolor", "pressure")
 DrawPlots()
+
+c = CurveAttributes()                                                                    
+c.curveColorSource = c.Custom                                                            
+c.curveColor = (255, 0, 0, 255)                                                          
+SetDefaultPlotOptions(c)                                                                 
+                            
 QueryOverTime("Spherical Compactness Factor", stride=10)
 
 c = CurveAttributes()

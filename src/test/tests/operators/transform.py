@@ -175,7 +175,7 @@ OpenDatabase(data_path("curve_test_data/zonecent.ultra"))
 AddPlot("Curve", "curve2")
 curveAtts = CurveAttributes()
 curveAtts.curveColorSource = curveAtts.Custom
-curveAtts.curveColor = (255, 135, 0 ,255)
+curveAtts.curveColor = (255, 0, 0, 255)
 SetPlotOptions(curveAtts)
 DrawPlots()
 Test("ops_transform07")

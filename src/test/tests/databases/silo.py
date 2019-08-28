@@ -669,7 +669,7 @@ testNum = testNum + 1
 DeleteAllPlots()
 
 AddPlot("Curve","alias")
-curveAtts.curveColor = (255, 0, 135, 255)
+curveAtts.curveColor = (168, 168, 168, 255)
 SetPlotOptions(curveAtts)
 DrawPlots()
 Test("silo_%d"%testNum)

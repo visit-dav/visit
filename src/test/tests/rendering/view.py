@@ -97,9 +97,19 @@ OpenDatabase(data_path("curve_test_data/c051.curve"))
 
 
 AddPlot("Curve", "flat")
+curveAtts = CurveAttributes()
+curveAtts.curveColorSource = curveAtts.Custom
+curveAtts.curveColor = (255, 0, 0, 255)
+SetPlotOptions(curveAtts)
 AddPlot("Curve", "going_up")
+curveAtts.curveColor = (0, 255, 0, 255)
+SetPlotOptions(curveAtts)
 AddPlot("Curve", "going_down")
+curveAtts.curveColor = (0, 0, 255, 255)
+SetPlotOptions(curveAtts)
 AddPlot("Curve", "parabolic")
+curveAtts.curveColor = (0, 255, 255, 255)
+SetPlotOptions(curveAtts)
 DrawPlots()
 
 v = ViewCurveAttributes()

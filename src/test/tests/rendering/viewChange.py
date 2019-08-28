@@ -244,6 +244,11 @@ def TestViewChangeLogScalingCurves():
     OpenDatabase(data_path("curve_test_data/distribution.ultra"))
 
     AddPlot("Curve", "Laplace Distribution")
+    curveAtts = CurveAttributes()
+    curveAtts.curveColorSource = curveAtts.Custom
+    curveAtts.curveColor = (255, 0, 0, 255)
+    SetPlotOptions(curveAtts)
+
     # For log scaling to work with these curves, we need to transform
     # first.
 
@@ -265,11 +270,15 @@ def TestViewChangeLogScalingCurves():
     Test("ViewChangeLogScaleCurves_01")
 
     AddPlot("Curve", "Log Normal Distribution")
+    curveAtts.curveColor = (0, 255, 0, 255)
+    SetPlotOptions(curveAtts)
     AddOperator("Transform")
     DrawPlots()
     Test("ViewChangeLogScaleCurves_02")
 
     AddPlot("Curve", "Exponential Distribution")
+    curveAtts.curveColor = (0, 0, 255, 255)
+    SetPlotOptions(curveAtts)
     AddOperator("Transform")
     DrawPlots()
     Test("ViewChangeLogScaleCurves_03")
@@ -286,9 +295,17 @@ def TestViewChangeLogScalingCurves():
     OpenDatabase(data_path("curve_test_data/c063.curve"))
 
     AddPlot("Curve", "flat")
+    curveAtts.curveColor = (0, 255, 255, 255)
+    SetPlotOptions(curveAtts)
     AddPlot("Curve", "going_down")
+    curveAtts.curveColor = (255, 0, 255, 255)
+    SetPlotOptions(curveAtts)
     AddPlot("Curve", "going_up")
+    curveAtts.curveColor = (255, 255, 0, 255)
+    SetPlotOptions(curveAtts)
     AddPlot("Curve", "parabolic")
+    curveAtts.curveColor = (255, 135, 0, 255)
+    SetPlotOptions(curveAtts)
 
     DrawPlots()
 
