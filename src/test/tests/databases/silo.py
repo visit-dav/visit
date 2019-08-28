@@ -79,6 +79,10 @@
 #    Edward Rusu, Tues Oct 2 8:20:24 PDT 2018
 #    Added tests for ghost_zone/node_labels in the silo files.
 #
+#    Kathleen Biagas, Wed Aug 28 09:04:00 MST 2019
+#    Turn off cycling of colors for all Curve plot tests.  Set the colors
+#    individually to match current baseline results.
+#
 # ----------------------------------------------------------------------------
 TurnOffAllAnnotations() # defines global object 'a'
 
@@ -279,16 +283,24 @@ SetAnnotationAttributes(a)
 OpenDatabase(silo_data_path("multi_ucd3d.silo"))
 
 AddPlot("Curve","line")
+curveAtts = CurveAttributes()
+curveAtts.curveColorSource = curveAtts.Custom
+curveAtts.curveColor = (255, 0, 0, 255)
+SetPlotOptions(curveAtts)
 DrawPlots()
 Test("silo_23")
 
 DeleteActivePlots()
 AddPlot("Curve","wave")
+curveAtts.curveColor = (0, 255, 0, 255)
+SetPlotOptions(curveAtts)
 DrawPlots()
 Test("silo_24")
 
 DeleteActivePlots()
 AddPlot("Curve","log")
+curveAtts.curveColor = (0, 0, 255, 255)
+SetPlotOptions(curveAtts)
 DrawPlots()
 Test("silo_25")
 
@@ -309,7 +321,11 @@ if not sys.platform.startswith("win"):
         Test("silo_26")
     else:
         AddPlot("Curve","sincurve")
+        curveAtts.curveColor = (0, 255, 255, 255)
+        SetPlotOptions(curveAtts)
         AddPlot("Curve","coscurve")
+        curveAtts.curveColor = (255, 0, 255, 255)
+        SetPlotOptions(curveAtts)
         DrawPlots()
         Test("silo_26")
         DeleteAllPlots()
@@ -599,10 +615,8 @@ TestSection("Curve with polar coordinates")
 
 OpenDatabase(silo_data_path("multi_rect2d.silo"))
 AddPlot("Curve","circle")
-catts = CurveAttributes()
-catts.curveColorSource = catts.Custom
-catts.curveColor = (255, 255, 0, 255)
-SetPlotOptions(catts)
+curveAtts.curveColor = (255, 255, 0, 255)
+SetPlotOptions(curveAtts)
 DrawPlots()
 ResetView()
 Test("silo_%d"%testNum)
@@ -644,13 +658,19 @@ DefineCurveExpression("waveSquared", "wave*wave")
 ResetView()
 
 AddPlot("Curve","wave")
+curveAtts.curveColor = (255, 135, 0, 255)
+SetPlotOptions(curveAtts)
 AddPlot("Curve","waveSquared")
+curveAtts.curveColor = (255, 0, 135, 255)
+SetPlotOptions(curveAtts)
 DrawPlots()
 Test("silo_%d"%testNum)
 testNum = testNum + 1
 DeleteAllPlots()
 
 AddPlot("Curve","alias")
+curveAtts.curveColor = (255, 0, 135, 255)
+SetPlotOptions(curveAtts)
 DrawPlots()
 Test("silo_%d"%testNum)
 testNum = testNum + 1

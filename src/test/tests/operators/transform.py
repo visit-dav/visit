@@ -48,6 +48,10 @@
 #    Kathleen Biagas, Thu Jul 11 08:20:24 PDT 2013
 #    Removed legacy style annotation setting.
 #
+#    Kathleen Biagas, Wed Aug 28 09:04:00 MST 2019
+#    Turn off cycling of colors for all Curve plot tests.  Set the colors
+#    individually to match current baseline results.
+#
 # ----------------------------------------------------------------------------
 
 # Turn off all annotation
@@ -169,6 +173,10 @@ DeleteAllPlots()
 OpenDatabase(data_path("curve_test_data/zonecent.ultra"))
 
 AddPlot("Curve", "curve2")
+curveAtts = CurveAttributes()
+curveAtts.curveColorSource = curveAtts.Custom
+curveAtts.curveColor = (255, 135, 0 ,255)
+SetPlotOptions(curveAtts)
 DrawPlots()
 Test("ops_transform07")
 

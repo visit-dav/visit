@@ -30,10 +30,6 @@
 #    Added TestScale, which demonstrates the need to scale curves with values
 #    greater than 1e37 or less than 1e-37.
 #
-#    Kathleen Biagas, Wed Aug 28 09:04:00 MST 2019
-#    Turn off cycling of colors for all tests.  Set the colors individually
-#    to match current baseline results.
-#
 # ----------------------------------------------------------------------------
 
 def Test1():
@@ -472,6 +468,58 @@ def TestScale():
     DeleteAllPlots()
     CloseDatabase(data_path("curve_test_data/need_scale.ultra"))
 
+def TestCycleColors():
+    TestSection("Cycle colors")
+
+    OpenDatabase(data_path("curve_test_data/curve.visit"))
+
+    curveAtts = CurveAttributes()
+    curveAtts.curveColorSource = curveAtts.Cycle
+    SetDefaultPlotOptions(curveAtts)
+
+    AddPlot("Curve", "flat") 
+    AddPlot("Curve", "going_up")
+    AddPlot("Curve", "going_down")
+    AddPlot("Curve", "parabolic")
+    SetPlotOptions(curveAtts)
+    DrawPlots()
+    Test("cycle_colors_01")
+    DeleteAllPlots()
+
+    SetTimeSliderState(98)
+    AddPlot("Curve", "flat") 
+    AddPlot("Curve", "going_up")
+    AddPlot("Curve", "going_down")
+    AddPlot("Curve", "parabolic")
+    SetPlotOptions(curveAtts)
+    DrawPlots()
+    Test("cycle_colors_02")
+    DeleteAllPlots()
+
+    # change background to match what *should* be next in the cycled colors
+    # (provided the default discrete color table is still 'levels'
+    annot = GetAnnotationAttributes()
+    annot.backgroundColor = (168, 168, 168, 255)
+    SetAnnotationAttributes(annot)
+
+    AddPlot("Curve", "flat") 
+    DrawPlots()
+    Test("cycle_colors_03")
+
+    AddPlot("Curve", "going_up")
+    DrawPlots()
+    Test("cycle_colors_04")
+
+    AddPlot("Curve", "going_down")
+    DrawPlots()
+    Test("cycle_colors_05")
+
+    AddPlot("Curve", "parabolic")
+    DrawPlots()
+    Test("cycle_colors_06")
+
+    DeleteAllPlots()
+
 def Main():
     Test1()
     TestOverlayCurves()
@@ -479,6 +527,7 @@ def Main():
     TestTimeCue()
     TestPolar()
     TestScale()
+    TestCycleColors()
 
 Main()
 Exit()

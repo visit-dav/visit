@@ -26,6 +26,10 @@
 #    Cyrus Harrison, Wed Jul 16 15:58:54 PDT 2014
 #    Added test cases to exercise centroid override
 #
+#    Kathleen Biagas, Wed Aug 28 09:04:00 MST 2019
+#    Turn off cycling of colors for all Curve plot tests.  Set the colors
+#    individually to match current baseline results.
+#
 # ----------------------------------------------------------------------------
 import json
 
@@ -78,9 +82,17 @@ AddPlot("Pseudocolor", "pressure")
 DrawPlots()
 QueryOverTime("Spherical Compactness Factor", stride=10)
 
+c = CurveAttributes()
+c.curveColorSource = c.Custom
+c.curveColor = (255, 0, 0, 255)
+SetDefaultPlotOptions(c)
+
 SetActiveWindow(2)
 SetAnnotationAttributes(a)
 Test("scf_03")
+
+c.curveColor = (0, 255, 0, 255)
+SetDefaultPlotOptions(c)
 
 SetActiveWindow(1)
 QueryOverTime("Spherical Compactness Factor", stride=10,centroid=[1.0,0.0,0.0])
