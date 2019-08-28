@@ -813,7 +813,8 @@ avtBlueprintFileFormat::ReadRootFile()
        if(error != 0)
        {
            BP_PLUGIN_EXCEPTION1(InvalidFilesException,
-                                "Error reading root file: " << root_fname);
+                                "Error reading root file: '" << root_fname<<"'. "
+                                <<error_msg);
        }
 
 #ifdef PARALLEL
