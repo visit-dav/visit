@@ -121,25 +121,51 @@ if (VISIT_OSMESA_DIR)
 
     set(OSMESA_INCLUDE_DIR ${VISIT_OSMESA_DIR}/include CACHE PATH "OSMesa include path")
 
-    find_library(GLAPI_LIBRARY glapi
-                 PATH ${VISIT_OSMESA_DIR}/lib
+    find_library(GLAPI_LIBRARY glapi PATH ${VISIT_OSMESA_DIR}/lib
                  NO_DEFAULT_PATH)
+    if (GLAPI_LIBRARY)
+        get_filename_component(GLAPI_LIB ${GLAPI_LIBRARY} NAME)
+        execute_process(COMMAND objdump -p ${GLAPI_LIBRARY}
+                        COMMAND grep SONAME
+                        RESULT_VARIABLE GLAPI_SONAME_RESULT
+                        OUTPUT_VARIABLE GLAPI_SONAME
+                        ERROR_VARIABLE  GLAPI_SONAME_ERROR)
 
-    get_filename_component(GLAPI_LIB ${GLAPI_LIBRARY} NAME)
+        if(GLAPI_SONAME)
+            string(REPLACE "SONAME" "" GLAPI_SONAME ${GLAPI_SONAME})
+            string(STRIP ${GLAPI_SONAME} GLAPI_SONAME)
+            set(GLAPI_LIBRARY ${VISIT_OSMESA_DIR}/lib/${GLAPI_SONAME})
+        endif()
 
-    # find the SOName
-    execute_process(COMMAND objdump -p ${GLAPI_LIBRARY}
-                    COMMAND grep SONAME
-                    RESULT_VARIABLE GLAPI_SONAME_RESULT
-                    OUTPUT_VARIABLE GLAPI_SONAME
-                    ERROR_VARIABLE  GLAPI_SONAME_ERROR)
+        execute_process(COMMAND ${CMAKE_COMMAND} -E copy
+                                ${GLAPI_LIBRARY}
+                                ${VISIT_BINARY_DIR}/lib/osmesa/)
 
-    if(GLAPI_SONAME)
-        string(REPLACE "SONAME" "" GLAPI_SONAME ${GLAPI_SONAME})
-        string(STRIP ${GLAPI_SONAME} GLAPI_SONAME)
-        set(GLAPI_LIBRARY ${VISIT_OSMESA_DIR}/lib/${GLAPI_SONAME})
+        list(APPEND OSMESA_LIBRARIES ${GLAPI_LIBRARY})
     endif()
-    list(APPEND OSMESA_LIBRARIES ${GLAPI_LIBRARY})
+
+    find_library(GLU_LIBRARY GLU PATH ${VISIT_OSMESA_DIR}/lib
+                 NO_DEFAULT_PATH)
+    if (GLU_LIBRARY)
+        get_filename_component(GLU_LIB ${GLU_LIBRARY} NAME)
+        execute_process(COMMAND objdump -p ${GLU_LIBRARY}
+                        COMMAND grep SONAME
+                        RESULT_VARIABLE GLU_SONAME_RESULT
+                        OUTPUT_VARIABLE GLU_SONAME
+                        ERROR_VARIABLE  GLU_SONAME_ERROR)
+
+        if(GLU_SONAME)
+            string(REPLACE "SONAME" "" GLU_SONAME ${GLU_SONAME})
+            string(STRIP ${GLU_SONAME} GLU_SONAME)
+            set(GLU_LIBRARY ${VISIT_OSMESA_DIR}/lib/${GLU_SONAME})
+        endif()
+
+        execute_process(COMMAND ${CMAKE_COMMAND} -E copy
+                                ${GLU_LIBRARY}
+                                ${VISIT_BINARY_DIR}/lib/osmesa/)
+
+        list(APPEND OSMESA_LIBRARIES ${GLU_LIBRARY})
+    endif()
 
     # Check for OSMesa size limit --- IS THIS STILL NECESSARY?
     set(MY_LIBS ${OSMESA_LIBRARIES})
