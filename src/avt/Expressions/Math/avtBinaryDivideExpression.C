@@ -101,17 +101,7 @@ avtBinaryDivideExpression::DoOperation(vtkDataArray *in1, vtkDataArray *in2,
             vtkIdType tup2 = (var2IsSingleton ? 0 : i);
             double val1 = in1->GetTuple1(tup1);
             double val2 = in2->GetTuple1(tup2);
-            if (val1 == 0. && val2 == 0.)
-            {
-                out->SetTuple1(i, 1.);
-            }
-            else if (val2 == 0. && val1 != 0.)
-            {
-                EXCEPTION2(ExpressionException, outputVariableName, 
-                           "You can't divide by zero");
-            }
-            else
-                out->SetTuple1(i, val1 / val2);
+            out->SetTuple1(i, CheckZero(val1,val2));
         }
     }
     else if (in1ncomps > 1 && in2ncomps == 1)
@@ -121,15 +111,10 @@ avtBinaryDivideExpression::DoOperation(vtkDataArray *in1, vtkDataArray *in2,
             vtkIdType tup1 = (var1IsSingleton ? 0 : i);
             vtkIdType tup2 = (var2IsSingleton ? 0 : i);
             double val2 = in2->GetTuple1(tup2);
-            if (val2 == 0)
-            {
-                EXCEPTION2(ExpressionException, outputVariableName, 
-                           "You can't divide by zero");
-            }
             for (int j = 0 ; j < in1ncomps ; j++)
             {
                 double val1 = in1->GetComponent(tup1, j);
-                out->SetComponent(i, j, val1/val2);
+                out->SetComponent(i, j, CheckZero(val1, val2));
             }
         }
     }
@@ -143,12 +128,7 @@ avtBinaryDivideExpression::DoOperation(vtkDataArray *in1, vtkDataArray *in2,
             for (int j = 0 ; j < in2ncomps ; j++)
             {
                 double val2 = in2->GetComponent(tup2, j);
-                if (val2 == 0)
-                {
-                    EXCEPTION2(ExpressionException, outputVariableName, 
-                               "You can't divide by zero");
-                }
-                out->SetComponent(i, j, val1/val2);
+                out->SetComponent(i, j, CheckZero(val1, val2));
             }
         }
     }
@@ -156,6 +136,44 @@ avtBinaryDivideExpression::DoOperation(vtkDataArray *in1, vtkDataArray *in2,
     {
         EXCEPTION2(ExpressionException, outputVariableName, 
                    "Division of vectors in undefined.");
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtBinaryDivideExpression::CheckZero
+//
+//  Purpose:
+//      Checks the values involved in the division. If the top and bottom
+//      are both within tolerance of zero, then the answer is 1. If the bottom
+//      is within tolerance but the top is not, then we throw an exception.
+//
+//  Arguments:
+//      top           The "top" number in the division.
+//      bottom        The "bottom" number in the division.
+//
+//  Programmer: Eddie Rusu
+//  Creation:   Thu Aug 29 15:05:08 PDT 2019
+//
+// ****************************************************************************
+
+double
+avtBinaryDivideExpression::CheckZero(double top, double bottom)
+{
+    if (fabs(bottom) < this->tolerance)
+    {
+        if (fabs(top) < this->tolerance)
+        {
+            return 1.0;
+        }
+        else
+        {
+            EXCEPTION2(ExpressionException, outputVariableName, 
+                        "You can't divide by zero");
+        }
+    }
+    else {
+        return top / bottom;
     }
 }
 

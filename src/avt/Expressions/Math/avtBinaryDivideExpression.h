@@ -49,6 +49,10 @@ class EXPRESSION_API avtBinaryDivideExpression : public avtBinaryMathExpression
     virtual void     DoOperation(vtkDataArray *in1, vtkDataArray *in2,
                                  vtkDataArray *out, int ncomps, int ntuples);
     virtual bool     CanHandleSingletonConstants(void) {return true;};
+  
+  private:
+    double tolerance = 1e-16;
+    double CheckZero(double, double);
 };
 
 
