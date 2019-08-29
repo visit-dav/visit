@@ -162,9 +162,9 @@ avtBinaryDivideExpression::CheckZero(double top, double bottom)
 {
     if (fabs(bottom) < this->tolerance)
     {
-        if (fabs(top) < this->tolerance)
+        if (this->process_anyways)
         {
-            return 1.0;
+            return this->value_if_zero;
         }
         else
         {

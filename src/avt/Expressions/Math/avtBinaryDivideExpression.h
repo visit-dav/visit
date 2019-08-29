@@ -52,6 +52,8 @@ class EXPRESSION_API avtBinaryDivideExpression : public avtBinaryMathExpression
   
   private:
     double tolerance = 1e-16;
+    bool process_anyways = true;
+    double value_if_zero = 0.;
     double CheckZero(double, double);
 };
 
