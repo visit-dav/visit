@@ -15,6 +15,11 @@
 #  Mark C. Miller, Wed Feb 18 17:52:44 PST 2009
 #  Fixed missing AddPlot() call just prior to image 08. Changed name of 
 #  curve objects that get re-interpreted.
+#
+#  Kathleen Biagas, Wed Aug 28 09:04:00 MST 2019
+#  Turn off cycling of colors for all Curve plot tests.  Set the colors
+#  individually to match current baseline results.
+#
 # ----------------------------------------------------------------------------
 
 
@@ -69,17 +74,22 @@ CloseDatabase(data_path("Rect_test_data/rect_data/datafile.rect"))
 
 TestSection("1D Datasets re-interpreted as curves.")
 
-c = CurveAttributes()
-c.showLabels = 0
-SetDefaultPlotOptions(c)
 
 OpenDatabase(data_path("Rect_test_data/1d/rect_data/datafile.rect"))
 
 AddPlot("Curve", "Scalar_Curves/pressure")
+c = CurveAttributes()
+c.showLabels = 0
+c.curveColorSource = c.Custom
+c.curveColor = (255, 0, 0, 255)
+SetPlotOptions(c)
 DrawPlots()
 ResetView()
 Test("rect_07")
+
 AddPlot("Curve", "Scalar_Curves/density")
+c.curveColor = (0, 255, 0, 255)
+SetPlotOptions(c)
 DrawPlots()
 TimeSliderNextState()
 Test("rect_08")

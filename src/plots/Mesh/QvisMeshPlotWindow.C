@@ -171,9 +171,12 @@ QvisMeshPlotWindow::CreateWindowContents()
     rb->setChecked(true);
     meshColorButtons->addButton(rb, 0);
     colorLayout->addWidget(rb, 0, 1);
+    rb = new QRadioButton(tr("Random"), central);
+    meshColorButtons->addButton(rb, 2);
+    colorLayout->addWidget(rb, 0, 2, Qt::AlignRight | Qt::AlignVCenter);
     rb = new QRadioButton(tr("Custom"), central);
     meshColorButtons->addButton(rb, 1);
-    colorLayout->addWidget(rb, 0, 2, Qt::AlignRight | Qt::AlignVCenter);
+    colorLayout->addWidget(rb, 0, 3, Qt::AlignRight | Qt::AlignVCenter);
 
     // Each time a radio button is clicked, call the scale clicked slot.
     connect(meshColorButtons, SIGNAL(buttonClicked(int)),
@@ -183,9 +186,7 @@ QvisMeshPlotWindow::CreateWindowContents()
     meshColor = new QvisColorButton(central);
     connect(meshColor, SIGNAL(selectedColor(const QColor &)),
             this, SLOT(meshColorChanged(const QColor &)));
-    colorLayout->addWidget(meshColor, 0, 3);
-
-
+    colorLayout->addWidget(meshColor, 0, 4);
 
     // Create the radio buttons for opaque color source
     opaqueColorLabel = new QLabel(tr("Opaque color"), central);
@@ -197,9 +198,12 @@ QvisMeshPlotWindow::CreateWindowContents()
     rb->setChecked(true);
     opaqueColorButtons->addButton(rb, 0);
     colorLayout->addWidget(rb, 1, 1);
+    rb = new QRadioButton(tr("Random"), central);
+    opaqueColorButtons->addButton(rb, 2);
+    colorLayout->addWidget(rb, 1, 2, Qt::AlignRight | Qt::AlignVCenter);
     rb = new QRadioButton(tr("Custom"), central);
     opaqueColorButtons->addButton(rb, 1);
-    colorLayout->addWidget(rb, 1, 2, Qt::AlignRight | Qt::AlignVCenter);
+    colorLayout->addWidget(rb, 1, 3, Qt::AlignRight | Qt::AlignVCenter);
 
     // Each time a radio button is clicked, call the scale clicked slot.
     connect(opaqueColorButtons, SIGNAL(buttonClicked(int)),
@@ -209,7 +213,7 @@ QvisMeshPlotWindow::CreateWindowContents()
     opaqueColor = new QvisColorButton(central);
     connect(opaqueColor, SIGNAL(selectedColor(const QColor &)),
             this, SLOT(opaqueColorChanged(const QColor &)));
-    colorLayout->addWidget(opaqueColor, 1, 3);
+    colorLayout->addWidget(opaqueColor, 1, 4);
 
     // Create the opaque mode buttons
     colorLayout->addWidget(new QLabel(tr("Opaque mode"), central), 2, 0);
@@ -469,7 +473,7 @@ QvisMeshPlotWindow::UpdateWindow(bool doAll)
                          opaqueColorButtons->button(0)->setEnabled(true);
                          opaqueColorButtons->button(1)->setEnabled(true);
 
-                         opaqueColor->setEnabled(meshAtts->GetOpaqueColorSource());
+                         opaqueColor->setEnabled(meshAtts->GetOpaqueColorSource() == MeshAttributes::OpaqueCustom);
                      }
                      else 
                      {
@@ -484,13 +488,13 @@ QvisMeshPlotWindow::UpdateWindow(bool doAll)
                      opaqueColorLabel->setEnabled(true);
                      opaqueColorButtons->button(0)->setEnabled(true);
                      opaqueColorButtons->button(1)->setEnabled(true);
-                     opaqueColor->setEnabled(meshAtts->GetOpaqueColorSource());
+                     opaqueColor->setEnabled(meshAtts->GetOpaqueColorSource() == MeshAttributes::OpaqueCustom);
                      break;
                  case MeshAttributes::Off:
                      opaqueColorLabel->setEnabled(false);
                      opaqueColorButtons->button(0)->setEnabled(false);
                      opaqueColorButtons->button(1)->setEnabled(false);
-                     opaqueColor->setEnabled(false);
+                     opaqueColor->setEnabled(meshAtts->GetOpaqueColorSource() == MeshAttributes::OpaqueCustom);
                      break;
             }
             opaqueModeGroup->blockSignals(false);
@@ -515,7 +519,7 @@ QvisMeshPlotWindow::UpdateWindow(bool doAll)
             meshColorButtons->button(meshAtts->GetMeshColorSource())->setChecked(true);
             meshColorButtons->blockSignals(false);
 
-            meshColor->setEnabled(meshAtts->GetMeshColorSource());
+            meshColor->setEnabled(meshAtts->GetMeshColorSource() == MeshAttributes::MeshCustom);
 
             break;
         case MeshAttributes::ID_opaqueColorSource:
@@ -523,7 +527,7 @@ QvisMeshPlotWindow::UpdateWindow(bool doAll)
             opaqueColorButtons->button(meshAtts->GetOpaqueColorSource())->setChecked(true);
             opaqueColorButtons->blockSignals(false);
 
-            opaqueColor->setEnabled(meshAtts->GetOpaqueColorSource());
+            opaqueColor->setEnabled(meshAtts->GetOpaqueColorSource() == MeshAttributes::OpaqueCustom);
 
             break;
         case MeshAttributes::ID_smoothingLevel:
@@ -561,7 +565,7 @@ QvisMeshPlotWindow::UpdateWindow(bool doAll)
                     opaqueColorLabel->setEnabled(true);
                     opaqueColorButtons->button(0)->setEnabled(true);
                     opaqueColorButtons->button(1)->setEnabled(true);
-                    opaqueColor->setEnabled(meshAtts->GetOpaqueColorSource());
+                    opaqueColor->setEnabled(meshAtts->GetOpaqueColorSource() == MeshAttributes::OpaqueCustom);
                 }
                 else 
                 {
@@ -924,7 +928,7 @@ QvisMeshPlotWindow::opaqueColorClicked(int  val)
     if(val != meshAtts->GetOpaqueColorSource())
     {
         meshAtts->SetOpaqueColorSource(MeshAttributes::OpaqueColor(val));
-        opaqueColor->setEnabled(val);
+        opaqueColor->setEnabled(meshAtts->GetOpaqueColorSource() == MeshAttributes::OpaqueCustom);
         Apply();
     }
 }
@@ -957,7 +961,7 @@ QvisMeshPlotWindow::meshColorClicked(int val)
     if(val != meshAtts->GetMeshColorSource())
     {
         meshAtts->SetMeshColorSource(MeshAttributes::MeshColor(val));
-        meshColor->setEnabled(val);
+        meshColor->setEnabled(meshAtts->GetMeshColorSource() == MeshAttributes::MeshCustom);
         Apply();
     }
 }

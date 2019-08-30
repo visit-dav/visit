@@ -8,6 +8,7 @@ VisIt Developer Manual
 
     pr_create
     pr_review
+    CreateRelease
 
 .. Indices and tables
 .. ==================

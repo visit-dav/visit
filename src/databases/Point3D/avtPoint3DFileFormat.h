@@ -36,6 +36,8 @@ class     vtkUnstructuredGrid;
 //   Hank Childs, Sat Mar 17 16:29:45 PDT 2007
 //   Added FreeUpResources.
 //
+//   Mark C. Miller, Thu Jul 25 21:12:18 PDT 2019
+//   Added spatialDim
 // ****************************************************************************
 
 class avtPoint3DFileFormat : public avtSTSDFileFormat
@@ -56,6 +58,7 @@ class avtPoint3DFileFormat : public avtSTSDFileFormat
 
   protected:
     bool                       haveReadData;
+    int                        spatialDim;
     vtkFloatArray             *column1;
     vtkFloatArray             *column2;
     vtkFloatArray             *column3;
