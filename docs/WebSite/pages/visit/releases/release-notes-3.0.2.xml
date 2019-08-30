@@ -28,17 +28,30 @@ enhancements and bug-fixes that were added to this release.</p>
 
 <h2>Bugs fixed in version 3.0.2</h2>
 <ul>
-  <li></li>
+  <li>Corrected a bug where VisIt would crash when attempting to use python expressions with other expressions as inputs.</li>
+  <li>Fixed launch failure on Windows when 8dot3name (shortnames) is disabled on the system.</li>
+  <li>Fixed issue with the mili plugin not handling integers in scientific notation.</li>
 </ul>
 
 <h2>Enhancements in version 3.0.2</h2>
 <ul>
-  <li></li>
+  <li>Host profiles were added for the Oak Ridge National Laboratory's Summit system.</li>
+  <li>Tables in the GUI doc that ran off the edge of the page have been converted to definition lists.</li>
+  <li>Modified the batch launching at NERSC to work on Cori after the major operating system upgrade."</li>
+  <li>Openssl was added to the list of required libraries in build_visit.</li>
+  <li>Added the turbo color table.</li>
+  <li>XYZ Writer repalces '?' with UNKNOWN_ATOMIC_ELEMENT and now warns user if dataset is not effectively point-centered.</li>
+  <li>Xdmf reader now supports time-varying grid count via top-level
+      &lt;Information Name="TimeVaryingMetaData" Value="True"/&gt; node in the xdmf file.</li>
 </ul>
 
 <h2>Changes for VisIt developers in version 3.0.2</h2>
 <ul>
-  <li></li>
+  <li>Updated masonry to build adios2 for OSX.</li>
+  <li>Fixed building plugins against a VisIt install for OSX.</li>
+  <li>Fixed xmledit failure due to missing QT cocoa plugin.</li>
+  <li>Fixed the libxml2 image not found error when loading the uintah database.</li>
+  <li>PySide was removed from build_visit until we get a newer version working with VisIt.</li>
 </ul>
 
 <p>For any additional questions, send e-mail to <a href="mailto:visit-users@ornl.gov">VisIt Users</a>.</p>
