@@ -33,6 +33,10 @@
 #    Jeremy Meredith, Fri May 20 09:37:14 EDT 2011
 #    Change subset mesh variable name since files have more than one mesh now.
 #
+#    Kathleen Biagas, Wed Aug 28 09:04:00 MST 2019
+#    Turn off cycling of colors for all Curve plot tests.  Set the colors
+#    individually to match current baseline results.
+#
 # ----------------------------------------------------------------------------
 
 
@@ -244,6 +248,10 @@ DeleteAllPlots();
 OpenDatabase(data_path("tecplot_test_data/simpxy.tec"))
 
 AddPlot("Curve","Temperature vs/Distance")
+curveAtts = CurveAttributes()
+curveAtts.curveColorSource = curveAtts.Custom
+curveAtts.curveColor = (255, 0, 0, 255)
+SetPlotOptions(curveAtts)
 DrawPlots()
 SetTheView()
 Test("tecplot_21")
@@ -252,6 +260,8 @@ DeleteAllPlots();
 OpenDatabase(data_path("tecplot_test_data/simpxy2.tec"))
 
 AddPlot("Curve","Only Zone/Temperature vs/Distance")
+curveAtts.curveColor = (0, 255, 0, 255)
+SetPlotOptions(curveAtts)
 DrawPlots()
 SetTheView()
 Test("tecplot_22")

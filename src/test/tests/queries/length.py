@@ -16,6 +16,11 @@
 #
 #    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
 #    Added ability to swtich between Silo's HDF5 and PDB data.
+#
+#    Kathleen Biagas, Wed Aug 28 09:04:00 MST 2019
+#    Turn off cycling of colors for all Curve plot tests.  Set the colors
+#    individually to match current baseline results.
+#
 # ----------------------------------------------------------------------------
 
 # Test that we can do an l2norm of a degenerate ultra file.
@@ -43,6 +48,10 @@ SetQueryOverTimeAttributes(q)
 QueryOverTime("Total Length")
 SetActiveWindow(2)
 TurnOffAllAnnotations()
+c = CurveAttributes()
+c.curveColorSource = c.Custom
+c.curveColor = (0, 255, 0, 255)
+SetPlotOptions(c)
 Test("length_03")
 
 Exit()

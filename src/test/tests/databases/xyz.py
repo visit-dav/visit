@@ -11,9 +11,38 @@
 #  Programmer: Jeremy Meredith
 #  Date:       June 14, 2007
 #
+#  Modifications:
+#    Eddie Rusu, Mon Aug 26 08:46:44 PDT 2019
+#    Added test for cell-centered non VTK_VERTEX points.
+#
 # ----------------------------------------------------------------------------
 
 
+def test_xyz_ascii_output(data_base_name, var, test_output):
+    OpenDatabase(silo_data_path(data_base_name))
+    AddPlot("Pseudocolor", var, 1, 1)
+    DrawPlots()
+
+    # Export results to database
+    e = ExportDBAttributes()
+    e.db_type = "XYZ"
+    e.filename = "test_ex_db"
+    ExportDatabase(e)
+    time.sleep(1)
+
+    # Stream the ascii text in from the exported database
+    file_streamer = open(e.filename+'.xyz', 'r')
+    string_to_test = file_streamer.read()
+    file_streamer.close()
+
+    # Test the string
+    TestText(test_output, string_to_test)
+    DeleteAllPlots()
+    CloseDatabase(silo_data_path(data_base_name))
+
+
+
+# Starting point in this script
 OpenDatabase(data_path("xyz_test_data/nanowireTB23K298.xyz"),0, "XYZ_1.0")
 
 AddPlot("Molecule", "element")
@@ -37,5 +66,12 @@ TimeSliderNextState()
 Test("xyz_05")
 TimeSliderNextState()
 Test("xyz_06")
+
+CloseDatabase(data_path("xyz_test_data/nanowireTB23K298.xyz"))
+
+# Test case where XYZ writer is cell-centered VTK_VERTEX data
+# In this case, the baseline text is generated from the point-centered data.
+DefineScalarExpression("vz2", 'recenter(vz, "zonal")')
+test_xyz_ascii_output('galaxy0000.silo', 'vz2', 'xyz_07')
 
 Exit()

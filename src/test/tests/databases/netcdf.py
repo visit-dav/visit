@@ -31,6 +31,10 @@
 #    Kathleen Biagas, Fri Sep 21 10:12:15 MST 2012 
 #    Removed pjoin so that tests can run on Windows.
 #
+#    Kathleen Biagas, Wed Aug 28 09:04:00 MST 2019
+#    Turn off cycling of colors for all Curve plot tests.  Set the colors
+#    individually to match current baseline results.
+#
 # ----------------------------------------------------------------------------
 RequiredDatabasePlugin("NETCDF")
 
@@ -268,11 +272,17 @@ def test3():
     # Try some curves
     OpenDatabase(data_path("netcdf_test_data/3252ATT-A1H.cdf"))
     AddPlot("Curve", "ATTN_55")
+    curveAtts = CurveAttributes()
+    curveAtts.curveColorSource = curveAtts.Custom
+    curveAtts.curveColor = (255, 0, 0, 255)
+    SetPlotOptions(curveAtts)
     DrawPlots()
     Test("netcdf_3_02")
     DeleteAllPlots()
     OpenDatabase(data_path("netcdf_test_data/AAtestCTD.nc"))
     AddPlot("Curve", "ST_70")
+    curveAtts.curveColor = (0, 255, 0, 255)
+    SetPlotOptions(curveAtts)
     DrawPlots()
     ResetView()
     Test("netcdf_3_03")
