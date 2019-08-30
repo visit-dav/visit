@@ -11,7 +11,7 @@ followed by the Unix installation instructions.
 Windows:
 ========
 
-1.  Download the visit3.0.0.exe or visit3.0.0_x64.exe installer program to
+1.  Download the visit3_0_0.windows-x86_64.exe installer program to
     your desktop.
 
 2.  Double click on the installer program icon to run the installer.
@@ -24,7 +24,7 @@ MacOS X:
 
 Downloads:
 
-1. Download VisIt-3.0.0.dmg and copy it to the desktop.
+1. Download visit3_0_0.darwin-x86_64-10_13.dmg and copy it to the desktop.
 
 2. Double click on the file to open it. This will cause MacOS to mount the
    disk image and open it in Finder.
@@ -53,9 +53,16 @@ Unix (gzipped tar file):
 
         "version" will be 3.0.0 for the current distribution.
 
-        "platform" will be one of the following:  linux-x86_64-rhel6 or
-        linux-x86_64-ubuntu11 depending on the machine.  The one you
-        use should match the name of the accompanying distribution file.
+        "platform" will be one of the following:
+
+            linux-x86_64-ubuntu18
+            linux-x86_64-debian9
+            linux-x86_64-fedora27
+            linux-x86_64-rhel7
+            linux-x86_64-rhel7-wmesa
+
+        The one you use should match the name of the accompanying
+        distribution file.
 
         "directory" is the directory you wish to install visit into.
         If the directory doesn't exist the script will create it.
@@ -63,11 +70,11 @@ Unix (gzipped tar file):
     For example
 
         chmod 755 visit-install3_0_0
-        ./visit-install3_0_0 3.0.0 linux-x86_64-rhel6 /usr/local/visit
+        ./visit-install3_0_0 3.0.0 linux-x86_64-rhel7 /usr/local/visit
 
-    will install the linux-x86_64-rhel6, 3.0.0 version of visit in the
+    will install the linux-x86_64-rhel7, 3.0.0 version of visit in the
     directory "/usr/local/visit".  Note that you will need to have the
-    file "visit3_0_0.linux-x86_64-rhel6.tar.gz" present in the current
+    file "visit3_0_0.linux-x86_64-rhel7.tar.gz" present in the current
     directory for this to function properly.
 
 2.  Add the bin directory below the installation directory
