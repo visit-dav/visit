@@ -46,7 +46,6 @@
             <lib name="ospray"/>
             <lib name="p7zip"/>
             <lib name="pidx"/>
-            <lib name="pyside"/>
             <lib name="silo"/>
             <lib name="szip"/>
             <lib name="tbb"/>
@@ -106,7 +105,6 @@
         <group name="no-thirdparty" comment="Do not build required 3rd party libraries" enabled="no">
             <lib name="no-cmake"/>
             <lib name="no-python"/>
-            <lib name="no-pyside"/>
             <lib name="no-qt" />
             <lib name="no-qwt" />
             <lib name="no-vtk"/>
