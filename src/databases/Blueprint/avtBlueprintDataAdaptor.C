@@ -1968,7 +1968,7 @@ avtBlueprintDataAdaptor::BP::VTKToBlueprint(conduit::Node &mesh,
       vtkRectilinearGrid *rgrid = (vtkRectilinearGrid *) dataset;
 
       mesh[coord_path+ "/type"] = "rectilinear";
-      mesh[topo_path + "/type"] = "structured";
+      mesh[topo_path + "/type"] = "rectilinear";
 
       if(ndims > 0)
       {
@@ -2021,8 +2021,8 @@ avtBlueprintDataAdaptor::BP::VTKToBlueprint(conduit::Node &mesh,
      BP_PLUGIN_INFO("VTKToBlueprint:: UntructuredGrid");
      vtkUnstructuredGrid *grid = (vtkUnstructuredGrid *) dataset;
 
-     mesh[topo_path + "/type"] = "unstructured";
      mesh[coord_path + "/type"] = "explicit";
+     mesh[topo_path + "/type"] = "unstructured";
 
      vtkPoints *vtk_pts = grid->GetPoints();
      vtkPointsToNode(mesh[coord_path + "/values"], vtk_pts, ndims);

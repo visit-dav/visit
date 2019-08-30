@@ -37,6 +37,10 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Modified the batch launching at NERSC to work on Cori after the major operating system upgrade."</li>
   <li>Openssl was added to the list of required libraries in build_visit.</li> 
   <li>Added the turbo color table.</li> 
+  <li>XYZ Writer repalces '?' with UNKNOWN_ATOMIC_ELEMENT and now warns user if dataset is not effectively point-centered.</li>
+  <li>Xdmf reader now supports time-varying grid count via top-level
+      &lt;Information Name="TimeVaryingMetaData" Value="True"/&gt; node in the xdmf file.</li>
+
 </ul>
 
 <a name="Dev_changes"></a>
@@ -45,6 +49,8 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Updated masonry to build adios2 for OSX.</li>
   <li>Fixed building plugins against a VisIt install for OSX.</li>
   <li>Fixed xmledit failure due to missing QT cocoa plugin.</li>
+  <li>Fixed the libxml2 image not found error when loading the uintah database.</li>
+  <li>PySide was removed from build_visit until we get a newer version working with VisIt.</li>
 </ul>
 
 <p>Click the following link to view the release notes for the previous version
