@@ -126,6 +126,9 @@ function bv_uintah_dry_run
 # Kevin Griffin, Mon Nov 24 12:33:02 PST 2014                                  #
 # Changed the -showme:compile to -show for OS X Mavericks. The -showme:compile #
 # was being reported as an invalid option.                                     #
+#                                                                              #
+# Kevin Griffin, Wed Aug 28 10:25:30 PDT 2019                                  #
+# Added the --with-libxml2 option to ensure that the /usr/lib/ version is used #
 # **************************************************************************** #
 
 function build_uintah
@@ -261,7 +264,8 @@ function build_uintah
 	--enable-minimal --enable-optimize \
 	--with-fortran=no --with-petsc=no --with-hypre=no \
 	--with-lapack=no --with-blas=no \
-        --with-mpi=\"$PAR_INCLUDE_DIR/..\" "
+        --with-mpi=\"$PAR_INCLUDE_DIR/..\" \ 
+        --with-libxml2=\"/usr\" "
 
         #        --with-mpi-include="${PAR_INCLUDE_DIR}/" \
         #        --with-mpi-lib="${PAR_INCLUDE_DIR}/../lib" "
@@ -276,7 +280,8 @@ function build_uintah
         --enable-minimal --enable-optimize \
 	--with-fortran=no --with-petsc=no --with-hypre=no \
 	--with-lapack=no --with-blas=no \
-        --with-mpi=\"$PAR_INCLUDE_DIR/..\" "
+        --with-mpi=\"$PAR_INCLUDE_DIR/..\" \
+        --with-libxml2=\"/usr\" "
 
         #        --with-mpi-include="${PAR_INCLUDE_DIR}/" \
         #        --with-mpi-lib="${PAR_INCLUDE_DIR}/../lib" "

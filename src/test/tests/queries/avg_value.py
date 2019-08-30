@@ -7,6 +7,11 @@
 #  Programmer: Hank Childs
 #  Date:       May 11, 2011
 #
+#  Modifications:
+#    Kathleen Biagas, Wed Aug 28 09:04:00 MST 2019
+#    Turn off cycling of colors for all Curve plot tests.  Set the colors
+#    individually to match current baseline results.
+#
 # ----------------------------------------------------------------------------
 
 TurnOffAllAnnotations()
@@ -40,9 +45,18 @@ Query("Average Value")
 t = GetQueryOutputString()
 TestText("avg_value_04", t)
 
+c = CurveAttributes()
+c.curveColorSource = c.Custom
+c.curveColor = (255, 0, 0, 255)
+SetDefaultPlotOptions(c)
+
 QueryOverTime("Average Value")
 SetActiveWindow(2)
 TurnOffAllAnnotations()
+c = CurveAttributes()
+c.curveColorSource = c.Custom
+c.curveColor = (255, 0, 0, 255)
+SetPlotOptions(c)
 Test("avg_value_05")
 
 Exit()

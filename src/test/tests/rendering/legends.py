@@ -172,7 +172,8 @@ def TestCurveLegend(a):
     # Test legend on
     AddPlot("Curve", "parabolic")
     curveAtts = CurveAttributes()
-    curveAtts.color = (255, 0, 0, 255)
+    curveAtts.curveColorSource = curveAtts.Custom
+    curveAtts.curveColor = (255, 0, 0, 255)
     curveAtts.lineWidth = 1
     SetPlotOptions(curveAtts)
     DrawPlots()
@@ -190,7 +191,7 @@ def TestCurveLegend(a):
     OpenDatabase(data_path("curve_test_data/c044.curve"))
 
     AddPlot("Curve", "parabolic")
-    curveAtts.color = (0, 255, 0, 255)
+    curveAtts.curveColor = (0, 255, 0, 255)
     curveAtts.lineWidth = 5
     SetPlotOptions(curveAtts)
     DrawPlots()
@@ -198,7 +199,7 @@ def TestCurveLegend(a):
     OpenDatabase(data_path("curve_test_data/c055.curve"))
 
     AddPlot("Curve", "parabolic")
-    curveAtts.color = (0, 0, 255, 255)
+    curveAtts.curveColor = (0, 0, 255, 255)
     curveAtts.lineWidth = 2
     SetPlotOptions(curveAtts)
     DrawPlots()
@@ -215,6 +216,9 @@ def TestCurveLegend(a):
     OpenDatabase(data_path("curve_test_data/distribution.ultra"))
 
     AddPlot("Curve", "Laplace Distribution")
+    curveAtts.curveColor = (0, 255, 255, 255)
+    curveAtts.lineWidth = 0
+    SetPlotOptions(curveAtts)
     DrawPlots()
     Test("legends_13")
     DeleteAllPlots()

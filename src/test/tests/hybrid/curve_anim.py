@@ -20,24 +20,29 @@
 #    Brad Whitlock, Wed Mar 9 09:15:30 PDT 2005
 #    Removed deprecated functions.
 #
+#    Kathleen Biagas, Wed Aug 28 09:04:00 MST 2019
+#    Turn off cycling of colors for all Curve plot tests.  Set the colors
+#    individually to match current baseline results.
+#
 # ----------------------------------------------------------------------------
 
 
 OpenDatabase(data_path("curve_test_data/curve.visit"))
 
-curv_atts = CurveAttributes()
+curveAtts = CurveAttributes()
+curveAtts.curveColorSource = curveAtts.Custom
 AddPlot("Curve", "flat") 
-curv_atts.color = (0, 255, 0, 255)
-SetPlotOptions(curv_atts)
+curveAtts.curveColor = (0, 255, 0, 255)
+SetPlotOptions(curveAtts)
 AddPlot("Curve", "going_up")
-curv_atts.color = (255, 0, 0, 255)
-SetPlotOptions(curv_atts)
+curveAtts.curveColor = (255, 0, 0, 255)
+SetPlotOptions(curveAtts)
 AddPlot("Curve", "going_down")
-curv_atts.color = (0, 0, 255, 255)
-SetPlotOptions(curv_atts)
+curveAtts.curveColor = (0, 0, 255, 255)
+SetPlotOptions(curveAtts)
 AddPlot("Curve", "parabolic")
-curv_atts.color = (0, 255, 255, 255)
-SetPlotOptions(curv_atts)
+curveAtts.curveColor = (0, 255, 255, 255)
+SetPlotOptions(curveAtts)
 
 SetTimeSliderState(40)
 DrawPlots()
@@ -63,8 +68,8 @@ Test("curve_anim5")
 
 SetTimeSliderState(5)
 AddPlot("Curve", "flat") 
-curv_atts.color = (0, 255, 0, 255)
-SetPlotOptions(curv_atts)
+curveAtts.curveColor = (0, 255, 0, 255)
+SetPlotOptions(curveAtts)
 DrawPlots()
 Test("curve_anim6")
 
