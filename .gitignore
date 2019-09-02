@@ -1,7 +1,5 @@
 *.pyc
 *.swp
-CMakeCache.txt
-CMakeFiles/
 build_branch_*/
 /data/*_test_data/
 /src/test/current/
