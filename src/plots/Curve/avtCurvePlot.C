@@ -355,6 +355,7 @@ avtCurvePlot::CustomizeBehavior(void)
 void
 avtCurvePlot::SetAtts(const AttributeGroup *a)
 {
+    static int colorIndex = 0;
     needsRecalculation =
         atts.ChangesRequireRecalculation(*(const CurveAttributes*)a);
     atts = *(const CurveAttributes*)a;
@@ -368,10 +369,11 @@ avtCurvePlot::SetAtts(const AttributeGroup *a)
                                static_cast<unsigned char>(bgColor[2]*255)};
         avtColorTables *ct = avtColorTables::Instance();
         if (! ct->GetJNDControlPointColor(ct->GetDefaultDiscreteColorTable(),
-                                          this->instanceIndex, bg, rgb))
-            ct->GetJNDControlPointColor("distinct", this->instanceIndex, bg, rgb);
+                                          colorIndex, bg, rgb))
+            ct->GetJNDControlPointColor("distinct", colorIndex, bg, rgb);
         double drgb[4] = {rgb[0]/255.0,rgb[1]/255.0,rgb[2]/255.0,255.0};
         std::copy(drgb,drgb+4,curveRgb);
+        colorIndex++;
     }
     else
     {
