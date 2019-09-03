@@ -15,7 +15,10 @@
 #   Kathleen Biagas, Mon Jul 13 20:09:58 PDT 2015
 #   Add Colleagues/avtText3DColleague.C
 #
-#****************************************************************************
+#   Eric Brugger, Fri Aug 30 11:07:45 PDT 2019
+#   Add OPENGL_INCLUDE_DIR to INCLUDE_DIRECTORIES.
+#
+#****************************************************************************/
 
 SET(COLLEAGUES_SOURCES
 Colleagues/VisWinAnnotations.C
@@ -135,6 +138,7 @@ ${VISIT_SOURCE_DIR}/avt/View
 ${VISIT_SOURCE_DIR}/visit_vtk/full
 ${VISIT_SOURCE_DIR}/visit_vtk/lightweight
 ${VTK_INCLUDE_DIRS}
+${OPENGL_INCLUDE_DIR}
 )
 
 # Add link directories
