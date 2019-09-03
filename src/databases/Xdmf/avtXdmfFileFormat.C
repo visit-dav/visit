@@ -154,7 +154,7 @@ bool
 avtXdmfFileFormat::HasInvariantMetaData() const
 {
    XdmfXmlNode infoElem = dom->FindElementByPath("/Xdmf/Information");
-   if (!strcmp(dom->Get(infoElem, "Name"), "TimeVaryingMetaData"))
+   if (infoElem && !strcmp(dom->Get(infoElem, "Name"), "TimeVaryingMetaData"))
    {
        if (!strcmp(dom->Get(infoElem, "Value"), "True"))
            return false;
