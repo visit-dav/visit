@@ -86,13 +86,6 @@ class DATABASE_API avtSTMDFileFormatInterface : public avtFileFormatInterface
     virtual std::string     CreateCacheNameIncludingSelections(std::string,
                                                                int, int);
 
-    //FIXME: Testing
-    virtual vtkDataArray  **GetTimeAndElementSpanVars(int,
-                                                      intVector,
-                                                      stringVector,
-                                                      int *,
-                                                      int);
-
     virtual void            GetCycles(intVector &);
     virtual void            GetTimes(doubleVector &);
 

@@ -435,38 +435,39 @@ avtFileFormatInterface::GetTimeAndElementSpanVars(int domain,
                                                   int *tsRange,
                                                   int stride)
 {
-    cerr << "INSIDE DEFAULT SPAN GETTER" << endl;//FIXME
 
-    //TODO: incorporate stride. 
     int startT     = tsRange[0];
     int stopT      = tsRange[1] + 1;
-    int spanSize   = (startT - stopT) / stride;
+    int spanSize   = (stopT - startT) / stride;
     int numElems   = elements.size();
     int numVars    = vars.size();
     int numArrays  = numElems * numVars;
 
     std::vector< std::vector<float> > results;
-    //results.reserve(spanSize);
+    results.reserve(spanSize);
 
-    
+    //
+    // Iterate over the requested time states and retrieve the requested vars
+    // and elements. 
+    //
     for (int ts = startT; ts < stopT; ts += stride)
     {
-        if (ts > stopT)
+        if (ts >= stopT)
         {
             break;
         }
     
-        cerr << "TS: " << ts << endl;
         floatVector varElRange;
-        //varElRange.reserve(numArrays);
+        varElRange.reserve(numArrays);
         
         for (stringVector::iterator varItr = vars.begin();
              varItr < vars.end(); ++varItr)
         {
             std::string curVar = *varItr; 
-            cerr << "VAR: " << curVar << endl;//FIXME
 
-            vtkFloatArray *allValues = (vtkFloatArray *) GetVar(ts, domain, curVar.c_str());
+            ActivateTimestep(ts);
+            vtkFloatArray *allValues = (vtkFloatArray *) 
+                GetVar(ts, domain, curVar.c_str());
 
             for (intVector::iterator elItr = elements.begin();
                  elItr < elements.end(); ++elItr)
@@ -487,7 +488,12 @@ avtFileFormatInterface::GetTimeAndElementSpanVars(int domain,
         spanArrays[i] = NULL;
     }
 
-    cerr << "MAX INDEX: " << numArrays << endl;//FIXME
+    //
+    // We now need to re-organize the data into the form needed 
+    // to produce curves. This is basically an array of variable
+    // element arrays that span over cycles/time:
+    // [ [c0_v0_e0, c1_v0_e0,...], [c0_v0_e1, c1_v0_e1, ...], ...]
+    //
     int spanArrIdx = 0;
     for (int v = 0; v < numVars; ++v) 
     {
@@ -500,11 +506,13 @@ avtFileFormatInterface::GetTimeAndElementSpanVars(int domain,
             vtkFloatArray *singleSpan = vtkFloatArray::New();
             singleSpan->SetNumberOfComponents(1);
             singleSpan->SetNumberOfTuples(spanSize);
-
             float *spanPtr = (float *) singleSpan->GetVoidPointer(0);
- 
+
             if (spanPtr == NULL)
-                cerr << "POINTER IS NULL" << endl;//FIXME
+            {
+                //TODO: should we report a warning here?
+                continue;
+            }
 
             for (int tIdx = 0; tIdx < spanSize; ++tIdx)
             {
