@@ -82,11 +82,11 @@ class avtMiliFileFormat : public avtMTMDFileFormat
                                        int, 
                                        const char *);
 
-    virtual vtkDataArray **GetTimeAndElementSpanVars(int,
-                                                     intVector,
-                                                     stringVector,
-                                                     int *,
-                                                     int);
+    virtual vtkDataArray **GetTimeSpanCurves(int,
+                                             stringVector,
+                                             intVector,
+                                             int *,
+                                             int);
 
     virtual void          PopulateDatabaseMetaData(avtDatabaseMetaData *, int);
 

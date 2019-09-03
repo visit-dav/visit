@@ -130,11 +130,11 @@ class PIPELINE_API avtOriginatingSource : virtual public avtQueryableSource
                                        void *args, avtContract_p,
                                        VoidRefList &);
 
-    virtual vtkDataArray         **FetchTimeAndElementSpanVars(int,
-                                                               intVector, 
-                                                               stringVector,
-                                                               int *,
-                                                               int);
+    virtual vtkDataArray         **FetchTimeSpanCurves(int,
+                                                       stringVector,
+                                                       intVector, 
+                                                       int *,
+                                                       int);
 
     virtual void                   FetchCycles(int, intVector &);
     virtual void                   FetchTimes(int, doubleVector &);

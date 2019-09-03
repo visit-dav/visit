@@ -209,22 +209,21 @@ class DATABASE_API avtFileFormatInterface
                                              const char *, void *, 
                                              DestructorFunction &) = 0;
 
-    virtual vtkDataArray  **GetTimeAndElementSpanVars(int,
-                                                      intVector,
-                                                      stringVector,
-                                                      int *,
-                                                      int);
-    virtual vtkDataArray  **GetDefaultTAESV(int,
-                                            intVector,
-                                            stringVector,
-                                            int *,
-                                            int);
-
-    virtual vtkDataArray  **GetPluginTAESV(int,
-                                           intVector,
-                                           stringVector,
-                                           int *,
-                                           int);
+    virtual vtkDataArray  **GetTimeSpanCurves(int,
+                                              stringVector,
+                                              intVector,
+                                              int *,
+                                              int);
+    virtual vtkDataArray  **GetTimeSpanCurvesDefault(int,
+                                                     stringVector,
+                                                     intVector,
+                                                     int *,
+                                                     int);
+    virtual vtkDataArray  **GetTimeSpanCurvesFromPlugin(int,
+                                                        stringVector,
+                                                        intVector,
+                                                        int *,
+                                                        int);
 
     virtual void            GetCycles(int, intVector &);
     virtual void            GetTimes(int, doubleVector &);

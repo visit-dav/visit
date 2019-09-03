@@ -419,7 +419,7 @@ avtFileFormatInterface::SetStrictMode(bool strictMode)
 
 
 // ****************************************************************************
-//  Method: avtFileFormatInterface::GetTimeAndElementSpanVars
+//  Method: avtFileFormatInterface::GetTimeSpanCurves
 //
 //  Purpose:
 //
@@ -429,11 +429,11 @@ avtFileFormatInterface::SetStrictMode(bool strictMode)
 // ****************************************************************************
 
 vtkDataArray **
-avtFileFormatInterface::GetTimeAndElementSpanVars(int domain,
-                                                  intVector elements,
-                                                  stringVector vars,
-                                                  int *tsRange,
-                                                  int stride)
+avtFileFormatInterface::GetTimeSpanCurves(int domain,
+                                          stringVector vars,
+                                          intVector elements,
+                                          int *tsRange,
+                                          int stride)
 {
     avtFileFormat *ff = GetFormat(0);
     bool canRetrieveFromPlugin = false;
@@ -445,25 +445,25 @@ avtFileFormatInterface::GetTimeAndElementSpanVars(int domain,
 
     if (canRetrieveFromPlugin)
     {
-        return GetPluginTAESV(domain,
-                              elements,
-                              vars,
-                              tsRange,
-                              stride);
+        return GetTimeSpanCurvesFromPlugin(domain,
+                                           vars,
+                                           elements,
+                                           tsRange,
+                                           stride);
     }
     else
     { 
-        return GetDefaultTAESV(domain,
-                               elements,
-                               vars,
-                               tsRange,
-                               stride);
+        return GetTimeSpanCurvesDefault(domain,
+                                        vars,
+                                        elements,
+                                        tsRange,
+                                        stride);
     }
 }
 
 
 // ****************************************************************************
-//  Method: avtFileFormatInterface::GetPluginTAESV
+//  Method: avtFileFormatInterface::GetTimeSpanCurvesFromPlugin
 //
 //  Purpose:
 //
@@ -473,19 +473,20 @@ avtFileFormatInterface::GetTimeAndElementSpanVars(int domain,
 // ****************************************************************************
 
 vtkDataArray **
-avtFileFormatInterface::GetPluginTAESV(int domain,
-                                       intVector elements,
-                                       stringVector vars,
-                                       int *tsRange,
-                                       int stride)
+avtFileFormatInterface::GetTimeSpanCurvesFromPlugin(int domain,
+                                                    stringVector vars,
+                                                    intVector elements,
+                                                    int *tsRange,
+                                                    int stride)
 {
-    debug1 << "Calling GetPluginTAESV, but it's not implemented..." << endl;
+    debug1 << "Calling GetTimeSpanCurvesFromPlugin, "
+           << "but it's not implemented..." << endl;
     return NULL; 
 }
 
 
 // ****************************************************************************
-//  Method: avtFileFormatInterface::GetDefaultTAESV
+//  Method: avtFileFormatInterface::GetTimeSpanCurvesDefault
 //
 //  Purpose:
 //
@@ -495,11 +496,11 @@ avtFileFormatInterface::GetPluginTAESV(int domain,
 // ****************************************************************************
 
 vtkDataArray **
-avtFileFormatInterface::GetDefaultTAESV(int domain,
-                                        intVector elements,
-                                        stringVector vars,
-                                        int *tsRange,
-                                        int stride)
+avtFileFormatInterface::GetTimeSpanCurvesDefault(int domain,
+                                                 stringVector vars,
+                                                 intVector elements,
+                                                 int *tsRange,
+                                                 int stride)
 {
     int startT     = tsRange[0];
     int stopT      = tsRange[1] + 1;
@@ -600,27 +601,41 @@ avtFileFormatInterface::GetDefaultTAESV(int domain,
 //  Method: avtFileFormatInterface::GetCycles
 //
 //  Purpose:
+//      Retrieve all available cycles (to be implemented by children).
 //
-//  Programmer: 
-//  Creation:   
+//  Arguments:
+//      unnamed int      Domain. 
+//      unnamed vector   Vector to store cycles. 
+//
+//  Programmer: Alister Maguire
+//  Creation:   Tue Sep  3 13:46:43 MST 2019 
 //
 // ****************************************************************************
 
 void
 avtFileFormatInterface::GetCycles(int, intVector &)
-{}
+{
+    debug2 << "Trying to retrieve cycles, but it's not implemented..." << endl;
+}
 
 
 // ****************************************************************************
 //  Method: avtFileFormatInterface::GetTimes
 //
 //  Purpose:
+//      Retrieve all available times (to be implemented by children).
 //
-//  Programmer: 
-//  Creation:   
+//  Arguments:
+//      unnamed int      Domain. 
+//      unnamed vector   Vector to store times. 
+//
+//  Programmer: Alister Maguire
+//  Creation:   Tue Sep  3 13:46:43 MST 2019 
 //
 // ****************************************************************************
 
 void
 avtFileFormatInterface::GetTimes(int, doubleVector &)
-{}
+{
+    debug2 << "Trying to retrieve times, but it's not implemented..." << endl;
+}

@@ -806,7 +806,7 @@ avtOriginatingSource::FetchArbitraryVTKObject(const char *name, int domain,
 
 //FIXME: testing
 // ****************************************************************************
-//  Method: avtOriginatingSource::FetchTimeAndElementSpanVars
+//  Method: avtOriginatingSource::FetchTimeSpanCurves
 //
 //  Purpose:
 //
@@ -816,13 +816,13 @@ avtOriginatingSource::FetchArbitraryVTKObject(const char *name, int domain,
 // ****************************************************************************
 
 vtkDataArray **
-avtOriginatingSource::FetchTimeAndElementSpanVars(int domain, 
-                                                  intVector elementIds,
-                                                  stringVector vars,
-                                                  int *cycleRange,
-                                                  int stepSize)
+avtOriginatingSource::FetchTimeSpanCurves(int domain, 
+                                          stringVector vars,
+                                          intVector elementIds,
+                                          int *cycleRange,
+                                          int stepSize)
 {
-    debug1 << "Asked to fetch time and element spanning variables, " << endl;
+    debug1 << "Asked to fetch time span curves, " << endl;
     debug1 << "but don't know how to do that." << endl;
     return NULL;
 }

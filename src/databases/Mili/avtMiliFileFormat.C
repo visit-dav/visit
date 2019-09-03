@@ -225,7 +225,7 @@ avtMiliFileFormat::avtMiliFileFormat(const char *fpath)
     materials  = NULL;
 
     //
-    // GetTimeAndElementSpanVars has been implemented in 
+    // GetTimeSpanCurves has been implemented in 
     // this plugin. 
     //
     canRetrieveSpan = true;
@@ -2131,36 +2131,43 @@ avtMiliFileFormat::GetElementSetVar(int timestep,
 
 
 // ****************************************************************************
-//  Method:  avtMiliFileFormat::GetTimeAndElementSpanVars
+//  Method:  avtMiliFileFormat::GetTimeSpanCurves
 //
 //  Purpose:
+//      Retrieve time span curves for the requested variable/element pairs
+//      across the specified time range. 
 //
 //  Arguments:
+//      domain        The domain of interest. 
+//      vars          The variables to retrieve curves for.
+//      elementIds    The elements (zones/nodes) to retrieve curves for. 
+//      tsRange       The timestep range to retrieve curves for. 
+//      stride        The timestep stride.
 //
 //  Programmer:  Alister Maguire
-//  Creation:    
+//  Creation:    Tue Sep  3 13:46:43 MST 2019 
 //
 //  Modifications
 //
 // ****************************************************************************
 
 vtkDataArray **
-avtMiliFileFormat::GetTimeAndElementSpanVars(int domain, 
-                                             intVector elementIds,
-                                             stringVector vars,
-                                             int *cycleRange,
-                                             int stride)
+avtMiliFileFormat::GetTimeSpanCurves(int domain, 
+                                     stringVector vars,
+                                     intVector elementIds,
+                                     int *tsRange,
+                                     int stride)
 {
     //TODO: throw errors if received odd values. 
     int startC = 0;
     int stopC  = nTimesteps;
-    if (cycleRange[0] > 0 && cycleRange[0] < nTimesteps)
+    if (tsRange[0] > 0 && tsRange[0] < nTimesteps)
     {
-        startC = cycleRange[0];
+        startC = tsRange[0];
     }
-    if (cycleRange[1] > 0 && cycleRange[1] <= nTimesteps)
+    if (tsRange[1] > 0 && tsRange[1] <= nTimesteps)
     {
-        stopC = cycleRange[1] + 1;
+        stopC = tsRange[1] + 1;
     }
 
      //TODO incorporate stride. 
@@ -2206,7 +2213,9 @@ avtMiliFileFormat::GetTimeAndElementSpanVars(int domain,
 
                 if (varMD == NULL)
                 {
-                    cerr << "\nTRUE EXCEPTION" << endl;
+                    //
+                    // This is truly an unknown variable. 
+                    //
                     EXCEPTION1(InvalidVariableException, varPath);
                 }
 

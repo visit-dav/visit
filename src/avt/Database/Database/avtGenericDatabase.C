@@ -3408,7 +3408,7 @@ avtGenericDatabase::GetAuxiliaryData(avtDataRequest_p spec,
 
 
 // ****************************************************************************
-//  Method: avtGenericDatabase::GetTimeAndElementSpanVars
+//  Method: avtGenericDatabase::GetTimeSpanCurves
 //
 //  Purpose:
 //
@@ -3420,14 +3420,14 @@ avtGenericDatabase::GetAuxiliaryData(avtDataRequest_p spec,
 // ****************************************************************************
 
 vtkDataArray **
-avtGenericDatabase::GetTimeAndElementSpanVars(int domain,
-                                              intVector elements,
-                                              stringVector vars,
-                                              int *tsRange,
-                                              int stride)
+avtGenericDatabase::GetTimeSpanCurves(int domain,
+                                      stringVector vars,
+                                      intVector elements,
+                                      int *tsRange,
+                                      int stride)
 {
     vtkDataArray **spanArray = Interface->
-        GetTimeAndElementSpanVars(domain, elements, vars, tsRange, stride);
+        GetTimeSpanCurves(domain, vars, elements, tsRange, stride);
 
     return spanArray;
 }

@@ -631,9 +631,8 @@ avtSourceFromDatabase::GetDomainName(const std::string &var, const int ts,
 }
 
 
-//FIXME: testing
 // ****************************************************************************
-//  Method: avtSourceFromDatabase::FetchTimeAndElementSpanVars
+//  Method: avtSourceFromDatabase::FetchTimeSpanCurves
 //
 //  Purpose:
 //
@@ -645,17 +644,17 @@ avtSourceFromDatabase::GetDomainName(const std::string &var, const int ts,
 // ****************************************************************************
 
 vtkDataArray **
-avtSourceFromDatabase::FetchTimeAndElementSpanVars(int domain, 
-                                                   intVector elements,
-                                                   stringVector vars,
-                                                   int *tsRange,
-                                                   int stepSize)
+avtSourceFromDatabase::FetchTimeSpanCurves(int domain, 
+                                           stringVector vars,
+                                           intVector elements,
+                                           int *tsRange,
+                                           int stepSize)
 {
-    return database->GetTimeAndElementSpanVars(domain, 
-                                               elements,
-                                               vars,
-                                               tsRange,
-                                               stepSize);
+    return database->GetTimeSpanCurves(domain, 
+                                       vars,
+                                       elements,
+                                       tsRange,
+                                       stepSize);
 }
 
 

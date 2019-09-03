@@ -161,11 +161,11 @@ class DATABASE_API avtFileFormat
                             { resultMustBeProducedOnlyOnThisProcessor = b; };
 
     virtual vtkDataArray 
-                        **GetTimeAndElementSpanVars(int,
-                                                    intVector,
-                                                    stringVector,
-                                                    int *,
-                                                    int);
+                        **GetTimeSpanCurves(int,
+                                            stringVector,
+                                            intVector,
+                                            int *,
+                                            int);
 
     //
     // MCM-07Apr05: Below this line, a new design pattern is being introduced

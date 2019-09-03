@@ -338,11 +338,11 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
                                                 const char *type, void *args);
     virtual avtDataTree_p      GetOutput(avtDataRequest_p,
                                          avtSourceFromDatabase *);
-    virtual vtkDataArray     **GetTimeAndElementSpanVars(int, 
-                                                         intVector,
-                                                         stringVector,
-                                                         int *,
-                                                         int);
+    virtual vtkDataArray     **GetTimeSpanCurves(int, 
+                                                 stringVector,
+                                                 intVector,
+                                                 int *,
+                                                 int);
 
     void                       GetCycles(int, intVector &);
     void                       GetTimes(int, doubleVector &);

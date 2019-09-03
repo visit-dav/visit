@@ -581,7 +581,7 @@ avtDatabase::GetOutput(const char *var, int ts)
 
 
 // ****************************************************************************
-//  Method: avtDatabase::GetTimeAndElementSpanVar
+//  Method: avtDatabase::GetTimeSpanCurves
 //
 //  Purpose:
 //
@@ -597,11 +597,11 @@ avtDatabase::GetOutput(const char *var, int ts)
 // ****************************************************************************
 
 vtkDataArray **
-avtDatabase::GetTimeAndElementSpanVars(int domain,
-                                       intVector elements, 
-                                       stringVector vars,
-                                       int *tsRange, 
-                                       int stepSize)
+avtDatabase::GetTimeSpanCurves(int domain,
+                               stringVector vars,
+                               intVector elements, 
+                               int *tsRange, 
+                               int stepSize)
 {
     //TODO: add debugging info here. 
     return NULL;

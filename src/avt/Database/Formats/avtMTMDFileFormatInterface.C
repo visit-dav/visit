@@ -747,7 +747,7 @@ avtMTMDFileFormatInterface::GenerateTimestepCounts()
 
 
 // ****************************************************************************
-//  Method: avtMTMDFileFormatInterface::GetTimeAndElementSpanVars
+//  Method: avtMTMDFileFormatInterface::GetTimeSpanCurvesFromPlugin
 //
 //  Purpose:
 //
@@ -763,11 +763,11 @@ avtMTMDFileFormatInterface::GenerateTimestepCounts()
 // ****************************************************************************
 
 vtkDataArray **
-avtMTMDFileFormatInterface::GetPluginTAESV(int domain,
-                                           intVector elements,
-                                           stringVector vars,
-                                           int *tsRange,
-                                           int stride)
+avtMTMDFileFormatInterface::GetTimeSpanCurvesFromPlugin(int domain,
+                                                        stringVector vars,
+                                                        intVector elements,
+                                                        int *tsRange,
+                                                        int stride)
 {
     if (nTimestepGroups == 1)
     {
@@ -777,11 +777,11 @@ avtMTMDFileFormatInterface::GetPluginTAESV(int domain,
         localRange[0] = GetTimestepWithinGroup(tsRange[0]);
         localRange[1] = GetTimestepWithinGroup(tsRange[1]);
 
-         return chunks[tsGroup]->GetTimeAndElementSpanVars(domain,
-                                                          elements, 
-                                                          vars,
-                                                          localRange,
-                                                          stride);
+         return chunks[tsGroup]->GetTimeSpanCurves(domain,
+                                                   vars,
+                                                   elements, 
+                                                   localRange,
+                                                   stride);
     }
     else
     {
@@ -828,7 +828,7 @@ avtMTMDFileFormatInterface::GetPluginTAESV(int domain,
             {
                 char dbMsg[256];
                 sprintf(dbMsg, "MTMD Error: the time groups "
-                    "are not matching up inside GetTimeAndElementSpanVars!");
+                    "are not matching up inside GetTimeSpanCurvesFromPlugin!");
                 debug1 << dbMsg << endl;
 
                 char exMsg[156];
@@ -839,11 +839,11 @@ avtMTMDFileFormatInterface::GetPluginTAESV(int domain,
             int gRange[] = {startLTS, endLTS}; 
 
             vtkFloatArray **group = (vtkFloatArray **)
-               (chunks[curG]->GetTimeAndElementSpanVars(domain,
-                                                        elements, 
-                                                        vars,
-                                                        gRange,
-                                                        stride));
+               (chunks[curG]->GetTimeSpanCurves(domain,
+                                                vars,
+                                                elements, 
+                                                gRange,
+                                                stride));
 
             gSpans.push_back(group); 
             startTS = endTS + 1;
@@ -908,7 +908,7 @@ avtMTMDFileFormatInterface::GetPluginTAESV(int domain,
                 {
                     char dbMsg[256];
                     sprintf(dbMsg, "MTMD Error: unable to retrieve all "
-                        "timesteps needed for GetTimeAndElementSpanVar");
+                        "timesteps needed for GetTimeSpanCurves");
                     debug1 << dbMsg << endl;
 
                     char exMsg[156];

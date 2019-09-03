@@ -243,7 +243,7 @@ avtFileFormat::SetCache(avtVariableCache *c)
 
 
 // ****************************************************************************
-//  Method:  avtFileFormat::GetTimeAndElementSpanVars
+//  Method:  avtFileFormat::GetTimeSpanCurves
 //
 //  Purpose:
 //
@@ -257,13 +257,13 @@ avtFileFormat::SetCache(avtVariableCache *c)
 // ****************************************************************************
 
 vtkDataArray **
-avtFileFormat::GetTimeAndElementSpanVars(int domain,
-                                         intVector elementIds,
-                                         stringVector vars,
-                                         int *cycleRange,
-                                         int stride)
+avtFileFormat::GetTimeSpanCurves(int domain,
+                                 stringVector vars,
+                                 intVector elementIds,
+                                 int *cycleRange,
+                                 int stride)
 {
-    debug1 << "Called GetTimeAndElementSpanVars on " << GetType() 
+    debug1 << "Called GetTimeSpanCurves on " << GetType() 
            << "but didn't define how to do that." << endl;
 
     return NULL;

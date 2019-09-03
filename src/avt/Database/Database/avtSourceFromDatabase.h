@@ -150,11 +150,11 @@ class DATABASE_API avtSourceFromDatabase : public avtOriginatingDatasetSource
                             const int, std::string &);
 
     virtual vtkDataArray **
-                        FetchTimeAndElementSpanVars(int,
-                                                    intVector,
-                                                    stringVector,
-                                                    int *,
-                                                    int);
+                        FetchTimeSpanCurves(int,
+                                            stringVector,
+                                            intVector,
+                                            int *,
+                                            int);
 
     void                FetchCycles(int, intVector &);
     void                FetchTimes(int, doubleVector &);

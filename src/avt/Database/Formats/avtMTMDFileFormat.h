@@ -85,13 +85,6 @@ class DATABASE_API avtMTMDFileFormat : public avtFileFormat
     virtual vtkDataArray  *GetVar(int, int, const char *) = 0;
     virtual vtkDataArray  *GetVectorVar(int, int, const char *);
 
-    //FIXME:  
-    virtual vtkDataArray  **GetTimeAndElementSpanVars(int,
-                                                      intVector,
-                                                      stringVector,
-                                                      int *,
-                                                      int) { return NULL; };
-
     virtual void           ActivateTimestep(int ts)
                                { avtFileFormat::ActivateTimestep(); };
     virtual bool           PopulateIOInformation(int ts, const std::string &meshname,
