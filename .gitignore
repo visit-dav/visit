@@ -1,5 +1,7 @@
 *.pyc
 *.swp
+build_branch_*/
+/data/*_test_data/
 /src/test/current/
 /src/test/diff/
 /src/test/html/

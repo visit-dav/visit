@@ -110,15 +110,14 @@ do
    echo "The VisIt executable $property"                  >> $output
    echo ""                                                >> $output
    $cmd INSTALL_NOTES                                     >> $output
-#  $cmd VisIt-$version.dmg                                >> $output
-   $cmd VisIt-$version-10.13.dmg                          >> $output
    $cmd jvisit$version.tar.gz                             >> $output
    $cmd visit-install$version2                            >> $output
-   $cmd visit${version}_x64.exe                           >> $output
-#  $cmd visit$version2.darwin-x86_64.tar.gz               >> $output
-   $cmd visit${version2}-10.13.darwin-x86_64.tar.gz       >> $output
-#  $cmd visit$version2.linux-x86_64-ubuntu18.tar.gz       >> $output
-#  $cmd visit$version2.linux-x86_64-ubuntu18-wmesa.tar.gz >> $output
+   $cmd visit$version2.windows-x86_64.exe                 >> $output
+   $cmd visit$version2.darwin-x86_64-10_13.dmg            >> $output
+   $cmd visit$version2.darwin-x86_64-10_13.tar.gz         >> $output
+   $cmd visit$version2.linux-x86_64-ubuntu18.tar.gz       >> $output
+   $cmd visit$version2.linux-x86_64-debian9.tar.gz        >> $output
+   $cmd visit$version2.linux-x86_64-fedora27.tar.gz       >> $output
    $cmd visit$version2.linux-x86_64-rhel7.tar.gz          >> $output
    $cmd visit$version2.linux-x86_64-rhel7-wmesa.tar.gz    >> $output
 
