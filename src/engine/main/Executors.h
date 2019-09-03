@@ -1203,30 +1203,6 @@ EngineRPCExecutor<QueryRPC>::Execute(QueryRPC *rpc)
                                Engine::EngineInitializeProgressCallback, NULL);
 }
 
-//FIXME: testing
-template<>
-void
-EngineRPCExecutor<DBQueryOverTimeRPC>::Execute(DBQueryOverTimeRPC *rpc)
-{
-    NetworkManager *netmgr = GetEngine()->GetNetMgr();
-
-    debug2 << "Executing DBQueryOverTimeRPC: " << rpc->GetID() << endl;
-    TRY
-    {
-        cerr << "ADDING DIRECT DB QOT FROM RPC" << endl;//FIXME
-        if (rpc->GetQueryOverTimeAtts() != NULL)
-        {
-            netmgr->AddDirectDBQueryOverTimeFilter(rpc->GetQueryOverTimeAtts(), rpc->GetID());
-        }
-        rpc->SendReply();
-    }
-    CATCH2(VisItException, e)
-    {
-        netmgr->CancelNetwork();
-        rpc->SendError(e.Message(), e.GetExceptionType());
-    }
-    ENDTRY
-}
 
 // ****************************************************************************
 //  Method: EngineRPCExecutor<QueryParametersRPC>::Execute

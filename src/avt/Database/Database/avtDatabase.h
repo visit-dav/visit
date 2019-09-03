@@ -308,8 +308,8 @@ class DATABASE_API avtDatabase
                                                           int *,
                                                           int);
 
-    virtual void                GetCycles(intVector &) {};
-    virtual void                GetTimes(doubleVector &) {};
+    virtual void                GetCycles(int, intVector &) {};
+    virtual void                GetTimes(int, doubleVector &) {};
 
     avtDatabaseMetaData        *GetMetaData(int stateIndex,
                                     bool forceReadAllCyclesTimes = false,

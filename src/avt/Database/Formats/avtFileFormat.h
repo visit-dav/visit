@@ -160,6 +160,13 @@ class DATABASE_API avtFileFormat
     void                  SetResultMustBeProducedOnlyOnThisProcessor(bool b)
                             { resultMustBeProducedOnlyOnThisProcessor = b; };
 
+    virtual vtkDataArray 
+                        **GetTimeAndElementSpanVars(int,
+                                                    intVector,
+                                                    stringVector,
+                                                    int *,
+                                                    int);
+
     //
     // MCM-07Apr05: Below this line, a new design pattern is being introduced
     // in order to make a more uniform interface boundary between format
@@ -189,6 +196,9 @@ class DATABASE_API avtFileFormat
     double                FormatGetTimeFromFilename(const char *f) const
                               { return GetTimeFromFilename(f); };
 
+    bool                  FormatCanRetrieveSpan(void) 
+                              { return CanRetrieveSpan(); };
+
     static const int      FORMAT_INVALID_CYCLE;
     static const double   FORMAT_INVALID_TIME;
 
@@ -217,6 +227,12 @@ class DATABASE_API avtFileFormat
     // This data member is for file formats that do their 
     // own domain decomposition.
     bool                  resultMustBeProducedOnlyOnThisProcessor;
+
+    // This let's the interface know if GetTimeAndElementSpanVars is
+    // implemented at the plugin level. 
+    bool                  canRetrieveSpan;
+    bool                  CanRetrieveSpan()
+                              { return canRetrieveSpan; };
 
     //
     // These cannot be const because the format might have to do real work

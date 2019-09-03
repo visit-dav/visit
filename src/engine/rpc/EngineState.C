@@ -19,7 +19,6 @@ EngineState::EngineState()
     objVector.push_back(&executeRPC);
     objVector.push_back(&clearCacheRPC);
     objVector.push_back(&queryRPC);
-    objVector.push_back(&DBQueryOverTimeRPC);
     objVector.push_back(&queryParametersRPC);
     objVector.push_back(&releaseDataRPC);
     objVector.push_back(&openDatabaseRPC);

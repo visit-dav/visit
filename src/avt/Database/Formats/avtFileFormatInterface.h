@@ -209,15 +209,25 @@ class DATABASE_API avtFileFormatInterface
                                              const char *, void *, 
                                              DestructorFunction &) = 0;
 
-    //FIXME: Testing
     virtual vtkDataArray  **GetTimeAndElementSpanVars(int,
                                                       intVector,
                                                       stringVector,
                                                       int *,
                                                       int);
+    virtual vtkDataArray  **GetDefaultTAESV(int,
+                                            intVector,
+                                            stringVector,
+                                            int *,
+                                            int);
 
-    virtual void            GetCycles(intVector &);
-    virtual void            GetTimes(doubleVector &);
+    virtual vtkDataArray  **GetPluginTAESV(int,
+                                           intVector,
+                                           stringVector,
+                                           int *,
+                                           int);
+
+    virtual void            GetCycles(int, intVector &);
+    virtual void            GetTimes(int, doubleVector &);
 
     virtual const char     *GetFilename(int) = 0;
     virtual void            SetDatabaseMetaData(avtDatabaseMetaData *md,

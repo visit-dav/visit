@@ -839,7 +839,7 @@ avtOriginatingSource::FetchTimeAndElementSpanVars(int domain,
 // ****************************************************************************
 
 void
-avtOriginatingSource::FetchCycles(intVector &)
+avtOriginatingSource::FetchCycles(int, intVector &)
 {
     debug1 << "Asked to fetch cycles, " << endl;
     debug1 << "but don't know how to do that." << endl;
@@ -857,7 +857,7 @@ avtOriginatingSource::FetchCycles(intVector &)
 // ****************************************************************************
 
 void
-avtOriginatingSource::FetchTimes(doubleVector &)
+avtOriginatingSource::FetchTimes(int, doubleVector &)
 {
     debug1 << "Asked to fetch times, " << endl;
     debug1 << "but don't know how to do that." << endl;

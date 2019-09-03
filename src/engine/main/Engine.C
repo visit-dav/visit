@@ -1167,7 +1167,6 @@ Engine::SetUpViewerInterface(int *argc, char **argv[])
     rpcExecutors.push_back(new EngineRPCExecutor<ExecuteRPC>(&enginestate->GetExecuteRPC()));
     rpcExecutors.push_back(new EngineRPCExecutor<ClearCacheRPC>(&enginestate->GetClearCacheRPC()));
     rpcExecutors.push_back(new EngineRPCExecutor<QueryRPC>(&enginestate->GetQueryRPC()));
-    rpcExecutors.push_back(new EngineRPCExecutor<DBQueryOverTimeRPC>(&enginestate->GetDBQueryOverTimeRPC()));
     rpcExecutors.push_back(new EngineRPCExecutor<QueryParametersRPC>(&enginestate->GetQueryParametersRPC()));
     rpcExecutors.push_back(new EngineRPCExecutor<ReleaseDataRPC>(&enginestate->GetReleaseDataRPC()));
     rpcExecutors.push_back(new EngineRPCExecutor<OpenDatabaseRPC>(&enginestate->GetOpenDatabaseRPC()));

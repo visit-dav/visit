@@ -652,14 +652,19 @@ avtSTMDFileFormatInterface::PopulateIOInformation(int ts, const std::string &mes
 //  Method: avtSTMDFileFormatInterface::GetCycles
 //
 //  Purpose:
+//    Retrieve all available cycles. 
 //
-//  Programmer: 
-//  Creation:   
+//  Arguments:
+//    dom      Unused domain number. 
+//    cycles   The vector to store cycles into. 
+//
+//  Programmer: Alister Maguire
+//  Creation:   Tue Sep  3 13:16:07 MST 2019 
 //
 // ****************************************************************************
 
 void
-avtSTMDFileFormatInterface::GetCycles(intVector &cycles)
+avtSTMDFileFormatInterface::GetCycles(int dom, intVector &cycles)
 {
     for (int i = 0; i < nTimesteps; ++i)
     {
@@ -672,14 +677,19 @@ avtSTMDFileFormatInterface::GetCycles(intVector &cycles)
 //  Method: avtSTMDFileFormatInterface::GetTimes
 //
 //  Purpose:
+//    Retrieve all available times. 
 //
-//  Programmer: 
-//  Creation:   
+//  Arguments:
+//    dom      Unused domain number. 
+//    times    The vector to store times into. 
+//
+//  Programmer: Alister Maguire
+//  Creation:   Tue Sep  3 13:16:07 MST 2019 
 //
 // ****************************************************************************
 
 void
-avtSTMDFileFormatInterface::GetTimes(doubleVector &times)
+avtSTMDFileFormatInterface::GetTimes(int dom, doubleVector &times)
 {
     for (int i = 0; i < nTimesteps; ++i)
     {

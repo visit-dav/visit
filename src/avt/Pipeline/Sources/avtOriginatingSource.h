@@ -136,8 +136,8 @@ class PIPELINE_API avtOriginatingSource : virtual public avtQueryableSource
                                                                int *,
                                                                int);
 
-    virtual void                   FetchCycles(intVector &);
-    virtual void                   FetchTimes(doubleVector &);
+    virtual void                   FetchCycles(int, intVector &);
+    virtual void                   FetchTimes(int, doubleVector &);
 
     virtual vtkObject             *FetchArbitraryVTKObject(const char *name,
                                                            int dom, int ts,

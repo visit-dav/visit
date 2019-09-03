@@ -67,15 +67,14 @@ class DATABASE_API avtMTMDFileFormatInterface : public avtFileFormatInterface
                                              const char *type, void *args,
                                              DestructorFunction &);
 
-    //FIXME: testing 
-    virtual vtkDataArray  **GetTimeAndElementSpanVars(int,
-                                                      intVector,
-                                                      stringVector,
-                                                      int *,
-                                                      int);
+    virtual void            GetCycles(int, intVector &);
+    virtual void            GetTimes(int, doubleVector &);
 
-    virtual void            GetCycles(intVector &);
-    virtual void            GetTimes(doubleVector &);
+    virtual vtkDataArray  **GetPluginTAESV(int, 
+                                           intVector,
+                                           stringVector, 
+                                           int *, 
+                                           int);
 
     virtual std::string     CreateCacheNameIncludingSelections(std::string,
                                                                int, int);

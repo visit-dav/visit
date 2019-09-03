@@ -140,257 +140,6 @@ avtMTMDFileFormatInterface::GetVar(int ts, int dom, const char *var)
 
 
 // ****************************************************************************
-//  Method: avtMTMDFileFormatInterface::GetTimeAndElementSpanVars
-//
-//  Purpose:
-//
-//  Arguments:
-//
-//  Returns:    
-//
-//  Progrmamer: Alister Maguire
-//  Creation:   July 23, 2019
-//
-//  Modifications:
-//
-// ****************************************************************************
-//FIXME: we need to abstract this away so that non-mili types of MTMD use the 
-//       default version.
-
-vtkDataArray **
-avtMTMDFileFormatInterface::GetTimeAndElementSpanVars(int domain,
-                                                      intVector elements,
-                                                      stringVector vars,
-                                                      int *tsRange,
-                                                      int stride)
-{
-    if (nTimestepGroups == 1)
-    {
-        int localRange[2];
-
-        int tsGroup   = GetTimestepGroupForTimestep(tsRange[0]);
-        localRange[0] = GetTimestepWithinGroup(tsRange[0]);
-        localRange[1] = GetTimestepWithinGroup(tsRange[1]);
-
-        return chunks[tsGroup]->GetTimeAndElementSpanVars(domain,
-                                                          elements, 
-                                                          vars,
-                                                          localRange,
-                                                          stride);
-    }
-    else
-    {
-        //FIXME: how should we handle this?
-        int localRange[2];
-        int tsGroup[2];
-
-        tsGroup[0]     = GetTimestepGroupForTimestep(tsRange[0]);
-        tsGroup[1]     = GetTimestepGroupForTimestep(tsRange[1]);
-        localRange[0]  = GetTimestepWithinGroup(tsRange[0]);
-        localRange[1]  = GetTimestepWithinGroup(tsRange[1]);
-
-        int startTS    = tsRange[0];
-        int endTS      = tsRange[1];
-        int curG       = tsGroup[0];
-
-        int numSpans   = elements.size() * vars.size();
-        int numSGroups = 0;
-
-        vector<vtkFloatArray **> gSpans;
-
-        do
-        {
-            if (curG == tsGroup[1])
-            {
-                endTS = tsRange[1];
-            }
-            else
-            {
-                endTS = startTS + tsPerGroup[curG] - 1;
-            }
-            int startLTS = GetTimestepWithinGroup(startTS);
-            int endLTS   = GetTimestepWithinGroup(endTS);
-            int startG   = GetTimestepGroupForTimestep(startTS);
-            int endG     = GetTimestepGroupForTimestep(endTS);
-
-            if (startG != endG || startG != curG)
-            {
-                char dbMsg[256];
-                sprintf(dbMsg, "MTMD Error: the time groups "
-                    "are not matching up inside GetTimeAndElementSpanVars!");
-                debug1 << dbMsg << endl;
-
-                char exMsg[156];
-                sprintf(exMsg, "Invalid timestep groups!");
-                EXCEPTION1(ImproperUseException, exMsg);
-            }
-
-            int gRange[] = {startLTS, endLTS}; 
-
-            vtkFloatArray **group = (vtkFloatArray **)
-               (chunks[curG]->GetTimeAndElementSpanVars(domain,
-                                                        elements, 
-                                                        vars,
-                                                        gRange,
-                                                        stride));
-
-            gSpans.push_back(group); 
-
-            startTS = endTS + 1;
-            numSGroups++;
-        } while (curG != tsGroup[1]);
-
-        vtkFloatArray **fullResults = new vtkFloatArray *[numSpans];
-
-        vector<int> spanSizes(numSpans, 0);
-
-        for (int i = 0; i < numSGroups; ++i)
-        {
-            vtkFloatArray **group = gSpans[i];
-
-            for (int j = 0; j < numSpans; ++j)
-            {
-                vtkFloatArray *span = group[j];
-                spanSizes[j] += span->GetNumberOfTuples();
-            }
-        }
-
-        for (int i = 0; i < numSpans; ++i)
-        {
-            fullResults[i] = vtkFloatArray::New();
-            fullResults[i]->SetNumberOfComponents(1);
-            fullResults[i]->SetNumberOfTuples(spanSizes[i]);
-
-            if (fullResults[i] == NULL)
-            {
-                char dbMsg[256];
-                sprintf(dbMsg, "MTMD Error: unable to create result container.");
-                debug1 << dbMsg << endl;
-
-                char exMsg[156];
-                sprintf(exMsg, "Unable to retrieve requested timesteps");
-                EXCEPTION1(ImproperUseException, exMsg);
-            }
-        }
-
-        vector<int> resIdxs(numSpans, 0);
-
-        for (int i = 0; i < numSGroups; ++i)
-        {
-            vtkFloatArray **group = gSpans[i];
-
-            for (int j = 0; j < numSpans; ++j)
-            {
-                vtkFloatArray *span = group[j];
-
-                int numTuples  = span->GetNumberOfTuples();
-                float *spanPtr = (float *) span->GetVoidPointer(0); 
-
-                if (spanPtr == NULL)
-                {
-                    char dbMsg[256];
-                    sprintf(dbMsg, "MTMD Error: unable to retrieve all "
-                        "timesteps needed for GetTimeAndElementSpanVar");
-                    debug1 << dbMsg << endl;
-
-                    char exMsg[156];
-                    sprintf(exMsg, "Unable to retrieve all requested " 
-                        "timesteps");
-                    EXCEPTION1(ImproperUseException, exMsg);
-                }
-                
-                for (int k = 0; k < numTuples; ++k)
-                {
-                    fullResults[j]->InsertTuple1(resIdxs[j], spanPtr[k]);
-                    resIdxs[j] += 1;
-                }
-
-                span->Delete();
-                span = NULL; 
-            }
-
-            delete [] gSpans[i];
-            gSpans[i] = NULL;
-        }
-        
-        return (vtkDataArray **) fullResults;
-    }
-}
-
-
-// ****************************************************************************
-//  Method: avtMTMDFileFormatInterface::GetCycles
-//
-//  Purpose:
-//
-//  Programmer: 
-//  Creation:   
-//
-// ****************************************************************************
-
-void
-avtMTMDFileFormatInterface::GetCycles(intVector &cycles)
-{
-    if (nTimestepGroups == 1)
-    {
-        chunks[0]->FormatGetCycles(cycles); 
-    }
-    else
-    {
-        std::vector< std::vector<int> > groupVecs;
-
-        for (int i = 0; i < nTimestepGroups; ++i)
-        {
-            intVector singleGroup;
-            chunks[i]->FormatGetCycles(singleGroup);
-
-            for (intVector::iterator gItr = singleGroup.begin();
-                 gItr < singleGroup.end(); ++gItr)
-            {
-                cycles.push_back(*gItr);
-            }
-        }
-    }
-}
-
-
-// ****************************************************************************
-//  Method: avtMTMDFileFormatInterface::GetTimes
-//
-//  Purpose:
-//
-//  Programmer: 
-//  Creation:   
-//
-// ****************************************************************************
-
-void
-avtMTMDFileFormatInterface::GetTimes(doubleVector &times)
-{
-    if (nTimestepGroups == 1)
-    {
-        chunks[0]->FormatGetTimes(times); 
-    }
-    else
-    {
-        std::vector< std::vector<double> > groupVecs;
-
-        for (int i = 0; i < nTimestepGroups; ++i)
-        {
-            doubleVector singleGroup;
-            chunks[i]->FormatGetTimes(singleGroup);
-
-            for (doubleVector::iterator gItr = singleGroup.begin();
-                 gItr < singleGroup.end(); ++gItr)
-            {
-                times.push_back(*gItr);
-            }
-        }
-    }
-}
-
-
-// ****************************************************************************
 //  Method: avtMTMDFileFormatInterface::GetVectorVar
 //
 //  Purpose:
@@ -993,5 +742,277 @@ avtMTMDFileFormatInterface::GenerateTimestepCounts()
         int n = chunks[i]->GetNTimesteps();
         tsPerGroup.push_back(n);
         nTotalTimesteps += n;
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtMTMDFileFormatInterface::GetTimeAndElementSpanVars
+//
+//  Purpose:
+//
+//  Arguments:
+//
+//  Returns:    
+//
+//  Progrmamer: Alister Maguire
+//  Creation:   July 23, 2019
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+vtkDataArray **
+avtMTMDFileFormatInterface::GetPluginTAESV(int domain,
+                                           intVector elements,
+                                           stringVector vars,
+                                           int *tsRange,
+                                           int stride)
+{
+    if (nTimestepGroups == 1)
+    {
+        int localRange[2];
+
+        int tsGroup   = GetTimestepGroupForTimestep(tsRange[0]);
+        localRange[0] = GetTimestepWithinGroup(tsRange[0]);
+        localRange[1] = GetTimestepWithinGroup(tsRange[1]);
+
+         return chunks[tsGroup]->GetTimeAndElementSpanVars(domain,
+                                                          elements, 
+                                                          vars,
+                                                          localRange,
+                                                          stride);
+    }
+    else
+    {
+        //TODO: This needs more thorough testing. I've only been able
+        //      to test this using databases with a single group. 
+        int localRange[2];
+        int tsGroup[2];
+
+        tsGroup[0]     = GetTimestepGroupForTimestep(tsRange[0]);
+        tsGroup[1]     = GetTimestepGroupForTimestep(tsRange[1]);
+        localRange[0]  = GetTimestepWithinGroup(tsRange[0]);
+        localRange[1]  = GetTimestepWithinGroup(tsRange[1]);
+
+        int startTS    = tsRange[0];
+        int endTS      = tsRange[1];
+        int curG       = tsGroup[0];
+
+        int numSpans   = elements.size() * vars.size();
+        int numSGroups = 0;
+
+        vector<vtkFloatArray **> gSpans;
+
+        //
+        // We need to determine if our timestep range spans 
+        // multiple groups. If so, we need to extract the 
+        // spans from each group and later combine them. 
+        //
+        do
+        {
+            if (curG == tsGroup[1])
+            {
+                endTS = tsRange[1];
+            }
+            else
+            {
+                endTS = startTS + tsPerGroup[curG] - 1;
+            }
+            int startLTS = GetTimestepWithinGroup(startTS);
+            int endLTS   = GetTimestepWithinGroup(endTS);
+            int startG   = GetTimestepGroupForTimestep(startTS);
+            int endG     = GetTimestepGroupForTimestep(endTS);
+
+            if (startG != endG || startG != curG)
+            {
+                char dbMsg[256];
+                sprintf(dbMsg, "MTMD Error: the time groups "
+                    "are not matching up inside GetTimeAndElementSpanVars!");
+                debug1 << dbMsg << endl;
+
+                char exMsg[156];
+                sprintf(exMsg, "Invalid timestep groups!");
+                EXCEPTION1(ImproperUseException, exMsg);
+            }
+
+            int gRange[] = {startLTS, endLTS}; 
+
+            vtkFloatArray **group = (vtkFloatArray **)
+               (chunks[curG]->GetTimeAndElementSpanVars(domain,
+                                                        elements, 
+                                                        vars,
+                                                        gRange,
+                                                        stride));
+
+            gSpans.push_back(group); 
+            startTS = endTS + 1;
+            numSGroups++;
+        } while (curG != tsGroup[1]);
+
+        //
+        // Initialize our return container and count the total sizes
+        // of our collected spans (the sum across each group). 
+        //
+        vtkFloatArray **fullResults = new vtkFloatArray *[numSpans];
+
+        vector<int> spanSizes(numSpans, 0);
+
+        for (int i = 0; i < numSGroups; ++i)
+        {
+            vtkFloatArray **group = gSpans[i];
+
+            for (int j = 0; j < numSpans; ++j)
+            {
+                vtkFloatArray *span = group[j];
+                spanSizes[j] += span->GetNumberOfTuples();
+            }
+        }
+
+        for (int i = 0; i < numSpans; ++i)
+        {
+            fullResults[i] = vtkFloatArray::New();
+            fullResults[i]->SetNumberOfComponents(1);
+            fullResults[i]->SetNumberOfTuples(spanSizes[i]);
+
+            if (fullResults[i] == NULL)
+            {
+                char dbMsg[256];
+                sprintf(dbMsg, "MTMD Error: unable to create result container.");
+                debug1 << dbMsg << endl;
+
+                char exMsg[156];
+                sprintf(exMsg, "Unable to retrieve requested timesteps");
+                EXCEPTION1(ImproperUseException, exMsg);
+            }
+        }
+
+        //
+        // We now need to merge the j'th span of every group so that we
+        // end up with contiguous curves. 
+        //
+        vector<int> resIdxs(numSpans, 0);
+
+        for (int i = 0; i < numSGroups; ++i)
+        {
+            vtkFloatArray **group = gSpans[i];
+
+            for (int j = 0; j < numSpans; ++j)
+            {
+                vtkFloatArray *span = group[j];
+
+                int numTuples  = span->GetNumberOfTuples();
+                float *spanPtr = (float *) span->GetVoidPointer(0); 
+
+                if (spanPtr == NULL)
+                {
+                    char dbMsg[256];
+                    sprintf(dbMsg, "MTMD Error: unable to retrieve all "
+                        "timesteps needed for GetTimeAndElementSpanVar");
+                    debug1 << dbMsg << endl;
+
+                    char exMsg[156];
+                    sprintf(exMsg, "Unable to retrieve all requested " 
+                        "timesteps");
+                    EXCEPTION1(ImproperUseException, exMsg);
+                }
+
+                for (int k = 0; k < numTuples; ++k)
+                {
+                    fullResults[j]->InsertTuple1(resIdxs[j], spanPtr[k]);
+                    resIdxs[j] += 1;
+                }
+
+                span->Delete();
+                span = NULL; 
+            }
+
+            delete [] gSpans[i];
+            gSpans[i] = NULL;
+        }
+
+        return (vtkDataArray **) fullResults;
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtMTMDFileFormatInterface::GetCycles
+//
+//  Purpose:
+//      Retrieve all available cycles.
+//
+//  Arguments:
+//    dom       Unused domain number. 
+//    cycles    The vector to store the retrieved cycles in. 
+//
+//  Programmer: Alister Maguire
+//  Creation:   Tue Sep  3 13:16:07 MST 2019 
+//
+// ****************************************************************************
+
+void
+avtMTMDFileFormatInterface::GetCycles(int dom, intVector &cycles)
+{
+    if (nTimestepGroups == 1)
+    {
+        chunks[0]->FormatGetCycles(cycles); 
+    }
+    else
+    {
+        std::vector< std::vector<int> > groupVecs;
+
+        for (int i = 0; i < nTimestepGroups; ++i)
+        {
+            intVector singleGroup;
+            chunks[i]->FormatGetCycles(singleGroup);
+
+            for (intVector::iterator gItr = singleGroup.begin();
+                 gItr < singleGroup.end(); ++gItr)
+            {
+                cycles.push_back(*gItr);
+            }
+        }
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtMTMDFileFormatInterface::GetTimes
+//
+//  Purpose:
+//      Retrieve all available times.
+//
+//  Arguments:
+//    dom       Unused domain number. 
+//    times     The vector to store the retrieved times in. 
+//
+//  Programmer: Alister Maguire
+//  Creation:   Tue Sep  3 13:16:07 MST 2019 
+//
+// ****************************************************************************
+
+void
+avtMTMDFileFormatInterface::GetTimes(int dom, doubleVector &times)
+{
+    if (nTimestepGroups == 1)
+    {
+        chunks[0]->FormatGetTimes(times); 
+    }
+    else
+    {
+        std::vector< std::vector<double> > groupVecs;
+
+        for (int i = 0; i < nTimestepGroups; ++i)
+        {
+            doubleVector singleGroup;
+            chunks[i]->FormatGetTimes(singleGroup);
+
+            for (doubleVector::iterator gItr = singleGroup.begin();
+                 gItr < singleGroup.end(); ++gItr)
+            {
+                times.push_back(*gItr);
+            }
+        }
     }
 }

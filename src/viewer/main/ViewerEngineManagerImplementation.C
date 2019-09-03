@@ -2408,16 +2408,6 @@ ViewerEngineManagerImplementation::Query(const EngineKey &ek,
     ENGINE_PROXY_RPC_END_NORESTART_RETHROW2;
 }
 
-//FIXME: testing
-bool
-ViewerEngineManagerImplementation::DBQueryOverTime(const EngineKey &ek, 
-                                                         int nid,
-                                          const QueryOverTimeAttributes *qatts)
-{
-    ENGINE_PROXY_RPC_BEGIN("DBQueryOverTime");
-    engine->GetEngineMethods()->DBQueryOverTime(nid, qatts);
-    ENGINE_PROXY_RPC_END_NORESTART_RETHROW2;
-}
 
 // ****************************************************************************
 // Method: ViewerEngineManagerImplementation::GetQueryParameters

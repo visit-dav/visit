@@ -77,6 +77,7 @@ avtFileFormat::avtFileFormat()
     closingFile = false;
     resultMustBeProducedOnlyOnThisProcessor = false;
     strictMode = false;
+    canRetrieveSpan = false;
 }
 
 
@@ -238,6 +239,34 @@ void
 avtFileFormat::SetCache(avtVariableCache *c)
 {
     cache = c;
+}
+
+
+// ****************************************************************************
+//  Method:  avtFileFormat::GetTimeAndElementSpanVars
+//
+//  Purpose:
+//
+//  Arguments:
+//
+//  Programmer:  Alister Maguire
+//  Creation:    
+//
+//  Modifications
+//
+// ****************************************************************************
+
+vtkDataArray **
+avtFileFormat::GetTimeAndElementSpanVars(int domain,
+                                         intVector elementIds,
+                                         stringVector vars,
+                                         int *cycleRange,
+                                         int stride)
+{
+    debug1 << "Called GetTimeAndElementSpanVars on " << GetType() 
+           << "but didn't define how to do that." << endl;
+
+    return NULL;
 }
 
 

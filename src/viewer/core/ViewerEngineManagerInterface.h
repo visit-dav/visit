@@ -180,11 +180,6 @@ public:
                        const QueryAttributes *atts,
                        QueryAttributes &retAtts) = 0;
 
-    //FIXME: testing
-    virtual bool DBQueryOverTime(const EngineKey &ek,
-                                 int id, 
-                                 const QueryOverTimeAttributes *qatts) = 0; 
-
     virtual bool GetQueryParameters(const EngineKey &ek,
                                     const std::string &qname,
                                     std::string *params) = 0;

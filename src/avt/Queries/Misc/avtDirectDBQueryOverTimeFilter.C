@@ -159,6 +159,7 @@ avtDirectDBQueryOverTimeFilter::Create(const AttributeGroup *atts)
 void
 avtDirectDBQueryOverTimeFilter::Execute(void)
 {
+    //TODO: delete curves after they're used. 
     cerr << "EXECUTING DB QOT" << endl;//FIXME
     //
     // The real output will be created after all time steps have completed,
@@ -187,20 +188,25 @@ avtDirectDBQueryOverTimeFilter::Execute(void)
     
     PickAttributes pAtts = atts.GetPickAtts();
     MapNode timeOpts     = pAtts.GetTimeOptions();
+    int domain           = pAtts.GetDomain();
+  
+    //
+    // The domain appears to default to -1 when not using a
+    // multi-domain dataset. Change it to 0.  
+    //
+    if (domain < 0)
+    {
+        domain = 0;
+    }
 
     intVector elements;
     elements.push_back(pAtts.GetElementNumber()); 
 
     stringVector vars = atts.GetQueryAtts().GetVariables(); 
 
-    int startT = atts.GetStartTime();
-    int stopT  = atts.GetEndTime();
-    int stride = atts.GetStride();
-
-    cerr << "\nSTART: " << startT << endl;
-    cerr << "STOP: " << stopT << endl;
-    cerr << "STRIDE: " << stride << endl;
-
+    int startT    = atts.GetStartTime();
+    int stopT     = atts.GetEndTime();
+    int stride    = atts.GetStride();
     int tsRange[] = {startT, stopT};
 
     cerr << "\nSTARTING TIME SPAN FILTER TIMING: " << endl;
@@ -224,7 +230,7 @@ avtDirectDBQueryOverTimeFilter::Execute(void)
             case QueryOverTimeAttributes::Cycle: 
             {
                 intVector cycles;
-                origSource->FetchCycles(cycles);
+                origSource->FetchCycles(domain, cycles);
                 int curStep = startT;
 
                 for (int i = 0; i < numTuples; i++)
@@ -238,7 +244,7 @@ avtDirectDBQueryOverTimeFilter::Execute(void)
             case QueryOverTimeAttributes::DTime: 
             {
                 doubleVector simTimes;
-                origSource->FetchTimes(simTimes);
+                origSource->FetchTimes(domain, simTimes);
                 int curStep = startT;
 
                 for (int i = 0; i < numTuples; i++)
@@ -262,30 +268,6 @@ avtDirectDBQueryOverTimeFilter::Execute(void)
                 break;
             } 
         }
-
-    ////
-    //// Store the necessary time value
-    ////
-    //if (useTimeForXAxis)
-    //{
-    //    double tval;
-    //    switch(atts.GetTimeType())
-    //    {
-    //    case QueryOverTimeAttributes::Cycle:
-    //        tval = (double) GetInput()->GetInfo().GetAttributes().GetCycle();
-    //        break;
-    //    case QueryOverTimeAttributes::DTime:
-    //        tval = GetInput()->GetInfo().GetAttributes().GetTime();
-    //        break;
-    //    case QueryOverTimeAttributes::Timestep:
-    //    default: // timestep
-    //        tval = (double)currentTime;
-    //        break;
-    //    }
-    //    times.push_back(tval);
-    //}
-
-
     }
     else
     {

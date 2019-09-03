@@ -58,29 +58,35 @@ typedef std::unordered_map<string, int> StrToIntMap;
 class avtMiliFileFormat : public avtMTMDFileFormat
 {
   public:
-                          avtMiliFileFormat(const char *);
+                           avtMiliFileFormat(const char *);
 
-    virtual              ~avtMiliFileFormat();
+    virtual               ~avtMiliFileFormat();
     
-    virtual const char   *GetType(void) { return "Mili File Format"; };
+    virtual const char    *GetType(void) { return "Mili File Format"; };
     
-    virtual void          GetCycles(intVector &);
+    virtual void           GetCycles(intVector &);
 
-    virtual void          GetTimes(doubleVector &);
+    virtual void           GetTimes(doubleVector &);
 
-    virtual int           GetNTimesteps(void);
+    virtual int            GetNTimesteps(void);
 
-    virtual vtkDataSet   *GetMesh(int, 
+    virtual vtkDataSet    *GetMesh(int, 
+                                   int, 
+                                   const char *); 
+
+    virtual vtkDataArray  *GetVar(int, 
                                   int, 
-                                  const char *); 
+                                  const char *);
 
-    virtual vtkDataArray *GetVar(int, 
-                                 int, 
-                                 const char *);
-
-    virtual vtkDataArray *GetVectorVar(int, 
+    virtual vtkDataArray  *GetVectorVar(int, 
                                        int, 
                                        const char *);
+
+    virtual vtkDataArray **GetTimeAndElementSpanVars(int,
+                                                     intVector,
+                                                     stringVector,
+                                                     int *,
+                                                     int);
 
     virtual void          PopulateDatabaseMetaData(avtDatabaseMetaData *, int);
 

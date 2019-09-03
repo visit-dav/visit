@@ -268,14 +268,6 @@ ViewerEngineManager::Query(const EngineKey &ek,
     return IMPL()->Query(ek, networkIds, atts, retAtts);
 }
 
-//FIXME: testing
-bool ViewerEngineManager::DBQueryOverTime(const EngineKey &ek,
-                                          int id, 
-                                          const QueryOverTimeAttributes *qatts)
-{
-    return IMPL()->DBQueryOverTime(ek, id, qatts);
-}
-
 bool
 ViewerEngineManager::GetQueryParameters(const EngineKey &ek,
                                         const std::string &qname,

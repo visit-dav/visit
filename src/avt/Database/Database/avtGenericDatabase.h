@@ -344,8 +344,8 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
                                                          int *,
                                                          int);
 
-    void                       GetCycles(intVector &);
-    void                       GetTimes(doubleVector &);
+    void                       GetCycles(int, intVector &);
+    void                       GetTimes(int, doubleVector &);
 
     virtual void               FreeUpResources(void);
     virtual int                NumStagesForFetch(avtDataRequest_p);

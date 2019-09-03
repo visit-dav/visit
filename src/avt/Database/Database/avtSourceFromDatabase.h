@@ -156,8 +156,8 @@ class DATABASE_API avtSourceFromDatabase : public avtOriginatingDatasetSource
                                                     int *,
                                                     int);
 
-    void                FetchCycles(intVector &);
-    void                FetchTimes(doubleVector &);
+    void                FetchCycles(int, intVector &);
+    void                FetchTimes(int, doubleVector &);
 
     virtual void        ReleaseData(void);
 

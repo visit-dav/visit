@@ -670,9 +670,9 @@ avtSourceFromDatabase::FetchTimeAndElementSpanVars(int domain,
 // ****************************************************************************
 
 void
-avtSourceFromDatabase::FetchCycles(intVector &cycles)
+avtSourceFromDatabase::FetchCycles(int dom, intVector &cycles)
 {
-    database->GetCycles(cycles);
+    database->GetCycles(dom, cycles);
 }
 
 
@@ -687,9 +687,9 @@ avtSourceFromDatabase::FetchCycles(intVector &cycles)
 // ****************************************************************************
 
 void
-avtSourceFromDatabase::FetchTimes(doubleVector &times)
+avtSourceFromDatabase::FetchTimes(int dom, doubleVector &times)
 {
-    database->GetTimes(times);
+    database->GetTimes(dom, times);
 }
 
 
