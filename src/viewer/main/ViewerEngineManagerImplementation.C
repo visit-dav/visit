@@ -2408,7 +2408,6 @@ ViewerEngineManagerImplementation::Query(const EngineKey &ek,
     ENGINE_PROXY_RPC_END_NORESTART_RETHROW2;
 }
 
-
 // ****************************************************************************
 // Method: ViewerEngineManagerImplementation::GetQueryParameters
 //
