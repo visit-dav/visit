@@ -419,12 +419,29 @@ avtFileFormatInterface::SetStrictMode(bool strictMode)
 
 
 // ****************************************************************************
-//  Method: avtFileFormatInterface::GetTimeSpanCurves
+//  Method:  avtMiliFileFormat::GetTimeSpanCurves
 //
 //  Purpose:
+//      Retrieve time span curves for the requested variable/element pairs
+//      across the specified time range. 
 //
-//  Programmer: Alister Maguire
-//  Creation:   
+//  Arguments:
+//      domain        The domain of interest. 
+//      vars          The variables to retrieve curves for.
+//      elementIds    The elements (zones/nodes) to retrieve curves for. 
+//      tsRange       The timestep range to retrieve curves for. 
+//      stride        The timestep stride.
+//
+//  Returns:
+//      A double pointer vtkDataArray arranged as follows:
+//      [ curve_0, curve_1, curve_2, ..., curve_N ],
+//      where each curve_i is a variable/element pair's value
+//      through the given time range with the given stride. 
+//
+//  Programmer:  Alister Maguire
+//  Creation:    Tue Sep  3 13:46:43 MST 2019 
+//
+//  Modifications
 //
 // ****************************************************************************
 
@@ -438,6 +455,10 @@ avtFileFormatInterface::GetTimeSpanCurves(int domain,
     avtFileFormat *ff = GetFormat(0);
     bool canRetrieveFromPlugin = false;
 
+    //
+    // First, determine whether we can retreive these curves directly
+    // from the plugin or we need to use the default method.  
+    //
     if (ff != NULL)
     {
         canRetrieveFromPlugin = ff->FormatCanRetrieveSpan(); 
@@ -463,12 +484,30 @@ avtFileFormatInterface::GetTimeSpanCurves(int domain,
 
 
 // ****************************************************************************
-//  Method: avtFileFormatInterface::GetTimeSpanCurvesFromPlugin
+//  Method:  avtMiliFileFormat::GetTimeSpanCurves
 //
 //  Purpose:
+//      Retrieve time span curves for the requested variable/element pairs
+//      across the specified time range. Use the database plugin's 
+//      defined method.  
 //
-//  Programmer: 
-//  Creation:   
+//  Arguments:
+//      domain        The domain of interest. 
+//      vars          The variables to retrieve curves for.
+//      elementIds    The elements (zones/nodes) to retrieve curves for. 
+//      tsRange       The timestep range to retrieve curves for. 
+//      stride        The timestep stride.
+//
+//  Returns:
+//      A double pointer vtkDataArray arranged as follows:
+//      [ curve_0, curve_1, curve_2, ..., curve_N ],
+//      where each curve_i is a variable/element pair's value
+//      through the given time range with the given stride. 
+//
+//  Programmer:  Alister Maguire
+//  Creation:    Tue Sep  3 13:46:43 MST 2019 
+//
+//  Modifications
 //
 // ****************************************************************************
 
@@ -479,19 +518,37 @@ avtFileFormatInterface::GetTimeSpanCurvesFromPlugin(int domain,
                                                     int *tsRange,
                                                     int stride)
 {
-    debug1 << "Calling GetTimeSpanCurvesFromPlugin, "
+    debug1 << "Calling GetTimeSpanCurvesFromPlugin from " << GetType()
            << "but it's not implemented..." << endl;
     return NULL; 
 }
 
 
 // ****************************************************************************
-//  Method: avtFileFormatInterface::GetTimeSpanCurvesDefault
+//  Method:  avtMiliFileFormat::GetTimeSpanCurves
 //
 //  Purpose:
+//      Retrieve time span curves for the requested variable/element pairs
+//      across the specified time range. Use the default implementation
+//      defined in this class. 
 //
-//  Programmer: 
-//  Creation:   
+//  Arguments:
+//      domain        The domain of interest. 
+//      vars          The variables to retrieve curves for.
+//      elementIds    The elements (zones/nodes) to retrieve curves for. 
+//      tsRange       The timestep range to retrieve curves for. 
+//      stride        The timestep stride.
+//
+//  Returns:
+//      A double pointer vtkDataArray arranged as follows:
+//      [ curve_0, curve_1, curve_2, ..., curve_N ],
+//      where each curve_i is a variable/element pair's value
+//      through the given time range with the given stride. 
+//
+//  Programmer:  Alister Maguire
+//  Creation:    Tue Sep  3 13:46:43 MST 2019 
+//
+//  Modifications
 //
 // ****************************************************************************
 
@@ -531,6 +588,9 @@ avtFileFormatInterface::GetTimeSpanCurvesDefault(int domain,
         {
             std::string curVar = *varItr; 
 
+            //
+            // Activate the current timestep and retrieve our variable. 
+            //
             ActivateTimestep(ts);
             vtkFloatArray *allValues = (vtkFloatArray *) 
                 GetVar(ts, domain, curVar.c_str());
@@ -538,6 +598,10 @@ avtFileFormatInterface::GetTimeSpanCurvesDefault(int domain,
             for (intVector::iterator elItr = elements.begin();
                  elItr < elements.end(); ++elItr)
             {
+                //
+                // VisIt ids begin at 0, but the interface ids start at 1. 
+                // Account for this before retrieving. 
+                //
                 long int visitId = (*elItr) - 1;
                 float val = allValues->GetTuple1(visitId);
                 varElRange.push_back(val);
@@ -580,7 +644,8 @@ avtFileFormatInterface::GetTimeSpanCurvesDefault(int domain,
 
             if (spanPtr == NULL)
             {
-                //TODO: should we report a warning here?
+                debug2 << "Encountered a null span in GetTimeSpanCurvesDefault"
+                    << endl;
                 continue;
             }
 

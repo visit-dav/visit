@@ -2144,6 +2144,12 @@ avtMiliFileFormat::GetElementSetVar(int timestep,
 //      tsRange       The timestep range to retrieve curves for. 
 //      stride        The timestep stride.
 //
+//  Returns:
+//      A double pointer vtkDataArray arranged as follows:
+//      [ curve_0, curve_1, curve_2, ..., curve_N ],
+//      where each curve_i is a variable/element pair's value
+//      through the given time range with the given stride. 
+//
 //  Programmer:  Alister Maguire
 //  Creation:    Tue Sep  3 13:46:43 MST 2019 
 //
@@ -2170,7 +2176,6 @@ avtMiliFileFormat::GetTimeSpanCurves(int domain,
         stopC = tsRange[1] + 1;
     }
 
-     //TODO incorporate stride. 
     int numElems  = elementIds.size();
     int numVars   = vars.size();
     int spanSize  = (stopC - startC) / stride;
@@ -2246,7 +2251,9 @@ avtMiliFileFormat::GetTimeSpanCurves(int domain,
 
             //FIXME: handle?
             if (spanPtr == NULL)
+            {
                cerr << "\n\nPOINTER IS NULL!" << endl;//FIXME
+            }
 
             int spanIdx = 0;
             for (int curC = startC; curC < stopC; curC += stride)

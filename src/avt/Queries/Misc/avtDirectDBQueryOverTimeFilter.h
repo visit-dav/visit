@@ -81,33 +81,32 @@ class QUERY_API avtDirectDBQueryOverTimeFilter : public avtDatasetToDatasetFilte
     virtual bool          FilterSupportsTimeParallelization(void);
 
   protected:
-    QueryOverTimeAttributes   atts;
-    SILRestrictionAttributes  querySILAtts;
-    doubleVector          qRes;
-    doubleVector          times;
-    bool                  success;
-    bool                  finalOutputCreated;
-    std::string           label;
+    QueryOverTimeAttributes     atts;
+    SILRestrictionAttributes    querySILAtts;
+    std::vector< doubleVector > curves;
+    doubleVector                times;
+    bool                        success;
+    bool                        finalOutputCreated;
+    std::string                 label;
 
-    bool                  useTimeForXAxis;
-    bool                  useVarForYAxis;
-    int                   nResultsToStore;
-    int                   numAdditionalFilters;
-    int                   cacheIdx;
-    bool                  useCache;
+    bool                        useTimeForXAxis;
+    bool                        useVarForYAxis;
+    int                         numCurves;
+    //int                         numAdditionalFilters;
+    int                         cacheIdx;
+    bool                        useCache;
 
     virtual void          Execute(void);
     virtual void          UpdateDataObjectInfo(void);
 
-    virtual int           AdditionalPipelineFilters(void) 
-                                            { return numAdditionalFilters; };
+    //virtual int           AdditionalPipelineFilters(void) 
+    //                                        { return numAdditionalFilters; };
 
     virtual void          CreateFinalOutput(void);
     virtual bool          ExecutionSuccessful(void) { return success; } ;
-    avtDataTree_p         CreateTree(const doubleVector &, 
-                                     const doubleVector &,
-                                     stringVector &,
-                                     const bool);
+    avtDataTree_p         CreateTreeFromCurves(const doubleVector &, 
+                                               stringVector &,
+                                               const bool);
 };
 
 

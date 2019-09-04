@@ -747,18 +747,30 @@ avtMTMDFileFormatInterface::GenerateTimestepCounts()
 
 
 // ****************************************************************************
-//  Method: avtMTMDFileFormatInterface::GetTimeSpanCurvesFromPlugin
+//  Method:  avtMiliFileFormat::GetTimeSpanCurvesFromPlugin
 //
 //  Purpose:
+//      Retrieve time span curves for the requested variable/element pairs
+//      across the specified time range. Use the plugin's defined method
+//      for this. 
 //
 //  Arguments:
+//      domain        The domain of interest. 
+//      vars          The variables to retrieve curves for.
+//      elementIds    The elements (zones/nodes) to retrieve curves for. 
+//      tsRange       The timestep range to retrieve curves for. 
+//      stride        The timestep stride.
 //
-//  Returns:    
+//  Returns:
+//      A double pointer vtkDataArray arranged as follows:
+//      [ curve_0, curve_1, curve_2, ..., curve_N ],
+//      where each curve_i is a variable/element pair's value
+//      through the given time range with the given stride. 
 //
-//  Progrmamer: Alister Maguire
-//  Creation:   July 23, 2019
+//  Programmer:  Alister Maguire
+//  Creation:    Tue Sep  3 13:46:43 MST 2019 
 //
-//  Modifications:
+//  Modifications
 //
 // ****************************************************************************
 
@@ -771,6 +783,9 @@ avtMTMDFileFormatInterface::GetTimeSpanCurvesFromPlugin(int domain,
 {
     if (nTimestepGroups == 1)
     {
+        //
+        // Easy case: just retrieve info for the single group. 
+        //
         int localRange[2];
 
         int tsGroup   = GetTimestepGroupForTimestep(tsRange[0]);
@@ -785,6 +800,12 @@ avtMTMDFileFormatInterface::GetTimeSpanCurvesFromPlugin(int domain,
     }
     else
     {
+        //
+        // Hard case: our requested span may cross several groups. 
+        // If so, we'll need to split our spans into chunks by group
+        // and then merge them together before returning.  
+        //
+
         //TODO: This needs more thorough testing. I've only been able
         //      to test this using databases with a single group. 
         int localRange[2];
@@ -805,9 +826,8 @@ avtMTMDFileFormatInterface::GetTimeSpanCurvesFromPlugin(int domain,
         vector<vtkFloatArray **> gSpans;
 
         //
-        // We need to determine if our timestep range spans 
-        // multiple groups. If so, we need to extract the 
-        // spans from each group and later combine them. 
+        // Determine if our span crosses several groups, and collect
+        // them individually. We can merge them together later. 
         //
         do
         {
@@ -852,7 +872,8 @@ avtMTMDFileFormatInterface::GetTimeSpanCurvesFromPlugin(int domain,
 
         //
         // Initialize our return container and count the total sizes
-        // of our collected spans (the sum across each group). 
+        // of our collected spans (the sum across each group). The
+        // totals SHOULD be the same for each span.  
         //
         vtkFloatArray **fullResults = new vtkFloatArray *[numSpans];
 
