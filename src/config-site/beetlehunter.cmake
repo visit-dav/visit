@@ -1,7 +1,7 @@
 ##
 ## Setup VISITHOME variables.
 ##
-SET(VISITHOME /home/biagas2/visit/thirdparty/3.0.1)
+SET(VISITHOME /home/biagas2/visit/thirdparty/3.0.2)
 SET(VISITARCH linux-x86_64_gcc-6.3)
 
 ## Compiler flags.
@@ -44,7 +44,7 @@ VISIT_OPTION_DEFAULT(VISIT_DATA_ARCHIVER_NAME "7za" TYPE STRING)
 ##
 ## ZLIB
 ##
-VISIT_OPTION_DEFAULT(VISIT_ZLIB_DIR ${VISITHOME}/zlib/1.2.8/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_ZLIB_DIR ${VISITHOME}/zlib/1.2.11/${VISITARCH})
 
 ##
 ## Python
