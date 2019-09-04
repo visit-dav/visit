@@ -1,0 +1,45 @@
+{
+   "hosts": [
+       { "network": "anl",
+         "networkName": "Argonne National Laboatory (ANL) network",
+         "files" : [ 
+             {"name": "host_anl_cooley.xml"}, 
+             {"name": "host_anl_theta.xml"}, 
+             {"name": "host_anl_mcs_login.xml"},
+             {"name": "customlauncher"}
+         ] 
+       },
+       { "network": "asu",
+         "networkName": "Arizona State University network",
+         "files" : [ 
+             {"name": "customlauncher"}
+         ] 
+       },
+       { "network": "awe",
+         "networkName": "Atomic Weapons Establishment network",
+         "files": [ 
+            {"name": "customlauncher"},
+            {"name": "host_awe_blackthorn.xml"},
+            {"name": "host_awe_pillowb.xml"},
+            {"name": "host_awe_sprig.xml"},
+            {"name": "host_awe_sprucea.xml"},
+            {"name": "host_awe_spruceb.xml"}
+         ] 
+       },
+       { "network": "clemson",
+         "networkName": "Clemson University network",
+         "files": [ 
+            {"name": "customlauncher"},
+            {"name": "host_clemson_insight.xml"}
+         ] 
+       },
+       { "network": "cscs",
+         "networkName": "Swiss National Super Computing Center (CSCS) network",
+         "files": [ 
+             {"name": "host_dora.xml"}, 
+             {"name": "host_daint.xml"}
+         ] 
+       }
+   ]
+}
+
