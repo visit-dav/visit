@@ -157,6 +157,15 @@ CurveViewerEnginePluginInfo::InitializePlotAtts(AttributeSubject *atts,
     const avtPlotMetaData &)
 {
     *(CurveAttributes*)atts = *defaultAtts;
+
+    // Maintain monotone increasing index of sufficient length to cycle
+    // colors. Utilize the attribute's curve color alpha to pass it along
+    // to the plot object where it is used to index a color table.
+    if (((CurveAttributes*)atts)->GetCurveColorSource() == CurveAttributes::Cycle)
+    {
+        static int colorIndex = 0;
+        ((CurveAttributes*)atts)->GetCurveColor().SetAlpha(colorIndex++);
+    }
 }
 // ****************************************************************************
 // Method: CurveViewerEnginePluginInfo::SupportsAnimation

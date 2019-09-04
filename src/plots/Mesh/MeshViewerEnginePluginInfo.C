@@ -151,6 +151,15 @@ MeshViewerEnginePluginInfo::InitializePlotAtts(AttributeSubject *atts,
     const avtPlotMetaData &)
 {
     *(MeshAttributes*)atts = *defaultAtts;
+
+    // Maintain monotone increasing index of sufficient length to cycle
+    // colors. Utilize the attribute's curve color alpha to pass it along
+    // to the plot object where it is used to index a color table.
+    if (((MeshAttributes*)atts)->GetMeshColorSource() == MeshAttributes::MeshRandom)
+    {
+        static int colorIndex = 0;
+        ((MeshAttributes*)atts)->GetMeshColor().SetAlpha(colorIndex++);
+    }
 }
 // ****************************************************************************
 //  Method: MeshViewerEnginePluginInfo::GetMenuName

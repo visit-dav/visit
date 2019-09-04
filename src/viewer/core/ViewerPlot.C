@@ -3443,12 +3443,14 @@ ViewerPlot::CreateActor(bool createNew,
     else
       plotList[cacheIndex]->SetPlotTitle(GetMenuName());
 
-    plotList[cacheIndex]->SetAtts(curPlotAtts);
+std::cerr << "BEFORE setting plot attributes, networkID = " << networkID << std::endl;
 
+    plotList[cacheIndex]->SetIndex(networkID);
     plotList[cacheIndex]->SetBackgroundColor(bgColor);
     plotList[cacheIndex]->SetForegroundColor(fgColor);
-    plotList[cacheIndex]->SetIndex(networkID);
     plotList[cacheIndex]->SetCurrentSILRestriction(silr);
+    plotList[cacheIndex]->SetAtts(curPlotAtts);
+
     if (viewerPluginInfo->PermitsCurveViewScaling())
     {
         viewerPlotList->GetScaleMode(xScaleMode, yScaleMode, WINMODE_CURVE);
@@ -4428,9 +4430,13 @@ ViewerPlot::ExecuteEngineRPC()
 
     plotAtts->GetAtts(cacheIndex, curPlotAtts);
 
+std::cerr << "BEFORE MakePlot networkID = " << networkID << std::endl;
+
     bool successful = GetViewerEngineManager()->MakePlot(engineKey,
             GetPlotName(), GetPluginID(), curPlotAtts, nullDataExtents,
             GetWindowId(), &networkID);
+
+std::cerr << "after MakePlot networkID = " << networkID << std::endl;
 
     if(!successful)
     {

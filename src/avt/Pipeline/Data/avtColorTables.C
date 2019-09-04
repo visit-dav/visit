@@ -1033,6 +1033,7 @@ avtColorTables::GetJNDControlPointColor(const std::string &ctName, int i,
     if (index < 0) return false;
     const ColorControlPointList &ct = ctAtts->operator[](index);
 
+    if (i < 0) i = 0;
     for (int n = 0; n < ct.GetNumControlPoints(); n++)
     {
         unsigned char rgb[3];

@@ -327,9 +327,13 @@ avtMeshPlot::SetAtts(const AttributeGroup *a)
         unsigned char bg[3] = {static_cast<unsigned char>(bgColor[0]*255),
                                static_cast<unsigned char>(bgColor[1]*255),
                                static_cast<unsigned char>(bgColor[2]*255)};
+
+        // Retrieve monotone color index from its hackish temporary place
+        int colorIndex = atts.GetMeshColor().Alpha();
+
         avtColorTables *ct = avtColorTables::Instance();
-        if (! ct->GetJNDControlPointColor(ct->GetDefaultDiscreteColorTable(), this->instanceIndex, bg, rgb))
-            ct->GetJNDControlPointColor("distinct", this->instanceIndex, bg, rgb);
+        if (! ct->GetJNDControlPointColor(ct->GetDefaultDiscreteColorTable(), colorIndex, bg, rgb))
+            ct->GetJNDControlPointColor("distinct", colorIndex, bg, rgb);
         SetMeshColor(rgb);
     }
     else // MeshAttributes::MeshCustom
