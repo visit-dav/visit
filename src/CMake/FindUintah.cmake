@@ -35,6 +35,8 @@
 # DAMAGE.
 #
 # Modifications:
+#   Kevin Griffin, Wed Sep 4 08:31:26 PDT 2019
+#   Added Allen's fix for stripping off the filename path.
 #
 #****************************************************************************/
 
@@ -90,6 +92,8 @@ SET_UP_THIRD_PARTY(UINTAH lib ${INCLUDE_TMP_DIR}
 # This variable MUST BE the FIRST variable in the library list.
 # Here the true name is retrieved from the third party set up
 LIST(GET UINTAH_LIB 0 UINTAH_INTERFACES_LIB)
+
+GET_FILENAME_COMPONENT(UINTAH_INTERFACES_LIB ${UINTAH_INTERFACES_LIB} NAME)
 
 MESSAGE(STATUS "UINTAH_INTERFACES_LIB = ${UINTAH_INTERFACES_LIB}")
 
