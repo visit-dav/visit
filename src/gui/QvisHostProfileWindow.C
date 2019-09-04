@@ -71,7 +71,6 @@
 
 #include <snprintf.h>
 
-
 #include <XMLNode.h>
 #include <SingleAttributeConfigManager.h>
 #include <MachineProfile.h>
@@ -80,6 +79,8 @@
 #include <StringHelpers.h>
 #include <ViewerProxy.h>
 #include <InstallationFunctions.h>
+
+#include <rapidjson/document.h>
 
 #include <cstdlib>
 
@@ -447,6 +448,9 @@ QvisHostProfileWindow::CreateWindowContents()
 //    Add current version's URL to remoteUrl combobox if not running from a
 //    development version.
 //
+//    Kathleen Biagas, Tue Sep  3 20:07:10 PDT 2019
+//    Change remote URL to github.
+//
 // ****************************************************************************
 
 QWidget *
@@ -488,10 +492,10 @@ QvisHostProfileWindow::CreateRemoteProfilesGroup()
         QString relURL, ver(VISIT_VERSION);
         if(ver.right(1) == "b")
             ver = ver.left(ver.length()-1);
-        relURL = QString("http://visit.ilight.com/svn/visit/tags/") + ver + QString("/src/resources/hosts/");
+        relURL = QString("https://raw.githubusercontent.com/visit-dav/visit/v") + ver + QString("/src/resources/hosts/");
         remoteUrl->addItem(relURL);
     }
-    remoteUrl->addItem("http://visit.ilight.com/svn/visit/trunk/src/resources/hosts/");
+    remoteUrl->addItem("https://raw.githubusercontent.com/visit-dav/visit/develop/src/resources/hosts/");
     remoteUrl->setCurrentIndex(0);
 
     remoteTree = new QTreeWidget(currentGroup);
@@ -617,12 +621,6 @@ QvisHostProfileWindow::addRemoteProfile(const QString& inputUrl, const QString &
         }
         remoteData[key] = results;
     }
-//    else {
-//        QFileInfo info(inputUrl);
-//        QTreeWidgetItem* item = new QTreeWidgetItem(QStringList() << info.fileName());
-//        remoteTree->addTopLevelItem(item);
-//    }
-
 }
 
 // ****************************************************************************
@@ -635,6 +633,8 @@ QvisHostProfileWindow::addRemoteProfile(const QString& inputUrl, const QString &
 // Creation:   September 10, 2013
 //
 // Modifications:
+//    Kathleen Biagas, Tue Sep  3 20:08:13 PDT 2019
+//    Use networks.json file to parse for locations of .xml files.
 //
 // ****************************************************************************
 
@@ -647,10 +647,12 @@ QvisHostProfileWindow::downloadHosts(QNetworkReply *reply)
 
     /// this is the result within an xml file..
     /// parse and store this entry.
-    if(QFileInfo(inputUrl).fileName() == "networks.dat"){
+    if(QFileInfo(inputUrl).fileName() == "networks.dat")
+    {
         /// if the network has a mapping structure..
         QStringList maplist = results.split("\n");
-        foreach(const QString& mp, maplist) {
+        foreach(const QString& mp, maplist)
+        {
             int mpindex = mp.indexOf(":");
             if(mpindex < 0) continue;
 
@@ -659,31 +661,39 @@ QvisHostProfileWindow::downloadHosts(QNetworkReply *reply)
 
             profileMap[key] = values;
         }
+        // change the url to retieve hosts directory structure from json file
+        QNetworkRequest request(QUrl(remoteUrl->currentText() + "/networks.json"));
+        manager->get(request);
     }
-    else if(inputUrl.contains(".xml")) {
-        addRemoteProfile(inputUrl, results);
-    }
-    else {
-        QStringList responseList = results.split("\n");
-
-        foreach(const QString& response, responseList) {
-
-            if(!response.contains("<a href")) continue;
-            if(!response.contains(".xml") && !response.contains("/<")) continue;
-
-            QString tag = "<a href=\"";
-            int start = response.indexOf(tag) + tag.length();
-            int end = response.indexOf("\">",start);
-
-            if(start == -1 || end == -1 || end <= start) continue;
-
-            QString urlext = response.mid(start,end-start);
-
-            QUrl newUrl(inputUrl + "/" + urlext);
-
-            QNetworkRequest request(newUrl);
-            manager->get(request);
+    else if(QFileInfo(inputUrl).fileName() == "networks.json")
+    {
+        rapidjson::Document d;
+        if(d.Parse<0>(results.toStdString().c_str()).HasParseError())
+        {
+            return;
         }
+        if (d.IsObject() && d.HasMember("hosts"))
+        {
+            rapidjson::Value &hostsRoot = d["hosts"];
+            for(rapidjson::SizeType i = 0; i < hostsRoot.Size(); ++i)
+            {
+                QString network(hostsRoot[i]["network"].GetString());
+                if (hostsRoot[i].HasMember("files"))
+                {
+                    rapidjson::Value &hostDir = hostsRoot[i]["files"];
+                    for(rapidjson::SizeType j = 0; j < hostDir.Size(); ++j)
+                    {
+                        QString fileN(hostDir[j]["name"].GetString());
+                        QNetworkRequest request(QUrl(remoteUrl->currentText() + "/" + network + "/" + fileN));
+                        manager->get(request);
+                    }
+                }
+            }
+        }
+    }
+    else if(inputUrl.contains(".xml"))
+    {
+        addRemoteProfile(inputUrl, results);
     }
 }
 
