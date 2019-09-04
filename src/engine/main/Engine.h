@@ -238,6 +238,8 @@ class ENGINE_MAIN_API Engine : public EngineBase
     // Get the network manager
     NetworkManager *GetNetMgr() { return netmgr; }
 
+    avtDatabaseMetaData *GetDBMD() { return metaData; };//FIXME: testing
+
     // Methods needed for an external event loop
     int             GetInputSocket();
     void            ProcessInput();

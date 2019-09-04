@@ -1477,6 +1477,8 @@ avtMiliFileFormat::GetVar(int timestep,
               
             }
 
+            visitTimer->StopTimer(gvTimer, "MILI: GetVar");
+
             return fltArray;
         }
 
@@ -1499,6 +1501,7 @@ avtMiliFileFormat::GetVar(int timestep,
                          varMD, 
                          fltArray);
 
+        visitTimer->StopTimer(gvTimer, "MILI: GetVar");
         return fltArray;
     }
 
@@ -1509,7 +1512,6 @@ avtMiliFileFormat::GetVar(int timestep,
     GetVar(timestep, dom, meshId, varMD, fltArray);
 
     visitTimer->StopTimer(gvTimer, "MILI: GetVar");
-
     return fltArray;
 }
 
@@ -2164,7 +2166,6 @@ avtMiliFileFormat::GetTimeSpanCurves(int domain,
                                      int *tsRange,
                                      int stride)
 {
-    //TODO: throw errors if received odd values. 
     int startC = 0;
     int stopC  = nTimesteps;
     if (tsRange[0] > 0 && tsRange[0] < nTimesteps)
@@ -2197,7 +2198,7 @@ avtMiliFileFormat::GetTimeSpanCurves(int domain,
             string varPath = vars[varIdx];
             int meshId     = ExtractMeshIdFromPath(varPath);
 
-             //
+            //
             // Is this a vector or standard variable?
             //
             bool hasComponents = false;
@@ -2207,8 +2208,17 @@ avtMiliFileFormat::GetTimeSpanCurves(int domain,
             MiliVariableMetaData *varMD = 
                miliMetaData[meshId]->GetVarMDByPath(truePath.c_str());
 
+            //
+            // If our initial MD is null, it likely means this is a vector, 
+            // tensor, or array that we need to extract a component from. 
+            //
             if (varMD == NULL)
             {
+                //
+                // If this is indeed a vector/tensor/array, we need to
+                // strip off the last section of the variable path, which
+                // will be the desired component. 
+                //
                 string compName = "";
                 size_t varPos   = varPath.find_last_of("/");
                 compName        = varPath.substr(varPos + 1);
@@ -2218,9 +2228,6 @@ avtMiliFileFormat::GetTimeSpanCurves(int domain,
 
                 if (varMD == NULL)
                 {
-                    //
-                    // This is truly an unknown variable. 
-                    //
                     EXCEPTION1(InvalidVariableException, varPath);
                 }
 
@@ -2239,7 +2246,6 @@ avtMiliFileFormat::GetTimeSpanCurves(int domain,
 
                 if (compIdx == -1)
                 {
-                    cerr << "\nTRUE EXCEPTION 2" << endl;
                     EXCEPTION1(InvalidVariableException, varPath);
                 }
             }
@@ -2247,15 +2253,10 @@ avtMiliFileFormat::GetTimeSpanCurves(int domain,
             vtkFloatArray *singleSpan = vtkFloatArray::New();
             singleSpan->SetNumberOfComponents(1); 
             singleSpan->SetNumberOfTuples(spanSize); 
+
             float *spanPtr = (float *) singleSpan->GetVoidPointer(0);
-
-            //FIXME: handle?
-            if (spanPtr == NULL)
-            {
-               cerr << "\n\nPOINTER IS NULL!" << endl;//FIXME
-            }
-
-            int spanIdx = 0;
+            int spanIdx    = 0;
+   
             for (int curC = startC; curC < stopC; curC += stride)
             {
                 if (curC >= stopC)
@@ -2263,14 +2264,15 @@ avtMiliFileFormat::GetTimeSpanCurves(int domain,
                     break;
                 }
 
-                 //TODO: Does this handle all cases?
                 if (!hasComponents)
                 {
                     vtkFloatArray *meshVar = 
                         (vtkFloatArray *) GetVar(curC, domain, truePath.c_str());
 
                     if (meshVar == NULL)
-                        cerr << "MESH VAR IS NULL!" << endl;//FIXME
+                    {
+                        EXCEPTION1(InvalidVariableException, truePath.c_str());
+                    }
 
                     spanPtr[spanIdx++] = meshVar->GetTuple1(visitId);
                 }
@@ -2279,12 +2281,14 @@ avtMiliFileFormat::GetTimeSpanCurves(int domain,
                     vtkFloatArray *meshVar = 
                         (vtkFloatArray *) GetVectorVar(curC, domain, truePath.c_str());
 
+                    if (meshVar == NULL)
+                    {
+                        EXCEPTION1(InvalidVariableException, truePath.c_str());
+                    }
+
                     int numTuples     = meshVar->GetNumberOfTuples();
                     int numComps      = meshVar->GetNumberOfComponents();
                     float *meshVarPtr = meshVar->GetPointer(0);
-
-                    if (meshVar == NULL)
-                        cerr << "MESH VAR IS NULL!" << endl;//FIXME
 
                     long int idx = (visitId * numComps) + compIdx;
                     spanPtr[spanIdx++] = meshVarPtr[idx];

@@ -98,7 +98,6 @@ avtDirectDBQueryOverTimeFilter::avtDirectDBQueryOverTimeFilter(const AttributeGr
         QueryAttributes qatts = atts.GetQueryAtts();
         avtDataObjectQuery *query = avtQueryFactory::Instance()->
             CreateQuery(&qatts);
-        //numAdditionalFilters = query->GetNFilters()+1; // 1 for query itself
         if (query->GetShortDescription() != NULL)
             label = query->GetShortDescription();
         else
@@ -112,8 +111,6 @@ avtDirectDBQueryOverTimeFilter::avtDirectDBQueryOverTimeFilter(const AttributeGr
     }
     CATCHALL
     {
-        cerr << "INIT PROB" << endl;//FIXME
-        //numAdditionalFilters = 2; // it's a guess
         debug1 << "There was a problem trying to instantiate a query for "
                << "a query over time.  Stifling the error handling, because "
                << "this problem will be caught later when we are better "
@@ -126,8 +123,8 @@ avtDirectDBQueryOverTimeFilter::avtDirectDBQueryOverTimeFilter(const AttributeGr
 // ****************************************************************************
 //  Method: avtDirectDBQueryOverTimeFilter destructor
 //
-//  Programmer: Kathleen Bonnell
-//  Creation:   March 15, 2004
+//  Programmer: 
+//  Creation:   
 //
 // ****************************************************************************
 
@@ -142,8 +139,8 @@ avtDirectDBQueryOverTimeFilter::~avtDirectDBQueryOverTimeFilter()
 //  Purpose:
 //    Call the constructor.
 //
-//  Programmer:  Kathleen Bonnell
-//  Creation:    March 15, 2004
+//  Programmer:  
+//  Creation:    
 //
 // ****************************************************************************
 
@@ -225,8 +222,10 @@ avtDirectDBQueryOverTimeFilter::Execute(void)
         {
             if (spanArray[cIdx]->GetNumberOfTuples() != numTuples)
             {
-                //TODO: raise appropriate error
-                cerr << "CURVE SIZES DON'T MATCH!" << endl;//FIXME
+                char msg[128];
+                snprintf(msg, 128, "The retreived curves are of different sizes! "
+                   "Not good...");
+                EXCEPTION1(VisItException, msg);
             }
 
             for (int i = 0; i < numTuples; ++i)
@@ -291,8 +290,8 @@ avtDirectDBQueryOverTimeFilter::Execute(void)
     }
     else
     {
-        //TODO: raise error
-        cerr << "NULL!!" << endl;
+        debug1 << "DirectDBQueryOverTime was unable to retrieve " <<
+            "any curves..." << endl;
     }
 
     CreateFinalOutput();
@@ -389,8 +388,8 @@ avtDirectDBQueryOverTimeFilter::UpdateDataObjectInfo(void)
 //  Purpose:
 //    Sets the SILRestriction atts necessary to create a SILRestriction.
 //
-//  Programmer: Kathleen Bonnell
-//  Creation:   May 4, 2004
+//  Programmer: 
+//  Creation:   
 //
 //  Modifications:
 //
