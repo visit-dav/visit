@@ -11,10 +11,8 @@
 # ----------------------------------------------------------------------------
 RequiredDatabasePlugin("Xolotl")
 
-from os.path import join as pjoin
-
-xolotl_0D = "xolotl_network-PSI2-0D.xolotl"
-xolotl_1D = "xolotl_network-PSI2-1D.xolotl"
+xolotl_0D = "xolotl_test_data/network-PSI2-0D.xolotl"
+xolotl_1D = "xolotl_test_data/network-PSI2-1D.xolotl"
 
 zeroDVars = ["Helium/Vacancies", "Helium/Deuterium", "Helium/Interstitial", "Helium/Tritium"]
 oneDVars = ["Helium Concentration", "Deuterium Concentration", "Interstitial Concentration", "Tritium Concentration"]
@@ -25,7 +23,7 @@ def test(var_name,tag_name):
     SetActivePlots(0)
     PseudocolorAtts = PseudocolorAttributes()
     PseudocolorAtts.scaling = PseudocolorAtts.Log  # Linear, Log, Skew
-    PseudocolorAtts.colorTableName = "Oranges"
+    PseudocolorAtts.colorTableName = "hot_desaturated"
     SetPlotOptions(PseudocolorAtts)
     DrawPlots()
     Test(tag_name + "_" +  var_name)
@@ -33,15 +31,15 @@ def test(var_name,tag_name):
 
 
 TestSection("0D Example Xolot File")
-OpenDatabase(xolotl_0D)
+OpenDatabase(data_path(xolotl_0D))
 for var_name in zeroDVars:
     test(var_name,"xolotl_0D")
-CloseDatabase(xolotl_0D)
+CloseDatabase(data_path(xolotl_0D))
 
 TestSection("1D Example Xolotl File")
-OpenDatabase(xolotl_1D)
+OpenDatabase(data_path(xolotl_1D))
 for var_name in oneDVars:
     test(var_name,"xolotl_1D")
-CloseDatabase(Xolotl_1D)
+CloseDatabase(data_path(xolotl_1D))
 
 Exit()
