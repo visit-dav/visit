@@ -1,4 +1,4 @@
-Release Candidate (RC) development
+Release Candidate (RC) Development
 ==================================
 
 Overview
