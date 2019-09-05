@@ -26,7 +26,8 @@ def test(var_name,tag_name):
     PseudocolorAtts.colorTableName = "hot_desaturated"
     SetPlotOptions(PseudocolorAtts)
     DrawPlots()
-    Test(tag_name + "_" +  var_name)
+    file_name = var_name.replace("/", "")
+    Test(tag_name + "_" +  file_name)
     DeleteAllPlots()
 
 
