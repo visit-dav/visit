@@ -4,7 +4,7 @@ Release Candidate (RC) development
 Overview
 --------
 
-VisIt normally has two active branches for doing development. The
+VisIt_ normally has two active branches for doing development. The
 first is develop and the second is the current release candidate. Work
 performed on the develop branch will go into the next major release,
 such as 3.1. Work performed on the current release candidate will go into
