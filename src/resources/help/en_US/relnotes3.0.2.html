@@ -27,7 +27,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Corrected a bug where VisIt would crash when attempting to use python expressions with other expressions as inputs.</li>
   <li>Corrected a launch failure on Windows when 8dot3name (shortnames) is disabled on the system.</li>
   <li>Corrected a bug with the mili plugin not handling integers in scientific notation.</li>
-  <li>Corrected a bug with the Uintah database reader not being able to read index.xml files.</li>
+  <li>Corrected a bug with the Uintah reader not being able to read index.xml files.</li>
   <li>Corrected a bug with importing remote profiles, where it looked at the old Subversion repository for remote profiles. Now it looks at the new Git repository.</li>
   <li>Corrected a bug where bringing up the Elevate attributes window would crash the graphical user interface on OSX.</li>
   <li>Corrected a bug with the Uintah reader where it would not load because the libxml2 could not be found.</li>
@@ -41,8 +41,9 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Modified the batch launching at NERSC to work on Cori after the major operating system upgrade."</li>
   <li>Openssl was added to the list of required libraries in build_visit.</li> 
   <li>Added the turbo color table.</li> 
-  <li>The XYZ Writer repalces '?' with UNKNOWN_ATOMIC_ELEMENT and now warns the user if the dataset is not effectively point-centered.</li>
+  <li>The XYZ writer replaces '?' with UNKNOWN_ATOMIC_ELEMENT and now warns the user if the dataset is not effectively point-centered.</li>
   <li>The Xdmf reader now supports time-varying grid counts via a top-level &lt;Information Name="TimeVaryingMetaData" Value="True"/&gt; node in the Xdmf file.</li>
+  <li>Added a reader for Xolotl files. Xolotl is an open-source, high performance plasma-surface interactions simulator that is under development with the DOE's SciDAC program. VisIt will automatically recognize files that end with the extention ".xolotl" as Xolotl files.</li>
   <li>Binary distributions have been added for Ubuntu 16, Ubuntu 18, Debian 9, and Fedora 27.</li>
 </ul>
 
