@@ -60,54 +60,54 @@ avtFunctionExpr::CreateMathFilters(const std::string &functionName) const
 {
     avtExpressionFilter *f = 0;
 
-    if (functionName == "sin")
-        f = new avtSinExpression();
-    else if (functionName == "sinh")
-        f = new avtSinhExpression();
-    else if (functionName == "cos")
-        f = new avtCosExpression();
-    else if (functionName == "cosh")
-        f = new avtCoshExpression();
-    else if (functionName == "tan")
-        f = new avtTanExpression();
-    else if (functionName == "tanh")
-        f = new avtTanhExpression();
+    if (functionName == "abs")
+        f = new avtAbsValExpression();
+    else if (functionName == "acos")
+        f = new avtArccosExpression();
+    else if (functionName == "asin")
+        f = new avtArcsinExpression();
     else if (functionName == "atan")
         f = new avtArctanExpression();
     else if (functionName == "atan2")
         f = new avtArctan2Expression();
-    else if (functionName == "asin")
-        f = new avtArcsinExpression();
-    else if (functionName == "acos")
-        f = new avtArccosExpression();
+    else if (functionName == "ceil")
+        f = new avtCeilingExpression();
+    else if (functionName == "cos")
+        f = new avtCosExpression();
+    else if (functionName == "cosh")
+        f = new avtCoshExpression();
     else if (functionName == "deg2rad")
         f = new avtDegreeToRadianExpression();
-    else if (functionName == "rad2deg")
-        f = new avtRadianToDegreeExpression();
-    else if (functionName == "abs")
-        f = new avtAbsValExpression();
-    else if (functionName == "ln")
-        f = new avtNaturalLogExpression();
     else if (functionName == "exp")
         f = new avtExpExpression();
+    else if (functionName == "floor")
+        f = new avtFloorExpression();
+    else if (functionName == "ln")
+        f = new avtNaturalLogExpression();
     else if ((functionName == "log") || (functionName == "log10"))
         f = new avtBase10LogExpression();
     else if (functionName == "log10withmin") 
         f = new avtBase10LogWithMinExpression();
-    else if (functionName == "sqrt")
-        f = new avtSquareRootExpression();
-    else if ((functionName == "sq") || (functionName == "sqr"))
-        f = new avtSquareExpression();
     else if (functionName == "mod" || functionName == "modulo")
         f = new avtModuloExpression();
-    else if (functionName == "ceil")
-        f = new avtCeilingExpression();
-    else if (functionName == "floor")
-        f = new avtFloorExpression();
-    else if (functionName == "round")
-        f = new avtRoundExpression();
+    else if (functionName == "rad2deg")
+        f = new avtRadianToDegreeExpression();
     else if ((functionName == "random") || (functionName == "rand"))
         f = new avtRandomExpression();
+    else if (functionName == "round")
+        f = new avtRoundExpression();
+    else if (functionName == "sin")
+        f = new avtSinExpression();
+    else if (functionName == "sinh")
+        f = new avtSinhExpression();
+    else if ((functionName == "sq") || (functionName == "sqr"))
+        f = new avtSquareExpression();
+    else if (functionName == "sqrt")
+        f = new avtSquareRootExpression();
+    else if (functionName == "tan")
+        f = new avtTanExpression();
+    else if (functionName == "tanh")
+        f = new avtTanhExpression();
 
     return f;
 }
