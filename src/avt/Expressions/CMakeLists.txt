@@ -238,6 +238,7 @@ Math/avtRadianToDegreeExpression.C
 Math/avtRoundExpression.C
 Math/avtSinExpression.C
 Math/avtSinhExpression.C
+Math/avtSmartDivideExpression.C
 Math/avtSquareExpression.C
 Math/avtSquareRootExpression.C
 Math/avtTanExpression.C
