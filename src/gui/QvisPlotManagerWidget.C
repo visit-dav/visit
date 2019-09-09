@@ -1063,7 +1063,6 @@ QvisPlotManagerWidget::UpdatePlotList()
 
         prefixes.push_back(prefix);
     }
-    
 
     //
     // Create a vector of selection names for the new plot list.
