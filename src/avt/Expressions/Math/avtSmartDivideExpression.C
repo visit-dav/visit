@@ -92,6 +92,11 @@ avtSmartDivideExpression::DeriveVariable(vtkDataSet* in_ds, int currentDomainsIn
     {
         vtkDataArray *data4 = DetermineCentering(&dummy, in_ds, varnames[3]);
         tolerance = data4->GetTuple1(0);
+        if (tolerance < 0.0)
+        {
+            EXCEPTION2(ExpressionException, outputVariableName, 
+                    "tolerance must be nonnegative.");
+        }
         debug5 << "avtSmartDivideExpression::DeriveVariable: User specified a tolerance of " << tolerance << "." << std::endl;
     }
     // TODO: this feature can be easily enhanced to to handle a multi-variable
