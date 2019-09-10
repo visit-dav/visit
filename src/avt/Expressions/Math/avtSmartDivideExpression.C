@@ -78,6 +78,10 @@ avtSmartDivideExpression::DeriveVariable(vtkDataSet* in_ds, int currentDomainsIn
     avtCentering dummy;
     vtkDataArray *data3 = DetermineCentering(&dummy, in_ds, varnames[2]);
     value_if_zero = data3->GetTuple1(0);
+    // TODO: this feature can be easily enhanced to to handle a multi-variable
+    // divide by zero case. For example, suppose the user wants the value_if_zero
+    // to vary over the tuples/components as represented by some variable.
+    // This can be easily done here.
 
     debug5 << "avtSmartDivideExpression::DeriveVariable: Centering determined. Now we recenter if needed" << std::endl;
     // Determine the centering that should be used.
