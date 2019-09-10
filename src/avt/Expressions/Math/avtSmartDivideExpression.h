@@ -61,10 +61,8 @@ class EXPRESSION_API avtSmartDivideExpression : public avtMultipleInputExpressio
 
     protected:
         virtual vtkDataArray *DeriveVariable(vtkDataSet*, int);
-        virtual void DoOperation(vtkDataArray*, vtkDataArray*, vtkDataArray*, int, int);
+        virtual void DoOperation(vtkDataArray*, vtkDataArray*, vtkDataArray*, int);
         virtual int GetNumberOfComponentsInOutput(int nCompsIn1, int nCompsIn2) { return (nCompsIn1 > nCompsIn2) ? nCompsIn1 : nCompsIn2;};
-        virtual int GetVariableDimension();
-        virtual bool FilterUnderstandsTransformedRectMesh();
 
         avtCentering centering;
         vtkDataSet *cur_mesh;
