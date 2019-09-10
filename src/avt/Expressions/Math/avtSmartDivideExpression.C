@@ -135,9 +135,7 @@ avtSmartDivideExpression::DeriveVariable(vtkDataSet* in_ds, int currentDomainsIn
     output->SetNumberOfComponents(nComps);
     output->SetNumberOfTuples(nVals);
 
-    cur_mesh = in_ds;
     DoOperation(output, data1, data2, nVals);
-    cur_mesh = NULL;
 
     debug3 << "Exiting  avtSmartDivideExpression::DeriveVariable(vtkDataSet*, int)" << std::endl;
     return output;

@@ -52,7 +52,7 @@ class EXPRESSION_API avtSmartDivideExpression : public avtMultipleInputExpressio
 {
     public:
 
-                avtSmartDivideExpression();
+                 avtSmartDivideExpression();
         virtual ~avtSmartDivideExpression();
 
         virtual const char *GetType() { return "avtSmartDivideExpression" ;};
@@ -60,12 +60,10 @@ class EXPRESSION_API avtSmartDivideExpression : public avtMultipleInputExpressio
         virtual int         NumVariableArguments() { return nProcessedArgs > 4 ? 4 : nProcessedArgs; };
 
     protected:
+        avtCentering centering;
+
         virtual vtkDataArray *DeriveVariable(vtkDataSet*, int);
         virtual void DoOperation(vtkDataArray*, vtkDataArray*, vtkDataArray*, int);
-        virtual int GetNumberOfComponentsInOutput(int nCompsIn1, int nCompsIn2) { return (nCompsIn1 > nCompsIn2) ? nCompsIn1 : nCompsIn2;};
-
-        avtCentering centering;
-        vtkDataSet *cur_mesh;
 
     private:
         double tolerance;
