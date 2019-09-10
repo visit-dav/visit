@@ -57,7 +57,7 @@ class EXPRESSION_API avtSmartDivideExpression : public avtMultipleInputExpressio
 
         virtual const char *GetType() { return "avtSmartDivideExpression" ;};
         virtual const char *GetDescription() { return "Calculate division with divide by zero default"; };
-        virtual int         NumVariableArguments() {return 3;};
+        virtual int         NumVariableArguments() { return nProcessedArgs > 4 ? 4 : nProcessedArgs; };
 
     protected:
         virtual vtkDataArray *DeriveVariable(vtkDataSet*, int);
@@ -68,8 +68,8 @@ class EXPRESSION_API avtSmartDivideExpression : public avtMultipleInputExpressio
         vtkDataSet *cur_mesh;
 
     private:
-        double tolerance = 1e-16;
-        double value_if_zero = 0.0;
+        double tolerance;
+        double value_if_zero;
 
         vtkDataArray* DetermineCentering(avtCentering*, vtkDataSet*, const char*);
         double CheckZero(double, double);
