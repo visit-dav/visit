@@ -61,8 +61,7 @@ class EXPRESSION_API avtSmartDivideExpression : public avtMultipleInputExpressio
 
     protected:
         virtual vtkDataArray *DeriveVariable(vtkDataSet*, int);
-        virtual vtkDataArray *CreateArray(vtkDataArray*, vtkDataArray*);
-        virtual void DoOperation(vtkDataArray*, vtkDataArray*, const double, vtkDataArray*, int, int);
+        virtual void DoOperation(vtkDataArray*, vtkDataArray*, vtkDataArray*, vtkDataArray*, int, int);
         virtual int GetNumberOfComponentsInOutput(int nCompsIn1, int nCompsIn2) { return (nCompsIn1 > nCompsIn2) ? nCompsIn1 : nCompsIn2;};
         virtual int GetVariableDimension();
         virtual bool FilterUnderstandsTransformedRectMesh();
@@ -71,6 +70,7 @@ class EXPRESSION_API avtSmartDivideExpression : public avtMultipleInputExpressio
         vtkDataSet *cur_mesh;
 
     private:
+        avtCentering DetermineCentering(vtkDataArray*, vtkDataSet*, const char*);
 };
 
 #endif
