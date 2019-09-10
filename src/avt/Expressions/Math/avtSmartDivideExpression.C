@@ -67,10 +67,25 @@ avtSmartDivideExpression::DeriveVariable(vtkDataSet* in_ds, int currentDomainsIn
     // Get the variables and their centerings
     vtkDataArray *data1 = NULL;
     vtkDataArray *data2 = NULL;
-    vtkDataArray *data3 = NULL;
     avtCentering var1_centering = DetermineCentering(data1, in_ds, varnames[0]);
     avtCentering var2_centering = DetermineCentering(data2, in_ds, varnames[1]);
-    avtCentering var3_centering = DetermineCentering(data3, in_ds, varnames[2]);
+
+    // The third variable should just be a constant double (e.g. divide(one, two, 1.0))
+    // So we ensure here that it is a singleton and set its value as the
+    // divide_by_zero value.
+
+    vtkDataArray *data3 = NULL;
+    DetermineCentering(data3, in_ds, varnames[2]);
+    if (data3->GetNumberOfComponents() != 1 || data3->GetNumberOfTuples() != 1)
+    {
+        EXCEPTION2(ExpressionException, outputVariableName, 
+                    "The 'value_if_zero' argument in the 'divide' function must be a constant double.");
+    }
+    else
+    {
+        value_if_zero = data3->GetTuple1(0);
+    }
+    
 
     // Determine the centering that should be used.
     // If they have different centering (i.e. one has zone centering), then
@@ -92,14 +107,6 @@ avtSmartDivideExpression::DeriveVariable(vtkDataSet* in_ds, int currentDomainsIn
     {
         centering = var1_centering;
     }
-
-    // Enforce the 3rd variable to take on the centering of the other two
-    // because the third variable is just a value that the user wants, and
-    // its centering does not bear any meaning.
-    if (var3_centering != centering)
-    {
-        data3 = Recenter(in_ds, data3, var3_centering, outputVariableName);
-    }
     
     // Setup the output variable
     int nComps1 = data1->GetNumberOfComponents();
@@ -114,7 +121,7 @@ avtSmartDivideExpression::DeriveVariable(vtkDataSet* in_ds, int currentDomainsIn
     output->SetNumberOfTuples(nVals);
 
     cur_mesh = in_ds;
-    DoOperation(output, data1, data2, data3, nComps, nVals);
+    DoOperation(output, data1, data2, nComps, nVals);
     cur_mesh = NULL;
 
     return output;
@@ -145,9 +152,73 @@ avtSmartDivideExpression::DetermineCentering(vtkDataArray *out, vtkDataSet *in_d
 }
 
 void
-avtSmartDivideExpression::DoOperation(vtkDataArray* output, vtkDataArray *top, vtkDataArray *bottom, vtkDataArray* value_if_zero, int nComps, int nVal)
+avtSmartDivideExpression::DoOperation(vtkDataArray* output, vtkDataArray *in1,
+        vtkDataArray *in2, int nComps, int nVals)
 {
+    // Get the number of components
+    bool var1IsSingleton = (in1->GetNumberOfTuples() == 1);
+    bool var2IsSingleton = (in2->GetNumberOfTuples() == 1);
+    int in1ncomps = in1->GetNumberOfComponents();
+    int in2ncomps = in2->GetNumberOfComponents();
+
+    if ((in1ncomps == 1) && (in2ncomps == 1))
+    {
+        for (int i = 0 ; i < nVals ; i++)
+        {
+            vtkIdType tup1 = (var1IsSingleton ? 0 : i);
+            vtkIdType tup2 = (var2IsSingleton ? 0 : i);
+            double val1 = in1->GetTuple1(tup1);
+            double val2 = in2->GetTuple1(tup2);
+            output->SetTuple1(i, CheckZero(val1,val2));
+        }
+    }
+    else if (in1ncomps > 1 && in2ncomps == 1)
+    {
+        for (int i = 0 ; i < nVals ; i++)
+        {
+            vtkIdType tup1 = (var1IsSingleton ? 0 : i);
+            vtkIdType tup2 = (var2IsSingleton ? 0 : i);
+            double val2 = in2->GetTuple1(tup2);
+            for (int j = 0 ; j < in1ncomps ; j++)
+            {
+                double val1 = in1->GetComponent(tup1, j);
+                output->SetComponent(i, j, CheckZero(val1, val2));
+            }
+        }
+    }
+    else if (in1ncomps == 1 && in2ncomps > 1)
+    {
+        for (int i = 0 ; i < nVals ; i++)
+        {
+            vtkIdType tup1 = (var1IsSingleton ? 0 : i);
+            vtkIdType tup2 = (var2IsSingleton ? 0 : i);
+            double val1 = in1->GetTuple1(tup1);
+            for (int j = 0 ; j < in2ncomps ; j++)
+            {
+                double val2 = in2->GetComponent(tup2, j);
+                output->SetComponent(i, j, CheckZero(val1, val2));
+            }
+        }
+    }
+    else
+    {
+        EXCEPTION2(ExpressionException, outputVariableName, 
+                   "Division of vectors in undefined.");
+    }
+    
     return;
+}
+
+double
+avtSmartDivideExpression::CheckZero(double top, double bottom)
+{
+    if (fabs(bottom) < this->tolerance)
+    {
+        return this->value_if_zero;
+    }
+    else {
+        return top / bottom;
+    }
 }
 
 int
