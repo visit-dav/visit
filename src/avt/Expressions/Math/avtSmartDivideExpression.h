@@ -73,7 +73,7 @@ class EXPRESSION_API avtSmartDivideExpression : public avtMultipleInputExpressio
         double tolerance = 1e-16;
         double value_if_zero = 0.0;
 
-        avtCentering DetermineCentering(vtkDataArray*, vtkDataSet*, const char*);
+        vtkDataArray* DetermineCentering(avtCentering*, vtkDataSet*, const char*);
         double CheckZero(double, double);
 
 };
