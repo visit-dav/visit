@@ -49,42 +49,53 @@
 #include <vtkDataSet.h>
 #include <vtkPointData.h>
 
+#include <DebugStream.h>
 #include <ExpressionException.h>
 
 avtSmartDivideExpression::avtSmartDivideExpression()
 {
+    debug5 << "Entering avtSmartDivideExpression::avtSmartDivideExpression()" << std::endl;
+    debug5 << "Exiting  avtSmartDivideExpression::avtSmartDivideExpression()" << std::endl;
     ;
 }
 
 avtSmartDivideExpression::~avtSmartDivideExpression()
 {
+    debug5 << "Entering avtSmartDivideExpression::~avtSmartDivideExpression()" << std::endl;
+    debug5 << "Exiting  avtSmartDivideExpression::~avtSmartDivideExpression()" << std::endl;
     ;
 }
 
 vtkDataArray *
 avtSmartDivideExpression::DeriveVariable(vtkDataSet* in_ds, int currentDomainsIndex)
 {
+    debug5 << "Entering avtSmartDivideExpression::DeriveVariable(vtkDataSet*, int)" << std::endl;
     // Get the variables and their centerings
-    vtkDataArray *data1 = NULL;
-    vtkDataArray *data2 = NULL;
-    avtCentering var1_centering = DetermineCentering(data1, in_ds, varnames[0]);
-    avtCentering var2_centering = DetermineCentering(data2, in_ds, varnames[1]);
+    avtCentering var1_centering;
+    avtCentering var2_centering;
+    vtkDataArray *data1 = DetermineCentering(&var1_centering, in_ds, varnames[0]);
+    vtkDataArray *data2 = DetermineCentering(&var2_centering, in_ds, varnames[1]);
 
     // The third variable should just be a constant double (e.g. divide(one, two, 1.0))
     // So we ensure here that it is a singleton and set its value as the
     // divide_by_zero value.
-
-    vtkDataArray *data3 = NULL;
-    DetermineCentering(data3, in_ds, varnames[2]);
+    avtCentering dummy;
+    vtkDataArray *data3 = DetermineCentering(&dummy, in_ds, varnames[2]);
+    debug5 << "Checking that the third argument is just one number." << std::endl;
     if (data3->GetNumberOfComponents() != 1 || data3->GetNumberOfTuples() != 1)
     {
+        debug5 << "Throw an exception because it is more than just one number." << std::endl;
+        debug5 << "Exiting  avtSmartDivideExpression::DeriveVariable(vtkDataSet*, int)" << std::endl;
         EXCEPTION2(ExpressionException, outputVariableName, 
                     "The 'value_if_zero' argument in the 'divide' function must be a constant double.");
     }
     else
     {
+        debug5 << "It is just one number, so setting that to value_if_zero." << std::endl;
         value_if_zero = data3->GetTuple1(0);
     }
+
+    debug5 << "Centering determined. Now we recenter if needed" << std::endl;
     
 
     // Determine the centering that should be used.
@@ -107,6 +118,8 @@ avtSmartDivideExpression::DeriveVariable(vtkDataSet* in_ds, int currentDomainsIn
     {
         centering = var1_centering;
     }
+
+    debug5 << "Values have been recentered as needed. Now we perform the operation" << std::endl;
     
     // Setup the output variable
     int nComps1 = data1->GetNumberOfComponents();
@@ -124,30 +137,43 @@ avtSmartDivideExpression::DeriveVariable(vtkDataSet* in_ds, int currentDomainsIn
     DoOperation(output, data1, data2, nComps, nVals);
     cur_mesh = NULL;
 
+    debug5 << "Exiting  avtSmartDivideExpression::DeriveVariable(vtkDataSet*, int)" << std::endl;
     return output;
 }
 
-avtCentering
-avtSmartDivideExpression::DetermineCentering(vtkDataArray *out, vtkDataSet *in_ds, const char *varname)
+vtkDataArray*
+avtSmartDivideExpression::DetermineCentering(avtCentering *centering_out, vtkDataSet *in_ds, const char *varname)
 {
-    out = in_ds->GetCellData()->GetArray(varname);
+    debug5 << "Entering avtSmartDivideExpression::DetermineCentering(vtkDataArray*, vtkDataSet*, const char*)" << std::endl;
+    debug5 << "\t For " << varname << std::endl;
+    vtkDataArray* out = in_ds->GetCellData()->GetArray(varname);
     if (out == NULL)
     {
         out = in_ds->GetPointData()->GetArray(varname);
         if (out == NULL)
         {
+            debug5 << "Exiting on exception because not zone or node centered." << std::endl;
+            debug5 << "Exiting  avtSmartDivideExpression::DetermineCentering(vtkDataArray*, vtkDataSet*, const char*)" << std::endl;
             EXCEPTION2(ExpressionException, outputVariableName, 
                     "An internal error occurred when calculating an expression."
                     "  Please contact a VisIt developer.");
         }
         else
         {
-            return AVT_NODECENT;
+            *(centering_out) = AVT_NODECENT;
+            debug5 << "Node centered." << std::endl;
+            out->Print(std::cout);
+            debug5 << "Exiting  avtSmartDivideExpression::DetermineCentering(vtkDataArray*, vtkDataSet*, const char*)" << std::endl;
+            return out;
         }
     }
     else
     {
-        return AVT_ZONECENT;
+        *(centering_out) = AVT_ZONECENT;
+        out->Print(std::cout);
+        debug5 << "Zone centered." << std::endl;
+        debug5 << "Exiting  avtSmartDivideExpression::DetermineCentering(vtkDataArray*, vtkDataSet*, const char*)" << std::endl;
+        return out;
     }
 }
 
@@ -155,6 +181,7 @@ void
 avtSmartDivideExpression::DoOperation(vtkDataArray* output, vtkDataArray *in1,
         vtkDataArray *in2, int nComps, int nVals)
 {
+    debug5 << "Entering avtSmartDivideExpression::DoOperation(vtkDataArray*, vtkDataArray*, vtkDataArray, int, int)" << std::endl;
     // Get the number of components
     bool var1IsSingleton = (in1->GetNumberOfTuples() == 1);
     bool var2IsSingleton = (in2->GetNumberOfTuples() == 1);
@@ -202,21 +229,26 @@ avtSmartDivideExpression::DoOperation(vtkDataArray* output, vtkDataArray *in1,
     }
     else
     {
+        debug5 << "Exiting  avtSmartDivideExpression::DoOperation(vtkDataArray*, vtkDataArray*, vtkDataArray, int, int)" << std::endl;
         EXCEPTION2(ExpressionException, outputVariableName, 
                    "Division of vectors in undefined.");
     }
     
+    debug5 << "Exiting  avtSmartDivideExpression::DoOperation(vtkDataArray*, vtkDataArray*, vtkDataArray, int, int)" << std::endl;
     return;
 }
 
 double
 avtSmartDivideExpression::CheckZero(double top, double bottom)
 {
+    debug5 << "Entering avtSmartDivideExpression::CheckZero(double, double)" << std::endl;
     if (fabs(bottom) < this->tolerance)
     {
+        debug5 << "Exiting  avtSmartDivideExpression::CheckZero(double, double)" << std::endl;
         return this->value_if_zero;
     }
     else {
+        debug5 << "Exiting  avtSmartDivideExpression::CheckZero(double, double)" << std::endl;
         return top / bottom;
     }
 }
