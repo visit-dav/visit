@@ -58,6 +58,7 @@ avtExpressionFilter::avtExpressionFilter()
     outputVariableName = NULL;
     currentTimeState = 0;
     calculateExtents = false;
+    nProcessedArgs = 0;
 }
 
 
@@ -121,6 +122,7 @@ avtExpressionFilter::ProcessArguments(ArgsExpr *args, ExprPipelineState *state)
             continue;
         }
         expr_node->CreateFilters(state);
+        nProcessedArgs++;
     }
 }
 

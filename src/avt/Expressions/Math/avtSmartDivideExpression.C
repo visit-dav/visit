@@ -54,7 +54,8 @@
 
 avtSmartDivideExpression::avtSmartDivideExpression()
 {
-    ;
+    tolerance = 1e-16;
+    value_if_zero = 0.0;
 }
 
 avtSmartDivideExpression::~avtSmartDivideExpression()
@@ -72,16 +73,32 @@ avtSmartDivideExpression::DeriveVariable(vtkDataSet* in_ds, int currentDomainsIn
     vtkDataArray *data1 = DetermineCentering(&var1_centering, in_ds, varnames[0]);
     vtkDataArray *data2 = DetermineCentering(&var2_centering, in_ds, varnames[1]);
 
-    // The third variable should just be a constant double (e.g. divide(one, two, 1.0))
-    // So we ensure here that it is a singleton and set its value as the
-    // divide_by_zero value.
+    // Check if there is a third variable. If so, that variable is the tolerance.
     avtCentering dummy;
-    vtkDataArray *data3 = DetermineCentering(&dummy, in_ds, varnames[2]);
-    value_if_zero = data3->GetTuple1(0);
+    if (varnames.size() >= 3 && nProcessedArgs >= 3)
+    {
+        vtkDataArray *data3 = DetermineCentering(&dummy, in_ds, varnames[2]);
+        value_if_zero = data3->GetTuple1(0);
+        debug5 << "avtSmartDivideExpression::DeriveVariable: User specified a divide_by_zero_value of " << value_if_zero << "." << std::endl;
+
+    }
     // TODO: this feature can be easily enhanced to to handle a multi-variable
     // divide by zero case. For example, suppose the user wants the value_if_zero
     // to vary over the tuples/components as represented by some variable.
     // This can be easily done here.
+
+    // Check if there is a 4th variable. If so, that variable is the tolerance.
+    if (varnames.size() >= 4 && nProcessedArgs >= 4)
+    {
+        vtkDataArray *data4 = DetermineCentering(&dummy, in_ds, varnames[3]);
+        tolerance = data4->GetTuple1(0);
+        debug5 << "avtSmartDivideExpression::DeriveVariable: User specified a tolerance of " << tolerance << "." << std::endl;
+    }
+    // TODO: this feature can be easily enhanced to to handle a multi-variable
+    // divide by zero case. For example, suppose the user wants to specify varying
+    // tolernaces over the mesh as represented by some variable.
+    // This can be easily done here.
+    
 
     debug5 << "avtSmartDivideExpression::DeriveVariable: Centering determined. Now we recenter if needed" << std::endl;
     // Determine the centering that should be used.

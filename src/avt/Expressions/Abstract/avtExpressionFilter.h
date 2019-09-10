@@ -121,6 +121,7 @@ class EXPRESSION_API avtExpressionFilter : virtual public
   protected:
     char                    *outputVariableName;
     int                      currentTimeState;
+    int                      nProcessedArgs;
     bool                     calculateExtents;
 
     virtual bool             IsPointVariable();
