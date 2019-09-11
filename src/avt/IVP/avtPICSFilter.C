@@ -1,40 +1,6 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
 //                             avtPICSFilter.C                               //
@@ -107,7 +73,6 @@ Consider the leaveDomains ICs and the balancing at the same time.
 #include <ExpressionList.h>
 #include <ParsingExprList.h>
 #include <VisItStreamUtil.h>
-#include <snprintf.h>
 
 #ifdef PARALLEL
 #include <time.h> // needed for nanosleep
@@ -488,7 +453,7 @@ avtPICSFilter::GetDomain(const BlockIDType &domain, const avtVector &pt)
 void
 avtPICSFilter::RestoreICsFilename( int timeStep, char *filename, size_t filenameSize )
 {
-    SNPRINTF( filename, filenameSize, "%s_%d_%03d", restartFilename, PAR_Rank(), timeStep );
+    snprintf( filename, filenameSize, "%s_%d_%03d", restartFilename, PAR_Rank(), timeStep );
 }
 
 // ****************************************************************************
@@ -1215,7 +1180,7 @@ avtPICSFilter::SetICAlgorithm()
     if ((selectedAlgo != PICS_VISIT_SELECTS) && (selectedAlgo != actualAlgo))
     {
         char str[1024];
-        SNPRINTF(str, 1024,
+        snprintf(str, 1024,
                  "\nWarning: the selected algorithm \"%s\" could not be used, "
                  "instead the following algorithm was used \"%s\".\n",
                  AlgorithmToString(selectedAlgo), AlgorithmToString(actualAlgo));
@@ -3378,13 +3343,13 @@ avtPICSFilter::ModifyContract(avtContract_p in_contract)
         char defn[1024];
         if( pathlineCMFE == PICS_CONN_CMFE )
         {
-            SNPRINTF(defn, 1024, "conn_cmfe(<[%d]id:%s>, <%s>)",
+            snprintf(defn, 1024, "conn_cmfe(<[%d]id:%s>, <%s>)",
                      timeOffset, pathlineName.c_str(), meshName.c_str());
         }
         // Different mesh between the two time steps
         else //if( pathlineCMFE == PICS_POS_CMFE )
         {
-            SNPRINTF(defn, 1024, "pos_cmfe(<[%d]id:%s>, <%s>, <%s>)",
+            snprintf(defn, 1024, "pos_cmfe(<[%d]id:%s>, <%s>, <%s>)",
                      timeOffset, pathlineName.c_str(), meshName.c_str(),
                      pathlineName.c_str());
         }

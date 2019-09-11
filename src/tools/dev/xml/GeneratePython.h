@@ -1,40 +1,6 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 #ifndef GENERATE_PYTHON_H
 #define GENERATE_PYTHON_H
@@ -119,7 +85,7 @@ inline char toupper(char c)
 //    Allow for mdserver-specific code in a plugin's source files.
 //
 //    Brad Whitlock, Fri Jul 30 16:29:12 PST 2004
-//    Fixed the size of a buffer used by SNPRINTF when writing out enum code.
+//    Fixed the size of a buffer used by snprintf when writing out enum code.
 //
 //    Brad Whitlock, Wed Dec 8 15:55:24 PST 2004
 //    Added support for variable names.
@@ -371,7 +337,7 @@ class AttsGeneratorInt : public virtual Int , public virtual PythonGeneratorFiel
 
     virtual void StringRepresentation(QTextStream &c, const QString &classname)
     {
-        c << "    SNPRINTF(tmpStr, 1000, \"%s" << name << " = %d\\n\", prefix, atts->";
+        c << "    snprintf(tmpStr, 1000, \"%s" << name << " = %d\\n\", prefix, atts->";
         if(accessType == Field::AccessPublic)
             c << name;
         else
@@ -466,19 +432,19 @@ class AttsGeneratorIntArray : public virtual IntArray , public virtual PythonGen
         else
             c << MethodNameGet() << "()";
         c << ";" << Endl;
-        c << "        SNPRINTF(tmpStr, 1000, \"%s" << name << " = (\", prefix);" << Endl;
+        c << "        snprintf(tmpStr, 1000, \"%s" << name << " = (\", prefix);" << Endl;
         c << "        str += tmpStr;" << Endl;
         c << "        for(int i = 0; i < " << length << "; ++i)" << Endl;
         c << "        {" << Endl;
-        c << "            SNPRINTF(tmpStr, 1000, \"%d\", " << name << "[i]);" << Endl;
+        c << "            snprintf(tmpStr, 1000, \"%d\", " << name << "[i]);" << Endl;
         c << "            str += tmpStr;" << Endl;
         c << "            if(i < " << length - 1 << ")" << Endl;
         c << "            {" << Endl;
-        c << "                SNPRINTF(tmpStr, 1000, \", \");" << Endl;
+        c << "                snprintf(tmpStr, 1000, \", \");" << Endl;
         c << "                str += tmpStr;" << Endl;
         c << "            }" << Endl;
         c << "        }" << Endl;
-        c << "        SNPRINTF(tmpStr, 1000, \")\\n\");" << Endl;
+        c << "        snprintf(tmpStr, 1000, \")\\n\");" << Endl;
         c << "        str += tmpStr;" << Endl;
         c << "    }" << Endl;
     }
@@ -568,19 +534,19 @@ class AttsGeneratorIntVector : public virtual IntVector , public virtual PythonG
         else
             c << MethodNameGet() << "()";
         c << ";" << Endl;
-        c << "        SNPRINTF(tmpStr, 1000, \"%s" << name << " = (\", prefix);" << Endl;
+        c << "        snprintf(tmpStr, 1000, \"%s" << name << " = (\", prefix);" << Endl;
         c << "        str += tmpStr;" << Endl;
         c << "        for(size_t i = 0; i < " << name << ".size(); ++i)" << Endl;
         c << "        {" << Endl;
-        c << "            SNPRINTF(tmpStr, 1000, \"%d\", " << name << "[i]);" << Endl;
+        c << "            snprintf(tmpStr, 1000, \"%d\", " << name << "[i]);" << Endl;
         c << "            str += tmpStr;" << Endl;
         c << "            if(i < " << name << ".size() - 1)" << Endl;
         c << "            {" << Endl;
-        c << "                SNPRINTF(tmpStr, 1000, \", \");" << Endl;
+        c << "                snprintf(tmpStr, 1000, \", \");" << Endl;
         c << "                str += tmpStr;" << Endl;
         c << "            }" << Endl;
         c << "        }" << Endl;
-        c << "        SNPRINTF(tmpStr, 1000, \")\\n\");" << Endl;
+        c << "        snprintf(tmpStr, 1000, \")\\n\");" << Endl;
         c << "        str += tmpStr;" << Endl;
         c << "    }" << Endl;
     }
@@ -628,9 +594,9 @@ class AttsGeneratorBool : public virtual Bool , public virtual PythonGeneratorFi
         else
             c << MethodNameGet() << "()";
         c << ")" << Endl;
-        c << "        SNPRINTF(tmpStr, 1000, \"%s" << name << " = 1\\n\", prefix);" << Endl;
+        c << "        snprintf(tmpStr, 1000, \"%s" << name << " = 1\\n\", prefix);" << Endl;
         c << "    else" << Endl;
-        c << "        SNPRINTF(tmpStr, 1000, \"%s" << name << " = 0\\n\", prefix);" << Endl;
+        c << "        snprintf(tmpStr, 1000, \"%s" << name << " = 0\\n\", prefix);" << Endl;
         c << "    str += tmpStr;" << Endl;
     }
 };
@@ -670,7 +636,7 @@ class AttsGeneratorFloat : public virtual Float , public virtual PythonGenerator
 
     virtual void StringRepresentation(QTextStream &c, const QString &classname)
     {
-        c << "    SNPRINTF(tmpStr, 1000, \"%s" << name << " = %g\\n\", prefix, atts->";
+        c << "    snprintf(tmpStr, 1000, \"%s" << name << " = %g\\n\", prefix, atts->";
         if(accessType == Field::AccessPublic)
             c << name;
         else
@@ -765,19 +731,19 @@ class AttsGeneratorFloatArray : public virtual FloatArray , public virtual Pytho
         else
             c << MethodNameGet() << "()";
         c << ";" << Endl;
-        c << "        SNPRINTF(tmpStr, 1000, \"%s" << name << " = (\", prefix);" << Endl;
+        c << "        snprintf(tmpStr, 1000, \"%s" << name << " = (\", prefix);" << Endl;
         c << "        str += tmpStr;" << Endl;
         c << "        for(int i = 0; i < " << length << "; ++i)" << Endl;
         c << "        {" << Endl;
-        c << "            SNPRINTF(tmpStr, 1000, \"%g\", " << name << "[i]);" << Endl;
+        c << "            snprintf(tmpStr, 1000, \"%g\", " << name << "[i]);" << Endl;
         c << "            str += tmpStr;" << Endl;
         c << "            if(i < " << length - 1 << ")" << Endl;
         c << "            {" << Endl;
-        c << "                SNPRINTF(tmpStr, 1000, \", \");" << Endl;
+        c << "                snprintf(tmpStr, 1000, \", \");" << Endl;
         c << "                str += tmpStr;" << Endl;
         c << "            }" << Endl;
         c << "        }" << Endl;
-        c << "        SNPRINTF(tmpStr, 1000, \")\\n\");" << Endl;
+        c << "        snprintf(tmpStr, 1000, \")\\n\");" << Endl;
         c << "        str += tmpStr;" << Endl;
         c << "    }" << Endl;
     }
@@ -866,19 +832,19 @@ class AttsGeneratorFloatVector : public virtual FloatVector , public virtual Pyt
         else
             c << MethodNameGet() << "()";
         c << ";" << Endl;
-        c << "        SNPRINTF(tmpStr, 1000, \"%s" << name << " = (\", prefix);" << Endl;
+        c << "        snprintf(tmpStr, 1000, \"%s" << name << " = (\", prefix);" << Endl;
         c << "        str += tmpStr;" << Endl;
         c << "        for(size_t i = 0; i < " << name << ".size(); ++i)" << Endl;
         c << "        {" << Endl;
-        c << "            SNPRINTF(tmpStr, 1000, \"%f\", " << name << "[i]);" << Endl;
+        c << "            snprintf(tmpStr, 1000, \"%f\", " << name << "[i]);" << Endl;
         c << "            str += tmpStr;" << Endl;
         c << "            if(i < " << name << ".size() - 1)" << Endl;
         c << "            {" << Endl;
-        c << "                SNPRINTF(tmpStr, 1000, \", \");" << Endl;
+        c << "                snprintf(tmpStr, 1000, \", \");" << Endl;
         c << "                str += tmpStr;" << Endl;
         c << "            }" << Endl;
         c << "        }" << Endl;
-        c << "        SNPRINTF(tmpStr, 1000, \")\\n\");" << Endl;
+        c << "        snprintf(tmpStr, 1000, \")\\n\");" << Endl;
         c << "        str += tmpStr;" << Endl;
         c << "    }" << Endl;
     }
@@ -919,7 +885,7 @@ class AttsGeneratorDouble : public virtual Double , public virtual PythonGenerat
 
     virtual void StringRepresentation(QTextStream &c, const QString &classname)
     {
-        c << "    SNPRINTF(tmpStr, 1000, \"%s" << name << " = %g\\n\", prefix, atts->";
+        c << "    snprintf(tmpStr, 1000, \"%s" << name << " = %g\\n\", prefix, atts->";
         if(accessType == Field::AccessPublic)
             c << name;
         else
@@ -1015,19 +981,19 @@ class AttsGeneratorDoubleArray : public virtual DoubleArray , public virtual Pyt
         else
             c << MethodNameGet() << "()";
         c << ";" << Endl;
-        c << "        SNPRINTF(tmpStr, 1000, \"%s" << name << " = (\", prefix);" << Endl;
+        c << "        snprintf(tmpStr, 1000, \"%s" << name << " = (\", prefix);" << Endl;
         c << "        str += tmpStr;" << Endl;
         c << "        for(int i = 0; i < " << length << "; ++i)" << Endl;
         c << "        {" << Endl;
-        c << "            SNPRINTF(tmpStr, 1000, \"%g\", " << name << "[i]);" << Endl;
+        c << "            snprintf(tmpStr, 1000, \"%g\", " << name << "[i]);" << Endl;
         c << "            str += tmpStr;" << Endl;
         c << "            if(i < " << length - 1 << ")" << Endl;
         c << "            {" << Endl;
-        c << "                SNPRINTF(tmpStr, 1000, \", \");" << Endl;
+        c << "                snprintf(tmpStr, 1000, \", \");" << Endl;
         c << "                str += tmpStr;" << Endl;
         c << "            }" << Endl;
         c << "        }" << Endl;
-        c << "        SNPRINTF(tmpStr, 1000, \")\\n\");" << Endl;
+        c << "        snprintf(tmpStr, 1000, \")\\n\");" << Endl;
         c << "        str += tmpStr;" << Endl;
         c << "    }" << Endl;
     }
@@ -1117,19 +1083,19 @@ class AttsGeneratorDoubleVector : public virtual DoubleVector , public virtual P
         else
             c << MethodNameGet() << "()";
         c << ";" << Endl;
-        c << "        SNPRINTF(tmpStr, 1000, \"%s" << name << " = (\", prefix);" << Endl;
+        c << "        snprintf(tmpStr, 1000, \"%s" << name << " = (\", prefix);" << Endl;
         c << "        str += tmpStr;" << Endl;
         c << "        for(size_t i = 0; i < " << name << ".size(); ++i)" << Endl;
         c << "        {" << Endl;
-        c << "            SNPRINTF(tmpStr, 1000, \"%g\", " << name << "[i]);" << Endl;
+        c << "            snprintf(tmpStr, 1000, \"%g\", " << name << "[i]);" << Endl;
         c << "            str += tmpStr;" << Endl;
         c << "            if(i < " << name << ".size() - 1)" << Endl;
         c << "            {" << Endl;
-        c << "                SNPRINTF(tmpStr, 1000, \", \");" << Endl;
+        c << "                snprintf(tmpStr, 1000, \", \");" << Endl;
         c << "                str += tmpStr;" << Endl;
         c << "            }" << Endl;
         c << "        }" << Endl;
-        c << "        SNPRINTF(tmpStr, 1000, \")\\n\");" << Endl;
+        c << "        snprintf(tmpStr, 1000, \")\\n\");" << Endl;
         c << "        str += tmpStr;" << Endl;
         c << "    }" << Endl;
     }
@@ -1170,7 +1136,7 @@ class AttsGeneratorUChar : public virtual UChar , public virtual PythonGenerator
 
     virtual void StringRepresentation(QTextStream &c, const QString &classname)
     {
-        c << "    SNPRINTF(tmpStr, 1000, \"%s" << name << " = %d\\n\", prefix, int(atts->";
+        c << "    snprintf(tmpStr, 1000, \"%s" << name << " = %d\\n\", prefix, int(atts->";
         if(accessType == Field::AccessPublic)
             c << name;
         else
@@ -1271,19 +1237,19 @@ class AttsGeneratorUCharArray : public virtual UCharArray , public virtual Pytho
         else
             c << MethodNameGet() << "()";
         c << ";" << Endl;
-        c << "        SNPRINTF(tmpStr, 1000, \"%s" << name << " = (\", prefix);" << Endl;
+        c << "        snprintf(tmpStr, 1000, \"%s" << name << " = (\", prefix);" << Endl;
         c << "        str += tmpStr;" << Endl;
         c << "        for(int i = 0; i < " << length << "; ++i)" << Endl;
         c << "        {" << Endl;
-        c << "            SNPRINTF(tmpStr, 1000, \"%d\", int(" << name << "[i]));" << Endl;
+        c << "            snprintf(tmpStr, 1000, \"%d\", int(" << name << "[i]));" << Endl;
         c << "            str += tmpStr;" << Endl;
         c << "            if(i < " << length - 1 << ")" << Endl;
         c << "            {" << Endl;
-        c << "                SNPRINTF(tmpStr, 1000, \", \");" << Endl;
+        c << "                snprintf(tmpStr, 1000, \", \");" << Endl;
         c << "                str += tmpStr;" << Endl;
         c << "            }" << Endl;
         c << "        }" << Endl;
-        c << "        SNPRINTF(tmpStr, 1000, \")\\n\");" << Endl;
+        c << "        snprintf(tmpStr, 1000, \")\\n\");" << Endl;
         c << "        str += tmpStr;" << Endl;
         c << "    }" << Endl;
     }
@@ -1387,19 +1353,19 @@ class AttsGeneratorUCharVector : public virtual UCharVector , public virtual Pyt
         else
             c << MethodNameGet() << "()";
         c << ";" << Endl;
-        c << "        SNPRINTF(tmpStr, 1000, \"%s" << name << " = (\", prefix);" << Endl;
+        c << "        snprintf(tmpStr, 1000, \"%s" << name << " = (\", prefix);" << Endl;
         c << "        str += tmpStr;" << Endl;
         c << "        for(size_t i = 0; i < " << name << ".size(); ++i)" << Endl;
         c << "        {" << Endl;
-        c << "            SNPRINTF(tmpStr, 1000, \"%d\", int(" << name << "[i]));" << Endl;
+        c << "            snprintf(tmpStr, 1000, \"%d\", int(" << name << "[i]));" << Endl;
         c << "            str += tmpStr;" << Endl;
         c << "            if(i < " << name << ".size() - 1)" << Endl;
         c << "            {" << Endl;
-        c << "                SNPRINTF(tmpStr, 1000, \", \");" << Endl;
+        c << "                snprintf(tmpStr, 1000, \", \");" << Endl;
         c << "                str += tmpStr;" << Endl;
         c << "            }" << Endl;
         c << "        }" << Endl;
-        c << "        SNPRINTF(tmpStr, 1000, \")\\n\");" << Endl;
+        c << "        snprintf(tmpStr, 1000, \")\\n\");" << Endl;
         c << "        str += tmpStr;" << Endl;
         c << "    }" << Endl;
     }
@@ -1439,7 +1405,7 @@ class AttsGeneratorString : public virtual String , public virtual PythonGenerat
 
     virtual void StringRepresentation(QTextStream &c, const QString &classname)
     {
-        c << "    SNPRINTF(tmpStr, 1000, \"%s" << name << " = \\\"%s\\\"\\n\", prefix, atts->";
+        c << "    snprintf(tmpStr, 1000, \"%s" << name << " = \\\"%s\\\"\\n\", prefix, atts->";
         if(accessType == Field::AccessPublic)
             c << name;
         else
@@ -1519,19 +1485,19 @@ class AttsGeneratorStringVector : public virtual StringVector , public virtual P
         else
             c << MethodNameGet() << "()";
         c << ";" << Endl;
-        c << "        SNPRINTF(tmpStr, 1000, \"%s" << name << " = (\", prefix);" << Endl;
+        c << "        snprintf(tmpStr, 1000, \"%s" << name << " = (\", prefix);" << Endl;
         c << "        str += tmpStr;" << Endl;
         c << "        for(size_t i = 0; i < " << name << ".size(); ++i)" << Endl;
         c << "        {" << Endl;
-        c << "            SNPRINTF(tmpStr, 1000, \"\\\"%s\\\"\", " << name << "[i].c_str());" << Endl;
+        c << "            snprintf(tmpStr, 1000, \"\\\"%s\\\"\", " << name << "[i].c_str());" << Endl;
         c << "            str += tmpStr;" << Endl;
         c << "            if(i < " << name << ".size() - 1)" << Endl;
         c << "            {" << Endl;
-        c << "                SNPRINTF(tmpStr, 1000, \", \");" << Endl;
+        c << "                snprintf(tmpStr, 1000, \", \");" << Endl;
         c << "                str += tmpStr;" << Endl;
         c << "            }" << Endl;
         c << "        }" << Endl;
-        c << "        SNPRINTF(tmpStr, 1000, \")\\n\");" << Endl;
+        c << "        snprintf(tmpStr, 1000, \")\\n\");" << Endl;
         c << "        str += tmpStr;" << Endl;
         c << "    }" << Endl;
     }
@@ -1572,7 +1538,7 @@ class AttsGeneratorColorTable : public virtual ColorTable , public virtual Pytho
 
     virtual void StringRepresentation(QTextStream &c, const QString &classname)
     {
-        c << "    SNPRINTF(tmpStr, 1000, \"%s" << name << " = \\\"%s\\\"\\n\", prefix, atts->";
+        c << "    snprintf(tmpStr, 1000, \"%s" << name << " = \\\"%s\\\"\\n\", prefix, atts->";
         if(accessType == Field::AccessPublic)
             c << name;
         else
@@ -1682,7 +1648,7 @@ class AttsGeneratorColor : public virtual Color , public virtual PythonGenerator
         else
             c << MethodNameGet() << "()";
         c << ".GetColor();" << Endl;
-        c << "    SNPRINTF(tmpStr, 1000, \"%s" << name << " = (%d, %d, %d, %d)\\n\", prefix, int("<<name<<"[0]), int("<<name<<"[1]), int("<<name<<"[2]), int("<<name<<"[3]));" << Endl;
+        c << "    snprintf(tmpStr, 1000, \"%s" << name << " = (%d, %d, %d, %d)\\n\", prefix, int("<<name<<"[0]), int("<<name<<"[1]), int("<<name<<"[2]), int("<<name<<"[3]));" << Endl;
         c << "    str += tmpStr;" << Endl;
     }
 };
@@ -1723,7 +1689,7 @@ class AttsGeneratorLineWidth : public virtual LineWidth , public virtual PythonG
 
     virtual void StringRepresentation(QTextStream &c, const QString &classname)
     {
-        c << "    SNPRINTF(tmpStr, 1000, \"%s" << name << " = %d\\n\", prefix, atts->";
+        c << "    snprintf(tmpStr, 1000, \"%s" << name << " = %d\\n\", prefix, atts->";
         if(accessType == Field::AccessPublic)
             c << name;
         else
@@ -1768,7 +1734,7 @@ class AttsGeneratorOpacity : public virtual Opacity , public virtual PythonGener
 
     virtual void StringRepresentation(QTextStream &c, const QString &classname)
     {
-        c << "    SNPRINTF(tmpStr, 1000, \"%s" << name << " = %g\\n\", prefix, atts->";
+        c << "    snprintf(tmpStr, 1000, \"%s" << name << " = %g\\n\", prefix, atts->";
         if(accessType == Field::AccessPublic)
             c << name;
         else
@@ -1813,7 +1779,7 @@ class AttsGeneratorVariableName : public virtual VariableName , public virtual P
 
     virtual void StringRepresentation(QTextStream &c, const QString &classname)
     {
-        c << "    SNPRINTF(tmpStr, 1000, \"%s" << name << " = \\\"%s\\\"\\n\", prefix, atts->";
+        c << "    snprintf(tmpStr, 1000, \"%s" << name << " = \\\"%s\\\"\\n\", prefix, atts->";
         if(accessType == Field::AccessPublic)
             c << name;
         else
@@ -2110,7 +2076,7 @@ class AttsGeneratorAtt : public virtual Att , public virtual PythonGeneratorFiel
             c << "        for(int i = 0; i < cL.GetNumColors(); ++i)" << Endl;
             c << "        {" << Endl;
             c << "            const unsigned char *c = cL[i].GetColor();" << Endl;
-            c << "            SNPRINTF(tmpStr, 1000, \"%s%sSet" << Name << "(%d, (%d, %d, %d, %d))\\n\"," << Endl;
+            c << "            snprintf(tmpStr, 1000, \"%s%sSet" << Name << "(%d, (%d, %d, %d, %d))\\n\"," << Endl;
             c << "                     comment, prefix, i, int(c[0]), int(c[1]), int(c[2]), int(c[3]));" << Endl;
             c << "            str += tmpStr;" << Endl;
             c << "        }" << Endl;
@@ -2171,9 +2137,9 @@ class AttsGeneratorAttVector : public virtual AttVector , public virtual PythonG
         c << "    {" << Endl;
         c << "        char msg[400] = {'\\0'};" << Endl;
         c << "        if(obj->data->Get" << Name << "().size() == 0)" << Endl;
-        c << "            SNPRINTF(msg, 400, \"In " << className << "::Get" << Name << " : The index %d is invalid because " << name << " is empty.\", index);" << Endl;
+        c << "            snprintf(msg, 400, \"In " << className << "::Get" << Name << " : The index %d is invalid because " << name << " is empty.\", index);" << Endl;
         c << "        else" << Endl;
-        c << "            SNPRINTF(msg, 400, \"In " << className << "::Get" << Name << " : The index %d is invalid. Use index values in: [0, %ld).\",  index, obj->data->Get" << Name << "().size());" << Endl;
+        c << "            snprintf(msg, 400, \"In " << className << "::Get" << Name << " : The index %d is invalid. Use index values in: [0, %ld).\",  index, obj->data->Get" << Name << "().size());" << Endl;
         c << "        PyErr_SetString(PyExc_IndexError, msg);" << Endl;
         c << "        return NULL;" << Endl;
         c << "    }" << Endl;
@@ -2212,7 +2178,7 @@ class AttsGeneratorAttVector : public virtual AttVector , public virtual PythonG
         c << "    if(!Py" << attType << "_Check(element))" << Endl; 
         c << "    {" << Endl;
         c << "        char msg[400] = {'\\0'};" << Endl;
-        c << "        SNPRINTF(msg, 400, \"The " << className << "::Add" << Name << " method only accepts " << attType << " objects.\");" << Endl;
+        c << "        snprintf(msg, 400, \"The " << className << "::Add" << Name << " method only accepts " << attType << " objects.\");" << Endl;
         c << "        PyErr_SetString(PyExc_TypeError, msg);" << Endl;
         c << "        return NULL;" << Endl;
         c << "    }" << Endl;
@@ -2277,7 +2243,7 @@ class AttsGeneratorAttVector : public virtual AttVector , public virtual PythonG
             c << "    if(index < 0 || index >= obj->data->GetNum" << Name << plural << "())" << Endl;
         c << "    {" << Endl;
         c << "        char msg[400] = {'\\0'};" << Endl;
-        c << "        SNPRINTF(msg, 400, \"In " << className << "::Remove" << Name << " : Index %d is out of range\", index);" << Endl;
+        c << "        snprintf(msg, 400, \"In " << className << "::Remove" << Name << " : Index %d is out of range\", index);" << Endl;
         c << "        PyErr_SetString(PyExc_IndexError, msg);" << Endl;
         c << "        return NULL;" << Endl;
         c << "    }" << Endl;
@@ -2335,7 +2301,7 @@ class AttsGeneratorAttVector : public virtual AttVector , public virtual PythonG
             c << "        for(AttributeGroupVector::const_iterator pos = atts->" << MethodNameGet() << "().begin(); pos != atts->" << MethodNameGet() << "().end(); ++pos, ++index)" << Endl;
         c << "        {" << Endl;
         c << "            const " << attType << " *current" << " = (const " << attType << " *)(*pos);" << Endl;
-        c << "            SNPRINTF(tmpStr, 1000, \"Get" << Name << "(%d).\", index);" << Endl;
+        c << "            snprintf(tmpStr, 1000, \"Get" << Name << "(%d).\", index);" << Endl;
         c << "            std::string objPrefix(prefix + std::string(tmpStr));" << Endl;
         c << "            str += Py" << attType << "_ToString(current, objPrefix.c_str());" << Endl;
         c << "        }" << Endl;
@@ -2427,7 +2393,7 @@ class PythonGeneratorEnum : public virtual Enum , public virtual PythonGenerator
         for(size_t i = 0; i < enumType->values.size(); ++i)
         {
             c << "      case " << classname << "::" << enumType->values[i] << ":\n";
-            c << "          SNPRINTF(tmpStr, 1000, \"%s" << name << " = %s" 
+            c << "          snprintf(tmpStr, 1000, \"%s" << name << " = %s" 
               << enumType->values[i] << "  # %s\\n\", prefix, prefix, " 
               << name << "_names);" << Endl;
             c << "          str += tmpStr;" << Endl;
@@ -2559,7 +2525,7 @@ class AttsGeneratorMapNode : public virtual MapNode , public virtual PythonGener
             else \
                 c << "else" << Endl; \
             c << "    {" << Endl; \
-            c << "        SNPRINTF(tmpStr, 1000, \"%s" << name << " = %s" << values[i] << "  # %s\\n\", prefix, prefix, " << name << "_names);" << Endl; \
+            c << "        snprintf(tmpStr, 1000, \"%s" << name << " = %s" << values[i] << "  # %s\\n\", prefix, prefix, " << name << "_names);" << Endl; \
             c << "        str += tmpStr;" << Endl; \
             c << "    }" << Endl; \
         } \
@@ -2721,7 +2687,7 @@ class AttsGeneratorScaleMode : public virtual PythonGeneratorField, public virtu
     virtual void StringRepresentation(QTextStream &c, const QString &classname)
     {
         c << "    const char *" << name << "_values[] = {\"LINEAR\", \"LOG\"};" << Endl;
-        c << "    SNPRINTF(tmpStr, 1000, \"%s" << name << " = %s%s  # LINEAR, LOG\\n\", prefix, prefix, " << name << "_values[atts->" << MethodNameGet() << "()]);" << Endl;
+        c << "    snprintf(tmpStr, 1000, \"%s" << name << " = %s%s  # LINEAR, LOG\\n\", prefix, prefix, " << name << "_values[atts->" << MethodNameGet() << "()]);" << Endl;
         c << "    str += tmpStr;" << Endl;
     }
 
@@ -2826,7 +2792,7 @@ class AttsGeneratorGlyphType : public virtual GlyphType , public virtual PythonG
         for(int i = 0; i < values_size; ++i)
         {
             c << "      case " << values[i] << ":\n";
-            c << "          SNPRINTF(tmpStr, 1000, \"%s" << name << " = %s" 
+            c << "          snprintf(tmpStr, 1000, \"%s" << name << " = %s" 
               << values[i] << "  # %s\\n\", prefix, prefix, " 
               << name << "_names);" << Endl;
             c << "          str += tmpStr;" << Endl;
@@ -3040,8 +3006,6 @@ class PythonGeneratorAttribute : public GeneratorBase
 
     void WriteIncludedHeaders(QTextStream &c)
     {
-        c << "#include <snprintf.h>" << Endl;
-
        for (size_t i=0; i<includes.size(); i++)
         {
             if (includes[i]->destination=="source" &&

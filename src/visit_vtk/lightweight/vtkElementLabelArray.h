@@ -1,3 +1,7 @@
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
+
 #ifndef vtkElementLabelArray_h
 #define vtkElementLabelArray_h
 
@@ -9,13 +13,13 @@
 #include "vtkObjectFactory.h"
 #include <map>
 
-class VISIT_VTK_LIGHT_API vtkElementLabelArray : public vtkCharArray 
+class VISIT_VTK_LIGHT_API vtkElementLabelArray : public vtkCharArray
 {
 public:
   static vtkElementLabelArray *New();
   vtkTypeMacro(vtkElementLabelArray,vtkCharArray);
   void PrintSelf(ostream& os, vtkIndent indent) override;
-  bool AddName(const std::string &name, 
+  bool AddName(const std::string &name,
                const std::vector<int> &labelRangesBegin,
                const std::vector<int> &labelRangesEnd,
                const std::vector<int> &elementIdsBegin,
@@ -33,7 +37,7 @@ protected:
   };
   vtkElementLabelArray();
   virtual ~vtkElementLabelArray();
-  std::map<std::string, LabelToZoneMapping> NameMapping; 
+  std::map<std::string, LabelToZoneMapping> NameMapping;
 private:
   vtkElementLabelArray(const vtkElementLabelArray&);   // not implemented
   void operator=(const vtkElementLabelArray&);  // not implemented

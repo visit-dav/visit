@@ -1,40 +1,6 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
 //                              avtMeshPlot.C                                //
@@ -44,8 +10,10 @@
 
 #include <vtkLookupTable.h>
 
+#include <ColorAttribute.h>
 #include <MeshAttributes.h>
 
+#include <avtColorTables.h>
 #include <avtMeshFilter.h>
 #include <avtSmoothPolyDataFilter.h>
 #include <avtMeshPlotMapper.h>
@@ -340,6 +308,8 @@ avtMeshPlot::SetCellCountMultiplierForSRThreshold(const avtDataObject_p dob)
 void
 avtMeshPlot::SetAtts(const AttributeGroup *a)
 {
+    int const maxColorsToTry = 50;
+
     needsRecalculation =
         atts.ChangesRequireRecalculation(*(const MeshAttributes*)a,
         behavior->GetInfo().GetAttributes().GetSpatialDimension());
@@ -347,21 +317,40 @@ avtMeshPlot::SetAtts(const AttributeGroup *a)
     atts = *(const MeshAttributes*)a;
 
     SetLineWidth(Int2LineWidth(atts.GetLineWidth()));
-    if (atts.GetMeshColorSource()==0)
+    if (atts.GetMeshColorSource() == MeshAttributes::Foreground)
     {
         SetMeshColor(fgColor);
     }
-    else
+    else if (atts.GetMeshColorSource() == MeshAttributes::MeshRandom)
+    {
+        unsigned char rgb[3] = {0,0,0};
+        unsigned char bg[3] = {static_cast<unsigned char>(bgColor[0]*255),
+                               static_cast<unsigned char>(bgColor[1]*255),
+                               static_cast<unsigned char>(bgColor[2]*255)};
+        avtColorTables *ct = avtColorTables::Instance();
+        if (! ct->GetJNDControlPointColor(ct->GetDefaultDiscreteColorTable(), this->instanceIndex, bg, rgb))
+            ct->GetJNDControlPointColor("distinct", this->instanceIndex, bg, rgb);
+        SetMeshColor(rgb);
+    }
+    else // MeshAttributes::MeshCustom
     {
         SetMeshColor(atts.GetMeshColor().GetColor());
     }
 
     SetRenderOpaque();
-    if (atts.GetOpaqueColorSource()==0)
+    if (atts.GetOpaqueColorSource() == MeshAttributes::Background)
     {
         SetOpaqueColor(bgColor);
     }
-    else
+    else if (atts.GetOpaqueColorSource() == MeshAttributes::OpaqueRandom)
+    {
+        unsigned char rgb[3] = {0,0,0};
+        avtColorTables *ct = avtColorTables::Instance();
+        if (! ct->GetControlPointColor(ct->GetDefaultDiscreteColorTable(), this->instanceIndex+1, rgb))
+            ct->GetControlPointColor("distinct", this->instanceIndex+1, rgb);
+        SetOpaqueColor(rgb);
+    }
+    else // MeshAttributes::OpaqueCustom
     {
         SetOpaqueColor(atts.GetOpaqueColor().GetColor());
     }
@@ -418,24 +407,16 @@ avtMeshPlot::SetAtts(const AttributeGroup *a)
 //    Kathleen Bonnell, Mon Mar 24 17:48:27 PST 2003
 //    Added call to SetOpaqueColor.
 //
+//    Mark C. Miller, Wed Jun 19 22:26:53 PDT 2019
+//    Simplify. Delegate to the double method.
 // ****************************************************************************
 
 void
 avtMeshPlot::SetMeshColor(const unsigned char *col)
 {
-    double rgb[3];
-    rgb[0] = (double) col[0] / 255.0;
-    rgb[1] = (double) col[1] / 255.0;
-    rgb[2] = (double) col[2] / 255.0;
-    mapper->SetMeshColor(rgb);
-    glyphMapper->ColorBySingleColor(rgb);
-
-    if (wireframeRenderingIsInappropriate)
-    {
-        SetOpaqueColor(col, true);
-    }
+    double rgb[3] = {col[0]/255.0,col[1]/255.0,col[2]/255.0};
+    SetMeshColor(rgb);
 }
-
 
 // ****************************************************************************
 //  Method: avtMeshPlot::SetMeshColor
@@ -457,9 +438,7 @@ void
 avtMeshPlot::SetMeshColor(const double *col)
 {
     double rgb[3];
-    rgb[0] = col[0];
-    rgb[1] = col[1];
-    rgb[2] = col[2];
+    std::copy(col,col+3,rgb);
     mapper->SetMeshColor(rgb);
     glyphMapper->ColorBySingleColor(rgb);
 
@@ -468,7 +447,6 @@ avtMeshPlot::SetMeshColor(const double *col)
         SetOpaqueColor(col, true);
     }
 }
-
 
 // ****************************************************************************
 //  Method: avtMeshPlot::SetOpaqueColor
@@ -487,21 +465,16 @@ avtMeshPlot::SetMeshColor(const double *col)
 //    The opaque color should match the mesh color if wireframe rendering
 //    is inappropriate.  Don't allow the color to be set incorrectly.
 //
+//    Mark C. Miller, Wed Jun 19 22:34:38 PDT 2019
+//    Simplify. Delegate to double method.
 // ****************************************************************************
 
 void
 avtMeshPlot::SetOpaqueColor(const unsigned char *col, bool force)
 {
-    if (!wireframeRenderingIsInappropriate || force)
-    {
-        double rgb[3];
-        rgb[0] = (double) col[0] / 255.0;
-        rgb[1] = (double) col[1] / 255.0;
-        rgb[2] = (double) col[2] / 255.0;
-        mapper->SetSurfaceColor(rgb);
-    }
+    double rgb[3] = {col[0]/255.0,col[1]/255.0,col[2]/255.0};
+    SetOpaqueColor(rgb, force);
 }
-
 
 // ****************************************************************************
 //  Method: avtMeshPlot::SetOpaqueColor
@@ -523,13 +496,10 @@ avtMeshPlot::SetOpaqueColor(const double *col, bool force)
     if (!wireframeRenderingIsInappropriate || force)
     {
         double rgb[3];
-        rgb[0] = col[0];
-        rgb[1] = col[1];
-        rgb[2] = col[2];
+        std::copy(col,col+3,rgb);
         mapper->SetSurfaceColor(rgb);
     }
 }
-
 
 // ****************************************************************************
 //  Method: avtMeshPlot::SetLegend
@@ -949,7 +919,7 @@ avtMeshPlot::SetBackgroundColor(const double *bg)
 {
     bool retVal = false;
 
-    if (atts.GetOpaqueColorSource()==0 && ShouldRenderOpaque())
+    if (atts.GetOpaqueColorSource() == MeshAttributes::Background && ShouldRenderOpaque())
     {
        if (bgColor[0] != bg[0] || bgColor[1] != bg[1] || bgColor[2] != bg[2])
        {
@@ -987,7 +957,7 @@ avtMeshPlot::SetForegroundColor(const double *fg)
 {
     bool retVal = false;
 
-    if (atts.GetMeshColorSource()==0)
+    if (atts.GetMeshColorSource() == MeshAttributes::Foreground)
     {
        if (fgColor[0] != fg[0] || fgColor[1] != fg[1] || fgColor[2] != fg[2])
        {

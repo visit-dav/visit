@@ -1,45 +1,10 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 #include <PyAxes3D.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 #include <PyAxisAttributes.h>
 #include <PyAxisAttributes.h>
 #include <PyAxisAttributes.h>
@@ -80,35 +45,35 @@ PyAxes3D_ToString(const Axes3D *atts, const char *prefix)
     char tmpStr[1000];
 
     if(atts->GetVisible())
-        SNPRINTF(tmpStr, 1000, "%svisible = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%svisible = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%svisible = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%svisible = 0\n", prefix);
     str += tmpStr;
     if(atts->GetAutoSetTicks())
-        SNPRINTF(tmpStr, 1000, "%sautoSetTicks = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sautoSetTicks = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sautoSetTicks = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sautoSetTicks = 0\n", prefix);
     str += tmpStr;
     if(atts->GetAutoSetScaling())
-        SNPRINTF(tmpStr, 1000, "%sautoSetScaling = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sautoSetScaling = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sautoSetScaling = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sautoSetScaling = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%slineWidth = %d\n", prefix, atts->GetLineWidth());
+    snprintf(tmpStr, 1000, "%slineWidth = %d\n", prefix, atts->GetLineWidth());
     str += tmpStr;
     const char *tickLocation_names = "Inside, Outside, Both";
     switch (atts->GetTickLocation())
     {
       case Axes3D::Inside:
-          SNPRINTF(tmpStr, 1000, "%stickLocation = %sInside  # %s\n", prefix, prefix, tickLocation_names);
+          snprintf(tmpStr, 1000, "%stickLocation = %sInside  # %s\n", prefix, prefix, tickLocation_names);
           str += tmpStr;
           break;
       case Axes3D::Outside:
-          SNPRINTF(tmpStr, 1000, "%stickLocation = %sOutside  # %s\n", prefix, prefix, tickLocation_names);
+          snprintf(tmpStr, 1000, "%stickLocation = %sOutside  # %s\n", prefix, prefix, tickLocation_names);
           str += tmpStr;
           break;
       case Axes3D::Both:
-          SNPRINTF(tmpStr, 1000, "%stickLocation = %sBoth  # %s\n", prefix, prefix, tickLocation_names);
+          snprintf(tmpStr, 1000, "%stickLocation = %sBoth  # %s\n", prefix, prefix, tickLocation_names);
           str += tmpStr;
           break;
       default:
@@ -119,23 +84,23 @@ PyAxes3D_ToString(const Axes3D *atts, const char *prefix)
     switch (atts->GetAxesType())
     {
       case Axes3D::ClosestTriad:
-          SNPRINTF(tmpStr, 1000, "%saxesType = %sClosestTriad  # %s\n", prefix, prefix, axesType_names);
+          snprintf(tmpStr, 1000, "%saxesType = %sClosestTriad  # %s\n", prefix, prefix, axesType_names);
           str += tmpStr;
           break;
       case Axes3D::FurthestTriad:
-          SNPRINTF(tmpStr, 1000, "%saxesType = %sFurthestTriad  # %s\n", prefix, prefix, axesType_names);
+          snprintf(tmpStr, 1000, "%saxesType = %sFurthestTriad  # %s\n", prefix, prefix, axesType_names);
           str += tmpStr;
           break;
       case Axes3D::OutsideEdges:
-          SNPRINTF(tmpStr, 1000, "%saxesType = %sOutsideEdges  # %s\n", prefix, prefix, axesType_names);
+          snprintf(tmpStr, 1000, "%saxesType = %sOutsideEdges  # %s\n", prefix, prefix, axesType_names);
           str += tmpStr;
           break;
       case Axes3D::StaticTriad:
-          SNPRINTF(tmpStr, 1000, "%saxesType = %sStaticTriad  # %s\n", prefix, prefix, axesType_names);
+          snprintf(tmpStr, 1000, "%saxesType = %sStaticTriad  # %s\n", prefix, prefix, axesType_names);
           str += tmpStr;
           break;
       case Axes3D::StaticEdges:
-          SNPRINTF(tmpStr, 1000, "%saxesType = %sStaticEdges  # %s\n", prefix, prefix, axesType_names);
+          snprintf(tmpStr, 1000, "%saxesType = %sStaticEdges  # %s\n", prefix, prefix, axesType_names);
           str += tmpStr;
           break;
       default:
@@ -143,14 +108,14 @@ PyAxes3D_ToString(const Axes3D *atts, const char *prefix)
     }
 
     if(atts->GetTriadFlag())
-        SNPRINTF(tmpStr, 1000, "%striadFlag = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%striadFlag = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%striadFlag = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%striadFlag = 0\n", prefix);
     str += tmpStr;
     if(atts->GetBboxFlag())
-        SNPRINTF(tmpStr, 1000, "%sbboxFlag = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sbboxFlag = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sbboxFlag = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sbboxFlag = 0\n", prefix);
     str += tmpStr;
     { // new scope
         std::string objPrefix(prefix);
@@ -168,60 +133,60 @@ PyAxes3D_ToString(const Axes3D *atts, const char *prefix)
         str += PyAxisAttributes_ToString(&atts->GetZAxis(), objPrefix.c_str());
     }
     if(atts->GetSetBBoxLocation())
-        SNPRINTF(tmpStr, 1000, "%ssetBBoxLocation = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%ssetBBoxLocation = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%ssetBBoxLocation = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%ssetBBoxLocation = 0\n", prefix);
     str += tmpStr;
     {   const double *bboxLocation = atts->GetBboxLocation();
-        SNPRINTF(tmpStr, 1000, "%sbboxLocation = (", prefix);
+        snprintf(tmpStr, 1000, "%sbboxLocation = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 6; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", bboxLocation[i]);
+            snprintf(tmpStr, 1000, "%g", bboxLocation[i]);
             str += tmpStr;
             if(i < 5)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const int *triadColor = atts->GetTriadColor();
-        SNPRINTF(tmpStr, 1000, "%striadColor = (", prefix);
+        snprintf(tmpStr, 1000, "%striadColor = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 3; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%d", triadColor[i]);
+            snprintf(tmpStr, 1000, "%d", triadColor[i]);
             str += tmpStr;
             if(i < 2)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
-    SNPRINTF(tmpStr, 1000, "%striadLineWidth = %g\n", prefix, atts->GetTriadLineWidth());
+    snprintf(tmpStr, 1000, "%striadLineWidth = %g\n", prefix, atts->GetTriadLineWidth());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%striadFont = %d\n", prefix, atts->GetTriadFont());
+    snprintf(tmpStr, 1000, "%striadFont = %d\n", prefix, atts->GetTriadFont());
     str += tmpStr;
     if(atts->GetTriadBold())
-        SNPRINTF(tmpStr, 1000, "%striadBold = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%striadBold = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%striadBold = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%striadBold = 0\n", prefix);
     str += tmpStr;
     if(atts->GetTriadItalic())
-        SNPRINTF(tmpStr, 1000, "%striadItalic = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%striadItalic = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%striadItalic = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%striadItalic = 0\n", prefix);
     str += tmpStr;
     if(atts->GetTriadSetManually())
-        SNPRINTF(tmpStr, 1000, "%striadSetManually = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%striadSetManually = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%striadSetManually = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%striadSetManually = 0\n", prefix);
     str += tmpStr;
     return str;
 }

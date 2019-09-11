@@ -1,40 +1,6 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
 //                              avtMiliFileFormat.C                          //
@@ -67,6 +33,7 @@
 #include <InvalidFilesException.h>
 #include <InvalidVariableException.h>
 #include <UnexpectedValueException.h>
+#include <NonCompliantFileException.h>
 
 #include <TimingsManager.h>
 
@@ -513,7 +480,7 @@ avtMiliFileFormat::OpenDB(int dom)
             char famname[128];
             for (int i = 0; i < 4; i++)
             {
-                sprintf(famname, root_fmtstrs[i], famroot, dom);
+                snprintf(famname, 128, root_fmtstrs[i], famroot, dom);
                 debug3 << "MILI: Attempting mc_open on root=\"" << famname 
                     << "\", path=\"" << fampath << "\"." << endl;
 
@@ -561,7 +528,7 @@ avtMiliFileFormat::GetNodePositions(int timestep,
     // The node positions are stored in 'nodpos'.
     //
     char npChar[128];
-    sprintf(npChar, "nodpos");
+    snprintf(npChar, 128, "nodpos");
     char *npCharPtr = (char *)npChar;
 
     MiliVariableMetaData *nodpos = miliMetaData[meshId]->
@@ -680,8 +647,8 @@ avtMiliFileFormat::GetMesh(int timestep, int dom, const char *mesh)
     {
         debug1 << "MILI: The user has requested a sand mesh that doesn't exist!"
                << "This shouldn't be possible...";
-        char msg[1024];
-        sprintf(msg, "Cannot view a non-existent sand mesh!");
+        char msg[128];
+        snprintf(msg, 128, "Cannot view a non-existent sand mesh!");
         EXCEPTION1(ImproperUseException, msg);
     }
 
@@ -700,8 +667,8 @@ avtMiliFileFormat::GetMesh(int timestep, int dom, const char *mesh)
         if (datasets[dom][meshId]->GetPoints() == NULL)
         {
             debug1 << "MILI: Unable to find nodes! This shouldn't happen..";
-            char msg[1024];
-            sprintf(msg, "Unable to load nodes from Mili!");
+            char msg[128];
+            snprintf(msg, 128, "Unable to load nodes from Mili!");
             EXCEPTION1(ImproperUseException, msg);
         }
     }
@@ -766,8 +733,8 @@ avtMiliFileFormat::GetMesh(int timestep, int dom, const char *mesh)
                 //
                 // Create a copy of our name to pass into mili. 
                 //
-                char charName[1024];
-                sprintf(charName, varName.c_str());
+                char charName[128];
+                snprintf(charName, 128, "%s", varName.c_str());
                 char *namePtr = (char *) charName;
 
                 ReadMiliVarToBuffer(namePtr, SRIds, SRInfo, start,
@@ -903,8 +870,8 @@ avtMiliFileFormat::ReadMesh(int dom)
 
         if (rval != OK)
         {
-            char msg[1024];
-            sprintf(msg, "Unable to retrieve %s from mili", shortName);
+            char msg[512];
+            snprintf(msg, 512, "Unable to retrieve %s from mili", shortName);
             EXCEPTION1(ImproperUseException, msg);
         }
 
@@ -1283,8 +1250,8 @@ avtMiliFileFormat::PopulateSubrecordInfo(int dom, int meshId)
         //
         debug1 << "MILI: Encountered multiple state record formats! Is this in "
                << "use now???";
-        char msg[1024];
-        sprintf(msg, "The Mili plugin is not set-up to handle multiple ",
+        char msg[512];
+        snprintf(msg, 512, "The Mili plugin is not set-up to handle multiple "
             "state record formats. Bailing.");
         EXCEPTION1(ImproperUseException, msg);
     }
@@ -1572,8 +1539,8 @@ avtMiliFileFormat::GetVar(int timestep,
     {
         debug1 << "MILI: GetVar recieved a null array?! "
                << "This shouldn't happen...";
-        char msg[1024];
-        sprintf(msg, "Data array must be initialized!");
+        char msg[128];
+        snprintf(msg, 128, "Data array must be initialized!");
         EXCEPTION1(ImproperUseException, msg);
     }
 
@@ -1586,8 +1553,8 @@ avtMiliFileFormat::GetVar(int timestep,
     //
     // Create a copy of our name to pass into mili. 
     //
-    char charName[1024];
-    sprintf(charName, vShortName.c_str());
+    char charName[128];
+    snprintf(charName, 128, "%s", vShortName.c_str());
     char *namePtr = (char *) charName;
 
     if (varMD->GetCentering() == AVT_NODECENT)
@@ -1909,8 +1876,8 @@ avtMiliFileFormat::GetVectorVar(int timestep,
     //
     // Create a copy of our name to pass into mili. 
     //
-    char charName[1024];
-    sprintf(charName, varMD->GetShortName().c_str());
+    char charName[128];
+    snprintf(charName, 128, "%s", varMD->GetShortName().c_str());
     char *namePtr = (char *) charName;
 
     int vecSize   = varMD->GetVectorSize();
@@ -2077,8 +2044,8 @@ avtMiliFileFormat::GetElementSetVar(int timestep,
     //
     // Create a copy of our name to pass into mili. 
     //
-    char charName[1024];
-    sprintf(charName, varMD->GetShortName().c_str());
+    char charName[128];
+    snprintf(charName, 128, "%s", varMD->GetShortName().c_str());
     char *namePtr = (char *) charName;
 
     int compDims      = varMD->GetComponentDims();
@@ -2326,7 +2293,7 @@ avtMiliFileFormat::AddMiliVariableToMetaData(avtDatabaseMetaData *avtMD,
     meshPaths.push_back(varPath);
 
     char meshName[32];
-    sprintf(meshName, "mesh%d", meshId + 1);
+    snprintf(meshName, 32, "mesh%d", meshId + 1);
     meshNames.push_back(meshName);
     numMeshes++;
 
@@ -2337,7 +2304,7 @@ avtMiliFileFormat::AddMiliVariableToMetaData(avtDatabaseMetaData *avtMD,
         meshPaths.push_back(sandPath);
 
         char meshName[32];
-        sprintf(meshName, "sand_mesh%d", meshId + 1);
+        snprintf(meshName, 32, "sand_mesh%d", meshId + 1);
         meshNames.push_back(meshName);
         numMeshes++;
     }
@@ -2435,7 +2402,7 @@ avtMiliFileFormat::AddMiliVariableToMetaData(avtDatabaseMetaData *avtMD,
                     // Add the x, y, z expressions. 
                     //
                     char name[1024];
-                    sprintf(name, "%s/%s", mPath.c_str(), 
+                    snprintf(name, 1024, "%s/%s", mPath.c_str(), 
                         vComps[(*idxItr)].c_str());
                     Expression expr = ScalarExpressionFromVec(mPath.c_str(),
                                                               name, 
@@ -2475,7 +2442,7 @@ avtMiliFileFormat::AddMiliVariableToMetaData(avtDatabaseMetaData *avtMD,
                     singleDim.SetType(Expression::ScalarMeshVar);
           
                     char singleDef[256];
-                    sprintf(singleDef, "<%s>[%d][%d]", 
+                    snprintf(singleDef, 256, "<%s>[%d][%d]", 
                         mPath.c_str(), cIdx, cIdx);
                     singleDim.SetDefinition(singleDef);
 
@@ -2492,7 +2459,7 @@ avtMiliFileFormat::AddMiliVariableToMetaData(avtDatabaseMetaData *avtMD,
                     multDim.SetType(Expression::ScalarMeshVar);
 
                     char multDef[256];
-                    sprintf(multDef, "<%s>[%d][%d]", mPath.c_str(), 
+                    snprintf(multDef, 256, "<%s>[%d][%d]", mPath.c_str(), 
                         cIdx, multDimIdxs[cIdx]);
                     multDim.SetDefinition(multDef);
 
@@ -2529,7 +2496,7 @@ avtMiliFileFormat::AddMiliVariableToMetaData(avtDatabaseMetaData *avtMD,
                     singleDim.SetType(Expression::ScalarMeshVar);
 
                     char singleDef[256];
-                    sprintf(singleDef, "<%s>[%d][%d]", 
+                    snprintf(singleDef, 256, "<%s>[%d][%d]", 
                         mPath.c_str(), cIdx, cIdx);
                     singleDim.SetDefinition(singleDef);
 
@@ -2544,7 +2511,7 @@ avtMiliFileFormat::AddMiliVariableToMetaData(avtDatabaseMetaData *avtMD,
                     int mltDIdx = cIdx + 3;
                     Expression multDim;
                     char multDef[256];
-                    sprintf(multDef, "<%s>[%d][%d]", mPath.c_str(), 
+                    snprintf(multDef, 256, "<%s>[%d][%d]", mPath.c_str(), 
                         cIdx, multDimIdxs[cIdx]);
                     string multName = mPath + "/" + vComps[mltDIdx];
                     multDim.SetName(multName);
@@ -2572,7 +2539,7 @@ avtMiliFileFormat::AddMiliVariableToMetaData(avtDatabaseMetaData *avtMD,
                     int cIdx = compIdxs[j];
                     compNames.push_back(vComps[cIdx]);
                     char name[1024];
-                    sprintf(name, "%s/%s", mPath.c_str(), 
+                    snprintf(name, 1024, "%s/%s", mPath.c_str(), 
                         vComps[cIdx].c_str());
                     Expression expr = ScalarExpressionFromVec(
                                           mPath.c_str(),
@@ -2609,6 +2576,10 @@ avtMiliFileFormat::AddMiliVariableToMetaData(avtDatabaseMetaData *avtMD,
 //
 //  Modifications
 //
+//      Alister Maguire, Fri Jun 28 15:01:24 PDT 2019
+//      Added checks to determine if shared variables have been added
+//      or not.  
+//
 // ****************************************************************************
 
 void
@@ -2623,9 +2594,9 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
         char sandMeshName[64];
         char matName[32];
 
-        sprintf(meshName, "mesh%d", meshId + 1);
-        sprintf(sandMeshName, "sand_mesh%d", meshId + 1);
-        sprintf(matName, "materials%d", meshId + 1);
+        snprintf(meshName, 32, "mesh%d", meshId + 1);
+        snprintf(sandMeshName, 64, "sand_mesh%d", meshId + 1);
+        snprintf(matName, 32, "materials%d", meshId + 1);
 
         avtMeshMetaData *mesh      = new avtMeshMetaData;
         mesh->name                 = meshName;
@@ -2755,13 +2726,14 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
                 for (int j = 0; j < groupShared.size(); ++j)
                 {
                     bool addVarNow = true;
+                    SharedVariableInfo *sharedInfo = NULL;
 
                     if (groupShared[j])
                     {
                         string sName = 
                             ((MiliElementSetMetaData *)varMD)->GetGroupShortName(j);
 
-                        SharedVariableInfo *sharedInfo = 
+                        sharedInfo = 
                             miliMetaData[meshId]->GetSharedVariableInfo(
                             sName.c_str());
 
@@ -2791,6 +2763,15 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
                                                   centering,
                                                   compIdxs,
                                                   vComps);
+
+                        //
+                        // If this is a shared variable, let's signify that we
+                        // no longer need to add it. 
+                        //
+                        if (sharedInfo != NULL)
+                        {
+                            sharedInfo->isLive = true;
+                        }
                     }
                 }
             }
@@ -2806,14 +2787,40 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
                     compIdxs.push_back(i);
                 }
 
-                AddMiliVariableToMetaData(md,
-                                          meshId,
-                                          avtType,
-                                          doSand,  
-                                          varPath,
-                                          centering,
-                                          compIdxs,
-                                          vComps);
+                if (varMD->IsShared())
+                {
+                    SharedVariableInfo *sharedInfo = 
+                        miliMetaData[meshId]->GetSharedVariableInfo(
+                        varMD->GetShortName().c_str());
+
+                    //
+                    // Check to see if one of the shared vars has already been
+                    // added. It only needs to occur once. 
+                    //
+                    if (!sharedInfo->isLive)
+                    {
+                        sharedInfo->isLive = true;
+                        AddMiliVariableToMetaData(md,
+                                                  meshId,
+                                                  avtType,
+                                                  doSand,  
+                                                  varPath,
+                                                  centering,
+                                                  compIdxs,
+                                                  vComps);
+                    }
+                }
+                else
+                {
+                    AddMiliVariableToMetaData(md,
+                                              meshId,
+                                              avtType,
+                                              doSand,  
+                                              varPath,
+                                              centering,
+                                              compIdxs,
+                                              vComps);
+                }
             }
         }
         //TODO: add derived types when given the OK. 
@@ -3311,7 +3318,12 @@ avtMiliFileFormat::ExtractJsonClasses(rapidjson::Document &jDoc,
     int cCount = 0;
     if (jClasses.HasMember("count"))
     {
-        cCount = jClasses["count"].GetInt();
+        //
+        // Counts may be in scientific notation. We need to retrieve 
+        // as a double and cast to int. 
+        //
+        double dbl = jClasses["count"].GetDouble();
+        cCount = (int) dbl;
     }
 
     //
@@ -3424,15 +3436,36 @@ avtMiliFileFormat::ExtractJsonClasses(rapidjson::Document &jDoc,
 //
 //  Modifications:
 //
+//      Alister Maguire, Tue Jul  9 13:31:59 PDT 2019
+//      Check that we have the correct file format. JSON tends to hang when
+//      it tries to open non-json files. 
+//
 // ****************************************************************************
 void
 avtMiliFileFormat::LoadMiliInfoJson(const char *fpath)
 {
     int jsonTimer1 = visitTimer->StartTimer(); 
 
-    std::ifstream jfile;
+    //
+    // First, we need to open the file and make sure that it's the 
+    // newer JSON format.
+    //
+    std::ifstream jfile(fpath);
 
-    jfile.open(fpath);
+    char first;
+    jfile.get(first);
+    if (first != '{')
+    {
+        char msg[512];
+        snprintf(msg, 512, "Invalid Mili file. You are likely using an outdated "
+            "format. To update your format, use the makemili_driver located "
+            "in the bin directory. ");
+
+        debug1 << "MILI: " <<  msg;
+        EXCEPTION2(NonCompliantFileException, "Mili", msg);
+    }
+    jfile.clear();
+    jfile.seekg(0, ios::beg);
 
     rapidjson::IStreamWrapper isw(jfile);
     rapidjson::Document jDoc;
@@ -3440,13 +3473,18 @@ avtMiliFileFormat::LoadMiliInfoJson(const char *fpath)
 
     if (jDoc.HasMember("Domains"))
     {
-        nDomains = jDoc["Domains"].GetInt(); 
+        //
+        // Counts may be in scientific notation. We need to retrieve 
+        // as a double and cast to int. 
+        //
+        double dbl = jDoc["Domains"].GetDouble(); 
+        nDomains   = (int) dbl;
     }
     else
     {
         debug1 << "MILI: Mili file missing domains?!?!?!\n";
-        char msg[1024];
-        sprintf(msg, "Mili file is missing domains!!");
+        char msg[128];
+        snprintf(msg, 128, "Mili file is missing domains!!");
         EXCEPTION1(ImproperUseException, msg);
     }
 
@@ -3469,8 +3507,8 @@ avtMiliFileFormat::LoadMiliInfoJson(const char *fpath)
     else
     {
         debug1 << "MILI: Mili file missing dims?!?!?!\n";
-        char msg[1024];
-        sprintf(msg, "Mili file is missing dims!!");
+        char msg[128];
+        snprintf(msg, 128, "Mili file is missing dims!!");
         EXCEPTION1(ImproperUseException, msg);
     }
     
@@ -3502,7 +3540,12 @@ avtMiliFileFormat::LoadMiliInfoJson(const char *fpath)
 
             if (jMats.HasMember("count"))
             {
-                nMats = jMats["count"].GetInt();
+                //
+                // Counts may be in scientific notation. We need to retrieve 
+                // as a double and cast to int. 
+                //
+                double dbl = jMats["count"].GetDouble();
+                nMats      = (int) dbl;
             }
 
             miliMetaData[meshId]->SetNumMaterials(nMats);
@@ -3530,7 +3573,7 @@ avtMiliFileFormat::LoadMiliInfoJson(const char *fpath)
                     else
                     {
                         char buff[128];
-                        sprintf(buff, "%d", matCount);
+                        snprintf(buff, 128, "%d", matCount);
                         matName = string(buff);
                     }
 
@@ -3594,7 +3637,12 @@ avtMiliFileFormat::LoadMiliInfoJson(const char *fpath)
             const rapidjson::Value &jStates = jDoc["States"];
             if (jStates.HasMember("count"))
             {
-                nTimesteps = jStates["count"].GetInt();
+                //
+                // Counts may be in scientific notation. We need to retrieve 
+                // as a double and cast to int. 
+                //
+                double dbl = jStates["count"].GetDouble();
+                nTimesteps = (int) dbl;
             }
 
             if (jStates.HasMember("times"))
@@ -3913,7 +3961,7 @@ avtMiliFileFormat::ScalarExpressionFromVec(const char *vecPath,
                                            int dim)
 {
     char def[256];
-    sprintf(def, "<%s>[%d]", vecPath, dim);
+    snprintf(def, 256, "<%s>[%d]", vecPath, dim);
     Expression::ExprType eType = Expression::ScalarMeshVar;
     return CreateGenericExpression(scalarPath, def, eType);
 }

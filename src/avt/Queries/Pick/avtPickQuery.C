@@ -1,40 +1,6 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
 //                              avtPickQuery.C                               //
@@ -44,7 +10,6 @@
 
 #include <algorithm>
 #include <float.h>
-#include <snprintf.h>
 
 #include <vtkCell.h>
 #include <vtkCellData.h>
@@ -617,7 +582,7 @@ avtPickQuery::DeterminePickedNode(vtkDataSet *ds, int &foundEl)
 //
 //  Modifications:
 //    Brad Whitlock, Thu Jul 29 17:26:26 PST 2004
-//    I made it use SNPRINTF.
+//    I made it use snprintf.
 //
 //    Hank Childs, Thu Mar 10 11:03:37 PST 2005
 //    Fix memory leak.
@@ -658,12 +623,12 @@ avtPickQuery::GetNodeCoords(vtkDataSet *ds, const int nodeId)
               false, true, true);
            if (pickAtts.GetDimension() == 2)
            {
-               SNPRINTF(buff, 80, "<%d, %d>",
+               snprintf(buff, 80, "<%d, %d>",
                    ijk[0]+nodeOrigin, ijk[1]+nodeOrigin);
            }
            else
            {
-               SNPRINTF(buff, 80, "<%d, %d, %d>",
+               snprintf(buff, 80, "<%d, %d, %d>",
                    ijk[0]+nodeOrigin, ijk[1]+nodeOrigin, ijk[2]+nodeOrigin);
            }
            nodeCoords.push_back(buff);
@@ -676,11 +641,11 @@ avtPickQuery::GetNodeCoords(vtkDataSet *ds, const int nodeId)
                true, true, true);
            if (pickAtts.GetDimension() == 2)
            {
-               SNPRINTF(buff, 80, "<%d, %d>", ijk[0], ijk[1]);
+               snprintf(buff, 80, "<%d, %d>", ijk[0], ijk[1]);
            }
            else
            {
-               SNPRINTF(buff, 80, "<%d, %d, %d>", ijk[0], ijk[1], ijk[2]);
+               snprintf(buff, 80, "<%d, %d, %d>", ijk[0], ijk[1], ijk[2]);
            }
            nodeCoords.push_back(buff);
            pickAtts.SetBnodeCoords(nodeCoords);
@@ -694,14 +659,14 @@ avtPickQuery::GetNodeCoords(vtkDataSet *ds, const int nodeId)
        if (pickAtts.GetDimension() == 2)
        {
            format = "<" + floatFormat + ", " + floatFormat + ">";
-           SNPRINTF(buff, 80, format.c_str(), coord[0], coord[1]);
+           snprintf(buff, 80, format.c_str(), coord[0], coord[1]);
        }
        else
        {
            format = "<" + floatFormat + ", "
                         + floatFormat + ", "
                         + floatFormat + ">";
-           SNPRINTF(buff, 80, format.c_str(), coord[0], coord[1], coord[2]);
+           snprintf(buff, 80, format.c_str(), coord[0], coord[1], coord[2]);
        }
        nodeCoords.push_back(buff);
        pickAtts.SetPnodeCoords(nodeCoords);
@@ -725,7 +690,7 @@ avtPickQuery::GetNodeCoords(vtkDataSet *ds, const int nodeId)
 //  Modifications:
 //    Brad Whitlock, Thu Jul 29 17:23:14 PST 2004
 //    I made it use the cell origin for the zonal domain logical coordinates.
-//    I also made it use SNPRINTF.
+//    I also made it use snprintf.
 //
 //    Gunther H. Weber, Thu Aug 22 10:19:37 PDT 2013
 //    Allow GetLogicalIndices to return negative indices.
@@ -751,12 +716,12 @@ avtPickQuery::GetZoneCoords(vtkDataSet *ds, const int zoneId)
                         ijk, false, true, true);
             if (pickAtts.GetDimension() == 2)
             {
-                SNPRINTF(buff, 80, "<%d, %d>", ijk[0] + cellOrigin,
+                snprintf(buff, 80, "<%d, %d>", ijk[0] + cellOrigin,
                          ijk[1] + cellOrigin);
             }
             else
             {
-                SNPRINTF(buff, 80, "<%d, %d, %d>",
+                snprintf(buff, 80, "<%d, %d, %d>",
                          ijk[0] + cellOrigin,
                          ijk[1] + cellOrigin,
                          ijk[2] + cellOrigin);
@@ -771,11 +736,11 @@ avtPickQuery::GetZoneCoords(vtkDataSet *ds, const int zoneId)
                         ijk, true, true, true);
             if (pickAtts.GetDimension() == 2)
             {
-                SNPRINTF(buff, 80, "<%d, %d>", ijk[0], ijk[1]);
+                snprintf(buff, 80, "<%d, %d>", ijk[0], ijk[1]);
             }
             else
             {
-                SNPRINTF(buff, 80, "<%d, %d, %d>", ijk[0], ijk[1], ijk[2]);
+                snprintf(buff, 80, "<%d, %d, %d>", ijk[0], ijk[1], ijk[2]);
             }
             zoneCoords.push_back(buff);
             pickAtts.SetBzoneCoords(zoneCoords);
@@ -976,11 +941,11 @@ avtPickQuery::RetrieveVarInfo(vtkDataSet* ds, const int findElement,
                     if (pickAtts.GetShowGlobalIds() &&
                         globalIncEl.size() == incidentElements.size())
                     {
-                        SNPRINTF(buff, 80, "(%d)", globalIncEl[k]);
+                        snprintf(buff, 80, "(%d)", globalIncEl[k]);
                     }
                     else
                     {
-                        SNPRINTF(buff, 80, "(%d)", incidentElements[k]);
+                        snprintf(buff, 80, "(%d)", incidentElements[k]);
                     }
                     names.push_back(buff);
                     varArray->GetTuple(findIncidentElements[k], temp);
@@ -1007,9 +972,9 @@ avtPickQuery::RetrieveVarInfo(vtkDataSet* ds, const int findElement,
                 // data we want is associated with element
                 if (pickAtts.GetShowGlobalIds() &&
                     pickAtts.GetGlobalElement() != -1)
-                    SNPRINTF(buff, 80, "(%d)", pickAtts.GetGlobalElement());
+                    snprintf(buff, 80, "(%d)", pickAtts.GetGlobalElement());
                 else
-                    SNPRINTF(buff, 80, "(%d)", element);
+                    snprintf(buff, 80, "(%d)", element);
                 names.push_back(buff);
                 varArray->GetTuple(findElement, temp);
                 mag = 0.;
@@ -1104,7 +1069,7 @@ avtPickQuery::RetrieveVarInfo(vtkDataSet* ds, const int findElement,
 //    Added logic to support multiple types of coordinates.
 //
 //    Brad Whitlock, Fri Jul 30 08:58:27 PDT 2004
-//    Made it use SNPRINTF.
+//    Made it use snprintf.
 //
 //    Kathleen Bonnell, Thu Sep 23 17:38:15 PDT 2004
 //    Added logic to search for ghost nodes, if ghostType == AVT_HAS_GHOSTS.
@@ -1274,12 +1239,12 @@ avtPickQuery::RetrieveNodes(vtkDataSet *ds, int zone, bool needRealId)
                              ptIds->GetId(i), ijk, false, true, true);
                         if (pickAtts.GetDimension() == 2)
                         {
-                            SNPRINTF(buff, 80, "<%d, %d>",
+                            snprintf(buff, 80, "<%d, %d>",
                                 ijk[0]+nodeOrigin, ijk[1]+nodeOrigin);
                         }
                         else
                         {
-                            SNPRINTF(buff, 80, "<%d, %d, %d>",
+                            snprintf(buff, 80, "<%d, %d, %d>",
                                 ijk[0]+nodeOrigin, ijk[1]+nodeOrigin, ijk[2]+nodeOrigin);
                         }
                         dnodeCoords.push_back(buff);
@@ -1290,11 +1255,11 @@ avtPickQuery::RetrieveNodes(vtkDataSet *ds, int zone, bool needRealId)
                              ptIds->GetId(i), ijk, true, true, true);
                         if (pickAtts.GetDimension() == 2)
                         {
-                            SNPRINTF(buff, 80, "<%d, %d>", ijk[0], ijk[1]);
+                            snprintf(buff, 80, "<%d, %d>", ijk[0], ijk[1]);
                         }
                         else
                         {
-                            SNPRINTF(buff, 80, "<%d, %d, %d>",
+                            snprintf(buff, 80, "<%d, %d, %d>",
                                      ijk[0], ijk[1], ijk[2]);
                         }
                         bnodeCoords.push_back(buff);
@@ -1309,14 +1274,14 @@ avtPickQuery::RetrieveNodes(vtkDataSet *ds, int zone, bool needRealId)
                     if (pickAtts.GetDimension() == 2)
                     {
                         format = "<" + floatFormat + ", " + floatFormat + ">";
-                        SNPRINTF(buff, 80, format.c_str(), coord[0], coord[1]);
+                        snprintf(buff, 80, format.c_str(), coord[0], coord[1]);
                     }
                     else
                     {
                         format = "<" + floatFormat + ", "
                                      + floatFormat + ", "
                                      + floatFormat + ">";
-                        SNPRINTF(buff, 80, format.c_str(),
+                        snprintf(buff, 80, format.c_str(),
                                  coord[0], coord[1], coord[2]);
                     }
                     pnodeCoords.push_back(buff);
@@ -1382,7 +1347,7 @@ avtPickQuery::RetrieveNodes(vtkDataSet *ds, int zone, bool needRealId)
 //
 //    Brad Whitlock, Fri Jul 30 09:00:37 PDT 2004
 //    I made it use the cell origin for the domain logical indices and I
-//    changed sprintf to SNPRINTF.
+//    changed sprintf to snprintf.
 //
 //    Hank Childs, Fri Aug 27 16:54:45 PDT 2004
 //    Rename ghost data array.
@@ -1501,12 +1466,12 @@ avtPickQuery::RetrieveZones(vtkDataSet *ds, int foundNode, bool needRealId)
 
                         if (pickAtts.GetDimension() == 2)
                         {
-                            SNPRINTF(buff, 80, "<%d, %d>", ijk[0] + cellOrigin,
+                            snprintf(buff, 80, "<%d, %d>", ijk[0] + cellOrigin,
                                      ijk[1] + cellOrigin);
                         }
                         else
                         {
-                            SNPRINTF(buff, 80, "<%d, %d, %d>", ijk[0] + cellOrigin,
+                            snprintf(buff, 80, "<%d, %d, %d>", ijk[0] + cellOrigin,
                                      ijk[1] + cellOrigin, ijk[2] + cellOrigin);
                         }
                         dzoneCoords.push_back(buff);
@@ -1518,11 +1483,11 @@ avtPickQuery::RetrieveZones(vtkDataSet *ds, int foundNode, bool needRealId)
 
                         if (pickAtts.GetDimension() == 2)
                         {
-                            SNPRINTF(buff, 80, "<%d, %d>", ijk[0], ijk[1]);
+                            snprintf(buff, 80, "<%d, %d>", ijk[0], ijk[1]);
                         }
                         else
                         {
-                            SNPRINTF(buff, 80, "<%d, %d, %d>",
+                            snprintf(buff, 80, "<%d, %d, %d>",
                                      ijk[0], ijk[1], ijk[2]);
                         }
                         bzoneCoords.push_back(buff);
@@ -1773,14 +1738,14 @@ avtPickQuery::ConvertElNamesToGlobal(void)
     // var names were retrieved from DB, not global, so convert them.
     char buff[24];
     stringVector globalElName;
-    SNPRINTF(buff, 24, "(%d)", pickAtts.GetGlobalElement());
+    snprintf(buff, 24, "(%d)", pickAtts.GetGlobalElement());
     globalElName.push_back(buff);
     intVector globalIds = pickAtts.GetGlobalIncidentElements();
 
     stringVector names;
     for (size_t i = 0; i < globalIds.size(); i++)
     {
-        SNPRINTF(buff, 24, "(%d)", globalIds[i]);
+        snprintf(buff, 24, "(%d)", globalIds[i]);
         names.push_back(buff);
     }
 
@@ -1839,11 +1804,11 @@ avtPickQuery::SetRealIds(vtkDataSet *ds)
 
     stringVector elStrings;
     foundEl = vtkVisItUtility::CalculateRealID(foundEl, forCell, ds);
-    SNPRINTF(fString, 20, "(%d)", foundEl);
+    snprintf(fString, 20, "(%d)", foundEl);
     for (size_t i = 0; i < incEls.size(); i++)
     {
         incEls[i] = vtkVisItUtility::CalculateRealID(incEls[i], !forCell, ds);
-        SNPRINTF(tmp, 20, "(%d)", incEls[i]);
+        snprintf(tmp, 20, "(%d)", incEls[i]);
         elStrings.push_back(tmp);
     }
 

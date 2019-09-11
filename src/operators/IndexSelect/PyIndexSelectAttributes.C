@@ -1,45 +1,10 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 #include <PyIndexSelectAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyIndexSelectAttributes
@@ -80,15 +45,15 @@ PyIndexSelectAttributes_ToString(const IndexSelectAttributes *atts, const char *
     switch (atts->GetMaxDim())
     {
       case IndexSelectAttributes::OneD:
-          SNPRINTF(tmpStr, 1000, "%smaxDim = %sOneD  # %s\n", prefix, prefix, maxDim_names);
+          snprintf(tmpStr, 1000, "%smaxDim = %sOneD  # %s\n", prefix, prefix, maxDim_names);
           str += tmpStr;
           break;
       case IndexSelectAttributes::TwoD:
-          SNPRINTF(tmpStr, 1000, "%smaxDim = %sTwoD  # %s\n", prefix, prefix, maxDim_names);
+          snprintf(tmpStr, 1000, "%smaxDim = %sTwoD  # %s\n", prefix, prefix, maxDim_names);
           str += tmpStr;
           break;
       case IndexSelectAttributes::ThreeD:
-          SNPRINTF(tmpStr, 1000, "%smaxDim = %sThreeD  # %s\n", prefix, prefix, maxDim_names);
+          snprintf(tmpStr, 1000, "%smaxDim = %sThreeD  # %s\n", prefix, prefix, maxDim_names);
           str += tmpStr;
           break;
       default:
@@ -99,68 +64,68 @@ PyIndexSelectAttributes_ToString(const IndexSelectAttributes *atts, const char *
     switch (atts->GetDim())
     {
       case IndexSelectAttributes::OneD:
-          SNPRINTF(tmpStr, 1000, "%sdim = %sOneD  # %s\n", prefix, prefix, dim_names);
+          snprintf(tmpStr, 1000, "%sdim = %sOneD  # %s\n", prefix, prefix, dim_names);
           str += tmpStr;
           break;
       case IndexSelectAttributes::TwoD:
-          SNPRINTF(tmpStr, 1000, "%sdim = %sTwoD  # %s\n", prefix, prefix, dim_names);
+          snprintf(tmpStr, 1000, "%sdim = %sTwoD  # %s\n", prefix, prefix, dim_names);
           str += tmpStr;
           break;
       case IndexSelectAttributes::ThreeD:
-          SNPRINTF(tmpStr, 1000, "%sdim = %sThreeD  # %s\n", prefix, prefix, dim_names);
+          snprintf(tmpStr, 1000, "%sdim = %sThreeD  # %s\n", prefix, prefix, dim_names);
           str += tmpStr;
           break;
       default:
           break;
     }
 
-    SNPRINTF(tmpStr, 1000, "%sxAbsMax = %d\n", prefix, atts->GetXAbsMax());
+    snprintf(tmpStr, 1000, "%sxAbsMax = %d\n", prefix, atts->GetXAbsMax());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sxMin = %d\n", prefix, atts->GetXMin());
+    snprintf(tmpStr, 1000, "%sxMin = %d\n", prefix, atts->GetXMin());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sxMax = %d\n", prefix, atts->GetXMax());
+    snprintf(tmpStr, 1000, "%sxMax = %d\n", prefix, atts->GetXMax());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sxIncr = %d\n", prefix, atts->GetXIncr());
+    snprintf(tmpStr, 1000, "%sxIncr = %d\n", prefix, atts->GetXIncr());
     str += tmpStr;
     if(atts->GetXWrap())
-        SNPRINTF(tmpStr, 1000, "%sxWrap = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sxWrap = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sxWrap = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sxWrap = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%syAbsMax = %d\n", prefix, atts->GetYAbsMax());
+    snprintf(tmpStr, 1000, "%syAbsMax = %d\n", prefix, atts->GetYAbsMax());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%syMin = %d\n", prefix, atts->GetYMin());
+    snprintf(tmpStr, 1000, "%syMin = %d\n", prefix, atts->GetYMin());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%syMax = %d\n", prefix, atts->GetYMax());
+    snprintf(tmpStr, 1000, "%syMax = %d\n", prefix, atts->GetYMax());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%syIncr = %d\n", prefix, atts->GetYIncr());
+    snprintf(tmpStr, 1000, "%syIncr = %d\n", prefix, atts->GetYIncr());
     str += tmpStr;
     if(atts->GetYWrap())
-        SNPRINTF(tmpStr, 1000, "%syWrap = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%syWrap = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%syWrap = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%syWrap = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%szAbsMax = %d\n", prefix, atts->GetZAbsMax());
+    snprintf(tmpStr, 1000, "%szAbsMax = %d\n", prefix, atts->GetZAbsMax());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%szMin = %d\n", prefix, atts->GetZMin());
+    snprintf(tmpStr, 1000, "%szMin = %d\n", prefix, atts->GetZMin());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%szMax = %d\n", prefix, atts->GetZMax());
+    snprintf(tmpStr, 1000, "%szMax = %d\n", prefix, atts->GetZMax());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%szIncr = %d\n", prefix, atts->GetZIncr());
+    snprintf(tmpStr, 1000, "%szIncr = %d\n", prefix, atts->GetZIncr());
     str += tmpStr;
     if(atts->GetZWrap())
-        SNPRINTF(tmpStr, 1000, "%szWrap = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%szWrap = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%szWrap = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%szWrap = 0\n", prefix);
     str += tmpStr;
     if(atts->GetUseWholeCollection())
-        SNPRINTF(tmpStr, 1000, "%suseWholeCollection = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%suseWholeCollection = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%suseWholeCollection = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%suseWholeCollection = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%scategoryName = \"%s\"\n", prefix, atts->GetCategoryName().c_str());
+    snprintf(tmpStr, 1000, "%scategoryName = \"%s\"\n", prefix, atts->GetCategoryName().c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%ssubsetName = \"%s\"\n", prefix, atts->GetSubsetName().c_str());
+    snprintf(tmpStr, 1000, "%ssubsetName = \"%s\"\n", prefix, atts->GetSubsetName().c_str());
     str += tmpStr;
     return str;
 }

@@ -1,40 +1,6 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
 //                            avtVTKFileReader.C                             //
@@ -70,7 +36,6 @@
 #include <PVTKParser.h>
 #include <VTMParser.h>
 
-#include <snprintf.h>
 #include <DebugStream.h>
 #include <Expression.h>
 #include <InvalidVariableException.h>
@@ -693,13 +658,12 @@ avtVTKFileReader::ReadInDataset(int domain)
         // returned.
         //
         if(pieceExtents[domain] == NULL  &&
-           dataset->GetDataObjectType() == VTK_IMAGE_DATA) 
+           dataset->GetDataObjectType() == VTK_IMAGE_DATA)
         {
-        
-          vtkImageData *img = vtkImageData::SafeDownCast(dataset); 
+          vtkImageData *img = vtkImageData::SafeDownCast(dataset);
           if(img)
           {
-            int *ext  = img->GetExtent(); 
+            int *ext  = img->GetExtent();
             dataset = ConvertStructuredPointsToRGrid((vtkStructuredPoints*)dataset,
                                                       ext);
           }
@@ -722,18 +686,20 @@ avtVTKFileReader::ReadInDataset(int domain)
             CreateCurves(rgrid);
         }
     }
-    
+
     // Convert vtkGhostType to avtGhostDataType
     // Rename the arrays stored in dataset->GetCellData() and dataset->GetPointData()
-    
+
     vtkDataArray *zoneArray = dataset->GetCellData()->GetArray("vtkGhostType");
-    if (zoneArray) {
+    if (zoneArray)
+    {
         zoneArray->SetName("avtGhostZones");
         dataset->GetCellData()->AddArray(zoneArray);
     }
-    
+
     vtkDataArray *nodeArray = dataset->GetPointData()->GetArray("vtkGhostType");
-    if (nodeArray) {
+    if (nodeArray)
+    {
         nodeArray->SetName("avtGhostNodes");
         dataset->GetPointData()->AddArray(nodeArray);
     }
@@ -912,7 +878,7 @@ avtVTKFileReader::GetAuxiliaryData(const char *var, int domain,
             for (it = valMap.begin(); it != valMap.end(); it++)
             {
                 char tmpname[32];
-                SNPRINTF(tmpname, sizeof(tmpname), "%d", it->first);
+                snprintf(tmpname, sizeof(tmpname), "%d", it->first);
                 matnames.push_back(tmpname);
                 matnos.push_back(it->first);
             }
@@ -1278,13 +1244,16 @@ avtVTKFileReader::GetVectorVar(int domain, const char *var)
 //    If unstructured grid has declared no cells (valid in xml verisons),
 //    assume it is a point mesh and set topodim to 0.
 //
+//    Kathleen Biagas, Tue Sep 10 12:11:23 PDT 2019
+//    Test UnstructedGrids and vtkPolyData for existence of Points before
+//    determining if the topological dimension should be lowered. Lack of
+//    points indicates an empty dataset.
+//
 // ****************************************************************************
 
 void
 avtVTKFileReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 {
-    int  i;
-
     if (!readInDataset)
     {
         ReadInFile();
@@ -1333,33 +1302,41 @@ avtVTKFileReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     if (vtkType == VTK_UNSTRUCTURED_GRID)
     {
         vtkUnstructuredGrid *ugrid = (vtkUnstructuredGrid *) dataset;
-        vtkUnsignedCharArray *types = vtkUnsignedCharArray::New();
-        GetListOfUniqueCellTypes(ugrid, types);
 
-        if (types->GetNumberOfTuples() == 1)
+        if(ugrid->GetNumberOfPoints() > 0)
         {
-            int myType = (int) types->GetValue(0);
-            if (myType == VTK_VERTEX)
+            if (ugrid->GetNumberOfCells() == 0)
             {
+                // no cells declared, assume  point mesh.
                 debug5 << "The VTK file format contains all points -- "
                        << "declaring this a point mesh." << endl;
+                type = AVT_POINT_MESH;
                 topo = 0;
             }
-            else if(myType == VTK_LINE)
+            else
             {
-                debug5 << "The mesh contains all lines, set topo=1" << endl;
-                topo = 1;
+                vtkUnsignedCharArray *types = vtkUnsignedCharArray::New();
+                GetListOfUniqueCellTypes(ugrid, types);
+
+                if (types->GetNumberOfTuples() == 1)
+                {
+                    int myType = (int) types->GetValue(0);
+                    if (myType == VTK_VERTEX)
+                    {
+                        debug5 << "The VTK file format contains all points -- "
+                               << "declaring this a point mesh." << endl;
+                        type = AVT_POINT_MESH;
+                        topo = 0;
+                    }
+                    else if(myType == VTK_LINE)
+                    {
+                        debug5 << "The mesh contains all lines, set topo=1" << endl;
+                        topo = 1;
+                    }
+                }
+                types->Delete();
             }
         }
-        else if (types->GetNumberOfTuples() == 0)
-        {
-            // no cells declared, assume  point mesh.
-            debug5 << "The VTK file format contains all points -- "
-                   << "declaring this a point mesh." << endl;
-            topo = 0;
-        }
-
-        types->Delete();
     }
     else if (vtkType == VTK_STRUCTURED_GRID)
     {
@@ -1380,15 +1357,14 @@ avtVTKFileReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     else if (vtkType == VTK_POLY_DATA)
     {
         vtkPolyData *pd = (vtkPolyData *) dataset;
-        if (pd->GetNumberOfPolys() == 0 && pd->GetNumberOfStrips() == 0)
+        if (pd->GetNumberOfPoints() > 0)
         {
-            if (pd->GetNumberOfLines() > 0)
+            if (pd->GetNumberOfPolys() == 0 && pd->GetNumberOfStrips() == 0)
             {
-                topo = 1;
-            }
-            else
-            {
-                topo = 0;
+                if (pd->GetNumberOfLines() > 0)
+                    topo = 1;
+                else
+                    topo = 0;
             }
         }
     }
@@ -1492,7 +1468,7 @@ avtVTKFileReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 
     int nvars = 0;
 
-    for (i = 0 ; i < dataset->GetPointData()->GetNumberOfArrays() ; i++)
+    for (int i = 0 ; i < dataset->GetPointData()->GetNumberOfArrays() ; i++)
     {
         vtkDataArray *arr = dataset->GetPointData()->GetArray(i);
         int ncomp = arr->GetNumberOfComponents();
@@ -1537,8 +1513,8 @@ avtVTKFileReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                 char *exp_def = new char[compnamelen];
                 for(int c = 0; c < ncomp; ++c)
                 {
-                    SNPRINTF(exp_name, compnamelen, "%s/comp_%d", name, c);
-                    SNPRINTF(exp_def,  compnamelen, "array_decompose(<%s>, %d)",  name, c);
+                    snprintf(exp_name, compnamelen, "%s/comp_%d", name, c);
+                    snprintf(exp_def,  compnamelen, "array_decompose(<%s>, %d)",  name, c);
                     Expression *e = new Expression;
                     e->SetType(Expression::ScalarMeshVar);
                     e->SetName(exp_name);
@@ -1551,7 +1527,7 @@ avtVTKFileReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         }
         nvars++;
     }
-    for (i = 0 ; i < dataset->GetCellData()->GetNumberOfArrays() ; i++)
+    for (int i = 0 ; i < dataset->GetCellData()->GetNumberOfArrays() ; i++)
     {
         vtkDataArray *arr = dataset->GetCellData()->GetArray(i);
         int ncomp = arr->GetNumberOfComponents();
@@ -1591,7 +1567,7 @@ avtVTKFileReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             for (it = valMap.begin(); it != valMap.end(); it++)
             {
                 char tmpname[32];
-                SNPRINTF(tmpname, sizeof(tmpname), "%d", it->first);
+                snprintf(tmpname, sizeof(tmpname), "%d", it->first);
                 matnames.push_back(tmpname);
                 matnos.push_back(it->first);
             }
@@ -1634,8 +1610,8 @@ avtVTKFileReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                 char *exp_def = new char[compnamelen];
                 for(int c = 0; c < ncomp; ++c)
                 {
-                    SNPRINTF(exp_name, compnamelen, "%s/comp_%d", name, c);
-                    SNPRINTF(exp_def,  compnamelen, "array_decompose(<%s>, %d)",  name, c);
+                    snprintf(exp_name, compnamelen, "%s/comp_%d", name, c);
+                    snprintf(exp_def,  compnamelen, "array_decompose(<%s>, %d)",  name, c);
                     Expression *e = new Expression;
                     e->SetType(Expression::ScalarMeshVar);
                     e->SetName(exp_name);
@@ -2111,7 +2087,7 @@ avtVTKFileReader::AddArrayVarToMetaData(avtDatabaseMetaData *md, string name,
     for (int i = 0 ; i < ncomps ; i++)
     {
         char name[16];
-        SNPRINTF(name, 16, "comp%02d", i);
+        snprintf(name, 16, "comp%02d", i);
         st->compNames[i] = name;
     }
     st->meshName = mesh;

@@ -1,40 +1,6 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 #include <PickAttributes.h>
 #include <DataNode.h>
@@ -3924,7 +3890,7 @@ PickAttributes::PrintSelf(ostream &os)
         format = "PickedPoint: <" + floatFormat + ", "
                                   + floatFormat + ", "
                                   + floatFormat + ">\n";
-        SNPRINTF(buff, 512, format.c_str(),nodePoint[0],
+        snprintf(buff, 512, format.c_str(),nodePoint[0],
                                            nodePoint[1],
                                            nodePoint[2]);
         os << buff;
@@ -3934,14 +3900,14 @@ PickAttributes::PrintSelf(ostream &os)
         format = "EndPoint1: <" + floatFormat + ", "
                                 + floatFormat + ", "
                                 + floatFormat + ">\n";
-        SNPRINTF(buff, 512, format.c_str(),nodePoint[0],
+        snprintf(buff, 512, format.c_str(),nodePoint[0],
                                            nodePoint[1],
                                            nodePoint[2]);
         os << buff;
         format = "EndPoint2: <" + floatFormat + ", "
                                 + floatFormat + ", "
                                 + floatFormat + ">\n";
-        SNPRINTF(buff, 512, format.c_str(),cellPoint[0],
+        snprintf(buff, 512, format.c_str(),cellPoint[0],
                                            cellPoint[1],
                                            cellPoint[2]);
         os << buff;    
@@ -3961,7 +3927,7 @@ PickAttributes::PrintSelf(ostream &os)
         format = "<" + floatFormat + ", "
                      + floatFormat + ", "
                      + floatFormat + ">\n";
-        SNPRINTF(buff, 512, format.c_str(),cellPoint[0],
+        snprintf(buff, 512, format.c_str(),cellPoint[0],
                                            cellPoint[1],
                                            cellPoint[2]);
         os << buff;
@@ -4062,14 +4028,14 @@ PickAttributes::PrintSelf(ostream &os)
                              + floatFormat + ", "
                              + floatFormat + ">\n";
 
-    SNPRINTF(buff, 512, format.c_str(),rayPoint1[0],
+    snprintf(buff, 512, format.c_str(),rayPoint1[0],
                                        rayPoint1[1],
                                        rayPoint1[2]);            
     os << buff;
     format = "RayPoint 2: <" + floatFormat + ", "
                              + floatFormat + ", "
                              + floatFormat + ">\n";
-    SNPRINTF(buff, 512, format.c_str(),rayPoint2[0],
+    snprintf(buff, 512, format.c_str(),rayPoint2[0],
                                        rayPoint2[1],
                                        rayPoint2[2]);            
     os << buff;
@@ -4185,9 +4151,9 @@ PickAttributes::CreateOutputString(std::string &os, bool withLetter)
     if (withLetter)
     {
         if (pickLetter.size() != 0)
-            SNPRINTF(buff, 512, "\n%s:  ", pickLetter.c_str());
+            snprintf(buff, 512, "\n%s:  ", pickLetter.c_str());
         else 
-            SNPRINTF(buff, 512, "\n");
+            snprintf(buff, 512, "\n");
         os += buff;
     }
     os += fileName;
@@ -4199,7 +4165,7 @@ PickAttributes::CreateOutputString(std::string &os, bool withLetter)
       
         if (showTS)
         {
-            SNPRINTF(buff, 512, "  timestep %d", timeStep);
+            snprintf(buff, 512, "  timestep %d", timeStep);
             os += buff;
         }
     }
@@ -4209,7 +4175,7 @@ PickAttributes::CreateOutputString(std::string &os, bool withLetter)
 
     if (domain != -1 && strstr(domStr.c_str(), "%") != NULL)
     {
-        SNPRINTF(buff, 512, domStr.c_str(), domain);
+        snprintf(buff, 512, domStr.c_str(), domain);
         domStr = buff;
     }
     
@@ -4217,7 +4183,7 @@ PickAttributes::CreateOutputString(std::string &os, bool withLetter)
     {
         if (domain != -1)
         {
-            SNPRINTF(buff, 512, "  %s %d\n", domStr.c_str(), domain);
+            snprintf(buff, 512, "  %s %d\n", domStr.c_str(), domain);
             os += buff;
         }
         else 
@@ -4231,7 +4197,7 @@ PickAttributes::CreateOutputString(std::string &os, bool withLetter)
 
         if (showMN)
         {
-            SNPRINTF(buff, 512, "\n%s\n", meshInfo.c_str());
+            snprintf(buff, 512, "\n%s\n", meshInfo.c_str());
             os += buff;
         }
     }
@@ -4251,7 +4217,7 @@ PickAttributes::CreateOutputString(std::string &os, bool withLetter)
         if (pickType == CurveNode)
         {
             format = "Point: <" + floatFormat + ", " + floatFormat + ">\n";
-            SNPRINTF(buff, 512, format.c_str(), nodePoint[0], nodePoint[1]);
+            snprintf(buff, 512, format.c_str(), nodePoint[0], nodePoint[1]);
             os += buff;
         }
         else if (pickType == CurveZone)
@@ -4259,7 +4225,7 @@ PickAttributes::CreateOutputString(std::string &os, bool withLetter)
             format = "Point1: <" + floatFormat + ", " + floatFormat + ">\n"
                     +"Point2: <" + floatFormat + ", " + floatFormat + ">\n";
 
-            SNPRINTF(buff, 512, format.c_str(),
+            snprintf(buff, 512, format.c_str(),
                       nodePoint[0], nodePoint[1], cellPoint[0], cellPoint[1]);
             os += buff;
         }
@@ -4270,14 +4236,14 @@ PickAttributes::CreateOutputString(std::string &os, bool withLetter)
                 if (!needTransformMessage)
                 {
                     format = "%s: <" + floatFormat + ", " + floatFormat + ">\n";
-                    SNPRINTF(buff, 512, format.c_str(),
+                    snprintf(buff, 512, format.c_str(),
                             point.c_str(), cellPoint[0], cellPoint[1]);
                 }
                 else 
                 {
                     format = "%s: (in transformed space)\n        <"  
                                 + floatFormat + ", " + floatFormat + ">\n";
-                    SNPRINTF(buff, 512, format.c_str(),
+                    snprintf(buff, 512, format.c_str(),
                             point.c_str(), cellPoint[0], cellPoint[1]);
                 }
             }
@@ -4288,7 +4254,7 @@ PickAttributes::CreateOutputString(std::string &os, bool withLetter)
                     format = "%s: <" + floatFormat + ", " 
                                      + floatFormat + ", " 
                                      + floatFormat + ">\n";
-                    SNPRINTF(buff, 512, format.c_str(),
+                    snprintf(buff, 512, format.c_str(),
                             point.c_str(), cellPoint[0], cellPoint[1], cellPoint[2]);
                 }
                 else 
@@ -4297,7 +4263,7 @@ PickAttributes::CreateOutputString(std::string &os, bool withLetter)
                                      + floatFormat + ", " 
                                      + floatFormat + ", " 
                                      + floatFormat + ">\n";
-                    SNPRINTF(buff, 512, format.c_str(),
+                    snprintf(buff, 512, format.c_str(),
                             point.c_str(), cellPoint[0], cellPoint[1], cellPoint[2]);
                 }
             }
@@ -4306,7 +4272,7 @@ PickAttributes::CreateOutputString(std::string &os, bool withLetter)
     }
     else
     {
-        SNPRINTF(buff, 512, "\nPoint: %s\n", pointString.c_str());
+        snprintf(buff, 512, "\nPoint: %s\n", pointString.c_str());
         os += buff;
     }
 
@@ -4351,22 +4317,22 @@ PickAttributes::CreateOutputString(std::string &os, bool withLetter)
             if (!elementIsGhost)
             {
                 if (!showGlobalIds || globalElement == -1) 
-                    SNPRINTF(buff, 512, "%d", elementNumber);
+                    snprintf(buff, 512, "%d", elementNumber);
                 else 
-                    SNPRINTF(buff, 512, "%d (global)", globalElement);
+                    snprintf(buff, 512, "%d (global)", globalElement);
             }
             else 
-                SNPRINTF(buff, 512, "%d(ghost)", elementNumber);
+                snprintf(buff, 512, "%d(ghost)", elementNumber);
             os += buff;
         }
         if (showZDLC)
         {
-            SNPRINTF(buff, 512, " %s %s", domStr.c_str(), dzoneCoords[0].c_str());
+            snprintf(buff, 512, " %s %s", domStr.c_str(), dzoneCoords[0].c_str());
             os += buff;
         }
         if (showZBLC)
         {
-            SNPRINTF(buff, 512, " %s %s", grpStr.c_str(), bzoneCoords[0].c_str());
+            snprintf(buff, 512, " %s %s", grpStr.c_str(), bzoneCoords[0].c_str());
             os += buff;
         }
         if (showZoneId || showZoneCoords)
@@ -4381,27 +4347,27 @@ PickAttributes::CreateOutputString(std::string &os, bool withLetter)
             if (!elementIsGhost)
             {
                 if (!showGlobalIds || globalElement == -1)
-                    SNPRINTF(buff, 512, "%d", elementNumber);
+                    snprintf(buff, 512, "%d", elementNumber);
                 else 
-                    SNPRINTF(buff, 512, "%d (global)", globalElement);
+                    snprintf(buff, 512, "%d (global)", globalElement);
             }
             else 
-                SNPRINTF(buff, 512, "%d(ghost)", elementNumber);
+                snprintf(buff, 512, "%d(ghost)", elementNumber);
             os += buff;
         }
         if (showNPC)
         {
-            SNPRINTF(buff, 512, " %s", pnodeCoords[0].c_str());
+            snprintf(buff, 512, " %s", pnodeCoords[0].c_str());
             os += buff;
         }
         if (showNDLC)
         {
-            SNPRINTF(buff, 512, " %s %s", domStr.c_str(), dnodeCoords[0].c_str());
+            snprintf(buff, 512, " %s %s", domStr.c_str(), dnodeCoords[0].c_str());
             os += buff;
         }
         if (showNBLC)
         {
-            SNPRINTF(buff, 512, " %s %s", grpStr.c_str(), bnodeCoords[0].c_str());
+            snprintf(buff, 512, " %s %s", grpStr.c_str(), bnodeCoords[0].c_str());
             os += buff;
         }
         if (showNodeId || showNodeCoords)
@@ -4449,28 +4415,28 @@ PickAttributes::CreateOutputString(std::string &os, bool withLetter)
             if (showId)
             {
                 if (ghosts.size() > 0 && ghosts[i])
-                    SNPRINTF(buff, 512, "%d(ghost)  ", incidentElements[i]);
+                    snprintf(buff, 512, "%d(ghost)  ", incidentElements[i]);
                 else if (showGlobal)
-                    SNPRINTF(buff, 512, "%d  ", globalIncidentElements[i]);
+                    snprintf(buff, 512, "%d  ", globalIncidentElements[i]);
                 else 
-                    SNPRINTF(buff, 512, "%d  ", incidentElements[i]);
+                    snprintf(buff, 512, "%d  ", incidentElements[i]);
                 os += buff; 
             }
             if (pickType == Zone || pickType == DomainZone)
             {
                 if (showNPC)
                 {
-                    SNPRINTF(buff, 512, " %s", pnodeCoords[i].c_str());
+                    snprintf(buff, 512, " %s", pnodeCoords[i].c_str());
                     os += buff;
                 }
                 if (showNDLC)
                 {
-                    SNPRINTF(buff, 512, " %s %s", domStr.c_str(), dnodeCoords[i].c_str());
+                    snprintf(buff, 512, " %s %s", domStr.c_str(), dnodeCoords[i].c_str());
                     os += buff;
                 }
                 if (showNBLC)
                 {
-                    SNPRINTF(buff, 512, " %s %s", grpStr.c_str(), bnodeCoords[i].c_str());
+                    snprintf(buff, 512, " %s %s", grpStr.c_str(), bnodeCoords[i].c_str());
                     os += buff;
                 }
                 if (showNodeCoords)
@@ -4482,12 +4448,12 @@ PickAttributes::CreateOutputString(std::string &os, bool withLetter)
             {
                 if (showZDLC)
                 {
-                    SNPRINTF(buff, 512, " %s %s", domStr.c_str(), dzoneCoords[i].c_str());
+                    snprintf(buff, 512, " %s %s", domStr.c_str(), dzoneCoords[i].c_str());
                     os += buff;
                 }
                 if (showZBLC)
                 {
-                    SNPRINTF(buff, 512, " %s %s", grpStr.c_str(), bzoneCoords[i].c_str());
+                    snprintf(buff, 512, " %s %s", grpStr.c_str(), bzoneCoords[i].c_str());
                     os += buff;
                 }
                 if (showZoneCoords)
@@ -4693,9 +4659,9 @@ PickAttributes::CreateConciseOutputString(std::string &os, bool withLetter)
     if (withLetter)
     {
         if (pickLetter.size() != 0)
-            SNPRINTF(buff, 512, "\n%s:  ", pickLetter.c_str());
+            snprintf(buff, 512, "\n%s:  ", pickLetter.c_str());
         else 
-            SNPRINTF(buff, 512, "\n");
+            snprintf(buff, 512, "\n");
         os += buff;
     }
     os += fileName;
@@ -4707,7 +4673,7 @@ PickAttributes::CreateConciseOutputString(std::string &os, bool withLetter)
       
         if (showTS)
         {
-            SNPRINTF(buff, 512, "  timestep %d", timeStep);
+            snprintf(buff, 512, "  timestep %d", timeStep);
             os += buff;
         }
     }
@@ -4722,10 +4688,10 @@ PickAttributes::CreateConciseOutputString(std::string &os, bool withLetter)
             {
                 buff[0] = ' ';
                 buff[1] = ' ';
-                SNPRINTF(buff+2, 510, domStr.c_str(), domain);
+                snprintf(buff+2, 510, domStr.c_str(), domain);
             }
             else
-                SNPRINTF(buff, 512, "  %s %d", domStr.c_str(), domain);
+                snprintf(buff, 512, "  %s %d", domStr.c_str(), domain);
 
             os += buff;
         }
@@ -4738,7 +4704,7 @@ PickAttributes::CreateConciseOutputString(std::string &os, bool withLetter)
 
         if (showMN)
         {
-            SNPRINTF(buff, 512, "  %s", meshInfo.c_str());
+            snprintf(buff, 512, "  %s", meshInfo.c_str());
             os += buff;
         }
     }
@@ -4752,14 +4718,14 @@ PickAttributes::CreateConciseOutputString(std::string &os, bool withLetter)
         if (pickType == CurveNode)
         {
             format = " at <" + floatFormat + ", " + floatFormat +  ">\n";
-            SNPRINTF(buff, 512, format.c_str() , nodePoint[0], nodePoint[1]);
+            snprintf(buff, 512, format.c_str() , nodePoint[0], nodePoint[1]);
             os += buff;
         }
         else if (pickType == CurveZone)
         {
             format = " at <" + floatFormat + ", " + floatFormat +  ">"
                      +" & <" + floatFormat + ", " + floatFormat +  ">\b";
-            SNPRINTF(buff, 512, format.c_str(), 
+            snprintf(buff, 512, format.c_str(), 
                       nodePoint[0], nodePoint[1], cellPoint[0], cellPoint[1]);
             os += buff;
         }
@@ -4768,14 +4734,14 @@ PickAttributes::CreateConciseOutputString(std::string &os, bool withLetter)
             if (dimension == 2)
             {
                 format = " at <" + floatFormat + ", " + floatFormat +  ">\n";
-                SNPRINTF(buff, 512, format.c_str(), cellPoint[0], cellPoint[1]);
+                snprintf(buff, 512, format.c_str(), cellPoint[0], cellPoint[1]);
             }
             else 
             {
                 format = " at <" + floatFormat + ", " 
                                  + floatFormat + ", " 
                                  + floatFormat +  ">\n";
-                SNPRINTF(buff, 512, format.c_str(),
+                snprintf(buff, 512, format.c_str(),
                             cellPoint[0], cellPoint[1], cellPoint[2]);
             }
             os += buff;
@@ -4783,7 +4749,7 @@ PickAttributes::CreateConciseOutputString(std::string &os, bool withLetter)
     }
     else
     {
-        SNPRINTF(buff, 512, " at %s\n", pointString.c_str());
+        snprintf(buff, 512, " at %s\n", pointString.c_str());
         os += buff;
     }
 
@@ -4827,22 +4793,22 @@ PickAttributes::CreateConciseOutputString(std::string &os, bool withLetter)
             if (!elementIsGhost)
             {
                 if (!showGlobalIds || globalElement == -1) 
-                    SNPRINTF(buff, 512, "%d ", elementNumber);
+                    snprintf(buff, 512, "%d ", elementNumber);
                 else 
-                    SNPRINTF(buff, 512, "%d (global) ", globalElement);
+                    snprintf(buff, 512, "%d (global) ", globalElement);
             }
             else 
-                SNPRINTF(buff, 512, "%d(ghost) ", elementNumber);
+                snprintf(buff, 512, "%d(ghost) ", elementNumber);
             os += buff;
         }
         if (showZDLC)
         {
-            SNPRINTF(buff, 512, "%s ", dzoneCoords[0].c_str());
+            snprintf(buff, 512, "%s ", dzoneCoords[0].c_str());
             os += buff;
         }
         if (showZBLC)
         {
-            SNPRINTF(buff, 512, "%s ", bzoneCoords[0].c_str());
+            snprintf(buff, 512, "%s ", bzoneCoords[0].c_str());
             os += buff;
         }
     }
@@ -4855,27 +4821,27 @@ PickAttributes::CreateConciseOutputString(std::string &os, bool withLetter)
             if (!elementIsGhost)
             {
                 if (!showGlobalIds || globalElement == -1)
-                    SNPRINTF(buff, 512, "%d ", elementNumber);
+                    snprintf(buff, 512, "%d ", elementNumber);
                 else 
-                    SNPRINTF(buff, 512, "%d (global) ", globalElement);
+                    snprintf(buff, 512, "%d (global) ", globalElement);
             }
             else 
-                SNPRINTF(buff, 512, "%d(ghost) ", elementNumber);
+                snprintf(buff, 512, "%d(ghost) ", elementNumber);
             os += buff;
         }
         if (showNPC)
         {
-            SNPRINTF(buff, 512, "%s ", pnodeCoords[0].c_str());
+            snprintf(buff, 512, "%s ", pnodeCoords[0].c_str());
             os += buff;
         }
         if (showNDLC)
         {
-            SNPRINTF(buff, 512, "%s ", dnodeCoords[0].c_str());
+            snprintf(buff, 512, "%s ", dnodeCoords[0].c_str());
             os += buff;
         }
         if (showNBLC)
         {
-            SNPRINTF(buff, 512, "%s ", bnodeCoords[0].c_str());
+            snprintf(buff, 512, "%s ", bnodeCoords[0].c_str());
             os += buff;
         }
     }
@@ -4910,28 +4876,28 @@ PickAttributes::CreateConciseOutputString(std::string &os, bool withLetter)
             if (showId)
             {
                 if (ghosts.size() > 0 && ghosts[i])
-                    SNPRINTF(buff, 512, "%d(ghost) ", incidentElements[i]);
+                    snprintf(buff, 512, "%d(ghost) ", incidentElements[i]);
                 else if (showGlobal) 
-                    SNPRINTF(buff, 512, "%d ", globalIncidentElements[i]);
+                    snprintf(buff, 512, "%d ", globalIncidentElements[i]);
                 else 
-                    SNPRINTF(buff, 512, "%d ", incidentElements[i]);
+                    snprintf(buff, 512, "%d ", incidentElements[i]);
                 os += buff; 
             }
             if (pickType == Zone || pickType == DomainZone)
             {
                 if (showNPC)
                 {
-                    SNPRINTF(buff, 512, "%s ", pnodeCoords[i].c_str());
+                    snprintf(buff, 512, "%s ", pnodeCoords[i].c_str());
                     os += buff;
                 }
                 if (showNDLC)
                 {
-                    SNPRINTF(buff, 512, "%s ", dnodeCoords[i].c_str());
+                    snprintf(buff, 512, "%s ", dnodeCoords[i].c_str());
                     os += buff;
                 }
                 if (showNBLC)
                 {
-                    SNPRINTF(buff, 512, "%s ", bnodeCoords[i].c_str());
+                    snprintf(buff, 512, "%s ", bnodeCoords[i].c_str());
                     os += buff;
                 }
             }
@@ -4939,12 +4905,12 @@ PickAttributes::CreateConciseOutputString(std::string &os, bool withLetter)
             {
                 if (showZDLC)
                 {
-                    SNPRINTF(buff, 512, "%s ", dzoneCoords[i].c_str());
+                    snprintf(buff, 512, "%s ", dzoneCoords[i].c_str());
                     os += buff;
                 }
                 if (showZBLC)
                 {
-                    SNPRINTF(buff, 512, "%s ", bzoneCoords[i].c_str());
+                    snprintf(buff, 512, "%s ", bzoneCoords[i].c_str());
                     os += buff;
                 }
             }

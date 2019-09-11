@@ -1,45 +1,10 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 #include <PyExpression.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyExpression
@@ -76,14 +41,14 @@ PyExpression_ToString(const Expression *atts, const char *prefix)
     std::string str;
     char tmpStr[1000];
 
-    SNPRINTF(tmpStr, 1000, "%sname = \"%s\"\n", prefix, atts->GetName().c_str());
+    snprintf(tmpStr, 1000, "%sname = \"%s\"\n", prefix, atts->GetName().c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sdefinition = \"%s\"\n", prefix, atts->GetDefinition().c_str());
+    snprintf(tmpStr, 1000, "%sdefinition = \"%s\"\n", prefix, atts->GetDefinition().c_str());
     str += tmpStr;
     if(atts->GetHidden())
-        SNPRINTF(tmpStr, 1000, "%shidden = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%shidden = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%shidden = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%shidden = 0\n", prefix);
     str += tmpStr;
     const char *type_names = "Unknown, ScalarMeshVar, VectorMeshVar, TensorMeshVar, SymmetricTensorMeshVar, "
         "ArrayMeshVar, CurveMeshVar, Mesh, Material, "
@@ -91,43 +56,43 @@ PyExpression_ToString(const Expression *atts, const char *prefix)
     switch (atts->GetType())
     {
       case Expression::Unknown:
-          SNPRINTF(tmpStr, 1000, "%stype = %sUnknown  # %s\n", prefix, prefix, type_names);
+          snprintf(tmpStr, 1000, "%stype = %sUnknown  # %s\n", prefix, prefix, type_names);
           str += tmpStr;
           break;
       case Expression::ScalarMeshVar:
-          SNPRINTF(tmpStr, 1000, "%stype = %sScalarMeshVar  # %s\n", prefix, prefix, type_names);
+          snprintf(tmpStr, 1000, "%stype = %sScalarMeshVar  # %s\n", prefix, prefix, type_names);
           str += tmpStr;
           break;
       case Expression::VectorMeshVar:
-          SNPRINTF(tmpStr, 1000, "%stype = %sVectorMeshVar  # %s\n", prefix, prefix, type_names);
+          snprintf(tmpStr, 1000, "%stype = %sVectorMeshVar  # %s\n", prefix, prefix, type_names);
           str += tmpStr;
           break;
       case Expression::TensorMeshVar:
-          SNPRINTF(tmpStr, 1000, "%stype = %sTensorMeshVar  # %s\n", prefix, prefix, type_names);
+          snprintf(tmpStr, 1000, "%stype = %sTensorMeshVar  # %s\n", prefix, prefix, type_names);
           str += tmpStr;
           break;
       case Expression::SymmetricTensorMeshVar:
-          SNPRINTF(tmpStr, 1000, "%stype = %sSymmetricTensorMeshVar  # %s\n", prefix, prefix, type_names);
+          snprintf(tmpStr, 1000, "%stype = %sSymmetricTensorMeshVar  # %s\n", prefix, prefix, type_names);
           str += tmpStr;
           break;
       case Expression::ArrayMeshVar:
-          SNPRINTF(tmpStr, 1000, "%stype = %sArrayMeshVar  # %s\n", prefix, prefix, type_names);
+          snprintf(tmpStr, 1000, "%stype = %sArrayMeshVar  # %s\n", prefix, prefix, type_names);
           str += tmpStr;
           break;
       case Expression::CurveMeshVar:
-          SNPRINTF(tmpStr, 1000, "%stype = %sCurveMeshVar  # %s\n", prefix, prefix, type_names);
+          snprintf(tmpStr, 1000, "%stype = %sCurveMeshVar  # %s\n", prefix, prefix, type_names);
           str += tmpStr;
           break;
       case Expression::Mesh:
-          SNPRINTF(tmpStr, 1000, "%stype = %sMesh  # %s\n", prefix, prefix, type_names);
+          snprintf(tmpStr, 1000, "%stype = %sMesh  # %s\n", prefix, prefix, type_names);
           str += tmpStr;
           break;
       case Expression::Material:
-          SNPRINTF(tmpStr, 1000, "%stype = %sMaterial  # %s\n", prefix, prefix, type_names);
+          snprintf(tmpStr, 1000, "%stype = %sMaterial  # %s\n", prefix, prefix, type_names);
           str += tmpStr;
           break;
       case Expression::Species:
-          SNPRINTF(tmpStr, 1000, "%stype = %sSpecies  # %s\n", prefix, prefix, type_names);
+          snprintf(tmpStr, 1000, "%stype = %sSpecies  # %s\n", prefix, prefix, type_names);
           str += tmpStr;
           break;
       default:
@@ -135,25 +100,25 @@ PyExpression_ToString(const Expression *atts, const char *prefix)
     }
 
     if(atts->GetFromDB())
-        SNPRINTF(tmpStr, 1000, "%sfromDB = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sfromDB = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sfromDB = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sfromDB = 0\n", prefix);
     str += tmpStr;
     if(atts->GetFromOperator())
-        SNPRINTF(tmpStr, 1000, "%sfromOperator = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sfromOperator = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sfromOperator = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sfromOperator = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%soperatorName = \"%s\"\n", prefix, atts->GetOperatorName().c_str());
+    snprintf(tmpStr, 1000, "%soperatorName = \"%s\"\n", prefix, atts->GetOperatorName().c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%smeshName = \"%s\"\n", prefix, atts->GetMeshName().c_str());
+    snprintf(tmpStr, 1000, "%smeshName = \"%s\"\n", prefix, atts->GetMeshName().c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sdbName = \"%s\"\n", prefix, atts->GetDbName().c_str());
+    snprintf(tmpStr, 1000, "%sdbName = \"%s\"\n", prefix, atts->GetDbName().c_str());
     str += tmpStr;
     if(atts->GetAutoExpression())
-        SNPRINTF(tmpStr, 1000, "%sautoExpression = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sautoExpression = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sautoExpression = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sautoExpression = 0\n", prefix);
     str += tmpStr;
     return str;
 }

@@ -1,45 +1,10 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 #include <PyLCSAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyLCSAttributes
@@ -80,11 +45,11 @@ PyLCSAttributes_ToString(const LCSAttributes *atts, const char *prefix)
     switch (atts->GetSourceType())
     {
       case LCSAttributes::NativeMesh:
-          SNPRINTF(tmpStr, 1000, "%ssourceType = %sNativeMesh  # %s\n", prefix, prefix, sourceType_names);
+          snprintf(tmpStr, 1000, "%ssourceType = %sNativeMesh  # %s\n", prefix, prefix, sourceType_names);
           str += tmpStr;
           break;
       case LCSAttributes::RegularGrid:
-          SNPRINTF(tmpStr, 1000, "%ssourceType = %sRegularGrid  # %s\n", prefix, prefix, sourceType_names);
+          snprintf(tmpStr, 1000, "%ssourceType = %sRegularGrid  # %s\n", prefix, prefix, sourceType_names);
           str += tmpStr;
           break;
       default:
@@ -92,30 +57,30 @@ PyLCSAttributes_ToString(const LCSAttributes *atts, const char *prefix)
     }
 
     {   const int *Resolution = atts->GetResolution();
-        SNPRINTF(tmpStr, 1000, "%sResolution = (", prefix);
+        snprintf(tmpStr, 1000, "%sResolution = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 3; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%d", Resolution[i]);
+            snprintf(tmpStr, 1000, "%d", Resolution[i]);
             str += tmpStr;
             if(i < 2)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     const char *UseDataSetStart_names = "Full, Subset";
     switch (atts->GetUseDataSetStart())
     {
       case LCSAttributes::Full:
-          SNPRINTF(tmpStr, 1000, "%sUseDataSetStart = %sFull  # %s\n", prefix, prefix, UseDataSetStart_names);
+          snprintf(tmpStr, 1000, "%sUseDataSetStart = %sFull  # %s\n", prefix, prefix, UseDataSetStart_names);
           str += tmpStr;
           break;
       case LCSAttributes::Subset:
-          SNPRINTF(tmpStr, 1000, "%sUseDataSetStart = %sSubset  # %s\n", prefix, prefix, UseDataSetStart_names);
+          snprintf(tmpStr, 1000, "%sUseDataSetStart = %sSubset  # %s\n", prefix, prefix, UseDataSetStart_names);
           str += tmpStr;
           break;
       default:
@@ -123,30 +88,30 @@ PyLCSAttributes_ToString(const LCSAttributes *atts, const char *prefix)
     }
 
     {   const double *StartPosition = atts->GetStartPosition();
-        SNPRINTF(tmpStr, 1000, "%sStartPosition = (", prefix);
+        snprintf(tmpStr, 1000, "%sStartPosition = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 3; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", StartPosition[i]);
+            snprintf(tmpStr, 1000, "%g", StartPosition[i]);
             str += tmpStr;
             if(i < 2)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     const char *UseDataSetEnd_names = "Full, Subset";
     switch (atts->GetUseDataSetEnd())
     {
       case LCSAttributes::Full:
-          SNPRINTF(tmpStr, 1000, "%sUseDataSetEnd = %sFull  # %s\n", prefix, prefix, UseDataSetEnd_names);
+          snprintf(tmpStr, 1000, "%sUseDataSetEnd = %sFull  # %s\n", prefix, prefix, UseDataSetEnd_names);
           str += tmpStr;
           break;
       case LCSAttributes::Subset:
-          SNPRINTF(tmpStr, 1000, "%sUseDataSetEnd = %sSubset  # %s\n", prefix, prefix, UseDataSetEnd_names);
+          snprintf(tmpStr, 1000, "%sUseDataSetEnd = %sSubset  # %s\n", prefix, prefix, UseDataSetEnd_names);
           str += tmpStr;
           break;
       default:
@@ -154,34 +119,34 @@ PyLCSAttributes_ToString(const LCSAttributes *atts, const char *prefix)
     }
 
     {   const double *EndPosition = atts->GetEndPosition();
-        SNPRINTF(tmpStr, 1000, "%sEndPosition = (", prefix);
+        snprintf(tmpStr, 1000, "%sEndPosition = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 3; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", EndPosition[i]);
+            snprintf(tmpStr, 1000, "%g", EndPosition[i]);
             str += tmpStr;
             if(i < 2)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     const char *integrationDirection_names = "Forward, Backward, Both";
     switch (atts->GetIntegrationDirection())
     {
       case LCSAttributes::Forward:
-          SNPRINTF(tmpStr, 1000, "%sintegrationDirection = %sForward  # %s\n", prefix, prefix, integrationDirection_names);
+          snprintf(tmpStr, 1000, "%sintegrationDirection = %sForward  # %s\n", prefix, prefix, integrationDirection_names);
           str += tmpStr;
           break;
       case LCSAttributes::Backward:
-          SNPRINTF(tmpStr, 1000, "%sintegrationDirection = %sBackward  # %s\n", prefix, prefix, integrationDirection_names);
+          snprintf(tmpStr, 1000, "%sintegrationDirection = %sBackward  # %s\n", prefix, prefix, integrationDirection_names);
           str += tmpStr;
           break;
       case LCSAttributes::Both:
-          SNPRINTF(tmpStr, 1000, "%sintegrationDirection = %sBoth  # %s\n", prefix, prefix, integrationDirection_names);
+          snprintf(tmpStr, 1000, "%sintegrationDirection = %sBoth  # %s\n", prefix, prefix, integrationDirection_names);
           str += tmpStr;
           break;
       default:
@@ -192,51 +157,51 @@ PyLCSAttributes_ToString(const LCSAttributes *atts, const char *prefix)
     switch (atts->GetAuxiliaryGrid())
     {
       case LCSAttributes::None:
-          SNPRINTF(tmpStr, 1000, "%sauxiliaryGrid = %sNone  # %s\n", prefix, prefix, auxiliaryGrid_names);
+          snprintf(tmpStr, 1000, "%sauxiliaryGrid = %sNone  # %s\n", prefix, prefix, auxiliaryGrid_names);
           str += tmpStr;
           break;
       case LCSAttributes::TwoDim:
-          SNPRINTF(tmpStr, 1000, "%sauxiliaryGrid = %sTwoDim  # %s\n", prefix, prefix, auxiliaryGrid_names);
+          snprintf(tmpStr, 1000, "%sauxiliaryGrid = %sTwoDim  # %s\n", prefix, prefix, auxiliaryGrid_names);
           str += tmpStr;
           break;
       case LCSAttributes::ThreeDim:
-          SNPRINTF(tmpStr, 1000, "%sauxiliaryGrid = %sThreeDim  # %s\n", prefix, prefix, auxiliaryGrid_names);
+          snprintf(tmpStr, 1000, "%sauxiliaryGrid = %sThreeDim  # %s\n", prefix, prefix, auxiliaryGrid_names);
           str += tmpStr;
           break;
       default:
           break;
     }
 
-    SNPRINTF(tmpStr, 1000, "%sauxiliaryGridSpacing = %g\n", prefix, atts->GetAuxiliaryGridSpacing());
+    snprintf(tmpStr, 1000, "%sauxiliaryGridSpacing = %g\n", prefix, atts->GetAuxiliaryGridSpacing());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%smaxSteps = %d\n", prefix, atts->GetMaxSteps());
+    snprintf(tmpStr, 1000, "%smaxSteps = %d\n", prefix, atts->GetMaxSteps());
     str += tmpStr;
     const char *operationType_names = "IntegrationTime, ArcLength, AverageDistanceFromSeed, EigenValue, EigenVector, "
         "Lyapunov";
     switch (atts->GetOperationType())
     {
       case LCSAttributes::IntegrationTime:
-          SNPRINTF(tmpStr, 1000, "%soperationType = %sIntegrationTime  # %s\n", prefix, prefix, operationType_names);
+          snprintf(tmpStr, 1000, "%soperationType = %sIntegrationTime  # %s\n", prefix, prefix, operationType_names);
           str += tmpStr;
           break;
       case LCSAttributes::ArcLength:
-          SNPRINTF(tmpStr, 1000, "%soperationType = %sArcLength  # %s\n", prefix, prefix, operationType_names);
+          snprintf(tmpStr, 1000, "%soperationType = %sArcLength  # %s\n", prefix, prefix, operationType_names);
           str += tmpStr;
           break;
       case LCSAttributes::AverageDistanceFromSeed:
-          SNPRINTF(tmpStr, 1000, "%soperationType = %sAverageDistanceFromSeed  # %s\n", prefix, prefix, operationType_names);
+          snprintf(tmpStr, 1000, "%soperationType = %sAverageDistanceFromSeed  # %s\n", prefix, prefix, operationType_names);
           str += tmpStr;
           break;
       case LCSAttributes::EigenValue:
-          SNPRINTF(tmpStr, 1000, "%soperationType = %sEigenValue  # %s\n", prefix, prefix, operationType_names);
+          snprintf(tmpStr, 1000, "%soperationType = %sEigenValue  # %s\n", prefix, prefix, operationType_names);
           str += tmpStr;
           break;
       case LCSAttributes::EigenVector:
-          SNPRINTF(tmpStr, 1000, "%soperationType = %sEigenVector  # %s\n", prefix, prefix, operationType_names);
+          snprintf(tmpStr, 1000, "%soperationType = %sEigenVector  # %s\n", prefix, prefix, operationType_names);
           str += tmpStr;
           break;
       case LCSAttributes::Lyapunov:
-          SNPRINTF(tmpStr, 1000, "%soperationType = %sLyapunov  # %s\n", prefix, prefix, operationType_names);
+          snprintf(tmpStr, 1000, "%soperationType = %sLyapunov  # %s\n", prefix, prefix, operationType_names);
           str += tmpStr;
           break;
       default:
@@ -247,11 +212,11 @@ PyLCSAttributes_ToString(const LCSAttributes *atts, const char *prefix)
     switch (atts->GetCauchyGreenTensor())
     {
       case LCSAttributes::Left:
-          SNPRINTF(tmpStr, 1000, "%scauchyGreenTensor = %sLeft  # %s\n", prefix, prefix, cauchyGreenTensor_names);
+          snprintf(tmpStr, 1000, "%scauchyGreenTensor = %sLeft  # %s\n", prefix, prefix, cauchyGreenTensor_names);
           str += tmpStr;
           break;
       case LCSAttributes::Right:
-          SNPRINTF(tmpStr, 1000, "%scauchyGreenTensor = %sRight  # %s\n", prefix, prefix, cauchyGreenTensor_names);
+          snprintf(tmpStr, 1000, "%scauchyGreenTensor = %sRight  # %s\n", prefix, prefix, cauchyGreenTensor_names);
           str += tmpStr;
           break;
       default:
@@ -263,48 +228,48 @@ PyLCSAttributes_ToString(const LCSAttributes *atts, const char *prefix)
     switch (atts->GetEigenComponent())
     {
       case LCSAttributes::Smallest:
-          SNPRINTF(tmpStr, 1000, "%seigenComponent = %sSmallest  # %s\n", prefix, prefix, eigenComponent_names);
+          snprintf(tmpStr, 1000, "%seigenComponent = %sSmallest  # %s\n", prefix, prefix, eigenComponent_names);
           str += tmpStr;
           break;
       case LCSAttributes::Intermediate:
-          SNPRINTF(tmpStr, 1000, "%seigenComponent = %sIntermediate  # %s\n", prefix, prefix, eigenComponent_names);
+          snprintf(tmpStr, 1000, "%seigenComponent = %sIntermediate  # %s\n", prefix, prefix, eigenComponent_names);
           str += tmpStr;
           break;
       case LCSAttributes::Largest:
-          SNPRINTF(tmpStr, 1000, "%seigenComponent = %sLargest  # %s\n", prefix, prefix, eigenComponent_names);
+          snprintf(tmpStr, 1000, "%seigenComponent = %sLargest  # %s\n", prefix, prefix, eigenComponent_names);
           str += tmpStr;
           break;
       case LCSAttributes::PosShearVector:
-          SNPRINTF(tmpStr, 1000, "%seigenComponent = %sPosShearVector  # %s\n", prefix, prefix, eigenComponent_names);
+          snprintf(tmpStr, 1000, "%seigenComponent = %sPosShearVector  # %s\n", prefix, prefix, eigenComponent_names);
           str += tmpStr;
           break;
       case LCSAttributes::NegShearVector:
-          SNPRINTF(tmpStr, 1000, "%seigenComponent = %sNegShearVector  # %s\n", prefix, prefix, eigenComponent_names);
+          snprintf(tmpStr, 1000, "%seigenComponent = %sNegShearVector  # %s\n", prefix, prefix, eigenComponent_names);
           str += tmpStr;
           break;
       case LCSAttributes::PosLambdaShearVector:
-          SNPRINTF(tmpStr, 1000, "%seigenComponent = %sPosLambdaShearVector  # %s\n", prefix, prefix, eigenComponent_names);
+          snprintf(tmpStr, 1000, "%seigenComponent = %sPosLambdaShearVector  # %s\n", prefix, prefix, eigenComponent_names);
           str += tmpStr;
           break;
       case LCSAttributes::NegLambdaShearVector:
-          SNPRINTF(tmpStr, 1000, "%seigenComponent = %sNegLambdaShearVector  # %s\n", prefix, prefix, eigenComponent_names);
+          snprintf(tmpStr, 1000, "%seigenComponent = %sNegLambdaShearVector  # %s\n", prefix, prefix, eigenComponent_names);
           str += tmpStr;
           break;
       default:
           break;
     }
 
-    SNPRINTF(tmpStr, 1000, "%seigenWeight = %g\n", prefix, atts->GetEigenWeight());
+    snprintf(tmpStr, 1000, "%seigenWeight = %g\n", prefix, atts->GetEigenWeight());
     str += tmpStr;
     const char *operatorType_names = "BaseValue, Gradient";
     switch (atts->GetOperatorType())
     {
       case LCSAttributes::BaseValue:
-          SNPRINTF(tmpStr, 1000, "%soperatorType = %sBaseValue  # %s\n", prefix, prefix, operatorType_names);
+          snprintf(tmpStr, 1000, "%soperatorType = %sBaseValue  # %s\n", prefix, prefix, operatorType_names);
           str += tmpStr;
           break;
       case LCSAttributes::Gradient:
-          SNPRINTF(tmpStr, 1000, "%soperatorType = %sGradient  # %s\n", prefix, prefix, operatorType_names);
+          snprintf(tmpStr, 1000, "%soperatorType = %sGradient  # %s\n", prefix, prefix, operatorType_names);
           str += tmpStr;
           break;
       default:
@@ -315,15 +280,15 @@ PyLCSAttributes_ToString(const LCSAttributes *atts, const char *prefix)
     switch (atts->GetTerminationType())
     {
       case LCSAttributes::Time:
-          SNPRINTF(tmpStr, 1000, "%sterminationType = %sTime  # %s\n", prefix, prefix, terminationType_names);
+          snprintf(tmpStr, 1000, "%sterminationType = %sTime  # %s\n", prefix, prefix, terminationType_names);
           str += tmpStr;
           break;
       case LCSAttributes::Distance:
-          SNPRINTF(tmpStr, 1000, "%sterminationType = %sDistance  # %s\n", prefix, prefix, terminationType_names);
+          snprintf(tmpStr, 1000, "%sterminationType = %sDistance  # %s\n", prefix, prefix, terminationType_names);
           str += tmpStr;
           break;
       case LCSAttributes::Size:
-          SNPRINTF(tmpStr, 1000, "%sterminationType = %sSize  # %s\n", prefix, prefix, terminationType_names);
+          snprintf(tmpStr, 1000, "%sterminationType = %sSize  # %s\n", prefix, prefix, terminationType_names);
           str += tmpStr;
           break;
       default:
@@ -331,108 +296,108 @@ PyLCSAttributes_ToString(const LCSAttributes *atts, const char *prefix)
     }
 
     if(atts->GetTerminateBySize())
-        SNPRINTF(tmpStr, 1000, "%sterminateBySize = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sterminateBySize = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sterminateBySize = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sterminateBySize = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%stermSize = %g\n", prefix, atts->GetTermSize());
+    snprintf(tmpStr, 1000, "%stermSize = %g\n", prefix, atts->GetTermSize());
     str += tmpStr;
     if(atts->GetTerminateByDistance())
-        SNPRINTF(tmpStr, 1000, "%sterminateByDistance = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sterminateByDistance = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sterminateByDistance = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sterminateByDistance = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%stermDistance = %g\n", prefix, atts->GetTermDistance());
+    snprintf(tmpStr, 1000, "%stermDistance = %g\n", prefix, atts->GetTermDistance());
     str += tmpStr;
     if(atts->GetTerminateByTime())
-        SNPRINTF(tmpStr, 1000, "%sterminateByTime = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sterminateByTime = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sterminateByTime = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sterminateByTime = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%stermTime = %g\n", prefix, atts->GetTermTime());
+    snprintf(tmpStr, 1000, "%stermTime = %g\n", prefix, atts->GetTermTime());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%smaxStepLength = %g\n", prefix, atts->GetMaxStepLength());
+    snprintf(tmpStr, 1000, "%smaxStepLength = %g\n", prefix, atts->GetMaxStepLength());
     str += tmpStr;
     if(atts->GetLimitMaximumTimestep())
-        SNPRINTF(tmpStr, 1000, "%slimitMaximumTimestep = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%slimitMaximumTimestep = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%slimitMaximumTimestep = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%slimitMaximumTimestep = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%smaxTimeStep = %g\n", prefix, atts->GetMaxTimeStep());
+    snprintf(tmpStr, 1000, "%smaxTimeStep = %g\n", prefix, atts->GetMaxTimeStep());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%srelTol = %g\n", prefix, atts->GetRelTol());
+    snprintf(tmpStr, 1000, "%srelTol = %g\n", prefix, atts->GetRelTol());
     str += tmpStr;
     const char *absTolSizeType_names = "Absolute, FractionOfBBox";
     switch (atts->GetAbsTolSizeType())
     {
       case LCSAttributes::Absolute:
-          SNPRINTF(tmpStr, 1000, "%sabsTolSizeType = %sAbsolute  # %s\n", prefix, prefix, absTolSizeType_names);
+          snprintf(tmpStr, 1000, "%sabsTolSizeType = %sAbsolute  # %s\n", prefix, prefix, absTolSizeType_names);
           str += tmpStr;
           break;
       case LCSAttributes::FractionOfBBox:
-          SNPRINTF(tmpStr, 1000, "%sabsTolSizeType = %sFractionOfBBox  # %s\n", prefix, prefix, absTolSizeType_names);
+          snprintf(tmpStr, 1000, "%sabsTolSizeType = %sFractionOfBBox  # %s\n", prefix, prefix, absTolSizeType_names);
           str += tmpStr;
           break;
       default:
           break;
     }
 
-    SNPRINTF(tmpStr, 1000, "%sabsTolAbsolute = %g\n", prefix, atts->GetAbsTolAbsolute());
+    snprintf(tmpStr, 1000, "%sabsTolAbsolute = %g\n", prefix, atts->GetAbsTolAbsolute());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sabsTolBBox = %g\n", prefix, atts->GetAbsTolBBox());
+    snprintf(tmpStr, 1000, "%sabsTolBBox = %g\n", prefix, atts->GetAbsTolBBox());
     str += tmpStr;
     const char *fieldType_names = "Default, FlashField, M3DC12DField, M3DC13DField, Nek5000Field, "
         "NektarPPField, NIMRODField";
     switch (atts->GetFieldType())
     {
       case LCSAttributes::Default:
-          SNPRINTF(tmpStr, 1000, "%sfieldType = %sDefault  # %s\n", prefix, prefix, fieldType_names);
+          snprintf(tmpStr, 1000, "%sfieldType = %sDefault  # %s\n", prefix, prefix, fieldType_names);
           str += tmpStr;
           break;
       case LCSAttributes::FlashField:
-          SNPRINTF(tmpStr, 1000, "%sfieldType = %sFlashField  # %s\n", prefix, prefix, fieldType_names);
+          snprintf(tmpStr, 1000, "%sfieldType = %sFlashField  # %s\n", prefix, prefix, fieldType_names);
           str += tmpStr;
           break;
       case LCSAttributes::M3DC12DField:
-          SNPRINTF(tmpStr, 1000, "%sfieldType = %sM3DC12DField  # %s\n", prefix, prefix, fieldType_names);
+          snprintf(tmpStr, 1000, "%sfieldType = %sM3DC12DField  # %s\n", prefix, prefix, fieldType_names);
           str += tmpStr;
           break;
       case LCSAttributes::M3DC13DField:
-          SNPRINTF(tmpStr, 1000, "%sfieldType = %sM3DC13DField  # %s\n", prefix, prefix, fieldType_names);
+          snprintf(tmpStr, 1000, "%sfieldType = %sM3DC13DField  # %s\n", prefix, prefix, fieldType_names);
           str += tmpStr;
           break;
       case LCSAttributes::Nek5000Field:
-          SNPRINTF(tmpStr, 1000, "%sfieldType = %sNek5000Field  # %s\n", prefix, prefix, fieldType_names);
+          snprintf(tmpStr, 1000, "%sfieldType = %sNek5000Field  # %s\n", prefix, prefix, fieldType_names);
           str += tmpStr;
           break;
       case LCSAttributes::NektarPPField:
-          SNPRINTF(tmpStr, 1000, "%sfieldType = %sNektarPPField  # %s\n", prefix, prefix, fieldType_names);
+          snprintf(tmpStr, 1000, "%sfieldType = %sNektarPPField  # %s\n", prefix, prefix, fieldType_names);
           str += tmpStr;
           break;
       case LCSAttributes::NIMRODField:
-          SNPRINTF(tmpStr, 1000, "%sfieldType = %sNIMRODField  # %s\n", prefix, prefix, fieldType_names);
+          snprintf(tmpStr, 1000, "%sfieldType = %sNIMRODField  # %s\n", prefix, prefix, fieldType_names);
           str += tmpStr;
           break;
       default:
           break;
     }
 
-    SNPRINTF(tmpStr, 1000, "%sfieldConstant = %g\n", prefix, atts->GetFieldConstant());
+    snprintf(tmpStr, 1000, "%sfieldConstant = %g\n", prefix, atts->GetFieldConstant());
     str += tmpStr;
     {   const double *velocitySource = atts->GetVelocitySource();
-        SNPRINTF(tmpStr, 1000, "%svelocitySource = (", prefix);
+        snprintf(tmpStr, 1000, "%svelocitySource = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 3; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", velocitySource[i]);
+            snprintf(tmpStr, 1000, "%g", velocitySource[i]);
             str += tmpStr;
             if(i < 2)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     const char *integrationType_names = "Euler, Leapfrog, DormandPrince, AdamsBashforth, RK4, "
@@ -440,27 +405,27 @@ PyLCSAttributes_ToString(const LCSAttributes *atts, const char *prefix)
     switch (atts->GetIntegrationType())
     {
       case LCSAttributes::Euler:
-          SNPRINTF(tmpStr, 1000, "%sintegrationType = %sEuler  # %s\n", prefix, prefix, integrationType_names);
+          snprintf(tmpStr, 1000, "%sintegrationType = %sEuler  # %s\n", prefix, prefix, integrationType_names);
           str += tmpStr;
           break;
       case LCSAttributes::Leapfrog:
-          SNPRINTF(tmpStr, 1000, "%sintegrationType = %sLeapfrog  # %s\n", prefix, prefix, integrationType_names);
+          snprintf(tmpStr, 1000, "%sintegrationType = %sLeapfrog  # %s\n", prefix, prefix, integrationType_names);
           str += tmpStr;
           break;
       case LCSAttributes::DormandPrince:
-          SNPRINTF(tmpStr, 1000, "%sintegrationType = %sDormandPrince  # %s\n", prefix, prefix, integrationType_names);
+          snprintf(tmpStr, 1000, "%sintegrationType = %sDormandPrince  # %s\n", prefix, prefix, integrationType_names);
           str += tmpStr;
           break;
       case LCSAttributes::AdamsBashforth:
-          SNPRINTF(tmpStr, 1000, "%sintegrationType = %sAdamsBashforth  # %s\n", prefix, prefix, integrationType_names);
+          snprintf(tmpStr, 1000, "%sintegrationType = %sAdamsBashforth  # %s\n", prefix, prefix, integrationType_names);
           str += tmpStr;
           break;
       case LCSAttributes::RK4:
-          SNPRINTF(tmpStr, 1000, "%sintegrationType = %sRK4  # %s\n", prefix, prefix, integrationType_names);
+          snprintf(tmpStr, 1000, "%sintegrationType = %sRK4  # %s\n", prefix, prefix, integrationType_names);
           str += tmpStr;
           break;
       case LCSAttributes::M3DC12DIntegrator:
-          SNPRINTF(tmpStr, 1000, "%sintegrationType = %sM3DC12DIntegrator  # %s\n", prefix, prefix, integrationType_names);
+          snprintf(tmpStr, 1000, "%sintegrationType = %sM3DC12DIntegrator  # %s\n", prefix, prefix, integrationType_names);
           str += tmpStr;
           break;
       default:
@@ -468,107 +433,107 @@ PyLCSAttributes_ToString(const LCSAttributes *atts, const char *prefix)
     }
 
     if(atts->GetClampLogValues())
-        SNPRINTF(tmpStr, 1000, "%sclampLogValues = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sclampLogValues = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sclampLogValues = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sclampLogValues = 0\n", prefix);
     str += tmpStr;
     const char *parallelizationAlgorithmType_names = "LoadOnDemand, ParallelStaticDomains, MasterSlave, VisItSelects";
     switch (atts->GetParallelizationAlgorithmType())
     {
       case LCSAttributes::LoadOnDemand:
-          SNPRINTF(tmpStr, 1000, "%sparallelizationAlgorithmType = %sLoadOnDemand  # %s\n", prefix, prefix, parallelizationAlgorithmType_names);
+          snprintf(tmpStr, 1000, "%sparallelizationAlgorithmType = %sLoadOnDemand  # %s\n", prefix, prefix, parallelizationAlgorithmType_names);
           str += tmpStr;
           break;
       case LCSAttributes::ParallelStaticDomains:
-          SNPRINTF(tmpStr, 1000, "%sparallelizationAlgorithmType = %sParallelStaticDomains  # %s\n", prefix, prefix, parallelizationAlgorithmType_names);
+          snprintf(tmpStr, 1000, "%sparallelizationAlgorithmType = %sParallelStaticDomains  # %s\n", prefix, prefix, parallelizationAlgorithmType_names);
           str += tmpStr;
           break;
       case LCSAttributes::MasterSlave:
-          SNPRINTF(tmpStr, 1000, "%sparallelizationAlgorithmType = %sMasterSlave  # %s\n", prefix, prefix, parallelizationAlgorithmType_names);
+          snprintf(tmpStr, 1000, "%sparallelizationAlgorithmType = %sMasterSlave  # %s\n", prefix, prefix, parallelizationAlgorithmType_names);
           str += tmpStr;
           break;
       case LCSAttributes::VisItSelects:
-          SNPRINTF(tmpStr, 1000, "%sparallelizationAlgorithmType = %sVisItSelects  # %s\n", prefix, prefix, parallelizationAlgorithmType_names);
+          snprintf(tmpStr, 1000, "%sparallelizationAlgorithmType = %sVisItSelects  # %s\n", prefix, prefix, parallelizationAlgorithmType_names);
           str += tmpStr;
           break;
       default:
           break;
     }
 
-    SNPRINTF(tmpStr, 1000, "%smaxProcessCount = %d\n", prefix, atts->GetMaxProcessCount());
+    snprintf(tmpStr, 1000, "%smaxProcessCount = %d\n", prefix, atts->GetMaxProcessCount());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%smaxDomainCacheSize = %d\n", prefix, atts->GetMaxDomainCacheSize());
+    snprintf(tmpStr, 1000, "%smaxDomainCacheSize = %d\n", prefix, atts->GetMaxDomainCacheSize());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sworkGroupSize = %d\n", prefix, atts->GetWorkGroupSize());
+    snprintf(tmpStr, 1000, "%sworkGroupSize = %d\n", prefix, atts->GetWorkGroupSize());
     str += tmpStr;
     if(atts->GetPathlines())
-        SNPRINTF(tmpStr, 1000, "%spathlines = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%spathlines = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%spathlines = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%spathlines = 0\n", prefix);
     str += tmpStr;
     if(atts->GetPathlinesOverrideStartingTimeFlag())
-        SNPRINTF(tmpStr, 1000, "%spathlinesOverrideStartingTimeFlag = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%spathlinesOverrideStartingTimeFlag = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%spathlinesOverrideStartingTimeFlag = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%spathlinesOverrideStartingTimeFlag = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%spathlinesOverrideStartingTime = %g\n", prefix, atts->GetPathlinesOverrideStartingTime());
+    snprintf(tmpStr, 1000, "%spathlinesOverrideStartingTime = %g\n", prefix, atts->GetPathlinesOverrideStartingTime());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%spathlinesPeriod = %g\n", prefix, atts->GetPathlinesPeriod());
+    snprintf(tmpStr, 1000, "%spathlinesPeriod = %g\n", prefix, atts->GetPathlinesPeriod());
     str += tmpStr;
     const char *pathlinesCMFE_names = "CONN_CMFE, POS_CMFE";
     switch (atts->GetPathlinesCMFE())
     {
       case LCSAttributes::CONN_CMFE:
-          SNPRINTF(tmpStr, 1000, "%spathlinesCMFE = %sCONN_CMFE  # %s\n", prefix, prefix, pathlinesCMFE_names);
+          snprintf(tmpStr, 1000, "%spathlinesCMFE = %sCONN_CMFE  # %s\n", prefix, prefix, pathlinesCMFE_names);
           str += tmpStr;
           break;
       case LCSAttributes::POS_CMFE:
-          SNPRINTF(tmpStr, 1000, "%spathlinesCMFE = %sPOS_CMFE  # %s\n", prefix, prefix, pathlinesCMFE_names);
+          snprintf(tmpStr, 1000, "%spathlinesCMFE = %sPOS_CMFE  # %s\n", prefix, prefix, pathlinesCMFE_names);
           str += tmpStr;
           break;
       default:
           break;
     }
 
-    SNPRINTF(tmpStr, 1000, "%sthresholdLimit = %g\n", prefix, atts->GetThresholdLimit());
+    snprintf(tmpStr, 1000, "%sthresholdLimit = %g\n", prefix, atts->GetThresholdLimit());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sradialLimit = %g\n", prefix, atts->GetRadialLimit());
+    snprintf(tmpStr, 1000, "%sradialLimit = %g\n", prefix, atts->GetRadialLimit());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sboundaryLimit = %g\n", prefix, atts->GetBoundaryLimit());
+    snprintf(tmpStr, 1000, "%sboundaryLimit = %g\n", prefix, atts->GetBoundaryLimit());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sseedLimit = %d\n", prefix, atts->GetSeedLimit());
+    snprintf(tmpStr, 1000, "%sseedLimit = %d\n", prefix, atts->GetSeedLimit());
     str += tmpStr;
     if(atts->GetIssueAdvectionWarnings())
-        SNPRINTF(tmpStr, 1000, "%sissueAdvectionWarnings = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sissueAdvectionWarnings = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sissueAdvectionWarnings = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sissueAdvectionWarnings = 0\n", prefix);
     str += tmpStr;
     if(atts->GetIssueBoundaryWarnings())
-        SNPRINTF(tmpStr, 1000, "%sissueBoundaryWarnings = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sissueBoundaryWarnings = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sissueBoundaryWarnings = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sissueBoundaryWarnings = 0\n", prefix);
     str += tmpStr;
     if(atts->GetIssueTerminationWarnings())
-        SNPRINTF(tmpStr, 1000, "%sissueTerminationWarnings = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sissueTerminationWarnings = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sissueTerminationWarnings = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sissueTerminationWarnings = 0\n", prefix);
     str += tmpStr;
     if(atts->GetIssueStepsizeWarnings())
-        SNPRINTF(tmpStr, 1000, "%sissueStepsizeWarnings = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sissueStepsizeWarnings = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sissueStepsizeWarnings = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sissueStepsizeWarnings = 0\n", prefix);
     str += tmpStr;
     if(atts->GetIssueStiffnessWarnings())
-        SNPRINTF(tmpStr, 1000, "%sissueStiffnessWarnings = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sissueStiffnessWarnings = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sissueStiffnessWarnings = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sissueStiffnessWarnings = 0\n", prefix);
     str += tmpStr;
     if(atts->GetIssueCriticalPointsWarnings())
-        SNPRINTF(tmpStr, 1000, "%sissueCriticalPointsWarnings = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sissueCriticalPointsWarnings = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sissueCriticalPointsWarnings = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sissueCriticalPointsWarnings = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%scriticalPointThreshold = %g\n", prefix, atts->GetCriticalPointThreshold());
+    snprintf(tmpStr, 1000, "%scriticalPointThreshold = %g\n", prefix, atts->GetCriticalPointThreshold());
     str += tmpStr;
     return str;
 }

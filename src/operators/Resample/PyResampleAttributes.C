@@ -1,45 +1,10 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 #include <PyResampleAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyResampleAttributes
@@ -77,65 +42,65 @@ PyResampleAttributes_ToString(const ResampleAttributes *atts, const char *prefix
     char tmpStr[1000];
 
     if(atts->GetUseExtents())
-        SNPRINTF(tmpStr, 1000, "%suseExtents = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%suseExtents = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%suseExtents = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%suseExtents = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sstartX = %g\n", prefix, atts->GetStartX());
+    snprintf(tmpStr, 1000, "%sstartX = %g\n", prefix, atts->GetStartX());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sendX = %g\n", prefix, atts->GetEndX());
+    snprintf(tmpStr, 1000, "%sendX = %g\n", prefix, atts->GetEndX());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%ssamplesX = %d\n", prefix, atts->GetSamplesX());
+    snprintf(tmpStr, 1000, "%ssamplesX = %d\n", prefix, atts->GetSamplesX());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sstartY = %g\n", prefix, atts->GetStartY());
+    snprintf(tmpStr, 1000, "%sstartY = %g\n", prefix, atts->GetStartY());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sendY = %g\n", prefix, atts->GetEndY());
+    snprintf(tmpStr, 1000, "%sendY = %g\n", prefix, atts->GetEndY());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%ssamplesY = %d\n", prefix, atts->GetSamplesY());
+    snprintf(tmpStr, 1000, "%ssamplesY = %d\n", prefix, atts->GetSamplesY());
     str += tmpStr;
     if(atts->GetIs3D())
-        SNPRINTF(tmpStr, 1000, "%sis3D = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sis3D = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sis3D = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sis3D = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sstartZ = %g\n", prefix, atts->GetStartZ());
+    snprintf(tmpStr, 1000, "%sstartZ = %g\n", prefix, atts->GetStartZ());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sendZ = %g\n", prefix, atts->GetEndZ());
+    snprintf(tmpStr, 1000, "%sendZ = %g\n", prefix, atts->GetEndZ());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%ssamplesZ = %d\n", prefix, atts->GetSamplesZ());
+    snprintf(tmpStr, 1000, "%ssamplesZ = %d\n", prefix, atts->GetSamplesZ());
     str += tmpStr;
     const char *tieResolver_names = "random, largest, smallest";
     switch (atts->GetTieResolver())
     {
       case ResampleAttributes::random:
-          SNPRINTF(tmpStr, 1000, "%stieResolver = %srandom  # %s\n", prefix, prefix, tieResolver_names);
+          snprintf(tmpStr, 1000, "%stieResolver = %srandom  # %s\n", prefix, prefix, tieResolver_names);
           str += tmpStr;
           break;
       case ResampleAttributes::largest:
-          SNPRINTF(tmpStr, 1000, "%stieResolver = %slargest  # %s\n", prefix, prefix, tieResolver_names);
+          snprintf(tmpStr, 1000, "%stieResolver = %slargest  # %s\n", prefix, prefix, tieResolver_names);
           str += tmpStr;
           break;
       case ResampleAttributes::smallest:
-          SNPRINTF(tmpStr, 1000, "%stieResolver = %ssmallest  # %s\n", prefix, prefix, tieResolver_names);
+          snprintf(tmpStr, 1000, "%stieResolver = %ssmallest  # %s\n", prefix, prefix, tieResolver_names);
           str += tmpStr;
           break;
       default:
           break;
     }
 
-    SNPRINTF(tmpStr, 1000, "%stieResolverVariable = \"%s\"\n", prefix, atts->GetTieResolverVariable().c_str());
+    snprintf(tmpStr, 1000, "%stieResolverVariable = \"%s\"\n", prefix, atts->GetTieResolverVariable().c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sdefaultValue = %g\n", prefix, atts->GetDefaultValue());
+    snprintf(tmpStr, 1000, "%sdefaultValue = %g\n", prefix, atts->GetDefaultValue());
     str += tmpStr;
     if(atts->GetDistributedResample())
-        SNPRINTF(tmpStr, 1000, "%sdistributedResample = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sdistributedResample = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sdistributedResample = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sdistributedResample = 0\n", prefix);
     str += tmpStr;
     if(atts->GetCellCenteredOutput())
-        SNPRINTF(tmpStr, 1000, "%scellCenteredOutput = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%scellCenteredOutput = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%scellCenteredOutput = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%scellCenteredOutput = 0\n", prefix);
     str += tmpStr;
     return str;
 }

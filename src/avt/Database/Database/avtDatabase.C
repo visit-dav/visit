@@ -1,40 +1,6 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
 //                              avtDatabase.C                                //
@@ -1692,7 +1658,7 @@ avtDatabase::AddTimeDerivativeExpressions(avtDatabaseMetaData *md)
              string expr_name = conn_base + string("/") + mmd->name + "_time";
              new_expr.SetName(expr_name);
              char buff[1024];
-             SNPRINTF(buff, 1024, "time(%s)", mmd->name.c_str());
+             snprintf(buff, 1024, "time(%s)", mmd->name.c_str());
              new_expr.SetDefinition(buff);
              new_expr.SetType(Expression::ScalarMeshVar);
              new_expr.SetAutoExpression(true);
@@ -1701,7 +1667,7 @@ avtDatabase::AddTimeDerivativeExpressions(avtDatabaseMetaData *md)
              expr_name = conn_base + string("/") + mmd->name + "_lasttime";
              string time_expr_name = conn_base + string("/") + mmd->name + "_time";
              new_expr.SetName(expr_name);
-             SNPRINTF(buff, 1024, "conn_cmfe(<[-1]id:%s>, %s)",
+             snprintf(buff, 1024, "conn_cmfe(<[-1]id:%s>, %s)",
              time_expr_name.c_str(), mmd->name.c_str());
              new_expr.SetDefinition(buff);
              new_expr.SetType(Expression::ScalarMeshVar);
@@ -1715,7 +1681,7 @@ avtDatabase::AddTimeDerivativeExpressions(avtDatabaseMetaData *md)
              string expr_name = pos_base + string("/") + mmd->name + "_time";
              new_expr.SetName(expr_name);
              char buff[1024];
-             SNPRINTF(buff, 1024, "time(%s)", mmd->name.c_str());
+             snprintf(buff, 1024, "time(%s)", mmd->name.c_str());
              new_expr.SetDefinition(buff);
              new_expr.SetType(Expression::ScalarMeshVar);
              new_expr.SetAutoExpression(true);
@@ -1724,7 +1690,7 @@ avtDatabase::AddTimeDerivativeExpressions(avtDatabaseMetaData *md)
              expr_name = pos_base + string("/") + mmd->name + "_lasttime";
              string time_expr_name = pos_base + string("/") + mmd->name + "_time";
              new_expr.SetName(expr_name);
-             SNPRINTF(buff, 1024, "pos_cmfe(<[-1]id:%s>, %s, 0.)",
+             snprintf(buff, 1024, "pos_cmfe(<[-1]id:%s>, %s, 0.)",
              time_expr_name.c_str(), mmd->name.c_str());
              new_expr.SetDefinition(buff);
              new_expr.SetType(Expression::ScalarMeshVar);
@@ -1749,7 +1715,7 @@ avtDatabase::AddTimeDerivativeExpressions(avtDatabaseMetaData *md)
                                    + smd->meshName + "_lasttime";
                      new_expr.SetName(expr_name);
                      char buff[1024];
-                     SNPRINTF(buff, 1024, "(<%s> - conn_cmfe(<[-1]id:%s>, %s)) / (<%s> - <%s>)",
+                     snprintf(buff, 1024, "(<%s> - conn_cmfe(<[-1]id:%s>, %s)) / (<%s> - <%s>)",
                          smd->name.c_str(), smd->name.c_str(), smd->meshName.c_str(),
                          time_expr_name.c_str(), last_time_expr_name.c_str());
                      new_expr.SetDefinition(buff);
@@ -1768,7 +1734,7 @@ avtDatabase::AddTimeDerivativeExpressions(avtDatabaseMetaData *md)
                                    + smd->meshName + "_lasttime";
                      new_expr.SetName(expr_name);
                      char buff[1024];
-                     SNPRINTF(buff, 1024, "<%s> - pos_cmfe(<[-1]id:%s>, %s, 0.) / (<%s> - <%s>)",
+                     snprintf(buff, 1024, "<%s> - pos_cmfe(<[-1]id:%s>, %s, 0.) / (<%s> - <%s>)",
                                 smd->name.c_str(), smd->name.c_str(), smd->meshName.c_str(),
                           time_expr_name.c_str(), last_time_expr_name.c_str());
                      new_expr.SetDefinition(buff);
@@ -1796,7 +1762,7 @@ avtDatabase::AddTimeDerivativeExpressions(avtDatabaseMetaData *md)
                                    + smd->meshName + "_lasttime";
                      new_expr.SetName(expr_name);
                      char buff[1024];
-                     SNPRINTF(buff, 1024, "<%s> - conn_cmfe(<[-1]id:%s>, %s) / (<%s> - <%s>)",
+                     snprintf(buff, 1024, "<%s> - conn_cmfe(<[-1]id:%s>, %s) / (<%s> - <%s>)",
                                 smd->name.c_str(), smd->name.c_str(), smd->meshName.c_str(),
                          time_expr_name.c_str(), last_time_expr_name.c_str());
                      new_expr.SetDefinition(buff);
@@ -1815,7 +1781,7 @@ avtDatabase::AddTimeDerivativeExpressions(avtDatabaseMetaData *md)
                                    + smd->meshName + "_lasttime";
                      new_expr.SetName(expr_name);
                      char buff[1024];
-                     SNPRINTF(buff, 1024, "<%s> - pos_cmfe(<[-1]id:%s>, %s, 0.) / (<%s> - <%s>)",
+                     snprintf(buff, 1024, "<%s> - pos_cmfe(<[-1]id:%s>, %s, 0.) / (<%s> - <%s>)",
                                 smd->name.c_str(), smd->name.c_str(), smd->meshName.c_str(),
                          time_expr_name.c_str(), last_time_expr_name.c_str());
                      new_expr.SetDefinition(buff);
@@ -1867,9 +1833,9 @@ avtDatabase::AddVectorMagnitudeExpressions(avtDatabaseMetaData *md)
 
         const char *vec_name = vmd.name.c_str();
         Expression new_expr;
-        SNPRINTF(buff,1024, "%s_magnitude", vec_name);
+        snprintf(buff,1024, "%s_magnitude", vec_name);
         new_expr.SetName(buff);
-        SNPRINTF(buff,1024, "magnitude(<%s>)", vec_name);
+        snprintf(buff,1024, "magnitude(<%s>)", vec_name);
         new_expr.SetDefinition(buff);
         new_expr.SetType(Expression::ScalarMeshVar);
         new_expr.SetAutoExpression(true);
@@ -1885,9 +1851,9 @@ avtDatabase::AddVectorMagnitudeExpressions(avtDatabaseMetaData *md)
         {
             const char *vec_name = elist[i].GetName().c_str();
             Expression new_expr;
-            SNPRINTF(buff,1024, "%s_magnitude", vec_name);
+            snprintf(buff,1024, "%s_magnitude", vec_name);
             new_expr.SetName(buff);
-            SNPRINTF(buff,1024, "magnitude(<%s>)", vec_name);
+            snprintf(buff,1024, "magnitude(<%s>)", vec_name);
             new_expr.SetDefinition(buff);
             new_expr.SetType(Expression::ScalarMeshVar);
             new_expr.SetAutoExpression(true);

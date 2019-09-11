@@ -1,39 +1,8 @@
-#*****************************************************************************
-#
-# Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-# Produced at the Lawrence Livermore National Laboratory
-# LLNL-CODE-442911
-# All rights reserved.
-#
-# This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-# full copyright notice is contained in the file COPYRIGHT located at the root
-# of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-#
-# Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-# modification, are permitted provided that the following conditions are met:
-#
-#  - Redistributions of  source code must  retain the above  copyright notice,
-#    this list of conditions and the disclaimer below.
-#  - Redistributions in binary form must reproduce the above copyright notice,
-#    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-#    documentation and/or other materials provided with the distribution.
-#  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-#    be used to endorse or promote products derived from this software without
-#    specific prior written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-# AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-# IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-# ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-# LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-# DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-# DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-# SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-# CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-# LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-# OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-# DAMAGE.
-#
+# Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+# Project developers.  See the top-level LICENSE file for dates and other
+# details.  No copyright assignment is required to contribute to VisIt.
+
+#****************************************************************************
 # Modifications:
 #
 #   Hank Childs, Sat Jun  5 19:03:22 CDT 2010
@@ -72,6 +41,12 @@
 #
 #   Eric Brugger, Tue Aug 28 14:35:30 PDT 2018
 #   I replaced support for vtkm with vtkh.
+#
+#   Kathleen Biagas, Fri Jul 19 12:13:02 PDT 2019
+#   Added vtkCommonMath, vtkCommonTransforms, vtkFiltersGeneral in support
+#   of building plugins vs install on Windows. They are direct depencencies
+#   for this library, and CMake automagically pulls them in when compiling
+#   VisIt even if not listed, but not when building the plugins.
 #
 #****************************************************************************/
 
@@ -207,7 +182,7 @@ LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY})
 
 #********************************* SERIAL ************************************
 ADD_LIBRARY(avtfilters_ser ${AVTFILTERS_SOURCES})
-TARGET_LINK_LIBRARIES(avtfilters_ser visitcommon lightweight_visit_vtk visit_vtk avtmath avtview avtpipeline_ser avtdatabase_ser avtdbatts vtkFiltersModeling)
+TARGET_LINK_LIBRARIES(avtfilters_ser visitcommon lightweight_visit_vtk visit_vtk avtmath avtview avtpipeline_ser avtdatabase_ser avtdbatts vtkCommonMath vtkCommonTransforms vtkFiltersGeneral vtkFiltersModeling)
 IF(VISIT_OSPRAY) 
     TARGET_LINK_LIBRARIES(avtfilters_ser ${OSPRAY_LIBRARIES})
     IF(ICET_FOUND)
@@ -219,7 +194,7 @@ VISIT_INSTALL_TARGETS(avtfilters_ser)
 #********************************* PARALLEL **********************************
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(avtfilters_par ${AVTFILTERS_SOURCES})
-    TARGET_LINK_LIBRARIES(avtfilters_par visitcommon lightweight_visit_vtk visit_vtk avtmath avtview avtpipeline_par avtdatabase_par avtdbatts vtkFiltersModeling)
+    TARGET_LINK_LIBRARIES(avtfilters_par visitcommon lightweight_visit_vtk visit_vtk avtmath avtview avtpipeline_par avtdatabase_par avtdbatts vtkCommonMath vtkCommonTransforms vtkFiltersGeneral vtkFiltersModeling)
     IF(VISIT_OSPRAY) 
         TARGET_LINK_LIBRARIES(avtfilters_par ${OSPRAY_LIBRARIES})
         IF(ICET_FOUND)

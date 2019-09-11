@@ -1,40 +1,6 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
 //                            avtvolimageFileFormat.C                        //
@@ -58,8 +24,6 @@
 #include <InvalidDBTypeException.h>
 
 #include <DebugStream.h>
-#include <snprintf.h>
-
 
 #include <fcntl.h>
 #include <visit-config.h>
@@ -178,7 +142,7 @@ avtvolimageFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         debug5 << "grid size = " << m_gridsize[b] << endl;
         debug5 << "no of pts = " << m_ni[b] << " " << m_nj[b] << " " << m_nk[b] << endl;
         char buf[50];
-        SNPRINTF(buf,50,"h=%f",m_gridsize[b]);
+        snprintf(buf,50,"h=%f",m_gridsize[b]);
         string bname= buf;
         mmd->blockNames[b] = bname;
     }
@@ -303,7 +267,7 @@ avtvolimageFileFormat::GetMesh(int domain, const char *meshname)
         if( fd == -1 )
         {
             delete [] zarray;
-            SNPRINTF(errmsg,500,"Error opening grid file %s",m_gridfilename.c_str());
+            snprintf(errmsg,500,"Error opening grid file %s",m_gridfilename.c_str());
             EXCEPTION1( InvalidDBTypeException, errmsg );
         }
 
@@ -313,7 +277,7 @@ avtvolimageFileFormat::GetMesh(int domain, const char *meshname)
         {
             CLOSE(fd);
             delete [] zarray;
-            SNPRINTF(errmsg,500,"Error accessing array in %s",m_gridfilename.c_str());
+            snprintf(errmsg,500,"Error accessing array in %s",m_gridfilename.c_str());
             EXCEPTION1( InvalidDBTypeException, errmsg );
         }
         if( m_prec == 4 )
@@ -323,7 +287,7 @@ avtvolimageFileFormat::GetMesh(int domain, const char *meshname)
             {
                 CLOSE(fd);
                 delete [] zarray;
-                SNPRINTF(errmsg,500,"Error reading grid array in %s" , m_gridfilename.c_str());
+                snprintf(errmsg,500,"Error reading grid array in %s" , m_gridfilename.c_str());
                 EXCEPTION1( InvalidDBTypeException, errmsg );
             }
         }
@@ -336,7 +300,7 @@ avtvolimageFileFormat::GetMesh(int domain, const char *meshname)
                 CLOSE(fd);
                 delete [] zarray;
                 delete [] tmp;
-                SNPRINTF(errmsg,500,"Error reading dp grid array in %s" , m_gridfilename.c_str());
+                snprintf(errmsg,500,"Error reading dp grid array in %s" , m_gridfilename.c_str());
                 EXCEPTION1( InvalidDBTypeException, errmsg );
             }
             for( size_t i = 0 ; i < (size_t)nnodes ; i++ ) // copy over to zarray
@@ -421,14 +385,14 @@ avtvolimageFileFormat::GetVar(int domain, const char *varname)
         int fd = OPEN(m_filename.c_str(),O_RDONLY|O_BINARY);
         if( fd == -1 )
         {
-            SNPRINTF(errmsg,500,"Error opening file %s",m_filename.c_str());
+            snprintf(errmsg,500,"Error opening file %s",m_filename.c_str());
             EXCEPTION1( InvalidDBTypeException, errmsg );
         }
         off_t nr = LSEEK(fd,m_offset[domain],SEEK_CUR);
         if( nr != m_offset[domain] )
         {
             CLOSE(fd);
-            SNPRINTF(errmsg,500,"Error accessing array in %s",m_filename.c_str());
+            snprintf(errmsg,500,"Error accessing array in %s",m_filename.c_str());
             EXCEPTION1( InvalidDBTypeException, errmsg );
         }
         if( m_prec == 4 )
@@ -437,7 +401,7 @@ avtvolimageFileFormat::GetVar(int domain, const char *varname)
             if( (size_t)nr != sizeof(float)*npts )
             {
                 CLOSE(fd);
-                SNPRINTF(errmsg,500,"Error reading array in %s" , m_filename.c_str());
+                snprintf(errmsg,500,"Error reading array in %s" , m_filename.c_str());
                 EXCEPTION1( InvalidDBTypeException, errmsg );
             }
         }
@@ -449,7 +413,7 @@ avtvolimageFileFormat::GetVar(int domain, const char *varname)
             {
                 CLOSE(fd); 
                 delete [] tmp;
-                SNPRINTF(errmsg,500,"Error reading array in %s" , m_filename.c_str());
+                snprintf(errmsg,500,"Error reading array in %s" , m_filename.c_str());
                 EXCEPTION1( InvalidDBTypeException, errmsg );
             }
             for( size_t i = 0 ; i < npts ; i++ )
@@ -521,7 +485,7 @@ void avtvolimageFileFormat::Initialize()
             m_mode == "mag" || m_mode == "veldiv" || m_mode == "velcurl" ||
             m_mode == "velmag") ) // AP removed .z extension
     {
-        SNPRINTF(errmsg,500,"Error: Unknown volimage mode %s" , m_mode.c_str() );
+        snprintf(errmsg,500,"Error: Unknown volimage mode %s" , m_mode.c_str() );
         EXCEPTION1( InvalidDBTypeException, errmsg );
     }
     debug5 << "mode = " << m_mode << endl;
@@ -529,26 +493,26 @@ void avtvolimageFileFormat::Initialize()
     int fd = OPEN( m_filename.c_str(), O_RDONLY|O_BINARY );
     if( fd == -1 )
     {
-        SNPRINTF(errmsg,500,"Error opening file %s",m_filename.c_str());
+        snprintf(errmsg,500,"Error opening file %s",m_filename.c_str());
         EXCEPTION1( InvalidDBTypeException, errmsg );
     }
     debug5 << "file opened " << endl;
     size_t nr = read(fd,&m_prec,sizeof(int) );
     if( nr != sizeof(int) )
     {
-        SNPRINTF(errmsg,500,"Error reading precision in %s",m_filename.c_str());
+        snprintf(errmsg,500,"Error reading precision in %s",m_filename.c_str());
         EXCEPTION1( InvalidDBTypeException, errmsg );
     }
     nr = read(fd,&m_nblocks,sizeof(int) );
     if( nr != sizeof(int) )
     {
-        SNPRINTF(errmsg,500,"Error reading nblocks in %s",m_filename.c_str());
+        snprintf(errmsg,500,"Error reading nblocks in %s",m_filename.c_str());
         EXCEPTION1( InvalidDBTypeException, errmsg );
     }
     nr = read(fd,&m_time,sizeof(double) );
     if( nr != sizeof(double) )
     {
-        SNPRINTF(errmsg,500,"Error reading time in %s",m_filename.c_str());
+        snprintf(errmsg,500,"Error reading time in %s",m_filename.c_str());
         EXCEPTION1( InvalidDBTypeException, errmsg );
     }
     debug5 << "prec = " << m_prec << " " << " nblocks = " << m_nblocks << " time= " << m_time << endl;
@@ -559,7 +523,7 @@ void avtvolimageFileFormat::Initialize()
     nr = read(fd,&nchars,sizeof(int) );
     if( nr != sizeof(int) )
     {
-        SNPRINTF(errmsg,500,"Error reading nchars in %s",m_filename.c_str());
+        snprintf(errmsg,500,"Error reading nchars in %s",m_filename.c_str());
         EXCEPTION1( InvalidDBTypeException, errmsg );
     }
 
@@ -572,7 +536,7 @@ void avtvolimageFileFormat::Initialize()
         nr = read(fd,&cgfn,nchars*sizeof(char) );
         if( nr != nchars*sizeof(char) )
         {
-            SNPRINTF(errmsg,500,"Error reading grid file name in %s",m_filename.c_str());
+            snprintf(errmsg,500,"Error reading grid file name in %s",m_filename.c_str());
             EXCEPTION1( InvalidDBTypeException, errmsg );
         }
         cgfn[nchars]='\0';
@@ -624,31 +588,31 @@ void avtvolimageFileFormat::Initialize()
         nr = read(fd,&m_gridsize[b],sizeof(double));
         if( nr != sizeof(double) )
         {
-            SNPRINTF(errmsg,500,"Error reading gridsizes in %s",m_filename.c_str());
+            snprintf(errmsg,500,"Error reading gridsizes in %s",m_filename.c_str());
             EXCEPTION1( InvalidDBTypeException, errmsg );
         }
         nr = read(fd,&m_xmin[b],sizeof(double));
         if( nr != sizeof(double) )
         {
-            SNPRINTF(errmsg,500,"Error reading xmin in %s",m_filename.c_str());
+            snprintf(errmsg,500,"Error reading xmin in %s",m_filename.c_str());
             EXCEPTION1( InvalidDBTypeException, errmsg );
         }
         nr = read(fd,&m_ymin[b],sizeof(double));
         if( nr != sizeof(double) )
         {
-            SNPRINTF(errmsg,500,"Error reading ymin in %s",m_filename.c_str());
+            snprintf(errmsg,500,"Error reading ymin in %s",m_filename.c_str());
             EXCEPTION1( InvalidDBTypeException, errmsg );
         }
         nr = read(fd,&m_zmin[b],sizeof(double));
         if( nr != sizeof(double) )
         {
-            SNPRINTF(errmsg,500,"Error reading zmin in %s",m_filename.c_str());
+            snprintf(errmsg,500,"Error reading zmin in %s",m_filename.c_str());
             EXCEPTION1( InvalidDBTypeException, errmsg );
         }
         nr = read(fd,dims,sizeof(int)*6);
         if( nr != sizeof(int)*6 )
         {
-            SNPRINTF(errmsg,500,"Error reading dimensions in %s",m_filename.c_str());
+            snprintf(errmsg,500,"Error reading dimensions in %s",m_filename.c_str());
             EXCEPTION1( InvalidDBTypeException, errmsg );
         }
         m_ni[b] = dims[1]-dims[0]+1;
@@ -686,7 +650,7 @@ void avtvolimageFileFormat::Initialize()
                 nr = read(fd,&m_dataptr[b],npts*sizeof(float));
                 if( nr != npts*sizeof(float) )
                 {
-                    SNPRINTF(errmsg,500,"Error reading float data array %s",m_filename.c_str());
+                    snprintf(errmsg,500,"Error reading float data array %s",m_filename.c_str());
                     EXCEPTION1( InvalidDBTypeException, errmsg );
                 }
             }
@@ -696,7 +660,7 @@ void avtvolimageFileFormat::Initialize()
                 nr = read(fd,&tmp,npts*sizeof(double));
                 if( nr != npts*sizeof(double) )
                 {
-                    SNPRINTF(errmsg,500,"Error reading double data array %s",m_filename.c_str());
+                    snprintf(errmsg,500,"Error reading double data array %s",m_filename.c_str());
                     EXCEPTION1( InvalidDBTypeException, errmsg );
                 }
                 for( size_t i = 0 ; i < npts ; i++ )
@@ -717,7 +681,7 @@ void avtvolimageFileFormat::Initialize()
         fd = OPEN(m_gridfilename.c_str(),O_RDONLY|O_BINARY);
         if( fd == -1 )
         {
-            SNPRINTF(errmsg,500,"Error opening grid file %s",m_gridfilename.c_str());
+            snprintf(errmsg,500,"Error opening grid file %s",m_gridfilename.c_str());
 //       EXCEPTION1( InvalidDBTypeException, errmsg );
             m_CartGrid = true;
             debug5 << errmsg << endl;
@@ -734,19 +698,19 @@ void avtvolimageFileFormat::Initialize()
         nr = read(fd,&dum_int,sizeof(int) );
         if( nr != sizeof(int) )
         {
-            SNPRINTF(errmsg,500,"Error reading precision in %s",m_gridfilename.c_str());
+            snprintf(errmsg,500,"Error reading precision in %s",m_gridfilename.c_str());
             EXCEPTION1( InvalidDBTypeException, errmsg );
         }
         nr = read(fd,&dum_int,sizeof(int) );
         if( nr != sizeof(int) )
         {
-            SNPRINTF(errmsg,500,"Error reading nblocks in %s",m_gridfilename.c_str());
+            snprintf(errmsg,500,"Error reading nblocks in %s",m_gridfilename.c_str());
             EXCEPTION1( InvalidDBTypeException, errmsg );
         }
         nr = read(fd,&dum_double,sizeof(double) );
         if( nr != sizeof(double) )
         {
-            SNPRINTF(errmsg,500,"Error reading time in %s",m_gridfilename.c_str());
+            snprintf(errmsg,500,"Error reading time in %s",m_gridfilename.c_str());
             EXCEPTION1( InvalidDBTypeException, errmsg );
         }
 
@@ -754,7 +718,7 @@ void avtvolimageFileFormat::Initialize()
         nr = read(fd,&nchars,sizeof(int) );
         if( nr != sizeof(int) )
         {
-            SNPRINTF(errmsg,500,"Error reading nchars in %s",m_gridfilename.c_str());
+            snprintf(errmsg,500,"Error reading nchars in %s",m_gridfilename.c_str());
             EXCEPTION1( InvalidDBTypeException, errmsg );
         }
         debug5 << "grid file nchars = " << nchars << endl;

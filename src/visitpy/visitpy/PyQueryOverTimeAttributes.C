@@ -1,45 +1,10 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 #include <PyQueryOverTimeAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 #include <PyQueryAttributes.h>
 #include <PyPickAttributes.h>
 
@@ -82,15 +47,15 @@ PyQueryOverTimeAttributes_ToString(const QueryOverTimeAttributes *atts, const ch
     switch (atts->GetTimeType())
     {
       case QueryOverTimeAttributes::Cycle:
-          SNPRINTF(tmpStr, 1000, "%stimeType = %sCycle  # %s\n", prefix, prefix, timeType_names);
+          snprintf(tmpStr, 1000, "%stimeType = %sCycle  # %s\n", prefix, prefix, timeType_names);
           str += tmpStr;
           break;
       case QueryOverTimeAttributes::DTime:
-          SNPRINTF(tmpStr, 1000, "%stimeType = %sDTime  # %s\n", prefix, prefix, timeType_names);
+          snprintf(tmpStr, 1000, "%stimeType = %sDTime  # %s\n", prefix, prefix, timeType_names);
           str += tmpStr;
           break;
       case QueryOverTimeAttributes::Timestep:
-          SNPRINTF(tmpStr, 1000, "%stimeType = %sTimestep  # %s\n", prefix, prefix, timeType_names);
+          snprintf(tmpStr, 1000, "%stimeType = %sTimestep  # %s\n", prefix, prefix, timeType_names);
           str += tmpStr;
           break;
       default:
@@ -98,53 +63,53 @@ PyQueryOverTimeAttributes_ToString(const QueryOverTimeAttributes *atts, const ch
     }
 
     if(atts->GetStartTimeFlag())
-        SNPRINTF(tmpStr, 1000, "%sstartTimeFlag = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sstartTimeFlag = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sstartTimeFlag = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sstartTimeFlag = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sstartTime = %d\n", prefix, atts->GetStartTime());
+    snprintf(tmpStr, 1000, "%sstartTime = %d\n", prefix, atts->GetStartTime());
     str += tmpStr;
     if(atts->GetEndTimeFlag())
-        SNPRINTF(tmpStr, 1000, "%sendTimeFlag = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sendTimeFlag = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sendTimeFlag = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sendTimeFlag = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sendTime = %d\n", prefix, atts->GetEndTime());
+    snprintf(tmpStr, 1000, "%sendTime = %d\n", prefix, atts->GetEndTime());
     str += tmpStr;
     if(atts->GetStrideFlag())
-        SNPRINTF(tmpStr, 1000, "%sstrideFlag = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sstrideFlag = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sstrideFlag = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sstrideFlag = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sstride = %d\n", prefix, atts->GetStride());
+    snprintf(tmpStr, 1000, "%sstride = %d\n", prefix, atts->GetStride());
     str += tmpStr;
     if(atts->GetCreateWindow())
-        SNPRINTF(tmpStr, 1000, "%screateWindow = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%screateWindow = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%screateWindow = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%screateWindow = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%swindowId = %d\n", prefix, atts->GetWindowId());
+    snprintf(tmpStr, 1000, "%swindowId = %d\n", prefix, atts->GetWindowId());
     str += tmpStr;
     {   const doubleVector &cachedCurvePts = atts->GetCachedCurvePts();
-        SNPRINTF(tmpStr, 1000, "%scachedCurvePts = (", prefix);
+        snprintf(tmpStr, 1000, "%scachedCurvePts = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < cachedCurvePts.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", cachedCurvePts[i]);
+            snprintf(tmpStr, 1000, "%g", cachedCurvePts[i]);
             str += tmpStr;
             if(i < cachedCurvePts.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     if(atts->GetUseCachedPts())
-        SNPRINTF(tmpStr, 1000, "%suseCachedPts = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%suseCachedPts = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%suseCachedPts = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%suseCachedPts = 0\n", prefix);
     str += tmpStr;
     return str;
 }

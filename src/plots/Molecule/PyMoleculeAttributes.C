@@ -1,45 +1,10 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 #include <PyMoleculeAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 #include <ColorAttribute.h>
 
 // ****************************************************************************
@@ -81,15 +46,15 @@ PyMoleculeAttributes_ToString(const MoleculeAttributes *atts, const char *prefix
     switch (atts->GetDrawAtomsAs())
     {
       case MoleculeAttributes::NoAtoms:
-          SNPRINTF(tmpStr, 1000, "%sdrawAtomsAs = %sNoAtoms  # %s\n", prefix, prefix, drawAtomsAs_names);
+          snprintf(tmpStr, 1000, "%sdrawAtomsAs = %sNoAtoms  # %s\n", prefix, prefix, drawAtomsAs_names);
           str += tmpStr;
           break;
       case MoleculeAttributes::SphereAtoms:
-          SNPRINTF(tmpStr, 1000, "%sdrawAtomsAs = %sSphereAtoms  # %s\n", prefix, prefix, drawAtomsAs_names);
+          snprintf(tmpStr, 1000, "%sdrawAtomsAs = %sSphereAtoms  # %s\n", prefix, prefix, drawAtomsAs_names);
           str += tmpStr;
           break;
       case MoleculeAttributes::ImposterAtoms:
-          SNPRINTF(tmpStr, 1000, "%sdrawAtomsAs = %sImposterAtoms  # %s\n", prefix, prefix, drawAtomsAs_names);
+          snprintf(tmpStr, 1000, "%sdrawAtomsAs = %sImposterAtoms  # %s\n", prefix, prefix, drawAtomsAs_names);
           str += tmpStr;
           break;
       default:
@@ -100,19 +65,19 @@ PyMoleculeAttributes_ToString(const MoleculeAttributes *atts, const char *prefix
     switch (atts->GetScaleRadiusBy())
     {
       case MoleculeAttributes::Fixed:
-          SNPRINTF(tmpStr, 1000, "%sscaleRadiusBy = %sFixed  # %s\n", prefix, prefix, scaleRadiusBy_names);
+          snprintf(tmpStr, 1000, "%sscaleRadiusBy = %sFixed  # %s\n", prefix, prefix, scaleRadiusBy_names);
           str += tmpStr;
           break;
       case MoleculeAttributes::Covalent:
-          SNPRINTF(tmpStr, 1000, "%sscaleRadiusBy = %sCovalent  # %s\n", prefix, prefix, scaleRadiusBy_names);
+          snprintf(tmpStr, 1000, "%sscaleRadiusBy = %sCovalent  # %s\n", prefix, prefix, scaleRadiusBy_names);
           str += tmpStr;
           break;
       case MoleculeAttributes::Atomic:
-          SNPRINTF(tmpStr, 1000, "%sscaleRadiusBy = %sAtomic  # %s\n", prefix, prefix, scaleRadiusBy_names);
+          snprintf(tmpStr, 1000, "%sscaleRadiusBy = %sAtomic  # %s\n", prefix, prefix, scaleRadiusBy_names);
           str += tmpStr;
           break;
       case MoleculeAttributes::Variable:
-          SNPRINTF(tmpStr, 1000, "%sscaleRadiusBy = %sVariable  # %s\n", prefix, prefix, scaleRadiusBy_names);
+          snprintf(tmpStr, 1000, "%sscaleRadiusBy = %sVariable  # %s\n", prefix, prefix, scaleRadiusBy_names);
           str += tmpStr;
           break;
       default:
@@ -123,15 +88,15 @@ PyMoleculeAttributes_ToString(const MoleculeAttributes *atts, const char *prefix
     switch (atts->GetDrawBondsAs())
     {
       case MoleculeAttributes::NoBonds:
-          SNPRINTF(tmpStr, 1000, "%sdrawBondsAs = %sNoBonds  # %s\n", prefix, prefix, drawBondsAs_names);
+          snprintf(tmpStr, 1000, "%sdrawBondsAs = %sNoBonds  # %s\n", prefix, prefix, drawBondsAs_names);
           str += tmpStr;
           break;
       case MoleculeAttributes::LineBonds:
-          SNPRINTF(tmpStr, 1000, "%sdrawBondsAs = %sLineBonds  # %s\n", prefix, prefix, drawBondsAs_names);
+          snprintf(tmpStr, 1000, "%sdrawBondsAs = %sLineBonds  # %s\n", prefix, prefix, drawBondsAs_names);
           str += tmpStr;
           break;
       case MoleculeAttributes::CylinderBonds:
-          SNPRINTF(tmpStr, 1000, "%sdrawBondsAs = %sCylinderBonds  # %s\n", prefix, prefix, drawBondsAs_names);
+          snprintf(tmpStr, 1000, "%sdrawBondsAs = %sCylinderBonds  # %s\n", prefix, prefix, drawBondsAs_names);
           str += tmpStr;
           break;
       default:
@@ -142,11 +107,11 @@ PyMoleculeAttributes_ToString(const MoleculeAttributes *atts, const char *prefix
     switch (atts->GetColorBonds())
     {
       case MoleculeAttributes::ColorByAtom:
-          SNPRINTF(tmpStr, 1000, "%scolorBonds = %sColorByAtom  # %s\n", prefix, prefix, colorBonds_names);
+          snprintf(tmpStr, 1000, "%scolorBonds = %sColorByAtom  # %s\n", prefix, prefix, colorBonds_names);
           str += tmpStr;
           break;
       case MoleculeAttributes::SingleColor:
-          SNPRINTF(tmpStr, 1000, "%scolorBonds = %sSingleColor  # %s\n", prefix, prefix, colorBonds_names);
+          snprintf(tmpStr, 1000, "%scolorBonds = %sSingleColor  # %s\n", prefix, prefix, colorBonds_names);
           str += tmpStr;
           break;
       default:
@@ -154,31 +119,31 @@ PyMoleculeAttributes_ToString(const MoleculeAttributes *atts, const char *prefix
     }
 
     const unsigned char *bondSingleColor = atts->GetBondSingleColor().GetColor();
-    SNPRINTF(tmpStr, 1000, "%sbondSingleColor = (%d, %d, %d, %d)\n", prefix, int(bondSingleColor[0]), int(bondSingleColor[1]), int(bondSingleColor[2]), int(bondSingleColor[3]));
+    snprintf(tmpStr, 1000, "%sbondSingleColor = (%d, %d, %d, %d)\n", prefix, int(bondSingleColor[0]), int(bondSingleColor[1]), int(bondSingleColor[2]), int(bondSingleColor[3]));
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sradiusVariable = \"%s\"\n", prefix, atts->GetRadiusVariable().c_str());
+    snprintf(tmpStr, 1000, "%sradiusVariable = \"%s\"\n", prefix, atts->GetRadiusVariable().c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sradiusScaleFactor = %g\n", prefix, atts->GetRadiusScaleFactor());
+    snprintf(tmpStr, 1000, "%sradiusScaleFactor = %g\n", prefix, atts->GetRadiusScaleFactor());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sradiusFixed = %g\n", prefix, atts->GetRadiusFixed());
+    snprintf(tmpStr, 1000, "%sradiusFixed = %g\n", prefix, atts->GetRadiusFixed());
     str += tmpStr;
     const char *atomSphereQuality_names = "Low, Medium, High, Super";
     switch (atts->GetAtomSphereQuality())
     {
       case MoleculeAttributes::Low:
-          SNPRINTF(tmpStr, 1000, "%satomSphereQuality = %sLow  # %s\n", prefix, prefix, atomSphereQuality_names);
+          snprintf(tmpStr, 1000, "%satomSphereQuality = %sLow  # %s\n", prefix, prefix, atomSphereQuality_names);
           str += tmpStr;
           break;
       case MoleculeAttributes::Medium:
-          SNPRINTF(tmpStr, 1000, "%satomSphereQuality = %sMedium  # %s\n", prefix, prefix, atomSphereQuality_names);
+          snprintf(tmpStr, 1000, "%satomSphereQuality = %sMedium  # %s\n", prefix, prefix, atomSphereQuality_names);
           str += tmpStr;
           break;
       case MoleculeAttributes::High:
-          SNPRINTF(tmpStr, 1000, "%satomSphereQuality = %sHigh  # %s\n", prefix, prefix, atomSphereQuality_names);
+          snprintf(tmpStr, 1000, "%satomSphereQuality = %sHigh  # %s\n", prefix, prefix, atomSphereQuality_names);
           str += tmpStr;
           break;
       case MoleculeAttributes::Super:
-          SNPRINTF(tmpStr, 1000, "%satomSphereQuality = %sSuper  # %s\n", prefix, prefix, atomSphereQuality_names);
+          snprintf(tmpStr, 1000, "%satomSphereQuality = %sSuper  # %s\n", prefix, prefix, atomSphereQuality_names);
           str += tmpStr;
           break;
       default:
@@ -189,55 +154,55 @@ PyMoleculeAttributes_ToString(const MoleculeAttributes *atts, const char *prefix
     switch (atts->GetBondCylinderQuality())
     {
       case MoleculeAttributes::Low:
-          SNPRINTF(tmpStr, 1000, "%sbondCylinderQuality = %sLow  # %s\n", prefix, prefix, bondCylinderQuality_names);
+          snprintf(tmpStr, 1000, "%sbondCylinderQuality = %sLow  # %s\n", prefix, prefix, bondCylinderQuality_names);
           str += tmpStr;
           break;
       case MoleculeAttributes::Medium:
-          SNPRINTF(tmpStr, 1000, "%sbondCylinderQuality = %sMedium  # %s\n", prefix, prefix, bondCylinderQuality_names);
+          snprintf(tmpStr, 1000, "%sbondCylinderQuality = %sMedium  # %s\n", prefix, prefix, bondCylinderQuality_names);
           str += tmpStr;
           break;
       case MoleculeAttributes::High:
-          SNPRINTF(tmpStr, 1000, "%sbondCylinderQuality = %sHigh  # %s\n", prefix, prefix, bondCylinderQuality_names);
+          snprintf(tmpStr, 1000, "%sbondCylinderQuality = %sHigh  # %s\n", prefix, prefix, bondCylinderQuality_names);
           str += tmpStr;
           break;
       case MoleculeAttributes::Super:
-          SNPRINTF(tmpStr, 1000, "%sbondCylinderQuality = %sSuper  # %s\n", prefix, prefix, bondCylinderQuality_names);
+          snprintf(tmpStr, 1000, "%sbondCylinderQuality = %sSuper  # %s\n", prefix, prefix, bondCylinderQuality_names);
           str += tmpStr;
           break;
       default:
           break;
     }
 
-    SNPRINTF(tmpStr, 1000, "%sbondRadius = %g\n", prefix, atts->GetBondRadius());
+    snprintf(tmpStr, 1000, "%sbondRadius = %g\n", prefix, atts->GetBondRadius());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sbondLineWidth = %d\n", prefix, atts->GetBondLineWidth());
+    snprintf(tmpStr, 1000, "%sbondLineWidth = %d\n", prefix, atts->GetBondLineWidth());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%selementColorTable = \"%s\"\n", prefix, atts->GetElementColorTable().c_str());
+    snprintf(tmpStr, 1000, "%selementColorTable = \"%s\"\n", prefix, atts->GetElementColorTable().c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sresidueTypeColorTable = \"%s\"\n", prefix, atts->GetResidueTypeColorTable().c_str());
+    snprintf(tmpStr, 1000, "%sresidueTypeColorTable = \"%s\"\n", prefix, atts->GetResidueTypeColorTable().c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sresidueSequenceColorTable = \"%s\"\n", prefix, atts->GetResidueSequenceColorTable().c_str());
+    snprintf(tmpStr, 1000, "%sresidueSequenceColorTable = \"%s\"\n", prefix, atts->GetResidueSequenceColorTable().c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%scontinuousColorTable = \"%s\"\n", prefix, atts->GetContinuousColorTable().c_str());
+    snprintf(tmpStr, 1000, "%scontinuousColorTable = \"%s\"\n", prefix, atts->GetContinuousColorTable().c_str());
     str += tmpStr;
     if(atts->GetLegendFlag())
-        SNPRINTF(tmpStr, 1000, "%slegendFlag = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%slegendFlag = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%slegendFlag = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%slegendFlag = 0\n", prefix);
     str += tmpStr;
     if(atts->GetMinFlag())
-        SNPRINTF(tmpStr, 1000, "%sminFlag = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sminFlag = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sminFlag = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sminFlag = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sscalarMin = %g\n", prefix, atts->GetScalarMin());
+    snprintf(tmpStr, 1000, "%sscalarMin = %g\n", prefix, atts->GetScalarMin());
     str += tmpStr;
     if(atts->GetMaxFlag())
-        SNPRINTF(tmpStr, 1000, "%smaxFlag = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%smaxFlag = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%smaxFlag = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%smaxFlag = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sscalarMax = %g\n", prefix, atts->GetScalarMax());
+    snprintf(tmpStr, 1000, "%sscalarMax = %g\n", prefix, atts->GetScalarMax());
     str += tmpStr;
     return str;
 }

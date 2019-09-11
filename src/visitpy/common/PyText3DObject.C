@@ -1,44 +1,9 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 #include <PyText3DObject.h>
 #include <ObserverToCallback.h>
-#include <snprintf.h>
 #include <ColorAttribute.h>
 
 // Macros that let us access the AnnotationObject and store the fields
@@ -100,91 +65,91 @@ PyText3DObject_ToString(const AnnotationObject *atts, const char *prefix)
     char tmpStr[1000]; 
 
     if(atts->GetVisible())
-        SNPRINTF(tmpStr, 1000, "%svisible = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%svisible = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%svisible = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%svisible = 0\n", prefix);
     str += tmpStr;
     if(atts->GetActive())
-        SNPRINTF(tmpStr, 1000, "%sactive = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sactive = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sactive = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sactive = 0\n", prefix);
     str += tmpStr;
     {   const double *position = atts->GetPosition();
-        SNPRINTF(tmpStr, 1000, "%sposition = (", prefix);
+        snprintf(tmpStr, 1000, "%sposition = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 3; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", position[i]);
+            snprintf(tmpStr, 1000, "%g", position[i]);
             str += tmpStr;
             if(i < 2)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const stringVector &text = atts->GetText();
-        SNPRINTF(tmpStr, 1000, "%stext = (", prefix);
+        snprintf(tmpStr, 1000, "%stext = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < text.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "\"%s\"", text[i].c_str());
+            snprintf(tmpStr, 1000, "\"%s\"", text[i].c_str());
             str += tmpStr;
             if(i < text.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     const unsigned char *textColor = atts->GetTextColor().GetColor();
-    SNPRINTF(tmpStr, 1000, "%stextColor = (%d, %d, %d, %d)\n", prefix, int(textColor[0]), int(textColor[1]), int(textColor[2]), int(textColor[3]));
+    snprintf(tmpStr, 1000, "%stextColor = (%d, %d, %d, %d)\n", prefix, int(textColor[0]), int(textColor[1]), int(textColor[2]), int(textColor[3]));
     str += tmpStr;
     if(atts->GetUseForegroundForTextColor())
-        SNPRINTF(tmpStr, 1000, "%suseForegroundForTextColor = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%suseForegroundForTextColor = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%suseForegroundForTextColor = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%suseForegroundForTextColor = 0\n", prefix);
     str += tmpStr;
     if(atts->GetPreserveOrientation())
-        SNPRINTF(tmpStr, 1000, "%spreserveOrientation = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%spreserveOrientation = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%spreserveOrientation = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%spreserveOrientation = 0\n", prefix);
     str += tmpStr;
     {   const double *rotations = atts->GetRotations();
-        SNPRINTF(tmpStr, 1000, "%srotations = (", prefix);
+        snprintf(tmpStr, 1000, "%srotations = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 3; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", rotations[i]);
+            snprintf(tmpStr, 1000, "%g", rotations[i]);
             str += tmpStr;
             if(i < 2)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     const char *heightMode_names = "Fixed, Relative";
     if(atts->GetHeightMode()) //Text3DObject::Relative)
     {
-        SNPRINTF(tmpStr, 1000, "%sheightMode = %sRelative  # %s\n", prefix, prefix, heightMode_names);
+        snprintf(tmpStr, 1000, "%sheightMode = %sRelative  # %s\n", prefix, prefix, heightMode_names);
         str += tmpStr;
     }
     else
     {
-        SNPRINTF(tmpStr, 1000, "%sheightMode = %sFixed  # %s\n", prefix, prefix, heightMode_names);
+        snprintf(tmpStr, 1000, "%sheightMode = %sFixed  # %s\n", prefix, prefix, heightMode_names);
         str += tmpStr;
     }
 
-    SNPRINTF(tmpStr, 1000, "%srelativeHeight = %g\n", prefix, double(atts->GetRelativeHeight())/100.);
+    snprintf(tmpStr, 1000, "%srelativeHeight = %g\n", prefix, double(atts->GetRelativeHeight())/100.);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sfixedHeight = %g\n", prefix, atts->GetFixedHeight());
+    snprintf(tmpStr, 1000, "%sfixedHeight = %g\n", prefix, atts->GetFixedHeight());
     str += tmpStr;
     return str;
 }

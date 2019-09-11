@@ -1,5 +1,9 @@
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
+
 // ************************************************************************* //
-//                            avtFVCOM_MTSDFileFormat.h                           //
+//                       avtFVCOM_MTSDFileFormat.h                           //
 // ************************************************************************* //
 
 #ifndef AVT_FVCOM_MTSD_FILE_FORMAT_H

@@ -1,40 +1,6 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
 //                              SpyFile.C                                    //
@@ -45,7 +11,6 @@
 #include <VisItException.h>
 #include <DebugStream.h>
 
-#include <snprintf.h>
 #include <float.h>
 #include <algorithm>
 #include <cmath>
@@ -1571,7 +1536,7 @@ SpyFile::GetFieldName(const int fieldId)
         
         if(tmp1 > 0)
         {
-            SNPRINTF(tmpstr, 80, "%s+%d", spyFileHeader->matFields[tmp].fieldID, tmp1);
+            snprintf(tmpstr, 80, "%s+%d", spyFileHeader->matFields[tmp].fieldID, tmp1);
             return tmpstr;
         }
         else
@@ -1605,165 +1570,165 @@ SpyFile::GetFieldName(const int fieldId)
         switch(caseId)
         {
             case STM_VMAG:
-                SNPRINTF(tmpstr, 80, "%s", "VMAG");
+                snprintf(tmpstr, 80, "%s", "VMAG");
                 break;
                 
             case STM_KE:
-                SNPRINTF(tmpstr, 80, "%s", "KE");
+                snprintf(tmpstr, 80, "%s", "KE");
                 break;
                 
             case STM_DENS:
-                SNPRINTF(tmpstr, 80, "%s", "DENS");
+                snprintf(tmpstr, 80, "%s", "DENS");
                 break;
                 
             case STM_DENSM:
                 if(matId > 0)
                 {
-                    SNPRINTF(tmpstr, 80, "%s+%d", "DENSM", matId);
+                    snprintf(tmpstr, 80, "%s+%d", "DENSM", matId);
                 }
                 else
                 {
-                    SNPRINTF(tmpstr, 80, "%s", "DENSM");
+                    snprintf(tmpstr, 80, "%s", "DENSM");
                 }
                 break;
                 
             case STM_IE:
-                SNPRINTF(tmpstr, 80, "%s", "IE");
+                snprintf(tmpstr, 80, "%s", "IE");
                 break;
                 
             case STM_XXSTRESS:
-                SNPRINTF(tmpstr, 80, "%s", "XXSTRESS");
+                snprintf(tmpstr, 80, "%s", "XXSTRESS");
                 break;
                 
             case STM_YYSTRESS:
-                SNPRINTF(tmpstr, 80, "%s", "YYSTRESS");
+                snprintf(tmpstr, 80, "%s", "YYSTRESS");
                 break;
                 
             case STM_ZZSTRESS:
-                SNPRINTF(tmpstr, 80, "%s", "ZZSTRESS");
+                snprintf(tmpstr, 80, "%s", "ZZSTRESS");
                 break;
                 
             case STM_ZZDEV:
-                SNPRINTF(tmpstr, 80, "%s", "ZZDEV");
+                snprintf(tmpstr, 80, "%s", "ZZDEV");
                 break;
                 
             case STM_TK:
-                SNPRINTF(tmpstr, 80, "%s", "TK");
+                snprintf(tmpstr, 80, "%s", "TK");
                 break;
                 
             case STM_TKM:
                 if(matId > 0)
                 {
-                    SNPRINTF(tmpstr, 80, "%s+%d", "TKM", matId);
+                    snprintf(tmpstr, 80, "%s+%d", "TKM", matId);
                 }
                 else
                 {
-                    SNPRINTF(tmpstr, 80, "%s", "TKM");
+                    snprintf(tmpstr, 80, "%s", "TKM");
                 }
                 break;
                 
             case STM_J2P:
-                SNPRINTF(tmpstr, 80, "%s","J2P");
+                snprintf(tmpstr, 80, "%s","J2P");
                 break;
                 
             case STM_VM:
-                SNPRINTF(tmpstr, 80, "%s","von Mises");
+                snprintf(tmpstr, 80, "%s","von Mises");
                 break;
                 
             case STM_J2PP:
-                SNPRINTF(tmpstr, 80, "%s","J2PP");
+                snprintf(tmpstr, 80, "%s","J2PP");
                 break;
                 
             case STM_CVMAG:
-                SNPRINTF(tmpstr, 80, "%s","CVMAG");
+                snprintf(tmpstr, 80, "%s","CVMAG");
                 break;
                 
             case STM_CVX:
-                SNPRINTF(tmpstr, 80, "%s","CVX");
+                snprintf(tmpstr, 80, "%s","CVX");
                 break;
                 
             case STM_CVY:
-                SNPRINTF(tmpstr, 80, "%s","CVY");
+                snprintf(tmpstr, 80, "%s","CVY");
                 break;
                 
             case STM_CVZ:
-                SNPRINTF(tmpstr, 80, "%s","CVZ");
+                snprintf(tmpstr, 80, "%s","CVZ");
                 break;
                 
             case STM_MVOL:
-                SNPRINTF(tmpstr, 80, "%s","MVOL");
+                snprintf(tmpstr, 80, "%s","MVOL");
                 break;
                 
             case STM_DIVV:
-                SNPRINTF(tmpstr, 80, "%s","DIVV");
+                snprintf(tmpstr, 80, "%s","DIVV");
                 break;
                 
             case STM_LX:
-                SNPRINTF(tmpstr, 80, "%s","LX");
+                snprintf(tmpstr, 80, "%s","LX");
                 break;
                 
             case STM_LY:
-                SNPRINTF(tmpstr, 80, "%s","LY");
+                snprintf(tmpstr, 80, "%s","LY");
                 break;
                 
             case STM_LZ:
-                SNPRINTF(tmpstr, 80, "%s","LZ");
+                snprintf(tmpstr, 80, "%s","LZ");
                 break;
                 
             case STM_X:
-                SNPRINTF(tmpstr, 80, "%s","X");
+                snprintf(tmpstr, 80, "%s","X");
                 break;
                 
             case STM_Y:
-                SNPRINTF(tmpstr, 80, "%s","Y");
+                snprintf(tmpstr, 80, "%s","Y");
                 break;
                 
             case STM_Z:
-                SNPRINTF(tmpstr, 80, "%s","Z");
+                snprintf(tmpstr, 80, "%s","Z");
                 break;
                 
             case STM_XC:
-                SNPRINTF(tmpstr, 80, "%s","XC");
+                snprintf(tmpstr, 80, "%s","XC");
                 break;
                 
             case STM_YC:
-                SNPRINTF(tmpstr, 80, "%s","YC");
+                snprintf(tmpstr, 80, "%s","YC");
                 break;
                 
             case STM_ZC:
-                SNPRINTF(tmpstr, 80, "%s","ZC");
+                snprintf(tmpstr, 80, "%s","ZC");
                 break;
                 
             case STM_DX:
-                SNPRINTF(tmpstr, 80, "%s","DX");
+                snprintf(tmpstr, 80, "%s","DX");
                 break;
                 
             case STM_DY:
-                SNPRINTF(tmpstr, 80, "%s","DY");
+                snprintf(tmpstr, 80, "%s","DY");
                 break;
                 
             case STM_DZ:
-                SNPRINTF(tmpstr, 80, "%s","DZ");
+                snprintf(tmpstr, 80, "%s","DZ");
                 break;
                 
             case -9999:
-                SNPRINTF(tmpstr, 80, "%s","ALL");
+                snprintf(tmpstr, 80, "%s","ALL");
                 break;
                 
             case -9998:
-                SNPRINTF(tmpstr, 80, "%s","GLOBAL");
+                snprintf(tmpstr, 80, "%s","GLOBAL");
                 break;
                 
             case -9997:
-                SNPRINTF(tmpstr, 80, "%s","MAT_GLOBAL");
+                snprintf(tmpstr, 80, "%s","MAT_GLOBAL");
                 break;
                 
             case -9996:
-                SNPRINTF(tmpstr, 80, "%s","POSITION");
+                snprintf(tmpstr, 80, "%s","POSITION");
                 break;
                 
             default:
-                SNPRINTF(tmpstr, 80, "%s","DEFAULT-GFN");
+                snprintf(tmpstr, 80, "%s","DEFAULT-GFN");
         }
         
         return tmpstr;

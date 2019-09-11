@@ -1,45 +1,10 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 #include <PyPersistentParticlesAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyPersistentParticlesAttributes
@@ -76,21 +41,21 @@ PyPersistentParticlesAttributes_ToString(const PersistentParticlesAttributes *at
     std::string str;
     char tmpStr[1000];
 
-    SNPRINTF(tmpStr, 1000, "%sstartIndex = %d\n", prefix, atts->GetStartIndex());
+    snprintf(tmpStr, 1000, "%sstartIndex = %d\n", prefix, atts->GetStartIndex());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sstopIndex = %d\n", prefix, atts->GetStopIndex());
+    snprintf(tmpStr, 1000, "%sstopIndex = %d\n", prefix, atts->GetStopIndex());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sstride = %d\n", prefix, atts->GetStride());
+    snprintf(tmpStr, 1000, "%sstride = %d\n", prefix, atts->GetStride());
     str += tmpStr;
     const char *startPathType_names = "Absolute, Relative";
     switch (atts->GetStartPathType())
     {
       case PersistentParticlesAttributes::Absolute:
-          SNPRINTF(tmpStr, 1000, "%sstartPathType = %sAbsolute  # %s\n", prefix, prefix, startPathType_names);
+          snprintf(tmpStr, 1000, "%sstartPathType = %sAbsolute  # %s\n", prefix, prefix, startPathType_names);
           str += tmpStr;
           break;
       case PersistentParticlesAttributes::Relative:
-          SNPRINTF(tmpStr, 1000, "%sstartPathType = %sRelative  # %s\n", prefix, prefix, startPathType_names);
+          snprintf(tmpStr, 1000, "%sstartPathType = %sRelative  # %s\n", prefix, prefix, startPathType_names);
           str += tmpStr;
           break;
       default:
@@ -101,34 +66,34 @@ PyPersistentParticlesAttributes_ToString(const PersistentParticlesAttributes *at
     switch (atts->GetStopPathType())
     {
       case PersistentParticlesAttributes::Absolute:
-          SNPRINTF(tmpStr, 1000, "%sstopPathType = %sAbsolute  # %s\n", prefix, prefix, stopPathType_names);
+          snprintf(tmpStr, 1000, "%sstopPathType = %sAbsolute  # %s\n", prefix, prefix, stopPathType_names);
           str += tmpStr;
           break;
       case PersistentParticlesAttributes::Relative:
-          SNPRINTF(tmpStr, 1000, "%sstopPathType = %sRelative  # %s\n", prefix, prefix, stopPathType_names);
+          snprintf(tmpStr, 1000, "%sstopPathType = %sRelative  # %s\n", prefix, prefix, stopPathType_names);
           str += tmpStr;
           break;
       default:
           break;
     }
 
-    SNPRINTF(tmpStr, 1000, "%straceVariableX = \"%s\"\n", prefix, atts->GetTraceVariableX().c_str());
+    snprintf(tmpStr, 1000, "%straceVariableX = \"%s\"\n", prefix, atts->GetTraceVariableX().c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%straceVariableY = \"%s\"\n", prefix, atts->GetTraceVariableY().c_str());
+    snprintf(tmpStr, 1000, "%straceVariableY = \"%s\"\n", prefix, atts->GetTraceVariableY().c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%straceVariableZ = \"%s\"\n", prefix, atts->GetTraceVariableZ().c_str());
+    snprintf(tmpStr, 1000, "%straceVariableZ = \"%s\"\n", prefix, atts->GetTraceVariableZ().c_str());
     str += tmpStr;
     if(atts->GetConnectParticles())
-        SNPRINTF(tmpStr, 1000, "%sconnectParticles = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sconnectParticles = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sconnectParticles = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sconnectParticles = 0\n", prefix);
     str += tmpStr;
     if(atts->GetShowPoints())
-        SNPRINTF(tmpStr, 1000, "%sshowPoints = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sshowPoints = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sshowPoints = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sshowPoints = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sindexVariable = \"%s\"\n", prefix, atts->GetIndexVariable().c_str());
+    snprintf(tmpStr, 1000, "%sindexVariable = \"%s\"\n", prefix, atts->GetIndexVariable().c_str());
     str += tmpStr;
     return str;
 }

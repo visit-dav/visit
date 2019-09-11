@@ -2728,6 +2728,8 @@ class MainLauncher(object):
     #   Eric Brugger, Mon Nov 19 13:24:37 PST 2012
     #   Correct a bug with running makemili and visitconvert in serial.
     #
+    #   Mark C. Miller, Thu Jun 20 16:38:38 PDT 2019
+    #   Support single processor parallel
     ############################################################################
 
     def UpdateExecutableNames(self):
@@ -2739,7 +2741,9 @@ class MainLauncher(object):
                         np = int(self.parallelArgs.np)
                     except ValueError:
                         np = 1
-            if np > 1:
+            if np == 1 and self.parallelArgs.parallel:
+                 self.generalArgs.exe_name = "engine_par"
+            elif np > 1:
                 self.generalArgs.exe_name = "engine_par"
             else:
                 self.generalArgs.exe_name = "engine_ser"

@@ -1,45 +1,10 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 #include <PySpreadsheetAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 #include <ColorAttribute.h>
 
 // ****************************************************************************
@@ -77,76 +42,76 @@ PySpreadsheetAttributes_ToString(const SpreadsheetAttributes *atts, const char *
     std::string str;
     char tmpStr[1000];
 
-    SNPRINTF(tmpStr, 1000, "%ssubsetName = \"%s\"\n", prefix, atts->GetSubsetName().c_str());
+    snprintf(tmpStr, 1000, "%ssubsetName = \"%s\"\n", prefix, atts->GetSubsetName().c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sformatString = \"%s\"\n", prefix, atts->GetFormatString().c_str());
+    snprintf(tmpStr, 1000, "%sformatString = \"%s\"\n", prefix, atts->GetFormatString().c_str());
     str += tmpStr;
     if(atts->GetUseColorTable())
-        SNPRINTF(tmpStr, 1000, "%suseColorTable = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%suseColorTable = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%suseColorTable = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%suseColorTable = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%scolorTableName = \"%s\"\n", prefix, atts->GetColorTableName().c_str());
+    snprintf(tmpStr, 1000, "%scolorTableName = \"%s\"\n", prefix, atts->GetColorTableName().c_str());
     str += tmpStr;
     if(atts->GetShowTracerPlane())
-        SNPRINTF(tmpStr, 1000, "%sshowTracerPlane = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sshowTracerPlane = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sshowTracerPlane = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sshowTracerPlane = 0\n", prefix);
     str += tmpStr;
     const unsigned char *tracerColor = atts->GetTracerColor().GetColor();
-    SNPRINTF(tmpStr, 1000, "%stracerColor = (%d, %d, %d, %d)\n", prefix, int(tracerColor[0]), int(tracerColor[1]), int(tracerColor[2]), int(tracerColor[3]));
+    snprintf(tmpStr, 1000, "%stracerColor = (%d, %d, %d, %d)\n", prefix, int(tracerColor[0]), int(tracerColor[1]), int(tracerColor[2]), int(tracerColor[3]));
     str += tmpStr;
     const char *normal_names = "X, Y, Z";
     switch (atts->GetNormal())
     {
       case SpreadsheetAttributes::X:
-          SNPRINTF(tmpStr, 1000, "%snormal = %sX  # %s\n", prefix, prefix, normal_names);
+          snprintf(tmpStr, 1000, "%snormal = %sX  # %s\n", prefix, prefix, normal_names);
           str += tmpStr;
           break;
       case SpreadsheetAttributes::Y:
-          SNPRINTF(tmpStr, 1000, "%snormal = %sY  # %s\n", prefix, prefix, normal_names);
+          snprintf(tmpStr, 1000, "%snormal = %sY  # %s\n", prefix, prefix, normal_names);
           str += tmpStr;
           break;
       case SpreadsheetAttributes::Z:
-          SNPRINTF(tmpStr, 1000, "%snormal = %sZ  # %s\n", prefix, prefix, normal_names);
+          snprintf(tmpStr, 1000, "%snormal = %sZ  # %s\n", prefix, prefix, normal_names);
           str += tmpStr;
           break;
       default:
           break;
     }
 
-    SNPRINTF(tmpStr, 1000, "%ssliceIndex = %d\n", prefix, atts->GetSliceIndex());
+    snprintf(tmpStr, 1000, "%ssliceIndex = %d\n", prefix, atts->GetSliceIndex());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sspreadsheetFont = \"%s\"\n", prefix, atts->GetSpreadsheetFont().c_str());
+    snprintf(tmpStr, 1000, "%sspreadsheetFont = \"%s\"\n", prefix, atts->GetSpreadsheetFont().c_str());
     str += tmpStr;
     if(atts->GetShowPatchOutline())
-        SNPRINTF(tmpStr, 1000, "%sshowPatchOutline = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sshowPatchOutline = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sshowPatchOutline = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sshowPatchOutline = 0\n", prefix);
     str += tmpStr;
     if(atts->GetShowCurrentCellOutline())
-        SNPRINTF(tmpStr, 1000, "%sshowCurrentCellOutline = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sshowCurrentCellOutline = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sshowCurrentCellOutline = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sshowCurrentCellOutline = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%scurrentPickType = %d\n", prefix, atts->GetCurrentPickType());
+    snprintf(tmpStr, 1000, "%scurrentPickType = %d\n", prefix, atts->GetCurrentPickType());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%scurrentPickLetter = \"%s\"\n", prefix, atts->GetCurrentPickLetter().c_str());
+    snprintf(tmpStr, 1000, "%scurrentPickLetter = \"%s\"\n", prefix, atts->GetCurrentPickLetter().c_str());
     str += tmpStr;
     {   const stringVector &pastPickLetters = atts->GetPastPickLetters();
-        SNPRINTF(tmpStr, 1000, "%spastPickLetters = (", prefix);
+        snprintf(tmpStr, 1000, "%spastPickLetters = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < pastPickLetters.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "\"%s\"", pastPickLetters[i].c_str());
+            snprintf(tmpStr, 1000, "\"%s\"", pastPickLetters[i].c_str());
             str += tmpStr;
             if(i < pastPickLetters.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     return str;

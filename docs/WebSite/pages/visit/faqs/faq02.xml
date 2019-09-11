@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <page>
   <title><![CDATA[VisIt FAQs]]></title>
+  <IM>LLNL-WEB-786678</IM>
   <owner><![CDATA[Page Owner Name]]></owner>
-  <lastchanged><![CDATA[March 20, 2013]]></lastchanged>
+  <lastchanged><![CDATA[August 14, 2019]]></lastchanged>
   <template><![CDATA[l2]]></template> 
   <content>
     <![CDATA[
@@ -22,18 +23,11 @@
 </ul>
 
 <h2>2. What platforms does VisIt run on?</h2>
-<p>VisIt can run on a variety of platforms from PCs running Windows or Linux all the way up to supercomputers running AIX. The following operating systems are supported:</p>
+<p>VisIt can run on a variety of platforms from PCs running Windows or Linux all the way up to supercomputers running variants of Linux. The following operating systems are supported:</p>
 <ul>
-  <li> Windows XP, Vista, 7 </li>
-  <li> Linux (x86, x86_64, Itanium, Altix) </li>
-  <li> MacOS X 10.4 through 10.6 (PowerPC and Intel) </li>
-  <li> AIX 5.3</li>
-</ul>
-<p>VisIt is known to work on other platforms as well but no binary distributions for these platforms are available due to machine retirements at LLNL.</p>
-<ul>
-  <li> SunOS 5.7</li>
-  <li> IRIX 6.5, IRIX64 6.5</li>
-  <li> Tru64 V5.1</li>
+  <li> Windows 7, 8, 10 </li>
+  <li> Linux (Redhat) </li>
+  <li> MacOS X 10.13 </li>
 </ul>
 
 </div>

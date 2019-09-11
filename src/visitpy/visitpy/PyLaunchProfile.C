@@ -1,45 +1,10 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 #include <PyLaunchProfile.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyLaunchProfile
@@ -76,176 +41,176 @@ PyLaunchProfile_ToString(const LaunchProfile *atts, const char *prefix)
     std::string str;
     char tmpStr[1000];
 
-    SNPRINTF(tmpStr, 1000, "%sprofileName = \"%s\"\n", prefix, atts->GetProfileName().c_str());
+    snprintf(tmpStr, 1000, "%sprofileName = \"%s\"\n", prefix, atts->GetProfileName().c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%stimeout = %d\n", prefix, atts->GetTimeout());
+    snprintf(tmpStr, 1000, "%stimeout = %d\n", prefix, atts->GetTimeout());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%snumProcessors = %d\n", prefix, atts->GetNumProcessors());
+    snprintf(tmpStr, 1000, "%snumProcessors = %d\n", prefix, atts->GetNumProcessors());
     str += tmpStr;
     if(atts->GetNumNodesSet())
-        SNPRINTF(tmpStr, 1000, "%snumNodesSet = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%snumNodesSet = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%snumNodesSet = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%snumNodesSet = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%snumNodes = %d\n", prefix, atts->GetNumNodes());
+    snprintf(tmpStr, 1000, "%snumNodes = %d\n", prefix, atts->GetNumNodes());
     str += tmpStr;
     if(atts->GetPartitionSet())
-        SNPRINTF(tmpStr, 1000, "%spartitionSet = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%spartitionSet = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%spartitionSet = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%spartitionSet = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%spartition = \"%s\"\n", prefix, atts->GetPartition().c_str());
+    snprintf(tmpStr, 1000, "%spartition = \"%s\"\n", prefix, atts->GetPartition().c_str());
     str += tmpStr;
     if(atts->GetBankSet())
-        SNPRINTF(tmpStr, 1000, "%sbankSet = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sbankSet = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sbankSet = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sbankSet = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sbank = \"%s\"\n", prefix, atts->GetBank().c_str());
+    snprintf(tmpStr, 1000, "%sbank = \"%s\"\n", prefix, atts->GetBank().c_str());
     str += tmpStr;
     if(atts->GetTimeLimitSet())
-        SNPRINTF(tmpStr, 1000, "%stimeLimitSet = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%stimeLimitSet = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%stimeLimitSet = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%stimeLimitSet = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%stimeLimit = \"%s\"\n", prefix, atts->GetTimeLimit().c_str());
+    snprintf(tmpStr, 1000, "%stimeLimit = \"%s\"\n", prefix, atts->GetTimeLimit().c_str());
     str += tmpStr;
     if(atts->GetLaunchMethodSet())
-        SNPRINTF(tmpStr, 1000, "%slaunchMethodSet = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%slaunchMethodSet = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%slaunchMethodSet = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%slaunchMethodSet = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%slaunchMethod = \"%s\"\n", prefix, atts->GetLaunchMethod().c_str());
+    snprintf(tmpStr, 1000, "%slaunchMethod = \"%s\"\n", prefix, atts->GetLaunchMethod().c_str());
     str += tmpStr;
     if(atts->GetForceStatic())
-        SNPRINTF(tmpStr, 1000, "%sforceStatic = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sforceStatic = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sforceStatic = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sforceStatic = 0\n", prefix);
     str += tmpStr;
     if(atts->GetForceDynamic())
-        SNPRINTF(tmpStr, 1000, "%sforceDynamic = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sforceDynamic = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sforceDynamic = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sforceDynamic = 0\n", prefix);
     str += tmpStr;
     if(atts->GetActive())
-        SNPRINTF(tmpStr, 1000, "%sactive = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sactive = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sactive = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sactive = 0\n", prefix);
     str += tmpStr;
     {   const stringVector &arguments = atts->GetArguments();
-        SNPRINTF(tmpStr, 1000, "%sarguments = (", prefix);
+        snprintf(tmpStr, 1000, "%sarguments = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < arguments.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "\"%s\"", arguments[i].c_str());
+            snprintf(tmpStr, 1000, "\"%s\"", arguments[i].c_str());
             str += tmpStr;
             if(i < arguments.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     if(atts->GetParallel())
-        SNPRINTF(tmpStr, 1000, "%sparallel = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sparallel = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sparallel = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sparallel = 0\n", prefix);
     str += tmpStr;
     if(atts->GetLaunchArgsSet())
-        SNPRINTF(tmpStr, 1000, "%slaunchArgsSet = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%slaunchArgsSet = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%slaunchArgsSet = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%slaunchArgsSet = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%slaunchArgs = \"%s\"\n", prefix, atts->GetLaunchArgs().c_str());
+    snprintf(tmpStr, 1000, "%slaunchArgs = \"%s\"\n", prefix, atts->GetLaunchArgs().c_str());
     str += tmpStr;
     if(atts->GetSublaunchArgsSet())
-        SNPRINTF(tmpStr, 1000, "%ssublaunchArgsSet = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%ssublaunchArgsSet = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%ssublaunchArgsSet = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%ssublaunchArgsSet = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%ssublaunchArgs = \"%s\"\n", prefix, atts->GetSublaunchArgs().c_str());
+    snprintf(tmpStr, 1000, "%ssublaunchArgs = \"%s\"\n", prefix, atts->GetSublaunchArgs().c_str());
     str += tmpStr;
     if(atts->GetSublaunchPreCmdSet())
-        SNPRINTF(tmpStr, 1000, "%ssublaunchPreCmdSet = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%ssublaunchPreCmdSet = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%ssublaunchPreCmdSet = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%ssublaunchPreCmdSet = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%ssublaunchPreCmd = \"%s\"\n", prefix, atts->GetSublaunchPreCmd().c_str());
+    snprintf(tmpStr, 1000, "%ssublaunchPreCmd = \"%s\"\n", prefix, atts->GetSublaunchPreCmd().c_str());
     str += tmpStr;
     if(atts->GetSublaunchPostCmdSet())
-        SNPRINTF(tmpStr, 1000, "%ssublaunchPostCmdSet = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%ssublaunchPostCmdSet = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%ssublaunchPostCmdSet = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%ssublaunchPostCmdSet = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%ssublaunchPostCmd = \"%s\"\n", prefix, atts->GetSublaunchPostCmd().c_str());
+    snprintf(tmpStr, 1000, "%ssublaunchPostCmd = \"%s\"\n", prefix, atts->GetSublaunchPostCmd().c_str());
     str += tmpStr;
     if(atts->GetMachinefileSet())
-        SNPRINTF(tmpStr, 1000, "%smachinefileSet = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%smachinefileSet = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%smachinefileSet = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%smachinefileSet = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%smachinefile = \"%s\"\n", prefix, atts->GetMachinefile().c_str());
+    snprintf(tmpStr, 1000, "%smachinefile = \"%s\"\n", prefix, atts->GetMachinefile().c_str());
     str += tmpStr;
     if(atts->GetVisitSetsUpEnv())
-        SNPRINTF(tmpStr, 1000, "%svisitSetsUpEnv = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%svisitSetsUpEnv = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%svisitSetsUpEnv = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%svisitSetsUpEnv = 0\n", prefix);
     str += tmpStr;
     if(atts->GetCanDoHWAccel())
-        SNPRINTF(tmpStr, 1000, "%scanDoHWAccel = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%scanDoHWAccel = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%scanDoHWAccel = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%scanDoHWAccel = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sGPUsPerNode = %d\n", prefix, atts->GetGPUsPerNode());
+    snprintf(tmpStr, 1000, "%sGPUsPerNode = %d\n", prefix, atts->GetGPUsPerNode());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sXArguments = \"%s\"\n", prefix, atts->GetXArguments().c_str());
+    snprintf(tmpStr, 1000, "%sXArguments = \"%s\"\n", prefix, atts->GetXArguments().c_str());
     str += tmpStr;
     if(atts->GetLaunchXServers())
-        SNPRINTF(tmpStr, 1000, "%slaunchXServers = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%slaunchXServers = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%slaunchXServers = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%slaunchXServers = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sXDisplay = \"%s\"\n", prefix, atts->GetXDisplay().c_str());
+    snprintf(tmpStr, 1000, "%sXDisplay = \"%s\"\n", prefix, atts->GetXDisplay().c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%snumThreads = %d\n", prefix, atts->GetNumThreads());
+    snprintf(tmpStr, 1000, "%snumThreads = %d\n", prefix, atts->GetNumThreads());
     str += tmpStr;
     if(atts->GetConstrainNodeProcs())
-        SNPRINTF(tmpStr, 1000, "%sconstrainNodeProcs = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sconstrainNodeProcs = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sconstrainNodeProcs = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sconstrainNodeProcs = 0\n", prefix);
     str += tmpStr;
     {   const intVector &allowableNodes = atts->GetAllowableNodes();
-        SNPRINTF(tmpStr, 1000, "%sallowableNodes = (", prefix);
+        snprintf(tmpStr, 1000, "%sallowableNodes = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < allowableNodes.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%d", allowableNodes[i]);
+            snprintf(tmpStr, 1000, "%d", allowableNodes[i]);
             str += tmpStr;
             if(i < allowableNodes.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const intVector &allowableProcs = atts->GetAllowableProcs();
-        SNPRINTF(tmpStr, 1000, "%sallowableProcs = (", prefix);
+        snprintf(tmpStr, 1000, "%sallowableProcs = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < allowableProcs.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%d", allowableProcs[i]);
+            snprintf(tmpStr, 1000, "%d", allowableProcs[i]);
             str += tmpStr;
             if(i < allowableProcs.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     return str;

@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<page>
+  <title><![CDATA[Release Notes for VisIt 3.0.2]]></title>
+  <owner><![CDATA[Page Owner Name]]></owner>
+  <IM>LLNL-WEB-789119</IM>
+  <lastchanged><![CDATA[September 11, 2019]]></lastchanged>
+  <template><![CDATA[l2]]></template> 
+  <content>
+    <![CDATA[
+	
+<link rel="stylesheet" href="content/css/mods.css" media="screen" />	
+
+<div class="row">	
+<div class="span9">
+
+<ul class="nav nav-tabs">
+  	<li><a href="simulation/computer-codes/visit">VisIt Home</a></li>
+	<li class="active"><a href="simulation/computer-codes/visit/downloads">Downloads</a></li>
+  	<li><a href="simulation/computer-codes/visit/new">What's New</a></li>
+  	<li><a href="simulation/computer-codes/visit/screenshots">Screen Shots</a></li>
+	<li><a href="simulation/computer-codes/visit/gallery">Gallery</a></li>
+	<li><a href="simulation/computer-codes/visit/faqs">FAQs</a></li>
+</ul>
+
+
+<p>Welcome to VisIt's release notes page. This page describes the important
+enhancements and bug-fixes that were added to this release.</p>
+
+<h2>Bugs fixed in version 3.0.2</h2>
+<ul>
+  <li>Corrected a bug where VisIt would crash when attempting to use python expressions with other expressions as inputs.</li>
+  <li>Corrected a launch failure on Windows when 8dot3name (shortnames) is disabled on the system.</li>
+  <li>Corrected a bug with the mili plugin not handling integers in scientific notation.</li>
+  <li>Corrected a bug with the Uintah reader not being able to read index.xml files.</li>
+  <li>Corrected a bug with importing remote profiles, where it looked at the old Subversion repository for remote profiles. Now it looks at the new Git repository.</li>
+  <li>Corrected a bug where bringing up the Elevate attributes window would crash the graphical user interface on OSX.</li>
+  <li>Corrected a bug with the Uintah reader where it would not load because the libxml2 could not be found.</li>
+  <li>Corrected a bug where the GUI plot list goes blank on macOS.</li>
+</ul>
+
+<h2>Enhancements in version 3.0.2</h2>
+<ul>
+  <li>Host profiles were added for the Oak Ridge National Laboratory's Summit system.</li>
+  <li>Tables in the graphical user interface documentation that ran off the edge of the page have been converted to definition lists.</li>
+  <li>Modified the batch launching at NERSC to work on Cori after the major operating system upgrade."</li>
+  <li>Openssl was added to the list of required libraries in build_visit.</li> 
+  <li>Added the turbo color table.</li> 
+  <li>The XYZ writer replaces '?' with UNKNOWN_ATOMIC_ELEMENT and now warns the user if the dataset is not effectively point-centered.</li>
+  <li>The Xdmf reader now supports time-varying grid counts via a top-level &lt;Information Name="TimeVaryingMetaData" Value="True"/&gt; node in the Xdmf file.</li>
+  <li>Added a reader for Xolotl files. Xolotl is an open-source, high performance plasma-surface interactions simulator that is under development with the DOE's SciDAC program. VisIt will automatically recognize files that end with the extention ".xolotl" as Xolotl files.</li>
+  <li>Binary distributions have been added for Ubuntu 16, Ubuntu 18, Debian 9, and Fedora 27.</li>
+</ul>
+
+<h2>Changes for VisIt developers in version 3.0.2</h2>
+<ul>
+  <li>Updated masonry to build adios2 for OSX.</li>
+  <li>Corrected the building of plugins against a VisIt install for OSX.</li>
+  <li>Corrected an xmledit failure due to missing a Qt cocoa plugin.</li>
+  <li>PySide was removed from build_visit until we get a newer version working with VisIt.</li>
+</ul>
+
+<p>For any additional questions, send e-mail to <a href="mailto:visit-users@ornl.gov">VisIt Users</a>.</p>
+
+</div>
+</div>	
+	  
+	  ]]>
+  </content>
+</page>

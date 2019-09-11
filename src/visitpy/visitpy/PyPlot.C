@@ -1,45 +1,10 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 #include <PyPlot.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyPlot
@@ -80,140 +45,140 @@ PyPlot_ToString(const Plot *atts, const char *prefix)
     switch (atts->GetStateType())
     {
       case Plot::NewlyCreated:
-          SNPRINTF(tmpStr, 1000, "%sstateType = %sNewlyCreated  # %s\n", prefix, prefix, stateType_names);
+          snprintf(tmpStr, 1000, "%sstateType = %sNewlyCreated  # %s\n", prefix, prefix, stateType_names);
           str += tmpStr;
           break;
       case Plot::Pending:
-          SNPRINTF(tmpStr, 1000, "%sstateType = %sPending  # %s\n", prefix, prefix, stateType_names);
+          snprintf(tmpStr, 1000, "%sstateType = %sPending  # %s\n", prefix, prefix, stateType_names);
           str += tmpStr;
           break;
       case Plot::Completed:
-          SNPRINTF(tmpStr, 1000, "%sstateType = %sCompleted  # %s\n", prefix, prefix, stateType_names);
+          snprintf(tmpStr, 1000, "%sstateType = %sCompleted  # %s\n", prefix, prefix, stateType_names);
           str += tmpStr;
           break;
       case Plot::Error:
-          SNPRINTF(tmpStr, 1000, "%sstateType = %sError  # %s\n", prefix, prefix, stateType_names);
+          snprintf(tmpStr, 1000, "%sstateType = %sError  # %s\n", prefix, prefix, stateType_names);
           str += tmpStr;
           break;
       default:
           break;
     }
 
-    SNPRINTF(tmpStr, 1000, "%splotType = %d\n", prefix, atts->GetPlotType());
+    snprintf(tmpStr, 1000, "%splotType = %d\n", prefix, atts->GetPlotType());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%splotName = \"%s\"\n", prefix, atts->GetPlotName().c_str());
+    snprintf(tmpStr, 1000, "%splotName = \"%s\"\n", prefix, atts->GetPlotName().c_str());
     str += tmpStr;
     if(atts->GetActiveFlag())
-        SNPRINTF(tmpStr, 1000, "%sactiveFlag = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sactiveFlag = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sactiveFlag = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sactiveFlag = 0\n", prefix);
     str += tmpStr;
     if(atts->GetHiddenFlag())
-        SNPRINTF(tmpStr, 1000, "%shiddenFlag = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%shiddenFlag = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%shiddenFlag = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%shiddenFlag = 0\n", prefix);
     str += tmpStr;
     if(atts->GetExpandedFlag())
-        SNPRINTF(tmpStr, 1000, "%sexpandedFlag = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sexpandedFlag = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sexpandedFlag = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sexpandedFlag = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%splotVar = \"%s\"\n", prefix, atts->GetPlotVar().c_str());
+    snprintf(tmpStr, 1000, "%splotVar = \"%s\"\n", prefix, atts->GetPlotVar().c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sdatabaseName = \"%s\"\n", prefix, atts->GetDatabaseName().c_str());
+    snprintf(tmpStr, 1000, "%sdatabaseName = \"%s\"\n", prefix, atts->GetDatabaseName().c_str());
     str += tmpStr;
     {   const intVector &operators = atts->GetOperators();
-        SNPRINTF(tmpStr, 1000, "%soperators = (", prefix);
+        snprintf(tmpStr, 1000, "%soperators = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < operators.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%d", operators[i]);
+            snprintf(tmpStr, 1000, "%d", operators[i]);
             str += tmpStr;
             if(i < operators.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const stringVector &operatorNames = atts->GetOperatorNames();
-        SNPRINTF(tmpStr, 1000, "%soperatorNames = (", prefix);
+        snprintf(tmpStr, 1000, "%soperatorNames = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < operatorNames.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "\"%s\"", operatorNames[i].c_str());
+            snprintf(tmpStr, 1000, "\"%s\"", operatorNames[i].c_str());
             str += tmpStr;
             if(i < operatorNames.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
-    SNPRINTF(tmpStr, 1000, "%sactiveOperator = %d\n", prefix, atts->GetActiveOperator());
+    snprintf(tmpStr, 1000, "%sactiveOperator = %d\n", prefix, atts->GetActiveOperator());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sid = %d\n", prefix, atts->GetId());
+    snprintf(tmpStr, 1000, "%sid = %d\n", prefix, atts->GetId());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sembeddedPlotId = %d\n", prefix, atts->GetEmbeddedPlotId());
+    snprintf(tmpStr, 1000, "%sembeddedPlotId = %d\n", prefix, atts->GetEmbeddedPlotId());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sbeginFrame = %d\n", prefix, atts->GetBeginFrame());
+    snprintf(tmpStr, 1000, "%sbeginFrame = %d\n", prefix, atts->GetBeginFrame());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sendFrame = %d\n", prefix, atts->GetEndFrame());
+    snprintf(tmpStr, 1000, "%sendFrame = %d\n", prefix, atts->GetEndFrame());
     str += tmpStr;
     {   const intVector &keyframes = atts->GetKeyframes();
-        SNPRINTF(tmpStr, 1000, "%skeyframes = (", prefix);
+        snprintf(tmpStr, 1000, "%skeyframes = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < keyframes.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%d", keyframes[i]);
+            snprintf(tmpStr, 1000, "%d", keyframes[i]);
             str += tmpStr;
             if(i < keyframes.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const intVector &databaseKeyframes = atts->GetDatabaseKeyframes();
-        SNPRINTF(tmpStr, 1000, "%sdatabaseKeyframes = (", prefix);
+        snprintf(tmpStr, 1000, "%sdatabaseKeyframes = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < databaseKeyframes.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%d", databaseKeyframes[i]);
+            snprintf(tmpStr, 1000, "%d", databaseKeyframes[i]);
             str += tmpStr;
             if(i < databaseKeyframes.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     if(atts->GetIsFromSimulation())
-        SNPRINTF(tmpStr, 1000, "%sisFromSimulation = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sisFromSimulation = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sisFromSimulation = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sisFromSimulation = 0\n", prefix);
     str += tmpStr;
     if(atts->GetFollowsTime())
-        SNPRINTF(tmpStr, 1000, "%sfollowsTime = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sfollowsTime = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sfollowsTime = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sfollowsTime = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sdescription = \"%s\"\n", prefix, atts->GetDescription().c_str());
+    snprintf(tmpStr, 1000, "%sdescription = \"%s\"\n", prefix, atts->GetDescription().c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sselection = \"%s\"\n", prefix, atts->GetSelection().c_str());
+    snprintf(tmpStr, 1000, "%sselection = \"%s\"\n", prefix, atts->GetSelection().c_str());
     str += tmpStr;
     if(atts->GetAnimatingFlag())
-        SNPRINTF(tmpStr, 1000, "%sanimatingFlag = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sanimatingFlag = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sanimatingFlag = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sanimatingFlag = 0\n", prefix);
     str += tmpStr;
     return str;
 }

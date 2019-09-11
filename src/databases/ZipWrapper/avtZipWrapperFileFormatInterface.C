@@ -1,40 +1,6 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
 //                    avtZipWrapperFileFormatInterface.C                     //
@@ -55,7 +21,6 @@
 #include <mpi.h>
 #endif
 
-#include <snprintf.h>
 #include <DatabasePluginInfo.h>
 #include <DatabasePluginManager.h>
 #include <DBOptionsAttributes.h>
@@ -398,7 +363,7 @@ avtZipWrapperFileFormatInterface::Initialize(int procNum, int procCount,
            << " at any one time." << endl;
 
     char procNumStr[32];
-    SNPRINTF(procNumStr, sizeof(procNumStr), "_%04d", procNum);
+    snprintf(procNumStr, sizeof(procNumStr), "_%04d", procNum);
     tmpDir = tmpDir + "/visitzw_" + userName + "_" +
              string(VisItInit::GetComponentName()) +
              (procCount > 1 ? string(procNumStr) : "");
@@ -410,7 +375,7 @@ avtZipWrapperFileFormatInterface::Initialize(int procNum, int procCount,
     if (mkdir(tmpDir.c_str(), 0777) != 0 && errno != EEXIST)
     {
         static char errMsg[1024];
-        SNPRINTF(errMsg, sizeof(errMsg), "mkdir failed with errno=%d (\"%s\")",
+        snprintf(errMsg, sizeof(errMsg), "mkdir failed with errno=%d (\"%s\")",
             errno, strerror(errno));
         EXCEPTION1(InvalidFilesException, errMsg);
     }
@@ -539,7 +504,7 @@ avtZipWrapperFileFormatInterface::avtZipWrapperFileFormatInterface(
     if (info == 0)
     {
         char errMsg[1024];
-        SNPRINTF(errMsg, sizeof(errMsg),
+        snprintf(errMsg, sizeof(errMsg),
             "Unable to load info about plugin \"%s\" for file \"%s\"",
             pluginId.c_str(), inputFileList[0][0].c_str());
         EXCEPTION1(InvalidFilesException, errMsg);
@@ -784,7 +749,7 @@ avtZipWrapperFileFormatInterface::GetRealInterface(int ts, int dom, bool dontCac
     }
 
     char tmpcmd[1024];
-    SNPRINTF(tmpcmd, sizeof(tmpcmd), "cd %s ; cp %s . ; touch %s.lck ; %s %s ; rm -f %s.lck",
+    snprintf(tmpcmd, sizeof(tmpcmd), "cd %s ; cp %s . ; touch %s.lck ; %s %s ; rm -f %s.lck",
         tmpDir.c_str(), compressedName.c_str(), dcname.c_str(), dcmd.c_str(), bname, dcname.c_str());
     debug5 << "Using decompression command: \"" << tmpcmd << "\"" << endl;
     int ret = system(tmpcmd);
@@ -793,7 +758,7 @@ avtZipWrapperFileFormatInterface::GetRealInterface(int ts, int dom, bool dontCac
         if (WEXITSTATUS(ret) != 0)
         {
             char errMsg[1024];
-            SNPRINTF(errMsg, sizeof(errMsg), "Decompression command apparently "
+            snprintf(errMsg, sizeof(errMsg), "Decompression command apparently "
                 "exited normally but returned non-zero exit status %d", WEXITSTATUS(ret));
             EXCEPTION1(InvalidFilesException, errMsg);
         }

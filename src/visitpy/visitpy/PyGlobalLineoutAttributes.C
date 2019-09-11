@@ -1,45 +1,10 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 #include <PyGlobalLineoutAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyGlobalLineoutAttributes
@@ -77,38 +42,38 @@ PyGlobalLineoutAttributes_ToString(const GlobalLineoutAttributes *atts, const ch
     char tmpStr[1000];
 
     if(atts->GetDynamic())
-        SNPRINTF(tmpStr, 1000, "%sDynamic = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sDynamic = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sDynamic = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sDynamic = 0\n", prefix);
     str += tmpStr;
     if(atts->GetCreateWindow())
-        SNPRINTF(tmpStr, 1000, "%screateWindow = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%screateWindow = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%screateWindow = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%screateWindow = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%swindowId = %d\n", prefix, atts->GetWindowId());
+    snprintf(tmpStr, 1000, "%swindowId = %d\n", prefix, atts->GetWindowId());
     str += tmpStr;
     if(atts->GetSamplingOn())
-        SNPRINTF(tmpStr, 1000, "%ssamplingOn = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%ssamplingOn = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%ssamplingOn = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%ssamplingOn = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%snumSamples = %d\n", prefix, atts->GetNumSamples());
+    snprintf(tmpStr, 1000, "%snumSamples = %d\n", prefix, atts->GetNumSamples());
     str += tmpStr;
     if(atts->GetCreateReflineLabels())
-        SNPRINTF(tmpStr, 1000, "%screateReflineLabels = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%screateReflineLabels = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%screateReflineLabels = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%screateReflineLabels = 0\n", prefix);
     str += tmpStr;
     const char *curveOption_names = "UpdateCurve, CreateCurve";
     switch (atts->GetCurveOption())
     {
       case GlobalLineoutAttributes::UpdateCurve:
-          SNPRINTF(tmpStr, 1000, "%scurveOption = %sUpdateCurve  # %s\n", prefix, prefix, curveOption_names);
+          snprintf(tmpStr, 1000, "%scurveOption = %sUpdateCurve  # %s\n", prefix, prefix, curveOption_names);
           str += tmpStr;
           break;
       case GlobalLineoutAttributes::CreateCurve:
-          SNPRINTF(tmpStr, 1000, "%scurveOption = %sCreateCurve  # %s\n", prefix, prefix, curveOption_names);
+          snprintf(tmpStr, 1000, "%scurveOption = %sCreateCurve  # %s\n", prefix, prefix, curveOption_names);
           str += tmpStr;
           break;
       default:
@@ -119,11 +84,11 @@ PyGlobalLineoutAttributes_ToString(const GlobalLineoutAttributes *atts, const ch
     switch (atts->GetColorOption())
     {
       case GlobalLineoutAttributes::RepeatColor:
-          SNPRINTF(tmpStr, 1000, "%scolorOption = %sRepeatColor  # %s\n", prefix, prefix, colorOption_names);
+          snprintf(tmpStr, 1000, "%scolorOption = %sRepeatColor  # %s\n", prefix, prefix, colorOption_names);
           str += tmpStr;
           break;
       case GlobalLineoutAttributes::CreateColor:
-          SNPRINTF(tmpStr, 1000, "%scolorOption = %sCreateColor  # %s\n", prefix, prefix, colorOption_names);
+          snprintf(tmpStr, 1000, "%scolorOption = %sCreateColor  # %s\n", prefix, prefix, colorOption_names);
           str += tmpStr;
           break;
       default:
@@ -131,9 +96,9 @@ PyGlobalLineoutAttributes_ToString(const GlobalLineoutAttributes *atts, const ch
     }
 
     if(atts->GetFreezeInTime())
-        SNPRINTF(tmpStr, 1000, "%sfreezeInTime = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sfreezeInTime = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sfreezeInTime = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sfreezeInTime = 0\n", prefix);
     str += tmpStr;
     return str;
 }

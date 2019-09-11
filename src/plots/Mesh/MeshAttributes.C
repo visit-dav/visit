@@ -1,40 +1,6 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 #include <MeshAttributes.h>
 #include <DataNode.h>
@@ -82,20 +48,21 @@ MeshAttributes::SmoothingLevel_FromString(const std::string &s, MeshAttributes::
 //
 
 static const char *MeshColor_strings[] = {
-"Foreground", "MeshCustom"};
+"Foreground", "MeshCustom", "MeshRandom"
+};
 
 std::string
 MeshAttributes::MeshColor_ToString(MeshAttributes::MeshColor t)
 {
     int index = int(t);
-    if(index < 0 || index >= 2) index = 0;
+    if(index < 0 || index >= 3) index = 0;
     return MeshColor_strings[index];
 }
 
 std::string
 MeshAttributes::MeshColor_ToString(int t)
 {
-    int index = (t < 0 || t >= 2) ? 0 : t;
+    int index = (t < 0 || t >= 3) ? 0 : t;
     return MeshColor_strings[index];
 }
 
@@ -103,7 +70,7 @@ bool
 MeshAttributes::MeshColor_FromString(const std::string &s, MeshAttributes::MeshColor &val)
 {
     val = MeshAttributes::Foreground;
-    for(int i = 0; i < 2; ++i)
+    for(int i = 0; i < 3; ++i)
     {
         if(s == MeshColor_strings[i])
         {
@@ -119,20 +86,21 @@ MeshAttributes::MeshColor_FromString(const std::string &s, MeshAttributes::MeshC
 //
 
 static const char *OpaqueColor_strings[] = {
-"Background", "OpaqueCustom"};
+"Background", "OpaqueCustom", "OpaqueRandom"
+};
 
 std::string
 MeshAttributes::OpaqueColor_ToString(MeshAttributes::OpaqueColor t)
 {
     int index = int(t);
-    if(index < 0 || index >= 2) index = 0;
+    if(index < 0 || index >= 3) index = 0;
     return OpaqueColor_strings[index];
 }
 
 std::string
 MeshAttributes::OpaqueColor_ToString(int t)
 {
-    int index = (t < 0 || t >= 2) ? 0 : t;
+    int index = (t < 0 || t >= 3) ? 0 : t;
     return OpaqueColor_strings[index];
 }
 
@@ -140,7 +108,7 @@ bool
 MeshAttributes::OpaqueColor_FromString(const std::string &s, MeshAttributes::OpaqueColor &val)
 {
     val = MeshAttributes::Background;
-    for(int i = 0; i < 2; ++i)
+    for(int i = 0; i < 3; ++i)
     {
         if(s == OpaqueColor_strings[i])
         {
@@ -772,7 +740,7 @@ MeshAttributes::SetFromNode(DataNode *parentNode)
         if(node->GetNodeType() == INT_NODE)
         {
             int ival = node->AsInt();
-            if(ival >= 0 && ival < 2)
+            if(ival >= 0 && ival < 3)
                 SetMeshColorSource(MeshColor(ival));
         }
         else if(node->GetNodeType() == STRING_NODE)
@@ -788,7 +756,7 @@ MeshAttributes::SetFromNode(DataNode *parentNode)
         if(node->GetNodeType() == INT_NODE)
         {
             int ival = node->AsInt();
-            if(ival >= 0 && ival < 2)
+            if(ival >= 0 && ival < 3)
                 SetOpaqueColorSource(OpaqueColor(ival));
         }
         else if(node->GetNodeType() == STRING_NODE)

@@ -11,7 +11,4 @@
     </Function>
     <Function name="Print" user="true" member="true">
     </Function>
-    <Include file="source" quoted="false">
-      snprintf.h
-    </Include>
   </Attribute>

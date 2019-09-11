@@ -1,45 +1,10 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 #include <PyGlobalAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 
 // ****************************************************************************
 // Module: PyGlobalAttributes
@@ -77,159 +42,159 @@ PyGlobalAttributes_ToString(const GlobalAttributes *atts, const char *prefix)
     char tmpStr[1000];
 
     {   const stringVector &sources = atts->GetSources();
-        SNPRINTF(tmpStr, 1000, "%ssources = (", prefix);
+        snprintf(tmpStr, 1000, "%ssources = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < sources.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "\"%s\"", sources[i].c_str());
+            snprintf(tmpStr, 1000, "\"%s\"", sources[i].c_str());
             str += tmpStr;
             if(i < sources.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const intVector &windows = atts->GetWindows();
-        SNPRINTF(tmpStr, 1000, "%swindows = (", prefix);
+        snprintf(tmpStr, 1000, "%swindows = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < windows.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%d", windows[i]);
+            snprintf(tmpStr, 1000, "%d", windows[i]);
             str += tmpStr;
             if(i < windows.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
-    SNPRINTF(tmpStr, 1000, "%sactiveWindow = %d\n", prefix, atts->GetActiveWindow());
+    snprintf(tmpStr, 1000, "%sactiveWindow = %d\n", prefix, atts->GetActiveWindow());
     str += tmpStr;
     if(atts->GetIconifiedFlag())
-        SNPRINTF(tmpStr, 1000, "%siconifiedFlag = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%siconifiedFlag = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%siconifiedFlag = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%siconifiedFlag = 0\n", prefix);
     str += tmpStr;
     if(atts->GetAutoUpdateFlag())
-        SNPRINTF(tmpStr, 1000, "%sautoUpdateFlag = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sautoUpdateFlag = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sautoUpdateFlag = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sautoUpdateFlag = 0\n", prefix);
     str += tmpStr;
     if(atts->GetReplacePlots())
-        SNPRINTF(tmpStr, 1000, "%sreplacePlots = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sreplacePlots = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sreplacePlots = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sreplacePlots = 0\n", prefix);
     str += tmpStr;
     if(atts->GetApplyOperator())
-        SNPRINTF(tmpStr, 1000, "%sapplyOperator = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sapplyOperator = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sapplyOperator = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sapplyOperator = 0\n", prefix);
     str += tmpStr;
     if(atts->GetApplySelection())
-        SNPRINTF(tmpStr, 1000, "%sapplySelection = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sapplySelection = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sapplySelection = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sapplySelection = 0\n", prefix);
     str += tmpStr;
     if(atts->GetApplyWindow())
-        SNPRINTF(tmpStr, 1000, "%sapplyWindow = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sapplyWindow = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sapplyWindow = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sapplyWindow = 0\n", prefix);
     str += tmpStr;
     if(atts->GetExecuting())
-        SNPRINTF(tmpStr, 1000, "%sexecuting = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sexecuting = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sexecuting = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sexecuting = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%swindowLayout = %d\n", prefix, atts->GetWindowLayout());
+    snprintf(tmpStr, 1000, "%swindowLayout = %d\n", prefix, atts->GetWindowLayout());
     str += tmpStr;
     if(atts->GetMakeDefaultConfirm())
-        SNPRINTF(tmpStr, 1000, "%smakeDefaultConfirm = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%smakeDefaultConfirm = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%smakeDefaultConfirm = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%smakeDefaultConfirm = 0\n", prefix);
     str += tmpStr;
     if(atts->GetCloneWindowOnFirstRef())
-        SNPRINTF(tmpStr, 1000, "%scloneWindowOnFirstRef = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%scloneWindowOnFirstRef = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%scloneWindowOnFirstRef = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%scloneWindowOnFirstRef = 0\n", prefix);
     str += tmpStr;
     if(atts->GetAutomaticallyAddOperator())
-        SNPRINTF(tmpStr, 1000, "%sautomaticallyAddOperator = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sautomaticallyAddOperator = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sautomaticallyAddOperator = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sautomaticallyAddOperator = 0\n", prefix);
     str += tmpStr;
     if(atts->GetTryHarderCyclesTimes())
-        SNPRINTF(tmpStr, 1000, "%stryHarderCyclesTimes = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%stryHarderCyclesTimes = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%stryHarderCyclesTimes = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%stryHarderCyclesTimes = 0\n", prefix);
     str += tmpStr;
     if(atts->GetTreatAllDBsAsTimeVarying())
-        SNPRINTF(tmpStr, 1000, "%streatAllDBsAsTimeVarying = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%streatAllDBsAsTimeVarying = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%streatAllDBsAsTimeVarying = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%streatAllDBsAsTimeVarying = 0\n", prefix);
     str += tmpStr;
     if(atts->GetCreateMeshQualityExpressions())
-        SNPRINTF(tmpStr, 1000, "%screateMeshQualityExpressions = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%screateMeshQualityExpressions = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%screateMeshQualityExpressions = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%screateMeshQualityExpressions = 0\n", prefix);
     str += tmpStr;
     if(atts->GetCreateTimeDerivativeExpressions())
-        SNPRINTF(tmpStr, 1000, "%screateTimeDerivativeExpressions = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%screateTimeDerivativeExpressions = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%screateTimeDerivativeExpressions = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%screateTimeDerivativeExpressions = 0\n", prefix);
     str += tmpStr;
     if(atts->GetCreateVectorMagnitudeExpressions())
-        SNPRINTF(tmpStr, 1000, "%screateVectorMagnitudeExpressions = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%screateVectorMagnitudeExpressions = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%screateVectorMagnitudeExpressions = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%screateVectorMagnitudeExpressions = 0\n", prefix);
     str += tmpStr;
     if(atts->GetNewPlotsInheritSILRestriction())
-        SNPRINTF(tmpStr, 1000, "%snewPlotsInheritSILRestriction = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%snewPlotsInheritSILRestriction = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%snewPlotsInheritSILRestriction = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%snewPlotsInheritSILRestriction = 0\n", prefix);
     str += tmpStr;
     if(atts->GetUserDirForSessionFiles())
-        SNPRINTF(tmpStr, 1000, "%suserDirForSessionFiles = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%suserDirForSessionFiles = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%suserDirForSessionFiles = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%suserDirForSessionFiles = 0\n", prefix);
     str += tmpStr;
     if(atts->GetSaveCrashRecoveryFile())
-        SNPRINTF(tmpStr, 1000, "%ssaveCrashRecoveryFile = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%ssaveCrashRecoveryFile = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%ssaveCrashRecoveryFile = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%ssaveCrashRecoveryFile = 0\n", prefix);
     str += tmpStr;
     if(atts->GetIgnoreExtentsFromDbs())
-        SNPRINTF(tmpStr, 1000, "%signoreExtentsFromDbs = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%signoreExtentsFromDbs = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%signoreExtentsFromDbs = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%signoreExtentsFromDbs = 0\n", prefix);
     str += tmpStr;
     if(atts->GetExpandNewPlots())
-        SNPRINTF(tmpStr, 1000, "%sexpandNewPlots = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sexpandNewPlots = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sexpandNewPlots = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sexpandNewPlots = 0\n", prefix);
     str += tmpStr;
     if(atts->GetUserRestoreSessionFile())
-        SNPRINTF(tmpStr, 1000, "%suserRestoreSessionFile = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%suserRestoreSessionFile = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%suserRestoreSessionFile = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%suserRestoreSessionFile = 0\n", prefix);
     str += tmpStr;
     const char *precisionType_names = "Float, Native, Double";
     switch (atts->GetPrecisionType())
     {
       case GlobalAttributes::Float:
-          SNPRINTF(tmpStr, 1000, "%sprecisionType = %sFloat  # %s\n", prefix, prefix, precisionType_names);
+          snprintf(tmpStr, 1000, "%sprecisionType = %sFloat  # %s\n", prefix, prefix, precisionType_names);
           str += tmpStr;
           break;
       case GlobalAttributes::Native:
-          SNPRINTF(tmpStr, 1000, "%sprecisionType = %sNative  # %s\n", prefix, prefix, precisionType_names);
+          snprintf(tmpStr, 1000, "%sprecisionType = %sNative  # %s\n", prefix, prefix, precisionType_names);
           str += tmpStr;
           break;
       case GlobalAttributes::Double:
-          SNPRINTF(tmpStr, 1000, "%sprecisionType = %sDouble  # %s\n", prefix, prefix, precisionType_names);
+          snprintf(tmpStr, 1000, "%sprecisionType = %sDouble  # %s\n", prefix, prefix, precisionType_names);
           str += tmpStr;
           break;
       default:
@@ -240,11 +205,11 @@ PyGlobalAttributes_ToString(const GlobalAttributes *atts, const char *prefix)
     switch (atts->GetBackendType())
     {
       case GlobalAttributes::VTK:
-          SNPRINTF(tmpStr, 1000, "%sbackendType = %sVTK  # %s\n", prefix, prefix, backendType_names);
+          snprintf(tmpStr, 1000, "%sbackendType = %sVTK  # %s\n", prefix, prefix, backendType_names);
           str += tmpStr;
           break;
       case GlobalAttributes::VTKM:
-          SNPRINTF(tmpStr, 1000, "%sbackendType = %sVTKM  # %s\n", prefix, prefix, backendType_names);
+          snprintf(tmpStr, 1000, "%sbackendType = %sVTKM  # %s\n", prefix, prefix, backendType_names);
           str += tmpStr;
           break;
       default:
@@ -252,9 +217,9 @@ PyGlobalAttributes_ToString(const GlobalAttributes *atts, const char *prefix)
     }
 
     if(atts->GetRemoveDuplicateNodes())
-        SNPRINTF(tmpStr, 1000, "%sremoveDuplicateNodes = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sremoveDuplicateNodes = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sremoveDuplicateNodes = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sremoveDuplicateNodes = 0\n", prefix);
     str += tmpStr;
     return str;
 }

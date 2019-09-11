@@ -26,14 +26,14 @@ enhancements and bug-fixes that were added to this release.</p>
 <ul>
   <li>Corrected a bug where VisIt would crash rendering transparent geometry when processor 0 didn't have any geometry.</li>
   <li>Corrected a bug where VisIt would not switch into scalable rendering mode when it should have when the total number of primitives to render was greater than 2 billion. This typically resulted in VisIt crashing because it ran out of memory.</li>
-  <li>Corrected color table named in Pseudocolor and Surface plots from hot to Default making those plots use whatever the default color map is set to.</li>
   <li>Corrected the batch launching on Sierra type systems at Lawrence Livermore National Laboratory.</li>
-  <li>Fixed glyphed points color being wrong when transparency turned on.</li>
-  <li>Fixed type widget in the Expressions window losing the type name when 'Apply' clicked.</li>
-  <li>Fixed inability to change opacity attenuation when ray casting.</li>
+  <li>Corrected a bug where glyphed points color were rendered in the wrong color when transparency was turned on.</li>
+  <li>Corrected a bug with the Expressions window where the 'Type' indicator in the variable definition would become blank when 'Apply' was clicked.</li>
+  <li>Corrected the inability to change the opacity attenuation when using ray casting in the Volume plot.</li>
   <li>Updated the language translations in the graphical user interface.</li>
-  <li>Increased the maximum number of characters allowed in file and dataset names from 1023 to 2047 in the XDMF reader.</li>
-  <li>Pseudocololor plot's line geometry options (tube, ribbon, endpoints) have been fixed to support cell-centered data.</li>
+  <li>Added support for cell-centered data with the Pseudocololor plot's line geometry options (tube, ribbon, endpoints).</li>
+  <li>Corrected a bug where the tool bar would be rendered with nonsense imagery when an image was zoomed for the first time in <i>Zoom</i> mode.</li>
+  <li>Corrected a bug with build_visit, where specifying a relative --prefix would result in some of the Python packages not getting installed in lib/site-packages."
 </ul>
 
 <a name="Enhancements"></a>
@@ -49,10 +49,10 @@ enhancements and bug-fixes that were added to this release.</p>
 <a name="Dev_changes"></a>
 <p><b><font size="4">Changes for VisIt developers in version 3.0.1</font></b></p>
 <ul>
-  <li>CLI documentation generation has been reversed so that developers now modify the rst file and automatically generate MethodDoc.C and MethodDoc.h.</li>
+  <li>The Python command line interface documentation generation has been reversed so that developers now modify the rst files in the Sphinx documentaion first and then automatically generate the MethodDoc.C and MethodDoc.h files.</li>
 </ul>
 
 <p>Click the following link to view the release notes for the previous version
-of VisIt: <a href=relnotes3.0.1.html>3.0.1</a>.</p>
+of VisIt: <a href=relnotes3.0.0.html>3.0</a>.</p>
 </body>
 </html>

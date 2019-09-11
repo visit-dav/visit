@@ -1,45 +1,10 @@
-/*****************************************************************************
-*
-* Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC
-* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
-* All rights reserved.
-*
-* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
-*    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
-* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
-* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
 #include <PyavtSubsetsMetaData.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
-#include <snprintf.h>
 #include <PyNameschemeAttributes.h>
 
 // ****************************************************************************
@@ -79,9 +44,9 @@ PyavtSubsetsMetaData_ToString(const avtSubsetsMetaData *atts, const char *prefix
 
     str = PyavtVarMetaData_ToString(atts, prefix);
 
-    SNPRINTF(tmpStr, 1000, "%scatName = \"%s\"\n", prefix, atts->GetCatName().c_str());
+    snprintf(tmpStr, 1000, "%scatName = \"%s\"\n", prefix, atts->GetCatName().c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%scatCount = %d\n", prefix, atts->GetCatCount());
+    snprintf(tmpStr, 1000, "%scatCount = %d\n", prefix, atts->GetCatCount());
     str += tmpStr;
     { // new scope
         std::string objPrefix(prefix);
@@ -89,93 +54,93 @@ PyavtSubsetsMetaData_ToString(const avtSubsetsMetaData *atts, const char *prefix
         str += PyNameschemeAttributes_ToString(&atts->GetNameScheme(), objPrefix.c_str());
     }
     {   const stringVector &colorScheme = atts->colorScheme;
-        SNPRINTF(tmpStr, 1000, "%scolorScheme = (", prefix);
+        snprintf(tmpStr, 1000, "%scolorScheme = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < colorScheme.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "\"%s\"", colorScheme[i].c_str());
+            snprintf(tmpStr, 1000, "\"%s\"", colorScheme[i].c_str());
             str += tmpStr;
             if(i < colorScheme.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const intVector &setsToChunksMaps = atts->GetSetsToChunksMaps();
-        SNPRINTF(tmpStr, 1000, "%ssetsToChunksMaps = (", prefix);
+        snprintf(tmpStr, 1000, "%ssetsToChunksMaps = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < setsToChunksMaps.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%d", setsToChunksMaps[i]);
+            snprintf(tmpStr, 1000, "%d", setsToChunksMaps[i]);
             str += tmpStr;
             if(i < setsToChunksMaps.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     {   const intVector &graphEdges = atts->GetGraphEdges();
-        SNPRINTF(tmpStr, 1000, "%sgraphEdges = (", prefix);
+        snprintf(tmpStr, 1000, "%sgraphEdges = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < graphEdges.size(); ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%d", graphEdges[i]);
+            snprintf(tmpStr, 1000, "%d", graphEdges[i]);
             str += tmpStr;
             if(i < graphEdges.size() - 1)
             {
-                SNPRINTF(tmpStr, 1000, ", ");
+                snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
             }
         }
-        SNPRINTF(tmpStr, 1000, ")\n");
+        snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
     if(atts->isChunkCat)
-        SNPRINTF(tmpStr, 1000, "%sisChunkCat = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sisChunkCat = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sisChunkCat = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sisChunkCat = 0\n", prefix);
     str += tmpStr;
     if(atts->isMaterialCat)
-        SNPRINTF(tmpStr, 1000, "%sisMaterialCat = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sisMaterialCat = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sisMaterialCat = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sisMaterialCat = 0\n", prefix);
     str += tmpStr;
     if(atts->isUnionOfChunks)
-        SNPRINTF(tmpStr, 1000, "%sisUnionOfChunks = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%sisUnionOfChunks = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sisUnionOfChunks = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sisUnionOfChunks = 0\n", prefix);
     str += tmpStr;
     if(atts->hasPartialCells)
-        SNPRINTF(tmpStr, 1000, "%shasPartialCells = 1\n", prefix);
+        snprintf(tmpStr, 1000, "%shasPartialCells = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%shasPartialCells = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%shasPartialCells = 0\n", prefix);
     str += tmpStr;
     const char *decompMode_names = "None, Cover, Partition";
     switch (atts->decompMode)
     {
       case avtSubsetsMetaData::None:
-          SNPRINTF(tmpStr, 1000, "%sdecompMode = %sNone  # %s\n", prefix, prefix, decompMode_names);
+          snprintf(tmpStr, 1000, "%sdecompMode = %sNone  # %s\n", prefix, prefix, decompMode_names);
           str += tmpStr;
           break;
       case avtSubsetsMetaData::Cover:
-          SNPRINTF(tmpStr, 1000, "%sdecompMode = %sCover  # %s\n", prefix, prefix, decompMode_names);
+          snprintf(tmpStr, 1000, "%sdecompMode = %sCover  # %s\n", prefix, prefix, decompMode_names);
           str += tmpStr;
           break;
       case avtSubsetsMetaData::Partition:
-          SNPRINTF(tmpStr, 1000, "%sdecompMode = %sPartition  # %s\n", prefix, prefix, decompMode_names);
+          snprintf(tmpStr, 1000, "%sdecompMode = %sPartition  # %s\n", prefix, prefix, decompMode_names);
           str += tmpStr;
           break;
       default:
           break;
     }
 
-    SNPRINTF(tmpStr, 1000, "%smaxTopoDim = %d\n", prefix, atts->maxTopoDim);
+    snprintf(tmpStr, 1000, "%smaxTopoDim = %d\n", prefix, atts->maxTopoDim);
     str += tmpStr;
     return str;
 }

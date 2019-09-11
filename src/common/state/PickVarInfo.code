@@ -213,15 +213,15 @@ PickVarInfo::CreateOutputString(std::string &os, const std::string &type)
             {
                 if (names.size() > 0)
                 {
-                    SNPRINTF(buff, 256, "%s ", names[0].c_str());
+                    snprintf(buff, 256, "%s ", names[0].c_str());
                     os += buff; 
                 }
-                SNPRINTF(buff, 256, "%s ", mixNames[mixOffset].c_str());
+                snprintf(buff, 256, "%s ", mixNames[mixOffset].c_str());
                 os += buff;
                 if (mixValues[mixOffset] < 1.)
                 {
                     format = "= " + floatFormat;
-                    SNPRINTF(buff, 256, format.c_str(), mixValues[mixOffset]);
+                    snprintf(buff, 256, format.c_str(), mixValues[mixOffset]);
                     os += buff;
                 }
                 os += "\n";
@@ -233,7 +233,7 @@ PickVarInfo::CreateOutputString(std::string &os, const std::string &type)
                     nMats = numMatsPerZone[i];
                     if (names.size() > 0)
                     {
-                        SNPRINTF(buff, 256, "    %s", names[i].c_str());
+                        snprintf(buff, 256, "    %s", names[i].c_str());
                         os += buff; 
                         if (nMats == 1)
                             spacing = "  ";
@@ -247,13 +247,13 @@ PickVarInfo::CreateOutputString(std::string &os, const std::string &type)
                         spacing = "    ";
                     for (j = 0; j < nMats; j++)
                     {
-                        SNPRINTF(buff, 256, "%s%s ", spacing.c_str(), 
+                        snprintf(buff, 256, "%s%s ", spacing.c_str(), 
                                  mixNames[j+mixOffset].c_str());
                         os += buff;
                         if (mixValues[j+mixOffset] < 1.)
                         {
                             format = "= " + floatFormat;
-                            SNPRINTF(buff, 256, format.c_str(), mixValues[j+mixOffset]);
+                            snprintf(buff, 256, format.c_str(), mixValues[j+mixOffset]);
                             os += buff;
                         }
                         os += "\n";
@@ -276,12 +276,12 @@ PickVarInfo::CreateOutputString(std::string &os, const std::string &type)
                     if (values.size() > 0)
                     {
                         format = "    %s = " + floatFormat + "\n";
-                        SNPRINTF(buff, 256, format.c_str(), names[i].c_str(),
+                        snprintf(buff, 256, format.c_str(), names[i].c_str(),
                                  values[i]);
                     }
                     else
                     {
-                        SNPRINTF(buff, 256, "    %s\n", names[i].c_str());
+                        snprintf(buff, 256, "    %s\n", names[i].c_str());
                     }
                     os += buff; 
                     spacing1 = "        ";
@@ -295,17 +295,17 @@ PickVarInfo::CreateOutputString(std::string &os, const std::string &type)
                 nMats = numMatsPerZone[i];
                 for (j = 0; j < nMats; j++)
                 {
-                    SNPRINTF(buff, 256, "%s%s\n", spacing1.c_str(), 
+                    snprintf(buff, 256, "%s%s\n", spacing1.c_str(), 
                              matNames[j+matOffset].c_str());
                     os += buff;
                     int nSpecs = numSpecsPerMat[j+matOffset];
                     for (k = 0; k < nSpecs; k++)
                     {
-                        SNPRINTF(buff, 256, "%s%s  ", spacing2.c_str(), 
+                        snprintf(buff, 256, "%s%s  ", spacing2.c_str(), 
                                  mixNames[k+mixOffset].c_str());
                         os += buff;
                         format = "= " + floatFormat + "\n";
-                        SNPRINTF(buff, 256, format.c_str(), mixValues[k+mixOffset]);
+                        snprintf(buff, 256, format.c_str(), mixValues[k+mixOffset]);
                         os += buff;
                     }
                     os += "\n";
@@ -323,7 +323,7 @@ PickVarInfo::CreateOutputString(std::string &os, const std::string &type)
             {
                 if (!centeringsMatch)
                 {
-                    SNPRINTF(buff, 256, "    %s ", names[i].c_str());
+                    snprintf(buff, 256, "    %s ", names[i].c_str());
                     os += buff;
                 }
                 os += "= ";
@@ -331,16 +331,16 @@ PickVarInfo::CreateOutputString(std::string &os, const std::string &type)
                 {
                     int stride = values.size() / names.size();
                     format = "(" + floatFormat;
-                    SNPRINTF(buff, 256, format.c_str(), values[i*stride]);
+                    snprintf(buff, 256, format.c_str(), values[i*stride]);
                     os += buff;
                     for (j = 1; j < stride-1; j++) 
                     {
                         format = "," + floatFormat;
-                        SNPRINTF(buff, 256, format.c_str(), values[i*stride+j]);
+                        snprintf(buff, 256, format.c_str(), values[i*stride+j]);
                         os += buff;
                     }
                     format = ") mag = " + floatFormat + "\n";
-                    SNPRINTF(buff, 256, format.c_str(), values[i*stride+stride-1]);
+                    snprintf(buff, 256, format.c_str(), values[i*stride+stride-1]);
                     os += buff; 
                 }
                 else if (variableType == "scalar")
@@ -348,11 +348,11 @@ PickVarInfo::CreateOutputString(std::string &os, const std::string &type)
                     if (!treatAsASCII)
                     {
                         format = floatFormat + "\n";
-                        SNPRINTF(buff, 256, format.c_str(), values[i]);
+                        snprintf(buff, 256, format.c_str(), values[i]);
                     }
                     else 
                     {
-                        SNPRINTF(buff, 256, "%c\n", (char) values[i]);
+                        snprintf(buff, 256, "%c\n", (char) values[i]);
                     }
                     os += buff;
                 }
@@ -403,11 +403,11 @@ PickVarInfo::CreateOutputString(std::string &os, const std::string &type)
                     nMats = numMatsPerZone[i];
                     for (j = 0; j < nMats; j++)
                     {
-                        SNPRINTF(buff, 256, "        material %s = ", 
+                        snprintf(buff, 256, "        material %s = ", 
                                  mixNames[j+mixOffset].c_str());
                         os += buff;
                         format = floatFormat + "\n";
-                        SNPRINTF(buff, 256, format.c_str(), mixValues[j+mixOffset]);
+                        snprintf(buff, 256, format.c_str(), mixValues[j+mixOffset]);
                         os += buff;
                     }
                     mixOffset += nMats;
@@ -417,12 +417,12 @@ PickVarInfo::CreateOutputString(std::string &os, const std::string &type)
     }
     else if (!miscMessage.empty())
     {
-        SNPRINTF(buff, 256, "    %s\n", miscMessage.c_str());
+        snprintf(buff, 256, "    %s\n", miscMessage.c_str());
         os += buff;
     }
     else
     {
-        SNPRINTF(buff, 256, "    No Information Found\n"); 
+        snprintf(buff, 256, "    No Information Found\n"); 
         os += buff;
     }
 }
@@ -669,7 +669,7 @@ PickVarInfo::PrintArray(std::string &os,
     {
         if (j == ncomps-1)
             format = floatFormat + ")\n";
-        SNPRINTF(line, 256, format.c_str(), values[offset+j]);
+        snprintf(line, 256, format.c_str(), values[offset+j]);
         os += line;
     }
 }
@@ -689,6 +689,8 @@ Definition:
 // Creation:   October 24, 2011
 //
 // Modifications:
+//    Alister Maguire, Fri Aug 23 13:53:07 PDT 2019
+//    Avoid adding null terminating characters to label strings.
 //
 // ****************************************************************************
 
@@ -874,7 +876,15 @@ PickVarInfo::CreateOutputMapNode(const std::string &type, MapNode &m)
                     size_t labelSize = values.size() / names.size();
                     std::string l;
                     for (size_t j = labelSize*i; j < labelSize *(i+1); ++j)
-                        l += (char)values[j]; 
+                    {
+                        //
+                        // We don't want to add the null terminators; doing
+                        // so causes strange behaviors. 
+                        //
+                        if ((char)values[j] == '\0')
+                            break;
+                        l += (char)values[j];
+                    }
                     if (centeringsMatch)
                         m[variableName] = l;
                     else
