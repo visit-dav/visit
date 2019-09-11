@@ -268,6 +268,11 @@ avtXolotlFileFormat::PopulateConcentrationGroupMetaData()
 //  Programmer: James Kress
 //  Creation:   July 15, 2019
 //
+//  Modifications:
+//   Kathleen Biagas, Tue Sep 10 17:30:33 PDT 2019
+//   Create 'data' array on the heap. Visual Studio won't compile stack created
+//   arrays unless their size can be determined at compile time.
+//
 // ****************************************************************************
 void
 avtXolotlFileFormat::PopulateHeaderGroupMetaData()
@@ -419,28 +424,29 @@ avtXolotlFileFormat::PopulateHeaderGroupMetaData()
       (unsigned long)(composition_dims[1]) <<
       " ndims " << ndims << endl;
 
-    int data[composition_dims[0]][composition_dims[1]];
+    int *data = new int[composition_dims[0]*composition_dims[1]];
     H5Dread(compositionDataSet, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, (void*)data);
 
-    int maximumHeliumDimension =       data[0][0];
-    int maximumDeuteriumDimension =    data[0][1];
-    int maximumTritiumDimension =      data[0][2];
-    int maximumVacancyDimension =      data[0][3];
-    int maximumInterstitialDimension = data[0][4];
+    int maximumHeliumDimension =       data[0];
+    int maximumDeuteriumDimension =    data[1];
+    int maximumTritiumDimension =      data[2];
+    int maximumVacancyDimension =      data[3];
+    int maximumInterstitialDimension = data[4];
     for (int i = 1; i < composition_dims[0]; i++)
     {
-        if (data[i][0] > maximumHeliumDimension)
-            maximumHeliumDimension = data[i][0];
-        if (data[i][1] > maximumDeuteriumDimension)
-            maximumDeuteriumDimension = data[i][1];
-        if (data[i][2] > maximumTritiumDimension)
-            maximumTritiumDimension = data[i][2];
-        if (data[i][3] > maximumVacancyDimension)
-            maximumVacancyDimension = data[i][3];
-        if (data[i][4] > maximumInterstitialDimension)
-            maximumInterstitialDimension = data[i][4];
+        int baseIndex = i * composition_dims[1];
+        if (data[baseIndex] > maximumHeliumDimension)
+            maximumHeliumDimension = data[baseIndex];
+        if (data[baseIndex + 1] > maximumDeuteriumDimension)
+            maximumDeuteriumDimension = data[baseIndex + 1];
+        if (data[baseIndex + 2] > maximumTritiumDimension)
+            maximumTritiumDimension = data[baseIndex + 2];
+        if (data[baseIndex + 3] > maximumVacancyDimension)
+            maximumVacancyDimension = data[baseIndex + 3];
+        if (data[baseIndex + 4] > maximumInterstitialDimension)
+            maximumInterstitialDimension = data[baseIndex + 4];
     }
-
+    delete [] data;
     varMaxes[0] = maximumHeliumDimension;
     varMaxes[1] = maximumDeuteriumDimension;
     varMaxes[2] = maximumTritiumDimension;
@@ -470,7 +476,7 @@ avtXolotlFileFormat::PopulateHeaderGroupMetaData()
           (unsigned long)(headerGrid_dims[0]) <<
           " ndims " << ndims << endl;
 
-        double data[headerGrid_dims[0]];
+        double *data  = new double[headerGrid_dims[0]];
         int err2 = -1;
         err2 = H5Dread(gridDataSet, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, (void*)data);
         if (err2 < 0)
@@ -485,7 +491,7 @@ avtXolotlFileFormat::PopulateHeaderGroupMetaData()
         {
             oneDGrid.push_back(data[i]);
         }
-
+        delete [] data;
         H5Sclose(sid);
         H5Dclose(gridDataSet);
     }
