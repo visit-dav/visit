@@ -303,8 +303,13 @@ Product Operator (``*``) : ``exprL * exprR``
 .. _Division_Expression_Operator:
 
 Division Operator (``/``) : ``exprL / exprR``
-    Creates a new expression which is quotient after dividing the ``exprL``
+    Creates a new expression which is the quotient after dividing the ``exprL``
     expression by the ``exprR`` expression.
+
+Division Operator : ``divide(top, bottom, [value_if_zero, tolerance])``
+    Creates a new expression which is the quotient after dividing the ``top``
+    expression by the ``bottom`` expression. The ``value_if_zero`` is used
+    wherever the bottom is within ``tolerance`` of zero.
 
 .. _Exponent_Expression_Operator:
 
