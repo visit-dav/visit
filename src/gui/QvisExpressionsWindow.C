@@ -1833,7 +1833,7 @@ QvisExpressionsWindow::ExpandFunction(const QString &func_name)
     }
     else if (func_name == "divide")
     {
-        res += QString("(<top>, <bottom>, [<value_if_zero>, <tolerance>])");
+        res += QString("(<val_numerator>, <val_denominator>, [<div_by_zero_value>, <tolerance>])");
         doParens = false;
     }
 
