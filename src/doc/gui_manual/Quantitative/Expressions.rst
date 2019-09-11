@@ -306,7 +306,7 @@ Division Operator (``/``) : ``exprL / exprR``
     Creates a new expression which is the quotient after dividing the ``exprL``
     expression by the ``exprR`` expression.
 
-Division Operator : ``divide(top, bottom, [value_if_zero, tolerance])``
+Division Operator : ``divide(val_numerator, val_denominator, [div_by_zero_value, tolerance])``
     Creates a new expression which is the quotient after dividing the ``top``
     expression by the ``bottom`` expression. The ``value_if_zero`` is used
     wherever the bottom is within ``tolerance`` of zero.
