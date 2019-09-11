@@ -28,6 +28,12 @@
 //  Programmer: Hank Childs
 //  Creation:   February 5, 2004
 //
+//  Modifications:
+//
+//    Eddie Rusu, Wed Sep 11 08:59:52 PDT 2019
+//    Populate class fields with default values. Added alternate constructor to
+//    be used when smart division is requested.
+//
 // ****************************************************************************
 
 avtBinaryDivideExpression::avtBinaryDivideExpression()
@@ -63,6 +69,27 @@ avtBinaryDivideExpression::~avtBinaryDivideExpression()
 {
     ;
 }
+
+
+// ****************************************************************************
+//  Method: avtBinaryDivideExpression::DeriveVariable
+//
+//  Purpose:
+//      Derives the variable that results from the expression. At least two
+//      inputs are required, and there may be two option inputs if smart
+//      division is enabled.
+//
+//  Arguments:
+//      in_ds   The dataset from which to extract the desired variables
+//              involved in the expression.
+//
+//  Returns:    The derived variable that results from the expression. The
+//              calling class must free this memory.
+//
+//  Programmer: Eddie Rusu
+//  Creation:   Wed Sep 11 08:59:52 PDT 2019
+//
+// ****************************************************************************
 
 vtkDataArray *
 avtBinaryDivideExpression::DeriveVariable(vtkDataSet* in_ds, int currentDomainsIndex)
@@ -151,36 +178,6 @@ avtBinaryDivideExpression::DeriveVariable(vtkDataSet* in_ds, int currentDomainsI
     return output;
 }
 
-vtkDataArray*
-avtBinaryDivideExpression::DetermineCentering(avtCentering *centering_out, vtkDataSet *in_ds, const char *varname)
-{
-    debug5 << "Entering avtBinaryDivideExpression::DetermineCentering(avtCentering*, vtkDataSet*, const char*)" << std::endl;
-    debug5 << "\t For " << varname << std::endl;
-    vtkDataArray* out = in_ds->GetCellData()->GetArray(varname);
-    if (out == NULL)
-    {
-        out = in_ds->GetPointData()->GetArray(varname);
-        if (out == NULL)
-        {
-            EXCEPTION2(ExpressionException, outputVariableName, 
-                    "An internal error occurred when calculating an expression."
-                    "  Please contact a VisIt developer.");
-        }
-        else
-        {
-            *(centering_out) = AVT_NODECENT;
-            debug5 << "Exiting  avtBinaryDivideExpression::DetermineCentering(avtCentering*, vtkDataSet*, const char*)" << std::endl;
-            return out;
-        }
-    }
-    else
-    {
-        *(centering_out) = AVT_ZONECENT;
-        debug5 << "Exiting  avtBinaryDivideExpression::DetermineCentering(avtCentering*, vtkDataSet*, const char*)" << std::endl;
-        return out;
-    }
-}
-
 
 // ****************************************************************************
 //  Method: avtBinaryDivideExpression::DoOperation
@@ -194,7 +191,7 @@ avtBinaryDivideExpression::DetermineCentering(avtCentering *centering_out, vtkDa
 //      in2           The second input data array.
 //      out           The output data array.
 //      ncomponents   The number of components ('1' for scalar, '2' or '3' for
-//                    vectors, etc.)
+//                    vectors, etc.). Not used for this filter.
 //      ntuples       The number of tuples (ie 'npoints' or 'ncells')
 //
 //  Programmer: Sean Ahern          <Header added by Hank Childs>
@@ -213,6 +210,10 @@ avtBinaryDivideExpression::DetermineCentering(avtCentering *centering_out, vtkDa
 //
 //    Hank Childs, Mon Jan 14 17:58:58 PST 2008
 //    Add support for singleton constants.
+//
+//    Eddie Rusu, Wed Sep 11 08:59:52 PDT 2019
+//    Defined 0 as a tolerance instead of absolutely 0.0. Added smart division
+//    in the form of CheckZero at each division.
 //
 // ****************************************************************************
 
@@ -278,12 +279,62 @@ avtBinaryDivideExpression::DoOperation(vtkDataArray *in1, vtkDataArray *in2,
 
 
 // ****************************************************************************
+//  Method: avtBinaryDivideExpression::DetermineCentering
+//
+//  Purpose:
+//      Determines the centering of an input variable and outputs the
+//      data array.
+//
+//  Arguments:
+//      centering_out   A pointer to the centering variable.
+//      in_ds           Dataset from which to extract the array.
+//      varname         The name of the variable we want to extract.
+//
+//  Returns:    The cell- or node-centered data array.
+//
+//  Programmer: Eddie Rusu
+//  Creation:   Wed Sep 11 08:59:52 PDT 2019
+//
+// ****************************************************************************
+
+vtkDataArray*
+avtBinaryDivideExpression::DetermineCentering(avtCentering *centering_out, vtkDataSet *in_ds, const char *varname)
+{
+    debug5 << "Entering avtBinaryDivideExpression::DetermineCentering(avtCentering*, vtkDataSet*, const char*)" << std::endl;
+    debug5 << "\t For " << varname << std::endl;
+    vtkDataArray* out = in_ds->GetCellData()->GetArray(varname);
+    if (out == NULL)
+    {
+        out = in_ds->GetPointData()->GetArray(varname);
+        if (out == NULL)
+        {
+            EXCEPTION2(ExpressionException, outputVariableName, 
+                    "An internal error occurred when calculating an expression."
+                    "  Please contact a VisIt developer.");
+        }
+        else
+        {
+            *(centering_out) = AVT_NODECENT;
+            debug5 << "Exiting  avtBinaryDivideExpression::DetermineCentering(avtCentering*, vtkDataSet*, const char*)" << std::endl;
+            return out;
+        }
+    }
+    else
+    {
+        *(centering_out) = AVT_ZONECENT;
+        debug5 << "Exiting  avtBinaryDivideExpression::DetermineCentering(avtCentering*, vtkDataSet*, const char*)" << std::endl;
+        return out;
+    }
+}
+
+
+// ****************************************************************************
 //  Method: avtBinaryDivideExpression::CheckZero
 //
 //  Purpose:
-//      Checks the values involved in the division. If the top and bottom
-//      are both within tolerance of zero, then the answer is 1. If the bottom
-//      is within tolerance but the top is not, then we throw an exception.
+//      Checks the values involved in the division. If the bottom is within
+//      tolerance of zero, then we throw an exception. However, if smart
+//      division is activated, then we return the specified default value.
 //
 //  Arguments:
 //      top           The "top" number in the division.

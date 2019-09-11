@@ -32,6 +32,9 @@ class     vtkDataArray;
 //    Hank Childs, Mon Jan 14 17:58:58 PST 2008
 //    Allow constants to be created as singletons.
 //
+//    Eddie Rusu, Wed Sep 11 08:59:52 PDT 2019
+//    Added the notion and logic of "smart division" or "guarded division".
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtBinaryDivideExpression : public avtBinaryMathExpression
@@ -45,7 +48,9 @@ class EXPRESSION_API avtBinaryDivideExpression : public avtBinaryMathExpression
                                      { return "avtBinaryDivideExpression"; };
     virtual const char       *GetDescription(void) 
                                      { return "Calculating binary division"; };
-        virtual int           NumVariableArguments() { return nProcessedArgs > 4 ? 4 : nProcessedArgs; };
+    virtual int           NumVariableArguments() {
+                              return nProcessedArgs > 4 ? 4 : nProcessedArgs;
+                          };
 
   protected:
     virtual vtkDataArray     *DeriveVariable(vtkDataSet*, int);

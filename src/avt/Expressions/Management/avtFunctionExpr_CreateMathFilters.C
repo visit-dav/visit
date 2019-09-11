@@ -56,6 +56,10 @@
 //   Add log10withmin.  This is possible with if, gt, and log, but more
 //   efficiently implemented in a single filter.
 //
+//   Eddie Rusu, Wed Sep 11 08:59:52 PDT 2019
+//   Alphabetically ordered by functionName for easier reading.
+//   Added "divide" filter.
+//
 // ****************************************************************************
 
 avtExpressionFilter *
