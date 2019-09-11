@@ -48,6 +48,7 @@
 #include <avtCosExpression.h>
 #include <avtCoshExpression.h>
 #include <avtDegreeToRadianExpression.h>
+#include <avtBinaryDivideExpression.h>
 #include <avtExpExpression.h>
 #include <avtFloorExpression.h>
 #include <avtModuloExpression.h>
@@ -57,7 +58,6 @@
 #include <avtRoundExpression.h>
 #include <avtSinExpression.h>
 #include <avtSinhExpression.h>
-#include <avtSmartDivideExpression.h>
 #include <avtSquareExpression.h>
 #include <avtSquareRootExpression.h>
 #include <avtTanExpression.h>
@@ -116,7 +116,7 @@ avtFunctionExpr::CreateMathFilters(const std::string &functionName) const
     else if (functionName == "deg2rad")
         f = new avtDegreeToRadianExpression();
     else if (functionName == "divide")
-        f = new avtSmartDivideExpression();
+        f = new avtBinaryDivideExpression(true);
     else if (functionName == "exp")
         f = new avtExpExpression();
     else if (functionName == "floor")
