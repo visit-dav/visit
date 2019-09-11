@@ -124,7 +124,7 @@ QvisElevateWindow::CreateWindowContents()
     useXYLimitsLabel = new QLabel(tr("Scale Elevation Height"), central);
     mainLayout->addWidget(useXYLimitsLabel,0,0);
     useXYLimitsWidget = new QWidget(central);
-    useXYLimits= new QButtonGroup(useXYLimits);
+    useXYLimits= new QButtonGroup(useXYLimitsWidget);
     QHBoxLayout *useXYLimitsLayout = new QHBoxLayout(useXYLimitsWidget);
     useXYLimitsLayout->setMargin(0);
     useXYLimitsLayout->setSpacing(10);
