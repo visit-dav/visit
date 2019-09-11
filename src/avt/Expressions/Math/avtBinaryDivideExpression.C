@@ -42,10 +42,14 @@
 
 #include <avtBinaryDivideExpression.h>
 
+#include <vtkCellData.h>
 #include <vtkDataArray.h>
 #include <vtkDataSet.h>
+#include <vtkDoubleArray.h>
+#include <vtkPointData.h>
 
 #include <ExpressionException.h>
+#include <DebugStream.h>
 
 
 // ****************************************************************************
@@ -62,6 +66,17 @@
 
 avtBinaryDivideExpression::avtBinaryDivideExpression()
 {
+    tolerance = 1e-16;
+    value_if_zero = 0.0;
+    smart_division = false;
+    ;
+}
+
+avtBinaryDivideExpression::avtBinaryDivideExpression(bool _process_anyways)
+{
+    tolerance = 1e-16;
+    value_if_zero = 0.0;
+    smart_division = _process_anyways;
     ;
 }
 
@@ -81,6 +96,123 @@ avtBinaryDivideExpression::avtBinaryDivideExpression()
 avtBinaryDivideExpression::~avtBinaryDivideExpression()
 {
     ;
+}
+
+vtkDataArray *
+avtBinaryDivideExpression::DeriveVariable(vtkDataSet* in_ds, int currentDomainsIndex)
+{
+    debug3 << "Entering avtBinaryDivideExpression::DeriveVariable(vtkDataSet*, int)" << std::endl;
+    // Get the variables and their centerings
+    avtCentering var1_centering;
+    avtCentering var2_centering;
+    vtkDataArray *data1 = DetermineCentering(&var1_centering, in_ds, varnames[0]);
+    vtkDataArray *data2 = DetermineCentering(&var2_centering, in_ds, varnames[1]);
+
+    // If smart_division is activated, then we check for 3rd and 4th inputs.
+    if (smart_division)
+    {
+        // Check if there is a third variable. If so, that variable is the tolerance.
+        avtCentering dummy;
+        if (varnames.size() >= 3 && nProcessedArgs >= 3)
+        {
+            vtkDataArray *data3 = DetermineCentering(&dummy, in_ds, varnames[2]);
+            value_if_zero = data3->GetTuple1(0);
+            debug5 << "avtBinaryDivideExpression::DeriveVariable: User specified a divide_by_zero_value of " << value_if_zero << "." << std::endl;
+
+        }
+        // TODO: this feature can be easily enhanced to to handle a multi-variable
+        // divide by zero case. For example, suppose the user wants the value_if_zero
+        // to vary over the tuples/components as represented by some variable.
+        // This can be easily done here.
+
+        // Check if there is a 4th variable. If so, that variable is the tolerance.
+        if (varnames.size() >= 4 && nProcessedArgs >= 4)
+        {
+            vtkDataArray *data4 = DetermineCentering(&dummy, in_ds, varnames[3]);
+            tolerance = data4->GetTuple1(0);
+            if (tolerance < 0.0)
+            {
+                EXCEPTION2(ExpressionException, outputVariableName, 
+                        "tolerance must be nonnegative.");
+            }
+            debug5 << "avtBinaryDivideExpression::DeriveVariable: User specified a tolerance of " << tolerance << "." << std::endl;
+        }
+        // TODO: this feature can be easily enhanced to to handle a multi-variable
+        // divide by zero case. For example, suppose the user wants to specify varying
+        // tolernaces over the mesh as represented by some variable.
+        // This can be easily done here.
+    }
+    
+
+    debug5 << "avtBinaryDivideExpression::DeriveVariable: Centering determined. Now we recenter if needed" << std::endl;
+    // Determine the centering that should be used.
+    // If they have different centering (i.e. one has zone centering), then
+    // zone centering will be used. If they have the same centering, then
+    // whatever that centering is will be used.
+    if (var1_centering != var2_centering)
+    {
+        centering = AVT_ZONECENT;
+        if (var1_centering == AVT_NODECENT)
+        {
+            data1 = Recenter(in_ds, data1, var1_centering, outputVariableName);
+        }
+        else
+        {
+            data2 = Recenter(in_ds, data2, var2_centering, outputVariableName);
+        }
+    }
+    else
+    {
+        centering = var1_centering;
+    }
+
+    debug5 << "avtBinaryDivideExpression::DeriveVariable: Values have been recentered as needed. Now we perform the operation" << std::endl;
+    // Setup the output variable
+    int nComps1 = data1->GetNumberOfComponents();
+    int nComps2 = data2->GetNumberOfComponents();
+    int nComps = nComps1 >= nComps2 ? nComps1 : nComps2;
+    int nVals = data1->GetNumberOfTuples();
+    if (nVals == 1) // data1 is a singleton
+        nVals = data2->GetNumberOfTuples();
+    
+    vtkDataArray *output = vtkDoubleArray::New();
+    output->SetNumberOfComponents(nComps);
+    output->SetNumberOfTuples(nVals);
+
+    DoOperation(data1, data2, output, nComps, nVals);
+
+    debug3 << "Exiting  avtBinaryDivideExpression::DeriveVariable(vtkDataSet*, int)" << std::endl;
+    return output;
+}
+
+vtkDataArray*
+avtBinaryDivideExpression::DetermineCentering(avtCentering *centering_out, vtkDataSet *in_ds, const char *varname)
+{
+    debug5 << "Entering avtBinaryDivideExpression::DetermineCentering(avtCentering*, vtkDataSet*, const char*)" << std::endl;
+    debug5 << "\t For " << varname << std::endl;
+    vtkDataArray* out = in_ds->GetCellData()->GetArray(varname);
+    if (out == NULL)
+    {
+        out = in_ds->GetPointData()->GetArray(varname);
+        if (out == NULL)
+        {
+            EXCEPTION2(ExpressionException, outputVariableName, 
+                    "An internal error occurred when calculating an expression."
+                    "  Please contact a VisIt developer.");
+        }
+        else
+        {
+            *(centering_out) = AVT_NODECENT;
+            debug5 << "Exiting  avtBinaryDivideExpression::DetermineCentering(avtCentering*, vtkDataSet*, const char*)" << std::endl;
+            return out;
+        }
+    }
+    else
+    {
+        *(centering_out) = AVT_ZONECENT;
+        debug5 << "Exiting  avtBinaryDivideExpression::DetermineCentering(avtCentering*, vtkDataSet*, const char*)" << std::endl;
+        return out;
+    }
 }
 
 
@@ -123,12 +255,14 @@ avtBinaryDivideExpression::DoOperation(vtkDataArray *in1, vtkDataArray *in2,
                                    vtkDataArray *out, int ncomponents,
                                    int ntuples)
 {
+    debug4 << "Entering avtBinaryDivideExpression::DoOperation(vtkDataArray*, vtkDataArray*, vtkDataArray*, int, int)" << std::endl;
     bool var1IsSingleton = (in1->GetNumberOfTuples() == 1);
     bool var2IsSingleton = (in2->GetNumberOfTuples() == 1);
     int in1ncomps = in1->GetNumberOfComponents();
     int in2ncomps = in2->GetNumberOfComponents();
     if ((in1ncomps == 1) && (in2ncomps == 1))
     {
+        debug5 << "avtBinaryDivideExpression::DoOperation: Scalar top and bottom." << std::endl;
         for (int i = 0 ; i < ntuples ; i++)
         {
             vtkIdType tup1 = (var1IsSingleton ? 0 : i);
@@ -140,6 +274,7 @@ avtBinaryDivideExpression::DoOperation(vtkDataArray *in1, vtkDataArray *in2,
     }
     else if (in1ncomps > 1 && in2ncomps == 1)
     {
+        debug5 << "avtBinaryDivideExpression::DoOperation: Vector top, scalar bottom." << std::endl;
         for (int i = 0 ; i < ntuples ; i++)
         {
             vtkIdType tup1 = (var1IsSingleton ? 0 : i);
@@ -154,6 +289,7 @@ avtBinaryDivideExpression::DoOperation(vtkDataArray *in1, vtkDataArray *in2,
     }
     else if (in1ncomps == 1 && in2ncomps > 1)
     {
+        debug5 << "avtBinaryDivideExpression::DoOperation: Scalar top, vector bottom." << std::endl;
         for (int i = 0 ; i < ntuples ; i++)
         {
             vtkIdType tup1 = (var1IsSingleton ? 0 : i);
@@ -171,6 +307,7 @@ avtBinaryDivideExpression::DoOperation(vtkDataArray *in1, vtkDataArray *in2,
         EXCEPTION2(ExpressionException, outputVariableName, 
                    "Division of vectors in undefined.");
     }
+    debug4 << "Exiting  avtBinaryDivideExpression::DoOperation(vtkDataArray*, vtkDataArray*, vtkDataArray*, int, int)" << std::endl;
 }
 
 
@@ -196,7 +333,7 @@ avtBinaryDivideExpression::CheckZero(double top, double bottom)
 {
     if (fabs(bottom) < this->tolerance)
     {
-        if (this->process_anyways)
+        if (this->smart_division)
         {
             return this->value_if_zero;
         }
