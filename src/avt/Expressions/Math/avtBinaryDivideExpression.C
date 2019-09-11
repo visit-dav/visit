@@ -75,7 +75,6 @@ avtBinaryDivideExpression::avtBinaryDivideExpression()
     tolerance = 1e-16;
     value_if_zero = 0.0;
     smart_division = false;
-    ;
 }
 
 avtBinaryDivideExpression::avtBinaryDivideExpression(bool _process_anyways)
@@ -83,7 +82,6 @@ avtBinaryDivideExpression::avtBinaryDivideExpression(bool _process_anyways)
     tolerance = 1e-16;
     value_if_zero = 0.0;
     smart_division = _process_anyways;
-    ;
 }
 
 
@@ -419,7 +417,8 @@ avtBinaryDivideExpression::CheckZero(double top, double bottom)
                         "You can't divide by zero");
         }
     }
-    else {
+    else
+    {
         return top / bottom;
     }
 }
