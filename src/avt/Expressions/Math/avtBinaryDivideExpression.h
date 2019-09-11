@@ -38,22 +38,27 @@ class EXPRESSION_API avtBinaryDivideExpression : public avtBinaryMathExpression
 {
   public:
                               avtBinaryDivideExpression();
+                              avtBinaryDivideExpression(bool);
     virtual                  ~avtBinaryDivideExpression();
 
     virtual const char       *GetType(void) 
                                      { return "avtBinaryDivideExpression"; };
     virtual const char       *GetDescription(void) 
                                      { return "Calculating binary division"; };
+        virtual int           NumVariableArguments() { return nProcessedArgs > 4 ? 4 : nProcessedArgs; };
 
   protected:
-    virtual void     DoOperation(vtkDataArray *in1, vtkDataArray *in2,
-                                 vtkDataArray *out, int ncomps, int ntuples);
-    virtual bool     CanHandleSingletonConstants(void) {return true;};
+    virtual vtkDataArray     *DeriveVariable(vtkDataSet*, int);
+    virtual void              DoOperation(vtkDataArray *in1, vtkDataArray *in2,
+                                  vtkDataArray *out, int ncomps, int ntuples);
+    virtual bool              CanHandleSingletonConstants(void) {return true;};
   
   private:
-    double tolerance = 1e-16;
-    bool process_anyways = true;
-    double value_if_zero = 0.;
+    double tolerance;
+    double value_if_zero;
+    bool smart_division;
+
+    vtkDataArray* DetermineCentering(avtCentering*, vtkDataSet*, const char*);
     double CheckZero(double, double);
 };
 
