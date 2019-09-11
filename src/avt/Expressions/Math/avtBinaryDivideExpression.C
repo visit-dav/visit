@@ -390,13 +390,14 @@ avtBinaryDivideExpression::DetermineCentering(avtCentering *centering_out,
 //  Method: avtBinaryDivideExpression::CheckZero
 //
 //  Purpose:
-//      Checks the values involved in the division. If the bottom is within
-//      tolerance of zero, then we throw an exception. However, if smart
-//      division is activated, then we return the specified default value.
+//      Checks the values involved in the division. If the denominator is
+//      within tolerance of zero, then we throw an exception. However, if smart
+//      division is activated, then we return the specified divide by zero
+//      value.
 //
 //  Arguments:
-//      top           The "top" number in the division.
-//      bottom        The "bottom" number in the division.
+//      top           The numerator.
+//      bottom        The denominator.
 //
 //  Programmer: Eddie Rusu
 //  Creation:   Thu Aug 29 15:05:08 PDT 2019
