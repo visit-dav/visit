@@ -658,13 +658,12 @@ avtVTKFileReader::ReadInDataset(int domain)
         // returned.
         //
         if(pieceExtents[domain] == NULL  &&
-           dataset->GetDataObjectType() == VTK_IMAGE_DATA) 
+           dataset->GetDataObjectType() == VTK_IMAGE_DATA)
         {
-        
-          vtkImageData *img = vtkImageData::SafeDownCast(dataset); 
+          vtkImageData *img = vtkImageData::SafeDownCast(dataset);
           if(img)
           {
-            int *ext  = img->GetExtent(); 
+            int *ext  = img->GetExtent();
             dataset = ConvertStructuredPointsToRGrid((vtkStructuredPoints*)dataset,
                                                       ext);
           }
@@ -687,18 +686,20 @@ avtVTKFileReader::ReadInDataset(int domain)
             CreateCurves(rgrid);
         }
     }
-    
+
     // Convert vtkGhostType to avtGhostDataType
     // Rename the arrays stored in dataset->GetCellData() and dataset->GetPointData()
-    
+
     vtkDataArray *zoneArray = dataset->GetCellData()->GetArray("vtkGhostType");
-    if (zoneArray) {
+    if (zoneArray)
+    {
         zoneArray->SetName("avtGhostZones");
         dataset->GetCellData()->AddArray(zoneArray);
     }
-    
+
     vtkDataArray *nodeArray = dataset->GetPointData()->GetArray("vtkGhostType");
-    if (nodeArray) {
+    if (nodeArray)
+    {
         nodeArray->SetName("avtGhostNodes");
         dataset->GetPointData()->AddArray(nodeArray);
     }
@@ -1243,13 +1244,16 @@ avtVTKFileReader::GetVectorVar(int domain, const char *var)
 //    If unstructured grid has declared no cells (valid in xml verisons),
 //    assume it is a point mesh and set topodim to 0.
 //
+//    Kathleen Biagas, Tue Sep 10 12:11:23 PDT 2019
+//    Test UnstructedGrids and vtkPolyData for existence of Points before
+//    determining if the topological dimension should be lowered. Lack of
+//    points indicates an empty dataset.
+//
 // ****************************************************************************
 
 void
 avtVTKFileReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 {
-    int  i;
-
     if (!readInDataset)
     {
         ReadInFile();
@@ -1298,33 +1302,41 @@ avtVTKFileReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     if (vtkType == VTK_UNSTRUCTURED_GRID)
     {
         vtkUnstructuredGrid *ugrid = (vtkUnstructuredGrid *) dataset;
-        vtkUnsignedCharArray *types = vtkUnsignedCharArray::New();
-        GetListOfUniqueCellTypes(ugrid, types);
 
-        if (types->GetNumberOfTuples() == 1)
+        if(ugrid->GetNumberOfPoints() > 0)
         {
-            int myType = (int) types->GetValue(0);
-            if (myType == VTK_VERTEX)
+            if (ugrid->GetNumberOfCells() == 0)
             {
+                // no cells declared, assume  point mesh.
                 debug5 << "The VTK file format contains all points -- "
                        << "declaring this a point mesh." << endl;
+                type = AVT_POINT_MESH;
                 topo = 0;
             }
-            else if(myType == VTK_LINE)
+            else
             {
-                debug5 << "The mesh contains all lines, set topo=1" << endl;
-                topo = 1;
+                vtkUnsignedCharArray *types = vtkUnsignedCharArray::New();
+                GetListOfUniqueCellTypes(ugrid, types);
+
+                if (types->GetNumberOfTuples() == 1)
+                {
+                    int myType = (int) types->GetValue(0);
+                    if (myType == VTK_VERTEX)
+                    {
+                        debug5 << "The VTK file format contains all points -- "
+                               << "declaring this a point mesh." << endl;
+                        type = AVT_POINT_MESH;
+                        topo = 0;
+                    }
+                    else if(myType == VTK_LINE)
+                    {
+                        debug5 << "The mesh contains all lines, set topo=1" << endl;
+                        topo = 1;
+                    }
+                }
+                types->Delete();
             }
         }
-        else if (types->GetNumberOfTuples() == 0)
-        {
-            // no cells declared, assume  point mesh.
-            debug5 << "The VTK file format contains all points -- "
-                   << "declaring this a point mesh." << endl;
-            topo = 0;
-        }
-
-        types->Delete();
     }
     else if (vtkType == VTK_STRUCTURED_GRID)
     {
@@ -1345,15 +1357,14 @@ avtVTKFileReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     else if (vtkType == VTK_POLY_DATA)
     {
         vtkPolyData *pd = (vtkPolyData *) dataset;
-        if (pd->GetNumberOfPolys() == 0 && pd->GetNumberOfStrips() == 0)
+        if (pd->GetNumberOfPoints() > 0)
         {
-            if (pd->GetNumberOfLines() > 0)
+            if (pd->GetNumberOfPolys() == 0 && pd->GetNumberOfStrips() == 0)
             {
-                topo = 1;
-            }
-            else
-            {
-                topo = 0;
+                if (pd->GetNumberOfLines() > 0)
+                    topo = 1;
+                else
+                    topo = 0;
             }
         }
     }
@@ -1457,7 +1468,7 @@ avtVTKFileReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 
     int nvars = 0;
 
-    for (i = 0 ; i < dataset->GetPointData()->GetNumberOfArrays() ; i++)
+    for (int i = 0 ; i < dataset->GetPointData()->GetNumberOfArrays() ; i++)
     {
         vtkDataArray *arr = dataset->GetPointData()->GetArray(i);
         int ncomp = arr->GetNumberOfComponents();
@@ -1516,7 +1527,7 @@ avtVTKFileReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         }
         nvars++;
     }
-    for (i = 0 ; i < dataset->GetCellData()->GetNumberOfArrays() ; i++)
+    for (int i = 0 ; i < dataset->GetCellData()->GetNumberOfArrays() ; i++)
     {
         vtkDataArray *arr = dataset->GetCellData()->GetArray(i);
         int ncomp = arr->GetNumberOfComponents();

@@ -170,6 +170,9 @@
 #    Eric Brugger, Wed Jun 26 08:57:57 PDT 2019
 #    Remove CCM plugin.
 #
+#    James Kress, Tue Aug 27; 15:21:30 EDT 2019
+#    Add Xolotl plugin
+#
 #****************************************************************************
 
 IF(NOT WIN32)
@@ -314,6 +317,7 @@ CHECK_THIRDPARTY_SATISFIED(Velodyne HDF5)
 CHECK_THIRDPARTY_SATISFIED(Vs HDF5)
 CHECK_THIRDPARTY_SATISFIED(XGC HDF5)
 CHECK_THIRDPARTY_SATISFIED(MOAB MOAB)
+CHECK_THIRDPARTY_SATISFIED(Xolotl HDF5)
 
 # if we don't have the xdmf lib, we can fall back to VisIt's xdmf reader
 # that only uses hdf5
