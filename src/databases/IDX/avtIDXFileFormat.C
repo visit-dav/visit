@@ -924,15 +924,22 @@ avtIDXFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
         //md->Add(new avtVectorMetaData(field.name,mesh->name,AVT_ZONECENT, field.ncomponents));
     }
 
-    std::vector<int> cycles;
+    /*    std::vector<int> cycles;
     cycles.resize(GetNTimesteps());
 
     for (int ti=0;ti<(int)cycles.size();ti++)
         cycles[ti] = ti;
+    */
+    if(timeIndex.size() == 0)
+      createTimeIndex();
 
-    md->SetCycles( cycles );
+    md->SetCycles( logTimeIndex); //cycles );
+    md->SetTimes( timeIndex );
     //md->SetMustRepopulateOnStateChange(true);
 
+    md->SetTimesAreAccurate(true);
+    //md->setCyclesAreAccurate(true);
+    
     debug5 << rank << ": end meta" <<std::endl;
 }
 
