@@ -34,6 +34,8 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Corrected a bug where the GUI plot list goes blank on macOS.</li>
   <li>Corrected a bug where the VTK reader incorrectly set topological dimension of a dataset to 0, making the dataset undrawable by VisIt. This occured in a multiblock case where the first block contained neither points nor cells.</li>
   <li>Corrected a bug with highlighting zones picked by their global ids. The highlighted cells were incorrect or non-existent before.</li>
+  <li>Corrected a bug where the OriginalZoneLabels and OriginalNodeLabels appeared twice in the menu when opening mili datasets.</li>
+  <li>Fixed viewer crash when glyphed points size scaled by tensor.</li>
 </ul>
 
 <a name="Enhancements"></a>
