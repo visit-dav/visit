@@ -518,7 +518,7 @@ vtkVisItGlyph3D::RequestData(
         if (this->ScaleMode == VTK_SCALE_BY_TENSOR) 
           {
           // def_mat is Identity at its creation, only change needed elements.
-          double* tensor = inScalars_forScaling->GetTuple9(inPtId);
+          double* tensor = inTensors_forScaling->GetTuple9(inPtId);
           def_mat->SetElement(0,0,tensor[0]);
           def_mat->SetElement(0,1,tensor[1]);
           def_mat->SetElement(0,2,tensor[2]);
