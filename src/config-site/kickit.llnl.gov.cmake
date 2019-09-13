@@ -1,7 +1,7 @@
 #/usr/gapps/visit/thirdparty_shared/3.0.1/cmake/3.9.3/linux-x86_64_gcc-4.8/bin/cmake
 ##
 ## ./build_visit3_0_1 generated host.cmake
-## created: Tue Jul  9 16:18:54 PDT 2019
+## created: Wed Sep 11 12:53:07 PDT 2019
 ## system: Linux kickit 5.0.8-1.el7.elrepo.x86_64 #1 SMP Wed Apr 17 10:11:44 EDT 2019 x86_64 x86_64 x86_64 GNU/Linux
 ## by: brugger1
 
@@ -249,6 +249,12 @@ VISIT_OPTION_DEFAULT(VISIT_PIDX_DIR ${VISITHOME}/pidx/${PIDX_VERSION}/${VISITARC
 ##
 VISIT_OPTION_DEFAULT(VISIT_SILO_DIR ${VISITHOME}/silo/4.10.2/${VISITARCH})
 VISIT_OPTION_DEFAULT(VISIT_SILO_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP} ZLIB_LIBRARY_DIR z TYPE STRING)
+
+##
+## Uintah
+##
+SETUP_APP_VERSION(UINTAH 2.6.0)
+VISIT_OPTION_DEFAULT(VISIT_UINTAH_DIR ${VISITHOME}/uintah/${UINTAH_VERSION}/${VISITARCH})
 
 ##
 ## VTKM
