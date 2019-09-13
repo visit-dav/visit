@@ -33,8 +33,8 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Corrected a bug with the Uintah reader where it would not load because the libxml2 could not be found.</li>
   <li>Corrected a bug where the GUI plot list goes blank on macOS.</li>
   <li>Corrected a bug where the VTK reader incorrectly set topological dimension of a dataset to 0, making the dataset undrawable by VisIt. This occured in a multiblock case where the first block contained neither points nor cells.</li>
-  <li>Corrected a bug where the OriginalZoneLabels and OriginalNodeLabels appeared twice in the menu when opening mili datasets.</li>
-  <li>Fixed viewer crash when glyphed points size scaled by tensor.</li>
+  <li>Corrected a bug where the OriginalZoneLabels and OriginalNodeLabels variables appeared twice in the menu for Mili files.</li>
+  <li>Corrected a viewer crash when glyphed points were scaled by a tensor.</li>
 </ul>
 
 <a name="Enhancements"></a>
@@ -49,6 +49,8 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>The Xdmf reader now supports time-varying grid counts via a top-level &lt;Information Name="TimeVaryingMetaData" Value="True"/&gt; node in the Xdmf file.</li>
   <li>Added a reader for Xolotl files. Xolotl is an open-source, high performance plasma-surface interactions simulator that is under development with the DOE's SciDAC program. VisIt will automatically recognize files that end with the extention ".xolotl" as Xolotl files.</li>
   <li>Binary distributions have been added for Ubuntu 16, Ubuntu 18, Debian 9, and Fedora 27.</li>
+  <li>Added "divide" built-in expression for enhanced divison to allow users to specify divide by zero value and tolerance for zero.</li>
+  <li>Support for reading Uintah files has been added to the Red Hat Enterprise Linux 7, Ubunutu 16, Ubuntu 18, Debian 9 and Fedora 27 binary distributions.</li>
 </ul>
 
 <a name="Dev_changes"></a>
