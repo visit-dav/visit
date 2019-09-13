@@ -946,9 +946,11 @@ function check_parallel
             export VISIT_MPI_COMPILER_CXX="$MPICH_COMPILER_CXX"
             export PAR_COMPILER="$MPICH_COMPILER"
             export PAR_COMPILER_CXX="$MPICH_COMPILER_CXX"
+            export PAR_INCLUDE="-I${VISITDIR}/mpich/$MPICH_VERSION/${VISITARCH}/include"
             info  "Configuring parallel with mpich build: "
-            info  "  PAR_COMPILER: $MPICH_COMPILER "
-            info  "  PAR_COMPILER_CXX: $MPICH_COMPILER_CXX"
+            info  "  PAR_COMPILER: $PAR_COMPILER"
+            info  "  PAR_COMPILER_CXX: $PAR_COMPILER_CXX"
+            info  "  PAR_INCLUDE: $PAR_INCLUDE"
             return 0
         fi
 
