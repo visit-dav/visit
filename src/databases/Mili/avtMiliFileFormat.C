@@ -2580,6 +2580,10 @@ avtMiliFileFormat::AddMiliVariableToMetaData(avtDatabaseMetaData *avtMD,
 //      Added checks to determine if shared variables have been added
 //      or not.  
 //
+//      Alister Maguire, Fri Sep 13 08:37:45 MST 2019
+//      We don't need to add the OriginalZone/NodeLabels for the 
+//      sand mesh. 
+//
 // ****************************************************************************
 
 void
@@ -2677,20 +2681,6 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
                                   numMats, 
                                   matNames, 
                                   matColors);
-
-            AddLabelVarToMetaData(md, 
-                                  "OriginalZoneLabels", 
-                                  sandMeshName, 
-                                  AVT_ZONECENT, 
-                                  dims);
-
-            bool hideFromGui = false;
-            AddLabelVarToMetaData(md, 
-                                  "OriginalNodeLabels", 
-                                  sandMeshName, 
-                                  AVT_NODECENT, 
-                                  dims, 
-                                  hideFromGui);
         }
 
         //
