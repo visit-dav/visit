@@ -143,6 +143,10 @@ vtkVisItGlyph3D::~vtkVisItGlyph3D()
 //    Kathleen Biagas, Thu May 30 12:15:07 PDT 2019
 //    Allow cell-centered data for coloring/scaling.
 //
+//    Kathleen Biagas, Fri Sep 13 09:36:22 PDT 2019
+//    When scaling by a tensor use inTensors_forScaling,
+//    not inScalars_forScaling.
+//
 // ****************************************************************************
 
 int
