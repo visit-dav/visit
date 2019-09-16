@@ -225,7 +225,7 @@ fi
 
 cd $testDir/$workingDir
 
-rm -f buildlog
+rm -f buildlog installlog
 
 # Clone the repository if necessary.
 if test ! -e $testDir/$workingDir/visit; then
@@ -356,7 +356,7 @@ echo "Starting install:\`date\`"
 
 # Install the package
 cd ../
-version=`cat $testDir/$workingDir/visit/src/VERSION`
+version=\`cat $testDir/$workingDir/visit/src/VERSION\`
 
 ../src/tools/dev/scripts/visit-install -c llnl_open \$version linux-x86_64 ./_install >> ../../installlog 2>&1
 
