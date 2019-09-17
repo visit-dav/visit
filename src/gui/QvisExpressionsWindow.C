@@ -193,9 +193,6 @@
 //    Kevin Griffin, Tue Aug 5 15:01:27 PDT 2014
 //    Added q_criterion and lambda2
 //
-//    Eddie Rusu, Wed Sep 11 08:59:52 PDT 2019
-//    Added "divide" function under the "Math" menu.
-//
 // ****************************************************************************
 
 struct ExprNameList
@@ -244,7 +241,6 @@ const char *expr_math[] = {
     "abs",
     "ceil",
     "floor",
-    "divide",
     "exp",
     "ln",
     "log10",
@@ -1637,9 +1633,6 @@ QvisExpressionsWindow::UpdateStandardExpressionEditor(const QString &expr_def)
 //    Brad Whitlock, Wed Sep 12 17:21:19 PDT 2012
 //    Add bin expression.
 //
-//    Eddie Rusu, Wed Sep 11 08:59:52 PDT 2019
-//    Added divide expression with optional arguments.
-//
 // ****************************************************************************
 
 QString
@@ -1829,11 +1822,6 @@ QvisExpressionsWindow::ExpandFunction(const QString &func_name)
     else if (func_name == "bin")
     {
         res += QString("(<var>, [0., 1., 2.])");
-        doParens = false;
-    }
-    else if (func_name == "divide")
-    {
-        res += QString("(<val_numerator>, <val_denominator>, [<div_by_zero_value>, <tolerance>])");
         doParens = false;
     }
 
