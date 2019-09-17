@@ -12,6 +12,15 @@
 #include <DebugStream.h>
 
 #include <vtkFloatArray.h>
+#include <vtkRectilinearGrid.h>
+#include <vtkPolyData.h>
+#include <vtkPoints.h>
+#include <vtkDataArray.h>
+#include <vtkVisItUtility.h>
+#include <avtDatabaseMetaData.h>//FIXME: testing
+#include <avtVectorMetaData.h>//FIXME: testing
+
+#include <QueryOverTimeAttributes.h>
 
 
 using     std::vector;
@@ -703,4 +712,216 @@ void
 avtFileFormatInterface::GetTimes(int, doubleVector &)
 {
     debug2 << "Trying to retrieve times, but it's not implemented..." << endl;
+}
+
+
+// ****************************************************************************
+//  Method:  avtMiliFileFormat::GetQOTMesh
+//
+//  Purpose:
+//
+//  Arguments:
+//
+//  Returns:
+//
+//  Programmer:  Alister Maguire
+//  Creation:    
+//
+//  Modifications
+//
+// ****************************************************************************
+
+vtkDataSet *
+avtFileFormatInterface::GetQOTMesh(const QueryOverTimeAttributes *QOTAtts,
+                                   int domain,
+                                   int *tsRange,
+                                   int tsStride)
+{
+    //FIXME: we currently don't have any way of determining
+    //       if this number of timesteps is valid in here. 
+    QueryOverTimeAttributes::TimeType tType = QOTAtts->GetTimeType();
+
+    int startT    = tsRange[0];
+    int stopT     = tsRange[1] + 1;
+    int numPoints = (stopT - startT) / tsStride;
+
+    doubleVector xCoords;
+    xCoords.reserve(numPoints);
+
+    switch (tType)
+    {
+        case QueryOverTimeAttributes::Cycle:
+        {
+            intVector cycles;
+            GetCycles(domain, cycles);
+
+            for (intVector::const_iterator cItr = cycles.begin();
+                 cItr < cycles.end(); ++cItr)
+            {
+                xCoords.push_back((double) (*cItr));
+            }
+
+            break;
+        }
+        case QueryOverTimeAttributes::DTime:
+        {
+            GetTimes(domain, xCoords);
+            break;
+        }
+        case QueryOverTimeAttributes::Timestep:
+        default:
+        {
+            for (int i = startT; i < stopT; i+=tsStride)
+            {
+                xCoords.push_back((double) i);
+            }
+            break;
+        }
+    }
+
+    vtkPolyData *polyData = vtkPolyData::New();
+    vtkPoints *points     = vtkPoints::New();
+    points->Resize(numPoints);
+
+    for (int i = 0; i < numPoints; ++i)
+    {
+        points->InsertNextPoint(xCoords[i], 0.0, 0.0);
+    }
+
+    polyData->SetPoints(points);
+    //TODO: free points here?
+
+    return (vtkDataSet *) polyData;
+}
+
+
+// ****************************************************************************
+//  Method:  avtMiliFileFormat::GetQOTVar
+//
+//  Purpose:
+//
+//  Arguments:
+//
+//  Returns:
+//
+//  Programmer:  Alister Maguire
+//  Creation:    
+//
+//  Modifications
+//
+// ****************************************************************************
+
+vtkDataArray *
+avtFileFormatInterface::GetQOTVar(int domain,
+                                  const char *varPath,
+                                  int element,
+                                  int *tsRange,
+                                  int tsStride)
+{
+    int startT       = tsRange[0];
+    int stopT        = tsRange[1] + 1;
+    int spanSize     = (stopT - startT) / tsStride;
+    long int visitId = element - 1;
+
+    vtkFloatArray *spanArray = vtkFloatArray::New();
+    spanArray->SetNumberOfTuples(spanSize);
+    spanArray->SetNumberOfComponents(1);
+    //spanArray->SetName(varPath);//FIXME: is this right? How is it handled in regular GetVar?
+
+    //
+    // Iterate over the requested time states and retrieve the requested vars
+    // and elements. 
+    //
+    int tupIdx = 0;
+    for (int ts = startT; ts < stopT; ts += tsStride, ++tupIdx)
+    {
+        if (ts >= stopT)
+        {
+            break;
+        }
+    
+        //
+        // Activate the current timestep and retrieve our variable. 
+        //
+        ActivateTimestep(ts);
+        vtkFloatArray *allValues = (vtkFloatArray *) 
+            GetVar(ts, domain, varPath);
+
+        //
+        // VisIt ids begin at 0, but the interface ids start at 1. 
+        // Account for this before retrieving. 
+        //
+        float targetVal = allValues->GetTuple1(visitId);
+        spanArray->SetTuple1(tupIdx, targetVal);
+    }
+
+    return (vtkDataArray *) spanArray;
+}
+
+
+// ****************************************************************************
+//  Method:  avtMiliFileFormat::GetQOTVectorVar
+//
+//  Purpose:
+//
+//  Arguments:
+//
+//  Returns:
+//
+//  Programmer:  Alister Maguire
+//  Creation:    
+//
+//  Modifications
+//
+// ****************************************************************************
+
+vtkDataArray *
+avtFileFormatInterface::GetQOTVectorVar(int domain,
+                                        const char *varPath,
+                                        int vDim,
+                                        int element,
+                                        int *tsRange,
+                                        int tsStride)
+{
+    int startT       = tsRange[0];
+    int stopT        = tsRange[1] + 1;
+    int spanSize     = (stopT - startT) / tsStride;
+    long int visitId = element - 1;
+    long int vecPos  = visitId * vDim;
+
+    vtkFloatArray *spanArray = vtkFloatArray::New();
+    spanArray->SetNumberOfComponents(vDim);
+    spanArray->SetNumberOfTuples(spanSize);
+
+    double *targetVec = new double[vDim];
+
+    for (int i = 0; i < vDim; ++i)
+    {
+        targetVec[i] = 0.0;
+    }
+
+    //
+    // Iterate over the requested time states and retrieve the requested vars
+    // and elements. 
+    //
+    int tupIdx = 0;
+    for (int ts = startT; ts < stopT; ts += tsStride, ++tupIdx)
+    {
+        if (ts >= stopT)
+        {
+            break;
+        }
+    
+        //
+        // Activate the current timestep and retrieve our variable. 
+        //
+        ActivateTimestep(ts);
+        vtkFloatArray *allValues = (vtkFloatArray *) 
+            GetVectorVar(ts, domain, varPath);
+
+        allValues->GetTuple(visitId, targetVec);
+        spanArray->SetTuple(tupIdx, targetVec);
+    }
+
+    return (vtkDataArray *) spanArray;
 }

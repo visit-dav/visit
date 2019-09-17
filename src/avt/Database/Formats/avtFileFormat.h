@@ -167,6 +167,9 @@ class DATABASE_API avtFileFormat
                                             int *,
                                             int);
 
+    avtDatabaseMetaData *GetMetaData(void)
+                             { return metadata; };
+
     //
     // MCM-07Apr05: Below this line, a new design pattern is being introduced
     // in order to make a more uniform interface boundary between format

@@ -448,6 +448,65 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
     vtkDataSet                *GetMesh(const char *, int, int, const char *,
                                        avtDataRequest_p);
 
+    //
+    // Query over time specific dataset methods. 
+    //
+    vtkDataSet                *GetQOTDataset(int,
+                                             const char *,
+                                             const std::vector<CharStrRef> &,
+                                             avtDataRequest_p, 
+                                             avtSourceFromDatabase *);
+    vtkDataSet                *GetQOTScalarVarDataset(const char *, 
+                                                      int,
+                                                      int,
+                                                      avtDataRequest_p);
+    vtkDataSet                *GetQOTVectorVarDataset(const char *, 
+                                                      int,
+                                                      int,
+                                                      avtDataRequest_p);
+    vtkDataSet                *GetQOTTensorVarDataset(const char *, 
+                                                      int,
+                                                      int,
+                                                      avtDataRequest_p);
+    vtkDataSet                *GetQOTSymmetricTensorVarDataset(const char *, 
+                                                               int,
+                                                               int,
+                                                               avtDataRequest_p);
+    vtkDataSet                *GetQOTArrayVarDataset(const char *, 
+                                                     int,
+                                                     int,
+                                                     avtDataRequest_p);
+    vtkDataArray              *GetQOTScalarVariable(const char *, 
+                                                    int, 
+                                                    int,
+                                                    int *,
+                                                    int,
+                                                    const avtDataRequest_p);
+    vtkDataArray              *GetQOTVectorVariable(const char *, 
+                                                    int, 
+                                                    int,
+                                                    int *,
+                                                    int,
+                                                    const avtDataRequest_p);
+    vtkDataArray              *GetQOTTensorVariable(const char *, 
+                                                    int, 
+                                                    int,
+                                                    int *,
+                                                    int,
+                                                    const avtDataRequest_p);
+    vtkDataArray              *GetQOTSymmetricTensorVariable(const char *, 
+                                                             int, 
+                                                             int,
+                                                             int *,
+                                                             int,
+                                                             const avtDataRequest_p);
+    vtkDataArray              *GetQOTArrayVariable(const char *, 
+                                                   int, 
+                                                   int,
+                                                   int *,
+                                                   int,
+                                                   const avtDataRequest_p);
+
     void                       AddOriginalCellsArray(vtkDataSet *, const int);
     void                       AddOriginalNodesArray(vtkDataSet *, const int);
 
@@ -476,6 +535,11 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
 
     void                       ReadDataset(avtDatasetCollection &, 
                                   intVector &, avtDataRequest_p &,
+                                  avtSourceFromDatabase *,
+                                  boolVector &);
+
+    void                       ReadQOTDataset(avtDatasetCollection &, 
+                                  int, avtDataRequest_p &,
                                   avtSourceFromDatabase *,
                                   boolVector &);
 

@@ -61,6 +61,7 @@
 #include <vtkRectilinearGrid.h>
 #include <vtkVisItUtility.h>
 #include <vtkFloatArray.h>
+#include <vtkPolyData.h>
 
 #include <avtCallback.h>
 #include <avtDatasetExaminer.h>
@@ -155,143 +156,179 @@ avtDirectDBQueryOverTimeFilter::Create(const AttributeGroup *atts)
 void
 avtDirectDBQueryOverTimeFilter::Execute(void)
 {
+    avtDataTree_p dataTree = GetInputDataTree();
+
+    if (true)
+    {
+        int numLeaves = 0;
+        vtkDataSet **leaves = dataTree->GetAllLeaves(numLeaves);
+
+        vtkPolyData *QOTData = (vtkPolyData *) leaves[0];
+        vtkPoints *QOTPoints = QOTData->GetPoints();
+
+        double coord[] = {0.0, 0.0, 0.0};
+        int numPoints = QOTPoints->GetNumberOfPoints();
+
+        for (int i = 0; i < numPoints; ++i)
+        {
+            QOTPoints->GetPoint(i, coord);        
+            times.push_back(coord[0]);
+        }
+
+        numCurves = 1;
+        curves.resize(numCurves);
+
+        vtkFloatArray *scalars = (vtkFloatArray *) QOTData->GetPointData()->GetScalars();
+
+        if (scalars != NULL)
+        {
+            int numTuples = scalars->GetNumberOfTuples();
+
+            for (int i = 0; i < numTuples; ++i)
+                curves[0].push_back(scalars->GetTuple1(i));
+        }
+    }
+
     //
     // The real output will be created after all time steps have completed,
     // so create a dummy output to pass along for now.
     //
     avtDataTree_p dummy = new avtDataTree();
 
-    //
-    // Set up error conditions and return early if any processor had an
-    // error upstream.
-    //
-    int hadError = 0;
-    if (GetInput()->GetInfo().GetValidity().HasErrorOccurred())
+    if (false)
     {
-        //errorMessage = GetInput()->GetInfo().GetValidity().GetErrorMessage();
-        hadError = 1;
-    }
-    if (hadError)
-    {
-        SetOutputDataTree(dummy);
-        success = false;
-        return;
-    }
-    
-    PickAttributes pAtts = atts.GetPickAtts();
-    MapNode timeOpts     = pAtts.GetTimeOptions();
-    int domain           = pAtts.GetDomain();
+        //
+        // Set up error conditions and return early if any processor had an
+        // error upstream.
+        //
+        int hadError = 0;
+        if (GetInput()->GetInfo().GetValidity().HasErrorOccurred())
+        {
+            //errorMessage = GetInput()->GetInfo().GetValidity().GetErrorMessage();
+            hadError = 1;
+        }
+        if (hadError)
+        {
+            SetOutputDataTree(dummy);
+            success = false;
+            return;
+        }
+        
+        PickAttributes pAtts = atts.GetPickAtts();
+        MapNode timeOpts     = pAtts.GetTimeOptions();
+        int domain           = pAtts.GetDomain();
   
-    //
-    // The domain appears to default to -1 when not using a
-    // multi-domain dataset. Change it to 0.  
-    //
-    if (domain < 0)
-    {
-        domain = 0;
-    }
-
-    intVector elements;
-    elements.push_back(pAtts.GetElementNumber()); 
-
-    stringVector vars = atts.GetQueryAtts().GetVariables(); 
-
-    int startT    = atts.GetStartTime();
-    int stopT     = atts.GetEndTime();
-    int stride    = atts.GetStride();
-    int tsRange[] = {startT, stopT};
-
-    cerr << "\nSTARTING TIME SPAN FILTER TIMING: " << endl;
-    auto start = std::chrono::high_resolution_clock::now();
-
-    avtOriginatingSource *origSource = GetInput()->GetSource()->GetOriginatingSource();
-    vtkFloatArray **spanArray = (vtkFloatArray **) (origSource->
-        FetchTimeSpanCurves(0, vars, elements, tsRange, stride));
-
-    auto stop = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double> elapsed = stop - start;
-    cerr << "TIME SPAN FILTER TIMING: " << elapsed.count() << endl;
-
-    if (spanArray != NULL)
-    {
-        numCurves     = elements.size() * vars.size();
-        int numTuples = spanArray[0]->GetNumberOfTuples();
-        curves.resize(numCurves);
-
-        for (int cIdx = 0; cIdx < numCurves; ++cIdx)
-        {
-            if (spanArray[cIdx]->GetNumberOfTuples() != numTuples)
-            {
-                char msg[128];
-                snprintf(msg, 128, "The retreived curves are of different sizes! "
-                   "Not good...");
-                EXCEPTION1(VisItException, msg);
-            }
-
-            for (int i = 0; i < numTuples; ++i)
-            {
-                curves[cIdx].push_back(spanArray[cIdx]->GetTuple1(i));
-            }
-        }
-
-        switch (atts.GetTimeType())
-        {
-            case QueryOverTimeAttributes::Cycle: 
-            {
-                intVector cycles;
-                origSource->FetchCycles(domain, cycles);
-                int curStep = startT;
-
-                for (int i = 0; i < numTuples; i++)
-                {
-                    times.push_back(cycles[curStep]);
-                    curStep += stride;
-                }
-                break;
-            } 
-            case QueryOverTimeAttributes::DTime: 
-            {
-                doubleVector simTimes;
-                origSource->FetchTimes(domain, simTimes);
-                int curStep = startT;
-
-                for (int i = 0; i < numTuples; i++)
-                {
-                    times.push_back(simTimes[curStep]);
-                    curStep += stride;
-                }
-                break;
-            } 
-            case QueryOverTimeAttributes::Timestep: 
-            {
-                int curStep = startT;
-
-                for (int i = 0; i < numTuples; i++)
-                {
-                    times.push_back(curStep);
-                    curStep += stride;
-                }
-                break;
-            } 
-        }
-
         //
-        // Clean up or span array memory. 
+        // The domain appears to default to -1 when not using a
+        // multi-domain dataset. Change it to 0.  
         //
-        for (int i = 0; i < numCurves; ++i)
+        if (domain < 0)
         {
-            if (spanArray[i] != NULL)
-            {
-                spanArray[i]->Delete();
-            }
+            domain = 0;
         }
-    
-        delete [] spanArray;
-    }
-    else
-    {
-        debug1 << "DirectDBQueryOverTime was unable to retrieve " <<
-            "any curves..." << endl;
+
+        intVector elements;
+        elements.push_back(pAtts.GetElementNumber()); 
+
+        stringVector vars = atts.GetQueryAtts().GetVariables(); 
+
+        int startT    = atts.GetStartTime();
+        int stopT     = atts.GetEndTime();
+        int stride    = atts.GetStride();
+        int tsRange[] = {startT, stopT};
+
+        //cerr << "\nSTARTING TIME SPAN FILTER TIMING: " << endl;
+        //auto start = std::chrono::high_resolution_clock::now();
+
+        avtOriginatingSource *origSource = GetInput()->GetSource()->GetOriginatingSource();
+        vtkFloatArray **spanArray = (vtkFloatArray **) (origSource->
+            FetchTimeSpanCurves(0, vars, elements, tsRange, stride));
+
+        //auto stop = std::chrono::high_resolution_clock::now();
+        //std::chrono::duration<double> elapsed = stop - start;
+        //cerr << "TIME SPAN FILTER TIMING: " << elapsed.count() << endl;
+
+        if (spanArray != NULL)
+        {
+            numCurves     = elements.size() * vars.size();
+            int numTuples = spanArray[0]->GetNumberOfTuples();
+            curves.resize(numCurves);
+
+            for (int cIdx = 0; cIdx < numCurves; ++cIdx)
+            {
+                if (spanArray[cIdx]->GetNumberOfTuples() != numTuples)
+                {
+                    char msg[128];
+                    snprintf(msg, 128, "The retreived curves are of different "
+                       "sizes! Not good...");
+                    EXCEPTION1(VisItException, msg);
+                }
+
+                for (int i = 0; i < numTuples; ++i)
+                {
+                    curves[cIdx].push_back(spanArray[cIdx]->GetTuple1(i));
+                }
+            }
+
+            switch (atts.GetTimeType())
+            {
+                case QueryOverTimeAttributes::Cycle: 
+                {
+                    intVector cycles;
+                    origSource->FetchCycles(domain, cycles);
+                    int curStep = startT;
+
+                    for (int i = 0; i < numTuples; i++)
+                    {
+                        times.push_back(cycles[curStep]);
+                        curStep += stride;
+                    }
+                    break;
+                } 
+                case QueryOverTimeAttributes::DTime: 
+                {
+                    doubleVector simTimes;
+                    origSource->FetchTimes(domain, simTimes);
+                    int curStep = startT;
+
+                    for (int i = 0; i < numTuples; i++)
+                    {
+                        times.push_back(simTimes[curStep]);
+                        curStep += stride;
+                    }
+                    break;
+                } 
+                case QueryOverTimeAttributes::Timestep: 
+                {
+                    int curStep = startT;
+
+                    for (int i = 0; i < numTuples; i++)
+                    {
+                        times.push_back(curStep);
+                        curStep += stride;
+                    }
+                    break;
+                } 
+            }
+
+            //
+            // Clean up or span array memory. 
+            //
+            for (int i = 0; i < numCurves; ++i)
+            {
+                if (spanArray[i] != NULL)
+                {
+                    spanArray[i]->Delete();
+                }
+            }
+        
+            delete [] spanArray;
+        }
+        else
+        {
+            debug1 << "DirectDBQueryOverTime was unable to retrieve " <<
+                "any curves..." << endl;
+        }
     }
 
     CreateFinalOutput();

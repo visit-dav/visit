@@ -28,6 +28,8 @@ class    avtFileFormat;
 class    avtIOInformation;
 class    avtVariableCache;
 
+class    QueryOverTimeAttributes;
+
 
 // ****************************************************************************
 //  Class: avtFileFormatInterface
@@ -208,6 +210,23 @@ class DATABASE_API avtFileFormatInterface
     virtual void           *GetAuxiliaryData(const char *, int, int, 
                                              const char *, void *, 
                                              DestructorFunction &) = 0;
+
+    virtual vtkDataSet     *GetQOTMesh(const QueryOverTimeAttributes *,
+                                       int,
+                                       int *, 
+                                       int);
+    virtual vtkDataArray   *GetQOTVar(int,
+                                      const char *, 
+                                      int, 
+                                      int *, 
+                                      int);
+    virtual vtkDataArray   *GetQOTVectorVar(int,
+                                            const char *, 
+                                            int, 
+                                            int, 
+                                            int *, 
+                                            int);
+
 
     virtual vtkDataArray  **GetTimeSpanCurves(int,
                                               stringVector,

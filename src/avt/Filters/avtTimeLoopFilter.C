@@ -161,9 +161,6 @@ avtTimeLoopFilter::Update(avtContract_p spec)
 
     int t0 = visitTimer->StartTimer();
 
-    cerr << "\nSTARTING TLF TIMING: " << endl;//FIXME
-    auto start = std::chrono::high_resolution_clock::now();//FIXME
-    
     for (timeLoopIter=0; timeLoopIter<numTimeLoopIterations; ++timeLoopIter)
     {
         debug4 << "Time loop filter updating with iteration # "
@@ -233,9 +230,6 @@ avtTimeLoopFilter::Update(avtContract_p spec)
             avtCallback::ResetTimeout(5*60);
         }
     }
-    auto stop = std::chrono::high_resolution_clock::now();//FIXME
-    std::chrono::duration<double> elapsed = stop - start;
-    cerr << "TLF TIME: " << elapsed.count() << endl;//FIXME
 
     visitTimer->StopTimer(t0, "avtTimeLoopFilter Read time slices");
 

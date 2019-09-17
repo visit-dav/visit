@@ -5291,40 +5291,30 @@ NetworkManager::AddDirectDBQueryOverTimeFilter(QueryOverTimeAttributes *qA,
         EXCEPTION1(ImproperUseException, error);
     }
 
-    bool useActualData = true;
-    if (qA->GetQueryAtts().GetQueryInputParams().HasNumericEntry("use_actual_data"))
-    {
-        useActualData = qA->GetQueryAtts().GetQueryInputParams().GetEntry("use_actual_data")->ToBool();
-    }
-
-    //
-    // Determine which input the filter should use.
-    //
-    //FIXME: do we still need this? Likely not...
+    //TODO: when doing the DirectDB QOT, we can only use the original data. 
+    //      In the future, we should just check for all of this in the main
+    //      AddQueryOverTimeFilter. 
     avtDataObject_p input;
-    if (useActualData ||
-        qA->GetQueryAtts().GetName() == "Locate and Pick Zone" ||
-        qA->GetQueryAtts().GetName() == "Locate and Pick Node")
-    {
-        input = networkCache[id]->GetPlot()->
-                GetIntermediateDataObject();
-    }
-    else
-    {
-        input = workingNet->GetExpressionNode()->GetOutput();
-    }
+    input = workingNet->GetExpressionNode()->GetOutput();
 
     qA->GetQueryAtts().SetPipeIndex(networkCache[id]->
         GetContract()->GetPipelineIndex());
 
-    if (strcmp(workingNet->GetDataSpec()->GetVariable(),
-               qA->GetQueryAtts().GetVariables()[0].c_str()) != 0)
-    {
-        avtDataRequest_p dr = new avtDataRequest(workingNet->GetDataSpec(),
-            qA->GetQueryAtts().GetVariables()[0].c_str());
+    //if (strcmp(workingNet->GetDataSpec()->GetVariable(),
+    //           qA->GetQueryAtts().GetVariables()[0].c_str()) != 0)
+    //{
+    //    avtDataRequest_p dr = new avtDataRequest(workingNet->GetDataSpec(),
+    //        qA->GetQueryAtts().GetVariables()[0].c_str());
 
-        workingNet->SetDataSpec(dr);
-    }
+    //    workingNet->SetDataSpec(dr);
+    //}
+
+    avtDataRequest_p dr = new avtDataRequest(workingNet->GetDataSpec(),
+        qA->GetQueryAtts().GetVariables()[0].c_str());
+    dr->SetQOTDataset(true);
+    dr->SetQOTAtts(qA);
+
+    workingNet->SetDataSpec(dr);
 
     //
     // Pass down the current SILRestriction (via UseSet) in case the query

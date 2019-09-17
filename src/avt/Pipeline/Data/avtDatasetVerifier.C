@@ -159,6 +159,7 @@ avtDatasetVerifier::VerifyDataset(vtkDataSet *ds, int dom)
         int nscalars = pt_var->GetNumberOfTuples();
         if (nscalars != nPts)
         {
+            cerr << "FIRST MISMATCH" << endl;//FIXME
             CorrectVarMismatch(pt_var, ds->GetPointData(), nPts); 
             // CorrectVarMismatch invalidates pt_var pointer. Grab it again.
             pt_var = ds->GetPointData()->GetArray(i);
