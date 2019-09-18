@@ -391,9 +391,10 @@ QvisHostProfileWindow::CreateWindowContents()
 
     launchProfilesGroup = CreateLaunchProfilesGroup();
     machineTabs->addTab(launchProfilesGroup, tr("Launch Profiles"));
-
+#ifndef WIN32
     remoteProfilesGroup = CreateRemoteProfilesGroup();
     masterWidget->addTab(remoteProfilesGroup, tr("Remote Profiles"));
+#endif
 
     ((DropListWidget*)hostList)->window = this;
 }
