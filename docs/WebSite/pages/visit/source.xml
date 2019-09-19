@@ -3,7 +3,7 @@
   <title><![CDATA[VisIt Source Code ]]></title>
   <IM>LLNL-WEB-789119</IM>
   <owner><![CDATA[Page Owner Name]]></owner>
-  <lastchanged><![CDATA[September 11, 2019]]></lastchanged>
+  <lastchanged><![CDATA[September 19, 2019]]></lastchanged>
   <template><![CDATA[l2]]></template> 
   <content>
     <![CDATA[
@@ -47,7 +47,7 @@ Please use the following acknowledgement and send us references to any publicati
 
 <ul>
   <li> <a href="http://portal.nersc.gov/project/visit/releases/3.0.2/visit3.0.2.tar.gz">VisIt sources</a></li>
-  <li> <a href="http://portal.nersc.gov/project/visit/releases/3.0.2/visitdev3.0.2.windows-x86_64.exe">VisIt Windows sources</a></li>
+  <li> <a href="http://portal.nersc.gov/project/visit/releases/3.0.2/visitdev3.0.2.exe">VisIt Windows sources</a></li>
   <li> <a href="http://portal.nersc.gov/project/visit/releases/3.0.2/build_visit3_0_2">VisIt build_visit script</a></li>
   <li> <a href="http://portal.nersc.gov/project/visit/releases/3.0.2/visit_md5_checksums">VisIt md5 checksums</a></li>
   <li> <a href="http://portal.nersc.gov/project/visit/releases/3.0.2/visit_sha1_checksums">VisIt sha1 checksums</a></li>
