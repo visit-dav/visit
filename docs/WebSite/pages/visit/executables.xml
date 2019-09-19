@@ -3,7 +3,7 @@
   <title><![CDATA[VisIt Executables]]></title>
   <IM>LLNL-WEB-789119</IM>
   <owner><![CDATA[Page Owner Name]]></owner>
-  <lastchanged><![CDATA[September 11, 2019]]></lastchanged>
+  <lastchanged><![CDATA[September 19, 2019]]></lastchanged>
   <template><![CDATA[l2]]></template> 
   <content>
     <![CDATA[
@@ -58,22 +58,22 @@
         <tr>
           <td>Windows (10 / 8 / 7) 64 bit<br />
           Visual Studio 2017</td>
-          <td><a href="http://portal.nersc.gov/project/visit/releases/3.0.2/visit3_0_2.windows-x86_64.exe">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/3.0.2/visit3.0.2_x64.exe">Download</a></td>
         </tr>
         <tr>
           <td>Mac OS X 10.13 - Intel 64 bit<br />
           Darwin 10.13, Darwin Kernel Version 17.7.0, clang-900.39.2, MPICH<br />
-          <i>(Includes parallel VisIt with self-contained MPICH MPI, Uintah. Works on Mac OS X 10.13 and later.)</i></td>
-          <td><a href="http://portal.nersc.gov/project/visit/releases/3.0.2/visit3_0_2.darwin-x86_64-10_13.dmg">Download</a></td>
+          <i>(Works on Mac OS X 10.13 and later.)</i></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/3.0.2/visit3.0.2.darwin-x86_64-10_13.dmg">Download</a></td>
         </tr>
         <tr>
           <td>Linux - x86_64 64 bit<br />
-          Ubuntu 16, 4.9.184-linuxkit #1 SMP, gcc 5.4<br />
+          Ubuntu 16, 4.9.184-linuxkit #1 SMP, gcc 5.4</td>
           <td><a href="http://portal.nersc.gov/project/visit/releases/3.0.2/visit3_0_2.linux-x86_64-ubuntu16.tar.gz">Download</a></td>
         </tr>
         <tr>
           <td>Linux - x86_64 64 bit<br />
-          Ubuntu 18, 4.9.184-linuxkit #1 SMP, gcc 7.4<br />
+          Ubuntu 18, 4.9.184-linuxkit #1 SMP, gcc 7.4</td>
           <td><a href="http://portal.nersc.gov/project/visit/releases/3.0.2/visit3_0_2.linux-x86_64-ubuntu18.tar.gz">Download</a></td>
         </tr>
         <tr>
@@ -84,19 +84,18 @@
         </tr>
         <tr>
           <td>Linux - x86_64 64 bit<br />
-          Fedora 27, 4.9.184-linuxkit #1 SMP, gcc 7.3.1<br />
+          Fedora 27, 4.9.184-linuxkit #1 SMP, gcc 7.3.1</td>
           <td><a href="http://portal.nersc.gov/project/visit/releases/3.0.2/visit3_0_2.linux-x86_64-fedora27.tar.gz">Download</a></td>
         </tr>
         <tr>
           <td>Linux - x86_64 64 bit<br />
-          Redhat Enterprise Linux 7.5, 4.18.9-1.el7.elrepo.x86_64 #1 SMP, gcc 4.8.5<br />
-          <i>(Includes parallel VisIt with self-contained MPICH MPI)</i></td>
+          Redhat Enterprise Linux 7.5, 4.18.9-1.el7.elrepo.x86_64 #1 SMP, gcc 4.8.5</td>
           <td><a href="http://portal.nersc.gov/project/visit/releases/3.0.2/visit3_0_2.linux-x86_64-rhel7.tar.gz">Download</a></td>
         </tr>
         <tr>
           <td>Linux - x86_64 64 bit<br />
           Redhat Enterprise Linux 7.5, 4.18.9-1.el7.elrepo.x86_64 #1 SMP, gcc 4.8.5<br />
-          <i>(Includes parallel VisIt with self-contained MPICH MPI and Mesa support for rendering without a display. Only use on servers without a display.)</i></td>
+          <i>(Includes Mesa support for rendering without a display. Only use on servers without a display.)</i></td>
           <td><a href="http://portal.nersc.gov/project/visit/releases/3.0.2/visit3_0_2.linux-x86_64-rhel7-wmesa.tar.gz">Download</a></td>
         </tr>
       </table>  
@@ -133,18 +132,18 @@
         </tr>
         <tr>
           <td>Linux - x86_64 64 bit<br />
-          Ubuntu 18, 4.9.184-linuxkit #1 SMP, gcc 7.4<br />
+          Ubuntu 18, 4.9.184-linuxkit #1 SMP, gcc 7.4</td>
           <td><a href="http://portal.nersc.gov/project/visit/releases/3.0.1/visit3_0_1.linux-x86_64-ubuntu18.tar.gz">Download</a></td>
         </tr>
         <tr>
           <td>Linux - x86_64 64 bit<br />
-          Debian 9, 4.9.184-linuxkit #1 SMP, gcc 6.3<br />
+          Debian 9, 4.9.184-linuxkit #1 SMP, gcc 6.3</td>
           <i>(Works on Debian 9 and 10.)</i></td>
           <td><a href="http://portal.nersc.gov/project/visit/releases/3.0.1/visit3_0_1.linux-x86_64-debian9.tar.gz">Download</a></td>
         </tr>
         <tr>
           <td>Linux - x86_64 64 bit<br />
-          Fedora 27, 4.9.184-linuxkit #1 SMP, gcc 7.3.1<br />
+          Fedora 27, 4.9.184-linuxkit #1 SMP, gcc 7.3.1</td>
           <td><a href="http://portal.nersc.gov/project/visit/releases/3.0.1/visit3_0_1.linux-x86_64-fedora27.tar.gz">Download</a></td>
         </tr>
         <tr>
