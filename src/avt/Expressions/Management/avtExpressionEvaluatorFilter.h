@@ -125,6 +125,8 @@ class EXPRESSION_API avtExpressionEvaluatorFilter
 
     static void              RegisterGetDataBinningCallback(GetDataBinningCallback, void *);
 
+    virtual bool             CanApplyToDirectDatabaseQOT(void);
+
   protected:
     virtual void             PreExecute(void) {}
     virtual void             PostExecute(void) {}

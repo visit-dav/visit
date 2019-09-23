@@ -41,6 +41,7 @@
 avtArraySumExpression::avtArraySumExpression()
 {
     issuedWarning = false;
+    canApplyToDirectDatabaseQOT = true;
 }
 
 

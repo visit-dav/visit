@@ -37,6 +37,7 @@
 avtVectorDecomposeExpression::avtVectorDecomposeExpression(int w)
 {
     which_comp = w;
+    canApplyToDirectDatabaseQOT = true;
 }
 
 

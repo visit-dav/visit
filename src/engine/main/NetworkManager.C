@@ -5213,18 +5213,32 @@ NetworkManager::AddQueryOverTimeFilter(QueryOverTimeAttributes *qA,
         EXCEPTION1(ImproperUseException, error);
     }
 
-    //TODO: determine this
-    bool useDirectDatabaseQOT = true;
+    //
+    // We need to determine if we can use the direct database QOT 
+    // filter. This can only be used with a subset of expressions. 
+    //
+    bool useDirectDatabaseQOT = false;
 
-    bool useActualData = false;
-    if (qA->GetQueryAtts().GetQueryInputParams().HasNumericEntry("use_actual_data"))
+    avtExpressionEvaluatorFilter *eef = 
+        dynamic_cast<avtExpressionEvaluatorFilter *> 
+        (workingNet->GetExpressionNode()->GetFilter());
+
+    if (eef != NULL)
     {
-        useActualData = qA->GetQueryAtts().GetQueryInputParams().GetEntry("use_actual_data")->ToBool();
+        useDirectDatabaseQOT = eef->CanApplyToDirectDatabaseQOT(); 
     }
 
-    if (useActualData && useDirectDatabaseQOT)
+    //
+    // If the user has requested actual data, we must use the 
+    // time loop filter instead of the direct database filter.
+    //
+    bool useActualData = false;
+    if (qA->GetQueryAtts().GetQueryInputParams().
+        HasNumericEntry("use_actual_data"))
     {
-        useDirectDatabaseQOT = false; 
+        useActualData = qA->GetQueryAtts().GetQueryInputParams().
+            GetEntry("use_actual_data")->ToBool();
+        useDirectDatabaseQOT = false;
     }
 
     //
@@ -5249,6 +5263,10 @@ NetworkManager::AddQueryOverTimeFilter(QueryOverTimeAttributes *qA,
 
     if (useDirectDatabaseQOT)
     {
+        //
+        // We need to let the database readers know that we're asking for
+        // a specialized QOT dataset.  
+        //
         avtDataRequest_p dr = new avtDataRequest(workingNet->GetDataSpec(),
             qA->GetQueryAtts().GetVariables()[0].c_str());
         dr->SetQOTDataset(true);

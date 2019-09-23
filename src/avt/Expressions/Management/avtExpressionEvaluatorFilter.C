@@ -716,6 +716,39 @@ avtExpressionEvaluatorFilter::RegisterGetDataBinningCallback(GetDataBinningCallb
 
 
 // ****************************************************************************
+//  Method: avtExpressionEvaluatorFilter::CanApplyToDirectDatabaseQOT
+//
+//  Purpose:
+//
+//  Programmer:   
+//  Creation:    
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+bool
+avtExpressionEvaluatorFilter::CanApplyToDirectDatabaseQOT(void)
+{
+    if (pipelineState.GetFilters().size() != 0)
+    {
+        vector<avtExpressionFilter*> &filters = pipelineState.GetFilters();
+
+        for (vector<avtExpressionFilter *>::const_iterator it = filters.begin();
+             it < filters.end(); ++it)
+        {
+            if (!(*it)->CanApplyToDirectDatabaseQOT())
+            {
+                return false;
+            }
+        }
+    }
+
+    return true;
+}
+
+
+// ****************************************************************************
 //  Method: avtExpressionEvaluatorFilter::Query
 //
 //  Purpose:

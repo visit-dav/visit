@@ -49,6 +49,7 @@
 avtArrayDecomposeExpression::avtArrayDecomposeExpression()
 {
     issuedWarning = false;
+    canApplyToDirectDatabaseQOT = true;
     index = -1;
 }
 

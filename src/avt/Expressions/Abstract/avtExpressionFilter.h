@@ -118,6 +118,9 @@ class EXPRESSION_API avtExpressionFilter : virtual public
 
     bool                     GetNumericVal(ExprNode *, double &res);
 
+    bool                     CanApplyToDirectDatabaseQOT(void)
+                               { return canApplyToDirectDatabaseQOT; };
+
   protected:
     char                    *outputVariableName;
     int                      currentTimeState;

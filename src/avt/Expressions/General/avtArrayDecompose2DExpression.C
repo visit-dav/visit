@@ -43,6 +43,7 @@ avtArrayDecompose2DExpression::avtArrayDecompose2DExpression()
 {
     issuedWarning = false;
     usePosition = false;
+    canApplyToDirectDatabaseQOT = true;
     index[0] = 0;
     index[1] = 0;
     position[0] = 0;
