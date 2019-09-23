@@ -804,30 +804,6 @@ avtOriginatingSource::FetchArbitraryVTKObject(const char *name, int domain,
 }
 
 
-//FIXME: testing
-// ****************************************************************************
-//  Method: avtOriginatingSource::FetchTimeSpanCurves
-//
-//  Purpose:
-//
-//  Programmer: Alister Maguire
-//  Creation:   Tue Jul 23 10:14:41 PDT 2019
-//
-// ****************************************************************************
-
-vtkDataArray **
-avtOriginatingSource::FetchTimeSpanCurves(int domain, 
-                                          stringVector vars,
-                                          intVector elementIds,
-                                          int *cycleRange,
-                                          int stepSize)
-{
-    debug1 << "Asked to fetch time span curves, " << endl;
-    debug1 << "but don't know how to do that." << endl;
-    return NULL;
-}
-
-
 // ****************************************************************************
 //  Method: avtOriginatingSource::FetchCycles
 //

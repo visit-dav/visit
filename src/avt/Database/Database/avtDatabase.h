@@ -300,14 +300,6 @@ class DATABASE_API avtDatabase
                                                 VoidRefList &,
                                                 const char *type,void *args)=0;
 
-    //TODO: should we add a new query that this relies on? See Query methods
-    //      below.
-    virtual vtkDataArray      **GetTimeSpanCurves(int,
-                                                  stringVector,
-                                                  intVector,
-                                                  int *,
-                                                  int);
-
     virtual void                GetCycles(int, intVector &) {};
     virtual void                GetTimes(int, doubleVector &) {};
 

@@ -77,7 +77,6 @@ avtFileFormat::avtFileFormat()
     closingFile = false;
     resultMustBeProducedOnlyOnThisProcessor = false;
     strictMode = false;
-    canRetrieveSpan = false;
 }
 
 
@@ -239,47 +238,6 @@ void
 avtFileFormat::SetCache(avtVariableCache *c)
 {
     cache = c;
-}
-
-
-// ****************************************************************************
-//  Method:  avtMiliFileFormat::GetTimeSpanCurves
-//
-//  Purpose:
-//      Retrieve time span curves for the requested variable/element pairs
-//      across the specified time range. 
-//
-//  Arguments:
-//      domain        The domain of interest. 
-//      vars          The variables to retrieve curves for.
-//      elementIds    The elements (zones/nodes) to retrieve curves for. 
-//      tsRange       The timestep range to retrieve curves for. 
-//      stride        The timestep stride.
-//
-//  Returns:
-//      A double pointer vtkDataArray arranged as follows:
-//      [ curve_0, curve_1, curve_2, ..., curve_N ],
-//      where each curve_i is a variable/element pair's value
-//      through the given time range with the given stride. 
-//
-//  Programmer:  Alister Maguire
-//  Creation:    Tue Sep  3 13:46:43 MST 2019 
-//
-//  Modifications
-//
-// ****************************************************************************
-
-vtkDataArray **
-avtFileFormat::GetTimeSpanCurves(int domain,
-                                 stringVector vars,
-                                 intVector elementIds,
-                                 int *cycleRange,
-                                 int stride)
-{
-    debug1 << "Called GetTimeSpanCurves on " << GetType() 
-           << "but didn't define how to do that." << endl;
-
-    return NULL;
 }
 
 

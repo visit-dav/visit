@@ -632,33 +632,6 @@ avtSourceFromDatabase::GetDomainName(const std::string &var, const int ts,
 
 
 // ****************************************************************************
-//  Method: avtSourceFromDatabase::FetchTimeSpanCurves
-//
-//  Purpose:
-//
-//  Arguments:
-//
-//  Programmer: Alister Maguire
-//  Creation:   Tue Jul 23 10:14:41 PDT 2019
-//
-// ****************************************************************************
-
-vtkDataArray **
-avtSourceFromDatabase::FetchTimeSpanCurves(int domain, 
-                                           stringVector vars,
-                                           intVector elements,
-                                           int *tsRange,
-                                           int stepSize)
-{
-    return database->GetTimeSpanCurves(domain, 
-                                       vars,
-                                       elements,
-                                       tsRange,
-                                       stepSize);
-}
-
-
-// ****************************************************************************
 //  Method: avtOriginatingSource::FetchCycles
 //
 //  Purpose:

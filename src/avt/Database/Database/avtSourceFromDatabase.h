@@ -149,13 +149,6 @@ class DATABASE_API avtSourceFromDatabase : public avtOriginatingDatasetSource
     virtual void        GetDomainName(const std::string &, const int, 
                             const int, std::string &);
 
-    virtual vtkDataArray **
-                        FetchTimeSpanCurves(int,
-                                            stringVector,
-                                            intVector,
-                                            int *,
-                                            int);
-
     void                FetchCycles(int, intVector &);
     void                FetchTimes(int, doubleVector &);
 

@@ -4387,32 +4387,6 @@ avtGenericDatabase::GetAuxiliaryData(avtDataRequest_p spec,
 
 
 // ****************************************************************************
-//  Method: avtGenericDatabase::GetTimeSpanCurves
-//
-//  Purpose:
-//
-//  Programmer: Alister Maguire
-//  Creation:   July 23, 2019
-//
-//  Modifications:
-//
-// ****************************************************************************
-
-vtkDataArray **
-avtGenericDatabase::GetTimeSpanCurves(int domain,
-                                      stringVector vars,
-                                      intVector elements,
-                                      int *tsRange,
-                                      int stride)
-{
-    vtkDataArray **spanArray = Interface->
-        GetTimeSpanCurves(domain, vars, elements, tsRange, stride);
-
-    return spanArray;
-}
-
-
-// ****************************************************************************
 //  Method: avtGenericDatabase::GetCycles
 //
 //  Purpose:

@@ -581,34 +581,6 @@ avtDatabase::GetOutput(const char *var, int ts)
 
 
 // ****************************************************************************
-//  Method: avtDatabase::GetTimeSpanCurves
-//
-//  Purpose:
-//
-//  Arguments:
-//
-//  Returns:    
-//
-//  Programmer: Alister Maguire
-//  Creation:   July 23, 2019
-//
-//  Modifications:
-//
-// ****************************************************************************
-
-vtkDataArray **
-avtDatabase::GetTimeSpanCurves(int domain,
-                               stringVector vars,
-                               intVector elements, 
-                               int *tsRange, 
-                               int stepSize)
-{
-    //TODO: add debugging info here. 
-    return NULL;
-}
-
-
-// ****************************************************************************
 //  Method: avtDatabase::PopulateDataObjectInformation
 //
 //  Purpose:

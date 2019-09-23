@@ -11,7 +11,6 @@
 #include <vtkCellData.h>
 #include <vtkDataArray.h>
 #include <vtkDataSet.h>
-#include <vtkFloatArray.h>
 #include <vtkFieldData.h>
 #include <vtkVisItUtility.h>
 
@@ -20,7 +19,6 @@
 #include <avtVector.h>
 
 #include <DebugStream.h>
-#include <chrono>//FIXME: testing
 
 
 // ****************************************************************************
