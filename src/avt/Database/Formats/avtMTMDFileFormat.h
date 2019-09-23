@@ -15,8 +15,6 @@
 
 #include <vector>
 
-#include <vectortypes.h>
-
 #include <void_ref_ptr.h>
 
 

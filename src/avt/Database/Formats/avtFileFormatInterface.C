@@ -12,11 +12,9 @@
 #include <DebugStream.h>
 
 #include <vtkFloatArray.h>
-#include <vtkRectilinearGrid.h>
 #include <vtkPolyData.h>
 #include <vtkPoints.h>
 #include <vtkDataArray.h>
-#include <vtkVisItUtility.h>
 
 #include <QueryOverTimeAttributes.h>
 

@@ -281,6 +281,9 @@ typedef struct {
 //   Burlen Loring, Tue Sep 29 13:20:29 PDT 2015
 //   Clean up a couple of warnings.
 //
+//   Alister Maguire, Mon Sep 23 15:11:40 MST 2019
+//   Added GetCycles and GetTimes. 
+//
 // ****************************************************************************
 
 class DATABASE_API avtDatabase

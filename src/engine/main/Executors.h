@@ -1600,7 +1600,6 @@ EngineRPCExecutor<CloneNetworkRPC>::Execute(CloneNetworkRPC *rpc)
     TRY
     {
         netmgr->CloneNetwork(rpc->GetID());
-
         if (rpc->GetQueryOverTimeAtts() != NULL)
             netmgr->AddQueryOverTimeFilter(rpc->GetQueryOverTimeAtts(),
                                            rpc->GetID());

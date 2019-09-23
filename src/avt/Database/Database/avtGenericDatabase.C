@@ -52,7 +52,6 @@
 #include <avtDomainBoundaries.h>
 #include <avtDomainNesting.h>
 #include <avtFileFormatInterface.h>
-#include <avtMTMDFileFormatInterface.h>
 #include <avtMemory.h>
 #include <avtMixedVariable.h>
 #include <avtParallel.h>
@@ -482,7 +481,6 @@ avtDataTree_p
 avtGenericDatabase::GetOutput(avtDataRequest_p spec,
                               avtSourceFromDatabase *src)
 {
-    //FIXME: testing
     if (spec->GetQOTDataset())
     {
         const QueryOverTimeAttributes *QOTAtts = spec->GetQOTAtts();
@@ -515,22 +513,6 @@ avtGenericDatabase::GetOutput(avtDataRequest_p spec,
             //
             ReadQOTDataset(datasetCollection, domain, spec, src, selectionsApplied);
             DebugDumpDatasetCollection(datasetCollection, nDomains, "output.ReadQOTDataset");
-
-            //
-            // Now that we have read things in from disk, verify that the dataset
-            // is valid, since routines like the MIR downstream will assume they are.
-            //
-            //int t1 = visitTimer->StartTimer();
-            //avtDatasetVerifier verifier;
-            //vtkDataSet **ds_list = new vtkDataSet*[nDomains];
-            //for (i = 0 ; i < nDomains ; i++)
-            //{
-            //    ds_list[i] = datasetCollection.GetDataset(i, 0);
-            //}
-            //verifier.VerifyDatasets(nDomains, ds_list, domains);
-            //delete [] ds_list;
-            //visitTimer->StopTimer(t1, "Verifying dataset");
-
         }
         CATCH2(VisItException, e)
         {
@@ -3220,14 +3202,16 @@ avtGenericDatabase::GetMesh(const char *meshname, int ts, int domain,
 //
 //  Arguments:
 //      domain       The domain of the dataset to retrieve.
-//      matname      The material of interest (may be _all).
+//      varname      The name of the variable to retreive. 
 //      vars2nd      The list of secondary variables.
+//      spec         The data request. 
 //      src          The source from a database.
 //
 //  Returns:         
+//      The requested QOT dataset. 
 //
-//  Programmer:  
-//  Creation:    
+//  Programmer: Alister Maguire 
+//  Creation:   Mon Sep 23 15:11:40 MST 2019 
 //
 //  Modifications:
 //
@@ -3240,7 +3224,6 @@ avtGenericDatabase::GetQOTDataset(int domain,
                                   avtDataRequest_p spec,
                                   avtSourceFromDatabase *src)
 {
-    //cerr << "GETTING QOT DS FOR " << varname << endl;//FIXME
     const QueryOverTimeAttributes *QOTAtts = spec->GetQOTAtts();
 
     if (QOTAtts == NULL)
@@ -3252,13 +3235,11 @@ avtGenericDatabase::GetQOTDataset(int domain,
             "QueryOverTimeAttributes.");
     }
 
-    //TODO: need to update to recieve multiple elements. 
-    int startTime = QOTAtts->GetStartTime();
-    int element   = QOTAtts->GetPickAtts().GetElementNumber();
+    int startTime   = QOTAtts->GetStartTime();
+    int element     = QOTAtts->GetPickAtts().GetElementNumber();
+    avtVarType type = GetMetaData(startTime)->DetermineVarType(varname);
 
     Interface->TurnMaterialSelectionOff();
-
-    avtVarType type = GetMetaData(startTime)->DetermineVarType(varname);
 
     vtkDataSet *rv = NULL;
 
@@ -3308,11 +3289,16 @@ avtGenericDatabase::GetQOTDataset(int domain,
 //  Method: avtGenericDatabase::AddSecondaryQOTVariables
 //
 //  Purpose:
+//      Add secondary variables to a QOT dataset. 
 //
 //  Arguments:
+//      ds       The QOT dataset. 
+//      domain   The domain of interest. 
+//      vars2nd  The secondary variables. 
+//      spec     The data request. 
 //
-//  Programmer: 
-//  Creation:  
+//  Programmer: Alister Maguire
+//  Creation:   Mon Sep 23 15:11:40 MST 2019 
 //
 //  Modifications:
 
@@ -3355,13 +3341,18 @@ avtGenericDatabase::AddSecondaryQOTVariables(vtkDataSet *ds,
 
         avtVarType vt = md->DetermineVarType(varName, false);
 
+        //
+        // The QOT dataset has a limited number of types that it handles. 
+        //
         if (vt == AVT_MESH || vt == AVT_MATERIAL || vt == AVT_LABEL_VAR ||
             vt == AVT_MATSPECIES || vt == AVT_CURVE)
             continue;
 
+        //
+        // The QOT dataset is always a point mesh. 
+        //
         vtkPointData *pointData = ds->GetPointData();
-
-        vtkDataArray *secVar = NULL;
+        vtkDataArray *secVar    = NULL;
 
         switch (vt)
         {
@@ -3407,14 +3398,16 @@ avtGenericDatabase::AddSecondaryQOTVariables(vtkDataSet *ds,
 //      Constructs a query over time dataset for a scalar variable.
 //
 //  Arguments:
-//      varname      The variable for that domain.
-//      ts           The timestep of interest.
-//      domain       The domain of the dataset to retrieve.
+//      varname      The variable of interest. 
+//      element      The element of interest. 
+//      domain       The domain of interest. 
+//      spec         The data request. 
 //
 //  Returns:         
+//      A QOT dataset containing the requested variable. 
 //
-//  Programmer: 
-//  Creation:  
+//  Programmer: Alister Maguire
+//  Creation:   Mon Sep 23 15:11:40 MST 2019 
 //
 //  Modifications:
 //
@@ -3444,7 +3437,9 @@ avtGenericDatabase::GetQOTScalarVarDataset(const char *varname,
     tsRange[1] = QOTAtts->GetEndTime();
     tsStride   = QOTAtts->GetStride();
 
-    //TODO: is first timestep good enough? We can always catch missing data later. 
+    //TODO: is first timestep good enough? We can always catch missing 
+    //      data later, but there may be cases where the firs timestep 
+    //      doesn't have our data. 
     const avtScalarMetaData *smd = GetMetaData(tsRange[0])->GetScalar(varname);
     if (smd == NULL)
     {
@@ -3455,10 +3450,7 @@ avtGenericDatabase::GetQOTScalarVarDataset(const char *varname,
 
     if (mesh == NULL)
     {
-        //
-        // Some file formats don't have a mesh for every domain (like Exodus
-        // when material selection is applied).  Just propagate the NULL up.
-        //
+        debug1 << "Was unable to retrieve the QOT mesh... This is odd" << endl;
         return NULL;
     }
 
@@ -3467,10 +3459,6 @@ avtGenericDatabase::GetQOTScalarVarDataset(const char *varname,
 
     if (var == NULL)
     {
-        //
-        // Some variables don't have a var for every domain, even if the
-        // mesh exists there.  Just propagate the NULL up.
-        //
         return NULL;
     }
 
@@ -3488,14 +3476,19 @@ avtGenericDatabase::GetQOTScalarVarDataset(const char *varname,
 //  Method: avtGenericDatabase::GetQOTVectorVarDataset
 //
 //  Purpose:
-//      Constructs a query over time dataset for a scalar variable.
+//      Constructs a query over time dataset for a vector variable.
 //
 //  Arguments:
+//      varname      The variable of interest. 
+//      element      The element of interest. 
+//      domain       The domain of interest. 
+//      spec         The data request. 
 //
 //  Returns:         
+//      A QOT dataset containing the requested variable. 
 //
-//  Programmer: 
-//  Creation:  
+//  Programmer: Alister Maguire
+//  Creation:   Mon Sep 23 15:11:40 MST 2019 
 //
 //  Modifications:
 //
@@ -3525,7 +3518,9 @@ avtGenericDatabase::GetQOTVectorVarDataset(const char *varname,
     tsRange[1] = QOTAtts->GetEndTime();
     tsStride   = QOTAtts->GetStride();
 
-    //TODO: is first timestep good enough? We can always catch missing data later. 
+    //TODO: is first timestep good enough? We can always catch missing 
+    //      data later, but there may be cases where the firs timestep 
+    //      doesn't have our data. 
     const avtVectorMetaData *vmd = GetMetaData(tsRange[0])->GetVector(varname);
     if (vmd == NULL)
     {
@@ -3536,7 +3531,7 @@ avtGenericDatabase::GetQOTVectorVarDataset(const char *varname,
 
     if (mesh == NULL)
     {
-        //TODO: report error here. We should always be able to retrieve this mesh.  
+        debug1 << "Was unable to retrieve the QOT mesh... This is odd" << endl;
         return NULL;
     }
 
@@ -3570,13 +3565,19 @@ avtGenericDatabase::GetQOTVectorVarDataset(const char *varname,
 //  Method: avtGenericDatabase::GetQOTArrayVarDataset
 //
 //  Purpose:
+//      Construct a QOT dataset containing an array variable. 
 //
 //  Arguments:
+//      varname      The variable of interest. 
+//      element      The element of interest. 
+//      domain       The domain of interest. 
+//      spec         The data request. 
 //
 //  Returns:         
+//      A QOT dataset containing the requested variable. 
 //
-//  Programmer: 
-//  Creation:  
+//  Programmer: Alister Maguire
+//  Creation:   Mon Sep 23 15:11:40 MST 2019 
 //
 //  Modifications:
 //
@@ -3606,7 +3607,9 @@ avtGenericDatabase::GetQOTArrayVarDataset(const char *varname,
     tsRange[1] = QOTAtts->GetEndTime();
     tsStride   = QOTAtts->GetStride();
 
-    //TODO: is first timestep good enough? We can always catch missing data later. 
+    //TODO: is first timestep good enough? We can always catch missing 
+    //      data later, but there may be cases where the firs timestep 
+    //      doesn't have our data. 
     const avtArrayMetaData *amd = GetMetaData(tsRange[0])->GetArray(varname);
     if (amd == NULL)
     {
@@ -3617,7 +3620,7 @@ avtGenericDatabase::GetQOTArrayVarDataset(const char *varname,
 
     if (mesh == NULL)
     {
-        //TODO: report error here. We should always be able to retrieve this mesh.  
+        debug1 << "Was unable to retrieve the QOT mesh... This is odd" << endl;
         return NULL;
     }
 
@@ -3643,13 +3646,19 @@ avtGenericDatabase::GetQOTArrayVarDataset(const char *varname,
 //  Method: avtGenericDatabase::GetQOTTensorVarDataset
 //
 //  Purpose:
+//      Construct a QOT dataset containing an tensor variable. 
 //
 //  Arguments:
+//      varname      The variable of interest. 
+//      element      The element of interest. 
+//      domain       The domain of interest. 
+//      spec         The data request. 
 //
 //  Returns:         
+//      A QOT dataset containing the requested variable. 
 //
-//  Programmer: 
-//  Creation:  
+//  Programmer: Alister Maguire
+//  Creation:   Mon Sep 23 15:11:40 MST 2019 
 //
 //  Modifications:
 //
@@ -3670,7 +3679,9 @@ avtGenericDatabase::GetQOTTensorVarDataset(const char *varname,
     tsRange[1] = QOTAtts->GetEndTime();
     tsStride   = QOTAtts->GetStride();
 
-    //TODO: is first timestep good enough? We can always catch missing data later. 
+    //TODO: is first timestep good enough? We can always catch missing 
+    //      data later, but there may be cases where the firs timestep 
+    //      doesn't have our data. 
     const avtTensorMetaData *tmd = GetMetaData(tsRange[0])->GetTensor(varname);
     if (tmd == NULL)
     {
@@ -3681,7 +3692,7 @@ avtGenericDatabase::GetQOTTensorVarDataset(const char *varname,
 
     if (mesh == NULL)
     {
-        //TODO: report error here. We should always be able to retrieve this mesh.  
+        debug1 << "Was unable to retrieve the QOT mesh... This is odd" << endl;
         return NULL;
     }
 
@@ -3707,13 +3718,19 @@ avtGenericDatabase::GetQOTTensorVarDataset(const char *varname,
 //  Method: avtGenericDatabase::GetQOTSymmetricTensorVarDataset
 //
 //  Purpose:
+//      Construct a QOT dataset containing an symmetric tensor variable.
 //
 //  Arguments:
+//      varname      The variable of interest. 
+//      element      The element of interest. 
+//      domain       The domain of interest. 
+//      spec         The data request. 
 //
 //  Returns:         
+//      A QOT dataset containing the requested variable. 
 //
-//  Programmer: 
-//  Creation:  
+//  Programmer: Alister Maguire
+//  Creation:   Mon Sep 23 15:11:40 MST 2019 
 //
 //  Modifications:
 //
@@ -3734,7 +3751,9 @@ avtGenericDatabase::GetQOTSymmetricTensorVarDataset(const char *varname,
     tsRange[1] = QOTAtts->GetEndTime();
     tsStride   = QOTAtts->GetStride();
 
-    //TODO: is first timestep good enough? We can always catch missing data later. 
+    //TODO: is first timestep good enough? We can always catch missing 
+    //      data later, but there may be cases where the firs timestep 
+    //      doesn't have our data. 
     const avtSymmetricTensorMetaData *stmd = 
         GetMetaData(tsRange[0])->GetSymmTensor(varname);
     if (stmd == NULL)
@@ -3746,7 +3765,7 @@ avtGenericDatabase::GetQOTSymmetricTensorVarDataset(const char *varname,
 
     if (mesh == NULL)
     {
-        //TODO: report error here. We should always be able to retrieve this mesh.  
+        debug1 << "Was unable to retrieve the QOT mesh... This is odd" << endl;
         return NULL;
     }
 
@@ -3772,13 +3791,21 @@ avtGenericDatabase::GetQOTSymmetricTensorVarDataset(const char *varname,
 //  Method: avtGenericDatabase::GetQOTScalarVariable
 //
 //  Purpose:
+//      Retrieve a QOT scalar variable. 
 //
 //  Arguments:
+//      varname      The variable of interest. 
+//      domain       The domain of interest. 
+//      element      The element of interest. 
+//      tsRange      The timestep range. 
+//      tsStride     The timestep stride. 
+//      spec         The data request. 
 //
 //  Returns:         
+//      The requested variable. 
 //
-//  Programmer: 
-//  Creation:  
+//  Programmer: Alister Maguire
+//  Creation:   Mon Sep 23 15:11:40 MST 2019 
 //
 //  Modifications:
 //
@@ -3800,7 +3827,6 @@ avtGenericDatabase::GetQOTScalarVariable(const char *varname,
     // Note: use the "real_varname" when talking to the Interface, but use
     // the standard "varname" for caching and all other places.
     //
-    //FIXME: is first timestep okay for smd?
     const avtScalarMetaData *smd = GetMetaData(tsRange[0])->GetScalar(varname);
     if (smd == NULL)
         EXCEPTION1(InvalidVariableException, varname);
@@ -3810,9 +3836,6 @@ avtGenericDatabase::GetQOTScalarVariable(const char *varname,
         real_varname = smd->originalName.c_str();
     }
 
-    //
-    // We haven't read in this domain before, so fetch it from the files.
-    //
     var = Interface->GetQOTVar(domain, real_varname, 
         element, tsRange, tsStride);
 
@@ -3837,13 +3860,21 @@ avtGenericDatabase::GetQOTScalarVariable(const char *varname,
 //  Method: avtGenericDatabase::GetQOTVectorVariable
 //
 //  Purpose:
+//      Retrieve a QOT vector variable. 
 //
 //  Arguments:
+//      varname      The variable of interest. 
+//      domain       The domain of interest. 
+//      element      The element of interest. 
+//      tsRange      The timestep range. 
+//      tsStride     The timestep stride. 
+//      spec         The data request. 
 //
 //  Returns:         
+//      The requested variable. 
 //
-//  Programmer: 
-//  Creation:  
+//  Programmer: Alister Maguire
+//  Creation:   Mon Sep 23 15:11:40 MST 2019 
 //
 //  Modifications:
 //
@@ -3865,7 +3896,6 @@ avtGenericDatabase::GetQOTVectorVariable(const char *varname,
     // Note: use the "real_varname" when talking to the Interface, but use
     // the standard "varname" for caching and all other places.
     //
-    //FIXME: is first timestep okay for smd?
     const avtVectorMetaData *vmd = GetMetaData(tsRange[0])->GetVector(varname);
     if (vmd == NULL)
         EXCEPTION1(InvalidVariableException, varname);
@@ -3877,9 +3907,6 @@ avtGenericDatabase::GetQOTVectorVariable(const char *varname,
 
     int vDim = vmd->varDim;
 
-    //
-    // We haven't read in this domain before, so fetch it from the files.
-    //
     var = Interface->GetQOTVectorVar(domain, real_varname, vDim,
         element, tsRange, tsStride);
 
@@ -3904,13 +3931,21 @@ avtGenericDatabase::GetQOTVectorVariable(const char *varname,
 //  Method: avtGenericDatabase::GetQOTArrayVariable
 //
 //  Purpose:
+//      Retrieve a QOT array variable. 
 //
 //  Arguments:
+//      varname      The variable of interest. 
+//      domain       The domain of interest. 
+//      element      The element of interest. 
+//      tsRange      The timestep range. 
+//      tsStride     The timestep stride. 
+//      spec         The data request. 
 //
 //  Returns:         
+//      The requested variable. 
 //
-//  Programmer: 
-//  Creation:  
+//  Programmer: Alister Maguire
+//  Creation:   Mon Sep 23 15:11:40 MST 2019 
 //
 //  Modifications:
 //
@@ -3932,7 +3967,6 @@ avtGenericDatabase::GetQOTArrayVariable(const char *varname,
     // Note: use the "real_varname" when talking to the Interface, but use
     // the standard "varname" for caching and all other places.
     //
-    //FIXME: is first timestep okay for smd?
     const avtArrayMetaData *amd = GetMetaData(tsRange[0])->GetArray(varname);
     if (amd == NULL)
         EXCEPTION1(InvalidVariableException, varname);
@@ -3944,9 +3978,6 @@ avtGenericDatabase::GetQOTArrayVariable(const char *varname,
 
     int aDim = amd->nVars;
 
-    //
-    // We haven't read in this domain before, so fetch it from the files.
-    //
     var = Interface->GetQOTVectorVar(domain, real_varname, aDim,
         element, tsRange, tsStride);
 
@@ -3971,13 +4002,21 @@ avtGenericDatabase::GetQOTArrayVariable(const char *varname,
 //  Method: avtGenericDatabase::GetQOTTensorVariable
 //
 //  Purpose:
+//      Retrieve a QOT tensor variable. 
 //
 //  Arguments:
+//      varname      The variable of interest. 
+//      domain       The domain of interest. 
+//      element      The element of interest. 
+//      tsRange      The timestep range. 
+//      tsStride     The timestep stride. 
+//      spec         The data request. 
 //
 //  Returns:         
+//      The requested variable. 
 //
-//  Programmer: 
-//  Creation:  
+//  Programmer: Alister Maguire
+//  Creation:   Mon Sep 23 15:11:40 MST 2019 
 //
 //  Modifications:
 //
@@ -3999,7 +4038,6 @@ avtGenericDatabase::GetQOTTensorVariable(const char *varname,
     // Note: use the "real_varname" when talking to the Interface, but use
     // the standard "varname" for caching and all other places.
     //
-    //FIXME: is first timestep okay for smd?
     const avtTensorMetaData *tmd = GetMetaData(tsRange[0])->GetTensor(varname);
     if (tmd == NULL)
         EXCEPTION1(InvalidVariableException, varname);
@@ -4011,9 +4049,6 @@ avtGenericDatabase::GetQOTTensorVariable(const char *varname,
 
     int tDim = tmd->dim;
 
-    //
-    // We haven't read in this domain before, so fetch it from the files.
-    //
     var = Interface->GetQOTVectorVar(domain, real_varname, tDim,
         element, tsRange, tsStride);
 
@@ -4038,13 +4073,21 @@ avtGenericDatabase::GetQOTTensorVariable(const char *varname,
 //  Method: avtGenericDatabase::GetQOTSymmetricTensorVariable
 //
 //  Purpose:
+//      Retrieve a QOT symmetric tensor variable. 
 //
 //  Arguments:
+//      varname      The variable of interest. 
+//      domain       The domain of interest. 
+//      element      The element of interest. 
+//      tsRange      The timestep range. 
+//      tsStride     The timestep stride. 
+//      spec         The data request. 
 //
 //  Returns:         
+//      The requested variable. 
 //
-//  Programmer: 
-//  Creation:  
+//  Programmer: Alister Maguire
+//  Creation:   Mon Sep 23 15:11:40 MST 2019 
 //
 //  Modifications:
 //
@@ -4066,7 +4109,6 @@ avtGenericDatabase::GetQOTSymmetricTensorVariable(const char *varname,
     // Note: use the "real_varname" when talking to the Interface, but use
     // the standard "varname" for caching and all other places.
     //
-    //FIXME: is first timestep okay for smd?
     const avtSymmetricTensorMetaData *stmd = 
         GetMetaData(tsRange[0])->GetSymmTensor(varname);
     if (stmd == NULL)
@@ -4079,9 +4121,6 @@ avtGenericDatabase::GetQOTSymmetricTensorVariable(const char *varname,
 
     int stDim = stmd->dim;
 
-    //
-    // We haven't read in this domain before, so fetch it from the files.
-    //
     var = Interface->GetQOTVectorVar(domain, real_varname, stDim,
         element, tsRange, tsStride);
 
@@ -6212,8 +6251,6 @@ avtGenericDatabase::ReadDataset(avtDatasetCollection &ds, intVector &domains,
                       avtDataRequest_p &spec, avtSourceFromDatabase *src,
                       boolVector &selectionsApplied)
 {
-    //TODO: aom -> this looks like where the original dataset read takes place. 
-    //      we'd likely need to read our QOT dataset here. 
     int timerHandle = visitTimer->StartTimer();
     int ts = spec->GetTimestep();
 
@@ -6611,9 +6648,11 @@ avtGenericDatabase::ReadDataset(avtDatasetCollection &ds, intVector &domains,
 // ****************************************************************************
 
 void
-avtGenericDatabase::ReadQOTDataset(avtDatasetCollection &ds, int domain,
-                      avtDataRequest_p &spec, avtSourceFromDatabase *src,
-                      boolVector &selectionsApplied)
+avtGenericDatabase::ReadQOTDataset(avtDatasetCollection &ds, 
+                                   int domain,
+                                   avtDataRequest_p &spec, 
+                                   avtSourceFromDatabase *src,
+                                   boolVector &selectionsApplied)
 {
     int timerHandle = visitTimer->StartTimer();
 
@@ -6627,63 +6666,25 @@ avtGenericDatabase::ReadQOTDataset(avtDatasetCollection &ds, int domain,
     char  progressString[1024];
     sprintf(progressString, "Reading QOT from %s", Interface->GetType());
 
-    //stringVector blockNames;
-    //stringVector groupNames;
-    //intVector gIds;
-    //intVector groupIdsBasedOnRange;
-    //int domOrigin = 0;
-    //int grpOrigin = 0;
-    //string enumScalarLabel;
-
-    //avtSubsetType subT = GetMetaData(ts)->DetermineSubsetType(var);
-    //if (subT == AVT_DOMAIN_SUBSET || subT == AVT_GROUP_SUBSET)
-    //{
-    //    string meshName = GetMetaData(ts)->MeshForVar(var);
-    //    blockNames =  GetMetaData(ts)->GetMesh(meshName)->blockNames;
-    //    domOrigin  =  GetMetaData(ts)->GetMesh(meshName)->blockOrigin;
-    //    grpOrigin  =  GetMetaData(ts)->GetMesh(meshName)->groupOrigin;
-    //    groupNames =  GetMetaData(ts)->GetMesh(meshName)->groupNames;
-    //    gIds       =  GetMetaData(ts)->GetMesh(meshName)->groupIds;
-    //    groupIdsBasedOnRange =  GetMetaData(ts)->GetMesh(meshName)->groupIdsBasedOnRange;
-    //}
-    //else if (subT == AVT_ENUMSCALAR_SUBSET)
-    //{
-    //    const avtScalarMetaData *smd = GetMetaData(ts)->GetScalar(var);
-    //    int n = (int)smd->enumNames.size();
-    //    char tmp[100];
-    //    sprintf(tmp,"%d",n);
-    //    enumScalarLabel += tmp;
-    //    enumScalarLabel += ";";
-    //    for (int i=0; i<n; ++i)
-    //    {
-    //        string name = smd->enumNames[i];
-    //        int value = smd->enumRanges[2*i];
-    //        sprintf(tmp, "%d", value);
-    //        enumScalarLabel += tmp;
-    //        enumScalarLabel += ";";
-    //        enumScalarLabel += name;
-    //        enumScalarLabel += ";";
-    //    }
-    //    enumScalarLabel += "mixed";
-    //}
-
-
-    ////
-    //// Some file formats have variables that are defined for only some of
-    //// the materials.  In that case, we have to tell the file format interface
-    //// of all of the variables we will be interested in.
-    ////
-    //const char *real_var = GetOriginalVariableName(md, var);
-    //vector<CharStrRef> real_vars2nd;
-    //for (size_t i = 0 ; i < vars2nd.size() ; i++)
-    //{
-    //    const char *str = GetOriginalVariableName(md, *(vars2nd[i]));
-    //    char *v2 = new char[strlen(str)+1];
-    //    strcpy(v2, str);
-    //    CharStrRef ref = v2;
-    //    real_vars2nd.push_back(ref);
-    //}
-    //Interface->RegisterVariableList(real_var, vars2nd);
+    //FIXME: needed?
+    //
+    // Some file formats have variables that are defined for only some of
+    // the materials.  In that case, we have to tell the file format interface
+    // of all of the variables we will be interested in.
+    //
+    int startTime = spec->GetQOTAtts()->GetStartTime();//TODO: is first timestep enough?
+    avtDatabaseMetaData *md = GetMetaData(ts);
+    const char *real_var = GetOriginalVariableName(md, var);
+    vector<CharStrRef> real_vars2nd;
+    for (size_t i = 0 ; i < vars2nd.size() ; i++)
+    {
+        const char *str = GetOriginalVariableName(md, *(vars2nd[i]));
+        char *v2 = new char[strlen(str)+1];
+        strcpy(v2, str);
+        CharStrRef ref = v2;
+        real_vars2nd.push_back(ref);
+    }
+    Interface->RegisterVariableList(real_var, vars2nd);
 
     //
     // File formats that do their own domain decomposition divide the problem

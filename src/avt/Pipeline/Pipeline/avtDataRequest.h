@@ -38,6 +38,7 @@ class PIPELINE_API avtSILSpecification
     bool                  operator==(const avtSILSpecification &);
 };
 
+
 class  avtWebpage;
 class  avtDataRequest;
 typedef ref_ptr<avtDataRequest> avtDataRequest_p;
