@@ -551,8 +551,6 @@ class ENGINE_MAIN_API NetworkManager : public EngineBase
     void          AddQueryOverTimeFilter(QueryOverTimeAttributes *,
                                          const int clonedFromId);
 
-    void          AddDirectDBQueryOverTimeFilter(QueryOverTimeAttributes *, const int);
-
     static void   RegisterInitializeProgressCallback(
                                            InitializeProgressCallback, void *);
     static void   RegisterProgressCallback(ProgressCallback, void *);

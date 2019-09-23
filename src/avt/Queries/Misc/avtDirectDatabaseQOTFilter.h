@@ -37,11 +37,11 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                       avtDirectDBQueryOverTimeFilter.h                            //
+//                       avtDirectDatabaseQOTFilter.h                            //
 // ************************************************************************* //
 
-#ifndef AVT_DIRECTDB_QUERYOVERTIME_FILTER_H
-#define AVT_DIRECTDB_QUERYOVERTIME_FILTER_H
+#ifndef AVT_DIRECT_DATABASE_QOT_FILTER_H
+#define AVT_DIRECT_DATABASE_QOT_FILTER_H
 
 #include <query_exports.h>
 
@@ -50,9 +50,12 @@
 #include <QueryOverTimeAttributes.h>
 #include <SILRestrictionAttributes.h>
 
+#include <avtQueryOverTimeFilter.h>
+
 #include <string>
 
 class vtkRectilinearGrid;
+class vtkPolyData;
 
 // ****************************************************************************
 //  Class: 
@@ -66,47 +69,37 @@ class vtkRectilinearGrid;
 //
 // ****************************************************************************
 
-class QUERY_API avtDirectDBQueryOverTimeFilter : public avtDatasetToDatasetFilter
+class QUERY_API avtDirectDatabaseQOTFilter : public avtQueryOverTimeFilter
 {
   public:
-                          avtDirectDBQueryOverTimeFilter(const AttributeGroup*);
-    virtual              ~avtDirectDBQueryOverTimeFilter();
+                          avtDirectDatabaseQOTFilter(const AttributeGroup*);
+    virtual              ~avtDirectDatabaseQOTFilter();
 
     static avtFilter     *Create(const AttributeGroup*);
 
-    virtual const char   *GetType(void)  { return "avtDirectDBQueryOverTimeFilter"; };
+    virtual const char   *GetType(void)  { return "avtDirectDatabaseQOTFilter"; };
     virtual const char   *GetDescription(void) { return "Querying over Time"; };
 
-    void                  SetSILAtts(const SILRestrictionAttributes *silAtts);
-    virtual bool          FilterSupportsTimeParallelization(void);
-
   protected:
-    QueryOverTimeAttributes     atts;
-    SILRestrictionAttributes    querySILAtts;
-    std::vector< doubleVector > curves;
-    doubleVector                times;
-    bool                        success;
-    bool                        finalOutputCreated;
+    //bool                        success;
     std::string                 label;
 
     bool                        useTimeForXAxis;
     bool                        useVarForYAxis;
     int                         numCurves;
-    //int                         numAdditionalFilters;
-    int                         cacheIdx;
-    bool                        useCache;
 
     virtual void          Execute(void);
     virtual void          UpdateDataObjectInfo(void);
 
-    //virtual int           AdditionalPipelineFilters(void) 
-    //                                        { return numAdditionalFilters; };
+    //virtual bool          ExecutionSuccessful(void) { return success; } ;
 
-    virtual void          CreateFinalOutput(void);
-    virtual bool          ExecutionSuccessful(void) { return success; } ;
-    avtDataTree_p         CreateTreeFromCurves(const doubleVector &, 
+    avtDataTree_p         CreateTreeFromCurves(vtkPolyData *,
                                                stringVector &,
                                                const bool);
+
+    avtDataTree_p         CreateOutputTree(vtkDataSet *,
+                                           const stringVector &,
+                                           const bool);
 };
 
 

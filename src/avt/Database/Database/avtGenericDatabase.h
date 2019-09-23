@@ -506,6 +506,9 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
                                                    int *,
                                                    int,
                                                    const avtDataRequest_p);
+    void                       AddSecondaryQOTVariables(vtkDataSet *, int,
+                                                const std::vector<CharStrRef> &,
+                                                const avtDataRequest_p);
 
     void                       AddOriginalCellsArray(vtkDataSet *, const int);
     void                       AddOriginalNodesArray(vtkDataSet *, const int);

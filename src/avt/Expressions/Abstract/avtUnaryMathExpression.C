@@ -31,7 +31,7 @@
 
 avtUnaryMathExpression::avtUnaryMathExpression()
 {
-    ;
+    canApplyToDirectDatabaseQOT = true;
 }
 
 

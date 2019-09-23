@@ -1607,38 +1607,7 @@ EngineRPCExecutor<CloneNetworkRPC>::Execute(CloneNetworkRPC *rpc)
 
         QueryOverTimeAttributes *qotAtts = rpc->GetQueryOverTimeAtts();
 
-        //avtDatabaseMetaData *metaData    = GetEngine()->GetDBMD();
-
-        //stringVector vars = qotAtts->GetQueryAtts().GetVariables();
-
-        //if (metaData != NULL)
-        //{
-        //    const ExpressionList expList = metaData->GetExprList();
-        //    int numExp = expList.GetNumExpressions();
-
-        //    for (stringVector::iterator varItr = vars.begin(); 
-        //         varItr < vars.end(); ++varItr)
-        //    {
-        //        for (int i = 0; i < numExp; ++i)
-        //        {
-        //            const Expression exp = expList.GetExpressions(i);
-        //            //cerr << "NAME: " << exp.GetName() << endl;
-
-        //            if ((*varItr) == exp.GetName())
-        //            {
-        //                //cerr << "IS EXPR: " << (*varItr) << endl;//FIXME
-        //                break;
-        //            }
-        //        }
-        //    }
-        //}
-        //else
-        //    cerr << "MD IS NULL" << endl;//FIXME
-
-        //FIXME: testing DirectDBQOT
         if (rpc->GetQueryOverTimeAtts() != NULL)
-            //netmgr->AddDirectDBQueryOverTimeFilter(qotAtts,
-            //                                       rpc->GetID());
             netmgr->AddQueryOverTimeFilter(rpc->GetQueryOverTimeAtts(),
                                            rpc->GetID());
         rpc->SendReply();

@@ -3240,6 +3240,7 @@ avtGenericDatabase::GetQOTDataset(int domain,
                                   avtDataRequest_p spec,
                                   avtSourceFromDatabase *src)
 {
+    //cerr << "GETTING QOT DS FOR " << varname << endl;//FIXME
     const QueryOverTimeAttributes *QOTAtts = spec->GetQOTAtts();
 
     if (QOTAtts == NULL)
@@ -3251,11 +3252,9 @@ avtGenericDatabase::GetQOTDataset(int domain,
             "QueryOverTimeAttributes.");
     }
 
-    int startTime   = QOTAtts->GetStartTime();
-
     //TODO: need to update to recieve multiple elements. 
-    int element = QOTAtts->GetPickAtts().GetElementNumber();
-    //stringVector vars = QOTAtts->GetQueryAtts().GetVariables();
+    int startTime = QOTAtts->GetStartTime();
+    int element   = QOTAtts->GetPickAtts().GetElementNumber();
 
     Interface->TurnMaterialSelectionOff();
 
@@ -3298,18 +3297,106 @@ avtGenericDatabase::GetQOTDataset(int domain,
 
     if (rv != NULL && vars2nd.size() > 0)
     {
-        //FIXME: do we need this?
-        //AddSecondaryVariables(rv, ts, domain, matname, vars2nd, spec);
+        AddSecondaryQOTVariables(rv, domain, vars2nd, spec);
     }
 
-    //
-    // Make sure that every domain we read has its extents merged into the
-    // extents for all the dataset.
-    //
-    //string meshname  = GetMetaData(ts)->MeshForVar(varname);
-    //src->MergeExtents(rv, domain, ts, meshname.c_str());
-
     return rv;
+}
+
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::AddSecondaryQOTVariables
+//
+//  Purpose:
+//
+//  Arguments:
+//
+//  Programmer: 
+//  Creation:  
+//
+//  Modifications:
+
+// ****************************************************************************
+
+void
+avtGenericDatabase::AddSecondaryQOTVariables(vtkDataSet *ds, 
+                                             int domain,
+                                             const vector<CharStrRef> &vars2nd,
+                                             const avtDataRequest_p spec)
+{
+    const QueryOverTimeAttributes *QOTAtts = spec->GetQOTAtts();
+
+    if (QOTAtts == NULL)
+    {
+        debug1 << "Trying to retrieve QOT Dataset without QOT atts! This "
+               << "shouldn't happen..." << endl;
+
+        EXCEPTION1(VisItException, "Cannot retrieve QOT Dataset without "
+            "QueryOverTimeAttributes.");
+    }
+
+    int tsRange[2];
+    int tsStride = 1;
+
+    int element = QOTAtts->GetPickAtts().GetElementNumber();
+    tsRange[0]  = QOTAtts->GetStartTime();
+    tsRange[1]  = QOTAtts->GetEndTime();
+    tsStride    = QOTAtts->GetStride();
+
+    //
+    // If we have any secondary arrays, then fetch those as well.
+    //
+    size_t num2ndVars = vars2nd.size();
+
+    for (size_t i = 0 ; i < num2ndVars ; i++)
+    {
+        const char *varName = *(vars2nd[i]);
+        avtDatabaseMetaData *md = GetMetaData(tsRange[0]);
+
+        avtVarType vt = md->DetermineVarType(varName, false);
+
+        if (vt == AVT_MESH || vt == AVT_MATERIAL || vt == AVT_LABEL_VAR ||
+            vt == AVT_MATSPECIES || vt == AVT_CURVE)
+            continue;
+
+        vtkPointData *pointData = ds->GetPointData();
+
+        vtkDataArray *secVar = NULL;
+
+        switch (vt)
+        {
+          case AVT_SCALAR_VAR:
+            secVar = GetQOTScalarVariable(varName, domain, element, 
+                tsRange, tsStride, spec);
+            break;
+          case AVT_VECTOR_VAR:
+            secVar = GetQOTVectorVariable(varName, domain, element, 
+                tsRange, tsStride, spec);
+            break;
+          case AVT_TENSOR_VAR:
+            secVar = GetQOTTensorVariable(varName, domain, element, 
+                tsRange, tsStride, spec);
+            break;
+          case AVT_SYMMETRIC_TENSOR_VAR:
+            secVar = GetQOTSymmetricTensorVariable(varName, domain, element, 
+                tsRange, tsStride, spec);
+            break;
+          case AVT_ARRAY_VAR:
+            secVar = GetQOTArrayVariable(varName, domain, element, 
+                tsRange, tsStride, spec);
+            break;
+          default:
+            EXCEPTION1(InvalidVariableException, varName);
+        }
+
+        if (secVar == NULL) 
+        {
+            continue;
+        }
+
+        secVar->SetName(varName);
+        pointData->AddArray(secVar);
+    }
 }
 
 
@@ -6556,30 +6643,12 @@ avtGenericDatabase::ReadQOTDataset(avtDatasetCollection &ds, int domain,
 {
     int timerHandle = visitTimer->StartTimer();
 
-    //FIXME: do we need any of this?
-    //int ts = spec->GetTimestep();
-
-    ////
-    //// This will get unset later if we determine that we actually do have
-    //// ghosts.
-    ////
-    //avtDatabaseMetaData *md = GetMetaData(ts);
-    //string meshname = md->MeshForVar(spec->GetVariable());
-    //md->SetContainsGhostZones(meshname, AVT_NO_GHOSTS);
-    //md->SetContainsOriginalCells(meshname, false);
-    //md->SetContainsOriginalNodes(meshname, false);
-    //md->SetContainsGlobalZoneIds(meshname, false);
-    //md->SetContainsGlobalNodeIds(meshname, false);
-
-
-    //bool post_ghost = spec->NeedPostGhostMaterialInfo();
-    ////
-    //// Set up some things we will want for later.
-    ////
+    //
+    // Set up some things we will want for later.
+    //
     const char *var = spec->GetVariable();
     const vector<CharStrRef> &vars2nd =
                                spec->GetSecondaryVariablesWithoutDuplicates();
-    //avtSILRestriction_p silr = spec->GetRestriction();
 
     char  progressString[1024];
     sprintf(progressString, "Reading QOT from %s", Interface->GetType());

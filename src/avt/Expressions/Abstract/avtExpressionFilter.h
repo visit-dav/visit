@@ -122,6 +122,7 @@ class EXPRESSION_API avtExpressionFilter : virtual public
     char                    *outputVariableName;
     int                      currentTimeState;
     bool                     calculateExtents;
+    bool                     canApplyToDirectDatabaseQOT;
 
     virtual bool             IsPointVariable();
 

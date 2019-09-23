@@ -76,6 +76,8 @@ class EXPRESSION_API avtUnaryMathExpression : public avtSingleInputExpressionFil
 
     avtCentering              centering;
     vtkDataSet               *cur_mesh;
+
+    bool                      canApplyToDirectDatabaseQOT;
 };
 
 

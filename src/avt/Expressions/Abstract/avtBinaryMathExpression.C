@@ -30,7 +30,7 @@
 
 avtBinaryMathExpression::avtBinaryMathExpression()
 {
-    ;
+    canApplyToDirectDatabaseQOT = true;
 }
 
 

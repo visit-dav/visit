@@ -34,7 +34,8 @@ Abstract/avtTwoPassDatasetQuery.C
 SET(MISC_SOURCES
 Misc/avtQueryFactory.C
 Misc/avtQueryOverTimeFilter.C
-Misc/avtDirectDBQueryOverTimeFilter.C
+Misc/avtTimeLoopQOTFilter.C
+Misc/avtDirectDatabaseQOTFilter.C
 )
 
 SET(PICK_SOURCES

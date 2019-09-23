@@ -58,6 +58,7 @@ avtExpressionFilter::avtExpressionFilter()
     outputVariableName = NULL;
     currentTimeState = 0;
     calculateExtents = false;
+    canApplyToDirectDatabaseQOT = false;
 }
 
 
