@@ -1075,7 +1075,6 @@ SimEngineManager::Query(const EngineKey &/*ek*/,
     return true;
 }
 
-
 // ****************************************************************************
 // Method: SimEngineManager::GetQueryParameters
 //

@@ -632,40 +632,6 @@ avtSourceFromDatabase::GetDomainName(const std::string &var, const int ts,
 
 
 // ****************************************************************************
-//  Method: avtOriginatingSource::FetchCycles
-//
-//  Purpose:
-//
-//  Programmer: Alister Maguire
-//  Creation:   
-//
-// ****************************************************************************
-
-void
-avtSourceFromDatabase::FetchCycles(int dom, intVector &cycles)
-{
-    database->GetCycles(dom, cycles);
-}
-
-
-// ****************************************************************************
-//  Method: avtOriginatingSource::FetchTimes
-//
-//  Purpose:
-//
-//  Programmer: Alister Maguire
-//  Creation:   
-//
-// ****************************************************************************
-
-void
-avtSourceFromDatabase::FetchTimes(int dom, doubleVector &times)
-{
-    database->GetTimes(dom, times);
-}
-
-
-// ****************************************************************************
 //  Method: avtSourceFromDatabase::QueryCoords
 //
 //  Purpose:    A query to find the coordinates of a zone or node. 

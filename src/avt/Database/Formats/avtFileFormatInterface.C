@@ -17,8 +17,6 @@
 #include <vtkPoints.h>
 #include <vtkDataArray.h>
 #include <vtkVisItUtility.h>
-#include <avtDatabaseMetaData.h>//FIXME: testing
-#include <avtVectorMetaData.h>//FIXME: testing
 
 #include <QueryOverTimeAttributes.h>
 

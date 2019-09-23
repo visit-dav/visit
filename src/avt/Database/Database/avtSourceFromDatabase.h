@@ -149,9 +149,6 @@ class DATABASE_API avtSourceFromDatabase : public avtOriginatingDatasetSource
     virtual void        GetDomainName(const std::string &, const int, 
                             const int, std::string &);
 
-    void                FetchCycles(int, intVector &);
-    void                FetchTimes(int, doubleVector &);
-
     virtual void        ReleaseData(void);
 
   protected:

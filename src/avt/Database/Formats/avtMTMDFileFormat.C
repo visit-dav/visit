@@ -14,9 +14,6 @@
 #include <ImproperUseException.h>
 #include <InvalidFilesException.h>
 
-#include <vtkDataArray.h>
-#include <vtkFloatArray.h>
-
 #include <cstring>
 
 using     std::vector;

@@ -17,7 +17,6 @@
 #include <void_ref_ptr.h>
 
 class avtIOInformation;
-class vtkDataArray;
 
 // ****************************************************************************
 //  Class: avtSTMDFileFormatInterface

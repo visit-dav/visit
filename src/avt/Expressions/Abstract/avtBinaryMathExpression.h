@@ -77,8 +77,6 @@ class EXPRESSION_API avtBinaryMathExpression
 
     avtCentering              centering;
     vtkDataSet               *cur_mesh;
-
-    bool                      canApplyToDirectDatabaseQOT;
 };
 
 

@@ -59,10 +59,6 @@
 #include <StartQueryRPC.h>
 #include <UpdatePlotAttsRPC.h>
 #include <UseNetworkRPC.h>
-#include <ExpressionList.h>//FIXME: testing
-#include <Expression.h>//FIXME: testing
-#include <QueryOverTimeAttributes.h>//FIXME testing
-#include <avtDatabaseMetaData.h>//FIXME: testing
 
 #include <avtParallel.h>
 #include <avtDataObjectString.h>
@@ -1604,8 +1600,6 @@ EngineRPCExecutor<CloneNetworkRPC>::Execute(CloneNetworkRPC *rpc)
     TRY
     {
         netmgr->CloneNetwork(rpc->GetID());
-
-        QueryOverTimeAttributes *qotAtts = rpc->GetQueryOverTimeAtts();
 
         if (rpc->GetQueryOverTimeAtts() != NULL)
             netmgr->AddQueryOverTimeFilter(rpc->GetQueryOverTimeAtts(),

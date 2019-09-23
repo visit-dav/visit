@@ -17,9 +17,6 @@
 #include <BadIndexException.h>
 #include <DebugStream.h>
 
-#include <vtkDataArray.h>
-#include <vtkFloatArray.h>
-
 
 using std::vector;
 

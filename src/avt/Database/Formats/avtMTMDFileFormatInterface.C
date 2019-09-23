@@ -17,8 +17,6 @@
 #include <BadIndexException.h>
 #include <DebugStream.h>
 
-#include <vtkFloatArray.h>
-
 
 using std::vector;
 
@@ -478,7 +476,6 @@ avtMTMDFileFormatInterface::SetDatabaseMetaData(avtDatabaseMetaData *md,
         }
     }
 }
-
 
 // ****************************************************************************
 //  Method: avtMTMDFileFormatInterface::SetCycleTimeInDatabaseMetaData

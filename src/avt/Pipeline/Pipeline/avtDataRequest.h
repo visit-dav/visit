@@ -22,7 +22,7 @@
 #include <avtGhostData.h>
 
 #include <avtDataSelection.h>
-#include <QueryOverTimeAttributes.h>//FIXME testing
+#include <QueryOverTimeAttributes.h>
 
 class PIPELINE_API avtSILSpecification
 {

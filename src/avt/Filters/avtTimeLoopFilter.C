@@ -18,7 +18,6 @@
 #include <InvalidFilesException.h>
 #include <math.h>
 #include <TimingsManager.h>
-#include <chrono>//FIXME: testing
 
 
 // ****************************************************************************

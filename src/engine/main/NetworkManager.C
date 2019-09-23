@@ -4310,12 +4310,10 @@ NetworkManager::Query(const std::vector<int> &ids, QueryAttributes *qa)
     TRY
     {
 
-        cerr << "QA NAME: " << qa->GetName() << endl;//FIXME
         query = avtQueryFactory::Instance()->CreateQuery(qa);
 
         if (query == NULL)
         {
-            cerr << "QUERY IS NULL" << endl;//FIXME
             //
             // For now, multiple input queries need to be instantiated here.
             //
@@ -4338,7 +4336,6 @@ NetworkManager::Query(const std::vector<int> &ids, QueryAttributes *qa)
 
         if (query != NULL)
         {
-            cerr << "QUERY IS NOT NULL" << endl;//FIXME
             avtSILRestriction_p silr =
                networkCache[ids[0]]->GetDataSpec()->GetRestriction();
             if (*silr != NULL)

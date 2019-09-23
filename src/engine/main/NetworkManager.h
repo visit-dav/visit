@@ -550,7 +550,6 @@ class ENGINE_MAIN_API NetworkManager : public EngineBase
     void          CloneNetwork(const int id);
     void          AddQueryOverTimeFilter(QueryOverTimeAttributes *,
                                          const int clonedFromId);
-
     static void   RegisterInitializeProgressCallback(
                                            InitializeProgressCallback, void *);
     static void   RegisterProgressCallback(ProgressCallback, void *);

@@ -9,8 +9,6 @@
 #include <avtOriginatingSource.h>
 #include <avtMetaData.h>
 
-#include <vtkDataArray.h>
-
 #include <DebugStream.h>
 #include <TimingsManager.h>
 
@@ -801,42 +799,6 @@ avtOriginatingSource::FetchArbitraryVTKObject(const char *name, int domain,
     debug1 << "This means caching will not work; this case is not expected"
            << endl;
     return NULL;
-}
-
-
-// ****************************************************************************
-//  Method: avtOriginatingSource::FetchCycles
-//
-//  Purpose:
-//
-//  Programmer: Alister Maguire
-//  Creation:   Tue Jul 23 10:14:41 PDT 2019
-//
-// ****************************************************************************
-
-void
-avtOriginatingSource::FetchCycles(int, intVector &)
-{
-    debug1 << "Asked to fetch cycles, " << endl;
-    debug1 << "but don't know how to do that." << endl;
-}
-
-
-// ****************************************************************************
-//  Method: avtOriginatingSource::FetchTimes
-//
-//  Purpose:
-//
-//  Programmer: Alister Maguire
-//  Creation:   Tue Jul 23 10:14:41 PDT 2019
-//
-// ****************************************************************************
-
-void
-avtOriginatingSource::FetchTimes(int, doubleVector &)
-{
-    debug1 << "Asked to fetch times, " << endl;
-    debug1 << "but don't know how to do that." << endl;
 }
 
 
