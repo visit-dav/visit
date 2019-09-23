@@ -56,6 +56,7 @@ Abstract/avtExpressionFilter.C
 Abstract/avtExpressionDataTreeIterator.C
 Abstract/avtMacroExpressionFilter.C
 Abstract/avtMultipleInputExpressionFilter.C
+Abstract/avtMultipleInputMathExpression.C
 Abstract/avtSingleInputExpressionFilter.C
 Abstract/avtUnaryMathExpression.C
 )
@@ -238,6 +239,7 @@ Math/avtRadianToDegreeExpression.C
 Math/avtRoundExpression.C
 Math/avtSinExpression.C
 Math/avtSinhExpression.C
+Math/avtSmartDivideExpression.C
 Math/avtSquareExpression.C
 Math/avtSquareRootExpression.C
 Math/avtTanExpression.C
