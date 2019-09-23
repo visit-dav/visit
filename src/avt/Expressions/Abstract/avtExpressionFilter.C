@@ -51,6 +51,9 @@ using namespace std;
 //    Hank Childs, Thu Aug 26 16:36:30 PDT 2010
 //    Initialize calculateExtents.
 //
+//    Eddie Rusu, Mon Sep 23 10:26:24 PDT 2019
+//    Initialize nProcessedArgs.
+//
 // ****************************************************************************
 
 avtExpressionFilter::avtExpressionFilter()
@@ -98,6 +101,9 @@ avtExpressionFilter::~avtExpressionFilter()
 //    Don't do further processing for lists and other constructs that aren't
 //    actually avtExprNodes.  This can happen when processing macro 
 //    expressions.
+//
+//    Eddie Rusu, Mon Sep 23 10:26:24 PDT 2019
+//    Count the number of arguments that this filter processes here.
 //
 // ****************************************************************************
 
