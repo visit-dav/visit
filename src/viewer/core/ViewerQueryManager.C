@@ -5252,7 +5252,6 @@ ViewerQueryManager::DoTimeQuery(ViewerWindow *origWin,
             GetViewerEngineManager()->CloneNetwork(engineKey,
                 origPlot->GetNetworkID(), timeQueryAtts);
             plotList->RealizePlots();
-
             //
             // If there was an error, the bad curve plot should not be left
             // around muddying up the waters.
