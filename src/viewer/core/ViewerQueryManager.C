@@ -5249,14 +5249,10 @@ ViewerQueryManager::DoTimeQuery(ViewerWindow *origWin,
         resultsPlot->SetSILRestriction(origPlot->GetSILRestriction());
         TRY
         {
-            cerr << "\nSTARTING QOT TIMING: " << endl;//FIXME: timing
-            auto start = std::chrono::high_resolution_clock::now();
             GetViewerEngineManager()->CloneNetwork(engineKey,
                 origPlot->GetNetworkID(), timeQueryAtts);
             plotList->RealizePlots();
-            auto stop = std::chrono::high_resolution_clock::now();
-            std::chrono::duration<double> elapsed = stop - start;
-            cerr << "QOT FILTER TIMING: " << elapsed.count() << endl;//FIXME: timing
+
             //
             // If there was an error, the bad curve plot should not be left
             // around muddying up the waters.
