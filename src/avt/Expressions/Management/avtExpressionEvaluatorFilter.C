@@ -719,9 +719,15 @@ avtExpressionEvaluatorFilter::RegisterGetDataBinningCallback(GetDataBinningCallb
 //  Method: avtExpressionEvaluatorFilter::CanApplyToDirectDatabaseQOT
 //
 //  Purpose:
+//      Determine if we can apply our filters to a direct database query 
+//      over time. There are only a subset of filters that can handle this.
 //
-//  Programmer:   
-//  Creation:    
+//  Returns:
+//      true if the filters can be applied to a direct database QOT.
+//      Otherwise, false.
+//
+//  Programmer: Alister Maguire 
+//  Creation:   Tue Sep 24 11:15:10 MST 2019 
 //
 //  Modifications:
 //

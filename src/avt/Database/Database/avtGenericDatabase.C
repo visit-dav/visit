@@ -475,79 +475,23 @@ DebugDumpDatasetCollection(avtDatasetCollection &dsc, int ndoms,
 //
 //    Mark C. Miller, Wed Dec 12 04:58:53 PST 2018
 //    Add judicious calls to DebugDumpDatasetCollection
+//
+//    Alister Maguire, Tue Sep 24 10:04:42 MST 2019
+//    Added a call to GetQOTOutput when prompted. 
+//
 // ****************************************************************************
 
 avtDataTree_p
 avtGenericDatabase::GetOutput(avtDataRequest_p spec,
                               avtSourceFromDatabase *src)
 {
-    if (spec->GetQOTDataset())
+    //
+    // If the request is for a QOT dataset, we can bypass a lot
+    // of the work. 
+    //
+    if (spec->RetrieveQOTDataset())
     {
-        const QueryOverTimeAttributes *QOTAtts = spec->GetQOTAtts();
-
-        if (QOTAtts == NULL)
-        {
-            debug1 << "Trying to retrieve QOT Dataset without QOT atts! This "
-                   << "shouldn't happen..." << endl;
-
-            EXCEPTION1(VisItException, "Cannot retrieve QOT Dataset without "
-                "QueryOverTimeAttributes.");
-        }
-
-        int nDomains = 1;
-        int domain = QOTAtts->GetPickAtts().GetDomain();
-        if (domain < 0)
-        {
-            domain = 0;
-        }
-
-        avtDatasetCollection datasetCollection(nDomains);
-
-        bool shouldDoMatSelect = false;
-        bool hadError = false;
-        boolVector selectionsApplied;
-        TRY
-        {
-            //
-            // This is the primary routine that reads things in from disk.
-            //
-            ReadQOTDataset(datasetCollection, domain, spec, src, selectionsApplied);
-            DebugDumpDatasetCollection(datasetCollection, nDomains, "output.ReadQOTDataset");
-        }
-        CATCH2(VisItException, e)
-        {
-            //
-            //  Only set an error condition, the early exit from this method
-            //  is after the parallel communication.  There may be a better
-            //  way to handle this.
-            //
-            hadError = true;
-            debug1 << "Catching the exception at the generic database level."
-                   << endl;
-            avtDataValidity &v = src->GetOutput()->GetInfo().GetValidity();
-            v.ErrorOccurred();
-            string tmp = e.Message(); // Otherwise there is a const problem.
-            v.SetErrorMessage(tmp);
-        }
-        ENDTRY
-
-        if (hadError)
-        {
-            avtDataTree_p rv = new avtDataTree();
-            return rv;
-        }
-
-        //
-        // Now make something that AVT will understand downstream.
-        //
-        intVector domains; 
-        domains.push_back(domain);
-        avtDataTree_p rv = datasetCollection.AssembleDataTree(domains);
-
-        ManageMemoryForNonCachableVar(NULL);
-        ManageMemoryForNonCachableMesh(NULL);
-
-        return rv;
+        return GetQOTOutput(spec, src);
     }
 
     avtDataValidity &validity = src->GetOutput()->GetInfo().GetValidity();
@@ -916,6 +860,112 @@ avtGenericDatabase::GetOutput(avtDataRequest_p spec,
     return rv;
 }
 
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::GetQOTOutput
+//
+//  Purpose:
+//      Retrieve a QOT dataset. Currently, this is a reduced point mesh
+//      that contains scalars of variable/element pairs through time. 
+//
+//      All of the dataset's arrays should be the same size (number of
+//      requested timesteps), and each will be a variable/element pair
+//      through time. The dataset also contains the same number of 
+//      points, each of which is associated with the dataset arrays in 
+//      the following manner:
+//      The point located at index 'i' will be defined as having position
+//      (x, 0, 0), where x is the timestep, simulation time, or cycle
+//      (whichever was requested) associated with the element located
+//      at index 'i' of each of the dataset's arrays. 
+//
+//  Arguments:
+//      spec    A database specification.
+//      src     The avtSourceFromDatabase object.
+//
+//  Returns:    A domain tree with a dataset for each domain.
+//
+//  Note: much of this was taken from GetOutput.
+//
+//  Programmer: Alister Maguire 
+//  Creation:   Tue Sep 24 10:04:42 MST 2019 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+avtDataTree_p
+avtGenericDatabase::GetQOTOutput(avtDataRequest_p spec,
+                                 avtSourceFromDatabase *src)
+{
+    const QueryOverTimeAttributes *QOTAtts = spec->GetQOTAtts();
+
+    if (QOTAtts == NULL)
+    {
+        debug1 << "Trying to retrieve QOT Dataset without QOT atts! This "
+               << "shouldn't happen..." << endl;
+
+        EXCEPTION1(VisItException, "Cannot retrieve QOT Dataset without "
+            "QueryOverTimeAttributes.");
+    }
+
+    //
+    // If the pick atts contains a domain >= 0, then this is our
+    // target. Otherwise, 0 is the only domain available. 
+    //
+    int nDomains = 1;
+    int domain = QOTAtts->GetPickAtts().GetDomain();
+    if (domain < 0)
+    {
+        domain = 0;
+    }
+
+    avtDatasetCollection datasetCollection(nDomains);
+
+    bool hadError = false;
+    TRY
+    {
+        //
+        // This is the primary routine that reads things in from disk.
+        //
+        ReadQOTDataset(datasetCollection, domain, spec, src);
+        DebugDumpDatasetCollection(datasetCollection, nDomains, "output.ReadQOTDataset");
+    }
+    CATCH2(VisItException, e)
+    {
+        //
+        //  Only set an error condition, the early exit from this method
+        //  is after the parallel communication.  There may be a better
+        //  way to handle this.
+        //
+        hadError = true;
+        debug1 << "Catching the exception at the generic database level."
+               << endl;
+        avtDataValidity &v = src->GetOutput()->GetInfo().GetValidity();
+        v.ErrorOccurred();
+        string tmp = e.Message(); // Otherwise there is a const problem.
+        v.SetErrorMessage(tmp);
+    }
+    ENDTRY
+
+    if (hadError)
+    {
+        avtDataTree_p rv = new avtDataTree();
+        return rv;
+    }
+
+    //
+    // Now make something that AVT will understand downstream.
+    //
+    intVector domains; 
+    domains.push_back(domain);
+    avtDataTree_p rv = datasetCollection.AssembleDataTree(domains);
+
+    ManageMemoryForNonCachableVar(NULL);
+    ManageMemoryForNonCachableMesh(NULL);
+
+    return rv;
+}
+    
 
 // ****************************************************************************
 //  Method: avtGenericDatabase::UpdateInternalState
@@ -3446,7 +3496,8 @@ avtGenericDatabase::GetQOTScalarVarDataset(const char *varname,
         EXCEPTION1(InvalidVariableException, varname);
     }
 
-    vtkDataSet *mesh = Interface->GetQOTMesh(QOTAtts, domain, tsRange, tsStride);
+    vtkDataSet *mesh = Interface->GetQOTMesh(QOTAtts, 
+        domain, tsRange, tsStride);
 
     if (mesh == NULL)
     {
@@ -3518,16 +3569,14 @@ avtGenericDatabase::GetQOTVectorVarDataset(const char *varname,
     tsRange[1] = QOTAtts->GetEndTime();
     tsStride   = QOTAtts->GetStride();
 
-    //TODO: is first timestep good enough? We can always catch missing 
-    //      data later, but there may be cases where the firs timestep 
-    //      doesn't have our data. 
     const avtVectorMetaData *vmd = GetMetaData(tsRange[0])->GetVector(varname);
     if (vmd == NULL)
     {
         EXCEPTION1(InvalidVariableException, varname);
     }
 
-    vtkDataSet *mesh = Interface->GetQOTMesh(QOTAtts, domain, tsRange, tsStride);
+    vtkDataSet *mesh = Interface->GetQOTMesh(QOTAtts, 
+        domain, tsRange, tsStride);
 
     if (mesh == NULL)
     {
@@ -3535,7 +3584,7 @@ avtGenericDatabase::GetQOTVectorVarDataset(const char *varname,
         return NULL;
     }
 
-    vtkDataArray *var = GetQOTVectorVariable(varname, domain, element, 
+    vtkDataArray *var = GetQOTVectorVariable(varname, domain, element,
         tsRange, tsStride, spec);
 
     if (var == NULL)
@@ -3607,16 +3656,14 @@ avtGenericDatabase::GetQOTArrayVarDataset(const char *varname,
     tsRange[1] = QOTAtts->GetEndTime();
     tsStride   = QOTAtts->GetStride();
 
-    //TODO: is first timestep good enough? We can always catch missing 
-    //      data later, but there may be cases where the firs timestep 
-    //      doesn't have our data. 
     const avtArrayMetaData *amd = GetMetaData(tsRange[0])->GetArray(varname);
     if (amd == NULL)
     {
         EXCEPTION1(InvalidVariableException, varname);
     }
 
-    vtkDataSet *mesh = Interface->GetQOTMesh(QOTAtts, domain, tsRange, tsStride);
+    vtkDataSet *mesh = Interface->GetQOTMesh(QOTAtts, 
+        domain, tsRange, tsStride);
 
     if (mesh == NULL)
     {
@@ -3688,7 +3735,8 @@ avtGenericDatabase::GetQOTTensorVarDataset(const char *varname,
         EXCEPTION1(InvalidVariableException, varname);
     }
 
-    vtkDataSet *mesh = Interface->GetQOTMesh(QOTAtts, domain, tsRange, tsStride);
+    vtkDataSet *mesh = Interface->GetQOTMesh(QOTAtts, 
+        domain, tsRange, tsStride);
 
     if (mesh == NULL)
     {
@@ -3738,9 +3786,9 @@ avtGenericDatabase::GetQOTTensorVarDataset(const char *varname,
 
 vtkDataSet *
 avtGenericDatabase::GetQOTSymmetricTensorVarDataset(const char *varname,
-                                           int element, 
-                                           int domain, 
-                                           const avtDataRequest_p spec)
+                                                    int element, 
+                                                    int domain, 
+                                                    const avtDataRequest_p spec)
 {
     const QueryOverTimeAttributes *QOTAtts = spec->GetQOTAtts();
 
@@ -3751,9 +3799,6 @@ avtGenericDatabase::GetQOTSymmetricTensorVarDataset(const char *varname,
     tsRange[1] = QOTAtts->GetEndTime();
     tsStride   = QOTAtts->GetStride();
 
-    //TODO: is first timestep good enough? We can always catch missing 
-    //      data later, but there may be cases where the firs timestep 
-    //      doesn't have our data. 
     const avtSymmetricTensorMetaData *stmd = 
         GetMetaData(tsRange[0])->GetSymmTensor(varname);
     if (stmd == NULL)
@@ -3761,7 +3806,8 @@ avtGenericDatabase::GetQOTSymmetricTensorVarDataset(const char *varname,
         EXCEPTION1(InvalidVariableException, varname);
     }
 
-    vtkDataSet *mesh = Interface->GetQOTMesh(QOTAtts, domain, tsRange, tsStride);
+    vtkDataSet *mesh = Interface->GetQOTMesh(QOTAtts, 
+        domain, tsRange, tsStride);
 
     if (mesh == NULL)
     {
@@ -3769,7 +3815,7 @@ avtGenericDatabase::GetQOTSymmetricTensorVarDataset(const char *varname,
         return NULL;
     }
 
-    vtkDataArray *var = GetQOTSymmetricTensorVariable(varname, domain, element, 
+    vtkDataArray *var = GetQOTSymmetricTensorVariable(varname, domain, element,
         tsRange, tsStride, spec);
 
     if (var == NULL)
@@ -3829,7 +3875,10 @@ avtGenericDatabase::GetQOTScalarVariable(const char *varname,
     //
     const avtScalarMetaData *smd = GetMetaData(tsRange[0])->GetScalar(varname);
     if (smd == NULL)
+    {
         EXCEPTION1(InvalidVariableException, varname);
+    }
+
     const char *real_varname = varname;
     if (smd->originalName != smd->name && smd->originalName != "")
     {
@@ -3898,7 +3947,10 @@ avtGenericDatabase::GetQOTVectorVariable(const char *varname,
     //
     const avtVectorMetaData *vmd = GetMetaData(tsRange[0])->GetVector(varname);
     if (vmd == NULL)
+    {
         EXCEPTION1(InvalidVariableException, varname);
+    }
+
     const char *real_varname = varname;
     if (vmd->originalName != vmd->name && vmd->originalName != "")
     {
@@ -3969,7 +4021,10 @@ avtGenericDatabase::GetQOTArrayVariable(const char *varname,
     //
     const avtArrayMetaData *amd = GetMetaData(tsRange[0])->GetArray(varname);
     if (amd == NULL)
+    {
         EXCEPTION1(InvalidVariableException, varname);
+    }
+
     const char *real_varname = varname;
     if (amd->originalName != amd->name && amd->originalName != "")
     {
@@ -4040,7 +4095,10 @@ avtGenericDatabase::GetQOTTensorVariable(const char *varname,
     //
     const avtTensorMetaData *tmd = GetMetaData(tsRange[0])->GetTensor(varname);
     if (tmd == NULL)
+    {
         EXCEPTION1(InvalidVariableException, varname);
+    }
+
     const char *real_varname = varname;
     if (tmd->originalName != tmd->name && tmd->originalName != "")
     {
@@ -4112,7 +4170,10 @@ avtGenericDatabase::GetQOTSymmetricTensorVariable(const char *varname,
     const avtSymmetricTensorMetaData *stmd = 
         GetMetaData(tsRange[0])->GetSymmTensor(varname);
     if (stmd == NULL)
+    {
         EXCEPTION1(InvalidVariableException, varname);
+    }
+
     const char *real_varname = varname;
     if (stmd->originalName != stmd->name && stmd->originalName != "")
     {
@@ -6636,12 +6697,14 @@ avtGenericDatabase::ReadDataset(avtDatasetCollection &ds, intVector &domains,
 //
 //  Arguments:
 //      ds        The dataset collection.
-//      domains   A list of domains to be read.
-//      spec      A data specification.
+//      domain    The domain to retrieve our data from.
+//      spec      A data request.
 //      src       The source object.
 //
-//  Programmer:   
-//  Creation:     
+//  Notes: Sections of this method were copied from ReadDataset.
+//
+//  Programmer: Alister Maguire
+//  Creation: Tue Sep 24 09:58:14 MST 2019 
 //
 //  Modifications:
 //
@@ -6651,8 +6714,7 @@ void
 avtGenericDatabase::ReadQOTDataset(avtDatasetCollection &ds, 
                                    int domain,
                                    avtDataRequest_p &spec, 
-                                   avtSourceFromDatabase *src,
-                                   boolVector &selectionsApplied)
+                                   avtSourceFromDatabase *src)
 {
     int timerHandle = visitTimer->StartTimer();
 
@@ -6661,21 +6723,18 @@ avtGenericDatabase::ReadQOTDataset(avtDatasetCollection &ds,
     //
     const char *var = spec->GetVariable();
     const vector<CharStrRef> &vars2nd =
-                               spec->GetSecondaryVariablesWithoutDuplicates();
+        spec->GetSecondaryVariablesWithoutDuplicates();
 
-    char  progressString[1024];
-    sprintf(progressString, "Reading QOT from %s", Interface->GetType());
-
-    //FIXME: needed?
     //
     // Some file formats have variables that are defined for only some of
     // the materials.  In that case, we have to tell the file format interface
     // of all of the variables we will be interested in.
     //
-    int startTime = spec->GetQOTAtts()->GetStartTime();//TODO: is first timestep enough?
-    avtDatabaseMetaData *md = GetMetaData(ts);
+    int startTime = spec->GetQOTAtts()->GetStartTime();
+    avtDatabaseMetaData *md = GetMetaData(startTime);
     const char *real_var = GetOriginalVariableName(md, var);
     vector<CharStrRef> real_vars2nd;
+
     for (size_t i = 0 ; i < vars2nd.size() ; i++)
     {
         const char *str = GetOriginalVariableName(md, *(vars2nd[i]));
@@ -6684,6 +6743,7 @@ avtGenericDatabase::ReadQOTDataset(avtDatasetCollection &ds,
         CharStrRef ref = v2;
         real_vars2nd.push_back(ref);
     }
+
     Interface->RegisterVariableList(real_var, vars2nd);
 
     //
@@ -6694,26 +6754,28 @@ avtGenericDatabase::ReadQOTDataset(avtDatasetCollection &ds,
     //
     avtDataValidity &validity = src->GetOutput()->GetInfo().GetValidity();
     Interface->SetResultMustBeProducedOnlyOnThisProcessor(
-                                                   validity.AreWeStreaming());
+        validity.AreWeStreaming());
 
     ds.SetVar(var);
     ds.SetVars2nd(vars2nd);
 
-    //stringVector labels;
-
-    vtkDataSet *single_ds = NULL;
-
-    //FIXME: should we check if the format can do domain decomp?
-    //if (md->GetFormatCanDoDomainDecomposition())
-    //    domain = PAR_Rank();
-
-    single_ds = GetQOTDataset(domain, var, vars2nd, spec, src);
+    char  progressString[1024];
+    sprintf(progressString, "Reading QOT dataset from %s", 
+        Interface->GetType());
 
     //
-    //  Allocate space for our dataset
+    // We currently only read from a single domain for a QOT
+    // dataset. 
     //
+    src->DatabaseProgress(domain, 1, progressString);
+
+    vtkDataSet *single_ds = GetQOTDataset(domain, var, vars2nd, spec, src);
+
     ds.SetNumMaterials(0, 1);
 
+    //
+    // We have a single domain label to add. 
+    //
     char label[256]; 
     snprintf(label, 256, "%d", domain);
     stringVector labels;
@@ -6730,7 +6792,6 @@ avtGenericDatabase::ReadQOTDataset(avtDatasetCollection &ds,
         single_ds->Delete();
     }
 
-    src->DatabaseProgress(0, 1, progressString);
     src->DatabaseProgress(1, 0, progressString);
 
     visitTimer->StopTimer(timerHandle, "Reading QOT dataset");

@@ -51,6 +51,9 @@ using namespace std;
 //    Hank Childs, Thu Aug 26 16:36:30 PDT 2010
 //    Initialize calculateExtents.
 //
+//    Alister Maguire, Tue Sep 24 11:15:10 MST 2019
+//    Initialized canApplyToDirectDatabaseQOT. 
+//
 // ****************************************************************************
 
 avtExpressionFilter::avtExpressionFilter()

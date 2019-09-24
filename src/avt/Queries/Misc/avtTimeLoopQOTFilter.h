@@ -63,6 +63,11 @@ class vtkRectilinearGrid;
 //  Purpose:
 //    Performs a query over time. 
 //
+//  Note: This class was previously named avtQueryOverTimeFilter. Now that
+//        there are multiple QOT filters to choose from, a base class has
+//        been created with the name avtQueryOverTimeFilter, and this class
+//        has been renamed avtTimeLoopQOTFilter. 
+//
 //  Programmer: Kathleen Bonnell 
 //  Creation:   March 19, 2004
 //
@@ -110,7 +115,8 @@ class vtkRectilinearGrid;
 //
 //    Alister Maguire, Mon Sep 23 11:13:48 MST 2019
 //    Changed name from avtQueryOverTimeFilter to avtTimeLoopQOTFilter, 
-//    and added avtQueryOverTimeFilter inheritance. 
+//    and added avtQueryOverTimeFilter inheritance. Also removed methods
+//    that are now defined in avtQueryOverTimeFilter. 
 //
 // ****************************************************************************
 

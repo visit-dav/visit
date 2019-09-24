@@ -20,8 +20,6 @@
 
 class    vtkDataSet;
 class    vtkDataArray;
-class    vtkFloatArray;
-class    vtkDataArray;
 
 class    avtDatabaseMetaData;
 class    avtFileFormat;
@@ -196,6 +194,9 @@ class    QueryOverTimeAttributes;
 //    Brad Whitlock, Thu Jun 19 10:50:25 PDT 2014
 //    Pass mesh name to PopulateIOInformation.
 //
+//    Alister Maguire, Tue Sep 24 11:15:10 MST 2019
+//    Added QOT methods as well as GetCycles and GetTimes.
+//
 // ****************************************************************************
 
 class DATABASE_API avtFileFormatInterface
@@ -211,6 +212,9 @@ class DATABASE_API avtFileFormatInterface
                                              const char *, void *, 
                                              DestructorFunction &) = 0;
 
+    //
+    // Query over time specific methods. 
+    //
     virtual vtkDataSet     *GetQOTMesh(const QueryOverTimeAttributes *,
                                        int,
                                        int *, 

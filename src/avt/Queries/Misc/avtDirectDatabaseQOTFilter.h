@@ -58,12 +58,29 @@ class vtkRectilinearGrid;
 class vtkPolyData;
 
 // ****************************************************************************
-//  Class: 
+//  Class: avtDirectDatabaseQOTFilter
 //
 //  Purpose:
+//      Perform a query over time by communciating directly with the database
+//      readers.
 //
-//  Programmer: 
-//  Creation:   
+//      Using this filter requires that the avtDataRequest be updated to 
+//      request a query over time dataset (QOTDataset), which can be 
+//      accomplished by setting the retrieveQOTDataset within avtDataRequest.
+//
+//      Using this filter is much faster than using the TimeLoopQOTFilter,
+//      but there are some significant drawbacks that must be noted:
+//
+//          1. This filter can only retrieve "original" data, meaning that
+//             the query will be performed before any other plots and filters
+//             are applied (excluding the expression filter). 
+//          2. The QOTDataset is limited in its ability to process expressions.
+//
+//      When using "actual" data or complex expressions, the TimeLoopQOTFilter
+//      should be relied on. 
+//
+//  Programmer: Alister Maguire
+//  Creation:   Tue Sep 24 13:46:56 MST 2019  
 //
 //  Modifications:
 //
@@ -72,37 +89,31 @@ class vtkPolyData;
 class QUERY_API avtDirectDatabaseQOTFilter : public avtQueryOverTimeFilter
 {
   public:
-                          avtDirectDatabaseQOTFilter(const AttributeGroup*);
-    virtual              ~avtDirectDatabaseQOTFilter();
+                             avtDirectDatabaseQOTFilter(const AttributeGroup*);
+    virtual                 ~avtDirectDatabaseQOTFilter();
 
-    static avtFilter     *Create(const AttributeGroup*);
+    static avtFilter        *Create(const AttributeGroup*);
 
-    virtual const char   *GetType(void)  { return "avtDirectDatabaseQOTFilter"; };
-    virtual const char   *GetDescription(void) { return "Querying over Time"; };
+    virtual const char      *GetType(void)  
+                               { return "avtDirectDatabaseQOTFilter"; };
+    virtual const char      *GetDescription(void) 
+                               { return "Querying over Time"; };
 
   protected:
-    //bool                        success;
-    std::string                 label;
+    bool                     success;
+    std::string              YLabel;
 
-    bool                        useTimeForXAxis;
-    bool                        useVarForYAxis;
-    int                         numCurves;
+    bool                     useTimeForXAxis;
+    bool                     useVarForYAxis;
 
-    virtual void          Execute(void);
-    virtual void          UpdateDataObjectInfo(void);
+    virtual void             Execute(void);
+    virtual void             UpdateDataObjectInfo(void);
 
-    //virtual bool          ExecutionSuccessful(void) { return success; } ;
+    virtual bool             ExecutionSuccessful(void) 
+                               { return success; };
 
-    avtDataTree_p         CreateTreeFromCurves(vtkPolyData *,
-                                               stringVector &,
-                                               const bool);
-
-    avtDataTree_p         CreateOutputTree(vtkDataSet *,
-                                           const stringVector &,
-                                           const bool);
+    avtDataTree_p            ConstructCurveTree(vtkPolyData *,
+                                                const bool);
 };
 
-
 #endif
-
-

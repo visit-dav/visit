@@ -5266,7 +5266,7 @@ NetworkManager::AddQueryOverTimeFilter(QueryOverTimeAttributes *qA,
         //
         avtDataRequest_p dr = new avtDataRequest(workingNet->GetDataSpec(),
             qA->GetQueryAtts().GetVariables()[0].c_str());
-        dr->SetQOTDataset(true);
+        dr->SetRetrieveQOTDataset(true);
         dr->SetQOTAtts(qA);
 
         //

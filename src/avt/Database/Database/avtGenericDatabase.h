@@ -325,6 +325,9 @@ class     vtkUnstructuredGrid;
 //    Added another bool variable to MaterialSelect 
 //    for forceConstructMaterialLabels. 
 //
+//    Alister Maguire, Tue Sep 24 10:04:42 MST 2019
+//    Added a number of QOT specific methods. 
+//
 // ****************************************************************************
 
 class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
@@ -338,6 +341,9 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
                                                 const char *type, void *args);
     virtual avtDataTree_p      GetOutput(avtDataRequest_p,
                                          avtSourceFromDatabase *);
+
+    virtual avtDataTree_p      GetQOTOutput(avtDataRequest_p,
+                                            avtSourceFromDatabase *);
 
     void                       GetCycles(int, intVector &);
     void                       GetTimes(int, doubleVector &);
@@ -538,8 +544,7 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
 
     void                       ReadQOTDataset(avtDatasetCollection &, 
                                   int, avtDataRequest_p &,
-                                  avtSourceFromDatabase *,
-                                  boolVector &);
+                                  avtSourceFromDatabase *);
 
     avtDomainBoundaries       *GetDomainBoundaryInformation(
                                       avtDatasetCollection &, intVector &, 

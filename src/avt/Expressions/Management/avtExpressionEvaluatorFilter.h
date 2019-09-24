@@ -92,6 +92,9 @@ typedef avtDataBinning *   (*GetDataBinningCallback)(void *, const char *);
 //   Hank Childs, Sat Aug 21 14:02:28 PDT 2010
 //   Renamed DDFs to DataBinnings.
 //
+//   Alister Maguire, Tue Sep 24 11:15:10 MST 2019
+//   Added CanApplyToDirectDatabaseQOT. 
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtExpressionEvaluatorFilter 

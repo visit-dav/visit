@@ -90,6 +90,9 @@ class     ExprNode;
 //    Kathleen Biagas, Thu Apr 5 10:07:43 PDT 2012
 //    Added CreateArrayFromMesh.
 //
+//    Alister Maguire, Tue Sep 24 11:15:10 MST 2019
+//    Added canApplyToDirectDatabaseQOT and corresponding getter. 
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtExpressionFilter : virtual public 

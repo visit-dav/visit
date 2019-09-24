@@ -15,18 +15,18 @@
 #include <QueryOverTimeAttributes.h>
 #include <SILRestrictionAttributes.h>
 
-#include <string>
-
-class vtkRectilinearGrid;
 
 // ****************************************************************************
 //  Class: avtQueryOverTimeFilter
 //
 //  Purpose:
-//    Performs a query over time. 
+//      Acts as a base class for query over time filters. 
 //
-//  Programmer: 
-//  Creation:   
+//  Note: This class is replacing a class that previously held this name. 
+//        That class is now named avtTimeLoopQOTFilter.  
+//
+//  Programmer: Alister Maguire
+//  Creation:   Tue Sep 24 13:46:56 MST 2019 
 //
 //  Modifications:
 //
@@ -35,23 +35,23 @@ class vtkRectilinearGrid;
 class QUERY_API avtQueryOverTimeFilter : public avtDatasetToDatasetFilter
 {
   public:
-                          avtQueryOverTimeFilter(const AttributeGroup*);
-    virtual              ~avtQueryOverTimeFilter();
+                                  avtQueryOverTimeFilter(const AttributeGroup*);
+    virtual                      ~avtQueryOverTimeFilter();
 
-    virtual const char   *GetType(void)  { return "avtQueryOverTimeFilter"; };
-    virtual const char   *GetDescription(void) { return "Querying over Time"; };
+    virtual const char           *GetType(void)  
+                                    { return "avtQueryOverTimeFilter"; };
 
-    void                  SetSILAtts(const SILRestrictionAttributes *silAtts);
+    virtual const char           *GetDescription(void) 
+                                    { return "Querying over Time"; };
 
-    virtual bool          FilterSupportsTimeParallelization(void)
-                              { return false; };
+    void                          SetSILAtts(const SILRestrictionAttributes *);
+
+    virtual bool                  FilterSupportsTimeParallelization(void)
+                                      { return false; };
 
   protected:
-    QueryOverTimeAttributes   atts;
-    SILRestrictionAttributes  querySILAtts;
+    QueryOverTimeAttributes       atts;
+    SILRestrictionAttributes      querySILAtts;
 };
 
-
 #endif
-
-

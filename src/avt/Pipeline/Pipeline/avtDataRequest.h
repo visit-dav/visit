@@ -192,6 +192,10 @@ typedef ref_ptr<avtDataRequest> avtDataRequest_p;
 //    Added forceConstructMaterialLabels to allow access to 
 //    material labels without a material variable. 
 //
+//    Alister Maguire, Tue Sep 24 11:15:10 MST 2019
+//    Added retrieveQOTDataset and QOTAtts along with their respective
+//    getters and setters. 
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataRequest
@@ -450,10 +454,10 @@ class PIPELINE_API avtDataRequest
     void                         SetNeedPostGhostMaterialInfo(bool b)
                                      { needPostGhostMaterialInfo = b; }
 
-    bool                         GetQOTDataset() const
-                                     { return getQOTDataset; }; 
-    void                         SetQOTDataset(bool q)
-                                     { getQOTDataset = q; }; 
+    bool                         RetrieveQOTDataset() const
+                                     { return retrieveQOTDataset; }; 
+    void                         SetRetrieveQOTDataset(bool q)
+                                     { retrieveQOTDataset = q; }; 
 
     void                         SetSelectionName(const std::string &s)
                                      { selectionName = s; }
@@ -531,7 +535,7 @@ class PIPELINE_API avtDataRequest
     bool                         passNativeCSG;
     bool                         transformVectorsDuringProject;
     bool                         needPostGhostMaterialInfo;
-    bool                         getQOTDataset;
+    bool                         retrieveQOTDataset;
     std::string                  selectionName;
     MissingDataBehavior_t        missingDataBehavior;
 

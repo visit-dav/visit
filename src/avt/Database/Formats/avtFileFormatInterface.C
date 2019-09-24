@@ -10,6 +10,7 @@
 
 #include <avtFileFormat.h>
 #include <DebugStream.h>
+#include <ImproperUseException.h>
 
 #include <vtkFloatArray.h>
 #include <vtkPolyData.h>
@@ -471,13 +472,29 @@ avtFileFormatInterface::GetTimes(int, doubleVector &)
 //  Method:  avtMiliFileFormat::GetQOTMesh
 //
 //  Purpose:
+//      Retrieve a query over time mesh. Currently, this is a reduced 
+//      point mesh such that each point is located at position (x, 0, 0),
+//      where x is the timestep, simulation time, or cycle (whichever was
+//      requested).
+//
+//      All of the mesh's future arrays should be the same size (number of
+//      requested timesteps), and each will be a variable/element pair
+//      through time. The value located at position 'i' of every array
+//      should correspond to the value of the array's variable/element 
+//      pair associated with the timestep/time/cycle from the x value
+//      of the 'ith' point. 
 //
 //  Arguments:
+//      QOTAtts    The query over time attributes. 
+//      domain     The domain to query. 
+//      tsRange    The timestep range. 
+//      tsStride   The timestep stride. 
 //
 //  Returns:
+//      A query over time mesh. 
 //
 //  Programmer:  Alister Maguire
-//  Creation:    
+//  Creation:    Tue Sep 24 11:15:10 MST 2019 
 //
 //  Modifications
 //
@@ -489,12 +506,27 @@ avtFileFormatInterface::GetQOTMesh(const QueryOverTimeAttributes *QOTAtts,
                                    int *tsRange,
                                    int tsStride)
 {
-    //FIXME: we currently don't have any way of determining
-    //       if this number of timesteps is valid in here. 
     QueryOverTimeAttributes::TimeType tType = QOTAtts->GetTimeType();
 
-    int startT    = tsRange[0];
-    int stopT     = tsRange[1] + 1;
+    int startT = tsRange[0];
+    int stopT  = tsRange[1] + 1;
+
+    //
+    // First, let's make sure this timestep range is valid. 
+    //
+    intVector cycles;
+    GetCycles(domain, cycles);
+    int numTS = cycles.size();
+
+    if (startT < 0 || startT >= numTS ||
+        stopT < 0 || stopT >= numTS ||
+        startT > stopT)
+    {
+        char msg[256]; 
+        snprintf(msg, 256, "Invalid timestep range requested.");
+        EXCEPTION1(ImproperUseException, msg);
+    }
+
     int numPoints = (stopT - startT) / tsStride;
 
     doubleVector xCoords;
@@ -504,30 +536,37 @@ avtFileFormatInterface::GetQOTMesh(const QueryOverTimeAttributes *QOTAtts,
     {
         case QueryOverTimeAttributes::Cycle:
         {
-            intVector cycles;
-            GetCycles(domain, cycles);
-
-            for (intVector::const_iterator cItr = cycles.begin();
-                 cItr < cycles.end(); ++cItr)
+            for (int i = startT; i < stopT; i += tsStride)
             {
-                xCoords.push_back((double) (*cItr));
+                xCoords.push_back((double) cycles[i]);
             }
 
             break;
         }
         case QueryOverTimeAttributes::DTime:
         {
-            GetTimes(domain, xCoords);
+            doubleVector times;
+            GetTimes(domain, times);
+
+            for (int i = startT; i < stopT; i += tsStride)
+            {
+                xCoords.push_back((double) times[i]);
+            }
             break;
         }
         case QueryOverTimeAttributes::Timestep:
-        default:
         {
-            for (int i = startT; i < stopT; i+=tsStride)
+            for (int i = startT; i < stopT; i += tsStride)
             {
                 xCoords.push_back((double) i);
             }
             break;
+        }
+        default:
+        {
+            char msg[256]; 
+            snprintf(msg, 256, "Unknown time type requested.");
+            EXCEPTION1(ImproperUseException, msg);
         }
     }
 
@@ -541,7 +580,7 @@ avtFileFormatInterface::GetQOTMesh(const QueryOverTimeAttributes *QOTAtts,
     }
 
     polyData->SetPoints(points);
-    //TODO: free points here?
+    points->Delete();
 
     return (vtkDataSet *) polyData;
 }
@@ -551,13 +590,23 @@ avtFileFormatInterface::GetQOTMesh(const QueryOverTimeAttributes *QOTAtts,
 //  Method:  avtMiliFileFormat::GetQOTVar
 //
 //  Purpose:
+//      Retrieve a query over time variable. 
+//      This will produce an array that contains the values of a single 
+//      element/variable pair through time. Each index 'i' of the array will
+//      correspond with the 'ith' timestep. 
 //
 //  Arguments:
+//      domain       The domain to read the variable from. 
+//      varPath      The variable path to retrieve. 
+//      element      The element to retrieve. 
+//      tsRange      The timestep range. 
+//      tsStride     The timestep stride. 
 //
 //  Returns:
+//      A query over time variable. 
 //
 //  Programmer:  Alister Maguire
-//  Creation:    
+//  Creation:    Tue Sep 24 11:15:10 MST 2019
 //
 //  Modifications
 //
@@ -573,25 +622,24 @@ avtFileFormatInterface::GetQOTVar(int domain,
     int startT       = tsRange[0];
     int stopT        = tsRange[1] + 1;
     int spanSize     = (stopT - startT) / tsStride;
+
+    //
+    // VisIt ids begin at 0, but the interface ids start at 1. 
+    // Account for this before retrieving. 
+    //
     long int visitId = element - 1;
 
     vtkFloatArray *spanArray = vtkFloatArray::New();
     spanArray->SetNumberOfTuples(spanSize);
     spanArray->SetNumberOfComponents(1);
-    //spanArray->SetName(varPath);//FIXME: is this right? How is it handled in regular GetVar?
 
     //
-    // Iterate over the requested time states and retrieve the requested vars
-    // and elements. 
+    // Iterate over the requested time states and retrieve the requested
+    // var/element pair. 
     //
     int tupIdx = 0;
     for (int ts = startT; ts < stopT; ts += tsStride, ++tupIdx)
     {
-        if (ts >= stopT)
-        {
-            break;
-        }
-    
         //
         // Activate the current timestep and retrieve our variable. 
         //
@@ -599,10 +647,6 @@ avtFileFormatInterface::GetQOTVar(int domain,
         vtkFloatArray *allValues = (vtkFloatArray *) 
             GetVar(ts, domain, varPath);
 
-        //
-        // VisIt ids begin at 0, but the interface ids start at 1. 
-        // Account for this before retrieving. 
-        //
         float targetVal = allValues->GetTuple1(visitId);
         spanArray->SetTuple1(tupIdx, targetVal);
     }
@@ -615,10 +659,21 @@ avtFileFormatInterface::GetQOTVar(int domain,
 //  Method:  avtMiliFileFormat::GetQOTVectorVar
 //
 //  Purpose:
+//      Retrieve a query over time vector variable. 
+//      This will produce an array that contains the values of a single 
+//      element/variable pair through time. Each index 'i' of the array will
+//      correspond with the 'ith' timestep. 
 //
 //  Arguments:
+//      domain       The domain to read the variable from. 
+//      varPath      The variable path to retrieve. 
+//      vDim         The dimension of the vector. 
+//      element      The element to retrieve. 
+//      tsRange      The timestep range. 
+//      tsStride     The timestep stride. 
 //
 //  Returns:
+//      A query over time vector variable. 
 //
 //  Programmer:  Alister Maguire
 //  Creation:    
@@ -639,6 +694,11 @@ avtFileFormatInterface::GetQOTVectorVar(int domain,
     int stopT        = tsRange[1] + 1;
     int spanSize     = (stopT - startT) / tsStride;
     long int visitId = element - 1;
+
+    //
+    // VisIt ids begin at 0, but the interface ids start at 1. 
+    // Account for this before retrieving. 
+    //
     long int vecPos  = visitId * vDim;
 
     vtkFloatArray *spanArray = vtkFloatArray::New();
@@ -659,11 +719,6 @@ avtFileFormatInterface::GetQOTVectorVar(int domain,
     int tupIdx = 0;
     for (int ts = startT; ts < stopT; ts += tsStride, ++tupIdx)
     {
-        if (ts >= stopT)
-        {
-            break;
-        }
-    
         //
         // Activate the current timestep and retrieve our variable. 
         //

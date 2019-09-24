@@ -162,6 +162,9 @@ using     std::map;
 //    Alister Maguire, Mon Nov 27 14:16:21 PST 2017
 //    Added forceConstructMaterialLabels. 
 //
+//    Alister Maguire, Tue Sep 24 11:15:10 MST 2019
+//    Added initialization of retrieveQOTDataset and QOTAtts.
+//
 // ****************************************************************************
 
 avtDataRequest::avtDataRequest(const char *var, int ts,
@@ -207,7 +210,7 @@ avtDataRequest::avtDataRequest(const char *var, int ts,
     passNativeCSG = false;
     transformVectorsDuringProject = true;
     needPostGhostMaterialInfo = false;
-    getQOTDataset = false;
+    retrieveQOTDataset = false;
     QOTAtts = NULL;
 
     InitAdmissibleDataTypes();
@@ -659,6 +662,9 @@ avtDataRequest::avtDataRequest(avtDataRequest_p spec)
 //    Alister Maguire, Mon Nov 27 14:16:21 PST 2017
 //    added forceConstructMaterialLabels.
 //
+//    Alister Maguire, Tue Sep 24 11:15:10 MST 2019
+//    Added retrieveQOTDataset and QOTAtts.
+//
 // ****************************************************************************
 
 avtDataRequest &
@@ -728,7 +734,7 @@ avtDataRequest::operator=(const avtDataRequest &spec)
     passNativeCSG                   = spec.passNativeCSG;
     transformVectorsDuringProject   = spec.transformVectorsDuringProject;
     needPostGhostMaterialInfo       = spec.needPostGhostMaterialInfo;
-    getQOTDataset                   = spec.getQOTDataset;
+    retrieveQOTDataset              = spec.retrieveQOTDataset;
     QOTAtts                         = spec.QOTAtts;
     secondaryVariables              = spec.secondaryVariables;
     selectionName                   = spec.selectionName;
@@ -857,6 +863,9 @@ avtDataRequest::operator=(const avtDataRequest &spec)
 //
 //    Alister Maguire, Mon Nov 27 14:16:21 PST 2017
 //    Added forceConstructMaterialLabels.
+//
+//    Alister Maguire, Tue Sep 24 11:15:10 MST 2019
+//    Added retrieveQOTDataset and QOTAtts.
 //
 // ****************************************************************************
 
@@ -1079,7 +1088,7 @@ avtDataRequest::operator==(const avtDataRequest &ds)
     if (needPostGhostMaterialInfo != ds.needPostGhostMaterialInfo)
         return false;
 
-    if (getQOTDataset != ds.getQOTDataset)
+    if (retrieveQOTDataset != ds.retrieveQOTDataset)
         return false;
 
     if ((*QOTAtts) != (*ds.QOTAtts))
@@ -1217,11 +1226,10 @@ avtDataRequest::GetRestriction(void)
 //  Method: avtDataRequest::SetQOTAtts
 //
 //  Purpose:
+//      Set the query over time attribitues. 
 //
-//  Returns:    
-//
-//  Programmer: 
-//  Creation:   
+//  Programmer: Alister Maguire
+//  Creation:   Tue Sep 24 11:15:10 MST 2019 
 //
 // ****************************************************************************
 
@@ -1236,11 +1244,13 @@ avtDataRequest::SetQOTAtts(QueryOverTimeAttributes *qA)
 //  Method: avtDataRequest::GetQOTAtts
 //
 //  Purpose:
+//      Get the query over time attributes. 
 //
-//  Returns:    
+//  Returns: 
+//      The query over time attributes. 
 //
-//  Programmer: 
-//  Creation:   
+//  Programmer:  Alister Maguire
+//  Creation:    Tue Sep 24 11:15:10 MST 2019 
 //
 // ****************************************************************************
 
@@ -2007,6 +2017,9 @@ avtSILSpecification::operator==(const avtSILSpecification &s)
 //    Alister Maguire, Mon Nov 27 14:16:21 PST 2017
 //    Added forceConstructMaterialLabels.
 //
+//    Alister Maguire, Tue Sep 24 11:15:10 MST 2019
+//    Added retrieveQOTDataset.
+//
 // ****************************************************************************
 
 static const char *
@@ -2111,7 +2124,7 @@ avtDataRequest::DebugDump(avtWebpage *webpage)
     webpage->AddTableEntry2("usesAllDomains", YesOrNo(usesAllDomains));
     webpage->AddTableEntry2("transformVectorsDuringProject", YesOrNo(transformVectorsDuringProject));
     webpage->AddTableEntry2("needPostGhostMaterialInfo", YesOrNo(needPostGhostMaterialInfo));
-    webpage->AddTableEntry2("getQOTDataset", YesOrNo(getQOTDataset));
+    webpage->AddTableEntry2("retrieveQOTDataset", YesOrNo(retrieveQOTDataset));
     webpage->AddTableEntry2("selectionName", selectionName.c_str());
     if(missingDataBehavior == MISSING_DATA_IGNORE)
         webpage->AddTableEntry2("missingDataBehavior", "MISSING_DATA_IGNORE");

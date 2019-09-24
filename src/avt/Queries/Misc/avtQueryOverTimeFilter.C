@@ -15,14 +15,15 @@
 #include <avtQueryFactory.h>
 #include <avtQueryOverTimeFilter.h>
 
+
 // ****************************************************************************
 //  Method: avtQueryOverTimeFilter constructor
 //
 //  Arguments:
 //    atts      The attributes the filter should use.
 //
-//  Programmer: Kathleen Bonnell
-//  Creation:   March 15, 2004
+//  Programmer: Alister Maguire
+//  Creation:   Tue Sep 24 11:15:10 MST 2019
 //
 //  Modifications:
 //
@@ -37,8 +38,8 @@ avtQueryOverTimeFilter::avtQueryOverTimeFilter(const AttributeGroup *a)
 // ****************************************************************************
 //  Method: avtQueryOverTimeFilter destructor
 //
-//  Programmer: Kathleen Bonnell
-//  Creation:   March 15, 2004
+//  Programmer: Alister Maguire
+//  Creation:   Tue Sep 24 13:46:56 MST 2019 
 //
 // ****************************************************************************
 
@@ -53,8 +54,11 @@ avtQueryOverTimeFilter::~avtQueryOverTimeFilter()
 //  Purpose:
 //    Sets the SILRestriction atts necessary to create a SILRestriction.
 //
-//  Programmer: Kathleen Bonnell
-//  Creation:   May 4, 2004
+//  Note: This was copied over from the previous version of 
+//        avtQueryOverTimeFilter.
+//
+//  Programmer: Alister Maguire
+//  Creation:   Tue Sep 24 13:46:56 MST 2019
 //
 //  Modifications:
 //
@@ -65,5 +69,3 @@ avtQueryOverTimeFilter::SetSILAtts(const SILRestrictionAttributes *silAtts)
 {
     querySILAtts = *silAtts;
 }
-
-
