@@ -110,9 +110,6 @@ avtMultipleInputMathExpression::DeriveVariable(vtkDataSet* in_ds, int dummy)
     debug3 << "Entering avtMultipleInputMathExpression::DeriveVariable("
             "vtkDataSet*, int)" << std::endl;
 
-    std::cout << "nProcessedArgs: " << nProcessedArgs << std::endl;
-    std::cout << "varnames size: " << varnames.size() << std::endl;
-
     // Get the variables and their centering
     for (int i = 0; i < nProcessedArgs; ++i)
     {
