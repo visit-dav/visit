@@ -47,6 +47,17 @@
 
 class vtkDataArray;
 
+// ****************************************************************************
+//  Class: avtMultipleInputMathExpression
+//
+//  Purpose:
+//      A filter that performs a math calculation with multiple arguments.
+//
+//  Programmer: Eddie Rusu
+//  Creation:   Tue Sep 24 09:07:44 PDT 2019
+//
+// ****************************************************************************
+
 class EXPRESSION_API avtMultipleInputMathExpression
     : public avtMultipleInputExpressionFilter
 {

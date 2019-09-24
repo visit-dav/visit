@@ -53,20 +53,14 @@
 
 
 // ****************************************************************************
-//  Method: avtBinaryDivideExpression constructor
+//  Method: avtSmartDivideExpression constructor
 //
 //  Purpose:
 //      Defines the constructor.  Note: this should not be inlined in the
 //      header because it causes problems for certain compilers.
 //
-//  Programmer: Hank Childs
-//  Creation:   February 5, 2004
-//
-//  Modifications:
-//
-//    Eddie Rusu, Wed Sep 11 08:59:52 PDT 2019
-//    Populate class fields with default values. Added alternate constructor to
-//    be used when smart division is requested.
+//  Programmer: Eddie Rusu
+//  Creation:   Tue Sep 24 09:07:44 PDT 2019
 //
 // ****************************************************************************
 
@@ -84,8 +78,8 @@ avtSmartDivideExpression::avtSmartDivideExpression()
 //      Defines the destructor.  Note: this should not be inlined in the header
 //      because it causes problems for certain compilers.
 //
-//  Programmer: Hank Childs
-//  Creation:   February 5, 2004
+//  Programmer: Eddie Rusu
+//  Creation:   Tue Sep 24 09:07:44 PDT 2019
 //
 // ****************************************************************************
 
@@ -93,6 +87,25 @@ avtSmartDivideExpression::~avtSmartDivideExpression()
 {
     ;
 }
+
+
+// ****************************************************************************
+//  Method: avtSmartDivideExpression::RecenterData
+//
+//  Purpose:
+//      Uses only the first two inputs to determine the centering of the data.
+//      If there is mixed centering, default to zone-centered.
+//
+//  Arguments:
+//      in_ds   The vtkDataSet that holds all the arrays. Arrays and
+//              centerings are already stored in dataArrays and centerings,
+//              which are class vectors, so in_ds is only needed because
+//              the call to Recenter requires it.
+//
+//  Programmer: Eddie Rusu
+//  Creation:   Tue Sep 24 09:07:44 PDT 2019
+//
+// ****************************************************************************
 
 void
 avtSmartDivideExpression::RecenterData(vtkDataSet* in_ds)
@@ -122,40 +135,16 @@ avtSmartDivideExpression::RecenterData(vtkDataSet* in_ds)
 }
 
 // ****************************************************************************
-//  Method: avtBinaryDivideExpression::DoOperation
+//  Method: avtSmartDivideExpression::DoOperation
 //
 //  Purpose:
-//      Divides the contents of the first array by the second array and puts
-//      the output in a third array.
+//      Divides the contents of the first array by the second array and outputs
+//      according to the specifications for divide-by-zero-value and tolerance.
 //
-//  Arguments:
-//      data1           The first input data array.
-//      data2           The second input data array.
-//      output           The output data array.
-//      ncomponents   The number of components ('1' for scalar, '2' or '3' for
-//                    vectors, etc.). Not used for this filter.
-//      ntuples       The number of tuples (ie 'npoints' or 'ncells')
+//  Returns: The result of the division operation.
 //
-//  Programmer: Sean Ahern          <Header added by Hank Childs>
-//  Creation:   November 18, 2002   <Header creation date>
-//
-//  Modifications:
-//
-//    Hank Childs, Mon Nov 18 07:35:07 PST 2002
-//    Added support for vectors and arbitrary data types.
-//
-//    Hank Childs, Thu Aug 14 11:18:07 PDT 2003
-//    Add support for vector and scalar types mixing.
-//
-//    Hank Childs, Fri Oct  7 10:43:28 PDT 2005
-//    Add support for dividing by zero.
-//
-//    Hank Childs, Mon Jan 14 17:58:58 PST 2008
-//    Add support for singleton constants.
-//
-//    Eddie Rusu, Wed Sep 11 08:59:52 PDT 2019
-//    Defined 0 as a tolerance instead of absolutely 0.0. Added smart division
-//    in the form of CheckZero at each division.
+//  Programmer: Eddie Rusu
+//  Creation:   Tue Sep 24 09:07:44 PDT 2019.
 //
 // ****************************************************************************
 
@@ -263,21 +252,21 @@ avtSmartDivideExpression::DoOperation()
     return output;
 }
 
-
-
-
 // ****************************************************************************
-//  Method: avtBinaryDivideExpression::CheckZero
+//  Method: avtSmartDivideExpression::CheckZero
 //
 //  Purpose:
 //      Checks the values involved in the division. If the denominator is
-//      within tolerance of zero, then we throw an exception. However, if smart
-//      division is activated, then we return the specified divide by zero
+//      within tolerance of zero, then we return the specified divide by zero
 //      value.
 //
 //  Arguments:
 //      top           The numerator.
 //      bottom        The denominator.
+//
+//  Returns: the result of the smart division of the two numbers. If the
+//           denominator is within tolerance of zero, then return the divide-
+//           by-zero value.
 //
 //  Programmer: Eddie Rusu
 //  Creation:   Thu Aug 29 15:05:08 PDT 2019

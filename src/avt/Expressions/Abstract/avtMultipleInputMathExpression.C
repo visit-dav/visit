@@ -37,7 +37,7 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                     avtMultipleInputMathExpression.h                      //
+//                     avtMultipleInputMathExpression.C                      //
 // ************************************************************************* //
 
 #include <avtMultipleInputMathExpression.h>
@@ -49,15 +49,60 @@
 #include <ExpressionException.h>
 #include <DebugStream.h>
 
+// ****************************************************************************
+//  Method: avtMultipleInputMathExpression constructor
+//
+//  Purpose:
+//      Defines the constructor.  Note: this should not be inlined in the
+//      header because it causes problems for certain compilers.
+//
+//  Programmer: Eddie Rusu
+//  Creation:   Tue Sep 24 09:07:44 PDT 2019
+//
+// ****************************************************************************
+
 avtMultipleInputMathExpression::avtMultipleInputMathExpression()
 {
     ;
 }
 
+
+// ****************************************************************************
+//  Method: avtMultipleInputMathExpression destructor
+//
+//  Purpose:
+//      Defines the constructor.  Note: this should not be inlined in the
+//      header because it causes problems for certain compilers.
+//
+//  Programmer: Eddie Rusu
+//  Creation:   Tue Sep 24 09:07:44 PDT 2019
+//
+// ****************************************************************************
+
 avtMultipleInputMathExpression::~avtMultipleInputMathExpression()
 {
     ;
 }
+
+
+// ****************************************************************************
+//  Method: avtMultipleInputMathExpression::DeriveVariable
+//
+//  Purpose:
+//      Creates data arrays of all the input arguments and determines their
+//      centering. Performs any recentering as necessary. Performs the math
+//      operation and returns the output of that operation.
+//
+//  Arguments:
+//      in_ds   The vtkDataSet from which to extract the data arrays.
+//      dummy   A dummy variable needed for the class hierarchy.
+//
+//  Returns:    The derived variable. The caller must free this memory.
+//
+//  Programmer: Eddie Rusu
+//  Creation:   Tue Sep 24 09:07:44 PDT 2019
+//
+// ****************************************************************************
 
 vtkDataArray*
 avtMultipleInputMathExpression::DeriveVariable(vtkDataSet* in_ds, int dummy)
@@ -85,7 +130,7 @@ avtMultipleInputMathExpression::DeriveVariable(vtkDataSet* in_ds, int dummy)
 }
 
 // ****************************************************************************
-//  Method: avtBinaryMathExpression::DetermineCentering
+//  Method: avtMultipleInputMathExpression::ExractCenteredData
 //
 //  Purpose:
 //      Determines the centering of an input variable and outputs the

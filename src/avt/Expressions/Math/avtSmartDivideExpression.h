@@ -49,25 +49,15 @@ class     vtkDataArray;
 
 
 // ****************************************************************************
-//  Class: avtBinaryDivideExpression
+//  Class: avtSmartDivideExpression
 //
 //  Purpose:
-//      A filter that calculates the quotient of its two inputs
+//      A filter that calculates the quotient of two inputs. Two additional
+//      inputs supported for setting the value when encountering a divide-
+//      by-zero and for defining a tolerance for zero.
 //
-//  Programmer: Sean Ahern
-//  Creation:   Tue Jun 11 16:23:45 PDT 2002
-//
-//  Modifications:
-//
-//    Hank Childs, Thu Feb  5 17:11:06 PST 2004
-//    Moved inlined constructor and destructor definitions to .C files
-//    because certain compilers have problems with them.
-//
-//    Hank Childs, Mon Jan 14 17:58:58 PST 2008
-//    Allow constants to be created as singletons.
-//
-//    Eddie Rusu, Wed Sep 11 08:59:52 PDT 2019
-//    Added the notion and logic of "smart division" or "guarded division".
+//  Programmer: Eddie Rusu
+//  Creation:   Tue Sep 24 09:07:44 PDT 2019
 //
 // ****************************************************************************
 
@@ -75,15 +65,15 @@ class EXPRESSION_API avtSmartDivideExpression
     : public avtMultipleInputMathExpression
 {
   public:
-                              avtSmartDivideExpression();
-    virtual                  ~avtSmartDivideExpression();
+             avtSmartDivideExpression();
+    virtual ~avtSmartDivideExpression();
 
-    virtual const char       *GetType(void) 
+    virtual const char *GetType(void) 
                                      { return "avtSmartDivideExpression"; };
-    virtual const char       *GetDescription(void) 
+    virtual const char *GetDescription(void) 
                                      { return "Calculating smart division"; };
-    virtual int           NumVariableArguments() {
-                              return nProcessedArgs > 4 ? 4 : nProcessedArgs;
+    virtual int         NumVariableArguments() {
+                            return nProcessedArgs > 4 ? 4 : nProcessedArgs;
                           };
 
   protected:
