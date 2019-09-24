@@ -5230,11 +5230,8 @@ NetworkManager::AddQueryOverTimeFilter(QueryOverTimeAttributes *qA,
     // the query coordinates, we must use the time loop filter 
     // instead of the direct database filter.
     //
-    if (qA.GetQueryAtts().GetQueryInputParams().
-        HasNumericEntry("preserve_coord"))
+    if (qA->GetPickAtts().GetTimePreserveCoord())
     {
-        multiCurve = (qA.GetQueryAtts().GetQueryInputParams().
-            GetEntry("preserve_coord")->ToInt() == 1);
         useDirectDatabaseQOT = false;
     }
 
@@ -5244,7 +5241,11 @@ NetworkManager::AddQueryOverTimeFilter(QueryOverTimeAttributes *qA,
     {
         useActualData = qA->GetQueryAtts().GetQueryInputParams().
             GetEntry("use_actual_data")->ToBool();
-        useDirectDatabaseQOT = false;
+
+        if (useActualData && useDirectDatabaseQOT)
+        {
+            useDirectDatabaseQOT = false;
+        }
     }
 
     //
