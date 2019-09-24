@@ -5226,9 +5226,18 @@ NetworkManager::AddQueryOverTimeFilter(QueryOverTimeAttributes *qA,
     }
 
     //
-    // If the user has requested actual data, we must use the 
-    // time loop filter instead of the direct database filter.
+    // If the user has requested actual data or to preserve
+    // the query coordinates, we must use the time loop filter 
+    // instead of the direct database filter.
     //
+    if (qA.GetQueryAtts().GetQueryInputParams().
+        HasNumericEntry("preserve_coord"))
+    {
+        multiCurve = (qA.GetQueryAtts().GetQueryInputParams().
+            GetEntry("preserve_coord")->ToInt() == 1);
+        useDirectDatabaseQOT = false;
+    }
+
     bool useActualData = false;
     if (qA->GetQueryAtts().GetQueryInputParams().
         HasNumericEntry("use_actual_data"))
