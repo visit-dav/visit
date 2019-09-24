@@ -78,6 +78,9 @@
 #    Timo Bremer, Fri Oct 28 09:09:27 PDT 2016
 #    Added merge tree and local threshold.
 #
+#    Eddie Rusu, Tue Sep 24 09:07:44 PDT 2019
+#    Added multiple input math expressions and smart divide.
+#
 #****************************************************************************/
 
 SET(ABSTRACT_SOURCES
