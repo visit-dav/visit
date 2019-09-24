@@ -78,6 +78,9 @@
 #    Timo Bremer, Fri Oct 28 09:09:27 PDT 2016
 #    Added merge tree and local threshold.
 #
+#    Eddie Rusu, Tue Sep 24 09:07:44 PDT 2019
+#    Added multiple input math expressions and smart divide.
+#
 #****************************************************************************/
 
 SET(ABSTRACT_SOURCES
@@ -87,6 +90,7 @@ Abstract/avtExpressionFilter.C
 Abstract/avtExpressionDataTreeIterator.C
 Abstract/avtMacroExpressionFilter.C
 Abstract/avtMultipleInputExpressionFilter.C
+Abstract/avtMultipleInputMathExpression.C
 Abstract/avtSingleInputExpressionFilter.C
 Abstract/avtUnaryMathExpression.C
 )
@@ -269,6 +273,7 @@ Math/avtRadianToDegreeExpression.C
 Math/avtRoundExpression.C
 Math/avtSinExpression.C
 Math/avtSinhExpression.C
+Math/avtSmartDivideExpression.C
 Math/avtSquareExpression.C
 Math/avtSquareRootExpression.C
 Math/avtTanExpression.C
