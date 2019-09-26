@@ -10,6 +10,7 @@ VisIt Developer Manual
     pr_review
     RCDevelopment
     CreateRelease
+    Docker
 
 .. Indices and tables
 .. ==================
