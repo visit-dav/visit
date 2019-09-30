@@ -51,7 +51,6 @@
 #include <avtTimeLoopFilter.h>
 
 #include <QueryOverTimeAttributes.h>
-#include <SILRestrictionAttributes.h>
 
 #include <string>
 

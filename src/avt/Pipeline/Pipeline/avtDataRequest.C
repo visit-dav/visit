@@ -1091,8 +1091,23 @@ avtDataRequest::operator==(const avtDataRequest &ds)
     if (retrieveQOTDataset != ds.retrieveQOTDataset)
         return false;
 
-    if ((*QOTAtts) != (*ds.QOTAtts))
+    if (QOTAtts != NULL && ds.QOTAtts != NULL)
+    {
+        if ((*QOTAtts) == (*ds.QOTAtts))
+        {
+            return true;
+        }
+
         return false;
+    }
+    else if (QOTAtts == NULL && ds.QOTAtts == NULL)
+    {
+        return true;
+    }
+    else
+    {
+        return false;
+    }
  
     //if (selectionName != ds.selectionName)
     //    return false;

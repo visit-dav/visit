@@ -743,7 +743,7 @@ avtExpressionEvaluatorFilter::CanApplyToDirectDatabaseQOT(void)
         for (vector<avtExpressionFilter *>::const_iterator it = filters.begin();
              it < filters.end(); ++it)
         {
-            if (!(*it)->CanApplyToDirectDatabaseQOT())
+            if ((*it) != NULL && !(*it)->CanApplyToDirectDatabaseQOT())
             {
                 return false;
             }
