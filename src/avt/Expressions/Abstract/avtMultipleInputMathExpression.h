@@ -45,6 +45,8 @@
 
 #include <avtMultipleInputExpressionFilter.h>
 
+#include <vtkDataArray.h>
+
 class vtkDataArray;
 
 // ****************************************************************************
@@ -65,13 +67,18 @@ class EXPRESSION_API avtMultipleInputMathExpression
                  avtMultipleInputMathExpression();
         virtual ~avtMultipleInputMathExpression();
 
-        virtual const char *GetType() {return "avtMultipleInputMathExpression";};
+        virtual const char *GetType() {
+                return "avtMultipleInputMathExpression";
+            };
         virtual const char *GetDescription() = 0;
         virtual int         NumVariableArguments() {return nProcessedArgs;};
 
     protected:
         virtual vtkDataArray *DeriveVariable(vtkDataSet*, int);
-        virtual vtkDataArray *ExractCenteredData(avtCentering*, vtkDataSet*, const char*);
+        virtual vtkDataArray *ExractCenteredData(avtCentering*, vtkDataSet*,
+                                                 const char*);
+        virtual vtkDataArray *CreateOutputVariable();
+        virtual vtkDataArray *CreateOutputVariable(int);
         virtual vtkDataArray *DoOperation() = 0;
         virtual void          RecenterData(vtkDataSet*);
 

@@ -45,6 +45,8 @@
 #include <vtkCellData.h>
 #include <vtkDataSet.h>
 #include <vtkPointData.h>
+#include <vtkDoubleArray.h>
+
 
 #include <ExpressionException.h>
 #include <DebugStream.h>
@@ -178,6 +180,64 @@ avtMultipleInputMathExpression::ExractCenteredData(avtCentering *centering_out,
                 "avtCentering*, vtkDataSet*, const char*)" << std::endl;
         return out;
     }
+}
+
+vtkDataArray*
+avtMultipleInputMathExpression::CreateOutputVariable()
+{
+    return CreateOutputVariable(dataArrays.size());
+}
+
+vtkDataArray*
+avtMultipleInputMathExpression::CreateOutputVariable(int arraysToConsider)
+{
+    // Loop over all inputs and determine the number of components and
+    // tuples
+    int nComps = 1;
+    int nVals = 1;
+    for (int i = 0; i < arraysToConsider; ++i)
+    {
+        int nCompsi = dataArrays[i]->GetNumberOfComponents();
+        if (nCompsi != nComps)
+        {
+            // We can support one-multi components, but we can only support
+            // multi-multi if they are the same values.
+            if (nComps == 1)
+            {
+                nComps = nCompsi;
+            }
+            else
+            {
+                EXCEPTION2(ExpressionException, outputVariableName, "Cannot "
+                        "process variables with different number of "
+                        "dimensions.");
+            }
+        }
+
+        int nValsi = dataArrays[i]->GetNumberOfTuples();
+        if (nValsi != nVals)
+        {
+            // We can support singleton values but we cannot support mismatched
+            // number of tuples
+            if (nVals == 1)
+            {
+                nVals = nValsi;
+            }
+            else
+            {
+                EXCEPTION2(ExpressionException, outputVariableName, "Cannot"
+                        "process variables with different number of "
+                        "elements.");
+            }
+        }
+    }
+
+    // Setup the output variable
+    vtkDataArray* output = vtkDoubleArray::New();
+    output->SetNumberOfComponents(nComps);
+    output->SetNumberOfTuples(nVals);
+
+    return output;
 }
 
 
