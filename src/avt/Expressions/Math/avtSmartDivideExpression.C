@@ -182,15 +182,8 @@ avtSmartDivideExpression::DoOperation()
     }
 
     // Setup the output variable
-    int nComps =
-        data1->GetNumberOfComponents() >= data2->GetNumberOfComponents() ?
-        data1->GetNumberOfComponents() :
-        data2->GetNumberOfComponents();
-    int nVals = data1->GetNumberOfTuples();
-
-    vtkDataArray* output = vtkDoubleArray::New();
-    output->SetNumberOfComponents(nComps);
-    output->SetNumberOfTuples(nVals);
+    vtkDataArray *output = CreateOutputVariable(2);
+    int nVals = output->GetNumberOfTuples();
 
     // Perform the division
     bool var1IsSingleton = (data1->GetNumberOfTuples() == 1);
