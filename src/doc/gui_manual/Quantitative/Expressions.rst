@@ -371,17 +371,17 @@ Base 10 Logarithm Function (``log10()``) : ``log10(expr0)``
     Creates a new expression which is everywhere the base 10 logarithm of its
     argument.
 
-.. _Pairwise_Max_Expression_Function:
+.. _Max_Expression_Function:
 
-Pairwise Max Function (``max()``) : ``max(expr0,exrp1)``
-    Creates a new expression which is everywhere the pairwise maximum of its
-    two arguments.
+Max Function (``max()``) : ``max(expr0, exrp1 [, ...])``
+    Creates a new expression which is everywhere the maximum among all input
+    variables.
 
-.. _Pairwise_Min_Expression_Function:
+.. _Min_Expression_Function:
 
-Pairwise Min Function (``min()``) : ``min(expr0,exrp1)``
-    Creates a new expression which is everywhere the pairwise minimum of its
-    two arguments.
+Min Function (``min()``) : ``min(expr0, exrp1 [, ...])``
+    Creates a new expression which is everywhere the minimum among all input
+    variables.
 
 .. _Modulo_Expression_Function:
 
