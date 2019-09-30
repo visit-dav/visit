@@ -56,12 +56,25 @@ avtMinMaxExpression::~avtMinMaxExpression()
 }
 
 
+// ****************************************************************************
+//  Method: avtMinMaxExpression::DoOperation
+//
+//  Purpose:
+//      Finds the max or min among all the input variables stored in
+//      dataArrays.
+//
+//  Programmer: Eddie Rusu
+//  Creation:   Mon Sep 30 14:09:49 PDT 2019
+//
+// ****************************************************************************
+
 vtkDataArray*
 avtMinMaxExpression::DoOperation()
 {
-    // Setup the output variable
-    // Loop over all inputs and determine the number of components
+    // Loop over all inputs and determine the number of components and
+    // tuples
     int nComps = 1;
+    int nVals = 1;
     for (int i = 0; i < nProcessedArgs; ++i)
     {
         int nCompsi = dataArrays[i]->GetNumberOfComponents();
@@ -80,9 +93,25 @@ avtMinMaxExpression::DoOperation()
                         "of differing dimensions.");
             }
         }
+
+        int nValsi = dataArrays[i]->GetNumberOfTuples();
+        if (nValsi != nVals)
+        {
+            // We can support singleton values but we cannot support mismatched
+            // number of tuples
+            if (nVals == 1)
+            {
+                nVals = nValsi;
+            }
+            else
+            {
+                EXCEPTION2(ExpressionException, outputVariableName, 
+                        "Mismatched data sizes in the input variables.");
+            }
+        }
     }
     
-    int nVals = dataArrays[0]->GetNumberOfTuples();
+    // Setup the output variable
     vtkDataArray* output = vtkDoubleArray::New();
     output->SetNumberOfComponents(nComps);
     output->SetNumberOfTuples(nVals);
@@ -98,7 +127,7 @@ avtMinMaxExpression::DoOperation()
 }
 
 // ****************************************************************************
-//  Method: avtMinMaxExpression::DoOperation
+//  Method: avtMinMaxExpression::DoOperationHelper
 //
 //  Purpose:
 //      Finds the minimum or maximum value between two arrays
@@ -107,7 +136,6 @@ avtMinMaxExpression::DoOperation()
 //      out     The output variable.
 //      in1     The first input data array.
 //      in2     The second input data array.
-//      out           The output data array.
 //
 //  Programmer: Hank Childs
 //  Creation:   March 13, 2006
@@ -121,7 +149,8 @@ avtMinMaxExpression::DoOperation()
 //    Change float to double.
 //
 //    Eddie Rusu, Mon Sep 30 11:13:18 PDT 2019
-//    Modified inputs for use with new multi-variable architecture.
+//    Modified inputs for use with new multi-variable architecture. Changed
+//    name from DoOperation to DoOperationHelper.
 //
 // ****************************************************************************
 
@@ -129,13 +158,14 @@ void
 avtMinMaxExpression::DoOperationHelper(vtkDataArray *out, vtkDataArray *in1,
         vtkDataArray *in2)
 {
-    debug4 << "Entering avtMinMaxExpression::DoOperationHelper()" << std::endl;
+    debug5 << "Entering avtMinMaxExpression::DoOperationHelper()" << std::endl;
     bool var1IsSingleton = (in1->GetNumberOfTuples() == 1);
     bool var2IsSingleton = (in2->GetNumberOfTuples() == 1);
 
     int ntuples = out->GetNumberOfTuples();
     int in1ncomps = in1->GetNumberOfComponents();
     int in2ncomps = in2->GetNumberOfComponents();
+
     if (in1ncomps == in2ncomps)
     {
         for (int i = 0 ; i < ntuples ; i++)
@@ -208,5 +238,5 @@ avtMinMaxExpression::DoOperationHelper(vtkDataArray *out, vtkDataArray *in1,
                 "Don't know how to take minimums or maximums with data of "
                 "differing dimensions.");
     }
-    debug4 << "Exiting  avtMinMaxExpression::DoOperationHelper()" << std::endl;
+    debug5 << "Exiting  avtMinMaxExpression::DoOperationHelper()" << std::endl;
 }
