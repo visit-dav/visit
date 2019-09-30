@@ -105,50 +105,7 @@ avtMinMaxExpression::~avtMinMaxExpression()
 vtkDataArray*
 avtMinMaxExpression::DoOperation()
 {
-    // Loop over all inputs and determine the number of components and
-    // tuples
-    int nComps = 1;
-    int nVals = 1;
-    for (int i = 0; i < nProcessedArgs; ++i)
-    {
-        int nCompsi = dataArrays[i]->GetNumberOfComponents();
-        if (nCompsi != nComps)
-        {
-            // We can support one-multi components, but we can only support
-            // multi-multi if they are the same values.
-            if (nComps == 1)
-            {
-                nComps = nCompsi;
-            }
-            else
-            {
-                EXCEPTION2(ExpressionException, outputVariableName, 
-                        "Don't know how to take minimums or maximums with data "
-                        "of differing dimensions.");
-            }
-        }
-
-        int nValsi = dataArrays[i]->GetNumberOfTuples();
-        if (nValsi != nVals)
-        {
-            // We can support singleton values but we cannot support mismatched
-            // number of tuples
-            if (nVals == 1)
-            {
-                nVals = nValsi;
-            }
-            else
-            {
-                EXCEPTION2(ExpressionException, outputVariableName, 
-                        "Mismatched data sizes in the input variables.");
-            }
-        }
-    }
-    
-    // Setup the output variable
-    vtkDataArray* output = vtkDoubleArray::New();
-    output->SetNumberOfComponents(nComps);
-    output->SetNumberOfTuples(nVals);
+    vtkDataArray* output = CreateOutputVariable();
 
     // Loop over all inputs and determine the min/max
     DoOperationHelper(output, dataArrays[0], dataArrays[1]);
