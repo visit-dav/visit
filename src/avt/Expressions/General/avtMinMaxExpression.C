@@ -9,8 +9,10 @@
 #include <avtMinMaxExpression.h>
 
 #include <vtkDataArray.h>
+#include <vtkDoubleArray.h>
 
 #include <ExpressionException.h>
+#include <DebugStream.h>
 
 
 // ****************************************************************************
@@ -28,6 +30,11 @@
 avtMinMaxExpression::avtMinMaxExpression()
 {
     doMin = false;
+}
+
+avtMinMaxExpression::avtMinMaxExpression(bool _doMin)
+{
+    doMin = _doMin;
 }
 
 
@@ -49,19 +56,58 @@ avtMinMaxExpression::~avtMinMaxExpression()
 }
 
 
+vtkDataArray*
+avtMinMaxExpression::DoOperation()
+{
+    // Setup the output variable
+    // Loop over all inputs and determine the number of components
+    int nComps = 1;
+    for (int i = 0; i < nProcessedArgs; ++i)
+    {
+        int nCompsi = dataArrays[i]->GetNumberOfComponents();
+        if (nCompsi != nComps)
+        {
+            // We can support one-multi components, but we can only support
+            // multi-multi if they are the same values.
+            if (nComps == 1)
+            {
+                nComps = nCompsi;
+            }
+            else
+            {
+                EXCEPTION2(ExpressionException, outputVariableName, 
+                        "Don't know how to take minimums or maximums with data "
+                        "of differing dimensions.");
+            }
+        }
+    }
+    
+    int nVals = dataArrays[0]->GetNumberOfTuples();
+    vtkDataArray* output = vtkDoubleArray::New();
+    output->SetNumberOfComponents(nComps);
+    output->SetNumberOfTuples(nVals);
+
+    // Loop over all inputs and determine the min/max
+    DoOperationHelper(output, dataArrays[0], dataArrays[1]);
+    for (int i = 2; i < nProcessedArgs; ++i)
+    {
+        DoOperationHelper(output, output, dataArrays[i]);
+    }
+
+    return output;
+}
+
 // ****************************************************************************
 //  Method: avtMinMaxExpression::DoOperation
 //
 //  Purpose:
-//      Finds the minimum or maximum value.
+//      Finds the minimum or maximum value between two arrays
 //
 //  Arguments:
-//      in1           The first input data array.
-//      in2           The second input data array.
+//      out     The output variable.
+//      in1     The first input data array.
+//      in2     The second input data array.
 //      out           The output data array.
-//      ncomponents   The number of components ('1' for scalar, '2' or '3' for
-//                    vectors, etc.)
-//      ntuples       The number of tuples (ie 'npoints' or 'ncells')
 //
 //  Programmer: Hank Childs
 //  Creation:   March 13, 2006
@@ -74,15 +120,20 @@ avtMinMaxExpression::~avtMinMaxExpression()
 //    Kathleen Biagas, Wed Apr 4 12:13:10 PDT 2012
 //    Change float to double.
 //
+//    Eddie Rusu, Mon Sep 30 11:13:18 PDT 2019
+//    Modified inputs for use with new multi-variable architecture.
+//
 // ****************************************************************************
 
 void
-avtMinMaxExpression::DoOperation(vtkDataArray *in1, vtkDataArray *in2,
-                                vtkDataArray *out, int ncomponents,int ntuples)
+avtMinMaxExpression::DoOperationHelper(vtkDataArray *out, vtkDataArray *in1,
+        vtkDataArray *in2)
 {
+    debug4 << "Entering avtMinMaxExpression::DoOperationHelper()" << std::endl;
     bool var1IsSingleton = (in1->GetNumberOfTuples() == 1);
     bool var2IsSingleton = (in2->GetNumberOfTuples() == 1);
 
+    int ntuples = out->GetNumberOfTuples();
     int in1ncomps = in1->GetNumberOfComponents();
     int in2ncomps = in2->GetNumberOfComponents();
     if (in1ncomps == in2ncomps)
@@ -154,7 +205,8 @@ avtMinMaxExpression::DoOperation(vtkDataArray *in1, vtkDataArray *in2,
     else
     {
         EXCEPTION2(ExpressionException, outputVariableName, 
-                         "Don't know how to take minimums or "
-                         "maximums with data of differing dimensions.");
+                "Don't know how to take minimums or maximums with data of "
+                "differing dimensions.");
     }
+    debug4 << "Exiting  avtMinMaxExpression::DoOperationHelper()" << std::endl;
 }
