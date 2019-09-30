@@ -110,6 +110,7 @@ avtMinMaxExpression::~avtMinMaxExpression()
 vtkDataArray*
 avtMinMaxExpression::DoOperation()
 {
+    debug4 << "Entering avtMinMaxExpression::DoOperation()" << std::endl;
     vtkDataArray* output = CreateOutputVariable();
 
     // Loop over all inputs and determine the min/max
@@ -119,6 +120,7 @@ avtMinMaxExpression::DoOperation()
         DoOperationHelper(output, output, dataArrays[i]);
     }
 
+    debug4 << "Exiting  avtMinMaxExpression::DoOperation()" << std::endl;
     return output;
 }
 
