@@ -58,6 +58,11 @@ class vtkDataArray;
 //  Programmer: Eddie Rusu
 //  Creation:   Tue Sep 24 09:07:44 PDT 2019
 //
+//  Modifications:
+//
+//      Eddie Rusu, Mon Sep 30 15:00:24 PDT 2019
+//      Added CreateOutputVariable and modified RecenterData.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtMultipleInputMathExpression

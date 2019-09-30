@@ -32,6 +32,10 @@ class     vtkDataArray;
 //    Hank Childs, Mon Jan 14 17:58:58 PST 2008
 //    Allow constants to be created as singletons.
 //
+//    Eddie Rusu, Mon Sep 30 15:00:24 PDT 2019
+//    Inherit from avtMultiInputMathExpressions to allow taking the min/max
+//    over more than 2 variables.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtMinMaxExpression

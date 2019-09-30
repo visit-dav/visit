@@ -476,6 +476,10 @@ avtVectorExpr::CreateFilters(ExprPipelineState *state)
 //    Timo Bremer, Fri Oct 28 09:09:27 PDT 2016
 //    Added merge_tree, split_tree and local_threshold.
 //
+//    Eddie Rusu, Mon Sep 30 14:49:38 PDT 2019
+//    Changed MinMax expression creation so that they construct with doMin
+//    as a construction parameter.
+//
 // ****************************************************************************
 
 avtExpressionFilter *
