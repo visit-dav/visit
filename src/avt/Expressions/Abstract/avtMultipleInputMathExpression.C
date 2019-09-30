@@ -221,7 +221,7 @@ avtMultipleInputMathExpression::CreateOutputVariable(int arraysToConsider)
     for (int i = 0; i < arraysToConsider; ++i)
     {
         int nCompsi = dataArrays[i]->GetNumberOfComponents();
-        if (nCompsi != nComps)
+        if (nCompsi != 1 && nCompsi != nComps)
         {
             // We can support one-multi components, but we can only support
             // multi-multi if they are the same values.
@@ -238,7 +238,7 @@ avtMultipleInputMathExpression::CreateOutputVariable(int arraysToConsider)
         }
 
         int nValsi = dataArrays[i]->GetNumberOfTuples();
-        if (nValsi != nVals)
+        if (nValsi != 1 && nValsi != nVals)
         {
             // We can support singleton values but we cannot support mismatched
             // number of tuples
@@ -248,7 +248,7 @@ avtMultipleInputMathExpression::CreateOutputVariable(int arraysToConsider)
             }
             else
             {
-                EXCEPTION2(ExpressionException, outputVariableName, "Cannot"
+                EXCEPTION2(ExpressionException, outputVariableName, "Cannot "
                         "process variables with different number of "
                         "elements.");
             }
