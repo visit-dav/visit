@@ -509,7 +509,13 @@ avtFileFormatInterface::GetQOTMesh(const QueryOverTimeAttributes *QOTAtts,
     QueryOverTimeAttributes::TimeType tType = QOTAtts->GetTimeType();
 
     int startT = tsRange[0];
-    int stopT  = tsRange[1] + 1;
+    int stopT  = tsRange[1];
+
+    //
+    // We want to always include the last time step. In cases where this
+    // doesn't occur naturally, we need to manually add it. 
+    //
+    bool addLastStep = ((stopT - startT) % tsStride == 0.0) ? false : true;
 
     //
     // First, let's make sure this timestep range is valid. 
@@ -527,7 +533,8 @@ avtFileFormatInterface::GetQOTMesh(const QueryOverTimeAttributes *QOTAtts,
         EXCEPTION1(ImproperUseException, msg);
     }
 
-    int numPoints = (stopT - startT) / tsStride;
+    int numPoints = (int) ceil((float)(stopT - startT) / 
+        (float) tsStride) + 1;
 
     doubleVector xCoords;
     xCoords.reserve(numPoints);
@@ -536,9 +543,14 @@ avtFileFormatInterface::GetQOTMesh(const QueryOverTimeAttributes *QOTAtts,
     {
         case QueryOverTimeAttributes::Cycle:
         {
-            for (int i = startT; i < stopT; i += tsStride)
+            for (int i = startT; i <= stopT; i += tsStride)
             {
                 xCoords.push_back((double) cycles[i]);
+            }
+
+            if (addLastStep)
+            {
+                xCoords.push_back((double) cycles[stopT]);
             }
 
             break;
@@ -548,18 +560,30 @@ avtFileFormatInterface::GetQOTMesh(const QueryOverTimeAttributes *QOTAtts,
             doubleVector times;
             GetTimes(domain, times);
 
-            for (int i = startT; i < stopT; i += tsStride)
+            for (int i = startT; i <= stopT; i += tsStride)
             {
                 xCoords.push_back((double) times[i]);
             }
+
+            if (addLastStep)
+            {
+                xCoords.push_back((double) times[stopT]);
+            }
+
             break;
         }
         case QueryOverTimeAttributes::Timestep:
         {
-            for (int i = startT; i < stopT; i += tsStride)
+            for (int i = startT; i <= stopT; i += tsStride)
             {
                 xCoords.push_back((double) i);
             }
+
+            if (addLastStep)
+            {
+                xCoords.push_back((double) stopT);
+            }
+
             break;
         }
         default:
@@ -620,8 +644,15 @@ avtFileFormatInterface::GetQOTVar(int domain,
                                   int tsStride)
 {
     int startT       = tsRange[0];
-    int stopT        = tsRange[1] + 1;
-    int spanSize     = (stopT - startT) / tsStride;
+    int stopT        = tsRange[1];
+
+    //
+    // We want to always include the last time step. In cases where this
+    // doesn't occur naturally, we need to manually add it. 
+    //
+    bool addLastStep = ((stopT - startT) % tsStride == 0.0) ? false : true;
+    int numTuples    = (int) ceil((float)(stopT - startT) / 
+        (float) tsStride) + 1;
 
     //
     // VisIt ids begin at 0, but the interface ids start at 1. 
@@ -630,7 +661,7 @@ avtFileFormatInterface::GetQOTVar(int domain,
     long int visitId = element - 1;
 
     vtkFloatArray *spanArray = vtkFloatArray::New();
-    spanArray->SetNumberOfTuples(spanSize);
+    spanArray->SetNumberOfTuples(numTuples);
     spanArray->SetNumberOfComponents(1);
 
     //
@@ -638,7 +669,7 @@ avtFileFormatInterface::GetQOTVar(int domain,
     // var/element pair. 
     //
     int tupIdx = 0;
-    for (int ts = startT; ts < stopT; ts += tsStride, ++tupIdx)
+    for (int ts = startT; ts <= stopT; ts += tsStride, ++tupIdx)
     {
         //
         // Activate the current timestep and retrieve our variable. 
@@ -646,6 +677,16 @@ avtFileFormatInterface::GetQOTVar(int domain,
         ActivateTimestep(ts);
         vtkFloatArray *allValues = (vtkFloatArray *) 
             GetVar(ts, domain, varPath);
+
+        float targetVal = allValues->GetTuple1(visitId);
+        spanArray->SetTuple1(tupIdx, targetVal);
+    }
+
+    if (addLastStep)
+    {
+        ActivateTimestep(stopT);
+        vtkFloatArray *allValues = (vtkFloatArray *) 
+            GetVar(stopT, domain, varPath);
 
         float targetVal = allValues->GetTuple1(visitId);
         spanArray->SetTuple1(tupIdx, targetVal);
@@ -690,9 +731,17 @@ avtFileFormatInterface::GetQOTVectorVar(int domain,
                                         int *tsRange,
                                         int tsStride)
 {
-    int startT       = tsRange[0];
-    int stopT        = tsRange[1] + 1;
-    int spanSize     = (stopT - startT) / tsStride;
+    int startT = tsRange[0];
+    int stopT  = tsRange[1];
+
+    //
+    // We want to always include the last time step. In cases where this
+    // doesn't occur naturally, we need to manually add it. 
+    //
+    bool addLastStep = ((stopT - startT) % tsStride == 0.0) ? false : true;
+    int numTuples    = (int) ceil((float)(stopT - startT) / 
+        (float) tsStride) + 1;
+
     long int visitId = element - 1;
 
     //
@@ -703,7 +752,7 @@ avtFileFormatInterface::GetQOTVectorVar(int domain,
 
     vtkFloatArray *spanArray = vtkFloatArray::New();
     spanArray->SetNumberOfComponents(vDim);
-    spanArray->SetNumberOfTuples(spanSize);
+    spanArray->SetNumberOfTuples(numTuples);
 
     double *targetVec = new double[vDim];
 
@@ -717,7 +766,7 @@ avtFileFormatInterface::GetQOTVectorVar(int domain,
     // and elements. 
     //
     int tupIdx = 0;
-    for (int ts = startT; ts < stopT; ts += tsStride, ++tupIdx)
+    for (int ts = startT; ts <= stopT; ts += tsStride, ++tupIdx)
     {
         //
         // Activate the current timestep and retrieve our variable. 
@@ -725,6 +774,16 @@ avtFileFormatInterface::GetQOTVectorVar(int domain,
         ActivateTimestep(ts);
         vtkFloatArray *allValues = (vtkFloatArray *) 
             GetVectorVar(ts, domain, varPath);
+
+        allValues->GetTuple(visitId, targetVec);
+        spanArray->SetTuple(tupIdx, targetVec);
+    }
+
+    if (addLastStep) 
+    {
+        ActivateTimestep(stopT);
+        vtkFloatArray *allValues = (vtkFloatArray *) 
+            GetVectorVar(stopT, domain, varPath);
 
         allValues->GetTuple(visitId, targetVec);
         spanArray->SetTuple(tupIdx, targetVec);

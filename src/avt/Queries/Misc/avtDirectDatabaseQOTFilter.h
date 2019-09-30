@@ -101,10 +101,10 @@ class QUERY_API avtDirectDatabaseQOTFilter : public avtQueryOverTimeFilter
 
   protected:
     bool                     success;
-    std::string              YLabel;
-
+    bool                     finalOutputCreated; 
     bool                     useTimeForXAxis;
     bool                     useVarForYAxis;
+    std::string              YLabel;
 
     virtual void             Execute(void);
     virtual void             UpdateDataObjectInfo(void);

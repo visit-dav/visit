@@ -80,10 +80,11 @@
 avtDirectDatabaseQOTFilter::avtDirectDatabaseQOTFilter(const AttributeGroup *a)
  : avtQueryOverTimeFilter(a)
 {
-    success         = true;
-    useTimeForXAxis = true;
-    useVarForYAxis  = false;
-    YLabel          = "";
+    success            = true;
+    finalOutputCreated = false;
+    useTimeForXAxis    = true;
+    useVarForYAxis     = false;
+    YLabel             = "";
 
     //
     // Let's first try to retreive some information about the query. 
@@ -184,16 +185,36 @@ avtDirectDatabaseQOTFilter::Execute(void)
         }
 
         int numLeaves = 0;
-        vtkDataSet **leaves  = dataTree->GetAllLeaves(numLeaves);
-        vtkPolyData *QOTData = (vtkPolyData *) leaves[0];
+        vtkDataSet **leaves = dataTree->GetAllLeaves(numLeaves);
 
-        avtDataTree_p tree   = ConstructCurveTree(QOTData, multiCurve);
-        SetOutputDataTree(tree);
+        if (numLeaves > 0)
+        {
+            vtkPolyData *QOTData = (vtkPolyData *) leaves[0];
+
+            if (QOTData == NULL)
+            {
+                debug1 << "Direct Database QOT leaf is NULL!" << endl;
+
+                SetOutputDataTree(new avtDataTree());
+            }
+
+            avtDataTree_p tree = ConstructCurveTree(QOTData, multiCurve);
+            SetOutputDataTree(tree);
+        }
+        else
+        {
+            debug1 << "Direct Database QOT recieved no leaves!" << endl;
+
+            SetOutputDataTree(new avtDataTree());
+        }
     }
     else
     {
         SetOutputDataTree(new avtDataTree());
     }
+
+    finalOutputCreated = true;
+    UpdateDataObjectInfo();
 }
 
 
@@ -221,60 +242,63 @@ avtDirectDatabaseQOTFilter::UpdateDataObjectInfo(void)
     outAtts.GetOriginalSpatialExtents()->Clear();
     outAtts.GetDesiredSpatialExtents()->Clear();
 
-    if (useTimeForXAxis)
+    if (finalOutputCreated)
     {
-        outAtts.SetXLabel("Time");
-        outAtts.SetYLabel(YLabel);
+        if (useTimeForXAxis)
+        {
+            outAtts.SetXLabel("Time");
+            outAtts.SetYLabel(YLabel);
 
-        if (atts.GetTimeType() == QueryOverTimeAttributes::Cycle)
-        {
-            outAtts.SetXUnits("cycle");
-        }
-        else if (atts.GetTimeType() == QueryOverTimeAttributes::DTime)
-        {
-            outAtts.SetXUnits("time");
-        }
-        else if (atts.GetTimeType() == QueryOverTimeAttributes::Timestep)
-        {
-            outAtts.SetXUnits("timestep");
+            if (atts.GetTimeType() == QueryOverTimeAttributes::Cycle)
+            {
+                outAtts.SetXUnits("cycle");
+            }
+            else if (atts.GetTimeType() == QueryOverTimeAttributes::DTime)
+            {
+                outAtts.SetXUnits("time");
+            }
+            else if (atts.GetTimeType() == QueryOverTimeAttributes::Timestep)
+            {
+                outAtts.SetXUnits("timestep");
+            }
+            else
+            {
+                outAtts.SetXUnits("");
+            }
+
+            if (useVarForYAxis)
+            {
+                std::string yl = outAtts.GetVariableName();
+                outAtts.SetYLabel(yl);
+                outAtts.SetYUnits(outAtts.GetVariableUnits(yl.c_str()));
+            }
         }
         else
         {
-            outAtts.SetXUnits("");
-        }
-
-        if (useVarForYAxis)
-        {
-            std::string yl = outAtts.GetVariableName();
+            std::string xl = atts.GetQueryAtts().GetVariables()[0] + "(t)";
+            std::string yl = atts.GetQueryAtts().GetVariables()[1] + "(t)";
+            outAtts.SetXLabel(xl);
             outAtts.SetYLabel(yl);
-            outAtts.SetYUnits(outAtts.GetVariableUnits(yl.c_str()));
+            outAtts.SetXUnits(atts.GetQueryAtts().GetXUnits());
+            outAtts.SetYUnits(atts.GetQueryAtts().GetYUnits());
         }
-    }
-    else
-    {
-        std::string xl = atts.GetQueryAtts().GetVariables()[0] + "(t)";
-        std::string yl = atts.GetQueryAtts().GetVariables()[1] + "(t)";
-        outAtts.SetXLabel(xl);
-        outAtts.SetYLabel(yl);
-        outAtts.SetXUnits(atts.GetQueryAtts().GetXUnits());
-        outAtts.SetYUnits(atts.GetQueryAtts().GetYUnits());
-    }
 
-    outAtts.SetLabels(atts.GetQueryAtts().GetVariables());
+        outAtts.SetLabels(atts.GetQueryAtts().GetVariables());
 
-    if (atts.GetQueryAtts().GetVariables().size() > 1)
-    {
-        outAtts.SetConstructMultipleCurves(true);
-    }
-    else
-    {
-        outAtts.SetConstructMultipleCurves(false);
-    }
+        if (atts.GetQueryAtts().GetVariables().size() > 1)
+        {
+            outAtts.SetConstructMultipleCurves(true);
+        }
+        else
+        {
+            outAtts.SetConstructMultipleCurves(false);
+        }
 
-    double bounds[6];
-    avtDataset_p ds = GetTypedOutput();
-    avtDatasetExaminer::GetSpatialExtents(ds, bounds);
-    outAtts.GetThisProcsOriginalSpatialExtents()->Set(bounds);
+        double bounds[6];
+        avtDataset_p ds = GetTypedOutput();
+        avtDatasetExaminer::GetSpatialExtents(ds, bounds);
+        outAtts.GetThisProcsOriginalSpatialExtents()->Set(bounds);
+    }
 }
 
 
@@ -286,7 +310,7 @@ avtDirectDatabaseQOTFilter::UpdateDataObjectInfo(void)
 //
 //  Arguments:
 //      polyData             The polydata containing the curves. 
-//      domultiCurvePlot     Whether or not to do a multi curve plot. 
+//      doMultiCurvePlot     Whether or not to do a multi curve plot. 
 //
 //  Returns:
 //      A data tree containing the curves. 
@@ -304,8 +328,17 @@ avtDirectDatabaseQOTFilter::ConstructCurveTree(vtkPolyData *polyData,
 {
     vtkPointData *inputPD = polyData->GetPointData();
     vtkPoints *inputPts   = polyData->GetPoints();
-    int numCurves         = inputPD->GetNumberOfArrays();
-    int numPts            = inputPD->GetScalars()->GetNumberOfTuples();
+
+    if (inputPD ==  NULL || inputPts == NULL)
+    {
+        debug1 << "avtDirectDatabaseQOTFilter: missing curves and/or points."
+            << endl;
+        avtDataTree_p tree = new avtDataTree(NULL, 0);
+        return tree;
+    }
+
+    int numCurves = inputPD->GetNumberOfArrays();
+    int numPts    = inputPD->GetScalars()->GetNumberOfTuples();
 
     stringVector vars;
     vars.reserve(numCurves);
@@ -365,7 +398,6 @@ avtDirectDatabaseQOTFilter::ConstructCurveTree(vtkPolyData *polyData,
     }
     else if (doMultiCurvePlot)
     {
-        //TODO: test this. 
         vtkRectilinearGrid *rgrid =
             vtkVisItUtility::CreateEmptyRGrid(numPts, numCurves, 1, VTK_FLOAT);
 
@@ -399,8 +431,6 @@ avtDirectDatabaseQOTFilter::ConstructCurveTree(vtkPolyData *polyData,
                 continue;
             }
 
-            vars.push_back(curve->GetName());
-
             yCoords->SetTuple1(i, i);
 
             int baseIdx = i*numPts;
@@ -410,9 +440,10 @@ avtDirectDatabaseQOTFilter::ConstructCurveTree(vtkPolyData *polyData,
                 scalars->SetTuple1(baseIdx + j, curve->GetTuple1(j));
             }
         }
+
         avtDataTree_p tree = new avtDataTree(rgrid, 0);
-        rgrid->Delete();
         scalars->Delete();
+        rgrid->Delete();
         return tree;
     }
     else

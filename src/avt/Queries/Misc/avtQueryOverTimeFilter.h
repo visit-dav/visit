@@ -44,7 +44,7 @@ class QUERY_API avtQueryOverTimeFilter : public avtDatasetToDatasetFilter
     virtual const char           *GetDescription(void) 
                                     { return "Querying over Time"; };
 
-    void                          SetSILAtts(const SILRestrictionAttributes *);
+    virtual void                  SetSILAtts(const SILRestrictionAttributes *);
 
     virtual bool                  FilterSupportsTimeParallelization(void)
                                       { return false; };
