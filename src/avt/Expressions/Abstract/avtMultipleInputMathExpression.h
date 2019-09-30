@@ -73,7 +73,7 @@ class EXPRESSION_API avtMultipleInputMathExpression
         virtual vtkDataArray *DeriveVariable(vtkDataSet*, int);
         virtual vtkDataArray *ExractCenteredData(avtCentering*, vtkDataSet*, const char*);
         virtual vtkDataArray *DoOperation() = 0;
-        virtual void          RecenterData(vtkDataSet*) = 0;
+        virtual void          RecenterData(vtkDataSet*);
 
         avtCentering centering;
         std::vector<vtkDataArray*> dataArrays;

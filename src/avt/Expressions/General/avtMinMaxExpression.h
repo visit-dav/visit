@@ -43,7 +43,7 @@
 #ifndef AVT_MINMAX_EXPRESSION_H
 #define AVT_MINMAX_EXPRESSION_H
 
-#include <avtBinaryMathExpression.h>
+#include <avtMultipleInputMathExpression.h>
 
 class     vtkDataArray;
 
@@ -68,24 +68,29 @@ class     vtkDataArray;
 //
 // ****************************************************************************
 
-class EXPRESSION_API avtMinMaxExpression : public avtBinaryMathExpression
+class EXPRESSION_API avtMinMaxExpression
+    : public avtMultipleInputMathExpression
 {
   public:
-                              avtMinMaxExpression();
-    virtual                  ~avtMinMaxExpression();
+             avtMinMaxExpression();
+             avtMinMaxExpression(bool);
+    virtual ~avtMinMaxExpression();
 
-    virtual const char       *GetType(void) 
-                                 { return "avtMinMaxExpression"; };
-    virtual const char       *GetDescription(void)
-                                 { return "Calculating min or max"; };
-    bool                      SetDoMinimum(bool b) { doMin = b; return true; };
+    virtual const char *GetType(void) { return "avtMinMaxExpression"; };
+    virtual const char *GetDescription(void)
+                          { return "Calculating min or max"; };
+
+    bool SetDoMinimum(bool b) { doMin = b; return true; };
+    // TODO: remove this
 
   protected:
-    bool             doMin;
+    virtual vtkDataArray *DoOperation();
+    virtual bool          CanHandleSingletonConstants(void) {return true;};
 
-    virtual void     DoOperation(vtkDataArray *in1, vtkDataArray *in2,
-                                 vtkDataArray *out, int ncomps, int ntuples);
-    virtual bool     CanHandleSingletonConstants(void) {return true;};
+    bool doMin;
+  
+  private:
+    void DoOperationHelper(vtkDataArray*, vtkDataArray*, vtkDataArray*);
 };
 
 

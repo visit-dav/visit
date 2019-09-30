@@ -100,7 +100,7 @@ avtSmartDivideExpression::~avtSmartDivideExpression()
 //      in_ds   The vtkDataSet that holds all the arrays. Arrays and
 //              centerings are already stored in dataArrays and centerings,
 //              which are class vectors, so in_ds is only needed because
-//              the call to Recenter requires it.
+//              the call to avtExpressionFilter::Recenter requires it.
 //
 //  Programmer: Eddie Rusu
 //  Creation:   Tue Sep 24 09:07:44 PDT 2019

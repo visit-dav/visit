@@ -179,3 +179,52 @@ avtMultipleInputMathExpression::ExractCenteredData(avtCentering *centering_out,
         return out;
     }
 }
+
+
+// ****************************************************************************
+//  Method: avtMultipleInputMathExpression::RecenterData
+//
+//  Purpose:
+//      Determines the centering of the input variables. If there is mixed
+//      centering, default to zone-centered.
+//
+//  Arguments:
+//      in_ds   The vtkDataSet that holds all the arrays. Arrays and
+//              centerings are already stored in dataArrays and centerings,
+//              which are class vectors, so in_ds is only needed because
+//              the call to avtExpressionFilter::Recenter requires it.
+//
+//  Programmer: Eddie Rusu
+//  Creation:   Mon Sep 30 10:38:44 PDT 2019
+//
+// ****************************************************************************
+
+void
+avtMultipleInputMathExpression::RecenterData(vtkDataSet* in_ds)
+{
+    debug5 << "Entering avtMultipleInputMathExpression::RecenterData(vtkDataSet*)"
+            << std::endl;
+
+    // Determine the centering
+    centering = centerings[0];
+    for (int i = 1; i < nProcessedArgs; ++i)
+    {
+        if (centerings[i] != centering)
+        {
+            centering = AVT_ZONECENT;
+            break;
+        }
+    }
+
+    // Recenter variables as needed
+    for (int i = 0; i < nProcessedArgs; ++i)
+    {
+        if (centerings[i] != centering)
+        {
+            dataArrays[i] = Recenter(in_ds, dataArrays[0], centerings[0],
+                outputVariableName);
+        }
+    }
+    debug5 << "Exiting  avtMultipleInputMathExpression::RecenterData(vtkDataSet*)"
+            << std::endl;
+}
