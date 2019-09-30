@@ -80,9 +80,6 @@ class EXPRESSION_API avtMinMaxExpression
     virtual const char *GetDescription(void)
                           { return "Calculating min or max"; };
 
-    bool SetDoMinimum(bool b) { doMin = b; return true; };
-    // TODO: remove this
-
   protected:
     virtual vtkDataArray *DoOperation();
     virtual bool          CanHandleSingletonConstants(void) {return true;};
