@@ -182,6 +182,27 @@ avtMultipleInputMathExpression::ExractCenteredData(avtCentering *centering_out,
     }
 }
 
+
+// ****************************************************************************
+//  Method: avtMultipleInputMathExpression::CreateOutputVariable
+//
+//  Purpose:
+//      Generate the output variable with the correct number of components
+//      and tuples.
+//
+//  Arguments:
+//      arraysToConsider    Indicates how many arrays (in order of input) to
+//                          consider in determining the component and tuple
+//                          count. Default behavior is to use all of the
+//                          processed arrays.
+//
+//  Returns:    Data array of appropriate size.
+//
+//  Programmer: Eddie Rusu
+//  Creation:   Mon Sep 30 14:49:38 PDT 2019
+//
+// ****************************************************************************
+
 vtkDataArray*
 avtMultipleInputMathExpression::CreateOutputVariable()
 {
@@ -191,6 +212,8 @@ avtMultipleInputMathExpression::CreateOutputVariable()
 vtkDataArray*
 avtMultipleInputMathExpression::CreateOutputVariable(int arraysToConsider)
 {
+    debug5 << "Entering avtMultipleInputMathExpression::"
+              "CreateOutputVariable(int)" << std::endl;
     // Loop over all inputs and determine the number of components and
     // tuples
     int nComps = 1;
@@ -236,7 +259,11 @@ avtMultipleInputMathExpression::CreateOutputVariable(int arraysToConsider)
     vtkDataArray* output = vtkDoubleArray::New();
     output->SetNumberOfComponents(nComps);
     output->SetNumberOfTuples(nVals);
+    debug5 << "Number of tuples: " << nVals << std::endl;
+    debug5 << "Number of components: " << nComps << std::endl;
 
+    debug5 << "Exiting  avtMultipleInputMathExpression::"
+              "CreateOutputVariable(int)" << std::endl;
     return output;
 }
 

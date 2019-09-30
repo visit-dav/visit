@@ -59,6 +59,11 @@
 //  Programmer: Hank Childs
 //  Creation:   March 13, 2006
 //
+//  Modifications:
+//
+//      Eddie Rusu, Mon Sep 30 14:49:38 PDT 2019
+//      Added alternate constructor that takes doMin as input.
+//
 // ****************************************************************************
 
 avtMinMaxExpression::avtMinMaxExpression()
