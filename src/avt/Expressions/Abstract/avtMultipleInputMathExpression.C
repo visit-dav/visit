@@ -308,7 +308,7 @@ avtMultipleInputMathExpression::RecenterData(vtkDataSet* in_ds)
     {
         if (centerings[i] != centering)
         {
-            dataArrays[i] = Recenter(in_ds, dataArrays[0], centerings[0],
+            dataArrays[i] = Recenter(in_ds, dataArrays[i], centerings[i],
                 outputVariableName);
         }
     }
