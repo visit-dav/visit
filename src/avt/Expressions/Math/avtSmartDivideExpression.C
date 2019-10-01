@@ -100,7 +100,7 @@ avtSmartDivideExpression::~avtSmartDivideExpression()
 //      in_ds   The vtkDataSet that holds all the arrays. Arrays and
 //              centerings are already stored in dataArrays and centerings,
 //              which are class vectors, so in_ds is only needed because
-//              the call to Recenter requires it.
+//              the call to avtExpressionFilter::Recenter requires it.
 //
 //  Programmer: Eddie Rusu
 //  Creation:   Tue Sep 24 09:07:44 PDT 2019
@@ -146,6 +146,12 @@ avtSmartDivideExpression::RecenterData(vtkDataSet* in_ds)
 //  Programmer: Eddie Rusu
 //  Creation:   Tue Sep 24 09:07:44 PDT 2019.
 //
+//  Modifications:
+//
+//      Eddie Rusu, Mon Sep 30 14:49:38 PDT 2019
+//      Replaced output variable setup with
+//      avtMultiInputMathExpression::CreateOutputVariable.
+//
 // ****************************************************************************
 
 vtkDataArray*
@@ -182,15 +188,8 @@ avtSmartDivideExpression::DoOperation()
     }
 
     // Setup the output variable
-    int nComps =
-        data1->GetNumberOfComponents() >= data2->GetNumberOfComponents() ?
-        data1->GetNumberOfComponents() :
-        data2->GetNumberOfComponents();
-    int nVals = data1->GetNumberOfTuples();
-
-    vtkDataArray* output = vtkDoubleArray::New();
-    output->SetNumberOfComponents(nComps);
-    output->SetNumberOfTuples(nVals);
+    vtkDataArray *output = CreateOutputVariable(2);
+    int nVals = output->GetNumberOfTuples();
 
     // Perform the division
     bool var1IsSingleton = (data1->GetNumberOfTuples() == 1);
