@@ -112,6 +112,8 @@ class QUERY_API avtDirectDatabaseQOTFilter : public avtQueryOverTimeFilter
     virtual bool             ExecutionSuccessful(void) 
                                { return success; };
 
+    vtkPolyData             *VerifyAndRefineTimesteps(vtkPolyData *);
+
     avtDataTree_p            ConstructCurveTree(vtkPolyData *,
                                                 const bool);
 };

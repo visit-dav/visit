@@ -643,8 +643,8 @@ avtFileFormatInterface::GetQOTVar(int domain,
                                   int *tsRange,
                                   int tsStride)
 {
-    int startT       = tsRange[0];
-    int stopT        = tsRange[1];
+    int startT = tsRange[0];
+    int stopT  = tsRange[1];
 
     //
     // We want to always include the last time step. In cases where this
@@ -653,12 +653,6 @@ avtFileFormatInterface::GetQOTVar(int domain,
     bool addLastStep = ((stopT - startT) % tsStride == 0.0) ? false : true;
     int numTuples    = (int) ceil((float)(stopT - startT) / 
         (float) tsStride) + 1;
-
-    //
-    // VisIt ids begin at 0, but the interface ids start at 1. 
-    // Account for this before retrieving. 
-    //
-    long int visitId = element - 1;
 
     vtkFloatArray *spanArray = vtkFloatArray::New();
     spanArray->SetNumberOfTuples(numTuples);
@@ -674,22 +668,40 @@ avtFileFormatInterface::GetQOTVar(int domain,
         //
         // Activate the current timestep and retrieve our variable. 
         //
-        ActivateTimestep(ts);
-        vtkFloatArray *allValues = (vtkFloatArray *) 
-            GetVar(ts, domain, varPath);
+        TRY
+        {
+            ActivateTimestep(ts);
+            vtkFloatArray *allValues = (vtkFloatArray *) 
+                GetVar(ts, domain, varPath);
 
-        float targetVal = allValues->GetTuple1(visitId);
-        spanArray->SetTuple1(tupIdx, targetVal);
+            float targetVal = allValues->GetTuple1(element);
+            spanArray->SetTuple1(tupIdx, targetVal);
+        }
+        CATCH2(VisItException, e)
+        {
+            spanArray->SetTuple1(tupIdx, 
+                std::numeric_limits<float>::quiet_NaN());
+        }
+        ENDTRY
     }
 
     if (addLastStep)
     {
-        ActivateTimestep(stopT);
-        vtkFloatArray *allValues = (vtkFloatArray *) 
-            GetVar(stopT, domain, varPath);
+        TRY
+        {
+            ActivateTimestep(stopT);
+            vtkFloatArray *allValues = (vtkFloatArray *) 
+                GetVar(stopT, domain, varPath);
 
-        float targetVal = allValues->GetTuple1(visitId);
-        spanArray->SetTuple1(tupIdx, targetVal);
+            float targetVal = allValues->GetTuple1(element);
+            spanArray->SetTuple1(tupIdx, targetVal);
+        }
+        CATCH2(VisItException, e)
+        {
+            spanArray->SetTuple1(tupIdx, 
+                std::numeric_limits<float>::quiet_NaN());
+        }
+        ENDTRY
     }
 
     return (vtkDataArray *) spanArray;
@@ -742,23 +754,23 @@ avtFileFormatInterface::GetQOTVectorVar(int domain,
     int numTuples    = (int) ceil((float)(stopT - startT) / 
         (float) tsStride) + 1;
 
-    long int visitId = element - 1;
-
     //
     // VisIt ids begin at 0, but the interface ids start at 1. 
     // Account for this before retrieving. 
     //
-    long int vecPos  = visitId * vDim;
+    long int vecPos  = element * vDim;
 
     vtkFloatArray *spanArray = vtkFloatArray::New();
     spanArray->SetNumberOfComponents(vDim);
     spanArray->SetNumberOfTuples(numTuples);
 
     double *targetVec = new double[vDim];
+    double *NaNVec    = new double[vDim];
 
     for (int i = 0; i < vDim; ++i)
     {
         targetVec[i] = 0.0;
+        NaNVec[i]    = std::numeric_limits<float>::quiet_NaN();
     }
 
     //
@@ -771,23 +783,41 @@ avtFileFormatInterface::GetQOTVectorVar(int domain,
         //
         // Activate the current timestep and retrieve our variable. 
         //
-        ActivateTimestep(ts);
-        vtkFloatArray *allValues = (vtkFloatArray *) 
-            GetVectorVar(ts, domain, varPath);
+        TRY
+        {
+            ActivateTimestep(ts);
+            vtkFloatArray *allValues = (vtkFloatArray *) 
+                GetVectorVar(ts, domain, varPath);
 
-        allValues->GetTuple(visitId, targetVec);
-        spanArray->SetTuple(tupIdx, targetVec);
+            allValues->GetTuple(element, targetVec);
+            spanArray->SetTuple(tupIdx, targetVec);
+        }
+        CATCH2(VisItException, e)
+        {
+            spanArray->SetTuple(tupIdx, NaNVec);
+        }
+        ENDTRY
     }
 
     if (addLastStep) 
     {
-        ActivateTimestep(stopT);
-        vtkFloatArray *allValues = (vtkFloatArray *) 
-            GetVectorVar(stopT, domain, varPath);
+        TRY
+        {
+            ActivateTimestep(stopT);
+            vtkFloatArray *allValues = (vtkFloatArray *) 
+                GetVectorVar(stopT, domain, varPath);
 
-        allValues->GetTuple(visitId, targetVec);
-        spanArray->SetTuple(tupIdx, targetVec);
+            allValues->GetTuple(element, targetVec);
+            spanArray->SetTuple(tupIdx, targetVec);
+        }
+        CATCH2(VisItException, e)
+        {
+            spanArray->SetTuple(tupIdx, NaNVec);
+        }
+        ENDTRY
     }
+
+    delete [] targetVec;
 
     return (vtkDataArray *) spanArray;
 }

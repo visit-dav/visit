@@ -58,6 +58,7 @@
 #include <avtDatasetExaminer.h>
 #include <avtExtents.h>
 #include <avtParallel.h>
+#include <avtCommonDataFunctions.h>
 
 #include <VisItException.h>
 #include <DebugStream.h>
@@ -198,7 +199,8 @@ avtDirectDatabaseQOTFilter::Execute(void)
                 SetOutputDataTree(new avtDataTree());
             }
 
-            avtDataTree_p tree = ConstructCurveTree(QOTData, multiCurve);
+            vtkPolyData *refined = VerifyAndRefineTimesteps(QOTData);
+            avtDataTree_p tree   = ConstructCurveTree(refined, multiCurve);
             SetOutputDataTree(tree);
         }
         else
@@ -215,6 +217,379 @@ avtDirectDatabaseQOTFilter::Execute(void)
 
     finalOutputCreated = true;
     UpdateDataObjectInfo();
+}
+
+
+// ****************************************************************************
+//  Method:  avtDirectDatabaseQOTFilter::VerifyAndRefineTimesteps
+//
+//  Purpose:
+//      Verify that all timesteps have been retrieved. If we are
+//      missing any, then let's reduce our dataset to only include
+//      the valid data, and let the user know which timesteps
+//      were skipped. 
+//
+//      Note: timesteps that encountered errors will have added
+//            NaN values to the associated data positions. 
+//
+//  Arguments:
+//      polyData    The polydata containing the curves. 
+//
+//  Returns:
+//      A vtkPolyData object only containing valid curves. 
+//
+//  Programmer: Alister Maguire
+//  Creation:   Mon Sep 30 14:17:20 MST 2019
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+vtkPolyData *
+avtDirectDatabaseQOTFilter::VerifyAndRefineTimesteps(vtkPolyData *inPolyData)
+{
+    vtkPolyData *outPolyData = vtkPolyData::New();
+    outPolyData->ShallowCopy(inPolyData);
+
+    vtkPointData *inPtData = inPolyData->GetPointData();
+    vtkPoints *inPts       = inPolyData->GetPoints();
+
+    if (inPtData ==  NULL || inPts == NULL ||
+        inPtData->GetScalars() == NULL)
+    {
+        return outPolyData;
+    }
+
+    int numCurves = inPtData->GetNumberOfArrays();
+    int numPts    = inPtData->GetScalars()->GetNumberOfTuples();
+
+    if (numCurves == 0)
+    { 
+        return outPolyData;
+    }
+
+    vtkPoints *outPts = vtkPoints::New();
+
+    //
+    // If we're missing data, this will be an over-estimate, but
+    // it should never be an under-estimate. 
+    //
+    outPts->Resize(numPts);
+
+    int stride = atts.GetStride();
+    int startT = atts.GetStartTime();
+    int stopT  = atts.GetEndTime();
+
+    //
+    // First pass: look for invalid data and mark their locations
+    // and record their time states.
+    //
+    bool missingData = false;
+    intVector invalidStateList;
+    invalidStateList.reserve(numPts);
+
+    boolVector isValid;
+    isValid.resize(numPts, true);
+
+    double coord[] = {0.0, 0.0, 0.0};
+
+    //
+    // In cases with multiple variables, only time states that 
+    // are valid across ALL variables will be kept.
+    //
+    for (int c = 0; c < numCurves; ++c)
+    {
+        vtkFloatArray *inCurve = 
+            (vtkFloatArray *) inPtData->GetArray(c);
+
+        int ts = startT;
+        for (int i = 0; i < numPts; ++i, ts += stride)
+        {
+            //
+            // Invalid states will contain NaN values. 
+            //
+            if (visitIsNan(inCurve->GetTuple1(i)))
+            {
+                missingData = true;
+                isValid[i]  = false;
+                invalidStateList.push_back(ts);
+            }
+        }
+    }
+
+    //
+    // If we found missing data, we have more work to do. Otherwise, 
+    // we're done. 
+    //
+    if (missingData)
+    {
+        int numInvalid = invalidStateList.size();
+        int numValid   = numPts - numInvalid;
+
+        //
+        // Report the missing timesteps. 
+        //
+        std::ostringstream osm;
+        osm << "\nQueryOverTime (" << atts.GetQueryAtts().GetName().c_str()
+            << ") experienced\n"
+            << "problems with the following timesteps and \n"
+            << "skipped them while generating the curve:\n   ";
+        
+        for (int j = 0; j < numInvalid; j++)
+        {
+            osm << invalidStateList[j] << " ";
+        }
+        debug4 << osm.str() << endl;
+        avtCallback::IssueWarning(osm.str().c_str());
+
+        //
+        // Second pass: re-write the arrays so that they only contain
+        // valid time states. 
+        //
+        vtkPointData *outPtData = outPolyData->GetPointData();
+
+        for (int c = 0; c < numCurves; ++c) 
+        {
+            vtkFloatArray *inCurve = 
+                (vtkFloatArray *) inPtData->GetArray(c);
+
+            const char *name = inCurve->GetName();
+        
+            vtkFloatArray *outCurve = vtkFloatArray::New();
+            outCurve->SetNumberOfTuples(numValid);
+            outCurve->SetNumberOfComponents(1);
+            outCurve->SetName(name);
+        
+            int vIdx = 0;
+            for (int i = 0; i < numPts; ++i)
+            {
+                if (isValid[i])
+                {
+                    outCurve->SetTuple1(vIdx++, inCurve->GetTuple1(i));
+
+                    if (c == 0) 
+                    {
+                        inPts->GetPoint(i, coord);        
+                        outPts->InsertNextPoint(coord[0], coord[1], coord[2]);
+                    }
+                }
+            }
+
+            outPtData->RemoveArray(name);
+            if (c == 0)
+            {
+                outPtData->SetScalars(outCurve);
+            }
+            else
+            {
+                outPtData->AddArray(outCurve);
+            }
+        }
+
+        outPolyData->SetPoints(outPts);
+    }
+
+    return outPolyData;
+}
+
+
+// ****************************************************************************
+//  Method:  avtDirectDatabaseQOTFilter::ConstructCurveTree
+//
+//  Purpose:
+//      Construct a tree from the time query curves. 
+//
+//  Arguments:
+//      polyData             The polydata containing the curves. 
+//      doMultiCurvePlot     Whether or not to do a multi curve plot. 
+//
+//  Returns:
+//      A data tree containing the curves. 
+//
+//  Programmer: Alister Maguire
+//  Creation:   Tue Sep 24 11:15:10 MST 2019 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+avtDataTree_p
+avtDirectDatabaseQOTFilter::ConstructCurveTree(vtkPolyData *polyData,
+                                               const bool doMultiCurvePlot)
+{
+    vtkPointData *inPtData = polyData->GetPointData();
+    vtkPoints *inPts       = polyData->GetPoints();
+
+    if (inPtData ==  NULL || inPts == NULL ||
+        inPtData->GetScalars() == NULL)
+    {
+        debug1 << "avtDirectDatabaseQOTFilter: missing curves and/or points."
+            << endl;
+        avtDataTree_p tree = new avtDataTree(NULL, 0);
+        return tree;
+    }
+
+    int numCurves = inPtData->GetNumberOfArrays();
+    int numPts    = inPtData->GetScalars()->GetNumberOfTuples();
+
+    if (numPts == 0 || numCurves == 0)
+    {
+        success = false;
+        debug2 << "avtDirectDatabaseQOTFilter: missing curves and/or points" 
+            << endl;
+        avtDataTree_p tree = new avtDataTree(NULL, 0);
+        return tree;
+    }
+
+    if (numCurves == 1)
+    {
+        vtkFloatArray *curve = 
+            (vtkFloatArray *) inPtData->GetScalars();
+
+        if (curve == NULL)
+        {
+            success = false;
+            char msg[512];
+            snprintf(msg, 512, "VisIt was unable to retreive data for the "
+                "following variable: %s\n", curve->GetName());
+            avtCallback::IssueWarning(msg);
+            avtDataTree_p tree = new avtDataTree(NULL, 0);
+            return tree;
+        }
+
+        vtkRectilinearGrid *rgrid = vtkVisItUtility::Create1DRGrid(numPts);
+        rgrid->SetDimensions(numPts, 1 , 1);
+
+        vtkDataArray *xCoords   = rgrid->GetXCoordinates();
+        vtkDoubleArray *scalars = vtkDoubleArray::New();
+
+        scalars->SetNumberOfComponents(1);
+        scalars->SetNumberOfTuples(numPts);
+        scalars->SetName(curve->GetName());
+
+        double coord[] = {0.0, 0.0, 0.0};
+
+        for (int i = 0; i < numPts; ++i)
+        {
+            inPts->GetPoint(i, coord);        
+            xCoords->SetTuple1(i, coord[0]);
+        }
+
+        scalars->ShallowCopy(curve);
+        rgrid->GetPointData()->SetScalars(scalars);
+
+        avtDataTree_p tree = new avtDataTree(rgrid, 0);
+        rgrid->Delete();
+        scalars->Delete(); 
+        return tree;
+    }
+    else if (doMultiCurvePlot)
+    {
+        vtkRectilinearGrid *rgrid =
+            vtkVisItUtility::CreateEmptyRGrid(numPts, numCurves, 1, VTK_FLOAT);
+
+        vtkDataArray *xCoords   = rgrid->GetXCoordinates();
+        vtkDataArray *yCoords   = rgrid->GetYCoordinates();
+        vtkDoubleArray *scalars = vtkDoubleArray::New();
+
+        scalars->SetNumberOfComponents(1);
+        scalars->SetNumberOfTuples(numPts * numCurves);
+
+        rgrid->GetPointData()->SetScalars(scalars);
+
+        double coord[] = {0.0, 0.0, 0.0};
+
+        for (int i = 0; i < numPts; ++i)
+        {
+            inPts->GetPoint(i, coord);        
+            xCoords->SetTuple1(i, coord[0]);
+        }
+
+        for (int i = 0; i < numCurves; i++)
+        {
+            vtkDoubleArray *curve = 
+                (vtkDoubleArray *) inPtData->GetArray(i);
+
+            if (curve == NULL)
+            {
+                char msg[512];
+                snprintf(msg, 512, "VisIt was unable to retreive data for the "
+                    "following variable: %s\n", curve->GetName()); 
+                continue;
+            }
+
+            yCoords->SetTuple1(i, i);
+
+            int baseIdx = i*numPts;
+
+            for (int j = 0; j < numPts; j++)
+            {
+                scalars->SetTuple1(baseIdx + j, curve->GetTuple1(j));
+            }
+        }
+
+        avtDataTree_p tree = new avtDataTree(rgrid, 0);
+        scalars->Delete();
+        rgrid->Delete();
+        return tree;
+    }
+    else
+    {
+        stringVector vars;
+        vars.reserve(numCurves);
+
+        vtkDataSet **grids = new vtkDataSet *[numCurves];
+
+        for (int i = 0; i< numCurves; ++i)
+        {
+            vtkDoubleArray *curve = 
+                (vtkDoubleArray *) inPtData->GetArray(i);
+
+            if (curve == NULL)
+            {
+                char msg[512];
+                snprintf(msg, 512, "VisIt was unable to retreive data for the "
+                    "following variable: %s\n", curve->GetName());
+                continue;
+            }
+
+            vars.push_back(curve->GetName());
+
+            grids[i] = vtkVisItUtility::Create1DRGrid(numPts, VTK_FLOAT);
+
+            vtkDataArray *xCoords   = ((vtkRectilinearGrid*)grids[i])->GetXCoordinates();
+            vtkDoubleArray *scalars = vtkDoubleArray::New();
+
+            scalars->SetNumberOfComponents(1);
+            scalars->SetNumberOfTuples(numPts);
+            scalars->SetName(vars[i].c_str());
+          
+            scalars->ShallowCopy(curve);
+            grids[i]->GetPointData()->SetScalars(scalars);
+
+            double coord[] = {0.0, 0.0, 0.0};
+
+            for (int i = 0; i < numPts; ++i)
+            {
+                inPts->GetPoint(i, coord);        
+                xCoords->SetTuple1(i, coord[0]);
+            }
+        }
+
+        avtDataTree_p tree = new avtDataTree(numCurves, grids, -1, vars);
+
+        for (int i = 0; i< numCurves; ++i)
+        {
+            if (grids[i] != NULL)
+            {
+                grids[i]->Delete();
+            }
+        }
+
+        delete [] grids;
+
+        return tree;
+    }
 }
 
 
@@ -300,205 +675,3 @@ avtDirectDatabaseQOTFilter::UpdateDataObjectInfo(void)
         outAtts.GetThisProcsOriginalSpatialExtents()->Set(bounds);
     }
 }
-
-
-// ****************************************************************************
-//  Method:  avtDirectDatabaseQOTFilter::ConstructCurveTree
-//
-//  Purpose:
-//      Construct a tree from the time query curves. 
-//
-//  Arguments:
-//      polyData             The polydata containing the curves. 
-//      doMultiCurvePlot     Whether or not to do a multi curve plot. 
-//
-//  Returns:
-//      A data tree containing the curves. 
-//
-//  Programmer: Alister Maguire
-//  Creation:   Tue Sep 24 11:15:10 MST 2019 
-//
-//  Modifications:
-//
-// ****************************************************************************
-
-avtDataTree_p
-avtDirectDatabaseQOTFilter::ConstructCurveTree(vtkPolyData *polyData,
-                                               const bool doMultiCurvePlot)
-{
-    vtkPointData *inputPD = polyData->GetPointData();
-    vtkPoints *inputPts   = polyData->GetPoints();
-
-    if (inputPD ==  NULL || inputPts == NULL)
-    {
-        debug1 << "avtDirectDatabaseQOTFilter: missing curves and/or points."
-            << endl;
-        avtDataTree_p tree = new avtDataTree(NULL, 0);
-        return tree;
-    }
-
-    int numCurves = inputPD->GetNumberOfArrays();
-    int numPts    = inputPD->GetScalars()->GetNumberOfTuples();
-
-    stringVector vars;
-    vars.reserve(numCurves);
-
-    if (numPts == 0 || numCurves == 0)
-    {
-        success = false;
-        debug2 << "avtDirectDatabaseQOTFilter: missing curves and/or points" 
-            << endl;
-        avtDataTree_p tree = new avtDataTree(NULL, 0);
-        return tree;
-    }
-
-    if (numCurves == 1)
-    {
-        vtkFloatArray *curve = 
-            (vtkFloatArray *) inputPD->GetScalars();
-
-        if (curve == NULL)
-        {
-            success = false;
-            char msg[512];
-            snprintf(msg, 512, "VisIt was unable to retreive data for the "
-                "following variable: %s\n", curve->GetName());
-            avtCallback::IssueWarning(msg);
-            avtDataTree_p tree = new avtDataTree(NULL, 0);
-            return tree;
-        }
-
-        vars.push_back(curve->GetName());
-
-        vtkRectilinearGrid *rgrid = vtkVisItUtility::Create1DRGrid(numPts);
-        rgrid->SetDimensions(numPts, 1 , 1);
-
-        vtkDataArray *xCoords   = rgrid->GetXCoordinates();
-        vtkDoubleArray *scalars = vtkDoubleArray::New();
-
-        scalars->SetNumberOfComponents(1);
-        scalars->SetNumberOfTuples(numPts);
-        scalars->SetName(vars[0].c_str());
-
-        double coord[] = {0.0, 0.0, 0.0};
-
-        for (int i = 0; i < numPts; ++i)
-        {
-            inputPts->GetPoint(i, coord);        
-            xCoords->SetTuple1(i, coord[0]);
-        }
-
-        scalars->ShallowCopy(curve);
-        rgrid->GetPointData()->SetScalars(scalars);
-
-        avtDataTree_p tree = new avtDataTree(rgrid, 0);
-        rgrid->Delete();
-        scalars->Delete(); 
-        return tree;
-    }
-    else if (doMultiCurvePlot)
-    {
-        vtkRectilinearGrid *rgrid =
-            vtkVisItUtility::CreateEmptyRGrid(numPts, numCurves, 1, VTK_FLOAT);
-
-        vtkDataArray *xCoords   = rgrid->GetXCoordinates();
-        vtkDataArray *yCoords   = rgrid->GetYCoordinates();
-        vtkDoubleArray *scalars = vtkDoubleArray::New();
-
-        scalars->SetNumberOfComponents(1);
-        scalars->SetNumberOfTuples(numPts * numCurves);
-
-        rgrid->GetPointData()->SetScalars(scalars);
-
-        double coord[] = {0.0, 0.0, 0.0};
-
-        for (int i = 0; i < numPts; ++i)
-        {
-            inputPts->GetPoint(i, coord);        
-            xCoords->SetTuple1(i, coord[0]);
-        }
-
-        for (int i = 0; i < numCurves; i++)
-        {
-            vtkDoubleArray *curve = 
-                (vtkDoubleArray *) inputPD->GetArray(i);
-
-            if (curve == NULL)
-            {
-                char msg[512];
-                snprintf(msg, 512, "VisIt was unable to retreive data for the "
-                    "following variable: %s\n", curve->GetName()); 
-                continue;
-            }
-
-            yCoords->SetTuple1(i, i);
-
-            int baseIdx = i*numPts;
-
-            for (int j = 0; j < numPts; j++)
-            {
-                scalars->SetTuple1(baseIdx + j, curve->GetTuple1(j));
-            }
-        }
-
-        avtDataTree_p tree = new avtDataTree(rgrid, 0);
-        scalars->Delete();
-        rgrid->Delete();
-        return tree;
-    }
-    else
-    {
-        vtkDataSet **grids = new vtkDataSet *[numCurves];
-
-        for (int i = 0; i< numCurves; ++i)
-        {
-            vtkDoubleArray *curve = 
-                (vtkDoubleArray *) inputPD->GetArray(i);
-
-            if (curve == NULL)
-            {
-                char msg[512];
-                snprintf(msg, 512, "VisIt was unable to retreive data for the "
-                    "following variable: %s\n", curve->GetName());
-                continue;
-            }
-
-            vars.push_back(curve->GetName());
-
-            grids[i] = vtkVisItUtility::Create1DRGrid(numPts, VTK_FLOAT);
-
-            vtkDataArray *xCoords   = ((vtkRectilinearGrid*)grids[i])->GetXCoordinates();
-            vtkDoubleArray *scalars = vtkDoubleArray::New();
-
-            scalars->SetNumberOfComponents(1);
-            scalars->SetNumberOfTuples(numPts);
-            scalars->SetName(vars[i].c_str());
-          
-            scalars->ShallowCopy(curve);
-            grids[i]->GetPointData()->SetScalars(scalars);
-
-            double coord[] = {0.0, 0.0, 0.0};
-
-            for (int i = 0; i < numPts; ++i)
-            {
-                inputPts->GetPoint(i, coord);        
-                xCoords->SetTuple1(i, coord[0]);
-            }
-        }
-
-        avtDataTree_p tree = new avtDataTree(numCurves, grids, -1, vars);
-
-        for (int i = 0; i< numCurves; ++i)
-        {
-            if (grids[i] != NULL)
-            {
-                grids[i]->Delete();
-            }
-        }
-
-        delete [] grids;
-
-        return tree;
-    }
-}
-
