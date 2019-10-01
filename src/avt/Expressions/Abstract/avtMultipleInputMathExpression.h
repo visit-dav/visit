@@ -47,8 +47,6 @@
 
 #include <vtkDataArray.h>
 
-class vtkDataArray;
-
 // ****************************************************************************
 //  Class: avtMultipleInputMathExpression
 //
