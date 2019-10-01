@@ -70,6 +70,10 @@
 #    Alister Maguire, Wed May 22 08:49:30 PDT 2019
 #    Updated mili tests to reflect new plugin changes. 
 #
+#    Alister Maguire, Tue Oct  1 11:48:15 MST 2019
+#    Make sure to set use_actual_data to true when we want
+#    to use data from the pipeline output. 
+#
 # ----------------------------------------------------------------------------
 RequiredDatabasePlugin(("PDB", "Mili", "SAMRAI"))
 
@@ -211,7 +215,7 @@ def TestOperators():
     DrawPlots()
    
     SetActiveWindow(1)
-    QueryOverTime("Volume", stride=10) 
+    QueryOverTime("Volume", stride=10, use_actual_data=1) 
     SetActiveWindow(2)
     InitAnnotation()
     Test("TimeQuery_ops_01")
@@ -232,7 +236,7 @@ def TestOperators():
     SetOperatorOptions(slice)
 
     DrawPlots()
-    QueryOverTime("2D area", stride=10)
+    QueryOverTime("2D area", stride=10, use_actual_data=1)
     SetActiveWindow(2)
     InitAnnotation()
     Test("TimeQuery_ops_02")
