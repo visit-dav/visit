@@ -44,7 +44,7 @@
 #include <QLabel>
 #include <QMenu>
 #include <QTreeWidget>
-#include <QTreeWidgetItem> 
+#include <QTreeWidgetItem>
 #include <QLayout>
 #include <QPushButton>
 #include <QLineEdit>
@@ -72,7 +72,7 @@
 // ****************************************************************************
 // Method: QvisTimeSliderControl::QvisTimeSliderControl
 //
-// Purpose: 
+// Purpose:
 //   Constructor for the QvisTimeSliderControl class.
 //
 // Arguments:
@@ -85,6 +85,8 @@
 // Creation:   Thu Aug 31 10:35:07 PDT 2000
 //
 // Modifications:
+//  Kathleen Biagas, Mon Sep 30 09:25:45 PDT 2019
+//  Set inital state of VCR play buttons to disabled. Add plotList.
 //
 // ****************************************************************************
 
@@ -136,6 +138,7 @@ QvisTimeSliderControlWidget::QvisTimeSliderControlWidget(QWidget *parent) :
     // Create the VCR controls.
     vcrControls = new QvisVCRControl(this);
     vcrControls->setEnabled(false);
+    vcrControls->SetPlayEnabledState(false);
     connect(vcrControls, SIGNAL(prevFrame()), this, SLOT(backwardStep()));
     connect(vcrControls, SIGNAL(reversePlay()), this, SLOT(reversePlay()));
     connect(vcrControls, SIGNAL(stop()), this, SLOT(stop()));
@@ -145,19 +148,22 @@ QvisTimeSliderControlWidget::QvisTimeSliderControlWidget(QWidget *parent) :
 
     // Initialize the attached subjects
     windowInfo = NULL;
+    plotList = NULL;
 
 }
 
 // ****************************************************************************
 // Method: QvisTimeSliderControlWidget::~QvisTimeSliderControlWidget
 //
-// Purpose: 
+// Purpose:
 //   Destructor for the QvisTimeSliderControl class.
 //
 // Programmer: Cyrus Harrison
 // Creation:   Fri Mar 12 10:59:55 PST 2010
 //
 // Modifications:
+//  Kathleen Biagas, Mon Sep 30 09:29:12 PDT 2019
+//  Added plotList.
 //
 // ****************************************************************************
 
@@ -169,16 +175,19 @@ QvisTimeSliderControlWidget::~QvisTimeSliderControlWidget()
     if(windowInfo)
         windowInfo->Detach(this);
 
+    if(plotList)
+        plotList->Detach(this);
+
 }
 
 // ****************************************************************************
 // Method: QvisTimeSliderControlWidget::SetTimeStateFormat
 //
-// Purpose: 
+// Purpose:
 //   Sets the display mode for the file panel. We can make it display files
 //   using cycle information or we can make it use time information.
 //
-// Arguments: 
+// Arguments:
 //   m : The new timestate display mode.
 //
 // Notes:      This method resets the text on the expanded databases, which
@@ -207,7 +216,7 @@ QvisTimeSliderControlWidget::~QvisTimeSliderControlWidget()
 //
 //   Cyrus Harrison, Tue Jul  1 16:04:25 PDT 2008
 //   Initial Qt4 Port.
-// 
+//
 // ****************************************************************************
 
 void
@@ -230,7 +239,7 @@ QvisTimeSliderControlWidget::SetTimeStateFormat(const TimeFormat &m)
 // ****************************************************************************
 // Method: QvisTimeSliderControlWidget::GetTimeStateFormat
 //
-// Purpose: 
+// Purpose:
 //   Returns the time state format.
 //
 // Returns:    The time state format.
@@ -253,7 +262,7 @@ QvisTimeSliderControlWidget::GetTimeStateFormat() const
 // ****************************************************************************
 // Method: QvisTimeSliderControlWidget::Update
 //
-// Purpose: 
+// Purpose:
 //   This method tells the widget to update itself when the subject
 //   changes.
 //
@@ -266,22 +275,38 @@ QvisTimeSliderControlWidget::GetTimeStateFormat() const
 //   Brad Whitlock, Sun Jan 25 01:28:23 PDT 2004
 //   I made it use windowInfo instead of globalAtts.
 //
+//   Kathleen Biagas, Mon Sep 30 09:29:50 PDT 2019
+//   Added plotList. Set 'shouldEnablePlay; based on active, completed
+//   time-varying plot that follows time.
+//
 // ****************************************************************************
 
 void
 QvisTimeSliderControlWidget::Update(Subject *TheChangedSubject)
 {
-    if(fileServer == 0 || windowInfo == 0)
+    if(fileServer == 0 || windowInfo == 0 || plotList == 0)
         return;
     else if(TheChangedSubject == windowInfo)
         UpdateAnimationControls(false);
+    else if(TheChangedSubject == plotList)
+    {
+        bool shouldEnablePlay = false;
+        for (int i = 0; i < plotList->GetNumPlots() && !shouldEnablePlay; ++i)
+        {
+            const Plot &current = plotList->operator[](i);
+            shouldEnablePlay = (current.GetActiveFlag() &&
+                                current.GetFollowsTime() &&
+                                current.GetStateType() == Plot::Completed);
+        }
+        vcrControls->SetPlayEnabledState(shouldEnablePlay);
+    }
 }
 
 
 // ****************************************************************************
 // Method: QvisTimeSliderControlWidget::UpdateAnimationControls
 //
-// Purpose: 
+// Purpose:
 //   This method is called when the GlobalAttributes subject that this
 //   widget watches is updated.
 //
@@ -387,7 +412,7 @@ QvisTimeSliderControlWidget::UpdateAnimationControls(bool doAll)
             {
                 int index = -1;
                 for(size_t j = 0; j < sources.size(); ++j)
-                { 
+                {
                     if(sources[j] == tsNames[i])
                     {
                         index = j;
@@ -531,7 +556,7 @@ QvisTimeSliderControlWidget::UpdateAnimationControlsEnabledState()
 // ****************************************************************************
 // Method: QvisTimeSliderControlWidget::UpdateTimeFieldText
 //
-// Purpose: 
+// Purpose:
 //   Updates the text in the time/cycle text field.
 //
 // Arguments:
@@ -666,9 +691,9 @@ QvisTimeSliderControlWidget::UpdateTimeFieldText(int timeState)
 // ****************************************************************************
 // Method: QvisTimeSliderControlWidget::SetTimeFieldText
 //
-// Purpose: 
-//   Sets the text in the time/cycle text field, makes sure the text is 
-//   visible to the user. 
+// Purpose:
+//   Sets the text in the time/cycle text field, makes sure the text is
+//   visible to the user.
 //
 // Arguments:
 //   text: Text value to set.
@@ -685,7 +710,7 @@ QvisTimeSliderControlWidget::UpdateTimeFieldText(int timeState)
 void
 QvisTimeSliderControlWidget::SetTimeFieldText(const QString &text)
 {
-    int w  = timeField->width(); 
+    int w  = timeField->width();
     int nw = timeField->fontMetrics().width("  " + text);
     if(w < nw)
         timeField->setMinimumWidth(nw);
@@ -696,7 +721,7 @@ QvisTimeSliderControlWidget::SetTimeFieldText(const QString &text)
 // ****************************************************************************
 // Method: QvisTimeSliderControlWidget::FormattedCycleString
 //
-// Purpose: 
+// Purpose:
 //   Returns a formatted cycle string.
 //
 // Arguments:
@@ -724,7 +749,7 @@ QvisTimeSliderControlWidget::FormattedCycleString(const int cycle) const
 // ****************************************************************************
 // Method: QvisTimeSliderControlWidget::FormattedTimeString
 //
-// Purpose: 
+// Purpose:
 //   Returns a formatted time string.
 //
 // Arguments:
@@ -738,7 +763,7 @@ QvisTimeSliderControlWidget::FormattedCycleString(const int cycle) const
 // Creation:   Mon Oct 13 16:03:37 PST 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 QString
@@ -811,12 +836,28 @@ QvisTimeSliderControlWidget::ConnectWindowInformation(WindowInformation *wi)
     UpdateAnimationControls(true);
 }
 
+void
+QvisTimeSliderControlWidget::ConnectPlotList(PlotList *pl)
+{
+    plotList = pl;
+    plotList->Attach(this);
+
+    bool shouldEnablePlay = false;
+    for (int i = 0; i < plotList->GetNumPlots() && !shouldEnablePlay; ++i)
+    {
+        const Plot &current = plotList->operator[](i);
+        shouldEnablePlay = (current.GetActiveFlag() &&
+                            current.GetFollowsTime() &&
+                            current.GetStateType() == Plot::Completed);
+    }
+    vcrControls->SetPlayEnabledState(shouldEnablePlay);
+}
 
 
 // ****************************************************************************
 // Method: QvisTimeSliderControlWidget::SetTimeSliderState
 //
-// Purpose: 
+// Purpose:
 //   Sets the animation frame.
 //
 // Arguments:
@@ -853,7 +894,7 @@ QvisTimeSliderControlWidget::SetTimeSliderState(int state)
              GetViewerMethods()->SetTimeSliderState(state);
          }
          else
-         {  
+         {
              QString msg;
              msg.sprintf(" %d.", state);
              Message(tr("The active time slider is already at state") + msg);
@@ -870,7 +911,7 @@ QvisTimeSliderControlWidget::SetTimeSliderState(int state)
 // ****************************************************************************
 // Method: QvisTimeSliderControlWidget::backwardStep
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that tells the viewer to switch to
 //   the previous time state for the active time slider.
 //
@@ -897,7 +938,7 @@ QvisTimeSliderControlWidget::backwardStep()
 // ****************************************************************************
 // Method: QvisTimeSliderControlWidget::reversePlay
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that tells the viewer to play the
 //   current animation in reverse.
 //
@@ -921,7 +962,7 @@ QvisTimeSliderControlWidget::reversePlay()
 // ****************************************************************************
 // Method: QvisTimeSliderControlWidget::stop
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that tells the viewer to stop playing
 //   the current animation.
 //
@@ -946,7 +987,7 @@ QvisTimeSliderControlWidget::stop()
 // ****************************************************************************
 // Method: QvisTimeSliderControlWidget::play
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that tells the viewer to play the
 //   current animation.
 //
@@ -970,7 +1011,7 @@ QvisTimeSliderControlWidget::play()
 // ****************************************************************************
 // Method: QvisTimeSliderControlWidget::forwardStep
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that tells the viewer to switch to
 //   the next frame in an animation.
 //
@@ -1020,7 +1061,7 @@ QvisTimeSliderControlWidget::forwardStep()
 // ****************************************************************************
 // Method: QvisTimeSliderControlWidget::sliderStart
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the animation
 //   slider is pressed.
 //
@@ -1049,14 +1090,14 @@ QvisTimeSliderControlWidget::sliderStart()
     int activeTS = windowInfo->GetActiveTimeSlider();
     if(activeTS >= 0)
         sliderVal = windowInfo->GetTimeSliderCurrentStates()[activeTS];
-    else 
+    else
         sliderVal = 0;
 }
 
 // ****************************************************************************
 // Method: QvisTimeSliderControlWidget::sliderMove
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the animation
 //   slider is moved.
 //
@@ -1087,7 +1128,7 @@ QvisTimeSliderControlWidget::sliderMove(int val)
 // ****************************************************************************
 // Method: QvisTimeSliderControlWidget::sliderEnd
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the slider is
 //   released. It will change the current frame of the animation to
 //   the last slider value.
@@ -1164,9 +1205,9 @@ QvisTimeSliderControlWidget::sliderChange(int val)
 // ****************************************************************************
 // Method: QvisTimeSliderControlWidget::processTimeText
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that processes the text entered by
-//   the user and looks for the closest cycle number and sets the 
+//   the user and looks for the closest cycle number and sets the
 //   animation to that cycle number.
 //
 // Programmer: Brad Whitlock
@@ -1226,7 +1267,7 @@ QvisTimeSliderControlWidget::processTimeText()
         {
             SetTimeFieldText("");
             return;
-        } 
+        }
 
         // Loop through the times for the current file while the
         // time that was entered is greater than or equal to the
@@ -1249,7 +1290,7 @@ QvisTimeSliderControlWidget::processTimeText()
         {
             SetTimeFieldText("");
             return;
-        } 
+        }
 
         // Loop through the cycles for the current file while the
         // cycle that was entered is greater than or equal to the
@@ -1275,7 +1316,7 @@ QvisTimeSliderControlWidget::processTimeText()
 // ****************************************************************************
 // Method: QvisTimeSliderControlWidget::changeActiveTimeSlider
 //
-// Purpose: 
+// Purpose:
 //   Tell the viewer to switch to the new active time slider.
 //
 // Arguments:

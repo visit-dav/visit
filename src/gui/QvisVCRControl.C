@@ -317,7 +317,7 @@ char QvisVCRControl::augmentedForeground[15];
 // Purpose: This is the constructor for the QvisVCRControl class. It
 //          creates some QPushButtons and adds them to the button
 //          group.
-//   
+//
 //
 // Notes:      The QvisVCRControl class is a widget that contains 5 buttons
 //             that correspond to reverse, rewind, stop, play, advance.
@@ -343,10 +343,15 @@ char QvisVCRControl::augmentedForeground[15];
 //   Set the icon size to something reasonable.  (It's way too small in
 //   virtually every Qt style.)
 //
+//   Kathleen Biagas, Mon Sep 30 09:19:57 PDT 2019
+//   Add playShouldBeEnabled. Change initial enabled state of play and reverse
+//   play to false.
+//
 // ****************************************************************************
 
 QvisVCRControl::QvisVCRControl(QWidget *parent) : QWidget(parent)
 {
+    playShouldBeEnabled = false;
     // Make the stop button active.
     activeButton = 2;
 
@@ -383,6 +388,7 @@ QvisVCRControl::QvisVCRControl(QWidget *parent) : QWidget(parent)
     buttons[1]->setCheckable(true);
     buttons[1]->setDown(false);
     buttons[1]->setIconSize(iconsize);
+    buttons[1]->setEnabled(false);
 
     buttons[2] = new QPushButton(this);
     buttons[2]->setIcon(QIcon(p3));
@@ -395,6 +401,7 @@ QvisVCRControl::QvisVCRControl(QWidget *parent) : QWidget(parent)
     buttons[3]->setCheckable(true);
     buttons[3]->setDown(false);
     buttons[3]->setIconSize(iconsize);
+    buttons[3]->setEnabled(false);
 
     buttons[4] = new QPushButton(this);
     buttons[4]->setIcon(QIcon(p5));
@@ -417,15 +424,15 @@ QvisVCRControl::QvisVCRControl(QWidget *parent) : QWidget(parent)
 // Method: QvisVCRControl
 //
 // Purpose: This is the destructor for the QvisVCRControl class.
-//   
 //
-// Notes:      
+//
+// Notes:
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Jul 12 11:28:07 PDT 2000
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 QvisVCRControl::~QvisVCRControl()
@@ -434,15 +441,42 @@ QvisVCRControl::~QvisVCRControl()
 }
 
 // ****************************************************************************
+// Method: QvisVCRControl::SetPlayEnabledState
+//
+// Purpose:
+//   Sets the enabled state for the forward and reverse play buttons.
+//
+// Arguments:
+//   shouldEnabledPlay : The new enabled state
+//
+// Programmer: Kathleen Biagas
+// Creation:   September 30, 2019
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisVCRControl::SetPlayEnabledState(bool shouldEnablePlay)
+{
+    blockSignals(true);
+    playShouldBeEnabled = shouldEnablePlay;
+    buttons[1]->setEnabled(shouldEnablePlay);
+    buttons[3]->setEnabled(shouldEnablePlay);
+    blockSignals(false);
+}
+
+
+// ****************************************************************************
 // Method: QvisVCRControl::SetActiveButton
 //
-// Purpose: 
+// Purpose:
 //   This method sets the active button.
 //
 // Arguments:
 //   btn : The index of the button to make active.
 //
-// Note:       
+// Note:
 //   This method will emit signals due to the calls of the b#_clicked
 //   slot functions.
 //
@@ -450,7 +484,7 @@ QvisVCRControl::~QvisVCRControl()
 // Creation:   Tue Sep 26 15:55:06 PST 2000
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -472,13 +506,13 @@ QvisVCRControl::SetActiveButton(int btn)
         break;
     case 4:
         b4_clicked();
-    }    
+    }
 }
 
 // ****************************************************************************
 // Method: QvisVCRControl::AugmentPixmap
 //
-// Purpose: 
+// Purpose:
 //   This method augments pixmap data so that the application's foreground
 //   color is used instead of the default of black.
 //
@@ -503,7 +537,7 @@ QvisVCRControl::AugmentPixmap(const char *xpm[])
     QColor foreground(palette().color(QPalette::Text));
 
     // Turn the third element into the foreground color.
-    sprintf(augmentedForeground, "X c #%02x%02x%02x", 
+    sprintf(augmentedForeground, "X c #%02x%02x%02x",
             foreground.red(), foreground.green(),
             foreground.blue());
     augmentedData[2] = augmentedForeground;
@@ -513,8 +547,8 @@ QvisVCRControl::AugmentPixmap(const char *xpm[])
 // Method: QvisVCRControl::b0_clicked()
 //
 // Purpose: slot function that emits the prevFrame signal.
-//   
-// Notes:      
+//
+// Notes:
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Jul 12 13:33:47 PST 2000
@@ -564,7 +598,7 @@ QvisVCRControl::b0_clicked()
 //
 // Purpose: slot function that emits the reversePlay signal.
 //
-// Notes:      
+// Notes:
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Jul 12 13:33:47 PST 2000
@@ -572,7 +606,7 @@ QvisVCRControl::b0_clicked()
 // Modifications:
 //   Brad Whitlock, Tue Jun  3 14:02:23 PDT 2008
 //   Qt 4.
-//   
+//
 // ****************************************************************************
 
 void
@@ -605,7 +639,7 @@ QvisVCRControl::b1_clicked()
 //
 // Purpose: slot function that emits the stop signal.
 //
-// Notes:      
+// Notes:
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Jul 12 13:33:47 PST 2000
@@ -652,7 +686,7 @@ QvisVCRControl::b2_clicked()
 //
 // Purpose: slot function that emits the play signal.
 //
-// Notes:      
+// Notes:
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Jul 12 13:33:47 PST 2000
@@ -696,7 +730,7 @@ QvisVCRControl::b3_clicked()
 //
 // Purpose: slot function that emits the nextFrame signal.
 //
-// Notes:      
+// Notes:
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Jul 12 13:33:47 PST 2000
@@ -752,6 +786,9 @@ QvisVCRControl::b4_clicked()
 // Creation:   Sun Dec 18, 2011
 //
 // Modifications:
+//  Kathleen Biagas, Mon Sep 30 09:22:55 PDT 2019
+//  Make enabled state of forward (3) and reverse (1) play buttons be dependent
+//  on the playShouldBeEnabled flag.
 //
 // ****************************************************************************
 
@@ -761,8 +798,8 @@ QvisVCRControl::SetDDTSimEnabled(bool enabled)
     // This is a DDT-sourced simulation.
     // Enable the stop, play, and step operations.
     buttons[0]->setEnabled(!enabled);
-    buttons[1]->setEnabled(!enabled);
+    buttons[1]->setEnabled(!enabled && playShouldBeEnabled);
     buttons[2]->setEnabled(true);
-    buttons[3]->setEnabled(true);
+    buttons[3]->setEnabled(playShouldBeEnabled);
     buttons[4]->setEnabled(true);
 }
