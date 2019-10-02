@@ -16,7 +16,7 @@ class QPushButton;
 //   This is a widget that encapsulates the individual VCR buttons
 //   into a new VCR controls widget.
 //
-// Notes:      
+// Notes:
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Jul 24 13:41:24 PST 2000
@@ -37,6 +37,11 @@ class QPushButton;
 //   Add a method to enable animation controls suitable for controlling
 //   a ddtsim-based simulation
 //
+//   Kathleen Biagas, Mon Sep 30 09:19:57 PDT 2019
+//   Add SetPlayEnabledState to control the enabled state of forward
+//   and reverse play buttons. Allows play to be disabled if the
+//   plots aren't yet drawn.
+//
 // *******************************************************************
 
 class GUI_API QvisVCRControl : public QWidget
@@ -46,7 +51,8 @@ public:
     QvisVCRControl(QWidget * parent=0);
     ~QvisVCRControl();
     void SetActiveButton(int btn);
-    void SetDDTSimEnabled(bool enabled);
+    void SetDDTSimEnabled(bool);
+    void SetPlayEnabledState(bool);
 signals:
     void prevFrame();
     void reversePlay();
@@ -67,6 +73,7 @@ private:
 
     static char *augmentedData[];
     static char  augmentedForeground[];
+    bool playShouldBeEnabled;
 };
 
 #endif

@@ -45,7 +45,7 @@
 
 #include <avtMultipleInputExpressionFilter.h>
 
-class vtkDataArray;
+#include <vtkDataArray.h>
 
 // ****************************************************************************
 //  Class: avtMultipleInputMathExpression
@@ -56,6 +56,11 @@ class vtkDataArray;
 //  Programmer: Eddie Rusu
 //  Creation:   Tue Sep 24 09:07:44 PDT 2019
 //
+//  Modifications:
+//
+//      Eddie Rusu, Mon Sep 30 15:00:24 PDT 2019
+//      Added CreateOutputVariable and modified RecenterData.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtMultipleInputMathExpression
@@ -65,15 +70,20 @@ class EXPRESSION_API avtMultipleInputMathExpression
                  avtMultipleInputMathExpression();
         virtual ~avtMultipleInputMathExpression();
 
-        virtual const char *GetType() {return "avtMultipleInputMathExpression";};
+        virtual const char *GetType() {
+                return "avtMultipleInputMathExpression";
+            };
         virtual const char *GetDescription() = 0;
         virtual int         NumVariableArguments() {return nProcessedArgs;};
 
     protected:
         virtual vtkDataArray *DeriveVariable(vtkDataSet*, int);
-        virtual vtkDataArray *ExractCenteredData(avtCentering*, vtkDataSet*, const char*);
+        virtual vtkDataArray *ExractCenteredData(avtCentering*, vtkDataSet*,
+                                                 const char*);
+        virtual vtkDataArray *CreateOutputVariable();
+        virtual vtkDataArray *CreateOutputVariable(int);
         virtual vtkDataArray *DoOperation() = 0;
-        virtual void          RecenterData(vtkDataSet*) = 0;
+        virtual void          RecenterData(vtkDataSet*);
 
         avtCentering centering;
         std::vector<vtkDataArray*> dataArrays;
