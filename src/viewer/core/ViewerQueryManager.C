@@ -2280,7 +2280,17 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
         {
             retry = false;
             int networkId = plot->GetNetworkID();
-            int windowId = plot->GetWindowId();
+            int origWindowId = plot->GetWindowId();
+
+            //TODO: should we really do this? 
+            if (timeQueryAtts->GetCanUseDirectDatabaseRoute())
+            {
+                //
+                // Make sure that we are querying from the original plot, not
+                // the QOT mesh. We'll reset the active window after the query. 
+                //
+                ViewerWindowManager::Instance()->SetActiveWindow(origWindowId + 1);
+            }
 
             TRY
             {
@@ -2298,7 +2308,7 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
                 GetViewerEngineManager()->UpdateExpressions(
                     plot->GetEngineKey(), plot->GetExpressions());
 
-                GetViewerEngineManager()->Pick(engineKey, networkId, windowId,
+                GetViewerEngineManager()->Pick(engineKey, networkId, origWindowId,
                                                &pa, pa);
                 pa.SetCreateSpreadsheet(createSpreadsheetSave);
                 if (pa.GetFulfilled())
@@ -2377,6 +2387,17 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
                 }
             }
             ENDTRY
+
+            if (timeQueryAtts->GetCanUseDirectDatabaseRoute())
+            {
+                //
+                // Now that we've performed our pick, make sure that we return
+                // to the correct window. 
+                int curWinId =
+                    ViewerWindowManager::Instance()->GetWindows().back()->GetWindowId();
+                ViewerWindowManager::Instance()->SetActiveWindow(curWinId + 1);
+            }
+
         } while (retry && numAttempts < 2);
         if (numAttempts == 2 && !pickCache.empty())
         {
@@ -3508,6 +3529,8 @@ ViewerQueryManager::PointQuery(const MapNode &queryParams)
         int stride = 1;
         if (doTimeManually)
         {
+            timeQueryAtts->SetCanUseDirectDatabaseRoute(false);
+
             //
             // When we are performing a time curve and returning the curves, 
             // we need to set the timestep manually. 
@@ -3519,7 +3542,7 @@ ViewerQueryManager::PointQuery(const MapNode &queryParams)
             origList->GetActivePlotIDs(plotIDs);
             int origPlotID       = (plotIDs.size() > 0 ? plotIDs[0] : -1);
             ViewerPlot *origPlot = origList->GetPlot(origPlotID);
-            origTimeStep     = origPlot->GetState();
+            origTimeStep         = origPlot->GetState();
             const avtDatabaseMetaData *md = origPlot->GetMetaData();
             int nStates          = md->GetNumStates();
             if (nStates <= 1)
@@ -3781,6 +3804,18 @@ ViewerQueryManager::PointQuery(const MapNode &queryParams)
                preserveCoord = queryParams.GetEntry("preserve_coord")->ToBool();
             else
                preserveCoord = pickAtts->GetTimePreserveCoord();
+
+            //
+            // We need to determine if we can use the direct route. 
+            //
+            if (timeQueryAtts->GetCanUseDirectDatabaseRoute())
+            { 
+                if (preserveCoord ||
+                    queryParams.GetEntry("use_actual_data")->ToBool())
+                {
+                    timeQueryAtts->SetCanUseDirectDatabaseRoute(false);
+                }
+            }
 
             bool tpc = pickAtts->GetTimePreserveCoord();
             bool tc  = pickAtts->GetDoTimeCurve();

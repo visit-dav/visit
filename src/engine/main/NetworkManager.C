@@ -5212,27 +5212,25 @@ NetworkManager::AddQueryOverTimeFilter(QueryOverTimeAttributes *qA,
 
     //
     // We need to determine if we can use the direct database QOT 
-    // filter. This can only be used with a subset of expressions. 
+    // filter. 
     //
     bool useDirectDatabaseQOT = false;
 
-    avtExpressionEvaluatorFilter *eef = 
-        dynamic_cast<avtExpressionEvaluatorFilter *> 
-        (workingNet->GetExpressionNode()->GetFilter());
-
-    if (eef != NULL)
+    if (qA->GetCanUseDirectDatabaseRoute())
     {
-        useDirectDatabaseQOT = eef->CanApplyToDirectDatabaseQOT(); 
-    }
+        //
+        // The query atts think that we can use this route, but only
+        // a subset of expressions are capable of being used with this
+        // path. We need to check them before proceeding. 
+        //
+        avtExpressionEvaluatorFilter *eef = 
+            dynamic_cast<avtExpressionEvaluatorFilter *> 
+            (workingNet->GetExpressionNode()->GetFilter());
 
-    //
-    // If the user has requested actual data or to preserve
-    // the query coordinates, we must use the time loop filter 
-    // instead of the direct database filter.
-    //
-    if (qA->GetPickAtts().GetTimePreserveCoord())
-    {
-        useDirectDatabaseQOT = false;
+        if (eef != NULL)
+        {
+            useDirectDatabaseQOT = eef->CanApplyToDirectDatabaseQOT(); 
+        }
     }
 
     bool useActualData = false;

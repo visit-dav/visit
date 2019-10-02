@@ -111,6 +111,11 @@ PyQueryOverTimeAttributes_ToString(const QueryOverTimeAttributes *atts, const ch
     else
         snprintf(tmpStr, 1000, "%suseCachedPts = 0\n", prefix);
     str += tmpStr;
+    if(atts->GetCanUseDirectDatabaseRoute())
+        snprintf(tmpStr, 1000, "%scanUseDirectDatabaseRoute = 1\n", prefix);
+    else
+        snprintf(tmpStr, 1000, "%scanUseDirectDatabaseRoute = 0\n", prefix);
+    str += tmpStr;
     return str;
 }
 
@@ -435,6 +440,30 @@ QueryOverTimeAttributes_GetUseCachedPts(PyObject *self, PyObject *args)
     return retval;
 }
 
+/*static*/ PyObject *
+QueryOverTimeAttributes_SetCanUseDirectDatabaseRoute(PyObject *self, PyObject *args)
+{
+    QueryOverTimeAttributesObject *obj = (QueryOverTimeAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the canUseDirectDatabaseRoute in the object.
+    obj->data->SetCanUseDirectDatabaseRoute(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+QueryOverTimeAttributes_GetCanUseDirectDatabaseRoute(PyObject *self, PyObject *args)
+{
+    QueryOverTimeAttributesObject *obj = (QueryOverTimeAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetCanUseDirectDatabaseRoute()?1L:0L);
+    return retval;
+}
+
 
 
 PyMethodDef PyQueryOverTimeAttributes_methods[QUERYOVERTIMEATTRIBUTES_NMETH] = {
@@ -461,6 +490,8 @@ PyMethodDef PyQueryOverTimeAttributes_methods[QUERYOVERTIMEATTRIBUTES_NMETH] = {
     {"GetCachedCurvePts", QueryOverTimeAttributes_GetCachedCurvePts, METH_VARARGS},
     {"SetUseCachedPts", QueryOverTimeAttributes_SetUseCachedPts, METH_VARARGS},
     {"GetUseCachedPts", QueryOverTimeAttributes_GetUseCachedPts, METH_VARARGS},
+    {"SetCanUseDirectDatabaseRoute", QueryOverTimeAttributes_SetCanUseDirectDatabaseRoute, METH_VARARGS},
+    {"GetCanUseDirectDatabaseRoute", QueryOverTimeAttributes_GetCanUseDirectDatabaseRoute, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -518,6 +549,8 @@ PyQueryOverTimeAttributes_getattr(PyObject *self, char *name)
         return QueryOverTimeAttributes_GetCachedCurvePts(self, NULL);
     if(strcmp(name, "useCachedPts") == 0)
         return QueryOverTimeAttributes_GetUseCachedPts(self, NULL);
+    if(strcmp(name, "canUseDirectDatabaseRoute") == 0)
+        return QueryOverTimeAttributes_GetCanUseDirectDatabaseRoute(self, NULL);
 
     return Py_FindMethod(PyQueryOverTimeAttributes_methods, self, name);
 }
@@ -554,6 +587,8 @@ PyQueryOverTimeAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = QueryOverTimeAttributes_SetCachedCurvePts(self, tuple);
     else if(strcmp(name, "useCachedPts") == 0)
         obj = QueryOverTimeAttributes_SetUseCachedPts(self, tuple);
+    else if(strcmp(name, "canUseDirectDatabaseRoute") == 0)
+        obj = QueryOverTimeAttributes_SetCanUseDirectDatabaseRoute(self, tuple);
 
     if(obj != NULL)
         Py_DECREF(obj);

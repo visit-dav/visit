@@ -3285,9 +3285,20 @@ avtGenericDatabase::GetQOTDataset(int domain,
             "QueryOverTimeAttributes.");
     }
 
-    int startTime   = QOTAtts->GetStartTime();
     int element     = QOTAtts->GetPickAtts().GetElementNumber();
+    int startTime   = QOTAtts->GetStartTime();
     avtVarType type = GetMetaData(startTime)->DetermineVarType(varname);
+
+    //
+    // If we're looking up a zone, we need to decrement the element
+    // id by 1 to match VisIt's ids. Nodes don't require this. 
+    //
+    string qName = QOTAtts->GetQueryAtts().GetName();
+    std::size_t flagFound = qName.find("Zone");
+    if (flagFound != std::string::npos)
+    {
+        element -= 1;
+    }
 
     Interface->TurnMaterialSelectionOff();
 
@@ -3378,6 +3389,17 @@ avtGenericDatabase::AddSecondaryQOTVariables(vtkDataSet *ds,
     tsRange[0]  = QOTAtts->GetStartTime();
     tsRange[1]  = QOTAtts->GetEndTime();
     tsStride    = QOTAtts->GetStride();
+
+    //
+    // If we're looking up a zone, we need to decrement the element
+    // id by 1 to match VisIt's ids. Nodes don't require this. 
+    //
+    string qName = QOTAtts->GetQueryAtts().GetName();
+    std::size_t flagFound = qName.find("Zone");
+    if (flagFound != std::string::npos)
+    {
+        element -= 1;
+    }
 
     //
     // If we have any secondary arrays, then fetch those as well.
@@ -3487,9 +3509,11 @@ avtGenericDatabase::GetQOTScalarVarDataset(const char *varname,
     tsRange[1] = QOTAtts->GetEndTime();
     tsStride   = QOTAtts->GetStride();
 
-    //TODO: is first timestep good enough? We can always catch missing 
-    //      data later, but there may be cases where the firs timestep 
-    //      doesn't have our data. 
+    //
+    // We seem to be okay retrieving md from the first time step, even if
+    // the variable isn't defined on that timestep. We should keep and eye
+    // on this for edge cases, though. 
+    //
     const avtScalarMetaData *smd = GetMetaData(tsRange[0])->GetScalar(varname);
     if (smd == NULL)
     {
@@ -3726,9 +3750,6 @@ avtGenericDatabase::GetQOTTensorVarDataset(const char *varname,
     tsRange[1] = QOTAtts->GetEndTime();
     tsStride   = QOTAtts->GetStride();
 
-    //TODO: is first timestep good enough? We can always catch missing 
-    //      data later, but there may be cases where the firs timestep 
-    //      doesn't have our data. 
     const avtTensorMetaData *tmd = GetMetaData(tsRange[0])->GetTensor(varname);
     if (tmd == NULL)
     {
