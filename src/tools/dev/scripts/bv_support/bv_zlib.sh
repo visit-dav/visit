@@ -27,6 +27,7 @@ function bv_zlib_info
     export ZLIB_COMPATIBILITY_VERSION=${ZLIB_COMPATIBILITY_VERSION:-"1.2"}
     export ZLIB_URL=${ZLIB_URL:-https://www.zlib.net}
     export ZLIB_BUILD_DIR=${ZLIB_BUILD_DIR:-"zlib-${ZLIB_VERSION}"}
+    export ZLIB_MD5_CHECKSUM="85adef240c5f370b308da8c938951a68"
     export ZLIB_SHA256_CHECKSUM="4ff941449631ace0d4d203e3483be9dbc9da454084111f97ea0a2114e19bf066"
 }
 
