@@ -1,56 +1,47 @@
-# Module automatically read in from construct_build_visit
-# Insert header and comments
-
-
-#initialize all the variables
 function bv_visit_initialize
 {
     export DO_VISIT="yes"
 }
 
-#enable the module for install
 function bv_visit_enable
 { 
     DO_VISIT="yes"
 }
 
-#disable the module for install
 function bv_visit_disable
 {
     DO_VISIT="no"
 }
 
-#add any dependency with comma separation
 function bv_visit_depends_on
 {
     echo ""
 }
 
-#add information about how to get library..
 function bv_visit_info
 {
-    echo "Setting VisIt info..."
+    if [[ "$USE_VISIT_FILE" == "yes" ]] ; then
+        export VISIT_MD5_CHECKSUM=""
+        export VISIT_SHA256_CHECKSUM=""
+    else
+        export VISIT_MD5_CHECKSUM="edccd6d6c289356ac1462b1606b10ef9"
+        export VISIT_SHA256_CHECKSUM="40c33f08de7a048fb436b8a72156b9e5303434e8e52d5d8590c7dc3ce8ac607d"
+    fi
 }
 
-#print variables used by this module
 function bv_visit_print
 {
     printf "%s%s\n" "VISIT_FILE=" "${VISIT_FILE}"
     printf "%s%s\n" "VISIT_VERSION=" "${VISIT_VERSION}"
-    #printf "%s%s\n" "VISIT_COMPATIBILITY_VERSION=" "${VISIT_COMPATIBILITY_VERSION}"
-    #printf "%s%s\n" "VISIT_BUILD_DIR=" "${VISIT_BUILD_DIR}"
 }
 
-#print how to install and uninstall module..
 function bv_visit_print_usage
 {
     printf "%-20s %s [%s]\n" "--visit"   "Build VisIt" "$DO_VISIT"
 }
 
-#values to add to host profile, write to $HOSTCONF
 function bv_visit_host_profile
 {
-    #Add code to write values to variable $HOSTCONF
     if [[ "$DO_VISIT" == "yes" ]] ; then
         echo >> $HOSTCONF
         echo "##" >> $HOSTCONF
@@ -58,7 +49,6 @@ function bv_visit_host_profile
     fi
 }
 
-#prepare the module and check whether it is built or is ready to be built.
 function bv_visit_ensure_built_or_ready
 {
     # Check-out the latest git sources, before building VisIt
@@ -69,10 +59,26 @@ function bv_visit_ensure_built_or_ready
             # Print a dialog screen
             info "GIT clone of visit ($GIT_ROOT_PATH) . . ."
             if [[ "$DO_REVISION" == "yes" && "$GITREVISION" != "" ]] ; then
-                # FIXME: Actually get the specified revision.
+                # Get the specified revision.
                 git clone $GIT_ROOT_PATH
-            else
+                cd visit
+                git checkout $GITREVISION
+                cd ..
+            elif [[ "$TRUNK_BUILD" == "yes" ]] ; then
+                # Get the trunk version
                 git clone $GIT_ROOT_PATH
+            elif [[ "$RC_BUILD" == "yes" ]] ; then
+                # Get the RC version
+                git clone $GIT_ROOT_PATH
+                cd visit
+                git checkout ${VISIT_VERSION:0:3}RC
+                cd ..
+            elif [[ "$TAGGED_BUILD" == "yes" ]] ; then
+                # Get the tagged version
+                git clone $GIT_ROOT_PATH
+                cd visit
+                git checkout v${VISIT_VERSION}
+                cd ..
             fi
             if [[ $? != 0 ]] ; then
                 warn "Unable to build VisIt. GIT clone failed."
@@ -112,14 +118,11 @@ function bv_visit_dry_run
 }
 
 
-#print what the module will do for building
 function bv_visit_print_build_command
 {
-    #print the build command..
     echo "visit has no build commands set"
 }
 
-# Modify the makefiles that cmake generated.
 function bv_visit_modify_makefiles
 {
     # NOTE: We are inside the VisIt src directory when this function is called.
@@ -170,13 +173,6 @@ function bv_visit_modify_makefiles
                avt/Expressions/Makefile.orig
             mv -f Make.tmp avt/Expressions/Makefile
         fi
-    elif [[ "$OPSYS" == "SunOS" ]]; then
-        # Some Solaris systems hang when compiling Fluent when optimizations
-        # are on.  Turn optimizations off.
-        info "Patching VisIt . . ."
-        cat databases/Fluent/Makefile | sed '/CXXFLAGS/s/$/ -O0/g' > Make.tmp
-        mv -f databases/Fluent/Makefile databases/Fluent/Makefile.orig
-        mv -f Make.tmp databases/Fluent/Makefile
     fi
 
     if [[ "$BUILD_VISIT_BGQ" == "yes" ]] ; then
@@ -423,22 +419,6 @@ function bv_visit_is_installed
     return 0
 }
 
-function bv_patch_2_5_0
-{
-
-    if [[ -e visit2.5.0 ]]; then
-        info "apply patch to ModelFit operator"
-        patch -f -p0 visit2.5.0/src/operators/ModelFit/CMakeLists.txt <<\EOF
-24d23
-< QT_WRAP_CPP(GModelFitOperator LIBG_SOURCES ${LIBG_MOC_SOURCES})
-94a94
->     QT_WRAP_CPP(GModelFitOperator LIBG_SOURCES ${LIBG_MOC_SOURCES})
-EOF
-    fi
-
-}
-
-#the build command..
 function bv_visit_build
 {
     #
