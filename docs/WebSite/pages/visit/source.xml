@@ -65,10 +65,10 @@ Please use the following acknowledgement and send us references to any publicati
   <li> <a href="https://github.com/visit-dav/visit/releases/download/v3.0.1/visit3.0.1.tar.gz">VisIt sources</a></li>
   <li> <a href="https://github.com/visit-dav/visit/releases/download/v3.0.1/visitdev3.0.1.exe">VisIt Windows sources</a></li>
   <li> <a href="https://github.com/visit-dav/visit/releases/download/v3.0.1/build_visit3_0_1">VisIt build_visit script</a></li>
-  <li> <a href="https://github.com/visit-dav/visit/releases/download/v3.0.1/visit_md5_checksums">VisIt md5 checksums</a></li>
-  <li> <a href="https://github.com/visit-dav/visit/releases/download/v3.0.1/visit_sha1_checksums">VisIt sha1 checksums</a></li>
-  <li> <a href="https://github.com/visit-dav/visit/releases/download/v3.0.1/visit_sha256_checksums">VisIt sha256 checksums</a></li>
-  <li> <a href="https://github.com/visit-dav/visit/releases/download/v3.0.1/visit_filesizes">VisIt file sizes</a></li>
+  <li> <a href="https://github.com/visit-dav/visit/releases/download/v3.0.1/visit_md5_checksums.txt">VisIt md5 checksums</a></li>
+  <li> <a href="https://github.com/visit-dav/visit/releases/download/v3.0.1/visit_sha1_checksums.txt">VisIt sha1 checksums</a></li>
+  <li> <a href="https://github.com/visit-dav/visit/releases/download/v3.0.1/visit_sha256_checksums.txt">VisIt sha256 checksums</a></li>
+  <li> <a href="https://github.com/visit-dav/visit/releases/download/v3.0.1/visit_filesizes.txt">VisIt file sizes</a></li>
 </ul>
 
 </div>
