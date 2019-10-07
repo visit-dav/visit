@@ -67,7 +67,7 @@ function bv_adios2_info
     export ADIOS2_URL=${ADIOS2_URL:-"https://github.com/ornladios/ADIOS2/releases/download/v2.4.0-rc"}
     export ADIOS2_BUILD_DIR=${ADIOS2_BUILD_DIR:-"ADIOS2-"${ADIOS2_VERSION}}
     export ADIOS2_MD5_CHECKSUM="be3f5c7d7ab4f7df65599bebc91e0ce4"
-    export ADIOS2_SHA256_CHECKSUM=""
+    export ADIOS2_SHA256_CHECKSUM="a1b2487cbf6d4d0fb63eb2efc28ce7bcc4992e28d99b6b621694c318cd9c7b50"
 }
 
 function bv_adios2_print

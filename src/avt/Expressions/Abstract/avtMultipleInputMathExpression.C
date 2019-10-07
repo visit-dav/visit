@@ -45,6 +45,8 @@
 #include <vtkCellData.h>
 #include <vtkDataSet.h>
 #include <vtkPointData.h>
+#include <vtkDoubleArray.h>
+
 
 #include <ExpressionException.h>
 #include <DebugStream.h>
@@ -178,4 +180,138 @@ avtMultipleInputMathExpression::ExractCenteredData(avtCentering *centering_out,
                 "avtCentering*, vtkDataSet*, const char*)" << std::endl;
         return out;
     }
+}
+
+
+// ****************************************************************************
+//  Method: avtMultipleInputMathExpression::CreateOutputVariable
+//
+//  Purpose:
+//      Generate the output variable with the correct number of components
+//      and tuples.
+//
+//  Arguments:
+//      arraysToConsider    Indicates how many arrays (in order of input) to
+//                          consider in determining the component and tuple
+//                          count. Default behavior is to use all of the
+//                          processed arrays.
+//
+//  Returns:    Data array of appropriate size.
+//
+//  Programmer: Eddie Rusu
+//  Creation:   Mon Sep 30 14:49:38 PDT 2019
+//
+// ****************************************************************************
+
+vtkDataArray*
+avtMultipleInputMathExpression::CreateOutputVariable()
+{
+    return CreateOutputVariable(dataArrays.size());
+}
+
+vtkDataArray*
+avtMultipleInputMathExpression::CreateOutputVariable(int arraysToConsider)
+{
+    debug5 << "Entering avtMultipleInputMathExpression::"
+              "CreateOutputVariable(int)" << std::endl;
+    // Loop over all inputs and determine the number of components and
+    // tuples
+    int nComps = 1;
+    int nVals = 1;
+    for (int i = 0; i < arraysToConsider; ++i)
+    {
+        int nCompsi = dataArrays[i]->GetNumberOfComponents();
+        if (nCompsi != 1 && nCompsi != nComps)
+        {
+            // We can support one-multi components, but we can only support
+            // multi-multi if they are the same values.
+            if (nComps == 1)
+            {
+                nComps = nCompsi;
+            }
+            else
+            {
+                EXCEPTION2(ExpressionException, outputVariableName, "Cannot "
+                        "process variables with different number of "
+                        "dimensions.");
+            }
+        }
+
+        int nValsi = dataArrays[i]->GetNumberOfTuples();
+        if (nValsi != 1 && nValsi != nVals)
+        {
+            // We can support singleton values but we cannot support mismatched
+            // number of tuples
+            if (nVals == 1)
+            {
+                nVals = nValsi;
+            }
+            else
+            {
+                EXCEPTION2(ExpressionException, outputVariableName, "Cannot "
+                        "process variables with different number of "
+                        "elements.");
+            }
+        }
+    }
+
+    // Setup the output variable
+    vtkDataArray* output = vtkDoubleArray::New();
+    output->SetNumberOfComponents(nComps);
+    output->SetNumberOfTuples(nVals);
+    debug5 << "Number of tuples: " << nVals << std::endl;
+    debug5 << "Number of components: " << nComps << std::endl;
+
+    debug5 << "Exiting  avtMultipleInputMathExpression::"
+              "CreateOutputVariable(int)" << std::endl;
+    return output;
+}
+
+
+// ****************************************************************************
+//  Method: avtMultipleInputMathExpression::RecenterData
+//
+//  Purpose:
+//      Determines the centering of the input variables. If there is mixed
+//      centering, default to zone-centered.
+//
+//  Arguments:
+//      in_ds   The vtkDataSet that holds all the arrays. Arrays and
+//              centerings are already stored in dataArrays and centerings,
+//              which are class vectors, so in_ds is only needed because
+//              the call to avtExpressionFilter::Recenter requires it.
+//
+//  Programmer: Eddie Rusu
+//  Creation:   Mon Sep 30 10:38:44 PDT 2019
+//
+// ****************************************************************************
+
+void
+avtMultipleInputMathExpression::RecenterData(vtkDataSet* in_ds)
+{
+    debug5 << "Entering avtMultipleInputMathExpression::RecenterData(vtkDataSet*)"
+            << std::endl;
+
+    // Determine the centering
+    centering = centerings[0];
+    for (int i = 1; i < nProcessedArgs; ++i)
+    {
+        if (centerings[i] != centering)
+        {
+            centering = AVT_ZONECENT;
+            break;
+        }
+    }
+
+    // Recenter variables as needed
+    for (int i = 0; i < nProcessedArgs; ++i)
+    {
+        if (centerings[i] != centering)
+        {
+            dataArrays[i] = Recenter(in_ds, dataArrays[i], centerings[i],
+                outputVariableName);
+        }
+    }
+    debug5 << "Exiting  avtMultipleInputMathExpression::RecenterData(vtkDataSet*)"
+            << std::endl;
 }
