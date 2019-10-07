@@ -24,14 +24,14 @@
 
 <h2>Automatically Build VisIt with the build_visit Script</h2>
 
-<p>VisIt can now be built automatically using the <a href="http://portal.nersc.gov/project/visit/releases/3.0.2/build_visit3_0_2">build_visit</a> script on many Linux, MacOS X, and AIX platforms <em>(more to come)</em>. The <a href="http://portal.nersc.gov/project/visit/releases/3.0.2/build_visit3_0_2">build_visit</a> script takes care of downloading relevant VisIt and 3rd party source code, configuring, and building it all using your C++ compiler. We encourage users to build VisIt using the build_visit script when our binary distributions have trouble running on some systems. We also recommend using the <a href="http://portal.nersc.gov/project/visit/releases/3.0.2/build_visit3_0_2">build_visit</a> script on your system if you plan to:</p>
+<p>VisIt can now be built automatically using the <a href="https://github.com/visit-dav/visit/releases/download/v3.0.2/build_visit3_0_2">build_visit</a> script on many Linux, MacOS X, and AIX platforms <em>(more to come)</em>. The <a href="https://github.com/visit-dav/visit/releases/download/v3.0.2/build_visit3_0_2">build_visit</a> script takes care of downloading relevant VisIt and 3rd party source code, configuring, and building it all using your C++ compiler. We encourage users to build VisIt using the build_visit script when our binary distributions have trouble running on some systems. We also recommend using the <a href="https://github.com/visit-dav/visit/releases/download/v3.0.2/build_visit3_0_2">build_visit</a> script on your system if you plan to:</p>
 
 <ul>
   <li>Modify the VisIt source code. </li>
   <li>Run a parallel compute engine. Building a parallel version of VisIt on your system allows you to configure VisIt so it uses your MPI library, avoiding incompatibilities.</li>
   <li>Create your own VisIt plugins. Building VisIt on your system ensures that it is built with the same C++ compiler that you will use to develop your plugin, minimizing the chance for runtime library incompatibilities.</li>
 </ul>
-<p> To simplify what has become a very complex procedure, we have developed the <a href="http://portal.nersc.gov/project/visit/releases/3.0.2/build_visit3_0_2">build_visit</a> script to automatically download and build VisIt and 3rd party sources on Linux, MacOS X, and AIX platforms. For instructions on building a parallel version of VisIt, see the section on building a parallel version of VisIt at <a href="http://www.visitusers.org/index.php?title=ParallelPorting">visitusers.org</a>. For instructions on building VisIt on Windows, see our <a href="simulation/computer-codes/visit/faqs/faq17">FAQ</a>. Links to download the Unix source code, the Windows source code, the md5 and sha1 checksums, and file sizes are below, organized by release starting with the most recent release. Links to download the third party libraries are at the end. The checksums and file sizes are for checking that the files were properly downloaded if corruption of the files is suspected during the download process.</p>
+<p> To simplify what has become a very complex procedure, we have developed the <a href="https://github.com/visit-dav/visit/releases/download/v3.0.2/build_visit3_0_2">build_visit</a> script to automatically download and build VisIt and 3rd party sources on Linux, MacOS X, and AIX platforms. For instructions on building a parallel version of VisIt, see the section on building a parallel version of VisIt at <a href="http://www.visitusers.org/index.php?title=ParallelPorting">visitusers.org</a>. For instructions on building VisIt on Windows, see our <a href="simulation/computer-codes/visit/faqs/faq17">FAQ</a>. Links to download the Unix source code, the Windows source code, the md5 and sha1 checksums, and file sizes are below, organized by release starting with the most recent release. Links to download the third party libraries are at the end. The checksums and file sizes are for checking that the files were properly downloaded if corruption of the files is suspected during the download process.</p>
 <p>If you use VisIt to generate images and/or movies please cite VisIt in your paper and the credits of your movie. Doing so helps us sustain funding for future improvements and on going maintenance. 
 Please use the following acknowledgement and send us references to any publications, presentations, or successful funding applications that make use of DOE software.</p>
 <ul>
@@ -46,13 +46,13 @@ Please use the following acknowledgement and send us references to any publicati
 <h2>VisIt 3.0.2</h2>
 
 <ul>
-  <li> <a href="http://portal.nersc.gov/project/visit/releases/3.0.2/visit3.0.2.tar.gz">VisIt sources</a></li>
-  <li> <a href="http://portal.nersc.gov/project/visit/releases/3.0.2/visitdev3.0.2.exe">VisIt Windows sources</a></li>
-  <li> <a href="http://portal.nersc.gov/project/visit/releases/3.0.2/build_visit3_0_2">VisIt build_visit script</a></li>
-  <li> <a href="http://portal.nersc.gov/project/visit/releases/3.0.2/visit_md5_checksums">VisIt md5 checksums</a></li>
-  <li> <a href="http://portal.nersc.gov/project/visit/releases/3.0.2/visit_sha1_checksums">VisIt sha1 checksums</a></li>
-  <li> <a href="http://portal.nersc.gov/project/visit/releases/3.0.2/visit_sha256_checksums">VisIt sha256 checksums</a></li>
-  <li> <a href="http://portal.nersc.gov/project/visit/releases/3.0.2/visit_filesizes">VisIt file sizes</a></li>
+  <li> <a href="https://github.com/visit-dav/visit/releases/download/v3.0.2/visit3.0.2.tar.gz">VisIt sources</a></li>
+  <li> <a href="https://github.com/visit-dav/visit/releases/download/v3.0.2/visitdev3.0.2.exe">VisIt Windows sources</a></li>
+  <li> <a href="https://github.com/visit-dav/visit/releases/download/v3.0.2/build_visit3_0_2">VisIt build_visit script</a></li>
+  <li> <a href="https://github.com/visit-dav/visit/releases/download/v3.0.2/visit_md5_checksums.txt">VisIt md5 checksums</a></li>
+  <li> <a href="https://github.com/visit-dav/visit/releases/download/v3.0.2/visit_sha1_checksums.txt">VisIt sha1 checksums</a></li>
+  <li> <a href="https://github.com/visit-dav/visit/releases/download/v3.0.2/visit_sha256_checksums.txt">VisIt sha256 checksums</a></li>
+  <li> <a href="https://github.com/visit-dav/visit/releases/download/v3.0.2/visit_filesizes.txt">VisIt file sizes</a></li>
 </ul>
 
 </div>
@@ -62,13 +62,13 @@ Please use the following acknowledgement and send us references to any publicati
 <h2>VisIt 3.0.1</h2>
 
 <ul>
-  <li> <a href="http://portal.nersc.gov/project/visit/releases/3.0.1/visit3.0.1.tar.gz">VisIt sources</a></li>
-  <li> <a href="http://portal.nersc.gov/project/visit/releases/3.0.1/visitdev3.0.1.exe">VisIt Windows sources</a></li>
-  <li> <a href="http://portal.nersc.gov/project/visit/releases/3.0.1/build_visit3_0_1">VisIt build_visit script</a></li>
-  <li> <a href="http://portal.nersc.gov/project/visit/releases/3.0.1/visit_md5_checksums">VisIt md5 checksums</a></li>
-  <li> <a href="http://portal.nersc.gov/project/visit/releases/3.0.1/visit_sha1_checksums">VisIt sha1 checksums</a></li>
-  <li> <a href="http://portal.nersc.gov/project/visit/releases/3.0.1/visit_sha256_checksums">VisIt sha256 checksums</a></li>
-  <li> <a href="http://portal.nersc.gov/project/visit/releases/3.0.1/visit_filesizes">VisIt file sizes</a></li>
+  <li> <a href="https://github.com/visit-dav/visit/releases/download/v3.0.1/visit3.0.1.tar.gz">VisIt sources</a></li>
+  <li> <a href="https://github.com/visit-dav/visit/releases/download/v3.0.1/visitdev3.0.1.exe">VisIt Windows sources</a></li>
+  <li> <a href="https://github.com/visit-dav/visit/releases/download/v3.0.1/build_visit3_0_1">VisIt build_visit script</a></li>
+  <li> <a href="https://github.com/visit-dav/visit/releases/download/v3.0.1/visit_md5_checksums.txt">VisIt md5 checksums</a></li>
+  <li> <a href="https://github.com/visit-dav/visit/releases/download/v3.0.1/visit_sha1_checksums.txt">VisIt sha1 checksums</a></li>
+  <li> <a href="https://github.com/visit-dav/visit/releases/download/v3.0.1/visit_sha256_checksums.txt">VisIt sha256 checksums</a></li>
+  <li> <a href="https://github.com/visit-dav/visit/releases/download/v3.0.1/visit_filesizes.txt">VisIt file sizes</a></li>
 </ul>
 
 </div>
@@ -78,29 +78,13 @@ Please use the following acknowledgement and send us references to any publicati
 <h2>VisIt 3.0</h2>
 
 <ul>
-  <li> <a href="http://portal.nersc.gov/project/visit/releases/3.0.0/visit3.0.0.tar.gz">VisIt sources</a></li>
-  <li> <a href="http://portal.nersc.gov/project/visit/releases/3.0.0/visitdev3.0.0.exe">VisIt Windows sources</a></li>
-  <li> <a href="http://portal.nersc.gov/project/visit/releases/3.0.0/build_visit3_0_0">VisIt build_visit script</a></li>
-  <li> <a href="http://portal.nersc.gov/project/visit/releases/3.0.0/visit_md5_checksums">VisIt md5 checksums</a></li>
-  <li> <a href="http://portal.nersc.gov/project/visit/releases/3.0.0/visit_sha1_checksums">VisIt sha1 checksums</a></li>
-  <li> <a href="http://portal.nersc.gov/project/visit/releases/3.0.0/visit_sha256_checksums">VisIt sha256 checksums</a></li>
-  <li> <a href="http://portal.nersc.gov/project/visit/releases/3.0.0/visit_filesizes">VisIt file sizes</a></li>
-</ul>
-
-</div>
-
-<div class="span3">
-
-<h2>VisIt 3.0 Beta</h2>
-
-<ul>
-  <li> <a href="http://portal.nersc.gov/project/visit/releases/3.0.0b/visit3.0.0b.tar.gz">VisIt sources</a></li>
-  <li> <a href="http://portal.nersc.gov/project/visit/releases/3.0.0b/visitdev3.0.0b.exe">VisIt Windows sources</a></li>
-  <li> <a href="http://portal.nersc.gov/project/visit/releases/3.0.0b/build_visit3_0_0b">VisIt build_visit script</a></li>
-  <li> <a href="http://portal.nersc.gov/project/visit/releases/3.0.0b/visit_md5_checksums">VisIt md5 checksums</a></li>
-  <li> <a href="http://portal.nersc.gov/project/visit/releases/3.0.0b/visit_sha1_checksums">VisIt sha1 checksums</a></li>
-  <li> <a href="http://portal.nersc.gov/project/visit/releases/3.0.0b/visit_sha256_checksums">VisIt sha256 checksums</a></li>
-  <li> <a href="http://portal.nersc.gov/project/visit/releases/3.0.0b/visit_filesizes">VisIt file sizes</a></li>
+  <li> <a href="https://github.com/visit-dav/visit/releases/download/v3.0.0/visit3.0.0.tar.gz">VisIt sources</a></li>
+  <li> <a href="https://github.com/visit-dav/visit/releases/download/v3.0.0/visitdev3.0.0.exe">VisIt Windows sources</a></li>
+  <li> <a href="https://github.com/visit-dav/visit/releases/download/v3.0.0/build_visit3_0_0">VisIt build_visit script</a></li>
+  <li> <a href="https://github.com/visit-dav/visit/releases/download/v3.0.0/visit_md5_checksums.txt">VisIt md5 checksums</a></li>
+  <li> <a href="https://github.com/visit-dav/visit/releases/download/v3.0.0/visit_sha1_checksums.txt">VisIt sha1 checksums</a></li>
+  <li> <a href="https://github.com/visit-dav/visit/releases/download/v3.0.0/visit_sha256_checksums.txt">VisIt sha256 checksums</a></li>
+  <li> <a href="https://github.com/visit-dav/visit/releases/download/v3.0.0/visit_filesizes.txt">VisIt file sizes</a></li>
 </ul>
 
 </div>
@@ -110,13 +94,13 @@ Please use the following acknowledgement and send us references to any publicati
 <h2>VisIt 2.13.3</h2>
 
 <ul>
-  <li> <a href="http://portal.nersc.gov/project/visit/releases/2.13.3/visit2.13.3.tar.gz">VisIt sources</a></li>
-  <li> <a href="http://portal.nersc.gov/project/visit/releases/2.13.3/visitdev2.13.3.exe">VisIt Windows sources</a></li>
-  <li> <a href="http://portal.nersc.gov/project/visit/releases/2.13.3/build_visit2_13_3">VisIt build_visit script</a></li>
-  <li> <a href="http://portal.nersc.gov/project/visit/releases/2.13.3/visit_md5_checksums">VisIt md5 checksums</a></li>
-  <li> <a href="http://portal.nersc.gov/project/visit/releases/2.13.3/visit_sha1_checksums">VisIt sha1 checksums</a></li>
-  <li> <a href="http://portal.nersc.gov/project/visit/releases/2.13.3/visit_sha256_checksums">VisIt sha256 checksums</a></li>
-  <li> <a href="http://portal.nersc.gov/project/visit/releases/2.13.3/visit_filesizes">VisIt file sizes</a></li>
+  <li> <a href="https://github.com/visit-dav/visit/releases/download/v2.13.3/visit2.13.3.tar.gz">VisIt sources</a></li>
+  <li> <a href="https://github.com/visit-dav/visit/releases/download/v2.13.3/visitdev2.13.3.exe">VisIt Windows sources</a></li>
+  <li> <a href="https://github.com/visit-dav/visit/releases/download/v2.13.3/build_visit2_13_3">VisIt build_visit script</a></li>
+  <li> <a href="https://github.com/visit-dav/visit/releases/download/v2.13.3/visit_md5_checksums.txt">VisIt md5 checksums</a></li>
+  <li> <a href="https://github.com/visit-dav/visit/releases/download/v2.13.3/visit_sha1_checksums.txt">VisIt sha1 checksums</a></li>
+  <li> <a href="https://github.com/visit-dav/visit/releases/download/v2.13.3/visit_sha256_checksums.txt">VisIt sha256 checksums</a></li>
+  <li> <a href="https://github.com/visit-dav/visit/releases/download/v2.13.3/visit_filesizes.txt">VisIt file sizes</a></li>
 </ul>
 
 </div>
@@ -126,13 +110,13 @@ Please use the following acknowledgement and send us references to any publicati
 <h2>VisIt 2.13.2</h2>
 
 <ul>
-  <li> <a href="http://portal.nersc.gov/project/visit/releases/2.13.2/visit2.13.2.tar.gz">VisIt sources</a></li>
-  <li> <a href="http://portal.nersc.gov/project/visit/releases/2.13.2/visitdev2.13.2.exe">VisIt Windows sources</a></li>
-  <li> <a href="http://portal.nersc.gov/project/visit/releases/2.13.2/build_visit2_13_2">VisIt build_visit script</a></li>
-  <li> <a href="http://portal.nersc.gov/project/visit/releases/2.13.2/visit_md5_checksums">VisIt md5 checksums</a></li>
-  <li> <a href="http://portal.nersc.gov/project/visit/releases/2.13.2/visit_sha1_checksums">VisIt sha1 checksums</a></li>
-  <li> <a href="http://portal.nersc.gov/project/visit/releases/2.13.2/visit_sha256_checksums">VisIt sha256 checksums</a></li>
-  <li> <a href="http://portal.nersc.gov/project/visit/releases/2.13.2/visit_filesizes">VisIt file sizes</a></li>
+  <li> <a href="https://github.com/visit-dav/visit/releases/download/v2.13.2/visit2.13.2.tar.gz">VisIt sources</a></li>
+  <li> <a href="https://github.com/visit-dav/visit/releases/download/v2.13.2/visitdev2.13.2.exe">VisIt Windows sources</a></li>
+  <li> <a href="https://github.com/visit-dav/visit/releases/download/v2.13.2/build_visit2_13_2">VisIt build_visit script</a></li>
+  <li> <a href="https://github.com/visit-dav/visit/releases/download/v2.13.2/visit_md5_checksums.txt">VisIt md5 checksums</a></li>
+  <li> <a href="https://github.com/visit-dav/visit/releases/download/v2.13.2/visit_sha1_checksums.txt">VisIt sha1 checksums</a></li>
+  <li> <a href="https://github.com/visit-dav/visit/releases/download/v2.13.2/visit_sha256_checksums.txt">VisIt sha256 checksums</a></li>
+  <li> <a href="https://github.com/visit-dav/visit/releases/download/v2.13.2/visit_filesizes.txt">VisIt file sizes</a></li>
 </ul>
 
 </div>
@@ -142,13 +126,13 @@ Please use the following acknowledgement and send us references to any publicati
 <h2>VisIt 2.13.1</h2>
 
 <ul>
-  <li> <a href="http://portal.nersc.gov/project/visit/releases/2.13.1/visit2.13.1.tar.gz">VisIt sources</a></li>
-  <li> <a href="http://portal.nersc.gov/project/visit/releases/2.13.1/visitdev2.13.1.exe">VisIt Windows sources</a></li>
-  <li> <a href="http://portal.nersc.gov/project/visit/releases/2.13.1/build_visit2_13_1">VisIt build_visit script</a></li>
-  <li> <a href="http://portal.nersc.gov/project/visit/releases/2.13.1/visit_md5_checksums">VisIt md5 checksums</a></li>
-  <li> <a href="http://portal.nersc.gov/project/visit/releases/2.13.1/visit_sha1_checksums">VisIt sha1 checksums</a></li>
-  <li> <a href="http://portal.nersc.gov/project/visit/releases/2.13.1/visit_sha256_checksums">VisIt sha256 checksums</a></li>
-  <li> <a href="http://portal.nersc.gov/project/visit/releases/2.13.1/visit_filesizes">VisIt file sizes</a></li>
+  <li> <a href="https://github.com/visit-dav/visit/releases/download/v2.13.1/visit2.13.1.tar.gz">VisIt sources</a></li>
+  <li> <a href="https://github.com/visit-dav/visit/releases/download/v2.13.1/visitdev2.13.1.exe">VisIt Windows sources</a></li>
+  <li> <a href="https://github.com/visit-dav/visit/releases/download/v2.13.1/build_visit2_13_1">VisIt build_visit script</a></li>
+  <li> <a href="https://github.com/visit-dav/visit/releases/download/v2.13.1/visit_md5_checksums.txt">VisIt md5 checksums</a></li>
+  <li> <a href="https://github.com/visit-dav/visit/releases/download/v2.13.1/visit_sha1_checksums.txt">VisIt sha1 checksums</a></li>
+  <li> <a href="https://github.com/visit-dav/visit/releases/download/v2.13.1/visit_sha256_checksums.txt">VisIt sha256 checksums</a></li>
+  <li> <a href="https://github.com/visit-dav/visit/releases/download/v2.13.1/visit_filesizes.txt">VisIt file sizes</a></li>
 </ul>
 
 </div>
@@ -158,13 +142,13 @@ Please use the following acknowledgement and send us references to any publicati
 <h2>VisIt 2.13</h2>
 
 <ul>
-  <li> <a href="http://portal.nersc.gov/project/visit/releases/2.13.0/visit2.13.0.tar.gz">VisIt sources</a></li>
-  <li> <a href="http://portal.nersc.gov/project/visit/releases/2.13.0/visitdev2.13.0.exe">VisIt Windows sources</a></li>
-  <li> <a href="http://portal.nersc.gov/project/visit/releases/2.13.0/build_visit2_13_0">VisIt build_visit script</a></li>
-  <li> <a href="http://portal.nersc.gov/project/visit/releases/2.13.0/visit_md5_checksums">VisIt md5 checksums</a></li>
-  <li> <a href="http://portal.nersc.gov/project/visit/releases/2.13.0/visit_sha1_checksums">VisIt sha1 checksums</a></li>
-  <li> <a href="http://portal.nersc.gov/project/visit/releases/2.13.0/visit_sha256_checksums">VisIt sha256 checksums</a></li>
-  <li> <a href="http://portal.nersc.gov/project/visit/releases/2.13.0/visit_filesizes">VisIt file sizes</a></li>
+  <li> <a href="https://github.com/visit-dav/visit/releases/download/v2.13.0/visit2.13.0.tar.gz">VisIt sources</a></li>
+  <li> <a href="https://github.com/visit-dav/visit/releases/download/v2.13.0/visitdev2.13.0.exe">VisIt Windows sources</a></li>
+  <li> <a href="https://github.com/visit-dav/visit/releases/download/v2.13.0/build_visit2_13_0">VisIt build_visit script</a></li>
+  <li> <a href="https://github.com/visit-dav/visit/releases/download/v2.13.0/visit_md5_checksums.txt">VisIt md5 checksums</a></li>
+  <li> <a href="https://github.com/visit-dav/visit/releases/download/v2.13.0/visit_sha1_checksums.txt">VisIt sha1 checksums</a></li>
+  <li> <a href="https://github.com/visit-dav/visit/releases/download/v2.13.0/visit_sha256_checksums.txt">VisIt sha256 checksums</a></li>
+  <li> <a href="https://github.com/visit-dav/visit/releases/download/v2.13.0/visit_filesizes.txt">VisIt file sizes</a></li>
 </ul>
 
 </div>
