@@ -617,6 +617,16 @@ avtDirectDatabaseQOTFilter::UpdateDataObjectInfo(void)
     outAtts.GetOriginalSpatialExtents()->Clear();
     outAtts.GetDesiredSpatialExtents()->Clear();
 
+    //
+    // If we have an active pick variable, let's use this as our main 
+    // active variable. 
+    //
+    std::string activePickVar = atts.GetPickAtts().GetActiveVariable();
+    if (!activePickVar.empty())
+    {
+        outAtts.SetActiveVariable(activePickVar.c_str());
+    }
+
     if (finalOutputCreated)
     {
         if (useTimeForXAxis)

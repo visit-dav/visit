@@ -2282,12 +2282,15 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
             int networkId = plot->GetNetworkID();
             int origWindowId = plot->GetWindowId();
 
-            //TODO: should we really do this? 
             if (timeQueryAtts->GetCanUseDirectDatabaseRoute())
             {
                 //
-                // Make sure that we are querying from the original plot, not
-                // the QOT mesh. We'll reset the active window after the query. 
+                // If we're doing a pick range, this routine we be called for
+                // each pick, and we need to make sure that the direct route
+                // is querying the original dataset each time, not the reduced
+                // QOT dataset. 
+                // This is a bit hacky, but it works for now. We should probably
+                // handle ranges more appropriately in the future. 
                 //
                 ViewerWindowManager::Instance()->SetActiveWindow(origWindowId + 1);
             }
@@ -2393,6 +2396,7 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
                 //
                 // Now that we've performed our pick, make sure that we return
                 // to the correct window. 
+                //
                 int curWinId =
                     ViewerWindowManager::Instance()->GetWindows().back()->GetWindowId();
                 ViewerWindowManager::Instance()->SetActiveWindow(curWinId + 1);
