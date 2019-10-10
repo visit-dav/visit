@@ -83,6 +83,10 @@
 #   Eric Brugger, Fri Jan  4 09:34:59 PST 2019
 #   I modified the script to work with the GitHub repository.
 #
+#   Eric Brugger, Fri Oct  4 09:12:49 PDT 2019
+#   I modified the installation of visit to no longer add toss3 to the
+#   installation path.
+#
 
 
 #
@@ -359,24 +363,6 @@ cd ../
 version=\`cat $testDir/$workingDir/visit/src/VERSION\`
 
 ../src/tools/dev/scripts/visit-install -c llnl_open \$version linux-x86_64 ./_install >> ../../installlog 2>&1
-
-if test "$testHost" = "pascal"     || \
-   test "$testHost" = "borax"      || \
-   test "$testHost" = "catalyst"   || \
-   test "$testHost" = "jade"       || \
-   test "$testHost" = "max"        || \
-   test "$testHost" = "mica"       || \
-   test "$testHost" = "quarts"     || \
-   test "$testHost" = "rzgenie"    || \
-   test "$testHost" = "rzhasgpu"   || \
-   test "$testHost" = "rztopaz"    || \
-   test "$testHost" = "rztrona"    || \
-   test "$testHost" = "rzsurface"  || \
-   test "$testHost" = "syrah"      || \
-   test "$testHost" = "agate"  ; then
-    mv ./_install/\$version/linux-x86_64 ./_install/\$version/linux-x86_64-toss3
-fi
-
 
 if test "$debug" = "true" ; then
     echo "Install completed at: \`date\`" | mail -s "Install completed" $userEmail

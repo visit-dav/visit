@@ -1268,9 +1268,9 @@ function run_build_visit()
     fi
 
     #
-    # If we doing a trunk build then make sure we are using GIT
+    # If we doing a trunk or RC build then make sure we are using GIT
     #
-    if [[ "$TRUNK_BUILD" == "yes" ]]; then
+    if [[ "$TRUNK_BUILD" == "yes" || "$RC_BUILD" == "yes" ]]; then
         if [[ "$DO_GIT" == "no" ]]; then
             DO_GIT="yes"
             DO_GIT_ANON="yes"
