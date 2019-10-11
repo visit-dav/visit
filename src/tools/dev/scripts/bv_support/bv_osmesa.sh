@@ -157,11 +157,11 @@ function build_osmesa
     #
     cd $OSMESA_BUILD_DIR || error "Couldn't cd to osmesa build dir."
 
-    info "Patching MesaGL"
-    apply_mesagl_patch
+    info "Patching OSMesa"
+    apply_osmesa_patch
     if [[ $? != 0 ]] ; then
-        if [[ $untarred_mesagl == 1 ]] ; then
-            warn "Giving up on MesaGL build because the patch failed."
+        if [[ $untarred_osmesa == 1 ]] ; then
+            warn "Giving up on OSMesa build because the patch failed."
             return 1
         else
             warn "Patch failed, but continuing.  I believe that this script\n" \
