@@ -5308,10 +5308,6 @@ NetworkManager::AddQueryOverTimeFilter(QueryOverTimeAttributes *qA,
 
     workingNet->AddNode(trans);
 
-    //
-    // Put a QueryOverTimeFilter right after the transition to handle
-    // the query.
-    //
     avtQueryOverTimeFilter *qotFilter = NULL;
 
     if (useDirectDatabaseQOT)
@@ -5335,6 +5331,10 @@ NetworkManager::AddQueryOverTimeFilter(QueryOverTimeAttributes *qA,
         }
     }
 
+    //
+    // Put a QueryOverTimeFilter right after the transition to handle
+    // the query.
+    //
     NetnodeFilter *nodeFilter = new NetnodeFilter(qotFilter, "QueryOverTime");
     nodeFilter->GetInputNodes().push_back(trans);
 

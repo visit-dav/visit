@@ -2282,18 +2282,19 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
             int networkId = plot->GetNetworkID();
             int origWindowId = plot->GetWindowId();
 
-            if (timeQueryAtts->GetCanUseDirectDatabaseRoute())
-            {
-                //
-                // If we're doing a pick range, this routine we be called for
-                // each pick, and we need to make sure that the direct route
-                // is querying the original dataset each time, not the reduced
-                // QOT dataset. 
-                // This is a bit hacky, but it works for now. We should probably
-                // handle ranges more appropriately in the future. 
-                //
-                ViewerWindowManager::Instance()->SetActiveWindow(origWindowId + 1);
-            }
+            //FIXME: needed any longer?
+            //if (timeQueryAtts->GetCanUseDirectDatabaseRoute())
+            //{
+            //    //
+            //    // If we're doing a pick range, this routine we be called for
+            //    // each pick, and we need to make sure that the direct route
+            //    // is querying the original dataset each time, not the reduced
+            //    // QOT dataset. 
+            //    // This is a bit hacky, but it works for now. We should probably
+            //    // handle ranges more appropriately in the future. 
+            //    //
+            //    ViewerWindowManager::Instance()->SetActiveWindow(origWindowId + 1);
+            //}
 
             TRY
             {
@@ -2391,16 +2392,17 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
             }
             ENDTRY
 
-            if (timeQueryAtts->GetCanUseDirectDatabaseRoute())
-            {
-                //
-                // Now that we've performed our pick, make sure that we return
-                // to the correct window. 
-                //
-                int curWinId =
-                    ViewerWindowManager::Instance()->GetWindows().back()->GetWindowId();
-                ViewerWindowManager::Instance()->SetActiveWindow(curWinId + 1);
-            }
+            //FIXME: needed any longer?
+            //if (timeQueryAtts->GetCanUseDirectDatabaseRoute())
+            //{
+            //    //
+            //    // Now that we've performed our pick, make sure that we return
+            //    // to the correct window. 
+            //    //
+            //    int curWinId =
+            //        ViewerWindowManager::Instance()->GetWindows().back()->GetWindowId();
+            //    ViewerWindowManager::Instance()->SetActiveWindow(curWinId + 1);
+            //}
 
         } while (retry && numAttempts < 2);
         if (numAttempts == 2 && !pickCache.empty())
@@ -5373,6 +5375,20 @@ ViewerQueryManager::DoTimeQuery(ViewerWindow *origWin,
     // gets the right values, the actual toolbar and popup menu are not
     // updating. If we ever figure out the problem, remove this code.
     resWin->GetActionManager()->UpdateSingleWindow();
+
+    if (timeQueryAtts->GetCanUseDirectDatabaseRoute())
+    {
+        //
+        // Cloning the network leaves us in an odd state; our current plot
+        // is the result of the QOT. If we've used the direct database route,
+        // that means we have a reduced QOT dataset. We need to revert to
+        // the original plot we queried and make sure it's back to it's
+        // original state. 
+        //
+        ViewerWindowManager::Instance()->SetActiveWindow(origWin->GetWindowId() + 1);
+        origPlot->ClearCurrentActor();
+        origList->UpdateFrame();
+    }
 }
 
 
