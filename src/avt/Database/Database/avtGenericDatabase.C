@@ -3285,20 +3285,19 @@ avtGenericDatabase::GetQOTDataset(int domain,
             "QueryOverTimeAttributes.");
     }
 
-    int element     = QOTAtts->GetPickAtts().GetElementNumber();
+    //
+    // Try to rely on the "real" element number, as it should
+    // reflect its position. If it's not available, we'll have
+    // to accept the standard and hope it's correct...
+    //
+    int element = QOTAtts->GetPickAtts().GetRealElementNumber();
+    if (element < 0)
+    {
+        element = QOTAtts->GetPickAtts().GetElementNumber();
+    }
+
     int startTime   = QOTAtts->GetStartTime();
     avtVarType type = GetMetaData(startTime)->DetermineVarType(varname);
-
-    //
-    // If we're looking up a zone, we need to decrement the element
-    // id by 1 to match VisIt's ids. Nodes don't require this. 
-    //
-    string qName = QOTAtts->GetQueryAtts().GetName();
-    std::size_t flagFound = qName.find("Zone");
-    if (flagFound != std::string::npos)
-    {
-        element -= 1;
-    }
 
     Interface->TurnMaterialSelectionOff();
 
@@ -3385,21 +3384,20 @@ avtGenericDatabase::AddSecondaryQOTVariables(vtkDataSet *ds,
     int tsRange[2];
     int tsStride = 1;
 
-    int element = QOTAtts->GetPickAtts().GetElementNumber();
+    //
+    // Try to rely on the "real" element number, as it should
+    // reflect its position. If it's not available, we'll have
+    // to accept the standard and hope it's correct...
+    //
+    int element = QOTAtts->GetPickAtts().GetRealElementNumber();
+    if (element < 0)
+    {
+        element = QOTAtts->GetPickAtts().GetElementNumber();
+    }
+
     tsRange[0]  = QOTAtts->GetStartTime();
     tsRange[1]  = QOTAtts->GetEndTime();
     tsStride    = QOTAtts->GetStride();
-
-    //
-    // If we're looking up a zone, we need to decrement the element
-    // id by 1 to match VisIt's ids. Nodes don't require this. 
-    //
-    string qName = QOTAtts->GetQueryAtts().GetName();
-    std::size_t flagFound = qName.find("Zone");
-    if (flagFound != std::string::npos)
-    {
-        element -= 1;
-    }
 
     //
     // If we have any secondary arrays, then fetch those as well.
