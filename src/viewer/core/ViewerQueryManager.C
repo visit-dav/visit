@@ -3450,6 +3450,10 @@ ViewerQueryManager::PointQuery(const MapNode &queryParams)
         //
         timeQueryAtts->SetCanUseDirectDatabaseRoute(true);
     }
+    else
+    {
+        timeQueryAtts->SetCanUseDirectDatabaseRoute(false);
+    }
 
     //
     // If the user is trying to retrieve curves without a range, 
