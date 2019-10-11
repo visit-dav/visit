@@ -1099,6 +1099,12 @@ ViewerQueryManager::DatabaseQuery(const MapNode &in_queryParams)
     {
         useActualData = queryParams.GetEntry("use_actual_data")->ToInt();
     }
+
+    if (useActualData)
+    {
+        timeQueryAtts->SetCanUseDirectDatabaseRoute(false);
+    }
+
     // ensure we are all on the same page
     queryParams["use_actual_data"] = useActualData;
 
@@ -2282,20 +2288,6 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
             int networkId = plot->GetNetworkID();
             int origWindowId = plot->GetWindowId();
 
-            //FIXME: needed any longer?
-            //if (timeQueryAtts->GetCanUseDirectDatabaseRoute())
-            //{
-            //    //
-            //    // If we're doing a pick range, this routine we be called for
-            //    // each pick, and we need to make sure that the direct route
-            //    // is querying the original dataset each time, not the reduced
-            //    // QOT dataset. 
-            //    // This is a bit hacky, but it works for now. We should probably
-            //    // handle ranges more appropriately in the future. 
-            //    //
-            //    ViewerWindowManager::Instance()->SetActiveWindow(origWindowId + 1);
-            //}
-
             TRY
             {
                 PickAttributes pa = *pickAtts;
@@ -2391,18 +2383,6 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
                 }
             }
             ENDTRY
-
-            //FIXME: needed any longer?
-            //if (timeQueryAtts->GetCanUseDirectDatabaseRoute())
-            //{
-            //    //
-            //    // Now that we've performed our pick, make sure that we return
-            //    // to the correct window. 
-            //    //
-            //    int curWinId =
-            //        ViewerWindowManager::Instance()->GetWindows().back()->GetWindowId();
-            //    ViewerWindowManager::Instance()->SetActiveWindow(curWinId + 1);
-            //}
 
         } while (retry && numAttempts < 2);
         if (numAttempts == 2 && !pickCache.empty())
@@ -3463,6 +3443,14 @@ ViewerQueryManager::PointQuery(const MapNode &queryParams)
         timeCurve = queryParams.GetEntry("do_time")->ToInt();
     timeCurve |= (pickAtts->GetDoTimeCurve() ? 1 : 0);
 
+    if (timeCurve)
+    {
+        //
+        // Assume that we can take the direct route until proven otherwise. 
+        //
+        timeQueryAtts->SetCanUseDirectDatabaseRoute(true);
+    }
+
     //
     // If the user is trying to retrieve curves without a range, 
     // make note of this in the debug log. 
@@ -3812,15 +3800,11 @@ ViewerQueryManager::PointQuery(const MapNode &queryParams)
                preserveCoord = pickAtts->GetTimePreserveCoord();
 
             //
-            // We need to determine if we can use the direct route. 
+            // We can't use the direct route when preserving the coordinates.
             //
-            if (timeQueryAtts->GetCanUseDirectDatabaseRoute())
-            { 
-                if (preserveCoord ||
-                    queryParams.GetEntry("use_actual_data")->ToBool())
-                {
-                    timeQueryAtts->SetCanUseDirectDatabaseRoute(false);
-                }
+            if (preserveCoord)
+            {
+                timeQueryAtts->SetCanUseDirectDatabaseRoute(false);
             }
 
             bool tpc = pickAtts->GetTimePreserveCoord();
@@ -3865,8 +3849,11 @@ ViewerQueryManager::PointQuery(const MapNode &queryParams)
           preserveCoord = queryParams.GetEntry("preserve_coord")->ToBool();
         else
           preserveCoord = pickAtts->GetTimePreserveCoord();
+
         if (timeCurve && preserveCoord)
         {
+            timeQueryAtts->SetCanUseDirectDatabaseRoute(false);
+
             // need to determine the coordinate to use, and change
             // the query type appropriately.
             if (pType == "DomainZone" || pType == "ZoneLabel")
