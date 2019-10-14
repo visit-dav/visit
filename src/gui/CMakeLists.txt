@@ -388,6 +388,7 @@ ${VISIT_SOURCE_DIR}/mdserver/rpc
 ${VISIT_SOURCE_DIR}/viewer/proxy
 ${VISIT_SOURCE_DIR}/viewer/rpc
 ${VISIT_SOURCE_DIR}/winutil
+${VISIT_SOURCE_DIR}/third_party_builtin
 ${QWT_INCLUDE_DIR}
 )
 LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY} )

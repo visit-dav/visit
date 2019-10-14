@@ -600,7 +600,7 @@ float atomic_radius[MAX_ELEMENT_NUMBER+1] = {
 };
 
 const char *element_names[MAX_ELEMENT_NUMBER+1] = {
-    "?",  // 0
+    "UNKNOWN_ATOMIC_ELEMENT",  // 0
     "H",  // 1
     "He", // 2
     "Li", // 3
@@ -1016,6 +1016,12 @@ InitializeAtomicPropertyMaps()
 //
 int ElementNameToAtomicNumber(const char *element)
 {
+    std::string element_str = element;
+    if (element_str.compare("UNKNOWN_ATOMIC_ELEMENT") == 0)
+    {
+        return 0;
+    }
+
     static char name[3];
     name[0] = element[0];
     name[1] = element[1];

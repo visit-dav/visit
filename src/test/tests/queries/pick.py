@@ -225,6 +225,9 @@
 #    Alister Maguire, Tue May 21 13:10:05 PDT 2019
 #    Updated tests that use mili to adhere to the plugin changes. 
 #
+#    Alister Maguire, Thu Sep 12 15:54:36 PDT 2019
+#    Add test for highlighting a zone picked by global id. 
+#
 # ----------------------------------------------------------------------------
 RequiredDatabasePlugin(("Boxlib2D","SAMRAI","Mili"))
 defaultAtts = GetPickAttributes()
@@ -2808,6 +2811,25 @@ def PickHighlight():
     Test("PickHighlight_01")
     DeleteAllPlots()
     ResetPickLetter()
+
+    OpenDatabase(silo_data_path("global_node.silo"))
+    AddPlot("Pseudocolor", "p")
+    DrawPlots()
+
+    # bug '3880 -- global id highlights incorrect cell. 
+    origAtts = GetPickAttributes()
+    pickAtts = origAtts
+    pickAtts.showPickHighlight = 1
+    pickAtts.showPickLetter = 1
+    SetPickAttributes(pickAtts)
+
+    PickByGlobalZone(236919)
+    Test("GlobalHighlight_00")
+
+    SetPickAttributes(origAtts)
+    DeleteAllPlots()
+    ResetPickLetter()
+
     #restore the attributes
     annotAtts  = GetAnnotationAttributes() 
     annotAtts.userInfoFlag = 1

@@ -60,6 +60,11 @@ class JobSubmitter_mpirun_LLNL(JobSubmitter_mpirun):
 #   I also set some LFS environment variables that weren't being set for
 #   Jose Milovich.
 #
+#   Eric Brugger, Thu Sep 19 09:30:11 PDT 2019
+#   I modified the bsub internal launcher to set the environment variables
+#   as part of bsub command to get around a bug on rzansel where the
+#   environment variables are not getting passed by bsub.
+#
 ###############################################################################
 
 class JobSubmitter_bsub_LLNL(JobSubmitter):
@@ -71,13 +76,7 @@ class JobSubmitter_bsub_LLNL(JobSubmitter):
 
     def CreateCommand(self, args, debugger):
         bsub, sublauncher = self.LauncherAndSubLauncher()
-        parcmd = ["env", "LSF_BINDIR=/opt/ibm/spectrumcomputing/lsf/10.1/linux3.10-glibc2.17-ppc64le-csm/bin"]
-        parcmd = parcmd + ["LSF_CONFDIR=/opt/ibm/spectrumcomputing/lsf/conf"]
-        parcmd = parcmd + ["LSF_ENVDIR=/opt/ibm/spectrumcomputing/lsf/conf"]
-        parcmd = parcmd + ["LSF_LIBDIR=/opt/ibm/spectrumcomputing/lsf/10.1/linux3.10-glibc2.17-ppc64le-csm/lib"]
-        parcmd = parcmd + ["LSF_SERVERDIR=/opt/ibm/spectrumcomputing/lsf/10.1/linux3.10-glibc2.17-ppc64le-csm/etc"]
-        parcmd = parcmd + ["LSF_UIDDIR=/opt/ibm/spectrumcomputing/lsf/10.1/linux3.10-glibc2.17-ppc64le-csm/lib/uid"]
-        parcmd = parcmd + ["/usr/tcetmp/bin/bsub"]
+        parcmd = ["/usr/tcetmp/bin/bsub"]
         parcmd = parcmd + ["-core_isolation", "2"]
         if self.parallel.launchargs != None:
             parcmd = parcmd + self.parallel.launchargs
@@ -93,6 +92,13 @@ class JobSubmitter_bsub_LLNL(JobSubmitter):
         if nodes == None:
             nodes = self.parallel.np
         ppn = str(int(math.ceil(float(self.parallel.np) / float(nodes))))
+        parcmd = parcmd + ["env", "LSF_BINDIR=/opt/ibm/spectrumcomputing/lsf/10.1/linux3.10-glibc2.17-ppc64le-csm/bin"]
+        parcmd = parcmd + ["LD_LIBRARY_PATH=%s" % GETENV("LD_LIBRARY_PATH")]
+        parcmd = parcmd + ["LSF_CONFDIR=/opt/ibm/spectrumcomputing/lsf/conf"]
+        parcmd = parcmd + ["LSF_ENVDIR=/opt/ibm/spectrumcomputing/lsf/conf"]
+        parcmd = parcmd + ["LSF_LIBDIR=/opt/ibm/spectrumcomputing/lsf/10.1/linux3.10-glibc2.17-ppc64le-csm/lib"]
+        parcmd = parcmd + ["LSF_SERVERDIR=/opt/ibm/spectrumcomputing/lsf/10.1/linux3.10-glibc2.17-ppc64le-csm/etc"]
+        parcmd = parcmd + ["XLSF_UIDDIR=/opt/ibm/spectrumcomputing/lsf/10.1/linux3.10-glibc2.17-ppc64le-csm/lib/uid"]
         parcmd = parcmd + ["/usr/tce/packages/jsrun/jsrun-2019.05.02/bin/jsrun"]
         parcmd = parcmd + ["--np", self.parallel.np]
         parcmd = parcmd + ["--nrs", self.parallel.nn]

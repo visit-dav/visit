@@ -511,6 +511,10 @@ avtVectorExpr::CreateFilters(ExprPipelineState *state)
 //    Timo Bremer, Fri Oct 28 09:09:27 PDT 2016
 //    Added merge_tree, split_tree and local_threshold.
 //
+//    Eddie Rusu, Mon Sep 30 14:49:38 PDT 2019
+//    Changed MinMax expression creation so that they construct with doMin
+//    as a construction parameter.
+//
 // ****************************************************************************
 
 avtExpressionFilter *
@@ -631,17 +635,9 @@ avtFunctionExpr::CreateFilters(string functionName)
     if (functionName == "distance_to_best_fit_line2")
         return new avtDistanceToBestFitLineExpression(false);
     if (functionName == "min" || functionName == "minimum")
-    {
-        avtMinMaxExpression *mm = new avtMinMaxExpression;
-        mm->SetDoMinimum(true);
-        return mm;
-    }
+        return new avtMinMaxExpression(true);
     if (functionName == "max" || functionName == "maximum")
-    {
-        avtMinMaxExpression *mm = new avtMinMaxExpression;
-        mm->SetDoMinimum(false);
-        return mm;
-    }
+        return new avtMinMaxExpression(false);
     if (functionName == "geodesic_vector_quantize")
         return new avtGeodesicVectorQuantizeExpression();
     if (functionName == "color")

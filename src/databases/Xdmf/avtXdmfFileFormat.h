@@ -78,6 +78,8 @@ class vtkUnstructuredGrid;
 //    I added support for processing the BaseIndex and GhostOffsets properties
 //    for strucutured grids.
 //
+//    Mark C. Miller, Wed Aug 28 14:43:31 EDT 2019
+//    Add HasInvariantXXX methods to support time varying xdmf block count
 // ****************************************************************************
 
 class avtXdmfFileFormat: public avtMTMDFileFormat
@@ -114,6 +116,10 @@ class avtXdmfFileFormat: public avtMTMDFileFormat
         virtual vtkDataSet *GetMesh(int, int, const char *);
         virtual vtkDataArray *GetVar(int, int, const char *);
         virtual vtkDataArray *GetVectorVar(int, int, const char *);
+
+        bool                  HasInvariantMetaData(void) const;
+        bool                  HasInvariantSIL(void) const;
+
 
     protected:
         // DATA MEMBERS

@@ -63,6 +63,7 @@ class QvisVCRControl;
 
 class avtDatabaseMetaData;
 class FileServerList;
+class PlotList;
 class WindowInformation;
 class ViewerProxy;
 
@@ -81,6 +82,9 @@ class ViewerProxy;
 //
 //
 // Modifications:
+//  Kathleen Biagas, Mon Sep 30 09:25:45 PDT 2019
+//  Observe PlotList so VCR controls play and reverse play buttons enabled
+//  state can be dependent upon the active plots being drawn.
 //
 // ****************************************************************************
 
@@ -97,6 +101,7 @@ public:
 
     void ConnectFileServer(FileServerList *);
     void ConnectWindowInformation(WindowInformation *);
+    void ConnectPlotList(PlotList *);
 
     void SetTimeStateFormat(const TimeFormat &fmt);
     const TimeFormat &GetTimeStateFormat() const;
@@ -135,6 +140,7 @@ private:
     WindowInformation        *windowInfo;
     int                       sliderVal;
     TimeFormat                timeStateFormat;
+    PlotList                 *plotList;
 };
 
 #endif

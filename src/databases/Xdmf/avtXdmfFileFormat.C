@@ -179,6 +179,37 @@ avtXdmfFileFormat::~avtXdmfFileFormat()
 }
 
 // ****************************************************************************
+//  Method: HasInvariantMetaData
+//
+//  Mark C. Miller, Wed Aug 28 14:44:27 EDT 2019
+// ****************************************************************************
+
+bool
+avtXdmfFileFormat::HasInvariantMetaData() const
+{
+   XdmfXmlNode infoElem = dom->FindElementByPath("/Xdmf/Information");
+   if (infoElem && !strcmp(dom->Get(infoElem, "Name"), "TimeVaryingMetaData"))
+   {
+       if (!strcmp(dom->Get(infoElem, "Value"), "True"))
+           return false;
+   }
+   return true;
+}
+
+// ****************************************************************************
+//  Method: HasInvariantSIL
+//
+//  Mark C. Miller, Wed Aug 28 14:44:27 EDT 2019
+// ****************************************************************************
+
+bool
+avtXdmfFileFormat::HasInvariantSIL() const
+{
+    return HasInvariantMetaData();
+}
+
+
+// ****************************************************************************
 //  Method: avtXdmfFileFormat::AddArrayExpressions
 //
 //  Purpose:

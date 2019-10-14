@@ -823,6 +823,11 @@ QvisPlotManagerWidget::DestroyVariableMenu()
 //   Mark C. Miller, Thu Jun  8 14:56:07 PDT 2017
 //   Adjust calls to UpdateVariableMenu/UpdatePlotVariableMenu to include
 //   bools indicating whether to destroy or simply clear menu items
+//
+//   Kevin Griffin, Fri Sep  6 18:46:24 PDT 2019
+//   Added calls to plotListBox and this widget to update and repaint
+//   themselves after an update for OSX.
+//
 // ****************************************************************************
 
 void
@@ -996,6 +1001,14 @@ QvisPlotManagerWidget::Update(Subject *TheChangedSubject)
 
     // Update the enabled state for plot/operator menus
     UpdatePlotAndOperatorMenuEnabledState();
+    
+#ifdef Q_OS_MAC
+    plotListBox->update();
+    plotListBox->repaint();
+    
+    this->update();
+    this->repaint();
+#endif
 }
 
 // ****************************************************************************
@@ -1175,7 +1188,7 @@ QvisPlotManagerWidget::UpdatePlotList()
 
     // Set the enabled states for the hide, delete, and draw buttons.
     UpdateHideDeleteDrawButtonsEnabledState();
-
+    
     blockSignals(false);
 }
 
@@ -2421,6 +2434,10 @@ QvisPlotManagerWidget::drawPlots()
 //   Cyrus Harrison, Thu Jul  3 09:16:15 PDT 2008
 //   Initial Qt4 Port.
 //
+//   Kevin Griffin, Fri Sep  6 18:46:24 PDT 2019
+//   Added calls to plotListBox and this widget to update and repaint
+//   themselves after an update for OSX.
+//
 // ****************************************************************************
 
 void
@@ -2480,6 +2497,14 @@ QvisPlotManagerWidget::setActivePlots()
                 newOperatorSelection, newExpandedPlots);
         }
     }
+    
+#ifdef Q_OS_MAC
+    plotListBox->update();
+    plotListBox->repaint();
+    
+    this->update();
+    this->repaint();
+#endif
 }
 
 // ****************************************************************************

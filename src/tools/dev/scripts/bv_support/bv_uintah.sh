@@ -25,7 +25,7 @@ function bv_uintah_alt_uintah_dir
     echo "Using alternate Uintah directory"
 
     # Check to make sure the directory or a particular include file exists.
-    [ ! -e "$1/../src/VisIt/uda2vis/udaData.h" ] && error "Uintah not found in $1"
+    [ ! -e "$1/../src/VisIt/interfaces/datatypes.h" ] && error "Uintah not found in $1"
 
     bv_uintah_enable
     USE_SYSTEM_UINTAH="yes"
@@ -62,13 +62,13 @@ function bv_uintah_initialize_vars
 
 function bv_uintah_info
 {
-    export UINTAH_VERSION=${UINTAH_VERSION:-"2.6.0"}
+    export UINTAH_VERSION=${UINTAH_VERSION:-"2.6.1"}
     export UINTAH_FILE=${UINTAH_FILE:-"Uintah-${UINTAH_VERSION}.tar.gz"}
     export UINTAH_COMPATIBILITY_VERSION=${UINTAH_COMPATIBILITY_VERSION:-"2.6"}
-    export UINTAH_URL=${UINTAH_URL:-"http://www.sci.utah.edu/releases/uintah_v${UINTAH_VERSION}"}
+    export UINTAH_URL=${UINTAH_URL:-"https://gforge.sci.utah.edu/svn/uintah/releases/uintah_v${UINTAH_VERSION}"}
     export UINTAH_BUILD_DIR=${UINTAH_BUILD_DIR:-"Uintah-${UINTAH_VERSION}/optimized"}
-    export UINTAH_MD5_CHECKSUM="0261898f72e51c7edabd9cc8c9884b4c"
-    export UINTAH_SHA256_CHECKSUM="082d6f3bb00f6905d1c799d3c4265c3746c785942057bdcbc351befbc3c7a210"
+    export UINTAH_MD5_CHECKSUM="09cad7b2fcc7b1f41dabcf7ecae21f54"
+    export UINTAH_SHA256_CHECKSUM="0801da6e5700fa826f2cbc6ed01f81f743f92df3e946cc6ba3748458f36f674e"
 }
 
 function bv_uintah_print
@@ -94,8 +94,8 @@ function bv_uintah_host_profile
         echo "##" >> $HOSTCONF
 
         if [[ "$USE_SYSTEM_UINTAH" == "yes" ]]; then
-            warn "Assuming version 2.6.1 for Uintah"
-            echo "SETUP_APP_VERSION(UINTAH 2.6.1)" >> $HOSTCONF
+            warn "Assuming version 2.7.0 for Uintah"
+            echo "SETUP_APP_VERSION(UINTAH 2.7.0)" >> $HOSTCONF
             echo "VISIT_OPTION_DEFAULT(VISIT_UINTAH_DIR $UINTAH_INSTALL_DIR)" >> $HOSTCONF 
             echo "SET(VISIT_USE_SYSTEM_UINTAH TRUE)" >> $HOSTCONF
         else
@@ -132,6 +132,9 @@ function bv_uintah_dry_run
 # Kevin Griffin, Mon Nov 24 12:33:02 PST 2014                                  #
 # Changed the -showme:compile to -show for OS X Mavericks. The -showme:compile #
 # was being reported as an invalid option.                                     #
+#                                                                              #
+# Kevin Griffin, Wed Aug 28 10:25:30 PDT 2019                                  #
+# Added the --with-libxml2 option to ensure that the /usr/lib/ version is used #
 # **************************************************************************** #
 
 function build_uintah
@@ -273,7 +276,8 @@ function build_uintah
 	--enable-minimal --enable-optimize \
 	--with-fortran=no --with-petsc=no --with-hypre=no \
 	--with-lapack=no --with-blas=no \
-        --with-mpi=\"$PAR_INCLUDE_DIR/..\" "
+        --with-mpi=\"$PAR_INCLUDE_DIR/..\" \
+        --with-libxml2=\"/usr\" "
 
         #        --with-mpi-include="${PAR_INCLUDE_DIR}/" \
         #        --with-mpi-lib="${PAR_INCLUDE_DIR}/../lib" "
@@ -288,7 +292,8 @@ function build_uintah
         --enable-minimal --enable-optimize \
 	--with-fortran=no --with-petsc=no --with-hypre=no \
 	--with-lapack=no --with-blas=no \
-        --with-mpi=\"$PAR_INCLUDE_DIR/..\" "
+        --with-mpi=\"$PAR_INCLUDE_DIR/..\" \
+        --with-libxml2=\"/usr\" "
 
         #        --with-mpi-include="${PAR_INCLUDE_DIR}/" \
         #        --with-mpi-lib="${PAR_INCLUDE_DIR}/../lib" "

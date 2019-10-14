@@ -43,7 +43,7 @@
 #ifndef AVT_MINMAX_EXPRESSION_H
 #define AVT_MINMAX_EXPRESSION_H
 
-#include <avtBinaryMathExpression.h>
+#include <avtMultipleInputMathExpression.h>
 
 class     vtkDataArray;
 
@@ -66,26 +66,32 @@ class     vtkDataArray;
 //    Hank Childs, Mon Jan 14 17:58:58 PST 2008
 //    Allow constants to be created as singletons.
 //
+//    Eddie Rusu, Mon Sep 30 15:00:24 PDT 2019
+//    Inherit from avtMultiInputMathExpressions to allow taking the min/max
+//    over more than 2 variables.
+//
 // ****************************************************************************
 
-class EXPRESSION_API avtMinMaxExpression : public avtBinaryMathExpression
+class EXPRESSION_API avtMinMaxExpression
+    : public avtMultipleInputMathExpression
 {
   public:
-                              avtMinMaxExpression();
-    virtual                  ~avtMinMaxExpression();
+             avtMinMaxExpression();
+             avtMinMaxExpression(bool);
+    virtual ~avtMinMaxExpression();
 
-    virtual const char       *GetType(void) 
-                                 { return "avtMinMaxExpression"; };
-    virtual const char       *GetDescription(void)
-                                 { return "Calculating min or max"; };
-    bool                      SetDoMinimum(bool b) { doMin = b; return true; };
+    virtual const char *GetType(void) { return "avtMinMaxExpression"; };
+    virtual const char *GetDescription(void)
+                          { return "Calculating min or max"; };
 
   protected:
-    bool             doMin;
+    virtual vtkDataArray *DoOperation();
+    virtual bool          CanHandleSingletonConstants(void) {return true;};
 
-    virtual void     DoOperation(vtkDataArray *in1, vtkDataArray *in2,
-                                 vtkDataArray *out, int ncomps, int ntuples);
-    virtual bool     CanHandleSingletonConstants(void) {return true;};
+    bool doMin;
+  
+  private:
+    void DoOperationHelper(vtkDataArray*, vtkDataArray*, vtkDataArray*);
 };
 
 
