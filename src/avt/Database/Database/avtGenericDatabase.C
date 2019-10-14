@@ -4516,9 +4516,14 @@ avtGenericDatabase::GetAuxiliaryData(avtDataRequest_p spec,
 //  Method: avtGenericDatabase::GetCycles
 //
 //  Purpose:
+//      Retrieve the available cycles from a database.  
+//
+//  Arguments:
+//      dom       The domain of interest.  
+//      cycles    A vector to store the retrieved cycles in. 
 //
 //  Programmer: Alister Maguire
-//  Creation:   
+//  Creation:   Tue Sep 24 09:58:14 MST 2019
 //
 // ****************************************************************************
 
@@ -4533,9 +4538,14 @@ avtGenericDatabase::GetCycles(int dom, intVector &cycles)
 //  Method: avtGenericDatabase::GetTimes
 //
 //  Purpose:
+//      Retrieve the available times from a database.  
+//
+//  Arguments:
+//      dom       The domain of interest.  
+//      times     A vector to store the retrieved times in. 
 //
 //  Programmer: Alister Maguire
-//  Creation:   
+//  Creation:   Tue Sep 24 09:58:14 MST 2019
 //
 // ****************************************************************************
 

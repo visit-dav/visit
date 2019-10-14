@@ -45,11 +45,8 @@
 
 #include <query_exports.h>
 
-#include <avtDatasetToDatasetFilter.h>
-
 #include <QueryOverTimeAttributes.h>
-#include <SILRestrictionAttributes.h>
-
+#include <avtDatasetToDatasetFilter.h>
 #include <avtQueryOverTimeFilter.h>
 
 #include <string>
@@ -75,6 +72,7 @@ class vtkPolyData;
 //             the query will be performed before any other plots and filters
 //             are applied (excluding the expression filter). 
 //          2. The QOTDataset is limited in its ability to process expressions.
+//          3. This filter cannot preserve coordinates during a QOT pick. 
 //
 //      When using "actual" data or complex expressions, the TimeLoopQOTFilter
 //      should be relied on. 

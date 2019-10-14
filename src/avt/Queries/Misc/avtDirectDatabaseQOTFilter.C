@@ -140,6 +140,9 @@ avtDirectDatabaseQOTFilter::~avtDirectDatabaseQOTFilter()
 //  Purpose:
 //    Call the constructor.
 //
+//  Arguments:
+//    atts      The attributes the filter should use.
+//
 //  Programmer: Alister Maguire
 //  Creation:   Tue Sep 24 11:15:10 MST 2019 
 //

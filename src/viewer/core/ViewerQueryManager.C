@@ -2383,7 +2383,6 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
                 }
             }
             ENDTRY
-
         } while (retry && numAttempts < 2);
         if (numAttempts == 2 && !pickCache.empty())
         {
@@ -3853,7 +3852,6 @@ ViewerQueryManager::PointQuery(const MapNode &queryParams)
           preserveCoord = queryParams.GetEntry("preserve_coord")->ToBool();
         else
           preserveCoord = pickAtts->GetTimePreserveCoord();
-
         if (timeCurve && preserveCoord)
         {
             timeQueryAtts->SetCanUseDirectDatabaseRoute(false);
