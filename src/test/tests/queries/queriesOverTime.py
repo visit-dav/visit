@@ -74,6 +74,9 @@
 #    Make sure to set use_actual_data to true when we want
 #    to use data from the pipeline output. 
 #
+#    Alister Maguire, Fri Oct 11 13:12:36 PDT 2019
+#    Added TestDirectDatabaseRoute. 
+#
 # ----------------------------------------------------------------------------
 RequiredDatabasePlugin(("PDB", "Mili", "SAMRAI"))
 
@@ -731,20 +734,99 @@ def TestReturnValue():
     DeleteAllPlots()
     ResetPickLetter()
 
+def TestDirectDatabaseRoute():
+    # multi curve
+    # multi domain
+    # multi curve (separate)
+    # node
+    OpenDatabase(data_path("mili_test_data/single_proc/d3samp6_10_longrun.plt.mili"))
+    AddPlot("Pseudocolor", "Primal/Shared/edrate")
+    DrawPlots()
+
+    element    = 116
+    domain     = 0
+    element    = 116
+    preserve   = 0
+    start      = 0
+    stride     = 1
+    stop       = 10000
+    vars       = ("default")
+
+    #
+    # First, let's time the query. This hard to predict because of it being dependent
+    # on the machine's architecture, but we can make an educated guess. The direct
+    # route should take under a second, and the old route should take at least
+    # 30 seconds. We'll give ourselves a threshold of 10 seconds to be safe. 
+    #
+    import time
+    thresh = 10
+    timer_start = time.time()
+
+    PickByZone(curve_plot_type=0, vars=vars, do_time=1, domain=domain, element=element, 
+        preserve_coord=preserve, end_time=stop, start_time=start, stride=stride)
+
+    timer_stop = time.time()
+    res = timer_stop - timer_start
+
+    AssertLTE("Timing Direct Database Query", res, thresh)
+    SetActiveWindow(2)
+    Test("Direct_Database_Route_00")
+    DeleteAllPlots()
+    SetActiveWindow(1)
+
+    #
+    # Like the original QOT, the direct route creates a clone, but this clone
+    # differs in that its resulting dataset will NOT match the original dataset. 
+    # Let's make sure the active dataset is being updated to the old plot by 
+    # performing a new pick (not through time).  
+    #
+    PickByZone(do_time=0, domain=domain, element=element)
+    Test("Direct_Database_Route_01")
+
+    #
+    # Test basic range settings. 
+    #
+    start  = 100
+    stop   = 900
+    stride = 10
+    PickByZone(curve_plot_type=0, vars=vars, do_time=1, domain=domain, element=element, 
+        preserve_coord=preserve, end_time=stop, start_time=start, stride=stride)
+    stride = 1
+    start  = 0
+    stop   = 10000
+    SetActiveWindow(2)
+    Test("Direct_Database_Route_02")
+    DeleteAllPlots()
+    SetActiveWindow(1)
+
+    #
+    # This tests two things: 
+    #    1. Plotting a node pick curve. 
+    #    2. Using a direct route query on magnitude expression. 
+    #
+    vars=("Primal/node/nodacc_magnitude")
+    PickByNode(curve_plot_type=0, vars=vars, do_time=1, domain=domain, element=element, 
+        preserve_coord=preserve, end_time=stop, start_time=start, stride=stride)
+    SetActiveWindow(2)
+    Test("Direct_Database_Route_03")
+    DeleteAllPlots()
+    SetActiveWindow(1)
+
    
 def TimeQueryMain():
-    TestAllTimeQueries()
-    TestFilledBoundary()
-    TestOperators()
-    TestExpressions()
-    TestTransientVariable()
-    TestSpecifyTimeQueryWindow()
-    TestTimeVaryingSIL()
-    TestQueryAfterQueryOverTime()
-    TestMili()
-    MultiVarTimePick()
-    TestPickRangeTimeQuery()
-    TestReturnValue()
+    #TestAllTimeQueries()
+    #TestFilledBoundary()
+    #TestOperators()
+    #TestExpressions()
+    #TestTransientVariable()
+    #TestSpecifyTimeQueryWindow()
+    #TestTimeVaryingSIL()
+    #TestQueryAfterQueryOverTime()
+    #TestMili()
+    #MultiVarTimePick()
+    #TestPickRangeTimeQuery()
+    #TestReturnValue()
+    TestDirectDatabaseRoute()
 
 # main
 InitAnnotation()

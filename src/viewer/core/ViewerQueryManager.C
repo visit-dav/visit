@@ -5372,9 +5372,8 @@ ViewerQueryManager::DoTimeQuery(ViewerWindow *origWin,
         //
         // Cloning the network leaves us in an odd state; our current plot
         // is the result of the QOT. If we've used the direct database route,
-        // that means we have a reduced QOT dataset. We need to revert to
-        // the original plot we queried and make sure it's back to it's
-        // original state. 
+        // that means we have a reduced QOT dataset. We need to make sure our
+        // original plot is back to it's original state. 
         //
         origPlot->ClearCurrentActor();
         origList->UpdateFrame();
