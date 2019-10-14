@@ -87,7 +87,7 @@ function bv_embree_host_profile
 function bv_embree_print_usage
 {
     #embree does not have an option, it is only dependent on embree.
-    printf "%-15s %s [%s]\n" "--embree" "Build embree" "$DO_EMBREE"
+    printf "%-20s %s [%s]\n" "--embree" "Build embree" "$DO_EMBREE"
 }
 
 function bv_embree_ensure

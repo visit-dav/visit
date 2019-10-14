@@ -88,7 +88,7 @@ function bv_ispc_host_profile
 function bv_ispc_print_usage
 {
     #ispc does not have an option, it is only dependent on ispc.
-    printf "%-15s %s [%s]\n" "--ispc" "Build ISPC" "$DO_ISPC"
+    printf "%-20s %s [%s]\n" "--ispc" "Build ISPC" "$DO_ISPC"
 }
 
 function bv_ispc_ensure
