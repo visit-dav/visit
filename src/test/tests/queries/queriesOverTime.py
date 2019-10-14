@@ -74,6 +74,9 @@
 #    Make sure to set use_actual_data to true when we want
 #    to use data from the pipeline output. 
 #
+#    Alister Maguire, Fri Oct 11 13:12:36 PDT 2019
+#    Added TestDirectDatabaseRoute. 
+#
 # ----------------------------------------------------------------------------
 RequiredDatabasePlugin(("PDB", "Mili", "SAMRAI"))
 
@@ -731,7 +734,139 @@ def TestReturnValue():
     DeleteAllPlots()
     ResetPickLetter()
 
-   
+def TestDirectDatabaseRoute():
+
+    #
+    # Cleanup any plots that haven't been deleted yet. 
+    #
+    SetActiveWindow(2)
+    DeleteAllPlots()
+    SetActiveWindow(1)
+    DeleteAllPlots()
+
+    OpenDatabase(data_path("mili_test_data/single_proc/d3samp6_10_longrun.plt.mili"))
+    AddPlot("Pseudocolor", "Primal/Shared/edrate")
+    DrawPlots()
+
+    element    = 116
+    domain     = 0
+    element    = 116
+    preserve   = 0
+    start      = 0
+    stride     = 1
+    stop       = 10000
+    vars       = ("default")
+
+    #
+    # First, let's time the query. This hard to predict because of it being dependent
+    # on the machine's architecture, but we can make an educated guess. The direct
+    # route should take under a second, and the old route should take at least
+    # 30 seconds. We'll give ourselves a threshold of 10 seconds to be safe. 
+    #
+    import time
+    thresh = 10
+    timer_start = time.time()
+
+    PickByZone(curve_plot_type=0, vars=vars, do_time=1, domain=domain, element=element, 
+        preserve_coord=preserve, end_time=stop, start_time=start, stride=stride)
+
+    timer_stop = time.time()
+    res = timer_stop - timer_start
+
+    AssertLTE("Timing Direct Database Query", res, thresh)
+    SetActiveWindow(2)
+    Test("Direct_Database_Route_00")
+    DeleteAllPlots()
+    SetActiveWindow(1)
+
+    #
+    # Like the original QOT, the direct route creates a clone, but this clone
+    # differs in that its resulting dataset will NOT match the original dataset. 
+    # Let's make sure the active dataset is being updated to the old plot by 
+    # performing a new pick (not through time).  
+    #
+    PickByZone(do_time=0, domain=domain, element=element)
+    Test("Direct_Database_Route_01")
+
+    #
+    # Test basic range settings. 
+    #
+    start  = 100
+    stop   = 900
+    stride = 10
+    PickByZone(curve_plot_type=0, vars=vars, do_time=1, domain=domain, element=element, 
+        preserve_coord=preserve, end_time=stop, start_time=start, stride=stride)
+    stride = 1
+    start  = 0
+    stop   = 10000
+    SetActiveWindow(2)
+    Test("Direct_Database_Route_02")
+    DeleteAllPlots()
+    SetActiveWindow(1)
+
+    DeleteAllPlots()
+    AddPlot("Pseudocolor", "Primal/node/nodacc/ax")
+    DrawPlots()
+
+    # This tests two things: 
+    #    1. Plotting a node pick curve. 
+    #    2. Using a direct route query on magnitude expression. 
+    #
+    vars=("Primal/node/nodacc_magnitude")
+    PickByNode(curve_plot_type=0, vars=vars, do_time=1, domain=domain, element=element,
+        preserve_coord=preserve, end_time=stop, start_time=start, stride=stride)
+    SetActiveWindow(2)
+    Test("Direct_Database_Route_03")
+    DeleteAllPlots()
+    SetActiveWindow(1)
+
+    DeleteAllPlots()
+    OpenDatabase(data_path("mili_test_data/single_proc/m_plot.mili"))
+    AddPlot("Pseudocolor", "Primal/brick/stress/sx")
+    DrawPlots()
+
+    #
+    # Test plotting multiple variables at once. 
+    #
+    element = 489
+    vars=("Primal/brick/stress/sz", "Primal/brick/stress/sx")
+    PickByZone(curve_plot_type=0, vars=vars, do_time=1, domain=domain, element=element,
+        preserve_coord=preserve, end_time=stop, start_time=start, stride=stride)
+    SetActiveWindow(2)
+    Test("Direct_Database_Route_04")
+    DeleteAllPlots()
+    SetActiveWindow(1)
+
+    #
+    # Testing the multi curve plot. 
+    #
+    PickByZone(curve_plot_type=1, vars=vars, do_time=1, domain=domain, element=element,
+        preserve_coord=preserve, end_time=stop, start_time=start, stride=stride)
+    SetActiveWindow(2)
+    Test("Direct_Database_Route_05")
+    DeleteAllPlots()
+    SetActiveWindow(1)
+
+    #
+    # Test multi-domain data. 
+    #
+    DeleteAllPlots()
+    OpenDatabase(data_path("mili_test_data/multi_proc/d3samp6.plt.mili"))
+    AddPlot("Pseudocolor", "Primal/Shared/edrate")
+    DrawPlots()
+    domain = 1
+    element = 11
+    vars = ("default")
+    PickByZone(curve_plot_type=0, vars=vars, do_time=1, domain=domain, element=element,
+        preserve_coord=preserve, end_time=stop, start_time=start, stride=stride)
+    SetActiveWindow(2)
+    Test("Direct_Database_Route_06")
+    DeleteAllPlots()
+    SetActiveWindow(1)
+
+    DeleteAllPlots()
+
+ 
 def TimeQueryMain():
     TestAllTimeQueries()
     TestFilledBoundary()
@@ -745,6 +880,7 @@ def TimeQueryMain():
     MultiVarTimePick()
     TestPickRangeTimeQuery()
     TestReturnValue()
+    TestDirectDatabaseRoute()
 
 # main
 InitAnnotation()

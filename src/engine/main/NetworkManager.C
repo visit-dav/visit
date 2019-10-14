@@ -5251,12 +5251,18 @@ NetworkManager::AddQueryOverTimeFilter(QueryOverTimeAttributes *qA,
     //
     avtDataObject_p input;
 
-    if (useActualData || (!useDirectDatabaseQOT &&
+    if (useActualData || 
         (qA->GetQueryAtts().GetName() == "Locate and Pick Zone" ||
-         qA->GetQueryAtts().GetName() == "Locate and Pick Node")))
+         qA->GetQueryAtts().GetName() == "Locate and Pick Node"))
     {
         input = networkCache[clonedFromId]->GetPlot()->
                 GetIntermediateDataObject();
+
+        //
+        // If this was a screen/interactive pick, it needs to 
+        // be performed on the actual data. 
+        //
+        useDirectDatabaseQOT = false;
     }
     else
     {
@@ -5308,10 +5314,6 @@ NetworkManager::AddQueryOverTimeFilter(QueryOverTimeAttributes *qA,
 
     workingNet->AddNode(trans);
 
-    //
-    // Put a QueryOverTimeFilter right after the transition to handle
-    // the query.
-    //
     avtQueryOverTimeFilter *qotFilter = NULL;
 
     if (useDirectDatabaseQOT)
@@ -5335,6 +5337,10 @@ NetworkManager::AddQueryOverTimeFilter(QueryOverTimeAttributes *qA,
         }
     }
 
+    //
+    // Put a QueryOverTimeFilter right after the transition to handle
+    // the query.
+    //
     NetnodeFilter *nodeFilter = new NetnodeFilter(qotFilter, "QueryOverTime");
     nodeFilter->GetInputNodes().push_back(trans);
 

@@ -117,6 +117,9 @@ avtPickByZoneQuery::~avtPickByZoneQuery()
 //    Make sure that the highlight extractor gets the local id, not the
 //    global one. 
 //
+//    Alister Maguire, Fri Oct 11 15:37:24 PDT 2019
+//    Set the real id for direct database lookups. 
+//
 // ****************************************************************************
 
 void
@@ -243,6 +246,7 @@ avtPickByZoneQuery::Execute(vtkDataSet *ds, const int dom)
            ConvertElNamesToGlobal();
     }
 
+    pickAtts.SetRealElementNumber(zoneid);
     pickAtts.SetElementNumber(userZoneId+cellOrigin);
     if (pickAtts.GetMatSelected())
     {

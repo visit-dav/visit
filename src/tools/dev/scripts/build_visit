@@ -55,23 +55,29 @@
 #5  bv_<module>_depends_on [not implemented yet], also may be removed in favor of xml structure
 #6. bv_<module>_build builds the module
 
-export VISIT_VERSION=${VISIT_VERSION:-"3.0.0"}
+export VISIT_VERSION=${VISIT_VERSION:-"3.1.0"}
 
 ####
 # Trunk:
 ####
 export TRUNK_BUILD="yes"
+export RC_BUILD="no"
+export TAGGED_BUILD="no"
 
 ###
 # RC Branch:
 ###
 #export TRUNK_BUILD="no"
+#export RC_BUILD="yes"
+#export TAGGED_BUILD="no"
 
 
 ###
 # Tagged Release:
 ###
 #export TRUNK_BUILD="no"
+#export RC_BUILD="no"
+#export TAGGED_BUILD="yes"
 
 export INITIAL_PWD=$PWD
 
@@ -408,6 +414,8 @@ function bv_write_unified_file
     echo "export VISIT_VERSION=\${VISIT_VERSION:-\"$VISIT_VERSION\"}" >> $OUTPUT_bv_FILE
 
     echo "export TRUNK_BUILD=\"$TRUNK_BUILD\"" >> $OUTPUT_bv_FILE
+    echo "export RC_BUILD=\"$RC_BUILD\"" >> $OUTPUT_bv_FILE
+    echo "export TAGGED_BUILD=\"$TAGGED_BUILD\"" >> $OUTPUT_bv_FILE
 
     echo "export INITIAL_PWD=\$PWD" >> $OUTPUT_bv_FILE
 

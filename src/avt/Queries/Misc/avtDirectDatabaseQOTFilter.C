@@ -140,6 +140,9 @@ avtDirectDatabaseQOTFilter::~avtDirectDatabaseQOTFilter()
 //  Purpose:
 //    Call the constructor.
 //
+//  Arguments:
+//    atts      The attributes the filter should use.
+//
 //  Programmer: Alister Maguire
 //  Creation:   Tue Sep 24 11:15:10 MST 2019 
 //
@@ -202,6 +205,7 @@ avtDirectDatabaseQOTFilter::Execute(void)
             vtkPolyData *refined = VerifyAndRefineTimesteps(QOTData);
             avtDataTree_p tree   = ConstructCurveTree(refined, multiCurve);
             SetOutputDataTree(tree);
+            refined->Delete();
         }
         else
         {
@@ -311,8 +315,12 @@ avtDirectDatabaseQOTFilter::VerifyAndRefineTimesteps(vtkPolyData *inPolyData)
             if (visitIsNan(inCurve->GetTuple1(i)))
             {
                 missingData = true;
-                isValid[i]  = false;
-                invalidStateList.push_back(ts);
+ 
+                if (isValid[i])
+                {
+                    isValid[i]  = false;
+                    invalidStateList.push_back(ts);
+                }
             }
         }
     }
@@ -341,6 +349,16 @@ avtDirectDatabaseQOTFilter::VerifyAndRefineTimesteps(vtkPolyData *inPolyData)
         }
         debug4 << osm.str() << endl;
         avtCallback::IssueWarning(osm.str().c_str());
+
+        if (numValid == 0)
+        {
+            //
+            // We have no valid output. Let's not do any work here. 
+            //
+            outPolyData->Delete();
+            vtkPolyData *empty = vtkPolyData::New();
+            return empty;
+        }
 
         //
         // Second pass: re-write the arrays so that they only contain
@@ -384,9 +402,12 @@ avtDirectDatabaseQOTFilter::VerifyAndRefineTimesteps(vtkPolyData *inPolyData)
             {
                 outPtData->AddArray(outCurve);
             }
+
+            outCurve->Delete();
         }
 
         outPolyData->SetPoints(outPts);
+        outPts->Delete();
     }
 
     return outPolyData;
@@ -619,6 +640,16 @@ avtDirectDatabaseQOTFilter::UpdateDataObjectInfo(void)
 
     if (finalOutputCreated)
     {
+        stringVector qotVars = atts.GetQueryAtts().GetVariables();
+
+        if (qotVars.size() > 0)
+        {
+            //
+            // The first requested variable becomes the active one. 
+            //
+            outAtts.SetActiveVariable(qotVars[0].c_str());
+        }
+
         if (useTimeForXAxis)
         {
             outAtts.SetXLabel("Time");
@@ -648,19 +679,19 @@ avtDirectDatabaseQOTFilter::UpdateDataObjectInfo(void)
                 outAtts.SetYUnits(outAtts.GetVariableUnits(yl.c_str()));
             }
         }
-        else
+        else if (qotVars.size() >= 2)
         {
-            std::string xl = atts.GetQueryAtts().GetVariables()[0] + "(t)";
-            std::string yl = atts.GetQueryAtts().GetVariables()[1] + "(t)";
+            std::string xl = qotVars[0] + "(t)";
+            std::string yl = qotVars[1] + "(t)";
             outAtts.SetXLabel(xl);
             outAtts.SetYLabel(yl);
             outAtts.SetXUnits(atts.GetQueryAtts().GetXUnits());
             outAtts.SetYUnits(atts.GetQueryAtts().GetYUnits());
         }
 
-        outAtts.SetLabels(atts.GetQueryAtts().GetVariables());
+        outAtts.SetLabels(qotVars);
 
-        if (atts.GetQueryAtts().GetVariables().size() > 1)
+        if (qotVars.size() > 1)
         {
             outAtts.SetConstructMultipleCurves(true);
         }
