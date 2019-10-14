@@ -3294,6 +3294,13 @@ avtGenericDatabase::GetQOTDataset(int domain,
     if (element < 0)
     {
         element = QOTAtts->GetPickAtts().GetElementNumber();
+
+        if (element < 0)
+        {
+            debug1 << "GetQOTDataset is unable to find a valid element id..."
+                << endl;
+            return NULL;
+        }
     }
 
     int startTime   = QOTAtts->GetStartTime();
