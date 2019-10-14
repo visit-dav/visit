@@ -5376,7 +5376,6 @@ ViewerQueryManager::DoTimeQuery(ViewerWindow *origWin,
         // the original plot we queried and make sure it's back to it's
         // original state. 
         //
-        ViewerWindowManager::Instance()->SetActiveWindow(origWin->GetWindowId() + 1);
         origPlot->ClearCurrentActor();
         origList->UpdateFrame();
     }
