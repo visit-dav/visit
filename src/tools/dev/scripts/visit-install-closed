@@ -68,6 +68,9 @@
 #   Eric Brugger, Wed Mar 20 10:31:35 PDT 2019
 #   I deleted zin. I added sierra. I updated jade for 3.0.0b.
 #
+#   Eric Brugger, Thu Sep 26 17:32:41 PDT 2019
+#   I removed special logic for installing on toss3 systems.
+#
 #-----------------------------------------------------------------------
 
 test=no
@@ -212,9 +215,7 @@ fi
 rm -f jade
 cat <<EOF > jade
 #!/bin/sh
-rm -rf /usr/gapps/visit/toss3
 ./visit-install -private -c llnl_closed -g visit -b wbronze -gw -l $ver linux-x86_64-jade /usr/gapps/visit > installlog 2>&1
-mv /usr/gapps/visit/$ver+/linux-x86_64 /usr/gapps/visit/$ver+/linux-x86_64-toss3
 rm -f resultlog
 echo ""                                              > resultlog 2>&1
 echo "        install of visit on jade"              >> resultlog 2>&1
@@ -222,14 +223,14 @@ echo "       --------------------------"             >> resultlog 2>&1
 echo ""                                              >> resultlog 2>&1
 df -k /usr/gapps/visit                               >> resultlog 2>&1
 echo ""                                              >> resultlog 2>&1
-ls -l /usr/gapps/visit/$ver+/linux-x86_64-toss3/bin  >> resultlog 2>&1
+ls -l /usr/gapps/visit/$ver+/linux-x86_64/bin        >> resultlog 2>&1
 echo ""                                              >> resultlog 2>&1
-echo "number of database plugins = "\`ls /usr/gapps/visit/$ver+/linux-x86_64-toss3/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls /usr/gapps/visit/$ver+/linux-x86_64-toss3/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver+/linux-x86_64-toss3/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo "number of database plugins = "\`ls /usr/gapps/visit/$ver+/linux-x86_64/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls /usr/gapps/visit/$ver+/linux-x86_64/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver+/linux-x86_64/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
 echo ""                                              >> resultlog 2>&1
 echo "The database plugins:"                         >> resultlog 2>&1
-ls /usr/gapps/visit/$ver+/linux-x86_64-toss3/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver+\/linux-x86_64-toss3\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+ls /usr/gapps/visit/$ver+/linux-x86_64/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver+\/linux-x86_64\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
 mv resultlog resultlog.jade
 EOF
 

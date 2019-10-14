@@ -121,6 +121,10 @@
 #   Eric Brugger, Tue Mar  5 12:35:11 PST 2019
 #   I added rzansel. I deleted carver and glory.
 #
+#   Eric Brugger, Thu Sep 26 17:28:15 PDT 2019
+#   I removed special logic for installing on toss3 systems. I removed
+#   ifyou and ubuntu1404_64.
+#
 #-----------------------------------------------------------------------
 
 test=no
@@ -162,8 +166,6 @@ esac
 # Parse the execute line, providing default values for error checking.
 #
 kickit=true
-ubuntu1404_64=false
-ifyou=false
 quartz=true
 lassen=true
 rztrona=true
@@ -184,8 +186,6 @@ do
    case $1 in
       -none)
          kickit=false
-         ubuntu1404_64=false
-         ifyou=false
          quartz=false
          lassen=false
          rztrona=false
@@ -198,22 +198,6 @@ do
          ;;
       +kickit)
          kickit=true
-         shift
-         ;;
-      -ubuntu1404_64)
-         ubuntu1404_64=false
-         shift
-         ;;
-      +ubuntu1404_64)
-         ubuntu1404_64=true
-         shift
-         ;;
-      -ifyou)
-         ifyou=false
-         shift
-         ;;
-      +ifyou)
-         ifyou=true
          shift
          ;;
       -quartz)
@@ -337,81 +321,12 @@ then
 fi
 
 #
-# Install on ubuntu1404_64.
-#
-rm -f ubuntu1404_64
-cat <<EOF > ubuntu1404_64
-#!/bin/sh
-./visit-install -private -c llnl_open -g visit -b wbronze -gw -l $ver linux-x86_64-ubuntu14 /home/brugger1/visit > installlog 2>&1
-rm -f resultlog
-echo "      install of visit on ubuntu1404_64"      > resultlog 2>&1
-echo "     -----------------------------------"    >> resultlog 2>&1
-echo ""                                            >> resultlog 2>&1
-df -k /home/brugger1/visit                         >> resultlog 2>&1
-echo ""                                            >> resultlog 2>&1
-ls -l /home/brugger1/visit/$ver+/linux-x86_64/bin  >> resultlog 2>&1
-echo ""                                            >> resultlog 2>&1
-echo "number of database plugins = "\`ls /home/brugger1/visit/$ver+/linux-x86_64/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls /home/brugger1/visit/$ver+/linux-x86_64/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls /home/brugger1/visit/$ver+/linux-x86_64/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
-echo ""                                            >> resultlog 2>&1
-echo "The database plugins:"                       >> resultlog 2>&1
-ls /home/brugger1/visit/$ver+/linux-x86_64/plugins/databases/libI* | sed "s/\/home\/brugger1\/visit\/$ver+\/linux-x86_64\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-EOF
-
-if [ $ubuntu1404_64 = true ]
-then
-   if [ $test = no ]
-   then
-      cp /home/brugger1/ubuntu1404_64/visitbuild/visit$ver2.linux-x86_64.tar.gz visit$ver2.linux-x86_64-ubuntu14.tar.gz
-      cp /home/brugger1/ubuntu1404_64/visitbuild/visit$ver2.linux-x86_64-wmesa.tar.gz visit$ver2.linux-x86_64-ubuntu14-wmesa.tar.gz
-      cp ubuntu1404_64 ubuntu1404_64_install
-      chmod 750 ubuntu1404_64_install;./ubuntu1404_64_install
-   fi
-fi
-
-#
-# Install on ifyou.
-#
-rm -f ifyou
-cat <<EOF > ifyou
-#!/bin/sh
-./visit-install -private -c llnl_open -g visit -b wbronze -gw -l $ver linux-x86_64-fc27 /net/wci-cl1.llnl.gov/vol/home/brugger1/visit > installlog 2>&1
-rm -f resultlog
-echo "      install of visit on ifyou"                > resultlog 2>&1
-echo "     ---------------------------"              >> resultlog 2>&1
-echo ""                                              >> resultlog 2>&1
-df -k /net/wci-cl1.llnl.gov/vol/home/brugger1/visit  >> resultlog 2>&1
-echo ""                                              >> resultlog 2>&1
-ls -l /net/wci-cl1.llnl.gov/vol/home/brugger1/visit/$ver+/linux-x86_64/bin >> resultlog 2>&1
-echo ""                                              >> resultlog 2>&1
-echo "number of database plugins = "\`ls /net/wci-cl1.llnl.gov/vol/home/brugger1/visit/$ver+/linux-x86_64/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls /net/wci-cl1.llnl.gov/vol/home/brugger1/visit/$ver+/linux-x86_64/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls /net/wci-cl1.llnl.gov/vol/home/brugger1/visit/$ver+/linux-x86_64/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
-echo ""                                              >> resultlog 2>&1
-echo "The database plugins:"                         >> resultlog 2>&1
-ls /net/wci-cl1.llnl.gov/vol/home/brugger1/visit/$ver+/linux-x86_64/plugins/databases/libI* | sed "s/\/net\/wci-cl1.llnl.gov\/vol\/home\/brugger1\/visit\/$ver+\/linux-x86_64\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-EOF
-
-if [ $ifyou = true ]
-then
-   if [ $test = no ]
-   then
-      cp /net/wci-cl1.llnl.gov/vol/home/brugger1/ifyou/visitbuild/visit$ver2.linux-x86_64.tar.gz visit$ver2.linux-x86_64-fc27.tar.gz
-      cp /net/wci-cl1.llnl.gov/vol/home/brugger1/ifyou/visitbuild/visit$ver2.linux-x86_64-wmesa.tar.gz visit$ver2.linux-x86_64-fc27-wmesa.tar.gz
-      cp ifyou ifyou_install
-      chmod 750 ifyou_install;./ifyou_install
-   fi
-fi
-
-#
 # Install on quartz.
 #
 rm -f quartz
 cat <<EOF > quartz
 #!/bin/sh
 ./visit-install -private -c llnl_open_cz -g visit -b wbronze -gw -l $ver linux-x86_64-quartz /usr/gapps/visit > installlog 2>&1
-mv /usr/gapps/visit/$ver+/linux-x86_64 /usr/gapps/visit/$ver+/linux-x86_64-toss3
 rm -f resultlog
 echo ""                                              > resultlog 2>&1
 echo "        install of visit on quartz"            >> resultlog 2>&1
@@ -419,14 +334,14 @@ echo "       ----------------------------"           >> resultlog 2>&1
 echo ""                                              >> resultlog 2>&1
 df -k /usr/gapps/visit                               >> resultlog 2>&1
 echo ""                                              >> resultlog 2>&1
-ls -l /usr/gapps/visit/$ver+/linux-x86_64-toss3/bin  >> resultlog 2>&1
+ls -l /usr/gapps/visit/$ver+/linux-x86_64/bin        >> resultlog 2>&1
 echo ""                                              >> resultlog 2>&1
-echo "number of database plugins = "\`ls /usr/gapps/visit/$ver+/linux-x86_64-toss3/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls /usr/gapps/visit/$ver+/linux-x86_64-toss3/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver+/linux-x86_64-toss3/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo "number of database plugins = "\`ls /usr/gapps/visit/$ver+/linux-x86_64/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls /usr/gapps/visit/$ver+/linux-x86_64/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver+/linux-x86_64/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
 echo ""                                              >> resultlog 2>&1
 echo "The database plugins:"                         >> resultlog 2>&1
-ls /usr/gapps/visit/$ver+/linux-x86_64-toss3/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver+\/linux-x86_64-toss3\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+ls /usr/gapps/visit/$ver+/linux-x86_64/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver+\/linux-x86_64\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
 mv resultlog resultlog.quartz
 EOF
 
@@ -486,21 +401,20 @@ rm -f rztrona
 cat <<EOF > rztrona
 #!/bin/sh
 ./visit-install -private -c llnl_open_rz -g visit -b wbronze -gw -l $ver linux-rztrona /usr/gapps/visit > installlog 2>&1
-mv /usr/gapps/visit/$ver+/linux-x86_64 /usr/gapps/visit/$ver+/linux-x86_64-toss3
 rm -f resultlog
 echo "        install of visit on rztrona"          > resultlog 2>&1
 echo "       -----------------------------"         >> resultlog 2>&1
 echo ""                                             >> resultlog 2>&1
 df -k /usr/gapps/visit                              >> resultlog 2>&1
 echo ""                                             >> resultlog 2>&1
-ls -l /usr/gapps/visit/$ver+/linux-x86_64-toss3/bin >> resultlog 2>&1
+ls -l /usr/gapps/visit/$ver+/linux-x86_64/bin       >> resultlog 2>&1
 echo ""                                             >> resultlog 2>&1
-echo "number of database plugins = "\`ls /usr/gapps/visit/$ver+/linux-x86_64-toss3/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls /usr/gapps/visit/$ver+/linux-x86_64-toss3/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver+/linux-x86_64-toss3/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo "number of database plugins = "\`ls /usr/gapps/visit/$ver+/linux-x86_64/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls /usr/gapps/visit/$ver+/linux-x86_64/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver+/linux-x86_64/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
 echo ""                                             >> resultlog 2>&1
 echo "The database plugins:"                        >> resultlog 2>&1
-ls /usr/gapps/visit/$ver+/linux-x86_64-toss3/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver+\/linux-x86_64-toss3\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+ls /usr/gapps/visit/$ver+/linux-x86_64/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver+\/linux-x86_64\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
 mail -s "VisIt install ($ver): rztrona" $emailName < resultlog
 EOF
 
@@ -657,5 +571,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f kickit ubuntu1404_64 ifyou quartz lassen rztrona rzansel rzuseq vulcan cooley
+   rm -f kickit quartz lassen rztrona rzansel rzuseq vulcan cooley
 fi

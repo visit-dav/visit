@@ -303,8 +303,14 @@ Product Operator (``*``) : ``exprL * exprR``
 .. _Division_Expression_Operator:
 
 Division Operator (``/``) : ``exprL / exprR``
-    Creates a new expression which is quotient after dividing the ``exprL``
+    Creates a new expression which is the quotient after dividing the ``exprL``
     expression by the ``exprR`` expression.
+
+Division Operator : ``divide(val_numerator, val_denominator, [div_by_zero_value, tolerance])``
+    Creates a new expression which is the quotient after dividing the
+    ``val_numerator`` expression by the ``val_denominator`` expression. The
+    ``div_by_zero_value`` is used wherever the ``val_denominator`` is within
+    ``tolerance`` of zero.
 
 .. _Exponent_Expression_Operator:
 
@@ -365,17 +371,17 @@ Base 10 Logarithm Function (``log10()``) : ``log10(expr0)``
     Creates a new expression which is everywhere the base 10 logarithm of its
     argument.
 
-.. _Pairwise_Max_Expression_Function:
+.. _Max_Expression_Function:
 
-Pairwise Max Function (``max()``) : ``max(expr0,exrp1)``
-    Creates a new expression which is everywhere the pairwise maximum of its
-    two arguments.
+Max Function (``max()``) : ``max(expr0, exrp1 [, ...])``
+    Creates a new expression which is everywhere the maximum among all input
+    variables.
 
-.. _Pairwise_Min_Expression_Function:
+.. _Min_Expression_Function:
 
-Pairwise Min Function (``min()``) : ``min(expr0,exrp1)``
-    Creates a new expression which is everywhere the pairwise minimum of its
-    two arguments.
+Min Function (``min()``) : ``min(expr0, exrp1 [, ...])``
+    Creates a new expression which is everywhere the minimum among all input
+    variables.
 
 .. _Modulo_Expression_Function:
 
