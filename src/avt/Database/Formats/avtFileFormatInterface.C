@@ -596,7 +596,7 @@ avtFileFormatInterface::GetQOTMesh(const QueryOverTimeAttributes *QOTAtts,
 
     vtkPolyData *polyData = vtkPolyData::New();
     vtkPoints *points     = vtkPoints::New();
-    points->Resize(numPoints);
+    points->Allocate(numPoints);
 
     for (int i = 0; i < numPoints; ++i)
     {
@@ -676,6 +676,8 @@ avtFileFormatInterface::GetQOTVar(int domain,
 
             float targetVal = allValues->GetTuple1(element);
             spanArray->SetTuple1(tupIdx, targetVal);
+
+            allValues->Delete();
         }
         CATCH2(VisItException, e)
         {
@@ -695,6 +697,8 @@ avtFileFormatInterface::GetQOTVar(int domain,
 
             float targetVal = allValues->GetTuple1(element);
             spanArray->SetTuple1(tupIdx, targetVal);
+
+            allValues->Delete();
         }
         CATCH2(VisItException, e)
         {
@@ -791,6 +795,8 @@ avtFileFormatInterface::GetQOTVectorVar(int domain,
 
             allValues->GetTuple(element, targetVec);
             spanArray->SetTuple(tupIdx, targetVec);
+
+            allValues->Delete();
         }
         CATCH2(VisItException, e)
         {
@@ -809,6 +815,8 @@ avtFileFormatInterface::GetQOTVectorVar(int domain,
 
             allValues->GetTuple(element, targetVec);
             spanArray->SetTuple(tupIdx, targetVec);
+
+            allValues->Delete();
         }
         CATCH2(VisItException, e)
         {
@@ -818,6 +826,7 @@ avtFileFormatInterface::GetQOTVectorVar(int domain,
     }
 
     delete [] targetVec;
+    delete [] NaNVec;
 
     return (vtkDataArray *) spanArray;
 }

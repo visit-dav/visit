@@ -960,6 +960,11 @@ avtGenericDatabase::GetQOTOutput(avtDataRequest_p spec,
     domains.push_back(domain);
     avtDataTree_p rv = datasetCollection.AssembleDataTree(domains);
 
+    avtDataObject_p dob = src->GetOutput();
+    boolVector emptySelections;
+    PopulateDataObjectInformation(dob, spec->GetVariable(), 
+        QOTAtts->GetStartTime(), emptySelections, spec);
+
     ManageMemoryForNonCachableVar(NULL);
     ManageMemoryForNonCachableMesh(NULL);
 

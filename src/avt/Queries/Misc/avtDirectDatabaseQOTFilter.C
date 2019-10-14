@@ -206,6 +206,16 @@ avtDirectDatabaseQOTFilter::Execute(void)
             avtDataTree_p tree   = ConstructCurveTree(refined, multiCurve);
             SetOutputDataTree(tree);
             refined->Delete();
+
+            for (int i = 0; i < numLeaves; ++i)
+            {
+                if (leaves[i] != NULL)
+                {
+                    leaves[i]->Delete();
+                }
+            }
+
+            delete [] leaves; 
         }
         else
         {
@@ -271,14 +281,6 @@ avtDirectDatabaseQOTFilter::VerifyAndRefineTimesteps(vtkPolyData *inPolyData)
     { 
         return outPolyData;
     }
-
-    vtkPoints *outPts = vtkPoints::New();
-
-    //
-    // If we're missing data, this will be an over-estimate, but
-    // it should never be an under-estimate. 
-    //
-    outPts->Resize(numPts);
 
     int stride = atts.GetStride();
     int startT = atts.GetStartTime();
@@ -359,6 +361,14 @@ avtDirectDatabaseQOTFilter::VerifyAndRefineTimesteps(vtkPolyData *inPolyData)
             vtkPolyData *empty = vtkPolyData::New();
             return empty;
         }
+
+        vtkPoints *outPts = vtkPoints::New();
+
+        //
+        // If we're missing data, this will be an over-estimate, but
+        // it should never be an under-estimate. 
+        //
+        outPts->Allocate(numPts);
 
         //
         // Second pass: re-write the arrays so that they only contain
