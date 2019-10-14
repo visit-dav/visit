@@ -81,7 +81,7 @@ function bv_ospray_print
 
 function bv_ospray_print_usage
 {
-    printf "%-15s %s [%s]\n" "--ospray" "Build OSPRay rendering support" "$DO_OSPRAY"
+    printf "%-20s %s [%s]\n" "--ospray" "Build OSPRay rendering support" "$DO_OSPRAY"
 }
 
 function bv_ospray_host_profile
