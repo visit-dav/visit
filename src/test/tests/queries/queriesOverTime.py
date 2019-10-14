@@ -735,10 +735,15 @@ def TestReturnValue():
     ResetPickLetter()
 
 def TestDirectDatabaseRoute():
-    # multi curve
-    # multi domain
-    # multi curve (separate)
-    # node
+
+    #
+    # Cleanup any plots that haven't been deleted yet. 
+    #
+    SetActiveWindow(2)
+    DeleteAllPlots()
+    SetActiveWindow(1)
+    DeleteAllPlots()
+
     OpenDatabase(data_path("mili_test_data/single_proc/d3samp6_10_longrun.plt.mili"))
     AddPlot("Pseudocolor", "Primal/Shared/edrate")
     DrawPlots()
@@ -799,33 +804,82 @@ def TestDirectDatabaseRoute():
     DeleteAllPlots()
     SetActiveWindow(1)
 
-    #
+    DeleteAllPlots()
+    AddPlot("Pseudocolor", "Primal/node/nodacc/ax")
+    DrawPlots()
+
     # This tests two things: 
     #    1. Plotting a node pick curve. 
     #    2. Using a direct route query on magnitude expression. 
     #
     vars=("Primal/node/nodacc_magnitude")
-    PickByNode(curve_plot_type=0, vars=vars, do_time=1, domain=domain, element=element, 
+    PickByNode(curve_plot_type=0, vars=vars, do_time=1, domain=domain, element=element,
         preserve_coord=preserve, end_time=stop, start_time=start, stride=stride)
     SetActiveWindow(2)
     Test("Direct_Database_Route_03")
     DeleteAllPlots()
     SetActiveWindow(1)
 
-   
+    DeleteAllPlots()
+    OpenDatabase(data_path("mili_test_data/single_proc/m_plot.mili"))
+    AddPlot("Pseudocolor", "Primal/brick/stress/sx")
+    DrawPlots()
+
+    #
+    # Test plotting multiple variables at once. 
+    #
+    element = 489
+    vars=("Primal/brick/stress/sz", "Primal/brick/stress/sx")
+    PickByZone(curve_plot_type=0, vars=vars, do_time=1, domain=domain, element=element,
+        preserve_coord=preserve, end_time=stop, start_time=start, stride=stride)
+    SetActiveWindow(2)
+    Test("Direct_Database_Route_04")
+    DeleteAllPlots()
+    SetActiveWindow(1)
+
+    #
+    # Testing the multi curve plot. 
+    #
+    PickByZone(curve_plot_type=1, vars=vars, do_time=1, domain=domain, element=element,
+        preserve_coord=preserve, end_time=stop, start_time=start, stride=stride)
+    SetActiveWindow(2)
+    Test("Direct_Database_Route_05")
+    DeleteAllPlots()
+    SetActiveWindow(1)
+
+    #
+    # Test multi-domain data. 
+    #
+    DeleteAllPlots()
+    OpenDatabase(data_path("mili_test_data/multi_proc/d3samp6.plt.mili"))
+    AddPlot("Pseudocolor", "Primal/Shared/edrate")
+    DrawPlots()
+    domain = 1
+    element = 11
+    vars = ("default")
+    PickByZone(curve_plot_type=0, vars=vars, do_time=1, domain=domain, element=element,
+        preserve_coord=preserve, end_time=stop, start_time=start, stride=stride)
+    SetActiveWindow(2)
+    Test("Direct_Database_Route_06")
+    DeleteAllPlots()
+    SetActiveWindow(1)
+
+    DeleteAllPlots()
+
+ 
 def TimeQueryMain():
-    #TestAllTimeQueries()
-    #TestFilledBoundary()
-    #TestOperators()
-    #TestExpressions()
-    #TestTransientVariable()
-    #TestSpecifyTimeQueryWindow()
-    #TestTimeVaryingSIL()
-    #TestQueryAfterQueryOverTime()
-    #TestMili()
-    #MultiVarTimePick()
-    #TestPickRangeTimeQuery()
-    #TestReturnValue()
+    TestAllTimeQueries()
+    TestFilledBoundary()
+    TestOperators()
+    TestExpressions()
+    TestTransientVariable()
+    TestSpecifyTimeQueryWindow()
+    TestTimeVaryingSIL()
+    TestQueryAfterQueryOverTime()
+    TestMili()
+    MultiVarTimePick()
+    TestPickRangeTimeQuery()
+    TestReturnValue()
     TestDirectDatabaseRoute()
 
 # main
