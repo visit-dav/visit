@@ -71,8 +71,8 @@ function bv_${output}_print
 #print how to install and uninstall module..
 function bv_${output}_print_usage
 {
-    printf \"%-15s %s [%s]\n\" \"--${output}\"   \"Build ${uppercase_out}\" \"\$DO_${uppercase_out}\"
-    printf \"%-15s %s [%s]\n\" \"--no-${output}\"   \"Do not Build ${uppercase_out}\" \"\$DO_${uppercase_out}\"
+    printf \"%-20s %s [%s]\n\" \"--${output}\"   \"Build ${uppercase_out}\" \"\$DO_${uppercase_out}\"
+    printf \"%-20s %s [%s]\n\" \"--no-${output}\"   \"Do not Build ${uppercase_out}\" \"\$DO_${uppercase_out}\"
 }
 
 #values to add to host profile, write to \$HOSTCONF
