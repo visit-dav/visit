@@ -3376,6 +3376,9 @@ ViewerQueryManager::HandlePickCache()
 //    Alister Maguire, Tue May 22 14:16:38 PDT 2018
 //    Added ability to plot range curves. 
 //
+//    Alister Maguire, Tue Oct 15 11:44:19 PDT 2019
+//    Added support for using the direct route for queries over time. 
+//
 // ****************************************************************************
 
 void
@@ -3442,12 +3445,28 @@ ViewerQueryManager::PointQuery(const MapNode &queryParams)
         timeCurve = queryParams.GetEntry("do_time")->ToInt();
     timeCurve |= (pickAtts->GetDoTimeCurve() ? 1 : 0);
 
+    //
+    // Perform an initial check to determine whether or not we 
+    // can use the direct route. There will be more verification
+    // later on. 
+    //
     if (timeCurve)
     {
-        //
-        // Assume that we can take the direct route until proven otherwise. 
-        //
-        timeQueryAtts->SetCanUseDirectDatabaseRoute(true);
+        if (queryParams.HasNumericEntry("use_actual_data"))
+        {
+            if (queryParams.GetEntry("use_actual_data")->ToInt() == 1)
+            {
+                timeQueryAtts->SetCanUseDirectDatabaseRoute(false);
+            }
+            else
+            {
+                timeQueryAtts->SetCanUseDirectDatabaseRoute(true);
+            }
+        }
+        else
+        {
+            timeQueryAtts->SetCanUseDirectDatabaseRoute(true);
+        }
     }
     else
     {

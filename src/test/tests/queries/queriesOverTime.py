@@ -76,8 +76,7 @@
 #
 #    Alister Maguire, Fri Oct 11 13:12:36 PDT 2019
 #    Added TestDirectDatabaseRoute. I also updated several tests to
-#    use actual data (or preserve coord) so that they continue to
-#    test the old QOT route. 
+#    use actual data so that they continue to test the old QOT route. 
 #
 # ----------------------------------------------------------------------------
 RequiredDatabasePlugin(("PDB", "Mili", "SAMRAI"))
@@ -341,9 +340,9 @@ def TestTransientVariable():
 
     pick = GetPickAttributes()
     pick.doTimeCurve = 1
-    pick.timePreserveCoord = 1
+    pick.timePreserveCoord = 0
     SetPickAttributes(pick)
-    PickByNode(327)
+    PickByNode(element=327, use_actual_data=1)
 
     pick.doTimeCurve = 0
     pick.timePreserveCoord = 1
@@ -883,7 +882,7 @@ def TestDirectDatabaseRoute():
     pick.doTimeCurve = 1
     pick.timePreserveCoord = 0
     SetPickAttributes(pick)
-    PickByNode(327)
+    PickByNode(element=327, use_actual_data=0)
 
     pick.doTimeCurve = 0
     pick.timePreserveCoord = 1
