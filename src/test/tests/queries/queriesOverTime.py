@@ -75,7 +75,9 @@
 #    to use data from the pipeline output. 
 #
 #    Alister Maguire, Fri Oct 11 13:12:36 PDT 2019
-#    Added TestDirectDatabaseRoute. 
+#    Added TestDirectDatabaseRoute. I also updated several tests to
+#    use actual data (or preserve coord) so that they continue to
+#    test the old QOT route. 
 #
 # ----------------------------------------------------------------------------
 RequiredDatabasePlugin(("PDB", "Mili", "SAMRAI"))
@@ -339,7 +341,7 @@ def TestTransientVariable():
 
     pick = GetPickAttributes()
     pick.doTimeCurve = 1
-    pick.timePreserveCoord = 0
+    pick.timePreserveCoord = 1
     SetPickAttributes(pick)
     PickByNode(327)
 
@@ -864,6 +866,34 @@ def TestDirectDatabaseRoute():
     DeleteAllPlots()
     SetActiveWindow(1)
 
+    DeleteAllPlots()
+
+    #
+    # Now let's test a variable that is not defined on all
+    # timesteps. 
+    #
+    db = silo_data_path("wave_tv*.silo database") 
+    OpenDatabase(db)
+    SetTimeSliderState(17)
+    ReOpenDatabase(db)
+    AddPlot("Pseudocolor", "transient")
+    DrawPlots()
+
+    pick = GetPickAttributes()
+    pick.doTimeCurve = 1
+    pick.timePreserveCoord = 0
+    SetPickAttributes(pick)
+    PickByNode(327)
+
+    pick.doTimeCurve = 0
+    pick.timePreserveCoord = 1
+    SetPickAttributes(pick)
+
+    SetActiveWindow(2)
+    InitAnnotation()
+    Test("Direct_Database_Route_07")
+    DeleteAllPlots()
+    SetActiveWindow(1)
     DeleteAllPlots()
 
  
