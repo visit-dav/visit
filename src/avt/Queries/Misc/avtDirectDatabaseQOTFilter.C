@@ -205,14 +205,10 @@ avtDirectDatabaseQOTFilter::Execute(void)
             vtkPolyData *refined = VerifyAndRefineTimesteps(QOTData);
             avtDataTree_p tree   = ConstructCurveTree(refined, multiCurve);
             SetOutputDataTree(tree);
-            refined->Delete();
 
-            for (int i = 0; i < numLeaves; ++i)
+            if (refined != NULL)
             {
-                if (leaves[i] != NULL)
-                {
-                    leaves[i]->Delete();
-                }
+                refined->Delete();
             }
 
             delete [] leaves; 
@@ -510,7 +506,12 @@ avtDirectDatabaseQOTFilter::ConstructCurveTree(vtkPolyData *polyData,
         rgrid->GetPointData()->SetScalars(scalars);
 
         avtDataTree_p tree = new avtDataTree(rgrid, 0);
-        rgrid->Delete();
+
+        if (rgrid != NULL)
+        { 
+            rgrid->Delete();
+        }
+
         scalars->Delete(); 
         return tree;
     }
@@ -560,8 +561,14 @@ avtDirectDatabaseQOTFilter::ConstructCurveTree(vtkPolyData *polyData,
         }
 
         avtDataTree_p tree = new avtDataTree(rgrid, 0);
+
+        if (rgrid != NULL)
+        {
+            rgrid->Delete();
+        }
+
         scalars->Delete();
-        rgrid->Delete();
+
         return tree;
     }
     else
