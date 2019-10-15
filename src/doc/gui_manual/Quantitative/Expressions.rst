@@ -1785,20 +1785,20 @@ isnan Function: ``isnan()`` : ``isnan(expr0)``
 .. _Q_Criterion_Expression_Function:
 
 q criterion Function: ``q_criterion()`` : ``q_criterion(<gradient(velocity[0])>, <gradient(velocity[1])>, <gradient(velocity[2])>)``
-    Generates the Q-criterion value developed by Hunt et. al.. It is based on the 
-    observation that, in regions where the Q-criterion is greater than zero, rotation 
-    exceeds strain and, in conjunction with a pressure min, indicates the presence of 
-    a vortex. The three arguments to the function are gradient vectors of the x-, y-, 
-    and z-velocity. The gradient function (see :ref:`gradient() <Gradient_Expression_Function>`) can be used to create the gradient vectors. 
+    Generates the Q-criterion value developed by Hunt et. al.. It is based on the
+    observation that, in regions where the Q-criterion is greater than zero, rotation
+    exceeds strain and, in conjunction with a pressure min, indicates the presence of
+    a vortex. The three arguments to the function are gradient vectors of the x-, y-,
+    and z-velocity. The gradient function (see :ref:`gradient() <Gradient_Expression_Function>`) can be used to create the gradient vectors.
 
 .. _Lambda2_Expression_Function:
 
 lambda2 Function: ``lambda2()`` : ``lambda2(<gradient(velocity[0])>, <gradient(velocity[1])>, <gradient(velocity[2])>)``
-    Generates the Lambda-2 criterion. It is based on the observation that, in 
-    regions where Lambda-2 is less than zero, rotation exceeds strain and, in 
+    Generates the Lambda-2 criterion. It is based on the observation that, in
+    regions where Lambda-2 is less than zero, rotation exceeds strain and, in
     conjunction with a pressure min, indicates the presence of a vortex. The three
     arguments to the function are gradient vectors of the x-, y-, and z-velocity.
-    The gradient function (see :ref:`gradient() <Gradient_Expression_Function>`) can be used to create the gradient vectors. 
+    The gradient function (see :ref:`gradient() <Gradient_Expression_Function>`) can be used to create the gradient vectors.
 
 .. _Mean_Curvature_Expression_Function:
 
