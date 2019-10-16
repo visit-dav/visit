@@ -1100,11 +1100,6 @@ ViewerQueryManager::DatabaseQuery(const MapNode &in_queryParams)
         useActualData = queryParams.GetEntry("use_actual_data")->ToInt();
     }
 
-    if (useActualData)
-    {
-        timeQueryAtts->SetCanUseDirectDatabaseRoute(false);
-    }
-
     // ensure we are all on the same page
     queryParams["use_actual_data"] = useActualData;
 
@@ -3446,27 +3441,13 @@ ViewerQueryManager::PointQuery(const MapNode &queryParams)
     timeCurve |= (pickAtts->GetDoTimeCurve() ? 1 : 0);
 
     //
-    // Perform an initial check to determine whether or not we 
-    // can use the direct route. There will be more verification
-    // later on. 
+    // If we're performing a time curve, we might be able
+    // to use the direct route. Assume yes until proven
+    // otherwise. 
     //
     if (timeCurve)
     {
-        if (queryParams.HasNumericEntry("use_actual_data"))
-        {
-            if (queryParams.GetEntry("use_actual_data")->ToInt() == 1)
-            {
-                timeQueryAtts->SetCanUseDirectDatabaseRoute(false);
-            }
-            else
-            {
-                timeQueryAtts->SetCanUseDirectDatabaseRoute(true);
-            }
-        }
-        else
-        {
-            timeQueryAtts->SetCanUseDirectDatabaseRoute(true);
-        }
+        timeQueryAtts->SetCanUseDirectDatabaseRoute(true);
     }
     else
     {
@@ -3759,6 +3740,24 @@ ViewerQueryManager::PointQuery(const MapNode &queryParams)
         curvePlotType = queryParams.GetEntry("curve_plot_type")->ToInt();
     else
         curvePlotType = pickAtts->GetTimeCurveType();
+
+    if (timeCurve)
+    {
+        //
+        // If we're doing a pick through time, we need to make sure
+        // that the "use_actual_data" flag is set. Assume true if
+        // it hasn't been requested.
+        //
+        int useActualData = 1;
+        if (queryParams.HasNumericEntry("use_actual_data"))
+        {
+            if (queryParams.GetEntry("use_actual_data")->ToInt() == 0)
+            {
+                useActualData = 0;
+            }
+        }
+        pickAtts->GetTimeOptions()["use_actual_data"] = useActualData;
+    }
 
     ViewerWindow *win = ViewerWindowManager::Instance()->GetActiveWindow();
     INTERACTION_MODE imode = win->GetInteractionMode();
@@ -5121,6 +5120,12 @@ ViewerQueryManager::DoTimeQuery(ViewerWindow *origWin,
                  "Try enabling it in the Controls->Plugin Manager window"));
             return;
         }
+    }
+
+    if (qParams.HasNumericEntry("use_actual_data") &&
+        qParams.GetEntry("use_actual_data")->ToInt() == 1)
+    {
+        timeQueryAtts->SetCanUseDirectDatabaseRoute(false);
     }
 
     //
