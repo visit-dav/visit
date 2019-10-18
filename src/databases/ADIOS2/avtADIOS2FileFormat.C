@@ -115,7 +115,7 @@ ADIOS2_CreateFileFormatInterface(const char * const *list, int nList, int nBlock
 
     if (stagingMode)
     {
-        adios2::StepStatus status = reader.BeginStep(adios2::StepMode::NextAvailable, -1.0f);
+        adios2::StepStatus status = reader.BeginStep(adios2::StepMode::Read, -1.0f);
         if (status == adios2::StepStatus::OK)
         {
             variables = io.AvailableVariables();

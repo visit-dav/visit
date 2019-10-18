@@ -549,7 +549,7 @@ avtADIOS2BaseFileFormat::GetVar(int timestate, int domain, const char *varname)
             adios2::StepStatus status = adios2::StepStatus::NotReady;
             while (status == adios2::StepStatus::NotReady)
             {
-                status = reader.BeginStep(adios2::StepMode::NextAvailable, 10.0f);
+                status = reader.BeginStep(adios2::StepMode::Read, 10.0f);
                 if (status == adios2::StepStatus::EndOfStream ||
                     status == adios2::StepStatus::OtherError)
                 {
