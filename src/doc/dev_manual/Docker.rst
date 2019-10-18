@@ -91,11 +91,13 @@ different Linux operating systems, although there are only a few unique
 varients that the rest are built on. You can go to the Docker Hub to find
 Linux distributions to start with.
 
-https://hub.docker.com/_/ubuntu
+https://hub.docker.com/_/centos
 
 https://hub.docker.com/_/debian
 
 https://hub.docker.com/_/fedora
+
+https://hub.docker.com/_/ubuntu
 
 In this example the Dockerfile is set up to use Ubuntu 16. The Dockerfile
 installs all the packages needed to build VisIt_ and then uses build_visit
@@ -108,7 +110,8 @@ actually be happily progressing along. ::
 
 Start up the container and run it interactively. ::
 
-    C:\Users\brugger\docker>docker run -t -i visitdev:3.0.2-ubuntu16 /bin/bash visit@bea87fee3276:~$
+    C:\Users\brugger\docker>docker run -t -i visitdev:3.0.2-ubuntu16 /bin/bash
+    visit@bea87fee3276:~$
 
 Now the container is ready for you to build VisIt_. First, you need to copy
 the tar file with the source code. To do this, you will need to go to another
