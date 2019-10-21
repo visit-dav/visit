@@ -2747,7 +2747,7 @@ class MainLauncher(object):
                 self.generalArgs.exe_name = "engine_par"
             else:
                 self.generalArgs.exe_name = "engine_ser"
-        elif self.generalArgs.exe_name in ("makemili", "visitconvert"):
+        elif self.generalArgs.exe_name in ("makemili_driver", "visitconvert"):
             if self.parallelArgs.parallel:
                 par_lite = os.path.join(self.visitdir, "exe", self.generalArgs.exe_name + "_par_lite")
                 if os.path.exists(par_lite):

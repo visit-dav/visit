@@ -148,7 +148,7 @@ visitargs        = []
 programs = (
 "-add_visit_searchpath",
 "-convert",
-"-makemili",
+"-makemili_driver",
 "-mpeg2encode",
 "-mpeg_encode",
 "-silex",

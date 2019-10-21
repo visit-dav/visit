@@ -1261,7 +1261,7 @@ rm -rf distribution
 #
 # Make the symbolic links for the programs
 #
-programs="curv3dprep makemili mpeg2encode surfcomp text2polys time_annotation visit visitconvert xml2atts xml2avt xml2info xml2java xml2makefile xml2cmake xml2projectfile xml2python xml2window xmledit xmltest visit_composite visit_transition"
+programs="curv3dprep makemili_driver mpeg2encode surfcomp text2polys time_annotation visit visitconvert xml2atts xml2avt xml2info xml2java xml2makefile xml2cmake xml2projectfile xml2python xml2window xmledit xmltest visit_composite visit_transition"
 
 cd "$dir"/bin
 for prog in $programs; do

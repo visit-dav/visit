@@ -44,6 +44,9 @@
 #  Kathleen Biagas, Thu Mar 24 16:29:50 PDT 2016
 #  Remove qt.conf in favor of having FindVisItQtx.cmake create one on the fly.
 #
+#  Alister Maguire, Tue Oct 15 10:09:02 PDT 2019
+#  Copy over the makemili_driver to the exe directory. 
+#
 #****************************************************************************
 
 #-----------------------------------------------------------------------------
@@ -105,6 +108,8 @@ IF (NOT WIN32)
         PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
                     GROUP_READ GROUP_WRITE GROUP_EXECUTE
                     WORLD_READ             WORLD_EXECUTE)
+
+    CONFIGURE_FILE(makemili_driver ${VISIT_EXECUTABLE_DIR} COPYONLY)
 
 ELSE (NOT WIN32)
 
