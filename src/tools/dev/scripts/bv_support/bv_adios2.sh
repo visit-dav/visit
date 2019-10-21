@@ -170,18 +170,37 @@ function build_adios2
         info "Configuring ADIOS2-$bt (~1 minute)"
 
         if [[ "$bt" == "par" ]]; then
-            # Change all references from adios2 to adios2_mpi.
-            find . -name "CMakeLists.txt" -exec sed -i "s/adios2/adios2_mpi/g" {} \;
-            # This changes too many things, now we need to change specific
-            # things back.
-            sed -i "s/adios2_mpi/adios2/g" source/CMakeLists.txt
-            find . -name "CMakeLists.txt" -exec sed -i "s/adios2_mpi.h/adios2.h/g" {} \;
-            find . -name "CMakeLists.txt" -exec sed -i "s/adios2_mpi\//adios2\//g" {} \;
-            find . -name "CMakeLists.txt" -exec sed -i "s/adios2_mpi_/adios2_/g" {} \;
-            find . -name "CMakeLists.txt" -exec sed -i "s/adios2_mpi-/adios2-/g" {} \;
-            find . -name "CMakeLists.txt" -exec sed -i "s/adios2_mpi::/adios2::/g" {} \;
-            find . -name "CMakeLists.txt" -exec sed -i "s/adios2_mpisys/adios2sys/g" {} \;
-            find . -name "CMakeLists.txt" -exec sed -i "s/\/adios2_mpi/\/adios2/g" {} \;
+            if [[ "$OPSYS" == "Darwin" ]]; then
+                # sed for OSX is different then most Linux distros in that you have
+                # to use a few extra characters to get it to do the same command (see
+                # https://ed.gs/2016/01/26/os-x-sed-invalid-command-code/).
+                #
+                # Change all references from adios2 to adios2_mpi.
+                find . -name "CMakeLists.txt" -exec sed -i "" "s/adios2/adios2_mpi/g" {} \;
+                # This changes too many things, now we need to change specific
+                # things back.
+                sed -i "" "s/adios2_mpi/adios2/g" source/CMakeLists.txt
+                find . -name "CMakeLists.txt" -exec sed -i "" "s/adios2_mpi.h/adios2.h/g" {} \;
+                find . -name "CMakeLists.txt" -exec sed -i "" "s/adios2_mpi\//adios2\//g" {} \;
+                find . -name "CMakeLists.txt" -exec sed -i "" "s/adios2_mpi_/adios2_/g" {} \;
+                find . -name "CMakeLists.txt" -exec sed -i "" "s/adios2_mpi-/adios2-/g" {} \;
+                find . -name "CMakeLists.txt" -exec sed -i "" "s/adios2_mpi::/adios2::/g" {} \;
+                find . -name "CMakeLists.txt" -exec sed -i "" "s/adios2_mpisys/adios2sys/g" {} \;
+                find . -name "CMakeLists.txt" -exec sed -i "" "s/\/adios2_mpi/\/adios2/g" {} \;
+            else
+                # Change all references from adios2 to adios2_mpi.
+                find . -name "CMakeLists.txt" -exec sed -i "s/adios2/adios2_mpi/g" {} \;
+                # This changes too many things, now we need to change specific
+                # things back.
+                sed -i "s/adios2_mpi/adios2/g" source/CMakeLists.txt
+                find . -name "CMakeLists.txt" -exec sed -i "s/adios2_mpi.h/adios2.h/g" {} \;
+                find . -name "CMakeLists.txt" -exec sed -i "s/adios2_mpi\//adios2\//g" {} \;
+                find . -name "CMakeLists.txt" -exec sed -i "s/adios2_mpi_/adios2_/g" {} \;
+                find . -name "CMakeLists.txt" -exec sed -i "s/adios2_mpi-/adios2-/g" {} \;
+                find . -name "CMakeLists.txt" -exec sed -i "s/adios2_mpi::/adios2::/g" {} \;
+                find . -name "CMakeLists.txt" -exec sed -i "s/adios2_mpisys/adios2sys/g" {} \;
+                find . -name "CMakeLists.txt" -exec sed -i "s/\/adios2_mpi/\/adios2/g" {} \;
+            fi
         fi
 
         # Make a build directory for an out-of-source build.. Change the
