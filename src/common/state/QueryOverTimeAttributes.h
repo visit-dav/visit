@@ -79,6 +79,7 @@ public:
     void SetPickAtts(const PickAttributes &pickAtts_);
     void SetCachedCurvePts(const doubleVector &cachedCurvePts_);
     void SetUseCachedPts(bool useCachedPts_);
+    void SetCanUseDirectDatabaseRoute(bool canUseDirectDatabaseRoute_);
 
     // Property getting methods
     TimeType              GetTimeType() const;
@@ -97,6 +98,7 @@ public:
     const doubleVector    &GetCachedCurvePts() const;
           doubleVector    &GetCachedCurvePts();
     bool                  GetUseCachedPts() const;
+    bool                  GetCanUseDirectDatabaseRoute() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -131,12 +133,14 @@ public:
         ID_pickAtts,
         ID_cachedCurvePts,
         ID_useCachedPts,
+        ID_canUseDirectDatabaseRoute,
         ID__LAST
     };
 
 protected:
     doubleVector    cachedCurvePts;
     bool            useCachedPts;
+    bool            canUseDirectDatabaseRoute;
 private:
     int             timeType;
     bool            startTimeFlag;
@@ -154,6 +158,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define QUERYOVERTIMEATTRIBUTES_TMFS "ibibibibiaad*b"
+#define QUERYOVERTIMEATTRIBUTES_TMFS "ibibibibiaad*bb"
 
 #endif

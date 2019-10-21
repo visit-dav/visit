@@ -325,6 +325,9 @@ class     vtkUnstructuredGrid;
 //    Added another bool variable to MaterialSelect 
 //    for forceConstructMaterialLabels. 
 //
+//    Alister Maguire, Tue Sep 24 10:04:42 MST 2019
+//    Added a number of QOT specific methods. 
+//
 // ****************************************************************************
 
 class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
@@ -338,6 +341,12 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
                                                 const char *type, void *args);
     virtual avtDataTree_p      GetOutput(avtDataRequest_p,
                                          avtSourceFromDatabase *);
+
+    virtual avtDataTree_p      GetQOTOutput(avtDataRequest_p,
+                                            avtSourceFromDatabase *);
+
+    void                       GetCycles(int, intVector &);
+    void                       GetTimes(int, doubleVector &);
 
     virtual void               FreeUpResources(void);
     virtual int                NumStagesForFetch(avtDataRequest_p);
@@ -440,6 +449,68 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
     vtkDataSet                *GetMesh(const char *, int, int, const char *,
                                        avtDataRequest_p);
 
+    //
+    // Query over time specific dataset methods. 
+    //
+    vtkDataSet                *GetQOTDataset(int,
+                                             const char *,
+                                             const std::vector<CharStrRef> &,
+                                             avtDataRequest_p, 
+                                             avtSourceFromDatabase *);
+    vtkDataSet                *GetQOTScalarVarDataset(const char *, 
+                                                      int,
+                                                      int,
+                                                      avtDataRequest_p);
+    vtkDataSet                *GetQOTVectorVarDataset(const char *, 
+                                                      int,
+                                                      int,
+                                                      avtDataRequest_p);
+    vtkDataSet                *GetQOTTensorVarDataset(const char *, 
+                                                      int,
+                                                      int,
+                                                      avtDataRequest_p);
+    vtkDataSet                *GetQOTSymmetricTensorVarDataset(const char *, 
+                                                               int,
+                                                               int,
+                                                               avtDataRequest_p);
+    vtkDataSet                *GetQOTArrayVarDataset(const char *, 
+                                                     int,
+                                                     int,
+                                                     avtDataRequest_p);
+    vtkDataArray              *GetQOTScalarVariable(const char *, 
+                                                    int, 
+                                                    int,
+                                                    int *,
+                                                    int,
+                                                    const avtDataRequest_p);
+    vtkDataArray              *GetQOTVectorVariable(const char *, 
+                                                    int, 
+                                                    int,
+                                                    int *,
+                                                    int,
+                                                    const avtDataRequest_p);
+    vtkDataArray              *GetQOTTensorVariable(const char *, 
+                                                    int, 
+                                                    int,
+                                                    int *,
+                                                    int,
+                                                    const avtDataRequest_p);
+    vtkDataArray              *GetQOTSymmetricTensorVariable(const char *, 
+                                                             int, 
+                                                             int,
+                                                             int *,
+                                                             int,
+                                                             const avtDataRequest_p);
+    vtkDataArray              *GetQOTArrayVariable(const char *, 
+                                                   int, 
+                                                   int,
+                                                   int *,
+                                                   int,
+                                                   const avtDataRequest_p);
+    void                       AddSecondaryQOTVariables(vtkDataSet *, int,
+                                                const std::vector<CharStrRef> &,
+                                                const avtDataRequest_p);
+
     void                       AddOriginalCellsArray(vtkDataSet *, const int);
     void                       AddOriginalNodesArray(vtkDataSet *, const int);
 
@@ -470,6 +541,10 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
                                   intVector &, avtDataRequest_p &,
                                   avtSourceFromDatabase *,
                                   boolVector &);
+
+    void                       ReadQOTDataset(avtDatasetCollection &, 
+                                  int, avtDataRequest_p &,
+                                  avtSourceFromDatabase *);
 
     avtDomainBoundaries       *GetDomainBoundaryInformation(
                                       avtDatasetCollection &, intVector &, 

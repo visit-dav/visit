@@ -54,6 +54,9 @@ using namespace std;
 //    Eddie Rusu, Mon Sep 23 10:26:24 PDT 2019
 //    Initialize nProcessedArgs.
 //
+//    Alister Maguire, Tue Sep 24 11:15:10 MST 2019
+//    Initialized canApplyToDirectDatabaseQOT. 
+//
 // ****************************************************************************
 
 avtExpressionFilter::avtExpressionFilter()
@@ -61,6 +64,7 @@ avtExpressionFilter::avtExpressionFilter()
     outputVariableName = NULL;
     currentTimeState = 0;
     calculateExtents = false;
+    canApplyToDirectDatabaseQOT = false;
     nProcessedArgs = 0;
 }
 

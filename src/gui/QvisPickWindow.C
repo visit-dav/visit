@@ -549,6 +549,10 @@ QvisPickWindow::CreateDisplayOptionsTab()
 //   Kathleen Biagas, Wed Jan 25 16:01:18 MST 2012
 //   Removed 'Options' from tab title so more tabs can be visible.
 //
+//   Alister Maguire, Wed Oct 16 08:41:57 MST 2019
+//   Added extra argumentto QvisTimeQueryOptionsWidget creation that
+//   disables creation of the data origin buttons. 
+//
 // ****************************************************************************
 
 void
@@ -559,7 +563,8 @@ QvisPickWindow::CreateTimeOptionsTab()
 
     QVBoxLayout *tLayout = new QVBoxLayout(pageTime);
 
-    timeOpts = new QvisTimeQueryOptionsWidget(tr("Do time curve with next pick"), pageTime);
+    timeOpts = new QvisTimeQueryOptionsWidget(
+        tr("Do time curve with next pick"), pageTime, false);
     connect(timeOpts, SIGNAL(toggled(bool)),
             this, SLOT(timeCurveToggled(bool)));
     tLayout->addWidget(timeOpts);

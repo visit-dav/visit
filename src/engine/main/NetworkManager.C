@@ -76,6 +76,8 @@
 #include <avtWholeImageCompositerNoZ.h>
 #include <avtPlot.h>
 #include <avtQueryOverTimeFilter.h>
+#include <avtTimeLoopQOTFilter.h>
+#include <avtDirectDatabaseQOTFilter.h>
 #include <avtQueryFactory.h>
 #include <avtMultiresFilter.h>
 #include <avtValueImageCompositer.h>
@@ -5193,6 +5195,9 @@ NetworkManager::CloneNetwork(const int id)
 //    if available.  Use it as a value to help determine where input is
 //    gathered from.
 //
+//    Alister Maguire, Mon Sep 23 12:35:44 MST 2019
+//    Refactored to handle two QOT types: DirectDatabaset and TimeLoop. 
+//
 // ****************************************************************************
 
 void
@@ -5205,22 +5210,59 @@ NetworkManager::AddQueryOverTimeFilter(QueryOverTimeAttributes *qA,
         EXCEPTION1(ImproperUseException, error);
     }
 
-    bool useActualData = true;
-    if (qA->GetQueryAtts().GetQueryInputParams().HasNumericEntry("use_actual_data"))
+    //
+    // We need to determine if we can use the direct database QOT 
+    // filter. 
+    //
+    bool useDirectDatabaseQOT = false;
+
+    if (qA->GetCanUseDirectDatabaseRoute())
     {
-        useActualData = qA->GetQueryAtts().GetQueryInputParams().GetEntry("use_actual_data")->ToBool();
+        //
+        // The query atts think that we can use this route, but only
+        // a subset of expressions are capable of being used with this
+        // path. We need to check them before proceeding. 
+        //
+        avtExpressionEvaluatorFilter *eef = 
+            dynamic_cast<avtExpressionEvaluatorFilter *> 
+            (workingNet->GetExpressionNode()->GetFilter());
+
+        if (eef != NULL)
+        {
+            useDirectDatabaseQOT = eef->CanApplyToDirectDatabaseQOT(); 
+        }
+    }
+
+    bool useActualData = false;
+    if (qA->GetQueryAtts().GetQueryInputParams().
+        HasNumericEntry("use_actual_data"))
+    {
+        useActualData = qA->GetQueryAtts().GetQueryInputParams().
+            GetEntry("use_actual_data")->ToBool();
+
+        if (useActualData && useDirectDatabaseQOT)
+        {
+            useDirectDatabaseQOT = false;
+        }
     }
 
     //
     // Determine which input the filter should use.
     //
     avtDataObject_p input;
-    if (useActualData ||
-        qA->GetQueryAtts().GetName() == "Locate and Pick Zone" ||
-        qA->GetQueryAtts().GetName() == "Locate and Pick Node")
+
+    if (useActualData || 
+        (qA->GetQueryAtts().GetName() == "Locate and Pick Zone" ||
+         qA->GetQueryAtts().GetName() == "Locate and Pick Node"))
     {
         input = networkCache[clonedFromId]->GetPlot()->
                 GetIntermediateDataObject();
+
+        //
+        // If this was a screen/interactive pick, it needs to 
+        // be performed on the actual data. 
+        //
+        useDirectDatabaseQOT = false;
     }
     else
     {
@@ -5230,20 +5272,36 @@ NetworkManager::AddQueryOverTimeFilter(QueryOverTimeAttributes *qA,
     qA->GetQueryAtts().SetPipeIndex(networkCache[clonedFromId]->
         GetContract()->GetPipelineIndex());
 
-    if (strcmp(workingNet->GetDataSpec()->GetVariable(),
-               qA->GetQueryAtts().GetVariables()[0].c_str()) != 0)
+    if (useDirectDatabaseQOT)
+    {
+        //
+        // We need to let the database readers know that we're asking for
+        // a specialized QOT dataset.  
+        //
+        avtDataRequest_p dr = new avtDataRequest(workingNet->GetDataSpec(),
+            qA->GetQueryAtts().GetVariables()[0].c_str());
+        dr->SetRetrieveQOTDataset(true);
+        dr->SetQOTAtts(qA);
+
+        //
+        // Add the remaining variables as secondaries. 
+        //
+        stringVector vars = qA->GetQueryAtts().GetVariables();
+        for (int i = 1; i < vars.size(); ++i)
+        {
+            dr->AddSecondaryVariable(vars[i].c_str());
+        }
+
+        workingNet->SetDataSpec(dr);
+    }
+    else if (strcmp(workingNet->GetDataSpec()->GetVariable(),
+                    qA->GetQueryAtts().GetVariables()[0].c_str()) != 0)
     {
         avtDataRequest_p dr = new avtDataRequest(workingNet->GetDataSpec(),
             qA->GetQueryAtts().GetVariables()[0].c_str());
 
         workingNet->SetDataSpec(dr);
     }
-
-    //
-    // Pass down the current SILRestriction (via UseSet) in case the query
-    // needs to make use of this information.
-    //
-    avtSILRestriction_p silr = workingNet->GetDataSpec()->GetRestriction();
 
     //
     //  Create a transition node so that the new filter will receive
@@ -5256,23 +5314,40 @@ NetworkManager::AddQueryOverTimeFilter(QueryOverTimeAttributes *qA,
 
     workingNet->AddNode(trans);
 
+    avtQueryOverTimeFilter *qotFilter = NULL;
+
+    if (useDirectDatabaseQOT)
+    {
+        qotFilter = new avtDirectDatabaseQOTFilter(qA);
+    }
+    else
+    {
+        qotFilter = new avtTimeLoopQOTFilter(qA);
+
+        //
+        // Pass down the current SILRestriction (via UseSet) in case the query
+        // needs to make use of this information.
+        //
+        avtSILRestriction_p silr = workingNet->GetDataSpec()->GetRestriction();
+        if (*silr != NULL)
+        {
+            const SILRestrictionAttributes *silAtts = silr->MakeAttributes();
+            qotFilter->SetSILAtts(silAtts);
+            delete silAtts;
+        }
+    }
+
     //
     // Put a QueryOverTimeFilter right after the transition to handle
     // the query.
     //
-    avtQueryOverTimeFilter *qf = new avtQueryOverTimeFilter(qA);
-    if (*silr != NULL)
-    {
-        const SILRestrictionAttributes *silAtts = silr->MakeAttributes();
-        qf->SetSILAtts(silAtts);
-        delete silAtts;
-    }
-    NetnodeFilter *qfilt = new NetnodeFilter(qf, "QueryOverTime");
-    qfilt->GetInputNodes().push_back(trans);
+    NetnodeFilter *nodeFilter = new NetnodeFilter(qotFilter, "QueryOverTime");
+    nodeFilter->GetInputNodes().push_back(trans);
 
-    workingNetnodeList.push_back(qfilt);
-    workingNet->AddNode(qfilt);
+    workingNetnodeList.push_back(nodeFilter);
+    workingNet->AddNode(nodeFilter);
 }
+
 
 // ****************************************************************************
 //  Method:  NetworkManager::NewVisWindow

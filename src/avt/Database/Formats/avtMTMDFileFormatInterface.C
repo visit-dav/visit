@@ -741,3 +741,85 @@ avtMTMDFileFormatInterface::GenerateTimestepCounts()
         nTotalTimesteps += n;
     }
 }
+
+
+// ****************************************************************************
+//  Method: avtMTMDFileFormatInterface::GetCycles
+//
+//  Purpose:
+//      Retrieve all available cycles.
+//
+//  Arguments:
+//    dom       Unused domain number. 
+//    cycles    The vector to store the retrieved cycles in. 
+//
+//  Programmer: Alister Maguire
+//  Creation:   Tue Sep  3 13:16:07 MST 2019 
+//
+// ****************************************************************************
+
+void
+avtMTMDFileFormatInterface::GetCycles(int dom, intVector &cycles)
+{
+    if (nTimestepGroups == 1)
+    {
+        chunks[0]->FormatGetCycles(cycles); 
+    }
+    else
+    {
+        std::vector< std::vector<int> > groupVecs;
+
+        for (int i = 0; i < nTimestepGroups; ++i)
+        {
+            intVector singleGroup;
+            chunks[i]->FormatGetCycles(singleGroup);
+
+            for (intVector::iterator gItr = singleGroup.begin();
+                 gItr < singleGroup.end(); ++gItr)
+            {
+                cycles.push_back(*gItr);
+            }
+        }
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtMTMDFileFormatInterface::GetTimes
+//
+//  Purpose:
+//      Retrieve all available times.
+//
+//  Arguments:
+//    dom       Unused domain number. 
+//    times     The vector to store the retrieved times in. 
+//
+//  Programmer: Alister Maguire
+//  Creation:   Tue Sep  3 13:16:07 MST 2019 
+//
+// ****************************************************************************
+
+void
+avtMTMDFileFormatInterface::GetTimes(int dom, doubleVector &times)
+{
+    if (nTimestepGroups == 1)
+    {
+        chunks[0]->FormatGetTimes(times); 
+    }
+    else
+    {
+        std::vector< std::vector<double> > groupVecs;
+
+        for (int i = 0; i < nTimestepGroups; ++i)
+        {
+            doubleVector singleGroup;
+            chunks[i]->FormatGetTimes(singleGroup);
+
+            for (doubleVector::iterator gItr = singleGroup.begin();
+                 gItr < singleGroup.end(); ++gItr)
+            {
+                times.push_back(*gItr);
+            }
+        }
+    }
+}

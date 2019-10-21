@@ -41,6 +41,9 @@
     <Field name="useCachedPts" label="useCachedPts" type="bool" access="protected">
       false
     </Field>
+    <Field name="canUseDirectDatabaseRoute" label="canUseDirectDatabaseRoute" type="bool" internal="true" access="protected">
+      true
+    </Field>
     <Function name="CreateNode" user="false" member="true">
     </Function>
     <Function name="SetFromNode" user="false" member="true">
