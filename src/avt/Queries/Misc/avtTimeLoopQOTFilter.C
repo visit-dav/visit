@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
-//                         avtTimeLoopQOTFilter.C                          //
+//                          avtTimeLoopQOTFilter.C                           //
 // ************************************************************************* //
 
 #include <float.h>

@@ -3876,7 +3876,7 @@ avtGenericDatabase::GetQOTSymmetricTensorVarDataset(const char *varname,
 //      element      The element of interest. 
 //      tsRange      The timestep range. 
 //      tsStride     The timestep stride. 
-//      spec         The data request. 
+//      dataRequest  The data request.
 //
 //  Returns:         
 //      The requested variable. 
@@ -3948,7 +3948,7 @@ avtGenericDatabase::GetQOTScalarVariable(const char *varname,
 //      element      The element of interest. 
 //      tsRange      The timestep range. 
 //      tsStride     The timestep stride. 
-//      spec         The data request. 
+//      dataRequest  The data request.
 //
 //  Returns:         
 //      The requested variable. 
@@ -4022,7 +4022,7 @@ avtGenericDatabase::GetQOTVectorVariable(const char *varname,
 //      element      The element of interest. 
 //      tsRange      The timestep range. 
 //      tsStride     The timestep stride. 
-//      spec         The data request. 
+//      dataRequest  The data request.
 //
 //  Returns:         
 //      The requested variable. 
@@ -4096,7 +4096,7 @@ avtGenericDatabase::GetQOTArrayVariable(const char *varname,
 //      element      The element of interest. 
 //      tsRange      The timestep range. 
 //      tsStride     The timestep stride. 
-//      spec         The data request. 
+//      dataRequest  The data request.
 //
 //  Returns:         
 //      The requested variable. 
@@ -4170,7 +4170,7 @@ avtGenericDatabase::GetQOTTensorVariable(const char *varname,
 //      element      The element of interest. 
 //      tsRange      The timestep range. 
 //      tsStride     The timestep stride. 
-//      spec         The data request. 
+//      dataRequest  The data request. 
 //
 //  Returns:         
 //      The requested variable. 
