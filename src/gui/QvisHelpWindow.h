@@ -135,6 +135,7 @@ private:
     QIcon        helpIcon;
     QString      helpFile;
     QString      helpPath;
+    QString      manualPath;
     bool         firstShow;
     int          activeTab;
     IndexMap     index;
