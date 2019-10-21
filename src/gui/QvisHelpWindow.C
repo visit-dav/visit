@@ -409,6 +409,50 @@ QvisHelpWindow::LoadHelp(const QString &fileName)
     ultraPage->setData(0, Qt::UserRole, QVariant("ultrawrapper.html"));
     ultraPage->setIcon(0, helpIcon);
 
+    //FIXME: testing
+    QTreeWidgetItem *manual = new QTreeWidgetItem(
+        helpContents, 0);
+    manual->setText(0, tr("VisIt Manuals"));
+    manual->setData(0, Qt::UserRole, QVariant("/Users/maguire7/Desktop/VisIt_repo/visit/src/doc/_build/index.html"));
+    manual->setIcon(0, helpIcon);
+    AddToIndex(tr("VisIt Manuals"), "/Users/maguire7/Desktop/VisIt_repo/visit/src/doc/_build/index.html");
+
+    //QTreeWidgetItem *manuals = new QTreeWidgetItem(
+    //    helpContents, 0);
+    //manuals->setText(0, tr("VisIt Manuals"));
+    //manuals->setIcon(0, openBookIcon);
+
+    //QTreeWidgetItem *guiMan = new QTreeWidgetItem(
+    //    manuals, 0);
+    //guiMan->setText(0, tr("GUI Manual"));
+    ////guiMan->setData(0, Qt::UserRole, QVariant("/Users/maguire7/Desktop/VisIt_repo/visit/src/doc/_build/gui_manual/index.html");
+    //guiMan->setData(0, Qt::UserRole, QVariant("/Users/maguire7/Desktop/VisIt_repo/visit/src/doc/dir_build/gui_manual/index.html"));
+    //guiMan->setIcon(0, helpIcon);
+    //AddToIndex(tr("GUI Manual"), "/Users/maguire7/Desktop/VisIt_repo/visit/src/doc/_build/gui_manual/index.html");
+
+    //QTreeWidgetItem *cliMan = new QTreeWidgetItem(
+    //    manuals, 0);
+    //cliMan->setText(0, tr("CLI Manual"));
+    //cliMan->setData(0, Qt::UserRole, QVariant("/Users/maguire7/Desktop/VisIt_repo/visit/src/doc/_build/cli_manual/index.html"));
+    //cliMan->setIcon(0, helpIcon);
+    //AddToIndex(tr("CLI Manual"), "/Users/maguire7/Desktop/VisIt_repo/visit/src/doc/_build/cli_manual/index.html");
+
+    //QTreeWidgetItem *devMan = new QTreeWidgetItem(
+    //    manuals, 0);
+    //devMan->setText(0, tr("Developer Manual"));
+    //devMan->setData(0, Qt::UserRole, QVariant("/Users/maguire7/Desktop/VisIt_repo/visit/src/doc/_build/dev_manual/index.html"));
+    //devMan->setIcon(0, helpIcon);
+    //AddToIndex(tr("Developer Manual"), "/Users/maguire7/Desktop/VisIt_repo/visit/src/doc/_build/dev_manual/index.html");
+
+    //helpContents->expandItem(manuals);
+
+    //thisItem->setText(0, node.toElement().attribute("topic"));
+    //thisItem->setData(0, Qt::UserRole, node.toElement().attribute("doc"));
+    // Add the topic to the index.
+    //FIXME: end testing
+
+
+
     // Read the XML file and create the DOM tree. Then use the tree to
     // build the User manual content.
     bool noHelp = false;
@@ -1441,7 +1485,26 @@ QvisHelpWindow::displayPage(const QString &page, bool reload)
 
     if(page != helpFile || reload)
     {
-        QString file(CompleteFileName(page));
+        std::string basePath = "/Users/maguire7/Desktop/VisIt_repo/visit/src/doc/_build/index.html";
+        //std::string guiPath = "/Users/maguire7/Desktop/VisIt_repo/visit/src/doc/_build/gui_manual/index.html;
+        std::string guiPath = "/Users/maguire7/Desktop/VisIt_repo/visit/src/doc/dir_build/gui_manual/index.html";
+        std::string cliPath = "/Users/maguire7/Desktop/VisIt_repo/visit/src/doc/_build/cli_manual/index.html";
+        std::string devPath = "/Users/maguire7/Desktop/VisIt_repo/visit/src/doc/_build/dev_manual/index.html";
+
+        QString file;
+        if (page.toStdString() != basePath &&
+            page.toStdString() != guiPath &&
+            page.toStdString() != cliPath &&
+            page.toStdString() != devPath)//FIXME
+        {
+            file = CompleteFileName(page);
+        }
+        else
+        {
+            cerr << "PATH: " << page.toStdString() << endl;//FIXME
+            file = page;
+        }
+
         if(QFile(file).exists())
         {
             helpBrowser->setSource(QUrl::fromLocalFile(file));
