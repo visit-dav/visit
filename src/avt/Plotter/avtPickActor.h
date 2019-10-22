@@ -132,16 +132,9 @@ class PLOTTER_API avtPickActor
     vtkGlyphSource2D  *glyphSource;
     vtkPolyDataMapper *glyphMapper;
 
-    //vtkActor2D       *hGlyphActor;
-    //vtkGlyphSource2D  *hGlyphSource;
-    //vtkPolyDataMapper2D *hGlyphMapper;
-
     vtkSphereSource      *pointHighlightSource;
     vtkPolyDataMapper2D  *pointHighlightMapper;
     vtkActor2D           *pointHighlightActor;
-    //vtkGlyphSource2D     *pointHighlightSource;
-    //vtkPolyDataMapper2D  *pointHighlightMapper;
-    //vtkActor2D           *pointHighlightActor;
 
     vtkMultiLineSource   *lineHighlightSource;
     vtkPolyDataMapper2D  *lineHighlightMapper;
