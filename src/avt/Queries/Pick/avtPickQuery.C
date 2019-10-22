@@ -1871,6 +1871,10 @@ avtPickQuery::SetPickAttsForTimeQuery(const PickAttributes *pa)
 //  Programmer: Matt Larsen
 //  Creation:   July 8, 2016
 //
+//  Modifications:
+//      Alister Maguire, Tue Oct 22 14:16:52 MST 2019
+//      Apply our transformation if we have it.
+//
 // ****************************************************************************
 
 void
@@ -1878,6 +1882,12 @@ avtPickQuery::ExtractZonePickHighlights(const int &zoneId,
                                         vtkDataSet *ds,
                                         const int &dom)
 {
+   //
+   // If we have a transform, we need to apply this
+   // to the extracted edges.
+   //
+   bool haveTransform = (transform == NULL) ? false : true;
+
    // Clear anything left over
    pickAtts.ClearLines();
    // Bail if highlights are not on
@@ -1904,6 +1914,23 @@ avtPickQuery::ExtractZonePickHighlights(const int &zoneId,
             double p2[3];
             edgePoints->GetPoint(0, p1);
             edgePoints->GetPoint(1, p2);
+
+            if (haveTransform)
+            {
+                avtVector tv1(p1);
+                avtVector tv2(p2);
+
+                tv1 = (*transform) * tv1;
+                tv2 = (*transform) * tv2;
+
+                p1[0] = tv1.x;
+                p1[1] = tv1.y;
+                p1[2] = tv1.z;
+                p2[0] = tv2.x;
+                p2[1] = tv2.y;
+                p2[2] = tv2.z;
+            }
+
             pickAtts.AddLine(p1, p2,i);
         }
         return;
@@ -1962,6 +1989,23 @@ avtPickQuery::ExtractZonePickHighlights(const int &zoneId,
             double p1[3],p2[3];
             ds->GetPoint(p1Id, p1);
             ds->GetPoint(p2Id, p2);
+
+            if (haveTransform)
+            {
+                avtVector tv1(p1);
+                avtVector tv2(p2);
+
+                tv1 = (*transform) * tv1;
+                tv2 = (*transform) * tv2;
+
+                p1[0] = tv1.x;
+                p1[1] = tv1.y;
+                p1[2] = tv1.z;
+                p2[0] = tv2.x;
+                p2[1] = tv2.y;
+                p2[2] = tv2.z;
+            }
+
             pickAtts.AddLine(p1, p2,i);
         }
     }

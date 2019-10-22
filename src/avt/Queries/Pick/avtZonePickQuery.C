@@ -64,14 +64,38 @@ avtZonePickQuery::~avtZonePickQuery()
 //  Programmer: Kathleen Bonnell
 //  Creation:   May 20, 2004 
 //
+//  Modifications:
+//      Alister Maguire, Tue Oct 22 14:01:43 MST 2019
+//      Was setting transform to m instead of invTransform. Updated
+//      to set the invTransform.
+//
 // ****************************************************************************
 
 void
 avtZonePickQuery::SetInvTransform(const avtMatrix *m)
 {
-    transform =  m;
+    invTransform =  m;
 }
 
+
+// ****************************************************************************
+//  Method: avtZonePickQuery::SetTransform
+//
+//  Purpose:
+//      Sets the transform.
+//
+//  Programmer: Alister Maguire
+//  Creation:   Tue Oct 22 14:01:43 MST 2019
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtZonePickQuery::SetTransform(const avtMatrix *m)
+{
+    transform =  m;
+}
 
 
 // ****************************************************************************
