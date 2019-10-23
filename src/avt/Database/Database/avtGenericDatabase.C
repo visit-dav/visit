@@ -6831,7 +6831,6 @@ avtGenericDatabase::ReadQOTDataset(avtDatasetCollection &ds,
     sprintf(progressString, "Reading QOT dataset from %s", 
         Interface->GetType());
 
-
     const int numDomains = (const int)domains.size();
 
     for (int i = 0; i < numDomains; ++i)
