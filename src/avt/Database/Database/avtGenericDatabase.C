@@ -891,6 +891,9 @@ avtGenericDatabase::GetOutput(avtDataRequest_p spec,
 //
 //  Modifications:
 //
+//      Alister Maguire, Wed Oct 23 09:37:20 PDT 2019
+//      Only proceed if we're on the correct processor. 
+//
 // ****************************************************************************
 
 avtDataTree_p
@@ -917,6 +920,16 @@ avtGenericDatabase::GetQOTOutput(avtDataRequest_p spec,
     if (domain < 0)
     {
         domain = 0;
+    }
+
+    //
+    // We only query a single domain, so we can just leave if this
+    // isn't the one we want. 
+    //
+    if (PAR_Rank() != domain) 
+    { 
+        avtDataTree_p rv = new avtDataTree();
+        return rv;
     }
 
     avtDatasetCollection datasetCollection(nDomains);
