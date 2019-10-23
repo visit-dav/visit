@@ -931,7 +931,7 @@ avtGenericDatabase::GetQOTOutput(avtDataRequest_p spec,
         trav.GetDomainList(domains);
     }
 
-    int                  nDomains = (int)domains.size();
+    int nDomains = (int)domains.size();
     avtDatasetCollection datasetCollection(nDomains);
 
     bool hadError = false;
