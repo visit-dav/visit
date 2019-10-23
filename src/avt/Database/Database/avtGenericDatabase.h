@@ -543,7 +543,7 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
                                   boolVector &);
 
     void                       ReadQOTDataset(avtDatasetCollection &, 
-                                  int, avtDataRequest_p &,
+                                  intVector &, avtDataRequest_p &,
                                   avtSourceFromDatabase *);
 
     avtDomainBoundaries       *GetDomainBoundaryInformation(
