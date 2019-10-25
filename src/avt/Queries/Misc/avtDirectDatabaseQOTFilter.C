@@ -146,7 +146,7 @@ avtDirectDatabaseQOTFilter::Execute(void)
 
     if (PAR_Rank() == 0)
     {
-        bool multiCurve   = false;
+        bool multiCurve = false;
         if (atts.GetQueryAtts().GetQueryInputParams().
             HasNumericEntry("curve_plot_type"))
         {

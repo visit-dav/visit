@@ -891,6 +891,10 @@ avtGenericDatabase::GetOutput(avtDataRequest_p spec,
 //
 //  Modifications:
 //
+//      Alister Maguire, Wed Oct 23 11:18:37 PDT 2019
+//      Create a proper data tree so that we can handle multi-processor
+//      queries. 
+//
 // ****************************************************************************
 
 avtDataTree_p
@@ -909,16 +913,25 @@ avtGenericDatabase::GetQOTOutput(avtDataRequest_p spec,
     }
 
     //
-    // If the pick atts contains a domain >= 0, then this is our
-    // target. Otherwise, 0 is the only domain available. 
+    // We only query a single domain, but we need to create proper 
+    // a proper data tree. Let's grab the domain list here.  
     //
-    int nDomains = 1;
-    int domain = QOTAtts->GetPickAtts().GetDomain();
-    if (domain < 0)
+    avtDatabaseMetaData *md = GetMetaData(QOTAtts->GetStartTime());
+    avtSILRestriction_p silr = spec->GetRestriction();
+    avtSILRestrictionTraverser trav(silr);
+    intVector domains;
+    std::string meshname = md->MeshForVar(spec->GetVariable());
+    if (md->GetMesh(meshname) != NULL &&
+        md->GetMesh(meshname)->meshType == AVT_CSG_MESH)
     {
-        domain = 0;
+        trav.GetDomainListAllProcs(domains);
+    }
+    else
+    {
+        trav.GetDomainList(domains);
     }
 
+    int nDomains = (int)domains.size();
     avtDatasetCollection datasetCollection(nDomains);
 
     bool hadError = false;
@@ -927,7 +940,7 @@ avtGenericDatabase::GetQOTOutput(avtDataRequest_p spec,
         //
         // This is the primary routine that reads things in from disk.
         //
-        ReadQOTDataset(datasetCollection, domain, spec, src);
+        ReadQOTDataset(datasetCollection, domains, spec, src);
         DebugDumpDatasetCollection(datasetCollection, nDomains, "output.ReadQOTDataset");
     }
     CATCH2(VisItException, e)
@@ -956,8 +969,6 @@ avtGenericDatabase::GetQOTOutput(avtDataRequest_p spec,
     //
     // Now make something that AVT will understand downstream.
     //
-    intVector domains; 
-    domains.push_back(domain);
     avtDataTree_p rv = datasetCollection.AssembleDataTree(domains);
 
     avtDataObject_p dob = src->GetOutput();
@@ -6738,7 +6749,7 @@ avtGenericDatabase::ReadDataset(avtDatasetCollection &ds, intVector &domains,
 //
 //  Arguments:
 //      ds        The dataset collection.
-//      domain    The domain to retrieve our data from.
+//      domains   A list of current domains. 
 //      spec      A data request.
 //      src       The source object.
 //
@@ -6749,15 +6760,31 @@ avtGenericDatabase::ReadDataset(avtDatasetCollection &ds, intVector &domains,
 //
 //  Modifications:
 //
+//      Alister Maguire, Wed Oct 23 11:18:37 PDT 2019
+//      Create a proper data tree so that we can handle multi-processor
+//      queries. 
+//
 // ****************************************************************************
 
 void
 avtGenericDatabase::ReadQOTDataset(avtDatasetCollection &ds, 
-                                   int domain,
+                                   intVector &domains,
                                    avtDataRequest_p &spec, 
                                    avtSourceFromDatabase *src)
 {
     int timerHandle = visitTimer->StartTimer();
+
+    const QueryOverTimeAttributes *QOTAtts = spec->GetQOTAtts();
+
+    //
+    // If the pick atts contains a domain >= 0, then this is our
+    // target. Otherwise, 0 is the only domain available. 
+    //
+    int qDomain = QOTAtts->GetPickAtts().GetDomain();
+    if (qDomain < 0)
+    {
+        qDomain = 0;
+    }
 
     //
     // Set up some things we will want for later.
@@ -6804,33 +6831,38 @@ avtGenericDatabase::ReadQOTDataset(avtDatasetCollection &ds,
     sprintf(progressString, "Reading QOT dataset from %s", 
         Interface->GetType());
 
-    //
-    // We currently only read from a single domain for a QOT
-    // dataset. 
-    //
-    src->DatabaseProgress(domain, 1, progressString);
+    const int numDomains = (const int)domains.size();
 
-    vtkDataSet *single_ds = GetQOTDataset(domain, var, vars2nd, spec, src);
-
-    ds.SetNumMaterials(0, 1);
-
-    //
-    // We have a single domain label to add. 
-    //
-    char label[256]; 
-    snprintf(label, 256, "%d", domain);
-    stringVector labels;
-    labels.push_back(label);
-    ds.labels[0] = labels;
-
-    //
-    //  Finish setting up the dataset
-    //
-    ds.needsMatSelect[0] = false;
-    ds.SetDataset(0, 0, single_ds);
-    if (single_ds != NULL)
+    for (int i = 0; i < numDomains; ++i)
     {
-        single_ds->Delete();
+        int curDomain = domains[i]; 
+
+        //
+        // We currently only read from a single domain for a QOT
+        // dataset. Create a null dataset for all other domains. 
+        //
+        vtkDataSet *single_ds = NULL;
+        if (curDomain == qDomain)
+        {
+            single_ds = GetQOTDataset(curDomain, var, vars2nd, spec, src);
+        }
+
+        ds.SetNumMaterials(i, 1);
+
+        char label[256]; 
+        snprintf(label, 256, "%d", curDomain);
+        stringVector labels;
+        labels.push_back(label);
+        ds.labels[i] = labels;
+
+        ds.needsMatSelect[i] = false;
+        ds.SetDataset(i, 0, single_ds);
+        if (single_ds != NULL)
+        {
+            single_ds->Delete();
+        }
+
+        src->DatabaseProgress(i, numDomains, progressString);
     }
 
     src->DatabaseProgress(1, 0, progressString);
