@@ -142,10 +142,10 @@ avtDirectDatabaseQOTFilter::Execute(void)
     //
     success = true;
 
-    avtDataTree_p dataTree = GetInputDataTree();
-
     if (PAR_Rank() == 0)
     {
+        avtDataTree_p dataTree = GetInputDataTree();
+
         bool multiCurve = false;
         if (atts.GetQueryAtts().GetQueryInputParams().
             HasNumericEntry("curve_plot_type"))
