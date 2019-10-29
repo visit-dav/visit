@@ -6432,7 +6432,6 @@ avtGenericDatabase::ReadDataset(avtDatasetCollection &ds, intVector &domains,
         }
         enumScalarLabel += "mixed";
     }
-
     //
     // Some file formats have variables that are defined for only some of
     // the materials.  In that case, we have to tell the file format interface
