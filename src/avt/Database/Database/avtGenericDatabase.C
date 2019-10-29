@@ -916,7 +916,8 @@ avtGenericDatabase::GetQOTOutput(avtDataRequest_p spec,
     // We only query a single domain, but we need to create proper 
     // a proper data tree. Let's grab the domain list here.  
     //
-    avtDatabaseMetaData *md = GetMetaData(QOTAtts->GetStartTime());
+    int startTime = QOTAtts->GetStartTime();
+    avtDatabaseMetaData *md = GetMetaData(startTime);
     avtSILRestriction_p silr = spec->GetRestriction();
     avtSILRestrictionTraverser trav(silr);
     intVector domains;
@@ -974,7 +975,7 @@ avtGenericDatabase::GetQOTOutput(avtDataRequest_p spec,
     avtDataObject_p dob = src->GetOutput();
     boolVector emptySelections;
     PopulateDataObjectInformation(dob, spec->GetVariable(), 
-        QOTAtts->GetStartTime(), emptySelections, spec);
+        startTime, emptySelections, spec);
 
     ManageMemoryForNonCachableVar(NULL);
     ManageMemoryForNonCachableMesh(NULL);
@@ -6432,7 +6433,6 @@ avtGenericDatabase::ReadDataset(avtDatasetCollection &ds, intVector &domains,
         enumScalarLabel += "mixed";
     }
 
-
     //
     // Some file formats have variables that are defined for only some of
     // the materials.  In that case, we have to tell the file format interface
@@ -6764,6 +6764,10 @@ avtGenericDatabase::ReadDataset(avtDatasetCollection &ds, intVector &domains,
 //      Create a proper data tree so that we can handle multi-processor
 //      queries. 
 //
+//      Alister Maguire, Tue Oct 29 10:32:56 PDT 2019
+//      Make sure that each processor calls ActivateTimestep on all
+//      timesteps that are requested.
+//
 // ****************************************************************************
 
 void
@@ -6794,11 +6798,19 @@ avtGenericDatabase::ReadQOTDataset(avtDatasetCollection &ds,
         spec->GetSecondaryVariablesWithoutDuplicates();
 
     //
+    // Gather some time span information needed further down.
+    //
+    int startTime = spec->GetQOTAtts()->GetStartTime();
+    int stopTime = spec->GetQOTAtts()->GetEndTime();
+    int stride   = spec->GetQOTAtts()->GetStride();
+    bool addLastStep = ((stopTime - startTime) % 
+        stride == 0.0) ? false : true;
+
+    //
     // Some file formats have variables that are defined for only some of
     // the materials.  In that case, we have to tell the file format interface
     // of all of the variables we will be interested in.
     //
-    int startTime = spec->GetQOTAtts()->GetStartTime();
     avtDatabaseMetaData *md = GetMetaData(startTime);
     const char *real_var = GetOriginalVariableName(md, var);
     vector<CharStrRef> real_vars2nd;
@@ -6837,14 +6849,39 @@ avtGenericDatabase::ReadQOTDataset(avtDatasetCollection &ds,
     {
         int curDomain = domains[i]; 
 
+        if (md->GetFormatCanDoDomainDecomposition())
+        {
+            curDomain = PAR_Rank();
+        }
+
         //
         // We currently only read from a single domain for a QOT
-        // dataset. Create a null dataset for all other domains. 
+        // dataset. Create a null dataset for all other domains.
         //
         vtkDataSet *single_ds = NULL;
         if (curDomain == qDomain)
         {
             single_ds = GetQOTDataset(curDomain, var, vars2nd, spec, src);
+        }
+        else
+        {
+            //
+            // This is some funny business here: every processor
+            // needs to call ActivateTimestep on the same timesteps
+            // (for future collection/communcation purposes). Since
+            // only one processor needs to perform the query, we
+            // need to tell the remaining processors to activate
+            // their timesteps here.
+            //
+            for (int ts = startTime; ts <= stopTime; ts += stride)
+            {
+                ActivateTimestep(ts);
+            }
+
+            if (addLastStep)
+            {
+                ActivateTimestep(stopTime);
+            }
         }
 
         ds.SetNumMaterials(i, 1);
@@ -6864,6 +6901,24 @@ avtGenericDatabase::ReadQOTDataset(avtDatasetCollection &ds,
 
         src->DatabaseProgress(i, numDomains, progressString);
     }
+
+    //
+    // This is the same business as above (see comment). This
+    // handles the case when num_processors < num_domains.
+    //
+    if (numDomains == 0)
+    {
+        for (int ts = startTime; ts <= stopTime; ts += stride)
+        {
+            ActivateTimestep(ts);
+        }
+
+        if (addLastStep)
+        {
+            ActivateTimestep(stopTime);
+        }
+    }
+
 
     src->DatabaseProgress(1, 0, progressString);
 
