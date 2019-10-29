@@ -15,19 +15,7 @@ openPMDFile = 'openpmd_test_data/data00000500.opmd'
 
 vars = ['Fields/rho']
 
-def test(var, tagName):
-    SetTimeSliderState(1)
-    AddPlot("Pseudocolor", var)
-    SetActivePlots(0)
-    PseudocolorAtts = PseudocolorAttributes()
-    PseudocolorAtts.colorTableName = "hot_desaturated"
-    SetPlotOptions(PseudocolorAtts)
-    DrawPlots()
-    fileName = var.replace("/", "")
-    Test(tagName + "_" +  fileName)
-    DeleteAllPlots()
-
-def test2(var, tagName) :
+def test(var, tagName) :
     SetTimeSliderState(1)
     AddPlot("Contour", var)
     SetActivePlots(0)
@@ -45,7 +33,7 @@ def test2(var, tagName) :
 TestSection("3D Example openPMD File")
 OpenDatabase(data_path(openPMDFile))
 for var in vars:
-    test2(var,"openPMD_3D")
+    test(var,"openPMD_3D")
 CloseDatabase(data_path(openPMDFile))
 
 Exit()
