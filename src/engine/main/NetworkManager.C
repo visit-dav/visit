@@ -1254,11 +1254,6 @@ NetworkManager::StartNetwork(const std::string &format,
                              const std::string &selName,
                              int windowID)
 {
-    cerr << "\nSTARTING NETWORK WITH THE FOLLOWING: " << endl;//FIXME
-    cerr << "FORMAT: " << format << endl;
-    cerr << "FILENAME: " << filename << endl;
-    cerr << "VAR: " << var << endl;
-    cerr << "TIME: " << time << endl;
     // If the variable is an expression, we need to find a "real" variable
     // name to work with.
     std::string leaf = ParsingExprList::GetRealVariable(var);
