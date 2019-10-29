@@ -61,6 +61,9 @@ public:
 //    Kathleen Biagas, Wed May 24 17:16:49 PDT 2017
 //    Removed duplicate method for returning the database.
 //
+//    Alister Maguire, Tue Oct 29 13:38:59 MST 2019
+//    Added GetVarName.
+//
 // ****************************************************************************
 class ENGINE_MAIN_API NetnodeDB: public Netnode
 {
@@ -71,6 +74,7 @@ public:
     void SetDBInfo(std::string _filename, std::string _var, int _time);
     virtual avtDataObject_p GetOutput(void);
     std::string GetFilename(void) {return filename;};
+    std::string GetVarName(void) {return var;};
     int GetTime(void) {return time;};
     ref_ptr<avtDatabase> GetDB(void) {return db;};
     void ReleaseData();

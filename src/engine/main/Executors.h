@@ -1589,6 +1589,10 @@ EngineRPCExecutor<RenderRPC>::Execute(RenderRPC *rpc)
 //    Kathleen Bonnell, Thu Apr 15 14:07:53 PDT 2004
 //    Send rpc->GetID() as arg to AddQueryOverTimeFilter.
 //
+//    Alister Maguire, Tue Oct 29 14:46:38 MST 2019
+//    Moved the actual cloning procedure to AddQueryOverTimeFilter so
+//    that the correct type of clone can be chosen.
+//
 // ****************************************************************************
 template<>
 void
@@ -1599,7 +1603,6 @@ EngineRPCExecutor<CloneNetworkRPC>::Execute(CloneNetworkRPC *rpc)
     debug2 << "Executing CloneNetworkRPC: " << rpc->GetID() << endl;
     TRY
     {
-        netmgr->CloneNetwork(rpc->GetID());
         if (rpc->GetQueryOverTimeAtts() != NULL)
             netmgr->AddQueryOverTimeFilter(rpc->GetQueryOverTimeAtts(),
                                            rpc->GetID());

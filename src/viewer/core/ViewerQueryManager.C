@@ -5388,18 +5388,6 @@ ViewerQueryManager::DoTimeQuery(ViewerWindow *origWin,
     // gets the right values, the actual toolbar and popup menu are not
     // updating. If we ever figure out the problem, remove this code.
     resWin->GetActionManager()->UpdateSingleWindow();
-
-    if (timeQueryAtts->GetCanUseDirectDatabaseRoute())
-    {
-        //
-        // Cloning the network leaves us in an odd state; our current plot
-        // is the result of the QOT. If we've used the direct database route,
-        // that means we have a reduced QOT dataset. We need to make sure our
-        // original plot is back to it's original state. 
-        //
-        origPlot->ClearCurrentActor();
-        origList->UpdateFrame();
-    }
 }
 
 
