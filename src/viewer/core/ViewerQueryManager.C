@@ -1099,6 +1099,7 @@ ViewerQueryManager::DatabaseQuery(const MapNode &in_queryParams)
     {
         useActualData = queryParams.GetEntry("use_actual_data")->ToInt();
     }
+
     // ensure we are all on the same page
     queryParams["use_actual_data"] = useActualData;
 
@@ -2280,7 +2281,7 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
         {
             retry = false;
             int networkId = plot->GetNetworkID();
-            int windowId = plot->GetWindowId();
+            int origWindowId = plot->GetWindowId();
 
             TRY
             {
@@ -2298,7 +2299,7 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
                 GetViewerEngineManager()->UpdateExpressions(
                     plot->GetEngineKey(), plot->GetExpressions());
 
-                GetViewerEngineManager()->Pick(engineKey, networkId, windowId,
+                GetViewerEngineManager()->Pick(engineKey, networkId, origWindowId,
                                                &pa, pa);
                 pa.SetCreateSpreadsheet(createSpreadsheetSave);
                 if (pa.GetFulfilled())
@@ -3370,6 +3371,9 @@ ViewerQueryManager::HandlePickCache()
 //    Alister Maguire, Tue May 22 14:16:38 PDT 2018
 //    Added ability to plot range curves. 
 //
+//    Alister Maguire, Tue Oct 15 11:44:19 PDT 2019
+//    Added support for using the direct route for queries over time. 
+//
 // ****************************************************************************
 
 void
@@ -3435,6 +3439,20 @@ ViewerQueryManager::PointQuery(const MapNode &queryParams)
     if (queryParams.HasNumericEntry("do_time"))
         timeCurve = queryParams.GetEntry("do_time")->ToInt();
     timeCurve |= (pickAtts->GetDoTimeCurve() ? 1 : 0);
+
+    //
+    // If we're performing a time curve, we might be able
+    // to use the direct route. Assume yes until proven
+    // otherwise. 
+    //
+    if (timeCurve)
+    {
+        timeQueryAtts->SetCanUseDirectDatabaseRoute(true);
+    }
+    else
+    {
+        timeQueryAtts->SetCanUseDirectDatabaseRoute(false);
+    }
 
     //
     // If the user is trying to retrieve curves without a range, 
@@ -3508,6 +3526,8 @@ ViewerQueryManager::PointQuery(const MapNode &queryParams)
         int stride = 1;
         if (doTimeManually)
         {
+            timeQueryAtts->SetCanUseDirectDatabaseRoute(false);
+
             //
             // When we are performing a time curve and returning the curves, 
             // we need to set the timestep manually. 
@@ -3519,7 +3539,7 @@ ViewerQueryManager::PointQuery(const MapNode &queryParams)
             origList->GetActivePlotIDs(plotIDs);
             int origPlotID       = (plotIDs.size() > 0 ? plotIDs[0] : -1);
             ViewerPlot *origPlot = origList->GetPlot(origPlotID);
-            origTimeStep     = origPlot->GetState();
+            origTimeStep         = origPlot->GetState();
             const avtDatabaseMetaData *md = origPlot->GetMetaData();
             int nStates          = md->GetNumStates();
             if (nStates <= 1)
@@ -3721,6 +3741,24 @@ ViewerQueryManager::PointQuery(const MapNode &queryParams)
     else
         curvePlotType = pickAtts->GetTimeCurveType();
 
+    if (timeCurve)
+    {
+        //
+        // If we're doing a pick through time, we need to make sure
+        // that the "use_actual_data" flag is set. Assume true if
+        // it hasn't been requested.
+        //
+        int useActualData = 1;
+        if (queryParams.HasNumericEntry("use_actual_data"))
+        {
+            if (queryParams.GetEntry("use_actual_data")->ToInt() == 0)
+            {
+                useActualData = 0;
+            }
+        }
+        pickAtts->GetTimeOptions()["use_actual_data"] = useActualData;
+    }
+
     ViewerWindow *win = ViewerWindowManager::Instance()->GetActiveWindow();
     INTERACTION_MODE imode = win->GetInteractionMode();
 
@@ -3782,6 +3820,14 @@ ViewerQueryManager::PointQuery(const MapNode &queryParams)
             else
                preserveCoord = pickAtts->GetTimePreserveCoord();
 
+            //
+            // We can't use the direct route when preserving the coordinates.
+            //
+            if (preserveCoord)
+            {
+                timeQueryAtts->SetCanUseDirectDatabaseRoute(false);
+            }
+
             bool tpc = pickAtts->GetTimePreserveCoord();
             bool tc  = pickAtts->GetDoTimeCurve();
             pickAtts->SetTimePreserveCoord(preserveCoord);
@@ -3826,6 +3872,8 @@ ViewerQueryManager::PointQuery(const MapNode &queryParams)
           preserveCoord = pickAtts->GetTimePreserveCoord();
         if (timeCurve && preserveCoord)
         {
+            timeQueryAtts->SetCanUseDirectDatabaseRoute(false);
+
             // need to determine the coordinate to use, and change
             // the query type appropriately.
             if (pType == "DomainZone" || pType == "ZoneLabel")
@@ -5074,6 +5122,12 @@ ViewerQueryManager::DoTimeQuery(ViewerWindow *origWin,
         }
     }
 
+    if (qParams.HasNumericEntry("use_actual_data") &&
+        qParams.GetEntry("use_actual_data")->ToInt() == 1)
+    {
+        timeQueryAtts->SetCanUseDirectDatabaseRoute(false);
+    }
+
     //
     //  Grab information from the originating window.
     //
@@ -5334,6 +5388,18 @@ ViewerQueryManager::DoTimeQuery(ViewerWindow *origWin,
     // gets the right values, the actual toolbar and popup menu are not
     // updating. If we ever figure out the problem, remove this code.
     resWin->GetActionManager()->UpdateSingleWindow();
+
+    if (timeQueryAtts->GetCanUseDirectDatabaseRoute())
+    {
+        //
+        // Cloning the network leaves us in an odd state; our current plot
+        // is the result of the QOT. If we've used the direct database route,
+        // that means we have a reduced QOT dataset. We need to make sure our
+        // original plot is back to it's original state. 
+        //
+        origPlot->ClearCurrentActor();
+        origList->UpdateFrame();
+    }
 }
 
 

@@ -303,8 +303,14 @@ Product Operator (``*``) : ``exprL * exprR``
 .. _Division_Expression_Operator:
 
 Division Operator (``/``) : ``exprL / exprR``
-    Creates a new expression which is quotient after dividing the ``exprL``
+    Creates a new expression which is the quotient after dividing the ``exprL``
     expression by the ``exprR`` expression.
+
+Division Operator : ``divide(val_numerator, val_denominator, [div_by_zero_value, tolerance])``
+    Creates a new expression which is the quotient after dividing the
+    ``val_numerator`` expression by the ``val_denominator`` expression. The
+    ``div_by_zero_value`` is used wherever the ``val_denominator`` is within
+    ``tolerance`` of zero.
 
 .. _Exponent_Expression_Operator:
 
@@ -365,17 +371,17 @@ Base 10 Logarithm Function (``log10()``) : ``log10(expr0)``
     Creates a new expression which is everywhere the base 10 logarithm of its
     argument.
 
-.. _Pairwise_Max_Expression_Function:
+.. _Max_Expression_Function:
 
-Pairwise Max Function (``max()``) : ``max(expr0,exrp1)``
-    Creates a new expression which is everywhere the pairwise maximum of its
-    two arguments.
+Max Function (``max()``) : ``max(expr0, exrp1 [, ...])``
+    Creates a new expression which is everywhere the maximum among all input
+    variables.
 
-.. _Pairwise_Min_Expression_Function:
+.. _Min_Expression_Function:
 
-Pairwise Min Function (``min()``) : ``min(expr0,exrp1)``
-    Creates a new expression which is everywhere the pairwise minimum of its
-    two arguments.
+Min Function (``min()``) : ``min(expr0, exrp1 [, ...])``
+    Creates a new expression which is everywhere the minimum among all input
+    variables.
 
 .. _Modulo_Expression_Function:
 
@@ -1778,13 +1784,21 @@ isnan Function: ``isnan()`` : ``isnan(expr0)``
 
 .. _Q_Criterion_Expression_Function:
 
-q criterion Function: ``q_criterion()`` : ``q_criterion(expr0)``
-    No description available.
+q criterion Function: ``q_criterion()`` : ``q_criterion(<gradient(velocity[0])>, <gradient(velocity[1])>, <gradient(velocity[2])>)``
+    Generates the Q-criterion value developed by Hunt et. al.. It is based on the
+    observation that, in regions where the Q-criterion is greater than zero, rotation
+    exceeds strain and, in conjunction with a pressure min, indicates the presence of
+    a vortex. The three arguments to the function are gradient vectors of the x-, y-,
+    and z-velocity. The gradient function (see :ref:`gradient() <Gradient_Expression_Function>`) can be used to create the gradient vectors.
 
 .. _Lambda2_Expression_Function:
 
-lambda2 Function: ``lambda2()`` : ``lambda2(expr0)``
-    No description available.
+lambda2 Function: ``lambda2()`` : ``lambda2(<gradient(velocity[0])>, <gradient(velocity[1])>, <gradient(velocity[2])>)``
+    Generates the Lambda-2 criterion. It is based on the observation that, in
+    regions where Lambda-2 is less than zero, rotation exceeds strain and, in
+    conjunction with a pressure min, indicates the presence of a vortex. The three
+    arguments to the function are gradient vectors of the x-, y-, and z-velocity.
+    The gradient function (see :ref:`gradient() <Gradient_Expression_Function>`) can be used to create the gradient vectors.
 
 .. _Mean_Curvature_Expression_Function:
 

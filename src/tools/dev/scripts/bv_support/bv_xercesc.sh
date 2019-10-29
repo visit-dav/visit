@@ -26,6 +26,7 @@ function bv_xercesc_info
     export XERCESC_BUILD_DIR=${XERCESC_BUILD_DIR:-"xerces-c-${XERCESC_VERSION}"}
     export XERCESC_URL=${XERCESC_URL:-"http://archive.apache.org/dist/xerces/c/3/sources"}
     export XERCESC_MD5_CHECKSUM="9eb1048939e88d6a7232c67569b23985"
+    export XERCESC_SHA256_CHECKSUM="743bd0a029bf8de56a587c270d97031e0099fe2b7142cef03e0da16e282655a0"
 }
 
 function bv_xercesc_print
@@ -34,8 +35,6 @@ function bv_xercesc_print
     printf "%s%s\n" "XERCESC_VERSION=" "${XERCESC_VERSION}"
     printf "%s%s\n" "XERCESC_COMPATIBILITY_VERSION=" "${XERCESC_COMPATIBILITY_VERSION}"
     printf "%s%s\n" "XERCESC_BUILD_DIR=" "${XERCESC_BUILD_DIR}"
-    printf "%s%s\n" "XERCESC_URL=" "${XERCESC_URL}"
-    printf "%s%s\n" "XERCESC_MD5_CHECKSUM=" "${XERCESC_MD5_CHECKSUM}"
 }
 
 function bv_xercesc_print_usage

@@ -19,7 +19,11 @@
 #
 #    Kevin Griffin, Thu Aug 11 10:53:13 PDT 2016
 #    Add avtGyRadiusQuery.
-#****************************************************************************
+#
+#    Alister Maguire, Tue Sep 24 13:46:56 MST 2019
+#    Added avtDirectDatabaseQOTFilter and avtTimeLoopQOTFilter.
+#
+#****************************************************************************/
 
 SET(ABSTRACT_SOURCES
 Abstract/avtCurveQuery.C
@@ -32,8 +36,10 @@ Abstract/avtTwoPassDatasetQuery.C
 )
 
 SET(MISC_SOURCES
-Misc/avtQueryFactory.C
 Misc/avtQueryOverTimeFilter.C
+Misc/avtQueryFactory.C
+Misc/avtTimeLoopQOTFilter.C
+Misc/avtDirectDatabaseQOTFilter.C
 )
 
 SET(PICK_SOURCES

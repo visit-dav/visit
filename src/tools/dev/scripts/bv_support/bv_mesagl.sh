@@ -39,7 +39,7 @@ function bv_mesagl_print
 
 function bv_mesagl_print_usage
 {
-    printf "%-15s %s [%s]\n" "--mesagl" "Build MesaGL" "$DO_MESAGL"
+    printf "%-20s %s [%s]\n" "--mesagl" "Build MesaGL" "$DO_MESAGL"
 }
 
 function bv_mesagl_host_profile
@@ -106,6 +106,38 @@ function bv_mesagl_dry_run
     fi
 }
 
+function apply_mesagl_patch
+{
+    patch -p0 << \EOF
+diff -c configure.ac.orig configure.ac
+*** configure.ac.orig	Thu Oct 10 15:44:18 2019
+--- configure.ac	Thu Oct 10 15:44:26 2019
+***************
+*** 2690,2696 ****
+      dnl (See https://llvm.org/bugs/show_bug.cgi?id=6823)
+      if test "x$enable_llvm_shared_libs" = xyes; then
+          dnl We can't use $LLVM_VERSION because it has 'svn' stripped out,
+!         LLVM_SO_NAME=LLVM-`$LLVM_CONFIG --version`
+          AS_IF([test -f "$LLVM_LIBDIR/lib$LLVM_SO_NAME.$IMP_LIB_EXT"], [llvm_have_one_so=yes])
+  
+          if test "x$llvm_have_one_so" = xyes; then
+--- 2690,2696 ----
+      dnl (See https://llvm.org/bugs/show_bug.cgi?id=6823)
+      if test "x$enable_llvm_shared_libs" = xyes; then
+          dnl We can't use $LLVM_VERSION because it has 'svn' stripped out,
+!         LLVM_SO_NAME=LLVM-$LLVM_VERSION
+          AS_IF([test -f "$LLVM_LIBDIR/lib$LLVM_SO_NAME.$IMP_LIB_EXT"], [llvm_have_one_so=yes])
+  
+          if test "x$llvm_have_one_so" = xyes; then
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "MesaGL patch failed."
+        return 1
+    fi
+
+    return 0;
+}
+
 function build_mesagl
 {
     #
@@ -119,10 +151,27 @@ function build_mesagl
     fi
 
     #
-    # Build MESAGL.
+    # Apply patches
     #
     cd $MESAGL_BUILD_DIR || error "Couldn't cd to mesagl build dir."
 
+    info "Patching MesaGL"
+    apply_mesagl_patch
+    if [[ $? != 0 ]] ; then
+        if [[ $untarred_mesagl == 1 ]] ; then
+            warn "Giving up on MesaGL build because the patch failed."
+            return 1
+        else
+            warn "Patch failed, but continuing.  I believe that this script\n" \
+                 "tried to apply a patch to an existing directory that had\n" \
+                 "already been patched ... that is, the patch is\n" \
+                 "failing harmlessly on a second application."
+        fi
+    fi
+
+    #
+    # Build MESAGL.
+    #
     if [[ "$DO_STATIC_BUILD" == "yes" ]]; then
         MESAGL_STATIC_DYNAMIC="--disable-shared --disable-shared-glapi --enable-static --enable-static-glapi"
     fi

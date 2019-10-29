@@ -51,6 +51,9 @@ class avtIOInformation;
 //    Brad Whitlock, Thu Jun 19 10:50:25 PDT 2014
 //    Pass mesh name to PopulateIOInformation.
 //
+//    Alister Maguire, Tue Sep 24 11:15:10 MST 2019
+//    Added GetCycles and GetTimes.
+//
 // ****************************************************************************
 
 class DATABASE_API avtMTMDFileFormatInterface : public avtFileFormatInterface
@@ -66,6 +69,10 @@ class DATABASE_API avtMTMDFileFormatInterface : public avtFileFormatInterface
     virtual void           *GetAuxiliaryData(const char *var, int, int,
                                              const char *type, void *args,
                                              DestructorFunction &);
+
+    virtual void            GetCycles(int, intVector &);
+    virtual void            GetTimes(int, doubleVector &);
+
     virtual std::string     CreateCacheNameIncludingSelections(std::string,
                                                                int, int);
 

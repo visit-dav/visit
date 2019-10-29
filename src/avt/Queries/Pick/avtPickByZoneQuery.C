@@ -113,6 +113,13 @@ avtPickByZoneQuery::~avtPickByZoneQuery()
 //    Matt Larsen, July 19 08:29:l2 PDT 2017
 //    Added support for picking by label
 //
+//    Alister Maguire, Thu Sep 12 15:34:02 PDT 2019
+//    Make sure that the highlight extractor gets the local id, not the
+//    global one. 
+//
+//    Alister Maguire, Fri Oct 11 15:37:24 PDT 2019
+//    Set the real id for direct database lookups. 
+//
 // ****************************************************************************
 
 void
@@ -239,6 +246,7 @@ avtPickByZoneQuery::Execute(vtkDataSet *ds, const int dom)
            ConvertElNamesToGlobal();
     }
 
+    pickAtts.SetRealElementNumber(zoneid);
     pickAtts.SetElementNumber(userZoneId+cellOrigin);
     if (pickAtts.GetMatSelected())
     {
@@ -323,7 +331,7 @@ avtPickByZoneQuery::Execute(vtkDataSet *ds, const int dom)
         pickAtts.SetPickPoint(center);
     }
     
-    this->ExtractZonePickHighlights(origPick, ds, dom);
+    this->ExtractZonePickHighlights(zoneid, ds, dom);
 }
 
 

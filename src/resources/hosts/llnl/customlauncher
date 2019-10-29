@@ -60,6 +60,11 @@ class JobSubmitter_mpirun_LLNL(JobSubmitter_mpirun):
 #   I also set some LFS environment variables that weren't being set for
 #   Jose Milovich.
 #
+#   Eric Brugger, Thu Sep 19 09:30:11 PDT 2019
+#   I modified the bsub internal launcher to set the environment variables
+#   as part of bsub command to get around a bug on rzansel where the
+#   environment variables are not getting passed by bsub.
+#
 ###############################################################################
 
 class JobSubmitter_bsub_LLNL(JobSubmitter):
@@ -71,13 +76,7 @@ class JobSubmitter_bsub_LLNL(JobSubmitter):
 
     def CreateCommand(self, args, debugger):
         bsub, sublauncher = self.LauncherAndSubLauncher()
-        parcmd = ["env", "LSF_BINDIR=/opt/ibm/spectrumcomputing/lsf/10.1/linux3.10-glibc2.17-ppc64le-csm/bin"]
-        parcmd = parcmd + ["LSF_CONFDIR=/opt/ibm/spectrumcomputing/lsf/conf"]
-        parcmd = parcmd + ["LSF_ENVDIR=/opt/ibm/spectrumcomputing/lsf/conf"]
-        parcmd = parcmd + ["LSF_LIBDIR=/opt/ibm/spectrumcomputing/lsf/10.1/linux3.10-glibc2.17-ppc64le-csm/lib"]
-        parcmd = parcmd + ["LSF_SERVERDIR=/opt/ibm/spectrumcomputing/lsf/10.1/linux3.10-glibc2.17-ppc64le-csm/etc"]
-        parcmd = parcmd + ["LSF_UIDDIR=/opt/ibm/spectrumcomputing/lsf/10.1/linux3.10-glibc2.17-ppc64le-csm/lib/uid"]
-        parcmd = parcmd + ["/usr/tcetmp/bin/bsub"]
+        parcmd = ["/usr/tcetmp/bin/bsub"]
         parcmd = parcmd + ["-core_isolation", "2"]
         if self.parallel.launchargs != None:
             parcmd = parcmd + self.parallel.launchargs
@@ -93,6 +92,13 @@ class JobSubmitter_bsub_LLNL(JobSubmitter):
         if nodes == None:
             nodes = self.parallel.np
         ppn = str(int(math.ceil(float(self.parallel.np) / float(nodes))))
+        parcmd = parcmd + ["env", "LSF_BINDIR=/opt/ibm/spectrumcomputing/lsf/10.1/linux3.10-glibc2.17-ppc64le-csm/bin"]
+        parcmd = parcmd + ["LD_LIBRARY_PATH=%s" % GETENV("LD_LIBRARY_PATH")]
+        parcmd = parcmd + ["LSF_CONFDIR=/opt/ibm/spectrumcomputing/lsf/conf"]
+        parcmd = parcmd + ["LSF_ENVDIR=/opt/ibm/spectrumcomputing/lsf/conf"]
+        parcmd = parcmd + ["LSF_LIBDIR=/opt/ibm/spectrumcomputing/lsf/10.1/linux3.10-glibc2.17-ppc64le-csm/lib"]
+        parcmd = parcmd + ["LSF_SERVERDIR=/opt/ibm/spectrumcomputing/lsf/10.1/linux3.10-glibc2.17-ppc64le-csm/etc"]
+        parcmd = parcmd + ["XLSF_UIDDIR=/opt/ibm/spectrumcomputing/lsf/10.1/linux3.10-glibc2.17-ppc64le-csm/lib/uid"]
         parcmd = parcmd + ["/usr/tce/packages/jsrun/jsrun-2019.05.02/bin/jsrun"]
         parcmd = parcmd + ["--np", self.parallel.np]
         parcmd = parcmd + ["--nrs", self.parallel.nn]
@@ -188,6 +194,10 @@ class JobSubmitter_bsub_LLNL(JobSubmitter):
 #   Eric Brugger, Fri Jun 14 10:39:30 PDT 2019
 #   I added cmax to the list of toss3 machines.
 #
+#   Eric Brugger, Thu Sep 26 17:19:10 PDT 2019
+#   I removed the logic for setting the visitarch to "linux-x86_64-toss3"
+#   on toss3 systems. I removed the logic for hoth.
+#
 ###############################################################################
 
 class LLNLLauncher(MainLauncher):
@@ -205,12 +215,6 @@ class LLNLLauncher(MainLauncher):
         return IP
 
     def Customize(self):
-        # ----
-        # Hoth @ LLNL
-        # ----
-        if self.nodename() == "hoth" and self.domainname() == "llnl.gov":
-            SETENV("LIBGL_ALWAYS_INDIRECT", "1")
-
         #
         # BG/Q networking changes for parallel engine. We override the host
         # with an IP address.
@@ -247,35 +251,12 @@ class LLNLLauncher(MainLauncher):
             self.generalArgs.host = "130.106.204.3"
 
         #
-        # Set the LD_LIBRARY_PATH to include the path to MPI on borax,
-        # catalyst, cmax, czvnc, jade, max, mica, pascal, pinot, quartz,
-        # rzalastor, rzgenie, rzhasgpu, rzslic, rztopaz, rztrona, rzvnc,
-        # surface, syrah, zin and agate.
+        # Set the LD_LIBRARY_PATH to include the path to MPI on
+        # linux-x86_64 systems.
         #
-        if self.sectorname() == "borax" or \
-            self.sectorname() == "catalyst" or \
-            self.sectorname() == "cmax" or \
-            self.sectorname() == "czvnc" or \
-            self.sectorname() == "jade" or \
-            self.sectorname() == "max" or \
-            self.sectorname() == "mica" or \
-            self.sectorname() == "pascal" or \
-            self.sectorname() == "pinot" or \
-            self.sectorname() == "quartz" or \
-            self.sectorname() == "rzalastor" or \
-            self.sectorname() == "rzgenie" or \
-            self.sectorname() == "rzhasgpu" or \
-            self.sectorname() == "rzslic" or \
-            self.sectorname() == "rztopaz" or \
-            self.sectorname() == "rztrona" or \
-            self.sectorname() == "rzvnc" or \
-            self.sectorname() == "surface" or \
-            self.sectorname() == "syrah" or \
-            self.sectorname() == "zin" or \
-            self.sectorname() == "agate":
+        if self.visitarch == "linux-x86_64":
             mpi_ld_library_paths = ["/usr/tce/packages/mvapich2/mvapich2-2.2-intel-16.0.3/lib", "/usr/tce/packages/intel/intel-16.0.3/lib/intel64"]
             SETENV("LD_LIBRARY_PATH", self.joinpaths(mpi_ld_library_paths))
-            self.visitarch = "linux-x86_64-toss3"
 
     #
     # Override the JobSubmitterFactory method so the custom job submitter can

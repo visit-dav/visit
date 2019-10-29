@@ -25,7 +25,7 @@ function bv_tcmalloc_info
     export TCMALLOC_COMPATIBILITY_VERSION=${TCMALLOC_COMPATIBILITY_VERSION:-"0.97"}
     export TCMALLOC_BUILD_DIR=${TCMALLOC_BUILD_DIR:-"google-perftools-0.97"}
     export TCMALLOC_MD5_CHECKSUM="5168bdca5557bc5630a866f132f8f7c1"
-    export TCMALLOC_SHA256_CHECKSUM=""
+    export TCMALLOC_SHA256_CHECKSUM="c879267296d91ccadf3aacb9340ca5801b41fbd37aad097b2b6081bf27bb505c"
 }
 
 function bv_tcmalloc_print

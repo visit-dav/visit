@@ -91,6 +91,10 @@ def createPackage():
 #
 #   Helper which installs the package in the build dir.
 #
+#   Modifications:
+#     Eric Brugger, Thu Oct  3 10:16:05 PDT 2019
+#     Remove logic to rename hardware path on toss3 systems.
+#
 # -----------------------------------------------------------------------------
 def installPackage():
     fname = abs_path(TestEnv.params["run_dir"], "installPackage_results.txt")
@@ -112,26 +116,6 @@ def installPackage():
         f.write("calling install cmd\n")
         subprocess.check_call([installCmd, "-c", "llnl_open", version, "linux-x86_64", installDir ], stdout=f,stderr=f)
         f.write("calling install cmd ... done\n")
-        # now we have to move the install to linux-x86_64-toss3 if running on a toss3,
-        # or VisIt won't launch
-        #  This is the list from llnl's custom launcher
-        if "borax"    in socket.gethostname() or \
-           "catalyst" in socket.gethostname() or \
-           "jade"     in socket.gethostname() or \
-           "max"      in socket.gethostname() or \
-           "mica"     in socket.gethostname() or \
-           "pascal"   in socket.gethostname() or \
-           "quartz"   in socket.gethostname() or \
-           "rzgenie"  in socket.gethostname() or \
-           "rzhasgpu" in socket.gethostname() or \
-           "rztopaz"  in socket.gethostname() or \
-           "rztrona"  in socket.gethostname() or \
-           "surface"  in socket.gethostname() or \
-           "syrah"    in socket.gethostname() or \
-           "agate"    in socket.gethostname() :
-            print "installPackage, renaming to toss3"
-            os.chdir(abs_path(installDir, version))
-            os.rename("linux-x86_64", "linux-x86_64-toss3")
         status = 1
     except subprocess.CalledProcessError as err:
         status = 0

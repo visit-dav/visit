@@ -51,6 +51,12 @@ using namespace std;
 //    Hank Childs, Thu Aug 26 16:36:30 PDT 2010
 //    Initialize calculateExtents.
 //
+//    Eddie Rusu, Mon Sep 23 10:26:24 PDT 2019
+//    Initialize nProcessedArgs.
+//
+//    Alister Maguire, Tue Sep 24 11:15:10 MST 2019
+//    Initialized canApplyToDirectDatabaseQOT. 
+//
 // ****************************************************************************
 
 avtExpressionFilter::avtExpressionFilter()
@@ -58,6 +64,8 @@ avtExpressionFilter::avtExpressionFilter()
     outputVariableName = NULL;
     currentTimeState = 0;
     calculateExtents = false;
+    canApplyToDirectDatabaseQOT = false;
+    nProcessedArgs = 0;
 }
 
 
@@ -98,6 +106,9 @@ avtExpressionFilter::~avtExpressionFilter()
 //    actually avtExprNodes.  This can happen when processing macro 
 //    expressions.
 //
+//    Eddie Rusu, Mon Sep 23 10:26:24 PDT 2019
+//    Count the number of arguments that this filter processes here.
+//
 // ****************************************************************************
 
 void
@@ -121,6 +132,7 @@ avtExpressionFilter::ProcessArguments(ArgsExpr *args, ExprPipelineState *state)
             continue;
         }
         expr_node->CreateFilters(state);
+        nProcessedArgs++;
     }
 }
 

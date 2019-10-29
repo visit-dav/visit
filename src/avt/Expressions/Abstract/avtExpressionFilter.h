@@ -90,6 +90,13 @@ class     ExprNode;
 //    Kathleen Biagas, Thu Apr 5 10:07:43 PDT 2012
 //    Added CreateArrayFromMesh.
 //
+//    Eddie Rusu, Mon Sep 23 10:26:24 PDT 2019
+//    Added nProcessedArgs to keep track of the number of arguments that this
+//    filter processes in ProcessArguments().
+//
+//    Alister Maguire, Tue Sep 24 11:15:10 MST 2019
+//    Added canApplyToDirectDatabaseQOT and corresponding getter. 
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtExpressionFilter : virtual public 
@@ -118,10 +125,15 @@ class EXPRESSION_API avtExpressionFilter : virtual public
 
     bool                     GetNumericVal(ExprNode *, double &res);
 
+    bool                     CanApplyToDirectDatabaseQOT(void)
+                               { return canApplyToDirectDatabaseQOT; };
+
   protected:
     char                    *outputVariableName;
     int                      currentTimeState;
     bool                     calculateExtents;
+    bool                     canApplyToDirectDatabaseQOT;
+    int                      nProcessedArgs;
 
     virtual bool             IsPointVariable();
 

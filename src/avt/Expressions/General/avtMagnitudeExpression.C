@@ -37,7 +37,7 @@
 
 avtMagnitudeExpression::avtMagnitudeExpression()
 {
-    ;
+    canApplyToDirectDatabaseQOT = true;
 }
 
 

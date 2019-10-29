@@ -747,3 +747,79 @@ avtSTSDFileFormatInterface::PopulateIOInformation(int ts, const std::string &mes
     }
     return retval;
 }
+
+
+// ****************************************************************************
+//  Method: avtSTSDFileFormatInterface::GetCycles
+//
+//  Purpose:
+//    Retrieve all available cycles. 
+//
+//  Arguments:
+//    dom      The domain of interest. 
+//    cycles   The vector to store cycles into.    
+//
+//  Programmer: Alister Maguire
+//  Creation:   Tue Sep  3 13:16:07 MST 2019 
+//
+// ****************************************************************************
+
+void
+avtSTSDFileFormatInterface::GetCycles(int dom, intVector &cycles)
+{
+    if (dom < 0 || dom >= nBlocks)
+    {
+        if (dom == PAR_Rank())
+        {
+            // Format is doing its own domain decomposition.
+            dom = 0;
+        }
+        else
+        {
+            EXCEPTION2(BadIndexException, dom, nBlocks);
+        }
+    }
+
+    for (int i = 0; i < nTimesteps; ++i)
+    {
+        cycles.push_back(timesteps[i][dom]->FormatGetCycle());
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtSTSDFileFormatInterface::GetTimes
+//
+//  Purpose:
+//    Retrieve all available times. 
+//
+//  Arguments:
+//    dom      The domain of interest. 
+//    times    The vector to store times into.    
+//
+//  Programmer: Alister Maguire
+//  Creation:   Tue Sep  3 13:16:07 MST 2019 
+//
+// ****************************************************************************
+
+void
+avtSTSDFileFormatInterface::GetTimes(int dom, doubleVector &times)
+{
+    if (dom < 0 || dom >= nBlocks)
+    {
+        if (dom == PAR_Rank())
+        {
+            // Format is doing its own domain decomposition.
+            dom = 0;
+        }
+        else
+        {
+            EXCEPTION2(BadIndexException, dom, nBlocks);
+        }
+    }
+
+    for (int i = 0; i < nTimesteps; ++i)
+    {
+        times.push_back(timesteps[i][dom]->FormatGetTime());
+    }
+}
