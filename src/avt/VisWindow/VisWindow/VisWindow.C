@@ -169,9 +169,9 @@ VisWindow::VisWindow(bool callInit)
 //    Brad Whitlock, Tue Nov 7 10:56:06 PDT 2000
 //    Added initialization of callback pointers.
 //
-//    Kathleen Bonnell, Mon Jun 18 14:56:09 PDT 2001 
-//    Added initialization of annotionAtts, and construction of new 
-//    colleague, axes3D.  
+//    Kathleen Bonnell, Mon Jun 18 14:56:09 PDT 2001
+//    Added initialization of annotionAtts, and construction of new
+//    colleague, axes3D.
 //
 //    Eric Brugger, Fri Aug 17 09:42:17 PDT 2001
 //    I added a callback to capture resize events.
@@ -192,7 +192,7 @@ VisWindow::VisWindow(bool callInit)
 //    Hank Childs, Tue Mar 12 18:29:46 PST 2002
 //    Added legends colleague.
 //
-//    Kathleen Bonnell, Fri Mar 15 14:16:28 PST 2002 
+//    Kathleen Bonnell, Fri Mar 15 14:16:28 PST 2002
 //    Added query colleague.
 //
 //    Eric Brugger, Tue Mar 26 16:13:08 PST 2002
@@ -202,7 +202,7 @@ VisWindow::VisWindow(bool callInit)
 //    Hank Childs, Fri Feb  1 09:57:52 PST 2002
 //    Added argument doNoWinMode.
 //
-//    Kathleen Bonnell, Fri May 10 15:38:14 PDT 2002   
+//    Kathleen Bonnell, Fri May 10 15:38:14 PDT 2002
 //    Added lineout callback, and flag specifiying that this window type
 //    should/should no be considered 'curve type'.  Used mainly by plots
 //    when adding a new plot, to determine whether or not to change the
@@ -211,7 +211,7 @@ VisWindow::VisWindow(bool callInit)
 //    Kathleen Bonnell, Tue Aug 13 15:15:37 PDT 2002
 //    Added lighting colleague.
 //
-//    Kathleen Bonnell, Thu Sep  5 09:10:08 PDT 2002 
+//    Kathleen Bonnell, Thu Sep  5 09:10:08 PDT 2002
 //    Create lighting colleague before view colleague, as updating the view
 //    also updates lighting.
 //
@@ -222,7 +222,7 @@ VisWindow::VisWindow(bool callInit)
 //    Added the annotation colleague and initialized the new frameAndState
 //    array.
 //
-//    Kathleen Bonnell, Thu Sep  2 13:40:25 PDT 2004 
+//    Kathleen Bonnell, Thu Sep  2 13:40:25 PDT 2004
 //    Initialize pickForIntersectionOnly.
 //
 //    Mark Blair, Mon Sep 25 11:41:09 PDT 2006
@@ -263,7 +263,7 @@ VisWindow::Initialize(VisWinRendering *ren)
     startRenderCallback->SetClientData(&renderProxy);
     startRenderCallback->SetCallback(&start_render);
     //
-    // Set up all of the non-colleague fields. 
+    // Set up all of the non-colleague fields.
     //
     frameAndState[0] = 1;
     frameAndState[1] = 0;
@@ -376,20 +376,20 @@ VisWindow::Initialize(VisWinRendering *ren)
 // ****************************************************************************
 // Method: VisWindow::CreateToolColleague
 //
-// Purpose: 
+// Purpose:
 //   Create the tools colleague without tool geometry.
 //
 // Arguments:
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Dec 7 16:01:44 PST 2010
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -422,7 +422,7 @@ VisWindow::CreateToolColleague()
 //    Hank Childs, Tue Mar 12 18:29:46 PST 2002
 //    Added deletion of legends colleague.
 //
-//    Kathleen Bonnell, Fri Mar 15 14:16:28 PST 2002 
+//    Kathleen Bonnell, Fri Mar 15 14:16:28 PST 2002
 //    Added deletion of query colleague.
 //
 //    Kathleen Bonnell, Tue Aug 13 15:15:37 PDT 2002
@@ -550,8 +550,8 @@ VisWindow::~VisWindow()
 //    Hank Childs, Tue Sep 18 12:02:29 PDT 2001
 //    Added case to switch statement to get rid of compiler warning.
 //
-//    Kathleen Bonnell, Fri May 10 15:38:14 PDT 2002   
-//    Added support for WINMODE_CURVE. 
+//    Kathleen Bonnell, Fri May 10 15:38:14 PDT 2002
+//    Added support for WINMODE_CURVE.
 //
 //    Brad Whitlock, Wed Nov 14 15:23:23 PST 2007
 //    Added background image support.
@@ -575,7 +575,7 @@ VisWindow::AddColleague(VisWinColleague *col)
     // Add this to our vector.
     //
     colleagues.push_back(col);
-   
+
     //
     // Set all of the general colleague information.
     //
@@ -677,7 +677,7 @@ VisWindow::SetBackgroundColor(double br, double bg, double bb)
 // ****************************************************************************
 // Method: VisWindow::SetGradientBackgroundColors
 //
-// Purpose: 
+// Purpose:
 //   Sets the gradient background style and colors and also does so for all
 //   colleagues.
 //
@@ -700,7 +700,7 @@ VisWindow::SetBackgroundColor(double br, double bg, double bb)
 //      Move iterator construction out of the loop, use pre-increment
 //      rather than post increment in the loop to avoid a temporary
 //      copy being constructed.
-//   
+//
 // ****************************************************************************
 
 void
@@ -734,7 +734,7 @@ VisWindow::SetGradientBackgroundColors(int gradStyle,
 // ****************************************************************************
 // Method: VisWindow::SetBackgroundMode
 //
-// Purpose: 
+// Purpose:
 //   Sets the background mode for the VisWindow. This determines whether or
 //   not we have a solid or a gradient background.
 //
@@ -749,7 +749,7 @@ VisWindow::SetGradientBackgroundColors(int gradStyle,
 //
 //   Tom Fogal, Fri Jul 18 18:30:08 EDT 2008
 //   Change argument to use an enum.
-//   
+//
 // ****************************************************************************
 
 void
@@ -806,7 +806,7 @@ VisWindow::SetForegroundColor(double fr, double fg, double fb)
 // ****************************************************************************
 // Method: VisWindow::InvertBackgroundColor
 //
-// Purpose: 
+// Purpose:
 //   Inverts the background color and the foreground color for the window.
 //
 // Note:       We invert both the internal bg/fg colors and the ones in the
@@ -910,7 +910,7 @@ VisWindow::SetViewport(double vl, double vb, double vr, double vt)
     viewportRight  = (vr < 0. ? 0. : (vr > 1. ? 1. : vr));
     viewportBottom = (vb < 0. ? 0. : (vb > 1. ? 1. : vb));
     viewportTop    = (vt < 0. ? 0. : (vt > 1. ? 1. : vt));
-    
+
     std::vector<VisWinColleague*>::iterator it = colleagues.begin();
     std::vector<VisWinColleague*>::iterator end = colleagues.end();
     for (; it != end; ++it)
@@ -967,8 +967,8 @@ VisWindow::UpdatePlotList(vector<avtActor_p> &lst)
 //   Brad Whitlock, Mon Oct 22 18:33:37 PST 2001
 //   Changed the exception keywords to macros.
 //
-//    Kathleen Bonnell, Fri May 10 15:38:14 PDT 2002   
-//    Added support for WINMODE_CURVE. 
+//    Kathleen Bonnell, Fri May 10 15:38:14 PDT 2002
+//    Added support for WINMODE_CURVE.
 //
 //    Jeremy Meredith, Thu Jan 31 14:41:50 EST 2008
 //    Added new AxisArray window mode.
@@ -1038,7 +1038,7 @@ VisWindow::ChangeMode(WINDOW_MODE newMode)
     mode = newMode;
 
     //
-    // If we are trying to set this to be a bad mode, catch that and set 
+    // If we are trying to set this to be a bad mode, catch that and set
     // ourselves to be in WINMODE_NONE.
     //
     TRY
@@ -1141,8 +1141,8 @@ VisWindow::Start2DMode(void)
 //    Eric Brugger, Fri Aug 17 09:42:17 PDT 2001
 //    I added code to update the view.
 //
-//    Kathleen Bonnell, Thu Oct 28 17:37:40 PDT 2004 
-//    Moved 'UpdateView' to after the colleagues have started 3D mode. 
+//    Kathleen Bonnell, Thu Oct 28 17:37:40 PDT 2004
+//    Moved 'UpdateView' to after the colleagues have started 3D mode.
 //
 //    Burlen Loring, Fri Sep 11 10:23:52 PDT 2015
 //    Move iterator construction out of the loop, use pre-increment
@@ -1174,7 +1174,7 @@ VisWindow::Start3DMode(void)
 //  Purpose:
 //      Has all of its modules start Curve mode.
 //
-//  Programmer: Kathleen Bonnell 
+//  Programmer: Kathleen Bonnell
 //  Creation:   May 10, 2002
 //
 //  Modifications:
@@ -1352,7 +1352,7 @@ VisWindow::Stop3DMode(void)
 //  Purpose:
 //      Has all of its modules stop Curve mode.
 //
-//  Programmer: Kathleen Bonnell 
+//  Programmer: Kathleen Bonnell
 //  Creation:   May 10, 2002
 //
 //  Modifications:
@@ -1381,7 +1381,7 @@ VisWindow::StopCurveMode(void)
 //  Purpose:
 //      Has all of its modules stop AxisArray mode.
 //
-//  Programmer: Jeremy Meredith 
+//  Programmer: Jeremy Meredith
 //  Creation:   January 28, 2008
 //
 //  Modifications:
@@ -1535,7 +1535,7 @@ VisWindow::DisableInteractionModeChanges(void)
 // ****************************************************************************
 // Method: VisWindow::GetHotPoint
 //
-// Purpose: 
+// Purpose:
 //   Returns a pointer to the hotpoint being clicked at point (x,y).
 //
 // Arguments:
@@ -1549,7 +1549,7 @@ VisWindow::DisableInteractionModeChanges(void)
 // Creation:   Mon Oct 1 14:17:35 PST 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -1561,7 +1561,7 @@ VisWindow::GetHotPoint(int x, int y, HotPoint &h) const
 // ****************************************************************************
 // Method: VisWindow::SetHighlightEnabled
 //
-// Purpose: 
+// Purpose:
 //   Turns hotpoint highlights on/off.
 //
 // Arguments:
@@ -1571,7 +1571,7 @@ VisWindow::GetHotPoint(int x, int y, HotPoint &h) const
 // Creation:   Wed Oct 3 00:05:38 PDT 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1583,7 +1583,7 @@ VisWindow::SetHighlightEnabled(bool val)
 // ****************************************************************************
 // Method: VisWindow::GetToolName
 //
-// Purpose: 
+// Purpose:
 //   Returns the name of the specified tool.
 //
 // Arguments:
@@ -1595,7 +1595,7 @@ VisWindow::SetHighlightEnabled(bool val)
 // Creation:   Fri Oct 12 10:47:10 PDT 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 const char *
@@ -1607,7 +1607,7 @@ VisWindow::GetToolName(int index) const
 // ****************************************************************************
 // Method: VisWindow::GetNumTools
 //
-// Purpose: 
+// Purpose:
 //   Returns the number of tools.
 //
 // Returns:    The number of tools.
@@ -1616,7 +1616,7 @@ VisWindow::GetToolName(int index) const
 // Creation:   Fri Oct 12 10:46:29 PDT 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 int
@@ -1628,7 +1628,7 @@ VisWindow::GetNumTools() const
 // ****************************************************************************
 // Method: VisWindow::SetToolEnabled
 //
-// Purpose: 
+// Purpose:
 //   Sets the enabled state of the specified tool.
 //
 // Arguments:
@@ -1639,7 +1639,7 @@ VisWindow::GetNumTools() const
 // Creation:   Mon Oct 1 13:20:20 PST 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1651,7 +1651,7 @@ VisWindow::SetToolEnabled(int index, bool val)
 // ****************************************************************************
 // Method: VisWindow::GetToolEnabled
 //
-// Purpose: 
+// Purpose:
 //   Returns whether or not the specified tool is enabled.
 //
 // Arguments:
@@ -1663,7 +1663,7 @@ VisWindow::SetToolEnabled(int index, bool val)
 // Creation:   Mon Oct 1 13:21:00 PST 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -1675,7 +1675,7 @@ VisWindow::GetToolEnabled(int index) const
 // ****************************************************************************
 // Method: VisWindow::GetToolAvailable
 //
-// Purpose: 
+// Purpose:
 //   Returns whether or not the specified tool is available.
 //
 // Arguments:
@@ -1687,7 +1687,7 @@ VisWindow::GetToolEnabled(int index) const
 // Creation:   Mon Oct 1 13:21:00 PST 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -1700,7 +1700,7 @@ VisWindow::GetToolAvailable(int index) const
 // ****************************************************************************
 // Method: VisWindow::GetToolInterface
 //
-// Purpose: 
+// Purpose:
 //   Returns the i'th tool interface.
 //
 // Arguments:
@@ -1708,13 +1708,13 @@ VisWindow::GetToolAvailable(int index) const
 //
 // Returns:    the index'th tool interface.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Feb 11 14:32:09 PST 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 avtToolInterface &
@@ -1727,7 +1727,7 @@ VisWindow::GetToolInterface(int index) const
 // ****************************************************************************
 // Method: VisWindow::UpdateTool
 //
-// Purpose: 
+// Purpose:
 //   Tells the index'th tool to update itself and re-renders the window if
 //   told to do so.
 //
@@ -1739,7 +1739,7 @@ VisWindow::GetToolInterface(int index) const
 // Creation:   Tue Feb 12 09:39:42 PDT 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1755,7 +1755,7 @@ VisWindow::UpdateTool(int index, bool redraw)
 // ****************************************************************************
 // Method: VisWindow::UpdatesEnabled
 //
-// Purpose: 
+// Purpose:
 //   Returns whether or not updates are enabled.
 //
 // Returns:    Whether or not updates are enabled.
@@ -1764,7 +1764,7 @@ VisWindow::UpdateTool(int index, bool redraw)
 // Creation:   Wed Sep 19 16:11:49 PST 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -1776,14 +1776,14 @@ VisWindow::UpdatesEnabled() const
 // ****************************************************************************
 // Method: VisWindow::Iconify
 //
-// Purpose: 
+// Purpose:
 //   Iconifies the render window.
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Apr 19 11:39:11 PDT 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1795,14 +1795,14 @@ VisWindow::Iconify()
 // ****************************************************************************
 // Method: VisWindow::DeIconify
 //
-// Purpose: 
+// Purpose:
 //   De-iconifies the render window.
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Apr 19 11:39:36 PDT 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1814,14 +1814,14 @@ VisWindow::DeIconify()
 // ****************************************************************************
 // Method: VisWindow::GetRealized
 //
-// Purpose: 
+// Purpose:
 //   Returns the realized state of the window.
 //
 // Programmer: Sean Ahern
 // Creation:   Tue Apr 16 12:44:17 PDT 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 bool
 VisWindow::GetRealized()
@@ -1832,14 +1832,14 @@ VisWindow::GetRealized()
 // ****************************************************************************
 // Method: VisWindow::Show
 //
-// Purpose: 
+// Purpose:
 //   Shows the render window.
 //
 // Programmer: Sean Ahern
 // Creation:   Tue Apr 16 12:44:17 PDT 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 void
 VisWindow::Show()
@@ -1850,14 +1850,14 @@ VisWindow::Show()
 // ****************************************************************************
 // Method: VisWindow::Raise
 //
-// Purpose: 
+// Purpose:
 //   Raises the render window.
 //
 // Programmer: Sean Ahern
 // Creation:   Mon May 20 13:29:38 PDT 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 void
 VisWindow::Raise()
@@ -1868,14 +1868,14 @@ VisWindow::Raise()
 // ****************************************************************************
 // Method: VisWindow::Lower
 //
-// Purpose: 
+// Purpose:
 //   Lowers the render window.
 //
 // Programmer: Sean Ahern
 // Creation:   Mon May 20 13:29:38 PDT 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1887,7 +1887,7 @@ VisWindow::Lower()
 // ****************************************************************************
 // Method: VisWindow::ActivateWindow
 //
-// Purpose: 
+// Purpose:
 //   Activates the render window.
 //
 // Programmer: Gunther H. Weber
@@ -1906,14 +1906,14 @@ VisWindow::ActivateWindow()
 // ****************************************************************************
 // Method: VisWindow::Hide
 //
-// Purpose: 
+// Purpose:
 //   Hides the render window.
 //
 // Programmer: Sean Ahern
 // Creation:   Tue Apr 16 12:44:17 PDT 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1925,7 +1925,7 @@ VisWindow::Hide()
 // ****************************************************************************
 // Method: VisWindow::IsVisible
 //
-// Purpose: 
+// Purpose:
 //   Returns whether the vis window is visible.
 //
 // Returns:    Whether the vis window is visible.
@@ -1934,7 +1934,7 @@ VisWindow::Hide()
 // Creation:   Wed Mar 12 09:23:10 PDT 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -1967,7 +1967,7 @@ VisWindow::SetSize(int w, int h)
 // ****************************************************************************
 // Method: VisWindow::GetSize
 //
-// Purpose: 
+// Purpose:
 //   Returns the renderable portion of the window size.
 //
 // Arguments:
@@ -2009,15 +2009,15 @@ VisWindow::SetWindowSize(int w, int h)
 // ****************************************************************************
 // Method: VisWindow::GetWindowSize
 //
-// Purpose: 
+// Purpose:
 //   Returns the window size.
 //
 // Arguments:
 //   w : A reference to an int that is used to return the window width.
 //   h : A reference to an int that is used to return the window height.
 //
-// Programmer: Mark C. Miller 
-// Creation:   07Jul03 
+// Programmer: Mark C. Miller
+// Creation:   07Jul03
 //
 // ****************************************************************************
 
@@ -2030,7 +2030,7 @@ VisWindow::GetWindowSize(int &w, int &h) const
 // ****************************************************************************
 // Method: VisWindow::GetCaptureRegion
 //
-// Purpose: 
+// Purpose:
 //   Returns the capture region ... basically the window size in 3D and the
 //   viewport size (and offset in the larger window) in 2D.
 //
@@ -2076,7 +2076,7 @@ VisWindow::SetLocation(int x, int y)
 // ****************************************************************************
 // Method: VisWindow::GetLocation
 //
-// Purpose: 
+// Purpose:
 //   Returns the window location.
 //
 // Arguments:
@@ -2103,7 +2103,7 @@ VisWindow::GetLocation(int &x, int &y) const
 //  Programmer: Hank Childs
 //  Creation:   July 6, 2000
 //
-// **************************************************************************** 
+// ****************************************************************************
 
 void
 VisWindow::Realize(void)
@@ -2139,7 +2139,7 @@ VisWindow::Realize(void)
 //   Pass in image type.
 //
 //   Brad Whitlock, Mon Feb 12 17:45:01 PST 2018
-//   Selectively disable the background colleague so we get a clear 
+//   Selectively disable the background colleague so we get a clear
 //   background.
 //
 // ****************************************************************************
@@ -2152,7 +2152,7 @@ VisWindow::ScreenRender(
 {
     int bgVis = windowBackground->GetVisibility();
     bool disableBG = disableBackground ||
-                     (imgT == ColorRGBAImage || 
+                     (imgT == ColorRGBAImage ||
                       imgT == LuminanceImage ||
                       imgT == ValueImage);
 
@@ -2279,10 +2279,10 @@ VisWindow::ScreenCapture(bool doViewportOnly, bool doZBufferToo,
 //
 //  Purpose:
 //      Does any necessary post-processing on a screen captured image. See
-//      comments in VisWinRendering.C for more details 
+//      comments in VisWinRendering.C for more details
 //
-//  Programmer: Mark C. Miller 
-//  Creation:   July 26, 2004 
+//  Programmer: Mark C. Miller
+//  Creation:   July 26, 2004
 //
 //  Modifications:
 //
@@ -2309,7 +2309,7 @@ VisWindow::PostProcessScreenCapture(avtImage_p capturedImage,
 //
 // Returns:    an avtImage with data values.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Sep 25 14:56:47 PDT 2017
@@ -2358,12 +2358,12 @@ VisWindow::GetAllDatasets()
 //  Creation:   July 6, 2000
 //
 //  Modifications:
-//    Kathleen Bonnell, Fri May 10 15:38:14 PDT 2002   
+//    Kathleen Bonnell, Fri May 10 15:38:14 PDT 2002
 //    Added test for Lineout interaction mode, so that the mode could
 //    be reset if necessary.
 //
-//    Kathleen Bonnell, Thu May 16 09:12:57 PDT 2002  
-//    Moved test for Lineout && 3d to VisWinInteractions. 
+//    Kathleen Bonnell, Thu May 16 09:12:57 PDT 2002
+//    Moved test for Lineout && 3d to VisWinInteractions.
 // ****************************************************************************
 
 void
@@ -2486,13 +2486,13 @@ VisWindow::NoPlots(void)
 //
 //  Modifications:
 //
-//    Kathleen Bonnell, Mon Jun 18 14:56:09 PDT 2001 
+//    Kathleen Bonnell, Mon Jun 18 14:56:09 PDT 2001
 //    Reset bounds for axes3D after plot is added.
 //
 //    Mark Blair, Mon Sep 25 11:41:09 PDT 2006
 //    Disable axis annotations if adding a type of plot to the vis window in
 //    which axis annotations are inappropriate.
-// 
+//
 //    Jeremy Meredith, Tue Apr 22 14:33:16 EDT 2008
 //    Removed axis annotation disabling -- it was only added for a single
 //    plot, and the functionality has been accomodated in a new window
@@ -2529,7 +2529,7 @@ VisWindow::AddPlot(avtActor_p &p)
 //
 //  Modifications:
 //
-//    Kathleen Bonnell, Mon Jun 18 14:56:09 PDT 2001 
+//    Kathleen Bonnell, Mon Jun 18 14:56:09 PDT 2001
 //    Reset bounds for axes3D after plot is removed.
 //
 //    Jeremy Meredith, Wed May 19 14:15:58 EDT 2010
@@ -2582,10 +2582,10 @@ VisWindow::ClearPlots(void)
 //    Kathleen Bonnell, Tue Sep 25 10:22:04 PDT 2001
 //    Turn off 3d axes bbox.
 //
-//    Kathleen Bonnell, Fri Mar 15 14:16:28 PST 2002 
-//    Added call to query's StartBoundingBox method. 
+//    Kathleen Bonnell, Fri Mar 15 14:16:28 PST 2002
+//    Added call to query's StartBoundingBox method.
 //
-//    Kathleen Bonnell, Mon Mar 18 09:32:20 PST 2002   
+//    Kathleen Bonnell, Mon Mar 18 09:32:20 PST 2002
 //    Move query's method before plots, so that pick points are hidden
 //    before the plots are hidden.  (aesthetically more pleasing).
 //
@@ -2614,8 +2614,8 @@ VisWindow::StartBoundingBox(void)
 //    Kathleen Bonnell, Tue Sep 25 10:22:04 PDT 2001
 //    Turn on 3d axes bbox, according to its set flag.
 //
-//    Kathleen Bonnell, Fri Mar 15 14:16:28 PST 2002 
-//    Added call to query's EndBoundingBox method. 
+//    Kathleen Bonnell, Fri Mar 15 14:16:28 PST 2002
+//    Added call to query's EndBoundingBox method.
 //
 // ****************************************************************************
 
@@ -2809,22 +2809,22 @@ VisWindow::GetSpinModeSuspended() const
 //    If the new view is the same as the old view, do nothing.  This is
 //    especially helpful when locking views.
 //
-//    Kathleen Bonnell, Thu May 15 10:00:02 PDT 2003 
-//    Scale the plots if necessary. 
-//    
-//    Kathleen Bonnell, Fri Jun  6 15:53:58 PDT 2003  
+//    Kathleen Bonnell, Thu May 15 10:00:02 PDT 2003
+//    Scale the plots if necessary.
+//
+//    Kathleen Bonnell, Fri Jun  6 15:53:58 PDT 2003
 //    Removed call to ScalePlots.  Added calls to FullFramOn/Off so that all
-//    colleagues can be notified when full-frame mode changes. 
-//    
-//    Kathleen Bonnell, Wed Jul 16 16:32:43 PDT 2003 
+//    colleagues can be notified when full-frame mode changes.
+//
+//    Kathleen Bonnell, Wed Jul 16 16:32:43 PDT 2003
 //    Allow FullFrameOn to be called when scale factor changes, not just
-//    when full-frame turned on for first time. 
-//    
+//    when full-frame turned on for first time.
+//
 //    Eric Brugger, Thu Oct 16 09:26:49 PDT 2003
 //    Modified to match changes in avtView2D made to handle full frame
 //    mode properly.
 //
-//    Kathleen Bonnell, Thu Feb 12 16:15:03 PST 2004 
+//    Kathleen Bonnell, Thu Feb 12 16:15:03 PST 2004
 //    Added call to Render after call to FullFrameOff, to ensure that
 //    the changes shows up immediately on the screen.
 //
@@ -2841,14 +2841,14 @@ VisWindow::SetView2D(const avtView2D &v)
 {
     if (view2D == v)
         return;
-    
+
     //
-    // Determine if full-frame mode has changed. 
+    // Determine if full-frame mode has changed.
     //
     bool fullFrameChanged = false;
 
     if (v.fullFrame != view2D.fullFrame)
-    { 
+    {
         fullFrameChanged = true;
     }
 
@@ -2861,7 +2861,7 @@ VisWindow::SetView2D(const avtView2D &v)
     UpdateView();
 
     //
-    // Tell colleagues that full-frame mode has changed, if necessary. 
+    // Tell colleagues that full-frame mode has changed, if necessary.
     //
     if (fullFrameChanged && !view2D.fullFrame)
     {
@@ -2970,7 +2970,7 @@ VisWindow::SetView3D(const avtView3D &v)
 //
 //  Modifications:
 //    Eric Brugger, Fri Mar 29 16:29:22 PST 2002
-//    Modify the method to just return the internally stored avtView3D 
+//    Modify the method to just return the internally stored avtView3D
 //    without first updating it from the vtk view state.
 //
 //    Tom Fogal, Mon Jun 16 10:47:02 EDT 2008
@@ -2993,7 +2993,7 @@ VisWindow::GetView3D(void) const
 //  Arguments:
 //    v         The new view.
 //
-//  Programmer: Kathleen Bonnell 
+//  Programmer: Kathleen Bonnell
 //  Creation:   May 10, 2002
 //
 //  Modifications:
@@ -3037,7 +3037,7 @@ VisWindow::SetViewCurve(const avtViewCurve &v)
 //
 //  Returns:    The currrent avtViewCurve.
 //
-//  Programmer: Kathleen Bonnell 
+//  Programmer: Kathleen Bonnell
 //  Creation:   May 10, 2002
 //
 //  Modifications:
@@ -3237,8 +3237,8 @@ VisWindow::Render(void)
 //    Hank Childs, Tue Mar 26 11:29:53 PST 2002
 //    If appropriate, call a routine indicating that the viewport has changed.
 //
-//    Kathleen Bonnell, Fri May 10 15:38:14 PDT 2002   
-//    Added support for WINMODE_CURVE. 
+//    Kathleen Bonnell, Fri May 10 15:38:14 PDT 2002
+//    Added support for WINMODE_CURVE.
 //
 //    Eric Brugger, Wed Aug 20 10:09:15 PDT 2003
 //    Added code to scale the plot if setting a curve view.  Pass the size
@@ -3249,12 +3249,12 @@ VisWindow::Render(void)
 //    Modified to match changes in avtView2D and avtViewCurve made to handle
 //    full frame mode properly.
 //
-//    Kathleen Bonnell, Thu Feb 12 16:15:03 PST 2004 
+//    Kathleen Bonnell, Thu Feb 12 16:15:03 PST 2004
 //    Added call to Render after call to FullFrameOn in 2d, to ensure that
 //    the changes shows up immediately on the screen.
-// 
-//    Kathleen Bonnell, Tue Apr 27 13:29:46 PDT 2004 
-//    Added call to Render after call to FullFrameOn in Curve mode, to ensure 
+//
+//    Kathleen Bonnell, Tue Apr 27 13:29:46 PDT 2004
+//    Added call to Render after call to FullFrameOn in Curve mode, to ensure
 //    that the changes show up immediately on the screen.
 //
 //    Mark Blair, Tue Dec  5 12:58:17 PST 2006
@@ -3280,7 +3280,7 @@ VisWindow::Render(void)
 //    Here's where we check to make sure no scaling factors are nonpositive.
 //
 //    Hank Childs, Fri Aug 27 14:37:31 PDT 2010
-//    1e+18 data seems to be too much for OpenGL and Mesa.  Scale it down 
+//    1e+18 data seems to be too much for OpenGL and Mesa.  Scale it down
 //    using our axis scales infrastructure before rendering.
 //
 //    Eric Brugger, Mon Nov  5 15:57:15 PST 2012
@@ -3411,11 +3411,11 @@ VisWindow::UpdateView()
 //  Creation:   June 5, 2000
 //
 //  Modifications:
-//    Kathleen Bonnell, Fri May 10 15:38:14 PDT 2002   
-//    Added support for LINEOUT. 
+//    Kathleen Bonnell, Fri May 10 15:38:14 PDT 2002
+//    Added support for LINEOUT.
 //
-//    Kathleen Bonnell, Fri Jun 27 16:30:26 PDT 2003  
-//    Removed calls to queries->SetQueryType, no longer necessary. 
+//    Kathleen Bonnell, Fri Jun 27 16:30:26 PDT 2003
+//    Removed calls to queries->SetQueryType, no longer necessary.
 //
 //    Brad Whitlock, Wed Jan 7 14:38:38 PST 2004
 //    Added code to tell the renderer colleague to set the right cursor
@@ -3569,17 +3569,17 @@ VisWindow::GetViewport(double *vport)
 //
 //  Modifications:
 //    Kathleen Bonnell, Wed May 28 16:25:37 PDT 2003
-//    Added ReAddColleagesToRenderWindow. 
+//    Added ReAddColleagesToRenderWindow.
 //
-//    Kathleen Bonnell, Tue Jul  8 20:06:37 PDT 2003 
+//    Kathleen Bonnell, Tue Jul  8 20:06:37 PDT 2003
 //    Always allow colleagues to re-add themselves (not just for antialiasing).
-// 
-//    Kathleen Bonnell, Mon Sep 29 13:15:20 PDT 2003 
-//    Pass the antialiasing flag to the plots. 
+//
+//    Kathleen Bonnell, Mon Sep 29 13:15:20 PDT 2003
+//    Pass the antialiasing flag to the plots.
 //
 //    Mark C. Miller, Tue Jan 18 12:44:34 PST 2005
 //    Pushed call to ReAddColleaguesToRenderWindow down into OrderPlots
-// 
+//
 // ****************************************************************************
 
 void
@@ -3738,14 +3738,14 @@ VisWindow::SetTitle(const char *title)
 // ****************************************************************************
 // Method: VisWindow::ShowMenu
 //
-// Purpose: 
+// Purpose:
 //   Executes the callback that tells the VisWindow's menu to show itself.
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Nov 3 13:49:15 PST 2000
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -3761,14 +3761,14 @@ VisWindow::ShowMenu()
 // ****************************************************************************
 // Method: VisWindow::SetShowMenu
 //
-// Purpose: 
+// Purpose:
 //   Sets the callback to use to show the popup menu.
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Nov 3 13:49:15 PST 2000
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -3781,14 +3781,14 @@ VisWindow::SetShowMenu(VisCallback *cb, void *data)
 // ****************************************************************************
 // Method: VisWindow::HideMenu
 //
-// Purpose: 
+// Purpose:
 //   Executes the callback that tells the VisWindow's menu to hide itself.
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Nov 3 13:49:15 PST 2000
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -3804,14 +3804,14 @@ VisWindow::HideMenu()
 // ****************************************************************************
 // Method: VisWindow::SetHideMenu
 //
-// Purpose: 
+// Purpose:
 //   Sets the callback to use to hide the popup menu.
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Nov 3 13:49:15 PST 2000
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -3824,7 +3824,7 @@ VisWindow::SetHideMenu(VisCallback *cb, void *data)
 // ****************************************************************************
 // Method: VisWindow::SetCloseCallback
 //
-// Purpose: 
+// Purpose:
 //   Sets the callback function that is called when the window is closed.
 //
 // Arguments:
@@ -3835,7 +3835,7 @@ VisWindow::SetHideMenu(VisCallback *cb, void *data)
 // Creation:   Wed Aug 22 11:59:57 PDT 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -3847,7 +3847,7 @@ VisWindow::SetCloseCallback(VisCallback *cb, void *data)
 // ****************************************************************************
 // Method: VisWindow::SetHideCallback
 //
-// Purpose: 
+// Purpose:
 //   Sets the callback function that is called when the window is hidden.
 //
 // Arguments:
@@ -3858,7 +3858,7 @@ VisWindow::SetCloseCallback(VisCallback *cb, void *data)
 // Creation:   Wed Mar 12 09:57:38 PDT 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -3870,7 +3870,7 @@ VisWindow::SetHideCallback(VisCallback *cb, void *data)
 // ****************************************************************************
 // Method: VisWindow::SetShowCallback
 //
-// Purpose: 
+// Purpose:
 //   Sets the callback function that is called when the window is shown.
 //
 // Arguments:
@@ -3881,7 +3881,7 @@ VisWindow::SetHideCallback(VisCallback *cb, void *data)
 // Creation:   Wed Mar 12 09:57:38 PDT 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -3893,14 +3893,14 @@ VisWindow::SetShowCallback(VisCallback *cb, void *data)
 // ****************************************************************************
 // Method: VisWindow::SetAnnotationAtts
 //
-// Purpose: 
-//   Sets the annotation attributes used to control axes, etc. 
+// Purpose:
+//   Sets the annotation attributes used to control axes, etc.
 //
 //  Arguments:
-//    atts     The annotation attributes to use. 
+//    atts     The annotation attributes to use.
 //
-// Programmer: Kathleen Bonnell 
-// Creation:   June 18, 2001 
+// Programmer: Kathleen Bonnell
+// Creation:   June 18, 2001
 //
 // Modifications:
 //   Brad Whitlock, Mon Aug 27 15:42:38 PST 2001
@@ -3984,12 +3984,12 @@ VisWindow::SetAnnotationAtts(const AnnotationAttributes *atts, bool force)
 // ****************************************************************************
 // Method: VisWindow::GetAnnotationAttributes()
 //
-// Purpose: 
+// Purpose:
 //   Returns a pointer to the window's annotation attributes.
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Aug 30 08:42:48 PDT 2001
-//   
+//
 // ****************************************************************************
 
 const AnnotationAttributes *
@@ -4001,7 +4001,7 @@ VisWindow::GetAnnotationAtts() const
 // ****************************************************************************
 // Method: VisWindow::AddAnnotationObject
 //
-// Purpose: 
+// Purpose:
 //   Tells the annotation colleague to create a new annotation.
 //
 // Arguments:
@@ -4012,7 +4012,7 @@ VisWindow::GetAnnotationAtts() const
 // Creation:   Tue Dec 2 15:32:59 PST 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -4024,14 +4024,14 @@ VisWindow::AddAnnotationObject(int annotType, const std::string &annotName)
 // ****************************************************************************
 // Method: VisWindow::HideActiveAnnotationObjects
 //
-// Purpose: 
+// Purpose:
 //   Hides the active annotations.
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Dec 2 15:33:29 PST 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -4043,14 +4043,14 @@ VisWindow::HideActiveAnnotationObjects()
 // ****************************************************************************
 // Method: VisWindow::DeleteActiveAnnotationObjects
 //
-// Purpose: 
+// Purpose:
 //   Deletes the active annotations.
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Dec 2 15:33:43 PST 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -4062,14 +4062,14 @@ VisWindow::DeleteActiveAnnotationObjects()
 // ****************************************************************************
 // Method: VisWindow::DeleteAnnotationObject
 //
-// Purpose: 
+// Purpose:
 //   Deletes the specified annotations.
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Mar 20 12:20:29 PDT 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -4081,14 +4081,14 @@ VisWindow::DeleteAnnotationObject(const std::string &name)
 // ****************************************************************************
 // Method: VisWindow::DeleteAllAnnotationObjects
 //
-// Purpose: 
+// Purpose:
 //   Deletes all annotation objects.
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Dec 2 15:34:01 PST 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -4100,14 +4100,14 @@ VisWindow::DeleteAllAnnotationObjects()
 // ****************************************************************************
 // Method: VisWindow::RaiseActiveAnnotationObjects
 //
-// Purpose: 
+// Purpose:
 //   Raises the active annotations.
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Dec 2 15:34:21 PST 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -4119,14 +4119,14 @@ VisWindow::RaiseActiveAnnotationObjects()
 // ****************************************************************************
 // Method: VisWindow::LowerActiveAnnotationObjects
 //
-// Purpose: 
+// Purpose:
 //   Lowers the active annotations.
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Dec 2 15:34:51 PST 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -4138,7 +4138,7 @@ VisWindow::LowerActiveAnnotationObjects()
 // ****************************************************************************
 // Method: VisWindow::SetAnnotationObjectOptions
 //
-// Purpose: 
+// Purpose:
 //   Sets the annotation object options.
 //
 // Arguments:
@@ -4148,7 +4148,7 @@ VisWindow::LowerActiveAnnotationObjects()
 // Creation:   Tue Dec 2 15:35:16 PST 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -4160,7 +4160,7 @@ VisWindow::SetAnnotationObjectOptions(const AnnotationObjectList &al)
 // ****************************************************************************
 // Method: VisWindow::UpdateAnnotationObjectList
 //
-// Purpose: 
+// Purpose:
 //   Updates the annotation object list.
 //
 // Arguments:
@@ -4170,7 +4170,7 @@ VisWindow::SetAnnotationObjectOptions(const AnnotationObjectList &al)
 // Creation:   Tue Dec 2 15:35:45 PST 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -4182,7 +4182,7 @@ VisWindow::UpdateAnnotationObjectList(AnnotationObjectList &al)
 // ****************************************************************************
 // Method: VisWindow::CreateAnnotationObjectsFromList
 //
-// Purpose: 
+// Purpose:
 //   Creates the annotation objects recorded in the annotation object list.
 //
 // Arguments:
@@ -4192,7 +4192,7 @@ VisWindow::UpdateAnnotationObjectList(AnnotationObjectList &al)
 // Creation:   Tue Dec 2 15:36:27 PST 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -4204,7 +4204,7 @@ VisWindow::CreateAnnotationObjectsFromList(const AnnotationObjectList &al)
 // ****************************************************************************
 // Method: VisWindow::SetFrameAndState
 //
-// Purpose: 
+// Purpose:
 //   Sets the vis window's frame and state so they are available for colleagues
 //   that need that information.
 //
@@ -4212,7 +4212,7 @@ VisWindow::CreateAnnotationObjectsFromList(const AnnotationObjectList &al)
 // Creation:   Tue Dec 2 15:37:01 PST 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -4239,14 +4239,14 @@ VisWindow::SetFrameAndState(int nFrames,
 // ****************************************************************************
 // Method: VisWindow::GetFrameAndState
 //
-// Purpose: 
+// Purpose:
 //   Gets the vis window's frame and state information.
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Dec 2 15:37:38 PST 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -4266,7 +4266,7 @@ VisWindow::GetFrameAndState(int &nFrames,
 // ****************************************************************************
 // Method: VisWindow::SetLightList
 //
-// Purpose: 
+// Purpose:
 //   Sets the light list and re-renders the window.
 //
 // Arguments:
@@ -4279,13 +4279,13 @@ VisWindow::GetFrameAndState(int &nFrames,
 //   Kathleen Bonnell, Tue Aug 13 15:15:37 PDT 2002
 //   Fleshed out this method with new lighting colleague.  Changed parameter
 //   to LightList from avtLightList.
-//   
-//   Kathleen Bonnell, Tue Nov  5 08:32:59 PST 2002 
-//   Allow tools to update lighting conditions. 
-// 
-//   Kathleen Bonnell, Tue Oct 26 15:58:06 PDT 2004 
-//   Call UpdateView so that CameraLights' transform matrix gets recomputed. 
-// 
+//
+//   Kathleen Bonnell, Tue Nov  5 08:32:59 PST 2002
+//   Allow tools to update lighting conditions.
+//
+//   Kathleen Bonnell, Tue Oct 26 15:58:06 PDT 2004
+//   Call UpdateView so that CameraLights' transform matrix gets recomputed.
+//
 // ****************************************************************************
 
 void
@@ -4295,10 +4295,10 @@ VisWindow::SetLightList(const LightList *ll)
     if (changed)
     {
         lightList = *ll;
-        avtLightList aLL(*ll); 
+        avtLightList aLL(*ll);
         lighting->SetLightList(aLL);
 
-        if (lighting->GetNumLightsEnabled() > 0)  
+        if (lighting->GetNumLightsEnabled() > 0)
         {
             // Set Ambient to 0, Diffuse to 1
             plots->TurnLightingOn();
@@ -4326,7 +4326,7 @@ VisWindow::SetLightList(const LightList *ll)
 // ****************************************************************************
 // Method: VisWindow::GetLightList
 //
-// Purpose: 
+// Purpose:
 //   Returns a reference to the window's light list.
 //
 // Returns:    A reference to the window's light list.
@@ -4337,7 +4337,7 @@ VisWindow::SetLightList(const LightList *ll)
 // Modifications:
 //   Kathleen Bonnell, Tue Aug 13 15:15:37 PDT 2002
 //   Change return type to LightList from avtLightList.
-//   
+//
 // ****************************************************************************
 
 const LightList *
@@ -4349,14 +4349,14 @@ VisWindow::GetLightList() const
 // ****************************************************************************
 // Method: VisWindow::UpdateAxes2D
 //
-// Purpose: 
+// Purpose:
 //   Updates necessary aspects of VisWinAxes.
 //
 // Arguments:
-//   atts     The annotation attributes to use. 
+//   atts     The annotation attributes to use.
 //
-// Programmer: Kathleen Bonnell 
-// Creation:   June 18, 2001 
+// Programmer: Kathleen Bonnell
+// Creation:   June 18, 2001
 //
 // Modifications:
 //   Kathleen Bonnell, Fri Jul  6 14:48:53 PDT 2001
@@ -4371,7 +4371,7 @@ VisWindow::GetLightList() const
 //   Eric Brugger, Wed Jun 25 15:45:22 PDT 2003
 //   Added the setting of the line width.
 //
-//   Kathleen Bonnell, Tue Dec 16 11:34:33 PST 2003 
+//   Kathleen Bonnell, Tue Dec 16 11:34:33 PST 2003
 //   Added the setting of the label scaling.
 //
 //   Brad Whitlock, Thu Jul 28 08:40:31 PDT 2005
@@ -4403,7 +4403,7 @@ VisWindow::UpdateAxes2D()
     int yLabel = axis2D.GetYAxis().GetLabel().GetVisible()?1:0;
     axes->SetLabelsVisibility(xLabel, yLabel);
 
-    axes->SetLabelScaling(axis2D.GetAutoSetScaling(), 
+    axes->SetLabelScaling(axis2D.GetAutoSetScaling(),
                           axis2D.GetXAxis().GetLabel().GetScaling(),
                           axis2D.GetYAxis().GetLabel().GetScaling());
 
@@ -4434,30 +4434,30 @@ VisWindow::UpdateAxes2D()
     int yTicks = yLabel; //axis2D.GetYAxis().GetTickMarks().GetVisible()?1:0;
     switch (axis2D.GetTickAxes())
     {
-        case Axes2D::Off : // off 
-                 axes->SetXTickVisibility(0, xTicks); 
-                 axes->SetYTickVisibility(0, yTicks); 
-                 frame->SetTopRightTickVisibility(0); 
+        case Axes2D::Off : // off
+                 axes->SetXTickVisibility(0, xTicks);
+                 axes->SetYTickVisibility(0, yTicks);
+                 frame->SetTopRightTickVisibility(0);
                  break;
-        case Axes2D::Bottom : // bottom 
-                 axes->SetXTickVisibility(1, xTicks); 
-                 axes->SetYTickVisibility(0, yTicks); 
-                 frame->SetTopRightTickVisibility(0); 
+        case Axes2D::Bottom : // bottom
+                 axes->SetXTickVisibility(1, xTicks);
+                 axes->SetYTickVisibility(0, yTicks);
+                 frame->SetTopRightTickVisibility(0);
                  break;
         case Axes2D::Left : // left
-                 axes->SetXTickVisibility(0, xTicks); 
-                 axes->SetYTickVisibility(1, yTicks); 
-                 frame->SetTopRightTickVisibility(0); 
+                 axes->SetXTickVisibility(0, xTicks);
+                 axes->SetYTickVisibility(1, yTicks);
+                 frame->SetTopRightTickVisibility(0);
                  break;
         case Axes2D::BottomLeft : //bottom-left
                  axes->SetXTickVisibility(1, xTicks);
-                 axes->SetYTickVisibility(1, yTicks); 
-                 frame->SetTopRightTickVisibility(0); 
+                 axes->SetYTickVisibility(1, yTicks);
+                 frame->SetTopRightTickVisibility(0);
                  break;
         case Axes2D::All : //all
-                 axes->SetXTickVisibility(1, xTicks); 
-                 axes->SetYTickVisibility(1, yTicks); 
-                 frame->SetTopRightTickVisibility(1); 
+                 axes->SetXTickVisibility(1, xTicks);
+                 axes->SetYTickVisibility(1, yTicks);
+                 frame->SetTopRightTickVisibility(1);
                  break;
     }
     axes->SetTickLocation(axis2D.GetTickLocation());
@@ -4545,7 +4545,7 @@ VisWindow::UpdateAxesArray()
     // labels
     int label = atts.GetAxes().GetLabel().GetVisible() ? 1 : 0;
     axesArray->SetLabelVisibility(label);
-    axesArray->SetLabelScaling(atts.GetAutoSetScaling(), 
+    axesArray->SetLabelScaling(atts.GetAutoSetScaling(),
                                atts.GetAxes().GetLabel().GetScaling());
 
     // title
@@ -4605,7 +4605,7 @@ VisWindow::UpdateParallelAxes()
     // labels
     int label = atts.GetAxes().GetLabel().GetVisible() ? 1 : 0;
     parallelAxes->SetLabelVisibility(label);
-    parallelAxes->SetLabelScaling(atts.GetAutoSetScaling(), 
+    parallelAxes->SetLabelScaling(atts.GetAutoSetScaling(),
                                   atts.GetAxes().GetLabel().GetScaling());
 
     // title
@@ -4641,11 +4641,11 @@ VisWindow::UpdateParallelAxes()
 // ****************************************************************************
 // Method: VisWindow::UpdateAxes3D
 //
-// Purpose: 
+// Purpose:
 //   Updates the VisWinAxes3D.
 //
-// Programmer: Kathleen Bonnell 
-// Creation:   June 20, 2001 
+// Programmer: Kathleen Bonnell
+// Creation:   June 20, 2001
 //
 // Modifications:
 //   Kathleen Bonnell, Fri Aug  3 15:29:04 PDT 2001
@@ -4654,14 +4654,14 @@ VisWindow::UpdateParallelAxes()
 //   Brad Whitlock, Fri Sep 21 15:53:34 PST 2001
 //   Changed the code so the bbox can be drawn even when the axes are not.
 //
-//   Kathleen Bonnell, Fri Nov  2 16:43:14 PST 2001 
-//   Fix SetTickLocation so that the arg is only 
+//   Kathleen Bonnell, Fri Nov  2 16:43:14 PST 2001
+//   Fix SetTickLocation so that the arg is only
 //   annotationAtts.GetAxes3DTickLocation().
 //
 //   Eric Brugger, Wed Nov  5 14:03:46 PST 2002
 //   Change the names of some of the fields in annotationAtts.
 //
-//   Kathleen Bonnell, Tue Dec 16 11:34:33 PST 2003 
+//   Kathleen Bonnell, Tue Dec 16 11:34:33 PST 2003
 //   Added the setting of the label scaling.
 //
 //   Brad Whitlock, Thu Jul 28 10:16:47 PDT 2005
@@ -4680,11 +4680,11 @@ VisWindow::UpdateParallelAxes()
 //   Added support for title visibility separate from label visibility.
 //
 //   Alister Maguire, Thu Mar  1 16:08:42 PST 2018
-//   Added support for altering the triad. 
+//   Added support for altering the triad.
 //
 //   Alister Maguire, Fri Mar  9 10:13:30 PST 2018
-//   Only update the triad color if the 
-//   set manually flag is raised. 
+//   Only update the triad color if the
+//   set manually flag is raised.
 //
 // ****************************************************************************
 
@@ -4694,7 +4694,7 @@ VisWindow::UpdateAxes3D()
     const Axes3D &axis3D = annotationAtts.GetAxes3D();
 
     //
-    // Axes visibility. 
+    // Axes visibility.
     //
     bool a = axis3D.GetVisible();
     axes3D->SetVisibility(a || axis3D.GetBboxFlag());
@@ -4761,7 +4761,7 @@ VisWindow::UpdateAxes3D()
     axes3D->SetFlyMode(axis3D.GetAxesType());
 
     //
-    // Triad 
+    // Triad
     //
     triad->SetVisibility(axis3D.GetTriadFlag());
     if (axis3D.GetTriadSetManually())
@@ -4781,13 +4781,13 @@ VisWindow::UpdateAxes3D()
     triad->SetFontFamily(annotationAtts.GetAxes3D().GetTriadFont());
 
     //
-    // Bounding Box 
+    // Bounding Box
     //
     axes3D->SetBBoxVisibility(axis3D.GetBboxFlag());
 
     //
-    // Gridlines 
-    //  
+    // Gridlines
+    //
     axes3D->SetXGridVisibility(a && axis3D.GetXAxis().GetGrid());
     axes3D->SetYGridVisibility(a && axis3D.GetYAxis().GetGrid());
     axes3D->SetZGridVisibility(a && axis3D.GetZAxis().GetGrid());
@@ -4832,7 +4832,7 @@ VisWindow::UpdateAxes3D()
 //   Added the passing of database path expansion mode.
 //
 //   Brad Whitlock, Tue Jan 29 16:14:56 PST 2008
-//   Added code to set the text attributes for the database and the user 
+//   Added code to set the text attributes for the database and the user
 //   information.
 //
 //   Brad Whitlock, Mon Mar  2 14:07:57 PST 2009
@@ -4917,14 +4917,14 @@ VisWindow::ProcessResizeEvent(void *data)
 // ****************************************************************************
 // Method: VisWindow::Pick
 //
-// Purpose: 
-//   Executes the callback that tells the VisWindow's to perform a pick. 
+// Purpose:
+//   Executes the callback that tells the VisWindow's to perform a pick.
 //
 // Arguments:
 //   x, y      The screen coordinates of the picked point.
 //
-// Programmer: Kathleen Bonnell 
-// Creation:   November 9, 2001 
+// Programmer: Kathleen Bonnell
+// Creation:   November 9, 2001
 //
 // Modifications:
 //   Kathleen Bonnell, Tue Mar  5 09:27:51 PST 2002
@@ -4934,36 +4934,36 @@ VisWindow::ProcessResizeEvent(void *data)
 //   Kathleen Bonnell, Fri Mar 15 14:16:28 PST 2002
 //   Use queries method, not plots. Change tolerance back to original.  Previous
 //   fix was very data-dependent.
-//   
-//   Kathleen Bonnell, Tue Mar 26 10:43:23 PST 2002 
-//   Remove unsued variables xs, ys. 
-//   
-//   Kathleen Bonnell, Mon May 20 17:01:31 PDT 2002  
+//
+//   Kathleen Bonnell, Tue Mar 26 10:43:23 PST 2002
+//   Remove unsued variables xs, ys.
+//
+//   Kathleen Bonnell, Mon May 20 17:01:31 PDT 2002
 //   Retrieve domain from OriginalCells array.  Test for pick position outside
-//   of dataset bounds. 
-//   
-//   Kathleen Bonnell, Fri Dec 20 09:48:48 PST 2002  
-//   Removed call that set the pick Letter from queries->GetNextDesignator. 
-// 
-//   Kathleen Bonnell, Fri Jan 31 09:36:54 PST 2003 
-//   Reworked code to remove picking from the renderer.  Ray-endpoints are 
+//   of dataset bounds.
+//
+//   Kathleen Bonnell, Fri Dec 20 09:48:48 PST 2002
+//   Removed call that set the pick Letter from queries->GetNextDesignator.
+//
+//   Kathleen Bonnell, Fri Jan 31 09:36:54 PST 2003
+//   Reworked code to remove picking from the renderer.  Ray-endpoints are
 //   calculated from the screen coordinates,  and passed to the viewer for
-//   handling by the engine. 
-// 
+//   handling by the engine.
+//
 //   Eric Brugger, Wed Jun 18 17:50:24 PDT 2003
 //   I modified the method so that pick worked properly with the new pan
 //   and zoom mechanism.
 //
-//   Kathleen Bonnell, Thu Sep  2 13:40:25 PDT 2004 
-//   Added code to call the 'FindIntersection' method if the flag is set. 
+//   Kathleen Bonnell, Thu Sep  2 13:40:25 PDT 2004
+//   Added code to call the 'FindIntersection' method if the flag is set.
 //
-//   Kathleen Bonnell, Tue Mar  7 08:27:25 PST 2006 
+//   Kathleen Bonnell, Tue Mar  7 08:27:25 PST 2006
 //   Expanded 'intersection only' to handle SR mode.
 //
 //  Kathleen Bonnell, Thu May  4 09:28:56 PDT 2006
-//  With VTK 5.0, DisplayToView no longer uses Aspect in caluclation of 
+//  With VTK 5.0, DisplayToView no longer uses Aspect in caluclation of
 //  ViewPoint, so do the calculation of ViewPoint after retrieval.
-// 
+//
 // ****************************************************************************
 
 void
@@ -4974,11 +4974,11 @@ VisWindow::Pick(int x, int y)
 
     if (pickForIntersectionOnly)
     {
-        ppInfo->intersectionOnly = true; 
+        ppInfo->intersectionOnly = true;
         if (!GetScalableRendering())
         {
             double isect[3];
-            ppInfo->validPick = FindIntersection(x, y, isect); 
+            ppInfo->validPick = FindIntersection(x, y, isect);
             if (ppInfo->validPick)
             {
                 ppInfo->rayPt1[0] = isect[0];
@@ -4988,26 +4988,26 @@ VisWindow::Pick(int x, int y)
         }
         else
         {
-            //        
+            //
             // SR mode, and intersect only, need to go to the engine for this
             // so tell pick what the x, y points are by setting them in rayPt.
-            //        
+            //
             ppInfo->rayPt1[0] = (double) x;
             ppInfo->rayPt1[1] = (double) y;
             ppInfo->validPick = false;
         }
         // Execute the callback.
         (*performPickCallback)((void*)ppInfo);
-        return;    
+        return;
     }
 
-    ppInfo->intersectionOnly = false; 
+    ppInfo->intersectionOnly = false;
     double cameraPos[4];
     double cameraFocal[4];
     double pickPos[3];
     double cameraDOP[3];
     double ray[3];
-    double tF, tB; 
+    double tF, tB;
     double rayPt1[4], rayPt2[4];
     double *displayCoords;
     double *clipRange;
@@ -5056,15 +5056,15 @@ VisWindow::Pick(int x, int y)
     //
     double worldCoords[4];
     vtkMatrix4x4 *mat = vtkMatrix4x4::New();
- 
+
     // get the perspective transformation from the active camera
     mat->DeepCopy(cam->GetCompositeProjectionTransformMatrix(1,0,1));
- 
+
     // use the inverse matrix
     mat->Invert();
- 
+
     mat->MultiplyPoint(viewPoint, worldCoords);
- 
+
     // Get the transformed vector & set WorldPoint
     // while we are at it try to keep w at one
     if (worldCoords[3])
@@ -5087,12 +5087,12 @@ VisWindow::Pick(int x, int y)
         {
             pickPos[i] = worldCoords[i] / worldCoords[3];
         }
-        //  
+        //
         //  Compute the ray endpoints.  The ray is along the line running from
         //  the camera position to the selection point, starting where this line
         //  intersects the front clipping plane, and terminating where this
         //  line intersects the back clipping plane.
-        //  
+        //
         for (i=0; i<3; i++)
         {
             ray[i] = pickPos[i] - cameraPos[i];
@@ -5101,10 +5101,10 @@ VisWindow::Pick(int x, int y)
         {
             cameraDOP[i] = cameraFocal[i] - cameraPos[i];
         }
- 
+
         vtkMath::Normalize(cameraDOP);
 
- 
+
         if (( rayLength = vtkMath::Dot(cameraDOP,ray)) == 0.0 )
         {
             debug5 << "vtkCellPicker could not calculate pick ray."  << endl;
@@ -5115,7 +5115,7 @@ VisWindow::Pick(int x, int y)
             clipRange = cam->GetClippingRange();
 
             validPick = true;
- 
+
             if ( cam->GetParallelProjection() )
             {
                 tF = clipRange[0] - rayLength;
@@ -5158,7 +5158,7 @@ VisWindow::Pick(int x, int y)
 // ****************************************************************************
 // Method: VisWindow::Pick
 //
-// Purpose: 
+// Purpose:
 //   Calls the Pick method with window coordinates [0,1]
 //
 // Arguments:
@@ -5168,14 +5168,14 @@ VisWindow::Pick(int x, int y)
 // Creation:   Mon Jan 5 14:43:11 PST 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
 VisWindow::Pick(double sx, double sy)
 {
     vtkRenderer *ren = GetCanvas();
-    
+
     if(ren->GetRenderWindow())
     {
         int *windowSize = ren->GetRenderWindow()->GetSize();
@@ -5191,15 +5191,15 @@ VisWindow::Pick(double sx, double sy)
 // ****************************************************************************
 // Method: VisWindow::SetPickCB
 //
-// Purpose: 
-//   Sets the callback to use to perform a pick. 
+// Purpose:
+//   Sets the callback to use to perform a pick.
 //
 // Arguments:
 //   cb        The callback method.
-//   data      The callback data. 
+//   data      The callback data.
 //
-// Programmer: Kathleen Bonnell 
-// Creation:   November 9, 2001 
+// Programmer: Kathleen Bonnell
+// Creation:   November 9, 2001
 //
 // ****************************************************************************
 
@@ -5214,19 +5214,19 @@ VisWindow::SetPickCB(VisCallback *cb, void *data)
 // ****************************************************************************
 // Method: VisWindow::ClearPickPoints
 //
-// Purpose: 
+// Purpose:
 //   Tell the plots to clear pick points.
 //
-// Programmer: Kathleen Bonnell 
-// Creation:   November 27, 2001 
+// Programmer: Kathleen Bonnell
+// Creation:   November 27, 2001
 //
 // Modifications:
 //   Kathleen Bonnell, Fri Mar 15 14:16:28 PST 2002
 //   Call queries method, not plots.
-//   
-//   Kathleen Bonnell, Wed Mar 26 14:29:23 PST 2003   
+//
+//   Kathleen Bonnell, Wed Mar 26 14:29:23 PST 2003
 //   Force a render so pick points always disappear from window.
-//   
+//
 // ****************************************************************************
 
 void
@@ -5240,14 +5240,14 @@ VisWindow::ClearPickPoints()
 // ****************************************************************************
 // Method: VisWindow::RemovePicks
 //
-// Purpose: 
-//   Tell the plots to remove a list of pick points. 
+// Purpose:
+//   Tell the plots to remove a list of pick points.
 //
 // Programmer: Alister Maguire
 // Creation:   Mon Oct 16 15:41:23 PDT 2017
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 std::string
@@ -5262,33 +5262,33 @@ VisWindow::RemovePicks(std::vector< std::string > targetLabels)
 // ****************************************************************************
 // Method: VisWindow::Lineout
 //
-// Purpose: 
-//   Executes the callback that tells the VisWindow's to perform a line-out. 
+// Purpose:
+//   Executes the callback that tells the VisWindow's to perform a line-out.
 //
 // Arguments:
 //   x1, y1, x2, y2      The screen coordinates of the endpoints of the line.
 //
-// Programmer: Kathleen Bonnell 
-// Creation:   December 17, 2001 
+// Programmer: Kathleen Bonnell
+// Creation:   December 17, 2001
 //
 // Modifications:
 //   Kathleen Bonnell, Wed May 15 16:40:35 PDT 2002
 //   Catch exeception thrown by GetDataExtents. (Indicates bad variable for Lineout).
 //
-//   Kathleen Bonnell, Thu Jun 20 14:58:18 PDT 2002  
-//   Moved code for determing YScale to ViewerQuery. 
+//   Kathleen Bonnell, Thu Jun 20 14:58:18 PDT 2002
+//   Moved code for determing YScale to ViewerQuery.
 //
-//   Kathleen Bonnell, Tue Jul 23 15:01:55 PDT 2002 
-//   Removed code for determining glyphSize. 
+//   Kathleen Bonnell, Tue Jul 23 15:01:55 PDT 2002
+//   Removed code for determining glyphSize.
 //
-//   Kathleen Bonnell, Tue Jul 30 13:35:04 PDT 2002   
-//   Set z-coord to 0 (for 2d) BEFORE the points are set for VisWinQuery. 
+//   Kathleen Bonnell, Tue Jul 30 13:35:04 PDT 2002
+//   Set z-coord to 0 (for 2d) BEFORE the points are set for VisWinQuery.
 //
-//   Kathleen Bonnell, Fri Dec 20 09:48:48 PST 2002  
+//   Kathleen Bonnell, Fri Dec 20 09:48:48 PST 2002
 //   Remove call to queries->GetNextDesignator.
 //
-//    Kathleen Bonnell, Fri Jun 27 16:30:26 PDT 2003 
-//    Removed call to queries->SetAttachmentPoint, queries->SetSecondaryPoint. 
+//    Kathleen Bonnell, Fri Jun 27 16:30:26 PDT 2003
+//    Removed call to queries->SetAttachmentPoint, queries->SetSecondaryPoint.
 //
 // ****************************************************************************
 
@@ -5297,7 +5297,7 @@ VisWindow::Lineout(int x1, int y1, int x2, int y2)
 {
     if(performLineoutCallback == 0)
         return;
- 
+
     //
     // Retrieve the objects we want to modify.
     //
@@ -5310,7 +5310,7 @@ VisWindow::Lineout(int x1, int y1, int x2, int y2)
     pt1[1] = (double) y1;
     pt2[0] = (double) x2;
     pt2[1] = (double) y2;
-   
+
     //
     // Have the canvas translate our endpoints in display coordinates
     // to endpoints in world coordinate.  Sadly, this takes five
@@ -5350,11 +5350,11 @@ VisWindow::Lineout(int x1, int y1, int x2, int y2)
 // ****************************************************************************
 // Method: VisWindow::GetVisualCues
 //
-// Purpose: 
-//   Returns a vector of visual cues currently in the VisWindow 
+// Purpose:
+//   Returns a vector of visual cues currently in the VisWindow
 //
-// Programmer: Mark C. Miller 
-// Creation:   June 7, 2004 
+// Programmer: Mark C. Miller
+// Creation:   June 7, 2004
 //
 // ****************************************************************************
 void
@@ -5368,12 +5368,12 @@ VisWindow::GetVisualCues(const VisualCueInfo::CueType cueType,
 // ****************************************************************************
 // Method: VisWindow::SetExternalRenderCallback
 //
-// Purpose: 
+// Purpose:
 //   Forward a request to register an external rendering callback function to
 //   the VisWinPlots.
 //
 // Programmer: Mark C. Miller
-// Creation:   January 13, 2003 
+// Creation:   January 13, 2003
 //
 // ****************************************************************************
 
@@ -5387,11 +5387,11 @@ VisWindow::SetExternalRenderCallback(VisCallbackWithDob *cb, void *data)
 // ****************************************************************************
 // Method: VisWindow::EnableExternalRenderRequests
 //
-// Purpose: 
+// Purpose:
 //   Forward a request to enable external render requests to the VisWinPlots
 //
 // Programmer: Mark C. Miller
-// Creation:   February 5, 2003 
+// Creation:   February 5, 2003
 //
 // ****************************************************************************
 
@@ -5404,11 +5404,11 @@ VisWindow::EnableExternalRenderRequests(void)
 // ****************************************************************************
 // Method: VisWindow::DisableExternalRenderRequests
 //
-// Purpose: 
+// Purpose:
 //   Forward a request to enable external render requests to the VisWinPlots
 //
 // Programmer: Mark C. Miller
-// Creation:   February 5, 2003 
+// Creation:   February 5, 2003
 //
 // Modified:
 //    Dave Bremer, Wed Oct 31 15:48:16 PDT 2007
@@ -5428,7 +5428,7 @@ VisWindow::DisableExternalRenderRequests(bool bClearImage)
 // requests
 //
 // Programmer: Mark C. Miller
-// Creation:   March 27, 2007 
+// Creation:   March 27, 2007
 //
 // ****************************************************************************
 
@@ -5445,7 +5445,7 @@ VisWindow::IsMakingExternalRenderRequests(void) const
 // renders
 //
 // Programmer: Mark C. Miller
-// Creation:   March 27, 2007 
+// Creation:   March 27, 2007
 //
 // ****************************************************************************
 
@@ -5462,7 +5462,7 @@ VisWindow::GetAverageExternalRenderingTime(void) const
 // visual queue
 //
 // Programmer: Mark C. Miller
-// Creation:   March 27, 2007 
+// Creation:   March 27, 2007
 //
 // ****************************************************************************
 
@@ -5475,11 +5475,11 @@ VisWindow::DoNextExternalRenderAsVisualQueue(int w, int h, const double *color)
 // ****************************************************************************
 // Method: VisWindow::ComputeVectorTextScaleFactor
 //
-// Purpose: 
+// Purpose:
 //   Tell the queries to clear ref lines (from LineOut).
 //
-// Programmer: Kathleen Bonnell 
-// Creation:   May 8, 2002 
+// Programmer: Kathleen Bonnell
+// Creation:   May 8, 2002
 //
 // ****************************************************************************
 
@@ -5492,16 +5492,16 @@ VisWindow::ComputeVectorTextScaleFactor(const double *pos, const double *vp)
 // ****************************************************************************
 // Method: VisWindow::ClearRefLines
 //
-// Purpose: 
+// Purpose:
 //   Tell the queries to clear ref lines (from LineOut).
 //
-// Programmer: Kathleen Bonnell 
-// Creation:   January 14, 2002 
+// Programmer: Kathleen Bonnell
+// Creation:   January 14, 2002
 //
 // Modifications:
-//   Kathleen Bonnell, Wed Mar 26 14:29:23 PST 2003   
+//   Kathleen Bonnell, Wed Mar 26 14:29:23 PST 2003
 //   Force a render so reflines always disappear from window.
-//   
+//
 // ****************************************************************************
 
 void
@@ -5515,15 +5515,15 @@ VisWindow::ClearRefLines()
 // ****************************************************************************
 // Method: VisWindow::SetLineoutCB
 //
-// Purpose: 
-//   Sets the callback to use to perform a lineout. 
+// Purpose:
+//   Sets the callback to use to perform a lineout.
 //
 // Arguments:
 //   cb        The callback method.
-//   data      The callback data. 
+//   data      The callback data.
 //
-// Programmer: Kathleen Bonnell 
-// Creation:   January 14, 2002 
+// Programmer: Kathleen Bonnell
+// Creation:   January 14, 2002
 //
 // ****************************************************************************
 
@@ -5538,12 +5538,12 @@ VisWindow::SetLineoutCB(VisCallback *cb, void *data)
 // ****************************************************************************
 // Method: VisWindow::SetViewChangedCB
 //
-// Purpose: 
-//   Sets the callback to use when the view changed. 
+// Purpose:
+//   Sets the callback to use when the view changed.
 //
 // Arguments:
 //   cb        The callback method.
-//   data      The callback data. 
+//   data      The callback data.
 //
 // Programmer: Eric Brugger
 // Creation:   Thu Oct 27 14:21:27 PDT 2011
@@ -5563,17 +5563,17 @@ VisWindow::SetViewChangedCB(VisCallback *cb, void *data)
 //  Purpose:
 //    Tells the query colleague that the lastt query was valid.
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   April 15, 2002 
+//  Programmer: Kathleen Bonnell
+//  Creation:   April 15, 2002
 //
 //  Modifications:
 //    Kathleen Bonnell, Tue Oct  1 16:25:50 PDT 2002
 //    Changed argument to Line*, to convey more information than just color.
 //
-//    Kathleen Bonnell, Thu Dec 19 13:32:47 PST 2002  
+//    Kathleen Bonnell, Thu Dec 19 13:32:47 PST 2002
 //    Added argument designator.
 //
-//    Kathleen Bonnell, Fri Jan 31 09:36:54 PST 2003 
+//    Kathleen Bonnell, Fri Jan 31 09:36:54 PST 2003
 //    Replaced argument designator with PickAttributes.
 //
 //    Mark C. Miller Wed Jun  9 17:44:38 PDT 2004
@@ -5582,7 +5582,7 @@ VisWindow::SetViewChangedCB(VisCallback *cb, void *data)
 // ****************************************************************************
 
 void
-VisWindow::QueryIsValid(const VisualCueInfo *pickCue, const VisualCueInfo *lineCue) 
+VisWindow::QueryIsValid(const VisualCueInfo *pickCue, const VisualCueInfo *lineCue)
 {
     queries->QueryIsValid(pickCue, lineCue);
 }
@@ -5592,10 +5592,10 @@ VisWindow::QueryIsValid(const VisualCueInfo *pickCue, const VisualCueInfo *lineC
 //  Method: VisWindow::GetScaleFactorAndType
 //
 //  Purpose:
-//      Gets the VisWindow's axis scale factor and type. 
+//      Gets the VisWindow's axis scale factor and type.
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   May 13, 2003 
+//  Programmer: Kathleen Bonnell
+//  Creation:   May 13, 2003
 //
 //  Modifications:
 //    Eric Brugger, Wed Aug 20 10:09:15 PDT 2003
@@ -5641,7 +5641,7 @@ VisWindow::GetScaleFactorAndType(double &s, int &t)
 
         s = viewAxisArray.GetScaleFactor(size);
     }
-    else // this really doesn't apply, set scale to 0. 
+    else // this really doesn't apply, set scale to 0.
     {
         s = 0.; // no scaling will happen.
     }
@@ -5653,7 +5653,7 @@ VisWindow::GetScaleFactorAndType(double &s, int &t)
 // Method:  VisWindow::Get3DAxisScalingFactors
 //
 // Purpose:
-//   Get the 3D scaling factors, if they are applied and we are in 
+//   Get the 3D scaling factors, if they are applied and we are in
 //   3D mode -- otherwise, fill them with (1,1,1).  Return true if they
 //   are active.
 //
@@ -5689,14 +5689,14 @@ VisWindow::Get3DAxisScalingFactors(double s[3])  const
 //  Method: VisWindow::UpdateQuery
 //
 //  Purpose:
-//    Tells the query colleague to do an update. 
+//    Tells the query colleague to do an update.
 //
 //  Arguments:
 //    id   which query to update
 //    cue  Attributes used to update the query.
 //
 //  Programmer: Kathleen Bonnell
-//  Creation:   June 18, 2002 
+//  Creation:   June 18, 2002
 //
 //  Modifications:
 //    Mark C. Miller Wed Jun  9 17:44:38 PDT 2004
@@ -5707,7 +5707,7 @@ VisWindow::Get3DAxisScalingFactors(double s[3])  const
 //    us pass a new label for picks.
 //
 // ****************************************************************************
- 
+
 void
 VisWindow::UpdateQuery(const std::string &id, const VisualCueInfo *cue)
 {
@@ -5719,20 +5719,20 @@ VisWindow::UpdateQuery(const std::string &id, const VisualCueInfo *cue)
 //  Method: VisWindow::DeleteQuery
 //
 //  Purpose:
-//    Tells the query colleague to do delete the query specifed by lineAtts. 
+//    Tells the query colleague to do delete the query specifed by lineAtts.
 //
 //  Arguments:
 //    lineAtts  Attributes that specify which query is to be deleted.
 //
 //  Programmer: Kathleen Bonnell
-//  Creation:   June 18, 2002 
+//  Creation:   June 18, 2002
 //
 //  Modifications:
 //
 //    Mark C. Miller Wed Jun  9 17:44:38 PDT 2004
 //    Changed interface to use VisualCueInfo object
 // ****************************************************************************
- 
+
 void
 VisWindow::DeleteQuery(const VisualCueInfo *lineCue)
 {
@@ -5744,16 +5744,16 @@ VisWindow::DeleteQuery(const VisualCueInfo *lineCue)
 //  Method: VisWindow::ScalePlots
 //
 //  Purpose:
-//    Tells the plots colleague to do scale the plots as specifed by vec. 
+//    Tells the plots colleague to do scale the plots as specifed by vec.
 //
 //  Arguments:
-//    vec   The vector by which plots are to be scaled. 
+//    vec   The vector by which plots are to be scaled.
 //
 //  Programmer: Kathleen Bonnell
-//  Creation:   July 11, 2002 
+//  Creation:   July 11, 2002
 //
 // ****************************************************************************
- 
+
 void
 VisWindow::ScalePlots(const double vec[3])
 {
@@ -5765,16 +5765,16 @@ VisWindow::ScalePlots(const double vec[3])
 //  Method: VisWindow::GetAmbientOn
 //
 //  Purpose:
-//    Retrieves the lighting flag specifying where ambient light is on or off. 
+//    Retrieves the lighting flag specifying where ambient light is on or off.
 //
 //  Returns:
-//    True if ambient lighting is in effect, false otherwise. 
+//    True if ambient lighting is in effect, false otherwise.
 //
 //  Programmer: Kathleen Bonnell
-//  Creation:   August 12, 2002 
+//  Creation:   August 12, 2002
 //
 // ****************************************************************************
- 
+
 bool
 VisWindow::GetAmbientOn()
 {
@@ -5786,16 +5786,16 @@ VisWindow::GetAmbientOn()
 //  Method: VisWindow::GetAmbientCoefficient
 //
 //  Purpose:
-//    Retrieves the ambient lighting coefficient. 
+//    Retrieves the ambient lighting coefficient.
 //
 //  Returns:
-//    The ambient lighting coefficient. 
+//    The ambient lighting coefficient.
 //
 //  Programmer: Kathleen Bonnell
-//  Creation:   August 12, 2002 
+//  Creation:   August 12, 2002
 //
 // ****************************************************************************
- 
+
 double
 VisWindow::GetAmbientCoefficient()
 {
@@ -5806,16 +5806,16 @@ VisWindow::GetAmbientCoefficient()
 //  Method: VisWindow::GetLighting
 //
 //  Purpose:
-//    Retrieves the flag specifying whether lighing is on or off. 
+//    Retrieves the flag specifying whether lighing is on or off.
 //
 //  Returns:
-//    True if lighting is in effect, false otherwise. 
+//    True if lighting is in effect, false otherwise.
 //
 //  Programmer: Kathleen Bonnell
-//  Creation:   August 12, 2002 
+//  Creation:   August 12, 2002
 //
 // ****************************************************************************
- 
+
 bool
 VisWindow::GetLighting()
 {
@@ -5828,15 +5828,15 @@ VisWindow::GetLighting()
 //
 //  Purpose:
 //    Tells the lighting colleague that light positions need updating.
-//    This occurs mainly when plots updpate the camera based on new bounds. 
+//    This occurs mainly when plots updpate the camera based on new bounds.
 //
 //  Programmer: Kathleen Bonnell
-//  Creation:   August 13, 2002 
+//  Creation:   August 13, 2002
 //
 //  Modifications:
 //    Kathleen Bonnell, Thu Aug 29 09:49:36 PDT 2002
 //    Removed arguments from lighting->UpdateLightPositions.  Added test
-//    for NULL. 
+//    for NULL.
 //
 // ****************************************************************************
 
@@ -5852,7 +5852,7 @@ VisWindow::UpdateLightPositions()
 // ****************************************************************************
 // Method: VisWindow::SetRenderInfoCallback
 //
-// Purpose: 
+// Purpose:
 //   Sets the rendering information callback function.
 //
 // Arguments:
@@ -5863,7 +5863,7 @@ VisWindow::UpdateLightPositions()
 // Creation:   Mon Sep 23 14:05:13 PST 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -6130,7 +6130,7 @@ size_t VisWindow::GetAlphaCompositeBlocking() const
 // ****************************************************************************
 // Method: VisWindow::SetAntialiasing
 //
-// Purpose: 
+// Purpose:
 //   Sets the window's antialiasing mode.
 //
 // Arguments:
@@ -6141,12 +6141,12 @@ size_t VisWindow::GetAlphaCompositeBlocking() const
 // Creation:   Mon Sep 23 14:06:02 PST 2002
 //
 // Modifications:
-//   Kathleen Bonnell, Wed Dec  4 17:29:34 PST 2002  
+//   Kathleen Bonnell, Wed Dec  4 17:29:34 PST 2002
 //   Removed frames argument.
-//   
-//   Kathleen Bonnell, Mon Sep 29 13:15:20 PDT 2003 
-//   Added call to RecalculateRenderOrder. 
-//   
+//
+//   Kathleen Bonnell, Mon Sep 29 13:15:20 PDT 2003
+//   Added call to RecalculateRenderOrder.
+//
 // ****************************************************************************
 
 void
@@ -6162,7 +6162,7 @@ VisWindow::SetAntialiasing(bool enabled)
 // ****************************************************************************
 // Method: VisWindow::GetAntialiasing
 //
-// Purpose: 
+// Purpose:
 //   Returns the window's AA mode.
 //
 // Returns:    The window's AA mode.
@@ -6171,7 +6171,7 @@ VisWindow::SetAntialiasing(bool enabled)
 // Creation:   Mon Sep 23 14:06:46 PST 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -6183,7 +6183,7 @@ VisWindow::GetAntialiasing() const
 // ****************************************************************************
 // Method: VisWindow::SetMultiresolutionMode
 //
-// Purpose: 
+// Purpose:
 //   Sets the window's multiresolution mode.
 //
 // Arguments:
@@ -6193,7 +6193,7 @@ VisWindow::GetAntialiasing() const
 // Creation:   Thu Oct 27 14:21:27 PDT 2011
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -6205,7 +6205,7 @@ VisWindow::SetMultiresolutionMode(bool enabled)
 // ****************************************************************************
 // Method: VisWindow::GetMultiresolutionMode
 //
-// Purpose: 
+// Purpose:
 //   Returns the window's multiresolution mode.
 //
 // Returns:    The window's multiresolution mode.
@@ -6214,7 +6214,7 @@ VisWindow::SetMultiresolutionMode(bool enabled)
 // Creation:   Thu Oct 27 14:21:27 PDT 2011
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -6226,7 +6226,7 @@ VisWindow::GetMultiresolutionMode() const
 // ****************************************************************************
 // Method: VisWindow::SetMultiresolutionCellSize
 //
-// Purpose: 
+// Purpose:
 //   Sets the window's multiresolution cell size.
 //
 // Arguments:
@@ -6236,7 +6236,7 @@ VisWindow::GetMultiresolutionMode() const
 // Creation:   Thu Oct 27 14:21:27 PDT 2011
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -6248,7 +6248,7 @@ VisWindow::SetMultiresolutionCellSize(double size)
 // ****************************************************************************
 // Method: VisWindow::GetMultiresolutionCellSize
 //
-// Purpose: 
+// Purpose:
 //   Returns the window's multiresolution cell size.
 //
 // Returns:    The window's multiresolution cell size.
@@ -6257,7 +6257,7 @@ VisWindow::SetMultiresolutionCellSize(double size)
 // Creation:   Thu Oct 27 14:21:27 PDT 2011
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 double
@@ -6269,7 +6269,7 @@ VisWindow::GetMultiresolutionCellSize() const
 // ****************************************************************************
 // Method: VisWindow::GetRenderTimes
 //
-// Purpose: 
+// Purpose:
 //   Returns the window's min,avg, and max render times.
 //
 // Arguments:
@@ -6282,7 +6282,7 @@ VisWindow::GetMultiresolutionCellSize() const
 //
 //   Mark C. Miller, Thu Nov  3 16:59:41 PST 2005
 //   Added 3 most recent rendering times to set of times returned
-//   
+//
 // ****************************************************************************
 
 void
@@ -6294,7 +6294,7 @@ VisWindow::GetRenderTimes(double times[6]) const
 // ****************************************************************************
 // Method: VisWindow::SetStereoRendering
 //
-// Purpose: 
+// Purpose:
 //   Sets the window's stereo mode.
 //
 // Arguments:
@@ -6305,7 +6305,7 @@ VisWindow::GetRenderTimes(double times[6]) const
 // Creation:   Mon Sep 23 14:08:27 PST 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -6317,7 +6317,7 @@ VisWindow::SetStereoRendering(bool enabled, int type)
 // ****************************************************************************
 // Method: VisWindow::GetStereo
 //
-// Purpose: 
+// Purpose:
 //   Returns whether or not stereo rendering is enabled.
 //
 // Returns:    Whether or not stereo rendering is enabled.
@@ -6326,7 +6326,7 @@ VisWindow::SetStereoRendering(bool enabled, int type)
 // Creation:   Mon Sep 23 14:09:04 PST 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -6338,7 +6338,7 @@ VisWindow::GetStereo() const
 // ****************************************************************************
 // Method: VisWindow::GetStereoType
 //
-// Purpose: 
+// Purpose:
 //   Returns the window's stereo rendering type.
 //
 // Returns:    The window's stereo rendering type.
@@ -6347,7 +6347,7 @@ VisWindow::GetStereo() const
 // Creation:   Mon Sep 23 14:09:33 PST 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 int
@@ -6360,7 +6360,7 @@ VisWindow::GetStereoType() const
 // ****************************************************************************
 // Method: VisWindow::IsDirect
 //
-// Purpose: 
+// Purpose:
 //     Returns whether or not the window is rendering directly to a GPU or
 //     whether it is going through an X-Server.
 //
@@ -6378,7 +6378,7 @@ VisWindow::IsDirect(void)
 // ****************************************************************************
 // Method: VisWindow::SetSurfaceRepresentation
 //
-// Purpose: 
+// Purpose:
 //   Sets the window's surface representation.
 //
 // Arguments:
@@ -6388,7 +6388,7 @@ VisWindow::IsDirect(void)
 // Creation:   Mon Sep 23 14:11:19 PST 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -6404,14 +6404,14 @@ VisWindow::SetSurfaceRepresentation(int rep)
 // ****************************************************************************
 // Method: VisWindow::GetSurfaceRepresentation
 //
-// Purpose: 
+// Purpose:
 //   Gets the window's surface representation.
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Sep 23 14:11:50 PST 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 int
@@ -6423,7 +6423,7 @@ VisWindow::GetSurfaceRepresentation() const
 // ****************************************************************************
 // Method: VisWindow::SetSpecularProperties
 //
-// Purpose: 
+// Purpose:
 //   Sets the window's specular properties.
 //
 // Arguments:
@@ -6435,7 +6435,7 @@ VisWindow::GetSurfaceRepresentation() const
 // Creation:   November 14, 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -6521,14 +6521,14 @@ VisWindow::GetSpecularColor()
 // ****************************************************************************
 // Method: VisWindow::SetColorTexturingFlag
 //
-// Purpose: 
+// Purpose:
 //   Sets the window's color texturing flag.
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Sep 18 11:04:39 PDT 2006
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -6544,14 +6544,14 @@ VisWindow::SetColorTexturingFlag(bool val)
 // ****************************************************************************
 // Method: VisWindow::GetColorTexturingFlag
 //
-// Purpose: 
+// Purpose:
 //   Returns the window's color texturing flag.
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Sep 18 11:04:16 PDT 2006
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -6563,7 +6563,7 @@ VisWindow::GetColorTexturingFlag() const
 // ****************************************************************************
 // Method: VisWindow::GetNumPrimitives
 //
-// Purpose: 
+// Purpose:
 //   Gets the approximate number of triangles that were rendered.
 //
 // Programmer: Brad Whitlock
@@ -6573,7 +6573,7 @@ VisWindow::GetColorTexturingFlag() const
 //
 //   Mark C. Miller, Thu Mar  3 17:38:36 PST 2005
 //   Changed name from GetNumTriangles to GetNumPrimitives
-//   
+//
 // ****************************************************************************
 
 int
@@ -6585,7 +6585,7 @@ VisWindow::GetNumPrimitives() const
 // ****************************************************************************
 // Method: VisWindow::SetNotifyForEachRender
 //
-// Purpose: 
+// Purpose:
 //   Sets a flag that tells the window whether or not it should report
 //   rendering information after each render.
 //
@@ -6596,7 +6596,7 @@ VisWindow::GetNumPrimitives() const
 // Creation:   Mon Sep 23 14:12:46 PST 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -6608,14 +6608,14 @@ VisWindow::SetNotifyForEachRender(bool val)
 // ****************************************************************************
 // Method: VisWindow::GetNotifyForEachRender
 //
-// Purpose: 
+// Purpose:
 //   Gets the window's rendering information notification mode.
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Sep 23 14:13:25 PST 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -6627,14 +6627,14 @@ VisWindow::GetNotifyForEachRender() const
 // ****************************************************************************
 // Method: VisWindow::SetScalableRendering
 //
-// Purpose: 
-//   Enables (true) or disables (false) scalable rendering mode 
+// Purpose:
+//   Enables (true) or disables (false) scalable rendering mode
 //
-// Programmer: Mark C. Miller 
-// Creation:   Tue Dec  3 19:15:37 PST 2002 
+// Programmer: Mark C. Miller
+// Creation:   Tue Dec  3 19:15:37 PST 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -6646,14 +6646,14 @@ VisWindow::SetScalableRendering(bool mode)
 // ****************************************************************************
 // Method: VisWindow::GetScalableRendering
 //
-// Purpose: 
-//   returns true if scalable rendering is enabled, false if not 
+// Purpose:
+//   returns true if scalable rendering is enabled, false if not
 //
-// Programmer: Mark C. Miller 
-// Creation:   Tue Dec  3 19:15:37 PST 2002 
+// Programmer: Mark C. Miller
+// Creation:   Tue Dec  3 19:15:37 PST 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -6665,14 +6665,14 @@ VisWindow::GetScalableRendering() const
 // ****************************************************************************
 // Method: VisWindow::GetScalableThreshold
 //
-// Purpose: 
+// Purpose:
 //   returns scalable rendering threshold
 //
-// Programmer: Mark C. Miller 
-// Creation:   Tue Dec  3 19:15:37 PST 2002 
+// Programmer: Mark C. Miller
+// Creation:   Tue Dec  3 19:15:37 PST 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 int
@@ -6685,8 +6685,8 @@ VisWindow::GetScalableThreshold() const
 // ****************************************************************************
 // Method: VisWindow::SetScalableActivationMode
 //
-// Programmer: Mark C. Miller 
-// Creation:   May 11, 2004 
+// Programmer: Mark C. Miller
+// Creation:   May 11, 2004
 //
 // ****************************************************************************
 
@@ -6699,8 +6699,8 @@ VisWindow::SetScalableActivationMode(int mode)
 // ****************************************************************************
 // Method: VisWindow::GetScalableActivationMode
 //
-// Programmer: Mark C. Miller 
-// Creation:   May 11, 2004 
+// Programmer: Mark C. Miller
+// Creation:   May 11, 2004
 //
 // ****************************************************************************
 
@@ -6713,9 +6713,9 @@ VisWindow::GetScalableActivationMode() const
 // ****************************************************************************
 // Method: VisWindow::SetScalableAutoThreshold
 //
-// Programmer: Mark C. Miller 
-// Creation:   May 11, 2004 
-//   
+// Programmer: Mark C. Miller
+// Creation:   May 11, 2004
+//
 // ****************************************************************************
 
 void
@@ -6727,8 +6727,8 @@ VisWindow::SetScalableAutoThreshold(int threshold)
 // ****************************************************************************
 // Method: VisWindow::GetScalableAutoThreshold
 //
-// Programmer: Mark C. Miller 
-// Creation:   May 11, 2004 
+// Programmer: Mark C. Miller
+// Creation:   May 11, 2004
 //
 // ****************************************************************************
 
@@ -6742,7 +6742,7 @@ VisWindow::GetScalableAutoThreshold() const
 // Method:  VisWindow::SetCompactDomainsActivationMode
 //
 // Purpose: Get/Set compact domains options.
-//   
+//
 // Programmer:  Dave Pugmire
 // Creation:    August 24, 2010
 //
@@ -6758,7 +6758,7 @@ VisWindow::SetCompactDomainsActivationMode(int mode)
 // Method:  VisWindow::GetCompactDomainsActivationMode
 //
 // Purpose: Get/Set compact domains options.
-//   
+//
 // Programmer:  Dave Pugmire
 // Creation:    August 24, 2010
 //
@@ -6774,7 +6774,7 @@ VisWindow::GetCompactDomainsActivationMode() const
 // Method:  VisWindow::SetCompactDomainsAutoThreshold
 //
 // Purpose: Get/Set compact domains options.
-//   
+//
 // Programmer:  Dave Pugmire
 // Creation:    August 24, 2010
 //
@@ -6790,7 +6790,7 @@ VisWindow::SetCompactDomainsAutoThreshold(int val)
 // Method:  VisWindow::GetCompactDomainsAutoThreshold
 //
 // Purpose: Get/Set compact domains options.
-//   
+//
 // Programmer:  Dave Pugmire
 // Creation:    August 24, 2010
 //
@@ -6806,7 +6806,7 @@ VisWindow::GetCompactDomainsAutoThreshold() const
 // ****************************************************************************
 // Method: VisWindow::SetOsprayRendering
 //
-// Purpose: 
+// Purpose:
 //   Sets the OSPRay rendering flag
 //
 // Arguments:
@@ -6816,7 +6816,7 @@ VisWindow::GetCompactDomainsAutoThreshold() const
 // Creation:   Tue 24 Apr 2018 11:15:25 AM EDT
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -6831,7 +6831,7 @@ VisWindow::SetOsprayRendering(bool enabled)
 // ****************************************************************************
 // Method: VisWindow::GetOsprayRendering
 //
-// Purpose: 
+// Purpose:
 //   Returns the OSPRay rendering flag
 //
 // Returns:    The OSPRay rendering flag
@@ -6840,7 +6840,7 @@ VisWindow::SetOsprayRendering(bool enabled)
 // Creation:   Tue 24 Apr 2018 11:17:21 AM EDT
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -6852,7 +6852,7 @@ VisWindow::GetOsprayRendering() const
 // ****************************************************************************
 // Method: VisWindow::SetOspraySPP
 //
-// Purpose: 
+// Purpose:
 //   Sets the OSPRay samples per pixel
 //
 // Arguments:
@@ -6862,7 +6862,7 @@ VisWindow::GetOsprayRendering() const
 // Creation:   Tue 24 Apr 2018 11:15:25 AM EDT
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -6877,7 +6877,7 @@ VisWindow::SetOspraySPP(int val)
 // ****************************************************************************
 // Method: VisWindow::GetOspraySPP
 //
-// Purpose: 
+// Purpose:
 //   Returns the OSPRay samples per pixel
 //
 // Returns:    The OSPRay samples per pixel
@@ -6886,7 +6886,7 @@ VisWindow::SetOspraySPP(int val)
 // Creation:   Tue 24 Apr 2018 11:17:21 AM EDT
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 int
@@ -6898,7 +6898,7 @@ VisWindow::GetOspraySPP() const
 // ****************************************************************************
 // Method: VisWindow::SetOsprayAO
 //
-// Purpose: 
+// Purpose:
 //   Sets the OSPRay ambient occlusion samples
 //
 // Arguments:
@@ -6908,7 +6908,7 @@ VisWindow::GetOspraySPP() const
 // Creation:   Tue 24 Apr 2018 11:15:25 AM EDT
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -6923,7 +6923,7 @@ VisWindow::SetOsprayAO(int val)
 // ****************************************************************************
 // Method: VisWindow::GetOsprayAO
 //
-// Purpose: 
+// Purpose:
 //   Returns the OSPRay ambient occlusion samples
 //
 // Returns:    The OSPRay ambient occlusion samples
@@ -6932,7 +6932,7 @@ VisWindow::SetOsprayAO(int val)
 // Creation:   Tue 24 Apr 2018 11:17:21 AM EDT
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 int
@@ -6944,7 +6944,7 @@ VisWindow::GetOsprayAO() const
 // ****************************************************************************
 // Method: VisWindow::SetOsprayShadows
 //
-// Purpose: 
+// Purpose:
 //   Set OSPRay shadows on or off
 //
 // Arguments:
@@ -6954,7 +6954,7 @@ VisWindow::GetOsprayAO() const
 // Creation:   Wed 02 May 2018 10:01:18 AM EDT
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -6969,7 +6969,7 @@ VisWindow::SetOsprayShadows(bool enabled)
 // ****************************************************************************
 // Method: VisWindow::GetOsprayShadows
 //
-// Purpose: 
+// Purpose:
 //   Returns the OSPRay shadows flag
 //
 // Returns:    The OSPRay shadows flag
@@ -6978,7 +6978,7 @@ VisWindow::SetOsprayShadows(bool enabled)
 // Creation:   Wed 02 May 2018 10:01:18 AM EDT
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -6992,7 +6992,7 @@ VisWindow::GetOsprayShadows() const
 // ****************************************************************************
 // Method: VisWindow::CreateToolbar
 //
-// Purpose: 
+// Purpose:
 //   Creates a toolbar widget and returns a pointer to it.
 //
 // Arguments:
@@ -7002,7 +7002,7 @@ VisWindow::GetOsprayShadows() const
 // Creation:   Wed Jan 29 14:34:25 PST 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void *
@@ -7014,7 +7014,7 @@ VisWindow::CreateToolbar(const char *name)
 // ****************************************************************************
 // Method: VisWindow::SetLargeIcons
 //
-// Purpose: 
+// Purpose:
 //   Tells the window to use large icons.
 //
 // Arguments:
@@ -7024,7 +7024,7 @@ VisWindow::CreateToolbar(const char *name)
 // Creation:   Tue Mar 16 09:51:44 PDT 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -7036,15 +7036,15 @@ VisWindow::SetLargeIcons(bool val)
 // ****************************************************************************
 // Method: VisWindow::ReAddColleaguesToRenderWindow
 //
-// Purpose: 
+// Purpose:
 //   Allow colleagues to re-add themselves to the render window, in order
-//   to be rendered after plots when in antialiasing mode. 
+//   to be rendered after plots when in antialiasing mode.
 //
 // Programmer: Kathleen Bonnell
 // Creation:   May 28, 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -7062,13 +7062,13 @@ VisWindow::ReAddColleaguesToRenderWindow(void)
 //  Method: VisWindow::FullFrameOff
 //
 //  Purpose:
-//    Tells colleagues that FullFrameMode has been turned off. 
+//    Tells colleagues that FullFrameMode has been turned off.
 //
 //  Programmer: Kathleen Bonnell
-//  Creation:   June 6, 2003 
+//  Creation:   June 6, 2003
 //
 // ****************************************************************************
- 
+
 void
 VisWindow::FullFrameOff()
 {
@@ -7084,14 +7084,14 @@ VisWindow::FullFrameOff()
 //  Method: VisWindow::FullFrameOn
 //
 //  Purpose:
-//    Tells colleagues that FullFrameMode has been turned on. 
+//    Tells colleagues that FullFrameMode has been turned on.
 //
 //  Arguments:
 //    scale     The axis scale factor.
 //    type      The axis scale type.
 //
 //  Programmer: Kathleen Bonnell
-//  Creation:   June 6, 2003 
+//  Creation:   June 6, 2003
 //
 // ****************************************************************************
 
@@ -7147,18 +7147,18 @@ VisWindow::Set3DAxisScalingFactors(bool on, const double s[3])
 //  Purpose:
 //    Returns the status of full-frame mode.
 //
-//  Returns: true if window mode is 2d, and full frame is on, false otherwise. 
+//  Returns: true if window mode is 2d, and full frame is on, false otherwise.
 //
 //  Programmer: Kathleen Bonnell
-//  Creation:   June 6, 2003 
+//  Creation:   June 6, 2003
 //
 //  Modifications:
 //    Eric Brugger, Thu Oct 16 09:26:49 PDT 2003
 //    Modified to match changes in avtView2D made to handle full frame
 //    mode properly.
 //
-//    Kathleen  Bonnell, Tue Dec  2 16:36:00 PST 2003 
-//    CurveMode is always in FullFrameMode. 
+//    Kathleen  Bonnell, Tue Dec  2 16:36:00 PST 2003
+//    CurveMode is always in FullFrameMode.
 //
 //    Jeremy Meredith, Thu Jan 31 14:41:50 EST 2008
 //    Added new AxisArray window mode (always fullframe).
@@ -7181,21 +7181,21 @@ VisWindow::GetFullFrameMode() const
         (mode == WINMODE_PARALLELAXES) ||
         (mode == WINMODE_VERTPARALLELAXES))
         return true;
-    else 
-        return false; 
+    else
+        return false;
 }
 
 // ****************************************************************************
 // Method: VisWindow::TransparenciesExist
 //
-// Purpose: 
-//   Returns whether or not there are transparent actors in the plots. 
+// Purpose:
+//   Returns whether or not there are transparent actors in the plots.
 //
 // Programmer: Kathleen Bonnell
-// Creation:   December 3, 2003 
+// Creation:   December 3, 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -7244,15 +7244,15 @@ VisWindow::GetCamera()
 // ****************************************************************************
 // Method: VisWindow::ReAddToolsToRenderWindow
 //
-// Purpose: 
+// Purpose:
 //   Allow tools to re-add themselves to the render window, in order
-//   to be rendered after plots but before tranparent actors. 
+//   to be rendered after plots but before tranparent actors.
 //
 // Programmer: Kathleen Bonnell
-// Creation:   December 3, 2003 
+// Creation:   December 3, 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -7265,14 +7265,14 @@ VisWindow::ReAddToolsToRenderWindow(void)
 // ****************************************************************************
 // Method: VisWindow::SetInteractorAtts
 //
-// Purpose: 
+// Purpose:
 //   Sets the interactor attributes used to control zoom, etc.
 //
 //  Arguments:
-//    atts     The interactor attributes to use. 
+//    atts     The interactor attributes to use.
 //
-// Programmer: Kathleen Bonnell 
-// Creation:   July 16, 2004 
+// Programmer: Kathleen Bonnell
+// Creation:   July 16, 2004
 //
 // Modifications:
 //   Eric Brugger, Fri Nov 12 14:51:13 PST 2004
@@ -7304,12 +7304,12 @@ VisWindow::SetInteractorAtts(const InteractorAttributes *atts)
 // ****************************************************************************
 // Method: VisWindow::GetInteractorAttributes()
 //
-// Purpose: 
+// Purpose:
 //   Returns a pointer to the window's interactor attributes.
 //
-// Programmer: Kathleen Bonnell 
-// Creation:   August 16, 2004 
-//   
+// Programmer: Kathleen Bonnell
+// Creation:   August 16, 2004
+//
 // ****************************************************************************
 
 const InteractorAttributes *
@@ -7322,21 +7322,21 @@ VisWindow::GetInteractorAtts() const
 // ****************************************************************************
 //  Method: VisWindow::FindIntersection
 //
-//  Purpose: 
+//  Purpose:
 //    Uses a vtkCellPicker to find the world coordinate corresponding to the
-//    specified screen coordinates. 
+//    specified screen coordinates.
 //
 //  Arguments:
 //    x         The screen x-coordinate.
 //    y         The screen y-coordinate.
 //    isect     A place to store the intersection point.
 //
-//  Returns:    True if an intersection with rendered data was found, 
+//  Returns:    True if an intersection with rendered data was found,
 //              false otherwise.
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   September 2, 2004 
-//   
+//  Programmer: Kathleen Bonnell
+//  Creation:   September 2, 2004
+//
 //  Modifications:
 //    Kathleen Bonnell, Thu Nov  4 16:46:31 PST 2004
 //    Make plots pickable before performing intersection, and unpickable after.
@@ -7356,7 +7356,7 @@ VisWindow::FindIntersection(const int x, const int y, double isect[3])
     vtkCellPicker *picker = vtkCellPicker::New();
     picker->SetTolerance(1.0e-6);
     picker->Pick(x, y, 0, ren);
-   
+
     int cell = picker->GetCellId();
 
     if ( cell < 0 )
@@ -7372,7 +7372,7 @@ VisWindow::FindIntersection(const int x, const int y, double isect[3])
             success = false;
             debug5 << "vtkCellPicker returned NULL dataset." << endl;
         }
-        else 
+        else
         {
             success = true;
             isect[0] = picker->GetPickPosition()[0];
@@ -7389,13 +7389,13 @@ VisWindow::FindIntersection(const int x, const int y, double isect[3])
 // ****************************************************************************
 //  Method: VisWindow::SetPickTypeToIntersection
 //
-//  Purpose: 
+//  Purpose:
 //    Sets a flag specifiying that the PickMethod should perform an
-//    intersection calculation. 
+//    intersection calculation.
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   September 2, 2004 
-//   
+//  Programmer: Kathleen Bonnell
+//  Creation:   September 2, 2004
+//
 //  Modifications:
 //
 // ****************************************************************************
@@ -7410,14 +7410,14 @@ VisWindow::SetPickTypeToIntersection()
 // ****************************************************************************
 //  Method: VisWindow::SetPickTypeToNormal
 //
-//  Purpose: 
+//  Purpose:
 //    Sets a flag specifiying that the PickMethod should NOT perform an
 //    intersection calculation, but perform in the default manner, constructing
-//    ray points from the screen coordinates. 
+//    ray points from the screen coordinates.
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   September 2, 2004 
-//   
+//  Programmer: Kathleen Bonnell
+//  Creation:   September 2, 2004
+//
 //  Modifications:
 //
 // ****************************************************************************
@@ -7503,20 +7503,20 @@ VisWindow::ResumeTranslucentGeometry()
 // ****************************************************************************
 // Method: VisWindow::GlyphPick
 //
-// Purpose: 
+// Purpose:
 //   Finds the domain and cell/node number intersected by a ray.
 //
 // Arguments:
 //   rp1       The origin of the ray.
 //   rp2       The endpoint of the ray.
-//   dom       A place to store the intersected domain number. 
-//   elNum     A place to store the intersected cell/node number. 
+//   dom       A place to store the intersected domain number.
+//   elNum     A place to store the intersected cell/node number.
 //   forCell   A flag returned that specifies whether Pick shoulde be
-//             a cell pick or node pick. 
+//             a cell pick or node pick.
 //   doRender  A flag specifying if a Render request should be made.
 //
-// Programmer: Kathleen Bonnell 
-// Creation:   October 11, 2004 
+// Programmer: Kathleen Bonnell
+// Creation:   October 11, 2004
 //
 // Modifications:
 //   Kathleen Bonnell, Tue Nov  2 10:18:16 PST 2004
@@ -7533,9 +7533,13 @@ VisWindow::ResumeTranslucentGeometry()
 //   Changed support for unglyphed point meshes slightly.  It will now
 //   also select nearest points even in the presence of line segment cells.
 //
+//   Kathleen Biagas, Thu Oct 31 12:24:06 PDT 2019
+//   Remove bounds test, picks of glyphs on the bounds border often fail
+//   this test.
+//
 // ****************************************************************************
 void
-VisWindow::GlyphPick(const double *rp1, const double *rp2, int &dom, int &elNum, 
+VisWindow::GlyphPick(const double *rp1, const double *rp2, int &dom, int &elNum,
                      bool &forCell, const bool doRender)
 {
     double dummy  = +FLT_MAX;
@@ -7543,7 +7547,7 @@ VisWindow::GlyphPick(const double *rp1, const double *rp2, int &dom, int &elNum,
 }
 
 void
-VisWindow::GlyphPick(const double *rp1, const double *rp2, int &dom, 
+VisWindow::GlyphPick(const double *rp1, const double *rp2, int &dom,
                      int &elNum, bool &forCell, double & d, const bool doRender)
 {
     //
@@ -7554,14 +7558,12 @@ VisWindow::GlyphPick(const double *rp1, const double *rp2, int &dom,
         GetCanvas()->GetRenderWindow()->Render();
 
     int i, cell = -1;
-    double *bnds = NULL;
     double dir[3];
     double r1[3] = {rp1[0], rp1[1], rp1[2]};
     double r2[3] = {rp2[0], rp2[1], rp2[2]};
 
     for (i = 0; i < 3; i++)
         dir[i] = r2[i] - r1[i];
-    double dummy1[3], dummy2;
     vtkActorCollection *actors = GetCanvas()->GetActors();
     vtkActor *actor = NULL;
     vtkDataSet *ds = NULL;
@@ -7569,7 +7571,7 @@ VisWindow::GlyphPick(const double *rp1, const double *rp2, int &dom,
     double minDist = FLT_MAX;
     double dist;
 
-    for (actors->InitTraversal(); (actor = actors->GetNextActor());) 
+    for (actors->InitTraversal(); (actor = actors->GetNextActor());)
     {
         if (actor->GetPickable() && actor->GetVisibility())
         {
@@ -7580,71 +7582,67 @@ VisWindow::GlyphPick(const double *rp1, const double *rp2, int &dom,
                        << " is NULL!" << endl;
                 continue;
             }
-            bnds = ds->GetBounds();
-            if (vtkBox::IntersectBox(bnds, r1, dir, dummy1, dummy2))
+            if (ds->GetNumberOfPoints() == 0)
+                continue;
+
+            bool unglyphedDataset = false;
+            if (ds->GetDataObjectType() == VTK_POLY_DATA &&
+                (((vtkPolyData*)ds)->GetNumberOfVerts() ==
+                 ((vtkPolyData*)ds)->GetNumberOfPoints()) &&
+                (((vtkPolyData*)ds)->GetNumberOfPolys() == 0))
             {
-                if (ds->GetNumberOfPoints() == 0)
-                    continue;
+                unglyphedDataset = true;
+            }
 
-                bool unglyphedDataset = false;
-                if (ds->GetDataObjectType() == VTK_POLY_DATA &&
-                    (((vtkPolyData*)ds)->GetNumberOfVerts() ==
-                     ((vtkPolyData*)ds)->GetNumberOfPoints()) &&
-                    (((vtkPolyData*)ds)->GetNumberOfPolys() == 0))
+            vtkVisItCellLocator *cellLocator = vtkVisItCellLocator::New();
+            cellLocator->SetIgnoreGhosts(true);
+            cellLocator->SetIgnoreLines(true);
+            cellLocator->SetDataSet(ds);
+            cellLocator->BuildLocator();
+            double pcoords[3] = {0., 0., 0.}, ptLine[3] = {0., 0., 0.};
+            double isect[3] = {0., 0., 0.};
+            int subId = 0, success = 0;
+            vtkIdType foundCell;
+            if (r1[0] == r2[0] &&
+                r1[1] == r2[1] &&
+                r1[2] == r2[2])
+            { /* WORLD COORD LOCATE */
+                cellLocator->FindClosestPoint(r1, ptLine, foundCell,
+                                              subId, dist);
+                if (foundCell >= 0 && dist >= 0)
                 {
-                    unglyphedDataset = true;
+                    success = 1;
                 }
-
-                vtkVisItCellLocator *cellLocator = vtkVisItCellLocator::New();
-                cellLocator->SetIgnoreGhosts(true);
-                cellLocator->SetIgnoreLines(true);
-                cellLocator->SetDataSet(ds);
-                cellLocator->BuildLocator();
-                double pcoords[3] = {0., 0., 0.}, ptLine[3] = {0., 0., 0.};
-                double isect[3] = {0., 0., 0.};
-                int subId = 0, success = 0;
-                vtkIdType foundCell; 
-                if (r1[0] == r2[0] &&
-                    r1[1] == r2[1] &&
-                    r1[2] == r2[2])
-                { /* WORLD COORD LOCATE */
-                    cellLocator->FindClosestPoint(r1, ptLine, foundCell,
-                                                  subId, dist);
-                    if (foundCell >= 0 && dist >= 0)
-                    {
-                        success = 1;
-                    }
-                }
-                else if (unglyphedDataset)
-                { /* RAY CLOSEST POINT LOCATE */
-                    cellLocator->FindClosestPointToLine(r1, r2,
-                                                        dist, foundCell);
-                    if (foundCell >= 0 && dist >= 0)
-                    {
-                        success = 1;
-                    }
-                }
-                else
-                { /* RAY-INTERSECT LOCATE */
-                    success = cellLocator->IntersectWithLine(r1, r2, 
-                                  dist, isect, pcoords, subId, foundCell);
-                }
-                cellLocator->Delete();
-
-                if (success && dist < minDist)
+            }
+            else if (unglyphedDataset)
+            { /* RAY CLOSEST POINT LOCATE */
+                cellLocator->FindClosestPointToLine(r1, r2,
+                                                    dist, foundCell);
+                if (foundCell >= 0 && dist >= 0)
                 {
-                    cell = foundCell;
-                    good_ds = ds;
-                    minDist = dist;
+                    success = 1;
                 }
+            }
+            else
+            { /* RAY-INTERSECT LOCATE */
+                success = cellLocator->IntersectWithLine(r1, r2,
+                              dist, isect, pcoords, subId, foundCell);
+            }
+            cellLocator->Delete();
+
+            if (success && dist < minDist)
+            {
+                cell = foundCell;
+                good_ds = ds;
+                minDist = dist;
             }
         }
     }
 
-    d = minDist; 
+    d = minDist;
     if ( cell < 0 )
     {
-       debug5 << "GlyphPick:  no valid cell was intersected!" << endl; 
+       debug5 << "GlyphPick:  no valid cell was intersected!" << endl;
     }
     else
     {
@@ -7653,9 +7651,9 @@ VisWindow::GlyphPick(const double *rp1, const double *rp2, int &dom,
         {
             debug5 << "GlyphPick:  locator returned a NULL dataset. " << endl;
         }
-        else 
+        else
         {
-            vtkDataArray *oc = 
+            vtkDataArray *oc =
                 ds->GetCellData()->GetArray("avtOriginalCellNumbers");
             if (oc != NULL)
             {
@@ -7705,8 +7703,8 @@ VisWindow::GlyphPick(const double *rp1, const double *rp2, int &dom,
 //  Purpose:
 //    Returns the maximum that have plots have been shifted in Z.
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   June 27, 2005 
+//  Programmer: Kathleen Bonnell
+//  Creation:   June 27, 2005
 //
 // ****************************************************************************
 
@@ -7720,7 +7718,7 @@ VisWindow::GetMaxPlotZShift()
 //  Method:  VisWindow::DoAllPlotsAxesHaveSameUnits
 //
 //  Programmer:  Mark C. Miller
-//  Creation:    April 5, 2006 
+//  Creation:    April 5, 2006
 //
 // ****************************************************************************
 bool
@@ -7732,14 +7730,14 @@ VisWindow::DoAllPlotsAxesHaveSameUnits()
 // ****************************************************************************
 // Method: VisWindow::CreateRubberbandMapper
 //
-// Purpose: 
+// Purpose:
 //   Create a rubber band mapper.
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Oct 14 16:29:20 PDT 2011
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 vtkPolyDataMapper2D *
@@ -7751,14 +7749,14 @@ VisWindow::CreateRubberbandMapper()
 // ****************************************************************************
 // Method: VisWindow::CreateXorGridMapper
 //
-// Purpose: 
+// Purpose:
 //   Create a dashed lines mapper.
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Oct 14 16:29:20 PDT 2011
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 vtkPolyDataMapper2D *
@@ -7770,7 +7768,7 @@ VisWindow::CreateXorGridMapper()
 // ****************************************************************************
 // Method: FontAttributes_To_VisWinTextAttributes
 //
-// Purpose: 
+// Purpose:
 //   Converts FontAttributes to VisWinTextAttributes
 //
 // Arguments:
@@ -7785,7 +7783,7 @@ VisWindow::CreateXorGridMapper()
 // Creation:   Tue Jan 29 16:11:43 PST 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 static VisWinTextAttributes
