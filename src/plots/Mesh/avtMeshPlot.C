@@ -1204,3 +1204,21 @@ avtMeshPlot::GetExtraInfoForPick()
     return extraPickInfo;
 }
 
+
+// ****************************************************************************
+//  Method: avtMeshPlot::PlotHasBeenGlyphed
+//
+//  Purpose:
+//    Return whether or not the plot has had point glyphs applied.
+//
+//  Programmer: Kathleen Biagas
+//  Creation:   October 31, 2019
+//
+// ****************************************************************************
+
+bool
+avtMeshPlot::PlotHasBeenGlyphed()
+{
+    return (atts.GetPointType() != Point && atts.GetPointType() != Sphere);
+}
+
