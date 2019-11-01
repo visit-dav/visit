@@ -1205,4 +1205,7 @@ PMDParticle::GetBlockProperties(int scalarDataSetId,
     particleBlock->maxParticle = particleBlock->minParticle
                                 + particleBlock->numParticles -1;
 
+
+	return 0;
+
 }
