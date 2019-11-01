@@ -370,6 +370,8 @@ PMDField::SetGridGlobalOffset(char * name,
             this->gridGlobalOffset[1] = tmpArray[1];
             this->gridGlobalOffset[2] = 0;
         }
+
+		delete tmpArray;
     }
 }
 
