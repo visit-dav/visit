@@ -159,6 +159,8 @@ void PMDFile::ScanFileAttributes()
 	hid_t 			aspace;
 	size_t 			size;
 	int				nPoints;
+	const size_t buffSize = 1024;
+	char buffer[buffSize];
 
 	// OpenPMD files always contain a data group at the root
 	groupId = H5Gopen(fileId, "/",H5P_DEFAULT);
@@ -186,8 +188,6 @@ void PMDFile::ScanFileAttributes()
 		if (strcmp(attrName,"openPMD")==0)
 		{
 
-			char buffer[size+1];
-
 			// Read attribute
 			H5Aread (attrId, atype, buffer);
 			buffer[size] = '\0';
@@ -198,9 +198,6 @@ void PMDFile::ScanFileAttributes()
 		else if (strcmp(attrName,"meshesPath")==0)
 		{
 
-			// Buffer of char
-			char buffer[size+1];
-
 			// Read attribute
 			H5Aread (attrId, atype, buffer);
 			buffer[size] = '\0';
@@ -210,10 +207,6 @@ void PMDFile::ScanFileAttributes()
 		}
 		else if (strcmp(attrName,"particlesPath")==0)
 		{
-
-			// Buffer of char
-			char buffer[size+1];
-
 			// Read attribute
 			H5Aread (attrId, atype, buffer);
 			buffer[size] = '\0';

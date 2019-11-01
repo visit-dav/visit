@@ -509,12 +509,12 @@ void PMDIteration::PrintInfo()
 			   << " zshift: " << field->gridPosition[2] << endl;
 		  cout << " - Unit SI: " << field->unitSI<< endl;
 		  cout << " - Grid Unit SI: " << field->gridUnitSI<< endl;
-		  cout << " - Geometry: " << field->geometry << endl;
-		  cout << " - xlabel: " << field->axisLabels[0]
-			   << " ylabel: " << field->axisLabels[1]
-			   << " zlabel: " << field->axisLabels[2] << endl;
-		  cout << " - Units: " << field->unitsLabel << endl;
-		  cout << " - Data order: " << field->dataOrder << endl;
+		  cout << " - Geometry: " << field->geometry.c_str() << endl;
+		  cout << " - xlabel: " << field->axisLabels[0].c_str()
+			   << " ylabel: " << field->axisLabels[1].c_str()
+			   << " zlabel: " << field->axisLabels[2].c_str() << endl;
+		  cout << " - Units: " << field->unitsLabel.c_str() << endl;
+		  cout << " - Data order: " << field->dataOrder.c_str() << endl;
 		  cout << endl;
 	}
 	cout << endl;
@@ -536,7 +536,7 @@ void PMDIteration::PrintInfo()
 			for (i=0;i<particle->GetNumScalarDatasets();i++)
 		  {
 				cout << " - Name: " << particle->scalarDataSets[i].name
-					<< ", Unit Label: " << particle->scalarDataSets[i].unitLabel
+					<< ", Unit Label: " << particle->scalarDataSets[i].unitLabel.c_str()
 					<< ", path: " << particle->scalarDataSets[i].path
 					<< ", unitSI: " << particle->scalarDataSets[i].unitSI
 					<< endl;
@@ -546,7 +546,7 @@ void PMDIteration::PrintInfo()
 			for (i=0;i<particle->GetNumVectorDatasets();i++)
 		  {
 				cout << " - Name: " << particle->vectorDataSets[i].name
-					 << ", Unit Label: " << particle->vectorDataSets[i].unitLabel
+					 << ", Unit Label: " << particle->vectorDataSets[i].unitLabel.c_str()
 					 << ", path: " << particle->vectorDataSets[i].path
 					 << ", scalar datasets: "
 					 << particle->vectorDataSets[i].dataSetId[0]

@@ -1028,7 +1028,7 @@ PMDParticle::SetUnitDimension(char * name,
 
         int npoints = H5Sget_simple_extent_npoints(attrSpace);
 
-        double powers[npoints];
+        double *powers = new double[npoints];
 
         err = H5Aread(attrId, attrType, powers);
 
@@ -1093,6 +1093,8 @@ PMDParticle::SetUnitDimension(char * name,
                 unitLabel += units;
             }
         }
+		
+		delete powers;
     }
     //cerr << unitLabel << endl;
     return unitLabel;
