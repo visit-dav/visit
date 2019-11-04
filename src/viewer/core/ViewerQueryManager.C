@@ -227,7 +227,7 @@ CreateExtentsString(const double * extents,
 //    Added init of floatFormat.
 //
 //    Alister Maguire, Tue Oct  3 11:27:21 PDT 2017
-//    Added init of overrideTimeStep. 
+//    Added init of overrideTimeStep.
 //
 // ****************************************************************************
 
@@ -1734,7 +1734,7 @@ ViewerQueryManager::ClearPickPoints()
 //  Purpose:
 //    Notifies observers of the PickAttributes that the pick points
 //    have changed. This is useful when we remove a subset of pick
-//    points. 
+//    points.
 //
 //  Programmer: Alister Maguire
 //  Creation:   Thu Aug  9 09:33:12 PDT 2018
@@ -1748,7 +1748,7 @@ ViewerQueryManager::ClearRemovedPickPoints()
 {
     //
     // We don't need to clear the whole window. We just need
-    // to notify of an update. 
+    // to notify of an update.
     //
     GetViewerState()->GetPickAttributes()->SetClearWindow(false);
     GetViewerState()->GetPickAttributes()->SetFulfilled(false);
@@ -1965,17 +1965,21 @@ ViewerQueryManager::ClearRemovedPickPoints()
 //
 //    Alister Maguire, Tue Oct  3 11:27:21 PDT 2017
 //    Added in an option for overriding the time step. This is currently
-//    needed when calling a pick range over time. 
+//    needed when calling a pick range over time.
 //
 //    Alister Maguire, Thu Oct 26 16:48:04 PDT 2017
-//    When picking by label, set the pick letter to be the label. 
+//    When picking by label, set the pick letter to be the label.
 //
 //    Alister Maguire, Wed May  9 09:48:44 PDT 2018
 //    After preparing for new pick, call UpdatePickAtts. Otherwise,
-//    old attributes will carry on to new picks. 
+//    old attributes will carry on to new picks.
 //
 //    Alister Maguire, Wed Aug  8 15:06:17 PDT 2018
 //    Set the pick letter to the value from GetNextPickLabel().
+//
+//    Kathleen Biagas, Thu Oct 31 12:38:53 MST 2019
+//    Do glyph pick if plot says it has been glyphed, because not all readers
+//    will report POINT_MESH.
 //
 // ****************************************************************************
 
@@ -2128,7 +2132,7 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
         //
         pickAtts->SetMatSelected(!usesAllMaterials ||
                                  plot->GetRealVarType() == AVT_MATERIAL);
-        
+
         pickAtts->SetPickLetter(GetNextPickLabel());
 
         if (overrideTimeStep)
@@ -2201,7 +2205,8 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
             doGlyphPick = fromPlot.GetEntry("glyphPickAlways")->ToBool();
 
         // Point meshes may need to be glyph picked
-        if (!doGlyphPick && plot->GetMeshType() == AVT_POINT_MESH)
+        if (!doGlyphPick && (plot->GetMeshType() == AVT_POINT_MESH ||
+             plot->PlotHasBeenGlyphed()))
         {
             if (fromPlot.HasNumericEntry("glyphPickIfPointMesh"))
                 doGlyphPick = fromPlot.GetEntry("glyphPickIfPointMesh")->ToBool();
@@ -2212,7 +2217,8 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
         bool mustGlyphPickOnEngine = false;
         if (doGlyphPick &&
             GetViewerProperties()->GetNowin() &&
-            plot->GetMeshType() == AVT_POINT_MESH)
+            (plot->GetMeshType() == AVT_POINT_MESH ||
+             plot->PlotHasBeenGlyphed()))
         {
             if (fromPlot.HasNumericEntry("canGlyphPickOnEngine"))
                 mustGlyphPickOnEngine =
@@ -2776,9 +2782,9 @@ ViewerQueryManager::SetDDTPickCallback(void (*cb)(PickAttributes *, void*), void
 //   showPickLetter or showPickHighlight is enabled.
 //
 //   Alister Maguire, Wed Aug  8 14:58:54 PDT 2018
-//   Added the ability to swivel the camera focus to the 
-//   retrieved pick point. Also, don't update the designator 
-//   if we are overriding the pick label. 
+//   Added the ability to swivel the camera focus to the
+//   retrieved pick point. Also, don't update the designator
+//   if we are overriding the pick label.
 //
 // ****************************************************************************
 
@@ -2881,11 +2887,11 @@ ViewerQueryManager::Pick(PICK_POINT_INFO *ppi, const int dom, const int el)
             // If we are not reusing a pick letter, make the pick label ready for
             // the next pick point.
             //
-            if (!pickAtts->GetReusePickLetter() && !pickAtts->GetOverridePickLabel()) 
+            if (!pickAtts->GetReusePickLetter() && !pickAtts->GetOverridePickLabel())
                 UpdateDesignator();
 
             //
-            // If we need a camera swivel, now is the time to do it. 
+            // If we need a camera swivel, now is the time to do it.
             //
             if (pickAtts->GetSwivelFocusToPick())
             {
@@ -3397,13 +3403,13 @@ ViewerQueryManager::HandlePickCache()
 //    supports them.
 //
 //    Alister Mguire, Tue Oct  3 11:27:21 PDT 2017
-//    Added support for retrieving the data from a pick range over time. 
+//    Added support for retrieving the data from a pick range over time.
 //
 //    Alister Maguire, Tue Oct 31 10:14:39 PDT 2017
-//    Added clean-up for when the element label has been set. 
+//    Added clean-up for when the element label has been set.
 //
 //    Alister Maguire, Tue May 22 14:16:38 PDT 2018
-//    Added ability to plot range curves. 
+//    Added ability to plot range curves.
 //
 // ****************************************************************************
 
@@ -3472,14 +3478,14 @@ ViewerQueryManager::PointQuery(const MapNode &queryParams)
     timeCurve |= (pickAtts->GetDoTimeCurve() ? 1 : 0);
 
     //
-    // If the user is trying to retrieve curves without a range, 
-    // make note of this in the debug log. 
+    // If the user is trying to retrieve curves without a range,
+    // make note of this in the debug log.
     //
-    if (!hasPickRange && 
+    if (!hasPickRange &&
          pickAtts->GetTimeOptions().HasEntry("return_curves"))
     {
         debug2 << "\nUser has requested to return curves without a "
-               << "range, but this is not supported. Only pick range " 
+               << "range, but this is not supported. Only pick range "
                << "over time currently supports return_curves.\n";
     }
 
@@ -3519,23 +3525,23 @@ ViewerQueryManager::PointQuery(const MapNode &queryParams)
 
         //
         // Check if we are returning curves. This is currently only available
-        // when performing a pick range over time. 
+        // when performing a pick range over time.
         //
         bool returnCurves = false;
         if (rangeTimeOpts.HasEntry("return_curves"))
             returnCurves = rangeTimeOpts.GetEntry("return_curves")->ToBool();
 
         //
-        // Under certain circumstances, we need to do the time picks 
-        // here instead of in the queryOverTimeFilter. 
+        // Under certain circumstances, we need to do the time picks
+        // here instead of in the queryOverTimeFilter.
         //
         bool showPickHighlight = pickAtts->GetShowPickHighlight();
         bool showPickLetter    = pickAtts->GetShowPickLetter();
-        bool doTimeManually    = (returnCurves || (timeCurve && 
+        bool doTimeManually    = (returnCurves || (timeCurve &&
                                  (showPickLetter || showPickHighlight)));
-            
+
         //
-        // If we're doing time manually, we need to retrieve some time info. 
+        // If we're doing time manually, we need to retrieve some time info.
         //
         int origTimeStep = 0;
         int startT = 0;
@@ -3544,8 +3550,8 @@ ViewerQueryManager::PointQuery(const MapNode &queryParams)
         if (doTimeManually)
         {
             //
-            // When we are performing a time curve and returning the curves, 
-            // we need to set the timestep manually. 
+            // When we are performing a time curve and returning the curves,
+            // we need to set the timestep manually.
             //
             overrideTimeStep  = true;
 
@@ -3565,17 +3571,17 @@ ViewerQueryManager::PointQuery(const MapNode &queryParams)
             }
 
             //
-            // We only want to highlight and show pick letter on the 
-            // original pick. So let's disable it first. 
+            // We only want to highlight and show pick letter on the
+            // original pick. So let's disable it first.
             //
             if (showPickHighlight)
                 pickAtts->SetShowPickHighlight(false);
             if (showPickLetter)
                 pickAtts->SetShowPickLetter(false);
- 
+
             //
             // Retrieve the start time, end time, and stride.
-            // 
+            //
             startT = 0;
             endT   = nStates-1;
             stride = 1;
@@ -3586,26 +3592,26 @@ ViewerQueryManager::PointQuery(const MapNode &queryParams)
         for(int curPick = 0; curPick < numPicks; ++curPick)
         {
             //
-            // If we're doing time manually, we need to perform 
-            // the picks individually, cache the values, and then 
-            // perform the curve. 
-            // 
+            // If we're doing time manually, we need to perform
+            // the picks individually, cache the values, and then
+            // perform the curve.
+            //
             if (doTimeManually)
             {
                 MapNode timeCurveOutput;
                 overrideTimeStep = true;
 
                 //
-                // For the recursive calls, we want to pretend 
+                // For the recursive calls, we want to pretend
                 // that we're not using a time curve.
                 //
                 pickAtts->SetDoTimeCurve(false);
-    
+
                 std::stringstream masterKey;
                 if (hasElementLabel)
                     masterKey<<label<<" ";
-                masterKey<<pickList[curPick]; 
-                
+                masterKey<<pickList[curPick];
+
                 doubleVector timeCurvePts;
                 MapNode singlePick(queryParams);
 
@@ -3626,7 +3632,7 @@ ViewerQueryManager::PointQuery(const MapNode &queryParams)
                         pickAtts->SetShowPickHighlight(false);
                         pickAtts->SetShowPickLetter(false);
                     }
-                   
+
                     if (hasElementLabel)
                     {
                         std::stringstream ss;
@@ -3639,19 +3645,19 @@ ViewerQueryManager::PointQuery(const MapNode &queryParams)
                     }
 
                     //
-                    // Perform the pick query. 
+                    // Perform the pick query.
                     //
                     PointQuery(singlePick);
 
                     //
-                    // Retrieve the variable values from our query. 
+                    // Retrieve the variable values from our query.
                     //
                     if (timeCurve)
                     {
                         int numVars = pickAtts->GetNumVarInfos();
                         for (int i = 0; i < numVars; ++i)
                         {
-                            doubleVector vals = 
+                            doubleVector vals =
                                 pickAtts->GetVarInfo(i).GetValues();
                             timeCurvePts.push_back(vals.back());
                         }
@@ -3659,7 +3665,7 @@ ViewerQueryManager::PointQuery(const MapNode &queryParams)
 
                     //
                     // If the user wants the curve points, we need
-                    // to add them to the output. 
+                    // to add them to the output.
                     //
                     if (returnCurves)
                     {
@@ -3673,7 +3679,7 @@ ViewerQueryManager::PointQuery(const MapNode &queryParams)
 
                 //
                 // If the user wants a curve plot, we need to send the
-                // pick cache to the queryOverTimeFilter. 
+                // pick cache to the queryOverTimeFilter.
                 //
                 if (timeCurve)
                 {
@@ -3694,7 +3700,7 @@ ViewerQueryManager::PointQuery(const MapNode &queryParams)
                 if (returnCurves)
                     multiOutput[masterKey.str()] = timeCurveOutput;
             }
-            else 
+            else
             {
                 MapNode singlePick(queryParams);
                 singlePick["pick_range"] = "";
@@ -4641,27 +4647,27 @@ ViewerQueryManager::VerifyQueryVariables(const string &qName,
 //
 //  Purpose:
 //      Retrieve the start time, stop time and stride for
-//      performing a time query. 
+//      performing a time query.
 //
 //  Arguments:
-//      startT       The start time for the query. 
-//      endT         The end time for the query. 
-//      stride       The stride of the time query. 
-//      nStates      The total number of time states available in the data. 
-//      timeParams   A map node containing the query input parameters. 
+//      startT       The start time for the query.
+//      endT         The end time for the query.
+//      stride       The stride of the time query.
+//      nStates      The total number of time states available in the data.
+//      timeParams   A map node containing the query input parameters.
 //
 //  Returns:
-//      True if retrieval was successfull. False otherwise. 
+//      True if retrieval was successfull. False otherwise.
 //
-//  Programmer: Alister Maguire 
+//  Programmer: Alister Maguire
 //  Creation:   Wed May 16 15:29:02 PDT 2018
 //
 //  Modifications:
 //
 // ****************************************************************************
-bool ViewerQueryManager::RetrieveTimeSteps(int &startT, 
-                                           int &endT, 
-                                           int &stride, 
+bool ViewerQueryManager::RetrieveTimeSteps(int &startT,
+                                           int &endT,
+                                           int &stride,
                                            int  nStates,
                                            MapNode timeParams)
 {
@@ -4717,12 +4723,12 @@ bool ViewerQueryManager::RetrieveTimeSteps(int &startT,
 //  Method: ViewerQueryManager::GetNextPickLabel
 //
 //  Purpose:
-//      Retrieve the next pick label/letter to use. 
+//      Retrieve the next pick label/letter to use.
 //
 //  Returns:
-//      The next pick label to use as an std::string. 
+//      The next pick label to use as an std::string.
 //
-//  Programmer: Alister Maguire 
+//  Programmer: Alister Maguire
 //  Creation:   Wed Aug  8 16:47:27 PDT 2018
 //
 //  Modifications:
@@ -4734,9 +4740,9 @@ std::string ViewerQueryManager::GetNextPickLabel()
     {
         if (pickAtts->GetOverridePickLabel())
             return std::string(pickAtts->GetForcedPickLabel());
-        else if (pickAtts->GetElementLabel() != "") 
-            return std::string(pickAtts->GetElementLabel()); 
-        else 
+        else if (pickAtts->GetElementLabel() != "")
+            return std::string(pickAtts->GetElementLabel());
+        else
             return std::string(designator);
     }
     else
@@ -5056,7 +5062,7 @@ ViewerQueryManager::UpdateQueryOverTimeAtts()
 //    issue error message.
 //
 //    Alister Maguire, Wed May 23 09:46:54 PDT 2018
-//    Replaced retrieval of time steps with RetrieveTimeSteps(). 
+//    Replaced retrieval of time steps with RetrieveTimeSteps().
 //
 // ***********************************************************************
 
@@ -5850,13 +5856,13 @@ ViewerQueryManager::VerifyMultipleInputQuery(ViewerPlotList *plist,
 //  Method: ViewerQueryManager::SwivelFocusToPickPoint
 //
 //  Purpose:
-//      Swivel the camera focus to the current pick point. 
+//      Swivel the camera focus to the current pick point.
 //
 //  Arguments:
-//    win    The current VisWindow being used. 
+//    win    The current VisWindow being used.
 //
 //  Returns:
-//      true if the swivel was successful, false otherwise. 
+//      true if the swivel was successful, false otherwise.
 //
 //  Programmer: Alister Maguire
 //  Creation:   Wed Aug  8 14:58:54 PDT 2018
@@ -5870,7 +5876,7 @@ bool ViewerQueryManager::SwivelFocusToPickPoint(ViewerWindow *win)
     if (pickAtts->GetPickPoint()[0] != FLT_MAX)
     {
         win->SwivelFocus3D(pickAtts->GetPickPoint()[0],
-                           pickAtts->GetPickPoint()[1], 
+                           pickAtts->GetPickPoint()[1],
                            pickAtts->GetPickPoint()[2]);
         return true;
     }
