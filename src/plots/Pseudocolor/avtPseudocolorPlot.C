@@ -144,7 +144,7 @@ avtPseudocolorPlot::~avtPseudocolorPlot()
         delete filter;
         filter = NULL;
     }
- 
+
     if (staggeringFilter != NULL)
     {
         delete staggeringFilter;
@@ -245,7 +245,7 @@ avtPseudocolorPlot::GetMapper(void)
     {
         return mapper;
     }
-    else 
+    else
     {
         return glyphMapper;
     }
@@ -895,7 +895,7 @@ avtPseudocolorPlot::SetColorTable(const char *ctName)
 
     colorTableIsFullyOpaque =
         avtColorTables::Instance()->ColorTableIsFullyOpaque(ctName);
-    
+
     bool namesMatch = (atts.GetColorTableName() == string(ctName));
     bool useOpacities = SetOpacityFromAtts();
 
@@ -1315,7 +1315,7 @@ avtPseudocolorPlot::SetLegendRanges()
     {
         EXCEPTION1(InvalidLimitsException, true);
     }
- 
+
     varLegend->SetScaling(atts.GetScaling(), atts.GetSkewFactor());
 
     //
@@ -1519,4 +1519,24 @@ avtPseudocolorPlot::SetCellCountMultiplierForSRThreshold(
         else
             cellCountMultiplierForSRThreshold = 12.0;
     }
+}
+
+
+// ****************************************************************************
+//  Method: avtPlot::PlotHasBeenGlyphed
+//
+//  Purpose:
+//    Returns whether or not this plot has been glyphed (point type isn't
+//    point or sphere). Will also return true if 'RenderPoints' is turned on.
+//
+//  Programmer: Kathleen Biagas
+//  Creation:   October 31, 2019
+//
+// ****************************************************************************
+
+bool
+avtPseudocolorPlot::PlotHasBeenGlyphed()
+{
+    return ((atts.GetPointType() != Point && atts.GetPointType() != Sphere) ||
+             atts.GetRenderPoints());
 }
