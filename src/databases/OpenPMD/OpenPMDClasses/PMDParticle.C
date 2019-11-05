@@ -1093,8 +1093,8 @@ PMDParticle::SetUnitDimension(char * name,
                 unitLabel += units;
             }
         }
-		
-		delete powers;
+
+        delete powers;
     }
     //cerr << unitLabel << endl;
     return unitLabel;
@@ -1206,6 +1206,6 @@ PMDParticle::GetBlockProperties(int scalarDataSetId,
                                 + particleBlock->numParticles -1;
 
 
-	return 0;
+    return 0;
 
 }

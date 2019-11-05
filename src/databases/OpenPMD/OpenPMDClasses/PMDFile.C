@@ -186,37 +186,38 @@ void PMDFile::ScanFileAttributes()
 		if (strcmp(attrName,"openPMD")==0)
 		{
 			char *buffer = new char[size + 1];
+
 			// Read attribute
 			H5Aread (attrId, atype, buffer);
 			buffer[size] = '\0';
 
 			this->version = buffer;
 
-			delete buffer;
+            delete buffer;
 		}
 		else if (strcmp(attrName,"meshesPath")==0)
 		{
-
 			char *buffer = new char[size + 1];
+
 			// Read attribute
 			H5Aread (attrId, atype, buffer);
 			buffer[size] = '\0';
 
 			strncpy(this->meshesPath,buffer,sizeof(buffer));
-			
 			delete buffer;
 
 		}
 		else if (strcmp(attrName,"particlesPath")==0)
 		{
-			char *buffer = new char[size + 1];
+            char *buffer = new char[size + 1];
+
 			// Read attribute
 			H5Aread (attrId, atype, buffer);
 			buffer[size] = '\0';
 
 			strncpy(this->particlesPath,buffer,sizeof(buffer));
 
-			delete buffer;
+            delete buffer;
 		}
     }
 
@@ -730,8 +731,8 @@ PMDFile::ReadFieldScalarBlock(void * array,
                 // Dimension sizes of the dataset in memory when we read
                 // selection from the dataset on the disk
                 hsize_t mdim[] = {static_cast<hsize_t>(fieldBlock->nbNodes[0]),
-								  static_cast<hsize_t>(fieldBlock->nbNodes[1]),
-								  static_cast<hsize_t>(fieldBlock->nbNodes[2])};
+                                  static_cast<hsize_t>(fieldBlock->nbNodes[1]),
+                                  static_cast<hsize_t>(fieldBlock->nbNodes[2])};
 
                 // Define the memory dataspace.
                 memspace = H5Screate_simple (fieldBlock->ndims, mdim, NULL);
@@ -794,7 +795,7 @@ PMDFile::ReadFieldScalarBlock(void * array,
                 // Dimension sizes of the dataset in memory when
                 // we read selection from the dataset on the disk
                 hsize_t mdim[] = { static_cast<hsize_t>(fieldBlock->nbNodes[0]),
-								   static_cast<hsize_t>(fieldBlock->nbNodes[1])};
+                                   static_cast<hsize_t>(fieldBlock->nbNodes[1])};
 
                 // Define the memory dataspace.
                 memspace = H5Screate_simple(fieldBlock->ndims, mdim, NULL);

@@ -536,7 +536,7 @@ void PMDIteration::PrintInfo()
 			for (i=0;i<particle->GetNumScalarDatasets();i++)
 		  {
 				cout << " - Name: " << particle->scalarDataSets[i].name
-					<< ", Unit Label: " << particle->scalarDataSets[i].unitLabel.c_str()
+                    << ", Unit Label: " << particle->scalarDataSets[i].unitLabel.c_str()
 					<< ", path: " << particle->scalarDataSets[i].path
 					<< ", unitSI: " << particle->scalarDataSets[i].unitSI
 					<< endl;
@@ -546,7 +546,7 @@ void PMDIteration::PrintInfo()
 			for (i=0;i<particle->GetNumVectorDatasets();i++)
 		  {
 				cout << " - Name: " << particle->vectorDataSets[i].name
-					 << ", Unit Label: " << particle->vectorDataSets[i].unitLabel.c_str()
+                     << ", Unit Label: " << particle->vectorDataSets[i].unitLabel.c_str()
 					 << ", path: " << particle->vectorDataSets[i].path
 					 << ", scalar datasets: "
 					 << particle->vectorDataSets[i].dataSetId[0]
