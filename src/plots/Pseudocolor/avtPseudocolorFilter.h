@@ -22,8 +22,8 @@
 //  Purpose:  To set specific flags in the pipeline that may be necessary
 //            when picking on point meshes.
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   October 29, 2004 
+//  Programmer: Kathleen Bonnell
+//  Creation:   October 29, 2004
 //
 //  Modifications:
 //    Kathleen Bonnell, Fri Nov 12 11:35:11 PST 2004
@@ -36,7 +36,7 @@
 //    Modified the class to work with avtDataRepresentation.
 //
 //    Alister Maguire, Tue Jul 16 14:12:20 PDT 2019
-//    Added mustRemoveFacesBeforeGhosts. 
+//    Added mustRemoveFacesBeforeGhosts.
 //
 // ****************************************************************************
 

@@ -1,14 +1,19 @@
 <?xml version="1.0"?>
   <Plugin name="Pseudocolor" type="plot" label="Pseudocolor" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" vartype="scalar,species" iconFile="Pseudocolor.xpm">
+    <CXXFLAGS>
+      ${VISIT_INCLUDE_DIR}/avt/Plotter/vtk
+    </CXXFLAGS>
     <Files components="V">
       avtPseudocolorFilter.C
+      avtPseudocolorGeometryFilter.C
       avtPseudocolorMapper.C
-      vtkMultiRepMapper.C
+      vtkExtractCellsByType.C
     </Files>
     <Files components="E">
       avtPseudocolorFilter.C
+      avtPseudocolorGeometryFilter.C
       avtPseudocolorMapper.C
-      vtkMultiRepMapper.C
+      vtkExtractCellsByType.C
     </Files>
     <Attribute name="PseudocolorAttributes" purpose="Attributes for the pseudocolor plot" persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="Pseudocolor.code">
       <Enum name="Scaling">
