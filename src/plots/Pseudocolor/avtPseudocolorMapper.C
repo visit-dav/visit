@@ -463,7 +463,7 @@ avtPseudocolorMapper::ColorByScalarOn(const string &sn)
     {
         if (mappers[i] != NULL && mappers[i]->IsA("vtkPointGlyphMapper") &&
             !drawPoints)
-               pgm->ColorByScalarOn(coloringVarName);
+                ((vtkPointGlyphMapper*)mappers[i])->ColorByScalarOn(sn);
     }
 }
 
@@ -651,7 +651,7 @@ avtPseudocolorMapper::SetGlyphType(GlyphType type)
 // ****************************************************************************
 
 void
-avtPseudocolorMapper::SetPointSize(int ps)
+avtPseudocolorMapper::SetPointSize(double ps)
 {
     if (pointSize != ps)
     {
