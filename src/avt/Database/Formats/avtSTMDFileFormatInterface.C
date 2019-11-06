@@ -643,3 +643,53 @@ avtSTMDFileFormatInterface::PopulateIOInformation(int ts, const std::string &mes
     }
     return timesteps[ts]->PopulateIOInformation(meshname, ioInfo);
 }
+
+
+// ****************************************************************************
+//  Method: avtSTMDFileFormatInterface::GetCycles
+//
+//  Purpose:
+//    Retrieve all available cycles. 
+//
+//  Arguments:
+//    dom      Unused domain number. 
+//    cycles   The vector to store cycles into. 
+//
+//  Programmer: Alister Maguire
+//  Creation:   Tue Sep  3 13:16:07 MST 2019 
+//
+// ****************************************************************************
+
+void
+avtSTMDFileFormatInterface::GetCycles(int dom, intVector &cycles)
+{
+    for (int i = 0; i < nTimesteps; ++i)
+    {
+        cycles.push_back(timesteps[i]->FormatGetCycle());
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtSTMDFileFormatInterface::GetTimes
+//
+//  Purpose:
+//    Retrieve all available times. 
+//
+//  Arguments:
+//    dom      Unused domain number. 
+//    times    The vector to store times into. 
+//
+//  Programmer: Alister Maguire
+//  Creation:   Tue Sep  3 13:16:07 MST 2019 
+//
+// ****************************************************************************
+
+void
+avtSTMDFileFormatInterface::GetTimes(int dom, doubleVector &times)
+{
+    for (int i = 0; i < nTimesteps; ++i)
+    {
+        times.push_back(timesteps[i]->FormatGetTime());
+    }
+}

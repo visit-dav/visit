@@ -110,6 +110,9 @@ avtPickByNodeQuery::~avtPickByNodeQuery()
 //    Don't replace nodeid with GetCurrentNodeForOriginal if we are
 //    picking by label. 
 //
+//    Alister Maguire, Fri Oct 11 15:37:24 PDT 2019
+//    Set the real element id for direct database lookups. 
+//
 // ****************************************************************************
 
 void
@@ -234,6 +237,7 @@ avtPickByNodeQuery::Execute(vtkDataSet *ds, const int dom)
         if (pickAtts.GetShowGlobalIds())
             ConvertElNamesToGlobal();
     }
+    pickAtts.SetRealElementNumber(nodeid);
     pickAtts.SetElementNumber(usernodeid + nodeOrigin);
     if (pickAtts.GetMatSelected())
     {

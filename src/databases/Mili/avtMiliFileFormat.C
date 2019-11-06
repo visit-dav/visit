@@ -1471,6 +1471,8 @@ avtMiliFileFormat::GetVar(int timestep,
               
             }
 
+            visitTimer->StopTimer(gvTimer, "MILI: GetVar");
+
             return fltArray;
         }
 
@@ -1493,6 +1495,7 @@ avtMiliFileFormat::GetVar(int timestep,
                          varMD, 
                          fltArray);
 
+        visitTimer->StopTimer(gvTimer, "MILI: GetVar");
         return fltArray;
     }
 
@@ -1503,7 +1506,6 @@ avtMiliFileFormat::GetVar(int timestep,
     GetVar(timestep, dom, meshId, varMD, fltArray);
 
     visitTimer->StopTimer(gvTimer, "MILI: GetVar");
-
     return fltArray;
 }
 

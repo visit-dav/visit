@@ -203,6 +203,10 @@ avtFileFormat::FreeUpResources(void)
 //      is for file formats that don't need to do anything special when a new
 //      timestep is encountered. 
 //
+//      Note: All processors must call ActivateTimestep, even if they have
+//      no "work" to perform. This is because of a communcation phase that
+//      assumes all processors have done so.
+//
 //  Programmer: Mark C. Miller 
 //  Creation:   February 23, 2004
 //
@@ -210,6 +214,9 @@ avtFileFormat::FreeUpResources(void)
 //
 //    Hank Childs, Fri Apr  1 08:48:50 PST 2005
 //    Use debug5 instead of debug1, since this isn't really a problem.
+//
+//    Alister Maguire, Tue Oct 29 09:54:23 PDT 2019
+//    Added note about every processor dependency.
 //
 // ****************************************************************************
 

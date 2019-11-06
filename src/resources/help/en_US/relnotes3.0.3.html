@@ -26,6 +26,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <ul>
   <li>Fixed bug with VTK reader parsing .vtm files when 'DataSet' tag doesn't have a 'file' attribute.</li>
   <li>Disable VCR play/reverse play buttons when there is not active drawn plot.</li>
+  <li>Fixed inability to Pick on glyphed points lying near the dataset bounds.</li>
 </ul>
 
 <a name="Enhancements"></a>
@@ -40,6 +41,8 @@ enhancements and bug-fixes that were added to this release.</p>
 <p><b><font size="4">Changes for VisIt developers in version 3.0.3</font></b></p>
 <ul>
   <li>Corrected a bug in build_visit that prevented OSMesa and MesaGL from building from within a Git checkout.</li>
+  <li>Added a patch to build_visit so that Qt builds on CentOS 8.</li>
+  <li>Added OSX-specific update to the sed command in bv_adios2.sh to fix the adios2 configuration error.</li>
 </ul>
 
 <p>Click the following link to view the release notes for the previous version

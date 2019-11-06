@@ -159,7 +159,7 @@ avtTimeLoopFilter::Update(avtContract_p spec)
     src->SetNumberOfExecutions(numIters);
 
     int t0 = visitTimer->StartTimer();
-    
+
     for (timeLoopIter=0; timeLoopIter<numTimeLoopIterations; ++timeLoopIter)
     {
         debug4 << "Time loop filter updating with iteration # "
