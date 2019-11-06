@@ -16,8 +16,8 @@
       *.bp
       *.bp.sst
       *.bp.ssc
-      *.md.idx
-      *.md.0
+      md.idx
+      md.0
     </FilePatterns>
     <Files components="M">
       avtADIOS2FileFormat.C
