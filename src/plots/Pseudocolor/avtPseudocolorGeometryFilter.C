@@ -211,7 +211,12 @@ avtPseudocolorGeometryFilter::ExecuteDataTree(avtDataRepresentation *inDR)
             }
             remover->Update();
             surfaceData = remover->GetOutput();
-            surfaceData->Register(NULL);
+            // ugrid data may report 'not all verts' but may truly be all verts
+            // so need to double-check that remover produced cells.
+            if (surfaceData->GetNumberOfCells() > 0)
+                surfaceData->Register(NULL);
+            else
+                surfaceData = nullptr;
         }
     }
 
