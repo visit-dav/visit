@@ -1415,7 +1415,6 @@ QvisHelpWindow::displayPage(const QString &page, bool reload)
     if(page != helpFile || reload)
     {
         QString file(CompleteFileName(page));
-
         if(QFile(file).exists())
         {
             helpBrowser->setSource(QUrl::fromLocalFile(file));
