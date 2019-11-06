@@ -552,6 +552,15 @@ vtkSlicer::UnstructuredGridExecute(void)
 
     double D = Origin[0]*Normal[0] + Origin[1]*Normal[1] + Origin[2]*Normal[2];
 
+    int accessMethod = 0;
+    if(inPts->GetData()->HasStandardMemoryLayout())
+    {
+        if(inPts->GetData()->GetDataType() == VTK_FLOAT)
+            accessMethod = 1;
+        else if(inPts->GetData()->GetDataType() == VTK_DOUBLE)
+            accessMethod = 2;
+    }
+
     vtkIdType nToProcess = (CellList != NULL ? CellListSize : nCells);
     vtkIdType numIcantSlice = 0;
     vtkIdType numVertices = 0;
@@ -609,7 +618,7 @@ vtkSlicer::UnstructuredGridExecute(void)
         if (canSlice)
         {
             int tmp[3] = {0,0,0};
-            if(inPts->GetDataType() == VTK_FLOAT)
+            if(accessMethod == 1)
             {
                 vtkUnstructuredCreateTriangles<float, SliceFunction<float> >(
                     sfv, cellId, pts, npts,
@@ -617,7 +626,7 @@ vtkSlicer::UnstructuredGridExecute(void)
                     SliceFunction<float>(tmp, inPts, this->Origin, this->Normal)
                 );
             }
-            else if(inPts->GetDataType() == VTK_DOUBLE)
+            else if(accessMethod == 2)
             {
                 vtkUnstructuredCreateTriangles<double, SliceFunction<double> >(
                     sfv, cellId, pts, npts,
