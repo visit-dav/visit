@@ -36,7 +36,7 @@
 *
 *****************************************************************************/
 
-// ************************************************************************* // 
+// ************************************************************************* //
 //                                ViewerPlot.h                               //
 // ************************************************************************* //
 
@@ -103,12 +103,12 @@ class avtToolInterface;
 //    Hank Childs, Thu Dec 28 15:23:42 PST 2000
 //    Replaced avtPlot_p in favor of avtActor_p, accounted for new plot scheme.
 //
-//    Kathleen Bonnell, Thu Feb 22 16:38:31 PST 2001 
-//    Added method GetDataExtents. 
+//    Kathleen Bonnell, Thu Feb 22 16:38:31 PST 2001
+//    Added method GetDataExtents.
 //
 //    Eric Brugger, Tue Mar 08 15:01:50 PST 2001
 //    I modified the class for use with plot plugins.  I also modified the
-//    class so that it is no longer abstract. 
+//    class so that it is no longer abstract.
 //
 //    Brad Whitlock, Tue Apr 24 14:42:51 PST 2001
 //    Added error flag coding.
@@ -140,7 +140,7 @@ class avtToolInterface;
 //    Brad Whitlock, Fri Sep 21 11:56:11 PDT 2001
 //    I changed the return type of SetVariableName.
 //
-//    Kathleen Bonnell, Wed Sep 26 15:02:36 PDT 2001 
+//    Kathleen Bonnell, Wed Sep 26 15:02:36 PDT 2001
 //    Added SetForeground/Background methods and members to store them.
 //
 //    Jeremy Meredith, Fri Sep 28 13:47:32 PDT 2001
@@ -153,8 +153,8 @@ class avtToolInterface;
 //    Jeremy Meredith, Fri Nov  9 10:08:20 PST 2001
 //    Added a network id.
 //
-//    Kathleen Bonnell, Thu Nov 15 16:06:43 PST 2001 
-//    Added Pick, StartPick, StopPick. 
+//    Kathleen Bonnell, Thu Nov 15 16:06:43 PST 2001
+//    Added Pick, StartPick, StopPick.
 //
 //    Brad Whitlock, Mon Feb 11 14:25:50 PST 2002
 //    Added a new method to initialize tools.
@@ -165,7 +165,7 @@ class avtToolInterface;
 //    Brad Whitlock, Fri Mar 8 09:40:05 PDT 2002
 //    Added methods to set/get the plot attributes.
 //
-//    Kathleen Bonnell, Wed Jun 19 17:50:21 PDT 2002   
+//    Kathleen Bonnell, Wed Jun 19 17:50:21 PDT 2002
 //    Added methods GetVarType and GetPlotQueryInfo and
 //    member queryAtts.
 //
@@ -175,9 +175,9 @@ class avtToolInterface;
 //    Brad Whitlock, Mon Nov 4 10:45:31 PDT 2002
 //    Added a method to get the frame range.
 //
-//    Kathleen Bonnell, Fri Nov 15 09:07:36 PST 2002 
-//    Removed Pick method, now handled by ViewerQueryManager. 
-//    
+//    Kathleen Bonnell, Fri Nov 15 09:07:36 PST 2002
+//    Removed Pick method, now handled by ViewerQueryManager.
+//
 //    Eric Brugger, Mon Nov 18 09:06:49 PST 2002
 //    I added support for keyframing.
 //
@@ -193,11 +193,11 @@ class avtToolInterface;
 //    Added CreateNode and SetFromNode.
 //
 //    Kathleen Bonnell, Thu Aug 28 10:10:35 PDT 2003
-//    Added IsMesh and SetOpaqueMeshIsAppropriate. 
+//    Added IsMesh and SetOpaqueMeshIsAppropriate.
 //
-//    Kathleen Bonnell, Thu Sep 11 11:50:02 PDT 2003 
+//    Kathleen Bonnell, Thu Sep 11 11:50:02 PDT 2003
 //    Added optional bool arg to 'AddOperator', indicates whether the operator
-//    should be initialized from its default or client atts. 
+//    should be initialized from its default or client atts.
 //
 //    Mark C. Miller, Wed Oct 29 14:36:35 PST 2003
 //    Added method to TransmuteActor() to support smooth transitions into
@@ -211,8 +211,8 @@ class avtToolInterface;
 //    a time slider then it never changes when time changes. I changed the
 //    constructor prototype.
 //
-//    Kathleen Bonnell, Thu Mar 11 08:19:10 PST 2004 
-//    Removed GetDataExtents, no longer used. 
+//    Kathleen Bonnell, Thu Mar 11 08:19:10 PST 2004
+//    Removed GetDataExtents, no longer used.
 //
 //    Jeremy Meredith, Thu Mar 25 16:33:55 PST 2004
 //    Added simulation support by using an engine key to map this plot
@@ -221,10 +221,10 @@ class avtToolInterface;
 //    Eric Brugger, Tue Mar 30 15:08:09 PST 2004
 //    Added data extents.
 //
-//    Kathleen Bonnell, Wed Mar 31 16:46:13 PST 2004 
-//    Added clonedNetworkId, which when not -1 indicates that this plot 
-//    should use a cloned network instead of creating a new one. 
-//    
+//    Kathleen Bonnell, Wed Mar 31 16:46:13 PST 2004
+//    Added clonedNetworkId, which when not -1 indicates that this plot
+//    should use a cloned network instead of creating a new one.
+//
 //    Brad Whitlock, Thu Apr 1 16:22:09 PST 2004
 //    I added a copy constructor and made changes to make keyframing work
 //    again.
@@ -233,38 +233,38 @@ class avtToolInterface;
 //    Added actorHasNoData arg. to CreateActor. Eliminated default values for
 //    other args to CreateActor
 //
-//    Kathleen Bonnell, Tue Jun  1 17:57:52 PDT 2004 
-//    Added bool args to StartPick. 
+//    Kathleen Bonnell, Tue Jun  1 17:57:52 PDT 2004
+//    Added bool args to StartPick.
 //
 //    Mark C. Miller, Tue Jun  8 14:43:36 PDT 2004
 //    Added GetWindowId
 //
-//    Kathleen Bonnell, Wed Aug 25 08:31:44 PDT 2004 
+//    Kathleen Bonnell, Wed Aug 25 08:31:44 PDT 2004
 //    Added GetMeshType.
 //
 //    Kathleen Bonnell, Fri Oct 29 13:57:38 PDT 2004
 //    Added GetBlockOrigin.
 //
-//    Kathleen Bonnell, Tue Jan 11 16:16:48 PST 2005 
-//    Added isLabel. 
+//    Kathleen Bonnell, Tue Jan 11 16:16:48 PST 2005
+//    Added isLabel.
 //
 //    Brad Whitlock, Fri Feb 18 10:08:36 PDT 2005
 //    Added GetExpressions method.
 //
-//    Kathleen Bonnell, Tue Jul  5 14:46:52 PDT 2005 
+//    Kathleen Bonnell, Tue Jul  5 14:46:52 PDT 2005
 //    Added GetRealVarType method.
 //
 //    Mark C. Miller, Wed Nov  9 12:35:15 PST 2005
 //    Added PrepareCacheForReplace
 //
-//    Kathleen Bonnell, Thu Nov 17 12:00:23 PST 2005 
+//    Kathleen Bonnell, Thu Nov 17 12:00:23 PST 2005
 //    Added GetTopologicalDimension method.
 //
 //    Brad Whitlock, Wed Jan 11 14:52:22 PST 2006
 //    I added SessionContainsErrors.
 //
-//    Kathleen Bonnell, Tue Jun 20 16:02:38 PDT 2006 
-//    Added GetPlotInfoAtts. 
+//    Kathleen Bonnell, Tue Jun 20 16:02:38 PDT 2006
+//    Added GetPlotInfoAtts.
 //
 //    Brad Whitlock, Mon Feb 12 12:18:39 PDT 2007
 //    I made it inherit ViewerBase and I added support for alternate displays.
@@ -275,7 +275,7 @@ class avtToolInterface;
 //    Kathleen Bonnell, Thu Mar 22 19:44:41 PDT 2007
 //    Added SetScaleMode, xScaleMode, yScaleMode in support of log-scaled views
 //
-//    Kathleen Bonnell, Fri May 11 15:06:40 PDT 2007 
+//    Kathleen Bonnell, Fri May 11 15:06:40 PDT 2007
 //    Added WINDOW_MODE arg to SetScaleMode, Add CanDoLogViewScaling().
 //
 //    Hank Childs, Thu Aug 30 15:57:55 PDT 2007
@@ -313,7 +313,10 @@ class avtToolInterface;
 //    clean up a compiler warning
 //
 //    Alister Maguire, Tue Jun  5 09:13:10 PDT 2018
-//    Added SetViewScale. 
+//    Added SetViewScale.
+//
+//    Kathleen Biagas, Thu Oct 31 12:32:57 MST 2019
+//    Added PlotHasBeenGlyphed.
 //
 // ****************************************************************************
 
@@ -524,9 +527,9 @@ public:
     void InitializePlot(Plot &p) const;
     void RegisterViewerPlotList(ViewerPlotList *vpl);
 
-    bool CloneNetwork(void) { return clonedNetworkId != -1; };
-    void SetCloneId(int id) { clonedNetworkId = id; } ;
-    int  GetCloneId(void) { return clonedNetworkId; } ;
+    bool CloneNetwork(void) { return clonedNetworkId != -1; }
+    void SetCloneId(int id) { clonedNetworkId = id; }
+    int  GetCloneId(void) { return clonedNetworkId; }
 
     int GetWindowId(void) const;
 
@@ -542,6 +545,8 @@ public:
     static void SetNumPlotsCreated(int);
 
     void GetExtraInfoForPick(MapNode &);
+
+    bool PlotHasBeenGlyphed();
 
 protected:
     void CopyHelper(const ViewerPlot &);
@@ -613,7 +618,7 @@ private:
     avtActor_p             *actorList;
     avtDataObjectReader_p  *readerList;
 
-    PlotQueryInfo         *queryAtts;      
+    PlotQueryInfo         *queryAtts;
 
     static avtActor_p             nullActor;
     static avtDataObjectReader_p  nullReader;

@@ -230,7 +230,7 @@ ViewerPlot::ViewerPlot(const int type_,ViewerPlotPluginInfo *viewerPluginInfo_,
     //
     type                = type_;
     viewerPluginInfo    = viewerPluginInfo_;
-    isMesh = (strcmp(viewerPluginInfo->GetName(), "Mesh") == 0); 
+    isMesh = (strcmp(viewerPluginInfo->GetName(), "Mesh") == 0);
     isLabel = (strcmp(viewerPluginInfo->GetName(), "Label") == 0);
     animating           = false;
     followsTime         = true;
@@ -748,14 +748,14 @@ ViewerPlot::SetFollowsTime(bool val)
 // ****************************************************************************
 // Method: ViewerPlot::SupportsAnimation
 //
-// Purpose: 
+// Purpose:
 //   Returns whether this plot supports animation.
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Sep 12 16:32:35 PDT 2013
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -767,14 +767,14 @@ ViewerPlot::SupportsAnimation() const
 // ****************************************************************************
 // Method: ViewerPlot::GetAnimating
 //
-// Purpose: 
+// Purpose:
 //   Get whether the plot is animating.
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Sep 12 16:32:35 PDT 2013
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -786,14 +786,14 @@ ViewerPlot::GetAnimating() const
 // ****************************************************************************
 // Method: ViewerPlot::ViewerPlot::SetAnimating
 //
-// Purpose: 
+// Purpose:
 //   Set whether the plot is animating.
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Sep 12 16:32:35 PDT 2013
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -825,14 +825,14 @@ ViewerPlot::SetAnimating(bool val)
 // ****************************************************************************
 // Method: ViewerPlot::AnimationStep
 //
-// Purpose: 
+// Purpose:
 //   Lets the plot change its plot or plot attributes to accomplish animation.
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Sep 12 16:32:35 PDT 2013
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -6248,13 +6248,13 @@ ViewerPlot::SetFullFrameScaling(bool useScale, double *s)
 // Method: ViewerPlot::SetViewScale
 //
 // Purpose:
-//   Set the view scale of the mapper. 
+//   Set the view scale of the mapper.
 //
 // Arguments:
-//   vs    The view scale. 
+//   vs    The view scale.
 //
-// Returns:    
-//   Whether or not the view scale was set. 
+// Returns:
+//   Whether or not the view scale was set.
 //
 // Programmer: Alister Maguire
 // Creation:   Mon Jun  4 15:13:43 PDT 2018
@@ -6710,3 +6710,29 @@ ViewerPlot::GetExtraInfoForPick(MapNode &info)
          info = plotList[cacheIndex]->GetExtraInfoForPick();
     }
 }
+
+
+// ****************************************************************************
+// Method: ViewerPlot::PlotHasBeenGlyphed
+//
+// Purpose:
+//   Return whether or not glyphs have been applied.
+//
+// Programmer: Kathleen Biagas
+// Creation:   October 31, 2019.
+//
+// Modifications:
+//
+// ****************************************************************************
+
+bool
+ViewerPlot::PlotHasBeenGlyphed()
+{
+    bool beenGlyphed = false;
+    if (*plotList[cacheIndex] != NULL)
+    {
+         beenGlyphed = plotList[cacheIndex]->PlotHasBeenGlyphed();
+    }
+    return beenGlyphed;
+}
+
