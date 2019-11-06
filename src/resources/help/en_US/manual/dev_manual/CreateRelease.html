@@ -1,0 +1,308 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Creating a Release &mdash; VisIt User Manual 2.11 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../genindex.html"/>
+        <link rel="search" title="Search" href="../search.html"/>
+    <link rel="top" title="VisIt User Manual 2.11 documentation" href="../index.html"/>
+        <link rel="up" title="VisIt Developer Manual" href="index.html"/>
+        <link rel="next" title="Using Docker" href="Docker.html"/>
+        <link rel="prev" title="Release Candidate (RC) Development" href="RCDevelopment.html"/> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> VisIt User Manual
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                local build
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../gui_manual/index.html">GUI Manual</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../cli_manual/index.html">CLI Manual</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Developer Manual</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="pr_create.html">Creating a Pull Request</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pr_review.html">Reviewing a Pull Request</a></li>
+<li class="toctree-l2"><a class="reference internal" href="RCDevelopment.html">Release Candidate (RC) Development</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Creating a Release</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#overview">Overview</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#tagging-the-release">Tagging the release</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#deleting-a-release">Deleting a release</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="Docker.html">Using Docker</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">VisIt User Manual</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="index.html">VisIt Developer Manual</a> &raquo;</li>
+        
+      <li>Creating a Release</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/dev_manual/CreateRelease.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="creating-a-release">
+<h1>Creating a Release<a class="headerlink" href="#creating-a-release" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
+<p>When we put out a new release we should tag the repository and create a
+release. We will describe creating a release by way of example using the
+steps used to create the 3.0.1 release.</p>
+</div>
+<div class="section" id="tagging-the-release">
+<h2>Tagging the release<a class="headerlink" href="#tagging-the-release" title="Permalink to this headline">¶</a></h2>
+<p>To create a release you will first create a tag using git commands. You
+should get the short SHA for the release that can be found on the splash
+screen of any of the binaries built from the source tar file. The Linux
+distributions are all built with the source tar file. The Windows
+distribution is typically not. To bring up the splash screen go to
+<em>Help-&gt;About</em>.</p>
+<div class="figure" id="id1">
+<img alt="../_images/Release-SplashScreen.png" src="../_images/Release-SplashScreen.png" />
+<p class="caption"><span class="caption-number">Fig. 10 </span><span class="caption-text">The splash screen with the short SHA.</span></p>
+</div>
+<p>Now you can issue the git commands to create the tag and push it to GitHub.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">checkout</span> <span class="mf">3.0</span><span class="n">RC</span>
+<span class="n">git</span> <span class="n">checkout</span> <span class="mi">2</span><span class="n">f38385</span>
+<span class="n">git</span> <span class="n">tag</span> <span class="n">v3</span><span class="o">.</span><span class="mf">0.1</span>
+<span class="n">git</span> <span class="n">push</span> <span class="n">origin</span> <span class="n">v3</span><span class="o">.</span><span class="mf">0.1</span>
+</pre></div>
+</div>
+<p>If you go to GitHub and go to the <em>Releases</em> tab you will see the newly
+created tag. Now you are ready to create the release. Click on
+<em>Draft a new release</em> to bring up the form to create a new release.</p>
+<div class="figure" id="id2">
+<img alt="../_images/Release-GitHubStep1.png" src="../_images/Release-GitHubStep1.png" />
+<p class="caption"><span class="caption-number">Fig. 11 </span><span class="caption-text">Creating a new release.</span></p>
+</div>
+<p>Now you can enter information about the release. Set the <em>Tag version</em> to
+<code class="docutils literal notranslate"><span class="pre">v3.0.1</span></code>, the <em>Release title</em> to <code class="docutils literal notranslate"><span class="pre">v3.0.1</span></code> and copy and paste the
+description from the 3.0.0 release into the description, changing the link
+to the release notes appropriately. At this point you can go to the bottom
+of the window and click on <em>Publish release</em>.</p>
+<div class="figure" id="id3">
+<img alt="../_images/Release-GitHubStep2.png" src="../_images/Release-GitHubStep2.png" />
+<p class="caption"><span class="caption-number">Fig. 12 </span><span class="caption-text">Entering information about the release.</span></p>
+</div>
+<p>Your newly created release will now appear.</p>
+<div class="figure" id="id4">
+<img alt="../_images/Release-GitHubStep3.png" src="../_images/Release-GitHubStep3.png" />
+<p class="caption"><span class="caption-number">Fig. 13 </span><span class="caption-text">The newly created release.</span></p>
+</div>
+</div>
+<div class="section" id="deleting-a-release">
+<h2>Deleting a release<a class="headerlink" href="#deleting-a-release" title="Permalink to this headline">¶</a></h2>
+<p>If you mess up the tag or the release you can delete the tag using git
+commands.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">tag</span> <span class="o">-</span><span class="n">d</span> <span class="n">v3</span><span class="o">.</span><span class="mf">0.1</span>
+<span class="n">git</span> <span class="n">push</span> <span class="n">origin</span> <span class="p">:</span><span class="n">refs</span><span class="o">/</span><span class="n">tags</span><span class="o">/</span><span class="n">v3</span><span class="o">.</span><span class="mf">0.1</span>
+</pre></div>
+</div>
+<p>You can then remove the release at GitHub. The release will change to
+a draft release because the tag no longer exists. Go ahead and click on
+the release to bring up the draft release.</p>
+<div class="figure" id="id5">
+<img alt="../_images/Release-GitHubDelete1.png" src="../_images/Release-GitHubDelete1.png" />
+<p class="caption"><span class="caption-number">Fig. 14 </span><span class="caption-text">Selecting the draft release corresponding to the deleted tag.</span></p>
+</div>
+<p>Click on <em>Delete</em> to delete the release.</p>
+<div class="figure" id="id6">
+<img alt="../_images/Release-GitHubDelete2.png" src="../_images/Release-GitHubDelete2.png" />
+<p class="caption"><span class="caption-number">Fig. 15 </span><span class="caption-text">Deleting the draft release corresponding to the deleted tag.</span></p>
+</div>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="Docker.html" class="btn btn-neutral float-right" title="Using Docker" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="RCDevelopment.html" class="btn btn-neutral" title="Release Candidate (RC) Development" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2008-2019, LLNL, UCRL-SM-220449.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'2.11',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+      <script type="text/javascript" src="../_static/language_data.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

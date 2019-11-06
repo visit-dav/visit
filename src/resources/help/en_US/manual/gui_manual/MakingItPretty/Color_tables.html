@@ -1,0 +1,433 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>9.2. Color Tables &mdash; VisIt User Manual 2.11 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../genindex.html"/>
+        <link rel="search" title="Search" href="../../search.html"/>
+    <link rel="top" title="VisIt User Manual 2.11 documentation" href="../../index.html"/>
+        <link rel="up" title="9. Making it pretty" href="index.html"/>
+        <link rel="next" title="9.3. Lighting" href="Lighting.html"/>
+        <link rel="prev" title="9.1. Annotations" href="Annotations.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> VisIt User Manual
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                local build
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">GUI Manual</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../Intro/index.html">1. Introduction to VisIt</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../WorkingWithFiles/index.html">2. Working with Databases</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Plots/index.html">3. Plots</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Operators/index.html">4. Operators</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../SavingPrinting/index.html">5. Saving and Printing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../VisualizationWindows/index.html">6. Visualization Windows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Subsetting/index.html">7. Subsetting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Quantitative/index.html">8. Quantitative Analysis</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html">9. Making it pretty</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="Annotations.html">9.1. Annotations</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">9.2. Color Tables</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#color-table-window">9.2.1. Color Table Window</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="#setting-the-active-color-table">9.2.1.1. Setting the active color table</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#creating-a-new-color-table">9.2.1.2. Creating a new color table</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#deleting-a-color-table">9.2.1.3. Deleting a color table</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#exporting-a-color-table">9.2.1.4. Exporting a color table</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#editing-a-continuous-color-table">9.2.1.5. Editing a continuous color table</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#editing-a-discrete-color-table">9.2.1.6. Editing a discrete color table</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#converting-color-table-types">9.2.1.7. Converting color table types</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="Lighting.html">9.3. Lighting</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Rendering_Options.html">9.4. Rendering Options</a></li>
+<li class="toctree-l3"><a class="reference internal" href="View.html">9.5. View</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../Animation/index.html">10. Animation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../InteractiveTools/index.html">11. Interactive Tools</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../MultipleDatabaseAndWindows/index.html">12. Multiple Databases and Windows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ClientServer/index.html">13. Client Server</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ComputeEngines/index.html">14. Compute Engines</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Preferences/index.html">15. Preferences</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Help/index.html">16. Help</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../StartupOptions/index.html">17. Startup Options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Building/index.html">18. Building</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../BuildingOnWindows/index.html">19. Building on Windows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Acknowledgments/index.html">20. Acknowledgments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../glossary.html">21. Glossary</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Contributing/index.html">22. Contributing</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../cli_manual/index.html">CLI Manual</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../dev_manual/index.html">Developer Manual</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">VisIt User Manual</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">VisIt GUI User Manual</a> &raquo;</li>
+        
+          <li><a href="index.html">9. Making it pretty</a> &raquo;</li>
+        
+      <li>9.2. Color Tables</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../_sources/gui_manual/MakingItPretty/Color_tables.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="color-tables">
+<span id="id1"></span><h1>9.2. Color Tables<a class="headerlink" href="#color-tables" title="Permalink to this headline">¶</a></h1>
+<p>A color table is a set of colors that is used by certain plots to color
+variables. Color tables can be immensely important for understanding
+visualizations since changes in color can highlight interesting features.
+VisIt has several built-in color tables that can be used in visualizations.
+VisIt also provides a <strong>Color table window</strong> for designing custom color tables.</p>
+<p>Color tables come in two types: continuous and discrete. A continuous color
+table is defined as a relatively few color control points defined at certain
+intervals in the color table and the gaps in between the color control points
+are filled by smoothly interpolating the colors. This makes continuous color
+tables look smooth since there are several colors that are blended to form
+the color table. Continuous color tables are used by several plots including
+the Pseudocolor, Tensor, and Vector plots. A plot that uses a continuous
+color table attempts to use all of the colors in the color table. Some
+plots that opt to only use a handful of colors from a continuous color
+table pick colors that are evenly distributed through the color table so
+that the plots end up with colors that still somewhat resemble the original
+colors from the continuous color table.</p>
+<p>A discrete color table is a set of N colors that can be set individually.
+There are no other colors in a discrete color table other than the colors
+that you provide. Discrete color tables are usually used by plots like the
+Boundary, Contour, FilledBoundary, or Subset plots, which need only a small
+set of colors. Typically, these plots use a color from a discrete color
+table to color some object and then use the next color to color another
+object, and so on. When they reach the end of the color table and still
+need more colors, they start again at the beginning with the first color
+from the discrete color table.</p>
+<div class="section" id="color-table-window">
+<h2>9.2.1. Color Table Window<a class="headerlink" href="#color-table-window" title="Permalink to this headline">¶</a></h2>
+<div class="figure" id="id2">
+<span id="fig-makingitpretty-colortables"></span><img alt="../../_images/MakingItPretty-ColorTables.png" src="../../_images/MakingItPretty-ColorTables.png" />
+<p class="caption"><span class="caption-number">Fig. 9.25 </span><span class="caption-text">The color table window</span></p>
+</div>
+<p>You can open VisIt’s <strong>Color table window</strong>, shown in
+<a class="reference internal" href="#fig-makingitpretty-colortables"><span class="std std-numref">Figure 9.25</span></a>, by selecting
+<strong>Color table</strong> from the <strong>Main Window’s Controls</strong> menu. The
+<strong>Color table window</strong> is vertically separated into three areas. The
+top area allows you to set the active color tables. The middle area, or
+manager portion of the window, allows you to create or delete new color
+tables, as well as export color tables. The bottom area, or editor
+portion of the window, allows you to edit color tables by adding,
+removing, moving, or changing the color of color control points. A
+color control point is a point with a color that influences how the
+color table will look.</p>
+<div class="section" id="setting-the-active-color-table">
+<h3>9.2.1.1. Setting the active color table<a class="headerlink" href="#setting-the-active-color-table" title="Permalink to this headline">¶</a></h3>
+<p>VisIt has the concept of active color tables, which are the color tables
+used to color plots that do not specify a color table. There is both an
+active continuous color table (for plots that prefer to use continuous
+color tables) and an active discrete color table (for plots that prefer
+to use discrete color tables). The active color table can be different
+for each visualization window. To set the active continuous color table,
+select a new color table name from the <strong>Continuous</strong> menu in the
+<strong>Active color table</strong> area. To select a new active discrete color
+table, select a new color table name from the <strong>Discrete</strong> menu in the
+<strong>Active color table</strong> area.</p>
+</div>
+<div class="section" id="creating-a-new-color-table">
+<h3>9.2.1.2. Creating a new color table<a class="headerlink" href="#creating-a-new-color-table" title="Permalink to this headline">¶</a></h3>
+<p>Creating a new color table is a simple process where you first type a
+new color table name into the <strong>Name</strong> text field and then click the
+<strong>New</strong> button. This creates a copy of the currently highlighted color
+table, which is the color table that is selected in the <strong>Manager</strong>
+area, and inserts it into the color table list with the specified name.
+After creating the new color table, you can modify the color control
+points to fashion a new color table.</p>
+</div>
+<div class="section" id="deleting-a-color-table">
+<h3>9.2.1.3. Deleting a color table<a class="headerlink" href="#deleting-a-color-table" title="Permalink to this headline">¶</a></h3>
+<p>To delete a color table, click on a color table name in the color table
+list and then click the <strong>Delete</strong> button. You can delete all color
+tables except for the last color table. VisIt makes no distinction
+between built-in color tables and user-defined color tables so any color
+table can be deleted. When you delete a color table, the active color
+table is set to the color table that comes first in the list. If a color
+table is in use when it is deleted, plots that used the deleted color
+table will use the default color table from that point on.</p>
+</div>
+<div class="section" id="exporting-a-color-table">
+<h3>9.2.1.4. Exporting a color table<a class="headerlink" href="#exporting-a-color-table" title="Permalink to this headline">¶</a></h3>
+<p>If you design a color table that you want to share with colleagues,
+click the <strong>Export</strong> button in the <strong>Manager</strong> area to save an XML file
+containing the color table definition for the highlighted color table
+to your .visit directory. The name of a color table file will usually
+be composed of the name of the color table with a <em>“.ct”</em> extension.
+Copying a color table file to a user’s .visit directory will allow
+VisIt to find the color table the next time VisIt runs. Look for the
+color table file in the directory in which VisIt was installed if you
+use the Windows version of VisIt.</p>
+</div>
+<div class="section" id="editing-a-continuous-color-table">
+<h3>9.2.1.5. Editing a continuous color table<a class="headerlink" href="#editing-a-continuous-color-table" title="Permalink to this headline">¶</a></h3>
+<div class="figure" id="id3">
+<span id="fig-makingitpretty-colortableeditcontinuous"></span><img alt="../../_images/MakingItPretty-ColorTableEditContinuous.png" src="../../_images/MakingItPretty-ColorTableEditContinuous.png" />
+<p class="caption"><span class="caption-number">Fig. 9.26 </span><span class="caption-text">The continuous color table editor</span></p>
+</div>
+<p>There are a handful of controls in the editor portion of the
+<strong>Color table window</strong>, shown in
+<a class="reference internal" href="#fig-makingitpretty-colortableeditcontinuous"><span class="std std-numref">Figure 9.26</span></a>, that
+are used to change the definition of a color table. To change a color
+table definition, you must alter its color control points. This means
+adding and removing color control points as well as changing their
+colors and locations.</p>
+<p>You can change the number of color control points in a color table using
+the <strong>Number of colors</strong> spin box. When a new color control point is
+added, it appears to the right of the selected color control point and
+to the left of the next color control point. Color control points are
+represented as a pointy box just above the color spectrum. The color
+control point that has a small triangular mark is the selected color
+control point. When a color control point is removed, the color control
+point that was created before the deleted color control point becomes
+the new selected color control point. Clicking the <strong>Align</strong> button
+makes all color control points have equal spacing.</p>
+<p>Clicking on a color control point makes it active. You can also use the
+Space bar if the color spectrum has keyboard focus. Clicking and dragging
+on a color control point changes its position. Clicking the arrow keys
+on the keyboard also moves a color control point. To change a color
+control point’s color, right click on it and choose a new color from the
+<strong>Popup color</strong> menu that appears under the mouse cursor. You can also
+change the color control point’s color by making the color control point
+active and then using the <strong>Red</strong>, <strong>Green</strong> and <strong>Blue</strong> sliders.</p>
+<p>The <strong>Color table window</strong> also has a couple of settings that can be set
+to influence a color table’s appearance without having permanent effects
+on the color table. The <strong>Smoothing</strong> menu can be used to select between
+no smoothing, linear smoothing and cubic spline smoothing. The <strong>Equal</strong>
+check box can temporarily tell the color table to ignore the positions
+of its color control points and use equal spacing instead. The <strong>Equal</strong>
+check box is often used with no smoothing.</p>
+</div>
+<div class="section" id="editing-a-discrete-color-table">
+<h3>9.2.1.6. Editing a discrete color table<a class="headerlink" href="#editing-a-discrete-color-table" title="Permalink to this headline">¶</a></h3>
+<div class="figure" id="id4">
+<span id="fig-makingitpretty-colortableeditdiscrete"></span><img alt="../../_images/MakingItPretty-ColorTableEditDiscrete.png" src="../../_images/MakingItPretty-ColorTableEditDiscrete.png" />
+<p class="caption"><span class="caption-number">Fig. 9.27 </span><span class="caption-text">The discrete color table editor</span></p>
+</div>
+<p>The <strong>Color table window’s Editor</strong> area looks different when you edit
+a discrete color table. Instead of showing a spectrum of colors, the
+window shows a grid of colors that correspond to the colors in the
+discrete color table. The order of the color control points if left to
+right, top to bottom. To edit a discrete color table, first left click
+on the color that you want to edit and then use the <strong>Red</strong>, <strong>Green</strong>,
+and <strong>Blue</strong> sliders to change the color. You can also right click on
+a color to select it and open the <strong>Popup color</strong> menu to choose a new
+color.</p>
+</div>
+<div class="section" id="converting-color-table-types">
+<h3>9.2.1.7. Converting color table types<a class="headerlink" href="#converting-color-table-types" title="Permalink to this headline">¶</a></h3>
+<p>It is possible to convert a continuous color table to a discrete color
+table and vice-versa using the <strong>Continuous</strong> and <strong>Discrete</strong> radio
+buttons in the editor portion of the <strong>Color table window</strong>. Changing the
+color table type from discrete to continuous does not change the color
+table’s color control points; it only changes how they are used. If you
+select the levels color table and click the <strong>Continuous</strong> radio button,
+the color table will be changed into a continuous color table and the
+<strong>Editor</strong> area will change to continuous mode and show the color table
+in a spectrum but no color control points will have changed. You can
+even turn the color table back into a discrete color table and the
+<strong>Editor</strong> area will show the color table in discrete mode, but the
+color control points will not have changed.</p>
+</div>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="Lighting.html" class="btn btn-neutral float-right" title="9.3. Lighting" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="Annotations.html" class="btn btn-neutral" title="9.1. Annotations" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2008-2019, LLNL, UCRL-SM-220449.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'2.11',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="../../_static/language_data.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

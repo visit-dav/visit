@@ -1,0 +1,379 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>7.3. Using the Subset Window &mdash; VisIt User Manual 2.11 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../genindex.html"/>
+        <link rel="search" title="Search" href="../../search.html"/>
+    <link rel="top" title="VisIt User Manual 2.11 documentation" href="../../index.html"/>
+        <link rel="up" title="7. Subsetting" href="index.html"/>
+        <link rel="next" title="7.4. Material Interface Reconstruction" href="Material_Interface_Reconstruction.html"/>
+        <link rel="prev" title="7.2. Subset Inclusion Lattice" href="Subset_Inclusion_Lattice.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> VisIt User Manual
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                local build
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">GUI Manual</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../Intro/index.html">1. Introduction to VisIt</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../WorkingWithFiles/index.html">2. Working with Databases</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Plots/index.html">3. Plots</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Operators/index.html">4. Operators</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../SavingPrinting/index.html">5. Saving and Printing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../VisualizationWindows/index.html">6. Visualization Windows</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html">7. Subsetting</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="What_is_a_subset.html">7.1. What is a subset?</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Subset_Inclusion_Lattice.html">7.2. Subset Inclusion Lattice</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">7.3. Using the Subset Window</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#browsing-subsets">7.3.1. Browsing subsets</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#changing-a-sil-restriction">7.3.2. Changing a <code class="docutils literal notranslate"><span class="pre">SIL</span></code> restriction</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#creating-complex-subsets">7.3.3. Creating complex subsets</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#turning-multiple-sets-on-and-off">7.3.4. Turning multiple sets on and off</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="Material_Interface_Reconstruction.html">7.4. Material Interface Reconstruction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Species.html">7.5. Species</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../Quantitative/index.html">8. Quantitative Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../MakingItPretty/index.html">9. Making it pretty</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Animation/index.html">10. Animation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../InteractiveTools/index.html">11. Interactive Tools</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../MultipleDatabaseAndWindows/index.html">12. Multiple Databases and Windows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ClientServer/index.html">13. Client Server</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ComputeEngines/index.html">14. Compute Engines</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Preferences/index.html">15. Preferences</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Help/index.html">16. Help</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../StartupOptions/index.html">17. Startup Options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Building/index.html">18. Building</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../BuildingOnWindows/index.html">19. Building on Windows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Acknowledgments/index.html">20. Acknowledgments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../glossary.html">21. Glossary</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Contributing/index.html">22. Contributing</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../cli_manual/index.html">CLI Manual</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../dev_manual/index.html">Developer Manual</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">VisIt User Manual</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">VisIt GUI User Manual</a> &raquo;</li>
+        
+          <li><a href="index.html">7. Subsetting</a> &raquo;</li>
+        
+      <li>7.3. Using the Subset Window</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../_sources/gui_manual/Subsetting/Using_the_Subset_Window.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="using-the-subset-window">
+<span id="id1"></span><h1>7.3. Using the Subset Window<a class="headerlink" href="#using-the-subset-window" title="Permalink to this headline">¶</a></h1>
+<p>Users can open the <strong>Subset Window</strong>, shown in
+<a class="reference internal" href="#subsetwindow"><span class="std std-numref">Figure 7.2</span></a>, by clicking on the <strong>Subset</strong> option in the
+<strong>Main Window’s Controls</strong> menu or by clicking on the <strong>Subset</strong>
+Venn Diagram-looking icon next to the name of a plot in the <strong>Plot list</strong>.
+VisIt’s <strong>Subset Window</strong> shows the relationships between subsets and provides
+controls that allow users to turn subsets on and off.</p>
+<div class="figure" id="id2">
+<span id="subsetwindow"></span><img alt="../../_images/subsetwindow.png" src="../../_images/subsetwindow.png" />
+<p class="caption"><span class="caption-number">Fig. 7.2 </span><span class="caption-text">Subset window</span></p>
+</div>
+<p>The <strong>Subset Window</strong> initially has three panels that display the sets
+associated with mesh of the currently active plot. The window will grow
+more panels to the right, when necessary as the subset structure of a
+mesh is browsed. Each successive panel shows the <em>next</em> level of subsets
+in the mesh. The leftmost panel contains the top level (e.g. <em>whole</em>) set for
+the whole mesh of the currently active plot. The top level or <em>whole</em> set,
+which includes all subsets in the mesh, is usually decomposed into the various
+kinds of subsets described in the section
+<a class="reference internal" href="What_is_a_subset.html#what-is-a-subset"><span class="std std-ref">What is a subset?</span></a>. For example, it
+can be decomposed by material, processor domain, etc. The various ways in
+which a database can be decomposed are called <em>subset categories</em>. The subset
+categories will vary depending on how the data producer(s) create the
+database(s).</p>
+<div class="section" id="browsing-subsets">
+<h2>7.3.1. Browsing subsets<a class="headerlink" href="#browsing-subsets" title="Permalink to this headline">¶</a></h2>
+<p>To browse the subsets for a database, users must first have created a plot.
+Once a plot is created and selected, open the <strong>Subset Window</strong>. The left
+panel in the <strong>Subset Window</strong> contains the database’s top level set and
+may also list some subset categories. Some simple databases don’t include
+any subset and so VisIt will not show any subsets for them. To start browsing
+the available subsets, users can click on one of the subset categories to
+display the subsets in that category. For instance, clicking on a “Material”
+subset category will list all of the mesh’s materials in the next panel to
+the right. The materials are subsets of the top level set. Double clicking on
+a set or clicking on an expand arrow lists any subset categories that can be
+used to further break down the set.</p>
+</div>
+<div class="section" id="changing-a-sil-restriction">
+<h2>7.3.2. Changing a <a class="reference internal" href="../glossary.html#term-sil"><span class="xref std std-term">SIL</span></a> restriction<a class="headerlink" href="#changing-a-sil-restriction" title="Permalink to this headline">¶</a></h2>
+<p>Each set in the <strong>Subset Window</strong> has a small check box next to it that
+allows users to turn the set on or off. The check box not only displays
+whether a set is on or off, but it also displays whether or not a set
+is partially on. When a set is partially on, it means that at least one
+(but not all) of the subsets it contains is turned on. When a set is
+partially on, its check box shows a small slash instead of a check or an
+empty box. Uncheck the check box next to a set name to turn the set off.</p>
+<p>Suppose a user has a database that contains 4 domains, numbered 1 through 4.
+If the user wants to turn off the subset named “domain1”, first click on the
+“domains” category to list the subsets in that category. Next, click the check
+box next to the subset name “domain1” and click the <strong>Apply</strong> button. The
+result of this operation, shown in <a class="reference internal" href="#subset1"><span class="std std-numref">Figure 7.3</span></a>,
+removes the “domain1” subset from the visualization. Note that the
+<strong>Subset Window</strong> “domain1” set’s check box is unchecked and the top
+level set’s check box has a slash through it to show that some subsets
+are turned off.</p>
+<div class="figure" id="id3">
+<span id="subset1"></span><img alt="../../_images/subset1.png" src="../../_images/subset1.png" />
+<p class="caption"><span class="caption-number">Fig. 7.3 </span><span class="caption-text">Removing one subset.</span></p>
+</div>
+<div class="figure" id="id4">
+<span id="subsetwindow2"></span><img alt="../../_images/subsetwindow2.png" src="../../_images/subsetwindow2.png" />
+<p class="caption"><span class="caption-number">Fig. 7.4 </span><span class="caption-text">Subset window with one subset removed.</span></p>
+</div>
+</div>
+<div class="section" id="creating-complex-subsets">
+<h2>7.3.3. Creating complex subsets<a class="headerlink" href="#creating-complex-subsets" title="Permalink to this headline">¶</a></h2>
+<p>When visualizing a database, it is often useful to look at <em>combinations</em>
+of subsets. Suppose a user has a database that has two subset categories:
+“Materials”, and “Domains” and that the user wants to turn off the
+“domain1” subset but also wants to turn off a material in the
+“domain4” subset. Users can do this by clicking on the “Domains” category and
+then unchecking the “domain1” check box in the second panel. Now, to turn
+off a material in the “domain4” subset, the user clicks on the “domains”
+category in the left panel. Next, double-click on the “domain4” subset in the
+second panel. Select the “Materials” subset category in the second panel to make
+the third panel list the materials that can be removed from the “domain4”
+subset. Turning off a couple materials from the list in the third panel
+will only affect the “domain4” subset. An example of a complex subset
+selection is shown in <a class="reference internal" href="#subset2"><span class="std std-numref">Figure 7.5</span></a> and the state of the
+<strong>Subset window</strong> is shown in <a class="reference internal" href="#subsetwindow3"><span class="std std-numref">Figure 7.6</span></a>.</p>
+<div class="figure" id="id5">
+<span id="subset2"></span><img alt="../../_images/subset2.png" src="../../_images/subset2.png" />
+<p class="caption"><span class="caption-number">Fig. 7.5 </span><span class="caption-text">Example of a complex subset.</span></p>
+</div>
+<div class="figure" id="id6">
+<span id="subsetwindow3"></span><img alt="../../_images/subsetwindow3.png" src="../../_images/subsetwindow3.png" />
+<p class="caption"><span class="caption-number">Fig. 7.6 </span><span class="caption-text">Subset window for complex subset example.</span></p>
+</div>
+</div>
+<div class="section" id="turning-multiple-sets-on-and-off">
+<h2>7.3.4. Turning multiple sets on and off<a class="headerlink" href="#turning-multiple-sets-on-and-off" title="Permalink to this headline">¶</a></h2>
+<p>When databases contain large numbers of subsets, it is convenient to turn
+many of them on and off at the same time. Users can select ranges of subsets
+by clicking on the name of a subset using the left mouse button and dragging
+the mouse up or down to other subsets in the list while still holding down
+the left mouse button. Alternatively, users can click on a subset to select
+it and then click on another subset while holding down the <em>Shift</em>
+key to select all of the subsets in the middle. Finally, users can select a
+group of multiple nonconsecutive subsets by holding down the <em>Ctrl</em> key
+while clicking on the subsets to be selected.</p>
+<p>Once a group of subsets has been selected, the buttons at the bottom of the
+pane can be used to adjust the selection in various ways. The top button
+applies an action to all of the sets in the pane regardless of how they have
+been selected. The bottom button applies an action to only the subsets that
+have been selected. Each action button has three possible actions: Turn on,
+Turn off, and Reverse. Users can change the action for an action button by
+clicking on the down-arrow button to its right and selecting one of the
+<strong>Turn on</strong>, <strong>Turn off</strong>, and <strong>Reverse</strong> menu options. When the <strong>Turn on</strong>
+action is used, the appropriate subsets will be turned on. When the
+<strong>Turn off</strong> action is used, they will be turned off. When the <strong>Reverse</strong>
+action is used, the on/off state of the sets will be reversed (or toggled).</p>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="Material_Interface_Reconstruction.html" class="btn btn-neutral float-right" title="7.4. Material Interface Reconstruction" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="Subset_Inclusion_Lattice.html" class="btn btn-neutral" title="7.2. Subset Inclusion Lattice" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2008-2019, LLNL, UCRL-SM-220449.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'2.11',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="../../_static/language_data.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

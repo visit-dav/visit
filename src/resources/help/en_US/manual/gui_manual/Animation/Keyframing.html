@@ -1,0 +1,415 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>10.2. Keyframing &mdash; VisIt User Manual 2.11 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../genindex.html"/>
+        <link rel="search" title="Search" href="../../search.html"/>
+    <link rel="top" title="VisIt User Manual 2.11 documentation" href="../../index.html"/>
+        <link rel="up" title="10. Animation" href="index.html"/>
+        <link rel="next" title="10.3. Scripting" href="Scripting.html"/>
+        <link rel="prev" title="10.1. Animation basics" href="Animation_basics.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> VisIt User Manual
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                local build
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">GUI Manual</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../Intro/index.html">1. Introduction to VisIt</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../WorkingWithFiles/index.html">2. Working with Databases</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Plots/index.html">3. Plots</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Operators/index.html">4. Operators</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../SavingPrinting/index.html">5. Saving and Printing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../VisualizationWindows/index.html">6. Visualization Windows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Subsetting/index.html">7. Subsetting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Quantitative/index.html">8. Quantitative Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../MakingItPretty/index.html">9. Making it pretty</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html">10. Animation</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="Animation_basics.html">10.1. Animation basics</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">10.2. Keyframing</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#keyframing-window">10.2.1. Keyframing Window</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="#keyframing-mode">10.2.1.1. Keyframing mode</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#setting-the-number-of-frames">10.2.1.2. Setting the number of frames</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#adding-a-keyframe">10.2.1.3. Adding a keyframe</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#adding-a-database-state-keyframe">10.2.1.4. Adding a database state keyframe</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#adding-a-view-keyframe">10.2.1.5. Adding a view keyframe</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#deleting-a-keyframe">10.2.1.6. Deleting a keyframe</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#moving-a-keyframe">10.2.1.7. Moving a keyframe</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#changing-the-plot-time-range">10.2.1.8. Changing the plot time range</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="Scripting.html">10.3. Scripting</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Movie_tools.html">10.4. Movie tools</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../InteractiveTools/index.html">11. Interactive Tools</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../MultipleDatabaseAndWindows/index.html">12. Multiple Databases and Windows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ClientServer/index.html">13. Client Server</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ComputeEngines/index.html">14. Compute Engines</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Preferences/index.html">15. Preferences</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Help/index.html">16. Help</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../StartupOptions/index.html">17. Startup Options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Building/index.html">18. Building</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../BuildingOnWindows/index.html">19. Building on Windows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Acknowledgments/index.html">20. Acknowledgments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../glossary.html">21. Glossary</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Contributing/index.html">22. Contributing</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../cli_manual/index.html">CLI Manual</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../dev_manual/index.html">Developer Manual</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">VisIt User Manual</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">VisIt GUI User Manual</a> &raquo;</li>
+        
+          <li><a href="index.html">10. Animation</a> &raquo;</li>
+        
+      <li>10.2. Keyframing</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../_sources/gui_manual/Animation/Keyframing.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="keyframing">
+<span id="id1"></span><h1>10.2. Keyframing<a class="headerlink" href="#keyframing" title="Permalink to this headline">¶</a></h1>
+<p>Keyframing is an advanced form of animation that allows you create animations
+where certain animation attributes such as view or plot attributes can change
+as the animation progresses. You can design an entire complex animation
+upfront by specifying a number of animation frames to be created and then you
+can tell VisIt which plots exist over the animation frames and how their time
+states map to the frames. You can also specify the plot attributes so they
+remain fixed over time or you can make individual plot and operator attributes
+evolve over time. With keyframing, you can make a plot fade out as the
+animation progresses, you can make a slice plane move, you can make the view
+slowly change, etc. Keyframe animations allow for quite complex animation
+behavior.</p>
+<div class="section" id="keyframing-window">
+<h2>10.2.1. Keyframing Window<a class="headerlink" href="#keyframing-window" title="Permalink to this headline">¶</a></h2>
+<div class="figure" id="id2">
+<span id="keyframe-1"></span><img alt="../../_images/keyframe1.png" src="../../_images/keyframe1.png" />
+<p class="caption"><span class="caption-number">Fig. 10.4 </span><span class="caption-text">Keyframing Window</span></p>
+</div>
+<p>Keyframe animations are designed using VisIt’s <strong>Keyframing Window</strong>
+(see <a class="reference internal" href="#keyframe-1"><span class="std std-numref">Figure 10.4</span></a>), which you can open by selecting the
+<strong>Keyframing</strong> option from the <strong>Controls</strong> menu. The window
+is dominated by the <strong>Keyframe area</strong> , which consists of many vertical
+lines that correspond to each frame in the animation and horizontal lines, or
+<strong>Keyframe lines</strong> , that correspond to the state attributes that are being
+keyframed. The horizontal lines are the most important because they allow you
+to move and delete keyframes and set the plot range, which is the set of
+animation frames over which the plot is defined.</p>
+<div class="section" id="keyframing-mode">
+<h3>10.2.1.1. Keyframing mode<a class="headerlink" href="#keyframing-mode" title="Permalink to this headline">¶</a></h3>
+<p>To create a keyframe animation, you must first open the <strong>Keyframing Window</strong>
+and check the <strong>Keyframing enabled</strong> check box. When VisIt is in keyframing
+mode, a keyframe is created for the active animation state each time you set
+plot or operator attributes and time is set using the <strong>Animation</strong> time
+slider. The Animation time slider is a special time slider that is made active
+when you enter keyframing mode and the animation frame can only be set using
+it. Changing time using any other time slider results in a new database state
+keyframe instead of changing the animation frame.</p>
+<p>If you have created plots before entering keyframing mode, VisIt converts them
+into plots that can be keyframed when you enter keyframing mode. When you leave
+keyframing mode, extra keyframing attributes associated with plots are deleted,
+the animation containing the plots reverts to a flipbook animation, and the
+Animation time slider is no longer accessible.</p>
+</div>
+<div class="section" id="setting-the-number-of-frames">
+<h3>10.2.1.2. Setting the number of frames<a class="headerlink" href="#setting-the-number-of-frames" title="Permalink to this headline">¶</a></h3>
+<p>When you go into keyframing mode for the first time, having never set a number
+of keyframes, VisIt will use the number of states in the active database for
+the number of frames in the new keyframe animation. The number of frames in
+the keyframe animation will vary with the length of the database with the most
+time states unless you manually specify a number of animation frames, which you
+can do by entering a new number of frames into the
+<strong>Keyframing Window’s Number of frames</strong> text field. Once you enter a number
+of frames, the number of frames will not change unless you change it.</p>
+</div>
+<div class="section" id="adding-a-keyframe">
+<h3>10.2.1.3. Adding a keyframe<a class="headerlink" href="#adding-a-keyframe" title="Permalink to this headline">¶</a></h3>
+<div class="figure" id="id3">
+<span id="keyframe-area"></span><img alt="../../_images/keyframearea.png" src="../../_images/keyframearea.png" />
+<p class="caption"><span class="caption-number">Fig. 10.5 </span><span class="caption-text">Keyframe area</span></p>
+</div>
+<p>To add a keyframe, you must first have created some plots and put VisIt into
+keyframing mode by clicking the <strong>Keyframing enabled</strong> check box in the
+<strong>Keyframing Window</strong> . After you have plots and VisIt is in keyframing mode,
+you can add a keyframe by opening a plot’s attribute window, changing settings,
+and clicking its <strong>Apply</strong> button. To set a keyframe for a later frame in the
+animation, move the <strong>Keyframe time</strong> slider, which is located under the
+<strong>Keyframe area</strong>
+(see <a class="reference internal" href="#keyframe-area"><span class="std std-numref">Figure 10.5</span></a>), to a later time and change the plot
+attributes again. Each time you add a keyframe to the animation, a small
+black diamond, called a <strong>Keyframe indicator</strong> , will appear along the
+<strong>Keyframe line</strong> for the plot. When you play through the animation using any
+of VisIt’s animation controls, the plot attributes are calculated for each
+animation frame and they are used to influence how the plots look when they
+appear in the <strong>Viewer</strong> window.</p>
+</div>
+<div class="section" id="adding-a-database-state-keyframe">
+<h3>10.2.1.4. Adding a database state keyframe<a class="headerlink" href="#adding-a-database-state-keyframe" title="Permalink to this headline">¶</a></h3>
+<p>Each plot that exists at a particular animation frame must use a specific
+database state so the correct data will be plotted. When VisIt is in keyframing
+mode, the database state can also be keyframed so you can control the database
+state used for a plot at any given animation frame. The ability to set an
+arbitrary database state keyframe for a plot allows you to control the flow of
+time in novel ways. You can, for example, slow down time, stop time, or even
+make time flow backwards for a little while.</p>
+<p>There are two ways to set database state keyframes in VisIt. The first way is
+to move the <strong>Keyframe time</strong> slider to the desired animation frame, enter a
+new number into the text field next to the
+<strong>Keyframe Window’s Add state keyframe</strong> button, and the click the
+<strong>Add state keyframe</strong> button. As an alternative, you can use the
+** Main Window’s Time slider** to create a database state keyframe, provided
+the active time slider is not the Animation time slider. To set a database
+state keyframe using the <strong>Time slider</strong> , select a new database time slider
+from the Active time slider combo box and then change time states using the
+<strong>Time slider</strong> . Instead of changing the active state for the plots that use
+the specified database, VisIt uses the information to create a new database
+state keyframe for the active animation frame.</p>
+</div>
+<div class="section" id="adding-a-view-keyframe">
+<h3>10.2.1.5. Adding a view keyframe<a class="headerlink" href="#adding-a-view-keyframe" title="Permalink to this headline">¶</a></h3>
+<p>In addition to being able to add keyframes for plot attributes, operator
+attributes, and database states, you can also set view keyframes so you can
+create sophisticated flybys of your data. To create a view keyframe, you must
+interactively change the view in the <strong>Viewer</strong>  window using the mouse or
+specify an exact view in the <strong>View Window</strong> . Once the view is where you want
+it for the active animation frame, open the <strong>View Window</strong> and click the
+<strong>Make camera keyframe from view</strong> button on the <strong>Advanced</strong> tab in order to
+make a view keyframe. Once the view keyframe has been added, a keyframe
+indicator will be drawn in the <strong>Keyframing Window</strong> .</p>
+<p>VisIt will not use view keyframes by default when you are in keyframing mode
+because it can be disruptive for VisIt to set the view while you are still
+adding view keyframes. Once you are satisfied with your view keyframes, click
+the <strong>Copy view from camera</strong> button on the <strong>Advanced</strong> tab in the
+<strong>View Window</strong> in order to allow VisIt to set the view using the view
+keyframes when you change animation frames.</p>
+</div>
+<div class="section" id="deleting-a-keyframe">
+<h3>10.2.1.6. Deleting a keyframe<a class="headerlink" href="#deleting-a-keyframe" title="Permalink to this headline">¶</a></h3>
+<p>To delete a keyframe, move the mouse over a <strong>Keyframe indicator</strong> and right
+click on it with the mouse once the indicator becomes highlighted.</p>
+</div>
+<div class="section" id="moving-a-keyframe">
+<h3>10.2.1.7. Moving a keyframe<a class="headerlink" href="#moving-a-keyframe" title="Permalink to this headline">¶</a></h3>
+<p>To move a keyframe, move the mouse over a <strong>Keyframe indicator</strong> , click the
+left mouse button and drag the <strong>Keyframe indicator</strong> left or right to a
+different animation frame. If at any point you drag the <strong>Keyframe indicator</strong>
+outside of the green area, which is the plot time range, and release the
+mouse button, moving the keyframe is cancelled and the <strong>Keyframe indicator</strong>
+returns to its former animation frame.</p>
+</div>
+<div class="section" id="changing-the-plot-time-range">
+<h3>10.2.1.8. Changing the plot time range<a class="headerlink" href="#changing-the-plot-time-range" title="Permalink to this headline">¶</a></h3>
+<p>The plot time range determines when a plot appears or disappears in a keyframed
+animation. Since VisIt allows plots to exist over a subset of the animation
+frames, you can set a plot’s plot range in the <strong>Keyframe area</strong> to make a plot
+appear later in an animation or be removed before the animation reaches the
+last frame. You may find it useful to set the plot range if you have increased
+the number of animation frames but found that the plot range did not expand to
+fill the new frames. To change the plot time range, you left-click on the
+beginning or ending edges of the <strong>Plot time range</strong> (the green band on the
+<strong>Keyframe line</strong> ) in the <strong>Keyframe area</strong> and drag it to a new animation
+frame.</p>
+</div>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="Scripting.html" class="btn btn-neutral float-right" title="10.3. Scripting" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="Animation_basics.html" class="btn btn-neutral" title="10.1. Animation basics" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2008-2019, LLNL, UCRL-SM-220449.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'2.11',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="../../_static/language_data.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

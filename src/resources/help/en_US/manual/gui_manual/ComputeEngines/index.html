@@ -1,0 +1,374 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>14. Compute Engines &mdash; VisIt User Manual 2.11 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../genindex.html"/>
+        <link rel="search" title="Search" href="../../search.html"/>
+    <link rel="top" title="VisIt User Manual 2.11 documentation" href="../../index.html"/>
+        <link rel="up" title="VisIt GUI User Manual" href="../index.html"/>
+        <link rel="next" title="15. Preferences" href="../Preferences/index.html"/>
+        <link rel="prev" title="13.2. Host Profiles" href="../ClientServer/Host_Profiles.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> VisIt User Manual
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                local build
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">GUI Manual</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../Intro/index.html">1. Introduction to VisIt</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../WorkingWithFiles/index.html">2. Working with Databases</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Plots/index.html">3. Plots</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Operators/index.html">4. Operators</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../SavingPrinting/index.html">5. Saving and Printing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../VisualizationWindows/index.html">6. Visualization Windows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Subsetting/index.html">7. Subsetting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Quantitative/index.html">8. Quantitative Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../MakingItPretty/index.html">9. Making it pretty</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Animation/index.html">10. Animation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../InteractiveTools/index.html">11. Interactive Tools</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../MultipleDatabaseAndWindows/index.html">12. Multiple Databases and Windows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ClientServer/index.html">13. Client Server</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">14. Compute Engines</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#compute-engines-window">14.1. Compute Engines Window</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#picking-a-compute-engine">14.1.1. Picking a compute engine</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#interrupting-a-compute-engine">14.1.2. Interrupting a compute engine</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#closing-a-compute-engine">14.1.3. Closing a compute engine</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#clearing-a-compute-engine-s-cache">14.1.4. Clearing a compute engine’s cache</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#simulation-window">14.2. Simulation Window</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../Preferences/index.html">15. Preferences</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Help/index.html">16. Help</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../StartupOptions/index.html">17. Startup Options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Building/index.html">18. Building</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../BuildingOnWindows/index.html">19. Building on Windows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Acknowledgments/index.html">20. Acknowledgments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../glossary.html">21. Glossary</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Contributing/index.html">22. Contributing</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../cli_manual/index.html">CLI Manual</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../dev_manual/index.html">Developer Manual</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">VisIt User Manual</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">VisIt GUI User Manual</a> &raquo;</li>
+        
+      <li>14. Compute Engines</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../_sources/gui_manual/ComputeEngines/index.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="compute-engines">
+<span id="computeengines"></span><h1>14. Compute Engines<a class="headerlink" href="#compute-engines" title="Permalink to this headline">¶</a></h1>
+<p>VisIt can have many compute engines running at the same time. Much of the time
+the compute engines are those that are installed with VisIt but on occasion,
+simulation codes may be instrumented to act as VisIt compute engines capable of
+performing visualization operations on simulation data as it is created. When a
+simulation is used as a VisIt compute engine, VisIt can access data directly
+from the simulation without the need to translate data into another format or
+write it out to disk. When simulations are instrumented to become VisIt compute
+engines, they have all of the capabilities of a standard VisIt compute engine
+and more. Specifically, simulations can accept additional simulation-defined
+control commands that direct them to perform actions such as writing a
+restart file. Since simulations offer extra capabilities over a normal VisIt
+compute engine, VisIt provides different windows in order to manage them. To
+manage compute engines and check on progress, VisIt provides a
+<strong>Compute Engine Window</strong>. VisIt provides the <strong>Simulation Window</strong> to
+manage simulations, display their progress, and provide extra controls for the
+simulations.</p>
+<div class="section" id="compute-engines-window">
+<h2>14.1. Compute Engines Window<a class="headerlink" href="#compute-engines-window" title="Permalink to this headline">¶</a></h2>
+<div class="figure" id="id1">
+<span id="remote-vis-compute-engine-window"></span><img alt="../../_images/enginewindow.png" src="../../_images/enginewindow.png" />
+<p class="caption"><span class="caption-number">Fig. 14.1 </span><span class="caption-text">Compute Engines Window</span></p>
+</div>
+<p>You can open the <strong>Compute Engines Window</strong>, shown in
+<a class="reference internal" href="#remote-vis-compute-engine-window"><span class="std std-numref">Figure 14.1</span></a>, by selecting the
+<strong>Compute engines</strong> option from the <strong>Main Window’s File</strong> menu. The main
+purpose of the <strong>Compute Engines Window</strong> is to display the progress of a
+compute engine as it completes a task. The window has two status bars. The top
+status bar indicates the progress of the overall task. The
+bottom status bar indicates that compute engine’s progress through the current
+processing stage. The window also provides buttons for interrupting and closing
+compute engines, as well as an <strong>Engine Information Area</strong> that indicates how
+many processors the engine uses and its style of load balancing.</p>
+<div class="section" id="picking-a-compute-engine">
+<h3>14.1.1. Picking a compute engine<a class="headerlink" href="#picking-a-compute-engine" title="Permalink to this headline">¶</a></h3>
+<p>The <strong>Compute Engines Window</strong> has the concept of an active compute engine.
+Only the active compute engine’s progress is displayed in the status bars.
+The active compute engine is also the engine that is interrupted or closed.
+To pick a new active compute engine, choose a compute engine name from the
+<strong>Engine</strong> menu. The <strong>Engine</strong> menu contains the names of all compute engines
+that VisIt is running.</p>
+</div>
+<div class="section" id="interrupting-a-compute-engine">
+<h3>14.1.2. Interrupting a compute engine<a class="headerlink" href="#interrupting-a-compute-engine" title="Permalink to this headline">¶</a></h3>
+<p>Some operations in VisIt may take a long time to complete so most computations
+are broken down into stages. In the event that you do not want to wait for an
+operation to complete, or if you realize that you made a mistake, you can
+interrupt a compute engine. When you click the <strong>Interrupt engine</strong> button
+a signal is sent to the compute engine that tells it to stop its work.
+The compute engine handles the interrupt requests after it
+completes the current stage so there can be a small delay before the compute
+engine is interrupted. Any plots being generated when a compute engine is
+interrupted are sent into the error state and are listed in red in the
+<strong>Plot list</strong> until they are regenerated.</p>
+</div>
+<div class="section" id="closing-a-compute-engine">
+<h3>14.1.3. Closing a compute engine<a class="headerlink" href="#closing-a-compute-engine" title="Permalink to this headline">¶</a></h3>
+<div class="figure" id="id2">
+<span id="remote-vis-close-compute-engine"></span><img alt="../../_images/reallyclose.png" src="../../_images/reallyclose.png" />
+<p class="caption"><span class="caption-number">Fig. 14.2 </span><span class="caption-text">Close compute engine confirmation dialog</span></p>
+</div>
+<p>You can close a compute engine when you no longer need it by clicking the
+<strong>Close engine</strong> button. The compute engine is closed only after you click
+<strong>Yes</strong> in a confirmation dialog window.</p>
+</div>
+<div class="section" id="clearing-a-compute-engine-s-cache">
+<h3>14.1.4. Clearing a compute engine’s cache<a class="headerlink" href="#clearing-a-compute-engine-s-cache" title="Permalink to this headline">¶</a></h3>
+<p>As the compute engine processes data, it caches calculation results in case
+they are needed again. This includes meshes and
+variables that have been read from databases as well as the results from
+more complicated calculations involving expressions and operators. VisIt’s
+compute engine periodically clears the cache of items that it no longer needs
+but if you want to explicitly clear the cache to free up more memory, you can
+click the <strong>Clear cache</strong> button in the <strong>Compute Engine Window</strong>.</p>
+</div>
+</div>
+<div class="section" id="simulation-window">
+<h2>14.2. Simulation Window<a class="headerlink" href="#simulation-window" title="Permalink to this headline">¶</a></h2>
+<div class="figure" id="id3">
+<span id="remote-vis-sim-window"></span><img alt="../../_images/simulationwindow.png" src="../../_images/simulationwindow.png" />
+<p class="caption"><span class="caption-number">Fig. 14.3 </span><span class="caption-text">Simulation Window</span></p>
+</div>
+<p>You can open the <strong>Simulation Window</strong>, shown in
+<a class="reference internal" href="#remote-vis-sim-window"><span class="std std-numref">Figure 14.3</span></a>, by selecting the
+<strong>Simulations</strong> option from the <strong>Main Window’s File</strong> menu. The main purpose
+of the <strong>Simulation Window</strong> is to display the progress of a simulation that is
+acting as a VisIt compute engine as it completes its visualization tasks. The
+<strong>Simulation Window</strong> also provides buttons that direct the simulation to
+perform simulation-defined commands such as saving out a restart dump. The list
+of commands depends on the functionality that the simulation exposes
+to VisIt when instrumented.</p>
+<p>The <strong>Simulation Window</strong> is divided up into two main areas. The top of the
+window, called the <strong>Simulation attributes</strong> area, displays various attributes
+of the simulation such as its name, when it was started, the name of the
+computer where it is running, the number of processors, etc. Below the
+<strong>Simulation attributes</strong> area, you will find controls that are also present in
+the <strong>Compute Engines Window</strong> such as the <strong>Interrupt</strong> button and
+<strong>Clear cache</strong> button. The <strong>Disconnect</strong> button is specific to the
+<strong>Simulation Window</strong> and when you click it, VisIt will detach from the running
+simulation, allowing it to continue its calculation. You can reconnect to
+the simulation later to check on the its progress or create more visualizations.</p>
+<p>Below the <strong>Simulation attributes</strong> area, you can access <strong>Commands</strong>,
+<strong>Messages</strong>, and <strong>Strip Charts</strong>. The <strong>Commands</strong> tab displays buttons for
+simulation-defined commands. When a simulation is instrumented to act as
+a VisIt compute engine, it publishes a list of commands that it will accept
+when connected to VisIt. This allows the simulation to provide hooks
+that allow the user to tell the simulation to execute certain commands
+like writing a restart file. Depending on the complexity of the commands
+exposed, VisIt could ultimately be used to steer the simulation as well as
+visualize its results. The <strong>Messages</strong> tab displays messages from the
+simulation. The <strong>Strip Charts</strong> tab shows traces of specific quantities
+published from the simulation to VisIt.</p>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../Preferences/index.html" class="btn btn-neutral float-right" title="15. Preferences" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="../ClientServer/Host_Profiles.html" class="btn btn-neutral" title="13.2. Host Profiles" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2008-2019, LLNL, UCRL-SM-220449.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'2.11',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="../../_static/language_data.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

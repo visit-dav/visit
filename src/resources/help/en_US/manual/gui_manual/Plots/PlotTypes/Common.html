@@ -1,0 +1,363 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>3.2.1. Common Controls &mdash; VisIt User Manual 2.11 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../../genindex.html"/>
+        <link rel="search" title="Search" href="../../../search.html"/>
+    <link rel="top" title="VisIt User Manual 2.11 documentation" href="../../../index.html"/>
+        <link rel="up" title="3.2. Standard Plot Types" href="index.html"/>
+        <link rel="next" title="3.2.2. Boundary and FilledBoundary Plots" href="BoundaryPlot.html"/>
+        <link rel="prev" title="3.2. Standard Plot Types" href="index.html"/> 
+
+  
+  <script src="../../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> VisIt User Manual
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                local build
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../../index.html">GUI Manual</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../../Intro/index.html">1. Introduction to VisIt</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../WorkingWithFiles/index.html">2. Working with Databases</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../index.html">3. Plots</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="../Working_with_Plots.html">3.1. Working with Plots</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="index.html">3.2. Standard Plot Types</a><ul class="current">
+<li class="toctree-l4 current"><a class="current reference internal" href="#">3.2.1. Common Controls</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="#plot-buttons">3.2.1.1. Plot buttons</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#plot-colors">3.2.1.2. Plot colors</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#point-type-and-size">3.2.1.3. Point type and size</a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="BoundaryPlot.html">3.2.2. Boundary and FilledBoundary Plots</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ContourPlot.html">3.2.3. Contour Plot</a></li>
+<li class="toctree-l4"><a class="reference internal" href="CurvePlot.html">3.2.4. Curve Plot</a></li>
+<li class="toctree-l4"><a class="reference internal" href="HistogramPlot.html">3.2.5. Histogram Plot</a></li>
+<li class="toctree-l4"><a class="reference internal" href="LabelPlot.html">3.2.6. Label Plot</a></li>
+<li class="toctree-l4"><a class="reference internal" href="MeshPlot.html">3.2.7. Mesh Plot</a></li>
+<li class="toctree-l4"><a class="reference internal" href="PseudocolorPlot.html">3.2.8. Pseudocolor plot</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ScatterPlot.html">3.2.9. Scatter Plot</a></li>
+<li class="toctree-l4"><a class="reference internal" href="SubsetPlot.html">3.2.10. Subset Plot</a></li>
+<li class="toctree-l4"><a class="reference internal" href="TensorPlot.html">3.2.11. Tensor plot</a></li>
+<li class="toctree-l4"><a class="reference internal" href="TruecolorPlot.html">3.2.12. Truecolor plot</a></li>
+<li class="toctree-l4"><a class="reference internal" href="VectorPlot.html">3.2.13. Vector plot</a></li>
+<li class="toctree-l4"><a class="reference internal" href="VolumePlot.html">3.2.14. Volume plot</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../Operators/index.html">4. Operators</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../SavingPrinting/index.html">5. Saving and Printing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../VisualizationWindows/index.html">6. Visualization Windows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../Subsetting/index.html">7. Subsetting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../Quantitative/index.html">8. Quantitative Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../MakingItPretty/index.html">9. Making it pretty</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../Animation/index.html">10. Animation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../InteractiveTools/index.html">11. Interactive Tools</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../MultipleDatabaseAndWindows/index.html">12. Multiple Databases and Windows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../ClientServer/index.html">13. Client Server</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../ComputeEngines/index.html">14. Compute Engines</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../Preferences/index.html">15. Preferences</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../Help/index.html">16. Help</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../StartupOptions/index.html">17. Startup Options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../Building/index.html">18. Building</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../BuildingOnWindows/index.html">19. Building on Windows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../Acknowledgments/index.html">20. Acknowledgments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../glossary.html">21. Glossary</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../Contributing/index.html">22. Contributing</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../cli_manual/index.html">CLI Manual</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../dev_manual/index.html">Developer Manual</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">VisIt User Manual</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../index.html">VisIt GUI User Manual</a> &raquo;</li>
+        
+          <li><a href="../index.html">3. Plots</a> &raquo;</li>
+        
+          <li><a href="index.html">3.2. Standard Plot Types</a> &raquo;</li>
+        
+      <li>3.2.1. Common Controls</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../../_sources/gui_manual/Plots/PlotTypes/Common.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="common-controls">
+<h1>3.2.1. Common Controls<a class="headerlink" href="#common-controls" title="Permalink to this headline">¶</a></h1>
+<p>There are a number of attributes of plots that are common to
+many, if not all plots. These include such things as <strong>Color table</strong>,
+<strong>Foreground</strong> and <strong>Background</strong> colors, <strong>Opacity</strong>,
+<strong>Line style</strong> and <strong>Point type</strong>, <strong>Log</strong> or <strong>Linear</strong> scaling,
+the <strong>Legend</strong> checkbox and others. These common plot attributes
+are described here first using the <strong>Pseudocolor plot</strong> as an example.</p>
+<div class="figure" id="id1">
+<span id="pseudocolorwindow-1"></span><img alt="../../../_images/pseudocolorwindow.png" src="../../../_images/pseudocolorwindow.png" />
+<p class="caption"><span class="caption-number">Fig. 3.5 </span><span class="caption-text">Example of <strong>Pseudocolor plot attribute window</strong></span></p>
+</div>
+<p>Then, attributes specific to each plot type are described in the
+remaining sections.</p>
+<div class="section" id="plot-buttons">
+<h2>3.2.1.1. Plot buttons<a class="headerlink" href="#plot-buttons" title="Permalink to this headline">¶</a></h2>
+<p>All plot attribute windows have several buttons at the bottom for
+common operations. Use the <strong>Apply</strong> after you have changed one or
+more attributes of a plot to make the new settings take effect.
+The <strong>Make default</strong> button is used to take the current settings
+and make those the default for the remainder of the <a class="reference external" href="https://visit.llnl.gov">VisIt</a> session.
+Each time a new plot of that type is created, it will be created
+with whatever the current defaults are for that plot. If you want
+these settings to persist across <a class="reference external" href="https://visit.llnl.gov">VisIt</a> sessions, you can either
+<strong>Save session</strong>, and then restart from this saved session later,
+or <strong>Save settings</strong> and then all <a class="reference external" href="https://visit.llnl.gov">VisIt</a> sessions will use those
+defaults. For more about saving sessions and settings, see
+<a class="reference internal" href="../../Preferences/How_to_Save_Settings.html#how-to-save-settings"><span class="std std-ref">How to Save Settings</span></a>. The <strong>Save</strong> and
+<strong>Load</strong> buttons give you the option of saving and loading plot
+attributes using their own separate XML. This allows users to
+easily share individual plot attributes. The reset button will
+return the plot’s attributes to whatever the current defaults are.
+The <strong>Dismiss</strong> button will dismiss the window. The <strong>Post</strong>
+button will place the window in the <strong>Notepad area</strong>
+(see <a class="reference internal" href="../../Intro/The_Main_Window.html#intro-posting-a-window"><span class="std std-ref">Posting a window</span></a>).</p>
+</div>
+<div class="section" id="plot-colors">
+<h2>3.2.1.2. Plot colors<a class="headerlink" href="#plot-colors" title="Permalink to this headline">¶</a></h2>
+<p>By default, <a class="reference external" href="https://visit.llnl.gov">VisIt</a> uses the <strong>Hot</strong> color table which maps values at
+the minimum of the data range to blues, values at the maximum of
+the data range to reds with transitions from blue to violet, to
+green, to yellow in between. However, many plots offer the option of
+selecting a specific color table. In the picture of the
+<strong>Pseudocolor plot attributes</strong> window, above, the color table may
+be changed by selecting the currently named table. A pull-down list
+will appear from which you can select a different table.
+For more information about
+<strong>Color tables</strong>, see <a class="reference internal" href="../../MakingItPretty/Color_tables.html#color-tables"><span class="std std-ref">Color Tables</span></a>.</p>
+<p>In addition, many plots have options to control colors and
+transparency (opacity) of individual plot elements such as lines on
+the <strong>Mesh plot</strong> or contours on the <strong>Contour plot</strong>.</p>
+</div>
+<div class="section" id="point-type-and-size">
+<span id="plot-point-type-and-size"></span><h2>3.2.1.3. Point type and size<a class="headerlink" href="#point-type-and-size" title="Permalink to this headline">¶</a></h2>
+<p>The <strong>Pseudocolor</strong>, <strong>Mesh</strong> and <strong>Scatter</strong> plots can use eight different
+point types for drawing point meshes (see <a class="reference internal" href="#glyphtypes"><span class="std std-numref">Figure 3.6</span></a>).
+The default option of <strong>Point</strong> is fastest and forces the plot to draw all of
+its points as tiny points.  The <strong>Sphere</strong> option applies textures to the
+points so it is nearly as fast as <strong>Point</strong>. Any of the other options place a
+glyph at each point, taking longer to render.  To set the point type choose an
+option from the <strong>Point type</strong> menu.  Setting the <strong>Point type</strong> to anything
+other than <strong>Point</strong> will have no effect if the plotted mesh is not a point
+mesh.</p>
+<p>If you choose any of the point types except <strong>Point</strong>, then you can also
+specify a point size by typing a new value into the <strong>Point size</strong> text field.
+The point size is used to determine the size of the glyph. For example, if you
+choose <strong>Box</strong>, and you enter a <strong>Point size</strong> of 0.1, then the length of all
+of the edges on the Box glyphs will be 0.1. If you use <strong>Point</strong>, then the
+<strong>Point size</strong> text field becomes the <strong>Point size (pixels)</strong> text field
+and you can set the point size in terms of pixels.</p>
+<div class="figure" id="id2">
+<span id="glyphtypes"></span><img alt="../../../_images/glyph_types2.png" src="../../../_images/glyph_types2.png" />
+<p class="caption"><span class="caption-number">Fig. 3.6 </span><span class="caption-text">Point types: Box, Axis, Icosahedron, Octahedron, Tetrahedron, Sphere Geometry, Point, Sphere</span></p>
+</div>
+<div class="figure" id="id3">
+<span id="pointtypecombo"></span><img alt="../../../_images/point_type_dropdown.png" src="../../../_images/point_type_dropdown.png" />
+<p class="caption"><span class="caption-number">Fig. 3.7 </span><span class="caption-text">Point type menu, expanded</span></p>
+</div>
+<p>For <strong>Mesh</strong> and <strong>Pseudocolor</strong> plots, the point size can also be scaled by a
+scalar variable if you check the <strong>Scale point size by variable</strong> check box and
+select a new scalar variable from the <strong>Variable</strong> menu. The value <code class="docutils literal notranslate"><span class="pre">default</span></code>
+must be replaced with the name of another scalar variable if you want <a class="reference external" href="https://visit.llnl.gov">VisIt</a> to
+scale the points with a variable other than the one being plotted.</p>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="BoundaryPlot.html" class="btn btn-neutral float-right" title="3.2.2. Boundary and FilledBoundary Plots" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="index.html" class="btn btn-neutral" title="3.2. Standard Plot Types" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2008-2019, LLNL, UCRL-SM-220449.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../../',
+            VERSION:'2.11',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../../_static/doctools.js"></script>
+      <script type="text/javascript" src="../../../_static/language_data.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

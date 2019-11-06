@@ -1,0 +1,982 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>9.1. Annotations &mdash; VisIt User Manual 2.11 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../genindex.html"/>
+        <link rel="search" title="Search" href="../../search.html"/>
+    <link rel="top" title="VisIt User Manual 2.11 documentation" href="../../index.html"/>
+        <link rel="up" title="9. Making it pretty" href="index.html"/>
+        <link rel="next" title="9.2. Color Tables" href="Color_tables.html"/>
+        <link rel="prev" title="9. Making it pretty" href="index.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> VisIt User Manual
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                local build
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">GUI Manual</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../Intro/index.html">1. Introduction to VisIt</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../WorkingWithFiles/index.html">2. Working with Databases</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Plots/index.html">3. Plots</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Operators/index.html">4. Operators</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../SavingPrinting/index.html">5. Saving and Printing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../VisualizationWindows/index.html">6. Visualization Windows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Subsetting/index.html">7. Subsetting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Quantitative/index.html">8. Quantitative Analysis</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html">9. Making it pretty</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="#">9.1. Annotations</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#annotation-window">9.1.1. Annotation Window</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#general-annotations">9.1.2. General Annotations</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="#turning-plot-legends-off-globally">9.1.2.1. Turning plot legends off globally</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#displaying-database-information">9.1.2.2. Displaying database information</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#displaying-user-information">9.1.2.3. Displaying user information</a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="#d-annotations">9.1.3. 2D Annotations</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="#general-2d-axis-properties">9.1.3.1. General 2D axis properties</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#setting-the-x-axis-and-y-axis-properties">9.1.3.2. Setting the X-Axis and Y-Axis properties</a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="#id2">9.1.4. 3D Annotations</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="#general-3d-axis-properties">9.1.4.1. General 3D axis properties</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#setting-the-x-axis-y-axis-and-z-axis-properties">9.1.4.2. Setting the X-Axis, Y-Axis and Z-Axis properties</a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="#annotation-colors">9.1.5. Annotation Colors</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#annotation-objects">9.1.6. Annotation Objects</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="#creating-a-new-annotation-object">9.1.6.1. Creating a new annotation object</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#selecting-an-annotation-object">9.1.6.2. Selecting an annotation object</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#hiding-an-annotation-object">9.1.6.3. Hiding an annotation object</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#deleting-an-annotation-object">9.1.6.4. Deleting an annotation object</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#text-annotation-objects">9.1.6.5. Text annotation objects</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#d-text-annotation-objects">9.1.6.6. 3D text annotation objects</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#time-slider-annotation-objects">9.1.6.7. Time slider annotation objects</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#d-line-annotation-objects">9.1.6.8. 2D line annotation objects</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#id3">9.1.6.9. 3D line annotation objects</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#image-annotation-objects">9.1.6.10. Image annotation objects</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="Color_tables.html">9.2. Color Tables</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Lighting.html">9.3. Lighting</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Rendering_Options.html">9.4. Rendering Options</a></li>
+<li class="toctree-l3"><a class="reference internal" href="View.html">9.5. View</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../Animation/index.html">10. Animation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../InteractiveTools/index.html">11. Interactive Tools</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../MultipleDatabaseAndWindows/index.html">12. Multiple Databases and Windows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ClientServer/index.html">13. Client Server</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ComputeEngines/index.html">14. Compute Engines</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Preferences/index.html">15. Preferences</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Help/index.html">16. Help</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../StartupOptions/index.html">17. Startup Options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Building/index.html">18. Building</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../BuildingOnWindows/index.html">19. Building on Windows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Acknowledgments/index.html">20. Acknowledgments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../glossary.html">21. Glossary</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Contributing/index.html">22. Contributing</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../cli_manual/index.html">CLI Manual</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../dev_manual/index.html">Developer Manual</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">VisIt User Manual</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">VisIt GUI User Manual</a> &raquo;</li>
+        
+          <li><a href="index.html">9. Making it pretty</a> &raquo;</li>
+        
+      <li>9.1. Annotations</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../_sources/gui_manual/MakingItPretty/Annotations.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="annotations">
+<span id="id1"></span><h1>9.1. Annotations<a class="headerlink" href="#annotations" title="Permalink to this headline">¶</a></h1>
+<p>Annotations are objects in the visualization window that convey information
+about the plots. Annotations can be global objects that show information
+such as the database name, or they can be objects like plot legends that
+are directly tied to plots. Annotations are an essential component of a good
+visualization because they make it clear what is being visualized and make
+the visualization appear more polished.</p>
+<p><a class="reference external" href="https://visit.llnl.gov">VisIt</a> supports several different annotation types that can be used to enhance
+visualizations. The first category of annotations includes general annotations
+like the database name, the user name, and plot legends. These annotations
+convey a good deal of information about what is being visualized, what values
+are in the plots, and who created the visualization. The second category of
+annotations include the plot axes and labels. This group of annotations comes
+in three groups: 2D, 3D and Array. The attributes for these groups can be
+set independently. Colors can greatly enhance the look of a visualization so
+<a class="reference external" href="https://visit.llnl.gov">VisIt</a> provides controls to set the colors used for annotations and the
+visualization window that contains them. The third and final category includes
+annotation objects that can be added to the visualization window. You can add
+as many annotation objects as you want to a visualization window. The currently
+supported annotation objects are: 2D text, 3D text, time slider, 2D line,
+3D line, and image annotations.</p>
+<div class="section" id="annotation-window">
+<h2>9.1.1. Annotation Window<a class="headerlink" href="#annotation-window" title="Permalink to this headline">¶</a></h2>
+<div class="figure" id="id4">
+<span id="fig-makingitpretty-annotation"></span><img alt="../../_images/MakingItPretty-Annotation.png" src="../../_images/MakingItPretty-Annotation.png" />
+<p class="caption"><span class="caption-number">Fig. 9.1 </span><span class="caption-text">The Annotation window</span></p>
+</div>
+<p>The <strong>Annotation Window</strong> (<a class="reference internal" href="#fig-makingitpretty-annotation"><span class="std std-numref">Figure 9.1</span></a>)
+contains controls for the various annotations that can appear in a
+visualization window. You can open the window choosing the <strong>Annotation</strong>
+option from the <strong>Main Window’s Controls menu</strong>. The <strong>Annotation Window</strong>
+has a tabbed interface which groups the different categories of annotations
+together.</p>
+</div>
+<div class="section" id="general-annotations">
+<h2>9.1.2. General Annotations<a class="headerlink" href="#general-annotations" title="Permalink to this headline">¶</a></h2>
+<div class="figure" id="id5">
+<span id="fig-makingitpretty-annotation2dexample"></span><img alt="../../_images/MakingItPretty-Annotation2DExample.png" src="../../_images/MakingItPretty-Annotation2DExample.png" />
+<p class="caption"><span class="caption-number">Fig. 9.2 </span><span class="caption-text">2D plot with annotations</span></p>
+</div>
+<p><a class="reference external" href="https://visit.llnl.gov">VisIt</a> has a few general annotations that describe the visualization and are
+independent of the type of database in the visualization. General annotations
+encompass the user name, the database name, and plot legends. The general
+annotation controls are located in the <strong>General</strong> tab.
+<a class="reference internal" href="#fig-makingitpretty-annotation2dexample"><span class="std std-numref">Figure 9.2</span></a> shows common
+locations for some general annotations.</p>
+<div class="section" id="turning-plot-legends-off-globally">
+<h3>9.1.2.1. Turning plot legends off globally<a class="headerlink" href="#turning-plot-legends-off-globally" title="Permalink to this headline">¶</a></h3>
+<p>Plot legends are special annotations that are added by plots. An example of
+a plot legend is the color bar and title that the Pseudocolor plot adds to
+the visualization window. Normally, plot legends are turned on or off by a
+check box in a plot attribute window but <a class="reference external" href="https://visit.llnl.gov">VisIt</a> also provides a check box in
+the <strong>General</strong> tab that can turn off the plot legends for all the plots
+in the visualization window. You can use the <strong>Legend</strong> check box at the
+top of the <strong>General</strong> tab to turn plot legends off if they are present.</p>
+</div>
+<div class="section" id="displaying-database-information">
+<h3>9.1.2.2. Displaying database information<a class="headerlink" href="#displaying-database-information" title="Permalink to this headline">¶</a></h3>
+<p>When plots are displayed in the visualization window, the name of the database
+used in the plots is shown in the visualization window’s upper left corner.
+You can turn the database information on or off using the <strong>Database</strong> check
+box in the <strong>General</strong> tab.</p>
+<p>The <strong>Path Expansion</strong> selection box controls the display of the filename
+text. <strong>File</strong> causes just the name of the file to be displayed. <strong>Directory</strong>
+causes the directory name of the file to be displayed. <strong>Full</strong> causes the
+full path of the file to be displayed. <strong>Smart</strong> uses simulation code
+specific conventions to display the file name in an optimal fashion.
+<strong>Smart Directory</strong> uses simulation code specific conventions to display
+the directory name in an optimal fashion.</p>
+<p>The <strong>Time</strong> check box controls the display of the time associated with
+the current database. If <strong>Time</strong> is enabled then the <strong>Time scale factor</strong>
+and <strong>Time offset</strong> controls become active, allowing you to scale as well
+as apply an offset to the time associated with a database when displaying it.</p>
+</div>
+<div class="section" id="displaying-user-information">
+<h3>9.1.2.3. Displaying user information<a class="headerlink" href="#displaying-user-information" title="Permalink to this headline">¶</a></h3>
+<p>When you add plots to the visualization window, your username is shown in the
+lower right corner. The user information annotation is turned on or off using
+the <strong>User information</strong> check box. You may want to turn off user information
+when you are generating images for presentations.</p>
+</div>
+</div>
+<div class="section" id="d-annotations">
+<h2>9.1.3. 2D Annotations<a class="headerlink" href="#d-annotations" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference external" href="https://visit.llnl.gov">VisIt</a> has a number of controls in the <strong>Annotation Window</strong> to control 2D
+annotations on the <strong>2D</strong> tab
+(<a class="reference internal" href="#fig-makingitpretty-annotation2dgeneral"><span class="std std-numref">Figure 9.3</span></a>). The 2D
+annotation settings are primarily concerned with the appearance of the
+2D axes that frame plots of 2D databases.
+<a class="reference internal" href="#fig-makingitpretty-annotation2dexample"><span class="std std-numref">Figure 9.2</span></a> shows a plot
+with various annotations.</p>
+<div class="figure" id="id6">
+<span id="fig-makingitpretty-annotation2dgeneral"></span><img alt="../../_images/MakingItPretty-Annotation2DGeneral.png" src="../../_images/MakingItPretty-Annotation2DGeneral.png" />
+<p class="caption"><span class="caption-number">Fig. 9.3 </span><span class="caption-text">The general 2D properties</span></p>
+</div>
+<p>The <strong>Show axes</strong> check box turns on and off the display of the 2D axes.</p>
+<div class="section" id="general-2d-axis-properties">
+<h3>9.1.3.1. General 2D axis properties<a class="headerlink" href="#general-2d-axis-properties" title="Permalink to this headline">¶</a></h3>
+<p><strong>Auto scale label values</strong> causes the labels to be multiplied by a factor
+of 10 to a multiple of 3 power such that the labels are in the range 0.001
+to 999. It then displays the multiplier in the axis title. An example is
+shown in <a class="reference internal" href="#fig-makingitpretty-autoscaleaxeslabelsexample"><span class="std std-numref">Figure 9.4</span></a>.
+The X-Axis range is 0 to 100,000, which causes the labels to be in the range
+0 to 100, with a (x10^3) added to the X-Axis and Y-Axis labels to indicate
+that the true range is actually 0 to 100x10^3 or 100,000.</p>
+<div class="figure" id="id7">
+<span id="fig-makingitpretty-autoscaleaxeslabelsexample"></span><img alt="../../_images/MakingItPretty-AutoscaleAxesLabelsExample.png" src="../../_images/MakingItPretty-AutoscaleAxesLabelsExample.png" />
+<p class="caption"><span class="caption-number">Fig. 9.4 </span><span class="caption-text">2D plot with axes labels being scaled by 10^3</span></p>
+</div>
+<p>The tick marks are small lines that are drawn along the edges of the 2D
+viewport. Tick marks can be drawn on a variety of axes by selecting a new
+option from the <strong>Show tick marks</strong> menu. Tick marks can also be drawn on
+the inside, outside, or both sides of the plot viewport by selecting a new
+option from the <strong>Tick mark locations</strong> menu.</p>
+<p>Tick mark spacing is usually changed to best suite the plots in the
+visualization window but you can explicitly set the tick mark spacing by
+first unchecking the <strong>Auto set ticks</strong> check box and then typing new tick
+spacing values into the <strong>Major minimum</strong>, <strong>Major maximum</strong>,
+<strong>Major spacing</strong>, and <strong>Minor spacing</strong> text fields in the <strong>X-Axis</strong> and
+<strong>Y-Axis</strong> tabs.</p>
+</div>
+<div class="section" id="setting-the-x-axis-and-y-axis-properties">
+<h3>9.1.3.2. Setting the X-Axis and Y-Axis properties<a class="headerlink" href="#setting-the-x-axis-and-y-axis-properties" title="Permalink to this headline">¶</a></h3>
+<p>There are tabs for separately controlling the properties of the X and Y
+axes. The tab for setting the X-Axis properties is shown in
+<a class="reference internal" href="#fig-makingitpretty-annotation2daxes"><span class="std std-numref">Figure 9.5</span></a>.</p>
+<div class="figure" id="id8">
+<span id="fig-makingitpretty-annotation2daxes"></span><img alt="../../_images/MakingItPretty-Annotation2DAxes.png" src="../../_images/MakingItPretty-Annotation2DAxes.png" />
+<p class="caption"><span class="caption-number">Fig. 9.5 </span><span class="caption-text">The 2D axes properties</span></p>
+</div>
+<p>The axis titles are the names that are drawn along each axis, indicating
+the meaning of the values shown along the axis. Normally, the names used
+for the axis titles come from the database being plotted so the axis titles
+are relevant for the displayed plots. Many of <a class="reference external" href="https://visit.llnl.gov">VisIt</a>’s database readers
+plugins read file formats that have no support for storing axis titles
+so <a class="reference external" href="https://visit.llnl.gov">VisIt</a> uses default values such as: “X-Axis”, “Y-Axis”. <a class="reference external" href="https://visit.llnl.gov">VisIt</a> provides
+options that allow you to override the defaults or the axis titles that
+come from the file. You can control the display of the axis titles by
+enabling and disabling the <strong>Title</strong> check box. If you want to override
+the axis titles that <a class="reference external" href="https://visit.llnl.gov">VisIt</a> uses for 2D visualizations, turn on the
+<strong>Custom title</strong> check box and type the new axis title into the adjacent
+text field.</p>
+<p>In addition to overriding the names of the axis titles, you can also
+override the units that are displayed next to the axis titles. Units are
+displayed only when they are available in the file format and like axis
+titles, they are not always stored in the file being plotted. If you want
+to specify units for the axes, turn on the <strong>Custom Units</strong> check box
+and type new units into the adjacent text field.</p>
+<p>The axis labels are the labels that appear along the 2D plot viewport.
+By default, the axis labels are enabled and set to appear. You can turn
+the labels off by unchecking the <strong>Labels</strong> check box. You can change
+the label scale factor by changing the <strong>Scaling (x10^?)</strong> text field.</p>
+<p>Tick mark spacing is usually changed to best suite the plots in the
+visualization window but you can explicitly set the tick mark spacing by
+first unchecking the <strong>Auto set ticks</strong> check box on the <strong>General 2D</strong>
+tab and then typing new tick spacing values into the <strong>Major minimum</strong>,
+<strong>Major maximum</strong>, <strong>Major spacing</strong>, and <strong>Minor spacing</strong> text fields.</p>
+<p>The 2D grid lines are a set of lines that make a grid over the 2D viewport.
+The grid lines are disabled by default but you can enable them by checking
+the <strong>Show grid</strong> check box. The grid lines correspond to the major tick
+marks.</p>
+</div>
+</div>
+<div class="section" id="id2">
+<h2>9.1.4. 3D Annotations<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference external" href="https://visit.llnl.gov">VisIt</a> has a number of controls, located on the <strong>3D</strong> tab in the
+<strong>Annotation Window</strong> for controlling annotations that are used when the
+visualization window contains 3D plots. Like the 2D controls, these
+controls focus mainly on the axes that are drawn around plots.
+<a class="reference internal" href="#fig-makingitpretty-annotation3dexample"><span class="std std-numref">Figure 9.6</span></a> shows an
+example 3D plot with the 3D annotations.
+<a class="reference internal" href="#fig-makingitpretty-annotation3dgeneral"><span class="std std-numref">Figure 9.7</span></a> and
+<a class="reference internal" href="#fig-makingitpretty-annotation3daxes"><span class="std std-numref">Figure 9.8</span></a> shows the
+<strong>Annotation Window’s 3D tab</strong>.</p>
+<div class="figure" id="id9">
+<span id="fig-makingitpretty-annotation3dexample"></span><img alt="../../_images/MakingItPretty-Annotation3DExample.png" src="../../_images/MakingItPretty-Annotation3DExample.png" />
+<p class="caption"><span class="caption-number">Fig. 9.6 </span><span class="caption-text">3D plot with annotations</span></p>
+</div>
+<div class="figure" id="id10">
+<span id="fig-makingitpretty-annotation3dgeneral"></span><img alt="../../_images/MakingItPretty-Annotation3DGeneral.png" src="../../_images/MakingItPretty-Annotation3DGeneral.png" />
+<p class="caption"><span class="caption-number">Fig. 9.7 </span><span class="caption-text">The general 3D properties</span></p>
+</div>
+<p>The <strong>Show axes</strong> check box turns on and off the display of the 3D axes.</p>
+<p>The <strong>Show triad</strong> check box turns on and off the display of the triad
+annotation. The triad annotation consists of a small set of axes and is
+displayed in the lower left corner of the visualization window and help
+you get your bearings in 3D.</p>
+<p>The <strong>Show bounding box</strong> check box turns on an off the display of the
+bounding box. The bounding box annotation displays the edges of a box that
+contains all the data.</p>
+<div class="section" id="general-3d-axis-properties">
+<h3>9.1.4.1. General 3D axis properties<a class="headerlink" href="#general-3d-axis-properties" title="Permalink to this headline">¶</a></h3>
+<p><strong>Auto scale label values</strong> causes the labels to be multiplied by a factor
+of 10 to a multiple of 3 power such that the labels are in the range 0.001
+to 999. It then displays the multiplier in the axis title. A 2D example is
+shown in <a class="reference internal" href="#fig-makingitpretty-autoscaleaxeslabelsexample"><span class="std std-numref">Figure 9.4</span></a>.
+The X-Axis range is 0 to 100,000, which causes the labels to be in the range
+0 to 100, with a (x10^3) added to the X-Axis and Y-Axis labels to indicate
+that the true range is actually 0 to 100x10^3 or 100,000.</p>
+<p>The tick marks are small lines that are drawn along the edges of the bounding
+box surfaces. Tick marks can be drawn on a variety of axes by selecting a
+new option from the <strong>Show tick marks</strong> menu. Tick marks can also be drawn
+on the inside, outside, or both sides of the plot bounding box by selecting
+a new option from the <strong>Tick mark locations</strong> menu.</p>
+<p>Tick mark spacing is usually changed to best suite the plots in the
+visualization window but you can explicitly set the tick mark spacing by
+first unchecking the <strong>Auto set ticks</strong> check box and then typing new tick
+spacing values into the <strong>Major minimum</strong>, <strong>Major maximum</strong>,
+<strong>Major spacing</strong>, and <strong>Minor spacing</strong> text fields in the <strong>X-Axis</strong>,
+<strong>Y-Axis</strong> and <strong>Z-Axis</strong> tabs.</p>
+</div>
+<div class="section" id="setting-the-x-axis-y-axis-and-z-axis-properties">
+<h3>9.1.4.2. Setting the X-Axis, Y-Axis and Z-Axis properties<a class="headerlink" href="#setting-the-x-axis-y-axis-and-z-axis-properties" title="Permalink to this headline">¶</a></h3>
+<p>There are tabs for separately controlling the properties of the X, Y and Z
+axes. The tab for setting the X-Axis properties is shown in
+<a class="reference internal" href="#fig-makingitpretty-annotation3daxes"><span class="std std-numref">Figure 9.8</span></a>.</p>
+<div class="figure" id="id11">
+<span id="fig-makingitpretty-annotation3daxes"></span><img alt="../../_images/MakingItPretty-Annotation3DAxes.png" src="../../_images/MakingItPretty-Annotation3DAxes.png" />
+<p class="caption"><span class="caption-number">Fig. 9.8 </span><span class="caption-text">The 3D axes properties</span></p>
+</div>
+<p>The axis titles are the names that are drawn along each axis, indicating
+the meaning of the values shown along the axis. Normally, the names used
+for the axis titles come from the database being plotted so the axis titles
+are relevant for the displayed plots. Many of <a class="reference external" href="https://visit.llnl.gov">VisIt</a>’s database readers
+plugins read file formats that have no support for storing axis titles
+so <a class="reference external" href="https://visit.llnl.gov">VisIt</a> uses default values such as: “X-Axis”, “Y-Axis” and “Z-Axis”.
+<a class="reference external" href="https://visit.llnl.gov">VisIt</a> provides options that allow you to override the defaults or the axis
+titles that come from the file. You can control the display of the axis
+titles by enabling and disabling the <strong>Title</strong> check box. If you want to
+override the axis titles that <a class="reference external" href="https://visit.llnl.gov">VisIt</a> uses for 3D visualizations, turn on
+the <strong>Custom title</strong> check box and type the new axis title into the
+adjacent text field.</p>
+<p>In addition to overriding the names of the axis titles, you can also
+override the units that are displayed next to the axis titles. Units are
+displayed only when they are available in the file format and like axis
+titles, they are not always stored in the file being plotted. If you want
+to specify units for the axes, turn on the <strong>Custom Units</strong> check box
+and type new units into the adjacent text field.</p>
+<p>The axis labels are the labels that appear along the edges of the bounding
+box. By default, the axis labels are enabled and set to appear. You can
+turn the labels off by unchecking the <strong>Labels</strong> check box. You can change
+the label scale factor by changing the <strong>Scaling (x10^?)</strong> text field.</p>
+<p>Tick mark spacing is usually changed to best suite the plots in the
+visualization window but you can explicitly set the tick mark spacing by
+first unchecking the <strong>Auto set ticks</strong> check box on the <strong>General 3D</strong>
+tab then typing new tick spacing values into the <strong>Major minimum</strong>,
+<strong>Major maximum</strong>, <strong>Major spacing</strong>, and <strong>Minor spacing</strong> text fields.</p>
+<p>The 3D grid lines are a set of lines that make a grid over the the bounding
+box. The grid lines are disabled by default but you can enable them by
+checking the <strong>Show grid</strong> check box. The grid lines correspond to the
+major tick marks.</p>
+</div>
+</div>
+<div class="section" id="annotation-colors">
+<span id="section-makingitpretty-annotationcolors"></span><h2>9.1.5. Annotation Colors<a class="headerlink" href="#annotation-colors" title="Permalink to this headline">¶</a></h2>
+<p>Colors are very important in a visualization since they help to determine
+how easy it is to read annotations. <a class="reference external" href="https://visit.llnl.gov">VisIt</a> provides a tab in the
+<strong>Annotation Window</strong>, shown in
+<a class="reference internal" href="#fig-makingitpretty-annotationcolors"><span class="std std-numref">Figure 9.9</span></a>, specifically
+devoted to choosing annotation colors. The <strong>Colors</strong> tab contains controls
+to set the background and foreground for the visualization window which, in
+turn, set the colors used for annotations. The <strong>Colors</strong> tab also provides
+controls for more advanced background colors called gradients which are
+colors that bleed into each other.</p>
+<div class="figure" id="id12">
+<span id="fig-makingitpretty-annotationcolors"></span><img alt="../../_images/MakingItPretty-AnnotationColors.png" src="../../_images/MakingItPretty-AnnotationColors.png" />
+<p class="caption"><span class="caption-number">Fig. 9.9 </span><span class="caption-text">The annotation colors tab</span></p>
+</div>
+<p>The <strong>Background color</strong> and <strong>Foreground color</strong> buttons allow you to
+set the background and foreground colors. To set the color, click the
+color button and select a color from the <strong>Popup color menu</strong>
+(see <a class="reference internal" href="#fig-makingitpretty-colorselectdialog"><span class="std std-numref">Figure 9.10</span></a>).
+Releasing the mouse outside of the <strong>Popup color menu</strong> cancels color
+selection and the color is not changed. Once you select a new color
+and click the <strong>Apply</strong> button, the colors for the active visualization
+window change. Note that each visualization window can have different
+background and foreground colors.</p>
+<div class="figure" id="id13">
+<span id="fig-makingitpretty-colorselectdialog"></span><img alt="../../_images/MakingItPretty-ColorSelectDialog.png" src="../../_images/MakingItPretty-ColorSelectDialog.png" />
+<p class="caption"><span class="caption-number">Fig. 9.10 </span><span class="caption-text">The popup color menu and the color selection dialog</span></p>
+</div>
+<p>The <strong>Background style</strong> setting allows you to select from four background
+styles. The default background style is <strong>Solid</strong> where the entire background
+is a single color. The second style is a <strong>Gradient</strong> background. In a
+gradient background, two colors are blended into each other in various
+ways. The resulting background offers differing degrees of contrast and can
+enhance the look of many visualizations. The third style is an <strong>Image</strong>
+background, where an image is tiled across the background. The fourth style
+is an <strong>Image sphere</strong>, where an image is projected onto a sphere. This can
+be used to paint the stars onto the background of an astrophysics simulation.
+To change the background style, click the <strong>Background style</strong> radio buttons.</p>
+<p><a class="reference external" href="https://visit.llnl.gov">VisIt</a> provides controls for setting the colors and style used for gradient
+backgrounds. There are two color buttons: <strong>Gradient color 1</strong> and
+<strong>Gradient color 2</strong> that are used to change colors. To change the
+gradient colors, click on the color buttons and select a color from the
+<strong>Popup color menu</strong>. The gradient style is used to determine how colors
+blend into each other. To change the gradient style, make a selection from
+the <strong>Gradient style</strong> menu. The available options are Bottom to Top, Top
+to Bottom, Left to Right, Right to Left, and Radial. The first four options
+blend gradient color 1 to gradient color 2 in the manner prescribed by
+the style name. For example, Bottom to Top will have gradient color 1 at
+the bottom and gradient color 2 at the top. The radial gradient style puts
+gradient color 1 in the middle of the visualization window and blends
+gradient color 2 radially outward from the center. Examples of the gradient
+styles are shown in <a class="reference internal" href="#fig-makingitpretty-gradients"><span class="std std-numref">Figure 9.11</span></a>.</p>
+<div class="figure" id="id14">
+<span id="fig-makingitpretty-gradients"></span><img alt="../../_images/MakingItPretty-Gradients.png" src="../../_images/MakingItPretty-Gradients.png" />
+<p class="caption"><span class="caption-number">Fig. 9.11 </span><span class="caption-text">The various gradient styles</span></p>
+</div>
+<p>The <strong>Background image</strong> text field allows you to specify the name of the
+file to use for the background image. The <strong>Repetitions in X</strong> and
+<strong>Repetitions in Y</strong> settings allow you to specify how many times to
+replicate the image in each of the X and Y image directions.</p>
+</div>
+<div class="section" id="annotation-objects">
+<h2>9.1.6. Annotation Objects<a class="headerlink" href="#annotation-objects" title="Permalink to this headline">¶</a></h2>
+<p>So far, the annotations that have been described can only have a single
+instance. To provide more flexibility in the types and numbers of annotations,
+<a class="reference external" href="https://visit.llnl.gov">VisIt</a> allows you to create annotation objects, which are objects that
+are added to the visualization window to convey information about the
+visualization. Currently, <a class="reference external" href="https://visit.llnl.gov">VisIt</a> supports six types of annotation objects:
+2D text objects, 3D text objects, time slider objects, 2D line objects, 3D
+line objects and image objects. All of those types of annotation objects
+will be described herein. The <strong>Objects</strong> tab, in the <strong>Annotation Window</strong>
+(<a class="reference internal" href="#fig-makingitpretty-annotationobjects"><span class="std std-numref">Figure 9.12</span></a> ) is devoted
+to managing the list of annotation objects and setting their properties.</p>
+<div class="figure" id="id15">
+<span id="fig-makingitpretty-annotationobjects"></span><img alt="../../_images/MakingItPretty-AnnotationObjects.png" src="../../_images/MakingItPretty-AnnotationObjects.png" />
+<p class="caption"><span class="caption-number">Fig. 9.12 </span><span class="caption-text">The annotation objects tab</span></p>
+</div>
+<p>The <strong>Objects</strong> tab in the <strong>Annotation Window</strong> is divided up into three
+main areas. The top of the window is split vertically into two areas that
+let you create new annotation objects and manage the list of annotation
+objects. The bottom half of the <strong>Objects</strong> tab displays the controls for
+setting the attributes of the selected annotation object. Each annotation
+object provides a separate user interface that is tailored for setting
+its particular attributes. When you select an annotation in the annotation
+object list, the appropriate annotation object interface is displayed.</p>
+<div class="section" id="creating-a-new-annotation-object">
+<h3>9.1.6.1. Creating a new annotation object<a class="headerlink" href="#creating-a-new-annotation-object" title="Permalink to this headline">¶</a></h3>
+<p>The <strong>Create new</strong> area in the <strong>Annotation Window’s Objects</strong> tab contains
+one button for each type of annotation object that <a class="reference external" href="https://visit.llnl.gov">VisIt</a> can create. Each
+button has the name of the type of annotation object <a class="reference external" href="https://visit.llnl.gov">VisIt</a> creates when
+you push it. After pushing one of the buttons, <a class="reference external" href="https://visit.llnl.gov">VisIt</a> creates a new instance
+of the specified annotation object type, adds a new entry to the
+<strong>Annotation objects</strong> list, and displays the appropriate annotation object
+interface in the bottom half of the <strong>Objects</strong> tab to display the attributes
+for the new annotation object.</p>
+</div>
+<div class="section" id="selecting-an-annotation-object">
+<h3>9.1.6.2. Selecting an annotation object<a class="headerlink" href="#selecting-an-annotation-object" title="Permalink to this headline">¶</a></h3>
+<p>The <strong>Objects</strong> tab displays the annotation object interface for the selected
+annotation object. To set attributes for a different annotation object, or
+to hide or delete a different annotation object, you must first select a
+different annotation object in the <strong>Annotation objects</strong> list. Click on a
+different entry in the <strong>Annotation objects</strong> list to highlight a different
+annotation object. Once you have highlighted a new annotation object, <a class="reference external" href="https://visit.llnl.gov">VisIt</a>
+displays the object’s attributes in the lower half of the <strong>Objects</strong> tab.</p>
+</div>
+<div class="section" id="hiding-an-annotation-object">
+<h3>9.1.6.3. Hiding an annotation object<a class="headerlink" href="#hiding-an-annotation-object" title="Permalink to this headline">¶</a></h3>
+<p>To hide an annotation object, select it in the <strong>Annotation objects</strong> list
+and then click the <strong>Hide/Show</strong> button on the <strong>Objects</strong> tab. To show the
+hidden annotation object, click the <strong>Hide/Show</strong> button a second time.
+The interfaces for the currently provided annotation objects also have a
+<strong>Visible</strong> check box that can be used to hide or show the annotation object.</p>
+</div>
+<div class="section" id="deleting-an-annotation-object">
+<h3>9.1.6.4. Deleting an annotation object<a class="headerlink" href="#deleting-an-annotation-object" title="Permalink to this headline">¶</a></h3>
+<p>To delete an annotation object, select it in the <strong>Annotation objects</strong>
+list and then click the <strong>Delete</strong> button on the <strong>Objects</strong> tab. You can
+delete more than one object if you select multiple objects plots in the
+<strong>Annotation objects</strong> list before clicking the <strong>Delete</strong> button.</p>
+</div>
+<div class="section" id="text-annotation-objects">
+<h3>9.1.6.5. Text annotation objects<a class="headerlink" href="#text-annotation-objects" title="Permalink to this headline">¶</a></h3>
+<p>Text annotation objects, shown in
+<a class="reference internal" href="#fig-makingitpretty-annotationobjecttextexample"><span class="std std-numref">Figure 9.13</span></a>,
+are created by clicking the <strong>Text</strong> button in the <strong>Create new</strong> area on the
+<strong>Objects</strong> tab. Text annotation objects are simple 2D text objects that are
+drawn on top of plots in the visualization window and are useful for adding
+titles to a visualization.</p>
+<div class="figure" id="id16">
+<span id="fig-makingitpretty-annotationobjecttextexample"></span><img alt="../../_images/MakingItPretty-AnnotationObjectTextExample.png" src="../../_images/MakingItPretty-AnnotationObjectTextExample.png" />
+<p class="caption"><span class="caption-number">Fig. 9.13 </span><span class="caption-text">Examples of text annotations</span></p>
+</div>
+<p>The text annotation object properties, shown in
+<a class="reference internal" href="#fig-makingitpretty-annotationobjecttext"><span class="std std-numref">Figure 9.14</span></a>, can be used
+to set the position, size, text, colors, and font properties.</p>
+<div class="figure" id="id17">
+<span id="fig-makingitpretty-annotationobjecttext"></span><img alt="../../_images/MakingItPretty-AnnotationObjectText.png" src="../../_images/MakingItPretty-AnnotationObjectText.png" />
+<p class="caption"><span class="caption-number">Fig. 9.14 </span><span class="caption-text">The text annotation interface</span></p>
+</div>
+<p>Text annotation objects are placed using 2D coordinates where the X, and Y
+values are in the range [0,1]. The point (0,0) corresponds to the lower left
+corner of the visualization window and the point (1,1) corresponds to the
+upper right of the visualization window. The 2D coordinate used to position
+the text annotation matches the text annotation’s lower left corner. To
+position a text annotation object, enter a new 2D coordinate into the
+<strong>Lower left</strong> text field. You can also click the down arrow next to the
+<strong>Lower left</strong> text field to interactively choose a new lower left coordinate
+for the text annotation using the screen positioning control, which represents
+the visualization window. The screen positioning control, shown in
+<a class="reference internal" href="#fig-makingitpretty-annotationobjectposition"><span class="std std-numref">Figure 9.15</span></a>, lets you
+move a set of cross-hairs to any point on a square area that represents the
+visualization window. Once you release the left mouse button, the location
+of the cross-hairs is used as the new coordinate for the text annotation
+object’s lower left corner.</p>
+<div class="figure" id="id18">
+<span id="fig-makingitpretty-annotationobjectposition"></span><img alt="../../_images/MakingItPretty-AnnotationObjectPosition.png" src="../../_images/MakingItPretty-AnnotationObjectPosition.png" />
+<p class="caption"><span class="caption-number">Fig. 9.15 </span><span class="caption-text">Screen positioning control</span></p>
+</div>
+<p>The size of the text is set using the <strong>Height</strong> spin box. The height is the
+fraction of the visualization window height.</p>
+<p>To set the text that a text annotation object displays, type a new string
+into the <strong>Text</strong> text field. You can make the text annotation object display
+any characters that you type in but you can also use the $time wildcard
+string to make the text annotation object display the time for the current
+time state of the active database. A text string of the form: Time=$time
+will display Time=10 in the visualization window when the active database’s
+time is 10. Whatever text you enter for the text annotation object is used
+to identify the text annotation object in the <strong>Annotation objects</strong> list.</p>
+<p>In addition to the usual text properties, text annotation objects can also
+include a shadow.</p>
+</div>
+<div class="section" id="d-text-annotation-objects">
+<h3>9.1.6.6. 3D text annotation objects<a class="headerlink" href="#d-text-annotation-objects" title="Permalink to this headline">¶</a></h3>
+<p>3D text annotation objects, shown in
+<a class="reference internal" href="#fig-makingitpretty-annotationobject3dtextexample"><span class="std std-numref">Figure 9.16</span></a>,
+are created by clicking the <strong>3D Text</strong> button in the <strong>Create new</strong> area on
+the <strong>Objects</strong> tab. 3D text annotation objects are extruded text that are
+positioned in 3D and are part of the 3D scene, so they may become obscured
+by other objects in the scene and will move in space as the image is panned
+and zoomed.</p>
+<div class="figure" id="id19">
+<span id="fig-makingitpretty-annotationobject3dtextexample"></span><img alt="../../_images/MakingItPretty-AnnotationObject3DTextExample.png" src="../../_images/MakingItPretty-AnnotationObject3DTextExample.png" />
+<p class="caption"><span class="caption-number">Fig. 9.16 </span><span class="caption-text">Examples of 3d text annotations</span></p>
+</div>
+<p>The 3D text annotation object properties, shown in
+<a class="reference internal" href="#fig-makingitpretty-annotationobject3dtext"><span class="std std-numref">Figure 9.17</span></a>, can be used
+to set the text, position, size, orientation and color properties.</p>
+<div class="figure" id="id20">
+<span id="fig-makingitpretty-annotationobject3dtext"></span><img alt="../../_images/MakingItPretty-AnnotationObject3DText.png" src="../../_images/MakingItPretty-AnnotationObject3DText.png" />
+<p class="caption"><span class="caption-number">Fig. 9.17 </span><span class="caption-text">The 3D text annotation interface</span></p>
+</div>
+<p>To set the text that a 3D text annotation object displays, type a new string
+into the <strong>Text</strong> text field.</p>
+<p>3D text annotation objects are placed in 3D coordinates in the same coordinate
+system used by the simulation data. To position a 3D text annotation object,
+enter a new 3D coordinate into the <strong>Position</strong> text field.</p>
+<p>The size of the text can be specified in two different ways. The first is
+using a relative height, where the height is a fraction of the size of the
+simulation data. The second is a fixed size, where the size is specified
+in the coordinate system of the simulation data. If you were to specify a
+relative height and apply the Transform operator to scale the data in each
+direction by a factor of 10, the size of the text would not change. If you
+were to specify a fixed height, scaling the data by a factor of 10 would
+result in the text being one tenth the size. To specify a relative height,
+select the <strong>Relative</strong> radio button and set the size using the spin box
+next to it. The specify a fixed height, select the <strong>Fixed</strong> radio button
+and enter the new height in the text box next to it.</p>
+<p>The orientation of the text can also be specified in two different ways.
+The first is relative to the screen coordinate system and the second is
+in the coordinate system of the simulation data. If the orientation is
+relative to the screen coordinate system, then rotating the image will
+not change the orientation of the text. If the orientation is relative
+to the coordinate system of the simulation data, then rotating the image
+will change the orientation of the text. To make the orientation relative
+to the screen, select the <strong>Preserve orientation when view changes</strong>
+radio button. To make the orientation relative to the simulation coordinate
+system, uncheck the <strong>Preserve orientation when view changes</strong> radio
+button. To set the orientation, set the <strong>Rotate Y</strong>, <strong>Rotate X</strong> and
+<strong>Rotate Z</strong> spin boxes. The rotations are applied in the left to right
+order of the spin boxes in the interface.</p>
+</div>
+<div class="section" id="time-slider-annotation-objects">
+<h3>9.1.6.7. Time slider annotation objects<a class="headerlink" href="#time-slider-annotation-objects" title="Permalink to this headline">¶</a></h3>
+<p>Time slider annotation objects, shown in
+<a class="reference internal" href="#fig-makingitpretty-annotationobjecttimesliderexample"><span class="std std-numref">Figure 9.18</span></a>,
+are created by clicking the Time slider button in the <strong>Create new</strong> area
+on the <strong>Objects</strong> tab. Time slider annotation objects consist of a graphic
+that shows the progress through an animation using animation and text that
+shows the current database time. Time slider annotation objects can be
+placed anywhere in the visualization window and you can set their size,
+text, colors, and appearance properties.</p>
+<div class="figure" id="id21">
+<span id="fig-makingitpretty-annotationobjecttimesliderexample"></span><img alt="../../_images/MakingItPretty-AnnotationObjectTimeSliderExample.png" src="../../_images/MakingItPretty-AnnotationObjectTimeSliderExample.png" />
+<p class="caption"><span class="caption-number">Fig. 9.18 </span><span class="caption-text">An example of a time slider annotation object</span></p>
+</div>
+<p>Time slider annotation objects are placed using 2D coordinates where the X,
+and Y values are in the range [0,1]. The point (0,0) corresponds to the
+lower left corner of the visualization window and the point (1,1) corresponds
+to the upper right of the visualization window. The 2D coordinate used to
+position the text annotation matches the text annotation’s lower left corner.
+To position a text annotation object, enter a new 2D coordinate into the
+<strong>Lower left</strong> text field. You can also click the down arrow next to the
+<strong>Lower left</strong> text field to interactively choose a new lower left coordinate
+for the text annotation using the screen positioning control, which represents
+the visualization window.</p>
+<div class="figure" id="id22">
+<span id="fig-makingitpretty-annotationobjecttimeslider"></span><img alt="../../_images/MakingItPretty-AnnotationObjectTimeSlider.png" src="../../_images/MakingItPretty-AnnotationObjectTimeSlider.png" />
+<p class="caption"><span class="caption-number">Fig. 9.19 </span><span class="caption-text">The time slider interface</span></p>
+</div>
+<p>The size of a time slider annotation object is controlled by settings its
+height and width as a percentage of the visualization window height and
+width. Type new values into the <strong>Width</strong> and <strong>Height</strong> spin buttons
+to set a new width or height for the time slider annotation object.</p>
+<p>You can set the text displayed by the time slider annotation object by
+typing a new text string into the <strong>Text label</strong> text field. Text is
+displayed below the time slider annotation object and it can contain any
+message that you want. The text can even include wildcards such as <em>$time</em>,
+which evaluates to the current time for the active database. If you use
+<em>$time</em> to make <a class="reference external" href="https://visit.llnl.gov">VisIt</a> incorporate the time for the active database, you
+can also specify the format string used to display the time. The format
+string is a standard C-language format string (e.g. “%4.6g”) and it
+determines the precision used to write out the numbers used in the time
+string. You will probably want to specify a format string that uses a
+fixed number of decimal places to ensure that the time string remains the
+same length during the animation, preventing distracting differences in
+the length of the string from taking the eye away from the visualization.
+Type a C-language format string into the <strong>Time format</strong> text field to
+change the time format string.</p>
+<p>Time slider annotations have three color attributes: start color, end
+color, and text color. A time slider annotation object displays time like
+a progress bar in that the progress bar starts out small and then grows to
+the right until it takes up the whole length of the annotation. The color
+used to represent the progress can be set by clicking the <strong>Start color</strong>
+button and choosing a new color from the <strong>Popup color</strong> menu. As the time
+slider annotation object shows more progress, the color that is used to
+fill up the time that has not been reached yet (end color) is overtaken
+by the start color. To set the end color for the time slider annotation
+object, click the <strong>End color</strong> button and choose a new color from the
+<strong>Popup color</strong> menu. Normally, time slider annotation objects use the
+foreground color of the visualization window when drawing the annotation’s text.
+If you want to make the annotation use a special color, turn off the
+<strong>Use foreground color</strong> check box and click the <strong>Text color</strong> button
+and choose a new color from the <strong>Popup color</strong> menu.</p>
+<p>Time slider objects have two more attributes that affect their appearance.
+The first of those attributes is set by clicking on the <strong>Rounded</strong> check
+box. When a time slider annotation object is rounded, the ends of the
+annotation are curved. The last attribute is set by clicking on the
+<strong>Shaded</strong> check box. When a time slider annotation object is shaded,
+simple lighting is applied to its geometry and the annotation will appear
+to be more 3-dimensional.</p>
+</div>
+<div class="section" id="d-line-annotation-objects">
+<h3>9.1.6.8. 2D line annotation objects<a class="headerlink" href="#d-line-annotation-objects" title="Permalink to this headline">¶</a></h3>
+<p>2D line annotation objects, shown in
+<a class="reference internal" href="#fig-makingitpretty-annotationobject2dline"><span class="std std-numref">Figure 9.21</span></a>, are created
+by clicking the <strong>2D Line</strong> button in the <strong>Create new</strong> area on the
+<strong>Objects</strong> tab. 2D line annotation objects are simple line objects that are
+drawn on top of plots in the visualization window and are useful for pointing
+to features of interest in a visualization. 2D line annotation objects can be
+placed anywhere in the visualization window and you can set their locations,
+arrow properties, and color.</p>
+<div class="figure" id="id23">
+<span id="fig-makingitpretty-annotationobject2dlineexample"></span><img alt="../../_images/MakingItPretty-AnnotationObject2DLineExample.png" src="../../_images/MakingItPretty-AnnotationObject2DLineExample.png" />
+<p class="caption"><span class="caption-number">Fig. 9.20 </span><span class="caption-text">Examples of 2D line annotations</span></p>
+</div>
+<p>2D line annotations are described mainly by two coordinates that specify the
+start and end points for the line. The start and end coordinates are specified
+as pairs of floating point numbers in the range [0,1] where the point (0,0)
+corresponds to the lower left corner of the visualization window and the
+point (1,1) corresponds to the upper right corner of the visualization window.
+You can set the start or end points for the 2D line annotation by entering
+new start or end points into the <strong>Start</strong> or <strong>End</strong> text fields in the 2D
+line object interface. You can also click the down arrow to the right of the
+<strong>Start</strong> or <strong>End</strong> text fields to interactively choose new coordinates using
+the screen positioning control.</p>
+<div class="figure" id="id24">
+<span id="fig-makingitpretty-annotationobject2dline"></span><img alt="../../_images/MakingItPretty-AnnotationObject2DLine.png" src="../../_images/MakingItPretty-AnnotationObject2DLine.png" />
+<p class="caption"><span class="caption-number">Fig. 9.21 </span><span class="caption-text">The 2D line object interface</span></p>
+</div>
+<p>Once the 2D line annotation has been positioned there are other attributes
+that can be set to improve its appearance. First of all, if the 2D line
+annotation is being used to point at important features in a visualization,
+you might want to increase the 2D line annotation’s width to make it stand
+out more. To change the width, select the new pixel width from the <strong>Width</strong>
+menu. It is also possible to set the line style. To change the style of the
+line, select the new line style from the <strong>Style</strong> menu. After changing the
+width and style, the color of the 2D line annotation should be chosen to
+stand out against the plots in the visualization. The color that you use
+should be chosen such that the line contrasts sharply with the plots over
+which it is drawn. To choose a new color for the line, click on the
+<strong>Line color</strong> button and choose a new color from the <strong>Popup color</strong> menu.
+You can also adjust the opacity of the line by using the opacity slider
+next to the <strong>Line color</strong> button.</p>
+<p>The last properties that are commonly set for 2D line annotations determine
+whether the end points of the line have arrow heads. The 2D line annotation
+supports two different styles of arrow heads: filled and lines. To make your
+line have arrow heads at the start or the end, make new selections from the
+<strong>Begin arrow</strong> and <strong>End arrow</strong> menus.</p>
+</div>
+<div class="section" id="id3">
+<h3>9.1.6.9. 3D line annotation objects<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
+<p>3D line annotation objects, shown in
+<a class="reference internal" href="#fig-makingitpretty-annotationobject3dtextexample"><span class="std std-numref">Figure 9.16</span></a>,
+are created by clicking the <strong>3D Line</strong> button in the <strong>Create new</strong> area on
+the <strong>Objects</strong> tab. 3D line annotation objects are lines that are
+positioned in 3D and are part of the 3D scene, so they may become obscured
+by other objects in the scene and will move in space as the image is panned
+and zoomed.</p>
+<p>The 3D line annotation object properties, shown in
+<a class="reference internal" href="#fig-makingitpretty-annotationobject3dline"><span class="std std-numref">Figure 9.22</span></a>, can be used
+to set the position, style and color properties.</p>
+<div class="figure" id="id25">
+<span id="fig-makingitpretty-annotationobject3dline"></span><img alt="../../_images/MakingItPretty-AnnotationObject3DLine.png" src="../../_images/MakingItPretty-AnnotationObject3DLine.png" />
+<p class="caption"><span class="caption-number">Fig. 9.22 </span><span class="caption-text">The 3D line object interface</span></p>
+</div>
+<p>3D text annotation objects are placed in 3D coordinates in the same coordinate
+system used by the simulation data. To position a 3D line annotation object,
+specify the start and end location of the line by entering the start location
+in the <strong>Start</strong> text field and the end location in the <strong>End</strong> text field.</p>
+<p>There are two types of lines supported, one is a normal line and the other
+is a tube. The line type is selected through the <strong>Line type</strong> menu. When
+using a normal line, you can specify the normal line width and line style
+properties using the <strong>Line Width</strong> and <strong>Line Style</strong> menus. When using
+a tube you can specify the tube quality and radius. The tube is created
+from a series of flat surfaces around the center of the line to approximate
+a tube. The number of surfaces used is controlled by the tube quality. The
+tube radius is the radius of the tube in the coordinate system of the
+simulation data. These properties can be changed through the <strong>Tube Quality</strong>
+and <strong>Tube Radius</strong> menus.</p>
+<p>It is also possible to add arrows to the beginning and end of the line. These
+can be enabled with the <strong>Begin Arrow</strong> and <strong>End Arrow</strong> toggle buttons.
+For each arrow, the user can also control the resolution and radius of the
+arrows. The arrows consist of cones places at the ends of the line and are
+constructed out of triangles that approximate a cone. The number of triangles
+used is controlled by the resolution. The radius is the radius of the
+cone in the same coordinate system as the simulation data. The resolution
+can be changed using the <strong>Resolution</strong> spin box and the radius is changed
+by typing a new value into the <strong>Radius</strong> text field.</p>
+</div>
+<div class="section" id="image-annotation-objects">
+<h3>9.1.6.10. Image annotation objects<a class="headerlink" href="#image-annotation-objects" title="Permalink to this headline">¶</a></h3>
+<p>Image annotation objects, shown in
+<a class="reference internal" href="#fig-makingitpretty-annotationobjectimageexample"><span class="std std-numref">Figure 9.23</span></a>,
+are created by clicking the <strong>Image</strong> button in the <strong>Create new</strong> area on
+the <strong>Objects</strong> tab. Image annotation objects display images from image
+files on disk in a visualization window. Images are drawn on top of plots
+in the visualization window and are useful for adding logos, pictures of
+experimental data, or other views of the same visualization. Image annotation
+objects can be placed anywhere in the visualization window and you can set
+their size, and optional transparency color.</p>
+<div class="figure" id="id26">
+<span id="fig-makingitpretty-annotationobjectimageexample"></span><img alt="../../_images/MakingItPretty-AnnotationObjectImageExample.png" src="../../_images/MakingItPretty-AnnotationObjectImageExample.png" />
+<p class="caption"><span class="caption-number">Fig. 9.23 </span><span class="caption-text">An Example of a visualization with two overlaid image annotations</span></p>
+</div>
+<p>The first step in incorporating an image annotation into a visualization
+is to choose the file that contains the image that will serve as the
+annotation. To choose an image file for the image annotation, type in
+the full path and filename to the file that you want to use into the
+<strong>Image source</strong> text field. You can also use the file browser to locate
+the image file if you click on the “…” button to the right of the
+<strong>Image source</strong> text field in the <strong>Image annotation interface</strong>, shown
+in <a class="reference internal" href="#fig-makingitpretty-annotationobjectimage"><span class="std std-numref">Figure 9.24</span></a>. Note
+that since image annotations are incorporated into a visualization inside
+of <a class="reference external" href="https://visit.llnl.gov">VisIt</a>’s viewer component, the image file must be located on the same
+computer that runs the viewer.</p>
+<div class="figure" id="id27">
+<span id="fig-makingitpretty-annotationobjectimage"></span><img alt="../../_images/MakingItPretty-AnnotationObjectImage.png" src="../../_images/MakingItPretty-AnnotationObjectImage.png" />
+<p class="caption"><span class="caption-number">Fig. 9.24 </span><span class="caption-text">The image object interface</span></p>
+</div>
+<p>After selecting an image file, you can position its lower left coordinate
+in the visualization window. The lower left corner of the visualization
+window is the origin (0,0) and the upper right corner of the visualization
+window is (1,1).</p>
+<p>Once you position the image where you want it, you can optionally scale
+it relative to its original size. Unlike some other annotation objects,
+the image annotation does not scale automatically when the visualization
+window changes size. The image annotation will remain the same size -
+something to take into account when setting up movies that use the image
+annotation. To scale the image relative to its original size, enter new
+percentages into the <strong>Width</strong> and <strong>Height</strong> spin boxes. If you want to
+scale one dimension of the image and let the other dimension remain
+unchanged, turn off the <strong>Lock aspect</strong> check box.</p>
+<p>Finally, if you are overlaying an image annotation whose image contains a
+constant background color or other area that you want to remove, you can
+pick a color that <a class="reference external" href="https://visit.llnl.gov">VisIt</a> will make transparent. For example,
+<a class="reference internal" href="#fig-makingitpretty-annotationobjectimageexample"><span class="std std-numref">Figure 9.23</span></a>
+shows an image of some Curve plots overlaid on top of the plots in the
+visualization window and the original background color in the annotation
+object was removed to make it transparent. If you want to make a color in
+an image transparent before <a class="reference external" href="https://visit.llnl.gov">VisIt</a> displays it as an image annotation
+object, click on the <strong>Transparent color</strong> check box and then select a
+new color by clicking on the <strong>Transparent color</strong> button and picking a
+new color from the <strong>Popup color menu</strong>.</p>
+</div>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="Color_tables.html" class="btn btn-neutral float-right" title="9.2. Color Tables" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="index.html" class="btn btn-neutral" title="9. Making it pretty" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2008-2019, LLNL, UCRL-SM-220449.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'2.11',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="../../_static/language_data.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

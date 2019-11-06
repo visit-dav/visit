@@ -1,0 +1,1201 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>VisIt CLI Events &mdash; VisIt User Manual 2.11 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../genindex.html"/>
+        <link rel="search" title="Search" href="../search.html"/>
+    <link rel="top" title="VisIt User Manual 2.11 documentation" href="../index.html"/>
+        <link rel="up" title="VisIt Python (CLI) Interface Manual" href="index.html"/>
+        <link rel="next" title="Contributing To VisIt CLI Documentation" href="contributing.html"/>
+        <link rel="prev" title="Attribute Reference" href="attributes.html"/> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> VisIt User Manual
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                local build
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../gui_manual/index.html">GUI Manual</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">CLI Manual</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="intro.html">Introduction to VisIt</a></li>
+<li class="toctree-l2"><a class="reference internal" href="python.html">Python</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quickrecipes.html">Quick Recipes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html">Functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="attributes.html">Attribute Reference</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">VisIt CLI Events</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contributing.html">Contributing To VisIt CLI Documentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="acknowledgments.html">Acknowledgments</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dev_manual/index.html">Developer Manual</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">VisIt User Manual</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="index.html">VisIt Python (CLI) Interface Manual</a> &raquo;</li>
+        
+      <li>VisIt CLI Events</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/cli_manual/events.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="visit-cli-events">
+<h1>VisIt CLI Events<a class="headerlink" href="#visit-cli-events" title="Permalink to this headline">¶</a></h1>
+<p>This chapter shows a table with all events that the VisIt GUI could
+potentially generate. Different plugins create different events, so the
+list will depend on the user configuration. The list in this section is
+generated from a call to the <em>GetCallbackNames()</em> function and will
+therefore list just the events that are applicable to the user that
+generates this documentation.</p>
+<p>The list is alphabetically ordered. The left column, labeled <em>EventName</em>
+displays each event or callback name. The right column, labeled
+<em>ArgCount</em> displays the result of calling
+<em>GetCallbackArgumentCount(EventName)</em> for the corresponding event, which
+returns the number of arguments a callback function for that event
+should accept.
+|
+|</p>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+<blockquote>
+<div><table border="1" class="docutils">
+<colgroup>
+<col width="79%" />
+<col width="21%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><strong>EventName</strong></td>
+<td><em>ArgCount</em></td>
+</tr>
+<tr class="row-even"><td>AMRStitchCellAttributes</td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td>ActivateDatabaseRPC</td>
+<td>1</td>
+</tr>
+<tr class="row-even"><td>AddAnnotationObjectRPC</td>
+<td>2</td>
+</tr>
+<tr class="row-odd"><td>AddEmbeddedPlotRPC</td>
+<td>1</td>
+</tr>
+<tr class="row-even"><td>AddInitializedOperatorRPC</td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td>AddOperatorRPC</td>
+<td>2</td>
+</tr>
+<tr class="row-even"><td>AddPlotRPC</td>
+<td>2</td>
+</tr>
+<tr class="row-odd"><td>AddWindowRPC</td>
+<td>0</td>
+</tr>
+<tr class="row-even"><td>AlterDatabaseCorrelationRPC</td>
+<td>4</td>
+</tr>
+<tr class="row-odd"><td>AnimationAttributes</td>
+<td>1</td>
+</tr>
+<tr class="row-even"><td>AnimationPlayRPC</td>
+<td>0</td>
+</tr>
+<tr class="row-odd"><td>AnimationReversePlayRPC</td>
+<td>0</td>
+</tr>
+<tr class="row-even"><td>AnimationSetNFramesRPC</td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td>AnimationStopRPC</td>
+<td>0</td>
+</tr>
+<tr class="row-even"><td>AnnotationAttributes</td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td>ApplyNamedSelectionRPC</td>
+<td>1</td>
+</tr>
+<tr class="row-even"><td>AxisAlignedSlice4DAttributes</td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td>BoundaryAttributes</td>
+<td>1</td>
+</tr>
+<tr class="row-even"><td>BoundaryOpAttributes</td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td>BoxAttributes</td>
+<td>1</td>
+</tr>
+<tr class="row-even"><td>CartographicProjectionAttributes</td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td>ChangeActivePlotsVarRPC</td>
+<td>1</td>
+</tr>
+<tr class="row-even"><td>CheckForNewStatesRPC</td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td>ChooseCenterOfRotationRPC</td>
+<td>2</td>
+</tr>
+<tr class="row-even"><td>ClearAllWindowsRPC</td>
+<td>0</td>
+</tr>
+<tr class="row-odd"><td>ClearCacheForAllEnginesRPC</td>
+<td>0</td>
+</tr>
+<tr class="row-even"><td>ClearCacheRPC</td>
+<td>2</td>
+</tr>
+<tr class="row-odd"><td>ClearPickPointsRPC</td>
+<td>0</td>
+</tr>
+<tr class="row-even"><td>ClearRefLinesRPC</td>
+<td>0</td>
+</tr>
+<tr class="row-odd"><td>ClearViewKeyframesRPC</td>
+<td>0</td>
+</tr>
+<tr class="row-even"><td>ClearWindowRPC</td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td>ClipAttributes</td>
+<td>1</td>
+</tr>
+<tr class="row-even"><td>CloneWindowRPC</td>
+<td>0</td>
+</tr>
+<tr class="row-odd"><td>CloseComputeEngineRPC</td>
+<td>2</td>
+</tr>
+<tr class="row-even"><td>CloseDatabaseRPC</td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td>CloseRPC</td>
+<td>0</td>
+</tr>
+<tr class="row-even"><td>ColorTableAttributes</td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td>ConeAttributes</td>
+<td>1</td>
+</tr>
+<tr class="row-even"><td>ConnectToMetaDataServerRPC</td>
+<td>2</td>
+</tr>
+<tr class="row-odd"><td>ConnectedComponentsAttributes</td>
+<td>1</td>
+</tr>
+<tr class="row-even"><td>ConstructDataBinningAttributes</td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td>ConstructDataBinningRPC</td>
+<td>0</td>
+</tr>
+<tr class="row-even"><td>ContourAttributes</td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td>CoordSwapAttributes</td>
+<td>1</td>
+</tr>
+<tr class="row-even"><td>CopyActivePlotsRPC</td>
+<td>0</td>
+</tr>
+<tr class="row-odd"><td>CopyAnnotationsToWindowRPC</td>
+<td>2</td>
+</tr>
+<tr class="row-even"><td>CopyLightingToWindowRPC</td>
+<td>2</td>
+</tr>
+<tr class="row-odd"><td>CopyPlotsToWindowRPC</td>
+<td>2</td>
+</tr>
+<tr class="row-even"><td>CopyViewToWindowRPC</td>
+<td>2</td>
+</tr>
+<tr class="row-odd"><td>CreateBondsAttributes</td>
+<td>1</td>
+</tr>
+<tr class="row-even"><td>CreateDatabaseCorrelationRPC</td>
+<td>4</td>
+</tr>
+<tr class="row-odd"><td>CreateNamedSelectionRPC</td>
+<td>1</td>
+</tr>
+<tr class="row-even"><td>CurveAttributes</td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td>CylinderAttributes</td>
+<td>1</td>
+</tr>
+<tr class="row-even"><td>DDTConnectRPC</td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td>DDTFocusRPC</td>
+<td>1</td>
+</tr>
+<tr class="row-even"><td>DataBinningAttributes</td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td>DatabaseMetaData</td>
+<td>1</td>
+</tr>
+<tr class="row-even"><td>DeIconifyAllWindowsRPC</td>
+<td>0</td>
+</tr>
+<tr class="row-odd"><td>DeferExpressionAttributes</td>
+<td>1</td>
+</tr>
+<tr class="row-even"><td>DeleteActiveAnnotationObjectsRPC</td>
+<td>0</td>
+</tr>
+<tr class="row-odd"><td>DeleteActivePlotsRPC</td>
+<td>0</td>
+</tr>
+<tr class="row-even"><td>DeleteDatabaseCorrelationRPC</td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td>DeleteNamedSelectionRPC</td>
+<td>1</td>
+</tr>
+<tr class="row-even"><td>DeletePlotDatabaseKeyframeRPC</td>
+<td>2</td>
+</tr>
+<tr class="row-odd"><td>DeletePlotKeyframeRPC</td>
+<td>2</td>
+</tr>
+<tr class="row-even"><td>DeleteViewKeyframeRPC</td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td>DeleteWindowRPC</td>
+<td>0</td>
+</tr>
+<tr class="row-even"><td>DemoteOperatorRPC</td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td>DetachRPC</td>
+<td>0</td>
+</tr>
+<tr class="row-even"><td>DisableRedrawRPC</td>
+<td>0</td>
+</tr>
+<tr class="row-odd"><td>DisplaceAttributes</td>
+<td>1</td>
+</tr>
+<tr class="row-even"><td>DrawPlotsRPC</td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td>DualMeshAttributes</td>
+<td>1</td>
+</tr>
+<tr class="row-even"><td>EdgeAttributes</td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td>ElevateAttributes</td>
+<td>1</td>
+</tr>
+<tr class="row-even"><td>EllipsoidSliceAttributes</td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td>EnableToolRPC</td>
+<td>2</td>
+</tr>
+<tr class="row-even"><td>EnableToolbarRPC</td>
+<td>2</td>
+</tr>
+<tr class="row-odd"><td>ExplodeAttributes</td>
+<td>1</td>
+</tr>
+<tr class="row-even"><td>ExportColorTableRPC</td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td>ExportDBAttributes</td>
+<td>1</td>
+</tr>
+<tr class="row-even"><td>ExportDBRPC</td>
+<td>0</td>
+</tr>
+<tr class="row-odd"><td>ExportEntireStateRPC</td>
+<td>1</td>
+</tr>
+<tr class="row-even"><td>ExportHostProfileRPC</td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td>ExportRPC</td>
+<td>1</td>
+</tr>
+<tr class="row-even"><td>ExpressionList</td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td>ExternalSurfaceAttributes</td>
+<td>1</td>
+</tr>
+<tr class="row-even"><td>ExtrudeAttributes</td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td>FFTAttributes</td>
+<td>1</td>
+</tr>
+<tr class="row-even"><td>FileOpenOptions</td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td>FilledBoundaryAttributes</td>
+<td>1</td>
+</tr>
+<tr class="row-even"><td>FluxAttributes</td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td>GetProcInfoRPC</td>
+<td>3</td>
+</tr>
+<tr class="row-even"><td>GetQueryParametersRPC</td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td>GlobalAttributes</td>
+<td>1</td>
+</tr>
+<tr class="row-even"><td>GlobalLineoutAttributes</td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td>HideActiveAnnotationObjectsRPC</td>
+<td>0</td>
+</tr>
+<tr class="row-even"><td>HideActivePlotsRPC</td>
+<td>0</td>
+</tr>
+<tr class="row-odd"><td>HideAllWindowsRPC</td>
+<td>0</td>
+</tr>
+<tr class="row-even"><td>HideToolbarsForAllWindowsRPC</td>
+<td>0</td>
+</tr>
+<tr class="row-odd"><td>HideToolbarsRPC</td>
+<td>0</td>
+</tr>
+<tr class="row-even"><td>HistogramAttributes</td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td>IconifyAllWindowsRPC</td>
+<td>0</td>
+</tr>
+<tr class="row-even"><td>ImportEntireStateRPC</td>
+<td>2</td>
+</tr>
+<tr class="row-odd"><td>ImportEntireStateWithDifferentSourcesRPC</td>
+<td>3</td>
+</tr>
+<tr class="row-even"><td>IndexSelectAttributes</td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td>InitializeNamedSelectionVariablesRPC</td>
+<td>1</td>
+</tr>
+<tr class="row-even"><td>IntegralCurveAttributes</td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td>InteractorAttributes</td>
+<td>1</td>
+</tr>
+<tr class="row-even"><td>InverseGhostZoneAttributes</td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td>InvertBackgroundRPC</td>
+<td>0</td>
+</tr>
+<tr class="row-even"><td>IsosurfaceAttributes</td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td>IsovolumeAttributes</td>
+<td>1</td>
+</tr>
+<tr class="row-even"><td>KeyframeAttributes</td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td>LCSAttributes</td>
+<td>1</td>
+</tr>
+<tr class="row-even"><td>LabelAttributes</td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td>LagrangianAttributes</td>
+<td>1</td>
+</tr>
+<tr class="row-even"><td>LimitCycleAttributes</td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td>LineoutAttributes</td>
+<td>1</td>
+</tr>
+<tr class="row-even"><td>LoadNamedSelectionRPC</td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td>LowerActiveAnnotationObjectsRPC</td>
+<td>0</td>
+</tr>
+<tr class="row-even"><td>MaterialAttributes</td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td>MenuQuitRPC</td>
+<td>1</td>
+</tr>
+<tr class="row-even"><td>MeshAttributes</td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td>MeshManagementAttributes</td>
+<td>1</td>
+</tr>
+<tr class="row-even"><td>ModelFitAtts</td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td>MoleculeAttributes</td>
+<td>1</td>
+</tr>
+<tr class="row-even"><td>MoveAndResizeWindowRPC</td>
+<td>5</td>
+</tr>
+<tr class="row-odd"><td>MovePlotDatabaseKeyframeRPC</td>
+<td>3</td>
+</tr>
+<tr class="row-even"><td>MovePlotKeyframeRPC</td>
+<td>3</td>
+</tr>
+<tr class="row-odd"><td>MovePlotOrderTowardFirstRPC</td>
+<td>1</td>
+</tr>
+<tr class="row-even"><td>MovePlotOrderTowardLastRPC</td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td>MoveViewKeyframeRPC</td>
+<td>2</td>
+</tr>
+<tr class="row-even"><td>MoveWindowRPC</td>
+<td>3</td>
+</tr>
+<tr class="row-odd"><td>MultiCurveAttributes</td>
+<td>1</td>
+</tr>
+<tr class="row-even"><td>MultiresControlAttributes</td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td>OnionPeelAttributes</td>
+<td>1</td>
+</tr>
+<tr class="row-even"><td>OpenCLIClientRPC</td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td>OpenClientRPC</td>
+<td>3</td>
+</tr>
+<tr class="row-even"><td>OpenComputeEngineRPC</td>
+<td>2</td>
+</tr>
+<tr class="row-odd"><td>OpenDatabaseRPC</td>
+<td>4</td>
+</tr>
+<tr class="row-even"><td>OpenGUIClientRPC</td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td>OpenMDServerRPC</td>
+<td>2</td>
+</tr>
+<tr class="row-even"><td>OverlayDatabaseRPC</td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td>ParallelCoordinatesAttributes</td>
+<td>1</td>
+</tr>
+<tr class="row-even"><td>PersistentParticlesAttributes</td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td>PickAttributes</td>
+<td>1</td>
+</tr>
+<tr class="row-even"><td>PlotDDTVispointVariablesRPC</td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td>PlotList</td>
+<td>1</td>
+</tr>
+<tr class="row-even"><td>PoincareAttributes</td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td>PrintWindowRPC</td>
+<td>0</td>
+</tr>
+<tr class="row-even"><td>PrinterAttributes</td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td>ProcessAttributes</td>
+<td>1</td>
+</tr>
+<tr class="row-even"><td>ProcessExpressionsRPC</td>
+<td>0</td>
+</tr>
+<tr class="row-odd"><td>ProjectAttributes</td>
+<td>1</td>
+</tr>
+<tr class="row-even"><td>PromoteOperatorRPC</td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td>PseudocolorAttributes</td>
+<td>1</td>
+</tr>
+<tr class="row-even"><td>QueryAttributes</td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td>QueryOverTimeAttributes</td>
+<td>1</td>
+</tr>
+<tr class="row-even"><td>QueryRPC</td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td>RadialResampleAttributes</td>
+<td>1</td>
+</tr>
+<tr class="row-even"><td>RaiseActiveAnnotationObjectsRPC</td>
+<td>0</td>
+</tr>
+<tr class="row-odd"><td>ReOpenDatabaseRPC</td>
+<td>2</td>
+</tr>
+<tr class="row-even"><td>ReadHostProfilesFromDirectoryRPC</td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td>RecenterViewRPC</td>
+<td>0</td>
+</tr>
+<tr class="row-even"><td>RedoViewRPC</td>
+<td>0</td>
+</tr>
+<tr class="row-odd"><td>RedrawRPC</td>
+<td>0</td>
+</tr>
+<tr class="row-even"><td>ReflectAttributes</td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td>ReleaseToDDTRPC</td>
+<td>1</td>
+</tr>
+<tr class="row-even"><td>RemapAttributes</td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td>RemoveAllOperatorsRPC</td>
+<td>0</td>
+</tr>
+<tr class="row-even"><td>RemoveLastOperatorRPC</td>
+<td>0</td>
+</tr>
+<tr class="row-odd"><td>RemoveOperatorRPC</td>
+<td>1</td>
+</tr>
+<tr class="row-even"><td>RemovePicksRPC</td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td>RenamePickLabelRPC</td>
+<td>1</td>
+</tr>
+<tr class="row-even"><td>RenderingAttributes</td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td>ReplaceDatabaseRPC</td>
+<td>2</td>
+</tr>
+<tr class="row-even"><td>ReplicateAttributes</td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td>RequestMetaDataRPC</td>
+<td>2</td>
+</tr>
+<tr class="row-even"><td>ResampleAttributes</td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td>ResetAnnotationAttributesRPC</td>
+<td>0</td>
+</tr>
+<tr class="row-even"><td>ResetAnnotationObjectListRPC</td>
+<td>0</td>
+</tr>
+<tr class="row-odd"><td>ResetInteractorAttributesRPC</td>
+<td>0</td>
+</tr>
+<tr class="row-even"><td>ResetLightListRPC</td>
+<td>0</td>
+</tr>
+<tr class="row-odd"><td>ResetLineoutColorRPC</td>
+<td>0</td>
+</tr>
+<tr class="row-even"><td>ResetMaterialAttributesRPC</td>
+<td>0</td>
+</tr>
+<tr class="row-odd"><td>ResetMeshManagementAttributesRPC</td>
+<td>0</td>
+</tr>
+<tr class="row-even"><td>ResetOperatorOptionsRPC</td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td>ResetPickAttributesRPC</td>
+<td>0</td>
+</tr>
+<tr class="row-even"><td>ResetPickLetterRPC</td>
+<td>0</td>
+</tr>
+<tr class="row-odd"><td>ResetPlotOptionsRPC</td>
+<td>1</td>
+</tr>
+<tr class="row-even"><td>ResetQueryOverTimeAttributesRPC</td>
+<td>0</td>
+</tr>
+<tr class="row-odd"><td>ResetViewRPC</td>
+<td>0</td>
+</tr>
+<tr class="row-even"><td>ResizeWindowRPC</td>
+<td>3</td>
+</tr>
+<tr class="row-odd"><td>RevolveAttributes</td>
+<td>1</td>
+</tr>
+<tr class="row-even"><td>SPHResampleAttributes</td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td>SaveNamedSelectionRPC</td>
+<td>1</td>
+</tr>
+<tr class="row-even"><td>SaveViewRPC</td>
+<td>0</td>
+</tr>
+<tr class="row-odd"><td>SaveWindowAttributes</td>
+<td>1</td>
+</tr>
+<tr class="row-even"><td>SaveWindowRPC</td>
+<td>0</td>
+</tr>
+<tr class="row-odd"><td>ScatterAttributes</td>
+<td>1</td>
+</tr>
+<tr class="row-even"><td>SendSimulationCommandRPC</td>
+<td>4</td>
+</tr>
+<tr class="row-odd"><td>SetActivePlotsRPC</td>
+<td>2</td>
+</tr>
+<tr class="row-even"><td>SetActiveTimeSliderRPC</td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td>SetActiveWindowRPC</td>
+<td>1</td>
+</tr>
+<tr class="row-even"><td>SetAnimationAttributesRPC</td>
+<td>0</td>
+</tr>
+<tr class="row-odd"><td>SetAnnotationAttributesRPC</td>
+<td>0</td>
+</tr>
+<tr class="row-even"><td>SetAnnotationObjectOptionsRPC</td>
+<td>0</td>
+</tr>
+<tr class="row-odd"><td>SetAppearanceRPC</td>
+<td>0</td>
+</tr>
+<tr class="row-even"><td>SetBackendTypeRPC</td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td>SetCenterOfRotationRPC</td>
+<td>1</td>
+</tr>
+<tr class="row-even"><td>SetCreateMeshQualityExpressionsRPC</td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td>SetCreateTimeDerivativeExpressionsRPC</td>
+<td>1</td>
+</tr>
+<tr class="row-even"><td>SetCreateVectorMagnitudeExpressionsRPC</td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td>SetDefaultAnnotationAttributesRPC</td>
+<td>0</td>
+</tr>
+<tr class="row-even"><td>SetDefaultAnnotationObjectListRPC</td>
+<td>0</td>
+</tr>
+<tr class="row-odd"><td>SetDefaultFileOpenOptionsRPC</td>
+<td>0</td>
+</tr>
+<tr class="row-even"><td>SetDefaultInteractorAttributesRPC</td>
+<td>0</td>
+</tr>
+<tr class="row-odd"><td>SetDefaultLightListRPC</td>
+<td>0</td>
+</tr>
+<tr class="row-even"><td>SetDefaultMaterialAttributesRPC</td>
+<td>0</td>
+</tr>
+<tr class="row-odd"><td>SetDefaultMeshManagementAttributesRPC</td>
+<td>0</td>
+</tr>
+<tr class="row-even"><td>SetDefaultOperatorOptionsRPC</td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td>SetDefaultPickAttributesRPC</td>
+<td>0</td>
+</tr>
+<tr class="row-even"><td>SetDefaultPlotOptionsRPC</td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td>SetDefaultQueryOverTimeAttributesRPC</td>
+<td>0</td>
+</tr>
+<tr class="row-even"><td>SetGlobalLineoutAttributesRPC</td>
+<td>0</td>
+</tr>
+<tr class="row-odd"><td>SetInteractorAttributesRPC</td>
+<td>0</td>
+</tr>
+<tr class="row-even"><td>SetKeyframeAttributesRPC</td>
+<td>0</td>
+</tr>
+<tr class="row-odd"><td>SetLightListRPC</td>
+<td>0</td>
+</tr>
+<tr class="row-even"><td>SetMaterialAttributesRPC</td>
+<td>0</td>
+</tr>
+<tr class="row-odd"><td>SetMeshManagementAttributesRPC</td>
+<td>0</td>
+</tr>
+<tr class="row-even"><td>SetNamedSelectionAutoApplyRPC</td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td>SetOperatorOptionsRPC</td>
+<td>1</td>
+</tr>
+<tr class="row-even"><td>SetPickAttributesRPC</td>
+<td>0</td>
+</tr>
+<tr class="row-odd"><td>SetPlotDatabaseStateRPC</td>
+<td>3</td>
+</tr>
+<tr class="row-even"><td>SetPlotDescriptionRPC</td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td>SetPlotFollowsTimeRPC</td>
+<td>0</td>
+</tr>
+<tr class="row-even"><td>SetPlotFrameRangeRPC</td>
+<td>3</td>
+</tr>
+<tr class="row-odd"><td>SetPlotOptionsRPC</td>
+<td>1</td>
+</tr>
+<tr class="row-even"><td>SetPlotOrderToFirstRPC</td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td>SetPlotOrderToLastRPC</td>
+<td>1</td>
+</tr>
+<tr class="row-even"><td>SetPlotSILRestrictionRPC</td>
+<td>0</td>
+</tr>
+<tr class="row-odd"><td>SetPrecisionTypeRPC</td>
+<td>1</td>
+</tr>
+<tr class="row-even"><td>SetQueryFloatFormatRPC</td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td>SetQueryOverTimeAttributesRPC</td>
+<td>0</td>
+</tr>
+<tr class="row-even"><td>SetRemoveDuplicateNodesRPC</td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td>SetRenderingAttributesRPC</td>
+<td>0</td>
+</tr>
+<tr class="row-even"><td>SetStateLoggingRPC</td>
+<td>0</td>
+</tr>
+<tr class="row-odd"><td>SetSuppressMessagesRPC</td>
+<td>1</td>
+</tr>
+<tr class="row-even"><td>SetTimeSliderStateRPC</td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td>SetToolUpdateModeRPC</td>
+<td>1</td>
+</tr>
+<tr class="row-even"><td>SetToolbarIconSizeRPC</td>
+<td>0</td>
+</tr>
+<tr class="row-odd"><td>SetTreatAllDBsAsTimeVaryingRPC</td>
+<td>1</td>
+</tr>
+<tr class="row-even"><td>SetTryHarderCyclesTimesRPC</td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td>SetView2DRPC</td>
+<td>0</td>
+</tr>
+<tr class="row-even"><td>SetView3DRPC</td>
+<td>0</td>
+</tr>
+<tr class="row-odd"><td>SetViewAxisArrayRPC</td>
+<td>1</td>
+</tr>
+<tr class="row-even"><td>SetViewCurveRPC</td>
+<td>0</td>
+</tr>
+<tr class="row-odd"><td>SetViewExtentsTypeRPC</td>
+<td>1</td>
+</tr>
+<tr class="row-even"><td>SetViewKeyframeRPC</td>
+<td>0</td>
+</tr>
+<tr class="row-odd"><td>SetWindowAreaRPC</td>
+<td>1</td>
+</tr>
+<tr class="row-even"><td>SetWindowLayoutRPC</td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td>SetWindowModeRPC</td>
+<td>1</td>
+</tr>
+<tr class="row-even"><td>ShowAllWindowsRPC</td>
+<td>0</td>
+</tr>
+<tr class="row-odd"><td>ShowToolbarsForAllWindowsRPC</td>
+<td>0</td>
+</tr>
+<tr class="row-even"><td>ShowToolbarsRPC</td>
+<td>0</td>
+</tr>
+<tr class="row-odd"><td>SliceAttributes</td>
+<td>1</td>
+</tr>
+<tr class="row-even"><td>SmoothOperatorAttributes</td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td>SphereSliceAttributes</td>
+<td>1</td>
+</tr>
+<tr class="row-even"><td>SpreadsheetAttributes</td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td>StaggerAttributes</td>
+<td>1</td>
+</tr>
+<tr class="row-even"><td>StartPlotAnimationRPC</td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td>StatisticalTrendsAttributes</td>
+<td>1</td>
+</tr>
+<tr class="row-even"><td>StopPlotAnimationRPC</td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td>SubdivideQuadsAttributes</td>
+<td>1</td>
+</tr>
+<tr class="row-even"><td>SubsetAttributes</td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td>SuppressQueryOutputRPC</td>
+<td>1</td>
+</tr>
+<tr class="row-even"><td>SurfaceNormalAttributes</td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td>TensorAttributes</td>
+<td>1</td>
+</tr>
+<tr class="row-even"><td>ThreeSliceAttributes</td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td>ThresholdAttributes</td>
+<td>1</td>
+</tr>
+<tr class="row-even"><td>TimeSliderNextStateRPC</td>
+<td>0</td>
+</tr>
+<tr class="row-odd"><td>TimeSliderPreviousStateRPC</td>
+<td>0</td>
+</tr>
+<tr class="row-even"><td>ToggleAllowPopupRPC</td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td>ToggleBoundingBoxModeRPC</td>
+<td>0</td>
+</tr>
+<tr class="row-even"><td>ToggleCameraViewModeRPC</td>
+<td>0</td>
+</tr>
+<tr class="row-odd"><td>ToggleFullFrameRPC</td>
+<td>0</td>
+</tr>
+<tr class="row-even"><td>ToggleLockTimeRPC</td>
+<td>0</td>
+</tr>
+<tr class="row-odd"><td>ToggleLockToolsRPC</td>
+<td>0</td>
+</tr>
+<tr class="row-even"><td>ToggleLockViewModeRPC</td>
+<td>0</td>
+</tr>
+<tr class="row-odd"><td>ToggleMaintainViewModeRPC</td>
+<td>0</td>
+</tr>
+<tr class="row-even"><td>TogglePerspectiveViewRPC</td>
+<td>0</td>
+</tr>
+<tr class="row-odd"><td>ToggleSpinModeRPC</td>
+<td>0</td>
+</tr>
+<tr class="row-even"><td>TransformAttributes</td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td>TriangulateRegularPointsAttributes</td>
+<td>1</td>
+</tr>
+<tr class="row-even"><td>TruecolorAttributes</td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td>TubeAttributes</td>
+<td>1</td>
+</tr>
+<tr class="row-even"><td>TurnOffAllLocksRPC</td>
+<td>0</td>
+</tr>
+<tr class="row-odd"><td>UndoViewRPC</td>
+<td>0</td>
+</tr>
+<tr class="row-even"><td>UpdateColorTableRPC</td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td>UpdateDBPluginInfoRPC</td>
+<td>1</td>
+</tr>
+<tr class="row-even"><td>UpdateNamedSelectionRPC</td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td>VectorAttributes</td>
+<td>1</td>
+</tr>
+<tr class="row-even"><td>View2DAttributes</td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td>View3DAttributes</td>
+<td>1</td>
+</tr>
+<tr class="row-even"><td>ViewCurveAttributes</td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td>VolumeAttributes</td>
+<td>1</td>
+</tr>
+<tr class="row-even"><td>WindowInformation</td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td>WriteConfigFileRPC</td>
+<td>0</td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="contributing.html" class="btn btn-neutral float-right" title="Contributing To VisIt CLI Documentation" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="attributes.html" class="btn btn-neutral" title="Attribute Reference" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2008-2019, LLNL, UCRL-SM-220449.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'2.11',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+      <script type="text/javascript" src="../_static/language_data.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

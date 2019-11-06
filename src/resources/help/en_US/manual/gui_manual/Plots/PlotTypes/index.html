@@ -1,0 +1,404 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>3.2. Standard Plot Types &mdash; VisIt User Manual 2.11 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../../genindex.html"/>
+        <link rel="search" title="Search" href="../../../search.html"/>
+    <link rel="top" title="VisIt User Manual 2.11 documentation" href="../../../index.html"/>
+        <link rel="up" title="3. Plots" href="../index.html"/>
+        <link rel="next" title="3.2.1. Common Controls" href="Common.html"/>
+        <link rel="prev" title="3.1. Working with Plots" href="../Working_with_Plots.html"/> 
+
+  
+  <script src="../../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> VisIt User Manual
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                local build
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../../index.html">GUI Manual</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../../Intro/index.html">1. Introduction to VisIt</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../WorkingWithFiles/index.html">2. Working with Databases</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../index.html">3. Plots</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="../Working_with_Plots.html">3.1. Working with Plots</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">3.2. Standard Plot Types</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="Common.html">3.2.1. Common Controls</a></li>
+<li class="toctree-l4"><a class="reference internal" href="BoundaryPlot.html">3.2.2. Boundary and FilledBoundary Plots</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ContourPlot.html">3.2.3. Contour Plot</a></li>
+<li class="toctree-l4"><a class="reference internal" href="CurvePlot.html">3.2.4. Curve Plot</a></li>
+<li class="toctree-l4"><a class="reference internal" href="HistogramPlot.html">3.2.5. Histogram Plot</a></li>
+<li class="toctree-l4"><a class="reference internal" href="LabelPlot.html">3.2.6. Label Plot</a></li>
+<li class="toctree-l4"><a class="reference internal" href="MeshPlot.html">3.2.7. Mesh Plot</a></li>
+<li class="toctree-l4"><a class="reference internal" href="PseudocolorPlot.html">3.2.8. Pseudocolor plot</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ScatterPlot.html">3.2.9. Scatter Plot</a></li>
+<li class="toctree-l4"><a class="reference internal" href="SubsetPlot.html">3.2.10. Subset Plot</a></li>
+<li class="toctree-l4"><a class="reference internal" href="TensorPlot.html">3.2.11. Tensor plot</a></li>
+<li class="toctree-l4"><a class="reference internal" href="TruecolorPlot.html">3.2.12. Truecolor plot</a></li>
+<li class="toctree-l4"><a class="reference internal" href="VectorPlot.html">3.2.13. Vector plot</a></li>
+<li class="toctree-l4"><a class="reference internal" href="VolumePlot.html">3.2.14. Volume plot</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../Operators/index.html">4. Operators</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../SavingPrinting/index.html">5. Saving and Printing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../VisualizationWindows/index.html">6. Visualization Windows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../Subsetting/index.html">7. Subsetting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../Quantitative/index.html">8. Quantitative Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../MakingItPretty/index.html">9. Making it pretty</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../Animation/index.html">10. Animation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../InteractiveTools/index.html">11. Interactive Tools</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../MultipleDatabaseAndWindows/index.html">12. Multiple Databases and Windows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../ClientServer/index.html">13. Client Server</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../ComputeEngines/index.html">14. Compute Engines</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../Preferences/index.html">15. Preferences</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../Help/index.html">16. Help</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../StartupOptions/index.html">17. Startup Options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../Building/index.html">18. Building</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../BuildingOnWindows/index.html">19. Building on Windows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../Acknowledgments/index.html">20. Acknowledgments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../glossary.html">21. Glossary</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../Contributing/index.html">22. Contributing</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../cli_manual/index.html">CLI Manual</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../dev_manual/index.html">Developer Manual</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">VisIt User Manual</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../index.html">VisIt GUI User Manual</a> &raquo;</li>
+        
+          <li><a href="../index.html">3. Plots</a> &raquo;</li>
+        
+      <li>3.2. Standard Plot Types</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../../_sources/gui_manual/Plots/PlotTypes/index.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="standard-plot-types">
+<h1>3.2. Standard Plot Types<a class="headerlink" href="#standard-plot-types" title="Permalink to this headline">¶</a></h1>
+<p>VisIt comes with eighteen standard plots:
+Boundary,
+Contour,
+Curve,
+FilledBoundary,
+Histogram,
+Label,
+Mesh,
+<code class="docutils literal notranslate"><span class="pre">Molecule,</span></code>
+<code class="docutils literal notranslate"><span class="pre">MultiCurve,</span></code>
+ParallelCoordinates,
+Pseudocolor,
+Scatter,
+Spreadsheet,
+Subset,
+Tensor,
+Truecolor,
+Vector, and Volume. This section explains each plot in detail.</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="Common.html">3.2.1. Common Controls</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="Common.html#plot-buttons">3.2.1.1. Plot buttons</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Common.html#plot-colors">3.2.1.2. Plot colors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Common.html#point-type-and-size">3.2.1.3. Point type and size</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="BoundaryPlot.html">3.2.2. Boundary and FilledBoundary Plots</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="BoundaryPlot.html#changing-colors">3.2.2.1. Changing colors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="BoundaryPlot.html#opacity">3.2.2.2. Opacity</a></li>
+<li class="toctree-l2"><a class="reference internal" href="BoundaryPlot.html#wireframe-mode">3.2.2.3. Wireframe mode</a></li>
+<li class="toctree-l2"><a class="reference internal" href="BoundaryPlot.html#geometry-smoothing">3.2.2.4. Geometry smoothing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="BoundaryPlot.html#drawing-only-clean-zones">3.2.2.5. Drawing only clean zones</a></li>
+<li class="toctree-l2"><a class="reference internal" href="BoundaryPlot.html#setting-point-properties">3.2.2.6. Setting point properties</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="ContourPlot.html">3.2.3. Contour Plot</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="ContourPlot.html#setting-the-number-of-contours">3.2.3.1. Setting the number of contours</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ContourPlot.html#setting-limits">3.2.3.2. Setting Limits</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ContourPlot.html#scaling">3.2.3.3. Scaling</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ContourPlot.html#setting-contour-colors">3.2.3.4. Setting contour colors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ContourPlot.html#wireframe-view">3.2.3.5. Wireframe view</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="CurvePlot.html">3.2.4. Curve Plot</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="CurvePlot.html#setting-curve-color">3.2.4.1. Setting curve color</a></li>
+<li class="toctree-l2"><a class="reference internal" href="CurvePlot.html#showing-curve-labels">3.2.4.2. Showing curve labels</a></li>
+<li class="toctree-l2"><a class="reference internal" href="CurvePlot.html#space-filled-curves">3.2.4.3. Space-filled curves</a></li>
+<li class="toctree-l2"><a class="reference internal" href="CurvePlot.html#setting-line-style-and-line-width">3.2.4.4. Setting line style and line width</a></li>
+<li class="toctree-l2"><a class="reference internal" href="CurvePlot.html#drawing-points-on-the-curve-plot">3.2.4.5. Drawing points on the Curve plot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="CurvePlot.html#adding-time-cues">3.2.4.6. Adding Time Cues</a></li>
+<li class="toctree-l2"><a class="reference internal" href="CurvePlot.html#polar-coordinate-system-conversion">3.2.4.7. Polar coordinate system conversion</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="HistogramPlot.html">3.2.5. Histogram Plot</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="HistogramPlot.html#setting-the-histogram-data-range">3.2.5.1. Setting the histogram data range</a></li>
+<li class="toctree-l2"><a class="reference internal" href="HistogramPlot.html#setting-the-type-of-graph">3.2.5.2. Setting the type of graph</a></li>
+<li class="toctree-l2"><a class="reference internal" href="HistogramPlot.html#setting-the-number-of-bins">3.2.5.3. Setting the number of bins</a></li>
+<li class="toctree-l2"><a class="reference internal" href="HistogramPlot.html#setting-the-histogram-calculation-method">3.2.5.4. Setting the histogram calculation method</a></li>
+<li class="toctree-l2"><a class="reference internal" href="HistogramPlot.html#data-scaling">3.2.5.5. Data scaling</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="LabelPlot.html">3.2.6. Label Plot</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="LabelPlot.html#choosing-the-label-plot-s-variable">3.2.6.1. Choosing the Label plot’s variable</a></li>
+<li class="toctree-l2"><a class="reference internal" href="LabelPlot.html#showing-node-and-zone-numbers">3.2.6.2. Showing node and zone numbers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="LabelPlot.html#restricting-the-number-of-labels">3.2.6.3. Restricting the number of labels</a></li>
+<li class="toctree-l2"><a class="reference internal" href="LabelPlot.html#depth-testing-for-3d-label-plots">3.2.6.4. Depth testing for 3D Label plots</a></li>
+<li class="toctree-l2"><a class="reference internal" href="LabelPlot.html#formatting-labels">3.2.6.5. Formatting labels</a></li>
+<li class="toctree-l2"><a class="reference internal" href="LabelPlot.html#labeling-subset-names-and-material-names">3.2.6.6. Labeling subset names and material names</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="MeshPlot.html">3.2.7. Mesh Plot</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="MeshPlot.html#mesh-plot-opaque-modes">3.2.7.1. Mesh plot opaque modes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="MeshPlot.html#showing-internal-zones">3.2.7.2. Showing internal zones</a></li>
+<li class="toctree-l2"><a class="reference internal" href="MeshPlot.html#changing-colors">3.2.7.3. Changing colors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="MeshPlot.html#changing-mesh-line-attributes">3.2.7.4. Changing mesh line attributes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="MeshPlot.html#changing-point-type-and-size">3.2.7.5. Changing point type and size</a></li>
+<li class="toctree-l2"><a class="reference internal" href="MeshPlot.html#geometry-smoothing">3.2.7.6. Geometry smoothing</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="PseudocolorPlot.html">3.2.8. Pseudocolor plot</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="PseudocolorPlot.html#data-tab-options">3.2.8.1. Data tab options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="PseudocolorPlot.html#geometry-tab-options">3.2.8.2. Geometry tab options</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="ScatterPlot.html">3.2.9. Scatter Plot</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="ScatterPlot.html#scatter-plot-wizard">3.2.9.1. Scatter plot wizard</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ScatterPlot.html#selecting-a-variable">3.2.9.2. Selecting a variable</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ScatterPlot.html#setting-an-input-variable-s-role">3.2.9.3. Setting an input variable’s role</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ScatterPlot.html#setting-the-minimum-and-maximum-values">3.2.9.4. Setting the minimum and maximum values</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ScatterPlot.html#scaling-an-input-variable">3.2.9.5. Scaling an input variable</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ScatterPlot.html#setting-the-colors">3.2.9.6. Setting the colors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ScatterPlot.html#setting-point-properties">3.2.9.7. Setting point properties</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="SubsetPlot.html">3.2.10. Subset Plot</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="SubsetPlot.html#changing-colors">3.2.10.1. Changing colors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="SubsetPlot.html#opacity">3.2.10.2. Opacity</a></li>
+<li class="toctree-l2"><a class="reference internal" href="SubsetPlot.html#setting-point-properties">3.2.10.3. Setting point properties</a></li>
+<li class="toctree-l2"><a class="reference internal" href="SubsetPlot.html#wireframe-mode">3.2.10.4. Wireframe mode</a></li>
+<li class="toctree-l2"><a class="reference internal" href="SubsetPlot.html#drawing-internal-surfaces">3.2.10.5. Drawing internal surfaces</a></li>
+<li class="toctree-l2"><a class="reference internal" href="SubsetPlot.html#geometry-smoothing">3.2.10.6. Geometry smoothing</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="TensorPlot.html">3.2.11. Tensor plot</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="TensorPlot.html#changing-the-tensor-colors">3.2.11.1. Changing the tensor colors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="TensorPlot.html#setting-the-tensor-scale">3.2.11.2. Setting the tensor scale</a></li>
+<li class="toctree-l2"><a class="reference internal" href="TensorPlot.html#setting-the-number-of-tensors">3.2.11.3. Setting the number of tensors</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="TruecolorPlot.html">3.2.12. Truecolor plot</a></li>
+<li class="toctree-l1"><a class="reference internal" href="VectorPlot.html">3.2.13. Vector plot</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="VectorPlot.html#setting-vector-color">3.2.13.1. Setting vector color</a></li>
+<li class="toctree-l2"><a class="reference internal" href="VectorPlot.html#vector-scaling">3.2.13.2. Vector scaling</a></li>
+<li class="toctree-l2"><a class="reference internal" href="VectorPlot.html#heads-on-the-vector-glyph">3.2.13.3. Heads on the vector glyph</a></li>
+<li class="toctree-l2"><a class="reference internal" href="VectorPlot.html#tails-on-the-vector-glyph">3.2.13.4. Tails on the vector glyph</a></li>
+<li class="toctree-l2"><a class="reference internal" href="VectorPlot.html#setting-the-number-of-vectors">3.2.13.5. Setting the number of vectors</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="VolumePlot.html">3.2.14. Volume plot</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="VolumePlot.html#setting-colors">3.2.14.1. Setting colors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="VolumePlot.html#limits">3.2.14.2. Limits</a></li>
+<li class="toctree-l2"><a class="reference internal" href="VolumePlot.html#setting-opacities">3.2.14.3. Setting opacities</a></li>
+<li class="toctree-l2"><a class="reference internal" href="VolumePlot.html#changing-the-opacity-variable">3.2.14.4. Changing the opacity variable</a></li>
+<li class="toctree-l2"><a class="reference internal" href="VolumePlot.html#controlling-image-quality">3.2.14.5. Controlling image quality</a></li>
+<li class="toctree-l2"><a class="reference internal" href="VolumePlot.html#software-rendered-images">3.2.14.6. Software rendered images</a></li>
+<li class="toctree-l2"><a class="reference internal" href="VolumePlot.html#lighting">3.2.14.7. Lighting</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="Common.html" class="btn btn-neutral float-right" title="3.2.1. Common Controls" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="../Working_with_Plots.html" class="btn btn-neutral" title="3.1. Working with Plots" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2008-2019, LLNL, UCRL-SM-220449.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../../',
+            VERSION:'2.11',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../../_static/doctools.js"></script>
+      <script type="text/javascript" src="../../../_static/language_data.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

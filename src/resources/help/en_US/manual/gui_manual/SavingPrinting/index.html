@@ -1,0 +1,321 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>5. Saving and Printing &mdash; VisIt User Manual 2.11 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../genindex.html"/>
+        <link rel="search" title="Search" href="../../search.html"/>
+    <link rel="top" title="VisIt User Manual 2.11 documentation" href="../../index.html"/>
+        <link rel="up" title="VisIt GUI User Manual" href="../index.html"/>
+        <link rel="next" title="5.1. Session files" href="Session_files.html"/>
+        <link rel="prev" title="4.3.29. Tube operator" href="../Operators/OperatorTypes/Tube_operator.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> VisIt User Manual
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                local build
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">GUI Manual</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../Intro/index.html">1. Introduction to VisIt</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../WorkingWithFiles/index.html">2. Working with Databases</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Plots/index.html">3. Plots</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Operators/index.html">4. Operators</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">5. Saving and Printing</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="Session_files.html">5.1. Session files</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Saving_the_visualization_window.html">5.2. Saving the Visualization Window</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Saving_movies.html">5.3. Saving movies</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Saving_Cinema.html">5.4. Saving Cinema</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Exporting_databases.html">5.5. Exporting databases</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Printing.html">5.6. Printing</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../VisualizationWindows/index.html">6. Visualization Windows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Subsetting/index.html">7. Subsetting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Quantitative/index.html">8. Quantitative Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../MakingItPretty/index.html">9. Making it pretty</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Animation/index.html">10. Animation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../InteractiveTools/index.html">11. Interactive Tools</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../MultipleDatabaseAndWindows/index.html">12. Multiple Databases and Windows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ClientServer/index.html">13. Client Server</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ComputeEngines/index.html">14. Compute Engines</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Preferences/index.html">15. Preferences</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Help/index.html">16. Help</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../StartupOptions/index.html">17. Startup Options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Building/index.html">18. Building</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../BuildingOnWindows/index.html">19. Building on Windows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Acknowledgments/index.html">20. Acknowledgments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../glossary.html">21. Glossary</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Contributing/index.html">22. Contributing</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../cli_manual/index.html">CLI Manual</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../dev_manual/index.html">Developer Manual</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">VisIt User Manual</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">VisIt GUI User Manual</a> &raquo;</li>
+        
+      <li>5. Saving and Printing</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../_sources/gui_manual/SavingPrinting/index.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="saving-and-printing">
+<span id="savingprinting"></span><h1>5. Saving and Printing<a class="headerlink" href="#saving-and-printing" title="Permalink to this headline">¶</a></h1>
+<p>In this chapter, we discuss how to save and print files from within VisIt. The
+section on saving files is further broken down into four main areas: saving session files, saving
+images, saving movies, saving Cinema databases, and exporting databases. We first
+learn about saving session files using the <strong>Save Session</strong> window. We then learn
+about saving images of visualizations using the <strong>Save Window</strong> and then we move on to
+saving movies and sets of image files using the <strong>Save movie wizard</strong>. In addition
+to movies, VisIt provides the <strong>Save to Cinema</strong> wizard to create Cinema image databases,
+which surpass movies and allow the user to explore data from different viewpoints.
+After learning to save images, movies, and Cinema databases, this chapter concentrates
+on exporting VisIt plots as databases using the <strong>Export Database window</strong>. Finally,
+we learn to print images of visualizations using the <strong>Printer Window</strong>.</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="Session_files.html">5.1. Session files</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="Session_files.html#saving-session">5.1.1. Saving session</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Session_files.html#restoring-session">5.1.2. Restoring session</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="Saving_the_visualization_window.html">5.2. Saving the Visualization Window</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="Saving_the_visualization_window.html#the-save-window">5.2.1. The Save Window</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Saving_the_visualization_window.html#selecting-the-output-directory-for-saved-files">5.2.2. Selecting the output directory for saved files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Saving_the_visualization_window.html#setting-the-save-file-name">5.2.3. Setting the save file name</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Saving_the_visualization_window.html#setting-the-file-type">5.2.4. Setting the file type</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Saving_the_visualization_window.html#saving-images-with-screen-capture">5.2.5. Saving images with screen capture</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Saving_the_visualization_window.html#setting-image-resolution">5.2.6. Setting image resolution</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Saving_the_visualization_window.html#saving-stereo-images">5.2.7. Saving stereo images</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Saving_the_visualization_window.html#saving-binary-geometry-files">5.2.8. Saving binary geometry files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Saving_the_visualization_window.html#selecting-pixel-data">5.2.9. Selecting pixel data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Saving_the_visualization_window.html#saving-tiled-images">5.2.10. Saving tiled images</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="Saving_movies.html">5.3. Saving movies</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="Saving_movies.html#choosing-movie-formats">5.3.1. Choosing movie formats</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Saving_movies.html#choosing-movie-length">5.3.2. Choosing movie length</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Saving_movies.html#choosing-the-movie-name">5.3.3. Choosing the movie name</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Saving_movies.html#choosing-e-mail-notification">5.3.4. Choosing e-mail notification</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Saving_movies.html#choosing-movie-generation-method">5.3.5. Choosing movie generation method</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="Saving_Cinema.html">5.4. Saving Cinema</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="Saving_Cinema.html#choosing-filename">5.4.1. Choosing filename</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Saving_Cinema.html#choosing-specification">5.4.2. Choosing specification</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Saving_Cinema.html#image-settings">5.4.3. Image settings</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Saving_Cinema.html#composite-images">5.4.4. Composite images</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Saving_Cinema.html#choosing-camera-type">5.4.5. Choosing Camera type</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Saving_Cinema.html#frame-settings">5.4.6. Frame settings</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Saving_Cinema.html#saving-cinema-from-libsim">5.4.7. Saving Cinema from Libsim</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="Exporting_databases.html">5.5. Exporting databases</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="Exporting_databases.html#exporting-variables">5.5.1. Exporting variables</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Exporting_databases.html#choosing-an-export-file-format">5.5.2. Choosing an export file format</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Exporting_databases.html#export-options">5.5.3. Export Options</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="Printing.html">5.6. Printing</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="Printing.html#the-printer-window">5.6.1. The Printer Window</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="Session_files.html" class="btn btn-neutral float-right" title="5.1. Session files" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="../Operators/OperatorTypes/Tube_operator.html" class="btn btn-neutral" title="4.3.29. Tube operator" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2008-2019, LLNL, UCRL-SM-220449.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'2.11',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="../../_static/language_data.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>
